@@ -48,6 +48,7 @@ import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
 import { usePageFiltersOptional } from "./contexts/pageFilters";
 import { useInstallationFilterUrlSync } from "./hooks/useInstallationFilter";
 import { searchByFieldsToQuery } from "./lib/searchByFieldsToQuery";
+import { buildViewAllHref } from "./lib/viewAllHref";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useAuthModal } from "@/modules/auth";
 import { useLocalization } from "@/hooks/useLocalization";
@@ -303,13 +304,11 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   // Lien « voir sur la page complète » (ex. /lieux) AVEC les filtres courants :
   // on recopie les query params actifs (typologies/services, déjà dans l'URL) +
   // la recherche texte (`?search=`). Affiché seulement si `customHeader.linkText`.
+  // La fusion vit dans `buildViewAllHref` : un `linkHref` de config peut porter sa propre query
+  // (scope de la page cible, ex. `?territoire=…`), qu'une concaténation naïve détruisait.
   const viewAllHref = useMemo(() => {
     if (!customHeader?.linkText) return null;
-    const base = customHeader.linkHref || "/lieux";
-    const params = new URLSearchParams(searchParams);
-    if (searchQuery) params.set("search", searchQuery);
-    const qs = params.toString();
-    return qs ? `${base}?${qs}` : base;
+    return buildViewAllHref(customHeader.linkHref || "/lieux", searchParams, searchQuery);
   }, [customHeader, searchParams, searchQuery]);
 
   const searchTags = useMemo<Record<string, string[]>>(() => {

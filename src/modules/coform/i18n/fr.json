@@ -553,6 +553,9 @@
         "saved": "Choix enregistré",
         "failed": "Le choix n'a pas pu être enregistré"
       }
+    },
+    "field": {
+      "required": "obligatoire"
     }
   }
 }

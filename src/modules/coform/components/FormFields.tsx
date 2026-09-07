@@ -75,6 +75,86 @@ export function FieldError({ name, message }: { name: string; message: string | 
   );
 }
 
+/**
+ * Libellé d'une question — **point unique** où se règle son apparence.
+ *
+ * Les champs du module rendaient auparavant ce bloc en copie inline
+ * (`<Label className="text-sm font-medium">{label}{isRequired && "*"}</Label>`),
+ * dans 10 fichiers. Toute retouche de hiérarchie visuelle devait donc être
+ * répétée à chaque champ — et le moindre oubli désalignait une question. Ici,
+ * une seule ligne fait bouger tout le formulaire.
+ *
+ * **Hiérarchie** : la question est en `text-base font-semibold` alors que le
+ * contenu (options, aides, valeurs) reste en `text-sm`. Cet écart d'un cran de
+ * taille ET de graisse est ce qui permet de distinguer « ce qui est demandé »
+ * de « ce avec quoi on répond » — avant, tout le formulaire était au même
+ * `text-sm` et les deux niveaux se confondaient.
+ *
+ * **Élément rendu** : `<label>` **uniquement** si `htmlFor` est fourni. Sans
+ * cible, un `<label>` n'a aucun effet d'accessibilité (il ne donne son nom à
+ * rien) : on rend alors une `<div>`, que le contrôle référence par
+ * `aria-labelledby={id}`. C'est le cas de tous les champs composites dont le
+ * contrôle n'est pas un input focusable (liste de cases, bouton de modale…).
+ */
+export function FieldLabel({
+  field,
+  htmlFor,
+  id,
+  hasError,
+  className,
+}: {
+  field: Pick<FormFieldMapping, "label" | "isRequired">;
+  /** Id de l'input ciblé. Fourni → `<label for>` ; absent → `<div>`. */
+  htmlFor?: string;
+  /** Id du libellé, à référencer via `aria-labelledby` côté contrôle. */
+  id?: string;
+  hasError?: boolean;
+  className?: string;
+}) {
+  const t = useT("modules/coform");
+  if (!field.label) return null;
+
+  const content = (
+    <>
+      {field.label}
+      {field.isRequired && (
+        <>
+          <span className="text-destructive ml-1" aria-hidden="true">
+            *
+          </span>
+          {/* L'astérisque est décorative : lue telle quelle, elle s'annonce
+              « étoile ». Le caractère obligatoire est donc porté ici par un
+              texte réservé aux lecteurs d'écran, DANS le libellé — et non par
+              `aria-required` sur le contrôle, que plusieurs champs du module ne
+              posent pas (les composites dont le contrôle n'est pas un input).
+              Au niveau du libellé, l'information vaut pour tous. */}
+          <span className="sr-only">{t("coform.field.required", "obligatoire")}</span>
+        </>
+      )}
+    </>
+  );
+
+  const classes = cn(
+    "block text-base font-semibold leading-snug text-foreground",
+    hasError && "text-destructive",
+    className,
+  );
+
+  if (htmlFor) {
+    return (
+      <Label id={id} htmlFor={htmlFor} className={classes}>
+        {content}
+      </Label>
+    );
+  }
+
+  return (
+    <div id={id} className={classes}>
+      {content}
+    </div>
+  );
+}
+
 interface FormFieldProps {
   field: FormFieldMapping;
   register?: UseFormRegister<Record<string, unknown>>;
@@ -95,15 +175,7 @@ export function TextField({ field, register, errors }: FormFieldProps) {
   
   return (
     <div className={cn("space-y-2", field.width)}>
-      {field.label && (
-        <Label
-          htmlFor={field.name}
-          className="text-sm font-medium text-foreground"
-        >
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </Label>
-      )}
+      <FieldLabel field={field} htmlFor={field.name} />
       {field.info && <HintText text={field.info} />}
       <div className={cn(
         // `overflow-hidden rounded-md` : clippe la sous-ligne `after:` au
@@ -143,15 +215,7 @@ export function TextAreaField({ field, register, errors, value, onChange }: Form
   
   return (
     <div className={cn("space-y-2", field.width)}>
-      {field.label && (
-        <Label
-          htmlFor={field.name}
-          className="text-sm font-medium text-foreground"
-        >
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </Label>
-      )}
+      <FieldLabel field={field} htmlFor={field.name} />
       {field.info && <HintText text={field.info} />}
 
       {isMarkdown ? (
@@ -311,12 +375,7 @@ export function RadioField({ field, errors, value, onChange }: FormFieldProps) {
 
   return (
     <div className={cn("space-y-4", field.width)}>
-      {field.label && (
-        <Label className="text-sm font-medium text-foreground">
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </Label>
-      )}
+      <FieldLabel field={field} />
       {field.info && <HintText text={field.info} />}
       
       <RadioGroup
@@ -376,15 +435,7 @@ export function SelectField({ field, errors, value, onChange }: FormFieldProps) 
 
   return (
     <div className={cn("space-y-2", field.width)}>
-      {field.label && (
-        <Label
-          htmlFor={field.name}
-          className="text-sm font-medium text-foreground"
-        >
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </Label>
-      )}
+      <FieldLabel field={field} htmlFor={field.name} />
       {field.info && <HintText text={field.info} />}
 
       {field.searchable ? (
@@ -487,12 +538,7 @@ export function CheckboxField({ field, errors, value = [], onChange }: FormField
 
   return (
     <div className={cn("space-y-4", field.width)}>
-      {field.label && (
-        <Label className="text-sm font-medium text-foreground">
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </Label>
-      )}
+      <FieldLabel field={field} />
       {field.info && <HintText text={field.info} />}
 
       <div

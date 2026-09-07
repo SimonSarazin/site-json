@@ -159,6 +159,14 @@
     "domain": "rezo-sante-reunion.00.re"
   },
   {
+    "slug": "ESS974",
+    "config": "config.prod.equipements-Sportifs-Scolaire.json",
+    "css": "index-equipements-sportifs",
+    "images": "equipementsSportifs974",
+    "coolifyApp": "site-json-equipements-sportifs-scolaires",
+    "domain": "equipements-sportifs-scolaires.00.re"
+  },
+  {
     "slug": "federationDesCae",
     "config": "config.prod.federationDesCae.json",
     "css": "index-rezo-la-mer"

@@ -1411,7 +1411,6 @@ const GridLayoutSectionPropsSchema = z.object({
   className: z.string().optional(),
   leftWrapperClass: z.string().optional(),
   rightWrapperClass: z.string().optional(),
-  fixedHeight: z.string().optional(),
 });
 
 const GridLayoutSectionSchema = z.object({
@@ -1698,6 +1697,25 @@ const MegaMenu = z.object({
   width: z.enum(["sm", "md", "lg", "xl", "full"]).default("lg"),
 });
 
+// Génère `children` depuis une liste `costum.lists.<list>` au lieu de les écrire à la main
+// (cf. Document de spécification « Menu dynamique costum.lists dans le header »). `children`
+// déclaré en parallèle sert de repli statique tant que la liste n'est pas résolue (absente,
+// vide, ou `filterId` introuvable en config) — résolu par `useResolveDynamicNav`, câblé dans
+// `SiteHeader` : aucune variante de header n'a besoin de connaître ce champ.
+const DynamicNavList = z.object({
+  // Nom de la liste costum.lists à lire (ex. "themes") — statique ou recette dynamique, détecté
+  // automatiquement. Plusieurs noms = fusion dans l'ordre déclaré (cf. @/lib/listSources), cas d'un
+  // même champ alimenté depuis plusieurs collections : une recette par collection.
+  list: z.union([z.string().min(1), z.array(z.string().min(1)).min(1)]),
+  // id du dropdownFilter/filterGroup cible (résolu via getDropdownFilterOwner) : détermine
+  // à la fois la page de destination et le champ filtré par chaque entrée générée.
+  filterId: z.string().min(1),
+  // Slug du costum porteur de la liste, si différent du site courant.
+  costumSlug: z.string().optional(),
+  // Plafond d'entrées affichées (défaut : DEFAULT_DYNAMIC_NAV_LIMIT, cf. lib/dynamicNav.ts).
+  limit: z.number().int().positive().optional(),
+});
+
 // Enhanced NavItem with mega menu support
 // Define interface for EnhancedNavItem to avoid 'any'
 export interface EnhancedNavItemType {
@@ -1716,6 +1734,7 @@ export interface EnhancedNavItemType {
   description?: LocalizedString;
   /** Affiche le sous-menu en mise en avant (colonne "lien principal" via `path` + grille). */
   featured?: boolean;
+  dynamicList?: z.infer<typeof DynamicNavList>;
 }
 
 const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
@@ -1731,8 +1750,9 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
     megaMenu: MegaMenu.optional(),
     description: LocalizedString.optional(),
     featured: z.boolean().optional(),
-  }).refine(d => d.path || d.href || d.children || d.megaMenu, {
-    message: "NavItem : path, href, children ou megaMenu obligatoire"
+    dynamicList: DynamicNavList.optional(),
+  }).refine(d => d.path || d.href || d.children || d.megaMenu || d.dynamicList, {
+    message: "NavItem : path, href, children, megaMenu ou dynamicList obligatoire"
   })
 );
 

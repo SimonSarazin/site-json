@@ -655,7 +655,18 @@ function ReadOnlyTimeSlots({ field, value, widthClass }: { field: FormFieldMappi
 // ─── Lecture seule : lignes dynamiques (dynamicFields) ────────────
 
 function ReadOnlyDynamicFields({ field, value, widthClass }: { field: FormFieldMapping; value: FormFieldValue; widthClass: string }) {
-  const rows = Array.isArray(value) ? (value as DynamicFieldsRow[]) : [];
+  // Les lignes vides viennent du semis `minRows` (`seedDynamicRows`, appliqué
+  // aussi par `normalizeAnswerData` dont dépend ce rendu) : elles existent pour
+  // donner une ligne à REMPLIR en saisie, elles n'ont rien à dire en lecture.
+  // Sans ce filtre, une réponse enregistrée sans aucune ligne — le cas nominal,
+  // puisque les lignes vides ne sont jamais persistées — afficherait des cartes
+  // grises vides au lieu du « — ».
+  const rows = (Array.isArray(value) ? (value as DynamicFieldsRow[]) : []).filter(
+    (row) =>
+      row != null &&
+      typeof row === "object" &&
+      Object.values(row).some((v) => String(v ?? "").trim() !== ""),
+  );
   const subFields = field.dynamicFieldsConfig?.fieldsConfig ?? [];
   // Libellé + résolution des clés de select → label affiché (comme le select simple).
   const displayOf = (key: string, raw: string): string => {

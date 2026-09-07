@@ -8,7 +8,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import type { FormFieldMapping, FinderValue, FinderElement, FinderConfig } from "../types";
 import { FinderElementCard } from "./FinderElementCard";
 import { FinderSearchModal } from "./FinderSearchModal";
-import { FieldError, HintText } from "./FormFields";
+import { FieldError, FieldLabel, HintText } from "./FormFields";
 import { useFinderElementImages, mergeResolvedFinderImages } from "../hooks/useFinderElementImages";
 
 interface FinderFieldProps {
@@ -154,12 +154,7 @@ export function FinderField({
       {/* Label — `<div>` (et pas `<label>`) car le control n'est pas un input
           mais un bouton ouvrant un modal. Un `<label>` sans `htmlFor` n'a aucun
           effet a11y. Le bouton ci-dessous porte son propre `aria-label`. */}
-      {!hideLabel && (
-        <div id={`${field.name}-label`} className="text-sm font-medium">
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </div>
-      )}
+      {!hideLabel && <FieldLabel field={field} id={`${field.name}-label`} />}
 
       {/* Info/Description */}
       {field.info && <HintText text={field.info} />}

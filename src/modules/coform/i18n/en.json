@@ -553,6 +553,9 @@
         "saved": "Choice saved",
         "failed": "The choice could not be saved"
       }
+    },
+    "field": {
+      "required": "required"
     }
   }
 }

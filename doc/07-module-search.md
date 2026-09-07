@@ -1049,7 +1049,7 @@ Toutes les variantes sont lazy-loadées. Une page **mono-type** ne télécharge 
 - Bouton « Contacter » : **plus de `disabled={!isConnected}`** — toujours cliquable ; si non connecté → `openLogin()`.
 - Bouton « Suivre » : **`disabled={isLoadingFollow}` uniquement** (plus de `disabled={!isConnected || isLoadingFollow}`) — toujours cliquable si le follow n'est pas en cours ; si non connecté → `openLogin()`.
 
-Voir [doc/23-module-auth.md](doc/23-module-auth.md) pour l'API `useAuthModal`.
+Voir [doc/23-module-auth.md](23-module-auth.md) pour l'API `useAuthModal`.
 
 ### Mode détails — conteneur (`detailsMode`) vs contenu (`preview.type`)
 
@@ -1207,14 +1207,40 @@ Usage type : `/annuaire` institut-bleu — `card.detailsMode: "dialog"` + `previ
 `dropdownFilter` d'une AUTRE page devient cliquable **vers cette page** (`findFilterByField` scanne
 toute la config) — ne déclarer que des champs neutres, ou assumer la navigation.
 
-#### Options DYNAMIQUES d'un filtre — `optionsFrom` (listes déclarées du costum)
+#### Options d'un filtre depuis `costum.lists` — `optionsFrom`
 
-Un filtre (dropdown ou `filterGroups`) peut tirer ses options d'une **liste déclarée du costum**
-(`costum.lists.<nom>` : `{collection, distinct, where}`) au lieu d'options figées :
+Un filtre (dropdown ou `filterGroups`) peut tirer ses options d'une ou plusieurs **listes déclarées du
+costum** au lieu d'options figées :
 
 ```jsonc
-{ "field": "tags", "optionsFrom": { "list": "tagsDocument" } }   // costumSlug optionnel (défaut : site)
+{ "field": "tags",    "optionsFrom": { "list": "tagsDocument" } }        // costumSlug optionnel (défaut : site)
+{ "field": "themes",  "optionsFrom": { "list": ["themes", "themesPoi", "themesEvents"],
+                                       "withDeclared": true } }          // plusieurs listes + socle déclaré
 ```
+
+**La FORME de chaque liste est détectée automatiquement** (`@/lib/listSources`, `isDynamicList`) :
+statique (tableau/map) → lue en mémoire dans le costum déjà chargé, aucune requête ; recette
+(`{collection, distinct, where}`, badges) → résolue par `costum/co/listvalues`. Le rédacteur de config
+n'a donc pas à savoir sous quelle forme la liste est déclarée en base — se tromper ne produisait aucune
+erreur, juste un repli silencieux sur les options figées. `optionsKey`, qui désignait autrefois
+explicitement la voie statique, reste accepté comme **alias déprécié** de `optionsFrom.list`.
+
+**Plusieurs listes = fusion**, dans l'ordre déclaré (la première où une valeur apparaît fixe sa
+graphie). Cas d'usage : un même champ alimenté depuis plusieurs collections, qui demande alors une
+recette par collection (parent62 : `themes` est écrit sur `poi` ET sur `events`). Les `variants`
+(graphies regroupées) sont **unis entre listes** — sans quoi le filtre n'interrogerait qu'une graphie
+et raterait silencieusement les fiches de l'autre collection.
+
+**`withDeclared`** fait des `options` écrites en config un **SOCLE** fusionné en tête, au lieu d'un
+simple repli de chargement : elles gardent alors leur **libellé i18n** (et leur couleur, leur `level`),
+là où une valeur venue de la base s'affiche en `capitaliser(valeur)`. Opt-in délibéré : fusionner
+partout ferait réapparaître des valeurs de config absentes de la base, donc des filtres qui ne rendent
+rien.
+
+**`optionsReady`** signifie « toutes les sources ont répondu », jamais « on a déjà de quoi afficher » —
+`FiltersSection` s'en sert pour retarder l'hydratation URL. Annoncer « prêt » trop tôt (ce qu'un socle
+non vide rend tentant) laisse l'hydratation s'exécuter avant l'arrivée des valeurs, puis l'effet de
+lecture rejoué **efface la sélection par défaut**.
 
 `useDynamicFilterOptions` interroge l'endpoint `costum/co/listvalues` (existe côté legacy ET Node,
 byte-vérifié) qui résout la liste **hors du cache costum** (valeurs fraîches — une valeur saisie
@@ -1223,8 +1249,8 @@ déclaration en base porte collection/champ/filtre — une liste non déclarée 
 Pagination : plafond client 300 (couvre 7 des 8 listes du parc) ; au-delà, la réponse porte
 `total`/`truncated` et la **recherche re-interroge le serveur** (`q`, forme canonique sans
 accents/casse, `limit` ≤ 5000) — mesuré : « Zooplancton », rang 1208/1209, trouvé via la saisie.
-Sans `optionsFrom`, rien ne change (les options déclarées font foi). Les libellés sont capitalisés
-à l'AFFICHAGE seul (la valeur filtrée reste byte-fidèle).
+Sans `optionsFrom` ni `optionsKey`, rien ne change (les options déclarées font foi) et aucune requête
+n'est émise. Les libellés sont capitalisés à l'AFFICHAGE seul (la valeur filtrée reste byte-fidèle).
 
 ### Cartes news dans la recherche (CardNews et PreviewNews)
 

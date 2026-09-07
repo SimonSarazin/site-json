@@ -1937,7 +1937,7 @@ export const SearchHeaderSectionSchema = z.object({
 | `subheadClassName` | `string?`         | Override de la classe couleur du sous-titre (def. `text-foreground`) ; `""` pour ne rien forcer |
 | `filtersClassName` | `string?`         | Override du conteneur flex de la rangee de filtres (def. `flex flex-col lg:flex-row lg:items-center`) |
 | `types`            | `array?`          | Types de filtre (id, label)            |
-| `dropdownFilters`  | `array?`          | Filtres en menu deroulant (`id`, `label`, `field?`, `multiple?`, `allLabel?`, `options[]`, `optionsFrom?`) |
+| `dropdownFilters`  | `array?`          | Filtres en menu deroulant (`id`, `label`, `field?`, `multiple?`, `allLabel?`, `options[]`, `optionsFrom?` — `{list: string \| string[], costumSlug?, withDeclared?}`, cf. `doc/07-module-search.md`) |
 | `buttons`          | `ActionButton[]?` | Boutons d'action                       |
 | `showSearch`       | `boolean?`        | Afficher le champ de recherche         |
 | `searchPlaceholder` | `LocalizedString?` | Placeholder de la recherche          |
@@ -2299,7 +2299,6 @@ const GridLayoutSectionPropsSchema = z.object({
   className: z.string().optional(),
   leftWrapperClass: z.string().optional(),
   rightWrapperClass: z.string().optional(),
-  fixedHeight: z.string().optional(),
 });
 
 const GridLayoutSectionSchema = z.object({
@@ -2319,7 +2318,6 @@ const GridLayoutSectionSchema = z.object({
 | `className`         | `string?` | Classes CSS additionnelles               |
 | `leftWrapperClass`  | `string?` | Classes CSS du wrapper gauche            |
 | `rightWrapperClass` | `string?` | Classes CSS du wrapper droit             |
-| `fixedHeight`       | `string?` | Hauteur fixe de la grille                |
 
 ---
 
