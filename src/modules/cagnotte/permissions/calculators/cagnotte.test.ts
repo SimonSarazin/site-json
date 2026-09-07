@@ -168,6 +168,50 @@ describe("calculateCagnottePermissions — canMarkActionDone", () => {
 });
 
 /**
+ * Supprimer sa propre action — plus fort que la corriger, donc plus étroit :
+ * l'auteur, pas les contributeurs assignés.
+ *
+ * Le front était ici plus restrictif que le backend, qui autorise déjà l'auteur
+ * (`Action.delete()` du SDK → `isAuthorOrAdmin`). Un créateur voyait donc son action
+ * refusée par une UI plus sévère que la règle métier.
+ */
+describe("calculateCagnottePermissions — canDeleteAction", () => {
+  const NON_ADMIN = () => makeOrgEntity(false);
+
+  it("l'auteur supprime son action non terminée, sans être admin", () => {
+    const perms = calculateCagnottePermissions(NON_ADMIN(), makeMe("auteur"));
+    expect(perms.canDeleteAction({ status: "todo", authorId: "auteur", contributorIds: [] })).toBe(true);
+  });
+
+  it("le contributeur assigné édite mais NE supprime PAS", () => {
+    const assigne = calculateCagnottePermissions(NON_ADMIN(), makeMe("assigne"));
+    const actionAssignee = { status: "todo" as const, contributorIds: ["assigne"] };
+
+    expect(assigne.canEditAction(actionAssignee)).toBe(true);
+    expect(assigne.canDeleteAction(actionAssignee)).toBe(false);
+  });
+
+  it("une action TERMINÉE ne se supprime que par l'admin ou le porteur", () => {
+    const auteur = calculateCagnottePermissions(NON_ADMIN(), makeMe("auteur"));
+    expect(auteur.canDeleteAction({ status: "done", authorId: "auteur", contributorIds: [] })).toBe(false);
+
+    const admin = calculateCagnottePermissions(makeOrgEntity(true), makeMe("admin"));
+    expect(admin.canDeleteAction({ status: "done", contributorIds: [] })).toBe(true);
+
+    const porteur = calculateCagnottePermissions(NON_ADMIN(), makeMe("deposant"), {
+      ownerIds: ["deposant"],
+    });
+    expect(porteur.canDeleteAction({ status: "done", contributorIds: [] })).toBe(true);
+  });
+
+  it("un tiers ne supprime rien", () => {
+    const tiers = calculateCagnottePermissions(NON_ADMIN(), makeMe("tiers"));
+    expect(tiers.canDeleteAction({ status: "todo", authorId: "auteur", contributorIds: [] })).toBe(false);
+    expect(tiers.canDeleteAction({ status: "todo", contributorIds: [] })).toBe(false);
+  });
+});
+
+/**
  * `ownerIds` ne se déduit d'aucune entité — être porteur d'une ressource est un fait
  * sur la ressource, pas un rôle sur un objet.
  *
@@ -202,6 +246,36 @@ describe("calculateCagnottePermissions — porteur sans entité", () => {
 
     expect(perms.canCreateMilestone).toBe(false);
     expect(perms.canContributeReason).toBe("No entity provided");
+  });
+
+  /**
+   * Le cas qui manquait, et par lequel le créateur d'une action perdait ses boutons :
+   * l'entité projet de la fiche commun est résolue de façon asynchrone, donc `null`
+   * pendant le chargement et en cas d'échec. Les règles au niveau action ne dépendent
+   * pas d'elle — l'auteur est un fait porté par l'action, pas un rôle sur le projet.
+   */
+  it("l'auteur d'une action garde édition et suppression sans entité en main", () => {
+    const auteur = calculateCagnottePermissions(null, makeMe("auteur"));
+    const sonAction = { status: "todo" as const, authorId: "auteur", contributorIds: [] };
+
+    expect(auteur.canEditAction(sonAction)).toBe(true);
+    expect(auteur.canDeleteAction(sonAction)).toBe(true);
+    expect(auteur.canMarkActionDone(sonAction)).toBe(true);
+
+    // Les droits qui dépendent VRAIMENT d'un rôle sur l'entité restent fermés.
+    expect(auteur.isAdmin).toBe(false);
+    expect(auteur.canCreateMilestone).toBe(false);
+    expect(auteur.canCreateAction(OPEN_MILESTONE)).toBe(false);
+    expect(auteur.canEditMilestone(OPEN_MILESTONE)).toBe(false);
+  });
+
+  it("le contributeur assigné aussi, et un tiers toujours pas", () => {
+    const assigne = calculateCagnottePermissions(null, makeMe("assigne"));
+    expect(assigne.canEditAction({ status: "todo", contributorIds: ["assigne"] })).toBe(true);
+
+    const tiers = calculateCagnottePermissions(null, makeMe("tiers"));
+    expect(tiers.canEditAction({ status: "todo", authorId: "auteur", contributorIds: [] })).toBe(false);
+    expect(tiers.canDeleteAction({ status: "todo", authorId: "auteur", contributorIds: [] })).toBe(false);
   });
 
   it("un non-connecté ne devient jamais porteur, même listé dans ownerIds", () => {

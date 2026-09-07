@@ -30,6 +30,40 @@ export interface CagnotteActionLike {
   authorId?: string;
 }
 
+/**
+ * Ce qu'une carte sait dire d'une action au calculateur de permissions — même contrat
+ * que `CagnotteActionLike`, mais `status` et `contributorIds` y sont requis : une carte
+ * qui rend une action les connaît toujours.
+ *
+ * `authorId` reste optionnel : les cartes qui ne le renseignent pas gardent le
+ * comportement d'avant (admin ou contributeur assigné), sans erreur de type.
+ */
+export interface ActionPermissionInput {
+  status: CagnotteActionStatus;
+  contributorIds: string[];
+  authorId?: string;
+}
+
+/**
+ * Sous-ensemble de `CagnottePermissions` consommé par les cartes de palier — les deux
+ * écrans qui rendent paliers et actions (`MilestoneCard` côté cagnotte,
+ * `ActionsMilestoneCard` côté AAC) partagent ce contrat.
+ *
+ * Déclaré ici, dans le module qui possède le calculateur, et non dans chaque écran :
+ * les deux copies locales qui existaient avaient divergé, celle des cartes cagnotte
+ * ayant perdu `authorId` — donc la règle « l'auteur peut corriger son action ».
+ */
+export interface MilestoneCardPermissions {
+  canCreateAction: (input: { status: CagnotteMilestoneStatus }) => boolean;
+  canEditMilestone: (input: { status: CagnotteMilestoneStatus }) => boolean;
+  canCloseMilestone: (input: { status: CagnotteMilestoneStatus }) => boolean;
+  canDeleteMilestone: (input: { status: CagnotteMilestoneStatus; hasTransactions: boolean }) => boolean;
+  canCandidateAction: (input: ActionPermissionInput) => boolean;
+  canMarkActionDone: (input: ActionPermissionInput) => boolean;
+  canEditAction: (input: ActionPermissionInput) => boolean;
+  canDeleteAction: (input: ActionPermissionInput) => boolean;
+}
+
 export interface CagnottePermissions {
   // Contribution
   /** L'utilisateur peut ouvrir la modale de contribution (connecté + projet existant + milestones actifs) */
@@ -55,7 +89,7 @@ export interface CagnottePermissions {
   canEditAction: (action: CagnotteActionLike | null | undefined) => boolean;
   /** Marquer une action terminée (admin OU auteur OU contributeur de l'action) + action en `todo` */
   canMarkActionDone: (action: CagnotteActionLike | null | undefined) => boolean;
-  /** Supprimer une action (admin uniquement) */
+  /** Supprimer une action (admin OU auteur de l'action) — `done` : admin seul */
   canDeleteAction: (action: CagnotteActionLike | null | undefined) => boolean;
   /** Se porter candidat sur une action (connecté + action `todo` + pas déjà contributeur) */
   canCandidateAction: (action: CagnotteActionLike | null | undefined) => boolean;

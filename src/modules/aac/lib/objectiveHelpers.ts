@@ -4,10 +4,7 @@
  * lors de sa scission en 2 composants distincts (financement vs actions).
  */
 import type { Project } from "@communecter/cocolight-api-client";
-import type {
-  FundingMilestone as Milestone,
-  FundingAction as ProjectAction,
-} from "@/modules/cagnotte/types";
+import type { FundingAction as ProjectAction } from "@/modules/cagnotte/types";
 import { getEntityId, normalizeTags, resolveActionAuthorId } from "@/modules/cagnotte/utils/dataTransform";
 import { resolveAnswerAuthorId } from "./answerAuthor";
 
@@ -126,24 +123,11 @@ export function getModalProjectEntityCandidate(
 }
 
 /**
- * Ce que la carte sait dire d'une action au calculateur de permissions.
- *
- * `authorId` est optionnel : les cartes qui ne le renseignent pas gardent le
- * comportement d'avant (admin ou contributeur assigné).
+ * Contrat de permissions des cartes de palier — défini par le module cagnotte, qui
+ * possède le calculateur. Ré-exporté ici pour les call-sites AAC qui l'importaient
+ * déjà depuis ce fichier.
  */
-export interface ActionPermissionInput {
-  status: ProjectAction["status"];
-  contributorIds: string[];
-  authorId?: string;
-}
-
-export interface MilestoneCardPermissions {
-  canCreateAction: (input: { status: Milestone["status"] }) => boolean;
-  canEditMilestone: (input: { status: Milestone["status"] }) => boolean;
-  canCloseMilestone: (input: { status: Milestone["status"] }) => boolean;
-  canDeleteMilestone: (input: { status: Milestone["status"]; hasTransactions: boolean }) => boolean;
-  canCandidateAction: (input: ActionPermissionInput) => boolean;
-  canMarkActionDone: (input: ActionPermissionInput) => boolean;
-  canEditAction: (input: ActionPermissionInput) => boolean;
-  canDeleteAction: (input: ActionPermissionInput) => boolean;
-}
+export type {
+  ActionPermissionInput,
+  MilestoneCardPermissions,
+} from "@/modules/cagnotte/permissions/types";

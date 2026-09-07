@@ -156,11 +156,23 @@ export function getEntityId(value: unknown): string {
  *
  * Le backend écrit les deux champs à la création (`ActionAction.php` : `'creator' => $user`
  * ET `'idUserAuthor' => $user`), mais des documents anciens n'en portent qu'un — on lit
- * donc les deux, `creator` d'abord. Retourne `""` quand l'action ne dit pas qui l'a créée.
+ * donc les deux, `creator` d'abord.
+ *
+ * Le dernier repli, `authorId`, couvre les actions qui arrivent **déjà normalisées** :
+ * `FundingAction` ne transporte plus `creator` (cf. la branche `selectorType: "project"`
+ * de `useCagnotteAdapter`, où `depense.actions` est typé `FundingAction[]`). Sans lui,
+ * repasser un tel objet par cette fonction effaçait son auteur, et personne ne pouvait
+ * plus corriger sa propre action.
+ *
+ * Retourne `""` quand l'action ne dit pas qui l'a créée.
  */
 export function resolveActionAuthorId(actionLike: unknown): string {
   const record = asRecord(actionLike);
-  return getEntityId(record.creator) || getEntityId(record.idUserAuthor);
+  return (
+    getEntityId(record.creator) ||
+    getEntityId(record.idUserAuthor) ||
+    getEntityId(record.authorId)
+  );
 }
 
 /**
