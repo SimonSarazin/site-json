@@ -49,10 +49,25 @@ export type MarkerVisual =
  */
 const DEFAULT_SIZE = { image: 36, circle: 30, pin: 34, icon: 34 } as const;
 
-/** Taille déclarée, sinon le défaut de la forme. */
+/**
+ * Taille déclarée, sinon le défaut de la forme.
+ *
+ * Coerce les chaînes numériques : le schéma valide `iconSize` via
+ * `z.coerce.number()`, mais la config N'EST PAS parsée par Zod au runtime (le
+ * JSON brut est servi tel quel — Zod ne sert qu'à l'outillage et au preflight).
+ * Sans cette coercition, un `"45"` passerait la validation puis serait ignoré
+ * ici : la carte rendrait la taille par défaut sans le moindre avertissement,
+ * exactement le mode d'échec silencieux qu'on cherche à supprimer.
+ * Une valeur non numérique ou nulle retombe sur le défaut de la forme —
+ * jamais sur 0, qui rendrait le marqueur invisible.
+ */
 function sizeOf(conf: MarkerVisualConf | undefined, fallback: number): number {
-  const declared = conf?.iconSize;
-  return typeof declared === "number" && Number.isFinite(declared) ? declared : fallback;
+  // `unknown` volontaire : le type annonce `number`, mais la valeur vient d'un
+  // JSON jamais validé au runtime — elle peut être une chaîne, voire n'importe quoi.
+  const declared: unknown = conf?.iconSize;
+  if (declared === undefined || declared === null || declared === "") return fallback;
+  const size = Number(declared);
+  return Number.isFinite(size) && size > 0 ? size : fallback;
 }
 
 /** Jeton de thème → variable CSS (le pin suit le thème au paint). */

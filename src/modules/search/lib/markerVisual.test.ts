@@ -383,6 +383,23 @@ describe("resolveMarkerVisual — `icon` : pictogramme lucide dans la forme", ()
       ).toMatchObject({ size: 36 });
     });
 
+    // Le schéma valide `iconSize` via z.coerce, mais la config n'est PAS parsée
+    // par Zod au runtime : sans coercition ici, un "45" validé serait ignoré et
+    // la carte rendrait la taille par défaut, sans erreur nulle part.
+    it("accepte une taille écrite en chaîne (cas réel des configs JSON)", () => {
+      expect(
+        resolveMarkerVisual({}, { style: "pin", iconSize: "45" } as never, BASE),
+      ).toMatchObject({ kind: "pin", size: 45 });
+    });
+
+    it("retombe sur le défaut de la forme si la valeur n'est pas exploitable", () => {
+      for (const bad of ["", "abc", null, undefined, 0, -10, NaN]) {
+        expect(
+          resolveMarkerVisual({}, { style: "circle", iconSize: bad } as never, BASE),
+        ).toMatchObject({ kind: "circle", size: 30 });
+      }
+    });
+
     it("un cas de `by` peut redimensionner un marqueur au cas par cas", () => {
       const conf = {
         style: "pin" as const,
