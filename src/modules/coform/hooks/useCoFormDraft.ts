@@ -49,6 +49,23 @@ export interface UseCoFormDraftOptions {
    * d'avant : les brouillons déjà en place continuent d'être retrouvés.
    */
   scope?: string | null;
+  /**
+   * Élément auquel la réponse est rattachée (lieu, projet…), quand il y en a un.
+   *
+   * Une même « nouvelle réponse » (`answerId` absent) d'un même formulaire peut
+   * être saisie depuis plusieurs éléments : « Ajouter une salle » sur le profil
+   * du tiers-lieu A, puis sur celui de B. Sans ce segment, les deux partagent
+   * la clé `…:new` — le brouillon écrit pour A est proposé sur B, et comme la
+   * restauration l'emporte sur le champ finder verrouillé (`lockedFields`), la
+   * salle créée depuis B se rattache à A, via un champ que l'utilisateur ne
+   * peut pas corriger.
+   *
+   * Omis ou vide ⇒ pas de segment, et la clé reste EXACTEMENT celle d'avant
+   * (même règle que `scope`). `elementType` ne fait que qualifier l'id
+   * (`<type>/<id>`) : seul `elementId` décide de la présence du segment.
+   */
+  elementId?: string | null;
+  elementType?: string | null;
   baseUpdatedAt?: number | null;
   disabled?: boolean;
 }
@@ -76,17 +93,29 @@ interface DraftSnapshot {
 }
 const EMPTY_SNAPSHOT: DraftSnapshot = { restorable: null, stale: null };
 
-function buildKey(
-  formId: string,
-  userId: string,
-  answerId: string | undefined,
-  scope?: string | null
-): string {
-  const base = `${KEY_PREFIX}:${formId}:${userId}:${answerId ?? "new"}`;
-  // Segment ajouté SEULEMENT s'il y a un périmètre : sans ça, on changerait la
-  // clé du formulaire entier et on rendrait orphelins les brouillons existants.
+type DraftKeyParts = Pick<
+  UseCoFormDraftOptions,
+  "answerId" | "scope" | "elementId" | "elementType"
+> & { formId: string; userId: string };
+
+/**
+ * `coform-draft:v1:<form>:<user>:<answer|new>[:<elementType>/<elementId>][:<scope>]`
+ *
+ * Les deux segments optionnels ne sont ajoutés QUE s'ils ont une valeur : sans
+ * ça, on changerait la clé du formulaire entier et on rendrait orphelins les
+ * brouillons existants. L'élément précède le périmètre : il dit CE QU'ON
+ * répond (comme `answerId`), le périmètre dit COMMENT c'est rendu.
+ */
+function buildKey({ formId, userId, answerId, scope, elementId, elementType }: DraftKeyParts): string {
+  let key = `${KEY_PREFIX}:${formId}:${userId}:${answerId ?? "new"}`;
+  const element = (elementId ?? "").trim();
+  if (element !== "") {
+    const type = (elementType ?? "").trim();
+    key += `:${type === "" ? element : `${type}/${element}`}`;
+  }
   const p = (scope ?? "").trim();
-  return p === "" ? base : `${base}:${p}`;
+  if (p !== "") key += `:${p}`;
+  return key;
 }
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
@@ -208,11 +237,15 @@ export function useCoFormDraft({
   userId,
   answerId,
   scope,
+  elementId,
+  elementType,
   baseUpdatedAt,
   disabled,
 }: UseCoFormDraftOptions): UseCoFormDraftReturn {
   const isActive = !disabled && !!formId && !!userId;
-  const key = isActive ? buildKey(formId!, userId!, answerId, scope) : null;
+  const key = isActive
+    ? buildKey({ formId: formId!, userId: userId!, answerId, scope, elementId, elementType })
+    : null;
   const normalizedBaseUpdatedAt = baseUpdatedAt ?? null;
 
   // Timestamp de début de session (= montage du hook). Utilisé pour FILTRER les
@@ -248,9 +281,9 @@ export function useCoFormDraft({
   const [restoredDismissed, setRestoredDismissed] = useState(false);
 
   // Les deux bannières sont masquées POUR UN MONTAGE ET UNE CLÉ donnés. Quand la
-  // clé change sans démontage — `answerId`/`scope` qui arrivent en async, passage
-  // à une autre réponse — le masquage d'avant ne veut plus rien dire et cacherait
-  // une bannière légitime.
+  // clé change sans démontage — `answerId`/`scope`/`elementId` qui arrivent en
+  // async, passage à une autre réponse — le masquage d'avant ne veut plus rien
+  // dire et cacherait une bannière légitime.
   //
   // Ajusté PENDANT LE RENDU et non dans un effet : c'est le patron React pour
   // « remettre un état à zéro quand une prop change ». Un effet provoquerait un
@@ -364,13 +397,15 @@ export function useCoFormDraft({
     // Purge aussi la clé "new" si on vient de soumettre une création avec answerId
     // existant : l'éventuel brouillon "new" laissé en route est obsolète.
     //
-    // ⚠️ DU MÊME PÉRIMÈTRE, pas tous. Sans `scope`, soumettre depuis une étape
-    // extraite effaçait le brouillon de création du PARCOURS COMPLET — la
-    // collision cross-périmètre que ce segment vient précisément d'interdire — et
-    // laissait au contraire traîner le sien, d'où une bannière « Brouillon trouvé »
-    // pointant sur un commun déjà déposé.
+    // ⚠️ DU MÊME PÉRIMÈTRE ET DU MÊME ÉLÉMENT, pas tous. Sans `scope`, soumettre
+    // depuis une étape extraite effaçait le brouillon de création du PARCOURS
+    // COMPLET — la collision cross-périmètre que ce segment vient précisément
+    // d'interdire — et laissait au contraire traîner le sien, d'où une bannière
+    // « Brouillon trouvé » pointant sur un commun déjà déposé. Même raisonnement
+    // pour l'élément : la clé « new » à purger est celle que CE montage aurait
+    // écrite, donc reconstruite avec exactement les mêmes segments.
     if (formId && userId && answerId && answerId !== "new") {
-      removeKey(buildKey(formId, userId, undefined, scope));
+      removeKey(buildKey({ formId, userId, answerId: undefined, scope, elementId, elementType }));
     }
     // Comme `discardDraft` : jeter AUSSI le payload en attente, sinon le flush
     // au démontage réécrirait après la soumission le brouillon qu'on purge.
@@ -382,7 +417,7 @@ export function useCoFormDraft({
     setStaleDismissed(false);
     setRestoredDismissed(false);
     notifyDraftsChanged();
-  }, [formId, userId, answerId, scope]);
+  }, [formId, userId, answerId, scope, elementId, elementType]);
 
   const acknowledgeStale = useCallback(() => {
     setStaleDismissed(true);

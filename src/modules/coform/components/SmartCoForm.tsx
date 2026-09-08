@@ -85,6 +85,8 @@ interface SmartCoFormProps {
    * ID de l'élément lié au form (lieu, projet, événement…). Propagé à
    * `useCoFormQuery` pour activer le mode "par élément" backend
    * (`Coform::getFormAccessInfo` calcule alors `access.restrictedFields`).
+   * Entre aussi dans la clé du brouillon (cf. `useCoFormDraft`) : une saisie
+   * commencée depuis un élément n'est pas proposée sur un autre.
    * Requis avec `elementType`.
    */
   elementId?: string;
@@ -476,6 +478,8 @@ export function SmartCoForm({
         initialStepKey={initialStepKey}
         formId={formId}
         draftScope={draftScope}
+        elementId={elementId}
+        elementType={elementType}
         userId={draftUserId}
         baseUpdatedAt={baseUpdatedAt}
         enableDraft={enableDraft}
@@ -507,6 +511,8 @@ export function SmartCoForm({
       restrictedFields={restrictedFields}
       formId={formId}
       draftScope={draftScope}
+      elementId={elementId}
+      elementType={elementType}
       userId={draftUserId}
       baseUpdatedAt={baseUpdatedAt}
       enableDraft={enableDraft}

@@ -28,6 +28,13 @@ interface CoFormProviderProps {
    * dans la clé du brouillon. Cf. `useCoFormDraft`.
    */
   draftScope?: string | null;
+  /**
+   * Élément auquel la réponse est rattachée (lieu, projet…) — entre dans la clé
+   * du brouillon, pour qu'une saisie faite depuis un élément ne soit pas
+   * proposée sur un autre. Cf. `useCoFormDraft`.
+   */
+  elementId?: string | null;
+  elementType?: string | null;
   /** Active la persistance du draft. Défaut : true. */
   enableDraft?: boolean;
 }
@@ -53,6 +60,8 @@ export function CoFormProvider({
   baseUpdatedAt,
   formId,
   draftScope,
+  elementId,
+  elementType,
   enableDraft = true,
 }: CoFormProviderProps) {
   const subFormsFields = useMemo(() => parseCoFormFields(formData), [formData]);
@@ -108,6 +117,8 @@ export function CoFormProvider({
     userId,
     answerId,
     scope: draftScope,
+    elementId,
+    elementType,
     baseUpdatedAt,
     disabled: !enableDraft,
   });

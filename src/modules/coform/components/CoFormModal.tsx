@@ -66,7 +66,9 @@ export interface CoFormModalProps {
    * ID de l'élément lié au form (lieu, projet, événement…). Active le mode
    * "par élément" backend : `Coform::getFormAccessInfo` calcule alors
    * `access.restrictedFields` à partir de `placeAdminOnlyFields` /
-   * `placeMemberOnlyFields`. Requis avec `elementType`.
+   * `placeMemberOnlyFields`. Entre aussi dans la clé du brouillon : sans lui,
+   * une « nouvelle réponse » commencée depuis un lieu serait proposée sur un
+   * autre (cf. `useCoFormDraft`). Requis avec `elementType`.
    */
   elementId?: string;
   /** Type de l'élément (collection MongoDB). Requis si `elementId` fourni. */

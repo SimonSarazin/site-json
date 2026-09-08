@@ -23,13 +23,21 @@ const PAYLOAD = {
   addedOptions: {},
 } as unknown as Parameters<ReturnType<typeof useCoFormDraft>["saveDraft"]>[0];
 
+/** Saisie faite depuis le profil du tiers-lieu A — finder verrouillé compris. */
+const PAYLOAD_LIEU_A = {
+  data: { step1: { nom: "Salle du lieu A", finder: "lieu-A" } },
+  currentStepIndex: 0,
+  completedSteps: [],
+  addedOptions: {},
+} as unknown as Parameters<ReturnType<typeof useCoFormDraft>["saveDraft"]>[0];
+
 function options(over: Partial<Parameters<typeof useCoFormDraft>[0]> = {}) {
   return { formId: "form-1", userId: "user-1", ...over };
 }
 
-function poserBrouillon(timestamp: number) {
+function poserBrouillon(timestamp: number, cle = CLE) {
   window.localStorage.setItem(
-    CLE,
+    cle,
     JSON.stringify({
       version: 1,
       data: { step1: { titre: "repris" } },
@@ -325,5 +333,133 @@ describe("useCoFormDraft", () => {
     const { result } = renderHook(() => useCoFormDraft(options()));
     expect(result.current.restorableDraft).toBeNull();
     expect(window.localStorage.getItem(CLE)).toBeNull();
+  });
+
+  /**
+   * Bloquant 1.2 de la relecture de la MR 53 : la clé ignorait l'ÉLÉMENT.
+   *
+   * « Ajouter une salle » depuis le profil du tiers-lieu A, refermer ; même
+   * geste sur B : même `formId`, même user, pas d'`answerId` ⇒ même clé `…:new`,
+   * et la bannière « Brouillon trouvé » proposait sur B la saisie faite pour A —
+   * finder verrouillé compris, puisque la restauration l'emporte sur
+   * `lockedFields`. La salle créée depuis B se rattachait à A, via un champ que
+   * l'utilisateur ne pouvait pas corriger. Inatteignable tant que le brouillon
+   * était coupé en modale ; il ne l'est plus.
+   */
+  describe("clé par ÉLÉMENT (elementId / elementType)", () => {
+    const CLE_A = "coform-draft:v1:form-1:user-1:new:organizations/lieu-A";
+    const CLE_B = "coform-draft:v1:form-1:user-1:new:organizations/lieu-B";
+    const surLieu = (id: string) => options({ elementId: id, elementType: "organizations" });
+
+    it("deux éléments différents ⇒ deux clés : le brouillon de A n'est PAS proposé sur B", () => {
+      // Profil de A : saisie, fermeture (flush au démontage).
+      const a = renderHook(() => useCoFormDraft(surLieu("lieu-A")));
+      act(() => a.result.current.saveDraft(PAYLOAD_LIEU_A));
+      act(() => a.unmount());
+      expect(lire(CLE_A)?.data).toEqual(PAYLOAD_LIEU_A.data);
+      expect(lire(CLE)).toBeNull();
+
+      // Profil de B : rien à reprendre, et sa propre saisie va dans SA clé.
+      const b = renderHook(() => useCoFormDraft(surLieu("lieu-B")));
+      expect(b.result.current.restorableDraft).toBeNull();
+      act(() => b.result.current.saveDraft(PAYLOAD));
+      act(() => b.unmount());
+      expect(lire(CLE_B)?.data).toEqual(PAYLOAD.data);
+      expect(lire(CLE_A)?.data).toEqual(PAYLOAD_LIEU_A.data); // celui de A est intact
+    });
+
+    it("même élément ⇒ même clé : le brouillon est retrouvé", () => {
+      poserBrouillon(Date.now() - 60_000, CLE_A);
+      const { result } = renderHook(() => useCoFormDraft(surLieu("lieu-A")));
+      expect(result.current.restorableDraft?.data).toEqual({ step1: { titre: "repris" } });
+    });
+
+    /**
+     * Le segment n'est ajouté QUE s'il y a un élément — même précaution que pour
+     * `scope` : sinon tout brouillon déjà enregistré deviendrait orphelin.
+     * `elementType` seul ne compte pas : c'est `elementId` qui décide.
+     */
+    it.each([[undefined], [null], [""], ["   "]])(
+      "sans élément (%s), la clé reste EXACTEMENT celle d'avant",
+      (elementId) => {
+        const { result, unmount } = renderHook(() =>
+          useCoFormDraft(
+            options({ elementId: elementId as string | null | undefined, elementType: "organizations" }),
+          ),
+        );
+        act(() => result.current.saveDraft(PAYLOAD));
+        act(() => unmount());
+        expect(lire(CLE)).not.toBeNull();
+        expect(window.localStorage.length).toBe(1);
+      },
+    );
+
+    it("sans `elementType`, l'id seul isole quand même", () => {
+      const { result, unmount } = renderHook(() => useCoFormDraft(options({ elementId: "lieu-A" })));
+      act(() => result.current.saveDraft(PAYLOAD));
+      act(() => unmount());
+      expect(lire("coform-draft:v1:form-1:user-1:new:lieu-A")).not.toBeNull();
+      expect(lire(CLE)).toBeNull();
+    });
+
+    it("l'élément précède le périmètre dans la clé", () => {
+      const { result, unmount } = renderHook(() =>
+        useCoFormDraft(options({ elementId: "lieu-A", elementType: "organizations", scope: "aapStep1" })),
+      );
+      act(() => result.current.saveDraft(PAYLOAD));
+      act(() => unmount());
+      expect(lire("coform-draft:v1:form-1:user-1:new:organizations/lieu-A:aapStep1")).not.toBeNull();
+    });
+
+    it("purger après soumission ne touche que la clé « new » DU MÊME élément", () => {
+      for (const k of [CLE, CLE_A, CLE_B]) poserBrouillon(Date.now() - 60_000, k);
+      const { result } = renderHook(() =>
+        useCoFormDraft(options({ answerId: "ans-9", elementId: "lieu-A", elementType: "organizations" })),
+      );
+      act(() => result.current.purgeDraft());
+      expect(lire(CLE_A)).toBeNull(); // la création DE CE lieu part
+      expect(lire(CLE_B)).not.toBeNull(); // celle de l'autre lieu est intacte
+      expect(lire(CLE)).not.toBeNull(); // celle sans élément aussi
+    });
+
+    it("changer d'élément sans démonter réaffiche la bannière", () => {
+      poserBrouillon(Date.now() - 60_000, CLE_A);
+      poserBrouillon(Date.now() - 60_000, CLE_B);
+      const { result, rerender } = renderHook(
+        ({ id }: { id: string }) => useCoFormDraft(surLieu(id)),
+        { initialProps: { id: "lieu-A" } },
+      );
+      act(() => result.current.acknowledgeRestored());
+      expect(result.current.restorableDraft).toBeNull();
+
+      rerender({ id: "lieu-B" });
+      expect(result.current.restorableDraft).not.toBeNull();
+    });
+
+    /**
+     * Reproduction du bloquant (`commentaire/review-mr53-verif/__verif_b2`),
+     * `expect` inversés : c'est le scénario exact du rapport.
+     */
+    it("VERIF B2 inversé : deux « nouvelles réponses » du même formulaire, depuis deux lieux, ne partagent PAS la clé", () => {
+      // Modale ouverte depuis le profil du tiers-lieu A.
+      const a = renderHook(() =>
+        useCoFormDraft({ formId: "form-salle", userId: "user-1", elementId: "tiers-lieu-A", elementType: "organizations" }),
+      );
+      act(() => a.result.current.saveDraft(PAYLOAD_LIEU_A));
+      act(() => void vi.advanceTimersByTime(1000));
+      act(() => a.unmount());
+
+      const cles = Object.keys(window.localStorage);
+      expect(cles).toHaveLength(1);
+      expect(cles[0]).toBe("coform-draft:v1:form-salle:user-1:new:organizations/tiers-lieu-A");
+
+      // Modale ouverte depuis le profil du tiers-lieu B : rien n'est proposé.
+      const b = renderHook(() =>
+        useCoFormDraft({ formId: "form-salle", userId: "user-1", elementId: "tiers-lieu-B", elementType: "organizations" }),
+      );
+      act(() => void vi.advanceTimersByTime(100));
+      expect(b.result.current.restorableDraft).toBeNull();
+      act(() => b.unmount());
+    });
   });
 });

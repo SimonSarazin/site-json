@@ -89,6 +89,13 @@ interface DynamicCoFormProps {
    * dans la clé du brouillon. Cf. `useCoFormDraft`.
    */
   draftScope?: string | null;
+  /**
+   * Élément auquel la réponse est rattachée (lieu, projet…) — entre dans la clé
+   * du brouillon, pour qu'une saisie faite depuis un élément ne soit pas
+   * proposée sur un autre. Cf. `useCoFormDraft`.
+   */
+  elementId?: string | null;
+  elementType?: string | null;
   /** updatedAt serveur (édition) — pour détecter les drafts obsolètes */
   baseUpdatedAt?: number | null;
   /** Active la persistance du draft. Défaut : true. */
@@ -129,6 +136,8 @@ export function DynamicCoForm({
   formId,
   userId,
   draftScope,
+  elementId,
+  elementType,
   baseUpdatedAt,
   enableDraft = true,
   existingAnswerMeta,
@@ -181,7 +190,9 @@ export function DynamicCoForm({
   // Persistance du brouillon en localStorage. Désactivée si conditions non réunies.
   // `answerId` scope la clé par réponse (sinon "new") : sans lui, l'édition de
   // deux réponses du même formulaire partagerait le même slot de brouillon
-  // (restauration croisée) et écraserait le brouillon de création.
+  // (restauration croisée) et écraserait le brouillon de création. `elementId`
+  // scope les créations par élément : sans lui, « Ajouter une salle » depuis le
+  // lieu A proposait sur le lieu B le brouillon de A — finder verrouillé compris.
   const {
     restorableDraft,
     staleDraftInfo,
@@ -196,6 +207,8 @@ export function DynamicCoForm({
       userId,
       answerId,
       scope: draftScope,
+      elementId,
+      elementType,
       baseUpdatedAt,
       disabled: !enableDraft || autoSubmitOnBlur,
     });

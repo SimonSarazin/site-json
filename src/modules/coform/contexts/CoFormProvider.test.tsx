@@ -562,5 +562,36 @@ describe("CoFormProvider", () => {
       expect(JSON.parse(brut!).currentStepIndex).toBe(1);
       window.localStorage.removeItem(KEY);
     });
+
+    /**
+     * Bloquant 1.2 de la relecture de la MR 53 : le provider ne transmettait
+     * pas l'élément au brouillon — la saisie faite depuis le lieu A atterrissait
+     * dans la clé `…:new` partagée, et était proposée sur le lieu B.
+     */
+    it("scope la clé par ÉLÉMENT : la saisie faite depuis un lieu ne va pas dans la clé partagée", () => {
+      const KEY_A = `${KEY}:organizations/lieu-A`;
+      window.localStorage.removeItem(KEY);
+      window.localStorage.removeItem(KEY_A);
+      const formData = makeCoFormData(["s1", "s2"]);
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <CoFormProvider
+          formData={formData}
+          formId={FORM_ID}
+          userId={USER_ID}
+          elementId="lieu-A"
+          elementType="organizations"
+        >
+          {children}
+        </CoFormProvider>
+      );
+      const { result, unmount } = renderHook(() => useCtx(), { wrapper });
+      act(() => result.current.saveStepData("s1", { textField: "salle du lieu A" }));
+      unmount();
+      expect(window.localStorage.getItem(KEY)).toBeNull();
+      const brut = window.localStorage.getItem(KEY_A);
+      expect(brut).not.toBeNull();
+      expect(JSON.parse(brut!).data).toEqual({ s1: { textField: "salle du lieu A" } });
+      window.localStorage.removeItem(KEY_A);
+    });
   });
 });

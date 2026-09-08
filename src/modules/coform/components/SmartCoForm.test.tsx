@@ -34,10 +34,12 @@ vi.mock("../hooks/useCoFormCatalogs", () => ({
 }));
 
 vi.mock("./DynamicCoForm", () => ({
-  DynamicCoForm: (props: { formData: CoFormData; hideBanner?: boolean; hideStepHeaders?: boolean; hideSubmitButton?: boolean; autoSubmitOnBlur?: boolean; draftScope?: string | null }) => (
+  DynamicCoForm: (props: { formData: CoFormData; hideBanner?: boolean; hideStepHeaders?: boolean; hideSubmitButton?: boolean; autoSubmitOnBlur?: boolean; draftScope?: string | null; elementId?: string | null; elementType?: string | null }) => (
     <div
       data-testid="dynamic-coform"
       data-draft-scope={props.draftScope ?? ""}
+      data-element-id={props.elementId ?? ""}
+      data-element-type={props.elementType ?? ""}
       data-step-count={Object.keys(props.formData.inputs ?? {}).length}
       data-hide-banner={String(!!props.hideBanner)}
       data-hide-step-headers={String(!!props.hideStepHeaders)}
@@ -51,12 +53,14 @@ vi.mock("./DynamicCoForm", () => ({
 }));
 
 vi.mock("./MultiStepCoForm", () => ({
-  MultiStepCoForm: (props: { formData: CoFormData; submitMode?: string; initialStepKey?: string }) => (
+  MultiStepCoForm: (props: { formData: CoFormData; submitMode?: string; initialStepKey?: string; elementId?: string | null; elementType?: string | null }) => (
     <div
       data-testid="multistep-coform"
       data-step-count={Object.keys(props.formData.inputs ?? {}).length}
       data-submit-mode={props.submitMode}
       data-initial-step={props.initialStepKey ?? ""}
+      data-element-id={props.elementId ?? ""}
+      data-element-type={props.elementType ?? ""}
     />
   ),
 }));
@@ -217,6 +221,41 @@ describe("SmartCoForm", () => {
       const formData = makeFormData(["s1"]);
       render(<SmartCoForm formData={formData} />, { wrapper: makeWrapper() });
       expect(screen.getByTestId("dynamic-coform").getAttribute("data-draft-scope")).toBe("");
+    });
+  });
+
+  /**
+   * Bloquant 1.2 de la relecture de la MR 53 : l'élément transitait jusqu'à
+   * `useCoFormQuery`, mais pas jusqu'au brouillon — d'où une clé `…:new`
+   * partagée entre deux lieux. C'est ici que les deux chemins de rendu reçoivent
+   * l'élément ; on asserte la transmission sur chacun.
+   */
+  describe("élément du brouillon (elementId / elementType)", () => {
+    it("transmis au formulaire simple", () => {
+      render(
+        <SmartCoForm formData={makeFormData(["s1"])} elementId="lieu-A" elementType="organizations" />,
+        { wrapper: makeWrapper() },
+      );
+      const dyn = screen.getByTestId("dynamic-coform");
+      expect(dyn.dataset.elementId).toBe("lieu-A");
+      expect(dyn.dataset.elementType).toBe("organizations");
+    });
+
+    it("transmis au wizard", () => {
+      render(
+        <SmartCoForm formData={makeFormData(["s1", "s2"])} elementId="lieu-A" elementType="organizations" />,
+        { wrapper: makeWrapper() },
+      );
+      const multi = screen.getByTestId("multistep-coform");
+      expect(multi.dataset.elementId).toBe("lieu-A");
+      expect(multi.dataset.elementType).toBe("organizations");
+    });
+
+    it("sans élément, rien n'est transmis — la clé reste celle d'avant", () => {
+      render(<SmartCoForm formData={makeFormData(["s1"])} />, { wrapper: makeWrapper() });
+      const dyn = screen.getByTestId("dynamic-coform");
+      expect(dyn.dataset.elementId).toBe("");
+      expect(dyn.dataset.elementType).toBe("");
     });
   });
 
