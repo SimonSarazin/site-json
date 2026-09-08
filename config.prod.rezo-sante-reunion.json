@@ -123,16 +123,13 @@
     "typography": {
       "fontFamily": {
         "sans": [
-          "Hanken Grotesk",
-          "sans-serif"
+          "Inter"
         ],
         "serif": [
-          "Fraunces",
-          "serif"
+          "Roboto Slab"
         ],
         "mono": [
-          "Spline Sans Mono",
-          "monospace"
+          "Roboto Mono"
         ]
       },
       "letterSpacing": "0em"
@@ -393,6 +390,27 @@
             "fr": "Numéro à compléter",
             "en": "Phone number to be completed"
           }
+        }
+      ]
+    },
+
+    "partners": {
+      "logos": [
+        {
+          "image": "images/rezoSanteReunion/ars.jpeg",
+          "alt": {
+            "fr": "ARS La Réunion",
+            "en": "Regional Health Agency of Réunion"
+          },
+          "href": "https://www.ars.sante.fr/la-reunion"
+        },
+        {
+          "image": "images/rezoSanteReunion/promotionsante.png",
+          "alt": {
+            "fr": "Promotion santé la Réunion",
+            "en": "Health promotion in Réunion"
+          },
+          "href": "https://promotionsante.re/"
         }
       ]
     },
@@ -1409,9 +1427,9 @@
             "width": "container",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "organizations",
                 "projects"
@@ -1599,9 +1617,9 @@
             "width": "container",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "organizations",
                 "projects"
@@ -1789,9 +1807,9 @@
             "width": "container",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "organizations",
                 "projects"
@@ -1977,9 +1995,9 @@
             "width": "container",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "organizations",
                 "projects"
@@ -2167,9 +2185,9 @@
             "width": "container",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "organizations",
                 "projects"
@@ -2357,9 +2375,9 @@
             "width": "container",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "organizations",
                 "projects"
@@ -2864,9 +2882,9 @@
             "bg": "default",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "organizations"
               ],
@@ -3369,9 +3387,9 @@
             "bg": "default",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "projects"
               ],
@@ -3680,9 +3698,9 @@
             "width": "container",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "poi",
                 "projects"
@@ -4007,16 +4025,16 @@
             },
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "indexStepList": 12,
               "fediverse": false,
               "filters": {
-                "preferences.toBeValidated.rezoSanteReunion": {
+                "preferences.toBeValidated.EcosystemeSanteReunion": {
                   "$exists": false
                 },
-                "source.toBeValidated.rezoSanteReunion": {
+                "source.toBeValidated.EcosystemeSanteReunion": {
                   "$exists": false
                 }
               }
@@ -4471,6 +4489,1124 @@
       ]
     }
   ],
+  "costumForms": {
+    "rezo-sante-acteur": {
+      "id": "rezo-sante-acteur",
+      "entityType": "organizations",
+      "collection": "organizations",
+      "costumSlug": "EcosystemeSanteReunion",
+      "icon": "building-2",
+      "layout": {
+        "kind": "flat"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        },
+        "telephone": {
+          "serverKey": "telephone",
+          "read": "telephone:read",
+          "write": "telephone:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "identite",
+          "label": {
+            "fr": "L'acteur",
+            "en": "The organisation"
+          },
+          "icon": "building-2",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "profil_avatar",
+                "name",
+                "type",
+                "shortDescription",
+                "description"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contact",
+          "label": {
+            "fr": "Contact",
+            "en": "Contact"
+          },
+          "icon": "mail",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "email",
+                "telephone",
+                "url"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "qualification",
+          "label": {
+            "fr": "Thématiques",
+            "en": "Topics"
+          },
+          "icon": "tags",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "thematic",
+                "tags"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "localisation",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Image",
+            "en": "Image"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "read": "rezoSante:tagsHorsThematiques",
+          "write": "rezoSante:tagsAvecThematiques",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          },
+          "info": {
+            "fr": "Mots-clés libres. Les thématiques cochées ci-dessus sont ajoutées automatiquement à l'enregistrement — et retirées si vous les décochez.",
+            "en": "Free keywords. The topics ticked above are added automatically on save — and removed if you untick them."
+          },
+          "widgetProps": {
+            "searchable": true
+          }
+        },
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom",
+            "en": "Name"
+          },
+          "placeholder": {
+            "fr": "Nom de la structure ou du professionnel",
+            "en": "Organisation or practitioner name"
+          }
+        },
+        "type": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Type d'acteur",
+            "en": "Organisation type"
+          },
+          "placeholder": {
+            "fr": "Choisir un type…",
+            "en": "Pick a type…"
+          },
+          "enum": [
+            {
+              "value": "NGO",
+              "label": {
+                "fr": "Association",
+                "en": "Non-profit"
+              }
+            },
+            {
+              "value": "Group",
+              "label": {
+                "fr": "Collectif / groupe",
+                "en": "Group"
+              }
+            },
+            {
+              "value": "LocalBusiness",
+              "label": {
+                "fr": "Professionnel / entreprise",
+                "en": "Business"
+              }
+            },
+            {
+              "value": "Cooperative",
+              "label": {
+                "fr": "Coopérative",
+                "en": "Cooperative"
+              }
+            },
+            {
+              "value": "GovernmentOrganization",
+              "label": {
+                "fr": "Institution publique",
+                "en": "Public institution"
+              }
+            }
+          ]
+        },
+        "shortDescription": {
+          "widget": "text",
+          "label": {
+            "fr": "Description courte",
+            "en": "Short description"
+          },
+          "info": {
+            "fr": "Une phrase qui résume l'activité.",
+            "en": "One sentence summing up the activity."
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          },
+          "widgetProps": {
+            "height": 280,
+            "preview": "edit"
+          }
+        },
+        "email": {
+          "widget": "email",
+          "label": {
+            "fr": "Email",
+            "en": "Email"
+          }
+        },
+        "telephone": {
+          "widget": "tel",
+          "group": "telephone",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          }
+        },
+        "_telSlot": {
+          "widget": "hidden",
+          "group": "telephone"
+        },
+        "_telRest": {
+          "widget": "hidden",
+          "group": "telephone"
+        },
+        "url": {
+          "widget": "text",
+          "label": {
+            "fr": "Site web",
+            "en": "Website"
+          }
+        },
+        "thematic": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Thématiques",
+            "en": "Topics"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          },
+          "info": {
+            "fr": "Les thématiques choisies sont aussi ajoutées aux mots-clés à l'enregistrement — c'est ce qui fait apparaître la fiche sur la page de thématique correspondante.",
+            "en": "The selected topics are also added to the tags on save — that is what makes the entry show up on the matching topic page."
+          },
+          "enum": [
+            {
+              "value": "Nutrition",
+              "label": {
+                "fr": "Nutrition",
+                "en": "Nutrition"
+              }
+            },
+            {
+              "value": "Activité physique",
+              "label": {
+                "fr": "Activité physique",
+                "en": "Physical activity"
+              }
+            },
+            {
+              "value": "Sommeil",
+              "label": {
+                "fr": "Sommeil",
+                "en": "Sleep"
+              }
+            },
+            {
+              "value": "Addictions",
+              "label": {
+                "fr": "Addictions",
+                "en": "Addiction"
+              }
+            },
+            {
+              "value": "Bien-être mental",
+              "label": {
+                "fr": "Bien-être mental",
+                "en": "Mental wellbeing"
+              }
+            },
+            {
+              "value": "Culture & Santé",
+              "label": {
+                "fr": "Culture & Santé",
+                "en": "Culture & health"
+              }
+            }
+          ]
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter un acteur",
+            "en": "Add an organisation"
+          },
+          "edit": {
+            "fr": "Modifier l'acteur",
+            "en": "Edit organisation"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer la fiche",
+            "en": "Create entry"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "organizations",
+        "navigateOnSuccess": false,
+        "successKey": {
+          "add": "toast.add.organizationSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.organizationError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_ORGANIZATION",
+          "edit": "EntityFormModal · UPDATE_ORGANIZATION"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "organizations",
+            "searchKeys": [
+              "admin-organizations",
+              "searchCostumStatic"
+            ]
+          }
+        }
+      }
+    },
+    "rezo-sante-projet": {
+      "id": "rezo-sante-projet",
+      "entityType": "projects",
+      "collection": "projects",
+      "costumSlug": "EcosystemeSanteReunion",
+      "icon": "sprout",
+      "layout": {
+        "kind": "flat"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "contenu",
+          "label": {
+            "fr": "Le projet",
+            "en": "The project"
+          },
+          "icon": "sprout",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "profil_avatar",
+                "name",
+                "shortDescription",
+                "description",
+                "url"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "qualification",
+          "label": {
+            "fr": "Thématiques & bénéficiaires",
+            "en": "Topics & beneficiaries"
+          },
+          "icon": "tags",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "thematic",
+                "beneficiaires",
+                "tags"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "localisation",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Image",
+            "en": "Image"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "read": "rezoSante:tagsHorsThematiques",
+          "write": "rezoSante:tagsAvecThematiques",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          },
+          "info": {
+            "fr": "Mots-clés libres. Les thématiques cochées ci-dessus sont ajoutées automatiquement à l'enregistrement — et retirées si vous les décochez.",
+            "en": "Free keywords. The topics ticked above are added automatically on save — and removed if you untick them."
+          },
+          "widgetProps": {
+            "searchable": true
+          }
+        },
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom du projet",
+            "en": "Project name"
+          },
+          "placeholder": {
+            "fr": "Le nom tel qu'il sera affiché",
+            "en": "The name as it will be displayed"
+          }
+        },
+        "shortDescription": {
+          "widget": "text",
+          "label": {
+            "fr": "Description courte",
+            "en": "Short description"
+          },
+          "info": {
+            "fr": "Une phrase qui résume le projet.",
+            "en": "One sentence summing up the project."
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          },
+          "widgetProps": {
+            "height": 280,
+            "preview": "edit"
+          }
+        },
+        "url": {
+          "widget": "text",
+          "label": {
+            "fr": "Site web",
+            "en": "Website"
+          }
+        },
+        "thematic": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Thématiques",
+            "en": "Topics"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          },
+          "info": {
+            "fr": "Les thématiques choisies sont aussi ajoutées aux mots-clés à l'enregistrement — c'est ce qui fait apparaître la fiche sur la page de thématique correspondante.",
+            "en": "The selected topics are also added to the tags on save — that is what makes the entry show up on the matching topic page."
+          },
+          "enum": [
+            {
+              "value": "Nutrition",
+              "label": {
+                "fr": "Nutrition",
+                "en": "Nutrition"
+              }
+            },
+            {
+              "value": "Activité physique",
+              "label": {
+                "fr": "Activité physique",
+                "en": "Physical activity"
+              }
+            },
+            {
+              "value": "Sommeil",
+              "label": {
+                "fr": "Sommeil",
+                "en": "Sleep"
+              }
+            },
+            {
+              "value": "Addictions",
+              "label": {
+                "fr": "Addictions",
+                "en": "Addiction"
+              }
+            },
+            {
+              "value": "Bien-être mental",
+              "label": {
+                "fr": "Bien-être mental",
+                "en": "Mental wellbeing"
+              }
+            },
+            {
+              "value": "Culture & Santé",
+              "label": {
+                "fr": "Culture & Santé",
+                "en": "Culture & health"
+              }
+            }
+          ]
+        },
+        "beneficiaires": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Bénéficiaires",
+            "en": "Beneficiaries"
+          },
+          "placeholder": {
+            "fr": "À qui s'adresse ce projet ?",
+            "en": "Who is this project for?"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          },
+          "enum": [
+            {
+              "value": "0 à 3 ans",
+              "label": {
+                "fr": "0 à 3 ans",
+                "en": "0 to 3 years"
+              }
+            },
+            {
+              "value": "3 à 6 ans",
+              "label": {
+                "fr": "3 à 6 ans",
+                "en": "3 to 6 years"
+              }
+            },
+            {
+              "value": "6 à 12 ans",
+              "label": {
+                "fr": "6 à 12 ans",
+                "en": "6 to 12 years"
+              }
+            },
+            {
+              "value": "12 à 18 ans",
+              "label": {
+                "fr": "12 à 18 ans",
+                "en": "12 to 18 years"
+              }
+            },
+            {
+              "value": "Enfants (2-9 ans)",
+              "label": {
+                "fr": "Enfants (2-9 ans)",
+                "en": "Children (2-9 years)"
+              }
+            },
+            {
+              "value": "Pré-adolescents/Adolescents (10-17 ans)",
+              "label": {
+                "fr": "Pré-adolescents/Adolescents (10-17 ans)",
+                "en": "Teens (10-17 years)"
+              }
+            },
+            {
+              "value": "Personnes en perte d’autonomie",
+              "label": {
+                "fr": "Personnes en perte d’autonomie",
+                "en": "People losing autonomy"
+              }
+            },
+            {
+              "value": "Femmes enceintes",
+              "label": {
+                "fr": "Femmes enceintes",
+                "en": "Pregnant women"
+              }
+            },
+            {
+              "value": "Personnes en situation de handicap",
+              "label": {
+                "fr": "Personnes en situation de handicap",
+                "en": "People with disabilities"
+              }
+            },
+            {
+              "value": "Personnes de plus de 55 ans",
+              "label": {
+                "fr": "Personnes de plus de 55 ans",
+                "en": "People over 55"
+              }
+            }
+          ]
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter un projet",
+            "en": "Add a project"
+          },
+          "edit": {
+            "fr": "Modifier le projet",
+            "en": "Edit project"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer le projet",
+            "en": "Create project"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "projects",
+        "navigateOnSuccess": false,
+        "successKey": {
+          "add": "toast.add.projectSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.projectError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_PROJECT",
+          "edit": "EntityFormModal · UPDATE_PROJECT"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "projects",
+            "searchKeys": [
+              "admin-projects",
+              "searchCostumStatic"
+            ]
+          }
+        }
+      }
+    },
+    "rezo-sante-ressource": {
+      "id": "rezo-sante-ressource",
+      "entityType": "poi",
+      "collection": "poi",
+      "costumSlug": "EcosystemeSanteReunion",
+      "icon": "book-open",
+      "layout": {
+        "kind": "flat"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "contenu",
+          "label": {
+            "fr": "La ressource",
+            "en": "The resource"
+          },
+          "icon": "book-open",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "profil_avatar",
+                "name",
+                "type",
+                "shortDescription",
+                "description",
+                "urls"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "qualification",
+          "label": {
+            "fr": "Thématiques",
+            "en": "Topics"
+          },
+          "icon": "tags",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "thematic",
+                "tags"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "localisation",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Image",
+            "en": "Image"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "read": "rezoSante:tagsHorsThematiques",
+          "write": "rezoSante:tagsAvecThematiques",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          },
+          "info": {
+            "fr": "Mots-clés libres. Les thématiques cochées ci-dessus sont ajoutées automatiquement à l'enregistrement — et retirées si vous les décochez.",
+            "en": "Free keywords. The topics ticked above are added automatically on save — and removed if you untick them."
+          },
+          "widgetProps": {
+            "searchable": true
+          }
+        },
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Titre",
+            "en": "Title"
+          },
+          "placeholder": {
+            "fr": "Titre de la ressource",
+            "en": "Resource title"
+          }
+        },
+        "type": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Nature",
+            "en": "Kind"
+          },
+          "placeholder": {
+            "fr": "Lien / Vidéo / Document / Outil",
+            "en": "Link / Video / Document / Tool"
+          },
+          "enum": [
+            {
+              "value": "link",
+              "label": {
+                "fr": "Lien",
+                "en": "Link"
+              }
+            },
+            {
+              "value": "video",
+              "label": {
+                "fr": "Vidéo",
+                "en": "Video"
+              }
+            },
+            {
+              "value": "Resource material",
+              "label": {
+                "fr": "Document",
+                "en": "Document"
+              }
+            },
+            {
+              "value": "tool",
+              "label": {
+                "fr": "Outil",
+                "en": "Tool"
+              }
+            }
+          ]
+        },
+        "shortDescription": {
+          "widget": "text",
+          "label": {
+            "fr": "Description courte",
+            "en": "Short description"
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          },
+          "widgetProps": {
+            "height": 240,
+            "preview": "edit"
+          }
+        },
+        "urls": {
+          "widget": "urlList",
+          "label": {
+            "fr": "Liens",
+            "en": "Links"
+          },
+          "info": {
+            "fr": "URL de la ressource en ligne.",
+            "en": "URL of the online resource."
+          },
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un lien",
+              "en": "Add a link"
+            },
+            "removeLabel": {
+              "fr": "Retirer",
+              "en": "Remove"
+            }
+          }
+        },
+        "thematic": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Thématiques",
+            "en": "Topics"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          },
+          "info": {
+            "fr": "Les thématiques choisies sont aussi ajoutées aux mots-clés à l'enregistrement — c'est ce qui fait apparaître la fiche sur la page de thématique correspondante.",
+            "en": "The selected topics are also added to the tags on save — that is what makes the entry show up on the matching topic page."
+          },
+          "enum": [
+            {
+              "value": "Nutrition",
+              "label": {
+                "fr": "Nutrition",
+                "en": "Nutrition"
+              }
+            },
+            {
+              "value": "Activité physique",
+              "label": {
+                "fr": "Activité physique",
+                "en": "Physical activity"
+              }
+            },
+            {
+              "value": "Sommeil",
+              "label": {
+                "fr": "Sommeil",
+                "en": "Sleep"
+              }
+            },
+            {
+              "value": "Addictions",
+              "label": {
+                "fr": "Addictions",
+                "en": "Addiction"
+              }
+            },
+            {
+              "value": "Bien-être mental",
+              "label": {
+                "fr": "Bien-être mental",
+                "en": "Mental wellbeing"
+              }
+            },
+            {
+              "value": "Culture & Santé",
+              "label": {
+                "fr": "Culture & Santé",
+                "en": "Culture & health"
+              }
+            }
+          ]
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une ressource",
+            "en": "Add a resource"
+          },
+          "edit": {
+            "fr": "Modifier la ressource",
+            "en": "Edit resource"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer la ressource",
+            "en": "Create resource"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "poi",
+        "navigateOnSuccess": false,
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_POI",
+          "edit": "EntityFormModal · UPDATE_POI"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "pois",
+            "searchKeys": [
+              "admin-poi",
+              "searchCostumStatic"
+            ]
+          }
+        }
+      }
+    }
+  },
   "profiles": {
     "default": {
       "layout": "default",
@@ -4662,6 +5798,25 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
+      "editModals": [
+        {
+          "editModal": "edit-rezo-sante-acteur",
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "EcosystemeSanteReunion"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "EcosystemeSanteReunion"
+              }
+            ]
+          }
+        }
+      ],
       "sections": [
         {
           "type": "profile-header",
@@ -5011,6 +6166,25 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
+      "editModals": [
+        {
+          "editModal": "edit-rezo-sante-projet",
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "EcosystemeSanteReunion"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "EcosystemeSanteReunion"
+              }
+            ]
+          }
+        }
+      ],
       "sections": [
         {
           "type": "profile-header",
@@ -5459,6 +6633,25 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
+      "editModals": [
+        {
+          "editModal": "edit-rezo-sante-ressource",
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "EcosystemeSanteReunion"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "EcosystemeSanteReunion"
+              }
+            ]
+          }
+        }
+      ],
       "sections": [
         {
           "type": "profile-header",
@@ -5810,13 +7003,13 @@
       "limit": 8,
       "params": {
         "sourceKey": [
-          "rezoSanteReunion"
+          "EcosystemeSanteReunion"
         ],
         "filters": {
-          "preferences.toBeValidated.rezoSanteReunion": {
+          "preferences.toBeValidated.EcosystemeSanteReunion": {
             "$exists": false
           },
-          "source.toBeValidated.rezoSanteReunion": {
+          "source.toBeValidated.EcosystemeSanteReunion": {
             "$exists": false
           }
         },
@@ -5962,9 +7155,9 @@
               "notSourceKey": true,
               "defaultFilters": {
                 "$or": {
-                  "source.key": "rezoSanteReunion",
-                  "source.keys": "rezoSanteReunion",
-                  "reference.costum": "rezoSanteReunion"
+                  "source.key": "EcosystemeSanteReunion",
+                  "source.keys": "EcosystemeSanteReunion",
+                  "reference.costum": "EcosystemeSanteReunion"
                 }
               },
               "defaultSortBy": {
@@ -6044,9 +7237,9 @@
               "notSourceKey": true,
               "defaultFilters": {
                 "$or": {
-                  "source.key": "rezoSanteReunion",
-                  "source.keys": "rezoSanteReunion",
-                  "reference.costum": "rezoSanteReunion"
+                  "source.key": "EcosystemeSanteReunion",
+                  "source.keys": "EcosystemeSanteReunion",
+                  "reference.costum": "EcosystemeSanteReunion"
                 }
               },
               "defaultSortBy": {
@@ -6112,9 +7305,9 @@
               "notSourceKey": true,
               "defaultFilters": {
                 "$or": {
-                  "source.key": "rezoSanteReunion",
-                  "source.keys": "rezoSanteReunion",
-                  "reference.costum": "rezoSanteReunion"
+                  "source.key": "EcosystemeSanteReunion",
+                  "source.keys": "EcosystemeSanteReunion",
+                  "reference.costum": "EcosystemeSanteReunion"
                 }
               },
               "defaultSortBy": {
@@ -6187,9 +7380,9 @@
               "notSourceKey": true,
               "defaultFilters": {
                 "$or": {
-                  "source.key": "rezoSanteReunion",
-                  "source.keys": "rezoSanteReunion",
-                  "reference.costum": "rezoSanteReunion"
+                  "source.key": "EcosystemeSanteReunion",
+                  "source.keys": "EcosystemeSanteReunion",
+                  "reference.costum": "EcosystemeSanteReunion"
                 }
               },
               "defaultSortBy": {

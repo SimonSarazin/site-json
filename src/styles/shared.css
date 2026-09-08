@@ -83,7 +83,7 @@
      le texte reposait nu sur l'image, illisible sur un cliché clair — défaut
      silencieux, qu'aucun test ne voit. Même logique de repli que `--color-header-bar`
      juste au-dessus. Sans effet sur les 3 configs qui consomment ces sections
-     aujourd'hui (nos-commune, commune-transparente, rezoSanteReunion) : toutes
+     aujourd'hui (nos-commune, commune-transparente, EcosystemeSanteReunion) : toutes
      définissent déjà `--hero-tint` et l'emportent donc sur ce repli.
 
      ⚠ Noir INVARIANT, surtout pas `var(--foreground)` : ce token bascule avec le

@@ -24,6 +24,9 @@ const CONFIG_FILE: Record<string, string> = {
   "institut-bleu-acteur": "config.prod.institut-bleu.json",
   "structure": "config.prod.maison-sport-sante-la-tampon.json",
   "actualite": "config.prod.maison-sport-sante-la-tampon.json",
+  "rezo-sante-acteur": "config.prod.rezo-sante-reunion.json",
+  "rezo-sante-projet": "config.prod.rezo-sante-reunion.json",
+  "rezo-sante-ressource": "config.prod.rezo-sante-reunion.json",
 };
 
 /** Document costum BRUT (JSON config), tel que servi au runtime via `window.__CONFIG__.costumForms`. */

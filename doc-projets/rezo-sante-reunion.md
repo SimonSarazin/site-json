@@ -12,7 +12,7 @@
 > [Module Admin](../doc/30-module-admin.md) · [Module formEngine](../doc/28-module-formengine.md).
 > Mémoire : `[[project-rezo-sante-reunion]]`.
 
-Dernière mise à jour : **2026-08-27** (lot 4 §9 — 6ᵉ thématique **Culture & Santé**, correctif de lisibilité des héros `hero-tinted-overlay`, activation documentée de la cloche de notifications).
+Dernière mise à jour : **2026-09-08** (lot 5 §9 — création de fiches : 3 formulaires costum avec les champs **Thématiques** et **Bénéficiaires**, `typeObj` posé en base §6bis.1 ; lot 6 §9 — **changement de slug du costum en production**, `rezoSanteReunion` → `EcosystemeSanteReunion`).
 
 ---
 
@@ -54,17 +54,17 @@ Deux conséquences de conception, à ne pas perdre de vue :
 
 | | |
 |---|---|
-| Slug de site | `rezoSanteReunion` |
-| Entité Cocolight | `rezoSanteReunion` — collection `organizations`, type `NGO`, « Rézo Santé Réunion » |
-| Costum backend | **CRÉÉ le 30/07** — config minimale posée sur l'org porteuse (motif *costum-in-org*) : `costum = { slug: "costumize", language: "fr" }`. `slug` désigne le **moteur**, pas le site : le slug de site reste `rezoSanteReunion`, celui de l'org, déjà présent dans la collection `slugs`. Cf. §6bis |
+| Slug de site | `EcosystemeSanteReunion` — **renommé en prod le 08/09** (ex-`rezoSanteReunion`, cf. §9 lot 6). C'est le `VITE_SLUG` de `sites.json` : il charge l'entité porteuse au boot, et sert de `costumSlug` / `sourceKey` sur toute la config |
+| Entité Cocolight | `EcosystemeSanteReunion` — collection `organizations`, type `NGO`, « Rézo Santé Réunion » (id `6a4ccc3b9da32f33e85e4c43`) |
+| Costum backend | **CRÉÉ le 30/07** — config minimale posée sur l'org porteuse (motif *costum-in-org*) : `costum = { slug: "costumize", language: "fr" }`. `slug` désigne le **moteur**, pas le site : le slug de site reste `EcosystemeSanteReunion`, celui de l'org, déjà présent dans la collection `slugs`. Cf. §6bis |
 | Config | [`../config.prod.rezo-sante-reunion.json`](../config.prod.rezo-sante-reunion.json) |
 | CSS | [`../src/index-rezo-sante-reunion.css`](../src/index-rezo-sante-reunion.css) — **feuille propre** depuis le 30/07 (commit `82669e97`, fin de l'héritage d'`index-parent62.css`) ; couleurs et typographie vivent dans `config.theme` |
 | Langues | `fr` (défaut) + `en` |
 | Header / Footer | `transparent-scroll` / `contact-partners` |
 | Archétype de départ | `parent62` (portail complet) |
 | Backend de référence | `https://www.communecter.org` (le backend local `:5080` était éteint) |
-| SDK | `@communecter/cocolight-api-client` **1.0.189** (`package.json` `^1.0.189`, dérive constatée le 27/08 : bump transverse du monorepo, non spécifique à ce site — 1.0.172 documenté le 03/08 est désormais périmé) |
-| Branche | `main` |
+| SDK | `@communecter/cocolight-api-client` **1.0.191** (lu dans `node_modules` le 08/09 ; bumps transverses du monorepo, non spécifiques à ce site) |
+| Branche | `mira-dev` |
 
 ### Historique des chantiers
 
@@ -79,6 +79,8 @@ Deux conséquences de conception, à ne pas perdre de vue :
 | 2026-08-03 | Claude | Synchronisation transverse : merge `fix/institut-bleu-ui` (`94251b7b`) → SDK **1.0.172 publiée**, `VITE_SITE_PUBLIC_URL` (§8). Gates rejoués : typecheck ✅, préflight **412/412 (22 fichiers)** ✅. Mise à jour de ce dossier. |
 | 2026-08-27 | Claude | Lot 4 — **6ᵉ thématique « Culture & Santé »**, en parité avec les 5 existantes (nav, footer, home, hub `/thematiques`, page `/theme/culture-sante`, 3 facettes `dropdownFilters`, `/a-propos`) ; visuel final fourni par le client (généré par IA, cohérent avec les 5 autres). Voir §9 pour le détail. |
 | 2026-08-27 | Claude | Lot 4 (suite) — **correctif de lisibilité des héros `hero-tinted-overlay`** : `drop-shadow`/`drop-shadow-lg` de Tailwind (≤ 0,15 d'opacité) remplacés par deux utilitaires dédiés `hero-text-shadow`/`hero-text-shadow-strong` (`shared.css`), posés en custom properties surchargeables via `theme.customCSS` (même patron que `--color-hero-tint`). Composant **partagé** avec `nos-commune` : vérifié en clair/sombre/mobile sur les deux configs, aucune régression. Documenté au passage : la cloche de notifications (`header.utilities.notifications`) est active depuis l'origine de cette config, jamais consignée jusqu'ici (§4.1, §10). |
+| 2026-09-08 | Claude | Lot 5 — **création de fiches** : `typeObj` du costum posé en base (`thematic` sur les 3 collections, `beneficiaires` sur les projets, §6bis.1), puis les 3 formulaires costum `rezo-sante-{acteur,projet,ressource}`, leurs routes d'édition bornées et la réconciliation `tags` ⇄ `thematic`. Voir §9. |
+| 2026-09-08 | Claude | Lot 6 — **changement de slug du costum en production** : `rezoSanteReunion` → `EcosystemeSanteReunion`, répercuté sur `sites.json`, les 10 `baseParams`, les 4 sources d'onglets admin, les 3 routes `editModals`, les 3 `costumForms` et la palette de commandes. Dossier d'assets `images/rezoSanteReunion/` inchangé (clé distincte). Voir §9. |
 
 ---
 
@@ -101,7 +103,7 @@ Deux conséquences de conception, à ne pas perdre de vue :
 ```
 Communecter (backend)                    SiteForge (ce dépôt)
 ─────────────────────                    ────────────────────
-entité  rezoSanteReunion  ──── slug ───▶ sites.json → config.prod.rezo-sante-reunion.json
+entité  EcosystemeSanteReunion  ──── slug ───▶ sites.json → config.prod.rezo-sante-reunion.json
   └─ costum  ✔ posé (30/07, §6bis)          ├─ theme  « Lumière du matin » (light + dark)
                                             ├─ header transparent-scroll · footer contact-partners
 données scopées par                         ├─ 14 pages / 41 sections / 16 types (03/08)
@@ -112,8 +114,8 @@ données scopées par                         ├─ 14 pages / 41 sections / 16
 ```
 
 **Une seule voie de filtrage** : le périmètre par **costum**, via le **paramètre natif**
-`sourceKey: ["rezoSanteReunion"]` posé sur les 9 `baseParams`, accompagné de
-`costumSlug: "rezoSanteReunion"` qui arme la porte de validation côté client.
+`sourceKey: ["EcosystemeSanteReunion"]` posé sur les 9 `baseParams`, accompagné de
+`costumSlug: "EcosystemeSanteReunion"` qui arme la porte de validation côté client.
 
 Ce choix se justifie sur trois plans (mesures en §5.5 à §5.7) :
 
@@ -139,7 +141,7 @@ Ce choix se justifie sur trois plans (mesures en §5.5 à §5.7) :
 | Thématiques | 6 axes + hub (6ᵉ axe « Culture & Santé » ajouté le 27/08, lot 4) | ✅ 7 pages, filtrées par tags |
 | Agenda | rendez-vous du réseau | ✅ `/agenda` |
 | Notifications | cloche du header pour les membres connectés | ✅ `header.utilities.notifications: true` — activé, jamais consigné avant le 27/08. La cloche du header suffit, décision volontaire : pas de page `/notifications` dédiée |
-| Création de fiches | depuis le site | 🟡 **prévue** — formulaires costum liés à `rezoSanteReunion` annoncés par le client (29/07). Non activée tant que les `costumForms` ne sont pas écrits : un `modal` sans document rend `null` en silence. File de validation en place (onglet « Validation »). |
+| Création de fiches | depuis le site | 🟡 **3 formulaires costum écrits (08/09, §9 lot 5)** — annuaire, projets, ressources, avec les champs Thématiques et Bénéficiaires. Actifs dans le back-office ; le `typeObj` reste à appliquer au backend de déploiement (§6bis.1). Création publique (`floatingActionButton`) non demandée à ce stade. File de validation en place (onglet « Validation »). |
 | Import de masse | CSV → entités | ✅ onglet `import-export` du back-office |
 | Validation des dépôts | file de modération | ✅ onglet « Validation » — section `moderation` (lot 1c) |
 | Éditorial | à propos, socle légal | ✅ `/a-propos`, `/mentions-legales`, `/confidentialite` |
@@ -206,7 +208,7 @@ décrivent **deux moments** :
 > le costum est le **périmètre de service** (ce qu'on interroge à l'exécution).
 
 Le chemin est donc : reprendre les **1 088 fiches** taguées `#santé` → les trier et nettoyer avec PSR
-→ les **référencer** sous `reference.costum: "rezoSanteReunion"` → le site les sert par le costum,
+→ les **référencer** sous `reference.costum: "EcosystemeSanteReunion"` → le site les sert par le costum,
 avec modération. Aucune ligne de la config actuelle n'est à jeter pour cela.
 
 ---
@@ -217,7 +219,7 @@ Sondé le **29/07** sur `https://www.communecter.org`.
 
 | Fait | Valeur |
 |---|---|
-| Entité | `rezoSanteReunion` — `organizations`, type `NGO`, « Rézo Santé Réunion » |
+| Entité | `EcosystemeSanteReunion` — `organizations`, type `NGO`, « Rézo Santé Réunion » |
 | Costum | **`null`** |
 | Liens | `members(2)` — rien d'autre |
 | Tags portés par l'entité | `Santé` · `Ecran` · `Addiction` · `Alimentation` · `Activité physique` · `Competences psycho social` · `Sommeil` · `sédentarité` · `Santé Sexuelle` |
@@ -362,7 +364,7 @@ dont PSR a besoin pour trier.
 Le flag `toBeValidated` sert **l'autre** cas : les fiches créées par des tiers **via le site**.
 
 ⚠ **Correction du 29/07 (précision du client)** : ce cas **existera**. Des formulaires costum liés au
-costum `rezoSanteReunion` sont prévus. Trois conséquences, qui rendent la correction du lot 1b
+costum `EcosystemeSanteReunion` sont prévus. Trois conséquences, qui rendent la correction du lot 1b
 d'autant plus nécessaire :
 
 1. **La modération par flag devient la voie principale**, à côté du référencement. Deux flux
@@ -385,7 +387,7 @@ deux en `$exists: false`. Elle sort prématurément dans deux cas : `notSourceKe
 réimplémentait la garde à la main sur **un seul** champ avec `$ne: true` — un opérateur **plus
 permissif**, démontré inopérant sur une fiche réelle (`vegetalitec`, en attente chez `cressReunion`,
 passait le filtre). Correction appliquée : `notSourceKey` et le `$or` manuel supprimés,
-`sourceKey: ["rezoSanteReunion"]` + `costumSlug: "rezoSanteReunion"` posés sur les **9** `baseParams`.
+`sourceKey: ["EcosystemeSanteReunion"]` + `costumSlug: "EcosystemeSanteReunion"` posés sur les **9** `baseParams`.
 La garde native s'applique donc désormais, et le passage au multi-source se fera en ajoutant des clés
 au tableau.
 
@@ -412,7 +414,7 @@ doublon à traiter puisqu'il concerne le porteur lui-même.
 ## 6bis. Le costum backend — ce qui a été posé, et ce qui manque encore
 
 **Posé le 30/07** sur l'org porteuse `Rézo Santé Réunion` (`6a4ccc3b9da32f33e85e4c43`, slug
-`rezoSanteReunion`) :
+`EcosystemeSanteReunion`) :
 
 ```js
 costum: { slug: "costumize", language: "fr" }
@@ -423,7 +425,7 @@ Trois choses à comprendre sur ces deux clés :
 - **`slug` désigne le MOTEUR, pas le site.** C'est le motif *costum-in-org* : `costumize` est le
   moteur générique partagé, et le slug du SITE est celui de l'org porteuse. Même structure que
   `institutBleu`, `sportSanteBienetre` et `equipementsSportifs974`, qui portent tous
-  `costum.slug = "costumize"`. C'est bien `rezoSanteReunion` que la config envoie en `costumSlug` et
+  `costum.slug = "costumize"`. C'est bien `EcosystemeSanteReunion` que la config envoie en `costumSlug` et
   en `sourceKey`, et son entrée dans la collection `slugs` existait déjà.
 - **`language`** est défaussé à `"fr"` par les deux backends s'il manque ; l'écrire évite de dépendre
   de ce défaut.
@@ -432,7 +434,7 @@ Trois choses à comprendre sur ces deux clés :
   `app` et `htmlConstruct`, qui relèvent de la construction d'UI legacy dont site-json n'a pas besoin
   (il fait tout par config).
 
-**Ce que ça débloque.** Avant, `POST /co2/cms/getcostumjson?slug=rezoSanteReunion` rendait une
+**Ce que ça débloque.** Avant, `POST /co2/cms/getcostumjson?slug=EcosystemeSanteReunion` rendait une
 **HTTP 500** sur le legacy : `GetCostumJsonAction.php:21` fait `$costum = $costum["costum"]` sans
 garde, et l'index manquant lève un E_NOTICE que Yii convertit en exception. Le backend Node, lui,
 tolérait et rendait `{language, id}` — c'est la sémantique de PROD (en `error_reporting(0)` PHP
@@ -440,10 +442,58 @@ auto-vivifie). Après, **les deux rendent 200 et la réponse est byte-identique*
 `{"result":true,"msg":"Success","data":{"slug":"costumize","language":"fr","id":"6a4ccc3b…"}}`.
 
 **Ce que ça ne débloque PAS — et c'est le vrai reste à faire.** Le périmètre est toujours **vide** :
-`sourceKey[]=rezoSanteReunion` renvoie **0 résultat** sur les deux serveurs, parce qu'aucune fiche ne
+`sourceKey[]=EcosystemeSanteReunion` renvoie **0 résultat** sur les deux serveurs, parce qu'aucune fiche ne
 porte encore ce slug dans `source.key`, `source.keys` ou `reference.costum`. Créer le costum le rend
 *résolvable* ; le peupler est un travail de donnée distinct — référencement à l'unité (§5.6, avec ses
 quatre limites) ou import.
+
+### 6bis.1 Le `typeObj` — posé le 08/09, et ce qu'il déclare
+
+Les formulaires du lot 5 (§9) exigeaient des champs que le contrat d'écriture du SDK ne connaît pas.
+Un costum les déclare dans `costum.typeObj.<clé>.dynFormCostum.beforeBuild.properties` — c'est cette
+déclaration, et elle seule, qui les rend écrivables (`costum/co/resolved` la sert, `liveDigest` du
+SDK la digère). Trois nœuds, sur le modèle exact de `parent62.costum.typeObj.recoveryCenter` :
+
+| clé `typeObj` | collection | propriétés déclarées |
+|---|---|---|
+| `organizations` | annuaire | `thematic` |
+| `projects` | projets | `thematic`, `beneficiaires` |
+| `poi` | ressources | `thematic` |
+
+chacune `{ inputType: "selectMultiple", list: …, select2: { multiple: true } }`, avec
+`costum.lists.thematiques` (6 valeurs) et `costum.lists.beneficiaires` (10 valeurs). Vérifié digéré
+par le SDK : `thematic` array/6 enum sur les trois collections, `beneficiaires` array/10 sur projets.
+
+Le nom `thematic` n'est pas un choix libre : c'est **déjà** un champ du contrat `ADD_ORGANIZATION`
+(`array<string>`), et celui qu'emploie le formulaire annuaire de Sport Santé Bien-Être. Un seul nom
+pour les trois collections, aucun doublon avec un champ de base.
+
+> ⚠ **Deux pièges pour l'application au backend de DÉPLOIEMENT.**
+>
+> 1. **Ne pas `$set` le bloc `costum` entier — `costum.slug` désigne le MOTEUR, pas le site.** L'org
+>    porte `{ slug: "costumize", … }` ; écrire uniquement `costum.typeObj`,
+>    `costum.lists.thematiques` et `costum.lists.beneficiaires`.
+>
+>    **Ce n'est pas une question de style : un `slug` qui ne désigne aucun document existant de la
+>    collection `costum` CASSE TOUTE ÉCRITURE d'entité du costum.** Chaîne mesurée le 08/09 (l'erreur
+>    a été produite en vrai, puis remontée à sa source) :
+>    `Costum::init` fait `PHDB::findOne(Costum::COLLECTION, {slug: <costum.slug de l'élément>})`, et
+>    **tout son corps est sous `if(isset($c) && !empty($c))`** — moteur introuvable ⇒ init muet ⇒
+>    `cacheCostumInit` ne met rien en cache ⇒ `CacheHelper::getCostum()` rend vide ⇒
+>    `DataValidator::validate` ne retire plus `costumSlug`/`costumType`/`costumId` des valeurs (ce
+>    `unset` est conditionné à `!empty($costum)`) ⇒ la clé tombe dans le `else` et le save échoue sur
+>    **`Contenu Invalide costumType : Poi`**. Le costum n'a pas besoin d'être « rendu » par le legacy
+>    au préalable : `costumCacheParams()` réchauffe le cache à la volée depuis `$_POST["costumSlug"]`
+>    — mais seulement si `Costum::init` aboutit.
+>
+>    Deux conséquences pratiques : (a) `costum/co/resolved` **ne suffit pas à valider** un costum, il
+>    tolère un moteur absent (`$doc = array()` → overlay seul) là où le chemin d'écriture legacy ne
+>    le tolère pas — le test qui compte est un vrai save ; (b) le `typeObj` du moteur `costumize`
+>    étant **vide**, il n'apporte rien au `typeObj` fusionné : l'enjeu du bon `slug` est la
+>    résolution elle-même, pas son contenu.
+> 2. **Vider le cache legacy** après écriture : `GetCostumJsonAction` met la réponse en `CFileCache`
+>    sous `costumlite<id>`. Sans purge, l'ancienne valeur (vide) continue d'être servie.
+>    `costum/co/resolved`, lui, n'a pas de cache.
 
 ---
 
@@ -524,11 +574,11 @@ en enlevant un bloc. Cf. §13.
 
 ## 8. Étapes de mise en place
 
-1. ☑ ~~**Créer le costum `rezoSanteReunion`** côté Communecter~~ — **fait le 30/07** (lot 2 :
+1. ☑ ~~**Créer le costum `EcosystemeSanteReunion`** côté Communecter~~ — **fait le 30/07** (lot 2 :
    config minimale *costum-in-org* posée sur l'org porteuse, §6bis). Le costum **résout** ; il reste à le **peupler**.
 2. ☐ **Amorcer depuis `#santé`** : extraire les **1 088** fiches taguées, les trier/nettoyer avec PSR
    (à commencer par le doublon PSR lui-même, §5.8), puis les **référencer** sous
-   `reference.costum: "rezoSanteReunion"`.
+   `reference.costum: "EcosystemeSanteReunion"`.
 3. ☐ **Arrêter le vocabulaire des « sujets pratiqués »** avec PSR, et le renseigner pendant le
    nettoyage — sans quoi les 5 pages thématiques restent inexploitables (§5.2).
 4. ☐ Rejouer `npm run config:probe -- config.prod.rezo-sante-reunion.json` → viser 9/9 périmètres non vides.
@@ -536,14 +586,14 @@ en enlevant un bloc. Cf. §13.
 6. ☐ Compléter les marqueurs « à compléter » du socle légal (§11).
 7. ☐ **Trancher l'essai `hero-carousel`** (§7.1) : le garder en tête de `/thematiques`, le porter en
    home, ou le retirer (un bloc à enlever).
-8. ☐ Prévisualiser : `VITE_SLUG=rezoSanteReunion npm run dev`.
+8. ☐ Prévisualiser : `VITE_SLUG=EcosystemeSanteReunion npm run dev`.
 9. ☐ Build / déploiement (DNS `rezoSanté.re`). **Variables d'env à connaître depuis le 03/08**
    (merge `fix/institut-bleu-ui`) :
    - **`VITE_SITE_PUBLIC_URL`** — URL publique du site-json **lui-même** (canonical, `og:url`/`og:image`,
      `sitemap.xml`, flux RSS) ; lue par `getSitePublicUrl()`
      ([`../src/lib/constant/common.ts`](../src/lib/constant/common.ts)) et
      [`../server/lib/sitemap.js`](../server/lib/sitemap.js) ; dérivée par `deploy:env` depuis
-     `sites.json` (`aliases[0]` prioritaire, sinon `domain`). ⚠ L'entrée `rezoSanteReunion` de
+     `sites.json` (`aliases[0]` prioritaire, sinon `domain`). ⚠ L'entrée `EcosystemeSanteReunion` de
      `sites.json` ne déclare **ni `domain` ni `coolifyApp`** (vérifié 03/08) → repli `getServerUrl()`
      (comportement historique) tant que la cible de déploiement n'est pas déclarée.
    - **`VITE_SERVER_URL`** — à ne PAS confondre : c'est le serveur **communecter** (images `/upload`,
@@ -564,8 +614,8 @@ composition initiale, corrigé le jour même :
 | `notSourceKey: true` sur 8 `baseParams` | **supprimé** (il coupait `applyValidationGate`) |
 | `defaultFilters.$or` scalaire à 3 clés, écrit à la main | **supprimé** (redondant, mono-costum, non extensible) |
 | `"preferences.toBeValidated.…": {"$ne": true}` | **supprimé** — opérateur inopérant, démontré sur `vegetalitec` |
-| — | `sourceKey: ["rezoSanteReunion"]` sur **9** `baseParams` |
-| — | `costumSlug: "rezoSanteReunion"` sur **9** `baseParams` (arme la porte native à 2 flags) |
+| — | `sourceKey: ["EcosystemeSanteReunion"]` sur **9** `baseParams` |
+| — | `costumSlug: "EcosystemeSanteReunion"` sur **9** `baseParams` (arme la porte native à 2 flags) |
 
 Régressions à revalider : aucune constatée — validate ✅, audit **0 constat**, préflight **328/328**,
 rendu **40/40**. Le périmètre reste vide (costum absent), donc le comportement de la porte de
@@ -573,7 +623,7 @@ validation **n'a pas pu être observé sur des données réelles** : à revérif
 référencement.
 
 **Lot 1c — 29/07 — file de validation.** Le client précise que **des formulaires costum liés à
-`rezoSanteReunion` sont prévus**. Conséquence immédiate : sans file de validation, une fiche déposée
+`EcosystemeSanteReunion` sont prévus**. Conséquence immédiate : sans file de validation, une fiche déposée
 via un formulaire serait masquée par la porte (armée au lot 1b) **et** impossible à valider. Ajout
 d'un onglet « Validation » portant la section builtin `moderation` (placée avant `import-export`,
 dans l'ordre du flux de travail). Le bloc `status` n'est **pas** configuré (sous-champs non câblés,
@@ -615,7 +665,7 @@ Gates rejoués le 03/08 après merge : typecheck ✅ · préflight **412/412 (22
 | `audit:config` | ✅ RAS (dernière mesure : 30/07, commit `f0e0893f`) |
 | `test:preflight` | ✅ **412/412 (22 fichiers)** (rejoué le 03/08, après merge `fix/institut-bleu-ui`) |
 | `config:render` | ✅ 14/14 pages · **41/41 sections** avec contenu SSR (30/07, commit `f0e0893f`) |
-| `config:probe` | ⛔ **0/9 périmètres** — le costum RÉSOUT désormais (lot 2), mais le périmètre est vide : aucune fiche ne porte encore `source.key`/`source.keys`/`reference.costum` = `rezoSanteReunion` (§6bis) |
+| `config:probe` | ⛔ **0/9 périmètres** — le costum RÉSOUT désormais (lot 2), mais le périmètre est vide : aucune fiche ne porte encore `source.key`/`source.keys`/`reference.costum` = `EcosystemeSanteReunion` (§6bis) |
 
 ---
 
@@ -663,6 +713,101 @@ Gates rejoués le 27/08 :
 | `test:integration` | ✅ une fois isolé des deux effets de bord d'environnement ci-dessus (non liés à ce lot) |
 | `config:probe` | non rejoué — le périmètre était déjà à 0/9 avant ce lot (§6bis), rien ne l'a changé |
 
+**Lot 5 — 08/09 — création de fiches : les 3 formulaires costum.** Demande client : un champ
+**Bénéficiaires** à l'ajout de projet, et un champ **Thématique** sur les formulaires projets,
+annuaire et ressources, dont la valeur alimente `tags` à l'enregistrement.
+
+*Le point dur, et sa résolution.* Aucun des deux champs n'était écrivable : le contrat de base du
+SDK ne connaît, pour `projects`, que `name / shortDescription / description / url / public / tags /
+address / socialNetwork / profil_avatar`, et le costum ne déclarait AUCUNE extension (absent de
+l'artefact bundlé comme du contrat live). Un champ inventé aurait été retiré en silence du
+`element/save` par le `DraftProxy` du SDK. La réponse n'était donc pas dans `site-json` : elle était
+**en base**, dans le `typeObj` du costum (§6bis.1). Une fois posé, `costum/co/resolved` le sert, le
+SDK le digère automatiquement — un slug absent de l'artefact part en live sans qu'il faille
+`VITE_COSTUM_FORCE_LIVE` — et les deux champs deviennent réels.
+
+| Surface | Changement |
+|---|---|
+| `config.costumForms` | **créée** — `rezo-sante-acteur` (organizations), `rezo-sante-projet` (projects), `rezo-sante-ressource` (poi) ; layout `flat`, groupe d'adresse standard, image de profil |
+| `profiles.{organizations,projects,poi}.editModals` | **créées**, chacune bornée par un `when` sur `sourceKeys` / `reference.costum` — sans quoi le formulaire s'ouvrirait sur toute entité du type (bug institutBleu, ~29 400 organisations) |
+| `admin.tabs` | **inchangés** : les trois onglets étaient déjà en `create: "inherit"`, qui résout seul vers le form costum du bon `entityType` |
+| `costumForms.*.fields.tags` | codecs `read`/`write` (`rezoSante:tagsHorsThematiques` / `…AvecThematiques`) — la réconciliation `tags` ⇄ `thematic`. **Aucune `mutation.stamps`** |
+| `src/modules/profil/forms/costum/rezo-sante/fns.ts` (+ `registerSpecFns`) | **nouveau** — les 2 seules clés de code des 3 formulaires |
+| `src/modules/profil/forms/rezo-sante.configDriven.test.ts` + `costum/rezo-sante/fns.test.ts` | **nouveaux** — 20 tests : pipeline d'écriture réel et helpers purs |
+| `tests/preflight/stamps.test.ts` | sentinelle d'inventaire : le site **n'y figure pas**, avec le motif écrit sur place |
+| `__contract__/costum-types.live.json` | entrée du costum ajoutée **à la main** — la régénération globale supprimait `associationEkilibre` et `saintpaulSport1`, que le backend local ne résout pas |
+
+*Pourquoi la recopie vers `tags` n'est pas cosmétique.* Toute la surface de filtrage du site
+interroge `tags` et jamais `thematic` : les 6 pages `/theme/*` (`defaultFilters.tags.$in`) comme les
+filtres « Thématique » de `/projets`, `/annuaire` et `/ressources`. Sans elle, une fiche correctement
+qualifiée n'apparaîtrait sur aucune page de thématique. Les 6 libellés sont donc un contrat avec ces
+filtres — un test le vérifie contre les `defaultFilters` réels, sans recopier la liste.
+
+*La réconciliation `tags` ⇄ `thematic`.* Elle vit dans les codecs `read`/`write` du champ `tags` :
+
+```
+lecture  (édition)   tags affichés = tags en base   −  thématiques de la fiche
+écriture (save)      tags envoyés  = tags affichés  ∪  thématiques cochées
+```
+
+Les thématiques ne doublent donc pas dans « Mots-clés », cocher pose le tag, **décocher le retire**,
+et un mot-clé libre reste supprimable.
+
+> **Pourquoi pas une `mutation.stamps`.** Elle ne sait qu'AJOUTER : `op:"append"` fait
+> `unionDedup(targetServerData, payload, valeur)` (`stamps.ts`), donc elle repose tout tag retiré
+> dans le formulaire — thématique décochée comprise, et même un simple mot-clé libre. `op:"set"`
+> n'est pas une issue : le préflight l'interdit sur un champ présent dans `fields`, et il écraserait
+> les mots-clés libres. La réconciliation appartient au CHAMP. Garde de non-retour :
+> `rezo-sante.configDriven.test.ts` vérifie qu'**aucun** des 3 formulaires ne porte d'estampille
+> `tags`, et le motif est écrit dans la sentinelle de `tests/preflight/stamps.test.ts`, là où on
+> s'étonnerait de ne pas trouver le site.
+
+On soustrait les thématiques **réellement stockées sur la fiche**, pas les 6 options du formulaire :
+une fiche importée taguée « Nutrition » sans `thematic` renseigné garde ce mot-clé, visible et
+supprimable. Le masquer le rendrait invisible tout en le laissant en base — et l'écriture le
+supprimerait à l'insu de tous. Deux clés de code, parce qu'un transform de CHAMP ne reçoit pas de
+`params` : la règle ne peut pas se déclarer en JSON (même raison que `costum/structure/fns.ts`).
+
+*Un champ retiré.* `email` était proposé au formulaire projet : `config:costum-drift` l'a désigné
+fantôme (absent d'`ADD_PROJECT`, donc perdu au save). Retiré plutôt que livré silencieusement mort.
+
+**Lot 6 — 08/09 — changement de slug du costum en production.** Le costum a été renommé côté prod :
+`rezoSanteReunion` → **`EcosystemeSanteReunion`**. Le slug n'est pas une étiquette : c'est le
+`VITE_SLUG` de `sites.json`, qui **charge l'entité porteuse au boot**, sert de `costumSlug` (porte de
+validation), de `sourceKey` (périmètre de recherche), et de valeur testée par les prédicats `when`
+des routes d'édition. Répercuté sur toutes ces surfaces :
+
+| Surface | Occurrences |
+|---|---|
+| `sites.json` → `slug` | 1 (`VITE_SLUG`) |
+| `pages[].sections[].props.baseParams` → `sourceKey[]` + `costumSlug` | 10 + 10 |
+| `admin.tabs[].sections[].source.defaultFilters.$or` (`source.key` / `source.keys` / `reference.costum`) | 4 × 3 |
+| `profiles.{organizations,projects,poi}.editModals[].when.or[].value` | 3 × 2 |
+| `costumForms.*.costumSlug` | 3 |
+| `commandPalette.entitySearch.params.sourceKey[]` | 1 |
+| `__contract__/costum-types.live.json` (clé du costum) · `__effective__/rezo-sante-reunion.json` | fixtures resynchronisées |
+
+**Inchangés, et c'est voulu** : la clé `images` de `sites.json` et le dossier
+`public/images/rezoSanteReunion/` (le slug de costum et le dossier d'assets sont deux choses
+distinctes) ; le nom du fichier de config, la feuille CSS, le domaine, l'app Coolify ; les
+identifiants locaux des formulaires (`rezo-sante-*`) et les clés de transform (`rezoSante:*`), qui
+sont des noms de config/registre et non le slug.
+
+> ⚠ **Le backend local n'a pas suivi.** L'organisation porteuse y porte encore `slug:
+> "rezoSanteReunion"` (base `prod270726`, instantané du 27/07). Tant qu'elle n'est pas renommée —
+> dans `organizations` ET dans la collection `slugs` — le site ne résout plus son costum en local :
+> `VITE_SLUG` ne trouve pas l'entité au boot. Sans effet sur la prod, où le renommage a eu lieu.
+
+Gates rejoués le 08/09 :
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 15 pages · 44 sections |
+| `config:costum-drift` | ✅ 0 fantôme sur les 3 formulaires (`_telSlot`/`_telRest` de l'acteur = faux positif du script, qui ne lit pas `field.group` ; les 2 formulaires organisations de sport-sante portent le même signalement) |
+| `typecheck` / `lint` | ✅ / ✅ |
+| `test:unit` (préflight inclus) | ✅ **3140/3146** (6 skip) — **aucun échec** |
+| `config:surface --check` | ⛔ **rouge AVANT ce lot** : le fichier généré est périmé de 3 configs entières (`equipements-Sportifs-Scolaire`, `maison-sport-sante-la-tampon`, `relief`). Régénération volontairement laissée hors de ce lot — elle produit 800+ lignes étrangères. À traiter dans son propre commit |
+
 ---
 
 ## 10. Checklist d'avancement
@@ -670,7 +815,7 @@ Gates rejoués le 27/08 :
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
 | 1 | Thème & identité | ✅ | light + dark en parité (40 tokens), 6 thématiques dont 5 en `chart1..5` + 1 en `accent` (budget épuisé, §7) ; depuis le 30/07 : feuille propre `index-rezo-sante-reunion.css` + titres **Fraunces** (lot 3) ; depuis le 27/08 : héros `hero-tinted-overlay` lisibles sur photo claire (`hero-text-shadow`, lot 4) |
-| 2 | Chrome (header/footer) | 🟡 | nav regroupée en 4 entrées (Thématiques passe à 6 enfants au lot 4) ; cloche de **notifications active** (`header.utilities.notifications`, jamais consignée avant le 27/08) ; **coordonnées de contact « à compléter »**, aucun logo partenaire |
+| 2 | Chrome (header/footer) | 🟡 | nav regroupée en 4 entrées (Thématiques passe à 6 enfants au lot 4) ; cloche de **notifications active** (`header.utilities.notifications`, jamais consignée avant le 27/08) ; **coordonnées de contact « à compléter »** ; **2 logos partenaires** posés dans `footer.partners` (ARS La Réunion, Promotion Santé La Réunion), servis depuis `public/images/rezoSanteReunion/` |
 | 3 | Home | ✅ | 6 sections, `action-tiles` des thématiques à 6 tuiles depuis le lot 4 |
 | 4 | Thématiques (hub + 6) | ❌ | rendent, mais **le vocabulaire de classification n'existe pas** : les tags mesurés donnent 1 à 13 fiches, ou 1 348 hors sujet (§5.2). En attente des « sujets pratiqués ». Hub : `hero-carousel` en tête depuis le 30/07 — **essai à confirmer** (§7.1) |
 | 5 | Annuaire | 🟡 | rend ; périmètre vide |
@@ -680,7 +825,7 @@ Gates rejoués le 27/08 :
 | 9 | À propos | ✅ | 6 sections, alternance des registres |
 | 10 | Socle légal | 🟡 | 2 pages ; marqueurs « à compléter » à renseigner |
 | 11 | Back-office + import | 🟡 | **9 onglets** (mesuré 03/08 : dashboard, membres, annuaire, projets, agenda, ressources, validation, import-export, référencement) ; le costum résout depuis le 30/07, le périmètre reste à peupler |
-| 12 | Création de fiches | 🟡 | **prévue** : formulaires costum annoncés. Porte de validation armée et file « Validation » posée — il reste à écrire les `costumForms` et le `floatingActionButton` |
+| 12 | Création de fiches | 🟡 | **3 `costumForms` livrés le 08/09** (`rezo-sante-acteur` / `-projet` / `-ressource`) : les onglets admin Annuaire, Projets et Ressources ouvrent le formulaire costum au lieu de la modale générique (`create: "inherit"` les résout seul). Champs **Thématiques** (6, synchronisées avec `tags`) et **Bénéficiaires** (10, projets). Reste : appliquer le `typeObj` au backend de DÉPLOIEMENT (§6bis.1), et la création publique (`floatingActionButton`), non demandée à ce stade |
 | 13 | Actions d'engagement | ❌ | **hors config** — chiffrage §4.3 |
 | 14 | Partenariat inter-orga | ❌ | **hors config** — chiffrage §4.3 |
 
@@ -688,17 +833,31 @@ Gates rejoués le 27/08 :
 
 ## 11. Points d'attention / limitations
 
-- **Le costum est créé (30/07, §6bis) mais son périmètre est VIDE.** `sourceKey[]=rezoSanteReunion`
+- **Le backend LOCAL n'a pas suivi le renommage de slug (lot 6).** L'organisation porteuse y
+  porte encore `slug: "rezoSanteReunion"` (base `prod270726`, instantané du 27/07). Tant qu'elle
+  n'est pas renommée dans `organizations` ET dans la collection `slugs`, `VITE_SLUG` ne trouve plus
+  l'entité au boot et le costum ne résout pas en local. Sans effet sur la prod, où le renommage a eu
+  lieu.
+- **Le costum est créé (30/07, §6bis) mais son périmètre est VIDE.** `sourceKey[]=EcosystemeSanteReunion`
   renvoie 0 résultat sur les deux backends : aucune fiche ne porte encore
-  `source.key`/`source.keys`/`reference.costum` = `rezoSanteReunion`. Le blocage n°1 est désormais le
+  `source.key`/`source.keys`/`reference.costum` = `EcosystemeSanteReunion`. Le blocage n°1 est désormais le
   **peuplement** (référencement à l'unité §5.6, ou import).
-- **Création de fiches : prévue, pas encore activée.** Des formulaires costum liés à `rezoSanteReunion` sont annoncés (29/07) ; le socle est prêt (porte de validation armée, file « Validation »). Reste le blocage de forme : le bouton flottant n'accepte **qu'un seul**
-  `modal` : on ne peut pas proposer « créer un acteur » *et* « créer un projet » par ce biais. Et
-  surtout, un `modal: "add-X"` sans document `costumForms.X` correspondant produit un bouton qui
-  **rend `null` en silence** (constat d'audit `ref-morte`). Activer ce bouton exige d'abord d'écrire
-  le formulaire costum.
+- **Création de fiches : les 3 formulaires existent depuis le 08/09** (§9 lot 5), et les onglets du
+  back-office les ouvrent. **Deux restes.** (a) Le `typeObj` doit être appliqué au backend de
+  déploiement, sans quoi `thematic`/`beneficiaires` y seront retirés en silence du save (§6bis.1 —
+  lire les deux pièges avant d'écrire). (b) La création **publique** n'est pas activée : le bouton
+  flottant n'accepte **qu'un seul** `modal`, on ne peut donc pas proposer « créer un acteur » *et*
+  « créer un projet » par ce biais — et un `modal: "add-X"` sans document `costumForms.X` rend
+  `null` en silence (constat d'audit `ref-morte`). Non demandé à ce stade.
+- **Le filtre « Format » de `/ressources` reste non remplissable.** Il porte sur `category`, qui
+  n'est ni au contrat d'écriture POI ni déclaré au `typeObj` : aucune fiche créée depuis le site ne
+  pourra le renseigner. Le formulaire ressource expose `type` à la place (Lien / Vidéo / Document /
+  Outil). Trois issues possibles, à trancher : déclarer `category` au `typeObj`, basculer le filtre
+  sur `type`, ou le basculer sur `tags`. **Rien n'a été changé sur la page** — décision client.
 - **Convention de sous-type des ressources à arrêter.** Il n'existe aucune collection « ressource » :
-  dans le parc, c'est un POI sous-typé (parent62 utilise `type: "recoveryCenter"`). Le sous-type doit
+  dans le parc, c'est un POI sous-typé (parent62 utilise `type: "recoveryCenter"`). Le formulaire du
+  08/09 ne tranche PAS : il laisse l'utilisateur choisir `type` parmi 4 valeurs, sans `presetValue`
+  ni `identity`, précisément pour ne pas figer la convention par effet de bord. Le sous-type doit
   être décidé **avant** que les `itemRules` soient figées, puisqu'il est testé dans les prédicats.
 - **CTA de la preview `resource` figé.** Les libellés d'action sont câblés sur quatre valeurs
   françaises (`lien`, `video`, `document`, `compte-rendu`). Des catégories nommées autrement
@@ -747,7 +906,7 @@ projet).
 
 | Question | Responsable |
 |---|---|
-| ~~Créer le costum `rezoSanteReunion`~~ **fait le 30/07 (§6bis)** → reste le **peuplement** : qui référence/importe les premières fiches, et quand ? | PSR / admin Communecter |
+| ~~Créer le costum `EcosystemeSanteReunion`~~ **fait le 30/07 (§6bis)** → reste le **peuplement** : qui référence/importe les premières fiches, et quand ? | PSR / admin Communecter |
 | **Essai `hero-carousel`** (30/07, complété à 6 diapositives le 27/08) : confirmer ou non son maintien en tête de `/thematiques`, et arbitrer le portage en home voulu par la maquette Lovable (coût mesuré : ratio 16:9 vs 3:2 → bascule du candidat LCP) | Client + Thomas |
 | **Vocabulaire des « sujets pratiqués »** : quelle liste, saisie où, renseignée quand ? Sans elle, les 5 pages thématiques n'ont rien à filtrer | Tibor + PSR (@Pierre, @duvardfrancois, @SebastienPSR) |
 | Reprise des **1 088 fiches `#santé`** : qui trie, selon quels critères d'inclusion ? | PSR |
