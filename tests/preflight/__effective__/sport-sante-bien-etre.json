@@ -218,24 +218,7 @@
       "baseParams": {
         "defaultTypes": [
           "projects"
-        ],
-        "notSourceKey": true,
-        "defaultFilters": {
-          "links.preferences.toBeValidated.sportSanteBienetre": {
-            "$exists": false
-          },
-          "$or": {
-            "links.contributors.682b2ac5e05a1d45844340e7": {
-              "$exists": true
-            },
-            "parent.682b2ac5e05a1d45844340e7": {
-              "$exists": true
-            }
-          },
-          "links.contributors.682b2ac5e05a1d45844340e7": {
-            "$exists": true
-          }
-        }
+        ]
       }
     },
     "/communaute/searchProStatic": {
@@ -296,11 +279,11 @@
         ],
         "defaultFilters": {
           "$or": {
+            "source.key": "sportSanteBienetre",
             "source.keys": "sportSanteBienetre",
             "reference.costum": "sportSanteBienetre"
           }
-        },
-        "notSourceKey": true
+        }
       }
     },
     "/creneaux/searchProStatic": {
@@ -310,8 +293,14 @@
         ],
         "notSourceKey": true,
         "defaultFilters": {
-          "form": "6928096adf5caf0d230e7f26"
-        }
+          "form": "6928096adf5caf0d230e7f26",
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7": "Validé"
+        },
+        "searchBy": [
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdegc9sgox76p87n27",
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdeggo91owe8t9ovl4p",
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdmxv88txy6f5z6svg"
+        ]
       }
     },
     "/formation/searchProStatic": {
@@ -433,7 +422,8 @@
           "profilImageUrl"
         ],
         "searchBy": [
-          "name"
+          "name",
+          "description"
         ],
         "defaultSortBy": {
           "created": -1
@@ -441,7 +431,12 @@
       }
     }
   },
-  "referencement": {},
+  "referencement": {
+    "projects": {
+      "sousTypes": [],
+      "annotation": null
+    }
+  },
   "membership": {
     "citoyens/membership": {
       "types": [
