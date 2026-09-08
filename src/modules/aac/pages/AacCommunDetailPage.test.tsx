@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import type { AacResolvedConfig } from "../types";
+import type { AacDetailSection } from "../lib/resolveAacDetailSections";
 
 /**
  * La fiche d'un commun ne monte ses trois blocs financement — la carte, « Besoins
@@ -13,6 +14,10 @@ import type { AacResolvedConfig } from "../types";
  *
  * Le hook de permissions et son calculateur sont RÉELS : c'est le câblage
  * page → `config.gates` → calculateur → rendu qui est sous test, pas un stub.
+ *
+ * Second lot : la page ATTEND cette config (deux appels séquentiels, elle
+ * arrive après `formQuery`) et refuse de se rendre sans elle — sinon un form
+ * `coremu` se peignait d'abord sans financement, puis basculait en grille.
  */
 
 vi.mock("@/hooks/useT", () => ({ useT: () => (key: string) => key }));
@@ -71,9 +76,11 @@ function makeConfig(coremu: boolean): AacResolvedConfig {
     typeCoFinancer: null,
   };
 }
-let config: AacResolvedConfig = makeConfig(false);
+let config: AacResolvedConfig | null = makeConfig(false);
+let isConfigLoading = false;
+let configError: Error | null = null;
 vi.mock("../hooks/useAacConfig", () => ({
-  useAacConfig: () => ({ config, isLoading: false, error: null }),
+  useAacConfig: () => ({ config, isLoading: isConfigLoading, error: configError }),
 }));
 
 vi.mock("../hooks/useAacDirectoryContext", () => ({
@@ -103,8 +110,15 @@ vi.mock("../hooks/useAacFundingResource", () => ({
 vi.mock("../hooks/useCommunObjectivesController", () => ({
   useCommunObjectivesController: () => ({}),
 }));
+/** Un bloc déclaré, tel que `useAacDetailSections` le résout depuis `config.aac.detail.sections`. */
+const CONTEXTE_SECTION: AacDetailSection = {
+  id: "contexte",
+  title: "Contexte",
+  field: { stepKey: "aapStep1", id: "contexte", path: "answers.aapStep1.contexte", label: "Contexte", options: [] },
+};
+let detailSections: AacDetailSection[] = [];
 vi.mock("../hooks/useAacDetailSections", () => ({
-  useAacDetailSections: () => [],
+  useAacDetailSections: () => detailSections,
   useAacGallerySubKey: () => null,
 }));
 vi.mock("@/modules/coform/components/CoFormModal", () => ({ CoFormModal: () => null }));
@@ -118,8 +132,8 @@ vi.mock("../components/pageDetail/CommunFinancingCard.tsx", () => ({
   CommunFinancingCard: () => <div data-testid="financing-card" />,
 }));
 vi.mock("../components/pageDetail/CommunTocNav.tsx", () => ({
-  CommunTocNav: ({ sections }: { sections: Array<{ id: string }> }) => (
-    <nav>
+  CommunTocNav: ({ sections, activeSection }: { sections: Array<{ id: string }>; activeSection: string }) => (
+    <nav data-testid="toc" data-active={activeSection}>
       {sections.map((s) => (
         <span key={s.id} data-testid={`toc-${s.id}`} />
       ))}
@@ -151,11 +165,15 @@ const { default: AacCommunDetailPage } = await import("./AacCommunDetailPage");
 const FUNDING_IDS = ["financing-card", "financing-section", "cofinancers-table"] as const;
 const FUNDING_TOC = ["toc-besoins-financiers", "toc-cofinanceurs"] as const;
 
-describe("AacCommunDetailPage — le financement suit le gate `coremu`", () => {
-  beforeEach(() => {
-    me = CONNECTED;
-  });
+beforeEach(() => {
+  me = CONNECTED;
+  config = makeConfig(false);
+  isConfigLoading = false;
+  configError = null;
+  detailSections = [];
+});
 
+describe("AacCommunDetailPage — le financement suit le gate `coremu`", () => {
   it("sans `coremu` : ni carte, ni « Besoins financiers », ni « Cofinanceurs » — et pas d'entrée de sommaire", () => {
     config = makeConfig(false);
     render(<AacCommunDetailPage />);
@@ -188,5 +206,66 @@ describe("AacCommunDetailPage — le financement suit le gate `coremu`", () => {
     for (const id of FUNDING_IDS) {
       expect(screen.getByTestId(id)).toBeTruthy();
     }
+  });
+});
+
+describe("AacCommunDetailPage — la fiche attend la configuration de l'appel", () => {
+  /**
+   * Avant : la garde de chargement ne lisait que `answerQuery` et `formQuery`.
+   * La config, plus lente, arrivait après — et `showFunding` avec elle : la
+   * fiche d'un form `coremu` se rendait d'abord SANS carte ni « Besoins
+   * financiers », héros pleine largeur, puis tout basculait en grille.
+   */
+  it("config en cours de chargement : le squelette — ni héros, ni financement, ni sommaire", () => {
+    config = null;
+    isConfigLoading = true;
+    render(<AacCommunDetailPage />);
+
+    expect(screen.getByRole("status")).toBeTruthy();
+    expect(screen.queryByTestId("hero")).toBeNull();
+    expect(screen.queryByTestId("toc")).toBeNull();
+    for (const id of FUNDING_IDS) {
+      expect(screen.queryByTestId(id)).toBeNull();
+    }
+  });
+
+  /**
+   * Sans config, ni gates ni blocs déclarés ne se résolvent : la fiche se
+   * rendait vidée de son financement et de sa prose, sans un mot. Même
+   * traitement que `formQuery.error`, avec un message qui nomme la cause.
+   */
+  it("config en erreur : un message explicite, pas une fiche vidée en silence", () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    config = null;
+    configError = new Error("boom");
+    render(<AacCommunDetailPage />);
+
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("page.error");
+    expect(screen.getByText("page.configErrorMessage")).toBeTruthy();
+    expect(screen.queryByTestId("hero")).toBeNull();
+    consoleError.mockRestore();
+  });
+});
+
+describe("AacCommunDetailPage — section active du sommaire", () => {
+  /**
+   * L'état partait de `"besoins-financiers"` en dur : sans `coremu`, cette ancre
+   * n'existe pas et aucune entrée n'était active avant le premier défilement.
+   */
+  it("sans `coremu`, c'est la première entrée réelle qui est active", () => {
+    config = makeConfig(false);
+    detailSections = [CONTEXTE_SECTION];
+    render(<AacCommunDetailPage />);
+
+    expect(screen.getByTestId("toc-contexte")).toBeTruthy();
+    expect(screen.getByTestId("toc").getAttribute("data-active")).toBe("contexte");
+  });
+
+  it("avec `coremu`, « Besoins financiers » reste la première entrée active", () => {
+    config = makeConfig(true);
+    detailSections = [CONTEXTE_SECTION];
+    render(<AacCommunDetailPage />);
+
+    expect(screen.getByTestId("toc").getAttribute("data-active")).toBe("besoins-financiers");
   });
 });

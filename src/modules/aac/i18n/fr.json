@@ -7,6 +7,7 @@
     "loading": "Chargement…",
     "error": "Impossible de charger ce commun.",
     "errorMessage": "Une erreur est survenue pendant le chargement du commun.",
+    "configErrorMessage": "La configuration de l'appel n'a pas pu être chargée : les blocs de cette fiche ne peuvent pas être résolus.",
     "notFound": "Commun introuvable",
     "notFoundMessage": "Le commun demandé n'a pas été trouvé.",
     "missingAnswer": "Aucun identifiant de réponse n'a été fourni.",

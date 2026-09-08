@@ -116,8 +116,11 @@ export default function AacCommunDetailPage() {
     const { answerId } = useParams();
     const { api, loading, entity, me, refreshMe } = useCocolight();
 
-    // État de la section active
-    const [activeSection, setActiveSection] = useState("besoins-financiers");
+    // Section active du sommaire. `null` tant que l'observateur n'a rien vu :
+    // l'affichage retombe alors sur la PREMIÈRE entrée de `SECTIONS` (cf. le
+    // rendu de `CommunTocNav`). L'ancienne valeur en dur `"besoins-financiers"`
+    // désignait une ancre qui n'existe pas sans le gate `coremu`.
+    const [activeSection, setActiveSection] = useState<string | null>(null);
     // Édition de la réponse CoForm à l'intérieur de la page (pas de navigation).
     const [isEditOpen, setIsEditOpen] = useState(false);
     const isReady = !loading && !!api;
@@ -185,7 +188,13 @@ export default function AacCommunDetailPage() {
     });
 
     // Requête Configuration Aac
-    const { config, error: configError } = useAacConfig(formId ?? null);
+    //
+    // `isLoading` entre dans la garde de chargement plus bas : la config enchaîne
+    // DEUX appels séquentiels (form parent, puis aapConfig) et arrive donc après
+    // `formQuery`. Sans l'attendre, la fiche d'un form `coremu` se peignait
+    // d'abord SANS financement — héros pleine largeur —, puis basculait en grille
+    // 12 colonnes quand `config.gates` arrivait enfin.
+    const { config, isLoading: isConfigLoading, error: configError } = useAacConfig(formId ?? null);
 
     /**
      * Les droits se calculent avec les gates DU FORM (`coremu`…). Appelé sans
@@ -296,7 +305,9 @@ export default function AacCommunDetailPage() {
         if (typeof document !== "undefined") document.title = pageTitle;
     }, [pageTitle]);
 
-    const isDataLoaded = answerQuery.isSuccess && formQuery.isSuccess;
+    // La config compte aussi : tant qu'elle charge, la page rend le squelette et
+    // aucune ancre n'existe encore — observer à ce moment n'observerait rien.
+    const isDataLoaded = answerQuery.isSuccess && formQuery.isSuccess && !isConfigLoading;
 
     useEffect(() => {
         if (!isDataLoaded) return;
@@ -327,8 +338,13 @@ export default function AacCommunDetailPage() {
     }, [isDataLoaded, SECTIONS]);
 
     if (!answerId) return <PageShell><ErrorCard title={String(t("page.communDetail"))} description={String(t("page.missingAnswer"))} /></PageShell>;
-    if (answerQuery.isLoading || formQuery.isLoading) return <PageShell><LoadingCard label={String(t("page.loading"))} /></PageShell>;
+    if (answerQuery.isLoading || formQuery.isLoading || isConfigLoading) return <PageShell><LoadingCard label={String(t("page.loading"))} /></PageShell>;
     if (answerQuery.error || formQuery.error) return <PageShell><ErrorCard title={String(t("page.error"))} description={String(t("page.errorMessage"))} /></PageShell>;
+    // Sans la config, ni les gates ni les blocs déclarés ne se résolvent : la
+    // fiche se rendrait vidée de son financement et de sa prose, sans un mot.
+    // Une erreur EXPLICITE plutôt qu'un « fail closed » silencieux — même
+    // traitement que `formQuery.error`, avec un message qui nomme la cause.
+    if (configError) return <PageShell><ErrorCard title={String(t("page.error"))} description={String(t("page.configErrorMessage"))} /></PageShell>;
     if (!answerQuery.data || !formQuery.data) return <PageShell><ErrorCard title={String(t("page.notFound"))} description={String(t("page.notFoundMessage"))} /></PageShell>;
 
     const answer = answerQuery.data;
@@ -458,7 +474,9 @@ export default function AacCommunDetailPage() {
                 <CommunMilestoneDialogs ctrl={objectivesCtrl} />
 
                 <div className="grid lg:grid-cols-12 gap-8 lg:gap-12">
-                    <CommunTocNav sections={SECTIONS} activeSection={activeSection} />
+                    {/* Tant que l'observateur n'a rien signalé, la première entrée
+                        est active — quelle qu'elle soit. */}
+                    <CommunTocNav sections={SECTIONS} activeSection={activeSection ?? SECTIONS[0]?.id ?? ""} />
 
                     <div className="lg:col-span-9 space-y-20">
 
