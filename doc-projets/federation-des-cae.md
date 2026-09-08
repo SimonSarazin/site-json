@@ -188,7 +188,7 @@ Réglages notables de la section `toolsCatalog` :
 | 4 | Fiche d'un outil — sous-catégorie | ✅ | 31/08 — repli catalogue ajouté au détail |
 | 5 | Enrichissement d'un outil (admin) | ✅ | enregistrement, rattachement d'un commun, deux formes de lien |
 | 6 | Bloc « Informations liées au commun » | 🟡 | rendu, mais `CommunInfoAction` fige des `FIELD_*` propres au formulaire tiers-lieux → réduit au titre et à la description sur un commun de CET appel (cf. §13) |
-| 7 | Logo du site | ❌ | `header.logo` pointe `images/federationDesCae/logo.png`, absent de `public/` — seul constat d'audit |
+| 7 | Logo du site | 🟡 | le vrai logo n'a jamais été commité ; `header.logo` (fichier absent → image cassée, `alt=""`) a été retiré au profit d'un `logoIcon: "handshake"` provisoire (review MR 53, H24). Le header `standard` ne rend pas `logoTitle` sur desktop : il faut le fichier `public/images/federationDesCae/logo.png` |
 | 8 | Version mobile du catalogue | ✅ | `ToolFiltersSheet` — commité sur **`jdev`** (`cb26991d`), le module `toolsCatalog` étant partagé |
 | 9 | Brouillon du formulaire de dépôt | ✅ | actif sur une étape extraite, et le reprendre ne l'efface plus (cf. §10 31/08ter) |
 | 10 | Vérification navigateur | ❌ | **jamais faite** sur AUCUN lot du 27/08 au 31/08, ni sur celui du 03/09 |
@@ -615,7 +615,7 @@ une affirmation fausse. Aucun appelant ne lit `mutation.data` ; seul le verdict 
 
 | Question | Responsable |
 |---|---|
-| Fournir le logo `public/images/federationDesCae/logo.png` (débloque l'audit ET le préflight `site-assets`) | Schumann |
+| Fournir le logo `public/images/federationDesCae/logo.png`, puis rétablir `header.logo` (et déclarer `"images": "federationDesCae"` dans `sites.json`) — le `logoIcon: "handshake"` actuel est un provisoire ; le préflight `logo-assets` refuse désormais un `header.logo` sans fichier | Schumann |
 | `showOpenSourceToggle` : 2 outils sur 83 sont marqués open source — garde-t-on le filtre ? | Schumann |
 | Passer `communUrlTemplate` en URL absolue une fois l'hôte du site arrêté | Schumann |
 | Rendre configurables les `FIELD_*` de `CommunInfoAction` | à arbitrer |
