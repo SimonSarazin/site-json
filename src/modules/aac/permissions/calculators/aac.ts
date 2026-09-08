@@ -1,12 +1,14 @@
 /**
  * Calculateur de permissions AAC.
  *
- * Sémantique :
+ * Sémantique (parité legacy, cf. doc/34 §6) :
  *  - admin = admin de l'entité OU admin du costum (bypass TOTAL, cf. `isCostumAdmin`)
- *  - dépôt PAS ouvert par défaut : active + (standalone OU connecté) + gate
- *    communauté/rôles + unicité (`oneAnswerPerPers`)
- *  - financement gardé par le gate MAÎTRE `coRemuneration` (OFF ⇒ jamais)
- *  - tolère l'auteur temporaire standalone (answer sans `userId`)
+ *  - dépôt PAS ouvert par défaut : active + CONNECTÉ + gate communauté/rôles +
+ *    unicité (`oneAnswerPerPers`) — les gardes de `Coform::getFormAccessInfo`
+ *  - lecture publique, sauf `onlyMemberAccess` (membres + admins)
+ *  - modification : auteur OU admin, OU tout connecté si `anyOnewithLinkCanAnswer`
+ *  - financement gardé par le gate MAÎTRE `coremu` (OFF ⇒ jamais, admin compris)
+ *  - tolère l'auteur temporaire (answer sans `userId`)
  */
 import type { EntityTypes, User } from "@communecter/cocolight-api-client";
 import type { AacCommunLike, AacPermissionData, AacPermissions } from "../types";
@@ -56,12 +58,12 @@ export function calculateAacPermissions(
     if (isAdmin) return active;
     if (!active) return false;
     if (gates.oneAnswerPerPers && data?.hasOwnCommun) return false;
-    // `standalone` remplace l'exigence de CONNEXION (réponse possible sans compte),
-    // pas les gates communauté/rôles — c'est la règle de l'en-tête, et celle que
-    // `canCreateCommunReason` ci-dessous appliquait déjà (`!isConnected &&
-    // !gates.standalone`). La décision, elle, court-circuitait les deux gardes
-    // suivantes : un anonyme obtenait le dépôt sur un appel réservé aux membres.
-    if (!gates.standalone && !isConnected) return false;
+    // Un dépôt exige un compte. Il n'existe pas de clé `standalone` : c'était un
+    // mode de REQUÊTE legacy (`.standalone.true`, `filters.formStandalone`), pas
+    // une option du form — le gate qu'on en dérivait valait toujours `false`. La
+    // seule dispense de compte du legacy est `temporarymembercanreply` (compte
+    // temporaire par email, `Coform::getFormAccessInfo`), non portée ici.
+    if (!isConnected) return false;
     if (gates.onlyMemberAccess && !isCommunityMember) return false;
     if (!hasRequiredRole) return false;
     return true;
@@ -73,28 +75,41 @@ export function calculateAacPermissions(
       ? "AAC inactive"
       : gates.oneAnswerPerPers && data?.hasOwnCommun
         ? "Already answered (one per person)"
-        : !isConnected && !gates.standalone
+        : !isConnected
           ? "User not connected"
           : "Insufficient membership/role";
 
-  // 2. Lire les communs.
-  const canReadCommuns = isAdmin || Boolean(gates.annuaire) || isCommunityMember;
+  // 2. Lire les communs — publics, sauf appel réservé à sa communauté
+  // (`Form.php:1869` : `onlymemberaccess` faux OU membre). Il n'existe pas de
+  // clé `annuaire` ; la restriction de LISTING (`onlyAdminCanSeeList`) est
+  // appliquée par le backend, cf. doc/34 §13.5.
+  const canReadCommuns = isAdmin || isCommunityMember || !gates.onlyMemberAccess;
 
   // 3. Modifier un commun — auteur OU admin (tolère l'auteur temporaire sans userId).
+  // `anyOnewithLinkCanAnswer` (« avoir le lien suffit pour répondre ») ouvre
+  // l'édition à tout CONNECTÉ, sans lien au contexte : c'est ce que fait le
+  // legacy sur une réponse existante (`IndexAction.php:237`, sous
+  // `session['userId']`). Jamais un anonyme — ce n'est pas un dépôt sans compte.
   const canEditCommun = (commun?: AacCommunLike | null): boolean => {
     if (isAdmin) return true;
     if (!commun || !currentUserId) return false;
+    if (gates.anyOnewithLinkCanAnswer && isConnected) return true;
     return commun.authorId === currentUserId;
   };
 
   // 4. Participer aux actions.
   const canParticipateActions = isConnected;
 
-  // 5. Contribuer financièrement — gate MAÎTRE corénumération obligatoire.
-  const canContributeFunding = Boolean(gates.coRemuneration) && isConnected;
+  // 5. Financement — gate MAÎTRE `coremu` (`form.coremu`, préconfiguration
+  // « Système de coremuneration »). OFF ⇒ le legacy masque l'onglet
+  // Contributions à tout le monde, admin compris (`detailProposal.php:105`) :
+  // `canViewFunding` en est la traduction d'AFFICHAGE. Contribuer exige en plus
+  // un compte — le legacy ne conditionne pas l'affichage à la connexion.
+  const canViewFunding = Boolean(gates.coremu);
+  const canContributeFunding = canViewFunding && isConnected;
   const canContributeFundingReason = canContributeFunding
     ? undefined
-    : !gates.coRemuneration
+    : !canViewFunding
       ? "Co-funding disabled (master gate)"
       : "User not connected";
 
@@ -108,6 +123,7 @@ export function calculateAacPermissions(
     canReadCommuns,
     canEditCommun,
     canParticipateActions,
+    canViewFunding,
     canContributeFunding,
     canContributeFundingReason,
     canSelectCommun,

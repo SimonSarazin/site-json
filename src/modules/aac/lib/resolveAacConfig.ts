@@ -16,9 +16,11 @@
  *    `activateLocalCriteria`) > `aapConfig…params.config.criterions`.
  *  - **coercions** : `coeff` string → number, rôles CSV → array, flags "true".
  *
- * ⚠️ GATE (plan SOCLE §6) : les clés `coRemuneration`/`annuaire`/`standalone` et
- * la référence de campagne exacte restent à confirmer sur données réelles ; elles
- * sont lues en best-effort ci-dessous et marquées `GATE`.
+ * Les gates sont les clés RACINE du form que le legacy lit réellement (relevé
+ * sur `Coform::getFormAccessInfo`, `Form.php`, `detailProposal.php`,
+ * `IndexAction.php`) — aucune clé « best-effort » : une clé que le backend
+ * n'écrit jamais ne peut ouvrir aucune porte. Seule la référence de campagne
+ * exacte reste à confirmer sur données réelles (`GATE`).
  *
  * Fonction pure (aucun accès réseau) → testable avec des fixtures synthétiques.
  */
@@ -177,22 +179,28 @@ export function resolveAacConfig(
     };
   });
 
+  // Toutes à la RACINE du form — jamais dans `params`, jamais sur l'aapConfig.
+  // Les clés `coRemuneration`, `standalone` et `annuaire` qu'on lisait ici
+  // n'existent pas côté legacy (`coRemuneration` : zéro occurrence ;
+  // `standalone` : un mode de REQUÊTE, `.standalone.true` /
+  // `filters.formStandalone` ; `annuaire` : un nom de vue). Un gate calculé sur
+  // une clé fantôme vaut toujours `false` — et éteint ce qu'il garde.
   const gates: AacGates = {
     active: form.active !== false,
     onlyMemberAccess: asBool(form.onlymemberaccess),
     oneAnswerPerPers: asBool(form.oneAnswerPerPers),
     canReadOtherAnswers: asBool(form.canReadOtherAnswers),
     showAnswers: asBool(form.showAnswers),
-    // ⚠️ GATE — clés best-effort (à confirmer sur données réelles) :
-    standalone:
-      asBool(form.standalone) ||
-      asBool(form.anyOnewithLinkCanAnswer) ||
-      asBool(params.standalone),
-    coRemuneration:
-      asBool(params.coRemuneration) ||
-      asBool(form.coRemuneration) ||
-      asBool(config.coRemuneration),
-    annuaire: asBool(form.annuaire) || asBool(params.annuaire),
+    // Gate MAÎTRE du financement. Écrit par la préconfiguration « Système de
+    // coremuneration » d'`aap.js` (`Form::switchcoremu`), lu par
+    // `detailProposal.php:105` via `filter_var(FILTER_VALIDATE_BOOLEAN)` :
+    // booléen OU chaîne `"true"` — d'où `asBool`.
+    coremu: asBool(form.coremu),
+    // « Avoir le lien suffit pour répondre » (`form.js`) : un CONNECTÉ peut lire
+    // et modifier une réponse sans lien au contexte (`IndexAction.php:237`, sous
+    // `session['userId']`). Ce n'est PAS un dépôt sans connexion — le flag ne
+    // remplace donc aucun `standalone`.
+    anyOnewithLinkCanAnswer: asBool(form.anyOnewithLinkCanAnswer),
   };
 
   // Campagnes déclarées sur l'aapConfig (`config.campagne` = { campId: {...} }).

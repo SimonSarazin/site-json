@@ -170,22 +170,35 @@ export interface AacStepRoles {
   suiviStepKey: string | null;
 }
 
-/** Portes d'accès / options (best-effort ; certaines clés GATE-pending). */
+/**
+ * Portes d'accès / options — les clés RACINE du form que le legacy lit
+ * réellement, coercées en booléen (`"true"` accepté, comme
+ * `filter_var(FILTER_VALIDATE_BOOLEAN)` côté PHP).
+ *
+ * Pas de `standalone` (mode de requête, pas une option), pas d'`annuaire` (nom
+ * de vue), pas de `coRemuneration` (n'a jamais existé) : un gate dérivé d'une
+ * clé fantôme vaut toujours `false` et éteint ce qu'il garde.
+ */
 export interface AacGates {
   active: boolean;
   onlyMemberAccess: boolean;
   oneAnswerPerPers: boolean;
   canReadOtherAnswers: boolean;
   showAnswers: boolean;
-  /** Standalone : répondre hors interface (avec/sans compte). */
-  standalone: boolean;
   /**
-   * ⚠️ GATE — Gate MAÎTRE du financement (corénumération) : OFF ⇒ pas de
-   * financeur / objet finançable / paiement. Clé réelle à confirmer au GATE.
+   * Gate MAÎTRE du financement — `form.coremu`, posé par la préconfiguration
+   * « Système de coremuneration » d'`aap.js` (`Form::switchcoremu`). OFF ⇒ le
+   * legacy masque l'onglet Contributions à tout le monde
+   * (`detailProposal.php:105`) ; ici, aucun bloc financement sur la fiche.
    */
-  coRemuneration: boolean;
-  /** ⚠️ GATE — Publier au répertoire (annuaire) : gate listing/visibilité. */
-  annuaire: boolean;
+  coremu: boolean;
+  /**
+   * « Avoir le lien suffit pour répondre » (`form.anyOnewithLinkCanAnswer`) :
+   * un utilisateur CONNECTÉ peut lire et modifier une réponse sans lien au
+   * contexte de l'appel (`IndexAction.php:237`, sous `session['userId']`).
+   * Ce n'est PAS un dépôt sans connexion.
+   */
+  anyOnewithLinkCanAnswer: boolean;
 }
 
 /**

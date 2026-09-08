@@ -177,3 +177,56 @@ describe("resolveAacConfig", () => {
     expect(cfg.roles.depenseStepKey).toBeNull();
   });
 });
+
+/**
+ * Les gates sont les clés RACINE du form que le legacy lit réellement. Avant
+ * (review MR 53, C3/N1) : le financement était gardé par `coRemuneration` — une
+ * clé qui n'existe nulle part côté PHP — et deux autres gates (`standalone`,
+ * `annuaire`) dérivaient de clés fantômes : toujours `false`, ils éteignaient ce
+ * qu'ils gardaient.
+ */
+describe("resolveAacConfig — gates (clés legacy réelles, à la racine du form)", () => {
+  const base = { subForms: ["aapStep1"], inputs: { aapStep1: step({ titre: "text" }) } };
+
+  it("`coremu` : booléen OU chaîne 'true' (parité `filter_var(FILTER_VALIDATE_BOOLEAN)`) ; absent ⇒ false", () => {
+    expect(resolveAacConfig("f1", { ...base, coremu: true }).gates.coremu).toBe(true);
+    expect(resolveAacConfig("f1", { ...base, coremu: "true" }).gates.coremu).toBe(true);
+    expect(resolveAacConfig("f1", { ...base, coremu: "false" }).gates.coremu).toBe(false);
+    expect(resolveAacConfig("f1", { ...base, coremu: false }).gates.coremu).toBe(false);
+    expect(resolveAacConfig("f1", base).gates.coremu).toBe(false);
+  });
+
+  it("`coremu` se lit à la RACINE du form — ni dans `params`, ni sur l'aapConfig", () => {
+    const cfg = resolveAacConfig("f1", { ...base, params: { coremu: true } }, { coremu: true });
+    expect(cfg.gates.coremu).toBe(false);
+  });
+
+  it("une clé inconnue ne fabrique aucun gate : `coRemuneration`, `standalone`, `annuaire` sont ignorées", () => {
+    const cfg = resolveAacConfig(
+      "f1",
+      { ...base, coRemuneration: true, standalone: true, annuaire: true, params: { coRemuneration: true, standalone: true, annuaire: true } },
+      { coRemuneration: true }
+    );
+    expect(cfg.gates).not.toHaveProperty("coRemuneration");
+    expect(cfg.gates).not.toHaveProperty("standalone");
+    expect(cfg.gates).not.toHaveProperty("annuaire");
+    // `coRemuneration: true` ne lève PAS le gate de financement : seule `coremu` le fait.
+    expect(cfg.gates.coremu).toBe(false);
+    expect(Object.keys(cfg.gates).sort()).toEqual([
+      "active",
+      "anyOnewithLinkCanAnswer",
+      "canReadOtherAnswers",
+      "coremu",
+      "oneAnswerPerPers",
+      "onlyMemberAccess",
+      "showAnswers",
+    ]);
+  });
+
+  it("`anyOnewithLinkCanAnswer` est un gate à part entière — il n'alimente plus un `standalone`", () => {
+    const on = resolveAacConfig("f1", { ...base, anyOnewithLinkCanAnswer: "true" });
+    expect(on.gates.anyOnewithLinkCanAnswer).toBe(true);
+    expect(on.gates).not.toHaveProperty("standalone");
+    expect(resolveAacConfig("f1", base).gates.anyOnewithLinkCanAnswer).toBe(false);
+  });
+});

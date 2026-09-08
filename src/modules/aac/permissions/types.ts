@@ -9,20 +9,29 @@
  *  5. contribution financière
  *
  * + bypass admin-org TOTAL (résolu centralement par `usePermissions` via
- *   `isCostumAdmin`) ; + gate MAÎTRE corénumération (OFF ⇒ pas de financement) ;
- *   + gate dépôt 3 modes (ouvert / membres / rôles) ; + tolérance compte
- *   temporaire standalone (answer sans `userId`).
+ *   `isCostumAdmin`) ; + gate MAÎTRE `coremu` (OFF ⇒ pas de financement, ni
+ *   affiché ni possible) ; + gate dépôt 3 modes (ouvert / membres / rôles),
+ *   toujours connecté ; + tolérance compte temporaire (answer sans `userId`).
  */
 
+/**
+ * Les gates tels que le calculateur les consomme — un sous-ensemble de
+ * `AacGates` (types.ts), tous optionnels : absents, ils valent « fermé ».
+ */
 export interface AacGateFlags {
   active?: boolean;
   onlyMemberAccess?: boolean;
   oneAnswerPerPers?: boolean;
-  standalone?: boolean;
-  /** Gate MAÎTRE : OFF ⇒ pas de financeur / objet finançable / paiement. */
-  coRemuneration?: boolean;
-  /** Répertoire/annuaire : gate visibilité du listing. */
-  annuaire?: boolean;
+  /**
+   * Gate MAÎTRE du financement (`form.coremu`) : OFF ⇒ pas de financeur, pas
+   * d'objet finançable, pas de paiement — et rien d'affiché, admin compris.
+   */
+  coremu?: boolean;
+  /**
+   * « Avoir le lien suffit pour répondre » : un CONNECTÉ peut modifier une
+   * réponse sans lien au contexte. Ne dispense jamais de la connexion.
+   */
+  anyOnewithLinkCanAnswer?: boolean;
   /** Restreindre le dépôt à certains rôles (liste). */
   restrictRoles?: string[];
 }
@@ -44,16 +53,23 @@ export interface AacCommunLike {
 }
 
 export interface AacPermissions {
-  /** 1. Déposer un commun (active + gate 3 modes / standalone + unicité). */
+  /** 1. Déposer un commun (active + connecté + gate 3 modes + unicité). */
   canCreateCommun: boolean;
   canCreateCommunReason?: string;
-  /** 2. Lire les communs (annuaire public OU membre communauté OU admin). */
+  /** 2. Lire les communs (public, sauf `onlyMemberAccess` : membres et admins). */
   canReadCommuns: boolean;
-  /** 3. Modifier un commun (auteur OU admin). */
+  /** 3. Modifier un commun (auteur OU admin, OU tout connecté si `anyOnewithLinkCanAnswer`). */
   canEditCommun: (commun?: AacCommunLike | null) => boolean;
   /** 4. Participer aux actions (connecté ; détail par action ailleurs). */
   canParticipateActions: boolean;
-  /** 5. Contribuer financièrement (gate MAÎTRE corénumération + connexion). */
+  /**
+   * 5a. Voir le financement d'un commun — le gate MAÎTRE `coremu` seul, sans
+   * condition de compte ni d'admin : c'est ce que fait le legacy avec l'onglet
+   * Contributions (`detailProposal.php:105`). Gate d'AFFICHAGE des blocs
+   * financement de la fiche.
+   */
+  canViewFunding: boolean;
+  /** 5b. Contribuer financièrement (`canViewFunding` + connexion). */
   canContributeFunding: boolean;
   canContributeFundingReason?: string;
   /**

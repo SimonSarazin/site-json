@@ -5,7 +5,12 @@ import type { AacGateFlags } from "../types";
 
 /**
  * Le calculateur de permissions AAC — le seul fichier pur du module qui décide de
- * droits, et qui n'avait aucun test. Le patron suit `cagnotte.test.ts`.
+ * droits. Le patron suit `cagnotte.test.ts`.
+ *
+ * Les gates sont les clés RACINE du form que le legacy lit réellement (review
+ * MR 53, C3/N1) : `coremu` garde le financement ; `standalone` et `annuaire`
+ * n'existaient pas côté backend et ont disparu ; `anyOnewithLinkCanAnswer` a
+ * retrouvé son sens (modifier une réponse sans lien au contexte, connecté).
  */
 
 const makeEntity = (isAdmin: boolean) =>
@@ -29,13 +34,20 @@ describe("calculateAacPermissions — dépôt d'un commun", () => {
     expect(membre.canCreateCommunReason).toBe("AAC inactive");
   });
 
-  it("un non-connecté ne dépose pas, sauf appel standalone", () => {
+  /**
+   * Il n'existe pas de clé `standalone` côté legacy (mode de requête, pas une
+   * option du form) : le dépôt exige un compte, point — parité
+   * `Coform::getFormAccessInfo` (`not_logged_in`). Et `anyOnewithLinkCanAnswer`
+   * n'est PAS un dépôt sans connexion : il ne lève pas cette garde.
+   */
+  it("un non-connecté ne dépose pas — `anyOnewithLinkCanAnswer` n'y change rien", () => {
     const ferme = calculateAacPermissions(NON_ADMIN(), ANON, { gates: gates() });
     expect(ferme.canCreateCommun).toBe(false);
     expect(ferme.canCreateCommunReason).toBe("User not connected");
 
-    const ouvert = calculateAacPermissions(NON_ADMIN(), ANON, { gates: gates({ standalone: true }) });
-    expect(ouvert.canCreateCommun).toBe(true);
+    const parLien = calculateAacPermissions(NON_ADMIN(), ANON, { gates: gates({ anyOnewithLinkCanAnswer: true }) });
+    expect(parLien.canCreateCommun).toBe(false);
+    expect(parLien.canCreateCommunReason).toBe("User not connected");
   });
 
   it("`oneAnswerPerPers` ferme le dépôt à qui a déjà répondu", () => {
@@ -47,42 +59,19 @@ describe("calculateAacPermissions — dépôt d'un commun", () => {
     expect(perms.canCreateCommunReason).toBe("Already answered (one per person)");
   });
 
-  /**
-   * `standalone` remplace l'exigence de CONNEXION, pas les gates communauté/rôles —
-   * c'est ce qu'énonce l'en-tête du calculateur, et ce qu'implémentait déjà
-   * `canCreateCommunReason` (`!isConnected && !gates.standalone`) pendant que la
-   * décision, elle, court-circuitait tout.
-   */
-  it("`standalone` ne dispense NI du gate communauté NI des rôles", () => {
-    const nonMembre = calculateAacPermissions(NON_ADMIN(), ANON, {
-      gates: gates({ standalone: true, onlyMemberAccess: true }),
+  it("le gate communauté ferme le dépôt à un connecté non membre, et l'ouvre à un membre", () => {
+    const nonMembre = calculateAacPermissions(NON_ADMIN(), makeMe("u"), {
+      gates: gates({ onlyMemberAccess: true }),
       isCommunityMember: false,
     });
     expect(nonMembre.canCreateCommun).toBe(false);
     expect(nonMembre.canCreateCommunReason).toBe("Insufficient membership/role");
 
-    const sansRole = calculateAacPermissions(NON_ADMIN(), makeMe("u"), {
-      gates: gates({ standalone: true, restrictRoles: ["porteur"] }),
-      userRoles: ["visiteur"],
-    });
-    expect(sansRole.canCreateCommun).toBe(false);
-  });
-
-  it("mais laisse passer un membre, connecté ou non", () => {
-    const membreAnonyme = calculateAacPermissions(NON_ADMIN(), ANON, {
-      gates: gates({ standalone: true, onlyMemberAccess: true }),
+    const membre = calculateAacPermissions(NON_ADMIN(), makeMe("u"), {
+      gates: gates({ onlyMemberAccess: true }),
       isCommunityMember: true,
     });
-    expect(membreAnonyme.canCreateCommun).toBe(true);
-  });
-
-  it("le gate communauté ferme le dépôt à un connecté non membre", () => {
-    const perms = calculateAacPermissions(NON_ADMIN(), makeMe("u"), {
-      gates: gates({ onlyMemberAccess: true }),
-      isCommunityMember: false,
-    });
-    expect(perms.canCreateCommun).toBe(false);
-    expect(perms.canCreateCommunReason).toBe("Insufficient membership/role");
+    expect(membre.canCreateCommun).toBe(true);
   });
 
   it("les rôles requis : il suffit d'en porter un", () => {
@@ -102,11 +91,15 @@ describe("calculateAacPermissions — dépôt d'un commun", () => {
 });
 
 describe("calculateAacPermissions — lecture, édition, financement", () => {
-  it("l'annuaire public s'ouvre à tous ; sinon aux membres et aux admins", () => {
-    expect(calculateAacPermissions(NON_ADMIN(), ANON, { gates: { annuaire: true } }).canReadCommuns).toBe(true);
-    expect(calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: {}, isCommunityMember: true }).canReadCommuns).toBe(true);
-    expect(calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: {}, isCommunityMember: false }).canReadCommuns).toBe(false);
-    expect(calculateAacPermissions(makeEntity(true), makeMe("a"), { gates: {} }).canReadCommuns).toBe(true);
+  /**
+   * Plus de gate `annuaire` (aucune clé backend) : la lecture est publique, sauf
+   * appel réservé à sa communauté (`Form.php:1869`) — et les admins passent.
+   */
+  it("la lecture est publique, sauf `onlyMemberAccess` : membres et admins seulement", () => {
+    expect(calculateAacPermissions(NON_ADMIN(), ANON, { gates: {} }).canReadCommuns).toBe(true);
+    expect(calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: { onlyMemberAccess: true }, isCommunityMember: true }).canReadCommuns).toBe(true);
+    expect(calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: { onlyMemberAccess: true }, isCommunityMember: false }).canReadCommuns).toBe(false);
+    expect(calculateAacPermissions(makeEntity(true), makeMe("a"), { gates: { onlyMemberAccess: true } }).canReadCommuns).toBe(true);
   });
 
   it("un commun se modifie par son auteur ou un admin", () => {
@@ -119,17 +112,61 @@ describe("calculateAacPermissions — lecture, édition, financement", () => {
     expect(admin.canEditCommun({ authorId: "u1" })).toBe(true);
   });
 
-  it("`coRemuneration` est le gate MAÎTRE du financement", () => {
-    const off = calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: { coRemuneration: false } });
+  /**
+   * Le VRAI sens de `anyOnewithLinkCanAnswer` (« avoir le lien suffit pour
+   * répondre ») : sur une réponse existante, le legacy pose `canEditAnswer = true`
+   * pour tout CONNECTÉ (`IndexAction.php:237`) — sans lien au contexte, mais
+   * jamais pour un anonyme.
+   */
+  it("`anyOnewithLinkCanAnswer` ouvre l'édition à tout connecté — jamais à un anonyme", () => {
+    const gates = { anyOnewithLinkCanAnswer: true };
+    const connecte = calculateAacPermissions(NON_ADMIN(), makeMe("u1"), { gates });
+    expect(connecte.canEditCommun({ authorId: "u2" })).toBe(true);
+    expect(connecte.canEditCommun(null)).toBe(false);
+
+    const anonyme = calculateAacPermissions(NON_ADMIN(), ANON, { gates });
+    expect(anonyme.canEditCommun({ authorId: "u2" })).toBe(false);
+  });
+
+  /**
+   * `coremu` — la clé que le legacy lit (`detailProposal.php:105`), et non
+   * `coRemuneration`, qui n'existait nulle part : le gate valait toujours `false`
+   * et aurait éteint le financement de tout site (review MR 53, C3).
+   */
+  it("`coremu` est le gate MAÎTRE du financement ; absent ⇒ fermé", () => {
+    const off = calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: { coremu: false } });
+    expect(off.canViewFunding).toBe(false);
     expect(off.canContributeFunding).toBe(false);
     expect(off.canContributeFundingReason).toBe("Co-funding disabled (master gate)");
 
-    const anonyme = calculateAacPermissions(NON_ADMIN(), ANON, { gates: { coRemuneration: true } });
+    const absent = calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: {} });
+    expect(absent.canViewFunding).toBe(false);
+    expect(absent.canContributeFunding).toBe(false);
+
+    const connecte = calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: { coremu: true } });
+    expect(connecte.canViewFunding).toBe(true);
+    expect(connecte.canContributeFunding).toBe(true);
+  });
+
+  it("l'affichage du financement suit `coremu` seul ; contribuer exige en plus un compte", () => {
+    const anonyme = calculateAacPermissions(NON_ADMIN(), ANON, { gates: { coremu: true } });
+    expect(anonyme.canViewFunding).toBe(true);
     expect(anonyme.canContributeFunding).toBe(false);
     expect(anonyme.canContributeFundingReason).toBe("User not connected");
+  });
 
-    const connecte = calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: { coRemuneration: true } });
-    expect(connecte.canContributeFunding).toBe(true);
+  it("`coremu` OFF masque le financement à l'admin aussi (parité legacy)", () => {
+    const admin = calculateAacPermissions(makeEntity(true), makeMe("a"), { gates: { coremu: false } });
+    expect(admin.canViewFunding).toBe(false);
+    expect(admin.canContributeFunding).toBe(false);
+  });
+
+  it("`coRemuneration` n'est pas un gate : il n'ouvre rien", () => {
+    const perms = calculateAacPermissions(NON_ADMIN(), makeMe("u"), {
+      gates: { coRemuneration: true } as unknown as AacGateFlags,
+    });
+    expect(perms.canViewFunding).toBe(false);
+    expect(perms.canContributeFunding).toBe(false);
   });
 
   it("le droit d'administrer l'annuaire n'appartient qu'à l'admin", () => {
@@ -146,9 +183,10 @@ describe("calculateAacPermissions — lecture, édition, financement", () => {
 
 describe("calculateAacPermissions — sans entité", () => {
   it("rend les valeurs par défaut, en conservant l'identité du lecteur", () => {
-    const perms = calculateAacPermissions(null, makeMe("u"), { gates: { active: true, annuaire: true } });
+    const perms = calculateAacPermissions(null, makeMe("u"), { gates: { active: true, coremu: true } });
     expect(perms.currentUserId).toBe("u");
     expect(perms.isConnected).toBe(true);
     expect(perms.canCreateCommun).toBe(false);
+    expect(perms.canViewFunding).toBe(false);
   });
 });
