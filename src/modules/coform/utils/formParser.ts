@@ -33,6 +33,26 @@ const ROOT_LEVEL_FIELDS: FormFieldMapping["componentType"][] = [
 ];
 
 /**
+ * Préfixes des clés sous lesquelles les champs root-level sont rangés à la
+ * racine de `answers` : ceux de `FIELD_PREFIX_MAP` pour `ROOT_LEVEL_FIELDS`
+ * (`evaluation{key}`, `yesOrNo{key}`), plus la jumelle `criterias{key}` de
+ * commonTable. Dérivés et non recopiés : un nouveau type root-level est
+ * reconnu d'office.
+ *
+ * Sert à distinguer, à la racine, un rangement root-level d'une ÉTAPE — y
+ * compris pour un champ que le parse n'a pas produit (étape masquée), dont on
+ * ne connaît pas le nom exact. Cf. `denormalizeAnswerData`.
+ */
+const ROOT_LEVEL_STORAGE_PREFIXES: readonly string[] = [
+  ...ROOT_LEVEL_FIELDS.flatMap((ct) => FIELD_PREFIX_MAP[ct] ?? []),
+  "criterias",
+];
+
+function isRootLevelStorageKey(key: string): boolean {
+  return ROOT_LEVEL_STORAGE_PREFIXES.some((prefix) => key.startsWith(prefix));
+}
+
+/**
  * Types de champs à ÉCRITURE DIRECTE : leur valeur est scopée par évaluateur
  * (ou par contexte) et s'écrit par chemin ciblé (`answer.updateField`, cf.
  * `actions/mutations/selection.ts`), jamais par soumission du formulaire.
@@ -59,10 +79,11 @@ const DIRECT_WRITE_COMPONENT_TYPES: ReadonlySet<FormFieldMapping["componentType"
  *
  * Strippées même quand aucun champ parsé ne les porte : un input sans config
  * (`multiDecide` non résolu), masqué (`hideInForm`) ou restreint côté serveur
- * n'apparaît pas dans le parse, mais sa valeur, elle, arrive bien des réponses
- * serveur et repartirait telle quelle. Seule exception : un champ ORDINAIRE
- * déclaré sous ce nom exact (ex. un `text` nommé `selection`), qui reste un
- * champ du formulaire à part entière.
+ * n'apparaît pas dans le parse — et une ÉTAPE ENTIÈRE peut manquer au parse
+ * (`hideStep`, `omitHiddenSteps`) — mais la valeur, elle, arrive bien des
+ * réponses serveur et repartirait telle quelle. Seule exception : un champ
+ * ORDINAIRE déclaré sous ce nom exact (ex. un `text` nommé `selection`), qui
+ * reste un champ du formulaire à part entière.
  */
 export const DIRECT_WRITE_RAW_KEYS: ReadonlySet<string> = new Set([
   "selection",
@@ -2292,6 +2313,33 @@ export function denormalizeAnswerData(
         console.log(`[denormalizeAnswerData] Moved ${field.name} from subform ${subFormId} to root`);
       }
     }
+  }
+
+  // Étapes ABSENTES DU PARSE — `hideStep` (propriété du formulaire) ou
+  // `omitHiddenSteps` (décision de l'appelant ; cas nominal AAC : l'étape de
+  // jury n'est pas proposée au déposant non-admin). La boucle ci-dessus ne les
+  // voit pas, mais leur bloc est bien dans `formData` : `normalizeAnswerData`
+  // clone `answers` EN ENTIER, le provider installe ce clone dans `stepsData`,
+  // et le wizard soumet `stepsData` entier. Sans ce balayage, `selection`,
+  // `choose`, `admissibility`… d'une étape invisible repartiraient intacts, et
+  // le backend les remplacerait en bloc par cet instantané périmé.
+  //
+  // Est une « étape » tout objet simple à la racine qui n'est ni une étape
+  // parsée, ni un rangement root-level (`evaluation{key}`, `yesOrNo{key}`,
+  // `criterias{key}`). Ces derniers sont des maps par catégorie / critère dont
+  // les clés sont libres — une catégorie nommée « selection » y est légitime —
+  // donc reconnus par préfixe et laissés tels quels. Limite assumée : une
+  // étape masquée dont l'id commence par l'un de ces préfixes n'est pas
+  // balayée.
+  //
+  // Aucun champ ordinaire n'est connu sur une étape non parsée : TOUTES les
+  // clés brutes sont retirées, y compris un hypothétique `text` homonyme —
+  // on sacrifie ce cas d'école plutôt que les notes des jurés.
+  const parsedStepIds = new Set(subFormsFields.map((s) => s.subFormId));
+  for (const [key, value] of Object.entries(denormalized)) {
+    if (parsedStepIds.has(key) || isRootLevelStorageKey(key)) continue;
+    if (!isPlainObject(value)) continue;
+    stripDirectWriteKeys(value, []);
   }
 
   return denormalized;
