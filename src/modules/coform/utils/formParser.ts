@@ -33,6 +33,81 @@ const ROOT_LEVEL_FIELDS: FormFieldMapping["componentType"][] = [
 ];
 
 /**
+ * Types de champs à ÉCRITURE DIRECTE : leur valeur est scopée par évaluateur
+ * (ou par contexte) et s'écrit par chemin ciblé (`answer.updateField`, cf.
+ * `actions/mutations/selection.ts`), jamais par soumission du formulaire.
+ *
+ * `SaveAnswerAction` ne deep-merge que les clés suffixées `_multiEval` : toute
+ * autre clé soumise REMPLACE en bloc ce qui est en base. Soumettre `selection`
+ * effacerait donc les notes de tous les autres évaluateurs (654 réponses en
+ * base au relevé).
+ *
+ * L'absence de ces types au schéma Zod et aux valeurs par défaut ne suffit
+ * PAS : la valeur entre aussi par les réponses serveur (`normalizeAnswerData`
+ * recopie `answers.<étape>` en bloc), et deux des trois chemins d'écriture
+ * (wizard `submitAllData`, autosave) soumettent la donnée BRUTE sans passer
+ * par `z.object`. D'où le strip explicite dans `denormalizeAnswerData`.
+ */
+const DIRECT_WRITE_COMPONENT_TYPES: ReadonlySet<FormFieldMapping["componentType"]> = new Set<
+  FormFieldMapping["componentType"]
+>(["selection", "pourContre", "aapEvaluation", "chooseProposal"]);
+
+/**
+ * Clés BRUTES sous lesquelles le legacy range ces inputs dans `answers.<étape>`
+ * (`buildNotePath`, `buildAdmissibilityPath`, `buildAdmissibilityTimePath`,
+ * `buildVotePath`, `buildAapEvaluationPath`, `buildChoosePath`).
+ *
+ * Strippées même quand aucun champ parsé ne les porte : un input sans config
+ * (`multiDecide` non résolu), masqué (`hideInForm`) ou restreint côté serveur
+ * n'apparaît pas dans le parse, mais sa valeur, elle, arrive bien des réponses
+ * serveur et repartirait telle quelle. Seule exception : un champ ORDINAIRE
+ * déclaré sous ce nom exact (ex. un `text` nommé `selection`), qui reste un
+ * champ du formulaire à part entière.
+ */
+export const DIRECT_WRITE_RAW_KEYS: ReadonlySet<string> = new Set([
+  "selection",
+  "admissibility",
+  "admissibilityTime",
+  "pourContre",
+  "evaluation",
+  "choose",
+]);
+
+/**
+ * Vérifie si un type de champ est à écriture directe (jamais soumis).
+ */
+export function isDirectWriteField(componentType: FormFieldMapping["componentType"]): boolean {
+  return DIRECT_WRITE_COMPONENT_TYPES.has(componentType);
+}
+
+/**
+ * Retire d'une étape les clés d'écriture directe — MUTE `subFormData`.
+ *
+ * Deux passes, volontairement redondantes :
+ *  1. le `name` de chaque champ parsé à écriture directe ;
+ *  2. les clés brutes legacy (`DIRECT_WRITE_RAW_KEYS`), pour les inputs que le
+ *     parse n'a pas produits (voir le commentaire de la constante).
+ */
+function stripDirectWriteKeys(
+  subFormData: Record<string, unknown>,
+  fields: FormFieldMapping[]
+): void {
+  const ordinaryNames = new Set<string>();
+  for (const field of fields) {
+    if (isDirectWriteField(field.componentType)) {
+      delete subFormData[field.name];
+    } else {
+      ordinaryNames.add(field.name);
+    }
+  }
+  for (const key of DIRECT_WRITE_RAW_KEYS) {
+    if (key in subFormData && !ordinaryNames.has(key)) {
+      delete subFormData[key];
+    }
+  }
+}
+
+/**
  * Vérifie si un type de champ est stocké à la racine de answers
  */
 /**
@@ -1446,6 +1521,11 @@ export function generateZodSchema(
         // Voir `actions/mutations/selection.ts`.
         // Idem pour `pourContre` : valeur scopée par évaluateur, écrite par
         // chemin ciblé, donc jamais soumise.
+        //
+        // ⚠️ Cette absence n'est PAS la protection — seul le bouton mono-étape
+        // voit la sortie de `z.object`. La protection réelle est le strip dans
+        // `denormalizeAnswerData` (`DIRECT_WRITE_COMPONENT_TYPES`), traversé
+        // par les trois chemins d'écriture.
         case "selection":
         case "pourContre":
         case "aapEvaluation":
@@ -1632,7 +1712,9 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
         //  - `titleSeparator` est purement décoratif ;
         //  - `selection` est un enjeu de DONNÉES — une clé remontée au submit
         //    remplacerait en bloc les notes de tous les évaluateurs. Cf. le
-        //    switch du schéma, plus haut.
+        //    switch du schéma, plus haut, et le strip de `denormalizeAnswerData`
+        //    qui est la protection effective (la valeur entre aussi par les
+        //    réponses serveur, pas seulement par ces défauts).
         case "titleSeparator":
         case "selection":
         case "pourContre":
@@ -2084,11 +2166,16 @@ export function normalizeAnswerData(
 
 /**
  * Dénormalise les données avant soumission au serveur
- * 
+ *
  * Effectue l'opération inverse de normalizeAnswerData :
  * déplace les champs root-level depuis leur sous-formulaire vers la racine
  * pour être compatible avec le format attendu par le PHP.
- * 
+ *
+ * Point UNIQUE traversé par les trois chemins d'écriture (bouton mono-étape,
+ * autosave `DynamicCoForm`, wizard `CoFormProvider.submitAllData`) : c'est ici,
+ * et pas dans le schéma Zod, que vivent les règles « ne jamais persister »
+ * (lignes vides `dynamicFields`, `img` des finders, inputs de décision).
+ *
  * @param formData - Données du formulaire (depuis react-hook-form)
  * @param subFormsFields - Structure parsée du formulaire
  * @returns Données formatées pour le serveur PHP
@@ -2105,6 +2192,12 @@ export function denormalizeAnswerData(
   for (const { subFormId, fields } of subFormsFields) {
     const subFormData = denormalized[subFormId] as Record<string, unknown> | undefined;
     if (!subFormData) continue;
+
+    // Inputs de décision (`selection`, `pourContre`, `evaluation`, `choose`,
+    // `admissibility`…) : JAMAIS soumis, quelle que soit l'origine de la valeur
+    // (réponses serveur relues, brouillon restauré, `getValues()` brut). Ils
+    // s'écrivent par chemin ciblé — cf. `DIRECT_WRITE_COMPONENT_TYPES`.
+    stripDirectWriteKeys(subFormData, fields);
 
     for (const field of fields) {
       // ── Multi-eval (radioNew + activeMultieval=true) ─────────────

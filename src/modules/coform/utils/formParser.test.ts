@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  DIRECT_WRITE_RAW_KEYS,
   denormalizeAnswerData,
   extractFinderLinks,
   generateDefaultValues,
@@ -7,6 +8,7 @@ import {
   getFieldNameWithPrefix,
   getOriginalFieldKey,
   hasFieldPrefix,
+  isDirectWriteField,
   isRootLevelField,
   mapCoFormTypeToComponentType,
   getSharedFinderInfo,
@@ -1747,6 +1749,177 @@ describe("selection / pourContre — jamais soumis", () => {
       expect(res.success && ct in (res.data as Record<string, unknown>)).toBe(false);
     });
   }
+});
+
+/**
+ * Clés d'écriture directe — JAMAIS soumises, quel que soit le chemin.
+ *
+ * L'absence au schéma Zod (ci-dessus) ne protège que le bouton mono-étape :
+ * le wizard (`submitAllData`) et l'autosave soumettent `getValues()` brut, et
+ * la valeur y entre par les RÉPONSES SERVEUR (`normalizeAnswerData` recopie
+ * `answers.<étape>` en bloc), pas par les défauts générés. Le point unique
+ * traversé par les trois chemins est `denormalizeAnswerData` : c'est lui qui
+ * doit stripper, sinon un « Enregistrer » du jury ré-émet un instantané périmé
+ * de `selection` et efface les notes posées entre-temps par les autres.
+ */
+describe("denormalizeAnswerData — clés d'écriture directe jamais soumises", () => {
+  // Formulaire AAP réel : dépôt (aapStep1) + jury (aapStep2) portant les quatre
+  // inputs de décision, dont `selection` via l'indirection `multiDecide`.
+  function makeParcoursJury(): CoFormData {
+    return makeCoFormData({
+      inputConfig: { multiDecide: "tpls.forms.aap.selection" },
+      inputs: {
+        aapStep1: {
+          id: "aapStep1",
+          name: "Dépôt",
+          formParent: "form123",
+          inputs: { titre: { type: "text", label: "Titre", placeholder: "" } },
+        },
+        aapStep2: {
+          id: "aapStep2",
+          name: "Jury",
+          formParent: "form123",
+          inputs: {
+            commentaire: { type: "text", label: "Commentaire", placeholder: "" },
+            decide: { type: "tpls.forms.ocecoform.multiDecide", label: "Sélection" },
+            pourContre: { type: "tpls.forms.ocecoform.pourContre", label: "Vote" },
+            evaluation: { type: "tpls.forms.aap.evaluation", label: "Évaluation" },
+            choose: { type: "tpls.forms.aap.chooseProposal", label: "Choix" },
+          },
+        },
+      },
+    });
+  }
+
+  // Ce qu'on lit en base à l'ouverture : userB a déjà noté, voté, choisi.
+  const REPONSES_SERVEUR = {
+    aapStep1: { titre: "Mon commun" },
+    aapStep2: {
+      commentaire: "ok",
+      selection: { userB: { c1: 4 } },
+      admissibility: { userB: true },
+      admissibilityTime: { userB: "2026-01-01" },
+      pourContre: { userB: "pour" },
+      evaluation: { userB: { 0: { note: 3 } } },
+      choose: { ctx1: { value: "selected" } },
+    },
+  };
+
+  it("le parse porte bien les quatre types d'écriture directe sur aapStep2", () => {
+    const fields = parseCoFormFields(makeParcoursJury());
+    const jury = fields.find((s) => s.subFormId === "aapStep2")!;
+    expect(jury.fields.map((f) => [f.name, f.componentType]).sort()).toEqual([
+      ["choose", "chooseProposal"],
+      ["commentaire", "text"],
+      ["evaluation", "aapEvaluation"],
+      ["pourContre", "pourContre"],
+      ["selection", "selection"],
+    ]);
+    for (const ct of ["selection", "pourContre", "aapEvaluation", "chooseProposal"] as const) {
+      expect(isDirectWriteField(ct)).toBe(true);
+    }
+    expect(isDirectWriteField("text")).toBe(false);
+  });
+
+  it("strippe les clés même quand la valeur vient des réponses serveur (chemin wizard)", () => {
+    const fields = parseCoFormFields(makeParcoursJury());
+    // Exactement ce que le wizard soumet : les réponses normalisées, relues
+    // telles quelles depuis `stepState.stepsData` (aucun passage par Zod).
+    const stepsData = normalizeAnswerData(REPONSES_SERVEUR, fields, "userA") as Record<string, unknown>;
+    // Sanity : la valeur est bien ENTRÉE par ce chemin — c'est ce que les
+    // champs lisent pour s'afficher, on ne la retire pas de la lecture.
+    expect((stepsData.aapStep2 as Record<string, unknown>).selection).toEqual({ userB: { c1: 4 } });
+
+    const payload = denormalizeAnswerData(stepsData, fields, "userA");
+    const jury = payload.aapStep2 as Record<string, unknown>;
+    for (const cle of DIRECT_WRITE_RAW_KEYS) {
+      expect(jury, `\`${cle}\` ne doit jamais repartir au serveur`).not.toHaveProperty(cle);
+    }
+    // Les champs ordinaires de la même étape, eux, partent normalement.
+    expect(jury.commentaire).toBe("ok");
+    expect(payload.aapStep1).toEqual({ titre: "Mon commun" });
+  });
+
+  it("strippe sur le chemin mono-étape / autosave (`{ [subFormId]: getValues() }`)", () => {
+    const fields = parseCoFormFields(makeParcoursJury());
+    const jury = fields.find((s) => s.subFormId === "aapStep2")!;
+    // `SmartCoForm.onSubmit` enveloppe la sortie de `getValues()` sous l'id
+    // d'étape — l'autosave y arrive sans validation Zod, donc avec `selection`.
+    const brut = { aapStep2: { ...REPONSES_SERVEUR.aapStep2 } };
+    const payload = denormalizeAnswerData(brut, [jury], "userA");
+    expect(payload.aapStep2).toEqual({ commentaire: "ok" });
+  });
+
+  it("strippe les clés brutes legacy même sans champ parsé (input sans config)", () => {
+    // `multiDecide` SANS `inputConfig` → le parse ne produit aucun champ de
+    // décision ; la valeur serveur, elle, est bien là et passerait sinon.
+    const data = makeCoFormData({
+      inputs: {
+        aapStep2: {
+          id: "aapStep2",
+          name: "Jury",
+          formParent: "form123",
+          inputs: {
+            commentaire: { type: "text", label: "Commentaire", placeholder: "" },
+            decide: { type: "tpls.forms.ocecoform.multiDecide", label: "Sélection" },
+          },
+        },
+      },
+    });
+    const fields = parseCoFormFields(data);
+    expect(fields[0].fields.map((f) => f.name)).toEqual(["commentaire"]);
+
+    const stepsData = normalizeAnswerData(REPONSES_SERVEUR, fields, "userA") as Record<string, unknown>;
+    const payload = denormalizeAnswerData(stepsData, fields, "userA");
+    expect(payload.aapStep2).toEqual({ commentaire: "ok" });
+  });
+
+  it("préserve un champ ORDINAIRE déclaré sous une clé homonyme", () => {
+    // Un `text` nommé `selection` est un vrai champ du formulaire : il n'a
+    // rien à voir avec l'input de jury et doit être soumis comme les autres.
+    const fields: SubFormFields[] = [
+      makeSubFormFields(
+        [makeField({ name: "selection", componentType: "text" })],
+        "step1",
+      ),
+    ];
+    const payload = denormalizeAnswerData({ step1: { selection: "libre" } }, fields);
+    expect(payload.step1).toEqual({ selection: "libre" });
+  });
+
+  it("ne touche pas au pack `_multiEval` d'un radio de la même étape", () => {
+    const fields: SubFormFields[] = [
+      makeSubFormFields(
+        [
+          makeField({
+            name: "avis",
+            componentType: "radio",
+            options: ["oui", "non"],
+            activeMultieval: true,
+          }),
+          makeField({ name: "selection", componentType: "selection", type: "tpls.forms.aap.selection" }),
+        ],
+        "aapStep2",
+      ),
+    ];
+    const payload = denormalizeAnswerData(
+      { aapStep2: { avis: "oui", selection: { userB: { c1: 4 } } } },
+      fields,
+      "userA",
+    );
+    const jury = payload.aapStep2 as Record<string, unknown>;
+    expect(jury).not.toHaveProperty("selection");
+    expect(jury).not.toHaveProperty("avis");
+    expect(jury.avis_multiEval).toEqual({ userA: { value: "oui", date: "now", answer: "0_oui" } });
+  });
+
+  it("ne mute pas l'objet d'entrée (les champs continuent de lire `stepsData`)", () => {
+    const fields = parseCoFormFields(makeParcoursJury());
+    const stepsData = normalizeAnswerData(REPONSES_SERVEUR, fields, "userA") as Record<string, unknown>;
+    const avant = JSON.stringify(stepsData);
+    denormalizeAnswerData(stepsData, fields, "userA");
+    expect(JSON.stringify(stepsData)).toBe(avant);
+  });
 });
 
 /**
