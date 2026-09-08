@@ -48,7 +48,9 @@ interface MultiStepCoFormProps {
   variant?: CoFormVariant;
   /**
    * Affiche l'en-tête d'étapes : pastilles cliquables, compteur et sommaire.
-   * Le mettre à `false` retire donc aussi la navigation directe.
+   * Le mettre à `false` retire donc aussi la navigation directe — mais SANS EFFET
+   * quand `variant === "stepper"`, qui force l'en-tête, ni sur un formulaire à une
+   * seule étape, où il n'est jamais rendu.
    */
   showProgress?: boolean;
   showStepNumbers?: boolean;

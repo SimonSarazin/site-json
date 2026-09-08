@@ -7,7 +7,6 @@ interface UseCoFormNavigationReturn {
   totalSteps: number;
   isFirstStep: boolean;
   isLastStep: boolean;
-  progressPercent: number;
   completedSteps: string[];
   canGoNext: boolean;
   canGoPrevious: boolean;
@@ -22,11 +21,6 @@ interface UseCoFormNavigationReturn {
 export function useCoFormNavigation(): UseCoFormNavigationReturn {
   const coform = useCoForm();
 
-  const progressPercent =
-    coform.totalSteps > 0
-      ? Math.round(((coform.stepState.currentStepIndex + 1) / coform.totalSteps) * 100)
-      : 0;
-
   const canGoNext = !coform.isLastStep;
   const canGoPrevious = !coform.isFirstStep;
 
@@ -35,7 +29,6 @@ export function useCoFormNavigation(): UseCoFormNavigationReturn {
     totalSteps: coform.totalSteps,
     isFirstStep: coform.isFirstStep,
     isLastStep: coform.isLastStep,
-    progressPercent,
     completedSteps: coform.stepState.completedSteps,
     canGoNext,
     canGoPrevious,

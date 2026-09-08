@@ -338,7 +338,38 @@ Formulaire mono-étape basé sur react-hook-form + zodResolver. Gère :
 
 ### MultiStepCoForm
 
-Wizard multi-étapes avec navigation. Utilise `CoFormProvider` pour partager l'état entre étapes. Affiche un stepper visuel avec statuts `pending`/`current`/`completed`/`error`.
+Wizard multi-étapes. Utilise `CoFormProvider` pour partager l'état entre étapes.
+
+**En-tête d'étapes** (`StepsNav`) : sur ordinateur, un rail de pastilles cliquables, une par étape,
+qui a remplacé la barre `<Progress>` ; sous `md`, le rail cède la place à une barre segmentée et à un
+bouton d'étape. Cinq statuts, calculés par `buildStepItems` (`utils/stepsNav.ts`), dans cet ordre de
+priorité — `current` > `locked` > `error` > `done` > `todo` :
+
+| Statut | Sens |
+|---|---|
+| `current` | étape affichée — prioritaire sur `error` : l'erreur est déjà sous les yeux |
+| `done` | valide au regard de son schéma Zod — constaté à l'ouverture en édition, en quittant l'étape, ou après un envoi d'étape réussi |
+| `error` | signalée à corriger : validation RHF ratée, envoi serveur raté, ou garde de soumission finale |
+| `locked` | réservée à un autre rôle, non cliquable. **Prévu mais pas encore câblé** : `MultiStepCoForm` ne passe pas `lockedIds` (cf. BACKLOG « droits par étape AAP ») |
+| `todo` | ni complétée ni signalée — une étape simplement **traversée** y reste |
+
+Le segment de rail entre deux étapes n'est plein que si **les deux bouts** sont atteints, si bien
+qu'un saut laisse visuellement le trou qu'il a créé. Au-delà de 6 étapes, seules 5 sont affichées,
+centrées sur l'étape courante (la fenêtre bute aux extrémités plutôt que de raccourcir) ; un nœud
+« ⋯ » à chaque bout annonce le **nombre** d'étapes cachées de son côté et ouvre le sommaire — lequel
+liste **toutes** les étapes, pas seulement les masquées. Le même sommaire s'ouvre depuis le lien
+« toutes les étapes » du pied et, sous `md`, depuis le bouton d'étape.
+
+**Navigation directe** : toutes les étapes sont cliquables (`allowFreeNavigation`, défaut `true` —
+prop React uniquement, ce n'est plus une clé de section, cf. § Intégration JSON). Quitter une étape
+enregistre son brouillon avant le saut, donc la saisie n'est jamais perdue.
+
+**Garde de soumission finale** : à l'envoi, react-hook-form valide l'étape courante, puis la garde
+vérifie **toutes les autres** — y compris celles jamais affichées, dont les valeurs manquantes sont
+complétées par `generateDefaultValues`. L'étape courante est exclue à dessein : RHF vient de la
+valider et ses valeurs fraîches ne sont pas encore dans `stepsData`. S'il reste une étape invalide,
+rien n'est écrit (ni `onStepSubmit`, ni `onFinalSubmit`) et l'utilisateur est ramené sur la première
+à corriger.
 
 **Bannière** : délégué à `CoFormBanner`.
 
@@ -790,7 +821,7 @@ Hooks de contexte pour le wizard multi-étapes :
 |---|---|
 | `useCoForm()` | Contexte CoForm complet (throws si hors Provider) |
 | `useOptionalCoForm()` | Contexte CoForm ou `null` (safe — **nom exact**, pas `useCoFormOptional`) |
-| `useCoFormNavigation()` | `{ currentStepIndex, totalSteps, isFirstStep, isLastStep, progressPercent, completedSteps, canGoNext, canGoPrevious, next(), previous(), goTo(index) }` |
+| `useCoFormNavigation()` | `{ currentStepIndex, totalSteps, isFirstStep, isLastStep, completedSteps, canGoNext, canGoPrevious, next(), previous(), goTo(index) }` |
 | `useCoFormStep(options?)` | `{ form, fields, subFormId, stepName, isSubmitting, isCompleted, hasError, submitStep(), saveStep() }` |
 | `useCoFormSubmit(options?)` | `{ allData, isSubmitting, isComplete, error, submit(), reset() }` |
 
@@ -1103,6 +1134,10 @@ interface CoFormContextType {
   submitStepData: (subFormId: string, data: SubFormData) => Promise<void>;
   submitAllData: () => Promise<void>;
   resetForm: () => void;
+  // Navigation directe entre étapes
+  setStepCompleted: (subFormId: string, completed: boolean) => void;
+  markStepInvalid: (subFormId: string, invalid: boolean) => void;
+  getStepsData: () => AllStepsData;   // lit `stepsDataRef.current`, jamais la closure
 }
 ```
 
@@ -1321,9 +1356,8 @@ t("coform.access.formClosed.title"); // → "Période de réponse terminée"
 
 | Groupe | Exemples de clés |
 |---|---|
-| `coform.steps.*` | `step`, `of`, `completed`, `current`, `pending` |
+| `coform.steps.*` | `navLabel`, `counter`, `stepLabel`, `stepLabelUnnamed`, `allSteps`, `hiddenBefore`, `hiddenAfter`, `goToFirstError`, `status.{done,current,error,locked,todo}` |
 | `coform.navigation.*` | `next`, `previous`, `submit`, `save`, `reset` |
-| `coform.progress.*` | `title`, `percent` |
 | `coform.validation.*` | `required`, `minLength`, `maxLength`, `email`, `url`, `number`, `selectOption`, `selectAtLeastOne`, `requiredField` (`{{label}}`), `urlInvalid` (`{{label}}`), `simpleTableRequired` (`{{label}}`), `multiCheckboxPlusCplxRequired`, `noteRange` |
 | `coform.status.*` | `loading`, `submitting`, `success`, `updateSuccess`, `error`, `stepSuccess`, `stepError` |
 | `coform.errors.*` | `formNotFound`, `networkError`, `serverError` |
@@ -1392,11 +1426,10 @@ Le module expose un type de section JSON `"coform"` pour `SectionRenderer` :
     "formId": "abc123",
     "variant": "wizard",
     "submitMode": "final",
-    "title": "Inscrivez-vous",
-    "description": "Remplissez le formulaire ci-dessous",
+    "title": { "fr": "Inscrivez-vous", "en": "Sign up" },
+    "description": { "fr": "Remplissez le formulaire ci-dessous", "en": "Fill in the form below" },
     "showProgress": true,
     "showStepNumbers": true,
-    "allowFreeNavigation": false,
     "redirectAfterSubmit": "/merci"
   }
 }
@@ -1411,11 +1444,16 @@ Schema Zod : `CoFormSectionSchema` dans `src/modules/coform/schema.ts`.
 | `submitMode` | `"step"\|"final"\|"both"` | `"final"` | Quand sauvegarder |
 | `title` | `LocalizedString?` | — | Titre de la section |
 | `description` | `LocalizedString?` | — | Description |
-| `showProgress` | `boolean` | `true` | Barre de progression |
-| `showStepNumbers` | `boolean` | `true` | Numéros d'étapes |
-| `allowFreeNavigation` | `boolean` | `false` | Navigation libre entre étapes |
+| `showProgress` | `boolean` | `true` | Affiche l'en-tête d'étapes (`StepsNav`), navigation directe comprise. **Sans effet** si `variant: "stepper"` (qui force l'en-tête) ou si le formulaire n'a qu'une étape |
+| `showStepNumbers` | `boolean` | `true` | Numérote les pastilles des étapes **encore à faire** ; l'étape courante affiche toujours son numéro, les autres une icône |
 | `redirectAfterSubmit` | `string?` | — | URL redirection post-soumission |
 | `className` | `string?` | — | Classe CSS additionnelle pour le conteneur section |
+
+⚠️ **`allowFreeNavigation` n'est plus une clé de section.** Elle a été retirée de
+`CoFormSectionSchema` quand la navigation directe est devenue le comportement par défaut. Comme le
+schéma **strippe** les clés inconnues au lieu de les rejeter, une config qui la déclare encore ne
+produit **aucune erreur** — elle n'a simplement plus aucun effet. La prop existe toujours sur
+`MultiStepCoForm` (défaut `true`) pour les appelants React.
 
 **Comportement de `variant` dans `CoFormSection`** :
 - `"wizard"` → `forceMultiStep: true` sur `SmartCoForm`

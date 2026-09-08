@@ -25,9 +25,6 @@
       "save": "Sauvegarder",
       "reset": "Réinitialiser"
     },
-    "progress": {
-      "title": "Progression"
-    },
     "validation": {
       "required": "Ce champ est requis",
       "minLength": "Minimum {{min}} caractères",
