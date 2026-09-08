@@ -12,6 +12,7 @@ import {
   getEntityIdFromUnknown,
   getEnvelopeProjects,
   resolveMilestoneSyncContext,
+  type MilestoneSyncContext,
   type MilestoneSyncDocs,
 } from '@/modules/cagnotte/lib/milestoneSyncContext';
 import type { FundingMilestoneStatus } from "@/modules/cagnotte/types";
@@ -72,7 +73,37 @@ function requireSource(source: UpdateSource): Api {
   return source;
 }
 
-function resolveSyncContextOrThrow(params: MilestoneMutationBaseParams) {
+/**
+ * Palier « answer-only » : la dépense ne référence aucun palier projet (`milestoneId`
+ * vide) et l'appelant la désigne par sa position dans `depense[]`.
+ *
+ * Cas atteignable depuis la fiche commun d'un commun SANS projet lié :
+ * `buildItemsFromRawDepenses` produit `{ milestoneId: "", depenseIndex }`, et
+ * `MilestoneEditDialog` accepte `!milestoneId` dès qu'un index est fourni.
+ */
+function isAnswerOnlyMilestone(params: MilestoneMutationBaseParams): boolean {
+  return !params.milestoneId && typeof params.answerDepenseIndex === 'number';
+}
+
+function resolveSyncContextOrThrow(params: MilestoneMutationBaseParams): MilestoneSyncContext {
+  // Rien à résoudre pour un palier answer-only : il n'a PAS de côté projet, et son
+  // côté réponse est déjà connu. Les résolveurs, eux, rendent `null` sur un
+  // `milestoneId` vide (garde contre l'appariement de la première entrée sans
+  // champ, cf. `resolveMilestoneSyncContextFromDocs`) — passer par eux lèverait
+  // `syncContextMissing` avant même de lire `answerDepenseIndex`.
+  //
+  // `fromDocs: true` : sans enveloppe interrogée, les actions restent invisibles —
+  // sans conséquence ici, un `milestoneId` vide n'apparie aucune action (cf.
+  // `getMilestoneConstraints`).
+  if (isAnswerOnlyMilestone(params)) {
+    return {
+      projectMilestoneIndex: null,
+      answerDepenseIndex: params.answerDepenseIndex as number,
+      description: '',
+      fromDocs: true,
+    };
+  }
+
   const syncContext = resolveMilestoneSyncContext({
     rawEnvelope: params.rawEnvelope,
     docs: params.docs,

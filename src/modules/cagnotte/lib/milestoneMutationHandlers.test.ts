@@ -419,3 +419,146 @@ describe("deleteMilestoneWithSync — repli sur les documents", () => {
     });
   });
 });
+
+/**
+ * Palier « answer-only » : la dépense ne référence aucun palier projet (`milestoneId`
+ * vide). C'est le cas d'un commun AAC SANS projet lié — `buildItemsFromRawDepenses`
+ * produit `{ milestoneId: "", depenseIndex }`, et `MilestoneEditDialog` accepte ce
+ * cas dès qu'un `answerDepenseIndex` est fourni. Les quatre handlers doivent alors
+ * cibler CET index côté réponse, et ne rien tenter côté projet.
+ *
+ * Non-régression MR 53 (review §1.4) : les résolveurs rendent `null` sur id vide, et
+ * `resolveSyncContextOrThrow` levait `syncContextMissing` AVANT de lire
+ * `answerDepenseIndex` — les quatre boutons de la fiche commun étaient morts.
+ */
+describe("palier answer-only (milestoneId vide + answerDepenseIndex)", () => {
+  const RAW_DEPENSES = [{ poste: "A", price: 10 }, { poste: "B", price: 20 }];
+  const answerServerData = { answers: { aapStep1: { depense: RAW_DEPENSES } } };
+
+  /** Même forme que `useCommunObjectivesController` sans projet : `projectMilestones` absent. */
+  const answerOnly = {
+    rawEnvelope: null as unknown,
+    docs: { projectMilestones: undefined, depenses: RAW_DEPENSES },
+    projectId: "",
+    answerId: "answer1",
+    milestoneId: "",
+    answerDepenseIndex: 1,
+  };
+
+  it("edit écrit poste/prix à l'index fourni, sans rien tenter côté projet", async () => {
+    const { api, answerEntity, answerUpdateField, apiProject } = buildApiMock({ answerServerData });
+
+    await editMilestoneWithSync({
+      source: api,
+      ...answerOnly,
+      name: "B2",
+      description: "",
+      status: "open",
+      targetAmount: 30,
+    });
+
+    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith(
+      expect.objectContaining({
+        answer: answerEntity,
+        index: 1,
+        fields: expect.objectContaining({ poste: "B2", price: 30 }),
+      }),
+    );
+    // Historique de prix : 20 → 30, à l'index 1.
+    expect(answerUpdateField).toHaveBeenCalledWith(
+      "answers.aapStep1.depense.1.historique",
+      expect.objectContaining({ champ: "price", avant: 20, apres: 30 }),
+      expect.objectContaining({ arrayForm: true }),
+    );
+    expect(apiProject).not.toHaveBeenCalled();
+    expect(mockUpdateProjectMilestoneFields).not.toHaveBeenCalled();
+  });
+
+  it("close passe la dépense à include:false à l'index fourni, sans rien tenter côté projet", async () => {
+    const { api, answerEntity, apiProject } = buildApiMock({ answerServerData });
+
+    await closeMilestoneWithSync({ source: api, ...answerOnly });
+
+    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith({
+      answer: answerEntity,
+      index: 1,
+      fields: { include: false },
+    });
+    expect(apiProject).not.toHaveBeenCalled();
+    expect(mockUpdateProjectMilestoneFields).not.toHaveBeenCalled();
+  });
+
+  it("restore repasse la dépense à include:true à l'index fourni, sans rien tenter côté projet", async () => {
+    const { api, answerEntity, apiProject } = buildApiMock({ answerServerData });
+
+    await restoreMilestoneWithSync({ source: api, ...answerOnly });
+
+    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith({
+      answer: answerEntity,
+      index: 1,
+      fields: { include: true },
+    });
+    expect(apiProject).not.toHaveBeenCalled();
+    expect(mockUpdateProjectMilestoneFields).not.toHaveBeenCalled();
+  });
+
+  it("delete retire la dépense à l'index fourni, sans rien tenter côté projet", async () => {
+    const { api, answerEntity, apiProject } = buildApiMock({ answerServerData });
+
+    await deleteMilestoneWithSync({ source: api, ...answerOnly });
+
+    expect(mockDeleteAnswerDepenseAtIndex).toHaveBeenCalledWith({ answer: answerEntity, index: 1 });
+    expect(apiProject).not.toHaveBeenCalled();
+    expect(mockDeleteActionById).not.toHaveBeenCalled();
+    expect(mockDeleteProjectMilestoneAtIndex).not.toHaveBeenCalled();
+  });
+
+  it("delete refuse toujours une dépense financée — `hasFunding` est lu à l'index fourni", async () => {
+    const { api } = buildApiMock({ answerServerData });
+
+    await expect(
+      deleteMilestoneWithSync({
+        source: api,
+        ...answerOnly,
+        docs: { projectMilestones: undefined, depenses: [RAW_DEPENSES[0], { ...RAW_DEPENSES[1], financer: [{ amount: 5 }] }] },
+      }),
+    ).rejects.toThrow("milestone.errors.cannotDeleteIfFunded");
+
+    expect(mockDeleteAnswerDepenseAtIndex).not.toHaveBeenCalled();
+  });
+
+  it("GARDE : un milestoneId vide SANS index reste refusé (syncContextMissing), sans écriture", async () => {
+    const { api, apiAnswer } = buildApiMock({ answerServerData });
+    const { answerDepenseIndex: _omitted, ...withoutIndex } = answerOnly;
+
+    await expect(
+      editMilestoneWithSync({ source: api, ...withoutIndex, name: "B2", description: "", status: "open", targetAmount: 30 }),
+    ).rejects.toThrow("milestone.errors.syncContextMissing");
+
+    expect(apiAnswer).not.toHaveBeenCalled();
+    expect(mockUpdateAnswerDepenseFields).not.toHaveBeenCalled();
+  });
+
+  it("TÉMOIN : un milestoneId renseigné (dépense liée) passe par le résolveur et écrit à l'index apparié", async () => {
+    const { api } = buildApiMock({ answerServerData });
+    const linked = [RAW_DEPENSES[0], { ...RAW_DEPENSES[1], milestone: "m1" }];
+
+    await editMilestoneWithSync({
+      source: api,
+      rawEnvelope: null,
+      docs: { projectMilestones: undefined, depenses: linked },
+      projectId: "",
+      answerId: "answer1",
+      milestoneId: "m1",
+      name: "B2",
+      description: "",
+      status: "open",
+      targetAmount: 30,
+    });
+
+    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith(
+      expect.objectContaining({ index: 1, fields: expect.objectContaining({ poste: "B2", price: 30 }) }),
+    );
+    expect(mockUpdateProjectMilestoneFields).not.toHaveBeenCalled();
+  });
+});
