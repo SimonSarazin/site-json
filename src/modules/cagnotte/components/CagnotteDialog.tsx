@@ -39,6 +39,7 @@ import {
     readEntityPreferences,
     toSafeInt,
 } from "@/modules/cagnotte/utils/dataTransform";
+import {computeResourceFundingTotals} from "@/modules/cagnotte/lib/resourceFundingTotals";
 import {useCagnotteType} from "@/modules/cagnotte/hooks/useCagnotteType.ts";
 import {computePledgesFromResources, useCagnotteAdapter} from "@/modules/cagnotte/hooks/useCagnotteAdapter";
 import {useSite} from "@/hooks/useSite.tsx";
@@ -386,42 +387,21 @@ const CagnotteDialogContent = ({
         }
     }
 
-    // Extraire les données de cagnotte du projet (montants convertis en int avant somme)
-    const resourceCagnotteTotalAmount = useMemo(() => {
-        if (selectedResource?.resourceFinancedAmount) {
-            return toSafeInt(selectedResource.resourceFinancedAmount);
-        }
-        const itemsFinancedTotal = (activeResourceItems || [])
-            .filter((item) => item?.status !== 'close')
-            .reduce(
-                (sum, item) => sum + toSafeInt(item.currentFunding),
-                0
-            );
-
-        if ((activeResourceItems || []).length > 0) {
-            return itemsFinancedTotal;
-        }
-
-        return toSafeInt(selectedResource?.resourceFinancedAmount);
-    }, [activeResourceItems, selectedResource]);
-
-    const resourceCagnotteTargetAmount = useMemo(() => {
-        const milestonesTarget = (activeResourceItems || [])
-            .filter((item) => item?.status !== 'close')
-            .reduce(
-                (sum, item) => sum + toSafeInt(item.price),
-                0
-            );
-
-        if ((activeResourceItems || []).length > 0) {
-            return milestonesTarget;
-        }
-
-        return toSafeInt(selectedResource?.resourceTotalAmount);
-    }, [activeResourceItems, selectedResource]);
-
-    // `resourceProgressPercentage` est désormais calculé en interne par `CagnotteResourceProgressCard`.
-    const remainingToFinanceAmount = Math.max(resourceCagnotteTargetAmount - resourceCagnotteTotalAmount, 0);
+    // Total financé, cible et reste à financer sommés sur les MÊMES items ouverts
+    // (dépenses orphelines comprises), comme `PaymentConfigPage.maxAllocatable`.
+    // Ne PAS court-circuiter par `selectedResource.resourceFinancedAmount` : cet
+    // agrégat n'a pas le périmètre de `items[]` (milestones projet seuls côté
+    // projet, dépenses closes comprises côté proposition) — le plafond de la
+    // modale divergeait alors de celui du paiement (cf. resourceFundingTotals.ts).
+    // `resourceProgressPercentage` est calculé en interne par `CagnotteResourceProgressCard`.
+    const {
+        totalAmount: resourceCagnotteTotalAmount,
+        targetAmount: resourceCagnotteTargetAmount,
+        remainingAmount: remainingToFinanceAmount,
+    } = useMemo(
+        () => computeResourceFundingTotals(activeResourceItems, selectedResource),
+        [activeResourceItems, selectedResource]
+    );
     const maxContributionAmount = remainingToFinanceAmount;
 
     // Vérifier si le resource(proposition ou projet) sélectionné est déjà le resourceModalId
