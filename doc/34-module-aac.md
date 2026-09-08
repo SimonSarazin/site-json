@@ -2,10 +2,14 @@
 
 # Module AAC — Appel à Communs
 
-> **État : SOCLE (fondations).** Le module pose l'ossature, le contrat de données et le
-> résolveur de configuration. **Aucune surface fonctionnelle n'est encore livrée** (dépôt,
-> listing, évaluation, financement). Ce document est le point d'entrée pour intégrer ces
-> besoins sans re-faire les erreurs du legacy.
+> **État : LIVRÉ — annuaire, fiche, financement, droits.** Le module rend l'**annuaire des
+> communs** (sections `aac-directory` / `aac-highlight`, route `/aac`), la **fiche d'un commun**
+> (`/aac/commun/:answerId` : financement via la cagnotte, sélection admin, paliers et actions,
+> contributeurs, blocs de prose déclarés en config, galerie), le **dépôt et l'édition** d'un commun
+> par CoForm, et les **droits** (§6) calculés sur les gates réels du form (`coremu`,
+> `onlymemberaccess`…). Restent au backlog : campagnes, panier, doublonnage, immuabilité `paid`
+> (§10). Ce document est le point d'entrée pour intégrer ces besoins sans re-faire les erreurs
+> du legacy.
 
 ---
 
@@ -61,30 +65,78 @@ au GATE §9) : `financer.paymentStatus`, `financer.campaign`, `financer.finkey`,
 ## 3. Configuration (côté site)
 
 **Un seul AAC par site.** Le patron est celui de `config.ampli`, mais **singulier** (objet, pas
-tableau). Le site déclare simplement son formulaire :
+tableau). Le site déclare son formulaire dans `config.aac`, puis pose les sections du module
+dans ses pages :
 
 ```jsonc
-// config.prod.<site>.json
+// config.prod.<site>.json — extrait de config.prod.federationDesCae.json
 {
-  "aac": { "formId": "677e7e389058e31575550ac8" },   // ← source de vérité UNIQUE
+  "aac": {
+    "formId": "677e7e389058e31575550ac8",               // ← source de vérité UNIQUE
+    "directory": { "fields": { /* §3.1 */ } },         // facultatif
+    "detail":    { "gallery": "…", "sections": [ /* §3.2 */ ] }   // facultatif
+  },
 
-  "pages": [{
-    "path": "/",
-    "sections": [
-      { "type": "aac", "id": "aac", "props": { "title": { "fr": "Appel à Communs" } } }
-    ]
-  }]
+  "pages": [
+    { "path": "/", "sections": [
+      { "type": "aac-highlight", "id": "contribuer", "props": {
+          "title": { "fr": "Contributeurs aux communs" },
+          "tone": "primary",
+          "cta": { "label": { "fr": "Contribuez aux communs" }, "href": "/aac/communs" },
+          "count": { "source": "communs", "label": { "fr": "Communs déposés" } }
+      } },
+      { "type": "aac-directory", "id": "apercu", "props": {
+          "title": { "fr": "Découvrez les communs" },
+          "variant": "preview", "pageSize": 6, "showDepositButton": false,
+          "moreLink": { "href": "/aac/communs", "label": { "fr": "Voir tous les communs" } }
+      } }
+    ] },
+    { "path": "/aac/communs", "sections": [
+      { "type": "aac-directory", "id": "aac", "props": {
+          "title": { "fr": "Les communs identifiés" }, "columns": 3, "pageSize": 12, "variant": "full"
+      } }
+    ] }
+  ]
 }
 ```
 
-- **`config.aac.formId`** = le **form parent** (`type:aap`, `aapType:aac`). Déclaré dans
-  [`src/types/site-schema.ts`](../src/types/site-schema.ts) (juste après `ampli`).
-- La **section** `{type:"aac"}` ne porte **pas** de `formId` — seulement la présentation
-  (`title`, `className`). Elle lit `useSite().config.aac?.formId`.
-- La **route `/aac`** n'a **pas de paramètre** (un seul AAC par site) et lit la même clé.
+**Le bloc `config.aac`** — `AacConfigSchema` dans [`modules/aac/schema.ts`](../src/modules/aac/schema.ts),
+déclaré dans [`src/types/site-schema.ts`](../src/types/site-schema.ts) juste après `ampli` :
+
+| clé | rôle |
+|---|---|
+| `formId` | le **form parent** (`type:aap`, `aapType:aac`). Obligatoire. |
+| `directory.fields` | quel champ du document porte quel rôle sur la carte d'annuaire — §3.1 |
+| `detail.gallery` / `detail.sections[]` | la fiche d'un commun : galerie et blocs de prose — §3.2 |
+
+**Les trois sections** — aucune ne porte de `formId` : toutes lisent `config.aac.formId`
+(`useSite().config.aac`). Props dans [`schema.ts`](../src/modules/aac/schema.ts) :
+
+| `type` | rôle | props |
+|---|---|---|
+| `aac-directory` | **l'annuaire des communs** : filtres (recherche, usages, tags, maturité, tri), grille ou liste, défilement infini, bouton « Je dépose un commun » | `title`, `description`, `className`, `display` (`grid` \| `list`, mode initial), `columns` (1-4), `pageSize` (1-100), `filters{search,usage,tags,maturity,sort}`, `emptyText`, `showDepositButton`, `depositButtonLabel`, `variant` (`full` \| `preview`), `moreLink{href,label}` |
+| `aac-highlight` | bande d'appel à l'action avec médaillon chiffré — le nombre de communs est **compté** (mode `countonly`), jamais saisi | `title` (requis), `description`, `className`, `tone` (`primary` \| `muted`), `cta{label,href}`, `count{source:"communs",label}` |
+| `aac` | aperçu de **diagnostic** de la config résolue (`AacConfigStub`) — pas une surface utilisateur | `title`, `className` |
+
+`variant: "preview"` rend les mêmes cartes, bornées à `pageSize`, sans filtre ni compteur ni
+défilement, suivies de `moreLink` : c'est l'aperçu d'une page d'accueil. Sans `moreLink`, l'aperçu
+est un cul-de-sac. Un filtre activé dont la question n'a pas pu être résolue est **masqué**, jamais
+rendu inerte.
+
+⚠️ Les `.default()` Zod de ces props sont **documentaires** : la config n'est pas parsée par Zod à
+l'exécution, chaque composant applique ses propres défauts.
+
+**Les deux routes** ([`routes.tsx`](../src/modules/aac/routes.tsx), chargées en `lazy`) :
+
+| route | page | rôle |
+|---|---|---|
+| `/aac` | `AacPage` | l'annuaire complet (`aac-directory` en `full`) — **sans paramètre**, un seul AAC par site |
+| `/aac/commun/:answerId` | `AacCommunDetailPage` | la fiche d'un commun (une `Answer`) : héros, financement (si `coremu`, §6), paliers et actions, contributeurs, blocs de prose §3.2, galerie |
+
+Une page de module rend **son propre chrome** (`SiteHeader` / `SiteFooter`, cf. §5).
 
 **Prérequis backend** : le form + son `aapConfig` doivent exister. Sans `config.aac.formId`,
-la section et la route affichent un message explicite (pas de crash).
+les sections et les routes affichent un message explicite (pas de crash).
 
 ### 3.1 `directory.fields` — quel CHAMP porte quel RÔLE
 
@@ -187,6 +239,44 @@ curl -s -X POST "$VITE_BASE_URL_BACKEND/survey/coform/getformbyid" \
 `radioNew<id>` / `checkboxNew<id>` / `categorizedCheckbox<id>`…). On repère la question par son
 **libellé**, et on écrit `answers.<étape>.<id>`.
 
+### 3.2 `detail` — la fiche d'un commun
+
+La fiche (`/aac/commun/:answerId`) rend ses blocs structurels d'elle-même (héros, financement,
+paliers, contributeurs, galerie). Les **blocs de prose** — les questions de l'appel qui méritent
+une section — sont **déclarés**, jamais devinés : contrairement à l'annuaire, aucune heuristique
+ne peut dire quelles questions d'un appel font une section, ni dans quel ordre
+([`lib/resolveAacDetailSections.ts`](../src/modules/aac/lib/resolveAacDetailSections.ts)).
+
+```jsonc
+// extrait de config.prod.federationDesCae.json
+"aac": {
+  "formId": "677e7e389058e31575550ac8",
+  "detail": {
+    "gallery": "aapStep1.image",                        // subKey des documents de la galerie
+    "sections": [
+      { "id": "modele",      "title": { "fr": "Modèle économique" },  "icon": "Layers",
+        "field": "answers.aapStep1.aapStep1lpvinn7ld70wbk7w339" },
+      { "id": "gouvernance", "title": { "fr": "Mode de gouvernance" }, "icon": "UsersRound",
+        "field": "answers.aapStep1.aapStep1lpvioouzejcnjy7ffw" }
+    ]
+  }
+}
+```
+
+| clé | rôle |
+|---|---|
+| `gallery` | le `subKey` des documents joints à montrer en galerie (`answers.<étape>.<id>` côté document ⇒ `<étape>.<id>`). **Omis ⇒ pas de galerie.** |
+| `sections[].id` | ancre DOM et cible du sommaire — unique (un doublon est écarté) |
+| `sections[].field` | **même grammaire que `directory.fields`** (§3.1) : `answers.<étape>.<id>` ou chemin racine. Illisible ⇒ entrée écartée |
+| `sections[].title` | omis ⇒ le **libellé de la question** elle-même (l'intitulé vient de l'appel, pas d'une traduction générique) ; repli ultime : l'`id` |
+| `sections[].kicker` | sur-titre optionnel |
+| `sections[].icon` | nom d'icône lucide (`DynamicIcon`) ; inconnu ou omis ⇒ icône par défaut |
+
+**Règle : pas de déclaration ⇒ zéro bloc, par conception.** `resolveAacDetailSections` rend `[]`
+dès que `detail.sections` est absent ou vide, et `useAacGallerySubKey()` rend `null` sans
+`detail.gallery`. Une fiche sans prose ni galerie sur un nouveau site n'est pas un bug : c'est le
+bloc `detail` qui manque — et rien ne le signale à `config:validate` (tout y est optionnel).
+
 ---
 
 ## 4. Le résolveur `AacConfig` — le cœur du socle
@@ -268,12 +358,30 @@ financière.
 
 - **Bypass admin-costum TOTAL** : résolu **centralement** par `usePermissions` (`isCostumAdmin`)
   — le calculateur ne le ré-implémente pas.
-- **Gate MAÎTRE `coRemuneration`** : **OFF ⇒ aucun financement** (pas de financeur, pas d'objet
-  finançable, pas de paiement).
-- **Dépôt = 3 modes** (ouvert / membres / rôles) + **standalone**. Le dépôt n'est **jamais**
-  ouvert à tous par défaut.
-- **Standalone** : un answer peut avoir pour auteur un **compte temporaire (email seul, sans
-  `userId`)** → tout calcul ancré sur `userId` doit tolérer son absence.
+- **Gate MAÎTRE `coremu`** — lu à la **racine du form** (`form.coremu`, booléen ou chaîne
+  `"true"` : `filter_var(FILTER_VALIDATE_BOOLEAN)` côté PHP). Posé par la préconfiguration
+  « Système de coremuneration » d'`aap.js` (`Form::switchcoremu`), lu par `detailProposal.php:105`.
+  **OFF ⇒ aucun bloc financement** sur la fiche, admin compris (`canViewFunding`) ; contribuer
+  exige en plus d'être connecté (`canContributeFunding`). La clé n'est **ni dans `params`, ni sur
+  l'aapConfig** ; `coRemuneration` n'a jamais existé. Un form sans `coremu` (c'est le cas du form
+  CAE) masque le financement **comme le legacy** : c'est la préconfiguration qu'il faut (re)jouer,
+  pas le front. Qui peut financer une fois le bloc affiché (`params.financerLimitRoles` /
+  `limitTypes`) n'est pas porté aujourd'hui.
+- **Dépôt = 3 modes** (ouvert / membres / rôles), toujours **connecté** — les gardes de
+  `Coform::getFormAccessInfo`. Le dépôt n'est **jamais** ouvert à tous par défaut. Il n'existe
+  **pas** de clé `standalone` : c'est un mode de **requête** legacy (`.standalone.true`,
+  `filters.formStandalone`), pas une option du form — le gate qu'on en dérivait valait toujours
+  `false`. La seule dispense de compte du legacy est `temporarymembercanreply` (compte temporaire
+  par email), non portée.
+- **`anyOnewithLinkCanAnswer`** (« avoir le lien suffit pour répondre », `form.js`) : un
+  **connecté** peut lire et modifier une réponse **sans lien au contexte** de l'appel
+  (`IndexAction.php:237`, sous `session['userId']`). Ce n'est **pas** un dépôt sans connexion.
+  Porté par `canEditCommun`.
+- **Lecture** : publique, sauf `onlymemberaccess` (membres et admins — `Form.php:1869`). Pas de
+  clé `annuaire` : la restriction de **listing** (`onlyAdminCanSeeList`) est appliquée par le
+  backend, §13.5.
+- **Compte temporaire** : un answer peut avoir pour auteur un **compte temporaire (email seul,
+  sans `userId`)** → tout calcul ancré sur `userId` doit tolérer son absence.
 - **Manquant, à ajouter au moment du financement** : la **garde d'immuabilité `paid`**
   (aucun garde en lecture seule n'existe aujourd'hui sur un financement payé).
 
@@ -384,8 +492,9 @@ avant de construire le financement** (base `pixelhumain1` ; AAC de référence :
   **tout le scope financement est indéfini** (bloquant) ;
 - la forme réelle de `depense[].financer[]` sur un **answer déjà financé** (présence de
   `paymentStatus` / `campaign` / porteur) ;
-- les clés réelles des **9 domaines** de l'`aapConfig` + le flag **`coRemuneration`** ;
-- les gates `annuaire` / `standalone` ;
+- les clés réelles des **9 domaines** de l'`aapConfig` — le flag de financement, lui, est
+  **tranché** : `form.coremu` (§6), et non `coRemuneration` ;
+- les gates `annuaire` / `standalone` — **tranché** : clés fantômes, retirées du résolveur (§6) ;
 - le lien `depense.milestone` ↔ `project.oceco.milestones[].milestoneId`.
 
 **Décisions ouvertes** : (a) de **nouveaux endpoints SDK** seront très probablement nécessaires pour
@@ -414,8 +523,8 @@ Patron canonique — précédent : `LocationField`. **5 à 6 touchpoints** :
 
 ### Autres jalons
 
-- **Listing** : conditionner par les flags `annuaire` / visibilité ; forker `parseCoformAnswer`
-  en `parseAacAnswer` (l'actuel est hardcodé sur un seul formulaire).
+- **Listing** : **livré** (`aac-directory`, `parseAacAnswer`) — la visibilité est celle du
+  backend (§13.5) ; il n'existe pas de flag `annuaire` (§6).
 - **Évaluation** : le **radar multi-éval est prêt** (`useMultiEvalData` + `MultiEvalRadarTabs`).
   Le champ **selection 2D + admissibilité** est à construire. *(Signal donnée : la matrice jury
   n'est peuplée sur AUCUN AAC réel — l'éval effective est `selection` + `admissibility`.)*
@@ -604,10 +713,10 @@ Rien à réimplémenter côté client pour ces deux-là.
 > ⚠️ **Constat pour le GATE §10** — la clé réelle du flag « Publier sur l'annuaire des appels à
 > communs » est **`isPublishedInAacOrg`**, portée par le **form**, en **opt-out** : `getAacElements()`
 > et `aacQuery()` matchent `isPublishedInAacOrg === true` **ou champ absent** ⇒ publié par défaut.
-> Elle gouverne l'annuaire **des AAC**, pas la lecture des communs — donc ni la clé
-> (`form.annuaire` / `params.annuaire`), ni le défaut, ni la portée de `gates.annuaire`
-> ([`lib/resolveAacConfig.ts`](../src/modules/aac/lib/resolveAacConfig.ts)) ne correspondent.
-> À reverser au GATE lors d'une prochaine passe.
+> Elle gouverne l'annuaire **des AAC**, pas la lecture des communs. Le gate `annuaire` que lisait
+> `resolveAacConfig` (`form.annuaire` / `params.annuaire`) n'avait aucune clé backend : il a été
+> **retiré** (§6) — la lecture des communs suit `onlymemberaccess`, le listing suit
+> `onlyAdminCanSeeList` ci-dessus.
 
 ### 13.6 Routes sœurs
 
