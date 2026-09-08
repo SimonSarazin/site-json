@@ -17,9 +17,10 @@ export interface AgendaListProps {
   card: ListConf["card"];
   preview: ListConf["preview"];
   columns?: ListConf["columns"];
-  hasMorePast?: boolean;
-  onLoadMorePast?: () => void;
-  loadingMorePast?: boolean;
+  /** Pagination PAR ONGLET : En cours et À venir partagent le flux « prochains », Passés a le sien. */
+  hasMore?: Partial<Record<AgendaTab, boolean>>;
+  onLoadMore?: (tab: AgendaTab) => void;
+  loadingMore?: Partial<Record<AgendaTab, boolean>>;
   /** false = teaser : un seul bucket (= `tab`), sans barre d'onglets. */
   showTabs?: boolean;
 }
@@ -37,12 +38,23 @@ export default function AgendaList({
   card,
   preview,
   columns,
-  hasMorePast,
-  onLoadMorePast,
-  loadingMorePast,
+  hasMore,
+  onLoadMore,
+  loadingMore,
   showTabs = true,
 }: AgendaListProps) {
   const t = useT("modules/agenda");
+
+  // « Charger plus » rendu dès que le flux de l'onglet a une page suivante — bucket vide compris
+  // (ex. une page entière d'événements en cours : « À venir » est vide mais la suite du flux existe).
+  const loadMore = (tb: AgendaTab) =>
+    hasMore?.[tb] ? (
+      <div className="mt-6 flex justify-center">
+        <Button variant="outline" onClick={() => onLoadMore?.(tb)} disabled={!!loadingMore?.[tb]}>
+          {loadingMore?.[tb] ? t("loadingMore") : t("loadMore")}
+        </Button>
+      </div>
+    ) : null;
 
   const renderBucket = (tb: AgendaTab) =>
     loading && tab === tb ? (
@@ -52,16 +64,13 @@ export default function AgendaList({
     ) : buckets[tb].length > 0 ? (
       <>
         <SearchListView results={buckets[tb] as unknown as SearchEntity[]} columns={columns} card={card} preview={preview} />
-        {tb === "past" && hasMorePast && (
-          <div className="mt-6 flex justify-center">
-            <Button variant="outline" onClick={onLoadMorePast} disabled={loadingMorePast}>
-              {loadingMorePast ? t("loadingMore") : t("loadMore")}
-            </Button>
-          </div>
-        )}
+        {loadMore(tb)}
       </>
     ) : (
-      <div className="py-12 text-center text-muted-foreground">{t("empty")}</div>
+      <>
+        <div className="py-12 text-center text-muted-foreground">{t("empty")}</div>
+        {loadMore(tb)}
+      </>
     );
 
   // Teaser : un seul bucket (= onglet par défaut), sans barre d'onglets.

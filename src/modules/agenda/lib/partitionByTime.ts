@@ -8,9 +8,15 @@ export type TimeBucket = "ongoing" | "upcoming" | "past";
  *  - `past`    : fin (end ?? start) < now
  *  - `upcoming`: début > now
  *  - `ongoing` : start ≤ now ≤ (end ?? start)
+ *
+ * Une fin ANTÉRIEURE au début est écartée (on retombe sur `start`) : le test de fin passe en
+ * premier, si bien qu'une telle borne rangerait dans « Passés » un événement qui n'a pas commencé —
+ * le jour même où il a lieu. Deux sources en produisent : une fermeture d'`openingHours` franchissant
+ * minuit (traitée à la source, cf. `closingTimeOnDay`) et une `endDate` incohérente en base, que
+ * personne ne redresse en amont.
  */
 export function eventTimeBucket(start: Date, end: Date | null, now: Date): TimeBucket {
-  const effectiveEnd = end ?? start;
+  const effectiveEnd = end && end.getTime() >= start.getTime() ? end : start;
   if (effectiveEnd.getTime() < now.getTime()) return "past";
   if (start.getTime() > now.getTime()) return "upcoming";
   return "ongoing";

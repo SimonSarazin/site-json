@@ -229,6 +229,8 @@
     "toast.card.starError": "Impossible de mettre à jour les favoris",
     "toast.card.activateFundingSuccess": "Financement activé",
     "toast.card.activateFundingError": "Impossible d'activer le financement",
+    "card.event.recurring": "Chaque {{days}}",
+    "card.event.recurringAnd": "et",
     "card.detailed.seeMore": "Voir plus",
     "card.detailed.addFavorite": "Ajouter aux favoris",
     "card.detailed.removeFavorite": "Retirer des favoris",
