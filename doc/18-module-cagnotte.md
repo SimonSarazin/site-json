@@ -165,13 +165,13 @@ Chaque jalon cagnotte existe en **double** dans deux collections backend distinc
 | Collection | Chemin | Rôle |
 |---|---|---|
 | **`projects`** | `oceco.milestones[]` | Définition du jalon : `{ milestoneId, name, description, status: open\|done\|close }` |
-| **`answers`** (CoForm) | `answers.aapStep1.depense[]` | Miroir financier : `{ poste, price, milestone, financer[], include }` |
+| **`answers`** (CoForm) | `answers.aapStep1.depense[]` | Miroir financier : `{ poste, price, description, milestone, financer[], include }` |
 
 → Toute mutation milestone doit être **propagée des deux côtés** :
 
 | Action | Côté project | Côté answer |
 |---|---|---|
-| Édition | `updateProjectMilestoneFields({ name, description, status })` | `updateAnswerDepenseFields({ poste, price })` — `+ description` sans projet lié : la dépense est alors le seul document du palier |
+| Édition | `updateProjectMilestoneFields({ name, description, status })` | `updateAnswerDepenseFields({ poste, price, description })` — `description` tenue en double comme `poste`/`name` : c'est `depense.description` que relisent la fiche et la modale (`useCagnotteAdapter`, `buildItemsFromRawDepenses`, `fundableItemToMilestone`), projet lié ou non |
 | Clôture | `status: "close"` | `include: false` |
 | Restauration | `status: "open"` | `include: true` |
 | Suppression | `deleteProjectMilestoneAtIndex` | `deleteAnswerDepenseAtIndex` + suppression des actions liées |
@@ -184,6 +184,13 @@ Un palier **answer-only** (`milestoneId` vide — commun sans projet lié, dont 
 produit `{ milestoneId: "", depenseIndex }`) est désigné par `answerDepenseIndex` : les handlers
 court-circuitent la résolution (qui rend `null` sur un id vide) et n'écrivent que côté answer, à cet
 index. Un id vide SANS index reste refusé (`syncContextMissing`).
+
+Avec projet lié, un id vide + index n'est PAS conclu answer-only d'emblée : les handlers relisent
+d'abord `depense[index].milestone` (ligne de la ressource dans l'enveloppe, puis `docs`) et, s'il
+existe, traitent le palier des deux côtés (`withRecoveredMilestoneId`). C'est le cas d'une dépense
+legacy que la réparation de `useCagnotteAdapter` vient de doter d'un id (écrit sur le projet ET la
+dépense, puis invalidation de l'enveloppe et du cache brut `useCommunRawDepenses`) alors que l'écran
+tient encore l'item d'avant. Sans id nulle part, le côté projet manque vraiment (`missingProjectSide`).
 
 > Le nom `aapStep1` vient de « Appel À Projet, étape 1 ». Le module suppose que le CoForm cible contient cette structure. **Non généralisé** pour d'autres structures.
 

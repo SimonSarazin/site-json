@@ -197,7 +197,7 @@ describe("editMilestoneWithSync", () => {
     });
     expect(unchanged.answerUpdateField).not.toHaveBeenCalled();
     expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith(
-      expect.objectContaining({ index: 0, fields: { poste: "Nom inchangé", price: 100 } }),
+      expect.objectContaining({ index: 0, fields: { poste: "Nom inchangé", price: 100, description: "desc" } }),
     );
 
     vi.clearAllMocks();
@@ -744,13 +744,16 @@ describe("milestoneId vide + index, AVEC projet lié : l'id est relu sur la dép
 });
 
 /**
- * H22 (review MR 53) : sans projet lié, `description` n'était envoyée QUE par
- * `updateProjectMilestoneFields` — donc jamais. Le formulaire la jetait en silence,
- * avec un toast « mis à jour ». Sans côté projet, la dépense de la réponse est le
- * seul document du palier : la description y est écrite (c'est `d.description`
- * que relit `useCagnotteAdapter`).
+ * H22 (review MR 53) : `description` n'était envoyée QUE par
+ * `updateProjectMilestoneFields`. Sans projet lié, donc jamais — le formulaire la
+ * jetait en silence, avec un toast « mis à jour ». Le premier correctif ne
+ * l'écrivait sur la dépense QUE sans projet ; or la fiche et la modale relisent
+ * `depense.description` quel que soit le projet (`useCagnotteAdapter`,
+ * `buildItemsFromRawDepenses`, `fundableItemToMilestone`) : avec projet, la
+ * description éditée restait invisible. Elle est écrite sur la dépense SANS
+ * condition, et sur `oceco.milestones[]` en plus quand un projet est lié.
  */
-describe("editMilestoneWithSync — description sans projet lié (H22)", () => {
+describe("editMilestoneWithSync — description écrite sur la dépense (H22)", () => {
   it("écrit la description saisie sur la dépense de la réponse quand projectId est vide", async () => {
     const { api, answerEntity, apiProject } = buildApiMock({
       answerServerData: { answers: { aapStep1: { depense: [{ poste: "A", price: 10 }, { poste: "B", price: 20, milestone: "m1" }] } } },
@@ -804,8 +807,8 @@ describe("editMilestoneWithSync — description sans projet lié (H22)", () => {
     });
   });
 
-  it("TÉMOIN : avec projet lié, la description reste côté projet — la dépense ne reçoit que poste/prix", async () => {
-    const { api, projectEntity } = buildApiMock();
+  it("avec projet lié, la description est écrite des DEUX côtés — la dépense est ce que l'écran relit", async () => {
+    const { api, answerEntity, projectEntity } = buildApiMock();
     const rawEnvelope = buildRawEnvelope(buildProjectData());
 
     await editMilestoneWithSync({
@@ -820,9 +823,11 @@ describe("editMilestoneWithSync — description sans projet lié (H22)", () => {
       targetAmount: 100,
     });
 
-    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith(
-      expect.objectContaining({ index: 0, fields: { poste: "Palier", price: 100 } }),
-    );
+    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith({
+      answer: answerEntity,
+      index: 0,
+      fields: { poste: "Palier", price: 100, description: "Description saisie" },
+    });
     expect(mockUpdateProjectMilestoneFields).toHaveBeenCalledWith({
       project: projectEntity,
       index: 0,

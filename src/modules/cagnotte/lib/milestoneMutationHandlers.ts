@@ -319,10 +319,14 @@ export async function editMilestoneWithSync(input: EditMilestoneParams): Promise
       fields: {
         poste: params.name,
         price: params.targetAmount,
-        // Sans projet lié, la dépense est le SEUL document du palier : la description
-        // y vit (c'est `d.description` que relit `useCagnotteAdapter`). Avec projet,
-        // elle reste sur `oceco.milestones[]` (ci-dessous) — ne pas la dupliquer.
-        ...(hasProject ? {} : { description: params.description }),
+        // La description vit sur la DÉPENSE, projet lié ou non : c'est
+        // `depense.description` que relisent la fiche et la modale
+        // (`useCagnotteAdapter`, `buildItemsFromRawDepenses`,
+        // `fundableItemToMilestone` → `MilestoneEditDialog`). Ne l'écrire que sur
+        // `oceco.milestones[]` la rendait invisible dès qu'un projet était lié.
+        // Avec projet, le palier la reçoit AUSSI (ci-dessous) — même double tenue
+        // que `poste`/`name` et `include`/`status`, cf. doc/18.
+        description: params.description,
       },
     }),
   ];
