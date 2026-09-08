@@ -14,17 +14,28 @@ import type { ModuleRouteFactory } from "@/lib/modules";
  * partaient dans le bundle principal — donc chez les 16 sites du parc qui n'ont pas
  * d'AAC. Le `<Suspense>` qui les couvre est celui de `RootLayout.tsx:96`, et le
  * module suit ainsi la convention déjà tenue par `SectionRenderer` pour les sections.
+ *
+ * **Gate sur `config.aac`** : le module est `core`, donc découvert sur TOUS les
+ * sites — sans ce gate, `/aac` et `/aac/commun/:answerId` étaient montées sur les
+ * 16 sites sans AAC (vérifié par SSR sur `tiers-lieux`), où elles n'affichaient
+ * qu'un « aucun AAC déclaré » et court-circuitaient le catch-all du site. Sans
+ * `config.aac`, la factory rend `[]` : l'URL tombe sur le catch-all
+ * (`buildRoutes.tsx`), comme n'importe quelle page inexistante. Précédent :
+ * `auth/routes.tsx` gate `/recover/:user/:code` sur `config.auth.recover.mode`.
  */
 const AacPage = lazy(() => import("./pages/AacPage"));
 const AacCommunDetailPage = lazy(() => import("./pages/AacCommunDetailPage"));
 
-export const routes: ModuleRouteFactory = (): RouteObject[] => [
-  {
-    path: "/aac",
-    element: <AacPage />,
-  },
-  {
-    path: "/aac/commun/:answerId",
-    element: <AacCommunDetailPage />,
-  },
-];
+export const routes: ModuleRouteFactory = (_queryClient, config): RouteObject[] => {
+  if (!config?.aac) return [];
+  return [
+    {
+      path: "/aac",
+      element: <AacPage />,
+    },
+    {
+      path: "/aac/commun/:answerId",
+      element: <AacCommunDetailPage />,
+    },
+  ];
+};
