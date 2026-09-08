@@ -189,7 +189,12 @@
       "empty": "Aucun renseignement disponible."
     },
     "toc": {
-      "navigation": "Navigation"
+      "navigation": "Navigation",
+      "financialNeeds": "Besoins financiers",
+      "actions": "Suivi des actions",
+      "contributors": "Contributeurs",
+      "cofinancers": "Cofinanceurs",
+      "gallery": "Galerie"
     },
     "gallery": {
       "empty": "Aucune image disponible.",

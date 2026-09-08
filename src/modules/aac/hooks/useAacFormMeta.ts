@@ -29,10 +29,10 @@ interface UseAacFormMetaResult {
 }
 
 export function useAacFormMeta(formId: string | null): UseAacFormMetaResult {
-  const { api, entity, loading } = useCocolight();
+  const { api, entity, loading, me } = useCocolight();
 
   const { data, isLoading, error } = useQuery({
-    ...aacConfigQueryOptions(loading ? null : api, entity, formId),
+    ...aacConfigQueryOptions(loading ? null : api, entity, formId, me?.id ?? null),
     select: selectAacFormMeta,
   });
 
@@ -44,10 +44,10 @@ export function useAacFormMeta(formId: string | null): UseAacFormMetaResult {
  * C'est la valeur qu'emploie le backend AAP pour lire `choose[contextId]`.
  */
 export function useAacContextId(formId: string | null): string | null {
-  const { api, entity, loading } = useCocolight();
+  const { api, entity, loading, me } = useCocolight();
 
   const { data } = useQuery({
-    ...aacConfigQueryOptions(loading ? null : api, entity, formId),
+    ...aacConfigQueryOptions(loading ? null : api, entity, formId, me?.id ?? null),
     select: selectAacContextId,
   });
 
@@ -59,10 +59,10 @@ export function useAacContextId(formId: string | null): string | null {
  * dénormalise à l'écriture. Même entrée de cache, autre `select`.
  */
 export function useAacContext(formId: string | null): AacContext | null {
-  const { api, entity, loading } = useCocolight();
+  const { api, entity, loading, me } = useCocolight();
 
   const { data } = useQuery({
-    ...aacConfigQueryOptions(loading ? null : api, entity, formId),
+    ...aacConfigQueryOptions(loading ? null : api, entity, formId, me?.id ?? null),
     select: selectAacContext,
   });
 
@@ -74,10 +74,10 @@ export function useAacContext(formId: string | null): AacContext | null {
  * tire ses libellés exacts. Même entrée de cache, autre `select`.
  */
 export function useAacFormParams(formId: string | null): unknown {
-  const { api, entity, loading } = useCocolight();
+  const { api, entity, loading, me } = useCocolight();
 
   const { data } = useQuery({
-    ...aacConfigQueryOptions(loading ? null : api, entity, formId),
+    ...aacConfigQueryOptions(loading ? null : api, entity, formId, me?.id ?? null),
     select: selectAacFormParams,
   });
 
@@ -94,10 +94,10 @@ export function useAacFormParams(formId: string | null): unknown {
  * costum (sans slug, pas de `{source}`).
  */
 export function useAacFormEntity(formId: string | null): Form | null {
-  const { api, entity, loading } = useCocolight();
+  const { api, entity, loading, me } = useCocolight();
 
   const { data } = useQuery({
-    ...aacConfigQueryOptions(loading ? null : api, entity, formId),
+    ...aacConfigQueryOptions(loading ? null : api, entity, formId, me?.id ?? null),
     select: selectAacFormEntity,
   });
 

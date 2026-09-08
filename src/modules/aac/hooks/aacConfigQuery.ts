@@ -86,10 +86,12 @@ export const selectAacFormEntity = (b: AacConfigBundle): Form => b.form;
 export function aacConfigQueryOptions(
   api: Api | null,
   entity: AacHostEntity | null,
-  formId: string | null
+  formId: string | null,
+  /** Qui lit : le bundle porte un `access` calculé pour lui. Cf. `AAC_QUERY_KEYS.CONFIG`. */
+  userId: string | null = null
 ) {
   return queryOptions({
-    queryKey: AAC_QUERY_KEYS.CONFIG(formId),
+    queryKey: AAC_QUERY_KEYS.CONFIG(formId, userId),
     // `entity` est requise : sans elle, pas de slug costum, donc pas de
     // `{source}` — l'annuaire ne peut pas être interrogé.
     enabled: !!api && !!entity && !!formId,

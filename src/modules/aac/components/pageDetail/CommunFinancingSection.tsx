@@ -1,12 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { ChevronDown, Plus } from "lucide-react";
-import type { CoFormData, CoFormAnswer } from "@/modules/coform/types";
+import type { CoFormData } from "@/modules/coform/types";
 import type { AacResolvedConfig } from "../../types";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import type {
   FundingMilestone as Milestone,
   FundingAction as ProjectAction,
@@ -15,18 +14,26 @@ import type {
 } from "@/modules/cagnotte/types";
 import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import { MilestoneManageActions } from "@/modules/cagnotte/components/sections/MilestoneManageActions";
-import { MilestoneEditDialog } from "@/modules/cagnotte/components/sections/parts/MilestoneEditDialog";
-import CreateMilestoneDialog from "@/modules/cagnotte/components/sections/CreateMilestoneDialog";
 import { toSafeInt, buildItemsFromRawDepenses } from "@/modules/cagnotte/utils/dataTransform";
-import { useCommunObjectivesController } from "@/modules/aac/hooks/useCommunObjectivesController";
 import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
-import { toMilestoneStatus, type MilestoneCardPermissions } from "@/modules/aac/lib/objectiveHelpers";
+import type { CommunObjectivesController } from "./CommunMilestoneDialogs";
+import {
+  toMilestoneStatus,
+  fundableItemToMilestone,
+  fundableItemToMilestoneRef,
+  type MilestoneCardPermissions,
+} from "@/modules/aac/lib/objectiveHelpers";
 
 interface CommunFinancingSectionProps {
     formData: CoFormData;
-    answerQuery: CoFormAnswer | null;
     aacConfig: AacResolvedConfig | null;
     funding?: CagnotteResource | null;
+    /**
+     * Le contrôleur, monté UNE fois par la page. Le recevoir en prop plutôt que
+     * l'appeler ici est ce qui garantit que les deux blocs de paliers partagent le
+     * même état — sans quoi clore un palier d'un côté laissait l'autre périmé.
+     */
+    ctrl: CommunObjectivesController;
 }
 
 function FinancingMilestoneCard({
@@ -149,28 +156,9 @@ function FinancingMilestoneCard({
                     <div className="overflow-hidden">
                         <div className="mb-3">
                             <MilestoneManageActions
-                                onEdit={() => openEditMilestoneModal({
-                                    id: item.milestoneId,
-                                    title: item.name,
-                                    description: item.description ?? "",
-                                    status: toMilestoneStatus(item.status) ?? "open",
-                                    date_start: undefined,
-                                    date_end: undefined,
-                                    targetAmount: Number(item.price ?? 0),
-                                    transactions: [],
-                                    actions: item.actions ?? [],
-                                    answerDepenseIndex: typeof item.depenseIndex === "number" ? item.depenseIndex : undefined,
-                                } as Milestone)}
-                                onClose={() => onMilestoneClose(item.itemId, {
-                                    id: item.milestoneId,
-                                    title: item.name,
-                                    answerDepenseIndex: typeof item.depenseIndex === "number" ? item.depenseIndex : undefined,
-                                } as Milestone)}
-                                onDelete={() => onMilestoneDelete(item.itemId, {
-                                    id: item.milestoneId,
-                                    title: item.name,
-                                    answerDepenseIndex: typeof item.depenseIndex === "number" ? item.depenseIndex : undefined,
-                                } as Milestone)}
+                                onEdit={() => openEditMilestoneModal(fundableItemToMilestone(item))}
+                                onClose={() => onMilestoneClose(item.itemId, fundableItemToMilestoneRef(item))}
+                                onDelete={() => onMilestoneDelete(item.itemId, fundableItemToMilestoneRef(item))}
                                 isDeleting={loadingIds.deletingItemId === item.itemId}
                                 isClosing={loadingIds.closingItemId === item.itemId}
                                 closeDisabled={
@@ -181,11 +169,7 @@ function FinancingMilestoneCard({
                                 canClose={permissions.canEditMilestone({ status: toMilestoneStatus(item.status) }) && permissions.canCloseMilestone({ status: toMilestoneStatus(item.status) })}
                                 canDelete={canDeleteThisMilestone}
                                 isClosed={item.status === "close"}
-                                onRestore={() => onMilestoneRestore(item.itemId, {
-                                    id: item.milestoneId,
-                                    title: item.name,
-                                    answerDepenseIndex: typeof item.depenseIndex === "number" ? item.depenseIndex : undefined,
-                                } as Milestone)}
+                                onRestore={() => onMilestoneRestore(item.itemId, fundableItemToMilestoneRef(item))}
                                 isRestoring={loadingIds.restoringItemId === item.itemId}
                             />
                         </div>
@@ -196,48 +180,20 @@ function FinancingMilestoneCard({
     );
 }
 
-export function CommunFinancingSection({ answerQuery, funding }: CommunFinancingSectionProps) {
+export function CommunFinancingSection({ funding, ctrl }: CommunFinancingSectionProps) {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
-    const ctrl = useCommunObjectivesController({ answerQuery, funding });
 
-    const { data: depenses, refetch: refetchDepenses } = useCommunRawDepenses(ctrl.resolvedAnswerId);
-
-    const prevLoadingIdsRef = useRef(ctrl.loadingIds);
-    useEffect(() => {
-        const prev = prevLoadingIdsRef.current;
-        const justSettled =
-            (prev.closingItemId && !ctrl.loadingIds.closingItemId) ||
-            (prev.deletingItemId && !ctrl.loadingIds.deletingItemId) ||
-            (prev.restoringItemId && !ctrl.loadingIds.restoringItemId);
-        prevLoadingIdsRef.current = ctrl.loadingIds;
-        if (justSettled) refetchDepenses();
-    }, [ctrl.loadingIds, refetchDepenses]);
+    // Les dépenses brutes se resynchronisent seules : les mutations de palier
+    // déclarent `extraInvalidate` sur cette entrée de cache (cf. `milestoneCtx` dans
+    // `useCommunObjectivesController`). L'effet qui surveillait `loadingIds` a été
+    // retiré — il ne voyait que les mutations de SA propre instance du contrôleur.
+    const { data: depenses } = useCommunRawDepenses(ctrl.resolvedAnswerId);
 
     const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
 
     return (
         <div className="grid gap-4">
-            <ConfirmDialog
-                open={!!ctrl.pendingDeleteMilestone}
-                onOpenChange={(open) => {
-                    if (!open) ctrl.cancelDeleteMilestone();
-                }}
-                title={String(t("detail.objectives.deleteMilestoneConfirm.title"))}
-                description={
-                    ctrl.pendingDeleteMilestone
-                        ? String(t("detail.objectives.deleteMilestoneConfirm.description", undefined, { name: ctrl.pendingDeleteMilestone.milestone.title }))
-                        : ""
-                }
-                confirmLabel={String(t("detail.objectives.deleteMilestoneConfirm.confirm"))}
-                cancelLabel={String(t("detail.objectives.deleteMilestoneConfirm.cancel"))}
-                isDestructive
-                isPending={
-                    !!ctrl.pendingDeleteMilestone &&
-                    ctrl.loadingIds.deletingItemId === ctrl.pendingDeleteMilestone.itemId
-                }
-                onConfirm={ctrl.confirmDeleteMilestone}
-            />
             {ctrl.cagnottePerms.canCreateMilestone ? (
                 <div className="flex justify-end">
                     <Button size="sm" className="h-7 text-[11px] gap-1 px-2 bg-primary hover:bg-primary/90" onClick={ctrl.openCreateMilestoneModal}>
@@ -258,41 +214,6 @@ export function CommunFinancingSection({ answerQuery, funding }: CommunFinancing
                     loadingIds={ctrl.loadingIds}
                 />
             ))}
-            {ctrl.selectedMilestone && ctrl.milestoneEditInitialValues ? (
-                <MilestoneEditDialog
-                    open={ctrl.isEditMilestoneOpen}
-                    onOpenChange={(open) => {
-                        ctrl.setIsEditMilestoneOpen(open);
-                        if (!open) ctrl.setSelectedMilestone(null);
-                    }}
-                    initialValues={ctrl.milestoneEditInitialValues}
-                    milestoneId={ctrl.selectedMilestone.id}
-                    answerDepenseIndex={ctrl.selectedMilestone.answerDepenseIndex}
-                    mutation={ctrl.activeEditMilestoneMutation as unknown as import("@tanstack/react-query").UseMutationResult<void, Error, import("@/modules/cagnotte/actions/mutations/milestone").EditMilestoneParams>}
-                    apiErrorFallbackKey="ActionsSection.errors.milestoneEditFailed"
-                    onSuccess={async () => {
-                        await ctrl.handleMilestoneEditSuccess();
-                        await refetchDepenses();
-                    }}
-                />
-            ) : null}
-            <CreateMilestoneDialog
-                open={ctrl.isCreateMilestoneOpen}
-                onOpenChange={ctrl.setIsCreateMilestoneOpen}
-                selectedProjectId={ctrl.resolvedProjectId}
-                answerId={ctrl.resolvedAnswerId}
-                currentUserId={ctrl.currentUserId || ""}
-                existingMilestoneIds={ctrl.existingMilestoneIds}
-                isConnected={ctrl.isConnected}
-                inputIdPrefix="aac-milestone"
-                onCreated={async () => {
-                    await ctrl.refetchFundingEnvelope();
-                }}
-                onRefetch={async () => {
-                    await ctrl.refetchFundingEnvelope();
-                    await refetchDepenses();
-                }}
-            />
         </div>
     );
 }

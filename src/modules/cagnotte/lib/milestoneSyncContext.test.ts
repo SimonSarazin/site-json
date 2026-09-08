@@ -157,3 +157,31 @@ describe("resolveMilestoneSyncContext — le repli refuse ce qui n'est pas un vr
     ).toBeNull();
   });
 });
+
+/**
+ * Un item answer-only porte un `milestoneId` VIDE, et `MilestoneEditDialog` l'accepte
+ * dès qu'un `answerDepenseIndex` est fourni. Sans garde, les `findIndex` de ce
+ * résolveur apparient la première entrée dépourvue du champ — et les index rendus
+ * deviennent des chemins Mongo visant le mauvais palier.
+ */
+describe("resolveMilestoneSyncContextFromDocs — un milestoneId vide n'apparie rien", () => {
+  it("rend null plutôt que d'apparier une entrée sans palier", () => {
+    expect(
+      resolveMilestoneSyncContextFromDocs({
+        projectMilestones: [{ description: "sans milestoneId" }, { milestoneId: "m1" }],
+        depenses: [{ poste: "sans milestone" }, { milestone: "m1" }],
+        milestoneId: "",
+      }),
+    ).toBeNull();
+  });
+
+  it("apparie normalement dès que l'id est renseigné", () => {
+    const ctx = resolveMilestoneSyncContextFromDocs({
+      projectMilestones: [{ description: "sans milestoneId" }, { milestoneId: "m1" }],
+      depenses: [{ poste: "sans milestone" }, { milestone: "m1" }],
+      milestoneId: "m1",
+    });
+    expect(ctx?.projectMilestoneIndex).toBe(1);
+    expect(ctx?.answerDepenseIndex).toBe(1);
+  });
+});

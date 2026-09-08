@@ -56,6 +56,43 @@ export const AacDirectoryFieldsSchema = z.object({
   users: z.string().optional(),
 });
 
+/**
+ * Un bloc de prose de la FICHE d'un commun : une question de l'appel, rendue en
+ * section avec son ancre et son entrée de sommaire.
+ *
+ * Les blocs sont DÉCLARÉS, pas devinés : la fiche n'a pas d'équivalent du `scan`
+ * de l'annuaire, parce qu'aucune heuristique ne peut dire quelles questions d'un
+ * appel méritent une section ni dans quel ordre. Sans déclaration, la fiche ne
+ * rend aucun bloc de prose — ce qui est préférable à sept blocs vides.
+ */
+export const AacDetailSectionSchema = z.object({
+  /** Ancre DOM et cible du sommaire. Doit être unique dans la liste. */
+  id: z.string().min(1),
+  /**
+   * Titre du bloc. Omis ⇒ le LIBELLÉ de la question elle-même, ce qui fait porter
+   * l'intitulé par l'appel plutôt que par une traduction générique.
+   */
+  title: LocalizedString.optional(),
+  /** Sur-titre optionnel, au-dessus du titre. */
+  kicker: LocalizedString.optional(),
+  /** Nom d'icône lucide. Inconnu ou omis ⇒ icône par défaut. */
+  icon: z.string().optional(),
+  /** MÊME grammaire que `directory.fields` — cf. `AacDirectoryFieldsSchema`. */
+  field: z.string().min(1),
+});
+
+/** Réglages propres à la FICHE d'un commun (`/aac/commun/:answerId`). */
+export const AacDetailSchema = z.object({
+  /**
+   * Où vivent les images de la galerie : le `subKey` que porte chaque document
+   * joint (`answers.<étape>.<id>` côté document ⇒ `<étape>.<id>` en subKey).
+   * Omis ⇒ pas de galerie.
+   */
+  gallery: z.string().optional(),
+  /** Les blocs de prose, DANS L'ORDRE d'affichage. */
+  sections: z.array(AacDetailSectionSchema).optional(),
+});
+
 export const AacConfigSchema = z.object({
   /** ID du formulaire AAC (form parent `type:aap, aapType:aac`). */
   formId: z.string().min(1),
@@ -65,9 +102,13 @@ export const AacConfigSchema = z.object({
       fields: AacDirectoryFieldsSchema.optional(),
     })
     .optional(),
+  /** Réglages de la fiche d'un commun. */
+  detail: AacDetailSchema.optional(),
 });
 
 export type AacConfig = z.infer<typeof AacConfigSchema>;
+export type AacDetailConfig = z.infer<typeof AacDetailSchema>;
+export type AacDetailSectionConfig = z.infer<typeof AacDetailSectionSchema>;
 export type AacDirectoryFieldsConfig = z.infer<typeof AacDirectoryFieldsSchema>;
 
 /**

@@ -30,7 +30,7 @@ import { canManageObjectiveActions, getModalProjectEntityCandidate, resolveCommu
 import { useCommunFundingContext } from "@/modules/aac/hooks/useCommunFundingContext";
 import { useCommunFundingHost } from "@/modules/aac/hooks/useCommunFundingHost";
 import { useCommunProjectEntity } from "@/modules/aac/hooks/useCommunProjectEntity";
-import { useCommunRawDepensesDocument } from "@/modules/aac/hooks/useCommunRawDepenses";
+import { useCommunRawDepensesDocument, COMMUN_RAW_DEPENSES_QUERY_KEY } from "@/modules/aac/hooks/useCommunRawDepenses";
 import type { MilestoneSyncDocs } from "@/modules/cagnotte/lib/milestoneSyncContext";
 import { asRecord } from "@/modules/cagnotte/utils/dataTransform";
 
@@ -114,7 +114,23 @@ export function useCommunObjectivesController({
   );
 
   const actionCtx = useMemo(() => ({ api, projectId: resolvedProjectId, project: projectEntity }), [api, resolvedProjectId, projectEntity]);
-  const milestoneCtx = useMemo(() => ({ api, rawEnvelope: fundingEnvelopeData?.rawEnvelope ?? null, docs: milestoneDocs, projectId: resolvedProjectId, answerId: resolvedAnswerId }), [api, fundingEnvelopeData?.rawEnvelope, milestoneDocs, resolvedProjectId, resolvedAnswerId]);
+  /**
+   * La fiche commun relit les paliers par une SECONDE entrée de cache, que les
+   * mutations cagnotte ne connaissent pas : `useCommunRawDepenses`. Sans le déclarer
+   * ici, clore ou supprimer un palier depuis « Suivi des actions » laissait « Besoins
+   * financiers » sur l'ancien état jusqu'au rechargement de la page.
+   *
+   * Le préfixe `[clé, answerId]` suffit : la clé complète porte l'étape en 3ᵉ
+   * position, et React Query invalide par préfixe.
+   */
+  const milestoneCtx = useMemo(() => ({
+    api,
+    rawEnvelope: fundingEnvelopeData?.rawEnvelope ?? null,
+    docs: milestoneDocs,
+    projectId: resolvedProjectId,
+    answerId: resolvedAnswerId,
+    extraInvalidate: [[COMMUN_RAW_DEPENSES_QUERY_KEY, resolvedAnswerId]],
+  }), [api, fundingEnvelopeData?.rawEnvelope, milestoneDocs, resolvedProjectId, resolvedAnswerId]);
 
   const candidateActionMutation = useCandidateAction(actionCtx);
   const markActionDoneMutation = useMarkActionDone(actionCtx);

@@ -23,10 +23,10 @@ interface UseAacConfigResult {
 }
 
 export function useAacConfig(formId: string | null): UseAacConfigResult {
-  const { api, entity, loading } = useCocolight();
+  const { api, entity, loading, me } = useCocolight();
 
   const { data, isLoading, error } = useQuery({
-    ...aacConfigQueryOptions(loading ? null : api, entity, formId),
+    ...aacConfigQueryOptions(loading ? null : api, entity, formId, me?.id ?? null),
     select: selectAacConfig,
   });
 

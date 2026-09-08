@@ -189,7 +189,12 @@
       "empty": "No information available."
     },
     "toc": {
-      "navigation": "Navigation"
+      "navigation": "Navigation",
+      "financialNeeds": "Funding needs",
+      "actions": "Action tracking",
+      "contributors": "Contributors",
+      "cofinancers": "Co-funders",
+      "gallery": "Gallery"
     },
     "gallery": {
       "empty": "No images available.",

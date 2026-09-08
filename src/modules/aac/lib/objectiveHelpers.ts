@@ -4,7 +4,11 @@
  * lors de sa scission en 2 composants distincts (financement vs actions).
  */
 import type { Project } from "@communecter/cocolight-api-client";
-import type { FundingAction as ProjectAction } from "@/modules/cagnotte/types";
+import type {
+  FundingAction as ProjectAction,
+  FundingMilestone as Milestone,
+  CagnotteFundableItem,
+} from "@/modules/cagnotte/types";
 import type { CagnotteMilestoneStatus } from "@/modules/cagnotte/permissions/types";
 import { getEntityId, normalizeTags, resolveActionAuthorId } from "@/modules/cagnotte/utils/dataTransform";
 import { resolveAnswerAuthorId } from "./answerAuthor";
@@ -18,6 +22,60 @@ import { resolveAnswerAuthorId } from "./answerAuthor";
  */
 export function toMilestoneStatus(status: string | undefined): CagnotteMilestoneStatus {
   return status === "close" || status === "done" ? status : "open";
+}
+
+/**
+ * L'index de la dépense dans la réponse, quand il y en a un.
+ *
+ * Requis pour cibler la dépense quand `milestoneId` est vide — cas d'un item
+ * answer-only, cf. `editMilestoneWithSync`.
+ *
+ * ⚠️ Le garde `>= 0` n'est pas cosmétique. `useCagnotteAdapter` pose
+ * `depenseIndex: matchedDepense?.index ?? -1`, où `-1` est la SENTINELLE « ce palier
+ * projet n'a pas de dépense associée ». Un simple test `typeof === "number"` la
+ * laisse passer : `resolveMilestoneSyncContext` donne alors la priorité à l'index
+ * fourni par l'UI, et l'écriture atterrit littéralement dans
+ * `answers.<step>.depense.-1` — clé parasite créée dans le document, avec un toast
+ * de succès.
+ */
+function answerDepenseIndexOf(item: CagnotteFundableItem): number | undefined {
+  return typeof item.depenseIndex === "number" && item.depenseIndex >= 0
+    ? item.depenseIndex
+    : undefined;
+}
+
+/**
+ * La DÉSIGNATION d'un palier : de quoi l'identifier pour le clore, le supprimer ou
+ * le restaurer. Les trois handlers n'ont besoin de rien d'autre.
+ *
+ * Cette forme et la suivante étaient recopiées en littéraux `as Milestone` — huit
+ * fois entre les deux sections de la fiche commun, à l'identique.
+ */
+export function fundableItemToMilestoneRef(item: CagnotteFundableItem): Milestone {
+  return {
+    id: item.milestoneId,
+    title: item.name,
+    answerDepenseIndex: answerDepenseIndexOf(item),
+  } as Milestone;
+}
+
+/**
+ * Le palier COMPLET, tel que la modale d'édition l'attend : titre, description,
+ * statut normalisé, montant cible et actions portées.
+ */
+export function fundableItemToMilestone(item: CagnotteFundableItem): Milestone {
+  return {
+    id: item.milestoneId,
+    title: item.name,
+    description: item.description ?? "",
+    status: toMilestoneStatus(item.status) ?? "open",
+    date_start: undefined,
+    date_end: undefined,
+    targetAmount: Number(item.price ?? 0),
+    transactions: [],
+    actions: item.actions ?? [],
+    answerDepenseIndex: answerDepenseIndexOf(item),
+  } as Milestone;
 }
 
 export function resolveAacActionEntityId(actionLike: { id?: string; _id?: string; entityId?: string } | null | undefined): string {

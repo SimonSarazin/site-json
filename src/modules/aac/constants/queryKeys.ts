@@ -12,10 +12,17 @@
  * pour préserver la mutualisation du cache.
  */
 export const AAC_QUERY_KEYS = {
-  // Config résolue d'un AAC (form parent + aapConfig + inputs). PUBLIQUE.
+  // Config résolue d'un AAC (form parent + aapConfig + inputs).
   // Producteur : useAacConfig
   // Consommateurs invalidants : (à venir) éditeur de config AAC
-  CONFIG: (formId: string | null) => ["aac-config", formId] as const,
+  //
+  // `userId` en DERNIER segment, comme COMMUNS et FACETS : le bundle conserve
+  // l'instance `Form`, dont le `serverData.access` (`restrictedFields`) est calculé
+  // POUR L'UTILISATEUR COURANT. Sans ce segment, l'entrée préchargée en anonyme
+  // serait resservie à un utilisateur connecté — le défaut que `COFORM_QUERY_KEYS.FORM`
+  // vient précisément de corriger.
+  CONFIG: (formId: string | null, userId: string | null = null) =>
+    ["aac-config", formId, userId] as const,
   CONFIG_PREFIX: () => ["aac-config"] as const,
 
   // Listing des communs d'un AAC, ISOLÉ PAR CAMPAGNE.

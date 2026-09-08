@@ -5,6 +5,9 @@ import { useT } from "@/hooks/useT";
 import { useState, useRef, useLayoutEffect } from "react";
 import { Layers } from "lucide-react";
 import { ProseContent } from "@/components/shared/ProseContent";
+import { DEFAULT_AAC_STEP } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
+import { useAacDirectoryContext } from "../../hooks/useAacDirectoryContext";
+import type { AacCardFieldRef } from "../../lib/resolveAacCardFields";
 
 interface CommunHeroProps {
     formData: CoFormData;
@@ -23,12 +26,28 @@ export function CommunHero({formData: _formData, answerData, aacConfig, deposite
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
 
-    const depenseStepKey = aacConfig?.steps?.[0]?.key || "aapStep1";
+    /**
+     * L'étape RÉSOLUE, pas la première : `resolveAacConfig` calcule
+     * `roles.depenseStepKey` en cherchant l'input `depense`, précisément parce que
+     * ce n'est pas forcément l'étape 0 (cf. `doc/34-module-aac.md` §4).
+     */
+    const depenseStepKey = aacConfig?.roles?.depenseStepKey || DEFAULT_AAC_STEP;
+
+    /**
+     * Les mots-clés et le descriptif court se lisent par leur RÉFÉRENCE RÉSOLUE, et
+     * non par un identifiant de question en dur — `doc/34-module-aac.md` §9 l'interdit.
+     * Les deux étaient déjà déclarés dans `config.aac.directory.fields` du site
+     * (`tags` et `description`) : la page recopiait simplement les mêmes ids à la main.
+     */
+    const { fields } = useAacDirectoryContext();
+    const readAnswer = (ref: AacCardFieldRef | null): unknown =>
+        ref?.stepKey ? answerData?.[ref.stepKey]?.[ref.id] : undefined;
+
     const rawTitle = answerData?.[depenseStepKey]?.titre;
     const title = rawTitle ? String(rawTitle) : t("detail.noname");
-    const keywords = answerData?.[depenseStepKey]?.aapStep1m03ot9qymmfgashp7l || [];
+    const keywords = readAnswer(fields.tags) || [];
     const tags = answerData?.[depenseStepKey]?.tags || [];
-    const shortDesc = answerData?.[depenseStepKey]?.aapStep1lzi62x3etw49gyc424d || t("detail.noShortDesc");
+    const shortDesc = readAnswer(fields.description) || t("detail.noShortDesc");
     const longDesc = answerData?.[depenseStepKey]?.description || t("detail.nodesc");
     const [isExpanded, setIsExpanded] = useState(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
@@ -63,9 +82,12 @@ export function CommunHero({formData: _formData, answerData, aacConfig, deposite
             ) : null}
 
             <div className="flex flex-wrap gap-2">
-                {Array.isArray(keywords) ? keywords.map(keyword => (
-                    <span className="px-2 py-1 text-[10px] font-bold tracking-widest uppercase border border-border text-muted-foreground rounded-sm">
-                        {String(keyword)} 
+                {Array.isArray(keywords) ? keywords.map((keyword, i) => (
+                    <span
+                        key={`${String(keyword)}-${i}`}
+                        className="px-2 py-1 text-[10px] font-bold tracking-widest uppercase border border-border text-muted-foreground rounded-sm"
+                    >
+                        {String(keyword)}
                     </span>
                 )) : null}
             </div>

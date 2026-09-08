@@ -7,6 +7,10 @@ import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import AacDirectorySection from "../sections/AacDirectorySection";
+// Enregistre le bundle i18n "modules/aac". Les SECTIONS le font déjà ; sans cet
+// import, une arrivée DIRECTE sur la route (lien partagé, F5) rendait la page
+// avant tout enregistrement — et `t()` retournait les clés brutes.
+import "../i18n";
 
 /**
  * Les routes de module sont montées sous `RootLayout` (providers + `<Outlet/>`),

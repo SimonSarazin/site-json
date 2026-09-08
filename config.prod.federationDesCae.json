@@ -143,6 +143,67 @@
         "users": "links.cae",
         "choose": "answers.aapStep2.choose"
       }
+    },
+    "detail": {
+      "gallery": "aapStep1.image",
+      "sections": [
+        {
+          "id": "modele",
+          "title": {
+            "fr": "Modèle économique"
+          },
+          "icon": "Layers",
+          "field": "answers.aapStep1.aapStep1lpvinn7ld70wbk7w339"
+        },
+        {
+          "id": "gouvernance",
+          "title": {
+            "fr": "Mode de gouvernance"
+          },
+          "icon": "UsersRound",
+          "field": "answers.aapStep1.aapStep1lpvioouzejcnjy7ffw"
+        },
+        {
+          "id": "juridique",
+          "title": {
+            "fr": "Cadre juridique"
+          },
+          "icon": "Scale",
+          "field": "answers.aapStep1.aapStep1lpvip7f9pa6et762ysa"
+        },
+        {
+          "id": "partenariats",
+          "title": {
+            "fr": "Partenariats & coopération"
+          },
+          "icon": "HandHeart",
+          "field": "answers.aapStep1.aapStep1lpvipvzp13vf2jypqgxq"
+        },
+        {
+          "id": "contribution",
+          "title": {
+            "fr": "Modalités de contribution"
+          },
+          "icon": "FileText",
+          "field": "answers.aapStep1.aapStep1lqb428ajrbhwdbmg6qi"
+        },
+        {
+          "id": "usages",
+          "title": {
+            "fr": "Cas d'usages"
+          },
+          "icon": "Users",
+          "field": "answers.aapStep1.aapStep1lusoklfzokkn4svl1ei"
+        },
+        {
+          "id": "equipe",
+          "title": {
+            "fr": "Équipe & communauté"
+          },
+          "icon": "UserCheck",
+          "field": "answers.aapStep1.aapStep1m0w49vpl5jm001xwvsv"
+        }
+      ]
     }
   },
   "cagnotteModuleConfig": {

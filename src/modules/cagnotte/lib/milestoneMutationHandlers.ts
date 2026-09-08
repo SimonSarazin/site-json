@@ -114,10 +114,22 @@ function getMilestoneConstraints(
     if (!matchesAnswer && !matchesProject) continue;
 
     const actions = Array.isArray(projectData.actions) ? projectData.actions : [];
-    const actionsForMilestone = actions.filter((rawAction) => {
-      const action = asRecord(rawAction);
-      return String(asRecord(action.milestone).milestoneId ?? '').trim() === params.milestoneId;
-    });
+    /**
+     * Un `milestoneId` VIDE ne désigne aucun palier — il ne doit donc apparier
+     * AUCUNE action.
+     *
+     * Sans ce garde, la comparaison matche toute action dépourvue de palier
+     * (`asRecord(undefined)` → `{}` → `''`), et `deleteMilestoneWithSync` les supprime
+     * une à une. Le cas est atteignable depuis la fiche commun : un item answer-only
+     * porte un `milestoneId` vide, que `MilestoneEditDialog` accepte dès qu'un
+     * `answerDepenseIndex` est fourni.
+     */
+    const actionsForMilestone = params.milestoneId
+      ? actions.filter((rawAction) => {
+          const action = asRecord(rawAction);
+          return String(asRecord(action.milestone).milestoneId ?? '').trim() === params.milestoneId;
+        })
+      : [];
 
     const actionIds = actionsForMilestone
       .map((rawAction) => getEntityIdFromUnknown(rawAction))

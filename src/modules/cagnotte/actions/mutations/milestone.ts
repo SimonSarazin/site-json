@@ -46,6 +46,19 @@ export interface MilestoneMutationContext {
   docs?: MilestoneSyncDocs | null;
   projectId: string;
   answerId: string;
+  /**
+   * Clés à invalider EN PLUS du défaut, déclarées par l'appelant — même rôle que
+   * `extraInvalidate` sur le contexte coform (`coform/actions/mutations/core.ts`).
+   *
+   * Nécessaire parce qu'un consommateur peut relire les mêmes paliers par une autre
+   * entrée de cache que `funding-envelope`, que ces mutations ne connaissent pas :
+   * la fiche commun AAC les relit via `COMMUN_RAW_DEPENSES_QUERY_KEY`. Sans ça,
+   * clore un palier depuis un écran laissait l'écran voisin sur l'ancien état.
+   *
+   * Déclarées ICI plutôt que dans le `onSuccess` passé à `mutate()` : React Query
+   * saute les callbacks par appel dès que l'observateur perd son abonné.
+   */
+  extraInvalidate?: QueryKey[];
 }
 
 /**
@@ -135,9 +148,12 @@ export function createMilestoneMutation<TParams = void>(config: MilestoneMutatio
       getSuccessParams: config.getSuccessParams
         ? (_data, variables) => config.getSuccessParams!(variables)
         : undefined,
-      invalidateQueries: config.invalidate
-        ? config.invalidate(ctx)
-        : [CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX()],
+      invalidateQueries: [
+        ...(config.invalidate
+          ? config.invalidate(ctx)
+          : [CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX()]),
+        ...(ctx.extraInvalidate ?? []),
+      ],
     });
   };
 }

@@ -73,6 +73,14 @@ export function resolveMilestoneSyncContextFromDocs(params: {
   /** Provenance, reportée telle quelle sur le contexte rendu. Défaut : les documents. */
   fromDocs?: boolean;
 }): MilestoneSyncContext | null {
+  /**
+   * Un `milestoneId` VIDE ne désigne aucun palier : sans ce garde, les deux
+   * `findIndex` apparient la PREMIÈRE entrée dépourvue du champ (`asRecord(undefined)`
+   * → `{}` → `''`), et les index rendus deviennent des chemins Mongo pointant sur le
+   * mauvais palier ou la mauvaise dépense.
+   */
+  if (!params.milestoneId) return null;
+
   const projectMilestoneIndex = params.projectMilestones.findIndex(
     (milestone) => String(asRecord(milestone).milestoneId ?? '').trim() === params.milestoneId
   );

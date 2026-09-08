@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { canManageObjectiveActions, normalizeActionForEdit, resolveCommunOwnerIds } from "./objectiveHelpers";
+import {
+  canManageObjectiveActions,
+  normalizeActionForEdit,
+  resolveCommunOwnerIds,
+  fundableItemToMilestone,
+  fundableItemToMilestoneRef,
+  toMilestoneStatus,
+} from "./objectiveHelpers";
+import type { CagnotteFundableItem } from "@/modules/cagnotte/types";
 
 describe("resolveCommunOwnerIds", () => {
   it("retient le déposant, quel que soit le visiteur", () => {
@@ -54,5 +62,62 @@ describe("normalizeActionForEdit", () => {
     expect(normalizeActionForEdit({ idUserAuthor: "u2" }).authorId).toBe("u2");
     // Documents anciens : personne n'est déclaré — l'action reste éditable par l'admin seul.
     expect(normalizeActionForEdit({ name: "Sans auteur" }).authorId).toBe("");
+  });
+});
+
+/**
+ * `useCagnotteAdapter` pose `depenseIndex: matchedDepense?.index ?? -1`, où `-1` est
+ * la SENTINELLE « ce palier projet n'a pas de dépense associée ». Elle ne doit jamais
+ * ressortir comme un index : la chaîne de mutation lui donne priorité sur l'index
+ * résolu et écrirait dans `answers.<step>.depense.-1`.
+ */
+describe("fundableItemToMilestone — la sentinelle -1 ne sort pas", () => {
+  const item = (over: Partial<CagnotteFundableItem> = {}) =>
+    ({
+      fromType: "depense",
+      itemId: "i1",
+      milestoneId: "m1",
+      depenseIndex: 0,
+      name: "Palier",
+      price: 100,
+      status: "open",
+      actions: [],
+      funding: [],
+      currentFunding: 0,
+      unpaidFunding: 0,
+      userPledge: 0,
+      allFunding: [],
+      ...over,
+    }) as CagnotteFundableItem;
+
+  it("garde un index réel, y compris 0", () => {
+    expect(fundableItemToMilestone(item({ depenseIndex: 0 })).answerDepenseIndex).toBe(0);
+    expect(fundableItemToMilestoneRef(item({ depenseIndex: 3 })).answerDepenseIndex).toBe(3);
+  });
+
+  it("écarte la sentinelle -1, sur les deux formes", () => {
+    expect(fundableItemToMilestone(item({ depenseIndex: -1 })).answerDepenseIndex).toBeUndefined();
+    expect(fundableItemToMilestoneRef(item({ depenseIndex: -1 })).answerDepenseIndex).toBeUndefined();
+  });
+
+  it("reporte les champs du palier sans les inventer", () => {
+    const m = fundableItemToMilestone(item({ name: "Serveur", price: 250, description: undefined }));
+    expect(m.title).toBe("Serveur");
+    expect(m.targetAmount).toBe(250);
+    expect(m.description).toBe("");
+  });
+});
+
+describe("toMilestoneStatus", () => {
+  it("laisse passer les trois valeurs du domaine", () => {
+    expect(toMilestoneStatus("open")).toBe("open");
+    expect(toMilestoneStatus("done")).toBe("done");
+    expect(toMilestoneStatus("close")).toBe("close");
+  });
+
+  it("traite tout statut inconnu comme ouvert — jamais figé par erreur", () => {
+    expect(toMilestoneStatus(undefined)).toBe("open");
+    expect(toMilestoneStatus("")).toBe("open");
+    expect(toMilestoneStatus("archivé")).toBe("open");
   });
 });

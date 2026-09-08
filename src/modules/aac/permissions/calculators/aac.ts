@@ -56,8 +56,12 @@ export function calculateAacPermissions(
     if (isAdmin) return active;
     if (!active) return false;
     if (gates.oneAnswerPerPers && data?.hasOwnCommun) return false;
-    if (gates.standalone) return true; // réponse possible (avec/sans compte)
-    if (!isConnected) return false;
+    // `standalone` remplace l'exigence de CONNEXION (réponse possible sans compte),
+    // pas les gates communauté/rôles — c'est la règle de l'en-tête, et celle que
+    // `canCreateCommunReason` ci-dessous appliquait déjà (`!isConnected &&
+    // !gates.standalone`). La décision, elle, court-circuitait les deux gardes
+    // suivantes : un anonyme obtenait le dépôt sur un appel réservé aux membres.
+    if (!gates.standalone && !isConnected) return false;
     if (gates.onlyMemberAccess && !isCommunityMember) return false;
     if (!hasRequiredRole) return false;
     return true;

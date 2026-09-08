@@ -1,7 +1,8 @@
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, type ElementType, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
-import { AlertCircle, Home, Sparkles, ListChecks, Handshake, Layers, UsersRound, Scale, HandHeart, FileText, Users, UserCheck, HeartHandshake, Pencil, Image as ImageIcon } from "lucide-react";
+import { AlertCircle, Home, Sparkles, ListChecks, Handshake, FileText, HeartHandshake, Pencil, Image as ImageIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { toast } from "sonner";
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -27,6 +28,8 @@ import { CommunFinancingCard } from "../components/pageDetail/CommunFinancingCar
 import { CommunTocNav, type TocSection } from "../components/pageDetail/CommunTocNav.tsx";
 import { CommunFinancingSection } from "../components/pageDetail/CommunFinancingSection.tsx";
 import { CommunActionsSection } from "../components/pageDetail/CommunActionsSection.tsx";
+import { CommunMilestoneDialogs } from "../components/pageDetail/CommunMilestoneDialogs.tsx";
+import { useCommunObjectivesController } from "../hooks/useCommunObjectivesController";
 import { CommunContributorsSection } from "../components/pageDetail/CommunContributorsSection.tsx";
 import { CommunCofinancersTable } from "../components/pageDetail/CommunCofinancersTable.tsx";
 import { CommunProse } from "../components/pageDetail/CommunProse.tsx";
@@ -35,6 +38,12 @@ import { useAacFundingResource } from "../hooks/useAacFundingResource";
 import { useCommunFundingHost } from "../hooks/useCommunFundingHost";
 import { useCommunFundingContext } from "../hooks/useCommunFundingContext";
 import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
+import { useAacDetailSections, useAacGallerySubKey } from "../hooks/useAacDetailSections";
+import type { AacDetailSection } from "../lib/resolveAacDetailSections";
+// Enregistre le bundle i18n "modules/aac". Les SECTIONS le font déjà ; sans cet
+// import, une arrivée DIRECTE sur la route (lien partagé, F5) rendait la page
+// avant tout enregistrement — et `t()` retournait les clés brutes.
+import "../i18n";
 
 export interface Task {
     label: string;
@@ -48,22 +57,14 @@ export interface Objective {
     tasks: Task[];
 }
 
-const AAP_STEP1_FIELD_KEYS = {
-    modeleEconomique: "aapStep1lpvinn7ld70wbk7w339",
-    gouvernance: "aapStep1lpvioouzejcnjy7ffw",
-    cadreJuridique: "aapStep1lpvip7f9pa6et762ysa",
-    partenariats: "aapStep1lpvipvzp13vf2jypqgxq",
-    modalitesContribution: "aapStep1lqb428ajrbhwdbmg6qi",
-    casUsages: "aapStep1lusoklfzokkn4svl1ei",
-    equipeCommunaute: "aapStep1m0w49vpl5jm001xwvsv",
-} as const;
-
-const GALLERY_IMAGE_SUBKEY = "aapStep1.image";
-
+/** @param subKey le `subKey` que porte un document de galerie, déclaré par le site. */
 function extractGalleryImages(
     documents: CoFormAnswer["documents"],
-    baseUrl: string
+    baseUrl: string,
+    subKey: string | null
 ): GalleryImage[] {
+    if (!subKey) return [];
+
     const list: AnswerDocumentFile[] = Array.isArray(documents)
         ? documents
         : documents
@@ -71,24 +72,42 @@ function extractGalleryImages(
             : [];
 
     return list
-        .filter((doc) => doc?.subKey === GALLERY_IMAGE_SUBKEY && doc?.name)
+        .filter((doc) => doc?.subKey === subKey && doc?.name)
         .map((doc) => ({
             src: `${baseUrl}/upload/${doc.moduleId}/${doc.folder}/${doc.name}`,
             alt: doc.name,
         }));
 }
 
-const STATIC_SECTIONS: TocSection[] = [
-    { id: "cofinanceurs", label: "Cofinanceurs", icon: Handshake },
-    { id: "modele", label: "Modèle économique", icon: Layers },
-    { id: "gouvernance", label: "Gouvernance", icon: UsersRound },
-    { id: "juridique", label: "Cadre juridique", icon: Scale },
-    { id: "partenariats", label: "Partenariats", icon: HandHeart },
-    { id: "contribution", label: "Contribution", icon: FileText },
-    { id: "usages", label: "Cas d'usages", icon: Users },
-    { id: "equipe", label: "Équipe & communauté", icon: UserCheck },
-    { id: "galerie", label: "Galerie", icon: ImageIcon },
-];
+/**
+ * L'icône d'un bloc déclaré. Le nom vient de la config ; inconnu ou absent, on
+ * retombe sur `FileText` plutôt que de ne rien rendre au sommaire.
+ */
+function iconFor(name?: string): ElementType {
+    if (!name) return FileText;
+    return ({ className }: { className?: string }) => (
+        <DynamicIcon name={name as IconName} className={className} />
+    );
+}
+
+/**
+ * Le contenu d'un bloc, lu par sa référence résolue.
+ *
+ * Rend un tableau VIDE quand la réponse ne porte rien — et non `[""]`, que
+ * produisait l'ancienne forme `[String(x ?? "")]` : un tableau d'une chaîne vide
+ * a une longueur de 1, donc un bloc sans contenu était indistinguable d'un bloc
+ * rempli, et se rendait vide.
+ */
+function proseOf(answer: CoFormAnswer | undefined, section: AacDetailSection): string[] {
+    const brut = section.field.stepKey
+        ? (answer?.answers as Record<string, Record<string, unknown>> | undefined)
+              ?.[section.field.stepKey]?.[section.field.id]
+        : (answer as Record<string, unknown> | undefined)?.[section.field.id];
+
+    if (Array.isArray(brut)) return brut.map(String).filter((p) => p.trim() !== "");
+    const texte = brut == null ? "" : String(brut);
+    return texte.trim() === "" ? [] : [texte];
+}
 
 export default function AacCommunDetailPage() {
     useLoadNamespace("modules/aac");
@@ -105,7 +124,10 @@ export default function AacCommunDetailPage() {
 
     // Requête CoForm
     const answerQuery = useQuery({
-        queryKey: ["aac-commun-detail", answerId],
+        // `me?.id` en dernier segment : `answer.serverData` porte un `access` calculé
+        // pour le lecteur. Sans lui, l'entrée d'un anonyme serait resservie à un
+        // utilisateur connecté — même motif que `COFORM_QUERY_KEYS.FORM`.
+        queryKey: ["aac-commun-detail", answerId, me?.id ?? null],
         enabled: isReady && !!answerId,
         staleTime: 2 * 60 * 1000,
         queryFn: async (): Promise<CoFormAnswer> => {
@@ -151,7 +173,8 @@ export default function AacCommunDetailPage() {
 
     // Requête Configuration Formulaire
     const formQuery = useQuery({
-        queryKey: ["aac-commun-form", formId],
+        // Idem : `form.serverData.access.restrictedFields` dépend du lecteur.
+        queryKey: ["aac-commun-form", formId, me?.id ?? null],
         enabled: isReady && !!formId,
         staleTime: 5 * 60 * 1000,
         queryFn: async (): Promise<CoFormData> => {
@@ -186,16 +209,55 @@ export default function AacCommunDetailPage() {
 
     const isProjectPhase = canManageObjectiveActions(targetResource?.projectId);
 
+    /**
+     * Les blocs de prose de la fiche, DÉCLARÉS par `config.aac.detail.sections`.
+     *
+     * Ils étaient auparavant sept identifiants de questions codés en dur, sept
+     * extractions et sept blocs JSX recopiés — pour un seul appel. La résolution
+     * réutilise `parseFieldPath` et l'entrée de cache de `aacConfigQuery` : aucune
+     * requête supplémentaire.
+     */
+    const detailSections = useAacDetailSections(formId ?? null);
+    const gallerySubKey = useAacGallerySubKey();
+
+    /**
+     * Le contrôleur des paliers, monté UNE SEULE FOIS pour la page.
+     *
+     * « Besoins financiers » et « Suivi des actions » l'appelaient chacun : deux états
+     * indépendants pour les mêmes paliers, donc une mutation lancée d'un bloc laissait
+     * l'autre périmé. Monté ici, les deux blocs partagent le même état — et leurs
+     * dialogues, qui seraient sinon pilotés en double, remontent avec lui dans
+     * `CommunMilestoneDialogs`.
+     *
+     * Appelé AVANT les retours anticipés plus bas : un hook ne se monte pas
+     * conditionnellement.
+     */
+    const objectivesCtrl = useCommunObjectivesController({
+        answerQuery: answerQuery.data ?? null,
+        funding: targetResource,
+    });
+
+    /**
+     * Le sommaire dérive des MÊMES sources que le rendu : les blocs structurels
+     * d'un côté, les blocs déclarés de l'autre. Une seule liste à tenir.
+     */
     const SECTIONS: TocSection[] = useMemo(() => [
-        { id: "besoins-financiers", label: "Besoins financiers", icon: Sparkles },
+        { id: "besoins-financiers", label: String(t("detail.toc.financialNeeds")), icon: Sparkles },
         ...(isProjectPhase
             ? [
-                  { id: "objectifs", label: "Suivi des actions", icon: ListChecks },
-                  { id: "contributeurs", label: "Contributeurs", icon: HeartHandshake },
+                  { id: "objectifs", label: String(t("detail.toc.actions")), icon: ListChecks },
+                  { id: "contributeurs", label: String(t("detail.toc.contributors")), icon: HeartHandshake },
               ]
             : []),
-        ...STATIC_SECTIONS,
-    ], [isProjectPhase]);
+        { id: "cofinanceurs", label: String(t("detail.toc.cofinancers")), icon: Handshake },
+        ...detailSections.map((section) => ({
+            id: section.id,
+            label: section.title,
+            icon: iconFor(section.icon),
+        })),
+        ...(gallerySubKey ? [{ id: "galerie", label: String(t("detail.toc.gallery")), icon: ImageIcon }] : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `t` est recréé à chaque rendu (cf. useT) : l'inclure annulerait le mémo.
+    ], [isProjectPhase, detailSections, gallerySubKey]);
 
     useEffect(() => {
         if (configError) {
@@ -243,7 +305,7 @@ export default function AacCommunDetailPage() {
 
     if (!answerId) return <PageShell><ErrorCard title={String(t("page.communDetail"))} description={String(t("page.missingAnswer"))} /></PageShell>;
     if (answerQuery.isLoading || formQuery.isLoading) return <PageShell><LoadingCard label={String(t("page.loading"))} /></PageShell>;
-    if (answerQuery.error || formQuery.error) return <PageShell><ErrorCard title={String(t("page.error"))} description="Une erreur est survenue." /></PageShell>;
+    if (answerQuery.error || formQuery.error) return <PageShell><ErrorCard title={String(t("page.error"))} description={String(t("page.errorMessage"))} /></PageShell>;
     if (!answerQuery.data || !formQuery.data) return <PageShell><ErrorCard title={String(t("page.notFound"))} description={String(t("page.notFoundMessage"))} /></PageShell>;
 
     const answer = answerQuery.data;
@@ -299,15 +361,8 @@ export default function AacCommunDetailPage() {
         await answerQuery.refetch();
     };
 
-    const galleryImages = extractGalleryImages(answer.documents, getBaseUrl());
+    const galleryImages = extractGalleryImages(answer.documents, getBaseUrl(), gallerySubKey);
 
-    const modeleEco = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.modeleEconomique] ?? "")];
-    const gouvernance = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.gouvernance] ?? "")];
-    const juridique = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.cadreJuridique] ?? "")];
-    const partenariats = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.partenariats] ?? "")];
-    const modalites = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.modalitesContribution] ?? "")];
-    const usages = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.casUsages] ?? "")];
-    const equipe = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.equipeCommunaute] ?? "")];
     return (
         <PageShell>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-24">
@@ -373,33 +428,35 @@ export default function AacCommunDetailPage() {
                     />
                 </div>
 
+                <CommunMilestoneDialogs ctrl={objectivesCtrl} />
+
                 <div className="grid lg:grid-cols-12 gap-8 lg:gap-12">
                     <CommunTocNav sections={SECTIONS} activeSection={activeSection} />
 
                     <div className="lg:col-span-9 space-y-20">
 
-                        <Section id="besoins-financiers" title="Besoins financiers" kicker="Paliers">
+                        <Section id="besoins-financiers" title={String(t("detail.toc.financialNeeds"))}>
                             <CommunFinancingSection
                                 formData={formData}
-                                answerQuery={answer ?? {}}
                                 aacConfig={config}
                                 funding={targetResource}
+                                ctrl={objectivesCtrl}
                             />
                         </Section>
 
                         {isProjectPhase && (
-                            <Section id="objectifs" title="Suivi des actions" kicker="Avancement">
+                            <Section id="objectifs" title={String(t("detail.toc.actions"))}>
                                 <CommunActionsSection
                                     formData={formData}
-                                    answerQuery={answer ?? {}}
                                     aacConfig={config}
                                     funding={targetResource}
+                                    ctrl={objectivesCtrl}
                                 />
                             </Section>
                         )}
 
                         {isProjectPhase && (
-                            <Section id="contributeurs" title="Contributeurs">
+                            <Section id="contributeurs" title={String(t("detail.toc.contributors"))}>
                                 <CommunContributorsSection
                                     projectId={targetResource?.projectId}
                                     projectSlug={projectSlug}
@@ -409,7 +466,7 @@ export default function AacCommunDetailPage() {
                             </Section>
                         )}
 
-                        <Section id="cofinanceurs" title="Cofinanceurs" kicker="Partenaires engagés">
+                        <Section id="cofinanceurs" title={String(t("detail.toc.cofinancers"))}>
                             <CommunCofinancersTable 
                                 formData={formData}
                                 answerQuery={answer ?? {}}
@@ -418,58 +475,22 @@ export default function AacCommunDetailPage() {
                             />
                         </Section>
 
-                        {/* Modèle économique */}
-                        <Section id="modele" title="Modèle économique">
-                            <CommunProse 
-                                paragraphs={modeleEco}
-                            />
-                        </Section>
+                        {detailSections.map((section) => (
+                            <Section
+                                key={section.id}
+                                id={section.id}
+                                title={section.title}
+                                kicker={section.kicker}
+                            >
+                                <CommunProse paragraphs={proseOf(answer, section)} />
+                            </Section>
+                        ))}
 
-                        {/* Gouvernance */}
-                        <Section id="gouvernance" title="Mode de gouvernance">
-                            <CommunProse 
-                                paragraphs={gouvernance}
-                            />
-                        </Section>
-
-                        {/* Cadre Juridique */}
-                        <Section id="juridique" title="Choix juridiques de protection">
-                            <CommunProse 
-                                paragraphs={juridique}
-                            />
-                        </Section>
-
-                        {/* Partenariats */}
-                        <Section id="partenariats" title="Partenariats & coopération">
-                            <CommunProse 
-                                paragraphs={partenariats}
-                            />
-                        </Section>
-
-                        {/* Modalités de contribution */}
-                        <Section id="contribution" title="Modalités de contribution">
-                            <CommunProse 
-                                paragraphs={modalites}
-                            />
-                        </Section>
-
-                        {/* Cas d'usages */}
-                        <Section id="usages" title="Cas d'usages du commun">
-                            <CommunProse 
-                                paragraphs={usages}
-                            />
-                        </Section>
-
-                        {/* Équipe & communauté */}
-                        <Section id="equipe" title="Équipe & communauté">
-                            <CommunProse
-                                paragraphs={equipe}
-                            />
-                        </Section>
-
-                        <Section id="galerie" title="Galerie" kicker="Photos">
-                            <GallerySection images={galleryImages} />
-                        </Section>
+                        {gallerySubKey ? (
+                            <Section id="galerie" title={String(t("detail.toc.gallery"))}>
+                                <GallerySection images={galleryImages} />
+                            </Section>
+                        ) : null}
                     </div>
                 </div>
             </div>
@@ -527,6 +548,8 @@ function LoadingCard({ label }: { label: string }) {
 }
 
 function ErrorCard({ title, description }: { title: string; description: string }) {
+    // Le namespace est déjà chargé par la page ; `useT` seul suffit ici.
+    const t = useT("modules/aac");
     return (
         <div className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center text-center">
             <div className="mb-6 rounded-full bg-muted/50 p-6 ring-1 ring-border shadow-sm">
@@ -538,7 +561,7 @@ function ErrorCard({ title, description }: { title: string; description: string 
                 <Button asChild variant="outline" className="gap-2">
                     <Link to="/">
                         <Home className="h-4 w-4" />
-                        Retour à l'accueil
+                        {String(t("page.backHome"))}
                     </Link>
                 </Button>
             </div>

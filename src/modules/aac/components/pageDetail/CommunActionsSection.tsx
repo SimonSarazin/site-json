@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { ChevronDown, Plus, Pencil, Trash2, UserPlus, Loader2 } from "lucide-react";
-import type { CoFormData, CoFormAnswer } from "@/modules/coform/types";
+import type { CoFormData } from "@/modules/coform/types";
 import type { AacResolvedConfig } from "../../types";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -16,23 +16,24 @@ import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import { ContributorsAvatars } from "@/modules/cagnotte/components/sections/parts/badges";
 import { ActionCreateDialog } from "@/modules/cagnotte/components/sections/parts/ActionCreateDialog";
 import { ActionEditDialog } from "@/modules/cagnotte/components/sections/parts/ActionEditDialog";
-import { MilestoneEditDialog } from "@/modules/cagnotte/components/sections/parts/MilestoneEditDialog";
-import CreateMilestoneDialog from "@/modules/cagnotte/components/sections/CreateMilestoneDialog";
 import { MilestoneManageActions } from "@/modules/cagnotte/components/sections/MilestoneManageActions";
 import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
-import { useCommunObjectivesController } from "@/modules/aac/hooks/useCommunObjectivesController";
+import type { CommunObjectivesController } from "./CommunMilestoneDialogs";
 import {
   normalizeActionForEdit,
   resolveAacActionEntityId,
   toMilestoneStatus,
+  fundableItemToMilestone,
+  fundableItemToMilestoneRef,
   type MilestoneCardPermissions,
 } from "@/modules/aac/lib/objectiveHelpers";
 
 interface CommunActionsSectionProps {
     formData: CoFormData;
-    answerQuery: CoFormAnswer | null;
     aacConfig: AacResolvedConfig | null;
     funding?: CagnotteResource | null;
+    /** Le contrôleur, monté UNE fois par la page — cf. `CommunMilestoneDialogs`. */
+    ctrl: CommunObjectivesController;
 }
 
 function ActionRowButton({
@@ -254,30 +255,9 @@ function ActionsMilestoneCard({
                     <div className="overflow-hidden">
                         <div className="mb-3">
                             <MilestoneManageActions
-                                onEdit={() => openEditMilestoneModal({
-                                    id: item.milestoneId,
-                                    title: item.name,
-                                    description: item.description ?? "",
-                                    status: toMilestoneStatus(item.status) ?? "open",
-                                    date_start: undefined,
-                                    date_end: undefined,
-                                    targetAmount: Number(item.price ?? 0),
-                                    transactions: [],
-                                    actions: item.actions ?? [],
-                                    // Requis pour cibler la dépense quand id (milestoneId) est vide
-                                    // (item answer-only) — cf. editMilestoneWithSync.
-                                    answerDepenseIndex: typeof item.depenseIndex === "number" ? item.depenseIndex : undefined,
-                                } as Milestone)}
-                                onClose={() => onMilestoneClose(item.itemId, {
-                                    id: item.milestoneId,
-                                    title: item.name,
-                                    answerDepenseIndex: typeof item.depenseIndex === "number" ? item.depenseIndex : undefined,
-                                } as Milestone)}
-                                onDelete={() => onMilestoneDelete(item.itemId, {
-                                    id: item.milestoneId,
-                                    title: item.name,
-                                    answerDepenseIndex: typeof item.depenseIndex === "number" ? item.depenseIndex : undefined,
-                                } as Milestone)}
+                                onEdit={() => openEditMilestoneModal(fundableItemToMilestone(item))}
+                                onClose={() => onMilestoneClose(item.itemId, fundableItemToMilestoneRef(item))}
+                                onDelete={() => onMilestoneDelete(item.itemId, fundableItemToMilestoneRef(item))}
                                 isDeleting={loadingIds.deletingItemId === item.itemId}
                                 isClosing={loadingIds.closingItemId === item.itemId}
                                 closeDisabled={
@@ -288,11 +268,7 @@ function ActionsMilestoneCard({
                                 canClose={permissions.canEditMilestone({ status: toMilestoneStatus(item.status) }) && permissions.canCloseMilestone({ status: toMilestoneStatus(item.status) })}
                                 canDelete={canDeleteThisMilestone}
                                 isClosed={item.status === "close"}
-                                onRestore={() => onMilestoneRestore(item.itemId, {
-                                    id: item.milestoneId,
-                                    title: item.name,
-                                    answerDepenseIndex: typeof item.depenseIndex === "number" ? item.depenseIndex : undefined,
-                                } as Milestone)}
+                                onRestore={() => onMilestoneRestore(item.itemId, fundableItemToMilestoneRef(item))}
                                 isRestoring={loadingIds.restoringItemId === item.itemId}
                             />
                             {permissions.canCreateAction({ status: toMilestoneStatus(item.status) }) ? (
@@ -312,10 +288,9 @@ function ActionsMilestoneCard({
     );
 }
 
-export function CommunActionsSection({ answerQuery, funding }: CommunActionsSectionProps) {
+export function CommunActionsSection({ funding, ctrl }: CommunActionsSectionProps) {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
-    const ctrl = useCommunObjectivesController({ answerQuery, funding });
 
     // Les actions n'existent pas côté answer-only (proposition non promue en projet) —
     // pas de bloc à rendre tant qu'il n'y a pas de projectId.
@@ -325,26 +300,6 @@ export function CommunActionsSection({ answerQuery, funding }: CommunActionsSect
 
     return (
         <div className="grid gap-4">
-            <ConfirmDialog
-                open={!!ctrl.pendingDeleteMilestone}
-                onOpenChange={(open) => {
-                    if (!open) ctrl.cancelDeleteMilestone();
-                }}
-                title={String(t("detail.objectives.deleteMilestoneConfirm.title"))}
-                description={
-                    ctrl.pendingDeleteMilestone
-                        ? String(t("detail.objectives.deleteMilestoneConfirm.description", undefined, { name: ctrl.pendingDeleteMilestone.milestone.title }))
-                        : ""
-                }
-                confirmLabel={String(t("detail.objectives.deleteMilestoneConfirm.confirm"))}
-                cancelLabel={String(t("detail.objectives.deleteMilestoneConfirm.cancel"))}
-                isDestructive
-                isPending={
-                    !!ctrl.pendingDeleteMilestone &&
-                    ctrl.loadingIds.deletingItemId === ctrl.pendingDeleteMilestone.itemId
-                }
-                onConfirm={ctrl.confirmDeleteMilestone}
-            />
             <ConfirmDialog
                 open={!!ctrl.pendingDeleteAction}
                 onOpenChange={(open) => {
@@ -372,37 +327,6 @@ export function CommunActionsSection({ answerQuery, funding }: CommunActionsSect
                     </Button>
                 </div>
             ) : null}
-            {ctrl.selectedMilestone && ctrl.milestoneEditInitialValues ? (
-                <MilestoneEditDialog
-                    open={ctrl.isEditMilestoneOpen}
-                    onOpenChange={(open) => {
-                        ctrl.setIsEditMilestoneOpen(open);
-                        if (!open) ctrl.setSelectedMilestone(null);
-                    }}
-                    initialValues={ctrl.milestoneEditInitialValues}
-                    milestoneId={ctrl.selectedMilestone.id}
-                    answerDepenseIndex={ctrl.selectedMilestone.answerDepenseIndex}
-                    mutation={ctrl.activeEditMilestoneMutation as unknown as import("@tanstack/react-query").UseMutationResult<void, Error, import("@/modules/cagnotte/actions/mutations/milestone").EditMilestoneParams>}
-                    apiErrorFallbackKey="ActionsSection.errors.milestoneEditFailed"
-                    onSuccess={ctrl.handleMilestoneEditSuccess}
-                />
-            ) : null}
-            <CreateMilestoneDialog
-                open={ctrl.isCreateMilestoneOpen}
-                onOpenChange={ctrl.setIsCreateMilestoneOpen}
-                selectedProjectId={ctrl.resolvedProjectId}
-                answerId={ctrl.resolvedAnswerId}
-                currentUserId={ctrl.currentUserId || ""}
-                existingMilestoneIds={ctrl.existingMilestoneIds}
-                isConnected={ctrl.isConnected}
-                inputIdPrefix="aac-milestone"
-                onCreated={async () => {
-                    await ctrl.refetchFundingEnvelope();
-                }}
-                onRefetch={async () => {
-                    await ctrl.refetchFundingEnvelope();
-                }}
-            />
             {funding?.items?.map((o: CagnotteFundableItem, i: number) => (
                 <ActionsMilestoneCard
                     key={i}
