@@ -1,6 +1,18 @@
 import { describe, expect, it } from "vitest";
+import type { CagnotteFundableItem } from "../types";
+// Import croisé assumé, réservé au test : on rejoue les VRAIS gestes de
+// `MilestoneListField` (coform) pour couvrir la chaîne réelle, pas une liste
+// fabriquée à la main.
+import {
+  normalizeDepenseValue,
+  removeDepense,
+  setDepenseOpen,
+  updateDepense,
+  type DepenseEntry,
+} from "@/modules/coform/utils/depense";
 import {
   asRecord,
+  buildItemsFromRawDepenses,
   buildResourceFromAnswer,
   getEntityId,
   getNonEmptyRecord,
@@ -330,5 +342,188 @@ describe("buildResourceFromAnswer", () => {
     const autreEtape = { id: "answer-3", answers: { etapeX: { titre: "Ailleurs", depense: [{ poste: "P", priceInt: 7 }] } } };
     expect(buildResourceFromAnswer(autreEtape, "etapeX")!.resourceTotalAmount).toBe(7);
     expect(buildResourceFromAnswer(autreEtape)!.items).toEqual([]);
+  });
+});
+
+/**
+ * Régression 1.3 (MR 53) : dans `MilestoneListField`, `rawDepenses` est la valeur
+ * react-hook-form — déjà modifiée par le geste — et `enrichedItems` la photo
+ * serveur (`targetResource.items`), figée jusqu'à la soumission. Retourner l'item
+ * enrichi tel quel faisait « gagner » le serveur sur la saisie : ligne supprimée
+ * toujours affichée, palier clôturé resté « open », montant édité perdu — et, par
+ * cascade, « Modifier » ouvrait la modale sur une autre ligne.
+ *
+ * Les gestes sont rejoués avec les VRAIS helpers du champ (`removeDepense`,
+ * `setDepenseOpen`, `updateDepense`, `normalizeDepenseValue`) pour que le test
+ * couvre la chaîne réelle, pas une liste fabriquée à la main.
+ */
+describe("buildItemsFromRawDepenses — la ligne brute (saisie) prime sur la photo serveur", () => {
+  function serverItem(
+    depenseIndex: number,
+    name: string,
+    price: number,
+    milestoneId: string,
+    extra: Partial<CagnotteFundableItem> = {},
+  ): CagnotteFundableItem {
+    return {
+      fromType: "depense",
+      itemId: String(depenseIndex),
+      milestoneId,
+      depenseIndex,
+      name,
+      description: "",
+      price,
+      status: "open",
+      actions: [],
+      funding: [],
+      currentFunding: 0,
+      unpaidFunding: 0,
+      userPledge: 0,
+      allFunding: [],
+      ...extra,
+    };
+  }
+
+  // Photo serveur : [0] Développement 5 000 € (ms-a), [1] Hébergement 300 € (ms-b).
+  const server = (): CagnotteFundableItem[] => [
+    serverItem(0, "Développement", 5000, "ms-a"),
+    serverItem(1, "Hébergement", 300, "ms-b"),
+  ];
+
+  const localInitial = (): DepenseEntry[] => [
+    { poste: "Développement", price: 5000, milestone: "ms-a" },
+    { poste: "Hébergement", price: 300, milestone: "ms-b" },
+  ];
+
+  it("suppression locale de la ligne 0 → seule la survivante reste, appariée par milestoneId", () => {
+    const local = removeDepense(localInitial(), 0);
+    const enriched = server();
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(local), enriched);
+
+    expect(items.map((i) => i.name)).toEqual(["Hébergement"]);
+    expect(items[0].milestoneId).toBe("ms-b");
+    // L'item retourné n'est plus l'objet serveur tel quel…
+    expect(items[0]).not.toBe(enriched[0]);
+    expect(items[0]).not.toBe(enriched[1]);
+    // … et son index est l'index LOCAL, celui que `list[item.depenseIndex]` relit.
+    expect(items[0].depenseIndex).toBe(0);
+    expect(items[0].itemId).toBe("0");
+  });
+
+  it("clôture locale (include:false) → le palier passe en « close »", () => {
+    const local = setDepenseOpen(localInitial(), 0, false);
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(local), server());
+    expect(items[0].status).toBe("close");
+    expect(items[1].status).toBe("open");
+  });
+
+  it("montant édité localement à 7 000 → price 7 000, pas l'ancien montant serveur", () => {
+    const local = updateDepense(localInitial(), 0, { price: 7000 });
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(local), server());
+    expect(items[0].price).toBe(7000);
+  });
+
+  it("libellé et description édités localement sont ceux affichés", () => {
+    const local = updateDepense(localInitial(), 1, { poste: "Hébergement mutualisé", description: "Serveur partagé" });
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(local), server());
+    expect(items[1].name).toBe("Hébergement mutualisé");
+    expect(items[1].description).toBe("Serveur partagé");
+  });
+
+  it("ajout local d'une 3e ligne → toute la liste reflète le local", () => {
+    const local: DepenseEntry[] = [...localInitial(), { poste: "Formation", price: 900, milestone: "ms-c" }];
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(local), server());
+    expect(items.map((i) => i.name)).toEqual(["Développement", "Hébergement", "Formation"]);
+    expect(items.map((i) => i.depenseIndex)).toEqual([0, 1, 2]);
+  });
+
+  it("cascade « Modifier » : l'item affiché et la ligne relue par `list[depenseIndex]` sont la même", () => {
+    // Avant : affiché « Développement » (item serveur 0), édité « Hébergement »
+    // (list[0] local) — valider écrasait la survivante.
+    const local = removeDepense(localInitial(), 0);
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(local), server());
+    const affiche = items[0];
+    const valeursInitiales = { name: String(local[affiche.depenseIndex]?.poste ?? "") };
+    expect(affiche.name).toBe("Hébergement");
+    expect(valeursInitiales.name).toBe("Hébergement");
+  });
+
+  it("de l'enrichi apparié, on ne reprend que les actions et les agrégats de financement", () => {
+    const enriched = server();
+    const actions = [{ id: "act-1", name: "Installer" }] as unknown as CagnotteFundableItem["actions"];
+    const allFunding = [
+      { id: "u1", financerName: "Alice", financerId: "u1", amount: 250, date: 1, paymentStatus: "paid", transactionId: "t1" },
+    ] as CagnotteFundableItem["allFunding"];
+    enriched[1] = serverItem(1, "Hébergement", 300, "ms-b", {
+      actions,
+      allFunding,
+      funding: allFunding,
+      currentFunding: 250,
+      unpaidFunding: 250,
+      userPledge: 250,
+    });
+
+    // Après suppression de la ligne 0, la survivante (ms-b) est en position 0.
+    const local = updateDepense(removeDepense(localInitial(), 0), 0, { price: 7000 });
+    const [item] = buildItemsFromRawDepenses(normalizeDepenseValue(local), enriched);
+
+    expect(item.actions).toBe(actions);
+    expect(item.allFunding).toBe(allFunding);
+    expect(item.funding).toBe(allFunding);
+    expect(item.currentFunding).toBe(250);
+    expect(item.unpaidFunding).toBe(250);
+    expect(item.userPledge).toBe(250);
+    // … tandis que les champs édités restent ceux de la saisie.
+    expect(item.price).toBe(7000);
+    expect(item.name).toBe("Hébergement");
+    expect(item.depenseIndex).toBe(0);
+  });
+
+  it("une ligne sans milestone n'est jamais appariée par position", () => {
+    // L'item serveur 0 (ms-a) était retourné pour TOUTE ligne locale en position 0.
+    const local: DepenseEntry[] = [{ poste: "Sans palier", price: 10 }];
+    const enriched = server();
+    enriched[0] = serverItem(0, "Développement", 5000, "ms-a", { currentFunding: 999 });
+    const [item] = buildItemsFromRawDepenses(normalizeDepenseValue(local), enriched);
+    expect(item.name).toBe("Sans palier");
+    expect(item.price).toBe(10);
+    expect(item.milestoneId).toBe("");
+    expect(item.currentFunding).toBe(0);
+  });
+
+  it("neutre pour des dépenses SERVEUR (fiche AAC) : brut et enrichi décrivent la même ligne", () => {
+    // `CommunFinancingSection` / `CommunFinancingCard` / `CommunCofinancersTable`
+    // passent `answers.<step>.depense` du document (clé `price`, jamais `priceInt`)
+    // et les items de l'enveloppe : la fusion doit rendre exactement l'enrichi,
+    // à l'identité d'objet près.
+    const actions = [{ id: "act-1" }] as unknown as CagnotteFundableItem["actions"];
+    const enriched = [
+      serverItem(0, "Développement", 5000, "ms-a", { actions, currentFunding: 250 }),
+      serverItem(1, "Hébergement", 300, "ms-b"),
+    ];
+    const document = [
+      { poste: "Développement", price: 5000, milestone: "ms-a", financer: [{ id: "u1", amount: 250 }] },
+      { poste: "Hébergement", price: 300, milestone: "ms-b", include: true },
+    ];
+    const items = buildItemsFromRawDepenses(document, enriched);
+    expect(items).toHaveLength(2);
+    items.forEach((item, i) => {
+      expect(item.name).toBe(enriched[i].name);
+      expect(item.price).toBe(enriched[i].price);
+      expect(item.status).toBe(enriched[i].status);
+      expect(item.milestoneId).toBe(enriched[i].milestoneId);
+      expect(item.depenseIndex).toBe(enriched[i].depenseIndex);
+      expect(item.itemId).toBe(enriched[i].itemId);
+      expect(item.actions).toBe(enriched[i].actions);
+      expect(item.currentFunding).toBe(enriched[i].currentFunding);
+    });
+  });
+
+  it("contrôle : sans enrichi, la saisie locale est reflétée telle quelle", () => {
+    const local = updateDepense(setDepenseOpen(removeDepense(localInitial(), 0), 0, false), 0, { price: 7000 });
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(local), []);
+    expect(items.map((i) => i.name)).toEqual(["Hébergement"]);
+    expect(items[0].status).toBe("close");
+    expect(items[0].price).toBe(7000);
   });
 });

@@ -308,28 +308,72 @@ export function buildResourceFromAnswer(
   };
 }
 
+/**
+ * Projette `depense[]` en items finançables, en FUSIONNANT chaque ligne brute avec
+ * l'item enrichi qui lui correspond (`targetResource.items`, produit par
+ * `useCagnotteAdapter` depuis l'enveloppe).
+ *
+ * La ligne BRUTE est la source de vérité pour tout ce qu'un formulaire édite —
+ * `name`, `price`, `status`, `description`. Dans `MilestoneListField`, `rawDepenses`
+ * est la valeur react-hook-form, déjà modifiée par le geste (suppression, clôture,
+ * montant), alors que `enrichedItems` est une photo serveur figée jusqu'à la
+ * soumission. Retourner l'item enrichi tel quel ré-affichait la ligne supprimée,
+ * laissait un palier clôturé en « open », gardait l'ancien montant — et, par
+ * cascade, « Modifier » ouvrait la modale sur une AUTRE ligne (`depenseIndex`
+ * serveur relu dans `list[editIndex]` local).
+ *
+ * De l'enrichi, on ne reprend que ce que la ligne brute ne porte pas : `actions`
+ * et les agrégats de financement (`funding`, `currentFunding`, `unpaidFunding`,
+ * `userPledge`, `allFunding`). Sans item enrichi, ces agrégats sont reconstruits
+ * depuis `depense.financer`.
+ *
+ * L'appariement se fait par `milestoneId` SEUL : une position est instable dès
+ * qu'une ligne est retirée localement (la survivante devient la ligne 0, l'item
+ * serveur 0 est la ligne supprimée), l'identifiant de palier, lui, traverse le
+ * geste. Une ligne sans `milestone` n'est donc jamais enrichie — c'est le prix de
+ * la stabilité. `depenseIndex` est l'index LOCAL : c'est lui que les gestes du
+ * champ relisent (`list[item.depenseIndex]`).
+ *
+ * Pour les appelants qui passent des dépenses SERVEUR (`CommunFinancingSection`,
+ * `CommunFinancingCard`, `CommunCofinancersTable`), brut et enrichi décrivent la
+ * même ligne du même document : la fusion y est sans effet.
+ */
 export function buildItemsFromRawDepenses(
   rawDepenses: UnknownRecord[],
   enrichedItems: CagnotteFundableItem[],
 ): CagnotteFundableItem[] {
   return rawDepenses.map((d, index) => {
     const milestoneId = toString(d.milestone);
-    const enriched = enrichedItems.find(
-      (it) => it.depenseIndex === index || (milestoneId !== "" && it.milestoneId === milestoneId),
-    );
-    if (enriched) return enriched;
+    const enriched =
+      milestoneId !== "" ? enrichedItems.find((it) => it.milestoneId === milestoneId) : undefined;
+
+    const fromRaw = {
+      fromType: "depense" as const,
+      itemId: toString(d.id) || String(index),
+      milestoneId,
+      depenseIndex: index,
+      name: toString(d.poste),
+      description: toString(d.description),
+      price: toSafeInt(d.priceInt ?? d.price),
+      status: d.include !== false ? "open" : "close",
+    };
+
+    if (enriched) {
+      return {
+        ...fromRaw,
+        actions: enriched.actions,
+        funding: enriched.funding,
+        currentFunding: enriched.currentFunding,
+        unpaidFunding: enriched.unpaidFunding,
+        userPledge: enriched.userPledge,
+        allFunding: enriched.allFunding,
+      };
+    }
 
     const { currentFunding, allFunding } = buildFallbackFundingFromRawFinancers(d.financer);
 
     return {
-      fromType: "depense",
-      itemId: String(index),
-      milestoneId,
-      depenseIndex: index,
-      name: toString(d.poste),
-      description: "",
-      price: toSafeInt(d.priceInt ?? d.price),
-      status: d.include !== false ? "open" : "close",
+      ...fromRaw,
       actions: [],
       funding: [],
       currentFunding,
