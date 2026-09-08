@@ -242,6 +242,26 @@ export const ReservationsConfSchema = z.object({
   }),
   /** Plafond d'answers chargées (garde de pagination). Défaut : 200. */
   maxAnswers: z.number().int().positive().optional(),
+  /**
+   * Prise de réservation depuis la fiche (OPT-IN). Absent = comportement
+   * historique : grille hebdo en blocs empilés, lecture seule. Présent = grille
+   * à l'échelle horaire, cases libres cliquables ouvrant le formulaire CoForm
+   * pré-rempli (équipement verrouillé, créneau repris).
+   *
+   * L'amplitude n'est qu'une GRILLE DE RÉFÉRENCE : aucun horaire d'ouverture
+   * n'existe sur les équipements en base. Une case libre signifie « aucune
+   * réservation connue », pas « l'équipement est ouvert ».
+   */
+  booking: z.object({
+    /** Première heure affichée (0-23). Défaut code : 8. */
+    startHour: z.number().int().min(0).max(23).optional(),
+    /** Dernière heure affichée, exclue (1-24). Défaut code : 22. */
+    endHour: z.number().int().min(1).max(24).optional(),
+    /** Pas de la grille, en minutes. Défaut code : 60. */
+    slotMinutes: z.number().int().positive().optional(),
+    /** Réserver réservé aux admins de l'entité du site. Défaut code : true. */
+    adminOnly: z.boolean().optional(),
+  }).optional(),
 });
 export type ReservationsConf = z.infer<typeof ReservationsConfSchema>;
 

@@ -7,7 +7,14 @@ import {
   parseReservationAnswer,
   groupReservationsByUser,
   buildWeeklyGrid,
+  reservationConflicts,
+  slotsOverlap,
+  periodsOverlap,
+  buildBookingGrid,
+  minutesToLabel,
   type Reservation,
+  type CandidateSlot,
+  type ReservationCandidate,
 } from "./reservations";
 
 /* ── Fixtures ────────────────────────────────────────────────────────────── */
@@ -290,5 +297,230 @@ describe("reservationColor", () => {
     expect(reservationColor(4)).toBe("var(--chart-5)");
     expect(reservationColor(5)).toBe("var(--chart-1)");
     expect(RESERVATION_COLORS).toHaveLength(5);
+  });
+});
+
+/* ── reservationConflicts ────────────────────────────────────────────────── */
+
+/** Réservation existante minimale : un créneau hebdo + une période. */
+function existing(
+  overrides: Partial<Reservation> & { day?: string; start?: number; end?: number } = {},
+): Reservation {
+  const { day = "monday", start = 1020, end = 1140, ...rest } = overrides;
+  return {
+    id: "r1",
+    resourceIds: ["poi1"],
+    user: "CLUB A",
+    slots: [
+      {
+        day: day as Reservation["slots"][number]["day"],
+        start: "17:00",
+        end: "19:00",
+        startMinutes: start,
+        endMinutes: end,
+      },
+    ],
+    ...rest,
+  } as Reservation;
+}
+
+const candidat = (start: number, end: number, period: Partial<ReservationCandidate> = {}) => ({
+  slots: [{ day: "monday" as const, startMinutes: start, endMinutes: end }],
+  ...period,
+});
+
+describe("slotsOverlap", () => {
+  const slot = (day: string, s: number, e: number) =>
+    ({ day, startMinutes: s, endMinutes: e }) as CandidateSlot;
+
+  it("détecte un chevauchement partiel le même jour", () => {
+    expect(slotsOverlap(slot("monday", 1020, 1140), slot("monday", 1080, 1200))).toBe(true);
+  });
+
+  it("ne voit aucun conflit entre deux créneaux jointifs (semi-ouvert)", () => {
+    // 17h–19h puis 19h–20h30 : ils se suivent, ils ne se chevauchent pas.
+    expect(slotsOverlap(slot("monday", 1020, 1140), slot("monday", 1140, 1230))).toBe(false);
+  });
+
+  it("ignore un jour différent, même aux mêmes heures", () => {
+    expect(slotsOverlap(slot("monday", 1020, 1140), slot("tuesday", 1020, 1140))).toBe(false);
+  });
+
+  it("ignore un créneau de durée nulle (donnée dégradée)", () => {
+    expect(slotsOverlap(slot("monday", 1020, 1020), slot("monday", 960, 1200))).toBe(false);
+    expect(slotsOverlap(slot("monday", 960, 1200), slot("monday", 1020, 1020))).toBe(false);
+  });
+
+  it("détecte l'inclusion complète d'un créneau dans l'autre", () => {
+    expect(slotsOverlap(slot("monday", 1050, 1080), slot("monday", 1020, 1140))).toBe(true);
+  });
+});
+
+describe("periodsOverlap", () => {
+  it("recouvre quand les intervalles se croisent", () => {
+    expect(
+      periodsOverlap(
+        { periodStart: "2026-01-01", periodEnd: "2026-06-30" },
+        { periodStart: "2026-06-01", periodEnd: "2026-12-31" },
+      ),
+    ).toBe(true);
+  });
+
+  it("ne recouvre pas deux saisons disjointes", () => {
+    expect(
+      periodsOverlap(
+        { periodStart: "2026-01-01", periodEnd: "2026-06-30" },
+        { periodStart: "2026-09-01", periodEnd: "2026-12-31" },
+      ),
+    ).toBe(false);
+  });
+
+  it("inclut les bornes : deux périodes qui se touchent d'un jour se recouvrent", () => {
+    expect(
+      periodsOverlap(
+        { periodStart: "2026-01-01", periodEnd: "2026-06-30" },
+        { periodStart: "2026-06-30", periodEnd: "2026-12-31" },
+      ),
+    ).toBe(true);
+  });
+
+  it("traite une borne absente comme infinie", () => {
+    expect(periodsOverlap({}, { periodStart: "2026-09-01", periodEnd: "2026-12-31" })).toBe(true);
+    expect(periodsOverlap({ periodEnd: "2026-01-01" }, { periodStart: "2026-09-01" })).toBe(false);
+  });
+
+  it("traite une borne malformée comme infinie (faux positif préféré)", () => {
+    expect(
+      periodsOverlap(
+        { periodStart: "pas une date", periodEnd: "2026-01-31" },
+        { periodStart: "2026-09-01" },
+      ),
+    ).toBe(false);
+    expect(
+      periodsOverlap({ periodStart: "pas une date" }, { periodStart: "2026-09-01" }),
+    ).toBe(true);
+  });
+});
+
+describe("reservationConflicts", () => {
+  it("signale une réservation qui chevauche le même créneau et la même période", () => {
+    const conflits = reservationConflicts(
+      candidat(1080, 1200, { periodStart: "2026-01-01", periodEnd: "2026-12-31" }),
+      [existing({ periodStart: "2026-01-01", periodEnd: "2026-12-31" })],
+    );
+    expect(conflits).toHaveLength(1);
+    expect(conflits[0].user).toBe("CLUB A");
+  });
+
+  it("n'en signale aucune si les périodes sont disjointes", () => {
+    expect(
+      reservationConflicts(
+        candidat(1080, 1200, { periodStart: "2027-01-01", periodEnd: "2027-06-30" }),
+        [existing({ periodStart: "2026-01-01", periodEnd: "2026-12-31" })],
+      ),
+    ).toEqual([]);
+  });
+
+  it("n'en signale aucune sur un créneau jointif", () => {
+    expect(reservationConflicts(candidat(1140, 1230), [existing()])).toEqual([]);
+  });
+
+  it("n'en signale aucune si le candidat n'a pas de créneau", () => {
+    expect(reservationConflicts({ slots: [] }, [existing()])).toEqual([]);
+  });
+
+  it("ne remonte qu'une fois une réservation à plusieurs créneaux en conflit", () => {
+    const r = existing();
+    r.slots.push({ day: "monday", start: "17:30", end: "18:30", startMinutes: 1050, endMinutes: 1110 });
+    expect(reservationConflicts(candidat(1020, 1140), [r])).toHaveLength(1);
+  });
+
+  it("préserve l'ordre d'entrée et écarte les non-conflits", () => {
+    const a = { ...existing(), id: "a", user: "CLUB A" };
+    const b = { ...existing({ day: "friday" }), id: "b", user: "CLUB B" };
+    const c = { ...existing(), id: "c", user: "CLUB C" };
+    expect(reservationConflicts(candidat(1020, 1140), [a, b, c]).map((r) => r.id)).toEqual(["a", "c"]);
+  });
+});
+
+/* ── buildBookingGrid ────────────────────────────────────────────────────── */
+
+describe("buildBookingGrid", () => {
+  /** Grille hebdo à partir d'une seule réservation lundi 17h–19h. */
+  const semaine = () =>
+    buildWeeklyGrid(
+      groupReservationsByUser([
+        {
+          id: "r1",
+          resourceIds: ["poi1"],
+          user: "CLUB A",
+          slots: [
+            { day: "monday", start: "17:00", end: "19:00", startMinutes: 1020, endMinutes: 1140 },
+          ],
+        } as Reservation,
+      ]),
+    );
+
+  it("découpe l'amplitude configurée en rangées régulières, 7 cases chacune", () => {
+    const rows = buildBookingGrid(semaine(), { startHour: 8, endHour: 22, slotMinutes: 60 });
+    expect(rows).toHaveLength(14);
+    expect(rows[0].label).toBe("08:00 – 09:00");
+    expect(rows[13].label).toBe("21:00 – 22:00");
+    expect(rows[0].cells).toHaveLength(7);
+    expect(rows[0].cells.map((c) => c.dayKey)).toEqual([
+      "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+    ]);
+  });
+
+  it("marque occupées TOUTES les rangées recouvertes par un créneau", () => {
+    const rows = buildBookingGrid(semaine(), { startHour: 8, endHour: 22, slotMinutes: 60 });
+    const lundi = (label: string) =>
+      rows.find((r) => r.label === label)!.cells.find((c) => c.dayKey === "monday")!;
+    expect(lundi("16:00 – 17:00").blocks).toHaveLength(0);
+    expect(lundi("17:00 – 18:00").blocks).toHaveLength(1);
+    expect(lundi("18:00 – 19:00").blocks).toHaveLength(1);
+    expect(lundi("19:00 – 20:00").blocks).toHaveLength(0);
+    expect(lundi("17:00 – 18:00").blocks[0].user).toBe("CLUB A");
+  });
+
+  it("laisse libres les autres jours à la même heure", () => {
+    const rows = buildBookingGrid(semaine(), { startHour: 17, endHour: 18 });
+    expect(rows[0].cells.filter((c) => c.blocks.length > 0).map((c) => c.dayKey)).toEqual(["monday"]);
+  });
+
+  it("élargit l'amplitude pour ne jamais masquer une réservation hors cadre", () => {
+    // Amplitude 8h–10h, mais la réservation est à 17h : la grille doit descendre jusqu'à 19h,
+    // sinon la case 17h serait absente (et donc implicitement « libre »).
+    const rows = buildBookingGrid(semaine(), { startHour: 8, endHour: 10, slotMinutes: 60 });
+    expect(rows[0].label).toBe("08:00 – 09:00");
+    expect(rows[rows.length - 1].label).toBe("18:00 – 19:00");
+    const occupee = rows.find((r) => r.startMinutes === 1020)!.cells.find((c) => c.dayKey === "monday")!;
+    expect(occupee.blocks).toHaveLength(1);
+  });
+
+  it("applique les défauts 8h–22h au pas de 60 min", () => {
+    const rows = buildBookingGrid([]);
+    expect(rows).toHaveLength(14);
+    expect(rows[0].startMinutes).toBe(480);
+    expect(rows[13].endMinutes).toBe(1320);
+  });
+
+  it("honore un pas plus fin", () => {
+    const rows = buildBookingGrid([], { startHour: 8, endHour: 9, slotMinutes: 30 });
+    expect(rows.map((r) => r.label)).toEqual(["08:00 – 08:30", "08:30 – 09:00"]);
+  });
+
+  it("produit des clés de case uniques", () => {
+    const rows = buildBookingGrid([], { startHour: 8, endHour: 10 });
+    const keys = rows.flatMap((r) => r.cells.map((c) => c.key));
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+});
+
+describe("minutesToLabel", () => {
+  it("formate en 24 h zéro-paddé", () => {
+    expect(minutesToLabel(0)).toBe("00:00");
+    expect(minutesToLabel(540)).toBe("09:00");
+    expect(minutesToLabel(1230)).toBe("20:30");
   });
 });

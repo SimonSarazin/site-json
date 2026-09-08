@@ -249,3 +249,182 @@ export function buildWeeklyGrid(groups: UserReservations[]): WeeklyGridDay[] {
       ),
   }));
 }
+
+/* ── Détection de conflit ──────────────────────────────────────────────── */
+
+/** Créneau candidat : le minimum nécessaire au calcul (pas de libellés). */
+export interface CandidateSlot {
+  day: DayKey;
+  startMinutes: number;
+  endMinutes: number;
+}
+
+/** Réservation envisagée — créneaux hebdo + période de validité (bornes ISO). */
+export interface ReservationCandidate {
+  slots: CandidateSlot[];
+  periodStart?: string;
+  periodEnd?: string;
+}
+
+/**
+ * Borne ISO exploitable (`YYYY-MM-DD`), ou `null` si la valeur est absente ou
+ * malformée. Une borne `null` vaut « pas de limite » : le recouvrement de
+ * périodes est alors présumé, donc le conflit est SIGNALÉ. On préfère un faux
+ * positif (l'usager voit un avertissement sur un créneau libre) à un faux
+ * négatif (deux clubs dans le même gymnase à la même heure).
+ */
+function isoBound(value: string | undefined): string | null {
+  if (typeof value !== "string") return null;
+  const day = value.slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : null;
+}
+
+/**
+ * Deux périodes se recouvrent-elles ? Bornes INCLUSES (une période
+ * date-only couvre son dernier jour), bornes absentes = infinies.
+ * La comparaison lexicographique est valide sur des dates ISO zéro-paddées.
+ */
+export function periodsOverlap(
+  a: { periodStart?: string; periodEnd?: string },
+  b: { periodStart?: string; periodEnd?: string },
+): boolean {
+  const aStart = isoBound(a.periodStart);
+  const aEnd = isoBound(a.periodEnd);
+  const bStart = isoBound(b.periodStart);
+  const bEnd = isoBound(b.periodEnd);
+  if (aStart && bEnd && aStart > bEnd) return false;
+  if (bStart && aEnd && bStart > aEnd) return false;
+  return true;
+}
+
+/**
+ * Deux créneaux hebdomadaires se chevauchent-ils ? Même jour et intervalles
+ * horaires sécants, en semi-ouvert `[début, fin)` : 17h–19h et 19h–20h30 se
+ * SUIVENT, ils ne se chevauchent pas. Un créneau de durée nulle (donnée
+ * dégradée : heure de fin illisible, cf. `parseSlot`) n'occupe aucun temps et
+ * n'entre donc jamais en conflit.
+ */
+export function slotsOverlap(a: CandidateSlot, b: CandidateSlot): boolean {
+  if (a.day !== b.day) return false;
+  if (a.startMinutes >= a.endMinutes || b.startMinutes >= b.endMinutes) return false;
+  return a.startMinutes < b.endMinutes && b.startMinutes < a.endMinutes;
+}
+
+/**
+ * Réservations existantes en conflit avec une réservation envisagée : il faut
+ * un chevauchement du créneau HEBDOMADAIRE **et** un recouvrement de la
+ * PÉRIODE — deux clubs sur le même créneau à des saisons disjointes ne se
+ * gênent pas.
+ *
+ * `existing` est la liste DÉJÀ restreinte à la ressource visée (c'est ce que
+ * `useReservationsQuery` retourne) : la fonction ne refiltre pas sur
+ * `resourceIds`. Résultat sans doublon, dans l'ordre d'`existing`.
+ */
+export function reservationConflicts(
+  candidate: ReservationCandidate,
+  existing: Reservation[],
+): Reservation[] {
+  if (candidate.slots.length === 0) return [];
+  return existing.filter(
+    (r) =>
+      periodsOverlap(candidate, r)
+      && r.slots.some((rs) => candidate.slots.some((cs) => slotsOverlap(cs, rs))),
+  );
+}
+
+/* ── Grille de réservation (échelle horaire) ───────────────────────────── */
+
+/** Une case de la grille : un créneau d'un jour, avec ses occupants. */
+export interface BookingCell {
+  key: string;
+  dayKey: DayKey;
+  startMinutes: number;
+  endMinutes: number;
+  /** "18:00" / "19:00" — affichage. */
+  start: string;
+  end: string;
+  /** Réservations qui recouvrent la case (vide = case libre). */
+  blocks: WeeklySlotBlock[];
+}
+
+/** Une rangée horaire : la même tranche pour les 7 jours. */
+export interface BookingGridRow {
+  startMinutes: number;
+  endMinutes: number;
+  /** "18:00 – 19:00". */
+  label: string;
+  /** Toujours 7 cases, Lun→Dim. */
+  cells: BookingCell[];
+}
+
+export interface BookingAmplitude {
+  /** Première heure affichée. Défaut 8. */
+  startHour?: number;
+  /** Dernière heure affichée, exclue. Défaut 22. */
+  endHour?: number;
+  /** Pas de la grille en minutes. Défaut 60. */
+  slotMinutes?: number;
+}
+
+const DEFAULT_START_HOUR = 8;
+const DEFAULT_END_HOUR = 22;
+const DEFAULT_SLOT_MINUTES = 60;
+
+/** Minutes depuis minuit → "HH:MM" (24 h, zéro-paddé). */
+export function minutesToLabel(minutes: number): string {
+  const m = Math.max(0, Math.round(minutes));
+  return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+}
+
+/**
+ * Découpe la semaine en rangées horaires régulières.
+ *
+ * L'amplitude configurée n'est qu'un CADRAGE d'affichage : elle est étendue
+ * pour englober toute réservation existante qui déborde (sinon un créneau à 7 h
+ * disparaîtrait silencieusement de la grille — et la case correspondante
+ * serait proposée comme libre, ce qui serait faux).
+ *
+ * Une case est occupée dès qu'un bloc la RECOUVRE, même partiellement : un
+ * créneau 17 h–19 h occupe les deux rangées 17-18 et 18-19.
+ */
+export function buildBookingGrid(
+  grid: WeeklyGridDay[],
+  amplitude: BookingAmplitude = {},
+): BookingGridRow[] {
+  const step = Math.max(1, amplitude.slotMinutes ?? DEFAULT_SLOT_MINUTES);
+  const confStart = (amplitude.startHour ?? DEFAULT_START_HOUR) * 60;
+  const confEnd = (amplitude.endHour ?? DEFAULT_END_HOUR) * 60;
+
+  const all = grid.flatMap((d) => d.blocks);
+  // Bornes élargies aux réservations hors cadre, alignées sur le pas.
+  let from = confStart;
+  let to = Math.max(confEnd, confStart + step);
+  for (const b of all) {
+    from = Math.min(from, Math.floor(b.startMinutes / step) * step);
+    to = Math.max(to, Math.ceil(b.endMinutes / step) * step);
+  }
+  from = Math.max(0, from);
+
+  const byDay = new Map<DayKey, WeeklySlotBlock[]>(grid.map((d) => [d.dayKey, d.blocks]));
+  const rows: BookingGridRow[] = [];
+  for (let start = from; start < to; start += step) {
+    const end = start + step;
+    rows.push({
+      startMinutes: start,
+      endMinutes: end,
+      label: `${minutesToLabel(start)} – ${minutesToLabel(end)}`,
+      cells: DAY_KEYS.map((dayKey) => ({
+        key: `${dayKey}-${start}`,
+        dayKey,
+        startMinutes: start,
+        endMinutes: end,
+        start: minutesToLabel(start),
+        end: minutesToLabel(end),
+        blocks: (byDay.get(dayKey) ?? []).filter(
+          (b) => b.startMinutes < end && start < b.endMinutes,
+        ),
+      })),
+    });
+  }
+  return rows;
+}
