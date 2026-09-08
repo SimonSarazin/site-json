@@ -498,9 +498,16 @@
                   "type": "searchCount",
                   "entityType": "organizations",
                   "baseParams": {
-                    "sourceKey": ["sportSanteBienetre"],
-                    "defaultTypes": ["organizations"]
-                  }
+                                  "sourceKey": [
+                                    "sportSanteBienetre"
+                                  ],
+                                  "defaultTypes": [
+                                    "organizations"
+                                  ],
+                                  "defaultFilters": {
+                                    "statusActor": "Validé"
+                                  }
+                                }
                 }
               },
               {
@@ -1242,12 +1249,13 @@
                 "organizations"
               ],
               "defaultFilters": {
-                "$or": {
-                  "source.key": "sportSanteBienetre",
-                  "source.keys": "sportSanteBienetre",
-                  "reference.costum": "sportSanteBienetre"
-                }
-              }
+                                  "$or": {
+                                    "source.key": "sportSanteBienetre",
+                                    "source.keys": "sportSanteBienetre",
+                                    "reference.costum": "sportSanteBienetre"
+                                  },
+                                  "statusActor": "Validé"
+                                }
             },
             "list": {
               "columns": {
@@ -1417,15 +1425,16 @@
                 "organizations"
               ],
               "defaultFilters": {
-                "$or": {
-                  "source.key": "sportSanteBienetre",
-                  "source.keys": "sportSanteBienetre",
-                  "reference.costum": "sportSanteBienetre"
-                },
-                "tags": [
-                  "mss"
-                ]
-              }
+                                  "$or": {
+                                    "source.key": "sportSanteBienetre",
+                                    "source.keys": "sportSanteBienetre",
+                                    "reference.costum": "sportSanteBienetre"
+                                  },
+                                  "tags": [
+                                    "mss"
+                                  ],
+                                  "statusActor": "Validé"
+                                }
             },
             "list": {
               "columns": {
@@ -1506,12 +1515,13 @@
                 "organizations"
               ],
               "defaultFilters": {
-                "$or": {
-                  "source.key": "sportSanteBienetre",
-                  "source.keys": "sportSanteBienetre",
-                  "reference.costum": "sportSanteBienetre"
-                }
-              }
+                                  "$or": {
+                                    "source.key": "sportSanteBienetre",
+                                    "source.keys": "sportSanteBienetre",
+                                    "reference.costum": "sportSanteBienetre"
+                                  },
+                                  "statusActor": "Validé"
+                                }
             },
             "list": {
               "columns": {
@@ -2696,15 +2706,16 @@
                 "organizations"
               ],
               "defaultFilters": {
-                "$or": {
-                  "source.key": "sportSanteBienetre",
-                  "source.keys": "sportSanteBienetre",
-                  "reference.costum": "sportSanteBienetre"
-                },
-                "tags": [
-                  "Labellisé"
-                ]
-              }
+                                  "$or": {
+                                    "source.key": "sportSanteBienetre",
+                                    "source.keys": "sportSanteBienetre",
+                                    "reference.costum": "sportSanteBienetre"
+                                  },
+                                  "tags": [
+                                    "Labellisé"
+                                  ],
+                                  "statusActor": "Validé"
+                                }
             },
             "list": {
               "columns": {
@@ -4875,11 +4886,20 @@
       ],
       "limit": 8,
       "params": {
-        "sourceKey": [
-          "sportSanteBienetre",
-          "equipementsSportifs974"
-        ]
-      },
+                  "sourceKey": [
+                    "sportSanteBienetre",
+                    "equipementsSportifs974"
+                  ],
+                  "filters": {
+                    "statusActor": {
+                      "$nin": [
+                        "En attente",
+                        "En cours",
+                        "Refusé"
+                      ]
+                    }
+                  }
+                },
       "itemActionByType": {
         "poi": {
           "kind": "preview",
@@ -6784,8 +6804,9 @@
         "payloadEmitEmptyOnEdit": true,
         "inject": {
           "extraFields": {
-            "type": "NGO"
-          }
+                           "type": "NGO",
+                           "statusActor": "En cours"
+                         }
         },
         "entityType": "organizations",
         "successKey": {
@@ -7576,9 +7597,10 @@
         "entityType": "organizations",
         "inject": {
           "extraFields": {
-            "type": "NGO",
-            "role": "admin"
-          }
+                           "type": "NGO",
+                           "role": "admin",
+                           "statusActor": "Validé"
+                         }
         },
         "successKey": {
           "add": "toast.add.organizationSuccess",
@@ -9124,7 +9146,29 @@
               "delete"
             ],
             "create": "add-sport-sante-bienetre-organizations",
-            "edit": "inherit"
+            "edit": "inherit",
+            "status": {
+              "mode": "statusField",
+              "field": "statusActor",
+              "states": [
+                {
+                  "value": "En attente",
+                  "tone": "pending"
+                },
+                {
+                  "value": "En cours",
+                  "tone": "progress"
+                },
+                {
+                  "value": "Validé",
+                  "tone": "positive"
+                },
+                {
+                  "value": "Refusé",
+                  "tone": "negative"
+                }
+              ]
+            }
           },
           {
             "type": "resource",
@@ -9175,7 +9219,29 @@
               "delete"
             ],
             "create": "add-sport-sante-bienetre-mss",
-            "edit": "inherit"
+            "edit": "inherit",
+            "status": {
+              "mode": "statusField",
+              "field": "statusActor",
+              "states": [
+                {
+                  "value": "En attente",
+                  "tone": "pending"
+                },
+                {
+                  "value": "En cours",
+                  "tone": "progress"
+                },
+                {
+                  "value": "Validé",
+                  "tone": "positive"
+                },
+                {
+                  "value": "Refusé",
+                  "tone": "negative"
+                }
+              ]
+            }
           }
         ]
       },

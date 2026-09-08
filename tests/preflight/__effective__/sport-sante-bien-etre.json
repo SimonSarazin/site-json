@@ -251,7 +251,8 @@
             "source.key": "sportSanteBienetre",
             "source.keys": "sportSanteBienetre",
             "reference.costum": "sportSanteBienetre"
-          }
+          },
+          "statusActor": "Validé"
         }
       }
     },
@@ -268,7 +269,8 @@
           },
           "tags": [
             "mss"
-          ]
+          ],
+          "statusActor": "Validé"
         }
       }
     },
@@ -282,7 +284,8 @@
             "source.key": "sportSanteBienetre",
             "source.keys": "sportSanteBienetre",
             "reference.costum": "sportSanteBienetre"
-          }
+          },
+          "statusActor": "Validé"
         }
       }
     },
@@ -316,7 +319,8 @@
           },
           "tags": [
             "Labellisé"
-          ]
+          ],
+          "statusActor": "Validé"
         }
       }
     },
