@@ -51,7 +51,7 @@ import type { FundingMilestone as Milestone, CagnotteFundableItem } from "@/modu
 import type { AacLog } from "@/modules/aac/types";
 import { useAacFundingResource } from "@/modules/aac/hooks/useAacFundingResource";
 import type { MilestoneCardPermissions } from "@/modules/aac/lib/objectiveHelpers";
-import { FieldError, HintText } from "./FormFields";
+import { FieldError, FieldLabel, HintText } from "./FormFields";
 import { DepenseFormDialog, type DepenseFormValues } from "./DepenseFormDialog";
 import {
   addDepense,
@@ -88,15 +88,6 @@ function splitMilestoneItemsByStatus(
     }
   }
   return { openItems, closedItems };
-}
-
-function DepenseFieldLabel({ field }: { field: FormFieldMapping }) {
-  return (
-    <div className="block text-sm font-medium">
-      {field.label}
-      {field.isRequired && <span className="text-destructive ml-1">*</span>}
-    </div>
-  );
 }
 
 /**
@@ -447,7 +438,7 @@ export function MilestoneListField({
     <div className={cn("space-y-3", field.width || "col-span-12")}>
       <div className="flex items-end justify-between gap-4">
         <div>
-          <DepenseFieldLabel field={field} />
+          <FieldLabel field={field} />
           {field.info && <HintText text={field.info} />}
         </div>
         {!disabled ? (

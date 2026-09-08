@@ -2,10 +2,9 @@ import { useId, useMemo, useRef, useState } from "react";
 import type { FieldErrors } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FieldError, HintText } from "./FormFields";
+import { FieldError, FieldLabel, HintText } from "./FormFields";
 import { useTagSuggestions } from "../hooks/useTagSuggestions";
 import { addTags, normalizeTagsValue, removeTag } from "../utils/tags";
 import type { FormFieldMapping, TagsValue } from "../types";
@@ -139,12 +138,7 @@ export function TagsField({
   if (readOnly) {
     return (
       <div className={cn("space-y-2", field.width || "col-span-12")}>
-        {!hideLabel && (
-          <div className="block text-sm font-medium">
-            {field.label}
-            {field.isRequired && <span className="text-destructive ml-1">*</span>}
-          </div>
-        )}
+        {!hideLabel && <FieldLabel field={field} />}
         {tags.length === 0 ? (
           <span className="text-muted-foreground/50 italic">—</span>
         ) : (
@@ -164,15 +158,7 @@ export function TagsField({
 
   return (
     <div className={cn("space-y-2", field.width || "col-span-12")}>
-      {!hideLabel && field.label && (
-        <Label
-          htmlFor={field.name}
-          className={cn("block text-sm font-medium", hasError && "text-destructive")}
-        >
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </Label>
-      )}
+      {!hideLabel && <FieldLabel field={field} htmlFor={field.name} hasError={hasError} />}
       {field.info && <HintText text={field.info} />}
 
       {/* Le conteneur imite un input : les puces vivent DANS le cadre, la zone

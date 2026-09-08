@@ -15,6 +15,7 @@ import {
   type VoteValue,
   type PourContreValue,
 } from "../utils/pourContre";
+import { FieldLabel } from "./FormFields";
 import type { FormFieldMapping } from "../types";
 
 /**
@@ -88,11 +89,7 @@ export function PourContreField({
 
   return (
     <div className={cn("space-y-4", field.width || "col-span-12")}>
-      {field.label && (
-        <div className="block text-base font-semibold leading-snug text-foreground">
-          {field.label}
-        </div>
-      )}
+      <FieldLabel field={field} />
 
       {!disabled && (
         <div>

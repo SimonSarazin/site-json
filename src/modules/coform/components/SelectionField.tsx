@@ -16,6 +16,7 @@ import {
   type SelectionCriterion,
   type RawSelectionConfig,
 } from "../utils/selection";
+import { FieldLabel } from "./FormFields";
 import type { FormFieldMapping } from "../types";
 
 /**
@@ -167,11 +168,7 @@ export function SelectionField({
 
   return (
     <div className={cn("space-y-4", field.width || "col-span-12")}>
-      {field.label && (
-        <div className="block text-base font-semibold leading-snug text-foreground">
-          {field.label}
-        </div>
-      )}
+      <FieldLabel field={field} />
 
       {parsed.criteria.length === 0 ? (
         // 76 formulaires sur 92 utilisent `selection` sans critères configurés.

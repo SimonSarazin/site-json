@@ -1309,8 +1309,13 @@ interface VoteDetail {
 
 type VotesRecord = Record<string, VoteDetail>;
 
+/**
+ * Métadonnées d'un lien (`canEdit`, `contributors`, `organizations`, `tls`) : le
+ * backend y met ce qu'il veut selon le type. `unknown` plutôt qu'`any` — rien ne
+ * lit ces champs aujourd'hui, et le jour où on le fera, le narrowing sera exigé.
+ */
 interface MetaDetails {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface LinksRecord {

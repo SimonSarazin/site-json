@@ -12,6 +12,7 @@ import {
   SELECTED,
   type ChooseProposalValue,
 } from "../utils/chooseProposal";
+import { FieldLabel } from "./FormFields";
 import type { FormFieldMapping } from "../types";
 
 /**
@@ -88,9 +89,7 @@ export function ChooseProposalField({
 
   return (
     <div className={cn("space-y-2", field.width || "col-span-12")}>
-      {field.label && (
-        <div className="block text-sm font-medium text-foreground">{field.label}</div>
-      )}
+      <FieldLabel field={field} />
 
       {/* Structure reprise du legacy (`aap/chooseProposal.php`) : une carte
           portant deux options côte à côte, pastille radio puis libellé, couleur
