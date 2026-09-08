@@ -422,6 +422,53 @@ describe("useCoFormDraft", () => {
       expect(lire(CLE)).not.toBeNull(); // celle sans élément aussi
     });
 
+    /**
+     * En ÉDITION, l'élément ne change PAS la clé : `answerId` identifie déjà la
+     * réponse, et la même réponse est ouverte depuis des points d'entrée qui ne
+     * passent pas tous l'élément — la modale du profil le passe
+     * (`ProfilTiersLieuxAbout`), `CoFormAnswerPage` non. Avec le segment en
+     * édition, le brouillon écrit depuis l'une n'était pas retrouvé depuis
+     * l'autre, et la purge après soumission ne le croisait pas. Seule une
+     * NOUVELLE réponse peut viser deux éléments depuis le même formulaire.
+     */
+    describe("en édition, l'élément ne change pas la clé", () => {
+      const CLE_EDITION = "coform-draft:v1:form-1:user-1:ans-9";
+      const depuisProfil = () =>
+        options({ answerId: "ans-9", elementId: "lieu-A", elementType: "organizations" });
+      const depuisPage = () => options({ answerId: "ans-9" });
+
+      it("écrit sous la clé de la réponse, sans segment élément", () => {
+        const { result, unmount } = renderHook(() => useCoFormDraft(depuisProfil()));
+        act(() => result.current.saveDraft(PAYLOAD_LIEU_A));
+        act(() => unmount());
+        expect(lire(CLE_EDITION)?.data).toEqual(PAYLOAD_LIEU_A.data);
+        expect(Object.keys(window.localStorage)).toEqual([CLE_EDITION]);
+      });
+
+      it("le brouillon écrit depuis la modale du profil est retrouvé depuis la page de réponse", () => {
+        const profil = renderHook(() => useCoFormDraft(depuisProfil()));
+        act(() => profil.result.current.saveDraft(PAYLOAD_LIEU_A));
+        // Laisse le debounce écrire, puis avance l'horloge : le filtre de
+        // session ne propose que les brouillons ANTÉRIEURS au montage suivant.
+        act(() => void vi.advanceTimersByTime(1000));
+        act(() => profil.unmount());
+
+        const page = renderHook(() => useCoFormDraft(depuisPage()));
+        expect(page.result.current.restorableDraft?.data).toEqual(PAYLOAD_LIEU_A.data);
+      });
+
+      it("purger depuis la page de réponse efface le brouillon écrit depuis la modale du profil", () => {
+        const profil = renderHook(() => useCoFormDraft(depuisProfil()));
+        act(() => profil.result.current.saveDraft(PAYLOAD_LIEU_A));
+        act(() => profil.unmount());
+        expect(lire(CLE_EDITION)).not.toBeNull();
+
+        const page = renderHook(() => useCoFormDraft(depuisPage()));
+        act(() => page.result.current.purgeDraft());
+        expect(window.localStorage.length).toBe(0);
+      });
+    });
+
     it("changer d'élément sans démonter réaffiche la bannière", () => {
       poserBrouillon(Date.now() - 60_000, CLE_A);
       poserBrouillon(Date.now() - 60_000, CLE_B);

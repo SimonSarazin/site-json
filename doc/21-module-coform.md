@@ -695,8 +695,10 @@ Trois mécanismes transverses, actifs sur les **deux** formulaires.
 
 ### Brouillon localStorage (`useCoFormDraft`)
 
-`hooks/useCoFormDraft.ts` — clé `coform-draft:v1:<formId>:<userId>:<answerId|new>`, TTL **30 jours**, écritures
-**debouncées 500 ms**. Le contrat `CoFormDraft` porte `{version:1, data, currentStepIndex, completedSteps,
+`hooks/useCoFormDraft.ts` — clé `coform-draft:v1:<formId>:<userId>:new[:<elementType>/<elementId>][:<scope>]`
+pour une nouvelle réponse, `coform-draft:v1:<formId>:<userId>:<answerId>[:<scope>]` en édition (l'élément ne
+qualifie que `new` : une réponse existante est déjà identifiée par son id, et elle est ouverte depuis des points
+d'entrée qui ne passent pas tous l'élément), TTL **30 jours**, écritures **debouncées 500 ms**. Le contrat `CoFormDraft` porte `{version:1, data, currentStepIndex, completedSteps,
 addedOptions, timestamp, baseUpdatedAt}`. Désactivé si utilisateur anonyme, `formId` manquant ou `disabled`.
 
 - **Détection de conflit** : si l'`updatedAt` serveur est postérieur au `baseUpdatedAt` du brouillon, celui-ci

@@ -60,6 +60,12 @@ export interface UseCoFormDraftOptions {
    * salle créée depuis B se rattache à A, via un champ que l'utilisateur ne
    * peut pas corriger.
    *
+   * Ne compte QUE pour une nouvelle réponse. En édition, `answerId` identifie
+   * déjà la réponse — et la même réponse est ouverte depuis des points d'entrée
+   * qui ne passent pas tous l'élément (la modale du profil oui,
+   * `CoFormAnswerPage` non) : l'ignorer là garantit UN seul brouillon
+   * d'édition, retrouvé et purgé d'un point d'entrée à l'autre.
+   *
    * Omis ou vide ⇒ pas de segment, et la clé reste EXACTEMENT celle d'avant
    * (même règle que `scope`). `elementType` ne fait que qualifier l'id
    * (`<type>/<id>`) : seul `elementId` décide de la présence du segment.
@@ -99,16 +105,25 @@ type DraftKeyParts = Pick<
 > & { formId: string; userId: string };
 
 /**
- * `coform-draft:v1:<form>:<user>:<answer|new>[:<elementType>/<elementId>][:<scope>]`
+ * Nouvelle réponse : `coform-draft:v1:<form>:<user>:new[:<elementType>/<elementId>][:<scope>]`
+ * Édition :          `coform-draft:v1:<form>:<user>:<answerId>[:<scope>]`
  *
- * Les deux segments optionnels ne sont ajoutés QUE s'ils ont une valeur : sans
- * ça, on changerait la clé du formulaire entier et on rendrait orphelins les
+ * Les segments optionnels ne sont ajoutés QUE s'ils ont une valeur : sans ça,
+ * on changerait la clé du formulaire entier et on rendrait orphelins les
  * brouillons existants. L'élément précède le périmètre : il dit CE QU'ON
  * répond (comme `answerId`), le périmètre dit COMMENT c'est rendu.
+ *
+ * L'élément ne qualifie que le créneau `new` : c'est la seule situation où deux
+ * saisies du même formulaire visent deux éléments. Une réponse existante est
+ * déjà identifiée par son id, et elle est ouverte depuis des points d'entrée
+ * qui ne passent pas tous l'élément (modale du profil : oui ; `CoFormAnswerPage`
+ * : non) — avec le segment en édition, le brouillon écrit depuis l'un n'était
+ * pas retrouvé depuis l'autre, et la purge après soumission ne le croisait pas.
  */
 function buildKey({ formId, userId, answerId, scope, elementId, elementType }: DraftKeyParts): string {
-  let key = `${KEY_PREFIX}:${formId}:${userId}:${answerId ?? "new"}`;
-  const element = (elementId ?? "").trim();
+  const reponse = answerId ?? "new";
+  let key = `${KEY_PREFIX}:${formId}:${userId}:${reponse}`;
+  const element = reponse === "new" ? (elementId ?? "").trim() : "";
   if (element !== "") {
     const type = (elementType ?? "").trim();
     key += `:${type === "" ? element : `${type}/${element}`}`;
