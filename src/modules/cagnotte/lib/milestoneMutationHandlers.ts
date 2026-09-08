@@ -252,6 +252,10 @@ export async function editMilestoneWithSync(params: EditMilestoneParams): Promis
       fields: {
         poste: params.name,
         price: params.targetAmount,
+        // Sans projet lié, la dépense est le SEUL document du palier : la description
+        // y vit (c'est `d.description` que relit `useCagnotteAdapter`). Avec projet,
+        // elle reste sur `oceco.milestones[]` (ci-dessous) — ne pas la dupliquer.
+        ...(hasProject ? {} : { description: params.description }),
       },
     }),
   ];

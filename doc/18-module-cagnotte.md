@@ -171,7 +171,7 @@ Chaque jalon cagnotte existe en **double** dans deux collections backend distinc
 
 | Action | Côté project | Côté answer |
 |---|---|---|
-| Édition | `updateProjectMilestoneFields({ name, description, status })` | `updateAnswerDepenseFields({ poste, price })` |
+| Édition | `updateProjectMilestoneFields({ name, description, status })` | `updateAnswerDepenseFields({ poste, price })` — `+ description` sans projet lié : la dépense est alors le seul document du palier |
 | Clôture | `status: "close"` | `include: false` |
 | Restauration | `status: "open"` | `include: true` |
 | Suppression | `deleteProjectMilestoneAtIndex` | `deleteAnswerDepenseAtIndex` + suppression des actions liées |
@@ -179,6 +179,11 @@ Chaque jalon cagnotte existe en **double** dans deux collections backend distinc
 Cette orchestration est centralisée dans :
 - `lib/milestoneMutationHandlers.ts` — `editMilestoneWithSync`, `closeMilestoneWithSync`, `restoreMilestoneWithSync`, `deleteMilestoneWithSync`
 - `lib/milestoneSyncContext.ts` — `resolveMilestoneSyncContext({ rawEnvelope, projectId, answerId, milestoneId })` retourne `{ projectMilestoneIndex, answerDepenseIndex }` ou `null`
+
+Un palier **answer-only** (`milestoneId` vide — commun sans projet lié, dont `buildItemsFromRawDepenses`
+produit `{ milestoneId: "", depenseIndex }`) est désigné par `answerDepenseIndex` : les handlers
+court-circuitent la résolution (qui rend `null` sur un id vide) et n'écrivent que côté answer, à cet
+index. Un id vide SANS index reste refusé (`syncContextMissing`).
 
 > Le nom `aapStep1` vient de « Appel À Projet, étape 1 ». Le module suppose que le CoForm cible contient cette structure. **Non généralisé** pour d'autres structures.
 

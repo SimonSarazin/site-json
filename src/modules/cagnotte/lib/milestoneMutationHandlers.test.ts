@@ -562,3 +562,91 @@ describe("palier answer-only (milestoneId vide + answerDepenseIndex)", () => {
     expect(mockUpdateProjectMilestoneFields).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * H22 (review MR 53) : sans projet lié, `description` n'était envoyée QUE par
+ * `updateProjectMilestoneFields` — donc jamais. Le formulaire la jetait en silence,
+ * avec un toast « mis à jour ». Sans côté projet, la dépense de la réponse est le
+ * seul document du palier : la description y est écrite (c'est `d.description`
+ * que relit `useCagnotteAdapter`).
+ */
+describe("editMilestoneWithSync — description sans projet lié (H22)", () => {
+  it("écrit la description saisie sur la dépense de la réponse quand projectId est vide", async () => {
+    const { api, answerEntity, apiProject } = buildApiMock({
+      answerServerData: { answers: { aapStep1: { depense: [{ poste: "A", price: 10 }, { poste: "B", price: 20, milestone: "m1" }] } } },
+    });
+
+    await editMilestoneWithSync({
+      source: api,
+      rawEnvelope: null,
+      docs: { projectMilestones: undefined, depenses: [{ poste: "A", price: 10 }, { poste: "B", price: 20, milestone: "m1" }] },
+      projectId: "",
+      answerId: "answer1",
+      milestoneId: "m1",
+      name: "B",
+      description: "Description saisie",
+      status: "open",
+      targetAmount: 20,
+    });
+
+    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith({
+      answer: answerEntity,
+      index: 1,
+      fields: { poste: "B", price: 20, description: "Description saisie" },
+    });
+    expect(apiProject).not.toHaveBeenCalled();
+    expect(mockUpdateProjectMilestoneFields).not.toHaveBeenCalled();
+  });
+
+  it("écrit aussi la description sur un palier answer-only (milestoneId vide + index)", async () => {
+    const { api, answerEntity } = buildApiMock({
+      answerServerData: { answers: { aapStep1: { depense: [{ poste: "A", price: 10 }, { poste: "B", price: 20 }] } } },
+    });
+
+    await editMilestoneWithSync({
+      source: api,
+      rawEnvelope: null,
+      docs: { projectMilestones: undefined, depenses: [{ poste: "A", price: 10 }, { poste: "B", price: 20 }] },
+      projectId: "",
+      answerId: "answer1",
+      milestoneId: "",
+      answerDepenseIndex: 1,
+      name: "B",
+      description: "Description saisie",
+      status: "open",
+      targetAmount: 20,
+    });
+
+    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith({
+      answer: answerEntity,
+      index: 1,
+      fields: { poste: "B", price: 20, description: "Description saisie" },
+    });
+  });
+
+  it("TÉMOIN : avec projet lié, la description reste côté projet — la dépense ne reçoit que poste/prix", async () => {
+    const { api, projectEntity } = buildApiMock();
+    const rawEnvelope = buildRawEnvelope(buildProjectData());
+
+    await editMilestoneWithSync({
+      source: api,
+      rawEnvelope,
+      projectId: "project1",
+      answerId: "answer1",
+      milestoneId: "m1",
+      name: "Palier",
+      description: "Description saisie",
+      status: "open",
+      targetAmount: 100,
+    });
+
+    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith(
+      expect.objectContaining({ index: 0, fields: { poste: "Palier", price: 100 } }),
+    );
+    expect(mockUpdateProjectMilestoneFields).toHaveBeenCalledWith({
+      project: projectEntity,
+      index: 0,
+      fields: { name: "Palier", description: "Description saisie", status: "open" },
+    });
+  });
+});
