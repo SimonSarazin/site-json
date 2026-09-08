@@ -127,20 +127,33 @@ describe("costums EcosystemeSanteReunion — écriture", () => {
     }
   });
 
-  it("annuaire : un email vide est OMIS du payload de création (AJV ADD_ORGANIZATION)", () => {
-    // `ADD_ORGANIZATION.email` est `{format:"email", type:"string"}` — SANS alternative `const:""`,
-    // contrairement à `url` ou `geo`. Une chaîne vide fait échouer la validation AJV côté client,
-    // AVANT tout appel réseau : `ApiValidationError: ADD_ORGANIZATION - Request validation failed`.
-    // D'où le `write: "omitEmpty"` sur ce champ. En ÉDITION rien ne change : `emitEmpty` retransforme
-    // l'absence en clear typé, ce qui reste nécessaire pour vider l'adresse mail d'une fiche.
-    const creation = envoieDe("rezo-sante-acteur", { name: "Association Test", type: "NGO", email: "" }, "add");
+  it("annuaire : le payload de création satisfait les exigences d'ADD_ORGANIZATION", () => {
+    // Deux contraintes du schéma de CRÉATION, toutes deux vérifiées côté CLIENT par AJV — un manquement
+    // lève `ApiValidationError: ADD_ORGANIZATION - Request validation failed` sans qu'aucune requête ne
+    // parte, donc sans rien à lire côté serveur :
+    //   · `role` est REQUIS (`enum: ["admin","member"]`) et n'a AUCUN défaut au schéma. Il ne vient pas
+    //     de la machinerie de mutation mais d'un CHAMP du formulaire — c'est ainsi que procède le
+    //     formulaire générique du parc (`addOrganization.descriptor.ts` + `inject.role`).
+    //   · `email` est `{format:"email"}` SANS alternative `const:""`, contrairement à `url` ou `geo`.
+    //     Le pipeline émettant `""` pour tout champ texte vide à la création, il faut l'OMETTRE.
+    const creation = envoieDe("rezo-sante-acteur", { name: "Association Test", type: "NGO", role: "admin", email: "" }, "add");
+    expect(creation.role, "role est requis par ADD_ORGANIZATION").toBe("admin");
     expect(creation).not.toHaveProperty("email");
 
-    const renseigne = envoieDe("rezo-sante-acteur", { name: "Association Test", type: "NGO", email: "a@b.re" }, "add");
+    const renseigne = envoieDe("rezo-sante-acteur", { name: "Association Test", type: "NGO", role: "admin", email: "a@b.re" }, "add");
     expect(renseigne.email).toBe("a@b.re");
 
-    const vidage = envoieDe("rezo-sante-acteur", { name: "Association Test", type: "NGO", email: "" });
+    const vidage = envoieDe("rezo-sante-acteur", { name: "Association Test", type: "NGO", role: "admin", email: "" });
     expect(vidage.email, "en édition, le vidage doit rester possible").toBe("");
+  });
+
+  it("annuaire : le champ role est proposé, avec « admin » par défaut", () => {
+    const champ = costumDoc("rezo-sante-acteur").fields.role as { default: string; required: boolean; enum: { value: string }[] };
+    expect(champ.default).toBe("admin");
+    expect(champ.required).toBe(true);
+    expect(champ.enum.map((o) => o.value)).toEqual(["admin", "member"]);
+    // le formulaire générique qu'on remplace posait la question : ne pas l'escamoter
+    expect(costumDoc("rezo-sante-acteur").sections[0].groups[0].fields).toContain("role");
   });
 
   it("chaque thématique proposée est reconnue par le filtre d'au moins une page /theme/*", () => {

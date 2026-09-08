@@ -4526,6 +4526,7 @@
                 "profil_avatar",
                 "name",
                 "type",
+                "role",
                 "shortDescription",
                 "description"
               ]
@@ -4619,6 +4620,35 @@
             "fr": "Nom de la structure ou du professionnel",
             "en": "Organisation or practitioner name"
           }
+        },
+        "role": {
+          "widget": "select",
+          "required": true,
+          "default": "admin",
+          "label": {
+            "fr": "Votre rôle dans cette structure",
+            "en": "Your role in this organisation"
+          },
+          "info": {
+            "fr": "Requis par le serveur à la création. « Administrateur » vous permet de modifier la fiche ensuite.",
+            "en": "Required by the server on creation. “Administrator” lets you edit the entry afterwards."
+          },
+          "enum": [
+            {
+              "value": "admin",
+              "label": {
+                "fr": "Administrateur",
+                "en": "Administrator"
+              }
+            },
+            {
+              "value": "member",
+              "label": {
+                "fr": "Membre",
+                "en": "Member"
+              }
+            }
+          ]
         },
         "type": {
           "widget": "select",
@@ -4854,6 +4884,7 @@
       },
       "mutation": {
         "entityType": "organizations",
+        "payloadEmitEmptyOnEdit": true,
         "navigateOnSuccess": false,
         "successKey": {
           "add": "toast.add.organizationSuccess",

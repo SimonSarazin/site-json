@@ -771,15 +771,20 @@ supprimerait à l'insu de tous. Deux clés de code, parce qu'un transform de CHA
 *Un champ retiré.* `email` était proposé au formulaire projet : `config:costum-drift` l'a désigné
 fantôme (absent d'`ADD_PROJECT`, donc perdu au save). Retiré plutôt que livré silencieusement mort.
 
-*Et un champ corrigé.* Sur le formulaire annuaire, laisser l'email vide faisait échouer la création
-avec `ApiValidationError: ADD_ORGANIZATION - Request validation failed`, **avant tout appel réseau** :
-le schéma déclare `email: {format:"email", type:"string"}` **sans alternative `const:""`**,
-contrairement à `url` (`anyOf` avec la chaîne vide) ou `geo`. Le pipeline émet pourtant `""` à la
-création pour tout champ texte laissé vide. Corrigé par `write: "omitEmpty"` — clé partagée prévue
-exactement pour « les champs optionnels que l'AJV ADD rejette si envoyés vides ». L'édition est
-inchangée : `emitEmpty` retransforme l'absence en clear typé, ce qui reste nécessaire pour vider
-l'adresse d'une fiche existante. Trois assertions le gardent (création vide / création renseignée /
-vidage en édition).
+*Deux contraintes de `ADD_ORGANIZATION` que le formulaire annuaire devait satisfaire.* Toutes deux
+vérifiées **côté client** par l'AJV du SDK : un manquement lève
+`ApiValidationError: ADD_ORGANIZATION - Request validation failed` **sans qu'aucune requête ne parte**,
+donc sans rien à lire côté serveur — d'où un diagnostic qui ne peut se faire qu'en rejouant la
+validation (schéma de base ⊕ `properties` du costum ⊕ contexte, cf. `ApiClient.callEndpoint`).
+
+| Contrainte | Symptôme | Correctif |
+|---|---|---|
+| `role` est **requis** (`enum: ["admin","member"]`) et n'a **aucun défaut** au schéma | échec systématique à la création | **champ du formulaire**, `default: "admin"` — c'est ainsi que fait le formulaire générique du parc (`addOrganization.descriptor.ts` + `inject.role`), qui posait déjà la question ; la remplacer par une modale costum ne devait pas l'escamoter |
+| `email` est `{format:"email"}` **sans alternative `const:""`**, contrairement à `url` ou `geo` | échec dès que l'email est laissé vide | `write: "omitEmpty"` — clé partagée prévue pour « les champs optionnels que l'AJV ADD rejette si envoyés vides ». L'édition est inchangée : `emitEmpty` retransforme l'absence en clear typé, nécessaire pour vider l'adresse d'une fiche |
+
+Les deux autres formulaires ne sont pas concernés : `ADD_POI` et `ADD_PROJECT` n'ont ni `role` ni
+`email` requis, et la création de ressource fonctionnait déjà. Quatre assertions gardent le tout
+(présence de `role`, email vide omis, email renseigné transmis, vidage en édition possible).
 
 **Lot 6 — 08/09 — changement de slug du costum en production.** Le costum a été renommé côté prod :
 `rezoSanteReunion` → **`EcosystemeSanteReunion`**. Le slug n'est pas une étiquette : c'est le
