@@ -279,8 +279,11 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
     chaque `columns[].path`, de `status.field`, d'`exclusiveField` et des `source.defaultFields`.
     Règle utile au configurateur : **tout champ à afficher ou à filtrer doit avoir sa racine
     présente dans l'une de ces quatre sources**, sinon il n'est pas projeté et revient vide.
-    L'invalidation post-mutation couvre `admin-*` **et** les listes publiques
-    (`SEARCH_STATIC_LIST/MAP_PREFIX`).
+    L'invalidation post-mutation couvre `admin-*` **et** toutes les surfaces publiques via
+    `publicSurfaceKeys(slug)` (`src/lib/queryKeys.ts`) — listes search + compteurs, agenda, fil blog —
+    le même jeu de clés que valider / référencer / supprimer. (Avant le 07/09/2026 : seulement les
+    deux listes statiques ; un `publicationStatus` marqué depuis l'admin laissait le fil d'actualités
+    sur son cache.)
 
     ```jsonc
     "status": { "mode": "statusField",
