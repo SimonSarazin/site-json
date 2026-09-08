@@ -19,6 +19,9 @@ import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
 import { CommonTableField } from "./CommonTableField";
+import { CategorizedCheckboxField } from "./CategorizedCheckboxField";
+import { TimeSlotsField } from "./TimeSlotsField";
+import { DynamicFieldsField } from "./DynamicFieldsField";
 import { MultiEvalChartDialog } from "./MultiEvalChartDialog";
 import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
 import { ErrorSummary } from "./ErrorSummary";
@@ -28,10 +31,11 @@ import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
 import { CoFormBanner } from "./CoFormBanner";
 import { useConditionalFields } from "../hooks/useConditionalFields";
+import { ConditionalField } from "./ConditionalField";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
 import { getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
 import { scrollToFieldByName } from "../utils/helpers";
-import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, ExistingAnswerMeta } from "../types";
+import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, CategorizedCheckboxValue, FinderValue, SimpleTableValue, ExistingAnswerMeta } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
 
 interface MultiStepCoFormProps {
@@ -183,7 +187,7 @@ function MultiStepCoFormContent({
   const showMultiEvalButton = stepHasMultiEval && !!coform.answerId;
 
   // Logique conditionnelle pour l'étape courante
-  const { isFieldVisible } = useConditionalFields(fields?.fields ?? [], form.control);
+  const { isFieldVisible, hasConditionalRule } = useConditionalFields(fields?.fields ?? [], form.control);
 
   const lockedSet = useMemo(() => new Set(lockedFields ?? []), [lockedFields]);
   const restrictedSet = useMemo(() => new Set(restrictedFields ?? []), [restrictedFields]);
@@ -362,14 +366,28 @@ function MultiStepCoFormContent({
           <form id="step-form" onSubmit={form.handleSubmit(handleSubmit, handleInvalid)}>
             <div className="grid grid-cols-12 gap-6">
               {fields.fields.map((field) => {
-                if (!isFieldVisible(field.name)) return null;
                 // Skip total : l'user n'a pas le droit selon les listes
                 // place(Admin|Member)OnlyFields. Calculé serveur-side dans
                 // `access.restrictedFields`. Aligné sur le legacy isAdminOnly
                 // qui hide entirely (pas de readonly cosmétique).
                 if (restrictedSet.has(getOriginalFieldKey(field))) return null;
+                // Un champ PILOTÉ par une règle conditionnelle passe par
+                // `ConditionalField`, qui anime sa venue et son départ ; les
+                // autres gardent strictement le rendu d'origine.
+                const estConditionnel = hasConditionalRule(field.name);
+                const visible = isFieldVisible(field.name);
+                // Garde DÉFENSIVE : un champ sans règle est toujours visible
+                // (les deux fonctions lisent la même table). Elle n'est là que
+                // pour le jour où un masquage viendrait d'une autre source —
+                // invariant verrouillé par `useConditionalFields.test.ts`.
+                if (!estConditionnel && !visible) return null;
                 const isLocked = lockedSet.has(field.name);
-                const fieldElement = (() => { switch (field.componentType) {
+                // Fonction NON invoquée ici : `ConditionalField` ne l'appelle
+                // que lorsque le champ doit exister, sinon tous les champs
+                // conditionnels seraient montés en permanence — et ceux qui
+                // interrogent le réseau (`finder`, `commonTable`) le feraient
+                // pour rien.
+                const rendreChamp = () => { switch (field.componentType) {
                 case "text":
                   return (
                     <TextField
@@ -536,6 +554,62 @@ function MultiStepCoFormContent({
                     />
                   );
 
+                case "categorizedCheckbox":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <CategorizedCheckboxField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value as CategorizedCheckboxValue}
+                          onChange={controllerField.onChange}
+                          readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
+                case "timeSlots":
+                  // Câblage identique à DynamicCoForm — le trou multi-step rendait « type de champ
+                  // inconnu » sur un form multi-étapes portant ces inputs (cas réel : form 13
+                  // étapes, dynamicFields à l'étape 9). NB : ces 2 composants n'ont pas (encore)
+                  // de prop readOnly — même limite que côté DynamicCoForm.
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <TimeSlotsField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value}
+                          onChange={controllerField.onChange}
+                        />
+                      )}
+                    />
+                  );
+
+                case "dynamicFields":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <DynamicFieldsField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value}
+                          onChange={controllerField.onChange}
+                        />
+                      )}
+                    />
+                  );
+
                 case "finder":
                   return (
                     <Controller
@@ -605,7 +679,28 @@ function MultiStepCoFormContent({
                       <p>{t("coform.errors.unknownFieldType", undefined, { type: field.type })}</p>
                     </div>
                   );
-              } })();
+              } };
+
+                if (estConditionnel) {
+                  // Les champs décoratifs ne reçoivent pas d'ancre
+                  // `data-field-name`, comme sur le chemin non animé ci-dessous.
+                  const estDecoratif =
+                    field.componentType === "sectionTitle" ||
+                    field.componentType === "sectionDescription";
+                  return (
+                    <ConditionalField
+                      key={field.name}
+                      visible={visible}
+                      width={field.width}
+                      fieldName={estDecoratif ? undefined : field.name}
+                      isLocked={isLocked}
+                    >
+                      {rendreChamp}
+                    </ConditionalField>
+                  );
+                }
+
+                const fieldElement = rendreChamp();
 
                 // Wrapper avec `data-field-name` pour permettre au récap
                 // d'erreurs (`ErrorSummary`) de scroller + highlight via

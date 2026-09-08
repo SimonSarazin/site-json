@@ -3,21 +3,34 @@ import { T } from "@/components/ui/T";
 import { useNavigate } from "react-router";
 import { cn } from '@/lib/utils';
 import { CTASectionProps } from '@/types/site-schema';
+import { classifyHref } from '@/lib/linkKind';
 
 export function CTASection({ id, props }: { id?: string; props: CTASectionProps }) {
   const navigate = useNavigate();
   const { headline, subhead, backgroundImage, backgroundColor, buttons, align = 'center' } = props;
 
+  // Contrat 4 voies partagé avec NavLink et CardsSection (cf. src/lib/linkKind.ts). Avant, tout ce
+  // qui n'était ni `#` ni `http` partait dans `navigate()` : un `tel:`/`mailto:` de config tombait
+  // sur le catch-all et rendait la page d'accueil en 200 — sur mobile l'appel ne partait jamais.
   const handleButtonClick = (href: string) => {
-    if (href.startsWith('#')) {
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+    switch (classifyHref(href)) {
+      case 'inert':
+        return;
+      case 'anchor': {
+        document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
+        return;
       }
-    } else if (href.startsWith('http') || href.startsWith('//')) {
-      window.open(href, '_blank', 'noopener,noreferrer');
-    } else {
-      navigate(href);
+      case 'protocol':
+        // Handler OS (téléphone, client mail) : navigation de document, jamais un nouvel onglet.
+        // `assign()` plutôt qu'une affectation de `location.href` : même effet, mais la règle
+        // React Compiler interdit de MUTER un global (« This value cannot be modified »).
+        window.location.assign(href);
+        return;
+      case 'external':
+        window.open(href, '_blank', 'noopener,noreferrer');
+        return;
+      default:
+        navigate(href);
     }
   };
 

@@ -48,6 +48,18 @@ par `isAdminEntryVisible` (`lib/adminEntry.ts`) — jamais de lien vers une page
 }
 ```
 
+**Entrée « Kanban » du menu avatar** (opt-in `auth.menu.kanban` — cf. [doc/23-module-auth.md](23-module-auth.md),
+section `config.auth.menu` ; PAS dans `admin` : activer le kanban n'oblige pas à activer le back-office) :
+ajoute dans le **menu avatar** (`AuthMenu`, au même niveau que Profil / Administration, layouts desktop et
+mobile) une entrée « Kanban » qui ouvre **dans un nouvel onglet** la vue kanban des actions de la plateforme :
+`<serverUrl>/#@<costumSlug>.view.actions` (ex. `https://www.communecter.org/#@sportSanteBienetre.view.actions`).
+Visibilité = **admins du costum uniquement**, via le gate `isKanbanEntryVisible` (`lib/adminEntry.ts`, testé
+dans `adminEntry.test.ts` : `resolveAdminAccessLevel ≥ siteAdmin`, superAdmin compris) — indépendante de
+`admin.enabled`/`access.min`. Le slug est celui du **costum actif** (`useCocolight().entity.slug`, résolu
+depuis le `VITE_SLUG` du déploiement — même source que le scoping d'`AdminResourceTable`), la base est
+`getServerUrl()` (`VITE_SERVER_URL`, `www.communecter.org` sur tout le parc). Composition testée :
+`lib/platformKanbanUrl.ts`. Sans slug de carrier résolu, l'entrée n'apparaît pas (pas de lien cassé).
+
 Trois niveaux (`AdminAccessLevelSchema`, du plus fort au plus faible) :
 
 | Niveau | Qui | Résolution (`resolveAdminAccessLevel`) |
@@ -79,14 +91,42 @@ NB : l'export a un plancher **backend** `superAdmin` non contournable par config
 
 ## Les sections
 
-7 types builtin + sections costum via `registerAdminSection` (type libre non-builtin).
+7 types builtin (résolus par le `switch` d'`AdminSectionRenderer`) + **2 sections génériques
+pré-enregistrées par le module lui-même** — `invitation` et `ownershipMigration` : elles
+s'activent par simple JSON, **sans une ligne de code costum** (`registerAdminSection` appelé en
+side-effect au chargement du module, core/eager) —
++ sections costum via `registerAdminSection` (type libre non-builtin).
 
 ### `dashboard`
 
-`{ "type": "dashboard", "title": { … } }` — aucune autre config : les tuiles sont **dérivées**
+`{ "type": "dashboard", "title": { … } }` — sans autre config, les tuiles sont **dérivées**
 des sections `resource` des onglets **visibles** (compteur total + badge « à valider » si la
 resource gère la validation, via `searchCostum` variant admin, count serveur) + une tuile
 Modération (taille de la file) si l'onglet existe. Chaque tuile est un vrai lien `/admin/<tab>`.
+
+**KPIs déclarés (opt-in)** — `kpis: []` ajoute des tuiles AVANT les dérivées (même anatomie de
+Card ; champs communs `label` / `hint` / `icon` (nom lucide, DynamicIcon) / `linkTo`) :
+
+```jsonc
+"kpis": [
+  { "type": "searchCount",            // compteur d'un périmètre de recherche
+    "label": { "fr": "Créneaux actifs" }, "entityType": "answers",
+    "source": { /* mêmes baseParams que searchProStatic */ },
+    "trend": "monthly" },             // + évolution : créations mois courant vs précédent
+  { "type": "membersPending", "label": { "fr": "Pros inscrits" } },  // carrier toBeValidated
+  { "type": "analyticsVisitors", "label": { "fr": "Usagers actifs" } } // état « à raccorder »
+]
+```
+
+- `searchCount` : count de la 1ʳᵉ page seul ; avec `trend: "monthly"`, charge le périmètre complet
+  (`useSearchAllResults`, clé `ADMIN_QUERY_KEYS.KPI_SEARCH_PREFIX`) et dérive la tendance des
+  `created` (`lib/kpiTrend.ts`, pur + testé). Limite : les **suppressions ne sont pas historisées**
+  → on compare les créations, pas les totaux historiques ; tendance rendue seulement sur périmètre
+  complet.
+- `membersPending` : membres du carrier en attente de validation (même source que la section `members`).
+- `analyticsVisitors` : tuile **placeholder explicite** — le moteur n'a aucune API de LECTURE
+  d'audience (`IntegrationsLoader` = tracking sortant uniquement) ; brancher un jour un outil RGPD
+  (Matomo…) transformera ce type en vraie source.
 
 ### `members`
 
@@ -106,23 +146,48 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
 { "type": "resource", "entityType": "poi",
   "label": { "fr": "Équipements" },
   "source": { "defaultFilters": { "type": "recoveryCenter" }, "defaultSortBy": { "name": 1 } },
-  "columns": ["name", { "path": "address.addressLocality", "label": { "fr": "Commune" } }],
+  "columns": ["name", { "path": "address.addressLocality", "label": { "fr": "Commune" } },
+              { "path": "medias", "label": { "fr": "Audio" }, "type": "audio" }],
   "create": "inherit", "edit": "inherit",       // false | "inherit" | "add-<key>"/"edit-<key>"
-  "rowActions": ["edit", "delete", "validate", "reference"],
-  "bulkActions": ["validate", "export", "delete"] }
+  "createDefaults": { "category": "appel-projet" },  // valeurs semées dans la modale d'AJOUT
+  "rowActions": ["edit", "delete", "validate", "reference", "setFeatured"],
+  "exclusiveField": "featured",                 // EXIGÉ par `setFeatured` (sans lui : action absente)
+  "restrictActionsToOwned": false,              // true = fiche non possédée → lecture + `reference` seuls
+  "bulkActions": ["validate", "export", "delete", "transfer"],
+  "transferFrom": "sportSanteBienetre" }        // EXIGÉ par `transfer` (sans lui : bouton caché)
 ```
 
 - `source` = mêmes `baseParams` que `searchProStatic` (`SearchBaseParamsSchema`) — y compris la clé
   sucre **`costumSubType`** (sous-type de costum : natifs + référencés annotés, cf.
   [07-module-search](07-module-search.md)) qui remplace un `defaultFilters.type` quand la
   collection est multi-forms.
-- **Mode admin** (dès que `validate` ∈ rowActions ou `status` présent) : la recherche passe par
-  l'endpoint admin (`globalautocompleteadmin`, documents **complets**, `preferences` lisible) →
-  badge/filtre « En attente / Validé », actions de validation contextuelle. `defaultFields` y est
-  ignoré (résolution d'édition costum + forms préremplis l'exigent).
+- **Mode admin** (dès que `validate` ∈ rowActions ou `status` présent, **hors**
+  `status.mode: "statusField"` **avec au moins un état dans `states`** — sans `states`, le mode
+  statusField est inerte et la table retombe en mode admin, `AdminResourceTable.tsx:135-140`) :
+  la recherche passe par l'endpoint admin
+  (`globalautocompleteadmin`, documents **complets**, `preferences` lisible) → badge/filtre
+  « En attente / Validé », actions de validation contextuelle. `defaultFields` y est
+  ignoré (résolution d'édition costum + forms préremplis l'exigent) — **sauf `events`**, que le
+  legacy réduit même sur la route admin (`getSimpleEventById`) : la table envoie alors la projection
+  explicite `[...champsProjetes, "preferences"]`, qui reprend les racines des `columns`, de
+  `status.field`, d'`exclusiveField` **et des `source.defaultFields`** — pour `events`, ces derniers
+  sont donc honorés, pas ignorés. (`AdminResourceTable.tsx:212`)
 - `create`/`edit: "inherit"` : la création prend le form **costum** du site s'il en existe un pour
   ce type (`config.costumForms`), l'édition suit la résolution publique (`editModalMatch`,
   par-ligne). Clé forcée `add-<key>`/`edit-<key>` possible ; `false` = lecture seule.
+- **`createDefaults`** (opt-in) : valeurs **semées dans la modale d'AJOUT** ouverte depuis cette
+  section, fusionnées **par-dessus** les défauts dérivés du form (`fields.<nom>.default`) — donc une
+  clé absente garde son défaut normal. **Jamais en édition** (l'entité fait foi : écraser son seed
+  par une valeur d'onglet réécrirait une fiche à l'insu de l'admin).
+  C'est la réponse au patron « un onglet = un sous-ensemble » : une table filtrée par son `source`
+  (ex. `defaultTags: ["Appels à projets"]`) ouvre le form **déjà positionné** sur le sous-type que
+  l'onglet impose, au lieu d'exiger un form costum **cloné par sous-type** pour ne varier qu'un
+  défaut. Consommateur actuel : `config.prod.parent62.json` (onglets `appels-projets` /
+  `offres-emploi`, champ `category`).
+  ⚠ Les clés sont des **noms de champs du form résolu par `create`** : une clé inconnue de ce form
+  est **ignorée** (`applyCreateDefaults` filtre sur le descripteur) — pas d'erreur, mais pas de
+  semis non plus, donc vérifier l'orthographe contre `costumForms.<id>.fields`.
+  (`src/modules/profil/forms/createDefaults.ts`, `EntityFormModal.tsx`)
 - **Édition = entité COMPLÈTE** : la ligne de liste (résultat `searchCostum`) est **allégée** — sans
   les champs `images`/`files` fusionnés par `about`. `openEditEntity` **recharge l'entité full par id**
   via `me.poi/organization/project/event({ id })` (mapping `EDIT_LOAD_METHOD` :
@@ -136,11 +201,59 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
   ex. « 14 juin 2026 »). Formats acceptés : `Date` (revivifié par la lib sur `serverData`),
   MongoDate `{ sec }` (**secondes** epoch → `sec*1000`), `{ $date }` (nombre/chaîne), et
   `{ $date: { $numberLong } }`.
+- **Colonne audio** : la forme objet d'une colonne accepte `type: "text" | "audio"` — `type` est
+  optionnel et le schéma ne porte **aucun** défaut (`AdminColumnsSchema`, `schema.ts:62-63`) : toute
+  colonne sans `type` (ou avec `"text"`) rend la cellule en texte, le défaut vit dans le rendu
+  (`AdminResourceTable.tsx:622-624`), pas dans le schéma.
+  `{ "path": "medias", "label": { "fr": "Audio" }, "type": "audio" }` rend un `AudioPlayer` compact
+  alimenté par le **1ᵉʳ `medias[]` de `type: "audio"`** de la ligne (ou par la valeur si c'est
+  directement une URL ; `—` si rien) ; la cellule passe en `min-w-[13rem]` au lieu du `truncate`.
+  ⚠ `AdminColumnsSchema` est partagé avec la section `reference`, mais celle-ci **ignore `type`** :
+  elle rend toujours `formatCell` (`AdminReferenceSection.tsx:202`) — une colonne `audio` y passe la
+  validation et s'affiche en texte, **sans message**. `type` n'a d'effet que dans `resource`.
+- **`restrictActionsToOwned`** (booléen opt-in, à écrire explicitement — aucun défaut Zod appliqué
+  au runtime ; absent = comportement historique) : sur une ligne **non possédée**
+  (`serverData.source.keys` ∌ slug du costum — référencée ou étrangère), `edit`, `delete`,
+  `validate`, les actions « Marquer : <état> » du mode `statusField` et `setFeatured` sont
+  **masqués** ; seules la lecture et l'action `reference` (Référencer / Retirer la référence)
+  restent. C'est le gate du patron « une vue Structures (fiches du site) + une vue Référencement
+  (curation) ». ⚠ C'est un gate d'**affichage**, pas la vérité des droits : le backend reste
+  l'autorité (un superAdmin peut éditer une étrangère). Consommateur actuel :
+  `config.prod.maison-sport-sante-la-tampon.json:2962` (onglet Structures).
+  (`AdminResourceTable.tsx:603`)
+- **`setFeatured` + `exclusiveField`** — couple **obligatoire** : l'action « Mettre à la une /
+  Retirer de la une » n'apparaît que si `rowActions` contient `setFeatured` **et** que
+  `exclusiveField` est renseigné (les deux à écrire explicitement en JSON ; sans `exclusiveField`,
+  l'action est absente **sans aucun message**). `exclusiveField` est le chemin pointé d'un booléen à
+  **exclusivité** (ex. `featured`) : au clic, `runExclusiveFlag` pose d'abord la **cible**
+  (`entity.updateField`), puis dé-marque en **best-effort** les fiches déjà à `true` retrouvées par
+  une **recherche serveur dédiée** (`fetchFlagged`, sur le périmètre `source` de la resource —
+  jamais les lignes chargées de l'infinite scroll, jamais les filtres UI transitoires). Un double
+  flag transitoire est bénin ; l'ordre inverse laissait zéro flag en cas d'échec. Les unsets en
+  échec ne sont pas propagés : ils déclenchent le toast `useSetExclusiveFlag.partialUnset`.
+  Invalidation : `admin-*` + `SEARCH_STATIC_LIST_PREFIX` + `blog:*`. Consommateur actuel :
+  `config.prod.maison-sport-sante-la-tampon.json:2922` (`"exclusiveField": "featured"` sur le fil
+  actualités). (`lib/exclusiveFlag.ts`, `hooks/useSetExclusiveFlag.ts`)
+- ⚠ **Ne JAMAIS viser `preferences.*`** dans `columns` ni dans `source.defaultFields` : la
+  projection dérivée (`champsProjetes`) reprend telle quelle la **racine** de chaque chemin, or
+  `preferences` est un champ **interdit** du legacy (`SearchNew::checkFields`) — il est retiré par
+  `unset()`, ce qui rend le tableau PHP non séquentiel et **casse toute la projection Mongo**
+  (documents réduits à `_id`). Résultat : le tableau se vide **intégralement, sans message**. Vaut
+  là où la projection dérivée part sur la route **publique** (mode `statusField`). Sur la route
+  admin, `checkFields` ne s'applique pas — c'est précisément pourquoi la branche `events` y ajoute
+  `preferences` en dernière position, pour le badge `toBeValidated`.
+  (`AdminResourceTable.tsx:162` et `:210-212`)
 - Recherche plein-texte (300 ms), tri serveur par colonne (clavier + `aria-sort`), scroll infini
   par 10 avec compteur « X affichés sur Y ».
 - **Bulk** : sélection par lignes (l'en-tête sélectionne les lignes **chargées** ; la sélection se
   réinitialise quand recherche/filtre/tri changent), progression x/y pendant les boucles, et en cas
   d'échecs partiels les éléments en échec **restent sélectionnés** avec action « Réessayer ».
+- **`bulkActions: ["transfer"]` + `transferFrom`** — couple **obligatoire** : `transfer` ouvre, sur
+  la sélection cochée, le dialog de **migration d'appropriation** en mode `ids[]` (le même que la
+  section `ownershipMigration`). `transferFrom` porte le slug du costum **cédant** ; sans lui le
+  bouton reste **invisible** (`canBulkTransfer = bulkActions.includes("transfer") && !!resource.transferFrom`,
+  `AdminResourceTable.tsx:264`), sans aucun message. Le cédant vient de la config et non des fiches :
+  les lignes de `searchCostum` ne projettent pas toujours `source`.
 - **Create/edit depuis l'admin — rester sur place + rafraîchir la liste** (côté *config* du form
   costum, pas du schéma admin) : un form costum ouvert **depuis** l'admin (ex. articles parent62)
   pose `mutation.navigateOnSuccess: false` → pas de redirection vers `/profil/{slug}` au succès, on
@@ -149,9 +262,45 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
   du `useSearchQuery` de la table) → le nouvel élément apparaît **immédiatement** dans la liste (create
   ET edit), en plus du fil concerné (ex. `blog:<slug>`). Sans ces deux réglages, le create rediligerait
   hors admin et la table ne se rafraîchirait pas.
-- `status` : **contrat futur** — seule sa présence (booléen) active le mode admin aujourd'hui ;
-  les sous-champs `field/mode/states/cascade/notifyEmail` ne sont pas encore câblés (voir la
-  JSDoc du schéma avant d'écrire une valeur non-défaut).
+- `status` — deux modes (`status.mode`) :
+  - `costumFlag` (défaut) : présence = mode admin (flag `preferences.toBeValidated[slug]`,
+    comportement historique ci-dessus) ;
+  - `statusField` (câblé le 31/07/2026, décision 2026-07-07) : le statut est un **champ métier**
+    de `serverData` (`field`, chemin pointé) à valeurs dans `states` — colonne **badge toné**
+    (tokens `bg-badge-*`, mêmes couleurs que les cartes publiques), **filtre serveur** par état
+    (match exact ; les rows sans le champ ne sortent que sur « Tous »), actions par-ligne
+    « Marquer : <état> » (gate `rowActions:["validate"]`) via `entity.updateField`
+    (UPDATE_PATH_VALUE — un `$set` ciblé, pas un save d'answer complet). La recherche reste sur
+    l'endpoint **public** (pas de variant admin), mais **pas en documents complets** : sur `fields`
+    vide, la route publique RÉDUIT les documents (mesuré sur organizations, poi et answers — d'où
+    colonnes vides et toggle Référencer aveugle). La table envoie donc une **projection explicite
+    dérivée de la config** (`champsProjetes`) : un socle fixe + la **racine de premier niveau** de
+    chaque `columns[].path`, de `status.field`, d'`exclusiveField` et des `source.defaultFields`.
+    Règle utile au configurateur : **tout champ à afficher ou à filtrer doit avoir sa racine
+    présente dans l'une de ces quatre sources**, sinon il n'est pas projeté et revient vide.
+    L'invalidation post-mutation couvre `admin-*` **et** les listes publiques
+    (`SEARCH_STATIC_LIST/MAP_PREFIX`).
+
+    ```jsonc
+    "status": { "mode": "statusField",
+      "field": "answers.<formKey>.<suffixe>",           // ex. select « Administration » d'une answer
+      "states": [ "En attente",                          // forme courte
+        { "value": "Réfusé",                             // valeur brute VERBATIM (legacy accentué)
+          "label": { "fr": "Refusé" },                   // affichage corrigé
+          "tone": "negative" } ] }                       // positive | pending | progress | negative
+    ```
+    `cascade`/`notifyEmail` du contrat initial sont **retirés** (cascade legacy intrinsèque ;
+    email de statut = hook costum backend). Premier consommateur : modération des créneaux
+    Ekilib.re (answers CoForm, cf. `doc-projets/maison-sport-sante-la-tampon.md` §9.7).
+
+    ⚠ **Lecture ≠ écriture pour les answers** : `field` est le chemin **Mongo imbriqué**
+    (`answers.<formKey>.<clé>`) — c'est lui que consomment le filtre serveur et l'écriture
+    `UPDATE_PATH_VALUE`. Mais les **hooks costum de recherche aplatissent** les champs d'answer au
+    top-level de la ligne en supprimant `answers.*` (ex. `SportSanteBienetre::searchAnswers` pose
+    aussi `name`/`structure`/`address` à la racine). La lecture (badge, action courante) passe donc
+    par `readStatusValue` (resourceHelpers) : chemin complet d'abord, **repli sur la clé feuille à
+    plat**. Les `columns` d'une resource answers doivent viser la **shape aplatie** (`name`,
+    `structure.name`, `<formKey+clé>` à plat…), pas les chemins imbriqués.
 
 ### `import`
 
@@ -180,13 +329,33 @@ Export CSV du costum (`exportElements` + `toCsv`), filtre par statut de validati
 
 ```jsonc
 { "type": "reference", "entityTypes": ["poi", "organizations"], "columns": ["name"],
+  "search": {                                    // ciblage des CANDIDATES (optionnel)
+    "openData": "optOut",                        // "optIn" (défaut code) | "optOut" | "off"
+    "defaultFilters": {                          // vivier commun à toutes les collections
+      "source.keys": "sportSanteBienetre",
+      "address.postalCode": { "$in": ["97430", "97418"] } },
+    "defaultFiltersByType": { "events": { "…": "…" } } },   // ciblage PAR collection
   "moderateReferenced": false }   // opt-in : les référencés arrivent "à modérer"
 ```
 
-Deux sous-onglets : « Rechercher & référencer » (recherche **globale hors costum**, garde-fous
-legacy : `preferences.isOpenData` + exclusion du déjà rattaché/référencé) et « Référencés »
-(+ retrait). Pose/retire `reference.costum` (endpoint `setsource`). `columns` = colonnes de
-données (défaut Nom/Commune) ; Type (badge) et Action restent fixes.
+Deux sous-onglets : « Rechercher & référencer » (recherche **globale hors costum**) et
+« Référencés » (+ retrait). Pose/retire `reference.costum` (endpoint `setsource`). `columns` =
+colonnes de données (défaut Nom/Commune) ; Type (badge) et Action restent fixes.
+
+**Filtres des candidates** (`search`, `buildOpenSearchFilters`, `AdminReferenceSection.tsx:40`) —
+trois couches, dont deux seulement sont configurables :
+
+| Couche | Configurable | Contenu |
+|---|---|---|
+| Politique **open-data** (`search.openData`) | oui, au niveau section | `optIn` = fidèle legacy (`preferences.isOpenData: true`) · `optOut` = tout sauf refus EXPLICITE (`{ $nin: [false, "false"] }`) · `off` = aucun filtre open-data |
+| Ciblage du vivier | oui | `search.defaultFilters` (commun à toutes les collections) ⊕ `search.defaultFiltersByType.<collection>` fusionné **par-dessus** le commun |
+| Garde-fous du déjà rattaché/référencé | **non** | `$nin` sur `reference.costum` et `source.keys` (le costum courant), fusionnés **même-clé** par-dessus la config : un ciblage `source.keys` devient `$in` et s'unionne au `$nin` de garde |
+
+⚠ Le `.default("optIn")` du schéma **ne tourne jamais** (la config n'est pas parsée par Zod au
+runtime) : sans clé `openData` écrite explicitement, c'est le repli **code** `search?.openData ?? "optIn"`
+(`AdminReferenceSection.tsx:46`) qui s'applique — même valeur, mais l'origine du défaut est là.
+Sans bloc `search` du tout, le comportement reste le legacy historique. Consommateur actuel :
+`config.prod.maison-sport-sante-la-tampon.json` (`"openData": "optOut"` + `defaultFilters`).
 
 **Sous-types de costum** (quand la collection porte ≥ 1 form costum déclarant `subType`, cf.
 [28-module-formengine](28-module-formengine.md)) : le référencement pose EN PLUS l'**annotation**
@@ -213,6 +382,45 @@ d'élément : le Node durci refuserait). Échec visible (toast `referencedUnmode
 votes « Laisser publié / C'est un abus » (consolidate + saveModerate byte-compatibles, seuil
 legacy 3 votes majoritaires), modale de détail des signalements.
 
+### `invitation` (générique, pré-enregistrée par le module)
+
+`{ "type": "invitation" }` — **aucune prop**. Réunit les deux **liens partageables** membre / admin
+(`CREATE_INVITATION_LINK`, copiés au presse-papier), la liste des **invités en attente**
+(`useEntityMembers` `isInviting`) avec un bouton « Relancer » par ligne (`RELAUNCH_INVITATION`), et
+l'invitation par email via `InviteMemberDialog` (réutilisé du module profil). Rien à écrire côté
+code : le module l'enregistre lui-même. (`sections/AdminInvitationSection.tsx`, `hooks/useInvitationActions.ts`)
+
+### `ownershipMigration` (générique, pré-enregistrée par le module)
+
+Reprise de la **propriété** d'un lot de fiches d'un costum cédant vers ce site (endpoints
+`TRANSFER_SOURCE_*`) — le pendant, pour le **stock**, de ce que les `mutation.stamps` des
+costumForms font à la création. La section n'est qu'un **sélecteur** (collection + critère
+whitelisté) + l'**historique des runs** ; l'analyse, les options par run et l'apply vivent dans
+`OwnershipMigrationDialog`, réutilisé tel quel par la bulkAction `transfer` d'`AdminResourceTable`.
+
+```jsonc
+{ "type": "ownershipMigration", "access": "siteAdmin",
+  "props": {
+    "from": "equipementsSportifs974",   // REQUIS — slug du costum CÉDANT
+    "collections": ["poi"],             // défaut ["poi"]
+    "selectors": [                      // REQUIS, ≥ 1 — whitelist serveur sur `field`
+      { "field": "address.codeInsee", "value": "97415",
+        "label": { "fr": "Fiches de la commune de Saint-Paul (Insee 97415)" } } ],
+    "subType": "recoveryCenter",        // défaut d'annotation : "auto" | "" | valeur explicite
+    "keepReference": true,              // false = transfert sec (pas de référencement du cédant)
+    "keysPolicy": "replace" } }         // "strict" (défaut serveur) | "replace"
+```
+
+(extrait réel : `config.prod.saint-paul-sport.json:6959`)
+
+Particularité : ces `props` **sont réellement parsées par Zod au runtime**
+(`PropsSchema.safeParse` dans le composant — `AdminCustomSectionSchema` laisse `props` libre à
+dessein), contrairement au reste de la config du site. Les `.default()` s'y appliquent donc
+(`collections` → `["poi"]`), et une config fautive ne fait **pas** échouer `config:validate` : elle
+rend le message « configuration invalide » au runtime. `subType` et `keysPolicy` ne sont que des
+**défauts** — l'opérateur les ajuste par run dans le dialog, et le serveur re-déroule tous les
+contrôles à l'apply (l'UI n'est jamais l'autorité).
+(`sections/AdminOwnershipMigrationSection.tsx`, `hooks/useOwnershipMigration.ts`)
 ### Sections costum
 
 `registerAdminSection("monType", MonComposant)` puis `{ "type": "monType", "props": { … } }` —
@@ -228,7 +436,7 @@ silencieusement dans la section custom. Champs stricts notables : `import.entity
 
 ## i18n, mobile, dark mode
 
-- **i18n** : namespace `modules/admin` (fr + en, ~137 clés, parité vérifiée par le préflight).
+- **i18n** : namespace `modules/admin` (fr + en, ~270 clés feuilles, parité vérifiée par le préflight).
   Les libellés de config (`label`, `title`, `columns[].label`) restent des `LocalizedString`.
 - **Mobile** : vérifié à 390/768 px (0 px de débordement mesuré) — barres d'onglets défilantes
   (`ScrollableTabsList`), colonne d'actions de table **sticky à droite**, en-tête sticky,
@@ -237,10 +445,11 @@ silencieusement dans la section custom. Champs stricts notables : `import.entity
 
 ## Limites connues / backlog
 
-- `status.*` : déclaré au schéma, **non câblé**. Décision 2026-07-07 : `mode`/`field`/`states`
-  seront implémentés à l'arrivée de SSBE (workflows multi-états, via `UPDATE_PATH_VALUE`) ;
-  `cascade` et `notifyEmail` seront **retirés** (cascade legacy intrinsèque, email = hook costum
-  backend — mauvaise couche pour un flag de config front).
+- ~~`status.*` non câblé~~ **fait le 31/07/2026** : `mode: "statusField"` implémenté (badge toné +
+  filtre serveur + « Marquer » via `entity.updateField`), `cascade`/`notifyEmail` retirés comme
+  acté — cf. la section `resource` ci-dessus. Reste ouvert : l'**autorisation backend** d'un
+  `updatepathvalue` sur une answer par un admin de costum non-auteur (à vérifier en recette —
+  même famille de risque que le save d'answer par un non-propriétaire).
 - Dérivation automatique des `tabs` : ne sera **pas** implémentée en runtime — les tabs se
   génèrent explicitement (assistant config / commande à venir), la config reste inspectable.
 - `me.isCostumAdmin(slug)` : pas exposé par la lib, et **0/65 costums** de la base n'a

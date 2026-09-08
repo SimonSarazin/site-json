@@ -304,7 +304,19 @@ export const Page = z.object({
   title: LocalizedString,
   seo: PageMeta.optional(),
   layout: z.enum(["default", "fullwidth", "sidebar-left", "sidebar-right", "landing"]).default("default"),
-  auth: z.object({ required: z.boolean().default(false), roles: z.array(z.string()).optional() }).optional(),
+  auth: z.object({
+    required: z.boolean().default(false),
+    // Niveau d'ADMINISTRATION requis, même vocabulaire que `admin.access.min` — résolu par les
+    // vraies méthodes du SDK (`isSuperAdmin`/`isAdminPlatform`/`entity.isAdmin`). Forme à utiliser.
+    access: z.enum(["siteAdmin", "superAdmin"]).optional(),
+    // ⚠️ DÉPRÉCIÉ — préférer `access`. Teste des clés BRUTES de `me.serverData.roles`.
+    roles: z.array(z.string()).optional(),
+    // Ce qui se passe quand l'accès est refusé. Défaut `prompt`, CODÉ EN DUR dans
+    // `src/lib/pageAccess.ts:55` (`DEFAULT_GATE_MODE`) — la config n'étant jamais parsée par Zod
+    // au runtime, il faut écrire la clé explicitement pour choisir un autre mode.
+    mode: z.enum(["prompt", "redirect", "hide"]).optional(),
+  }).optional(),
+  // ⚠️ DÉPRÉCIÉ — préférer `auth` (voir le tableau ci-dessous).
   middleware: z.array(z.string()).optional(),
   sections: z.array(Section),
   hideHeader: z.boolean().optional(),
@@ -320,13 +332,22 @@ export const Page = z.object({
 | `title`      | `LocalizedString`        | Oui      | Titre multi-langues de la page                       |
 | `seo`        | `PageMeta`               | Non      | Metadonnees SEO de la page                           |
 | `layout`     | `enum`                   | Non      | Layout de la page (defaut: `"default"`)              |
-| `auth`       | `object`                 | Non      | Authentification requise et roles autorises           |
-| `middleware` | `string[]`               | Non      | Fonctions middleware a executer avant rendu           |
+| `auth`       | `object`                 | Non      | Garde d'acces de la page (voir les 4 lignes suivantes) |
+| `auth.required` | `boolean`             | Non      | Exige une session                                     |
+| `auth.access` | `"siteAdmin" \| "superAdmin"` | Non | Exige un niveau d'admin — **forme a utiliser** (meme vocabulaire que `admin.access.min`) |
+| `auth.roles` | `string[]`               | Non      | ⚠️ **DEPRECIE** — teste des cles brutes de `me.serverData.roles`, dont le SDK ne connait que `superAdmin` et `adminPlatform` : tout autre nom (ex. `"admin"`) ferme la page a TOUT LE MONDE, superAdmin compris. `tests/preflight/page-guards.test.ts` refuse desormais les noms hors de ce jeu |
+| `auth.mode`  | `"prompt" \| "redirect" \| "hide"` | Non | Comportement en cas de refus : `prompt` (on reste sur la page, la modale de connexion s'ouvre), `redirect` (vers `/login`, destination memorisee), `hide` (refus affiche). **Defaut `prompt` code en dur** (`src/lib/pageAccess.ts:55`) : la config n'etant jamais parsee par Zod, il faut ecrire la cle explicitement pour choisir un autre mode |
+| `middleware` | `string[]`               | Non      | ⚠️ **DEPRECIE** — preferer `auth`. Seuls `auth-required`, `admin-only` et `redirect-if-authenticated` sont resolus par le registre d'`usePageGuards` ; **tout autre nom est un no-op SILENCIEUX** (la page se croit gardee et ne l'est pas — l'avertissement console n'existe qu'en DEV). `tests/preflight/page-guards.test.ts` refuse les noms inconnus |
 | `sections`   | `Section[]`              | Oui      | Sections de la page                                  |
 | `hideHeader` | `boolean`                | Non      | Masquer l'en-tete sur cette route                    |
 | `hideFooter` | `boolean`                | Non      | Masquer le pied de page sur cette route              |
 | `customCSS`  | `string`                 | Non      | CSS additionnel par page                             |
 | `customJS`   | `string`                 | Non      | JS additionnel par page                              |
+
+> ⚠️ **Ce n'est pas une garde serveur** : `usePageGuards` s'evalue dans un `useEffect`, il n'y a pas
+> de session au SSR. `isGatedPage` (`src/lib/pageAccess.ts`) evite au moins que les sections d'une
+> page gardee soient serialisees, indexees ou listees au sitemap. Detail complet, limites comprises :
+> [Gardes de page](34-gardes-de-page.md).
 
 ### `PageMeta`
 

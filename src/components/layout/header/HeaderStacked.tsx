@@ -99,30 +99,33 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
 
   return (
     <>
-      {/* Bandeau wordmark — dans le flux. `min-h` (PAS `h`) : l'ampleur ~50vh du
-          design desktop est garantie, mais le bandeau S'ÉTEND si son contenu est
-          plus grand (petit écran, sous-titre long) au lieu de le couper. */}
+      {/* Bandeau wordmark — dans le flux. Pas de `min-h` avant `xl:` : la hauteur suit son
+          contenu (logo/titre/sous-titre) + son padding. `xl:` est choisi (PAS `lg:`) pour
+          matcher exactement le breakpoint où la barre en dessous bascule du hamburger à la
+          nav complète (`hidden xl:flex` / `xl:hidden`, cf. plus bas) — sinon, entre 1024 et
+          1279px, le bandeau prendrait sa forme desktop (50vh, gros logo) au-dessus d'une
+          barre encore en mode mobile, un décalage visuel constaté à l'écran. Plancher à 50vh
+          à partir de `xl:` : partage moitié bandeau / moitié section "à la une" au premier
+          écran — le bandeau S'ÉTEND si son contenu dépasse ce plancher, jamais de clipping. */}
       <header className="relative bg-neutral-800 bg-cover bg-center" style={bgStyle}>
         <div aria-hidden className="absolute inset-0 pointer-events-none dark:bg-background/90" />
-        {/* `pb-24` : réserve les 56px que la barre (en marge négative, cf. plus bas)
-            superpose au bas du bandeau + 2.5rem de respiration — le wordmark ne
+        {/* `pb-16` : réserve les 56px que la barre (en marge négative, cf. plus bas)
+            superpose au bas du bandeau + une fine respiration — le wordmark ne
             passe jamais sous la barre. */}
-        <div className="relative flex min-h-[50vh] flex-col items-center justify-center px-4 pt-10 pb-24">
-          <NavLink to={header.path || "/"} className="flex flex-col sm:flex-row items-center gap-4 sm:gap-10 lg:gap-20 text-center sm:text-left cursor-pointer group">
+        <div className="relative flex flex-col items-center justify-center px-4 pt-6 pb-16 xl:min-h-[50vh]">
+          <NavLink to={header.path || "/"} className="flex flex-col sm:flex-row items-center gap-3 sm:gap-5 xl:gap-12 text-center sm:text-left cursor-pointer group">
             <HeaderLogo
               header={header}
               isOverlay
               iconTone="white"
-              imageClassName="h-20 w-20 sm:h-35 sm:w-35 lg:h-60 lg:w-60 shrink-0 object-contain transition-transform group-hover:scale-110"
-              iconClassName="w-20 h-20 sm:w-35 sm:h-35 lg:w-60 lg:h-60 shrink-0 transition-transform group-hover:scale-110"
-              imageHeight={200}
+              imageClassName="h-11 w-11 sm:h-16 sm:w-16 xl:h-40 xl:w-40 shrink-0 object-contain transition-transform group-hover:scale-110"
+              iconClassName="w-11 h-11 sm:w-16 sm:h-16 xl:w-40 xl:h-40 shrink-0 transition-transform group-hover:scale-110"
+              imageHeight={160}
             />
             {(header.logoTitle || header.logoSubtitle) && (
               <span className="flex flex-col items-center sm:items-start leading-tight">
                 {header.logoTitle && (
-                  // Le saut à la taille desktop (9xl) attend `lg:` (1024px), pas `md:` (768px) :
-                  // sur les largeurs tablette, 9xl ferait déborder le wordmark de l'écran.
-                  <span className="font-display text-5xl sm:text-6xl lg:text-9xl font-serif mb-2 sm:mb-5">
+                  <span className="font-display text-2xl sm:text-3xl xl:text-7xl font-serif mb-1 sm:mb-1.5 xl:mb-3">
                     {header.logoTitleAccent ? (
                       <>
                         {/* Wordmark 2 segments : `logoTitle` en `header.textColor` (repli noir)
@@ -145,7 +148,7 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
                   </span>
                 )}
                 {header.logoSubtitle && (
-                  <span className="whitespace-pre-line text-base sm:text-xl lg:text-5xl font-medium text-white mt-1 sm:mt-3">{t(header.logoSubtitle)}</span>
+                  <span className="whitespace-pre-line text-sm sm:text-base xl:text-3xl font-medium text-white mt-1 sm:mt-1.5 xl:mt-3">{t(header.logoSubtitle)}</span>
                 )}
               </span>
             )}

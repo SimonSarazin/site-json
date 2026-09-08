@@ -51,7 +51,9 @@
         "showLess": "Voir moins",
         "moreSlots": "+{{count}} créneaux",
         "activitySheet": "Fiche d'activité",
-        "structureSheet": "Fiche structure"
+        "structureSheet": "Fiche structure",
+        "edit": "Modifier",
+        "editError": "Impossible de charger cette fiche pour la modifier."
     },
     "CardPoiAmenities": {
         "amenities": "Aménagement",
@@ -153,6 +155,25 @@
             "open": "Voir le tableau de bord de l'installation"
         }
     },
+    "PreviewStructure": {
+        "edit": "Éditer",
+        "validated": "Profil validé",
+        "website": "Site web",
+        "affiliation": "Affiliation fédérale",
+        "affiliated": "Affiliée",
+        "location": "Localisation",
+        "representative": "Représentant légal",
+        "personInCharge": "Personne en charge",
+        "repAndPic": "Représentant légal & personne en charge",
+        "information": "Informations",
+        "identifier": "Identifiant",
+        "category": "Catégorie",
+        "memberOf": "Membre de",
+        "memberOfCount_one": "{{count}} organisation",
+        "memberOfCount_other": "{{count}} organisations",
+        "createdOn": "Créé le",
+        "documents": "Documents"
+    },
     "PreviewReservations": {
         "title": "Réservations",
         "empty": "Aucune réservation enregistrée pour cet équipement.",
@@ -208,6 +229,8 @@
     "toast.card.starError": "Impossible de mettre à jour les favoris",
     "toast.card.activateFundingSuccess": "Financement activé",
     "toast.card.activateFundingError": "Impossible d'activer le financement",
+    "card.event.recurring": "Chaque {{days}}",
+    "card.event.recurringAnd": "et",
     "card.detailed.seeMore": "Voir plus",
     "card.detailed.addFavorite": "Ajouter aux favoris",
     "card.detailed.removeFavorite": "Retirer des favoris",

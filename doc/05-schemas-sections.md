@@ -211,6 +211,14 @@ const CardsSectionSchema = z.object({
 | `showResultCount` | `boolean` | Afficher le compteur de resultats |
 | `showViewToggle` | `boolean` | Afficher le toggle de vue |
 
+**Contrat de lien** (`items[].href`) — meme `classifyHref` que [`cta`](#cta)
+(`CardsSection.tsx:114`) : `"#"` rend la carte **non cliquable** (`<div class="block">`) tandis qu'un `href`
+absent ou vide ne pose **aucun conteneur** (fragment — la garde `if (href)` de `CardsSection.tsx:112` precede
+l'appel a `classifyHref`),
+`mailto:`/`tel:`/`sms:` sortent en `<a href>` natif (handler OS), `http(s)://` ou `//` en
+`<a target="_blank" rel="noopener noreferrer">` (ou `items[].target` s'il est pose), tout le reste
+en `<Link>` React Router — les ancres `#ancre` incluses.
+
 ## `stats`
 
 ```ts
@@ -365,6 +373,21 @@ const CTASectionSchema = z.object({
 | `variant`         | `enum`    | `"default" \| "secondary" \| "outline" \| "ghost"` |
 | `align`           | `enum`    | Alignement (defaut: `"center"`)              |
 
+**Contrat de lien** (`buttons[].href`) — tranche par `classifyHref` (`src/lib/linkKind.ts`,
+`CTASection.tsx:16`), partage avec `cards` et `categories-grid` :
+
+| `href` | Effet |
+| ------ | ----- |
+| `"#"` ou chaine vide | **INERTE** : le bouton ne fait rien (placeholder de config) |
+| `#ancre` | Defilement vers l'element de la page courante (`scrollIntoView`) |
+| `mailto:` / `tel:` / `sms:` | Navigation de document remise au handler de l'OS — **jamais** un nouvel onglet |
+| `http(s)://` ou `//` | Nouvel onglet (`noopener noreferrer`) |
+| tout le reste | Navigation SPA React Router |
+
+> Avant ce contrat, tout ce qui n'etait ni `#` ni `http` partait dans `navigate()` : un `tel:` ou un
+> `mailto:` de config tombait sur le catch-all et rendait la **page d'accueil en 200** — aucune
+> erreur, donc invisible en recette, et le tap-to-call ne se declenchait jamais sur mobile.
+
 ## `blogList`
 
 ```ts
@@ -417,15 +440,63 @@ const ContactFormSectionSchema = z.object({
       placeholder: LocalizedString.optional(),
       options: z.array(LocalizedString).optional(),
       validation: z.string().optional(),
+      // Role du champ dans le message envoye (cf. `src/lib/contactPayload.ts`). Facultatif :
+      // a defaut, le role est deduit du `name` par convention.
+      role: z.enum(["senderName", "senderEmail", "phone", "subject", "message", "extra"]).optional(),
     })),
     submitLabel: LocalizedString,
-    action: z.string(),
-    method: z.enum(["GET", "POST"]).default("POST"),
+    /** @deprecated IGNORE — cf. la note ci-dessous. */
+    action: z.string().optional(),
+    /** @deprecated IGNORE — cf. `action`. */
+    method: z.enum(["GET", "POST"]).optional(),
     successMessage: LocalizedString.optional(),
     errorMessage: LocalizedString.optional(),
   }),
 });
 ```
+
+> ⚠️ **`action`/`method` ne sont plus lus.** Le composant ne les deconstruit meme plus : le message
+> part par la lib (`api.endpointApi.contactSend` → `CONTACT_SEND` → `/co2/mailmanagement/createandsend`),
+> et le destinataire est resolu **cote serveur** depuis le costum porteur — d'ou `costumSlug`
+> (`getSlug()`) comme seul parametre d'adressage.
+>
+> **Ordre de resolution : `costum.contactMail` d'ABORD, `costum.admin.email` seulement en REPLI**
+> (parite du bloc CMS legacy, `contactForm.php:606` : `costum.contactMail || costum.admin.email`).
+> Ce n'est pas cosmetique : `sportSanteBienetre` declare DEUX adresses en `contactMail` alors que son
+> `admin.email` n'en porte qu'une — le second destinataire disparaitrait —, et `cyberReunion` n'a QUE
+> `contactMail`, donc aucun message ne partirait. Plusieurs adresses (tableau ou chaine a virgules) =
+> **un mail par destinataire**. L'overlay porte par l'element l'emporte sur le document `costum` du
+> moteur. Si aucune adresse n'est trouvee : le backend Node **refuse explicitement**, la le legacy
+> retombe sur `replyTo` et **renvoie le message a son auteur**. Les deux cles restent optionnelles au
+> schema pour ne pas invalider une config existante, mais `tests/preflight/contact-form.test.ts:51-56`
+> **fait echouer** toute config de SITE qui en declare encore une. ⚠️ Son filtre est
+> `/^config\.prod\..+\.json$/` (l.31) : il exige un suffixe de slug et ne scanne donc **pas**
+> `config.prod.json`, qui porte pourtant une section `contactForm`. (L'ancien fil postait du JSON sur
+> `/api/contact`, une route qui n'a jamais existe.)
+
+**Roles des champs** (`src/lib/contactPayload.ts`)
+
+La section declare des champs LIBRES, alors que l'endpoint attend des cles FIXES (`names`,
+`emailSender`, `tplObject`, `message`, `sign`). Le rattachement se fait de deux facons :
+
+1. `field.role` explicite — recommande pour tout nouveau formulaire ;
+2. a defaut, la **convention de nommage** : `name`/`nom`/`fullname` → `senderName`,
+   `email`/`mail`/`courriel` → `senderEmail`, `phone`/`tel`/`telephone` → `phone`,
+   `subject`/`objet` → `subject`, `message` → `message`. Tout le reste retombe sur `extra`.
+
+| Role | Requis ? | Effet |
+| ---- | -------- | ----- |
+| `senderName`  | **Oui** | `names` + signature |
+| `senderEmail` | **Oui** | `emailSender` + `replyTo` (mis en minuscules) |
+| `subject`     | **Oui** | `subject` et `tplObject` |
+| `message`     | **Oui** | Corps du message |
+| `phone`       | Non     | **Pas de champ dedie cote endpoint** : replie en TEXTE dans le corps et dans la signature |
+| `extra`       | Non     | Champ non rattache (rgpd, newsletter…) : valide localement, **jamais envoye** |
+
+> ⚠️ Sans les **quatre roles requis**, `buildContactPayload` rend `null` : le formulaire affiche le
+> message d'erreur et **n'envoie rien** (`ContactFormSection.tsx:97-104`). Le preflight
+> `tests/preflight/contact-form.test.ts:58-64` refuse une telle config — sans lui, la panne est
+> silencieuse a la relecture.
 
 ## `registerForm`, `loginForm`, `recoverPasswordForm`
 
@@ -1415,14 +1486,28 @@ export const HeroSearchSchema = z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
     backgroundImage: z.string().optional(),
+    // Boutons de categorie AUTO-PORTEURS : chaque bouton declare son effet.
     ctaButtons: z
       .array(
         z.object({
           label: LocalizedString,
           variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
+          // Filtres poses par ce bouton (multi-params, multi-valeurs) → `?param=v1,v2`
+          filters: z
+            .array(
+              z.object({
+                param: z.string().min(1),
+                values: z.array(z.string().min(1)).min(1),
+              })
+            )
+            .optional(),
+          // Navigation (ex. « + » → page de recherche complete).
+          href: z.string().optional(),
         })
       )
       .optional(),
+    // Id de la section vers laquelle scroller au lancement d'une recherche.
+    scrollTarget: z.string().optional(),
     placeholder: LocalizedString.optional(),
     searchButtonText: LocalizedString.optional(),
     // Scope de l'autocompletion — aligner sur le searchProStatic de la page
@@ -1445,13 +1530,26 @@ export const HeroSearchSchema = z.object({
 | `headline` | `LocalizedString` | Titre principal |
 | `subhead` | `LocalizedString?` | Sous-titre |
 | `backgroundImage` | `string?` | Image de fond |
-| `ctaButtons` | `array?` | Boutons d'action (variant: `"default" \| "secondary" \| "accent" \| "primary" \| "outline"`) |
+| `ctaButtons` | `array?` | Boutons d'action AUTO-PORTEURS (variant: `"default" \| "secondary" \| "accent" \| "primary" \| "outline"`) |
+| `ctaButtons[].filters` | `{param, values[]}[]?` | Pose des query params `?param=v1,v2` (format pluriel de `computeFiltersFromUrl`, identique a la sidebar `/lieux`) |
+| `ctaButtons[].href` | `string?` | Navigue (ex. « + » → page de recherche complete) |
+| `scrollTarget` | `string?` | Id de la section vers laquelle defiler au lancement d'une recherche (ex. le `searchProStatic` de la page). Absent = pas de defilement |
 | `placeholder` | `LocalizedString?` | Placeholder du champ de recherche |
 | `searchButtonText` | `LocalizedString?` | Texte du bouton de recherche |
 | `searchVariant` | `"default" \| "navigator-tl"` | Variant SDK de l'endpoint backend pour l'autocompletion |
 | `baseParams` | `SearchBaseParamsSchema?` | Parametres de filtrage du périmetre réseau (scope de l'autocompletion) |
 | `filterGroups` | `FilterGroupSchema[]?` | Groupes de filtres headless (typologies, services — meme format que `FiltersSection`) |
 | `filtersByAnswers` | `Record<string, ...>?` | Filtres par réponses de formulaires CoForm |
+
+> **Trois effets possibles pour un bouton** (`site-schema.ts:180-205`) : avec `filters` il POSE les
+> query params correspondants ; avec `href` il NAVIGUE ; sans ni l'un ni l'autre il **réinitialise**
+> les filtres gérés par le hero. Ce mécanisme remplace l'ancien mapping positionnel codé en dur.
+>
+> ⚠️ **Valeurs contenant une virgule** : l'écriture les ENCODE avant de joindre
+> (`computeUrlFromFilters.encodeValues`) et la lecture décode chaque fragment
+> (`computeFiltersFromUrl`) — mais `HeroSearch` compare encore les siennes **sans décoder**
+> (`HeroSearch.tsx:64-72`, `raw.split(",")`). Tant qu'une page ne porte pas à la fois un
+> `hero-search` et une section `filters`, les deux espaces de noms ne se croisent pas.
 
 ---
 
@@ -1781,9 +1879,17 @@ export const CtaNewsletterSchema = z.object({
 
 ## `searchHeader`
 
-Section titre avec filtres et boutons d'action pour Rezo la Mer.
+Bandeau titre + rangee de filtres + boutons d'action, en tete d'une page de recherche.
+
+> **Source** : le schema s'appelle `SearchHeaderSectionSchema` et vit dans
+> `src/modules/search/schema.ts:1133-1172` (re-exporte par `src/types/site-schema.ts:628`) — le nom
+> `TitleWithFiltersRezoLaMerSchema` n'existe plus, pas plus que le composant
+> `TitleWithFiltersRezoLaMer` (c'est `SearchHeaderSection`). `ActionButtonSchema` est un contrat
+> **partage** declare dans `src/types/action-button-schema.ts` (feuille neutre : le schema
+> `searchHeader` le declare, `<ActionButtonGroup>` du module profil le rend).
 
 ```ts
+// src/types/action-button-schema.ts
 export const ActionButtonSchema = z.object({
   label: LocalizedString,
   icon: z.string().optional(),
@@ -1795,28 +1901,31 @@ export const ActionButtonSchema = z.object({
   requiresAdmin: z.boolean().optional(),
 });
 
-export const TitleWithFiltersRezoLaMerSchema = z.object({
+// src/modules/search/schema.ts
+const SearchHeaderProps = z.object({
+  headline: LocalizedString.optional(),
+  subhead: LocalizedString.optional(),
+  headlineClassName: z.string().optional(),
+  subheadClassName: z.string().optional(),
+  filtersClassName: z.string().optional(),
+  types: z.array(
+    z.object({
+      id: z.string(),
+      label: LocalizedString,
+    })
+  ).optional(),
+  dropdownFilters: z.array(TitleWithFiltersDropdownSchema).optional(),
+  buttons: z.array(ActionButtonSchema).optional(),
+  showSearch: z.boolean().optional(),
+  searchPlaceholder: LocalizedString.optional(),
+  compact: z.boolean().optional(),
+  showActiveFiltersTags: z.union([z.boolean(), z.enum(["mobile", "desktop"])]).optional(),
+});
+
+export const SearchHeaderSectionSchema = z.object({
   type: z.literal("searchHeader"),
   id: z.string().optional(),
-  props: z.object({
-    headline: LocalizedString.optional(),
-    subhead: LocalizedString.optional(),
-    categories: z.array(
-      z.object({
-        id: z.string(),
-        label: LocalizedString,
-      })
-    ).optional(),
-    types: z.array(
-      z.object({
-        id: z.string(),
-        label: LocalizedString,
-      })
-    ).optional(),
-    buttons: z.array(ActionButtonSchema).optional(),
-    showSearch: z.boolean().optional(),
-    searchPlaceholder: LocalizedString.optional(),
-  }),
+  props: SearchHeaderProps,
 });
 ```
 
@@ -1824,11 +1933,18 @@ export const TitleWithFiltersRezoLaMerSchema = z.object({
 | ------------------ | ----------------- | -------------------------------------- |
 | `headline`         | `LocalizedString?` | Titre                                 |
 | `subhead`          | `LocalizedString?` | Sous-titre                            |
-| `categories`       | `array?`          | Categories de filtre (id, label)       |
+| `headlineClassName` | `string?`        | Override de la classe couleur du `h1` (def. `text-foreground`) — utile sur fond fixe sombre, ou `--foreground` devient illisible en light |
+| `subheadClassName` | `string?`         | Override de la classe couleur du sous-titre (def. `text-foreground`) ; `""` pour ne rien forcer |
+| `filtersClassName` | `string?`         | Override du conteneur flex de la rangee de filtres (def. `flex flex-col lg:flex-row lg:items-center`) |
 | `types`            | `array?`          | Types de filtre (id, label)            |
+| `dropdownFilters`  | `array?`          | Filtres en menu deroulant (`id`, `label`, `field?`, `multiple?`, `allLabel?`, `options[]`, `optionsFrom?` — `{list: string \| string[], costumSlug?, withDeclared?}`, cf. `doc/07-module-search.md`) |
 | `buttons`          | `ActionButton[]?` | Boutons d'action                       |
 | `showSearch`       | `boolean?`        | Afficher le champ de recherche         |
 | `searchPlaceholder` | `LocalizedString?` | Placeholder de la recherche          |
+| `compact`          | `boolean?`        | Padding vertical REDUIT (`py-4` au lieu de `py-12`) — a activer quand une section `title` au-dessus tient lieu de hero. Defaut `false` |
+| `showActiveFiltersTags` | `boolean \| "mobile" \| "desktop"?` | Rangee de chips de filtres actifs : `true`/absent = partout, `"desktop"` = ≥ lg, `"mobile"` = < lg, `false` = masquee |
+
+> La prop `categories` **n'existe plus** dans ce schema.
 
 ---
 
@@ -2183,7 +2299,6 @@ const GridLayoutSectionPropsSchema = z.object({
   className: z.string().optional(),
   leftWrapperClass: z.string().optional(),
   rightWrapperClass: z.string().optional(),
-  fixedHeight: z.string().optional(),
 });
 
 const GridLayoutSectionSchema = z.object({
@@ -2203,7 +2318,6 @@ const GridLayoutSectionSchema = z.object({
 | `className`         | `string?` | Classes CSS additionnelles               |
 | `leftWrapperClass`  | `string?` | Classes CSS du wrapper gauche            |
 | `rightWrapperClass` | `string?` | Classes CSS du wrapper droit             |
-| `fixedHeight`       | `string?` | Hauteur fixe de la grille                |
 
 ---
 
@@ -2292,7 +2406,9 @@ const HeroQuickAccessSchema = z.object({
 
 ## `categories-grid`
 
-Grille de catégories thématiques avec icônes, titres et liens. Variantes visuelles: `ocean`, `cyber`, `ssbe`.
+Grille de catégories thématiques avec icônes, titres et liens. Variantes visuelles: `primary`
+(teinte primaire + glow au survol), `accent` (teinte accent), `frosted` (verre dépoli lourd,
+`backdrop-blur-md`).
 
 ```ts
 const CategoriesGridSectionSchema = z.object({
@@ -2301,7 +2417,7 @@ const CategoriesGridSectionSchema = z.object({
   props: z.object({
     headline: LocalizedString.optional(),
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber", "ssbe"]).optional().default("ssbe"),
+    variant: z.enum(["primary", "accent", "frosted"]).optional().default("primary"),
     columns: z.number().min(2).max(6).optional().default(3),
     cards: z.array(z.object({
       icon: z.string().optional(),
@@ -2317,11 +2433,19 @@ const CategoriesGridSectionSchema = z.object({
 |---|---|---|
 | `headline` | `LocalizedString?` | Titre de la grille |
 | `subhead` | `LocalizedString?` | Sous-titre |
-| `variant` | `"ocean"\|"cyber"\|"ssbe"` | Style visuel de la grille |
+| `variant` | `"primary"\|"accent"\|"frosted"` | Style visuel de la grille (défaut code `primary`) |
 | `columns` | `number` | Nombre de colonnes (2–6, défaut 3) |
 | `cards` | `array` | Cartes de catégorie (icon optionnel, title/subtitle/link optionnels) |
 
 Note : `icon` et `title` sont rendus optionnels car certaines configs utilisent uniquement `subtitle` (cf. `config.prod.sport-sante-bien-etre.json`).
+
+**Contrat de lien** (`cards[].link`) : les cartes sont rendues par `NavLink`
+(`CategoriesGridSection.tsx:128-141`), donc en **navigation SPA** — auparavant un `<a href>` natif
+qui rechargeait TOUTE l'application à chaque clic (re-téléchargement du HTML + réhydratation). Le
+même contrat `classifyHref` que [`cta`](#cta) s'applique : `"#"`/vide rend un `<span>` inerte,
+`mailto:`/`tel:`/`sms:` une ancre native remise à l'OS, `http(s)://` ou `//` un
+`<a target="_blank" rel="noopener noreferrer">`, tout le reste un `<Link>` React Router. Une carte
+sans `link` n'est pas enveloppée du tout.
 
 ---
 

@@ -37,6 +37,8 @@
     "reference": "Référencer",
     "detach": "Détacher",
     "unreference": "Retirer la référence",
+    "feature": "Mettre à la une",
+    "unfeature": "Retirer de la une",
     "delete": "Supprimer",
     "empty": "Aucun élément.",
     "searchFailed": "La recherche a échoué : {{message}}.",
@@ -64,7 +66,12 @@
     "deleteTitle": "Supprimer « {{label}} » ?",
     "selectAll": "Tout sélectionner (lignes chargées)",
     "selectRow": "Sélectionner {{label}}",
-    "rowActions": "Actions pour {{label}}"
+    "rowActions": "Actions pour {{label}}",
+    "setStatus": "Marquer : {{state}}",
+    "statusUnset": "Non renseigné",
+    "statusSuccess": "Statut mis à jour : {{state}}",
+    "statusError": "Échec de la mise à jour du statut",
+    "bulkTransfer": "Migrer la propriété"
   },
   "AdminExportSection": {
     "title": "Export CSV",
@@ -174,6 +181,12 @@
     "classified": "Sous-type enregistré",
     "referencedUnmoderated": "Référencé, mais la modération n'a pas pu être posée"
   },
+  "useSetExclusiveFlag": {
+    "featured": "Mis à la une",
+    "unfeatured": "Retiré de la une",
+    "error": "Action impossible",
+    "partialUnset": "La une est posée, mais {{count}} ancienne(s) mise(s) en avant n'ont pas pu être retirées — vérifier le tableau."
+  },
   "AdminInvitation": {
     "error": "Erreur",
     "noContext": "Aucun élément à administrer.",
@@ -191,6 +204,11 @@
     "relaunch": "Relancer",
     "relaunchSent": "L'invitation a été renvoyée.",
     "relaunchFailed": "Impossible de relancer l'invitation."
+  },
+  "DashboardKpis": {
+    "trendMonthly": "+{{added}} ce mois-ci · {{delta}} vs mois précédent",
+    "membersPending": "en attente de validation",
+    "analyticsPending": "Mesure d'audience à raccorder (outil RGPD à venir)"
   },
   "AdminOwnershipMigration": {
     "title": "Migration d'appropriation",
@@ -248,6 +266,14 @@
       "alreadyReferenced": "Références préexistantes (complétées, jamais écrasées)",
       "pendingModeration": "Fiches en attente de modération",
       "selfReference": "Auto-référencement parasite (nettoyé à l'application)"
-    }
+    },
+    "optionSubType": "Sous-type (annotation)",
+    "optionSubTypeHint": "« auto » = déduit du type si homogène · vide = aucune annotation",
+    "optionKeysPolicy": "Politique source.keys",
+    "keysPolicyStrict": "strict — la fiche n'appartient plus qu'à ce site",
+    "keysPolicyReplace": "replace — préserve les clés secondaires (ex. ESS974)",
+    "optionsChanged": "Options modifiées : relancez l'analyse pour pouvoir appliquer.",
+    "selectionIds": "{{count}} fiche(s) cochée(s)",
+    "subTypeSuggestions": "Types constatés dans la sélection :"
   }
 }

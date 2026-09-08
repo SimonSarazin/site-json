@@ -3,7 +3,7 @@
   "generated": "2025-09-08T10:30:00.000Z",
   "meta": {
     "title": {
-      "fr": "Le réseau social des tiers-lieux de sociabilité | TiersLieux",
+      "fr": "Le réseau social des lieux de sociabilité | TiersLieux",
       "en": "The social network for third places | TiersLieux"
     },
     "description": {
@@ -186,13 +186,24 @@
           {
             "label": {
               "fr": "Fichier",
-              "en": "Fichier"
+              "en": "File"
             },
             "description": {
               "fr": "Un drive avec outils collaboratifs en ligne (word, excel, ppt, etc)",
               "en": "A cloud storage solution with online collaborative tools (word, excel, ppt, etc)"
             },
             "path": "https://fichier.tiers-lieux.org/"
+          },
+          {
+            "label": {
+              "fr": "Grist - tableur collaboratif",
+              "en": "Grist - collaborative spreadsheet"
+            },
+            "description": {
+              "fr": "Accédez à Grist pour collaborer sur des tableaux partagés",
+              "en": "Access Grist to collaborate on shared spreadsheets"
+            },
+            "path": "https://grist.tiers-lieux.org/"
           },
           {
             "label": {
@@ -269,11 +280,15 @@
         "children": [
           {
             "label": {
-              "fr": "Tableau de bord",
-              "en": "Dashboard"
+              "fr": "Observatoire des données",
+              "en": "Data dashboard"
             },
             "path": "/observatoire",
-            "icon": "chart-column"
+            "icon": "chart-column",
+            "description": {
+              "fr": "Les données des lieux avec de nombreux filtres",
+              "en": "Third-place data with extensive filtering"
+            }
           },
           {
             "label": {
@@ -281,7 +296,7 @@
               "en": "Regional networks"
             },
             "description": {
-              "fr": "Découvrez l'observatoire des réseaux régionaux",
+              "fr": "Découvrez les lieux filtrés par réseaux régionaux",
               "en": "Explore the regional networks observatory"
             },
             "path": "/reseaux-regionaux"
@@ -292,7 +307,7 @@
               "en": "Thematic networks"
             },
             "description": {
-              "fr": "Découvrez l'observatoire des réseaux thématiques",
+              "fr": "Découvrez les lieux filtrés par réseaux thématiques",
               "en": "Explore the thematic networks observatory"
             },
             "path": "/reseaux-thematiques"
@@ -948,8 +963,8 @@
               "en": "Connect, discuss, propose and disseminate information about third places."
             },
             "description": {
-              "fr": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris et aliquip ex ea commodo consequat.",
-              "en": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+              "fr": "Le forum et le chat Tiers-Lieux permettent aux acteurs des tiers-lieux de poser des questions, échanger et débattre autour de leurs pratiques, besoins et projets. Ce sont aussi des espaces pour proposer, partager et diffuser des informations, ressources et initiatives utiles à la communauté.",
+              "en": "The Tiers-Lieux forum and chat bring people together to connect, exchange ideas and discuss their practices, needs and projects. They also provide spaces to share, propose and disseminate information, resources and initiatives useful to the community."
             },
             "image": "images/tiersLieux/forum.png",
             "imagePosition": "right",
@@ -990,8 +1005,8 @@
               "en": "Documentation and list of tools to organize and coordinate the life of a third place."
             },
             "description": {
-              "fr": "Accédez à une base de connaissances collaborative et découvrez les meilleurs outils pour gérer votre tiers-lieu. Ressources pratiques, guides méthodologiques et retours d'expérience sont à votre disposition.",
-              "en": "Access a collaborative knowledge base and discover the best tools to manage your third place. Practical resources, methodological guides and feedback are at your disposal."
+              "fr": "Le wiki Movilab vous permettra d'accéder à une base de connaissances collaborative. Ressources pratiques, guides méthodologiques et retours d'expérience sont à votre disposition. La page logiciels et usages et son catalogue permet de découvrir les meilleurs outils pour gérer et animer votre lieu, mais aussi de décrire les votres, et ainsi faciliter des coopérations et cofinancements d'améliorations.",
+              "en": "The Movilab wiki gives you access to a collaborative knowledge base. Practical resources, methodological guides and feedback from experience are available to you. The Uses page and its catalogue help you discover the best tools to manage and animate your space, while also allowing you to document your own tools and practices—making it easier to develop collaborations"
             },
             "image": "images/tiersLieux/docs.png",
             "imagePosition": "left",
@@ -1071,23 +1086,16 @@
               "en": "Observe the data"
             },
             "description": {
-              "fr": "Découvrez comment nos indicateurs témoignent de notre impact et de notre croissance. Des résultats concrets qui illustrent la transformation des territoires.",
-              "en": "Discover how our metrics demonstrate success and growth. Concrete results that illustrate territorial transformation."
+              "fr": "Découvrez un observatoire des données des tiers-lieux lié aux différentes informations nourries par chaque lieu sur la plateforme et les outils liés.",
+              "en": "Discover a data observatory for third places, connected to the various information contributed by each place across the platform and its related tools."
             },
             "links": [
               {
                 "label": {
-                  "fr": "Les réseaux régionaux",
-                  "en": "Regional networks"
+                  "fr": "L'observatoire des données",
+                  "en": "Data observatory"
                 },
-                "href": "/reseaux-regionaux"
-              },
-              {
-                "label": {
-                  "fr": "Les réseaux thématiques",
-                  "en": "Thematic networks"
-                },
-                "href": "/reseaux-thematiques"
+                "href": "/observatoire"
               }
             ],
             "iconCard": {
@@ -2288,8 +2296,8 @@
           "id": "mentions-legales",
           "props": {
             "html": {
-              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Mentions légales</h1>\n<p class=\"text-muted-foreground mb-8\">Conformément à l'article 6-III de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Éditeur du site</h2>\n<p class=\"text-muted-foreground mb-2\">[Dénomination de l'association] — association régie par la loi du 1<sup>er</sup> juillet 1901.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li>Siège social : [adresse complète]</li>\n<li>N° RNA / déclaration en préfecture : [W000000000]</li>\n<li>SIRET (le cas échéant) : [000 000 000 00000]</li>\n<li>Courriel : [contact@exemple.org]</li>\n<li>Téléphone : [+33 0 00 00 00 00]</li>\n<li>Directeur / Directrice de la publication : [Nom Prénom]</li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Hébergeur</h2>\n<p class=\"text-muted-foreground mb-6\">[Nom de l'hébergeur] — [adresse] — [téléphone].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Propriété intellectuelle</h2>\n<p class=\"text-muted-foreground mb-6\">L'ensemble des contenus (textes, logos, éléments graphiques) est, sauf mention contraire, la propriété de l'éditeur ou de ses partenaires. Les contenus publiés par les utilisateurs restent la propriété de leurs auteurs. La plateforme s'appuie sur le logiciel libre <strong>Communecter</strong> (licence GPL) ; les données des tiers-lieux sont diffusées sous licence <strong>ODbL</strong>.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Données personnelles</h2>\n<p class=\"text-muted-foreground mb-6\">Le traitement de vos données personnelles est décrit dans notre <a href=\"/confidentialite\" class=\"text-primary hover:underline\">politique de confidentialité</a>.</p>\n</div>",
-              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Legal notice</h1>\n<p class=\"text-muted-foreground mb-8\">In accordance with Article 6-III of French Act No. 2004-575 of 21 June 2004 on confidence in the digital economy (LCEN).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Publisher</h2>\n<p class=\"text-muted-foreground mb-2\">[Association name] — a non-profit association governed by the French Act of 1 July 1901.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li>Registered office: [full address]</li>\n<li>Registration no. (RNA / prefecture): [W000000000]</li>\n<li>SIRET (where applicable): [000 000 000 00000]</li>\n<li>Email: [contact@exemple.org]</li>\n<li>Phone: [+33 0 00 00 00 00]</li>\n<li>Publication director: [Full name]</li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Host</h2>\n<p class=\"text-muted-foreground mb-6\">[Host name] — [address] — [phone].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Intellectual property</h2>\n<p class=\"text-muted-foreground mb-6\">Unless otherwise stated, all content (text, logos, graphics) is the property of the publisher or its partners. Content published by users remains the property of its authors. The platform is built on the open-source software <strong>Communecter</strong> (GPL licence); third-place data is published under the <strong>ODbL</strong> licence.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Personal data</h2>\n<p class=\"text-muted-foreground mb-6\">The processing of your personal data is described in our <a href=\"/confidentialite\" class=\"text-primary hover:underline\">privacy policy</a>.</p>\n</div>"
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Mentions légales</h1>\n<p class=\"text-muted-foreground mb-8\">Conformément à l'article 6-III de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Éditeur du site</h2>\n<p class=\"text-muted-foreground mb-2\">Association <a href=\"https://anis-catalyst.org/\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">ANIS</a> — association régie par la loi du 1<sup>er</sup> juillet 1901.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li>Siège social : 16, allée de la Filature, 59000 Lille</li>\n<li>N° RNA : W595011926</li>\n<li>SIRET : 439 650 300 00031</li>\n<li>Courriel : contact@tiers-lieux.org</li>\n</ul>\n<p class=\"text-muted-foreground mb-6\">L'association ANIS, qui travaille sur la question des tiers-lieux <a href=\"https://www.youtube.com/watch?v=fdn5qJzSZRM\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">depuis 2011</a>, joue le rôle de garant juridique de l'édition du site tiers-lieux.org pour le collectif des lieux Licoop - Lieux comme Communs de Proximité (voir paragraphe gouvernance). Nous suivons pour cela le modèle juridique de Wikipedia (protégé juridiquement par la Wikimedia Foundation).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Gouvernance</h2>\n<p class=\"text-muted-foreground mb-6\">Tiers-Lieux.org est géré par un collectif de lieux qui se pensent comme des « communs de proximité ». Ils se regroupent sous l'appellation <a href=\"/lieux?licoop=Oui\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">Licoop</a> et ont tous réalisé pour cela l'<a href=\"/coform/6876c3e58fa8df3c7f024253/place\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">auto-diagnostic Licoop</a> (ouvert à tous les lieux), et ont eu un droit de vote une fois leur diagnostic garanti par un <a href=\"https://fr.wikipedia.org/wiki/Syst%C3%A8me_participatif_de_garantie\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">système participatif de garantie</a>. Ce droit de vote leur a été attribué sur le principe d'un lieu = 3 voix (une voix en démocratie directe, une à déléguer au réseau de leur choix et une à déléguer à une ou un contributeur de leur choix). Pour valider juridiquement ce principe, une convention est signée avec l'<a href=\"https://anis-catalyst.org/\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">ANIS</a> et la <a href=\"https://lsc.encommuns.org/\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">Legal Service For Commons</a> : elle reprend ce cadre démocratique et engage statutairement les deux structures à le respecter.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Hébergeur</h2>\n<p class=\"text-muted-foreground mb-6\">Open Atlas — La Saline, 56 rue Andy, 97422 Saint-Paul.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Propriété intellectuelle</h2>\n<p class=\"text-muted-foreground mb-6\">Les éléments graphiques et le logo sont la propriété de la <a href=\"https://lsc.encommuns.org/\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">Legal Service For Commons</a>. Les contenus textes du site sont sous licence libre AGPL 4.0. La plateforme s'appuie sur le logiciel libre <strong>Communecter</strong> (licence <a href=\"https://gitlab.adullact.net/pixelhumain/co2/-/tree/master\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">Apache 2.0 pour le serveur co2</a> et licence <a href=\"https://gitlab.adullact.net/pixelhumain/site-json\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">GPL pour le client</a>) ; les données des tiers-lieux sont diffusées sous licence <strong>ODbL</strong> et accessibles via l'<a href=\"/api-donnees\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">API</a>.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Données personnelles</h2>\n<p class=\"text-muted-foreground mb-6\">Le traitement de vos données personnelles est décrit dans notre <a href=\"/confidentialite\" class=\"text-primary hover:underline\">politique de confidentialité</a>.</p>\n</div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Legal notice</h1>\n<p class=\"text-muted-foreground mb-8\">In accordance with Article 6-III of French Act No. 2004-575 of 21 June 2004 on confidence in the digital economy (LCEN).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Publisher</h2>\n<p class=\"text-muted-foreground mb-2\">Association <a href=\"https://anis-catalyst.org/\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">ANIS</a> — a non-profit association governed by the French Act of 1 July 1901.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li>Registered office: 16, allée de la Filature, 59000 Lille, France</li>\n<li>Registration no. (RNA): W595011926</li>\n<li>SIRET: 439 650 300 00031</li>\n<li>Email: contact@tiers-lieux.org</li>\n</ul>\n<p class=\"text-muted-foreground mb-6\">ANIS, which has been working on third places <a href=\"https://www.youtube.com/watch?v=fdn5qJzSZRM\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">since 2011</a>, acts as legal guarantor for the publication of tiers-lieux.org on behalf of the Licoop collective - Lieux comme Communs de Proximité (see the Governance section). We follow the legal model used by Wikipedia (legally protected by the Wikimedia Foundation).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Governance</h2>\n<p class=\"text-muted-foreground mb-6\">Tiers-Lieux.org is run by a collective of places that see themselves as \"local commons\". They come together under the name <a href=\"/lieux?licoop=Oui\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">Licoop</a> and have all completed the <a href=\"/coform/6876c3e58fa8df3c7f024253/place\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">Licoop self-assessment</a> (open to all places), and were granted voting rights once their assessment was certified through a <a href=\"https://fr.wikipedia.org/wiki/Syst%C3%A8me_participatif_de_garantie\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">participatory guarantee system</a>. These voting rights were granted on the principle of one place = 3 votes (one vote in direct democracy, one to delegate to the network of their choice, and one to delegate to a contributor of their choice). To legally formalise this principle, an agreement with <a href=\"https://anis-catalyst.org/\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">ANIS</a> and Legal Service For Commons is signed, setting out this democratic framework and requiring ANIS and <a href=\"https://lsc.encommuns.org/\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">Legal Service For Commons</a> to statutorily uphold this governance.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Host</h2>\n<p class=\"text-muted-foreground mb-6\">Open Atlas — La Saline, 56 rue Andy, 97422 Saint-Paul, France.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Intellectual property</h2>\n<p class=\"text-muted-foreground mb-6\">The graphic elements and logo are the property of <a href=\"https://lsc.encommuns.org/\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">Legal Service For Commons</a>. The site's text content is published under the free AGPL 4.0 licence. The platform is built on the open-source software <strong>Communecter</strong> (licence <a href=\"https://gitlab.adullact.net/pixelhumain/co2/-/tree/master\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">Apache 2.0 for the co2 server</a> and <a href=\"https://gitlab.adullact.net/pixelhumain/site-json\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">GPL for the client</a>) ; third-place data is published under the <strong>ODbL</strong> licence and accessible via the <a href=\"/api-donnees\" class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\">API</a>.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Personal data</h2>\n<p class=\"text-muted-foreground mb-6\">The processing of your personal data is described in our <a href=\"/confidentialite\" class=\"text-primary hover:underline\">privacy policy</a>.</p>\n</div>"
             }
           }
         }
@@ -2410,8 +2418,8 @@
           {
             "href": "https://lescommuns.tiers-lieux.org/#les-communs",
             "label": {
-              "fr": "S'entraider",
-              "en": "Help each other"
+              "fr": "L'appel à communs",
+              "en": "Call for commons"
             }
           },
           {
@@ -2429,10 +2437,10 @@
             }
           },
           {
-            "href": "/lieux",
+            "href": "/coform/6876c3e58fa8df3c7f024253/place",
             "label": {
-              "fr": "Les marques",
-              "en": "Brands"
+              "fr": "Diagnostic Licoop",
+              "en": "Diagnostic Licoop"
             }
           }
         ]
@@ -2469,9 +2477,18 @@
       }
     ],
     "copyright": {
-      "fr": "Copyright 2025",
-      "en": "Copyright 2025"
-    }
+      "fr": "Logiciel libre Communecter sous licence MIT - Contenu sous Creative Commons CC BY-SA 4.0",
+      "en": "Communecter free software under MIT licence - Content under Creative Commons CC BY-SA 4.0"
+    },
+    "legalLinks": [
+      {
+        "href": "https://gitlab.adullact.net/pixelhumain/site-json/-/tree/main",
+        "label": {
+          "fr": "Code source du site",
+          "en": "Site source code"
+        }
+      }
+    ]
   },
   "features": [
     {
@@ -2620,6 +2637,9 @@
   },
   "auth": {
     "variant": "default",
+    "menu": {
+      "kanban": true
+    },
     "hideHeader": false,
     "hideFooter": false,
     "login": {
@@ -3936,7 +3956,12 @@
                     "name": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mieg4k7yxrito5j9e6",
                     "bedPrice": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0minaceqtibwcyy3khtm",
                     "roomPrice": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq84do7c678u3c8xuq",
-                    "linkPath": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq83c8getjt3lcz64f"
+                    "linkPath": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq83c8getjt3lcz64f",
+                    "area": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mieg4k7zslc8awrql2",
+                    "equipments": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mieg8j24m89gm99t5mi",
+                    "services": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq86g5vaw1kavrapkb",
+                    "roomType": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mix3hskq78wglr6m61x",
+                    "moreInfo": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq88plgleoln5tmc7b"
                   },
                   "coworkingPath": {
                     "id": "6925e2b05dd63b02ca70d6d9",
@@ -3946,8 +3971,10 @@
                     "extra": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0mieg8j24m89gm99t5mi",
                     "linkPath": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0miq8118cmkh16zjwmt",
                     "hourly": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minag948nw1ltatx78o",
-                    "halfDay": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minagtkflgfepmrq32l",
-                    "fullDay": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minah6jdpwjpzymuxm"
+                    "halfday": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minagtkflgfepmrq32l",
+                    "fullday": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minah6jdpwjpzymuxm",
+                    "equipments": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0mieg8j24m89gm99t5mi",
+                    "moreInfo": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0miq8auz2wess00qdkpe"
                   },
                   "roomPath": {
                     "id": "6925869ad76aaf6c5a2b2f8a",
@@ -3957,12 +3984,19 @@
                     "input": "navigatorDesTierslieux25112025_1436_0miokvr9ezvu0064fk",
                     "linkPath": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miq81uh4gat3vgbtgkj",
                     "name": 0,
+                    "area": 1,
                     "minPers": 2,
                     "maxPers": 3,
                     "hourly": 4,
                     "halfday": 5,
                     "fullday": 6,
-                    "images": 8
+                    "solidarity": 7,
+                    "images": 8,
+                    "equipments": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miok91fh1gta2sneeu5",
+                    "catering": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0mieg8j24m89gm99t5mi",
+                    "moreInfo": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miq8a6oceswkv6i75jp",
+                    "about": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miolbscdcrucb5a8uuq",
+                    "tip": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miol2ccdl9a86x4f3yc"
                   },
                   "forms": {
                     "646498a5f2b3d6423d74b7f6": {

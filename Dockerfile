@@ -62,6 +62,12 @@ ENV VITE_SERVER_URL=""
 ENV VITE_SLUG=""
 # Domaines autorisés pour l'optimiseur d'images (séparés par des virgules)
 ENV IMAGE_OPTIMIZER_ALLOWED_DOMAINS=""
+# Temps reel (docs/29). Vide = fonctionnalite absente, le client reste en polling.
+#  HUB    : le hub SSE, toujours Node. Ne detient aucune cle de signature.
+#  TICKET : l'emetteur du ticket — legacy PHP OU backend Node, celui que la lib interroge.
+#           Defaut : <HUB>/realtime/ticket, correct quand la cible de la lib EST le hub.
+ENV REALTIME_HUB_URL=""
+ENV REALTIME_TICKET_URL=""
 
 # Copier les builds
 COPY --from=builder /app/dist ./dist

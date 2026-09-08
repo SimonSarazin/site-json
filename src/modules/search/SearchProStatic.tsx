@@ -17,6 +17,10 @@ const SearchMapWrapper = lazy(() => import("./components/SearchMapWrapper"));
 const SearchBubbleChart = lazy(() => import("./components/SearchBubbleChart"));
 const FranceRegionsMap = lazy(() => import("./components/FranceRegionsMap"));
 const ThematicCards = lazy(() => import("./components/ThematicCards"));
+// Création d'une answer CoForm (`addButton.coform`, ex. « Ajouter un créneau ») :
+// monté au premier clic seulement → le chunk coform n'est jamais téléchargé sur
+// les sections sans cette config.
+const CoFormModal = lazy(() => import("@/modules/coform/components/CoFormModal"));
 // Fiche installation ouverte par l'URL (lien partagé). Import DYNAMIQUE : pas
 // d'arête statique search → observatoire (l'inverse existe déjà), et le chunk
 // recharts n'est tiré que sur un deep-link effectif.
@@ -44,11 +48,18 @@ import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
 import { usePageFiltersOptional } from "./contexts/pageFilters";
 import { useInstallationFilterUrlSync } from "./hooks/useInstallationFilter";
 import { searchByFieldsToQuery } from "./lib/searchByFieldsToQuery";
+import { buildViewAllHref } from "./lib/viewAllHref";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useAuthModal } from "@/modules/auth";
 import { useLocalization } from "@/hooks/useLocalization";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  SEARCH_QUERY_KEYS,
+  SEARCH_STATIC_LIST_PREFIX,
+  SEARCH_STATIC_MAP_PREFIX,
+} from "./constants/queryKeys";
 
 /**
  * Répartition {largeur liste, largeur carte, colonnes de la liste} du mode split,
@@ -141,6 +152,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const [localSearchInput, setLocalSearchInput] = useState("");
   const debouncedLocalSearch = useDebounce(localSearchInput, 500);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCoformModalOpen, setIsCoformModalOpen] = useState(false);
   const [selectedZoneId, setSelectedZoneId] = useState<string>("");
   const [selectedTagValue, setSelectedTagValue] = useState<string>("");
   // Synchro liste↔carte (mode split) : id de l'item focalisé — source UNIQUE,
@@ -230,6 +242,10 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   }, [selectedZone]);
 
   const getModalName = (): string | null => {
+    // `coform` prime : le bouton ouvre la création d'answer (CoFormModal), pas
+    // une modale d'entité — sinon les défauts organization/project (true dans
+    // le schéma) détourneraient le clic vers add-organization.
+    if (addButton?.coform) return null;
     if (addButton?.modal) return addButton.modal;
     if (addButton?.organization) return "add-organization";
     if (addButton?.project) return "add-project";
@@ -244,10 +260,38 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       openLogin();
       return;
     }
+    if (addButton?.coform) {
+      setIsCoformModalOpen(true);
+      return;
+    }
     if (modalName) {
       setIsModalOpen(true);
     }
   };
+
+  const queryClient = useQueryClient();
+  // Après création d'une answer (ex. créneau) : re-fetch des listes de la
+  // section — useCoFormFinalMutation n'invalide que les caches coform
+  // (FORM/FORM_ANSWERS), jamais ceux du module search.
+  const handleCoformSaved = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_LIST_PREFIX) });
+    queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_MAP_PREFIX) });
+  }, [queryClient]);
+
+  // Bouton « Ajouter » (modale d'entité ou création d'answer CoForm) —
+  // activation par CONFIG (`show`), gate admin débrayable (`adminOnly: false`,
+  // le clic d'un non-connecté ouvre le login). Factorisé : il doit apparaître
+  // à côté du bouton Carte dans le header STANDARD **et** dans le header
+  // custom (`customHeader`), qui sont exclusifs — deux JSX divergeraient.
+  const showAddButton = Boolean(addButton?.show && (addButton.adminOnly === false || permissions.isAdmin));
+  const addButtonElement = showAddButton && addButton ? (
+    <Button variant="outline" size="sm" onClick={handleAddClick}>
+      <Plus className="h-4 w-4 sm:mr-1" />
+      <span className="hidden sm:inline">
+        {addButton.label ? t(addButton.label) : t("Ajouter")}
+      </span>
+    </Button>
+  ) : null;
 
   const filterNames = contextFilters?.filterNames;
   const searchQuery = contextFilters?.searchQuery;
@@ -260,13 +304,11 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   // Lien « voir sur la page complète » (ex. /lieux) AVEC les filtres courants :
   // on recopie les query params actifs (typologies/services, déjà dans l'URL) +
   // la recherche texte (`?search=`). Affiché seulement si `customHeader.linkText`.
+  // La fusion vit dans `buildViewAllHref` : un `linkHref` de config peut porter sa propre query
+  // (scope de la page cible, ex. `?territoire=…`), qu'une concaténation naïve détruisait.
   const viewAllHref = useMemo(() => {
     if (!customHeader?.linkText) return null;
-    const base = customHeader.linkHref || "/lieux";
-    const params = new URLSearchParams(searchParams);
-    if (searchQuery) params.set("search", searchQuery);
-    const qs = params.toString();
-    return qs ? `${base}?${qs}` : base;
+    return buildViewAllHref(customHeader.linkHref || "/lieux", searchParams, searchQuery);
   }, [customHeader, searchParams, searchQuery]);
 
   const searchTags = useMemo<Record<string, string[]>>(() => {
@@ -349,7 +391,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     transformedResults,
     totalCount,
   } = useSearchQuery({
-    queryKeyPrefix: "searchCostumStatic",
+    queryKeyPrefix: SEARCH_STATIC_LIST_PREFIX,
     searchText,
     searchTags,
     searchType,
@@ -365,7 +407,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   // plafond 5000, cache 30 min (re-toggle liste↔carte instantané). Désactivée
   // (searchType: null → aucun appel) hors vue carte.
   const mapAll = useSearchAllResults({
-    queryKeyPrefix: "searchCostumStaticMapAll",
+    queryKeyPrefix: SEARCH_STATIC_MAP_PREFIX,
     searchType: (viewMode === "map" || (viewMode === "split" && !isMobile)) && enableMap ? searchType : null,
     searchText,
     searchTags,
@@ -439,6 +481,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     <span className="hidden sm:inline">{mapView === "split" ? t("Liste + carte") : t("Carte")}</span>
                   </Button>
                 )}
+                {addButtonElement}
                 {enableRegions && !customHeader && (
                   <Button
                     variant={viewMode === "regions" ? "default" : "outline"}
@@ -473,18 +516,6 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     )}
                     <span className="hidden sm:inline">
                       {csvButton.label ? t(csvButton.label) : t("CSV")}
-                    </span>
-                  </Button>
-                )}
-                {addButton?.show && permissions.isAdmin && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddClick}
-                  >
-                    <Plus className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">
-                      {addButton.label ? t(addButton.label) : t("Ajouter")}
                     </span>
                   </Button>
                 )}
@@ -771,6 +802,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                       <span className="hidden sm:inline">{mapView === "split" ? t("Liste + carte") : t("Carte")}</span>
                     </Button>
                   )}
+                  {addButtonElement}
                   {customHeader.linkText && viewAllHref && (
                     // `text-foreground` : le lien est un <a> (asChild) → sinon il hérite
                     // du style global `a { text-primary }` et tranche avec les autres boutons.
@@ -877,6 +909,21 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           parent={entity}
           formConfig={addButton?.formConfig}
         />
+      )}
+
+      {/* Monté seulement après le 1er clic (chunk coform à la demande). Suspense
+          local : sans lui, le fallback de la section (SectionRenderer) ferait
+          flasher toute la liste pendant le chargement du chunk. */}
+      {addButton?.coform && isCoformModalOpen && (
+        <Suspense fallback={null}>
+          <CoFormModal
+            formId={addButton.coform}
+            open={isCoformModalOpen}
+            onOpenChange={setIsCoformModalOpen}
+            title={addButton.label ? String(t(addButton.label)) : undefined}
+            onAfterSubmit={handleCoformSaved}
+          />
+        </Suspense>
       )}
 
       {showInstallationUrlModal && (

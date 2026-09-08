@@ -9,13 +9,15 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolightOptional } from "@/hooks/useCocolight";
 import "../i18n/i18n";
 import { parseCoFormFields, normalizeAnswerData } from "../utils/formParser";
+import { dayI18nKey, normalizeSlot, toTimeString } from "../utils/timeSlots";
 import { parseStoredToEntries } from "../utils/coformLocality";
-import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue, CommonTableValue } from "../types";
+import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue, CommonTableValue, CategorizedCheckboxValue, TimeSlotValue, DynamicFieldsRow } from "../types";
 import { ReadOnlyUploaderGallery } from "./ReadOnlyUploaderGallery";
 import { SimpleTableField } from "./SimpleTableField";
 import { EvaluationField } from "./EvaluationField";
 import { FinderField } from "./FinderField";
 import { CommonTableField } from "./CommonTableField";
+import { CategorizedCheckboxField } from "./CategorizedCheckboxField";
 
 interface CoFormReadOnlyProps {
   formData: CoFormData;
@@ -307,6 +309,35 @@ function ReadOnlyField({
     );
   }
 
+  if (field.componentType === "timeSlots") {
+    return <ReadOnlyTimeSlots field={field} value={value} widthClass={widthClass} />;
+  }
+
+  if (field.componentType === "dynamicFields") {
+    return <ReadOnlyDynamicFields field={field} value={value} widthClass={widthClass} />;
+  }
+
+  // categorizedCheckbox : même raison que commonTable ci-dessus — la valeur est composite
+  // (`{list, sublist}`), donc sans ce cas elle sort en `[object Object]`.
+  if (field.componentType === "categorizedCheckbox") {
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd>
+          <CategorizedCheckboxField
+            field={field}
+            errors={{}}
+            value={value as unknown as CategorizedCheckboxValue}
+            readOnly
+            hideLabel
+          />
+        </dd>
+      </div>
+    );
+  }
+
   if (field.componentType === "location") {
     const entries = parseStoredToEntries(value);
     return (
@@ -447,4 +478,84 @@ function ReadOnlyField({
     </div>
   );
 }
+
+// ─── Lecture seule : créneaux horaires (timeSlots) ────────────────
+
+function ReadOnlyTimeSlots({ field, value, widthClass }: { field: FormFieldMapping; value: FormFieldValue; widthClass: string }) {
+  const t = useT("modules/coform");
+  const slots = (Array.isArray(value) ? (value as TimeSlotValue[]) : []).map(normalizeSlot);
+  return (
+    <div className={cn(widthClass, "space-y-1.5")}>
+      <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        {field.label}
+      </dt>
+      <dd className="text-sm text-foreground">
+        {slots.length === 0 ? (
+          <span className="text-muted-foreground/50 italic">—</span>
+        ) : (
+          <div className="flex flex-wrap gap-1.5">
+            {slots.map((slot, index) => (
+              <Badge key={index} variant="secondary" className="font-normal text-xs px-2 py-0.5">
+                {t(`coform.timeSlots.days.${dayI18nKey(slot.day)}`)}{" "}
+                {toTimeString(slot.startHour, slot.startMinute)} – {toTimeString(slot.endHour, slot.endMinute)}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </dd>
+    </div>
+  );
+}
+
+// ─── Lecture seule : lignes dynamiques (dynamicFields) ────────────
+
+function ReadOnlyDynamicFields({ field, value, widthClass }: { field: FormFieldMapping; value: FormFieldValue; widthClass: string }) {
+  // Les lignes vides viennent du semis `minRows` (`seedDynamicRows`, appliqué
+  // aussi par `normalizeAnswerData` dont dépend ce rendu) : elles existent pour
+  // donner une ligne à REMPLIR en saisie, elles n'ont rien à dire en lecture.
+  // Sans ce filtre, une réponse enregistrée sans aucune ligne — le cas nominal,
+  // puisque les lignes vides ne sont jamais persistées — afficherait des cartes
+  // grises vides au lieu du « — ».
+  const rows = (Array.isArray(value) ? (value as DynamicFieldsRow[]) : []).filter(
+    (row) =>
+      row != null &&
+      typeof row === "object" &&
+      Object.values(row).some((v) => String(v ?? "").trim() !== ""),
+  );
+  const subFields = field.dynamicFieldsConfig?.fieldsConfig ?? [];
+  // Libellé + résolution des clés de select → label affiché (comme le select simple).
+  const displayOf = (key: string, raw: string): string => {
+    const sub = subFields.find((s) => s.key === key);
+    return sub?.options?.[raw] ?? raw;
+  };
+  const labelOf = (key: string): string => subFields.find((s) => s.key === key)?.label ?? key;
+  return (
+    <div className={cn(widthClass, "space-y-1.5")}>
+      <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        {field.label}
+      </dt>
+      <dd className="text-sm text-foreground">
+        {rows.length === 0 ? (
+          <span className="text-muted-foreground/50 italic">—</span>
+        ) : (
+          <div className="space-y-2">
+            {rows.map((row, index) => (
+              <div key={index} className="rounded-md bg-muted/30 border border-border/40 p-2 space-y-0.5">
+                {Object.entries(row)
+                  .filter(([, raw]) => String(raw ?? "").trim() !== "")
+                  .map(([key, raw]) => (
+                    <p key={key} className="text-xs">
+                      <span className="text-muted-foreground">{labelOf(key)} : </span>
+                      <span className="font-medium">{displayOf(key, String(raw))}</span>
+                    </p>
+                  ))}
+              </div>
+            ))}
+          </div>
+        )}
+      </dd>
+    </div>
+  );
+}
+
 export default CoFormReadOnly;

@@ -13,6 +13,25 @@ describe("eventTimeBucket", () => {
   it("ponctuel sans end, futur → upcoming", () => expect(eventTimeBucket(new Date("2026-06-20"), null, NOW)).toBe("upcoming"));
   it("ponctuel sans end, passé → past", () => expect(eventTimeBucket(new Date("2026-06-10"), null, NOW)).toBe("past"));
   it("ponctuel pile maintenant → ongoing (start ≤ now ≤ start)", () => expect(eventTimeBucket(NOW, null, NOW)).toBe("ongoing"));
+
+  // Le test de fin passe AVANT celui de début : une fin antérieure au début rangeait donc en
+  // « Passés » un événement qui n'a pas encore commencé, le jour même où il a lieu. Deux sources
+  // réelles : un créneau `openingHours` franchissant minuit et une `endDate` incohérente en base.
+  it("fin antérieure au début, event du jour à venir → upcoming (la fin aberrante est ignorée)", () => {
+    expect(eventTimeBucket(new Date("2026-06-15T21:00:00Z"), new Date("2026-06-15T01:00:00Z"), NOW)).toBe("upcoming");
+  });
+
+  it("fin antérieure au début, event commencé : traité comme sans fin (repli sur `start`)", () => {
+    // Pas « ongoing » : une fin aberrante ne prouve aucune durée, l'event est donc lu comme
+    // ponctuel — exactement le comportement d'un `end: null`, et non un état inventé.
+    expect(eventTimeBucket(new Date("2026-06-15T11:00:00Z"), new Date("2026-06-15T02:00:00Z"), NOW)).toBe(
+      eventTimeBucket(new Date("2026-06-15T11:00:00Z"), null, NOW),
+    );
+  });
+
+  it("fin antérieure au début, event bel et bien passé → past (le repli sur `start` tranche)", () => {
+    expect(eventTimeBucket(new Date("2026-06-10T21:00:00Z"), new Date("2026-06-10T01:00:00Z"), NOW)).toBe("past");
+  });
 });
 
 describe("partitionByTime", () => {
@@ -33,5 +52,18 @@ describe("partitionByTime", () => {
     const recurring = ({ serverData: { startDateSort: "2026-06-20T09:00:00Z" } } as unknown as Event);
     const { upcoming } = partitionByTime([recurring], NOW);
     expect(upcoming).toHaveLength(1);
+  });
+
+  it("récurrent SANS endDate, dans son créneau (openingHours) au moment de now → ongoing (pas ignoré)", () => {
+    // NOW = 2026-06-15T12:00:00Z, un lundi. Sans dérivation de `end` depuis `openingHours`
+    // (cf. eventDates.ts), cet event resterait sans bucket "ongoing" atteignable (end == start < now).
+    const recurring = ({
+      serverData: {
+        startDateSortFormat: "2026-06-15T08:00:00Z",
+        openingHours: [{ dayOfWeek: "Mo", hours: [{ opens: "08:00", closes: "19:00" }] }],
+      },
+    } as unknown as Event);
+    const { ongoing } = partitionByTime([recurring], NOW);
+    expect(ongoing).toHaveLength(1);
   });
 });

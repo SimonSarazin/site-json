@@ -8,6 +8,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from "sonner";
 import { useLocalization } from "@/hooks/useLocalization";
+import { useCocolight } from "@/hooks/useCocolight";
+import { getSlug } from "@/lib/constant/common";
+import { buildContactPayload } from "@/lib/contactPayload";
 import { ContactFormSectionProps } from '@/types/site-schema';
 
 /** Valeur manipulée pour chaque champ du formulaire */
@@ -16,8 +19,12 @@ type FormState = Record<string, FieldValue>;
 
 export function ContactFormSection({ id, props }: { id?: string; props: ContactFormSectionProps }) {
   const { t } = useLocalization();
-  
-  const { fields, submitLabel, action, method = 'POST', successMessage, errorMessage } = props;
+  const { api } = useCocolight();
+
+  // `action`/`method` restent acceptés par le schéma mais sont IGNORÉS : le message part par la lib
+  // (`CONTACT_SEND` → `/co2/mailmanagement/createandsend`), pas vers une URL déclarée en config.
+  // L'ancien fil postait du JSON sur `/api/contact`, une route qui n'a jamais existé.
+  const { fields, submitLabel, successMessage, errorMessage } = props;
 
   const [formData, setFormData] = useState<FormState>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,23 +92,28 @@ export function ContactFormSection({ id, props }: { id?: string; props: ContactF
       return;
     }
 
-    try {
-      const response = await fetch(action, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+    // Destinataire : JAMAIS choisi par le client. Le serveur le résout depuis le costum porteur,
+    // dans CET ordre : `costum.contactMail` d'abord, `costum.admin.email` seulement en REPLI
+    // (parité du bloc CMS legacy `contactMail || admin.email`). Plusieurs adresses — tableau ou
+    // chaîne à virgules — donnent un mail PAR destinataire. D'où `costumSlug` comme seul
+    // paramètre d'adressage (cf. CONTACT_SEND).
+    const payload = buildContactPayload(fields, formData, getSlug());
+    if (!payload || !api) {
+      toast.error("Erreur", {
+        description: errorMessage ? t(errorMessage) : "Une erreur est survenue lors de l'envoi du formulaire"
       });
+      setIsSubmitting(false);
+      return;
+    }
 
-      if (response.ok) {
-        toast.success("Succès", {
-          description: successMessage ? t(successMessage) : "Votre message a été envoyé avec succès"
-        });
-        setFormData({});
-      } else {
-        throw new Error("Erreur lors de l'envoi");
-      }
+    try {
+      const res = await api.endpointApi.contactSend(payload);
+      // Le legacy répond {result:true, msg:"Ok : webhook handdled"} ; un refus rend result:false.
+      if (res && (res as { result?: unknown }).result === false) throw new Error("Envoi refusé");
+      toast.success("Succès", {
+        description: successMessage ? t(successMessage) : "Votre message a été envoyé avec succès"
+      });
+      setFormData({});
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err: unknown) {
       toast.error("Erreur", {

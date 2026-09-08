@@ -4053,8 +4053,6 @@
               "fr": "Envoyer le message",
               "en": "Send message"
             },
-            "action": "/api/contact",
-            "method": "POST",
             "successMessage": {
               "fr": "Votre message a été envoyé avec succès !",
               "en": "Your message has been sent successfully!"
@@ -4451,6 +4449,9 @@
     "customCSS": ""
   },
   "auth": {
+    "menu": {
+      "kanban": true
+    },
     "login": {
       "title": {
         "fr": "Se connecter",

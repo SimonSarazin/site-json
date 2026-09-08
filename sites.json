@@ -40,6 +40,17 @@
     "domain": "ssbe.00.re"
   },
   {
+    "slug": "associationEkilibre",
+    "config": "config.prod.maison-sport-sante-la-tampon.json",
+    "css": "index-sport-sante-bien-etre",
+    "images": "maisonSportSanteLaTampon",
+    "coolifyApp": "site-json-ekilibre",
+    "domain": "ekilibre.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
+  },
+  {
     "slug": "institutBleu",
     "config": "config.prod.institut-bleu.json",
     "css": "index-institut-bleu",
@@ -146,5 +157,13 @@
     "images": "rezoSanteReunion",
     "coolifyApp": "site-json-rezo-sante-reunion",
     "domain": "rezo-sante-reunion.00.re"
+  },
+  {
+    "slug": "ESS974",
+    "config": "config.prod.equipements-Sportifs-Scolaire.json",
+    "css": "index-equipements-sportifs",
+    "images": "equipementsSportifs974",
+    "coolifyApp": "site-json-equipements-sportifs-scolaires",
+    "domain": "equipements-sportifs-scolaires.00.re"
   }
 ]
