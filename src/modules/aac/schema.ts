@@ -6,8 +6,9 @@ import { LocalizedString } from "@/types/locale-schema";
  * `config.ampli`, mais **SINGULIER : un seul AAC par site**.
  *
  * Le site déclare simplement SON formulaire (form parent `type:aap,
- * aapType:aac`). La section `aac` et la route `/aac` le lisent depuis ici →
- * source de vérité UNIQUE (pas de formId dupliqué dans les props de section).
+ * aapType:aac`). Les sections `aac-directory`/`aac-highlight` et les routes
+ * `/aac` le lisent depuis ici → source de vérité UNIQUE (pas de formId dupliqué
+ * dans les props de section).
  */
 /**
  * Quel CHAMP du document porte chaque rôle de la carte d'annuaire.
@@ -112,32 +113,15 @@ export type AacDetailSectionConfig = z.infer<typeof AacDetailSectionSchema>;
 export type AacDirectoryFieldsConfig = z.infer<typeof AacDirectoryFieldsSchema>;
 
 /**
- * Schéma Zod de la section `aac`.
+ * Schéma Zod de la section `aac-directory` — l'annuaire des communs.
  *
  * ⚠️ Le `formId` n'est PAS ici : il vient de `config.aac.formId` (un seul AAC
- * par site). Les props ne portent que la présentation.
+ * par site). Les props ne portent que la présentation et le paramétrage
+ * d'affichage : tout ce qui relève du formulaire (libellés et options des
+ * filtres) est DÉRIVÉ du form.
  *
  * Forme imposée par la `discriminatedUnion("type")` de `@/types/site-schema` :
  * `{ type: z.literal(...), id?: string, props: z.object({...}) }`.
- */
-export const AacSectionSchema = z.object({
-  type: z.literal("aac"),
-  id: z.string().optional(),
-  props: z.object({
-    title: LocalizedString.optional(),
-    className: z.string().optional(),
-  }),
-});
-
-export type AacSection = z.infer<typeof AacSectionSchema>;
-export type AacSectionProps = AacSection["props"];
-
-/**
- * Schéma Zod de la section `aac-directory` — l'annuaire des communs.
- *
- * Comme pour `aac`, le `formId` vient de `config.aac.formId`. Les props ne
- * portent que la présentation et le paramétrage d'affichage : tout ce qui
- * relève du formulaire (libellés et options des filtres) est DÉRIVÉ du form.
  */
 export const AacDirectorySectionSchema = z.object({
   type: z.literal("aac-directory"),

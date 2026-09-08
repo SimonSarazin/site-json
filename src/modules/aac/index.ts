@@ -2,9 +2,7 @@
  * Module AAC (Appel à Communs) — export centralisé.
  *
  * Un « commun » = une réponse Coform (document `answers`). Le module se pose SUR
- * l'acquis coform / cagnotte / observatoire / search (cf. plan SOCLE). Ce jalon
- * ne livre que les FONDATIONS (scaffold + résolveur AacConfig + types + section
- * stub) — aucune surface fonctionnelle.
+ * l'acquis coform / cagnotte / observatoire / search (cf. plan SOCLE).
  */
 
 // Side-effects : enregistre le bundle i18n "modules/aac" + le calculateur de
@@ -22,15 +20,12 @@ export type { AacQueryKeyType } from "./constants/queryKeys";
 // Schémas : bloc de config site (`config.aac`, singulier) + sections
 export {
   AacConfigSchema,
-  AacSectionSchema,
   AacDirectorySectionSchema,
   AacHighlightSectionSchema,
   AacDirectoryFieldsSchema,
 } from "./schema";
 export type {
   AacConfig,
-  AacSection,
-  AacSectionProps,
   AacDirectorySection,
   AacDirectorySectionProps,
   AacHighlightSection,

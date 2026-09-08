@@ -75,13 +75,14 @@
           }
         },
         {
-          "type": "aac",
+          "type": "aac-directory",
           "id": "aac",
           "props": {
             "title": {
               "fr": "Appel à Communs de la Fédération des CAE"
             },
-            "className": "max-w-5xl mx-auto px-6 pb-20"
+            "className": "max-w-5xl mx-auto px-6 pb-20",
+            "variant": "full"
           }
         }
       ]

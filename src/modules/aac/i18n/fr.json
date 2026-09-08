@@ -10,31 +10,11 @@
     "notFound": "Commun introuvable",
     "notFoundMessage": "Le commun demandé n'a pas été trouvé.",
     "missingAnswer": "Aucun identifiant de réponse n'a été fourni.",
-    "communTitle": "Communes",
-    "communCount": "{{count}} commun{{count}}",
     "communLabel": "Commune #{{number}}",
-    "communNoName": "(Commun sans nom)",
-    "noCommunAvailable": "Aucun commun disponible.",
     "updated": "Modifié le"
   },
   "section": {
-    "stubTitle": "Configuration de l'Appel à Communs",
-    "stubHint": "Aperçu de la configuration résolue (socle — aucune surface fonctionnelle encore).",
-    "loading": "Chargement de la configuration…",
-    "error": "Impossible de charger la configuration de l'AAC.",
     "noForm": "Aucun Appel à Communs déclaré pour ce site (« config.aac.formId » manquant)."
-  },
-  "config": {
-    "steps": "Étapes du formulaire",
-    "depenseStep": "Étape des dépenses",
-    "evalStep": "Étape d'évaluation",
-    "financementStep": "Étape de financement",
-    "suiviStep": "Étape de suivi",
-    "criteria": "Critères d'évaluation",
-    "criteriaSource": "Source des critères",
-    "gates": "Accès & options",
-    "campaigns": "Campagnes déclarées",
-    "none": "—"
   },
   "directory": {
     "count_one": "résultat",

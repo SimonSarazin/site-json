@@ -10,31 +10,11 @@
     "notFound": "Commun not found",
     "notFoundMessage": "The requested commun could not be found.",
     "missingAnswer": "No answer identifier was provided.",
-    "communTitle": "Commons",
-    "communCount": "{{count}} commun{{count}}",
     "communLabel": "Commun #{{number}}",
-    "communNoName": "(Unnamed commun)",
-    "noCommunAvailable": "No commons available.",
     "updated": "Updated on"
   },
   "section": {
-    "stubTitle": "Call for Commons configuration",
-    "stubHint": "Preview of the resolved configuration (foundation only — no functional surface yet).",
-    "loading": "Loading configuration…",
-    "error": "Unable to load the AAC configuration.",
     "noForm": "No Call for Commons declared for this site (missing \"config.aac.formId\")."
-  },
-  "config": {
-    "steps": "Form steps",
-    "depenseStep": "Expense step",
-    "evalStep": "Evaluation step",
-    "financementStep": "Funding step",
-    "suiviStep": "Follow-up step",
-    "criteria": "Evaluation criteria",
-    "criteriaSource": "Criteria source",
-    "gates": "Access & options",
-    "campaigns": "Declared campaigns",
-    "none": "—"
   },
   "directory": {
     "count_one": "result",

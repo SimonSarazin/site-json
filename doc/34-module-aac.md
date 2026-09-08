@@ -109,19 +109,21 @@ déclaré dans [`src/types/site-schema.ts`](../src/types/site-schema.ts) juste a
 | `directory.fields` | quel champ du document porte quel rôle sur la carte d'annuaire — §3.1 |
 | `detail.gallery` / `detail.sections[]` | la fiche d'un commun : galerie et blocs de prose — §3.2 |
 
-**Les trois sections** — aucune ne porte de `formId` : toutes lisent `config.aac.formId`
+**Les deux sections** — aucune ne porte de `formId` : toutes lisent `config.aac.formId`
 (`useSite().config.aac`). Props dans [`schema.ts`](../src/modules/aac/schema.ts) :
 
 | `type` | rôle | props |
 |---|---|---|
 | `aac-directory` | **l'annuaire des communs** : filtres (recherche, usages, tags, maturité, tri), grille ou liste, défilement infini, bouton « Je dépose un commun » | `title`, `description`, `className`, `display` (`grid` \| `list`, mode initial), `columns` (1-4), `pageSize` (1-100), `filters{search,usage,tags,maturity,sort}`, `emptyText`, `showDepositButton`, `depositButtonLabel`, `variant` (`full` \| `preview`), `moreLink{href,label}` |
 | `aac-highlight` | bande d'appel à l'action avec médaillon chiffré — le nombre de communs est **compté** (mode `countonly`), jamais saisi | `title` (requis), `description`, `className`, `tone` (`primary` \| `muted`), `cta{label,href}`, `count{source:"communs",label}` |
-| `aac` | aperçu de **diagnostic** de la config résolue (`AacConfigStub`) — pas une surface utilisateur | `title`, `className` |
 
 `variant: "preview"` rend les mêmes cartes, bornées à `pageSize`, sans filtre ni compteur ni
 défilement, suivies de `moreLink` : c'est l'aperçu d'une page d'accueil. Sans `moreLink`, l'aperçu
 est un cul-de-sac. Un filtre activé dont la question n'a pas pu être résolue est **masqué**, jamais
 rendu inerte.
+
+(La section `aac` d'origine — aperçu de debug de la config résolue, `AacConfigStub` — a été retirée
+avec `AacCommunList` : review MR 53, M25/H11/H13.)
 
 ⚠️ Les `.default()` Zod de ces props sont **documentaires** : la config n'est pas parsée par Zod à
 l'exécution, chaque composant applique ses propres défauts.
@@ -133,11 +135,12 @@ l'exécution, chaque composant applique ses propres défauts.
 | `/aac` | `AacPage` | l'annuaire complet (`aac-directory` en `full`) — **sans paramètre**, un seul AAC par site |
 | `/aac/commun/:answerId` | `AacCommunDetailPage` | la fiche d'un commun (une `Answer`) : héros, financement (si `coremu`, §6), paliers et actions, contributeurs, blocs de prose §3.2, galerie |
 
-Une page de module rend **son propre chrome** (`SiteHeader` / `SiteFooter`, cf. §5).
+Les routes ne sont **montées que si `config.aac` existe** (`routes.tsx` rend `[]` sinon) : sur un site
+sans AAC, l'URL tombe sur le catch-all du site. Une page de module rend **son propre chrome**
+(`SiteHeader` / `SiteFooter`, cf. §5).
 
 **Prérequis backend** : le form + son `aapConfig` doivent exister. Sans `config.aac.formId`,
-les sections et les routes affichent un message explicite (pas de crash).
-
+les sections affichent un message explicite (pas de crash), et les routes ne sont pas montées.
 ### 3.1 `directory.fields` — quel CHAMP porte quel RÔLE
 
 Facultatif, et **seulement quand l'heuristique se trompe** : l'annuaire sait déjà déduire ses
@@ -316,8 +319,8 @@ suiviStepKey}`, `criteria[]`, `criteriaSource`, `gates`, `campaigns[]`.
 src/modules/aac/
   module.config.ts          # { name:"aac", type:"core", enabled:true } → auto-découvert
   index.ts                  # side-effects i18n + permissions/register EN PREMIER, puis exports
-  routes.tsx                # /aac (pas de param — un seul AAC par site)
-  schema.ts                 # AacConfigSchema (bloc site) + AacSectionSchema (section)
+  routes.tsx                # /aac + /aac/commun/:answerId (pas de param de form — un seul AAC par site ; [] sans config.aac)
+  schema.ts                 # AacConfigSchema (bloc site) + AacDirectorySectionSchema / AacHighlightSectionSchema (sections)
   types.ts                  # CONTRAT : Commun/Depense/Financer + Campagne/Panier/Log RÉSERVÉS
   lib/resolveAacConfig.ts   # résolveur PUR (+ .test.ts)
   lib/formParent.ts         # firstParent(form) → le CONTEXTE porteur d'un appel (+ .test.ts)
@@ -331,8 +334,8 @@ src/modules/aac/
   hooks/useAacPermissions.ts
   permissions/              # types, defaults, calculators/aac.ts, register, index
   constants/queryKeys.ts    # AAC_QUERY_KEYS
-  components/AacConfigStub.tsx  # section (export default, `import "../i18n"` en 1re ligne)
-  pages/AacPage.tsx         # page de la route
+  sections/AacDirectorySection.tsx, AacHighlightSection.tsx  # sections (export default, `import "../i18n"` en 1re ligne)
+  pages/AacPage.tsx, AacCommunDetailPage.tsx  # pages des routes
   i18n.ts + i18n/{fr,en}.json
 ```
 

@@ -86,7 +86,6 @@ const LazySections: {
   meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
   coform: lazy(() => import("@/modules/coform/components/CoFormSection")),
   toolsCatalog: lazy(() => import("@/modules/toolsCatalog/sections/ToolsCatalogSection")),
-  aac: lazy(() => import("@/modules/aac/components/AacConfigStub")),
   "aac-directory": lazy(() => import("@/modules/aac/sections/AacDirectorySection")),
   "aac-highlight": lazy(() => import("@/modules/aac/sections/AacHighlightSection")),
   actions: lazy(() => import("@/modules/cagnotte/components/sections/ActionsSection")),
