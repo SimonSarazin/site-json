@@ -17,6 +17,7 @@ import type { CoFormAnswer, CoFormData, AnswerDocumentFile } from "@/modules/cof
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
 import { useAacConfig } from "../hooks/useAacConfig";
 import { useAacPermissions } from "../hooks/useAacPermissions";
+import type { AacPermissionData } from "../permissions";
 import { useAacDirectoryContext } from "../hooks/useAacDirectoryContext";
 import { resolveAnswerAuthorId } from "../lib/answerAuthor";
 import { isSelectedIn, type ChooseProposalValue } from "@/modules/coform/utils/chooseProposal";
@@ -114,7 +115,6 @@ export default function AacCommunDetailPage() {
     const t = useT("modules/aac");
     const { answerId } = useParams();
     const { api, loading, entity, me, refreshMe } = useCocolight();
-    const perms = useAacPermissions(entity);
 
     // État de la section active
     const [activeSection, setActiveSection] = useState("besoins-financiers");
@@ -188,6 +188,16 @@ export default function AacCommunDetailPage() {
     const { config, error: configError } = useAacConfig(formId ?? null);
 
     /**
+     * Les droits se calculent avec les gates DU FORM (`coremu`…). Appelé sans
+     * eux, le calculateur ne voyait aucun gate : `canViewFunding` restait faux et
+     * les blocs financement ne pouvaient jamais s'afficher. Mémoïsé sur l'objet
+     * `gates` — stable tant que la requête ne change pas — parce que
+     * `useAacPermissions` recalcule sur l'identité de `data`.
+     */
+    const permData = useMemo<AacPermissionData>(() => ({ gates: config?.gates }), [config?.gates]);
+    const perms = useAacPermissions(entity, permData);
+
+    /**
      * L'entité SUR LAQUELLE lire le financement de ce commun.
      *
      * L'enveloppe n'est pas interrogeable « pour une réponse » : le SDK la scope à
@@ -238,18 +248,31 @@ export default function AacCommunDetailPage() {
     });
 
     /**
+     * Le financement n'existe sur cette fiche que si l'appel a levé le gate
+     * MAÎTRE `coremu` (`perms.canViewFunding`) — parité `detailProposal.php:105`,
+     * qui masque l'onglet Contributions à tout le monde, admin compris. Une seule
+     * variable pour les trois blocs ET leurs entrées de sommaire : un lien vers
+     * une ancre absente serait un lien mort.
+     */
+    const showFunding = perms.canViewFunding;
+
+    /**
      * Le sommaire dérive des MÊMES sources que le rendu : les blocs structurels
      * d'un côté, les blocs déclarés de l'autre. Une seule liste à tenir.
      */
     const SECTIONS: TocSection[] = useMemo(() => [
-        { id: "besoins-financiers", label: String(t("detail.toc.financialNeeds")), icon: Sparkles },
+        ...(showFunding
+            ? [{ id: "besoins-financiers", label: String(t("detail.toc.financialNeeds")), icon: Sparkles }]
+            : []),
         ...(isProjectPhase
             ? [
                   { id: "objectifs", label: String(t("detail.toc.actions")), icon: ListChecks },
                   { id: "contributeurs", label: String(t("detail.toc.contributors")), icon: HeartHandshake },
               ]
             : []),
-        { id: "cofinanceurs", label: String(t("detail.toc.cofinancers")), icon: Handshake },
+        ...(showFunding
+            ? [{ id: "cofinanceurs", label: String(t("detail.toc.cofinancers")), icon: Handshake }]
+            : []),
         ...detailSections.map((section) => ({
             id: section.id,
             label: section.title,
@@ -257,7 +280,7 @@ export default function AacCommunDetailPage() {
         })),
         ...(gallerySubKey ? [{ id: "galerie", label: String(t("detail.toc.gallery")), icon: ImageIcon }] : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `t` est recréé à chaque rendu (cf. useT) : l'inclure annulerait le mémo.
-    ], [isProjectPhase, detailSections, gallerySubKey]);
+    ], [showFunding, isProjectPhase, detailSections, gallerySubKey]);
 
     useEffect(() => {
         if (configError) {
@@ -411,21 +434,25 @@ export default function AacCommunDetailPage() {
                     />
                 </div>
 
-                {/* Top Banner */}
-                <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 mb-14">
-                    <CommunHero 
+                {/* Top Banner — sans carte de financement, le héros n'a pas à
+                    rester sur 7 colonnes de 12 : on retire la grille plutôt que
+                    de laisser un vide à sa droite. */}
+                <div className={showFunding ? "grid lg:grid-cols-12 gap-8 lg:gap-12 mb-14" : "mb-14"}>
+                    <CommunHero
                         formData={formData}
                         answerData={answer.answers ?? {}}
                         aacConfig={config}
                         depositedOnName={originFormName}
                     />
 
-                    <CommunFinancingCard 
-                        formData={formData}
-                        answerQuery={answer ?? {}}
-                        aacConfig={config}
-                        funding={targetResource}
-                    />
+                    {showFunding && (
+                        <CommunFinancingCard
+                            formData={formData}
+                            answerQuery={answer ?? {}}
+                            aacConfig={config}
+                            funding={targetResource}
+                        />
+                    )}
                 </div>
 
                 <CommunMilestoneDialogs ctrl={objectivesCtrl} />
@@ -435,14 +462,16 @@ export default function AacCommunDetailPage() {
 
                     <div className="lg:col-span-9 space-y-20">
 
-                        <Section id="besoins-financiers" title={String(t("detail.toc.financialNeeds"))}>
-                            <CommunFinancingSection
-                                formData={formData}
-                                aacConfig={config}
-                                funding={targetResource}
-                                ctrl={objectivesCtrl}
-                            />
-                        </Section>
+                        {showFunding && (
+                            <Section id="besoins-financiers" title={String(t("detail.toc.financialNeeds"))}>
+                                <CommunFinancingSection
+                                    formData={formData}
+                                    aacConfig={config}
+                                    funding={targetResource}
+                                    ctrl={objectivesCtrl}
+                                />
+                            </Section>
+                        )}
 
                         {isProjectPhase && (
                             <Section id="objectifs" title={String(t("detail.toc.actions"))}>
@@ -466,14 +495,16 @@ export default function AacCommunDetailPage() {
                             </Section>
                         )}
 
-                        <Section id="cofinanceurs" title={String(t("detail.toc.cofinancers"))}>
-                            <CommunCofinancersTable 
-                                formData={formData}
-                                answerQuery={answer ?? {}}
-                                aacConfig={config}
-                                funding={targetResource}
-                            />
-                        </Section>
+                        {showFunding && (
+                            <Section id="cofinanceurs" title={String(t("detail.toc.cofinancers"))}>
+                                <CommunCofinancersTable
+                                    formData={formData}
+                                    answerQuery={answer ?? {}}
+                                    aacConfig={config}
+                                    funding={targetResource}
+                                />
+                            </Section>
+                        )}
 
                         {detailSections.map((section) => (
                             <Section
