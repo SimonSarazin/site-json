@@ -203,6 +203,15 @@ export function PlaceFormView({
         formData={formData}
         defaultValues={defaultValues}
         answerId={access?.existingAnswerId ?? undefined}
+        // Le lieu est l'ÉLÉMENT de la réponse : il entre dans la clé du brouillon
+        // (cf. `useCoFormDraft`). Sans lui, la saisie faite sur `…/place/A` était
+        // proposée sur `…/place/B`, et « Reprendre » l'emportait sur le finder
+        // verrouillé juste en dessous — la salle de B se rattachait à A. Même
+        // type que la requête d'accès (`CoFormPlacePage` / `ToolsAnswerDialog`
+        // interrogent avec `"organizations"`) : même lieu ⇒ même clé, quel que
+        // soit le point d'entrée.
+        elementId={placeId}
+        elementType="organizations"
         lockedFields={[sharedFinderInfo.fieldName]}
         readOnly={readOnly}
         existingAnswerMeta={access?.existingAnswerMeta ?? null}
