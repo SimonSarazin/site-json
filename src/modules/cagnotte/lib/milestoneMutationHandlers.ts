@@ -85,12 +85,78 @@ function isAnswerOnlyMilestone(params: MilestoneMutationBaseParams): boolean {
   return !params.milestoneId && typeof params.answerDepenseIndex === 'number';
 }
 
+/**
+ * Le `milestone` que porte la dépense visée par `answerDepenseIndex`, relu dans la
+ * ligne de la ressource dans l'enveloppe puis, à défaut, dans `docs` — `""` si
+ * aucun des deux ne le porte.
+ *
+ * L'enveloppe d'abord : c'est elle que la réparation de `useCagnotteAdapter`
+ * invalide en premier, `docs.depenses` partage le cache de l'écran (cf. ci-dessous).
+ * Même appariement de ligne que `getMilestoneConstraints`.
+ */
+function findDepenseMilestoneIdAtIndex(params: MilestoneMutationBaseParams): string {
+  const index = params.answerDepenseIndex;
+  if (typeof index !== 'number') return '';
+
+  const readAt = (depenses: unknown): string =>
+    Array.isArray(depenses) ? String(asRecord(depenses[index]).milestone ?? '').trim() : '';
+
+  for (const projectRow of getEnvelopeProjects(params.rawEnvelope)) {
+    const projectData = asRecord(projectRow.serverData ?? projectRow);
+    const candidateAnswerId = getEntityIdFromUnknown(projectData) || String(projectData.answer ?? '').trim();
+    const candidateProjectId =
+      String(asRecord(projectData.project).id ?? '').trim() ||
+      getEntityIdFromUnknown(projectRow.projectIdObj) ||
+      String(projectData.projectId ?? '').trim();
+
+    const matchesAnswer = params.answerId && candidateAnswerId === params.answerId;
+    const matchesProject = params.projectId && candidateProjectId === params.projectId;
+    if (!matchesAnswer && !matchesProject) continue;
+
+    const depensesFromAnswer = asRecord(asRecord(projectData.answers).aapStep1).depense;
+    const fromEnvelope = readAt(Array.isArray(projectData.depenses) ? projectData.depenses : depensesFromAnswer);
+    if (fromEnvelope) return fromEnvelope;
+  }
+
+  return readAt(params.docs?.depenses);
+}
+
+/**
+ * Complète un `milestoneId` vide par celui que la dépense visée porte DÉJÀ — avec
+ * projet lié seulement.
+ *
+ * Le cas : commun avec projet lié, dépense legacy sans `milestone`. La réparation
+ * de `useCagnotteAdapter` fabrique un id et l'écrit sur le projet ET sur
+ * `depense[i].milestone`, mais l'écran peut encore tenir l'item d'AVANT
+ * (`{ milestoneId: "", depenseIndex: i }`, cf. `buildItemsFromRawDepenses`, qui
+ * reprend l'id de la ligne brute). Conclure « answer-only » ici échouait en
+ * `missingProjectSide` : le palier existe bien des deux côtés — c'est son id qu'il
+ * faut relire, pas l'absence d'id qu'il faut croire.
+ *
+ * Appliqué aux PARAMS, et pas seulement à la résolution du contexte : les
+ * contraintes (`getMilestoneConstraints`) apparient actions et dépenses par
+ * `params.milestoneId`, et doivent voir le même palier.
+ *
+ * Sans projet, rien à relire : un `milestone` sur la dépense n'y désigne rien, et
+ * l'index seul fait foi (palier answer-only, cf. `isAnswerOnlyMilestone`).
+ */
+function withRecoveredMilestoneId<T extends MilestoneMutationBaseParams>(params: T): T {
+  if (params.milestoneId || !params.projectId || typeof params.answerDepenseIndex !== 'number') {
+    return params;
+  }
+  const recovered = findDepenseMilestoneIdAtIndex(params);
+  return recovered ? { ...params, milestoneId: recovered } : params;
+}
+
 function resolveSyncContextOrThrow(params: MilestoneMutationBaseParams): MilestoneSyncContext {
   // Rien à résoudre pour un palier answer-only : il n'a PAS de côté projet, et son
   // côté réponse est déjà connu. Les résolveurs, eux, rendent `null` sur un
   // `milestoneId` vide (garde contre l'appariement de la première entrée sans
   // champ, cf. `resolveMilestoneSyncContextFromDocs`) — passer par eux lèverait
   // `syncContextMissing` avant même de lire `answerDepenseIndex`.
+  //
+  // Avec projet lié, on n'arrive ici qu'après `withRecoveredMilestoneId` : la
+  // dépense visée ne porte d'id nulle part, le côté projet manque VRAIMENT.
   //
   // `fromDocs: true` : sans enveloppe interrogée, les actions restent invisibles —
   // sans conséquence ici, un `milestoneId` vide n'apparie aucune action (cf.
@@ -226,7 +292,8 @@ function getMilestoneConstraints(
   return { actionIds: [], hasFunding: false, allActionsDone: false, canClose : false };
 }
 
-export async function editMilestoneWithSync(params: EditMilestoneParams): Promise<void> {
+export async function editMilestoneWithSync(input: EditMilestoneParams): Promise<void> {
+  const params = withRecoveredMilestoneId(input);
   const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
   const hasProject = Boolean(params.projectId);
@@ -297,7 +364,8 @@ export async function editMilestoneWithSync(params: EditMilestoneParams): Promis
   await Promise.all(writes);
 }
 
-export async function closeMilestoneWithSync(params: CloseMilestoneParams): Promise<void> {
+export async function closeMilestoneWithSync(input: CloseMilestoneParams): Promise<void> {
+  const params = withRecoveredMilestoneId(input);
   const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
   const answerDepenseIndex = resolveAnswerDepenseIndex(params, syncContext);
@@ -340,7 +408,8 @@ export async function closeMilestoneWithSync(params: CloseMilestoneParams): Prom
   });
 }
 
-export async function restoreMilestoneWithSync(params: RestoreMilestoneParams): Promise<void> {
+export async function restoreMilestoneWithSync(input: RestoreMilestoneParams): Promise<void> {
+  const params = withRecoveredMilestoneId(input);
   const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
   const answerDepenseIndex = resolveAnswerDepenseIndex(params, syncContext);
@@ -383,7 +452,8 @@ export async function restoreMilestoneWithSync(params: RestoreMilestoneParams): 
   });
 }
 
-export async function deleteMilestoneWithSync(params: MilestoneMutationBaseParams): Promise<void> {
+export async function deleteMilestoneWithSync(input: MilestoneMutationBaseParams): Promise<void> {
+  const params = withRecoveredMilestoneId(input);
   const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
   const answerDepenseIndex = resolveAnswerDepenseIndex(params, syncContext);

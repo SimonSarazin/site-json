@@ -564,6 +564,186 @@ describe("palier answer-only (milestoneId vide + answerDepenseIndex)", () => {
 });
 
 /**
+ * B3 (review MR 53, relecture) : commun AVEC projet lié, dépense legacy sans
+ * `milestone`. La réparation de `useCagnotteAdapter` écrit l'id fabriqué sur le
+ * projet ET sur `depense[i].milestone`, mais l'écran peut encore tenir l'item
+ * d'AVANT (`{ milestoneId: "", depenseIndex: i }`, repris de la ligne brute par
+ * `buildItemsFromRawDepenses`). Conclure « answer-only » avec un projet lié
+ * échouait en `missingProjectSide` : les quatre handlers relisent l'id que porte la
+ * dépense visée — dans l'enveloppe, puis dans `docs` — et traitent le palier des
+ * deux côtés.
+ */
+describe("milestoneId vide + index, AVEC projet lié : l'id est relu sur la dépense visée", () => {
+  const RECOVERED = "m-repare";
+  const DEPENSES = [{ poste: "A", price: 10 }, { poste: "B", price: 20, milestone: RECOVERED }];
+  /** Le palier relu est en 2ᵉ position côté projet : l'index projet (1) doit venir de LUI, pas de la dépense. */
+  const PROJECT_MILESTONES = [
+    { milestoneId: "m1", name: "Autre", description: "", status: "open" },
+    { milestoneId: RECOVERED, name: "B", description: "", status: "open" },
+  ];
+  const answerServerData = { answers: { aapStep1: { depense: DEPENSES } } };
+  const DOCS = { projectMilestones: PROJECT_MILESTONES, depenses: DEPENSES };
+  const base = { projectId: "project1", answerId: "answer1", milestoneId: "", answerDepenseIndex: 1 };
+
+  const envelopeWith = (
+    extra: { actions?: Array<Record<string, unknown>>; depenses?: Array<Record<string, unknown>> } = {},
+  ) =>
+    buildRawEnvelope({
+      id: "answer1",
+      projectId: "project1",
+      project: { id: "project1", oceco: { milestones: PROJECT_MILESTONES } },
+      actions: extra.actions ?? [],
+      depenses: extra.depenses ?? DEPENSES,
+    });
+
+  it("edit (docs seuls) : écrit les DEUX côtés, à l'index projet du palier relu", async () => {
+    const { api, answerEntity, projectEntity } = buildApiMock({ answerServerData });
+
+    await editMilestoneWithSync({
+      source: api,
+      rawEnvelope: null,
+      docs: DOCS,
+      ...base,
+      name: "B2",
+      description: "d",
+      status: "open",
+      targetAmount: 20,
+    });
+
+    expect(mockUpdateProjectMilestoneFields).toHaveBeenCalledWith({
+      project: projectEntity,
+      index: 1,
+      fields: { name: "B2", description: "d", status: "open" },
+    });
+    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith(
+      expect.objectContaining({
+        answer: answerEntity,
+        index: 1,
+        fields: expect.objectContaining({ poste: "B2", price: 20 }),
+      }),
+    );
+  });
+
+  it("close (enveloppe seule) : idem depuis la ligne de la ressource, sans docs", async () => {
+    const { api, answerEntity, projectEntity } = buildApiMock({ answerServerData });
+
+    await closeMilestoneWithSync({ source: api, rawEnvelope: envelopeWith(), ...base });
+
+    expect(mockUpdateProjectMilestoneFields).toHaveBeenCalledWith({
+      project: projectEntity,
+      index: 1,
+      fields: { status: "close" },
+    });
+    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith({
+      answer: answerEntity,
+      index: 1,
+      fields: { include: false },
+    });
+  });
+
+  it("restore (enveloppe seule) : rouvre le palier relu des deux côtés", async () => {
+    const { api, answerEntity, projectEntity } = buildApiMock({ answerServerData });
+
+    await restoreMilestoneWithSync({ source: api, rawEnvelope: envelopeWith(), ...base });
+
+    expect(mockUpdateProjectMilestoneFields).toHaveBeenCalledWith({
+      project: projectEntity,
+      index: 1,
+      fields: { status: "open" },
+    });
+    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith({
+      answer: answerEntity,
+      index: 1,
+      fields: { include: true },
+    });
+  });
+
+  it("les contraintes voient l'id relu : close refuse une action ouverte sur CE palier", async () => {
+    const { api } = buildApiMock({ answerServerData });
+    const rawEnvelope = envelopeWith({ actions: [{ id: "a1", milestone: { milestoneId: RECOVERED }, status: "todo" }] });
+
+    await expect(closeMilestoneWithSync({ source: api, rawEnvelope, ...base })).rejects.toThrow(
+      "milestone.errors.cannotCloseWithOpenActions",
+    );
+    expect(mockUpdateProjectMilestoneFields).not.toHaveBeenCalled();
+    expect(mockUpdateAnswerDepenseFields).not.toHaveBeenCalled();
+  });
+
+  it("delete (enveloppe) : supprime l'action liée au palier relu, le palier projet et la dépense", async () => {
+    const { api, answerEntity, projectEntity, projectAction, resolvedActionEntity } = buildApiMock({ answerServerData });
+    const rawEnvelope = envelopeWith({ actions: [{ id: "a1", milestone: { milestoneId: RECOVERED }, status: "done" }] });
+
+    await deleteMilestoneWithSync({ source: api, rawEnvelope, ...base });
+
+    expect(projectAction).toHaveBeenCalledWith({ id: "a1" });
+    expect(mockDeleteActionById).toHaveBeenCalledWith({ action: resolvedActionEntity });
+    expect(mockDeleteProjectMilestoneAtIndex).toHaveBeenCalledWith({ project: projectEntity, index: 1 });
+    expect(mockDeleteAnswerDepenseAtIndex).toHaveBeenCalledWith({ answer: answerEntity, index: 1 });
+  });
+
+  it("l'enveloppe prime sur des docs périmés : la dépense sans `milestone` dans docs est relue dans l'enveloppe", async () => {
+    const { api, projectEntity } = buildApiMock({ answerServerData });
+    // `docs.depenses` partage le cache de l'écran (`useCommunRawDepenses`) : c'est
+    // lui qui peut être en retard sur la réparation, pas l'enveloppe.
+    const staleDocs = {
+      projectMilestones: PROJECT_MILESTONES,
+      depenses: [{ poste: "A", price: 10 }, { poste: "B", price: 20 }],
+    };
+
+    await editMilestoneWithSync({
+      source: api,
+      rawEnvelope: envelopeWith(),
+      docs: staleDocs,
+      ...base,
+      name: "B2",
+      description: "d",
+      status: "open",
+      targetAmount: 20,
+    });
+
+    expect(mockUpdateProjectMilestoneFields).toHaveBeenCalledWith(
+      expect.objectContaining({ project: projectEntity, index: 1 }),
+    );
+    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith(expect.objectContaining({ index: 1 }));
+  });
+
+  it("GARDE : sans projet lié, pas de relecture — l'index seul fait foi (answer-only)", async () => {
+    const { api, apiProject } = buildApiMock({ answerServerData });
+
+    await closeMilestoneWithSync({ source: api, rawEnvelope: null, docs: DOCS, ...base, projectId: "" });
+
+    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith(
+      expect.objectContaining({ index: 1, fields: { include: false } }),
+    );
+    expect(apiProject).not.toHaveBeenCalled();
+    expect(mockUpdateProjectMilestoneFields).not.toHaveBeenCalled();
+  });
+
+  it("GARDE : dépense sans `milestone` nulle part → reste answer-only, et le côté projet manque vraiment", async () => {
+    const { api } = buildApiMock({ answerServerData });
+    const sansId = {
+      projectMilestones: PROJECT_MILESTONES,
+      depenses: [{ poste: "A", price: 10 }, { poste: "B", price: 20 }],
+    };
+
+    await expect(
+      editMilestoneWithSync({
+        source: api,
+        rawEnvelope: null,
+        docs: sansId,
+        ...base,
+        name: "B2",
+        description: "d",
+        status: "open",
+        targetAmount: 20,
+      }),
+    ).rejects.toThrow("milestone.errors.incompleteForEdit.missingProjectSide");
+    expect(mockUpdateAnswerDepenseFields).not.toHaveBeenCalled();
+    expect(mockUpdateProjectMilestoneFields).not.toHaveBeenCalled();
+  });
+});
+
+/**
  * H22 (review MR 53) : sans projet lié, `description` n'était envoyée QUE par
  * `updateProjectMilestoneFields` — donc jamais. Le formulaire la jetait en silence,
  * avec un toast « mis à jour ». Sans côté projet, la dépense de la réponse est le
