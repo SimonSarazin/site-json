@@ -1,4 +1,5 @@
 import type { SearchByFieldValue } from "../contexts/pageFilters";
+import { ANSWER_PATH_TYPE, answerFilterClause } from "./answerFilterClause";
 
 /**
  * Traduit le `searchByFields` du `PageFilters` (filtres dynamiques : answers
@@ -32,6 +33,9 @@ export function searchByFieldsToQuery(
   const locality: Record<string, unknown> = {};
   const sourceKeys: string[] = [];
   let searchTarget: SearchTargetQuery | null = null;
+  // Facettes sur une liste d'`answers` : valeurs cochées regroupées PAR CHAMP de
+  // réponse (clé = chemin). Assemblées après la boucle en ET de OU (cf. plus bas).
+  const answerGroups = new Map<string, string[]>();
 
   for (const { field, type, value } of Object.values(searchByFields)) {
     if (type === "scopeList") {
@@ -61,6 +65,15 @@ export function searchByFieldsToQuery(
       }
       continue;
     }
+    if (type === ANSWER_PATH_TYPE) {
+      // La liste porte les réponses elles-mêmes : le prédicat porte sur le CHEMIN de
+      // la réponse, pas sur `_id` (cf. answerFilterClause). Pas d'écriture directe
+      // dans `filters` : les valeurs d'un même champ doivent finir en OU.
+      if (Array.isArray(value) && value.length > 0) {
+        answerGroups.set(field, [...(answerGroups.get(field) ?? []), ...(value as string[])]);
+      }
+      continue;
+    }
     if (Array.isArray(value) && value.length > 0) {
       if (!filters[field]) {
         filters[field] = { $in: value };
@@ -70,6 +83,31 @@ export function searchByFieldsToQuery(
       }
     }
   }
+
+  // ET de OU : un `$or` par champ de réponse (les valeurs cochées d'un groupe sont
+  // alternatives), l'ensemble composé sous la clé UNIQUE `$or` — seule forme que la
+  // grammaire du backend sait recevoir des deux côtés (legacy et Node), cf.
+  // `mongoFilters.ts` pour la démonstration et les formes à ne pas émettre.
+  const answerAnd: unknown[] = [];
+  for (const [fieldPath, values] of answerGroups) {
+    const clauses: Record<string, unknown>[] = [];
+    for (const value of Array.from(new Set(values))) {
+      const clause = answerFilterClause(fieldPath, value);
+      if (clause) {
+        clauses.push(clause);
+        continue;
+      }
+      // Inexprimable (libellé de multiCheckboxPlus contenant un point) : on n'émet
+      // PAS de filtre mort. Bruyant en dev, signalé par tests/preflight en CI.
+      if (import.meta.env.DEV) {
+        console.warn(
+          `[filtersByAnswers] valeur non filtrable (le libellé contient un point) : "${value}" sur ${fieldPath}`,
+        );
+      }
+    }
+    if (clauses.length > 0) answerAnd.push({ $or: clauses });
+  }
+  if (answerAnd.length > 0) filters.$or = { $and: answerAnd };
 
   return { filters, locality, sourceKeys, searchTarget };
 }

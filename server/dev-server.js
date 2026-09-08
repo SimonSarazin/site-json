@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
 import dotenv from "dotenv";
 import { helloassoCheckoutIntentHandler, helloassoTokenHandler, helloassoCallbackHandler, helloassoCheckoutStatusHandler, helloassoDiagnosticHandler } from "./api/helloasso-checkout.js";
+import { realtimeFluxHandler, realtimePushHandler } from "./api/realtime.js";
 import { createImageOptimizer } from "./middleware/imageOptimizer.js";
 import { createImageUpload } from "./middleware/imageUpload.js";
 import { normalizeSiteConfig } from "./utils/normalizeSiteConfig.js";
@@ -76,6 +77,10 @@ async function createServer() {
 
   // Middleware JSON pour les requêtes API (DOIT être AVANT les routes)
   app.use(express.json());
+  // TEMPS REEL (push) — monte APRES `express.json()`, DELIBEREMENT : ces routes ont un CORPS
+  // JSON, contrairement au flux. Montees avant, `req.body` serait vide et un abonnement
+  // parfaitement valide repartirait en 400.
+  app.all("/api/realtime/push/*splat", realtimePushHandler);
 
   // Routes API HelloAsso
   app.get("/api/helloasso/token", helloassoTokenHandler);
@@ -84,6 +89,14 @@ async function createServer() {
   app.get("/api/helloasso/checkout-status/:checkoutIntentId", helloassoCheckoutStatusHandler);
   app.get("/api/helloasso/orgs", helloassoDiagnosticHandler);
 
+  // TEMPS REEL — avant le 404 /api. Pas de `compression` en dev, mais l'ordre reste le meme
+  // qu'en prod pour que les deux serveurs se comportent pareil.
+  app.get("/api/realtime/flux", realtimeFluxHandler);
+
+  // Route /api/* INCONNUE : 404 franc (même garde que prod-server) — sinon le catch-all SSR
+  // répond 200 avec la page HTML et un client testant `response.ok` croit à un succès.
+  app.use("/api", (_req, res) => res.status(404).json({ error: "Unknown API route" }));
+
   // Flux RSS des articles blog (SEO/distribution). costumSlug : ?costum= > config.blog.feedCostumSlug > env.
   app.get("/blog/feed.xml", async (req, res) => {
     try {
@@ -91,7 +104,7 @@ async function createServer() {
       if (!slug) { res.status(400).type("application/xml").send('<?xml version="1.0"?><error>costumSlug manquant (?costum=slug ou config.blog.feedCostumSlug)</error>'); return; }
       const { renderBlogFeed } = await vite.ssrLoadModule("/src/modules/blog/server/feed.ts");
       const title = cachedConfig?.meta?.title?.fr || cachedConfig?.meta?.title || "Articles";
-      const xml = await renderBlogFeed({ costumSlug: String(slug), title });
+      const xml = await renderBlogFeed({ costumSlug: String(slug), title, publicFilters: cachedConfig?.blog?.publicFilters, publicSortBy: cachedConfig?.blog?.publicSortBy });
       res.type("application/rss+xml").send(xml);
     } catch (e) {
       console.error("[blog-feed]", e);

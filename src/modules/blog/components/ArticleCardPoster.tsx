@@ -4,18 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { formatDateLong } from "@/helpers/formatDate";
 import { useT } from "@/hooks/useT";
 import { estimateReadingTime } from "../lib/readingTime";
 import { stripMarkdown } from "../lib/markdown";
 import type { ArticleCardProps } from "./ArticleCard";
-
-function articleDate(created: unknown): string | null {
-  if (created == null || created === "") return null;
-  const n = typeof created === "number" ? created : Number(created);
-  const d = Number.isFinite(n) ? new Date(n < 2e10 ? n * 1000 : n) : new Date(String(created));
-  return Number.isNaN(d.getTime()) ? null : formatDateLong(d);
-}
+import { articleDate } from "../lib/articleDate";
 
 /**
  * Variant « poster » de la carte d'article : pour les flux d'affiches/flyers. L'image est montrée EN ENTIER
@@ -27,7 +20,7 @@ export function ArticleCardPoster({ article, href, lastRef, featured = false }: 
   const image = article.profilMediumImageUrl || article.profilImageUrl;
   const excerpt = article.shortDescription
     || (typeof article.description === "string" ? stripMarkdown(article.description).slice(0, 180) : "");
-  const date = articleDate(article.created);
+  const date = articleDate(article);
   const minutes = estimateReadingTime(article.description);
   const tags = Array.isArray(article.tags) ? article.tags.slice(0, 3) : [];
 

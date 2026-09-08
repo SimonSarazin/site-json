@@ -201,7 +201,6 @@ footer nav { font-family: var(--font-serif); }
 #territoire-boulonnais-titre { --territoire-bulle: #c34a42; }
 #territoire-calaisis-titre { --territoire-bulle: #ed8a4c; }
 #territoire-entre-mer-et-terres-titre { --territoire-bulle: #3fb4be; }
-#territoire-familles-en-sol-mineur-titre { --territoire-bulle: #a2537e; }
 #territoire-familles-en-sol-mineur-henin-carvin-titre { --territoire-bulle: #a2537e; }
 #territoire-familles-en-sol-mineur-lens-lievin-titre { --territoire-bulle: #97776b; }
 #territoire-ternois-bruaysis-titre { --territoire-bulle: #d492a9; }
@@ -225,7 +224,6 @@ footer nav { font-family: var(--font-serif); }
   --territoire-boulonnais: #c34a42;
   --territoire-calaisis: #ed8a4c;
   --territoire-entre-mer-et-terres: #3fb4be;
-  --territoire-familles-en-sol-mineur: #a2537e;
   --territoire-fsm-henin-carvin: #a2537e;
   --territoire-fsm-lens-lievin: #97776b;
   --territoire-ternois-bruaysis: #d492a9;

@@ -137,8 +137,33 @@ const AdminResourceSectionSchema = z.object({
   source: SearchBaseParamsSchema.partial().optional(),
   columns: AdminColumnsSchema.optional(),
   create: AdminFormRefSchema.default("inherit"),
+  /**
+   * Valeurs SEMÉES dans la modale de CRÉATION ouverte depuis cette section (jamais en édition —
+   * l'entité fait alors foi). Fusionnées PAR-DESSUS les défauts dérivés du formulaire
+   * (`fields.<nom>.default`), donc une clé absente d'ici garde son défaut normal.
+   *
+   * Sert le cas « un onglet = un sous-ensemble » : une table filtrée par `source` (ex.
+   * `defaultTags:["Appels à projets"]`) ouvre le formulaire DÉJÀ positionné sur le sous-type
+   * correspondant, sans faire re-choisir à l'admin ce que l'onglet dit déjà. Sans ce canal, il
+   * faudrait un formulaire costum cloné par sous-type pour ne varier qu'un défaut.
+   *
+   * Les clés sont des noms de champs du formulaire résolu par `create` ; une clé qu'il ne déclare
+   * pas est écartée par `applyCreateDefaults` (semis inerte, jamais de valeur fantôme).
+   */
+  createDefaults: z.record(z.string(), z.unknown()).optional(),
   edit: AdminFormRefSchema.default("inherit"),
   rowActions: z.array(z.enum(["edit", "delete", "validate", "reference", "setFeatured"])).optional(),
+  /**
+   * Gating par APPARTENANCE (opt-in) : sur une ligne NON possédée (`source.keys` ∌ slug du site —
+   * référencée ou étrangère), seules la lecture et l'action `reference` restent ; `edit`/`delete`/
+   * `validate`/statusField sont masqués. Modèle « la propriété porte les fonctionnalités, la
+   * référence ne porte que la visibilité » : le Node durci refuse déjà ces écritures sur une
+   * entité étrangère (401, cf. useReferenceElement) — sans ce gate, l'UX proposait des actions
+   * vouées à l'échec. Gating d'AFFICHAGE ≠ vérité des droits (un superAdmin peut éditer une
+   * étrangère) : v1 par appartenance, opt-in par section pour ne pas changer les sites qui
+   * modèrent du référencé (`moderateReferenced`).
+   */
+  restrictActionsToOwned: z.boolean().optional(),
   /** `transfer` requiert `transferFrom` (le bouton reste caché sans lui) — ouvre le dialog de
    *  migration d'appropriation en mode ids[] sur la sélection (mêmes contrôles/gate serveur). */
   bulkActions: z.array(z.enum(["export", "validate", "delete", "transfer"])).optional(),
@@ -149,9 +174,9 @@ const AdminResourceSectionSchema = z.object({
    * Champ booléen à EXCLUSIVITÉ (un seul document du périmètre `source` à `true` à la fois, ex.
    * `featured`/« à la une »). OPT-IN strict : n'a d'effet que combiné à `rowActions:["setFeatured"]`
    * — sans lui, l'action « Mettre à la une » ne s'affiche pas, zéro impact sur les sections
-   * `resource` existantes. Portée de l'exclusivité : les lignes actuellement CHARGÉES dans le
-   * tableau (pas une recherche dédiée sur tout le périmètre) — suffisant pour une volumétrie admin
-   * usuelle, cf. `useSetExclusiveFlag`.
+   * `resource` existantes. Portée de l'exclusivité (depuis la review MR 44) : une RECHERCHE
+   * SERVEUR dédiée sur le périmètre déclaré par `source` (`fetchFlagged` — jamais les lignes
+   * chargées de l'infinite scroll, jamais les filtres UI transitoires), cf. `runExclusiveFlag`.
    */
   exclusiveField: z.string().optional(),
 });
@@ -183,6 +208,25 @@ const AdminReferenceSectionSchema = z.object({
   type: z.literal("reference"),
   title: LocalizedString.optional(),
   entityTypes: z.array(z.string()).optional(),
+  /**
+   * Recherche de CANDIDATES (« Rechercher & référencer ») configurable — décision 2026-08-20 :
+   *  - `openData` : politique de consentement, au niveau SECTION (uniforme) —
+   *      `optIn` (défaut) = fidèle legacy referenceTable (`isOpenData: true` exigé ; commit
+   *      c097823fc 2021, Bouboule) ; `optOut` = tout sauf refus EXPLICITE
+   *      (`$nin [false, "false"]` — 2 241 orgs + 1 741 events du parc l'ont posé, respectés) ;
+   *      `off` = aucun filtre open-data.
+   *  - `defaultFilters` : ciblage du VIVIER commun à toutes les collections de la section
+   *      (grammaire Mongo-ish du parc : `source.keys`, `address.postalCode`…).
+   *  - `defaultFiltersByType` : ciblage PAR collection, fusionné PAR-DESSUS le commun — une
+   *      section multi-collections (sélecteur) ne fait pas fuiter un filtre d'orgs vers les events.
+   * Les garde-fous `$nin` du déjà-rattaché/référencé restent NON configurables (fusionnés
+   * même-clé après la config — parité : add/reference ne déduplique pas).
+   */
+  search: z.object({
+    openData: z.enum(["optIn", "optOut", "off"]).default("optIn"),
+    defaultFilters: z.record(z.string(), z.unknown()).optional(),
+    defaultFiltersByType: z.record(z.string(), z.record(z.string(), z.unknown())).optional(),
+  }).optional(),
   /** Colonnes de DONNÉES des deux tables (défaut name + address.addressLocality). Les colonnes
    *  structurelles Type (badge collection) et Action restent fixes. */
   columns: AdminColumnsSchema.optional(),

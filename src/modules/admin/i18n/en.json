@@ -66,7 +66,6 @@
     "deleteTitle": "Delete “{{label}}”?",
     "selectAll": "Select all (loaded rows)",
     "selectRow": "Select {{label}}",
-    "bulkTransfer": "Transfer ownership",
     "rowActions": "Actions for {{label}}",
     "setStatus": "Mark as: {{state}}",
     "statusUnset": "Not set",
@@ -185,7 +184,8 @@
   "useSetExclusiveFlag": {
     "featured": "Featured",
     "unfeatured": "Removed from featured",
-    "error": "Action failed"
+    "error": "Action failed",
+    "partialUnset": "Featured set, but {{count}} previous featured item(s) could not be cleared — check the table."
   },
   "AdminInvitation": {
     "error": "Error",

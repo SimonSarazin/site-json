@@ -19,7 +19,9 @@
   - [searchByFieldsToQuery](#searchbyfieldstoquery)
   - [computeFiltersFromUrl](#computefiltersfromurl)
   - [computeUrlFromFilters](#computeurlfromfilters)
+  - [answerFilterClause — filtrer une liste d'answers (filterTarget)](#answerfilterclause--filtrer-une-liste-danswers-filtertarget)
   - [canonicalBaseParams](#canonicalbaseparams)
+  - [mongoFilters — fusion des filtres $or](#mongofilters--fusion-des-filtres-or)
   - [schedules — regroupement des créneaux CoForm](#schedules--regroupement-des-créneaux-coform)
   - [coformAnswer — parser partagé carte + détail](#coformanswer--parser-partagé-carte--détail)
 - [Hooks](#hooks)
@@ -41,7 +43,7 @@
   - [Cartes (card variants)](#cartes-card-variants)
     - [CardPoiAmenities — POI avec aménagements (`card.type: "poi-amenities"`)](#cardpoiamenities--poi-avec-aménagements-cardtype-poi-amenities)
     - [CardProfile — authentification requise](#cardprofile--authentification-requise)
-  - [Mode détails (detailsMode)](#mode-détails-detailsmode)
+  - [Mode détails — conteneur (`detailsMode`) vs contenu (`preview.type`)](#mode-détails--conteneur-detailsmode-vs-contenu-previewtype)
     - [PreviewPoiAmenities — fiche détail POI (`preview.type: "poi-amenities"`)](#previewpoiamenities--fiche-détail-poi-previewtype-poi-amenities)
   - [Facettes cliquables & navigation par filtre (`dropdownFilters`)](#facettes-cliquables--navigation-par-filtre-dropdownfilters)
   - [Cartes news dans la recherche (CardNews et PreviewNews)](#cartes-news-dans-la-recherche-cardnews-et-previewnews)
@@ -167,6 +169,7 @@ src/modules/search/
 │       ├── PreviewEvent.tsx        # Fiche détail événement (type: "event")
 │       ├── PreviewFacets.tsx       # Preview générique data-driven (type: "facets")
 │       ├── PreviewNews.tsx         # Détail actualité — NewsDetailPage embedded (type: "news")
+│       ├── PreviewStructure.tsx    # Fiche détail organisation (type: "structure")
 │       ├── PreviewTestimonial.tsx  # Coque témoignage (type: "testimonial") → dispatch design
 │       ├── testimonial/
 │       │   └── PreviewTestimonialBubble.tsx  # Design "bubble"
@@ -201,9 +204,12 @@ src/modules/search/
 │
 ├── lib/
 │   ├── buildSearchPayload.ts      # SOURCE UNIQUE : baseParams → payload searchCostum
-│   ├── searchByFieldsToQuery.ts   # searchByFields → { filters, locality, sourceKeys }
+│   ├── searchByFieldsToQuery.ts   # searchByFields → { filters, locality, sourceKeys, searchTarget }
 │   ├── computeFiltersFromUrl.ts   # URL query params → mutations PageFilters
 │   ├── computeUrlFromFilters.ts   # PageFilters → URL query params (miroir, inverse du précédent)
+│   ├── answerFilterClause.ts      # ANSWER_PATH_TYPE / answerGroupFieldPath / answerFilterClause /
+│   │                              #   answerToggleArgs — facettes sur une liste d'answers (filterTarget)
+│   ├── mongoFilters.ts            # orClausesOf / mergeMongoFilters — fusion des `$or` de defaultFilters
 │   ├── canonicalBaseParams.ts     # canonicalSearchProStaticBaseParams()
 │   ├── filterToggles.ts           # Logique des toggles de filtres
 │   ├── schedules.ts               # groupSchedules — créneaux CoForm groupés par jour (Lun→Dim)
@@ -409,7 +415,8 @@ Les schémas de filtres (`FilterGroupSchema`, `FilterGroupsSchema`, `FiltersByAn
       "thematique": {
         "label": { "fr": "Thématique" },
         "forms": "monFormId",
-        "path": "thematique"
+        "path": "thematique",
+        "filterTarget": "linkedElements"
       }
     },
     "filtersByPath": {
@@ -424,11 +431,26 @@ Les schémas de filtres (`FilterGroupSchema`, `FilterGroupsSchema`, `FiltersByAn
 
 Les filtres `scopeList` chargent les zones géographiques via `useSearchZoneQuery`. Les `filtersByAnswers` chargent les options depuis les réponses CoForm via `useFiltersByAnswersQuery`. Les `filtersByPath` chargent les options via `useFiltersByPathQuery` (`coformFilterByPath`). Les `entityList` peuplent leurs options dynamiquement via `useFilterEntitiesQuery`.
 
+**`filterTarget` — sur quel document porte la sélection** (clé des groupes `filtersByAnswers` **et** `filtersByPath`, `schema.ts:125` / `schema.ts:158`) : `"linkedElements"` (défaut historique) filtre les éléments **LIÉS** aux réponses — `_id: {$in: orgaNameArray}`, le cas `/lieux` de l'exemple ci-dessus ; `"answers"` filtre les **RÉPONSES elles-mêmes**, par un prédicat sur le chemin déclaré (`path` / `thematicPath`), pour une liste sœur en `baseParams.defaultTypes: ["answers"]` (`/creneaux` de `maison-sport-sante-la-tampon`) :
+
+```json
+"filtersByAnswers": {
+  "ald": {
+    "label": { "fr": "Affection longue durée (ALD)" },
+    "forms": "6a85af345d898a57cb49f029",
+    "path": "associationEkilibre…_0.multiCheckboxPlusassociationEkilibre…ald",
+    "filterTarget": "answers"
+  }
+}
+```
+
+> ⚠️ Poser une facette sur une liste d'`answers` **sans** cette clé est une panne **SILENCIEUSE** : le groupe s'affiche avec ses options, se coche, et **vide la liste**. Le défaut `linkedElements` vit dans le **code** (la config n'est jamais parsée par Zod au runtime) → la clé doit être écrite explicitement. Prédicat émis, table « type d'input → prédicat », piège du libellé à point et gardes preflight : [§answerFilterClause](#answerfilterclause--filtrer-une-liste-danswers-filtertarget).
+
 `FiltersSection` utilise `computeFiltersFromUrl` pour lire les query params d'URL et appliquer les filtres correspondants au montage et à chaque changement d'URL — la même logique que `usePageFiltersUrlSync` (source unique).
 
 `FiltersSection` lit également `?search=` pour reporter la recherche texte dans son champ local quand on arrive depuis un lien.
 
-**Synchro URL bidirectionnelle.** Au-delà de la lecture, `FiltersSection` écrit aussi l'URL au clic (miroir en `replace`, le `PageFiltersContext` reste la source) via `computeUrlFromFilters` (inverse exact de `computeFiltersFromUrl`). Tous les types de filtres de la sidebar sont couverts dans les deux sens : recherche texte (`?search=`), groupes « tag » (`selectedFilters`), `entityList` / `scopeList` / `filtersByAnswers`-`filtersByPath` (`searchByFields`). Résultat : un clic produit un permalien partageable et le bouton retour restaure l'état précédent.
+**Synchro URL bidirectionnelle.** Au-delà de la lecture, `FiltersSection` écrit aussi l'URL au clic (miroir en `replace`, le `PageFiltersContext` reste la source) via `computeUrlFromFilters` (inverse exact de `computeFiltersFromUrl`). Tous les types de filtres de la sidebar sont couverts dans les deux sens : recherche texte (`?search=`), groupes « tag » (`selectedFilters`), `entityList` / `scopeList` / `searchTargets`, groupes « champ » (`group.field`), `dateRange` et `filtersByAnswers`-`filtersByPath` (`searchByFields`) — couverture détaillée et format de chaque param en [§computeUrlFromFilters](#computeurlfromfilters). Résultat : un clic produit un permalien partageable et le bouton retour restaure l'état précédent.
 
 Trois garde-fous évitent toute boucle avec l'effet de lecture (continu) :
 - **echo guard** (`lastSyncedSearch`) — l'effet de lecture ignore les écritures que la section vient elle-même de faire ;
@@ -571,7 +593,7 @@ export function buildSearchPayload(
 
 ### searchByFieldsToQuery
 
-`src/modules/search/lib/searchByFieldsToQuery.ts` — traduit le `searchByFields` du `PageFilters` en les 3 morceaux de requête consommés par `searchCostum`.
+`src/modules/search/lib/searchByFieldsToQuery.ts` — traduit le `searchByFields` du `PageFilters` en les 4 morceaux de requête consommés par `searchCostum`.
 
 **Source unique** réutilisée par `SearchProStatic` (liste) **et** `useAutocomplete` (suggestions) — garantit des filtres dynamiques identiques des deux côtés.
 
@@ -579,28 +601,42 @@ export function buildSearchPayload(
 export function searchByFieldsToQuery(
   searchByFields: Record<string, SearchByFieldValue>,
 ): {
-  filters: Record<string, Record<string, string[]>>;  // ex. { "_id": { "$in": [...] } }
+  filters: Record<string, Record<string, unknown>>;    // ex. { "_id": { "$in": [...] } }
   locality: Record<string, unknown>;                   // zones scopeList
   sourceKeys: string[];                                // entityList → sourceKey SDK
+  searchTarget: SearchTargetQuery | null;              // { defaultTypes?, defaultFilters? } — HORS Mongo
 }
 ```
 
-Règles de mapping :
+`filters` est typé `Record<string, Record<string, unknown>>` (et non `…string[]`) parce qu'il porte aussi
+des opérateurs de date (`$gt`/`$lte`) et la clé composée `$or` des facettes sur answers.
+
+Règles de mapping (`searchByFieldsToQuery.ts:40-110`) :
 - `type === "scopeList"` → `locality`
 - `type === "sourceKey"` → `sourceKeys` (injecté dans `baseParams.sourceKey`)
+- `type === "searchTarget"` → `searchTarget` — **pas un filtre Mongo** : porté à part (`defaultTypes` /
+  `defaultFilters`), radio → au plus une entrée
+- `type === "dateRange"` → `filters[field] = { $gt: start, $lte: end }` (bornes présentes seulement ;
+  seul `$gt` est converti en date par le backend)
+- `type === "answerPath"` (`ANSWER_PATH_TYPE`) → **pas d'écriture directe** : les valeurs sont regroupées
+  par chemin de réponse, chaque groupe devient un `$or`, l'ensemble est composé en ET sous la clé unique
+  `filters.$or = { $and: [...] }` (cf. [§answerFilterClause](#answerfilterclause--filtrer-une-liste-danswers-filtertarget)
+  et [§mongoFilters](#mongofilters--fusion-des-filtres-or))
 - autres → `filters[field] = { $in: value }` (merge des valeurs si le champ apparaît plusieurs fois)
 
 ### computeFiltersFromUrl
 
 `src/modules/search/lib/computeFiltersFromUrl.ts` — traduit les query params d'URL en mutations de l'état `PageFilters`.
 
-**Source unique** réutilisée par `FiltersSection` (UI `/lieux`) **et** `usePageFiltersUrlSync` (applicateur headless de la home) — garantit exactement les mêmes filtres produits dans les deux contextes.
+**Source unique** réutilisée par `FiltersSection` (UI `/lieux`) **et** `usePageFiltersUrlSync` (applicateur headless de la home) — garantit exactement les mêmes filtres produits dans les deux contextes… **à condition de passer le 4ᵉ paramètre** : sans `answerGroupConfs`, un deep-link pose un filtre `_id`/orgaNameArray là où le clic pose un prédicat de chemin (cf. `filterTarget` ci-dessous), et les deux divergent en silence. `FiltersSection` le construit en fusionnant `filtersByAnswers` + `filtersByPath` (`FiltersSection.tsx:199`) ; `usePageFiltersUrlSync` passe son `filtersByAnswers` (`usePageFiltersUrlSync.ts:47`).
 
 ```ts
 export function computeFiltersFromUrl(
   searchParams: URLSearchParams,
   filterGroups: FilterGroupLike[],
   filterAnswerData: FilterAnswerDataLike,
+  // Config des groupes « par réponses » indexée par id — défaut `null` (silencieux).
+  answerGroupConfs: Record<string, AnswerGroupConf> | null = null,
 ): {
   applySelected: (prev: Record<string, string[]>) => Record<string, string[]>;
   applySearchFields: (prev: Record<string, SearchByFieldValue>) => Record<string, SearchByFieldValue>;
@@ -611,7 +647,12 @@ Logique de mapping des query params :
 - Groupe `type === "entityList"` → `searchByFields` (type `sourceKey`)
 - Groupe `type === "scopeList"` → `searchByFields` (type `scopeList`, encodage `{ id, type: level }` → `locality`)
 - Groupe « tag » (options en config) → `selectedFilters[groupId]`
-- Clé matchant une entrée `filterAnswerData` → `searchByFields[optionKey] = { field: "_id", value: orgaNameArray }`
+- Clé matchant une entrée `filterAnswerData` → `searchByFields[optionKey]`, via `answerToggleArgs`
+  (`lib/answerFilterClause.ts:89`), **source unique partagée avec le clic** de `FiltersSection` :
+  - groupe sans `filterTarget` ou `filterTarget: "linkedElements"` → `{ field: "_id", value: orgaNameArray }`
+    (comportement historique, listes d'éléments liés type `/lieux`) ;
+  - groupe `filterTarget: "answers"` avec un `path`/`thematicPath` → `{ field: "answers.<path>",
+    type: "answerPath", value: [libellé] }` (cf. [§answerFilterClause](#answerfilterclause--filtrer-une-liste-danswers-filtertarget)).
 
 Les fonctions retournées sont des **fonctions de merge** (elles préservent les clés non gérées par les groupes déclarés) — sûres à passer directement à `setSelectedFilters` / `setSearchByFields`.
 
@@ -630,7 +671,39 @@ export function computeUrlFromFilters(
 ): URLSearchParams
 ```
 
-Couvre `?search=` (texte), groupes « tag » (`selectedFilters`), `entityList` / `scopeList` (noms d'options présents dans `searchByFields`) et « par réponses » (clés d'options présentes dans `searchByFields`). Clone `current` → préserve les params hors filtres (pagination…) ; ne touche pas un param dont les options ne sont pas encore chargées. Round-trip et idempotence couverts par `computeUrlFromFilters.test.ts`.
+Couvre `?search=` (texte), groupes « tag » (`selectedFilters`), `entityList` / `scopeList` / `searchTargets` et groupes « champ » (`group.field`) — noms d'options présents dans `searchByFields` —, `dateRange` (CSV `start[,end]` sous l'id du groupe) et « par réponses » (clés d'options présentes dans `searchByFields`). Clone `current` → préserve les params hors filtres (pagination…) ; ne touche pas un param dont les options ne sont pas encore chargées. Round-trip et idempotence couverts par `computeUrlFromFilters.test.ts`.
+
+**Encodage symétrique.** Chaque valeur est `encodeURIComponent`-ée avant d'être jointe par une virgule (`encodeValues`, `computeUrlFromFilters.ts:43-45`, appliqué aux trois écritures), en miroir du `split(",")` puis `decodeURIComponent` **par segment** de la lecture (`computeFiltersFromUrl.ts:129-132`). Sans lui, une valeur contenant elle-même une virgule (ex. « Collectivités (Département, Intercommunalité, Région, etc) », groupes `portage` de `relief` et `tiers-lieux`) était redécoupée, ne correspondait plus à aucune option, et le param disparaissait de l'URL — perte **partielle et silencieuse** en liste mixte : les valeurs sans virgule survivaient, l'autre non. Ce n'est pas une nouvelle convention : `dropdownFilters.ts` écrit déjà ainsi, avec sa lecture symétrique dans `SearchHeaderSection` ; et l'encodage est l'**identité** sur une valeur URL-safe (aucune URL déjà partagée ne cesse de fonctionner). ⚠ **Exception : le CSV `dateRange`** (`start,end`) n'est PAS encodé — son lecteur ne décode pas et la position de début vide (`,end`) est significative ; l'encoder ferait glisser la borne de fin en borne de début.
+
+### answerFilterClause — filtrer une liste d'answers (filterTarget)
+
+`src/modules/search/lib/answerFilterClause.ts` — décide du prédicat produit par une option cochée dans un groupe « par réponses » (`filtersByAnswers` / `filtersByPath`), selon ce que la liste affiche vraiment.
+
+Ces deux familles de groupes ont été écrites pour `/lieux`, où l'élément listé (l'organisation) **n'est pas** le document qui porte la réponse : la sélection y part en `{ _id: { $in: orgaNameArray } }`. Sur une liste qui porte les **réponses elles-mêmes** (`baseParams.defaultTypes: ["answers"]` — cas `/creneaux` de `maison-sport-sante-la-tampon`), filtrer par `_id` d'organisation ne peut rien rendre : le prédicat doit porter sur le **chemin de la réponse**. C'est le seul rôle de `filterTarget`.
+
+> ⚠️ **Panne SILENCIEUSE.** Un groupe posé sur une liste d'`answers` **sans** `filterTarget: "answers"` s'affiche normalement, avec ses options, se coche… et **vide la liste**. Aucune erreur, aucun log. Comme toute clé de config, `filterTarget` n'est **jamais** parsé par Zod au runtime : le défaut (`linkedElements`) vit dans le **code** — `answerGroupFieldPath` retourne `null` dès que `filterTarget !== "answers"` (`answerFilterClause.ts:45-50`) — la clé doit donc être écrite **explicitement** dans le JSON.
+
+| Export | Rôle |
+|---|---|
+| `ANSWER_PATH_TYPE` (`"answerPath"`) | `type` posé dans `searchByFields` par un groupe ciblant les answers |
+| `answerGroupFieldPath(conf)` | Chemin complet du champ (`answers.<path\|thematicPath>`), ou `null` si le groupe ne cible pas les answers / n'a pas de chemin |
+| `answerFilterClause(fieldPath, value)` | Prédicat Mongo d'**une** valeur cochée (table ci-dessous), ou `null` si la valeur est inexprimable |
+| `answerToggleArgs(conf, optionKey, option)` | `{field, value, fieldType}` — **source unique** du clic (`FiltersSection.tsx:860`) et de la lecture d'URL (`computeFiltersFromUrl.ts:234`) |
+
+**Table « type d'input CoForm → prédicat »** (`answerFilterClause.ts:65-78`) — portage du legacy `answerDirectory.js` (`showGenPrevAnswers`, l. 1264-1290), même ordre de tests, même sémantique :
+
+| Le chemin contient | Prédicat émis |
+|---|---|
+| `multiCheckboxPlus` | `{ "<chemin>.<libellé>": { "$exists": true } }` |
+| `multiRadio` | `{ "<chemin>.value": "<libellé>" }` |
+| `checkboxNew` / `radioNew` | chemin **amputé** du marqueur, libellé en valeur |
+| *(aucun des précédents)* | `{ "<chemin>": "<libellé>" }` |
+
+Pourquoi `$exists` sur une clé dotée et pas un `$in` : un `multiCheckboxPlus` stocke ses libellés en **CLÉS**, pas en valeurs (`[{"Obésité":{…}},{"Douleurs chroniques":{…}}]`) — un `$in` sur le chemin comparerait des objets et rendrait 0. Le test d'existence, lui, est **indexé** (index wildcard `answers.$**_1` → SUBPLAN + OR + IXSCAN).
+
+> ⚠️ **Second piège, silencieux lui aussi : le libellé à POINT.** Un libellé de `multiCheckboxPlus` contenant un `.` (« Facilitateur.rice de Tiers-Lieux ») est **inexprimable** — le point deviendrait un niveau de chemin supplémentaire. `answerFilterClause` renvoie alors `null` et **aucun filtre n'est émis** (plutôt qu'un filtre mort) : simple `console.warn` en DEV côté appelant (`searchByFieldsToQuery.ts:102-106`). Les autres branches placent le libellé en VALEUR, où un point est inoffensif.
+
+**Gardes** : `tests/preflight/answer-facets.test.ts` (règle 1 — `filterTarget: "answers"` sans chemin = no-op silencieux ; règle 2 — dans un `gridLayout`, si la liste sœur porte `defaultTypes: ["answers"]`, les groupes de la colonne de filtres DOIVENT cibler les answers) et `tests/preflight/answer-facet-labels.test.ts` (+ `scripts/answer-facet-labels.mjs`, qui va lire les libellés réels des formulaires).
 
 ### canonicalBaseParams
 
@@ -643,6 +716,21 @@ export function canonicalSearchProStaticBaseParams(
   locality?: Record<string, unknown>,
 ): Record<string, unknown>
 ```
+
+Les `defaultFilters` de la config et les `filters` dynamiques sont assemblés par **`mergeMongoFilters`** et non par un spread (`canonicalBaseParams.ts:30`) — voir juste en dessous.
+
+### mongoFilters — fusion des filtres $or
+
+`src/modules/search/lib/mongoFilters.ts` — `$or` est une clé **unique** de `defaultFilters`, revendiquée par deux écrivains : le périmètre déclaré en config (`config.prod.tiers-lieux.json` pose `defaultFilters.$or = {tags:{$in:["TiersLieux"]}}` sur les pages qui portent justement des groupes « par réponses ») et le réducteur `searchByFieldsToQuery` (facettes sur answers). Un simple `{...a, ...b}` fait gagner le dernier et **détruit silencieusement** le périmètre de l'autre.
+
+| Export | Rôle |
+|---|---|
+| `orClausesOf(orValue)` | Normalise une valeur de `$or` en membres de `$and` combinables : forme composée `{$and:[…]}` → ses membres tels quels ; MAP legacy `{champ: op, …}` → une clause `{$or:[…]}` ; tableau → idem (**toléré en lecture seulement**) |
+| `mergeMongoFilters(base, extra)` | `{...base, ...extra}` **sauf** `$or`, dont les deux côtés sont composés en ET (`{$and:[…]}`) |
+
+Règles (`mongoFilters.ts:54-77`) : quand un **seul** côté porte un `$or`, sa forme est conservée **telle quelle** (les configs et groupes historiques émettent exactement le fil qu'ils émettaient déjà) ; un `$or` **vide** n'est jamais émis (c'est un 500 legacy, « $or must be a nonempty array ») ; la forme **TABLEAU** `$or: [clause, …]` ne doit jamais être émise (500 legacy — cf. §Pièges connus n°12c).
+
+La forme composée `$or: { $and: [ {$or:[…]}, {$or:[…]} ] }` (ET de OU) est mesurée conforme sur les **deux** backends (legacy 5080 et Node 5099) : `SearchNew::searchFilters` (SearchNew.php:549-574) lit `$or` comme une MAP `champ => opérateur` et recopie la valeur **brute**, donc un `$and` niché y passe intact ; `addQuery` empile ensuite chaque clé sous `$and[]` (cf. §Pièges connus n°12d).
 
 ### expandCostumSubType — sous-types de costum (clé sucre `costumSubType`)
 
@@ -777,12 +865,15 @@ Charge les options de filtres dérivées des réponses CoForm via `entity.coform
 const { data, isLoading, error } = useFiltersByAnswersQuery(
   queryId,     // string — identifiant unique pour la queryKey
   options,     // FiltersByAnswersOptions — map des filtres à récupérer
+               //   { [key]: { id, label, forms?, path?, finderPath?, filterTarget? } }
 );
 // data : Record<string, FilterAnswerType>
 // FilterAnswerType : { label: LocalizedString, values: Record<string, {image, name, orgaNameArray}> }
 ```
 
 **SSR-ready** : `filtersByAnswersQueryKey()` et `fetchFiltersByAnswers()` sont exportés séparément pour les prefetch SSR.
+
+`filterTarget` n'agit **pas** sur cette requête (les options chargées sont les mêmes) : il décide du prédicat produit **au clic** et à la lecture d'URL — cf. [§answerFilterClause](#answerfilterclause--filtrer-une-liste-danswers-filtertarget). Idem pour `useFiltersByPathQuery`.
 
 ### useFiltersByPathQuery
 
@@ -791,7 +882,7 @@ const { data, isLoading, error } = useFiltersByAnswersQuery(
 ```ts
 const { data, isLoading, error } = useFiltersByPathQuery(
   queryId,    // string
-  options,    // FiltersByPathOptions — { [key]: { thematicPath, finderPath?, notSourceKey? } }
+  options,    // FiltersByPathOptions — { [key]: { thematicPath, finderPath?, notSourceKey?, filterTarget? } }
 );
 // data : Record<string, FilterAnswerType>
 ```
@@ -888,7 +979,7 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 
 - **`card.type` / `card.variant`** → la carte de liste (`SearchCard`) ;
 - **`card.detailsMode`** → le *conteneur* de détail (`SwitchDetailsMode` : `drawer`/`dialog`) ;
-- **`preview.type`** → le *contenu* du détail rendu DANS ce conteneur (`Preview` : `default`/`poi-amenities`/`coform-answer`/`event`/`facets`/`news`/`testimonial`/`resource`).
+- **`preview.type`** → le *contenu* du détail rendu DANS ce conteneur (`Preview` : `default`/`poi-amenities`/`coform-answer`/`event`/`facets`/`news`/`testimonial`/`resource`/`structure`).
 
 | `card.type` (ou `variant`) | Composant | Usage |
 |--------|-----------|-------|
@@ -909,6 +1000,8 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 | `resource` | `CardResource` | Coque → dispatch sur `list.resource.design` (repli `card`) → `CardResourceCard` (média-library, **distinct** de `resource-booking`/`CardResourceBooking`) |
 
 > `news`, `testimonial` et `resource` ne sont acceptées **que** par `card.type` : l'enum `card.variant` (schema.ts) ne les inclut pas (comme `overlay`).
+
+**`card.structureAction`** (carte `card-answer` uniquement, `schema.ts:461`) — ce que fait le bouton « Fiche structure » : `{"kind": "profil"}` navigue vers `/profil/:slug` (comportement historique) ; `{"kind": "preview"}` ouvre la fiche **en modale** — `SwitchDetailsMode` monté en `dialog` avec `preview: {type: "structure"}` (`CardAnswer.tsx:215-221`) — sans quitter la liste ni perdre filtres et position de défilement. Défaut **côté code** `profil` : `CardAnswer.tsx:38` teste `=== "preview"`, donc clé absente = navigation ; la config n'étant jamais parsée par Zod au runtime, la poser **explicitement** est le seul moyen d'activer la modale. L'entité complète (la carte ne porte qu'un sous-document de la structure) n'est chargée **qu'au clic** — `useEntityBySlugQuery` conditionné à l'ouverture — et le bouton reste `disabled` pendant ce chargement. Même forme que `map.itemAction`, à dessein : un seul vocabulaire d'action dans le module. Posé en config réelle : `config.prod.maison-sport-sante-la-tampon.json:795`.
 
 Toutes les variantes sont lazy-loadées. Une page **mono-type** ne télécharge que le chunk configuré ; une liste **hétérogène** (`list.itemRules`, cf. [§Rendu PAR ITEM](#rendu-par-item-des-listes-hétérogènes-listitemrules)) en charge un par famille présente — c'est pourquoi `SearchListView` enveloppe chaque carte dans son **propre `<Suspense>`**. Les **couleurs en dur** des cartes ont été remplacées par des **tokens de thème** (commits 4936978 / ad11831 / 06baffb) → chaque carte s'adapte au thème du site et au mode clair/sombre.
 
@@ -956,7 +1049,7 @@ Toutes les variantes sont lazy-loadées. Une page **mono-type** ne télécharge 
 - Bouton « Contacter » : **plus de `disabled={!isConnected}`** — toujours cliquable ; si non connecté → `openLogin()`.
 - Bouton « Suivre » : **`disabled={isLoadingFollow}` uniquement** (plus de `disabled={!isConnected || isLoadingFollow}`) — toujours cliquable si le follow n'est pas en cours ; si non connecté → `openLogin()`.
 
-Voir [doc/23-module-auth.md](doc/23-module-auth.md) pour l'API `useAuthModal`.
+Voir [doc/23-module-auth.md](23-module-auth.md) pour l'API `useAuthModal`.
 
 ### Mode détails — conteneur (`detailsMode`) vs contenu (`preview.type`)
 
@@ -981,6 +1074,7 @@ Le détail d'une entité sélectionnée est **découplé en deux axes** (commit 
 | `news` | `PreviewNews` | Détail actualité — embarque `NewsDetailPage` (mode `embedded`) + permalien « Voir en page » (cf. `preview.showDetailLink`) |
 | `testimonial` | `PreviewTestimonial` | Coque → `PreviewTestimonialBubble` (dispatch `list.testimonial.design`) |
 | `resource` | `PreviewResource` | Coque → `PreviewResourceCard` (dispatch `list.resource.design`) |
+| `structure` | `PreviewStructure` | Fiche détail d'une **organisation** : hero (statut / type / logo), affiliation, adresse + carte, représentant légal, infos, documents — champs custom du costum lus via l'index signature de `serverData`. Utilisée par `/structure` (`config.prod.maison-sport-sante-la-tampon.json:2125`) **et** par le bouton « Fiche structure » de `CardAnswer` (cf. `card.structureAction`) |
 
 Chaque contenu de `Preview` borne lui-même sa hauteur/scroll (indépendant du conteneur). `list.preview.fields` surcharge le mappage des IDs de champ CoForm (voir « parser CoForm » ci-dessous).
 
@@ -1113,14 +1207,40 @@ Usage type : `/annuaire` institut-bleu — `card.detailsMode: "dialog"` + `previ
 `dropdownFilter` d'une AUTRE page devient cliquable **vers cette page** (`findFilterByField` scanne
 toute la config) — ne déclarer que des champs neutres, ou assumer la navigation.
 
-#### Options DYNAMIQUES d'un filtre — `optionsFrom` (listes déclarées du costum)
+#### Options d'un filtre depuis `costum.lists` — `optionsFrom`
 
-Un filtre (dropdown ou `filterGroups`) peut tirer ses options d'une **liste déclarée du costum**
-(`costum.lists.<nom>` : `{collection, distinct, where}`) au lieu d'options figées :
+Un filtre (dropdown ou `filterGroups`) peut tirer ses options d'une ou plusieurs **listes déclarées du
+costum** au lieu d'options figées :
 
 ```jsonc
-{ "field": "tags", "optionsFrom": { "list": "tagsDocument" } }   // costumSlug optionnel (défaut : site)
+{ "field": "tags",    "optionsFrom": { "list": "tagsDocument" } }        // costumSlug optionnel (défaut : site)
+{ "field": "themes",  "optionsFrom": { "list": ["themes", "themesPoi", "themesEvents"],
+                                       "withDeclared": true } }          // plusieurs listes + socle déclaré
 ```
+
+**La FORME de chaque liste est détectée automatiquement** (`@/lib/listSources`, `isDynamicList`) :
+statique (tableau/map) → lue en mémoire dans le costum déjà chargé, aucune requête ; recette
+(`{collection, distinct, where}`, badges) → résolue par `costum/co/listvalues`. Le rédacteur de config
+n'a donc pas à savoir sous quelle forme la liste est déclarée en base — se tromper ne produisait aucune
+erreur, juste un repli silencieux sur les options figées. `optionsKey`, qui désignait autrefois
+explicitement la voie statique, reste accepté comme **alias déprécié** de `optionsFrom.list`.
+
+**Plusieurs listes = fusion**, dans l'ordre déclaré (la première où une valeur apparaît fixe sa
+graphie). Cas d'usage : un même champ alimenté depuis plusieurs collections, qui demande alors une
+recette par collection (parent62 : `themes` est écrit sur `poi` ET sur `events`). Les `variants`
+(graphies regroupées) sont **unis entre listes** — sans quoi le filtre n'interrogerait qu'une graphie
+et raterait silencieusement les fiches de l'autre collection.
+
+**`withDeclared`** fait des `options` écrites en config un **SOCLE** fusionné en tête, au lieu d'un
+simple repli de chargement : elles gardent alors leur **libellé i18n** (et leur couleur, leur `level`),
+là où une valeur venue de la base s'affiche en `capitaliser(valeur)`. Opt-in délibéré : fusionner
+partout ferait réapparaître des valeurs de config absentes de la base, donc des filtres qui ne rendent
+rien.
+
+**`optionsReady`** signifie « toutes les sources ont répondu », jamais « on a déjà de quoi afficher » —
+`FiltersSection` s'en sert pour retarder l'hydratation URL. Annoncer « prêt » trop tôt (ce qu'un socle
+non vide rend tentant) laisse l'hydratation s'exécuter avant l'arrivée des valeurs, puis l'effet de
+lecture rejoué **efface la sélection par défaut**.
 
 `useDynamicFilterOptions` interroge l'endpoint `costum/co/listvalues` (existe côté legacy ET Node,
 byte-vérifié) qui résout la liste **hors du cache costum** (valeurs fraîches — une valeur saisie
@@ -1129,8 +1249,8 @@ déclaration en base porte collection/champ/filtre — une liste non déclarée 
 Pagination : plafond client 300 (couvre 7 des 8 listes du parc) ; au-delà, la réponse porte
 `total`/`truncated` et la **recherche re-interroge le serveur** (`q`, forme canonique sans
 accents/casse, `limit` ≤ 5000) — mesuré : « Zooplancton », rang 1208/1209, trouvé via la saisie.
-Sans `optionsFrom`, rien ne change (les options déclarées font foi). Les libellés sont capitalisés
-à l'AFFICHAGE seul (la valeur filtrée reste byte-fidèle).
+Sans `optionsFrom` ni `optionsKey`, rien ne change (les options déclarées font foi) et aucune requête
+n'est émise. Les libellés sont capitalisés à l'AFFICHAGE seul (la valeur filtrée reste byte-fidèle).
 
 ### Cartes news dans la recherche (CardNews et PreviewNews)
 
@@ -1505,7 +1625,7 @@ La carte de liste est pilotée par `list.card.variant` (sinon `list.card.type` �
 `card.type`/`variant` est **orthogonal** à deux autres axes (commit 8cd4070), à configurer indépendamment :
 
 - **`list.card.detailsMode`** (`drawer` / `dialog`) → le *conteneur* de la fiche détail (`SwitchDetailsMode` → `DetailsModeDrawer` / `DetailsModeDialog`) ;
-- **`list.preview.type`** (`default` / `poi-amenities` / `coform-answer` / `event` / `facets` / `news` / `testimonial` / `resource`) → le *contenu* rendu DANS ce conteneur (`Preview` → `PreviewDefault` / `PreviewPoiAmenities` / `PreviewCoformAnswer` / `PreviewEvent` / `PreviewFacets` / `PreviewNews` / `PreviewTestimonial` / `PreviewResource`). `list.preview.fields` surcharge le mappage des IDs de champ CoForm consommés par `parseCoformAnswer` (cf. `lib/coformAnswer.ts`) ; `list.preview.facets` déclare les champs cliquables du preview générique `facets` (cf. [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters)) ; `list.preview.width` / `list.preview.showDetailLink` (cf. [§Mode détails](#mode-détails--conteneur-detailsmode-vs-contenu-previewtype)).
+- **`list.preview.type`** (`default` / `poi-amenities` / `coform-answer` / `event` / `facets` / `news` / `testimonial` / `resource` / `structure`) → le *contenu* rendu DANS ce conteneur (`Preview` → `PreviewDefault` / `PreviewPoiAmenities` / `PreviewCoformAnswer` / `PreviewEvent` / `PreviewFacets` / `PreviewNews` / `PreviewTestimonial` / `PreviewResource` / `PreviewStructure`). `list.preview.fields` surcharge le mappage des IDs de champ CoForm consommés par `parseCoformAnswer` (cf. `lib/coformAnswer.ts`) ; `list.preview.facets` déclare les champs cliquables du preview générique `facets` (cf. [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters)) ; `list.preview.width` / `list.preview.showDetailLink` (cf. [§Mode détails](#mode-détails--conteneur-detailsmode-vs-contenu-previewtype)).
 
 **Règle d'extension** : pour ajouter une nouvelle variante, créer `components/card/CardMonDesign.tsx` (nom DESIGN, pas de site), l'enregistrer dans `SearchCard.tsx` (switch), et ajouter l'entrée dans **`CardConfSchema`** (`variant` / `type`) — le bloc `card` est un schéma nommé extrait de `ListConfSchema`, partagé avec `ListItemRuleSchema.card`.
 
@@ -1774,7 +1894,7 @@ La zone de résultats de `SearchProStatic` (mode liste en sidebar désactivée) 
 
 → backend : `{$and: [ {$or: [{tags: {$in: [/TiersLieux/i]}}]}, {tags: {$nin: ["RéseauTiersLieux"]}}, {address.addressCountry: {$in: […]}} ]}`. Le `$nin` (exact) retire **tous** les réseaux, y compris ceux **double-taggés** `TiersLieux` + `RéseauTiersLieux`. Appliqué aux 3 recherches `navigator-tl` de lieux (hero, aperçu home, page `/lieux`) ; **pas** à la section `data-observatory` (stats).
 
-> ⚠️ JSON n'autorise pas de commentaire inline, donc ce `$or`-objet mono-clause restera cryptique dans le config — c'est un idiome du DSL backend assumé. Une alternative plus lisible (`"$and": [ {tags:[…]}, {tags:{$nin:[…]}} ]`) nécessiterait d'ajouter le support de `$and` dans `SearchNew::searchFilters` (écarté : code partagé par tous les sites).
+> ⚠️ JSON n'autorise pas de commentaire inline, donc ce `$or`-objet mono-clause restera cryptique dans le config — c'est un idiome du DSL backend assumé. Une alternative `"$and": [ … ]` **au premier niveau** reste hors de portée (`SearchNew::searchFilters` n'a pas de handler `$and` ; écarté : code partagé par tous les sites). En revanche un `$and` **niché sous `$or`** passe, sans rien ajouter au backend : `searchFilters` (SearchNew.php:549-574) lit `$or` comme une MAP `champ => opérateur` et recopie la valeur **brute**. La forme composée `"$or": { "$and": [ {"$or": […]}, {"$or": […]} ] }` (ET de OU) traverse donc intacte — vérifiée conforme sur les deux backends (legacy 5080 et Node 5099) et c'est celle qu'émettent les facettes sur answers (`searchByFieldsToQuery.ts:110`) puis que compose `mergeMongoFilters` avec le `$or` de la config (cf. [§mongoFilters](#mongofilters--fusion-des-filtres-or)).
 
 ---
 

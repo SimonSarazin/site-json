@@ -106,10 +106,14 @@ const DYN_FIELD = makeField({
 });
 
 describe("DynamicFieldsField", () => {
-  it("seed minRows lignes vides au montage (parité legacy)", () => {
+  it("n'écrit PAS dans le formulaire au montage", () => {
+    // Les `minRows` lignes viennent de `generateDefaultValues` (cf.
+    // formParser.test.ts). Les semer ici par `onChange` rendait le formulaire
+    // `isDirty` avant toute saisie — alerte « modifications non enregistrées »
+    // et autosave sur un formulaire jamais touché.
     const onChange = vi.fn();
     render(<DynamicFieldsField field={DYN_FIELD} errors={{}} value={[]} onChange={onChange} />);
-    expect(onChange).toHaveBeenCalledWith([{ partnerName: "", postalCode: "" }]);
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it("rend les sous-champs configurés avec leurs labels et valeurs", () => {
@@ -146,5 +150,95 @@ describe("DynamicFieldsField", () => {
     const empty = makeField({ componentType: "dynamicFields" });
     const { container } = render(<DynamicFieldsField field={empty} errors={{}} value={[]} />);
     expect(container.firstChild).toBeNull();
+  });
+});
+
+/**
+ * Libellé de la question et nommage a11y — filet de RENDU.
+ *
+ * Ces deux champs sont arrivés par le merge `main` → `jdev` (f2f92ae2) avec le
+ * bloc `<Label>` inline pré-refactor, sur une branche où `FieldLabel` n'existait
+ * pas. Le garde-fou statique `tests/preflight/coform-field-label.test.ts`
+ * surveille le TEXTE SOURCE ; il ne voit pas un libellé rendu via une variable
+ * ou un sous-composant. Ici on vérifie le DOM réellement produit.
+ */
+
+/**
+ * Le groupe et son libellé, ou un échec net.
+ *
+ * ⚠️ Ne PAS remplacer par de l'optional chaining : `expect(undefined).not.toBeNull()`
+ * PASSE. Avec `libelle?.querySelector(...)`, l'assertion « il y a un sr-only »
+ * restait verte alors que le libellé n'existait plus du tout — un test incapable
+ * d'échouer. La recherche est aussi scopée au `container` (les deux champs
+ * partagent `field.name`, donc le même id).
+ */
+function groupeEtLibelle(container: HTMLElement) {
+  const groupe = container.querySelector('[role="group"]');
+  if (!groupe) throw new Error("aucun élément role=\"group\" rendu");
+  const labelId = groupe.getAttribute("aria-labelledby");
+  if (!labelId) throw new Error("le groupe ne porte pas d'aria-labelledby");
+  const libelle = container.querySelector(`[id="${labelId}"]`);
+  if (!libelle) throw new Error(`aria-labelledby pointe « ${labelId} », introuvable dans le rendu`);
+  return { groupe, libelle };
+}
+
+describe.each([
+  ["TimeSlotsField", TimeSlotsField, makeField({ label: "Horaires" })],
+  ["DynamicFieldsField", DynamicFieldsField, { ...DYN_FIELD, label: "Horaires" }],
+] as const)("%s — libellé de la question", (_nom, Composant, champ) => {
+  it("nomme le groupe par le libellé, rendu dans la hiérarchie « question »", () => {
+    const { container } = render(<Composant field={champ} errors={{}} value={[]} />);
+    const { libelle } = groupeEtLibelle(container);
+    expect(libelle.textContent).toContain("Horaires");
+    // L'écart d'un cran de taille ET de graisse est ce qui distingue « ce qui
+    // est demandé » de « ce avec quoi on répond ». C'est ce que la copie
+    // inline (text-sm font-medium) cassait.
+    expect(libelle.className).toContain("text-base");
+    expect(libelle.className).toContain("font-semibold");
+  });
+
+  it("porte le caractère obligatoire en texte lecteur d'écran, pas en astérisque seule", () => {
+    const { container } = render(
+      <Composant field={{ ...champ, isRequired: true }} errors={{}} value={[]} />,
+    );
+    const { libelle } = groupeEtLibelle(container);
+    // Sans ce `sr-only`, l'astérisque s'annonce « étoile ».
+    expect(libelle.querySelector(".sr-only")).not.toBeNull();
+  });
+
+  it("rattache le message d'erreur au groupe, et le libellé passe en rouge", () => {
+    const { container } = render(
+      <Composant
+        field={champ}
+        errors={{ field1: { type: "custom", message: "Créneau incomplet" } }}
+        value={[]}
+      />,
+    );
+    const { groupe, libelle } = groupeEtLibelle(container);
+    const decritPar = groupe.getAttribute("aria-describedby");
+    expect(decritPar).not.toBeNull();
+    // La cible doit EXISTER : un aria-describedby pendant ne dit rien à personne.
+    expect(container.querySelector(`[id="${decritPar}"]`)?.textContent).toContain(
+      "Créneau incomplet",
+    );
+    expect(libelle.className).toContain("text-destructive");
+  });
+
+  it("ne pointe aucune description quand l'erreur n'a pas de message", () => {
+    // Erreur zod imbriquée (donnée legacy au mauvais type dans un sous-champ) :
+    // `hasError` est vrai mais `FieldError` ne rend rien. Dériver l'id de
+    // `hasError` produirait un `aria-describedby` vers un élément inexistant.
+    const { container } = render(
+      <Composant field={champ} errors={{ field1: { type: "custom" } }} value={[]} />,
+    );
+    const { groupe } = groupeEtLibelle(container);
+    expect(groupe.getAttribute("aria-describedby")).toBeNull();
+  });
+
+  it("n'expose pas de groupe anonyme quand la question n'a pas de libellé", () => {
+    const { container } = render(
+      <Composant field={{ ...champ, label: "" }} errors={{}} value={[]} />,
+    );
+    expect(container.querySelector('[role="group"]')).toBeNull();
   });
 });

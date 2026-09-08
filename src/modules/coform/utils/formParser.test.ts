@@ -441,6 +441,58 @@ describe("generateDefaultValues", () => {
     expect(result.f2).toBeUndefined();
   });
 
+  it("dynamicFields → `minRows` lignes de sous-champs vides (pas [])", () => {
+    // Source de vérité du semis : c'est ICI, et non un `onChange` au montage du
+    // composant, sans quoi la baseline RHF (`[]`) diffère de la valeur affichée
+    // et le formulaire naît `isDirty`.
+    const result = generateDefaultValues([
+      makeSubFormFields([
+        makeField({
+          name: "partenaires",
+          componentType: "dynamicFields",
+          isRequired: false,
+          dynamicFieldsConfig: {
+            enableMultipleRows: true,
+            minRows: 1,
+            maxRows: 2,
+            fieldsConfig: [
+              { key: "partnerName", label: "Nom du partenaire", type: "text", required: true },
+              { key: "postalCode", label: "Code postal", type: "text" },
+            ],
+          },
+        }),
+      ]),
+    ]);
+    expect(result.partenaires).toEqual([{ partnerName: "", postalCode: "" }]);
+  });
+
+  it("dynamicFields requis avec minRows: 0 → 1 ligne quand même", () => {
+    // `Math.max(isRequired ? 1 : 0, minRows)` — formule recopiée du composant.
+    const result = generateDefaultValues([
+      makeSubFormFields([
+        makeField({
+          name: "obligatoire",
+          componentType: "dynamicFields",
+          isRequired: true,
+          dynamicFieldsConfig: {
+            enableMultipleRows: true,
+            minRows: 0,
+            maxRows: 5,
+            fieldsConfig: [{ key: "nom", label: "Nom", type: "text" }],
+          },
+        }),
+      ]),
+    ]);
+    expect(result.obligatoire).toEqual([{ nom: "" }]);
+  });
+
+  it("dynamicFields sans config → []", () => {
+    const result = generateDefaultValues([
+      makeSubFormFields([makeField({ name: "vide", componentType: "dynamicFields" })]),
+    ]);
+    expect(result.vide).toEqual([]);
+  });
+
   it("checkbox → []", () => {
     const result = generateDefaultValues([
       makeSubFormFields([makeField({ name: "cb", componentType: "checkbox" })]),
@@ -524,6 +576,52 @@ describe("generateZodSchema", () => {
       makeSubFormFields([makeField({ name: "f1", componentType: "text", isRequired: false })]),
     ]);
     expect(schema.parse({ f1: "hello" })).toEqual({ f1: "hello" });
+  });
+
+  it("dynamicFields requis : des lignes vides ne suffisent pas", () => {
+    // Le schéma ne filtre plus les lignes vides (le strip vit au save, seul
+    // point traversé par les 3 chemins d'écriture) : le « requis » doit donc
+    // compter les lignes RENSEIGNÉES, sans quoi le semis automatique de
+    // `minRows` validerait à lui seul un champ obligatoire jamais rempli.
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({
+          name: "partenaires",
+          componentType: "dynamicFields",
+          isRequired: true,
+          dynamicFieldsConfig: {
+            enableMultipleRows: true,
+            minRows: 1,
+            maxRows: 3,
+            fieldsConfig: [{ key: "nom", label: "Nom", type: "text" }],
+          },
+        }),
+      ]),
+    ]);
+    expect(() => schema.parse({ partenaires: [{ nom: "" }] })).toThrow();
+    expect(() => schema.parse({ partenaires: [{ nom: "ADAPTE" }] })).not.toThrow();
+  });
+
+  it("dynamicFields NON requis reste soumissible avec des lignes vides", () => {
+    // Régression connue : un dynamicFields non requis à sous-champs `required`
+    // rendait le formulaire INSOUMISSIBLE, parce que les lignes semées
+    // automatiquement échouaient aux règles par sous-champ.
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({
+          name: "partenaires",
+          componentType: "dynamicFields",
+          isRequired: false,
+          dynamicFieldsConfig: {
+            enableMultipleRows: true,
+            minRows: 1,
+            maxRows: 3,
+            fieldsConfig: [{ key: "nom", label: "Nom", type: "text", required: true }],
+          },
+        }),
+      ]),
+    ]);
+    expect(() => schema.parse({ partenaires: [{ nom: "" }] })).not.toThrow();
   });
 
   it("text required ne peut pas être vide", () => {
@@ -865,6 +963,161 @@ describe("denormalizeAnswerData", () => {
       ),
     ];
     expect(denormalizeAnswerData(formData, fields)).toEqual({});
+  });
+});
+
+describe("denormalizeAnswerData — lignes vides dynamicFields", () => {
+  const CHAMP = makeField({
+    name: "partenaires",
+    componentType: "dynamicFields",
+    dynamicFieldsConfig: {
+      enableMultipleRows: true,
+      minRows: 1,
+      maxRows: 3,
+      fieldsConfig: [
+        { key: "partnerName", label: "Nom", type: "text" },
+        { key: "postalCode", label: "CP", type: "text" },
+      ],
+    },
+  });
+  const FIELDS: SubFormFields[] = [makeSubFormFields([CHAMP], "step1")];
+
+  it("ne persiste pas les lignes entièrement vides", () => {
+    // Ces lignes viennent des valeurs par défaut (`minRows`) et ne sont pas
+    // supprimables à la main : sans ce strip, chaque save écrit
+    // `{"partnerName":"","postalCode":""}` en base.
+    const data = {
+      step1: {
+        partenaires: [
+          { partnerName: "ADAPTETONSPORT", postalCode: "97430" },
+          { partnerName: "", postalCode: "" },
+        ],
+      },
+    };
+    const out = denormalizeAnswerData(data, FIELDS);
+    expect((out.step1 as Record<string, unknown>).partenaires).toEqual([
+      { partnerName: "ADAPTETONSPORT", postalCode: "97430" },
+    ]);
+  });
+
+  it("garde les lignes partiellement remplies", () => {
+    // Une saisie en cours n'est pas un déchet : seule la ligne ENTIÈREMENT
+    // vide est du remplissage automatique.
+    const data = { step1: { partenaires: [{ partnerName: "ADAPTE", postalCode: "" }] } };
+    const out = denormalizeAnswerData(data, FIELDS);
+    expect((out.step1 as Record<string, unknown>).partenaires).toEqual([
+      { partnerName: "ADAPTE", postalCode: "" },
+    ]);
+  });
+
+  it("rend une réponse legacy conforme au schéma Zod (pas seulement complète)", () => {
+    // Norme d'enrichissement : produire un shape ENTIÈREMENT conforme, pas
+    // seulement complet. Sans coercion, `postalCode: 97430` fait échouer
+    // `form.trigger()` à l'ouverture de l'étape, avec une issue Zod imbriquée
+    // (`path: ["partenaires", 0, "postalCode"]`) qu'`ErrorSummary` n'affiche
+    // pas : l'utilisateur reste bloqué sans savoir quoi corriger.
+    const champ = makeField({
+      name: "partenaires",
+      componentType: "dynamicFields",
+      dynamicFieldsConfig: {
+        enableMultipleRows: true,
+        minRows: 1,
+        maxRows: 3,
+        fieldsConfig: [
+          { key: "partnerName", label: "Nom", type: "text" },
+          { key: "postalCode", label: "CP", type: "text" },
+        ],
+      },
+    });
+    const fields: SubFormFields[] = [makeSubFormFields([champ], "step1")];
+    const enrichi = normalizeAnswerData(
+      { step1: { partenaires: [{ partnerName: "ADAPTE", postalCode: 97430 }, null] } },
+      fields,
+    )!.step1 as Record<string, unknown>;
+
+    expect(enrichi.partenaires).toEqual([
+      { partnerName: "ADAPTE", postalCode: "97430" },
+    ]);
+    expect(generateZodSchema(fields).safeParse(enrichi).success).toBe(true);
+  });
+
+  it("ne plante pas sur une ligne legacy à cellules non-string", () => {
+    // Le prédicat tourne ici sur la donnée BRUTE du serveur, sans parse Zod en
+    // amont : une réponse legacy portant un nombre (ou une ligne `null`) ferait
+    // échouer `denormalizeAnswerData` en entier — enregistrement impossible sur
+    // une réponse qui s'enregistrait avant. Le court-circuit de `.every()`
+    // masque le cas dès qu'une première cellule est remplie : c'est donc la
+    // ligne SEMÉE (cellules vides d'abord) qui déclenchait le crash.
+    const data = {
+      step1: { partenaires: [{ partnerName: "", postalCode: 97430 }, null, { partnerName: "", postalCode: "" }] },
+    };
+    expect(() => denormalizeAnswerData(data, FIELDS)).not.toThrow();
+    expect((denormalizeAnswerData(data, FIELDS).step1 as Record<string, unknown>).partenaires).toEqual([
+      { partnerName: "", postalCode: 97430 },
+    ]);
+  });
+
+  it("traite les espaces seuls comme du vide", () => {
+    const data = { step1: { partenaires: [{ partnerName: "   ", postalCode: "" }] } };
+    const out = denormalizeAnswerData(data, FIELDS);
+    expect((out.step1 as Record<string, unknown>).partenaires).toEqual([]);
+  });
+});
+
+describe("normalizeAnswerData — recomplètement dynamicFields", () => {
+  function champ(minRows: number, isRequired = false) {
+    return makeField({
+      name: "partenaires",
+      componentType: "dynamicFields",
+      isRequired,
+      dynamicFieldsConfig: {
+        enableMultipleRows: true,
+        minRows,
+        maxRows: 5,
+        fieldsConfig: [
+          { key: "partnerName", label: "Nom", type: "text" },
+          { key: "postalCode", label: "CP", type: "text" },
+        ],
+      },
+    });
+  }
+
+  it("rouvre une réponse vide avec ses `minRows` lignes", () => {
+    // Une réponse enregistrée sans ligne remplie est persistée `[]` : sans
+    // recomplètement, sa réouverture n'afficherait aucune ligne à remplir.
+    const fields: SubFormFields[] = [makeSubFormFields([champ(1)], "step1")];
+    const out = normalizeAnswerData({ step1: { partenaires: [] } }, fields)!;
+    expect((out.step1 as Record<string, unknown>).partenaires).toEqual([
+      { partnerName: "", postalCode: "" },
+    ]);
+  });
+
+  it("complète jusqu'à `minRows` sans toucher aux lignes remplies", () => {
+    const fields: SubFormFields[] = [makeSubFormFields([champ(2)], "step1")];
+    const out = normalizeAnswerData(
+      { step1: { partenaires: [{ partnerName: "ADAPTE", postalCode: "97430" }] } },
+      fields,
+    )!;
+    expect((out.step1 as Record<string, unknown>).partenaires).toEqual([
+      { partnerName: "ADAPTE", postalCode: "97430" },
+      { partnerName: "", postalCode: "" },
+    ]);
+  });
+
+  it("ne retire jamais de lignes au-delà de `minRows`", () => {
+    const fields: SubFormFields[] = [makeSubFormFields([champ(1)], "step1")];
+    const rows = [
+      { partnerName: "A", postalCode: "1" },
+      { partnerName: "B", postalCode: "2" },
+    ];
+    const out = normalizeAnswerData({ step1: { partenaires: rows } }, fields)!;
+    expect((out.step1 as Record<string, unknown>).partenaires).toEqual(rows);
+  });
+
+  it("champ requis à minRows 0 → une ligne quand même", () => {
+    const fields: SubFormFields[] = [makeSubFormFields([champ(0, true)], "step1")];
+    const out = normalizeAnswerData({ step1: { partenaires: [] } }, fields)!;
+    expect((out.step1 as Record<string, unknown>).partenaires).toHaveLength(1);
   });
 });
 

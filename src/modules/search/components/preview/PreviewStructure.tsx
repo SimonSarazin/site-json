@@ -193,7 +193,9 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
   const affiliate = sd.affiliate as string | undefined;
   const affiliateTo = sd.affiliateTo as string | undefined;
   const email = sd.email as string | undefined;
-  const link = sd.link as string | undefined;
+  // Le site web du parc réel vit dans `url` (49/138 orgs SSBE — la clé qu'écrit aussi le form
+  // structure) ; `link` n'existe que sur 3 fiches historiques → repli.
+  const link = (sd.url as string | undefined) ?? (sd.link as string | undefined);
   const shortDescription = sd.shortDescription as string | undefined;
   const description = sd.description as string | undefined;
   const profilImageUrl = sd.profilImageUrl as string | undefined;
@@ -209,7 +211,8 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
   const youtube = sd.youtube as string | undefined;
 
   const telephone = (sd.telephone ?? {}) as { mobile?: string[]; fixe?: string[] };
-  const mainPhone = telephone.mobile?.[0] ?? telephone.fixe?.[0];
+  // repli sur le `mobile` PLAT historique (4/138 orgs) quand l'objet telephone ne porte rien
+  const mainPhone = telephone.mobile?.[0] ?? telephone.fixe?.[0] ?? (typeof sd.mobile === "string" && sd.mobile ? sd.mobile : undefined);
 
   const repTitle = sd.representativeTitle as string | undefined;
   const repCivility = (sd.representativeCivility as string | undefined) ?? "";

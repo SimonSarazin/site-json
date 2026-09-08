@@ -84,14 +84,32 @@ export function isSlotOrdered(slot: TimeSlotValue): boolean {
 }
 
 /**
- * Normalise un slot venu du serveur pour l'édition : résout l'éventuel format
- * 12h legacy en 24h (les clés AmPm disparaissent — on sauve en 24h).
+ * Normalise la CASSE d'un jour stocké : le template legacy ACTUEL écrit des jours en minuscules
+ * ("monday" — timeSlots.php pose la value lowercase), le parc historique est Capitalisé
+ * ("Monday"). Sans ce recalage, un slot legacy récent s'affichait en Select VIDE à l'édition
+ * (aucune option ne matche) et sa journée partait perdue au save.
+ */
+export function normalizeDay(day: string | undefined): string {
+  if (!day) return "";
+  const canonical = TIME_SLOT_DAYS.find((d) => d.toLowerCase() === day.toLowerCase());
+  return canonical ?? day;
+}
+
+/**
+ * Normalise un slot venu du serveur pour l'édition : résout l'éventuel format 12h legacy en 24h
+ * (SEULES les clés AmPm disparaissent — on sauve en 24h) et recale la casse du jour.
+ * ⚠ Les clés INCONNUES du slot sont PRÉSERVÉES (spread) : les slots réels portent du payload
+ * hors form (`duree` sur 123/124 slots equipementsSportifs974, `prix` — import legacy) que le
+ * legacy conserve à l'édition. L'ancienne version reconstruisait le slot aux 5 clés canoniques :
+ * une seule édition détruisait `duree` de TOUS les slots (y compris via l'autosave).
  */
 export function normalizeSlot(slot: TimeSlotValue): TimeSlotValue {
   const start = fromTimeString(toTimeString(slot.startHour, slot.startMinute, slot.startAmPm));
   const end = fromTimeString(toTimeString(slot.endHour, slot.endMinute, slot.endAmPm));
+  const { startAmPm: _s, endAmPm: _e, ...rest } = slot;
   return {
-    day: slot.day ?? "",
+    ...rest,
+    day: normalizeDay(slot.day),
     startHour: start.hour,
     startMinute: start.minute,
     endHour: end.hour,

@@ -32,7 +32,7 @@
   "header": {
     "type": "transparent-scroll",
     "path": "/",
-    "logo": "images/maisonSportSanteLaTampon/logo.svg",
+    "logo": "/images/maisonSportSanteLaTampon/logo.svg",
     "logoClass": "h-[60px] w-auto shrink-0 object-contain group-hover:scale-110 transition-transform",
     "logoAlt": {
       "fr": "Ekilib.re – Maison Sport Santé du Tampon",
@@ -61,6 +61,21 @@
         },
         "path": "/s-informer",
         "icon": "compass"
+      },
+      {
+        "label": {
+          "fr": "Actualités",
+          "en": "News"
+        },
+        "path": "/blog"
+      },
+      {
+        "label": {
+          "fr": "Ressources",
+          "en": "Resources"
+        },
+        "path": "/ressources",
+        "icon": "book-open"
       },
       {
         "label": {
@@ -218,7 +233,7 @@
                   "fr": "Des activités douces pour le cœur.",
                   "en": "Gentle activities for the heart."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?ald=Insuffisance%2520cardiaque%2520grave%252C%2520troubles%2520du%2520rythme%2520graves%252C%2520cardiopathies%2520valvulaires%2520graves%252C%2520cardiopathies%2520cong%25C3%25A9nitales%2520graves,Maladie%2520coronaire%2520%253A%2520infarctus%2520du%2520myocarde,Art%25C3%25A9riopathies%2520chroniques%2520,Accident%2520vasculaire%2520c%25C3%25A9r%25C3%25A9bral%2520invalidant"
               },
               {
                 "icon": "droplets",
@@ -230,7 +245,7 @@
                   "fr": "Mieux contrôler sa glycémie.",
                   "en": "Better blood sugar control."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?ald=Diab%25C3%25A8te%2520de%2520type%25201%2520et%2520diab%25C3%25A8te%2520de%2520type%25202%2520de%2520l%2527adulte%2520ou%2520de%2520l%2527enfant"
               },
               {
                 "icon": "weight",
@@ -242,7 +257,7 @@
                   "fr": "Un programme progressif et bienveillant.",
                   "en": "A progressive and supportive program."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?maladies=Ob%25C3%25A9sit%25C3%25A9"
               },
               {
                 "icon": "bone",
@@ -254,7 +269,7 @@
                   "fr": "Bouger sans se faire mal.",
                   "en": "Move without hurting yourself."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?maladies=Douleurs%2520chroniques"
               },
               {
                 "icon": "ribbon",
@@ -266,7 +281,7 @@
                   "fr": "Pendant et après les traitements.",
                   "en": "During and after treatment."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?ald=Cancer%2520colorectal,Cancer%2520de%2520la%2520prostate,Cancer%2520du%2520sein,Cancer%2520du%2520col%2520de%2520l%25E2%2580%2599ut%25C3%25A9rus"
               },
               {
                 "icon": "wind",
@@ -278,7 +293,7 @@
                   "fr": "Renforcer son souffle et son endurance.",
                   "en": "Strengthen your breath and endurance."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?ald=Insuffisance%2520respiratoire%2520chronique%2520grave%2520%253A%2520BPCO%252C%2520asthme%2520grave"
               },
               {
                 "icon": "brain",
@@ -290,7 +305,7 @@
                   "fr": "Yoga, relaxation, bien-être.",
                   "en": "Yoga, relaxation, well-being."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?ald=Affections%2520psychiatriques%2520de%2520longue%2520dur%25C3%25A9e%2520dont%2520d%25C3%25A9pression%2520r%25C3%25A9currente%252C%2520troubles%2520bipolaires&maladies=D%25C3%25A9pression,Trouble%2520du%2520sommeil"
               },
               {
                 "icon": "person-standing",
@@ -302,7 +317,7 @@
                   "fr": "Garder son autonomie et son équilibre.",
                   "en": "Maintain autonomy and balance."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?beneficiaries=seniors,personnes-agees"
               }
             ]
           }
@@ -357,83 +372,21 @@
           }
         },
         {
-          "type": "searchProStatic",
-          "id": "actualites-featured",
+          "type": "articleFeed",
           "props": {
-            "customHeader": {
-              "title": {
-                "fr": "Actualités",
-                "en": "News"
-              }
+            "costumSlug": "associationEkilibre",
+            "filters": {
+              "publicationStatus": "Publié"
             },
-            "useFilter": false,
-            "showMap": false,
-            "enableMap": false,
-            "disableInfiniteScroll": true,
-            "baseParams": {
-              "defaultTypes": ["poi"],
-              "notSourceKey": true,
-              "indexStepList": 1,
-              "defaultFilters": {
-                "type": "article",
-                "source.key": "associationEkilibre",
-                "publicationStatus": "Publié",
-                "featured": true
-              },
-              "defaultSortBy": {
-                "publicationDate": -1
-              }
+            "sortBy": {
+              "publicationDate": -1
             },
-            "list": {
-              "columns": { "sm": 1, "md": 1, "lg": 1, "xl": 1 },
-              "card": { "type": "resource", "detailsMode": "dialog" },
-              "preview": { "type": "resource" },
-              "resource": {
-                "titleField": "name",
-                "descriptionField": "description",
-                "dateField": "publicationDate",
-                "imageField": "profilMediumImageUrl",
-                "urlsField": "link",
-                "badge": { "field": "category" }
-              }
-            }
-          }
-        },
-        {
-          "type": "searchProStatic",
-          "id": "actualites-grid",
-          "props": {
-            "useFilter": false,
-            "showMap": false,
-            "enableMap": false,
-            "disableInfiniteScroll": true,
-            "baseParams": {
-              "defaultTypes": ["poi"],
-              "notSourceKey": true,
-              "indexStepList": 6,
-              "defaultFilters": {
-                "type": "article",
-                "source.key": "associationEkilibre",
-                "publicationStatus": "Publié",
-                "featured": { "$ne": true }
-              },
-              "defaultSortBy": {
-                "publicationDate": -1
-              }
+            "title": {
+              "fr": "Actualités",
+              "en": "News"
             },
-            "list": {
-              "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 },
-              "card": { "type": "resource", "detailsMode": "dialog" },
-              "preview": { "type": "resource" },
-              "resource": {
-                "titleField": "name",
-                "descriptionField": "description",
-                "dateField": "publicationDate",
-                "imageField": "profilMediumImageUrl",
-                "urlsField": "link",
-                "badge": { "field": "category" }
-              }
-            }
+            "featured": "flag",
+            "pageSize": 7
           }
         },
         {
@@ -516,7 +469,6 @@
               "fr": "Explorez les créneaux sport santé labellisés de la commune du Tampon et trouvez l'activité adaptée à votre situation.",
               "en": "Explore the labeled sport health slots in Le Tampon and find the activity that suits your situation."
             },
-            "filtersClassName": "mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-2xl border border-border/60 bg-card/95 p-3 shadow-2xl backdrop-blur-md",
             "buttons": [
               {
                 "label": {
@@ -534,268 +486,335 @@
                 "href": "/structure",
                 "variant": "outline"
               }
-            ],
-            "showSearch": true,
-            "searchPlaceholder": {
-              "fr": "Rechercher une activité, un lieu…",
-              "en": "Search for an activity, a place…"
-            },
-            "dropdownFilters": [
-              {
-                "id": "activityType",
-                "label": {
-                  "fr": "Type d'activité",
-                  "en": "Activity type"
-                },
-                "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegdo93f77wi3y186s",
-                "multiple": false,
-                "options": [
-                  {
-                    "id": "sports-collectif",
-                    "value": "Sports collectifs",
-                    "label": {
-                      "fr": "Sports collectifs",
-                      "en": "Team sports"
-                    }
-                  },
-                  {
-                    "id": "activites-aquatiques",
-                    "value": "Activités aquatiques",
-                    "label": {
-                      "fr": "Activités aquatiques",
-                      "en": "Aquatic activities"
-                    }
-                  },
-                  {
-                    "id": "activites-athletiques",
-                    "value": "Activités athlétiques",
-                    "label": {
-                      "fr": "Activités athlétiques",
-                      "en": "Athletic activities"
-                    }
-                  },
-                  {
-                    "id": "activites-de-pleine-nature",
-                    "value": "Activités de pleine nature",
-                    "label": {
-                      "fr": "Activités de pleine nature",
-                      "en": "Outdoor activities"
-                    }
-                  },
-                  {
-                    "id": "activites-gymniques",
-                    "value": "Activités gymniques/expression/forme et force",
-                    "label": {
-                      "fr": "Activités",
-                      "en": "Gymnastic"
-                    }
-                  },
-                  {
-                    "id": "sports-de-raquettes",
-                    "value": "Sports de raquettes",
-                    "label": {
-                      "fr": "Sports de raquettes",
-                      "en": "Racket sports"
-                    }
-                  },
-                  {
-                    "id": "sports-urbains",
-                    "value": "Sports urbains",
-                    "label": {
-                      "fr": "Sports urbains",
-                      "en": "Urban sports"
-                    }
-                  },
-                  {
-                    "id": "arts-martiaux-combats",
-                    "value": "Arts martiaux et combats",
-                    "label": {
-                      "fr": "Arts martiaux et combats",
-                      "en": "Martial arts and combat"
-                    }
-                  },
-                  {
-                    "id": "autres-sports",
-                    "value": "Autres sports",
-                    "label": {
-                      "fr": "Autres sports",
-                      "en": "Other sports"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "beneficiaries",
-                "label": {
-                  "fr": "Bénéficiaires",
-                  "en": "Beneficiaries"
-                },
-                "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmyf2gky9capf1vcfl",
-                "multiple": true,
-                "options": [
-                  {
-                    "id": "enfants",
-                    "value": "Enfants (2-9 ans)",
-                    "label": {
-                      "fr": "Enfants (2-9 ans)",
-                      "en": "Children (2-9 years)"
-                    }
-                  },
-                  {
-                    "id": "adolescents",
-                    "value": "Pré-adolescents/Adolescents (10-17 ans)",
-                    "label": {
-                      "fr": "Pré-adolescents/Adolescents (10-17 ans)",
-                      "en": "Teens (10-17 years)"
-                    }
-                  },
-                  {
-                    "id": "adultes",
-                    "value": "Personnes en perte d'autonomie",
-                    "label": {
-                      "fr": "Personnes en perte d'autonomie",
-                      "en": "Adults with loss of autonomy"
-                    }
-                  },
-                  {
-                    "id": "femmes-enceintes",
-                    "value": "Femmes enceintes",
-                    "label": {
-                      "fr": "Femmes enceintes",
-                      "en": "Pregnant women"
-                    }
-                  },
-                  {
-                    "id": "personnes-situation-handicap",
-                    "value": "Personnes en situation de handicap",
-                    "label": {
-                      "fr": "Personnes en situation de handicap",
-                      "en": "People with disabilities"
-                    }
-                  },
-                  {
-                    "id": "personnes-plus-55-ans",
-                    "value": "Personnes de plus de 55 ans",
-                    "label": {
-                      "fr": "Personnes de plus de 55 ans",
-                      "en": "People over 55 years old"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "sportHealthType",
-                "label": {
-                  "fr": "Type de Sport Santé",
-                  "en": "Sport-health type"
-                },
-                "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1cs8on3yru1p80lq",
-                "multiple": false,
-                "options": [
-                  {
-                    "id": "ssso",
-                    "value": "Sport santé sur ordonnance - SSsO",
-                    "label": {
-                      "fr": "Sport santé sur ordonnance",
-                      "en": "Sport health on prescription"
-                    }
-                  },
-                  {
-                    "id": "sspt",
-                    "value": "Sport santé pour tous - SSpT",
-                    "label": {
-                      "fr": "Sport santé pour tous",
-                      "en": "Sport health for all"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "publicType",
-                "label": {
-                  "fr": "Type de publique",
-                  "en": "Audience type"
-                },
-                "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmya4gmezjilnyjj5f",
-                "multiple": true,
-                "options": [
-                  {
-                    "id": "mixte",
-                    "value": "mixte",
-                    "label": {
-                      "fr": "Mixte",
-                      "en": "Mixed"
-                    }
-                  },
-                  {
-                    "id": "femmes",
-                    "value": "femmes",
-                    "label": {
-                      "fr": "Femmes",
-                      "en": "Women"
-                    }
-                  }
-                ]
-              }
             ]
           }
         },
         {
-          "type": "searchProStatic",
-          "id": "creneaux-list",
+          "type": "gridLayout",
+          "id": "creneaux-grid",
           "props": {
-            "customHeader": {
-              "title": {
-                "fr": "Toutes les créneaux",
-                "en": "All slots"
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftSection": {
+              "type": "filters",
+              "id": "creneaux-filtres",
+              "props": {
+                "title": {
+                  "fr": "Affiner votre recherche",
+                  "en": "Refine your search"
+                },
+                "defaultOpenGroups": [
+                  "activityType",
+                  "beneficiaries"
+                ],
+                "filterGroups": [
+                  {
+                    "id": "activityType",
+                    "label": {
+                      "fr": "Type d'activité",
+                      "en": "Activity type"
+                    },
+                    "type": "filters",
+                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegdo93f77wi3y186s",
+                    "optionStyle": "check",
+                    "order": 1,
+                    "options": [
+                      {
+                        "id": "sports-collectif",
+                        "label": {
+                          "fr": "Sports collectifs",
+                          "en": "Team sports"
+                        },
+                        "name": "Sports collectifs"
+                      },
+                      {
+                        "id": "activites-aquatiques",
+                        "label": {
+                          "fr": "Activités aquatiques",
+                          "en": "Aquatic activities"
+                        },
+                        "name": "Activités aquatiques"
+                      },
+                      {
+                        "id": "activites-athletiques",
+                        "label": {
+                          "fr": "Activités athlétiques",
+                          "en": "Athletic activities"
+                        },
+                        "name": "Activités athlétiques"
+                      },
+                      {
+                        "id": "activites-de-pleine-nature",
+                        "label": {
+                          "fr": "Activités de pleine nature",
+                          "en": "Outdoor activities"
+                        },
+                        "name": "Activités de pleine nature"
+                      },
+                      {
+                        "id": "activites-gymniques",
+                        "label": {
+                          "fr": "Activités gymniques, expression, forme et force",
+                          "en": "Gymnastics, expression, fitness and strength"
+                        },
+                        "name": "Activités gymniques/expression/forme et force"
+                      },
+                      {
+                        "id": "sports-de-raquettes",
+                        "label": {
+                          "fr": "Sports de raquettes",
+                          "en": "Racket sports"
+                        },
+                        "name": "Sports de raquettes"
+                      },
+                      {
+                        "id": "sports-urbains",
+                        "label": {
+                          "fr": "Sports urbains",
+                          "en": "Urban sports"
+                        },
+                        "name": "Sports urbains"
+                      },
+                      {
+                        "id": "arts-martiaux-combats",
+                        "label": {
+                          "fr": "Arts martiaux et combats",
+                          "en": "Martial arts and combat"
+                        },
+                        "name": "Arts martiaux et combats"
+                      },
+                      {
+                        "id": "autres-sports",
+                        "label": {
+                          "fr": "Autres sports",
+                          "en": "Other sports"
+                        },
+                        "name": "Autres sports"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "sportHealthType",
+                    "label": {
+                      "fr": "Type de Sport Santé",
+                      "en": "Sport-health type"
+                    },
+                    "type": "filters",
+                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1cs8on3yru1p80lq",
+                    "optionStyle": "check",
+                    "order": 2,
+                    "options": [
+                      {
+                        "id": "ssso",
+                        "label": {
+                          "fr": "Sport santé sur ordonnance",
+                          "en": "Sport health on prescription"
+                        },
+                        "name": "Sport santé sur ordonnance - SSsO"
+                      },
+                      {
+                        "id": "sspt",
+                        "label": {
+                          "fr": "Sport santé pour tous",
+                          "en": "Sport health for all"
+                        },
+                        "name": "Sport santé pour tous - SSpT"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "publicType",
+                    "label": {
+                      "fr": "Type de publique",
+                      "en": "Audience type"
+                    },
+                    "type": "filters",
+                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmya4gmezjilnyjj5f",
+                    "optionStyle": "check",
+                    "order": 3,
+                    "options": [
+                      {
+                        "id": "mixte",
+                        "label": {
+                          "fr": "Mixte",
+                          "en": "Mixed"
+                        },
+                        "name": "mixte"
+                      },
+                      {
+                        "id": "femmes",
+                        "label": {
+                          "fr": "Femmes",
+                          "en": "Women"
+                        },
+                        "name": "femmes"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "beneficiaries",
+                    "label": {
+                      "fr": "Bénéficiaires",
+                      "en": "Beneficiaries"
+                    },
+                    "type": "filters",
+                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmyf2gky9capf1vcfl",
+                    "optionStyle": "check",
+                    "order": 4,
+                    "options": [
+                      {
+                        "id": "enfants",
+                        "label": {
+                          "fr": "Enfants (2-9 ans)",
+                          "en": "Children (2-9)"
+                        },
+                        "name": "Enfants (2-9 ans)"
+                      },
+                      {
+                        "id": "adolescents",
+                        "label": {
+                          "fr": "Pré-adolescents/Adolescents (10-17 ans)",
+                          "en": "Teens (10-17)"
+                        },
+                        "name": "Pré-adolescents/Adolescents (10-17 ans)"
+                      },
+                      {
+                        "id": "adultes",
+                        "label": {
+                          "fr": "Adultes (18-55 ans)",
+                          "en": "Adults (18-55)"
+                        },
+                        "name": "Adultes (18-55 ans)"
+                      },
+                      {
+                        "id": "seniors",
+                        "label": {
+                          "fr": "Séniors (plus de 55 ans)",
+                          "en": "Seniors (55+)"
+                        },
+                        "name": "Séniors (plus de 55 ans)"
+                      },
+                      {
+                        "id": "personnes-agees",
+                        "label": {
+                          "fr": "Personnes âgées  (plus de 65 ans)",
+                          "en": "Older people (65+)"
+                        },
+                        "name": "Personnes âgées  (plus de 65 ans)"
+                      },
+                      {
+                        "id": "handicap",
+                        "label": {
+                          "fr": "Personnes en situation de handicap",
+                          "en": "People with disabilities"
+                        },
+                        "name": "Personnes en situation de handicap"
+                      },
+                      {
+                        "id": "femmes-enceintes",
+                        "label": {
+                          "fr": "Femmes enceintes",
+                          "en": "Pregnant women"
+                        },
+                        "name": "Femmes enceintes"
+                      }
+                    ]
+                  }
+                ],
+                "filtersByAnswers": {
+                  "ald": {
+                    "label": {
+                      "fr": "Affection longue durée (ALD)",
+                      "en": "Long-term condition (ALD)"
+                    },
+                    "forms": "6a85af345d898a57cb49f029",
+                    "path": "associationEkilibre19082026_1327_0.multiCheckboxPlusassociationEkilibre19082026_1327_0mdmyjntfqs0ascyzqf",
+                    "finderPath": "answers.associationEkilibre19082026_1327_0.finderassociationEkilibre19082026_1327_0mdn1fzoewyjg66n85p",
+                    "optionStyle": "check",
+                    "order": 5,
+                    "filterTarget": "answers"
+                  },
+                  "maladies": {
+                    "label": {
+                      "fr": "Maladie chronique",
+                      "en": "Chronic condition"
+                    },
+                    "forms": "6a85af345d898a57cb49f029",
+                    "path": "associationEkilibre19082026_1327_0.multiCheckboxPlusassociationEkilibre19082026_1327_0mp587j82dmr9ulaffcq",
+                    "finderPath": "answers.associationEkilibre19082026_1327_0.finderassociationEkilibre19082026_1327_0mdn1fzoewyjg66n85p",
+                    "optionStyle": "check",
+                    "order": 6,
+                    "filterTarget": "answers"
+                  }
+                }
               }
             },
-            "useFilter": true,
-            "showMap": true,
-            "enableMap": true,
-            "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": false,
-            "disableInfiniteScroll": false,
-            "defaultViewMode": "list",
-            "addButton": {
-              "show": true,
-              "adminOnly": false,
-              "coform": "6a85af345d898a57cb49f029",
-              "label": {
-                "fr": "Ajouter un créneau",
-                "en": "Add a slot"
-              }
-            },
-            "baseParams": {
-              "defaultTypes": [
-                "answers"
-              ],
-              "notSourceKey": true,
-              "defaultFilters": {
-                "form": "6a85af345d898a57cb49f029",
-                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7": "Validé"
-              }
-            },
-            "list": {
-              "columns": {
-                "sm": 2,
-                "md": 3,
-                "lg": 3,
-                "xl": 3
-              },
-              "card": {
-                "type": "card-answer",
-                "detailsMode": "dialog"
-              },
-              "preview": {
-                "type": "coform-answer",
-                "editButton": true
-              }
-            },
-            "map": {
-              "marker": {
-                "style": "pin",
-                "color": "primary"
+            "rightSection": {
+              "type": "searchProStatic",
+              "id": "creneaux-list",
+              "props": {
+                "customHeader": {
+                  "title": {
+                    "fr": "Tous les créneaux",
+                    "en": "All slots"
+                  }
+                },
+                "showMap": true,
+                "enableMap": true,
+                "disableInfiniteScroll": false,
+                "defaultViewMode": "list",
+                "addButton": {
+                  "show": true,
+                  "adminOnly": false,
+                  "coform": "6a85af345d898a57cb49f029",
+                  "label": {
+                    "fr": "Ajouter un créneau",
+                    "en": "Add a slot"
+                  }
+                },
+                "baseParams": {
+                  "sourceKey": [
+                    "associationEkilibre"
+                  ],
+                  "defaultTypes": [
+                    "answers"
+                  ],
+                  "defaultFilters": {
+                    "form": "6a85af345d898a57cb49f029",
+                    "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7": "Validé"
+                  },
+                  "searchBy": [
+                    "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegc9sgox76p87n27",
+                    "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdeggo91owe8t9ovl4p",
+                    "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmxv88txy6f5z6svg"
+                  ]
+                },
+                "list": {
+                  "columns": {
+                    "sm": 2,
+                    "md": 3,
+                    "lg": 3,
+                    "xl": 3
+                  },
+                  "card": {
+                    "type": "card-answer",
+                    "detailsMode": "dialog",
+                    "structureAction": {
+                      "kind": "preview"
+                    }
+                  },
+                  "preview": {
+                    "type": "coform-answer",
+                    "editButton": true
+                  }
+                },
+                "map": {
+                  "marker": {
+                    "style": "pin",
+                    "color": "primary"
+                  }
+                }
               }
             }
           }
@@ -1828,63 +1847,16 @@
           }
         },
         {
-          "type": "searchProStatic",
-          "id": "actualites-articles-list",
+          "type": "articleFeed",
           "props": {
-            "useFilter": true,
-            "showMap": false,
-            "enableMap": false,
-            "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": true,
-            "disableInfiniteScroll": false,
-            "baseParams": {
-              "defaultTypes": [
-                "poi"
-              ],
-              "notSourceKey": true,
-              "defaultSortBy": {
-                "publicationDate": -1
-              },
-              "defaultFilters": {
-                "type": "article",
-                "source.key": "associationEkilibre",
-                "publicationStatus": "Publié"
-              }
+            "costumSlug": "associationEkilibre",
+            "filters": {
+              "publicationStatus": "Publié"
             },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 3,
-                "lg": 3,
-                "xl": 3
-              },
-              "previewParam": "preview-actus",
-              "card": {
-                "type": "resource",
-                "detailsMode": "drawer"
-              },
-              "preview": {
-                "type": "resource"
-              },
-              "resource": {
-                "design": "card",
-                "titleField": "name",
-                "descriptionField": "description",
-                "dateField": "publicationDate",
-                "imageField": "profilMediumImageUrl",
-                "urlsField": "link",
-                "badge": { "field": "category" },
-                "facets": [
-                  {
-                    "field": "tags",
-                    "label": {
-                      "fr": "Mots-clés",
-                      "en": "Tags"
-                    }
-                  }
-                ]
-              }
-            }
+            "sortBy": {
+              "publicationDate": -1
+            },
+            "pageSize": 12
           }
         }
       ]
@@ -1947,8 +1919,8 @@
                   {
                     "id": "97418",
                     "label": {
-                      "fr": "97418 – Saint-Joseph",
-                      "en": "97418 – Saint-Joseph"
+                      "fr": "97418 – La Plaine des Cafres (Le Tampon)",
+                      "en": "97418 – La Plaine des Cafres (Le Tampon)"
                     },
                     "value": "97418"
                   }
@@ -2067,17 +2039,14 @@
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
             "baseParams": {
+              "sourceKey": [
+                "associationEkilibre"
+              ],
               "defaultTypes": [
                 "organizations"
               ],
-              "notSourceKey": true,
               "defaultFilters": {
-                "source.key": {
-                  "$in": [
-                    "sportSanteBienetre",
-                    "associationEkilibre"
-                  ]
-                },
+                "statusActor": "Validé",
                 "address.postalCode": {
                   "$in": [
                     "97430",
@@ -2086,31 +2055,67 @@
                 }
               },
               "defaultFields": [
-                "email",
-                "link",
-                "socialNetwork",
-                "youtube",
-                "telephone",
-                "statusActor",
-                "legalStatus",
-                "affiliate",
-                "affiliateTo",
+                "name",
+                "type",
+                "collection",
+                "slug",
+                "source",
+                "reference",
+                "links",
+                "creator",
+                "created",
+                "updated",
+                "shortDescription",
+                "description",
+                "tags",
+                "address",
+                "geo",
+                "geoPosition",
+                "counts",
+                "profilImageUrl",
+                "profilThumbImageUrl",
+                "profilMediumImageUrl",
                 "siren",
                 "sigle",
+                "affiliate",
+                "affiliateTo",
                 "thematic",
-                "mobile",
+                "telephone",
+                "email",
+                "url",
+                "socialNetwork",
+                "legalStatus",
+                "statusFile",
+                "responsableCivilePro",
+                "statusPrimaire",
+                "statusSecondaire",
+                "statusCommunale",
+                "autreDescription",
                 "representativeTitle",
+                "otherRepresentativeTitle",
                 "representativeCivility",
                 "representativeName",
                 "representativeFirstName",
                 "representativeEmail",
                 "representativeTelephone",
+                "responsableSameAsRepresent",
                 "personInChargeTitle",
+                "otherPersonInChargeTitle",
                 "personInChargeCivility",
                 "personInChargeName",
                 "personInChargeFirstName",
                 "personInChargeEmail",
-                "personInChargeTelephone"
+                "personInChargeTelephone",
+                "statusActor",
+                "link",
+                "mobile",
+                "youtube"
+              ],
+              "searchBy": [
+                "name",
+                "shortDescription",
+                "description",
+                "tags"
               ]
             },
             "list": {
@@ -2277,8 +2282,6 @@
               "fr": "Envoyer mon message",
               "en": "Send my message"
             },
-            "action": "/api/contact",
-            "method": "POST",
             "successMessage": {
               "fr": "Votre message a bien été envoyé. Nous vous répondrons rapidement !",
               "en": "Your message has been sent. We will get back to you shortly!"
@@ -2396,6 +2399,296 @@
           "id": "accessibilite-content",
           "props": {
             "html": "<section class=\"py-16 px-4\"><div class=\"container mx-auto max-w-3xl space-y-8\"><h1 class=\"text-3xl md:text-4xl font-bold text-foreground\">Accessibilité</h1><div class=\"space-y-4 text-muted-foreground leading-relaxed\"><p>L'association Ekilib.re s'engage à rendre son site accessible au plus grand nombre, conformément aux recommandations <strong class=\"text-foreground\">WCAG 2.1 niveau AA</strong> et au référentiel <strong class=\"text-foreground\">RGAA</strong>.</p><h2 class=\"text-xl font-bold text-foreground\">Mesures mises en œuvre</h2><p>Navigation au clavier sur tous les éléments interactifs, attributs ARIA sur les boutons et liens iconiques, contrastes de couleurs conformes, textes alternatifs sur les images, mode sombre disponible.</p><h2 class=\"text-xl font-bold text-foreground\">Signaler un problème</h2><p>Si vous rencontrez un défaut d'accessibilité, contactez-nous à contact@ekilib.re ou au 06 93 51 42 24 : nous nous efforcerons de le corriger rapidement.</p></div></div></section>"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/blog",
+      "title": {
+        "fr": "Actualités",
+        "en": "News"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Actualités — Ekilib.re, Maison Sport Santé du Tampon",
+          "en": "News — Ekilib.re, Sport Health House of Le Tampon"
+        },
+        "description": {
+          "fr": "Toutes les actualités d'Ekilib.re : nouveaux créneaux sport santé au Tampon, fermetures, évènements et informations santé.",
+          "en": "All Ekilib.re news: new sport-health slots in Le Tampon, closures, events and health information."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/maisonSportSanteLaTampon/hero2.jpg"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "blog-search",
+          "props": {
+            "headline": {
+              "fr": "Les actualités d'Ekilib.re",
+              "en": "Ekilib.re news"
+            },
+            "subhead": {
+              "fr": "Nouveaux créneaux, fermetures, informations santé : cherchez par mot-clé ou filtrez par catégorie.",
+              "en": "New slots, closures, health information: search by keyword or filter by category."
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une actualité…",
+              "en": "Search the news…"
+            },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "categorie",
+                "label": {
+                  "fr": "Catégorie",
+                  "en": "Category"
+                },
+                "field": "category",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Toutes les catégories",
+                  "en": "All categories"
+                },
+                "options": [
+                  {
+                    "id": "nouveau-creneau",
+                    "value": "Nouveau créneau",
+                    "label": {
+                      "fr": "Nouveau créneau",
+                      "en": "New slot"
+                    }
+                  },
+                  {
+                    "id": "evenement",
+                    "value": "Évènement",
+                    "label": {
+                      "fr": "Évènement",
+                      "en": "Event"
+                    }
+                  },
+                  {
+                    "id": "information-sante",
+                    "value": "Information santé",
+                    "label": {
+                      "fr": "Information santé",
+                      "en": "Health information"
+                    }
+                  },
+                  {
+                    "id": "fermeture-modification",
+                    "value": "Fermeture/modification",
+                    "label": {
+                      "fr": "Fermeture/modification",
+                      "en": "Closure/change"
+                    }
+                  },
+                  {
+                    "id": "autre",
+                    "value": "Autre",
+                    "label": {
+                      "fr": "Autre",
+                      "en": "Other"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "articleFeed",
+          "props": {
+            "costumSlug": "associationEkilibre",
+            "filters": {
+              "publicationStatus": "Publié"
+            },
+            "sortBy": {
+              "publicationDate": -1
+            },
+            "featured": "flag",
+            "pageSize": 12,
+            "fullWidth": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "/ressources",
+      "title": {
+        "fr": "Ressources",
+        "en": "Resources"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Ressources — Ekilib.re, Maison Sport Santé du Tampon",
+          "en": "Resources — Ekilib.re, Sport Health House of Le Tampon"
+        },
+        "description": {
+          "fr": "Documents ressources des professionnels du sport santé : recommandations, bonnes pratiques, bilans et parcours, formulaires de prescription.",
+          "en": "Resource documents for sport-health professionals: recommendations, best practices, assessments and pathways, prescription forms."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/maisonSportSanteLaTampon/hero2.jpg"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "ressources-header",
+          "props": {
+            "headline": {
+              "fr": "Ressources",
+              "en": "Resources"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un document…",
+              "en": "Search a document…"
+            },
+            "showActiveFiltersTags": "desktop",
+            "dropdownFilters": [
+              {
+                "id": "ressource-category",
+                "label": {
+                  "fr": "Catégorie",
+                  "en": "Category"
+                },
+                "field": "category",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Toutes les catégories",
+                  "en": "All categories"
+                },
+                "options": [
+                  {
+                    "id": "recommandations",
+                    "value": "Recommandations",
+                    "label": {
+                      "fr": "Recommandations",
+                      "en": "Recommendations"
+                    }
+                  },
+                  {
+                    "id": "bonnes-pratiques",
+                    "value": "Bonnes pratiques",
+                    "label": {
+                      "fr": "Bonnes pratiques",
+                      "en": "Best practices"
+                    }
+                  },
+                  {
+                    "id": "bilans-parcours",
+                    "value": "Bilans & parcours",
+                    "label": {
+                      "fr": "Bilans & parcours",
+                      "en": "Assessments & pathways"
+                    }
+                  },
+                  {
+                    "id": "formulaires-prescription",
+                    "value": "Formulaires de prescription",
+                    "label": {
+                      "fr": "Formulaires de prescription",
+                      "en": "Prescription forms"
+                    }
+                  },
+                  {
+                    "id": "autres",
+                    "value": "Autres",
+                    "label": {
+                      "fr": "Autres",
+                      "en": "Other"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "ressources-list",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Tous les documents",
+                "en": "All documents"
+              }
+            },
+            "useFilter": true,
+            "showMap": false,
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "sourceKey": [
+                "associationEkilibre"
+              ],
+              "defaultFilters": {
+                "type": "recoveryCenter",
+                "status": "Visible"
+              },
+              "defaultFields": [
+                "name",
+                "category",
+                "description",
+                "urls",
+                "medias",
+                "status",
+                "created",
+                "type",
+                "source",
+                "profilMediumImageUrl",
+                "profilImageUrl"
+              ],
+              "searchBy": [
+                "name",
+                "description"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              }
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "resource",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "resource",
+                "width": "2xl"
+              },
+              "resource": {
+                "design": "card",
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "created",
+                "imageField": "profilMediumImageUrl",
+                "urlsField": "urls",
+                "badge": {
+                  "field": "category",
+                  "colors": {
+                    "Recommandations": "var(--chart-1)",
+                    "Bonnes pratiques": "var(--chart-2)",
+                    "Bilans & parcours": "var(--chart-3)",
+                    "Formulaires de prescription": "var(--chart-4)",
+                    "Autres": "var(--chart-5)"
+                  }
+                }
+              }
+            }
           }
         }
       ]
@@ -2615,6 +2908,34 @@
         "sidebarRing": "oklch(0.72 0.10 185)"
       }
     },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.5rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      },
+      "dark": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      }
+    },
     "customCSS": ".ssso-card .header-gradient {\n  background: linear-gradient(135deg, var(--accent), var(--warning))!important;\n}\n\n .sspt-card .header-gradient {\n background: linear-gradient(135deg, var(--primary), var(--muted-foreground))!important;\n} \n\n .ssso-card .border-card-border-left {\n border-color: var(--accent)!important;}"
   },
   "auth": {
@@ -2664,10 +2985,12 @@
                 "linkTo": "/creneaux",
                 "entityType": "answers",
                 "source": {
+                  "sourceKey": [
+                    "associationEkilibre"
+                  ],
                   "defaultTypes": [
                     "answers"
                   ],
-                  "notSourceKey": true,
                   "defaultFilters": {
                     "form": "6a85af345d898a57cb49f029",
                     "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7": "Validé"
@@ -2728,36 +3051,286 @@
           {
             "type": "resource",
             "entityType": "poi",
+            "label": {
+              "fr": "Actualités",
+              "en": "News"
+            },
             "source": {
-              "defaultFilters": {
-                "type": "article",
-                "source.key": "associationEkilibre"
-              },
-              "defaultSortBy": {
-                "publicationDate": -1
-              },
-              "costumSlug": "associationEkilibre",
               "sourceKey": [
                 "associationEkilibre"
               ],
-              "defaultFields": [
-                "category",
-                "publicationDate",
-                "publicationStatus",
-                "featured"
-              ]
+              "defaultFilters": {
+                "type": "article"
+              },
+              "defaultSortBy": {
+                "publicationDate": -1
+              }
             },
             "columns": [
-              { "path": "name", "label": { "fr": "Titre", "en": "Title" } },
-              { "path": "category", "label": { "fr": "Catégorie", "en": "Category" } },
-              { "path": "publicationDate", "label": { "fr": "Date de publication", "en": "Publication date" } },
-              { "path": "publicationStatus", "label": { "fr": "Statut", "en": "Status" } },
-              { "path": "featured", "label": { "fr": "À la une", "en": "Featured" } }
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "category",
+                "label": {
+                  "fr": "Catégorie",
+                  "en": "Category"
+                }
+              },
+              {
+                "path": "publicationDate",
+                "label": {
+                  "fr": "Date de publication",
+                  "en": "Publication date"
+                }
+              },
+              {
+                "path": "featured",
+                "label": {
+                  "fr": "À la une",
+                  "en": "Featured"
+                }
+              }
             ],
-            "rowActions": ["edit", "delete", "setFeatured"],
+            "rowActions": [
+              "edit",
+              "validate",
+              "delete",
+              "setFeatured"
+            ],
             "exclusiveField": "featured",
             "create": "add-actualite",
-            "edit": "inherit"
+            "edit": "inherit",
+            "status": {
+              "mode": "statusField",
+              "field": "publicationStatus",
+              "states": [
+                {
+                  "value": "Brouillon",
+                  "tone": "pending"
+                },
+                {
+                  "value": "Publié",
+                  "tone": "positive"
+                },
+                {
+                  "value": "Archivé",
+                  "tone": "negative"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "ressources",
+        "label": {
+          "fr": "Ressources",
+          "en": "Resources"
+        },
+        "icon": "book-open",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Documents ressources pro",
+              "en": "Professional resource documents"
+            },
+            "source": {
+              "sourceKey": [
+                "associationEkilibre"
+              ],
+              "defaultFilters": {
+                "type": "recoveryCenter"
+              },
+              "defaultSortBy": {
+                "created": -1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "category",
+                "label": {
+                  "fr": "Catégorie",
+                  "en": "Category"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Date d'ajout",
+                  "en": "Added on"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "validate",
+              "delete"
+            ],
+            "create": "add-ekilibre-ressource",
+            "edit": "inherit",
+            "status": {
+              "mode": "statusField",
+              "field": "status",
+              "states": [
+                {
+                  "value": "Brouillon",
+                  "tone": "pending"
+                },
+                {
+                  "value": "Visible",
+                  "tone": "positive"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "structures",
+        "label": {
+          "fr": "Structures",
+          "en": "Structures"
+        },
+        "icon": "building-2",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "organizations",
+            "label": {
+              "fr": "Structures du site",
+              "en": "Site structures"
+            },
+            "restrictActionsToOwned": true,
+            "rowActions": [
+              "edit",
+              "validate",
+              "reference",
+              "delete"
+            ],
+            "source": {
+              "sourceKey": [
+                "associationEkilibre"
+              ],
+              "defaultSortBy": {
+                "name": 1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                }
+              },
+              {
+                "path": "source.key",
+                "label": {
+                  "fr": "Provenance",
+                  "en": "Source"
+                }
+              }
+            ],
+            "status": {
+              "mode": "statusField",
+              "field": "statusActor",
+              "states": [
+                {
+                  "value": "En attente",
+                  "tone": "pending"
+                },
+                {
+                  "value": "En cours",
+                  "tone": "progress"
+                },
+                {
+                  "value": "Validé",
+                  "tone": "positive"
+                },
+                {
+                  "value": "Refusé",
+                  "tone": "negative"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "referencement",
+        "label": {
+          "fr": "Référencement",
+          "en": "Referencing"
+        },
+        "icon": "link-2",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "reference",
+            "title": {
+              "fr": "Référencer une structure existante",
+              "en": "Reference an existing organization"
+            },
+            "entityTypes": [
+              "organizations"
+            ],
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                }
+              },
+              {
+                "path": "source.key",
+                "label": {
+                  "fr": "Provenance",
+                  "en": "Source"
+                }
+              }
+            ],
+            "search": {
+              "openData": "optOut",
+              "defaultFilters": {
+                "source.keys": "sportSanteBienetre",
+                "address.postalCode": {
+                  "$in": [
+                    "97430",
+                    "97418"
+                  ]
+                }
+              }
+            }
           }
         ]
       },
@@ -2778,13 +3351,20 @@
               "en": "Slots — moderation"
             },
             "source": {
-              "notSourceKey": true,
+              "sourceKey": [
+                "associationEkilibre"
+              ],
               "defaultFilters": {
                 "form": "6a85af345d898a57cb49f029"
               },
               "defaultSortBy": {
                 "created": -1
-              }
+              },
+              "searchBy": [
+                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegc9sgox76p87n27",
+                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdeggo91owe8t9ovl4p",
+                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmxv88txy6f5z6svg"
+              ]
             },
             "columns": [
               {
@@ -2875,9 +3455,15 @@
       "limit": 8,
       "params": {
         "sourceKey": [
-          "sportSanteBienetre"
+          "sportSanteBienetre",
+          "associationEkilibre"
         ]
       }
+    },
+    "articleSearch": {
+      "enabled": true,
+      "costumSlug": "associationEkilibre",
+      "limit": 8
     }
   },
   "costumForms": {
@@ -2885,6 +3471,7 @@
       "id": "structure",
       "entityType": "organizations",
       "collection": "organizations",
+      "costumSlug": "associationEkilibre",
       "icon": "building-2",
       "layout": {
         "kind": "wizard",
@@ -2899,13 +3486,50 @@
           "serverKey": "address",
           "read": "address:read",
           "write": "address:write"
+        },
+        "telephone": {
+          "serverKey": "telephone",
+          "read": "telephone:read",
+          "write": "telephone:write"
+        },
+        "representativeTitle": {
+          "serverKey": "representativeTitle",
+          "read": "enumOrOther:read",
+          "write": "enumOrOther:write",
+          "params": {
+            "valueField": "representativeTitle",
+            "otherField": "otherRepresentativeTitle",
+            "known": [
+              "Président",
+              "Maire.sse",
+              "Chef.fe d'entreprise",
+              "Chef.fe d'établissement",
+              "Autre..."
+            ],
+            "other": "Autre..."
+          }
+        },
+        "personInChargeTitle": {
+          "serverKey": "personInChargeTitle",
+          "read": "enumOrOther:read",
+          "write": "enumOrOther:write",
+          "params": {
+            "valueField": "personInChargeTitle",
+            "otherField": "otherPersonInChargeTitle",
+            "known": [
+              "Président",
+              "Maire.sse",
+              "Chef.fe d'entreprise",
+              "Chef.fe d'établissement",
+              "Autre..."
+            ],
+            "other": "Autre..."
+          }
         }
       },
       "fields": {
         "siren": {
           "widget": "text",
-          "write": "number:fromDigits",
-          "clear": null,
           "label": {
             "fr": "Siren / Siret",
             "en": "Siren / Siret"
@@ -2913,7 +3537,8 @@
           "placeholder": {
             "fr": "123 456 789 00012",
             "en": "123 456 789 00012"
-          }
+          },
+          "write": "coerce:orUndef"
         },
         "name": {
           "widget": "text",
@@ -3092,11 +3717,11 @@
         "tags": {
           "widget": "hidden",
           "type": "array",
-          "writeOnly": true,
           "write": "structure:tagsFromThematic"
         },
-        "mobile": {
-          "widget": "text",
+        "telephone": {
+          "widget": "tel",
+          "group": "telephone",
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
@@ -3104,10 +3729,15 @@
           "placeholder": {
             "fr": "0692001122",
             "en": "0692001122"
-          },
-          "widgetProps": {
-            "inputType": "tel"
           }
+        },
+        "_telSlot": {
+          "widget": "hidden",
+          "group": "telephone"
+        },
+        "_telRest": {
+          "widget": "hidden",
+          "group": "telephone"
         },
         "address": {
           "widget": "location",
@@ -3245,6 +3875,7 @@
         },
         "legalStatus": {
           "widget": "select",
+          "required": true,
           "label": {
             "fr": "Forme juridique",
             "en": "Legal form"
@@ -3540,7 +4171,8 @@
                 "en": "Other..."
               }
             }
-          ]
+          ],
+          "group": "representativeTitle"
         },
         "otherRepresentativeTitle": {
           "widget": "text",
@@ -3552,7 +4184,8 @@
             "field": "representativeTitle",
             "op": "eq",
             "value": "Autre..."
-          }
+          },
+          "group": "representativeTitle"
         },
         "representativeCivility": {
           "widget": "select",
@@ -3622,8 +4255,6 @@
         },
         "representativeTelephone": {
           "widget": "text",
-          "write": "number:fromDigits",
-          "clear": null,
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
@@ -3634,7 +4265,8 @@
           },
           "widgetProps": {
             "inputType": "tel"
-          }
+          },
+          "write": "coerce:orUndef"
         },
         "responsableSameAsRepresent": {
           "widget": "switch",
@@ -3697,7 +4329,8 @@
                 "en": "Other..."
               }
             }
-          ]
+          ],
+          "group": "personInChargeTitle"
         },
         "otherPersonInChargeTitle": {
           "widget": "text",
@@ -3717,7 +4350,8 @@
                 "value": "Autre..."
               }
             ]
-          }
+          },
+          "group": "personInChargeTitle"
         },
         "personInChargeCivility": {
           "widget": "select",
@@ -3803,8 +4437,6 @@
         },
         "personInChargeTelephone": {
           "widget": "text",
-          "write": "number:fromDigits",
-          "clear": null,
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
@@ -3816,6 +4448,7 @@
           "widgetProps": {
             "inputType": "tel"
           },
+          "write": "coerce:orUndef",
           "visibleIf": {
             "field": "responsableSameAsRepresent",
             "op": "falsy"
@@ -3868,11 +4501,6 @@
           "groups": [
             {
               "columns": 1,
-              "label": {
-                "fr": "Adresse du siège",
-                "en": "Head office address"
-              },
-              "required": true,
               "fields": [
                 "address",
                 "addressCountry",
@@ -3884,7 +4512,7 @@
             {
               "columns": 2,
               "fields": [
-                "mobile",
+                "telephone",
                 "email"
               ]
             },
@@ -4079,7 +4707,7 @@
       },
       "scope": {
         "slugFrom": "constant",
-        "constant": "sportSanteBienetre"
+        "constant": "associationEkilibre"
       },
       "mutation": {
         "entityType": "organizations",
@@ -4109,15 +4737,21 @@
           "params": {
             "userList": "organizations",
             "searchKeys": [
-              "searchCostumStatic"
+              "searchCostumStatic",
+              "searchCostumStaticMapAll",
+              "admin-organizations"
             ]
           }
         }
+      },
+      "identity": {
+        "type": "Cooperative"
       }
     },
     "actualite": {
       "id": "actualite",
       "entityType": "poi",
+      "costumSlug": "associationEkilibre",
       "collection": "poi",
       "icon": "newspaper",
       "layout": {
@@ -4149,13 +4783,6 @@
           }
         }
       },
-      "serializeGroups": {
-        "address": {
-          "serverKey": "address",
-          "read": "address:read",
-          "write": "address:write"
-        }
-      },
       "sections": [
         {
           "id": "content",
@@ -4172,12 +4799,11 @@
                 "_imageFile",
                 "category",
                 "publicationDate",
-                "address",
+                "shortDescription",
                 "description",
                 "tags",
                 "link",
-                "publicationStatus",
-                "featured"
+                "publicationStatus"
               ]
             }
           ]
@@ -4260,49 +4886,16 @@
             "en": "Publication date"
           }
         },
-        "address": {
-          "widget": "location",
+        "shortDescription": {
+          "widget": "textarea",
           "label": {
-            "fr": "Lieu associé (facultatif)",
-            "en": "Related place (optional)"
+            "fr": "Résumé (chapô)",
+            "en": "Summary (standfirst)"
           },
           "info": {
-            "fr": "Renseignez un lieu si l'actualité s'y rattache (ex. un nouveau créneau). Laissez vide sinon.",
-            "en": "Fill in a place if the news item relates to one (e.g. a new time slot). Leave empty otherwise."
+            "fr": "Affiché sur les cartes du fil et en tête de l'article.",
+            "en": "Shown on feed cards and at the top of the article."
           }
-        },
-        "addressCountry": {
-          "widget": "hidden",
-          "group": "address",
-          "default": "RE"
-        },
-        "addressLocality": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "postalCode": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "streetAddress": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "localityId": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "geo": {
-          "widget": "hidden",
-          "type": "object",
-          "writeOnly": true,
-          "write": "geo:write"
-        },
-        "geoPosition": {
-          "widget": "hidden",
-          "type": "object",
-          "writeOnly": true,
-          "write": "geoPosition:write"
         },
         "description": {
           "widget": "markdown",
@@ -4366,18 +4959,9 @@
                 "en": "Archived"
               }
             }
-          ]
-        },
-        "featured": {
-          "widget": "switch",
-          "label": {
-            "fr": "À la une",
-            "en": "Featured"
-          },
-          "info": {
-            "fr": "Modifiable ici pour RETIRER la une. Pour la mettre en avant, utilisez le bouton dédié dans le tableau du back-office (garantit qu'une seule actualité est mise en avant à la fois).",
-            "en": "Editable here to REMOVE the featured flag. To feature a news item, use the dedicated button in the back-office table (guarantees a single featured item at a time)."
-          }
+          ],
+          "required": true,
+          "default": "Brouillon"
         }
       },
       "scope": {
@@ -4404,14 +4988,251 @@
           "edit": "EntityFormModal · EDIT_ACTUALITE"
         },
         "invalidateFn": {
+          "fn": "invalidate:blog",
+          "params": {
+            "userList": "pois",
+            "searchKeys": [
+              "blog:associationEkilibre",
+              "admin-poi"
+            ]
+          }
+        },
+        "payloadEmitEmptyOnEdit": true,
+        "navigateOnSuccess": false
+      },
+      "identity": {
+        "type": "article"
+      }
+    },
+    "ekilibre-ressource": {
+      "id": "ekilibre-ressource",
+      "entityType": "poi",
+      "collection": "poi",
+      "costumSlug": "associationEkilibre",
+      "icon": "book-open",
+      "layout": {
+        "kind": "flat"
+      },
+      "sections": [
+        {
+          "id": "document",
+          "label": {
+            "fr": "Document ressource",
+            "en": "Resource document"
+          },
+          "icon": "book-open",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "category",
+                "description",
+                "documents",
+                "urls",
+                "status"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom",
+            "en": "Name"
+          },
+          "placeholder": {
+            "fr": "Nom du document",
+            "en": "Document name"
+          }
+        },
+        "category": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Catégorie",
+            "en": "Category"
+          },
+          "placeholder": {
+            "fr": "Choisir une catégorie…",
+            "en": "Pick a category…"
+          },
+          "enum": [
+            {
+              "value": "Recommandations",
+              "label": {
+                "fr": "Recommandations",
+                "en": "Recommendations"
+              }
+            },
+            {
+              "value": "Bonnes pratiques",
+              "label": {
+                "fr": "Bonnes pratiques",
+                "en": "Best practices"
+              }
+            },
+            {
+              "value": "Bilans & parcours",
+              "label": {
+                "fr": "Bilans & parcours",
+                "en": "Assessments & pathways"
+              }
+            },
+            {
+              "value": "Formulaires de prescription",
+              "label": {
+                "fr": "Formulaires de prescription",
+                "en": "Prescription forms"
+              }
+            },
+            {
+              "value": "Autres",
+              "label": {
+                "fr": "Autres",
+                "en": "Other"
+              }
+            }
+          ]
+        },
+        "description": {
+          "widget": "markdown",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          },
+          "info": {
+            "fr": "Texte court décrivant le document.",
+            "en": "Short text describing the document."
+          }
+        },
+        "documents": {
+          "widget": "file",
+          "label": {
+            "fr": "Fichier PDF",
+            "en": "PDF file"
+          },
+          "info": {
+            "fr": "PDF uploadé (10 Mo max) — ou renseigner un lien web ci-dessous.",
+            "en": "Uploaded PDF (10 MB max) — or provide a web link below."
+          },
+          "widgetProps": {
+            "contentKey": "file",
+            "maxItems": 1,
+            "accept": "application/pdf"
+          },
+          "renderOnly": true
+        },
+        "urls": {
+          "widget": "urlList",
+          "label": {
+            "fr": "Lien web externe",
+            "en": "External web link"
+          },
+          "info": {
+            "fr": "URL HTTPS du document en ligne.",
+            "en": "HTTPS URL of the online document."
+          },
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un lien",
+              "en": "Add a link"
+            },
+            "removeLabel": {
+              "fr": "Retirer",
+              "en": "Remove"
+            }
+          }
+        },
+        "status": {
+          "widget": "select",
+          "required": true,
+          "default": "Brouillon",
+          "label": {
+            "fr": "Statut",
+            "en": "Status"
+          },
+          "enum": [
+            {
+              "value": "Visible",
+              "label": {
+                "fr": "Visible",
+                "en": "Visible"
+              }
+            },
+            {
+              "value": "Brouillon",
+              "label": {
+                "fr": "Brouillon",
+                "en": "Draft"
+              }
+            }
+          ]
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une ressource",
+            "en": "Add a resource"
+          },
+          "edit": {
+            "fr": "Modifier la ressource",
+            "en": "Edit resource"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "scope": {
+        "slugFrom": "carrier"
+      },
+      "mutation": {
+        "entityType": "poi",
+        "inject": {
+          "extraFields": {
+            "type": "recoveryCenter"
+          },
+          "parentFromCarrier": true
+        },
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_RESSOURCE",
+          "edit": "EntityFormModal · EDIT_RESSOURCE"
+        },
+        "invalidateFn": {
           "fn": "invalidate:standard",
           "params": {
-            "userList": "poi",
+            "userList": "pois",
             "searchKeys": [
+              "admin-poi",
               "searchCostumStatic"
             ]
           }
-        }
+        },
+        "payloadEmitEmptyOnEdit": true,
+        "navigateOnSuccess": false
+      },
+      "identity": {
+        "type": "recoveryCenter"
       }
     }
   },
@@ -4546,7 +5367,7 @@
             "organization": true,
             "project": true,
             "event": true,
-            "poi": true
+            "poi": false
           }
         },
         {
@@ -4660,29 +5481,25 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
-      "editModal": "edit-structure",
-      "editModalMatch": {
-        "type": "NGO"
-      },
-      "when": {
-        "or": [
-          {
-            "field": "sourceKeys",
-            "op": "contains",
-            "value": "sportSanteBienetre"
-          },
-          {
-            "field": "sourceKeys",
-            "op": "contains",
-            "value": "associationEkilibre"
-          },
-          {
-            "field": "reference.costum",
-            "op": "contains",
-            "value": "sportSanteBienetre"
+      "editModals": [
+        {
+          "editModal": "edit-structure",
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "associationEkilibre"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "associationEkilibre"
+              }
+            ]
           }
-        ]
-      },
+        }
+      ],
       "sections": [
         {
           "type": "profile-header",
@@ -4692,7 +5509,7 @@
             "organization": false,
             "project": true,
             "event": true,
-            "poi": true
+            "poi": false
           }
         },
         {
@@ -4875,7 +5692,7 @@
             "organization": false,
             "project": false,
             "event": true,
-            "poi": true
+            "poi": false
           }
         },
         {
@@ -5229,12 +6046,46 @@
       "hideHeader": false,
       "hideFooter": false,
       "editModals": [
-        { "editModal": "edit-equipements-sportifs", "editModalMatch": { "type": "recoveryCenter" } },
-        { "editModal": "edit-actualite", "editModalMatch": { "type": "article" },
-          "when": { "or": [
-            { "field": "sourceKeys", "op": "contains", "value": "associationEkilibre" },
-            { "field": "reference.costum", "op": "contains", "value": "associationEkilibre" }
-          ] } }
+        {
+          "editModal": "edit-actualite",
+          "editModalMatch": {
+            "type": "article"
+          },
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "associationEkilibre"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "associationEkilibre"
+              }
+            ]
+          }
+        },
+        {
+          "editModal": "edit-ekilibre-ressource",
+          "editModalMatch": {
+            "type": "recoveryCenter"
+          },
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "associationEkilibre"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "associationEkilibre"
+              }
+            ]
+          }
+        }
       ],
       "sections": [
         {
@@ -5370,6 +6221,17 @@
           ]
         }
       ]
+    }
+  },
+  "blog": {
+    "feedCostumSlug": "associationEkilibre",
+    "readerVariant": "default",
+    "defaultCardVariant": "default",
+    "publicFilters": {
+      "publicationStatus": "Publié"
+    },
+    "publicSortBy": {
+      "publicationDate": -1
     }
   }
 }

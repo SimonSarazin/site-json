@@ -183,8 +183,12 @@ export const HeroSearchSchema = z.object({
           label: LocalizedString,
           variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
           // Filtres posés par ce bouton (multi-params, multi-valeurs).
-          // NB : les valeurs ne doivent pas contenir de virgule (format URL
-          // partagé avec /lieux — `split(",")`).
+          // Les valeurs peuvent contenir une virgule : l'écriture les ENCODE avant de joindre
+          // (`computeUrlFromFilters.encodeValues`) et la lecture décode chaque fragment
+          // (`computeFiltersFromUrl`). ⚠️ Vaut pour les params écrits par la section `filters` ;
+          // `HeroSearch` compare encore les siens SANS décoder (HeroSearch.tsx:64-72) — tant
+          // qu'aucune page ne porte à la fois un `hero-search` et une section `filters`, les deux
+          // espaces de noms ne se croisent pas.
           filters: z
             .array(
               z.object({
@@ -843,10 +847,25 @@ const ContactFormSectionSchema = z.object({
       placeholder: LocalizedString.optional(),
       options: z.array(LocalizedString).optional(),
       validation: z.string().optional(), // regex ou mot‑clé (email, tel…)
+      /**
+       * Rôle du champ dans le message envoyé (cf. `lib/contactPayload.ts`). Facultatif : à défaut,
+       * le rôle est déduit du `name` par convention (`name`/`email`/`phone`/`subject`/`message`).
+       * Un champ sans rôle est un consentement d'interface (rgpd, newsletter) : validé localement,
+       * jamais envoyé.
+       */
+      role: z.enum(["senderName", "senderEmail", "phone", "subject", "message", "extra"]).optional(),
     })),
     submitLabel: LocalizedString,
-    action: z.string(),
-    method: z.enum(["GET", "POST"]).default("POST"),
+    /**
+     * @deprecated IGNORÉ. Le message part par la lib (`CONTACT_SEND` →
+     * `/co2/mailmanagement/createandsend`), qui résout le destinataire côté serveur depuis
+     * `costum.contactMail` — `costum.admin.email` n'est qu'un REPLI. Conservé optionnel pour ne pas
+     * invalider une config existante ;
+     * `tests/preflight/contact-form.test.ts` refuse qu'on en déclare une nouvelle.
+     */
+    action: z.string().optional(),
+    /** @deprecated IGNORÉ — cf. `action`. */
+    method: z.enum(["GET", "POST"]).optional(),
     successMessage: LocalizedString.optional(),
     errorMessage: LocalizedString.optional(),
   }),
@@ -1392,7 +1411,6 @@ const GridLayoutSectionPropsSchema = z.object({
   className: z.string().optional(),
   leftWrapperClass: z.string().optional(),
   rightWrapperClass: z.string().optional(),
-  fixedHeight: z.string().optional(),
 });
 
 const GridLayoutSectionSchema = z.object({
@@ -1608,8 +1626,41 @@ export const Page = z.object({
   title: LocalizedString,
   seo: PageMeta.optional(),
   layout: z.enum(["default", "fullwidth", "sidebar-left", "sidebar-right", "landing"]).default("default"),
-  auth: z.object({ required: z.boolean().default(false), roles: z.array(z.string()).optional() }).optional(),
-  middleware: z.array(z.string()).optional(), // Custom middleware functions
+  auth: z
+    .object({
+      required: z.boolean().default(false),
+      /**
+       * Niveau d'ADMINISTRATION requis, même vocabulaire que `admin.access.min`
+       * (`AdminAccessLevelSchema`) : `siteAdmin` = admin du costum porteur, `superAdmin` = admin
+       * plateforme. Résolu par les vraies méthodes du SDK (`isSuperAdmin`/`isAdminPlatform`/
+       * `entity.isAdmin`) — c'est la forme à utiliser.
+       */
+      access: z.enum(["siteAdmin", "superAdmin"]).optional(),
+      /**
+       * ⚠️ DÉPRÉCIÉ — préférer `access`. Teste des clés BRUTES de `me.serverData.roles`, dont le
+       * SDK ne connaît que `superAdmin` et `adminPlatform` : tout autre nom (ex. `"admin"`) ferme
+       * la page à TOUT LE MONDE, superAdmin compris, sans le moindre signal. Une garde préflight
+       * (tests/preflight/page-guards.test.ts) refuse désormais les noms hors de ce jeu.
+       */
+      roles: z.array(z.string()).optional(),
+      /**
+       * Ce qui se passe quand l'accès est refusé. Défaut (codé en dur côté moteur, cf.
+       * `src/lib/pageAccess.ts` — la config n'est pas parsée par Zod au runtime) : `prompt`.
+       *  - `prompt`   : on reste sur la page, la modale de connexion s'ouvre par-dessus ;
+       *  - `redirect` : navigation vers `/login`, destination mémorisée ;
+       *  - `hide`     : rien n'est rendu, un refus est affiché.
+       * Dans les TROIS cas les sections ne sont jamais sérialisées au SSR.
+       */
+      mode: z.enum(["prompt", "redirect", "hide"]).optional(),
+    })
+    .optional(),
+  /**
+   * ⚠️ DÉPRÉCIÉ — préférer `auth`. Noms résolus contre le registre d'`usePageGuards` :
+   * `auth-required` (doublon exact d'`auth.required`), `admin-only`, `redirect-if-authenticated`.
+   * Un nom hors registre est un NO-OP SILENCIEUX (`registry[mw]?.()`) : la page se croit gardée et
+   * ne l'est pas. Une garde préflight refuse les noms inconnus, et le moteur avertit en dev.
+   */
+  middleware: z.array(z.string()).optional(),
   sections: z.array(Section),
   hideHeader: z.boolean().optional(),
   hideFooter: z.boolean().optional(),
@@ -1637,6 +1688,25 @@ const MegaMenu = z.object({
   width: z.enum(["sm", "md", "lg", "xl", "full"]).default("lg"),
 });
 
+// Génère `children` depuis une liste `costum.lists.<list>` au lieu de les écrire à la main
+// (cf. Document de spécification « Menu dynamique costum.lists dans le header »). `children`
+// déclaré en parallèle sert de repli statique tant que la liste n'est pas résolue (absente,
+// vide, ou `filterId` introuvable en config) — résolu par `useResolveDynamicNav`, câblé dans
+// `SiteHeader` : aucune variante de header n'a besoin de connaître ce champ.
+const DynamicNavList = z.object({
+  // Nom de la liste costum.lists à lire (ex. "themes") — statique ou recette dynamique, détecté
+  // automatiquement. Plusieurs noms = fusion dans l'ordre déclaré (cf. @/lib/listSources), cas d'un
+  // même champ alimenté depuis plusieurs collections : une recette par collection.
+  list: z.union([z.string().min(1), z.array(z.string().min(1)).min(1)]),
+  // id du dropdownFilter/filterGroup cible (résolu via getDropdownFilterOwner) : détermine
+  // à la fois la page de destination et le champ filtré par chaque entrée générée.
+  filterId: z.string().min(1),
+  // Slug du costum porteur de la liste, si différent du site courant.
+  costumSlug: z.string().optional(),
+  // Plafond d'entrées affichées (défaut : DEFAULT_DYNAMIC_NAV_LIMIT, cf. lib/dynamicNav.ts).
+  limit: z.number().int().positive().optional(),
+});
+
 // Enhanced NavItem with mega menu support
 // Define interface for EnhancedNavItem to avoid 'any'
 export interface EnhancedNavItemType {
@@ -1655,6 +1725,7 @@ export interface EnhancedNavItemType {
   description?: LocalizedString;
   /** Affiche le sous-menu en mise en avant (colonne "lien principal" via `path` + grille). */
   featured?: boolean;
+  dynamicList?: z.infer<typeof DynamicNavList>;
 }
 
 const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
@@ -1670,8 +1741,9 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
     megaMenu: MegaMenu.optional(),
     description: LocalizedString.optional(),
     featured: z.boolean().optional(),
-  }).refine(d => d.path || d.href || d.children || d.megaMenu, {
-    message: "NavItem : path, href, children ou megaMenu obligatoire"
+    dynamicList: DynamicNavList.optional(),
+  }).refine(d => d.path || d.href || d.children || d.megaMenu || d.dynamicList, {
+    message: "NavItem : path, href, children, megaMenu ou dynamicList obligatoire"
   })
 );
 

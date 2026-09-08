@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { format } from "date-fns";
 import type { Organization, Poi, Project, User, Event as EventType} from "@communecter/cocolight-api-client";
 import getDateFnsLocale from "@/dateFns";
-import { toValidDate } from "@/helpers/formatDate";
+import { resolveEventStartDate, toValidDate } from "@/helpers/formatDate";
 
 const useItem = (item: User | Organization | Project | Poi | EventType) => {
   /**
@@ -106,12 +106,11 @@ const useItem = (item: User | Organization | Project | Poi | EventType) => {
       merged.image = merged.profilImageUrl;
     }
 
-    // Champs spécifiques Event
-    if (raw.startDate) {
-      merged.startDate = toValidDate(raw.startDate);
-      if (merged.startDate) {
-        merged.eventDate = format(merged.startDate, 'P', { locale: getDateFnsLocale() });
-      }
+    // Champs spécifiques Event — `resolveEventStartDate` (`@/helpers/formatDate`, partagé) : `startDate`
+    // ponctuel sinon `startDateSort`/`startDateSortFormat` récurrent.
+    merged.startDate = resolveEventStartDate(raw);
+    if (merged.startDate) {
+      merged.eventDate = format(merged.startDate, 'P', { locale: getDateFnsLocale() });
     }
 
     if (raw.endDate) {
