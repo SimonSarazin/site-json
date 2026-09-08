@@ -771,6 +771,16 @@ supprimerait à l'insu de tous. Deux clés de code, parce qu'un transform de CHA
 *Un champ retiré.* `email` était proposé au formulaire projet : `config:costum-drift` l'a désigné
 fantôme (absent d'`ADD_PROJECT`, donc perdu au save). Retiré plutôt que livré silencieusement mort.
 
+*Et un champ corrigé.* Sur le formulaire annuaire, laisser l'email vide faisait échouer la création
+avec `ApiValidationError: ADD_ORGANIZATION - Request validation failed`, **avant tout appel réseau** :
+le schéma déclare `email: {format:"email", type:"string"}` **sans alternative `const:""`**,
+contrairement à `url` (`anyOf` avec la chaîne vide) ou `geo`. Le pipeline émet pourtant `""` à la
+création pour tout champ texte laissé vide. Corrigé par `write: "omitEmpty"` — clé partagée prévue
+exactement pour « les champs optionnels que l'AJV ADD rejette si envoyés vides ». L'édition est
+inchangée : `emitEmpty` retransforme l'absence en clear typé, ce qui reste nécessaire pour vider
+l'adresse d'une fiche existante. Trois assertions le gardent (création vide / création renseignée /
+vidage en édition).
+
 **Lot 6 — 08/09 — changement de slug du costum en production.** Le costum a été renommé côté prod :
 `rezoSanteReunion` → **`EcosystemeSanteReunion`**. Le slug n'est pas une étiquette : c'est le
 `VITE_SLUG` de `sites.json`, qui **charge l'entité porteuse au boot**, sert de `costumSlug` (porte de

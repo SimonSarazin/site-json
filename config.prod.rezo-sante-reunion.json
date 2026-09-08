@@ -4693,6 +4693,7 @@
         },
         "email": {
           "widget": "email",
+          "write": "omitEmpty",
           "label": {
             "fr": "Email",
             "en": "Email"

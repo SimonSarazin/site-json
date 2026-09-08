@@ -127,6 +127,22 @@ describe("costums EcosystemeSanteReunion — écriture", () => {
     }
   });
 
+  it("annuaire : un email vide est OMIS du payload de création (AJV ADD_ORGANIZATION)", () => {
+    // `ADD_ORGANIZATION.email` est `{format:"email", type:"string"}` — SANS alternative `const:""`,
+    // contrairement à `url` ou `geo`. Une chaîne vide fait échouer la validation AJV côté client,
+    // AVANT tout appel réseau : `ApiValidationError: ADD_ORGANIZATION - Request validation failed`.
+    // D'où le `write: "omitEmpty"` sur ce champ. En ÉDITION rien ne change : `emitEmpty` retransforme
+    // l'absence en clear typé, ce qui reste nécessaire pour vider l'adresse mail d'une fiche.
+    const creation = envoieDe("rezo-sante-acteur", { name: "Association Test", type: "NGO", email: "" }, "add");
+    expect(creation).not.toHaveProperty("email");
+
+    const renseigne = envoieDe("rezo-sante-acteur", { name: "Association Test", type: "NGO", email: "a@b.re" }, "add");
+    expect(renseigne.email).toBe("a@b.re");
+
+    const vidage = envoieDe("rezo-sante-acteur", { name: "Association Test", type: "NGO", email: "" });
+    expect(vidage.email, "en édition, le vidage doit rester possible").toBe("");
+  });
+
   it("chaque thématique proposée est reconnue par le filtre d'au moins une page /theme/*", () => {
     const filtres = new Set<string>();
     for (const page of cfg.pages as { sections?: { props?: Record<string, unknown> }[] }[]) {
