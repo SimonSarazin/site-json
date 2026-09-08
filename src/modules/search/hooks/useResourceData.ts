@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import { useT } from "@/hooks/useT";
+import type { LocalizedString } from "@/types/locale-schema";
 import { toValidDate } from "@/helpers/formatDate";
 import { normalizeFilterValue, resolveServerDataPath, toFacetTokens } from "../lib/dropdownFilters";
 import { valueColor } from "../lib/testimonial";
@@ -27,8 +29,10 @@ export interface ResourceData {
   date: Date | null;
   /** Vignette « héros » (image du POI, ou 1re image de galerie), ou `null`. */
   image: string | null;
-  /** Catégorie : `value` (libellé), `color` (pastille/couverture), `icon` (nom lucide du type). */
-  badge: { value: string; color: string; icon: string } | null;
+  /** Catégorie : `value` (à AFFICHER — libellé de `badge.labels` si la valeur stockée est une clé,
+   *  sinon la valeur stockée), `raw` (valeur STOCKÉE — celle qui sert aux maps et aux filtres),
+   *  `color` (pastille/couverture), `icon` (nom lucide du type). */
+  badge: { value: string; raw: string; color: string; icon: string } | null;
   /** Ville (adresse), chaîne vide si absente. */
   city: string;
   /** Liens externes (`serverData.urls`). */
@@ -98,7 +102,26 @@ function resolveTypeIcon(value: string, iconsMap: Record<string, string> | undef
  * ICI (la config n'est pas parsée par Zod au runtime). NB : la galerie/les documents proviennent de `medias`
  * INDEXÉ par la recherche ; la galerie complète (`about.images`/`about.files`) nécessitera un chargement d'entité.
  */
+/**
+ * Libellé AFFICHÉ d'une valeur de badge : entrée de `badge.labels` (comparaison NORMALISÉE, comme
+ * `colors`/`icons` — la casse et les accents d'une clé de config ne doivent pas décider du rendu),
+ * sinon la valeur stockée telle quelle. Pur : le résolveur de LocalizedString est passé en argument.
+ */
+export function resolveBadgeLabel(
+  value: string,
+  labels: Record<string, LocalizedString> | undefined,
+  tLoc: (v: LocalizedString) => string,
+): string {
+  if (!labels) return value;
+  const norm = normalizeFilterValue(value);
+  for (const [k, v] of Object.entries(labels)) if (normalizeFilterValue(k) === norm) return tLoc(v);
+  return value;
+}
+
 export function useResourceData(item: SearchListEntity, cfg: ResourceConf | undefined): ResourceData {
+  // Résolution du libellé de badge : `t` route sur LocalizedString (cf. useT). Hors du useMemo —
+  // un hook ne peut pas être appelé dedans ; il est dans les deps pour suivre le changement de langue.
+  const t = useT("modules/search");
   return useMemo(() => {
     const sd = (item?.serverData ?? {}) as Record<string, unknown>;
     const c = cfg ?? {};
@@ -124,7 +147,16 @@ export function useResourceData(item: SearchListEntity, cfg: ResourceConf | unde
       date: toValidDate(resolveServerDataPath(sd, c.dateField ?? "created")),
       image: readString(c.imageField ?? "profilMediumImageUrl") || readString("profilImageUrl") || media.images[0] || null,
       badge: badgeValue
-        ? { value: badgeValue, color: valueColor(badgeValue, { map: c.badge?.colors }), icon: resolveTypeIcon(badgeValue, c.badge?.icons) }
+        ? {
+            // `value` = ce qu'on AFFICHE : le libellé localisé quand la valeur stockée est une clé
+            // (`badge.labels`), sinon la valeur elle-même. `raw` reste la valeur STOCKÉE : c'est elle
+            // qui indexe `colors`/`icons` et que comparent les filtres — les dissocier évite qu'un
+            // renommage de libellé décolore les pastilles ou casse un filtre.
+            value: resolveBadgeLabel(badgeValue, c.badge?.labels, t),
+            raw: badgeValue,
+            color: valueColor(badgeValue, { map: c.badge?.colors }),
+            icon: resolveTypeIcon(badgeValue, c.badge?.icons),
+          }
         : null,
       city: readString(c.cityField ?? "address.addressLocality"),
       urls: (() => {
@@ -137,5 +169,5 @@ export function useResourceData(item: SearchListEntity, cfg: ResourceConf | unde
       video: media.video,
       facets,
     };
-  }, [item, cfg]);
+  }, [item, cfg, t]);
 }

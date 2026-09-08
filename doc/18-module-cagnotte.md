@@ -426,7 +426,7 @@ Schéma commun (4 premières) : `CagnotteBaseSectionPropsSchema = { idProjet?: s
 
 Les 4 sections data-driven ont des props étendues au-delà de la base :
 - `actions` : `showStatus`, `showProgress`, `showDates` (boolean, défaut `true`), `layout` (`"list" | "grid" | "timeline"`, défaut `"list"`)
-- `finance` : `showProgress`, `showFundingGoal`, `showContributors` (boolean, défaut `true`), `showTimeline` (défaut `false`), `layout` (`"cards" | "list" | "compact"`, défaut `"cards"`)
+- `finance` : `showProgress`, `showFundingGoal`, `showContributors` (boolean, défaut `true`) (défaut `false`), `layout` (`"cards" | "list" | "compact"`, défaut `"cards"`)
 - `actions-summary` : `showKpis`, `showCharts` (boolean, défaut `true`), `charts.statusDistribution.type` (`"pie" | "bar" | "list"`), `charts.timeline.type` (`"bar" | "line" | "list"`)
 - `finance-summary` : `showKpis`, `showCharts` (boolean, défaut `true`), `charts.fundingProgress.type` (`"progress" | "bar" | "list"`), `charts.amountByMilestone.type` (`"bar" | "list"`)
 

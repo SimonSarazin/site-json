@@ -22,7 +22,7 @@ import {
   normalizeSlot,
   toTimeString,
 } from "../utils/timeSlots";
-import { HintText, FieldError } from "./FormFields";
+import { HintText, FieldError, FieldLabel } from "./FormFields";
 
 interface TimeSlotsFieldProps {
   field: FormFieldMapping;
@@ -45,6 +45,13 @@ export function TimeSlotsField({ field, errors, value, onChange }: TimeSlotsFiel
   // repart de ces slots normalisés.
   const slots: TimeSlotValue[] = (Array.isArray(value) ? (value as TimeSlotValue[]) : []).map(normalizeSlot);
   const hasError = !!errors[field.name];
+  const labelId = `${field.name}-label`;
+  // `errorId` suit le MESSAGE, pas `hasError` : une erreur zod imbriquée
+  // (donnée legacy au mauvais type dans un sous-champ) met `hasError` à vrai
+  // sans message top-level — `FieldError` ne rend alors rien, et un
+  // `aria-describedby` dérivé de `hasError` pointerait un id inexistant.
+  const errorMessage = errors[field.name]?.message as string | undefined;
+  const errorId = errorMessage ? `${field.name}-error` : undefined;
   const multiple = config.enableMultipleSlots !== false;
   // `step` attend des secondes ; le picker natif ne l'impose pas partout,
   // c'est une aide de saisie (la validation bloquante reste le zod ordre/complet).
@@ -63,13 +70,24 @@ export function TimeSlotsField({ field, errors, value, onChange }: TimeSlotsFiel
   };
 
   return (
-    <div className={cn("space-y-2", field.width)}>
-      {field.label && (
-        <Label className="text-sm font-medium text-foreground">
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </Label>
-      )}
+    /* `role="group"` + `aria-labelledby` : le contrôle n'est pas un input ciblable
+       (répéteur de créneaux), donc `FieldLabel` rend une `<div>` — sans rôle sur le
+       conteneur, elle ne nommerait rien. Même montage que `CommonTableField`. */
+    <div
+      /* Pas de `role` sans libellé : un groupe anonyme n'ajoute rien à l'arbre
+         d'accessibilité, il ne fait que l'encombrer. */
+      role={field.label ? "group" : undefined}
+      aria-labelledby={field.label ? labelId : undefined}
+      /* `aria-invalid`/`aria-required` ne sont pas des propriétés supportées de
+         `role="group"` : conservés pour l'alignement avec `CommonTableField`,
+         l'information réelle passant par le `sr-only` de `FieldLabel` et le
+         `role="alert"` de `FieldError`. */
+      aria-invalid={hasError || undefined}
+      aria-describedby={errorId}
+      aria-required={field.isRequired || undefined}
+      className={cn("space-y-2", field.width)}
+    >
+      <FieldLabel field={field} id={labelId} hasError={hasError} />
       {field.info && <HintText text={field.info} />}
 
       <div className="space-y-3">
@@ -171,7 +189,7 @@ export function TimeSlotsField({ field, errors, value, onChange }: TimeSlotsFiel
         </Button>
       )}
 
-      <FieldError name={field.name} message={hasError ? (errors[field.name]?.message as string | undefined) : undefined} />
+      <FieldError name={field.name} message={errorMessage} />
     </div>
   );
 }

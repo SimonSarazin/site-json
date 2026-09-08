@@ -31,7 +31,7 @@
   "header": {
     "type": "stacked",
     "path": "/",
-    "logo": "/images/parent62/logo.png",
+    "logo": "/images/parent62/Logo-Aquarelle.png",
     "textColor": "var(--p62-marine)",
     "logoAlt": {
       "fr": "Parent62 — Réseau Parentalité 62",
@@ -213,14 +213,6 @@
           },
           {
             "label": {
-              "fr": "Familles en sol mineur",
-              "en": "Familles en sol mineur"
-            },
-            "path": "/territoire/familles-en-sol-mineur",
-            "icon": "map-pin"
-          },
-          {
-            "label": {
               "fr": "Familles en sol mineur Hénin Carvin",
               "en": "Familles en sol mineur Hénin Carvin"
             },
@@ -250,73 +242,10 @@
           "fr": "Thèmes",
           "en": "Topics"
         },
-        "path": "/theme/la-petite-enfance",
-        "children": [
-          {
-            "label": {
-              "fr": "La petite enfance",
-              "en": "Early childhood"
-            },
-            "path": "/theme/la-petite-enfance",
-            "icon": "baby"
-          },
-          {
-            "label": {
-              "fr": "L’adolescence",
-              "en": "Adolescence"
-            },
-            "path": "/theme/ladolescence",
-            "icon": "users"
-          },
-          {
-            "label": {
-              "fr": "La santé",
-              "en": "Health"
-            },
-            "path": "/theme/la-sante",
-            "icon": "heart-pulse"
-          },
-          {
-            "label": {
-              "fr": "Le handicap",
-              "en": "Disability"
-            },
-            "path": "/theme/le-handicap",
-            "icon": "accessibility"
-          },
-          {
-            "label": {
-              "fr": "Les jeux",
-              "en": "Games"
-            },
-            "path": "/theme/les-jeux",
-            "icon": "puzzle"
-          },
-          {
-            "label": {
-              "fr": "L’éducation",
-              "en": "Education"
-            },
-            "path": "/theme/leducation",
-            "icon": "graduation-cap"
-          },
-          {
-            "label": {
-              "fr": "La communication",
-              "en": "Communication"
-            },
-            "path": "/theme/la-communication",
-            "icon": "message-circle"
-          },
-          {
-            "label": {
-              "fr": "Les écrans – Le numérique",
-              "en": "Screens & digital"
-            },
-            "path": "/theme/les-ecrans-le-numerique",
-            "icon": "smartphone"
-          }
-        ]
+        "dynamicList": {
+          "list": ["themes", "themesPoi", "themesEvents"],
+          "filterId": "theme"
+        }
       },
       {
         "label": {
@@ -497,6 +426,47 @@
             "accentColor": "var(--p62-turquoise)",
             "autoplay": true,
             "autoplayIntervalMs": 6000
+          }
+        },
+        {
+          "type": "action-tiles",
+          "id": "home-double-entree",
+          "props": {
+            "headline": {
+              "fr": "Vous êtes…",
+              "en": "You are…"
+            },
+            "columns": {
+              "lg": 2
+            },
+            "actions": [
+              {
+                "icon": "heart-handshake",
+                "title": {
+                  "fr": "Parent",
+                  "en": "A parent"
+                },
+                "subtitle": {
+                  "fr": "Trouver du soutien, des activités et des paroles de parents près de chez vous",
+                  "en": "Find support, activities and parents' voices near you"
+                },
+                "href": "/parents",
+                "color": "primary"
+              },
+              {
+                "icon": "briefcase",
+                "title": {
+                  "fr": "Professionnel·le ou bénévole",
+                  "en": "A professional or volunteer"
+                },
+                "subtitle": {
+                  "fr": "Référencer vos actions, rejoindre le réseau et suivre l'agenda pro",
+                  "en": "List your activities, join the network and follow the professional agenda"
+                },
+                "href": "/pro",
+                "color": "accent"
+              }
+            ]
           }
         },
         {
@@ -692,8 +662,8 @@
                   "en": "Aujourd'hui — The Parenting Network 62"
                 },
                 "text": {
-                  "fr": "Parents, centres sociaux, associations, institutions : un maillage vivant sur les dix territoires du département.",
-                  "en": "Parents, social centres, associations, institutions: a living web across the department's ten territories."
+                  "fr": "Parents, centres sociaux, associations, institutions : un maillage vivant sur les neuf territoires du département.",
+                  "en": "Parents, social centres, associations, institutions: a living web across the department's nine territories."
                 }
               }
             ]
@@ -1566,8 +1536,8 @@
               "en": "Territorial coordinations"
             },
             "subtitle": {
-              "fr": "Neuf coordinations, dix territoires : trouvez la vôtre et écrivez-lui directement.",
-              "en": "Nine coordinations, ten territories: find yours and get in touch directly."
+              "fr": "Neuf coordinations, neuf territoires : trouvez la vôtre et écrivez-lui directement.",
+              "en": "Nine coordinations, nine territories: find yours and get in touch directly."
             },
             "align": "center",
             "size": "lg"
@@ -1945,20 +1915,20 @@
       ]
     },
     {
-      "path": "/blog",
+      "path": "/theme",
       "title": {
-        "fr": "Actualités",
-        "en": "News"
+        "fr": "Thèmes",
+        "en": "Topics"
       },
       "layout": "fullwidth",
       "seo": {
         "title": {
-          "fr": "Actualités — Parent62",
-          "en": "News — Parent62"
+          "fr": "Thèmes — Parent62",
+          "en": "Topics — Parent62"
         },
         "description": {
-          "fr": "Toutes les actualités du Réseau Parentalité 62 : filtrez par thème, public et territoire.",
-          "en": "All the news from the Parenting Network 62: filter by topic, audience and territory."
+          "fr": "Toutes les ressources du Réseau Parentalité 62 classées par thème.",
+          "en": "All Parenting Network 62 resources sorted by topic."
         },
         "ogType": "website",
         "twitterCard": "summary_large_image",
@@ -1967,15 +1937,15 @@
       "sections": [
         {
           "type": "searchHeader",
-          "id": "blog-search",
+          "id": "theme-search",
           "props": {
             "headline": {
-              "fr": "Les actualités du réseau",
-              "en": "Network news"
+              "fr": "Nos thèmes",
+              "en": "Our topics"
             },
             "subhead": {
-              "fr": "Ateliers, rencontres, appels à projets : filtrez par thème, public ou territoire.",
-              "en": "Workshops, meet-ups, calls for projects: filter by topic, audience or territory."
+              "fr": "Explorez les ressources du réseau par thème, public ou territoire.",
+              "en": "Explore the network's resources by topic, audience or territory."
             },
             "showSearch": true,
             "searchPlaceholder": {
@@ -1986,6 +1956,11 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
+                "hidden": true,
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -2276,11 +2251,379 @@
                     }
                   },
                   {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
+                    "id": "familles-en-sol-mineur-henin-carvin",
+                    "value": "Familles en sol mineur Hénin Carvin",
                     "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
+                      "fr": "Familles en sol mineur Hénin Carvin",
+                      "en": "Familles en sol mineur Hénin Carvin"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-lens-lievin",
+                    "value": "Familles en sol mineur Lens Liévin",
+                    "label": {
+                      "fr": "Familles en sol mineur Lens Liévin",
+                      "en": "Familles en sol mineur Lens Liévin"
+                    }
+                  },
+                  {
+                    "id": "ternois-bruaysis",
+                    "value": "Ternois Bruaysis",
+                    "label": {
+                      "fr": "Ternois Bruaysis",
+                      "en": "Ternois Bruaysis"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "articleFeed",
+          "id": "theme-feed",
+          "props": {
+            "costumSlug": "parent62",
+            "pageSize": 12,
+            "featured": false,
+            "fullWidth": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "/blog",
+      "title": {
+        "fr": "Actualités",
+        "en": "News"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Actualités — Parent62",
+          "en": "News — Parent62"
+        },
+        "description": {
+          "fr": "Toutes les actualités du Réseau Parentalité 62 : filtrez par thème, public et territoire.",
+          "en": "All the news from the Parenting Network 62: filter by topic, audience and territory."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/parent62/hero-carte.png"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "blog-search",
+          "props": {
+            "headline": {
+              "fr": "Les actualités du réseau",
+              "en": "Network news"
+            },
+            "subhead": {
+              "fr": "Ateliers, rencontres, appels à projets : filtrez par thème, public ou territoire.",
+              "en": "Workshops, meet-ups, calls for projects: filter by topic, audience or territory."
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une actualité…",
+              "en": "Search the news…"
+            },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
+                "label": {
+                  "fr": "Thèmes",
+                  "en": "Topics"
+                },
+                "field": "themes",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les thèmes",
+                  "en": "All topics"
+                },
+                "options": [
+                  {
+                    "id": "la-citoyennete",
+                    "value": "La citoyenneté",
+                    "label": {
+                      "fr": "La citoyenneté",
+                      "en": "La citoyenneté"
+                    }
+                  },
+                  {
+                    "id": "la-communication",
+                    "value": "La communication",
+                    "label": {
+                      "fr": "La communication",
+                      "en": "La communication"
+                    }
+                  },
+                  {
+                    "id": "la-culture",
+                    "value": "La culture",
+                    "label": {
+                      "fr": "La culture",
+                      "en": "La culture"
+                    }
+                  },
+                  {
+                    "id": "la-petite-enfance",
+                    "value": "La petite enfance",
+                    "label": {
+                      "fr": "La petite enfance",
+                      "en": "La petite enfance"
+                    }
+                  },
+                  {
+                    "id": "la-sante",
+                    "value": "La santé",
+                    "label": {
+                      "fr": "La santé",
+                      "en": "La santé"
+                    }
+                  },
+                  {
+                    "id": "ladolescence",
+                    "value": "L’adolescence",
+                    "label": {
+                      "fr": "L’adolescence",
+                      "en": "L’adolescence"
+                    }
+                  },
+                  {
+                    "id": "larrivee-dun-enfant",
+                    "value": "L’arrivée d’un enfant",
+                    "label": {
+                      "fr": "L’arrivée d’un enfant",
+                      "en": "L’arrivée d’un enfant"
+                    }
+                  },
+                  {
+                    "id": "le-deuil",
+                    "value": "Le deuil",
+                    "label": {
+                      "fr": "Le deuil",
+                      "en": "Le deuil"
+                    }
+                  },
+                  {
+                    "id": "le-handicap",
+                    "value": "Le handicap",
+                    "label": {
+                      "fr": "Le handicap",
+                      "en": "Le handicap"
+                    }
+                  },
+                  {
+                    "id": "le-repit",
+                    "value": "Le répit",
+                    "label": {
+                      "fr": "Le répit",
+                      "en": "Le répit"
+                    }
+                  },
+                  {
+                    "id": "lecole",
+                    "value": "L’école",
+                    "label": {
+                      "fr": "L’école",
+                      "en": "L’école"
+                    }
+                  },
+                  {
+                    "id": "leducation",
+                    "value": "L’éducation",
+                    "label": {
+                      "fr": "L’éducation",
+                      "en": "L’éducation"
+                    }
+                  },
+                  {
+                    "id": "les-activites-supports-a-la-relation",
+                    "value": "Les activités supports à la relation",
+                    "label": {
+                      "fr": "Les activités supports à la relation",
+                      "en": "Les activités supports à la relation"
+                    }
+                  },
+                  {
+                    "id": "les-ecrans-le-numerique",
+                    "value": "Les écrans – Le numérique",
+                    "label": {
+                      "fr": "Les écrans – Le numérique",
+                      "en": "Les écrans – Le numérique"
+                    }
+                  },
+                  {
+                    "id": "les-emotions",
+                    "value": "Les émotions",
+                    "label": {
+                      "fr": "Les émotions",
+                      "en": "Les émotions"
+                    }
+                  },
+                  {
+                    "id": "les-jeux",
+                    "value": "Les jeux",
+                    "label": {
+                      "fr": "Les jeux",
+                      "en": "Les jeux"
+                    }
+                  },
+                  {
+                    "id": "les-situations-de-separation",
+                    "value": "Les situations de séparation",
+                    "label": {
+                      "fr": "Les situations de séparation",
+                      "en": "Les situations de séparation"
+                    }
+                  },
+                  {
+                    "id": "les-violences",
+                    "value": "Les violences",
+                    "label": {
+                      "fr": "Les violences",
+                      "en": "Les violences"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "public",
+                "label": {
+                  "fr": "Publics",
+                  "en": "Audiences"
+                },
+                "field": "publics",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les publics",
+                  "en": "All audiences"
+                },
+                "options": [
+                  {
+                    "id": "benevoles",
+                    "value": "Bénévoles",
+                    "label": {
+                      "fr": "Bénévoles",
+                      "en": "Bénévoles"
+                    }
+                  },
+                  {
+                    "id": "en-famille",
+                    "value": "En famille",
+                    "label": {
+                      "fr": "En famille",
+                      "en": "En famille"
+                    }
+                  },
+                  {
+                    "id": "enfance",
+                    "value": "Enfance",
+                    "label": {
+                      "fr": "Enfance",
+                      "en": "Enfance"
+                    }
+                  },
+                  {
+                    "id": "futurs-parents",
+                    "value": "Futurs parents",
+                    "label": {
+                      "fr": "Futurs parents",
+                      "en": "Futurs parents"
+                    }
+                  },
+                  {
+                    "id": "parents",
+                    "value": "Parents",
+                    "label": {
+                      "fr": "Parents",
+                      "en": "Parents"
+                    }
+                  },
+                  {
+                    "id": "parents-enfants",
+                    "value": "Parents-enfants",
+                    "label": {
+                      "fr": "Parents-enfants",
+                      "en": "Parents-enfants"
+                    }
+                  },
+                  {
+                    "id": "professionnels",
+                    "value": "Professionnels",
+                    "label": {
+                      "fr": "Professionnels",
+                      "en": "Professionnels"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "territoire",
+                "label": {
+                  "fr": "Territoires",
+                  "en": "Territories"
+                },
+                "field": "territoires",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les territoires",
+                  "en": "All territories"
+                },
+                "options": [
+                  {
+                    "id": "arrageois",
+                    "value": "Arrageois",
+                    "label": {
+                      "fr": "Arrageois",
+                      "en": "Arrageois"
+                    }
+                  },
+                  {
+                    "id": "artois",
+                    "value": "Artois",
+                    "label": {
+                      "fr": "Artois",
+                      "en": "Artois"
+                    }
+                  },
+                  {
+                    "id": "audomarois",
+                    "value": "Audomarois",
+                    "label": {
+                      "fr": "Audomarois",
+                      "en": "Audomarois"
+                    }
+                  },
+                  {
+                    "id": "boulonnais",
+                    "value": "Boulonnais",
+                    "label": {
+                      "fr": "Boulonnais",
+                      "en": "Boulonnais"
+                    }
+                  },
+                  {
+                    "id": "calaisis",
+                    "value": "Calaisis",
+                    "label": {
+                      "fr": "Calaisis",
+                      "en": "Calaisis"
+                    }
+                  },
+                  {
+                    "id": "entre-mer-et-terres",
+                    "value": "Entre Mer et Terres",
+                    "label": {
+                      "fr": "Entre Mer et Terres",
+                      "en": "Entre Mer et Terres"
                     }
                   },
                   {
@@ -2366,6 +2709,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -2653,14 +3000,6 @@
                     "label": {
                       "fr": "Entre Mer et Terres",
                       "en": "Entre Mer et Terres"
-                    }
-                  },
-                  {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
                     }
                   },
                   {
@@ -2749,6 +3088,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -3039,14 +3382,6 @@
                     }
                   },
                   {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
-                    }
-                  },
-                  {
                     "id": "familles-en-sol-mineur-henin-carvin",
                     "value": "Familles en sol mineur Hénin Carvin",
                     "label": {
@@ -3115,6 +3450,10 @@
             "dropdownFilters": [
               {
                 "id": "category",
+                "optionsFrom": {
+                  "list": ["categoriesParole"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Catégorie",
                   "en": "Category"
@@ -3207,14 +3546,6 @@
                     "label": {
                       "fr": "Entre Mer et Terres",
                       "en": "Entre Mer et Terres"
-                    }
-                  },
-                  {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
                     }
                   },
                   {
@@ -3367,6 +3698,10 @@
               },
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -3610,7 +3945,6 @@
                     "Boulonnais": "var(--territoire-boulonnais)",
                     "Calaisis": "var(--territoire-calaisis)",
                     "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
-                    "Familles en sol mineur": "var(--territoire-familles-en-sol-mineur)",
                     "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
                     "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
                     "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
@@ -3716,11 +4050,11 @@
                     }
                   },
                   {
-                    "id": "jeu",
-                    "value": "Jeu",
+                    "id": "les-jeux-du-reseau",
+                    "value": "Les jeux du réseau",
                     "label": {
-                      "fr": "Jeu",
-                      "en": "Jeu"
+                      "fr": "Les jeux du réseau",
+                      "en": "Les jeux du réseau"
                     }
                   },
                   {
@@ -3737,6 +4071,22 @@
                     "label": {
                       "fr": "Lien",
                       "en": "Lien"
+                    }
+                  },
+                  {
+                    "id": "inforeso",
+                    "value": "Inforéso",
+                    "label": {
+                      "fr": "Inforéso",
+                      "en": "Inforéso"
+                    }
+                  },
+                  {
+                    "id": "elles-et-ils-ont-marque-le-reseau",
+                    "value": "Elles et ils ont marqué le réseau",
+                    "label": {
+                      "fr": "Elles et ils ont marqué le réseau",
+                      "en": "Elles et ils ont marqué le réseau"
                     }
                   }
                 ]
@@ -3800,14 +4150,6 @@
                     "label": {
                       "fr": "Entre Mer et Terres",
                       "en": "Entre Mer et Terres"
-                    }
-                  },
-                  {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
                     }
                   },
                   {
@@ -3909,6 +4251,10 @@
               },
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -4243,9 +4589,16 @@
                     "Vidéo": "var(--chart-1)",
                     "Photo": "var(--chart-2)",
                     "Compte-rendu": "var(--chart-3)",
-                    "Jeu": "var(--chart-4)",
+                    "Les jeux du réseau": "var(--chart-4)",
                     "Document": "var(--chart-5)",
-                    "Lien": "var(--primary)"
+                    "Lien": "var(--primary)",
+                    "Inforéso": "var(--info)",
+                    "Elles et ils ont marqué le réseau": "var(--success)"
+                  },
+                  "icons": {
+                    "Inforéso": "newspaper",
+                    "Elles et ils ont marqué le réseau": "award",
+                    "Les jeux du réseau": "gamepad-2"
                   }
                 },
                 "facets": [
@@ -4370,14 +4723,6 @@
                     }
                   },
                   {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
-                    }
-                  },
-                  {
                     "id": "familles-en-sol-mineur-henin-carvin",
                     "value": "Familles en sol mineur Hénin Carvin",
                     "label": {
@@ -4476,6 +4821,10 @@
               },
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -4681,7 +5030,7 @@
               "sourceKey": [
                 "parent62"
               ],
-              "indexStepList": 12,
+              "indexStepList": 60,
               "filters": {
                 "type": "others"
               }
@@ -4860,14 +5209,6 @@
                     "label": {
                       "fr": "Entre Mer et Terres",
                       "en": "Entre Mer et Terres"
-                    }
-                  },
-                  {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
                     }
                   },
                   {
@@ -5091,14 +5432,6 @@
                     }
                   },
                   {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
-                    }
-                  },
-                  {
                     "id": "familles-en-sol-mineur-henin-carvin",
                     "value": "Familles en sol mineur Hénin Carvin",
                     "label": {
@@ -5316,14 +5649,6 @@
                     "label": {
                       "fr": "Entre Mer et Terres",
                       "en": "Entre Mer et Terres"
-                    }
-                  },
-                  {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
                     }
                   },
                   {
@@ -5547,14 +5872,6 @@
                     }
                   },
                   {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
-                    }
-                  },
-                  {
                     "id": "familles-en-sol-mineur-henin-carvin",
                     "value": "Familles en sol mineur Hénin Carvin",
                     "label": {
@@ -5772,14 +6089,6 @@
                     "label": {
                       "fr": "Entre Mer et Terres",
                       "en": "Entre Mer et Terres"
-                    }
-                  },
-                  {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
                     }
                   },
                   {
@@ -6003,14 +6312,6 @@
                     }
                   },
                   {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
-                    }
-                  },
-                  {
                     "id": "familles-en-sol-mineur-henin-carvin",
                     "value": "Familles en sol mineur Hénin Carvin",
                     "label": {
@@ -6228,14 +6529,6 @@
                     "label": {
                       "fr": "Entre Mer et Terres",
                       "en": "Entre Mer et Terres"
-                    }
-                  },
-                  {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
                     }
                   },
                   {
@@ -6459,14 +6752,6 @@
                     }
                   },
                   {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
-                    }
-                  },
-                  {
                     "id": "familles-en-sol-mineur-henin-carvin",
                     "value": "Familles en sol mineur Hénin Carvin",
                     "label": {
@@ -6556,6 +6841,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -6772,14 +7061,6 @@
                     "label": {
                       "fr": "Entre Mer et Terres",
                       "en": "Entre Mer et Terres"
-                    }
-                  },
-                  {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
                     }
                   },
                   {
@@ -6872,6 +7153,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -7088,14 +7373,6 @@
                     "label": {
                       "fr": "Entre Mer et Terres",
                       "en": "Entre Mer et Terres"
-                    }
-                  },
-                  {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
                     }
                   },
                   {
@@ -7188,6 +7465,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -7404,14 +7685,6 @@
                     "label": {
                       "fr": "Entre Mer et Terres",
                       "en": "Entre Mer et Terres"
-                    }
-                  },
-                  {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
                     }
                   },
                   {
@@ -7504,6 +7777,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -7720,14 +7997,6 @@
                     "label": {
                       "fr": "Entre Mer et Terres",
                       "en": "Entre Mer et Terres"
-                    }
-                  },
-                  {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
                     }
                   },
                   {
@@ -7820,6 +8089,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -8036,14 +8309,6 @@
                     "label": {
                       "fr": "Entre Mer et Terres",
                       "en": "Entre Mer et Terres"
-                    }
-                  },
-                  {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
                     }
                   },
                   {
@@ -8136,6 +8401,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -8352,14 +8621,6 @@
                     "label": {
                       "fr": "Entre Mer et Terres",
                       "en": "Entre Mer et Terres"
-                    }
-                  },
-                  {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
                     }
                   },
                   {
@@ -8452,6 +8713,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -8671,14 +8936,6 @@
                     }
                   },
                   {
-                    "id": "familles-en-sol-mineur",
-                    "value": "Familles en sol mineur",
-                    "label": {
-                      "fr": "Familles en sol mineur",
-                      "en": "Familles en sol mineur"
-                    }
-                  },
-                  {
                     "id": "familles-en-sol-mineur-henin-carvin",
                     "value": "Familles en sol mineur Hénin Carvin",
                     "label": {
@@ -8754,6 +9011,51 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/arrageois-comite",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Dates du comité local",
+                "en": "Local committee dates"
+              }
+            },
+            "description": {
+              "fr": "La prochaine réunion du comité local Arrageois.",
+              "en": "Next meeting of the Arrageois local committee."
+            },
+            "showViewToggle": false,
+            "showTabs": false,
+            "defaultTab": "upcoming",
+            "limit": 3,
+            "filters": {
+              "type": false,
+              "text": false
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3,
+              "xl": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "costumSlug": "parent62",
+              "indexStepList": 30,
+              "filters": {
+                "type": "meeting",
+                "territoires": {
+                  "$in": [
+                    "Arrageois"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "cards",
           "props": {
             "columns": 2,
@@ -8771,19 +9073,144 @@
                 }
               },
               {
-                "icon": "users",
+                "icon": "folder-open",
                 "title": {
-                  "fr": "Le comité local",
-                  "en": "The local committee"
+                  "fr": "Comptes rendus des réunions",
+                  "en": "Minutes of the meetings"
                 },
                 "text": {
-                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.\nComptes rendus des réunions : cliquer sur cette carte (Google Drive).",
-                  "en": "Professionals and parents of the territory meet regularly to share news, build joint activities and keep the network alive locally. Meeting dates are announced in the agenda.\nMinutes of the meetings: click on this card (Google Drive)."
+                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
                 },
                 "href": "https://drive.google.com/drive/folders/1-xR70C3jtA6XK7bAhzVyysK-8_Gx-Hy_",
                 "target": "_blank"
               }
             ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "/territoire/arrageois-ressources",
+          "props": {
+            "enableMap": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Ressources du territoire",
+                "en": "Resources in this territory"
+              },
+              "linkText": {
+                "fr": "Voir toutes les ressources",
+                "en": "See all resources"
+              },
+              "linkHref": "/ressources?territoire=arrageois"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "sourceKey": [
+                "parent62"
+              ],
+              "defaultFilters": {
+                "type": "recoveryCenter",
+                "territoires": {
+                  "$in": [
+                    "Arrageois"
+                  ]
+                }
+              },
+              "defaultFields": [
+                "name",
+                "category",
+                "description",
+                "urls",
+                "medias",
+                "territoires",
+                "publics",
+                "themes",
+                "tags",
+                "address",
+                "created",
+                "type",
+                "source",
+                "profilMediumImageUrl",
+                "profilImageUrl"
+              ],
+              "searchBy": [
+                "name",
+                "description"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              },
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "resource",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "resource",
+                "width": "2xl"
+              },
+              "resource": {
+                "design": "card",
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "created",
+                "imageField": "profilMediumImageUrl",
+                "cityField": "address.addressLocality",
+                "urlsField": "urls",
+                "badge": {
+                  "field": "category",
+                  "colors": {
+                    "Vidéo": "var(--chart-1)",
+                    "Photo": "var(--chart-2)",
+                    "Compte-rendu": "var(--chart-3)",
+                    "Les jeux du réseau": "var(--chart-4)",
+                    "Document": "var(--chart-5)",
+                    "Lien": "var(--primary)",
+                    "Inforéso": "var(--info)",
+                    "Elles et ils ont marqué le réseau": "var(--success)"
+                  },
+                  "icons": {
+                    "Inforéso": "newspaper",
+                    "Elles et ils ont marqué le réseau": "award",
+                    "Les jeux du réseau": "gamepad-2"
+                  }
+                },
+                "facets": [
+                  {
+                    "field": "publics",
+                    "label": {
+                      "fr": "Publics",
+                      "en": "Audiences"
+                    }
+                  },
+                  {
+                    "field": "themes",
+                    "label": {
+                      "fr": "Thèmes",
+                      "en": "Themes"
+                    }
+                  },
+                  {
+                    "field": "tags",
+                    "label": {
+                      "fr": "Mots-clés",
+                      "en": "Keywords"
+                    }
+                  }
+                ]
+              }
+            }
           }
         },
         {
@@ -8799,6 +9226,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -9130,12 +9561,6 @@
           }
         },
         {
-          "type": "html",
-          "props": {
-            "html": "<section class=\"py-10 px-4\"><div class=\"container mx-auto max-w-3xl\"><h2 class=\"text-2xl font-bold mb-3\">Ressources du territoire</h2><ul class=\"list-disc pl-6 space-y-1\"><li><a class=\"underline\" href=\"https://rp62-arrageois.gogocarto.fr\" target=\"_blank\" rel=\"noopener noreferrer\">Carte interactive du territoire (GoGoCarto)</a></li><li><a class=\"underline\" href=\"https://www.parent62.org/plaquette-ressource-parentalite-et-eloignement-du-reseau-parentalite-de-larrageois/\" target=\"_blank\" rel=\"noopener noreferrer\">Plaquette ressource « Parentalité et éloignement »</a></li><li><a class=\"underline\" href=\"https://www.parent62.org/guide-ressource-parents-dados-a-destination-des-partenaires-realisation-et-participation-des-parents-du-territoire-de-larrageois/\" target=\"_blank\" rel=\"noopener noreferrer\">Guide ressource « Parents d'Ados » à destination des partenaires</a></li></ul></div></section>"
-          }
-        },
-        {
           "type": "cta",
           "props": {
             "headline": {
@@ -9195,6 +9620,51 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/artois-comite",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Dates du comité local",
+                "en": "Local committee dates"
+              }
+            },
+            "description": {
+              "fr": "La prochaine réunion du comité local Artois.",
+              "en": "Next meeting of the Artois local committee."
+            },
+            "showViewToggle": false,
+            "showTabs": false,
+            "defaultTab": "upcoming",
+            "limit": 3,
+            "filters": {
+              "type": false,
+              "text": false
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3,
+              "xl": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "costumSlug": "parent62",
+              "indexStepList": 30,
+              "filters": {
+                "type": "meeting",
+                "territoires": {
+                  "$in": [
+                    "Artois"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "cards",
           "props": {
             "columns": 2,
@@ -9212,19 +9682,144 @@
                 }
               },
               {
-                "icon": "users",
+                "icon": "folder-open",
                 "title": {
-                  "fr": "Le comité local",
-                  "en": "The local committee"
+                  "fr": "Comptes rendus des réunions",
+                  "en": "Minutes of the meetings"
                 },
                 "text": {
-                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.\nComptes rendus des réunions : cliquer sur cette carte (Google Drive).",
-                  "en": "Professionals and parents of the territory meet regularly to share news, build joint activities and keep the network alive locally. Meeting dates are announced in the agenda.\nMinutes of the meetings: click on this card (Google Drive)."
+                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
                 },
                 "href": "https://drive.google.com/drive/folders/1P9CBZfe71ri7FU8Vc9H_8e_yF_v6_hye?usp=sharing",
                 "target": "_blank"
               }
             ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "/territoire/artois-ressources",
+          "props": {
+            "enableMap": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Ressources du territoire",
+                "en": "Resources in this territory"
+              },
+              "linkText": {
+                "fr": "Voir toutes les ressources",
+                "en": "See all resources"
+              },
+              "linkHref": "/ressources?territoire=artois"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "sourceKey": [
+                "parent62"
+              ],
+              "defaultFilters": {
+                "type": "recoveryCenter",
+                "territoires": {
+                  "$in": [
+                    "Artois"
+                  ]
+                }
+              },
+              "defaultFields": [
+                "name",
+                "category",
+                "description",
+                "urls",
+                "medias",
+                "territoires",
+                "publics",
+                "themes",
+                "tags",
+                "address",
+                "created",
+                "type",
+                "source",
+                "profilMediumImageUrl",
+                "profilImageUrl"
+              ],
+              "searchBy": [
+                "name",
+                "description"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              },
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "resource",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "resource",
+                "width": "2xl"
+              },
+              "resource": {
+                "design": "card",
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "created",
+                "imageField": "profilMediumImageUrl",
+                "cityField": "address.addressLocality",
+                "urlsField": "urls",
+                "badge": {
+                  "field": "category",
+                  "colors": {
+                    "Vidéo": "var(--chart-1)",
+                    "Photo": "var(--chart-2)",
+                    "Compte-rendu": "var(--chart-3)",
+                    "Les jeux du réseau": "var(--chart-4)",
+                    "Document": "var(--chart-5)",
+                    "Lien": "var(--primary)",
+                    "Inforéso": "var(--info)",
+                    "Elles et ils ont marqué le réseau": "var(--success)"
+                  },
+                  "icons": {
+                    "Inforéso": "newspaper",
+                    "Elles et ils ont marqué le réseau": "award",
+                    "Les jeux du réseau": "gamepad-2"
+                  }
+                },
+                "facets": [
+                  {
+                    "field": "publics",
+                    "label": {
+                      "fr": "Publics",
+                      "en": "Audiences"
+                    }
+                  },
+                  {
+                    "field": "themes",
+                    "label": {
+                      "fr": "Thèmes",
+                      "en": "Themes"
+                    }
+                  },
+                  {
+                    "field": "tags",
+                    "label": {
+                      "fr": "Mots-clés",
+                      "en": "Keywords"
+                    }
+                  }
+                ]
+              }
+            }
           }
         },
         {
@@ -9240,6 +9835,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -9630,6 +10229,51 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/audomarois-comite",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Dates du comité local",
+                "en": "Local committee dates"
+              }
+            },
+            "description": {
+              "fr": "La prochaine réunion du comité local Audomarois.",
+              "en": "Next meeting of the Audomarois local committee."
+            },
+            "showViewToggle": false,
+            "showTabs": false,
+            "defaultTab": "upcoming",
+            "limit": 3,
+            "filters": {
+              "type": false,
+              "text": false
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3,
+              "xl": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "costumSlug": "parent62",
+              "indexStepList": 30,
+              "filters": {
+                "type": "meeting",
+                "territoires": {
+                  "$in": [
+                    "Audomarois"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "cards",
           "props": {
             "columns": 2,
@@ -9647,19 +10291,144 @@
                 }
               },
               {
-                "icon": "users",
+                "icon": "folder-open",
                 "title": {
-                  "fr": "Le comité local",
-                  "en": "The local committee"
+                  "fr": "Comptes rendus des réunions",
+                  "en": "Minutes of the meetings"
                 },
                 "text": {
-                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.\nComptes rendus des réunions : cliquer sur cette carte (Google Drive).",
-                  "en": "Professionals and parents of the territory meet regularly to share news, build joint activities and keep the network alive locally. Meeting dates are announced in the agenda.\nMinutes of the meetings: click on this card (Google Drive)."
+                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
                 },
                 "href": "https://drive.google.com/drive/folders/15CKV2rLe8fGPRcAveEjSP9PtZTLKY3c5?usp=sharing",
                 "target": "_blank"
               }
             ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "/territoire/audomarois-ressources",
+          "props": {
+            "enableMap": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Ressources du territoire",
+                "en": "Resources in this territory"
+              },
+              "linkText": {
+                "fr": "Voir toutes les ressources",
+                "en": "See all resources"
+              },
+              "linkHref": "/ressources?territoire=audomarois"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "sourceKey": [
+                "parent62"
+              ],
+              "defaultFilters": {
+                "type": "recoveryCenter",
+                "territoires": {
+                  "$in": [
+                    "Audomarois"
+                  ]
+                }
+              },
+              "defaultFields": [
+                "name",
+                "category",
+                "description",
+                "urls",
+                "medias",
+                "territoires",
+                "publics",
+                "themes",
+                "tags",
+                "address",
+                "created",
+                "type",
+                "source",
+                "profilMediumImageUrl",
+                "profilImageUrl"
+              ],
+              "searchBy": [
+                "name",
+                "description"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              },
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "resource",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "resource",
+                "width": "2xl"
+              },
+              "resource": {
+                "design": "card",
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "created",
+                "imageField": "profilMediumImageUrl",
+                "cityField": "address.addressLocality",
+                "urlsField": "urls",
+                "badge": {
+                  "field": "category",
+                  "colors": {
+                    "Vidéo": "var(--chart-1)",
+                    "Photo": "var(--chart-2)",
+                    "Compte-rendu": "var(--chart-3)",
+                    "Les jeux du réseau": "var(--chart-4)",
+                    "Document": "var(--chart-5)",
+                    "Lien": "var(--primary)",
+                    "Inforéso": "var(--info)",
+                    "Elles et ils ont marqué le réseau": "var(--success)"
+                  },
+                  "icons": {
+                    "Inforéso": "newspaper",
+                    "Elles et ils ont marqué le réseau": "award",
+                    "Les jeux du réseau": "gamepad-2"
+                  }
+                },
+                "facets": [
+                  {
+                    "field": "publics",
+                    "label": {
+                      "fr": "Publics",
+                      "en": "Audiences"
+                    }
+                  },
+                  {
+                    "field": "themes",
+                    "label": {
+                      "fr": "Thèmes",
+                      "en": "Themes"
+                    }
+                  },
+                  {
+                    "field": "tags",
+                    "label": {
+                      "fr": "Mots-clés",
+                      "en": "Keywords"
+                    }
+                  }
+                ]
+              }
+            }
           }
         },
         {
@@ -9675,6 +10444,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -10006,12 +10779,6 @@
           }
         },
         {
-          "type": "html",
-          "props": {
-            "html": "<section class=\"py-10 px-4\"><div class=\"container mx-auto max-w-3xl\"><h2 class=\"text-2xl font-bold mb-3\">Ressources du territoire</h2><ul class=\"list-disc pl-6 space-y-1\"><li><a class=\"underline\" href=\"https://acteur-parentalite-audomarois.gogocarto.fr/\" target=\"_blank\" rel=\"noopener noreferrer\">Cartographie interactive des acteurs de la parentalité (GoGoCarto)</a></li></ul></div></section>"
-          }
-        },
-        {
           "type": "cta",
           "props": {
             "headline": {
@@ -10071,6 +10838,51 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/boulonnais-comite",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Dates du comité local",
+                "en": "Local committee dates"
+              }
+            },
+            "description": {
+              "fr": "La prochaine réunion du comité local Boulonnais.",
+              "en": "Next meeting of the Boulonnais local committee."
+            },
+            "showViewToggle": false,
+            "showTabs": false,
+            "defaultTab": "upcoming",
+            "limit": 3,
+            "filters": {
+              "type": false,
+              "text": false
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3,
+              "xl": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "costumSlug": "parent62",
+              "indexStepList": 30,
+              "filters": {
+                "type": "meeting",
+                "territoires": {
+                  "$in": [
+                    "Boulonnais"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "cards",
           "props": {
             "columns": 2,
@@ -10088,19 +10900,144 @@
                 }
               },
               {
-                "icon": "users",
+                "icon": "folder-open",
                 "title": {
-                  "fr": "Le comité local",
-                  "en": "The local committee"
+                  "fr": "Comptes rendus des réunions",
+                  "en": "Minutes of the meetings"
                 },
                 "text": {
-                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.\nComptes rendus des réunions : cliquer sur cette carte (Google Drive).",
-                  "en": "Professionals and parents of the territory meet regularly to share news, build joint activities and keep the network alive locally. Meeting dates are announced in the agenda.\nMinutes of the meetings: click on this card (Google Drive)."
+                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
                 },
                 "href": "https://drive.google.com/open?id=1eUFrIrM-fUOJ0nWkNcm7VDidfrszZrLg",
                 "target": "_blank"
               }
             ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "/territoire/boulonnais-ressources",
+          "props": {
+            "enableMap": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Ressources du territoire",
+                "en": "Resources in this territory"
+              },
+              "linkText": {
+                "fr": "Voir toutes les ressources",
+                "en": "See all resources"
+              },
+              "linkHref": "/ressources?territoire=boulonnais"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "sourceKey": [
+                "parent62"
+              ],
+              "defaultFilters": {
+                "type": "recoveryCenter",
+                "territoires": {
+                  "$in": [
+                    "Boulonnais"
+                  ]
+                }
+              },
+              "defaultFields": [
+                "name",
+                "category",
+                "description",
+                "urls",
+                "medias",
+                "territoires",
+                "publics",
+                "themes",
+                "tags",
+                "address",
+                "created",
+                "type",
+                "source",
+                "profilMediumImageUrl",
+                "profilImageUrl"
+              ],
+              "searchBy": [
+                "name",
+                "description"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              },
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "resource",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "resource",
+                "width": "2xl"
+              },
+              "resource": {
+                "design": "card",
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "created",
+                "imageField": "profilMediumImageUrl",
+                "cityField": "address.addressLocality",
+                "urlsField": "urls",
+                "badge": {
+                  "field": "category",
+                  "colors": {
+                    "Vidéo": "var(--chart-1)",
+                    "Photo": "var(--chart-2)",
+                    "Compte-rendu": "var(--chart-3)",
+                    "Les jeux du réseau": "var(--chart-4)",
+                    "Document": "var(--chart-5)",
+                    "Lien": "var(--primary)",
+                    "Inforéso": "var(--info)",
+                    "Elles et ils ont marqué le réseau": "var(--success)"
+                  },
+                  "icons": {
+                    "Inforéso": "newspaper",
+                    "Elles et ils ont marqué le réseau": "award",
+                    "Les jeux du réseau": "gamepad-2"
+                  }
+                },
+                "facets": [
+                  {
+                    "field": "publics",
+                    "label": {
+                      "fr": "Publics",
+                      "en": "Audiences"
+                    }
+                  },
+                  {
+                    "field": "themes",
+                    "label": {
+                      "fr": "Thèmes",
+                      "en": "Themes"
+                    }
+                  },
+                  {
+                    "field": "tags",
+                    "label": {
+                      "fr": "Mots-clés",
+                      "en": "Keywords"
+                    }
+                  }
+                ]
+              }
+            }
           }
         },
         {
@@ -10116,6 +11053,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -10447,12 +11388,6 @@
           }
         },
         {
-          "type": "html",
-          "props": {
-            "html": "<section class=\"py-10 px-4\"><div class=\"container mx-auto max-w-3xl\"><h2 class=\"text-2xl font-bold mb-3\">Ressources du territoire</h2><ul class=\"list-disc pl-6 space-y-1\"><li><a class=\"underline\" href=\"https://www.parent62.org/jeux-et-outils-du-reseau-2/\" target=\"_blank\" rel=\"noopener noreferrer\">Jeux et outils du réseau</a></li><li><a class=\"underline\" href=\"https://www.parent62.org/les-lieux-daccueil-enfants-parents-du-boulonnais/\" target=\"_blank\" rel=\"noopener noreferrer\">Les Lieux d'Accueil Enfants Parents du Boulonnais</a></li><li><a class=\"underline\" href=\"http://soutenirlesaidants.fr\" target=\"_blank\" rel=\"noopener noreferrer\">Plateforme répit — soutenirlesaidants.fr</a></li></ul></div></section>"
-          }
-        },
-        {
           "type": "cta",
           "props": {
             "headline": {
@@ -10512,6 +11447,51 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/calaisis-comite",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Dates du comité local",
+                "en": "Local committee dates"
+              }
+            },
+            "description": {
+              "fr": "La prochaine réunion du comité local Calaisis.",
+              "en": "Next meeting of the Calaisis local committee."
+            },
+            "showViewToggle": false,
+            "showTabs": false,
+            "defaultTab": "upcoming",
+            "limit": 3,
+            "filters": {
+              "type": false,
+              "text": false
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3,
+              "xl": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "costumSlug": "parent62",
+              "indexStepList": 30,
+              "filters": {
+                "type": "meeting",
+                "territoires": {
+                  "$in": [
+                    "Calaisis"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "cards",
           "props": {
             "columns": 2,
@@ -10529,19 +11509,144 @@
                 }
               },
               {
-                "icon": "users",
+                "icon": "folder-open",
                 "title": {
-                  "fr": "Le comité local",
-                  "en": "The local committee"
+                  "fr": "Comptes rendus des réunions",
+                  "en": "Minutes of the meetings"
                 },
                 "text": {
-                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.\nComptes rendus des réunions : cliquer sur cette carte (Google Drive).",
-                  "en": "Professionals and parents of the territory meet regularly to share news, build joint activities and keep the network alive locally. Meeting dates are announced in the agenda.\nMinutes of the meetings: click on this card (Google Drive)."
+                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
                 },
                 "href": "https://drive.google.com/open?id=1AsrYqbr9j1lQsr-8NhtEPUH4V_axjGzK",
                 "target": "_blank"
               }
             ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "/territoire/calaisis-ressources",
+          "props": {
+            "enableMap": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Ressources du territoire",
+                "en": "Resources in this territory"
+              },
+              "linkText": {
+                "fr": "Voir toutes les ressources",
+                "en": "See all resources"
+              },
+              "linkHref": "/ressources?territoire=calaisis"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "sourceKey": [
+                "parent62"
+              ],
+              "defaultFilters": {
+                "type": "recoveryCenter",
+                "territoires": {
+                  "$in": [
+                    "Calaisis"
+                  ]
+                }
+              },
+              "defaultFields": [
+                "name",
+                "category",
+                "description",
+                "urls",
+                "medias",
+                "territoires",
+                "publics",
+                "themes",
+                "tags",
+                "address",
+                "created",
+                "type",
+                "source",
+                "profilMediumImageUrl",
+                "profilImageUrl"
+              ],
+              "searchBy": [
+                "name",
+                "description"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              },
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "resource",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "resource",
+                "width": "2xl"
+              },
+              "resource": {
+                "design": "card",
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "created",
+                "imageField": "profilMediumImageUrl",
+                "cityField": "address.addressLocality",
+                "urlsField": "urls",
+                "badge": {
+                  "field": "category",
+                  "colors": {
+                    "Vidéo": "var(--chart-1)",
+                    "Photo": "var(--chart-2)",
+                    "Compte-rendu": "var(--chart-3)",
+                    "Les jeux du réseau": "var(--chart-4)",
+                    "Document": "var(--chart-5)",
+                    "Lien": "var(--primary)",
+                    "Inforéso": "var(--info)",
+                    "Elles et ils ont marqué le réseau": "var(--success)"
+                  },
+                  "icons": {
+                    "Inforéso": "newspaper",
+                    "Elles et ils ont marqué le réseau": "award",
+                    "Les jeux du réseau": "gamepad-2"
+                  }
+                },
+                "facets": [
+                  {
+                    "field": "publics",
+                    "label": {
+                      "fr": "Publics",
+                      "en": "Audiences"
+                    }
+                  },
+                  {
+                    "field": "themes",
+                    "label": {
+                      "fr": "Thèmes",
+                      "en": "Themes"
+                    }
+                  },
+                  {
+                    "field": "tags",
+                    "label": {
+                      "fr": "Mots-clés",
+                      "en": "Keywords"
+                    }
+                  }
+                ]
+              }
+            }
           }
         },
         {
@@ -10557,6 +11662,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -10888,12 +11997,6 @@
           }
         },
         {
-          "type": "html",
-          "props": {
-            "html": "<section class=\"py-10 px-4\"><div class=\"container mx-auto max-w-3xl\"><h2 class=\"text-2xl font-bold mb-3\">Ressources du territoire</h2><ul class=\"list-disc pl-6 space-y-1\"><li><a class=\"underline\" href=\"https://www.parent62.org/jeux-et-outils-du-reseau/\" target=\"_blank\" rel=\"noopener noreferrer\">Jeux et outils du réseau</a></li><li><a class=\"underline\" href=\"https://www.parent62.org/autour-des-parents-une-nouvelle-application-pour-les-familles-du-calaisis/\" target=\"_blank\" rel=\"noopener noreferrer\">« Autour des Parents » : une application pour les familles du Calaisis</a></li></ul></div></section>"
-          }
-        },
-        {
           "type": "cta",
           "props": {
             "headline": {
@@ -10953,6 +12056,51 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/entre-mer-et-terres-comite",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Dates du comité local",
+                "en": "Local committee dates"
+              }
+            },
+            "description": {
+              "fr": "La prochaine réunion du comité local Entre Mer et Terres.",
+              "en": "Next meeting of the Entre Mer et Terres local committee."
+            },
+            "showViewToggle": false,
+            "showTabs": false,
+            "defaultTab": "upcoming",
+            "limit": 3,
+            "filters": {
+              "type": false,
+              "text": false
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3,
+              "xl": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "costumSlug": "parent62",
+              "indexStepList": 30,
+              "filters": {
+                "type": "meeting",
+                "territoires": {
+                  "$in": [
+                    "Entre Mer et Terres"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "cards",
           "props": {
             "columns": 2,
@@ -10970,19 +12118,144 @@
                 }
               },
               {
-                "icon": "users",
+                "icon": "folder-open",
                 "title": {
-                  "fr": "Le comité local",
-                  "en": "The local committee"
+                  "fr": "Comptes rendus des réunions",
+                  "en": "Minutes of the meetings"
                 },
                 "text": {
-                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.\nComptes rendus des réunions : cliquer sur cette carte (Google Drive).",
-                  "en": "Professionals and parents of the territory meet regularly to share news, build joint activities and keep the network alive locally. Meeting dates are announced in the agenda.\nMinutes of the meetings: click on this card (Google Drive)."
+                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
                 },
                 "href": "https://drive.google.com/drive/folders/1vDZliknVKG2QukWnVQ5-WxSvaiW2O4en?usp=sharing",
                 "target": "_blank"
               }
             ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "/territoire/entre-mer-et-terres-ressources",
+          "props": {
+            "enableMap": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Ressources du territoire",
+                "en": "Resources in this territory"
+              },
+              "linkText": {
+                "fr": "Voir toutes les ressources",
+                "en": "See all resources"
+              },
+              "linkHref": "/ressources?territoire=entre-mer-et-terres"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "sourceKey": [
+                "parent62"
+              ],
+              "defaultFilters": {
+                "type": "recoveryCenter",
+                "territoires": {
+                  "$in": [
+                    "Entre Mer et Terres"
+                  ]
+                }
+              },
+              "defaultFields": [
+                "name",
+                "category",
+                "description",
+                "urls",
+                "medias",
+                "territoires",
+                "publics",
+                "themes",
+                "tags",
+                "address",
+                "created",
+                "type",
+                "source",
+                "profilMediumImageUrl",
+                "profilImageUrl"
+              ],
+              "searchBy": [
+                "name",
+                "description"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              },
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "resource",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "resource",
+                "width": "2xl"
+              },
+              "resource": {
+                "design": "card",
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "created",
+                "imageField": "profilMediumImageUrl",
+                "cityField": "address.addressLocality",
+                "urlsField": "urls",
+                "badge": {
+                  "field": "category",
+                  "colors": {
+                    "Vidéo": "var(--chart-1)",
+                    "Photo": "var(--chart-2)",
+                    "Compte-rendu": "var(--chart-3)",
+                    "Les jeux du réseau": "var(--chart-4)",
+                    "Document": "var(--chart-5)",
+                    "Lien": "var(--primary)",
+                    "Inforéso": "var(--info)",
+                    "Elles et ils ont marqué le réseau": "var(--success)"
+                  },
+                  "icons": {
+                    "Inforéso": "newspaper",
+                    "Elles et ils ont marqué le réseau": "award",
+                    "Les jeux du réseau": "gamepad-2"
+                  }
+                },
+                "facets": [
+                  {
+                    "field": "publics",
+                    "label": {
+                      "fr": "Publics",
+                      "en": "Audiences"
+                    }
+                  },
+                  {
+                    "field": "themes",
+                    "label": {
+                      "fr": "Thèmes",
+                      "en": "Themes"
+                    }
+                  },
+                  {
+                    "field": "tags",
+                    "label": {
+                      "fr": "Mots-clés",
+                      "en": "Keywords"
+                    }
+                  }
+                ]
+              }
+            }
           }
         },
         {
@@ -10998,6 +12271,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -11329,12 +12606,6 @@
           }
         },
         {
-          "type": "html",
-          "props": {
-            "html": "<section class=\"py-10 px-4\"><div class=\"container mx-auto max-w-3xl\"><h2 class=\"text-2xl font-bold mb-3\">Ressources du territoire</h2><ul class=\"list-disc pl-6 space-y-1\"><li><a class=\"underline\" href=\"https://reseau-parentalite-entre-mer-e.gogocarto.fr/map\" target=\"_blank\" rel=\"noopener noreferrer\">Cartographie interactive du territoire (GoGoCarto)</a></li><li><a class=\"underline\" href=\"https://www.parent62.org/decouvrez-biblioboost-site-de-consultation-et-demprunt-des-jeux-et-outils-disponibles-sur-le-montreuillois/\" target=\"_blank\" rel=\"noopener noreferrer\">Biblioboost — consultation et emprunt des jeux et outils</a></li></ul></div></section>"
-          }
-        },
-        {
           "type": "cta",
           "props": {
             "headline": {
@@ -11367,368 +12638,6 @@
       ]
     },
     {
-      "path": "/territoire/familles-en-sol-mineur",
-      "title": {
-        "fr": "Familles en sol mineur",
-        "en": "Familles en sol mineur"
-      },
-      "layout": "fullwidth",
-      "seo": {
-        "title": {
-          "fr": "Familles en sol mineur — Parent62",
-          "en": "Familles en sol mineur — Parent62"
-        },
-        "description": {
-          "fr": "Actualités parentalité sur le territoire « Familles en sol mineur ».",
-          "en": "Parenting news across the “Familles en sol mineur” area."
-        },
-        "ogType": "website",
-        "twitterCard": "summary_large_image",
-        "ogImage": "/images/parent62/hero-carte.png"
-      },
-      "sections": [
-        {
-          "type": "title",
-          "id": "territoire-familles-en-sol-mineur-titre",
-          "props": {
-            "title": {
-              "fr": "Familles en sol mineur",
-              "en": "Familles en sol mineur"
-            },
-            "subtitle": {
-              "fr": "Le Comité Local Parentalité Familles en sol mineur est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.",
-              "en": "The Familles en sol mineur local parenting committee is one of the 9 local committees of the Parenting Network 62."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
-          "type": "searchHeader",
-          "id": "/territoire/familles-en-sol-mineur-search",
-          "props": {
-            "showSearch": true,
-            "searchPlaceholder": {
-              "fr": "Rechercher…",
-              "en": "Search…"
-            },
-            "showActiveFiltersTags": true,
-            "dropdownFilters": [
-              {
-                "id": "theme",
-                "label": {
-                  "fr": "Thèmes",
-                  "en": "Topics"
-                },
-                "field": "themes",
-                "multiple": true,
-                "allLabel": {
-                  "fr": "Tous les thèmes",
-                  "en": "All topics"
-                },
-                "options": [
-                  {
-                    "id": "la-citoyennete",
-                    "value": "La citoyenneté",
-                    "label": {
-                      "fr": "La citoyenneté",
-                      "en": "La citoyenneté"
-                    }
-                  },
-                  {
-                    "id": "la-communication",
-                    "value": "La communication",
-                    "label": {
-                      "fr": "La communication",
-                      "en": "La communication"
-                    }
-                  },
-                  {
-                    "id": "la-culture",
-                    "value": "La culture",
-                    "label": {
-                      "fr": "La culture",
-                      "en": "La culture"
-                    }
-                  },
-                  {
-                    "id": "la-petite-enfance",
-                    "value": "La petite enfance",
-                    "label": {
-                      "fr": "La petite enfance",
-                      "en": "La petite enfance"
-                    }
-                  },
-                  {
-                    "id": "la-sante",
-                    "value": "La santé",
-                    "label": {
-                      "fr": "La santé",
-                      "en": "La santé"
-                    }
-                  },
-                  {
-                    "id": "ladolescence",
-                    "value": "L’adolescence",
-                    "label": {
-                      "fr": "L’adolescence",
-                      "en": "L’adolescence"
-                    }
-                  },
-                  {
-                    "id": "larrivee-dun-enfant",
-                    "value": "L’arrivée d’un enfant",
-                    "label": {
-                      "fr": "L’arrivée d’un enfant",
-                      "en": "L’arrivée d’un enfant"
-                    }
-                  },
-                  {
-                    "id": "le-deuil",
-                    "value": "Le deuil",
-                    "label": {
-                      "fr": "Le deuil",
-                      "en": "Le deuil"
-                    }
-                  },
-                  {
-                    "id": "le-handicap",
-                    "value": "Le handicap",
-                    "label": {
-                      "fr": "Le handicap",
-                      "en": "Le handicap"
-                    }
-                  },
-                  {
-                    "id": "le-repit",
-                    "value": "Le répit",
-                    "label": {
-                      "fr": "Le répit",
-                      "en": "Le répit"
-                    }
-                  },
-                  {
-                    "id": "lecole",
-                    "value": "L’école",
-                    "label": {
-                      "fr": "L’école",
-                      "en": "L’école"
-                    }
-                  },
-                  {
-                    "id": "leducation",
-                    "value": "L’éducation",
-                    "label": {
-                      "fr": "L’éducation",
-                      "en": "L’éducation"
-                    }
-                  },
-                  {
-                    "id": "les-activites-supports-a-la-relation",
-                    "value": "Les activités supports à la relation",
-                    "label": {
-                      "fr": "Les activités supports à la relation",
-                      "en": "Les activités supports à la relation"
-                    }
-                  },
-                  {
-                    "id": "les-ecrans-le-numerique",
-                    "value": "Les écrans – Le numérique",
-                    "label": {
-                      "fr": "Les écrans – Le numérique",
-                      "en": "Les écrans – Le numérique"
-                    }
-                  },
-                  {
-                    "id": "les-emotions",
-                    "value": "Les émotions",
-                    "label": {
-                      "fr": "Les émotions",
-                      "en": "Les émotions"
-                    }
-                  },
-                  {
-                    "id": "les-jeux",
-                    "value": "Les jeux",
-                    "label": {
-                      "fr": "Les jeux",
-                      "en": "Les jeux"
-                    }
-                  },
-                  {
-                    "id": "les-situations-de-separation",
-                    "value": "Les situations de séparation",
-                    "label": {
-                      "fr": "Les situations de séparation",
-                      "en": "Les situations de séparation"
-                    }
-                  },
-                  {
-                    "id": "les-violences",
-                    "value": "Les violences",
-                    "label": {
-                      "fr": "Les violences",
-                      "en": "Les violences"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "public",
-                "label": {
-                  "fr": "Publics",
-                  "en": "Audiences"
-                },
-                "field": "publics",
-                "multiple": true,
-                "allLabel": {
-                  "fr": "Tous les publics",
-                  "en": "All audiences"
-                },
-                "options": [
-                  {
-                    "id": "benevoles",
-                    "value": "Bénévoles",
-                    "label": {
-                      "fr": "Bénévoles",
-                      "en": "Bénévoles"
-                    }
-                  },
-                  {
-                    "id": "en-famille",
-                    "value": "En famille",
-                    "label": {
-                      "fr": "En famille",
-                      "en": "En famille"
-                    }
-                  },
-                  {
-                    "id": "enfance",
-                    "value": "Enfance",
-                    "label": {
-                      "fr": "Enfance",
-                      "en": "Enfance"
-                    }
-                  },
-                  {
-                    "id": "futurs-parents",
-                    "value": "Futurs parents",
-                    "label": {
-                      "fr": "Futurs parents",
-                      "en": "Futurs parents"
-                    }
-                  },
-                  {
-                    "id": "parents",
-                    "value": "Parents",
-                    "label": {
-                      "fr": "Parents",
-                      "en": "Parents"
-                    }
-                  },
-                  {
-                    "id": "parents-enfants",
-                    "value": "Parents-enfants",
-                    "label": {
-                      "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
-                    }
-                  },
-                  {
-                    "id": "professionnels",
-                    "value": "Professionnels",
-                    "label": {
-                      "fr": "Professionnels",
-                      "en": "Professionnels"
-                    }
-                  }
-                ]
-              }
-            ],
-            "compact": true
-          }
-        },
-        {
-          "type": "gridLayout",
-          "id": "familles-en-sol-mineur-layout",
-          "props": {
-            "leftColumns": 3,
-            "rightColumns": 1,
-            "gap": 8,
-            "leftSection": {
-              "type": "articleFeed",
-              "id": "/territoire/familles-en-sol-mineur-feed",
-              "props": {
-                "costumSlug": "parent62",
-                "pageSize": 12,
-                "featured": false,
-                "filters": {
-                  "territoires": {
-                    "$in": [
-                      "Familles en sol mineur"
-                    ]
-                  }
-                }
-              }
-            },
-            "rightSection": {
-              "type": "team",
-              "id": "familles-en-sol-mineur-coordination",
-              "props": {
-                "layout": "grid",
-                "columns": 1,
-                "members": [
-                  {
-                    "name": {
-                      "fr": "Fiona Karkri",
-                      "en": "Fiona Karkri"
-                    },
-                    "role": {
-                      "fr": "Votre coordination",
-                      "en": "Your coordination"
-                    },
-                    "bio": {
-                      "fr": "06 73 75 40 49 · Hénin Carvin",
-                      "en": "06 73 75 40 49 · Hénin Carvin"
-                    },
-                    "avatar": "/images/parent62/equipe/fiona-karkri.svg",
-                    "socials": [
-                      {
-                        "platform": "mail",
-                        "url": "mailto:fsm.henincarvin@parent62.org"
-                      }
-                    ]
-                  },
-                  {
-                    "name": {
-                      "fr": "Guillaume Mondot",
-                      "en": "Guillaume Mondot"
-                    },
-                    "role": {
-                      "fr": "Votre coordination",
-                      "en": "Your coordination"
-                    },
-                    "bio": {
-                      "fr": "06 43 33 41 31 · Lens Liévin",
-                      "en": "06 43 33 41 31 · Lens Liévin"
-                    },
-                    "avatar": "/images/parent62/equipe/guillaume-mondot.svg",
-                    "socials": [
-                      {
-                        "platform": "mail",
-                        "url": "mailto:famillesensolmineur@parent62.org"
-                      }
-                    ]
-                  }
-                ]
-              }
-            },
-            "rightWrapperClass": "lg:sticky lg:top-24"
-          }
-        }
-      ]
-    },
-    {
       "path": "/territoire/familles-en-sol-mineur-henin-carvin",
       "title": {
         "fr": "Familles en sol mineur Hénin Carvin",
@@ -11756,6 +12665,51 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/familles-en-sol-mineur-henin-carvin-comite",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Dates du comité local",
+                "en": "Local committee dates"
+              }
+            },
+            "description": {
+              "fr": "La prochaine réunion du comité local Familles en sol mineur Hénin Carvin.",
+              "en": "Next meeting of the Familles en sol mineur Hénin Carvin local committee."
+            },
+            "showViewToggle": false,
+            "showTabs": false,
+            "defaultTab": "upcoming",
+            "limit": 3,
+            "filters": {
+              "type": false,
+              "text": false
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3,
+              "xl": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "costumSlug": "parent62",
+              "indexStepList": 30,
+              "filters": {
+                "type": "meeting",
+                "territoires": {
+                  "$in": [
+                    "Familles en sol mineur Hénin Carvin"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "cards",
           "props": {
             "columns": 2,
@@ -11773,17 +12727,144 @@
                 }
               },
               {
-                "icon": "users",
+                "icon": "folder-open",
                 "title": {
-                  "fr": "Le comité local",
-                  "en": "The local committee"
+                  "fr": "Comptes rendus des réunions",
+                  "en": "Minutes of the meetings"
                 },
                 "text": {
-                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.",
-                  "en": "Professionals and parents of the territory meet regularly to share news, build joint activities and keep the network alive locally. Meeting dates are announced in the agenda."
-                }
+                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                },
+                "href": "https://drive.google.com/drive/folders/1DwrBRmRVZTrGDAmfHhgeUIPRcQIvElIl",
+                "target": "_blank"
               }
             ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "/territoire/familles-en-sol-mineur-henin-carvin-ressources",
+          "props": {
+            "enableMap": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Ressources du territoire",
+                "en": "Resources in this territory"
+              },
+              "linkText": {
+                "fr": "Voir toutes les ressources",
+                "en": "See all resources"
+              },
+              "linkHref": "/ressources?territoire=familles-en-sol-mineur-henin-carvin"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "sourceKey": [
+                "parent62"
+              ],
+              "defaultFilters": {
+                "type": "recoveryCenter",
+                "territoires": {
+                  "$in": [
+                    "Familles en sol mineur Hénin Carvin"
+                  ]
+                }
+              },
+              "defaultFields": [
+                "name",
+                "category",
+                "description",
+                "urls",
+                "medias",
+                "territoires",
+                "publics",
+                "themes",
+                "tags",
+                "address",
+                "created",
+                "type",
+                "source",
+                "profilMediumImageUrl",
+                "profilImageUrl"
+              ],
+              "searchBy": [
+                "name",
+                "description"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              },
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "resource",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "resource",
+                "width": "2xl"
+              },
+              "resource": {
+                "design": "card",
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "created",
+                "imageField": "profilMediumImageUrl",
+                "cityField": "address.addressLocality",
+                "urlsField": "urls",
+                "badge": {
+                  "field": "category",
+                  "colors": {
+                    "Vidéo": "var(--chart-1)",
+                    "Photo": "var(--chart-2)",
+                    "Compte-rendu": "var(--chart-3)",
+                    "Les jeux du réseau": "var(--chart-4)",
+                    "Document": "var(--chart-5)",
+                    "Lien": "var(--primary)",
+                    "Inforéso": "var(--info)",
+                    "Elles et ils ont marqué le réseau": "var(--success)"
+                  },
+                  "icons": {
+                    "Inforéso": "newspaper",
+                    "Elles et ils ont marqué le réseau": "award",
+                    "Les jeux du réseau": "gamepad-2"
+                  }
+                },
+                "facets": [
+                  {
+                    "field": "publics",
+                    "label": {
+                      "fr": "Publics",
+                      "en": "Audiences"
+                    }
+                  },
+                  {
+                    "field": "themes",
+                    "label": {
+                      "fr": "Thèmes",
+                      "en": "Themes"
+                    }
+                  },
+                  {
+                    "field": "tags",
+                    "label": {
+                      "fr": "Mots-clés",
+                      "en": "Keywords"
+                    }
+                  }
+                ]
+              }
+            }
           }
         },
         {
@@ -11799,6 +12880,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -12189,6 +13274,51 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/familles-en-sol-mineur-lens-lievin-comite",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Dates du comité local",
+                "en": "Local committee dates"
+              }
+            },
+            "description": {
+              "fr": "La prochaine réunion du comité local Familles en sol mineur Lens Liévin.",
+              "en": "Next meeting of the Familles en sol mineur Lens Liévin local committee."
+            },
+            "showViewToggle": false,
+            "showTabs": false,
+            "defaultTab": "upcoming",
+            "limit": 3,
+            "filters": {
+              "type": false,
+              "text": false
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3,
+              "xl": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "costumSlug": "parent62",
+              "indexStepList": 30,
+              "filters": {
+                "type": "meeting",
+                "territoires": {
+                  "$in": [
+                    "Familles en sol mineur Lens Liévin"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "cards",
           "props": {
             "columns": 2,
@@ -12206,19 +13336,144 @@
                 }
               },
               {
-                "icon": "users",
+                "icon": "folder-open",
                 "title": {
-                  "fr": "Le comité local",
-                  "en": "The local committee"
+                  "fr": "Comptes rendus des réunions",
+                  "en": "Minutes of the meetings"
                 },
                 "text": {
-                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.\nComptes rendus des réunions : cliquer sur cette carte (Google Drive).",
-                  "en": "Professionals and parents of the territory meet regularly to share news, build joint activities and keep the network alive locally. Meeting dates are announced in the agenda.\nMinutes of the meetings: click on this card (Google Drive)."
+                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
                 },
                 "href": "https://drive.google.com/drive/u/4/folders/18FsQlISmxbXIkeduz6ZXD6yL8TI8dKU8",
                 "target": "_blank"
               }
             ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "/territoire/familles-en-sol-mineur-lens-lievin-ressources",
+          "props": {
+            "enableMap": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Ressources du territoire",
+                "en": "Resources in this territory"
+              },
+              "linkText": {
+                "fr": "Voir toutes les ressources",
+                "en": "See all resources"
+              },
+              "linkHref": "/ressources?territoire=familles-en-sol-mineur-lens-lievin"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "sourceKey": [
+                "parent62"
+              ],
+              "defaultFilters": {
+                "type": "recoveryCenter",
+                "territoires": {
+                  "$in": [
+                    "Familles en sol mineur Lens Liévin"
+                  ]
+                }
+              },
+              "defaultFields": [
+                "name",
+                "category",
+                "description",
+                "urls",
+                "medias",
+                "territoires",
+                "publics",
+                "themes",
+                "tags",
+                "address",
+                "created",
+                "type",
+                "source",
+                "profilMediumImageUrl",
+                "profilImageUrl"
+              ],
+              "searchBy": [
+                "name",
+                "description"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              },
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "resource",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "resource",
+                "width": "2xl"
+              },
+              "resource": {
+                "design": "card",
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "created",
+                "imageField": "profilMediumImageUrl",
+                "cityField": "address.addressLocality",
+                "urlsField": "urls",
+                "badge": {
+                  "field": "category",
+                  "colors": {
+                    "Vidéo": "var(--chart-1)",
+                    "Photo": "var(--chart-2)",
+                    "Compte-rendu": "var(--chart-3)",
+                    "Les jeux du réseau": "var(--chart-4)",
+                    "Document": "var(--chart-5)",
+                    "Lien": "var(--primary)",
+                    "Inforéso": "var(--info)",
+                    "Elles et ils ont marqué le réseau": "var(--success)"
+                  },
+                  "icons": {
+                    "Inforéso": "newspaper",
+                    "Elles et ils ont marqué le réseau": "award",
+                    "Les jeux du réseau": "gamepad-2"
+                  }
+                },
+                "facets": [
+                  {
+                    "field": "publics",
+                    "label": {
+                      "fr": "Publics",
+                      "en": "Audiences"
+                    }
+                  },
+                  {
+                    "field": "themes",
+                    "label": {
+                      "fr": "Thèmes",
+                      "en": "Themes"
+                    }
+                  },
+                  {
+                    "field": "tags",
+                    "label": {
+                      "fr": "Mots-clés",
+                      "en": "Keywords"
+                    }
+                  }
+                ]
+              }
+            }
           }
         },
         {
@@ -12234,6 +13489,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -12624,6 +13883,51 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/ternois-bruaysis-comite",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Dates du comité local",
+                "en": "Local committee dates"
+              }
+            },
+            "description": {
+              "fr": "La prochaine réunion du comité local Ternois Bruaysis.",
+              "en": "Next meeting of the Ternois Bruaysis local committee."
+            },
+            "showViewToggle": false,
+            "showTabs": false,
+            "defaultTab": "upcoming",
+            "limit": 3,
+            "filters": {
+              "type": false,
+              "text": false
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3,
+              "xl": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "costumSlug": "parent62",
+              "indexStepList": 30,
+              "filters": {
+                "type": "meeting",
+                "territoires": {
+                  "$in": [
+                    "Ternois Bruaysis"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "cards",
           "props": {
             "columns": 2,
@@ -12641,17 +13945,144 @@
                 }
               },
               {
-                "icon": "users",
+                "icon": "folder-open",
                 "title": {
-                  "fr": "Le comité local",
-                  "en": "The local committee"
+                  "fr": "Comptes rendus des réunions",
+                  "en": "Minutes of the meetings"
                 },
                 "text": {
-                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.",
-                  "en": "Professionals and parents of the territory meet regularly to share news, build joint activities and keep the network alive locally. Meeting dates are announced in the agenda."
-                }
+                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                },
+                "href": "https://drive.google.com/drive/folders/1hHM5Es-SJFBBlnbPugZAuHe0dY40T88w",
+                "target": "_blank"
               }
             ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "/territoire/ternois-bruaysis-ressources",
+          "props": {
+            "enableMap": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Ressources du territoire",
+                "en": "Resources in this territory"
+              },
+              "linkText": {
+                "fr": "Voir toutes les ressources",
+                "en": "See all resources"
+              },
+              "linkHref": "/ressources?territoire=ternois-bruaysis"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "sourceKey": [
+                "parent62"
+              ],
+              "defaultFilters": {
+                "type": "recoveryCenter",
+                "territoires": {
+                  "$in": [
+                    "Ternois Bruaysis"
+                  ]
+                }
+              },
+              "defaultFields": [
+                "name",
+                "category",
+                "description",
+                "urls",
+                "medias",
+                "territoires",
+                "publics",
+                "themes",
+                "tags",
+                "address",
+                "created",
+                "type",
+                "source",
+                "profilMediumImageUrl",
+                "profilImageUrl"
+              ],
+              "searchBy": [
+                "name",
+                "description"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              },
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "resource",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "resource",
+                "width": "2xl"
+              },
+              "resource": {
+                "design": "card",
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "created",
+                "imageField": "profilMediumImageUrl",
+                "cityField": "address.addressLocality",
+                "urlsField": "urls",
+                "badge": {
+                  "field": "category",
+                  "colors": {
+                    "Vidéo": "var(--chart-1)",
+                    "Photo": "var(--chart-2)",
+                    "Compte-rendu": "var(--chart-3)",
+                    "Les jeux du réseau": "var(--chart-4)",
+                    "Document": "var(--chart-5)",
+                    "Lien": "var(--primary)",
+                    "Inforéso": "var(--info)",
+                    "Elles et ils ont marqué le réseau": "var(--success)"
+                  },
+                  "icons": {
+                    "Inforéso": "newspaper",
+                    "Elles et ils ont marqué le réseau": "award",
+                    "Les jeux du réseau": "gamepad-2"
+                  }
+                },
+                "facets": [
+                  {
+                    "field": "publics",
+                    "label": {
+                      "fr": "Publics",
+                      "en": "Audiences"
+                    }
+                  },
+                  {
+                    "field": "themes",
+                    "label": {
+                      "fr": "Thèmes",
+                      "en": "Themes"
+                    }
+                  },
+                  {
+                    "field": "tags",
+                    "label": {
+                      "fr": "Mots-clés",
+                      "en": "Keywords"
+                    }
+                  }
+                ]
+              }
+            }
           }
         },
         {
@@ -12667,6 +14098,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -13546,6 +14981,10 @@
                   },
                   {
                     "id": "themes",
+                    "optionsFrom": {
+                      "list": ["themes", "themesPoi", "themesEvents"],
+                      "withDeclared": true
+                    },
                     "label": {
                       "fr": "Thèmes",
                       "en": "Topics"
@@ -13918,7 +15357,6 @@
                             "Boulonnais": "var(--territoire-boulonnais)",
                             "Calaisis": "var(--territoire-calaisis)",
                             "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
-                            "Familles en sol mineur": "var(--territoire-familles-en-sol-mineur)",
                             "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
                             "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
                             "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
@@ -14001,9 +15439,16 @@
                             "Vidéo": "var(--chart-1)",
                             "Photo": "var(--chart-2)",
                             "Compte-rendu": "var(--chart-3)",
-                            "Jeu": "var(--chart-4)",
+                            "Les jeux du réseau": "var(--chart-4)",
                             "Document": "var(--chart-5)",
-                            "Lien": "var(--primary)"
+                            "Lien": "var(--primary)",
+                            "Inforéso": "var(--info)",
+                            "Elles et ils ont marqué le réseau": "var(--success)"
+                          },
+                          "icons": {
+                            "Inforéso": "newspaper",
+                            "Elles et ils ont marqué le réseau": "award",
+                            "Les jeux du réseau": "gamepad-2"
                           }
                         },
                         "facets": [
@@ -14776,9 +16221,16 @@
                   "Vidéo": "var(--chart-1)",
                   "Photo": "var(--chart-2)",
                   "Compte-rendu": "var(--chart-3)",
-                  "Jeu": "var(--chart-4)",
+                  "Les jeux du réseau": "var(--chart-4)",
                   "Document": "var(--chart-5)",
-                  "Lien": "var(--primary)"
+                  "Lien": "var(--primary)",
+                  "Inforéso": "var(--info)",
+                  "Elles et ils ont marqué le réseau": "var(--success)"
+                },
+                "icons": {
+                  "Inforéso": "newspaper",
+                  "Elles et ils ont marqué le réseau": "award",
+                  "Les jeux du réseau": "gamepad-2"
                 }
               },
               "facets": [
@@ -14849,7 +16301,6 @@
                   "Boulonnais": "var(--territoire-boulonnais)",
                   "Calaisis": "var(--territoire-calaisis)",
                   "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
-                  "Familles en sol mineur": "var(--territoire-familles-en-sol-mineur)",
                   "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
                   "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
                   "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
@@ -15742,6 +17193,17 @@
             }
           ]
         }
+      ],
+      "editModals": [
+        {
+          "editModal": "edit-parent62-event",
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "parent62" },
+              { "field": "reference.costum", "op": "contains", "value": "parent62" }
+            ]
+          }
+        }
       ]
     },
     "poi": {
@@ -15945,6 +17407,7 @@
               "columns": 1,
               "fields": [
                 "name",
+                "category",
                 "shortDescription",
                 "description",
                 "profil_avatar",
@@ -15989,6 +17452,44 @@
             "fr": "Titre",
             "en": "Title"
           }
+        },
+        "category": {
+          "widget": "select",
+          "label": {
+            "fr": "Type d'actualité",
+            "en": "News type"
+          },
+          "placeholder": {
+            "fr": "Choisir un type",
+            "en": "Choose a type"
+          },
+          "info": {
+            "fr": "« Appel à projets » et « Offre d'emploi » ajoutent automatiquement le mot-clé correspondant et font apparaître l'article sur sa page dédiée ; « Article simple » n'en pose aucun.",
+            "en": "“Call for projects” and “Job offer” auto-add the matching tag and list the article on its dedicated page; “Standard article” adds none."
+          },
+          "enum": [
+            {
+              "value": "actualite",
+              "label": {
+                "fr": "Article simple",
+                "en": "Standard article"
+              }
+            },
+            {
+              "value": "appel-projet",
+              "label": {
+                "fr": "Appel à projets",
+                "en": "Call for projects"
+              }
+            },
+            {
+              "value": "offre-emploi",
+              "label": {
+                "fr": "Offre d'emploi",
+                "en": "Job offer"
+              }
+            }
+          ]
         },
         "shortDescription": {
           "widget": "textarea",
@@ -16079,13 +17580,6 @@
               "label": {
                 "fr": "Entre Mer et Terres",
                 "en": "Entre Mer et Terres"
-              }
-            },
-            {
-              "value": "Familles en sol mineur",
-              "label": {
-                "fr": "Familles en sol mineur",
-                "en": "Familles en sol mineur"
               }
             },
             {
@@ -16181,8 +17675,10 @@
           "required": true
         },
         "themes": {
-          "widget": "multiselect",
-          "multiple": true,
+          "widget": "valueSelect",
+          "widgetProps": {
+            "list": ["themes", "themesPoi", "themesEvents"]
+          },
           "label": {
             "fr": "Thèmes",
             "en": "Topics"
@@ -16385,6 +17881,22 @@
         "existingUrlFrom": "image:profilUrl"
       },
       "mutation": {
+        "stamps": [
+          {
+            "field": "tags",
+            "op": "append",
+            "on": "both",
+            "value": {
+              "$mapLabels": {
+                "from": "category",
+                "map": {
+                  "appel-projet": "Appels à projets",
+                  "offre-emploi": "Offres d'emploi"
+                }
+              }
+            }
+          }
+        ],
         "entityType": "poi",
         "navigateOnSuccess": false,
         "inject": {
@@ -16501,7 +18013,11 @@
           }
         },
         "category": {
-          "widget": "select",
+          "widget": "valueSelect",
+          "widgetProps": {
+            "multiple": false,
+            "list": ["categoriesParole"]
+          },
           "required": true,
           "label": {
             "fr": "Catégorie",
@@ -16623,13 +18139,6 @@
               "label": {
                 "fr": "Entre Mer et Terres",
                 "en": "Entre Mer et Terres"
-              }
-            },
-            {
-              "value": "Familles en sol mineur",
-              "label": {
-                "fr": "Familles en sol mineur",
-                "en": "Familles en sol mineur"
               }
             },
             {
@@ -16768,8 +18277,10 @@
           ]
         },
         "themes": {
-          "widget": "multiselect",
-          "multiple": true,
+          "widget": "valueSelect",
+          "widgetProps": {
+            "list": ["themes", "themesPoi", "themesEvents"]
+          },
           "label": {
             "fr": "Thèmes",
             "en": "Themes"
@@ -17136,13 +18647,6 @@
               }
             },
             {
-              "value": "Familles en sol mineur",
-              "label": {
-                "fr": "Familles en sol mineur",
-                "en": "Familles en sol mineur"
-              }
-            },
-            {
               "value": "Familles en sol mineur Hénin Carvin",
               "label": {
                 "fr": "Familles en sol mineur Hénin Carvin",
@@ -17235,8 +18739,10 @@
           "required": true
         },
         "themes": {
-          "widget": "multiselect",
-          "multiple": true,
+          "widget": "valueSelect",
+          "widgetProps": {
+            "list": ["themes", "themesPoi", "themesEvents"]
+          },
           "label": {
             "fr": "Thèmes",
             "en": "Topics"
@@ -17419,8 +18925,8 @@
             "en": "Resource type"
           },
           "placeholder": {
-            "fr": "Vidéo / Photo / Compte-rendu / Jeu…",
-            "en": "Video / Photo / Report / Game…"
+            "fr": "Vidéo / Photo / Compte-rendu / Jeux du réseau…",
+            "en": "Video / Photo / Report / Network games…"
           },
           "enum": [
             {
@@ -17445,10 +18951,10 @@
               }
             },
             {
-              "value": "Jeu",
+              "value": "Les jeux du réseau",
               "label": {
-                "fr": "Jeu",
-                "en": "Jeu"
+                "fr": "Les jeux du réseau",
+                "en": "Les jeux du réseau"
               }
             },
             {
@@ -17463,6 +18969,20 @@
               "label": {
                 "fr": "Lien",
                 "en": "Lien"
+              }
+            },
+            {
+              "value": "Inforéso",
+              "label": {
+                "fr": "Inforéso",
+                "en": "Inforéso"
+              }
+            },
+            {
+              "value": "Elles et ils ont marqué le réseau",
+              "label": {
+                "fr": "Elles et ils ont marqué le réseau",
+                "en": "Elles et ils ont marqué le réseau"
               }
             }
           ]
@@ -17766,13 +19286,6 @@
               }
             },
             {
-              "value": "Familles en sol mineur",
-              "label": {
-                "fr": "Familles en sol mineur",
-                "en": "Familles en sol mineur"
-              }
-            },
-            {
               "value": "Familles en sol mineur Hénin Carvin",
               "label": {
                 "fr": "Familles en sol mineur Hénin Carvin",
@@ -17864,8 +19377,10 @@
           ]
         },
         "themes": {
-          "widget": "multiselect",
-          "multiple": true,
+          "widget": "valueSelect",
+          "widgetProps": {
+            "list": ["themes", "themesPoi", "themesEvents"]
+          },
           "label": {
             "fr": "Thèmes",
             "en": "Topics"
@@ -18153,6 +19668,574 @@
           }
         }
       }
+    },
+    "parent62-reunion": {
+      "id": "parent62-reunion",
+      "entityType": "events",
+      "collection": "events",
+      "costumSlug": "parent62",
+      "layout": {
+        "kind": "tabs"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "infos",
+          "label": {
+            "fr": "Informations",
+            "en": "Details"
+          },
+          "icon": "info",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "description",
+                "url",
+                "profil_avatar"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dates",
+          "label": {
+            "fr": "Dates",
+            "en": "Dates"
+          },
+          "icon": "calendar-days",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "eventDates"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "lieu",
+          "label": {
+            "fr": "Lieu",
+            "en": "Location"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "taxo",
+          "label": {
+            "fr": "Thématiques",
+            "en": "Topics"
+          },
+          "icon": "tags",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "territoires",
+                "publics",
+                "themes",
+                "tags"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Image",
+            "en": "Image"
+          }
+        },
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Titre de l'événement",
+            "en": "Event title"
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "required": true,
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          },
+          "widgetProps": {
+            "height": 320,
+            "preview": "edit"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          },
+          "widgetProps": {
+            "searchable": true
+          }
+        },
+        "territoires": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Territoires",
+            "en": "Territories"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          },
+          "enum": [
+            {
+              "value": "Arrageois",
+              "label": {
+                "fr": "Arrageois",
+                "en": "Arrageois"
+              }
+            },
+            {
+              "value": "Artois",
+              "label": {
+                "fr": "Artois",
+                "en": "Artois"
+              }
+            },
+            {
+              "value": "Audomarois",
+              "label": {
+                "fr": "Audomarois",
+                "en": "Audomarois"
+              }
+            },
+            {
+              "value": "Boulonnais",
+              "label": {
+                "fr": "Boulonnais",
+                "en": "Boulonnais"
+              }
+            },
+            {
+              "value": "Calaisis",
+              "label": {
+                "fr": "Calaisis",
+                "en": "Calaisis"
+              }
+            },
+            {
+              "value": "Entre Mer et Terres",
+              "label": {
+                "fr": "Entre Mer et Terres",
+                "en": "Entre Mer et Terres"
+              }
+            },
+            {
+              "value": "Familles en sol mineur Hénin Carvin",
+              "label": {
+                "fr": "Familles en sol mineur Hénin Carvin",
+                "en": "Familles en sol mineur Hénin Carvin"
+              }
+            },
+            {
+              "value": "Familles en sol mineur Lens Liévin",
+              "label": {
+                "fr": "Familles en sol mineur Lens Liévin",
+                "en": "Familles en sol mineur Lens Liévin"
+              }
+            },
+            {
+              "value": "Ternois Bruaysis",
+              "label": {
+                "fr": "Ternois Bruaysis",
+                "en": "Ternois Bruaysis"
+              }
+            }
+          ],
+          "required": true
+        },
+        "publics": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Publics",
+            "en": "Audiences"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          },
+          "enum": [
+            {
+              "value": "Bénévoles",
+              "label": {
+                "fr": "Bénévoles",
+                "en": "Bénévoles"
+              }
+            },
+            {
+              "value": "En famille",
+              "label": {
+                "fr": "En famille",
+                "en": "En famille"
+              }
+            },
+            {
+              "value": "Enfance",
+              "label": {
+                "fr": "Enfance",
+                "en": "Enfance"
+              }
+            },
+            {
+              "value": "Futurs parents",
+              "label": {
+                "fr": "Futurs parents",
+                "en": "Futurs parents"
+              }
+            },
+            {
+              "value": "Parents",
+              "label": {
+                "fr": "Parents",
+                "en": "Parents"
+              }
+            },
+            {
+              "value": "Parents-enfants",
+              "label": {
+                "fr": "Parents-enfants",
+                "en": "Parents-enfants"
+              }
+            },
+            {
+              "value": "Professionnels",
+              "label": {
+                "fr": "Professionnels",
+                "en": "Professionnels"
+              }
+            }
+          ]
+        },
+        "themes": {
+          "widget": "valueSelect",
+          "widgetProps": {
+            "list": [
+              "themes",
+              "themesPoi",
+              "themesEvents"
+            ]
+          },
+          "label": {
+            "fr": "Thèmes",
+            "en": "Topics"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          },
+          "enum": [
+            {
+              "value": "La citoyenneté",
+              "label": {
+                "fr": "La citoyenneté",
+                "en": "La citoyenneté"
+              }
+            },
+            {
+              "value": "La communication",
+              "label": {
+                "fr": "La communication",
+                "en": "La communication"
+              }
+            },
+            {
+              "value": "La culture",
+              "label": {
+                "fr": "La culture",
+                "en": "La culture"
+              }
+            },
+            {
+              "value": "La petite enfance",
+              "label": {
+                "fr": "La petite enfance",
+                "en": "La petite enfance"
+              }
+            },
+            {
+              "value": "La santé",
+              "label": {
+                "fr": "La santé",
+                "en": "La santé"
+              }
+            },
+            {
+              "value": "L’adolescence",
+              "label": {
+                "fr": "L’adolescence",
+                "en": "L’adolescence"
+              }
+            },
+            {
+              "value": "L’arrivée d’un enfant",
+              "label": {
+                "fr": "L’arrivée d’un enfant",
+                "en": "L’arrivée d’un enfant"
+              }
+            },
+            {
+              "value": "Le deuil",
+              "label": {
+                "fr": "Le deuil",
+                "en": "Le deuil"
+              }
+            },
+            {
+              "value": "Le handicap",
+              "label": {
+                "fr": "Le handicap",
+                "en": "Le handicap"
+              }
+            },
+            {
+              "value": "Le répit",
+              "label": {
+                "fr": "Le répit",
+                "en": "Le répit"
+              }
+            },
+            {
+              "value": "L’école",
+              "label": {
+                "fr": "L’école",
+                "en": "L’école"
+              }
+            },
+            {
+              "value": "L’éducation",
+              "label": {
+                "fr": "L’éducation",
+                "en": "L’éducation"
+              }
+            },
+            {
+              "value": "Les activités supports à la relation",
+              "label": {
+                "fr": "Les activités supports à la relation",
+                "en": "Les activités supports à la relation"
+              }
+            },
+            {
+              "value": "Les écrans – Le numérique",
+              "label": {
+                "fr": "Les écrans – Le numérique",
+                "en": "Les écrans – Le numérique"
+              }
+            },
+            {
+              "value": "Les émotions",
+              "label": {
+                "fr": "Les émotions",
+                "en": "Les émotions"
+              }
+            },
+            {
+              "value": "Les jeux",
+              "label": {
+                "fr": "Les jeux",
+                "en": "Les jeux"
+              }
+            },
+            {
+              "value": "Les situations de séparation",
+              "label": {
+                "fr": "Les situations de séparation",
+                "en": "Les situations de séparation"
+              }
+            },
+            {
+              "value": "Les violences",
+              "label": {
+                "fr": "Les violences",
+                "en": "Les violences"
+              }
+            }
+          ]
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Lieu (facultatif)",
+            "en": "Location (optional)"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        },
+        "eventDates": {
+          "widget": "eventDates",
+          "label": {
+            "fr": "Dates",
+            "en": "Dates"
+          }
+        },
+        "startDate": {
+          "widget": "hidden",
+          "type": "string",
+          "requiredIf": {
+            "field": "recurrency",
+            "op": "falsy"
+          },
+          "write": "eventDate:write"
+        },
+        "endDate": {
+          "widget": "hidden",
+          "type": "string",
+          "write": "eventDate:write",
+          "requiredIf": {
+            "field": "recurrency",
+            "op": "falsy"
+          }
+        },
+        "recurrency": {
+          "widget": "hidden",
+          "type": "boolean",
+          "default": false
+        },
+        "openingHours": {
+          "widget": "hidden",
+          "type": "array",
+          "write": "eventOpeningHours:write"
+        },
+        "url": {
+          "widget": "text",
+          "label": {
+            "fr": "Lien (site, inscription…)",
+            "en": "Link (website, registration…)"
+          }
+        },
+        "timeZone": {
+          "widget": "hidden",
+          "type": "string",
+          "write": "eventTimeZone:write"
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une réunion du comité",
+            "en": "Add a committee meeting"
+          },
+          "edit": {
+            "fr": "Modifier la réunion",
+            "en": "Edit meeting"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "events",
+        "navigateOnSuccess": false,
+        "inject": {
+          "extraFields": {
+            "type": "meeting"
+          }
+        },
+        "successKey": {
+          "add": "toast.add.eventSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.eventError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_REUNION",
+          "edit": "EntityFormModal · UPDATE_REUNION"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:event",
+          "params": {
+            "userList": "events",
+            "searchKeys": [
+              "admin-events"
+            ]
+          }
+        }
+      }
     }
   },
   "admin": {
@@ -18246,6 +20329,134 @@
               "delete"
             ],
             "create": "add-parent62-article",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "appels-projets",
+        "label": {
+          "fr": "Appels à projets",
+          "en": "Calls for projects"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Appels à projets",
+              "en": "Calls for projects"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "article"
+              },
+              "defaultTags": [
+                "Appels à projets"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Date",
+                  "en": "Date"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-article",
+            "createDefaults": {
+              "category": "appel-projet"
+            },
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "offres-emploi",
+        "label": {
+          "fr": "Offres d'emploi",
+          "en": "Job offers"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Offres d'emploi",
+              "en": "Job offers"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "article"
+              },
+              "defaultTags": [
+                "Offres d'emploi"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Date",
+                  "en": "Date"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-article",
+            "createDefaults": {
+              "category": "offre-emploi"
+            },
             "edit": "inherit"
           }
         ]
@@ -18461,6 +20672,78 @@
               "delete"
             ],
             "create": "add-parent62-event",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "reunions-comite",
+        "label": {
+          "fr": "Réunions du comité",
+          "en": "Committee meetings"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "events",
+            "label": {
+              "fr": "Réunions du comité",
+              "en": "Committee meetings"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "meeting"
+              },
+              "defaultSortBy": {
+                "startDate": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "territoires",
+                "label": {
+                  "fr": "Territoire",
+                  "en": "Territory"
+                }
+              },
+              {
+                "path": "startDate",
+                "label": {
+                  "fr": "Début",
+                  "en": "Start"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune",
+                  "en": "City"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-reunion",
             "edit": "inherit"
           }
         ]

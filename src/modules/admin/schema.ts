@@ -61,6 +61,15 @@ export const AdminColumnsSchema = z.array(z.union([
     label: LocalizedString.optional(),
     /** Rendu de la cellule : `text` (défaut) ou `audio` (lecteur audio depuis un `medias[].url` / une URL). */
     type: z.enum(["text", "audio"]).optional(),
+    /**
+     * En-tête cliquable pour trier ? Défaut `true` (comportement historique).
+     * `false` rend un simple libellé — à poser sur toute colonne dont le `path` n'existe PAS
+     * en base : le tri est SERVEUR (`defaultSortBy`), donc une colonne FABRIQUÉE après la
+     * requête (champs aplatis par un hook costum, jointures) trierait sur une clé absente,
+     * c'est-à-dire dans un ordre arbitraire — tout en écrasant le tri par défaut, et en
+     * déstabilisant la pagination du scroll infini (skip/limit sans ordre total).
+     */
+    sortable: z.boolean().optional(),
   }),
 ]));
 
@@ -137,6 +146,20 @@ const AdminResourceSectionSchema = z.object({
   source: SearchBaseParamsSchema.partial().optional(),
   columns: AdminColumnsSchema.optional(),
   create: AdminFormRefSchema.default("inherit"),
+  /**
+   * Valeurs SEMÉES dans la modale de CRÉATION ouverte depuis cette section (jamais en édition —
+   * l'entité fait alors foi). Fusionnées PAR-DESSUS les défauts dérivés du formulaire
+   * (`fields.<nom>.default`), donc une clé absente d'ici garde son défaut normal.
+   *
+   * Sert le cas « un onglet = un sous-ensemble » : une table filtrée par `source` (ex.
+   * `defaultTags:["Appels à projets"]`) ouvre le formulaire DÉJÀ positionné sur le sous-type
+   * correspondant, sans faire re-choisir à l'admin ce que l'onglet dit déjà. Sans ce canal, il
+   * faudrait un formulaire costum cloné par sous-type pour ne varier qu'un défaut.
+   *
+   * Les clés sont des noms de champs du formulaire résolu par `create` ; une clé qu'il ne déclare
+   * pas est écartée par `applyCreateDefaults` (semis inerte, jamais de valeur fantôme).
+   */
+  createDefaults: z.record(z.string(), z.unknown()).optional(),
   edit: AdminFormRefSchema.default("inherit"),
   rowActions: z.array(z.enum(["edit", "delete", "validate", "reference", "setFeatured"])).optional(),
   /**

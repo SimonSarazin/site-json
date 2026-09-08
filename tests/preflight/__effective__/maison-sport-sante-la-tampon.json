@@ -39,6 +39,11 @@
           "declare": "edit-actualite",
           "native": "edit-actualite",
           "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-ekilibre-ressource",
+          "native": "edit-ekilibre-ressource",
+          "horsPerimetre": "edit-profile"
         }
       ]
     }
@@ -57,6 +62,24 @@
         }
       },
       "create": "add-actualite",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "ressources/poi": {
+      "source": {
+        "sourceKey": [
+          "associationEkilibre"
+        ],
+        "defaultFilters": {
+          "type": "recoveryCenter"
+        },
+        "defaultSortBy": {
+          "created": -1
+        }
+      },
+      "create": "add-ekilibre-ressource",
       "edit": {
         "enabled": true,
         "modalName": null
@@ -201,6 +224,40 @@
           "description",
           "tags"
         ]
+      }
+    },
+    "/ressources/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "associationEkilibre"
+        ],
+        "defaultFilters": {
+          "type": "recoveryCenter",
+          "status": "Visible"
+        },
+        "defaultFields": [
+          "name",
+          "category",
+          "description",
+          "urls",
+          "medias",
+          "status",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        }
       }
     }
   },

@@ -1001,7 +1001,13 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 
 > `news`, `testimonial` et `resource` ne sont acceptées **que** par `card.type` : l'enum `card.variant` (schema.ts) ne les inclut pas (comme `overlay`).
 
-**`card.structureAction`** (carte `card-answer` uniquement, `schema.ts:461`) — ce que fait le bouton « Fiche structure » : `{"kind": "profil"}` navigue vers `/profil/:slug` (comportement historique) ; `{"kind": "preview"}` ouvre la fiche **en modale** — `SwitchDetailsMode` monté en `dialog` avec `preview: {type: "structure"}` (`CardAnswer.tsx:215-221`) — sans quitter la liste ni perdre filtres et position de défilement. Défaut **côté code** `profil` : `CardAnswer.tsx:38` teste `=== "preview"`, donc clé absente = navigation ; la config n'étant jamais parsée par Zod au runtime, la poser **explicitement** est le seul moyen d'activer la modale. L'entité complète (la carte ne porte qu'un sous-document de la structure) n'est chargée **qu'au clic** — `useEntityBySlugQuery` conditionné à l'ouverture — et le bouton reste `disabled` pendant ce chargement. Même forme que `map.itemAction`, à dessein : un seul vocabulaire d'action dans le module. Posé en config réelle : `config.prod.maison-sport-sante-la-tampon.json:795`.
+**`card.structureAction`** (carte `card-answer` uniquement, `schema.ts:476`) — le bouton « Fiche structure », **deux axes orthogonaux**, tous deux optionnels : un site peut ne régler que la visibilité sans toucher à l'action.
+
+**`kind`** = ce que **fait** le bouton : `"profil"` / absent → navigue vers `/profil/:slug` (comportement historique) ; `"preview"` → ouvre la fiche **en modale** — `SwitchDetailsMode` monté en `dialog` avec `preview: {type: "structure"}` — sans quitter la liste ni perdre filtres et position de défilement. Défaut **côté code** `profil` : `CardAnswer.tsx:40` teste `=== "preview"`, donc clé absente = navigation. L'entité complète (la carte ne porte qu'un sous-document de la structure) n'est chargée **qu'au clic** — `useEntityBySlugQuery` conditionné à l'ouverture — et le bouton reste `disabled` pendant ce chargement.
+
+**`audience`** = **qui le voit** : `"all"` / absent → tout le monde (historique) ; `"managers"` → super-admin plateforme, admin du costum porteur, ou admin **validé** de la structure organisatrice de la carte, via `isCoformAnswerManager` (`lib/coformAnswer.ts`) — le **même** prédicat que le bouton « Modifier » du détail, parce que la fiche structure est un outil de gestion (affiliation, représentant légal, documents) et non une information utile à qui compare des créneaux. Le bouton est **masqué**, jamais `disabled` : un bouton grisé inviterait à demander un droit. Le gate est conditionné par `useHydrated` (`CardAnswer.tsx:70-73`) — `/creneaux` est prérendue en SSR où `me` vaut toujours `null` : le bouton est donc absent du HTML serveur **et** du 1er render client, puis apparaît après hydratation chez les seuls ayants droit (aucun mismatch ; épinglé par `CardAnswer.ssr.test.tsx`, qui rend avec le vrai hook). Le gate est posé **avant** le branchement `kind`, donc il couvre les deux trajectoires (modale et navigation). ⚠️ Règle de **pertinence d'affichage**, **pas** une frontière de sécurité : `/profil/:slug` et `/structure` restent des routes publiques et le slug de la structure part déjà dans le HTML servi à tout visiteur.
+
+La config n'étant jamais parsée par Zod au runtime, poser les clés **explicitement** est le seul moyen de les activer. Même forme que `map.itemAction`, à dessein : un seul vocabulaire d'action dans le module. Posé en config réelle : `config.prod.sport-sante-bien-etre.json` (`audience` seul → les gestionnaires gardent la navigation historique) ; `config.prod.maison-sport-sante-la-tampon.json` (`kind: "preview"`).
 
 Toutes les variantes sont lazy-loadées. Une page **mono-type** ne télécharge que le chunk configuré ; une liste **hétérogène** (`list.itemRules`, cf. [§Rendu PAR ITEM](#rendu-par-item-des-listes-hétérogènes-listitemrules)) en charge un par famille présente — c'est pourquoi `SearchListView` enveloppe chaque carte dans son **propre `<Suspense>`**. Les **couleurs en dur** des cartes ont été remplacées par des **tokens de thème** (commits 4936978 / ad11831 / 06baffb) → chaque carte s'adapte au thème du site et au mode clair/sombre.
 
@@ -1049,7 +1055,7 @@ Toutes les variantes sont lazy-loadées. Une page **mono-type** ne télécharge 
 - Bouton « Contacter » : **plus de `disabled={!isConnected}`** — toujours cliquable ; si non connecté → `openLogin()`.
 - Bouton « Suivre » : **`disabled={isLoadingFollow}` uniquement** (plus de `disabled={!isConnected || isLoadingFollow}`) — toujours cliquable si le follow n'est pas en cours ; si non connecté → `openLogin()`.
 
-Voir [doc/23-module-auth.md](doc/23-module-auth.md) pour l'API `useAuthModal`.
+Voir [doc/23-module-auth.md](23-module-auth.md) pour l'API `useAuthModal`.
 
 ### Mode détails — conteneur (`detailsMode`) vs contenu (`preview.type`)
 
@@ -1207,14 +1213,40 @@ Usage type : `/annuaire` institut-bleu — `card.detailsMode: "dialog"` + `previ
 `dropdownFilter` d'une AUTRE page devient cliquable **vers cette page** (`findFilterByField` scanne
 toute la config) — ne déclarer que des champs neutres, ou assumer la navigation.
 
-#### Options DYNAMIQUES d'un filtre — `optionsFrom` (listes déclarées du costum)
+#### Options d'un filtre depuis `costum.lists` — `optionsFrom`
 
-Un filtre (dropdown ou `filterGroups`) peut tirer ses options d'une **liste déclarée du costum**
-(`costum.lists.<nom>` : `{collection, distinct, where}`) au lieu d'options figées :
+Un filtre (dropdown ou `filterGroups`) peut tirer ses options d'une ou plusieurs **listes déclarées du
+costum** au lieu d'options figées :
 
 ```jsonc
-{ "field": "tags", "optionsFrom": { "list": "tagsDocument" } }   // costumSlug optionnel (défaut : site)
+{ "field": "tags",    "optionsFrom": { "list": "tagsDocument" } }        // costumSlug optionnel (défaut : site)
+{ "field": "themes",  "optionsFrom": { "list": ["themes", "themesPoi", "themesEvents"],
+                                       "withDeclared": true } }          // plusieurs listes + socle déclaré
 ```
+
+**La FORME de chaque liste est détectée automatiquement** (`@/lib/listSources`, `isDynamicList`) :
+statique (tableau/map) → lue en mémoire dans le costum déjà chargé, aucune requête ; recette
+(`{collection, distinct, where}`, badges) → résolue par `costum/co/listvalues`. Le rédacteur de config
+n'a donc pas à savoir sous quelle forme la liste est déclarée en base — se tromper ne produisait aucune
+erreur, juste un repli silencieux sur les options figées. `optionsKey`, qui désignait autrefois
+explicitement la voie statique, reste accepté comme **alias déprécié** de `optionsFrom.list`.
+
+**Plusieurs listes = fusion**, dans l'ordre déclaré (la première où une valeur apparaît fixe sa
+graphie). Cas d'usage : un même champ alimenté depuis plusieurs collections, qui demande alors une
+recette par collection (parent62 : `themes` est écrit sur `poi` ET sur `events`). Les `variants`
+(graphies regroupées) sont **unis entre listes** — sans quoi le filtre n'interrogerait qu'une graphie
+et raterait silencieusement les fiches de l'autre collection.
+
+**`withDeclared`** fait des `options` écrites en config un **SOCLE** fusionné en tête, au lieu d'un
+simple repli de chargement : elles gardent alors leur **libellé i18n** (et leur couleur, leur `level`),
+là où une valeur venue de la base s'affiche en `capitaliser(valeur)`. Opt-in délibéré : fusionner
+partout ferait réapparaître des valeurs de config absentes de la base, donc des filtres qui ne rendent
+rien.
+
+**`optionsReady`** signifie « toutes les sources ont répondu », jamais « on a déjà de quoi afficher » —
+`FiltersSection` s'en sert pour retarder l'hydratation URL. Annoncer « prêt » trop tôt (ce qu'un socle
+non vide rend tentant) laisse l'hydratation s'exécuter avant l'arrivée des valeurs, puis l'effet de
+lecture rejoué **efface la sélection par défaut**.
 
 `useDynamicFilterOptions` interroge l'endpoint `costum/co/listvalues` (existe côté legacy ET Node,
 byte-vérifié) qui résout la liste **hors du cache costum** (valeurs fraîches — une valeur saisie
@@ -1223,8 +1255,8 @@ déclaration en base porte collection/champ/filtre — une liste non déclarée 
 Pagination : plafond client 300 (couvre 7 des 8 listes du parc) ; au-delà, la réponse porte
 `total`/`truncated` et la **recherche re-interroge le serveur** (`q`, forme canonique sans
 accents/casse, `limit` ≤ 5000) — mesuré : « Zooplancton », rang 1208/1209, trouvé via la saisie.
-Sans `optionsFrom`, rien ne change (les options déclarées font foi). Les libellés sont capitalisés
-à l'AFFICHAGE seul (la valeur filtrée reste byte-fidèle).
+Sans `optionsFrom` ni `optionsKey`, rien ne change (les options déclarées font foi) et aucune requête
+n'est émise. Les libellés sont capitalisés à l'AFFICHAGE seul (la valeur filtrée reste byte-fidèle).
 
 ### Cartes news dans la recherche (CardNews et PreviewNews)
 

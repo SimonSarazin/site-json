@@ -74,10 +74,14 @@ export const FilterGroupSchema = z.object({
      *  consommateurs le lisent sans cast. */
     variants: z.array(z.string()).optional(),
   })).optional(),
-  /** Source DYNAMIQUE des options (cf. `OptionsFromSchema` du searchHeader) : les valeurs viennent
-   *  d'une liste `costum.lists` et REMPLACENT les `options` déclarées. Sur un groupe à `field`, chaque
-   *  option reçoit `name` = la valeur stockée, donc le filtrage par champ fonctionne tel quel. */
-  optionsFrom: z.object({ list: z.string(), costumSlug: z.string().optional() }).optional(),
+  /** Source des options : une ou plusieurs listes `costum.lists` (cf. `OptionsFromSchema` du
+   *  searchHeader). Sur un groupe à `field`, chaque option reçoit `name` = la valeur stockée, donc le
+   *  filtrage par champ fonctionne tel quel. */
+  optionsFrom: z.lazy(() => OptionsFromSchema).optional(), // forward-ref : OptionsFromSchema est défini plus bas
+  /** DÉPRÉCIÉ — alias de `optionsFrom.list`. Distinguait autrefois la source STATIQUE de la source
+   *  dynamique ; la forme est désormais détectée à la lecture (`useDynamicFilterOptions`), le rédacteur
+   *  de config n'a plus à choisir. Conservé pour les configs existantes. */
+  optionsKey: z.string().optional(),
   config: z.object({
     countryCode: z.array(z.string()).optional(),
     level: z.array(z.string()).optional(),
@@ -388,6 +392,14 @@ export const ResourceConfSchema = z.object({
     field: z.string(),
     colors: z.record(z.string(), z.string()).optional(),
     icons: z.record(z.string(), z.string()).optional(),
+    /**
+     * Map valeur STOCKÉE → libellé AFFICHÉ (localisé). Troisième carte, à côté de `colors` et
+     * `icons`, pour le cas où le champ stocke une CLÉ (`mss`, `has`…) et non un libellé : sans
+     * elle la pastille afficherait la clé brute. Indispensable sur un site multilingue, où
+     * stocker le libellé français rendrait la version anglaise fausse. Valeur absente de la map
+     * (ou map absente) → la valeur stockée est affichée telle quelle, comportement historique.
+     */
+    labels: z.record(z.string(), LocalizedString).optional(),
   }).optional(),
   /** Champ de la ville affichée. Repli code : "address.addressLocality". */
   cityField: z.string().optional(),
@@ -449,16 +461,34 @@ export const CardConfSchema = z.object({
     // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).
     showFunding:     z.boolean().optional(),
     /**
-     * Carte `card-answer` : ce que fait le bouton « Fiche structure ».
-     *  - `profil`  (DÉFAUT côté code) — navigue vers `/profil/:slug`, comportement historique ;
+     * Carte `card-answer` : le bouton « Fiche structure ». DEUX axes orthogonaux, tous deux
+     * optionnels — un site peut ne régler QUE la visibilité sans toucher à l'action.
+     *
+     * `kind` — CE QUE FAIT le bouton :
+     *  - absent / `profil` (DÉFAUT côté code) — navigue vers `/profil/:slug`, historique ;
      *  - `preview` — ouvre la fiche EN MODALE (même `preview.type: "structure"` que les cartes de
-     *    l'annuaire), sans quitter la liste.
-     * Sur une page où l'usager COMPARE des créneaux, la navigation lui fait perdre sa liste, ses
-     * filtres et sa position de défilement pour une information qu'il ne veut que consulter au
-     * passage — d'où l'option. Absent = navigation, pour ne rien changer aux sites existants.
+     *    l'annuaire), sans quitter la liste. Sur une page où l'usager COMPARE des créneaux, la
+     *    navigation lui fait perdre liste, filtres et position de défilement.
+     *  Optionnel pour pouvoir poser `audience` SEUL : `CardAnswer` teste `=== "preview"`, donc
+     *  clé absente = navigation — le schéma dit désormais la même chose que le code.
+     *
+     * `audience` — QUI VOIT le bouton :
+     *  - absent / `all` (DÉFAUT côté code) — tout le monde, comportement historique ;
+     *  - `managers` — les seuls gestionnaires du créneau : super-admin plateforme, admin du costum
+     *    porteur, ou admin VALIDÉ de la structure organisatrice de CETTE carte
+     *    (`isCoformAnswerManager`, le prédicat du bouton « Modifier » du détail). La fiche
+     *    structure est un outil de gestion, elle n'informe pas qui cherche un créneau.
+     *  Volontairement PAS nommé `adminOnly` : `addButton.adminOnly` désigne une règle STRICTEMENT
+     *  plus étroite (admin du carrier costum seul) — même nom pour deux règles serait un piège.
+     *  ⚠️ Pertinence d'AFFICHAGE, pas une sécurité : `/profil/:slug` et `/structure` restent
+     *  publics et le slug de la structure part déjà dans le HTML servi à tout visiteur.
+     *
      * Même forme que `MapConf.itemAction`, à dessein : un seul vocabulaire d'action dans le module.
      */
-    structureAction: z.object({ kind: z.enum(["profil", "preview"]) }).optional(),
+    structureAction: z.object({
+      kind: z.enum(["profil", "preview"]).optional(),
+      audience: z.enum(["all", "managers"]).optional(),
+    }).optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
     detailedMode: z.enum(["default", "service-pricing"]).default("default"),
     // Coin haut-droit des cartes à image (`image-cover`) : par défaut les
@@ -1102,21 +1132,31 @@ const TitleWithFiltersDropdownOptionSchema = z.object({
 });
 
 /**
- * Source DYNAMIQUE d'options : les valeurs viennent d'une liste déclarée du costum
- * (`costum.lists.<nom>`, forme `{collection, distinct, where}`), résolue par `costum/co/listvalues`.
+ * Source des options d'un filtre : UNE OU PLUSIEURS listes déclarées du costum (`costum.lists.<nom>`),
+ * résolues chacune SELON SA FORME — statique (tableau/map) lue en mémoire, recette
+ * (`{collection, distinct, where}`) résolue par `costum/co/listvalues`. La détection est automatique :
+ * le rédacteur de config n'a pas à savoir sous quelle forme la liste est déclarée en base.
  *
- * REMPLACE les `options` écrites à la main quand elle est déclarée — pas de fusion. Les valeurs
- * dynamiques n'ont donc PAS de libellé traduit : elles s'affichent telles qu'elles sont stockées.
- * C'est le prix assumé pour que le filtre suive la donnée : sur institutBleu, la config gelait
- * 12 territoires quand la base en compte 64, soit 52 valeurs injoignables au filtre.
+ * Plusieurs listes = fusion, dans l'ordre déclaré (cf. `@/lib/listSources`) — cas d'un même champ
+ * alimenté depuis plusieurs collections, qui demande alors une recette par collection.
+ *
+ * Par défaut, les valeurs résolues REMPLACENT les `options` écrites à la main : elles n'ont donc pas de
+ * libellé traduit, elles s'affichent telles qu'elles sont stockées. C'est le prix assumé pour que le
+ * filtre suive la donnée — sur institutBleu, la config gelait 12 territoires quand la base en compte
+ * 64, soit 52 valeurs injoignables au filtre. Avec `withDeclared`, les `options` déclarées deviennent
+ * au contraire un SOCLE fusionné, et gardent leur libellé.
  *
  * Sans `optionsFrom`, rien ne change : les options déclarées font foi, comme aujourd'hui.
  */
 const OptionsFromSchema = z.object({
-  /** Nom de la liste dans `costum.lists`. */
-  list: z.string(),
+  /** Nom de la liste dans `costum.lists`, ou plusieurs à fusionner (ordre = priorité). */
+  list: z.union([z.string(), z.array(z.string()).min(1)]),
   /** Costum porteur ; par défaut celui du site. */
   costumSlug: z.string().optional(),
+  /** Les `options` déclarées deviennent le SOCLE (fusionné en tête, libellés i18n conservés) au lieu
+   *  d'un simple repli de chargement. Opt-in : fusionner partout ferait réapparaître des valeurs de
+   *  config absentes de la base, donc des filtres qui ne rendent rien. */
+  withDeclared: z.boolean().optional(),
 });
 
 const TitleWithFiltersDropdownSchema = z.object({
@@ -1127,6 +1167,15 @@ const TitleWithFiltersDropdownSchema = z.object({
   allLabel: LocalizedString.optional(),
   options: z.array(TitleWithFiltersDropdownOptionSchema).default([]),
   optionsFrom: OptionsFromSchema.optional(),
+  /** Source STATIQUE : cf. `FilterGroupSchema.optionsKey` — même sémantique, même résolveur
+   *  (`useDynamicFilterOptions`). */
+  optionsKey: z.string().optional(),
+  /** Le filtre continue de s'hydrater depuis l'URL et de filtrer le contenu, mais ne rend AUCUN
+   *  contrôle visible (ni dans la barre desktop, ni dans la Sheet mobile, ni comme tag actif) — pour
+   *  une page dont l'identité EST déjà ce filtre (ex. une page `/theme` où le thème vient du query
+   *  param `?theme=…` posé par un menu externe) : afficher un sélecteur redondant avec le contexte
+   *  de la page n'a pas de sens, contrairement à `public`/`territoire` qui restent des affinages. */
+  hidden: z.boolean().optional(),
 });
 
 // Props partagées entre le type canonique `searchHeader` et son alias.

@@ -481,6 +481,9 @@
       "loadError": "Impossible de charger les options.",
       "notConfigured": "Ce champ n'est pas encore configuré.",
       "orphans": "Réponses enregistrées ne correspondant plus à une option proposée :"
+    },
+    "field": {
+      "required": "obligatoire"
     }
   }
 }

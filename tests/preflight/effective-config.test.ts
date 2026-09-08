@@ -192,6 +192,9 @@ function projeter(site: string, cfg: Cfg) {
           slug,
         ),
         create: resolveCreateModal(s, forms as never, slug ?? undefined),
+        // Semé dans la modale d'ajout ouverte depuis cet onglet : change ce qui est ÉCRIT sur une
+        // fiche neuve, donc à surveiller au même titre que la modale elle-même.
+        ...(s.createDefaults ? { createDefaults: s.createDefaults } : {}),
         edit: resolveEditModal(s),
       };
     }

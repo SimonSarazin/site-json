@@ -15,8 +15,19 @@
 > 06/07) · [`ENDPOINT.md`](../../ENDPOINT.md) (fiches d'endpoints SDK à créer). Mémoire :
 > `[[project-maison-sport-sante-la-tampon]]`.
 
-Dernière mise à jour : **2026-08-23**. Trois jours de travail (20 → 23/08) qui font sortir le site
-de sa condition de sous-site du costum régional, et referment trois pannes silencieuses.
+Dernière mise à jour : **2026-09-08** (§9.15 : compteurs statistiques dynamiques sur la home,
+1ᵉʳ lot — `21f0d53f`).
+
+**Chiffres clés de la home passés en partie au dynamique** (§9.15, Nicolas, `21f0d53f`, 08/09) : le
+schéma `cta-card-grid.props.stats[]` accepte désormais un `source` optionnel (`searchCount` /
+`membersCount`) qui résout la valeur réelle **côté client**, sans dépendance au module `admin` —
+`value` devient alors optionnel (skeleton pendant la résolution), jamais de chiffre inventé. Un seul
+des 4 items de « Ekilib.re en chiffres » est branché à ce stade : **« Créneaux disponibles »**, sur
+les mêmes `baseParams` que le KPI admin « Créneaux actifs » (§9.6). Les 3 autres (Activités
+proposées, Participants actifs, Partenaires) restent codés en dur, faute de source backend
+confirmée pour chacun (§13) — c'était le constat A.6 de la checklist depuis le 31/07.
+
+<details><summary>Session 6 (20-24/08) — bascule <code>associationEkilibre</code> auto-porteuse, refonte /creneaux, corrections de production</summary>
 
 **Le site est devenu auto-porteur.** Le costum `associationEkilibre` porte désormais ses propres
 déclarations en base, et les **six** périmètres de recherche du site — `/creneaux`, `/structure`, le
@@ -73,6 +84,8 @@ les champs métier sont rabotés au save, en silence. Runbook en §9.11.
 > **Journal récupéré.** Six commits `docs(mss)` (20-21/08) avaient écrit dans
 > `doc-projets/mss-la-tampon-plan-corrections.md`, **supprimé du dépôt** par `53febb6e` sans que son
 > contenu soit reversé ici. Les chantiers A à G qu'il portait sont réintégrés en §9.9 à §9.11.
+
+</details>
 
 <details><summary>Session 5 (18-19/08) — form créneaux dédié &amp; chantier Actualités</summary>
 
@@ -155,7 +168,7 @@ et restreintes aux codes postaux **97430 / 97418**.
 | **CoForm « créneau »** | **`6a85af345d898a57cb49f029`** « Créneau - tampon » (dédié, §9.8) — section `associationEkilibre19082026_1327_0` ; **1 créneau = 1 answer** ; ex-form SSBE partagé `6928096adf5caf0d230e7f26` jusqu'au 19/08 |
 | **Orga porteuse** | slug `associationEkilibre`, `_id 692817af564b0621d52ebbc6`, type `organizations` (résolu au boot via `GET_ELEMENTS_KEY`) |
 | **Backend (dev)** | environnement de dev local (configuration hors de ce document) ; backend de prod **à définir** |
-| **SDK** | `@communecter/cocolight-api-client` — lecture seule. Requis **`^1.0.189`**, **installé 1.0.189** (mesuré le 23/08) : requis et installé coïncident, la désynchronisation récurrente de ce poste (§12) n'est plus d'actualité |
+| **SDK** | `@communecter/cocolight-api-client` — lecture seule. Requis **`^1.0.191`**, **installé 1.0.191** (mesuré le 08/09) : requis et installé coïncident, la désynchronisation récurrente de ce poste (§12) n'est plus d'actualité |
 | **Branche site-json** | **`main`** (suit `origin`, GitLab Adullact). Les lots `ekilibre` ont été mergés ; le travail des 20-23/08 est commité directement sur `main` (dernier : `c378525b`, 23/08) |
 | **Intervenants (git)** | Francki (init 02/07) · Nicolas (config 20/07, 28/07 ; lot structure 31/07 + 06/08) · Peterson (lot créneaux 06/07) · Cael (merge + doc 06/08, back-office/KPIs 06/08) ; chef de projet **à confirmer** |
 
@@ -236,9 +249,9 @@ et restreintes aux codes postaux **97430 / 97418**.
    plus expulsé vers `/login` — il **reste sur la page**, ses sections cèdent la place à une invitation
    et la modale de connexion s'ouvre par-dessus (§9.13). Garde de **session** : tout compte connecté
    entre, il n'y a pas de contrôle « professionnel de santé » (§12).
-7. **Le pilotage admin** : back-office `/admin` à **six onglets** (Tableau de bord, Membres,
-   Actualités, Structures, Référencement, Modération), niveau `siteAdmin`, et 4 KPIs du CDC §4.2
-   (§9.6, §9.10).
+7. **Le pilotage admin** : back-office `/admin` à **sept onglets** (Tableau de bord, Membres,
+   Actualités, **Ressources**, Structures, Référencement, Modération), niveau `siteAdmin`, et
+   4 KPIs du CDC §4.2 (§9.6, §9.10, §9.14).
 8. **Un formulaire de contact** opérationnel — **câblé sur l'endpoint `CONTACT_SEND` du SDK depuis le
    23/08** (§9.13) ; reste à renseigner **`costum.contactMail`** en base pour que le message atteigne
    la MSS (§13).
@@ -409,6 +422,8 @@ site pour porter un contenu structuré sans code nouveau.
 | **Fiche détail structure (06/08, `253dec37`)** | `src/modules/search/components/preview/PreviewStructure.tsx` (nouveau, ~540 lignes) · `src/modules/search/components/Preview.tsx` (dispatch `preview.type: "structure"`) · `src/modules/search/components/card/CardContact.tsx` (fix téléphone objet `{mobile,fixe}`) · `src/modules/search/constants/queryKeys.ts` (`DOCUMENTS`) · `src/modules/search/schema.ts` (enum `PreviewConfSchema.type` + `"structure"`) · `src/modules/search/i18n/{fr,en}.json` (clés `PreviewStructure.*`) |
 | **Back-office `/admin` + KPIs (06/08, `2bf0007d`)** | `config.prod.maison-sport-sante-la-tampon.json` (bloc `admin`) · `src/modules/admin/schema.ts` (`AdminDashboardKpiSchema`) · `src/modules/admin/sections/DashboardKpis.tsx` (nouveau) · `src/modules/admin/sections/DashboardSection.tsx` · `src/modules/admin/lib/kpiTrend.ts` + `.test.ts` (nouveaux) · `src/modules/admin/constants/queryKeys.ts` (`KPI_SEARCH_PREFIX`) · `src/modules/admin/i18n/{fr,en}.json` — détail §9.6 |
 | **Actualités (10/08, codé — §9.7)** | `config.prod.maison-sport-sante-la-tampon.json` (`costumForms["actualite"]`, onglet admin, sections home + `/espace-pro`) · `src/modules/admin/schema.ts` (`rowActions:"setFeatured"`, `exclusiveField`) · `src/modules/admin/lib/exclusiveFlag.ts` (+ `.test.ts`, nouveau) · `src/modules/admin/hooks/useSetExclusiveFlag.ts` (nouveau) · `src/modules/admin/sections/AdminResourceTable.tsx` (bouton « Mettre à la une ») · `src/modules/admin/i18n/{fr,en}.json` · `src/modules/profil/forms/actualite.configDriven.test.ts` (nouveau, 8 tests) · `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` (+1 ligne) — **2 correctifs moteur** : `src/modules/formEngine/config/schema.ts` (`WidgetKind` + `"markdown"`), `src/modules/profil/forms/costum/compileCostumSchema.ts` (`WIDGET_DEFAULTS` + `"markdown"`) — aucun nouveau composant de carte (réutilise `card.type/preview.type:"resource"`, existant) |
+| **Ressources pro (24/08, `edb20de6` — §9.14)** | `config.prod.maison-sport-sante-la-tampon.json` (`costumForms["ekilibre-ressource"]`, page `/ressources`, entrée de nav, onglet admin `ressources`, route `profiles.poi.editModals`) — **0 code front** : réutilise `formEngine` (widgets `file`/`urlList`/`select`), presenters `card.type/preview.type:"resource"`, table admin `resource` en mode `statusField` · backend : `EkilibreMigrationController::declarePoiTypes` (costum repo `7ce80d9f0`) |
+| **Compteurs stats dynamiques (08/09, `21f0d53f` — §9.15)** | `src/types/site-schema.ts` (`StatDynamicSourceSchema`, `source` sur `CtaCardGridSchema.props.stats[]`) · `src/components/sections/useStatDynamicValue.ts` (nouveau) + `.test.ts` (nouveau, 6 tests) · `src/components/sections/CtaCardGrid.tsx` (`StatTile`) · `config.prod.maison-sport-sante-la-tampon.json` (item « Créneaux disponibles ») — moteur générique, **aucun autre site impacté** (4 autres configs `cta-card-grid` toujours valides sans `source`) |
 | **Assets** | `public/images/maisonSportSanteLaTampon/` (hero, hero2/3, logo, logo-mss, pictogramme) |
 | **Docs workspace** | [`../../FONCTIONNALITES-EKILIBRE.md`](../../FONCTIONNALITES-EKILIBRE.md) · [`../../ENDPOINT.md`](../../ENDPOINT.md) |
 | **Déploiement** | `server/prod-server.js` · variables d'environnement (`.env` local, non détaillées ici) — prod à définir |
@@ -437,6 +452,8 @@ site pour porter un contenu structuré sans code nouveau.
 | **Renommage `structure-ekilibre` → `structure`** (06/08) | le préfixe `ekilibre` était redondant (le costumForm vit déjà dans la config du site Ekilibre) ; nom plus court, aligné sur `entityType: "organizations"` |
 | **`number:fromDigits` (contournement, pas `coerce:number`)** | le costum SSBE déclare `siren`/`representativeTelephone`/`personInChargeTelephone` en `number` par artefact d'inférence (les données réelles sont des chaînes) ; `coerce:number` renverrait `undefined` sur tout séparateur/indicatif, perdant le champ. Le transform ne garde que les chiffres — pertes assumées (`+`, zéro initial) documentées dans le fichier ; correctif définitif attendu côté artefact costum (§11) |
 | **Actualités portées en POI, pas en News** (décision 06/08) | le CDC exige catégorie fermée, statut brouillon/publié/archivé, mise en avant unique et date de publication planifiable — absents du module News (flux social lecture/commentaires/réactions) ; le pattern `costumForm` + `formEngine` déjà utilisé pour `structure` couvre ce besoin sans code nouveau |
+| **Stats dynamiques de la home indépendantes du module `admin`** (08/09, §9.15) | le contrat calque celui des KPIs admin (`AdminDashboardKpiSchema`), mais la section publique ne doit dépendre que de hooks déjà publics (`useSearchAllResults`, `useEntityMembers`) — jamais du module `admin`, chargé à part et gardé `siteAdmin` |
+| **`value` optionnel + skeleton plutôt qu'un chiffre imposé** (08/09, §9.15) | `value` reste le repli immédiat si fourni (anti-flash SSR) ; sans lui, un skeleton comble l'attente le temps du fetch client — dans les deux cas, jamais de chiffre inventé si la source échoue ou tarde |
 
 ---
 
@@ -1020,10 +1037,17 @@ l'action admin et non par écriture Mongo directe.
 
 **Une seule route d'édition d'organisation** est déclarée, bornée par
 `when: or[sourceKeys ∋ associationEkilibre, reference.costum ∋ associationEkilibre]` et **sans**
-`editModalMatch`. L'absence de match sur le type est délibérée : les 14 fiches référencées n'ont pas
-de champ `type`, un filtre `NGO`/`Cooperative` les aurait toutes exclues. *(Ceci referme le constat
-« route d'édition non bornée par costum » ouvert le 10/08 en §12 — avec `associationEkilibre` et non
-`sportSanteBienetre` comme valeur testée.)*
+`editModalMatch`. *(Ceci referme le constat « route d'édition non bornée par costum » ouvert le 10/08
+en §12 — avec `associationEkilibre` et non `sportSanteBienetre` comme valeur testée.)*
+
+> ⚠️ **Correction du 28/08 — la justification écrite ici le 23/08 était fausse.** Elle disait :
+> « l'absence de match sur le type est délibérée, les 14 fiches référencées n'ont pas de champ `type` ».
+> Le constat est exact, la cause ne l'est pas. La vraie raison est que le costumForm `structure` ne
+> déclare **pas de `subType`** : rien n'est donc écrit dans `reference.costumTypes.associationEkilibre`
+> au moment du référencement, et `editModalMatch` n'a effectivement rien à matcher. Ce n'est pas une
+> propriété des fiches, c'est une pièce manquante de la chaîne de rattachement
+> (cf. [doc/35](../doc/35-rattachement-et-referencement.md)) : institut-bleu, qui pose `identity` **et**
+> `subType`, n'a pas ce problème. Le contournement reste défendable en l'état ; sa justification, non.
 
 ---
 
@@ -1200,6 +1224,150 @@ sans domaine propre et vers le backend par défaut du parc — **à confirmer** 
 
 ---
 
+### 9.14 Scoping des saisies front refermé + « Documents ressources pro » (24/08)
+
+> Commits : site-json `edb20de6` · costum `a15bdaa47`, `7ce80d9f0` · citizenToolKit `b0a8d0ec`.
+
+**Le `source.key` des saisies front, refermé à la racine.** Le passage au scoping `sourceKey` (§9.9)
+avait un angle mort : le contrat SDK `SAVE_COFORM_ANSWER` (`additionalProperties:false`) ne transporte
+pas `costumSlug`, donc `Coform::saveAnswer` créait les réponses front **sans `source`** — invisibles
+du site (constaté sur un créneau ajouté le 24/08 au matin). Deux correctifs backend : un **repli
+« orga porteuse »** dans `Coform::saveAnswer` (`b0a8d0ec` — si l'orga du form porte un costum
+embarqué, la réponse est scopée sur son slug, comme une saisie faite sous le costum ; corrige le même
+bug latent pour tout site SiteForge) et **`fixSourceKey` élargi** (`a15bdaa47`) à TOUTE réponse du
+form hors scope — copies héritées de SSBE comme saisies directes. Appliqué en dev le 24/08 :
+`config:probe` remonte **44 résultats** sur `/creneaux`.
+
+**Documents ressources pro (CDC §4.5)** — réutilisation du module ressources de **parent62**
+(`edb20de6`, **0 code front**) : une ressource = un **POI `type:"recoveryCenter"`** scopé
+`source.keys:["associationEkilibre"]`, champs plats `category` (5 valeurs CDC : Recommandations /
+Bonnes pratiques / Bilans & parcours / Formulaires de prescription / Autres) et `status`
+(Visible / Brouillon, défaut **Brouillon** — même logique anti-publication accidentelle que les
+actualités). Quatre morceaux de config : `costumForms["ekilibre-ressource"]` (nom*, catégorie*,
+description, PDF via widget `file` `accept:"application/pdf"`, lien externe `urlList`, statut) ·
+page publique **`/ressources`** (annuaire des **publiés seulement** — `defaultFilters
+{status:"Visible"}` —, recherche nom/description, filtre catégorie, cartes `resource` à badge coloré
+`chart-1…5`) · entrée de nav · onglet **admin `ressources`** (`siteAdmin`, table `resource` en mode
+`statusField` Brouillon/Visible, création/édition/suppression) + route `edit-ekilibre-ressource`
+dans `profiles.poi.editModals`, **bornée au costum** (`sourceKeys contains associationEkilibre`,
+piège institutBleu).
+
+**La découverte structurante — la déclaration `typeObj` en base est un prérequis dur.** Le SDK
+n'accepte au save d'une entité sous scope costum que les champs déclarés dans le **costum résolu**
+(`costum/co/resolved` → `typeObj`, résolution **live-first**) ; or le costum embarqué de l'orga n'en
+avait **aucun**. Symptômes mesurés : au create les champs costum sont **écartés en silence** (« test
+doc » créé sans `category`), à l'édition ils sont **rejetés**
+(`[DraftProxy] Le champ "category" n'est pas autorisé.`). Correctif : action URL
+**`costum/ekilibreMigration/declarePoiTypes`** (`7ce80d9f0`, dry-run + `/apply/1`) qui pose
+`costum.typeObj.article` **et** `costum.typeObj.recoveryCenter` — la déclaration `article` referme au
+passage une panne **latente** des actualités (champs `category`/`publicationDate`/`link`/
+`publicationStatus`/`featured` jamais déclarés ; 0 article créé, le flux n'avait jamais été exercé).
+Volontairement **sans enums en base** : le form du site reste seul juge des valeurs. **À rejouer en
+PROD** — l'action rejoint le runbook §9.11.
+
+**Recette réelle du 24/08 (navigateur, base vérifiée)** : déclaration appliquée → « test doc » créé,
+statut basculé Visible depuis la table admin, `category:"Bonnes pratiques"` posée à l'édition —
+create / statut / edit verts de bout en bout.
+
+**Écarts assumés** : la limite **10 Mo** et l'exigence **HTTPS** du CDC sont **informatives** côté
+front (mentions sous les champs ; le serveur garde ses limites d'upload) — blocage strict = petite
+évolution du widget `file` si exigée. Le **type PDF / lien** est dérivé du contenu (PDF si document
+joint, lien si `urls`), pas un champ saisi.
+
+**Gates au 24/08** : `config:validate` **13 pages / 49 sections** · `audit:config` RAS · préflight
+**534/534** (snapshot effective à jour) · `config:render` **13/13 pages** · `config:probe` :
+`/creneaux` 44 résultats, `/ressources` périmètre neuf (1 ressource après recette) · `tsc -b`
+0 erreur · SDK requis `^1.0.189`, installé **1.0.189**.
+
+---
+
+### 9.15 Compteurs statistiques dynamiques sur la home — 1ᵉʳ lot (08/09, Nicolas, `21f0d53f`)
+
+**Demande** : les 4 chiffres de la section « Ekilib.re en chiffres » (accueil, section
+`cta-card-grid#chiffres-ekilibre`) sont codés en dur depuis l'init (constat A.6 de la checklist,
+question en attente depuis le 31/07, §13) — les brancher sur des données réelles.
+
+**Réalisation** : extension **opt-in** du schéma `CtaCardGridSchema.props.stats[]` — nouveau champ
+`source` (`StatDynamicSourceSchema`, union `searchCount` / `membersCount`) résolu **côté client**
+par un nouveau hook `useStatDynamicValue`. Sans `source`, un stat reste identique à avant (`value`
+requis, statique). Volontairement **indépendant du module `admin`** bien que le contrat calque celui
+des KPIs du dashboard (`AdminDashboardKpiSchema`, §9.6) : ces stats sont rendues sur une page
+**publique**, elles ne doivent dépendre que de hooks déjà publics (`useSearchAllResults` — même
+`searchCostum` que les sections search — et `useEntityMembers`), jamais du module `admin`.
+
+| Item de `stats[]` | Branché ? | Source | Pourquoi |
+|---|---|---|---|
+| **Créneaux disponibles** | ✅ dynamique | `source.searchCount`, mêmes `baseParams` que le KPI admin « Créneaux actifs » (§9.6) : `sourceKey:["associationEkilibre"]`, `form:"6a85af345d898a57cb49f029"`, statut `"Validé"` | seul mapping sans ambiguïté — réutilise une définition déjà validée en admin |
+| Activités proposées | 🟡 statique (`8`) | — | aucune entité identifiée en base pour ce compte |
+| Participants actifs | 🟡 statique (`340+`) | — | **≠** le KPI admin « Usagers actifs », que l'admin lui-même déclare **non raccordé** (analytics RGPD, §9.6/§13) — le mapper sur `membersCount` produirait un chiffre faux (ordres de grandeur incompatibles avec « 0 pro en attente ») |
+| Partenaires | 🟡 statique (`12`) | — | aucune notion SDK correspondante identifiée (pas des « membres », pas des réponses de formulaire) |
+
+**Comportement `value` / `source`** : `value` devient optionnel — mais un `.refine()` Zod interdit un
+stat sans **aucun** des deux. Avec `source` seul (cas actuel de « Créneaux disponibles », `value`
+retiré de la config), un skeleton (`@/components/ui/skeleton`, déjà utilisé par le dashboard admin)
+comble l'attente ; avec `value` **et** `source` tous les deux, `value` sert de repli immédiat (SSR,
+anti-flash) tant que le fetch n'a pas résolu. Jamais de chiffre inventé dans les deux cas — le hook
+renvoie `null` tant que la donnée n'est pas connue (`searchCount.total` nativement `null` avant la
+1ʳᵉ page ; garde explicite `isLoading` côté `membersCount`, dont le `totalCount` vaut `0` par défaut
+avant chargement).
+
+**Fetch côté client uniquement** (comme le dashboard admin dont cette logique est le pendant
+public) — pas de prefetch SSR pour ce lot ; amélioration possible en itération suivante si le flash
+initial (le temps du fetch client) s'avère gênant en usage réel.
+
+**Fichiers** : `src/types/site-schema.ts` (`StatDynamicSourceSchema` + `source` sur `stats[]`) ·
+`src/components/sections/useStatDynamicValue.ts` (nouveau hook) ·
+`src/components/sections/useStatDynamicValue.test.ts` (nouveau, 6 tests — anti-flash `isLoading`,
+garde entité absente, désactivation propre des deux hooks sous-jacents) ·
+`src/components/sections/CtaCardGrid.tsx` (sous-composant `StatTile`) ·
+`config.prod.maison-sport-sante-la-tampon.json` (item « Créneaux disponibles »).
+
+**Gates (08/09)** : `config:validate` ✅ **13 pages / 49 sections** (site cible) et les **4 autres**
+sites utilisant `cta-card-grid` (`rezo-la-mer`, `cyber-reunion`, `sport-sante-bien-etre`,
+`rezo-sante-reunion`) toujours ✅ — rétrocompatibilité vérifiée, `source` étant strictement
+optionnel · `tsc -b` ✅ 0 erreur · lint ✅ 0 erreur sur les fichiers du lot · `useStatDynamicValue`
+**6/6** ✅.
+
+**Reste sur ce lot** : trancher la source (si une existe) des 3 stats encore statiques — cf. §13.
+
+---
+
+
+### 9.16 Ce que le site régional lui doit — et ce qu'il lui reste à reprendre (08/09)
+
+Une analyse croisée avec [Sport Santé Bien-être](sport-sante-bien-etre.md) a établi, `git log` à
+l'appui, que la page `/creneaux` d'Ekilib.re a été **copiée depuis SSBE** en août puis corrigée ici
+en huit commits (20→23/08). SSBE a ensuite emprunté la contribution et la modération sans ces
+corrections : c'est une dette de rétro-portage, pas une dérivation à sens unique.
+
+**Ce qui reste à reprendre ICI**, mesuré côté SSBE et applicable au Tampon :
+
+| Geste | Pourquoi |
+|---|---|
+| `sortable: false` sur les 4 colonnes fabriquées de la modération | Ces colonnes sont produites par le hook PHP **après** la requête Mongo : trier dessus ordonne au hasard et déstabilise le scroll infini. La doc SSBE le signale depuis le 02/09 |
+| `enableMap: false` sur `/ressources` | Le correctif `eb4db0ab` n'a jamais été rapatrié : un annuaire de documents propose encore une bascule Carte. `showMap: false` ne suffit pas, le code lit `enableMap` |
+| `structureAction.audience: "managers"` | Le bouton « Fiche structure » reste exposé à tout le monde ; le gate est neuf, créé pour SSBE |
+| `badge.labels` et `badge.icons` sur `/ressources` | Les deux clés que la MR 51 a créées. Les valeurs stockées ici SONT les libellés, donc pas de clé brute affichée — mais la pastille reste **française en version anglaise**, alors que les traductions existent déjà dans ce fichier |
+| `navigateOnSuccess: false` sur `costumForms.structure` | Créer une structure depuis `/admin` éjecte l'administrateur (2 formulaires sur 3 le portent, pas celui-là) |
+| `searchBy` sur l'onglet admin `ressources` | Ici c'est SSBE qui a l'avantage : aucun `searchBy`, la recherche de la table ne fouille pas la description |
+| `label` sur les états de statut | 12 des 13 états des tables admin s'affichent en français brut sur un back-office bilingue |
+| Sections `html` en `LocalizedString` | Les 3 sections `html` sur 3 — dont les trois pages légales — portent une chaîne brute française sur un site déclaré bilingue |
+| `members.filters` avec `isInviting` | L'onglet Membres perd la liste des invités en attente que SSBE affiche |
+
+**Un défaut partagé, de donnée et non de config** : le filtre « Bénéficiaires » de `/creneaux`
+s'appuie sur un `$in`, égalité exacte. Côté SSBE, 232 réponses stockent les cases cochées en une
+chaîne collée et sont donc invisibles au filtre. Ekilib.re **n'a qu'une réponse**, correctement
+stockée — il ne rencontre pas le défaut, il n'y est pas immunisé. Le script de normalisation
+([`../tools/ssbe-creneaux/normalize-beneficiaires.mjs`](../tools/ssbe-creneaux/normalize-beneficiaires.mjs))
+est paramétrable par formulaire et s'appliquerait ici à l'identique si le stock grossissait.
+
+⚠ **Palette ⌘K** : `params.sourceKey` inclut `"sportSanteBienetre"` — un périmètre régional que
+`/structure` prend soin d'exclure. Élargissement volontaire ou oubli, à trancher (§13). Et elle ne
+filtre pas `statusActor`, contrairement à `/structure` : écart théorique ici (les 14 structures sont
+validées), mais SSBE a dû poser la garde pour 32 fiches.
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Lot A — Vitrine & annuaires (config)
@@ -1211,7 +1379,7 @@ sans domaine propre et vers le backend par défaut du parc — **à confirmer** 
 | A.3 | Annuaire structures `/structure` (CP + domaine d'intervention) | ✅ config | périmètre `associationEkilibre` + `statusActor:"Validé"` + CP ; projection **55 champs** (§9.13) ; **14 fiches référencées** en DEV le 20/08 (§9.10) — à rejouer en PROD |
 | A.4 | Flux d'actualités (home, lecture seule) | ✅ | **remplacé** par le module blog : `articleFeed` `featured:"flag"` sur `/`, `/espace-pro` et `/blog` (§9.13) — le flux `news` n'est plus utilisé |
 | A.5 | Auth / Espace Pro | ✅ | CTA header → `/espace-pro`, **gardée** (`auth.required`). Depuis le 21/08 : plus de saut vers `/login`, la modale s'ouvre **sur place** (§9.13). ⚠️ garde de **session** : tout compte connecté entre (§12) |
-| A.6 | Chiffres clés de la home | 🟡 | **codés en dur** (24 créneaux, 8 activités…) — se désynchroniseront du réel |
+| A.6 | Chiffres clés de la home | 🟡 | **1/4 dynamique** depuis le 08/09 (§9.15) : « Créneaux disponibles » compte réellement les réponses validées du form dédié. Les 3 autres (Activités proposées, Participants actifs, Partenaires) restent codés en dur — aucune source confirmée pour eux |
 | A.7 | Formulaire de contact | 🟡 | **câblé le 23/08** sur `CONTACT_SEND` (SDK → `/co2/mailmanagement/createandsend`), clés `action`/`method` retirées (§9.13). Reste **hors `site-json`** : renseigner **`costum.contactMail`** sur le costum (`admin.email` n'est qu'un repli), sinon le legacy renvoie le message à son auteur |
 | A.8 | Auto-inscription structure (`/structure`, bouton public + wizard) | 🟡 | **commité** (`9fbe7c02` 31/07 + renommé/complété `253dec37` 06/08, Nicolas) — costumForm `structure` (§9.5/§9.5 bis) + fiche détail `PreviewStructure` ; 40 tests config-driven ✅ ; recette navigateur (upload logo, soumission réelle) à faire |
 
@@ -1248,6 +1416,16 @@ sans domaine propre et vers le backend par défaut du parc — **à confirmer** 
 | E.4 | Back-office — CRUD actualités par l'admin (dont statut Publié/Brouillon/Archivé et mise en avant exclusive) | ✅ | **codé le 10/08, opérationnel le 19/08** — onglet `resource` + bouton « Mettre à la une » dédié (exclusivité gérée depuis le tableau, décision utilisateur, §9.7) ; création confirmée en base (§9.7 ter) — reste la recette du bouton « Mettre à la une » lui-même en navigateur |
 | E.5 | Éditeur de contenu riche (WYSIWYG, cf. CDC « en production ») | 🟡 | **substitué par décision utilisateur (06/08)** : widget `markdown` existant, pas de nouvelle dépendance — hors périmètre explicite, cf. §9.7/§13 |
 | E.6 | Fiche Actualités sur `/espace-pro` | ✅ config | `articleFeed` (pageSize 12, sans une épinglée) — la section `actualites-articles-list` n'existe plus sous ce nom (§9.13) |
+
+### Lot F — Documents ressources pro (CDC §4.5)
+
+| # | Fonctionnalité | État | Détail |
+|---|---|---|---|
+| F.1 | Formulaire de dépôt (nom*, catégorie*, PDF ou lien, description, statut) | ✅ | `costumForms["ekilibre-ressource"]` (§9.14) — recette réelle le 24/08 (création + édition en base) |
+| F.2 | Annuaire public `/ressources` (publiés seulement, recherche + filtre catégorie) | ✅ config | `config:render` vert ; audience publique **provisoire** — décision utilisateur du 24/08 (« on verra après »), restriction pros possible plus tard (`auth.required` / `visibleIf`) |
+| F.3 | Back-office — CRUD + statut Visible/Brouillon | ✅ | onglet admin `resource` en mode `statusField` (§9.14) — statut basculé en réel le 24/08 |
+| F.4 | Déclaration `costum.typeObj` en base (`declarePoiTypes`) | ✅ dev | appliquée le 24/08 ; **à rejouer en PROD** (runbook §9.11) |
+| F.5 | Limite 10 Mo + HTTPS stricts côté front | ❌ | informatifs seulement (écart assumé §9.14) — évolution du widget `file` si exigée |
 
 ### Lot C — Industrialisation & mise en ligne
 
@@ -1308,7 +1486,8 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
   repassant la suite complète — pré-existant, sans lien avec le lot actualités du jour.
 - ~~**Route d'édition `structure` non bornée par costum**~~ **RÉSOLU le 20/08** (§9.10) : le `when` est
   posé, sur `associationEkilibre` (et non `sportSanteBienetre` comme le proposait l'extrait ci-dessous),
-  sans `editModalMatch` — délibérément, les 14 fiches référencées n'ayant pas de champ `type`.
+  sans `editModalMatch` — faute de `subType` sur le costumForm, non par choix (justification corrigée
+  le 28/08, cf. §9.10).
   <details><summary>Constat d'origine (10/08)</summary>
   `profiles.organizations.editModal = "edit-structure"` n'a pas de clause `when` — le préflight
   `tests/preflight/edit-modal-scope.test.ts` (nouveau, mergé depuis `main` le 06/08, jamais fait
@@ -1439,7 +1618,7 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 | **Qui valide les créneaux** : le process est désormais **outillé** (onglet Modération de `/admin`, §9.6 bis) — reste à désigner qui l'opère à la MSS | MSS / réseau SSBE |
 | **`useDeleteAnswer`** (suppression de créneau) — si le besoin est confirmé | Peterson |
 | **Spec e2e Ekilibre** (lecture seule, modèle parent62) | Peterson |
-| **Chiffres clés dynamiques** sur la home (compter les answers au lieu du dur) | Peterson / MSS |
+| ~~**Chiffres clés dynamiques** sur la home~~ **1/4 fait le 08/09** (§9.15) : « Créneaux disponibles ». **Reste à trancher** : source (si une existe) des 3 autres — Activités proposées, Participants actifs, Partenaires | Peterson / MSS |
 | ~~Filtres pathologies : pré-appliquer un filtre depuis les cartes ?~~ **FAIT** (§9.12). **Reste à valider** : les **regroupements médicaux** composés au passage — « Problème cardiaque » = 4 ALD, « Cancer » = 4 ALD, « Stress / santé mentale » à cheval sur les deux champs. Ce sont des choix de rédaction, pas des choix cliniques | **MSS** |
 | **Backend de prod + domaine** : la cible existe (Coolify `site-json-ekilibre`, `ekilibre.00.re`, §9.13) mais le **domaine propre** et le **backend de prod** restent à trancher — `VITE_COSTUM_FORCE_LIVE` pointe aujourd'hui vers le backend par défaut du parc | MSS / Thomas |
 | Chef de projet / budget / phasage du CDC | à confirmer |

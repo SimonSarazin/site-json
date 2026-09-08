@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 
 import {
   agendaBaseSig,
+  agendaBoundsSig,
   agendaListIndexStep,
   buildAgendaCalendarParams,
   buildAgendaListParams,
@@ -103,5 +104,81 @@ describe("buildAgendaParams — le reste du contrat", () => {
       name: "tournoi",
     });
     expect("type" in buildAgendaListParams(20, { name: "" })).toBe(false);
+  });
+});
+
+/**
+ * Bornes et tri SERVEUR du mode LISTE (`from`/`to`/`order`/`recurrency`, legacy 2026-09-04 + miroir
+ * Node) : c'est ce qui rend « À venir » indépendant de la taille de page (avant : flux DESC non borné
+ * retourné côté client, juste SSI futurs ≤ indexStepList).
+ */
+describe("buildAgendaParams — bornes du mode LISTE", () => {
+  const NOW = new Date("2026-09-04T10:00:00.000Z");
+  const END = new Date("2027-09-04T21:59:59.999Z");
+
+  it("sans bornes : aucun des quatre paramètres n'est émis (réponse serveur inchangée, pas de endDateSortFormat)", () => {
+    const p = buildAgendaListParams(20, {}, undefined);
+    for (const k of ["from", "to", "order", "recurrency"]) expect(k in p).toBe(false);
+  });
+
+  it("« prochains » : from/to en ISO AVEC offset (toISOString) + order asc", () => {
+    const p = buildAgendaListParams(20, {}, undefined, { from: NOW, to: END, order: "asc" });
+    expect(p).toMatchObject({ indexStep: 20, from: "2026-09-04T10:00:00.000Z", to: "2027-09-04T21:59:59.999Z", order: "asc" });
+    expect("recurrency" in p).toBe(false);
+  });
+
+  it("« passés » : to + desc + recurrency:false (une série n'a pas de passé)", () => {
+    const p = buildAgendaListParams(20, {}, undefined, { to: NOW, order: "desc", recurrency: false });
+    expect(p).toMatchObject({ to: "2026-09-04T10:00:00.000Z", order: "desc", recurrency: false });
+    expect("from" in p).toBe(false);
+  });
+
+  it("les bornes se combinent au scope/filtres de baseParams sans les écraser", () => {
+    const p = buildAgendaListParams(10, { type: "meeting" }, { sourceKey: ["parent62"] }, { from: NOW, order: "asc" });
+    expect(p).toMatchObject({ sourceKey: ["parent62"], type: "meeting", from: NOW.toISOString(), order: "asc" });
+  });
+
+  it("agendaBoundsSig : deux flux ≠ deux signatures ; une nouvelle ancre = une nouvelle signature ; sans bornes = \"\"", () => {
+    const a = agendaBoundsSig({ from: NOW, to: END, order: "asc" });
+    const b = agendaBoundsSig({ to: NOW, order: "desc", recurrency: false });
+    expect(a).not.toBe(b);
+    expect(agendaBoundsSig({ from: new Date(NOW.getTime() + 1000), to: END, order: "asc" })).not.toBe(a);
+    expect(agendaBoundsSig(undefined)).toBe("");
+  });
+});
+
+describe("baseParams.recurrency — le site choisit d'inclure ou non les séries", () => {
+  // Constantes locales : `T0`/`T1` du bloc précédent ne sortent pas de son `describe`.
+  const T0 = new Date("2026-09-04T10:00:00.000Z");
+  const T1 = new Date("2027-09-04T21:59:59.999Z");
+
+  it("absent : aucune clé émise — « inclus » est le défaut serveur, on ne l'affirme pas", () => {
+    expect("recurrency" in buildAgendaListParams(20, {}, {})).toBe(false);
+    expect("recurrency" in buildAgendaCalendarParams(T0, T1, {}, {})).toBe(false);
+  });
+
+  it("false : émis dans les DEUX modes — sinon on exclut les séries de la liste et elles reviennent dans la grille", () => {
+    expect(buildAgendaListParams(20, {}, { recurrency: false })).toMatchObject({ recurrency: false });
+    expect(buildAgendaCalendarParams(T0, T1, {}, { recurrency: false })).toMatchObject({ recurrency: false });
+  });
+
+  it("true : émis explicitement (le serveur l'accepte depuis le parse booléen du 2026-09-04)", () => {
+    expect(buildAgendaListParams(20, {}, { recurrency: true })).toMatchObject({ recurrency: true });
+  });
+
+  it("le `false` du flux « Passés » l'emporte sur une config qui inclurait les séries", () => {
+    // Contrainte de sens, pas préférence de site : une série ne renvoie que sa PROCHAINE occurrence.
+    const p = buildAgendaListParams(20, {}, { recurrency: true }, { to: T0, order: "desc", recurrency: false });
+    expect(p).toMatchObject({ recurrency: false });
+  });
+
+  it("le flux « prochains » suit la config (il ne pose pas de `recurrency` de son côté)", () => {
+    const p = buildAgendaListParams(20, {}, { recurrency: false }, { from: T0, to: T1, order: "asc" });
+    expect(p).toMatchObject({ recurrency: false, order: "asc" });
+  });
+
+  it("agendaBaseSig : deux périmètres ne différant que par `recurrency` ne partagent pas de cache", () => {
+    expect(agendaBaseSig({ recurrency: false })).not.toBe(agendaBaseSig({ recurrency: true }));
+    expect(agendaBaseSig({ recurrency: false })).not.toBe(agendaBaseSig({}));
   });
 });
