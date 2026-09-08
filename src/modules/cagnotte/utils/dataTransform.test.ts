@@ -345,6 +345,33 @@ describe("buildResourceFromAnswer", () => {
   });
 });
 
+describe("buildResourceFromAnswer — financeurs servis en objet keyé par id", () => {
+  it("somme les montants au lieu de compter un financeur fantôme à 0 (forme Mongo)", () => {
+    // Régression C8 (MR 53) : `toArray` emballait l'objet entier en UN financeur
+    // sans `id` ni `amount` — financement à zéro, cofinanceur fantôme.
+    const answer = {
+      id: "answer-4",
+      answers: {
+        aapStep1: {
+          depense: [
+            {
+              poste: "Dev",
+              price: 1000,
+              financer: {
+                u1: { id: "u1", name: "Alice", amount: 250 },
+                u2: { id: "u2", name: "Bob", amount: 100 },
+              },
+            },
+          ],
+        },
+      },
+    };
+    const resource = buildResourceFromAnswer(answer)!;
+    expect(resource.resourceFinancedAmount).toBe(350);
+    expect(resource.items[0].allFunding.map((f) => f.financerId)).toEqual(["u1", "u2"]);
+  });
+});
+
 /**
  * Régression 1.3 (MR 53) : dans `MilestoneListField`, `rawDepenses` est la valeur
  * react-hook-form — déjà modifiée par le geste — et `enrichedItems` la photo
@@ -517,6 +544,24 @@ describe("buildItemsFromRawDepenses — la ligne brute (saisie) prime sur la pho
       expect(item.actions).toBe(enriched[i].actions);
       expect(item.currentFunding).toBe(enriched[i].currentFunding);
     });
+  });
+
+  it("sans item enrichi : financeurs en objet keyé par id → montants sommés, pas de financeur fantôme", () => {
+    // Régression C8 (MR 53), même famille que C7 côté adaptateur.
+    const raw = [
+      {
+        poste: "Dev",
+        price: 100,
+        financer: {
+          u1: { id: "u1", name: "Alice", amount: 250 },
+          u2: { id: "u2", name: "Bob", amount: 100 },
+        },
+      },
+    ];
+    const [item] = buildItemsFromRawDepenses(raw, []);
+    expect(item.currentFunding).toBe(350);
+    expect(item.allFunding.map((f) => f.financerId)).toEqual(["u1", "u2"]);
+    expect(item.allFunding.map((f) => f.amount)).toEqual([250, 100]);
   });
 
   it("contrôle : sans enrichi, la saisie locale est reflétée telle quelle", () => {

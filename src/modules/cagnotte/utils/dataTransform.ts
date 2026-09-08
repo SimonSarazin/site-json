@@ -232,14 +232,19 @@ function toTimestampOrNow(value: unknown): number {
 
 /**
  * Reconstruit `currentFunding`/`allFunding` à partir des financeurs BRUTS
- * (`depense.financer[]`) — utilisé par `buildItemsFromRawDepenses` quand
- * aucune entrée `targetResource.items` ne peut enrichir la dépense
+ * (`depense.financer`) — utilisé par `buildItemsFromRawDepenses` quand
+ * aucune entrée `targetResource.items` ne peut enrichir la dépense.
+ *
+ * `financer` arrive en tableau depuis l'enveloppe, mais un document brut peut le
+ * porter en objet keyé par id de financeur (forme Mongo). `toArrayOrValues` couvre
+ * les deux ; `toArray` aurait emballé l'objet entier en UN financeur fantôme
+ * (`amount` 0, `id` vide) et mis le financement à zéro.
  */
 function buildFallbackFundingFromRawFinancers(rawFinancer: unknown): {
   currentFunding: number;
   allFunding: CagnotteFundableItem["allFunding"];
 } {
-  const financers = toArray<unknown>(rawFinancer).map(asRecord);
+  const financers = toArrayOrValues<unknown>(rawFinancer).map(asRecord);
   const allFunding = financers.map((f, index) => ({
     id: toString(f.id) || `financer-${index}`,
     financerName: toString(f.name) || toString(f.financerName) || "",

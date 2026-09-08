@@ -22,6 +22,9 @@ import { generateMilestoneId } from "@/modules/cagnotte/utils/idGeneration";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { appendProjectMilestone, updateAnswerDepenseFields } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
 
+/** Financeur d'une dépense tel que l'enveloppe le sert, avant enrichissement. */
+type RawDepenseFinancer = FundingTransaction & { method?: string };
+
 interface RawDepense {
     id?: string | number;
     milestone?: string;
@@ -30,7 +33,12 @@ interface RawDepense {
     priceInt?: number | string;
     include?: boolean;
     actions?: FundingAction[];
-    financer?: Array<FundingTransaction & { method?: string }>;
+    /**
+     * Tableau depuis l'enveloppe, mais un document brut peut le porter en objet
+     * keyé par id de financeur (forme Mongo). À lire via `toArrayOrValues`, jamais
+     * par un `.map` direct — celui-ci plantait tout l'adaptateur.
+     */
+    financer?: RawDepenseFinancer[] | Record<string, RawDepenseFinancer>;
 }
 
 interface RawAction {
@@ -188,7 +196,7 @@ function buildDepenseFundingData(
     orgsIds: string[],
     userId?: string
 ) {
-    const rawFinancers = (depense?.financer || []) as Array<FundingTransaction & { method?: string }>;
+    const rawFinancers = toArrayOrValues<RawDepenseFinancer>(depense?.financer);
     const enrichedFinancers = rawFinancers.map(fund => ({
         ...fund,
         metadata: findMetadataById(fund.id, globalLinks)
@@ -392,7 +400,7 @@ export function useCagnotteAdapter(
 
                 const items = (proposition?.depenses || []).map((d: RawDepense, index: number) => {
 
-                    const rawFinancers = (d.financer || []) as Array<FundingTransaction & { method?: string }>;
+                    const rawFinancers = toArrayOrValues<RawDepenseFinancer>(d.financer);
                     const enrichedFinancers = rawFinancers.map(fund => ({
                         ...fund,
                         metadata: findMetadataById(fund.id, globalLinks)

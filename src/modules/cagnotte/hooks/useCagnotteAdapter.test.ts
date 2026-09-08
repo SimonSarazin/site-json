@@ -1,5 +1,25 @@
-import { describe, it, expect } from "vitest";
-import { milestoneRepairKey } from "./useCagnotteAdapter";
+// @vitest-environment jsdom
+import { describe, it, expect, vi } from "vitest";
+import { createElement, type ReactNode } from "react";
+import { renderHook } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { CAGNOTTE_TYPE_CONFIGS, type CagnotteTypeConfig, type FundingEnvelopeNormalizedData } from "../types";
+import type { OrgProject } from "./useOrganizationProjectsWithAnswers";
+
+// Utilisateur connecté `u1`, sans organisation admin et sans API : l'adaptateur
+// calcule, la réparation des dépenses orphelines (effet) reste inerte.
+vi.mock("@/hooks/useCocolight", () => ({
+  useCocolight: () => ({
+    api: null,
+    me: { serverData: { id: "u1" }, getEntityType: () => "citoyens" },
+  }),
+}));
+vi.mock("@/modules/cagnotte/hooks/useUserAdminOrganizations", () => {
+  const aucune: never[] = [];
+  return { useUserAdminOrganizations: () => aucune };
+});
+
+import { milestoneRepairKey, useCagnotteAdapter } from "./useCagnotteAdapter";
 import { generateMilestoneId } from "../utils/idGeneration";
 
 /**
@@ -56,5 +76,125 @@ describe("generateMilestoneId — pourquoi il ne peut PAS servir de clé de gard
   it("évite les identifiants déjà pris", () => {
     const pris = generateMilestoneId();
     expect(generateMilestoneId([pris])).not.toBe(pris);
+  });
+});
+
+/**
+ * Régression C7 (MR 53) : `depense.financer` peut arriver en objet keyé par id de
+ * financeur (forme Mongo brute). Les gardes pré-MR (`Array.isArray`,
+ * `!transactions.length`) avaient sauté au profit d'un `.map` direct — l'objet
+ * faisait planter TOUT l'adaptateur, sur les deux branches (`project` et
+ * `proposition`). Lecture attendue : `toArrayOrValues`, montants sommés.
+ */
+describe("useCagnotteAdapter — `depense.financer` en objet keyé par id", () => {
+  /** Fabriques : `getUserFunding` enrichit les financeurs EN PLACE, on ne partage donc aucune fixture. */
+  const financerObjet = () => ({
+    u1: { id: "u1", name: "Alice", amount: 250 },
+    u2: { id: "u2", name: "Bob", amount: 100 },
+  });
+  const financerTableau = () => Object.values(financerObjet());
+
+  function enveloppe(depense: Record<string, unknown>, projectId?: string): FundingEnvelopeNormalizedData {
+    return {
+      rawEnvelope: {
+        projects: [{ id: "answer-1", projectId, titre: "Mon commun", depenses: [depense] }],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+  }
+
+  const projets = (): OrgProject[] =>
+    [
+      {
+        id: "proj-1",
+        name: "Projet du commun",
+        answerId: "answer-1",
+        milestones: [{ milestoneId: "m1", name: "Dev", price: 5000, status: "open", currentFunding: 42 }],
+        cagnotteTotalAmount: 0,
+        cagnotteTargetAmount: 5000,
+        rawProject: {},
+      },
+    ] as unknown as OrgProject[];
+
+  function renderAdapter(
+    fundingEnvelope: FundingEnvelopeNormalizedData,
+    allProjects: OrgProject[],
+    config: CagnotteTypeConfig,
+    selectedId: string,
+  ) {
+    const client = new QueryClient();
+    const wrapper = ({ children }: { children: ReactNode }) =>
+      createElement(QueryClientProvider, { client }, children);
+    return renderHook(() => useCagnotteAdapter(fundingEnvelope, allProjects, config, selectedId), { wrapper });
+  }
+
+  it("proposition : ne plante pas, somme les montants et retrouve la part de l'utilisateur", () => {
+    const { result } = renderAdapter(
+      enveloppe({ poste: "Dev", priceInt: 5000, milestone: "m1", financer: financerObjet() }),
+      [],
+      CAGNOTTE_TYPE_CONFIGS.aac,
+      "answer-1",
+    );
+    const item = result.current.savedSelectedResource!.items[0];
+    expect(item.currentFunding).toBe(350);
+    expect(item.unpaidFunding).toBe(350);
+    expect(item.allFunding.map((f) => f.id)).toEqual(["u1", "u2"]);
+    // `u1` est l'utilisateur connecté (cf. mock `useCocolight`).
+    expect(item.userPledge).toBe(250);
+    expect(item.funding.map((f) => f.financerId)).toEqual(["u1"]);
+  });
+
+  it("projet : idem sur le palier apparié à la dépense", () => {
+    const { result } = renderAdapter(
+      enveloppe({ poste: "Dev", priceInt: 5000, milestone: "m1", financer: financerObjet() }, "proj-1"),
+      projets(),
+      CAGNOTTE_TYPE_CONFIGS.standard,
+      "proj-1",
+    );
+    const item = result.current.savedSelectedResource!.items[0];
+    expect(item.milestoneId).toBe("m1");
+    expect(item.currentFunding).toBe(350);
+    expect(item.allFunding).toHaveLength(2);
+    expect(item.userPledge).toBe(250);
+  });
+
+  it("témoin : la forme tableau donne exactement les mêmes montants", () => {
+    const proposition = renderAdapter(
+      enveloppe({ poste: "Dev", priceInt: 5000, milestone: "m1", financer: financerTableau() }),
+      [],
+      CAGNOTTE_TYPE_CONFIGS.aac,
+      "answer-1",
+    ).result.current.savedSelectedResource!.items[0];
+    expect(proposition.currentFunding).toBe(350);
+    expect(proposition.userPledge).toBe(250);
+
+    const projet = renderAdapter(
+      enveloppe({ poste: "Dev", priceInt: 5000, milestone: "m1", financer: financerTableau() }, "proj-1"),
+      projets(),
+      CAGNOTTE_TYPE_CONFIGS.standard,
+      "proj-1",
+    ).result.current.savedSelectedResource!.items[0];
+    expect(projet.currentFunding).toBe(350);
+    expect(projet.userPledge).toBe(250);
+  });
+
+  it("sans financeur : 0 côté proposition, repli sur `currentFunding` du palier côté projet", () => {
+    const proposition = renderAdapter(
+      enveloppe({ poste: "Dev", priceInt: 5000, milestone: "m1" }),
+      [],
+      CAGNOTTE_TYPE_CONFIGS.aac,
+      "answer-1",
+    ).result.current.savedSelectedResource!.items[0];
+    expect(proposition.currentFunding).toBe(0);
+    expect(proposition.allFunding).toEqual([]);
+
+    const projet = renderAdapter(
+      enveloppe({ poste: "Dev", priceInt: 5000, milestone: "m1" }, "proj-1"),
+      projets(),
+      CAGNOTTE_TYPE_CONFIGS.standard,
+      "proj-1",
+    ).result.current.savedSelectedResource!.items[0];
+    expect(projet.currentFunding).toBe(42);
+    expect(projet.allFunding).toEqual([]);
   });
 });
