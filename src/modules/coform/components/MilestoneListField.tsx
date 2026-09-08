@@ -34,6 +34,14 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+// Bundles i18n des namespaces consommés ici (« modules/aac ») et par
+// `MilestoneManageActions` (« modules/cagnotte »). `src/i18n.ts` n'a aucun
+// backend : un namespace n'existe que si son `i18n.ts` a été importé, et ce
+// champ est branché sur le renderer GÉNÉRIQUE de coform — sur une page sans
+// section AAC ni cagnotte, personne d'autre ne les apporte, et l'écran montrait
+// les clés brutes (« detail.objectives.addMilestone »…).
+import "@/modules/aac/i18n";
+import "@/modules/cagnotte/i18n";
 import { useCocolightOptional } from "@/hooks/useCocolight";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { MilestoneManageActions } from "@/modules/cagnotte/components/sections/MilestoneManageActions";
