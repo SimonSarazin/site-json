@@ -164,6 +164,12 @@ export const AacDirectorySectionSchema = z.object({
     /**
      * Activation des filtres. Un filtre activé mais dont la question n'a pas pu
      * être résolue est masqué — jamais rendu inerte.
+     *
+     * Un bloc PARTIEL veut dire « je change ceux-là, le reste par défaut » :
+     * `{ "search": false }` n'éteint que la recherche. Les `.default()` ci-dessous
+     * ne s'appliquent pas à l'exécution (la config n'est jamais parsée par Zod) :
+     * c'est `resolveDirectoryFilters` (`lib/directoryFilters.ts`) qui fusionne,
+     * clé par clé, et qui doit rester aligné sur ces défauts — un test le vérifie.
      */
     filters: z
       .object({

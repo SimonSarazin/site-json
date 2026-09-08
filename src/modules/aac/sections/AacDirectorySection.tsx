@@ -15,6 +15,7 @@ import { useAacDirectoryContext } from "../hooks/useAacDirectoryContext";
 import { useAacCommuns } from "../hooks/useAacCommuns";
 import { useAacFacets } from "../hooks/useAacFacets";
 import { EMPTY_AAC_FILTERS, type AacDirectoryFiltersState } from "../lib/filtersKey";
+import { resolveDirectoryFilters } from "../lib/directoryFilters";
 import { resolveAacDepositStepKey } from "../lib/depositStep";
 import { AacDirectoryFilters } from "../components/directory/AacDirectoryFilters";
 import { AacDirectoryResults } from "../components/directory/AacDirectoryResults";
@@ -57,13 +58,7 @@ export default function AacDirectorySection({ id, props }: Props) {
     display: initialDisplay = "grid",
     columns = 3,
     pageSize = 12,
-    filters: enabledFilters = {
-      search: true,
-      tags: true,
-      maturity: true,
-      usage: true,
-      sort: true,
-    },
+    filters: filtersConfig,
     emptyText,
     showDepositButton = true,
     depositButtonLabel,
@@ -72,6 +67,12 @@ export default function AacDirectorySection({ id, props }: Props) {
   } = props;
 
   const isPreview = variant === "preview";
+
+  // Fusion avec les défauts, clé par clé : la config n'est pas parsée par Zod à
+  // l'exécution, donc un bloc partiel `{"search": false}` arrive tel quel — un
+  // défaut de destructuration ne jouerait que si le bloc était ABSENT et
+  // éteindrait les quatre autres filtres par omission.
+  const enabledFilters = resolveDirectoryFilters(filtersConfig);
 
   const [filters, setFilters] = useState<AacDirectoryFiltersState>(EMPTY_AAC_FILTERS);
   const debouncedQuery = useDebounce(filters.q, SEARCH_DEBOUNCE_MS);

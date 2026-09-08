@@ -16,6 +16,7 @@ import {
   type AacDirectoryFiltersState,
   type AacSortKey,
 } from "../../lib/filtersKey";
+import type { AacDirectoryEnabledFilters } from "../../lib/directoryFilters";
 import type { AacUsageOption } from "../../lib/aacUsage";
 import type { AacCardFieldRef } from "../../lib/resolveAacCardFields";
 
@@ -35,7 +36,8 @@ interface AacDirectoryFiltersProps {
   tagOptions: AacFacetOption[];
   /** Question « Utilisable » résolue — porte le libellé ET les options. */
   maturityField: AacCardFieldRef | null;
-  enabled: { search: boolean; tags: boolean; maturity: boolean; usage: boolean; sort: boolean };
+  /** Filtres à afficher — DÉJÀ fusionnés avec les défauts (`resolveDirectoryFilters`). */
+  enabled: AacDirectoryEnabledFilters;
   /** Le formulaire n'est pas encore arrivé : facettes annoncées mais inertes. */
   isLoading?: boolean;
 }
