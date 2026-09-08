@@ -364,6 +364,13 @@ convention du repo, **plus une spécificité AAC** :
    (`config.roles.depenseStepKey`) aux replis document, `buildResourceFromAnswer` comme
    `useCommunRawDepenses`, plutôt que de laisser jouer leur défaut `DEFAULT_AAC_STEP`.
    Sur les limites du repli lui-même (index Mongo, suppression refusée) : `doc/18` §Pièges n°2bis.
+10. **Les `.default()` des schémas de section ne jouent PAS à l'exécution** (la config n'est jamais
+   parsée par Zod au runtime — cf. `doc/05`, encadré d'en-tête). Un sous-objet de la config arrive
+   donc **tel quel**, et un défaut de destructuration (`filters = {…}`) ne joue que s'il est
+   **absent** : `"filters": { "search": false }` sur `aac-directory` éteignait les quatre autres
+   filtres. Fusionner **clé par clé** (`resolveDirectoryFilters`, `lib/directoryFilters.ts`), dont le
+   défaut est tenu aligné sur le schéma par un test — et faire de même pour tout nouveau sous-objet
+   à défauts.
 
 ---
 
