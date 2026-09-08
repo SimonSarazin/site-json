@@ -1,16 +1,18 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import { createElement, type ReactNode } from "react";
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CAGNOTTE_TYPE_CONFIGS, type CagnotteTypeConfig, type FundingEnvelopeNormalizedData } from "../types";
 import type { OrgProject } from "./useOrganizationProjectsWithAnswers";
 
-// Utilisateur connecté `u1`, sans organisation admin et sans API : l'adaptateur
-// calcule, la réparation des dépenses orphelines (effet) reste inerte.
+// Utilisateur connecté `u1`, sans organisation admin. Sans API (défaut),
+// l'adaptateur calcule et la réparation des dépenses orphelines (effet) reste
+// inerte ; le bloc « réparation » ci-dessous en fournit une pour l'exercer.
+const mocks = vi.hoisted(() => ({ api: null as unknown }));
 vi.mock("@/hooks/useCocolight", () => ({
   useCocolight: () => ({
-    api: null,
+    api: mocks.api,
     me: { serverData: { id: "u1" }, getEntityType: () => "citoyens" },
   }),
 }));
@@ -18,9 +20,24 @@ vi.mock("@/modules/cagnotte/hooks/useUserAdminOrganizations", () => {
   const aucune: never[] = [];
   return { useUserAdminOrganizations: () => aucune };
 });
+// Les écritures de la réparation (`entity.updateField` sous le capot) sont
+// mockées : on observe l'orchestration, pas `actionMilestonePathUpdates`.
+vi.mock("@/modules/cagnotte/lib/actionMilestonePathUpdates", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/modules/cagnotte/lib/actionMilestonePathUpdates")>()),
+  appendProjectMilestone: vi.fn().mockResolvedValue(undefined),
+  updateAnswerDepenseFields: vi.fn().mockResolvedValue(undefined),
+}));
 
 import { milestoneRepairKey, useCagnotteAdapter } from "./useCagnotteAdapter";
 import { generateMilestoneId } from "../utils/idGeneration";
+import { CAGNOTTE_QUERY_KEYS } from "../constants/queryKeys";
+import { appendProjectMilestone, updateAnswerDepenseFields } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
+import { COMMUN_RAW_DEPENSES_QUERY_KEY } from "@/modules/aac/hooks/useCommunRawDepenses";
+
+afterEach(() => {
+  mocks.api = null;
+  vi.clearAllMocks();
+});
 
 /**
  * Régression : boucle de requêtes infinie à l'ouverture du formulaire de dépôt
@@ -196,5 +213,89 @@ describe("useCagnotteAdapter — `depense.financer` en objet keyé par id", () =
     ).result.current.savedSelectedResource!.items[0];
     expect(projet.currentFunding).toBe(42);
     expect(projet.allFunding).toEqual([]);
+  });
+});
+
+/**
+ * B3 (review MR 53) : commun AVEC projet lié, dépense legacy sans `milestone`.
+ * La réparation fabrique un id, l'écrit sur le projet ET sur
+ * `depense[i].milestone`, puis n'invalidait QUE l'enveloppe. Or la fiche commun
+ * relit `depense[]` par une SECONDE entrée de cache (`useCommunRawDepenses`,
+ * staleTime 60 s) : elle servait encore la ligne sans `milestone`, l'item fusionné
+ * par `buildItemsFromRawDepenses` restait sans id, et les quatre boutons de
+ * « Besoins financiers » échouaient. La réparation doit invalider les DEUX caches.
+ */
+describe("useCagnotteAdapter — réparation d'une dépense orpheline (projet lié)", () => {
+  /** Enveloppe d'un commun dont le projet lié ne porte PAS la dépense n° 0. */
+  function enveloppeAvecProjetLie(answerId: string): FundingEnvelopeNormalizedData {
+    return {
+      rawEnvelope: {
+        projects: [
+          {
+            id: answerId,
+            projectId: "proj-1",
+            titre: "Mon commun",
+            project: { id: "proj-1", oceco: { milestones: [{ milestoneId: "m1" }] } },
+            depenses: [{ poste: "Dépense legacy", priceInt: 100 }],
+          },
+        ],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+  }
+
+  function renderAvecApi(answerId: string) {
+    const projectEntity = { id: "proj-1" };
+    const answerEntity = { id: answerId };
+    mocks.api = {
+      project: vi.fn().mockResolvedValue(projectEntity),
+      answer: vi.fn().mockResolvedValue(answerEntity),
+    };
+    const client = new QueryClient();
+    const invalidate = vi.spyOn(client, "invalidateQueries");
+    const wrapper = ({ children }: { children: ReactNode }) =>
+      createElement(QueryClientProvider, { client }, children);
+    renderHook(() => useCagnotteAdapter(enveloppeAvecProjetLie(answerId), [], CAGNOTTE_TYPE_CONFIGS.aac, answerId), {
+      wrapper,
+    });
+    return { invalidate, projectEntity, answerEntity };
+  }
+
+  it("invalide aussi le cache brut des dépenses de la fiche commun, sous le préfixe de la réponse", async () => {
+    // Identité de réponse propre à ce test : la garde `inFlightMilestoneRepairs`
+    // est module-wide, une clé déjà vue ne relancerait pas la réparation.
+    const { invalidate } = renderAvecApi("answer-b3-cache");
+
+    await waitFor(() => {
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: [COMMUN_RAW_DEPENSES_QUERY_KEY, "answer-b3-cache"] });
+    });
+    // L'enveloppe l'était déjà : les deux, pas l'une à la place de l'autre.
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX() });
+  });
+
+  it("n'invalide qu'APRÈS avoir écrit l'id sur le projet et sur la dépense visée", async () => {
+    const { invalidate, projectEntity, answerEntity } = renderAvecApi("answer-b3-ordre");
+
+    await waitFor(() => {
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: [COMMUN_RAW_DEPENSES_QUERY_KEY, "answer-b3-ordre"] });
+    });
+
+    expect(appendProjectMilestone).toHaveBeenCalledWith(
+      expect.objectContaining({
+        project: projectEntity,
+        milestone: expect.objectContaining({ name: "Dépense legacy", status: "open" }),
+      }),
+    );
+    const generatedId = vi.mocked(appendProjectMilestone).mock.calls[0][0].milestone.milestoneId;
+    expect(generatedId).toBeTruthy();
+    expect(updateAnswerDepenseFields).toHaveBeenCalledWith({
+      answer: answerEntity,
+      index: 0,
+      fields: { milestone: generatedId },
+    });
+    // Sinon le refetch relirait encore la ligne d'avant.
+    expect(vi.mocked(updateAnswerDepenseFields).mock.invocationCallOrder[0]).toBeLessThan(
+      invalidate.mock.invocationCallOrder[0],
+    );
   });
 });
