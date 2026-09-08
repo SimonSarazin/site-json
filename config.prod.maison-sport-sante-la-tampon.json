@@ -337,12 +337,23 @@
             },
             "stats": [
               {
-                "value": "24",
                 "label": {
                   "fr": "Créneaux disponibles",
                   "en": "Available slots"
                 },
-                "color": "primary"
+                "color": "primary",
+                "source": {
+                  "type": "searchCount",
+                  "entityType": "answers",
+                  "baseParams": {
+                    "sourceKey": ["associationEkilibre"],
+                    "defaultTypes": ["answers"],
+                    "defaultFilters": {
+                      "form": "6a85af345d898a57cb49f029",
+                      "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7": "Validé"
+                    }
+                  }
+                }
               },
               {
                 "value": "8",
@@ -1370,7 +1381,7 @@
             "layout": "grid",
             "items": [
               {
-                "icon": "hospital",
+                "image": "/images/maisonSportSanteLaTampon/partenaires/masante.jpeg",
                 "title": {
                   "fr": "masante.re",
                   "en": "masante.re"
@@ -1383,7 +1394,7 @@
                 "target": "_blank"
               },
               {
-                "icon": "medal",
+                "image": "/images/maisonSportSanteLaTampon/partenaires/ssbe.jpeg",
                 "title": {
                   "fr": "SSBE.re",
                   "en": "SSBE.re"
@@ -1396,7 +1407,7 @@
                 "target": "_blank"
               },
               {
-                "icon": "users",
+                "image": "/images/maisonSportSanteLaTampon/partenaires/reunir974.png",
                 "title": {
                   "fr": "Réunir 974",
                   "en": "Réunir 974"
@@ -1409,7 +1420,7 @@
                 "target": "_blank"
               },
               {
-                "icon": "baby",
+                "image": "/images/maisonSportSanteLaTampon/partenaires/polepediatrique.png",
                 "title": {
                   "fr": "Pôle Pédiatrique",
                   "en": "Pôle Pédiatrique"
@@ -1422,7 +1433,7 @@
                 "target": "_blank"
               },
               {
-                "icon": "graduation-cap",
+                "image": "/images/maisonSportSanteLaTampon/partenaires/etp-lareunion.png",
                 "title": {
                   "fr": "ETP La Réunion",
                   "en": "ETP La Réunion"
@@ -1435,7 +1446,7 @@
                 "target": "_blank"
               },
               {
-                "icon": "stethoscope",
+                "image": "/images/maisonSportSanteLaTampon/partenaires/endoreunion.jpg",
                 "title": {
                   "fr": "Endoréunion",
                   "en": "Endoréunion"
@@ -1448,7 +1459,7 @@
                 "target": "_blank"
               },
               {
-                "icon": "weight",
+                "image": "/images/maisonSportSanteLaTampon/partenaires/CSO.jpg",
                 "title": {
                   "fr": "Obésité Réunion",
                   "en": "Obésité Réunion"
@@ -1485,7 +1496,7 @@
             "layout": "grid",
             "items": [
               {
-                "icon": "landmark",
+                 "image": "/images/maisonSportSanteLaTampon/partenaires/ars.png",
                 "title": {
                   "fr": "ARS La Réunion",
                   "en": "ARS La Réunion"
@@ -1498,7 +1509,7 @@
                 "target": "_blank"
               },
               {
-                "icon": "network",
+                "image": "/images/maisonSportSanteLaTampon/partenaires/feecoia.png",
                 "title": {
                   "fr": "FEECOIA",
                   "en": "FEECOIA"
@@ -1511,7 +1522,7 @@
                 "target": "_blank"
               },
               {
-                "icon": "stethoscope",
+                "image": "/images/maisonSportSanteLaTampon/partenaires/cpts-australe.jpeg",
                 "title": {
                   "fr": "CPTS Australe",
                   "en": "CPTS Australe"
@@ -1524,7 +1535,7 @@
                 "target": "_blank"
               },
               {
-                "icon": "building-2",
+                "image": "/images/maisonSportSanteLaTampon/partenaires/letampon.png",
                 "title": {
                   "fr": "Commune du Tampon",
                   "en": "Municipality of Le Tampon"
@@ -1537,7 +1548,7 @@
                 "target": "_blank"
               },
               {
-                "icon": "flag",
+                "image": "/images/maisonSportSanteLaTampon/partenaires/DRAJES.png",
                 "title": {
                   "fr": "DRAJES La Réunion",
                   "en": "DRAJES La Réunion"
