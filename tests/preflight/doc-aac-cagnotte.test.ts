@@ -38,6 +38,12 @@ function bulletContaining(doc: string, needle: string): string {
   return lines.slice(start, end).join("\n");
 }
 
+/** `"<…>.<name>": "<componentType>"` figure dans la table de `mapCoFormTypeToComponentType`. */
+function isMappedInputType(formParserSrc: string, name: string): boolean {
+  const esc = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`"(?:[\\w.]+\\.)?${esc}":\\s*"\\w+"`).test(formParserSrc);
+}
+
 function makeOrgEntity(isAdmin = false): EntityTypes {
   return {
     getEntityType: () => "organizations",
@@ -94,5 +100,34 @@ describe("doc/34-module-aac ⇄ lib (anti-dérive)", () => {
     expect(bullet).toMatch(/racine/i);
     expect(bullet).toMatch(/"config"/);
     expect(bullet).not.toMatch(/rend `null`/);
+  });
+
+  it("M49 — §9 piège n°1 : la liste des types d'input « encore non mappés » colle à formParser", () => {
+    const src = read("src/modules/coform/utils/formParser.ts");
+    const doc = read("doc/34-module-aac.md");
+    const item = doc.slice(doc.indexOf("1. **`unknown`"), doc.indexOf("\n2. **Pollution"));
+    expect(item.length).toBeGreaterThan(100);
+
+    // Chaque type annoncé « non mappé » doit l'être vraiment : en dire un mappé fait
+    // bloquer une mise en service (ou re-développer un champ livré).
+    const m = item.match(/Types encore non mappés : ([^\n]+?)\./);
+    expect(m, "phrase « Types encore non mappés : … »").not.toBeNull();
+    const unmapped = [...(m as RegExpMatchArray)[1].matchAll(/`([^`]+)`/g)].map((t) => t[1]);
+    expect(unmapped.length).toBeGreaterThan(0);
+    for (const name of unmapped) {
+      expect(isMappedInputType(src, name), `\`${name}\` est mappé par formParser : à retirer de la liste`).toBe(false);
+    }
+
+    // Les champs livrés par la MR 53 sont mappés ET annoncés « déjà mappés ».
+    const deja = item.indexOf("Déjà mappés");
+    expect(deja).toBeGreaterThan(-1);
+    for (const name of ["newDepenseList", "aap.selection", "chooseProposal", "tags", "categorizedCheckbox", "finder", "titleSeparator"]) {
+      expect(isMappedInputType(src, name), `\`${name}\` attendu dans formParser`).toBe(true);
+      expect(item.indexOf(`${name}\``), `\`${name}\` attendu après « Déjà mappés »`).toBeGreaterThan(deja);
+    }
+    // `multiDecide` n'est pas un type mappé mais une indirection (`resolveMultiDecide`).
+    expect(isMappedInputType(src, "multiDecide")).toBe(false);
+    expect(src).toMatch(/resolveMultiDecide/);
+    expect(item.indexOf("`multiDecide`")).toBeGreaterThan(deja);
   });
 });

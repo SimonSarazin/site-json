@@ -444,10 +444,15 @@ convention du repo, **plus une spécificité AAC** :
 
 1. **`unknown` = perte de donnée SILENCIEUSE.** Un type d'input AAP non mappé rend une boîte rouge
    **et droppe sa valeur au save**. **Ne déposez pas de vrai commun via un form non mappé.**
-   Types encore non mappés : `newDepenseList`, `aap.selection`, `chooseProposal`, `multiDecide`,
-   `suiviFromBudget`, `generateprojectbtn`, `tags`, `categorizedCheckbox`.
-   *(Déjà mappés : `finder`, `checkboxNew`, `radioNew`, `evaluation.evaluation`, et l'alias
-   `titleSeparator` → `sectionTitle`.)*
+   Types encore non mappés : `suiviFromBudget`, `generateprojectbtn`.
+   *(Déjà mappés — `mapCoFormTypeToComponentType`, `coform/utils/formParser.ts` : `finder`,
+   `checkboxNew`, `radioNew`, `categorizedCheckbox` (`CategorizedCheckboxField`),
+   `evaluation.evaluation`, `titleSeparator` (`TitleSeparatorField`, plus d'alias vers
+   `sectionTitle`), `tags` (`TagsField`), `ocecoform.newDepenseList` → `milestoneList`
+   (`MilestoneListField`), `aap.selection` (`SelectionField`), `aap.chooseProposal`
+   (`ChooseProposalField`). `multiDecide` n'est pas un type : c'est une indirection résolue par
+   `resolveMultiDecide` vers le type désigné par `inputConfig.multiDecide` — sans config, l'input
+   ne se rend pas du tout.)*
 2. **Pollution `{}` ↔ `[]` (MongoDB).** Un champ **array** (`depense[]`) **DOIT** déclarer
    `getFieldShape = 'array'` **+ un default**, sinon un `[]` legacy arrive en `{}` et casse le
    resolver Zod au submit.
