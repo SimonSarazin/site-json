@@ -42,6 +42,8 @@ import { useCommunFundingContext } from "../hooks/useCommunFundingContext";
 import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
 import { useAacDetailSections, useAacGallerySubKey } from "../hooks/useAacDetailSections";
 import type { AacDetailSection } from "../lib/resolveAacDetailSections";
+import { resolveCommunSeo } from "../lib/communSeo";
+import { AacSeo, type AacSeoProps } from "../AacSeo";
 // Enregistre le bundle i18n "modules/aac". Les SECTIONS le font déjà ; sans cet
 // import, une arrivée DIRECTE sur la route (lien partagé, F5) rendait la page
 // avant tout enregistrement — et `t()` retournait les clés brutes.
@@ -300,13 +302,18 @@ export default function AacCommunDetailPage() {
         }
     }, [configError]);
 
-    const pageTitle = useMemo(() => {
-        return formQuery.data?.name || String(t("page.communDetail"));
-    }, [formQuery.data?.name, t]);
-
-    useEffect(() => {
-        if (typeof document !== "undefined") document.title = pageTitle;
-    }, [pageTitle]);
+    /**
+     * SEO des états intermédiaires (chargement, erreur, introuvable) : le nom de
+     * l'appel, sinon le libellé générique. La fiche chargée le remplace par le
+     * titre du COMMUN (cf. `resolveCommunSeo` plus bas). Helmet tient le
+     * `<title>` — y compris en SSR, où l'ancien `document.title = …` impératif
+     * n'existait pas, et le restaure au démontage, ce que l'effet ne faisait pas.
+     */
+    const seoPath = answerId ? `/aac/commun/${answerId}` : "/aac";
+    const fallbackSeo: AacSeoProps = {
+        title: formQuery.data?.name || String(t("page.communDetail")),
+        path: seoPath,
+    };
 
     // La config compte aussi : tant qu'elle charge, la page rend le squelette et
     // aucune ancre n'existe encore — observer à ce moment n'observerait rien.
@@ -340,18 +347,33 @@ export default function AacCommunDetailPage() {
         return () => observer.disconnect();
     }, [isDataLoaded, SECTIONS]);
 
-    if (!answerId) return <PageShell><ErrorCard title={String(t("page.communDetail"))} description={String(t("page.missingAnswer"))} /></PageShell>;
-    if (answerQuery.isLoading || formQuery.isLoading || isConfigLoading) return <PageShell><LoadingCard label={String(t("page.loading"))} /></PageShell>;
-    if (answerQuery.error || formQuery.error) return <PageShell><ErrorCard title={String(t("page.error"))} description={String(t("page.errorMessage"))} /></PageShell>;
+    if (!answerId) return <PageShell seo={fallbackSeo}><ErrorCard title={String(t("page.communDetail"))} description={String(t("page.missingAnswer"))} /></PageShell>;
+    if (answerQuery.isLoading || formQuery.isLoading || isConfigLoading) return <PageShell seo={fallbackSeo}><LoadingCard label={String(t("page.loading"))} /></PageShell>;
+    if (answerQuery.error || formQuery.error) return <PageShell seo={fallbackSeo}><ErrorCard title={String(t("page.error"))} description={String(t("page.errorMessage"))} /></PageShell>;
     // Sans la config, ni les gates ni les blocs déclarés ne se résolvent : la
     // fiche se rendrait vidée de son financement et de sa prose, sans un mot.
     // Une erreur EXPLICITE plutôt qu'un « fail closed » silencieux — même
     // traitement que `formQuery.error`, avec un message qui nomme la cause.
-    if (configError) return <PageShell><ErrorCard title={String(t("page.error"))} description={String(t("page.configErrorMessage"))} /></PageShell>;
-    if (!answerQuery.data || !formQuery.data) return <PageShell><ErrorCard title={String(t("page.notFound"))} description={String(t("page.notFoundMessage"))} /></PageShell>;
+    if (configError) return <PageShell seo={fallbackSeo}><ErrorCard title={String(t("page.error"))} description={String(t("page.configErrorMessage"))} /></PageShell>;
+    if (!answerQuery.data || !formQuery.data) return <PageShell seo={fallbackSeo}><ErrorCard title={String(t("page.notFound"))} description={String(t("page.notFoundMessage"))} /></PageShell>;
 
     const answer = answerQuery.data;
     const formData = formQuery.data;
+
+    // Le SEO de la fiche : le titre du COMMUN (par sa référence résolue, puis
+    // les replis du héros), son résumé, son image — et l'URL canonique de ce
+    // lien partageable. Repli sur le nom de l'appel et le libellé générique.
+    const communSeo = resolveCommunSeo(answer, {
+        fields: directory.fields,
+        depenseStepKey: config?.roles.depenseStepKey ?? null,
+        baseUrl: getBaseUrl(),
+    });
+    const seo: AacSeoProps = {
+        title: communSeo.title || fallbackSeo.title,
+        description: communSeo.description || String(t("page.communDetailDescription")),
+        image: communSeo.image,
+        path: seoPath,
+    };
 
     // Auteur OU admin peut modifier le commun. Cf. `resolveAnswerAuthorId` pour
     // le piège : `answer.user` n'est PAS l'auteur sur un commun porté par une
@@ -422,7 +444,7 @@ export default function AacCommunDetailPage() {
     const galleryImages = extractGalleryImages(answer.documents, getBaseUrl(), gallerySubKey);
 
     return (
-        <PageShell>
+        <PageShell seo={seo}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-24">
                 {/* Une condition PAR bouton : « Modifier » est ouvert à l'auteur,
                     la sélection au seul admin de l'appel. Une garde commune
@@ -593,9 +615,11 @@ export default function AacCommunDetailPage() {
     );
 }
 
-function PageShell({ children }: { children: ReactNode }) {
+/** Le chrome de la page — et son SEO, présent dans TOUS les états (squelette, erreur, fiche). */
+function PageShell({ seo, children }: { seo: AacSeoProps; children: ReactNode }) {
     return (
         <div className="min-h-screen flex flex-col bg-background">
+            <AacSeo {...seo} />
             <SiteHeader />
             <main className="flex-1 py-8">
                 <div className="container mx-auto">{children}</div>

@@ -142,11 +142,32 @@ vi.mock("../components/pageDetail/CommunFinancingCard.tsx", () => ({
     </div>
   ),
 }));
+// Le SEO est un Helmet (exige un `HelmetProvider`) : seul ce que la page lui
+// DIT est vérifié ici — titre, description, image, chemin canonique.
+vi.mock("../AacSeo", () => ({
+  AacSeo: (props: { title?: string | null; description?: string | null; image?: string | null; path?: string | null }) => (
+    <div
+      data-testid="seo"
+      data-title={props.title ?? ""}
+      data-description={props.description ?? ""}
+      data-image={props.image ?? ""}
+      data-path={props.path ?? ""}
+    />
+  ),
+}));
 vi.mock("../components/pageDetail/CommunTocNav.tsx", () => ({
-  CommunTocNav: ({ sections, activeSection }: { sections: Array<{ id: string }>; activeSection: string }) => (
+  CommunTocNav: ({
+    sections,
+    activeSection,
+  }: {
+    sections: Array<{ id: string; icon: React.ElementType }>;
+    activeSection: string;
+  }) => (
     <nav data-testid="toc" data-active={activeSection}>
       {sections.map((s) => (
-        <span key={s.id} data-testid={`toc-${s.id}`} />
+        <span key={s.id} data-testid={`toc-${s.id}`}>
+          <s.icon className="toc-icon" />
+        </span>
       ))}
     </nav>
   ),
@@ -301,5 +322,41 @@ describe("AacCommunDetailPage — après un paiement, la fiche se rafraîchit (H
 
     expect(refetchAnswer).toHaveBeenCalled();
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["aac-milestone-list-depenses", "a1"] });
+  });
+});
+
+describe("AacCommunDetailPage — la fiche rend son SEO (M12)", () => {
+  /**
+   * Avant : aucun Helmet — la page écrivait `document.title` dans un effet,
+   * donc APRÈS hydratation, depuis le nom du FORMULAIRE, sans nettoyage. Le
+   * `<head>` SSR portait un `<title>` vide et zéro balise `og:*` sur un lien
+   * pourtant partageable.
+   */
+  it("titre du COMMUN, résumé en texte brut et URL canonique de la fiche", () => {
+    ANSWER.answers = { aapStep1: { titre: "Une instance peertube", description: "Partage **vidéo**" } };
+    render(<AacCommunDetailPage />);
+
+    const seo = screen.getByTestId("seo");
+    expect(seo.getAttribute("data-title")).toBe("Une instance peertube");
+    expect(seo.getAttribute("data-description")).toBe("Partage vidéo");
+    expect(seo.getAttribute("data-path")).toBe("/aac/commun/a1");
+    ANSWER.answers = {};
+  });
+
+  it("sans titre de commun, le nom de l'appel ; sans résumé, le libellé générique", () => {
+    render(<AacCommunDetailPage />);
+
+    const seo = screen.getByTestId("seo");
+    expect(seo.getAttribute("data-title")).toBe("Appel test");
+    expect(seo.getAttribute("data-description")).toBe("page.communDetailDescription");
+  });
+
+  it("le squelette de chargement porte déjà un SEO (nom de l'appel)", () => {
+    config = null;
+    isConfigLoading = true;
+    render(<AacCommunDetailPage />);
+
+    expect(screen.getByTestId("seo").getAttribute("data-title")).toBe("Appel test");
+    expect(screen.getByTestId("seo").getAttribute("data-path")).toBe("/aac/commun/a1");
   });
 });

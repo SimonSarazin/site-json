@@ -12,7 +12,8 @@
     "notFoundMessage": "Le commun demandé n'a pas été trouvé.",
     "missingAnswer": "Aucun identifiant de réponse n'a été fourni.",
     "communLabel": "Commune #{{number}}",
-    "updated": "Modifié le"
+    "updated": "Modifié le",
+    "directoryTitle": "Appel à communs"
   },
   "section": {
     "noForm": "Aucun Appel à Communs déclaré pour ce site (« config.aac.formId » manquant)."

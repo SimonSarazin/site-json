@@ -4,7 +4,7 @@ import { aggregateCofinancers } from "./cofinancers";
 
 type Ligne = Partial<CagnotteFundableItem["allFunding"][number]> & { name?: string; type?: string };
 
-function item(over: Partial<CagnotteFundableItem> & { allFunding?: Ligne[] }): CagnotteFundableItem {
+function item(over: Omit<Partial<CagnotteFundableItem>, "allFunding"> & { allFunding?: Ligne[] }): CagnotteFundableItem {
   return {
     fromType: "depense",
     itemId: "0",

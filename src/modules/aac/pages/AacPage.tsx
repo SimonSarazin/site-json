@@ -7,6 +7,8 @@ import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import AacDirectorySection from "../sections/AacDirectorySection";
+import { AacSeo } from "../AacSeo";
+import { useAacFormEntity } from "../hooks/useAacFormMeta";
 // Enregistre le bundle i18n "modules/aac". Les SECTIONS le font déjà ; sans cet
 // import, une arrivée DIRECTE sur la route (lien partagé, F5) rendait la page
 // avant tout enregistrement — et `t()` retournait les clés brutes.
@@ -26,6 +28,7 @@ function AacNotFound() {
   const t = useT("modules/aac");
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <AacSeo title={String(t("page.directoryTitle"))} path="/aac" />
       <SiteHeader />
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
@@ -62,11 +65,24 @@ function AacNotFound() {
  */
 export default function AacPage() {
   const { config: siteConfig } = useSite();
+  useLoadNamespace("modules/aac");
+  const t = useT("modules/aac");
 
-  if (!siteConfig.aac?.formId) return <AacNotFound />;
+  const formId = siteConfig.aac?.formId ?? null;
+  // Le nom et la description de l'APPEL font le SEO de l'annuaire — même entrée
+  // de cache que le reste du module (`aacConfigQuery`), aucune requête de plus.
+  const form = useAacFormEntity(formId);
+  const formData = (form?.serverData ?? null) as { name?: string; description?: string } | null;
+
+  if (!formId) return <AacNotFound />;
 
   return (
     <div className="min-h-screen flex flex-col">
+      <AacSeo
+        title={formData?.name || String(t("page.directoryTitle"))}
+        description={typeof formData?.description === "string" ? formData.description : undefined}
+        path="/aac"
+      />
       <SiteHeader />
       <main className="flex-1">
         <div className="container mx-auto px-6">

@@ -12,7 +12,8 @@
     "notFoundMessage": "The requested commun could not be found.",
     "missingAnswer": "No answer identifier was provided.",
     "communLabel": "Commun #{{number}}",
-    "updated": "Updated on"
+    "updated": "Updated on",
+    "directoryTitle": "Call for commons"
   },
   "section": {
     "noForm": "No Call for Commons declared for this site (missing \"config.aac.formId\")."
