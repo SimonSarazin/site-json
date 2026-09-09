@@ -217,7 +217,12 @@ const FUNDING_TOC = ["toc-besoins-financiers", "toc-cofinanceurs"] as const;
 
 beforeEach(() => {
   me = CONNECTED;
-  ANSWER = BASE_ANSWER;
+  // `ANSWER` est un objet PARTAGÉ par les douze tests du fichier : la remise à
+  // zéro appartient au `beforeEach`, pas au corps du test qui l'a rempli. Écrite
+  // là-bas, elle ne s'exécutait pas si l'assertion précédente échouait — et la
+  // réponse d'un test partait alors dans tous les suivants. On repart d'un objet
+  // neuf plutôt que de vider `answers` : `created`/`updated` aussi sont mutés.
+  ANSWER = { ...BASE_ANSWER, answers: {} };
   config = makeConfig(false);
   isConfigLoading = false;
   configError = null;
@@ -359,7 +364,6 @@ describe("AacCommunDetailPage — la fiche rend son SEO (M12)", () => {
     expect(seo.getAttribute("data-title")).toBe("Une instance peertube");
     expect(seo.getAttribute("data-description")).toBe("Partage vidéo");
     expect(seo.getAttribute("data-path")).toBe("/aac/commun/a1");
-    ANSWER.answers = {};
   });
 
   it("sans titre de commun, le nom de l'appel ; sans résumé, le libellé générique", () => {
