@@ -1,6 +1,11 @@
 /**
  * Hook d'abstraction qui transforme les données sources (projets/milestones ou propositions/dépenses)
  * en un modèle de données agnostique et unifié.
+ *
+ * PUR : il ne fait aucune écriture. Les dépenses orphelines qu'il détecte (dépense
+ * sans palier projet) sont RENDUES (`pendingMilestoneRepairs`) ; les écrire est
+ * l'affaire de `useOrphanDepenseRepair`, monté par les seules surfaces d'édition,
+ * avec un droit — jamais par un simple appelant de l'adaptateur (M40).
  */
 import { useEffect, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -230,8 +235,11 @@ function buildDepenseFundingData(
     return { enrichedFinancers, enrichedActions, currentFunding, unpaidFunding, userPledge };
 }
 
-/** Dépense côté projet sans milestone rattaché */
-interface PendingMilestoneRepair {
+/**
+ * Dépense d'une réponse sans palier projet correspondant, et le palier à lui
+ * fabriquer. Rendue par `useCagnotteAdapter`, consommée par `useOrphanDepenseRepair`.
+ */
+export interface PendingMilestoneRepair {
     projectId: string;
     answerId: string;
     milestoneId: string;
@@ -278,12 +286,11 @@ export function useCagnotteAdapter(
     config: CagnotteTypeConfig,
     selectedId: string,
 ) {
-    const {me, api} = useCocolight();
+    const {me} = useCocolight();
     const currentUserEntity = (me && isUser(me) ? me : null) as User | null;
     const userAdminOrganizations = useUserAdminOrganizations(currentUserEntity, {});
-    const queryClient = useQueryClient();
 
-    const {resources, savedSelectedResource, pendingMilestoneRepairs} = useMemo(() => {
+    return useMemo(() => {
         const rawEnvelopeTypeAssertion = fundingEnvelope?.rawEnvelope as { projects?: RawProposition[], links?: GlobalLinks } | undefined;
         const rawProjects = rawEnvelopeTypeAssertion?.projects || [];
         const globalLinks = rawEnvelopeTypeAssertion?.links || {};
@@ -497,11 +504,50 @@ export function useCagnotteAdapter(
         resources = resources.filter(re => re.name !== "");
         return { resources, savedSelectedResource, pendingMilestoneRepairs };
     }, [fundingEnvelope, allProjects, config.selectorType, selectedId, me?.serverData?.id, userAdminOrganizations]);
+}
+
+/**
+ * Écrit les réparations d'UNE ressource : pour chaque dépense orpheline, le palier
+ * fabriqué est ajouté à `project.oceco.milestones[]` et son id posé sur
+ * `depense[i].milestone`, puis les deux caches sont invalidés.
+ *
+ * Opt-in des surfaces d'édition (fiche commun, section finance d'un projet) —
+ * PAS de l'adaptateur. Avant, l'adaptateur portait cet effet : tout appelant
+ * écrivait, `PledgeHeaderButton` compris, monté dans le header de chaque page avec
+ * tous les projets de l'organisation. Un visiteur connecté sans droit déclenchait
+ * N × (`api.project` + `api.answer` + `updatepathvalue`) rejetés à chaque
+ * chargement ; un admin voyait ses documents modifiés sans l'avoir demandé (M40).
+ *
+ * `enabled` porte le droit d'écrire sur le projet ET la réponse — le même que
+ * créer un palier, qui fait exactement ces deux écritures : `canCreateMilestone`
+ * du calculateur cagnotte (admin du projet lié, ou déposant du commun).
+ */
+export function useOrphanDepenseRepair(params: {
+    /** La ressource affichée — seules SES dépenses orphelines sont réparées. */
+    resource: Pick<CagnotteResource, "answerId" | "projectId"> | null | undefined;
+    /** `pendingMilestoneRepairs` rendu par `useCagnotteAdapter`. */
+    repairs: readonly PendingMilestoneRepair[];
+    /** Droit d'écriture de l'appelant sur cette ressource. */
+    enabled: boolean;
+}): void {
+    const { resource, repairs, enabled } = params;
+    const { api } = useCocolight();
+    const queryClient = useQueryClient();
+
+    const answerId = resource?.answerId ?? "";
+    const projectId = resource?.projectId ?? "";
+    const targetedRepairs = useMemo(
+        () =>
+            answerId && projectId
+                ? repairs.filter((repair) => repair.answerId === answerId && repair.projectId === projectId)
+                : [],
+        [repairs, answerId, projectId],
+    );
 
     useEffect(() => {
-        if (!api || pendingMilestoneRepairs.length === 0) return;
+        if (!enabled || !api || targetedRepairs.length === 0) return;
 
-        pendingMilestoneRepairs.forEach((repair) => {
+        targetedRepairs.forEach((repair) => {
             const repairKey = milestoneRepairKey(repair);
             if (inFlightMilestoneRepairs.has(repairKey)) return;
             inFlightMilestoneRepairs.add(repairKey);
@@ -538,13 +584,11 @@ export function useCagnotteAdapter(
                     void queryClient.invalidateQueries({queryKey: CAGNOTTE_QUERY_KEYS.COMMUN_RAW_DEPENSES_PREFIX(repair.answerId)});
                 } catch (error) {
                     inFlightMilestoneRepairs.delete(repairKey);
-                    console.error("useCagnotteAdapter: échec de la génération auto du milestone projet pour une dépense orpheline", error);
+                    console.error("useOrphanDepenseRepair: échec de la génération auto du milestone projet pour une dépense orpheline", error);
                 }
             })();
         });
-    }, [pendingMilestoneRepairs, api, queryClient]);
-
-    return {resources, savedSelectedResource};
+    }, [enabled, targetedRepairs, api, queryClient]);
 }
 
 export function computePledgesFromResources(resources: CagnotteResource[], userId?: string, orgsIds: string[] = []): Pledge[] {

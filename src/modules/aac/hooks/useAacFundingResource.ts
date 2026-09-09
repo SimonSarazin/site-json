@@ -17,12 +17,21 @@ import { useMemo } from "react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useSite } from "@/hooks/useSite";
+import type { CoFormAnswer } from "@/modules/coform/types";
 import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope";
 import { useCagnotteType } from "@/modules/cagnotte/hooks/useCagnotteType";
 import { useOrganizationProjectsWithAnswers } from "@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers";
-import { useCagnotteAdapter } from "@/modules/cagnotte/hooks/useCagnotteAdapter";
+import { useCagnotteAdapter, useOrphanDepenseRepair } from "@/modules/cagnotte/hooks/useCagnotteAdapter";
+import { useCagnottePermissions } from "@/modules/cagnotte/hooks/useCagnottePermissions";
 import { buildResourceFromAnswer } from "@/modules/cagnotte/utils/dataTransform";
 import type { CagnotteResource } from "@/modules/cagnotte/types";
+import { useCommunProjectEntity } from "@/modules/aac/hooks/useCommunProjectEntity";
+import { resolveCommunOwnerIds } from "@/modules/aac/lib/objectiveHelpers";
+
+/** Le document réponse tel que `resolveCommunOwnerIds` sait le lire — ou rien. */
+function asOwnerAnswer(answer: unknown): Pick<CoFormAnswer, "userId" | "user"> | null {
+  return answer && typeof answer === "object" ? (answer as Pick<CoFormAnswer, "userId" | "user">) : null;
+}
 
 export interface UseAacFundingResourceOptions {
   hostEntity?: EntityTypes | null;
@@ -66,12 +75,30 @@ export function useAacFundingResource(
   });
 
   const selectedProjectContextId = String(answerId || "").trim();
-  const { savedSelectedResource } = useCagnotteAdapter(
+  const { savedSelectedResource, pendingMilestoneRepairs } = useCagnotteAdapter(
     fundingData,
     allProjects,
     cagnotteConfig,
     selectedProjectContextId,
   );
+
+  /**
+   * Réparation des dépenses orphelines de CE commun (dépense sans palier projet) :
+   * une écriture sur le projet lié et sur la réponse, réservée à qui a le droit de
+   * créer un palier — admin du projet lié, ou déposant du commun (`ownerIds`). Les
+   * deux surfaces qui passent par ici (fiche commun, `MilestoneListField`) sont des
+   * surfaces d'édition ; l'adaptateur, lui, n'écrit plus (M40). Même entité et
+   * mêmes `ownerIds` que le contrôleur de la fiche — même entrée de cache pour le
+   * projet, donc aucune requête supplémentaire.
+   */
+  const projectEntity = useCommunProjectEntity(savedSelectedResource?.projectId);
+  const ownerIds = useMemo(() => resolveCommunOwnerIds(asOwnerAnswer(options?.answer)), [options?.answer]);
+  const repairPerms = useCagnottePermissions(projectEntity, { ownerIds });
+  useOrphanDepenseRepair({
+    resource: savedSelectedResource,
+    repairs: pendingMilestoneRepairs,
+    enabled: repairPerms.canCreateMilestone,
+  });
 
   const answerResource = useMemo(
     () => (options?.answer ? buildResourceFromAnswer(options.answer, options.step) : null),

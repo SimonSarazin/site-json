@@ -48,7 +48,7 @@ export const CAGNOTTE_QUERY_KEYS = {
   // relisent les paliers (staleTime 60 s), distincte de l'enveloppe.
   // Producteur : modules/aac/hooks/useCommunRawDepenses (qui ré-exporte la constante)
   // Consommateurs invalidants : la réparation des dépenses orphelines
-  // (`useCagnotteAdapter`), les mutations paliers via `extraInvalidate`
+  // (`useOrphanDepenseRepair`), les mutations paliers via `extraInvalidate`
   // (fiche commun), `useGenerateAacProject`, `useAssociateExistingAacProject`.
   // La clé vit ICI parce que c'est cagnotte qui l'invalide : aac dépend de
   // cagnotte, jamais l'inverse.

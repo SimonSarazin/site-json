@@ -28,7 +28,7 @@ vi.mock("@/modules/cagnotte/lib/actionMilestonePathUpdates", async (importOrigin
   updateAnswerDepenseFields: vi.fn().mockResolvedValue(undefined),
 }));
 
-import { milestoneRepairKey, useCagnotteAdapter } from "./useCagnotteAdapter";
+import { milestoneRepairKey, useCagnotteAdapter, useOrphanDepenseRepair } from "./useCagnotteAdapter";
 import { generateMilestoneId } from "../utils/idGeneration";
 import { CAGNOTTE_QUERY_KEYS } from "../constants/queryKeys";
 import { appendProjectMilestone, updateAnswerDepenseFields } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
@@ -272,6 +272,134 @@ describe("useCagnotteAdapter — montant lu en `price` quand `priceInt` manque (
 });
 
 /**
+ * M40 (review MR 53) : la réparation des dépenses orphelines ÉCRIVAIT (projet +
+ * réponse) depuis un `useEffect` de l'adaptateur, sans contrôle de droits et pour
+ * TOUT appelant — `PledgeHeaderButton` compris, monté dans le header de chaque
+ * page avec tous les projets de l'organisation. Un visiteur connecté sans aucun
+ * droit déclenchait N×3 écritures rejetées à chaque chargement ; un admin voyait
+ * ses documents modifiés sans l'avoir demandé.
+ *
+ * L'adaptateur est redevenu pur : il RENVOIE les réparations à faire
+ * (`pendingMilestoneRepairs`). Les écrire est un opt-in explicite des surfaces
+ * d'édition (`useOrphanDepenseRepair`), gardé par un droit (`canCreateMilestone`)
+ * et limité à la ressource affichée.
+ */
+describe("useCagnotteAdapter — la réparation n'est plus un effet du rendu (M40)", () => {
+  /** Deux communs d'un même appel, chacun avec une dépense legacy sans `milestone`. */
+  function enveloppeDeuxCommuns(answerA: string, answerB: string): FundingEnvelopeNormalizedData {
+    const commun = (answerId: string, projectId: string) => ({
+      id: answerId,
+      projectId,
+      titre: `Commun ${answerId}`,
+      project: { id: projectId, oceco: { milestones: [] } },
+      depenses: [{ poste: "Dépense legacy", price: 100 }],
+    });
+    return {
+      rawEnvelope: { projects: [commun(answerA, "proj-a"), commun(answerB, "proj-b")], links: {} },
+    } as unknown as FundingEnvelopeNormalizedData;
+  }
+
+  function apiEspion() {
+    const api = {
+      project: vi.fn().mockImplementation(async ({ id }: { id: string }) => ({ id })),
+      answer: vi.fn().mockImplementation(async ({ id }: { id: string }) => ({ id })),
+    };
+    mocks.api = api;
+    return api;
+  }
+
+  function client() {
+    const queryClient = new QueryClient();
+    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+    const wrapper = ({ children }: { children: ReactNode }) =>
+      createElement(QueryClientProvider, { client: queryClient }, children);
+    return { wrapper, invalidate };
+  }
+
+  const unTour = () => new Promise((resolve) => setTimeout(resolve, 10));
+
+  it("le simple rendu de l'adaptateur n'écrit RIEN, même avec une API et des orphelines", async () => {
+    const api = apiEspion();
+    const { wrapper, invalidate } = client();
+
+    const { result } = renderHook(
+      () => useCagnotteAdapter(enveloppeDeuxCommuns("answer-m40-rendu-a", "answer-m40-rendu-b"), [], CAGNOTTE_TYPE_CONFIGS.aac, "answer-m40-rendu-a"),
+      { wrapper },
+    );
+    await unTour();
+
+    // Les orphelines sont bien détectées — c'est l'écriture qui ne part plus.
+    expect(result.current.pendingMilestoneRepairs.map((r) => r.answerId)).toEqual([
+      "answer-m40-rendu-a",
+      "answer-m40-rendu-b",
+    ]);
+    expect(api.project).not.toHaveBeenCalled();
+    expect(api.answer).not.toHaveBeenCalled();
+    expect(appendProjectMilestone).not.toHaveBeenCalled();
+    expect(invalidate).not.toHaveBeenCalled();
+  });
+
+  it("sans droit d'écriture (`enabled: false`), le hook de réparation n'écrit rien", async () => {
+    const api = apiEspion();
+    const { wrapper, invalidate } = client();
+
+    renderHook(
+      () => {
+        const adapter = useCagnotteAdapter(enveloppeDeuxCommuns("answer-m40-droit-a", "answer-m40-droit-b"), [], CAGNOTTE_TYPE_CONFIGS.aac, "answer-m40-droit-a");
+        useOrphanDepenseRepair({ resource: adapter.savedSelectedResource, repairs: adapter.pendingMilestoneRepairs, enabled: false });
+      },
+      { wrapper },
+    );
+    await unTour();
+
+    expect(api.project).not.toHaveBeenCalled();
+    expect(appendProjectMilestone).not.toHaveBeenCalled();
+    expect(invalidate).not.toHaveBeenCalled();
+  });
+
+  it("avec le droit, ne répare QUE la ressource passée — jamais les autres communs de l'enveloppe", async () => {
+    const api = apiEspion();
+    const { wrapper, invalidate } = client();
+
+    renderHook(
+      () => {
+        const adapter = useCagnotteAdapter(enveloppeDeuxCommuns("answer-m40-cible-a", "answer-m40-cible-b"), [], CAGNOTTE_TYPE_CONFIGS.aac, "answer-m40-cible-a");
+        useOrphanDepenseRepair({ resource: adapter.savedSelectedResource, repairs: adapter.pendingMilestoneRepairs, enabled: true });
+      },
+      { wrapper },
+    );
+
+    await waitFor(() => {
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: CAGNOTTE_QUERY_KEYS.COMMUN_RAW_DEPENSES_PREFIX("answer-m40-cible-a") });
+    });
+    expect(api.answer).toHaveBeenCalledTimes(1);
+    expect(api.answer).toHaveBeenCalledWith({ id: "answer-m40-cible-a" });
+    expect(api.project).toHaveBeenCalledWith({ id: "proj-a" });
+    expect(updateAnswerDepenseFields).toHaveBeenCalledTimes(1);
+    expect(updateAnswerDepenseFields).toHaveBeenCalledWith(
+      expect.objectContaining({ answer: { id: "answer-m40-cible-a" }, index: 0 }),
+    );
+    expect(invalidate).not.toHaveBeenCalledWith({ queryKey: CAGNOTTE_QUERY_KEYS.COMMUN_RAW_DEPENSES_PREFIX("answer-m40-cible-b") });
+  });
+
+  it("sans ressource (rien de sélectionné), rien ne part même avec le droit", async () => {
+    const api = apiEspion();
+    const { wrapper } = client();
+
+    renderHook(
+      () => {
+        const adapter = useCagnotteAdapter(enveloppeDeuxCommuns("answer-m40-vide-a", "answer-m40-vide-b"), [], CAGNOTTE_TYPE_CONFIGS.aac, "");
+        useOrphanDepenseRepair({ resource: adapter.savedSelectedResource, repairs: adapter.pendingMilestoneRepairs, enabled: true });
+      },
+      { wrapper },
+    );
+    await unTour();
+
+    expect(api.project).not.toHaveBeenCalled();
+  });
+});
+
+/**
  * B3 (review MR 53) : commun AVEC projet lié, dépense legacy sans `milestone`.
  * La réparation fabrique un id, l'écrit sur le projet ET sur
  * `depense[i].milestone`, puis n'invalidait QUE l'enveloppe. Or la fiche commun
@@ -310,9 +438,19 @@ describe("useCagnotteAdapter — réparation d'une dépense orpheline (projet li
     const invalidate = vi.spyOn(client, "invalidateQueries");
     const wrapper = ({ children }: { children: ReactNode }) =>
       createElement(QueryClientProvider, { client }, children);
-    renderHook(() => useCagnotteAdapter(enveloppeAvecProjetLie(answerId), [], CAGNOTTE_TYPE_CONFIGS.aac, answerId), {
-      wrapper,
-    });
+    // La réparation est un opt-in des surfaces d'édition (M40) : on la monte ici
+    // comme la fiche commun le fait, avec le droit accordé.
+    renderHook(
+      () => {
+        const adapter = useCagnotteAdapter(enveloppeAvecProjetLie(answerId), [], CAGNOTTE_TYPE_CONFIGS.aac, answerId);
+        useOrphanDepenseRepair({
+          resource: adapter.savedSelectedResource,
+          repairs: adapter.pendingMilestoneRepairs,
+          enabled: true,
+        });
+      },
+      { wrapper },
+    );
     return { invalidate, projectEntity, answerEntity };
   }
 
