@@ -88,6 +88,32 @@ function absoluteUrl(baseUrl: string, src: string): string {
   return src.startsWith("/") ? `${baseUrl}${src}` : `${baseUrl}/${src}`;
 }
 
+/** Les extensions que `ReadOnlyUploaderGallery` tient pour des images. */
+const IMAGE_PATH = /\.(jpe?g|png|gif|webp|svg|bmp)$/i;
+
+/**
+ * Premier visuel d'une réponse `uploader`, dans les formes que le champ écrit :
+ *
+ *  - tableau de chemins ou d'objets `{docPath}` — le format de travail ;
+ *  - objet legacy `{updateDate, files}`, `files` étant une map `{docId: docPath}`
+ *    ou un tableau. SANS `files`, les documents ne sont pas dans la réponse
+ *    (ils vivent dans la collection `documents`) : rien à lire ici, c'est la
+ *    vignette pré-calculée qui les connaît ;
+ *  - une chaîne nue, quand l'override de config vise un champ texte.
+ *
+ * Seuls les chemins à extension d'image comptent : un uploader porte aussi des
+ * PDF, et le legacy (`allImages`) filtre de même.
+ */
+function firstImagePath(v: unknown): string {
+  if (typeof v === "string") return v.trim();
+  const files = rec(v).files !== undefined ? rec(v).files : v;
+  return (
+    toArray(files)
+      .map((f) => (typeof f === "string" ? f : toStr(rec(f).docPath)).trim())
+      .find((p) => IMAGE_PATH.test(p.split("?")[0])) ?? ""
+  );
+}
+
 /**
  * Lit un champ résolu sur le document brut, dans le monde que sa référence
  * désigne : `answers.<stepKey>.<id>` pour une réponse, `<id>` à la RACINE quand
@@ -231,7 +257,12 @@ export function parseAacAnswer(
   // rester visible (« 5 500 € sur 5 000 € »).
   const progressPercent = Math.trunc((totalFunded / Math.max(totalRequested, 1)) * 100);
 
-  const imagePath = toStr(a.image).trim();
+  // Visuel : la question résolue d'abord — c'est elle que l'override de config
+  // désigne, et c'est la seule lecture qui tienne quand l'étape de dépôt n'est
+  // pas `aapStep1` (`getPropositionThumbnail` cherche `aapStep1.image` en dur).
+  // Puis la vignette pré-calculée, qui reste le seul repli pour une réponse
+  // legacy dont les fichiers ne sont pas dans `answers`.
+  const imagePath = firstImagePath(readField(a, fields.image)) || toStr(a.image).trim();
   const imageUrl = imagePath ? absoluteUrl(baseUrl, imagePath) : null;
 
   // Membres. Chemin configuré ⇒ on compte ses entrées, **sans repli** : « 0

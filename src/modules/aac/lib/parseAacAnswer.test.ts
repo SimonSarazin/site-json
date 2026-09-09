@@ -551,6 +551,74 @@ describe("parseAacAnswer — image et identifiant", () => {
     expect(parse({ _id: { $id: "a" }, image: "  " }).imageUrl).toBeNull();
   });
 
+  it("sans vignette backend, le visuel vient de la question `image` RÉSOLUE", () => {
+    // Étape de dépôt ≠ `aapStep1` : `getPropositionThumbnail` cherche
+    // `aapStep1.image` en dur, `a.image` revient vide, et toutes les cartes
+    // tombaient sur l'aplat gris — le rôle `image` était résolu mais jamais lu.
+    // Forme écrite par le champ React : `{updateDate, files: {docId: docPath}}`.
+    const card = parse(
+      {
+        _id: { $id: "a1" },
+        image: "",
+        answers: {
+          etapeA: {
+            image: { updateDate: ["2026-01-01"], files: { d1: "/upload/x/visuel.png" } },
+          },
+        },
+      },
+      { baseUrl: "https://ex.org" }
+    );
+    expect(card.imageUrl).toBe("https://ex.org/upload/x/visuel.png");
+  });
+
+  it("formes de l'uploader : tableau de chemins, tableau de `{docPath}`, chaîne nue", () => {
+    const withImage = (image: unknown) =>
+      parse({ _id: { $id: "a" }, answers: { etapeA: { image } } }).imageUrl;
+    expect(withImage(["/upload/a.jpg", "/upload/b.png"])).toBe("/upload/a.jpg");
+    expect(withImage([{ docId: "d1", docPath: "/upload/c.webp" }])).toBe("/upload/c.webp");
+    expect(withImage("https://cdn.test/d.png")).toBe("https://cdn.test/d.png");
+  });
+
+  it("l'override de config désigne LA question à lire, et prime sur la vignette backend", () => {
+    // `config.aac.directory.fields.image = "answers.etapeB.q_visuel"` : la valeur
+    // n'était lue par personne. Elle l'est, et elle l'emporte — comme
+    // `description` et `tags`, la carte affiche un champ précis, pas le premier venu.
+    const fields: AacCardFields = {
+      ...FIELDS,
+      image: {
+        stepKey: "etapeB",
+        id: "q_visuel",
+        path: "answers.etapeB.q_visuel",
+        label: "Visuel",
+        options: [],
+      },
+    };
+    const card = parseAacAnswer(
+      {
+        _id: { $id: "a" },
+        image: "/upload/backend.png",
+        answers: { etapeB: { q_visuel: ["/upload/config.png"] } },
+      },
+      { fields, baseUrl: "https://ex.org" }
+    );
+    expect(card.imageUrl).toBe("https://ex.org/upload/config.png");
+  });
+
+  it("uploader sans image exploitable ⇒ vignette backend, sinon null", () => {
+    const id = { _id: { $id: "a" } };
+    // Un PDF n'est pas un visuel ; la vignette backend reprend la main.
+    expect(
+      parse({ ...id, image: "/upload/b.png", answers: { etapeA: { image: ["/upload/doc.pdf"] } } })
+        .imageUrl
+    ).toBe("/upload/b.png");
+    // Legacy sans `files` : les documents ne sont pas dans la réponse.
+    expect(
+      parse({ ...id, answers: { etapeA: { image: { updateDate: ["2024-01-01"] } } } }).imageUrl
+    ).toBeNull();
+    expect(parse({ ...id, answers: { etapeA: { image: [] } } }).imageUrl).toBeNull();
+    expect(parse({ ...id, answers: { etapeA: { image: null } } }).imageUrl).toBeNull();
+  });
+
   it("`_id` en chaîne, ou champ `id`, restent lisibles", () => {
     expect(parse({ _id: "plain" }).id).toBe("plain");
     expect(parse({ id: "viaId" }).id).toBe("viaId");
