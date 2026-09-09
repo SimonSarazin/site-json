@@ -19,7 +19,7 @@ import {
   parseCoformAnswer,
   getStatusStyle,
   getAnswerRef,
-  canEditCoformAnswer,
+  isCoformAnswerManager,
 } from "../../lib/coformAnswer";
 
 // Édition de l'answer (`preview.editButton`) : chunk coform chargé seulement au
@@ -64,10 +64,12 @@ export default function PreviewCoformAnswer({ item, preview, onClose }: PreviewP
   // Référence mémoïsée : recalculée à chaque render, elle ferait changer les
   // deps de `handleEdited` en continu (useCallback inopérant).
   const answerRef = useMemo(() => getAnswerRef(item), [item]);
-  // Opt-in config + règle de droits (super-admin / admin du costum / admin de la
-  // structure organisatrice) — cf. `canEditCoformAnswer`.
+  // Opt-in config + règle de gestion (super-admin / admin du costum / admin de la
+  // structure organisatrice) — cf. `isCoformAnswerManager`, le MÊME prédicat que le
+  // bouton « Fiche structure » de la carte. Pas de garde d'hydratation ici : ce détail
+  // ne s'ouvre qu'au CLIC, donc toujours après hydratation.
   const canRequestEdit = Boolean(
-    preview?.editButton && answerRef && canEditCoformAnswer(serverData, { me, entity }),
+    preview?.editButton && answerRef && isCoformAnswerManager(serverData, { me, entity }),
   );
   const [editRequested, setEditRequested] = useState(false);
   // Re-fetch FRAIS de l'answer avant édition : la recherche renvoie les champs

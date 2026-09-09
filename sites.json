@@ -37,7 +37,10 @@
     "css": "index-sport-sante-bien-etre",
     "images": "sportSanteBienetre",
     "coolifyApp": "site-json-ssbe",
-    "domain": "ssbe.00.re"
+    "domain": "ssbe.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "associationEkilibre",

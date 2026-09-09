@@ -554,6 +554,24 @@ export const ActionTilesSchema = z.object({
 export type ActionTiles = z.infer<typeof ActionTilesSchema>;
 export type ActionTilesProps = z.infer<typeof ActionTilesSchema>["props"];
 
+/**
+ * Source dynamique d'un compteur `cta-card-grid.props.stats[]`
+ * `searchCount` compte un périmètre de recherche déjà public (même contrat que les KPIs admin) ; 
+ * `membersCount` compte les membres de l'entité, validés par défaut (`toBeValidated: true` = en attente).
+ */
+const StatDynamicSourceSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("searchCount"),
+    entityType: z.string(), // answers | organizations | poi | events | …
+    baseParams: SearchBaseParamsSchema.partial().optional(),
+  }),
+  z.object({
+    type: z.literal("membersCount"),
+    toBeValidated: z.boolean().default(false),
+  }),
+]);
+export type StatDynamicSource = z.infer<typeof StatDynamicSourceSchema>;
+
 //──────────────── Community Rézo la Mer
 export const CtaCardGridSchema = z.object({
   type: z.literal("cta-card-grid"),
@@ -578,9 +596,15 @@ export const CtaCardGridSchema = z.object({
     stats: z
       .array(
         z.object({
-          value: z.string(),
+          // Optionnel seulement si `source` est fourni (cf. refine ci-dessous). Avec
+          // `source`, `value` sert de repli immédiat le temps du chargement ; sans lui,
+          // un skeleton s'affiche à sa place (cf. StatTile dans CtaCardGrid.tsx).
+          value: z.string().optional(),
           label: LocalizedString,
           color: z.enum(["primary", "turquoise", "cyan-bright", "accent", "teal", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]).optional(),
+          source: StatDynamicSourceSchema.optional(),
+        }).refine((stat) => stat.value !== undefined || stat.source !== undefined, {
+          message: "Un stat doit avoir soit `value` (statique) soit `source` (dynamique).",
         })
       )
       .optional(),

@@ -397,6 +397,14 @@ export const ResourceConfSchema = z.object({
     field: z.string(),
     colors: z.record(z.string(), z.string()).optional(),
     icons: z.record(z.string(), z.string()).optional(),
+    /**
+     * Map valeur STOCKÉE → libellé AFFICHÉ (localisé). Troisième carte, à côté de `colors` et
+     * `icons`, pour le cas où le champ stocke une CLÉ (`mss`, `has`…) et non un libellé : sans
+     * elle la pastille afficherait la clé brute. Indispensable sur un site multilingue, où
+     * stocker le libellé français rendrait la version anglaise fausse. Valeur absente de la map
+     * (ou map absente) → la valeur stockée est affichée telle quelle, comportement historique.
+     */
+    labels: z.record(z.string(), LocalizedString).optional(),
   }).optional(),
   /** Champ de la ville affichée. Repli code : "address.addressLocality". */
   cityField: z.string().optional(),
@@ -484,16 +492,34 @@ export const CardConfSchema = z.object({
     // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).
     showFunding:     z.boolean().optional(),
     /**
-     * Carte `card-answer` : ce que fait le bouton « Fiche structure ».
-     *  - `profil`  (DÉFAUT côté code) — navigue vers `/profil/:slug`, comportement historique ;
+     * Carte `card-answer` : le bouton « Fiche structure ». DEUX axes orthogonaux, tous deux
+     * optionnels — un site peut ne régler QUE la visibilité sans toucher à l'action.
+     *
+     * `kind` — CE QUE FAIT le bouton :
+     *  - absent / `profil` (DÉFAUT côté code) — navigue vers `/profil/:slug`, historique ;
      *  - `preview` — ouvre la fiche EN MODALE (même `preview.type: "structure"` que les cartes de
-     *    l'annuaire), sans quitter la liste.
-     * Sur une page où l'usager COMPARE des créneaux, la navigation lui fait perdre sa liste, ses
-     * filtres et sa position de défilement pour une information qu'il ne veut que consulter au
-     * passage — d'où l'option. Absent = navigation, pour ne rien changer aux sites existants.
+     *    l'annuaire), sans quitter la liste. Sur une page où l'usager COMPARE des créneaux, la
+     *    navigation lui fait perdre liste, filtres et position de défilement.
+     *  Optionnel pour pouvoir poser `audience` SEUL : `CardAnswer` teste `=== "preview"`, donc
+     *  clé absente = navigation — le schéma dit désormais la même chose que le code.
+     *
+     * `audience` — QUI VOIT le bouton :
+     *  - absent / `all` (DÉFAUT côté code) — tout le monde, comportement historique ;
+     *  - `managers` — les seuls gestionnaires du créneau : super-admin plateforme, admin du costum
+     *    porteur, ou admin VALIDÉ de la structure organisatrice de CETTE carte
+     *    (`isCoformAnswerManager`, le prédicat du bouton « Modifier » du détail). La fiche
+     *    structure est un outil de gestion, elle n'informe pas qui cherche un créneau.
+     *  Volontairement PAS nommé `adminOnly` : `addButton.adminOnly` désigne une règle STRICTEMENT
+     *  plus étroite (admin du carrier costum seul) — même nom pour deux règles serait un piège.
+     *  ⚠️ Pertinence d'AFFICHAGE, pas une sécurité : `/profil/:slug` et `/structure` restent
+     *  publics et le slug de la structure part déjà dans le HTML servi à tout visiteur.
+     *
      * Même forme que `MapConf.itemAction`, à dessein : un seul vocabulaire d'action dans le module.
      */
-    structureAction: z.object({ kind: z.enum(["profil", "preview"]) }).optional(),
+    structureAction: z.object({
+      kind: z.enum(["profil", "preview"]).optional(),
+      audience: z.enum(["all", "managers"]).optional(),
+    }).optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
     detailedMode: z.enum(["default", "service-pricing"]).default("default"),
     // Coin haut-droit des cartes à image (`image-cover`) : par défaut les
