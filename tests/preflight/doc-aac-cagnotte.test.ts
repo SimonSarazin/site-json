@@ -140,3 +140,13 @@ describe("doc/34-module-aac ⇄ lib (anti-dérive)", () => {
     expect(doc).toMatch(/getformbyid[\s\S]{0,600}avant la mise en production du module/);
   });
 });
+
+describe("doc/README ⇄ doc/34 (anti-dérive)", () => {
+  it("l'entrée AAC de l'index ne présente plus le module comme un socle 🚧 alors que doc/34 le dit livré", () => {
+    expect(read("doc/34-module-aac.md")).toMatch(/État : LIVRÉ/);
+    const row = read("doc/README.md").split("\n").find((l) => l.includes("34-module-aac.md"));
+    expect(row, "entrée 34-module-aac.md dans doc/README.md").toBeDefined();
+    expect(row).not.toMatch(/🚧|socle/);
+    expect(row).toMatch(/annuaire/);
+  });
+});
