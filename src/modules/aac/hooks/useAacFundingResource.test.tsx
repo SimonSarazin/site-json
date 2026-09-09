@@ -36,6 +36,8 @@ vi.mock("@/modules/cagnotte/hooks/useFundingEnvelope", () => ({
 }));
 vi.mock("@/modules/cagnotte/hooks/useCagnotteAdapter", () => ({
   useCagnotteAdapter: () => ({ savedSelectedResource: null }),
+  // Réparation opt-in des dépenses orphelines (lot 2, G7) : sans effet ici.
+  useOrphanDepenseRepair: () => {},
 }));
 // `getApi` n'est atteint qu'avec des projets retournés ; le SDK n'a rien à faire ici.
 vi.mock("@/lib/apiClient", () => ({ getApi: vi.fn() }));

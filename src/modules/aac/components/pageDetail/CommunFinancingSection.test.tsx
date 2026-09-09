@@ -61,6 +61,8 @@ function makeCtrl(): CommunObjectivesController {
       canEditMilestone: () => false,
       canCloseMilestone: () => false,
       canDeleteMilestone: () => false,
+      // Restauration d'un palier clos (lot 2, G6/H7) : le composant la consulte aussi.
+      canRestoreMilestone: () => false,
     },
     openCreateMilestoneModal: vi.fn(),
     openEditMilestoneModal: vi.fn(),

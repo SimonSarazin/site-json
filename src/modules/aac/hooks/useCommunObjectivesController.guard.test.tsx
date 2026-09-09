@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import i18n from "@/i18n";
 import "@/modules/cagnotte/i18n";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { showErrorToast } from "@/lib/toastUtils";
 import type { CoFormAnswer } from "@/modules/coform/types";
 import type { CagnotteResource, FundingAction } from "@/modules/cagnotte/types";
@@ -72,7 +73,14 @@ const ANSWER = { userId: "auteur" } as unknown as CoFormAnswer;
 const FUNDING = { id: "answer-1", answerId: "answer-1", projectId: "proj-1", items: [] } as unknown as CagnotteResource;
 const ACTION = { id: "a1", name: "Maquettes", status: "todo" } as unknown as FundingAction;
 
-const wrapper = ({ children }: { children: ReactNode }) => <LocalizationProvider>{children}</LocalizationProvider>;
+// Le contrôleur lit `useQueryClient()` (invalidation du cache brut des dépenses, lot 2) :
+// un QueryClient sans retry suffit, aucune requête ne part dans ces tests.
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <QueryClientProvider client={queryClient}>
+    <LocalizationProvider>{children}</LocalizationProvider>
+  </QueryClientProvider>
+);
 
 function monter(funding: CagnotteResource = FUNDING) {
   return renderHook(() => useCommunObjectivesController({ answerQuery: ANSWER, funding }), { wrapper });
