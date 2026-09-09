@@ -1,5 +1,5 @@
 import { ChooseProposalField } from "./ChooseProposalField";
-import type { ChooseProposalValue } from "../utils/chooseProposal";
+import { resolveChooseContext, type ChooseProposalValue } from "../utils/chooseProposal";
 import { AapEvaluationField } from "./AapEvaluationField";
 import type { RawAapEvaluationConfig, AapEvaluationValue } from "../utils/aapEvaluation";
 import { PourContreField } from "./PourContreField";
@@ -770,6 +770,8 @@ function MultiStepCoFormContent({
                 }
 
                 // Hors RHF également, mais scopé par CONTEXTE et non par évaluateur.
+                // Le contexte est le parent du FORMULAIRE — la clé que lit
+                // l'annuaire — pas l'entité du site (cf. `resolveChooseContext`).
                 case "chooseProposal": {
                   const brutChoose = (coform.stepState.stepsData[fields.subFormId] ?? {}) as Record<string, unknown>;
                   return (
@@ -779,6 +781,7 @@ function MultiStepCoFormContent({
                       subFormId={fields.subFormId}
                       formId={formId}
                       value={brutChoose.choose as ChooseProposalValue | undefined}
+                      context={resolveChooseContext(coform.formData)}
                       answerId={coform.answerId}
                       readOnly={isLocked}
                     />

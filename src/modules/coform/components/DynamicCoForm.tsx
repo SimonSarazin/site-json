@@ -1,5 +1,5 @@
 import { ChooseProposalField } from "./ChooseProposalField";
-import type { ChooseProposalValue } from "../utils/chooseProposal";
+import { resolveChooseContext, type ChooseProposalValue } from "../utils/chooseProposal";
 import { AapEvaluationField } from "./AapEvaluationField";
 import type { RawAapEvaluationConfig, AapEvaluationValue } from "../utils/aapEvaluation";
 import { PourContreField } from "./PourContreField";
@@ -796,6 +796,8 @@ export function DynamicCoForm({
                 }
 
                 // Hors RHF également, mais scopé par CONTEXTE et non par évaluateur.
+                // Le contexte est le parent du FORMULAIRE — la clé que lit
+                // l'annuaire — pas l'entité du site (cf. `resolveChooseContext`).
                 case "chooseProposal": {
                   const brutChoose = (externalDefaults ?? {}) as Record<string, unknown>;
                   return (
@@ -805,6 +807,7 @@ export function DynamicCoForm({
                       subFormId={subFormId}
                       formId={formId ?? null}
                       value={brutChoose.choose as ChooseProposalValue | undefined}
+                      context={resolveChooseContext(formData)}
                       answerId={answerId}
                       readOnly={isLocked}
                     />

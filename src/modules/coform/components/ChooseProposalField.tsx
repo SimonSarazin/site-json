@@ -10,6 +10,7 @@ import {
   getStoredContextName,
   buildChooseEntry,
   SELECTED,
+  type ChooseContext,
   type ChooseProposalValue,
 } from "../utils/chooseProposal";
 import { FieldLabel } from "./FormFields";
@@ -19,10 +20,18 @@ import type { FormFieldMapping } from "../types";
  * `tpls.forms.aap.chooseProposal` — « sélectionné pour l'afficher dans l'annuaire ».
  *
  * Comme ses voisins : hors RHF, hors schéma Zod, écriture par chemin ciblé. La
- * particularité est le SCOPE : la valeur est indexée par CONTEXTE (le costum),
- * pas par évaluateur. Le choix ne vaut donc que pour le costum courant, et
- * l'écriture ne doit surtout pas toucher aux autres — 9 des 59 réponses en base
- * portent 2 ou 3 contextes.
+ * particularité est le SCOPE : la valeur est indexée par CONTEXTE, pas par
+ * évaluateur. Le choix ne vaut donc que pour ce contexte, et l'écriture ne doit
+ * surtout pas toucher aux autres — 9 des 59 réponses en base portent 2 ou 3
+ * contextes.
+ *
+ * ⚠️ Le contexte est celui de l'ANNUAIRE — l'organisation porteuse du
+ * formulaire de l'appel (1re entrée de `form.parent`, cf. `resolveChooseContext`),
+ * la clé sur laquelle le filtre de l'annuaire porte (`aacQueryParams`). Il
+ * arrive en prop, résolu par le formulaire qui rend le champ. L'entité du slug
+ * du site (`cocolight.contextId`) peut en diverger : écrire sous elle
+ * enregistrait sans erreur un choix que l'annuaire n'allait jamais lire —
+ * « j'ai cliqué, rien ne change ». Même règle que `CommunSelectionControl`.
  */
 
 export interface ChooseProposalFieldProps {
@@ -30,6 +39,12 @@ export interface ChooseProposalFieldProps {
   subFormId: string;
   formId?: string | null;
   value?: ChooseProposalValue | null;
+  /**
+   * Contexte sous lequel le choix s'écrit et se lit. `null` ⇒ le formulaire n'a
+   * pas de parent exploitable : le champ ne se rend pas, plutôt que d'écrire
+   * sous une clé que personne ne lira.
+   */
+  context?: ChooseContext | null;
   answerId?: string;
   readOnly?: boolean;
 }
@@ -39,6 +54,7 @@ export function ChooseProposalField({
   subFormId,
   formId,
   value,
+  context,
   answerId,
   readOnly,
 }: ChooseProposalFieldProps) {
@@ -55,20 +71,20 @@ export function ChooseProposalField({
   // sur l'ancien choix alors que l'enregistrement a réussi. Cf. `useEcrituresLocales`.
   const echo = useEcrituresLocales<boolean>();
 
-  const contextId = cocolight?.contextId ?? null;
-  const entite = cocolight?.entity as { name?: string } | null | undefined;
-
   // Sans réponse enregistrée, rien à cibler (cf. `SelectionField`). Sans contexte
   // identifié, on ne saurait PAS sous quelle clé écrire : mieux vaut ne rien
   // afficher que d'écrire au mauvais endroit — la valeur est justement ce qui
   // décide de la publication dans l'annuaire.
-  if (!answerId || !contextId) return null;
+  if (!answerId || !context) return null;
 
+  const contextId = context.id;
   const disabled = Boolean(readOnly);
   const selectionne = echo.lire(contextId, isSelectedIn(value, contextId));
   const autres = getOtherSelections(value, contextId);
-  const nomContexte =
-    entite?.name ?? getStoredContextName(value, contextId) ?? null;
+  // Le nom vient de la MÊME entrée que la clé (le legacy peut l'avoir détruit :
+  // `moveFormToParent`), sinon de ce que le dernier choix a dénormalisé — jamais
+  // de l'entité du site, qui décrirait un contexte pour écrire sous un autre.
+  const nomContexte = context.name ?? getStoredContextName(value, contextId) ?? null;
 
   const choisir = (selected: boolean) => {
     if (disabled || selected === selectionne) return;
@@ -77,7 +93,7 @@ export function ChooseProposalField({
         subFormId,
         contextId,
         entry: buildChooseEntry(
-          { id: contextId, type: cocolight?.contextType ?? null, name: nomContexte },
+          { id: contextId, type: context.type ?? null, name: nomContexte },
           selected
         ),
       },

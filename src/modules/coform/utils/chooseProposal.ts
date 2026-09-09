@@ -3,19 +3,20 @@
  * l'afficher dans l'annuaire ».
  *
  * Une différence majeure avec ses voisins : la valeur n'est pas scopée par
- * ÉVALUATEUR mais par CONTEXTE (le costum qui affiche le formulaire) :
+ * ÉVALUATEUR mais par CONTEXTE (l'organisation porteuse de l'appel) :
  *
  *   answers.<étape>.choose.<contextId> = { value, type, name }
  *
- * Une même candidature peut donc être retenue par un costum et pas par un autre.
+ * Une même candidature peut donc être retenue par un appel et pas par un autre.
  * Ce n'est pas théorique : sur les 59 réponses relevées en base, **9 portent 2 ou
  * 3 contextes**. Aplatir en booléen — ou soumettre la clé avec le formulaire —
- * effacerait les choix de tous les autres costums, le backend remplaçant en bloc
- * toute clé non suffixée `_multiEval`.
+ * effacerait les choix de tous les autres contextes, le backend remplaçant en
+ * bloc toute clé non suffixée `_multiEval`.
  *
  * D'où, comme pour `selection`, une écriture par chemin ciblé et zéro entrée au
  * schéma Zod.
  */
+import { firstParent } from "@/modules/aac/lib/formParent";
 
 export const SELECTED = "selected";
 export const NOT_SELECTED = "notselected";
@@ -30,11 +31,30 @@ export interface ChooseEntry {
 /** `{ <contextId>: { value, type, name } }`. */
 export type ChooseProposalValue = Record<string, ChooseEntry | undefined>;
 
-/** Le contexte courant, tel que le legacy le résout depuis `costum`/`contextData`. */
+/** Le contexte sous lequel le choix s'écrit — cf. `resolveChooseContext`. */
 export interface ChooseContext {
   id: string;
   type?: string | null;
   name?: string | null;
+}
+
+/**
+ * Le contexte sous lequel `choose` s'écrit ET se lit : la 1re entrée de
+ * `form.parent` — l'organisation porteuse de l'appel.
+ *
+ * C'est la clé qu'emploie le backend AAP, et celle sur laquelle l'annuaire du
+ * module AAC filtre (`aacQueryParams`, via `aacConfigQuery` → `firstParent`).
+ * Le legacy la résolvait depuis le costum ; l'entité du slug du site peut en
+ * diverger (formulaire porté par plusieurs parents, ou par une autre
+ * organisation que celle du site) — écrire sous elle enregistrerait sans erreur
+ * un choix que personne ne lirait. Une seule fonction pour les deux lectures,
+ * sinon elles dérivent : on délègue au helper du module AAC.
+ *
+ * @param formData - `CoFormData` (le `serverData` du form), ou tout objet à `parent`.
+ * @returns le contexte, ou `null` si le formulaire n'a pas de parent exploitable.
+ */
+export function resolveChooseContext(formData: unknown): ChooseContext | null {
+  return firstParent(formData);
 }
 
 /**

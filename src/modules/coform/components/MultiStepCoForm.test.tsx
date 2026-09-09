@@ -31,6 +31,15 @@ vi.mock("sonner", () => ({
   toast: { error: vi.fn(), success: vi.fn() },
 }));
 
+// Espion sur les props reçues par le champ `chooseProposal` (M31, plus bas).
+const chooseProposalSpy = vi.fn();
+vi.mock("./ChooseProposalField", () => ({
+  ChooseProposalField: (props: unknown) => {
+    chooseProposalSpy(props);
+    return null;
+  },
+}));
+
 import { MultiStepCoForm } from "./MultiStepCoForm";
 
 /** Deux étapes : le cas nominal du wizard (une seule tomberait en mode simple). */
@@ -119,5 +128,54 @@ describe("MultiStepCoForm — clé du brouillon", () => {
     expect(draft.discardDraft).toHaveBeenCalledTimes(1);
     unmount();
     expect(discardDraftRef.current).toBeNull();
+  });
+});
+
+/**
+ * M31 : le contexte de `chooseProposal` est le parent du FORMULAIRE — la clé
+ * que lit l'annuaire AAC — et il descend en prop jusqu'au champ. C'est le cas
+ * nominal de cet input (étape d'évaluation d'un wizard AAP). Le champ seul est
+ * couvert par `ChooseProposalField.test.tsx` ; ici, le maillon qui le nourrit.
+ */
+describe("MultiStepCoForm — contexte de `chooseProposal`", () => {
+  const FORM_AAP = {
+    ...FORM_DATA,
+    parent: { orgA: { type: "organizations", name: "Org A" } },
+    inputs: {
+      aapStep1: {
+        step: 1,
+        name: "Dépôt",
+        inputs: { titre: { type: "text", label: "Titre" } },
+      },
+      aapStep2: {
+        step: 2,
+        name: "Jury",
+        inputs: { choose: { type: "tpls.forms.aap.chooseProposal", label: "Sélectionné" } },
+      },
+    },
+  } as unknown as CoFormData;
+
+  beforeEach(() => {
+    mockUseCoFormDraft.mockReset();
+    mockUseCoFormDraft.mockReturnValue(draftInerte());
+    chooseProposalSpy.mockClear();
+    Element.prototype.scrollIntoView = vi.fn();
+  });
+
+  it("transmet le parent du formulaire au champ, avec son type et son nom", () => {
+    render(
+      <MultiStepCoForm
+        formData={FORM_AAP}
+        formId="form-1"
+        answerId="answer-1"
+        initialStepKey="aapStep2"
+      />,
+    );
+    expect(chooseProposalSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        context: { id: "orgA", type: "organizations", name: "Org A" },
+        answerId: "answer-1",
+      }),
+    );
   });
 });

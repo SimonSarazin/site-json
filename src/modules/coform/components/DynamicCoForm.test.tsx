@@ -31,6 +31,15 @@ vi.mock("sonner", () => ({
   toast: { error: vi.fn(), success: vi.fn() },
 }));
 
+// Espion sur les props reçues par le champ `chooseProposal` (M31, plus bas).
+const chooseProposalSpy = vi.fn();
+vi.mock("./ChooseProposalField", () => ({
+  ChooseProposalField: (props: unknown) => {
+    chooseProposalSpy(props);
+    return null;
+  },
+}));
+
 import { DynamicCoForm } from "./DynamicCoForm";
 
 const FORM_DATA = {
@@ -168,5 +177,45 @@ describe("DynamicCoForm — purge du brouillon seulement sur succès avéré (H1
     await expect(soumission).rejects.toThrow("réseau");
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(draft.purgeDraft).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * M31 : le contexte de `chooseProposal` est le parent du FORMULAIRE — la clé
+ * que lit l'annuaire AAC — et il descend en prop jusqu'au champ. Le champ seul
+ * est couvert par `ChooseProposalField.test.tsx` ; ici, le maillon qui le nourrit.
+ */
+describe("DynamicCoForm — contexte de `chooseProposal`", () => {
+  const FORM_AAP = {
+    ...FORM_DATA,
+    parent: { orgA: { type: "organizations", name: "Org A" } },
+    inputs: {
+      aapStep2: {
+        step: 1,
+        name: "Jury",
+        inputs: {
+          nom: { type: "text", label: "Nom" },
+          choose: { type: "tpls.forms.aap.chooseProposal", label: "Sélectionné" },
+        },
+      },
+    },
+  } as unknown as CoFormData;
+
+  it("transmet le parent du formulaire au champ, avec son type et son nom", () => {
+    render(
+      <DynamicCoForm formData={FORM_AAP} onSubmit={vi.fn()} formId="form-1" answerId="answer-1" />,
+    );
+    expect(chooseProposalSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        context: { id: "orgA", type: "organizations", name: "Org A" },
+        answerId: "answer-1",
+      }),
+    );
+  });
+
+  it("sans parent, transmet `null` — le champ ne se rendra pas", () => {
+    const sansParent = { ...FORM_AAP, parent: null } as unknown as CoFormData;
+    render(<DynamicCoForm formData={sansParent} onSubmit={vi.fn()} formId="form-1" answerId="answer-1" />);
+    expect(chooseProposalSpy).toHaveBeenCalledWith(expect.objectContaining({ context: null }));
   });
 });

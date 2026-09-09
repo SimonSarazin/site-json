@@ -5,8 +5,9 @@ import type { FormFieldMapping } from "../types";
 
 /**
  * Ce champ décide de la publication d'une candidature dans l'annuaire, et son
- * scope est le CONTEXTE (le costum), pas l'évaluateur. Les tests portent donc
- * surtout sur l'isolation : ce qui est écrit ne doit toucher qu'un contexte.
+ * scope est le CONTEXTE (l'organisation porteuse de l'appel — le parent du
+ * formulaire, reçu en prop), pas l'évaluateur. Les tests portent donc surtout
+ * sur l'isolation : ce qui est écrit ne doit toucher qu'un contexte, et le bon.
  */
 
 vi.mock("@/hooks/useT", () => ({
@@ -49,6 +50,10 @@ const TROIS = {
   ctxC: { value: "selected", type: "projects", name: "Costum C" },
 };
 
+/** Le parent du formulaire de l'appel — ce que `resolveChooseContext` rend. */
+const CONTEXTE_A = { id: "ctxA", type: "organizations", name: "Costum A" };
+const CONTEXTE_B = { id: "ctxB", type: "organizations", name: "Costum B" };
+
 function poser(over: Partial<Parameters<typeof ChooseProposalField>[0]> = {}) {
   return render(
     <ChooseProposalField
@@ -56,6 +61,7 @@ function poser(over: Partial<Parameters<typeof ChooseProposalField>[0]> = {}) {
       subFormId="aapStep2"
       formId="form-1"
       value={TROIS}
+      context={CONTEXTE_A}
       answerId="answer-1"
       {...over}
     />
@@ -68,10 +74,11 @@ function poser(over: Partial<Parameters<typeof ChooseProposalField>[0]> = {}) {
 describe("ChooseProposalField", () => {
   beforeEach(() => {
     saveMutate.mockReset();
+    // Le costum du site : son `contextId` ne doit JAMAIS servir de clé.
     ctxMock.mockReturnValue({
       api: {},
-      entity: { name: "Costum A" },
-      contextId: "ctxA",
+      entity: { name: "Costum du site" },
+      contextId: "ctxSite",
       contextType: "organizations",
     });
   });
@@ -81,11 +88,11 @@ describe("ChooseProposalField", () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it("ne rend RIEN sans contexte identifié", () => {
+  it("ne rend RIEN sans contexte explicite — même si le costum en a un", () => {
     // On ne saurait pas sous quelle clé écrire ; se tromper publierait la
-    // candidature dans le mauvais annuaire.
-    ctxMock.mockReturnValue({ api: {}, entity: null, contextId: null });
-    const { container } = poser();
+    // candidature dans le mauvais annuaire. Le `contextId` du costum n'est PAS
+    // un repli acceptable : ce n'est pas la clé que l'annuaire lit.
+    const { container } = poser({ context: null });
     expect(container.firstChild).toBeNull();
   });
 
@@ -97,20 +104,13 @@ describe("ChooseProposalField", () => {
   });
 
   it("un contexte non retenu s'affiche bien comme non retenu", () => {
-    ctxMock.mockReturnValue({ api: {}, entity: { name: "Costum B" }, contextId: "ctxB" });
-    poser();
+    poser({ context: CONTEXTE_B });
     const [oui] = screen.getAllByRole("radio");
     expect(oui.getAttribute("aria-checked")).toBe("false");
   });
 
   it("écrit au chemin du SEUL contexte courant", () => {
-    ctxMock.mockReturnValue({
-      api: {},
-      entity: { name: "Costum B" },
-      contextId: "ctxB",
-      contextType: "organizations",
-    });
-    poser();
+    poser({ context: CONTEXTE_B });
     fireEvent.click(screen.getAllByRole("radio")[0]); // « Oui »
     expect(saveMutate).toHaveBeenCalledWith(
       {
@@ -119,6 +119,37 @@ describe("ChooseProposalField", () => {
         entry: { value: "selected", type: "organizations", name: "Costum B" },
       },
       expect.objectContaining({ onSuccess: expect.any(Function) })
+    );
+  });
+
+  /**
+   * Régression (M31) : le champ écrivait sous `cocolight.contextId` — l'entité
+   * résolue depuis le slug du site — alors que l'annuaire AAC filtre sur
+   * `choose.<1re clé de form.parent>`. Sur un formulaire porté par un autre
+   * parent que l'entité du site, le toast annonçait l'enregistrement, la base
+   * recevait `choose.<site>`, et le commun restait « En attente » dans
+   * l'annuaire, indéfiniment. Même règle que `CommunSelectionControl`.
+   */
+  it("écrit sous le contexte du FORMULAIRE, jamais sous celui du costum du site", () => {
+    poser({ context: CONTEXTE_B });
+    fireEvent.click(screen.getAllByRole("radio")[0]); // « Oui »
+    const [vars] = saveMutate.mock.calls[0] as [{ contextId: string; entry: { name: string } }];
+    expect(vars.contextId).toBe("ctxB");
+    expect(vars.contextId).not.toBe("ctxSite");
+    // Le nom vient de la même entrée que la clé, pas de l'entité du site.
+    expect(vars.entry.name).toBe("Costum B");
+  });
+
+  it("un parent sans nom (legacy `moveFormToParent`) reprend le nom du dernier choix", () => {
+    poser({ context: { id: "ctxA", type: "organizations", name: null } });
+    expect(screen.getByText(/Contexte : Costum A/)).toBeTruthy();
+    fireEvent.click(screen.getAllByRole("radio")[1]); // « Non »
+    expect(saveMutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contextId: "ctxA",
+        entry: { value: "notselected", type: "organizations", name: "Costum A" },
+      }),
+      expect.anything()
     );
   });
 
@@ -136,16 +167,10 @@ describe("ChooseProposalField", () => {
    * exactement ce que le formulaire continue de fournir.
    */
   it("affiche le nouveau choix une fois l'enregistrement RÉUSSI", () => {
-    ctxMock.mockReturnValue({
-      api: {},
-      entity: { name: "Costum B" },
-      contextId: "ctxB",
-      contextType: "organizations",
-    });
     // Le serveur répond OK : on déclenche le `onSuccess` que le champ a branché.
     saveMutate.mockImplementation((vars, opts) => opts?.onSuccess?.(undefined, vars));
 
-    poser();
+    poser({ context: CONTEXTE_B });
     const [oui, non] = screen.getAllByRole("radio");
     expect(oui.getAttribute("aria-checked")).toBe("false");
 
@@ -155,16 +180,10 @@ describe("ChooseProposalField", () => {
   });
 
   it("un enregistrement en ÉCHEC laisse le choix réel affiché", () => {
-    ctxMock.mockReturnValue({
-      api: {},
-      entity: { name: "Costum B" },
-      contextId: "ctxB",
-      contextType: "organizations",
-    });
     // Le serveur refuse : `onSuccess` ne tire pas. Le bouton ne doit pas mentir.
     saveMutate.mockImplementation(() => {});
 
-    poser();
+    poser({ context: CONTEXTE_B });
     const [oui] = screen.getAllByRole("radio");
     fireEvent.click(oui);
     expect(oui.getAttribute("aria-checked")).toBe("false");
@@ -201,8 +220,7 @@ describe("ChooseProposalField", () => {
     // Sur « Non » il n'y a pas de publication à rattacher : le legacy masque
     // la ligne (`$(".contextName").hide()`). Cas séparé du précédent : deux
     // `render()` dans un même `it` laisseraient les deux arbres dans le DOM.
-    ctxMock.mockReturnValue({ api: {}, entity: { name: "Costum B" }, contextId: "ctxB" });
-    poser();
+    poser({ context: CONTEXTE_B });
     expect(screen.queryByText(/Contexte :/)).toBeNull();
   });
 
