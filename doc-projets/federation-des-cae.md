@@ -724,7 +724,6 @@ une affirmation fausse. Aucun appelant ne lit `mutation.data` ; seul le verdict 
 | ~~Fournir le logo~~ — **fait le 09/09** ; reste à obtenir de la Fédération un **SVG ou une version à jour** (l'actuel vient d'un annuaire tiers, 2023) | Schumann |
 | **Activer la préconfiguration « Système de coremuneration »** sur le formulaire de l'appel si la Fédération veut le financement — sans `form.coremu`, les trois blocs sont masqués (comme dans le legacy) | Aboire / Fédération |
 | **Déployer le correctif legacy du 500 de `POST /survey/coform/getformbyid`** (form de type `aapConfig`) **avant** la mise en production du module AAC — sinon `campagne` et tout `config.*` restent invisibles | Aboire |
-| Lancer `test:integration` et `test:e2e` sur le lot 08-09/09 | à faire |
 | `showOpenSourceToggle` : 2 outils sur 83 sont marqués open source — garde-t-on le filtre ? | Schumann |
 | Passer `communUrlTemplate` en URL absolue une fois l'hôte du site arrêté | Schumann |
 | Rendre configurables les `FIELD_*` de `CommunInfoAction` | à arbitrer |
