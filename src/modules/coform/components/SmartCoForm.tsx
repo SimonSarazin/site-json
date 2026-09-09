@@ -490,8 +490,15 @@ export function SmartCoForm({
   }
 
   // Rendu : formulaire simple (1 seule étape ou standalone)
-  const subFormIds = Object.keys(effectiveFormData.inputs || {});
-  const subFormId = subFormIds[0] || "default";
+  //
+  // Clé de l'étape PARSÉE, pas `Object.keys(inputs)[0]` : c'est celle que
+  // `DynamicCoForm` utilise (`subFormsFields[0].subFormId`), donc la seule sous
+  // laquelle ses `defaultValues` et sa saisie ont un sens. Les deux divergent
+  // dès que la première étape déclarée est masquée (`hideStep`) : le parse ne
+  // garde que la suivante, on tombe en mode simple — et on lisait les défauts
+  // de l'étape masquée puis on renvoyait la saisie sous SA clé, l'étape rendue
+  // repartant vide.
+  const subFormId = subFormsFields[0]?.subFormId ?? "default";
 
   // Extraire les valeurs par défaut pour cette étape
   const stepDefaults = normalizedDefaults?.[subFormId];

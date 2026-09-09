@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import type { CoFormData } from "../types";
@@ -33,8 +33,23 @@ vi.mock("../hooks/useCoFormCatalogs", () => ({
   useCoFormCatalogs: () => ({ catalogs: {}, isLoading: false, error: null, refetch: vi.fn() }),
 }));
 
+/** Ce que le `onSubmit` fourni par `SmartCoForm` a RÉSOLU au dernier envoi. */
+const soumission = vi.hoisted(() => ({ resultat: undefined as unknown }));
+
 vi.mock("./DynamicCoForm", () => ({
-  DynamicCoForm: (props: { formData: CoFormData; hideBanner?: boolean; hideStepHeaders?: boolean; hideSubmitButton?: boolean; autoSubmitOnBlur?: boolean; draftScope?: string | null; elementId?: string | null; elementType?: string | null }) => (
+  DynamicCoForm: (props: {
+    formData: CoFormData;
+    hideBanner?: boolean;
+    hideStepHeaders?: boolean;
+    hideSubmitButton?: boolean;
+    autoSubmitOnBlur?: boolean;
+    draftScope?: string | null;
+    elementId?: string | null;
+    elementType?: string | null;
+    enableDraft?: boolean;
+    defaultValues?: Record<string, unknown>;
+    onSubmit: (data: Record<string, unknown>) => unknown;
+  }) => (
     <div
       data-testid="dynamic-coform"
       data-draft-scope={props.draftScope ?? ""}
@@ -45,9 +60,21 @@ vi.mock("./DynamicCoForm", () => ({
       data-hide-step-headers={String(!!props.hideStepHeaders)}
       data-hide-submit-button={String(!!props.hideSubmitButton)}
       data-auto-submit={String(!!props.autoSubmitOnBlur)}
+      data-enable-draft={String(!!props.enableDraft)}
+      data-default-values={JSON.stringify(props.defaultValues ?? null)}
     >
       {/* Liste des subFormIds pour vérif standalone */}
       {Object.keys(props.formData.inputs ?? {}).join(",")}
+      <button
+        type="button"
+        data-testid="dyn-submit"
+        onClick={() => {
+          soumission.resultat = undefined;
+          void Promise.resolve(props.onSubmit({ textField: "saisie" })).then((r) => {
+            soumission.resultat = r;
+          });
+        }}
+      />
     </div>
   ),
 }));
@@ -504,5 +531,54 @@ describe("SmartCoForm — hiddenStepKeys", () => {
       { wrapper: makeWrapper() }
     );
     expect(screen.getByTestId("dynamic-coform").textContent).toBe("aapStep2");
+  });
+});
+
+/**
+ * Mono-étape : la clé sous laquelle `SmartCoForm` lit les valeurs par défaut et
+ * emballe le payload était `Object.keys(inputs)[0]` BRUT, là où `DynamicCoForm`
+ * (et tout le reste du module) travaille sur l'étape PARSÉE
+ * (`subFormsFields[0].subFormId`). Les deux divergent dès que la première
+ * étape du formulaire est masquée par `hideStep` : le parse ne garde que la
+ * seconde, on tombe en mode simple, et le formulaire simple recevait les
+ * défauts de l'étape MASQUÉE puis renvoyait sa saisie sous la clé de cette
+ * étape masquée — la vraie étape rendue repartait vide.
+ */
+describe("SmartCoForm — mono-étape : clé de l'étape RENDUE, pas de la première déclarée", () => {
+  function formAvecPremiereEtapeMasquee(): CoFormData {
+    const base = makeFormData(["cachee", "visible"]);
+    return {
+      ...base,
+      inputs: {
+        ...base.inputs,
+        cachee: { ...base.inputs!.cachee, hideStep: true },
+      },
+    } as CoFormData;
+  }
+  const defaults = {
+    cachee: { textField: "valeur de l'étape masquée" },
+    visible: { textField: "valeur de l'étape rendue" },
+  };
+
+  it("les valeurs par défaut sont celles de l'étape rendue", () => {
+    render(<SmartCoForm formData={formAvecPremiereEtapeMasquee()} defaultValues={defaults} />, {
+      wrapper: makeWrapper(),
+    });
+    const dyn = screen.getByTestId("dynamic-coform");
+    expect(dyn.textContent).toContain("visible");
+    expect(JSON.parse(dyn.dataset.defaultValues!)).toEqual({ textField: "valeur de l'étape rendue" });
+  });
+
+  it("le payload est emballé sous la clé de l'étape rendue", async () => {
+    const onFinalSubmit = vi.fn().mockResolvedValue(undefined);
+    render(
+      <SmartCoForm formData={formAvecPremiereEtapeMasquee()} defaultValues={defaults} onFinalSubmit={onFinalSubmit} />,
+      { wrapper: makeWrapper() },
+    );
+    fireEvent.click(screen.getByTestId("dyn-submit"));
+    await waitFor(() => expect(onFinalSubmit).toHaveBeenCalledTimes(1));
+    const payload = onFinalSubmit.mock.calls[0][0] as Record<string, unknown>;
+    expect(Object.keys(payload)).toEqual(["visible"]);
+    expect(payload.visible).toEqual({ textField: "saisie" });
   });
 });
