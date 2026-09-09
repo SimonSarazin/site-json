@@ -142,19 +142,27 @@ export function AacDirectoryFilters({
               allLabel={String(t("directory.filters.all"))}
               options={usageTree.map((c) => ({ id: c.id, label: c.label, count: c.count }))}
               selected={filters.usage}
-              onToggle={(id) =>
+              onToggle={(id) => {
+                const nextUsage = toggleIn(filters.usage, id);
                 patch({
-                  usage: toggleIn(filters.usage, id),
+                  usage: nextUsage,
                   // Une sous-catégorie dont la catégorie n'est plus retenue
                   // n'est plus atteignable : la garder filtrerait sur du
-                  // masqué, ce qui se lit comme un bug.
-                  usageSub: filters.usageSub.filter((subId) =>
-                    usageTree
-                      .filter((c) => toggleIn(filters.usage, id).includes(c.id))
-                      .some((c) => c.children.some((s) => s.id === subId))
-                  ),
-                })
-              }
+                  // masqué, ce qui se lit comme un bug. SAUF si plus aucune
+                  // catégorie n'est retenue : « Tous » réaffiche toutes les
+                  // sous-catégories, celle qui est cochée reste donc
+                  // atteignable — la vider changerait la liste dans le dos
+                  // de l'utilisateur.
+                  usageSub:
+                    nextUsage.length === 0
+                      ? filters.usageSub
+                      : filters.usageSub.filter((subId) =>
+                          usageTree
+                            .filter((c) => nextUsage.includes(c.id))
+                            .some((c) => c.children.some((s) => s.id === subId))
+                        ),
+                });
+              }}
               onClear={() => patch({ usage: [], usageSub: [] })}
             />
 
