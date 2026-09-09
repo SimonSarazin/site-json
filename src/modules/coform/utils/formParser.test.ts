@@ -1875,14 +1875,18 @@ describe("denormalizeAnswerData — clés d'écriture directe jamais soumises", 
   });
 
   /**
-   * Étapes RETIRÉES DU PARSE. Le strip par étape parsée ne les voit pas, mais
-   * leur bloc est bien dans ce que soumet le wizard : `normalizeAnswerData`
+   * Étapes ABSENTES DU PARSE — ne partent PAS, du tout.
+   *
+   * Leur bloc est pourtant dans ce que soumet le wizard : `normalizeAnswerData`
    * clone `answers` EN ENTIER, `CoFormProvider` installe ce clone dans
-   * `stepsData`, et `submitAllData` dénormalise `stepsData` entier. Sans
-   * balayage, `selection`/`choose`/… d'une étape invisible repartiraient
-   * intacts, et le backend les remplacerait en bloc.
+   * `stepsData`, et `submitAllData` dénormalise `stepsData` entier. Fait
+   * backend (mainteneur du legacy, 9 sept. 2026) : une étape absente du payload
+   * est PRÉSERVÉE à la sauvegarde (PHP et port Node), une étape présente est
+   * écrasée clé par clé. Ré-émettre une étape non rendue, c'est donc écraser
+   * avec l'instantané périmé de l'ouverture — notes du jury, `_multiEval`,
+   * champs ordinaires compris — alors que ne rien émettre la conserve intacte.
    */
-  it("balaie une étape retirée du parse par l'appelant (`omitHiddenSteps`, wizard)", () => {
+  it("une étape retirée du parse par l'appelant (`omitHiddenSteps`, wizard) est absente du payload", () => {
     // Cas nominal AAC (`AacCommunDetailPage`) : l'étape de jury est masquée au
     // déposant non-admin. Avec ≥ 2 étapes visibles on est en wizard, donc sur
     // le chemin `submitAllData` qui soumet TOUTES les étapes de `stepsData`.
@@ -1901,43 +1905,38 @@ describe("denormalizeAnswerData — clés d'écriture directe jamais soumises", 
       fields,
       "userA",
     ) as Record<string, unknown>;
-    // Sanity : le bloc de l'étape masquée EST dans ce que le wizard soumet.
-    expect((stepsData.aapStep2 as Record<string, unknown>).selection).toEqual({ userB: { c1: 4 } });
+    // Sanity : le bloc de l'étape masquée EST dans ce que le wizard soumet —
+    // décision du jury ET champ ordinaire.
+    expect(stepsData.aapStep2).toMatchObject({ selection: { userB: { c1: 4 } }, commentaire: "ok" });
 
     const payload = denormalizeAnswerData(stepsData, fields, "userA");
-    const jury = payload.aapStep2 as Record<string, unknown>;
-    for (const cle of DIRECT_WRITE_RAW_KEYS) {
-      expect(jury, `\`${cle}\` d'une étape masquée ne doit pas repartir au serveur`).not.toHaveProperty(cle);
-    }
-    // Le reste de l'étape masquée repart tel quel (comportement antérieur), et
-    // les étapes visibles ne sont pas affectées.
-    expect(jury.commentaire).toBe("ok");
+    // Pas seulement ses clés de décision : l'étape entière, `commentaire`
+    // compris, sinon le backend l'écraserait clé par clé.
+    expect(payload).not.toHaveProperty("aapStep2");
+    expect(Object.keys(payload).sort()).toEqual(["aapStep1", "aapStep3"]);
+    // Les étapes visibles ne sont pas affectées.
     expect(payload.aapStep1).toEqual({ titre: "Mon commun" });
     expect(payload.aapStep3).toEqual({ suivi: "en cours" });
   });
 
-  it("balaie une étape marquée `hideStep` par le formulaire", () => {
+  it("une étape marquée `hideStep` par le formulaire est absente du payload", () => {
     const parcours = makeParcoursJury();
     parcours.inputs!.aapStep2.hideStep = true;
     const fields = parseCoFormFields(parcours);
     expect(fields.map((s) => s.subFormId)).toEqual(["aapStep1"]);
 
     const stepsData = normalizeAnswerData(REPONSES_SERVEUR, fields, "userA") as Record<string, unknown>;
+    expect(stepsData).toHaveProperty("aapStep2");
+
     const payload = denormalizeAnswerData(stepsData, fields, "userA");
-    const jury = payload.aapStep2 as Record<string, unknown>;
-    for (const cle of DIRECT_WRITE_RAW_KEYS) {
-      expect(jury, `\`${cle}\` d'une étape \`hideStep\` ne doit pas repartir au serveur`).not.toHaveProperty(cle);
-    }
-    expect(jury.commentaire).toBe("ok");
-    expect(payload.aapStep1).toEqual({ titre: "Mon commun" });
+    expect(payload).toEqual({ aapStep1: { titre: "Mon commun" } });
   });
 
-  it("laisse intact le rangement root-level `evaluation{key}` d'un champ parsé", () => {
-    // Le balayage ne doit reconnaître comme « étape » que ce qui n'est pas un
-    // rangement root-level. `evaluation{key}` est une map
-    // `{ [categoryPath]: { [criteriaId]: vote } }` dont les clés sont les
-    // NOMS DE CATÉGORIES saisis par l'admin — une catégorie « selection » ou
-    // « evaluation » y est légitime et serait effacée par un balayage naïf.
+  it("conserve le rangement root-level `evaluation{key}` d'un champ parsé", () => {
+    // `evaluation{key}` est une map `{ [categoryPath]: { [criteriaId]: vote } }`
+    // dont les clés sont les NOMS DE CATÉGORIES saisis par l'admin — une
+    // catégorie « selection » ou « evaluation » y est légitime. La clé est
+    // produite par la boucle à partir d'un champ parsé : elle part telle quelle.
     const fields: SubFormFields[] = [
       makeSubFormFields(
         [
@@ -1954,7 +1953,7 @@ describe("denormalizeAnswerData — clés d'écriture directe jamais soumises", 
         evaluationCrit: notes,
         aapStep1: { commentaire: "ok" },
         aapStep3: { suivi: "en cours" },
-        // Étape masquée, non parsée : balayée, elle.
+        // Étape masquée, non parsée : absente du payload, elle.
         aapStep2: { selection: { userB: { c1: 4 } }, note: "x" },
       },
       fields,
@@ -1963,7 +1962,130 @@ describe("denormalizeAnswerData — clés d'écriture directe jamais soumises", 
     const payload = denormalizeAnswerData(stepsData, fields, "userA");
     expect(payload.evaluationCrit).toEqual(notes);
     expect(payload.aapStep1).toEqual({ commentaire: "ok" });
-    expect(payload.aapStep2).toEqual({ note: "x" });
+    expect(payload.aapStep3).toEqual({ suivi: "en cours" });
+    expect(payload).not.toHaveProperty("aapStep2");
+  });
+
+  it("retire le rangement root-level d'un champ NON parsé (porté par une étape masquée)", () => {
+    // L'étape de jury porte un `evaluation` (rangé `evaluation{key}`) et un
+    // commonTable (rangé `yesOrNo{key}` + `criterias{key}`) : trois clés
+    // RACINE, hors du bloc de l'étape. Le parse complet en atteste.
+    const parcours = makeParcoursJury();
+    parcours.inputs!.aapStep2.inputs.grille = { type: "tpls.forms.cplx.evaluation", label: "Grille" };
+    parcours.inputs!.aapStep2.inputs.besoins = { type: "tpls.forms.evaluation.commonTableV2", label: "Besoins" };
+    const juryComplet = parseCoFormFields(parcours).find((s) => s.subFormId === "aapStep2")!;
+    expect(juryComplet.fields.map((f) => [f.name, f.componentType])).toEqual(
+      expect.arrayContaining([
+        ["evaluationgrille", "evaluation"],
+        ["yesOrNobesoins", "commonTable"],
+      ]),
+    );
+
+    // Le déposant ne voit pas l'étape de jury : ces trois clés ne sont
+    // produites par aucun champ parsé.
+    const fields = parseCoFormFields(omitHiddenSteps(parcours, ["aapStep2"]));
+    expect(fields.map((s) => s.subFormId)).toEqual(["aapStep1"]);
+
+    const stepsData = normalizeAnswerData(
+      {
+        ...REPONSES_SERVEUR,
+        evaluationgrille: { impact: { c1: 3 } },
+        yesOrNobesoins: { crit1: { note: 2 } },
+        criteriasbesoins: { crit1: { usage: "Bureautique", usageKey: "crit1", coeff: 1, label: "" } },
+      },
+      fields,
+      "userA",
+    ) as Record<string, unknown>;
+    // Sanity : `normalizeAnswerData` les a bien recopiées telles quelles.
+    expect(stepsData).toHaveProperty("evaluationgrille");
+    expect(stepsData).toHaveProperty("yesOrNobesoins");
+    expect(stepsData).toHaveProperty("criteriasbesoins");
+
+    const payload = denormalizeAnswerData(stepsData, fields, "userA");
+    expect(payload).toEqual({ aapStep1: { titre: "Mon commun" } });
+  });
+
+  it("conserve une étape parsée nommée `evaluationStep` (ancien angle mort de l'heuristique par préfixe)", () => {
+    // Le tri se fait sur ce que le parse CONNAÎT, pas sur la forme du nom : une
+    // étape dont l'id commence par `evaluation` est une étape si elle est
+    // parsée (conservée avec ses données), et rien du tout sinon (retirée).
+    const parcours = makeParcoursJury();
+    parcours.inputs!.evaluationStep = {
+      id: "evaluationStep",
+      name: "Auto-évaluation",
+      formParent: "form123",
+      inputs: { bilan: { type: "text", label: "Bilan", placeholder: "" } },
+    };
+    parcours.inputs!.evaluationJury = {
+      id: "evaluationJury",
+      name: "Jury bis",
+      formParent: "form123",
+      inputs: { verdict: { type: "text", label: "Verdict", placeholder: "" } },
+    };
+    const fields = parseCoFormFields(omitHiddenSteps(parcours, ["aapStep2", "evaluationJury"]));
+    expect(fields.map((s) => s.subFormId)).toEqual(["aapStep1", "evaluationStep"]);
+
+    const stepsData = normalizeAnswerData(
+      {
+        ...REPONSES_SERVEUR,
+        evaluationStep: { bilan: "positif" },
+        evaluationJury: { verdict: "retenu", selection: { userB: { c1: 4 } } },
+      },
+      fields,
+      "userA",
+    ) as Record<string, unknown>;
+    const payload = denormalizeAnswerData(stepsData, fields, "userA");
+    expect(payload).toEqual({
+      aapStep1: { titre: "Mon commun" },
+      evaluationStep: { bilan: "positif" },
+    });
+  });
+
+  it("laisse intacts le pack `_multiEval` et les `dynamicFields` d'une étape parsée", () => {
+    // Le périmètre ne retire que des clés RACINE : à l'intérieur d'une étape
+    // parsée, les traitements existants (pack multi-eval de l'user courant,
+    // filtrage des lignes vides) produisent exactement ce qu'ils produisaient.
+    const fields: SubFormFields[] = [
+      makeSubFormFields(
+        [
+          makeField({ name: "avis", componentType: "radio", options: ["oui", "non"], activeMultieval: true }),
+          makeField({
+            name: "partenaires",
+            componentType: "dynamicFields",
+            dynamicFieldsConfig: {
+              enableMultipleRows: true,
+              minRows: 1,
+              maxRows: 3,
+              fieldsConfig: [{ key: "nom", label: "Nom", type: "text" }],
+            },
+          }),
+        ],
+        "aapStep1",
+      ),
+    ];
+    const stepsData = normalizeAnswerData(
+      {
+        aapStep1: {
+          avis_multiEval: { userB: { value: "non", date: "d", answer: "1_non" } },
+          partenaires: [{ nom: "ADAPTETONSPORT" }],
+        },
+        // Étape masquée : son `_multiEval` ne repart pas non plus, le backend
+        // le préserve tel quel.
+        aapStep2: { avis_multiEval: { userB: { value: "non", date: "d", answer: "1_non" } } },
+      },
+      fields,
+      "userA",
+    ) as Record<string, unknown>;
+    (stepsData.aapStep1 as Record<string, unknown>).avis = "oui";
+    (stepsData.aapStep1 as Record<string, unknown>).partenaires = [{ nom: "ADAPTETONSPORT" }, { nom: "" }];
+
+    const payload = denormalizeAnswerData(stepsData, fields, "userA");
+    expect(payload).toEqual({
+      aapStep1: {
+        avis_multiEval: { userA: { value: "oui", date: "now", answer: "0_oui" } },
+        partenaires: [{ nom: "ADAPTETONSPORT" }],
+      },
+    });
   });
 
   it("préserve un champ ORDINAIRE déclaré sous une clé homonyme", () => {
