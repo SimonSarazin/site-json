@@ -9,11 +9,16 @@
  * On utilise le hook de scroll GÉNÉRIQUE, pas ses variantes « Next » : celles-ci
  * chaînent un `PaginatorPage` du SDK, forme que le transport masque justement.
  */
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { Form } from "@communecter/cocolight-api-client";
 import { useInfiniteQueryScroll } from "@/hooks/useInfiniteQueryScroll";
 import { AAC_QUERY_KEYS } from "../constants/queryKeys";
-import { fetchAacCommunsPage, type AacCommunsPage } from "../lib/communsTransport";
+import {
+  fetchAacCommunsPage,
+  type AacCommunsPage,
+  type AacScanMemoizer,
+} from "../lib/communsTransport";
 import { aacFiltersKey, type AacDirectoryFiltersState } from "../lib/filtersKey";
 import { PUBLIC_AAC_VISIBILITY, type AacVisibility } from "../lib/aacQueryParams";
 import type { AacCardFields } from "../lib/resolveAacCardFields";
@@ -55,6 +60,13 @@ export interface UseAacCommunsResult {
 
 const DEFAULT_PAGE_SIZE = 12;
 
+/**
+ * Fraîcheur du listing ET de son balayage — la MÊME, à dessein : un balayage plus
+ * frais que le listing serait refait pour rien, un balayage plus vieux servirait
+ * à un listing qui vient d'être refetché des documents qu'il croit périmés.
+ */
+const STALE_TIME = 60 * 1000;
+
 export function useAacCommuns({
   formId,
   form,
@@ -68,6 +80,29 @@ export function useAacCommuns({
   visibility = PUBLIC_AAC_VISIBILITY,
 }: UseAacCommunsParams): UseAacCommunsResult {
   const filtersKey = aacFiltersKey(filters, { pageSize });
+  const queryClient = useQueryClient();
+
+  /**
+   * Le balayage vit dans le cache React Query, sous une clé PROPRE à sa requête
+   * serveur (cf. `COMMUNS_SCAN`). `fetchQuery` le sert tel quel tant qu'il est
+   * frais et non invalidé, sinon le refait : la page 0 le paie, les suivantes le
+   * relisent. Une invalidation du listing (dépôt, sélection) le marque périmé
+   * avec lui — la première page rejouée le refait, une seule fois pour toutes.
+   */
+  const memoizeScan = useCallback<AacScanMemoizer>(
+    (serverParams, run) =>
+      queryClient.fetchQuery({
+        queryKey: AAC_QUERY_KEYS.COMMUNS_SCAN(
+          formId,
+          campaignId,
+          serverParams,
+          visibility.currentUserId
+        ),
+        queryFn: run,
+        staleTime: STALE_TIME,
+      }),
+    [queryClient, formId, campaignId, visibility.currentUserId]
+  );
 
   const {
     data,
@@ -92,13 +127,14 @@ export function useAacCommuns({
         contextId,
         baseUrl,
         visibility,
+        memoizeScan,
       });
     },
     getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.page + 1 : undefined),
     options: {
       initialPageParam: 0,
       enabled: enabled && !!formId && !!form && !!fields,
-      staleTime: 60 * 1000,
+      staleTime: STALE_TIME,
     },
   });
 

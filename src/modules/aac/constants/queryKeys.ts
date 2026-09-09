@@ -41,6 +41,24 @@ export const AAC_QUERY_KEYS = {
   ) => ["aac-communs", formId, campaignId, filtersKey, userId] as const,
   COMMUNS_PREFIX: () => ["aac-communs"] as const,
 
+  // BALAYAGE de l'annuaire — le chemin « filtre client » du transport : les
+  // communs que la borne autorise pour UNE requête serveur donnée, AVANT filtrage
+  // client. Partagé par toutes les pages du scroll infini (la page n'entre pas
+  // dans la requête) et par tous les états de filtres qui envoient les mêmes
+  // paramètres serveur — cocher une catégorie d'usage ne refait pas le balayage.
+  //
+  // SOUS le préfixe COMMUNS, à dessein : toute invalidation du listing l'emporte,
+  // sans qu'un écrivain ait une clé de plus à connaître (cf. M10, où une clé
+  // oubliée a laissé un médaillon périmé). `serverParams` est un objet : React
+  // Query le hache à clés triées, deux requêtes identiques donnent la même entrée.
+  // Producteur : useAacCommuns (via `queryClient.fetchQuery`, sans observateur)
+  COMMUNS_SCAN: (
+    formId: string | null,
+    campaignId: string | null = null,
+    serverParams: Readonly<Record<string, unknown>> = {},
+    userId: string | null = null
+  ) => ["aac-communs", formId, campaignId, "scan", serverParams, userId] as const,
+
   // Cardinal de la population VISIBLE d'un AAC (mode `countonly`), ISOLÉ PAR
   // CAMPAGNE. User-scopé pour la même raison que COMMUNS : deux visiteurs ne
   // voient pas le même ensemble, donc ne comptent pas le même nombre.

@@ -85,7 +85,33 @@ export interface AacCommunsQuery {
    * n'est qu'une parité de comportement avec le bloc legacy.
    */
   visibility?: AacVisibility;
+  /**
+   * Mémoïsation du BALAYAGE, à la charge de l'appelant.
+   *
+   * Sur le chemin balayage, la requête serveur ne dépend PAS de `page` : chaque
+   * page du scroll infini demanderait les mêmes `AAC_SCAN_SIZE` documents pour
+   * n'en afficher que `pageSize` de plus. Le transport ne sait pas où vit le
+   * cache de l'appelant ; il lui tend le travail à faire, avec les paramètres
+   * serveur qui l'identifient. Omise ⇒ un balayage par appel.
+   */
+  memoizeScan?: AacScanMemoizer;
 }
+
+/** Ce qu'un balayage rapatrie : les communs AVANT filtrage client, et si la borne a été atteinte. */
+export interface AacCommunsScan {
+  cards: AacCommunCard[];
+  truncated: boolean;
+}
+
+/**
+ * `serverParams` est l'IDENTITÉ du balayage : deux appels qui envoient les mêmes
+ * paramètres serveur ramènent les mêmes documents, quels que soient les filtres
+ * client qui les découpent ensuite.
+ */
+export type AacScanMemoizer = (
+  serverParams: Readonly<Record<string, unknown>>,
+  run: () => Promise<AacCommunsScan>
+) => Promise<AacCommunsScan>;
 
 /** Une page de résultats, déjà normalisée. */
 export interface AacCommunsPage {
@@ -198,11 +224,15 @@ export async function fetchAacCommunsPage(
 
   // Chemin balayage : on prend tout ce que la borne autorise, puis on filtre et
   // pagine en mémoire — la seule façon d'avoir un total et un `hasNext` justes.
-  const { cards } = await fetchCards(query, {
-    indexMin: 0,
-    indexStep: AAC_SCAN_SIZE,
-    serverParams,
-  });
+  //
+  // Le balayage est tendu à `memoizeScan` quand l'appelant en fournit une : la
+  // page n'entre pas dans la requête, donc les pages suivantes n'ont rien à
+  // redemander au serveur. Le filtrage client, lui, reste par page — c'est lui
+  // qui varie, et 300 cartes se filtrent en mémoire sans coût perceptible.
+  const runScan = () => scanAacCommuns(query, serverParams);
+  const { cards, truncated } = await (query.memoizeScan
+    ? query.memoizeScan(serverParams, runScan)
+    : runScan());
 
   const matching = filterCommuns(cards, client);
   const start = page * pageSize;
@@ -213,6 +243,19 @@ export async function fetchAacCommunsPage(
     total: matching.length,
     page,
     hasNext: start + communs.length < matching.length,
-    truncated: cards.length >= AAC_SCAN_SIZE,
+    truncated,
   };
+}
+
+/** Le balayage borné, SANS filtrage client : ce que `memoizeScan` mémorise. */
+async function scanAacCommuns(
+  query: AacCommunsQuery,
+  serverParams: Record<string, unknown>
+): Promise<AacCommunsScan> {
+  const { cards } = await fetchCards(query, {
+    indexMin: 0,
+    indexStep: AAC_SCAN_SIZE,
+    serverParams,
+  });
+  return { cards, truncated: cards.length >= AAC_SCAN_SIZE };
 }
