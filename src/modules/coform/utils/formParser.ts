@@ -1896,6 +1896,39 @@ function enrichCommonTableMyCatalog(raw: unknown): Record<string, unknown> {
 }
 
 /**
+ * Convertit une map serveur en tableau — jamais en `[]` si elle porte du
+ * contenu.
+ *
+ * Mongo/PHP sérialisent une collection vide indifféremment `[]` ou `{}`,
+ * MAIS aussi une LISTE NON VIDE en map à clés d'index dès que celles-ci ne
+ * sont plus contiguës (`{"0":…,"2":…}` après suppression d'un élément par
+ * le legacy). Jeter la map (`return []`) détruisait alors la donnée en
+ * silence : le champ s'affichait vide, et le premier enregistrement
+ * réécrivait la clé en bloc côté backend — paliers, `financer[]` et
+ * `historique[]` d'une `depense` perdus sans message.
+ *
+ * Même tolérance que `toArray` (`aac/lib/parseAacAnswer`) et
+ * `toArrayOrValues` (`cagnotte/utils/dataTransform`), déjà appliquée aux
+ * mêmes données par ailleurs dans le dépôt.
+ *
+ * - `{}` → `[]` (le cas « tableau vide sérialisé par PHP », inchangé).
+ * - Entrées `null`/`undefined` écartées : ce sont les trous de la
+ *   sérialisation, pas des éléments à réinjecter dans le formulaire.
+ * - Clés toutes numériques → tri NUMÉRIQUE ("2" avant "10"), pour rétablir
+ *   l'ordre de la liste d'origine quel que soit l'ordre d'énumération
+ *   (`"01"`, `"1"`… ne sont pas des index entiers pour JS). Sinon, ordre
+ *   d'insertion conservé.
+ */
+function coerceObjectToArray(value: Record<string, unknown>): unknown[] {
+  const entries = Object.entries(value).filter(([, v]) => v !== null && v !== undefined);
+  if (entries.length === 0) return [];
+  if (entries.every(([k]) => /^\d+$/.test(k))) {
+    entries.sort(([a], [b]) => Number(a) - Number(b));
+  }
+  return entries.map(([, v]) => v);
+}
+
+/**
  * Coerce une valeur reçue du serveur vers le shape attendu par le schéma
  * Zod. Conserve la valeur d'origine si elle est déjà du bon type ;
  * remplace par une valeur par défaut neutre seulement si la forme est
@@ -1910,8 +1943,10 @@ function coerceValueToShape(value: unknown, shape: FieldShape): unknown {
       return "";
     case "array":
       if (Array.isArray(value)) return value;
-      // `{}` → `[]` ; null/undefined → laisser tel quel (le default form joue)
-      if (isPlainObject(value)) return [];
+      // map → tableau (`{}` → `[]`) ; null/undefined → laisser tel quel
+      // (le default form joue). Cf. `coerceObjectToArray` : on CONVERTIT,
+      // on ne jette pas — une map non vide porte de la donnée réelle.
+      if (isPlainObject(value)) return coerceObjectToArray(value);
       return value;
     case "record":
       // null préservé (certains schemas l'acceptent explicitement, ex: finder)

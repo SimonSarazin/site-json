@@ -1003,6 +1003,122 @@ describe("milestoneList — coercion du `{}` serveur (H17)", () => {
   });
 });
 
+/**
+ * Régression du correctif H17 : ranger `milestoneList` dans la branche `array`
+ * de `getFieldShape` l'a soumis à `coerceValueToShape`, qui JETAIT toute map
+ * serveur (`if (isPlainObject(value)) return []`). Or PHP/Mongo sérialise en
+ * map à clés d'index une liste NON VIDE dès que les index ne sont plus
+ * contigus (`{"0":…,"2":…}` après une suppression legacy). Le champ paliers
+ * s'affichait vide, et le premier enregistrement écrasait la clé en base :
+ * toutes les dépenses, leurs `financer[]` et `historique[]` détruits sans
+ * message. On CONVERTIT désormais (`Object.values`, cf. `toArray` de
+ * `aac/lib/parseAacAnswer` et `toArrayOrValues` de `cagnotte`).
+ */
+describe("branche `array` — une map serveur non vide est convertie, jamais jetée", () => {
+  const milestoneFields = [
+    makeSubFormFields(
+      [makeField({ name: "depense", componentType: "milestoneList", type: "tpls.forms.ocecoform.newDepenseList" })],
+      "aapStep1"
+    ),
+  ];
+
+  const normalizeDepense = (depense: unknown) =>
+    (normalizeAnswerData({ aapStep1: { depense } } as never, milestoneFields) as Record<
+      string,
+      Record<string, unknown>
+    >).aapStep1.depense;
+
+  it("convertit une map à index NON contigus en tableau, dans l'ordre des index", () => {
+    const palier0 = { poste: "Serveur", price: 120 };
+    const palier2 = { poste: "Dev", price: 300 };
+    expect(normalizeDepense({ "0": palier0, "2": palier2 })).toEqual([palier0, palier2]);
+  });
+
+  it("trie NUMÉRIQUEMENT les clés d'index (\"2\" avant \"10\")", () => {
+    expect(
+      normalizeDepense({ "10": { poste: "dix" }, "2": { poste: "deux" }, "1": { poste: "un" } })
+    ).toEqual([{ poste: "un" }, { poste: "deux" }, { poste: "dix" }]);
+  });
+
+  it("garde `{}` → `[]` (tableau vide sérialisé par PHP, cas H17)", () => {
+    expect(normalizeDepense({})).toEqual([]);
+  });
+
+  it("laisse un vrai tableau intact", () => {
+    const depenses = [{ poste: "A" }, { poste: "B" }];
+    expect(normalizeDepense(depenses)).toEqual(depenses);
+  });
+
+  it("écarte les trous (`null`) de la sérialisation", () => {
+    expect(normalizeDepense({ "0": { poste: "A" }, "1": null, "3": { poste: "B" } })).toEqual([
+      { poste: "A" },
+      { poste: "B" },
+    ]);
+  });
+
+  it("conserve l'ordre d'insertion quand les clés ne sont pas des index", () => {
+    expect(normalizeDepense({ b1: { poste: "B" }, a1: { poste: "A" } })).toEqual([
+      { poste: "B" },
+      { poste: "A" },
+    ]);
+  });
+
+  it("bout en bout : le contenu d'une `depense` en map survit et passe le schéma Zod", () => {
+    const palier0 = {
+      poste: "Serveur",
+      price: 120,
+      financer: [{ id: "f1", amount: 50 }],
+      historique: [{ date: 1700000000 }],
+      milestone: "m1",
+    };
+    const palier2 = { poste: "Dev", price: 300, financer: [], historique: [] };
+
+    const normalized = normalizeAnswerData(
+      { aapStep1: { depense: { "0": palier0, "2": palier2 } } } as never,
+      milestoneFields
+    ) as Record<string, Record<string, unknown>>;
+
+    // Le contenu est INTACT : clés hors contrat comprises (le backend
+    // remplace la clé en bloc au save — les perdre ici les détruit en base).
+    expect(normalized.aapStep1.depense).toEqual([palier0, palier2]);
+
+    const parsed = generateZodSchema(milestoneFields).safeParse(normalized.aapStep1);
+    expect(parsed.success).toBe(true);
+    expect((parsed.data as { depense: unknown[] }).depense).toEqual([palier0, palier2]);
+  });
+
+  it("ne régresse pas les autres componentTypes de la branche `array`", () => {
+    const fields = [
+      makeSubFormFields([
+        makeField({ name: "tags", componentType: "tags" }),
+        makeField({ name: "cb", componentType: "checkbox" }),
+        makeField({ name: "slots", componentType: "timeSlots" }),
+        makeField({ name: "tbl", componentType: "simpleTable" }),
+      ]),
+    ];
+    const slot = { day: "monday", startHour: "09", startMinute: "00", endHour: "10", endMinute: "00" };
+    const normalized = normalizeAnswerData(
+      {
+        step1: {
+          // `{}` (vide) inchangé, vrai tableau inchangé…
+          tags: {},
+          cb: ["a", "b"],
+          // …et map non vide désormais convertie au lieu d'être jetée.
+          slots: { "0": slot },
+          tbl: { "0": ["T", "Col1"], "1": ["Row1", ""] },
+        },
+      } as never,
+      fields
+    ) as Record<string, Record<string, unknown>>;
+
+    expect(normalized.step1.tags).toEqual([]);
+    expect(normalized.step1.cb).toEqual(["a", "b"]);
+    expect(normalized.step1.slots).toEqual([slot]);
+    expect(normalized.step1.tbl).toEqual([["T", "Col1"], ["Row1", ""]]);
+    expect(generateZodSchema(fields).safeParse(normalized.step1).success).toBe(true);
+  });
+});
+
 describe("normalizeAnswerData", () => {
   it("retourne undefined pour null/undefined", () => {
     expect(normalizeAnswerData(null, [])).toBeUndefined();
