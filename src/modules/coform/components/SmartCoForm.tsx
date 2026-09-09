@@ -428,7 +428,18 @@ export function SmartCoForm({
   //
   // `isInputStandalone` reste exclu : ce mode soumet au blur
   // (`autoSubmitOnBlur`), un brouillon n'y a rien à sauver.
-  const enableDraft = !readOnly && !isInputStandalone && !!formId && !!me?.id;
+  //
+  // EN ÉDITION, PAS DE BROUILLON SANS `baseUpdatedAt`. La péremption d'un
+  // brouillon (`useCoFormDraft.computeDraftState`) ne se décide que si sa
+  // lignée `baseUpdatedAt` est connue — et elle vient d'ici. Un appelant qui
+  // passe `answerId` sans `updated` produirait un brouillon impossible à
+  // déclarer obsolète : trente jours durant, « Reprendre » remplacerait sans
+  // avertir une réponse modifiée entre-temps par quelqu'un d'autre. Mieux vaut
+  // pas de filet qu'un filet qui efface le travail des autres. `CoFormModal`
+  // documente la prop comme « à transmettre dès qu'on passe `answerId` » ;
+  // ici, on le garantit.
+  const enableDraft =
+    !readOnly && !isInputStandalone && !!formId && !!me?.id && (!answerId || baseUpdatedAt != null);
   const draftUserId = currentUserId;
   // Vide pour le parcours complet — la clé reste alors celle d'avant, et les
   // brouillons déjà enregistrés continuent d'être retrouvés.

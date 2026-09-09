@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
@@ -80,9 +80,10 @@ vi.mock("./DynamicCoForm", () => ({
 }));
 
 vi.mock("./MultiStepCoForm", () => ({
-  MultiStepCoForm: (props: { formData: CoFormData; submitMode?: string; initialStepKey?: string; elementId?: string | null; elementType?: string | null; unknownFieldVariant?: string }) => (
+  MultiStepCoForm: (props: { formData: CoFormData; submitMode?: string; initialStepKey?: string; elementId?: string | null; elementType?: string | null; unknownFieldVariant?: string; enableDraft?: boolean }) => (
     <div
       data-testid="multistep-coform"
+      data-enable-draft={String(!!props.enableDraft)}
       data-step-count={Object.keys(props.formData.inputs ?? {}).length}
       data-submit-mode={props.submitMode}
       data-initial-step={props.initialStepKey ?? ""}
@@ -106,6 +107,13 @@ vi.mock("./CoFormReadOnly", () => ({
 
 vi.mock("sonner", () => ({
   toast: { error: vi.fn() },
+}));
+
+// Utilisateur courant : sans lui, le brouillon est coupé (clé user-scopée) et
+// la décision `enableDraft` n'est jamais observable.
+const mockCocolight = vi.fn((): { me: { id: string } | null } | undefined => ({ me: { id: "user-1" } }));
+vi.mock("@/hooks/useCocolight", () => ({
+  useCocolightOptional: () => mockCocolight(),
 }));
 
 vi.mock("@/hooks/useT", () => ({
@@ -468,6 +476,11 @@ describe("SmartCoForm", () => {
    * introuvable », exactement ce que `"placeholder"` existe pour éviter.
    */
   describe("unknownFieldVariant propagé aux deux chemins de rendu", () => {
+    beforeEach(() => {
+      mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
+      mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+    });
+
     it("transmis au wizard", () => {
       render(<SmartCoForm formData={makeFormData(["s1", "s2"])} unknownFieldVariant="placeholder" />, {
         wrapper: makeWrapper(),
@@ -545,6 +558,11 @@ describe("SmartCoForm — hiddenStepKeys", () => {
  * étape masquée — la vraie étape rendue repartait vide.
  */
 describe("SmartCoForm — mono-étape : clé de l'étape RENDUE, pas de la première déclarée", () => {
+  beforeEach(() => {
+    mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
+    mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+  });
+
   function formAvecPremiereEtapeMasquee(): CoFormData {
     const base = makeFormData(["cachee", "visible"]);
     return {
@@ -580,5 +598,71 @@ describe("SmartCoForm — mono-étape : clé de l'étape RENDUE, pas de la premi
     const payload = onFinalSubmit.mock.calls[0][0] as Record<string, unknown>;
     expect(Object.keys(payload)).toEqual(["visible"]);
     expect(payload.visible).toEqual({ textField: "saisie" });
+  });
+});
+
+/**
+ * H19 / H14 (rapport MR 53) : `useCoFormDraft` ne sait déclarer un brouillon
+ * périmé que si `draft.baseUpdatedAt != null` — et cette lignée vient de la
+ * prop `baseUpdatedAt`. Depuis que le brouillon est actif en modale, trois
+ * appelants passent `answerId` SANS `baseUpdatedAt` : leurs brouillons
+ * naissaient éternels (TTL 30 jours), et « Reprendre » écrasait sans
+ * avertissement une réponse modifiée entre-temps par quelqu'un d'autre.
+ * En édition, pas de repère de péremption ⇒ pas de brouillon.
+ */
+describe("SmartCoForm — brouillon d'ÉDITION : coupé sans repère de péremption (H19)", () => {
+  beforeEach(() => {
+    mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
+    mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+  });
+
+  const enableDraft = (testId: string) => screen.getByTestId(testId).dataset.enableDraft;
+
+  it("création (pas d'answerId) : actif, aucun repère à attendre", () => {
+    render(<SmartCoForm formData={makeFormData(["s1"])} formId="form123" />, { wrapper: makeWrapper() });
+    expect(enableDraft("dynamic-coform")).toBe("true");
+  });
+
+  it("édition SANS baseUpdatedAt : coupé (formulaire simple)", () => {
+    render(<SmartCoForm formData={makeFormData(["s1"])} formId="form123" answerId="ans-1" />, {
+      wrapper: makeWrapper(),
+    });
+    expect(enableDraft("dynamic-coform")).toBe("false");
+  });
+
+  it("édition SANS baseUpdatedAt : coupé (wizard)", () => {
+    render(<SmartCoForm formData={makeFormData(["s1", "s2"])} formId="form123" answerId="ans-1" />, {
+      wrapper: makeWrapper(),
+    });
+    expect(enableDraft("multistep-coform")).toBe("false");
+  });
+
+  it("édition AVEC baseUpdatedAt : actif sur les deux chemins", () => {
+    const simple = render(
+      <SmartCoForm formData={makeFormData(["s1"])} formId="form123" answerId="ans-1" baseUpdatedAt={1_700_000} />,
+      { wrapper: makeWrapper() },
+    );
+    expect(enableDraft("dynamic-coform")).toBe("true");
+    simple.unmount();
+    render(
+      <SmartCoForm formData={makeFormData(["s1", "s2"])} formId="form123" answerId="ans-1" baseUpdatedAt={1_700_000} />,
+      { wrapper: makeWrapper() },
+    );
+    expect(enableDraft("multistep-coform")).toBe("true");
+  });
+
+  it("`null` explicite n'est pas un repère : coupé", () => {
+    // `answer.updated ?? null` — une réponse legacy sans `updated` ne peut pas
+    // non plus être surveillée.
+    render(<SmartCoForm formData={makeFormData(["s1"])} formId="form123" answerId="ans-1" baseUpdatedAt={null} />, {
+      wrapper: makeWrapper(),
+    });
+    expect(enableDraft("dynamic-coform")).toBe("false");
+  });
+
+  it("sans utilisateur, coupé quoi qu'il arrive", () => {
+    mockCocolight.mockReturnValueOnce({ me: null });
+    render(<SmartCoForm formData={makeFormData(["s1"])} formId="form123" />, { wrapper: makeWrapper() });
+    expect(enableDraft("dynamic-coform")).toBe("false");
   });
 });
