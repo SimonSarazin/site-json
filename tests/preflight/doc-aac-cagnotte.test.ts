@@ -4,6 +4,7 @@ import path from "node:path";
 import type { EntityTypes, Organization, User } from "@communecter/cocolight-api-client";
 import { calculateCagnottePermissions } from "@/modules/cagnotte/permissions/calculators/cagnotte";
 import { resolveCommunOwnerIds } from "@/modules/aac/lib/objectiveHelpers";
+import { parseFieldPath } from "@/modules/aac/lib/resolveAacCardFields";
 
 /**
  * Anti-dérive de la doc de référence des modules AAC / cagnotte (doc/18, doc/34,
@@ -23,6 +24,18 @@ function tableRow(doc: string, cell: string): string {
   const line = doc.split("\n").find((l) => l.startsWith(`| \`${cell}\` |`));
   expect(line, `ligne de table \`${cell}\` introuvable`).toBeDefined();
   return line as string;
+}
+
+/** L'item de liste markdown (`- …` + ses lignes de continuation indentées) qui contient `needle`. */
+function bulletContaining(doc: string, needle: string): string {
+  const lines = doc.split("\n");
+  const at = lines.findIndex((l) => l.includes(needle));
+  expect(at, `« ${needle} » introuvable`).toBeGreaterThan(-1);
+  let start = at;
+  while (start > 0 && !lines[start].startsWith("- ")) start--;
+  let end = at + 1;
+  while (end < lines.length && lines[end].startsWith("  ")) end++;
+  return lines.slice(start, end).join("\n");
 }
 
 function makeOrgEntity(isAdmin = false): EntityTypes {
@@ -66,5 +79,20 @@ describe("doc-projets/federation-des-cae ⇄ module AAC (anti-dérive)", () => {
     const doc = read("doc-projets/federation-des-cae.md");
     expect(doc).not.toMatch(/déposant \+ admin de l'appel/);
     expect(doc).toMatch(/`ownerIds` \(le déposant seul/);
+  });
+});
+
+describe("doc/34-module-aac ⇄ lib (anti-dérive)", () => {
+  it("M48 — §3.1 : `aapStep1.q_x` est accepté comme chemin RACINE (source \"config\"), seul `answers.*` mal formé rend null", () => {
+    // Le premier segment n'étant pas `answers`, la valeur est lue telle quelle à la
+    // racine du document — elle n'est PAS rejetée, et rien ne retombe sur le scan.
+    expect(parseFieldPath("aapStep1.q_x")).toEqual({ stepKey: null, id: "aapStep1.q_x" });
+    expect(parseFieldPath("answers.q_x")).toBeNull();
+    expect(parseFieldPath("answers.a.b.c")).toBeNull();
+
+    const bullet = bulletContaining(read("doc/34-module-aac.md"), "`aapStep1.q_x`");
+    expect(bullet).toMatch(/racine/i);
+    expect(bullet).toMatch(/"config"/);
+    expect(bullet).not.toMatch(/rend `null`/);
   });
 });

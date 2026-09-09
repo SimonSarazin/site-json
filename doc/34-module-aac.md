@@ -226,9 +226,16 @@ qui dit lequel a répondu : c'est par lui qu'on diagnostique une carte vide.
 - un chemin désignant une question ABSENTE du formulaire est quand même honoré (référence
   « nue », `options: []`) — rien ne casse, mais le filtre correspondant ne ramène rien. Rien
   ne vérifie l'existence des ids : c'est à la charge de l'auteur du config ;
-- une valeur de forme intermédiaire (`aapStep1.q_x`, `answers.q_x`, chemin à 4 segments) n'est
-  **pas** appliquée : `parseFieldPath` rend `null` et la chaîne continue sur le scan. Comme la
-  config n'est jamais parsée par Zod au runtime, la faute ne se voit qu'en lisant `source`.
+- seul un chemin `answers.*` d'une autre profondeur que trois segments (`answers.q_x`,
+  `answers.a.b.c`) est rejeté : `parseFieldPath` rend `null` et la chaîne continue sur
+  `form.mapping`, puis le scan ;
+- **toute autre forme est acceptée telle quelle comme chemin RACINE** — y compris un
+  `aapStep1.q_x` (préfixe `answers.` oublié : la forme est naturelle, c'est celle qu'affiche
+  `data.inputs.<étape>.inputs`). Le rôle est alors figé sur un chemin qui n'existe pas à la racine
+  du document (la donnée vit sous `answers.aapStep1.…`), `source` affiche `"config"` comme pour
+  un succès, la carte reste vide — et `aacQueryParams.serverPath` refusant un `stepKey` nul,
+  recherche et tri repassent en balayage client. Comme la config n'est jamais parsée par Zod au
+  runtime, rien ne le signale : relire le chemin.
 
 **Trouver l'id d'une question** (aucun outil livré) — le document du form se lit sans auth :
 
