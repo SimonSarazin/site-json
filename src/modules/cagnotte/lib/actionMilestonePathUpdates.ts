@@ -37,6 +37,13 @@ export async function appendAnswerDepense(params: {
   step?: string;
   depense: {
     poste: string;
+    /**
+     * Vit sur la DÉPENSE : c'est `depense.description` que relisent la fiche
+     * commun et la modale d'édition (`useCagnotteAdapter`, `buildItemsFromRawDepenses`,
+     * `fundableItemToMilestone`). Même double tenue que l'édition avec projet lié
+     * (`editMilestoneWithSync`) — cf. doc/18, « Sync croisé ».
+     */
+    description?: string;
     price: number;
     date: string;
     user: string;

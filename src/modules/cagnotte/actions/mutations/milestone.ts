@@ -318,6 +318,9 @@ export const useCreateMilestone = createMilestoneMutation<CreateMilestoneParams>
       answer,
       depense: {
         poste: params.name,
+        // Sur la dépense comme à l'édition (`editMilestoneWithSync`) : c'est là
+        // que la fiche et la modale la relisent, projet lié ou non (H22).
+        description: params.description,
         price: params.targetAmount,
         date: new Date().toISOString(),
         user: params.userId,
