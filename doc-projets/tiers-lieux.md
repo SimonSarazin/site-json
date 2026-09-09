@@ -92,7 +92,7 @@ de hero sur une page à panneau, cela produit deux champs de recherche.
 
 ## 4. Ce que la config met en œuvre
 
-### 4.1 Les 13 pages
+### 4.1 Les 14 pages
 
 | Page | Sections | Rôle |
 |---|---|---|
@@ -103,6 +103,7 @@ de hero sur une page à panneau, cela produit deux champs de recherche.
 | `/communaute` | 1 | `searchProStatic` |
 | `/actualites` | 2 | `searchHeader` + `tabs` — onglet **Actus** (`articleFeed`) / onglet **Événements** (`agenda`, 3 `sourceKey`). **Remplace `/evenements`** (07/09, cf. §9) |
 | `/blog` | 1 | `articleFeed` — liste canonique du module blog : cible du repli du lecteur `/blog/:slug` et du `<link>` de canal du flux RSS |
+| `/annuaire-ressources` | 2 | `title` + `coform-resource-directory` |
 | `/usages` | 1 | `toolsCatalog` — catalogue d'outils d'usage (livré 06/08, review 10/08 — cf. §9) |
 | `/api-donnees` | 1 | `html` — API et données ouvertes |
 | `/mentions-legales` · `/confidentialite` · `/cgu` | 1 chacune | socle légal **présent et fourni** (≈ 3,5 k · 11 k · 12 k caractères) |
@@ -167,9 +168,10 @@ rezo-la-mer 79.
 | Thème | [`../src/index-tiers-lieux.css`](../src/index-tiers-lieux.css) |
 | Déclaration | [`../sites.json`](../sites.json) → `navigatorDesTierslieux` |
 | Formulaire costum | [`../src/modules/profil/forms/costum/`](../src/modules/profil/forms/costum) — id `tiers-lieux` |
-| Panneau de filtres | [`../src/modules/search/sections/FiltersSection.tsx`](../src/modules/search/sections/FiltersSection.tsx) |
+| Panneau de filtres | [`../src/modules/search/sections/FiltersSection.tsx`](../src/modules/search/sections/FiltersSection.tsx) — + flag `keepOptionOrder` |
 | Observatoire | [`../src/modules/observatoire/`](../src/modules/observatoire) |
 | Ampli | [`../src/modules/ampli/`](../src/modules/ampli) |
+| Annuaire ressources (`/annuaire-ressources`, 08/09) | Section `coform-resource-directory` (module `search`), variant `searchCostum` `navigator-tl-ressource` — cf. `../doc/07-module-search.md` § `coform-resource-directory` |
 
 ---
 
@@ -200,6 +202,37 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 08/09ter — admin : onglet « Référencement »
+
+**Config seule** (`config.prod.tiers-lieux.json`). Onglet `admin.tabs[]` `referencement` (icône
+`link-2`, `access: siteAdmin`), section `type: "reference"` — `entityTypes: ["organizations",
+"citoyens"]`, colonnes Nom / Commune / Provenance (`source.key`). Deux sous-onglets natifs :
+**Rechercher & référencer** (recherche globale hors costum, politique open-data `optIn`) et
+**Référencés** (+ retrait). Le bouton pose `reference.costum ∋ navigatorDesTierslieux` via
+`setsource` (`Admin::addSourceInElement`, collection-agnostique — `citoyens` traité comme
+`organizations`). Le costum ne déclarant pas de `subType` sur ces collections, le référencement est
+nu (`reference.costumTypes` non posé). Fixture `__effective__/tiers-lieux.json` régénérée.
+
+**Gates** : `config:validate` ✅ (14 pages, 26 sections) · `audit:config` RAS · `config:render`
+14/14 · module `admin` + `effective-config` ✅.
+
+### 08/09 — page `/annuaire-ressources`
+
+Ajout de la page **`/annuaire-ressources`** (menu « Les lieux » → « Coworking, salles &
+hébergements ») : annuaire à plat des ressources d'un tiers-lieu (coworking / salle de réunion /
+hébergement), portage du bloc costum `franceTierslieux#annuaires-ressources-tiers-lieux`. Section
+moteur config-agnostique **`coform-resource-directory`** (module `search`), variant `searchCostum`
+`navigator-tl-ressource` (endpoint `/costum/navigator/getsressourcetl`, `Navigator::getRessourceTL`).
+**Détail moteur : `doc/07-module-search.md` § `coform-resource-directory`.**
+
+Contenu : facettes « type » + 3 groupes prix (heure / demi-journée / journée, calqués Communecter) ;
+carte à carrousel automatique, clic sur le tiers-lieu porteur = filtre « porté par » ; modal « En
+savoir plus » (gabarit `ProfilTiersLieuxAbout`) avec bouton **« Réserver »** (lien de résa) ou
+**« Contacter par e-mail »** (`mailto:` de l'e-mail du tiers-lieu) sinon.
+
+**Gates** : `config:validate` ✅ (14 pages, 26 sections) · `audit:config` RAS · `config:render`
+14/14 · `tsc -b` / `eslint` / préflights `search` ✅.
 
 ### 07/09bis — l'admin peut publier actus et événements · le jaune sort de `secondary`
 
@@ -557,6 +590,8 @@ d'autres projets, tous vérifiés non régressifs à son égard :
 | 17 | Actus & Événements (`/actualites` + `/blog`) | 🟡 | Livré 07/09 — `searchHeader` + `tabs` (`articleFeed` / `agenda`), `config.blog` posé. Gates verts, rendu vérifié clair/sombre/mobile. Reste : **le costum n'a que 2 articles, sans image ni `publicationStatus`** — page maigre tant que la rédaction ne suit pas ; et pas de redirection pour l'ancienne URL `/evenements` |
 | 18 | Publication depuis `/admin` (actus + événements) | ⛔ | Onglets et formulaires livrés 07/09 (calqués sur saint-paul, routes `editModals` posées, `parentFromCarrier` ajouté). **La création d'ACTUALITÉ est bloquée par le SDK** : `POI_TYPES` (1.0.191) ne contient pas `"article"`, `ADD_POI` échoue à la validation AVANT l'appel réseau — cf. `Document de spécification — POI_TYPES sans « article »…`. Touche AUSSI saint-paul, parent62 et Ekilib.re. Le volet **événements** n'est pas concerné (`EVENT_TYPES` couvre les 20 valeurs du form). Bouton « Ajouter un POI » des profils désactivé (`addConfig.poi: false`) tant que le SDK bloque, sinon il ouvrait un formulaire incapable d'enregistrer |
 | 19 | Palette : le jaune hors de `secondary` | ✅ | 07/09 — `secondary` passé en sable sourd (clair et sombre), jaune vif conservé sous `warning`. Corrige un `text-secondary-foreground` à **1,06:1** en sombre et trois pastilles `bg-yellow-400`/`text-white` à **1,53:1** sur la home. Contrastes remesurés au navigateur |
+| 20 | Annuaire des ressources (`/annuaire-ressources`) | ✅ | 08/09 — page ajoutée : section `coform-resource-directory` (module `search`, variant `navigator-tl-ressource`). Facettes type + 3 groupes prix, carte carrousel + filtre « porté par », modal « En savoir plus » (bouton « Réserver » / `mailto:`). Détail moteur : `doc/07-module-search.md`. Gates config/tsc/eslint/préflights ✅ |
+| 21 | Admin — onglet « Référencement » | ✅ | 08/09 — `admin.tabs[]` `referencement` + section `type: "reference"`, `entityTypes: ["organizations", "citoyens"]` (config seule). `setsource` add/remove collection-agnostique. Gates config/effective-config/admin ✅ |
 
 ---
 
@@ -579,8 +614,9 @@ dans `commentaire/sdk-tools-catalog.md` (notes locales, hors dépôt).
 | Upload de l'image d'un outil | ✅ présent | `entity.uploadDocument(file, {contentKey: "icons", docType: "image"})` — même `contentKey` que le legacy |
 | `BaseEntity.setCostumScope(slug, {pinSchema})` — **épingle du schéma** pour ÉDITER un lieu de l'annuaire | ⛔ **À DEMANDER** | Bloque l'édition d'un lieu (`[DraftProxy] Le champ "holderOrganization" n'est pas autorisé.`). Mesuré sur 3 lieux réels : 2 échouent. Cf. §11.2 |
 
-La config dépend par ailleurs du variant **`navigator-tl`** : toute évolution de cet endpoint la
-touche en premier.
+La config dépend par ailleurs des variants `searchCostum` **`navigator-tl`** (pages `/lieux` etc.) et
+**`navigator-tl-ressource`** (page `/annuaire-ressources` → endpoint `/costum/navigator/getsressourcetl`,
+`Navigator::getRessourceTL`) : toute évolution de ces endpoints touche la config en premier.
 
 ### 11.1 ✅ Livrée le 11/08 — `normalizedName` sur `COSTUM_TOOL_USERS`
 

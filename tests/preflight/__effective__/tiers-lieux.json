@@ -583,7 +583,16 @@
       }
     }
   },
-  "referencement": {},
+  "referencement": {
+    "organizations": {
+      "sousTypes": [],
+      "annotation": null
+    },
+    "citoyens": {
+      "sousTypes": [],
+      "annotation": null
+    }
+  },
   "membership": {
     "citoyens/membership": {
       "types": [

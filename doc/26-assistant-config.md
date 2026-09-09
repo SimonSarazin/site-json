@@ -55,7 +55,7 @@ L'idée est étonnamment peu coûteuse parce que **les quatre briques dures exis
 ### 1. Le schéma Zod est la source de vérité… et il est exportable en JSON Schema
 
 - `src/types/site-schema.ts` (~2 360 lignes) : `SiteConfig` racine, `Header`,
-  `Footer`, `Page`, et **75 sections** discriminées par
+  `Footer`, `Page`, et **76 sections** discriminées par
   `z.discriminatedUnion("type", […])` (`src/types/site-schema.ts:1523`).
 - **zod 4.1.13 fournit `z.toJSONSchema()` natif** (vérifié sur place : il
   fonctionne sur nos schémas). On peut donc produire, à la volée ou au build,
@@ -68,7 +68,7 @@ L'idée est étonnamment peu coûteuse parce que **les quatre briques dures exis
   le vrai schéma Zod côté serveur** (boucle d'erreurs, cf. plus bas).
 - Les schémas n'ont **aucun `.describe()`** aujourd'hui — mais les commentaires
   français du fichier et `src/components/admin/section-meta.ts` (métadonnées
-  des **75 sections** pour le panel) fournissent la matière sémantique à injecter
+  des **76 sections** pour le panel) fournissent la matière sémantique à injecter
   dans le prompt système.
 
 ### 2. Un AdminPanel existe, avec auto-formulaires Zod et persistance câblée
@@ -317,7 +317,7 @@ couleur en dur dans les sections — les tokens du thème.
 
 Deux catalogues à exposer à la skill :
 
-- **Sections** : `src/components/admin/section-meta.ts` — **75 sections** avec
+- **Sections** : `src/components/admin/section-meta.ts` — **76 sections** avec
   `label` + description française orientée intention (« Bannière principale
   avec titre, sous-titre et CTA »). C'est le menu de composition des pages ;
   `config-schema.ts section:<type>` donne ensuite la forme exacte des props.
@@ -434,7 +434,7 @@ le *nombre* de sections, elle sait **où les lire**. (Corollaire pour ce documen
 et pour SKILL.md : le seul compte écrit à la main est celui de la forme
 `**N sections**`, surveillé par `tests/preflight/section-meta.test.ts` ; tout
 nombre écrit hors de cette forme dérive en silence — c'est ce qui est arrivé
-ici, « 60+ », « 60 » et « 68 » ayant coexisté pour 75 sections réelles.)
+ici, « 60+ », « 60 » et « 68 » ayant coexisté pour 76 sections réelles.)
 
 **2. Vérifier ce qui doit rester écrit (couche semi-stable).** Les tables de
 jugement (identité visuelle des designs, recettes d'activation des modules)

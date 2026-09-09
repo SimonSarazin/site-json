@@ -277,6 +277,7 @@ Dispatch : `src/modules/search/components/SearchCard.tsx` (clé = `card.variant 
 | `news` | carte actualité (item `News`) | fils d'actus en recherche |
 | `testimonial` | témoignage (leaf `CardTestimonialBubble`) | paroles/citations ; bloc `list.testimonial` (`design: "bubble"`) |
 | `resource` | ressource image-first (leaf `CardResourceCard`) | médiathèques/ressources ; bloc `list.resource` (`design: "card"`) |
+| `resource-directory` | carte ressource de tiers-lieu (coworking / salle / hébergement) — nom, localité, capacité + tarif « à partir de », porteur | section `coform-resource-directory` uniquement ; bloc `list.resourceDirectory` |
 
 ### Presenters — previews (`list.preview.type`)
 
@@ -293,6 +294,7 @@ Dispatch : `src/modules/search/components/Preview.tsx` ; conteneur = `card.detai
 | `testimonial` | détail témoignage (leaf `PreviewTestimonialBubble`) | bloc `list.testimonial` |
 | `resource` | détail ressource (leaf `PreviewResourceCard`) | bloc `list.resource` |
 | `structure` | fiche détail organisation (coordonnées, carte, docs, bouton Éditer) | annuaires de structures |
+| `resource-directory` | modal ressource de tiers-lieu (gabarit du « En savoir plus » d'un profil TL) — carrousel + pastille capacité, nom, tarifs (toutes unités), surface, À propos, équipements, services, CTA « Réserver » / « Voir le tiers-lieu » | section `coform-resource-directory` uniquement ; bloc `list.resourceDirectory` |
 
 ⚠ **Une option de `card`/`preview` n'a d'effet que sur CERTAINS types** — posée
 ailleurs, elle est ignorée en silence. `config:schema section:searchPro` imprime
@@ -351,7 +353,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 
 | module | surface | clés JSON | prérequis backend |
 |---|---|---|---|
-| `search` | sections `searchPro`/`searchProStatic`/`filters`/`searchHeader`/`cardCountCT`/`thematics` | `baseParams` (`sourceKey`, `defaultFields`…), `list` (card/detailsMode/preview, `itemRules`/`itemAction` si liste hétérogène), `map` (`itemAction`/`marker`), `filters[].select`/`optionStyle`/`order` (widgets par groupe) | données indexées (sourceKey) ; carte : fond MapTiler via env `VITE_MAPTILER_API_KEY` (sinon repli OSM/Carto) + `integrations.map.styleLight/Dark` |
+| `search` | sections `searchPro`/`searchProStatic`/`filters`/`searchHeader`/`cardCountCT`/`thematics` | `baseParams` (`sourceKey`, `defaultFields`…), `list` (card/detailsMode/preview, `itemRules`/`itemAction` si liste hétérogène), `map` (`itemAction`/`marker`), `filters[].select`/`optionStyle`/`order`/`keepOptionOrder` (widgets & ordre par groupe) | données indexées (sourceKey) ; carte : fond MapTiler via env `VITE_MAPTILER_API_KEY` (sinon repli OSM/Carto) + `integrations.map.styleLight/Dark` |
 | `agenda` | section `agenda` (vues liste/calendrier/carte/split) | `baseParams`, `filters` (text/type/tags), `defaultMode`/`tabs`/`detailsMode`, `enableMap`/`map` | événements indexés (`searchEventsCostum`) |
 | `news` | section `news` | `props.entitySlug`, `maxItems` | fil d'actus de l'entité |
 | `blog` | routes `/blog/:slug` (+ `/blog/id/:id`) + sections `articleFeed`/`articleReader` | `config.blog` (`feedCostumSlug`, variants card/reader), `costumForms.<article>`, `commandPalette.articleSearch` | POI `type:"article"` scopés costum (`source.key`) |
@@ -376,7 +378,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 - **`.design-sync/previews/` — la ressource la plus utile, et elle est dans git** :
   153 stories portant des compositions de props RÉELLES (valeurs plausibles,
   commentaire d'usage : « Usage réel : home de Rézo la mer »). Le JSON Schema
-  donne la FORME, la story donne la COMPOSITION — **43 des 75 sections** en ont
+  donne la FORME, la story donne la COMPOSITION — **43 des 76 sections** en ont
   une (les 28 sans sont data-driven : search\*, agenda, cagnotte, blog — une
   composition statique n'y montrerait rien), ainsi que **les 6 headers et les 4
   footers**. Copie la story, ne réinvente pas le remplissage.

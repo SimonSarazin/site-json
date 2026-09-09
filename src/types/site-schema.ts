@@ -6,7 +6,7 @@
 // Validation : Zod 4.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
-import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema, MarkerConfSchema, FeaturedCarouselSectionSchema } from "@/modules/search/schema";
+import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema, MarkerConfSchema, FeaturedCarouselSectionSchema, CoformResourceDirectorySectionSchema } from "@/modules/search/schema";
 import { DataObservatorySectionSchema } from "@/modules/observatoire/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { NotificationsSectionSchema } from "@/modules/notification/schema";
@@ -1579,6 +1579,7 @@ export const Section = z.discriminatedUnion("type", [
   MeeteemSectionSchema,
   CardCountCTSectionSchema,
   ThematicsSectionSchema,
+  CoformResourceDirectorySectionSchema,
   FeaturedCarouselSectionSchema,
   GridLayoutSectionSchema,
   NewsSectionSchema,

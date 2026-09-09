@@ -21,6 +21,7 @@ const PreviewFacets = lazy(() => import("./preview/PreviewFacets"));
 const PreviewNews = lazy(() => import("./preview/PreviewNews"));
 const PreviewTestimonial = lazy(() => import("./preview/PreviewTestimonial"));
 const PreviewResource = lazy(() => import("./preview/PreviewResource"));
+const PreviewResourceDirectory = lazy(() => import("./preview/PreviewResourceDirectory"));
 const PreviewStructure = lazy(() => import("./preview/PreviewStructure"));
 
 const Preview: React.FC<PreviewProps> = ({ item, preview = { type: "default" }, list, onClose }) => {
@@ -43,6 +44,8 @@ const Preview: React.FC<PreviewProps> = ({ item, preview = { type: "default" }, 
       return <PreviewTestimonial item={item} preview={preview} list={list} onClose={onClose} />;
     case "resource":
       return <PreviewResource item={item} preview={preview} list={list} onClose={onClose} />;
+    case "resource-directory":
+      return <PreviewResourceDirectory item={item} preview={preview} list={list} onClose={onClose} />;
     case "structure":
       return <PreviewStructure item={item} preview={preview} list={list} onClose={onClose} />;
     case "default":

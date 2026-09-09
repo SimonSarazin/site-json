@@ -23,7 +23,7 @@ export interface UseSearchQueryParams {
    * (comportement préservé). Sinon on passe `{ variant }` → endpoint alternatif.
    * `admin` requiert le SDK ≥ 1.0.161 (endpoint globalautocompleteadmin).
    */
-  variant?: "default" | "navigator-tl" | "admin";
+  variant?: "default" | "navigator-tl" | "navigator-tl-ressource" | "admin";
   /** Overrides du cache React Query (ex. dashboards « charger tout » : un
    *  staleTime long évite de re-chaîner toutes les pages au retour). */
   cache?: { staleTime?: number; gcTime?: number };

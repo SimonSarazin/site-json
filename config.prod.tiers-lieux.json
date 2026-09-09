@@ -118,6 +118,13 @@
               "en": "Places that can host you for several days."
             },
             "path": "/lieux?services=Hébérgement"
+          },
+          {
+            "label": {
+              "fr": "Coworking, salles & hébergements",
+              "en": "Coworking, rooms & stays"
+            },
+            "path": "/annuaire-ressources"
           }
         ]
       },
@@ -2364,6 +2371,88 @@
               "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\"><h1 class=\"text-3xl font-bold mb-6\">API et données ouvertes</h1><p class=\"text-lg text-muted-foreground mb-8\">Toutes les datas des Tiers Lieux et des réseaux.<br/>Récupérez, Naviguez, Retravaillez la data des Tiers Lieux à votre guise. Créer plus de collaboration, de valeurs ajoutées, communiquez.</p><h2 class=\"text-xl font-bold mb-4\">Tiers-lieux :</h2><div class=\"flex gap-3 mb-8\"><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">API</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">JSON</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">CSV</span></div><h2 class=\"text-xl font-bold mb-4\">Réseaux :</h2><div class=\"grid grid-cols-2 md:grid-cols-3 gap-2 mb-8 text-sm text-muted-foreground\"><span>Auvergne-Rhône-Alpes</span><span>Bourgogne-Franche-Comté</span><span>Bretagne</span><span>Centre-Val de Loire</span><span>Corse</span><span>Grand Est</span><span>Guadeloupe</span><span>Hauts-de-France</span><span>Normandie</span><span>Nouvelle-Aquitaine</span><span>Occitanie</span><span>Pays de la Loire</span><span>Provence-Alpes-Côte d'Azur</span><span>Île-de-France</span><span>Guyane</span><span>Martinique</span><span>Réunion</span><span>Mayotte</span></div><hr class=\"my-6\"/><p class=\"text-sm text-muted-foreground\">Les données sont sous licence <strong>ODBL</strong>.</p><p class=\"text-sm text-muted-foreground\">La plateforme est basée sur le logiciel libre <strong>Communecter</strong>, qui est sous licence <strong>GPL</strong>.</p></div>",
               "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\"><h1 class=\"text-3xl font-bold mb-6\">API and open data</h1><p class=\"text-lg text-muted-foreground mb-8\">All the data of third places and networks.<br/>Retrieve, browse and rework third-place data as you wish. Create more collaboration, more added value, communicate.</p><h2 class=\"text-xl font-bold mb-4\">Third places:</h2><div class=\"flex gap-3 mb-8\"><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">API</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">JSON</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">CSV</span></div><h2 class=\"text-xl font-bold mb-4\">Networks:</h2><div class=\"grid grid-cols-2 md:grid-cols-3 gap-2 mb-8 text-sm text-muted-foreground\"><span>Auvergne-Rhône-Alpes</span><span>Bourgogne-Franche-Comté</span><span>Bretagne</span><span>Centre-Val de Loire</span><span>Corse</span><span>Grand Est</span><span>Guadeloupe</span><span>Hauts-de-France</span><span>Normandie</span><span>Nouvelle-Aquitaine</span><span>Occitanie</span><span>Pays de la Loire</span><span>Provence-Alpes-Côte d'Azur</span><span>Île-de-France</span><span>Guyane</span><span>Martinique</span><span>Réunion</span><span>Mayotte</span></div><hr class=\"my-6\"/><p class=\"text-sm text-muted-foreground\">The data is licensed under <strong>ODBL</strong>.</p><p class=\"text-sm text-muted-foreground\">The platform is built on the open-source software <strong>Communecter</strong>, licensed under <strong>GPL</strong>.</p></div>"
             }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/annuaire-ressources",
+      "title": {
+        "fr": "Annuaire des ressources",
+        "en": "Resources directory"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title",
+          "id": "annuaire-ressources-title",
+          "props": {
+            "title": {
+              "fr": "Coworking, salles de réunion et hébergements",
+              "en": "Coworking, meeting rooms and accommodation"
+            },
+            "subtitle": {
+              "fr": "Les ressources partagées des tiers-lieux du réseau.",
+              "en": "Shared resources of the network's third places."
+            }
+          }
+        },
+        {
+          "type": "coform-resource-directory",
+          "id": "annuaire-ressources-tl",
+          "props": {
+            "costumSlug": "navigatorDesTierslieux",
+            "contextId": "649ed498f93ee7202e6c8b12",
+            "contextType": "projects",
+            "finderSuffix": "miem3epsztzcm9dgim",
+            "fieldSuffixes": {
+              "equipments": "mieg8j24m89gm99t5mi",
+              "name": "mieg4k7yxrito5j9e6",
+              "area": "mieg4k7zslc8awrql2"
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3
+            },
+            "resourceTypes": [
+              {
+                "id": "coworking",
+                "kind": "coworking",
+                "formId": "6925e2b05dd63b02ca70d6d9",
+                "stepPrefix": "navigatorDesTierslieux25112025_209_0",
+                "label": {
+                  "fr": "Coworking",
+                  "en": "Coworking"
+                },
+                "linkSuffix": "miq8118cmkh16zjwmt"
+              },
+              {
+                "id": "meeting-room",
+                "kind": "meeting",
+                "formId": "6925869ad76aaf6c5a2b2f8a",
+                "stepPrefix": "navigatorDesTierslieux25112025_1436_0",
+                "label": {
+                  "fr": "Salle de réunion",
+                  "en": "Meeting room"
+                },
+                "linkSuffix": "miq81uh4gat3vgbtgkj",
+                "descriptionSuffix": "miolbscdcrucb5a8uuq"
+              },
+              {
+                "id": "accommodation",
+                "kind": "accommodation",
+                "formId": "6925ee8ac537f8056114aec7",
+                "stepPrefix": "navigatorDesTierslieux25112025_2059_0",
+                "label": {
+                  "fr": "Hébergement",
+                  "en": "Accommodation"
+                },
+                "linkSuffix": "miq83c8getjt3lcz64f",
+                "descriptionSuffix": "miq88plgleoln5tmc7b",
+                "servicesSuffix": "miq86g5vaw1kavrapkb"
+              }
+            ]
           }
         }
       ]
@@ -5619,6 +5708,51 @@
             ],
             "actions": [
               "invite"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "referencement",
+        "label": {
+          "fr": "Référencement",
+          "en": "Referencing"
+        },
+        "icon": "link-2",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "reference",
+            "title": {
+              "fr": "Référencer une structure ou une personne existante",
+              "en": "Reference an existing organization or person"
+            },
+            "entityTypes": [
+              "organizations",
+              "citoyens"
+            ],
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune",
+                  "en": "Town"
+                }
+              },
+              {
+                "path": "source.key",
+                "label": {
+                  "fr": "Provenance",
+                  "en": "Source"
+                }
+              }
             ]
           }
         ]
