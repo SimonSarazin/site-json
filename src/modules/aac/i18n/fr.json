@@ -232,7 +232,8 @@
         "associateError": "Impossible d'associer ce projet.",
         "alreadyLinked": "Ce projet est déjà rattaché à un autre commun. Choisissez-en un autre ou générez un nouveau projet.",
         "projectWithoutId": "Le projet sélectionné n'a pas d'identifiant.",
-        "incompleteContext": "Contexte incomplet : session ou commun introuvable."
+        "incompleteContext": "Contexte incomplet : session ou commun introuvable.",
+        "openError": "Impossible d'ouvrir l'aperçu du projet."
       }
     },
     "origin": {

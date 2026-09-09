@@ -9,6 +9,7 @@ import type { FinderConfig, FinderElement } from "@/modules/coform/types";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { cn } from "@/lib/utils";
+import { showErrorToast } from "@/lib/toastUtils";
 import { useGenerateAacProject } from "../../hooks/useGenerateAacProject";
 import { useAssociateExistingAacProject } from "../../hooks/useAssociateExistingAacProject";
 
@@ -104,7 +105,11 @@ export function CommunProjectControl({
         const entity = (await api.project({ id: projectId })) as Project;
         setProjectEntity(entity);
       } catch (error) {
+        // Projet supprimé, visibilité restreinte, 500 transitoire : sans retour, le
+        // spinner s'éteignait et le bouton redevenait cliquable comme si de rien
+        // n'était — le seul chemin d'erreur du composant à ne rien dire.
         console.warn("Impossible de résoudre le projet pour l'aperçu", error);
+        showErrorToast(error, "detail.project.toasts.openError", t);
         return;
       } finally {
         setIsResolvingPreview(false);

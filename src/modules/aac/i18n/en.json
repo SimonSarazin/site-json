@@ -232,7 +232,8 @@
         "associateError": "Unable to associate this project.",
         "alreadyLinked": "This project is already linked to another commun. Choose another one or generate a new project.",
         "projectWithoutId": "The selected project has no identifier.",
-        "incompleteContext": "Incomplete context: session or commun not found."
+        "incompleteContext": "Incomplete context: session or commun not found.",
+        "openError": "Unable to open the project preview."
       }
     },
     "origin": {

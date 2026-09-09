@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
 
 /**
  * Trois états à couvrir (cf. doc/34-module-aac.md §1 — génération IRRÉVERSIBLE,
@@ -10,7 +10,11 @@ import { render, screen, fireEvent, act } from "@testing-library/react";
  *     (`EntityPreviewDrawer`), PAS une navigation `/profil/:slug` ;
  *  2. pas de projet, admin → bouton "Générer" (+ "Associer"), SANS badge ;
  *  3. pas de projet, non-admin → badge "Phase proposition" seul, aucun bouton.
+ * Et un chemin d'erreur : l'aperçu qui ne se résout pas se DIT (toast), il
+ * n'échoue pas en silence.
  */
+
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 vi.mock("@/hooks/useT", () => ({
   useT: () => (key: string, fallback?: string, params?: Record<string, unknown>) => {
@@ -74,6 +78,7 @@ vi.mock("@/modules/coform/components/FinderSearchModal", () => ({
 }));
 
 const { CommunProjectControl } = await import("./CommunProjectControl");
+const { toast } = await import("sonner");
 
 type Props = Parameters<typeof CommunProjectControl>[0];
 
@@ -98,6 +103,8 @@ function renderControl(over: Partial<Props> = {}) {
 }
 
 beforeEach(() => {
+  vi.restoreAllMocks();
+  vi.mocked(toast.error).mockClear();
   generateMutate.mockClear();
   associateMutate.mockClear();
   isPending = false;
@@ -259,5 +266,22 @@ describe("CommunProjectControl — projet existant", () => {
     fireEvent.click(screen.getByRole("button", { name: /detail\.project\.openCta/ }));
     const drawer = await screen.findByTestId("entity-preview-drawer");
     expect(drawer.getAttribute("data-link")).toBe("");
+  });
+
+  it("signale par un toast l'aperçu qui ne se résout pas, au lieu d'échouer en silence", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const api = { project: vi.fn().mockRejectedValue(new Error("Projet inaccessible")) } as unknown as NonNullable<Props["api"]>;
+    renderControl({ projectId: "proj-1", projectSlug: "mon-projet", api });
+
+    fireEvent.click(screen.getByRole("button", { name: /detail\.project\.openCta/ }));
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith("detail.project.toasts.openError", {
+        description: "Projet inaccessible",
+      }),
+    );
+    expect(screen.queryByTestId("entity-preview-drawer")).toBeNull();
+    // Le bouton redevient cliquable : l'utilisateur, informé, peut réessayer.
+    expect(screen.getByRole("button", { name: /detail\.project\.openCta/ }).hasAttribute("disabled")).toBe(false);
   });
 });
