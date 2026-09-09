@@ -32,9 +32,7 @@ import HeaderLogo from "./HeaderLogo";
 import { logoHeightClass, logoSizePx } from "./logoSize";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
-import {ClientOnly} from "@/components/layout/ClientOnly.tsx";
-import PledgeHeaderButton from "@/modules/cagnotte/components/PledgeHeaderButton.tsx";
-import PiggyBankHeaderButton from "@/modules/cagnotte/components/PiggyBankHeaderButton.tsx";
+import { PiggyBankHeaderButton, PledgeHeaderButton } from "./CagnotteHeaderButtons";
 
 interface NavItemProps {
   item: EnhancedNavItemType;
@@ -205,21 +203,11 @@ export function HeaderStandard({ header }: HeaderStandardProps) {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
             {header.nav.map((item, idx) => (<NavItem key={idx} item={item} />))}
-            {header.utilities?.piggyBank && (
-                // ClientOnly : la cagnotte est member-only (le composant lit `me`
-                // pour décider de rendre ou pas). Sans ClientOnly, SSR rend le bouton
-                // (me=null → null), client le rend après auth → hydration mismatch
-                // (cf. PiggyBankHeaderButton:if (!me?.id) return null).
-                <ClientOnly>
-                  {() => <PiggyBankHeaderButton />}
-                </ClientOnly>
-            )}
-
-            {header.utilities?.pledge && (
-                <ClientOnly>
-                  {() => <PledgeHeaderButton />}
-                </ClientOnly>
-            )}
+            {/* Wrappers lazy (cf. CagnotteHeaderButtons) : le chunk cagnotte n'est
+                téléchargé que si l'utilitaire est activé, et seulement après
+                hydratation — la cagnotte est member-only, le SSR n'a rien à en rendre. */}
+            {header.utilities?.piggyBank && <PiggyBankHeaderButton />}
+            {header.utilities?.pledge && <PledgeHeaderButton />}
           </nav>
 
           {/* Utilities & Mobile Trigger */}
