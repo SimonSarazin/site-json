@@ -1,4 +1,4 @@
-import type { UseMutationResult } from "@tanstack/react-query";
+import { useQueryClient, type UseMutationResult } from "@tanstack/react-query";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
@@ -6,6 +6,7 @@ import { MilestoneEditDialog } from "@/modules/cagnotte/components/sections/part
 import CreateMilestoneDialog from "@/modules/cagnotte/components/sections/CreateMilestoneDialog";
 import type { EditMilestoneParams } from "@/modules/cagnotte/actions/mutations/milestone";
 import type { useCommunObjectivesController } from "@/modules/aac/hooks/useCommunObjectivesController";
+import { COMMUN_RAW_DEPENSES_QUERY_KEY } from "@/modules/aac/hooks/useCommunRawDepenses";
 
 export type CommunObjectivesController = ReturnType<typeof useCommunObjectivesController>;
 
@@ -25,6 +26,24 @@ export type CommunObjectivesController = ReturnType<typeof useCommunObjectivesCo
 export function CommunMilestoneDialogs({ ctrl }: { ctrl: CommunObjectivesController }) {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
+    const queryClient = useQueryClient();
+
+    /**
+     * La liste des paliers de la fiche est PILOTÉE par `useCommunRawDepenses`
+     * (`buildItemsFromRawDepenses` itère sur les dépenses brutes ; l'enveloppe
+     * n'enrichit qu'une dépense déjà présente). Or `CreateMilestoneDialog`
+     * construit son propre contexte de mutation, sans `extraInvalidate` : sa
+     * mutation n'invalide que l'enveloppe. Sans cette invalidation, le palier
+     * créé n'apparaissait qu'au rechargement de la page — le toast de succès
+     * avait pourtant été affiché. Même préfixe que `milestoneCtx` du contrôleur
+     * pour éditer / clore / supprimer / restaurer.
+     */
+    const handleMilestoneCreated = async () => {
+        await Promise.all([
+            queryClient.invalidateQueries({ queryKey: [COMMUN_RAW_DEPENSES_QUERY_KEY, ctrl.resolvedAnswerId] }),
+            ctrl.refetchFundingEnvelope(),
+        ]);
+    };
 
     return (
         <>
@@ -74,9 +93,7 @@ export function CommunMilestoneDialogs({ ctrl }: { ctrl: CommunObjectivesControl
                 existingMilestoneIds={ctrl.existingMilestoneIds}
                 isConnected={ctrl.isConnected}
                 inputIdPrefix="aac-milestone"
-                onCreated={async () => {
-                    await ctrl.refetchFundingEnvelope();
-                }}
+                onCreated={handleMilestoneCreated}
                 onRefetch={async () => {
                     await ctrl.refetchFundingEnvelope();
                 }}
