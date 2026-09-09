@@ -127,6 +127,17 @@ export interface AacCommunCard {
   totalFunded: number;
   /** Non borné : le financé PEUT dépasser le demandé (dépense revue à la baisse). */
   progressPercent: number;
+  /**
+   * Une demande de cofinancement est EN COURS : un montant est demandé, ou
+   * déjà collecté. Pilote le libellé « Collecté sur cofinancement en cours » /
+   * « Pas de demande de cofinancement en cours » et l'affichage de la jauge.
+   *
+   * ⚠️ Pas `totalFunded > 0` : une collecte qui vient d'ouvrir (8 400 € demandés,
+   * rien de versé) est précisément le commun à mettre en avant, et elle
+   * s'affichait « sans demande ». Le collecté entre aussi dans la condition
+   * parce que 275 lignes en base portent un `price` booléen ou `null` (⇒ 0) :
+   * masquer ce qu'elles ont déjà collecté serait une régression.
+   */
   hasFundingRequest: boolean;
   /** Membres du chemin configuré (`fields.users`), sinon `user_count` backend. */
   usersCount: number;
@@ -265,7 +276,7 @@ export function parseAacAnswer(
     totalRequested,
     totalFunded,
     progressPercent,
-    hasFundingRequest: totalFunded > 0,
+    hasFundingRequest: totalRequested > 0 || totalFunded > 0,
     usersCount,
     interestCount: toSafeInt(a.interrest_count),
     isSelected,

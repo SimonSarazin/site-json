@@ -180,7 +180,8 @@ describe("parseAacAnswer — formes du listing", () => {
       expect(card.totalFunded).toBe(funded);
       expect(Number.isFinite(card.progressPercent)).toBe(true);
       expect(card.progressPercent).toBeGreaterThanOrEqual(0);
-      expect(card.hasFundingRequest).toBe(funded > 0);
+      // « Demande en cours » = quelque chose est demandé OU déjà collecté.
+      expect(card.hasFundingRequest).toBe(requested > 0 || funded > 0);
     }
   });
 
@@ -224,6 +225,24 @@ describe("parseAacAnswer — budget", () => {
     expect(card.totalFunded).toBe(4000);
     expect(card.progressPercent).toBe(80);
     expect(card.hasFundingRequest).toBe(true);
+  });
+
+  it("`hasFundingRequest` mesure la DEMANDE : vrai dès qu'un montant est demandé, même sans versement", () => {
+    // Une collecte qui vient d'ouvrir : 8 400 € demandés, rien de collecté.
+    // C'est le commun à mettre en avant — il s'affichait « Pas de demande de
+    // cofinancement en cours », jauge masquée.
+    const fresh = parse(withFunds([{ price: 8400, financer: [] }]));
+    expect(fresh.totalRequested).toBe(8400);
+    expect(fresh.totalFunded).toBe(0);
+    expect(fresh.hasFundingRequest).toBe(true);
+
+    // Rien demandé, rien collecté ⇒ pas de demande.
+    expect(parse(withFunds([])).hasFundingRequest).toBe(false);
+    expect(parse(withFunds([{ price: 0, financer: [] }])).hasFundingRequest).toBe(false);
+
+    // `price` à 0 (booléen/`null` en base) mais du collecté ⇒ la demande existe
+    // bien : on ne masque jamais un montant déjà versé.
+    expect(parse(withFunds([{ price: null, financer: [500] }])).hasFundingRequest).toBe(true);
   });
 
   it("SUR-FINANCEMENT : le pourcentage dépasse 100 et n'est pas plafonné", () => {
