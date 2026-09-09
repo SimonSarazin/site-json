@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { Heart, ArrowRight, Check, X, Loader2 } from "lucide-react";
 import type { CoFormData, CoFormAnswer } from "@/modules/coform/types";
 import type { AacResolvedConfig } from "../../types";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useAuthModal } from "@/modules/auth";
 import { ClientOnly } from "@/components/layout/ClientOnly";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -33,6 +34,13 @@ import { useCommunFundingContext } from "@/modules/aac/hooks/useCommunFundingCon
 import { useCommunFundingHost } from "@/modules/aac/hooks/useCommunFundingHost";
 import { useReactorNames } from "@/modules/aac/hooks/useReactorNames";
 import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
+
+/**
+ * Ce qu'un visiteur NON connecté a demandé, et qu'on rejoue quand sa session
+ * arrive : réagir (« Je contribue », « Ça m'intéresse », « J'utilise ») ou
+ * financer.
+ */
+type PostLoginIntent = { kind: "reaction"; type: CommunReactionType } | { kind: "fund" };
 
 interface StatProps {
     value: string | number;
@@ -147,6 +155,7 @@ export function CommunFinancingCard({
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
     const { me, entity } = useCocolight();
+    const { openLogin } = useAuthModal();
     const { toggleReaction } = useCommunReactions();
     const answerId = answerQuery ? getEntityId(answerQuery) : undefined;
     const [reactions, setReactions] = useState(() => getCommunReactionState(answerQuery, me?.serverData?.id));
@@ -276,7 +285,27 @@ export function CommunFinancingCard({
         }
     };
 
+    /**
+     * Un visiteur non connecté n'est jamais laissé devant un bouton grisé ni un
+     * toast d'échec (CLAUDE.md, gotcha n° 11) : on ouvre la modale de connexion
+     * globale, et l'intention est rejouée une fois la session établie.
+     *
+     * Pourquoi un état + effet, et non `onSuccess: () => executeToggle(type)` :
+     * `onSuccess` rend la main AVANT que `me` n'ait été propagé (cf.
+     * `AacDepositButton`) — la fermeture de `executeToggle` verrait encore le
+     * `me` anonyme, donc aucun `reactorId`, donc l'échec que ce garde évite.
+     */
+    const [postLoginIntent, setPostLoginIntent] = useState<PostLoginIntent | null>(null);
+    const fundButtonRef = useRef<HTMLButtonElement>(null);
+
+    const requireConnected = (intent: PostLoginIntent): boolean => {
+        if (me?.isConnected) return true;
+        openLogin({ onSuccess: () => setPostLoginIntent(intent) });
+        return false;
+    };
+
     const handleToggleClick = (type: CommunReactionType) => {
+        if (!requireConnected({ kind: "reaction", type })) return;
         if (type === "interesse") {
             // Le bouton se contente d'ouvrir le modal — la sélection/désélection se
             // fait organisation par organisation dans la liste (cf. handleOrgClick).
@@ -292,6 +321,32 @@ export function CommunFinancingCard({
         const isAlreadyInterested = interestedOrgIds.has(orgId);
         executeToggle("interesse", { id: orgId, name: org?.name || "" }, !isAlreadyInterested);
     };
+
+    /**
+     * Rejoue l'intention au rendu où la session arrive. L'état optimiste
+     * (`reactions`) est recalculé pour ce `me` par l'effet plus haut, dans le
+     * MÊME commit — mais sa valeur n'est pas encore lisible ici : le sens de
+     * la bascule est donc relu à la source, pas dans `reactions`.
+     *
+     * Financer : la cagnotte est un `DialogTrigger` non contrôlé — on rejoue le
+     * clic sur le bouton, dont le garde laisse maintenant passer l'ouverture.
+     */
+    useEffect(() => {
+        if (!postLoginIntent || !me?.isConnected) return;
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- l'intention est consommée UNE fois, au rendu où la session arrive
+        setPostLoginIntent(null);
+        if (postLoginIntent.kind === "fund") {
+            fundButtonRef.current?.click();
+            return;
+        }
+        if (postLoginIntent.type === "interesse") {
+            handleToggleClick("interesse");
+            return;
+        }
+        const alreadyActive = getCommunReactionState(answerQuery, me?.serverData?.id)[postLoginIntent.type];
+        void executeToggle(postLoginIntent.type, undefined, !alreadyActive);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- ne rejoue que sur l'arrivée de la session ou d'une intention, jamais sur les handlers (recréés à chaque rendu)
+    }, [postLoginIntent, me?.isConnected]);
 
     // Réacteurs (par stat) — ne servent qu'au tooltip affiché au survol des stats.
     // Pour "utilise"/"love", la réaction ne porte pas de nom (cf. useReactorNames),
@@ -524,8 +579,16 @@ export function CommunFinancingCard({
                         }}
                     >
                         <button
+                            ref={fundButtonRef}
                             type="button"
-                            disabled={resourceRemainingAmount <= 0 || !me?.isConnected}
+                            disabled={resourceRemainingAmount <= 0}
+                            onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                                // Non connecté : la connexion s'ouvre à la place de la
+                                // cagnotte. `preventDefault()` retient le handler du
+                                // `DialogTrigger` — Radix ne joue pas le sien sur un
+                                // événement déjà traité.
+                                if (!requireConnected({ kind: "fund" })) e.preventDefault();
+                            }}
                             className="w-full py-3.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-md transition-all shadow-[0_0_30px_-8px] shadow-primary/60 flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                         >
                             <Heart className="size-4" />

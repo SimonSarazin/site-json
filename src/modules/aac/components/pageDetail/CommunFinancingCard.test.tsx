@@ -143,3 +143,98 @@ describe("CommunFinancingCard — l'étape des dépenses est celle que la page a
     expect(useCommunRawDepenses).toHaveBeenCalledWith("a1", undefined);
   });
 });
+
+/**
+ * Un élément NEUF à chaque rendu : rerendre le même objet React laisse React
+ * court-circuiter tout l'arbre (props identiques), et le nouveau `me` du mock
+ * ne serait jamais lu.
+ */
+const makeUi = () => (
+  <LocalizationProvider>
+    <CommunFinancingCard
+      formData={{ id: "f1", name: "Appel", inputs: {} } as never}
+      answerQuery={ANSWER}
+      aacConfig={makeConfig("etapeA")}
+      funding={null}
+    />
+  </LocalizationProvider>
+);
+
+/** Simule une connexion réussie : le callback `onSuccess` du modal, puis l'arrivée de `me`. */
+async function connecter(rerender: (ui: React.ReactElement) => void) {
+  const opts = openLogin.mock.calls[0]?.[0] as { onSuccess?: () => void } | undefined;
+  await act(async () => {
+    opts?.onSuccess?.();
+  });
+  me = CONNECTED;
+  await act(async () => {
+    rerender(makeUi());
+  });
+}
+
+describe("CommunFinancingCard — « Financer ce commun » hors connexion ouvre la connexion (M14)", () => {
+  /**
+   * Avant : `disabled={… || !me?.isConnected}` — un bouton grisé, sans message
+   * ni chemin vers la connexion (CLAUDE.md, gotcha n° 11).
+   */
+  it("le bouton reste actif ; le clic ouvre le modal de connexion, PAS la cagnotte", () => {
+    me = ANONYMOUS;
+    depenses = [{ poste: "Serveur", priceInt: 1000 }];
+    renderCard();
+
+    const bouton = screen.getByRole("button", { name: /detail\.financing\.cta/ });
+    expect(bouton).not.toBeDisabled();
+
+    fireEvent.click(bouton);
+    expect(openLogin).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId("cagnotte-open")).toBeNull();
+  });
+
+  it("une fois connecté, la cagnotte s'ouvre d'elle-même", async () => {
+    me = ANONYMOUS;
+    depenses = [{ poste: "Serveur", priceInt: 1000 }];
+    const { rerender } = render(makeUi());
+    fireEvent.click(screen.getByRole("button", { name: /detail\.financing\.cta/ }));
+    expect(screen.queryByTestId("cagnotte-open")).toBeNull();
+
+    await connecter(rerender);
+    expect(screen.getByTestId("cagnotte-open")).toBeTruthy();
+  });
+
+  it("connecté, le clic ouvre directement la cagnotte", () => {
+    me = CONNECTED;
+    depenses = [{ poste: "Serveur", priceInt: 1000 }];
+    renderCard();
+    fireEvent.click(screen.getByRole("button", { name: /detail\.financing\.cta/ }));
+    expect(openLogin).not.toHaveBeenCalled();
+    expect(screen.getByTestId("cagnotte-open")).toBeTruthy();
+  });
+});
+
+describe("CommunFinancingCard — les CTA de réaction hors connexion ouvrent la connexion (M15)", () => {
+  /**
+   * Avant : le clic appliquait l'optimisme (+1), appelait `toggleReaction` sans
+   * réacteur → toast d'erreur, puis −1. L'action ne pouvait jamais aboutir.
+   */
+  it("« Je contribue » n'appelle pas `toggleReaction`, ne touche pas au compteur, ouvre la connexion", () => {
+    me = ANONYMOUS;
+    renderCard();
+
+    fireEvent.click(screen.getByRole("button", { name: /detail\.contribute/ }));
+
+    expect(openLogin).toHaveBeenCalledTimes(1);
+    expect(toggleReaction).not.toHaveBeenCalled();
+    // Un contributeur dans `links.contributors` : le compteur reste à 1.
+    expect(screen.getByText("1")).toBeTruthy();
+  });
+
+  it("une fois connecté, la réaction demandée est rejouée avec le réacteur de la session", async () => {
+    me = ANONYMOUS;
+    const { rerender } = render(makeUi());
+    fireEvent.click(screen.getByRole("button", { name: /detail\.vote/ }));
+    expect(toggleReaction).not.toHaveBeenCalled();
+
+    await connecter(rerender);
+    expect(toggleReaction).toHaveBeenCalledWith("a1", "love", "u1", "Alice");
+  });
+});
