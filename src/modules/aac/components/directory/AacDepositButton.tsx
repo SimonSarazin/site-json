@@ -92,17 +92,20 @@ export function AacDepositButton({ formId, stepKey, label }: AacDepositButtonPro
   };
 
   /**
-   * Le commun vient de naître : le listing et les facettes sont périmés.
-   * `useCoFormFinalMutation` n'invalide que les clés `coform` — la passerelle
-   * vers les clés AAC doit être posée ici.
+   * Le commun vient de naître : le listing, le décompte et les facettes sont
+   * périmés. `useCoFormFinalMutation` n'invalide que les clés `coform` — la
+   * passerelle vers les clés AAC doit être posée ici.
    *
    * Le nouveau commun remonte bien pour son auteur, même non sélectionné : la
    * restriction de visibilité de `splitAacFilters` est un `$or` qui inclut
    * `user: <moi>`. Il s'affiche avec le badge « En attente », jusqu'à ce qu'un
-   * administrateur le sélectionne.
+   * administrateur le sélectionne — et le médaillon « Communs déposés » le
+   * compte, puisqu'il est calculé par le MÊME `splitAacFilters` que le listing.
+   * Les trois clés, comme `CommunSelectionControl`.
    */
   const handleAfterSubmit = () => {
     queryClient.invalidateQueries({ queryKey: AAC_QUERY_KEYS.COMMUNS_PREFIX() });
+    queryClient.invalidateQueries({ queryKey: AAC_QUERY_KEYS.COUNT_PREFIX() });
     queryClient.invalidateQueries({ queryKey: AAC_QUERY_KEYS.FACETS_PREFIX() });
   };
 
