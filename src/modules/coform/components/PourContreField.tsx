@@ -56,15 +56,19 @@ export function PourContreField({
     formId: formId ?? "",
     answerId,
   });
-  const echo = useEcrituresLocales<VoteValue | null>();
+  const echo = useEcrituresLocales<unknown>();
 
+  // Le formulaire ne resynchronise pas son instantané : sans ça, le vote reste
+  // affiché à sa valeur d'avant. Cf. `useEcrituresLocales`. L'écho porte sur la
+  // valeur ENTIÈRE (clé = évaluateur) : le décompte et les parts en dérivent,
+  // et resteraient à « Votants 2 · Pour 1 » sous un bouton « Pour » en
+  // surbrillance si seul le vote du contrôle était rattrapé.
+  const votes = echo.superposer(value);
   // Pas de `useMemo` : le décompte parcourt une poignée d'évaluateurs et son
   // résultat n'alimente ni enfant mémoïsé, ni effet, ni queryKey — le mémoïser
   // serait du bruit (norme 14).
-  const tally = tallyVotes(value);
-  // Le formulaire ne resynchronise pas son instantané : sans ça, le vote reste
-  // affiché à sa valeur d'avant. Cf. `useEcrituresLocales`.
-  const monVote = echo.lire("vote", getMyVote(value, currentUserId));
+  const tally = tallyVotes(votes);
+  const monVote = getMyVote(votes, currentUserId);
 
   // Même raison que `SelectionField` : l'écriture cible un document existant.
   if (!answerId) return null;
@@ -83,7 +87,7 @@ export function PourContreField({
     saveVote.mutate(
       { subFormId, userId: currentUserId, vote },
       // Après le serveur, jamais avant : un échec doit laisser le vote réel.
-      { onSuccess: (_d, vars) => echo.noter("vote", vars.vote as VoteValue) }
+      { onSuccess: (_d, vars) => echo.noter(vars.userId, vars.vote) }
     );
   };
 

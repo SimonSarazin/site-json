@@ -23,6 +23,13 @@ import { useCallback, useState } from "react";
  * PLUSIEURS critères à la suite, et `variables` ne retient que le dernier appel.
  * Une entrée par clé écrite est donc nécessaire.
  *
+ * L'écho doit porter sur la valeur ENTIÈRE, pas seulement sur le contrôle : les
+ * AGRÉGATS (moyennes de `selection`, décompte de `pourContre`) sont dérivés de
+ * la même valeur jamais resynchronisée. Ne rattraper que le vote laissait
+ * « Votants 2 · Pour 1 » sous un bouton « Pour » en surbrillance — l'écran se
+ * contredisait lui-même jusqu'au rechargement. D'où `superposer`, qui rend le
+ * dictionnaire serveur avec les écritures locales par-dessus.
+ *
  * La mémoire vit le temps du montage. Au remontage, le serveur reprend la main —
  * c'est voulu : l'écriture locale n'est qu'un écho de ce qu'on vient d'envoyer,
  * jamais une source de vérité.
@@ -41,5 +48,18 @@ export function useEcrituresLocales<T>() {
     [ecrites]
   );
 
-  return { noter, lire };
+  /**
+   * Le dictionnaire serveur avec les écritures locales par-dessus — pour tout
+   * ce qui se dérive de la valeur entière (moyennes, décomptes). Rend `base`
+   * telle quelle tant que rien n'a été écrit : pas d'identité neuve pour rien.
+   */
+  const superposer = useCallback(
+    (base: Record<string, T> | null | undefined): Record<string, T> => {
+      const serveur = base ?? {};
+      return Object.keys(ecrites).length === 0 ? serveur : { ...serveur, ...ecrites };
+    },
+    [ecrites]
+  );
+
+  return { noter, lire, superposer };
 }

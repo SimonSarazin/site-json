@@ -96,6 +96,53 @@ describe("PourContreField", () => {
     expect(screen.getByText(/Merci pour votre vote : Pour/)).toBeTruthy();
   });
 
+  /** Valeur du `<dd>` qui suit l'étiquette `label` dans la grille des comptes. */
+  const compte = (label: string) =>
+    screen.getByText(label, { selector: "dt" }).nextElementSibling?.textContent;
+
+  /**
+   * Régression (M27) : `tallyVotes(value)` lisait l'instantané du formulaire,
+   * jamais resynchronisé, alors que seul le vote du contrôle était rattrapé.
+   * Deux votes en base (1 pour, 1 contre), le juré clique « Pour » : le bouton
+   * passait en surbrillance et « Merci pour votre vote » s'affichait, mais la
+   * ligne juste en dessous restait sur « Votants 2 · Pour 1 (50 %) » et la
+   * barre ne bougeait pas de toute la session.
+   *
+   * `value` reste délibérément sur son état d'origine : c'est ce que le
+   * formulaire continue de fournir après l'enregistrement.
+   */
+  it("après un vote enregistré, décompte et parts suivent — pas seulement le bouton", () => {
+    voteMutate.mockImplementation((vars, opts) => opts?.onSuccess?.(undefined, vars));
+    poser({ value: { autre1: "1", autre2: "-1" } });
+    expect(compte("Votants")).toBe("2");
+    expect(compte("Pour")).toBe("1 (50%)");
+
+    fireEvent.click(screen.getByRole("radio", { name: "Pour" }));
+
+    expect(screen.getByRole("radio", { name: "Pour" }).getAttribute("aria-checked")).toBe("true");
+    expect(screen.getByText(/Merci pour votre vote : Pour/)).toBeTruthy();
+    expect(compte("Votants")).toBe("3");
+    expect(compte("Pour")).toBe("2 (67%)");
+    expect(compte("Contre")).toBe("1 (33%)");
+  });
+
+  it("changer son vote déplace le compte, sans compter deux fois", () => {
+    voteMutate.mockImplementation((vars, opts) => opts?.onSuccess?.(undefined, vars));
+    poser({ value: { moi: "1", autre1: "-1" } });
+    fireEvent.click(screen.getByRole("radio", { name: "Contre" }));
+    expect(compte("Votants")).toBe("2");
+    expect(compte("Pour")).toBe("0 (0%)");
+    expect(compte("Contre")).toBe("2 (100%)");
+  });
+
+  it("un enregistrement en ÉCHEC laisse le décompte réel", () => {
+    voteMutate.mockImplementation(() => {}); // le serveur refuse : pas d'onSuccess
+    poser({ value: { autre1: "1", autre2: "-1" } });
+    fireEvent.click(screen.getByRole("radio", { name: "Pour" }));
+    expect(compte("Votants")).toBe("2");
+    expect(screen.queryByText(/Merci pour votre vote/)).toBeNull();
+  });
+
   it("n'annonce pas de vote quand je n'ai pas voté", () => {
     poser({ value: { autre1: "1" } });
     expect(screen.queryByText(/Merci pour votre vote/)).toBeNull();

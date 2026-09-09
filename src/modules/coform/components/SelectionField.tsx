@@ -10,6 +10,7 @@ import { useEcrituresLocales } from "../hooks/useEcrituresLocales";
 import {
   parseSelectionConfig,
   computeSelectionMeans,
+  withEvaluatorNotes,
   formatCriterionValue,
   toNote,
   type SelectionValue,
@@ -138,11 +139,20 @@ export function SelectionField({
   const [refus, setRefus] = useState<Record<string, boolean>>({});
   const idRefus = useId();
 
-  // Une seule passe pour les dérivations liées (config + moyennes).
-  const { parsed, means } = useMemo(() => {
+  // Une seule passe pour les dérivations liées (config + valeur locale + moyennes).
+  // L'écho porte sur la valeur ENTIÈRE : « Mon évaluation » et « Tous les
+  // évaluateurs » en dérivent, et resteraient sur « — » / « (0) » sous des
+  // étoiles pleines si seule la note du contrôle était rattrapée.
+  const { parsed, mesNotes, means } = useMemo(() => {
     const p = parseSelectionConfig(config, depositLabels ?? {});
-    return { parsed: p, means: computeSelectionMeans(value, p.criteria, currentUserId) };
-  }, [config, depositLabels, value, currentUserId]);
+    const notes = echoNotes.superposer(currentUserId ? value?.[currentUserId] : null);
+    const locale = withEvaluatorNotes(value, currentUserId, notes);
+    return {
+      parsed: p,
+      mesNotes: notes,
+      means: computeSelectionMeans(locale, p.criteria, currentUserId),
+    };
+  }, [config, depositLabels, value, currentUserId, echoNotes.superposer]);
 
   // Sans réponse enregistrée, il n'y a rien à cibler : l'écriture se fait par
   // chemin sur un document existant. Relevé en base, le cas ne se présente pas
@@ -151,7 +161,6 @@ export function SelectionField({
   if (!answerId) return null;
 
   const disabled = Boolean(readOnly) || !currentUserId;
-  const mesNotes = (currentUserId && value?.[currentUserId]) || {};
   const monAvis = echoAvis.lire(
     "avis",
     currentUserId ? admissibility?.[currentUserId] : undefined
@@ -200,7 +209,7 @@ export function SelectionField({
             </thead>
             <tbody>
               {parsed.criteria.map((critere) => {
-                const note = toNote(echoNotes.lire(critere.fieldKey, mesNotes[critere.fieldKey]));
+                const note = toNote(mesNotes[critere.fieldKey]);
                 const valeur = critere.isFree
                   ? ""
                   : formatCriterionValue(critere.fieldKey, depositAnswers?.[critere.fieldKey]);

@@ -145,6 +145,25 @@ export type SelectionNotes = Record<string, unknown>;
 /** Valeur complète de la clé `selection` : `{ <userId>: notes }`. */
 export type SelectionValue = Record<string, SelectionNotes>;
 
+/**
+ * `selection` avec les notes de l'évaluateur courant remplacées par `notes`
+ * — ce que le champ affiche une fois ses écritures locales superposées.
+ *
+ * Sans évaluateur, ou sans note à poser ET sans entrée existante, la valeur
+ * est rendue telle quelle : ajouter une entrée vide compterait un évaluateur
+ * de plus dans `computeSelectionMeans` et tirerait la moyenne globale vers le
+ * bas — le legacy ne compte que les entrées présentes.
+ */
+export function withEvaluatorNotes(
+  selection: SelectionValue | null | undefined,
+  userId: string | null | undefined,
+  notes: SelectionNotes
+): SelectionValue | null | undefined {
+  if (!userId) return selection;
+  if (!selection?.[userId] && Object.keys(notes).length === 0) return selection;
+  return { ...(selection ?? {}), [userId]: notes };
+}
+
 export interface SelectionMeans {
   /** Moyenne pondérée de l'utilisateur courant, ou `null` s'il n'a pas voté. */
   myMean: number | null;

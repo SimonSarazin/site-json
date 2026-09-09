@@ -128,6 +128,43 @@ describe("SelectionField", () => {
     expect(screen.getAllByText("2 / 5").length).toBe(2);
   });
 
+  /**
+   * Régression (M32) : les moyennes et le décompte étaient calculés sur `value`
+   * — l'instantané du formulaire, jamais resynchronisé — alors que seule la
+   * note du contrôle était rattrapée par l'écho local. Premier juré sur une
+   * candidature vierge : les étoiles se remplissaient, mais « Mon évaluation »
+   * restait sur « — » et « Tous les évaluateurs (0) ». L'écran se contredisait
+   * jusqu'au rechargement.
+   *
+   * `value` reste délibérément vide : c'est ce que le formulaire continue de
+   * fournir après l'enregistrement.
+   */
+  it("après des notes enregistrées, moyennes et décompte suivent — pas seulement les étoiles", () => {
+    noteMutate.mockImplementation((vars, opts) => opts?.onSuccess?.(undefined, vars));
+    poser({ value: {} });
+    expect(screen.getAllByText("—")).toHaveLength(2);
+    expect(screen.getByText("(0)")).toBeTruthy();
+
+    // 3 critères × 5 étoiles : 4 sur `depense` (×1), 2 sur `axesTFPB` (×2).
+    const etoiles = screen.getAllByRole("radio");
+    fireEvent.click(etoiles[3]);
+    fireEvent.click(etoiles[5 + 1]);
+
+    // (4×1 + 2×2 + 0×1) / 4 = 2 ; seul évaluateur → même moyenne globale.
+    expect(screen.getAllByText("2 / 5")).toHaveLength(2);
+    expect(screen.getByText("(1)")).toBeTruthy();
+    expect(screen.queryByText("—")).toBeNull();
+  });
+
+  it("un enregistrement en ÉCHEC ne touche ni aux étoiles ni aux moyennes", () => {
+    noteMutate.mockImplementation(() => {}); // le serveur refuse : pas d'onSuccess
+    poser({ value: {} });
+    fireEvent.click(screen.getAllByRole("radio")[3]);
+    expect(screen.getAllByText("—")).toHaveLength(2);
+    expect(screen.getByText("(0)")).toBeTruthy();
+    expect(screen.getAllByRole("radio")[3].getAttribute("aria-checked")).toBe("false");
+  });
+
   it("en lecture seule : ni notation ni bloc d'admissibilité", () => {
     poser({ readOnly: true });
     fireEvent.click(screen.getAllByRole("radio")[0]);

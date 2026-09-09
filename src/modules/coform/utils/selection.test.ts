@@ -4,6 +4,7 @@ import {
   toNote,
   parseSelectionConfig,
   computeSelectionMeans,
+  withEvaluatorNotes,
   formatCriterionValue,
 } from "./selection";
 
@@ -196,5 +197,28 @@ describe("formatCriterionValue", () => {
     expect(formatCriterionValue("k", 42)).toBe("42");
     expect(formatCriterionValue("k", { a: 1 })).toBe("");
     expect(formatCriterionValue("k", null)).toBe("");
+  });
+});
+
+describe("withEvaluatorNotes — la valeur locale dont dérivent les moyennes", () => {
+  it("remplace les notes de l'évaluateur courant, sans toucher aux autres", () => {
+    const v = withEvaluatorNotes({ moi: { c1: 1 }, autre: { c1: 5 } }, "moi", { c1: 4, c2: 2 });
+    expect(v).toEqual({ moi: { c1: 4, c2: 2 }, autre: { c1: 5 } });
+  });
+
+  it("ajoute l'évaluateur quand il a écrit sans entrée préalable", () => {
+    expect(withEvaluatorNotes({}, "moi", { c1: 4 })).toEqual({ moi: { c1: 4 } });
+    expect(withEvaluatorNotes(undefined, "moi", { c1: 4 })).toEqual({ moi: { c1: 4 } });
+  });
+
+  it("ne crée PAS d'entrée vide — elle compterait un évaluateur de plus", () => {
+    const base = { autre: { c1: 5 } };
+    expect(withEvaluatorNotes(base, "moi", {})).toBe(base);
+    expect(withEvaluatorNotes(undefined, "moi", {})).toBeUndefined();
+  });
+
+  it("sans évaluateur identifié, rend la valeur telle quelle", () => {
+    const base = { autre: { c1: 5 } };
+    expect(withEvaluatorNotes(base, null, { c1: 4 })).toBe(base);
   });
 });
