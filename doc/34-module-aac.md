@@ -125,6 +125,21 @@ rendu inerte.
 (La section `aac` d'origine — aperçu de debug de la config résolue, `AacConfigStub` — a été retirée
 avec `AacCommunList` : review MR 53, M25/H11/H13.)
 
+**Chargement et erreurs** — ce que l'auteur d'un config verra pendant que ça charge, ou quand ça
+échoue :
+
+- **annuaire** : le SSR rend `AacDirectorySkeleton` (place réservée aux cartes), et son docblock dit
+  vrai. Une erreur **ne remplace jamais des communs déjà chargés** : panneau bloquant seulement
+  quand la liste est à 0 commun, sinon **bandeau de reprise** sous la liste (`directory.loadMoreError`
+  + `directory.retry`, props `onRetry` / `isRetrying` d'`AacDirectoryResults`), la sentinelle du
+  défilement infini étant retirée tant que l'erreur tient — sans quoi elle relancerait la page en
+  échec en boucle ;
+- **médaillon d'`aac-highlight`** (`count.source: "communs"`) : **présent dès le SSR** sous forme de
+  squelette, à sa taille définitive (`w-40 md:w-48`) — la bande ne se réagence donc pas à
+  l'hydratation. Il ne disparaît que sur **échec réel** du décompte, et n'est pas rendu du tout si
+  `config.aac.formId` est absent (le nombre ne sera jamais connu : mieux vaut pas de médaillon
+  qu'un médaillon vide).
+
 ⚠️ Les `.default()` Zod de ces props sont **documentaires** : la config n'est pas parsée par Zod à
 l'exécution, chaque composant applique ses propres défauts.
 
@@ -202,10 +217,31 @@ Les 8 rôles, et ce que chacun pilote **au-delà de la carte** :
 | `description` | texte | — |
 | `tags` | chips | `tagsPath` envoyé au serveur quand une facette tag est cochée |
 | `maturity` | — | filtre « maturité » (ses OPTIONS viennent de la question) ; **aucun repli backend** : non résolu ⇒ `null` et filtre masqué |
-| `image` | visuel | — |
-| `depense` | jauge de financement | repli quand `funds` n'est pas pré-calculé |
-| `choose` | badge « en attente » | lu sur l'étape d'ÉVALUATION, pas celle de dépôt |
+| `image` | visuel | **c'est lui qui pilote la vignette** — cf. l'ordre de lecture ci-dessous |
+| `depense` | jauge de financement | repli quand `funds` n'est pas pré-calculé, **avec le même filtre `include !== false`** que le backend (§13.3) |
+| `choose` | badge « en attente » | lu sur l'étape d'ÉVALUATION, pas celle de dépôt ; la clé de contexte est la **1ʳᵉ entrée de `form.parent`** (`firstParent`), pas l'entité du slug du site |
 | `users` | nombre de membres | **le seul rôle qui ne parle pas du formulaire** — cf. ci-dessous |
+
+**`image` : la QUESTION d'abord, la vignette backend en repli.** L'ordre est
+`question résolue` (override de config → scan du premier `uploader` → défaut canonique `image`)
+**puis** le champ pré-calculé `image` du backend. Dans ce sens, parce que
+`getPropositionThumbnail` cherche `aapStep1.image` **en dur** : dès que l'étape de dépôt n'est
+pas la première, la vignette est vide alors que la réponse porte bien un visuel. Deux règles de
+lecture (`firstImagePath`, `parseAacAnswer`) :
+
+- **seuls les chemins à extension d'image comptent** — `jpg`/`jpeg`/`png`/`gif`/`webp`/`svg`/`bmp`,
+  le même filtre que le legacy (`allImages`) : un `uploader` porte aussi des PDF ;
+- la forme legacy `{updateDate, files}` **sans `files`** ne fournit rien : les documents ne sont
+  pas dans la réponse (ils vivent dans la collection `documents`), et c'est précisément la
+  vignette pré-calculée qui les connaît — d'où le repli.
+
+**La jauge s'affiche dès qu'une demande est OUVERTE.** `hasFundingRequest` vaut
+« demandé > 0 **OU** collecté > 0 », jamais « collecté > 0 » seul : une collecte qui vient
+d'ouvrir (8 400 € demandés, rien de versé) est le commun à mettre en avant, et la carte affiche
+donc « Collecté sur cofinancement en cours » avec **« 0 € »** plutôt que « pas de demande de
+cofinancement en cours ». Le collecté entre aussi dans la condition parce que 275 lignes en base
+portent un `price` booléen ou `null` (⇒ 0) : masquer ce qu'elles ont déjà collecté serait une
+régression.
 
 **`users` : le vivier dépend de la PLATEFORME, pas du form.** Un même commun peut être porté
 par deux AAC, avec des membres différents de part et d'autre : `links.cae` sur la fédération
@@ -294,6 +330,54 @@ dès que `detail.sections` est absent ou vide, et `useAacGallerySubKey()` rend `
 `detail.gallery`. Une fiche sans prose ni galerie sur un nouveau site n'est pas un bug : c'est le
 bloc `detail` qui manque — et rien ne le signale à `config:validate` (tout y est optionnel).
 
+### 3.3 La fiche — financement, paliers, cofinanceurs, SEO
+
+Les blocs structurels de `/aac/commun/:answerId` ne se déclarent pas ; ce qui suit décrit ce
+qu'ils font, parce que plusieurs de leurs règles sont contre-intuitives.
+
+**L'étape est celle qui a été RÉSOLUE.** Les trois blocs de financement — la carte
+(`CommunFinancingCard`), « Besoins financiers » (`CommunFinancingSection`) et la table des
+cofinanceurs (`CommunCofinancersTable`) — lisent `answers.<config.roles.depenseStepKey>.depense`,
+et le contrôleur des paliers (`useCommunObjectivesController`) reçoit la même `depenseStepKey`.
+La règle du §4 (« jamais de `aapStepN` en dur ») est donc tenue **côté lecture** : sur un AAC dont
+l'étape de dépôt n'est pas la première, les paliers s'affichent quand même.
+
+**Hors connexion, on ouvre la modale, on ne grise pas.** « Financer ce commun » et les CTA de
+réaction appellent `useAuthModal().openLogin()` et **rejouent l'intention** une fois la connexion
+faite (patron décrit dans [`doc/23`](23-module-auth.md)) — pas de bouton grisé ni de `toast.error`.
+
+**Paliers clos.** « Besoins financiers » **liste** les paliers clôturés, avec un badge « Clos »
+(`detail.objectives.closedBadge` / `…Hint`) et la restauration possible ; ils sont **exclus des
+totaux** de la carte et des cofinanceurs comptés. Les deux cartes de palier (« Besoins financiers »
+et « Suivi des actions ») affichent leur barre de gestion dès qu'**UN** des trois droits est acquis
+— édition, suppression ou restauration — et passent `canRestore = canRestoreMilestone(status)` :
+un palier **clos ET financé** reste donc restaurable, alors qu'il n'est plus supprimable.
+
+**Cofinanceurs : une seule agrégation.** `lib/cofinancers.ts` (`aggregateCofinancers`) agrège les
+lignes `allFunding` des paliers **ouverts** par `id` → à défaut par `nom` → à défaut en ligne
+anonyme. Le compteur de la carte est la **longueur de ce résultat** : les deux chiffres coïncident
+par construction. Conséquence voulue : une entrée `financer` **sans `id`** — le doublonnage porteur
+du §2 — est **listée** et comptée, là où deux agrégations séparées annonçaient « 600 € ·
+2 cofinanceurs » sur la carte et une seule ligne à 500 € dans la table.
+
+**Contributeurs et projet lié.** Le bouton « Ajouter des contributeur·rices » est **désactivé avec
+sa raison affichée** (`detail.contributorsSection.addUnavailable`) tant que le projet lié n'est pas
+résolu — il n'est pas seulement masqué au visiteur sans droit. L'échec de résolution de l'aperçu
+« Ouvrir le projet » remonte un toast `detail.project.toasts.openError`, le bouton restant
+réessayable.
+
+**SEO.** `AacSeo` est posé sur les deux routes : `/aac` (le **nom** et la **description de l'appel**,
+lus sur la même entrée de cache que le reste du module — aucune requête de plus ; repli
+`page.directoryTitle`) et `/aac/commun/:answerId`. Le titre du commun vient de la référence résolue `directory.fields.title`,
+à défaut du `titre` de l'étape de dépense, à défaut des champs pré-calculés du backend (`name`,
+`descriptionStr`, `image` — qui ne sont pas un contrat, cf. §13.4) ; le résumé est le texte brut
+borné à 160 caractères ; l'image est absolutisée ; le `canonical` est bâti sur
+`VITE_SITE_PUBLIC_URL`.
+
+**Invalidations.** Après un paiement (`onFunded`) **et** après la création d'un palier, la fiche
+invalide `[aac-milestone-list-depenses, answerId]` (cf. §7) et relit la réponse : sans quoi la
+carte et la modale de dépôt affichaient encore l'état d'avant.
+
 ---
 
 ## 4. Le résolveur `AacConfig` — le cœur du socle
@@ -317,9 +401,10 @@ Les règles qu'il reproduit — **chacune est un piège du legacy** :
 | **Priorité des critères** | `formParent.evaluationCriteria` (si `activateLocalCriteria`) **>** `aapConfig…params.config.criterions`. Exposé via `criteriaSource`. |
 | **Coercions** | `coeff` string → number, rôles **CSV → array**, flags `"true"` → bool. |
 | **Config org-spécifique** | Deux configs CoForm coexistent (**template héritable** vs **org-spécifique**) → on lit **celle pointée par `form.config`**. |
+| **`typeCoFinancer` à la RACINE du form** | Nature des organisations cofinanceuses : `"tiersLieux"` (le défaut legacy FTL) ou un **TAG d'organisation** (`"cae"`…, `Organization::get_cofinancer_bytags`). Clé racine du form parent, comme les gates — `financer.php:835` lit `costum.mainFormData.typeCoFinancer` puis `parentForm.typeCoFinancer`, `AnswerAction.php:268` teste `$params["parentForm"]["typeCoFinancer"]` : **ni `params`, ni l'aapConfig**. Absent ⇒ `null` ; le repli `"tiersLieux"` appartient à l'**affichage** (`CommunFinancingCard`), pas au résolveur. |
 
 Sortie (`AacResolvedConfig`) : `steps[]`, `roles{depenseStepKey, evalStepKey, financementStepKey,
-suiviStepKey}`, `criteria[]`, `criteriaSource`, `gates`, `campaigns[]`.
+suiviStepKey}`, `criteria[]`, `criteriaSource`, `gates`, `campaigns[]`, `typeCoFinancer`.
 
 > **Nommage — ne pas confondre :**
 > - **`AacConfig`** (`schema.ts`) = le bloc **DÉCLARÉ** dans `config.aac` (juste `{ formId }`).
@@ -339,6 +424,10 @@ src/modules/aac/
   lib/resolveAacConfig.ts   # résolveur PUR (+ .test.ts)
   lib/formParent.ts         # firstParent(form) → le CONTEXTE porteur d'un appel (+ .test.ts)
   lib/objectiveHelpers.ts   # dont resolveCommunOwnerIds : qui gère les paliers d'un commun
+  lib/cofinancers.ts        # aggregateCofinancers : UNE agrégation pour la carte ET la table (§3.3)
+  lib/communSeo.ts          # resolveCommunSeo : titre / résumé / image de la fiche (§3.3)
+  lib/filterCommuns.ts      # filtrage + tri CLIENT du chemin balayage (usageSubKey / parseUsageSubKey)
+  lib/associateExistingProject.ts # rattacher un commun à un projet DÉJÀ existant (§9 piège n°11)
   hooks/useAacConfig.ts     # résolveur câblé (api.form ×2, 0 nouvel endpoint)
   hooks/useCommunFundingContext.ts # où vit un commun : l'appel où il a été DÉPOSÉ
   hooks/useCommunFundingHost.ts    # l'entité de ce contexte — celle qui détient l'enveloppe
@@ -357,8 +446,14 @@ src/modules/aac/
 `src/types/site-schema.ts` (union + `config.aac`), `src/components/sections/SectionRenderer.tsx`
 (`LazySections`, `lazy` de **vite-preload**, cible en **export default**),
 `src/lib/queryKeys.ts` (barrel), `src/components/admin/section-meta.ts`,
-`scripts/audit-config.ts` (`/aac` dans `KNOWN_ROUTE_PREFIXES`),
-`.claude/skills/config-assistant/SKILL.md` (table Modules — **testée**).
+`.claude/skills/config-assistant/SKILL.md` (table Modules — **testée**, y compris le CONTENU de la
+ligne : `skill-integrity.test.ts` vérifie que les **sections** citées en colonne « surface » sont
+enregistrées dans `SectionRenderer` et que les **routes** citées sont bien déclarées par un
+`src/modules/*/routes.tsx`, pas seulement que le nom du module figure dans la table).
+Rien à enregistrer en revanche dans `scripts/audit-config.ts` : ses `KNOWN_ROUTE_PREFIXES` sont
+**dérivés** du code par `moduleRoutePrefixes()` (lecture des `path:` de premier niveau des
+`routes.tsx`), précisément pour qu'une nouvelle route de module ne produise pas de faux
+`lien-mort`.
 
 > ⚠️ **Le chrome du site n'est pas automatique sur une route de module.** Les routes de module
 > sont montées sous `RootLayout` (providers + `<Outlet/>`), **pas** sous `SiteRenderer` (qui rend
@@ -433,6 +528,51 @@ convention du repo, **plus une spécificité AAC** :
 - **`campaignId`** entre dans les clés des données scopées campagne (**isolation stricte**).
 - **`userId` en DERNIER segment** sur les données user-scopées (mes votes/éval/financements/« vu »),
   et **absent** des données publiques (config, listing) pour préserver la mutualisation du cache.
+  ⚠️ Depuis la bascule sur `directoryproposal`, `COMMUNS` / `COUNT` / `FACETS` **sont** user-scopées :
+  un visiteur non administrateur ne reçoit que les communs sélectionnés plus les siens (§13.5).
+
+**Le balayage de l'annuaire est MÉMORISÉ.** Le chemin « filtre client » (`usage`, `usageSub`,
+`maturity`, et `q`/`tags` tant que la question n'est pas résolue — cf. §3.1) balaie jusqu'à
+`AAC_SCAN_SIZE = 300` documents. Ce balayage vit désormais dans le cache sous sa propre clé :
+
+```ts
+AAC_QUERY_KEYS.COMMUNS_SCAN(formId, campaignId, serverParams, userId)
+// ["aac-communs", formId, campaignId, "scan", serverParams, userId]
+```
+
+- **une seule requête `directoryproposal`** (`indexStep: 300`) par requête serveur et par fenêtre de
+  fraîcheur (60 s, la MÊME que celle du listing — un balayage plus frais serait refait pour rien,
+  un balayage plus vieux servirait des documents périmés à un listing qu'on vient de refetcher) ;
+- **partagée par toutes les pages** du défilement infini (la page n'entre pas dans la requête) **et
+  par tous les états de filtres client** qui envoient les mêmes paramètres serveur : cocher une
+  catégorie d'usage ne refait pas le balayage ;
+- placée **sous le préfixe `aac-communs`** à dessein : toute invalidation du listing l'emporte, sans
+  qu'un écrivain ait une clé de plus à connaître. `serverParams` est un objet — React Query le hache
+  à clés triées, deux requêtes identiques donnent la même entrée ;
+- **produite sans observateur**, par `queryClient.fetchQuery` depuis `useAacCommuns`. Le contrat
+  `AacCommunsQuery` porte pour cela un champ **optionnel** `memoizeScan` : omis, le transport
+  retrouve son comportement d'avant (`useAacFacets` ne le passe pas).
+
+> ⚠️ **`COMMUN_PROJECT` a DEUX écrivains.** Le producteur est `useCommunProjectEntity`, mais le flux
+> « Ajouter / éditer une action » (`useCommunObjectivesController`) **écrit** dans cette entrée
+> l'entité `Project` qu'il résout à l'ouverture de la modale. Sans cette écriture, la modale
+> s'ouvrirait sur le `null` que le hook a mis en cache après un échec (2 min) et la mutation
+> lèverait `projectMissing` une fois la saisie faite. Le commentaire de `queryKeys.ts` ne cite
+> aujourd'hui que le producteur.
+
+**Invalider après un dépôt ou une sélection** : `AacDepositButton` comme `CommunSelectionControl`
+invalident les **TROIS** préfixes `COMMUNS_PREFIX()` / `COUNT_PREFIX()` / `FACETS_PREFIX()`. Les trois,
+parce qu'ils sont volontairement disjoints : le décompte ignore les filtres de l'annuaire (il doit
+survivre à leur changement sans refetch) et les facettes se calculent sur le jeu NON filtré (sinon
+cocher une option ferait disparaître les autres). Un dépôt qui n'invaliderait que le listing laisserait
+un médaillon périmé (M10).
+
+**Hors module** : la clé du cache brut `depense[]` d'une réponse
+(`[aac-milestone-list-depenses, answerId, step]`) vit **côté cagnotte** —
+`CAGNOTTE_QUERY_KEYS.COMMUN_RAW_DEPENSES(answerId, step)` / `COMMUN_RAW_DEPENSES_PREFIX(answerId)`,
+ré-exportée par `useCommunRawDepenses` — parce que c'est cagnotte qui l'invalide : `aac` dépend de
+`cagnotte`, jamais l'inverse. La « première dépendance cagnotte → aac » qu'on redoutait n'existe
+donc pas.
 
 ---
 
@@ -445,7 +585,16 @@ convention du repo, **plus une spécificité AAC** :
 | Dashboards | `dashboard.ts` + `dimensions.ts` (**array-aware**, lit `answers.<form>.serverData.answers.<section>.<field>`) | `modules/observatoire` |
 | Listing / filtres / cartes | `useSearchQuery` (`searchType:['answers']`), `CardAnswer`, `parseCoformAnswer`, `FiltersSection` | `modules/search` |
 | Évaluation | `useMultiEvalData` + `MultiEvalRadarTabs`/`Dialog` (radar **prêt**), `EvaluationField`/`EvaluationVoteCell` | `modules/coform` |
-| Parsing de données non typées | `utils/dataTransform.ts` (`asRecord`, `toArrayOrValues`, `getServerData`…) | `modules/cagnotte` |
+| Parsing de données non typées | `utils/dataTransform.ts` (`asRecord`, `toArrayOrValues`, `getServerData`, `toSafeInt`, `normalizeActionStatus`, `resolveActionAuthorId`…) | `modules/cagnotte` |
+| Réparation des dépenses orphelines | `useOrphanDepenseRepair({ resource, repairs, enabled })` — l'écriture ; `useCagnotteAdapter` ne rend plus que les `pendingMilestoneRepairs` | `modules/cagnotte` |
+
+⚠️ **`useAacFundingResource` ne charge les projets de l'organisation qu'en cagnotte « standard ».**
+`useOrganizationProjectsWithAnswers` (`searchCostum` borné à 10 000 projets **plus** un `api.answer`
+par projet retourné) n'est lu par l'adaptateur que dans la branche `selectorType: "project"`. Sur un
+site AAC (`cagnotteModuleConfig.defaultType: "aac"` ⇒ `proposition`), les ressources viennent de
+l'enveloppe seule : ces requêtes **ne partent plus du tout**, ni à l'ouverture de la fiche ni à celle
+de la modale de dépôt (`MilestoneListField`). Toute séquence réseau documentée ailleurs qui les
+mentionne pour ces deux surfaces est périmée.
 
 ---
 
@@ -464,7 +613,11 @@ convention du repo, **plus une spécificité AAC** :
    ne se rend pas du tout.)*
 2. **Pollution `{}` ↔ `[]` (MongoDB).** Un champ **array** (`depense[]`) **DOIT** déclarer
    `getFieldShape = 'array'` **+ un default**, sinon un `[]` legacy arrive en `{}` et casse le
-   resolver Zod au submit.
+   resolver Zod au submit. Types aujourd'hui coercés en tableau par `getFieldShape`
+   (`coform/utils/formParser.ts`) : `checkbox`, `multiCheckboxPlus`, `simpleTable`, `tags`,
+   `timeSlots`, `dynamicFields` et **`milestoneList`** — pour ce dernier, un `depense = {}`
+   refusé par le `z.array` rendait l'étape **insoumettable** alors que le champ s'affichait vide
+   et correct.
 3. **Stockage legacy non uniforme.** `FIELD_PREFIX_MAP` préfixe certains champs
    (`finder` → `finder{key}`, `commonTable` → `yesOrNo{key}`) et `ROOT_LEVEL_FIELDS` stocke
    `evaluation`/`commonTable` **à la RACINE** de `answers` (pas sous `answers[subFormId]`).
@@ -482,7 +635,9 @@ convention du repo, **plus une spécificité AAC** :
 8. **Dérive de version SDK** : le repo `cocolight-api-client` peut être **en retard** sur le paquet
    installé. **Coder contre `node_modules`**, pas contre les sources du repo.
 9. **Un commun listé ici n'y a pas forcément été DÉPOSÉ.** Il suffit qu'un admin d'ici l'ait
-   sélectionné (`answers.aapStep2.choose.<contextId>`). Sa **fiche** est rendue avec le formulaire
+   sélectionné (`answers.aapStep2.choose.<contextId>`, où `<contextId>` est la **1ʳᵉ entrée de
+   `form.parent`** — `firstParent` —, ni le costum courant ni l'entité du slug du site : c'est la
+   clé qu'emploie le backend AAP et celle sur laquelle l'annuaire filtre). Sa **fiche** est rendue avec le formulaire
    de l'appel COURANT (`directory.formId ?? answer.form`), mais son **financement** appartient à
    son appel d'origine : l'enveloppe est scopée à l'entité appelante (cf. `doc/18` §Pièges n°2bis),
    donc la lire depuis l'entité du site ne le trouve pas. Résoudre l'hôte avec
@@ -503,6 +658,30 @@ convention du repo, **plus une spécificité AAC** :
    filtres. Fusionner **clé par clé** (`resolveDirectoryFilters`, `lib/directoryFilters.ts`), dont le
    défaut est tenu aligné sur le schéma par un test — et faire de même pour tout nouveau sous-objet
    à défauts.
+11. **Associer un projet EXISTANT : deux gardes, deux pièges d'API.**
+    `assertProjectAssociable` (`lib/associateExistingProject.ts`) vérifie deux sources indépendantes
+    qu'un projet n'est pas déjà celui d'un autre commun — la back-ref `project.serverData.answer`,
+    puis la collection `answers` (`coformAnswersSearch`, scopé au costum). Deux détails **non
+    négociables** :
+    - la projection de cette recherche **doit** porter `collection` **et** `id` : sans `collection`,
+      `_linkEntities` du SDK **jette silencieusement** chaque ligne et la page revient vide — le
+      contrôle ne bloque alors plus jamais rien ;
+    - la réparation d'une dépense sans palier appelle `answer.generateMilestoneFromDepense(<clé>)`
+      avec la **CLÉ du sous-document** (`"3"`), pas une position densifiée : `depense` arrive parfois
+      en objet à clés creuses (`{"0":…, "3":…}`), et densifier réparerait `"1"`, qui n'existe pas.
+
+    Les échecs métier sont typés : `AacProjectLinkError` porte une **clé i18n** du namespace
+    `modules/aac` (le message technique reste en anglais, pour les logs) et
+    `ProjectAlreadyLinkedError` l'étend en ajoutant l'answer en conflit et la source de la détection.
+    La **traduction se fait dans le hook** `useAssociateExistingAacProject`, jamais dans la lib —
+    clés `detail.project.toasts.alreadyLinked` / `.projectWithoutId` / `.incompleteContext`.
+12. **Les filtres d'usage se lisent par clé QUALIFIÉE.** Un identifiant de sous-catégorie
+    (`2_site-vitrine`) n'est unique que **dans** sa catégorie : le filtre `usageSub` emploie donc des
+    clés `<catégorie>/<sous-catégorie>` (`usageSubKey` / `parseUsageSubKey`, `lib/filterCommuns.ts`),
+    lues dans `usage.bySub` — jamais dans `usage.subs`, l'aplat qui confond les homonymes, que le
+    filtre ne consulte plus du tout. Une clé **nue** reste tolérée (l'état historique) et se lit sous
+    les catégories retenues, toutes si aucune ne l'est : l'union qui en résulte est la limite de
+    cette forme, pas un choix.
 
 ---
 
@@ -700,7 +879,7 @@ ci-dessous sont **tout de même présents** (vides) : `parsePropositionData` est
 | `descriptionStr` | `answers.aapStep1.description` | |
 | `tags` | `answers.aapStep1.tags` | ré-indexé (`array_values`) |
 | `image` | vignette résolue (`getPropositionThumbnail`) | |
-| `funds` | `answers.aapStep1.depense[]` | **agrégat de financement** : `{ price: int, financer: number[] }` — les dépenses `include === false` sont **exclues**, et `financer` est réduit aux seuls **montants** |
+| `funds` | `answers.aapStep1.depense[]` | **agrégat de financement** : `{ price: int, financer: number[] }` — les dépenses `include === false` sont **exclues**, et `financer` est réduit aux seuls **montants**. Le repli client (`parseAacAnswer` sur `answers.<étape résolue>.depense[]`, quand `funds` est vide) applique **le même filtre** : sans lui, un palier clôturé restait compté dans la demande dès que le backend n'avait rien pré-calculé (projection étroite, étape de dépôt ≠ `aapStep1`), et les deux chemins n'affichaient pas le même montant |
 | `user_count` | `links.contributors` | cardinal |
 | `interrest_count` | `vote` où `status === "love"` | cardinal |
 
