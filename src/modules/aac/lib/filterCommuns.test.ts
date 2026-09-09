@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterCommuns, foldForSearch } from "./filterCommuns";
+import { filterCommuns, foldForSearch, parseUsageSubKey, usageSubKey } from "./filterCommuns";
 import { EMPTY_AAC_FILTERS, type AacDirectoryFiltersState } from "./filtersKey";
 import type { AacCommunCard } from "./parseAacAnswer";
 import { EMPTY_AAC_USAGE } from "./aacUsage";
@@ -106,5 +106,58 @@ describe("filterCommuns", () => {
   it("aucun résultat ⇒ tableau vide, jamais d'exception", () => {
     expect(filterCommuns(CARDS, f({ q: "introuvable" }))).toEqual([]);
     expect(filterCommuns([], f({ q: "x" }))).toEqual([]);
+  });
+});
+
+describe("filterCommuns — sous-catégories d'usage, uniques dans LEUR catégorie seulement", () => {
+  // `2_site-vitrine` existe sous « Communication externe » ET sous « Métiers de
+  // la formation » (données réelles, cf. aacUsage.ts) : un identifiant nu ne
+  // désigne pas une seule pastille, et `usage.subs` (l'aplat) les confond.
+  const COM = "1_communication-externe";
+  const FORM = "7_metiers-de-la-formation";
+  const SUB = "2_site-vitrine";
+  const USAGE_CARDS = [
+    card({ id: "com", usage: { categories: [COM], subs: [SUB], bySub: { [COM]: [SUB] } } }),
+    card({ id: "form", usage: { categories: [FORM], subs: [SUB], bySub: { [FORM]: [SUB] } } }),
+    // Cité dans les deux catégories, mais « Site vitrine » seulement sous COM.
+    card({
+      id: "mixed",
+      usage: { categories: [COM, FORM], subs: [SUB], bySub: { [COM]: [SUB] } },
+    }),
+    card({ id: "none", usage: { categories: [COM], subs: [], bySub: {} } }),
+  ];
+
+  it("une clé qualifiée `<catégorie>/<sous-catégorie>` ne matche que sous SA catégorie", () => {
+    expect(ids(filterCommuns(USAGE_CARDS, f({ usageSub: [usageSubKey(COM, SUB)] })))).toEqual([
+      "com",
+      "mixed",
+    ]);
+    expect(ids(filterCommuns(USAGE_CARDS, f({ usageSub: [usageSubKey(FORM, SUB)] })))).toEqual([
+      "form",
+    ]);
+  });
+
+  it("OR entre clés qualifiées — l'union est celle des paires demandées, pas des homonymes", () => {
+    expect(
+      ids(filterCommuns(USAGE_CARDS, f({ usageSub: [usageSubKey(FORM, SUB), usageSubKey(COM, "9_autre")] })))
+    ).toEqual(["form"]);
+  });
+
+  it("une clé nue se lit dans les catégories RETENUES — pas dans l'aplat `usage.subs`", () => {
+    // « mixed » porte bien la sous-catégorie, mais sous COM : retenir FORM l'exclut.
+    expect(ids(filterCommuns(USAGE_CARDS, f({ usage: [FORM], usageSub: [SUB] })))).toEqual(["form"]);
+    expect(ids(filterCommuns(USAGE_CARDS, f({ usage: [COM], usageSub: [SUB] })))).toEqual([
+      "com",
+      "mixed",
+    ]);
+  });
+
+  it("une clé nue sans catégorie retenue garde l'union des homonymes (limite de la forme nue)", () => {
+    expect(ids(filterCommuns(USAGE_CARDS, f({ usageSub: [SUB] })))).toEqual(["com", "form", "mixed"]);
+  });
+
+  it("usageSubKey / parseUsageSubKey sont réciproques ; une clé nue rend categoryId null", () => {
+    expect(parseUsageSubKey(usageSubKey(COM, SUB))).toEqual({ categoryId: COM, subId: SUB });
+    expect(parseUsageSubKey(SUB)).toEqual({ categoryId: null, subId: SUB });
   });
 });

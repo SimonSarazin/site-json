@@ -17,7 +17,10 @@
  *
  * Sémantique, calquée sur celle des facettes du module search :
  *  - `q` : sous-chaîne du titre, insensible à la casse ET aux accents ;
- *  - OR à l'intérieur d'une facette, AND entre facettes.
+ *  - OR à l'intérieur d'une facette, AND entre facettes ;
+ *  - `usageSub` : clés QUALIFIÉES `<catégorie>/<sous-catégorie>` (cf.
+ *    `usageSubKey`), lues sous leur catégorie — une clé nue reste tolérée et se
+ *    lit sous les catégories retenues.
  */
 import type { AacCommunCard } from "./parseAacAnswer";
 import type { AacDirectoryFiltersState, AacSortKey } from "./filtersKey";
@@ -59,10 +62,49 @@ function matchesUsage(card: AacCommunCard, selected: readonly string[]): boolean
   return selected.some((id) => owned.has(id));
 }
 
-function matchesUsageSub(card: AacCommunCard, selected: readonly string[]): boolean {
-  if (selected.length === 0) return true;
-  const owned = new Set(card.usage.subs);
-  return selected.some((id) => owned.has(id));
+/**
+ * Séparateur de la clé QUALIFIÉE d'une sous-catégorie : `<catégorie>/<sous-catégorie>`.
+ *
+ * Un identifiant de sous-catégorie (`2_site-vitrine`) n'est unique que DANS sa
+ * catégorie (cf. `aacUsage.ts`) : deux catégories peuvent porter le même. Seule
+ * la paire désigne une pastille. Le `/` ne peut pas apparaître dans un
+ * identifiant (`<index>_<slug>`, slug en `[a-z0-9-]`) — c'est déjà la forme
+ * qu'emploie `aacUsage.test.ts` pour vérifier l'unicité des enfants.
+ */
+export const USAGE_SUB_KEY_SEPARATOR = "/";
+
+export function usageSubKey(categoryId: string, subId: string): string {
+  return `${categoryId}${USAGE_SUB_KEY_SEPARATOR}${subId}`;
+}
+
+/** Une clé NUE (`2_site-vitrine`, l'état historique) rend `categoryId: null`. */
+export function parseUsageSubKey(key: string): { categoryId: string | null; subId: string } {
+  const at = key.indexOf(USAGE_SUB_KEY_SEPARATOR);
+  if (at < 0) return { categoryId: null, subId: key };
+  return { categoryId: key.slice(0, at), subId: key.slice(at + 1) };
+}
+
+/**
+ * Une sous-catégorie QUALIFIÉE ne se lit que sous SA catégorie, dans
+ * `usage.bySub` — jamais dans `usage.subs`, l'aplat qui confond les homonymes.
+ *
+ * Une clé NUE se lit sous les catégories RETENUES (`selectedCategories`), sous
+ * toutes si aucune ne l'est : l'union qui en résulte est la limite de la forme
+ * nue, pas un choix — d'où les clés qualifiées.
+ */
+function matchesUsageSub(
+  card: AacCommunCard,
+  selectedSubs: readonly string[],
+  selectedCategories: readonly string[]
+): boolean {
+  if (selectedSubs.length === 0) return true;
+  const bySub = card.usage.bySub;
+  const scope = selectedCategories.length > 0 ? selectedCategories : Object.keys(bySub);
+  return selectedSubs.some((key) => {
+    const { categoryId, subId } = parseUsageSubKey(key);
+    const categories = categoryId ? [categoryId] : scope;
+    return categories.some((c) => (bySub[c] ?? []).includes(subId));
+  });
 }
 
 export function filterCommuns(
@@ -75,7 +117,7 @@ export function filterCommuns(
       matchesAnyOf(card.tags, filters.tags) &&
       matchesAnyOf(card.maturity ? [card.maturity] : [], filters.maturity) &&
       matchesUsage(card, filters.usage) &&
-      matchesUsageSub(card, filters.usageSub)
+      matchesUsageSub(card, filters.usageSub, filters.usage)
   );
 
   return sortCommuns(matching, filters.sort);
