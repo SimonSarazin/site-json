@@ -405,6 +405,75 @@ describe("deleteMilestoneWithSync", () => {
 });
 
 /**
+ * M38 (review MR 53) : la MR exigeait les DEUX index pour supprimer, là où le code
+ * d'avant construisait chaque suppression indépendamment et ne refusait que si
+ * AUCUN côté n'existait (`noIndexForDelete`). Un jalon présent dans
+ * `project.oceco.milestones[]` sans dépense miroir — ce que laisse `useCreateMilestone`
+ * quand `appendAnswerDepense` échoue après `appendProjectMilestone` — devenait
+ * indéracinable, et comme édition et clôture exigent déjà le côté réponse, figé.
+ */
+describe("deleteMilestoneWithSync — un seul côté suffit (M38)", () => {
+  const params = (rawEnvelope: unknown, api: Api, answerId = "answer1") => ({
+    source: api,
+    rawEnvelope,
+    projectId: "project1",
+    answerId,
+    milestoneId: "m1",
+  });
+
+  it("supprime un jalon projet SANS dépense miroir — côté projet seul, avec ses actions", async () => {
+    const { api, projectEntity, projectAction, resolvedActionEntity } = buildApiMock();
+    const rawEnvelope = buildRawEnvelope(
+      buildProjectData({
+        omitDepense: true,
+        actions: [{ id: "a1", milestone: { milestoneId: "m1" }, status: "todo" }],
+      }),
+    );
+
+    await expect(deleteMilestoneWithSync(params(rawEnvelope, api))).resolves.toBeUndefined();
+
+    expect(projectAction).toHaveBeenCalledWith({ id: "a1" });
+    expect(mockDeleteActionById).toHaveBeenCalledWith({ action: resolvedActionEntity });
+    expect(mockDeleteProjectMilestoneAtIndex).toHaveBeenCalledWith({ project: projectEntity, index: 0 });
+    expect(mockDeleteAnswerDepenseAtIndex).not.toHaveBeenCalled();
+  });
+
+  it("supprime une dépense dont le jalon projet a disparu — côté réponse seul", async () => {
+    const { api, answerEntity } = buildApiMock();
+    const rawEnvelope = buildRawEnvelope(buildProjectData({ omitProjectMilestone: true }));
+
+    await expect(deleteMilestoneWithSync(params(rawEnvelope, api))).resolves.toBeUndefined();
+
+    expect(mockDeleteAnswerDepenseAtIndex).toHaveBeenCalledWith({ answer: answerEntity, index: 0 });
+    expect(mockDeleteProjectMilestoneAtIndex).not.toHaveBeenCalled();
+  });
+
+  it("refuse quand aucun côté n'est supprimable (`noIndexForDelete`), sans écriture", async () => {
+    const { api } = buildApiMock();
+    // Côté projet absent, et pas d'`answerId` pour écrire côté réponse.
+    const rawEnvelope = buildRawEnvelope(buildProjectData({ omitProjectMilestone: true }));
+
+    await expect(deleteMilestoneWithSync(params(rawEnvelope, api, ""))).rejects.toThrow(
+      "milestone.errors.noIndexForDelete",
+    );
+    expect(mockDeleteProjectMilestoneAtIndex).not.toHaveBeenCalled();
+    expect(mockDeleteAnswerDepenseAtIndex).not.toHaveBeenCalled();
+  });
+
+  it("GARDE conservée : un jalon financé reste refusé", async () => {
+    const { api } = buildApiMock();
+    const rawEnvelope = buildRawEnvelope(
+      buildProjectData({ depenses: [{ milestone: "m1", priceInt: 100, financer: [{ amount: 50 }] }] }),
+    );
+
+    await expect(deleteMilestoneWithSync(params(rawEnvelope, api))).rejects.toThrow(
+      "milestone.errors.cannotDeleteIfFunded",
+    );
+    expect(mockDeleteProjectMilestoneAtIndex).not.toHaveBeenCalled();
+  });
+});
+
+/**
  * Le repli `docs` (commun déposé sous un autre contexte) voit les deux documents du
  * palier, mais PAS ses actions — elles ne vivent ni dans `oceco.milestones[]` ni dans
  * `depense[]`, et le SDK n'expose aucun listage hors enveloppe.

@@ -479,16 +479,27 @@ export async function deleteMilestoneWithSync(input: MilestoneMutationBaseParams
     throw new Error(t("milestone.errors.cannotDeleteWithoutEnvelope"));
   }
 
-  if (hasProject && typeof syncContext.projectMilestoneIndex !== 'number') {
-    throw new Error(t("milestone.errors.incompleteForDelete.missingProjectSide"));
-  }
-  if (answerDepenseIndex === null || !params.answerId) {
-    throw new Error(t("milestone.errors.incompleteForDelete.missingAnswerSide"));
+  /**
+   * Chaque côté se supprime INDÉPENDAMMENT : un seul suffit, et on ne refuse
+   * que s'il n'y en a aucun. Exiger les deux (édition et clôture le font, à raison :
+   * elles écrivent des deux côtés) rendait indéracinable un jalon présent d'un seul
+   * côté — le cas concret : `useCreateMilestone` écrit le projet PUIS la réponse,
+   * sans compensation ; si la seconde écriture échoue, `oceco.milestones[]` garde
+   * un jalon sans dépense miroir, et comme éditer ou clore exige le côté réponse,
+   * plus aucun geste ne l'atteint (M38). Le cas symétrique — dépense dont le jalon
+   * projet a disparu — se supprime de même, côté réponse seul.
+   */
+  const projectMilestoneIndex = hasProject ? syncContext.projectMilestoneIndex : null;
+  const hasProjectSide = typeof projectMilestoneIndex === 'number';
+  const hasAnswerSide = answerDepenseIndex !== null && Boolean(params.answerId);
+
+  if (!hasProjectSide && !hasAnswerSide) {
+    throw new Error(t("milestone.errors.noIndexForDelete"));
   }
 
   const deletions: Promise<unknown>[] = [];
 
-  if (hasProject) {
+  if (hasProject && (hasProjectSide || constraints.actionIds.length > 0)) {
     const project = await api.project({ id: params.projectId });
 
     for (const actionId of constraints.actionIds) {
@@ -496,21 +507,25 @@ export async function deleteMilestoneWithSync(input: MilestoneMutationBaseParams
       await deleteActionById({ action });
     }
 
+    if (hasProjectSide) {
+      deletions.push(
+        deleteProjectMilestoneAtIndex({
+          project,
+          index: projectMilestoneIndex,
+        })
+      );
+    }
+  }
+
+  if (hasAnswerSide) {
+    const answer = await api.answer({ id: params.answerId });
     deletions.push(
-      deleteProjectMilestoneAtIndex({
-        project,
-        index: syncContext.projectMilestoneIndex as number,
+      deleteAnswerDepenseAtIndex({
+        answer,
+        index: answerDepenseIndex as number,
       })
     );
   }
-
-  const answer = await api.answer({ id: params.answerId });
-  deletions.push(
-    deleteAnswerDepenseAtIndex({
-      answer,
-      index: answerDepenseIndex,
-    })
-  );
 
   await Promise.all(deletions);
 }
