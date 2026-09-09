@@ -6,8 +6,7 @@
       "builtins": {
         "organization": "add-tiers-lieux",
         "project": "add-project",
-        "event": "add-event",
-        "poi": "add-poi"
+        "event": "add-tiers-lieux-event"
       },
       "customs": [
         "add-tiers-lieux"
@@ -16,14 +15,12 @@
     "organizations": {
       "builtins": {
         "project": "add-project",
-        "event": "add-event",
-        "poi": "add-poi"
+        "event": "add-tiers-lieux-event"
       }
     },
     "projects": {
       "builtins": {
-        "event": "add-event",
-        "poi": "add-poi"
+        "event": "add-tiers-lieux-event"
       }
     }
   },
@@ -37,9 +34,65 @@
           "horsPerimetre": "edit-tiers-lieux"
         }
       ]
+    },
+    "events": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-tiers-lieux-event",
+          "native": "edit-tiers-lieux-event",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "poi": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-tiers-lieux-article",
+          "native": "edit-tiers-lieux-article",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
     }
   },
-  "adminResources": {},
+  "adminResources": {
+    "actualites/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "article"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "navigatorDesTierslieux",
+        "sourceKey": [
+          "navigatorDesTierslieux"
+        ]
+      },
+      "create": "add-tiers-lieux-article",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "agenda/events": {
+      "source": {
+        "defaultSortBy": {
+          "startDate": -1
+        },
+        "costumSlug": "navigatorDesTierslieux",
+        "sourceKey": [
+          "navigatorDesTierslieux"
+        ]
+      },
+      "create": "add-tiers-lieux-event",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    }
+  },
   "pages": {
     "//hero-search": {
       "baseParams": {
@@ -330,7 +383,7 @@
         ]
       }
     },
-    "/evenements/agenda": {
+    "/actualites/agenda": {
       "baseParams": {
         "sourceKey": [
           "franceTierslieux",

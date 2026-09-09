@@ -334,14 +334,14 @@
           },
           {
             "label": {
-              "fr": "Événements",
-              "en": "Events"
+              "fr": "Actus & événements",
+              "en": "News & events"
             },
             "description": {
-              "fr": "Les événements autour des tiers-lieux.org à venir",
-              "en": "Upcoming events around tiers-lieux.org"
+              "fr": "L'actualité et les événements autour de tiers-lieux.org",
+              "en": "News and events around tiers-lieux.org"
             },
-            "path": "/evenements"
+            "path": "/actualites"
           },
           {
             "label": {
@@ -860,10 +860,10 @@
                 "en": "Upcoming events"
               },
               "linkText": {
-                "fr": "Voir tous les événements",
-                "en": "See all events"
+                "fr": "Voir toutes les actus et événements",
+                "en": "See all news and events"
               },
-              "linkHref": "/evenements"
+              "linkHref": "/actualites"
             },
             "showViewToggle": false,
             "showTabs": false,
@@ -947,7 +947,7 @@
           "type": "html",
           "id": "tiers-lieux-actions",
           "props": {
-            "html": "<div class=\"container mx-auto px-6\"><div class=\"grid md:grid-cols-3 gap-8\">\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0 shadow-md transform rotate-y-180\">\n      <i class=\"fa-solid fa-magnifying-glass text-white text-xl transform scale-x-[-1]\"></i>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Découvrir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Explorez la carte des lieux et découvrez leur diversité.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <i class=\"fa-solid fa-arrow-right text-gray-900 dark:text-gray-300 text-xl\"></i>\n    </div>\n  </div>\n\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-yellow-400 flex items-center justify-center flex-shrink-0 shadow-md\" style=\"clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)\">\n      <i class=\"fa-solid fa-gear text-white text-xl\"></i>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se réunir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Trouvez la salle de réunion idéale pour organiser votre rencontre.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <i class=\"fa-solid fa-arrow-right text-gray-900 dark:text-gray-300 text-xl\"></i>\n    </div>\n  </div>\n\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0 shadow-md\">\n      <i class=\"fa-solid fa-heart text-white text-xl\"></i>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se reconnaître</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Via les marques collectives, identifiez les lieux qui vous inspirent.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <i class=\"fa-solid fa-arrow-right text-gray-900 dark:text-gray-300 text-xl\"></i>\n    </div>\n  </div>\n</div></div>"
+            "html": "<div class=\"container mx-auto px-6\"><div class=\"grid md:grid-cols-3 gap-8\">\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-warning rounded-full flex items-center justify-center flex-shrink-0 shadow-md transform rotate-y-180\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Découvrir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Explorez la carte des lieux et découvrez leur diversité.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </div>\n\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-warning flex items-center justify-center flex-shrink-0 shadow-md\" style=\"clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se réunir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Trouvez la salle de réunion idéale pour organiser votre rencontre.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </div>\n\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-warning rounded-full flex items-center justify-center flex-shrink-0 shadow-md\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se reconnaître</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Via les marques collectives, identifiez les lieux qui vous inspirent.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </div>\n</div></div>"
           }
         },
         {
@@ -2213,56 +2213,141 @@
       ]
     },
     {
-      "path": "/evenements",
+      "path": "/actualites",
       "title": {
-        "fr": "Événements - Le réseau social des tiers-lieux",
-        "en": "Events - The third places social network"
+        "fr": "Actus & Événements - Le réseau social des tiers-lieux",
+        "en": "News & Events - The third places social network"
       },
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "agenda",
-          "id": "section-evenements",
+          "type": "searchHeader",
+          "id": "actualites-header",
           "props": {
-            "customHeader": {
-              "title": {
-                "fr": "Les événements autour de tiers-lieux.org",
-                "en": "events around tiers-lieux.org"
-              }
+            "headline": {
+              "fr": "Actus & événements",
+              "en": "News & events"
             },
-            "filters": {
-              "type": true,
-              "text": true,
-              "tags": true
+            "subhead": {
+              "fr": "L'actualité et les rendez-vous du réseau des tiers-lieux.",
+              "en": "News and upcoming events from the third places network."
             },
-            "detailsMode": "drawer",
-            "enableMap": false,
-            "mapView": "map",
-            "map": {
-              "marker": {
-                "useItemImage": true,
-                "style": "pin",
-                "color": "primary"
-              }
-            },
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3,
-              "xl": 4
-            },
-            "baseParams": {
-              "sourceKey": [
-                "franceTierslieux",
-                "tierslieuxbelgique",
-                "navigatorDesTierslieux"
-              ],
-              "indexStepList": 20,
-              "fediverse": false
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une actu ou un événement...",
+              "en": "Search for news or an event..."
             }
           }
+        },
+        {
+          "type": "tabs",
+          "id": "actualites-tabs",
+          "props": {
+            "defaultTab": "actus",
+            "orientation": "horizontal",
+            "tabs": [
+              {
+                "id": "actus",
+                "label": {
+                  "fr": "Actus",
+                  "en": "News"
+                },
+                "icon": "newspaper",
+                "content": [
+                  {
+                    "type": "articleFeed",
+                    "id": "actualites-articles-feed",
+                    "props": {
+                      "costumSlug": "navigatorDesTierslieux",
+                      "pageSize": 12,
+                      "cardVariant": "default",
+                      "feedLayout": "grid",
+                      "fullWidth": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "evenements",
+                "label": {
+                  "fr": "Événements",
+                  "en": "Events"
+                },
+                "icon": "calendar",
+                "content": [
+                  {
+                    "type": "agenda",
+                    "id": "actualites-agenda",
+                    "props": {
+                      "filters": {
+                        "type": true,
+                        "text": false,
+                        "tags": true
+                      },
+                      "detailsMode": "drawer",
+                      "enableMap": false,
+                      "mapView": "map",
+                      "map": {
+                        "marker": {
+                          "useItemImage": true,
+                          "style": "pin",
+                          "color": "primary"
+                        }
+                      },
+                      "columns": {
+                        "sm": 1,
+                        "md": 2,
+                        "lg": 3,
+                        "xl": 4
+                      },
+                      "baseParams": {
+                        "sourceKey": [
+                          "franceTierslieux",
+                          "tierslieuxbelgique",
+                          "navigatorDesTierslieux"
+                        ],
+                        "indexStepList": 20,
+                        "fediverse": false
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
         }
-      ]
+      ],
+      "seo": {
+        "description": {
+          "fr": "Les actualités et les événements du réseau des tiers-lieux.",
+          "en": "News and events from the third places network."
+        }
+      }
+    },
+    {
+      "path": "/blog",
+      "title": {
+        "fr": "Actualités - Le réseau social des tiers-lieux",
+        "en": "News - The third places social network"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "articleFeed",
+          "id": "blog-feed",
+          "props": {
+            "costumSlug": "navigatorDesTierslieux",
+            "pageSize": 12,
+            "fullWidth": true
+          }
+        }
+      ],
+      "seo": {
+        "description": {
+          "fr": "Toutes les actualités du réseau des tiers-lieux.",
+          "en": "All news from the third places network."
+        }
+      }
     },
     {
       "path": "/api-donnees",
@@ -2430,10 +2515,10 @@
             }
           },
           {
-            "href": "/evenements",
+            "href": "/actualites",
             "label": {
-              "fr": "Événements",
-              "en": "Events"
+              "fr": "Actus & événements",
+              "en": "News & events"
             }
           },
           {
@@ -2513,8 +2598,8 @@
       "light": {
         "primary": "hsl(182, 56%, 40%)",
         "primaryForeground": "hsl(0, 0%, 100%)",
-        "secondary": "hsl(43, 91%, 52%)",
-        "secondaryForeground": "hsl(25, 20%, 12%)",
+        "secondary": "hsl(43, 68%, 90%)",
+        "secondaryForeground": "hsl(35, 35%, 20%)",
         "accent": "hsl(182, 40%, 88%)",
         "accentForeground": "hsl(182, 56%, 22%)",
         "background": "hsl(0, 0%, 100%)",
@@ -2553,8 +2638,8 @@
       "dark": {
         "primary": "hsl(182, 56%, 50%)",
         "primaryForeground": "hsl(0, 0%, 100%)",
-        "secondary": "hsl(43, 85%, 48%)",
-        "secondaryForeground": "hsl(25, 20%, 10%)",
+        "secondary": "hsl(38, 22%, 24%)",
+        "secondaryForeground": "hsl(43, 38%, 88%)",
         "accent": "hsl(182, 30%, 22%)",
         "accentForeground": "hsl(182, 56%, 80%)",
         "background": "hsl(210, 20%, 8%)",
@@ -3639,6 +3724,633 @@
           }
         }
       }
+    },
+    "tiers-lieux-article": {
+      "id": "tiers-lieux-article",
+      "entityType": "poi",
+      "collection": "poi",
+      "costumSlug": "navigatorDesTierslieux",
+      "subType": "article",
+      "identity": {
+        "type": "article"
+      },
+      "layout": {
+        "kind": "flat"
+      },
+      "serializeGroups": {},
+      "sections": [
+        {
+          "id": "content",
+          "label": {
+            "fr": "Contenu",
+            "en": "Content"
+          },
+          "icon": "newspaper",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "shortDescription",
+                "description",
+                "profil_avatar",
+                "galerie",
+                "documents",
+                "tags"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Titre",
+            "en": "Title"
+          }
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Chapô / extrait",
+            "en": "Excerpt"
+          },
+          "info": {
+            "fr": "Résumé court (~1-2 phrases) affiché en tête d'article et sur les cartes.",
+            "en": "Short summary (~1-2 sentences) shown at the top of the article and on cards."
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "required": true,
+          "label": {
+            "fr": "Contenu",
+            "en": "Content"
+          },
+          "widgetProps": {
+            "height": 320,
+            "preview": "edit"
+          }
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Image",
+            "en": "Image"
+          }
+        },
+        "galerie": {
+          "widget": "gallery",
+          "label": {
+            "fr": "Galerie d'images",
+            "en": "Image gallery"
+          },
+          "info": {
+            "fr": "Images additionnelles affichées avec l'article (jusqu'à 12).",
+            "en": "Additional images shown with the article (up to 12)."
+          },
+          "widgetProps": {
+            "contentKey": "slider",
+            "maxItems": 12
+          },
+          "renderOnly": true
+        },
+        "documents": {
+          "widget": "file",
+          "label": {
+            "fr": "Documents",
+            "en": "Documents"
+          },
+          "info": {
+            "fr": "Fichiers joints à l'article (PDF, bureautique…, jusqu'à 8).",
+            "en": "Files attached to the article (PDF, office…, up to 8)."
+          },
+          "widgetProps": {
+            "contentKey": "file",
+            "maxItems": 8
+          },
+          "renderOnly": true
+        },
+        "tags": {
+          "widget": "tags",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          },
+          "widgetProps": {
+            "searchable": true
+          }
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une actualité",
+            "en": "Add an article"
+          },
+          "edit": {
+            "fr": "Modifier l'actualité",
+            "en": "Edit article"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer l'actualité",
+            "en": "Create article"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "poi",
+        "inject": {
+          "extraFields": {
+            "type": "article"
+          },
+          "parentFromCarrier": true
+        },
+        "navigateOnSuccess": false,
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_POI",
+          "edit": "EntityFormModal · UPDATE_POI"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:blog",
+          "params": {
+            "userList": "pois",
+            "searchKeys": [
+              "blog:navigatorDesTierslieux",
+              "admin-poi"
+            ]
+          }
+        }
+      }
+    },
+    "tiers-lieux-event": {
+      "id": "tiers-lieux-event",
+      "entityType": "events",
+      "collection": "events",
+      "costumSlug": "navigatorDesTierslieux",
+      "layout": {
+        "kind": "tabs"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "infos",
+          "label": {
+            "fr": "Informations",
+            "en": "Details"
+          },
+          "icon": "info",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "type",
+                "shortDescription",
+                "description",
+                "url",
+                "profil_avatar"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dates",
+          "label": {
+            "fr": "Dates",
+            "en": "Dates"
+          },
+          "icon": "calendar-days",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "eventDates",
+                "startDate",
+                "endDate"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "lieu",
+          "label": {
+            "fr": "Lieu",
+            "en": "Location"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "taxo",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Keywords"
+          },
+          "icon": "tags",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "tags"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Visuel",
+            "en": "Image"
+          }
+        },
+        "name": {
+          "widget": "text",
+          "required": true,
+          "placeholder": {
+            "fr": "Titre de l'événement",
+            "en": "Event title"
+          },
+          "label": {
+            "fr": "Titre de l'événement",
+            "en": "Event title"
+          }
+        },
+        "type": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Type d'événement",
+            "en": "Event type"
+          },
+          "placeholder": {
+            "fr": "Choisir un type…",
+            "en": "Choose a type…"
+          },
+          "enum": [
+            {
+              "value": "workshop",
+              "label": {
+                "fr": "Atelier",
+                "en": "Workshop"
+              }
+            },
+            {
+              "value": "competition",
+              "label": {
+                "fr": "Compétition",
+                "en": "Competition"
+              }
+            },
+            {
+              "value": "concert",
+              "label": {
+                "fr": "Concert",
+                "en": "Concert"
+              }
+            },
+            {
+              "value": "contest",
+              "label": {
+                "fr": "Concours",
+                "en": "Contest"
+              }
+            },
+            {
+              "value": "conference",
+              "label": {
+                "fr": "Conférence",
+                "en": "Conference"
+              }
+            },
+            {
+              "value": "debate",
+              "label": {
+                "fr": "Débat",
+                "en": "Debate"
+              }
+            },
+            {
+              "value": "exhibition",
+              "label": {
+                "fr": "Exposition",
+                "en": "Exhibition"
+              }
+            },
+            {
+              "value": "festival",
+              "label": {
+                "fr": "Festival",
+                "en": "Festival"
+              }
+            },
+            {
+              "value": "crowdfunding",
+              "label": {
+                "fr": "Financement participatif",
+                "en": "Crowdfunding"
+              }
+            },
+            {
+              "value": "fair",
+              "label": {
+                "fr": "Foire",
+                "en": "Fair"
+              }
+            },
+            {
+              "value": "course",
+              "label": {
+                "fr": "Formation",
+                "en": "Course"
+              }
+            },
+            {
+              "value": "protest",
+              "label": {
+                "fr": "Manifestation",
+                "en": "Protest"
+              }
+            },
+            {
+              "value": "market",
+              "label": {
+                "fr": "Marché",
+                "en": "Market"
+              }
+            },
+            {
+              "value": "film",
+              "label": {
+                "fr": "Projection",
+                "en": "Film screening"
+              }
+            },
+            {
+              "value": "getTogether",
+              "label": {
+                "fr": "Rencontre",
+                "en": "Get together"
+              }
+            },
+            {
+              "value": "meeting",
+              "label": {
+                "fr": "Réunion",
+                "en": "Meeting"
+              }
+            },
+            {
+              "value": "spectacle",
+              "label": {
+                "fr": "Spectacle",
+                "en": "Show"
+              }
+            },
+            {
+              "value": "internship",
+              "label": {
+                "fr": "Stage",
+                "en": "Internship"
+              }
+            },
+            {
+              "value": "stand",
+              "label": {
+                "fr": "Stand",
+                "en": "Stand"
+              }
+            },
+            {
+              "value": "others",
+              "label": {
+                "fr": "Autre",
+                "en": "Other"
+              }
+            }
+          ]
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "placeholder": {
+            "fr": "Résumé en quelques lignes",
+            "en": "A few lines of summary"
+          },
+          "label": {
+            "fr": "Résumé",
+            "en": "Summary"
+          },
+          "help": {
+            "fr": "Une ou deux phrases, affichées sur la carte de l'agenda.",
+            "en": "One or two sentences, shown on the agenda card."
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "required": true,
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          },
+          "widgetProps": {
+            "height": 320,
+            "preview": "edit"
+          }
+        },
+        "url": {
+          "widget": "text",
+          "placeholder": {
+            "fr": "https://…",
+            "en": "https://…"
+          },
+          "label": {
+            "fr": "Lien (site, inscription…)",
+            "en": "Link (website, registration…)"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          },
+          "widgetProps": {
+            "searchable": true
+          }
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Lieu",
+            "en": "Location"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        },
+        "eventDates": {
+          "widget": "eventDates",
+          "label": {
+            "fr": "Dates",
+            "en": "Dates"
+          }
+        },
+        "startDate": {
+          "widget": "hidden",
+          "type": "string",
+          "requiredIf": {
+            "field": "recurrency",
+            "op": "falsy"
+          },
+          "write": "eventDate:write"
+        },
+        "endDate": {
+          "widget": "hidden",
+          "type": "string",
+          "requiredIf": {
+            "field": "recurrency",
+            "op": "falsy"
+          },
+          "write": "eventDate:write"
+        },
+        "recurrency": {
+          "widget": "hidden",
+          "type": "boolean",
+          "default": false
+        },
+        "openingHours": {
+          "widget": "hidden",
+          "type": "array",
+          "write": "eventOpeningHours:write"
+        },
+        "timeZone": {
+          "widget": "hidden",
+          "type": "string",
+          "write": "eventTimeZone:write"
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter un événement",
+            "en": "Add an event"
+          },
+          "edit": {
+            "fr": "Modifier l'événement",
+            "en": "Edit event"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer l'événement",
+            "en": "Create event"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "events",
+        "navigateOnSuccess": false,
+        "inject": {
+          "extraFields": {
+            "preferences": {
+              "toBeValidated": true
+            }
+          }
+        },
+        "successKey": {
+          "add": "toast.add.eventSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.eventError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_EVENT",
+          "edit": "EntityFormModal · UPDATE_EVENT"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:event",
+          "params": {
+            "userList": "events",
+            "searchKeys": [
+              "admin-events"
+            ]
+          }
+        }
+      }
     }
   },
   "profiles": {
@@ -3772,7 +4484,7 @@
             "organization": true,
             "project": true,
             "event": true,
-            "poi": true,
+            "poi": false,
             "custom": [
               {
                 "modalKey": "add-tiers-lieux",
@@ -3915,7 +4627,7 @@
             "organization": false,
             "project": true,
             "event": true,
-            "poi": true
+            "poi": false
           }
         },
         {
@@ -4328,7 +5040,7 @@
             "organization": false,
             "project": false,
             "event": true,
-            "poi": true
+            "poi": false
           }
         },
         {
@@ -4471,6 +5183,16 @@
       "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
+      "editModals": [
+        {
+          "editModal": "edit-tiers-lieux-event",
+          "when": {
+            "field": "sourceKeys",
+            "op": "contains",
+            "value": "navigatorDesTierslieux"
+          }
+        }
+      ],
       "sections": [
         {
           "type": "profile-header",
@@ -4650,6 +5372,19 @@
       "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
+      "editModals": [
+        {
+          "editModal": "edit-tiers-lieux-article",
+          "editModalMatch": {
+            "type": "article"
+          },
+          "when": {
+            "field": "sourceKeys",
+            "op": "contains",
+            "value": "navigatorDesTierslieux"
+          }
+        }
+      ],
       "sections": [
         {
           "type": "profile-header",
@@ -4823,6 +5558,12 @@
       }
     }
   },
+  "blog": {
+    "feedCostumSlug": "navigatorDesTierslieux",
+    "readerVariant": "default",
+    "defaultCardVariant": "default",
+    "defaultFeedLayout": "grid"
+  },
   "floatingActionButton": {
     "enabled": true,
     "position": "bottom-left",
@@ -4835,5 +5576,180 @@
     "condition": {
       "auth": "required"
     }
+  },
+  "admin": {
+    "enabled": true,
+    "title": {
+      "fr": "Administration du réseau",
+      "en": "Network administration"
+    },
+    "access": {
+      "min": "siteAdmin"
+    },
+    "tabs": [
+      {
+        "id": "dashboard",
+        "label": {
+          "fr": "Tableau de bord",
+          "en": "Dashboard"
+        },
+        "icon": "layout-dashboard",
+        "sections": [
+          {
+            "type": "dashboard"
+          }
+        ]
+      },
+      {
+        "id": "membres",
+        "label": {
+          "fr": "Membres du réseau",
+          "en": "Network members"
+        },
+        "icon": "users",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "members",
+            "filters": [
+              "toBeValidated",
+              "isAdmin",
+              "isInviting",
+              "text"
+            ],
+            "actions": [
+              "invite"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "actualites",
+        "label": {
+          "fr": "Actualités",
+          "en": "News"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Actualités",
+              "en": "News"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "article"
+              },
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "navigatorDesTierslieux",
+              "sourceKey": [
+                "navigatorDesTierslieux"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Date",
+                  "en": "Date"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-tiers-lieux-article",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "agenda",
+        "label": {
+          "fr": "Événements",
+          "en": "Events"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "events",
+            "label": {
+              "fr": "Événements",
+              "en": "Events"
+            },
+            "source": {
+              "defaultSortBy": {
+                "startDate": -1
+              },
+              "costumSlug": "navigatorDesTierslieux",
+              "sourceKey": [
+                "navigatorDesTierslieux"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "type",
+                "label": {
+                  "fr": "Type",
+                  "en": "Type"
+                }
+              },
+              {
+                "path": "startDate",
+                "label": {
+                  "fr": "Début",
+                  "en": "Start"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Proposé le",
+                  "en": "Submitted"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-tiers-lieux-event",
+            "edit": "inherit"
+          }
+        ]
+      }
+    ]
   }
 }
