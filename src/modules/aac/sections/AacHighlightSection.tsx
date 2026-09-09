@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useAacCommunsCount } from "../hooks/useAacCommunsCount";
+import { useAacDirectoryContext } from "../hooks/useAacDirectoryContext";
 import type { AacHighlightSectionProps } from "../schema";
 
 interface Props {
@@ -27,8 +28,12 @@ export default function AacHighlightSection({ id, props }: Props) {
   const { t: localize } = useLocalization();
   const { title, description, className, tone = "primary", cta, count } = props;
 
-  const wantsCount = count?.source === "communs";
-  const { count: communsCount, isLoading } = useAacCommunsCount(wantsCount);
+  // Sans AAC déclaré (`config.aac.formId`), le décompte ne sera JAMAIS connu :
+  // ce n'est pas une attente, c'est une absence — pas de médaillon du tout,
+  // plutôt qu'un squelette qui ne se résoudrait jamais.
+  const { formId } = useAacDirectoryContext();
+  const wantsCount = count?.source === "communs" && formId !== null;
+  const { count: communsCount, error: countError } = useAacCommunsCount(wantsCount);
 
   const isPrimary = tone === "primary";
 
@@ -66,7 +71,7 @@ export default function AacHighlightSection({ id, props }: Props) {
         {wantsCount && (
           <CountMedallion
             value={communsCount}
-            isLoading={isLoading}
+            error={countError}
             label={count?.label ? localize(count.label) : undefined}
             isPrimary={isPrimary}
           />
@@ -79,24 +84,31 @@ export default function AacHighlightSection({ id, props }: Props) {
 /**
  * Le médaillon. Tant que le chiffre n'est pas connu on montre un squelette —
  * jamais un `0`, qui se lirait comme « aucun commun » et non comme « je ne sais
- * pas encore ». En cas d'échec, `count` reste `null` et le médaillon disparaît :
- * une bande sans chiffre reste lisible, un chiffre faux ne l'est pas.
+ * pas encore ». Ce squelette est aussi ce que rend le SSR : la requête n'y est
+ * pas encore ACTIVÉE (elle attend le formulaire, jamais préchargé), donc
+ * l'attente se lit sur `value`, pas sur `isLoading` — qui vaut false tant que
+ * rien n'est en vol, et laisserait la place vide puis surgir le médaillon.
+ *
+ * En cas d'échec, `count` reste `null` et le médaillon disparaît : une bande
+ * sans chiffre reste lisible, un chiffre faux ne l'est pas. Un chiffre déjà
+ * connu prime sur une erreur de rafraîchissement — React Query le conserve,
+ * on l'affiche plutôt que de faire disparaître le médaillon.
  */
 function CountMedallion({
   value,
-  isLoading,
+  error,
   label,
   isPrimary,
 }: {
   value: number | null;
-  isLoading: boolean;
+  error: Error | null;
   label?: string;
   isPrimary: boolean;
 }) {
   const t = useT("modules/aac");
   const text = label ?? String(t("highlight.communs"));
 
-  if (!isLoading && value === null) return null;
+  if (value === null && error) return null;
 
   return (
     <div
@@ -105,7 +117,7 @@ function CountMedallion({
         isPrimary ? "bg-background" : "bg-card border"
       )}
     >
-      {isLoading ? (
+      {value === null ? (
         <Skeleton className="h-12 w-16" />
       ) : (
         <span className="text-5xl font-bold text-primary tabular-nums">{value}</span>
