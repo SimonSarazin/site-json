@@ -510,7 +510,7 @@ Le module enregistre un namespace `cagnotte` via `register.ts` (side-effect). 11
 | `canCreateAction(m)` | admin + milestone non `close` |
 | `canEditAction(a)` | si `a.status === "done"` : admin uniquement ; sinon : admin OU **auteur** (`a.authorId`) OU contributeur (`a.contributorIds.includes(currentUserId)`) |
 | `canMarkActionDone(a)` | (admin OU **auteur** OU contributeur) + `a.status === "todo"` |
-| `canDeleteAction(a)` | admin uniquement (signature `(action) => isAdmin` — le paramètre `action` est ignoré) |
+| `canDeleteAction(a)` | si `a.status === "done"` : admin uniquement ; sinon : admin OU **auteur** (`a.authorId`) — les contributeurs assignés, non (supprimer est plus fort que corriger ; aligné sur le garde backend `Action.delete()`, `isAuthorOrAdmin`) |
 | `canCandidateAction(a)` | `currentUserId` non vide + `a.status === "todo"` + pas déjà contributeur |
 
 Métadonnées exposées : `isConnected`, `isAdmin`, `isContributor`, `currentUserId`.
