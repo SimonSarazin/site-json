@@ -39,6 +39,18 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+function renderAdapter(
+  fundingEnvelope: FundingEnvelopeNormalizedData,
+  allProjects: OrgProject[],
+  config: CagnotteTypeConfig,
+  selectedId: string,
+) {
+  const client = new QueryClient();
+  const wrapper = ({ children }: { children: ReactNode }) =>
+    createElement(QueryClientProvider, { client }, children);
+  return renderHook(() => useCagnotteAdapter(fundingEnvelope, allProjects, config, selectedId), { wrapper });
+}
+
 /**
  * Régression : boucle de requêtes infinie à l'ouverture du formulaire de dépôt
  * d'un commun (`findanswered` → `updatepathvalue` → `fundingenvelope` → …).
@@ -133,18 +145,6 @@ describe("useCagnotteAdapter — `depense.financer` en objet keyé par id", () =
       },
     ] as unknown as OrgProject[];
 
-  function renderAdapter(
-    fundingEnvelope: FundingEnvelopeNormalizedData,
-    allProjects: OrgProject[],
-    config: CagnotteTypeConfig,
-    selectedId: string,
-  ) {
-    const client = new QueryClient();
-    const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(QueryClientProvider, { client }, children);
-    return renderHook(() => useCagnotteAdapter(fundingEnvelope, allProjects, config, selectedId), { wrapper });
-  }
-
   it("proposition : ne plante pas, somme les montants et retrouve la part de l'utilisateur", () => {
     const { result } = renderAdapter(
       enveloppe({ poste: "Dev", priceInt: 5000, milestone: "m1", financer: financerObjet() }),
@@ -213,6 +213,60 @@ describe("useCagnotteAdapter — `depense.financer` en objet keyé par id", () =
     ).result.current.savedSelectedResource!.items[0];
     expect(projet.currentFunding).toBe(42);
     expect(projet.allFunding).toEqual([]);
+  });
+});
+
+/**
+ * §9.1 (review MR 53, décision backend) : `priceInt` n'est JAMAIS stocké — seule
+ * l'enveloppe le fabrique (`$convert` → int). Tout document lu hors enveloppe, ou
+ * une ligne que l'enveloppe n'a pas convertie, ne porte que `price` — parfois en
+ * chaîne (« 1 500 »). L'adaptateur lisait `Number(d.priceInt) || 0` : montant 0.
+ * Règle de lecture : `priceInt || price`, normalisé par `toSafeInt`.
+ */
+describe("useCagnotteAdapter — montant lu en `price` quand `priceInt` manque (§9.1)", () => {
+  function proposition(depense: Record<string, unknown>): FundingEnvelopeNormalizedData {
+    return {
+      rawEnvelope: {
+        projects: [{ id: "answer-prix", titre: "Mon commun", depenses: [depense] }],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+  }
+
+  it("proposition : `price` seul est lu", () => {
+    const item = renderAdapter(proposition({ poste: "Dev", price: 1500, milestone: "m1" }), [], CAGNOTTE_TYPE_CONFIGS.aac, "answer-prix")
+      .result.current.savedSelectedResource!.items[0];
+    expect(item.price).toBe(1500);
+  });
+
+  it("proposition : un `price` en chaîne avec espace est normalisé (`toSafeInt`)", () => {
+    const item = renderAdapter(proposition({ poste: "Dev", price: "1 500", milestone: "m1" }), [], CAGNOTTE_TYPE_CONFIGS.aac, "answer-prix")
+      .result.current.savedSelectedResource!.items[0];
+    expect(item.price).toBe(1500);
+  });
+
+  it("proposition : `priceInt` prime quand l'enveloppe l'a calculé", () => {
+    const item = renderAdapter(proposition({ poste: "Dev", priceInt: 5000, price: 4000, milestone: "m1" }), [], CAGNOTTE_TYPE_CONFIGS.aac, "answer-prix")
+      .result.current.savedSelectedResource!.items[0];
+    expect(item.price).toBe(5000);
+  });
+
+  it("projet : une dépense orpheline (sans palier projet) lit aussi `price`", () => {
+    const envelope = {
+      rawEnvelope: {
+        projects: [{ id: "answer-prix-projet", projectId: "proj-prix", titre: "Mon commun", depenses: [{ poste: "Legacy", price: 700 }] }],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+    // Sans `answerId` : pas de réparation à programmer, on n'observe que la lecture.
+    const projets = [
+      { id: "proj-prix", name: "Projet", milestones: [], cagnotteTotalAmount: 0, cagnotteTargetAmount: 0, rawProject: {} },
+    ] as unknown as OrgProject[];
+
+    const item = renderAdapter(envelope, projets, CAGNOTTE_TYPE_CONFIGS.standard, "proj-prix")
+      .result.current.savedSelectedResource!.items[0];
+    expect(item.name).toBe("Legacy");
+    expect(item.price).toBe(700);
   });
 });
 

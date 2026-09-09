@@ -17,7 +17,7 @@ import { useUserAdminOrganizations } from "@/modules/cagnotte/hooks/useUserAdmin
 import { isUser } from "@/lib/getTypedEntity";
 import type { User } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
-import { asRecord, getServerData, normalizeTags, toArrayOrValues, toNumber } from "@/modules/cagnotte/utils/dataTransform.ts";
+import { asRecord, getServerData, normalizeTags, toArrayOrValues, toNumber, toSafeInt } from "@/modules/cagnotte/utils/dataTransform.ts";
 import { generateMilestoneId } from "@/modules/cagnotte/utils/idGeneration";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { COMMUN_RAW_DEPENSES_QUERY_KEY } from "@/modules/aac/hooks/useCommunRawDepenses";
@@ -26,12 +26,27 @@ import { appendProjectMilestone, updateAnswerDepenseFields } from "@/modules/cag
 /** Financeur d'une dépense tel que l'enveloppe le sert, avant enrichissement. */
 type RawDepenseFinancer = FundingTransaction & { method?: string };
 
+/**
+ * Montant d'une dépense : `priceInt` si l'enveloppe l'a calculé, sinon `price` tel
+ * que le document le porte. `||` et non `??` : un `priceInt` à 0 est aussi ce que
+ * `$convert` rend d'une chaîne non numérique (« 1 500 »), que `toSafeInt` sait lire.
+ */
+function readDepensePrice(depense: Pick<RawDepense, "priceInt" | "price">): number {
+    return toSafeInt(depense.priceInt || depense.price);
+}
+
 interface RawDepense {
     id?: string | number;
     milestone?: string;
     poste?: string;
     description?: string;
+    /**
+     * Entier calculé par les pipelines de l'enveloppe (`$convert` → int) — jamais
+     * stocké. Une ligne lue hors enveloppe ne porte que `price`, parfois en chaîne
+     * (« 1 500 ») : lire via `readDepensePrice`, jamais `priceInt` seul (§9.1).
+     */
     priceInt?: number | string;
+    price?: number | string | boolean | null;
     include?: boolean;
     actions?: FundingAction[];
     /**
@@ -352,7 +367,7 @@ export function useCagnotteAdapter(
                         depenseIndex: idx,
                         name: d.poste ?? "",
                         description: d.description ?? "",
-                        price: Number(d.priceInt) || 0,
+                        price: readDepensePrice(d),
                         status: d.include !== false ? "open" : "close",
                         actions: enrichedActions,
                         currentFunding,
@@ -455,7 +470,7 @@ export function useCagnotteAdapter(
                         depenseIndex: index,
                         name: d.poste ?? "",
                         description: d.description ?? "",
-                        price: Number(d.priceInt) || 0,
+                        price: readDepensePrice(d),
                         status: d.include !== false ? "open" : "close",
                         actions: enrichedActions,
                         currentFunding,
