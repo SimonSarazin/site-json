@@ -94,8 +94,9 @@ describe("costum structure Ekilib.re — document de config", () => {
     expect(d2.fields._imageFile).toMatchObject({ widget: "image", renderOnly: true });
     expect(d2.fields.postalCode).toMatchObject({ group: "address" });
     expect(d2.fields.geo).toMatchObject({ writeOnly: true, write: "geo:write" });
-    // tags n'est plus writeOnly : sa valeur courante est seedée pour que le write MERGE (préservation
-    // des tags étrangers — « mss ») au lieu de remplacer. cf. fns.ts structure:tagsFromThematic.
+    // tags n'est pas writeOnly : sa valeur courante est seedée, mais uniquement pour distinguer
+    // « rien à écrire » (création) de « effacer » (édition). cf. fns.ts structure:tagsFromThematic
+    // (miroir verbatim de thematic — plus de merge de tags étrangers).
     expect(d2.fields.tags).toMatchObject({ write: "structure:tagsFromThematic" });
     expect(d2.fields.tags.writeOnly).toBeUndefined();
     expect(d2.fields.socialLinks).toMatchObject({ path: "socialNetwork", read: "social:read", write: "social:write" });
@@ -140,12 +141,8 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
     expect(payload.thematic).toEqual(FILLED.thematic);
   });
 
-  it("5. dérive `tags` (libellés courts) depuis `thematic` (libellés longs)", () => {
-    // Exactement les tags de l'organisation réelle : « Periscolaire » sans accent, « 2eme » en toutes lettres.
-    expect(payload.tags).toEqual([
-      "Sport", "Santé/prévention", "Social", "Insertion", "Culture",
-      "Scolaire 1er degré", "Scolaire 2nd degré", "Periscolaire 1er degré", "Periscolaire 2eme degré",
-    ]);
+  it("5. recopie `tags` = `thematic` À L'IDENTIQUE (miroir dédoublonné, cf. hook legacy)", () => {
+    expect(payload.tags).toEqual(FILLED.thematic);
   });
 
   it("6. omet `tags` quand aucune thématique n'est cochée (jamais d'écrasement accidentel)", () => {

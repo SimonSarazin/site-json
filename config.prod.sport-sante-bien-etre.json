@@ -552,6 +552,44 @@
           }
         },
         {
+          "type": "searchHeader",
+          "id": "espace-pro-actions-rapides",
+          "props": {
+            "headline": {
+              "fr": "⚡ Actions rapides",
+              "en": "⚡ Quick actions"
+            },
+            "subhead": {
+              "fr": "Renseignez d'abord votre structure puis votre créneau",
+              "en": "First register your structure, then your slot"
+            },
+            "subheadClassName": "text-destructive italic",
+            "compact": true,
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Étape 1 — Ajouter sa structure",
+                  "en": "Step 1 — Add your structure"
+                },
+                "icon": "building-2",
+                "modal": "add-sport-sante-bienetre-organizations",
+                "requiresAdmin": false,
+                "variant": "primary"
+              },
+              {
+                "label": {
+                  "fr": "Étape 2 — Ajouter son créneau",
+                  "en": "Step 2 — Add your slot"
+                },
+                "icon": "calendar-plus",
+                "href": "/coform/6928096adf5caf0d230e7f26",
+                "requiresAdmin": false,
+                "variant": "outline"
+              }
+            ]
+          }
+        },
+        {
           "type": "html",
           "id": "mission",
           "props": {
@@ -1411,6 +1449,10 @@
           "type": "searchProStatic",
           "id": "section-structure-cards",
           "props": {
+            "title": {
+              "fr": "Maisons Sport Santé",
+              "en": "Sport Health Houses"
+            },
             "useFilter": true,
             "showMap": true,
             "enableMap": true,
@@ -1427,9 +1469,8 @@
                   "source.keys": "sportSanteBienetre",
                   "reference.costum": "sportSanteBienetre"
                 },
-                "tags": [
-                  "mss"
-                ]
+                "mss": "true",
+                "statusActor" : "Validé"
               }
             },
             "list": {
@@ -1440,11 +1481,15 @@
                 "xl": 1
               },
               "card": {
-                "type": "contact-card",
-                "detailsMode": "drawer"
+                "type": "image-cover",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "structure"
               }
             },
             "map": {
+              "layout": "split",
               "marker": {
                 "useItemImage": true,
                 "style": "pin",
@@ -5000,18 +5045,6 @@
       ],
       "editModals": [
         {
-          "editModal": "edit-sport-sante-bienetre-mss",
-          "editModalMatch": {
-            "type": "NGO"
-          },
-          "when": {
-            "or": [
-              { "field": "sourceKeys", "op": "contains", "value": "sportSanteBienetre" },
-              { "field": "reference.costum", "op": "contains", "value": "sportSanteBienetre" }
-            ]
-          }
-        },
-        {
           "editModal": "edit-sport-sante-bienetre-organizations",
           "when": {
             "or": [
@@ -5591,6 +5624,15 @@
       "entityType": "organizations",
       "collection": "organizations",
       "costumSlug": "sportSanteBienetre",
+      "icon": "building-2",
+      "identity": {
+        "type": "Cooperative"
+      },
+      "scope": {
+        "slugFrom": "constant",
+        "constant": "sportSanteBienetre"
+      },
+      "validateFn": "validate:addressComplete",
       "layout": {
         "kind": "wizard",
         "validatePerStep": true,
@@ -5599,11 +5641,6 @@
         "header": "gradient"
       },
       "serializeGroups": {
-        "telephone": {
-          "serverKey": "telephone",
-          "read": "telephone:read",
-          "write": "telephone:write"
-        },
         "address": {
           "serverKey": "address",
           "read": "address:read",
@@ -5612,23 +5649,37 @@
       },
       "sections": [
         {
-          "id": "identite",
+          "id": "structure",
           "label": {
-            "fr": "Identité",
-            "en": "Identity"
+            "fr": "Votre structure",
+            "en": "Your structure"
           },
           "icon": "building-2",
           "groups": [
             {
               "columns": 1,
               "fields": [
-                "name"
+                "siren",
+                "name",
+                "sigle"
               ]
             },
             {
-              "columns": 2,
+              "columns": 1,
               "fields": [
-                "sigle",
+                "affiliate",
+                "affiliateTo"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "mss"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
                 "thematic"
               ]
             },
@@ -5647,23 +5698,27 @@
           ]
         },
         {
-          "id": "coordonnees",
+          "id": "contact",
           "label": {
             "fr": "Coordonnées",
-            "en": "Contact"
+            "en": "Contact details"
           },
           "icon": "map-pin",
           "groups": [
             {
               "columns": 1,
               "fields": [
-                "address"
+                "address",
+                "addressCountry",
+                "addressLocality",
+                "postalCode",
+                "streetAddress"
               ]
             },
             {
               "columns": 2,
               "fields": [
-                "telephone",
+                "mobile",
                 "email"
               ]
             },
@@ -5678,28 +5733,46 @@
               "fields": [
                 "socialLinks"
               ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "openingHours"
-              ]
             }
           ]
         },
         {
-          "id": "juridique",
+          "id": "legal",
           "label": {
-            "fr": "Juridique",
-            "en": "Legal"
+            "fr": "Forme juridique",
+            "en": "Legal form"
           },
           "icon": "scale",
           "groups": [
             {
-              "columns": 2,
+              "columns": 1,
               "fields": [
-                "legalStatus",
-                "siren"
+                "legalStatus"
+              ]
+            },
+            {
+              "columns": 1,
+              "label": {
+                "fr": "Pièces justificatives",
+                "en": "Supporting documents"
+              },
+              "fields": [
+                "statusFile",
+                "responsableCivilePro"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "statusPrimaire",
+                "statusSecondaire",
+                "statusCommunale"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "autreDescription"
               ]
             }
           ]
@@ -5707,23 +5780,23 @@
         {
           "id": "representant",
           "label": {
-            "fr": "Représentant",
-            "en": "Representative"
+            "fr": "Votre représentant",
+            "en": "Your representative"
           },
           "icon": "user",
           "groups": [
             {
-              "columns": 2,
+              "columns": 1,
               "fields": [
-                "representativeCivility",
                 "representativeTitle"
               ]
             },
             {
               "columns": 2,
               "fields": [
-                "representativeFirstName",
-                "representativeName"
+                "representativeCivility",
+                "representativeName",
+                "representativeFirstName"
               ]
             },
             {
@@ -5738,8 +5811,8 @@
         {
           "id": "responsable",
           "label": {
-            "fr": "Responsable",
-            "en": "Manager"
+            "fr": "Personne chargée du dossier SSBE",
+            "en": "Person in charge of the SSBE file"
           },
           "icon": "user-check",
           "groups": [
@@ -5750,17 +5823,17 @@
               ]
             },
             {
-              "columns": 2,
+              "columns": 1,
               "fields": [
-                "personInChargeCivility",
                 "personInChargeTitle"
               ]
             },
             {
               "columns": 2,
               "fields": [
-                "personInChargeFirstName",
-                "personInChargeName"
+                "personInChargeCivility",
+                "personInChargeName",
+                "personInChargeFirstName"
               ]
             },
             {
@@ -5774,21 +5847,181 @@
         }
       ],
       "fields": {
-        "telephone": {
-          "widget": "tel",
-          "group": "telephone",
-                              "label": {
-            "fr": "Téléphone",
-            "en": "Phone"
+        "siren": {
+          "widget": "text",
+          "write": "coerce:orUndef",
+          "label": {
+            "fr": "Siren / Siret",
+            "en": "Siren / Siret"
+          },
+          "placeholder": {
+            "fr": "123 456 789 00012",
+            "en": "123 456 789 00012"
           }
         },
-        "_telSlot": {
-          "widget": "hidden",
-          "group": "telephone"
+        "name": {
+          "widget": "text",
+          "required": true,
+          "rules": {
+            "minLength": 3
+          },
+          "label": {
+            "fr": "Nom",
+            "en": "Name"
+          },
+          "placeholder": {
+            "fr": "Nom de la structure",
+            "en": "Structure name"
+          },
+          "info": {
+            "fr": "Le nom qui sera affiché publiquement",
+            "en": "The name that will be publicly displayed"
+          }
         },
-        "_telRest": {
+        "sigle": {
+          "widget": "text",
+          "label": {
+            "fr": "Sigle de l'association",
+            "en": "Association acronym"
+          }
+        },
+        "affiliate": {
+          "widget": "switch",
+          "write": "coerce:boolString",
+          "label": {
+            "fr": "Structure affiliée à une union, à une fédération ou à un réseau",
+            "en": "Structure affiliated with a union, federation or network"
+          }
+        },
+        "affiliateTo": {
+          "widget": "text",
+          "label": {
+            "fr": "Affiliation",
+            "en": "Affiliation"
+          },
+          "placeholder": {
+            "fr": "Nom de l'union, fédération ou réseau",
+            "en": "Name of the union, federation or network"
+          },
+          "visibleIf": {
+            "field": "affiliate",
+            "op": "truthy"
+          }
+        },
+        "mss": {
+          "widget": "switch",
+          "write": "coerce:boolString",
+          "label": {
+            "fr": "La structure est une maison sport santé (MSS)",
+            "en": "The structure is also a Sport-Health House (MSS)"
+          }
+        },
+        "thematic": {
+          "widget": "multiselect",
+          "type": "array",
+          "label": {
+            "fr": "Domaine d'intervention (plusieurs choix possibles)",
+            "en": "Field of action (multiple choices possible)"
+          },
+          "enum": [
+            {
+              "value": "Sport",
+              "label": {
+                "fr": "Sport",
+                "en": "Sport"
+              }
+            },
+            {
+              "value": "Santé/prévention",
+              "label": {
+                "fr": "Santé/prévention",
+                "en": "Health / Prevention"
+              }
+            },
+            {
+              "value": "Social",
+              "label": {
+                "fr": "Social",
+                "en": "Social"
+              }
+            },
+            {
+              "value": "Insertion",
+              "label": {
+                "fr": "Insertion",
+                "en": "Integration"
+              }
+            },
+            {
+              "value": "Culture",
+              "label": {
+                "fr": "Culture",
+                "en": "Culture"
+              }
+            },
+            {
+              "value": "Tourisme",
+              "label": {
+                "fr": "Tourisme",
+                "en": "Tourism"
+              }
+            },
+            {
+              "value": "Handicap",
+              "label": {
+                "fr": "Handicap",
+                "en": "Disability"
+              }
+            },
+            {
+              "value": "Scolaire 1er degré - Maternelle et primaire",
+              "label": {
+                "fr": "Scolaire 1er degré - Maternelle et primaire",
+                "en": "Primary school - Nursery and primary"
+              }
+            },
+            {
+              "value": "Scolaire 2nd degré - Collège et Lycée",
+              "label": {
+                "fr": "Scolaire 2nd degré - Collège et Lycée",
+                "en": "Secondary school - Middle and high school"
+              }
+            },
+            {
+              "value": "Périscolaire 1er degré - Maternelle et primaire",
+              "label": {
+                "fr": "Périscolaire 1er degré - Maternelle et primaire",
+                "en": "After-school - Nursery and primary"
+              }
+            },
+            {
+              "value": "Périscolaire 2nd degré - Collège et Lycée",
+              "label": {
+                "fr": "Périscolaire 2nd degré - Collège et Lycée",
+                "en": "After-school - Middle and high school"
+              }
+            }
+          ]
+        },
+        "tags": {
           "widget": "hidden",
-          "group": "telephone"
+          "type": "array",
+          "write": "structure:tagsFromThematic"
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Votre logo",
+            "en": "Your logo"
+          },
+          "info": {
+            "fr": "Format carré recommandé · PNG ou JPG",
+            "en": "Square format recommended · PNG or JPG"
+          },
+          "widgetProps": {
+            "shape": "square",
+            "aspect": 1
+          }
         },
         "description": {
           "widget": "textarea",
@@ -5800,29 +6033,83 @@
         "address": {
           "widget": "location",
           "label": {
-            "fr": "Adresse",
-            "en": "Address"
+            "fr": "Adresse du siège",
+            "en": "Registered office address"
+          },
+          "widgetProps": {
+            "required": true
           }
         },
         "addressCountry": {
           "widget": "hidden",
-          "group": "address"
+          "group": "address",
+          "required": true,
+          "default": "RE"
         },
         "addressLocality": {
           "widget": "hidden",
-          "group": "address"
+          "group": "address",
+          "required": true
         },
         "postalCode": {
           "widget": "hidden",
-          "group": "address"
+          "group": "address",
+          "required": true
         },
         "streetAddress": {
           "widget": "hidden",
-          "group": "address"
+          "group": "address",
+          "required": true
         },
         "localityId": {
           "widget": "hidden",
           "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "write": "geoPosition:write"
+        },
+        "mobile": {
+          "widget": "tel",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          },
+          "placeholder": {
+            "fr": "0692 22 90 80",
+            "en": "0692 22 90 80"
+          }
+        },
+        "email": {
+          "widget": "text",
+          "write": "coerce:orUndef",
+          "label": {
+            "fr": "Adresse e-mail de contact",
+            "en": "Contact email"
+          },
+          "placeholder": {
+            "fr": "@email.com",
+            "en": "@email.com"
+          },
+          "widgetProps": {
+            "inputType": "email"
+          }
+        },
+        "link": {
+          "widget": "text",
+          "write": "coerce:orUndef",
+          "label": {
+            "fr": "Site web",
+            "en": "Website"
+          },
+          "placeholder": {
+            "fr": "https://monsite.re",
+            "en": "https://mysite.re"
+          }
         },
         "socialLinks": {
           "widget": "fieldArray",
@@ -5853,32 +6140,16 @@
                     "label": "Facebook"
                   },
                   {
-                    "value": "twitter",
-                    "label": "Twitter / X"
-                  },
-                  {
                     "value": "instagram",
                     "label": "Instagram"
-                  },
-                  {
-                    "value": "linkedin",
-                    "label": "LinkedIn"
                   },
                   {
                     "value": "youtube",
                     "label": "YouTube"
                   },
                   {
-                    "value": "mastodon",
-                    "label": "Mastodon"
-                  },
-                  {
-                    "value": "telegram",
-                    "label": "Telegram"
-                  },
-                  {
-                    "value": "discord",
-                    "label": "Discord"
+                    "value": "linkedin",
+                    "label": "LinkedIn"
                   }
                 ]
               },
@@ -5893,25 +6164,672 @@
             ]
           }
         },
-        "openingHours": {
-          "widget": "openingHours",
+        "legalStatus": {
+          "widget": "select",
+          "required": true,
           "label": {
-            "fr": "Horaires d’ouverture",
-            "en": "Opening hours"
+            "fr": "Forme juridique",
+            "en": "Legal form"
+          },
+          "info": {
+            "fr": "Choisir la forme juridique",
+            "en": "Choose the legal form"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "enum": [
+            {
+              "value": "Association loi 1901",
+              "label": {
+                "fr": "Association loi 1901",
+                "en": "Association (1901 law)"
+              }
+            },
+            {
+              "value": "Collectivité",
+              "label": {
+                "fr": "Collectivité",
+                "en": "Local authority"
+              }
+            },
+            {
+              "value": "Groupement d'Intérêt Publique",
+              "label": {
+                "fr": "Groupement d'Intérêt Publique",
+                "en": "Public interest group"
+              }
+            },
+            {
+              "value": "Entreprise, Auto-entrepreneur, Sisa",
+              "label": {
+                "fr": "Entreprise, Auto-entrepreneur, Sisa",
+                "en": "Company, Self-employed, Sisa"
+              }
+            },
+            {
+              "value": "Établissement public",
+              "label": {
+                "fr": "Établissement public",
+                "en": "Public establishment"
+              }
+            },
+            {
+              "value": "Autre",
+              "label": {
+                "fr": "Autre",
+                "en": "Other"
+              }
+            }
+          ]
+        },
+        "statusFile": {
+          "widget": "file",
+          "label": {
+            "fr": "Statuts",
+            "en": "Bylaws"
+          },
+          "visibleIf": {
+            "field": "legalStatus",
+            "op": "eq",
+            "value": "Entreprise, Auto-entrepreneur, Sisa"
+          },
+          "widgetProps": {
+            "contentKey": "statusFile",
+            "docType": "file",
+            "maxItems": 1,
+            "accept": ".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx,.odt,.ods,.odp,.csv"
           }
         },
-        "profil_avatar": {
-          "widget": "image",
+        "responsableCivilePro": {
+          "widget": "file",
           "label": {
-            "fr": "Logo",
-            "en": "Logo"
+            "fr": "Responsabilité civile pro (année en cours) ou attestation d'assurance",
+            "en": "Professional liability (current year) or insurance certificate"
+          },
+          "visibleIf": {
+            "field": "legalStatus",
+            "op": "in",
+            "value": [
+              "Association loi 1901",
+              "Groupement d'Intérêt Publique",
+              "Entreprise, Auto-entrepreneur, Sisa"
+            ]
+          },
+          "widgetProps": {
+            "contentKey": "responsableCivilePro",
+            "docType": "file",
+            "maxItems": 1,
+            "accept": ".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx,.odt,.ods,.odp,.csv"
           }
         },
-        "siren": {
+        "statusPrimaire": {
+          "widget": "select",
+          "label": {
+            "fr": "Vous êtes ?",
+            "en": "You are?"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "visibleIf": {
+            "field": "legalStatus",
+            "op": "eq",
+            "value": "Collectivité"
+          },
+          "enum": [
+            {
+              "value": "Région",
+              "label": {
+                "fr": "Région",
+                "en": "Region"
+              }
+            },
+            {
+              "value": "Département",
+              "label": {
+                "fr": "Département",
+                "en": "Department"
+              }
+            },
+            {
+              "value": "Intercommunalité",
+              "label": {
+                "fr": "Intercommunalité",
+                "en": "Inter-municipality"
+              }
+            },
+            {
+              "value": "Commune",
+              "label": {
+                "fr": "Commune",
+                "en": "Municipality"
+              }
+            }
+          ]
+        },
+        "statusSecondaire": {
+          "widget": "select",
+          "label": {
+            "fr": "Vous êtes ?",
+            "en": "You are?"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "visibleIf": {
+            "and": [
+              {
+                "field": "legalStatus",
+                "op": "eq",
+                "value": "Collectivité"
+              },
+              {
+                "field": "statusPrimaire",
+                "op": "eq",
+                "value": "Intercommunalité"
+              }
+            ]
+          },
+          "enum": [
+            {
+              "value": "TCO",
+              "label": "TCO"
+            },
+            {
+              "value": "CIREST",
+              "label": "CIREST"
+            },
+            {
+              "value": "CINOR",
+              "label": "CINOR"
+            },
+            {
+              "value": "CIVIS",
+              "label": "CIVIS"
+            },
+            {
+              "value": "CASUD",
+              "label": "CASUD"
+            }
+          ]
+        },
+        "statusCommunale": {
+          "widget": "select",
+          "label": {
+            "fr": "Vous êtes ?",
+            "en": "You are?"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "visibleIf": {
+            "and": [
+              {
+                "field": "legalStatus",
+                "op": "eq",
+                "value": "Collectivité"
+              },
+              {
+                "field": "statusPrimaire",
+                "op": "eq",
+                "value": "Commune"
+              }
+            ]
+          },
+          "enum": [
+            {
+              "value": "97400 - ST DENIS",
+              "label": "97400 - ST DENIS"
+            },
+            {
+              "value": "97410 - ST PIERRE",
+              "label": "97410 - ST PIERRE"
+            },
+            {
+              "value": "97411 - ST PAUL",
+              "label": "97411 - ST PAUL"
+            },
+            {
+              "value": "97412 - BRAS PANON",
+              "label": "97412 - BRAS PANON"
+            },
+            {
+              "value": "97413 - CILAOS",
+              "label": "97413 - CILAOS"
+            },
+            {
+              "value": "97414 - ENTRE DEUX",
+              "label": "97414 - ENTRE DEUX"
+            },
+            {
+              "value": "97416 - ST LEU",
+              "label": "97416 - ST LEU"
+            },
+            {
+              "value": "97417 - ST DENIS",
+              "label": "97417 - ST DENIS"
+            },
+            {
+              "value": "97418 - LE TAMPON",
+              "label": "97418 - LE TAMPON"
+            },
+            {
+              "value": "97419 - LA POSSESSION",
+              "label": "97419 - LA POSSESSION"
+            },
+            {
+              "value": "97420 - LE PORT",
+              "label": "97420 - LE PORT"
+            },
+            {
+              "value": "97421 - ST LOUIS",
+              "label": "97421 - ST LOUIS"
+            },
+            {
+              "value": "97422 - ST PAUL",
+              "label": "97422 - ST PAUL"
+            },
+            {
+              "value": "97423 - ST PAUL",
+              "label": "97423 - ST PAUL"
+            },
+            {
+              "value": "97424 - ST LEU",
+              "label": "97424 - ST LEU"
+            },
+            {
+              "value": "97425 - LES AVIRONS",
+              "label": "97425 - LES AVIRONS"
+            },
+            {
+              "value": "97426 - LES TROIS BASSINS",
+              "label": "97426 - LES TROIS BASSINS"
+            },
+            {
+              "value": "97427 - L ETANG SALE",
+              "label": "97427 - L ETANG SALE"
+            },
+            {
+              "value": "97429 - PETITE ILE",
+              "label": "97429 - PETITE ILE"
+            },
+            {
+              "value": "97430 - LE TAMPON",
+              "label": "97430 - LE TAMPON"
+            },
+            {
+              "value": "97431 - LA PLAINE DES PALMISTES",
+              "label": "97431 - LA PLAINE DES PALMISTES"
+            },
+            {
+              "value": "97432 - ST PIERRE",
+              "label": "97432 - ST PIERRE"
+            },
+            {
+              "value": "97433 - SALAZIE",
+              "label": "97433 - SALAZIE"
+            },
+            {
+              "value": "97434 - ST PAUL",
+              "label": "97434 - ST PAUL"
+            },
+            {
+              "value": "97435 - ST PAUL",
+              "label": "97435 - ST PAUL"
+            },
+            {
+              "value": "97436 - ST LEU",
+              "label": "97436 - ST LEU"
+            },
+            {
+              "value": "97437 - ST BENOIT",
+              "label": "97437 - ST BENOIT"
+            },
+            {
+              "value": "97438 - STE MARIE",
+              "label": "97438 - STE MARIE"
+            },
+            {
+              "value": "97439 - STE ROSE",
+              "label": "97439 - STE ROSE"
+            },
+            {
+              "value": "97440 - ST ANDRE",
+              "label": "97440 - ST ANDRE"
+            },
+            {
+              "value": "97441 - STE SUZANNE",
+              "label": "97441 - STE SUZANNE"
+            },
+            {
+              "value": "97450 - ST LOUIS",
+              "label": "97450 - ST LOUIS"
+            },
+            {
+              "value": "97460 - ST PAUL",
+              "label": "97460 - ST PAUL"
+            },
+            {
+              "value": "97470 - ST BENOIT",
+              "label": "97470 - ST BENOIT"
+            },
+            {
+              "value": "97480 - ST JOSEPH",
+              "label": "97480 - ST JOSEPH"
+            },
+            {
+              "value": "97490 - ST DENIS",
+              "label": "97490 - ST DENIS"
+            }
+          ]
+        },
+        "autreDescription": {
           "widget": "text",
           "label": {
-            "fr": "N° SIREN",
-            "en": "SIREN number"
+            "fr": "À préciser",
+            "en": "Please specify"
+          },
+          "visibleIf": {
+            "field": "legalStatus",
+            "op": "eq",
+            "value": "Autre"
+          }
+        },
+        "representativeTitle": {
+          "widget": "valueSelect",
+          "type": "string",
+          "default": "",
+          "read": "coerce:string",
+          "widgetProps": {
+            "multiple": false,
+            "creatable": true
+          },
+          "enum": [
+            {
+              "value": "Président",
+              "label": {
+                "fr": "Président",
+                "en": "President"
+              }
+            },
+            {
+              "value": "Maire.sse",
+              "label": {
+                "fr": "Maire.sse",
+                "en": "Mayor"
+              }
+            },
+            {
+              "value": "Chef.fe d'entreprise",
+              "label": {
+                "fr": "Chef.fe d'entreprise",
+                "en": "Company director"
+              }
+            },
+            {
+              "value": "Chef.fe d'établissement",
+              "label": {
+                "fr": "Chef.fe d'établissement",
+                "en": "Head of establishment"
+              }
+            },
+            {
+              "value": "Autre...",
+              "label": {
+                "fr": "Autre...",
+                "en": "Other..."
+              }
+            }
+          ],
+          "label": {
+            "fr": "Titre (fonction, statut...)",
+            "en": "Title (role, status...)"
+          },
+          "info": {
+            "fr": "Choisissez dans la liste ou saisissez directement",
+            "en": "Pick from the list or type it directly"
+          }
+        },
+        "representativeCivility": {
+          "widget": "select",
+          "label": {
+            "fr": "Civilité",
+            "en": "Title"
+          },
+          "enum": [
+            {
+              "value": "M.",
+              "label": {
+                "fr": "M.",
+                "en": "Mr."
+              }
+            },
+            {
+              "value": "Mme",
+              "label": {
+                "fr": "Mme",
+                "en": "Mrs."
+              }
+            }
+          ]
+        },
+        "representativeName": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Last name"
+          },
+          "placeholder": {
+            "fr": "Nom",
+            "en": "Last name"
+          }
+        },
+        "representativeFirstName": {
+          "widget": "text",
+          "label": {
+            "fr": "Prénom",
+            "en": "First name"
+          },
+          "placeholder": {
+            "fr": "Prénom",
+            "en": "First name"
+          }
+        },
+        "representativeEmail": {
+          "widget": "text",
+          "write": "coerce:orUndef",
+          "label": {
+            "fr": "E-mail",
+            "en": "Email"
+          },
+          "placeholder": {
+            "fr": "mail@exemple.com",
+            "en": "mail@example.com"
+          },
+          "widgetProps": {
+            "inputType": "email"
+          }
+        },
+        "representativeTelephone": {
+          "widget": "text",
+          "write": "coerce:orUndef",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          },
+          "placeholder": {
+            "fr": "0692001122",
+            "en": "0692001122"
+          },
+          "widgetProps": {
+            "inputType": "tel"
+          }
+        },
+        "responsableSameAsRepresent": {
+          "widget": "switch",
+          "write": "coerce:boolString",
+          "label": {
+            "fr": "Le représentant est aussi la personne en charge du dossier SSBE",
+            "en": "The representative is also the person in charge of the SSBE file"
+          }
+        },
+        "personInChargeTitle": {
+          "widget": "valueSelect",
+          "type": "string",
+          "default": "",
+          "read": "coerce:string",
+          "widgetProps": {
+            "multiple": false,
+            "creatable": true
+          },
+          "enum": [
+            {
+              "value": "Président",
+              "label": {
+                "fr": "Président",
+                "en": "President"
+              }
+            },
+            {
+              "value": "Maire.sse",
+              "label": {
+                "fr": "Maire.sse",
+                "en": "Mayor"
+              }
+            },
+            {
+              "value": "Chef.fe d'entreprise",
+              "label": {
+                "fr": "Chef.fe d'entreprise",
+                "en": "Company director"
+              }
+            },
+            {
+              "value": "Chef.fe d'établissement",
+              "label": {
+                "fr": "Chef.fe d'établissement",
+                "en": "Head of establishment"
+              }
+            },
+            {
+              "value": "Autre...",
+              "label": {
+                "fr": "Autre...",
+                "en": "Other..."
+              }
+            }
+          ],
+          "label": {
+            "fr": "Titre (fonction, statut...)",
+            "en": "Title (role, status...)"
+          },
+          "info": {
+            "fr": "Choisissez dans la liste ou saisissez directement",
+            "en": "Pick from the list or type it directly"
+          },
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
+        },
+        "personInChargeCivility": {
+          "widget": "select",
+          "label": {
+            "fr": "Civilité",
+            "en": "Title"
+          },
+          "enum": [
+            {
+              "value": "M.",
+              "label": {
+                "fr": "M.",
+                "en": "Mr."
+              }
+            },
+            {
+              "value": "Mme",
+              "label": {
+                "fr": "Mme",
+                "en": "Mrs."
+              }
+            }
+          ],
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
+        },
+        "personInChargeName": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Last name"
+          },
+          "placeholder": {
+            "fr": "Nom",
+            "en": "Last name"
+          },
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
+        },
+        "personInChargeFirstName": {
+          "widget": "text",
+          "label": {
+            "fr": "Prénom",
+            "en": "First name"
+          },
+          "placeholder": {
+            "fr": "Prénom",
+            "en": "First name"
+          },
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
+        },
+        "personInChargeEmail": {
+          "widget": "text",
+          "write": "coerce:orUndef",
+          "label": {
+            "fr": "E-mail",
+            "en": "Email"
+          },
+          "placeholder": {
+            "fr": "mail@exemple.com",
+            "en": "mail@example.com"
+          },
+          "widgetProps": {
+            "inputType": "email"
+          },
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
+        },
+        "personInChargeTelephone": {
+          "widget": "text",
+          "write": "coerce:orUndef",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          },
+          "placeholder": {
+            "fr": "0692001122",
+            "en": "0692001122"
+          },
+          "widgetProps": {
+            "inputType": "tel"
+          },
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
           }
         },
         "infoGeneral": {
@@ -5922,13 +6840,6 @@
             "en": "General information"
           }
         },
-        "name": {
-          "widget": "text",
-          "label": {
-            "fr": "Nom de la structure",
-            "en": "Structure name"
-          }
-        },
         "similarLink": {
           "widget": "hidden",
           "type": "object",
@@ -5937,285 +6848,40 @@
             "en": "Similar link"
           }
         },
-        "sigle": {
-          "widget": "text",
-          "label": {
-            "fr": "Sigle",
-            "en": "Acronym"
-          }
-        },
-        "affiliate": {
-          "widget": "switch",
-          "write": "coerce:boolOuiNon",
-          "label": {
-            "fr": "Affiliate",
-            "en": "Affiliate"
-          }
-        },
-        "affiliateTo": {
-          "widget": "text",
-          "label": {
-            "fr": "Affiliate to",
-            "en": "Affiliated to"
-          }
-        },
-        "thematic": {
-          "widget": "multiselect",
-          "label": {
-            "fr": "Thématiques",
-            "en": "Topics"
-          },
-          "enum": [
-            {
-              "value": "Sport",
-              "label": "Sport"
-            },
-            {
-              "value": "Santé/prévention",
-              "label": "Santé/prévention"
-            },
-            {
-              "value": "Social",
-              "label": "Social"
-            },
-            {
-              "value": "Insertion",
-              "label": "Insertion"
-            },
-            {
-              "value": "Culture",
-              "label": "Culture"
-            },
-            {
-              "value": "Tourisme",
-              "label": "Tourisme"
-            },
-            {
-              "value": "Handicap",
-              "label": "Handicap"
-            },
-            {
-              "value": "Scolaire 1er degré - Maternelle et primaire",
-              "label": "Scolaire 1er degré - Maternelle et primaire"
-            },
-            {
-              "value": "Scolaire 2nd degré - Collège et Lycée",
-              "label": "Scolaire 2nd degré - Collège et Lycée"
-            },
-            {
-              "value": "Périscolaire 1er degré - Maternelle et primaire",
-              "label": "Périscolaire 1er degré - Maternelle et primaire"
-            },
-            {
-              "value": "Périscolaire 2nd degré - Collège et Lycée",
-              "label": "Périscolaire 2nd degré - Collège et Lycée"
-            }
-          ]
-        },
-        "image": {
-          "widget": "text",
-          "label": {
-            "fr": "Image",
-            "en": "Image"
-          }
-        },
-        "mobile": {
-          "widget": "text",
-          "label": {
-            "fr": "Mobile",
-            "en": "Mobile"
-          }
-        },
         "formLocality": {
-          "widget": "text",
+          "widget": "hidden",
           "label": {
             "fr": "Localité",
             "en": "Locality"
           }
         },
         "location": {
-          "widget": "text",
+          "widget": "hidden",
+          "type": "object",
           "label": {
             "fr": "Localisation",
             "en": "Location"
           }
         },
-        "email": {
-          "widget": "text",
+        "image": {
+          "widget": "hidden",
           "label": {
-            "fr": "E-mail",
-            "en": "Email"
-          }
-        },
-        "link": {
-          "widget": "text",
-          "label": {
-            "fr": "Site web",
-            "en": "Website"
+            "fr": "Image",
+            "en": "Image"
           }
         },
         "youtube": {
-          "widget": "text",
+          "widget": "hidden",
           "label": {
             "fr": "Youtube",
             "en": "YouTube"
           }
         },
         "linkedin": {
-          "widget": "text",
+          "widget": "hidden",
           "label": {
             "fr": "Linkedin",
             "en": "LinkedIn"
-          }
-        },
-        "legalStatus": {
-          "widget": "text",
-          "label": {
-            "fr": "Statut juridique",
-            "en": "Legal status"
-          }
-        },
-        "autreDescription": {
-          "widget": "text",
-          "label": {
-            "fr": "Autre description",
-            "en": "Other description"
-          }
-        },
-        "representativeTitle": {
-          "widget": "select",
-          "label": {
-            "fr": "Fonction",
-            "en": "Role"
-          },
-          "enum": [
-            {
-              "value": "Président",
-              "label": "Président"
-            },
-            {
-              "value": "Maire.sse",
-              "label": "Maire.sse"
-            },
-            {
-              "value": "Chef.fe d'entreprise",
-              "label": "Chef.fe d'entreprise"
-            },
-            {
-              "value": "Chef.fe d'établissement",
-              "label": "Chef.fe d'établissement"
-            },
-            {
-              "value": "Autre...",
-              "label": "Autre..."
-            }
-          ]
-        },
-        "representativeCivility": {
-          "widget": "text",
-          "label": {
-            "fr": "Civilité",
-            "en": "Title"
-          }
-        },
-        "representativeName": {
-          "widget": "text",
-          "label": {
-            "fr": "Nom",
-            "en": "Last name"
-          }
-        },
-        "representativeFirstName": {
-          "widget": "text",
-          "label": {
-            "fr": "Prénom",
-            "en": "First name"
-          }
-        },
-        "representativeEmail": {
-          "widget": "text",
-          "label": {
-            "fr": "E-mail",
-            "en": "Email"
-          }
-        },
-        "representativeTelephone": {
-          "widget": "text",
-          "label": {
-            "fr": "Téléphone",
-            "en": "Phone"
-          }
-        },
-        "responsableSameAsRepresent": {
-          "widget": "switch",
-          "write": "coerce:boolString",
-          "label": {
-            "fr": "Le responsable est le représentant légal",
-            "en": "Person in charge is the legal representative"
-          }
-        },
-        "personInChargeTitle": {
-          "widget": "select",
-          "label": {
-            "fr": "Fonction",
-            "en": "Role"
-          },
-          "enum": [
-            {
-              "value": "Président",
-              "label": "Président"
-            },
-            {
-              "value": "Maire.sse",
-              "label": "Maire.sse"
-            },
-            {
-              "value": "Chef.fe d'entreprise",
-              "label": "Chef.fe d'entreprise"
-            },
-            {
-              "value": "Chef.fe d'établissement",
-              "label": "Chef.fe d'établissement"
-            },
-            {
-              "value": "Autre...",
-              "label": "Autre..."
-            }
-          ]
-        },
-        "personInChargeCivility": {
-          "widget": "text",
-          "label": {
-            "fr": "Civilité",
-            "en": "Title"
-          }
-        },
-        "personInChargeName": {
-          "widget": "text",
-          "label": {
-            "fr": "Nom",
-            "en": "Last name"
-          }
-        },
-        "personInChargeFirstName": {
-          "widget": "text",
-          "label": {
-            "fr": "Prénom",
-            "en": "First name"
-          }
-        },
-        "personInChargeEmail": {
-          "widget": "text",
-          "label": {
-            "fr": "E-mail",
-            "en": "Email"
-          }
-        },
-        "personInChargeTelephone": {
-          "widget": "text",
-          "label": {
-            "fr": "Téléphone",
-            "en": "Phone"
           }
         }
       },
@@ -6227,32 +6893,75 @@
           },
           "edit": {
             "fr": "Modifier la structure",
-            "en": "Edit structure"
+            "en": "Edit the structure"
+          }
+        },
+        "description": {
+          "add": {
+            "fr": "Référencez votre structure et la personne qui porte le projet.",
+            "en": "Register your structure and the person leading the project."
+          },
+          "edit": {
+            "fr": "Mettre à jour les informations de la structure.",
+            "en": "Update the structure information."
           }
         },
         "submitLabel": {
           "add": {
             "fr": "Créer la structure",
-            "en": "Create structure"
+            "en": "Create the structure"
           },
           "edit": {
-            "fr": "Enregistrer",
-            "en": "Save"
+            "fr": "Enregistrer les modifications",
+            "en": "Save changes"
           }
         },
-        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden"
+        "gradientHeader": true,
+        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden",
+        "validationFailedKey": {
+          "fr": "Veuillez corriger les champs en erreur (voir les onglets signalés).",
+          "en": "Please fix the highlighted fields (see the flagged tabs)."
+        },
+        "navText": {
+          "next": {
+            "fr": "Suivant →",
+            "en": "Next →"
+          },
+          "previous": {
+            "fr": "← Précédent",
+            "en": "← Previous"
+          },
+          "cancel": {
+            "fr": "Annuler",
+            "en": "Cancel"
+          },
+          "stepTemplate": {
+            "stepKey": {
+              "fr": "Étape",
+              "en": "Step"
+            },
+            "ofKey": {
+              "fr": "sur",
+              "en": "of"
+            }
+          }
+        }
       },
       "image": {
         "field": "profil_avatar",
         "existingUrlFrom": "image:profilUrl"
       },
       "mutation": {
+        "entityType": "organizations",
+        "payloadEmitEmptyOnEdit": true,
         "inject": {
+          "dropEmptyEmail": true,
           "extraFields": {
-            "type": "NGO"
+            "type": "Cooperative",
+            "role": "admin",
+            "statusActor": "En cours"
           }
         },
-        "entityType": "organizations",
         "successKey": {
           "add": "toast.add.organizationSuccess",
           "edit": "toast.profile.updateSuccess"
@@ -6262,13 +6971,18 @@
           "edit": "toast.profile.updateError"
         },
         "errorContext": {
-          "add": "EntityFormModal · ADD_ORGANIZATION",
-          "edit": "EntityFormModal · UPDATE_ORGANIZATION"
+          "add": "EntityFormModal · ADD_STRUCTURE",
+          "edit": "EntityFormModal · EDIT_STRUCTURE"
         },
         "invalidateFn": {
           "fn": "invalidate:standard",
           "params": {
-            "userList": "organizations"
+            "userList": "organizations",
+            "searchKeys": [
+              "searchCostumStatic",
+              "searchCostumStaticMapAll",
+              "admin-organizations"
+            ]
           }
         }
       }
@@ -6453,586 +7167,6 @@
             "searchKeys": [
               "blog:sportSanteBienetre"
             ]
-          }
-        }
-      }
-    },
-    "sport-sante-bienetre-mss": {
-      "id": "sport-sante-bienetre-mss",
-      "entityType": "organizations",
-      "collection": "organizations",
-      "costumSlug": "sportSanteBienetre",
-      "layout": {
-        "kind": "wizard",
-        "validatePerStep": true,
-        "stepper": "tabs",
-        "progress": "bar",
-        "header": "gradient"
-      },
-      "serializeGroups": {
-        "telephone": {
-          "serverKey": "telephone",
-          "read": "telephone:read",
-          "write": "telephone:write"
-        },
-        "address": {
-          "serverKey": "address",
-          "read": "address:read",
-          "write": "address:write"
-        }
-      },
-      "sections": [
-        {
-          "id": "presentation",
-          "label": {
-            "fr": "Présentation",
-            "en": "About"
-          },
-          "icon": "building-2",
-          "groups": [
-            {
-              "columns": 2,
-              "fields": [
-                "name",
-                "sigle"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "profil_avatar"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "shortDescription"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "description"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "tags"
-              ]
-            }
-          ]
-        },
-        {
-          "id": "contact",
-          "label": {
-            "fr": "Contact",
-            "en": "Contact"
-          },
-          "icon": "map-pin",
-          "groups": [
-            {
-              "columns": 2,
-              "fields": [
-                "telephone",
-                "email"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "link"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "address"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "openingHours"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "socialLinks"
-              ]
-            }
-          ]
-        },
-        {
-          "id": "representative",
-          "label": {
-            "fr": "Représentant",
-            "en": "Representative"
-          },
-          "icon": "user",
-          "groups": [
-            {
-              "columns": 2,
-              "fields": [
-                "representativeCivility",
-                "representativeTitle"
-              ]
-            },
-            {
-              "columns": 2,
-              "fields": [
-                "representativeFirstName",
-                "representativeName"
-              ]
-            },
-            {
-              "columns": 2,
-              "fields": [
-                "representativeEmail",
-                "representativeTelephone"
-              ]
-            }
-          ]
-        },
-        {
-          "id": "manager",
-          "label": {
-            "fr": "Responsable",
-            "en": "Manager"
-          },
-          "icon": "user-check",
-          "groups": [
-            {
-              "columns": 1,
-              "fields": [
-                "responsableSameAsRepresent"
-              ]
-            },
-            {
-              "columns": 2,
-              "fields": [
-                "personInChargeCivility",
-                "personInChargeTitle"
-              ]
-            },
-            {
-              "columns": 2,
-              "fields": [
-                "personInChargeFirstName",
-                "personInChargeName"
-              ]
-            },
-            {
-              "columns": 2,
-              "fields": [
-                "personInChargeEmail",
-                "personInChargeTelephone"
-              ]
-            }
-          ]
-        }
-      ],
-      "fields": {
-        "telephone": {
-          "widget": "tel",
-          "group": "telephone",
-                              "label": {
-            "fr": "Téléphone",
-            "en": "Phone"
-          }
-        },
-        "_telSlot": {
-          "widget": "hidden",
-          "group": "telephone"
-        },
-        "_telRest": {
-          "widget": "hidden",
-          "group": "telephone"
-        },
-        "description": {
-          "widget": "textarea",
-          "label": {
-            "fr": "Description",
-            "en": "Description"
-          }
-        },
-        "tags": {
-          "widget": "tags",
-          "label": {
-            "fr": "Mots-clés",
-            "en": "Tags"
-          }
-        },
-        "address": {
-          "widget": "location",
-          "label": {
-            "fr": "Adresse",
-            "en": "Address"
-          }
-        },
-        "addressCountry": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "addressLocality": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "postalCode": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "streetAddress": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "localityId": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "socialLinks": {
-          "widget": "fieldArray",
-          "label": {
-            "fr": "Réseaux sociaux",
-            "en": "Social networks"
-          },
-          "read": "social:read",
-          "write": "social:write",
-          "path": "socialNetwork",
-          "clear": "",
-          "widgetProps": {
-            "addLabel": {
-              "fr": "Ajouter un réseau social",
-              "en": "Add a social network"
-            },
-            "itemFields": [
-              {
-                "name": "platform",
-                "kind": "select",
-                "label": {
-                  "fr": "Plateforme",
-                  "en": "Platform"
-                },
-                "options": [
-                  {
-                    "value": "facebook",
-                    "label": "Facebook"
-                  },
-                  {
-                    "value": "twitter",
-                    "label": "Twitter / X"
-                  },
-                  {
-                    "value": "instagram",
-                    "label": "Instagram"
-                  },
-                  {
-                    "value": "linkedin",
-                    "label": "LinkedIn"
-                  },
-                  {
-                    "value": "youtube",
-                    "label": "YouTube"
-                  },
-                  {
-                    "value": "mastodon",
-                    "label": "Mastodon"
-                  },
-                  {
-                    "value": "telegram",
-                    "label": "Telegram"
-                  },
-                  {
-                    "value": "discord",
-                    "label": "Discord"
-                  }
-                ]
-              },
-              {
-                "name": "url",
-                "kind": "text",
-                "placeholder": {
-                  "fr": "https://...",
-                  "en": "https://..."
-                }
-              }
-            ]
-          }
-        },
-        "openingHours": {
-          "widget": "openingHours",
-          "label": {
-            "fr": "Horaires d'ouverture",
-            "en": "Opening hours"
-          }
-        },
-        "profil_avatar": {
-          "widget": "image",
-          "label": {
-            "fr": "Logo",
-            "en": "Logo"
-          }
-        },
-        "name": {
-          "widget": "text",
-          "label": {
-            "fr": "Nom de la structure",
-            "en": "Organization name"
-          }
-        },
-        "similarLink": {
-          "widget": "hidden",
-          "type": "object",
-          "label": {
-            "fr": "Lien similaire",
-            "en": "Similar link"
-          }
-        },
-        "sigle": {
-          "widget": "text",
-          "label": {
-            "fr": "Sigle",
-            "en": "Acronym"
-          }
-        },
-        "image": {
-          "widget": "text",
-          "label": {
-            "fr": "Image",
-            "en": "Image"
-          }
-        },
-        "mobile": {
-          "widget": "text",
-          "label": {
-            "fr": "Mobile",
-            "en": "Mobile"
-          }
-        },
-        "email": {
-          "widget": "text",
-          "label": {
-            "fr": "Email",
-            "en": "Email"
-          }
-        },
-        "formLocality": {
-          "widget": "text",
-          "label": {
-            "fr": "Localité",
-            "en": "Locality"
-          }
-        },
-        "location": {
-          "widget": "text",
-          "label": {
-            "fr": "Localisation",
-            "en": "Location"
-          }
-        },
-        "link": {
-          "widget": "text",
-          "label": {
-            "fr": "Site web",
-            "en": "Website"
-          }
-        },
-        "shortDescription": {
-          "widget": "text",
-          "label": {
-            "fr": "Description courte",
-            "en": "Short description"
-          }
-        },
-        "representativeTitle": {
-          "widget": "select",
-          "label": {
-            "fr": "Titre / fonction",
-            "en": "Title / role"
-          },
-          "enum": [
-            {
-              "value": "Président",
-              "label": "Président"
-            },
-            {
-              "value": "Maire.sse",
-              "label": "Maire.sse"
-            },
-            {
-              "value": "Chef.fe d'entreprise",
-              "label": "Chef.fe d'entreprise"
-            },
-            {
-              "value": "Chef.fe d'établissement",
-              "label": "Chef.fe d'établissement"
-            },
-            {
-              "value": "Autre...",
-              "label": "Autre..."
-            }
-          ]
-        },
-        "representativeCivility": {
-          "widget": "text",
-          "label": {
-            "fr": "Civilité",
-            "en": "Civility"
-          }
-        },
-        "representativeName": {
-          "widget": "text",
-          "label": {
-            "fr": "Nom",
-            "en": "Last name"
-          }
-        },
-        "representativeFirstName": {
-          "widget": "text",
-          "label": {
-            "fr": "Prénom",
-            "en": "First name"
-          }
-        },
-        "representativeEmail": {
-          "widget": "text",
-          "label": {
-            "fr": "Email",
-            "en": "Email"
-          }
-        },
-        "representativeTelephone": {
-          "widget": "text",
-          "label": {
-            "fr": "Téléphone",
-            "en": "Phone"
-          }
-        },
-        "responsableSameAsRepresent": {
-          "widget": "switch",
-          "write": "coerce:boolString",
-          "label": {
-            "fr": "Identique au représentant légal",
-            "en": "Same as legal representative"
-          }
-        },
-        "personInChargeTitle": {
-          "widget": "select",
-          "label": {
-            "fr": "Titre / fonction",
-            "en": "Title / role"
-          },
-          "enum": [
-            {
-              "value": "Président",
-              "label": "Président"
-            },
-            {
-              "value": "Maire.sse",
-              "label": "Maire.sse"
-            },
-            {
-              "value": "Chef.fe d'entreprise",
-              "label": "Chef.fe d'entreprise"
-            },
-            {
-              "value": "Chef.fe d'établissement",
-              "label": "Chef.fe d'établissement"
-            },
-            {
-              "value": "Autre...",
-              "label": "Autre..."
-            }
-          ]
-        },
-        "personInChargeCivility": {
-          "widget": "text",
-          "label": {
-            "fr": "Civilité",
-            "en": "Civility"
-          }
-        },
-        "personInChargeName": {
-          "widget": "text",
-          "label": {
-            "fr": "Nom",
-            "en": "Last name"
-          }
-        },
-        "personInChargeFirstName": {
-          "widget": "text",
-          "label": {
-            "fr": "Prénom",
-            "en": "First name"
-          }
-        },
-        "personInChargeEmail": {
-          "widget": "text",
-          "label": {
-            "fr": "Email",
-            "en": "Email"
-          }
-        },
-        "personInChargeTelephone": {
-          "widget": "text",
-          "label": {
-            "fr": "Téléphone",
-            "en": "Phone"
-          }
-        }
-      },
-      "chrome": {
-        "title": {
-          "add": {
-            "fr": "Créer une Maison Sport-Santé",
-            "en": "Create a Sport & Health House"
-          },
-          "edit": {
-            "fr": "Modifier la Maison Sport-Santé",
-            "en": "Edit the Sport & Health House"
-          }
-        },
-        "submitLabel": {
-          "add": {
-            "fr": "Créer",
-            "en": "Create"
-          },
-          "edit": {
-            "fr": "Enregistrer",
-            "en": "Save"
-          }
-        },
-        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden"
-      },
-      "image": {
-        "field": "profil_avatar",
-        "existingUrlFrom": "image:profilUrl"
-      },
-      "mutation": {
-        "entityType": "organizations",
-        "inject": {
-          "extraFields": {
-            "type": "NGO",
-            "role": "admin"
-          }
-        },
-        "successKey": {
-          "add": "toast.add.organizationSuccess",
-          "edit": "toast.profile.updateSuccess"
-        },
-        "errorKey": {
-          "add": "toast.add.organizationError",
-          "edit": "toast.profile.updateError"
-        },
-        "errorContext": {
-          "add": "EntityFormModal · ADD_ORGANIZATION",
-          "edit": "EntityFormModal · UPDATE_ORGANIZATION"
-        },
-        "invalidateFn": {
-          "fn": "invalidate:standard",
-          "params": {
-            "userList": "organizations"
           }
         }
       }
@@ -8521,8 +8655,28 @@
               "delete"
             ],
             "create": "add-sport-sante-bienetre-organizations",
-            "edit": "inherit"
-          },
+            "edit": "inherit",
+            "status": {
+              "mode": "statusField",
+              "field": "statusActor",
+              "states": [
+                { "value": "En attente", "tone": "pending" },
+                { "value": "En cours", "tone": "progress" },
+                { "value": "Validé", "tone": "positive" },
+                { "value": "Refusé", "tone": "negative" }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "maisons-sport-sante",
+        "label": {
+          "fr": "Maisons Sport Santé",
+          "en": "Sport-Health Houses"
+        },
+        "access": "siteAdmin",
+        "sections": [
           {
             "type": "resource",
             "entityType": "organizations",
@@ -8532,7 +8686,7 @@
             },
             "source": {
               "defaultFilters": {
-                "type": "NGO"
+                "mss": "true"
               },
               "defaultSortBy": {
                 "name": 1
@@ -8571,8 +8725,21 @@
               "export",
               "delete"
             ],
-            "create": "add-sport-sante-bienetre-mss",
-            "edit": "inherit"
+            "create": "add-sport-sante-bienetre-organizations",
+            "createDefaults": {
+              "mss": "true"
+            },
+            "edit": "inherit",
+            "status": {
+              "mode": "statusField",
+              "field": "statusActor",
+              "states": [
+                { "value": "En attente", "tone": "pending" },
+                { "value": "En cours", "tone": "progress" },
+                { "value": "Validé", "tone": "positive" },
+                { "value": "Refusé", "tone": "negative" }
+              ]
+            }
           }
         ]
       },
