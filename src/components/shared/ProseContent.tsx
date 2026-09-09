@@ -41,8 +41,21 @@ export interface ProseContentProps {
  * n'est pas propre à un formulaire : les fiches AAC affichent les mêmes valeurs
  * en lecture. Une seule implémentation, donc une seule garantie de sécurité.
  */
+/**
+ * Une VRAIE balise HTML — ouvrante avec ses attributs, ou fermante — telle que
+ * CommonMark la définit (§ Raw HTML), et rien d'autre. L'ancienne heuristique
+ * `<[a-zA-Z][^>]*>` prenait pour une balise tout `<lettre…>` : l'autolien
+ * markdown `<https://commun.fr>` ou l'e-mail `<contact@commun.fr>` faisaient
+ * basculer TOUT le texte dans la branche HTML, où le markdown n'est plus
+ * interprété et où DOMPurify supprime le pseudo-tag — l'URL disparaissait,
+ * le reste s'affichait en texte brut. Ici, `https` est suivi de `:` et
+ * `contact` de `@` : ni un nom de balise complet, ni un attribut → markdown.
+ */
+const HTML_TAG_RE =
+  /<(?:[a-zA-Z][a-zA-Z0-9-]*(?:\s+[a-zA-Z_:][\w:.-]*(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?)*\s*\/?|\/[a-zA-Z][a-zA-Z0-9-]*\s*)>/;
+
 export function ProseContent({ text, className, forceMarkdown = false }: ProseContentProps) {
-  const isHtml = !forceMarkdown && /<[a-zA-Z][^>]*>/.test(text);
+  const isHtml = !forceMarkdown && HTML_TAG_RE.test(text);
   const rawHtml = isHtml ? text : markdownParser.render(text);
   return (
     <div

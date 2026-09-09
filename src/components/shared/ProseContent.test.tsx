@@ -47,3 +47,48 @@ describe("ProseContent — profil de sanitisation restreint (H23)", () => {
     expect(container.firstElementChild?.className).toBe("prose prose-sm");
   });
 });
+
+/**
+ * L'auto-détection HTML ne doit reconnaître qu'une VRAIE balise. Un rédacteur
+ * qui tape un autolien markdown (`<https://…>`, `<contact@…>`) dans le textarea
+ * d'un commun doit voir son lien ET son markdown, pas un texte brut amputé.
+ */
+describe("ProseContent — auto-détection HTML vs markdown (M46)", () => {
+  const DESCRIPTION = "Notre site : <https://commun.fr>\n\n## Objectifs\n\n- a\n- b";
+
+  it("un autolien markdown ne fait pas basculer le texte en HTML brut", () => {
+    const { container } = render(<ProseContent text={DESCRIPTION} />);
+    // L'URL est rendue en lien (et n'a pas disparu)…
+    expect(container.querySelector('a[href="https://commun.fr"]')?.textContent).toBe("https://commun.fr");
+    // …et le reste du markdown est interprété.
+    expect(container.querySelector("h2")?.textContent).toBe("Objectifs");
+    expect(container.querySelectorAll("li")).toHaveLength(2);
+    expect(container.textContent).not.toContain("##");
+  });
+
+  it("un e-mail entre chevrons devient un lien mailto:", () => {
+    const { container } = render(<ProseContent text={"Écrire à <contact@commun.fr> **vite**"} />);
+    expect(container.querySelector('a[href="mailto:contact@commun.fr"]')).not.toBeNull();
+    expect(container.querySelector("strong")?.textContent).toBe("vite");
+  });
+
+  it("une comparaison `a < b` reste du texte", () => {
+    const { container } = render(<ProseContent text={"si a < b et c > d, **ok**"} />);
+    expect(container.textContent).toContain("a < b et c > d");
+    expect(container.querySelector("strong")?.textContent).toBe("ok");
+  });
+
+  it("du HTML déjà rendu (Parsedown) reste pris tel quel, sans ré-interprétation markdown", () => {
+    // Une ligne indentée de 4 espaces serait un bloc de code en markdown.
+    const { container } = render(<ProseContent text={'<p class="x">Bonjour</p>\n    <p>suite</p>'} />);
+    expect(container.querySelector("pre")).toBeNull();
+    expect(container.querySelectorAll("p")).toHaveLength(2);
+  });
+
+  it("reconnaît une balise fermante seule et une balise avec attributs", () => {
+    const { container: a } = render(<ProseContent text={"fin</p>\n    code?"} />);
+    expect(a.querySelector("pre")).toBeNull();
+    const { container: b } = render(<ProseContent text={'<a href="https://x.org" rel="noopener">l</a>\n    code?'} />);
+    expect(b.querySelector("pre")).toBeNull();
+  });
+});
