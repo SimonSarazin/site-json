@@ -28,11 +28,16 @@ export default function AacHighlightSection({ id, props }: Props) {
   const { t: localize } = useLocalization();
   const { title, description, className, tone = "primary", cta, count } = props;
 
-  // Sans AAC déclaré (`config.aac.formId`), le décompte ne sera JAMAIS connu :
-  // ce n'est pas une attente, c'est une absence — pas de médaillon du tout,
-  // plutôt qu'un squelette qui ne se résoudrait jamais.
-  const { formId } = useAacDirectoryContext();
-  const wantsCount = count?.source === "communs" && formId !== null;
+  // Le décompte sera-t-il connu UN JOUR ? Sans AAC déclaré (`config.aac.formId`)
+  // non ; mais pas davantage si la résolution du formulaire a échoué (formulaire
+  // supprimé, 403) ou s'est terminée sans rien produire (pas d'entité costum,
+  // donc requête jamais activée) : la requête du décompte attend `resolved` et
+  // resterait `pending` pour toujours. Dans tous ces cas c'est une ABSENCE, pas
+  // une attente — pas de médaillon du tout, plutôt qu'un squelette perpétuel.
+  const { formId, resolved, isFormLoading, configError } = useAacDirectoryContext();
+  const isCountReachable =
+    formId !== null && !configError && (isFormLoading || Boolean(resolved));
+  const wantsCount = count?.source === "communs" && isCountReachable;
   const { count: communsCount, error: countError } = useAacCommunsCount(wantsCount);
 
   const isPrimary = tone === "primary";
@@ -88,6 +93,9 @@ export default function AacHighlightSection({ id, props }: Props) {
  * pas encore ACTIVÉE (elle attend le formulaire, jamais préchargé), donc
  * l'attente se lit sur `value`, pas sur `isLoading` — qui vaut false tant que
  * rien n'est en vol, et laisserait la place vide puis surgir le médaillon.
+ * Lire l'attente sur `value` n'est tenable que parce que l'appelant a déjà
+ * écarté les cas où le chiffre ne viendra JAMAIS (`isCountReachable`) : sans
+ * cette garde, ce squelette serait perpétuel.
  *
  * En cas d'échec, `count` reste `null` et le médaillon disparaît : une bande
  * sans chiffre reste lisible, un chiffre faux ne l'est pas. Un chiffre déjà

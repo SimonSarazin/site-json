@@ -12,13 +12,25 @@ import type { AacHighlightSectionProps } from "../schema";
  * qu'on fait varier. Remis « en attente » avant chaque test.
  */
 const countState: UseAacCommunsCountResult = { count: null, isLoading: false, error: null };
-let formId: string | null = "f1";
+
+/**
+ * Le socle partagé, MUTABLE lui aussi : c'est l'état de la RÉSOLUTION du
+ * formulaire qui dit si le chiffre viendra un jour. Au repos : résolution
+ * aboutie (`resolved` posé), donc décompte ACTIVÉ et légitimement en attente.
+ */
+const contextState = {
+  formId: "f1" as string | null,
+  resolved: {} as unknown,
+  isFormLoading: false,
+  configError: null as Error | null,
+};
+const CONTEXT_AT_REST = { ...contextState };
 
 vi.mock("../hooks/useAacCommunsCount", () => ({
   useAacCommunsCount: () => countState,
 }));
 vi.mock("../hooks/useAacDirectoryContext", () => ({
-  useAacDirectoryContext: () => ({ formId }),
+  useAacDirectoryContext: () => contextState,
 }));
 
 import AacHighlightSection from "./AacHighlightSection";
@@ -47,7 +59,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   Object.assign(countState, { count: null, isLoading: false, error: null });
-  formId = "f1";
+  Object.assign(contextState, CONTEXT_AT_REST);
 });
 
 /**
@@ -91,10 +103,18 @@ describe("AacHighlightSection — le médaillon réserve sa place (M21)", () => 
   });
 
   it("ne réserve rien sans AAC déclaré : le chiffre ne viendra jamais", () => {
-    formId = null;
+    contextState.formId = null;
     poser();
 
     expect(screen.queryByText("Communs déposés")).not.toBeInTheDocument();
+  });
+
+  it("réserve la place tant que la résolution du formulaire est EN VOL", () => {
+    contextState.resolved = null;
+    contextState.isFormLoading = true;
+    poser();
+
+    expect(screen.getByText("Communs déposés")).toBeInTheDocument();
   });
 
   it("ne rend aucun médaillon si la config n'en demande pas", () => {
@@ -103,5 +123,32 @@ describe("AacHighlightSection — le médaillon réserve sa place (M21)", () => 
 
     expect(screen.queryByText("Communs déposés")).not.toBeInTheDocument();
     expect(screen.queryByText("12")).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * Le revers de M21 : le médaillon lit son attente sur `value === null`, et la
+ * requête du décompte attend `resolved` — donc reste `pending` À JAMAIS si la
+ * résolution du formulaire n'aboutit pas. Le squelette « en attente » devenait
+ * alors perpétuel, là où la doc du composant promet qu'un chiffre inconnu fait
+ * DISPARAÎTRE le médaillon.
+ */
+describe("AacHighlightSection — la config du formulaire ne se résoudra jamais", () => {
+  it("retire le médaillon quand la résolution a échoué", () => {
+    contextState.resolved = null;
+    contextState.configError = new Error("form supprimé");
+    poser();
+
+    expect(screen.queryByText("Communs déposés")).not.toBeInTheDocument();
+  });
+
+  it("retire le médaillon quand la résolution est terminée sans rien produire", () => {
+    // Requête de config désactivée (pas d'entité costum) : ni en vol, ni en
+    // erreur, et `resolved` restera nul.
+    contextState.resolved = null;
+    contextState.isFormLoading = false;
+    poser();
+
+    expect(screen.queryByText("Communs déposés")).not.toBeInTheDocument();
   });
 });
