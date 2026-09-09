@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, within, fireEvent } from "@testing-library/react";
 
 /**
  * Ce que cette section décide, et que trois tours de travail ont empilé :
@@ -10,7 +10,9 @@ import { render, screen, within } from "@testing-library/react";
  *  3. QUI voit le bouton d'ajout — l'admin du projet ET le déposant, personne
  *     d'autre (cf. `canInviteContributors`) ;
  *  4. QUI déclenche la lecture des invitations en attente — le seul admin du
- *     projet, parce que le backend réserve cette route (branche `isMe` du SDK).
+ *     projet, parce que le backend réserve cette route (branche `isMe` du SDK) ;
+ *  5. QUAND le bouton d'ajout agit — la modale exige l'entité projet, le bouton
+ *     ne doit pas laisser cliquer dans le vide tant qu'elle n'est pas là.
  */
 
 vi.mock("@/hooks/useT", () => ({
@@ -153,6 +155,35 @@ describe("CommunContributorsSection — droit d'ajouter", () => {
     renderSection();
     expect(bouton()).toBeNull();
     expect(screen.queryByTestId("invite-dialog")).toBeNull();
+  });
+});
+
+describe("CommunContributorsSection — projet lié non résolu", () => {
+  const bouton = () => screen.getByRole("button", { name: /detail\.contributorsSection\.addCta/ });
+  const RAISON = "detail.contributorsSection.addUnavailable";
+
+  it("désactive « Ajouter » avec la raison tant que le projet n'est pas résolu — plus de clic sans effet", () => {
+    // En vol, ou résolution échouée (le hook avale l'erreur et rend `null`) : même état.
+    projetCourant = null;
+    renderSection({ isCommunAuthor: true });
+
+    expect(bouton().hasAttribute("disabled")).toBe(true);
+    expect(screen.getByText(RAISON)).toBeTruthy();
+    expect(bouton().getAttribute("aria-describedby")).toBe(screen.getByText(RAISON).id);
+
+    fireEvent.click(bouton());
+    expect(screen.queryByTestId("invite-dialog")).toBeNull();
+  });
+
+  it("réactive « Ajouter » dès que le projet est résolu, la raison disparaît", () => {
+    projetCourant = { id: "proj-1", isAdmin: () => false };
+    renderSection({ isCommunAuthor: true });
+
+    expect(bouton().hasAttribute("disabled")).toBe(false);
+    expect(screen.queryByText(RAISON)).toBeNull();
+
+    fireEvent.click(bouton());
+    expect(screen.getByTestId("invite-dialog").getAttribute("data-open")).toBe("true");
   });
 });
 

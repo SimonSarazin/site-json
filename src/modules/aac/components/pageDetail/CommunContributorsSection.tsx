@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Building2, Crown, ExternalLink, MailCheck, UserPlus } from "lucide-react";
@@ -131,12 +131,22 @@ export function CommunContributorsSection({
     const queryClient = useQueryClient();
 
     const [isInviteOpen, setIsInviteOpen] = useState(false);
+    const inviteUnavailableId = useId();
 
     const { contributors, total, links, isLoading, isError } = useCommunProjectContributors(projectId);
 
     const projectEntity = useCommunProjectEntity(projectId);
     const isAdminOfProject = isProjectAdmin(projectEntity);
     const canInvite = canInviteContributors(projectEntity, { isCommunAuthor });
+    /**
+     * Le droit d'inviter ne dépend pas de l'entité (le déposant l'a d'office), mais la
+     * modale, elle, ne se monte qu'avec `projectEntity`. Tant que le projet n'est pas
+     * résolu — en vol, ou définitivement si `useCommunProjectEntity` a avalé l'erreur
+     * et rendu `null` — le bouton ouvrait un état `isInviteOpen` que rien ne lisait :
+     * clics sans le moindre retour. Le hook ne distingue pas les deux cas ; on
+     * désactive donc explicitement, avec la raison, plutôt que de laisser cliquer.
+     */
+    const canOpenInvite = canInvite && !!projectEntity;
 
     const { contributors: pendingResults } = useProjectContributors(
         isAdminOfProject ? projectEntity : null,
@@ -216,8 +226,20 @@ export function CommunContributorsSection({
     return (
         <div className="space-y-4">
             {canInvite && (
-                <div className="flex justify-end">
-                    <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsInviteOpen(true)}>
+                <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+                    {!canOpenInvite && (
+                        <p id={inviteUnavailableId} className="text-xs text-muted-foreground">
+                            {String(t("detail.contributorsSection.addUnavailable"))}
+                        </p>
+                    )}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => setIsInviteOpen(true)}
+                        disabled={!canOpenInvite}
+                        aria-describedby={canOpenInvite ? undefined : inviteUnavailableId}
+                    >
                         <UserPlus className="size-3.5" />
                         {String(t("detail.contributorsSection.addCta"))}
                     </Button>
@@ -265,7 +287,7 @@ export function CommunContributorsSection({
                 </p>
             )}
 
-            {canInvite && projectEntity && (
+            {canOpenInvite && (
                 <InviteMemberDialog
                     entity={projectEntity}
                     open={isInviteOpen}

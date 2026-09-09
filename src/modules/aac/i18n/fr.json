@@ -167,6 +167,7 @@
       "organization": "Organisation",
       "more": "+{{count}} autre·s non affiché·es.",
       "addCta": "Ajouter des contributeur·rices",
+      "addUnavailable": "Le projet lié est encore en cours de chargement, ou n'est pas accessible.",
       "pendingTitle": "Invitations en attente",
       "pendingInvitation": "Invitation envoyée",
       "seeProject": "Voir le projet"

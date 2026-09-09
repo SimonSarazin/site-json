@@ -167,6 +167,7 @@
       "organization": "Organization",
       "more": "+{{count}} not shown.",
       "addCta": "Add contributors",
+      "addUnavailable": "The linked project is still loading, or is not accessible.",
       "pendingTitle": "Pending invitations",
       "pendingInvitation": "Invitation sent",
       "seeProject": "See the project"
