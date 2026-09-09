@@ -134,6 +134,9 @@ export function SelectionField({
   // Une mémoire PAR CRITÈRE : le jury en note plusieurs à la suite.
   const echoNotes = useEcrituresLocales<unknown>();
   const echoAvis = useEcrituresLocales<unknown>();
+  // Extraite pour que le `useMemo` ne dépende que d'elle (stable tant que rien
+  // n'est écrit), pas de l'objet du hook, neuf à chaque rendu.
+  const superposerNotes = echoNotes.superposer;
   // Critères dont la dernière saisie a été REFUSÉE (hors barème). Le refus
   // doit se voir : le champ ne porte plus de contrainte native (cf. l'input).
   const [refus, setRefus] = useState<Record<string, boolean>>({});
@@ -145,14 +148,14 @@ export function SelectionField({
   // étoiles pleines si seule la note du contrôle était rattrapée.
   const { parsed, mesNotes, means } = useMemo(() => {
     const p = parseSelectionConfig(config, depositLabels ?? {});
-    const notes = echoNotes.superposer(currentUserId ? value?.[currentUserId] : null);
+    const notes = superposerNotes(currentUserId ? value?.[currentUserId] : null);
     const locale = withEvaluatorNotes(value, currentUserId, notes);
     return {
       parsed: p,
       mesNotes: notes,
       means: computeSelectionMeans(locale, p.criteria, currentUserId),
     };
-  }, [config, depositLabels, value, currentUserId, echoNotes.superposer]);
+  }, [config, depositLabels, value, currentUserId, superposerNotes]);
 
   // Sans réponse enregistrée, il n'y a rien à cibler : l'écriture se fait par
   // chemin sur un document existant. Relevé en base, le cas ne se présente pas
