@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { ChevronDown, Plus, Pencil, Trash2, UserPlus, Loader2 } from "lucide-react";
 import type { CoFormData } from "@/modules/coform/types";
 import type { AacResolvedConfig } from "../../types";
@@ -15,7 +15,7 @@ import type {
 import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import { ContributorsAvatars } from "@/modules/cagnotte/components/sections/parts/badges";
 import { ActionCreateDialog } from "@/modules/cagnotte/components/sections/parts/ActionCreateDialog";
-import { ActionEditDialog } from "@/modules/cagnotte/components/sections/parts/ActionEditDialog";
+import { ActionEditDialog, type EditingActionContext } from "@/modules/cagnotte/components/sections/parts/ActionEditDialog";
 import { MilestoneManageActions } from "@/modules/cagnotte/components/sections/MilestoneManageActions";
 import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
 import type { CommunObjectivesController } from "./CommunMilestoneDialogs";
@@ -292,6 +292,37 @@ export function CommunActionsSection({ funding, ctrl }: CommunActionsSectionProp
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
 
+    /**
+     * Le contexte d'édition d'une action, dérivé de l'état STABLE du contrôleur :
+     * `selectedAction` et `selectedMilestoneId` sont posés par `handleActionEdit`, une
+     * fois par ouverture.
+     *
+     * `ActionEditDialog` mémoïse ses `defaultValues` sur l'IDENTITÉ de cet objet et
+     * fait `form.reset()` dès qu'elle change. Construit en littéral dans le JSX, il
+     * changeait à CHAQUE rendu du parent — refetch au retour du focus, `loadingIds`
+     * d'une opération concurrente, `refreshMe()` — et la saisie en cours était
+     * remplacée par les valeurs d'origine : « aucune modification » à la validation.
+     * Même règle que `cagnotte/ActionsSection` : le parent ne pousse que le contexte
+     * de l'action ciblée, et ne monte le dialogue que s'il y en a une.
+     */
+    const editingAction = useMemo<EditingActionContext | null>(() => {
+        const action = ctrl.selectedAction;
+        if (!action) return null;
+        return {
+            milestoneId: ctrl.selectedMilestoneId,
+            actionEntityId: resolveAacActionEntityId(action),
+            action: {
+                name: action.name ?? "",
+                credits: Number(action.credits ?? 0),
+                status: action.status ?? "todo",
+                tags: action.tags ?? [],
+                contributors: action.contributors ?? [],
+                date_start: action.date_start,
+                date_end: action.date_end,
+            },
+        };
+    }, [ctrl.selectedMilestoneId, ctrl.selectedAction]);
+
     // Les actions n'existent pas côté answer-only (proposition non promue en projet) —
     // pas de bloc à rendre tant qu'il n'y a pas de projectId.
     if (!ctrl.canManageActions) {
@@ -356,29 +387,19 @@ export function CommunActionsSection({ funding, ctrl }: CommunActionsSectionProp
                     await ctrl.refetchFundingEnvelope();
                 }}
             />
-            <ActionEditDialog
-                open={ctrl.isEditActionOpen}
-                onOpenChange={ctrl.setIsEditActionOpen}
-                actionCtx={ctrl.actionCtx}
-                editingAction={{
-                    milestoneId: ctrl.selectedMilestoneId,
-                    actionEntityId: resolveAacActionEntityId(ctrl.selectedAction as { id?: string; _id?: string; entityId?: string } | null | undefined),
-                    action: {
-                        name: ctrl.selectedAction?.name ?? "",
-                        credits: Number(ctrl.selectedAction?.credits ?? 0),
-                        status: (ctrl.selectedAction?.status as "todo" | "done") ?? "todo",
-                        tags: ctrl.selectedAction?.tags ?? [],
-                        contributors: ctrl.selectedAction?.contributors ?? [],
-                        date_start: ctrl.selectedAction?.date_start,
-                        date_end: ctrl.selectedAction?.date_end,
-                    },
-                }}
-                milestoneTitle={ctrl.selectedMilestoneTitle}
-                projectEntity={ctrl.projectEntity}
-                onSuccess={async () => {
-                    await ctrl.refetchFundingEnvelope();
-                }}
-            />
+            {editingAction ? (
+                <ActionEditDialog
+                    open={ctrl.isEditActionOpen}
+                    onOpenChange={ctrl.setIsEditActionOpen}
+                    actionCtx={ctrl.actionCtx}
+                    editingAction={editingAction}
+                    milestoneTitle={ctrl.selectedMilestoneTitle}
+                    projectEntity={ctrl.projectEntity}
+                    onSuccess={async () => {
+                        await ctrl.refetchFundingEnvelope();
+                    }}
+                />
+            ) : null}
         </div>
     );
 }
