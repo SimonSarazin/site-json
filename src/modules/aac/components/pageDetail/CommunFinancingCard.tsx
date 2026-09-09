@@ -139,7 +139,7 @@ interface CommunFinancingCardProps {
 export function CommunFinancingCard({
     formData: _formData,
     answerQuery,
-    aacConfig: _aacConfig,
+    aacConfig,
     funding,
     onFunded,
 }: CommunFinancingCardProps) {
@@ -184,7 +184,7 @@ export function CommunFinancingCard({
         }
         setIsLoadingOrgs(true);
         try {
-            const typeCoFinancer = _aacConfig?.typeCoFinancer ?? "tiersLieux";
+            const typeCoFinancer = aacConfig?.typeCoFinancer ?? "tiersLieux";
             let orgParam: Partial<GlobalAutocompleteCostumData> = {};
             
             if (typeCoFinancer === "tiersLieux") {
@@ -343,7 +343,11 @@ export function CommunFinancingCard({
     const { context: fundingContext } = useCommunFundingContext(answerQuery);
     const { hostEntity: fundingHost } = useCommunFundingHost(fundingContext);
 
-    const { data: depenses } = useCommunRawDepenses(answerId);
+    // L'étape RÉSOLUE par la page (`config.roles.depenseStepKey`), jamais
+    // `aapStep1` en dur : `useAacFundingResource` lit déjà cette étape pour
+    // `funding`, et un appel dont `depense` vit ailleurs se contredisait — en-tête
+    // à 30 %, mais zéro palier et zéro cofinanceur.
+    const { data: depenses } = useCommunRawDepenses(answerId, aacConfig?.roles?.depenseStepKey ?? undefined);
     const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
     const openItems = items.filter((item) => item?.status !== "close");
 

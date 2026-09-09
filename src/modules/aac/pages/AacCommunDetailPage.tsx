@@ -254,6 +254,7 @@ export default function AacCommunDetailPage() {
     const objectivesCtrl = useCommunObjectivesController({
         answerQuery: answerQuery.data ?? null,
         funding: targetResource,
+        depenseStepKey: config?.roles.depenseStepKey ?? null,
     });
 
     /**

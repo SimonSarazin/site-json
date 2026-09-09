@@ -39,10 +39,16 @@ import { asRecord } from "@/modules/cagnotte/utils/dataTransform";
 export function useCommunObjectivesController({
   answerQuery,
   funding,
+  depenseStepKey,
 }: {
   answerQuery: CoFormAnswer | null;
   /** L'enveloppe résolue par `useAacFundingResource` — un projet ou une proposition. */
   funding?: CagnotteResource | null;
+  /**
+   * L'étape qui porte `depense[]`, résolue par la page (`config.roles.depenseStepKey`).
+   * Absente ⇒ `DEFAULT_AAC_STEP`, comme les appelants historiques.
+   */
+  depenseStepKey?: string | null;
 }) {
   const { api, apiClient, me } = useCocolight();
   const queryClient = useQueryClient();
@@ -107,7 +113,7 @@ export function useCommunObjectivesController({
     answerId: resolvedAnswerId,
   });
 
-  const { data: rawDepensesDocument } = useCommunRawDepensesDocument(resolvedAnswerId);
+  const { data: rawDepensesDocument } = useCommunRawDepensesDocument(resolvedAnswerId, depenseStepKey ?? undefined);
   const milestoneDocs = useMemo<MilestoneSyncDocs>(
     () => ({
       projectMilestones: asRecord(asRecord(projectEntity?.serverData).oceco).milestones,

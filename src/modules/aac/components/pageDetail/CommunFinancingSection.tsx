@@ -180,7 +180,7 @@ function FinancingMilestoneCard({
     );
 }
 
-export function CommunFinancingSection({ funding, ctrl }: CommunFinancingSectionProps) {
+export function CommunFinancingSection({ aacConfig, funding, ctrl }: CommunFinancingSectionProps) {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
 
@@ -188,7 +188,13 @@ export function CommunFinancingSection({ funding, ctrl }: CommunFinancingSection
     // déclarent `extraInvalidate` sur cette entrée de cache (cf. `milestoneCtx` dans
     // `useCommunObjectivesController`). L'effet qui surveillait `loadingIds` a été
     // retiré — il ne voyait que les mutations de SA propre instance du contrôleur.
-    const { data: depenses } = useCommunRawDepenses(ctrl.resolvedAnswerId);
+    //
+    // L'étape est celle que la page a RÉSOLUE (`config.roles.depenseStepKey`) :
+    // `aapStep1` en dur vidait la liste sur tout appel dont `depense` vit ailleurs.
+    const { data: depenses } = useCommunRawDepenses(
+        ctrl.resolvedAnswerId,
+        aacConfig?.roles?.depenseStepKey ?? undefined,
+    );
 
     const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
 

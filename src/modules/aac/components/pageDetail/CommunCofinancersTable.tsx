@@ -24,14 +24,16 @@ interface CommunCofinancersTableProps {
     funding?: CagnotteResource | null;
 }
 
-export function CommunCofinancersTable({formData: _formData, answerQuery, aacConfig: _aacConfig, funding}: CommunCofinancersTableProps) {
+export function CommunCofinancersTable({formData: _formData, answerQuery, aacConfig, funding}: CommunCofinancersTableProps) {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
     const { entity } = useCocolight();
     const porteurId = entity?.id;
 
     const answerId = answerQuery ? getEntityId(answerQuery) : undefined;
-    const { data: depenses } = useCommunRawDepenses(answerId);
+    // Même étape que la carte et « Besoins financiers » : celle que la page a
+    // résolue, pas `aapStep1` en dur.
+    const { data: depenses } = useCommunRawDepenses(answerId, aacConfig?.roles?.depenseStepKey ?? undefined);
     const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
 
     const cofinancers: LigneCofinancement[] = items
