@@ -23,7 +23,7 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | **Choix en cours dans une config** (listes figées, chaîne de rattachement…) — pose la question, ne juge pas | `npm run config:besoins -- <config>` · `-- --diff` en revue |
 | **Depuis quand une clé existe, et qui l'a adoptée** | `npm run config:changelog key <nom>` · `since <config>` pour ce qui a bougé depuis |
 | **Ce qui est possible et peu connu** (mécanismes jamais exercés, ou par un seul site — avec son nom) | `npm run config:changelog candidates` |
-| **Composition de props réelle** d'une section / d'un header / d'un footer | `.design-sync/previews/<Composant>.tsx` (153 stories versionnées) — chemin exact imprimé en tête de `config:schema section:<type>`, et `◆` dans le catalogue `sections` |
+| **Composition de props réelle** d'une section / d'un header / d'un footer | `.design-sync/previews/<Composant>.tsx` (154 stories versionnées) — chemin exact imprimé en tête de `config:schema section:<type>`, et `◆` dans le catalogue `sections` |
 | **Recette de composition de PAGE** (gabarit = une page réelle d'archétype) | `npm run config:example -- --recipe <id>` — imprime la page complète, prête à adapter |
 | Forme exacte d'une section | `npm run config:schema section:<type>` (ex. `section:pricing`) |
 | Forme de `header`/`footer`/`theme`/`meta`/`auth`/`page`/`profiles`/`integrations`/`commandPalette` | `npm run config:schema <bloc>` |
@@ -357,7 +357,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 | `blog` | routes `/blog/:slug` (+ `/blog/id/:id`) + sections `articleFeed`/`articleReader` | `config.blog` (`feedCostumSlug`, variants card/reader), `costumForms.<article>`, `commandPalette.articleSearch` | POI `type:"article"` scopés costum (`source.key`) |
 | `coform` | routes `/coform/:formId` (+ `/answer/:answerId`, `/place`) | réf. de formulaire | CoForm défini côté backend |
 | `toolsCatalog` | section `toolsCatalog` (catalogue d'outils d'usage : recherche/filtres/pagination CÔTÉ SERVEUR + modale détail des lieux, bloc commun, bouton de réponse, édition d'enrichissement réservée aux admins du costum) | `formId`/`step`/`finderPath` (+ options : `showOpenSourceToggle`, `showUsageFilter`, `defaultView`, `showCommunInfo`+`communFormId`, `showAnswerButton`, `enableEnrichmentEditing`…) | réponses coform (commonTable) + collection `navigatorcriteria` (enrichissement) |
-| `aac` | sections `aac-directory` (annuaire des communs, `variant` full/preview) / `aac-highlight` (bande CTA + compteur), routes `/aac` + `/aac/commun/:answerId` (montées seulement si `config.aac` existe) | `config.aac.formId` (form parent `type:aap,aapType:aac` — jamais dans les props de section), `config.aac.directory.fields`, `config.aac.detail` | CoForm/AAP défini côté backend (form + aapConfig) |
+| `aac` | sections `aac-directory`/`aac-highlight` (l'annuaire des communs — `variant` full/preview — et la bande CTA + médaillon compteur), routes `/aac` + `/aac/commun/:answerId` (montées seulement si `config.aac` existe) | `config.aac.formId` (form parent `type:aap,aapType:aac` — jamais dans les props de section), `config.aac.directory.fields`, `config.aac.detail` | CoForm/AAP défini côté backend (form + aapConfig) — cf. doc/34 §3 |
 | `cagnotte` | sections `actions`/`finance`/`*-summary` | `idProjet` | projet + Stripe/HelloAsso |
 | `profil` | `/profil/:slug`, section `member` | `config.profiles` (tabs, editModal) | types d'entités |
 | `auth` | `loginForm`/`registerForm`/`recoverPasswordForm`, `<AuthMenu>` (dont entrée « Kanban » plateforme via `auth.menu.kanban`, admins du costum) | `config.auth`, `header.utilities.auth` | comptes/SSO Communecter |
@@ -375,14 +375,14 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 ## Design system (voir le rendu réel avant de choisir)
 
 - **`.design-sync/previews/` — la ressource la plus utile, et elle est dans git** :
-  153 stories portant des compositions de props RÉELLES (valeurs plausibles,
+  154 stories portant des compositions de props RÉELLES (valeurs plausibles,
   commentaire d'usage : « Usage réel : home de Rézo la mer »). Le JSON Schema
   donne la FORME, la story donne la COMPOSITION — **43 des 77 sections** en ont
-  une (les 28 sans sont data-driven : search\*, agenda, cagnotte, blog — une
-  composition statique n'y montrerait rien), ainsi que **les 6 headers et les 4
-  footers**. Copie la story, ne réinvente pas le remplissage.
+  une (les 34 sans sont surtout data-driven : search\*, agenda, cagnotte, blog,
+  aac, coform — une composition statique n'y montrerait rien), ainsi que **les 7
+  headers et les 4 footers**. Copie la story, ne réinvente pas le remplissage.
 - **Vérité versionnée : `.design-sync/`** — `config.json` (`componentSrcMap` :
-  ~153 composants exportés → chemin source dans `src/`), `conventions.md`
+  ~155 composants exportés → chemin source dans `src/`), `conventions.md`
   (règles : enveloppe `DsProvider`, **tokens CSS d'abord — jamais de couleur en
   dur**, composants de modules props-driven qui ne fetchent rien),
   `NOTES.md` (pièges connus, exclusions volontaires).
@@ -396,7 +396,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
   `footer.type` ou un presenter, regarder le screenshot
   (`_screenshots/header__HeaderMegaMenu.png`…) et le `prompt.md` correspondant
   si le bundle est présent ; sinon lire le composant source via
-  `componentSrcMap`. Y sont notamment : les 6 headers, les 4 footers, et les
+  `componentSrcMap`. Y sont notamment : les 7 headers, les 4 footers, et les
   leaves search `CardResourceCard` / `CardTestimonialBubble` /
   `PreviewResourceCard` / `PreviewTestimonialBubble`.
 

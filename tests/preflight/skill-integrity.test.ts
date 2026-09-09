@@ -4,6 +4,7 @@ import path from "node:path";
 import { z } from "zod";
 import { Header, Footer } from "@/types/site-schema";
 import { ListConfSchema, PreviewConfSchema } from "@/modules/search/schema";
+import { sectionPreviews, chromePreviews } from "../../scripts/lib/design-previews";
 
 /**
  * Anti-dérive de la skill `config-assistant` (.claude/skills/config-assistant/
@@ -50,6 +51,39 @@ function tableTypes(sectionHeading: string): string[] {
   return [...block.matchAll(/^\| `([^`]+)`/gm)].map((m) => m[1]);
 }
 
+/**
+ * Colonne « surface » (2ᵉ) de chaque ligne de la table Modules, par module.
+ * `tableTypes` ne lit que la 1ʳᵉ colonne : la ligne `aac` a pu annoncer une
+ * section `aac` et une route `/aac/:formId` qui n'existaient pas (review MR 53,
+ * H28/M5) sans que rien ne rougisse.
+ */
+function modulesSurface(): Map<string, string> {
+  const start = skill.indexOf("### Modules");
+  const next = skill.indexOf("### ", start + 1);
+  const block = skill.slice(start, next === -1 ? undefined : next);
+  const out = new Map<string, string>();
+  for (const m of block.matchAll(/^\| `([^`]+)` \| (.+?) \| /gm)) out.set(m[1], m[2]);
+  return out;
+}
+
+/** Clés de la map LazySections de SectionRenderer.tsx (lecture texte, comme section-meta.test.ts). */
+function rendererTypes(): string[] {
+  const src = fs.readFileSync(path.join(ROOT, "src/components/sections/SectionRenderer.tsx"), "utf-8");
+  return [...src.matchAll(/^\s+"?([\w-]+)"?:\s*lazy\(/gm)].map((m) => m[1]);
+}
+
+/** Tous les `path: "…"` littéraux des `src/modules/*\/routes.tsx`, sans slash de tête (`aac/commun/:answerId`). */
+function moduleRoutePaths(): string[] {
+  const dir = path.join(ROOT, "src/modules");
+  const out: string[] = [];
+  for (const mod of fs.readdirSync(dir, { withFileTypes: true })) {
+    const file = path.join(dir, mod.name, "routes.tsx");
+    if (!mod.isDirectory() || !fs.existsSync(file)) continue;
+    for (const m of fs.readFileSync(file, "utf-8").matchAll(/path:\s*"([^"]+)"/g)) out.push(m[1].replace(/^\//, ""));
+  }
+  return out;
+}
+
 describe("skill config-assistant ⇄ code (anti-dérive)", () => {
   // `default` INCLUS : ce n'est pas un design (il délègue à HeaderStandard /
   // FooterRich) mais il existe dans des configs réelles — un agent qui en
@@ -85,6 +119,52 @@ describe("skill config-assistant ⇄ code (anti-dérive)", () => {
       .map((d) => d.name);
     const documented = tableTypes("### Modules");
     expect(documented.sort()).toEqual(real.sort());
+  });
+
+  it("la colonne « surface » de la table Modules ne cite que des sections enregistrées", () => {
+    const real = rendererTypes();
+    const cited: Array<{ mod: string; type: string }> = [];
+    for (const [mod, surface] of modulesSurface()) {
+      // « section `x` », « sections `a`/`b`/`*-summary` » — la chaîne backtickée qui suit le mot.
+      for (const m of surface.matchAll(/\bsections? ((?:`[^`]+`\s*\/?\s*)+)/g)) {
+        for (const t of m[1].matchAll(/`([^`]+)`/g)) cited.push({ mod, type: t[1] });
+      }
+    }
+    expect(cited.length).toBeGreaterThan(10);
+    for (const { mod, type } of cited) {
+      const re = new RegExp(`^${type.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`);
+      expect(real.some((t) => re.test(t)), `module ${mod} : section \`${type}\` inconnue de SectionRenderer`).toBe(true);
+    }
+  });
+
+  it("la colonne « surface » de la table Modules ne cite que des routes déclarées par un module", () => {
+    const declared = moduleRoutePaths();
+    let cited = 0;
+    for (const [mod, surface] of modulesSurface()) {
+      for (const m of surface.matchAll(/`(\/[^`\s]+)`/g)) {
+        cited++;
+        const route = m[1].replace(/^\//, "");
+        // Une route imbriquée est citée par son suffixe (« + `/answer/:answerId` » sous coform).
+        const ok = declared.some((p) => p === route || p.endsWith(`/${route}`));
+        expect(ok, `module ${mod} : route \`${m[1]}\` déclarée par aucun src/modules/*/routes.tsx`).toBe(true);
+      }
+    }
+    expect(cited).toBeGreaterThan(5);
+  });
+
+  it("les compteurs de stories (.design-sync/previews) cités par la skill sont exacts", () => {
+    const sections = rendererTypes().length;
+    const withStory = sectionPreviews(ROOT).size;
+    const stories = fs.readdirSync(path.join(ROOT, ".design-sync/previews")).filter((f) => f.endsWith(".tsx")).length;
+    const headers = chromePreviews(ROOT, "Header").length;
+    const footers = chromePreviews(ROOT, "Footer").length;
+    // « 43 des 77 sections … (les 34 sans … » — le total est déjà contrôlé par
+    // section-meta.test.ts ; ici la part AVEC story et son complément (28 ≠ 77 − 43).
+    expect(skill).toContain(`**${withStory} des ${sections} sections**`);
+    expect(skill).toContain(`les ${sections - withStory} sans`);
+    for (const m of skill.matchAll(/\b(\d+) stories\b/g)) expect(Number(m[1]), "N stories").toBe(stories);
+    for (const m of skill.matchAll(/\b(\d+) headers\b/g)) expect(Number(m[1]), "N headers").toBe(headers);
+    for (const m of skill.matchAll(/\b(\d+) footers\b/g)) expect(Number(m[1]), "N footers").toBe(footers);
   });
 
   it("les outils référencés existent (scripts npm + fichiers)", () => {
