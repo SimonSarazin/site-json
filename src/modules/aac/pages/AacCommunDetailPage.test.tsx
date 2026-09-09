@@ -41,7 +41,18 @@ vi.mock("@/hooks/useCocolight", () => ({
   useCocolight: () => ({ api: {}, loading: false, entity: ENTITY, me, refreshMe: vi.fn() }),
 }));
 
-const ANSWER = { _id: { $id: "a1" }, form: "f1", user: "u1", answers: {}, documents: [] };
+/** Base mutable : les tests de lignée de brouillon jouent sur `created`/`updated`. */
+type TestAnswer = {
+  _id: { $id: string };
+  form: string;
+  user: string;
+  answers: Record<string, unknown>;
+  documents: unknown[];
+  created?: number;
+  updated?: number;
+};
+const BASE_ANSWER: TestAnswer = { _id: { $id: "a1" }, form: "f1", user: "u1", answers: {}, documents: [] };
+let ANSWER: TestAnswer = BASE_ANSWER;
 const FORM = { id: "f1", name: "Appel test", inputs: {} };
 const refetchAnswer = vi.fn().mockResolvedValue(undefined);
 const invalidateQueries = vi.fn().mockResolvedValue(undefined);
@@ -124,7 +135,14 @@ vi.mock("../hooks/useAacDetailSections", () => ({
   useAacDetailSections: () => detailSections,
   useAacGallerySubKey: () => null,
 }));
-vi.mock("@/modules/coform/components/CoFormModal", () => ({ CoFormModal: () => null }));
+// La modale d'édition expose la LIGNÉE de péremption qu'elle reçoit : c'est
+// elle que `SmartCoForm` exige pour activer le brouillon, et qu'il grave dans
+// l'entrée localStorage (cf. `useCoFormDraft.computeDraftState`).
+vi.mock("@/modules/coform/components/CoFormModal", () => ({
+  CoFormModal: (props: { baseUpdatedAt?: number | null }) => (
+    <div data-testid="edit-modal" data-base-updated-at={String(props.baseUpdatedAt ?? "null")} />
+  ),
+}));
 
 // Les blocs eux-mêmes ont leurs propres dépendances (cagnotte, React Query) hors
 // du périmètre de CE test : on ne vérifie que leur PRÉSENCE dans l'arbre.
@@ -199,6 +217,7 @@ const FUNDING_TOC = ["toc-besoins-financiers", "toc-cofinanceurs"] as const;
 
 beforeEach(() => {
   me = CONNECTED;
+  ANSWER = BASE_ANSWER;
   config = makeConfig(false);
   isConfigLoading = false;
   configError = null;
@@ -376,5 +395,41 @@ describe("AacCommunDetailPage — icône d'un bloc déclaré (bonus)", () => {
     const entree = screen.getByTestId("toc-contexte");
     expect(entree.querySelector("svg.lucide-file-text")).toBeTruthy();
     consoleError.mockRestore();
+  });
+});
+
+/**
+ * Régression du lot 2 (H19) : `SmartCoForm` refuse désormais d'ouvrir un
+ * brouillon d'édition sans lignée de péremption (`answerId` + `baseUpdatedAt ==
+ * null`). Or la fiche ne passait que `answer.updated` — champ OPTIONNEL, absent
+ * de tout commun jamais remanié depuis son dépôt. Le brouillon, activé par le
+ * lot 1, se retrouvait silencieusement coupé sur ce sous-ensemble.
+ *
+ * `created` est une lignée équivalente : `computeDraftState` ne compare que
+ * cette valeur à elle-même dans le temps, et la première modification serveur
+ * pose un `updated` strictement supérieur au `created` gravé dans le brouillon.
+ */
+describe("AacCommunDetailPage — lignée de péremption du brouillon d'édition", () => {
+  const baseUpdatedAt = () => screen.getByTestId("edit-modal").getAttribute("data-base-updated-at");
+
+  it("commun jamais remanié (pas d'`updated`) : `created` sert de lignée", () => {
+    ANSWER = { ...BASE_ANSWER, created: 1_700_000_000 };
+    render(<AacCommunDetailPage />);
+
+    expect(baseUpdatedAt()).toBe("1700000000");
+  });
+
+  it("commun déjà remanié : `updated` l'emporte, comportement inchangé", () => {
+    ANSWER = { ...BASE_ANSWER, created: 1_700_000_000, updated: 1_700_009_999 };
+    render(<AacCommunDetailPage />);
+
+    expect(baseUpdatedAt()).toBe("1700009999");
+  });
+
+  it("ni l'un ni l'autre : `null`, la garde de `SmartCoForm` coupe le brouillon", () => {
+    ANSWER = { ...BASE_ANSWER };
+    render(<AacCommunDetailPage />);
+
+    expect(baseUpdatedAt()).toBe("null");
   });
 });

@@ -614,7 +614,15 @@ export default function AacCommunDetailPage() {
                     defaultValues={answer.answers}
                     // Sans lui, un brouillon local plus ancien que la réponse
                     // serveur se restaure sans avertir. Cf. `useCoFormDraft`.
-                    baseUpdatedAt={answer.updated ?? null}
+                    //
+                    // Repli sur `created` : `updated` est optionnel — un commun
+                    // jamais remanié depuis son dépôt n'en a pas. Sans ce repli,
+                    // `baseUpdatedAt` restait `null` sur ces réponses-là et
+                    // `SmartCoForm` y coupait purement le brouillon. La date de
+                    // création est une lignée équivalente : la première
+                    // modification serveur pose un `updated` strictement
+                    // supérieur, que `computeDraftState` détecte.
+                    baseUpdatedAt={answer.updated ?? answer.created ?? null}
                     hiddenStepKeys={hiddenStepsForEdit}
                     onAfterSubmit={handleEditSubmit}
                 />

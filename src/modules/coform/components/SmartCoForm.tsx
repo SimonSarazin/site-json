@@ -440,12 +440,22 @@ export function SmartCoForm({
   // EN ÉDITION, PAS DE BROUILLON SANS `baseUpdatedAt`. La péremption d'un
   // brouillon (`useCoFormDraft.computeDraftState`) ne se décide que si sa
   // lignée `baseUpdatedAt` est connue — et elle vient d'ici. Un appelant qui
-  // passe `answerId` sans `updated` produirait un brouillon impossible à
+  // passe `answerId` sans lignée produirait un brouillon impossible à
   // déclarer obsolète : trente jours durant, « Reprendre » remplacerait sans
   // avertir une réponse modifiée entre-temps par quelqu'un d'autre. Mieux vaut
   // pas de filet qu'un filet qui efface le travail des autres. `CoFormModal`
   // documente la prop comme « à transmettre dès qu'on passe `answerId` » ;
   // ici, on le garantit.
+  //
+  // LA LIGNÉE N'EST PAS QUE `updated`. Ce champ est OPTIONNEL sur
+  // `CoFormAnswer` : une réponse jamais modifiée depuis son dépôt n'en a pas.
+  // Un `answer.updated` brut coupait donc le brouillon sur tout ce
+  // sous-ensemble. La lignée à transmettre est `updated ?? created` — c'est la
+  // responsabilité de l'appelant, seul détenteur de la réponse éditée
+  // (`SmartCoForm` ne la charge pas), et `computeDraftState` ne compare jamais
+  // que cette valeur à elle-même dans le temps : la première modification
+  // serveur pose un `updated` strictement supérieur à `created`. Sans NI l'un
+  // NI l'autre, la garde ci-dessous reste et coupe.
   const enableDraft =
     !readOnly && !isInputStandalone && !!formId && !!me?.id && (!answerId || baseUpdatedAt != null);
   const draftUserId = currentUserId;
