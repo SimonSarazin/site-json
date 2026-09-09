@@ -491,6 +491,13 @@ enrichi depuis le legacy garde son ancre, un outil enrichi depuis un site site-j
 communId factice et relit le résultat avec le même code que le serveur. Un gabarit non relisible
 échoue à `config:validate` au lieu de se corrompre en silence dans la base.
 
+Il substitue **DEUX identifiants distincts** et exige de relire chaque fois **celui qu'il vient d'y
+mettre**. Relire « une » communId ne suffisait pas : un gabarit portant déjà une communId **en dur**
+— l'URL d'une vraie fiche copiée-collée à la place du gabarit — en rend une aussi, et chaque outil
+rattaché aurait alors pointé le **même** commun, sans la moindre erreur. La double substitution est
+la preuve que le marqueur `{communId}` est présent **et** que c'est lui que le serveur lira ; un tel
+gabarit est désormais rejeté par `config:validate`.
+
 **Vérifié en réel** (endpoint `toolscatalog`, catalogue CAE paginé, 83 outils) : 3 outils portaient
 une `communId` avant, **4** après — « Framateam » résout maintenant sur la valeur DÉJÀ en base
 (`/aac/commun/6a33be10fbb6f52b76632076`), sans migration, et les deux ancres legacy continuent de
