@@ -16,7 +16,7 @@
 > vit sur la branche `aac-dev` et n'a rien à voir avec le site des tiers-lieux, qui vit sur `jdev`
 > et `main` : leurs dossiers devaient être séparés. Cf. §10 31/08.
 
-Dernière mise à jour : **2026-09-03** (la cagnotte d'un commun déposé sur un autre appel — cf. §10).
+Dernière mise à jour : **2026-09-09** (revue de la MR 53 et ses correctifs — cf. §10).
 
 ---
 
@@ -42,8 +42,8 @@ formulaire d'observatoire distinct de l'appel lui-même (cf. §5).
 | Costum backend | **aucun** (pas d'entrée `costum` pour ce slug) |
 | Formulaire de l'appel | `677e7e389058e31575550ac8` — « Les communs des CAEs » (type `aap`), **20 réponses** |
 | Formulaire d'observatoire | `6525865cdeaf281bbc7280e9` — « Observatoire des besoins et solutions des CAEs », **35 réponses** |
-| Branche | **`aac-dev`** (le config est absent de `jdev` et de `main`) |
-| SDK | `@communecter/cocolight-api-client` **1.0.189** |
+| Branche | **`main`** depuis le 09/09 (merge `287bb35a` de `fix/mr-53-bloquants`) — le config venait de `aac-dev` |
+| SDK | `@communecter/cocolight-api-client` **1.0.191** |
 
 ⚠️ Les deux formulaires sont rattachés à **deux organisations différentes** : l'appel à la Fédération
 des CAE (`677e7e13…`), l'observatoire à « Communs des CAEs » (`65255cbf…`). Le catalogue d'usages
@@ -57,6 +57,8 @@ n'est donc pas ancré sur l'entité du site — ne pas déduire l'un de l'autre.
 | 27/08 | Schumann + Claude | Le lien d'un commun peut désigner la fiche site-json ; clic en navigation SPA ; enregistrement d'un enrichissement (cf. §10 27/08 et §12.1) |
 | 30/08 | Schumann + Claude | Page « Besoins et solutions » (`7bf3417a`) |
 | 31/08 | Schumann + Claude | Extraction de ce dossier ; règle de satisfaction et sous-catégorie du catalogue d'usages (cf. §10 31/08) |
+| 03/09 | Schumann + Claude | Cagnotte d'un commun déposé sur un autre appel (cf. §10 03/09) |
+| 08-09/09 | Anatole (MR 53) · Aboire · Claude | Revue de la MR 53 « module AAC » puis **112 commits de correctifs** en deux lots, mergés dans `main` (cf. §10 08-09/09) |
 
 ---
 
@@ -188,21 +190,103 @@ Réglages notables de la section `toolsCatalog` :
 | 4 | Fiche d'un outil — sous-catégorie | ✅ | 31/08 — repli catalogue ajouté au détail |
 | 5 | Enrichissement d'un outil (admin) | ✅ | enregistrement, rattachement d'un commun, deux formes de lien |
 | 6 | Bloc « Informations liées au commun » | 🟡 | rendu, mais `CommunInfoAction` fige des `FIELD_*` propres au formulaire tiers-lieux → réduit au titre et à la description sur un commun de CET appel (cf. §13) |
-| 7 | Logo du site | 🟡 | le vrai logo n'a jamais été commité ; `header.logo` (fichier absent → image cassée, `alt=""`) a été retiré au profit d'un `logoIcon: "handshake"` provisoire (review MR 53, H24). Le header `standard` ne rend pas `logoTitle` sur desktop : il faut le fichier `public/images/federationDesCae/logo.png` |
+| 7 | Logo du site | ✅ | livré le 09/09 (`24fe861b`, `f47e87a3`) : lockup officiel « les SCOP — Fédération des coopératives d'activité et d'emploi », **détouré** (50 % de marge blanche retirée → ×1,6 à hauteur égale) et **réellement transparent** (le fichier d'origine avait un fond blanc incrusté → rectangle blanc en mode sombre). `logoSize: "lg"` + `height: "md"`. ⚠️ provenance : fiche annuaire Avise, 2023 — à remplacer si la Fédération fournit un SVG ou une version plus récente |
 | 8 | Version mobile du catalogue | ✅ | `ToolFiltersSheet` — commité sur **`jdev`** (`cb26991d`), le module `toolsCatalog` étant partagé |
 | 9 | Brouillon du formulaire de dépôt | ✅ | actif sur une étape extraite, et le reprendre ne l'efface plus (cf. §10 31/08ter) |
 | 10 | Vérification navigateur | ❌ | **jamais faite** sur AUCUN lot du 27/08 au 31/08, ni sur celui du 03/09 |
 | 11 | Cagnotte d'un commun déposé sur un autre appel | 🟡 | modale ciblée, paliers/actions gérables par le déposant et l'admin du **projet lié** (cf. §10 03/09) — reste à confirmer sur données réelles que l'enveloppe du contexte d'origine répond |
+| 12 | Bloc financement de la fiche | 🟡 | gaté sur `form.coremu` (09/09) — **le formulaire de l'appel ne porte pas cette clé**, donc le financement est masqué, exactement comme dans le legacy. À activer côté legacy si la Fédération veut le financement (cf. §14) |
+| 13 | Campagnes de l'appel | ❌ | `POST /survey/coform/getformbyid` répond **500** sur un form de type `aapConfig` — bug legacy **corrigé mais non déployé**. Tant qu'il l'est, `campagne` et tout `config.*` sont invisibles côté front, avalés en best-effort silencieux (cf. §14) |
+| 14 | Vérification navigateur du lot 08-09/09 | 🟡 | SSR de production vérifié (4 pages + un site sans AAC) et l'en-tête inspecté à l'écran ; `test:integration` et `test:e2e` **jamais lancés** |
 
-**Gates au 31/08** (dernier lot, `d48dd882`) : `typecheck` ✅ · `eslint` ✅ · `test:unit` 3351 ✅ ·
-`config:validate` ✅ · `audit:config` 1 constat (le logo, ci-dessus) ·
-`config:render` 3/3 pages, 6/6 sections avec contenu SSR · `config:probe` aucun `baseParams` à sonder.
-Le préflight `site-assets` est **rouge** : `public/images/federationDesCae/` est un dossier vide
-qu'aucun slug ne réclame — même cause que le point 7.
+**Gates au merge `287bb35a` (09/09)** : `typecheck` ✅ · `eslint` ✅ **0 erreur** (24 avertissements
+préexistants) · `test:unit` **4 230** ✅ dont préflight **635** ✅ · `build` ✅ · `config:validate` ✅
+3 pages / 6 sections · `audit:config` ✅ **RAS** (le constat du logo est levé) ·
+SSR de production vérifié sur `/`, `/aac/communs`, `/usages`, `/aac/commun/:id`.
+`test:integration` et `test:e2e` **non lancés**.
+
+*Pour mémoire, gates au 31/08 (`d48dd882`) : `test:unit` 3 351 ✅ ; le préflight `site-assets` était
+rouge — `public/images/federationDesCae/` vide et non déclaré. Réglé le 09/09 par le logo + l'entrée
+`images` de `sites.json`.*
 
 ---
 
 ## 10. Impacts des modifications
+
+### 08-09/09 — la revue de la MR 53, et les 112 commits qui en sont sortis
+
+**Le lot.** La MR !53 d'Anatole (`aac-dev` → `main`) livrait le **module AAC** — annuaire, fiche d'un
+commun, financement par paliers, droits — plus ce site : 216 fichiers, **+28 322 / −2 737**. Trop gros
+pour une relecture linéaire : elle a été conduite par périmètres, chaque constat passant ensuite
+devant des vérificateurs chargés de le **réfuter** et de reconstruire son déclencheur jusqu'à un point
+d'entrée réel. Rapport complet : `commentaire/review-mr53-aac.md` (hors git, `commentaire/` est
+ignoré) ; tests de reproduction dans `commentaire/review-mr53-verif/`.
+
+**Résultat de la revue.** 164 constats bruts → **83 confirmés** (5 critiques, 29 hauts, 49 moyens),
+10 contestés, 25 rejetés. Puis 421 références `fichier:ligne` du rapport contrôlées une à une :
+19 écarts, dont **un qui changeait une conclusion** (voir plus bas).
+
+**Les quatre bloquants**, tous reproduits par exécution avant d'être corrigés :
+
+| # | Défaut | Correctif |
+|---|---|---|
+| 1 | Le wizard CoForm **ré-émettait un instantané périmé** des cinq inputs de décision (`selection`, `admissibility`, `pourContre`, `evaluation`, `choose`) et **effaçait les notes des autres évaluateurs** — la protection existait mais ne couvrait que le chemin mono-étape | `denormalizeAnswerData` ne ré-émet plus **rien qui ne soit parsé** (cf. « la règle de sauvegarde », ci-dessous) |
+| 2 | La **clé de brouillon ignorait l'élément** : le brouillon saisi sur un tiers-lieu était proposé sur un autre, et écrasait le champ finder pourtant verrouillé | segment élément dans `buildKey`, propagé de `CoFormModal` jusqu'à `useCoFormDraft` ; l'élément ne qualifie que la clé d'une **nouvelle** réponse |
+| 3 | `buildItemsFromRawDepenses` faisait **gagner la photo serveur sur la saisie locale** : supprimer, clôturer ou modifier une ligne n'avait aucun effet visible, et « Modifier » éditait la mauvaise ligne | fusion au lieu de remplacement, appariement par `milestoneId` seul |
+| 4 | Toute la branche **« palier sans projet lié »** était inatteignable : les 4 handlers levaient `syncContextMissing` avant d'atteindre le repli `answerDepenseIndex` | court-circuit quand l'index est fourni ; la description est désormais écrite sur la dépense, projet lié ou non |
+
+**La règle de sauvegarde, tranchée avec le backend (Aboire, 09/09) — c'est elle qui a donné sa forme
+définitive au correctif n°1** : *une étape absente du payload est **préservée** à la sauvegarde sur les
+deux backends (PHP et port Node) ; une étape présente est **écrasée clé par clé**.* La bonne règle
+n'était donc pas « nettoyer les clés de décision d'une étape masquée » mais **ne jamais ré-émettre ce
+qui n'est pas parsé**. Cela supprime du même coup une heuristique fragile et l'instantané périmé des
+champs ordinaires d'une étape invisible.
+
+**Trois autres faits backend ont fermé des questions ouvertes** :
+
+| Question | Réponse |
+|---|---|
+| Gate de financement | **`form.coremu`**, à la racine du form AAP (`coRemuneration` n'existe nulle part dans le legacy) |
+| Où vit `campagne` | à la **racine de l'`aapConfig`** — la lecture du front était juste |
+| `financerLimitRoles` | **pas contrôlé à l'écriture** : c'est un niveau d'affichage, pas une sécurité |
+
+**Ce que la revue a corrigé dans ses propres conclusions.** Deux fois, un fait backend a invalidé un
+constat que la revue tenait pour acquis :
+
+- `priceInt` **n'est jamais stocké** : il est fabriqué par un `$addFields` dans les trois pipelines
+  d'enveloppe de `Aap.php`. Le vrai défaut n'était pas « `parseAacAnswer` ignore `priceInt` » mais
+  **178 montants stockés en `string`** (plus 75 bool, 200 null) que `toInt`/`toNote` lisaient comme
+  `1` ou `0`. Règle retenue : `toSafeInt(price)` sur un **document**, `priceInt ?? price` sur
+  l'**enveloppe**.
+- `CLAUDE.md` est **gitignoré** : le « cinquième bloquant » (compteur de sections périmé, préflight
+  rouge) n'en était pas un — la CI est verte, le rouge n'apparaît que sur une machine dont le fichier
+  local est en retard.
+
+**Une régression introduite par les correctifs eux-mêmes, et rattrapée.** La relecture adversariale du
+lot 2 a trouvé une **perte de données critique** créée par le lot 2 : `coerceValueToShape`, en rangeant
+`milestoneList` dans la branche `array`, **jetait** toute map serveur non vide au lieu de la convertir.
+Un admin ouvrant « Modifier » sur un commun dont `depense` revient en map (indices non contigus après
+suppression legacy), corrigeant un titre et enregistrant, supprimait **tous ses paliers**, leurs
+`financer[]` et leur `historique[]`. Corrigé par `coerceObjectToArray` (tri numérique des clés
+d'index, `{}` reste `[]`). C'est l'argument le plus net pour ne jamais fusionner un lot sans sa
+relecture.
+
+**Le site lui-même.** Le logo a enfin été livré (cf. checklist n°7) : le fichier officiel portait
+**50 % de marge blanche** — l'en-tête imposant la hauteur, la marque n'occupait que 30 px sur 48 —
+et un **fond blanc incrusté** malgré un canal alpha, invisible en clair mais rectangle blanc en mode
+sombre. Détouré et rendu transparent par remplissage depuis les bords (les lettres « SCOP » sont
+préservées), il est ×1,6 plus grand à hauteur d'en-tête égale. Un en-tête `stacked` a été essayé et
+**écarté** : sa case de logo est carrée (`160×160`, `object-contain`), donc un lockup 2,15:1 y est
+bridé par la largeur, et son fond anthracite rend le pavé « FÉDÉRATION DES COOPÉRATIVES… » illisible.
+
+**Gates au merge `287bb35a`** : `typecheck` ✅ · `eslint` ✅ 0 erreur (24 avertissements préexistants ;
+une erreur `react-hooks/rules-of-hooks` introduite par le lot 2 a été corrigée en `6256d3fa`) ·
+`test:unit` **4 230** ✅ dont préflight **635** ✅ · `build` ✅ · `config:validate` ✅ 3 pages / 6 sections ·
+`audit:config` ✅ RAS · SSR de production vérifié sur `/`, `/aac/communs`, `/usages`,
+`/aac/commun/:id` (SEO présent côté serveur) et sur un site **sans** AAC (la route tombe bien sur le
+catch-all). **`test:integration` et `test:e2e` n'ont jamais été lancés** (cf. §14).
+
+---
 
 ### 03/09 — la cagnotte d'un commun déposé ailleurs
 
@@ -617,6 +701,19 @@ une affirmation fausse. Aucun appelant ne lit `mutation.data` ; seul le verdict 
   27/08, mesurée et bornée (aucun crash, aucune perte de donnée). Se règle sans une ligne de code en
   passant le gabarit en absolu dès que l'hôte est arrêté.
 - ⚠️ Le catalogue d'usages est ancré sur une organisation **différente** de celle du site (cf. §1).
+- ⚠️ **`priceInt` n'est jamais stocké** — il est calculé par les pipelines d'enveloppe de `Aap.php`.
+  Règle de lecture d'un montant : `toSafeInt(price)` sur un **document**, `priceInt ?? price` sur
+  l'**enveloppe**. La base porte 178 `price` en `string`, 75 en bool, 200 null (cf. §10 08-09/09).
+- ⚠️ **Le gate de financement est `form.coremu`**, à la racine du form AAP — pas `coRemuneration`,
+  qui n'existe nulle part dans le legacy. `financerLimitRoles` / `limitTypes` ne sont **pas**
+  contrôlés à l'écriture : affichage seulement, jamais une sécurité.
+- ⚠️ **L'optimiseur `/img` ne peut pas préserver l'alpha en JPEG** (servi aux clients qui n'annoncent
+  ni AVIF ni WebP). Sans effet sur les navigateurs, mais un logo transparent y apparaît sur fond
+  blanc. Corollaire pratique : `.cache/images` et le `Cache-Control: immutable` masquent tout
+  changement d'image à URL identique — vider `.cache/images` **et** forcer le rechargement pour
+  vérifier à l'écran.
+- ⚠️ **`CLAUDE.md` est gitignoré** : le préflight `section-meta` le contrôle *s'il est présent*. Un
+  compteur périmé rougit en local sans rien dire de la CI.
 
 ---
 
@@ -624,8 +721,11 @@ une affirmation fausse. Aucun appelant ne lit `mutation.data` ; seul le verdict 
 
 | Question | Responsable |
 |---|---|
-| Fournir le logo `public/images/federationDesCae/logo.png`, puis rétablir `header.logo` (et déclarer `"images": "federationDesCae"` dans `sites.json`) — le `logoIcon: "handshake"` actuel est un provisoire ; le préflight `logo-assets` refuse désormais un `header.logo` sans fichier | Schumann |
+| ~~Fournir le logo~~ — **fait le 09/09** ; reste à obtenir de la Fédération un **SVG ou une version à jour** (l'actuel vient d'un annuaire tiers, 2023) | Schumann |
+| **Activer la préconfiguration « Système de coremuneration »** sur le formulaire de l'appel si la Fédération veut le financement — sans `form.coremu`, les trois blocs sont masqués (comme dans le legacy) | Aboire / Fédération |
+| **Déployer le correctif legacy du 500 de `POST /survey/coform/getformbyid`** (form de type `aapConfig`) **avant** la mise en production du module AAC — sinon `campagne` et tout `config.*` restent invisibles | Aboire |
+| Lancer `test:integration` et `test:e2e` sur le lot 08-09/09 | à faire |
 | `showOpenSourceToggle` : 2 outils sur 83 sont marqués open source — garde-t-on le filtre ? | Schumann |
 | Passer `communUrlTemplate` en URL absolue une fois l'hôte du site arrêté | Schumann |
 | Rendre configurables les `FIELD_*` de `CommunInfoAction` | à arbitrer |
-| Vérification navigateur des lots 27/08 et 31/08 — **jamais faite** | Schumann |
+| Vérification navigateur des lots 27/08, 31/08 et 03/09 — **jamais faite** (celui du 08-09/09 a été vérifié en SSR de production) | Schumann |
