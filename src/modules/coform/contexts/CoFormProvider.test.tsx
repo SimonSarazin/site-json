@@ -593,5 +593,80 @@ describe("CoFormProvider", () => {
       expect(JSON.parse(brut!).data).toEqual({ s1: { textField: "salle du lieu A" } });
       window.localStorage.removeItem(KEY_A);
     });
+
+    /**
+     * H20 / H14 (rapport MR 53) : le chemin multi-étapes n'appelait JAMAIS
+     * `purgeDraft`. Pire, l'ordre des opérations garantissait l'écriture :
+     * `submitStep` → `setStepState` → auto-save armé (500 ms), qui se
+     * déclenchait pendant l'attente réseau de `submitAll()` — ou, si la modale
+     * se fermait avant, le flush au démontage l'écrivait quand même. Le
+     * brouillon d'AVANT l'enregistrement restait donc proposé pendant 30 jours,
+     * et « Reprendre » puis soumettre annulait l'enregistrement.
+     */
+    describe("purge après soumission finale (H20)", () => {
+      function monterAvec(onFinalSubmit: (...args: unknown[]) => Promise<void>) {
+        const formData = makeCoFormData(["s1", "s2"]);
+        const wrapper = ({ children }: { children: React.ReactNode }) => (
+          <CoFormProvider
+            formData={formData}
+            formId={FORM_ID}
+            userId={USER_ID}
+            submitMode="final"
+            onFinalSubmit={onFinalSubmit}
+          >
+            {children}
+          </CoFormProvider>
+        );
+        return renderHook(() => useCtx(), { wrapper });
+      }
+
+      it("une soumission réussie purge le brouillon — et le flush au démontage ne le ressuscite pas", async () => {
+        window.localStorage.removeItem(KEY);
+        const { result, unmount } = monterAvec(vi.fn().mockResolvedValue(undefined));
+        // La saisie arme l'auto-save (debounce) : c'est ce payload en attente
+        // que le démontage écrivait après coup.
+        act(() => result.current.saveStepData("s1", { textField: "saisie" }));
+        await act(async () => {
+          await result.current.submitAllData();
+        });
+        unmount(); // fermeture de la modale sur le succès → flush
+        expect(window.localStorage.getItem(KEY)).toBeNull();
+      });
+
+      it("un brouillon déjà écrit est aussi supprimé", async () => {
+        window.localStorage.setItem(
+          KEY,
+          JSON.stringify({
+            version: 1,
+            data: { s1: { textField: "d'avant" } },
+            currentStepIndex: 0,
+            completedSteps: [],
+            addedOptions: {},
+            timestamp: Date.now() - 60_000,
+            baseUpdatedAt: null,
+          }),
+        );
+        const { result, unmount } = monterAvec(vi.fn().mockResolvedValue(undefined));
+        await act(async () => {
+          await result.current.submitAllData();
+        });
+        unmount();
+        expect(window.localStorage.getItem(KEY)).toBeNull();
+      });
+
+      it("une soumission en ÉCHEC conserve le brouillon", async () => {
+        window.localStorage.removeItem(KEY);
+        const { result, unmount } = monterAvec(vi.fn().mockRejectedValue(new Error("500")));
+        act(() => result.current.saveStepData("s1", { textField: "saisie" }));
+        await act(async () => {
+          await result.current.submitAllData().catch(() => undefined);
+        });
+        unmount();
+        const brut = window.localStorage.getItem(KEY);
+        expect(brut).not.toBeNull();
+        expect(JSON.parse(brut!).data).toEqual({ s1: { textField: "saisie" } });
+        window.localStorage.removeItem(KEY);
+      });
+    });
   });
 });

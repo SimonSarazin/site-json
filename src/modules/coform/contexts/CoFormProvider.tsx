@@ -110,6 +110,7 @@ export function CoFormProvider({
     staleDraftInfo,
     saveDraft,
     discardDraft: discardDraftRaw,
+    purgeDraft,
     acknowledgeStale,
     acknowledgeRestored,
   } = useCoFormDraft({
@@ -309,6 +310,16 @@ export function CoFormProvider({
           hasAddedOptions ? stepState.addedOptions : undefined,
           hasLinks ? links : undefined
         );
+
+        // Le serveur a la donnée : le brouillon n'a plus lieu d'être — comme
+        // `DynamicCoForm.handleFormSubmit` sur le chemin mono-étape. C'était
+        // le SEUL chemin sans purge : l'auto-save armé par le `submitStep`
+        // qui précède (et le flush au démontage, quand la modale se ferme sur
+        // le succès) réécrivait l'instantané d'AVANT l'enregistrement, que la
+        // bannière « Brouillon trouvé » reproposait ensuite pendant 30 jours.
+        // `purgeDraft` jette aussi le payload en attente, donc rien ne le
+        // ressuscite. Un échec (throw ci-dessus) le conserve, à dessein.
+        purgeDraft();
       }
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Erreur lors de la soumission finale"));
@@ -316,7 +327,7 @@ export function CoFormProvider({
     } finally {
       setIsLoading(false);
     }
-  }, [submitMode, onFinalSubmit, stepState.addedOptions, subFormsFields, userId]);
+  }, [submitMode, onFinalSubmit, stepState.addedOptions, subFormsFields, userId, purgeDraft]);
 
   // Réinitialisation
   const resetForm = useCallback(() => {
