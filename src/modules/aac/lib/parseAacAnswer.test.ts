@@ -299,6 +299,31 @@ describe("parseAacAnswer — budget", () => {
     expect(card.totalRequested).toBe(200);
     expect(card.totalFunded).toBe(75);
   });
+
+  it("le repli `depense` EXCLUT les lignes clôturées (`include: false`), comme le backend", () => {
+    // Le backend filtre `include` avant de livrer `funds` ; le repli lit
+    // `depense[]` brut. Sans filtre, le même commun affichait 1 500 € demandés
+    // (13 %) ici et 500 € (40 %) sur un AAC canonique — un palier clôturé
+    // restait compté dans la demande.
+    const card = parse({
+      _id: { $id: "a1" },
+      funds: [],
+      answers: {
+        etapeA: {
+          depense: [
+            { price: 1000, financer: [], include: false },
+            { price: 500, financer: [{ amount: 200 }] },
+            // Absent ou `true` ⇒ actif (convention legacy).
+            { price: 250, financer: [], include: true },
+          ],
+        },
+      },
+    });
+    expect(card.funds).toHaveLength(2);
+    expect(card.totalRequested).toBe(750);
+    expect(card.totalFunded).toBe(200);
+    expect(card.progressPercent).toBe(26);
+  });
 });
 
 describe("parseAacAnswer — titre, description, tags, maturité", () => {

@@ -188,22 +188,26 @@ export function parseAacAnswer(
   const maturity = toStr(maturityRaw).trim() || null;
 
   // Budget. `funds` est déjà filtré `include` par le backend ; en repli on lit
-  // `depense[]` brut, qui porte encore des objets `financer`.
+  // `depense[]` brut, qui porte encore des objets `financer` — ET les lignes
+  // clôturées (`include: false`, ce qu'écrit la clôture d'un palier). Le filtre
+  // s'applique aux deux chemins, pour qu'ils rendent le MÊME montant : sans
+  // lui, un palier clôturé restait compté dans la demande dès que le backend
+  // n'avait rien pré-calculé (projection étroite, étape de dépôt ≠ `aapStep1`).
   const funds: AacFund[] = (
     toArray(a.funds).length > 0
       ? toArray(a.funds)
       : toArray(readField(a, fields.depense))
-  ).map((d) => {
-    const dep = rec(d);
-    return {
+  )
+    .map(rec)
+    .filter((dep) => dep.include !== false)
+    .map((dep) => ({
       // `price` seul : aucun chemin d'écriture ne pose `priceInt` sur un document
       // (0 stocké sur 2 803 réponses), et `targetAmount` n'y a jamais existé.
       price: toSafeInt(dep.price),
       financers: toArray(dep.financer).map((f) =>
         typeof f === "number" || typeof f === "string" ? toFloat(f) : toFloat(rec(f).amount)
       ),
-    };
-  });
+    }));
 
   const totalRequested = funds.reduce((s, f) => s + f.price, 0);
   const totalFunded = funds.reduce(
