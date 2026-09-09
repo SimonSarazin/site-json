@@ -66,7 +66,11 @@ async function assertProjectAssociable(params: {
     const page = await context.coformAnswersSearch({
       searchType: ["answers"],
       filters: { "project.id": project.id },
-      fields: ["_id", "project"],
+      // ⚠️ `collection` OBLIGATOIRE : le SDK (`_linkEntities`) élimine en
+      // silence toute ligne qui ne le porte pas — sans lui, la page revient
+      // vide et ce contrôle ne bloque jamais rien. `id` : le SDK ne peuple
+      // `.id` que depuis les champs projetés.
+      fields: ["_id", "id", "collection", "project"],
       count: true,
       indexMin: 0,
       indexStep: 5,

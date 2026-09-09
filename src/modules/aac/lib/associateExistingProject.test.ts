@@ -28,12 +28,24 @@ function buildProject(milestones: Array<Record<string, unknown>> = [], serverDat
   } as unknown as Project;
 }
 
-/** Hôte de costum mocké : `coformAnswersSearch` renvoyant les answers `ids` fournis. */
+/**
+ * Hôte de costum mocké, FIDÈLE au SDK : `coformAnswersSearch` passe par
+ * `_createPaginatorEngine` → `_linkEntities`, qui élimine toute ligne sans
+ * `collection` — donc TOUTE la page dès que la projection `fields` ne le
+ * demande pas (piège vérifié, documenté dans `useReservationsQuery` et
+ * `useInstallationAnswersQuery`). Le mock rejoue cette projection puis ce
+ * filtre : un `fields` sans `"collection"` rend une page vide.
+ */
 function buildContext(resultIds: string[] = []) {
   return {
-    coformAnswersSearch: vi.fn().mockResolvedValue({
-      results: resultIds.map((id) => ({ id })),
-      count: { answers: resultIds.length },
+    coformAnswersSearch: vi.fn().mockImplementation(async (params: { fields?: string[] }) => {
+      const fields = params.fields ?? [];
+      const project = (row: Record<string, unknown>) =>
+        Object.fromEntries(Object.entries(row).filter(([key]) => fields.length === 0 || fields.includes(key)));
+      const results = resultIds
+        .map((id) => project({ id, _id: { $id: id }, collection: "answers", project: { id: "proj-1" } }))
+        .filter((row) => "collection" in row);
+      return { results, count: { answers: results.length } };
     }),
   } as unknown as Organization;
 }
@@ -118,6 +130,18 @@ describe("associateExistingProject — double vérif « projet déjà rattaché 
       expect.objectContaining({ filters: { "project.id": "proj-1" } }),
     );
     expect(answer.updateField).not.toHaveBeenCalled();
+  });
+
+  it("projette `collection` et `id` — sans eux, le SDK vide la page et le contrôle #2 est mort", () => {
+    const context = buildContext(["answer-42"]);
+
+    return associateExistingProject({ answer: buildAnswer(), project: buildProject(), userId: "user-1", context })
+      .catch(() => undefined)
+      .then(() => {
+        expect(context.coformAnswersSearch).toHaveBeenCalledWith(
+          expect.objectContaining({ fields: expect.arrayContaining(["collection", "id"]) }),
+        );
+      });
   });
 
   it("autorise si la collection answers ne renvoie que CE commun", async () => {
