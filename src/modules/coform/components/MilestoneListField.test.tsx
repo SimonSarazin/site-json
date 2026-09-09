@@ -27,8 +27,11 @@ vi.mock("@/hooks/useLoadNamespace", () => ({ useLoadNamespace: () => {} }));
 vi.mock("@/hooks/useCocolight", () => ({
   useCocolightOptional: () => ({ api: null, entity: null }),
 }));
+// Paramétrable : la photo serveur (`targetResource.items`) est ce qui se
+// FUSIONNE avec la valeur RHF — les tests de fusion, plus bas, la font parler.
+const fundingMock = vi.fn();
 vi.mock("@/modules/aac/hooks/useAacFundingResource", () => ({
-  useAacFundingResource: () => ({ targetResource: undefined }),
+  useAacFundingResource: () => fundingMock(),
 }));
 
 const permsMock = vi.fn();
@@ -58,21 +61,26 @@ const LIGNE: DepenseEntry = {
 
 function poser(value: DepenseEntry[], answerId?: string, readOnly = false) {
   const onChange = vi.fn();
-  render(
+  const arbre = (v: DepenseEntry[]) => (
     <MilestoneListField
       field={champ()}
       errors={{}}
-      value={value}
+      value={v}
       onChange={onChange}
       answerId={answerId}
       readOnly={readOnly}
-    />,
+    />
   );
-  return onChange;
+  const vue = render(arbre(value));
+  // `rerender` : ce que fait le formulaire hôte quand `onChange` a remonté une
+  // nouvelle valeur (RHF la redonne au champ), ou quand une source vive bouge.
+  return Object.assign(onChange, { rerender: (v: DepenseEntry[]) => vue.rerender(arbre(v)) });
 }
 
 describe("MilestoneListField", () => {
   beforeEach(() => {
+    fundingMock.mockReset();
+    fundingMock.mockReturnValue({ targetResource: undefined });
     permsMock.mockReturnValue({
       canCreateMilestone: true,
       canEditMilestone: () => true,
@@ -171,5 +179,67 @@ describe("MilestoneListField", () => {
     await waitFor(() => expect(onChange).toHaveBeenCalledTimes(1));
     const [liste] = onChange.mock.calls[0] as [DepenseEntry[]];
     expect(liste[0]).toMatchObject({ poste: "Matériel", price: 120 });
+  });
+
+  /** Photo serveur d'une ligne, telle que `useCagnotteAdapter` la produit. */
+  const itemServeur = (over: Record<string, unknown> = {}) => ({
+    fromType: "depense" as const,
+    itemId: "0",
+    milestoneId: "m-abc",
+    depenseIndex: 0,
+    name: "Développement",
+    description: "",
+    price: 5000,
+    status: "open",
+    actions: [],
+    funding: [],
+    currentFunding: 0,
+    unpaidFunding: 0,
+    userPledge: 0,
+    allFunding: [],
+    ...over,
+  });
+  const ressource = (items: ReturnType<typeof itemServeur>[]) => ({
+    targetResource: {
+      fromType: "proposition" as const,
+      id: "answer-1",
+      name: "Mon commun",
+      answerId: "answer-1",
+      projectId: "",
+      resourceTotalAmount: 0,
+      resourceFinancedAmount: 0,
+      items,
+    },
+  });
+
+  /**
+   * Régression (M28) : la modale de modification réinitialisait la saisie à
+   * chaque rendu du champ. `valeursInitiales` est un littéral reconstruit à
+   * chaque rendu ; l'effet de resemage du dialogue dépendait de son identité ;
+   * et ce champ se rerend hors de tout geste — il s'abonne à l'enveloppe
+   * (`useAacFundingResource`), dont la réparation automatique de l'adaptateur
+   * invalide le cache. L'utilisateur tape 6000 ; le refetch arrive ; le montant
+   * repasse à 5000 sous ses doigts, sans message.
+   */
+  it("un refetch de l'enveloppe pendant la modification ne réinitialise PAS la saisie", async () => {
+    fundingMock.mockReturnValue(ressource([itemServeur()]));
+    const onChange = poser([LIGNE], "answer-1");
+
+    fireEvent.click(screen.getByRole("button", { name: /MilestoneManageActions\.edit/ }));
+    const montant = screen.getByLabelText("Montant cible") as HTMLInputElement;
+    expect(montant.value).toBe("5000");
+    fireEvent.change(montant, { target: { value: "6000" } });
+
+    // Le refetch : même contenu, AUTRE identité — la liste dérivée et
+    // `valeursInitiales` changent d'identité avec lui.
+    fundingMock.mockReturnValue(ressource([itemServeur()]));
+    onChange.rerender([LIGNE]);
+
+    expect(montant.value).toBe("6000");
+
+    fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+    await waitFor(() => expect(onChange).toHaveBeenCalledTimes(1));
+    const [liste] = onChange.mock.calls[0] as [DepenseEntry[]];
+    expect(liste[0]).toMatchObject({ poste: "Développement", price: 6000, milestone: "m-abc" });
   });
 });

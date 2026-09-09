@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -18,6 +18,15 @@ export interface DepenseFormValues {
   name: string;
   description: string;
   targetAmount: number;
+}
+
+const VIDE: MilestoneCreateFormData = { name: "", description: "", targetAmount: 0 };
+
+/** Valeurs de départ du formulaire : celles de la ligne en modification, sinon vides. */
+function valeursDeDepart(initial: DepenseFormValues | undefined): MilestoneCreateFormData {
+  return initial
+    ? { name: initial.name, description: initial.description, targetAmount: initial.targetAmount }
+    : VIDE;
 }
 
 /**
@@ -53,19 +62,26 @@ export function DepenseFormDialog({
   const modeEdition = initial !== undefined;
   const form = useForm<MilestoneCreateFormData>({
     resolver: zodResolver(milestoneCreateFormSchema),
-    defaultValues: { name: "", description: "", targetAmount: 0 },
+    // Figées au MONTAGE : le champ monte le dialogue à l'ouverture.
+    defaultValues: valeursDeDepart(initial),
   });
 
-  // Le dialogue est monté conditionnellement par le champ, mais il peut être
-  // rouvert sur une AUTRE ligne sans démontage : on resème à chaque ouverture.
+  // Le dialogue peut aussi être rouvert sur une AUTRE ligne sans démontage : on
+  // resème à chaque OUVERTURE — et seulement là. `initial` est lu par une ref
+  // (mise à jour dans un effet, pas pendant le rendu — cf. react-hooks/refs) :
+  // le champ appelant reconstruit `initial` en littéral à chaque rendu, et ses
+  // rendus ne dépendent pas de l'utilisateur (deux sources react-query vives,
+  // `useWatch` du formulaire hôte). Faire dépendre l'effet de l'objet rejouait
+  // `form.reset` sous les doigts de l'utilisateur : le montant repassait à sa
+  // valeur d'origine en pleine saisie, sans message.
+  const initialRef = useRef(initial);
+  useEffect(() => {
+    initialRef.current = initial;
+  }, [initial]);
   useEffect(() => {
     if (!open) return;
-    form.reset(
-      initial
-        ? { name: initial.name, description: initial.description, targetAmount: initial.targetAmount }
-        : { name: "", description: "", targetAmount: 0 },
-    );
-  }, [open, initial, form]);
+    form.reset(valeursDeDepart(initialRef.current));
+  }, [open, form]);
 
   const soumettre = form.handleSubmit((values) => {
     onSubmit({
