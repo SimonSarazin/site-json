@@ -239,7 +239,9 @@
       "langSwitch": false,
       "auth": true
     },
-    "logo": "images/federationDesCae/logo.png"
+    "logo": "images/federationDesCae/logo.png",
+    "logoSize": "lg",
+    "height": "md"
   },
   "pages": [
     {
