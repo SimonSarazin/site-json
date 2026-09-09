@@ -212,10 +212,30 @@ export function CommunFinancingCard({
         }
         setIsLoadingOrgs(true);
         try {
-            const typeCoFinancer = aacConfig?.typeCoFinancer ?? "tiersLieux";
-            let orgParam: Partial<GlobalAutocompleteCostumData> = {};
-            
-            if (typeCoFinancer === "tiersLieux") {
+            /**
+             * `typeCoFinancer` est une valeur LIBRE du form parent
+             * (`financer.php:835` lit `parentForm.typeCoFinancer`) : la casse
+             * n'y est pas garantie, et un appel peut en déclarer une que cette
+             * carte ne connaît pas. Depuis que le résolveur rend la valeur
+             * réelle plutôt que `null`, ces deux cas atteignaient un `if/else if`
+             * SANS `else` : `orgParam` restait `{}`, `searchCostum({})` levait
+             * (le SDK exige `searchType`), l'erreur était avalée plus bas et la
+             * modale annonçait « aucune organisation » là où elle listait les
+             * tiers-lieux. D'où la comparaison insensible à la casse et le repli
+             * EXPLICITE sur les tiers-lieux, défaut legacy du dispositif.
+             */
+            const typeCoFinancer = (aacConfig?.typeCoFinancer ?? "").trim().toLowerCase();
+            let orgParam: Partial<GlobalAutocompleteCostumData>;
+
+            if (typeCoFinancer === "cae") {
+                orgParam = {
+                    searchType: ["organizations"],
+                    filters: {
+                        "tags": { "$in": ["CAE", "cae", "Cae"] }
+                    },
+                    notSourceKey: true
+                };
+            } else {
                 orgParam = {
                     searchType: ["organizations"],
                     filters: {
@@ -227,16 +247,8 @@ export function CommunFinancingCard({
                     },
                     notSourceKey: true
                 };
-            } else if (typeCoFinancer === "cae") {
-                orgParam = {
-                    searchType: ["organizations"],
-                    filters: {
-                        "tags": { "$in": ["CAE", "cae", "Cae"] }
-                    },
-                    notSourceKey: true
-                };
             }
-            
+
             const result = await entity.searchCostum(orgParam);
             setOrgs(result && result?.results ? Object.values(result?.results).map(res => res?.serverData || {}) : []);
         } catch (error) {

@@ -81,7 +81,7 @@ vi.mock("@/modules/cagnotte/components/CagnotteDialog", () => ({
 const { CommunFinancingCard } = await import("./CommunFinancingCard");
 type PostLoginIntent = Parameters<typeof CommunFinancingCard>[0]["postLoginIntent"];
 
-function makeConfig(depenseStepKey: string | null): AacResolvedConfig {
+function makeConfig(depenseStepKey: string | null, typeCoFinancer: string | null = null): AacResolvedConfig {
   return {
     formId: "f1",
     configId: null,
@@ -100,7 +100,7 @@ function makeConfig(depenseStepKey: string | null): AacResolvedConfig {
       anyOnewithLinkCanAnswer: false,
     },
     campaigns: [],
-    typeCoFinancer: null,
+    typeCoFinancer,
   };
 }
 
@@ -145,6 +145,7 @@ function renderCard(over: Partial<Parameters<typeof CommunFinancingCard>[0]> = {
 beforeEach(() => {
   me = CONNECTED;
   depenses = [];
+  ENTITY.searchCostum.mockClear();
   useCommunRawDepenses.mockClear();
   toggleReaction.mockClear();
   openLogin.mockClear();
@@ -314,5 +315,62 @@ describe("CommunFinancingCard — les CTA de réaction hors connexion ouvrent la
       rerender(makeUi(true));
     });
     expect(toggleReaction).toHaveBeenCalledTimes(1);
+  });
+});
+
+/**
+ * Depuis que `resolveTypeCoFinancer` rend la valeur RÉELLE du form parent (et non
+ * plus `null` systématiquement), le `if/else if` sans `else` de `loadOrganizations`
+ * est atteignable : toute valeur inconnue — ou d'une autre casse — laissait
+ * `orgParam` vide, `searchCostum({})` levait (le SDK exige `searchType`), l'erreur
+ * était avalée et la modale annonçait « aucune organisation ».
+ */
+describe("CommunFinancingCard — la population cofinanceuse a toujours un repli", () => {
+  const TIERS_LIEUX = {
+    searchType: ["organizations"],
+    filters: {
+      $or: {
+        "source.keys": "franceTierslieux",
+        "reference.costum": "franceTierslieux",
+        mainTag: "TiersLieux",
+      },
+    },
+    notSourceKey: true,
+  };
+  const CAE = {
+    searchType: ["organizations"],
+    filters: { tags: { $in: ["CAE", "cae", "Cae"] } },
+    notSourceKey: true,
+  };
+
+  /** « J'utilise » ouvre le modal de sélection, qui charge les organisations. */
+  async function ouvrirLaListe(typeCoFinancer: string | null) {
+    renderCard({ aacConfig: makeConfig("etapeA", typeCoFinancer) });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /detail\.use/ }));
+    });
+  }
+
+  it("`cae` : la recherche porte sur les organisations taguées CAE", async () => {
+    await ouvrirLaListe("cae");
+    expect(ENTITY.searchCostum).toHaveBeenCalledWith(CAE);
+  });
+
+  it("`CAE` : la casse du form parent n'est pas un contrat — même recherche", async () => {
+    await ouvrirLaListe("CAE");
+    expect(ENTITY.searchCostum).toHaveBeenCalledWith(CAE);
+  });
+
+  it("non déclaré (`null`) : repli tiers-lieux, le défaut legacy", async () => {
+    await ouvrirLaListe(null);
+    expect(ENTITY.searchCostum).toHaveBeenCalledWith(TIERS_LIEUX);
+  });
+
+  it("valeur inconnue : repli tiers-lieux — JAMAIS une requête sans `searchType`", async () => {
+    await ouvrirLaListe("scic");
+    expect(ENTITY.searchCostum).toHaveBeenCalledTimes(1);
+    expect(ENTITY.searchCostum).toHaveBeenCalledWith(TIERS_LIEUX);
+    // Le défaut d'origine : `{}` — et la modale vide qui s'ensuivait.
+    expect(ENTITY.searchCostum).not.toHaveBeenCalledWith({});
   });
 });
