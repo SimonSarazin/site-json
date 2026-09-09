@@ -22,7 +22,7 @@ import { buildSearchPayload } from "@/modules/search/lib/buildSearchPayload";
 import { expandCostumSubType } from "@/modules/search/lib/costumSubType";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
-import { SEARCH_QUERY_KEYS, SEARCH_STATIC_LIST_PREFIX, SEARCH_STATIC_MAP_PREFIX } from "@/modules/search/constants/queryKeys";
+import { publicSurfaceKeys } from "@/lib/queryKeys";
 import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
 import "@/modules/admin/i18n";
@@ -131,7 +131,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const tSearch = useT("modules/search");
   // Colonnes : `"path"` brut OU `{path, label}` (libellé localisé) — cf. AdminColumnSchema.
   const columns = (resource.columns ?? ["name"]).map((c) =>
-    typeof c === "string" ? { path: c, label: undefined, type: undefined } : c,
+    typeof c === "string" ? { path: c, label: undefined, type: undefined, sortable: undefined } : c,
   );
   const rowActions = resource.rowActions ?? ["edit", "delete"];
   const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
@@ -367,7 +367,11 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   /** Mode statusField : écrit le champ métier via `entity.updateField` (UPDATE_PATH_VALUE — un $set
    *  ciblé ; PAS le save d'answer complet, qui exigerait un re-fetch pour ne rien effacer). Les rows
    *  sont des entités revivifiées (`helper.fromEntityJSON`) — garde défensive sinon. Invalidation :
-   *  tables/tuiles admin ET listes publiques (liste + carte lisent le même champ, ex. /creneaux). */
+   *  tables/tuiles admin ET TOUTES les surfaces publiques via `publicSurfaceKeys` — le MÊME jeu de
+   *  clés que valider/référencer/supprimer (listes search + compteurs, agenda, fil blog). Un statut
+   *  métier gouverne une VISIBILITÉ (ex. `status: Visible` sur /ressources, `publicationStatus` sur
+   *  un fil d'actualités) : n'invalider que les listes statiques laissait le fil blog, l'agenda et
+   *  les compteurs sur leur cache jusqu'au rechargement. */
   const setStatus = useMutationWithToast<void, { item: unknown; value: string; display: string }>({
     mutationFn: async ({ item, value }) => {
       if (!fieldStatus) return;
@@ -381,8 +385,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     namespace: "modules/admin",
     onSuccessCallback: () => {
       void invalidateAdmin();
-      queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_LIST_PREFIX) });
-      queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_MAP_PREFIX) });
+      for (const key of publicSurfaceKeys(costumSlug || undefined)) void queryClient.invalidateQueries({ queryKey: key });
     },
   });
   const setExclusiveFlag = useSetExclusiveFlag(() => {});
@@ -558,7 +561,14 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                   key={col.path}
                   aria-sort={sort?.col === col.path ? (sort.dir === 1 ? "ascending" : "descending") : "none"}
                 >
-                  {/* Vrai <button> (pattern shadcn data-table) : tri accessible au CLAVIER + aria-sort. */}
+                  {/* `sortable: false` → libellé simple : proposer un tri qui ne trie pas (colonne
+                      FABRIQUÉE après la requête, absente en base) coûterait le tri par défaut. */}
+                  {col.sortable === false ? (
+                    <span className={col.label ? "px-3 text-sm font-medium" : "px-3 text-sm font-medium capitalize"}>
+                      {col.label ? t(col.label) : col.path}
+                    </span>
+                  ) : (
+                  /* Vrai <button> (pattern shadcn data-table) : tri accessible au CLAVIER + aria-sort. */
                   <Button
                     variant="ghost"
                     size="sm"
@@ -568,6 +578,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                     {col.label ? t(col.label) : col.path}
                     {sort?.col === col.path && (sort.dir === 1 ? <ChevronUp className="ml-1 h-3 w-3 text-primary" /> : <ChevronDown className="ml-1 h-3 w-3 text-primary" />)}
                   </Button>
+                  )}
                 </TableHead>
               ))}
               {(adminMode || fieldStatus) && <TableHead>{tAdmin("AdminResourceTable.statusColumn")}</TableHead>}
