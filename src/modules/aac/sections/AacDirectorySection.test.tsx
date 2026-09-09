@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import type { AacDirectoryEnabledFilters } from "../lib/directoryFilters";
 import { EMPTY_AAC_CARD_FIELDS } from "../lib/resolveAacCardFields";
@@ -42,7 +42,9 @@ const communsState: UseAacCommunsResult = {
   totalCount: 0,
   isLoading: false,
   isPending: false,
+  isFetching: false,
   isFetchingNextPage: false,
+  isFetchNextPageError: false,
   hasNextPage: false,
   fetchNextPage: () => Promise.resolve(),
   lastItemRef: () => {},
@@ -74,8 +76,12 @@ vi.mock("../components/directory/AacDirectoryFilters", () => ({
 // Les résultats ne sont pas le sujet non plus : on ne retient que l'ÉTAT que
 // la section leur transmet — c'est lui qui décide entre squelette et « vide ».
 vi.mock("../components/directory/AacDirectoryResults", () => ({
-  AacDirectoryResults: ({ isLoading }: { isLoading: boolean }) => (
-    <div data-testid="results" data-loading={String(isLoading)} />
+  AacDirectoryResults: ({ isLoading, onRetry }: { isLoading: boolean; onRetry?: () => void }) => (
+    <div data-testid="results" data-loading={String(isLoading)}>
+      <button type="button" onClick={onRetry}>
+        retry
+      </button>
+    </div>
   ),
 }));
 vi.mock("../components/directory/AacDepositButton", () => ({
@@ -167,5 +173,47 @@ describe("AacDirectorySection — attente du formulaire (H8)", () => {
     renderSection({});
 
     expect(screen.getByTestId("results").dataset.loading).toBe("false");
+  });
+});
+
+/**
+ * H9 — la reprise relance la PAGE en défaut si c'est une page suivante qui a
+ * échoué (les précédentes sont intactes dans le cache), tout le listing sinon.
+ * Refetcher 24 cartes pour en récupérer 12 serait un gaspillage ; relancer
+ * `fetchNextPage` sur une erreur de première page ne relancerait rien.
+ */
+describe("AacDirectorySection — reprise après échec (H9)", () => {
+  it("relance la page suivante quand c'est elle qui a échoué", () => {
+    const fetchNextPage = vi.fn(() => Promise.resolve());
+    const refetch = vi.fn(() => Promise.resolve());
+    Object.assign(communsState, {
+      error: new Error("503"),
+      isFetchNextPageError: true,
+      fetchNextPage,
+      refetch,
+    });
+
+    renderSection({});
+    fireEvent.click(screen.getByRole("button", { name: "retry" }));
+
+    expect(fetchNextPage).toHaveBeenCalledTimes(1);
+    expect(refetch).not.toHaveBeenCalled();
+  });
+
+  it("relance tout le listing sinon", () => {
+    const fetchNextPage = vi.fn(() => Promise.resolve());
+    const refetch = vi.fn(() => Promise.resolve());
+    Object.assign(communsState, {
+      error: new Error("503"),
+      isFetchNextPageError: false,
+      fetchNextPage,
+      refetch,
+    });
+
+    renderSection({});
+    fireEvent.click(screen.getByRole("button", { name: "retry" }));
+
+    expect(refetch).toHaveBeenCalledTimes(1);
+    expect(fetchNextPage).not.toHaveBeenCalled();
   });
 });

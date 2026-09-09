@@ -50,7 +50,11 @@ export interface UseAacCommunsResult {
   totalCount: number;
   isLoading: boolean;
   isPending: boolean;
+  /** Un fetch est en vol — première page, page suivante OU refetch complet. */
+  isFetching: boolean;
   isFetchingNextPage: boolean;
+  /** L'`error` vient d'un `fetchNextPage` : les pages déjà chargées sont intactes. */
+  isFetchNextPageError: boolean;
   hasNextPage: boolean | undefined;
   fetchNextPage: () => Promise<unknown>;
   lastItemRef: ReturnType<typeof useInfiniteQueryScroll<AacCommunsPage>>["lastItemRef"];
@@ -109,7 +113,9 @@ export function useAacCommuns({
     error,
     fetchNextPage,
     hasNextPage,
+    isFetching,
     isFetchingNextPage,
+    isFetchNextPageError,
     isLoading,
     isPending,
     refetch,
@@ -148,7 +154,9 @@ export function useAacCommuns({
     totalCount: data?.pages?.[0]?.total ?? 0,
     isLoading,
     isPending,
+    isFetching,
     isFetchingNextPage,
+    isFetchNextPageError,
     hasNextPage,
     fetchNextPage,
     lastItemRef,

@@ -22,6 +22,8 @@
     "count_other": "résultats",
     "empty": "Aucun commun ne correspond à votre recherche.",
     "error": "Impossible de charger les communs.",
+    "loadMoreError": "Le chargement de la suite a échoué.",
+    "retry": "Réessayer",
     "loading": "Chargement…",
     "display": {
       "label": "Affichage",

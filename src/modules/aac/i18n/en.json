@@ -22,6 +22,8 @@
     "count_other": "results",
     "empty": "No commons match your search.",
     "error": "Unable to load the commons.",
+    "loadMoreError": "Failed to load more commons.",
+    "retry": "Retry",
     "loading": "Loading…",
     "display": {
       "label": "Display",

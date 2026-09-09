@@ -118,10 +118,14 @@ export default function AacDirectorySection({ id, props }: Props) {
     totalCount,
     isLoading,
     isPending,
+    isFetching,
     isFetchingNextPage,
+    isFetchNextPageError,
     hasNextPage,
+    fetchNextPage,
     lastItemRef,
     error,
+    refetch,
   } = useAacCommuns({
     formId,
     form,
@@ -144,6 +148,14 @@ export default function AacDirectorySection({ id, props }: Props) {
   // « 0 communs » là où rien n'a encore été demandé. `isPending` couvre ce
   // creux ; il retombe à false dès la première réponse, succès ou erreur.
   const isAwaitingResults = isLoading || isPending;
+
+  // Reprise après échec : la page en défaut si c'est une page SUIVANTE qui a
+  // échoué (les précédentes sont intactes dans le cache), tout le listing sinon.
+  // Le choix se fait ici, où l'on connaît la requête — les résultats n'ont qu'un
+  // bouton à offrir.
+  const retry = () => {
+    void (isFetchNextPageError ? fetchNextPage() : refetch());
+  };
 
   if (!formId) {
     return (
@@ -193,6 +205,8 @@ export default function AacDirectorySection({ id, props }: Props) {
             isFetchingNextPage={false}
             hasNextPage={false}
             error={error}
+            onRetry={retry}
+            isRetrying={isFetching}
             lastItemRef={NOOP_REF}
             emptyText={emptyText ? localize(emptyText) : undefined}
           />
@@ -262,6 +276,8 @@ export default function AacDirectorySection({ id, props }: Props) {
               isFetchingNextPage={isFetchingNextPage}
               hasNextPage={hasNextPage}
               error={error}
+              onRetry={retry}
+              isRetrying={isFetching}
               lastItemRef={lastItemRef}
               emptyText={emptyText ? localize(emptyText) : undefined}
             />
