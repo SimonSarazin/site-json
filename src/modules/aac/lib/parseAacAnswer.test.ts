@@ -256,6 +256,35 @@ describe("parseAacAnswer — budget", () => {
     expect(parse(withFunds([{ price: "abc", financer: [] }])).totalRequested).toBe(0);
   });
 
+  it("prix en chaîne FORMATÉE (« 1 500,00 ») : espaces et virgule absorbés — jamais 1", () => {
+    // Relevé en base : `depense[].price` est une chaîne sur 178 réponses. Un
+    // `parseInt` nu s'arrête à l'espace et lit 1 — le budget affiché est alors
+    // mille fois trop petit, sans erreur.
+    expect(parse(withFunds([{ price: "1 500,00", financer: [] }])).totalRequested).toBe(1500);
+    expect(parse(withFunds([{ price: "1 500.50", financer: [] }])).totalRequested).toBe(1500);
+    // Le même montant, lu sur le REPLI `depense[]` — le chemin le plus exposé
+    // aux chaînes, puisque le backend n'y a rien pré-calculé.
+    const card = parse({
+      _id: { $id: "a1" },
+      funds: [],
+      answers: { etapeA: { depense: [{ price: "1 500,00", financer: [] }] } },
+    });
+    expect(card.totalRequested).toBe(1500);
+  });
+
+  it("prix booléen ou `null` (75 et 200 réponses en base) ⇒ 0, pas 1 ni NaN", () => {
+    expect(parse(withFunds([{ price: true, financer: [] }])).totalRequested).toBe(0);
+    expect(parse(withFunds([{ price: null, financer: [] }])).totalRequested).toBe(0);
+    expect(parse(withFunds([{ price: false, financer: [] }])).totalRequested).toBe(0);
+  });
+
+  it("`targetAmount` n'est PAS un montant de dépense : clé morte, ignorée", () => {
+    // Aucun chemin d'écriture ne pose `targetAmount` dans `depense[]` — c'est un
+    // champ de PALIER (`oceco.milestones[]`). Le lire ici masquerait un `price`
+    // absent derrière un montant qui n'a jamais été demandé.
+    expect(parse(withFunds([{ targetAmount: 300, financer: [] }])).totalRequested).toBe(0);
+  });
+
   it("`financer` absent ou non itérable ⇒ liste vide, pas d'exception", () => {
     expect(parse(withFunds([{ price: 10 }])).funds[0].financers).toEqual([]);
     expect(parse(withFunds([{ price: 10, financer: "x" }])).funds[0].financers).toEqual([]);

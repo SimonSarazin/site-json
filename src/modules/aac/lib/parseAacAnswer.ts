@@ -21,6 +21,7 @@
  * et un même commun peut être porté par deux AAC avec des chiffres différents.
  * D'où le rôle `users`, dont le chemin est libre — cf. `readField`.
  */
+import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
 import type { AacCardFieldRef, AacCardFields } from "./resolveAacCardFields";
 import { readUsageAnswer, type AacUsageAnswer } from "./aacUsage";
 
@@ -30,11 +31,11 @@ const rec = (v: unknown): Rec =>
   v && typeof v === "object" && !Array.isArray(v) ? (v as Rec) : {};
 const toStr = (v: unknown): string => (typeof v === "string" ? v : "");
 
-/** Entier tolérant, calqué sur `intval()` : préfixe numérique, 0 sinon. */
-const toInt = (v: unknown): number => {
-  const n = parseInt(String(v ?? ""), 10);
-  return Number.isFinite(n) ? n : 0;
-};
+// Entiers : `toSafeInt`, le lecteur UNIQUE des montants sur un document (cf.
+// `cagnotte/utils/dataTransform`). Un `parseInt(String(v))` local lisait 1 sur
+// `"1 500,00"` — et `depense[].price` arrive en chaîne sur 178 réponses, en
+// booléen sur 75, à `null` sur 200 : espaces et virgule sont absorbés, bool et
+// `null` valent 0, et le préfixe numérique reste celui d'`intval()`.
 
 /**
  * Secondes Unix, depuis les TROIS formes que ce champ prend selon la source :
@@ -44,16 +45,16 @@ const toInt = (v: unknown): number => {
  *  - `number` — la forme de fil, et celle des fixtures ;
  *  - `{sec, usec}` — la forme Mongo héritée, que porte encore `modified`.
  *
- * ⚠️ Ne PAS remplacer par `toInt` : sur une `Date`, `parseInt(String(v))` rend
- * `NaN` — donc `0`. Les tris par date deviendraient inertes, sans erreur.
+ * ⚠️ Ne PAS remplacer par `toSafeInt` seul : sur une `Date` (un objet), il rend
+ * `0`. Les tris par date deviendraient inertes, sans erreur.
  */
 const toEpochSeconds = (v: unknown): number => {
   if (v instanceof Date) {
     const ms = v.getTime();
     return Number.isFinite(ms) ? Math.trunc(ms / 1000) : 0;
   }
-  if (v && typeof v === "object") return toInt((v as Rec).sec);
-  return toInt(v);
+  if (v && typeof v === "object") return toSafeInt((v as Rec).sec);
+  return toSafeInt(v);
 };
 
 /** Flottant tolérant, calqué sur `floatval()`. */
@@ -195,7 +196,9 @@ export function parseAacAnswer(
   ).map((d) => {
     const dep = rec(d);
     return {
-      price: toInt(dep.price ?? dep.targetAmount),
+      // `price` seul : aucun chemin d'écriture ne pose `priceInt` sur un document
+      // (0 stocké sur 2 803 réponses), et `targetAmount` n'y a jamais existé.
+      price: toSafeInt(dep.price),
       financers: toArray(dep.financer).map((f) =>
         typeof f === "number" || typeof f === "string" ? toFloat(f) : toFloat(rec(f).amount)
       ),
@@ -222,7 +225,7 @@ export function parseAacAnswer(
   // AAC porteur du même commun.
   const usersCount = fields.users
     ? toArray(readField(a, fields.users)).length
-    : toInt(a.user_count);
+    : toSafeInt(a.user_count);
 
   // Badge « En attente ».
   //
@@ -260,7 +263,7 @@ export function parseAacAnswer(
     progressPercent,
     hasFundingRequest: totalFunded > 0,
     usersCount,
-    interestCount: toInt(a.interrest_count),
+    interestCount: toSafeInt(a.interrest_count),
     isSelected,
     // L'usage vit dans l'étape de DÉPÔT, celle que porte `fields.title` — jamais
     // une clé d'étape en dur.
