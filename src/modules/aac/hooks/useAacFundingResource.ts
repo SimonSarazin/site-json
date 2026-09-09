@@ -50,9 +50,19 @@ export function useAacFundingResource(
     siteConfig: siteConfig?.config?.cagnotteModuleConfig?.defaultType,
   });
 
+  /**
+   * `allProjects` n'est lu par `useCagnotteAdapter` QUE dans sa branche
+   * `selectorType === "project"` (cagnotte « standard ») ; en mode `proposition`
+   * — le `defaultType: "aac"` des sites AAC — les ressources viennent de
+   * l'enveloppe seule. Or ce hook coûte un `searchCostum` borné à 10 000 projets
+   * PLUS un `api.answer` par projet retourné, en parallèle : sur un costum à 200
+   * projets cagnotte, 201 requêtes dont rien ne dépendait — à l'ouverture de la
+   * fiche comme à celle de la modale de dépôt (`MilestoneListField`). On ne le
+   * déclenche que pour le mode qui le lit.
+   */
   const { projects: allProjects } = useOrganizationProjectsWithAnswers({
     entity: entity || null,
-    enabled: !!entity,
+    enabled: !!entity && cagnotteConfig.selectorType === "project",
   });
 
   const selectedProjectContextId = String(answerId || "").trim();
