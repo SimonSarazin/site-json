@@ -153,7 +153,7 @@ describe("costums EcosystemeSanteReunion — écriture", () => {
     expect(champ.required).toBe(true);
     expect(champ.enum.map((o) => o.value)).toEqual(["admin", "member"]);
     // le formulaire générique qu'on remplace posait la question : ne pas l'escamoter
-    expect(costumDoc("rezo-sante-acteur").sections[0].groups[0].fields).toContain("role");
+    expect(costumDoc("rezo-sante-acteur").sections[0]?.groups?.[0]?.fields).toContain("role");
   });
 
   it("chaque thématique proposée est reconnue par le filtre d'au moins une page /theme/*", () => {
