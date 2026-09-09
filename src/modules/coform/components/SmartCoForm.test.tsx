@@ -666,3 +666,54 @@ describe("SmartCoForm — brouillon d'ÉDITION : coupé sans repère de pérempt
     expect(enableDraft("dynamic-coform")).toBe("false");
   });
 });
+
+/**
+ * H15 (rapport MR 53) : le `onSubmit` que `SmartCoForm` donne au formulaire
+ * simple traite l'erreur lui-même (`onError`, sans throw) — il résolvait donc
+ * aussi sur échec, et `DynamicCoForm` purgeait le brouillon dans les deux cas.
+ * Il signale désormais le verdict par sa valeur : `true` si le serveur a la
+ * donnée, `false` sinon.
+ */
+describe("SmartCoForm — le onSubmit du formulaire simple dit si le serveur a la donnée (H15)", () => {
+  beforeEach(() => {
+    mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
+    soumission.resultat = undefined;
+  });
+
+  it("mutation en échec : résout `false` et remonte l'erreur à `onError`", async () => {
+    const mutation = defaultMutation();
+    mutation.mutateAsync = vi.fn().mockRejectedValue(new Error("session expirée"));
+    mockUseCoFormFinalMutation.mockReturnValue(mutation);
+    const onError = vi.fn();
+    render(<SmartCoForm formData={makeFormData(["s1"])} formId="form123" onError={onError} />, {
+      wrapper: makeWrapper(),
+    });
+    fireEvent.click(screen.getByTestId("dyn-submit"));
+    await waitFor(() => expect(soumission.resultat).toBe(false));
+    expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "session expirée" }));
+  });
+
+  it("mutation réussie : résout `true`", async () => {
+    mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+    render(<SmartCoForm formData={makeFormData(["s1"])} formId="form123" />, { wrapper: makeWrapper() });
+    fireEvent.click(screen.getByTestId("dyn-submit"));
+    await waitFor(() => expect(soumission.resultat).toBe(true));
+  });
+
+  it("`onAfterSubmit` qui échoue n'annule pas le verdict : la réponse EST enregistrée", async () => {
+    mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+    const onError = vi.fn();
+    render(
+      <SmartCoForm
+        formData={makeFormData(["s1"])}
+        formId="form123"
+        onAfterSubmit={() => Promise.reject(new Error("rafraîchissement raté"))}
+        onError={onError}
+      />,
+      { wrapper: makeWrapper() },
+    );
+    fireEvent.click(screen.getByTestId("dyn-submit"));
+    await waitFor(() => expect(soumission.resultat).toBe(true));
+    expect(onError).toHaveBeenCalledTimes(1);
+  });
+});

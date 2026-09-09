@@ -538,6 +538,13 @@ export function SmartCoForm({
       existingAnswerMeta={existingAnswerMeta}
       unknownFieldVariant={unknownFieldVariant}
       onSubmit={async (data, addedOptions) => {
+        // « Le serveur a la donnée » — c'est ce que `DynamicCoForm` lit pour
+        // purger le brouillon. L'erreur est traitée ici (pas relancée : un
+        // throw remonterait jusqu'au `onSubmit` du `<form>` en rejet non géré),
+        // donc on la signale par la valeur de retour. `onAfterSubmit` n'entre
+        // pas dans le verdict : s'il échoue, la réponse est quand même
+        // enregistrée, et le brouillon n'a plus lieu d'être.
+        let soumis = false;
         try {
           // Dénormaliser pour le format PHP (champs root-level à la racine)
           const rawData = { [subFormId]: data } as Record<string, unknown>;
@@ -552,6 +559,7 @@ export function SmartCoForm({
           } else {
             await internalMutation.mutateAsync({ allData: dataForServer, addedOptions: formattedAddedOptions, links: linksOrUndef });
           }
+          soumis = true;
 
           // Callback post-soumission (ex: toast, fermer modale)
           if (onAfterSubmit) {
@@ -560,6 +568,7 @@ export function SmartCoForm({
         } catch (err) {
           onError?.(err instanceof Error ? err : new Error(String(err)));
         }
+        return soumis;
       }}
     />
   );

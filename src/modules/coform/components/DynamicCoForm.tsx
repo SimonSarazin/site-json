@@ -51,7 +51,13 @@ import "../i18n/i18n";
 
 interface DynamicCoFormProps {
   formData: CoFormData;
-  onSubmit: (data: SubFormData, addedOptions?: AddedOptionsMap) => void | Promise<void>;
+  /**
+   * Soumission. Résoudre `false` signale un ÉCHEC AVÉRÉ (erreur déjà traitée
+   * par l'appelant, sans throw) : le brouillon est alors conservé. Tout autre
+   * retour — `void`, `true` — vaut succès et purge le brouillon ; un throw le
+   * conserve aussi.
+   */
+  onSubmit: (data: SubFormData, addedOptions?: AddedOptionsMap) => void | boolean | Promise<void | boolean>;
   submitButtonText?: string;
   isLoading?: boolean;
   /** Valeurs par défaut pour pré-remplir le formulaire (mode édition) */
@@ -278,8 +284,13 @@ export function DynamicCoForm({
   const handleFormSubmit = useCallback(async (data: FormValues) => {
     setHasAttemptedSubmit(false);
     const hasAddedOptions = Object.keys(addedOptionsMap).some(k => addedOptionsMap[k].length > 0);
-    await onSubmit(data as SubFormData, hasAddedOptions ? addedOptionsMap : undefined);
-    // Succès : purge le draft (le serveur est désormais la source de vérité).
+    const resultat = await onSubmit(data as SubFormData, hasAddedOptions ? addedOptionsMap : undefined);
+    // Purge SEULEMENT sur succès avéré. Le `onSubmit` de `SmartCoForm` traite
+    // l'erreur lui-même (toast + `onError`) et résout `false` au lieu de
+    // relancer : purger ici quand même supprimait la clé ET le payload en
+    // attente, si bien que fermer la modale après un échec réseau perdait
+    // toute la saisie — le cas exact que le brouillon existe pour couvrir.
+    if (resultat === false) return;
     purgeDraft();
   }, [addedOptionsMap, onSubmit, purgeDraft]);
 
