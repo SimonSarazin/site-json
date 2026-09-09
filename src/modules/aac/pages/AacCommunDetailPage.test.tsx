@@ -360,3 +360,21 @@ describe("AacCommunDetailPage — la fiche rend son SEO (M12)", () => {
     expect(screen.getByTestId("seo").getAttribute("data-path")).toBe("/aac/commun/a1");
   });
 });
+
+describe("AacCommunDetailPage — icône d'un bloc déclaré (bonus)", () => {
+  /**
+   * `iconFor` promettait « inconnu ⇒ FileText », mais `DynamicIcon` rend `null`
+   * sur un nom inconnu tant qu'aucun `fallback` ne lui est passé : l'entrée
+   * de sommaire restait sans icône.
+   */
+  it("un nom d'icône inconnu rend FileText au sommaire, pas rien", () => {
+    // `DynamicIcon` journalise l'échec du chargement — attendu ici.
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    detailSections = [{ ...CONTEXTE_SECTION, icon: "icone-qui-n-existe-pas" }];
+    render(<AacCommunDetailPage />);
+
+    const entree = screen.getByTestId("toc-contexte");
+    expect(entree.querySelector("svg.lucide-file-text")).toBeTruthy();
+    consoleError.mockRestore();
+  });
+});

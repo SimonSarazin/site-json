@@ -86,11 +86,19 @@ function extractGalleryImages(
 /**
  * L'icône d'un bloc déclaré. Le nom vient de la config ; inconnu ou absent, on
  * retombe sur `FileText` plutôt que de ne rien rendre au sommaire.
+ *
+ * `fallback` est ce qui tient la seconde moitié de cette promesse : sans lui,
+ * `DynamicIcon` rend `null` sur un nom inconnu — et pendant le chargement de
+ * l'icône. `FileText` occupe la place dans les deux cas.
  */
 function iconFor(name?: string): ElementType {
     if (!name) return FileText;
     return ({ className }: { className?: string }) => (
-        <DynamicIcon name={name as IconName} className={className} />
+        <DynamicIcon
+            name={name as IconName}
+            className={className}
+            fallback={() => <FileText className={className} />}
+        />
     );
 }
 
