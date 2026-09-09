@@ -19,6 +19,7 @@ export const SECTION_FAMILIES = [
   "observatoire",
   "agenda",
   "blog",
+  "aac",
 ] as const;
 
 export type SectionFamily = (typeof SECTION_FAMILIES)[number];
@@ -150,6 +151,9 @@ const SECTION_META: Record<string, SectionMeta> = {
   articleFeed: { label: "Fil d'articles", desc: "Fil paginé (scroll infini) des articles d'un costum (module blog, costumSlug requis), variantes de carte et grille/liste, lecture via /blog/:slug ou /blog/id/:id", image: "https://placehold.co/300x180/e84393/eee?text=Article+Feed", family: "blog" },
   articleReader: { label: "Lecteur d'article", desc: "Affiche un article (POI) précis par slug ou id sur n'importe quelle page — île client du module blog, sans SEO propre", image: "https://placehold.co/300x180/636e72/eee?text=Article+Reader", family: "blog" },
   articleTeaser: { label: "Aperçu d'articles", desc: "Aperçu figé des N derniers articles d'un costum (module blog, costumSlug requis) : titre en badge incliné, grille de cartes à bouton, CTA « voir tout » — sans pagination, pensé pour être posé entre deux sections", image: "https://placehold.co/300x180/00b894/eee?text=Article+Teaser", family: "blog" },
+  // aac
+  "aac-highlight": { label: "Bande AAC", desc: "Bande d'appel à l'action d'un Appel à Communs : titre, texte, bouton et médaillon comptant les communs déposés (compté en direct, jamais écrit dans la config)", image: "https://placehold.co/300x180/00cec9/eee?text=Bande+AAC", family: "aac" },
+  "aac-directory": { label: "Annuaire des communs", desc: "Listing paginé des communs d'un Appel à Communs : cartes avec cofinancement collecté, filtres par nom, thème et maturité", image: "https://placehold.co/300x180/00cec9/eee?text=Annuaire+communs", family: "aac" },
 };
 
 export default SECTION_META;

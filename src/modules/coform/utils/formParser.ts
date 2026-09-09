@@ -1,5 +1,6 @@
 import { z } from "zod";
-import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay, CommonTableConfig, CommonTableValue, CategorizedCheckboxConfig, CategorizedCheckboxSource, TimeSlotsConfig, DynamicFieldsConfig } from "../types";
+import { resolveMultiDecide } from "./multiDecide";
+import type { CoFormData, CoFormInputField, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay, CommonTableConfig, CommonTableValue, CategorizedCheckboxConfig, CategorizedCheckboxSource, CategorizedCheckboxValue, TimeSlotsConfig, DynamicFieldsConfig } from "../types";
 import { isSlotComplete, isSlotOrdered } from "./timeSlots";
 
 // ─── Configuration des préfixes de champs ────────────────────────
@@ -30,6 +31,85 @@ const ROOT_LEVEL_FIELDS: FormFieldMapping["componentType"][] = [
   "evaluation",
   "commonTable",
 ];
+
+/**
+ * Types de champs à ÉCRITURE DIRECTE : leur valeur est scopée par évaluateur
+ * (ou par contexte) et s'écrit par chemin ciblé (`answer.updateField`, cf.
+ * `actions/mutations/selection.ts`), jamais par soumission du formulaire.
+ *
+ * `SaveAnswerAction` ne deep-merge que les clés suffixées `_multiEval` : toute
+ * autre clé soumise REMPLACE en bloc ce qui est en base. Soumettre `selection`
+ * effacerait donc les notes de tous les autres évaluateurs (654 réponses en
+ * base au relevé).
+ *
+ * L'absence de ces types au schéma Zod et aux valeurs par défaut ne suffit
+ * PAS : la valeur entre aussi par les réponses serveur (`normalizeAnswerData`
+ * recopie `answers.<étape>` en bloc), et deux des trois chemins d'écriture
+ * (wizard `submitAllData`, autosave) soumettent la donnée BRUTE sans passer
+ * par `z.object`. D'où le strip explicite dans `denormalizeAnswerData`.
+ */
+const DIRECT_WRITE_COMPONENT_TYPES: ReadonlySet<FormFieldMapping["componentType"]> = new Set<
+  FormFieldMapping["componentType"]
+>(["selection", "pourContre", "aapEvaluation", "chooseProposal"]);
+
+/**
+ * Clés BRUTES sous lesquelles le legacy range ces inputs dans `answers.<étape>`
+ * (`buildNotePath`, `buildAdmissibilityPath`, `buildAdmissibilityTimePath`,
+ * `buildVotePath`, `buildAapEvaluationPath`, `buildChoosePath`).
+ *
+ * Strippées même quand aucun champ parsé ne les porte : sur une étape PARSÉE,
+ * un input sans config (`multiDecide` non résolu), masqué (`hideInForm`) ou
+ * restreint côté serveur n'apparaît pas dans le parse — mais la valeur, elle,
+ * arrive bien des réponses serveur et repartirait telle quelle. Seule
+ * exception : un champ ORDINAIRE déclaré sous ce nom exact (ex. un `text`
+ * nommé `selection`), qui reste un champ du formulaire à part entière.
+ *
+ * Une étape ENTIÈREMENT absente du parse (`hideStep`, `omitHiddenSteps`) n'a
+ * pas besoin de ce strip : elle ne part plus du tout — cf.
+ * `denormalizeAnswerData`, le backend la préserve telle quelle.
+ */
+export const DIRECT_WRITE_RAW_KEYS: ReadonlySet<string> = new Set([
+  "selection",
+  "admissibility",
+  "admissibilityTime",
+  "pourContre",
+  "evaluation",
+  "choose",
+]);
+
+/**
+ * Vérifie si un type de champ est à écriture directe (jamais soumis).
+ */
+export function isDirectWriteField(componentType: FormFieldMapping["componentType"]): boolean {
+  return DIRECT_WRITE_COMPONENT_TYPES.has(componentType);
+}
+
+/**
+ * Retire d'une étape les clés d'écriture directe — MUTE `subFormData`.
+ *
+ * Deux passes, volontairement redondantes :
+ *  1. le `name` de chaque champ parsé à écriture directe ;
+ *  2. les clés brutes legacy (`DIRECT_WRITE_RAW_KEYS`), pour les inputs que le
+ *     parse n'a pas produits (voir le commentaire de la constante).
+ */
+function stripDirectWriteKeys(
+  subFormData: Record<string, unknown>,
+  fields: FormFieldMapping[]
+): void {
+  const ordinaryNames = new Set<string>();
+  for (const field of fields) {
+    if (isDirectWriteField(field.componentType)) {
+      delete subFormData[field.name];
+    } else {
+      ordinaryNames.add(field.name);
+    }
+  }
+  for (const key of DIRECT_WRITE_RAW_KEYS) {
+    if (key in subFormData && !ordinaryNames.has(key)) {
+      delete subFormData[key];
+    }
+  }
+}
 
 /**
  * Vérifie si un type de champ est stocké à la racine de answers
@@ -129,6 +209,23 @@ export function isRootLevelField(componentType: FormFieldMapping["componentType"
 }
 
 /**
+ * Lecture d'un drapeau de configuration d'input, calquée sur le
+ * `filter_var($v, FILTER_VALIDATE_BOOLEAN)` du PHP.
+ *
+ * Le parc mélange booléens et chaînes pour un même drapeau. On ne réplique
+ * volontairement PAS le `== true` lâche du legacy, qui fait passer la chaîne
+ * `"false"` pour vraie — masquer un champ parce que quelqu'un a écrit
+ * `hideInForm: "false"` serait absurde.
+ */
+export function isTruthyFlag(value: unknown): boolean {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+  if (typeof value !== "string") return false;
+  const v = value.trim().toLowerCase();
+  return v === "true" || v === "1" || v === "on" || v === "yes";
+}
+
+/**
  * Génère le nom du champ avec son préfixe si nécessaire
  * @param componentType - Type du composant
  * @param originalKey - Clé originale du champ dans le formulaire
@@ -140,6 +237,34 @@ export function getFieldNameWithPrefix(
 ): string {
   const prefix = FIELD_PREFIX_MAP[componentType];
   return prefix ? `${prefix}${originalKey}` : originalKey;
+}
+
+/**
+ * Position d'affichage d'un input, dans la priorité du legacy.
+ *
+ * Un document d'étape peut servir PLUSIEURS formulaires parents : la position
+ * est alors stockée par parent dans `positions[<formId>]`, et la clé plate
+ * `position` n'est souvent même pas écrite. Sur l'étape 2 d'« Appel à commun
+ * des tiers lieux », 15 inputs sur 17 sont dans ce cas — les lire comme des
+ * zéros faisait remonter les 6 titres de section en tête, groupés, au lieu de
+ * les intercaler au-dessus de leurs questions.
+ *
+ * Même bascule que le legacy, qui trie sur `positions[$parentForm['_id']]` pour
+ * un AAP et sur `position` sinon (`survey/views/tpls/forms/step.php:94-113`).
+ * Ici la bascule est portée par la donnée et non par le type de formulaire :
+ * mesuré, quand les deux clés coexistent elles ne divergent jamais.
+ *
+ * @param input - L'input BRUT, tel qu'il est stocké (avant résolution multiDecide)
+ * @param formParentId - `_id` du formulaire parent, porté par `CoFormSubFormInputs.formParent`
+ */
+export function resolveInputOrder(
+  input: Pick<CoFormInputField, "position" | "positions">,
+  formParentId: string | undefined
+): number {
+  const scoped = formParentId ? input.positions?.[formParentId] : undefined;
+  const raw = scoped ?? input.position;
+  const parsed = parseInt(raw ?? "0", 10);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 /**
@@ -296,6 +421,15 @@ export function mapCoFormTypeToComponentType(
     "tpls.forms.emailUser": "text",
     "tpls.forms.cplx.simpleTable": "simpleTable",
     "tpls.forms.uploader": "uploader",
+    // Liste de paliers/dépenses AAC (`answers.aapStep1.depense[]`) — géré
+    // en synchronisation serveur immédiate, pas de
+    // schéma Zod structurant (le composant ne dépend pas de la valeur RHF).
+    "tpls.forms.ocecoform.newDepenseList": "milestoneList",
+    // Cible de l'indirection `multiDecide` — cf. `utils/multiDecide.ts`.
+    "tpls.forms.aap.selection": "selection",
+    "tpls.forms.ocecoform.pourContre": "pourContre",
+    "tpls.forms.aap.evaluation": "aapEvaluation",
+    "tpls.forms.aap.chooseProposal": "chooseProposal",
     "tpls.forms.cplx.timeSlots": "timeSlots",
     "tpls.forms.cplx.dynamicFields": "dynamicFields",
     // Types HTML natifs date/heure (formulaires SSBE) : même pipeline que
@@ -307,6 +441,13 @@ export function mapCoFormTypeToComponentType(
     sectionTitle: "sectionTitle",
     "tpls.forms.sectionTitle": "sectionTitle",
     "tpls.forms.sectionDescription": "sectionDescription",
+    // `titleSeparator` avait jusqu'ici un alias vers `sectionTitle`, faute de
+    // rendu propre. Il a désormais le sien, fidèle au template legacy (bandeau
+    // pleine largeur, bordures pointillées, chevron) — cf. `TitleSeparatorField`.
+    // Les deux écritures du type coexistent en base, comme pour `sectionTitle`.
+    titleSeparator: "titleSeparator",
+    "tpls.forms.titleSeparator": "titleSeparator",
+    "tpls.forms.tags": "tags",
     select: "select",
     // Liste déroulante : les forms stockent le type tantôt en raccourci
     // `select` (builder dynamicFields), tantôt en chemin de template complet
@@ -344,17 +485,108 @@ export function mapCoFormTypeToComponentType(
 /**
  * Convertit les inputs CoForm en structure mappée pour react-hook-form
  */
-export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
+export interface ParseCoFormFieldsOptions {
+  /**
+   * Conserver les étapes marquées `hideStep`. Réservé aux lectures
+   * STRUCTURELLES, qui cherchent où se trouve un champ et non ce qu'il faut
+   * afficher — `getSharedFinderInfo` en est le cas type : le finder partagé
+   * détermine le lieu de la réponse, et cette information ne doit pas dépendre
+   * du fait qu'un admin ait coché « cacher l'étape ».
+   */
+  includeHiddenSteps?: boolean;
+}
+
+/**
+ * Retire des étapes du formulaire, sur décision de L'APPELANT.
+ *
+ * Complète `hideStep`, qui est une propriété du FORMULAIRE : ici la règle vient
+ * du contexte d'appel — « l'étape d'évaluation d'un appel à communs n'est pas
+ * proposée à qui n'administre pas cet appel ». Le formulaire ne peut pas la
+ * porter : elle dépend de l'utilisateur ET de l'écran.
+ *
+ * ⚠️ Filtre la DONNÉE, et non le parse. Une option passée à `parseCoFormFields`
+ * se perdrait à la frontière du composant : `CoFormProvider`, `DynamicCoForm` et
+ * `CoFormReadOnly` reparsent le `formData` qu'ils reçoivent, sans options — une
+ * étape « masquée » resterait donc rendue, avec ses champs requis. `hideStep` ne
+ * souffre pas de ça parce qu'il VIT dans la donnée ; on fait pareil.
+ *
+ * Filtrer la donnée fait sortir l'étape du parcours, du sommaire, du schéma Zod
+ * et des valeurs par défaut d'un seul geste — sans quoi un champ requis d'une
+ * étape invisible rendrait le formulaire insoumettable, sur un champ que
+ * personne ne voit.
+ *
+ * Rend l'objet d'origine quand il n'y a rien à retirer : l'identité est
+ * préservée, donc les mémoïsations en aval ne sont pas invalidées pour rien.
+ */
+export function omitHiddenSteps(
+  formData: CoFormData,
+  hiddenStepKeys: readonly string[] | undefined
+): CoFormData {
+  if (!hiddenStepKeys?.length || !formData.inputs) return formData;
+  const restantes = Object.fromEntries(
+    Object.entries(formData.inputs).filter(([stepKey]) => !hiddenStepKeys.includes(stepKey))
+  );
+  if (Object.keys(restantes).length === Object.keys(formData.inputs).length) return formData;
+  return { ...formData, inputs: restantes };
+}
+
+export function parseCoFormFields(
+  formData: CoFormData,
+  options: ParseCoFormFieldsOptions = {}
+): SubFormFields[] {
   if (!formData.inputs) return [];
 
   const subFormsFields: SubFormFields[] = [];
 
-  Object.entries(formData.inputs).forEach(([subFormId, subFormData]) => {
-    const fields: FormFieldMapping[] = [];
+  // Champs que l'utilisateur courant n'a pas le droit de voir. Calculés
+  // serveur-side (`Coform::getFormAccessInfo`) : union des listes place-level
+  // et des inputs `isAdminOnly`. On les écarte ICI et pas seulement au rendu,
+  // pour qu'ils sortent aussi du schéma Zod et des valeurs par défaut — sinon
+  // un champ restreint ET requis rendrait le formulaire insoumettable, sans
+  // que l'utilisateur voie jamais le champ fautif.
+  const restricted = new Set(formData.access?.restrictedFields ?? []);
 
-    Object.entries(subFormData.inputs).forEach(([fieldKey, fieldData]) => {
+  Object.entries(formData.inputs).forEach(([subFormId, subFormData]) => {
+    // Étape masquée (« Cacher etape » du wizard de config AAP) : on la retire
+    // ici, donc du sommaire du wizard comme du contenu — les deux dérivent de
+    // ce même parse. Cf. `CoFormSubFormInputs.hideStep` pour les deux écarts
+    // assumés avec le legacy (pas d'exemption admin, s'applique aussi à la
+    // création).
+    if (!options.includeHiddenSteps && isTruthyFlag(subFormData.hideStep)) return;
+
+    const fields: FormFieldMapping[] = [];
+    // Ordre d'affichage, capturé AU MOMENT DU PUSH depuis l'input brut.
+    //
+    // Le relire après coup par la clé du champ ne marche pas : un `multiDecide`
+    // est réindexé sous le nom du type qu'il désigne (`decide` → `selection`),
+    // et `getOriginalFieldKey` ne défait pas cette réindexation — le lookup
+    // échouait donc en silence et retombait sur 0.
+    const displayOrder = new Map<FormFieldMapping, number>();
+
+    Object.entries(subFormData.inputs).forEach(([rawFieldKey, rawFieldData]) => {
       // Ignorer les anciens inputs de validation d'étape (validateStep*)
-      if (/validatestep/i.test(fieldData.type)) return;
+      if (/validatestep/i.test(rawFieldData.type)) return;
+
+      // `hideInForm` : l'input est sorti du formulaire (legacy `step_v2.php:455`).
+      // Statique — aucune notion d'utilisateur — donc tranché ici et pas côté
+      // serveur : la donnée arrive déjà dans le payload, et d'autres vues la
+      // consomment avec leurs propres règles (l'export PDF de `costum` réaffiche
+      // justement `depense` et `budget` malgré le flag).
+      if (isTruthyFlag(rawFieldData.hideInForm)) return;
+
+      // Restriction serveur (`isAdminOnly`, listes place-level). Testée sur la
+      // clé BRUTE, avant la résolution `multiDecide` qui réindexe : c'est cette
+      // clé-là que le backend énumère. Même ordre que le legacy, qui coupe sur
+      // `isAdminOnly` (l.358) avant de substituer le multiDecide (l.387).
+      if (restricted.has(rawFieldKey)) return;
+
+      // `multiDecide` est un placeholder : il désigne un autre type via
+      // `inputConfig.multiDecide`, et l'input est RÉINDEXÉ sous la clé de ce
+      // type. Sans config, il ne se rend pas du tout. Cf. `resolveMultiDecide`.
+      const resolved = resolveMultiDecide(rawFieldKey, rawFieldData, formData.inputConfig);
+      if (!resolved) return;
+      const fieldKey = resolved.key;
+      const fieldData = resolved.field;
 
       const componentType = mapCoFormTypeToComponentType(fieldData.type);
       
@@ -413,18 +645,10 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
           );
         }
         // Flag legacy `enableSelect2` → liste déroulante recherchable. Côté PHP
-        // il est lu via `filter_var(..., FILTER_VALIDATE_BOOLEAN)` ; on réplique
-        // les valeurs vraies courantes (booléen, "true", "1"/1, "on", "yes").
-        const rawSelect2 = selectParams?.enableSelect2;
-        searchable =
-          rawSelect2 === true ||
-          rawSelect2 === "true" ||
-          rawSelect2 === "1" ||
-          rawSelect2 === 1 ||
-          rawSelect2 === "on" ||
-          rawSelect2 === "yes"
-            ? true
-            : undefined;
+        // il est lu via `filter_var(..., FILTER_VALIDATE_BOOLEAN)`, ce que
+        // `isTruthyFlag` réplique. `undefined` plutôt que `false` quand c'est
+        // faux : la prop reste absente au lieu d'être explicitement désactivée.
+        searchable = isTruthyFlag(selectParams?.enableSelect2) ? true : undefined;
       }
 
       // Config spécifique pour multiRadio
@@ -739,6 +963,22 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         };
       }
 
+      // Config spécifique pour tags — vocabulaire partagé du formulaire.
+      // Le legacy accumule les tags saisis dans `form.params.<key>.list`
+      // (`PushTagsAction`) et suggère depuis cette liste (`SearchTagsAction`).
+      // `params` étant déjà chargé avec le form, la liste est disponible sans
+      // aucune requête. Liste absente/vide → le champ retombe sur l'index
+      // global (`api.searchTags`), qui est la branche non-aap du legacy.
+      let tagsConfig: FormFieldMapping["tagsConfig"] | undefined;
+
+      if (componentType === "tags") {
+        const rawList = (formData.params?.[fieldKey] as { list?: unknown } | undefined)?.list;
+        const list = Array.isArray(rawList)
+          ? rawList.map((t) => (typeof t === "string" ? t.trim() : "")).filter(Boolean)
+          : [];
+        tagsConfig = { list };
+      }
+
       // Config spécifique pour uploader
       if (componentType === "uploader") {
         const paramsData = formData.params?.[fieldKey] || {};
@@ -859,7 +1099,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
       const evaluationKey =
         componentType === "radio" ? fieldDataWithMultiEval.evaluationKey : undefined;
 
-      fields.push({
+      const mapping: FormFieldMapping = {
         // Appliquer le préfixe selon le type (finder, multiCheckboxPlus, evaluation)
         name: getFieldNameWithPrefix(componentType, fieldKey),
         label: fieldData.label || "",
@@ -870,7 +1110,18 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         info: fieldData.info,
         isRequired: fieldData.isRequired || false,
         width: parseBootstrapWidth(fieldData.width),
-        markdown: fieldData.enableMarkdown,
+        // Éditeur markdown ACTIF PAR DÉFAUT sur les textarea : seule une
+        // désactivation explicite le retire.
+        //
+        // Relevé sur le parc : 754 textarea, dont **aucun** ne porte
+        // `enableMarkdown: true` et **un seul** le porte à `false`. L'option
+        // n'avait donc jamais servi, et inverser le défaut fait basculer 753
+        // champs — c'est voulu, pas un effet de bord.
+        //
+        // La chaîne `"false"` est traitée comme `false` : le parc stocke
+        // volontiers ses booléens en chaînes (cf. `activateLocalCriteria`), et
+        // une valeur écrite ainsi demain doit désactiver, pas activer.
+        markdown: fieldData.enableMarkdown !== false && fieldData.enableMarkdown !== "false",
         options,
         optionLabels,
         searchable,
@@ -888,19 +1139,19 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         timeSlotsConfig,
         dynamicFieldsConfig,
         sectionTitleConfig,
+        tagsConfig,
         conditionalDisplay,
         activeMultieval,
         evaluationKey,
-      });
+      };
+      fields.push(mapping);
+      displayOrder.set(mapping, resolveInputOrder(rawFieldData, subFormData.formParent));
     });
 
-    fields.sort((a, b) => {
-      const keyA = getOriginalFieldKey(a);
-      const keyB = getOriginalFieldKey(b);
-      const posA = parseInt(formData.inputs?.[subFormId].inputs[keyA]?.position || "0");
-      const posB = parseInt(formData.inputs?.[subFormId].inputs[keyB]?.position || "0");
-      return posA - posB;
-    });
+    // Tri STABLE (garanti depuis ES2019) : à position égale, l'ordre de
+    // déclaration est conservé — c'est ce qui tient les deux inputs à
+    // `positions = "1"` de l'étape 2 des tiers-lieux dans leur ordre d'origine.
+    fields.sort((a, b) => (displayOrder.get(a) ?? 0) - (displayOrder.get(b) ?? 0));
 
     subFormsFields.push({
       subFormId,
@@ -1204,6 +1455,21 @@ export function generateZodSchema(
           break;
         }
 
+        case "milestoneList":
+          // Piloté par react-hook-form et persisté À LA SOUMISSION, comme les
+          // autres champs (ce n'était pas le cas : le composant écrivait
+          // directement au serveur et ne réécrivait jamais la valeur RHF, si
+          // bien qu'une soumission postérieure écrasait les ajouts).
+          //
+          // ⚠️ `z.any()` par ligne est DÉLIBÉRÉ : une dépense réelle porte des
+          // clés hors contrat (`financer[]`, `historique[]`, `milestone`…) que
+          // le champ n'édite pas. Un `z.object` nu les stripperait, et comme le
+          // backend remplace la clé en bloc, soumettre sans toucher aux dépenses
+          // détruirait la donnée en base — le piège déjà rencontré sur
+          // `timeSlots`. Cf. `utils/depense.ts`.
+          schemaShape[field.name] = z.array(z.any()).optional();
+          break;
+
         case "uploader": {
           const uploaderSchema = z.union([
             z.array(z.any()),
@@ -1226,6 +1492,49 @@ export function generateZodSchema(
           break;
         }
 
+        case "tags": {
+          // Tableau de libellés libres. Le legacy stocke
+          // `$("#key").val().split(",")` → toujours un array de strings.
+          const tagsSchema = z.array(z.string());
+          schemaShape[field.name] = field.isRequired
+            ? tagsSchema.min(1, t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }))
+            : tagsSchema.optional();
+          break;
+        }
+
+        // Séparateur décoratif : AUCUNE entrée dans le schéma.
+        //
+        // ⚠️ `isRequired: true` est posé sur 57 des 78 `titleSeparator` du parc
+        // alors que l'input ne produit aucune valeur (le template legacy ne rend
+        // qu'un titre). Le traiter comme un champ requis rendrait ces
+        // formulaires **impossibles à soumettre**. L'absence de clé est donc
+        // délibérée — et pas un oubli : `z.object` strippe la clé au parse,
+        // exactement ce qu'on veut ici.
+        case "titleSeparator":
+          break;
+        // ⚠️ ABSENCE DÉLIBÉRÉE, et c'est une protection de données.
+        //
+        // `answers.<étape>.selection` est un objet indexé par ÉVALUATEUR, et
+        // `SaveAnswerAction` ne deep-merge que les clés suffixées `_multiEval`
+        // (`:214`) : toute autre clé est REMPLACÉE en bloc. Déclarer `selection`
+        // ici la ferait soumettre avec le formulaire, et chaque enregistrement
+        // effacerait les notes de tous les autres évaluateurs — 654 réponses
+        // concernées en base.
+        //
+        // Le champ écrit lui-même, par chemin ciblé, comme le legacy.
+        // Voir `actions/mutations/selection.ts`.
+        // Idem pour `pourContre` : valeur scopée par évaluateur, écrite par
+        // chemin ciblé, donc jamais soumise.
+        //
+        // ⚠️ Cette absence n'est PAS la protection — seul le bouton mono-étape
+        // voit la sortie de `z.object`. La protection réelle est le strip dans
+        // `denormalizeAnswerData` (`DIRECT_WRITE_COMPONENT_TYPES`), traversé
+        // par les trois chemins d'écriture.
+        case "selection":
+        case "pourContre":
+        case "aapEvaluation":
+        case "chooseProposal":
+          break;
         case "timeSlots": {
           // Structure: [{ day, startHour, startMinute, endHour, endMinute }]
           // (clés AmPm tolérées en lecture de données legacy 12h).
@@ -1357,6 +1666,16 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
           defaultValues[field.name] = null;
           break;
 
+        // Valeur composite `{ list, sublist }`. Sans ce cas, le champ tombait
+        // dans le `default` qui pose `""` — et le schéma, lui, attend un objet :
+        // « Invalid input: expected object, received string » s'affichait sous le
+        // champ dès l'ouverture d'un formulaire vierge. Le `.optional()` du
+        // schéma ne rattrape rien, car `""` n'est pas `undefined` ; et pour un
+        // champ requis (le cas courant) il n'y a même pas d'`optional`.
+        case "categorizedCheckbox":
+          defaultValues[field.name] = { list: [], sublist: {} } satisfies CategorizedCheckboxValue;
+          break;
+
         case "simpleTable": {
           // Construire le tableau 2D initial depuis la config
           const config = field.simpleTableConfig;
@@ -1383,8 +1702,28 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
           break;
 
         case "uploader":
+        case "milestoneList":
         case "timeSlots":
           defaultValues[field.name] = [];
+          break;
+
+        case "tags":
+          defaultValues[field.name] = [];
+          break;
+
+        // Aucune valeur ne doit entrer dans l'état du formulaire (le `default`
+        // ci-dessous poserait `""`, une clé fantôme que le submit remonterait) :
+        //  - `titleSeparator` est purement décoratif ;
+        //  - `selection` est un enjeu de DONNÉES — une clé remontée au submit
+        //    remplacerait en bloc les notes de tous les évaluateurs. Cf. le
+        //    switch du schéma, plus haut, et le strip de `denormalizeAnswerData`
+        //    qui est la protection effective (la valeur entre aussi par les
+        //    réponses serveur, pas seulement par ces défauts).
+        case "titleSeparator":
+        case "selection":
+        case "pourContre":
+        case "aapEvaluation":
+        case "chooseProposal":
           break;
 
         default:
@@ -1417,8 +1756,12 @@ function getFieldShape(componentType: FormFieldMapping["componentType"]): FieldS
     case "checkbox":
     case "multiCheckboxPlus":
     case "simpleTable":
+    case "tags":
     case "timeSlots": // tableaux d'objets (créneaux / lignes) : un `[]` vide
     case "dynamicFields": // encodé `{}` par le PHP doit redevenir array
+    case "milestoneList": // idem : `depense = {}` (cf. `normalizeDepenseValue`),
+      // sinon le schéma `z.array` refuse l'étape entière alors que le champ
+      // s'affiche vide et correct — l'étape devient insoumettable.
       return "array";
     case "multiRadio":
     case "finder":
@@ -1553,6 +1896,39 @@ function enrichCommonTableMyCatalog(raw: unknown): Record<string, unknown> {
 }
 
 /**
+ * Convertit une map serveur en tableau — jamais en `[]` si elle porte du
+ * contenu.
+ *
+ * Mongo/PHP sérialisent une collection vide indifféremment `[]` ou `{}`,
+ * MAIS aussi une LISTE NON VIDE en map à clés d'index dès que celles-ci ne
+ * sont plus contiguës (`{"0":…,"2":…}` après suppression d'un élément par
+ * le legacy). Jeter la map (`return []`) détruisait alors la donnée en
+ * silence : le champ s'affichait vide, et le premier enregistrement
+ * réécrivait la clé en bloc côté backend — paliers, `financer[]` et
+ * `historique[]` d'une `depense` perdus sans message.
+ *
+ * Même tolérance que `toArray` (`aac/lib/parseAacAnswer`) et
+ * `toArrayOrValues` (`cagnotte/utils/dataTransform`), déjà appliquée aux
+ * mêmes données par ailleurs dans le dépôt.
+ *
+ * - `{}` → `[]` (le cas « tableau vide sérialisé par PHP », inchangé).
+ * - Entrées `null`/`undefined` écartées : ce sont les trous de la
+ *   sérialisation, pas des éléments à réinjecter dans le formulaire.
+ * - Clés toutes numériques → tri NUMÉRIQUE ("2" avant "10"), pour rétablir
+ *   l'ordre de la liste d'origine quel que soit l'ordre d'énumération
+ *   (`"01"`, `"1"`… ne sont pas des index entiers pour JS). Sinon, ordre
+ *   d'insertion conservé.
+ */
+function coerceObjectToArray(value: Record<string, unknown>): unknown[] {
+  const entries = Object.entries(value).filter(([, v]) => v !== null && v !== undefined);
+  if (entries.length === 0) return [];
+  if (entries.every(([k]) => /^\d+$/.test(k))) {
+    entries.sort(([a], [b]) => Number(a) - Number(b));
+  }
+  return entries.map(([, v]) => v);
+}
+
+/**
  * Coerce une valeur reçue du serveur vers le shape attendu par le schéma
  * Zod. Conserve la valeur d'origine si elle est déjà du bon type ;
  * remplace par une valeur par défaut neutre seulement si la forme est
@@ -1567,8 +1943,10 @@ function coerceValueToShape(value: unknown, shape: FieldShape): unknown {
       return "";
     case "array":
       if (Array.isArray(value)) return value;
-      // `{}` → `[]` ; null/undefined → laisser tel quel (le default form joue)
-      if (isPlainObject(value)) return [];
+      // map → tableau (`{}` → `[]`) ; null/undefined → laisser tel quel
+      // (le default form joue). Cf. `coerceObjectToArray` : on CONVERTIT,
+      // on ne jette pas — une map non vide porte de la donnée réelle.
+      if (isPlainObject(value)) return coerceObjectToArray(value);
       return value;
     case "record":
       // null préservé (certains schemas l'acceptent explicitement, ex: finder)
@@ -1830,11 +2208,47 @@ export function normalizeAnswerData(
 
 /**
  * Dénormalise les données avant soumission au serveur
- * 
+ *
  * Effectue l'opération inverse de normalizeAnswerData :
  * déplace les champs root-level depuis leur sous-formulaire vers la racine
  * pour être compatible avec le format attendu par le PHP.
- * 
+ *
+ * Point UNIQUE traversé par les trois chemins d'écriture (bouton mono-étape,
+ * autosave `DynamicCoForm`, wizard `CoFormProvider.submitAllData`) : c'est ici,
+ * et pas dans le schéma Zod, que vivent les règles « ne jamais persister »
+ * (lignes vides `dynamicFields`, `img` des finders, inputs de décision).
+ *
+ * RÈGLE DE PÉRIMÈTRE — ne jamais ré-émettre ce qui n'est pas parsé.
+ *
+ * Fait backend (mainteneur du legacy, 9 sept. 2026) : « une étape absente du
+ * payload est préservée à la sauvegarde sur les deux backends (PHP et port
+ * Node) ; une étape présente est écrasée clé par clé ». Ré-émettre une étape
+ * n'apporte donc rien à sa conservation, et ré-émettre une étape que l'on n'a
+ * PAS rendue est nuisible : ce serait un instantané périmé, pris à l'ouverture
+ * du formulaire, qui écraserait ce que d'autres y ont écrit entre-temps (notes
+ * du jury sur l'étape d'évaluation masquée au déposant, contributions
+ * `_multiEval`, champs ordinaires).
+ *
+ * Or ce que reçoit cette fonction déborde du parse : `normalizeAnswerData`
+ * clone `answers` EN ENTIER (étapes masquées par `hideStep` ou
+ * `omitHiddenSteps`, rangements root-level de champs non parsés, tout ce que le
+ * legacy a pu ranger là), `CoFormProvider` installe ce clone dans `stepsData`,
+ * et le wizard soumet `stepsData` entier. Le payload est donc RÉDUIT à ce que
+ * la fonction connaît :
+ *  - les étapes parsées (`subFormsFields`), avec leurs données ;
+ *  - les clés root-level qu'elle PRODUIT elle-même à partir d'un champ parsé
+ *    (`evaluation{key}`, `yesOrNo{key}`, `criterias{key}`).
+ * Toute autre clé racine est retirée. Suivi explicite (`emittedRootKeys`) et
+ * non heuristique par préfixe : une étape nommée `evaluationStep` est une
+ * étape, un `evaluation{key}` d'un champ non parsé n'a rien à faire ici.
+ *
+ * Le chemin mono-étape (`SmartCoForm`, `{ [subFormId]: data }`) n'est pas
+ * concerné : sa seule clé racine est le premier `inputs` du formulaire rendu,
+ * qui est l'étape parsée dans le cas nominal. (Si ce premier `inputs` portait
+ * `hideStep`, la clé ne serait pas parsée — incohérence préexistante avec
+ * `DynamicCoForm`, qui cible lui `subFormsFields[0]` : la donnée partait alors
+ * sous l'id d'une étape masquée, elle ne part plus.)
+ *
  * @param formData - Données du formulaire (depuis react-hook-form)
  * @param subFormsFields - Structure parsée du formulaire
  * @returns Données formatées pour le serveur PHP
@@ -1847,10 +2261,20 @@ export function denormalizeAnswerData(
   // Copie profonde pour ne pas muter l'original
   const denormalized = JSON.parse(JSON.stringify(formData)) as Record<string, unknown>;
 
+  // Clés racine que le payload est autorisé à porter : les étapes parsées,
+  // plus chaque rangement root-level écrit par la boucle ci-dessous.
+  const emittedRootKeys = new Set<string>(subFormsFields.map((s) => s.subFormId));
+
   // Pour chaque subform, déplacer les champs root-level vers la racine
   for (const { subFormId, fields } of subFormsFields) {
     const subFormData = denormalized[subFormId] as Record<string, unknown> | undefined;
     if (!subFormData) continue;
+
+    // Inputs de décision (`selection`, `pourContre`, `evaluation`, `choose`,
+    // `admissibility`…) : JAMAIS soumis, quelle que soit l'origine de la valeur
+    // (réponses serveur relues, brouillon restauré, `getValues()` brut). Ils
+    // s'écrivent par chemin ciblé — cf. `DIRECT_WRITE_COMPONENT_TYPES`.
+    stripDirectWriteKeys(subFormData, fields);
 
     for (const field of fields) {
       // ── Multi-eval (radioNew + activeMultieval=true) ─────────────
@@ -1929,6 +2353,8 @@ export function denormalizeAnswerData(
         const myCatalogKey = `criterias${fieldKey}`;
         denormalized[scoresKey] = composite?.scores ?? {};
         denormalized[myCatalogKey] = composite?.myCatalog ?? {};
+        emittedRootKeys.add(scoresKey);
+        emittedRootKeys.add(myCatalogKey);
         delete subFormData[field.name];
         if (import.meta.env.DEV) {
           console.log(
@@ -1940,11 +2366,23 @@ export function denormalizeAnswerData(
 
       // Cas générique root-level (ex: evaluation) : déplacer du subform vers la racine.
       denormalized[field.name] = subFormData[field.name];
+      emittedRootKeys.add(field.name);
       delete subFormData[field.name];
       if (import.meta.env.DEV) {
         console.log(`[denormalizeAnswerData] Moved ${field.name} from subform ${subFormId} to root`);
       }
     }
+  }
+
+  // Tout ce qui reste à la racine sans avoir été parsé ni produit ci-dessus
+  // n'est PAS ré-émis : étape masquée (`hideStep`, `omitHiddenSteps` — cas
+  // nominal AAC, l'étape de jury n'est pas proposée au déposant non-admin),
+  // rangement root-level d'un champ non parsé, clé inconnue recopiée en bloc
+  // par `normalizeAnswerData`. Retiré, pas balayé : le backend préserve une
+  // étape absente du payload, alors qu'une étape présente serait écrasée clé
+  // par clé avec l'instantané périmé pris à l'ouverture (cf. en-tête).
+  for (const key of Object.keys(denormalized)) {
+    if (!emittedRootKeys.has(key)) delete denormalized[key];
   }
 
   return denormalized;
@@ -2047,7 +2485,13 @@ export function getSharedFinderInfo(formData: CoFormData): SharedFinderInfo | nu
   const fieldName = finderPath.slice(dotIdx + 1);
 
   // Récupère le FinderConfig parsé via la pipeline existante.
-  const subFormsFields = parseCoFormFields(formData);
+  //
+  // `includeHiddenSteps` : lecture STRUCTURELLE, pas d'affichage. Le finder
+  // partagé désigne le lieu auquel la réponse se rattache — il pilote le
+  // pré-remplissage, le verrouillage et les filtres du mode collaboratif. Si
+  // l'étape qui le porte est marquée `hideStep`, on doit quand même le trouver,
+  // sans quoi le mode par lieu se dégraderait en silence.
+  const subFormsFields = parseCoFormFields(formData, { includeHiddenSteps: true });
   const subForm = subFormsFields.find((sf) => sf.subFormId === subFormId);
   if (!subForm) return null;
   const field = subForm.fields.find((f) => f.name === fieldName);

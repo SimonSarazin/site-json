@@ -4,6 +4,8 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { useContext } from "react";
 import { CoFormContext } from "./CoFormContext";
 import { CoFormProvider } from "./CoFormProvider";
+import { LocalizationProvider } from "@/contexts/LocalizationProvider";
+import { useCoFormStep } from "../hooks/useCoFormStep";
 import type { CoFormData, CoFormSubFormInputs } from "../types";
 
 /**
@@ -35,7 +37,7 @@ function makeCoFormData(subFormIds: string[]): CoFormData {
     };
   }
   return {
-    _id: { $id: "form123" },
+    _id: { _str: "form123" },
     id: "form123",
     name: "Test Form",
     created: 0,
@@ -514,6 +516,226 @@ describe("CoFormProvider", () => {
       expect(result.current.stepState.submittingStep).toBeNull();
       expect(result.current.stepState.addedOptions).toEqual({});
       expect(result.current.error).toBeNull();
+    });
+  });
+  // ─── Persistance du brouillon ────────────────────────────────────────────────
+  // Le brouillon est actif en modale depuis `9f063beb`, où ouvrir puis refermer
+  // sans rien saisir est un geste courant : il ne doit alors RIEN écrire.
+  describe("brouillon", () => {
+    const FORM_ID = "form123";
+    const USER_ID = "user42";
+    const KEY = `coform-draft:v1:${FORM_ID}:${USER_ID}:new`;
+
+    function monter() {
+      const formData = makeCoFormData(["s1", "s2"]);
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <CoFormProvider formData={formData} formId={FORM_ID} userId={USER_ID}>
+          {children}
+        </CoFormProvider>
+      );
+      return renderHook(() => useCtx(), { wrapper });
+    }
+
+    it("n'écrit RIEN quand le formulaire est ouvert puis refermé sans saisie", () => {
+      window.localStorage.removeItem(KEY);
+      const { unmount } = monter();
+      unmount(); // démontage = fermeture de la modale → flush
+      expect(window.localStorage.getItem(KEY)).toBeNull();
+    });
+
+    it("écrit dès qu'une donnée est saisie, et le flush au démontage la conserve", () => {
+      window.localStorage.removeItem(KEY);
+      const { result, unmount } = monter();
+      act(() => result.current.saveStepData("s1", { textField: "saisie" }));
+      unmount();
+      const brut = window.localStorage.getItem(KEY);
+      expect(brut).not.toBeNull();
+      expect(JSON.parse(brut!).data).toEqual({ s1: { textField: "saisie" } });
+      window.localStorage.removeItem(KEY);
+    });
+
+    it("écrit aussi sur une simple navigation — la position du wizard se restaure", () => {
+      window.localStorage.removeItem(KEY);
+      const { result, unmount } = monter();
+      act(() => result.current.goToNextStep());
+      unmount();
+      const brut = window.localStorage.getItem(KEY);
+      expect(brut).not.toBeNull();
+      expect(JSON.parse(brut!).currentStepIndex).toBe(1);
+      window.localStorage.removeItem(KEY);
+    });
+
+    /**
+     * Bloquant 1.2 de la relecture de la MR 53 : le provider ne transmettait
+     * pas l'élément au brouillon — la saisie faite depuis le lieu A atterrissait
+     * dans la clé `…:new` partagée, et était proposée sur le lieu B.
+     */
+    it("scope la clé par ÉLÉMENT : la saisie faite depuis un lieu ne va pas dans la clé partagée", () => {
+      const KEY_A = `${KEY}:organizations/lieu-A`;
+      window.localStorage.removeItem(KEY);
+      window.localStorage.removeItem(KEY_A);
+      const formData = makeCoFormData(["s1", "s2"]);
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <CoFormProvider
+          formData={formData}
+          formId={FORM_ID}
+          userId={USER_ID}
+          elementId="lieu-A"
+          elementType="organizations"
+        >
+          {children}
+        </CoFormProvider>
+      );
+      const { result, unmount } = renderHook(() => useCtx(), { wrapper });
+      act(() => result.current.saveStepData("s1", { textField: "salle du lieu A" }));
+      unmount();
+      expect(window.localStorage.getItem(KEY)).toBeNull();
+      const brut = window.localStorage.getItem(KEY_A);
+      expect(brut).not.toBeNull();
+      expect(JSON.parse(brut!).data).toEqual({ s1: { textField: "salle du lieu A" } });
+      window.localStorage.removeItem(KEY_A);
+    });
+
+    /**
+     * H20 / H14 (rapport MR 53) : le chemin multi-étapes n'appelait JAMAIS
+     * `purgeDraft`. Pire, l'ordre des opérations garantissait l'écriture :
+     * `submitStep` → `setStepState` → auto-save armé (500 ms), qui se
+     * déclenchait pendant l'attente réseau de `submitAll()` — ou, si la modale
+     * se fermait avant, le flush au démontage l'écrivait quand même. Le
+     * brouillon d'AVANT l'enregistrement restait donc proposé pendant 30 jours,
+     * et « Reprendre » puis soumettre annulait l'enregistrement.
+     */
+    describe("purge après soumission finale (H20)", () => {
+      function monterAvec(onFinalSubmit: (...args: unknown[]) => Promise<void>) {
+        const formData = makeCoFormData(["s1", "s2"]);
+        const wrapper = ({ children }: { children: React.ReactNode }) => (
+          <CoFormProvider
+            formData={formData}
+            formId={FORM_ID}
+            userId={USER_ID}
+            submitMode="final"
+            onFinalSubmit={onFinalSubmit}
+          >
+            {children}
+          </CoFormProvider>
+        );
+        return renderHook(() => useCtx(), { wrapper });
+      }
+
+      it("une soumission réussie purge le brouillon — et le flush au démontage ne le ressuscite pas", async () => {
+        window.localStorage.removeItem(KEY);
+        const { result, unmount } = monterAvec(vi.fn().mockResolvedValue(undefined));
+        // La saisie arme l'auto-save (debounce) : c'est ce payload en attente
+        // que le démontage écrivait après coup.
+        act(() => result.current.saveStepData("s1", { textField: "saisie" }));
+        await act(async () => {
+          await result.current.submitAllData();
+        });
+        unmount(); // fermeture de la modale sur le succès → flush
+        expect(window.localStorage.getItem(KEY)).toBeNull();
+      });
+
+      it("un brouillon déjà écrit est aussi supprimé", async () => {
+        window.localStorage.setItem(
+          KEY,
+          JSON.stringify({
+            version: 1,
+            data: { s1: { textField: "d'avant" } },
+            currentStepIndex: 0,
+            completedSteps: [],
+            addedOptions: {},
+            timestamp: Date.now() - 60_000,
+            baseUpdatedAt: null,
+          }),
+        );
+        const { result, unmount } = monterAvec(vi.fn().mockResolvedValue(undefined));
+        await act(async () => {
+          await result.current.submitAllData();
+        });
+        unmount();
+        expect(window.localStorage.getItem(KEY)).toBeNull();
+      });
+
+      it("une soumission en ÉCHEC conserve le brouillon", async () => {
+        window.localStorage.removeItem(KEY);
+        const { result, unmount } = monterAvec(vi.fn().mockRejectedValue(new Error("500")));
+        act(() => result.current.saveStepData("s1", { textField: "saisie" }));
+        await act(async () => {
+          await result.current.submitAllData().catch(() => undefined);
+        });
+        unmount();
+        const brut = window.localStorage.getItem(KEY);
+        expect(brut).not.toBeNull();
+        expect(JSON.parse(brut!).data).toEqual({ s1: { textField: "saisie" } });
+        window.localStorage.removeItem(KEY);
+      });
+    });
+
+    /**
+     * H16 (rapport MR 53) : `restoreDraft` ne faisait que `setStepState`. Le
+     * formulaire réellement rendu est l'instance react-hook-form de
+     * `useCoFormStep`, réinitialisée UNIQUEMENT sur changement d'index d'étape.
+     * Un brouillon écrit sur l'étape 0, repris depuis l'étape 0 : rien ne
+     * bougeait à l'écran, puis « Suivant » soumettait les valeurs jamais
+     * restaurées — et l'auto-save persistait aussitôt ce brouillon amputé.
+     */
+    describe("reprise d'un brouillon : l'étape affichée se resynchronise (H16)", () => {
+      function poserBrouillonAnterieur() {
+        window.localStorage.setItem(
+          KEY,
+          JSON.stringify({
+            version: 1,
+            data: { s1: { textField: "repris" } },
+            currentStepIndex: 0,
+            completedSteps: [],
+            addedOptions: {},
+            timestamp: Date.now() - 60_000,
+            baseUpdatedAt: null,
+          }),
+        );
+      }
+
+      function monterAvecEtape() {
+        const formData = makeCoFormData(["s1", "s2"]);
+        const wrapper = ({ children }: { children: React.ReactNode }) => (
+          <LocalizationProvider>
+            <CoFormProvider formData={formData} formId={FORM_ID} userId={USER_ID}>
+              {children}
+            </CoFormProvider>
+          </LocalizationProvider>
+        );
+        return renderHook(() => ({ ctx: useCtx(), step: useCoFormStep() }), { wrapper });
+      }
+
+      it("« Reprendre » sur l'étape courante remplit SON formulaire, sans changement d'index", () => {
+        poserBrouillonAnterieur();
+        const { result, unmount } = monterAvecEtape();
+        expect(result.current.ctx.restorableDraft).not.toBeNull();
+        expect(result.current.step.form.getValues().textField).not.toBe("repris");
+
+        act(() => result.current.ctx.restoreDraft());
+
+        expect(result.current.ctx.stepState.currentStepIndex).toBe(0);
+        expect(result.current.step.form.getValues().textField).toBe("repris");
+        unmount();
+        window.localStorage.removeItem(KEY);
+      });
+
+      it("puis « Suivant » soumet la valeur reprise — l'étape n'est pas réécrite vide", async () => {
+        poserBrouillonAnterieur();
+        const { result, unmount } = monterAvecEtape();
+        act(() => result.current.ctx.restoreDraft());
+
+        let ok = false;
+        await act(async () => {
+          ok = await result.current.step.submitStep();
+        });
+        expect(ok).toBe(true);
+        expect(result.current.ctx.stepState.stepsData.s1).toEqual({ textField: "repris" });
+        expect(result.current.ctx.stepState.currentStepIndex).toBe(1);
+        unmount();
+        window.localStorage.removeItem(KEY);
+      });
     });
   });
 });

@@ -9,10 +9,16 @@ import type { CoFormData } from "../types";
 export async function prefetchCoFormQuery(
   queryClient: QueryClient,
   formId: string,
-  fetchFn: () => Promise<CoFormData>
+  fetchFn: () => Promise<CoFormData>,
+  /**
+   * Utilisateur pour lequel on précharge. Le SSR est anonyme, d'où le défaut :
+   * un client connecté ne lira PAS cette entrée, il refera l'appel avec son
+   * identité — c'est exactement ce qu'on veut, `access` lui étant propre.
+   */
+  userId: string | null = null
 ): Promise<void> {
   await queryClient.prefetchQuery({
-    queryKey: COFORM_QUERY_KEYS.FORM(formId),
+    queryKey: COFORM_QUERY_KEYS.FORM(formId, userId),
     queryFn: fetchFn,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -25,8 +31,9 @@ export function invalidateCoFormQuery(
   queryClient: QueryClient,
   formId: string
 ): void {
+  // Préfixe : invalide la variante de CHAQUE utilisateur (la clé est scopée).
   queryClient.invalidateQueries({
-    queryKey: COFORM_QUERY_KEYS.FORM(formId),
+    queryKey: COFORM_QUERY_KEYS.FORM_PREFIX(formId),
   });
 }
 

@@ -5,9 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/hooks/useT";
+import { classifyHref } from "@/lib/linkKind";
+import NavLink from "@/components/layout/NavLink";
 import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import { SectionHeader } from "./SectionHeader";
 import { useCommunInfo } from "../hooks/useCommunInfo";
+import { normalizeToolHref } from "../utils/toolHref";
 
 interface CommunInfoSectionProps {
   /** `_id` (24hex) de la réponse AAP du commun (item.communId). */
@@ -27,17 +30,20 @@ function ContactRow({
   href: string | null;
 }) {
   if (!href) return null;
+  // `NavLink` : ces liens viennent de la fiche du commun, donc de la saisie d'un
+  // admin. Un `mailto:` en `target="_blank"` laissait un onglet vide derrière lui,
+  // et un lien nu (forme tolérée par le serveur) partait en navigation SPA vers la
+  // page d'accueil. `classifyHref` tranche les deux, l'icône ne s'affiche que sur
+  // ce qui part vraiment vers un autre site.
+  const cible = normalizeToolHref(href);
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-    >
+    <NavLink to={cible} className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
       <Icon className="h-4 w-4 shrink-0" />
       <span className="truncate">{label}</span>
-      <ExternalLink className="h-3 w-3 shrink-0 opacity-60" />
-    </a>
+      {classifyHref(cible) === "external" && (
+        <ExternalLink className="h-3 w-3 shrink-0 opacity-60" />
+      )}
+    </NavLink>
   );
 }
 

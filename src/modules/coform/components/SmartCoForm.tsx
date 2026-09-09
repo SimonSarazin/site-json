@@ -6,7 +6,7 @@ import { DynamicCoForm } from "./DynamicCoForm";
 import { MultiStepCoForm } from "./MultiStepCoForm";
 import { CoFormReadOnly } from "./CoFormReadOnly";
 import { CommonTableCatalogsLoader } from "../contexts/CommonTableCatalogsLoader";
-import { parseCoFormFields, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks, collectCommonTableInputKeys } from "../utils/formParser";
+import { parseCoFormFields, omitHiddenSteps, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks, collectCommonTableInputKeys } from "../utils/formParser";
 import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap, ExistingAnswerMeta } from "../types";
 import type { FinderLinksMap } from "../utils/formParser";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -62,15 +62,26 @@ interface SmartCoFormProps {
   onDirtyChange?: (isDirty: boolean) => void;
   /** Ref vers la fonction de soumission programmatique */
   submitRef?: React.RefObject<(() => void) | null>;
+  /**
+   * Ref vers le rejet explicite du brouillon (supprime la clé localStorage et
+   * annule l'écriture en attente). Renseignée par le détenteur du hook
+   * `useCoFormDraft` — `DynamicCoForm` ou `CoFormProvider` selon le chemin.
+   * `CoFormModal` l'appelle sur « Abandonner les modifications ».
+   */
+  discardDraftRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
+  /**
+   * Étapes à retirer du parcours pour CET appel — indépendamment de ce que le
+   * formulaire déclare. Sert aux règles qui dépendent de l'utilisateur et de
+   * l'écran, là où `hideStep` est une propriété du formulaire : sur la fiche
+   * d'un commun, l'étape d'évaluation n'est pas proposée à qui n'administre pas
+   * l'appel. L'étape sort du parcours, du sommaire, du schéma Zod et des
+   * valeurs par défaut.
+   */
+  hiddenStepKeys?: readonly string[];
   /** updatedAt serveur (édition) — pour détecter les drafts obsolètes. */
   baseUpdatedAt?: number | null;
-  /**
-   * Le form est rendu dans une modale ; désactive la persistance du draft
-   * (contexte éphémère). Defaut : false.
-   */
-  inModal?: boolean;
   /**
    * Métadonnées de la réponse existante (créateur + dernier modifieur).
    * Quand fournies, un lien "Voir l'activité" apparaît sous le form, qui
@@ -81,11 +92,19 @@ interface SmartCoFormProps {
    * ID de l'élément lié au form (lieu, projet, événement…). Propagé à
    * `useCoFormQuery` pour activer le mode "par élément" backend
    * (`Coform::getFormAccessInfo` calcule alors `access.restrictedFields`).
+   * Entre aussi dans la clé du brouillon (cf. `useCoFormDraft`) : une saisie
+   * commencée depuis un élément n'est pas proposée sur un autre.
    * Requis avec `elementType`.
    */
   elementId?: string;
   /** Type de l'élément (collection MongoDB). Requis si `elementId` fourni. */
   elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
+  /**
+   * Comment rendre un champ dont le type n'a pas de composant. Défaut :
+   * `"error"`. Cf. `UnsupportedField` — `"placeholder"` est réservé aux
+   * formulaires de CRÉATION ouverts au public.
+   */
+  unknownFieldVariant?: "error" | "placeholder";
 }
 
 interface LoadingStateProps {
@@ -181,12 +200,14 @@ export function SmartCoForm({
   initialStepKey,
   onDirtyChange,
   submitRef,
+  discardDraftRef,
   lockedFields,
+  hiddenStepKeys,
   baseUpdatedAt,
-  inModal = false,
   existingAnswerMeta,
   elementId,
   elementType,
+  unknownFieldVariant,
 }: SmartCoFormProps) {
   // Charger les données depuis l'API si formId est fourni
   const {
@@ -194,7 +215,8 @@ export function SmartCoForm({
     isLoading,
     error,
     refetch,
-    stepsCount,
+    // `stepsCount` du hook n'est volontairement PAS consommé : il compte les
+    // étapes brutes, donc les étapes masquées. Cf. `actualStepsCount`.
   } = useCoFormQuery({
     formId: formId ?? "",
     enabled: !!formId && !externalFormData,
@@ -220,9 +242,23 @@ export function SmartCoForm({
   // multi-eval (read = SA contribution `_multiEval.{id}` ; write = SON entrée).
   const currentUserId = me?.id ?? null;
 
+  // Étapes masquées par l'appelant : on filtre la DONNÉE, une fois, et tout ce
+  // qui suit — parse, rendu, sommaire, schéma Zod, valeurs par défaut — en
+  // hérite. Filtrer seulement au parse ne suffisait pas : les enfants reparsent
+  // le `formData` qu'on leur passe (cf. `omitHiddenSteps`).
+  //
+  // `hiddenStepKeys` est souvent recréé à chaque rendu par l'appelant : on
+  // dépend de son CONTENU, pas de sa référence.
+  const hiddenStepsKey = hiddenStepKeys ? hiddenStepKeys.join("|") : "";
+  const visibleFormData = useMemo(
+    () => (formData ? omitHiddenSteps(formData, hiddenStepKeys) : formData),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- contenu, pas référence
+    [formData, hiddenStepsKey]
+  );
+
   const allSubFormsFields = useMemo(
-    () => (formData ? parseCoFormFields(formData) : []),
-    [formData]
+    () => (visibleFormData ? parseCoFormFields(visibleFormData) : []),
+    [visibleFormData]
   );
 
   // Auto-résolution du stepKey à partir de l'inputKey si stepKey n'est pas fourni
@@ -236,11 +272,19 @@ export function SmartCoForm({
   }, [stepKey, inputKey, formData]);
 
   // Mode standalone : fabriquer un formData filtré à une seule étape
+  //
+  // `hideStep` est neutralisé sur l'étape recopiée : la config du site a
+  // réclamé CETTE étape nommément, la masquer rendrait une page vide en
+  // silence. Même raisonnement que pour `hideStepStandalone` (cf.
+  // `CoFormSubFormInputs`) — `hideStep` retire une étape du PARCOURS, il ne
+  // désactive pas une page qui ne porte qu'elle.
   const standaloneFormData = useMemo(() => {
     if (!resolvedStepKey || !formData?.inputs?.[resolvedStepKey]) return null;
     return {
       ...formData,
-      inputs: { [resolvedStepKey]: formData.inputs[resolvedStepKey] },
+      inputs: {
+        [resolvedStepKey]: { ...formData.inputs[resolvedStepKey], hideStep: false },
+      },
       // Pas de bannière en standalone
       useBannerImg: false,
     } as CoFormData;
@@ -255,6 +299,8 @@ export function SmartCoForm({
       inputs: {
         [resolvedStepKey]: {
           ...step,
+          // Cf. `standaloneFormData` : le champ est réclamé nommément.
+          hideStep: false,
           inputs: { [inputKey]: step.inputs[inputKey] },
         },
       },
@@ -264,6 +310,9 @@ export function SmartCoForm({
 
   const effectiveStandaloneData = inputStandaloneFormData ?? standaloneFormData;
 
+  // Le mode standalone n'applique PAS `hiddenStepKeys` : l'appelant a réclamé
+  // cette étape-là explicitement par `stepKey`, la demande explicite l'emporte —
+  // même arbitrage que le `hideStep: false` forcé sur l'étape recopiée.
   const subFormsFields = effectiveStandaloneData
     ? parseCoFormFields(effectiveStandaloneData)
     : allSubFormsFields;
@@ -318,9 +367,12 @@ export function SmartCoForm({
     return <EmptyState />;
   }
 
-  const actualStepsCount = externalFormData
-    ? Object.keys(externalFormData.inputs || {}).length
-    : stepsCount;
+  // Compte des étapes RÉELLEMENT rendues. `stepsCount` (comme le décompte brut
+  // de `externalFormData.inputs`) part de `formData.inputs`, donc AVANT le
+  // filtre `hideStep` : un formulaire à deux étapes dont une masquée franchirait
+  // encore `multiStepThreshold` et afficherait tout le chrome du wizard pour une
+  // étape unique. On dérive donc du parse, seule source qui connaît le filtre.
+  const actualStepsCount = allSubFormsFields.length;
 
   // Déterminer le mode à utiliser
   const shouldUseMultiStep = (() => {
@@ -355,21 +407,65 @@ export function SmartCoForm({
   }
 
   // Données effectives (filtrées si standalone)
-  const effectiveFormData = effectiveStandaloneData ?? formData;
+  // `formData` est narrowé non-null par la garde ci-dessus (l.367) ; le memo,
+  // lui, est déclaré avant elle. On retombe donc explicitement sur `formData`
+  // plutôt que de poser une assertion.
+  const effectiveFormData = effectiveStandaloneData ?? visibleFormData ?? formData;
   const isStandalone = !!standaloneFormData;
   const isInputStandalone = !!inputStandaloneFormData;
 
-  // Persistance du draft : désactivée en lecture seule, standalone (sous-composant
-  // embarqué), modal (contexte éphémère), ou quand on n'a pas d'utilisateur
-  // identifié (clé localStorage user-scopée pour éviter les fuites cross-user).
+  // Persistance du draft : désactivée en lecture seule, en standalone
+  // (sous-composant embarqué), ou sans utilisateur identifié (la clé
+  // localStorage est user-scopée, pour éviter les fuites cross-user).
+  //
+  // ACTIVÉE EN MODALE. Elle en était exclue au motif d'un « contexte
+  // éphémère » — or c'est justement le contexte où un brouillon sert le plus :
+  // fermer une modale par erreur perdait toute la saisie. Le vrai obstacle
+  // était ailleurs : l'écriture est debouncée à 500 ms et le démontage
+  // l'annulait au lieu de la vider, ce qui rendait le brouillon inexploitable
+  // là où le démontage est le cas nominal. Corrigé dans `useCoFormDraft`
+  // (flush au démontage + à la sortie d'onglet).
+  // ACTIVÉE AUSSI SUR UNE ÉTAPE SEULE. Elle en était exclue (`!isStandalone`)
+  // parce que la clé de brouillon ignorait le périmètre : un brouillon écrit sur
+  // une étape extraite, restauré dans le parcours complet, aurait remplacé
+  // `stepsData` par cette seule étape. Or c'est exactement la forme du dépôt d'un
+  // commun — bouton « Déposer », une étape, une modale — donc le cas où fermer
+  // par erreur coûte le plus cher. La clé porte désormais le périmètre
+  // (`draftScope`, cf. `useCoFormDraft`), la restauration croisée est impossible,
+  // et l'exclusion n'a plus lieu d'être.
+  //
+  // `isInputStandalone` reste exclu : ce mode soumet au blur
+  // (`autoSubmitOnBlur`), un brouillon n'y a rien à sauver.
+  //
+  // EN ÉDITION, PAS DE BROUILLON SANS `baseUpdatedAt`. La péremption d'un
+  // brouillon (`useCoFormDraft.computeDraftState`) ne se décide que si sa
+  // lignée `baseUpdatedAt` est connue — et elle vient d'ici. Un appelant qui
+  // passe `answerId` sans lignée produirait un brouillon impossible à
+  // déclarer obsolète : trente jours durant, « Reprendre » remplacerait sans
+  // avertir une réponse modifiée entre-temps par quelqu'un d'autre. Mieux vaut
+  // pas de filet qu'un filet qui efface le travail des autres. `CoFormModal`
+  // documente la prop comme « à transmettre dès qu'on passe `answerId` » ;
+  // ici, on le garantit.
+  //
+  // LA LIGNÉE N'EST PAS QUE `updated`. Ce champ est OPTIONNEL sur
+  // `CoFormAnswer` : une réponse jamais modifiée depuis son dépôt n'en a pas.
+  // Un `answer.updated` brut coupait donc le brouillon sur tout ce
+  // sous-ensemble. La lignée à transmettre est `updated ?? created` — c'est la
+  // responsabilité de l'appelant, seul détenteur de la réponse éditée
+  // (`SmartCoForm` ne la charge pas), et `computeDraftState` ne compare jamais
+  // que cette valeur à elle-même dans le temps : la première modification
+  // serveur pose un `updated` strictement supérieur à `created`. Sans NI l'un
+  // NI l'autre, la garde ci-dessous reste et coupe.
   const enableDraft =
-    !readOnly &&
-    !inModal &&
-    !isStandalone &&
-    !isInputStandalone &&
-    !!formId &&
-    !!me?.id;
+    !readOnly && !isInputStandalone && !!formId && !!me?.id && (!answerId || baseUpdatedAt != null);
   const draftUserId = currentUserId;
+  // Vide pour le parcours complet — la clé reste alors celle d'avant, et les
+  // brouillons déjà enregistrés continuent d'être retrouvés.
+  // `resolvedStepKey` et non `stepKey` brut : c'est lui qui construit
+  // `standaloneFormData`, donc lui qui décrit ce qui est réellement rendu. Les deux
+  // ne divergent aujourd'hui que sur la branche `inputKey` seul, où le brouillon
+  // est de toute façon coupé — s'appuyer là-dessus serait un accident.
+  const draftScope = isStandalone ? (resolvedStepKey ?? null) : null;
 
   // Mode lecture seule : utiliser CoFormReadOnly
   if (readOnly) {
@@ -389,7 +485,7 @@ export function SmartCoForm({
   if (shouldUseMultiStep) {
     return withCatalogs(
       <MultiStepCoForm
-        formData={formData}
+        formData={effectiveFormData}
         submitMode={submitMode}
         onStepSubmit={onStepSubmit}
         onFinalSubmit={
@@ -401,6 +497,7 @@ export function SmartCoForm({
         }
         onSuccess={onAfterSubmit}
         onDirtyChange={onDirtyChange}
+        discardDraftRef={discardDraftRef}
         lockedFields={lockedFields}
         restrictedFields={restrictedFields}
         className={className}
@@ -410,17 +507,28 @@ export function SmartCoForm({
         answerId={answerId}
         initialStepKey={initialStepKey}
         formId={formId}
+        draftScope={draftScope}
+        elementId={elementId}
+        elementType={elementType}
         userId={draftUserId}
         baseUpdatedAt={baseUpdatedAt}
         enableDraft={enableDraft}
         existingAnswerMeta={existingAnswerMeta}
+        unknownFieldVariant={unknownFieldVariant}
       />
     );
   }
 
   // Rendu : formulaire simple (1 seule étape ou standalone)
-  const subFormIds = Object.keys(effectiveFormData.inputs || {});
-  const subFormId = subFormIds[0] || "default";
+  //
+  // Clé de l'étape PARSÉE, pas `Object.keys(inputs)[0]` : c'est celle que
+  // `DynamicCoForm` utilise (`subFormsFields[0].subFormId`), donc la seule sous
+  // laquelle ses `defaultValues` et sa saisie ont un sens. Les deux divergent
+  // dès que la première étape déclarée est masquée (`hideStep`) : le parse ne
+  // garde que la suivante, on tombe en mode simple — et on lisait les défauts
+  // de l'étape masquée puis on renvoyait la saisie sous SA clé, l'étape rendue
+  // repartant vide.
+  const subFormId = subFormsFields[0]?.subFormId ?? "default";
 
   // Extraire les valeurs par défaut pour cette étape
   const stepDefaults = normalizedDefaults?.[subFormId];
@@ -437,14 +545,26 @@ export function SmartCoForm({
       autoSubmitOnBlur={isInputStandalone}
       onDirtyChange={onDirtyChange}
       submitRef={submitRef}
+      discardDraftRef={discardDraftRef}
       lockedFields={lockedFields}
       restrictedFields={restrictedFields}
       formId={formId}
+      draftScope={draftScope}
+      elementId={elementId}
+      elementType={elementType}
       userId={draftUserId}
       baseUpdatedAt={baseUpdatedAt}
       enableDraft={enableDraft}
       existingAnswerMeta={existingAnswerMeta}
+      unknownFieldVariant={unknownFieldVariant}
       onSubmit={async (data, addedOptions) => {
+        // « Le serveur a la donnée » — c'est ce que `DynamicCoForm` lit pour
+        // purger le brouillon. L'erreur est traitée ici (pas relancée : un
+        // throw remonterait jusqu'au `onSubmit` du `<form>` en rejet non géré),
+        // donc on la signale par la valeur de retour. `onAfterSubmit` n'entre
+        // pas dans le verdict : s'il échoue, la réponse est quand même
+        // enregistrée, et le brouillon n'a plus lieu d'être.
+        let soumis = false;
         try {
           // Dénormaliser pour le format PHP (champs root-level à la racine)
           const rawData = { [subFormId]: data } as Record<string, unknown>;
@@ -459,6 +579,7 @@ export function SmartCoForm({
           } else {
             await internalMutation.mutateAsync({ allData: dataForServer, addedOptions: formattedAddedOptions, links: linksOrUndef });
           }
+          soumis = true;
 
           // Callback post-soumission (ex: toast, fermer modale)
           if (onAfterSubmit) {
@@ -467,6 +588,7 @@ export function SmartCoForm({
         } catch (err) {
           onError?.(err instanceof Error ? err : new Error(String(err)));
         }
+        return soumis;
       }}
     />
   );

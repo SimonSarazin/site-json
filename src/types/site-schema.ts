@@ -1498,6 +1498,11 @@ import {
 import { CoFormSectionSchema } from "@/modules/coform/schema";
 import { ToolsCatalogSectionSchema } from "@/modules/toolsCatalog/schema";
 import {
+  AacConfigSchema,
+  AacDirectorySectionSchema,
+  AacHighlightSectionSchema,
+} from "@/modules/aac/schema";
+import {
   LoginFormSectionSchema,
   RegisterFormSectionSchema,
   RecoverPasswordFormSectionSchema,
@@ -1615,6 +1620,8 @@ export const Section = z.discriminatedUnion("type", [
   CagnotteLayoutSectionSchema,
   CoFormSectionSchema,
   ToolsCatalogSectionSchema,
+  AacDirectorySectionSchema,
+  AacHighlightSectionSchema,
   DataObservatorySectionSchema,
   AgendaSectionSchema,
   ArticleFeedSectionSchema,
@@ -2244,6 +2251,11 @@ export const SiteConfig = z.object({
     condition: VisibilityConditionSchema,
   }).optional(),
   ampli: z.array(AmpliConfigSchema).optional(),
+  // Config site-level de l'Appel à Communs — SINGULIER (un seul AAC par site,
+  // contrairement à `ampli` qui est un tableau). Le site déclare son `formId` ;
+  // les sections `aac-directory`/`aac-highlight` et les routes `/aac` le lisent
+  // depuis ici (les routes ne sont montées que si ce bloc existe). cf. modules/aac.
+  aac: AacConfigSchema.optional(),
   commandPalette: CommandPaletteConfigSchema.optional(),
   // Config site-level du blog : défauts des variants extensibles (card/reader/feedLayout). cf. modules/blog.
   blog: BlogConfigSchema.optional(),

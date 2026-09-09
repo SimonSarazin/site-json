@@ -1,0 +1,610 @@
+// @vitest-environment jsdom
+import { afterEach, describe, it, expect, vi } from "vitest";
+import { createElement, type ReactNode } from "react";
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { CAGNOTTE_TYPE_CONFIGS, type CagnotteTypeConfig, type FundingEnvelopeNormalizedData } from "../types";
+import type { OrgProject } from "./useOrganizationProjectsWithAnswers";
+
+// Utilisateur connecté `u1`, sans organisation admin. Sans API (défaut),
+// l'adaptateur calcule et la réparation des dépenses orphelines (effet) reste
+// inerte ; le bloc « réparation » ci-dessous en fournit une pour l'exercer.
+const mocks = vi.hoisted(() => ({ api: null as unknown }));
+vi.mock("@/hooks/useCocolight", () => ({
+  useCocolight: () => ({
+    api: mocks.api,
+    me: { serverData: { id: "u1" }, getEntityType: () => "citoyens" },
+  }),
+}));
+vi.mock("@/modules/cagnotte/hooks/useUserAdminOrganizations", () => {
+  const aucune: never[] = [];
+  return { useUserAdminOrganizations: () => aucune };
+});
+// Les écritures de la réparation (`entity.updateField` sous le capot) sont
+// mockées : on observe l'orchestration, pas `actionMilestonePathUpdates`.
+vi.mock("@/modules/cagnotte/lib/actionMilestonePathUpdates", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/modules/cagnotte/lib/actionMilestonePathUpdates")>()),
+  appendProjectMilestone: vi.fn().mockResolvedValue(undefined),
+  updateAnswerDepenseFields: vi.fn().mockResolvedValue(undefined),
+}));
+
+import { milestoneRepairKey, useCagnotteAdapter, useOrphanDepenseRepair } from "./useCagnotteAdapter";
+import { generateMilestoneId } from "../utils/idGeneration";
+import { CAGNOTTE_QUERY_KEYS } from "../constants/queryKeys";
+import { appendProjectMilestone, updateAnswerDepenseFields } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
+import { COMMUN_RAW_DEPENSES_QUERY_KEY } from "@/modules/cagnotte/constants/queryKeys";
+import { COMMUN_RAW_DEPENSES_QUERY_KEY as AAC_REEXPORTED_KEY } from "@/modules/aac/hooks/useCommunRawDepenses";
+
+afterEach(() => {
+  mocks.api = null;
+  vi.clearAllMocks();
+});
+
+function renderAdapter(
+  fundingEnvelope: FundingEnvelopeNormalizedData,
+  allProjects: OrgProject[],
+  config: CagnotteTypeConfig,
+  selectedId: string,
+) {
+  const client = new QueryClient();
+  const wrapper = ({ children }: { children: ReactNode }) =>
+    createElement(QueryClientProvider, { client }, children);
+  return renderHook(() => useCagnotteAdapter(fundingEnvelope, allProjects, config, selectedId), { wrapper });
+}
+
+/**
+ * Régression : boucle de requêtes infinie à l'ouverture du formulaire de dépôt
+ * d'un commun (`findanswered` → `updatepathvalue` → `fundingenvelope` → …).
+ *
+ * Cause : la garde d'idempotence de la réparation des dépenses orphelines
+ * incluait le `milestoneId`. Or quand la dépense n'en a pas, celui-ci est
+ * FABRIQUÉ par `generateMilestoneId` (`Date.now()` + `Math.random()`) à chaque
+ * recalcul du memo. La clé était donc neuve à chaque tour, la garde inopérante :
+ * la réparation réécrivait, invalidait l'enveloppe, relançait le memo — et
+ * créait au passage un milestone de rebut sur le projet à CHAQUE itération.
+ */
+describe("milestoneRepairKey", () => {
+  it("ne dépend QUE de l'identité stable de la dépense", () => {
+    const a = milestoneRepairKey({ answerId: "ans1", depenseIndex: 0 });
+    const b = milestoneRepairKey({ answerId: "ans1", depenseIndex: 0 });
+    expect(a).toBe(b);
+  });
+
+  it("survit à un identifiant de milestone régénéré — le cœur du bug", () => {
+    // Deux passages du memo sur la MÊME dépense produisent deux ids différents.
+    const id1 = generateMilestoneId();
+    const id2 = generateMilestoneId([id1]);
+    expect(id1).not.toBe(id2);
+
+    // La clé, elle, doit rester identique : sinon la garde ne matche jamais.
+    const repair = { answerId: "ans1", depenseIndex: 2 };
+    expect(milestoneRepairKey({ ...repair, milestoneId: id1 } as never)).toBe(
+      milestoneRepairKey({ ...repair, milestoneId: id2 } as never)
+    );
+  });
+
+  it("distingue deux dépenses de la même réponse", () => {
+    expect(milestoneRepairKey({ answerId: "ans1", depenseIndex: 0 })).not.toBe(
+      milestoneRepairKey({ answerId: "ans1", depenseIndex: 1 })
+    );
+  });
+
+  it("distingue la même position dans deux réponses", () => {
+    expect(milestoneRepairKey({ answerId: "ans1", depenseIndex: 0 })).not.toBe(
+      milestoneRepairKey({ answerId: "ans2", depenseIndex: 0 })
+    );
+  });
+});
+
+describe("generateMilestoneId — pourquoi il ne peut PAS servir de clé de garde", () => {
+  it("rend une valeur différente à chaque appel, même sans collision déclarée", () => {
+    const ids = new Set(Array.from({ length: 20 }, () => generateMilestoneId()));
+    // Si ces valeurs étaient stables, la clé d'origine aurait fonctionné.
+    expect(ids.size).toBeGreaterThan(1);
+  });
+
+  it("évite les identifiants déjà pris", () => {
+    const pris = generateMilestoneId();
+    expect(generateMilestoneId([pris])).not.toBe(pris);
+  });
+});
+
+/**
+ * Régression C7 (MR 53) : `depense.financer` peut arriver en objet keyé par id de
+ * financeur (forme Mongo brute). Les gardes pré-MR (`Array.isArray`,
+ * `!transactions.length`) avaient sauté au profit d'un `.map` direct — l'objet
+ * faisait planter TOUT l'adaptateur, sur les deux branches (`project` et
+ * `proposition`). Lecture attendue : `toArrayOrValues`, montants sommés.
+ */
+describe("useCagnotteAdapter — `depense.financer` en objet keyé par id", () => {
+  /** Fabriques : `getUserFunding` enrichit les financeurs EN PLACE, on ne partage donc aucune fixture. */
+  const financerObjet = () => ({
+    u1: { id: "u1", name: "Alice", amount: 250 },
+    u2: { id: "u2", name: "Bob", amount: 100 },
+  });
+  const financerTableau = () => Object.values(financerObjet());
+
+  function enveloppe(depense: Record<string, unknown>, projectId?: string): FundingEnvelopeNormalizedData {
+    return {
+      rawEnvelope: {
+        projects: [{ id: "answer-1", projectId, titre: "Mon commun", depenses: [depense] }],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+  }
+
+  const projets = (): OrgProject[] =>
+    [
+      {
+        id: "proj-1",
+        name: "Projet du commun",
+        answerId: "answer-1",
+        milestones: [{ milestoneId: "m1", name: "Dev", price: 5000, status: "open", currentFunding: 42 }],
+        cagnotteTotalAmount: 0,
+        cagnotteTargetAmount: 5000,
+        rawProject: {},
+      },
+    ] as unknown as OrgProject[];
+
+  it("proposition : ne plante pas, somme les montants et retrouve la part de l'utilisateur", () => {
+    const { result } = renderAdapter(
+      enveloppe({ poste: "Dev", priceInt: 5000, milestone: "m1", financer: financerObjet() }),
+      [],
+      CAGNOTTE_TYPE_CONFIGS.aac,
+      "answer-1",
+    );
+    const item = result.current.savedSelectedResource!.items[0];
+    expect(item.currentFunding).toBe(350);
+    expect(item.unpaidFunding).toBe(350);
+    expect(item.allFunding.map((f) => f.id)).toEqual(["u1", "u2"]);
+    // `u1` est l'utilisateur connecté (cf. mock `useCocolight`).
+    expect(item.userPledge).toBe(250);
+    expect(item.funding.map((f) => f.financerId)).toEqual(["u1"]);
+  });
+
+  it("projet : idem sur le palier apparié à la dépense", () => {
+    const { result } = renderAdapter(
+      enveloppe({ poste: "Dev", priceInt: 5000, milestone: "m1", financer: financerObjet() }, "proj-1"),
+      projets(),
+      CAGNOTTE_TYPE_CONFIGS.standard,
+      "proj-1",
+    );
+    const item = result.current.savedSelectedResource!.items[0];
+    expect(item.milestoneId).toBe("m1");
+    expect(item.currentFunding).toBe(350);
+    expect(item.allFunding).toHaveLength(2);
+    expect(item.userPledge).toBe(250);
+  });
+
+  it("témoin : la forme tableau donne exactement les mêmes montants", () => {
+    const proposition = renderAdapter(
+      enveloppe({ poste: "Dev", priceInt: 5000, milestone: "m1", financer: financerTableau() }),
+      [],
+      CAGNOTTE_TYPE_CONFIGS.aac,
+      "answer-1",
+    ).result.current.savedSelectedResource!.items[0];
+    expect(proposition.currentFunding).toBe(350);
+    expect(proposition.userPledge).toBe(250);
+
+    const projet = renderAdapter(
+      enveloppe({ poste: "Dev", priceInt: 5000, milestone: "m1", financer: financerTableau() }, "proj-1"),
+      projets(),
+      CAGNOTTE_TYPE_CONFIGS.standard,
+      "proj-1",
+    ).result.current.savedSelectedResource!.items[0];
+    expect(projet.currentFunding).toBe(350);
+    expect(projet.userPledge).toBe(250);
+  });
+
+  it("sans financeur : 0 côté proposition, repli sur `currentFunding` du palier côté projet", () => {
+    const proposition = renderAdapter(
+      enveloppe({ poste: "Dev", priceInt: 5000, milestone: "m1" }),
+      [],
+      CAGNOTTE_TYPE_CONFIGS.aac,
+      "answer-1",
+    ).result.current.savedSelectedResource!.items[0];
+    expect(proposition.currentFunding).toBe(0);
+    expect(proposition.allFunding).toEqual([]);
+
+    const projet = renderAdapter(
+      enveloppe({ poste: "Dev", priceInt: 5000, milestone: "m1" }, "proj-1"),
+      projets(),
+      CAGNOTTE_TYPE_CONFIGS.standard,
+      "proj-1",
+    ).result.current.savedSelectedResource!.items[0];
+    expect(projet.currentFunding).toBe(42);
+    expect(projet.allFunding).toEqual([]);
+  });
+});
+
+/**
+ * §9.1 (review MR 53, décision backend) : `priceInt` n'est JAMAIS stocké — seule
+ * l'enveloppe le fabrique (`$convert` → int). Tout document lu hors enveloppe, ou
+ * une ligne que l'enveloppe n'a pas convertie, ne porte que `price` — parfois en
+ * chaîne (« 1 500 »). L'adaptateur lisait `Number(d.priceInt) || 0` : montant 0.
+ * Règle de lecture : `priceInt || price`, normalisé par `toSafeInt`.
+ */
+describe("useCagnotteAdapter — montant lu en `price` quand `priceInt` manque (§9.1)", () => {
+  function proposition(depense: Record<string, unknown>): FundingEnvelopeNormalizedData {
+    return {
+      rawEnvelope: {
+        projects: [{ id: "answer-prix", titre: "Mon commun", depenses: [depense] }],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+  }
+
+  it("proposition : `price` seul est lu", () => {
+    const item = renderAdapter(proposition({ poste: "Dev", price: 1500, milestone: "m1" }), [], CAGNOTTE_TYPE_CONFIGS.aac, "answer-prix")
+      .result.current.savedSelectedResource!.items[0];
+    expect(item.price).toBe(1500);
+  });
+
+  it("proposition : un `price` en chaîne avec espace est normalisé (`toSafeInt`)", () => {
+    const item = renderAdapter(proposition({ poste: "Dev", price: "1 500", milestone: "m1" }), [], CAGNOTTE_TYPE_CONFIGS.aac, "answer-prix")
+      .result.current.savedSelectedResource!.items[0];
+    expect(item.price).toBe(1500);
+  });
+
+  it("proposition : `priceInt` prime quand l'enveloppe l'a calculé", () => {
+    const item = renderAdapter(proposition({ poste: "Dev", priceInt: 5000, price: 4000, milestone: "m1" }), [], CAGNOTTE_TYPE_CONFIGS.aac, "answer-prix")
+      .result.current.savedSelectedResource!.items[0];
+    expect(item.price).toBe(5000);
+  });
+
+  it("projet : une dépense orpheline (sans palier projet) lit aussi `price`", () => {
+    const envelope = {
+      rawEnvelope: {
+        projects: [{ id: "answer-prix-projet", projectId: "proj-prix", titre: "Mon commun", depenses: [{ poste: "Legacy", price: 700 }] }],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+    // Sans `answerId` : pas de réparation à programmer, on n'observe que la lecture.
+    const projets = [
+      { id: "proj-prix", name: "Projet", milestones: [], cagnotteTotalAmount: 0, cagnotteTargetAmount: 0, rawProject: {} },
+    ] as unknown as OrgProject[];
+
+    const item = renderAdapter(envelope, projets, CAGNOTTE_TYPE_CONFIGS.standard, "proj-prix")
+      .result.current.savedSelectedResource!.items[0];
+    expect(item.name).toBe("Legacy");
+    expect(item.price).toBe(700);
+  });
+
+  /**
+   * La troisième lecture de montant de la même fonction — le palier projet APPARIÉ à
+   * sa dépense — lisait encore `Number(m.price) || 0`. Or `m.price` est le `price`
+   * BRUT du document réponse (`enrichMilestones` fait `price: depense?.price ?? 0`),
+   * hors de tout pipeline `$convert` : deux dépenses identiques stockées « 1 500 »
+   * s'affichaient 1 500 € en orpheline et 0 € une fois appariées.
+   */
+  it("projet : le palier apparié lit le même montant que la même dépense restée orpheline", () => {
+    const envelope = {
+      rawEnvelope: {
+        projects: [{
+          id: "answer-prix-projet",
+          projectId: "proj-prix",
+          titre: "Mon commun",
+          depenses: [{ poste: "Dev", price: "1 500", milestone: "m1" }, { poste: "Legacy", price: "1 500" }],
+        }],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+    // Sans `answerId` : pas de réparation à programmer, on n'observe que la lecture.
+    const projets = [
+      {
+        id: "proj-prix",
+        name: "Projet",
+        milestones: [{ milestoneId: "m1", name: "Dev", price: "1 500", status: "open", currentFunding: 0 }],
+        cagnotteTotalAmount: 0,
+        cagnotteTargetAmount: 0,
+        rawProject: {},
+      },
+    ] as unknown as OrgProject[];
+
+    const items = renderAdapter(envelope, projets, CAGNOTTE_TYPE_CONFIGS.standard, "proj-prix")
+      .result.current.savedSelectedResource!.items;
+    expect(items.map((i) => i.name)).toEqual(["Dev", "Legacy"]);
+    expect(items[0].price).toBe(1500);
+    expect(items[0].price).toBe(items[1].price);
+  });
+
+  it("projet : le `price` du palier sert quand la dépense appariée n'en porte aucun", () => {
+    const envelope = {
+      rawEnvelope: {
+        projects: [{ id: "answer-prix-projet", projectId: "proj-prix", titre: "Mon commun", depenses: [{ poste: "Dev", milestone: "m1" }] }],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+    const projets = [
+      {
+        id: "proj-prix",
+        name: "Projet",
+        milestones: [{ milestoneId: "m1", name: "Dev", price: "2 400", status: "open", currentFunding: 0 }],
+        cagnotteTotalAmount: 0,
+        cagnotteTargetAmount: 0,
+        rawProject: {},
+      },
+    ] as unknown as OrgProject[];
+
+    const item = renderAdapter(envelope, projets, CAGNOTTE_TYPE_CONFIGS.standard, "proj-prix")
+      .result.current.savedSelectedResource!.items[0];
+    expect(item.price).toBe(2400);
+  });
+
+  it("proposition : les agrégats bruts de l'enveloppe sont normalisés eux aussi", () => {
+    // Sans dépense, `computeResourceFundingTotals` se replie sur ces agrégats :
+    // c'est la seule valeur affichée, elle ne peut pas tomber à 0 sur une chaîne.
+    const envelope = {
+      rawEnvelope: {
+        projects: [{ id: "answer-prix", titre: "Mon commun", depenses: [], totalCouts: "3 000", totalFinancement: "1 200" }],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+
+    const resource = renderAdapter(envelope, [], CAGNOTTE_TYPE_CONFIGS.aac, "answer-prix")
+      .result.current.savedSelectedResource!;
+    expect(resource.resourceTotalAmount).toBe(3000);
+    expect(resource.resourceFinancedAmount).toBe(1200);
+  });
+
+  it("projet : les agrégats de la ressource sont normalisés comme les items", () => {
+    const envelope = {
+      rawEnvelope: { projects: [{ id: "answer-prix-projet", projectId: "proj-prix", titre: "Mon commun", depenses: [] }], links: {} },
+    } as unknown as FundingEnvelopeNormalizedData;
+    const projets = [
+      {
+        id: "proj-prix",
+        name: "Projet",
+        milestones: [],
+        cagnotteTotalAmount: "1 200",
+        cagnotteTargetAmount: "3 000",
+        rawProject: {},
+      },
+    ] as unknown as OrgProject[];
+
+    const resource = renderAdapter(envelope, projets, CAGNOTTE_TYPE_CONFIGS.standard, "proj-prix")
+      .result.current.savedSelectedResource!;
+    expect(resource.resourceTotalAmount).toBe(3000);
+    expect(resource.resourceFinancedAmount).toBe(1200);
+  });
+});
+
+/**
+ * M40 (review MR 53) : la réparation des dépenses orphelines ÉCRIVAIT (projet +
+ * réponse) depuis un `useEffect` de l'adaptateur, sans contrôle de droits et pour
+ * TOUT appelant — `PledgeHeaderButton` compris, monté dans le header de chaque
+ * page avec tous les projets de l'organisation. Un visiteur connecté sans aucun
+ * droit déclenchait N×3 écritures rejetées à chaque chargement ; un admin voyait
+ * ses documents modifiés sans l'avoir demandé.
+ *
+ * L'adaptateur est redevenu pur : il RENVOIE les réparations à faire
+ * (`pendingMilestoneRepairs`). Les écrire est un opt-in explicite des surfaces
+ * d'édition (`useOrphanDepenseRepair`), gardé par un droit (`canCreateMilestone`)
+ * et limité à la ressource affichée.
+ */
+describe("useCagnotteAdapter — la réparation n'est plus un effet du rendu (M40)", () => {
+  /** Deux communs d'un même appel, chacun avec une dépense legacy sans `milestone`. */
+  function enveloppeDeuxCommuns(answerA: string, answerB: string): FundingEnvelopeNormalizedData {
+    const commun = (answerId: string, projectId: string) => ({
+      id: answerId,
+      projectId,
+      titre: `Commun ${answerId}`,
+      project: { id: projectId, oceco: { milestones: [] } },
+      depenses: [{ poste: "Dépense legacy", price: 100 }],
+    });
+    return {
+      rawEnvelope: { projects: [commun(answerA, "proj-a"), commun(answerB, "proj-b")], links: {} },
+    } as unknown as FundingEnvelopeNormalizedData;
+  }
+
+  function apiEspion() {
+    const api = {
+      project: vi.fn().mockImplementation(async ({ id }: { id: string }) => ({ id })),
+      answer: vi.fn().mockImplementation(async ({ id }: { id: string }) => ({ id })),
+    };
+    mocks.api = api;
+    return api;
+  }
+
+  function client() {
+    const queryClient = new QueryClient();
+    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+    const wrapper = ({ children }: { children: ReactNode }) =>
+      createElement(QueryClientProvider, { client: queryClient }, children);
+    return { wrapper, invalidate };
+  }
+
+  const unTour = () => new Promise((resolve) => setTimeout(resolve, 10));
+
+  it("le simple rendu de l'adaptateur n'écrit RIEN, même avec une API et des orphelines", async () => {
+    const api = apiEspion();
+    const { wrapper, invalidate } = client();
+
+    const { result } = renderHook(
+      () => useCagnotteAdapter(enveloppeDeuxCommuns("answer-m40-rendu-a", "answer-m40-rendu-b"), [], CAGNOTTE_TYPE_CONFIGS.aac, "answer-m40-rendu-a"),
+      { wrapper },
+    );
+    await unTour();
+
+    // Les orphelines sont bien détectées — c'est l'écriture qui ne part plus.
+    expect(result.current.pendingMilestoneRepairs.map((r) => r.answerId)).toEqual([
+      "answer-m40-rendu-a",
+      "answer-m40-rendu-b",
+    ]);
+    expect(api.project).not.toHaveBeenCalled();
+    expect(api.answer).not.toHaveBeenCalled();
+    expect(appendProjectMilestone).not.toHaveBeenCalled();
+    expect(invalidate).not.toHaveBeenCalled();
+  });
+
+  it("sans droit d'écriture (`enabled: false`), le hook de réparation n'écrit rien", async () => {
+    const api = apiEspion();
+    const { wrapper, invalidate } = client();
+
+    renderHook(
+      () => {
+        const adapter = useCagnotteAdapter(enveloppeDeuxCommuns("answer-m40-droit-a", "answer-m40-droit-b"), [], CAGNOTTE_TYPE_CONFIGS.aac, "answer-m40-droit-a");
+        useOrphanDepenseRepair({ resource: adapter.savedSelectedResource, repairs: adapter.pendingMilestoneRepairs, enabled: false });
+      },
+      { wrapper },
+    );
+    await unTour();
+
+    expect(api.project).not.toHaveBeenCalled();
+    expect(appendProjectMilestone).not.toHaveBeenCalled();
+    expect(invalidate).not.toHaveBeenCalled();
+  });
+
+  it("avec le droit, ne répare QUE la ressource passée — jamais les autres communs de l'enveloppe", async () => {
+    const api = apiEspion();
+    const { wrapper, invalidate } = client();
+
+    renderHook(
+      () => {
+        const adapter = useCagnotteAdapter(enveloppeDeuxCommuns("answer-m40-cible-a", "answer-m40-cible-b"), [], CAGNOTTE_TYPE_CONFIGS.aac, "answer-m40-cible-a");
+        useOrphanDepenseRepair({ resource: adapter.savedSelectedResource, repairs: adapter.pendingMilestoneRepairs, enabled: true });
+      },
+      { wrapper },
+    );
+
+    await waitFor(() => {
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: CAGNOTTE_QUERY_KEYS.COMMUN_RAW_DEPENSES_PREFIX("answer-m40-cible-a") });
+    });
+    expect(api.answer).toHaveBeenCalledTimes(1);
+    expect(api.answer).toHaveBeenCalledWith({ id: "answer-m40-cible-a" });
+    expect(api.project).toHaveBeenCalledWith({ id: "proj-a" });
+    expect(updateAnswerDepenseFields).toHaveBeenCalledTimes(1);
+    expect(updateAnswerDepenseFields).toHaveBeenCalledWith(
+      expect.objectContaining({ answer: { id: "answer-m40-cible-a" }, index: 0 }),
+    );
+    expect(invalidate).not.toHaveBeenCalledWith({ queryKey: CAGNOTTE_QUERY_KEYS.COMMUN_RAW_DEPENSES_PREFIX("answer-m40-cible-b") });
+  });
+
+  it("sans ressource (rien de sélectionné), rien ne part même avec le droit", async () => {
+    const api = apiEspion();
+    const { wrapper } = client();
+
+    renderHook(
+      () => {
+        const adapter = useCagnotteAdapter(enveloppeDeuxCommuns("answer-m40-vide-a", "answer-m40-vide-b"), [], CAGNOTTE_TYPE_CONFIGS.aac, "");
+        useOrphanDepenseRepair({ resource: adapter.savedSelectedResource, repairs: adapter.pendingMilestoneRepairs, enabled: true });
+      },
+      { wrapper },
+    );
+    await unTour();
+
+    expect(api.project).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * B3 (review MR 53) : commun AVEC projet lié, dépense legacy sans `milestone`.
+ * La réparation fabrique un id, l'écrit sur le projet ET sur
+ * `depense[i].milestone`, puis n'invalidait QUE l'enveloppe. Or la fiche commun
+ * relit `depense[]` par une SECONDE entrée de cache (`useCommunRawDepenses`,
+ * staleTime 60 s) : elle servait encore la ligne sans `milestone`, l'item fusionné
+ * par `buildItemsFromRawDepenses` restait sans id, et les quatre boutons de
+ * « Besoins financiers » échouaient. La réparation doit invalider les DEUX caches.
+ */
+describe("useCagnotteAdapter — réparation d'une dépense orpheline (projet lié)", () => {
+  /** Enveloppe d'un commun dont le projet lié ne porte PAS la dépense n° 0. */
+  function enveloppeAvecProjetLie(answerId: string): FundingEnvelopeNormalizedData {
+    return {
+      rawEnvelope: {
+        projects: [
+          {
+            id: answerId,
+            projectId: "proj-1",
+            titre: "Mon commun",
+            project: { id: "proj-1", oceco: { milestones: [{ milestoneId: "m1" }] } },
+            depenses: [{ poste: "Dépense legacy", priceInt: 100 }],
+          },
+        ],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+  }
+
+  function renderAvecApi(answerId: string) {
+    const projectEntity = { id: "proj-1" };
+    const answerEntity = { id: answerId };
+    mocks.api = {
+      project: vi.fn().mockResolvedValue(projectEntity),
+      answer: vi.fn().mockResolvedValue(answerEntity),
+    };
+    const client = new QueryClient();
+    const invalidate = vi.spyOn(client, "invalidateQueries");
+    const wrapper = ({ children }: { children: ReactNode }) =>
+      createElement(QueryClientProvider, { client }, children);
+    // La réparation est un opt-in des surfaces d'édition (M40) : on la monte ici
+    // comme la fiche commun le fait, avec le droit accordé.
+    renderHook(
+      () => {
+        const adapter = useCagnotteAdapter(enveloppeAvecProjetLie(answerId), [], CAGNOTTE_TYPE_CONFIGS.aac, answerId);
+        useOrphanDepenseRepair({
+          resource: adapter.savedSelectedResource,
+          repairs: adapter.pendingMilestoneRepairs,
+          enabled: true,
+        });
+      },
+      { wrapper },
+    );
+    return { invalidate, projectEntity, answerEntity };
+  }
+
+  it("invalide aussi le cache brut des dépenses de la fiche commun, sous le préfixe de la réponse", async () => {
+    // Identité de réponse propre à ce test : la garde `inFlightMilestoneRepairs`
+    // est module-wide, une clé déjà vue ne relancerait pas la réparation.
+    const { invalidate } = renderAvecApi("answer-b3-cache");
+
+    await waitFor(() => {
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: CAGNOTTE_QUERY_KEYS.COMMUN_RAW_DEPENSES_PREFIX("answer-b3-cache") });
+    });
+    // L'enveloppe l'était déjà : les deux, pas l'une à la place de l'autre.
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX() });
+  });
+
+  /**
+   * §11.6 (résiduel) : la clé du cache brut vivait dans le module aac, et
+   * l'adaptateur l'importait de là — première dépendance cagnotte → aac du dépôt.
+   * Elle vit désormais dans `cagnotte/constants/queryKeys` ; le hook aac la
+   * ré-exporte, et ses consommateurs (`useGenerateAacProject`,
+   * `useAssociateExistingAacProject`, le contrôleur de la fiche) invalident la
+   * MÊME clé que la réparation.
+   */
+  it("la clé du cache brut est celle de cagnotte, ré-exportée à l'identique par aac", () => {
+    expect(AAC_REEXPORTED_KEY).toBe(COMMUN_RAW_DEPENSES_QUERY_KEY);
+    expect(CAGNOTTE_QUERY_KEYS.COMMUN_RAW_DEPENSES("answer-x", "aapStep1")).toEqual([
+      COMMUN_RAW_DEPENSES_QUERY_KEY,
+      "answer-x",
+      "aapStep1",
+    ]);
+    expect(CAGNOTTE_QUERY_KEYS.COMMUN_RAW_DEPENSES_PREFIX("answer-x")).toEqual([COMMUN_RAW_DEPENSES_QUERY_KEY, "answer-x"]);
+  });
+
+  it("n'invalide qu'APRÈS avoir écrit l'id sur le projet et sur la dépense visée", async () => {
+    const { invalidate, projectEntity, answerEntity } = renderAvecApi("answer-b3-ordre");
+
+    await waitFor(() => {
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: CAGNOTTE_QUERY_KEYS.COMMUN_RAW_DEPENSES_PREFIX("answer-b3-ordre") });
+    });
+
+    expect(appendProjectMilestone).toHaveBeenCalledWith(
+      expect.objectContaining({
+        project: projectEntity,
+        milestone: expect.objectContaining({ name: "Dépense legacy", status: "open" }),
+      }),
+    );
+    const generatedId = vi.mocked(appendProjectMilestone).mock.calls[0][0].milestone.milestoneId;
+    expect(generatedId).toBeTruthy();
+    expect(updateAnswerDepenseFields).toHaveBeenCalledWith({
+      answer: answerEntity,
+      index: 0,
+      fields: { milestone: generatedId },
+    });
+    // Sinon le refetch relirait encore la ligne d'avant.
+    expect(vi.mocked(updateAnswerDepenseFields).mock.invocationCallOrder[0]).toBeLessThan(
+      invalidate.mock.invocationCallOrder[0],
+    );
+  });
+});

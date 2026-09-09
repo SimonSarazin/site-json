@@ -166,6 +166,36 @@ openLogin({ initialMode: "register" });
 Lève `Error("useAuthModal doit être utilisé sous <AuthModalProvider>")` si
 appelé hors du provider.
 
+### Rejouer l'intention après connexion
+
+`onSuccess` rend la main **avant** que `me` n'ait été propagé : y exécuter directement l'action
+verrait encore la session anonyme. Le patron est donc en deux temps — mémoriser l'intention dans
+`onSuccess`, la rejouer dans un effet qui attend l'arrivée de la session :
+
+```tsx
+const [postLoginIntent, setPostLoginIntent] = useState<Intent | null>(null);
+
+const requireConnected = (intent: Intent): boolean => {
+  if (me?.isConnected) return true;
+  openLogin({ onSuccess: () => setPostLoginIntent(intent) });
+  return false;
+};
+
+useEffect(() => {
+  if (!postLoginIntent || !me?.isConnected) return;
+  setPostLoginIntent(null);          // consommée UNE fois
+  run(postLoginIntent);
+}, [postLoginIntent, me?.isConnected]);
+```
+
+> **Cas du déclencheur non contrôlé.** Quand l'action est un `DialogTrigger` **non contrôlé** — la
+> modale de financement de la fiche commun AAC, par exemple — il n'y a pas d'état à rétablir : on
+> rejoue le **clic** sur le bouton (`ref.current?.click()`), dont le garde laisse alors passer
+> l'ouverture. C'est la seule variante à connaître ; tout le reste du patron est identique.
+>
+> Corollaire : un état optimiste recalculé pour le nouveau `me` dans le **même** commit n'est pas
+> encore lisible dans l'effet — relire le sens d'une bascule **à la source**, pas dans l'état local.
+
 ### Consommateurs actuels
 
 | Consommateur | Usage |
@@ -176,6 +206,7 @@ appelé hors du provider.
 | `ActionButtonGroup` (profil) | `openLogin()` pour adhérer/suivre |
 | `CardProfile` (search) | `openLogin()` pour suivre/contacter/ajouter |
 | `GatedPageNotice` | `openLogin()` **une seule fois** sur une page gardée en mode `prompt` face à un anonyme |
+| `CommunFinancingCard` (AAC) | `openLogin({ onSuccess })` pour « Financer ce commun » et les CTA de réaction, avec **rejeu de l'intention** après connexion (cf. ci-dessus) |
 
 ## Routes fournies par le module
 

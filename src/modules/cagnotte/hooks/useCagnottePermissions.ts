@@ -30,14 +30,16 @@ export function useCagnottePermissions(
   entity: EntityTypes | null,
   data?: CagnottePermissionData
 ): CagnottePermissions {
+  const ownerIdsKey = (data?.ownerIds ?? []).join("|");
   const stableData = useMemo<Record<string, unknown>>(
     () => ({
       cagnotte: {
         hasActiveItems: data?.hasActiveItems ?? false,
         resourceId: data?.resourceId ?? "",
+        ownerIds: ownerIdsKey ? ownerIdsKey.split("|") : [],
       },
     }),
-    [data?.hasActiveItems, data?.resourceId]
+    [data?.hasActiveItems, data?.resourceId, ownerIdsKey]
   );
 
   const { cagnotte } = usePermissions<{ cagnotte: CagnottePermissions }>(

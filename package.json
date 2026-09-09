@@ -146,7 +146,7 @@
     "recharts": "^2.15.4",
     "remark-gfm": "^4.0.1",
     "serialize-javascript": "^7.0.1",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.3",
     "sonner": "^2.0.7",
     "supercluster": "^8.0.1",
     "tailwind-merge": "^3.4.0",

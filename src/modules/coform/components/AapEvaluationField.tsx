@@ -1,0 +1,232 @@
+import { useId, useState } from "react";
+import { Star } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useCocolightOptional } from "@/hooks/useCocolight";
+import { useSaveAapEvaluationNote } from "../actions/mutations/selection";
+import { useEcrituresLocales } from "../hooks/useEcrituresLocales";
+import {
+  parseAapEvaluationConfig,
+  buildCriterionValue,
+  isNoteValid,
+  toNumber,
+  AAP_EVALUATION_NOTE_MAX,
+  type RawAapEvaluationConfig,
+  type AapEvaluationValue,
+  type AapEvaluationCriterion,
+} from "../utils/aapEvaluation";
+import { FieldLabel } from "./FormFields";
+import type { FormFieldMapping } from "../types";
+
+/**
+ * `tpls.forms.aap.evaluation` — grille de notation à critères libres.
+ *
+ * Même contrat que `SelectionField` et `PourContreField` : hors RHF, hors schéma
+ * Zod, écriture immédiate par chemin ciblé. La particularité est la valeur
+ * écrite : un OBJET `{label, note, coeff}` par critère, et non un scalaire.
+ *
+ * Ne comporte ni moyenne ni décompte : le legacy n'en affiche aucun.
+ */
+
+export interface AapEvaluationFieldProps {
+  field: FormFieldMapping;
+  subFormId: string;
+  formId?: string | null;
+  /** `form.evaluationCriteria`. */
+  config?: RawAapEvaluationConfig | null;
+  /** `{ <userId>: { <index>: {label, note, coeff} } }`. */
+  value?: AapEvaluationValue | null;
+  answerId?: string;
+  readOnly?: boolean;
+}
+
+function StarRating({
+  note,
+  disabled,
+  label,
+  onRate,
+}: {
+  note: number;
+  disabled: boolean;
+  label: string;
+  onRate: (n: number) => void;
+}) {
+  const [hover, setHover] = useState<number | null>(null);
+  // 5 étoiles pour une note sur 10 : chaque étoile vaut 2 points, ce qui garde
+  // l'échelle de stockage du legacy tout en gardant un rendu lisible.
+  const parEtoile = AAP_EVALUATION_NOTE_MAX / 5;
+  const affichee = hover ?? note;
+  return (
+    <div className="flex items-center gap-0.5" role="radiogroup" aria-label={label}>
+      {[1, 2, 3, 4, 5].map((n) => {
+        const valeur = n * parEtoile;
+        return (
+          <button
+            key={n}
+            type="button"
+            role="radio"
+            aria-checked={note === valeur}
+            aria-label={String(valeur)}
+            disabled={disabled}
+            onClick={() => onRate(valeur)}
+            onMouseEnter={() => !disabled && setHover(valeur)}
+            onMouseLeave={() => setHover(null)}
+            className={cn("p-0.5 rounded", disabled ? "cursor-default" : "cursor-pointer")}
+          >
+            <Star
+              className={cn(
+                "size-5",
+                valeur <= affichee ? "fill-primary text-primary" : "text-muted-foreground/40"
+              )}
+            />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export function AapEvaluationField({
+  field,
+  subFormId,
+  formId,
+  config,
+  value,
+  answerId,
+  readOnly,
+}: AapEvaluationFieldProps) {
+  useLoadNamespace("modules/coform");
+  const t = useT("modules/coform");
+  const cocolight = useCocolightOptional();
+  const currentUserId = cocolight?.me?.id ?? null;
+
+  const saveNote = useSaveAapEvaluationNote({
+    api: cocolight?.api ?? null,
+    formId: formId ?? "",
+    answerId,
+  });
+
+  // Le formulaire ne resynchronise pas son instantané : sans ça, une note posée
+  // reste affichée à sa valeur d'avant. Une mémoire PAR CRITÈRE — l'évaluateur en
+  // note plusieurs à la suite. Cf. `useEcrituresLocales`.
+  const echo = useEcrituresLocales<number>();
+  // Critères dont la dernière saisie a été REFUSÉE (hors barème). Le refus
+  // doit se voir : le champ ne porte plus de contrainte native (cf. l'input).
+  const [refus, setRefus] = useState<Record<string, boolean>>({});
+  const idRefus = useId();
+
+  const parsedBrut = parseAapEvaluationConfig(config, currentUserId ? value?.[currentUserId] : null);
+  const parsed = {
+    ...parsedBrut,
+    criteria: parsedBrut.criteria.map((c) => ({ ...c, note: echo.lire(c.index, c.note) })),
+  };
+
+  // Même raison que ses deux cousins : l'écriture cible un document existant.
+  if (!answerId) return null;
+
+  const disabled = Boolean(readOnly) || !currentUserId;
+
+  const noter = (critere: AapEvaluationCriterion, note: number) => {
+    if (disabled || !currentUserId || !isNoteValid(note)) return;
+    saveNote.mutate(
+      {
+        subFormId,
+        userId: currentUserId,
+        index: critere.index,
+        value: buildCriterionValue(critere, note),
+      },
+      // Après le serveur, jamais avant : un échec doit laisser la note réelle.
+      { onSuccess: (_d, vars) => echo.noter(vars.index, vars.value.note) }
+    );
+  };
+
+  return (
+    <div className={cn("space-y-3", field.width || "col-span-12")}>
+      <FieldLabel field={field} />
+
+      {parsed.criteria.length === 0 ? (
+        <p className="text-sm text-muted-foreground italic">
+          {t("coform.aapEvaluation.noCriteria", "Aucun critère d'évaluation n'a été configuré.")}
+        </p>
+      ) : (
+        <ul className="divide-y divide-border/60">
+          {parsed.criteria.map((critere) => (
+            <li key={critere.index} className="flex items-center justify-between gap-4 py-2.5">
+              <span className="text-sm font-medium">
+                {critere.label}
+                {critere.coeff !== 1 && (
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    ×{critere.coeff}
+                  </span>
+                )}
+              </span>
+              {parsed.voteType === "starCriterionBased" ? (
+                <StarRating
+                  note={critere.note}
+                  disabled={disabled}
+                  label={critere.label}
+                  onRate={(n) => noter(critere, n)}
+                />
+              ) : (
+                <div className="flex flex-col items-end">
+                  {/* Ni `min`, ni `max`, et `step="any"` : ce champ vit DANS le
+                      `<form>` de l'étape (sans `noValidate`), et une contrainte
+                      native non satisfaite bloque la soumission du wizard —
+                      « Suivant » ne répond plus, sans message. Sans `step`, le pas
+                      natif vaut 1 et « 3,7 » bloquerait de même. Le barème est
+                      vérifié ici (`isNoteValid`), et le refus s'affiche. */}
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    step="any"
+                    defaultValue={critere.note || ""}
+                    disabled={disabled}
+                    aria-label={critere.label}
+                    aria-invalid={refus[critere.index] || undefined}
+                    aria-describedby={refus[critere.index] ? `${idRefus}-${critere.index}` : undefined}
+                    className="w-24 h-8"
+                    // Écriture au blur, comme le legacy : pas d'appel réseau à
+                    // chaque frappe.
+                    onBlur={(e) => {
+                      const saisie = e.target.value.trim();
+                      if (saisie === "") return;
+                      const n = toNumber(saisie);
+                      if (n === critere.note) return;
+                      if (!isNoteValid(n)) {
+                        // Refus VISIBLE : message, et retour à la note réelle —
+                        // le DOM ne doit pas afficher une note qui n'existe
+                        // nulle part.
+                        e.target.value = critere.note ? String(critere.note) : "";
+                        setRefus((prev) => ({ ...prev, [critere.index]: true }));
+                        return;
+                      }
+                      if (refus[critere.index]) {
+                        setRefus((prev) => ({ ...prev, [critere.index]: false }));
+                      }
+                      noter(critere, n);
+                    }}
+                  />
+                  {refus[critere.index] && (
+                    <p
+                      id={`${idRefus}-${critere.index}`}
+                      role="alert"
+                      className="mt-1 text-xs text-destructive"
+                    >
+                      {t(
+                        "coform.aapEvaluation.noteOutOfRange",
+                        "La note doit être comprise entre 0 et {{max}}",
+                        { max: AAP_EVALUATION_NOTE_MAX }
+                      )}
+                    </p>
+                  )}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}

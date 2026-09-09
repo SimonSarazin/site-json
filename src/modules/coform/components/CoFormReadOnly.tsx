@@ -1,3 +1,4 @@
+import { tallyVotes } from "../utils/pourContre";
 import { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -11,11 +12,15 @@ import "../i18n/i18n";
 import { parseCoFormFields, normalizeAnswerData } from "../utils/formParser";
 import { dayI18nKey, normalizeSlot, toTimeString } from "../utils/timeSlots";
 import { parseStoredToEntries } from "../utils/coformLocality";
-import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue, CommonTableValue, CategorizedCheckboxValue, TimeSlotValue, DynamicFieldsRow } from "../types";
+import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue, CommonTableValue, CategorizedCheckboxValue, TimeSlotValue, DynamicFieldsRow, TagsValue } from "../types";
 import { ReadOnlyUploaderGallery } from "./ReadOnlyUploaderGallery";
 import { SimpleTableField } from "./SimpleTableField";
 import { EvaluationField } from "./EvaluationField";
 import { FinderField } from "./FinderField";
+import { TagsField } from "./TagsField";
+import { MilestoneListField } from "./MilestoneListField";
+import type { DepenseEntry } from "../utils/depense";
+import { TitleSeparatorField } from "./FormFields";
 import { CommonTableField } from "./CommonTableField";
 import { CategorizedCheckboxField } from "./CategorizedCheckboxField";
 
@@ -219,6 +224,9 @@ function ReadOnlyField({
   answerId?: string;
   subFormId?: string;
 }) {
+  // Hook appelé AVANT tout retour conditionnel — ce composant en fait plusieurs
+  // (uploader, simpleTable, …) et les règles des hooks l'exigent.
+  const t = useT("modules/coform");
   const widthClass = field.width ?? "col-span-12";
 
   // Rendu spécifique pour uploader
@@ -304,6 +312,143 @@ function ReadOnlyField({
           {/* `formId` : parité avec le mode édition (DynamicCoForm) — sans lui, les
               badges de contributeurs s'affichent mais ne sont pas cliquables. */}
           <CommonTableField field={field} errors={{}} value={value as unknown as CommonTableValue} readOnly hideLabel formId={formId} />
+        </dd>
+      </div>
+    );
+  }
+
+  // titleSeparator : décoratif, donc AUCUNE valeur — sans ce cas il tombe dans le
+  // rendu générique et s'affiche comme une question vide (« label » + « — »). Le
+  // legacy le rend à l'identique en mode lecture (son template n'a pas de branche
+  // `mode`), on garde donc le séparateur, qui structure la lecture.
+  if (field.componentType === "titleSeparator") {
+    return <TitleSeparatorField field={field} />;
+  }
+
+  // tags : liste de libellés. Le rendu générique « tableau » afficherait déjà des
+  // badges, mais on passe par le composant pour que le vide donne « — » et que
+  // l'apparence soit strictement celle du mode édition.
+  if (field.componentType === "tags") {
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd>
+          <TagsField field={field} errors={{}} value={value as TagsValue} readOnly hideLabel />
+        </dd>
+      </div>
+    );
+  }
+
+  // milestoneList : valeur composite (liste d'objets `depense`). Sans ce cas,
+  // elle tombait dans la branche « tableau » générique et s'affichait en
+  // `[object Object]` par ligne — même famille de bug que commonTable.
+  if (field.componentType === "milestoneList") {
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd>
+          <MilestoneListField
+            field={field}
+            errors={{}}
+            value={value as unknown as DepenseEntry[]}
+            readOnly
+          />
+        </dd>
+      </div>
+    );
+  }
+
+  // selection : valeur composite indexée par ÉVALUATEUR (`{userId: {critère: note}}`).
+  // Sans ce cas, elle sortirait en `[object Object]` — même famille que
+  // milestoneList ci-dessus.
+  //
+  // On affiche le NOMBRE d'évaluateurs, pas la moyenne : celle-ci se pondère par
+  // les coefficients de `params.configSelectionCriteria`, que ce rendu n'a pas
+  // sous la main. Mieux vaut une information vraie et partielle qu'une moyenne
+  // calculée sans ses coefficients, qui serait fausse sans le dire.
+  if (field.componentType === "selection") {
+    const evaluateurs =
+      value && typeof value === "object" && !Array.isArray(value)
+        ? Object.keys(value as Record<string, unknown>).length
+        : 0;
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd className="text-sm text-muted-foreground">
+          {evaluateurs > 0
+            ? t("coform.selection.evaluatorCount", "{{count}} évaluateur(s)", {
+                count: evaluateurs,
+              })
+            : "—"}
+        </dd>
+      </div>
+    );
+  }
+
+  // pourContre : comme `selection`, valeur indexée par évaluateur — sans ce cas,
+  // elle sortirait en `[object Object]`. Ici on PEUT tout dire : le décompte ne
+  // dépend d'aucune configuration, contrairement aux moyennes de `selection`.
+  if (field.componentType === "pourContre") {
+    const t2 = tallyVotes(value as Record<string, unknown> | null);
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd className="text-sm text-muted-foreground">
+          {t2.total > 0
+            ? `${t("coform.pourContre.for", "Pour")} ${t2.pour} · ${t("coform.pourContre.neutral", "Neutre")} ${t2.neutre} · ${t("coform.pourContre.against", "Contre")} ${t2.contre}`
+            : "—"}
+        </dd>
+      </div>
+    );
+  }
+
+  // aapEvaluation : valeur indexée par évaluateur, comme `selection`. On affiche
+  // le nombre d'évaluateurs — les notes elles-mêmes n'ont de sens qu'en regard
+  // des critères, que ce rendu n'a pas sous la main.
+  if (field.componentType === "aapEvaluation") {
+    const evaluateurs =
+      value && typeof value === "object" && !Array.isArray(value)
+        ? Object.keys(value as Record<string, unknown>).length
+        : 0;
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd className="text-sm text-muted-foreground">
+          {evaluateurs > 0
+            ? t("coform.selection.evaluatorCount", "{{count}} évaluateur(s)", { count: evaluateurs })
+            : "—"}
+        </dd>
+      </div>
+    );
+  }
+
+  // chooseProposal : valeur indexée par CONTEXTE — sans ce cas, `[object Object]`.
+  // On liste les costums qui ont retenu la candidature ; contrairement aux notes,
+  // cette information se lit sans aucune configuration.
+  if (field.componentType === "chooseProposal") {
+    const retenus =
+      value && typeof value === "object" && !Array.isArray(value)
+        ? Object.entries(value as Record<string, { value?: unknown; name?: unknown }>)
+            .filter(([, e]) => e?.value === "selected")
+            .map(([id, e]) => (typeof e?.name === "string" && e.name.trim() ? e.name : id))
+        : [];
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd className="text-sm text-muted-foreground">
+          {retenus.length > 0 ? retenus.join(", ") : "—"}
         </dd>
       </div>
     );

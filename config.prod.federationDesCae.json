@@ -1,0 +1,431 @@
+{
+  "version": "1.0.0",
+  "meta": {
+    "title": {
+      "fr": "Fédération des CAE — Appel à Communs"
+    },
+    "description": {
+      "fr": "La Fédération des coopératives d'activité et d'emploi recueille, présente, finance et suit les communs de son réseau via son Appel à Communs."
+    },
+    "defaultLang": "fr",
+    "languages": [
+      "fr"
+    ],
+    "keywords": [
+      "CAE",
+      "coopérative d'activité et d'emploi",
+      "les SCOP",
+      "appel à communs",
+      "financement participatif"
+    ]
+  },
+  "theme": {
+    "colors": {
+      "light": {
+        "background": "oklch(1.0000 0 0)",
+        "foreground": "oklch(0.2000 0 0)",
+        "card": "oklch(1.0000 0 0)",
+        "cardForeground": "oklch(0.2000 0 0)",
+        "popover": "oklch(1.0000 0 0)",
+        "popoverForeground": "oklch(0.2000 0 0)",
+        "primary": "oklch(0.5800 0.2450 356)",
+        "primaryForeground": "oklch(1.0000 0 0)",
+        "secondary": "oklch(0.9600 0.0150 356)",
+        "secondaryForeground": "oklch(0.3500 0.0500 356)",
+        "muted": "oklch(0.9700 0 0)",
+        "mutedForeground": "oklch(0.5500 0.0200 356)",
+        "accent": "oklch(0.9400 0.0500 356)",
+        "accentForeground": "oklch(0.4500 0.1800 356)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.9200 0.0050 356)",
+        "input": "oklch(0.9200 0.0050 356)",
+        "ring": "oklch(0.5800 0.2450 356)",
+        "chart1": "oklch(0.5800 0.2450 356)",
+        "chart2": "oklch(0.6500 0.1900 20)",
+        "chart3": "oklch(0.6200 0.1600 300)",
+        "chart4": "oklch(0.7000 0.1500 60)",
+        "chart5": "oklch(0.5500 0.1400 200)",
+        "sidebar": "oklch(0.9800 0.0030 356)",
+        "sidebarForeground": "oklch(0.2000 0 0)",
+        "sidebarPrimary": "oklch(0.5800 0.2450 356)",
+        "sidebarPrimaryForeground": "oklch(1.0000 0 0)",
+        "sidebarAccent": "oklch(0.9400 0.0500 356)",
+        "sidebarAccentForeground": "oklch(0.4500 0.1800 356)",
+        "sidebarBorder": "oklch(0.9200 0.0050 356)",
+        "sidebarRing": "oklch(0.5800 0.2450 356)"
+      },
+      "dark": {
+        "background": "oklch(0.1800 0.0100 356)",
+        "foreground": "oklch(0.9600 0.0050 356)",
+        "card": "oklch(0.2200 0.0150 356)",
+        "cardForeground": "oklch(0.9600 0.0050 356)",
+        "popover": "oklch(0.2000 0.0150 356)",
+        "popoverForeground": "oklch(0.9600 0.0050 356)",
+        "primary": "oklch(0.6800 0.2200 356)",
+        "primaryForeground": "oklch(0.1500 0.0200 356)",
+        "secondary": "oklch(0.3000 0.0400 356)",
+        "secondaryForeground": "oklch(0.9600 0.0050 356)",
+        "muted": "oklch(0.2800 0.0200 356)",
+        "mutedForeground": "oklch(0.7200 0.0300 356)",
+        "accent": "oklch(0.4000 0.1000 356)",
+        "accentForeground": "oklch(0.9600 0.0050 356)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.3500 0.0300 356)",
+        "input": "oklch(0.3000 0.0200 356)",
+        "ring": "oklch(0.6800 0.2200 356)",
+        "chart1": "oklch(0.6800 0.2200 356)",
+        "chart2": "oklch(0.7000 0.1800 20)",
+        "chart3": "oklch(0.6800 0.1500 300)",
+        "chart4": "oklch(0.7500 0.1400 60)",
+        "chart5": "oklch(0.6200 0.1300 200)",
+        "sidebar": "oklch(0.2000 0.0150 356)",
+        "sidebarForeground": "oklch(0.9600 0.0050 356)",
+        "sidebarPrimary": "oklch(0.6800 0.2200 356)",
+        "sidebarPrimaryForeground": "oklch(0.1500 0.0200 356)",
+        "sidebarAccent": "oklch(0.4000 0.1000 356)",
+        "sidebarAccentForeground": "oklch(0.9600 0.0050 356)",
+        "sidebarBorder": "oklch(0.3500 0.0300 356)",
+        "sidebarRing": "oklch(0.6800 0.2200 356)"
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "sans": [
+          "Inter"
+        ],
+        "serif": [
+          "Roboto Slab"
+        ],
+        "mono": [
+          "Roboto Mono"
+        ]
+      },
+      "letterSpacing": "0em"
+    },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.5rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      },
+      "dark": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      }
+    }
+  },
+  "aac": {
+    "formId": "677e7e389058e31575550ac8",
+    "directory": {
+      "fields": {
+        "description": "answers.aapStep1.aapStep1lzi62x3etw49gyc424d",
+        "tags": "answers.aapStep1.aapStep1m03ot9qymmfgashp7l",
+        "maturity": "answers.aapStep1.aapStep1m2ucu54mopm33osqxpd",
+        "users": "links.cae",
+        "choose": "answers.aapStep2.choose"
+      }
+    },
+    "detail": {
+      "gallery": "aapStep1.image",
+      "sections": [
+        {
+          "id": "modele",
+          "title": {
+            "fr": "Modèle économique"
+          },
+          "icon": "layers",
+          "field": "answers.aapStep1.aapStep1lpvinn7ld70wbk7w339"
+        },
+        {
+          "id": "gouvernance",
+          "title": {
+            "fr": "Mode de gouvernance"
+          },
+          "icon": "users-round",
+          "field": "answers.aapStep1.aapStep1lpvioouzejcnjy7ffw"
+        },
+        {
+          "id": "juridique",
+          "title": {
+            "fr": "Cadre juridique"
+          },
+          "icon": "scale",
+          "field": "answers.aapStep1.aapStep1lpvip7f9pa6et762ysa"
+        },
+        {
+          "id": "partenariats",
+          "title": {
+            "fr": "Partenariats & coopération"
+          },
+          "icon": "hand-heart",
+          "field": "answers.aapStep1.aapStep1lpvipvzp13vf2jypqgxq"
+        },
+        {
+          "id": "contribution",
+          "title": {
+            "fr": "Modalités de contribution"
+          },
+          "icon": "file-text",
+          "field": "answers.aapStep1.aapStep1lqb428ajrbhwdbmg6qi"
+        },
+        {
+          "id": "usages",
+          "title": {
+            "fr": "Cas d'usages"
+          },
+          "icon": "users",
+          "field": "answers.aapStep1.aapStep1lusoklfzokkn4svl1ei"
+        },
+        {
+          "id": "equipe",
+          "title": {
+            "fr": "Équipe & communauté"
+          },
+          "icon": "user-check",
+          "field": "answers.aapStep1.aapStep1m0w49vpl5jm001xwvsv"
+        }
+      ]
+    }
+  },
+  "cagnotteModuleConfig": {
+    "defaultType": "aac"
+  },
+  "header": {
+    "type": "standard",
+    "logoTitle": {
+      "fr": "Fédération des CAE"
+    },
+    "nav": [
+      {
+        "label": {
+          "fr": "Accueil"
+        },
+        "path": "/"
+      },
+      {
+        "label": {
+          "fr": "Les communs"
+        },
+        "path": "/aac/communs"
+      },
+      {
+        "label": {
+          "fr": "Besoins et solutions"
+        },
+        "path": "/usages"
+      }
+    ],
+    "utilities": {
+      "themeSwitch": true,
+      "langSwitch": false,
+      "auth": true
+    },
+    "logo": "images/federationDesCae/logo.png",
+    "logoSize": "lg",
+    "height": "md"
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": {
+        "fr": "Appel à Communs"
+      },
+      "sections": [
+        {
+          "type": "hero",
+          "id": "intro",
+          "props": {
+            "headline": {
+              "fr": "Soutenir les communs des CAEs et favoriser la mutualisation"
+            },
+            "subhead": {
+              "fr": "La Fédération des CAE aide à la mutualisation autour des ressources et communs utiles aux CAEs : identifier les besoins et les solutions utiles aux coopératives, et favoriser l'investissement collectif dans les communs qui y répondent."
+            },
+            "align": "center",
+            "cta": [
+              {
+                "label": {
+                  "fr": "Découvrir les communs"
+                },
+                "href": "/aac/communs",
+                "variant": "default"
+              }
+            ]
+          }
+        },
+        {
+          "type": "aac-highlight",
+          "id": "contribuer",
+          "props": {
+            "title": {
+              "fr": "Contributeurs aux communs"
+            },
+            "description": {
+              "fr": "Vous cherchez une ressource ouverte et partagée pour répondre à vos besoins ? Vous avez envie de contribuer aux communs des CAEs afin de mutualiser les efforts ?"
+            },
+            "tone": "primary",
+            "cta": {
+              "label": {
+                "fr": "Contribuez aux communs"
+              },
+              "href": "/aac/communs"
+            },
+            "count": {
+              "source": "communs",
+              "label": {
+                "fr": "Communs déposés"
+              }
+            }
+          }
+        },
+        {
+          "type": "aac-directory",
+          "id": "apercu",
+          "props": {
+            "title": {
+              "fr": "Découvrez les communs"
+            },
+            "variant": "preview",
+            "columns": 3,
+            "pageSize": 6,
+            "showDepositButton": false,
+            "moreLink": {
+              "href": "/aac/communs",
+              "label": {
+                "fr": "Voir tous les communs"
+              }
+            },
+            "className": "max-w-7xl mx-auto px-6"
+          }
+        },
+        {
+          "type": "aac-highlight",
+          "id": "deposer",
+          "props": {
+            "title": {
+              "fr": "Vous portez un commun ?"
+            },
+            "description": {
+              "fr": "Décrivez votre commun, ses cas d'usage, sa communauté et ses besoins de financement. Il rejoindra l'annuaire et sera soumis aux CAEs du réseau."
+            },
+            "tone": "muted",
+            "cta": {
+              "label": {
+                "fr": "Déposer un commun"
+              },
+              "href": "/aac/communs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/aac/communs",
+      "title": {
+        "fr": "Les communs identifiés"
+      },
+      "seo": {
+        "title": {
+          "fr": "Les communs identifiés — Fédération des CAE"
+        },
+        "description": {
+          "fr": "L'annuaire des communs de la Fédération des coopératives d'activité et d'emploi : recherche, filtres par besoin, tag et maturité."
+        }
+      },
+      "sections": [
+        {
+          "type": "aac-directory",
+          "id": "aac",
+          "props": {
+            "title": {
+              "fr": "Les communs identifiés"
+            },
+            "columns": 3,
+            "pageSize": 12,
+            "className": "max-w-7xl mx-auto px-6 pb-20",
+            "variant": "full"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/usages",
+      "title": {
+        "fr": "Besoins et solutions"
+      },
+      "seo": {
+        "title": {
+          "fr": "Besoins et solutions — Fédération des CAE"
+        },
+        "description": {
+          "fr": "Le catalogue des besoins des coopératives d'activité et d'emploi et des solutions qu'elles utilisent : recherche par outil, filtres par catégorie et par besoin."
+        }
+      },
+      "sections": [
+        {
+          "type": "toolsCatalog",
+          "id": "section-besoins-solutions",
+          "props": {
+            "formId": "6525865cdeaf281bbc7280e9",
+            "step": "communsDeCaes1696958044_0",
+            "finderPath": "answers.communsDeCaes1696958044_0.findercommunsDeCaes1696958044_0lnklp69hi0yszjihhe8",
+            "title": {
+              "fr": "Catalogue des besoins et solutions utilisées par les CAE"
+            },
+            "description": {
+              "fr": "Les outils que les coopératives d'activité et d'emploi utilisent au quotidien, classés par besoin. Chaque solution indique qui l'emploie et, quand elle en est un, le commun auquel elle se rattache."
+            },
+            "searchPlaceholder": {
+              "fr": "Rechercher un outil…"
+            },
+            "showSearch": true,
+            "showResultCount": true,
+            "showCategoryFilter": true,
+            "showUsageFilter": true,
+            "showOpenSourceToggle": true,
+            "defaultView": "grid",
+            "showCommunInfo": true,
+            "communFormId": "677e7e389058e31575550ac8",
+            "showAnswerButton": true,
+            "answerButtonLabel": {
+              "fr": "Répondez au questionnaire"
+            },
+            "enableEnrichmentEditing": true,
+            "communUrlTemplate": "/aac/commun/{communId}",
+            "width": "container"
+          }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "default",
+    "description": {
+      "fr": "Fédération des coopératives d'activité et d'emploi — les SCOP. Réseau des CAE engagées dans l'entrepreneuriat collectif."
+    },
+    "copyright": {
+      "fr": "© Fédération des CAE — les SCOP. Tous droits réservés."
+    },
+    "socials": [],
+    "columns": []
+  }
+}
