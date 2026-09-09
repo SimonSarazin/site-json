@@ -1759,6 +1759,9 @@ function getFieldShape(componentType: FormFieldMapping["componentType"]): FieldS
     case "tags":
     case "timeSlots": // tableaux d'objets (créneaux / lignes) : un `[]` vide
     case "dynamicFields": // encodé `{}` par le PHP doit redevenir array
+    case "milestoneList": // idem : `depense = {}` (cf. `normalizeDepenseValue`),
+      // sinon le schéma `z.array` refuse l'étape entière alors que le champ
+      // s'affiche vide et correct — l'étape devient insoumettable.
       return "array";
     case "multiRadio":
     case "finder":

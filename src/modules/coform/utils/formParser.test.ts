@@ -961,6 +961,48 @@ describe("tags et titleSeparator (port des inputs legacy)", () => {
   });
 });
 
+/**
+ * H17 (rapport MR 53) : le schéma `milestoneList` exige `z.array`, mais le type
+ * manquait à `getFieldShape` — un `depense = {}` (tableau vide sérialisé par PHP,
+ * cas que `normalizeDepenseValue` absorbe côté composant) traversait
+ * `coerceServerAnswerShape` intact et faisait échouer `zodResolver` sur toute
+ * l'étape. Le champ s'affichait vide et correct ; l'étape était insoumettable.
+ */
+describe("milestoneList — coercion du `{}` serveur (H17)", () => {
+  const fields = [
+    makeSubFormFields(
+      [makeField({ name: "depense", componentType: "milestoneList", type: "tpls.forms.ocecoform.newDepenseList" })],
+      "aapStep1"
+    ),
+  ];
+
+  it("coerce un `{}` serveur en tableau vide", () => {
+    const normalized = normalizeAnswerData({ aapStep1: { depense: {} } } as never, fields) as Record<
+      string,
+      Record<string, unknown>
+    >;
+    expect(normalized.aapStep1.depense).toEqual([]);
+  });
+
+  it("l'étape normalisée passe le schéma Zod", () => {
+    const normalized = normalizeAnswerData({ aapStep1: { depense: {} } } as never, fields) as Record<
+      string,
+      Record<string, unknown>
+    >;
+    const schema = generateZodSchema(fields);
+    expect(schema.safeParse(normalized.aapStep1).success).toBe(true);
+  });
+
+  it("laisse un vrai tableau intact — les clés hors contrat (financer, historique) survivent", () => {
+    const depense = [{ poste: "Serveur", price: 120, financer: [{ id: "f1" }], historique: [] }];
+    const normalized = normalizeAnswerData({ aapStep1: { depense } } as never, fields) as Record<
+      string,
+      Record<string, unknown>
+    >;
+    expect(normalized.aapStep1.depense).toEqual(depense);
+  });
+});
+
 describe("normalizeAnswerData", () => {
   it("retourne undefined pour null/undefined", () => {
     expect(normalizeAnswerData(null, [])).toBeUndefined();
