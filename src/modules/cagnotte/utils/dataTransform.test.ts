@@ -17,6 +17,7 @@ import {
   getEntityId,
   getNonEmptyRecord,
   getServerData,
+  normalizeActionStatus,
   normalizeIdOrNull,
   readEntityPreferences,
   toArray,
@@ -135,6 +136,22 @@ describe("toString", () => {
     expect(toString(null)).toBe("");
     expect(toString({ foo: "bar" })).toBe("");
     expect(toString(undefined)).toBe("");
+  });
+});
+
+describe("normalizeActionStatus", () => {
+  it("ne rend que `todo` ou `done` — `done` quelle que soit la casse", () => {
+    expect(normalizeActionStatus("done")).toBe("done");
+    expect(normalizeActionStatus("Done")).toBe("done");
+    expect(normalizeActionStatus("todo")).toBe("todo");
+  });
+
+  it("tout statut inconnu, `disabled` compris, vaut `todo` — jamais verrouillé par erreur", () => {
+    expect(normalizeActionStatus("disabled")).toBe("todo");
+    expect(normalizeActionStatus("archived")).toBe("todo");
+    expect(normalizeActionStatus(undefined)).toBe("todo");
+    expect(normalizeActionStatus(null)).toBe("todo");
+    expect(normalizeActionStatus(42)).toBe("todo");
   });
 });
 

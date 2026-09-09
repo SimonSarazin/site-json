@@ -8,6 +8,7 @@ import {
   getEntityId,
   getNonEmptyRecord,
   getServerData,
+  normalizeActionStatus,
   normalizeTags,
   resolveActionAuthorId,
   toArray,
@@ -34,7 +35,6 @@ export type {
   FundingEnvelopeNormalizedData,
 } from '@/modules/cagnotte/types';
 import type {
-  FundingActionStatus,
   FundingPaymentStatus,
   FundingContributor,
   FundingTransaction,
@@ -112,13 +112,6 @@ function getTimestamp(value: unknown): number | undefined {
   }
 
   return undefined;
-}
-
-function normalizeActionStatus(value: unknown): FundingActionStatus {
-  const status = toString(value).toLowerCase();
-  if (status === 'done') return 'done';
-  if (status === 'todo' || status === 'disabled') return 'todo';
-  return 'todo';
 }
 
 function normalizePaymentStatus(value: unknown): FundingPaymentStatus {

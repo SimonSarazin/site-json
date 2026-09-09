@@ -10,7 +10,12 @@ import type {
   CagnotteFundableItem,
 } from "@/modules/cagnotte/types";
 import type { CagnotteMilestoneStatus } from "@/modules/cagnotte/permissions/types";
-import { getEntityId, normalizeTags, resolveActionAuthorId } from "@/modules/cagnotte/utils/dataTransform";
+import {
+  getEntityId,
+  normalizeActionStatus,
+  normalizeTags,
+  resolveActionAuthorId,
+} from "@/modules/cagnotte/utils/dataTransform";
 import { resolveAnswerAuthorId } from "./answerAuthor";
 
 /**
@@ -128,7 +133,9 @@ export function normalizeActionForEdit(actionLike: Record<string, unknown>): Pro
     id: resolveAacActionEntityId(actionLike as { id?: string; _id?: string; entityId?: string }),
     name: String(actionLike.name ?? ""),
     credits: Number(actionLike.credits ?? 0),
-    status: (String(actionLike.status ?? "todo") as ProjectAction["status"]),
+    // Même normalisation que l'enveloppe : les gardes (`canEditAction`,
+    // `canMarkActionDone`…) testent des égalités strictes sur `todo` | `done`.
+    status: normalizeActionStatus(actionLike.status),
     tags: normalizeTags(actionLike.tags),
     authorId: resolveActionAuthorId(actionLike),
     contributors: mergedContributors,

@@ -63,6 +63,21 @@ describe("normalizeActionForEdit", () => {
     // Documents anciens : personne n'est déclaré — l'action reste éditable par l'admin seul.
     expect(normalizeActionForEdit({ name: "Sans auteur" }).authorId).toBe("");
   });
+
+  // Les gardes révisées (`canEditAction`, `canDeleteAction`, `canMarkActionDone`,
+  // `canCandidateAction`) testent `status === "done"` / `status !== "todo"` en
+  // égalité STRICTE : un statut recopié tel quel du backend leur échappe.
+  it("ramène le statut aux deux valeurs du domaine, comme l'enveloppe — `disabled` reste cochable", () => {
+    expect(normalizeActionForEdit({ status: "disabled" }).status).toBe("todo");
+    expect(normalizeActionForEdit({ status: "archived" }).status).toBe("todo");
+    expect(normalizeActionForEdit({}).status).toBe("todo");
+  });
+
+  it("reconnaît `done` quelle que soit la casse — une action terminée ne se rouvre pas par un `Done`", () => {
+    expect(normalizeActionForEdit({ status: "Done" }).status).toBe("done");
+    expect(normalizeActionForEdit({ status: "DONE" }).status).toBe("done");
+    expect(normalizeActionForEdit({ status: "done" }).status).toBe("done");
+  });
 });
 
 /**
