@@ -20,7 +20,6 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { asRecord, getServerData, normalizeTags, toArrayOrValues, toNumber, toSafeInt } from "@/modules/cagnotte/utils/dataTransform.ts";
 import { generateMilestoneId } from "@/modules/cagnotte/utils/idGeneration";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
-import { COMMUN_RAW_DEPENSES_QUERY_KEY } from "@/modules/aac/hooks/useCommunRawDepenses";
 import { appendProjectMilestone, updateAnswerDepenseFields } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
 
 /** Financeur d'une dépense tel que l'enveloppe le sert, avant enrichissement. */
@@ -536,7 +535,7 @@ export function useCagnotteAdapter(
                     // SANS `milestone` : l'item fusionné par `buildItemsFromRawDepenses`
                     // restait sans id, et les quatre boutons de « Besoins financiers »
                     // échouaient. Même préfixe `[clé, answerId]` que `useGenerateAacProject`.
-                    void queryClient.invalidateQueries({queryKey: [COMMUN_RAW_DEPENSES_QUERY_KEY, repair.answerId]});
+                    void queryClient.invalidateQueries({queryKey: CAGNOTTE_QUERY_KEYS.COMMUN_RAW_DEPENSES_PREFIX(repair.answerId)});
                 } catch (error) {
                     inFlightMilestoneRepairs.delete(repairKey);
                     console.error("useCagnotteAdapter: échec de la génération auto du milestone projet pour une dépense orpheline", error);

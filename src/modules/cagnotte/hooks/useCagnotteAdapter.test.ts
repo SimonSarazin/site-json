@@ -32,7 +32,8 @@ import { milestoneRepairKey, useCagnotteAdapter } from "./useCagnotteAdapter";
 import { generateMilestoneId } from "../utils/idGeneration";
 import { CAGNOTTE_QUERY_KEYS } from "../constants/queryKeys";
 import { appendProjectMilestone, updateAnswerDepenseFields } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
-import { COMMUN_RAW_DEPENSES_QUERY_KEY } from "@/modules/aac/hooks/useCommunRawDepenses";
+import { COMMUN_RAW_DEPENSES_QUERY_KEY } from "@/modules/cagnotte/constants/queryKeys";
+import { COMMUN_RAW_DEPENSES_QUERY_KEY as AAC_REEXPORTED_KEY } from "@/modules/aac/hooks/useCommunRawDepenses";
 
 afterEach(() => {
   mocks.api = null;
@@ -321,17 +322,35 @@ describe("useCagnotteAdapter — réparation d'une dépense orpheline (projet li
     const { invalidate } = renderAvecApi("answer-b3-cache");
 
     await waitFor(() => {
-      expect(invalidate).toHaveBeenCalledWith({ queryKey: [COMMUN_RAW_DEPENSES_QUERY_KEY, "answer-b3-cache"] });
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: CAGNOTTE_QUERY_KEYS.COMMUN_RAW_DEPENSES_PREFIX("answer-b3-cache") });
     });
     // L'enveloppe l'était déjà : les deux, pas l'une à la place de l'autre.
     expect(invalidate).toHaveBeenCalledWith({ queryKey: CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX() });
+  });
+
+  /**
+   * §11.6 (résiduel) : la clé du cache brut vivait dans le module aac, et
+   * l'adaptateur l'importait de là — première dépendance cagnotte → aac du dépôt.
+   * Elle vit désormais dans `cagnotte/constants/queryKeys` ; le hook aac la
+   * ré-exporte, et ses consommateurs (`useGenerateAacProject`,
+   * `useAssociateExistingAacProject`, le contrôleur de la fiche) invalident la
+   * MÊME clé que la réparation.
+   */
+  it("la clé du cache brut est celle de cagnotte, ré-exportée à l'identique par aac", () => {
+    expect(AAC_REEXPORTED_KEY).toBe(COMMUN_RAW_DEPENSES_QUERY_KEY);
+    expect(CAGNOTTE_QUERY_KEYS.COMMUN_RAW_DEPENSES("answer-x", "aapStep1")).toEqual([
+      COMMUN_RAW_DEPENSES_QUERY_KEY,
+      "answer-x",
+      "aapStep1",
+    ]);
+    expect(CAGNOTTE_QUERY_KEYS.COMMUN_RAW_DEPENSES_PREFIX("answer-x")).toEqual([COMMUN_RAW_DEPENSES_QUERY_KEY, "answer-x"]);
   });
 
   it("n'invalide qu'APRÈS avoir écrit l'id sur le projet et sur la dépense visée", async () => {
     const { invalidate, projectEntity, answerEntity } = renderAvecApi("answer-b3-ordre");
 
     await waitFor(() => {
-      expect(invalidate).toHaveBeenCalledWith({ queryKey: [COMMUN_RAW_DEPENSES_QUERY_KEY, "answer-b3-ordre"] });
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: CAGNOTTE_QUERY_KEYS.COMMUN_RAW_DEPENSES_PREFIX("answer-b3-ordre") });
     });
 
     expect(appendProjectMilestone).toHaveBeenCalledWith(
