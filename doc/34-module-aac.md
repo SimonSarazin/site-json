@@ -141,6 +141,13 @@ sans AAC, l'URL tombe sur le catch-all du site. Une page de module rend **son pr
 
 **Prérequis backend** : le form + son `aapConfig` doivent exister. Sans `config.aac.formId`,
 les sections affichent un message explicite (pas de crash), et les routes ne sont pas montées.
+
+⚠️ **Prérequis de déploiement** : le SDK lit le form et son `aapConfig` via
+`POST /survey/coform/getformbyid`, qui répondait **500** (page HTML) sur un form de type
+`aapConfig`. C'est un bug legacy, **corrigé** côté PHP — le correctif doit être **déployé sur le
+legacy avant la mise en production du module** : sans lui, `campagne` et tout `config.*` restent
+invisibles côté front (`useAacConfig` est best-effort et avale l'erreur, `resolveAacConfig` voit
+`undefined`). Cf. review MR 53 §9.3 bis et §9.7.
 ### 3.1 `directory.fields` — quel CHAMP porte quel RÔLE
 
 Facultatif, et **seulement quand l'heuristique se trompe** : l'annuaire sait déjà déduire ses
@@ -376,7 +383,9 @@ financière.
   l'aapConfig** ; `coRemuneration` n'a jamais existé. Un form sans `coremu` (c'est le cas du form
   CAE) masque le financement **comme le legacy** : c'est la préconfiguration qu'il faut (re)jouer,
   pas le front. Qui peut financer une fois le bloc affiché (`params.financerLimitRoles` /
-  `limitTypes`) n'est pas porté aujourd'hui.
+  `limitTypes`) n'est pas porté aujourd'hui — et ⚠️ `financerLimitRoles` / `limitTypes` ne sont
+  **pas contrôlés à l'écriture** par le backend (retour legacy du 9/09, review MR 53 §9.7) : ce
+  niveau, quand il sera porté, est un **niveau d'affichage seulement**, pas une sécurité.
 - **Dépôt = 3 modes** (ouvert / membres / rôles), toujours **connecté** — les gardes de
   `Coform::getFormAccessInfo`. Le dépôt n'est **jamais** ouvert à tous par défaut. Il n'existe
   **pas** de clé `standalone` : c'est un mode de **requête** legacy (`.standalone.true`,

@@ -130,4 +130,13 @@ describe("doc/34-module-aac ⇄ lib (anti-dérive)", () => {
     expect(src).toMatch(/resolveMultiDecide/);
     expect(item.indexOf("`multiDecide`")).toBeGreaterThan(deja);
   });
+
+  it("§3 / §6 — retours backend du 9/09 : `financerLimitRoles` non contrôlé à l'écriture, 500 de getformbyid à déployer", () => {
+    // Pins de prose (pas d'ancre code : ce sont des décisions backend, review MR 53 §9.7).
+    // Un futur portage de « qui peut financer » ne doit pas être présenté comme une
+    // sécurité, et le module ne doit pas partir en production sans le correctif legacy.
+    const doc = read("doc/34-module-aac.md");
+    expect(doc).toMatch(/`financerLimitRoles` \/ `limitTypes` ne sont\s+\*\*pas contrôlés à l'écriture\*\*/);
+    expect(doc).toMatch(/getformbyid[\s\S]{0,600}avant la mise en production du module/);
+  });
 });
