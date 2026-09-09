@@ -1,9 +1,9 @@
 import MarkdownIt from "markdown-it";
-import { sanitize } from "@/lib/sanitize";
+import { sanitizeProse } from "@/lib/sanitize";
 
 /**
  * Parseur markdown partagé. `html: true` autorise le HTML inline — d'où
- * l'obligation absolue de passer la sortie dans `sanitize()` avant injection.
+ * l'obligation absolue de passer la sortie dans `sanitizeProse()` avant injection.
  */
 const markdownParser = new MarkdownIt({ html: true, linkify: true });
 
@@ -26,9 +26,16 @@ export interface ProseContentProps {
  * même pattern que `HTMLSection`, cf. `doc/bonnes-pratiques-code.md` §8.
  *
  * ⚠️ Sécurité (XSS) : ne jamais réintroduire `dangerouslySetInnerHTML` sans
- * `sanitize()`, ni `react-markdown` + `rehype-raw` (qui rendaient le HTML brut
+ * sanitisation, ni `react-markdown` + `rehype-raw` (qui rendaient le HTML brut
  * NON sanitisé → faille). Les tests de non-régression vivent dans
- * `modules/coform/components/FormFields.test.tsx`.
+ * `ProseContent.test.tsx` (et `modules/coform/components/FormFields.test.tsx`).
+ *
+ * ⚠️ Profil : c'est `sanitizeProse`, PAS `sanitize`. L'auteur du texte est un
+ * visiteur quelconque (la description d'un commun est un textarea ouvert à qui
+ * dépose), et le profil DOMPurify par défaut laisse passer `<form>`, `<input>`,
+ * `style`/`class` — de quoi dessiner un faux écran de connexion plein écran sur
+ * le domaine du site, sans le moindre script. Le profil restreint retire ces
+ * crochets ; la mise en forme vient du conteneur `prose` de l'appelant.
  *
  * Vit ici, et non dans le module coform, parce que le rendu d'un texte saisi
  * n'est pas propre à un formulaire : les fiches AAC affichent les mêmes valeurs
@@ -40,7 +47,7 @@ export function ProseContent({ text, className, forceMarkdown = false }: ProseCo
   return (
     <div
       className={className}
-      dangerouslySetInnerHTML={{ __html: sanitize(rawHtml) }}
+      dangerouslySetInnerHTML={{ __html: sanitizeProse(rawHtml) }}
       suppressHydrationWarning
     />
   );
