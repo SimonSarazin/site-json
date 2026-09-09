@@ -505,8 +505,12 @@ export function useCagnotteAdapter(
                     name: proposition.titre ?? "",
                     projectId: proposition.projectId ?? "",
                     answerId: String(proposition.id),
-                    resourceTotalAmount: Number(proposition.totalCouts) || 0,
-                    resourceFinancedAmount: Number(proposition.totalFinancement) || 0,
+                    // Totaux lus sur l'enveloppe BRUTE : `useFundingEnvelope` ne les
+                    // normalise (`toNumber`) que sur sa sortie, pas ici. Ce sont des
+                    // champs du document réponse, en chaîne à l'occasion — d'où
+                    // `toSafeInt`, comme partout ailleurs sur un montant (§9.1).
+                    resourceTotalAmount: toSafeInt(proposition.totalCouts),
+                    resourceFinancedAmount: toSafeInt(proposition.totalFinancement),
                     items,
                 };
             });

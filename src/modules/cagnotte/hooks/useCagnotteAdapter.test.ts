@@ -331,6 +331,22 @@ describe("useCagnotteAdapter — montant lu en `price` quand `priceInt` manque (
     expect(item.price).toBe(2400);
   });
 
+  it("proposition : les agrégats bruts de l'enveloppe sont normalisés eux aussi", () => {
+    // Sans dépense, `computeResourceFundingTotals` se replie sur ces agrégats :
+    // c'est la seule valeur affichée, elle ne peut pas tomber à 0 sur une chaîne.
+    const envelope = {
+      rawEnvelope: {
+        projects: [{ id: "answer-prix", titre: "Mon commun", depenses: [], totalCouts: "3 000", totalFinancement: "1 200" }],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+
+    const resource = renderAdapter(envelope, [], CAGNOTTE_TYPE_CONFIGS.aac, "answer-prix")
+      .result.current.savedSelectedResource!;
+    expect(resource.resourceTotalAmount).toBe(3000);
+    expect(resource.resourceFinancedAmount).toBe(1200);
+  });
+
   it("projet : les agrégats de la ressource sont normalisés comme les items", () => {
     const envelope = {
       rawEnvelope: { projects: [{ id: "answer-prix-projet", projectId: "proj-prix", titre: "Mon commun", depenses: [] }], links: {} },
