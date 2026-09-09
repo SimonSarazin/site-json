@@ -10,7 +10,7 @@
  * Aucune requête supplémentaire : tout vient de l'entrée de cache d'
  * `aacConfigQuery`, lue par des `select` différents.
  */
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import type { Form } from "@communecter/cocolight-api-client";
 import { useSite } from "@/hooks/useSite";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -59,8 +59,24 @@ export interface AacDirectoryContext {
   /** Qui regarde : entre dans les query keys, la population visible en dépend. */
   visibility: AacVisibility;
   baseUrl: string;
-  /** Le formulaire n'est pas encore arrivé — les libellés de facettes manquent. */
+  /**
+   * La résolution du formulaire est EN VOL.
+   *
+   * À distinguer de « `form` est encore `null` » : une requête désactivée (pas
+   * d'entité costum, pas de `formId`) ou en échec laisse `form` à `null` POUR
+   * TOUJOURS. Les surfaces qui attendent le formulaire doivent s'appuyer sur ce
+   * drapeau — et non sur l'absence de `form` — sinon leur attente devient un
+   * squelette permanent.
+   */
   isFormLoading: boolean;
+  /**
+   * L'échec de la résolution — formulaire supprimé, 403, réseau. Tant qu'il est
+   * posé, rien de ce qui en dépend n'aboutira : les surfaces doivent l'annoncer
+   * plutôt que d'attendre.
+   */
+  configError: Error | null;
+  /** Rejoue la résolution — la reprise à offrir avec `configError`. */
+  refetchConfig: () => void;
 }
 
 export function useAacDirectoryContext(): AacDirectoryContext {
@@ -69,7 +85,7 @@ export function useAacDirectoryContext(): AacDirectoryContext {
 
   const formId = siteConfig.aac?.formId ?? null;
 
-  const { config } = useAacConfig(formId);
+  const { config, error: configError, refetch: refetchAacConfig } = useAacConfig(formId);
   const { meta, isLoading: isFormLoading } = useAacFormMeta(formId);
   const contextId = useAacContextId(formId);
   const context = useAacContext(formId);
@@ -97,6 +113,10 @@ export function useAacDirectoryContext(): AacDirectoryContext {
     [perms.isAdmin, perms.currentUserId, contextId]
   );
 
+  const refetchConfig = useCallback(() => {
+    void refetchAacConfig();
+  }, [refetchAacConfig]);
+
   return {
     formId,
     config: config ?? null,
@@ -109,5 +129,7 @@ export function useAacDirectoryContext(): AacDirectoryContext {
     visibility,
     baseUrl: getBaseUrl(),
     isFormLoading,
+    configError,
+    refetchConfig,
   };
 }

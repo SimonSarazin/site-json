@@ -93,6 +93,8 @@ export default function AacDirectorySection({ id, props }: Props) {
     visibility,
     baseUrl,
     isFormLoading,
+    configError,
+    refetchConfig,
   } = useAacDirectoryContext();
 
   // L'étape de DÉPÔT — celle qui porte le titre, sinon la première déclarée.
@@ -145,15 +147,30 @@ export default function AacDirectorySection({ id, props }: Props) {
   // L'attente RÉELLE des résultats. Tant que `form` n'est pas résolu, la requête
   // est désactivée : React Query la dit `pending` mais pas `fetching`, donc
   // `isLoading` (= pending ET fetching) vaut false — et les résultats liraient
-  // « 0 communs » là où rien n'a encore été demandé. `isPending` couvre ce
-  // creux ; il retombe à false dès la première réponse, succès ou erreur.
-  const isAwaitingResults = isLoading || isPending;
+  // « 0 communs » là où rien n'a encore été demandé. `isPending` couvre ce creux,
+  // MAIS une requête désactivée reste `pending` À JAMAIS : lui seul afficherait
+  // un squelette perpétuel le jour où le formulaire ne se résout pas (supprimé,
+  // 403, pas d'entité costum). On ne s'y fie donc que tant que la résolution est
+  // encore EN VOL ; sinon on laisse les résultats conclure — état vide, ou
+  // panneau d'erreur si la résolution a échoué.
+  const isAwaitingResults = isLoading || (isPending && isFormLoading);
 
-  // Reprise après échec : la page en défaut si c'est une page SUIVANTE qui a
-  // échoué (les précédentes sont intactes dans le cache), tout le listing sinon.
-  // Le choix se fait ici, où l'on connaît la requête — les résultats n'ont qu'un
-  // bouton à offrir.
+  // La panne de résolution est une panne des résultats : sans formulaire, le
+  // listing ne partira jamais. On la fait donc remonter là où l'utilisateur
+  // l'attend — le panneau d'erreur, avec sa reprise — plutôt que de la taire
+  // derrière un « Aucun commun » qui accuserait l'appel d'être vide.
+  const resultsError = error ?? configError;
+
+  // Reprise après échec : la résolution du formulaire si c'est elle qui a lâché
+  // (le listing, lui, n'a même pas démarré), la page en défaut si c'est une page
+  // SUIVANTE qui a échoué (les précédentes sont intactes dans le cache), tout le
+  // listing sinon. Le choix se fait ici, où l'on connaît les requêtes — les
+  // résultats n'ont qu'un bouton à offrir.
   const retry = () => {
+    if (configError) {
+      refetchConfig();
+      return;
+    }
     void (isFetchNextPageError ? fetchNextPage() : refetch());
   };
 
@@ -204,9 +221,9 @@ export default function AacDirectorySection({ id, props }: Props) {
             isLoading={isAwaitingResults}
             isFetchingNextPage={false}
             hasNextPage={false}
-            error={error}
+            error={resultsError}
             onRetry={retry}
-            isRetrying={isFetching}
+            isRetrying={isFetching || isFormLoading}
             lastItemRef={NOOP_REF}
             emptyText={emptyText ? localize(emptyText) : undefined}
           />
@@ -275,9 +292,9 @@ export default function AacDirectorySection({ id, props }: Props) {
               isLoading={isAwaitingResults}
               isFetchingNextPage={isFetchingNextPage}
               hasNextPage={hasNextPage}
-              error={error}
+              error={resultsError}
               onRetry={retry}
-              isRetrying={isFetching}
+              isRetrying={isFetching || isFormLoading}
               lastItemRef={lastItemRef}
               emptyText={emptyText ? localize(emptyText) : undefined}
             />
