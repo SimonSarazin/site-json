@@ -230,3 +230,30 @@ describe("resolveAacConfig — gates (clés legacy réelles, à la racine du for
     expect(resolveAacConfig("f1", base).gates.anyOnewithLinkCanAnswer).toBe(false);
   });
 });
+
+describe("resolveAacConfig — `typeCoFinancer` (racine du form parent)", () => {
+  // Legacy : `financer.php:835` lit `costum.mainFormData.typeCoFinancer`, sinon
+  // `coForm_FormWizardParams.parentForm.typeCoFinancer`, sinon « tiersLieux » ;
+  // `AnswerAction.php:268` teste `$params["parentForm"]["typeCoFinancer"]`. Les
+  // deux désignent la RACINE du form parent (`fondationTerritorialeDesLumières.json`
+  // le porte à côté de `standaloneBgColor`), jamais l'aapConfig ni `params`.
+  it("lit `typeCoFinancer` à la racine du form — la branche « cae » redevient atteignable", () => {
+    expect(resolveAacConfig("f1", { typeCoFinancer: "cae" }).typeCoFinancer).toBe("cae");
+    expect(resolveAacConfig("f1", { typeCoFinancer: "tiersLieux" }).typeCoFinancer).toBe(
+      "tiersLieux"
+    );
+  });
+
+  it("absent, vide ou non-chaîne ⇒ null : le repli « tiersLieux » appartient à l'affichage", () => {
+    expect(resolveAacConfig("f1", {}).typeCoFinancer).toBeNull();
+    expect(resolveAacConfig("f1", { typeCoFinancer: "  " }).typeCoFinancer).toBeNull();
+    expect(resolveAacConfig("f1", { typeCoFinancer: 3 }).typeCoFinancer).toBeNull();
+  });
+
+  it("ne se lit ni dans `params` ni sur l'aapConfig — le legacy n'y regarde jamais", () => {
+    expect(
+      resolveAacConfig("f1", { params: { typeCoFinancer: "cae" } }).typeCoFinancer
+    ).toBeNull();
+    expect(resolveAacConfig("f1", {}, { typeCoFinancer: "cae" }).typeCoFinancer).toBeNull();
+  });
+});

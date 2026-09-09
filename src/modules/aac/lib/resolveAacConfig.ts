@@ -203,6 +203,8 @@ export function resolveAacConfig(
     anyOnewithLinkCanAnswer: asBool(form.anyOnewithLinkCanAnswer),
   };
 
+  const typeCoFinancer = resolveTypeCoFinancer(form);
+
   // Campagnes déclarées sur l'aapConfig (`config.campagne` = { campId: {...} }).
   const campObj = rec(config.campagne);
   const campaigns: Campagne[] = Object.entries(campObj).map(([id, c]) => {
@@ -235,8 +237,22 @@ export function resolveAacConfig(
     criteriaSource,
     gates,
     campaigns,
-    // Pas encore resolu depuis la config (cf. CommunFinancingCard.tsx qui retombe
-    // sur "tiersLieux" via `?? "tiersLieux"` tant que ce champ reste null).
-    typeCoFinancer: null,
+    typeCoFinancer,
   };
+}
+
+/**
+ * Nature des organisations cofinanceuses : `"tiersLieux"` (FTL, le défaut legacy)
+ * ou un TAG d'organisation (`"cae"`…) — `Organization::get_cofinancer_bytags`.
+ *
+ * Clé RACINE du form parent, comme les gates : `financer.php:835` lit
+ * `costum.mainFormData.typeCoFinancer` puis `parentForm.typeCoFinancer`,
+ * `AnswerAction.php:268` teste `$params["parentForm"]["typeCoFinancer"]`. Ni
+ * `params`, ni l'aapConfig — le legacy n'y regarde jamais.
+ *
+ * Rend `null` quand le form ne le déclare pas : le repli « tiersLieux »
+ * appartient à l'affichage (`CommunFinancingCard`), pas au résolveur.
+ */
+function resolveTypeCoFinancer(form: Rec): string | null {
+  return toStr(form.typeCoFinancer).trim() || null;
 }
