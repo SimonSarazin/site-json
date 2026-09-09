@@ -223,7 +223,10 @@
         "generateSuccess": "Le projet a été généré avec succès.",
         "generateError": "Impossible de générer le projet.",
         "associateSuccess": "Le commun a été associé au projet.",
-        "associateError": "Impossible d'associer ce projet."
+        "associateError": "Impossible d'associer ce projet.",
+        "alreadyLinked": "Ce projet est déjà rattaché à un autre commun. Choisissez-en un autre ou générez un nouveau projet.",
+        "projectWithoutId": "Le projet sélectionné n'a pas d'identifiant.",
+        "incompleteContext": "Contexte incomplet : session ou commun introuvable."
       }
     },
     "origin": {

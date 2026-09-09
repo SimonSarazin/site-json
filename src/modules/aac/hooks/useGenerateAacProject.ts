@@ -5,6 +5,7 @@
  */
 import type { Api, GenerateProjectResult } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useT } from "@/hooks/useT";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { AAC_QUERY_KEYS } from "@/modules/aac/constants/queryKeys";
 import { COMMUN_RAW_DEPENSES_QUERY_KEY } from "@/modules/aac/hooks/useCommunRawDepenses";
@@ -15,10 +16,14 @@ export function useGenerateAacProject(opts: {
   parentId: string | null;
   parentType: string | null;
 }) {
+  // `showErrorToast` place `error.message` tel quel en description du toast :
+  // tout message levé ici doit donc être DÉJÀ traduit.
+  const t = useT("modules/aac");
+
   return useMutationWithToast<GenerateProjectResult, void>({
     mutationFn: async () => {
       if (!opts.api || !opts.answerId || !opts.parentId || !opts.parentType) {
-        throw new Error("Contexte incomplet pour générer un projet.");
+        throw new Error(String(t("detail.project.toasts.incompleteContext")));
       }
       const answer = await opts.api.answer({ id: opts.answerId });
       return answer.generateProject({ parentId: opts.parentId, parentType: opts.parentType });

@@ -4,10 +4,12 @@
  */
 import type { Api, Organization, Project } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useT } from "@/hooks/useT";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { AAC_QUERY_KEYS } from "@/modules/aac/constants/queryKeys";
 import { COMMUN_RAW_DEPENSES_QUERY_KEY } from "@/modules/aac/hooks/useCommunRawDepenses";
 import {
+  AacProjectLinkError,
   associateExistingProject,
   type AssociateExistingProjectResult,
 } from "@/modules/aac/lib/associateExistingProject";
@@ -23,16 +25,26 @@ export function useAssociateExistingAacProject(opts: {
    */
   context?: Organization | Project | null;
 }) {
+  // `showErrorToast` place `error.message` tel quel en description du toast :
+  // tout message levé ici doit donc être DÉJÀ traduit.
+  const t = useT("modules/aac");
+
   return useMutationWithToast<AssociateExistingProjectResult, { projectId: string }>({
     mutationFn: async ({ projectId }) => {
       if (!opts.api || !opts.answerId || !opts.userId) {
-        throw new Error("Contexte incomplet pour associer un projet existant.");
+        throw new Error(String(t("detail.project.toasts.incompleteContext")));
       }
       const [answer, project] = await Promise.all([
         opts.api.answer({ id: opts.answerId }),
         opts.api.project({ id: projectId }),
       ]);
-      return associateExistingProject({ answer, project, userId: opts.userId, context: opts.context ?? null });
+      try {
+        return await associateExistingProject({ answer, project, userId: opts.userId, context: opts.context ?? null });
+      } catch (error) {
+        // La lib est pure : elle porte la clé, le hook traduit.
+        if (error instanceof AacProjectLinkError) throw new Error(String(t(error.i18nKey)));
+        throw error;
+      }
     },
     successKey: "detail.project.toasts.associateSuccess",
     errorKey: "detail.project.toasts.associateError",

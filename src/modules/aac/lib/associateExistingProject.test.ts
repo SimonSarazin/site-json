@@ -1,6 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Answer, Organization, Project } from "@communecter/cocolight-api-client";
-import { associateExistingProject, ProjectAlreadyLinkedError } from "./associateExistingProject";
+import fr from "../i18n/fr.json";
+import en from "../i18n/en.json";
+import {
+  AacProjectLinkError,
+  associateExistingProject,
+  PROJECT_ALREADY_LINKED_I18N_KEY,
+  PROJECT_WITHOUT_ID_I18N_KEY,
+  ProjectAlreadyLinkedError,
+} from "./associateExistingProject";
 
 /**
  * Deux invariants comptent plus que la forme du payload :
@@ -52,6 +60,44 @@ function buildContext(resultIds: string[] = []) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+});
+
+/** Lit `a.b.c` dans un bundle i18n. */
+const readKey = (bundle: unknown, key: string): unknown =>
+  key.split(".").reduce<unknown>((acc, part) => (acc as Record<string, unknown> | undefined)?.[part], bundle);
+
+describe("associateExistingProject — erreurs métier traduisibles, jamais de français en dur", () => {
+  // `showErrorToast` place `error.message` tel quel en description du toast. La lib
+  // est pure (pas de `t`) : elle porte une CLÉ du namespace `modules/aac`, présente
+  // dans les deux bundles, et le hook la traduit. Le message reste technique.
+  it("ProjectAlreadyLinkedError porte `i18nKey`, résolue en fr ET en en, distincte du message technique", async () => {
+    const project = buildProject([], { answer: "answer-999" });
+
+    const error: unknown = await associateExistingProject({ answer: buildAnswer(), project, userId: "user-1" }).catch(
+      (e: unknown) => e,
+    );
+
+    expect(error).toBeInstanceOf(AacProjectLinkError);
+    const linkError = error as ProjectAlreadyLinkedError;
+    expect(linkError.i18nKey).toBe(PROJECT_ALREADY_LINKED_I18N_KEY);
+    expect(typeof readKey(fr, linkError.i18nKey)).toBe("string");
+    expect(typeof readKey(en, linkError.i18nKey)).toBe("string");
+    expect(linkError.message).not.toBe(readKey(fr, linkError.i18nKey));
+    expect(linkError.message).not.toMatch(/rattaché|Choisis/);
+  });
+
+  it("un projet sans id lève la même famille d'erreur, avec sa clé dans les deux bundles", async () => {
+    const project = { id: "", serverData: { oceco: { milestones: [] } } } as unknown as Project;
+
+    const error: unknown = await associateExistingProject({ answer: buildAnswer(), project, userId: "user-1" }).catch(
+      (e: unknown) => e,
+    );
+
+    expect(error).toBeInstanceOf(AacProjectLinkError);
+    expect((error as AacProjectLinkError).i18nKey).toBe(PROJECT_WITHOUT_ID_I18N_KEY);
+    expect(typeof readKey(fr, PROJECT_WITHOUT_ID_I18N_KEY)).toBe("string");
+    expect(typeof readKey(en, PROJECT_WITHOUT_ID_I18N_KEY)).toBe("string");
+  });
 });
 
 describe("associateExistingProject — écriture du lien answer -> project", () => {

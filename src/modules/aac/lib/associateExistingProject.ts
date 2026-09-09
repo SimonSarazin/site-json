@@ -17,14 +17,37 @@ export interface AssociateExistingProjectResult {
 /** Entité hôte du costum (Org|Project) — seule à porter le `coformAnswersSearch` scopé costum. */
 type CostumHost = Pick<Organization | Project, "coformAnswersSearch">;
 
-export class ProjectAlreadyLinkedError extends Error {
+/**
+ * Erreur métier du flux d'association.
+ *
+ * La lib est PURE, sans `t` : elle porte la CLÉ i18n (namespace `modules/aac`)
+ * du message à montrer, et c'est le hook (`useAssociateExistingAacProject`) qui
+ * la traduit avant que `showErrorToast` ne place `error.message` en description
+ * du toast. `message` reste technique, en anglais, pour les logs — jamais une
+ * phrase française en dur qu'un anglophone lirait telle quelle.
+ */
+export class AacProjectLinkError extends Error {
+  constructor(
+    /** Clé du namespace `modules/aac` du message à afficher. */
+    public readonly i18nKey: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = "AacProjectLinkError";
+  }
+}
+
+export const PROJECT_ALREADY_LINKED_I18N_KEY = "detail.project.toasts.alreadyLinked";
+export const PROJECT_WITHOUT_ID_I18N_KEY = "detail.project.toasts.projectWithoutId";
+
+export class ProjectAlreadyLinkedError extends AacProjectLinkError {
   constructor(
     /** ID de l'answer qui détient déjà ce projet. */
     public readonly linkedAnswerId: string,
     /** Comment le conflit a été détecté : sur le doc projet, ou via la collection answers. */
     public readonly via: "project-data" | "answers-collection",
   ) {
-    super("Ce projet est déjà rattaché à un autre commun. Choisis-en un autre ou génère un nouveau projet.");
+    super(PROJECT_ALREADY_LINKED_I18N_KEY, `Project already linked to answer ${linkedAnswerId} (via ${via})`);
     this.name = "ProjectAlreadyLinkedError";
   }
 }
@@ -100,7 +123,7 @@ export async function associateExistingProject(params: {
   const step = params.step || DEFAULT_AAC_STEP;
 
   if (!project.id) {
-    throw new Error("Projet sans id, impossible de l'associer.");
+    throw new AacProjectLinkError(PROJECT_WITHOUT_ID_I18N_KEY, "Project without id: cannot associate it.");
   }
 
   await assertProjectAssociable({ answer, project, context: params.context });
