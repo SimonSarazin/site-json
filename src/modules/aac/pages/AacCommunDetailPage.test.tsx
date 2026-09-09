@@ -41,7 +41,12 @@ vi.mock("@/hooks/useCocolight", () => ({
   useCocolight: () => ({ api: {}, loading: false, entity: ENTITY, me, refreshMe: vi.fn() }),
 }));
 
-/** Base mutable : les tests de lignée de brouillon jouent sur `created`/`updated`. */
+/**
+ * Base mutable : les tests de lignée de brouillon jouent sur `created`/`updated`.
+ * `name`, `descriptionStr` et `image` sont les champs PRÉ-CALCULÉS par le backend
+ * sur le document réponse : les seuls que le SEO puisse lire tant que la config de
+ * l'appel n'est pas là — c'est-à-dire au rendu SSR.
+ */
 type TestAnswer = {
   _id: { $id: string };
   form: string;
@@ -50,9 +55,12 @@ type TestAnswer = {
   documents: unknown[];
   created?: number;
   updated?: number;
+  name: string;
+  descriptionStr: string;
+  image: string;
 };
-const BASE_ANSWER: TestAnswer = { _id: { $id: "a1" }, form: "f1", user: "u1", answers: {}, documents: [] };
-let ANSWER: TestAnswer = BASE_ANSWER;
+const BASE_ANSWER: TestAnswer = { _id: { $id: "a1" }, form: "f1", user: "u1", answers: {}, documents: [], name: "", descriptionStr: "", image: "" };
+let ANSWER: TestAnswer = { ...BASE_ANSWER };
 const FORM = { id: "f1", name: "Appel test", inputs: {} };
 const refetchAnswer = vi.fn().mockResolvedValue(undefined);
 const invalidateQueries = vi.fn().mockResolvedValue(undefined);
@@ -233,8 +241,8 @@ beforeEach(() => {
   // zéro appartient au `beforeEach`, pas au corps du test qui l'a rempli. Écrite
   // là-bas, elle ne s'exécutait pas si l'assertion précédente échouait — et la
   // réponse d'un test partait alors dans tous les suivants. On repart d'un objet
-  // neuf plutôt que de vider `answers` : `created`/`updated` aussi sont mutés.
-  ANSWER = { ...BASE_ANSWER, answers: {} };
+  // neuf : `created`/`updated` et les champs SEO sont mutés eux aussi.
+  ANSWER = { ...BASE_ANSWER };
   config = makeConfig(false);
   isConfigLoading = false;
   configError = null;
@@ -422,6 +430,30 @@ describe("AacCommunDetailPage — la fiche rend son SEO (M12)", () => {
 
     expect(screen.getByTestId("seo").getAttribute("data-title")).toBe("Appel test");
     expect(screen.getByTestId("seo").getAttribute("data-path")).toBe("/aac/commun/a1");
+  });
+
+  /**
+   * L'ÉTAT DU SSR : le loader de route précharge la réponse, mais pas la config
+   * de l'appel — la page rend donc son squelette côté serveur. Le SEO était
+   * calculé APRÈS les gardes de chargement : le `<head>` servi au robot ou à
+   * l'aperçu de messagerie ne portait qu'un titre générique, sans
+   * `og:description` ni `og:image`, sur un lien pourtant fait pour être partagé.
+   */
+  it("le squelette porte le SEO DU COMMUN dès que la réponse est préchargée (SSR)", () => {
+    ANSWER.name = "Une instance peertube";
+    ANSWER.descriptionStr = "Partage **vidéo**";
+    ANSWER.image = "/upload/commun.jpg";
+    config = null;
+    isConfigLoading = true;
+    render(<AacCommunDetailPage />);
+
+    // On est bien dans la branche squelette…
+    expect(screen.getByRole("status")).toBeTruthy();
+    // …et le `<head>` porte déjà le commun.
+    const seo = screen.getByTestId("seo");
+    expect(seo.getAttribute("data-title")).toBe("Une instance peertube");
+    expect(seo.getAttribute("data-description")).toBe("Partage vidéo");
+    expect(seo.getAttribute("data-image")).toBe("http://backend.test/upload/commun.jpg");
   });
 });
 

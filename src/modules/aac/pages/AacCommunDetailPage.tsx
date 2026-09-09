@@ -43,6 +43,7 @@ import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
 import { useAacDetailSections, useAacGallerySubKey } from "../hooks/useAacDetailSections";
 import type { AacDetailSection } from "../lib/resolveAacDetailSections";
 import { resolveCommunSeo } from "../lib/communSeo";
+import { COMMUN_ANSWER_QUERY_KEY, COMMUN_FORM_QUERY_KEY } from "../prefetch/prefetchCommun";
 import { AacSeo, type AacSeoProps } from "../AacSeo";
 // Enregistre le bundle i18n "modules/aac". Les SECTIONS le font déjà ; sans cet
 // import, une arrivée DIRECTE sur la route (lien partagé, F5) rendait la page
@@ -156,7 +157,11 @@ export default function AacCommunDetailPage() {
         // `me?.id` en dernier segment : `answer.serverData` porte un `access` calculé
         // pour le lecteur. Sans lui, l'entrée d'un anonyme serait resservie à un
         // utilisateur connecté — même motif que `COFORM_QUERY_KEYS.FORM`.
-        queryKey: ["aac-commun-detail", answerId, me?.id ?? null],
+        //
+        // La clé vient du module de préfetch : c'est CETTE entrée que le loader
+        // de route remplit au SSR. Recopiée à la main des deux côtés, elle aurait
+        // divergé sans que rien ne le dise — la page se contentant de refetcher.
+        queryKey: COMMUN_ANSWER_QUERY_KEY(answerId ?? null, me?.id ?? null),
         enabled: isReady && !!answerId,
         staleTime: 2 * 60 * 1000,
         queryFn: async (): Promise<CoFormAnswer> => {
@@ -202,8 +207,9 @@ export default function AacCommunDetailPage() {
 
     // Requête Configuration Formulaire
     const formQuery = useQuery({
-        // Idem : `form.serverData.access.restrictedFields` dépend du lecteur.
-        queryKey: ["aac-commun-form", formId, me?.id ?? null],
+        // Idem : `form.serverData.access.restrictedFields` dépend du lecteur — et
+        // idem pour la clé, partagée avec le loader (cf. `answerQuery`).
+        queryKey: COMMUN_FORM_QUERY_KEY(formId ?? null, me?.id ?? null),
         enabled: isReady && !!formId,
         staleTime: 5 * 60 * 1000,
         queryFn: async (): Promise<CoFormData> => {
@@ -325,15 +331,33 @@ export default function AacCommunDetailPage() {
     }, [configError]);
 
     /**
-     * SEO des états intermédiaires (chargement, erreur, introuvable) : le nom de
-     * l'appel, sinon le libellé générique. La fiche chargée le remplace par le
-     * titre du COMMUN (cf. `resolveCommunSeo` plus bas). Helmet tient le
-     * `<title>` — y compris en SSR, où l'ancien `document.title = …` impératif
-     * n'existait pas, et le restaure au démontage, ce que l'effet ne faisait pas.
+     * Le SEO de la fiche : le titre du COMMUN (par sa référence résolue, puis les
+     * replis du héros), son résumé, son image — et l'URL canonique de ce lien
+     * partageable. Repli sur le nom de l'appel puis le libellé générique.
+     *
+     * Calculé AVANT les gardes de chargement, donc émis dans TOUS les états —
+     * squelette compris. C'est l'état du SSR : la réponse est préchargée par le
+     * loader de route (`prefetch/prefetchCommun`), mais la config de l'appel,
+     * elle, ne l'est pas (son entrée de cache porte une instance `Form`, que la
+     * déshydratation ne peut pas traverser) : la page rend encore son squelette
+     * côté serveur. Calculé après les gardes, comme avant, le `<head>` servi au
+     * robot ou à l'aperçu de messagerie n'aurait porté qu'un titre générique,
+     * sans `og:description` ni `og:image`.
+     *
+     * Helmet tient le `<title>` — y compris en SSR, où l'ancien
+     * `document.title = …` impératif n'existait pas — et le restaure au
+     * démontage, ce que l'effet ne faisait pas.
      */
     const seoPath = answerId ? `/aac/commun/${answerId}` : "/aac";
-    const fallbackSeo: AacSeoProps = {
-        title: formQuery.data?.name || String(t("page.communDetail")),
+    const communSeo = resolveCommunSeo(answerQuery.data, {
+        fields: directory.fields,
+        depenseStepKey: config?.roles.depenseStepKey ?? null,
+        baseUrl: getBaseUrl(),
+    });
+    const seo: AacSeoProps = {
+        title: communSeo.title || formQuery.data?.name || String(t("page.communDetail")),
+        description: communSeo.description || String(t("page.communDetailDescription")),
+        image: communSeo.image,
         path: seoPath,
     };
 
@@ -369,33 +393,18 @@ export default function AacCommunDetailPage() {
         return () => observer.disconnect();
     }, [isDataLoaded, SECTIONS]);
 
-    if (!answerId) return <PageShell seo={fallbackSeo}><ErrorCard title={String(t("page.communDetail"))} description={String(t("page.missingAnswer"))} /></PageShell>;
-    if (answerQuery.isLoading || formQuery.isLoading || isConfigLoading) return <PageShell seo={fallbackSeo}><LoadingCard label={String(t("page.loading"))} /></PageShell>;
-    if (answerQuery.error || formQuery.error) return <PageShell seo={fallbackSeo}><ErrorCard title={String(t("page.error"))} description={String(t("page.errorMessage"))} /></PageShell>;
+    if (!answerId) return <PageShell seo={seo}><ErrorCard title={String(t("page.communDetail"))} description={String(t("page.missingAnswer"))} /></PageShell>;
+    if (answerQuery.isLoading || formQuery.isLoading || isConfigLoading) return <PageShell seo={seo}><LoadingCard label={String(t("page.loading"))} /></PageShell>;
+    if (answerQuery.error || formQuery.error) return <PageShell seo={seo}><ErrorCard title={String(t("page.error"))} description={String(t("page.errorMessage"))} /></PageShell>;
     // Sans la config, ni les gates ni les blocs déclarés ne se résolvent : la
     // fiche se rendrait vidée de son financement et de sa prose, sans un mot.
     // Une erreur EXPLICITE plutôt qu'un « fail closed » silencieux — même
     // traitement que `formQuery.error`, avec un message qui nomme la cause.
-    if (configError) return <PageShell seo={fallbackSeo}><ErrorCard title={String(t("page.error"))} description={String(t("page.configErrorMessage"))} /></PageShell>;
-    if (!answerQuery.data || !formQuery.data) return <PageShell seo={fallbackSeo}><ErrorCard title={String(t("page.notFound"))} description={String(t("page.notFoundMessage"))} /></PageShell>;
+    if (configError) return <PageShell seo={seo}><ErrorCard title={String(t("page.error"))} description={String(t("page.configErrorMessage"))} /></PageShell>;
+    if (!answerQuery.data || !formQuery.data) return <PageShell seo={seo}><ErrorCard title={String(t("page.notFound"))} description={String(t("page.notFoundMessage"))} /></PageShell>;
 
     const answer = answerQuery.data;
     const formData = formQuery.data;
-
-    // Le SEO de la fiche : le titre du COMMUN (par sa référence résolue, puis
-    // les replis du héros), son résumé, son image — et l'URL canonique de ce
-    // lien partageable. Repli sur le nom de l'appel et le libellé générique.
-    const communSeo = resolveCommunSeo(answer, {
-        fields: directory.fields,
-        depenseStepKey: config?.roles.depenseStepKey ?? null,
-        baseUrl: getBaseUrl(),
-    });
-    const seo: AacSeoProps = {
-        title: communSeo.title || fallbackSeo.title,
-        description: communSeo.description || String(t("page.communDetailDescription")),
-        image: communSeo.image,
-        path: seoPath,
-    };
 
     // Auteur OU admin peut modifier le commun. Cf. `resolveAnswerAuthorId` pour
     // le piège : `answer.user` n'est PAS l'auteur sur un commun porté par une
