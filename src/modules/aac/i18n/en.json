@@ -140,6 +140,8 @@
       "noFundingYet": "No partner has contributed to this commun yet.",
       "noTasksYet": "No task has been added to this commun yet.",
       "archivedMilestones": "{{count}} archived milestone(s)",
+      "closedBadge": "Closed",
+      "closedBadgeHint": "Closed milestone: excluded from the amounts and cofinancers counted in the card.",
       "milestoneField": {
         "saveFirst": "Save this commun first to add and manage its milestones.",
         "history": "Amount history",

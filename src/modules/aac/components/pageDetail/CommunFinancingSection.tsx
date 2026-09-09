@@ -70,9 +70,13 @@ function FinancingMilestoneCard({
         ? Math.min(Math.round((toSafeInt(item.currentFunding) / toSafeInt(item.price)) * 100), 100)
         : 0;
     const done = pct >= 100;
+    // Un palier clos reste listé — c'est ici qu'on le restaure — mais la carte et
+    // la table des cofinanceurs l'excluent de leurs totaux : sans marqueur, le
+    // lecteur additionnait des montants absents du total annoncé juste au-dessus.
+    const isClosed = item.status === "close";
 
     return (
-        <div className="bg-surface border border-border rounded-lg overflow-hidden group">
+        <div className={`bg-surface border rounded-lg overflow-hidden group ${isClosed ? "border-dashed border-border" : "border-border"}`}>
             <button
                 type="button"
                 onClick={() => setOpen((o) => !o)}
@@ -81,10 +85,18 @@ function FinancingMilestoneCard({
                 className="w-full text-left p-5 sm:p-6 flex items-center gap-4 sm:gap-8 hover:bg-surface-2/40 transition-colors cursor-pointer"
             >
                 <div className="min-w-0 flex-1">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                        {String(c("detail.objectives.milestone", undefined, { number: index + 1 }))}
+                    <div className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                        <span>{String(c("detail.objectives.milestone", undefined, { number: index + 1 }))}</span>
+                        {isClosed ? (
+                            <span
+                                className="rounded-sm border border-border bg-surface-2 px-1.5 py-0.5 text-[9px] normal-case tracking-normal"
+                                title={String(c("detail.objectives.closedBadgeHint"))}
+                            >
+                                {String(c("detail.objectives.closedBadge"))}
+                            </span>
+                        ) : null}
                     </div>
-                    <h4 className="font-display font-bold truncate">{item.name}</h4>
+                    <h4 className={`font-display font-bold truncate ${isClosed ? "text-muted-foreground" : ""}`}>{item.name}</h4>
                 </div>
 
                 <div className="hidden sm:block w-64 shrink-0 ml-auto">

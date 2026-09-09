@@ -96,3 +96,27 @@ describe("CommunFinancingSection — l'étape des dépenses est celle que la pag
     expect(useCommunRawDepenses).toHaveBeenCalledWith("a1", "etapeA");
   });
 });
+
+describe("CommunFinancingSection — un palier clos est marqué comme tel (M17)", () => {
+  /**
+   * La carte et la table des cofinanceurs excluent les paliers clos de leurs
+   * totaux ; la liste, elle, les gardait sans aucun marqueur — le lecteur
+   * additionnait « 900 € / 900 € » absents du « 0 € sur 100 € » annoncé au-dessus.
+   * Le palier reste listé (c'est là qu'on le restaure), mais badgé.
+   */
+  it("badge « clos » sur le palier `include: false`, aucun sur le palier ouvert", () => {
+    depenses = [
+      { poste: "Ouvert", priceInt: 100 },
+      { poste: "Clos", priceInt: 900, include: false, financer: [{ id: "u1", amount: 900 }] },
+    ];
+    renderSection();
+
+    expect(screen.getByText("Ouvert")).toBeTruthy();
+    expect(screen.getByText("Clos")).toBeTruthy();
+    const badges = screen.getAllByText("detail.objectives.closedBadge");
+    expect(badges).toHaveLength(1);
+    // Le badge est dans la carte du palier CLOS, pas dans celle du palier ouvert.
+    expect(badges[0].closest("button")?.textContent).toContain("Clos");
+    expect(badges[0].closest("button")?.textContent).not.toContain("Ouvert");
+  });
+});
