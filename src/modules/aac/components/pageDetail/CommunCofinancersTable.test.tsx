@@ -73,3 +73,37 @@ describe("CommunCofinancersTable — l'étape des dépenses est celle que la pag
     expect(useCommunRawDepenses).toHaveBeenCalledWith("a1", "etapeA");
   });
 });
+
+describe("CommunCofinancersTable — un financeur sans `financerId` reste listé (M16)", () => {
+  /**
+   * Le doublonnage porteur (doc/34 §2) arrive sans `id`. Avant : la ligne était
+   * écartée en silence — son montant n'apparaissait nulle part, alors que la
+   * carte, juste au-dessus, la comptait.
+   */
+  it("une ligne par financeur, id ou pas, avec son montant", () => {
+    depenses = [
+      {
+        poste: "Serveur",
+        priceInt: 1000,
+        financer: [
+          { id: "org1", name: "CAE Sud", amount: 500 },
+          { name: "Doublonnage porteur", amount: 100, fundingType: "prepaid" },
+        ],
+      },
+    ];
+    renderTable();
+
+    expect(screen.queryByText("detail.cofinancers.empty")).toBeNull();
+    expect(screen.getByText("CAE Sud")).toBeTruthy();
+    expect(screen.getByText("Doublonnage porteur")).toBeTruthy();
+    expect(screen.getAllByRole("row")).toHaveLength(3); // en-tête + 2 lignes
+  });
+
+  it("avec uniquement des lignes sans id, la table n'affiche pas « aucun cofinanceur »", () => {
+    depenses = [{ poste: "Serveur", priceInt: 1000, financer: [{ name: "Anonyme", amount: 40 }] }];
+    renderTable();
+
+    expect(screen.queryByText("detail.cofinancers.empty")).toBeNull();
+    expect(screen.getByText("Anonyme")).toBeTruthy();
+  });
+});

@@ -211,6 +211,32 @@ describe("CommunFinancingCard — « Financer ce commun » hors connexion ouvre 
   });
 });
 
+describe("CommunFinancingCard — le compteur de cofinanceurs compte ce que la table liste (M16)", () => {
+  /**
+   * Avant : `new Set(allFunding.map(c => c.financerId)).size` — toutes les lignes
+   * sans id ne comptaient que pour UNE entrée (`undefined`), quand la table les
+   * écartait toutes. Désormais les deux lisent `aggregateCofinancers` : une
+   * ligne par id, sinon par nom.
+   */
+  it("trois lignes (un id, deux noms sans id) ⇒ 3 cofinanceurs", () => {
+    depenses = [
+      {
+        poste: "Serveur",
+        priceInt: 1000,
+        financer: [
+          { id: "org1", name: "CAE Sud", amount: 500 },
+          { name: "Anonyme A", amount: 100 },
+          { name: "Anonyme B", amount: 50 },
+        ],
+      },
+    ];
+    renderCard();
+
+    const boite = screen.getByText("detail.financing.cofinancers").closest("div");
+    expect(boite?.querySelector("div")?.textContent).toBe("3");
+  });
+});
+
 describe("CommunFinancingCard — les CTA de réaction hors connexion ouvrent la connexion (M15)", () => {
   /**
    * Avant : le clic appliquait l'optimisme (+1), appelait `toggleReaction` sans

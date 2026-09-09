@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import CagnotteDialog from "@/modules/cagnotte/components/CagnotteDialog";
 import { toSafeInt, buildItemsFromRawDepenses, getEntityId } from "@/modules/cagnotte/utils/dataTransform";
 import { formatCurrency } from "@/modules/cagnotte/utils/format";
-import type { CagnotteResource, CagnotteFundableItem } from "@/modules/cagnotte/types";
+import type { CagnotteResource } from "@/modules/cagnotte/types";
 import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 
 /**
@@ -34,6 +34,7 @@ import { useCommunFundingContext } from "@/modules/aac/hooks/useCommunFundingCon
 import { useCommunFundingHost } from "@/modules/aac/hooks/useCommunFundingHost";
 import { useReactorNames } from "@/modules/aac/hooks/useReactorNames";
 import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
+import { aggregateCofinancers } from "@/modules/aac/lib/cofinancers";
 
 /**
  * Ce qu'un visiteur NON connecté a demandé, et qu'on rejoue quand sa session
@@ -412,8 +413,9 @@ export function CommunFinancingCard({
     const resourceRemainingAmount = Math.max(resourceTotalAmount - resourceFinancedAmount, 0);
     const resourceAmountPerc = resourceTotalAmount > 0 ? Math.min(toSafeInt((resourceFinancedAmount / resourceTotalAmount) * 100), 100) : 0;
 
-    const cofinancers = openItems.flatMap((item) => item?.allFunding ?? []);
-    const cofinancerCount = new Set(cofinancers.map((cont: CagnotteFundableItem["allFunding"][number]) => cont?.financerId)).size;
+    // Le MÊME ensemble que les lignes de `CommunCofinancersTable` : `new Set(financerId)`
+    // comptait `undefined` pour une entrée quand la table, elle, écartait ces lignes.
+    const cofinancerCount = aggregateCofinancers(items).length;
 
     // Stats d'actions — seulement pertinent une fois la proposition promue en
     // projet (cf. `canManageObjectiveActions`, même règle que CommunActionsSection).

@@ -5,17 +5,8 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { toSafeInt, buildItemsFromRawDepenses, getEntityId } from "@/modules/cagnotte/utils/dataTransform";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
-import type { CagnotteResource, FundingTransaction } from "@/modules/cagnotte/types";
-
-/**
- * Une ligne de `allFunding`. Le repli `name`/`type` sur `financerName`/`financerType`
- * couvre les documents anciens, écrits avant que l'enrichissement ne renomme ces
- * champs (cf. `getUserFunding` dans `useCagnotteAdapter`).
- */
-type LigneCofinancement = FundingTransaction & {
-    name?: string;
-    type?: string;
-};
+import { aggregateCofinancers } from "@/modules/aac/lib/cofinancers";
+import type { CagnotteResource } from "@/modules/cagnotte/types";
 
 interface CommunCofinancersTableProps {
     formData: CoFormData;
@@ -36,34 +27,19 @@ export function CommunCofinancersTable({formData: _formData, answerQuery, aacCon
     const { data: depenses } = useCommunRawDepenses(answerId, aacConfig?.roles?.depenseStepKey ?? undefined);
     const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
 
-    const cofinancers: LigneCofinancement[] = items
-        .filter((item) => item?.status !== "close")
-        .flatMap((item) => item?.allFunding ?? []);
-
-    const amountsPerCofinancer = cofinancers.reduce((acc: Record<string, { name: string, type: string, totalAmount: number }>, current: LigneCofinancement) => {
-        const financerId = current?.financerId;
-        
-        const name = current?.financerName || current?.name || String(t("detail.cofinancers.unknownContributor"));
-        const type = current?.financerType || current?.type || String(t("detail.cofinancers.organizations"));
-        const amount = Number(current?.amount || 0); 
-
-        if (financerId) {
-            if (!acc[financerId]) {
-                acc[financerId] = { name: name, type: type, totalAmount: 0 };
-            }
-            acc[financerId].totalAmount += amount;
-        }
-        
-        return acc;
-    }, {});
-
-    const cofinancersTotalsArray = Object.entries(amountsPerCofinancer).map(([financerId, data]) => ({
-        financerId,
-        name: data.name,
-        type: data.type == "tl" ? String(t("detail.cofinancers.organizations")) : data.type,
-        featured: porteurId === financerId,
-        totalAmount: data.totalAmount
-    }));
+    // La MÊME agrégation que le compteur de la carte (`aggregateCofinancers`) :
+    // une ligne sans `financerId` n'est plus écartée — elle était comptée dans
+    // la carte et absente d'ici, les deux chiffres ne pouvaient pas se recouper.
+    const cofinancersTotalsArray = aggregateCofinancers(items).map((agg) => {
+        const type = agg.type || String(t("detail.cofinancers.organizations"));
+        return {
+            key: agg.key,
+            name: agg.name || String(t("detail.cofinancers.unknownContributor")),
+            type: type === "tl" ? String(t("detail.cofinancers.organizations")) : type,
+            featured: !!agg.financerId && porteurId === agg.financerId,
+            totalAmount: agg.totalAmount,
+        };
+    });
 
     if(cofinancersTotalsArray.length === 0) {
         return (
@@ -94,7 +70,7 @@ export function CommunCofinancersTable({formData: _formData, answerQuery, aacCon
                 <tbody className="divide-y divide-border">
                 {cofinancersTotalsArray.map((c) => (
                     <tr
-                        key={c.name}
+                        key={c.key}
                         className={`hover:bg-surface/60 transition-colors ${c.featured ? "bg-primary/5" : ""}`}
                     >
                         <td className="py-3.5 px-4 font-medium">
