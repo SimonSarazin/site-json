@@ -8,6 +8,7 @@
  * pour eviter de la dupliquer.
  */
 import { useCallback, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { Project } from "@communecter/cocolight-api-client";
 import type { CoFormAnswer } from "@/modules/coform/types";
 import { useCagnottePermissions } from "@/modules/cagnotte/hooks/useCagnottePermissions";
@@ -30,6 +31,7 @@ import { canManageObjectiveActions, getModalProjectEntityCandidate, resolveCommu
 import { useCommunFundingContext } from "@/modules/aac/hooks/useCommunFundingContext";
 import { useCommunFundingHost } from "@/modules/aac/hooks/useCommunFundingHost";
 import { useCommunProjectEntity } from "@/modules/aac/hooks/useCommunProjectEntity";
+import { AAC_QUERY_KEYS } from "@/modules/aac/constants/queryKeys";
 import { useCommunRawDepensesDocument, COMMUN_RAW_DEPENSES_QUERY_KEY } from "@/modules/aac/hooks/useCommunRawDepenses";
 import type { MilestoneSyncDocs } from "@/modules/cagnotte/lib/milestoneSyncContext";
 import { asRecord } from "@/modules/cagnotte/utils/dataTransform";
@@ -43,6 +45,7 @@ export function useCommunObjectivesController({
   funding?: CagnotteResource | null;
 }) {
   const { api, apiClient, me } = useCocolight();
+  const queryClient = useQueryClient();
   const profileEntity = useOptionalProfileEntity();
   const profileProjectEntity = useMemo(
     () => (profileEntity?.entity && isProject(profileEntity.entity) ? profileEntity.entity : null),
@@ -208,14 +211,28 @@ export function useCommunObjectivesController({
     }
 
     try {
-      return (me
+      const resolved = (me
         ? await me.project({ id: effectiveProjectId })
         : await api!.project({ id: effectiveProjectId })) as Project;
+      /**
+       * On arrive ici parce que le cache n'avait PAS l'entité — typiquement
+       * `useCommunProjectEntity` a avalé un échec et mis `null` en cache pour
+       * deux minutes. La modale reçoit `projectEntity` / `actionCtx.project`,
+       * c'est-à-dire cette valeur de cache : sans l'y écrire, elle s'ouvrirait
+       * sur un projet nul et `useCreateAction` lèverait `projectMissing` une
+       * fois la saisie faite. L'écriture sert aussi les droits (`isAdmin()`) et
+       * le repli `oceco.milestones[]`, qui lisent la même entrée.
+       */
+      queryClient.setQueryData(
+        AAC_QUERY_KEYS.COMMUN_PROJECT(effectiveProjectId, me?.id ?? null),
+        resolved,
+      );
+      return resolved;
     } catch (error) {
       console.warn("Unable to resolve project entity for AAC modal", error);
       return null;
     }
-  }, [api, me, profileProjectEntity, projectEntity, resolvedProjectId]);
+  }, [api, me, profileProjectEntity, projectEntity, queryClient, resolvedProjectId]);
 
   const openCreateActionModal = async (milestoneId: string, milestoneTitle: string) => {
     if (!canManageActions) return;
