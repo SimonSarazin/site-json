@@ -113,22 +113,37 @@ export default function AacDirectorySection({ id, props }: Props) {
     enabled: !isPreview,
   });
 
-  const { communs, totalCount, isLoading, isFetchingNextPage, hasNextPage, lastItemRef, error } =
-    useAacCommuns({
-      formId,
-      form,
-      // Le listing n'ATTEND PAS le formulaire : sans lui, `parseAacAnswer`
-      // retombe sur les champs pré-calculés du backend, qui suffisent à rendre
-      // une carte. La résolution des questions affine ensuite (et débloque les
-      // filtres, dont les options viennent du form).
-      fields: cardFields,
-      // Seule la recherche est debouncée ; cocher une facette doit réagir tout de suite.
-      filters: { ...filters, q: debouncedQuery },
-      pageSize,
-      contextId,
-      baseUrl,
-      visibility,
-    });
+  const {
+    communs,
+    totalCount,
+    isLoading,
+    isPending,
+    isFetchingNextPage,
+    hasNextPage,
+    lastItemRef,
+    error,
+  } = useAacCommuns({
+    formId,
+    form,
+    // Le listing n'ATTEND PAS le formulaire : sans lui, `parseAacAnswer`
+    // retombe sur les champs pré-calculés du backend, qui suffisent à rendre
+    // une carte. La résolution des questions affine ensuite (et débloque les
+    // filtres, dont les options viennent du form).
+    fields: cardFields,
+    // Seule la recherche est debouncée ; cocher une facette doit réagir tout de suite.
+    filters: { ...filters, q: debouncedQuery },
+    pageSize,
+    contextId,
+    baseUrl,
+    visibility,
+  });
+
+  // L'attente RÉELLE des résultats. Tant que `form` n'est pas résolu, la requête
+  // est désactivée : React Query la dit `pending` mais pas `fetching`, donc
+  // `isLoading` (= pending ET fetching) vaut false — et les résultats liraient
+  // « 0 communs » là où rien n'a encore été demandé. `isPending` couvre ce
+  // creux ; il retombe à false dès la première réponse, succès ou erreur.
+  const isAwaitingResults = isLoading || isPending;
 
   if (!formId) {
     return (
@@ -174,7 +189,7 @@ export default function AacDirectorySection({ id, props }: Props) {
             communs={communs}
             display={display}
             columns={columns}
-            isLoading={isLoading}
+            isLoading={isAwaitingResults}
             isFetchingNextPage={false}
             hasNextPage={false}
             error={error}
@@ -243,7 +258,7 @@ export default function AacDirectorySection({ id, props }: Props) {
               communs={communs}
               display={display}
               columns={columns}
-              isLoading={isLoading}
+              isLoading={isAwaitingResults}
               isFetchingNextPage={isFetchingNextPage}
               hasNextPage={hasNextPage}
               error={error}

@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import type { AacDirectoryEnabledFilters } from "../lib/directoryFilters";
 import { EMPTY_AAC_CARD_FIELDS } from "../lib/resolveAacCardFields";
 import type { AacDirectorySectionProps } from "../schema";
+import type { UseAacCommunsResult } from "../hooks/useAacCommuns";
 
 vi.mock("../i18n", () => ({}));
 vi.mock("@/hooks/useT", () => ({ useT: () => (key: string) => key }));
@@ -32,16 +33,26 @@ vi.mock("../hooks/useAacDirectoryContext", () => ({
     isFormLoading: false,
   }),
 }));
+/**
+ * État du listing, MUTABLE d'un test à l'autre : c'est l'état de la requête
+ * qu'on fait varier, pas le composant. Remis au repos avant chaque test.
+ */
+const communsState: UseAacCommunsResult = {
+  communs: [],
+  totalCount: 0,
+  isLoading: false,
+  isPending: false,
+  isFetchingNextPage: false,
+  hasNextPage: false,
+  fetchNextPage: () => Promise.resolve(),
+  lastItemRef: () => {},
+  error: null,
+  refetch: () => Promise.resolve(),
+};
+const COMMUNS_AT_REST = { ...communsState };
+
 vi.mock("../hooks/useAacCommuns", () => ({
-  useAacCommuns: () => ({
-    communs: [],
-    totalCount: 0,
-    isLoading: false,
-    isFetchingNextPage: false,
-    hasNextPage: false,
-    lastItemRef: () => {},
-    error: null,
-  }),
+  useAacCommuns: () => communsState,
 }));
 vi.mock("../hooks/useAacFacets", () => ({
   useAacFacets: () => ({ usageTree: [], tagOptions: [], isLoading: false }),
@@ -60,8 +71,12 @@ vi.mock("../components/directory/AacDirectoryFilters", () => ({
     </div>
   ),
 }));
+// Les résultats ne sont pas le sujet non plus : on ne retient que l'ÉTAT que
+// la section leur transmet — c'est lui qui décide entre squelette et « vide ».
 vi.mock("../components/directory/AacDirectoryResults", () => ({
-  AacDirectoryResults: () => null,
+  AacDirectoryResults: ({ isLoading }: { isLoading: boolean }) => (
+    <div data-testid="results" data-loading={String(isLoading)} />
+  ),
 }));
 vi.mock("../components/directory/AacDepositButton", () => ({
   AacDepositButton: () => null,
@@ -83,6 +98,10 @@ function renderSection(props: Record<string, unknown>) {
     </MemoryRouter>
   );
 }
+
+beforeEach(() => {
+  Object.assign(communsState, COMMUNS_AT_REST);
+});
 
 describe("AacDirectorySection — bloc `filters` de la config", () => {
   it("un bloc PARTIEL n'éteint que le filtre cité (M4/M22/M24)", () => {
@@ -110,5 +129,43 @@ describe("AacDirectorySection — bloc `filters` de la config", () => {
     for (const key of ALL_FILTERS) {
       expect(screen.queryByTestId(`filter-${key}`)).toBeNull();
     }
+  });
+});
+
+/**
+ * H8 — tant que le formulaire n'est pas résolu, la requête des communs est
+ * DÉSACTIVÉE : React Query la dit `pending` sans la dire `fetching`, donc
+ * `isLoading` vaut false alors que rien n'a encore été demandé. Passé tel quel,
+ * cet `isLoading` faisait tomber les résultats sur « Aucun commun » — en SSR et
+ * au premier rendu client — là où le squelette est attendu.
+ */
+describe("AacDirectorySection — attente du formulaire (H8)", () => {
+  it("annonce le chargement quand la requête est en attente sans être en vol", () => {
+    communsState.isPending = true;
+    communsState.isLoading = false;
+
+    renderSection({});
+
+    expect(screen.getByTestId("results").dataset.loading).toBe("true");
+  });
+
+  it("idem en variante `preview`", () => {
+    communsState.isPending = true;
+    communsState.isLoading = false;
+
+    renderSection({ variant: "preview" });
+
+    expect(screen.getByTestId("results").dataset.loading).toBe("true");
+  });
+
+  it("ne le fait plus une fois la première réponse arrivée, même vide", () => {
+    // `isPending` retombe dès la première réponse : une liste vide est alors
+    // une VRAIE absence de communs, à afficher comme telle.
+    communsState.isPending = false;
+    communsState.isLoading = false;
+
+    renderSection({});
+
+    expect(screen.getByTestId("results").dataset.loading).toBe("false");
   });
 });
