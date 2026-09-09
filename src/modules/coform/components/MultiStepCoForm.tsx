@@ -69,6 +69,11 @@ interface MultiStepCoFormProps {
   initialStepKey?: string;
   /** Appelé quand l'état "modifié" change (utilisable par CoFormModal) */
   onDirtyChange?: (isDirty: boolean) => void;
+  /**
+   * Ref vers le rejet explicite du brouillon — renseignée par `CoFormProvider`,
+   * détenteur de `useCoFormDraft` sur ce chemin. Cf. `SmartCoForm`.
+   */
+  discardDraftRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
   /**
@@ -129,6 +134,7 @@ export function MultiStepCoForm({
   answerId,
   initialStepKey,
   onDirtyChange,
+  discardDraftRef,
   lockedFields,
   restrictedFields,
   formId,
@@ -157,6 +163,7 @@ export function MultiStepCoForm({
       userId={userId}
       baseUpdatedAt={baseUpdatedAt}
       enableDraft={enableDraft}
+      discardDraftRef={discardDraftRef}
     >
       <MultiStepCoFormContent
         variant={variant}

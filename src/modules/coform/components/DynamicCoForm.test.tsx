@@ -96,6 +96,21 @@ describe("DynamicCoForm — clé du brouillon", () => {
     expect(opts.elementId).toBeUndefined();
     expect(opts.elementType).toBeUndefined();
   });
+
+  /** M34 : « Abandonner les modifications » de `CoFormModal` passe par cette ref. */
+  it("expose le `discardDraft` du hook via `discardDraftRef`", async () => {
+    const draft = draftInerte();
+    mockUseCoFormDraft.mockReturnValue(draft);
+    const discardDraftRef = { current: null as (() => void) | null };
+    const { unmount } = render(
+      <DynamicCoForm formData={FORM_DATA} onSubmit={vi.fn()} formId="form-1" userId="user-1" discardDraftRef={discardDraftRef} />,
+    );
+    await waitFor(() => expect(discardDraftRef.current).not.toBeNull());
+    discardDraftRef.current!();
+    expect(draft.discardDraft).toHaveBeenCalledTimes(1);
+    unmount();
+    expect(discardDraftRef.current).toBeNull();
+  });
 });
 
 /**

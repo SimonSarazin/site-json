@@ -37,6 +37,12 @@ interface CoFormProviderProps {
   elementType?: string | null;
   /** Active la persistance du draft. Défaut : true. */
   enableDraft?: boolean;
+  /**
+   * Ref vers le rejet explicite du brouillon (`discardDraft`), pour un parent
+   * qui n'est pas sous le contexte — `CoFormModal` via `SmartCoForm` /
+   * `MultiStepCoForm`. Même patron que `submitRef` côté `DynamicCoForm`.
+   */
+  discardDraftRef?: React.RefObject<(() => void) | null>;
 }
 
 /**
@@ -63,6 +69,7 @@ export function CoFormProvider({
   elementId,
   elementType,
   enableDraft = true,
+  discardDraftRef,
 }: CoFormProviderProps) {
   const subFormsFields = useMemo(() => parseCoFormFields(formData), [formData]);
 
@@ -177,6 +184,15 @@ export function CoFormProvider({
   const discardDraft = useCallback(() => {
     discardDraftRaw();
   }, [discardDraftRaw]);
+
+  // Exposer le rejet explicite hors du contexte (« Abandonner » de la modale).
+  useEffect(() => {
+    if (!discardDraftRef) return;
+    discardDraftRef.current = discardDraft;
+    return () => {
+      discardDraftRef.current = null;
+    };
+  }, [discardDraftRef, discardDraft]);
 
   const acknowledgeStaleDraft = useCallback(() => {
     acknowledgeStale();

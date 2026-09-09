@@ -49,9 +49,11 @@ vi.mock("./DynamicCoForm", () => ({
     enableDraft?: boolean;
     defaultValues?: Record<string, unknown>;
     onSubmit: (data: Record<string, unknown>) => unknown;
+    discardDraftRef?: unknown;
   }) => (
     <div
       data-testid="dynamic-coform"
+      data-has-discard-ref={String(!!props.discardDraftRef)}
       data-draft-scope={props.draftScope ?? ""}
       data-element-id={props.elementId ?? ""}
       data-element-type={props.elementType ?? ""}
@@ -80,10 +82,11 @@ vi.mock("./DynamicCoForm", () => ({
 }));
 
 vi.mock("./MultiStepCoForm", () => ({
-  MultiStepCoForm: (props: { formData: CoFormData; submitMode?: string; initialStepKey?: string; elementId?: string | null; elementType?: string | null; unknownFieldVariant?: string; enableDraft?: boolean }) => (
+  MultiStepCoForm: (props: { formData: CoFormData; submitMode?: string; initialStepKey?: string; elementId?: string | null; elementType?: string | null; unknownFieldVariant?: string; enableDraft?: boolean; discardDraftRef?: unknown }) => (
     <div
       data-testid="multistep-coform"
       data-enable-draft={String(!!props.enableDraft)}
+      data-has-discard-ref={String(!!props.discardDraftRef)}
       data-step-count={Object.keys(props.formData.inputs ?? {}).length}
       data-submit-mode={props.submitMode}
       data-initial-step={props.initialStepKey ?? ""}
@@ -486,6 +489,25 @@ describe("SmartCoForm", () => {
         wrapper: makeWrapper(),
       });
       expect(screen.getByTestId("multistep-coform").dataset.unknownFieldVariant).toBe("placeholder");
+    });
+  });
+
+  /** M34 : la ref de rejet du brouillon doit atteindre le détenteur du hook, sur les deux chemins. */
+  describe("discardDraftRef propagé aux deux chemins de rendu", () => {
+    beforeEach(() => {
+      mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
+      mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+    });
+
+    it("transmis au formulaire simple et au wizard", () => {
+      const ref = { current: null };
+      const simple = render(<SmartCoForm formData={makeFormData(["s1"])} discardDraftRef={ref} />, {
+        wrapper: makeWrapper(),
+      });
+      expect(screen.getByTestId("dynamic-coform").dataset.hasDiscardRef).toBe("true");
+      simple.unmount();
+      render(<SmartCoForm formData={makeFormData(["s1", "s2"])} discardDraftRef={ref} />, { wrapper: makeWrapper() });
+      expect(screen.getByTestId("multistep-coform").dataset.hasDiscardRef).toBe("true");
     });
   });
 });

@@ -76,6 +76,12 @@ interface DynamicCoFormProps {
   onDirtyChange?: (isDirty: boolean) => void;
   /** Ref vers la fonction de soumission programmatique du formulaire */
   submitRef?: React.RefObject<(() => void) | null>;
+  /**
+   * Ref vers le rejet explicite du brouillon (`discardDraft` du hook) — pour
+   * que « Abandonner les modifications » de `CoFormModal` supprime ce que
+   * l'auto-save a déjà écrit et annule l'écriture en attente.
+   */
+  discardDraftRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
   /**
@@ -137,6 +143,7 @@ export function DynamicCoForm({
   autoSubmitOnBlur = false,
   onDirtyChange,
   submitRef,
+  discardDraftRef,
   lockedFields,
   restrictedFields,
   formId,
@@ -385,6 +392,15 @@ export function DynamicCoForm({
       if (submitRef) submitRef.current = null;
     };
   }, [submitRef, handleSubmit, handleFormSubmit, handleInvalid]);
+
+  // Exposer le rejet explicite du brouillon via discardDraftRef (même patron).
+  useEffect(() => {
+    if (!discardDraftRef) return;
+    discardDraftRef.current = discardDraft;
+    return () => {
+      discardDraftRef.current = null;
+    };
+  }, [discardDraftRef, discardDraft]);
 
   // Auto-submit debounced : déclenché 600 ms après le dernier changement de
   // valeur, uniquement si la valeur courante diffère de la dernière soumise.

@@ -62,6 +62,13 @@ interface SmartCoFormProps {
   onDirtyChange?: (isDirty: boolean) => void;
   /** Ref vers la fonction de soumission programmatique */
   submitRef?: React.RefObject<(() => void) | null>;
+  /**
+   * Ref vers le rejet explicite du brouillon (supprime la clé localStorage et
+   * annule l'écriture en attente). Renseignée par le détenteur du hook
+   * `useCoFormDraft` — `DynamicCoForm` ou `CoFormProvider` selon le chemin.
+   * `CoFormModal` l'appelle sur « Abandonner les modifications ».
+   */
+  discardDraftRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
   /**
@@ -193,6 +200,7 @@ export function SmartCoForm({
   initialStepKey,
   onDirtyChange,
   submitRef,
+  discardDraftRef,
   lockedFields,
   hiddenStepKeys,
   baseUpdatedAt,
@@ -479,6 +487,7 @@ export function SmartCoForm({
         }
         onSuccess={onAfterSubmit}
         onDirtyChange={onDirtyChange}
+        discardDraftRef={discardDraftRef}
         lockedFields={lockedFields}
         restrictedFields={restrictedFields}
         className={className}
@@ -526,6 +535,7 @@ export function SmartCoForm({
       autoSubmitOnBlur={isInputStandalone}
       onDirtyChange={onDirtyChange}
       submitRef={submitRef}
+      discardDraftRef={discardDraftRef}
       lockedFields={lockedFields}
       restrictedFields={restrictedFields}
       formId={formId}

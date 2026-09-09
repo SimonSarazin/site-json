@@ -111,6 +111,12 @@ export function CoFormModal({
   const [isDirty, setIsDirty] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
   const submitRef = useRef<(() => void) | null>(null);
+  // Rejet EXPLICITE du brouillon, câblé jusqu'au détenteur de `useCoFormDraft`
+  // (formulaire simple ou provider du wizard). Sans lui, « Abandonner les
+  // modifications » ne défaisait rien : l'auto-save avait déjà écrit, et le
+  // flush au démontage écrivait le reste — le brouillon qu'on venait de
+  // déclarer abandonner était reproposé à la réouverture.
+  const discardDraftRef = useRef<(() => void) | null>(null);
 
   // Réinitialise isDirty à la fermeture (propre pour la prochaine ouverture)
   const handleOpenChange = useCallback((nextOpen: boolean) => {
@@ -140,6 +146,9 @@ export function CoFormModal({
   const handleConfirmDiscard = useCallback(() => {
     setConfirmClose(false);
     setIsDirty(false);
+    // AVANT la fermeture : `discardDraft` supprime la clé ET jette le payload
+    // en attente, ce que le flush au démontage ne pourra plus réécrire.
+    discardDraftRef.current?.();
     onOpenChange(false);
   }, [onOpenChange]);
 
@@ -200,6 +209,7 @@ export function CoFormModal({
               onAfterSubmit={handleAfterSubmit}
               onDirtyChange={setIsDirty}
               submitRef={submitRef}
+              discardDraftRef={discardDraftRef}
               lockedFields={lockedFields}
               hiddenStepKeys={hiddenStepKeys}
               elementId={elementId}

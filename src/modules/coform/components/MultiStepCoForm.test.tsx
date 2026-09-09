@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import type { CoFormData } from "../types";
 
 /**
@@ -104,5 +104,20 @@ describe("MultiStepCoForm — clé du brouillon", () => {
     const opts = mockUseCoFormDraft.mock.calls[0][0] as Record<string, unknown>;
     expect(opts.elementId).toBeUndefined();
     expect(opts.elementType).toBeUndefined();
+  });
+
+  /** M34 : « Abandonner les modifications » de `CoFormModal` passe par cette ref. */
+  it("expose le `discardDraft` du hook via `discardDraftRef` (porté par le provider)", async () => {
+    const draft = draftInerte();
+    mockUseCoFormDraft.mockReturnValue(draft);
+    const discardDraftRef = { current: null as (() => void) | null };
+    const { unmount } = render(
+      <MultiStepCoForm formData={FORM_DATA} formId="form-1" userId="user-1" discardDraftRef={discardDraftRef} />,
+    );
+    await waitFor(() => expect(discardDraftRef.current).not.toBeNull());
+    discardDraftRef.current!();
+    expect(draft.discardDraft).toHaveBeenCalledTimes(1);
+    unmount();
+    expect(discardDraftRef.current).toBeNull();
   });
 });
