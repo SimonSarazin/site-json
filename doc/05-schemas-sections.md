@@ -91,7 +91,11 @@ SectionSchema = z.object({ type: z.literal(<SECTION_TYPE>), id?: string, props: 
 > **Les `.default()` Zod ne s'appliquent pas à l'exécution.** La config JSON n'est
 > jamais parsée par Zod au runtime (`SiteConfigSchema` ne sert qu'aux tests et à
 > l'AdminPanel ; le serveur livre `normalizeSiteConfig(raw)` — assainissement
-> DOMPurify seulement — et `SectionRenderer` passe les `props` telles quelles).
+> DOMPurify seulement, au **profil par défaut** de `sanitize()` : la config est
+> rédigée par un admin du site, elle garde donc `style`, `class`, `<form>`,
+> `<svg>`… La prose saisie par un visiteur quelconque, elle, passe par le profil
+> restreint `sanitizeProse()`, cf. `ProseContent` et [doc/21](21-module-coform.md)
+> — et `SectionRenderer` passe les `props` telles quelles).
 > Les défauts notés dans ce document sont donc **documentaires** : c'est **chaque
 > composant qui fusionne ses propres défauts** (destructuration `= …` pour un
 > scalaire, fusion **clé par clé** pour un sous-objet). Conséquence pour un
