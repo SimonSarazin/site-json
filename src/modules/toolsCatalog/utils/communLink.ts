@@ -73,10 +73,20 @@ export function replaceCommunId(url: string, communId: string): string | null {
 /**
  * Un gabarit (`communUrlTemplate`) produit-il un lien que le serveur saura relire ?
  *
- * On ne teste pas la présence d'un motif : on SUBSTITUE une communId factice et on
+ * On ne teste pas la présence d'un motif : on SUBSTITUE une communId factice —
+ * exactement comme `ToolEditDialog` le fera (`replace("{communId}", id)`) — et on
  * relit le résultat avec `extractCommunId`. Le prédicat est donc exactement celui
  * du serveur, et il le restera si les formes acceptées évoluent.
+ *
+ * Relire « une » communId ne suffit pas : un gabarit qui porte déjà une communId
+ * EN DUR (l'URL d'une vraie fiche copiée-collée à la place du gabarit) en rend
+ * une aussi, et chaque outil rattaché pointerait alors le même commun, sans la
+ * moindre erreur. On substitue donc DEUX identifiants distincts et on exige que
+ * le lien rende à chaque fois celui qu'on vient d'y mettre : c'est la preuve que
+ * le marqueur est présent ET que c'est lui que le serveur lira.
  */
 export function templateYieldsCommunId(template: string): boolean {
-  return extractCommunId(template.replace("{communId}", "0".repeat(24))) !== "";
+  return ["a".repeat(24), "b".repeat(24)].every(
+    (id) => extractCommunId(template.replace("{communId}", id)) === id,
+  );
 }

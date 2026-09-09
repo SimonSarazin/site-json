@@ -92,7 +92,22 @@ describe("templateYieldsCommunId — le gabarit est-il relisible par le serveur 
     ["un gabarit sans marqueur", "/aac/commun/"],
     ["un gabarit qui oublie le segment", "/aac/{communId}"],
     ["une URL quelconque", "https://rustinelibre.fr/notre-collectif"],
+    // L'URL d'une VRAIE fiche copiée-collée à la place du gabarit : elle « rend »
+    // bien une communId, mais toujours la même — chaque outil rattaché pointerait
+    // ce commun-là, quel que soit celui choisi, sans la moindre erreur.
+    ["un gabarit à communId en dur (route)", `/aac/commun/${ID}`],
+    ["un gabarit à communId en dur (ancre legacy)", `https://communs.les-cae.coop/#detail-un-commun.communId.${ID}`],
+    // Le marqueur est là, mais ce n'est pas lui que le serveur lit.
+    ["un marqueur derrière une communId en dur", `/aac/commun/${ID}/{communId}`],
+    ["une ancre en dur qui l'emporte sur le marqueur de route", `https://x.org/aac/commun/{communId}#detail-un-commun.communId.${ID}`],
   ])("rejette %s", (_quoi, tpl) => {
     expect(templateYieldsCommunId(tpl)).toBe(false);
+  });
+
+  it("le marqueur substitué est bien celui que le serveur relit (pas seulement « une » communId)", () => {
+    // Même substitution que `ToolEditDialog` : `replace("{communId}", id)`.
+    const tpl = "/aac/commun/{communId}";
+    expect(extractCommunId(tpl.replace("{communId}", ID))).toBe(ID);
+    expect(extractCommunId(tpl.replace("{communId}", AUTRE))).toBe(AUTRE);
   });
 });
