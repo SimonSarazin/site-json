@@ -49,6 +49,61 @@ describe("ProseContent — profil de sanitisation restreint (H23)", () => {
 });
 
 /**
+ * Le profil restreint suit la SOURCE du texte, pas le composant : `ProseContent`
+ * rend aussi la définition d'un formulaire (`field.info`, titre/description de
+ * section), écrite par l'administrateur de l'AAP. Lui appliquer le profil
+ * restreint aplatissait la présentation de formulaires du parc.
+ */
+describe("ProseContent — `source` choisit le profil", () => {
+  const MISE_EN_FORME =
+    '<p class="lead" id="intro" style="color:#c00">Merci de <b>détailler</b>' +
+    ' <svg viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg></p>';
+
+  it("`source=\"formDefinition\"` conserve style, class, id et le SVG d'un libellé admin", () => {
+    const { container } = render(<ProseContent text={MISE_EN_FORME} source="formDefinition" />);
+    const p = container.querySelector("p");
+    expect(p?.getAttribute("style")).toContain("color");
+    expect(p?.getAttribute("class")).toBe("lead");
+    expect(p?.getAttribute("id")).toBe("intro");
+    expect(container.querySelector("svg")).not.toBeNull();
+    expect(container.querySelector("b")?.textContent).toBe("détailler");
+  });
+
+  it("le même texte rendu sans `source` (défaut utilisateur) perd ces crochets", () => {
+    const { container } = render(<ProseContent text={MISE_EN_FORME} />);
+    const p = container.querySelector("p");
+    expect(p?.getAttribute("style")).toBeNull();
+    expect(p?.getAttribute("class")).toBeNull();
+    expect(p?.getAttribute("id")).toBeNull();
+    expect(container.querySelector("svg")).toBeNull();
+  });
+
+  it("`source=\"formDefinition\"` retire quand même scripts et handlers", () => {
+    // Le profil par défaut n'est pas « pas de sanitisation ».
+    const { container } = render(
+      <ProseContent
+        text={'<p>ok</p><script>window.__pwned = 1;</script><img src="x" onerror="window.__pwned = 1">'}
+        source="formDefinition"
+      />,
+    );
+    expect(container.querySelector("script")).toBeNull();
+    expect(container.querySelector("img")?.getAttribute("onerror")).toBeNull();
+  });
+
+  it("une réponse d'utilisateur reste assainie même à côté d'un formulaire mis en forme", () => {
+    // `source` est une décision par appel : le profil admin ne déteint pas.
+    const reponse =
+      '<div style="position:fixed;inset:0" class="fixed inset-0">' +
+      '<form action="https://evil.tld"><input type="password"></form></div>';
+    const { container } = render(<ProseContent text={reponse} source="userInput" />);
+    expect(container.querySelector("form")).toBeNull();
+    expect(container.querySelector("input")).toBeNull();
+    expect(container.querySelector("[style]")).toBeNull();
+    expect(container.querySelector("[class]")).toBeNull();
+  });
+});
+
+/**
  * L'auto-détection HTML ne doit reconnaître qu'une VRAIE balise. Un rédacteur
  * qui tape un autolien markdown (`<https://…>`, `<contact@…>`) dans le textarea
  * d'un commun doit voir son lien ET son markdown, pas un texte brut amputé.

@@ -1012,8 +1012,12 @@ export function DynamicCoForm({
                 </div>
                 {formData.inputs?.[subForm.subFormId]?.info && (
                   <CardDescription className="text-base">
+                    {/* Description d'étape issue de la définition du formulaire
+                        (admin AAP) → profil DOMPurify par défaut. Cf.
+                        `ProseContent` / `@/lib/sanitize`. */}
                     <ProseContent
                       text={formData.inputs[subForm.subFormId].info as string}
+                      source="formDefinition"
                       className="prose prose-sm dark:prose-invert max-w-none"
                     />
                   </CardDescription>

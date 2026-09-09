@@ -44,11 +44,19 @@ export { ProseContent };
  * Délègue à `ProseContent` qui auto-détecte HTML vs markdown, rend le markdown
  * via markdown-it (`<br/>` inline supportés) puis **sanitise** le HTML avant
  * injection.
+ *
+ * `source="formDefinition"` : les 15 appelants de `HintText` lui passent
+ * `field.info`, c'est-à-dire l'aide rédigée par l'administrateur de l'AAP dans
+ * la définition du formulaire — pas une réponse de déposant. Elle garde donc le
+ * profil DOMPurify par défaut (`style`, `class`, `id`, `<svg>` conservés) : des
+ * formulaires du parc mettent leurs aides en forme. Cf. `@/lib/sanitize` et
+ * `ProseContent`.
  */
 export function HintText({ text }: { text: string }) {
   return (
     <ProseContent
       text={text}
+      source="formDefinition"
       className="text-xs text-muted-foreground -mt-1 mb-1 prose prose-xs dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0"
     />
   );
@@ -288,8 +296,11 @@ export function SectionTitleField({ field }: { field: FormFieldMapping }) {
         </h2>
       )}
       {field.info && (
+        // Définition du formulaire (admin AAP) → profil DOMPurify par défaut,
+        // cf. `ProseContent` / `@/lib/sanitize`.
         <ProseContent
           text={field.info}
+          source="formDefinition"
           className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none mt-1"
         />
       )}
@@ -324,8 +335,10 @@ export function TitleSeparatorField({ field }: { field: FormFieldMapping }) {
           </h2>
         )}
         {field.info && (
+          // Définition du formulaire (admin AAP) → profil DOMPurify par défaut.
           <ProseContent
             text={field.info}
+            source="formDefinition"
             className="mt-1 text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none [&>p]:m-0"
           />
         )}
@@ -346,10 +359,15 @@ export function TitleSeparatorField({ field }: { field: FormFieldMapping }) {
 export function SectionDescriptionField({ field }: { field: FormFieldMapping }) {
   return (
     <div className={cn("col-span-12 my-1", field.width)}>
+      {/* Libellé ET info viennent de la définition du formulaire, écrite par
+          l'administrateur de l'AAP → profil DOMPurify par défaut, qui conserve
+          la mise en forme (`style`, `class`) de ces blocs de texte libre.
+          Cf. `ProseContent` / `@/lib/sanitize`. */}
       {field.label && (
         <ProseContent
           text={field.label}
           forceMarkdown
+          source="formDefinition"
           className="text-sm text-foreground prose prose-sm dark:prose-invert max-w-none mb-1"
         />
       )}
@@ -357,6 +375,7 @@ export function SectionDescriptionField({ field }: { field: FormFieldMapping }) 
         <ProseContent
           text={field.info}
           forceMarkdown
+          source="formDefinition"
           className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none"
         />
       )}

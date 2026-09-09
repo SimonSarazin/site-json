@@ -397,8 +397,12 @@ function MultiStepCoFormContent({
           </div>
           {coform.formData?.inputs?.[fields.subFormId]?.info && (
             <CardDescription className="text-base">
+              {/* `inputs[subFormId].info` = description de l'étape, écrite par
+                  l'admin de l'AAP dans la définition du formulaire → profil
+                  DOMPurify par défaut. Cf. `ProseContent` / `@/lib/sanitize`. */}
               <ProseContent
                 text={coform.formData.inputs[fields.subFormId].info as string}
+                source="formDefinition"
                 className="prose prose-sm dark:prose-invert max-w-none"
               />
             </CardDescription>

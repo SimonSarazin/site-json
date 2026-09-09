@@ -110,8 +110,9 @@ export function CommunHero({formData: _formData, answerData, aacConfig, deposite
             >
                 {/* `description` est un textarea du coform, donc saisi avec
                     l'éditeur markdown : on l'interprète au lieu de l'afficher
-                    tel quel. Même rendu — et même sanitisation — que les
-                    champs du formulaire. */}
+                    tel quel. C'est une RÉPONSE, écrite par le déposant : on
+                    laisse le `source` par défaut de `ProseContent`, donc le
+                    profil restreint. */}
                 <ProseContent
                     text={String(longDesc)}
                     className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"

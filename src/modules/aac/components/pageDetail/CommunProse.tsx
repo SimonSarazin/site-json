@@ -23,6 +23,10 @@ export function CommunProse({ paragraphs, forceMarkdown = false }: CommunProsePr
 
     return (
         <div className="space-y-4 text-muted-foreground leading-relaxed max-w-[68ch]">
+            {/* Les paragraphes d'une fiche sont des RÉPONSES au formulaire de
+                dépôt, écrites par un visiteur quelconque : `source` reste au
+                défaut de `ProseContent`, donc au profil restreint (cf.
+                `@/lib/sanitize`). */}
             {paragraphs.map((p, i) =>
                 p ? <ProseContent key={i} text={p} forceMarkdown={forceMarkdown} /> : null
             )}

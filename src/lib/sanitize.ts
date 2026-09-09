@@ -5,9 +5,11 @@ import DOMPurify from 'isomorphic-dompurify';
  *
  *  Profil DOMPurify PAR DÉFAUT — le même que `server/utils/normalizeSiteConfig.js`
  *  applique aux champs HTML de la config au boot (idempotence SSR/client). Il est
- *  fait pour du HTML rédigé par un ADMIN du site (sections `html`, `content`…) :
- *  il retire les scripts, handlers et URLs `javascript:` mais conserve `style`,
- *  `class`, `<form>`, `<input>`, `<svg>`… Pour du texte saisi par n'importe quel
+ *  fait pour du HTML rédigé par un ADMIN du site (sections `html`, `content`…, et
+ *  la définition d'un formulaire coform : `field.info`, titres et descriptions de
+ *  section — cf. `ProseContent` avec `source="formDefinition"`) : il retire les
+ *  scripts, handlers et URLs `javascript:` mais conserve `style`, `class`,
+ *  `<form>`, `<input>`, `<svg>`… Pour du texte saisi par n'importe quel
  *  utilisateur, utiliser `sanitizeProse`.
  */
 export function sanitize(html: string): string {
@@ -16,7 +18,10 @@ export function sanitize(html: string): string {
 
 /**
  * Profil pour la PROSE SAISIE PAR N'IMPORTE QUEL UTILISATEUR — réponse coform,
- * description d'un commun, note libre d'une fiche (cf. `ProseContent`).
+ * description d'un commun, note libre d'une fiche. C'est le défaut de
+ * `ProseContent` ; ce qui décide du profil est la SOURCE du texte, pas le
+ * composant, d'où la prop `source` qui bascule sur `sanitize()` pour la
+ * définition d'un formulaire (écrite par un admin).
  *
  * Le profil par défaut n'est pas une porte XSS, mais il laisse passer tout ce
  * qu'il faut pour dessiner un FAUX ÉCRAN DE CONNEXION plein écran servi depuis
