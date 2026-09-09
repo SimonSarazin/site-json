@@ -132,7 +132,7 @@ export default function AacCommunDetailPage() {
     // Section active du sommaire. `null` tant que l'observateur n'a rien vu :
     // l'affichage retombe alors sur la PREMIÈRE entrée de `SECTIONS` (cf. le
     // rendu de `CommunTocNav`). L'ancienne valeur en dur `"besoins-financiers"`
-    // désignait une ancre qui n'existe pas sans le gate `coremu`.
+    // désignait une ancre qui n'existe pas sans étape de financement.
     const [activeSection, setActiveSection] = useState<string | null>(null);
     // Édition de la réponse CoForm à l'intérieur de la page (pas de navigation).
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -223,19 +223,22 @@ export default function AacCommunDetailPage() {
     //
     // `isLoading` entre dans la garde de chargement plus bas : la config enchaîne
     // DEUX appels séquentiels (form parent, puis aapConfig) et arrive donc après
-    // `formQuery`. Sans l'attendre, la fiche d'un form `coremu` se peignait
+    // `formQuery`. Sans l'attendre, la fiche d'un appel financé se peignait
     // d'abord SANS financement — héros pleine largeur —, puis basculait en grille
     // 12 colonnes quand `config.gates` arrivait enfin.
     const { config, isLoading: isConfigLoading, error: configError } = useAacConfig(formId ?? null);
 
     /**
-     * Les droits se calculent avec les gates DU FORM (`coremu`…). Appelé sans
-     * eux, le calculateur ne voyait aucun gate : `canViewFunding` restait faux et
-     * les blocs financement ne pouvaient jamais s'afficher. Mémoïsé sur l'objet
-     * `gates` — stable tant que la requête ne change pas — parce que
+     * Les droits se calculent avec la config DU FORM : ses gates, et l'étape de
+     * financement. Appelé sans eux, le calculateur ne voyait rien — et les blocs
+     * financement ne pouvaient jamais s'afficher. Mémoïsé sur `gates` et la clé
+     * d'étape — stables tant que la requête ne change pas — parce que
      * `useAacPermissions` recalcule sur l'identité de `data`.
      */
-    const permData = useMemo<AacPermissionData>(() => ({ gates: config?.gates }), [config?.gates]);
+    const permData = useMemo<AacPermissionData>(
+        () => ({ gates: config?.gates, hasFundingStep: Boolean(config?.roles.financementStepKey) }),
+        [config?.gates, config?.roles.financementStepKey]
+    );
     const perms = useAacPermissions(entity, permData);
 
     /**
@@ -290,11 +293,12 @@ export default function AacCommunDetailPage() {
     });
 
     /**
-     * Le financement n'existe sur cette fiche que si l'appel a levé le gate
-     * MAÎTRE `coremu` (`perms.canViewFunding`) — parité `detailProposal.php:105`,
-     * qui masque l'onglet Contributions à tout le monde, admin compris. Une seule
-     * variable pour les trois blocs ET leurs entrées de sommaire : un lien vers
-     * une ancre absente serait un lien mort.
+     * Le financement n'existe sur cette fiche que si l'appel porte une étape de
+     * financement (`perms.canViewFunding`) — parité `detailProposal.php:100-104`,
+     * l'onglet `#proposition-funding`, ouvert à tous, anonymes compris. Ce n'est
+     * PAS `coremu`, qui ne garde que l'onglet Contributions (l.105-108). Une
+     * seule variable pour les trois blocs ET leurs entrées de sommaire : un lien
+     * vers une ancre absente serait un lien mort.
      */
     const showFunding = perms.canViewFunding;
 

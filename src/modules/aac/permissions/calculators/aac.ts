@@ -7,7 +7,8 @@
  *    unicité (`oneAnswerPerPers`) — les gardes de `Coform::getFormAccessInfo`
  *  - lecture publique, sauf `onlyMemberAccess` (membres + admins)
  *  - modification : auteur OU admin, OU tout connecté si `anyOnewithLinkCanAnswer`
- *  - financement gardé par le gate MAÎTRE `coremu` (OFF ⇒ jamais, admin compris)
+ *  - financement affiché si l'appel a une étape de financement (`aapStep3`),
+ *    jamais gardé par `coremu` — qui ne garde que la corémunération (§6)
  *  - tolère l'auteur temporaire (answer sans `userId`)
  */
 import type { EntityTypes, User } from "@communecter/cocolight-api-client";
@@ -100,17 +101,28 @@ export function calculateAacPermissions(
   // 4. Participer aux actions.
   const canParticipateActions = isConnected;
 
-  // 5. Financement — gate MAÎTRE `coremu` (`form.coremu`, préconfiguration
-  // « Système de coremuneration »). OFF ⇒ le legacy masque l'onglet
-  // Contributions à tout le monde, admin compris (`detailProposal.php:105`) :
-  // `canViewFunding` en est la traduction d'AFFICHAGE. Contribuer exige en plus
-  // un compte — le legacy ne conditionne pas l'affichage à la connexion.
-  const canViewFunding = Boolean(gates.coremu);
+  // 5. Financement — l'appel a-t-il une ÉTAPE de financement ?
+  //
+  // `detailProposal.php` porte DEUX onglets, et un seul est gaté par `coremu` :
+  //  - `#proposition-funding` (l.100-104) — les paliers et leurs financeurs —
+  //    n'est masqué que si l'étape `aapStep3` est désactivée ou cachée ;
+  //  - `#proposition-contribution` (l.105-108) — la corémunération — est le seul
+  //    que `form.coremu` garde, et site-json ne le porte pas.
+  //
+  // Le gate d'affichage suit donc le PREMIER : `hasFundingStep`, résolu par
+  // `roles.financementStepKey` (l'étape qui porte l'input `financer`). Brancher
+  // les blocs financement sur `coremu` éteignait la fiche de tout appel qui ne
+  // fait pas de corémunération — dont celui de la Fédération des CAE, où 500 €
+  // déjà collectés devenaient invisibles.
+  //
+  // Contribuer exige en plus un compte — le legacy ne conditionne pas
+  // l'affichage à la connexion.
+  const canViewFunding = Boolean(data?.hasFundingStep);
   const canContributeFunding = canViewFunding && isConnected;
   const canContributeFundingReason = canContributeFunding
     ? undefined
     : !canViewFunding
-      ? "Co-funding disabled (master gate)"
+      ? "No funding step on this call"
       : "User not connected";
 
   // 6. Publier / retirer un commun de l'annuaire — administration de l'appel.
