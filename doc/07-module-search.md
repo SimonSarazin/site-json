@@ -1300,11 +1300,12 @@ contrat de config lu par un hook normalizer.
 
 - **`TestimonialConfSchema`** (`TestimonialConf`) — champs `.partial()` : `design`
   (enum `["bubble"]`), `quoteField`, `titleField`, `dateField`, `subtitleField`,
-  `audioField`, `badge` (`{field, colors?}`), `accent` (`{field, colors?}`),
+  `audioField`, `imageField`, `badge` (`{field, colors?}`), `accent` (`{field, colors?}`),
   `facets` (`PreviewFacetSchema[]`). Replis **code** appliqués par
   `useTestimonialData` (config jamais parsée par Zod au runtime) : `design`→`bubble`,
   `quoteField`→`description`, `titleField`→`name`, `dateField`→`created`,
-  `audioField`→`medias`.
+  `audioField`→`medias`, `imageField`→`profilMediumImageUrl` puis `profilImageUrl`
+  puis la 1re image de `medias`.
 - **`ResourceConfSchema`** (`ResourceConf`) — `.partial()` : `design` (enum
   `["card"]`), `titleField`, `descriptionField`, `dateField`, `imageField`, `badge`
   (`{field, colors?, icons?}`), `cityField`, `urlsField`, `mediasField`, `facets`.

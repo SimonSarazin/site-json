@@ -1,5 +1,6 @@
 import { Calendar, Mic } from "lucide-react";
 import { AudioPlayer } from "@/components/media/AudioPlayer";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { formatDateLong } from "@/helpers/formatDate";
 import { useT } from "@/hooks/useT";
 import { ClickableFacet } from "../../ClickableFacet";
@@ -9,9 +10,10 @@ import { PreviewProps } from "../../../schema";
 
 /**
  * Design « bubble » de la preview testimonial (contenu de la modale `detailsMode:"dialog"`). Le conteneur
- * pose la croix en haut-droite → l'en-tête réserve `pr-12`. Rendu : en-tête (pastille catégorie + titre +
- * attribution accent·date), LECTEUR AUDIO mis en avant, citation en pulled-quote teinté catégorie (texte
- * brut, `whitespace-pre-line`), puis « repères » GÉNÉRIQUES (aucun champ en dur) via `data.facets` +
+ * pose la croix en haut-droite → l'en-tête réserve `pr-12`. Rendu : bannière d'illustration éventuelle,
+ * en-tête (pastille catégorie + titre + attribution accent·date), LECTEUR AUDIO mis en avant, puis la
+ * citation en pulled-quote teinté catégorie (texte brut, `whitespace-pre-line`), puis les
+ * « repères » GÉNÉRIQUES (aucun champ en dur) via `data.facets` +
  * `ClickableFacet` (deviennent cliquables si un dropdownFilter indexe le champ ; sinon texte simple).
  */
 export default function PreviewTestimonialBubble({ item, list, onClose }: PreviewProps) {
@@ -25,6 +27,15 @@ export default function PreviewTestimonialBubble({ item, list, onClose }: Previe
 
   return (
     <div className="flex max-h-[85vh] flex-col">
+      {/* Illustration — bannière plafonnée à 30vh : `aspect-[21/9]` dérive sa hauteur de la LARGEUR du
+          dialogue et `shrink-0` l'empêche de céder, ce qui écraserait la zone de contenu sur un grand
+          écran (même plafond que la preview « resource »). */}
+      {data.image && (
+        <div className="relative aspect-[21/9] max-h-[30vh] w-full shrink-0 overflow-hidden bg-muted">
+          <OptimizedImage src={data.image} alt={data.title} width={840} className="h-full w-full object-cover" />
+        </div>
+      )}
+
       {/* En-tête : catégorie + titre + attribution (accent · date) */}
       <div className="shrink-0 space-y-3 border-b border-border py-4 pl-5 pr-12">
         {data.badge && (

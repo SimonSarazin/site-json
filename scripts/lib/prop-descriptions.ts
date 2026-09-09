@@ -49,6 +49,7 @@ const LIST: Record<string, string> = {
   "testimonial.design": "Paire Card+Preview du témoignage (repli code : bubble).",
   "testimonial.quoteField": "Champ serverData de la citation — le héros du témoignage (repli code : description).",
   "testimonial.audioField": "Champ du média audio [{type:audio, url}] → lecteur AudioPlayer (repli code : medias).",
+  "testimonial.imageField": "Champ de l'illustration (bannière card + preview) — repli code : profilMediumImageUrl, puis profilImageUrl, puis la 1re image de medias.",
   "testimonial.badge": "Catégorie : teinte de la bulle + pastille ; colors = map valeur→couleur (var() ou hex), repli palette déterministe.",
   "testimonial.accent": "Accent secondaire (ex. territoire) : point coloré ; colors = map valeur→couleur.",
   "testimonial.facets": "Repères/taxonomies data-driven du témoignage (réutilise le mécanisme facettes générique).",
@@ -273,6 +274,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
 
   "section:searchHeader": {
     "props.headline": "Titre du bandeau (h1 si le searchHeader EST le héro de la page).",
+    "props.headlineFromFilter": "id d'un dropdownFilters dont la valeur sélectionnée REMPLACE le headline (qui reste le repli) — page dont l'identité EST ce filtre, ex. /theme?theme=…. Le filtre peut être hidden.",
     "props.headlineClassName": "Override de la couleur du titre — pour un fond fixe sombre où --foreground devient illisible (ex. text-white dark:text-foreground).",
     "props.subheadClassName": "Override de la couleur du sous-titre (chaîne vide pour ne pas forcer text-foreground).",
     "props.filtersClassName": "Override du conteneur flex de la rangée filtres (ex. centrer au lieu d'étaler).",
