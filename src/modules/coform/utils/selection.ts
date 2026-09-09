@@ -12,6 +12,7 @@
  * Toutes les règles ci-dessous sont relevées sur `selection.php` et vérifiées
  * contre les données réelles de `pixelhumain1`.
  */
+import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
 
 /**
  * Étape de DÉPÔT, dont les réponses alimentent la colonne « réponse du candidat ».
@@ -223,6 +224,11 @@ export function computeSelectionMeans(
  * `depense` et `budget` sont traités à part : ce sont des listes de lignes, dont
  * le legacy affiche la SOMME des prix et non le contenu. Un tableau ordinaire
  * est listé, un scalaire affiché tel quel, tout le reste rendu vide.
+ *
+ * Les prix passent par `toSafeInt`, le lecteur UNIQUE des montants sur un
+ * document — pas par `toNote`, qui est fait pour des notes : `"1 500,00"` y
+ * valait 1 et `true` 1, alors que `depense[].price` arrive en chaîne sur 178
+ * réponses et en booléen sur 75.
  */
 export function formatCriterionValue(fieldKey: string, value: unknown): string {
   if (fieldKey === "depense" || fieldKey === "budget") {
@@ -230,8 +236,7 @@ export function formatCriterionValue(fieldKey: string, value: unknown): string {
     let total = 0;
     for (const ligne of Object.values(value as Record<string, unknown>)) {
       if (ligne && typeof ligne === "object") {
-        const prix = (ligne as Record<string, unknown>).price;
-        total += toNote(prix);
+        total += toSafeInt((ligne as Record<string, unknown>).price);
       }
     }
     return String(total);

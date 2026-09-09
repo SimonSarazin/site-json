@@ -13,6 +13,7 @@
  * (`SaveAnswerAction` : `$mergedAnswers[$step][$input] = $inputValue`).
  * C'est exactement le piège déjà rencontré sur `timeSlots`.
  */
+import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
 
 /**
  * Une ligne de dépense telle que persistée dans `answers.<step>.depense[]`.
@@ -21,7 +22,10 @@
 export interface DepenseEntry {
   /** Libellé de la dépense (le legacy l'appelle « poste »). */
   poste: string;
-  /** Montant cible. Le legacy stocke tantôt `price`, tantôt `priceInt`. */
+  /**
+   * Montant cible — la clé `price`, en nombre. `priceInt` n'est JAMAIS stocké
+   * (0 document sur 2 803) : c'est un champ calculé par l'enveloppe seulement.
+   */
   price: number;
   date?: string;
   user?: string;
@@ -38,17 +42,25 @@ function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
-/** Entier tolérant : accepte `"12"`, `12`, `12.7` ; tout le reste vaut 0. */
+/**
+ * Montant d'une ligne de dépense — `toSafeInt`, le lecteur UNIQUE des montants
+ * sur un document, sous le nom que le champ connaît.
+ *
+ * Un `Number(value)` local rendait `NaN` — donc 0 — sur `"1 500,00"` et
+ * `"1 500.00"` (l'espace de milliers), et 1 sur `true` ; or `depense[].price`
+ * arrive en chaîne sur 178 réponses et en booléen sur 75. Accepte `"12"`, `12`,
+ * `12.7` (tronqué), `"1 500,00"` ; bool, `null` et le reste valent 0.
+ */
 export function toDepenseAmount(value: unknown): number {
-  const n = typeof value === "string" ? Number(value.replace(",", ".")) : Number(value);
-  return Number.isFinite(n) ? Math.trunc(n) : 0;
+  return toSafeInt(value);
 }
 
 /**
  * Normalise une valeur serveur en liste exploitable.
  *
- * Absorbe le `{}` que PHP sérialise pour un tableau vide, et le doublon
- * `price`/`priceInt` du legacy.
+ * Absorbe le `{}` que PHP sérialise pour un tableau vide. `priceInt` n'existe
+ * sur aucun document ; il n'est lu qu'au cas où une ligne passée ici sortirait
+ * d'une réponse d'enveloppe, où il fait autorité (`priceInt ?? price`).
  */
 export function normalizeDepenseValue(value: unknown): DepenseEntry[] {
   if (!Array.isArray(value)) return [];

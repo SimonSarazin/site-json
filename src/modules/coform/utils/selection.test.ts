@@ -177,6 +177,19 @@ describe("formatCriterionValue", () => {
     expect(formatCriterionValue("depense", undefined)).toBe("0");
   });
 
+  it("les prix sont des MONTANTS de document : « 1 500,00 » vaut 1500, bool et null valent 0", () => {
+    // Relevé en base sur `depense[].price` : 178 chaînes, 75 booléens, 200 null.
+    // Lus comme des notes (`toNote`), « 1 500,00 » valait 1 et `true` 1 : la
+    // colonne « Valeur » du jury affichait un budget faux, sans erreur.
+    const lignes = {
+      0: { poste: "A", price: "1 500,00" },
+      1: { poste: "B", price: true },
+      2: { poste: "C", price: null },
+      3: { poste: "D", price: 250 },
+    };
+    expect(formatCriterionValue("depense", lignes)).toBe("1750");
+  });
+
   it("liste un tableau, affiche un scalaire, vide le reste", () => {
     expect(formatCriterionValue("k", ["un", "deux"])).toBe("un\ndeux");
     expect(formatCriterionValue("k", "texte")).toBe("texte");

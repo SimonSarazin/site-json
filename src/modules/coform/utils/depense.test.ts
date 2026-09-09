@@ -42,6 +42,19 @@ describe("toDepenseAmount", () => {
     expect(toDepenseAmount(undefined)).toBe(0);
     expect(toDepenseAmount({})).toBe(0);
   });
+
+  it("chaîne FORMATÉE avec espace de milliers : « 1 500,00 » et « 1 500.00 » valent 1500", () => {
+    // `Number("1 500.00")` rend NaN — donc 0 : un montant réel disparaissait à
+    // la première relecture. 178 réponses portent `price` en chaîne.
+    expect(toDepenseAmount("1 500,00")).toBe(1500);
+    expect(toDepenseAmount("1 500.00")).toBe(1500);
+    expect(toDepenseAmount(" 42 ")).toBe(42);
+  });
+
+  it("booléen ⇒ 0, jamais 1 (75 réponses en base)", () => {
+    expect(toDepenseAmount(true)).toBe(0);
+    expect(toDepenseAmount(false)).toBe(0);
+  });
 });
 
 describe("normalizeDepenseValue", () => {
@@ -52,10 +65,14 @@ describe("normalizeDepenseValue", () => {
     expect(n.milestone).toBe("m-abc123");
   });
 
-  it("réconcilie le doublon legacy price / priceInt", () => {
-    // Le legacy écrit tantôt l'un tantôt l'autre ; `priceInt` fait autorité.
+  it("lit `price` comme un montant de document ; `priceInt` (enveloppe) fait autorité s'il est là", () => {
+    // `priceInt` n'est stocké sur aucun document — il ne vient que d'une
+    // réponse d'enveloppe, où il fait autorité (`priceInt ?? price`).
     expect(normalizeDepenseValue([{ poste: "x", price: 10, priceInt: 42 }])[0].price).toBe(42);
     expect(normalizeDepenseValue([{ poste: "x", price: "80" }])[0].price).toBe(80);
+    // Les formes réelles de `price` sur un document : chaîne formatée, booléen.
+    expect(normalizeDepenseValue([{ poste: "x", price: "1 500,00" }])[0].price).toBe(1500);
+    expect(normalizeDepenseValue([{ poste: "x", price: true }])[0].price).toBe(0);
   });
 
   it("absorbe le `{}` que PHP sérialise pour un tableau vide", () => {
