@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { UseFormRegister, FieldErrors } from "react-hook-form";
-import MarkdownIt from "markdown-it";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { ProseContent } from "@/components/shared/ProseContent";
+import { Check, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -29,51 +29,34 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { sanitize } from "@/lib/sanitize";
 import { useT } from "@/hooks/useT";
 import type { FormFieldMapping } from "../types";
 import { MarkdownEditor } from "./MarkdownEditor";
 
-/**
- * Parser markdown partagé (singleton module-level → pas recréé à chaque render).
- * `html: true` préserve l'HTML inline (ex: `<br/>`) ; `linkify` auto-lie les URLs.
- * Sa sortie est TOUJOURS passée dans `sanitize()` avant injection (cf. ProseContent).
- */
-const markdownParser = new MarkdownIt({ html: true, linkify: true });
-
-/**
- * Rend un contenu admin (`field.info`/`field.label`, parfois saisi par un admin
- * costum peu fiable) : soit du HTML déjà rendu (Parsedown PHP), soit du markdown.
- * Dans les deux cas on produit du HTML puis on le **sanitise** (DOMPurify via
- * `@/lib/sanitize`) avant de l'injecter — même pattern que `HTMLSection`, cf.
- * `doc/bonnes-pratiques-code.md` §8.
- *
- * ⚠️ Sécurité (XSS) : ne jamais réintroduire `dangerouslySetInnerHTML` sans
- * `sanitize()`, ni `react-markdown` + `rehype-raw` (qui rendaient le HTML brut
- * NON sanitisé → faille).
- */
-export function ProseContent({ text, className, forceMarkdown = false }: { text: string; className?: string; forceMarkdown?: boolean }) {
-  const isHtml = !forceMarkdown && /<[a-zA-Z][^>]*>/.test(text);
-  const rawHtml = isHtml ? text : markdownParser.render(text);
-  return (
-    <div
-      className={className}
-      dangerouslySetInnerHTML={{ __html: sanitize(rawHtml) }}
-      suppressHydrationWarning
-    />
-  );
-}
+// `ProseContent` a été sorti dans `@/components/shared` : les fiches AAC
+// affichent en lecture les mêmes valeurs que les champs saisissent, et une
+// seconde implémentation aurait signifié une seconde garantie de sécurité à
+// maintenir. Ré-exporté ici pour que les call-sites du module ne bougent pas.
+export { ProseContent };
 
 /**
  * Composant pour afficher un indice/info avec support markdown ET HTML brut.
  * Délègue à `ProseContent` qui auto-détecte HTML vs markdown, rend le markdown
  * via markdown-it (`<br/>` inline supportés) puis **sanitise** le HTML avant
  * injection.
+ *
+ * `source="formDefinition"` : les 15 appelants de `HintText` lui passent
+ * `field.info`, c'est-à-dire l'aide rédigée par l'administrateur de l'AAP dans
+ * la définition du formulaire — pas une réponse de déposant. Elle garde donc le
+ * profil DOMPurify par défaut (`style`, `class`, `id`, `<svg>` conservés) : des
+ * formulaires du parc mettent leurs aides en forme. Cf. `@/lib/sanitize` et
+ * `ProseContent`.
  */
 export function HintText({ text }: { text: string }) {
   return (
     <ProseContent
       text={text}
+      source="formDefinition"
       className="text-xs text-muted-foreground -mt-1 mb-1 prose prose-xs dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0"
     />
   );
@@ -313,14 +296,57 @@ export function SectionTitleField({ field }: { field: FormFieldMapping }) {
         </h2>
       )}
       {field.info && (
+        // Définition du formulaire (admin AAP) → profil DOMPurify par défaut,
+        // cf. `ProseContent` / `@/lib/sanitize`.
         <ProseContent
           text={field.info}
+          source="formDefinition"
           className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none mt-1"
         />
       )}
       {cfg.showBar && cfg.barPosition === "below" && (
         <hr className="mt-2 border-border" />
       )}
+    </div>
+  );
+}
+
+/**
+ * Séparateur de titre (`tpls.forms.titleSeparator`).
+ *
+ * Marque une rupture forte dans un formulaire long : le legacy rend un `<h2>`
+ * centré dans un bandeau gris borduré de pointillés haut et bas, suivi d'un
+ * chevron vers le bas (`titleSeparator.php`). On garde cette signature — bandeau
+ * pleine largeur + pointillés + chevron — mais avec les tokens du design system
+ * plutôt que le `#ddd` en dur, pour que le thème sombre suive.
+ *
+ * **N'enregistre aucune valeur** : ni défaut, ni entrée dans le schéma Zod.
+ * ⚠️ `isRequired: true` est pourtant posé sur 57 des 78 occurrences du parc ;
+ * l'honorer rendrait ces formulaires insoumettables (cf. `generateZodSchema`).
+ * On l'ignore donc délibérément, et on ne rend pas d'astérisque.
+ */
+export function TitleSeparatorField({ field }: { field: FormFieldMapping }) {
+  return (
+    <div className={cn("col-span-12 my-6", field.width)}>
+      <div className="border-y border-dashed border-border bg-muted/60 px-4 py-3 text-center">
+        {field.label && (
+          <h2 className="text-lg font-bold tracking-tight text-foreground">
+            {field.label}
+          </h2>
+        )}
+        {field.info && (
+          // Définition du formulaire (admin AAP) → profil DOMPurify par défaut.
+          <ProseContent
+            text={field.info}
+            source="formDefinition"
+            className="mt-1 text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none [&>p]:m-0"
+          />
+        )}
+        <ChevronDown
+          aria-hidden="true"
+          className="mx-auto mt-1 h-4 w-4 text-muted-foreground"
+        />
+      </div>
     </div>
   );
 }
@@ -333,10 +359,15 @@ export function SectionTitleField({ field }: { field: FormFieldMapping }) {
 export function SectionDescriptionField({ field }: { field: FormFieldMapping }) {
   return (
     <div className={cn("col-span-12 my-1", field.width)}>
+      {/* Libellé ET info viennent de la définition du formulaire, écrite par
+          l'administrateur de l'AAP → profil DOMPurify par défaut, qui conserve
+          la mise en forme (`style`, `class`) de ces blocs de texte libre.
+          Cf. `ProseContent` / `@/lib/sanitize`. */}
       {field.label && (
         <ProseContent
           text={field.label}
           forceMarkdown
+          source="formDefinition"
           className="text-sm text-foreground prose prose-sm dark:prose-invert max-w-none mb-1"
         />
       )}
@@ -344,6 +375,7 @@ export function SectionDescriptionField({ field }: { field: FormFieldMapping }) 
         <ProseContent
           text={field.info}
           forceMarkdown
+          source="formDefinition"
           className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none"
         />
       )}

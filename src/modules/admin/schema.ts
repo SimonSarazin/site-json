@@ -61,6 +61,15 @@ export const AdminColumnsSchema = z.array(z.union([
     label: LocalizedString.optional(),
     /** Rendu de la cellule : `text` (défaut) ou `audio` (lecteur audio depuis un `medias[].url` / une URL). */
     type: z.enum(["text", "audio"]).optional(),
+    /**
+     * En-tête cliquable pour trier ? Défaut `true` (comportement historique).
+     * `false` rend un simple libellé — à poser sur toute colonne dont le `path` n'existe PAS
+     * en base : le tri est SERVEUR (`defaultSortBy`), donc une colonne FABRIQUÉE après la
+     * requête (champs aplatis par un hook costum, jointures) trierait sur une clé absente,
+     * c'est-à-dire dans un ordre arbitraire — tout en écrasant le tri par défaut, et en
+     * déstabilisant la pagination du scroll infini (skip/limit sans ordre total).
+     */
+    sortable: z.boolean().optional(),
   }),
 ]));
 

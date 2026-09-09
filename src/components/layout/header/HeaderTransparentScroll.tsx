@@ -14,13 +14,12 @@ import NavIcon from "./NavIcon";
 import { Badge } from "@/components/ui/badge";
 import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
-import { PiggyBankHeaderButton } from "@/modules/cagnotte/components/PiggyBankHeaderButton";
+import { PiggyBankHeaderButton, PledgeHeaderButton } from "./CagnotteHeaderButtons";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive, useHeaderOpaqueAtRest } from "./useHeaderBehavior";
 import { logoSquareClass, logoSizePx } from "./logoSize";
 import { useVisibilityList } from "@/lib/visibility/useVisibility";
-import PledgeHeaderButton from "@/modules/cagnotte/components/PledgeHeaderButton";
 
 interface HeaderTransparentScrollProps {
     header: Header;
@@ -192,22 +191,12 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                             );
                         })}
 
-                        {header.utilities?.piggyBank && (
-                            // ClientOnly : la cagnotte est member-only (le composant lit `me`
-                            // pour décider de rendre ou pas). Sans ClientOnly, SSR rend le bouton
-                            // (me=null → null), client le rend après auth → hydration mismatch
-                            // (cf. PiggyBankHeaderButton:if (!me?.id) return null).
-                            <ClientOnly>
-                                {() => <PiggyBankHeaderButton />}
-                            </ClientOnly>
-                        )}
-
-                        {header.utilities?.pledge && (
-                            // Bouton pour ouvrir la modale de paiement des promesses de financement
-                            <ClientOnly>
-                                {() => <PledgeHeaderButton />}
-                            </ClientOnly>
-                        )}
+                        {/* Wrappers lazy (cf. CagnotteHeaderButtons) : le chunk cagnotte n'est
+                            téléchargé que si l'utilitaire est activé, et seulement après
+                            hydratation — la cagnotte est member-only, le SSR n'a rien à en rendre. */}
+                        {header.utilities?.piggyBank && <PiggyBankHeaderButton />}
+                        {/* Bouton pour ouvrir la modale de paiement des promesses de financement */}
+                        {header.utilities?.pledge && <PledgeHeaderButton />}
 
                         {header.urgenceButton && (
                             <NavLink

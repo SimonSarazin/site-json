@@ -24,7 +24,9 @@ export default function CardResourceCard({ item, onClick, list }: SearchCardProp
   const tint = bubbleTint(badgeColor);
   const excerpt = newsExcerpt(data.description, 180);
   const typeIcon = (data.badge?.icon ?? "file") as IconName;
-  const cat = normalizeFilterValue(data.badge?.value ?? "");
+  // Valeur STOCKÉE (`raw`), pas le libellé affiché : ce jeton indexe les styles par catégorie,
+  // il ne doit pas changer avec la langue ni avec une retouche de libellé.
+  const cat = normalizeFilterValue(data.badge?.raw ?? "");
   const isVideo = cat === "video";
   const isLink = cat === "lien";
   const domain = data.urls[0] ? hostname(data.urls[0]) : "";

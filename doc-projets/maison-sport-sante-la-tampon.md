@@ -168,7 +168,7 @@ et restreintes aux codes postaux **97430 / 97418**.
 | **CoForm « créneau »** | **`6a85af345d898a57cb49f029`** « Créneau - tampon » (dédié, §9.8) — section `associationEkilibre19082026_1327_0` ; **1 créneau = 1 answer** ; ex-form SSBE partagé `6928096adf5caf0d230e7f26` jusqu'au 19/08 |
 | **Orga porteuse** | slug `associationEkilibre`, `_id 692817af564b0621d52ebbc6`, type `organizations` (résolu au boot via `GET_ELEMENTS_KEY`) |
 | **Backend (dev)** | environnement de dev local (configuration hors de ce document) ; backend de prod **à définir** |
-| **SDK** | `@communecter/cocolight-api-client` — lecture seule. Requis **`^1.0.189`**, **installé 1.0.189** (mesuré le 23/08) : requis et installé coïncident, la désynchronisation récurrente de ce poste (§12) n'est plus d'actualité |
+| **SDK** | `@communecter/cocolight-api-client` — lecture seule. Requis **`^1.0.191`**, **installé 1.0.191** (mesuré le 08/09) : requis et installé coïncident, la désynchronisation récurrente de ce poste (§12) n'est plus d'actualité |
 | **Branche site-json** | **`main`** (suit `origin`, GitLab Adullact). Les lots `ekilibre` ont été mergés ; le travail des 20-23/08 est commité directement sur `main` (dernier : `c378525b`, 23/08) |
 | **Intervenants (git)** | Francki (init 02/07) · Nicolas (config 20/07, 28/07 ; lot structure 31/07 + 06/08) · Peterson (lot créneaux 06/07) · Cael (merge + doc 06/08, back-office/KPIs 06/08) ; chef de projet **à confirmer** |
 
@@ -249,9 +249,9 @@ et restreintes aux codes postaux **97430 / 97418**.
    plus expulsé vers `/login` — il **reste sur la page**, ses sections cèdent la place à une invitation
    et la modale de connexion s'ouvre par-dessus (§9.13). Garde de **session** : tout compte connecté
    entre, il n'y a pas de contrôle « professionnel de santé » (§12).
-7. **Le pilotage admin** : back-office `/admin` à **six onglets** (Tableau de bord, Membres,
-   Actualités, Structures, Référencement, Modération), niveau `siteAdmin`, et 4 KPIs du CDC §4.2
-   (§9.6, §9.10).
+7. **Le pilotage admin** : back-office `/admin` à **sept onglets** (Tableau de bord, Membres,
+   Actualités, **Ressources**, Structures, Référencement, Modération), niveau `siteAdmin`, et
+   4 KPIs du CDC §4.2 (§9.6, §9.10, §9.14).
 8. **Un formulaire de contact** opérationnel — **câblé sur l'endpoint `CONTACT_SEND` du SDK depuis le
    23/08** (§9.13) ; reste à renseigner **`costum.contactMail`** en base pour que le message atteigne
    la MSS (§13).
@@ -1329,6 +1329,42 @@ optionnel · `tsc -b` ✅ 0 erreur · lint ✅ 0 erreur sur les fichiers du lot 
 **6/6** ✅.
 
 **Reste sur ce lot** : trancher la source (si une existe) des 3 stats encore statiques — cf. §13.
+
+---
+
+
+### 9.16 Ce que le site régional lui doit — et ce qu'il lui reste à reprendre (08/09)
+
+Une analyse croisée avec [Sport Santé Bien-être](sport-sante-bien-etre.md) a établi, `git log` à
+l'appui, que la page `/creneaux` d'Ekilib.re a été **copiée depuis SSBE** en août puis corrigée ici
+en huit commits (20→23/08). SSBE a ensuite emprunté la contribution et la modération sans ces
+corrections : c'est une dette de rétro-portage, pas une dérivation à sens unique.
+
+**Ce qui reste à reprendre ICI**, mesuré côté SSBE et applicable au Tampon :
+
+| Geste | Pourquoi |
+|---|---|
+| `sortable: false` sur les 4 colonnes fabriquées de la modération | Ces colonnes sont produites par le hook PHP **après** la requête Mongo : trier dessus ordonne au hasard et déstabilise le scroll infini. La doc SSBE le signale depuis le 02/09 |
+| `enableMap: false` sur `/ressources` | Le correctif `eb4db0ab` n'a jamais été rapatrié : un annuaire de documents propose encore une bascule Carte. `showMap: false` ne suffit pas, le code lit `enableMap` |
+| `structureAction.audience: "managers"` | Le bouton « Fiche structure » reste exposé à tout le monde ; le gate est neuf, créé pour SSBE |
+| `badge.labels` et `badge.icons` sur `/ressources` | Les deux clés que la MR 51 a créées. Les valeurs stockées ici SONT les libellés, donc pas de clé brute affichée — mais la pastille reste **française en version anglaise**, alors que les traductions existent déjà dans ce fichier |
+| `navigateOnSuccess: false` sur `costumForms.structure` | Créer une structure depuis `/admin` éjecte l'administrateur (2 formulaires sur 3 le portent, pas celui-là) |
+| `searchBy` sur l'onglet admin `ressources` | Ici c'est SSBE qui a l'avantage : aucun `searchBy`, la recherche de la table ne fouille pas la description |
+| `label` sur les états de statut | 12 des 13 états des tables admin s'affichent en français brut sur un back-office bilingue |
+| Sections `html` en `LocalizedString` | Les 3 sections `html` sur 3 — dont les trois pages légales — portent une chaîne brute française sur un site déclaré bilingue |
+| `members.filters` avec `isInviting` | L'onglet Membres perd la liste des invités en attente que SSBE affiche |
+
+**Un défaut partagé, de donnée et non de config** : le filtre « Bénéficiaires » de `/creneaux`
+s'appuie sur un `$in`, égalité exacte. Côté SSBE, 232 réponses stockent les cases cochées en une
+chaîne collée et sont donc invisibles au filtre. Ekilib.re **n'a qu'une réponse**, correctement
+stockée — il ne rencontre pas le défaut, il n'y est pas immunisé. Le script de normalisation
+([`../tools/ssbe-creneaux/normalize-beneficiaires.mjs`](../tools/ssbe-creneaux/normalize-beneficiaires.mjs))
+est paramétrable par formulaire et s'appliquerait ici à l'identique si le stock grossissait.
+
+⚠ **Palette ⌘K** : `params.sourceKey` inclut `"sportSanteBienetre"` — un périmètre régional que
+`/structure` prend soin d'exclure. Élargissement volontaire ou oubli, à trancher (§13). Et elle ne
+filtre pas `statusActor`, contrairement à `/structure` : écart théorique ici (les 14 structures sont
+validées), mais SSBE a dû poser la garde pour 32 fiches.
 
 ---
 

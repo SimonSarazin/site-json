@@ -38,6 +38,14 @@ export interface CoFormModalProps {
   answerId?: string;
   /** Valeurs par défaut pour pré-remplir (mode édition) */
   defaultValues?: AllStepsData;
+  /**
+   * `updated` de la réponse éditée. À TRANSMETTRE dès qu'on passe `answerId` :
+   * c'est la seule chose qui permet à `useCoFormDraft` de voir qu'un brouillon
+   * local est plus vieux que la version serveur. Sans lui, un brouillon
+   * d'avant-hier se restaure par-dessus une réponse modifiée entre-temps, sans
+   * le moindre avertissement.
+   */
+  baseUpdatedAt?: number | null;
   /** Mode lecture seule */
   readOnly?: boolean;
   /** Callback exécuté après soumission réussie (avant fermeture automatique) */
@@ -49,14 +57,28 @@ export interface CoFormModalProps {
   /** Liste de clés d'inputs verrouillés (non modifiables dans le modal) */
   lockedFields?: string[];
   /**
+   * Étapes à retirer du parcours pour cet appel (cf. `SmartCoForm`). La règle
+   * vient de l'appelant, pas du formulaire — typiquement « l'étape d'évaluation
+   * n'est pas proposée à qui n'administre pas l'appel ».
+   */
+  hiddenStepKeys?: readonly string[];
+  /**
    * ID de l'élément lié au form (lieu, projet, événement…). Active le mode
    * "par élément" backend : `Coform::getFormAccessInfo` calcule alors
    * `access.restrictedFields` à partir de `placeAdminOnlyFields` /
-   * `placeMemberOnlyFields`. Requis avec `elementType`.
+   * `placeMemberOnlyFields`. Entre aussi dans la clé du brouillon : sans lui,
+   * une « nouvelle réponse » commencée depuis un lieu serait proposée sur un
+   * autre (cf. `useCoFormDraft`). Requis avec `elementType`.
    */
   elementId?: string;
   /** Type de l'élément (collection MongoDB). Requis si `elementId` fourni. */
   elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
+  /**
+   * Comment rendre un champ dont le type n'a pas de composant. Défaut :
+   * `"error"`. Cf. `UnsupportedField` — `"placeholder"` est réservé aux
+   * formulaires de CRÉATION ouverts au public.
+   */
+  unknownFieldVariant?: "error" | "placeholder";
 }
 
 /**
@@ -72,13 +94,16 @@ export function CoFormModal({
   inputKey,
   answerId,
   defaultValues,
+  baseUpdatedAt,
   readOnly = false,
   onAfterSubmit,
   closeOnSubmit = !inputKey,
   className,
   lockedFields,
+  hiddenStepKeys,
   elementId,
   elementType,
+  unknownFieldVariant,
 }: CoFormModalProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -86,6 +111,12 @@ export function CoFormModal({
   const [isDirty, setIsDirty] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
   const submitRef = useRef<(() => void) | null>(null);
+  // Rejet EXPLICITE du brouillon, câblé jusqu'au détenteur de `useCoFormDraft`
+  // (formulaire simple ou provider du wizard). Sans lui, « Abandonner les
+  // modifications » ne défaisait rien : l'auto-save avait déjà écrit, et le
+  // flush au démontage écrivait le reste — le brouillon qu'on venait de
+  // déclarer abandonner était reproposé à la réouverture.
+  const discardDraftRef = useRef<(() => void) | null>(null);
 
   // Réinitialise isDirty à la fermeture (propre pour la prochaine ouverture)
   const handleOpenChange = useCallback((nextOpen: boolean) => {
@@ -115,6 +146,9 @@ export function CoFormModal({
   const handleConfirmDiscard = useCallback(() => {
     setConfirmClose(false);
     setIsDirty(false);
+    // AVANT la fermeture : `discardDraft` supprime la clé ET jette le payload
+    // en attente, ce que le flush au démontage ne pourra plus réécrire.
+    discardDraftRef.current?.();
     onOpenChange(false);
   }, [onOpenChange]);
 
@@ -170,14 +204,17 @@ export function CoFormModal({
               inputKey={inputKey}
               answerId={answerId}
               defaultValues={defaultValues}
+              baseUpdatedAt={baseUpdatedAt}
               readOnly={readOnly}
               onAfterSubmit={handleAfterSubmit}
               onDirtyChange={setIsDirty}
               submitRef={submitRef}
+              discardDraftRef={discardDraftRef}
               lockedFields={lockedFields}
+              hiddenStepKeys={hiddenStepKeys}
               elementId={elementId}
               elementType={elementType}
-              inModal
+              unknownFieldVariant={unknownFieldVariant}
             />
           </div>
         </DialogContent>

@@ -39,6 +39,16 @@ export interface CoFormContextType {
   restorableDraft: { timestamp: number } | null;
   /** Métadonnées du brouillon écarté (server plus récent). null si absent. */
   staleDraftInfo: { timestamp: number } | null;
+  /**
+   * Nombre de reprises de brouillon depuis le montage. Le formulaire
+   * react-hook-form de l'étape courante (`useCoFormStep`) ne se réinitialise
+   * que sur changement d'index d'étape ; or reprendre un brouillon écrit sur
+   * l'étape où l'on se trouve ne change pas l'index. Ce compteur donne à
+   * l'effet de reset un second déclencheur, sans lui faire suivre chaque
+   * `stepsData` (ce qui remettrait le formulaire « propre » à chaque
+   * `submitStep` et couperait la détection de modifications).
+   */
+  draftRestoreCount: number;
 
   // Actions
   goToNextStep: () => void;
@@ -81,6 +91,7 @@ export const defaultCoFormContext: CoFormContextType = {
 
   restorableDraft: null,
   staleDraftInfo: null,
+  draftRestoreCount: 0,
 
   goToNextStep: () => {},
   goToPreviousStep: () => {},

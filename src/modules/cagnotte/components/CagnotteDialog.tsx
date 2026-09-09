@@ -34,10 +34,11 @@ import {useCagnottePermissions} from "@/modules/cagnotte/hooks/useCagnottePermis
 import {useCagnotteContextSafe} from "@/modules/cagnotte/hooks/useCagnotteContext";
 import {formatNumber} from "@/modules/cagnotte/utils/format";
 import {
+    getEntityId,
     normalizeIdOrNull,
     readEntityPreferences,
-    toSafeInt,
 } from "@/modules/cagnotte/utils/dataTransform";
+import {buildFundingByResourceId, computeResourceFundingTotals} from "@/modules/cagnotte/lib/resourceFundingTotals";
 import {useCagnotteType} from "@/modules/cagnotte/hooks/useCagnotteType.ts";
 import {computePledgesFromResources, useCagnotteAdapter} from "@/modules/cagnotte/hooks/useCagnotteAdapter";
 import {useSite} from "@/hooks/useSite.tsx";
@@ -46,7 +47,7 @@ import {useOrganizationProjectsWithAnswers} from "@/modules/cagnotte/hooks/useOr
 import {useUserAdminOrganizations} from "@/modules/cagnotte/hooks/useUserAdminOrganizations.ts";
 // Chargement à la demande du modal de paiement des promesses.
 const PromessesDialog = lazy(() => import("./PromessesDialog"));
-import type { User } from "@communecter/cocolight-api-client";
+import type { EntityTypes, User } from "@communecter/cocolight-api-client";
 import { isUser } from "@/lib/getTypedEntity";
 import PaymentReceivedScreen from "@/modules/cagnotte/components/PaymentReceivedScreen.tsx";
 import PledgeConfirmedScreen from "@/modules/cagnotte/components/PledgeConfirmedScreen.tsx";
@@ -71,6 +72,18 @@ interface CagnotteDialogProps {
         itemId?: string;
         hideResourceSelect?: boolean;
         hideOtherItems?: boolean;
+        /**
+         * Entité sur laquelle lire l'enveloppe. Par défaut celle du site — ce qui ne
+         * convient qu'aux ressources de CE contexte. Une fiche qui affiche une
+         * ressource vivant sous un autre contexte doit passer son hôte, sinon la
+         * ressource forcée reste introuvable ici.
+         */
+        hostEntity?: EntityTypes | null;
+        /**
+         * Ressource injectée par l'appelant, en repli de l'enveloppe : elle rejoint la liste et peut être
+         * sélectionnée comme les autres.
+         */
+        resource?: CagnotteResource;
     };
     cagnotteType?: CagnotteType;
 }
@@ -195,7 +208,10 @@ const CagnotteDialogContent = ({
     // Un seul useFundingEnvelope() : il retourne `projects[]` complet ET
     // `selectedProject` ciblé (filtré par projectId côté normalize). Pas besoin
     // d'un 2e hook global — voir doc/refactor-useOrganizationProjectsWithAnswers-lazy.md §9.
-    const {data: fundingEnvelope} = useFundingEnvelope(selectedResourceId || undefined);
+    const {data: fundingEnvelope, isLoading: isEnvelopeLoading} = useFundingEnvelope(
+        selectedResourceId || undefined,
+        {hostEntity: openContext?.hostEntity},
+    );
     const siteConfig = useSite();
 
     const {config: cagnotteConfig} = useCagnotteType({
@@ -208,23 +224,31 @@ const CagnotteDialogContent = ({
 
     // Unifier les données venant de projet ou proposition/ depenses ou milestone
     const {
-        resources,
-        savedSelectedResource
+        resources: envelopeResources,
+        savedSelectedResource: envelopeSelectedResource
     } = useCagnotteAdapter(fundingEnvelope, allProjects, cagnotteConfig, selectedResourceId);
-    const fundingByResourceId = useMemo(() => {
-        const nextMap = new Map<string, { totalFunding: number; totalCost: number }>();
-        resources.forEach((resource) => {
-            const resourceId = String(resource?.id || "").trim();
-            if (!resourceId) return;
 
-            nextMap.set(resourceId, {
-                totalFunding: toSafeInt(resource?.resourceFinancedAmount),
-                totalCost: toSafeInt(resource?.resourceTotalAmount),
-            });
-        });
+    // La ressource injectée par l'appelant complète l'enveloppe sans la remplacer
+    const injectedResource = openContext?.resource;
+    const resources = useMemo(() => {
+        if (!injectedResource) return envelopeResources;
+        const injectedId = getEntityId(injectedResource.id);
+        return envelopeResources.some((resource) => getEntityId(resource.id) === injectedId)
+            ? envelopeResources
+            : [injectedResource, ...envelopeResources];
+    }, [envelopeResources, injectedResource]);
 
-        return nextMap;
-    }, [resources]);
+    const savedSelectedResource = useMemo(() => {
+        if (envelopeSelectedResource) return envelopeSelectedResource;
+        if (!injectedResource) return undefined;
+        return getEntityId(injectedResource.id) === getEntityId(selectedResourceId)
+            ? injectedResource
+            : undefined;
+    }, [envelopeSelectedResource, injectedResource, selectedResourceId]);
+    // Financé / cible par ressource pour le sélecteur, sommés sur `items[]` — la
+    // même source que la carte de progression ci-dessous, pas les agrégats bruts
+    // (cf. resourceFundingTotals.ts, C10).
+    const fundingByResourceId = useMemo(() => buildFundingByResourceId(resources), [resources]);
     const currentUserEntity = (me && isUser(me) ? me : null) as User | null;
     const userAdminOrganizations = useUserAdminOrganizations(currentUserEntity, {});
     const orgsIds =  userAdminOrganizations?.map(user => user.id);
@@ -249,26 +273,57 @@ const CagnotteDialogContent = ({
     const cagnotteCtx = useCagnotteContextSafe();
     void cagnotteCtx; // unused pour l'instant — placeholder pour usage futur
 
+    // Ids de toutes les ressources (mémoïsé — évite de re-parcourir `resources` à
+    // chaque render, cf. getEntityId dans dataTransform.ts pour les formes d'id gérées).
+    const allResourcesIds = useMemo(
+        () =>
+            resources
+                .flatMap((p) => [
+                    getEntityId(p.id),
+                    getEntityId(p.projectId),
+                    getEntityId(p.answerId),
+                    getEntityId((p as { _id?: unknown })._id)
+                ])
+                .filter(Boolean),
+        [resources]
+    );
+
+    const isValidResourceId = useCallback(
+        (id: unknown) => {
+            const cleaned = getEntityId(id);
+            return !!cleaned && allResourcesIds.includes(cleaned);
+        },
+        [allResourcesIds]
+    );
+
     // Sélectionner le projet avec priorité au contexte d'ouverture.
     // Pattern "adjust state during render" (React 19) au lieu d'un useEffect
     // pour éviter `react-hooks/set-state-in-effect` warning.
     // Cf. https://react.dev/reference/react/useState#storing-information-from-previous-renders
     if (resources.length > 0) {
-        const allResourcesIds = resources.map((p) => p.id).filter((id) => !!id);
-        const selectionIsValid = !!selectedResourceId && allResourcesIds.includes(selectedResourceId);
-        if (!selectionIsValid) {
-            const preferred = forcedResourceId || defaultResourceId;
-            const next = preferred && allResourcesIds.includes(preferred)
-                ? preferred
-                : (allResourcesIds[0] || "");
-            if (next !== selectedResourceId) {
-                setSelectedResourceId(next);
-            }
+        const targetId = isValidResourceId(forcedResourceId) ? getEntityId(forcedResourceId)
+                       // Une ressource forcée mais absente ne retombe sur AUCUNE autre.
+                       : forcedResourceId ? ""
+                       : isValidResourceId(selectedResourceId) ? getEntityId(selectedResourceId)
+                       : isValidResourceId(defaultResourceId) ? getEntityId(defaultResourceId)
+                       : (allResourcesIds[0] || "");
+
+        if (targetId !== getEntityId(selectedResourceId)) {
+            setSelectedResourceId(targetId);
         }
     }
 
-    // Récupérer les données du projet sélectionné (typé CagnotteResource — plus de casts)
-    const selectedResource: CagnotteResource | undefined = resources.find((p) => p.id === selectedResourceId);
+    const forcedResourceMissing =
+        !!forcedResourceId && !isEnvelopeLoading && !allProjectsLoading && !isValidResourceId(forcedResourceId);
+
+    const selectedResource: CagnotteResource | undefined = useMemo(() => {
+        const cleanedSelected = getEntityId(selectedResourceId);
+        return resources.find((p) =>
+            getEntityId(p.id) === cleanedSelected ||
+            getEntityId(p.projectId) === cleanedSelected ||
+            getEntityId(p.answerId) === cleanedSelected
+        );
+    }, [resources, selectedResourceId]);
 
     const activeResourceItems = useMemo(
         () => selectedResource?.items.filter((item) => (item.status || 'open') !== 'close'),
@@ -321,39 +376,21 @@ const CagnotteDialogContent = ({
         }
     }
 
-    // Extraire les données de cagnotte du projet (montants convertis en int avant somme)
-    const resourceCagnotteTotalAmount = useMemo(() => {
-        const itemsFinancedTotal = (activeResourceItems || [])
-            .filter((item) => item?.status !== 'close')
-            .reduce(
-                (sum, item) => sum + toSafeInt(item.currentFunding),
-                0
-            );
-
-        if ((activeResourceItems || []).length > 0) {
-            return itemsFinancedTotal;
-        }
-
-        return toSafeInt(selectedResource?.resourceFinancedAmount);
-    }, [activeResourceItems, selectedResource]);
-
-    const resourceCagnotteTargetAmount = useMemo(() => {
-        const milestonesTarget = (activeResourceItems || [])
-            .filter((item) => item?.status !== 'close')
-            .reduce(
-                (sum, item) => sum + toSafeInt(item.price),
-                0
-            );
-
-        if ((activeResourceItems || []).length > 0) {
-            return milestonesTarget;
-        }
-
-        return toSafeInt(selectedResource?.resourceTotalAmount);
-    }, [activeResourceItems, selectedResource]);
-
-    // `resourceProgressPercentage` est désormais calculé en interne par `CagnotteResourceProgressCard`.
-    const remainingToFinanceAmount = Math.max(resourceCagnotteTargetAmount - resourceCagnotteTotalAmount, 0);
+    // Total financé, cible et reste à financer sommés sur les MÊMES items ouverts
+    // (dépenses orphelines comprises), comme `PaymentConfigPage.maxAllocatable`.
+    // Ne PAS court-circuiter par `selectedResource.resourceFinancedAmount` : cet
+    // agrégat n'a pas le périmètre de `items[]` (milestones projet seuls côté
+    // projet, dépenses closes comprises côté proposition) — le plafond de la
+    // modale divergeait alors de celui du paiement (cf. resourceFundingTotals.ts).
+    // `resourceProgressPercentage` est calculé en interne par `CagnotteResourceProgressCard`.
+    const {
+        totalAmount: resourceCagnotteTotalAmount,
+        targetAmount: resourceCagnotteTargetAmount,
+        remainingAmount: remainingToFinanceAmount,
+    } = useMemo(
+        () => computeResourceFundingTotals(activeResourceItems, selectedResource),
+        [activeResourceItems, selectedResource]
+    );
     const maxContributionAmount = remainingToFinanceAmount;
 
     // Vérifier si le resource(proposition ou projet) sélectionné est déjà le resourceModalId
@@ -640,6 +677,12 @@ const CagnotteDialogContent = ({
                         cagnotteConfig={cagnotteConfig}
                     />
                 </Suspense>
+            ) : forcedResourceMissing ? (
+                <div className="py-8 text-center text-sm text-muted-foreground">
+                    {t("CagnotteDialog.labels.resourceOutOfScope", undefined, {
+                        context: cagnotteConfig.selectorType + context,
+                    })}
+                </div>
             ) : (
                 <div className="space-y-6">
                     {/* Bouton pour ouvrir le modal de paiement des promesses */}

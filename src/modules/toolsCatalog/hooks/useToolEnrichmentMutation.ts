@@ -1,8 +1,9 @@
 import { useRef } from "react";
-import type { ToolEnrichmentInput, ToolEnrichmentResult } from "@communecter/cocolight-api-client";
+import type { ToolEnrichmentInput } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { TOOLS_CATALOG_QUERY_KEYS } from "../constants/queryKeys";
+import { readEnrichmentVerdict } from "../utils/enrichmentResult";
 
 /** Fichier image à uploader avant enregistrement (optionnel). */
 export interface ToolEnrichmentSubmit extends ToolEnrichmentInput {
@@ -33,7 +34,11 @@ export function useToolEnrichmentMutation() {
   // sur l'élément porteur.
   const uploadedRef = useRef<{ file: File; docId: string; docPath: string } | null>(null);
 
-  return useMutationWithToast<ToolEnrichmentResult, ToolEnrichmentSubmit>({
+  // `unknown` et PAS `ToolEnrichmentResult` : selon la version de lib installée, la
+  // valeur rendue est soit l'enveloppe, soit le document `navigatorcriteria` déballé
+  // (cf. `readEnrichmentVerdict`). La typer en enveloppe serait une affirmation fausse
+  // sur la lib en place. Aucun appelant ne lit `mutation.data` — seul le verdict compte.
+  return useMutationWithToast<unknown, ToolEnrichmentSubmit>({
     mutationFn: async ({ imageFile, ...input }: ToolEnrichmentSubmit) => {
       if (!carrier) throw new Error("Contexte costum indisponible");
 
@@ -52,12 +57,16 @@ export function useToolEnrichmentMutation() {
       }
 
       const res = await carrier.saveToolEnrichment(payload);
-      if (!res.results) {
+      // ⚠️ PAS `res.results` : la lib déballe la clé métier `data` et perd le verdict,
+      // si bien qu'un enregistrement réussi remontait en échec (HTTP 200, base à jour,
+      // toast rouge). `readEnrichmentVerdict` reconstitue l'enveloppe — cf. sa doc.
+      const { ok, msg } = readEnrichmentVerdict(res);
+      if (!ok) {
         // Le `msg` serveur est du FR PHP hors i18n → NE PAS le mettre dans `Error.message`
         // (`showErrorToast` le rendrait en description du toast). Message vide → description
         // vide, l'utilisateur ne voit que le titre i18n `edit.error` ; le `msg` reste en
         // `cause` pour le diagnostic (console / error tracking).
-        throw Object.assign(new Error(""), { cause: res.msg });
+        throw Object.assign(new Error(""), { cause: msg });
       }
       return res;
     },

@@ -148,6 +148,18 @@
           },
           {
             "label": {
+              "fr": "Ressources",
+              "en": "Resources"
+            },
+            "path": "/ressources",
+            "icon": "book-open",
+            "description": {
+              "fr": "Guides, recommandations et outils à télécharger.",
+              "en": "Guides, recommendations and tools to download."
+            }
+          },
+          {
+            "label": {
               "fr": "Labelliser",
               "en": "Get Labeled"
             },
@@ -486,9 +498,16 @@
                   "type": "searchCount",
                   "entityType": "organizations",
                   "baseParams": {
-                    "sourceKey": ["sportSanteBienetre"],
-                    "defaultTypes": ["organizations"]
-                  }
+                                  "sourceKey": [
+                                    "sportSanteBienetre"
+                                  ],
+                                  "defaultTypes": [
+                                    "organizations"
+                                  ],
+                                  "defaultFilters": {
+                                    "statusActor": "Validé"
+                                  }
+                                }
                 }
               },
               {
@@ -1060,24 +1079,7 @@
             "baseParams": {
               "defaultTypes": [
                 "projects"
-              ],
-              "notSourceKey": true,
-              "defaultFilters": {
-                "links.preferences.toBeValidated.sportSanteBienetre": {
-                  "$exists": false
-                },
-                "$or": {
-                  "links.contributors.682b2ac5e05a1d45844340e7": {
-                    "$exists": true
-                  },
-                  "parent.682b2ac5e05a1d45844340e7": {
-                    "$exists": true
-                  }
-                },
-                "links.contributors.682b2ac5e05a1d45844340e7": {
-                  "$exists": true
-                }
-              }
+              ]
             },
             "list": {
               "columns": {
@@ -1285,12 +1287,13 @@
                 "organizations"
               ],
               "defaultFilters": {
-                "$or": {
-                  "source.key": "sportSanteBienetre",
-                  "source.keys": "sportSanteBienetre",
-                  "reference.costum": "sportSanteBienetre"
-                }
-              }
+                                  "$or": {
+                                    "source.key": "sportSanteBienetre",
+                                    "source.keys": "sportSanteBienetre",
+                                    "reference.costum": "sportSanteBienetre"
+                                  },
+                                  "statusActor": "Validé"
+                                }
             },
             "list": {
               "columns": {
@@ -1556,12 +1559,13 @@
                 "organizations"
               ],
               "defaultFilters": {
-                "$or": {
-                  "source.keys": "sportSanteBienetre",
-                  "reference.costum": "sportSanteBienetre"
-                }
-              },
-              "notSourceKey": true
+                                  "$or": {
+                                    "source.key": "sportSanteBienetre",
+                                    "source.keys": "sportSanteBienetre",
+                                    "reference.costum": "sportSanteBienetre"
+                                  },
+                                  "statusActor": "Validé"
+                                }
             },
             "list": {
               "columns": {
@@ -2245,7 +2249,7 @@
                         "name": "Enfants (2-9 ans)",
                         "label": {
                           "fr": "Enfants (2-9 ans)",
-                          "en": "Children (2-9 years)"
+                          "en": "Children (2-9)"
                         }
                       },
                       {
@@ -2253,23 +2257,47 @@
                         "name": "Pré-adolescents/Adolescents (10-17 ans)",
                         "label": {
                           "fr": "Pré-adolescents/Adolescents (10-17 ans)",
-                          "en": "Teens (10-17 years)"
+                          "en": "Pre-teens/Teens (10-17)"
                         }
                       },
                       {
                         "id": "adultes",
-                        "name": "Personnes en perte d'autonomie",
+                        "name": "Adultes (18-55 ans)",
                         "label": {
-                          "fr": "Personnes en perte d'autonomie",
-                          "en": "Adults with loss of autonomy"
+                          "fr": "Adultes (18-55 ans)",
+                          "en": "Adults (18-55)"
                         }
                       },
                       {
-                        "id": "femmes-enceintes",
-                        "name": "Femmes enceintes",
+                        "id": "personnes-plus-55-ans",
+                        "name": "Personnes de plus de 55 ans",
                         "label": {
-                          "fr": "Femmes enceintes",
-                          "en": "Pregnant women"
+                          "fr": "Personnes de plus de 55 ans",
+                          "en": "People over 55"
+                        }
+                      },
+                      {
+                        "id": "seniors",
+                        "name": "Séniors (plus de 55 ans)",
+                        "label": {
+                          "fr": "Séniors (plus de 55 ans)",
+                          "en": "Seniors (over 55)"
+                        }
+                      },
+                      {
+                        "id": "personnes-agees",
+                        "name": "Personnes âgées  (plus de 65 ans)",
+                        "label": {
+                          "fr": "Personnes âgées (plus de 65 ans)",
+                          "en": "Elderly (over 65)"
+                        }
+                      },
+                      {
+                        "id": "perte-autonomie",
+                        "name": "Personnes en perte d'autonomie",
+                        "label": {
+                          "fr": "Personnes en perte d'autonomie",
+                          "en": "People losing autonomy"
                         }
                       },
                       {
@@ -2281,11 +2309,11 @@
                         }
                       },
                       {
-                        "id": "personnes-plus-55-ans",
-                        "name": "Personnes de plus de 55 ans",
+                        "id": "femmes-enceintes",
+                        "name": "Femmes enceintes",
                         "label": {
-                          "fr": "Personnes de plus de 55 ans",
-                          "en": "People over 55 years old"
+                          "fr": "Femmes enceintes",
+                          "en": "Pregnant women"
                         }
                       }
                     ]
@@ -2347,14 +2375,6 @@
                         }
                       },
                       {
-                        "id": "97411",
-                        "name": "97411",
-                        "label": {
-                          "fr": "97411 - Bois de Nèfles Saint-Paul",
-                          "en": "97411 - Bois de Nèfles Saint-Paul"
-                        }
-                      },
-                      {
                         "id": "97412",
                         "name": "97412",
                         "label": {
@@ -2363,11 +2383,27 @@
                         }
                       },
                       {
-                        "id": "97416",
-                        "name": "97416",
+                        "id": "97413",
+                        "name": "97413",
                         "label": {
-                          "fr": "97416 - La Chaloupe Saint-Leu",
-                          "en": "97416 - La Chaloupe Saint-Leu"
+                          "fr": "97413 - Cilaos",
+                          "en": "97413 - Cilaos"
+                        }
+                      },
+                      {
+                        "id": "97414",
+                        "name": "97414",
+                        "label": {
+                          "fr": "97414 - Entre-Deux",
+                          "en": "97414 - Entre-Deux"
+                        }
+                      },
+                      {
+                        "id": "97417",
+                        "name": "97417",
+                        "label": {
+                          "fr": "97417 - La Montagne",
+                          "en": "97417 - La Montagne"
                         }
                       },
                       {
@@ -2400,6 +2436,22 @@
                         "label": {
                           "fr": "97421 - La Rivière Saint-Louis",
                           "en": "97421 - La Rivière Saint-Louis"
+                        }
+                      },
+                      {
+                        "id": "97422",
+                        "name": "97422",
+                        "label": {
+                          "fr": "97422 - La Saline",
+                          "en": "97422 - La Saline"
+                        }
+                      },
+                      {
+                        "id": "97425",
+                        "name": "97425",
+                        "label": {
+                          "fr": "97425 - Les Avirons",
+                          "en": "97425 - Les Avirons"
                         }
                       },
                       {
@@ -2443,6 +2495,14 @@
                         }
                       },
                       {
+                        "id": "97432",
+                        "name": "97432",
+                        "label": {
+                          "fr": "97432 - Ravine des Cabris",
+                          "en": "97432 - Ravine des Cabris"
+                        }
+                      },
+                      {
                         "id": "97433",
                         "name": "97433",
                         "label": {
@@ -2475,6 +2535,14 @@
                         }
                       },
                       {
+                        "id": "97437",
+                        "name": "97437",
+                        "label": {
+                          "fr": "97437 - Sainte-Anne",
+                          "en": "97437 - Sainte-Anne"
+                        }
+                      },
+                      {
                         "id": "97438",
                         "name": "97438",
                         "label": {
@@ -2491,6 +2559,14 @@
                         }
                       },
                       {
+                        "id": "97441",
+                        "name": "97441",
+                        "label": {
+                          "fr": "97441 - Sainte-Suzanne",
+                          "en": "97441 - Sainte-Suzanne"
+                        }
+                      },
+                      {
                         "id": "97450",
                         "name": "97450",
                         "label": {
@@ -2504,14 +2580,6 @@
                         "label": {
                           "fr": "97460 - Saint-Paul",
                           "en": "97460 - Saint-Paul"
-                        }
-                      },
-                      {
-                        "id": "97470",
-                        "name": "97470",
-                        "label": {
-                          "fr": "97470 - Saint-Benoît",
-                          "en": "97470 - Saint-Benoît"
                         }
                       },
                       {
@@ -2587,8 +2655,14 @@
                   ],
                   "notSourceKey": true,
                   "defaultFilters": {
-                    "form": "6928096adf5caf0d230e7f26"
-                  }
+                    "form": "6928096adf5caf0d230e7f26",
+                    "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7": "Validé"
+                  },
+                  "searchBy": [
+                    "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdegc9sgox76p87n27",
+                    "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdeggo91owe8t9ovl4p",
+                    "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdmxv88txy6f5z6svg"
+                  ]
                 },
                 "list": {
                   "columns": {
@@ -2676,15 +2750,16 @@
                 "organizations"
               ],
               "defaultFilters": {
-                "$or": {
-                  "source.key": "sportSanteBienetre",
-                  "source.keys": "sportSanteBienetre",
-                  "reference.costum": "sportSanteBienetre"
-                },
-                "tags": [
-                  "Labellisé"
-                ]
-              }
+                                  "$or": {
+                                    "source.key": "sportSanteBienetre",
+                                    "source.keys": "sportSanteBienetre",
+                                    "reference.costum": "sportSanteBienetre"
+                                  },
+                                  "tags": [
+                                    "Labellisé"
+                                  ],
+                                  "statusActor": "Validé"
+                                }
             },
             "list": {
               "columns": {
@@ -4225,6 +4300,260 @@
       ]
     },
     {
+      "path": "/ressources",
+      "title": {
+        "fr": "Ressources",
+        "en": "Resources"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Ressources — Sport Santé Bien-être La Réunion",
+          "en": "Resources — Sport Health Wellness Réunion"
+        },
+        "description": {
+          "fr": "Documents ressources du sport santé à La Réunion : recommandations HAS, guides et référentiels, rapports et enquêtes, outils pratiques, financements.",
+          "en": "Sport-health resource documents in Réunion: HAS recommendations, guides and frameworks, reports and surveys, practical tools, funding."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "ressources-header",
+          "props": {
+            "headline": {
+              "fr": "Ressources",
+              "en": "Resources"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un document par son nom\u2026",
+              "en": "Search a document by name\u2026"
+            },
+            "showActiveFiltersTags": "desktop"
+          }
+        },
+        {
+          "type": "gridLayout",
+          "id": "ressources-grid",
+          "props": {
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftSection": {
+              "type": "filters",
+              "id": "ressources-filtres",
+              "props": {
+                "title": {
+                  "fr": "Affiner votre recherche",
+                  "en": "Refine your search"
+                },
+                "defaultOpenGroups": [
+                  "thematique"
+                ],
+                "filterGroups": [
+                  {
+                    "id": "thematique",
+                    "label": {
+                      "fr": "Thématique",
+                      "en": "Topic"
+                    },
+                    "type": "filters",
+                    "field": "thematique",
+                    "optionStyle": "check",
+                    "order": 1,
+                    "options": [
+              {
+                "id": "mss",
+                "label": {
+                  "fr": "Maisons Sport Santé",
+                  "en": "Sport Health Houses"
+                },
+                "name": "mss"
+              },
+              {
+                "id": "rapports",
+                "label": {
+                  "fr": "Rapports & enquêtes",
+                  "en": "Reports & surveys"
+                },
+                "name": "rapports"
+              },
+              {
+                "id": "has",
+                "label": {
+                  "fr": "Recommandations HAS par pathologie",
+                  "en": "HAS recommendations by condition"
+                },
+                "name": "has"
+              },
+              {
+                "id": "guides",
+                "label": {
+                  "fr": "Guides & référentiels",
+                  "en": "Guides & frameworks"
+                },
+                "name": "guides"
+              },
+              {
+                "id": "outils",
+                "label": {
+                  "fr": "Outils pratiques",
+                  "en": "Practical tools"
+                },
+                "name": "outils"
+              },
+              {
+                "id": "communication",
+                "label": {
+                  "fr": "Communication",
+                  "en": "Communication"
+                },
+                "name": "communication"
+              },
+              {
+                "id": "financements",
+                "label": {
+                  "fr": "Financements & aides",
+                  "en": "Funding & support"
+                },
+                "name": "financements"
+              }
+                    ]
+                  }
+                ]
+              }
+            },
+            "rightSection": {
+              "type": "searchProStatic",
+              "id": "ressources-list",
+              "props": {
+                "customHeader": {
+                  "title": {
+                    "fr": "Tous les documents",
+                    "en": "All documents"
+                  }
+                },
+                "useFilter": true,
+                "showMap": false,
+                "enableMap": false,
+                "disableInfiniteScroll": false,
+                "defaultViewMode": "list",
+                "baseParams": {
+                  "defaultTypes": [
+                    "poi"
+                  ],
+                  "sourceKey": [
+                    "sportSanteBienetre"
+                  ],
+                  "defaultFilters": {
+                    "type": "ressource",
+                    "status": "Visible"
+                  },
+                  "defaultFields": [
+                    "name",
+                    "thematique",
+                    "description",
+                    "urls",
+                    "medias",
+                    "status",
+                    "created",
+                    "type",
+                    "source",
+                    "profilMediumImageUrl",
+                    "profilImageUrl"
+                  ],
+                  "searchBy": [
+                    "name",
+                    "description"
+                  ],
+                  "defaultSortBy": {
+                    "created": -1
+                  }
+                },
+                "list": {
+                  "columns": {
+                    "sm": 1,
+                    "md": 2,
+                    "lg": 2
+                  },
+                  "card": {
+                    "type": "resource",
+                    "detailsMode": "dialog"
+                  },
+                  "preview": {
+                    "type": "resource",
+                    "width": "2xl"
+                  },
+                  "resource": {
+                    "design": "card",
+                    "titleField": "name",
+                    "descriptionField": "description",
+                    "dateField": "created",
+                    "imageField": "profilMediumImageUrl",
+                    "urlsField": "urls",
+                    "badge": {
+                      "field": "thematique",
+                      "colors": {
+                        "mss": "var(--chart-1)",
+                        "rapports": "var(--chart-2)",
+                        "has": "var(--chart-3)",
+                        "guides": "var(--chart-4)",
+                        "outils": "var(--chart-5)",
+                        "communication": "var(--primary)",
+                        "financements": "var(--accent)"
+                      },
+                      "icons": {
+                  "mss": "house",
+                  "rapports": "file-bar-chart",
+                  "has": "stethoscope",
+                  "guides": "book-open",
+                  "outils": "wrench",
+                  "communication": "megaphone",
+                  "financements": "coins"
+                      },
+                      "labels": {
+                  "mss": {
+                    "fr": "Maisons Sport Santé",
+                    "en": "Sport Health Houses"
+                  },
+                  "rapports": {
+                    "fr": "Rapports & enquêtes",
+                    "en": "Reports & surveys"
+                  },
+                  "has": {
+                    "fr": "Recommandations HAS par pathologie",
+                    "en": "HAS recommendations by condition"
+                  },
+                  "guides": {
+                    "fr": "Guides & référentiels",
+                    "en": "Guides & frameworks"
+                  },
+                  "outils": {
+                    "fr": "Outils pratiques",
+                    "en": "Practical tools"
+                  },
+                  "communication": {
+                    "fr": "Communication",
+                    "en": "Communication"
+                  },
+                  "financements": {
+                    "fr": "Financements & aides",
+                    "en": "Funding & support"
+                  }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "path": "/mentions-legales",
       "title": {
         "fr": "Mentions légales",
@@ -4601,11 +4930,20 @@
       ],
       "limit": 8,
       "params": {
-        "sourceKey": [
-          "sportSanteBienetre",
-          "equipementsSportifs974"
-        ]
-      },
+                  "sourceKey": [
+                    "sportSanteBienetre",
+                    "equipementsSportifs974"
+                  ],
+                  "filters": {
+                    "statusActor": {
+                      "$nin": [
+                        "En attente",
+                        "En cours",
+                        "Refusé"
+                      ]
+                    }
+                  }
+                },
       "itemActionByType": {
         "poi": {
           "kind": "preview",
@@ -5604,6 +5942,18 @@
               { "field": "reference.costum", "op": "contains", "value": "sportSanteBienetre" }
             ]
           }
+        },
+        {
+          "editModal": "edit-sport-sante-bienetre-ressource",
+          "editModalMatch": {
+            "type": "ressource"
+          },
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "sportSanteBienetre" },
+              { "field": "reference.costum", "op": "contains", "value": "sportSanteBienetre" }
+            ]
+          }
         }
       ]
     }
@@ -5619,6 +5969,197 @@
     "fgColor": "#000000"
   },
   "costumForms": {
+    "sport-sante-bienetre-ressource": {
+      "id": "sport-sante-bienetre-ressource",
+      "entityType": "poi",
+      "collection": "poi",
+      "costumSlug": "sportSanteBienetre",
+      "icon": "book-open",
+      "layout": {
+        "kind": "flat"
+      },
+      "sections": [
+        {
+          "id": "document",
+          "label": {
+            "fr": "Document ressource",
+            "en": "Resource document"
+          },
+          "icon": "book-open",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "thematique",
+                "description",
+                "documents",
+                "urls",
+                "status"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom",
+            "en": "Name"
+          },
+          "placeholder": {
+            "fr": "Nom du document",
+            "en": "Document name"
+          }
+        },
+        "thematique": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Thématique",
+            "en": "Topic"
+          },
+          "placeholder": {
+            "fr": "Choisir une thématique\u2026",
+            "en": "Pick a topic\u2026"
+          },
+          "enum": [
+            { "value": "mss", "label": { "fr": "Maisons Sport Santé", "en": "Sport Health Houses" } },
+            { "value": "rapports", "label": { "fr": "Rapports & enquêtes", "en": "Reports & surveys" } },
+            { "value": "has", "label": { "fr": "Recommandations HAS par pathologie", "en": "HAS recommendations by condition" } },
+            { "value": "guides", "label": { "fr": "Guides & référentiels", "en": "Guides & frameworks" } },
+            { "value": "outils", "label": { "fr": "Outils pratiques", "en": "Practical tools" } },
+            { "value": "communication", "label": { "fr": "Communication", "en": "Communication" } },
+            { "value": "financements", "label": { "fr": "Financements & aides", "en": "Funding & support" } }
+          ]
+        },
+        "description": {
+          "widget": "markdown",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          },
+          "info": {
+            "fr": "Texte court décrivant le document.",
+            "en": "Short text describing the document."
+          }
+        },
+        "documents": {
+          "widget": "file",
+          "label": {
+            "fr": "Fichier PDF",
+            "en": "PDF file"
+          },
+          "info": {
+            "fr": "PDF uploadé (10 Mo max) — ou renseigner un lien web ci-dessous.",
+            "en": "Uploaded PDF (10 MB max) — or provide a web link below."
+          },
+          "widgetProps": {
+            "contentKey": "file",
+            "maxItems": 1,
+            "accept": "application/pdf"
+          },
+          "renderOnly": true
+        },
+        "urls": {
+          "widget": "urlList",
+          "label": {
+            "fr": "Lien web externe",
+            "en": "External web link"
+          },
+          "info": {
+            "fr": "URL HTTPS du document en ligne.",
+            "en": "HTTPS URL of the online document."
+          },
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un lien",
+              "en": "Add a link"
+            },
+            "removeLabel": {
+              "fr": "Retirer",
+              "en": "Remove"
+            }
+          }
+        },
+        "status": {
+          "widget": "select",
+          "required": true,
+          "default": "Brouillon",
+          "label": {
+            "fr": "Statut",
+            "en": "Status"
+          },
+          "enum": [
+            { "value": "Visible", "label": { "fr": "Visible", "en": "Visible" } },
+            { "value": "Brouillon", "label": { "fr": "Brouillon", "en": "Draft" } }
+          ]
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une ressource",
+            "en": "Add a resource"
+          },
+          "edit": {
+            "fr": "Modifier la ressource",
+            "en": "Edit resource"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "scope": {
+        "slugFrom": "carrier"
+      },
+      "mutation": {
+        "entityType": "poi",
+        "inject": {
+          "extraFields": {
+            "type": "ressource"
+          },
+          "parentFromCarrier": true
+        },
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_RESSOURCE_SSBE",
+          "edit": "EntityFormModal · EDIT_RESSOURCE_SSBE"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "pois",
+            "searchKeys": [
+              "admin-poi",
+              "searchCostumStatic"
+            ]
+          }
+        },
+        "payloadEmitEmptyOnEdit": true,
+        "navigateOnSuccess": false
+      },
+      "identity": {
+        "type": "ressource"
+      }
+    },
     "sport-sante-bienetre-organizations": {
       "id": "sport-sante-bienetre-organizations",
       "entityType": "organizations",
@@ -6039,6 +6580,18 @@
           "widgetProps": {
             "required": true
           }
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
         },
         "addressCountry": {
           "widget": "hidden",
@@ -7048,6 +7601,18 @@
             "en": "Address"
           }
         },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        },
         "addressCountry": {
           "widget": "hidden",
           "group": "address"
@@ -7142,6 +7707,8 @@
         "existingUrlFrom": "image:profilUrl"
       },
       "mutation": {
+        "payloadEmitEmptyOnEdit": true,
+        "navigateOnSuccess": false,
         "entityType": "poi",
         "inject": {
           "extraFields": {
@@ -7280,6 +7847,18 @@
             "fr": "Adresse",
             "en": "Address"
           }
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
         },
         "addressCountry": {
           "widget": "hidden",
@@ -7541,6 +8120,7 @@
         "existingUrlFrom": "image:profilUrl"
       },
       "mutation": {
+        "payloadEmitEmptyOnEdit": true,
         "entityType": "projects",
         "inject": {
           "parent": true,
@@ -7727,6 +8307,18 @@
             "en": "Address"
           }
         },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        },
         "addressCountry": {
           "widget": "hidden",
           "group": "address"
@@ -7887,6 +8479,7 @@
         "existingUrlFrom": "image:profilUrl"
       },
       "mutation": {
+        "payloadEmitEmptyOnEdit": true,
         "entityType": "events",
         "inject": {
           "extraFields": {
@@ -8111,6 +8704,18 @@
             "fr": "Adresse",
             "en": "Address"
           }
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
         },
         "addressCountry": {
           "widget": "hidden",
@@ -8537,6 +9142,8 @@
         "existingUrlFrom": "image:profilUrl"
       },
       "mutation": {
+        "payloadEmitEmptyOnEdit": true,
+        "navigateOnSuccess": false,
         "entityType": "poi",
         "inject": {
           "extraFields": {
@@ -8978,7 +9585,193 @@
         "access": "siteAdmin",
         "sections": [
           {
-            "type": "reference"
+            "type": "reference",
+            "title": {
+              "fr": "Référencer un projet existant",
+              "en": "Reference an existing project"
+            },
+            "entityTypes": [
+              "projects"
+            ],
+            "search": {
+              "openData": "optOut"
+            },
+            "moderateReferenced": true
+          }
+        ]
+      },
+      {
+        "id": "ressources",
+        "label": {
+          "fr": "Ressources",
+          "en": "Resources"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Documents ressources",
+              "en": "Resource documents"
+            },
+            "source": {
+              "sourceKey": [
+                "sportSanteBienetre"
+              ],
+              "defaultFilters": {
+                "type": "ressource"
+              },
+              "defaultSortBy": {
+                "created": -1
+              },
+              "searchBy": [
+                "name",
+                "description"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "thematique",
+                "label": {
+                  "fr": "Thématique",
+                  "en": "Topic"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Ajouté le",
+                  "en": "Added on"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "validate",
+              "delete"
+            ],
+            "create": "add-sport-sante-bienetre-ressource",
+            "edit": "inherit",
+            "status": {
+              "mode": "statusField",
+              "field": "status",
+              "states": [
+                { "value": "Brouillon", "tone": "pending" },
+                { "value": "Visible", "tone": "positive" }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "moderation",
+        "label": {
+          "fr": "Modération",
+          "en": "Moderation"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "answers",
+            "label": {
+              "fr": "Créneaux — modération",
+              "en": "Slots — moderation"
+            },
+            "source": {
+              "notSourceKey": true,
+              "defaultFilters": {
+                "form": "6928096adf5caf0d230e7f26"
+              },
+              "defaultSortBy": {
+                "created": -1
+              },
+              "searchBy": [
+                "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdegc9sgox76p87n27",
+                "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdeggo91owe8t9ovl4p",
+                "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdmxv88txy6f5z6svg"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Activité",
+                  "en": "Activity"
+                },
+                "sortable": false
+              },
+              {
+                "path": "structure.name",
+                "label": {
+                  "fr": "Structure",
+                  "en": "Organization"
+                },
+                "sortable": false
+              },
+              {
+                "path": "sportSanteBienetre2172025_854_0mdn1cs8on3yru1p80lq",
+                "label": {
+                  "fr": "Type",
+                  "en": "Type"
+                },
+                "sortable": false
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                },
+                "sortable": false
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Déclaré le",
+                  "en": "Declared on"
+                }
+              }
+            ],
+            "rowActions": [
+              "validate"
+            ],
+            "create": false,
+            "edit": false,
+            "status": {
+              "mode": "statusField",
+              "field": "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7",
+              "states": [
+                {
+                  "value": "En attente",
+                  "tone": "pending"
+                },
+                {
+                  "value": "En cours",
+                  "tone": "progress"
+                },
+                {
+                  "value": "Validé",
+                  "tone": "positive"
+                },
+                {
+                  "value": "Réfusé",
+                  "label": {
+                    "fr": "Refusé",
+                    "en": "Refused"
+                  },
+                  "tone": "negative"
+                }
+              ]
+            }
           }
         ]
       }

@@ -1,22 +1,19 @@
 /**
- * @unused 2026-05-19 — workaround historique pour récupérer l'id d'une action créée.
+ * Résolution de l'id MongoDB d'une action côté UI.
  *
- * Devenu obsolète : `useCreateAction` (cf. `actions/mutations/action.ts`) utilise
- * désormais l'API entity-oriented du SDK (`project.action()` + `action.save()`),
- * qui peuple `action.id` automatiquement après la réponse serveur. Plus besoin de
- * refetcher l'envelope et de matcher l'action par `name`/`credits`/`status`.
- *
- * Conservé selon la politique projet (ne pas supprimer les exports non utilisés).
- * Toutes les mutations action passent désormais par l'API entity-oriented du
- * SDK (`project.action().save()` / `.delete()` / `.updateStatus()` / etc.).
+ * `useCreateAction` (cf. `actions/mutations/action.ts`) utilise l'API
+ * entity-oriented du SDK (`project.action()` + `action.save()`), qui peuple
+ * `action.id` automatiquement après la réponse serveur — `resolveCreatedActionId`
+ * n'est donc plus nécessaire pour la création. Mais `resolveActionEntityId` /
+ * `isValidEntityId` restent activement utilisés par `ActionsSection.tsx` (candidater,
+ * marquer terminé, éditer, supprimer une action existante) : ne pas supprimer.
  */
 import { asRecord } from "@/modules/cagnotte/utils/dataTransform";
 import type { FundingAction, FundingActionStatus } from "@/modules/cagnotte/types";
 
 /**
  * Alias rétro-compat. Le type canonique est `FundingActionStatus` (sous-ensemble
- * explicite de `ActionStatus` SDK). Conservé en re-export car cet helper est
- * actuellement `@unused` (workaround remplacé par `action.id` peuplé par le SDK).
+ * explicite de `ActionStatus` SDK).
  */
 export type ActionStatus = FundingActionStatus;
 

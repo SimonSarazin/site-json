@@ -1,0 +1,256 @@
+{
+  "page": {
+    "backHome": "Retour à l'accueil",
+    "backToAac": "Retour à l'AAC",
+    "communDetail": "Détail du commun",
+    "communDetailDescription": "Consultez l'ensemble des réponses et informations associées à ce commun.",
+    "loading": "Chargement…",
+    "error": "Impossible de charger ce commun.",
+    "errorMessage": "Une erreur est survenue pendant le chargement du commun.",
+    "configErrorMessage": "La configuration de l'appel n'a pas pu être chargée : les blocs de cette fiche ne peuvent pas être résolus.",
+    "notFound": "Commun introuvable",
+    "notFoundMessage": "Le commun demandé n'a pas été trouvé.",
+    "missingAnswer": "Aucun identifiant de réponse n'a été fourni.",
+    "communLabel": "Commune #{{number}}",
+    "updated": "Modifié le",
+    "directoryTitle": "Appel à communs"
+  },
+  "section": {
+    "noForm": "Aucun Appel à Communs déclaré pour ce site (« config.aac.formId » manquant)."
+  },
+  "directory": {
+    "count_one": "résultat",
+    "count_other": "résultats",
+    "empty": "Aucun commun ne correspond à votre recherche.",
+    "error": "Impossible de charger les communs.",
+    "loadMoreError": "Le chargement de la suite a échoué.",
+    "retry": "Réessayer",
+    "loading": "Chargement…",
+    "display": {
+      "label": "Affichage",
+      "grid": "Afficher en grille",
+      "list": "Afficher en liste"
+    },
+    "search": {
+      "label": "Rechercher un commun par son nom",
+      "placeholder": "Recherche par nom"
+    },
+    "deposit": {
+      "cta": "Je dépose un commun",
+      "modalTitle": "Déposer un commun",
+      "closed": "L'appel à communs est fermé : le dépôt n'est plus possible."
+    },
+    "filters": {
+      "all": "Tous",
+      "title": "Filtres",
+      "usage": "Filtrer par besoins",
+      "usageCategory": "Catégorie d'usage",
+      "usageSubCategory": "Sous catégorie d'usage",
+      "tags": "Filtrer par tag",
+      "maturity": "Utilisable",
+      "sort": "Trier par",
+      "reset": "Effacer"
+    },
+    "card": {
+      "untitled": "Commun sans titre",
+      "noDescription": "(Pas de description)",
+      "pending": "En attente",
+      "collected": "Collecté sur les cofinancements en cours",
+      "noFunding": "Pas de demande de cofinancement en cours",
+      "user": "utilisateur",
+      "users": "utilisateurs",
+      "interested_one": "intéressé",
+      "interested_other": "intéressés",
+      "viewDetail": "Voir la fiche de « {{name}} »",
+      "showMoreTags_one": "Voir le mot-clé masqué",
+      "showMoreTags_other": "Voir les {{count}} mots-clés masqués"
+    },
+    "sort": {
+      "alpha": "Ordre alphabétique",
+      "interest_desc": "Nombre d'intéressés (décroissant)",
+      "interest_asc": "Nombre d'intéressés (croissant)",
+      "created_asc": "Date de création (croissant)",
+      "created_desc": "Date de création (décroissant)",
+      "updated_asc": "Date de mise à jour (croissant)",
+      "updated_desc": "Date de mise à jour (décroissant)"
+    },
+    "more": "Voir tous les communs"
+  },
+  "detail": {
+    "noname": "(Sans nom)",
+    "nodesc": "(Sans description)",
+    "noShortDesc": "(Sans résumé)",
+    "showLess": "Voir moins",
+    "showMore": "Voir plus",
+    "contributors": "Contributeur·rices",
+    "votes": "Intéressé·es",
+    "tls": "Utilisateur·rices",
+    "contribute": "Je contribue",
+    "alreadyContributor": "Déjà contributeur·rice",
+    "vote": "Ça m'intéresse",
+    "alreadyInterested": "Déjà intéressé·e",
+    "use": "J'utilise",
+    "namesLoading": "Chargement…",
+    "namesUnavailable": "Noms indisponibles",
+    "actionsStat": "Actions",
+    "addAction": "Ajouter une action",
+    "edit": {
+      "cta": "Modifier",
+      "title": "Modifier ce commun",
+      "successToast": "Les modifications ont été enregistrées."
+    },
+    "financing": {
+      "title": "Financement participatif",
+      "outOf": "sur {{amount}}",
+      "collected": "Collecté",
+      "cofinancers": "Cofinanceurs",
+      "remaining": "Restant à financer",
+      "cta": "Financer ce commun",
+      "goalReached": "Objectif atteint",
+      "selectOrganization": "Sélectionnez une organisation",
+      "noOrganizationFound": "Aucune organisation trouvée."
+    },
+    "objectives": {
+      "milestone": "Palier {{number}}",
+      "tasksLabel": "tâches",
+      "tabFunding": "Financement",
+      "tabTasks": "Tâches",
+      "collectedPercent": "{{percent}}% collecté",
+      "paid": "Payé",
+      "pledged": "Promesse",
+      "done": "Terminée",
+      "inProgress": "En cours",
+      "actionsButtons": {
+        "candidate": "Candidater à cette action",
+        "edit": "Modifier l'action",
+        "delete": "Supprimer l'action"
+      },
+      "addMilestone": "Ajouter un palier",
+      "deleteMilestoneConfirm": {
+        "title": "Supprimer ce palier ?",
+        "description": "Le palier « {{name}} » sera supprimé définitivement.",
+        "confirm": "Oui, supprimer",
+        "cancel": "Annuler"
+      },
+      "deleteActionConfirm": {
+        "title": "Supprimer cette action ?",
+        "description": "L'action « {{name}} » sera supprimée définitivement.",
+        "confirm": "Oui, supprimer",
+        "cancel": "Annuler"
+      },
+      "noFundingYet": "Aucun partenaire n'a encore contribué à ce commun.",
+      "noTasksYet": "Aucune tâche n'a encore été ajoutée à ce commun.",
+      "milestoneField": {
+        "saveFirst": "Enregistrez d'abord ce commun pour ajouter et gérer ses paliers.",
+        "history": "Historique des montants",
+        "historyEmpty": "Aucune modification de montant enregistrée.",
+        "deleteWithActionsWarning": "Le palier « {{name}} » et ses {{count}} action(s) associée(s) seront supprimés définitivement."
+      },
+      "archivedMilestones": "{{count}} palier(s) archivé(s)",
+      "closedBadge": "Clos",
+      "closedBadgeHint": "Palier clos : exclu des montants et des cofinanceurs comptés dans la carte."
+    },
+    "cofinancers": {
+      "unknownContributor": "Contributeur inconnu",
+      "organizations": "Organisations",
+      "empty": "Aucun partenaire n'a encore contribué à ce commun.",
+      "partner": "Partenaire",
+      "type": "Type",
+      "contribution": "Contribution"
+    },
+    "contributorsSection": {
+      "empty": "Personne n'a encore rejoint le projet de ce commun.",
+      "error": "Les contributeur·rices n'ont pas pu être chargé·es.",
+      "admin": "Admin du projet",
+      "author": "Déposant·e",
+      "contributor": "Contributeur·rice",
+      "organization": "Organisation",
+      "more": "+{{count}} autre·s non affiché·es.",
+      "addCta": "Ajouter des contributeur·rices",
+      "addUnavailable": "Le projet lié est encore en cours de chargement, ou n'est pas accessible.",
+      "pendingTitle": "Invitations en attente",
+      "pendingInvitation": "Invitation envoyée",
+      "seeProject": "Voir le projet"
+    },
+    "prose": {
+      "empty": "Aucun renseignement disponible."
+    },
+    "toc": {
+      "navigation": "Navigation",
+      "financialNeeds": "Besoins financiers",
+      "actions": "Suivi des actions",
+      "contributors": "Contributeurs",
+      "cofinancers": "Cofinanceurs",
+      "gallery": "Galerie"
+    },
+    "gallery": {
+      "empty": "Aucune image disponible.",
+      "imageAlt": "Image {{index}}"
+    },
+    "selection": {
+      "selectCta": "Sélectionner",
+      "deselectCta": "Retirer de l'annuaire",
+      "selected": "Sélectionné",
+      "pending": "En attente",
+      "cancel": "Annuler",
+      "confirmSelect": {
+        "title": "Publier ce commun dans l'annuaire ?",
+        "description": "Il apparaîtra dans l'annuaire de « {{name}} », visible par tous les visiteurs.",
+        "confirm": "Oui, sélectionner"
+      },
+      "confirmDeselect": {
+        "title": "Retirer ce commun de l'annuaire ?",
+        "description": "Il n'apparaîtra plus dans l'annuaire de « {{name}} ». Le commun et ses réponses sont conservés.",
+        "confirm": "Oui, retirer"
+      },
+      "descriptionNoName": {
+        "confirmSelect": "Il apparaîtra dans l'annuaire de cet appel à communs, visible par tous les visiteurs.",
+        "confirmDeselect": "Il n'apparaîtra plus dans l'annuaire de cet appel à communs. Le commun et ses réponses sont conservés."
+      }
+    },
+    "project": {
+      "openCta": "Ouvrir le projet",
+      "openFullPage": "Voir la page complète",
+      "generateCta": "Générer le projet",
+      "associateCta": "Associer un projet existant",
+      "proposalPhaseBadge": "Phase proposition",
+      "confirmGenerate": {
+        "title": "Générer un projet à partir de ce commun ?",
+        "description": "Un projet et un espace de suivi seront créés à partir de cette réponse. Cette action est irréversible.",
+        "confirm": "Oui, générer",
+        "cancel": "Annuler"
+      },
+      "associate": {
+        "finderLabel": "Projet",
+        "finderButton": "Rechercher et associer",
+        "finderPlaceholder": "Entrez le nom du projet à associer"
+      },
+      "toasts": {
+        "generateSuccess": "Le projet a été généré avec succès.",
+        "generateError": "Impossible de générer le projet.",
+        "associateSuccess": "Le commun a été associé au projet.",
+        "associateError": "Impossible d'associer ce projet.",
+        "alreadyLinked": "Ce projet est déjà rattaché à un autre commun. Choisissez-en un autre ou générez un nouveau projet.",
+        "projectWithoutId": "Le projet sélectionné n'a pas d'identifiant.",
+        "incompleteContext": "Contexte incomplet : session ou commun introuvable.",
+        "openError": "Impossible d'ouvrir l'aperçu du projet."
+      }
+    },
+    "origin": {
+      "deposedOn": "Déposé sur « {{name}} »"
+    }
+  },
+  "toasts": {
+    "errors": {
+      "noApiClient": "Client API indisponible.",
+      "noReactor": "Aucun·e utilisateur·rice identifié·e.",
+      "noAnswerId": "Identifiant de réponse manquant."
+    },
+    "reactionFailed": {
+      "title": "Impossible d'enregistrer votre réaction"
+    }
+  },
+  "highlight": {
+    "communs": "Communs déposés"
+  }
+}

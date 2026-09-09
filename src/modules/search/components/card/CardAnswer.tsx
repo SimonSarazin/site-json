@@ -6,9 +6,11 @@ import { Building2, Calendar, ChevronDown, ChevronUp, FileText, Mail, MapPin, Us
 import { SearchCardProps } from "../../schema";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { parseCoformAnswer, getStatusStyle } from "../../lib/coformAnswer";
+import { parseCoformAnswer, getStatusStyle, isCoformAnswerManager } from "../../lib/coformAnswer";
 import { useNavigate } from "react-router";
 import { useEntityBySlugQuery } from "@/hooks/useEntityBySlugQuery";
+import { useCocolight } from "@/hooks/useCocolight";
+import { useHydrated } from "@/hooks/useHydrated";
 import { SwitchDetailsMode } from "../SwitchDetailsMode";
 
 export default function CardAnswer({ item, onClick, card }: SearchCardProps) {
@@ -41,9 +43,40 @@ export default function CardAnswer({ item, onClick, card }: SearchCardProps) {
 		slug: enModale && ficheOuverte ? a.structure.slug : undefined,
 	});
 
+	/**
+	 * QUI voit le bouton — `card.structureAction.audience` : absent/`all` (DÉFAUT côté code) =
+	 * tout le monde, comportement historique ; `managers` = les gestionnaires du créneau
+	 * (super-admin plateforme, admin du costum porteur, admin validé de la structure
+	 * organisatrice DE CE créneau).
+	 *
+	 * MÊME prédicat que le bouton « Modifier » du détail, à dessein : la fiche structure est un
+	 * outil de gestion (affiliation, représentant légal, documents), pas une information utile à
+	 * qui compare des créneaux. Deux règles séparées dériveraient — cf. `isCoformAnswerManager`.
+	 *
+	 * ⚠️ Pertinence d'UI, PAS une frontière de sécurité : `/profil/:slug` et `/structure` restent
+	 * des routes publiques, et le slug comme l'e-mail de la structure partent déjà dans le HTML
+	 * servi à tout visiteur (l'e-mail est d'ailleurs affiché en clair juste au-dessus du bouton).
+	 *
+	 * ⚠️ `hydrated` est OBLIGATOIRE : `/creneaux` est prérendue côté serveur, où `me` vaut
+	 * toujours `null`, alors que le 1er render client d'un gestionnaire a DÉJÀ son `me`. Sans la
+	 * garde, le HTML serveur et le 1er render client divergeraient. Avec, les deux rendent « pas
+	 * de bouton », qui apparaît après hydratation chez les seuls ayants droit — même patron que
+	 * `useAdminAccess` / `useVisibility`.
+	 *
+	 * Le court-circuit garantit qu'un site NON opté-in ne dépend ni de `hydrated` ni de `me` :
+	 * rendu strictement inchangé pour tout le parc.
+	 */
+	const { me, entity } = useCocolight();
+	const hydrated = useHydrated();
+	const reserveAuxGestionnaires = card?.structureAction?.audience === "managers";
+	const voitFicheStructure =
+		!reserveAuxGestionnaires || (hydrated && isCoformAnswerManager(serverData, { me, entity }));
+
 	const ouvrirFicheStructure = (event: MouseEvent<HTMLButtonElement>) => {
 		event.stopPropagation();
-		if (!a.structure.slug) return;
+		// Garde au point d'entrée, pas au montage de la modale : démonter `SwitchDetailsMode`
+		// sans remettre `ficheOuverte` à false désynchroniserait l'état et l'UI.
+		if (!voitFicheStructure || !a.structure.slug) return;
 		if (enModale) setFicheOuverte(true);
 		else navigate(`/profil/${a.structure.slug}`);
 	};
@@ -197,15 +230,19 @@ export default function CardAnswer({ item, onClick, card }: SearchCardProps) {
 						{t("coformAnswer.activitySheet")}
 					</Button>
 
-					<Button
-						variant="secondary"
-						className="inline-flex items-center gap-1.5 rounded-md bg-btn-structure px-4 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:text-foreground"
-						disabled={!a.structure.slug || structureEnCours}
-						onClick={ouvrirFicheStructure}
-					>
-						<Building2 className="w-3.5 h-3.5" />
-						{t("coformAnswer.structureSheet")}
-					</Button>
+					{/* Masqué (et non `disabled`) hors audience : un bouton grisé inviterait à
+					    demander un droit, là où la fiche n'a simplement rien à dire à l'usager. */}
+					{voitFicheStructure && (
+						<Button
+							variant="secondary"
+							className="inline-flex items-center gap-1.5 rounded-md bg-btn-structure px-4 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:text-foreground"
+							disabled={!a.structure.slug || structureEnCours}
+							onClick={ouvrirFicheStructure}
+						>
+							<Building2 className="w-3.5 h-3.5" />
+							{t("coformAnswer.structureSheet")}
+						</Button>
+					)}
 				</div>
 			</div>
 

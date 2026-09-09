@@ -64,8 +64,13 @@
         "missingProjectSide": "Cannot restore: this milestone is missing from projects.oceco.milestones (project side).",
         "missingAnswerSide": "Cannot restore: no linked expense for this milestone in answers.aapStep1.depense (answer side)."
       },
+      "incompleteForDelete": {
+        "missingProjectSide": "Cannot delete: this milestone is missing from projects.oceco.milestones (project side).",
+        "missingAnswerSide": "Cannot delete: no linked expense for this milestone in answers.aapStep1.depense (answer side)."
+      },
       "cannotCloseWithOpenActions": "Cannot close: all actions must be completed first.",
       "cannotDeleteIfFunded": "Cannot delete: this milestone is already funded.",
+      "cannotDeleteWithoutEnvelope": "Cannot delete from this page: this milestone's actions are not readable here, and they must be deleted along with it. Open the commun from the call it was submitted to.",
       "noIndexForDelete": "No valid index found to delete this milestone.",
       "actionIdMissing": "Some milestone actions have no valid ID.",
       "deleteActionUnavailable": "Action delete unavailable: missing apiClient.",
@@ -355,6 +360,7 @@
       "apiClientUnavailable": "API client unavailable.",
       "projectNotFoundForAction": "Project not found for action creation.",
       "noMilestoneSelected": "No milestone selected.",
+      "actionFormInvalid": "The form could not be submitted. Please check the fields, or reload the page if the problem persists.",
       "actionNameRequired": "Action name is required.",
       "invalidCredits": "Credits amount must be greater than or equal to 0.",
       "invalidDates": "Dates must be in dd/MM/yyyy format and end date must be greater than or equal to start date.",
@@ -387,6 +393,10 @@
         "deleteAction": "You must be logged in to delete an action.",
         "completeAction": "You must be logged in to complete an action.",
         "candidate": "You must be logged in to apply."
+      },
+      "createMilestone": {
+        "title": "Creation impossible",
+        "description": "Incomplete API context (project/answer)."
       },
       "restoreImpossible": {
         "title": "Restoration impossible",
@@ -526,6 +536,8 @@
       "loadingResources_proposition": "Loading proposals...",
       "noResource": "No project available for this organization",
       "noResource_proposition": "No proposal available for this organization",
+      "resourceOutOfScope": "This project cannot be funded from this page: its cagnotte belongs to another context.",
+      "resourceOutOfScope_proposition": "This common cannot be funded from this page: its cagnotte belongs to another context.",
       "selectResourcePlaceholder": "Select a project...",
       "selectResourcePlaceholder_proposition": "Select a proposal...",
       "setAsMainCagnotte": "Set as main cagnotte",

@@ -61,7 +61,8 @@
         "jumpTo": "Jump to field",
         "serverError": "Submission error",
         "toast": "The form contains errors"
-      }
+      },
+      "unsupportedFieldPlaceholder": "This field is not available here yet — it can still be filled in from the legacy interface."
     },
     "banner": {
       "alt": "Form banner"
@@ -454,6 +455,11 @@
         "pendingValidation": "Request pending — waiting for admin validation."
       }
     },
+    "tags": {
+      "placeholder": "Add a keyword…",
+      "remove": "Remove tag {{tag}}",
+      "searching": "Searching…"
+    },
     "timeSlots": {
       "day": "Day",
       "dayPlaceholder": "Pick a day",
@@ -481,6 +487,74 @@
       "loadError": "Options could not be loaded.",
       "notConfigured": "This field has not been configured yet.",
       "orphans": "Saved answers no longer matching an available option:"
+    },
+    "depense": {
+      "addTitle": "Add an expense",
+      "editTitle": "Edit expense",
+      "dialogDescription": "Expenses are saved along with your answer.",
+      "name": "Title",
+      "nameRequired": "A title is required",
+      "description": "Description",
+      "amount": "Target amount",
+      "amountInvalid": "The amount must be positive",
+      "add": "Add",
+      "save": "Save",
+      "cancel": "Cancel",
+      "empty": "No expense yet."
+    },
+    "selection": {
+      "criterion": "Criterion",
+      "candidateValue": "Applicant's answer",
+      "note": "Score",
+      "myMean": "My evaluation",
+      "allMean": "All evaluators",
+      "evaluatorCount_one": "{{count}} evaluator",
+      "evaluatorCount_other": "{{count}} evaluators",
+      "noCriteria": "No evaluation criteria have been configured.",
+      "admissibility": "Eligibility",
+      "admissible": "Eligible",
+      "inadmissible": "Not eligible",
+      "otherStatus": "Current status: {{value}}",
+      "noteOutOfRange": "The score must be between 0 and {{max}}",
+      "toasts": {
+        "noteSaved": "Score saved",
+        "noteFailed": "The score could not be saved",
+        "admissibilitySaved": "Eligibility opinion saved",
+        "admissibilityFailed": "The opinion could not be saved"
+      }
+    },
+    "pourContre": {
+      "for": "For",
+      "neutral": "Neutral",
+      "against": "Against",
+      "yourVote": "Your vote",
+      "thanks": "Thank you for your vote: {{vote}}",
+      "voters": "Voters",
+      "distribution": "Vote distribution",
+      "minimum": "Expected threshold: {{value}}",
+      "toasts": {
+        "voteSaved": "Vote saved",
+        "voteFailed": "The vote could not be saved"
+      }
+    },
+    "aapEvaluation": {
+      "noCriteria": "No evaluation criteria have been configured.",
+      "noteOutOfRange": "The score must be between 0 and {{max}}",
+      "toasts": {
+        "noteSaved": "Score saved",
+        "noteFailed": "The score could not be saved"
+      }
+    },
+    "chooseProposal": {
+      "yes": "Yes",
+      "no": "No",
+      "legend": "Directory listing",
+      "context": "Context: {{name}}",
+      "alsoSelected": "Also selected by: {{names}}",
+      "toasts": {
+        "saved": "Choice saved",
+        "failed": "The choice could not be saved"
+      }
     },
     "field": {
       "required": "required"
