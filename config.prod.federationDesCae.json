@@ -211,7 +211,6 @@
   },
   "header": {
     "type": "standard",
-    "logoIcon": "handshake",
     "logoTitle": {
       "fr": "Fédération des CAE"
     },
@@ -239,7 +238,8 @@
       "themeSwitch": true,
       "langSwitch": false,
       "auth": true
-    }
+    },
+    "logo": "images/federationDesCae/logo.png"
   },
   "pages": [
     {
