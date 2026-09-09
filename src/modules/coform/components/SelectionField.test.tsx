@@ -157,4 +157,67 @@ describe("SelectionField", () => {
     expect(screen.getByText(/Aucun critère/)).toBeTruthy();
     expect(screen.queryByText(/NaN/)).toBeNull();
   });
+
+  /**
+   * Mode `noteCriterionBased` (H18) : les inputs de note vivent DANS le `<form>`
+   * de l'étape, qui ne porte pas `noValidate`, et dont les boutons sont
+   * `type="submit"`. Avec `min`/`max`/`step` sur l'input, une saisie hors barème
+   * rendait le formulaire nativement invalide : le navigateur bloquait la
+   * soumission, `handleSubmit` n'était jamais appelé, le wizard paraissait gelé —
+   * et le champ, lui, refusait la note EN SILENCE.
+   */
+  describe("notation libre — refus visible, soumission native jamais bloquée", () => {
+    const CONFIG_NOTE = { ...CONFIG, type: "noteCriterionBased", noteMax: 10 };
+
+    it("une note hors barème ou hors pas ne rend plus le formulaire nativement invalide", () => {
+      render(
+        <form data-testid="etape">
+          <SelectionField
+            field={champ()}
+            subFormId="aapStep2"
+            formId="form-1"
+            config={CONFIG_NOTE}
+            value={{ moi: { depense: 4 } }}
+            depositLabels={{ depense: "Budget demandé" }}
+            answerId="answer-1"
+          />
+        </form>
+      );
+      const etape = screen.getByTestId("etape") as HTMLFormElement;
+      const saisie = screen.getByLabelText("Budget demandé") as HTMLInputElement;
+
+      fireEvent.change(saisie, { target: { value: "42" } }); // rangeOverflow avec max=10
+      expect(etape.checkValidity()).toBe(true);
+
+      fireEvent.change(saisie, { target: { value: "3.7" } }); // stepMismatch avec step=0.5
+      expect(etape.checkValidity()).toBe(true);
+    });
+
+    it("une note hors barème est refusée VISIBLEMENT et l'input revient à la note réelle", () => {
+      poser({ config: CONFIG_NOTE });
+      const saisie = screen.getByLabelText("Budget demandé") as HTMLInputElement;
+
+      // `change` puis `blur` séparés : RTL fait suivre `focusout` (celui que
+      // React écoute) d'un `blur` natif qui réappliquerait `target.value`.
+      fireEvent.change(saisie, { target: { value: "42" } });
+      fireEvent.blur(saisie);
+      expect(noteMutate).not.toHaveBeenCalled();
+      expect(screen.getByRole("alert").textContent).toBe(
+        "La note doit être comprise entre 0 et 10"
+      );
+      expect(saisie.getAttribute("aria-invalid")).toBe("true");
+      // La note réelle (`moi.depense = 4`) : le DOM ne montre pas un « 42 »
+      // qui n'existe nulle part.
+      expect(saisie.value).toBe("4");
+
+      // Une saisie valide ensuite : le message s'efface et la note part.
+      fireEvent.change(saisie, { target: { value: "7" } });
+      fireEvent.blur(saisie);
+      expect(screen.queryByRole("alert")).toBeNull();
+      expect(noteMutate).toHaveBeenCalledWith(
+        { subFormId: "aapStep2", userId: "moi", fieldKey: "depense", note: 7 },
+        expect.anything()
+      );
+    });
+  });
 });

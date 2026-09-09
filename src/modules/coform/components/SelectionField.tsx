@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -133,6 +133,10 @@ export function SelectionField({
   // Une mémoire PAR CRITÈRE : le jury en note plusieurs à la suite.
   const echoNotes = useEcrituresLocales<unknown>();
   const echoAvis = useEcrituresLocales<unknown>();
+  // Critères dont la dernière saisie a été REFUSÉE (hors barème). Le refus
+  // doit se voir : le champ ne porte plus de contrainte native (cf. l'input).
+  const [refus, setRefus] = useState<Record<string, boolean>>({});
+  const idRefus = useId();
 
   // Une seule passe pour les dérivations liées (config + moyennes).
   const { parsed, means } = useMemo(() => {
@@ -153,9 +157,12 @@ export function SelectionField({
     currentUserId ? admissibility?.[currentUserId] : undefined
   );
 
+  const estDansLeBareme = (note: number) =>
+    Number.isFinite(note) && note >= 0 && note <= parsed.noteMax;
+
   const noter = (critere: SelectionCriterion, note: number) => {
     if (disabled || !currentUserId) return;
-    if (note < 0 || note > parsed.noteMax) return;
+    if (!estDansLeBareme(note)) return;
     saveNote.mutate(
       { subFormId, userId: currentUserId, fieldKey: critere.fieldKey, note },
       // Après le serveur, jamais avant : un échec doit laisser la note réelle.
@@ -220,26 +227,61 @@ export function SelectionField({
                           onRate={(n) => noter(critere, n)}
                         />
                       ) : (
-                        <Input
-                          type="number"
-                          inputMode="decimal"
-                          min={0}
-                          max={parsed.noteMax}
-                          step="0.5"
-                          defaultValue={note || ""}
-                          disabled={disabled}
-                          aria-label={critere.label}
-                          className="w-24 h-8"
-                          // Écriture au blur, comme le legacy : on ne veut pas
-                          // un appel réseau à chaque frappe.
-                          onBlur={(e) => {
-                            const saisie = e.target.value.trim();
-                            if (saisie === "") return;
-                            const n = toNote(saisie);
-                            if (n === note) return;
-                            noter(critere, n);
-                          }}
-                        />
+                        <>
+                          {/* Ni `min`, ni `max`, et `step="any"` : ce champ vit
+                              DANS le `<form>` de l'étape (sans `noValidate`), et
+                              une contrainte native non satisfaite bloque la
+                              soumission du wizard — « Suivant » ne répond plus,
+                              sans message. Sans `step`, le pas natif vaut 1 et
+                              « 3,7 » bloquerait de même. Le barème est vérifié
+                              ici, et le refus s'affiche. */}
+                          <Input
+                            type="number"
+                            inputMode="decimal"
+                            step="any"
+                            defaultValue={note || ""}
+                            disabled={disabled}
+                            aria-label={critere.label}
+                            aria-invalid={refus[critere.fieldKey] || undefined}
+                            aria-describedby={
+                              refus[critere.fieldKey] ? `${idRefus}-${critere.fieldKey}` : undefined
+                            }
+                            className="w-24 h-8"
+                            // Écriture au blur, comme le legacy : on ne veut pas
+                            // un appel réseau à chaque frappe.
+                            onBlur={(e) => {
+                              const saisie = e.target.value.trim();
+                              if (saisie === "") return;
+                              const n = toNote(saisie);
+                              if (n === note) return;
+                              if (!estDansLeBareme(n)) {
+                                // Refus VISIBLE : message, et retour à la note
+                                // réelle — le DOM ne doit pas afficher une note
+                                // qui n'existe nulle part.
+                                e.target.value = note ? String(note) : "";
+                                setRefus((prev) => ({ ...prev, [critere.fieldKey]: true }));
+                                return;
+                              }
+                              if (refus[critere.fieldKey]) {
+                                setRefus((prev) => ({ ...prev, [critere.fieldKey]: false }));
+                              }
+                              noter(critere, n);
+                            }}
+                          />
+                          {refus[critere.fieldKey] && (
+                            <p
+                              id={`${idRefus}-${critere.fieldKey}`}
+                              role="alert"
+                              className="mt-1 text-xs text-destructive"
+                            >
+                              {t(
+                                "coform.selection.noteOutOfRange",
+                                "La note doit être comprise entre 0 et {{max}}",
+                                { max: parsed.noteMax }
+                              )}
+                            </p>
+                          )}
+                        </>
                       )}
                     </td>
                   </tr>

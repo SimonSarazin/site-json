@@ -122,4 +122,62 @@ describe("AapEvaluationField", () => {
     poser({ config: { criterions: [] } });
     expect(screen.getByText(/Aucun critère/)).toBeTruthy();
   });
+
+  /**
+   * H18 : les inputs de note vivent DANS le `<form>` de l'étape (sans
+   * `noValidate`, boutons `type="submit"`). Avec `min`/`max`/`step`, une saisie
+   * hors barème rendait le formulaire nativement invalide et bloquait « Suivant »
+   * sans message — pendant que le champ refusait la note en silence.
+   */
+  describe("notation libre — refus visible, soumission native jamais bloquée", () => {
+    const CONFIG_NOTE = { ...CONFIG, type: "noteCriterionBased" };
+
+    it("une note hors barème ou hors pas ne rend plus le formulaire nativement invalide", () => {
+      render(
+        <form data-testid="etape">
+          <AapEvaluationField
+            field={champ()}
+            subFormId="aapStep3"
+            formId="form-1"
+            config={CONFIG_NOTE}
+            value={{ moi: { "0": { label: "Budget", note: 4, coeff: 1 } } }}
+            answerId="answer-1"
+          />
+        </form>
+      );
+      const etape = screen.getByTestId("etape") as HTMLFormElement;
+      const [budget] = screen.getAllByRole("spinbutton") as HTMLInputElement[];
+
+      fireEvent.change(budget, { target: { value: "42" } }); // rangeOverflow avec max=10
+      expect(etape.checkValidity()).toBe(true);
+
+      fireEvent.change(budget, { target: { value: "3.7" } }); // stepMismatch avec step=0.5
+      expect(etape.checkValidity()).toBe(true);
+    });
+
+    it("une note hors barème est refusée VISIBLEMENT et l'input revient à la note réelle", () => {
+      poser({ config: CONFIG_NOTE });
+      const [budget] = screen.getAllByRole("spinbutton") as HTMLInputElement[];
+
+      // `change` puis `blur` séparés : RTL fait suivre `focusout` (celui que
+      // React écoute) d'un `blur` natif qui réappliquerait `target.value`.
+      fireEvent.change(budget, { target: { value: "42" } });
+      fireEvent.blur(budget);
+      expect(noteMutate).not.toHaveBeenCalled();
+      expect(screen.getByRole("alert").textContent).toMatch(/entre 0 et/);
+      expect(budget.getAttribute("aria-invalid")).toBe("true");
+      // La note réelle (`moi.0.note = 4`) : le DOM ne montre pas un « 42 »
+      // qui n'existe nulle part.
+      expect(budget.value).toBe("4");
+
+      // Une saisie valide ensuite : le message s'efface et la note part.
+      fireEvent.change(budget, { target: { value: "7" } });
+      fireEvent.blur(budget);
+      expect(screen.queryByRole("alert")).toBeNull();
+      expect(noteMutate).toHaveBeenCalledWith(
+        expect.objectContaining({ index: "0", value: { label: "Budget", note: 7, coeff: 1 } }),
+        expect.anything()
+      );
+    });
+  });
 });

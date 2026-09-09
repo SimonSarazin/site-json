@@ -515,6 +515,7 @@
       "admissible": "Admissible",
       "inadmissible": "Non admissible",
       "otherStatus": "Avis actuel : {{value}}",
+      "noteOutOfRange": "La note doit être comprise entre 0 et {{max}}",
       "toasts": {
         "noteSaved": "Note enregistrée",
         "noteFailed": "La note n'a pas pu être enregistrée",
@@ -538,6 +539,7 @@
     },
     "aapEvaluation": {
       "noCriteria": "Aucun critère d'évaluation n'a été configuré.",
+      "noteOutOfRange": "La note doit être comprise entre 0 et {{max}}",
       "toasts": {
         "noteSaved": "Note enregistrée",
         "noteFailed": "La note n'a pas pu être enregistrée"

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -112,6 +112,10 @@ export function AapEvaluationField({
   // reste affichée à sa valeur d'avant. Une mémoire PAR CRITÈRE — l'évaluateur en
   // note plusieurs à la suite. Cf. `useEcrituresLocales`.
   const echo = useEcrituresLocales<number>();
+  // Critères dont la dernière saisie a été REFUSÉE (hors barème). Le refus
+  // doit se voir : le champ ne porte plus de contrainte native (cf. l'input).
+  const [refus, setRefus] = useState<Record<string, boolean>>({});
+  const idRefus = useId();
 
   const parsedBrut = parseAapEvaluationConfig(config, currentUserId ? value?.[currentUserId] : null);
   const parsed = {
@@ -166,26 +170,58 @@ export function AapEvaluationField({
                   onRate={(n) => noter(critere, n)}
                 />
               ) : (
-                <Input
-                  type="number"
-                  inputMode="decimal"
-                  min={0}
-                  max={AAP_EVALUATION_NOTE_MAX}
-                  step="0.5"
-                  defaultValue={critere.note || ""}
-                  disabled={disabled}
-                  aria-label={critere.label}
-                  className="w-24 h-8"
-                  // Écriture au blur, comme le legacy : pas d'appel réseau à
-                  // chaque frappe.
-                  onBlur={(e) => {
-                    const saisie = e.target.value.trim();
-                    if (saisie === "") return;
-                    const n = toNumber(saisie);
-                    if (n === critere.note) return;
-                    noter(critere, n);
-                  }}
-                />
+                <div className="flex flex-col items-end">
+                  {/* Ni `min`, ni `max`, et `step="any"` : ce champ vit DANS le
+                      `<form>` de l'étape (sans `noValidate`), et une contrainte
+                      native non satisfaite bloque la soumission du wizard —
+                      « Suivant » ne répond plus, sans message. Sans `step`, le pas
+                      natif vaut 1 et « 3,7 » bloquerait de même. Le barème est
+                      vérifié ici (`isNoteValid`), et le refus s'affiche. */}
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    step="any"
+                    defaultValue={critere.note || ""}
+                    disabled={disabled}
+                    aria-label={critere.label}
+                    aria-invalid={refus[critere.index] || undefined}
+                    aria-describedby={refus[critere.index] ? `${idRefus}-${critere.index}` : undefined}
+                    className="w-24 h-8"
+                    // Écriture au blur, comme le legacy : pas d'appel réseau à
+                    // chaque frappe.
+                    onBlur={(e) => {
+                      const saisie = e.target.value.trim();
+                      if (saisie === "") return;
+                      const n = toNumber(saisie);
+                      if (n === critere.note) return;
+                      if (!isNoteValid(n)) {
+                        // Refus VISIBLE : message, et retour à la note réelle —
+                        // le DOM ne doit pas afficher une note qui n'existe
+                        // nulle part.
+                        e.target.value = critere.note ? String(critere.note) : "";
+                        setRefus((prev) => ({ ...prev, [critere.index]: true }));
+                        return;
+                      }
+                      if (refus[critere.index]) {
+                        setRefus((prev) => ({ ...prev, [critere.index]: false }));
+                      }
+                      noter(critere, n);
+                    }}
+                  />
+                  {refus[critere.index] && (
+                    <p
+                      id={`${idRefus}-${critere.index}`}
+                      role="alert"
+                      className="mt-1 text-xs text-destructive"
+                    >
+                      {t(
+                        "coform.aapEvaluation.noteOutOfRange",
+                        "La note doit être comprise entre 0 et {{max}}",
+                        { max: AAP_EVALUATION_NOTE_MAX }
+                      )}
+                    </p>
+                  )}
+                </div>
               )}
             </li>
           ))}
