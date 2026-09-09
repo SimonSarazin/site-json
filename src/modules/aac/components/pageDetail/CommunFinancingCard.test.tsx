@@ -61,21 +61,23 @@ vi.mock("@/modules/auth", () => ({ useAuthModal: () => ({ openLogin }) }));
  * PAS si l'enfant a fait `preventDefault()`. Le stub reproduit exactement cette
  * règle — c'est elle qui rend le test discriminant.
  */
+function CagnotteDialogStub({ children }: { children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div
+      data-testid="cagnotte-dialog"
+      onClick={(e: MouseEvent) => {
+        if (!e.defaultPrevented) setOpen(true);
+      }}
+    >
+      {children}
+      {open ? <div data-testid="cagnotte-open" /> : null}
+    </div>
+  );
+}
+
 vi.mock("@/modules/cagnotte/components/CagnotteDialog", () => ({
-  default: ({ children }: { children: ReactNode }) => {
-    const [open, setOpen] = useState(false);
-    return (
-      <div
-        data-testid="cagnotte-dialog"
-        onClick={(e: MouseEvent) => {
-          if (!e.defaultPrevented) setOpen(true);
-        }}
-      >
-        {children}
-        {open ? <div data-testid="cagnotte-open" /> : null}
-      </div>
-    );
-  },
+  default: CagnotteDialogStub,
 }));
 
 const { CommunFinancingCard } = await import("./CommunFinancingCard");
