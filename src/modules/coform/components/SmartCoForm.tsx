@@ -484,6 +484,7 @@ export function SmartCoForm({
         baseUpdatedAt={baseUpdatedAt}
         enableDraft={enableDraft}
         existingAnswerMeta={existingAnswerMeta}
+        unknownFieldVariant={unknownFieldVariant}
       />
     );
   }

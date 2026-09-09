@@ -53,7 +53,7 @@ vi.mock("./DynamicCoForm", () => ({
 }));
 
 vi.mock("./MultiStepCoForm", () => ({
-  MultiStepCoForm: (props: { formData: CoFormData; submitMode?: string; initialStepKey?: string; elementId?: string | null; elementType?: string | null }) => (
+  MultiStepCoForm: (props: { formData: CoFormData; submitMode?: string; initialStepKey?: string; elementId?: string | null; elementType?: string | null; unknownFieldVariant?: string }) => (
     <div
       data-testid="multistep-coform"
       data-step-count={Object.keys(props.formData.inputs ?? {}).length}
@@ -61,6 +61,7 @@ vi.mock("./MultiStepCoForm", () => ({
       data-initial-step={props.initialStepKey ?? ""}
       data-element-id={props.elementId ?? ""}
       data-element-type={props.elementType ?? ""}
+      data-unknown-field-variant={props.unknownFieldVariant ?? ""}
     />
   ),
 }));
@@ -429,6 +430,22 @@ describe("SmartCoForm", () => {
         { wrapper: makeWrapper() }
       );
       expect(screen.getByTestId("multistep-coform").dataset.initialStep).toBe("s2");
+    });
+  });
+
+  /**
+   * M33 (rapport MR 53) : la prop était câblée de bout en bout dans le wizard
+   * (interface, paramètre, `UnsupportedField`) mais `SmartCoForm` ne la lui
+   * passait pas — seul le formulaire simple la recevait. Le dépôt public d'un
+   * commun à plusieurs étapes affichait donc l'encadré rouge « type d'input
+   * introuvable », exactement ce que `"placeholder"` existe pour éviter.
+   */
+  describe("unknownFieldVariant propagé aux deux chemins de rendu", () => {
+    it("transmis au wizard", () => {
+      render(<SmartCoForm formData={makeFormData(["s1", "s2"])} unknownFieldVariant="placeholder" />, {
+        wrapper: makeWrapper(),
+      });
+      expect(screen.getByTestId("multistep-coform").dataset.unknownFieldVariant).toBe("placeholder");
     });
   });
 });
