@@ -412,12 +412,21 @@ export async function closeMilestoneWithSync(input: CloseMilestoneParams): Promi
   });
 }
 
+/**
+ * Rouvre un palier clos : `status: 'open'` côté projet, `include: true` côté réponse.
+ *
+ * Aucune contrainte sur les actions, à dessein. La clôture exige que toutes les
+ * actions soient terminées (`canClose`) ; la restauration est le geste inverse et
+ * n'a rien à exiger d'elles — c'est même le cas typique : un palier clos alors que
+ * son action était `done`, action repassée en `todo` (`ActionEditDialog`), et le
+ * palier qu'il faut rouvrir. Conditionner la réouverture à `canClose` la refusait
+ * précisément là, avec le message de la clôture (M39).
+ */
 export async function restoreMilestoneWithSync(input: RestoreMilestoneParams): Promise<void> {
   const params = withRecoveredMilestoneId(input);
   const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
   const answerDepenseIndex = resolveAnswerDepenseIndex(params, syncContext);
-  const constraints = getMilestoneConstraints(params, answerDepenseIndex);
 
   const hasProject = Boolean(params.projectId);
 
@@ -426,10 +435,6 @@ export async function restoreMilestoneWithSync(input: RestoreMilestoneParams): P
   }
   if (answerDepenseIndex === null || !params.answerId) {
     throw new Error(t("milestone.errors.incompleteForRestore.missingAnswerSide"));
-  }
-
-  if (hasProject && !constraints.canClose) {
-    throw new Error(t("milestone.errors.cannotCloseWithOpenActions"));
   }
 
   const [project, answer] = await Promise.all([

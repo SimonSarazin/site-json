@@ -298,6 +298,67 @@ describe("closeMilestoneWithSync / restoreMilestoneWithSync", () => {
   });
 });
 
+/**
+ * M39 (review MR 53) : la garde `cannotCloseWithOpenActions`, copiée de la clôture
+ * dans `restoreMilestoneWithSync`, conditionnait la RÉOUVERTURE d'un palier à ce
+ * que toutes ses actions soient terminées — l'inverse de son intention. Cas
+ * atteignable : palier clos alors que son action était `done`, action repassée en
+ * `todo` par un admin (`ActionEditDialog`), puis « Restaurer » : refus, avec le
+ * message de la clôture. Rouvrir n'exige rien des actions.
+ */
+describe("restoreMilestoneWithSync — sans condition sur les actions (M39)", () => {
+  const params = (rawEnvelope: unknown, api: Api) => ({
+    source: api,
+    rawEnvelope,
+    projectId: "project1",
+    answerId: "answer1",
+    milestoneId: "m1",
+  });
+
+  it("restaure un palier dont une action est repassée en cours", async () => {
+    const { api, answerEntity, projectEntity } = buildApiMock();
+    const rawEnvelope = buildRawEnvelope(
+      buildProjectData({ actions: [{ id: "a1", milestone: { milestoneId: "m1" }, status: "todo" }] }),
+    );
+
+    await expect(restoreMilestoneWithSync(params(rawEnvelope, api))).resolves.toBeUndefined();
+
+    expect(mockUpdateProjectMilestoneFields).toHaveBeenCalledWith({
+      project: projectEntity,
+      index: 0,
+      fields: { status: "open" },
+    });
+    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith({
+      answer: answerEntity,
+      index: 0,
+      fields: { include: true },
+    });
+  });
+
+  it("ne lève pas `actionIdMissing` : une action sans identifiant n'a rien à voir avec une réouverture", async () => {
+    const { api } = buildApiMock();
+    const rawEnvelope = buildRawEnvelope(
+      buildProjectData({ actions: [{ milestone: { milestoneId: "m1" }, status: "todo" }] }),
+    );
+
+    await expect(restoreMilestoneWithSync(params(rawEnvelope, api))).resolves.toBeUndefined();
+    expect(mockUpdateProjectMilestoneFields).toHaveBeenCalledWith(
+      expect.objectContaining({ fields: { status: "open" } }),
+    );
+  });
+
+  it("TÉMOIN : la clôture, elle, refuse toujours une action en cours", async () => {
+    const { api } = buildApiMock();
+    const rawEnvelope = buildRawEnvelope(
+      buildProjectData({ actions: [{ id: "a1", milestone: { milestoneId: "m1" }, status: "todo" }] }),
+    );
+
+    await expect(closeMilestoneWithSync(params(rawEnvelope, api))).rejects.toThrow(
+      "milestone.errors.cannotCloseWithOpenActions",
+    );
+  });
+});
+
 describe("deleteMilestoneWithSync", () => {
   it("lève cannotDeleteIfFunded si le palier a du financement", async () => {
     const { api } = buildApiMock();
