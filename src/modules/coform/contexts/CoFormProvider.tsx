@@ -152,6 +152,15 @@ export function CoFormProvider({
   // réécrit aussitôt (le `stepState` vient de changer, la garde d'identité passe).
   // Supprimer ici laissait une fenêtre où plus rien n'existait — et, sur le
   // chemin single-step où l'auto-save est gardé par `isDirty`, une perte sèche.
+  //
+  // `draftRestoreCount` : `stepState` ne pilote que l'ÉTAT du wizard. Le
+  // formulaire réellement rendu est l'instance react-hook-form de
+  // `useCoFormStep`, qui ne se réinitialise que sur changement d'index — et
+  // un brouillon repris sur l'étape courante ne change pas l'index. Sans ce
+  // second déclencheur, « Reprendre » ne changeait rien à l'écran, puis
+  // « Suivant » soumettait les valeurs jamais restaurées et l'auto-save
+  // persistait aussitôt ce brouillon amputé de l'étape reprise.
+  const [draftRestoreCount, setDraftRestoreCount] = useState(0);
   const restoreDraft = useCallback(() => {
     if (!restorableDraft) return;
     setStepState((prev) => ({
@@ -161,6 +170,7 @@ export function CoFormProvider({
       completedSteps: restorableDraft.completedSteps,
       addedOptions: restorableDraft.addedOptions,
     }));
+    setDraftRestoreCount((n) => n + 1);
     acknowledgeRestored();
   }, [restorableDraft, acknowledgeRestored]);
 
@@ -361,6 +371,7 @@ export function CoFormProvider({
       error,
       restorableDraft: restorableDraftMeta,
       staleDraftInfo,
+      draftRestoreCount,
       goToNextStep,
       goToPreviousStep,
       goToStep,
@@ -386,6 +397,7 @@ export function CoFormProvider({
       error,
       restorableDraftMeta,
       staleDraftInfo,
+      draftRestoreCount,
       goToNextStep,
       goToPreviousStep,
       goToStep,

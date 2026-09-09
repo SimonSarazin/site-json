@@ -4,6 +4,8 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { useContext } from "react";
 import { CoFormContext } from "./CoFormContext";
 import { CoFormProvider } from "./CoFormProvider";
+import { LocalizationProvider } from "@/contexts/LocalizationProvider";
+import { useCoFormStep } from "../hooks/useCoFormStep";
 import type { CoFormData, CoFormSubFormInputs } from "../types";
 
 /**
@@ -665,6 +667,73 @@ describe("CoFormProvider", () => {
         const brut = window.localStorage.getItem(KEY);
         expect(brut).not.toBeNull();
         expect(JSON.parse(brut!).data).toEqual({ s1: { textField: "saisie" } });
+        window.localStorage.removeItem(KEY);
+      });
+    });
+
+    /**
+     * H16 (rapport MR 53) : `restoreDraft` ne faisait que `setStepState`. Le
+     * formulaire réellement rendu est l'instance react-hook-form de
+     * `useCoFormStep`, réinitialisée UNIQUEMENT sur changement d'index d'étape.
+     * Un brouillon écrit sur l'étape 0, repris depuis l'étape 0 : rien ne
+     * bougeait à l'écran, puis « Suivant » soumettait les valeurs jamais
+     * restaurées — et l'auto-save persistait aussitôt ce brouillon amputé.
+     */
+    describe("reprise d'un brouillon : l'étape affichée se resynchronise (H16)", () => {
+      function poserBrouillonAnterieur() {
+        window.localStorage.setItem(
+          KEY,
+          JSON.stringify({
+            version: 1,
+            data: { s1: { textField: "repris" } },
+            currentStepIndex: 0,
+            completedSteps: [],
+            addedOptions: {},
+            timestamp: Date.now() - 60_000,
+            baseUpdatedAt: null,
+          }),
+        );
+      }
+
+      function monterAvecEtape() {
+        const formData = makeCoFormData(["s1", "s2"]);
+        const wrapper = ({ children }: { children: React.ReactNode }) => (
+          <LocalizationProvider>
+            <CoFormProvider formData={formData} formId={FORM_ID} userId={USER_ID}>
+              {children}
+            </CoFormProvider>
+          </LocalizationProvider>
+        );
+        return renderHook(() => ({ ctx: useCtx(), step: useCoFormStep() }), { wrapper });
+      }
+
+      it("« Reprendre » sur l'étape courante remplit SON formulaire, sans changement d'index", () => {
+        poserBrouillonAnterieur();
+        const { result, unmount } = monterAvecEtape();
+        expect(result.current.ctx.restorableDraft).not.toBeNull();
+        expect(result.current.step.form.getValues().textField).not.toBe("repris");
+
+        act(() => result.current.ctx.restoreDraft());
+
+        expect(result.current.ctx.stepState.currentStepIndex).toBe(0);
+        expect(result.current.step.form.getValues().textField).toBe("repris");
+        unmount();
+        window.localStorage.removeItem(KEY);
+      });
+
+      it("puis « Suivant » soumet la valeur reprise — l'étape n'est pas réécrite vide", async () => {
+        poserBrouillonAnterieur();
+        const { result, unmount } = monterAvecEtape();
+        act(() => result.current.ctx.restoreDraft());
+
+        let ok = false;
+        await act(async () => {
+          ok = await result.current.step.submitStep();
+        });
+        expect(ok).toBe(true);
+        expect(result.current.ctx.stepState.stepsData.s1).toEqual({ textField: "repris" });
+        expect(result.current.ctx.stepState.currentStepIndex).toBe(1);
+        unmount();
         window.localStorage.removeItem(KEY);
       });
     });
