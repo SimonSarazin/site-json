@@ -189,3 +189,37 @@ describe("CommunActionsSection — édition d'une action", () => {
     expect((screen.getByRole("spinbutton") as HTMLInputElement).value).toBe("800");
   });
 });
+
+describe("CommunActionsSection — restauration d'un palier clos", () => {
+  const restaurer = () => screen.queryByRole("button", { name: "Restaurer" });
+
+  it("un palier clos ET financé garde son bouton « Restaurer » — le parcours nominal de clôture", () => {
+    // Ni éditable (clos), ni supprimable (financé) : seul le droit de restauration reste.
+    const ctrl = controleur();
+    poser(ctrl, [palier({ status: "close", currentFunding: 2000, actions: [action({ status: "done" })] })]);
+
+    expect(restaurer()).toBeTruthy();
+    fireEvent.click(restaurer()!);
+    expect(ctrl.handleRestoreMilestone).toHaveBeenCalledWith(
+      "it1",
+      expect.objectContaining({ id: "m1", title: "Prototype" }),
+    );
+  });
+
+  it("« Restaurer » suit `canRestoreMilestone`, pas le droit de suppression", () => {
+    // Clos SANS financement : supprimable, donc la barre s'affiche — mais sans droit
+    // de restauration, le bouton n'a pas à y être.
+    poser(
+      controleur({ cagnottePerms: { ...DROITS_ADMIN, canRestoreMilestone: () => false } }),
+      [palier({ status: "close", currentFunding: 0 })],
+    );
+
+    expect(restaurer()).toBeNull();
+  });
+
+  it("un palier ouvert ne propose pas de restauration", () => {
+    poser(controleur(), [palier({ status: "open" })]);
+    expect(restaurer()).toBeNull();
+    expect(screen.getByRole("button", { name: "Clôturer" })).toBeTruthy();
+  });
+});

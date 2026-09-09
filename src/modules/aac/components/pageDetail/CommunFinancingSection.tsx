@@ -16,6 +16,7 @@ import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import { MilestoneManageActions } from "@/modules/cagnotte/components/sections/MilestoneManageActions";
 import { toSafeInt, buildItemsFromRawDepenses } from "@/modules/cagnotte/utils/dataTransform";
 import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
+import type { CagnottePermissions } from "@/modules/cagnotte/permissions/types";
 import type { CommunObjectivesController } from "./CommunMilestoneDialogs";
 import {
   toMilestoneStatus,
@@ -52,7 +53,7 @@ function FinancingMilestoneCard({
     onMilestoneClose: (itemId: string, milestone: Milestone) => void;
     onMilestoneRestore: (itemId: string, milestone: Milestone) => void;
     onMilestoneDelete: (itemId: string, milestone: Milestone) => void;
-    permissions: MilestoneCardPermissions;
+    permissions: MilestoneCardPermissions & Pick<CagnottePermissions, "canRestoreMilestone">;
     loadingIds: { deletingItemId: string; closingItemId: string; restoringItemId: string };
 }) {
     const [open, setOpen] = useState(false);
@@ -61,10 +62,21 @@ function FinancingMilestoneCard({
     useLoadNamespace("modules/aac");
     const c = useT("modules/aac");
 
+    const milestoneStatus = toMilestoneStatus(item.status);
+    const canEditThisMilestone = permissions.canEditMilestone({ status: milestoneStatus });
     const canDeleteThisMilestone = permissions.canDeleteMilestone({
-        status: toMilestoneStatus(item.status),
+        status: milestoneStatus,
         hasTransactions: toSafeInt(item.currentFunding) > 0,
     });
+    /**
+     * « Restaurer » a SA règle (`isAdmin && status === "close"`), distincte de l'édition
+     * (refusée sur un palier clos) et de la suppression (refusée sur un palier financé).
+     * Un palier clos ET financé n'a donc ni l'une ni l'autre : gater la barre sur ces
+     * deux seuls droits la faisait disparaître entièrement, et le palier ne pouvait
+     * plus jamais être rouvert — alors que le droit existe et que tous les autres
+     * appelants de `MilestoneManageActions` le passent en `canRestore`.
+     */
+    const canRestoreThisMilestone = permissions.canRestoreMilestone({ status: milestoneStatus });
 
     const pct = toSafeInt(item.price) > 0
         ? Math.min(Math.round((toSafeInt(item.currentFunding) / toSafeInt(item.price)) * 100), 100)
@@ -163,7 +175,7 @@ function FinancingMilestoneCard({
                 </div>
             )}
 
-            {permissions.canEditMilestone({ status: toMilestoneStatus(item.status) }) || canDeleteThisMilestone ? (
+            {canEditThisMilestone || canDeleteThisMilestone || canRestoreThisMilestone ? (
                 <div className="grid grid-rows-[0fr] opacity-0 group-hover:grid-rows-[1fr] group-hover:opacity-100 focus-within:grid-rows-[1fr] focus-within:opacity-100 transition-all duration-300 ease-in-out">
                     <div className="overflow-hidden">
                         <div className="mb-3">
@@ -177,9 +189,10 @@ function FinancingMilestoneCard({
                                     item.status === "close" ||
                                     !(item.actions ?? []).every((action: ProjectAction) => action.status === "done")
                                 }
-                                canEdit={permissions.canEditMilestone({ status: toMilestoneStatus(item.status) })}
-                                canClose={permissions.canEditMilestone({ status: toMilestoneStatus(item.status) }) && permissions.canCloseMilestone({ status: toMilestoneStatus(item.status) })}
+                                canEdit={canEditThisMilestone}
+                                canClose={canEditThisMilestone && permissions.canCloseMilestone({ status: milestoneStatus })}
                                 canDelete={canDeleteThisMilestone}
+                                canRestore={canRestoreThisMilestone}
                                 isClosed={item.status === "close"}
                                 onRestore={() => onMilestoneRestore(item.itemId, fundableItemToMilestoneRef(item))}
                                 isRestoring={loadingIds.restoringItemId === item.itemId}

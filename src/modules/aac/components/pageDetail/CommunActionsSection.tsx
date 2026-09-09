@@ -18,6 +18,7 @@ import { ActionCreateDialog } from "@/modules/cagnotte/components/sections/parts
 import { ActionEditDialog, type EditingActionContext } from "@/modules/cagnotte/components/sections/parts/ActionEditDialog";
 import { MilestoneManageActions } from "@/modules/cagnotte/components/sections/MilestoneManageActions";
 import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
+import type { CagnottePermissions } from "@/modules/cagnotte/permissions/types";
 import type { CommunObjectivesController } from "./CommunMilestoneDialogs";
 import {
   normalizeActionForEdit,
@@ -98,7 +99,7 @@ function ActionsMilestoneCard({
     onMilestoneClose: (itemId: string, milestone: Milestone) => void;
     onMilestoneDelete: (itemId: string, milestone: Milestone) => void;
     onMilestoneRestore: (itemId: string, milestone: Milestone) => void;
-    permissions: MilestoneCardPermissions;
+    permissions: MilestoneCardPermissions & Pick<CagnottePermissions, "canRestoreMilestone">;
     loadingIds: {
         candidateActionId: string;
         doneActionId: string;
@@ -114,10 +115,21 @@ function ActionsMilestoneCard({
     useLoadNamespace("modules/aac");
     const c = useT("modules/aac");
 
+    const milestoneStatus = toMilestoneStatus(item.status);
+    const canEditThisMilestone = permissions.canEditMilestone({ status: milestoneStatus });
     const canDeleteThisMilestone = permissions.canDeleteMilestone({
-        status: toMilestoneStatus(item.status),
+        status: milestoneStatus,
         hasTransactions: toSafeInt(item.currentFunding) > 0,
     });
+    /**
+     * « Restaurer » a SA règle (`isAdmin && status === "close"`), distincte de l'édition
+     * (refusée sur un palier clos) et de la suppression (refusée sur un palier financé).
+     * Un palier clos ET financé n'a donc ni l'une ni l'autre : gater la barre sur ces
+     * deux seuls droits la faisait disparaître entièrement, et le palier ne pouvait
+     * plus jamais être rouvert — alors que le droit existe et que tous les autres
+     * appelants de `MilestoneManageActions` le passent en `canRestore`.
+     */
+    const canRestoreThisMilestone = permissions.canRestoreMilestone({ status: milestoneStatus });
 
     const tasksDone = (item?.actions ?? []).filter((action: ProjectAction) => action.status === "done").length;
 
@@ -250,7 +262,7 @@ function ActionsMilestoneCard({
                 </div>
             )}
 
-            {permissions.canEditMilestone({ status: toMilestoneStatus(item.status) }) || canDeleteThisMilestone ? (
+            {canEditThisMilestone || canDeleteThisMilestone || canRestoreThisMilestone ? (
                 <div className="grid grid-rows-[0fr] opacity-0 group-hover:grid-rows-[1fr] group-hover:opacity-100 focus-within:grid-rows-[1fr] focus-within:opacity-100 transition-all duration-300 ease-in-out">
                     <div className="overflow-hidden">
                         <div className="mb-3">
@@ -264,14 +276,15 @@ function ActionsMilestoneCard({
                                     item.status === "close" ||
                                     !(item.actions ?? []).every((action: ProjectAction) => action.status === "done")
                                 }
-                                canEdit={permissions.canEditMilestone({ status: toMilestoneStatus(item.status) })}
-                                canClose={permissions.canEditMilestone({ status: toMilestoneStatus(item.status) }) && permissions.canCloseMilestone({ status: toMilestoneStatus(item.status) })}
+                                canEdit={canEditThisMilestone}
+                                canClose={canEditThisMilestone && permissions.canCloseMilestone({ status: milestoneStatus })}
                                 canDelete={canDeleteThisMilestone}
+                                canRestore={canRestoreThisMilestone}
                                 isClosed={item.status === "close"}
                                 onRestore={() => onMilestoneRestore(item.itemId, fundableItemToMilestoneRef(item))}
                                 isRestoring={loadingIds.restoringItemId === item.itemId}
                             />
-                            {permissions.canCreateAction({ status: toMilestoneStatus(item.status) }) ? (
+                            {permissions.canCreateAction({ status: milestoneStatus }) ? (
                                 <Button
                                     size="sm"
                                     className="h-7 text-[11px] gap-1 px-2 bg-primary hover:bg-primary/90 mb-2"
