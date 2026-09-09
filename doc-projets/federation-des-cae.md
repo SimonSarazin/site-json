@@ -192,7 +192,7 @@ Réglages notables de la section `toolsCatalog` :
 | 8 | Version mobile du catalogue | ✅ | `ToolFiltersSheet` — commité sur **`jdev`** (`cb26991d`), le module `toolsCatalog` étant partagé |
 | 9 | Brouillon du formulaire de dépôt | ✅ | actif sur une étape extraite, et le reprendre ne l'efface plus (cf. §10 31/08ter) |
 | 10 | Vérification navigateur | ❌ | **jamais faite** sur AUCUN lot du 27/08 au 31/08, ni sur celui du 03/09 |
-| 11 | Cagnotte d'un commun déposé sur un autre appel | 🟡 | modale ciblée, paliers/actions gérables par le déposant et l'admin (cf. §10 03/09) — reste à confirmer sur données réelles que l'enveloppe du contexte d'origine répond |
+| 11 | Cagnotte d'un commun déposé sur un autre appel | 🟡 | modale ciblée, paliers/actions gérables par le déposant et l'admin du **projet lié** (cf. §10 03/09) — reste à confirmer sur données réelles que l'enveloppe du contexte d'origine répond |
 
 **Gates au 31/08** (dernier lot, `d48dd882`) : `typecheck` ✅ · `eslint` ✅ · `test:unit` 3351 ✅ ·
 `config:validate` ✅ · `audit:config` 1 constat (le logo, ci-dessus) ·
@@ -236,11 +236,13 @@ l'**org du site**, donc seul un admin CAE gérait paliers et actions — jamais 
 | La ressource se reconstruit depuis le document réponse quand l'enveloppe ne la porte pas | `buildResourceFromAnswer` |
 | La synchro d'un palier accepte les documents bruts en repli | `resolveMilestoneSyncContextFromDocs`, `MilestoneMutationContext.docs` |
 | **Une ressource forcée introuvable ne retombe plus sur une autre** : message explicite, contribution impossible | `CagnotteDialog` |
-| Droits = entité du **projet lié** + `ownerIds` (déposant + admin de l'appel) | `useCommunObjectivesController`, `CagnottePermissionData.ownerIds` |
+| Droits = entité du **projet lié** + `ownerIds` (le déposant seul — l'admin de l'appel n'y est pas, cf. doc/34 §6) | `useCommunObjectivesController`, `resolveCommunOwnerIds`, `CagnottePermissionData.ownerIds` |
 | « Générer / Associer un projet » ouvert au déposant | `CommunProjectControl.canManageProject` |
 
 **Arbitrage produit** : le déposant gère les paliers, les actions **et** le rattachement du projet
-de son commun ; l'admin de l'appel aussi. Un simple visiteur, non.
+de son commun. L'admin de l'appel peut générer / associer le projet, mais n'écrit dans les paliers et
+actions que s'il administre le **projet lié** — porter l'appel ne donne pas la main sur le plan de
+financement d'autrui (cf. doc/34 §6, doc/18 §Pièges n°4). Un simple visiteur, non.
 
 **Reste ouvert** :
 

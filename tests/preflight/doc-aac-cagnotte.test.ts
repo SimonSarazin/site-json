@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { EntityTypes, Organization, User } from "@communecter/cocolight-api-client";
 import { calculateCagnottePermissions } from "@/modules/cagnotte/permissions/calculators/cagnotte";
+import { resolveCommunOwnerIds } from "@/modules/aac/lib/objectiveHelpers";
 
 /**
  * Anti-dérive de la doc de référence des modules AAC / cagnotte (doc/18, doc/34,
@@ -49,5 +50,21 @@ describe("doc/18-module-cagnotte ⇄ calculateurs (anti-dérive)", () => {
     expect(row).toMatch(/auteur/);
     expect(row).toMatch(/done/);
     expect(row).not.toMatch(/ignoré|admin uniquement \(signature/);
+  });
+});
+
+describe("doc-projets/federation-des-cae ⇄ module AAC (anti-dérive)", () => {
+  it("M47 — `ownerIds` d'un commun = le déposant seul, jamais l'admin de l'appel", () => {
+    // `resolveCommunOwnerIds` ne pousse que l'auteur de la réponse : l'admin de
+    // l'appel obtient les paliers par l'entité du projet lié, pas par cette liste
+    // (doc/34 §6, doc/18 §Pièges n°4). Une doc qui dit « déposant + admin de
+    // l'appel » invite à élargir les droits d'écriture sur le plan de financement
+    // de n'importe quel commun déposé par un tiers.
+    const answer = { userId: "deposant" } as Parameters<typeof resolveCommunOwnerIds>[0];
+    expect(resolveCommunOwnerIds(answer)).toEqual(["deposant"]);
+
+    const doc = read("doc-projets/federation-des-cae.md");
+    expect(doc).not.toMatch(/déposant \+ admin de l'appel/);
+    expect(doc).toMatch(/`ownerIds` \(le déposant seul/);
   });
 });
