@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { fireEvent, render, waitFor } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import type { CoFormData } from "../types";
 
 /**
@@ -130,7 +131,7 @@ describe("DynamicCoForm — purge du brouillon seulement sur succès avéré (H1
     mockUseCoFormDraft.mockReturnValue(draft);
   });
 
-  async function soumettre(onSubmit: (...args: unknown[]) => unknown) {
+  async function soumettre(onSubmit: ComponentProps<typeof DynamicCoForm>["onSubmit"]) {
     const { container } = render(
       <DynamicCoForm formData={FORM_DATA} onSubmit={onSubmit} formId="form-1" userId="user-1" />,
     );
