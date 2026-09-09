@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import type { ReactNode } from "react";
 import type { AacResolvedConfig } from "../types";
 import type { AacDetailSection } from "../lib/resolveAacDetailSections";
@@ -43,14 +43,17 @@ vi.mock("@/hooks/useCocolight", () => ({
 
 const ANSWER = { _id: { $id: "a1" }, form: "f1", user: "u1", answers: {}, documents: [] };
 const FORM = { id: "f1", name: "Appel test", inputs: {} };
+const refetchAnswer = vi.fn().mockResolvedValue(undefined);
+const invalidateQueries = vi.fn().mockResolvedValue(undefined);
 vi.mock("@tanstack/react-query", () => ({
   useQuery: ({ queryKey }: { queryKey: unknown[] }) => ({
     data: queryKey[0] === "aac-commun-detail" ? ANSWER : FORM,
     isLoading: false,
     isSuccess: true,
     error: null,
-    refetch: vi.fn(),
+    refetch: queryKey[0] === "aac-commun-detail" ? refetchAnswer : vi.fn(),
   }),
+  useQueryClient: () => ({ invalidateQueries }),
 }));
 
 /** Un objet STABLE par test : `useAacPermissions` mémoïse sur l'identité de `gates`. */
@@ -128,8 +131,16 @@ vi.mock("@/modules/coform/components/CoFormModal", () => ({ CoFormModal: () => n
 vi.mock("../components/pageDetail/CommunSelectionControl.tsx", () => ({ CommunSelectionControl: () => null }));
 vi.mock("../components/pageDetail/CommunProjectControl.tsx", () => ({ CommunProjectControl: () => null }));
 vi.mock("../components/pageDetail/CommunHero.tsx", () => ({ CommunHero: () => <div data-testid="hero" /> }));
+// La carte expose son crochet `onFunded` — ce que `CagnotteDialog` joue après
+// une contribution enregistrée (`onRefresh`).
 vi.mock("../components/pageDetail/CommunFinancingCard.tsx", () => ({
-  CommunFinancingCard: () => <div data-testid="financing-card" />,
+  CommunFinancingCard: ({ onFunded }: { onFunded?: () => void | Promise<void> }) => (
+    <div data-testid="financing-card">
+      <button type="button" onClick={() => void onFunded?.()}>
+        funded
+      </button>
+    </div>
+  ),
 }));
 vi.mock("../components/pageDetail/CommunTocNav.tsx", () => ({
   CommunTocNav: ({ sections, activeSection }: { sections: Array<{ id: string }>; activeSection: string }) => (
@@ -171,6 +182,8 @@ beforeEach(() => {
   isConfigLoading = false;
   configError = null;
   detailSections = [];
+  refetchAnswer.mockClear();
+  invalidateQueries.mockClear();
 });
 
 describe("AacCommunDetailPage — le financement suit le gate `coremu`", () => {
@@ -267,5 +280,26 @@ describe("AacCommunDetailPage — section active du sommaire", () => {
     render(<AacCommunDetailPage />);
 
     expect(screen.getByTestId("toc").getAttribute("data-active")).toBe("besoins-financiers");
+  });
+});
+
+describe("AacCommunDetailPage — après un paiement, la fiche se rafraîchit (H5)", () => {
+  /**
+   * `CommunFinancingCard` déclarait `onFunded` et le passait à `CagnotteDialog`
+   * (`onRefresh`), mais la page ne le fournissait pas. La modale n'invalide que
+   * ses propres caches : la réponse (dont `funding` est recalculé) et les
+   * dépenses brutes des trois blocs restaient périmées — « 0 € collectés »
+   * après un paiement réussi.
+   */
+  it("`onFunded` relit la réponse et invalide les dépenses brutes du commun", async () => {
+    config = makeConfig(true);
+    render(<AacCommunDetailPage />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("funded"));
+    });
+
+    expect(refetchAnswer).toHaveBeenCalled();
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["aac-milestone-list-depenses", "a1"] });
   });
 });

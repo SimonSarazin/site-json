@@ -1,7 +1,7 @@
 import { ReactNode, type ElementType, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
 import { AlertCircle, Home, Sparkles, ListChecks, Handshake, FileText, HeartHandshake, Pencil, Image as ImageIcon } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { toast } from "sonner";
 
@@ -31,6 +31,7 @@ import { CommunFinancingSection } from "../components/pageDetail/CommunFinancing
 import { CommunActionsSection } from "../components/pageDetail/CommunActionsSection.tsx";
 import { CommunMilestoneDialogs } from "../components/pageDetail/CommunMilestoneDialogs.tsx";
 import { useCommunObjectivesController } from "../hooks/useCommunObjectivesController";
+import { COMMUN_RAW_DEPENSES_QUERY_KEY } from "../hooks/useCommunRawDepenses";
 import { CommunContributorsSection } from "../components/pageDetail/CommunContributorsSection.tsx";
 import { CommunCofinancersTable } from "../components/pageDetail/CommunCofinancersTable.tsx";
 import { CommunProse } from "../components/pageDetail/CommunProse.tsx";
@@ -115,6 +116,7 @@ export default function AacCommunDetailPage() {
     const t = useT("modules/aac");
     const { answerId } = useParams();
     const { api, loading, entity, me, refreshMe } = useCocolight();
+    const queryClient = useQueryClient();
 
     // Section active du sommaire. `null` tant que l'observateur n'a rien vu :
     // l'affichage retombe alors sur la PREMIÈRE entrée de `SECTIONS` (cf. le
@@ -401,6 +403,22 @@ export default function AacCommunDetailPage() {
         await answerQuery.refetch();
     };
 
+    /**
+     * Après un paiement, la modale cagnotte n'invalide que SES caches
+     * (enveloppe, projets, modale). Les deux entrées dont cette fiche dépend
+     * — la réponse (`funding` en est recalculé par `useAacFundingResource`) et
+     * les dépenses brutes (`useCommunRawDepenses`, dans les trois blocs) — ne
+     * lui appartiennent pas : sans ce crochet, la carte affichait encore
+     * « 0 € collectés » après un paiement réussi, et rien ne distinguait le
+     * succès d'un échec. Même couple que `extraInvalidate` du contrôleur.
+     */
+    const handleFunded = async () => {
+        await Promise.all([
+            answerQuery.refetch(),
+            queryClient.invalidateQueries({ queryKey: [COMMUN_RAW_DEPENSES_QUERY_KEY, answerId] }),
+        ]);
+    };
+
     const galleryImages = extractGalleryImages(answer.documents, getBaseUrl(), gallerySubKey);
 
     return (
@@ -468,6 +486,7 @@ export default function AacCommunDetailPage() {
                             answerQuery={answer ?? {}}
                             aacConfig={config}
                             funding={targetResource}
+                            onFunded={handleFunded}
                         />
                     )}
                 </div>

@@ -133,7 +133,8 @@ interface CommunFinancingCardProps {
     answerQuery: CoFormAnswer | null;
     aacConfig: AacResolvedConfig | null;
     funding?: CagnotteResource | null;
-    onFunded?: () => void;
+    /** Joué après une contribution enregistrée — la page y rafraîchit SES caches. */
+    onFunded?: () => void | Promise<void>;
 }
 
 export function CommunFinancingCard({
