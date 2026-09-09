@@ -17,6 +17,11 @@
  * `null` pendant tout le chargement, puis en cas d'échec. Seuls les droits qui
  * dépendent réellement d'un rôle sur l'entité (paliers, création d'action, `isAdmin`)
  * tombent alors à `false`, via `isAdmin`.
+ *
+ * Corollaire : un droit accordé ici ne dit PAS que la mutation peut aboutir. Les
+ * mutations d'action exigent l'entité `Project` (`ActionMutationContext.project`) ;
+ * c'est à l'appelant de le vérifier au clic, par `useActionGuards().requireProjectEntity`
+ * — la disponibilité n'est pas une permission, et ne se calcule pas ici (M41).
  */
 import type { EntityTypes, User } from "@communecter/cocolight-api-client";
 import type {

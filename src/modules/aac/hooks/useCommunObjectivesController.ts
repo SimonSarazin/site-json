@@ -106,11 +106,18 @@ export function useCommunObjectivesController({
   const canManageActions = canManageObjectiveActions(resolvedProjectId);
   const isConnected = cagnottePerms.isConnected;
   const currentUserId = me?.serverData?.id ?? cagnottePerms.currentUserId;
-  const { requireConnected, requireApiAacContext } = useActionGuards({
+  /**
+   * `project` : les mutations d'action l'exigent (`actionCtx.project`, ci-dessous),
+   * alors que les droits d'action ne l'exigent pas — l'entité peut donc être `null`
+   * sous un bouton visible (résolution asynchrone, ou échec mis en cache par
+   * `useCommunProjectEntity`). `requireProjectEntity` le dit avant `mutate()`.
+   */
+  const { requireConnected, requireApiAacContext, requireProjectEntity } = useActionGuards({
     isConnected,
     apiClient,
     projectId: resolvedProjectId,
     answerId: resolvedAnswerId,
+    project: projectEntity,
   });
 
   const { data: rawDepensesDocument } = useCommunRawDepensesDocument(resolvedAnswerId, depenseStepKey ?? undefined);
@@ -273,6 +280,7 @@ export function useCommunObjectivesController({
   const handleActionCandidate = (_milestoneId: string, action: ProjectAction) => {
     if (!requireConnected("candidate")) return;
     if (!requireApiAacContext("candidate")) return;
+    if (!requireProjectEntity("candidateFailed")) return;
     setLoadingIds((prev) => ({ ...prev, candidateActionId: action.id }));
     candidateActionMutation.mutate({ actionId: action.id }, {
       onSuccess: async () => {
@@ -285,6 +293,7 @@ export function useCommunObjectivesController({
   const handleActionDone = (_milestoneId: string, action: ProjectAction) => {
     if (!requireConnected("complete")) return;
     if (!requireApiAacContext("complete")) return;
+    if (!requireProjectEntity("actionCompleteFailed")) return;
     setLoadingIds((prev) => ({ ...prev, doneActionId: action.id }));
     markActionDoneMutation.mutate({ actionId: action.id, name: action.name }, {
       onSuccess: async () => {
@@ -297,6 +306,7 @@ export function useCommunObjectivesController({
   const requestDeleteAction = (milestoneId: string, action: ProjectAction) => {
     if (!requireConnected("delete")) return;
     if (!requireApiAacContext("delete")) return;
+    if (!requireProjectEntity("actionDeleteFailed")) return;
     setPendingDeleteAction({ milestoneId, action });
   };
 
