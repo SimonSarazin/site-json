@@ -269,6 +269,88 @@ describe("useCagnotteAdapter — montant lu en `price` quand `priceInt` manque (
     expect(item.name).toBe("Legacy");
     expect(item.price).toBe(700);
   });
+
+  /**
+   * La troisième lecture de montant de la même fonction — le palier projet APPARIÉ à
+   * sa dépense — lisait encore `Number(m.price) || 0`. Or `m.price` est le `price`
+   * BRUT du document réponse (`enrichMilestones` fait `price: depense?.price ?? 0`),
+   * hors de tout pipeline `$convert` : deux dépenses identiques stockées « 1 500 »
+   * s'affichaient 1 500 € en orpheline et 0 € une fois appariées.
+   */
+  it("projet : le palier apparié lit le même montant que la même dépense restée orpheline", () => {
+    const envelope = {
+      rawEnvelope: {
+        projects: [{
+          id: "answer-prix-projet",
+          projectId: "proj-prix",
+          titre: "Mon commun",
+          depenses: [{ poste: "Dev", price: "1 500", milestone: "m1" }, { poste: "Legacy", price: "1 500" }],
+        }],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+    // Sans `answerId` : pas de réparation à programmer, on n'observe que la lecture.
+    const projets = [
+      {
+        id: "proj-prix",
+        name: "Projet",
+        milestones: [{ milestoneId: "m1", name: "Dev", price: "1 500", status: "open", currentFunding: 0 }],
+        cagnotteTotalAmount: 0,
+        cagnotteTargetAmount: 0,
+        rawProject: {},
+      },
+    ] as unknown as OrgProject[];
+
+    const items = renderAdapter(envelope, projets, CAGNOTTE_TYPE_CONFIGS.standard, "proj-prix")
+      .result.current.savedSelectedResource!.items;
+    expect(items.map((i) => i.name)).toEqual(["Dev", "Legacy"]);
+    expect(items[0].price).toBe(1500);
+    expect(items[0].price).toBe(items[1].price);
+  });
+
+  it("projet : le `price` du palier sert quand la dépense appariée n'en porte aucun", () => {
+    const envelope = {
+      rawEnvelope: {
+        projects: [{ id: "answer-prix-projet", projectId: "proj-prix", titre: "Mon commun", depenses: [{ poste: "Dev", milestone: "m1" }] }],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+    const projets = [
+      {
+        id: "proj-prix",
+        name: "Projet",
+        milestones: [{ milestoneId: "m1", name: "Dev", price: "2 400", status: "open", currentFunding: 0 }],
+        cagnotteTotalAmount: 0,
+        cagnotteTargetAmount: 0,
+        rawProject: {},
+      },
+    ] as unknown as OrgProject[];
+
+    const item = renderAdapter(envelope, projets, CAGNOTTE_TYPE_CONFIGS.standard, "proj-prix")
+      .result.current.savedSelectedResource!.items[0];
+    expect(item.price).toBe(2400);
+  });
+
+  it("projet : les agrégats de la ressource sont normalisés comme les items", () => {
+    const envelope = {
+      rawEnvelope: { projects: [{ id: "answer-prix-projet", projectId: "proj-prix", titre: "Mon commun", depenses: [] }], links: {} },
+    } as unknown as FundingEnvelopeNormalizedData;
+    const projets = [
+      {
+        id: "proj-prix",
+        name: "Projet",
+        milestones: [],
+        cagnotteTotalAmount: "1 200",
+        cagnotteTargetAmount: "3 000",
+        rawProject: {},
+      },
+    ] as unknown as OrgProject[];
+
+    const resource = renderAdapter(envelope, projets, CAGNOTTE_TYPE_CONFIGS.standard, "proj-prix")
+      .result.current.savedSelectedResource!;
+    expect(resource.resourceTotalAmount).toBe(3000);
+    expect(resource.resourceFinancedAmount).toBe(1200);
+  });
 });
 
 /**

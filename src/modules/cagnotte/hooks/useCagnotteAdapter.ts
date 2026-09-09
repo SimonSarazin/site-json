@@ -328,6 +328,14 @@ export function useCagnotteAdapter(
                         me?.serverData?.id
                     );
 
+                    // Montant du palier : la dépense appariée d'abord — c'est là que
+                    // l'enveloppe pose le `priceInt` converti (§9.1) —, sinon le `price`
+                    // du palier. Ce dernier est le `price` BRUT du document réponse
+                    // (`enrichMilestones` recopie `depense.price ?? 0`), hors de tout
+                    // pipeline `$convert` : `Number("1 500")` rendait NaN → 0, quand la
+                    // MÊME dépense restée orpheline s'affichait, elle, à 1 500 €.
+                    const price = (matchedDepense ? readDepensePrice(matchedDepense.depense) : 0) || toSafeInt(m.price);
+
                     return {
                         fromType: "milestone" as const,
                         itemId: milestoneIdStr,
@@ -335,7 +343,7 @@ export function useCagnotteAdapter(
                         depenseIndex: matchedDepense?.index ?? -1,
                         name: m.name ?? "",
                         description: m.description ?? "",
-                        price: Number(m.price) || 0,
+                        price,
                         status: m?.status ?? "open",
                         actions: enrichedActions,
                         currentFunding,
@@ -403,8 +411,12 @@ export function useCagnotteAdapter(
                     name: projet.name ?? "",
                     projectId: projectIdStr,
                     answerId: projet.answerId ?? "",
-                    resourceTotalAmount: Number(projet.cagnotteTargetAmount) || 0,
-                    resourceFinancedAmount: Number(projet.cagnotteTotalAmount) || 0,
+                    // Mêmes valeurs brutes, sommées en amont : `cagnotteTargetAmount`
+                    // additionne les `price` recopiés tels quels par `enrichMilestones`.
+                    // `toSafeInt`, comme le repli qu'en fait `computeResourceFundingTotals`
+                    // — sinon un « 1 500 » en chaîne rendait NaN → 0 ici aussi.
+                    resourceTotalAmount: toSafeInt(projet.cagnotteTargetAmount),
+                    resourceFinancedAmount: toSafeInt(projet.cagnotteTotalAmount),
                     items: [...items, ...orphanItems],
                 };
             });
