@@ -289,7 +289,10 @@ describe("associateExistingProject — pollution {} ↔ [] Mongo (régression)",
     );
   });
 
-  it("lit answer.answers.<step>.depense même sérialisé en objet", async () => {
+  it("lit answer.answers.<step>.depense même sérialisé en objet — et répare par CLÉ du document, pas par position", async () => {
+    // `generateMilestoneFromDepense(depid)` cible `answers.<step>.depense.<depid>`
+    // côté backend : redenser `{0, 3}` en `["0", "1"]` réparerait une clé
+    // inexistante et laisserait la dépense stockée en "3" sans milestone.
     const answer = {
       id: "answer-1",
       serverData: {
@@ -304,5 +307,25 @@ describe("associateExistingProject — pollution {} ↔ [] Mongo (régression)",
 
     expect(result.repairedDepensesCount).toBe(2);
     expect(answer.generateMilestoneFromDepense).toHaveBeenCalledTimes(2);
+    expect(answer.generateMilestoneFromDepense).toHaveBeenNthCalledWith(1, "0");
+    expect(answer.generateMilestoneFromDepense).toHaveBeenNthCalledWith(2, "3");
+  });
+
+  it("en objet, la dédup par milestone lit les valeurs et la réparation saute la clé déjà liée", async () => {
+    const answer = {
+      id: "answer-1",
+      serverData: {
+        answers: { aapStep1: { depense: { 0: { poste: "Lié", milestone: "m1" }, 5: { poste: "Orphelin" } } } },
+      },
+      updateField: vi.fn().mockResolvedValue(undefined),
+      generateMilestoneFromDepense: vi.fn().mockResolvedValue({ milestoneId: "generated-milestone" }),
+    } as unknown as Answer;
+    const project = buildProject([{ milestoneId: "m1", name: "Déjà lié" }]);
+
+    const result = await associateExistingProject({ answer, project, userId: "user-1" });
+
+    expect(result).toEqual({ projectId: "proj-1", backfilledMilestonesCount: 0, repairedDepensesCount: 1 });
+    expect(answer.generateMilestoneFromDepense).toHaveBeenCalledTimes(1);
+    expect(answer.generateMilestoneFromDepense).toHaveBeenCalledWith("5");
   });
 });

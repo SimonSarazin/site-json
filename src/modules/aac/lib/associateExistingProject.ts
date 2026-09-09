@@ -115,11 +115,11 @@ export async function associateExistingProject(params: {
 
   // Dédup : n'ajouter une dépense que pour les milestones du projet qui n'en
   // ont pas déjà une côté answer (idempotent si rejoué).
-  const existingDepenses = toArrayOrValues<Record<string, unknown>>(
+  const existingDepenses = depenseEntries(
     asRecord(asRecord(answer.serverData?.answers)[step]).depense
   );
   const alreadyLinkedMilestoneIds = new Set(
-    existingDepenses.map((depense) => String(depense.milestone ?? "")).filter(Boolean)
+    existingDepenses.map(([, depense]) => String(depense.milestone ?? "")).filter(Boolean)
   );
 
   const projectMilestones = toArrayOrValues<{ milestoneId?: string; name?: string }>(
@@ -145,9 +145,9 @@ export async function associateExistingProject(params: {
   }
 
   let repairedDepensesCount = 0;
-  for (const [index, depense] of existingDepenses.entries()) {
+  for (const [key, depense] of existingDepenses) {
     if (depense.milestone) continue; // déjà lié — le backend ne retouche pas non plus ce cas
-    await answer.generateMilestoneFromDepense(String(index));
+    await answer.generateMilestoneFromDepense(key);
     repairedDepensesCount += 1;
   }
 
@@ -156,4 +156,23 @@ export async function associateExistingProject(params: {
     backfilledMilestonesCount: missingMilestones.length,
     repairedDepensesCount,
   };
+}
+
+/**
+ * Les dépenses d'une réponse AVEC LA CLÉ qu'elles portent dans le document.
+ *
+ * `generateMilestoneFromDepense(depid)` cible `answers.<step>.depense.<depid>`
+ * côté backend : `depid` est la clé du sous-document, pas une position. Or
+ * `depense` arrive parfois sérialisé en OBJET à clés creuses (`{"0":…, "3":…}`,
+ * pollution Mongo `{}` ↔ `[]`) : `toArrayOrValues` redenserait les clés et l'on
+ * réparerait `"1"` — inexistante — au lieu de `"3"`. Même piège que celui que
+ * `asStrictArray` ferme dans `cagnotte/lib/milestoneSyncContext`.
+ */
+function depenseEntries(raw: unknown): Array<[key: string, depense: Record<string, unknown>]> {
+  const pairs: Array<[string, unknown]> = Array.isArray(raw)
+    ? raw.map((depense, index) => [String(index), depense])
+    : Object.entries(asRecord(raw));
+  return pairs.flatMap(([key, depense]) =>
+    depense && typeof depense === "object" ? [[key, depense as Record<string, unknown>]] : []
+  );
 }
