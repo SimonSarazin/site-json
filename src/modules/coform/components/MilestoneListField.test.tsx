@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import type { FormFieldMapping } from "../types";
 import type { DepenseEntry } from "../utils/depense";
 
@@ -241,5 +242,90 @@ describe("MilestoneListField", () => {
     await waitFor(() => expect(onChange).toHaveBeenCalledTimes(1));
     const [liste] = onChange.mock.calls[0] as [DepenseEntry[]];
     expect(liste[0]).toMatchObject({ poste: "Développement", price: 6000, milestone: "m-abc" });
+  });
+
+  /**
+   * Fusion avec la photo serveur (bloquant B3 du rapport, résiduel de couverture).
+   *
+   * Sur un site AAC — le cas nominal, la réponse étant dans l'enveloppe du site —
+   * `targetResource.items` est une photo serveur FIGÉE jusqu'à la soumission,
+   * tandis que la valeur RHF est déjà modifiée par le geste. Avant le correctif,
+   * `buildItemsFromRawDepenses` appariait par POSITION et rendait l'item enrichi
+   * tel quel : la ligne supprimée restait affichée et la survivante disparaissait,
+   * un palier clôturé restait « open », un montant édité gardait l'ancienne
+   * valeur — et « Modifier » ouvrait la modale sur une AUTRE ligne.
+   *
+   * Les tests précédents laissaient `targetResource` vide : la fusion n'y était
+   * jamais exercée. Ici, la photo serveur est TOUJOURS en retard d'un geste, et
+   * la saisie locale doit gagner.
+   */
+  describe("fusion avec la photo serveur — la saisie locale gagne", () => {
+    const LIGNE2: DepenseEntry = { poste: "Hébergement", price: 300, milestone: "m-def" };
+    const itemServeur2 = () =>
+      itemServeur({ itemId: "1", milestoneId: "m-def", depenseIndex: 1, name: "Hébergement", price: 300 });
+    // Le matcher texte de testing-library normalise les espaces du DOM (insécables
+    // compris), pas ceux de la chaîne attendue : on aligne les deux.
+    const montant = (n: number) => formatCurrency(n).replace(/\s+/g, " ");
+
+    it("édition : le nouveau montant s'affiche, pas celui de la photo serveur", async () => {
+      fundingMock.mockReturnValue(ressource([itemServeur()]));
+      const onChange = poser([LIGNE], "answer-1");
+      expect(screen.getByText(montant(5000))).toBeTruthy();
+
+      fireEvent.click(screen.getByRole("button", { name: /MilestoneManageActions\.edit/ }));
+      fireEvent.change(screen.getByLabelText("Montant cible"), { target: { value: "6000" } });
+      fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+      await waitFor(() => expect(onChange).toHaveBeenCalledTimes(1));
+      const [liste] = onChange.mock.calls[0] as [DepenseEntry[]];
+
+      // RHF redonne la valeur au champ ; la photo serveur, elle, dit encore 5000.
+      onChange.rerender(liste);
+      expect(screen.getByText(montant(6000))).toBeTruthy();
+      expect(screen.queryByText(montant(5000))).toBeNull();
+      // Les agrégats de financement viennent bien de l'enrichi (fusion, pas remplacement).
+      expect(liste[0].financer).toEqual([{ id: "u1", amount: 250 }]);
+    });
+
+    it("clôture : la ligne passe dans les archivés alors que la photo serveur la dit ouverte", () => {
+      fundingMock.mockReturnValue(ressource([itemServeur()]));
+      const onChange = poser([LIGNE], "answer-1");
+
+      fireEvent.click(screen.getByRole("button", { name: /MilestoneManageActions\.close/ }));
+      expect(onChange).toHaveBeenCalledTimes(1);
+      const [liste] = onChange.mock.calls[0] as [DepenseEntry[]];
+      expect(liste[0]).toMatchObject({ milestone: "m-abc", include: false });
+
+      onChange.rerender(liste);
+      // Plus dans la liste active ; repliée derrière le bouton des archivés.
+      expect(screen.queryByText("Développement")).toBeNull();
+      const archives = screen.getByRole("button", { expanded: false });
+      fireEvent.click(archives);
+      expect(screen.getByText("Développement")).toBeTruthy();
+      expect(screen.getByRole("button", { name: /MilestoneManageActions\.restore/ })).toBeTruthy();
+    });
+
+    it("suppression : la ligne retirée disparaît, la survivante reste — et « Modifier » l'ouvre, elle", async () => {
+      fundingMock.mockReturnValue(ressource([itemServeur(), itemServeur2()]));
+      const onChange = poser([LIGNE, LIGNE2], "answer-1");
+
+      fireEvent.click(screen.getAllByRole("button", { name: /MilestoneManageActions\.delete/ })[0]);
+      fireEvent.click(
+        screen.getByRole("button", { name: /deleteMilestoneConfirm\.confirm/ }),
+      );
+      await waitFor(() => expect(onChange).toHaveBeenCalledTimes(1));
+      const [liste] = onChange.mock.calls[0] as [DepenseEntry[]];
+      expect(liste).toEqual([LIGNE2]);
+
+      // La photo serveur porte encore les DEUX items, « Développement » en position 0.
+      onChange.rerender(liste);
+      expect(screen.queryByText("Développement")).toBeNull();
+      expect(screen.getByText("Hébergement")).toBeTruthy();
+
+      // `depenseIndex` est l'index LOCAL : la modale s'ouvre sur la survivante,
+      // en modification — pas en ajout sur une ligne fantôme.
+      fireEvent.click(screen.getByRole("button", { name: /MilestoneManageActions\.edit/ }));
+      expect(screen.getByText("Modifier la dépense")).toBeTruthy();
+      expect((screen.getByLabelText("Intitulé") as HTMLInputElement).value).toBe("Hébergement");
+    });
   });
 });
