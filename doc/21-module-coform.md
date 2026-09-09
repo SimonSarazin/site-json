@@ -105,7 +105,8 @@ src/modules/coform/
 │   ├── FinderField.tsx          # Champ recherche/sélection d'entités Cocolight
 │   ├── FinderSearchModal.tsx    # Modale de recherche du Finder
 │   ├── FormFields.tsx           # TextField, TextAreaField, RadioField, CheckboxField,
-│   │                            #   SectionTitleField, SectionDescriptionField, ProseContent, FieldError
+│   │                            #   SectionTitleField, SectionDescriptionField, FieldError
+│   │                            #   (+ ré-export de ProseContent, qui vit dans @/components/shared)
 │   ├── LocationField.tsx        # Adresse géolocalisée (parité dynForm formLocality) via AddressPicker
 │   ├── MarkdownEditor.tsx       # Éditeur Markdown client-only (@uiw/react-md-editor) — thème global,
 │   │                            #   toolbar réduite, preview sanitisée (renderMarkdown), overflow={false}
@@ -297,6 +298,8 @@ interface SmartCoFormProps {
   initialStepKey?: string;      // Étape initiale pour wizard
   onDirtyChange?: (isDirty) => void;
   submitRef?: React.RefObject<(() => void) | null>;
+  discardDraftRef?: React.RefObject<(() => void) | null>; // rejet explicite du brouillon
+  baseUpdatedAt?: number | null;// `answer.updated` — OBLIGATOIRE dès qu'on passe `answerId`
   lockedFields?: string[];      // Champs en lecture seule (pointer-events-none)
 }
 ```
@@ -316,6 +319,10 @@ interface SmartCoFormProps {
 
 **Mode readOnly** : délègue directement à `CoFormReadOnly`.
 
+> **Clé de payload en mono-étape.** `SmartCoForm` emploie l'étape **parsée** (`subFormsFields[0].subFormId`),
+> pas la première clé déclarée d'`inputs` — les deux peuvent diverger, et c'est la première qui décrit
+> ce qui est réellement rendu.
+
 ---
 
 ### DynamicCoForm
@@ -328,7 +335,8 @@ Formulaire mono-étape basé sur react-hook-form + zodResolver. Gère :
 - Champs verrouillés (`lockedFields`) : wrapper `pointer-events-none opacity-60`
 - Auto-submit sur blur via `useWatch` + debounce
 - Propagation de `isDirty` via `onDirtyChange`
-- Soumission programmatique via `submitRef`
+- Soumission programmatique via `submitRef`, rejet du brouillon via `discardDraftRef`
+- `onSubmit: (data, addedOptions?) => void | boolean | Promise<void | boolean>` — **`false` = échec avéré** (le brouillon est alors conservé), toute autre valeur vaut succès et purge le brouillon
 
 **Bannière** : délégué à `CoFormBanner` (cf. section dédiée).
 
@@ -472,7 +480,12 @@ Définis dans `FormFields.tsx` :
 | `sectionTitle` | `SectionTitleField` | Titre décoratif (showBar, barPosition, align, textDecoration) |
 | `sectionDescription` | `SectionDescriptionField` | Texte de description (ProseContent, forceMarkdown) |
 
-`FormFields.tsx` exporte aussi `ProseContent` (HTML ou Markdown selon le contenu) et `FieldError` (message d'erreur accessible avec `role="alert"` et `aria-describedby`).
+`FormFields.tsx` exporte aussi `FieldError` (message d'erreur accessible avec `role="alert"` et `aria-describedby`) et **ré-exporte** `ProseContent`, qui vit désormais dans `@/components/shared/ProseContent` — les fiches AAC rendent les mêmes valeurs en lecture, une seule implémentation donc une seule garantie de sécurité.
+
+**`ProseContent` (HTML ou Markdown selon le contenu)** — deux points à ne pas confondre :
+
+- **le profil de sanitisation est `sanitizeProse`, PAS `sanitize`.** L'auteur du texte est un visiteur quelconque (la description d'un commun est un textarea ouvert à qui dépose) ; le profil DOMPurify par défaut laisse passer `<form>`, `<input>`, `style`/`class`/`id` — de quoi dessiner un **faux écran de connexion plein écran** servi depuis le domaine du site, sans le moindre script. Le profil restreint (`@/lib/sanitize`) impose `USE_PROFILES: {html:true}` (ni SVG ni MathML), interdit les contrôles de formulaire et `<dialog>`, retire `style`/`class`/`id` et les `data-*` (lus par les sélecteurs `data-[state=…]` des composants de la page) ; la mise en forme vient du conteneur `prose` de l'appelant. `sanitize()` reste le profil des **champs HTML de la config admin** (`server/utils/normalizeSiteConfig.js`, sections `html`/`content`), rédigés par un administrateur du site ;
+- **la détection HTML ne reconnaît qu'une VRAIE balise** (ouvrante avec ses attributs, ou fermante, au sens CommonMark). L'ancienne heuristique `<[a-zA-Z][^>]*>` prenait pour une balise tout `<lettre…>` : l'autolien markdown `<https://commun.fr>` ou l'e-mail `<contact@commun.fr>` faisaient basculer **tout** le texte dans la branche HTML, où le markdown n'est plus interprété et où DOMPurify supprime le pseudo-tag — l'URL disparaissait. Ces deux formes repassent en markdown.
 
 **`MarkdownEditor`** (`components/MarkdownEditor.tsx`) : wrapper client-only autour de `@uiw/react-md-editor`. Utilise `useClientModule` (et non `React.lazy`) pour éviter l'erreur SSR `ERR_UNKNOWN_FILE_EXTENSION` causée par le CSS interne de la lib.
 
@@ -689,6 +702,68 @@ l'objet legacy plat), `entriesToStored` en écriture (`undefined` si vidé).
 
 ---
 
+### Champs AAP / oceco (`milestoneList`, `selection`, `aapEvaluation`, `chooseProposal`)
+
+Quatre champs venus des formulaires d'appel à projets. Ils ont en commun de **ne pas être des champs
+de formulaire ordinaires** : leur valeur est scopée par évaluateur ou par contexte, et l'écrire en bloc
+au submit effacerait celle des autres. Ils écrivent donc par **chemin ciblé**, hors du schéma Zod (cf.
+`denormalizeAnswerData`, qui strippe les inputs de décision des étapes parsées).
+
+**`milestoneList`** (`tpls.forms.ocecoform.newDepenseList` → `MilestoneListField`) — la liste des
+dépenses / paliers, persistée dans `answers.<step>.depense[]`.
+
+- Helpers purs dans `utils/depense.ts`. **Toutes les fonctions préservent les clés hors contrat** : une
+  ligne réelle porte `financer[]`, `historique[]`, `milestone`… que le champ n'édite pas, et le backend
+  remplace la clé **en bloc** (`$mergedAnswers[$step][$input] = $inputValue`) — les stripper détruirait
+  la donnée au premier enregistrement (même piège que `timeSlots`).
+- **Lecture des montants : `toDepenseAmount`, c'est-à-dire `toSafeInt`** — le lecteur unique des
+  montants sur un document (`cagnotte/utils/dataTransform`). Il accepte `"12"`, `12`, `12.7` (tronqué),
+  et surtout **`"1 500,00"` comme `"1 500.00"`** (espace de milliers, virgule ou point) ; `true`/`false`,
+  `null` et le reste valent **0**. Un `Number(value)` local rendait `NaN` — donc 0 — sur les deux formes
+  à espace, et 1 sur `true` ; or `depense[].price` arrive en chaîne sur 178 réponses et en booléen sur 75.
+- **`priceInt` n'est stocké sur AUCUN document** (0 sur 2 803) : c'est un champ *calculé* par l'enveloppe
+  cagnotte. Il n'est lu (`priceInt ?? price`) que si la ligne vient d'une réponse d'enveloppe, où il fait
+  autorité. La clé **`targetAmount` n'existe pas** dans `depense[]` — c'est le nom du champ de
+  *formulaire*, pas celui de la donnée.
+- **`getFieldShape = 'array'`** est obligatoire : PHP sérialise un tableau vide en `{}`, que le `z.array`
+  refuserait — l'étape deviendrait insoumettable alors que le champ s'affiche vide et correct.
+- La saisie passe par **`DepenseFormDialog`** (le même dialogue sert l'ajout et la modification ; il ne
+  persiste rien, il rend ses valeurs au champ). Ses **valeurs initiales sont figées à l'ouverture** :
+  un rendu du parent ne réinitialise plus la saisie en cours. À distinguer de `CreateMilestoneDialog`
+  (module cagnotte), qui appelle la mutation serveur et exige donc un `answerId` ; seule la
+  **validation** est partagée (`milestoneCreateFormSchema`).
+
+**`selection`** (`tpls.forms.aap.selection` → `SelectionField`) et **`aapEvaluation`** en mode
+`noteCriterionBased` — la grille du jury.
+
+- Colonne **« Valeur »** : pour les clés `depense` et `budget`, le legacy affiche la **somme des prix**
+  et non le contenu. Cette somme est une somme **entière** via `toSafeInt` (`formatCriterionValue`,
+  `utils/selection.ts`) — décimales tronquées, `"1 500,00"` = `1500` — et **non** une somme de flottants
+  via `toNote`, qui est fait pour des notes : `"1 500,00"` y valait 1, et `true` 1.
+- **Aucune contrainte native `min`/`max`/`step=0.5`** sur l'input de note : le barème est vérifié **au
+  blur**, comme l'écriture (on ne veut pas un appel réseau par frappe). Hors barème, le refus est
+  **affiché sous l'input** (`coform.selection.noteOutOfRange` / `coform.aapEvaluation.noteOutOfRange`,
+  `role="alert"` + `aria-invalid`) et l'input est remis à la **note réelle** — le DOM ne doit jamais
+  afficher une note qui n'existe nulle part.
+- L'écho local des écritures (`useEcrituresLocales`) expose `noter` / `lire` / **`superposer`**, et porte
+  sur la **valeur entière**, pas seulement sur le contrôle : les agrégats en sont dérivés (moyennes de
+  `selection`, décompte de `pourContre`). Ne rattraper que le vote laissait « Votants 2 · Pour 1 » sous
+  un bouton « Pour » en surbrillance, jusqu'au rechargement.
+
+**`chooseProposal`** (`tpls.forms.aap.chooseProposal` → `ChooseProposalField`) — « sélectionné pour
+l'annuaire ». La valeur est scopée par **CONTEXTE** :
+`answers.<étape>.choose.<contextId> = { value, type, name }` — une même candidature peut être retenue par
+un appel et pas par un autre (9 réponses sur 59 portent 2 ou 3 contextes).
+
+> ⚠️ Le contexte est la **1ʳᵉ entrée de `form.parent`** (`resolveChooseContext` → `firstParent`), **pas**
+> le costum courant ni `cocolight.contextId`, ni l'entité du slug du site. C'est la clé qu'emploie le
+> backend AAP et celle sur laquelle l'annuaire du module AAC filtre ; l'entité du site peut en diverger
+> (formulaire porté par plusieurs parents, ou par une autre organisation), et écrire sous elle
+> enregistrerait sans erreur un choix que personne ne lirait. **Sans parent exploitable, le champ ne se
+> rend pas** — il n'aurait nulle part où écrire.
+
+---
+
 ## Brouillon local, récap d'erreurs et sortie non sauvegardée
 
 Trois mécanismes transverses, actifs sur les **deux** formulaires.
@@ -713,6 +788,36 @@ addedOptions, timestamp, baseUpdatedAt}`. Désactivé si utilisateur anonyme, `f
   `MultiStepCoForm` n'en rendant que la bannière. Prop d'entrée : `enableDraft` (défaut `true`).
 - **`DraftRecoveryBanner`** rend les deux modes : `restorable` (Restaurer / Ignorer, avec l'ancienneté relative
   via `utils/formatRelative.ts`) et `stale` (information seule).
+
+> ⚠️ **En ÉDITION, pas de brouillon sans `baseUpdatedAt`.** `SmartCoForm` garde
+> `enableDraft = … && (!answerId || baseUpdatedAt != null)` : la péremption d'un brouillon ne se décide
+> que si sa lignée `baseUpdatedAt` est connue, et elle vient de l'appelant. Un appelant qui passe
+> `answerId` **sans** `answer.updated` produirait un brouillon impossible à déclarer obsolète — trente
+> jours durant, « Reprendre » remplacerait sans avertir une réponse modifiée entre-temps par quelqu'un
+> d'autre. Mieux vaut pas de filet qu'un filet qui efface le travail des autres. La prop de `CoFormModal`
+> est donc une **obligation**, pas une recommandation : « à transmettre dès qu'on passe `answerId` ».
+> Trois appelants ne la passent pas encore — `PreviewCoformAnswer`, `ProfileTiersLieuxInfo`,
+> `ProfilTiersLieuxAbout` : sur eux, le **brouillon d'édition est coupé** tant qu'ils ne transmettent pas
+> `answer.updated`.
+
+**Cycle de vie du brouillon** :
+
+| Événement | Effet |
+|---|---|
+| Succès avéré, mono-étape | purge — `DynamicCoForm` ne purge que si `onSubmit` ne résout **pas** `false` |
+| Succès avéré, wizard | purge — `submitAllData` purge après `onFinalSubmit` |
+| Échec de soumission | **conservé** (c'est précisément le moment où il sert) |
+| « Abandonner les modifications » (`CoFormModal`) | suppression explicite, **avant** la fermeture : `discardDraftRef` supprime la clé ET jette le payload debouncé en attente, que le flush au démontage ne pourra plus réécrire |
+| Fermeture sans modification | conservé |
+
+**Contrat `DynamicCoForm.onSubmit`** : `void | boolean | Promise<void | boolean>`. **`false` = échec
+avéré** (le brouillon est conservé) ; toute autre valeur vaut succès.
+
+**Nouvelles surfaces** : `discardDraftRef?: React.RefObject<(() => void) | null>` sur `SmartCoForm`,
+`DynamicCoForm`, `MultiStepCoForm` et `CoFormProvider` — même patron que `submitRef`. Côté contexte,
+`CoFormContextType` porte `draftRestoreCount: number` : `restoreDraft` l'incrémente pour **resynchroniser
+l'étape affichée** (l'effet de reset de `useCoFormStep` dépend de `[effectiveStepIndex, draftRestoreCount]`),
+`stepState` seul ne pilotant que l'état du wizard.
 
 ### Récapitulatif d'erreurs (`ErrorSummary`)
 
@@ -1096,6 +1201,7 @@ interface CoFormContextType {
   isLastStep: boolean;
   isLoading: boolean;
   error: Error | null;
+  draftRestoreCount: number;         // incrémenté par restoreDraft → resynchronise l'étape affichée
   // Actions
   goToNextStep: () => void;
   goToPreviousStep: () => void;
@@ -1121,6 +1227,7 @@ interface CoFormProviderProps {
   defaultValues?: AllStepsData;
   answerId?: string;
   initialStepKey?: string;  // subFormId de l'étape initiale
+  discardDraftRef?: React.RefObject<(() => void) | null>; // même patron que submitRef
 }
 ```
 
@@ -1167,8 +1274,24 @@ interface CoFormProviderProps {
 | `tpls.forms.uploader` | `uploader` |
 | `sectionTitle`, `tpls.forms.sectionTitle` | `sectionTitle` |
 | `tpls.forms.sectionDescription` | `sectionDescription` |
+| `titleSeparator`, `tpls.forms.titleSeparator` | `titleSeparator` (rendu propre, **plus d'alias** vers `sectionTitle`) |
+| `tpls.forms.tags` | `tags` |
+| `tpls.forms.ocecoform.newDepenseList` | `milestoneList` |
+| `tpls.forms.ocecoform.pourContre` | `pourContre` |
+| `tpls.forms.aap.selection` | `selection` |
+| `tpls.forms.aap.evaluation` | `aapEvaluation` |
+| `tpls.forms.aap.chooseProposal` | `chooseProposal` |
 | `select`, `tpls.forms.select` | `select` |
 | Inconnu | `unknown` |
+
+> **`multiDecide` n'est PAS un type mappé** : c'est une **indirection**, résolue par
+> `utils/multiDecide.ts` vers le type que désigne `inputConfig.multiDecide`. Sans cette config,
+> l'input ne se rend pas du tout.
+
+Les six dernières lignes (`titleSeparator` → `chooseProposal`) sont les champs AAP/oceco décrits en
+[§ Champs AAP / oceco](#champs-aap--oceco-milestonelist-selection-aapevaluation-chooseproposal).
+Types **encore non mappés** côté AAP : `suiviFromBudget`, `generateprojectbtn` — un type non mappé rend
+une boîte rouge **et droppe sa valeur au save**.
 
 **Deux fallbacks par expression régulière**, après la table (les costums legacy déclinent leurs propres
 templates, `tpls.forms.costum.<slug>.<chose>`) : tout type dont le **segment final** est
