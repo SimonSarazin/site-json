@@ -25,7 +25,7 @@ import { CommunSelectionControl } from "../components/pageDetail/CommunSelection
 import { CommunProjectControl } from "../components/pageDetail/CommunProjectControl.tsx";
 
 import { CommunHero } from "../components/pageDetail/CommunHero.tsx";
-import { CommunFinancingCard } from "../components/pageDetail/CommunFinancingCard.tsx";
+import { CommunFinancingCard, type PostLoginIntent } from "../components/pageDetail/CommunFinancingCard.tsx";
 import { CommunTocNav, type TocSection } from "../components/pageDetail/CommunTocNav.tsx";
 import { CommunFinancingSection } from "../components/pageDetail/CommunFinancingSection.tsx";
 import { CommunActionsSection } from "../components/pageDetail/CommunActionsSection.tsx";
@@ -135,6 +135,20 @@ export default function AacCommunDetailPage() {
     const [activeSection, setActiveSection] = useState<string | null>(null);
     // Édition de la réponse CoForm à l'intérieur de la page (pas de navigation).
     const [isEditOpen, setIsEditOpen] = useState(false);
+    /**
+     * Ce qu'un visiteur NON connecté a demandé dans la carte de financement
+     * (réagir, financer), en attente de sa session.
+     *
+     * Porté ICI, et non dans la carte : la connexion change `me.id`, donc les
+     * clés des TROIS requêtes user-scopées de la fiche ; elles repassent en
+     * chargement et la garde plus bas remplace tout le corps de la page par
+     * `<LoadingCard/>`. La carte est démontée à ce moment précis — un état
+     * local y serait perdu, et l'action demandée ne partait jamais. La page,
+     * elle, reste montée : l'intention lui survit et la carte la rejoue à son
+     * remontage. Le `onSuccess` du modal de connexion, qui écrit ici, vit dans
+     * le provider global : il n'est pas démonté non plus.
+     */
+    const [postLoginIntent, setPostLoginIntent] = useState<PostLoginIntent | null>(null);
     const isReady = !loading && !!api;
 
     // Requête CoForm
@@ -517,6 +531,8 @@ export default function AacCommunDetailPage() {
                             aacConfig={config}
                             funding={targetResource}
                             onFunded={handleFunded}
+                            postLoginIntent={postLoginIntent}
+                            onPostLoginIntent={setPostLoginIntent}
                         />
                     )}
                 </div>

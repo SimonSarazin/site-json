@@ -40,8 +40,11 @@ import { aggregateCofinancers } from "@/modules/aac/lib/cofinancers";
  * Ce qu'un visiteur NON connecté a demandé, et qu'on rejoue quand sa session
  * arrive : réagir (« Je contribue », « Ça m'intéresse », « J'utilise ») ou
  * financer.
+ *
+ * Exporté parce que l'intention ne vit PAS ici : elle est portée par la page
+ * (cf. `postLoginIntent` dans les props).
  */
-type PostLoginIntent = { kind: "reaction"; type: CommunReactionType } | { kind: "fund" };
+export type PostLoginIntent = { kind: "reaction"; type: CommunReactionType } | { kind: "fund" };
 
 interface StatProps {
     value: string | number;
@@ -144,6 +147,18 @@ interface CommunFinancingCardProps {
     funding?: CagnotteResource | null;
     /** Joué après une contribution enregistrée — la page y rafraîchit SES caches. */
     onFunded?: () => void | Promise<void>;
+    /**
+     * L'intention laissée par un visiteur non connecté, PORTÉE PAR LA PAGE.
+     *
+     * Elle ne peut pas vivre dans cette carte : le rendu où `me.isConnected`
+     * passe à `true` est précisément celui où la page remonte sa branche de
+     * chargement — ses trois requêtes sont user-scopées (`answerId`+`me.id`),
+     * leurs clés changent, `isLoading` repasse à vrai et la carte est DÉMONTÉE.
+     * Un `useState` local partait avec elle, et le rejeu n'arrivait jamais.
+     */
+    postLoginIntent: PostLoginIntent | null;
+    /** Pose l'intention (au clic) ou la consomme (`null`, au rejeu). */
+    onPostLoginIntent: (intent: PostLoginIntent | null) => void;
 }
 
 export function CommunFinancingCard({
@@ -152,6 +167,8 @@ export function CommunFinancingCard({
     aacConfig,
     funding,
     onFunded,
+    postLoginIntent,
+    onPostLoginIntent,
 }: CommunFinancingCardProps) {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
@@ -295,13 +312,16 @@ export function CommunFinancingCard({
      * `onSuccess` rend la main AVANT que `me` n'ait été propagé (cf.
      * `AacDepositButton`) — la fermeture de `executeToggle` verrait encore le
      * `me` anonyme, donc aucun `reactorId`, donc l'échec que ce garde évite.
+     *
+     * Pourquoi l'état est celui de la PAGE : cf. la prop `postLoginIntent`. Le
+     * callback passé à `openLogin` survit au démontage de la carte (il vit dans
+     * le provider du modal), et écrit donc dans un état qui, lui, ne démonte pas.
      */
-    const [postLoginIntent, setPostLoginIntent] = useState<PostLoginIntent | null>(null);
     const fundButtonRef = useRef<HTMLButtonElement>(null);
 
     const requireConnected = (intent: PostLoginIntent): boolean => {
         if (me?.isConnected) return true;
-        openLogin({ onSuccess: () => setPostLoginIntent(intent) });
+        openLogin({ onSuccess: () => onPostLoginIntent(intent) });
         return false;
     };
 
@@ -324,18 +344,22 @@ export function CommunFinancingCard({
     };
 
     /**
-     * Rejoue l'intention au rendu où la session arrive. L'état optimiste
-     * (`reactions`) est recalculé pour ce `me` par l'effet plus haut, dans le
-     * MÊME commit — mais sa valeur n'est pas encore lisible ici : le sens de
-     * la bascule est donc relu à la source, pas dans `reactions`.
+     * Rejoue l'intention dès que la carte et la session sont là — au rendu où
+     * `me` arrive si la carte n'a pas bougé, au REMONTAGE de la carte sinon
+     * (la fiche recharge ses requêtes user-scopées entre les deux). L'état
+     * optimiste (`reactions`) est recalculé pour ce `me` par l'effet plus haut,
+     * dans le MÊME commit — mais sa valeur n'est pas encore lisible ici : le
+     * sens de la bascule est donc relu à la source, pas dans `reactions`.
+     *
+     * Consommée AVANT d'agir (`onPostLoginIntent(null)`) : la page reprend la
+     * main sur un état neutre, et un rendu de plus ne rejoue rien.
      *
      * Financer : la cagnotte est un `DialogTrigger` non contrôlé — on rejoue le
      * clic sur le bouton, dont le garde laisse maintenant passer l'ouverture.
      */
     useEffect(() => {
         if (!postLoginIntent || !me?.isConnected) return;
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- l'intention est consommée UNE fois, au rendu où la session arrive
-        setPostLoginIntent(null);
+        onPostLoginIntent(null);
         if (postLoginIntent.kind === "fund") {
             fundButtonRef.current?.click();
             return;

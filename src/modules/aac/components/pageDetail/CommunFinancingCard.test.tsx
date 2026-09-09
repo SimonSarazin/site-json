@@ -79,6 +79,7 @@ vi.mock("@/modules/cagnotte/components/CagnotteDialog", () => ({
 }));
 
 const { CommunFinancingCard } = await import("./CommunFinancingCard");
+type PostLoginIntent = Parameters<typeof CommunFinancingCard>[0]["postLoginIntent"];
 
 function makeConfig(depenseStepKey: string | null): AacResolvedConfig {
   return {
@@ -110,18 +111,35 @@ const ANSWER = {
   vote: {},
 } as unknown as CoFormAnswer;
 
-function renderCard(over: Partial<Parameters<typeof CommunFinancingCard>[0]> = {}) {
-  return render(
+/**
+ * La PAGE, réduite à ce qui compte ici : elle porte l'intention post-connexion
+ * (la carte est démontée pendant le rechargement post-login, cf. le test M14/M15
+ * du démontage) et monte — ou non — la carte selon l'état de ses requêtes.
+ */
+function PageHarness({
+  carteMontee = true,
+  ...over
+}: Partial<Parameters<typeof CommunFinancingCard>[0]> & { carteMontee?: boolean }) {
+  const [intent, setIntent] = useState<PostLoginIntent>(null);
+  return (
     <LocalizationProvider>
-      <CommunFinancingCard
-        formData={{ id: "f1", name: "Appel", inputs: {} } as never}
-        answerQuery={ANSWER}
-        aacConfig={makeConfig("etapeA")}
-        funding={null}
-        {...over}
-      />
-    </LocalizationProvider>,
+      {carteMontee ? (
+        <CommunFinancingCard
+          formData={{ id: "f1", name: "Appel", inputs: {} } as never}
+          answerQuery={ANSWER}
+          aacConfig={makeConfig("etapeA")}
+          funding={null}
+          postLoginIntent={intent}
+          onPostLoginIntent={setIntent}
+          {...over}
+        />
+      ) : null}
+    </LocalizationProvider>
   );
+}
+
+function renderCard(over: Partial<Parameters<typeof CommunFinancingCard>[0]> = {}) {
+  return render(<PageHarness {...over} />);
 }
 
 beforeEach(() => {
@@ -147,18 +165,10 @@ describe("CommunFinancingCard — l'étape des dépenses est celle que la page a
 /**
  * Un élément NEUF à chaque rendu : rerendre le même objet React laisse React
  * court-circuiter tout l'arbre (props identiques), et le nouveau `me` du mock
- * ne serait jamais lu.
+ * ne serait jamais lu. Le harness, lui, garde sa place dans l'arbre — donc son
+ * état, exactement comme la page.
  */
-const makeUi = () => (
-  <LocalizationProvider>
-    <CommunFinancingCard
-      formData={{ id: "f1", name: "Appel", inputs: {} } as never}
-      answerQuery={ANSWER}
-      aacConfig={makeConfig("etapeA")}
-      funding={null}
-    />
-  </LocalizationProvider>
-);
+const makeUi = (carteMontee = true) => <PageHarness carteMontee={carteMontee} />;
 
 /** Simule une connexion réussie : le callback `onSuccess` du modal, puis l'arrivée de `me`. */
 async function connecter(rerender: (ui: React.ReactElement) => void) {
@@ -262,5 +272,47 @@ describe("CommunFinancingCard — les CTA de réaction hors connexion ouvrent la
 
     await connecter(rerender);
     expect(toggleReaction).toHaveBeenCalledWith("a1", "love", "u1", "Alice");
+  });
+
+  /**
+   * Le scénario RÉEL, celui qui ne marchait pas : la connexion change `me.id`,
+   * donc les clés des trois requêtes user-scopées de la fiche ; elles repassent
+   * en chargement, la page rend son squelette et la carte est DÉMONTÉE au rendu
+   * même où la session arrive. Tant que l'intention vivait dans un `useState` de
+   * la carte, elle partait avec elle et l'action n'était jamais rejouée.
+   */
+  it("la carte démontée pendant le rechargement post-login : l'action part quand même, une fois et une seule", async () => {
+    me = ANONYMOUS;
+    const { rerender } = render(makeUi());
+
+    // Déconnecté : « Ça m'intéresse » ouvre la connexion, rien d'autre.
+    fireEvent.click(screen.getByRole("button", { name: /detail\.vote/ }));
+    expect(openLogin).toHaveBeenCalledTimes(1);
+    expect(toggleReaction).not.toHaveBeenCalled();
+
+    // La session arrive : le `onSuccess` du modal (qui survit au démontage) pose
+    // l'intention, puis la fiche recharge ses requêtes → plus de carte.
+    const opts = openLogin.mock.calls[0]?.[0] as { onSuccess?: () => void } | undefined;
+    await act(async () => {
+      opts?.onSuccess?.();
+    });
+    me = CONNECTED;
+    await act(async () => {
+      rerender(makeUi(false));
+    });
+    expect(toggleReaction).not.toHaveBeenCalled();
+
+    // La fiche revient avec les données du connecté : l'action part enfin.
+    await act(async () => {
+      rerender(makeUi(true));
+    });
+    expect(toggleReaction).toHaveBeenCalledTimes(1);
+    expect(toggleReaction).toHaveBeenCalledWith("a1", "love", "u1", "Alice");
+
+    // …et une seule fois : un rendu de plus ne la rejoue pas (intention consommée).
+    await act(async () => {
+      rerender(makeUi(true));
+    });
+    expect(toggleReaction).toHaveBeenCalledTimes(1);
   });
 });

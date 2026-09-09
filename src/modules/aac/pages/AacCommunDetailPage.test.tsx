@@ -150,12 +150,24 @@ vi.mock("../components/pageDetail/CommunSelectionControl.tsx", () => ({ CommunSe
 vi.mock("../components/pageDetail/CommunProjectControl.tsx", () => ({ CommunProjectControl: () => null }));
 vi.mock("../components/pageDetail/CommunHero.tsx", () => ({ CommunHero: () => <div data-testid="hero" /> }));
 // La carte expose son crochet `onFunded` — ce que `CagnotteDialog` joue après
-// une contribution enregistrée (`onRefresh`).
+// une contribution enregistrée (`onRefresh`) — et l'intention post-connexion,
+// qu'elle POSE mais que la page DÉTIENT (la carte est démontée entre-temps).
 vi.mock("../components/pageDetail/CommunFinancingCard.tsx", () => ({
-  CommunFinancingCard: ({ onFunded }: { onFunded?: () => void | Promise<void> }) => (
-    <div data-testid="financing-card">
+  CommunFinancingCard: ({
+    onFunded,
+    postLoginIntent,
+    onPostLoginIntent,
+  }: {
+    onFunded?: () => void | Promise<void>;
+    postLoginIntent?: { kind: string } | null;
+    onPostLoginIntent?: (intent: { kind: string }) => void;
+  }) => (
+    <div data-testid="financing-card" data-intent={postLoginIntent?.kind ?? ""}>
       <button type="button" onClick={() => void onFunded?.()}>
         funded
+      </button>
+      <button type="button" onClick={() => onPostLoginIntent?.({ kind: "fund" })}>
+        intention
       </button>
     </div>
   ),
@@ -346,6 +358,35 @@ describe("AacCommunDetailPage — après un paiement, la fiche se rafraîchit (H
 
     expect(refetchAnswer).toHaveBeenCalled();
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["aac-milestone-list-depenses", "a1"] });
+  });
+});
+
+describe("AacCommunDetailPage — l'intention post-connexion est portée par la PAGE (M14/M15)", () => {
+  /**
+   * La connexion change `me.id`, donc les clés des trois requêtes user-scopées
+   * de la fiche : elles repassent en chargement et la garde rend le squelette,
+   * au rendu même où la session arrive. La carte est démontée à cet instant —
+   * une intention gardée dans SON état partait avec elle, et l'action demandée
+   * hors connexion n'était jamais rejouée.
+   */
+  it("posée par la carte, elle traverse le squelette de chargement et lui revient", () => {
+    config = makeConfig(true);
+    const { rerender } = render(<AacCommunDetailPage />);
+
+    fireEvent.click(screen.getByText("intention"));
+    expect(screen.getByTestId("financing-card").getAttribute("data-intent")).toBe("fund");
+
+    // Rechargement post-login : plus de carte.
+    config = null;
+    isConfigLoading = true;
+    rerender(<AacCommunDetailPage />);
+    expect(screen.queryByTestId("financing-card")).toBeNull();
+
+    // La fiche revient : l'intention est toujours là, la carte peut la rejouer.
+    config = makeConfig(true);
+    isConfigLoading = false;
+    rerender(<AacCommunDetailPage />);
+    expect(screen.getByTestId("financing-card").getAttribute("data-intent")).toBe("fund");
   });
 });
 
