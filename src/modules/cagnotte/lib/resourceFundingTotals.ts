@@ -73,3 +73,30 @@ export function computeResourceFundingTotals(
     remainingAmount: Math.max(targetAmount - totalAmount, 0),
   };
 }
+
+/** Ce que `CagnotteResourceSelector` affiche par ressource : « financé € / cible € ». */
+export interface ResourceFundingSummary {
+  totalFunding: number;
+  totalCost: number;
+}
+
+/**
+ * Financé / cible de CHAQUE ressource, sommés sur ses `items[]` par
+ * `computeResourceFundingTotals` — la même source que la carte de progression de
+ * la ressource sélectionnée. Lire ici les agrégats bruts
+ * (`resourceFinancedAmount` / `resourceTotalAmount`) faisait afficher, pour la
+ * même ressource, deux chiffres différents entre la liste déroulante et la carte
+ * (C10, résiduel). Clé : l'id de la ressource nettoyé ; sans id, pas d'entrée.
+ */
+export function buildFundingByResourceId(
+  resources: ReadonlyArray<Pick<CagnotteResource, "id" | "items" | "resourceTotalAmount" | "resourceFinancedAmount">>,
+): Map<string, ResourceFundingSummary> {
+  const byId = new Map<string, ResourceFundingSummary>();
+  for (const resource of resources) {
+    const resourceId = String(resource?.id || "").trim();
+    if (!resourceId) continue;
+    const totals = computeResourceFundingTotals(resource.items, resource);
+    byId.set(resourceId, { totalFunding: totals.totalAmount, totalCost: totals.targetAmount });
+  }
+  return byId;
+}

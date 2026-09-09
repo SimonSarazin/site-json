@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import type { CagnotteResource } from "@/modules/cagnotte/types";
 import {
+  buildFundingByResourceId,
   computeResourceFundingTotals,
   isOpenFundableItem,
   type FundingTotalsItem,
@@ -122,5 +124,61 @@ describe("computeResourceFundingTotals", () => {
     const totals = computeResourceFundingTotals([null, item(100, 40), undefined]);
 
     expect(totals).toEqual({ totalAmount: 40, targetAmount: 100, remainingAmount: 60 });
+  });
+});
+
+/**
+ * C10 (résiduel) : le sélecteur de ressource de la modale (`CagnotteResourceSelector`)
+ * affiche « financé € / cible € » par ressource depuis `fundingByResourceId`, que
+ * `CagnotteDialog` construisait encore sur les agrégats bruts
+ * (`resourceFinancedAmount` / `resourceTotalAmount`) — le périmètre que b95b2e00 a
+ * retiré de la carte de progression. Même ressource, deux chiffres différents
+ * entre la liste déroulante et la carte. Une seule source : `items[]`.
+ */
+describe("buildFundingByResourceId", () => {
+  function ressource(id: string, overrides: Partial<CagnotteResource> = {}): CagnotteResource {
+    return {
+      fromType: "project",
+      id,
+      name: `Ressource ${id}`,
+      resourceTotalAmount: 0,
+      resourceFinancedAmount: 0,
+      items: [],
+      ...overrides,
+    } as CagnotteResource;
+  }
+
+  it("somme financé et cible sur les MÊMES items que la carte de progression, orphelines comprises", () => {
+    const projet = ressource("proj-1", {
+      resourceTotalAmount: 2000,
+      resourceFinancedAmount: 1000,
+      items: [item(2000, 1000), item(500, 500)] as CagnotteResource["items"],
+    });
+
+    const map = buildFundingByResourceId([projet]);
+
+    expect(map.get("proj-1")).toEqual({ totalFunding: 1500, totalCost: 2500 });
+    const carte = computeResourceFundingTotals(projet.items, projet);
+    expect(map.get("proj-1")).toEqual({ totalFunding: carte.totalAmount, totalCost: carte.targetAmount });
+  });
+
+  it("ignore les items clos, comme la carte", () => {
+    const map = buildFundingByResourceId([
+      ressource("prop-1", { items: [item(1000, 400), item(3000, 3000, "close")] as CagnotteResource["items"] }),
+    ]);
+
+    expect(map.get("prop-1")).toEqual({ totalFunding: 400, totalCost: 1000 });
+  });
+
+  it("sans item, retombe sur les agrégats de la ressource", () => {
+    const map = buildFundingByResourceId([ressource("vide", { resourceTotalAmount: 4000, resourceFinancedAmount: 1500 })]);
+
+    expect(map.get("vide")).toEqual({ totalFunding: 1500, totalCost: 4000 });
+  });
+
+  it("clé = id de la ressource nettoyé ; une ressource sans id est ignorée", () => {
+    const map = buildFundingByResourceId([ressource("  proj-2 "), ressource(""), ressource("   ")]);
+
+    expect([...map.keys()]).toEqual(["proj-2"]);
   });
 });

@@ -37,9 +37,8 @@ import {
     getEntityId,
     normalizeIdOrNull,
     readEntityPreferences,
-    toSafeInt,
 } from "@/modules/cagnotte/utils/dataTransform";
-import {computeResourceFundingTotals} from "@/modules/cagnotte/lib/resourceFundingTotals";
+import {buildFundingByResourceId, computeResourceFundingTotals} from "@/modules/cagnotte/lib/resourceFundingTotals";
 import {useCagnotteType} from "@/modules/cagnotte/hooks/useCagnotteType.ts";
 import {computePledgesFromResources, useCagnotteAdapter} from "@/modules/cagnotte/hooks/useCagnotteAdapter";
 import {useSite} from "@/hooks/useSite.tsx";
@@ -246,20 +245,10 @@ const CagnotteDialogContent = ({
             ? injectedResource
             : undefined;
     }, [envelopeSelectedResource, injectedResource, selectedResourceId]);
-    const fundingByResourceId = useMemo(() => {
-        const nextMap = new Map<string, { totalFunding: number; totalCost: number }>();
-        resources.forEach((resource) => {
-            const resourceId = String(resource?.id || "").trim();
-            if (!resourceId) return;
-
-            nextMap.set(resourceId, {
-                totalFunding: toSafeInt(resource?.resourceFinancedAmount),
-                totalCost: toSafeInt(resource?.resourceTotalAmount),
-            });
-        });
-
-        return nextMap;
-    }, [resources]);
+    // Financé / cible par ressource pour le sélecteur, sommés sur `items[]` — la
+    // même source que la carte de progression ci-dessous, pas les agrégats bruts
+    // (cf. resourceFundingTotals.ts, C10).
+    const fundingByResourceId = useMemo(() => buildFundingByResourceId(resources), [resources]);
     const currentUserEntity = (me && isUser(me) ? me : null) as User | null;
     const userAdminOrganizations = useUserAdminOrganizations(currentUserEntity, {});
     const orgsIds =  userAdminOrganizations?.map(user => user.id);
