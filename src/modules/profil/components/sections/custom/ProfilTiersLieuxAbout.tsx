@@ -1574,8 +1574,10 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
               </div>
             ))}
 
-            {/* Textes libres — rendus via `ProseContent`, le même rendu que les inputs
-                coform : markdown ou HTML auto-détecté, puis sanitisé avant injection. */}
+            {/* Textes libres SAISIS par le gestionnaire du lieu — rendus via
+                `ProseContent` : markdown ou HTML auto-détecté, puis sanitisé.
+                Ce sont des réponses, pas de la définition de formulaire : on
+                laisse le `source` par défaut, donc le profil restreint. */}
             {modalItem?.notes?.map((note) => (
               <div key={note.label} className="space-y-1">
                 <p className="text-sm font-medium text-foreground">{note.label}</p>

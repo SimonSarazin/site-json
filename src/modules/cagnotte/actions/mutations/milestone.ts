@@ -18,6 +18,7 @@ import type { Api } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import type { FundingMilestoneStatus } from "@/modules/cagnotte/types";
+import type { MilestoneSyncDocs } from "@/modules/cagnotte/lib/milestoneSyncContext";
 import {
   appendAnswerDepense,
   appendProjectMilestone,
@@ -36,8 +37,28 @@ import {
 export interface MilestoneMutationContext {
   api: Api | null;
   rawEnvelope: unknown;
+  /**
+   * Documents bruts de la ressource (`project.oceco.milestones[]` + `depense[]`),
+   * en REPLI de l'enveloppe quand celle-ci ne porte pas la ressource — cas d'un
+   * commun déposé sous un autre contexte. Sans lui, éditer / clôturer / supprimer
+   * un palier échoue sur `milestone.errors.syncContextMissing`.
+   */
+  docs?: MilestoneSyncDocs | null;
   projectId: string;
   answerId: string;
+  /**
+   * Clés à invalider EN PLUS du défaut, déclarées par l'appelant — même rôle que
+   * `extraInvalidate` sur le contexte coform (`coform/actions/mutations/core.ts`).
+   *
+   * Nécessaire parce qu'un consommateur peut relire les mêmes paliers par une autre
+   * entrée de cache que `funding-envelope`, que ces mutations ne connaissent pas :
+   * la fiche commun AAC les relit via `COMMUN_RAW_DEPENSES_QUERY_KEY`. Sans ça,
+   * clore un palier depuis un écran laissait l'écran voisin sur l'ancien état.
+   *
+   * Déclarées ICI plutôt que dans le `onSuccess` passé à `mutate()` : React Query
+   * saute les callbacks par appel dès que l'observateur perd son abonné.
+   */
+  extraInvalidate?: QueryKey[];
 }
 
 /**
@@ -68,6 +89,7 @@ export interface MilestoneMutationConfig<TParams> {
 export interface ResolvedMilestoneContext {
   api: Api;
   rawEnvelope: unknown;
+  docs?: MilestoneSyncDocs | null;
   projectId: string;
   answerId: string;
 }
@@ -87,15 +109,13 @@ function resolveContextOrThrow(ctx: MilestoneMutationContext): ResolvedMilestone
   if (!ctx.api) {
     throw new MilestoneContextError("milestone.errors.apiClientUnavailable");
   }
-  if (!ctx.projectId) {
-    throw new MilestoneContextError("milestone.errors.projectIdMissing");
-  }
   if (!ctx.answerId) {
     throw new MilestoneContextError("milestone.errors.answerIdMissing");
   }
   return {
     api: ctx.api,
     rawEnvelope: ctx.rawEnvelope,
+    docs: ctx.docs,
     projectId: ctx.projectId,
     answerId: ctx.answerId,
   };
@@ -128,9 +148,12 @@ export function createMilestoneMutation<TParams = void>(config: MilestoneMutatio
       getSuccessParams: config.getSuccessParams
         ? (_data, variables) => config.getSuccessParams!(variables)
         : undefined,
-      invalidateQueries: config.invalidate
-        ? config.invalidate(ctx)
-        : [CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX()],
+      invalidateQueries: [
+        ...(config.invalidate
+          ? config.invalidate(ctx)
+          : [CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX()]),
+        ...(ctx.extraInvalidate ?? []),
+      ],
     });
   };
 }
@@ -148,6 +171,7 @@ export interface EditMilestoneParams {
   description: string;
   status: FundingMilestoneStatus;
   targetAmount: number;
+  answerDepenseIndex?: number;
 }
 
 /**
@@ -159,6 +183,7 @@ export const useEditMilestone = createMilestoneMutation<EditMilestoneParams>({
     await editMilestoneWithSync({
       source: ctx.api,
       rawEnvelope: ctx.rawEnvelope,
+      docs: ctx.docs,
       projectId: ctx.projectId,
       answerId: ctx.answerId,
       milestoneId: params.milestoneId,
@@ -166,6 +191,7 @@ export const useEditMilestone = createMilestoneMutation<EditMilestoneParams>({
       description: params.description,
       status: params.status,
       targetAmount: params.targetAmount,
+      answerDepenseIndex: params.answerDepenseIndex,
     });
   },
   i18n: {
@@ -182,6 +208,11 @@ export interface SimpleMilestoneParams {
   milestoneId: string;
   /** Nom utilisé uniquement pour les paramètres de toast (UX) */
   name?: string;
+  /**
+   * Index direct dans `answer.answers.aapStep1.depense[]`, requis pour cibler la
+   * dépense côté answer
+   */
+  answerDepenseIndex?: number;
 }
 
 export const useCloseMilestone = createMilestoneMutation<SimpleMilestoneParams>({
@@ -189,9 +220,11 @@ export const useCloseMilestone = createMilestoneMutation<SimpleMilestoneParams>(
     await closeMilestoneWithSync({
       source: ctx.api,
       rawEnvelope: ctx.rawEnvelope,
+      docs: ctx.docs,
       projectId: ctx.projectId,
       answerId: ctx.answerId,
       milestoneId: params.milestoneId,
+      answerDepenseIndex: params.answerDepenseIndex,
     });
   },
   i18n: {
@@ -209,9 +242,11 @@ export const useRestoreMilestone = createMilestoneMutation<SimpleMilestoneParams
     await restoreMilestoneWithSync({
       source: ctx.api,
       rawEnvelope: ctx.rawEnvelope,
+      docs: ctx.docs,
       projectId: ctx.projectId,
       answerId: ctx.answerId,
       milestoneId: params.milestoneId,
+      answerDepenseIndex: params.answerDepenseIndex,
     });
   },
   i18n: {
@@ -229,9 +264,11 @@ export const useDeleteMilestone = createMilestoneMutation<SimpleMilestoneParams>
     await deleteMilestoneWithSync({
       source: ctx.api,
       rawEnvelope: ctx.rawEnvelope,
+      docs: ctx.docs,
       projectId: ctx.projectId,
       answerId: ctx.answerId,
       milestoneId: params.milestoneId,
+      answerDepenseIndex: params.answerDepenseIndex,
     });
   },
   i18n: {
@@ -262,25 +299,28 @@ export interface CreateMilestoneParams {
  */
 export const useCreateMilestone = createMilestoneMutation<CreateMilestoneParams>({
   action: async (ctx, params) => {
-    const [project, answer] = await Promise.all([
-      ctx.api.project({ id: ctx.projectId }),
-      ctx.api.answer({ id: ctx.answerId }),
-    ]);
+    const answer = await ctx.api.answer({ id: ctx.answerId });
 
-    await appendProjectMilestone({
-      project,
-      milestone: {
-        milestoneId: params.milestoneId,
-        name: params.name,
-        description: params.description,
-        status: params.status ?? "open",
-      },
-    });
+    if (ctx.projectId) {
+      const project = await ctx.api.project({ id: ctx.projectId });
+      await appendProjectMilestone({
+        project,
+        milestone: {
+          milestoneId: params.milestoneId,
+          name: params.name,
+          description: params.description,
+          status: params.status ?? "open",
+        },
+      });
+    }
 
     await appendAnswerDepense({
       answer,
       depense: {
         poste: params.name,
+        // Sur la dépense comme à l'édition (`editMilestoneWithSync`) : c'est là
+        // que la fiche et la modale la relisent, projet lié ou non (H22).
+        description: params.description,
         price: params.targetAmount,
         date: new Date().toISOString(),
         user: params.userId,

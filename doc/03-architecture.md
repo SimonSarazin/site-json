@@ -1200,7 +1200,8 @@ introduite.
 
 | Fichier | Fonction | Description |
 |---|---|---|
-| `sanitize.ts` | `sanitize(html)` | Nettoie du HTML arbitraire via `isomorphic-dompurify` (SSR + client) |
+| `sanitize.ts` | `sanitize(html)` | Nettoie du HTML arbitraire via `isomorphic-dompurify` (SSR + client), **profil DOMPurify par défaut** — celui que `server/utils/normalizeSiteConfig.js` applique aux champs HTML de la config au boot (idempotence SSR/client). Pour du HTML rédigé par un **admin** — sections `html`, `content`…, et la **définition** d'un formulaire coform (`field.info`, titres et descriptions de section), via `<ProseContent source="formDefinition">` : retire scripts, handlers et URLs `javascript:`, mais **conserve** `style`, `class`, `<form>`, `<input>`, `<svg>` |
+| `sanitize.ts` | `sanitizeProse(html)` | Profil **restreint**, pour la prose saisie par **n'importe quel utilisateur** (réponse coform, description d'un commun) — c'est le **défaut** de `ProseContent`, le profil se choisit sur la SOURCE du texte (prop `source`), pas sur le composant. HTML seul (ni SVG ni MathML), contrôles de formulaire et `<dialog>` interdits, `style`/`class`/`id` et `data-*` retirés : sans quoi un `<div style="position:fixed;inset:0">` + `<form action="https://evil">` dessine un **faux écran de connexion** plein écran servi depuis le domaine du site, sans le moindre script |
 | `imageUtils.ts` | `buildOptimizedUrl(src, { w, h, q, f })` | Construit une URL `/img?url=...` pour le middleware d'optimisation. Bypass SVG, data URIs et blob |
 
 ### Routing et état
