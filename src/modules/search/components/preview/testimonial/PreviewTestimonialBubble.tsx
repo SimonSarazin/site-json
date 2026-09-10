@@ -26,10 +26,15 @@ export default function PreviewTestimonialBubble({ item, list, onClose }: Previe
   const accentColors = testimonial?.accent?.colors;
 
   return (
-    <div className="flex max-h-[85vh] flex-col">
+    /* `min-w-0` : même raison que sur `PreviewResourceCard` (voir son commentaire de racine) — sans lui,
+       cette racine est un élément de grille à `min-width: auto` et s'ÉLARGIT jusqu'à la largeur
+       min-content de son contenu au lieu de le comprimer. Un titre long ou une URL collée dans la
+       citation déborde alors du dialogue, rogné en silence par son `overflow-hidden`. */
+    <div className="flex max-h-[85vh] min-w-0 flex-col">
       {/* Illustration — bannière plafonnée à 30vh : `aspect-[21/9]` dérive sa hauteur de la LARGEUR du
           dialogue et `shrink-0` l'empêche de céder, ce qui écraserait la zone de contenu sur un grand
-          écran (même plafond que la preview « resource »). */}
+          écran (même plafond que la preview « resource »). Le conteneur pose la croix de fermeture
+          par-dessus : c'est `DetailsModeDialog` qui lui donne sa pastille de contraste. */}
       {data.image && (
         <div className="relative aspect-[21/9] max-h-[30vh] w-full shrink-0 overflow-hidden bg-muted">
           <OptimizedImage src={data.image} alt={data.title} width={840} className="h-full w-full object-cover" />

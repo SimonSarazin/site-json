@@ -274,7 +274,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
 
   "section:searchHeader": {
     "props.headline": "Titre du bandeau (h1 si le searchHeader EST le héro de la page).",
-    "props.headlineFromFilter": "id d'un dropdownFilters dont la valeur sélectionnée REMPLACE le headline (qui reste le repli) — page dont l'identité EST ce filtre, ex. /theme?theme=…. Le filtre peut être hidden.",
+    "props.headlineFromFilter": "id d'un dropdownFilters dont la valeur sélectionnée REMPLACE le headline (qui reste le repli) — ex. /theme?theme=…. Le filtre peut être hidden ; le titre devient le LIBELLÉ de l'option, à traduire dans chaque langue.",
     "props.headlineClassName": "Override de la couleur du titre — pour un fond fixe sombre où --foreground devient illisible (ex. text-white dark:text-foreground).",
     "props.subheadClassName": "Override de la couleur du sous-titre (chaîne vide pour ne pas forcer text-foreground).",
     "props.filtersClassName": "Override du conteneur flex de la rangée filtres (ex. centrer au lieu d'étaler).",

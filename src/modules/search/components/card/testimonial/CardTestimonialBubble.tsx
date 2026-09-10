@@ -24,10 +24,15 @@ export default function CardTestimonialBubble({ item, onClick, list }: SearchCar
   const tint = bubbleTint(badgeColor);
   const excerpt = newsExcerpt(data.quote, 260);
 
+  // `p-0` est OBLIGATOIRE depuis que le retrait intérieur est passé sur le wrapper `p-5` : `cn` est
+  // `twMerge`, donc c'était le `p-5` porté ici qui ÉLIMINAIT le `py-6` de la classe de base de `<Card>`.
+  // Sans rien pour le remplacer, ce `py-6` revient — 24 px de fond au-dessus de la bannière (qui cesse
+  // d'être « en tête », coins hauts carrés) et 48 px de hauteur en trop sur chaque carte, y compris SANS
+  // image, alors que la composition sans image doit rester celle d'avant.
   return (
     <Card
       onClick={onClick}
-      className="group flex h-full cursor-pointer flex-col gap-0 overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+      className="group flex h-full cursor-pointer flex-col gap-0 overflow-hidden p-0 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
     >
       {/* Illustration — absente sur la majorité des paroles (audio/écrit seuls) : la carte garde alors sa
           composition d'origine, sans réserve d'espace vide. */}
