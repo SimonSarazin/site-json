@@ -8,9 +8,10 @@ import type { AacGateFlags } from "../types";
  * droits. Le patron suit `cagnotte.test.ts`.
  *
  * Les gates sont les clés RACINE du form que le legacy lit réellement (review
- * MR 53, C3/N1) : `coremu` garde le financement ; `standalone` et `annuaire`
- * n'existaient pas côté backend et ont disparu ; `anyOnewithLinkCanAnswer` a
- * retrouvé son sens (modifier une réponse sans lien au contexte, connecté).
+ * MR 53, C3/N1) : `standalone` et `annuaire` n'existaient pas côté backend et
+ * ont disparu ; `anyOnewithLinkCanAnswer` a retrouvé son sens (modifier une
+ * réponse sans lien au contexte, connecté). Le financement, lui, ne dépend pas
+ * d'un gate mais de l'ÉTAPE de financement de l'appel (`hasFundingStep`).
  */
 
 const makeEntity = (isAdmin: boolean) =>
@@ -129,44 +130,54 @@ describe("calculateAacPermissions — lecture, édition, financement", () => {
   });
 
   /**
-   * `coremu` — la clé que le legacy lit (`detailProposal.php:105`), et non
-   * `coRemuneration`, qui n'existait nulle part : le gate valait toujours `false`
-   * et aurait éteint le financement de tout site (review MR 53, C3).
+   * `detailProposal.php` porte DEUX onglets : `#proposition-funding` (l.100-104),
+   * les paliers et leurs financeurs, ouvert dès que l'étape `aapStep3` existe, et
+   * `#proposition-contribution` (l.105-108), la corémunération, seul gardé par
+   * `form.coremu`. Les blocs de la fiche traduisent le PREMIER.
    */
-  it("`coremu` est le gate MAÎTRE du financement ; absent ⇒ fermé", () => {
-    const off = calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: { coremu: false } });
-    expect(off.canViewFunding).toBe(false);
-    expect(off.canContributeFunding).toBe(false);
-    expect(off.canContributeFundingReason).toBe("Co-funding disabled (master gate)");
+  it("le financement s'affiche dès que l'appel porte une étape de financement", () => {
+    const sans = calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: {}, hasFundingStep: false });
+    expect(sans.canViewFunding).toBe(false);
+    expect(sans.canContributeFunding).toBe(false);
+    expect(sans.canContributeFundingReason).toBe("No funding step on this call");
 
     const absent = calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: {} });
     expect(absent.canViewFunding).toBe(false);
-    expect(absent.canContributeFunding).toBe(false);
 
-    const connecte = calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: { coremu: true } });
-    expect(connecte.canViewFunding).toBe(true);
-    expect(connecte.canContributeFunding).toBe(true);
+    const avec = calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: {}, hasFundingStep: true });
+    expect(avec.canViewFunding).toBe(true);
+    expect(avec.canContributeFunding).toBe(true);
   });
 
-  it("l'affichage du financement suit `coremu` seul ; contribuer exige en plus un compte", () => {
-    const anonyme = calculateAacPermissions(NON_ADMIN(), ANON, { gates: { coremu: true } });
+  it("l'affichage suit l'étape seule ; contribuer exige en plus un compte", () => {
+    const anonyme = calculateAacPermissions(NON_ADMIN(), ANON, { gates: {}, hasFundingStep: true });
     expect(anonyme.canViewFunding).toBe(true);
     expect(anonyme.canContributeFunding).toBe(false);
     expect(anonyme.canContributeFundingReason).toBe("User not connected");
   });
 
-  it("`coremu` OFF masque le financement à l'admin aussi (parité legacy)", () => {
-    const admin = calculateAacPermissions(makeEntity(true), makeMe("a"), { gates: { coremu: false } });
+  it("sans étape de financement, l'admin non plus ne voit rien (parité legacy)", () => {
+    const admin = calculateAacPermissions(makeEntity(true), makeMe("a"), { gates: {}, hasFundingStep: false });
     expect(admin.canViewFunding).toBe(false);
     expect(admin.canContributeFunding).toBe(false);
   });
 
-  it("`coRemuneration` n'est pas un gate : il n'ouvre rien", () => {
-    const perms = calculateAacPermissions(NON_ADMIN(), makeMe("u"), {
-      gates: { coRemuneration: true } as unknown as AacGateFlags,
+  /**
+   * Régression du 09/09 : brancher l'affichage sur `coremu` éteignait les trois
+   * blocs sur l'appel de la Fédération des CAE — dont le formulaire ne porte pas
+   * la clé — alors que 500 € y étaient déjà collectés. `coremu` ne garde que la
+   * corémunération, que site-json ne rend pas.
+   */
+  it("`coremu` n'ouvre ni ne ferme le financement", () => {
+    const gatesCoremu = { coremu: true } as unknown as AacGateFlags;
+    const coremuSansEtape = calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: gatesCoremu });
+    expect(coremuSansEtape.canViewFunding).toBe(false);
+
+    const etapeSansCoremu = calculateAacPermissions(NON_ADMIN(), makeMe("u"), {
+      gates: { coremu: false },
+      hasFundingStep: true,
     });
-    expect(perms.canViewFunding).toBe(false);
-    expect(perms.canContributeFunding).toBe(false);
+    expect(etapeSansCoremu.canViewFunding).toBe(true);
   });
 
   it("le droit d'administrer l'annuaire n'appartient qu'à l'admin", () => {
@@ -183,7 +194,7 @@ describe("calculateAacPermissions — lecture, édition, financement", () => {
 
 describe("calculateAacPermissions — sans entité", () => {
   it("rend les valeurs par défaut, en conservant l'identité du lecteur", () => {
-    const perms = calculateAacPermissions(null, makeMe("u"), { gates: { active: true, coremu: true } });
+    const perms = calculateAacPermissions(null, makeMe("u"), { gates: { active: true }, hasFundingStep: true });
     expect(perms.currentUserId).toBe("u");
     expect(perms.isConnected).toBe(true);
     expect(perms.canCreateCommun).toBe(false);

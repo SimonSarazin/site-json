@@ -7,17 +7,19 @@ import type { AacDetailSection } from "../lib/resolveAacDetailSections";
 
 /**
  * La fiche d'un commun ne monte ses trois blocs financement — la carte, « Besoins
- * financiers », « Cofinanceurs » — que si l'appel a levé le gate MAÎTRE `coremu`
- * (review MR 53, C3 ; parité `detailProposal.php:105`). Avant : montés sans
- * condition, et le calculateur de droits appelé SANS les gates du form — aucune
- * permission de financement n'aurait jamais pu être vraie.
+ * financiers », « Cofinanceurs » — que si l'appel porte une ÉTAPE de financement
+ * (`roles.financementStepKey`, l'étape de l'input `financer`) : parité
+ * `detailProposal.php:100-104`, l'onglet `#proposition-funding`. Ce n'est pas
+ * `coremu`, qui ne garde que l'onglet Contributions (l.105-108) — le brancher là
+ * (09/09) avait éteint le financement de la Fédération des CAE, dont le form ne
+ * porte pas la clé.
  *
  * Le hook de permissions et son calculateur sont RÉELS : c'est le câblage
- * page → `config.gates` → calculateur → rendu qui est sous test, pas un stub.
+ * page → `config` → calculateur → rendu qui est sous test, pas un stub.
  *
  * Second lot : la page ATTEND cette config (deux appels séquentiels, elle
- * arrive après `formQuery`) et refuse de se rendre sans elle — sinon un form
- * `coremu` se peignait d'abord sans financement, puis basculait en grille.
+ * arrive après `formQuery`) et refuse de se rendre sans elle — sinon un appel
+ * financé se peignait d'abord sans financement, puis basculait en grille.
  */
 
 vi.mock("@/hooks/useT", () => ({ useT: () => (key: string) => key }));
@@ -75,14 +77,19 @@ vi.mock("@tanstack/react-query", () => ({
   useQueryClient: () => ({ invalidateQueries }),
 }));
 
-/** Un objet STABLE par test : `useAacPermissions` mémoïse sur l'identité de `gates`. */
-function makeConfig(coremu: boolean): AacResolvedConfig {
+/** Un objet STABLE par test : `permData` est mémoïsé sur `gates` et `roles.financementStepKey`. */
+function makeConfig(hasFundingStep: boolean): AacResolvedConfig {
   return {
     formId: "f1",
     configId: null,
     aapType: "aac",
     steps: [],
-    roles: { depenseStepKey: "aapStep1", evalStepKey: null, financementStepKey: null, suiviStepKey: null },
+    roles: {
+      depenseStepKey: "aapStep1",
+      evalStepKey: null,
+      financementStepKey: hasFundingStep ? "aapStep3" : null,
+      suiviStepKey: null,
+    },
     criteria: [],
     criteriaSource: "none",
     gates: {
@@ -91,7 +98,7 @@ function makeConfig(coremu: boolean): AacResolvedConfig {
       oneAnswerPerPers: false,
       canReadOtherAnswers: false,
       showAnswers: false,
-      coremu,
+      coremu: false,
       anyOnewithLinkCanAnswer: false,
     },
     campaigns: [],
@@ -251,8 +258,8 @@ beforeEach(() => {
   invalidateQueries.mockClear();
 });
 
-describe("AacCommunDetailPage — le financement suit le gate `coremu`", () => {
-  it("sans `coremu` : ni carte, ni « Besoins financiers », ni « Cofinanceurs » — et pas d'entrée de sommaire", () => {
+describe("AacCommunDetailPage — le financement suit l'étape de financement", () => {
+  it("sans étape de financement : ni carte, ni « Besoins financiers », ni « Cofinanceurs » — et pas d'entrée de sommaire", () => {
     config = makeConfig(false);
     render(<AacCommunDetailPage />);
 
@@ -262,7 +269,7 @@ describe("AacCommunDetailPage — le financement suit le gate `coremu`", () => {
     }
   });
 
-  it("avec `coremu` : les trois blocs et leurs entrées de sommaire sont montés", () => {
+  it("avec l'étape : les trois blocs et leurs entrées de sommaire sont montés", () => {
     config = makeConfig(true);
     render(<AacCommunDetailPage />);
 
@@ -272,11 +279,11 @@ describe("AacCommunDetailPage — le financement suit le gate `coremu`", () => {
   });
 
   /**
-   * L'affichage suit `coremu` SEUL : le legacy montre l'onglet Contributions aux
-   * anonymes (`detailProposal.php:105` ne teste pas la session). La connexion ne
-   * conditionne que l'ACTION de financer, à l'intérieur de la carte.
+   * L'affichage suit l'étape SEULE : le legacy montre l'onglet funding aux
+   * anonymes (`detailProposal.php:100-104` ne teste pas la session). La connexion
+   * ne conditionne que l'ACTION de financer, à l'intérieur de la carte.
    */
-  it("avec `coremu`, un visiteur non connecté voit aussi les blocs financement", () => {
+  it("avec l'étape, un visiteur non connecté voit aussi les blocs financement", () => {
     config = makeConfig(true);
     me = ANONYMOUS;
     render(<AacCommunDetailPage />);
@@ -291,7 +298,7 @@ describe("AacCommunDetailPage — la fiche attend la configuration de l'appel", 
   /**
    * Avant : la garde de chargement ne lisait que `answerQuery` et `formQuery`.
    * La config, plus lente, arrivait après — et `showFunding` avec elle : la
-   * fiche d'un form `coremu` se rendait d'abord SANS carte ni « Besoins
+   * fiche d'un appel financé se rendait d'abord SANS carte ni « Besoins
    * financiers », héros pleine largeur, puis tout basculait en grille.
    */
   it("config en cours de chargement : le squelette — ni héros, ni financement, ni sommaire", () => {
@@ -327,10 +334,11 @@ describe("AacCommunDetailPage — la fiche attend la configuration de l'appel", 
 
 describe("AacCommunDetailPage — section active du sommaire", () => {
   /**
-   * L'état partait de `"besoins-financiers"` en dur : sans `coremu`, cette ancre
-   * n'existe pas et aucune entrée n'était active avant le premier défilement.
+   * L'état partait de `"besoins-financiers"` en dur : sans étape de financement,
+   * cette ancre n'existe pas et aucune entrée n'était active avant le premier
+   * défilement.
    */
-  it("sans `coremu`, c'est la première entrée réelle qui est active", () => {
+  it("sans financement, c'est la première entrée réelle qui est active", () => {
     config = makeConfig(false);
     detailSections = [CONTEXTE_SECTION];
     render(<AacCommunDetailPage />);
@@ -339,7 +347,7 @@ describe("AacCommunDetailPage — section active du sommaire", () => {
     expect(screen.getByTestId("toc").getAttribute("data-active")).toBe("contexte");
   });
 
-  it("avec `coremu`, « Besoins financiers » reste la première entrée active", () => {
+  it("avec financement, « Besoins financiers » reste la première entrée active", () => {
     config = makeConfig(true);
     detailSections = [CONTEXTE_SECTION];
     render(<AacCommunDetailPage />);
