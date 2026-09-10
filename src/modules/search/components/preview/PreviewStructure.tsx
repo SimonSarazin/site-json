@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import type { Organization } from "@communecter/cocolight-api-client";
 import {
   Award,
@@ -7,8 +6,10 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
+  Download,
   Edit,
   Facebook,
+  FileText,
   FolderOpen,
   Globe,
   IdCard,
@@ -21,20 +22,18 @@ import {
   Phone,
   Scale,
   Tag,
-  Users,
   Youtube,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import LazyImage from "@/components/layout/LazyImage";
-import { FilesList, type DocFile } from "@/components/media/FilesList";
 import ProfileMapLeaflet from "@/modules/profil/components/sections/ProfileMapLeaflet";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { DynamicEditModal } from "@/modules/profil/components/profile-edit/EditModalRegistry";
+import { useEntityBySlugQuery } from "@/hooks/useEntityBySlugQuery";
 import { useT } from "@/hooks/useT";
 import { PreviewProps } from "@/modules/search/schema";
-import { SEARCH_QUERY_KEYS } from "@/modules/search/constants/queryKeys";
 
 /**
  * Fiche détail « structure » (organisation) — `preview.type: "structure"`.
@@ -53,17 +52,45 @@ interface StructureAddress {
   addressCountry?: string;
 }
 
-/** `contentKey` des documents-IMAGES (Document.php IMG_*) — exclus de la section « Documents ». */
-const IMAGE_CONTENT_KEYS = new Set([
-  "banner",
-  "bannerAboutForm",
-  "profil",
-  "logo",
-  "slider",
-  "media",
-  "profil-resized",
-  "profil-marker",
-]);
+/**
+ * Section « Documents » de la fiche : emplacements NOMMÉS, appariés aux fichiers par `subKey` (posé à
+ * l'upload = clé du champ formulaire). Reprend la fiche legacy SSBE `ssbe/organizations/preview.php` :
+ * 2 emplacements, repli « Non renseigné ». Le formulaire SiteForge écrit `subKey:"statusFile"` là où
+ * les fiches legacy portent `recepisseDeclaration` → le 1er emplacement accepte les deux.
+ */
+const DOCUMENT_SLOTS: ReadonlyArray<{ subKeys: readonly string[]; labelKey: string }> = [
+  { subKeys: ["statusFile", "recepisseDeclaration"], labelKey: "PreviewStructure.docRecepisse" },
+  { subKeys: ["responsableCivilePro"], labelKey: "PreviewStructure.docResponsableCivilePro" },
+];
+
+interface StructureDoc {
+  docId: string;
+  name?: string;
+  docPath?: string;
+  subKey?: string;
+}
+
+/** `about.files` (objet keyé `_id` OU tableau, cf. Organization::getById) → liste normalisée téléchargeable. */
+function normalizeAboutFiles(files: unknown): StructureDoc[] {
+  const list =
+    files && typeof files === "object" && !Array.isArray(files)
+      ? Object.values(files as Record<string, Record<string, unknown>>)
+      : Array.isArray(files)
+        ? (files as Array<Record<string, unknown>>)
+        : [];
+  return list
+    .map((f) => {
+      const rid = f._id as { $id?: string } | string | undefined;
+      const docId = rid && typeof rid === "object" ? rid.$id : rid;
+      return {
+        docId: String(docId ?? f.id ?? ""),
+        name: typeof f.name === "string" ? f.name : undefined,
+        docPath: typeof f.docPath === "string" ? f.docPath : undefined,
+        subKey: typeof f.subKey === "string" ? f.subKey : undefined,
+      };
+    })
+    .filter((d) => d.docId && d.docPath);
+}
 
 function InfoSectionTitle({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) {
   return (
@@ -256,35 +283,19 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
     .filter(Boolean)
     .join(", ");
 
-  // Documents attachés à la structure — lecture seule, via `getDocuments()` (DOCUMENT_LIST,
-  // co2/document/list) : seul endpoint documents disponible dans la version SDK installée
-  // (getGalleryFiles existe côté source cocolight-api-client mais pas encore dans le build
-  // publié ici). Ne distingue pas docType côté backend → on exclut les contentKey "image"
-  // connus pour ne garder que les vrais documents (PDF, etc.).
-  const documentsQuery = useQuery<DocFile[]>({
-    queryKey: SEARCH_QUERY_KEYS.DOCUMENTS(org?.id ?? null),
-    queryFn: async () => {
-      const docs = await org.getDocuments();
-      return docs
-        .filter((d) => !IMAGE_CONTENT_KEYS.has(d.contentKey ?? ""))
-        .map((d) => ({
-          docId: d.id,
-          // `path` renvoyé par DOCUMENT_LIST est le DOSSIER, pas le fichier (ListAction.php,
-          // contrairement à Document::getDocumentPath utilisé par les autres endpoints
-          // documents) — il faut concaténer le nom pour obtenir une URL téléchargeable.
-          docPath: d.path && d.name ? `${d.path.replace(/\/$/, "")}/${d.name}` : d.path,
-          name: d.name,
-          contentKey: d.contentKey,
-        }));
-    },
-    // `getDocuments()` (DOCUMENT_LIST) exige une session connectée côté backend — pour un
-    // visiteur anonyme la query échoue (ApiAuthenticationError) et la section reste
-    // silencieusement masquée (pas de rendu de `documentsQuery.error`), sans casser la fiche.
-    enabled: Boolean(org?.id && typeof org.getDocuments === "function"),
-    retry: false,
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
-  });
+  // Documents (pièces justificatives) — l'item de recherche est tronqué, on recharge la fiche
+  // COMPLÈTE par slug (même patron que useResourceEntity) : `about.files` porte alors `subKey`
+  // (Organization::getById backend) → on répartit les fichiers dans des EMPLACEMENTS NOMMÉS, comme
+  // la fiche legacy SSBE, plutôt qu'en liste à plat. Endpoint `element/about` public (pas d'auth).
+  const fullEntity = useEntityBySlugQuery({ slug, options: { enabled: Boolean(slug) } });
+  const docSlots = useMemo(() => {
+    const files = normalizeAboutFiles((fullEntity.data?.serverData as { files?: unknown } | undefined)?.files);
+    return DOCUMENT_SLOTS.map((s) => ({
+      label: t(s.labelKey),
+      files: files.filter((f) => f.subKey && s.subKeys.includes(f.subKey)),
+    }));
+  }, [fullEntity.data, t]);
+  const hasAnyDoc = docSlots.some((s) => s.files.length > 0);
 
   if (!name) return null;
 
@@ -518,11 +529,39 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
               )}
             </div>
 
-            {(documentsQuery.data?.length ?? 0) > 0 && (
+            {hasAnyDoc && (
               <>
                 <Separator className="my-1" />
-                <InfoSectionTitle icon={Users}>{t("PreviewStructure.documents")}</InfoSectionTitle>
-                <FilesList files={documentsQuery.data ?? []} />
+                <InfoSectionTitle icon={FileText}>{t("PreviewStructure.documents")}</InfoSectionTitle>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {docSlots.map((slot) => (
+                    <div key={slot.label} className="rounded-lg border border-border bg-card p-3">
+                      <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                        <FileText className="size-3.5 text-primary" />
+                        {slot.label}
+                      </p>
+                      {slot.files.length > 0 ? (
+                        <ul className="flex flex-col gap-1">
+                          {slot.files.map((f) => (
+                            <li key={f.docId}>
+                              <a
+                                href={f.docPath}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                              >
+                                <Download className="size-3.5 shrink-0" />
+                                <span className="truncate">{f.name ?? f.docPath}</span>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm italic text-muted-foreground">{t("PreviewStructure.notProvided")}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </>
             )}
           </div>

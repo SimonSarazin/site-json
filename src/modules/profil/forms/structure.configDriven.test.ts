@@ -366,3 +366,45 @@ describe("costum structure Ekilib.re — READ + visibleIf (parité avec l'ancien
     });
   });
 });
+
+/**
+ * 16-17. Seed ÉDITION des pièces jointes : `seedGalleryDefaults` PARTITIONNE `about.files` par CHAMP
+ * via `subKey` (posé à l'upload = clé du champ ; le backend écrase `contentKey` des doctype:file par
+ * un bucket MIME, mais conserve `subKey`). Sans ça, chaque widget `file` affichait TOUS les documents
+ * de la structure (Statuts ET RC pro montraient la même liste). Repli : un fonds 100 % ancien sans
+ * `subKey` garde le comportement passe-tout (costums déjà en place non régressés).
+ */
+describe("costum structure Ekilib.re — seed ÉDITION des pièces jointes (partition par subKey)", () => {
+  const editCtx = (entity: unknown) =>
+    ({ mode: "edit", entity, parent: null, scope: undefined, me: null, carrier: null, costum: undefined }) as unknown as EntityModalCtx;
+  // `serverData` alimente seedEntity ; `data.files` = about.files lu par seedGalleryDefaults.
+  const orgWithFiles = (files: Array<Record<string, unknown>>) =>
+    ({ serverData: { name: "x", legalStatus: "Entreprise, Auto-entrepreneur, Sisa" }, data: { files } }) as unknown;
+  const fileDoc = (hex: string, name: string, subKey?: string) => ({
+    _id: { $id: hex }, id: hex, name, docPath: `/upload/${name}`,
+    doctype: "file", contentKey: "pdf", ...(subKey ? { subKey } : {}),
+  });
+  type SeedFile = { existing: Array<{ name: string }> };
+
+  it("16. chaque widget `file` ne reçoit que SES documents quand `subKey` est renseigné", () => {
+    const d = specToConfig(spec).buildDefaults(editCtx(orgWithFiles([
+      fileDoc("a".repeat(24), "statuts.pdf", "statusFile"),
+      fileDoc("b".repeat(24), "assurance.pdf", "responsableCivilePro"),
+      fileDoc("c".repeat(24), "fonds-ancien.pdf"),
+    ]))) as Record<string, SeedFile>;
+    expect(d.statusFile.existing.map((e) => e.name)).toEqual(["statuts.pdf"]);
+    expect(d.responsableCivilePro.existing.map((e) => e.name)).toEqual(["assurance.pdf"]);
+    // Dès qu'un doc porte un subKey, le fonds ancien non rattachable n'apparaît nulle part.
+    expect([...d.statusFile.existing, ...d.responsableCivilePro.existing].map((e) => e.name))
+      .not.toContain("fonds-ancien.pdf");
+  });
+
+  it("17. fonds 100 % ancien (aucun `subKey`) → passe-tout inchangé (costums existants non régressés)", () => {
+    const d = specToConfig(spec).buildDefaults(editCtx(orgWithFiles([
+      fileDoc("a".repeat(24), "doc1.pdf"),
+      fileDoc("b".repeat(24), "doc2.pdf"),
+    ]))) as Record<string, SeedFile>;
+    expect(d.statusFile.existing.map((e) => e.name)).toEqual(["doc1.pdf", "doc2.pdf"]);
+    expect(d.responsableCivilePro.existing.map((e) => e.name)).toEqual(["doc1.pdf", "doc2.pdf"]);
+  });
+});
