@@ -6,7 +6,7 @@ import { PourContreField } from "./PourContreField";
 import type { PourContreValue } from "../utils/pourContre";
 import { SelectionField } from "./SelectionField";
 import { DEPOSIT_STEP_ID, type RawSelectionConfig, type SelectionValue } from "../utils/selection";
-import { Fragment, useCallback, useRef, useEffect, useMemo, useState } from "react";
+import { useCallback, useRef, useEffect, useMemo, useState } from "react";
 import { Controller, type FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 import { Activity } from "lucide-react";
