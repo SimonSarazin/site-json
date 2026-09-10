@@ -60,7 +60,9 @@ interface FiltreAOptions {
  * l'hydratation URL s'exécute trop tôt : elle rejette les valeurs qu'elle ne connaît pas encore, puis
  * se marque comme faite. C'est exactement ce qui perdait le deep-link.
  */
-export type FiltreResolu<T> = T & { optionsReady: boolean };
+/** `options` est GARANTI présent en sortie, même quand le filtre d'entrée n'en déclarait aucune :
+ *  `SearchHeaderSection` en fait 7 lectures directes, et un filtre 100 % dynamique n'en a pas. */
+export type FiltreResolu<T> = T & { optionsReady: boolean; options: OptionFiltre[] };
 
 /**
  * Plafond demandé au serveur. En deçà, la liste arrive ENTIÈRE et la recherche se fait dans le
@@ -125,9 +127,15 @@ export function useDynamicFilterOptions<T extends FiltreAOptions>(
 
     return filtres.map((f) => {
       const res = parFiltre.get(f.id);
-      if (!res) return { ...f, optionsReady: true };
-
+      // `options` est OBLIGATOIRE dans le type de sortie du schéma (`.default([])`), mais la config JSON
+      // n'est jamais parsée par Zod au runtime : un filtre 100 % dynamique (`optionsFrom` seul, aucune
+      // option écrite à la main — le cas du filtre « Catégorie » de parent62 depuis le retrait des
+      // catégories par défaut) arrive donc ici avec `options: undefined`, et les 7 lectures de
+      // `filter.options` de `SearchHeaderSection` plantaient la section entière. Ce hook est le
+      // normaliseur de la liste consommée par le rendu : le défaut se pose ICI, une fois.
       const declarees = f.options ?? [];
+      if (!res) return { ...f, options: declarees, optionsReady: true };
+
       const socle: SourceDeValeurs[] = f.optionsFrom?.withDeclared
         ? [{ values: declarees.map(valeurDe).filter((v) => v !== "") }]
         : [];
@@ -143,7 +151,7 @@ export function useDynamicFilterOptions<T extends FiltreAOptions>(
       const pret = res.regle;
       // Tant que rien n'est résolu, on garde les options DÉCLARÉES : le filtre reste utilisable (et un
       // repli écrit à la main continue de servir) au lieu de disparaître.
-      if (!values.length) return { ...f, optionsReady: pret };
+      if (!values.length) return { ...f, options: declarees, optionsReady: pret };
 
       // Une option DÉCLARÉE est réutilisée telle quelle pour la valeur qu'elle porte : c'est ce qui
       // conserve son libellé traduit (et sa couleur, son `level`…). Les valeurs venues de la base et

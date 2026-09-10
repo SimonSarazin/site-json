@@ -23,6 +23,8 @@ export interface TestimonialData {
   /** Accent (ex. territoire), ou `null`. */
   accent: { value: string; color: string } | null;
   audio: string | null;
+  /** Illustration (image du POI, ou 1re image de `medias`), ou `null`. */
+  image: string | null;
   facets: TestimonialFacetData[];
 }
 
@@ -74,6 +76,13 @@ export function useTestimonialData(
         ? { value: accentValue, color: valueColor(accentValue, { map: c.accent?.colors }) }
         : null,
       audio: firstMediaUrl(resolveServerDataPath(sd, c.audioField ?? "medias")),
+      // Même cascade que `useResourceData` : vignette du POI, puis image pleine, puis 1re image de `medias`
+      // (une image déposée en galerie n'alimente pas `profil*ImageUrl`).
+      image:
+        readString(c.imageField ?? "profilMediumImageUrl") ||
+        readString("profilImageUrl") ||
+        firstMediaUrl(resolveServerDataPath(sd, "medias"), "image") ||
+        null,
       facets,
     };
   }, [item, cfg]);

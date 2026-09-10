@@ -359,6 +359,9 @@ export const TestimonialConfSchema = z.object({
   subtitleField: z.string().optional(),
   /** Champ du média audio (`[{type:"audio", url}]`). Repli code : "medias". */
   audioField: z.string().optional(),
+  /** Champ de l'illustration (bannière de la carte et de la preview). Repli code : "profilMediumImageUrl",
+   *  puis "profilImageUrl", puis la 1re image de `medias` — un témoignage sans image reste rendu tel quel. */
+  imageField: z.string().optional(),
   /** Catégorie : pilote la teinte de la bulle + la pastille. `colors` = map valeur→couleur (`var()` ou hex). */
   badge: z.object({ field: z.string(), colors: z.record(z.string(), z.string()).optional() }).optional(),
   /** Accent (ex. territoire) : pilote le point coloré. `colors` = map valeur→couleur (`var()` ou hex). */
@@ -1181,6 +1184,11 @@ const TitleWithFiltersDropdownSchema = z.object({
 // Props partagées entre le type canonique `searchHeader` et son alias.
 const SearchHeaderProps = z.object({
   headline: LocalizedString.optional(),
+  /** `id` d'un `dropdownFilters` dont la VALEUR SÉLECTIONNÉE remplace le `headline` (qui reste le repli
+   *  quand rien n'est sélectionné). Pour une page dont l'identité EST ce filtre — `/theme?theme=…`,
+   *  atteinte depuis le menu dynamique du header : « Nos thèmes » y perd l'information utile, DE QUEL
+   *  thème on parle. Le filtre visé peut être `hidden`. Plusieurs valeurs sont jointes par « · ». */
+  headlineFromFilter: z.string().optional(),
   subhead: LocalizedString.optional(),
   // Override de la classe couleur du titre `h1` (déf. `text-foreground`). Utile
   // quand le bandeau a un fond fixe sombre (ex. `bg-[image:var(--gradient-section)]`) où le token
