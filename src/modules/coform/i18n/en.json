@@ -2,11 +2,21 @@
   "coform": {
     "title": "Form",
     "steps": {
-      "step": "Step",
-      "of": "of",
-      "completed": "Completed",
-      "current": "Current",
-      "pending": "Pending"
+      "navLabel": "Form steps",
+      "counter": "Step {{current}} of {{total}}",
+      "stepLabel": "Step {{number}}: {{name}} ({{state}})",
+      "stepLabelUnnamed": "Step {{number}} ({{state}})",
+      "allSteps": "All steps",
+      "hiddenBefore": "{{count}} before",
+      "hiddenAfter": "{{count}} after",
+      "goToFirstError": "Go to the first step to fix",
+      "status": {
+        "done": "Completed",
+        "current": "In progress",
+        "error": "To fix",
+        "locked": "Restricted",
+        "todo": "To do"
+      }
     },
     "navigation": {
       "next": "Next",
@@ -14,10 +24,6 @@
       "submit": "Submit",
       "save": "Save",
       "reset": "Reset"
-    },
-    "progress": {
-      "title": "Progress",
-      "percent": "{{percent}}% completed"
     },
     "validation": {
       "required": "This field is required",
@@ -62,7 +68,8 @@
         "serverError": "Submission error",
         "toast": "The form contains errors"
       },
-      "unsupportedFieldPlaceholder": "This field is not available here yet — it can still be filled in from the legacy interface."
+      "unsupportedFieldPlaceholder": "This field is not available here yet — it can still be filled in from the legacy interface.",
+      "stepIncomplete": "Complete the step “{{name}}” first."
     },
     "banner": {
       "alt": "Form banner"

@@ -181,7 +181,12 @@ export function CoFormModal({
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
-          className="max-w-[calc(100%-2rem)] sm:max-w-6xl max-h-[90vh] overflow-y-auto p-0 gap-0"
+          // `min-w-0` : `DialogContent` est une GRILLE, et un item de grille a
+          // `min-width: auto` — sa largeur min-content remonte donc à la piste.
+          // Un seul enfant large (texte `nowrap`, bouton, tableau) élargit la
+          // piste, TOUS les enfants s'étirent avec elle, et la modale se met à
+          // défiler latéralement. Mesuré : 452 px de contenu pour 356 de large.
+          className="max-w-[calc(100%-2rem)] sm:max-w-6xl max-h-[90vh] overflow-y-auto p-0 gap-0 [&>*]:min-w-0"
           onInteractOutside={(e) => {
             if (isSubmitting) e.preventDefault();
           }}

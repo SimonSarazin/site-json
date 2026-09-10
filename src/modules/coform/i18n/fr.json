@@ -2,11 +2,21 @@
   "coform": {
     "title": "Formulaire",
     "steps": {
-      "step": "Étape",
-      "of": "sur",
-      "completed": "Complété",
-      "current": "En cours",
-      "pending": "À venir"
+      "navLabel": "Étapes du formulaire",
+      "counter": "Étape {{current}} sur {{total}}",
+      "stepLabel": "Étape {{number}} : {{name}} ({{state}})",
+      "stepLabelUnnamed": "Étape {{number}} ({{state}})",
+      "allSteps": "Toutes les étapes",
+      "hiddenBefore": "{{count}} avant",
+      "hiddenAfter": "{{count}} après",
+      "goToFirstError": "Aller à la première étape à corriger",
+      "status": {
+        "done": "Complétée",
+        "current": "En cours",
+        "error": "À corriger",
+        "locked": "Réservée",
+        "todo": "À faire"
+      }
     },
     "navigation": {
       "next": "Suivant",
@@ -14,10 +24,6 @@
       "submit": "Envoyer",
       "save": "Sauvegarder",
       "reset": "Réinitialiser"
-    },
-    "progress": {
-      "title": "Progression",
-      "percent": "{{percent}}% complété"
     },
     "validation": {
       "required": "Ce champ est requis",
@@ -62,7 +68,8 @@
         "serverError": "Erreur lors de la soumission",
         "toast": "Le formulaire comporte des erreurs"
       },
-      "unsupportedFieldPlaceholder": "Ce champ n'est pas encore disponible ici — il reste renseignable depuis l'ancienne interface."
+      "unsupportedFieldPlaceholder": "Ce champ n'est pas encore disponible ici — il reste renseignable depuis l'ancienne interface.",
+      "stepIncomplete": "Complétez d'abord l'étape « {{name}} »."
     },
     "banner": {
       "alt": "Bannière du formulaire"

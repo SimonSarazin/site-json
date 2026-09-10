@@ -146,6 +146,26 @@ describe("contenu de la définition du formulaire — mise en forme préservée"
  * copie inline sur deux champs neufs, avec tous les gates au vert).
  * Une régression ici se propage à tout le formulaire, d'où ces tests.
  */
+/**
+ * Césure des mots insécables.
+ *
+ * jsdom ne fait pas de mise en page : ce test ne peut que vérifier que la classe
+ * est posée. Ce qu'elle produit a été mesuré dans un vrai navigateur, sur le vrai
+ * composant à 390 px : une URL de 84 caractères occupait 352 px dans une colonne
+ * de 308 (soit 44 px de débordement, qui remontaient jusqu'à faire défiler la
+ * modale latéralement), et 308 px avec la classe. Rendu du texte normal
+ * inchangé au pixel près.
+ */
+describe("ProseContent — césure", () => {
+  it("autorise la coupe des mots insécables, sans écraser la classe reçue", () => {
+    const { container } = render(<ProseContent text={"Un texte"} className="text-sm prose" />);
+    const div = container.firstElementChild!;
+    expect(div.className).toContain("wrap-anywhere");
+    expect(div.className).toContain("text-sm");
+    expect(div.className).toContain("prose");
+  });
+});
+
 describe("FieldLabel", () => {
   const champ = (over: Partial<FormFieldMapping> = {}) =>
     ({ name: "q1", label: "Ma question", isRequired: false, ...over }) as FormFieldMapping;
