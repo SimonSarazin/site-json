@@ -55,6 +55,8 @@ commune **ou** de la source `saintpaulSport1` (union `$or`).
 | 2026-08-15 | Peterson | Onglet admin « Migration » (reprise de propriété des fiches communales) — cf. section dédiée en fin de page |
 | 2026-09-01 | Peterson | Script de génération des **organisations usagères** (41 orgas taguées `usagerEquipementSportif`) côté `communecter74-dev` |
 | 2026-09-01/02 | Peterson (+ Claude) | **Lot « usagers des équipements »** : annuaire `/annuaire`, organisateur des événements, grille de réservation ; plan `../../.claude/plans/plan-saint-paul-sport-usagers-annuaire-events-reservation.md` |
+| 2026-09-09 | Peterson (+ Claude) | **Lot « lien créneau ↔ organisation »** : champ `finder` sur les organisations taguées ajouté au formulaire de créneaux, champ texte « Usager » masqué, 63 réponses historiques rattachées par identifiant ; 7 associations manquantes taguées (48 au total) ; plan `../../.claude/plans/plan-creneaux-lien-organisation-usagere.md` |
+| 2026-09-10 | Peterson (+ Claude) | **Outillage de mise en production** : action de migration `creneauxlienorga` (`communecter-php74`, calquée sur `CreneauxUsagersOrgsAction`) — taguer, poser le champ, reprendre l'historique, en simulation puis application, idempotente ; éprouvée en local par un aller-retour complet. Scripts mongo de secours et retours arrière dans `../../scripts-prod-creneaux/` |
 | 2026-09-07 | Peterson (+ Claude) | **Recette complète du lot** : `oneAnswerPerPers` repassé à `false` par Peterson, deux réservations créées et vérifiées de bout en bout, portes rejouées (rendu 12/12, sonde 6/6, `config:validate` ✅), recette en éventail sur 5 dimensions — 3 constats mineurs confirmés (§12) |
 
 ## 2. Objectifs de la configuration
@@ -261,6 +263,7 @@ Observatoire sert de snapshot canonique. Les deux diffs se limitent au lot.
 | 8 | Annuaire des organisations usagères (`/annuaire`) | ✅ | 41 organisations, sonde à 41, drawer `structure` vérifié au navigateur (02/09) |
 | 9 | Création d'événements avec organisateur | ✅ | Événement créé de bout en bout : `source.key saintpaulSport1`, `links.organizer`, lien réciproque, modération puis publication sur `/agenda` **et** `/actualites` (02/09) |
 | 10 | Filtrer les événements par organisation | ✅ | Par l'onglet « Événements » de la fiche d'organisation — aucun développement (arbitrage : pas de filtre sur `/agenda`) |
+| 12 | Lien créneau ↔ organisation par identifiant | ✅ | Sélecteur filtré sur le tag, texte masqué, 63 réponses reprises, 64/64 portent l'identifiant et le lien ; vérifié au navigateur (création + affichage d'une réservation historique) |
 | 11 | Réservation d'un créneau depuis la fiche | ✅ | `oneAnswerPerPers` passé à `false` le 07/09 → **deux réservations créées de bout en bout** sur un même équipement (mardi 18 h, jeudi 10 h) par le même compte, stockées à la forme historique (`finder<step>` + tableau de créneaux), grille passée de 98 à 96 cases libres et créneaux pris rendus non réservables |
 
 ## 11. Dépendances SDK ↔ `cocolight-api-client`
@@ -298,14 +301,28 @@ Observatoire sert de snapshot canonique. Les deux diffs se limitent au lot.
   inopérante tant que le drapeau n'est pas à `false`. Les mises à jour d'une réponse existante
   restent autorisées.
 - **Les 14 équipements porteurs de réservations sont hors du périmètre du site** : ils sont en
-  `source.keys: ["equipementsSportifs974"]`, alors que `/equipements-sportifs` liste les 206 POI
-  estampillés `saintpaulSport1`. Aucun des 206 n'a de réservation ⇒ aujourd'hui, sur ce site, la
-  section Réservations est vide sur **toutes** les fiches visibles. À traiter par la migration de
-  propriété (§ Onglet admin « Migration ») ou par un élargissement du périmètre de la page (§13).
-- **Une réservation ne porte aucun identifiant d'organisation** : le champ « Usager » du formulaire
-  est un texte libre. Le rapprochement avec l'annuaire se fait donc **par le nom**. Arbitrage du
-  01/09 : hybride — l'historique reste rapproché par nom, un lien structuré suppose l'ajout d'un
-  champ `finder` sur le formulaire (§13).
+  `source.keys: ["equipementsSportifs974"]`, alors que `/equipements-sportifs` liste les POI
+  estampillés `saintpaulSport1`. **Mesure du 09/09 (corrige le constat du 02/09)** : 16 équipements
+  portent au moins une réservation, dont **3 sont dans le périmètre** — `Gymnase de vue belle`
+  (3 réservations réelles : BADMINTON DE LA SALINE, JS SALINE, SALINE VOLLEY BALL), `Boulodrome`
+  (1) et `Plateau Vert Synthétique` (les 2 réservations de recette). Les **13 autres restent hors
+  périmètre** : la section Réservations est donc alimentée sur 2 fiches visibles seulement, et vide
+  sur les 205 autres. À traiter par la migration de propriété (§ Onglet admin « Migration ») ou par
+  un élargissement du périmètre de la page (§13).
+- ~~**Une réservation ne porte aucun identifiant d'organisation**~~ — **RÉSOLU le 09/09.** Le
+  formulaire porte désormais un champ `finder` sur les organisations, filtré sur le tag
+  `usagerEquipementSportif`, qui enregistre `{<id>: {id, name, type}}` et pose
+  `links.organizations` sur la réponse. Le champ texte « Usager » est **masqué** (`hide: true`),
+  ses valeurs conservées. Les 63 réponses historiques ont été rattachées (55 au nom exact, 8 après
+  pliage casse/accents), sans un seul cas ambigu. Le suffixe du nouveau champ est
+  `n0a7usagerorga1k9z`, déclaré sous `reservations.fields.userOrga` dans les **3** configs qui
+  consomment ce formulaire.
+- **Le site ignorait `hide`** : découvert à cette occasion, `formParser` affichait les champs que
+  le back-office masque. Corrigé (garde + test). Aucun effet sur le parc : aucun des formulaires
+  consommés par site-json ne portait de champ masqué.
+- **Le sélecteur d'association plafonne à 30 propositions** (`FINDER_INDEX_STEP`, en dur, sans
+  pagination) pour 48 associations taguées : une saisie très large peut en masquer une partie,
+  sans message. Limitation **assumée** (décision du 09/09) — taper le nom du club suffit.
 - **48 usagers distincts dans les créneaux, 41 organisations générées.** Manquent : `KARATE CLUB
   LEO`, `EN FORME` et `MONTAGNE REUNION` (existent en base sous `cressReunion` /
   `sportSanteBienetre`, **sans** le tag) ; `JKA Réunion`, `EN MOUV EN`, `BDN SAINT-PAUL SPORTS` et

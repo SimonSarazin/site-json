@@ -32,6 +32,9 @@ export interface Reservation {
   resourceIds: string[];
   /** "" si non renseigné (libellé de repli côté UI/i18n). */
   user: string;
+  /** Id de l'organisation usagère, quand la réponse porte le finder `userOrga`.
+   *  Absent sur les réponses historiques, qui ne connaissent l'usager que par son nom. */
+  userId?: string;
   activity?: string;
   bookingType?: string;
   /** ISO "2026-01-01" — formatage locale laissé au composant. */
@@ -42,6 +45,8 @@ export interface Reservation {
 
 export interface UserReservations {
   user: string;
+  /** Id de l'organisation, dès qu'au moins une réservation du groupe le porte. */
+  userId?: string;
   /** Index de couleur STABLE (ordre alphabétique global) — la couleur suit
    *  l'usager, indépendamment de l'ordre d'arrivée des answers. */
   colorIndex: number;
@@ -157,13 +162,28 @@ export function parseReservationAnswer(
       ? Object.keys(finderRaw as Record<string, unknown>)
       : [];
 
+  // Organisation usagère : le finder porte l'IDENTIFIANT en plus du nom, là où le champ
+  // historique ne portait qu'un nom saisi à la main. Rangé sous la clé PRÉFIXÉE, comme
+  // le finder de la ressource. `multiple: false` au formulaire, mais on lit la 1re entrée
+  // sans s'y fier : une réponse ancienne ou saisie ailleurs pourrait en porter plusieurs.
+  const orgaRaw = conf.fields.userOrga
+    ? step[`finder${conf.step}${conf.fields.userOrga}`]
+    : undefined;
+  const orgaEntry =
+    orgaRaw && typeof orgaRaw === "object" && !Array.isArray(orgaRaw)
+      ? Object.entries(orgaRaw as Record<string, { name?: unknown }>)[0]
+      : undefined;
+
   return {
     id:
       str(serverData.id)
       ?? str((serverData._id as { $id?: string } | undefined)?.$id)
       ?? "",
     resourceIds,
-    user: str(get(conf.fields.user)) ?? "",
+    // Le nom du finder prime, le texte historique sert de repli : pendant la reprise,
+    // les deux formes cohabitent dans la même grille.
+    user: (orgaEntry ? str(orgaEntry[1]?.name) : undefined) ?? str(get(conf.fields.user)) ?? "",
+    userId: orgaEntry ? orgaEntry[0] : undefined,
     activity: str(get(conf.fields.activity)),
     bookingType: str(get(conf.fields.bookingType)),
     periodStart: str(get(conf.fields.periodStart)),
@@ -179,17 +199,49 @@ export function parseReservationAnswer(
  * `colorIndex` découle de cet ordre global : il ne dépend pas de l'ordre
  * d'arrivée des answers.
  */
+/** Libellé plié : casse, accents, ponctuation et espaces multiples écrasés. */
+function foldLabel(label: string): string {
+  return label
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, " ")
+    .trim();
+}
+
 export function groupReservationsByUser(list: Reservation[]): UserReservations[] {
+  // PREMIÈRE passe : quel identifiant se cache derrière quel libellé ? Indispensable pendant la
+  // reprise, où le même club arrive sous deux formes — « BASKET CLUB  SAINT-PAULOIS » saisi à la
+  // main, sans identifiant, et « BASKET CLUB SAINT PAULOIS » choisi dans la liste, avec. Si l'on
+  // se contentait de faire primer l'identifiant, les deux tomberaient dans des groupes distincts
+  // et la grille donnerait deux couleurs à un seul club.
+  const idParLibelle = new Map<string, string>();
+  for (const r of list) {
+    if (r.userId) {
+      const k = foldLabel(r.user);
+      if (k && !idParLibelle.has(k)) idParLibelle.set(k, r.userId);
+    }
+  }
+  // Clé retenue : l'identifiant propre, sinon celui déduit du libellé, sinon le libellé plié.
+  const cle = (r: Reservation) => {
+    const plie = foldLabel(r.user);
+    return r.userId ?? idParLibelle.get(plie) ?? plie;
+  };
+
   const byUser = new Map<string, Reservation[]>();
   for (const r of list) {
-    const existing = byUser.get(r.user);
+    const key = cle(r);
+    const existing = byUser.get(key);
     if (existing) existing.push(r);
-    else byUser.set(r.user, [r]);
+    else byUser.set(key, [r]);
   }
-  return [...byUser.entries()]
-    .sort(([a], [b]) => a.localeCompare(b, "fr", { sensitivity: "base" }))
-    .map(([user, reservations], colorIndex) => ({
-      user,
+  return [...byUser.values()]
+    // Le libellé affiché est celui de la 1re réservation du groupe ; le tri porte sur lui,
+    // plus sur la clé, qui peut désormais être un identifiant opaque.
+    .sort((a, b) => a[0].user.localeCompare(b[0].user, "fr", { sensitivity: "base" }))
+    .map((reservations, colorIndex) => ({
+      user: reservations[0].user,
+      userId: reservations.find((r) => r.userId)?.userId,
       colorIndex,
       reservations,
       activities: [

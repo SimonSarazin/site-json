@@ -23,6 +23,7 @@ const STEP = "step2026_0";
 const FIELDS = {
   finder: "fFinder",
   user: "fUser",
+  userOrga: "fOrga",
   activity: "fActivity",
   slots: "fSlots",
   periodStart: "fStart",
@@ -38,8 +39,12 @@ function answerData(
 ): Record<string, unknown> {
   const step: Record<string, unknown> = {};
   for (const [suffix, value] of Object.entries(stepFields)) {
-    // Le finder est préfixé `finder<step>` (convention vérifiée en base).
-    const key = suffix === FIELDS.finder ? `finder${STEP}${suffix}` : `${STEP}${suffix}`;
+    // Les DEUX finders (ressource et organisation usagère) sont préfixés `finder<step>`
+    // — convention vérifiée en base ; les champs simples gardent la clé brute.
+    const key =
+      suffix === FIELDS.finder || suffix === FIELDS.userOrga
+        ? `finder${STEP}${suffix}`
+        : `${STEP}${suffix}`;
     step[key] = value;
   }
   return { id: "a1", answers: { [STEP]: step }, ...root };
@@ -156,6 +161,33 @@ describe("parseReservationAnswer", () => {
     expect(parseReservationAnswer(sd, CONF)!.user).toBe("");
   });
 
+  it("lit l'organisation usagère : le nom du finder prime, l'identifiant est porté", () => {
+    const sd = answerData({
+      [FIELDS.user]: "BASKET CLUB  SAINT-PAULOIS",
+      [FIELDS.userOrga]: {
+        org1: { id: "org1", name: "BASKET CLUB SAINT PAULOIS", type: "organizations" },
+      },
+    });
+    const r = parseReservationAnswer(sd, CONF)!;
+    expect(r.user).toBe("BASKET CLUB SAINT PAULOIS");
+    expect(r.userId).toBe("org1");
+  });
+
+  it("retombe sur le texte historique quand le finder organisation est absent", () => {
+    const r = parseReservationAnswer(answerData({ [FIELDS.user]: "JS SALINE" }), CONF)!;
+    expect(r.user).toBe("JS SALINE");
+    expect(r.userId).toBeUndefined();
+  });
+
+  it("ignore un finder organisation vide ou mal formé sans perdre le texte", () => {
+    for (const bidon of [{}, [], "org1", null]) {
+      const sd = answerData({ [FIELDS.user]: "JS SALINE", [FIELDS.userOrga]: bidon });
+      const r = parseReservationAnswer(sd, CONF)!;
+      expect(r.user).toBe("JS SALINE");
+      expect(r.userId).toBeUndefined();
+    }
+  });
+
   it("laisse les champs optionnels undefined quand absents", () => {
     const r = parseReservationAnswer(answerData({}), CONF)!;
     expect(r.activity).toBeUndefined();
@@ -192,6 +224,28 @@ describe("parseReservationAnswer", () => {
 /* ── groupReservationsByUser ─────────────────────────────────────────────── */
 
 describe("groupReservationsByUser", () => {
+  it("réunit dans UN SEUL groupe le même club saisi en texte et choisi dans la liste", () => {
+    // Le cas exact de la reprise : « BASKET CLUB  SAINT-PAULOIS » (double espace, trait d'union)
+    // saisi à la main, et « BASKET CLUB SAINT PAULOIS » venu du finder. Deux groupes signifieraient
+    // deux couleurs dans la grille pour un seul club.
+    const list = [
+      reservation({ id: "r1", user: "BASKET CLUB  SAINT-PAULOIS" }),
+      reservation({ id: "r2", user: "BASKET CLUB SAINT PAULOIS", userId: "org1" }),
+    ];
+    const groups = groupReservationsByUser(list);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].reservations.map((r) => r.id)).toEqual(["r1", "r2"]);
+    expect(groups[0].userId).toBe("org1");
+  });
+
+  it("sépare deux clubs d'identifiants différents, même si leurs noms se ressemblent", () => {
+    const groups = groupReservationsByUser([
+      reservation({ id: "r1", user: "MONTAGNE REUNION", userId: "org1" }),
+      reservation({ id: "r2", user: "Montagne Réunion", userId: "org2" }),
+    ]);
+    expect(groups).toHaveLength(2);
+  });
+
   it("regroupe par usager, déduplique les activités et somme les créneaux", () => {
     const list = [
       reservation({ id: "r1", user: "CLUB A", activity: "BADMINTON", slots: [{ day: "monday", start: "17:00", end: "19:00", startMinutes: 1020, endMinutes: 1140 }] }),

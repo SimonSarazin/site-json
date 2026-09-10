@@ -356,6 +356,12 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
       // Ignorer les anciens inputs de validation d'étape (validateStep*)
       if (/validatestep/i.test(fieldData.type)) return;
 
+      // `hide: true` = champ retiré de la saisie depuis le back-office. Le legacy le masque
+      // (`step_v2.php:256`) ; sans ce garde-fou le site l'affichait quand même, et un champ
+      // délibérément sorti du formulaire — parce que remplacé — restait proposé à l'utilisateur.
+      // On l'écarte SANS toucher aux réponses déjà stockées sous sa clé : elles restent lisibles.
+      if (fieldData.hide === true || fieldData.hide === "true") return;
+
       const componentType = mapCoFormTypeToComponentType(fieldData.type);
       
       // Récupérer les options depuis params si c'est un radio/checkbox
