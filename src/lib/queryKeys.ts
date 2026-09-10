@@ -24,6 +24,7 @@ export type { CostumQueryKeyType } from "@/constants/queryKeys";
 
 // Re-export des query keys des 7 modules (ampli, cagnotte, coform, interop,
 // news, profil, search — ordre alphabétique).
+export { AAC_QUERY_KEYS } from "@/modules/aac/constants/queryKeys";
 export { AMPLI_QUERY_KEYS } from "@/modules/ampli/constants/queryKeys";
 export { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 export { COFORM_QUERY_KEYS } from "@/modules/coform/constants/queryKeys";
@@ -68,6 +69,7 @@ export function publicSurfaceKeys(costumSlug?: string): QueryKey[] {
 }
 
 // Re-export des types associés
+export type { AacQueryKeyType } from "@/modules/aac/constants/queryKeys";
 export type { AmpliQueryKeyType } from "@/modules/ampli/constants/queryKeys";
 export type { CagnotteQueryKeyType } from "@/modules/cagnotte/constants/queryKeys";
 export type { CoformQueryKeyType } from "@/modules/coform/constants/queryKeys";

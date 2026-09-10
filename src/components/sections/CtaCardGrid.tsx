@@ -2,12 +2,56 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { type CtaCardGridProps } from "@/types/site-schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link } from "react-router";
+import { useStatDynamicValue } from "./useStatDynamicValue";
 
 interface CtaCardGridSectionProps {
     id?: string;
     props: CtaCardGridProps;
+}
+
+type CtaCardGridStat = NonNullable<CtaCardGridProps["stats"]>[number];
+
+/**
+ * Une tuile de `props.stats`. Extraite en composant à part : `useStatDynamicValue`
+ * est un hook, il ne peut pas être appelé dans le callback `.map()` du parent.
+ *
+ * `stat.value` (statique), s'il est fourni, reste affiché tant que la source
+ * dynamique n'a pas résolu — jamais de flash ni de chiffre inventé. Sans `value`
+ * (stat 100% dynamique), un skeleton comble ce même intervalle.
+ */
+function StatTile({
+    stat,
+    queryKeyPrefix,
+    className,
+    colorClass,
+    t,
+}: {
+    stat: CtaCardGridStat;
+    queryKeyPrefix: string;
+    className: string;
+    colorClass: string;
+    t: ReturnType<typeof useLocalization>["t"];
+}) {
+    const dynamicValue = useStatDynamicValue(stat.source, queryKeyPrefix);
+    const displayValue = dynamicValue != null ? String(dynamicValue) : stat.value;
+
+    return (
+        <div className={className}>
+            <div className="text-4xl font-bold mb-2">
+                {displayValue !== undefined ? (
+                    <span className={colorClass}>{displayValue}</span>
+                ) : (
+                    <Skeleton className="mx-auto h-10 w-16" />
+                )}
+            </div>
+            <div className="text-sm text-muted-foreground">
+                {t(stat.label)}
+            </div>
+        </div>
+    );
 }
 
 export function CtaCardGrid({ id, props }: CtaCardGridSectionProps) {
@@ -127,17 +171,14 @@ export function CtaCardGrid({ id, props }: CtaCardGridSectionProps) {
                 {props.stats && props.stats.length > 0 && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 animate-fade-in">
                         {props.stats.map((stat, index) => (
-                            <div
+                            <StatTile
                                 key={index}
+                                stat={stat}
+                                queryKeyPrefix={`cta-card-grid-stat-${id ?? "grid"}-${index}`}
                                 className={statClasses}
-                            >
-                                <div className={`text-4xl font-bold mb-2 ${getStatColorClass(stat.color)}`}>
-                                    {stat.value}
-                                </div>
-                                <div className="text-sm text-muted-foreground">
-                                    {t(stat.label)}
-                                </div>
-                            </div>
+                                colorClass={getStatColorClass(stat.color)}
+                                t={t}
+                            />
                         ))}
                     </div>
                 )}

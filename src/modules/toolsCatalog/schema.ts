@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { LocalizedString } from "@/types/locale-schema";
+import { templateYieldsCommunId } from "./utils/communLink";
 
 /**
  * Section `toolsCatalog` : catalogue générique d'outils d'usage (paginé +
@@ -71,8 +72,26 @@ export const ToolsCatalogSectionSchema = z.object({
      * `parse`-ée au runtime (les props arrivent brutes du JSON), un défaut zod ne
      * s'appliquerait donc jamais — et un domaine d'un costum précis n'a de toute
      * façon rien à faire dans le schéma d'un module générique.
+     *
+     * ⚠️ Le gabarit doit produire un lien que le SERVEUR sait relire, sinon le
+     * rattachement s'enregistre puis disparaît (`communId: ""` au retour, select sur
+     * « Aucun commun », bloc « Informations liées au commun » jamais rendu) — sans la
+     * moindre erreur nulle part. Deux formes sont reconnues, cf. `utils/communLink` :
+     * l'ancre legacy `#detail-un-commun.communId.{communId}` et la route de fiche
+     * site-json `…/commun/{communId}`.
+     *
+     * Le refine ne cherche pas un motif : il SUBSTITUE une communId factice et relit
+     * le résultat avec le même code que le serveur. Le contrôle reste donc exact si
+     * les formes acceptées évoluent. Seuls les gates parsent (`config:validate`,
+     * préflight) — c'est là que ça doit casser, pas en silence dans la base.
      */
-    communUrlTemplate: z.string().optional(),
+    communUrlTemplate: z
+      .string()
+      .refine(templateYieldsCommunId, {
+        message:
+          "communUrlTemplate doit produire un lien relisible par le serveur : soit une route « …/commun/{communId} », soit l'ancre legacy « #detail-un-commun.communId.{communId} ».",
+      })
+      .optional(),
 
     // ── Habillage section ─────────────────────────────────────────────────
     bg: z.string().optional(),

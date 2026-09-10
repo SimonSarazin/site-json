@@ -1,0 +1,421 @@
+/**
+ * Logique partagee entre CommunFinancingSection (besoins financiers) et
+ * CommunActionsSection (objectifs/actions) : mutations paliers + actions,
+ * permissions, resolution de l'entite Project, etats des dialogs.
+ *
+ * Chaque composant appelle ce hook independamment (sa propre instance d'etat) —
+ * ce n'est pas un contexte partage entre les 2 blocs, juste la meme logique
+ * pour eviter de la dupliquer.
+ */
+import { useCallback, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import type { Project } from "@communecter/cocolight-api-client";
+import type { CoFormAnswer } from "@/modules/coform/types";
+import { useCagnottePermissions } from "@/modules/cagnotte/hooks/useCagnottePermissions";
+import { useActionGuards } from "@/modules/cagnotte/hooks/useActionGuards";
+import type {
+  FundingMilestone as Milestone,
+  FundingAction as ProjectAction,
+  CagnotteResource,
+  CagnotteFundableItem,
+} from "@/modules/cagnotte/types";
+import { useCandidateAction, useDeleteAction, useMarkActionDone } from "@/modules/cagnotte/actions/mutations";
+import { useDeleteMilestone, useEditMilestone, useCloseMilestone, useRestoreMilestone } from "@/modules/cagnotte/actions/mutations";
+import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope";
+import { getEntityId } from "@/modules/cagnotte/utils/dataTransform";
+import { useCocolight } from "@/hooks/useCocolight";
+import { isProject } from "@/lib/getTypedEntity";
+import { useOptionalProfileEntity } from "@/modules/profil/hooks/useProfileEntity";
+import type { MilestoneEditFormData } from "@/modules/cagnotte/schemaForm";
+import { canManageObjectiveActions, getModalProjectEntityCandidate, resolveCommunOwnerIds } from "@/modules/aac/lib/objectiveHelpers";
+import { useCommunFundingContext } from "@/modules/aac/hooks/useCommunFundingContext";
+import { useCommunFundingHost } from "@/modules/aac/hooks/useCommunFundingHost";
+import { useCommunProjectEntity } from "@/modules/aac/hooks/useCommunProjectEntity";
+import { AAC_QUERY_KEYS } from "@/modules/aac/constants/queryKeys";
+import { useCommunRawDepensesDocument, COMMUN_RAW_DEPENSES_QUERY_KEY } from "@/modules/aac/hooks/useCommunRawDepenses";
+import type { MilestoneSyncDocs } from "@/modules/cagnotte/lib/milestoneSyncContext";
+import { asRecord } from "@/modules/cagnotte/utils/dataTransform";
+
+export function useCommunObjectivesController({
+  answerQuery,
+  funding,
+  depenseStepKey,
+}: {
+  answerQuery: CoFormAnswer | null;
+  /** L'enveloppe résolue par `useAacFundingResource` — un projet ou une proposition. */
+  funding?: CagnotteResource | null;
+  /**
+   * L'étape qui porte `depense[]`, résolue par la page (`config.roles.depenseStepKey`).
+   * Absente ⇒ `DEFAULT_AAC_STEP`, comme les appelants historiques.
+   */
+  depenseStepKey?: string | null;
+}) {
+  const { api, apiClient, me } = useCocolight();
+  const queryClient = useQueryClient();
+  const profileEntity = useOptionalProfileEntity();
+  const profileProjectEntity = useMemo(
+    () => (profileEntity?.entity && isProject(profileEntity.entity) ? profileEntity.entity : null),
+    [profileEntity],
+  );
+  const [isCreateActionOpen, setIsCreateActionOpen] = useState(false);
+  const [isEditActionOpen, setIsEditActionOpen] = useState(false);
+  const [isEditMilestoneOpen, setIsEditMilestoneOpen] = useState(false);
+  const [isCreateMilestoneOpen, setIsCreateMilestoneOpen] = useState(false);
+  const [selectedMilestoneId, setSelectedMilestoneId] = useState<string>("");
+  const [selectedMilestoneTitle, setSelectedMilestoneTitle] = useState<string>("");
+  const [selectedAction, setSelectedAction] = useState<ProjectAction | null>(null);
+  const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(null);
+  const [pendingDeleteMilestone, setPendingDeleteMilestone] = useState<{ itemId: string; milestone: Milestone } | null>(null);
+  const [pendingDeleteAction, setPendingDeleteAction] = useState<{ milestoneId: string; action: ProjectAction } | null>(null);
+  const [loadingIds, setLoadingIds] = useState({
+    candidateActionId: "",
+    doneActionId: "",
+    deletingActionId: "",
+    deletingItemId: "",
+    closingItemId: "",
+    restoringItemId: "",
+  });
+
+  const answerEntityId = answerQuery ? getEntityId(answerQuery) : "";
+
+  const { context: fundingContext } = useCommunFundingContext(answerQuery);
+  const { hostEntity: fundingHost, isLoading: isFundingHostLoading } =
+    useCommunFundingHost(fundingContext);
+  const { data: fundingEnvelopeData, refetch: refetchFundingEnvelope } = useFundingEnvelope(
+    answerEntityId,
+    { hostEntity: fundingHost, enabled: !isFundingHostLoading },
+  );
+
+  const resolvedProjectId = funding?.projectId || "";
+  const resolvedAnswerId = funding?.answerId || answerEntityId || "";
+
+  const fetchedProjectEntity = useCommunProjectEntity(resolvedProjectId);
+  const projectEntity = useMemo(
+    () => getModalProjectEntityCandidate(profileProjectEntity, fetchedProjectEntity, resolvedProjectId),
+    [profileProjectEntity, fetchedProjectEntity, resolvedProjectId],
+  );
+
+  const ownerIds = useMemo(() => resolveCommunOwnerIds(answerQuery), [answerQuery]);
+
+  const cagnottePerms = useCagnottePermissions(projectEntity, {
+    hasActiveItems: (funding?.items || []).some((m: CagnotteFundableItem) => m.status !== "close"),
+    resourceId: answerEntityId,
+    ownerIds,
+  });
+
+  const canManageActions = canManageObjectiveActions(resolvedProjectId);
+  const isConnected = cagnottePerms.isConnected;
+  const currentUserId = me?.serverData?.id ?? cagnottePerms.currentUserId;
+  /**
+   * `project` : les mutations d'action l'exigent (`actionCtx.project`, ci-dessous),
+   * alors que les droits d'action ne l'exigent pas — l'entité peut donc être `null`
+   * sous un bouton visible (résolution asynchrone, ou échec mis en cache par
+   * `useCommunProjectEntity`). `requireProjectEntity` le dit avant `mutate()`.
+   */
+  const { requireConnected, requireApiAacContext, requireProjectEntity } = useActionGuards({
+    isConnected,
+    apiClient,
+    projectId: resolvedProjectId,
+    answerId: resolvedAnswerId,
+    project: projectEntity,
+  });
+
+  const { data: rawDepensesDocument } = useCommunRawDepensesDocument(resolvedAnswerId, depenseStepKey ?? undefined);
+  const milestoneDocs = useMemo<MilestoneSyncDocs>(
+    () => ({
+      projectMilestones: asRecord(asRecord(projectEntity?.serverData).oceco).milestones,
+      depenses: rawDepensesDocument,
+    }),
+    [projectEntity, rawDepensesDocument],
+  );
+
+  const actionCtx = useMemo(() => ({ api, projectId: resolvedProjectId, project: projectEntity }), [api, resolvedProjectId, projectEntity]);
+  /**
+   * La fiche commun relit les paliers par une SECONDE entrée de cache, que les
+   * mutations cagnotte ne connaissent pas : `useCommunRawDepenses`. Sans le déclarer
+   * ici, clore ou supprimer un palier depuis « Suivi des actions » laissait « Besoins
+   * financiers » sur l'ancien état jusqu'au rechargement de la page.
+   *
+   * Le préfixe `[clé, answerId]` suffit : la clé complète porte l'étape en 3ᵉ
+   * position, et React Query invalide par préfixe.
+   */
+  const milestoneCtx = useMemo(() => ({
+    api,
+    rawEnvelope: fundingEnvelopeData?.rawEnvelope ?? null,
+    docs: milestoneDocs,
+    projectId: resolvedProjectId,
+    answerId: resolvedAnswerId,
+    extraInvalidate: [[COMMUN_RAW_DEPENSES_QUERY_KEY, resolvedAnswerId]],
+  }), [api, fundingEnvelopeData?.rawEnvelope, milestoneDocs, resolvedProjectId, resolvedAnswerId]);
+
+  const candidateActionMutation = useCandidateAction(actionCtx);
+  const markActionDoneMutation = useMarkActionDone(actionCtx);
+  const deleteActionMutation = useDeleteAction(actionCtx);
+
+  const activeEditMilestoneMutation = useEditMilestone(milestoneCtx);
+  const closeMilestoneMutation = useCloseMilestone(milestoneCtx);
+  const deleteMilestoneMutation = useDeleteMilestone(milestoneCtx);
+  const restoreMilestoneMutation = useRestoreMilestone(milestoneCtx);
+
+  const handleCloseMilestone = (itemId: string, milestone: Milestone) => {
+    if (!requireConnected("closeMilestone")) return;
+    if (!requireApiAacContext("closeMilestone")) return;
+    setLoadingIds((prev) => ({ ...prev, closingItemId: itemId }));
+    closeMilestoneMutation.mutate({ milestoneId: milestone.id, name: milestone.title, answerDepenseIndex: typeof milestone.answerDepenseIndex === "number" ? milestone.answerDepenseIndex : undefined }, {
+      onSuccess: async () => { await refetchFundingEnvelope(); },
+      onSettled: () => setLoadingIds((prev) => ({ ...prev, closingItemId: "" })),
+    });
+  };
+
+  const requestDeleteMilestone = (itemId: string, milestone: Milestone) => {
+    if (!requireConnected("deleteMilestone")) return;
+    if (!requireApiAacContext("deleteMilestone")) return;
+    setPendingDeleteMilestone({ itemId, milestone });
+  };
+
+  const handleRestoreMilestone = (itemId: string, milestone: Milestone) => {
+    if (!requireConnected("restoreMilestone")) return;
+    if (!requireApiAacContext("restoreMilestone")) return;
+    setLoadingIds((prev) => ({ ...prev, restoringItemId: itemId }));
+    restoreMilestoneMutation.mutate(
+      { milestoneId: milestone.id, name: milestone.title, answerDepenseIndex: typeof milestone.answerDepenseIndex === "number" ? milestone.answerDepenseIndex : undefined },
+      {
+        onSuccess: async () => { await refetchFundingEnvelope(); },
+        onSettled: () => {
+          setLoadingIds((prev) => ({ ...prev, restoringItemId: "" }));
+        },
+      },
+    );
+  };
+
+  const cancelDeleteMilestone = () => setPendingDeleteMilestone(null);
+
+  const confirmDeleteMilestone = () => {
+    if (!pendingDeleteMilestone) return;
+    const { itemId, milestone } = pendingDeleteMilestone;
+    setLoadingIds((prev) => ({ ...prev, deletingItemId: itemId }));
+    deleteMilestoneMutation.mutate({ milestoneId: milestone.id, name: milestone.title, answerDepenseIndex: typeof milestone.answerDepenseIndex === "number" ? milestone.answerDepenseIndex : undefined }, {
+      onSuccess: async () => { await refetchFundingEnvelope(); },
+      onSettled: () => {
+        setLoadingIds((prev) => ({ ...prev, deletingItemId: "" }));
+        setPendingDeleteMilestone(null);
+      },
+    });
+  };
+
+  const resolveProjectEntityForModal = useCallback(async (projectId?: string): Promise<Project | null> => {
+    const effectiveProjectId = String(projectId ?? resolvedProjectId ?? "").trim();
+    if (!effectiveProjectId) {
+      return null;
+    }
+
+    const candidate = getModalProjectEntityCandidate(profileProjectEntity, projectEntity, effectiveProjectId);
+    if (candidate) {
+      try {
+        await candidate.refresh();
+      } catch (error) {
+        console.warn("Unable to refresh cached project entity for AAC modal", error);
+      }
+      return candidate;
+    }
+
+    if (!me && !api) {
+      return null;
+    }
+
+    try {
+      const resolved = (me
+        ? await me.project({ id: effectiveProjectId })
+        : await api!.project({ id: effectiveProjectId })) as Project;
+      /**
+       * On arrive ici parce que le cache n'avait PAS l'entité — typiquement
+       * `useCommunProjectEntity` a avalé un échec et mis `null` en cache pour
+       * deux minutes. La modale reçoit `projectEntity` / `actionCtx.project`,
+       * c'est-à-dire cette valeur de cache : sans l'y écrire, elle s'ouvrirait
+       * sur un projet nul et `useCreateAction` lèverait `projectMissing` une
+       * fois la saisie faite. L'écriture sert aussi les droits (`isAdmin()`) et
+       * le repli `oceco.milestones[]`, qui lisent la même entrée.
+       */
+      queryClient.setQueryData(
+        AAC_QUERY_KEYS.COMMUN_PROJECT(effectiveProjectId, me?.id ?? null),
+        resolved,
+      );
+      return resolved;
+    } catch (error) {
+      console.warn("Unable to resolve project entity for AAC modal", error);
+      return null;
+    }
+  }, [api, me, profileProjectEntity, projectEntity, queryClient, resolvedProjectId]);
+
+  const openCreateActionModal = async (milestoneId: string, milestoneTitle: string) => {
+    if (!canManageActions) return;
+    if (!requireConnected("openCreateAction")) return;
+    if (!requireApiAacContext("openCreateAction")) return;
+
+    const resolvedEntity = await resolveProjectEntityForModal(resolvedProjectId);
+    if (!resolvedEntity && resolvedProjectId) return;
+
+    setSelectedMilestoneId(milestoneId);
+    setSelectedMilestoneTitle(milestoneTitle);
+    setIsCreateActionOpen(true);
+  };
+
+  const openCreateMilestoneModal = () => {
+    if (!requireConnected("createMilestone")) return;
+    if (!requireApiAacContext("createMilestone")) return;
+    setIsCreateMilestoneOpen(true);
+  };
+
+  const openEditMilestoneModal = (milestone: Milestone) => {
+    if (!requireConnected("editMilestone")) return;
+    if (!requireApiAacContext("editMilestone")) return;
+    setSelectedMilestone(milestone);
+    setIsEditMilestoneOpen(true);
+  };
+
+  const handleCreateAction = (milestoneId: string, milestoneTitle: string) => {
+    openCreateActionModal(milestoneId, milestoneTitle);
+  };
+
+  const handleActionCandidate = (_milestoneId: string, action: ProjectAction) => {
+    if (!requireConnected("candidate")) return;
+    if (!requireApiAacContext("candidate")) return;
+    if (!requireProjectEntity("candidateFailed")) return;
+    setLoadingIds((prev) => ({ ...prev, candidateActionId: action.id }));
+    candidateActionMutation.mutate({ actionId: action.id }, {
+      onSuccess: async () => {
+        await refetchFundingEnvelope();
+      },
+      onSettled: () => setLoadingIds((prev) => ({ ...prev, candidateActionId: "" })),
+    });
+  };
+
+  const handleActionDone = (_milestoneId: string, action: ProjectAction) => {
+    if (!requireConnected("complete")) return;
+    if (!requireApiAacContext("complete")) return;
+    if (!requireProjectEntity("actionCompleteFailed")) return;
+    setLoadingIds((prev) => ({ ...prev, doneActionId: action.id }));
+    markActionDoneMutation.mutate({ actionId: action.id, name: action.name }, {
+      onSuccess: async () => {
+        await refetchFundingEnvelope();
+      },
+      onSettled: () => setLoadingIds((prev) => ({ ...prev, doneActionId: "" })),
+    });
+  };
+
+  const requestDeleteAction = (milestoneId: string, action: ProjectAction) => {
+    if (!requireConnected("delete")) return;
+    if (!requireApiAacContext("delete")) return;
+    if (!requireProjectEntity("actionDeleteFailed")) return;
+    setPendingDeleteAction({ milestoneId, action });
+  };
+
+  const cancelDeleteAction = () => setPendingDeleteAction(null);
+
+  const confirmDeleteAction = () => {
+    if (!pendingDeleteAction) return;
+    const { action } = pendingDeleteAction;
+    setLoadingIds((prev) => ({ ...prev, deletingActionId: action.id }));
+    deleteActionMutation.mutate({ actionId: action.id, name: action.name }, {
+      onSuccess: async () => {
+        await refetchFundingEnvelope();
+      },
+      onSettled: () => {
+        setLoadingIds((prev) => ({ ...prev, deletingActionId: "" }));
+        setPendingDeleteAction(null);
+      },
+    });
+  };
+
+  const handleActionEdit = async (milestoneId: string, milestoneTitle: string, action: ProjectAction) => {
+    if (!canManageActions) return;
+    if (!requireConnected("editAction")) return;
+    if (!requireApiAacContext("editAction")) return;
+
+    const resolvedEntity = await resolveProjectEntityForModal(resolvedProjectId);
+    if (!resolvedEntity && resolvedProjectId) return;
+
+    setSelectedAction(action);
+    setSelectedMilestoneId(milestoneId);
+    setSelectedMilestoneTitle(milestoneTitle);
+    setIsEditActionOpen(true);
+  };
+
+  const handleMilestoneEditSuccess = async () => {
+    await refetchFundingEnvelope();
+  };
+
+  const milestoneEditInitialValues = useMemo<MilestoneEditFormData | null>(() => {
+    if (!selectedMilestone) return null;
+    return {
+      name: selectedMilestone.title,
+      description: selectedMilestone.description ?? "",
+      status: selectedMilestone.status,
+      targetAmount: selectedMilestone.targetAmount ?? 0,
+    };
+  }, [selectedMilestone]);
+
+  const existingMilestoneIds = useMemo(
+    () => (funding?.items ?? []).map((item: CagnotteFundableItem) => String(item.milestoneId ?? item.itemId ?? "")),
+    [funding?.items],
+  );
+
+  return {
+    // Permissions / contexte
+    cagnottePerms,
+    canManageActions,
+    isConnected,
+    currentUserId,
+    resolvedProjectId,
+    resolvedAnswerId,
+    projectEntity,
+    actionCtx,
+
+    // Etats de chargement (spinners par id)
+    loadingIds,
+
+    // Dialogs : etat d'ouverture
+    isCreateActionOpen,
+    setIsCreateActionOpen,
+    isEditActionOpen,
+    setIsEditActionOpen,
+    isEditMilestoneOpen,
+    setIsEditMilestoneOpen,
+    isCreateMilestoneOpen,
+    setIsCreateMilestoneOpen,
+    selectedMilestoneId,
+    selectedMilestoneTitle,
+    selectedAction,
+    selectedMilestone,
+    setSelectedMilestone,
+    milestoneEditInitialValues,
+    existingMilestoneIds,
+    activeEditMilestoneMutation,
+
+    // Confirmation de suppression (palier / action) en attente
+    pendingDeleteMilestone,
+    cancelDeleteMilestone,
+    confirmDeleteMilestone,
+    pendingDeleteAction,
+    cancelDeleteAction,
+    confirmDeleteAction,
+
+    // Handlers paliers
+    openCreateMilestoneModal,
+    openEditMilestoneModal,
+    handleCloseMilestone,
+    handleDeleteMilestone: requestDeleteMilestone,
+    handleMilestoneEditSuccess,
+    handleRestoreMilestone,
+
+    // Handlers actions
+    handleCreateAction,
+    handleActionCandidate,
+    handleActionDone,
+    handleActionDelete: requestDeleteAction,
+    handleActionEdit,
+
+    // Divers
+    refetchFundingEnvelope,
+  };
+}

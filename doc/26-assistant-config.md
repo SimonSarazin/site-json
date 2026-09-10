@@ -54,9 +54,9 @@ L'idée est étonnamment peu coûteuse parce que **les quatre briques dures exis
 
 ### 1. Le schéma Zod est la source de vérité… et il est exportable en JSON Schema
 
-- `src/types/site-schema.ts` (~2 360 lignes) : `SiteConfig` racine, `Header`,
-  `Footer`, `Page`, et **75 sections** discriminées par
-  `z.discriminatedUnion("type", […])` (`src/types/site-schema.ts:1523`).
+- `src/types/site-schema.ts` (~2 376 lignes) : `SiteConfig` racine, `Header`,
+  `Footer`, `Page`, et **77 sections** discriminées par
+  `z.discriminatedUnion("type", […])` (`src/types/site-schema.ts:1530`).
 - **zod 4.1.13 fournit `z.toJSONSchema()` natif** (vérifié sur place : il
   fonctionne sur nos schémas). On peut donc produire, à la volée ou au build,
   le JSON Schema de n'importe quel morceau (une section, le header, le theme…)
@@ -68,7 +68,7 @@ L'idée est étonnamment peu coûteuse parce que **les quatre briques dures exis
   le vrai schéma Zod côté serveur** (boucle d'erreurs, cf. plus bas).
 - Les schémas n'ont **aucun `.describe()`** aujourd'hui — mais les commentaires
   français du fichier et `src/components/admin/section-meta.ts` (métadonnées
-  des **75 sections** pour le panel) fournissent la matière sémantique à injecter
+  des **77 sections** pour le panel) fournissent la matière sémantique à injecter
   dans le prompt système.
 
 ### 2. Un AdminPanel existe, avec auto-formulaires Zod et persistance câblée
@@ -317,7 +317,7 @@ couleur en dur dans les sections — les tokens du thème.
 
 Deux catalogues à exposer à la skill :
 
-- **Sections** : `src/components/admin/section-meta.ts` — **75 sections** avec
+- **Sections** : `src/components/admin/section-meta.ts` — **77 sections** avec
   `label` + description française orientée intention (« Bannière principale
   avec titre, sous-titre et CTA »). C'est le menu de composition des pages ;
   `config-schema.ts section:<type>` donne ensuite la forme exacte des props.

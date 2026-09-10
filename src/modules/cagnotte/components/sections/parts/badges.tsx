@@ -81,9 +81,11 @@ export function ActionStatusBadge({ status, t }: { status: ActionStatus; t: TFun
 export function ContributorsAvatars({
   contributors,
   t,
+  showLabel = true,
 }: {
   contributors: Contributor[];
   t: TFunc;
+  showLabel?: boolean;
 }) {
   if (contributors.length === 0) return null;
   const visible = contributors.slice(0, 3);
@@ -91,16 +93,18 @@ export function ContributorsAvatars({
 
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-xs text-muted-foreground">
-        {String(t("ActionsSection.contributorsLabel"))}
-      </span>
+      {showLabel && (
+        <span className="text-xs text-muted-foreground">
+          {String(t("ActionsSection.contributorsLabel"))}
+        </span>
+      )}
       <div className="flex -space-x-1">
         {visible.map((contributor) => (
           <Tooltip key={contributor.id}>
             <TooltipTrigger asChild>
               <Avatar className="h-6 w-6 border-2 border-background">
                 <AvatarFallback className="text-[9px] bg-primary/20 text-primary-foreground">
-                  {initials(contributor.name)}
+                  {contributor.name && contributor.name !== "" ? initials(contributor.name) : ""}
                 </AvatarFallback>
               </Avatar>
             </TooltipTrigger>

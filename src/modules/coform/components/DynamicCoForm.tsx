@@ -1,3 +1,11 @@
+import { ChooseProposalField } from "./ChooseProposalField";
+import { resolveChooseContext, type ChooseProposalValue } from "../utils/chooseProposal";
+import { AapEvaluationField } from "./AapEvaluationField";
+import type { RawAapEvaluationConfig, AapEvaluationValue } from "../utils/aapEvaluation";
+import { PourContreField } from "./PourContreField";
+import type { PourContreValue } from "../utils/pourContre";
+import { SelectionField } from "./SelectionField";
+import { DEPOSIT_STEP_ID, type RawSelectionConfig, type SelectionValue } from "../utils/selection";
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useForm, Controller, useWatch, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,7 +15,9 @@ import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField } from "./FormFields";
+import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField, TitleSeparatorField } from "./FormFields";
+import { TagsField } from "./TagsField";
+import type { DepenseEntry } from "../utils/depense";
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
@@ -18,13 +28,15 @@ import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { LocationField } from "./LocationField";
 import { UploaderField } from "./UploaderField";
+import { UnsupportedField } from "./UnsupportedField";
+import { MilestoneListField } from "./MilestoneListField";
 import { TimeSlotsField } from "./TimeSlotsField";
 import { DynamicFieldsField } from "./DynamicFieldsField";
 import { CoFormBanner } from "./CoFormBanner";
 import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
 import { ErrorSummary } from "./ErrorSummary";
 import { AnswerActivityDialog } from "./AnswerActivityDialog";
-import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, CategorizedCheckboxValue, FinderValue, SimpleTableValue, MultiRadioValue, ExistingAnswerMeta } from "../types";
+import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, CategorizedCheckboxValue, FinderValue, SimpleTableValue, MultiRadioValue, ExistingAnswerMeta, TagsValue } from "../types";
 import { parseCoFormFields, generateZodSchema, generateDefaultValues, getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
 import { scrollToFieldByName } from "../utils/helpers";
 import { cn } from "@/lib/utils";
@@ -39,7 +51,13 @@ import "../i18n/i18n";
 
 interface DynamicCoFormProps {
   formData: CoFormData;
-  onSubmit: (data: SubFormData, addedOptions?: AddedOptionsMap) => void | Promise<void>;
+  /**
+   * Soumission. Résoudre `false` signale un ÉCHEC AVÉRÉ (erreur déjà traitée
+   * par l'appelant, sans throw) : le brouillon est alors conservé. Tout autre
+   * retour — `void`, `true` — vaut succès et purge le brouillon ; un throw le
+   * conserve aussi.
+   */
+  onSubmit: (data: SubFormData, addedOptions?: AddedOptionsMap) => void | boolean | Promise<void | boolean>;
   submitButtonText?: string;
   isLoading?: boolean;
   /** Valeurs par défaut pour pré-remplir le formulaire (mode édition) */
@@ -58,6 +76,12 @@ interface DynamicCoFormProps {
   onDirtyChange?: (isDirty: boolean) => void;
   /** Ref vers la fonction de soumission programmatique du formulaire */
   submitRef?: React.RefObject<(() => void) | null>;
+  /**
+   * Ref vers le rejet explicite du brouillon (`discardDraft` du hook) — pour
+   * que « Abandonner les modifications » de `CoFormModal` supprime ce que
+   * l'auto-save a déjà écrit et annule l'écriture en attente.
+   */
+  discardDraftRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
   /**
@@ -72,6 +96,18 @@ interface DynamicCoFormProps {
   formId?: string;
   /** ID utilisateur connecté — clé de draft */
   userId?: string | null;
+  /**
+   * Périmètre rendu quand ce n'est pas le formulaire entier (`stepKey`) — entre
+   * dans la clé du brouillon. Cf. `useCoFormDraft`.
+   */
+  draftScope?: string | null;
+  /**
+   * Élément auquel la réponse est rattachée (lieu, projet…) — entre dans la clé
+   * du brouillon, pour qu'une saisie faite depuis un élément ne soit pas
+   * proposée sur un autre. Cf. `useCoFormDraft`.
+   */
+  elementId?: string | null;
+  elementType?: string | null;
   /** updatedAt serveur (édition) — pour détecter les drafts obsolètes */
   baseUpdatedAt?: number | null;
   /** Active la persistance du draft. Défaut : true. */
@@ -81,6 +117,13 @@ interface DynamicCoFormProps {
    * Quand fournies, propagées par SmartCoForm depuis la query.
    */
   existingAnswerMeta?: ExistingAnswerMeta | null;
+  /**
+   * Comment rendre un champ dont le type n'a pas de composant. Défaut :
+   * `"error"` — un encadré rouge, parce qu'un type non mappé est un défaut de
+   * couverture qu'il ne faut pas taire. `"placeholder"` (bloc neutre) est
+   * réservé aux formulaires ouverts au public, cf. `UnsupportedField`.
+   */
+  unknownFieldVariant?: "error" | "placeholder";
 }
 
 /**
@@ -100,13 +143,18 @@ export function DynamicCoForm({
   autoSubmitOnBlur = false,
   onDirtyChange,
   submitRef,
+  discardDraftRef,
   lockedFields,
   restrictedFields,
   formId,
   userId,
+  draftScope,
+  elementId,
+  elementType,
   baseUpdatedAt,
   enableDraft = true,
   existingAnswerMeta,
+  unknownFieldVariant = "error",
 }: DynamicCoFormProps) {
   const t = useT("modules/coform");
   useLoadNamespace("modules/coform");
@@ -155,12 +203,25 @@ export function DynamicCoForm({
   // Persistance du brouillon en localStorage. Désactivée si conditions non réunies.
   // `answerId` scope la clé par réponse (sinon "new") : sans lui, l'édition de
   // deux réponses du même formulaire partagerait le même slot de brouillon
-  // (restauration croisée) et écraserait le brouillon de création.
-  const { restorableDraft, staleDraftInfo, saveDraft, discardDraft, purgeDraft, acknowledgeStale } =
+  // (restauration croisée) et écraserait le brouillon de création. `elementId`
+  // scope les créations par élément : sans lui, « Ajouter une salle » depuis le
+  // lieu A proposait sur le lieu B le brouillon de A — finder verrouillé compris.
+  const {
+    restorableDraft,
+    staleDraftInfo,
+    saveDraft,
+    discardDraft,
+    purgeDraft,
+    acknowledgeStale,
+    acknowledgeRestored,
+  } =
     useCoFormDraft({
       formId,
       userId,
       answerId,
+      scope: draftScope,
+      elementId,
+      elementType,
       baseUpdatedAt,
       disabled: !enableDraft || autoSubmitOnBlur,
     });
@@ -230,26 +291,59 @@ export function DynamicCoForm({
   const handleFormSubmit = useCallback(async (data: FormValues) => {
     setHasAttemptedSubmit(false);
     const hasAddedOptions = Object.keys(addedOptionsMap).some(k => addedOptionsMap[k].length > 0);
-    await onSubmit(data as SubFormData, hasAddedOptions ? addedOptionsMap : undefined);
-    // Succès : purge le draft (le serveur est désormais la source de vérité).
+    const resultat = await onSubmit(data as SubFormData, hasAddedOptions ? addedOptionsMap : undefined);
+    // Purge SEULEMENT sur succès avéré. Le `onSubmit` de `SmartCoForm` traite
+    // l'erreur lui-même (toast + `onError`) et résout `false` au lieu de
+    // relancer : purger ici quand même supprimait la clé ET le payload en
+    // attente, si bien que fermer la modale après un échec réseau perdait
+    // toute la saisie — le cas exact que le brouillon existe pour couvrir.
+    if (resultat === false) return;
     purgeDraft();
   }, [addedOptionsMap, onSubmit, purgeDraft]);
 
+  /**
+   * Reprendre un brouillon n'est PAS le jeter.
+   *
+   * Cette fonction appelait `discardDraft()` en comptant sur l'auto-save pour
+   * réécrire aussitôt, `reset(…, { keepDirty: true })` étant censé garder ce
+   * dernier actif. Or `keepDirty` CONSERVE l'état courant : au montage il vaut
+   * `false`, et le seul geste de l'utilisateur ici est justement d'avoir cliqué
+   * « Reprendre ». L'auto-save restait donc bloqué sur `if (!isDirty) return`,
+   * et l'entrée venait d'être supprimée : ouvrir, reprendre, refermer sans rien
+   * toucher perdait définitivement la saisie. En modale — où fermer est le geste
+   * courant — le brouillon se détruisait donc au moment précis où il servait.
+   *
+   * On réécrit explicitement le contenu repris (avec un timestamp de cette
+   * session, ce qui suffit ensuite au filtre à masquer la bannière) et on se
+   * contente de masquer celle-ci tout de suite. Rien n'est effacé avant une
+   * soumission réussie (`purgeDraft`) ou un rejet explicite (`discardDraft`).
+   */
   const handleRestoreDraft = useCallback(() => {
     if (!restorableDraft) return;
     const restored = restorableDraft.data[subFormId] as Record<string, unknown> | undefined;
     if (restored) {
-      // `keepDirty: true` : sans ça, un restore effacerait le draft sans le
-      // ré-écrire (l'auto-save est gated par isDirty), et un refresh juste
-      // après perdrait les données restaurées.
+      // `keepDirty` reste utile pour le cas INVERSE : si l'utilisateur avait déjà
+      // saisi avant de reprendre, `reset` remettrait le formulaire à propre et
+      // couperait l'auto-save. On ne s'appuie simplement plus dessus pour la
+      // réécriture, qui est explicite juste en dessous.
       reset({ ...defaultValues, ...restored } as FormValues, { keepDirty: true });
     }
     const restoredOptions = restorableDraft.addedOptions?.[subFormId];
     if (restoredOptions && Object.keys(restoredOptions).length > 0) {
       setAddedOptionsMap(restoredOptions);
     }
-    discardDraft();
-  }, [restorableDraft, subFormId, defaultValues, discardDraft, reset]);
+    saveDraft({
+      data: restorableDraft.data,
+      currentStepIndex: restorableDraft.currentStepIndex,
+      completedSteps: restorableDraft.completedSteps,
+      addedOptions: restorableDraft.addedOptions,
+      // On réécrit un brouillon EXISTANT : il garde sa lignée de péremption.
+      // La prendre du hook la mettrait à `null` si l'answer n'est pas encore
+      // chargée, et ce brouillon ne pourrait plus jamais être vu obsolète.
+      baseUpdatedAt: restorableDraft.baseUpdatedAt,
+    });
+    acknowledgeRestored();
+  }, [restorableDraft, subFormId, defaultValues, saveDraft, acknowledgeRestored, reset]);
 
   const handleInvalid = useCallback((invalidErrors: FieldErrors) => {
     setHasAttemptedSubmit(true);
@@ -298,6 +392,15 @@ export function DynamicCoForm({
       if (submitRef) submitRef.current = null;
     };
   }, [submitRef, handleSubmit, handleFormSubmit, handleInvalid]);
+
+  // Exposer le rejet explicite du brouillon via discardDraftRef (même patron).
+  useEffect(() => {
+    if (!discardDraftRef) return;
+    discardDraftRef.current = discardDraft;
+    return () => {
+      discardDraftRef.current = null;
+    };
+  }, [discardDraftRef, discardDraft]);
 
   // Auto-submit debounced : déclenché 600 ms après le dernier changement de
   // valeur, uniquement si la valeur courante diffère de la dernière soumise.
@@ -358,6 +461,22 @@ export function DynamicCoForm({
                 // place(Admin|Member)OnlyFields. Calculé serveur-side dans
                 // `access.restrictedFields`. Aligné sur le legacy isAdminOnly
                 // qui hide entirely (pas de readonly cosmétique).
+                //
+                // Seconde barrière en pratique : `parseCoFormFields` filtre DÉJÀ
+                // `formData.access.restrictedFields`, source que `SmartCoForm`
+                // passe aussi à cette prop — sur ce chemin la garde ne matche
+                // donc plus jamais. Elle ne couvre que le consommateur externe
+                // qui fournirait une liste par un autre chemin (les deux
+                // composants sont exportés publiquement, cf. `index.ts`).
+                //
+                // Attention si on la retire : elle teste la clé RÉSOLUE
+                // (`getOriginalFieldKey`), là où le parse teste la clé BRUTE.
+                // Sur un input `multiDecide` réindexé les deux diffèrent.
+                //
+                // La visibilité conditionnelle, elle, N'est PLUS gardée ici : un
+                // `return null` sec démonterait le champ avant que
+                // `ConditionalField` puisse animer sa sortie. Elle est traitée
+                // juste en dessous, par `!estConditionnel && !visible`.
                 if (restrictedSet.has(getOriginalFieldKey(field))) return null;
                 // Un champ PILOTÉ par une règle conditionnelle passe par
                 // `ConditionalField`, qui anime sa venue et son départ ; les
@@ -629,6 +748,114 @@ export function DynamicCoForm({
                     />
                   );
 
+                case "tags":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <TagsField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value as TagsValue}
+                          onChange={controllerField.onChange}
+                          readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
+                case "titleSeparator":
+                  return <TitleSeparatorField key={field.name} field={field} />;
+
+                // Hors `Controller` : écriture par chemin ciblé, hors soumission
+                // (cf. `utils/selection.ts`). La valeur vient donc des réponses
+                // BRUTES de l'étape, la clé étant délibérément absente de RHF.
+                //
+                // En mono-étape, les réponses de l'étape de DÉPÔT ne sont pas
+                // chargées : la colonne « réponse du candidat » reste vide, et
+                // seuls les libellés sont résolus. Le cas nominal de cet input
+                // est le wizard (relevé : 259 occurrences en `aapStep2`).
+                // Même contrat encore : hors RHF, écriture ciblée. La config vient
+                // de `form.evaluationCriteria`, pas de `params`.
+                case "aapEvaluation": {
+                  const brutEval = (externalDefaults ?? {}) as Record<string, unknown>;
+                  return (
+                    <AapEvaluationField
+                      key={field.name}
+                      field={field}
+                      subFormId={subFormId}
+                      formId={formId ?? null}
+                      config={formData?.evaluationCriteria as RawAapEvaluationConfig | undefined}
+                      value={brutEval.evaluation as AapEvaluationValue | undefined}
+                      answerId={answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
+
+                // Hors RHF également, mais scopé par CONTEXTE et non par évaluateur.
+                // Le contexte est le parent du FORMULAIRE — la clé que lit
+                // l'annuaire — pas l'entité du site (cf. `resolveChooseContext`).
+                case "chooseProposal": {
+                  const brutChoose = (externalDefaults ?? {}) as Record<string, unknown>;
+                  return (
+                    <ChooseProposalField
+                      key={field.name}
+                      field={field}
+                      subFormId={subFormId}
+                      formId={formId ?? null}
+                      value={brutChoose.choose as ChooseProposalValue | undefined}
+                      context={resolveChooseContext(formData)}
+                      answerId={answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
+
+                // Même contrat que `selection` : hors RHF, écriture ciblée.
+                case "pourContre": {
+                  const brutVote = (externalDefaults ?? {}) as Record<string, unknown>;
+                  return (
+                    <PourContreField
+                      key={field.name}
+                      field={field}
+                      subFormId={subFormId}
+                      formId={formId ?? null}
+                      value={brutVote.pourContre as PourContreValue | undefined}
+                      inputConfig={undefined}
+                      answerId={answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
+
+                case "selection": {
+                  const brut = (externalDefaults ?? {}) as Record<string, unknown>;
+                  const labelsDepot: Record<string, string> = {};
+                  const inputsDepot = formData?.inputs?.[DEPOSIT_STEP_ID]?.inputs ?? {};
+                  for (const [cle, def] of Object.entries(inputsDepot)) {
+                    if (def?.label) labelsDepot[cle] = def.label;
+                  }
+                  return (
+                    <SelectionField
+                      key={field.name}
+                      field={field}
+                      subFormId={subFormId}
+                      formId={formId ?? null}
+                      config={
+                        formData?.params?.configSelectionCriteria as RawSelectionConfig | undefined
+                      }
+                      value={brut.selection as SelectionValue | undefined}
+                      admissibility={brut.admissibility as Record<string, unknown> | undefined}
+                      depositLabels={labelsDepot}
+                      answerId={answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
+
                 case "timeSlots":
                   return (
                     <Controller
@@ -669,12 +896,33 @@ export function DynamicCoForm({
                 case "sectionDescription":
                   return <SectionDescriptionField key={field.name} field={field} />;
 
+                case "milestoneList":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <MilestoneListField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value as DepenseEntry[]}
+                          onChange={controllerField.onChange}
+                          answerId={answerId}
+                          readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
                 default:
                   return (
-                    <div key={field.name} role="alert" className="col-span-12 flex flex-col gap-1 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                      <p className="font-semibold">{field.label}</p>
-                      <p>{t("coform.errors.unknownFieldType", undefined, { type: field.type })}</p>
-                    </div>
+                    <UnsupportedField
+                      key={field.name}
+                      label={field.label}
+                      type={field.type}
+                      variant={unknownFieldVariant}
+                    />
                   );
               } };
 
@@ -708,7 +956,8 @@ export function DynamicCoForm({
                 if (!fieldElement) return null;
                 if (
                   field.componentType === "sectionTitle" ||
-                  field.componentType === "sectionDescription"
+                  field.componentType === "sectionDescription" ||
+                  field.componentType === "titleSeparator"
                 ) {
                   return fieldElement;
                 }
@@ -763,8 +1012,12 @@ export function DynamicCoForm({
                 </div>
                 {formData.inputs?.[subForm.subFormId]?.info && (
                   <CardDescription className="text-base">
+                    {/* Description d'étape issue de la définition du formulaire
+                        (admin AAP) → profil DOMPurify par défaut. Cf.
+                        `ProseContent` / `@/lib/sanitize`. */}
                     <ProseContent
                       text={formData.inputs[subForm.subFormId].info as string}
+                      source="formDefinition"
                       className="prose prose-sm dark:prose-invert max-w-none"
                     />
                   </CardDescription>

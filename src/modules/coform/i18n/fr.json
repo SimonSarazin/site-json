@@ -68,6 +68,7 @@
         "serverError": "Erreur lors de la soumission",
         "toast": "Le formulaire comporte des erreurs"
       },
+      "unsupportedFieldPlaceholder": "Ce champ n'est pas encore disponible ici — il reste renseignable depuis l'ancienne interface.",
       "stepIncomplete": "Complétez d'abord l'étape « {{name}} »."
     },
     "banner": {
@@ -461,6 +462,11 @@
         "pendingValidation": "Demande en attente — patientez la validation par un admin."
       }
     },
+    "tags": {
+      "placeholder": "Ajouter un mot-clé…",
+      "remove": "Retirer le tag {{tag}}",
+      "searching": "Recherche…"
+    },
     "timeSlots": {
       "day": "Jour",
       "dayPlaceholder": "Choisir un jour",
@@ -488,6 +494,74 @@
       "loadError": "Impossible de charger les options.",
       "notConfigured": "Ce champ n'est pas encore configuré.",
       "orphans": "Réponses enregistrées ne correspondant plus à une option proposée :"
+    },
+    "depense": {
+      "addTitle": "Ajouter une dépense",
+      "editTitle": "Modifier la dépense",
+      "dialogDescription": "Les dépenses sont enregistrées avec votre réponse.",
+      "name": "Intitulé",
+      "nameRequired": "L'intitulé est requis",
+      "description": "Description",
+      "amount": "Montant cible",
+      "amountInvalid": "Le montant doit être positif",
+      "add": "Ajouter",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "empty": "Aucune dépense pour l'instant."
+    },
+    "selection": {
+      "criterion": "Critère",
+      "candidateValue": "Réponse du candidat",
+      "note": "Note",
+      "myMean": "Mon évaluation",
+      "allMean": "Tous les évaluateurs",
+      "evaluatorCount_one": "{{count}} évaluateur",
+      "evaluatorCount_other": "{{count}} évaluateurs",
+      "noCriteria": "Aucun critère d'évaluation n'a été configuré.",
+      "admissibility": "Admissibilité",
+      "admissible": "Admissible",
+      "inadmissible": "Non admissible",
+      "otherStatus": "Avis actuel : {{value}}",
+      "noteOutOfRange": "La note doit être comprise entre 0 et {{max}}",
+      "toasts": {
+        "noteSaved": "Note enregistrée",
+        "noteFailed": "La note n'a pas pu être enregistrée",
+        "admissibilitySaved": "Avis d'admissibilité enregistré",
+        "admissibilityFailed": "L'avis n'a pas pu être enregistré"
+      }
+    },
+    "pourContre": {
+      "for": "Pour",
+      "neutral": "Neutre",
+      "against": "Contre",
+      "yourVote": "Votre vote",
+      "thanks": "Merci pour votre vote : {{vote}}",
+      "voters": "Votants",
+      "distribution": "Répartition des votes",
+      "minimum": "Seuil attendu : {{value}}",
+      "toasts": {
+        "voteSaved": "Vote enregistré",
+        "voteFailed": "Le vote n'a pas pu être enregistré"
+      }
+    },
+    "aapEvaluation": {
+      "noCriteria": "Aucun critère d'évaluation n'a été configuré.",
+      "noteOutOfRange": "La note doit être comprise entre 0 et {{max}}",
+      "toasts": {
+        "noteSaved": "Note enregistrée",
+        "noteFailed": "La note n'a pas pu être enregistrée"
+      }
+    },
+    "chooseProposal": {
+      "yes": "Oui",
+      "no": "Non",
+      "legend": "Publication dans l'annuaire",
+      "context": "Contexte : {{name}}",
+      "alsoSelected": "Également retenu par : {{names}}",
+      "toasts": {
+        "saved": "Choix enregistré",
+        "failed": "Le choix n'a pas pu être enregistré"
+      }
     },
     "field": {
       "required": "obligatoire"

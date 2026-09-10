@@ -72,7 +72,7 @@ function createFinancerEntry({
   return entry;
 }
 
-function getFormIdFromAnswerData(currentAnswerData: AnswerItemNormalized): string {
+export function getFormIdFromAnswerData(currentAnswerData: AnswerItemNormalized): string {
   const project = toRecord(currentAnswerData.project);
   const answers = toRecord(currentAnswerData.answers);
   const answerMeta = toRecord(currentAnswerData.answer);

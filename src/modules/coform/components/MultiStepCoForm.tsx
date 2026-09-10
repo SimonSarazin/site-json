@@ -1,4 +1,12 @@
-import { useCallback, useRef, useEffect, useMemo, useState } from "react";
+import { ChooseProposalField } from "./ChooseProposalField";
+import { resolveChooseContext, type ChooseProposalValue } from "../utils/chooseProposal";
+import { AapEvaluationField } from "./AapEvaluationField";
+import type { RawAapEvaluationConfig, AapEvaluationValue } from "../utils/aapEvaluation";
+import { PourContreField } from "./PourContreField";
+import type { PourContreValue } from "../utils/pourContre";
+import { SelectionField } from "./SelectionField";
+import { DEPOSIT_STEP_ID, type RawSelectionConfig, type SelectionValue } from "../utils/selection";
+import { Fragment, useCallback, useRef, useEffect, useMemo, useState } from "react";
 import { Controller, type FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 import { Activity } from "lucide-react";
@@ -13,7 +21,9 @@ import { CoFormProvider } from "../contexts/CoFormProvider";
 import { useCoForm } from "../hooks/useCoForm";
 import { useCoFormStep } from "../hooks/useCoFormStep";
 import { useCoFormNavigation, useCoFormSubmit } from "../hooks/useCoFormNavigation";
-import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField } from "./FormFields";
+import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField, TitleSeparatorField } from "./FormFields";
+import { TagsField } from "./TagsField";
+import type { DepenseEntry } from "../utils/depense";
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
@@ -28,6 +38,8 @@ import { AnswerActivityDialog } from "./AnswerActivityDialog";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
+import { MilestoneListField } from "./MilestoneListField";
+import { UnsupportedField } from "./UnsupportedField";
 import { CoFormBanner } from "./CoFormBanner";
 import { StepsNav } from "./StepsNav";
 import { useConditionalFields } from "../hooks/useConditionalFields";
@@ -36,7 +48,7 @@ import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
 import { getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
 import { buildStepItems, invalidSteps, isSubFormValid } from "../utils/stepsNav";
 import { scrollToFieldByName } from "../utils/helpers";
-import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, CategorizedCheckboxValue, FinderValue, SimpleTableValue, ExistingAnswerMeta } from "../types";
+import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, CategorizedCheckboxValue, FinderValue, SimpleTableValue, ExistingAnswerMeta, TagsValue } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
 
 interface MultiStepCoFormProps {
@@ -70,6 +82,11 @@ interface MultiStepCoFormProps {
   initialStepKey?: string;
   /** Appelé quand l'état "modifié" change (utilisable par CoFormModal) */
   onDirtyChange?: (isDirty: boolean) => void;
+  /**
+   * Ref vers le rejet explicite du brouillon — renseignée par `CoFormProvider`,
+   * détenteur de `useCoFormDraft` sur ce chemin. Cf. `SmartCoForm`.
+   */
+  discardDraftRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
   /**
@@ -82,6 +99,15 @@ interface MultiStepCoFormProps {
   restrictedFields?: string[];
   /** ID du formulaire — clé de draft localStorage. */
   formId?: string;
+  /** Périmètre du brouillon quand une seule étape est rendue. Cf. `useCoFormDraft`. */
+  draftScope?: string | null;
+  /**
+   * Élément auquel la réponse est rattachée (lieu, projet…) — entre dans la clé
+   * du brouillon, pour qu'une saisie faite depuis un élément ne soit pas
+   * proposée sur un autre. Cf. `useCoFormDraft`.
+   */
+  elementId?: string | null;
+  elementType?: string | null;
   /** ID utilisateur connecté — clé de draft localStorage. */
   userId?: string | null;
   /** updatedAt serveur (édition) — pour détecter les drafts obsolètes. */
@@ -94,6 +120,11 @@ interface MultiStepCoFormProps {
    * ouvre la modale AnswerActivityDialog avec l'historique des modifs.
    */
   existingAnswerMeta?: ExistingAnswerMeta | null;
+  /**
+   * Comment rendre un champ dont le type n'a pas de composant. Défaut :
+   * `"error"`. Cf. `UnsupportedField`.
+   */
+  unknownFieldVariant?: "error" | "placeholder";
 }
 
 /**
@@ -116,13 +147,18 @@ export function MultiStepCoForm({
   answerId,
   initialStepKey,
   onDirtyChange,
+  discardDraftRef,
   lockedFields,
   restrictedFields,
   formId,
+  draftScope,
+  elementId,
+  elementType,
   userId,
   baseUpdatedAt,
   enableDraft = true,
   existingAnswerMeta,
+  unknownFieldVariant = "error",
 }: MultiStepCoFormProps) {
   return (
     <CoFormProvider
@@ -134,9 +170,13 @@ export function MultiStepCoForm({
       answerId={answerId}
       initialStepKey={initialStepKey}
       formId={formId}
+      draftScope={draftScope}
+      elementId={elementId}
+      elementType={elementType}
       userId={userId}
       baseUpdatedAt={baseUpdatedAt}
       enableDraft={enableDraft}
+      discardDraftRef={discardDraftRef}
     >
       <MultiStepCoFormContent
         variant={variant}
@@ -149,6 +189,7 @@ export function MultiStepCoForm({
         restrictedFields={restrictedFields}
         className={className}
         existingAnswerMeta={existingAnswerMeta}
+        unknownFieldVariant={unknownFieldVariant}
       />
     </CoFormProvider>
   );
@@ -168,6 +209,7 @@ function MultiStepCoFormContent({
   restrictedFields,
   className,
   existingAnswerMeta,
+  unknownFieldVariant,
 }: {
   variant: CoFormVariant;
   showProgress: boolean;
@@ -179,6 +221,7 @@ function MultiStepCoFormContent({
   restrictedFields?: string[];
   className?: string;
   existingAnswerMeta?: ExistingAnswerMeta | null;
+  unknownFieldVariant: "error" | "placeholder";
 }) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -437,8 +480,12 @@ function MultiStepCoFormContent({
           </div>
           {coform.formData?.inputs?.[fields.subFormId]?.info && (
             <CardDescription className="text-base">
+              {/* `inputs[subFormId].info` = description de l'étape, écrite par
+                  l'admin de l'AAP dans la définition du formulaire → profil
+                  DOMPurify par défaut. Cf. `ProseContent` / `@/lib/sanitize`. */}
               <ProseContent
                 text={coform.formData.inputs[fields.subFormId].info as string}
+                source="formDefinition"
                 className="prose prose-sm dark:prose-invert max-w-none"
               />
             </CardDescription>
@@ -453,6 +500,22 @@ function MultiStepCoFormContent({
                 // place(Admin|Member)OnlyFields. Calculé serveur-side dans
                 // `access.restrictedFields`. Aligné sur le legacy isAdminOnly
                 // qui hide entirely (pas de readonly cosmétique).
+                //
+                // Seconde barrière en pratique : `parseCoFormFields` filtre DÉJÀ
+                // `formData.access.restrictedFields`, source que `SmartCoForm`
+                // passe aussi à cette prop — sur ce chemin la garde ne matche
+                // donc plus jamais. Elle ne couvre que le consommateur externe
+                // qui fournirait une liste par un autre chemin (les deux
+                // composants sont exportés publiquement, cf. `index.ts`).
+                //
+                // Attention si on la retire : elle teste la clé RÉSOLUE
+                // (`getOriginalFieldKey`), là où le parse teste la clé BRUTE.
+                // Sur un input `multiDecide` réindexé les deux diffèrent.
+                //
+                // La visibilité conditionnelle, elle, N'est PLUS gardée ici : un
+                // `return null` sec démonterait le champ avant que
+                // `ConditionalField` puisse animer sa sortie. Elle est traitée
+                // juste en dessous, par `!estConditionnel && !visible`.
                 if (restrictedSet.has(getOriginalFieldKey(field))) return null;
                 // Un champ PILOTÉ par une règle conditionnelle passe par
                 // `ConditionalField`, qui anime sa venue et son départ ; les
@@ -749,18 +812,150 @@ function MultiStepCoFormContent({
                     />
                   );
 
+                case "tags":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <TagsField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value as TagsValue}
+                          onChange={controllerField.onChange}
+                          readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
+                case "titleSeparator":
+                  return <TitleSeparatorField key={field.name} field={field} />;
+
+                // `selection` ne passe PAS par `Controller` : la valeur est
+                // scopée par évaluateur et s'écrit par chemin ciblé, hors
+                // soumission (cf. `utils/selection.ts`). On l'alimente donc
+                // depuis les réponses BRUTES du contexte, pas depuis l'état RHF
+                // — où la clé est délibérément absente.
+                // Même contrat encore : hors RHF, écriture ciblée. La config vient
+                // de `form.evaluationCriteria`, pas de `params`.
+                case "aapEvaluation": {
+                  const brutEval = (coform.stepState.stepsData[fields.subFormId] ?? {}) as Record<string, unknown>;
+                  return (
+                    <AapEvaluationField
+                      key={field.name}
+                      field={field}
+                      subFormId={fields.subFormId}
+                      formId={formId}
+                      config={coform.formData?.evaluationCriteria as RawAapEvaluationConfig | undefined}
+                      value={brutEval.evaluation as AapEvaluationValue | undefined}
+                      answerId={coform.answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
+
+                // Hors RHF également, mais scopé par CONTEXTE et non par évaluateur.
+                // Le contexte est le parent du FORMULAIRE — la clé que lit
+                // l'annuaire — pas l'entité du site (cf. `resolveChooseContext`).
+                case "chooseProposal": {
+                  const brutChoose = (coform.stepState.stepsData[fields.subFormId] ?? {}) as Record<string, unknown>;
+                  return (
+                    <ChooseProposalField
+                      key={field.name}
+                      field={field}
+                      subFormId={fields.subFormId}
+                      formId={formId}
+                      value={brutChoose.choose as ChooseProposalValue | undefined}
+                      context={resolveChooseContext(coform.formData)}
+                      answerId={coform.answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
+
+                // Même contrat que `selection` : hors RHF, écriture ciblée.
+                case "pourContre": {
+                  const brutVote = (coform.stepState.stepsData[fields.subFormId] ?? {}) as Record<string, unknown>;
+                  return (
+                    <PourContreField
+                      key={field.name}
+                      field={field}
+                      subFormId={fields.subFormId}
+                      formId={formId}
+                      value={brutVote.pourContre as PourContreValue | undefined}
+                      inputConfig={undefined}
+                      answerId={coform.answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
+
+                case "selection": {
+                  const brut = (coform.stepState.stepsData[fields.subFormId] ??
+                    {}) as Record<string, unknown>;
+                  const depot = (coform.stepState.stepsData[DEPOSIT_STEP_ID] ??
+                    {}) as Record<string, unknown>;
+                  const labelsDepot: Record<string, string> = {};
+                  const inputsDepot = coform.formData?.inputs?.[DEPOSIT_STEP_ID]?.inputs ?? {};
+                  for (const [cle, def] of Object.entries(inputsDepot)) {
+                    if (def?.label) labelsDepot[cle] = def.label;
+                  }
+                  return (
+                    <SelectionField
+                      key={field.name}
+                      field={field}
+                      subFormId={fields.subFormId}
+                      formId={formId}
+                      config={
+                        coform.formData?.params?.configSelectionCriteria as
+                          | RawSelectionConfig
+                          | undefined
+                      }
+                      value={brut.selection as SelectionValue | undefined}
+                      admissibility={brut.admissibility as Record<string, unknown> | undefined}
+                      depositAnswers={depot}
+                      depositLabels={labelsDepot}
+                      answerId={coform.answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
+
                 case "sectionTitle":
                   return <SectionTitleField key={field.name} field={field} />;
 
                 case "sectionDescription":
                   return <SectionDescriptionField key={field.name} field={field} />;
 
+                case "milestoneList":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <MilestoneListField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value as DepenseEntry[]}
+                          onChange={controllerField.onChange}
+                          answerId={coform.answerId}
+                          readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
                 default:
                   return (
-                    <div key={field.name} role="alert" className="col-span-12 flex flex-col gap-1 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                      <p className="font-semibold">{field.label}</p>
-                      <p>{t("coform.errors.unknownFieldType", undefined, { type: field.type })}</p>
-                    </div>
+                    <UnsupportedField
+                      key={field.name}
+                      label={field.label}
+                      type={field.type}
+                      variant={unknownFieldVariant}
+                    />
                   );
               } };
 
@@ -794,7 +989,8 @@ function MultiStepCoFormContent({
                 if (!fieldElement) return null;
                 if (
                   field.componentType === "sectionTitle" ||
-                  field.componentType === "sectionDescription"
+                  field.componentType === "sectionDescription" ||
+                  field.componentType === "titleSeparator"
                 ) {
                   return fieldElement;
                 }

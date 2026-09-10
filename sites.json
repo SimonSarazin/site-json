@@ -37,7 +37,10 @@
     "css": "index-sport-sante-bien-etre",
     "images": "sportSanteBienetre",
     "coolifyApp": "site-json-ssbe",
-    "domain": "ssbe.00.re"
+    "domain": "ssbe.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "associationEkilibre",
@@ -165,5 +168,13 @@
     "images": "equipementsSportifs974",
     "coolifyApp": "site-json-equipements-sportifs-scolaires",
     "domain": "equipements-sportifs-scolaires.00.re"
+  },
+  {
+    "slug": "federationDesCae",
+    "config": "config.prod.federationDesCae.json",
+    "css": "index-rezo-la-mer",
+    "images": "federationDesCae",
+    "coolifyApp": "site-json-federation-des-cae",
+    "domain": "federation-des-cae.00.re"
   }
 ]

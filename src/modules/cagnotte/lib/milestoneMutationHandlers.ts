@@ -12,6 +12,8 @@ import {
   getEntityIdFromUnknown,
   getEnvelopeProjects,
   resolveMilestoneSyncContext,
+  type MilestoneSyncContext,
+  type MilestoneSyncDocs,
 } from '@/modules/cagnotte/lib/milestoneSyncContext';
 import type { FundingMilestoneStatus } from "@/modules/cagnotte/types";
 
@@ -23,9 +25,16 @@ type UpdateSource = Api | null;
 type MilestoneMutationBaseParams = {
   source: UpdateSource;
   rawEnvelope: unknown;
+  /**
+   * Documents bruts de la ressource (`project.oceco.milestones`, `depense`), servant
+   * de REPLI quand l'enveloppe interrogée ne la porte pas — cas d'un commun déposé
+   * sous un autre contexte. À passer SANS coercion (cf. `MilestoneSyncDocs`).
+   */
+  docs?: MilestoneSyncDocs | null;
   projectId: string;
   answerId: string;
   milestoneId: string;
+  answerDepenseIndex?: number;
 };
 
 type EditMilestoneParams = MilestoneMutationBaseParams & {
@@ -33,6 +42,11 @@ type EditMilestoneParams = MilestoneMutationBaseParams & {
   description: string;
   status: FundingMilestoneStatus;
   targetAmount: number;
+  /**
+   * Index direct dans `answer.answers.aapStep1.depense[]`, utilisé pour cibler la
+   * dépense quand `milestoneId` est vide
+   */
+  answerDepenseIndex?: number;
 };
 
 type CloseMilestoneParams = MilestoneMutationBaseParams;
@@ -59,9 +73,106 @@ function requireSource(source: UpdateSource): Api {
   return source;
 }
 
-function resolveSyncContextOrThrow(params: MilestoneMutationBaseParams) {
+/**
+ * Palier « answer-only » : la dépense ne référence aucun palier projet (`milestoneId`
+ * vide) et l'appelant la désigne par sa position dans `depense[]`.
+ *
+ * Cas atteignable depuis la fiche commun d'un commun SANS projet lié :
+ * `buildItemsFromRawDepenses` produit `{ milestoneId: "", depenseIndex }`, et
+ * `MilestoneEditDialog` accepte `!milestoneId` dès qu'un index est fourni.
+ */
+function isAnswerOnlyMilestone(params: MilestoneMutationBaseParams): boolean {
+  return !params.milestoneId && typeof params.answerDepenseIndex === 'number';
+}
+
+/**
+ * Le `milestone` que porte la dépense visée par `answerDepenseIndex`, relu dans la
+ * ligne de la ressource dans l'enveloppe puis, à défaut, dans `docs` — `""` si
+ * aucun des deux ne le porte.
+ *
+ * L'enveloppe d'abord : c'est elle que la réparation de `useCagnotteAdapter`
+ * invalide en premier, `docs.depenses` partage le cache de l'écran (cf. ci-dessous).
+ * Même appariement de ligne que `getMilestoneConstraints`.
+ */
+function findDepenseMilestoneIdAtIndex(params: MilestoneMutationBaseParams): string {
+  const index = params.answerDepenseIndex;
+  if (typeof index !== 'number') return '';
+
+  const readAt = (depenses: unknown): string =>
+    Array.isArray(depenses) ? String(asRecord(depenses[index]).milestone ?? '').trim() : '';
+
+  for (const projectRow of getEnvelopeProjects(params.rawEnvelope)) {
+    const projectData = asRecord(projectRow.serverData ?? projectRow);
+    const candidateAnswerId = getEntityIdFromUnknown(projectData) || String(projectData.answer ?? '').trim();
+    const candidateProjectId =
+      String(asRecord(projectData.project).id ?? '').trim() ||
+      getEntityIdFromUnknown(projectRow.projectIdObj) ||
+      String(projectData.projectId ?? '').trim();
+
+    const matchesAnswer = params.answerId && candidateAnswerId === params.answerId;
+    const matchesProject = params.projectId && candidateProjectId === params.projectId;
+    if (!matchesAnswer && !matchesProject) continue;
+
+    const depensesFromAnswer = asRecord(asRecord(projectData.answers).aapStep1).depense;
+    const fromEnvelope = readAt(Array.isArray(projectData.depenses) ? projectData.depenses : depensesFromAnswer);
+    if (fromEnvelope) return fromEnvelope;
+  }
+
+  return readAt(params.docs?.depenses);
+}
+
+/**
+ * Complète un `milestoneId` vide par celui que la dépense visée porte DÉJÀ — avec
+ * projet lié seulement.
+ *
+ * Le cas : commun avec projet lié, dépense legacy sans `milestone`. La réparation
+ * de `useCagnotteAdapter` fabrique un id et l'écrit sur le projet ET sur
+ * `depense[i].milestone`, mais l'écran peut encore tenir l'item d'AVANT
+ * (`{ milestoneId: "", depenseIndex: i }`, cf. `buildItemsFromRawDepenses`, qui
+ * reprend l'id de la ligne brute). Conclure « answer-only » ici échouait en
+ * `missingProjectSide` : le palier existe bien des deux côtés — c'est son id qu'il
+ * faut relire, pas l'absence d'id qu'il faut croire.
+ *
+ * Appliqué aux PARAMS, et pas seulement à la résolution du contexte : les
+ * contraintes (`getMilestoneConstraints`) apparient actions et dépenses par
+ * `params.milestoneId`, et doivent voir le même palier.
+ *
+ * Sans projet, rien à relire : un `milestone` sur la dépense n'y désigne rien, et
+ * l'index seul fait foi (palier answer-only, cf. `isAnswerOnlyMilestone`).
+ */
+function withRecoveredMilestoneId<T extends MilestoneMutationBaseParams>(params: T): T {
+  if (params.milestoneId || !params.projectId || typeof params.answerDepenseIndex !== 'number') {
+    return params;
+  }
+  const recovered = findDepenseMilestoneIdAtIndex(params);
+  return recovered ? { ...params, milestoneId: recovered } : params;
+}
+
+function resolveSyncContextOrThrow(params: MilestoneMutationBaseParams): MilestoneSyncContext {
+  // Rien à résoudre pour un palier answer-only : il n'a PAS de côté projet, et son
+  // côté réponse est déjà connu. Les résolveurs, eux, rendent `null` sur un
+  // `milestoneId` vide (garde contre l'appariement de la première entrée sans
+  // champ, cf. `resolveMilestoneSyncContextFromDocs`) — passer par eux lèverait
+  // `syncContextMissing` avant même de lire `answerDepenseIndex`.
+  //
+  // Avec projet lié, on n'arrive ici qu'après `withRecoveredMilestoneId` : la
+  // dépense visée ne porte d'id nulle part, le côté projet manque VRAIMENT.
+  //
+  // `fromDocs: true` : sans enveloppe interrogée, les actions restent invisibles —
+  // sans conséquence ici, un `milestoneId` vide n'apparie aucune action (cf.
+  // `getMilestoneConstraints`).
+  if (isAnswerOnlyMilestone(params)) {
+    return {
+      projectMilestoneIndex: null,
+      answerDepenseIndex: params.answerDepenseIndex as number,
+      description: '',
+      fromDocs: true,
+    };
+  }
+
   const syncContext = resolveMilestoneSyncContext({
     rawEnvelope: params.rawEnvelope,
+    docs: params.docs,
     projectId: params.projectId,
     answerId: params.answerId,
     milestoneId: params.milestoneId,
@@ -74,7 +185,17 @@ function resolveSyncContextOrThrow(params: MilestoneMutationBaseParams) {
   return syncContext;
 }
 
-function getMilestoneConstraints(params: MilestoneMutationBaseParams): MilestoneConstraints {
+function resolveAnswerDepenseIndex(
+  params: MilestoneMutationBaseParams,
+  syncContext: { answerDepenseIndex: number | null },
+): number | null {
+  return typeof params.answerDepenseIndex === 'number' ? params.answerDepenseIndex : syncContext.answerDepenseIndex;
+}
+
+function getMilestoneConstraints(
+  params: MilestoneMutationBaseParams,
+  answerDepenseIndex: number | null,
+): MilestoneConstraints {
   const projects = getEnvelopeProjects(params.rawEnvelope);
 
   for (const projectRow of projects) {
@@ -90,10 +211,22 @@ function getMilestoneConstraints(params: MilestoneMutationBaseParams): Milestone
     if (!matchesAnswer && !matchesProject) continue;
 
     const actions = Array.isArray(projectData.actions) ? projectData.actions : [];
-    const actionsForMilestone = actions.filter((rawAction) => {
-      const action = asRecord(rawAction);
-      return String(asRecord(action.milestone).milestoneId ?? '').trim() === params.milestoneId;
-    });
+    /**
+     * Un `milestoneId` VIDE ne désigne aucun palier — il ne doit donc apparier
+     * AUCUNE action.
+     *
+     * Sans ce garde, la comparaison matche toute action dépourvue de palier
+     * (`asRecord(undefined)` → `{}` → `''`), et `deleteMilestoneWithSync` les supprime
+     * une à une. Le cas est atteignable depuis la fiche commun : un item answer-only
+     * porte un `milestoneId` vide, que `MilestoneEditDialog` accepte dès qu'un
+     * `answerDepenseIndex` est fourni.
+     */
+    const actionsForMilestone = params.milestoneId
+      ? actions.filter((rawAction) => {
+          const action = asRecord(rawAction);
+          return String(asRecord(action.milestone).milestoneId ?? '').trim() === params.milestoneId;
+        })
+      : [];
 
     const actionIds = actionsForMilestone
       .map((rawAction) => getEntityIdFromUnknown(rawAction))
@@ -116,9 +249,9 @@ function getMilestoneConstraints(params: MilestoneMutationBaseParams): Milestone
 
     const canClose = actionsForMilestone.length === 0 || allActionsDone;
 
-    const depensesForMilestone = depenses.filter(
-      (rawDepense) => String(asRecord(rawDepense).milestone ?? '').trim() === params.milestoneId
-    );
+    const depensesForMilestone = params.milestoneId
+      ? depenses.filter((rawDepense) => String(asRecord(rawDepense).milestone ?? '').trim() === params.milestoneId)
+      : (answerDepenseIndex !== null && depenses[answerDepenseIndex] ? [depenses[answerDepenseIndex]] : []);
 
     const hasFunding = depensesForMilestone.some((rawDepense) => {
       const financerList = Array.isArray(asRecord(rawDepense).financer) ? (asRecord(rawDepense).financer as unknown[]) : [];
@@ -128,156 +261,270 @@ function getMilestoneConstraints(params: MilestoneMutationBaseParams): Milestone
     return { actionIds, hasFunding, allActionsDone , canClose };
   }
 
+  // Repli sans enveloppe : on calcule ce que les documents en main permettent de
+  // savoir. `hasFunding` reste EXACT (les financeurs sont sur la dépense) ; côté
+  // actions, on ne voit RIEN — elles ne sont ni dans `oceco.milestones[]` ni dans
+  // `depense[]`, et le SDK n'expose aucun listage des actions d'un projet hors
+  // enveloppe. Cf. `resolveMilestoneSyncContextFromDocs`.
+  //
+  // Deux conséquences, traitées différemment :
+  //  - CLÔTURE : `canClose` vrai. Compromis assumé — la garde
+  //    `cannotCloseWithOpenActions` est levée ici, faute de pouvoir l'évaluer, plutôt
+  //    que de bloquer la clôture d'un palier légitime (cf. doc/18 §Pièges n°2bis).
+  //  - SUPPRESSION : `actionIds` vide ne veut PAS dire « aucune action ». Supprimer
+  //    sur cette base laisserait des actions orphelines pointant un `milestoneId`
+  //    disparu, en contournant la garde `actionIdMissing` du chemin enveloppe. D'où
+  //    le refus explicite dans `deleteMilestoneWithSync` (`syncContext.fromDocs`).
+  if (params.docs) {
+    const depenses = Array.isArray(params.docs.depenses) ? (params.docs.depenses as unknown[]) : [];
+    const depensesForMilestone = params.milestoneId
+      ? depenses.filter((rawDepense) => String(asRecord(rawDepense).milestone ?? '').trim() === params.milestoneId)
+      : (answerDepenseIndex !== null && depenses[answerDepenseIndex] ? [depenses[answerDepenseIndex]] : []);
+
+    const hasFunding = depensesForMilestone.some((rawDepense) => {
+      const financerList = Array.isArray(asRecord(rawDepense).financer) ? (asRecord(rawDepense).financer as unknown[]) : [];
+      return financerList.some((rawFinancer) => Number(asRecord(rawFinancer).amount ?? 0) > 0);
+    });
+
+    return { actionIds: [], hasFunding, allActionsDone: false, canClose: true };
+  }
+
   return { actionIds: [], hasFunding: false, allActionsDone: false, canClose : false };
 }
 
-export async function editMilestoneWithSync(params: EditMilestoneParams): Promise<void> {
+export async function editMilestoneWithSync(input: EditMilestoneParams): Promise<void> {
+  const params = withRecoveredMilestoneId(input);
   const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
+  const hasProject = Boolean(params.projectId);
 
-  if (syncContext.projectMilestoneIndex === null) {
-    throw new Error(t("milestone.errors.incompleteForEdit.missingProjectSide"));
-  }
-  if (syncContext.answerDepenseIndex === null) {
+  const answerDepenseIndex = resolveAnswerDepenseIndex(params, syncContext);
+
+  if (answerDepenseIndex === null || !params.answerId) {
     throw new Error(t("milestone.errors.incompleteForEdit.missingAnswerSide"));
+  }
+  if (hasProject && syncContext.projectMilestoneIndex === null) {
+    throw new Error(t("milestone.errors.incompleteForEdit.missingProjectSide"));
   }
 
   const [project, answer] = await Promise.all([
-    api.project({ id: params.projectId }),
+    hasProject ? api.project({ id: params.projectId }) : null,
     api.answer({ id: params.answerId }),
   ]);
 
-  await updateProjectMilestoneFields({
-    project,
-    index: syncContext.projectMilestoneIndex,
-    fields: {
-      name: params.name,
-      description: params.description,
-      status: params.status,
-    },
-  });
+  const writes: Promise<unknown>[] = [
+    updateAnswerDepenseFields({
+      answer,
+      index: answerDepenseIndex,
+      fields: {
+        poste: params.name,
+        price: params.targetAmount,
+        // La description vit sur la DÉPENSE, projet lié ou non : c'est
+        // `depense.description` que relisent la fiche et la modale
+        // (`useCagnotteAdapter`, `buildItemsFromRawDepenses`,
+        // `fundableItemToMilestone` → `MilestoneEditDialog`). Ne l'écrire que sur
+        // `oceco.milestones[]` la rendait invisible dès qu'un projet était lié.
+        // Avec projet, le palier la reçoit AUSSI (ci-dessous) — même double tenue
+        // que `poste`/`name` et `include`/`status`, cf. doc/18.
+        description: params.description,
+      },
+    }),
+  ];
 
-  await updateAnswerDepenseFields({
-    answer,
-    index: syncContext.answerDepenseIndex,
-    fields: {
-      poste: params.name,
-      price: params.targetAmount,
-    },
-  });
+  // Log des modifications de montant (`depense.historique[]`) — source
+  // observatoire, cf. `AacLog`. Comparé à la valeur AVANT écriture ; pas de
+  // log si le montant est inchangé (seuls poste/description ont changé).
+  const previousDepenseList = asRecord(asRecord(answer.serverData).answers).aapStep1;
+  const previousDepenses = Array.isArray(asRecord(previousDepenseList).depense)
+    ? (asRecord(previousDepenseList).depense as unknown[])
+    : [];
+  const previousPrice = Number(asRecord(previousDepenses[answerDepenseIndex]).price ?? 0);
+  const nextPrice = Number(params.targetAmount ?? 0);
+
+  if (previousPrice !== nextPrice) {
+    writes.push(
+      answer.updateField(
+        `answers.aapStep1.depense.${answerDepenseIndex}.historique`,
+        { champ: "price", avant: previousPrice, apres: nextPrice, quand: new Date().toISOString() },
+        { arrayForm: true },
+      ),
+    );
+  }
+
+  if (hasProject) {
+    writes.push(
+      updateProjectMilestoneFields({
+        project: project!,
+        index: syncContext.projectMilestoneIndex as number,
+        fields: {
+          name: params.name,
+          description: params.description,
+          status: params.status,
+        },
+      }),
+    );
+  }
+
+  await Promise.all(writes);
 }
 
-export async function closeMilestoneWithSync(params: CloseMilestoneParams): Promise<void> {
+export async function closeMilestoneWithSync(input: CloseMilestoneParams): Promise<void> {
+  const params = withRecoveredMilestoneId(input);
   const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
-  const constraints = getMilestoneConstraints(params);
+  const answerDepenseIndex = resolveAnswerDepenseIndex(params, syncContext);
+  const constraints = getMilestoneConstraints(params, answerDepenseIndex);
 
-  if (syncContext.projectMilestoneIndex === null) {
+  const hasProject = Boolean(params.projectId);
+
+  if (hasProject && syncContext.projectMilestoneIndex === null) {
     throw new Error(t("milestone.errors.incompleteForClose.missingProjectSide"));
   }
-  if (syncContext.answerDepenseIndex === null) {
+  if (answerDepenseIndex === null || !params.answerId) {
     throw new Error(t("milestone.errors.incompleteForClose.missingAnswerSide"));
   }
 
-  if (!constraints.canClose) {
+  if (hasProject && !constraints.canClose) {
     throw new Error(t("milestone.errors.cannotCloseWithOpenActions"));
   }
 
   const [project, answer] = await Promise.all([
-    api.project({ id: params.projectId }),
+    hasProject ? api.project({ id: params.projectId }) : Promise.resolve(null),
     api.answer({ id: params.answerId }),
   ]);
 
-  await updateProjectMilestoneFields({
-    project,
-    index: syncContext.projectMilestoneIndex,
-    fields: {
-      status: 'close',
-    },
-  });
+  if (hasProject) {
+    await updateProjectMilestoneFields({
+      project: project!,
+      index: syncContext.projectMilestoneIndex as number,
+      fields: {
+        status: 'close',
+      },
+    });
+  }
 
   await updateAnswerDepenseFields({
     answer,
-    index: syncContext.answerDepenseIndex,
+    index: answerDepenseIndex,
     fields: {
       include: false,
     },
   });
 }
 
-export async function restoreMilestoneWithSync(params: RestoreMilestoneParams): Promise<void> {
+/**
+ * Rouvre un palier clos : `status: 'open'` côté projet, `include: true` côté réponse.
+ *
+ * Aucune contrainte sur les actions, à dessein. La clôture exige que toutes les
+ * actions soient terminées (`canClose`) ; la restauration est le geste inverse et
+ * n'a rien à exiger d'elles — c'est même le cas typique : un palier clos alors que
+ * son action était `done`, action repassée en `todo` (`ActionEditDialog`), et le
+ * palier qu'il faut rouvrir. Conditionner la réouverture à `canClose` la refusait
+ * précisément là, avec le message de la clôture (M39).
+ */
+export async function restoreMilestoneWithSync(input: RestoreMilestoneParams): Promise<void> {
+  const params = withRecoveredMilestoneId(input);
   const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
+  const answerDepenseIndex = resolveAnswerDepenseIndex(params, syncContext);
 
-  if (syncContext.projectMilestoneIndex === null) {
+  const hasProject = Boolean(params.projectId);
+
+  if (hasProject && syncContext.projectMilestoneIndex === null) {
     throw new Error(t("milestone.errors.incompleteForRestore.missingProjectSide"));
   }
-  if (syncContext.answerDepenseIndex === null) {
+  if (answerDepenseIndex === null || !params.answerId) {
     throw new Error(t("milestone.errors.incompleteForRestore.missingAnswerSide"));
   }
 
   const [project, answer] = await Promise.all([
-    api.project({ id: params.projectId }),
+    hasProject ? api.project({ id: params.projectId }) : Promise.resolve(null),
     api.answer({ id: params.answerId }),
   ]);
 
-  await updateProjectMilestoneFields({
-    project,
-    index: syncContext.projectMilestoneIndex,
-    fields: {
-      status: 'open',
-    },
-  });
+  if (hasProject) {
+    await updateProjectMilestoneFields({
+      project: project!,
+      index: syncContext.projectMilestoneIndex as number,
+      fields: {
+        status: 'open',
+      },
+    });
+  }
 
   await updateAnswerDepenseFields({
     answer,
-    index: syncContext.answerDepenseIndex,
+    index: answerDepenseIndex,
     fields: {
       include: true,
     },
   });
 }
 
-export async function deleteMilestoneWithSync(params: MilestoneMutationBaseParams): Promise<void> {
+export async function deleteMilestoneWithSync(input: MilestoneMutationBaseParams): Promise<void> {
+  const params = withRecoveredMilestoneId(input);
   const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
-  const constraints = getMilestoneConstraints(params);
-
+  const answerDepenseIndex = resolveAnswerDepenseIndex(params, syncContext);
+  const constraints = getMilestoneConstraints(params, answerDepenseIndex);
   if (constraints.hasFunding) {
     throw new Error(t("milestone.errors.cannotDeleteIfFunded"));
   }
 
-  // Charge le project (utilisé pour résoudre les actions et pull la milestone).
-  const project = await api.project({ id: params.projectId });
+  const hasProject = Boolean(params.projectId);
 
-  for (const actionId of constraints.actionIds) {
-    const action = await project.action({ id: actionId });
-    await deleteActionById({ action });
+  // Sans enveloppe, les actions du palier sont invisibles (cf. `getMilestoneConstraints`).
+  // Supprimer quand même les laisserait orphelines : on refuse, et on le dit.
+  if (hasProject && syncContext.fromDocs) {
+    throw new Error(t("milestone.errors.cannotDeleteWithoutEnvelope"));
+  }
+
+  /**
+   * Chaque côté se supprime INDÉPENDAMMENT : un seul suffit, et on ne refuse
+   * que s'il n'y en a aucun. Exiger les deux (édition et clôture le font, à raison :
+   * elles écrivent des deux côtés) rendait indéracinable un jalon présent d'un seul
+   * côté — le cas concret : `useCreateMilestone` écrit le projet PUIS la réponse,
+   * sans compensation ; si la seconde écriture échoue, `oceco.milestones[]` garde
+   * un jalon sans dépense miroir, et comme éditer ou clore exige le côté réponse,
+   * plus aucun geste ne l'atteint (M38). Le cas symétrique — dépense dont le jalon
+   * projet a disparu — se supprime de même, côté réponse seul.
+   */
+  const projectMilestoneIndex = hasProject ? syncContext.projectMilestoneIndex : null;
+  const hasProjectSide = typeof projectMilestoneIndex === 'number';
+  const hasAnswerSide = answerDepenseIndex !== null && Boolean(params.answerId);
+
+  if (!hasProjectSide && !hasAnswerSide) {
+    throw new Error(t("milestone.errors.noIndexForDelete"));
   }
 
   const deletions: Promise<unknown>[] = [];
-  if (typeof syncContext.projectMilestoneIndex === 'number') {
-    deletions.push(
-      deleteProjectMilestoneAtIndex({
-        project,
-        index: syncContext.projectMilestoneIndex,
-      })
-    );
+
+  if (hasProject && (hasProjectSide || constraints.actionIds.length > 0)) {
+    const project = await api.project({ id: params.projectId });
+
+    for (const actionId of constraints.actionIds) {
+      const action = await project.action({ id: actionId });
+      await deleteActionById({ action });
+    }
+
+    if (hasProjectSide) {
+      deletions.push(
+        deleteProjectMilestoneAtIndex({
+          project,
+          index: projectMilestoneIndex,
+        })
+      );
+    }
   }
 
-  if (typeof syncContext.answerDepenseIndex === 'number' && params.answerId) {
-    // Charge l'answer en parallèle uniquement si on a une dépense à pull.
+  if (hasAnswerSide) {
     const answer = await api.answer({ id: params.answerId });
     deletions.push(
       deleteAnswerDepenseAtIndex({
         answer,
-        index: syncContext.answerDepenseIndex,
+        index: answerDepenseIndex as number,
       })
     );
-  }
-
-  if (deletions.length === 0) {
-    throw new Error(t("milestone.errors.noIndexForDelete"));
   }
 
   await Promise.all(deletions);

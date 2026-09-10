@@ -554,6 +554,24 @@ export const ActionTilesSchema = z.object({
 export type ActionTiles = z.infer<typeof ActionTilesSchema>;
 export type ActionTilesProps = z.infer<typeof ActionTilesSchema>["props"];
 
+/**
+ * Source dynamique d'un compteur `cta-card-grid.props.stats[]`
+ * `searchCount` compte un périmètre de recherche déjà public (même contrat que les KPIs admin) ; 
+ * `membersCount` compte les membres de l'entité, validés par défaut (`toBeValidated: true` = en attente).
+ */
+const StatDynamicSourceSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("searchCount"),
+    entityType: z.string(), // answers | organizations | poi | events | …
+    baseParams: SearchBaseParamsSchema.partial().optional(),
+  }),
+  z.object({
+    type: z.literal("membersCount"),
+    toBeValidated: z.boolean().default(false),
+  }),
+]);
+export type StatDynamicSource = z.infer<typeof StatDynamicSourceSchema>;
+
 //──────────────── Community Rézo la Mer
 export const CtaCardGridSchema = z.object({
   type: z.literal("cta-card-grid"),
@@ -578,9 +596,15 @@ export const CtaCardGridSchema = z.object({
     stats: z
       .array(
         z.object({
-          value: z.string(),
+          // Optionnel seulement si `source` est fourni (cf. refine ci-dessous). Avec
+          // `source`, `value` sert de repli immédiat le temps du chargement ; sans lui,
+          // un skeleton s'affiche à sa place (cf. StatTile dans CtaCardGrid.tsx).
+          value: z.string().optional(),
           label: LocalizedString,
           color: z.enum(["primary", "turquoise", "cyan-bright", "accent", "teal", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]).optional(),
+          source: StatDynamicSourceSchema.optional(),
+        }).refine((stat) => stat.value !== undefined || stat.source !== undefined, {
+          message: "Un stat doit avoir soit `value` (statique) soit `source` (dynamique).",
         })
       )
       .optional(),
@@ -1474,6 +1498,11 @@ import {
 import { CoFormSectionSchema } from "@/modules/coform/schema";
 import { ToolsCatalogSectionSchema } from "@/modules/toolsCatalog/schema";
 import {
+  AacConfigSchema,
+  AacDirectorySectionSchema,
+  AacHighlightSectionSchema,
+} from "@/modules/aac/schema";
+import {
   LoginFormSectionSchema,
   RegisterFormSectionSchema,
   RecoverPasswordFormSectionSchema,
@@ -1591,6 +1620,8 @@ export const Section = z.discriminatedUnion("type", [
   CagnotteLayoutSectionSchema,
   CoFormSectionSchema,
   ToolsCatalogSectionSchema,
+  AacDirectorySectionSchema,
+  AacHighlightSectionSchema,
   DataObservatorySectionSchema,
   AgendaSectionSchema,
   ArticleFeedSectionSchema,
@@ -2220,6 +2251,11 @@ export const SiteConfig = z.object({
     condition: VisibilityConditionSchema,
   }).optional(),
   ampli: z.array(AmpliConfigSchema).optional(),
+  // Config site-level de l'Appel à Communs — SINGULIER (un seul AAC par site,
+  // contrairement à `ampli` qui est un tableau). Le site déclare son `formId` ;
+  // les sections `aac-directory`/`aac-highlight` et les routes `/aac` le lisent
+  // depuis ici (les routes ne sont montées que si ce bloc existe). cf. modules/aac.
+  aac: AacConfigSchema.optional(),
   commandPalette: CommandPaletteConfigSchema.optional(),
   // Config site-level du blog : défauts des variants extensibles (card/reader/feedLayout). cf. modules/blog.
   blog: BlogConfigSchema.optional(),

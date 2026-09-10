@@ -303,10 +303,19 @@ export default function CoFormAnswerPage() {
               trou, car `computeDraftState` ne déclare un brouillon obsolète que si
               `draft.baseUpdatedAt != null`. Sans repère, un brouillon local
               écraserait donc en silence une réponse modifiée entre-temps côté
-              serveur — jamais détecté comme périmé. */}
+              serveur — jamais détecté comme périmé.
+
+              REPLI SUR `created` : `updated` est OPTIONNEL — une réponse jamais
+              modifiée depuis son dépôt n'en a pas. `answer.updated` seul rendait
+              donc `baseUpdatedAt` indéfini sur tout ce sous-ensemble, et
+              `SmartCoForm` y coupait le brouillon (`!answerId || baseUpdatedAt !=
+              null`) : le filet disparaissait précisément là où il n'y avait rien à
+              écraser. La date de création est une lignée valide — toute
+              modification serveur ultérieure porte un `updated` STRICTEMENT
+              supérieur, donc `computeDraftState` la voit passer devant. */}
           <SmartCoForm
             formId={formId}
-            baseUpdatedAt={answer?.updated}
+            baseUpdatedAt={answer?.updated ?? answer?.created ?? null}
             formData={formData}
             submitMode="final"
             onFinalSubmit={handleFinalSubmit}

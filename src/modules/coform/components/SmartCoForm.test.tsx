@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import type { CoFormData } from "../types";
@@ -33,29 +33,66 @@ vi.mock("../hooks/useCoFormCatalogs", () => ({
   useCoFormCatalogs: () => ({ catalogs: {}, isLoading: false, error: null, refetch: vi.fn() }),
 }));
 
+/** Ce que le `onSubmit` fourni par `SmartCoForm` a RÉSOLU au dernier envoi. */
+const soumission = vi.hoisted(() => ({ resultat: undefined as unknown }));
+
 vi.mock("./DynamicCoForm", () => ({
-  DynamicCoForm: (props: { formData: CoFormData; hideBanner?: boolean; hideStepHeaders?: boolean; hideSubmitButton?: boolean; autoSubmitOnBlur?: boolean }) => (
+  DynamicCoForm: (props: {
+    formData: CoFormData;
+    hideBanner?: boolean;
+    hideStepHeaders?: boolean;
+    hideSubmitButton?: boolean;
+    autoSubmitOnBlur?: boolean;
+    draftScope?: string | null;
+    elementId?: string | null;
+    elementType?: string | null;
+    enableDraft?: boolean;
+    defaultValues?: Record<string, unknown>;
+    onSubmit: (data: Record<string, unknown>) => unknown;
+    discardDraftRef?: unknown;
+  }) => (
     <div
       data-testid="dynamic-coform"
+      data-has-discard-ref={String(!!props.discardDraftRef)}
+      data-draft-scope={props.draftScope ?? ""}
+      data-element-id={props.elementId ?? ""}
+      data-element-type={props.elementType ?? ""}
       data-step-count={Object.keys(props.formData.inputs ?? {}).length}
       data-hide-banner={String(!!props.hideBanner)}
       data-hide-step-headers={String(!!props.hideStepHeaders)}
       data-hide-submit-button={String(!!props.hideSubmitButton)}
       data-auto-submit={String(!!props.autoSubmitOnBlur)}
+      data-enable-draft={String(!!props.enableDraft)}
+      data-default-values={JSON.stringify(props.defaultValues ?? null)}
     >
       {/* Liste des subFormIds pour vérif standalone */}
       {Object.keys(props.formData.inputs ?? {}).join(",")}
+      <button
+        type="button"
+        data-testid="dyn-submit"
+        onClick={() => {
+          soumission.resultat = undefined;
+          void Promise.resolve(props.onSubmit({ textField: "saisie" })).then((r) => {
+            soumission.resultat = r;
+          });
+        }}
+      />
     </div>
   ),
 }));
 
 vi.mock("./MultiStepCoForm", () => ({
-  MultiStepCoForm: (props: { formData: CoFormData; submitMode?: string; initialStepKey?: string }) => (
+  MultiStepCoForm: (props: { formData: CoFormData; submitMode?: string; initialStepKey?: string; elementId?: string | null; elementType?: string | null; unknownFieldVariant?: string; enableDraft?: boolean; discardDraftRef?: unknown }) => (
     <div
       data-testid="multistep-coform"
+      data-enable-draft={String(!!props.enableDraft)}
+      data-has-discard-ref={String(!!props.discardDraftRef)}
       data-step-count={Object.keys(props.formData.inputs ?? {}).length}
       data-submit-mode={props.submitMode}
       data-initial-step={props.initialStepKey ?? ""}
+      data-element-id={props.elementId ?? ""}
+      data-element-type={props.elementType ?? ""}
+      data-unknown-field-variant={props.unknownFieldVariant ?? ""}
     />
   ),
 }));
@@ -73,6 +110,13 @@ vi.mock("./CoFormReadOnly", () => ({
 
 vi.mock("sonner", () => ({
   toast: { error: vi.fn() },
+}));
+
+// Utilisateur courant : sans lui, le brouillon est coupé (clé user-scopée) et
+// la décision `enableDraft` n'est jamais observable.
+const mockCocolight = vi.fn((): { me: { id: string } | null } | undefined => ({ me: { id: "user-1" } }));
+vi.mock("@/hooks/useCocolight", () => ({
+  useCocolightOptional: () => mockCocolight(),
 }));
 
 vi.mock("@/hooks/useT", () => ({
@@ -105,7 +149,7 @@ function makeFormData(subFormIds: string[], extraInputs?: Record<string, Record<
     };
   }
   return {
-    _id: { $id: "form123" },
+    _id: { _str: "form123" },
     id: "form123",
     name: "Test Form",
     created: 0,
@@ -200,6 +244,60 @@ describe("SmartCoForm", () => {
     });
   });
 
+  /**
+   * Le brouillon était purement désactivé en mode standalone, faute de pouvoir
+   * distinguer les deux périmètres. La clé porte désormais ce périmètre, et c'est
+   * `SmartCoForm` qui le décide — la décision à l'origine du bug, jamais assertée.
+   */
+  describe("périmètre du brouillon (draftScope)", () => {
+    it("une étape extraite passe SON périmètre — pas la clé du parcours complet", () => {
+      const formData = makeFormData(["s1", "s2", "s3"]);
+      render(<SmartCoForm formData={formData} stepKey="s2" />, { wrapper: makeWrapper() });
+      expect(screen.getByTestId("dynamic-coform").getAttribute("data-draft-scope")).toBe("s2");
+    });
+
+    it("le parcours complet n'en a pas — sa clé reste EXACTEMENT celle d'avant", () => {
+      const formData = makeFormData(["s1"]);
+      render(<SmartCoForm formData={formData} />, { wrapper: makeWrapper() });
+      expect(screen.getByTestId("dynamic-coform").getAttribute("data-draft-scope")).toBe("");
+    });
+  });
+
+  /**
+   * Bloquant 1.2 de la relecture de la MR 53 : l'élément transitait jusqu'à
+   * `useCoFormQuery`, mais pas jusqu'au brouillon — d'où une clé `…:new`
+   * partagée entre deux lieux. C'est ici que les deux chemins de rendu reçoivent
+   * l'élément ; on asserte la transmission sur chacun.
+   */
+  describe("élément du brouillon (elementId / elementType)", () => {
+    it("transmis au formulaire simple", () => {
+      render(
+        <SmartCoForm formData={makeFormData(["s1"])} elementId="lieu-A" elementType="organizations" />,
+        { wrapper: makeWrapper() },
+      );
+      const dyn = screen.getByTestId("dynamic-coform");
+      expect(dyn.dataset.elementId).toBe("lieu-A");
+      expect(dyn.dataset.elementType).toBe("organizations");
+    });
+
+    it("transmis au wizard", () => {
+      render(
+        <SmartCoForm formData={makeFormData(["s1", "s2"])} elementId="lieu-A" elementType="organizations" />,
+        { wrapper: makeWrapper() },
+      );
+      const multi = screen.getByTestId("multistep-coform");
+      expect(multi.dataset.elementId).toBe("lieu-A");
+      expect(multi.dataset.elementType).toBe("organizations");
+    });
+
+    it("sans élément, rien n'est transmis — la clé reste celle d'avant", () => {
+      render(<SmartCoForm formData={makeFormData(["s1"])} />, { wrapper: makeWrapper() });
+      const dyn = screen.getByTestId("dynamic-coform");
+      expect(dyn.dataset.elementId).toBe("");
+      expect(dyn.dataset.elementType).toBe("");
+    });
+  });
+
   describe("mode standalone (stepKey)", () => {
     it("stepKey défini → DynamicCoForm avec 1 step filtré + hideBanner", () => {
       mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
@@ -243,6 +341,10 @@ describe("SmartCoForm", () => {
       const dyn = screen.getByTestId("dynamic-coform");
       expect(dyn.dataset.stepCount).toBe("1");
       expect(dyn.textContent).toBe("s2");
+      // Périmètre du brouillon : RÉSOLU depuis `inputKey`, pas fourni. C'est le
+      // seul cas où `stepKey` brut et `resolvedStepKey` divergent, donc le seul
+      // qui verrouille le choix — avec `stepKey ?? null` on lirait "".
+      expect(dyn.dataset.draftScope).toBe("s2");
       expect(dyn.dataset.hideStepHeaders).toBe("true");
       expect(dyn.dataset.hideSubmitButton).toBe("true");
       expect(dyn.dataset.autoSubmit).toBe("true");
@@ -367,5 +469,273 @@ describe("SmartCoForm", () => {
       );
       expect(screen.getByTestId("multistep-coform").dataset.initialStep).toBe("s2");
     });
+  });
+
+  /**
+   * M33 (rapport MR 53) : la prop était câblée de bout en bout dans le wizard
+   * (interface, paramètre, `UnsupportedField`) mais `SmartCoForm` ne la lui
+   * passait pas — seul le formulaire simple la recevait. Le dépôt public d'un
+   * commun à plusieurs étapes affichait donc l'encadré rouge « type d'input
+   * introuvable », exactement ce que `"placeholder"` existe pour éviter.
+   */
+  describe("unknownFieldVariant propagé aux deux chemins de rendu", () => {
+    beforeEach(() => {
+      mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
+      mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+    });
+
+    it("transmis au wizard", () => {
+      render(<SmartCoForm formData={makeFormData(["s1", "s2"])} unknownFieldVariant="placeholder" />, {
+        wrapper: makeWrapper(),
+      });
+      expect(screen.getByTestId("multistep-coform").dataset.unknownFieldVariant).toBe("placeholder");
+    });
+  });
+
+  /** M34 : la ref de rejet du brouillon doit atteindre le détenteur du hook, sur les deux chemins. */
+  describe("discardDraftRef propagé aux deux chemins de rendu", () => {
+    beforeEach(() => {
+      mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
+      mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+    });
+
+    it("transmis au formulaire simple et au wizard", () => {
+      const ref = { current: null };
+      const simple = render(<SmartCoForm formData={makeFormData(["s1"])} discardDraftRef={ref} />, {
+        wrapper: makeWrapper(),
+      });
+      expect(screen.getByTestId("dynamic-coform").dataset.hasDiscardRef).toBe("true");
+      simple.unmount();
+      render(<SmartCoForm formData={makeFormData(["s1", "s2"])} discardDraftRef={ref} />, { wrapper: makeWrapper() });
+      expect(screen.getByTestId("multistep-coform").dataset.hasDiscardRef).toBe("true");
+    });
+  });
+});
+
+/**
+ * `hiddenStepKeys` retire une étape sur décision de l'APPELANT — typiquement
+ * « l'étape d'évaluation d'un appel à communs n'est pas proposée à qui ne
+ * l'administre pas ».
+ *
+ * Sa première version ne filtrait que le parse local de `SmartCoForm` : les
+ * enfants recevaient le `formData` BRUT et le reparsaient sans options, si bien
+ * que l'étape restait rendue, avec ses champs requis. Ces tests portent sur ce
+ * que les enfants reçoivent VRAIMENT, pas sur un décompte interne.
+ */
+describe("SmartCoForm — hiddenStepKeys", () => {
+  it("retire l'étape du formData transmis au wizard", () => {
+    const formData = makeFormData(["aapStep1", "aapStep2", "aapStep3"]);
+    render(<SmartCoForm formData={formData} hiddenStepKeys={["aapStep2"]} />, {
+      wrapper: makeWrapper(),
+    });
+    const wizard = screen.getByTestId("multistep-coform");
+    expect(wizard.getAttribute("data-step-count")).toBe("2");
+  });
+
+  it("retire l'étape du formData transmis au formulaire simple", () => {
+    const formData = makeFormData(["aapStep1", "aapStep2"]);
+    render(<SmartCoForm formData={formData} hiddenStepKeys={["aapStep2"]} />, {
+      wrapper: makeWrapper(),
+    });
+    // 1 étape restante ⇒ bascule en mode simple, et ce mode ne doit PAS
+    // aplatir les deux étapes du formData d'origine.
+    const simple = screen.getByTestId("dynamic-coform");
+    expect(simple.getAttribute("data-step-count")).toBe("1");
+    expect(simple.textContent).toBe("aapStep1");
+  });
+
+  it("ne retire rien sans la prop", () => {
+    const formData = makeFormData(["aapStep1", "aapStep2", "aapStep3"]);
+    render(<SmartCoForm formData={formData} />, { wrapper: makeWrapper() });
+    expect(screen.getByTestId("multistep-coform").getAttribute("data-step-count")).toBe("3");
+  });
+
+  it("une clé inconnue ne retire rien", () => {
+    const formData = makeFormData(["aapStep1", "aapStep2"]);
+    render(<SmartCoForm formData={formData} hiddenStepKeys={["etapeInexistante"]} />, {
+      wrapper: makeWrapper(),
+    });
+    expect(screen.getByTestId("multistep-coform").getAttribute("data-step-count")).toBe("2");
+  });
+
+  it("une étape réclamée par `stepKey` l'emporte sur son masquage", () => {
+    // Demande explicite de l'appelant : la masquer rendrait une page vide.
+    const formData = makeFormData(["aapStep1", "aapStep2"]);
+    render(
+      <SmartCoForm formData={formData} stepKey="aapStep2" hiddenStepKeys={["aapStep2"]} />,
+      { wrapper: makeWrapper() }
+    );
+    expect(screen.getByTestId("dynamic-coform").textContent).toBe("aapStep2");
+  });
+});
+
+/**
+ * Mono-étape : la clé sous laquelle `SmartCoForm` lit les valeurs par défaut et
+ * emballe le payload était `Object.keys(inputs)[0]` BRUT, là où `DynamicCoForm`
+ * (et tout le reste du module) travaille sur l'étape PARSÉE
+ * (`subFormsFields[0].subFormId`). Les deux divergent dès que la première
+ * étape du formulaire est masquée par `hideStep` : le parse ne garde que la
+ * seconde, on tombe en mode simple, et le formulaire simple recevait les
+ * défauts de l'étape MASQUÉE puis renvoyait sa saisie sous la clé de cette
+ * étape masquée — la vraie étape rendue repartait vide.
+ */
+describe("SmartCoForm — mono-étape : clé de l'étape RENDUE, pas de la première déclarée", () => {
+  beforeEach(() => {
+    mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
+    mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+  });
+
+  function formAvecPremiereEtapeMasquee(): CoFormData {
+    const base = makeFormData(["cachee", "visible"]);
+    return {
+      ...base,
+      inputs: {
+        ...base.inputs,
+        cachee: { ...base.inputs!.cachee, hideStep: true },
+      },
+    } as CoFormData;
+  }
+  const defaults = {
+    cachee: { textField: "valeur de l'étape masquée" },
+    visible: { textField: "valeur de l'étape rendue" },
+  };
+
+  it("les valeurs par défaut sont celles de l'étape rendue", () => {
+    render(<SmartCoForm formData={formAvecPremiereEtapeMasquee()} defaultValues={defaults} />, {
+      wrapper: makeWrapper(),
+    });
+    const dyn = screen.getByTestId("dynamic-coform");
+    expect(dyn.textContent).toContain("visible");
+    expect(JSON.parse(dyn.dataset.defaultValues!)).toEqual({ textField: "valeur de l'étape rendue" });
+  });
+
+  it("le payload est emballé sous la clé de l'étape rendue", async () => {
+    const onFinalSubmit = vi.fn().mockResolvedValue(undefined);
+    render(
+      <SmartCoForm formData={formAvecPremiereEtapeMasquee()} defaultValues={defaults} onFinalSubmit={onFinalSubmit} />,
+      { wrapper: makeWrapper() },
+    );
+    fireEvent.click(screen.getByTestId("dyn-submit"));
+    await waitFor(() => expect(onFinalSubmit).toHaveBeenCalledTimes(1));
+    const payload = onFinalSubmit.mock.calls[0][0] as Record<string, unknown>;
+    expect(Object.keys(payload)).toEqual(["visible"]);
+    expect(payload.visible).toEqual({ textField: "saisie" });
+  });
+});
+
+/**
+ * H19 / H14 (rapport MR 53) : `useCoFormDraft` ne sait déclarer un brouillon
+ * périmé que si `draft.baseUpdatedAt != null` — et cette lignée vient de la
+ * prop `baseUpdatedAt`. Depuis que le brouillon est actif en modale, trois
+ * appelants passent `answerId` SANS `baseUpdatedAt` : leurs brouillons
+ * naissaient éternels (TTL 30 jours), et « Reprendre » écrasait sans
+ * avertissement une réponse modifiée entre-temps par quelqu'un d'autre.
+ * En édition, pas de repère de péremption ⇒ pas de brouillon.
+ */
+describe("SmartCoForm — brouillon d'ÉDITION : coupé sans repère de péremption (H19)", () => {
+  beforeEach(() => {
+    mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
+    mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+  });
+
+  const enableDraft = (testId: string) => screen.getByTestId(testId).dataset.enableDraft;
+
+  it("création (pas d'answerId) : actif, aucun repère à attendre", () => {
+    render(<SmartCoForm formData={makeFormData(["s1"])} formId="form123" />, { wrapper: makeWrapper() });
+    expect(enableDraft("dynamic-coform")).toBe("true");
+  });
+
+  it("édition SANS baseUpdatedAt : coupé (formulaire simple)", () => {
+    render(<SmartCoForm formData={makeFormData(["s1"])} formId="form123" answerId="ans-1" />, {
+      wrapper: makeWrapper(),
+    });
+    expect(enableDraft("dynamic-coform")).toBe("false");
+  });
+
+  it("édition SANS baseUpdatedAt : coupé (wizard)", () => {
+    render(<SmartCoForm formData={makeFormData(["s1", "s2"])} formId="form123" answerId="ans-1" />, {
+      wrapper: makeWrapper(),
+    });
+    expect(enableDraft("multistep-coform")).toBe("false");
+  });
+
+  it("édition AVEC baseUpdatedAt : actif sur les deux chemins", () => {
+    const simple = render(
+      <SmartCoForm formData={makeFormData(["s1"])} formId="form123" answerId="ans-1" baseUpdatedAt={1_700_000} />,
+      { wrapper: makeWrapper() },
+    );
+    expect(enableDraft("dynamic-coform")).toBe("true");
+    simple.unmount();
+    render(
+      <SmartCoForm formData={makeFormData(["s1", "s2"])} formId="form123" answerId="ans-1" baseUpdatedAt={1_700_000} />,
+      { wrapper: makeWrapper() },
+    );
+    expect(enableDraft("multistep-coform")).toBe("true");
+  });
+
+  it("`null` explicite n'est pas un repère : coupé", () => {
+    // `answer.updated ?? null` — une réponse legacy sans `updated` ne peut pas
+    // non plus être surveillée.
+    render(<SmartCoForm formData={makeFormData(["s1"])} formId="form123" answerId="ans-1" baseUpdatedAt={null} />, {
+      wrapper: makeWrapper(),
+    });
+    expect(enableDraft("dynamic-coform")).toBe("false");
+  });
+
+  it("sans utilisateur, coupé quoi qu'il arrive", () => {
+    mockCocolight.mockReturnValueOnce({ me: null });
+    render(<SmartCoForm formData={makeFormData(["s1"])} formId="form123" />, { wrapper: makeWrapper() });
+    expect(enableDraft("dynamic-coform")).toBe("false");
+  });
+});
+
+/**
+ * H15 (rapport MR 53) : le `onSubmit` que `SmartCoForm` donne au formulaire
+ * simple traite l'erreur lui-même (`onError`, sans throw) — il résolvait donc
+ * aussi sur échec, et `DynamicCoForm` purgeait le brouillon dans les deux cas.
+ * Il signale désormais le verdict par sa valeur : `true` si le serveur a la
+ * donnée, `false` sinon.
+ */
+describe("SmartCoForm — le onSubmit du formulaire simple dit si le serveur a la donnée (H15)", () => {
+  beforeEach(() => {
+    mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
+    soumission.resultat = undefined;
+  });
+
+  it("mutation en échec : résout `false` et remonte l'erreur à `onError`", async () => {
+    const mutation = defaultMutation();
+    mutation.mutateAsync = vi.fn().mockRejectedValue(new Error("session expirée"));
+    mockUseCoFormFinalMutation.mockReturnValue(mutation);
+    const onError = vi.fn();
+    render(<SmartCoForm formData={makeFormData(["s1"])} formId="form123" onError={onError} />, {
+      wrapper: makeWrapper(),
+    });
+    fireEvent.click(screen.getByTestId("dyn-submit"));
+    await waitFor(() => expect(soumission.resultat).toBe(false));
+    expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "session expirée" }));
+  });
+
+  it("mutation réussie : résout `true`", async () => {
+    mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+    render(<SmartCoForm formData={makeFormData(["s1"])} formId="form123" />, { wrapper: makeWrapper() });
+    fireEvent.click(screen.getByTestId("dyn-submit"));
+    await waitFor(() => expect(soumission.resultat).toBe(true));
+  });
+
+  it("`onAfterSubmit` qui échoue n'annule pas le verdict : la réponse EST enregistrée", async () => {
+    mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+    const onError = vi.fn();
+    render(
+      <SmartCoForm
+        formData={makeFormData(["s1"])}
+        formId="form123"
+        onAfterSubmit={() => Promise.reject(new Error("rafraîchissement raté"))}
+        onError={onError}
+      />,
+      { wrapper: makeWrapper() },
+    );
+    fireEvent.click(screen.getByTestId("dyn-submit"));
+    await waitFor(() => expect(soumission.resultat).toBe(true));
+    expect(onError).toHaveBeenCalledTimes(1);
   });
 });
