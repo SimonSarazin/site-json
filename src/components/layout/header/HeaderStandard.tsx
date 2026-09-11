@@ -32,6 +32,7 @@ import HeaderLogo from "./HeaderLogo";
 import { logoHeightClass, logoSizePx } from "./logoSize";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
+import { PiggyBankHeaderButton, PledgeHeaderButton } from "./CagnotteHeaderButtons";
 
 interface NavItemProps {
   item: EnhancedNavItemType;
@@ -202,6 +203,11 @@ export function HeaderStandard({ header }: HeaderStandardProps) {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
             {header.nav.map((item, idx) => (<NavItem key={idx} item={item} />))}
+            {/* Wrappers lazy (cf. CagnotteHeaderButtons) : le chunk cagnotte n'est
+                téléchargé que si l'utilitaire est activé, et seulement après
+                hydratation — la cagnotte est member-only, le SSR n'a rien à en rendre. */}
+            {header.utilities?.piggyBank && <PiggyBankHeaderButton />}
+            {header.utilities?.pledge && <PledgeHeaderButton />}
           </nav>
 
           {/* Utilities & Mobile Trigger */}

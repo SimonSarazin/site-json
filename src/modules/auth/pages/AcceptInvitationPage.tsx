@@ -31,13 +31,33 @@ interface ByMailResult {
  *  - `result:false` AVEC `next` → idempotence : l'invité avait DÉJÀ répondu (le flag n'existe plus) ;
  *  - `result:false` SANS `next` → lien invalide (user/target introuvable).
  */
+/**
+ * Extrait la réponse (`true`/`false`) du reste de l'URL, QUEL QUE SOIT l'ordre des segments.
+ *
+ * `invitation.php` colle les suffixes Yii AVANT la réponse : un costum à domaine propre émet
+ * `…/targetId/<id>/costum/true/answer/true` (l.23 puis l.115), pas `…/answer/true/costum/true`.
+ * On cherche donc le segment qui SUIT `answer` n'importe où dans le reste du chemin.
+ * ⚠️ `/costum/true` contient lui aussi la valeur `true` : c'est bien la position APRÈS le segment
+ * littéral `answer` qui fait foi, jamais la simple présence de « true » dans l'URL.
+ */
+export function lireReponse(reste: string | undefined): string | undefined {
+  if (!reste) return undefined;
+  const seg = reste.split("/").filter(Boolean);
+  const i = seg.indexOf("answer");
+  return i >= 0 ? seg[i + 1] : undefined;
+}
+
 export default function AcceptInvitationPage() {
-  const { userId, targetType, targetId, answer } = useParams<{
+  const params = useParams<{
     userId: string;
     targetType: string;
     targetId: string;
-    answer: string;
+    answer?: string;
+    "*"?: string;
   }>();
+  const { userId, targetType, targetId } = params;
+  // `answer` nommé si la route l'a capturé (formes historiques), sinon relu dans le splat.
+  const answer = params.answer ?? lireReponse(params["*"]);
   const { userApi } = useCocolight();
   const navigate = useNavigate();
   useLoadNamespace("modules/auth");
