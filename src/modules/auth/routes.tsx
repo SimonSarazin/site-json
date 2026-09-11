@@ -60,13 +60,19 @@ export const routes: ModuleRouteFactory = (_queryClient, config): RouteObject[] 
     element: <ValidateInvitationPage />,
   },
   // Réponse Accepter/Refuser d'une invitation par e-mail (≠ passerelle validateinvitation) :
-  // l'action n'est déclenchée qu'au clic. Splat = suffixes Yii `/redirect/…`, `/costum/true`.
+  // l'action n'est déclenchée qu'au clic.
+  //
+  // ⚠️ `answer` N'EST PAS un segment de position fixe. `invitation.php` construit `$urlActions`
+  // AVANT d'y coller la réponse : il y insère d'abord `/costum/true` (l.23) ou
+  // `/redirect/<url pointée>` (l.20), PUIS concatène `"/answer/true"` (l.115) ou `"/answer/false"`
+  // (l.132). Un costum à DOMAINE PROPRE — c'est-à-dire précisément un site servi par site-json —
+  // émet donc `…/targetId/<id>/costum/true/answer/true`, avec les suffixes AVANT la réponse.
+  // Une route `…/targetId/:targetId/answer/:answer/*` ne matche pas cette forme : mesuré, elle
+  // retombait sur la page d'accueil du site, sans erreur — donc silencieusement.
+  // D'où le SPLAT unique : tout ce qui suit `targetId` est absorbé, et la page extrait `answer`
+  // du splat quel que soit l'ordre des segments (cf. `lireReponse` dans AcceptInvitationPage).
   {
-    path: "co2/link/validateinvitationbymail/userId/:userId/targetType/:targetType/targetId/:targetId/answer/:answer/*",
-    element: <AcceptInvitationPage />,
-  },
-  {
-    path: "co2/link/validateinvitationbymail/userId/:userId/targetType/:targetType/targetId/:targetId/answer/:answer",
+    path: "co2/link/validateinvitationbymail/userId/:userId/targetType/:targetType/targetId/:targetId/*",
     element: <AcceptInvitationPage />,
   },
   { path: "co2/link/connect/ref/:ref", element: <JoinByLinkPage /> },

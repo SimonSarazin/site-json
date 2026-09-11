@@ -10,6 +10,7 @@ import { useSite } from "@/hooks/useSite";
 import "@/modules/auth/i18n";
 
 import { useCocolight } from "@/hooks/useCocolight";
+import { getSiteCostumContext } from "@/lib/siteCostum";
 import PasswordToggleTextInput from "@/components/form/PasswordToggleTextInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,7 +57,7 @@ export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormP
   // Destination transmise depuis LoginForm quand l'utilisateur bascule « créer un compte »
   // (elle-même posée par la garde de page). Repli sur l'accueil.
   const returnTo                     = returnToOrHome(location.state);
-  const { userApi, loading, me, entity, contextId, contextType } = useCocolight();
+  const { userApi, loading, me, contextId, contextType } = useCocolight();
   const { loaded }                   = useLoadNamespace("modules/auth");
   const t                            = useT("modules/auth");
   const { config }                   = useSite();
@@ -136,11 +137,14 @@ export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormP
       const { name, username, email, pwd } = formData;
 
       // Contexte costum du déploiement → le backend estampille `source.key` du citoyen (port Person::insert,
-      // legacy : inscription sous un costum actif). Slug/id/type de l'entité porteuse (résolue de VITE_SLUG au boot).
-      const deploymentSlug = (entity?.serverData as { slug?: string } | undefined)?.slug;
-      const costumCtx = deploymentSlug && contextId && contextType
-        ? { costumSlug: deploymentSlug, costumId: contextId, costumType: contextType }
-        : {};
+      // legacy : inscription sous un costum actif) ET brande l'e-mail de bienvenue (sujet, logo,
+      // expéditeur, domaine des liens = `costum.host`).
+      // Le slug vient de `getSlug()` (VITE_SLUG), PAS de `entity.serverData.slug` : même valeur en
+      // régime nominal, mais indépendante du réseau. Si `entityBySlug` a échoué au boot, `entity` est
+      // `null` et le trio disparaissait EN SILENCE — mail générique « Communecter », sans trace.
+      // Seuls `costumId`/`costumType` restent conditionnés à la résolution : le legacy résout son
+      // cache costum sur le SLUG, ils ne sont qu'un confort. Même source que ContactFormSection.
+      const costumCtx = getSiteCostumContext({ contextId, contextType }) ?? {};
 
       const response = await userApi.register({
         name,

@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import { matchRoutes } from "react-router";
 
 import { routes } from "../routes";
+import { lireReponse } from "../pages/AcceptInvitationPage";
 
 /**
  * Les liens de validation des e-mails DÉJÀ ENVOYÉS doivent résoudre sur
@@ -92,17 +93,40 @@ describe("routes de validation de compte (liens d'e-mails)", () => {
     }
   });
 
-  it("réponse Accepter/Refuser d'invitation : /co2/link/validateinvitationbymail/userId/:userId/…/answer/:answer (+ suffixes Yii)", () => {
+  /**
+   * ⚠️ L'ORDRE DES SEGMENTS N'EST PAS CELUI QU'ON CROIT — et c'est ce qui a cassé.
+   * `invitation.php` construit `$urlActions` puis y colle les suffixes Yii (`/costum/true` l.23,
+   * `/redirect/<url>` l.20) AVANT de concaténer la réponse (`"/answer/true"` l.115, `"/answer/false"`
+   * l.132). Un costum à DOMAINE PROPRE — donc un site servi par site-json — émet
+   * `…/targetId/<id>/costum/true/answer/true`. L'ancienne version de ce test ne vérifiait que les
+   * suffixes APRÈS `answer` : elle figeait notre hypothèse, pas le template. Mesuré sur un site-json
+   * local, la forme réelle retombait sur la page d'accueil, SANS erreur.
+   */
+  it("réponse Accepter/Refuser d'invitation : toutes les positions de suffixe émises par invitation.php", () => {
     const TID = "5f8d0a1b2c3d4e5f60718293";
+    const BASE = `/co2/link/validateinvitationbymail/userId/${ID}/targetType/organizations/targetId/${TID}`;
     for (const answer of ["true", "false"]) {
-      for (const suffix of ["", "/costum/true", "/redirect/.costum.co.index.slug.ctenat"]) {
-        const m = matcher(
-          `/co2/link/validateinvitationbymail/userId/${ID}/targetType/organizations/targetId/${TID}/answer/${answer}${suffix}`,
-        );
-        expect(m, `${answer}${suffix}`).not.toBeNull();
-        expect(m![m!.length - 1]!.params).toMatchObject({ userId: ID, targetType: "organizations", targetId: TID, answer });
+      const formes = [
+        `/answer/${answer}`,                                               // hors costum
+        `/costum/true/answer/${answer}`,                                   // costum à domaine propre (RÉEL)
+        `/redirect/.costum.co.index.slug.ctenat/answer/${answer}`,         // costum sans domaine (RÉEL)
+        `/answer/${answer}/costum/true`,                                   // ordre inverse (tolérance)
+      ];
+      for (const forme of formes) {
+        const m = matcher(BASE + forme);
+        expect(m, forme).not.toBeNull();
+        const params = m![m!.length - 1]!.params as Record<string, string | undefined>;
+        expect(params).toMatchObject({ userId: ID, targetType: "organizations", targetId: TID });
+        // la page relit `answer` dans le reste du chemin, quelle que soit sa position
+        expect(lireReponse(params["*"] ?? params.answer), forme).toBe(answer);
       }
     }
+  });
+
+  it("lireReponse ne confond pas `/costum/true` avec la réponse", () => {
+    expect(lireReponse("costum/true")).toBeUndefined();          // aucune réponse : lien incomplet
+    expect(lireReponse("costum/true/answer/false")).toBe("false"); // « true » présent, réponse = false
+    expect(lireReponse(undefined)).toBeUndefined();
   });
 
   it("les routes auth historiques restent servies (dont /recover-password, distinct de /recover/…)", () => {

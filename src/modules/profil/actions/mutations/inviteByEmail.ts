@@ -39,6 +39,14 @@ export function useInviteByEmail(entity: EntityTypes | null) {
   return useMutationWithToast<unknown, EmailInvite[]>({
     mutationFn: async (invites) => {
       if (!entity) throw new Error("No entity provided");
+      // L'invitation part par e-mail : c'est le `costumSlug` de la requête qui décide du sujet, du
+      // logo, de l'expéditeur et du DOMAINE du lien d'activation. Ce contexte est posé UNE fois sur
+      // le client API (`applySiteCostum` → `ApiClient.setSiteCostum`, src/lib/siteCostum.ts) et
+      // injecté par la lib sur tout endpoint marqué `costumContext` au contrat — rien à faire ici.
+      // ⚠️ Ne pas y ajouter `ensureCostumScope` : `setCostumScope` écrit aussi `_costumCtx`, qui
+      // gouverne le SCHÉMA D'ÉDITION de l'entité, et depuis la v1.0.192 le contexte de requête d'une
+      // entité ne lit plus que `_adminScope` — une entité non scopée laisse donc s'appliquer le
+      // costum DU SITE, qui est précisément ce qu'on veut.
       // Méthode d'entité de haut niveau : génère les UUID + listInvite, valide le type,
       // wrappe inviteEvent. Pas d'appel direct à endpointApi.
       return entity.inviteByEmail(invites);

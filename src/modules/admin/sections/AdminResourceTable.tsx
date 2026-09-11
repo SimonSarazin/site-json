@@ -47,7 +47,7 @@ import { useSetExclusiveFlag, type ExclusiveFlagEntity } from "../hooks/useSetEx
 import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateGroup";
 import type { AdminResourceSection, AdminSection } from "../schema";
 import { downloadCsv } from "../lib/downloadCsv";
-import { ensureCostumScope } from "../lib/ensureCostumScope";
+import { ensureCostumScope } from "@/lib/ensureCostumScope";
 import { AudioPlayer } from "@/components/media/AudioPlayer";
 import { formatColumnCell, getColumnValue, getPath, readStatusValue, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
 

@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { getApiClient } from "@/lib/apiClient";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
+import { withSiteCostumParams } from "@/lib/siteCostum";
 
 /**
  * Actions de la campagne d'invitation (docs/24 §2, backend docs/25) :
@@ -13,6 +14,14 @@ import { useT } from "@/hooks/useT";
  * ⚠️ Les deux endpoints sont NEUFS : ils n'existent pas encore dans la version publiée de la lib.
  * On passe donc par `apiClient.callEndpoint(<constante>)` (comme PASSWORD_RESET). À basculer sur
  * `endpointApi.createInvitationLink` / `endpointApi.relaunchInvitation` à la prochaine publication.
+ *
+ * Les deux aboutissent à un e-mail (relance) ou fabriquent un lien qui partira par e-mail : leur
+ * charge utile porte donc le contexte costum du site. Sans lui, le legacy brande au générique et,
+ * surtout, construit le lien sur SON hôte au lieu de `costum.host` — un lien d'invitation qui pointe
+ * ailleurs que sur le site est un lien mort pour l'invité.
+ * `withSiteCostumParams` ne pose le trio que si le contrat EMBARQUÉ dans la lib installée déclare
+ * `costumSlug` : les schémas de requête sont validés par AJV en `additionalProperties:false` AVANT
+ * l'envoi, l'ajouter en aveugle casserait l'appel tant que la lib publiée ignore le champ.
  */
 export function useInvitationActions() {
   const { contextId, contextType } = useCocolight();
@@ -28,11 +37,19 @@ export function useInvitationActions() {
     setBusy(true);
     try {
       const client = await getApiClient();
-      const res = await client.callEndpoint("CREATE_INVITATION_LINK", {
-        targetType: contextType,
-        targetId: contextId,
-        isAdmin: isAdmin ? "true" : "false",
-      });
+      const res = await client.callEndpoint(
+        "CREATE_INVITATION_LINK",
+        withSiteCostumParams(
+          client,
+          "CREATE_INVITATION_LINK",
+          {
+            targetType: contextType,
+            targetId: contextId,
+            isAdmin: isAdmin ? "true" : "false",
+          },
+          { contextId, contextType },
+        ),
+      );
       const body = (res?.data ?? res) as { result?: { link?: string } | false };
       const link = body && body.result && typeof body.result === "object" ? body.result.link : undefined;
       if (!link) {
@@ -59,7 +76,10 @@ export function useInvitationActions() {
     setBusy(true);
     try {
       const client = await getApiClient();
-      const res = await client.callEndpoint("RELAUNCH_INVITATION", { id: userId });
+      const res = await client.callEndpoint(
+        "RELAUNCH_INVITATION",
+        withSiteCostumParams(client, "RELAUNCH_INVITATION", { id: userId }, { contextId, contextType }),
+      );
       const body = (res?.data ?? res) as { result?: boolean; msg?: string };
       if (body?.result) {
         toast.success(t("AdminInvitation.relaunchSent"));

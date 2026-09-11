@@ -23,7 +23,7 @@ import type { SearchType } from "@/modules/search/schema";
 
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
 import { useReferenceElement, type AnnotableEntity, type ReferencingCarrier } from "../hooks/useReferenceElement";
-import { ensureCostumScope } from "../lib/ensureCostumScope";
+import { ensureCostumScope } from "@/lib/ensureCostumScope";
 import type { AdminReferenceSection as AdminReferenceSectionConfig, AdminSection } from "../schema";
 import { formatCell, getPath } from "./resourceHelpers";
 

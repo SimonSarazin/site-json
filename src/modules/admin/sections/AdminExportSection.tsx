@@ -12,7 +12,7 @@ import { useT } from "@/hooks/useT";
 import "@/modules/admin/i18n";
 
 import { downloadCsv } from "../lib/downloadCsv";
-import { ensureCostumScope } from "../lib/ensureCostumScope";
+import { ensureCostumScope } from "@/lib/ensureCostumScope";
 import { validationStatusFilter } from "../lib/validationFilter";
 import type { AdminExportSection as AdminExportSectionConfig, AdminSection } from "../schema";
 

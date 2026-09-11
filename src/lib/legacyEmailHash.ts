@@ -26,7 +26,13 @@ export type LegacyHashTarget =
   /** `#page.type.<collection>.id.<id>[.view.<vue>…]` — nécessite une résolution id → slug. */
   | { kind: 'element'; type: string; id: string; view: string | null }
   /** `#@<slug>` — le slug est déjà là, aucune résolution nécessaire. */
-  | { kind: 'slug'; slug: string };
+  | { kind: 'slug'; slug: string }
+  /**
+   * `#settings.redirect` — le lien « ici » du PIED DE PAGE de TOUS les e-mails legacy
+   * (`themes/CO2/views/layouts/mail/footer.php:87`, « pour ne plus recevoir ces e-mails, cliquez ici »),
+   * qui ouvre les réglages du compte CONNECTÉ. Aucun id : la cible est « moi ».
+   */
+  | { kind: 'settings' };
 
 /**
  * Analyse un fragment d'URL legacy.
@@ -47,6 +53,9 @@ export function parseLegacyHash(hash: string | null | undefined): LegacyHashTarg
   try { raw = decodeURIComponent(brut); } catch { raw = brut; }
   raw = raw.trim();
   if (!raw) return null;
+
+  // `#settings.redirect` — réglages du compte connecté (pied de page de chaque e-mail legacy).
+  if (/^settings\.redirect(?:[./?#].*)?$/.test(raw)) return { kind: 'settings' };
 
   // `#@slug` — profil par slug (le legacy l'émet dans quelques templates ; site-json n'a pas de
   // route `/@slug`, mais `/profil/:slug` fait le même travail).
