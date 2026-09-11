@@ -145,17 +145,26 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     await expect(artois).toHaveAttribute("data-state", "unchecked");
   });
 
-  test("/temoignages : la page « Paroles de parents » rend (recherche)", async ({ page }) => {
+  test("/temoignages : la page « Paroles de parents » rend (filtres à gauche)", async ({ page }) => {
     // Réconciliation 24/07 (main canonique) : la parole passe par la page
-    // /temoignages de Thomas (searchHeader + searchProStatic) — l'ancienne
-    // /paroles du MR a été retirée comme doublon.
+    // /temoignages de Thomas — l'ancienne /paroles du MR a été retirée comme doublon.
+    // 09/09 : la page échange son searchHeader à 5 dropdowns contre un searchHeader
+    // titre-seul (`showSearch:false`) + un `gridLayout` filtres/liste. Le champ de
+    // recherche « Rechercher une parole… » du bandeau n'existe donc plus : c'est le
+    // panneau `filters` qui porte désormais la recherche.
     await page.goto("/temoignages", { waitUntil: "domcontentloaded" });
     await waitForHydration(page);
 
     await expect(
       page.getByRole("heading", { name: "Paroles de parents" }).first(),
     ).toBeVisible();
-    await expect(page.getByPlaceholder("Rechercher une parole…")).toBeVisible();
+    // Gabarit « filtres à gauche » : la sidebar desktop de `FiltersSection` est le marqueur
+    // stable du nouveau rendu. Scopé à l'`aside` — le champ de recherche du panneau est
+    // rendu DEUX fois (bloc mobile `lg:hidden` + sidebar `hidden lg:block`), donc un
+    // `getByPlaceholder` global viserait la copie masquée.
+    const panneau = page.locator("aside").first();
+    await expect(panneau.getByRole("heading", { name: "Filtres" })).toBeVisible();
+    await expect(panneau.getByPlaceholder(/Rechercher par nom/i)).toBeVisible();
   });
 
   test("/territoire/arrageois : bandeau et liste des communes", async ({ page }) => {

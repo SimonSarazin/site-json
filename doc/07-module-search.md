@@ -468,6 +468,7 @@ Section bandeau de filtres **horizontal** (variante de `FiltersSection` présent
 | Prop | Type | Défaut | Description |
 |------|------|--------|-------------|
 | `headline` | LocalizedString | — | Titre principal `h1` |
+| `headlineFromFilter` | string | — | `id` d'un `dropdownFilters` dont la **valeur sélectionnée remplace** le `headline` (qui reste le repli quand rien n'est sélectionné). Pour une page dont l'identité EST ce filtre (`/theme?theme=…`, `/public/*?public=…`). Le filtre visé est cherché dans la liste **complète**, donc il peut être `hidden` ; plusieurs valeurs sont jointes par « · », **dans l'ordre des options** (pas des clics), et une valeur dont l'option n'existe plus est ignorée. Logique pure : `lib/headlineFromFilter.ts`. ⚠️ Le titre devient le **libellé de l'option** : il doit donc être traduit dans toutes les locales déclarées, sans quoi le `h1` diverge du `<title>` |
 | `subhead` | LocalizedString | — | Sous-titre |
 | `headlineClassName` | string | `"text-foreground"` | Override classe couleur du `h1`. Utile sur fonds sombres fixes (`bg-ocean-gradient`) : `"text-white dark:text-foreground"` |
 | `subheadClassName` | string | `"text-foreground"` | Override classe couleur du sous-titre. Mettre `""` pour hériter sans forcer `text-foreground` |
@@ -1300,11 +1301,12 @@ contrat de config lu par un hook normalizer.
 
 - **`TestimonialConfSchema`** (`TestimonialConf`) — champs `.partial()` : `design`
   (enum `["bubble"]`), `quoteField`, `titleField`, `dateField`, `subtitleField`,
-  `audioField`, `badge` (`{field, colors?}`), `accent` (`{field, colors?}`),
+  `audioField`, `imageField`, `badge` (`{field, colors?}`), `accent` (`{field, colors?}`),
   `facets` (`PreviewFacetSchema[]`). Replis **code** appliqués par
   `useTestimonialData` (config jamais parsée par Zod au runtime) : `design`→`bubble`,
   `quoteField`→`description`, `titleField`→`name`, `dateField`→`created`,
-  `audioField`→`medias`.
+  `audioField`→`medias`, `imageField`→`profilMediumImageUrl` puis `profilImageUrl`
+  puis la 1re image de `medias`.
 - **`ResourceConfSchema`** (`ResourceConf`) — `.partial()` : `design` (enum
   `["card"]`), `titleField`, `descriptionField`, `dateField`, `imageField`, `badge`
   (`{field, colors?, icons?}`), `cityField`, `urlsField`, `mediasField`, `facets`.
