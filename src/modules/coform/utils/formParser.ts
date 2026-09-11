@@ -1671,7 +1671,11 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
         // « Invalid input: expected object, received string » s'affichait sous le
         // champ dès l'ouverture d'un formulaire vierge. Le `.optional()` du
         // schéma ne rattrape rien, car `""` n'est pas `undefined` ; et pour un
-        // champ requis (le cas courant) il n'y a même pas d'`optional`.
+        // champ requis (le cas courant) il n'y a même pas d'`optional`. Le composant
+        // ne sème rien au montage (à dessein : il ne doit pas salir le formulaire),
+        // donc la valeur vide se construit ICI — et ici seulement : une seconde
+        // clause identique, héritée d'une fusion, était du code mort (esbuild :
+        // « This case clause will never be evaluated »).
         case "categorizedCheckbox":
           defaultValues[field.name] = { list: [], sublist: {} } satisfies CategorizedCheckboxValue;
           break;
@@ -1724,16 +1728,6 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
         case "pourContre":
         case "aapEvaluation":
         case "chooseProposal":
-          break;
-
-        case "categorizedCheckbox":
-          // Le schéma attend `{ list, sublist }`. Le défaut générique `""` le fait
-          // échouer même quand le champ n'est PAS requis (`z.object(...).optional()`
-          // accepte `undefined`, pas une chaîne) : une étape qui contient ce champ
-          // serait jugée invalide à jamais, et la garde de soumission finale en
-          // ferait un mur. Le composant ne sème rien au montage (à dessein : il ne
-          // doit pas salir le formulaire), donc la valeur vide se construit ICI.
-          defaultValues[field.name] = { list: [], sublist: {} };
           break;
 
         default:
