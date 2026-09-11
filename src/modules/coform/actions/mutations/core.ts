@@ -25,6 +25,19 @@ export interface CoFormMutationContext {
   formId: string;
   /** ID de la réponse cible (présent pour update/delete, absent pour création). */
   answerId?: string;
+  /**
+   * Clés SUPPLÉMENTAIRES à invalider, propres à l'appelant.
+   *
+   * Une écriture coform peut périmer des caches que le module coform ne connaît
+   * pas — l'annuaire et les facettes d'un AAC, par exemple, dont la population
+   * dépend de la sélection. Les invalider dans le `onSuccess` passé à `mutate()`
+   * ne suffit PAS : React Query saute les callbacks par appel dès que
+   * l'observateur n'a plus d'abonné (composant démonté). Un utilisateur qui
+   * confirme puis revient à la liste avant la réponse verrait donc le cache
+   * d'avant. Déclarées ici, elles vivent sur la mutation et survivent au
+   * démontage.
+   */
+  extraInvalidate?: QueryKey[];
 }
 
 /**
@@ -114,7 +127,10 @@ export function createCoFormMutation<TParams = void, TData = void>(
       getSuccessParams: config.getSuccessParams
         ? (data, variables) => config.getSuccessParams!(variables, data)
         : undefined,
-      invalidateQueries: config.invalidate ? config.invalidate(ctx) : [],
+      invalidateQueries: [
+        ...(config.invalidate ? config.invalidate(ctx) : []),
+        ...(ctx.extraInvalidate ?? []),
+      ],
     });
   };
 }

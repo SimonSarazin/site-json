@@ -468,6 +468,7 @@ Section bandeau de filtres **horizontal** (variante de `FiltersSection` présent
 | Prop | Type | Défaut | Description |
 |------|------|--------|-------------|
 | `headline` | LocalizedString | — | Titre principal `h1` |
+| `headlineFromFilter` | string | — | `id` d'un `dropdownFilters` dont la **valeur sélectionnée remplace** le `headline` (qui reste le repli quand rien n'est sélectionné). Pour une page dont l'identité EST ce filtre (`/theme?theme=…`, `/public/*?public=…`). Le filtre visé est cherché dans la liste **complète**, donc il peut être `hidden` ; plusieurs valeurs sont jointes par « · », **dans l'ordre des options** (pas des clics), et une valeur dont l'option n'existe plus est ignorée. Logique pure : `lib/headlineFromFilter.ts`. ⚠️ Le titre devient le **libellé de l'option** : il doit donc être traduit dans toutes les locales déclarées, sans quoi le `h1` diverge du `<title>` |
 | `subhead` | LocalizedString | — | Sous-titre |
 | `headlineClassName` | string | `"text-foreground"` | Override classe couleur du `h1`. Utile sur fonds sombres fixes (`bg-ocean-gradient`) : `"text-white dark:text-foreground"` |
 | `subheadClassName` | string | `"text-foreground"` | Override classe couleur du sous-titre. Mettre `""` pour hériter sans forcer `text-foreground` |
@@ -1078,7 +1079,13 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 
 > `news`, `testimonial` et `resource` ne sont acceptées **que** par `card.type` : l'enum `card.variant` (schema.ts) ne les inclut pas (comme `overlay`).
 
-**`card.structureAction`** (carte `card-answer` uniquement, `schema.ts:461`) — ce que fait le bouton « Fiche structure » : `{"kind": "profil"}` navigue vers `/profil/:slug` (comportement historique) ; `{"kind": "preview"}` ouvre la fiche **en modale** — `SwitchDetailsMode` monté en `dialog` avec `preview: {type: "structure"}` (`CardAnswer.tsx:215-221`) — sans quitter la liste ni perdre filtres et position de défilement. Défaut **côté code** `profil` : `CardAnswer.tsx:38` teste `=== "preview"`, donc clé absente = navigation ; la config n'étant jamais parsée par Zod au runtime, la poser **explicitement** est le seul moyen d'activer la modale. L'entité complète (la carte ne porte qu'un sous-document de la structure) n'est chargée **qu'au clic** — `useEntityBySlugQuery` conditionné à l'ouverture — et le bouton reste `disabled` pendant ce chargement. Même forme que `map.itemAction`, à dessein : un seul vocabulaire d'action dans le module. Posé en config réelle : `config.prod.maison-sport-sante-la-tampon.json:795`.
+**`card.structureAction`** (carte `card-answer` uniquement, `schema.ts:476`) — le bouton « Fiche structure », **deux axes orthogonaux**, tous deux optionnels : un site peut ne régler que la visibilité sans toucher à l'action.
+
+**`kind`** = ce que **fait** le bouton : `"profil"` / absent → navigue vers `/profil/:slug` (comportement historique) ; `"preview"` → ouvre la fiche **en modale** — `SwitchDetailsMode` monté en `dialog` avec `preview: {type: "structure"}` — sans quitter la liste ni perdre filtres et position de défilement. Défaut **côté code** `profil` : `CardAnswer.tsx:40` teste `=== "preview"`, donc clé absente = navigation. L'entité complète (la carte ne porte qu'un sous-document de la structure) n'est chargée **qu'au clic** — `useEntityBySlugQuery` conditionné à l'ouverture — et le bouton reste `disabled` pendant ce chargement.
+
+**`audience`** = **qui le voit** : `"all"` / absent → tout le monde (historique) ; `"managers"` → super-admin plateforme, admin du costum porteur, ou admin **validé** de la structure organisatrice de la carte, via `isCoformAnswerManager` (`lib/coformAnswer.ts`) — le **même** prédicat que le bouton « Modifier » du détail, parce que la fiche structure est un outil de gestion (affiliation, représentant légal, documents) et non une information utile à qui compare des créneaux. Le bouton est **masqué**, jamais `disabled` : un bouton grisé inviterait à demander un droit. Le gate est conditionné par `useHydrated` (`CardAnswer.tsx:70-73`) — `/creneaux` est prérendue en SSR où `me` vaut toujours `null` : le bouton est donc absent du HTML serveur **et** du 1er render client, puis apparaît après hydratation chez les seuls ayants droit (aucun mismatch ; épinglé par `CardAnswer.ssr.test.tsx`, qui rend avec le vrai hook). Le gate est posé **avant** le branchement `kind`, donc il couvre les deux trajectoires (modale et navigation). ⚠️ Règle de **pertinence d'affichage**, **pas** une frontière de sécurité : `/profil/:slug` et `/structure` restent des routes publiques et le slug de la structure part déjà dans le HTML servi à tout visiteur.
+
+La config n'étant jamais parsée par Zod au runtime, poser les clés **explicitement** est le seul moyen de les activer. Même forme que `map.itemAction`, à dessein : un seul vocabulaire d'action dans le module. Posé en config réelle : `config.prod.sport-sante-bien-etre.json` (`audience` seul → les gestionnaires gardent la navigation historique) ; `config.prod.maison-sport-sante-la-tampon.json` (`kind: "preview"`).
 
 Toutes les variantes sont lazy-loadées. Une page **mono-type** ne télécharge que le chunk configuré ; une liste **hétérogène** (`list.itemRules`, cf. [§Rendu PAR ITEM](#rendu-par-item-des-listes-hétérogènes-listitemrules)) en charge un par famille présente — c'est pourquoi `SearchListView` enveloppe chaque carte dans son **propre `<Suspense>`**. Les **couleurs en dur** des cartes ont été remplacées par des **tokens de thème** (commits 4936978 / ad11831 / 06baffb) → chaque carte s'adapte au thème du site et au mode clair/sombre.
 
@@ -1371,11 +1378,12 @@ contrat de config lu par un hook normalizer.
 
 - **`TestimonialConfSchema`** (`TestimonialConf`) — champs `.partial()` : `design`
   (enum `["bubble"]`), `quoteField`, `titleField`, `dateField`, `subtitleField`,
-  `audioField`, `badge` (`{field, colors?}`), `accent` (`{field, colors?}`),
+  `audioField`, `imageField`, `badge` (`{field, colors?}`), `accent` (`{field, colors?}`),
   `facets` (`PreviewFacetSchema[]`). Replis **code** appliqués par
   `useTestimonialData` (config jamais parsée par Zod au runtime) : `design`→`bubble`,
   `quoteField`→`description`, `titleField`→`name`, `dateField`→`created`,
-  `audioField`→`medias`.
+  `audioField`→`medias`, `imageField`→`profilMediumImageUrl` puis `profilImageUrl`
+  puis la 1re image de `medias`.
 - **`ResourceConfSchema`** (`ResourceConf`) — `.partial()` : `design` (enum
   `["card"]`), `titleField`, `descriptionField`, `dateField`, `imageField`, `badge`
   (`{field, colors?, icons?}`), `cityField`, `urlsField`, `mediasField`, `facets`.

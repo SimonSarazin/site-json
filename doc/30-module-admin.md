@@ -147,7 +147,8 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
   "label": { "fr": "Équipements" },
   "source": { "defaultFilters": { "type": "recoveryCenter" }, "defaultSortBy": { "name": 1 } },
   "columns": ["name", { "path": "address.addressLocality", "label": { "fr": "Commune" } },
-              { "path": "medias", "label": { "fr": "Audio" }, "type": "audio" }],
+              { "path": "medias", "label": { "fr": "Audio" }, "type": "audio" },
+              { "path": "structure.name", "sortable": false }],  // sortable:false = colonne non triable (cf. answers)
   "create": "inherit", "edit": "inherit",       // false | "inherit" | "add-<key>"/"edit-<key>"
   "createDefaults": { "category": "appel-projet" },  // valeurs semées dans la modale d'AJOUT
   "rowActions": ["edit", "delete", "validate", "reference", "setFeatured"],
@@ -278,8 +279,11 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
     chaque `columns[].path`, de `status.field`, d'`exclusiveField` et des `source.defaultFields`.
     Règle utile au configurateur : **tout champ à afficher ou à filtrer doit avoir sa racine
     présente dans l'une de ces quatre sources**, sinon il n'est pas projeté et revient vide.
-    L'invalidation post-mutation couvre `admin-*` **et** les listes publiques
-    (`SEARCH_STATIC_LIST/MAP_PREFIX`).
+    L'invalidation post-mutation couvre `admin-*` **et** toutes les surfaces publiques via
+    `publicSurfaceKeys(slug)` (`src/lib/queryKeys.ts`) — listes search + compteurs, agenda, fil blog —
+    le même jeu de clés que valider / référencer / supprimer. (Avant le 07/09/2026 : seulement les
+    deux listes statiques ; un `publicationStatus` marqué depuis l'admin laissait le fil d'actualités
+    sur son cache.)
 
     ```jsonc
     "status": { "mode": "statusField",
@@ -301,6 +305,13 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
     par `readStatusValue` (resourceHelpers) : chemin complet d'abord, **repli sur la clé feuille à
     plat**. Les `columns` d'une resource answers doivent viser la **shape aplatie** (`name`,
     `structure.name`, `<formKey+clé>` à plat…), pas les chemins imbriqués.
+  - ⚠ **Corollaire — `"sortable": false` sur ces colonnes-là.** Chaque en-tête est un bouton de tri
+    **serveur** : il écrase `defaultSortBy` par `{[path]: dir}`. Or une colonne aplatie par le hook
+    est FABRIQUÉE après la requête Mongo — donc après le tri et après la pagination : trier dessus
+    ordonne sur une clé absente (ordre arbitraire, identique en asc et desc) tout en perdant l'ordre
+    par défaut, et déstabilise le skip/limit du scroll infini. Poser `sortable: false` rend un
+    libellé simple ; seuls les **vrais champs Mongo** (`created`, `updated`…) restent triables.
+    Posé en config réelle : `config.prod.sport-sante-bien-etre.json` → onglet `moderation`.
 
 ### `import`
 

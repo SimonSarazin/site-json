@@ -78,7 +78,8 @@ interface FiltreAOptions {
 export type FiltreResolu<T extends { options?: unknown }> = T & {
   optionsReady: boolean;
   /** TOUJOURS un tableau, même avant réception : une config qui ne déclare qu'`optionsFrom` n'en
-   *  écrit pas, et les consommateurs lisent `filter.options` sans garde. */
+   *  écrit pas, et les consommateurs lisent `filter.options` sans garde — `SearchHeaderSection`
+   *  en fait 7 lectures directes, et un filtre 100 % dynamique n'a aucune option déclarée. */
   options: NonNullable<T["options"]>;
 };
 
@@ -205,11 +206,13 @@ export function useDynamicFilterOptions<T extends FiltreAOptions>(
     }));
 
     return filtres.map((f) => {
-      // `options` TOUJOURS présent en sortie : une config qui ne déclare qu'`optionsFrom` n'écrit pas
-      // de tableau, et le `default([])` du schéma Zod ne s'applique pas — la config est chargée telle
-      // quelle, jamais parsée au runtime. Les consommateurs, eux, lisent `filter.options` sans garde
-      // (`SearchHeaderSection.getDropdownSelectedValues`) : c'est ici, au seul point qui résout les
-      // options, que le tableau vide doit être garanti.
+      // `options` est OBLIGATOIRE dans le type de sortie du schéma (`.default([])`), mais la config JSON
+      // n'est jamais parsée par Zod au runtime : un filtre 100 % dynamique (`optionsFrom` seul, aucune
+      // option écrite à la main — le cas du filtre « Catégorie » de parent62 depuis le retrait des
+      // catégories par défaut) arrive donc ici avec `options: undefined`, et les 7 lectures de
+      // `filter.options` de `SearchHeaderSection` (`getDropdownSelectedValues`) plantaient la section
+      // entière. Ce hook est le normaliseur de la liste consommée par le rendu : le défaut se pose
+      // ICI, au seul point qui résout les options.
       const declarees = f.options ?? [];
 
       if (f.optionsFrom?.shapes) {

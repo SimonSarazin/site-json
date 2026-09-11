@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  canEditCoformAnswer,
+  isCoformAnswerManager,
   getAnswerRef,
   getAnswerStructureId,
   normalizeStatus,
@@ -66,7 +66,7 @@ describe("getAnswerStructureId", () => {
   });
 });
 
-describe("canEditCoformAnswer", () => {
+describe("isCoformAnswerManager", () => {
   const ORG_ID = "69281757564b0621d52ebb67";
   const answer = { structure: { _id: { _str: ORG_ID } } };
   const lambda = { isSuperAdmin: () => false, isAdminPlatform: () => false };
@@ -74,18 +74,18 @@ describe("canEditCoformAnswer", () => {
 
   it("autorise le super-admin plateforme, même sans lien avec la structure", () => {
     const superAdmin = { isSuperAdmin: () => true, isAdminPlatform: () => false };
-    expect(canEditCoformAnswer(answer, { me: superAdmin, entity: notCostumAdmin })).toBe(true);
+    expect(isCoformAnswerManager(answer, { me: superAdmin, entity: notCostumAdmin })).toBe(true);
     const platformAdmin = { isSuperAdmin: () => false, isAdminPlatform: () => true };
-    expect(canEditCoformAnswer(answer, { me: platformAdmin, entity: notCostumAdmin })).toBe(true);
+    expect(isCoformAnswerManager(answer, { me: platformAdmin, entity: notCostumAdmin })).toBe(true);
   });
 
   it("autorise l'admin du costum (entité porteuse du site)", () => {
-    expect(canEditCoformAnswer(answer, { me: lambda, entity: { isAdmin: () => true } })).toBe(true);
+    expect(isCoformAnswerManager(answer, { me: lambda, entity: { isAdmin: () => true } })).toBe(true);
   });
 
   it("autorise l'admin de la structure organisatrice du créneau", () => {
     const orgAdmin = { ...lambda, serverData: { links: { memberOf: { [ORG_ID]: { isAdmin: true } } } } };
-    expect(canEditCoformAnswer(answer, { me: orgAdmin, entity: notCostumAdmin })).toBe(true);
+    expect(isCoformAnswerManager(answer, { me: orgAdmin, entity: notCostumAdmin })).toBe(true);
   });
 
   it("refuse un admin d'une AUTRE structure", () => {
@@ -93,7 +93,7 @@ describe("canEditCoformAnswer", () => {
       ...lambda,
       serverData: { links: { memberOf: { "111111111111111111111111": { isAdmin: true } } } },
     };
-    expect(canEditCoformAnswer(answer, { me: otherOrgAdmin, entity: notCostumAdmin })).toBe(false);
+    expect(isCoformAnswerManager(answer, { me: otherOrgAdmin, entity: notCostumAdmin })).toBe(false);
   });
 
   it("refuse un droit d'admin non validé (pending / invitation / à valider)", () => {
@@ -101,16 +101,16 @@ describe("canEditCoformAnswer", () => {
       ...lambda,
       serverData: { links: { memberOf: { [ORG_ID]: { isAdmin: true, ...extra } } } },
     });
-    expect(canEditCoformAnswer(answer, { me: link({ isAdminPending: true }), entity: notCostumAdmin })).toBe(false);
-    expect(canEditCoformAnswer(answer, { me: link({ toBeValidated: true }), entity: notCostumAdmin })).toBe(false);
-    expect(canEditCoformAnswer(answer, { me: link({ isInviting: true }), entity: notCostumAdmin })).toBe(false);
+    expect(isCoformAnswerManager(answer, { me: link({ isAdminPending: true }), entity: notCostumAdmin })).toBe(false);
+    expect(isCoformAnswerManager(answer, { me: link({ toBeValidated: true }), entity: notCostumAdmin })).toBe(false);
+    expect(isCoformAnswerManager(answer, { me: link({ isInviting: true }), entity: notCostumAdmin })).toBe(false);
   });
 
   it("refuse un simple membre, un visiteur non connecté, et une answer sans structure", () => {
     const member = { ...lambda, serverData: { links: { memberOf: { [ORG_ID]: { isAdmin: false } } } } };
-    expect(canEditCoformAnswer(answer, { me: member, entity: notCostumAdmin })).toBe(false);
-    expect(canEditCoformAnswer(answer, { me: null, entity: notCostumAdmin })).toBe(false);
-    expect(canEditCoformAnswer({}, { me: lambda, entity: notCostumAdmin })).toBe(false);
+    expect(isCoformAnswerManager(answer, { me: member, entity: notCostumAdmin })).toBe(false);
+    expect(isCoformAnswerManager(answer, { me: null, entity: notCostumAdmin })).toBe(false);
+    expect(isCoformAnswerManager({}, { me: lambda, entity: notCostumAdmin })).toBe(false);
   });
 });
 

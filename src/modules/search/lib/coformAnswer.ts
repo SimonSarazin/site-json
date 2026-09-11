@@ -160,8 +160,8 @@ interface MemberOfLink {
   isInviting?: boolean;
 }
 
-/** `me` vu par la règle d'édition — structurel : le `User` du SDK y est assignable. */
-export interface AnswerEditorMe {
+/** `me` vu par la règle de gestion — structurel : le `User` du SDK y est assignable. */
+export interface AnswerManagerMe {
   isSuperAdmin?: () => boolean;
   isAdminPlatform?: () => boolean;
   serverData?: { links?: { memberOf?: Record<string, MemberOfLink> } };
@@ -172,6 +172,12 @@ export interface AnswerEditorMe {
  * sous `structure._id`, dont l'encodage dépend du chemin de sérialisation
  * (EJSON `$oid`, dump `_str`/`$id`, ou string déjà aplatie côté SDK) : on accepte
  * les quatre plutôt que de parier sur celui d'un endpoint donné.
+ *
+ * ⚠️ UNE seule structure : le hook costum backend écrase `structure` à chaque tour
+ * de sa boucle de jointure (`AssociationEkilibre`/`SportSanteBienetre::searchAnswers`),
+ * donc un créneau co-porté n'expose que la DERNIÈRE. Un admin d'une co-structure
+ * non retenue n'est pas reconnu — élargir demanderait que le backend renvoie la
+ * liste (fiche `ENDPOINT.md`), pas un contournement côté front.
  */
 export function getAnswerStructureId(serverData: Record<string, unknown> | undefined): string | null {
   const structure = serverData?.structure as Record<string, unknown> | undefined;
@@ -186,23 +192,39 @@ export function getAnswerStructureId(serverData: Record<string, unknown> | undef
  * `useUserAdminOrganizations` : une invitation ou une demande d'admin en attente
  * n'est pas un droit.
  */
-function isValidatedAdminOf(me: AnswerEditorMe | null | undefined, organizationId: string): boolean {
+function isValidatedAdminOf(me: AnswerManagerMe | null | undefined, organizationId: string): boolean {
   const link = me?.serverData?.links?.memberOf?.[organizationId];
   return Boolean(link?.isAdmin && !link.isAdminPending && !link.toBeValidated && !link.isInviting);
 }
 
 /**
- * Qui peut modifier une answer (= un créneau) : **super-admin plateforme**,
- * **admin du costum** porteur du site, ou **admin de la structure organisatrice**.
+ * Qui **a la charge** d'une answer (= un créneau) : **super-admin plateforme**,
+ * **admin du costum** porteur du site, ou **admin validé de la structure organisatrice**.
+ *
+ * UN seul prédicat pour DEUX points d'appel, à dessein :
+ *  - le bouton « Modifier » du détail (`PreviewCoformAnswer`) — droit d'écriture ;
+ *  - le bouton « Fiche structure » de la carte (`CardAnswer`, opt-in
+ *    `card.structureAction.audience`) — la fiche est un outil de GESTION
+ *    (affiliation, représentant légal, documents), pas une information utile à qui
+ *    compare des créneaux.
+ * Les deux répondent à la même question — « cette personne gère-t-elle ce créneau ? ».
+ * D'où le nom : `canEdit…` aurait laissé croire qu'il ne gouverne qu'une écriture, et
+ * un futur resserrement du droit d'édition aurait resserré l'affichage en silence.
  *
  * ⚠️ Volontairement plus large que le `canEdit` renvoyé par le backend, calculé
  * sur la seule PROPRIÉTÉ de la réponse (`editDeniedReason: "not_owner"`) : un
  * admin de costum n'est pas l'auteur du créneau et serait refusé à tort. Le
  * backend reste la source de vérité au moment du save.
+ * ⚠️ Côté AFFICHAGE, ce n'est PAS une frontière de sécurité : `/profil/:slug` et
+ * `/structure` restent des routes publiques, et le slug de la structure part déjà
+ * dans l'état React Query sérialisé servi à tout visiteur.
+ * ⚠️ Lien DIRECT uniquement : pas de remontée parent/organizer, contrairement au
+ * `Authorisation::isElementAdmin` du backend — un admin qui ne l'est que par
+ * hiérarchie ne sera pas reconnu ici.
  */
-export function canEditCoformAnswer(
+export function isCoformAnswerManager(
   serverData: Record<string, unknown> | undefined,
-  actor: { me?: AnswerEditorMe | null; entity?: { isAdmin?: () => boolean } | null },
+  actor: { me?: AnswerManagerMe | null; entity?: { isAdmin?: () => boolean } | null },
 ): boolean {
   // super-admin plateforme (`isSuperAdmin`/`isAdminPlatform`) OU admin de
   // l'entité porteuse du costum — même résolution que le gate de la page /admin.

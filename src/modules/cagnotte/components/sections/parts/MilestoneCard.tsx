@@ -39,21 +39,15 @@ import type {
   FundingMilestone as Milestone,
   FundingAction as ProjectAction,
 } from "@/modules/cagnotte/types";
+import type { MilestoneCardPermissions } from "@/modules/cagnotte/permissions/types";
 
 /**
- * Permissions exposées par `useCagnottePermissions` — typage local minimal pour éviter
- * un import circulaire (le hook lui-même importe le module cagnotte).
+ * Permissions exposées par `useCagnottePermissions`. Le contrat vit dans
+ * `permissions/types` — un fichier de types purs, sans import : le reprendre ici en
+ * copie locale l'avait fait diverger (l'`authorId` du calculateur y manquait, donc
+ * l'auteur d'une action n'obtenait jamais ses boutons sur cet écran).
  */
-export interface MilestoneCardPermissions {
-  canCreateAction: (input: { status: Milestone["status"] }) => boolean;
-  canEditMilestone: (input: { status: Milestone["status"] }) => boolean;
-  canCloseMilestone: (input: { status: Milestone["status"] }) => boolean;
-  canDeleteMilestone: (input: { status: Milestone["status"]; hasTransactions: boolean }) => boolean;
-  canCandidateAction: (input: { status: ProjectAction["status"]; contributorIds: string[] }) => boolean;
-  canMarkActionDone: (input: { status: ProjectAction["status"]; contributorIds: string[] }) => boolean;
-  canEditAction: (input: { status: ProjectAction["status"]; contributorIds: string[] }) => boolean;
-  canDeleteAction: (input: { status: ProjectAction["status"]; contributorIds: string[] }) => boolean;
-}
+export type { MilestoneCardPermissions };
 
 export interface MilestoneCardProps {
   milestone: Milestone;
@@ -217,6 +211,7 @@ export function MilestoneCard({
                 const actionLike = {
                   status: action.status,
                   contributorIds: action.contributors.map((c) => c.id),
+                  authorId: action.authorId,
                 };
                 const showCandidate = permissions.canCandidateAction(actionLike);
                 const showMarkDone = permissions.canMarkActionDone(actionLike);
