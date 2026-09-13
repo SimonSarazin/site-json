@@ -97,7 +97,6 @@ source .env.test && npm run test:e2e
 │   │   └── components/sections/parts/
 │   │       ├── MeeteemCard.test.tsx         # Composant card Meeteem
 │   │       ├── MeeteemFilters.test.tsx      # Composant filtres Meeteem
-│   │       ├── MeeteemMapPlaceholder.test.tsx # Placeholder carte Meeteem
 │   │       └── MeeteemViewToggle.test.tsx   # Toggle vue Meeteem
 │   ├── auth/hooks/__tests__/
 │   │   └── useSSOAuth.test.ts               # Hook SSO auth
@@ -574,8 +573,14 @@ D'autres tests CoForm couvrent : `formParser.test.ts` (parsing schéma de form),
 - `utils/cardFilters.test.ts` : filtres de cards
 - `components/sections/parts/MeeteemCard.test.tsx` : composant card
 - `components/sections/parts/MeeteemFilters.test.tsx` : composant filtres
-- `components/sections/parts/MeeteemMapPlaceholder.test.tsx` : placeholder carte
+- `utils/ampliUsersGeo.test.ts` : contributeurs → entités carto (id, Null Island, non localisés)
 - `components/sections/parts/MeeteemViewToggle.test.tsx` : toggle de vue
+- `components/sections/AmpliFeatures.test.tsx` : section « Proposez votre idée » (formulaire en ligne, compteurs)
+- `components/sections/parts/AmpliIdeaForm.test.tsx` : formulaire de proposition en ligne (accès, soumission, édition)
+- `components/sections/AmpliHeader.test.tsx` : les 3 CTA du hero et leurs ancres
+- `components/sections/parts/AmpliJoinButton.test.tsx` : demande d'adhésion (organisation ou projet)
+- `utils/scrollToSection.test.ts` : défilement + focus vers une section
+- `components/sections/parts/MeeteemAnswerModal.test.tsx` : détail d'une réponse en lecture seule
 
 #### Cagnotte (`src/modules/cagnotte/`)
 

@@ -1,25 +1,32 @@
+import { Suspense } from "react";
+import { lazy } from "vite-preload";
 import { AmpliConfig } from "../../schema";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import { Button } from "@/components/ui/button";
-import { Lightbulb, Send, TrendingUp } from "lucide-react";
+import { Lightbulb, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getSummaryData } from "../../helpers/summary";
+import { AMPLI_SECTION_IDS } from "../../constants/sectionIds";
+
+// Le moteur de formulaire coform est LOURD : il ne doit pas peser sur le chunk
+// de l'onglet home. Convention lazy du dépôt (`vite-preload`, export default,
+// sous `<Suspense>`).
+const AmpliIdeaForm = lazy(() => import("./parts/AmpliIdeaForm"));
 
 interface AmpliFeaturesProps {
     props: AmpliConfig["props"]["features"];
+    /** Formulaire de la page (`props.coform`) — celui qu'on propose de remplir. */
+    coform: string;
     isLoading?: boolean;
     data: Parameters<typeof getSummaryData>[0];
 }
 
-export default function AmpliFeatures({ props, isLoading, data }: AmpliFeaturesProps) {
+export default function AmpliFeatures({ props, coform, isLoading, data }: AmpliFeaturesProps) {
     useLoadNamespace("modules/ampli");
     const t = useT("modules/ampli");
 
-    if(isLoading) {
-        return null;
-    }
-    const summaryData = getSummaryData(data);
+    const summaryData = getSummaryData(data ?? []);
 
     const {
         headline,
@@ -28,28 +35,42 @@ export default function AmpliFeatures({ props, isLoading, data }: AmpliFeaturesP
         summary,
         howItWork,
     } = props || {};
-    
+
+    // Les compteurs attendent le périmètre complet des réponses ; le formulaire,
+    // lui, n'en dépend pas. On ne masque donc plus TOUTE la section pendant le
+    // chargement (c'est ce qui laissait la colonne gauche vide) : seuls les
+    // chiffres passent en squelette.
+    const stat = (value: number, className: string) =>
+        isLoading ? <Skeleton className="h-5 w-8" /> : <span className={className}>{value}</span>;
 
     return (
-        <section id="ampli-feature" className="container mx-auto px-4 sm:px-6 lg:px-8">
+        // `scroll-mt-24` : cible d'ancre du hero, et les en-têtes de site peuvent
+        // être `sticky` — sans marge, le titre de la section finirait dessous.
+        <section
+            id={AMPLI_SECTION_IDS.FEATURES}
+            className="container mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24"
+        >
             <div className="text-center my-4 sm:my-6 md:my-10">
-                <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground text-balance mb-4 sm:mb-6">
                     {headline ? t(headline) : t("AmpliFeatures.headline")}
                 </h2>
-                <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                <p className="text-base sm:text-lg md:text-xl text-muted-foreground text-pretty max-w-3xl mx-auto leading-relaxed">
                     {subhead ? t(subhead) : t("AmpliFeatures.subhead")}
                 </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                 <div className="p-4 forms-container">
-                    <div className="min-h-52">
-
-                    </div>
-                    <Button variant="secondary" size="lg" className="w-full mt-6 bg-primary/25">
-                        <Send className="mr-2" />
-                        {button ? t(button) : t("AmpliFeatures.button")}
-                    </Button>
+                    {/* Formulaire de proposition EN LIGNE : la section décrit le
+                        geste attendu, le formulaire doit être immédiatement
+                        remplissable — pas derrière un bouton. Le libellé
+                        `features.button` de la config devient celui de l'envoi. */}
+                    <Suspense fallback={<Skeleton className="h-80 w-full rounded-xl" />}>
+                        <AmpliIdeaForm
+                            coformId={coform}
+                            submitLabel={String(button ? t(button) : t("AmpliFeatures.button"))}
+                        />
+                    </Suspense>
                 </div>
                 <div className="space-y-6">
                     <Card className="p-6 bg-gradient-card border-primary/20">
@@ -81,21 +102,21 @@ export default function AmpliFeatures({ props, isLoading, data }: AmpliFeaturesP
                             </h3>
                         </div>
                         <div className="space-y-3">
-                            <div className="flex justify-between">
+                            <div className="flex justify-between items-center">
                                 <span className="text-muted-foreground">{summary && summary.submitted ? t(summary.submitted) : t("AmpliFeatures.summary.submitted")}</span>
-                                <span className="font-semibold text-foreground">{summaryData.totalAnswers}</span>
+                                {stat(summaryData.totalAnswers, "font-semibold text-foreground")}
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between items-center">
                                 <span className="text-muted-foreground">{summary && summary.members ? t(summary.members) : t("AmpliFeatures.summary.members")}</span>
-                                <span className="font-semibold text-foreground">{summaryData.totalUsers}</span>
+                                {stat(summaryData.totalUsers, "font-semibold text-foreground")}
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between items-center">
                                 <span className="text-muted-foreground">{summary && summary.amplified ? t(summary.amplified) : t("AmpliFeatures.summary.amplified")}</span>
-                                <span className="font-semibold text-secondary">{summaryData.totalLikes}</span>
+                                {stat(summaryData.totalLikes, "font-semibold text-secondary")}
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between items-center">
                                 <span className="text-muted-foreground">{summary && summary.comments ? t(summary.comments) : t("AmpliFeatures.summary.comments")}</span>
-                                <span className="font-semibold text-secondary">{summaryData.totalComments}</span>
+                                {stat(summaryData.totalComments, "font-semibold text-secondary")}
                             </div>
                         </div>
                     </Card>

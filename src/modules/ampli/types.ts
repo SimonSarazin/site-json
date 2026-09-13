@@ -46,10 +46,18 @@ export interface MeeteemCard {
     serverData: {
       id?: string;
       created?: Date;
+      /** Réactions par utilisateur : `userId -> { status, date }`. */
       vote?: Record<string, unknown>;
       comments?: Record<string, unknown>;
       [key: string]: unknown;
     };
+    /**
+     * Bascule d'une réaction (`Answer.addVote` du SDK) — un seul appel ajoute
+     * OU retire. OPTIONNELLE : au runtime les résultats sont de vraies entités
+     * `Answer` et la méthode est là, mais les fixtures de test construisent des
+     * objets nus. Son absence désactive simplement l'action (compteur figé).
+     */
+    addVote?: (status: string) => Promise<{ removedVoteStatus?: string; inc?: number }>;
   };
   data: MeeteemCardData;
   user?: MeeteemUserInfo;

@@ -5,7 +5,8 @@
       "message": "Messages",
       "network": "Network",
       "dashboard": "Dashboard",
-      "news": "News"
+      "news": "News",
+      "stats": "Statistics"
     },
     "comingSoon": {
       "title": "Coming soon",
@@ -16,7 +17,10 @@
     "headline": "Let's amplify common sense",
     "subhead": "An army of humans working for the common good. A peer-to-peer trust network that amplifies your ideas to the whole world.",
     "proposal": "Propose an idea",
-    "join": "Join Now",
+    "browse": "Browse the proposals",
+    "join": "Join the community",
+    "joinPending": "Request sent",
+    "joined": "You are a member",
     "mediaPulse": "Media Pulse",
     "globalAmplification": "Global Amplification",
     "trustedNetwork": "Trusted Network"
@@ -48,6 +52,9 @@
       "amplified": "Ideas amplified",
       "comments": "Discussions generated"
     },
+    "form": {
+      "error": "The submission form could not be loaded"
+    },
     "howItWork": {
       "headline": "How does it work?",
       "stepOne": "You submit your idea.",
@@ -61,15 +68,37 @@
   },
   "AmpliCommunity": {
     "headline": "Trusted Network",
-    "subhead": "A peer-to-peer ecosystem where each member is validated by the community."
+    "subhead": "A peer-to-peer ecosystem where each member is validated by the community.",
+    "map": {
+      "empty": "No contributor is located on the map",
+      "error": "Contributor loading failed: the map could not be filled",
+      "missing_one": "{{count}} contributor has no location ({{located}} of {{total}} shown)",
+      "missing_other": "{{count}} contributors have no location ({{located}} of {{total}} shown)"
+    }
   },
   "AmpliDashboard": {
-    "headline": "Vision Globale",
-    "subhead": "Voir la globalité sur les données fournit par votre communauté."
+    "headline": "Global overview",
+    "subhead": "See the big picture from the data your community provides.",
+    "kpi": {
+      "participants": "Participants",
+      "participantsHint": "Active members who took part",
+      "comments": "Comments",
+      "commentsHint": "Discussions generated",
+      "likes": "Likes",
+      "likesHint": "Appreciations received",
+      "tags": "Tags used",
+      "tagsHint": "Distinct categories"
+    },
+    "topLiked": "Most liked answers",
+    "topCommented": "Most commented answers",
+    "tagsChart": "Tag distribution",
+    "emptyRanking": "No answer to rank yet",
+    "emptyTags": "No tag used yet",
+    "untitled": "Untitled"
   },
   "AmpliNews": {
-    "headline": "Dernières actualités",
-    "subhead": "Restez informé des développements et des succès de notre communauté."
+    "headline": "Latest news",
+    "subhead": "Stay up to date with our community developments and wins."
   },
   "AmpliPage": {
     "notFoundTitle": "Ampli not found",
@@ -82,21 +111,32 @@
     "contributions_other": "{{count}} contributions"
   },
   "MeeteemSection": {
+    "empty": "No answers to show",
     "viewToggle": {
       "answers": "Directory",
       "map": "Map",
       "split": "Split"
     },
     "filters": {
-      "title": "Filters"
+      "title": "Filters",
+      "clearUser": "Clear the author filter"
     },
     "map": {
-      "placeholderTitle": "Interactive map",
-      "placeholderSubtitle": "(requires Leaflet.js)"
+      "error": "Map loading was interrupted: some answers are missing",
+      "empty": "No answer is located on the map"
     },
     "card": {
       "noDate": "N/A",
-      "noUser": "Anonymous"
+      "noUser": "Anonymous",
+      "locate": "Show on map",
+      "details": "Answer details",
+      "detailsLoading": "Loading the answer…",
+      "detailsError": "This answer could not be loaded.",
+      "edit": "Edit",
+      "open": "Open details for {{name}}",
+      "noLocation": "No address provided",
+      "react": "Amplify this answer",
+      "unreact": "Remove my amplification"
     }
   },
   "a11y": {
@@ -104,5 +144,14 @@
     "toggleTag": "Toggle filter {{tag}}",
     "selectUser": "View contributions by {{name}}",
     "loading": "Loading section…"
+  },
+  "toast": {
+    "reactionError": "Could not save your reaction",
+    "error": {
+      "generic": "Something went wrong"
+    }
+  },
+  "AmpliTabs": {
+    "label": "Ampli page navigation"
   }
 }

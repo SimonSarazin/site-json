@@ -23,6 +23,9 @@ export function AmpliSeo({ isLoading, activeTab = 'home' }: AmpliSeoProps) {
             home: "AmpliTemplateDefault.tabs.home",
             message: "AmpliTemplateDefault.tabs.message",
             community: "AmpliTemplateDefault.tabs.network",
+            // `stats` est le segment d'URL réel (cf. routes.tsx) ; `dashboard`
+            // reste mappé pour les liens historiques.
+            stats: "AmpliTemplateDefault.tabs.stats",
             dashboard: "AmpliTemplateDefault.tabs.dashboard",
             news: "AmpliTemplateDefault.tabs.news",
         };

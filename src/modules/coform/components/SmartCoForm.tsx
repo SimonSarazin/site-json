@@ -105,6 +105,19 @@ interface SmartCoFormProps {
    * formulaires de CRÉATION ouverts au public.
    */
   unknownFieldVariant?: "error" | "placeholder";
+  /**
+   * Libellé du bouton d'envoi (mode single-step). Défaut :
+   * `coform.navigation.submit`. Sert aux surfaces hôtes qui portent leur propre
+   * appel à l'action (ex. « Soumettre à la communauté » d'`AmpliFeatures`) —
+   * en multi-step, la navigation du wizard garde ses libellés.
+   */
+  submitButtonText?: string;
+  /**
+   * Masque la bannière du formulaire (titre + image). À poser quand le form est
+   * EMBARQUÉ dans une section qui a déjà son titre : sinon le nom du formulaire
+   * s'affiche en `<h1>` au milieu de la page hôte. Toujours vrai en standalone.
+   */
+  hideBanner?: boolean;
 }
 
 interface LoadingStateProps {
@@ -208,6 +221,8 @@ export function SmartCoForm({
   elementId,
   elementType,
   unknownFieldVariant,
+  submitButtonText,
+  hideBanner = false,
 }: SmartCoFormProps) {
   // Charger les données depuis l'API si formId est fourni
   const {
@@ -474,7 +489,7 @@ export function SmartCoForm({
         formData={effectiveFormData}
         answerData={normalizedDefaults ?? {}}
         answerId={answerId}
-        hideBanner={isStandalone}
+        hideBanner={hideBanner || isStandalone}
         hideStepHeaders={isInputStandalone}
         hideMetadata
       />
@@ -515,6 +530,7 @@ export function SmartCoForm({
         enableDraft={enableDraft}
         existingAnswerMeta={existingAnswerMeta}
         unknownFieldVariant={unknownFieldVariant}
+        hideBanner={hideBanner}
       />
     );
   }
@@ -536,10 +552,10 @@ export function SmartCoForm({
   return withCatalogs(
     <DynamicCoForm
       formData={effectiveFormData}
-      submitButtonText={t("coform.navigation.submit")}
+      submitButtonText={submitButtonText ?? t("coform.navigation.submit")}
       defaultValues={stepDefaults}
       answerId={answerId}
-      hideBanner={isStandalone}
+      hideBanner={hideBanner || isStandalone}
       hideStepHeaders={isInputStandalone}
       hideSubmitButton={isInputStandalone}
       autoSubmitOnBlur={isInputStandalone}

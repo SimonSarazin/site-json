@@ -5,7 +5,8 @@
       "message": "Messages",
       "network": "Réseau",
       "dashboard": "Tableau de bord",
-      "news": "Actualités"
+      "news": "Actualités",
+      "stats": "Statistiques"
     },
     "comingSoon": {
       "title": "Bientôt disponible",
@@ -16,7 +17,10 @@
     "headline": "Amplifions le bon sens",
     "subhead": "Une armée d'humains travaillant pour le bien commun. Un réseau de confiance entre pairs qui amplifie vos idées dans le monde entier.",
     "proposal": "Proposer une idée",
+    "browse": "Voir les propositions",
     "join": "Rejoindre la communauté",
+    "joinPending": "Demande envoyée",
+    "joined": "Vous êtes membre",
     "mediaPulse": "Pulsation médiatique",
     "globalAmplification": "Amplification mondiale",
     "trustedNetwork": "Réseau de confiance"
@@ -48,6 +52,9 @@
       "amplified": "Idées amplifiées",
       "comments": "Discussions générées"
     },
+    "form": {
+      "error": "Le formulaire de proposition n'a pas pu être chargé"
+    },
     "howItWork": {
       "headline": "Comment ça marche ?",
       "stepOne": "Vous soumettez votre idée.",
@@ -61,11 +68,33 @@
   },
   "AmpliCommunity": {
     "headline": "Réseau de Confiance",
-    "subhead": "Un écosystème pair-à-pair où chaque membre est validé par la communauté."
+    "subhead": "Un écosystème pair-à-pair où chaque membre est validé par la communauté.",
+    "map": {
+      "empty": "Aucun contributeur localisé sur la carte",
+      "error": "Chargement des contributeurs interrompu : la carte n'a pas pu être remplie",
+      "missing_one": "{{count}} contributeur n'est pas localisé ({{located}} sur {{total}} affichés)",
+      "missing_other": "{{count}} contributeurs ne sont pas localisés ({{located}} sur {{total}} affichés)"
+    }
   },
   "AmpliDashboard": {
     "headline": "Vision Globale",
-    "subhead": "Voir la globalité sur les données fournit par votre communauté."
+    "subhead": "Voir la globalité des données fournies par votre communauté.",
+    "kpi": {
+      "participants": "Participants",
+      "participantsHint": "Membres actifs ayant participé",
+      "comments": "Commentaires",
+      "commentsHint": "Discussions générées",
+      "likes": "Likes",
+      "likesHint": "Appréciations reçues",
+      "tags": "Tags utilisés",
+      "tagsHint": "Catégories différentes"
+    },
+    "topLiked": "Top réponses les plus aimées",
+    "topCommented": "Top réponses les plus commentées",
+    "tagsChart": "Répartition des tags",
+    "emptyRanking": "Aucune réponse à classer pour le moment",
+    "emptyTags": "Aucun tag utilisé pour le moment",
+    "untitled": "Sans titre"
   },
   "AmpliNews": {
     "headline": "Dernières actualités",
@@ -82,21 +111,32 @@
     "contributions_other": "{{count}} contributions"
   },
   "MeeteemSection": {
+    "empty": "Aucune réponse à afficher",
     "viewToggle": {
       "answers": "Annuaire",
       "map": "Carte",
       "split": "Split"
     },
     "filters": {
-      "title": "Filtres"
+      "title": "Filtres",
+      "clearUser": "Retirer le filtre auteur"
     },
     "map": {
-      "placeholderTitle": "Carte interactive",
-      "placeholderSubtitle": "(nécessite Leaflet.js)"
+      "error": "Chargement de la carte interrompu : certaines réponses sont manquantes",
+      "empty": "Aucune réponse localisée sur la carte"
     },
     "card": {
       "noDate": "N/A",
-      "noUser": "Anonyme"
+      "noUser": "Anonyme",
+      "locate": "Voir sur la carte",
+      "details": "Détail de la réponse",
+      "detailsLoading": "Chargement de la réponse…",
+      "detailsError": "Impossible de charger cette réponse.",
+      "edit": "Modifier",
+      "open": "Ouvrir le détail de {{name}}",
+      "noLocation": "Adresse non renseignée",
+      "react": "Amplifier cette réponse",
+      "unreact": "Retirer mon amplification"
     }
   },
   "a11y": {
@@ -104,5 +144,14 @@
     "toggleTag": "Basculer le filtre {{tag}}",
     "selectUser": "Voir les contributions de {{name}}",
     "loading": "Chargement de la section…"
+  },
+  "toast": {
+    "reactionError": "Impossible d'enregistrer votre réaction",
+    "error": {
+      "generic": "Une erreur est survenue"
+    }
+  },
+  "AmpliTabs": {
+    "label": "Navigation de la page Ampli"
   }
 }

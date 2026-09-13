@@ -9,6 +9,7 @@ import { AlertCircle, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { AmpliTabs } from "../components/AmpliTabs";
 
 /**
  * Page d'erreur "Ampli non trouvé" — extraite pour éviter la duplication
@@ -79,6 +80,9 @@ export default function AmpliPage() {
         <div className="min-h-screen flex flex-col">
             <AmpliSeo isLoading={false} activeTab={activeTab} />
             <SiteHeader />
+            {/* Hors du conteneur du `main` : la barre d'onglets court sur toute
+                la largeur, comme l'en-tête du site au-dessus d'elle. */}
+            <AmpliTabs slug={slug} activeTab={activeTab} />
             <main className="flex-1">
                 <div className={ampliConfig.layout === 'fullwidth' ? 'mx-auto' : 'container mx-auto'}>
                     <AmpliProvider config={ampliConfig}>

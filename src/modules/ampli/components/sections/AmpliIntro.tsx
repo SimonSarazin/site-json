@@ -88,10 +88,10 @@ export default function AmpliIntro({ props }: AmpliIntroProps) {
     return (
         <>
             <div className="text-center my-4 sm:my-6 md:my-10">
-                <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground text-balance mb-4 sm:mb-6">
                     {headline ? t(headline) : t("AmpliIntro.headline")}
                 </h2>
-                <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                <p className="text-base sm:text-lg md:text-xl text-muted-foreground text-pretty max-w-3xl mx-auto leading-relaxed">
                     {subhead ? t(subhead) : t("AmpliIntro.subhead")}
                 </p>
             </div>

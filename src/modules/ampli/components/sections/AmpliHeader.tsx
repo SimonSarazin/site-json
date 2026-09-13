@@ -1,12 +1,21 @@
 import { AmpliConfig } from "../../schema";
 import { useT } from "@/hooks/useT";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
+// Set d'icônes STATIQUE (les 2 CTA de contenu) → imports nommés. Seule l'icône
+// du hero vient de la config, elle seule justifie `DynamicIcon` (CLAUDE.md).
+import { ListChecks, MessageSquareText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getBaseUrl } from "@/lib/constant/common";
+import { AMPLI_SECTION_IDS } from "../../constants/sectionIds";
+import { scrollToSection } from "../../utils/scrollToSection";
+import { AmpliJoinButton } from "./parts/AmpliJoinButton";
 
 interface AmpliHeaderProps {
     props: AmpliConfig["props"]["hero"];
 }
+
+/** Gabarit commun aux 3 appels à l'action du hero. */
+const CTA_CLASS = "w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-6";
 
 export default function AmpliHeader({ props }: AmpliHeaderProps) {
     const t = useT("modules/ampli");
@@ -23,7 +32,7 @@ export default function AmpliHeader({ props }: AmpliHeaderProps) {
     return (
         <section
             id="meeteem-hero-section"
-            className="relative min-h-[70vh] flex items-center justify-center overflow-hidden"
+            className="relative min-h-[70vh] py-16 sm:py-20 flex items-center justify-center overflow-hidden"
         >
             {/* Background */}
             {!videoBg && (
@@ -56,39 +65,39 @@ export default function AmpliHeader({ props }: AmpliHeaderProps) {
                             />
                         </div>
                     </div>
-                    <h1 className="text-4xl font-bold text-foreground mb-4">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground text-balance mb-4">
                         {t(headline ?? "AmpliHero.headline")}
-                    </h1><p className="text-lg text-muted-foreground mb-6">
+                    </h1><p className="text-base sm:text-lg text-muted-foreground text-pretty mb-6">
                         {t(subhead ?? "AmpliHero.subhead")}
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-400">
+                        {/* « Proposer une idée » mène AU formulaire de la page, celui
+                            de la section « Proposez votre idée » — et pas à une
+                            seconde copie en modale : deux surfaces pour un même
+                            formulaire, c'est deux brouillons et deux états. Le focus
+                            est posé sur le premier champ, on arrive prêt à écrire. */}
                         <Button
                             key="proposal-btn"
                             variant="secondary"
                             size="lg"
-                            className="text-lg px-8 py-6"
-                        // onClick={() => handleCTAClick(Button.href)}
+                            className={CTA_CLASS}
+                            onClick={() => scrollToSection(AMPLI_SECTION_IDS.FEATURES, { focus: true })}
                         >
-                            <DynamicIcon
-                                name="message-square-text"
-                                size={64}
-                            />
+                            <MessageSquareText />
                             {t("AmpliHero.proposal")}
                         </Button>
                         <Button
-                            key="join-btn"
+                            key="browse-btn"
                             variant="secondary"
                             size="lg"
-                            className="text-lg px-8 py-6"
-                        // onClick={() => handleCTAClick(Button.href)}
+                            className={CTA_CLASS}
+                            onClick={() => scrollToSection(AMPLI_SECTION_IDS.MESSAGES)}
                         >
-                            <DynamicIcon
-                                name="user-round-plus"
-                                size={64}
-                            />
-                            {t("AmpliHero.join")}
+                            <ListChecks />
+                            {t("AmpliHero.browse")}
                         </Button>
+                        <AmpliJoinButton key="join-btn" className={CTA_CLASS} />
                     </div>
 
                     {listContent && listContent.items && listContent.items.length > 0 && (

@@ -13,18 +13,24 @@
   - [AmpliRenderer](#amplirenderer)
   - [AmpliSectionRenderer — tabs et sections](#amplisectionrenderer--tabs-et-sections)
   - [Section `meeteem` (section JSON publique)](#section-meeteem-section-json-publique)
+- [Barre d'onglets (`AmpliTabs`)](#barre-donglets-amplitabs)
 - [Contexte `AmpliProvider`](#contexte-ampliprovider)
 - [Hook `useFetchAnswerQuery`](#hook-usefetchanswerquery)
+- [Réactions Meeteem (`useMeeteemReactions`)](#réactions-meeteem-usemeeteemreactions)
+- [Carte des contributeurs (tab community)](#carte-des-contributeurs-tab-community)
 - [Helper `getSummaryData`](#helper-getsummarydata)
 - [Utilitaires client-side (`cardFilters.ts`)](#utilitaires-client-side-cardfiltersts)
 - [Composants de sections](#composants-de-sections)
   - [AmpliHeader](#ampliheader)
   - [AmpliIntro](#ampliintro)
   - [AmpliFeatures](#amplifeatures)
+  - [AmpliIdeaForm — le formulaire en ligne](#amplideaform--le-formulaire-en-ligne)
   - [AmpliMessages](#amplimessages)
   - [AmpliCommunity](#amplicommunity)
+  - [AmpliDashboard](#amplidashboard)
   - [MeeteemSection](#meeteemsection)
-  - [MeeteemCard, MeeteemFilters, MeeteemViewToggle, MeeteemMapPlaceholder](#sous-composants-meeteem)
+  - [MeeteemCard, MeeteemFilters, MeeteemViewToggle, MeeteemMap](#sous-composants-meeteem)
+  - [Modifier sa propre réponse](#modifier-sa-propre-réponse)
 - [Types canoniques (`types.ts`)](#types-canoniques-typests)
 - [i18n](#i18n)
 - [Tests unitaires](#tests-unitaires)
@@ -66,7 +72,10 @@ src/modules/ampli/
 │
 ├── hooks/
 │   ├── useAmpliContext.tsx         # useAmpliContext() — throw si hors Provider
-│   └── useFetchAnswerQuery.ts     # Hook principal : coformAnswersSearch + infinite scroll + extraction
+│   ├── useFetchAnswerQuery.ts     # Hook principal : coformAnswersSearch + infinite scroll + extraction
+│   ├── useAmpliAllAnswers.ts      # Périmètre COMPLET page par page (vues carte/split de Meeteem)
+│   ├── useContributorCities.ts    # Communes → coordonnées (contributeurs sans geo)
+│   └── useMeeteemReactions.ts     # Réactions des réponses : ajout ET retrait (bascule serveur)
 │
 ├── helpers/
 │   └── summary.ts                 # getSummaryData() : aggrégation totalAnswers/Users/Likes/Comments
@@ -74,26 +83,35 @@ src/modules/ampli/
 │                                  #  dupliqué indépendamment dans types.ts, dette technique potentielle)
 │
 ├── utils/
-│   └── cardFilters.ts             # collectAvailableTags(), filterCards() — purs, testés
+│   ├── cardFilters.ts             # collectAvailableTags(), filterCards() — purs, testés
+│   ├── meeteemGeo.ts              # Réponses CoForm → entités carto (purs, testés)
+│   ├── ampliUsersGeo.ts           # Contributeurs → entités carto (purs, testés)
+│   └── scrollToSection.ts         # Défilement + focus vers une section (CTA du hero)
 │
 ├── components/
 │   ├── AmpliUserCard.tsx          # Card d'un contributeur (avatar + compteur)
 │   └── sections/
 │       ├── AmpliHeader.tsx        # Section hero de la page Ampli (tab home)
 │       ├── AmpliIntro.tsx         # Section introduction (tab home) — délègue à <CardsSection>
-│       ├── AmpliFeatures.tsx      # Section bicolonne : formulaire placeholder + stats live (tab home)
+│       ├── AmpliFeatures.tsx      # Section bicolonne : formulaire de proposition + stats live (tab home)
 │       ├── AmpliMessages.tsx      # Section messages (tab home) — wrapper fin autour de MeeteemSection
 │       ├── AmpliCommunity.tsx     # Tab community : liste des contributeurs + vue carte (toggle inline)
+│       ├── AmpliDashboard.tsx     # Tab stats : KPI, tops likes/commentaires, graphe des tags
 │       ├── MeeteemSection.tsx     # Section JSON publique (type "meeteem")
 │       └── parts/
 │           ├── MeeteemCard.tsx           # Carte d'une réponse (variant large/compact)
 │           ├── MeeteemFilters.tsx        # Accordéon de filtres par tags (expanded par défaut)
 │           ├── MeeteemViewToggle.tsx     # Toggle 3 vues (Annuaire/Carte/Split)
-│           └── MeeteemMapPlaceholder.tsx # Placeholder vue Carte (map non encore implémentée)
+│           ├── MeeteemMap.tsx            # Carte MapLibre partagée (réponses ET contributeurs)
+│           ├── MeeteemAnswerModal.tsx    # Détail d'une réponse en lecture seule
+│           ├── AmpliContributorsMap.tsx  # Carte des contributeurs du tab community
+│           ├── AmpliIdeaForm.tsx         # Formulaire de proposition EN LIGNE (colonne gauche d'AmpliFeatures)
+│           └── AmpliJoinButton.tsx       # CTA « Rejoindre » du hero → demande d'adhésion réelle
 │
 ├── constants/
-│   └── queryKeys.ts               # AMPLI_QUERY_KEYS — FETCH_ANSWERS + FETCH_ANSWERS_PREFIX
-│                                  # (préfixe figé "ampli-meeteem", utilisé par useFetchAnswerQuery)
+│   ├── queryKeys.ts               # AMPLI_QUERY_KEYS — FETCH_ANSWERS + FETCH_ANSWERS_PREFIX
+│   │                              # (préfixe figé "ampli-meeteem", utilisé par useFetchAnswerQuery)
+│   └── sectionIds.ts              # AMPLI_SECTION_IDS — ancres DOM visées par les CTA du hero
 │
 ├── pages/
 │   └── AmpliPage.tsx              # Page principale (RR v7 route handler)
@@ -162,7 +180,7 @@ export const AmpliConfigSchema = z.object({
 ```
 /ampli/:slug           → AmpliPage (index) — tab "home"
 /ampli/:slug/community → AmpliPage — tab "community"
-/ampli/:slug/stats     → AmpliPage — tab "stats" (coming soon)
+/ampli/:slug/stats     → AmpliPage — tab "stats" (Vision Globale)
 /ampli/:slug/news      → AmpliPage — tab "news" (coming soon)
 ```
 
@@ -201,7 +219,7 @@ Les sous-routes (`community`, `stats`, `news`) ont toutes `element: null` — le
 |-----------|-------|
 | `home` | `<AmpliHeader>` + `<AmpliIntro>` + `<AmpliFeatures>` + `<AmpliMessages>` |
 | `community` | `<AmpliCommunity>` (liste des contributeurs) |
-| `stats` | Placeholder "coming soon" (titre + description i18n) |
+| `stats` | `<AmpliDashboard>` (compteurs, tops, répartition des tags) |
 | `news` | Placeholder "coming soon" (titre + description i18n) |
 | _(défaut)_ | `null` + `console.warn` |
 
@@ -236,12 +254,20 @@ Elle gère son propre appel `useFetchAnswerQuery` et tout l'état local (viewMod
 
 **Trois vues** :
 - `answers` : grille de `MeeteemCard` (variant large), avec infinite scroll (référence `lastItemRef` attachée à une div sentinelle sous la grille)
-- `map` : `MeeteemMapPlaceholder` (carte non encore implémentée)
-- `split` : colonne gauche scrollable (cartes compact) + colonne droite (`MeeteemMapPlaceholder variant="compact"`)
+- `map` : `MeeteemMap` (carte MapLibre du module search, alimentée par `meeteemGeo`)
+- `split` : colonne gauche scrollable (cartes compact) + colonne droite (`MeeteemMap` synchronisée)
 
 Le `lastItemRef` est **uniquement** attaché en vue `answers` — les vues `map` et `split` ne déclenchent pas de pagination supplémentaire.
 
 ---
+
+## Barre d'onglets (`AmpliTabs`)
+
+`components/AmpliTabs.tsx` — barre de navigation rendue par `AmpliPage` **entre `SiteHeader` et `<main>`** (hors du conteneur, elle court sur toute la largeur).
+
+Les onglets sont déclarés une seule fois dans `constants/tabs.ts` (`AMPLI_TABS` + `ampliTabPath`) : quatre entrées — `home` (Accueil), `community` (Réseau), `stats` (Statistiques), `news` (Actualités). **Pas d'entrée « Messages »** : les messages sont une section de la page d'accueil, pas une route.
+
+`Link` + `aria-current="page"` plutôt que `NavLink` : l'onglet actif est déjà résolu par le loader SSR d'`AmpliPage`, ce qui garantit un premier rendu client identique au HTML serveur (`NavLink` ferait clignoter le soulignement à l'hydratation).
 
 ## Contexte `AmpliProvider`
 
@@ -307,6 +333,147 @@ function useFetchAnswerQuery({
 
 ---
 
+## Réactions Meeteem (`useMeeteemReactions`)
+
+`src/modules/ampli/hooks/useMeeteemReactions.ts` — ajout **et** retrait d'une
+réaction (« amplification ») sur une réponse CoForm.
+
+### Une seule action pour les deux sens
+
+Il n'existe **pas** d'appel « supprimer une réaction ». Le backend
+(`co2/action/addaction`, `collection: "answers"`) **bascule** :
+
+| Situation | Effet | Réponse |
+|-----------|-------|---------|
+| Statut pas encore posé | ajout | `inc: 1`, `msg: "Reaction succesfully saved"` |
+| **Même** statut re-posté | **retrait** | `inc: -1`, `msg: ""`, `removedVoteStatus: "<statut>"` |
+| Statut différent | remplacement | `inc: 1` |
+
+C'est `removedVoteStatus` — et non `msg`, vide au retrait — qui dit sans
+ambiguïté dans quel sens la bascule est partie. Côté SDK, la méthode est
+`Answer.addVote(status)` (et `Answer.getVotes()` pour relire), transposées de
+`News`/`Comment` ; `AnswerVoteResult` type le retour.
+
+Le statut posé est `MEETEEM_REACTION_STATUS = "like"` : tout l'ampli compte les
+`like` (`getSummaryData` → « Idées amplifiées »), en poster un autre rendrait le
+cœur incohérent avec le compteur du bandeau.
+
+### État optimiste, sans patch du cache
+
+Le hook mémorise **uniquement la bascule de l'utilisateur courant**
+(`answerId → { reacted, pending }`) ; le compte, lui, reste dérivé des données
+serveur :
+
+```ts
+count = compteServeur - (jAvaisRéagiCôtéServeur ? 1 : 0) + (jeRéagis ? 1 : 0)
+```
+
+Deux raisons de ne PAS repatcher le cache React Query à la `useAddVoteNews` :
+
+- les vues carte/split gardent jusqu'à 5000 réponses, et le `useMemo` qui les
+  transforme en entités dépend de l'objet `data` entier — le repatcher ferait
+  retransformer tout le périmètre à chaque clic sur un cœur ;
+- ancrer le compte sur le serveur laisse arriver les réactions des **autres** et
+  rend un refetch inoffensif (pas de double comptage de la nôtre).
+
+`onSuccess` réaligne l'état sur la réponse du serveur, qui fait autorité : notre
+prévision peut être fausse (réaction posée depuis un autre onglet, cache chargé
+avant la connexion). `onError` **retire** la bascule au lieu de l'inverser —
+l'affichage repart des données serveur — et lève un toast (`toast.reactionError`).
+
+### Connexion et SSR
+
+- Utilisateur non connecté → `openLogin()` (modale globale d'`AuthModalProvider`),
+  **aucun appel réseau**.
+- `me` n'est lu qu'après `useHydrated()` : au SSR il vaut toujours `null`, le lire
+  avant l'hydratation ferait diverger le 1er rendu client du HTML serveur
+  (cœur plein contre cœur vide).
+
+Le hook est monté **une fois dans `MeeteemSection`**, pas dans la carte : les
+vues Annuaire et Split partagent ainsi la même bascule optimiste et la même
+mutation.
+
+---
+
+## Carte des contributeurs (tab community)
+
+`components/sections/parts/AmpliContributorsMap.tsx` + `utils/ampliUsersGeo.ts` —
+la vue Carte du tab community place les **contributeurs**, pas leurs réponses.
+
+### Pourquoi pas `meeteemGeo`
+
+La différence est de NATURE : `meeteemGeo` géolocalise une RÉPONSE via l'adresse
+saisie dans le formulaire (`card.data.address`). Le réutiliser ici donnerait
+plusieurs marqueurs pour un même contributeur (un par réponse) et aucun pour
+ceux dont la réponse n'a pas d'adresse alors qu'eux en ont une.
+
+### Coordonnées : le profil d'abord, la commune ensuite
+
+`coformAnswersSearch` projette déjà l'auteur avec `geo` / `geoPosition` /
+`address` **à la racine** de son `serverData` — exactement la forme que lit
+`getEntryCoords`. La carte convertit donc ce que la page a déjà chargé.
+
+Mais beaucoup de profils Communecter portent une adresse **sans aucun
+géocodage** (`addressLocality` + `localityId`, pas de `geo` — vérifié sur le
+document complet, ce n'est pas un artefact de projection). Les écarter donnerait
+moins de points sur la carte que de fiches dans l'annuaire, ce qui se lit comme
+un bug. `useContributorCities` les résout donc au **centre de leur commune** :
+
+- `collectMissingCities` liste les communes manquantes, **dédupliquées par
+  `localityId`** — une requête par ville, pas par contributeur ;
+- chacune passe par `cityAutocompleteByCountry` (le même endpoint que
+  `AddressEditor`), avec sa propre entrée de cache et un `staleTime` de 24 h ;
+- la correspondance se fait sur l'**ID**, jamais sur le nom : l'autocomplétion
+  est floue et peut rendre des homonymes.
+
+⚠ La position obtenue est le CENTRE de la commune : deux contributeurs d'une
+même ville se superposent exactement (le clustering les regroupe). Compromis
+assumé — mieux vaut une position approchée qu'une absence inexpliquée.
+
+`isResolving` entre dans `isComplete` : sans lui, la carte annoncerait « aucun
+contributeur localisé » le temps que les communes reviennent.
+
+Elle consomme la prop `data` du renderer et **ne remonte pas de hook** : la
+queryKey inclut `JSON.stringify(baseParams)`, et `indexStepMap` y diffère (0 côté
+renderer, 500 côté `MeeteemSection`) — un second hook créerait donc une entrée de
+cache distincte, donc un second appel réseau.
+
+### Pas de chargement progressif ici
+
+La requête du renderer pose `indexStep: 0`, qui désactive la pagination côté SDK
+(une seule requête, `hasNextPage` toujours faux) : le périmètre est complet dès
+la première réponse. `MeeteemMap` reçoit donc `total={null}` / `capped={false}`,
+et `MapProgress` ne rend rien. **Ne pas y brancher `useAmpliAllAnswers`** : sa
+chaîne de pages ne se termine pas quand le `count.total` du backend dépasse le
+nombre de documents réellement rendus.
+
+### Gardes encodés dans `ampliUsersGeo`
+
+| Garde | Pourquoi |
+|-------|----------|
+| id via `serverData.id`, repli `_id._str` / `_id.$id` | `String(_id)` rend `ObjectID("<hex>")`, pas le hex nu — un id inexploitable casse la clé React et la synchro, sans erreur |
+| Rejet de `[0, 0]` **pendant** la sélection | `Number("")` vaut 0 et `getEntryCoords` accepte `[0,0]` : un `geoPosition` vide placerait le contributeur au large du Ghana. Rejeter APRÈS la sélection est un bug — le placeholder vide l'emporterait sur un `geo` valide |
+| Coercition des coordonnées en string | L'API renvoie indifféremment `"−21.82"` ou `-21.82` |
+| `name` vide OMIS (clé absente) | `useItem` fusionne ses défauts par spread : `name: undefined` écrase le repli « Nom inconnu » et rend un titre de popup VIDE |
+| Déduplication par id | Deux marqueurs empilés = deux `key` React identiques |
+| `located` / `total` | Un contributeur reste non plaçable s'il n'a ni coordonnées ni commune identifiée ; sans compteur, la carte mentirait par omission |
+
+### Rendu
+
+- Avatars ronds via `map={{ marker: { useItemImage: true } }}` — constante de
+  MODULE, pas un littéral inline (`SearchMap` mémoïse ses marqueurs sur
+  l'identité de cet objet). Cohérent avec la vue liste, qui montre déjà ces
+  avatars ; un contributeur sans photo retombe sur la goutte, et une URL **morte**
+  sur une silhouette aux couleurs de marque (cf. `MapMarkerAvatar` et
+  `.search-map-avatar.is-fallback`). La popup applique le même garde sur son
+  image d'en-tête.
+- La popup n'a qu'un champ de texte libre (`shortDescription`) : on y met le
+  nombre de contributions — sujet même du tab — via un formateur injecté, ce qui
+  garde `ampliUsersGeo` pur.
+- Sous la carte, « X contributeurs ne sont pas localisés (N sur M affichés) ».
+
+---
+
 ## Helper `getSummaryData`
 
 `src/modules/ampli/helpers/summary.ts` — fonction pure qui agrège les statistiques globales d'une liste de réponses :
@@ -355,7 +522,27 @@ function filterCards(
 - `icon.show`, `icon.name`, `icon.size`, `icon.backdrop` : icône configurable via `DynamicIcon` de `lucide-react/dynamic` (fallback `"megaphone"`, taille 64)
 - `backgroundImage`, `videoBg` : fond optionnel (fallback `/images/ampli/background.jpg`)
 - `listContent.items[]` + `listContent.layout` : liste de points clés (layout `rows`/`columns`)
-- **Deux boutons CTA fixes** (non configurables) : "Proposer une idée" (`AmpliHero.proposal`) et "Rejoindre la communauté" (`AmpliHero.join`)
+**Trois boutons CTA fixes** (non configurables), tous actifs :
+
+| Bouton | Clé | Action |
+|--------|-----|--------|
+| Proposer une idée | `AmpliHero.proposal` | défile vers `AMPLI_SECTION_IDS.FEATURES` **et pose le focus sur le premier champ** du formulaire en ligne |
+| Voir les propositions | `AmpliHero.browse` | défile vers `AMPLI_SECTION_IDS.MESSAGES` (l'annuaire Meeteem) |
+| Rejoindre la communauté | `AmpliHero.join` | `<AmpliJoinButton>` — demande d'adhésion réelle (cf. ci-dessous) |
+
+« Proposer une idée » mène **au** formulaire de la page, pas à une seconde copie en modale : deux surfaces pour un même formulaire, ce serait deux brouillons et deux états à réconcilier.
+
+Les ancres viennent de `constants/sectionIds.ts`, partagées entre la section qui les **pose** (`AmpliFeatures`, `AmpliMessages`) et le hero qui les **vise** — en littéraux dupliqués, renommer une section casserait le bouton en silence. Les deux sections portent `scroll-mt-24` : les en-têtes de site peuvent être `sticky`, sans marge le titre finirait dessous. `utils/scrollToSection.ts` respecte `prefers-reduced-motion` (le `scroll-behavior: smooth` global d'`index.css`, lui, ne le consulte pas).
+
+#### AmpliJoinButton
+
+`components/sections/parts/AmpliJoinButton.tsx` — envoie une **vraie** demande d'adhésion à l'entité qui porte le site (`useCocolight().entity`, une organisation **ou** un projet), via `useRequestToJoin` du module profil.
+
+- **Organisation vs projet** : une organisation a des *membres* (`canRequestMembership` / `isMember`), un projet des *contributeurs* (`canRequestContributor` / `isContributor`). `requestToJoin` couvre les deux, le bouton lit donc les deux permissions — sinon il resterait inerte sur un site porté par un projet.
+- **Anonyme** : le clic ouvre la connexion (`openLogin`) au lieu de laisser partir un appel voué à l'échec. Pas de demande automatique au retour : l'utilisateur reprend la main sur un bouton qui affiche enfin son vrai état.
+- **Hydratation** : `me` et les liens de l'entité sont toujours vides au SSR. Le libellé n'est arbitré qu'après `useHydrated()` — avant, le bouton rend l'appel à l'action nu, qui est de toute façon le bon pour un visiteur anonyme.
+- **États sans action** : membre/contributeur/admin → « Vous êtes membre » (`AmpliHero.joined`, désactivé) ; demande en attente → « Demande envoyée » (`AmpliHero.joinPending`, désactivé). L'état « en attente » est aussi posé **localement** au succès de la mutation : les liens de l'entité ne se rafraîchissent pas dans la foulée, et l'utilisateur ne doit pas pouvoir redemander.
+- Le bundle i18n du module profil est importé explicitement : le toast de la mutation parle avec ses clés (`toast.relationship.*`) alors qu'il est déclenché hors profil.
 
 ### AmpliIntro
 
@@ -368,12 +555,35 @@ Le rendu des cartes est **délégué** au composant partagé `<CardsSection>` (l
 ### AmpliFeatures
 
 `components/sections/AmpliFeatures.tsx` — Section bicolonne :
-- Colonne gauche : zone formulaire (div vide `min-h-52` + bouton "Soumettre" — placeholder pour intégration future CoForm)
+- Colonne gauche : **le formulaire de proposition, rendu en ligne** — `<AmpliIdeaForm>` chargé en `lazy()` (le moteur coform est lourd, il ne doit pas peser sur le chunk de l'onglet home)
 - Colonne droite : carte "Comment ça marche" (3 étapes, icône `Lightbulb`) + carte "Statistiques live" (4 compteurs : soumissions, membres, amplifiées `totalLikes`, discussions `totalComments`)
 
 La carte summary utilise `summary.amplified` (et `AmpliFeatures.summary.amplified`) pour le compteur de likes, et `summary.comments` pour les commentaires.
 
-Les statistiques sont calculées en direct depuis `transformedResults` via `getSummaryData()`. Retourne `null` pendant le chargement (`isLoading: true`).
+Les statistiques sont calculées en direct depuis `transformedResults` via `getSummaryData()`. **La section ne retourne plus `null` pendant le chargement** : le formulaire ne dépend pas des réponses, seuls les 4 compteurs passent en squelette — sinon la colonne gauche restait vide le temps du fetch.
+
+`features.button` n'est plus le libellé d'un bouton mort : c'est celui du **bouton d'envoi du formulaire** (passé en `submitButtonText` à `SmartCoForm`). La section reçoit `coform` (l'id du formulaire) depuis `AmpliSectionRenderer`.
+
+### AmpliIdeaForm — le formulaire en ligne
+
+`components/sections/parts/AmpliIdeaForm.tsx` — proposition d'idée **sans modale** : la section décrit déjà le geste attendu ("Proposez votre idée" + "Comment ça marche ?"), le formulaire doit donc être remplissable immédiatement.
+
+Réutilise TELLE QUELLE la chaîne du module coform :
+
+| Brique | Rôle ici |
+|--------|----------|
+| `useCoFormQuery(formId)` | structure du formulaire **et** droits (`access`) |
+| `CoFormAccessGuard` | refus lisibles : non connecté (bouton de connexion → `openLogin`, `onSuccess: refetch`), form fermé/pas encore ouvert, déjà répondu |
+| `SmartCoForm` | rendu + soumission (single-step ou wizard selon le nombre de `subForms`) |
+| `CoFormThankYou` | accusé de réception, à la place du formulaire |
+
+Ce que le composant ajoute, et **pourquoi** :
+
+- **`hideBanner`** — sans lui, le nom du formulaire s'afficherait en `<h1>` 4xl au milieu de la colonne, en doublon du `<h2>` de la section. Prop ajoutée à `SmartCoForm` (et à `MultiStepCoForm`, qui rendait sa bannière sans condition).
+- **`submitButtonText`** — le libellé vient de la config du site ("Soumettre à la communauté"), pas du générique `coform.navigation.submit`.
+- **Invalidation du cache ampli** (`AMPLI_QUERY_KEYS.FETCH_ANSWERS_PREFIX`) après soumission : `useCoFormFinalMutation` n'invalide que **ses** caches (`FORM` / `FORM_ANSWERS`). Sans ça, l'idée tout juste soumise n'apparaîtrait ni dans les compteurs à droite ni dans l'annuaire Meeteem plus bas, jusqu'au prochain rechargement de page.
+- **`formId` ET `formData` passés à `SmartCoForm`** : `formData` évite une seconde souscription à la structure (même entrée de cache → le garde et le formulaire ne peuvent pas diverger), mais `formId` reste indispensable — la mutation interne de `SmartCoForm` part sinon sur un id vide.
+- **Après l'envoi** : une seule réponse autorisée (`access.isOneAnswerPerPers`) → on propose de la **modifier** (le garde est court-circuité par `access={null}`, sinon il refuserait sur `already_answered`) ; sinon → d'en **proposer une autre** (le formulaire est remonté, donc vierge ; le brouillon local a été purgé au succès).
 
 ### AmpliMessages
 
@@ -385,12 +595,27 @@ Les statistiques sont calculées en direct depuis `transformedResults` via `getS
 
 ### AmpliCommunity
 
-`components/sections/AmpliCommunity.tsx` — Tab "community". Accepte `props` (`headline`/`subhead`) et `data` (résultats bruts de `useFetchAnswerQuery`). Affiche :
+`components/sections/AmpliCommunity.tsx` — Tab "community". Accepte `props` (`headline`/`subhead`), `data` (résultats bruts de `useFetchAnswerQuery`) et `isLoading` / `isPending`. Affiche :
 - Un toggle **deux vues** (liste / carte) : deux `<Button>` inline (pas `MeeteemViewToggle`)
 - Vue liste (`viewMode === "list"`) : grille de `AmpliUserCard` (un par contributeur unique, avec compteur de contributions)
-- Vue carte (`viewMode === "map"`) : `MeeteemMapPlaceholder variant="large"`
+- Vue carte (`viewMode === "map"`) : `AmpliContributorsMap`, chargé en `lazy()` — cf. [Carte des contributeurs](#carte-des-contributeurs-tab-community)
 
-Données : agrégées via `getSummaryData(data).users`.
+Données : agrégées via `getSummaryData(data).users`, mémoïsées (`data` est un tableau recréé à chaque rendu par le renderer).
+
+**`isLoading` ET `isPending`** : `isLoading` seul ne suffit pas — tant que `entity` n'est pas initialisée la query est désactivée, donc `isPending` est vrai alors qu'`isLoading` est faux. Sans les deux, la carte annoncerait « aucun contributeur localisé » avant le premier appel.
+
+### AmpliDashboard
+
+`components/sections/AmpliDashboard.tsx` — Tab "stats" (« Vision Globale »). Accepte `props` (`dashboard.headline`/`subhead` de la config), `data` (mêmes résultats que les autres tabs) et `isLoading`. Affiche :
+- **Quatre KPI** : participants, commentaires, likes, tags utilisés
+- **Deux classements** : réponses les plus aimées / les plus commentées (rang, titre, auteur, décompte)
+- **Répartition des tags** : `BarChart` recharts, palette `--chart-1..5` du thème du site
+
+Agrégations dans `utils/dashboardStats.ts` (`getDashboardStats`, mémoïsé) — **aucun appel réseau supplémentaire** : le tab consomme le périmètre déjà chargé par `AmpliSectionRenderer`.
+
+⚠ Nuance assumée avec `getSummaryData` : le tableau de bord annonce « appréciations reçues » / « discussions générées », donc il totalise les likes et les commentaires, là où `getSummaryData` compte les RÉPONSES concernées (« idées amplifiées »). Les participants, eux, viennent de `getSummaryData` — une seule définition de l'identité d'un contributeur.
+
+Le graphe est sous `ClientOnly` (+ `Skeleton`) : recharts ne s'hydrate pas (ids `clipPath` d'un compteur global serveur≠client, mesure de texte impossible côté serveur) — même parti pris que le module observatoire.
 
 ### MeeteemSection
 
@@ -402,10 +627,24 @@ Données : agrégées via `getSummaryData(data).users`.
 
 | Composant | Rôle |
 |-----------|------|
-| `MeeteemCard` | Carte d'une réponse CoForm. Props : `card: MeeteemCard`, `activeFilters`, `onToggleFilter`, `onSelectUser`, `variant: "large" \| "compact"`, `animationDelay?`. Affiche nom, description, tags (cliquables), avatar utilisateur (cliquable → filtre). Stats : `vote` (Object.keys) + `comments` (Object.keys). |
+| `MeeteemCard` | Carte d'une réponse CoForm. Props : `card: MeeteemCard`, `activeFilters`, `onToggleFilter`, `onSelectUser`, `variant: "large" \| "compact"`, `animationDelay?`, plus les props de réaction `reactionCount?` / `hasReacted?` / `reactionPending?` / `onToggleReaction?`. Affiche nom, description, tags (cliquables), avatar utilisateur (cliquable → filtre). Stats : réaction (bouton bascule, cf. [Réactions Meeteem](#réactions-meeteem-usemeeteemreactions)) + `comments` (Object.keys). Sans `onToggleReaction`, le compteur reste un simple affichage figé lu dans `serverData.vote`. |
 | `MeeteemFilters` | Accordéon de filtres par tags. Props : `availableTags`, `activeFilters`, `onToggleFilter`. **Expanded par défaut** (`collapsed: false`). Retourne `null` si `availableTags.length === 0`. |
 | `MeeteemViewToggle` | Boutons toggle 3 vues (Annuaire/Carte/Split). Props : `value: MeeteemViewMode`, `onChange`. Utilise `VIEW_BUTTONS` constant avec icônes `TextAlignJustifyIcon` (Radix), `MapPinIcon`, `Columns2Icon` (Lucide). |
-| `MeeteemMapPlaceholder` | Placeholder "Carte interactive (nécessite Leaflet.js)". Props : `variant: "large" \| "compact"`. Utilise les clés i18n `MeeteemSection.map.placeholderTitle` / `placeholderSubtitle`. |
+| `MeeteemMap` | Carte MapLibre PARTAGÉE du module (réponses Meeteem ET contributeurs du tab community). Encapsule les gardes obligatoires du stack search : import du bundle i18n `modules/search`, `lazy(vite-preload)`, `ClientOnly` + `Suspense`, conteneur `relative` que le PARENT doit dimensionner (sans hauteur, la carte fait 0px sans aucune erreur). Props notables : `entities`, `isComplete`, `map` (conf marqueur relayée), `emptyMessage`, `onItemAction`. |
+| `AmpliContributorsMap` | Carte des contributeurs (tab community) — cf. [section dédiée](#carte-des-contributeurs-tab-community). |
+| `MeeteemAnswerModal` | Détail d'une réponse — en lecture seule, et **en édition quand c'est la sienne** (cf. [section dédiée](#modifier-sa-propre-réponse)). La projection des cartes est partielle : le contenu complet est re-fetché (`useCoFormAnswerQuery`) et la modale coform n'est montée qu'avec sa donnée — sinon elle s'ouvrirait vide, sans erreur. Ouvre avec `hideBanner` + un titre en `text-2xl` : la bannière peint le nom du **formulaire** (ex. « Sinistre ») en `<h1>` 4xl, qui écrasait le titre de la **réponse** laissé en `text-lg`. |
+
+### Modifier sa propre réponse
+
+Le bouton « Modifier » vit dans le header de `MeeteemAnswerModal` (`CoFormModal headerActions`), donc à un seul endroit pour **tous** les points d'entrée : carte de l'annuaire, colonne du mode split, et popup de la carte.
+
+- **Le droit vient du backend.** `useCoFormAnswerQuery` renvoie `answer.canEdit` / `editDeniedReason`, calculés serveur sur la réponse (propriété, formulaire encore ouvert, utilisateur connecté — vérifié en live : anonyme ⇒ `canEdit: false`, `editDeniedReason: "not_logged_in"`). Un test local « l'auteur est-ce moi ? » raterait la fermeture du formulaire et afficherait un bouton qui échoue à la sauvegarde. Ce n'est **pas** la règle de `canEditCoformAnswer` (module search), qui vise les admins éditant la réponse d'autrui.
+- **Rien n'est affiché quand la réponse est celle d'un autre** — ni bouton désactivé ni message : ce serait du bruit sur le cas majoritaire.
+- **Le pré-remplissage est sûr par construction** : la modale part de la réponse COMPLÈTE re-fetchée. La sauvegarde coform envoie le payload entier — partir de la projection partielle de la carte effacerait tous les champs absents (même piège que `PreviewCoformAnswer`).
+- **État dérivé de l'id** (`editedAnswerId === answerId`), pas un booléen : la modale n'est pas démontée entre deux réponses, un booléen laisserait la suivante s'ouvrir directement en édition.
+- **Après enregistrement**, deux invalidations : le préfixe ampli (sinon la carte de l'annuaire garde l'ancien texte) et `COFORM_QUERY_KEYS.FORM_ANSWER_PREFIX` (sinon rouvrir le détail sert la version d'avant — cache de 2 min). `useCoFormFinalMutation` n'invalide que `FORM` et `FORM_ANSWERS`, dont la clé (`"answers"`) est distincte de celle du détail (`"answer"`).
+
+---
 
 **Filtre utilisateur** : cliquer sur l'avatar d'un `MeeteemCard` active le `userFilter` (nom de l'utilisateur). Un badge apparaît dans le header de `MeeteemSection` pour le visualiser et le supprimer. Le filtre combine logiquement les tags actifs (OR entre tags) ET le filtre utilisateur (AND avec les tags).
 
@@ -456,11 +695,14 @@ interface AmpliSummaryData {
 Namespace : **`modules/ampli`**. Enregistré en side-effect par `i18n.ts` (`i18n.addResourceBundle` avec `true, true` — deep merge, overwrite).
 
 Groupes de clés dans `fr.json` / `en.json` :
-- `AmpliTemplateDefault.tabs.*` — labels des tabs (home, message, network, dashboard, news) — utilisés par `AmpliSeo`
-- `AmpliTemplateDefault.comingSoon.*` — message placeholder pour tabs stats/news
-- `AmpliHero.*` — textes par défaut du hero (headline, subhead, proposal, join, …)
+- `AmpliTemplateDefault.tabs.*` — labels des tabs (home, message, network, stats, dashboard, news) — utilisés par `AmpliTabs` et `AmpliSeo`
+- `AmpliTemplateDefault.comingSoon.*` — message placeholder du tab news
+- `AmpliTabs.label` — libellé accessible de la barre d'onglets
+- `AmpliDashboard.*` — titres, libellés des KPI (`kpi.*`), des classements et du graphe des tags
+- `AmpliHero.*` — textes par défaut du hero (headline, subhead, proposal, browse, join, joinPending, joined, …)
 - `AmpliIntro.*` — textes par défaut de l'intro (headline, subhead)
 - `AmpliFeatures.*` — textes par défaut des features
+- `AmpliFeatures.form.error` — échec de chargement du formulaire de proposition
 - `AmpliFeatures.summary.*` — labels stats (headline, submitted, members, amplified, comments)
 - `AmpliFeatures.howItWork.*` — étapes (headline, stepOne, stepTwo, stepThree)
 - `AmpliMessage.*` — textes par défaut de la section messages (headline, subhead)
@@ -469,8 +711,11 @@ Groupes de clés dans `fr.json` / `en.json` :
 - `AmpliUserCard.*` — carte contributeur (noLocation, contributions_one, contributions_other)
 - `MeeteemSection.viewToggle.*` — labels des boutons de vue (answers/map/split)
 - `MeeteemSection.filters.*` — titre de l'accordéon de filtres
-- `MeeteemSection.map.*` — textes du placeholder carte (placeholderTitle, placeholderSubtitle)
-- `MeeteemSection.card.*` — fallbacks carte (noDate, noUser)
+- `MeeteemSection.empty` — « aucune réponse à afficher »
+- `MeeteemSection.map.*` — états de la carte des réponses (`empty`, `error`)
+- `MeeteemSection.card.*` — carte d'une réponse : fallbacks (`noDate`, `noUser`), actions (`locate`, `noLocation`, `open`, `react`, `unreact`) et détail (`details`, `detailsLoading`, `detailsError`)
+- `AmpliCommunity.map.*` — états de la carte des contributeurs (`empty`, `error`, `missing_one`, `missing_other`)
+- `toast.*` — erreurs de mutation (`reactionError`, `error.generic`)
 - `a11y.*` — labels d'accessibilité (toggleFilters, toggleTag, selectUser, loading)
 
 **Attention** : les composants `AmpliHeader` et `AmpliMessages` utilisent respectivement les namespaces `AmpliHero.*` et `AmpliMessage.*` (singulier), pas `AmpliHeader.*` ni `AmpliMessages.*`.
@@ -483,10 +728,19 @@ Groupes de clés dans `fr.json` / `en.json` :
 |---------|-----------------|
 | `helpers/summary.test.ts` | `getSummaryData` — totalAnswers, totalUsers, totalLikes (voteCount.like), totalComments (Object.keys), agrégation par user (_id), items sans user groupés ensemble |
 | `utils/cardFilters.test.ts` | `collectAvailableTags` (déduplication, ordre), `filterCards` — OR tags, filtre user, combinaison AND tags+user |
-| `components/sections/parts/MeeteemCard.test.tsx` | Rendu variants large/compact, tags cliquables (toggle + aria-pressed), stats vote/comments via Object.keys, clic auteur → onSelectUser, fallbacks Anonyme/N/A |
+| `hooks/useMeeteemReactions.test.tsx` | Réactions — compte et « j'ai réagi » dérivés du serveur, ajout et retrait optimistes, arbitrage par `removedVoteStatus` (y compris quand le serveur bascule à l'inverse de la prévision), rollback + toast sur échec, `openLogin` sans appel réseau si déconnecté, second clic ignoré pendant l'aller-retour |
+| `components/sections/parts/MeeteemCard.test.tsx` | Rendu variants large/compact, tags cliquables (toggle + aria-pressed), stats vote/comments via Object.keys, clic auteur → onSelectUser, fallbacks Anonyme/N/A, réaction (bouton vs compteur figé, `aria-pressed`, libellé bascule, désactivation pendant l'appel, clic qui n'ouvre pas le détail) |
 | `components/sections/parts/MeeteemFilters.test.tsx` | Affichage filtres, toggle actif/inactif |
-| `components/sections/parts/MeeteemMapPlaceholder.test.tsx` | Rendu placeholder (variants large/compact) |
+| `utils/ampliUsersGeo.test.ts` | Conversion contributeurs → entités carto : id hexadécimal (rejet de la forme `ObjectID("…")`), coordonnées en string, préférence geoPosition/geo, garde Null Island, auteur non résolu, `name` vide OMIS, libellé de contributions, déduplication, compteurs localisés/total |
 | `components/sections/parts/MeeteemViewToggle.test.tsx` | Toggle vues, état actif |
+| `components/sections/AmpliFeatures.test.tsx` | Formulaire rendu dans la colonne gauche avec le bon coform et le libellé de la config ; section qui reste montée pendant le chargement (régression du `return null`) ; compteurs en squelette puis chiffrés |
+| `utils/scrollToSection.test.ts` | Défilement vers une ancre : cible absente (pas de throw), `prefers-reduced-motion`, focus sur le premier élément interactif, section réduite à un squelette |
+| `components/sections/AmpliHeader.test.tsx` | Les 3 CTA du hero, et les ancres visées par « Proposer une idée » (avec focus) et « Voir les propositions » |
+| `utils/dashboardStats.test.ts` | `getDashboardStats` — participants uniques, TOTAUX likes/commentaires (vs réponses concernées de `getSummaryData`), repli `vote` sans `voteCount.like`, agrégation/tri des tags (valeur unique, espaces), classements bornés et zéros exclus, auteur depuis l'entité User, `_id` non exploitable |
+| `components/AmpliTabs.test.tsx` | Barre d'onglets : quatre entrées (sans « Messages »), URLs de chaque tab, `aria-current` sur l'onglet courant |
+| `components/sections/parts/AmpliJoinButton.test.tsx` | Demande d'adhésion envoyée + retour local immédiat, cas projet (`canRequestContributor`), anonyme → connexion sans appel, états membre / contributeur / demande en attente, entité non résolue |
+| `components/sections/parts/MeeteemAnswerModal.test.tsx` | Rien monté sans réponse ouverte, squelette / erreur, contrat passé à `CoFormModal` (lecture seule, réponse re-fetchée), bannière masquée et titre mis en avant, titre générique par défaut ; édition : rien sur la réponse d'autrui, bascule lecture → édition, pré-remplissage complet, double invalidation après enregistrement, réouverture en lecture sur une autre réponse |
+| `components/sections/parts/AmpliIdeaForm.test.tsx` | Squelette / erreur / absence de données, `hideBanner` et `formId`+`formData` transmis, carte de refus + `openLogin` (avec `refetch` au succès), invalidation du cache ampli à la soumission, accusé de réception (enregistré vs mis à jour), « soumettre une autre » qui rend un formulaire vierge, passage en édition avec `answerId`/`defaultValues` |
 
 ---
 
@@ -566,13 +820,17 @@ Accès à la page : `https://monsite.fr/ampli/ma-communaute`
 
 ## Pièges connus / À noter
 
-### 1. Tabs `stats` et `news` non implémentés
+### 1. Tab `news` non implémenté
 
-Les routes `/ampli/:slug/stats` et `/ampli/:slug/news` sont déclarées dans `routes.tsx` et affichent un écran "coming soon". Ne pas les exposer dans la navigation tant qu'elles ne sont pas implémentées.
+La route `/ampli/:slug/news` est déclarée dans `routes.tsx` mais affiche encore un écran "coming soon" ; elle reste exposée dans la barre d'onglets. Le tab `stats` est implémenté (`AmpliDashboard`).
 
-### 2. Vue Carte non implémentée dans Meeteem
+Pas d'onglet « Messages » dans `AMPLI_TABS` : les messages sont une SECTION de la page d'accueil (`AmpliMessages`), pas une route.
 
-`MeeteemMapPlaceholder` est un placeholder — la vraie intégration Leaflet n'est pas encore faite. En attendant, les modes `map` et `split` affichent ce placeholder. Quand Leaflet sera intégré, utiliser `useClientModule()` (SSR-safe).
+### 2. Les cartes du module réutilisent le stack search (MapLibre, pas Leaflet)
+
+Il n'y a plus de placeholder : `MeeteemMap` monte `SearchMapWrapper` (MapLibre + supercluster + MapTiler). Toute nouvelle carte du module doit passer par lui plutôt que de remonter la chaîne à la main — il porte les quatre gardes non négociables (i18n `modules/search`, `lazy()` de `vite-preload`, `ClientOnly`, `Suspense`) et le parent doit lui donner une hauteur explicite.
+
+⚠ Une entité sans coordonnées valides est écartée **silencieusement** par `SearchMap` : toute carte du module doit compter ce qu'elle n'affiche pas (cf. `located` / `total` d'`ampliUsersGeo`).
 
 ### 3. `useFetchAnswerQuery` requiert un `entity` initialisé
 

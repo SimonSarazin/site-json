@@ -301,8 +301,12 @@ interface SmartCoFormProps {
   discardDraftRef?: React.RefObject<(() => void) | null>; // rejet explicite du brouillon
   baseUpdatedAt?: number | null;// `answer.updated` — OBLIGATOIRE dès qu'on passe `answerId`
   lockedFields?: string[];      // Champs en lecture seule (pointer-events-none)
+  submitButtonText?: string;    // Libellé du bouton d'envoi (mono-étape)
+  hideBanner?: boolean;         // Form EMBARQUÉ : la surface hôte porte déjà son titre
 }
 ```
+
+**Formulaire embarqué dans une section hôte** — `hideBanner` + `submitButtonText` vont de pair. Sans `hideBanner`, le nom du formulaire s'affiche en `<h1>` 4xl au milieu de la page qui l'accueille, en doublon de son propre titre ; `submitButtonText` laisse l'hôte porter son appel à l'action plutôt que le générique `coform.navigation.submit`. Premier usage : la colonne gauche d'`AmpliFeatures` (cf. [Module Ampli](22-module-ampli.md#amplideaform--le-formulaire-en-ligne)). En multi-étapes, seul `hideBanner` s'applique — la navigation du wizard garde ses libellés.
 
 **Logique de sélection du mode :**
 
@@ -393,6 +397,9 @@ export interface CoFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title?: string;
+  titleClassName?: string;    // Style du titre (à poser avec hideBanner)
+  hideBanner?: boolean;       // Masque le nom du formulaire (<h1> 4xl)
+  headerActions?: ReactNode;  // Actions à droite du titre (ex. « Modifier »)
   stepKey?: string;
   inputKey?: string;
   answerId?: string;
@@ -404,6 +411,10 @@ export interface CoFormModalProps {
   lockedFields?: string[];
 }
 ```
+
+**`headerActions`** — rendu à droite du titre, avec `pr-8` pour ne pas passer sous le bouton de fermeture du Dialog (`absolute top-4 right-4`). Ces actions doivent vivre **dans** le Dialog : le contenu est monté dans un portail, l'appelant ne peut rien poser par-dessus. Usage type : basculer une fiche en lecture seule vers l'édition (`MeeteemAnswerModal`).
+
+**`hideBanner` + `titleClassName`** — une modale a déjà un titre qui dit ce qu'on regarde. Sans `hideBanner`, la bannière du formulaire peint son nom en `<h1>` 4xl **sous** ce titre laissé en `text-lg` : le nom du FORMULAIRE écrase visuellement celui de la RÉPONSE affichée. Les deux props se posent ensemble — la bannière disparaît, le titre reprend une taille de titre de fiche. Premier usage : `MeeteemAnswerModal` (module ampli).
 
 **Comportement de fermeture** :
 - Si `isDirty && !isSubmitting` → affiche `AlertDialog` avec 3 options : "Continuer l'édition", "Annuler les modifications", "Enregistrer"
