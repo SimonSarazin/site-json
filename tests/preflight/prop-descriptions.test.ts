@@ -92,9 +92,16 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
   it("aucun dump ne redevient illisible (plafond de taille)", () => {
     // Avant `reused: "ref"` + repli de l'union Section, `profiles` sortait
     // 683 Ko et `page` 509 Ko : l'outil central de la skill était inutilisable
-    // sur les blocs les plus courants. Plafond large (60 Ko ≈ 15k tokens, le
-    // maximum actuel étant ~40 Ko) : il n'attrape que la vraie régression.
-    const CEILING = 60_000;
+    // sur les blocs les plus courants. Le plafond n'attrape que CETTE
+    // régression-là, pas la croissance ordinaire du schéma.
+    //
+    // Relevé de 60 à 80 Ko à la fusion `main` → `fdev` (sept. 2026) : les deux
+    // branches ont ajouté des sections chacune de leur côté (76 et 77 → 78), et
+    // les blocs qui embarquent l'union Section — `page`, `section:tabs`,
+    // `section:gridLayout` — ont franchi l'ancien plafond par leur SOMME, à
+    // 61-62 Ko. Chaque branche prise seule passait. 80 Ko ≈ 20k tokens : encore
+    // un ordre de grandeur sous les 500 Ko qui rendaient le dump inutilisable.
+    const CEILING = 80_000;
     const selectors = [...ROOT_BLOCK_SELECTORS, ...[...sectionOptions().keys()].map((t) => `section:${t}`)];
     const oversized = selectors
       .map((s) => {

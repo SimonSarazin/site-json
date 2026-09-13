@@ -132,10 +132,16 @@ describe("contenu de la définition du formulaire — mise en forme préservée"
         }
       />,
     );
-    expect(container.querySelector("form")).toBeNull();
-    expect(container.querySelector("input")).toBeNull();
-    expect(container.querySelector("[style]")).toBeNull();
-    expect(container.querySelector("[class]")).toBeNull();
+    // Les assertions portent sur le CONTENU assaini, pas sur l'enveloppe : le
+    // `ProseContent` du module pose `wrap-anywhere` sur son div (césure des URL,
+    // cf. son commentaire dans FormFields.tsx), que `container.querySelector`
+    // attraperait. Ce qui est garanti ici reste entier : le `class` et le `style`
+    // de l'ATTAQUANT, eux, ne survivent nulle part sous cette enveloppe.
+    const contenu = container.firstElementChild!;
+    expect(contenu.querySelector("form")).toBeNull();
+    expect(contenu.querySelector("input")).toBeNull();
+    expect(contenu.querySelector("[style]")).toBeNull();
+    expect(contenu.querySelector("[class]")).toBeNull();
   });
 });
 

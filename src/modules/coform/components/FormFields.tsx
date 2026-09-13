@@ -1,6 +1,9 @@
 import { useState } from "react";
 import type { UseFormRegister, FieldErrors } from "react-hook-form";
-import { ProseContent } from "@/components/shared/ProseContent";
+import {
+  ProseContent as ProseContentPartage,
+  type ProseContentProps,
+} from "@/components/shared/ProseContent";
 import { Check, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,11 +36,33 @@ import { useT } from "@/hooks/useT";
 import type { FormFieldMapping } from "../types";
 import { MarkdownEditor } from "./MarkdownEditor";
 
-// `ProseContent` a été sorti dans `@/components/shared` : les fiches AAC
-// affichent en lecture les mêmes valeurs que les champs saisissent, et une
-// seconde implémentation aurait signifié une seconde garantie de sécurité à
-// maintenir. Ré-exporté ici pour que les call-sites du module ne bougent pas.
-export { ProseContent };
+/**
+ * `ProseContent` a été sorti dans `@/components/shared` : les fiches AAC
+ * affichent en lecture les mêmes valeurs que les champs saisissent, et une
+ * seconde implémentation aurait signifié une seconde garantie de sécurité à
+ * maintenir. Exposé ici pour que les call-sites du module ne bougent pas.
+ *
+ * ENVELOPPÉ, et non ré-exporté nu, pour `wrap-anywhere` (overflow-wrap: anywhere) :
+ * ces textes sont saisis par des admins et contiennent des URL entières. Un mot
+ * insécable plus large que sa colonne pousse toute la chaîne — mesuré à 352 px dans
+ * une colonne de 308 — et la modale, qui a `overflow-y-auto` (donc `overflow-x: auto`
+ * imposé par CSS), se met alors à défiler latéralement. `anywhere` plutôt que
+ * `break-words` : lui seul réduit aussi la largeur min-content, ce qui compte ici
+ * puisque ces blocs sont des items de grille.
+ *
+ * POURQUOI ICI et pas dans le composant partagé : celui-ci garantit que le
+ * `className` de l'appelant reste le SEUL habillage, et son test le vérifie au
+ * caractère près (`shared/ProseContent.test.tsx`, garde H23 — le profil restreint
+ * n'a de sens que si rien ne se rajoute au rendu). La classe est un besoin de
+ * PRÉSENTATION propre au module, elle se pose donc à son point d'usage.
+ *
+ * Rétabli à la fusion `main` → `fdev` : le correctif (eec107fe) portait sur la copie
+ * locale de `ProseContent`, que l'extraction vers `shared/` a supprimée. Les deux
+ * changements ont fusionné sans conflit textuel et la classe est partie avec la copie.
+ */
+export function ProseContent({ className, ...props }: ProseContentProps) {
+  return <ProseContentPartage {...props} className={cn("wrap-anywhere", className)} />;
+}
 
 /**
  * Composant pour afficher un indice/info avec support markdown ET HTML brut.
