@@ -1637,12 +1637,30 @@ Deux pièges, tous deux **silencieux** :
    `style: "circle"`) **coloré par valeur** (code couleur par territoire) —
    prioritaire sur le jeton `color`, seul le remplissage vient du mapping ;
 3. `iconUrl` → **icône custom** (image/SVG brandée — URL relative préfixée par
-   `baseUrl`, ou absolue ; `iconSize` px déf. 34, `iconAnchor` `"bottom"`/`"center"`) ;
+   `baseUrl`, ou absolue ; `iconAnchor` `"bottom"`/`"center"`) ;
 4. `style: "pin"` / `style: "circle"` / `icon` (+ `color` en **jeton de thème** :
    `primary`/`secondary`/`accent`/`chart-1..5` ; `borderColor` déf. `background`)
    → goutte SVG ou pastille ronde, portant le **pictogramme lucide** d'`icon`
    en son centre quand il est déclaré (`icon` seul implique la goutte) ;
 5. sinon → pin par défaut (primary).
+
+**`iconSize` — taille de TOUTES les formes.** Le champ ne concerne pas que
+`iconUrl` : il dimensionne la forme retenue par la chaîne ci-dessus, quelle
+qu'elle soit, et met le pictogramme lucide à l'échelle avec elle. Sans lui,
+chaque forme garde sa taille historique :
+
+| Forme | Déclencheur | Défaut |
+| --- | --- | --- |
+| vignette de l'item | `useItemImage` | 36 px |
+| pastille ronde | `style: "circle"` | 30 px |
+| goutte | `style: "pin"`, `icon`, ou aucun | 34 px |
+| icône custom | `iconUrl` | 34 px |
+
+Bornes : 8–128 px. Déclaré dans `integrations.map.marker`, il s'applique donc à
+toutes les sections du site — y compris aux vignettes et aux pastilles, pas
+seulement aux icônes custom. Comme tout champ de `MarkerVisualConf`, un cas de
+`by` peut le surcharger au cas par cas (ce n'est pas un sélecteur de rendu : il
+se fusionne sur le marqueur de base au lieu de le remplacer).
 
 **`icon` vs `iconUrl`** — les deux mettent un pictogramme sur la carte, mais
 `icon` est un nom **lucide** (kebab-case, catalogue de 1901 noms validé par

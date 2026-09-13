@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ArrowRight, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,14 +21,27 @@ export function MapPopupDefault({ item, t, actionKind, onAction }: MapPopupProps
   const visibleTags = tags.slice(0, 4);
   const remaining = tags.length - visibleTags.length;
   const imgSrc = image ? (image.startsWith("http") ? image : `${getBaseUrl()}${image}`) : "";
+  // On mémorise l'URL qui a échoué (et non un booléen) : `item` change sans
+  // démontage quand l'utilisateur passe d'un marqueur à l'autre, et comparer à
+  // `imgSrc` remet l'état à neuf sans effet de reset. Sans ce garde, une URL
+  // morte — avatar supprimé, chemin obsolète — peint le cadre « image cassée »
+  // du navigateur en tête de popup.
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const showImage = Boolean(imgSrc) && failedSrc !== imgSrc;
   const addressLine = [address?.streetAddress, address?.postalCode, address?.addressLocality]
     .filter(Boolean)
     .join(", ");
 
   return (
     <Card className="max-w-64 gap-0 overflow-hidden border-border bg-background py-0 shadow-xl sm:max-w-72">
-      {imgSrc && (
-        <img src={imgSrc} alt="" loading="lazy" className="h-24 w-full object-cover" />
+      {showImage && (
+        <img
+          src={imgSrc}
+          alt=""
+          loading="lazy"
+          onError={() => setFailedSrc(imgSrc)}
+          className="h-24 w-full object-cover"
+        />
       )}
       <CardContent className="space-y-2 p-3">
         <h3 className="text-sm font-bold leading-tight text-foreground">{name}</h3>

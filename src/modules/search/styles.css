@@ -44,6 +44,25 @@
   background: var(--background);
 }
 
+/* Repli du marqueur-vignette quand l'URL d'avatar est morte (cf.
+   `MapMarkerAvatar`). DOIT vivre ici et non en utilitaires Tailwind : cette
+   feuille n'est pas layerisée alors que Tailwind v4 émet tout dans
+   `@layer utilities`, et le non-layerisé l'emporte quel que soit l'ordre —
+   `flex`/`bg-muted` posés sur l'élément seraient des classes MORTES, écrasées
+   par le `display:block` et le `background` de `.search-map-avatar`. */
+.search-map-avatar.is-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Couleurs de MARQUE, pas `--muted` : en thème sombre une pastille muted est
+     quasi noire sur un fond de carte sombre — le marqueur se lisait comme une
+     tache. Le couple primary/primary-foreground garde le même contraste en
+     clair comme en sombre, et range le repli dans le même langage visuel que
+     la goutte par défaut. */
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
 /* Pin SVG thème (map.marker.style: "pin" ou défaut) */
 .search-map-pin {
   display: block;

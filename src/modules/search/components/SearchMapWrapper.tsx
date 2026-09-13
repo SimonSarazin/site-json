@@ -1,3 +1,12 @@
+// Styles du stack carte (marqueurs, bulles de cluster, popup, halo de focus).
+// Importés ICI, au point d'entrée UNIQUE du chunk carte, et non chez les
+// appelants : `SearchPro`/`SearchProStatic` les importaient chacun de leur côté,
+// si bien que toute autre carte — celles d'`ampli` et d'`agenda` — rendait des
+// marqueurs et des clusters SANS AUCUN style (avatar carré au lieu de rond,
+// bulle de cluster nue, halo de focus mort), sans la moindre erreur. Les règles
+// sont toutes préfixées `.search-map-*` : aucun risque de débordement, et Vite
+// dédoublonne l'import pour les deux appelants historiques.
+import "../styles.css";
 
 import { useClientModule } from "@/hooks/useClientModule";
 import { useT } from "@/hooks/useT";
