@@ -98,6 +98,13 @@
               "en": "Places that can host you for several days."
             },
             "path": "/lieux?services=Hébérgement"
+          },
+          {
+            "label": {
+              "fr": "Coworking, salles & hébergements",
+              "en": "Coworking, rooms & stays"
+            },
+            "path": "/annuaire-ressources"
           }
         ]
       },
@@ -314,14 +321,14 @@
           },
           {
             "label": {
-              "fr": "Événements",
-              "en": "Events"
+              "fr": "Actus & événements",
+              "en": "News & events"
             },
             "description": {
-              "fr": "Les événements autour des tiers-lieux.org à venir",
-              "en": "Upcoming events around tiers-lieux.org"
+              "fr": "L'actualité et les événements autour de tiers-lieux.org",
+              "en": "News and events around tiers-lieux.org"
             },
-            "path": "/evenements"
+            "path": "/actualites"
           },
           {
             "label": {

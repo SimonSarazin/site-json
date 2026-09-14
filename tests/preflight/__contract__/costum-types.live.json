@@ -2,6 +2,66 @@
   "_source": "contrat costum LIVE (describeCostumForms sous force-live) — backend http://127.0.0.1:5080. Rafraîchir : npm run contract:snapshot:live. Un diff ici = l'inférence live a bougé sous les formulaires.",
   "_backend": "http://127.0.0.1:5080",
   "costums": {
+    "EcosystemeSanteReunion": {
+      "organizations": {
+        "thematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "projects": {
+        "thematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "beneficiaires": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "poi": {
+        "thematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
     "associationEkilibre": {
       "organizations": {
         "siren": {

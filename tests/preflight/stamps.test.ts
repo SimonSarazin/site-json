@@ -107,6 +107,14 @@ describe("préflight mutation.stamps", () => {
       // payload « En cours » passe la whitelist, le stamp pathValue de contournement a été retiré.
       // RELIEF dérive de la config tiers-lieux, dont il reprend le form et ses 5 stamps.
       "relief/tiers-lieux:5",
+      // EcosystemeSanteReunion n'apparaît PAS ici, et c'est un choix documenté : ses 3 forms recopient
+      // aussi les thématiques dans `tags` (toute la surface de filtrage du site interroge `tags`,
+      // jamais `thematic`), mais par les codecs `read`/`write` du CHAMP, pas par une estampille.
+      // Motif : `op:"append"` ne sait qu'ajouter et refusionne `targetServerData`, si bien qu'une
+      // thématique DÉCOCHÉE ne perdait jamais son tag — la fiche restait sur son ancienne page de
+      // thématique. La réconciliation (retrait compris) appartient donc au champ.
+      // cf. `src/modules/profil/forms/costum/rezo-sante/fns.ts` et sa garde de non-retour dans
+      // `rezo-sante.configDriven.test.ts` (« aucun formulaire ne porte d'estampille tags »).
       // Référencement régional posé à la création : la fiche appartient au costum COMMUNAL
       // (`source.key`) et est RÉFÉRENCÉE par `equipementsSportifs974`, qui la voit via la
       // traduction serveur `sourceKey` → `$or[source.keys, reference.costum]`.

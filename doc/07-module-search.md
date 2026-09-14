@@ -13,6 +13,7 @@
   - [`thematics` — filières dynamiques](#thematics--filières-dynamiques)
   - [`filters` — sidebar de filtres partagée](#filters--sidebar-de-filtres-partagée)
   - [`searchHeader` — header de filtres horizontal](#searchheader--header-de-filtres-horizontal)
+  - [`coform-resource-directory` — annuaire à plat de ressources CoForm](#coform-resource-directory--annuaire-à-plat-de-ressources-coform)
 - [Context et filtres page-scoped (`pageFilters.ts`)](#context-et-filtres-page-scoped-pagefiltersts)
 - [Helpers purs partagés (`lib/`)](#helpers-purs-partagés-lib)
   - [buildSearchPayload](#buildsearchpayload)
@@ -357,6 +358,11 @@ ne joue qu'en mode accordéon (`filterGroups[]`) :
 | `"select": {"searchable": true}` | recherche + sélection unique (MultipleSelector, remplace) |
 | `"select": {"multiple": true, "searchable": true}` | recherche + badges multi (MultipleSelector) |
 
+**Ordre des options** : par défaut TOUTES les options d'un groupe sont triées
+par libellé localisé (`localeCompare`). `"keepOptionOrder": true` sur le groupe
+conserve l'**ordre déclaré** — indispensable quand l'ordre porte du sens
+(tranches de prix croissantes de `coform-resource-directory`, étapes, etc.).
+
 Mobile (< `lg`, le breakpoint d'empilement du gridLayout) : champ de
 recherche AU-DESSUS d'un bouton « Filtres » + compteur ouvrant un Sheet bas —
 bascule pur CSS (pas de flash). Desktop : sidebar. Les champs compacts
@@ -502,6 +508,159 @@ Section bandeau de filtres **horizontal** (variante de `FiltersSection` présent
           { "id": "terrain-football", "label": { "fr": "Terrain de football" } }
         ]
       }
+    ]
+  }
+}
+```
+
+### `coform-resource-directory` — annuaire à plat de ressources CoForm
+
+Section **autonome** (elle monte son propre `PageFiltersProvider`, ne se pose
+pas dans un `gridLayout`) : un annuaire des **ressources d'un tiers-lieu**
+— coworking / salle de réunion / hébergement — avec une facette « type » et une
+facette « prix » à gauche, la grille de résultats à droite. **Une carte par
+réponse CoForm**, SAUF pour les salles de réunion où l'endpoint **éclate** chaque
+réponse en **une carte par salle** (cf. plus bas).
+
+Portage config-agnostique de `Navigator::getRessourceTL` (costum
+`franceTierslieux`), consommé via le **variant SDK dédié `navigator-tl-ressource`**
+(`/costum/navigator/getsressourcetl`) : un `SearchNew::globalAutoComplete` suivi
+d'un post-traitement **serveur** — résolution du tiers-lieu **porteur** depuis
+l'input « finder » de la réponse, remontée de son adresse/image/géo/email, garde
+région, filtre prix, filtre « porté par », éclatement des salles, `documents`
+attachés. La section ne refait côté client qu'un appel groupé
+(`useResourceParentsQuery`) pour le **`slug`** du lieu (non remonté par l'endpoint,
+nécessaire au lien « Voir le tiers-lieu »). Divergence assumée avec
+`searchProStatic` (règle 9 des bonnes pratiques) : liste d'`answers` +
+jointure sur le lieu porteur + garde région + éclatement, pour quoi
+`searchProStatic` n'offre aucun point d'accroche.
+
+| Prop | Type | Rôle |
+|------|------|------|
+| `resourceTypes` | `Array<{ id, kind, formId, stepPrefix, label, linkSuffix?, descriptionSuffix?, servicesSuffix? }>` (≥ 1) | Un type = une option de facette **et** un formulaire. `kind` ∈ `coworking\|meeting\|accommodation` → pilote la capacité/tarif (cf. `helpers/servicePricingAnswers`). Suffixes PROPRES au formulaire : `linkSuffix` = URL de réservation (`linkPath`), `descriptionSuffix` = « À propos » (meeting `miolbscdcrucb5a8uuq`, hébergement `miq88plgleoln5tmc7b`), `servicesSuffix` = « Services proposés » `string[]` (hébergement `miq86g5vaw1kavrapkb`) |
+| `finderSuffix` | string | Suffixe de l'input « finder » (tiers-lieu porteur), **commun** aux formulaires copie. Ex. `miem3epsztzcm9dgim` |
+| `fieldSuffixes` | `{ name?, equipments?, area?, bookingUrl? }` | Suffixes d'inputs COMMUNS. `name` (`mieg4k7yxrito5j9e6`) = titre coworking/hébergement (repli → « Espace de coworking » / « Hébergement »). Pour une salle éclatée, le titre = `serverData.roomName` (colonne 0 du tableau des salles) — repli « Salle de réunion ». `area` (`mieg4k7zslc8awrql2`) = surface (détail) |
+| `scope.addressLevel1` | string | Garde géo : ne garde que les ressources dont le **lieu porteur** est dans cette zone (`address.level1`). Passé dans `defaultFilters["address.level1"]` → l'endpoint `getsressourcetl` **filtre côté serveur** (il retire la clé du payload puis post-filtre sur le lieu porteur). Scroll infini natif conservé |
+| `costumSlug` / `contextId` / `contextType` | string | Périmètre costum (comme le payload legacy) |
+| `columns` | `{ sm?, md?, lg?, xl? }` | Grille de résultats (déf. `1/2/3`) |
+
+Le filtre Mongo FIXE (`buildResourceDirectoryFilters`) émet `form.$in` + un `$or`
+en **forme MAP** (`{ "answers.<step>.finder…": { "$exists": true }, … }`) — **pas
+un tableau** : `SearchNew::searchFilters` lit `$or` comme une map `champ→op`, et
+la forme tableau Mongo standard fait un **HTTP 500** sur le backend legacy
+(cf. [§mongoFilters](#mongofilters--fusion-des-filtres-or)).
+
+**Filtre « porté par » (serveur, piloté depuis les cartes)** : le clic sur
+« Porté par {tiers-lieu} » d'une carte pose `filters.parentId` (`{ $in: [id] }`,
+post-filtré par `Navigator::getRessourceTL` sur les parents résolus), il n'ouvre
+PAS le détail. Ce n'est pas une facette configurée : `CoformResourceDirectorySection`
+tient l'état `activeParent` et le distribue aux cartes via
+`ResourceDirectoryActionsProvider` ; une puce « Ressources portées par {nom} ✕ »
+au-dessus de la grille le retire. La facette « type » (client) s'applique par-dessus.
+
+**Quatre facettes** (`hideSearch: true` — pas de recherche texte). Un annuaire de
+ressources est BORNÉ : la section charge l'ensemble (`indexStepList: 500`,
+`defaultFields` inclut **`"form"`** — indispensable à l'éclatement serveur et au
+routage du filtre prix), parse chaque résultat (`parseResourceDirectoryItem`),
+puis :
+- **`resourceType`** — groupe `filters` SANS `field` : options = les
+  `resourceTypes` (`name` = `id`) → filtre **CÔTÉ CLIENT** sur `model.type.id`
+  (`pageFilters.selectedFilters`). Le compteur reflète le nombre filtré ;
+- **3 groupes prix** — **calqués sur Communecter** (`PRICE_FILTER_GROUPS` dans
+  `lib/resourceDirectory.ts`), un par unité de tarif, chacun avec SES tranches :
+  - `priceHourly` « Tarif à l'heure » : `0-20` / `20-50` / `50-100` / `100-`
+  - `priceHalfDay` « Tarif à la demi-journée » : `0-50` / `50-100` / `100-200` / `200-`
+  - `priceFullDay` « Tarif à la journée » : `0-100` / `100-200` / `200-400` / `400-`
+
+  Groupes `filters` AVEC `field` (= le nom du champ backend). `searchByFields` est
+  keyé par `option.name` : comme les tranches `50-100` / `100-200` reviennent
+  entre groupes, `name` est **préfixé du field** (`"priceHourly:50-100"`) et
+  `variants: ["50-100"]` porte la vraie valeur envoyée. `keepOptionOrder: true`
+  (tranches croissantes). → `searchByFields` → `{ priceHourly: { $in: [...] }, … }`
+  → filtre **CÔTÉ SERVEUR**. Le backend interprète chaque tranche `"min-max"`
+  (côté vide = borne absente) en intervalle semi-ouvert `[min, max[`, applique le
+  filtre par salle pour les salles de réunion, sur le chemin de prix du formulaire
+  sinon. Deux unités cochées se combinent en **ET** (le backend teste chaque
+  champ). Une réponse sans tarif dans une unité cochée sort → tout filtre prix
+  horaire/journée écarte les hébergements (tarifiés à la nuitée).
+
+**Éclatement « 1 salle = 1 réponse »** (serveur, formulaire salle de réunion
+uniquement) : chaque ligne du tableau des salles (`roomPath`, ligne 0 = libellés)
+devient une réponse `<answerId>.room<N>` portant `roomIndex` (1-based), `roomName`
+(colonne 0), `parentAnswerId`, et le tableau réduit à `[libellés, laSalle]`. Comme
+plusieurs cartes partagent alors le `_id` de l'answer source, la section **re-clé**
+ses items en `<_id>-room<N>` (clés React + deep-link `?resource=` uniques) ; carte
+et détail ne lisent que `serverData`. Une answer salle sans tableau n'est pas
+éclatée (repli titre « Salle de réunion »).
+
+**Variant SDK `navigator-tl-ressource`** → endpoint dédié
+`/costum/navigator/getsressourcetl` (`Navigator::getRessourceTL`) : `globalautocomplete`
++ post-traitement serveur (tiers-lieu porteur résolu, adresse/geo/image/email
+remontés, garde `address.level1`, filtres `parentId` / `price{Hourly,HalfDay,FullDay}`,
+éclatement des salles, `documents` attachés). `answers` reste un **blob brut** keyé
+par étape — surtout PAS `navigator-tl` (qui re-clé `answers` par les 3 form ids).
+`fields` doit inclure `"form"` (routage éclatement + filtre prix côté serveur).
+
+Cartes/détail : `card.type` / `preview.type` **`resource-directory`** (remplis
+par la section, non destinés à être écrits à la main), qui lisent leur tranche
+`list.resourceDirectory` et le contexte `ResourceParentsProvider`. La logique
+pure est dans `lib/resourceDirectory.ts` (`parseResourceDirectoryItem`), testée
+(`resourceDirectory.test.ts`).
+
+**La carte** (`CardResourceDirectory`) : image en **carrousel** partagé
+(`ResourcePhotoCarousel`) — sur la carte il **défile seul** (4 s, pause au survol)
+et **sans flèches** (`autoPlay controls="none"`), compteur conservé ; badge type en
+overlay, nom, localité, ligne capacité + tarif « à partir de », pied « Porté par
+{tiers-lieu} » : le NOM est un bouton qui pose le **filtre « porté par »** de la
+section (`stopPropagation` — n'ouvre pas le détail), à côté du lien « Voir le
+tiers-lieu » (profil). Hors section (pas de `ResourceDirectoryActionsProvider`), le
+nom retombe en texte simple.
+
+**Le détail** (`PreviewResourceDirectory`) reprend **le même gabarit que le modal
+« En savoir plus » d'un tiers-lieu** (`ProfilTiersLieuxAbout`), `preview.width:
+"2xl"`, adapté aux jetons de thème clair/sombre : carrousel `h-56` + **pastille de
+capacité** en coin → nom (`h3`, **pas d'étiquette de type**) + « Porté par
+{tiers-lieu} » + localité → **Tarifs** en pastilles (`{prix}€` + suffixe
+`resourceDirectory.priceSuffix.*` — TOUS les tarifs non nuls) + pastille « Tarif
+solidaire » → **Surface** (`area` commun, repli sur la colonne 1 de la salle) →
+**À propos** (`descriptionSuffix`) → **Équipements** (pastilles) → **Services
+proposés** (`servicesSuffix`, hébergement) → boutons.
+
+**Bouton d'action** — trois cas : (a) `bookingUrl` présent → **« Réserver »**
+(`https://` préfixé, `window.open`) ; (b) pas de `bookingUrl` mais un e-mail de
+tiers-lieu connu (`model.parentEmail` = `serverData.email` remonté par le backend,
+repli `parentEmails`) → **« Contacter par e-mail »** = un simple `<a href="mailto:…">`
+vers l'adresse du tiers-lieu (objet pré-rempli `resourceDirectory.mailtoSubject`,
+corps laissé au visiteur — **aucun formulaire, aucun envoi côté site**) ; (c) ni
+l'un ni l'autre → pas de bouton d'action. Toujours **« Voir le tiers-lieu »** si
+`slug`. Pas de section « Les salles » : l'éclatement serveur fait qu'un modal =
+une salle, ses champs (capacité / surface / tarifs / solidaire) sont posés
+directement dans le corps.
+
+```json
+{
+  "type": "coform-resource-directory",
+  "props": {
+    "title": { "fr": "Annuaire des ressources tiers-lieux" },
+    "costumSlug": "transiter",
+    "contextId": "65df30c185682029fd7e42bf",
+    "contextType": "organizations",
+    "finderSuffix": "miem3epsztzcm9dgim",
+    "fieldSuffixes": {
+      "name": "mieg4k7yxrito5j9e6", "equipments": "mieg8j24m89gm99t5mi", "area": "mieg4k7zslc8awrql2"
+    },
+    "scope": { "addressLevel1": "58be4af494ef47df1d0ddbcc" },
+    "resourceTypes": [
+      { "id": "coworking", "kind": "coworking", "formId": "6925e2b05dd63b02ca70d6d9",
+        "stepPrefix": "navigatorDesTierslieux25112025_209_0", "linkSuffix": "miq8118cmkh16zjwmt",
+        "label": { "fr": "Coworking" } },
+      { "id": "meeting-room", "kind": "meeting", "formId": "6925869ad76aaf6c5a2b2f8a",
+        "stepPrefix": "navigatorDesTierslieux25112025_1436_0", "linkSuffix": "miq81uh4gat3vgbtgkj",
+        "descriptionSuffix": "miolbscdcrucb5a8uuq", "label": { "fr": "Salle de réunion" } },
+      { "id": "accommodation", "kind": "accommodation", "formId": "6925ee8ac537f8056114aec7",
+        "stepPrefix": "navigatorDesTierslieux25112025_2059_0", "linkSuffix": "miq83c8getjt3lcz64f",
+        "descriptionSuffix": "miq88plgleoln5tmc7b", "servicesSuffix": "miq86g5vaw1kavrapkb",
+        "label": { "fr": "Hébergement" } }
     ]
   }
 }
@@ -1641,9 +1800,10 @@ La carte de liste est pilotée par `list.card.variant` (sinon `list.card.type` �
 
 ## Variante SDK `searchVariant`
 
-`searchVariant: "navigator-tl"` change l'endpoint backend utilisé :
+`searchVariant` change l'endpoint backend utilisé :
 - `default` (absent) : `/co2/search/globalautocomplete`
 - `navigator-tl` : `/costum/navigator/gettl` — enrichit chaque résultat avec `serverData.answers` (réponses CoForm auto-linkées)
+- `navigator-tl-ressource` : `/costum/navigator/getsressourcetl` — annuaire À PLAT des ressources d'un tiers-lieu (`searchType: ["answers"]`, `fields` DOIT inclure `"form"`) : `globalautocomplete` + post-traitement serveur — résolution du tiers-lieu porteur (adresse/geo/image/email remontées), garde `address.level1`, filtres `parentId` et `price{Hourly,HalfDay,FullDay}` (tranches `"min-max"`), **éclatement 1 salle = 1 réponse** (`<answerId>.room<N>` + `roomIndex`/`roomName`/`parentAnswerId`), `documents` attachés, `indexStep` par défaut `"all"`. Consommé UNIQUEMENT par la section `coform-resource-directory` (variant posé par la section, pas par la config).
 
 Utilisé pour les sites tiers-lieux qui enrichissent les fiches avec des données CoForm sans étape de lookup supplémentaire.
 

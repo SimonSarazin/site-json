@@ -1380,6 +1380,30 @@ Modale de gestion d'un membre spécifique. Actions disponibles selon permissions
 
 Liste les membres avec `UserListItem`. Supporte pagination et rôles.
 
+### `PendingInvitationModal` — invitation en attente (popup globale)
+
+Complète `InviteMemberDialog` côté invité : modale globale montée une fois dans `RootLayout.tsx`
+(`SiteShell`), à côté de `DiscourseGlobalModal` (même principe, cf. [Module interop](20-module-interop.md)).
+Si l'utilisateur connecté est invité à rejoindre — ou administrer — l'entité du site courant (organisation
+ou projet costum), elle le lui propose sans qu'il ait à aller chercher le bouton de statut sur la page
+profil de l'entité (`EntityStatusButton`).
+
+- `usePendingSiteInvitation()` (`hooks/`) : dérive `isInviting`/`isInvitingAdmin` via `useProfilPermissions`
+  sur l'entité `useCocolight().entity` (le « carrier » du site) — aucun appel réseau, les flags sont déjà
+  dans `me.serverData.links` une fois `me`/`entity` chargés.
+- Réutilise les mutations existantes `useAcceptInvitation`/`useRejectInvitation`
+  (`actions/mutations/relationship.ts`) — aucune nouvelle mutation créée.
+- Réponse obligatoire : pas de croix de fermeture, Échap et clic extérieur neutralisés
+  (`showCloseButton={false}` + `onEscapeKeyDown`/`onInteractOutside`) — seuls Accepter/Refuser referment
+  la modale (`onSuccess` de la mutation).
+- `useHydrated()` : `me` est toujours `null` au SSR, donc `open` reste `false` au 1er render client pour
+  rester identique au HTML serveur — sinon Radix marque `aria-hidden` sur les autres éléments de la page dès
+  le montage d'un Dialog ouvert, ce qui produit un mismatch d'hydratation sur des nœuds sans rapport.
+- La mémoire de fermeture (`dismissedEntityId`) se réinitialise à chaque connexion : `me` change de
+  **référence** à chaque `userLoggedIn`/`sessionReset` dans `CocolightProvider`, même pour le même compte,
+  donc une invitation fermée lors d'une session précédente dans le même onglet ne reste pas bloquée après
+  une reconnexion sans reload.
+
 ---
 
 ## `TabDetailRenderer`
@@ -1574,3 +1598,4 @@ L'utilisateur voit ainsi le formulaire de connexion au lieu d'un simple toast d'
 - [Module News](09-module-news.md)
 - [Permissions](10-permissions.md)
 - [Backend & SSR](14-backend-ssr.md)
+- [Module interop](20-module-interop.md) — pattern de modale globale repris par `PendingInvitationModal`
