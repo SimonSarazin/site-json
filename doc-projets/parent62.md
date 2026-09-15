@@ -2453,7 +2453,7 @@ point de dette à part entière — soit par un travail de bundle, soit en actan
 > des pages disjointes : `/reseau`, `/charte`, `/mois-parentalite` et l'accueil d'un côté,
 > `/public/*`, `/temoignages` et `/theme` de l'autre. Ma section, d'abord numérotée §9quinvicies, est
 > devenue **§9sexvicies** — `main` occupait déjà ce numéro avec la validation d'ensemble des cinq lots
-> du 09/09. Lot **non commité**.
+> du 09/09. **Commité le 15/09** sur `parents62` : `5e1adc40`, 28 fichiers.
 
 ### 9sexvicies.1 Accueil — le contenu passe devant la marque
 
