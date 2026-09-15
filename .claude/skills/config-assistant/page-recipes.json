@@ -8,12 +8,11 @@
    "source": "config.prod.parent62.json",
    "path": "/",
    "sequence": [
-    "featured-carousel",
+    "gridLayout",
     "action-tiles",
-    "map-bubbles",
     "articleTeaser"
    ],
-   "rythme": "Quatre blocs, un seul statique : le carrousel plein écran met en avant les POI tagués « A la une » (le contenu choisit la vitrine), puis DEUX tuiles « Vous êtes… » aiguillent parent / professionnel vers leur page d'entrée — seul texte rédigé de la page, et la garantie que ces pages ne dépendent pas de la seule nav. La carte à bulles donne ensuite l'entrée géographique vers les pages territoire, et l'aperçu d'articles ferme la page en preuve de vie avec son CTA « voir tout » vers /blog. L'identité est portée par le header stacked (wordmark plein écran) : la home n'a pas besoin de hero."
+   "rythme": "Trois blocs de premier niveau, un seul statique. Le premier est un `gridLayout` 2/2 qui met CÔTE À CÔTE le carrousel « à la une » (les POI tagués — le contenu choisit la vitrine) et la carte à bulles des territoires : les deux entrées principales, éditoriale et géographique, tiennent ainsi dans le premier écran au lieu de s'empiler. Viennent ensuite les DEUX tuiles « Vous êtes… » qui aiguillent parent / professionnel vers leur page d'entrée — seul texte rédigé de la page, et la garantie que ces pages ne dépendent pas de la seule nav — puis l'aperçu d'articles, qui ferme en preuve de vie avec son CTA vers /blog. L'identité est portée par le header stacked, réglé ici au QUART de l'écran (`header.height: \"sm\"`) précisément pour laisser ce premier écran au contenu : la home n'a pas besoin de hero."
   },
   {
    "id": "home-vitrine-dense",
@@ -142,13 +141,15 @@
    "path": "/reseau",
    "sequence": [
     "title",
-    "timeline",
     "content",
+    "content",
+    "title",
+    "categories-grid",
     "features-glass",
-    "faq",
-    "cta"
+    "title",
+    "content"
    ],
-   "rythme": "`title` ouvre, puis on ALTERNE les registres : frise (temps) → texte (fond) → cartes-icônes (synthèse) → FAQ (objections) → CTA. Trois `content` d'affilée fatiguent ; c'est l'alternation qui tient la page."
+   "rythme": "`title` ouvre, puis on ALTERNE les registres : texte fondateur (`content`, avec le lien vers le document d'origine) → l'équipe en texte + visuel cliquable (`content`) → les familles d'acteurs en cartes (`categories-grid`) → les valeurs en cartes-icônes (`features-glass`, libellés courts qui renvoient à la page portant le texte intégral) → la lettre d'information, visuel à gauche (`content`). Les deux ÉNONCÉS de la page — l'objectif du réseau, la définition de la parentalité — partagent le même moule : un `title` centré, titre + paragraphe unique. Une phrase seule porte mieux en énoncé qu'en corps de page, et deux énoncés traités pareil se répondent. Trois `content` d'affilée fatiguent ; DEUX à la suite passent. Pas de `cta` ici : la page se termine sur un bloc qui porte déjà son propre lien — un appel à l'action de plus ferait doublon."
   },
   {
    "id": "page-observatoire",

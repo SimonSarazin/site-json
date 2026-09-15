@@ -15,7 +15,7 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-09-09** — cinq lots : « Paroles de parents » (§9vicies), les ajustements demandés par le réseau (§9unvicies), la page `/theme` (§9duovicies), les pages Publics (§9tervicies puis §9quatervicies).
+Dernière mise à jour : **2026-09-15** — les cinq lots du 09/09 (§9vicies à §9quatervicies, validés en §9quinvicies), puis la refonte de l'accueil, les actions admin sur les actualités, les pages du réseau reprises à la source et le Mois de la Parentalité (§9sexvicies).
 
 **(d) Haut des 9 pages territoire refondu + saisie admin des réunions** — chaque page
 `/territoire/*` ouvre désormais, juste après son bandeau, sur les **3 prochaines réunions du comité
@@ -2445,14 +2445,334 @@ point de dette à part entière — soit par un travail de bundle, soit en actan
 
 ---
 
+## 9sexvicies. Impacts — accueil resserré, actions admin sur les actualités, pages du réseau reprises à la source, Mois de la Parentalité (09-15/09)
+
+> **Réconcilié avec `main` le 11/09** (`git stash apply` sur `002e71ad`, la branche `parents62` étant
+> alors à jour avec `main`). **Un seul conflit** : ce document — les deux lots ajoutaient une section
+> d'impacts au même endroit. `config.prod.parent62.json` a fusionné sans heurt, les deux lots touchant
+> des pages disjointes : `/reseau`, `/charte`, `/mois-parentalite` et l'accueil d'un côté,
+> `/public/*`, `/temoignages` et `/theme` de l'autre. Ma section, d'abord numérotée §9quinvicies, est
+> devenue **§9sexvicies** — `main` occupait déjà ce numéro avec la validation d'ensemble des cinq lots
+> du 09/09. Lot **non commité**.
+
+### 9sexvicies.1 Accueil — le contenu passe devant la marque
+
+| Demande | Réalisation |
+|---|---|
+| Bandeau au quart de l'écran | `header.height` était **inerte** sur le variant `stacked` (lu par `HeaderStandard` seul) : il pilote désormais le plancher (`PLANCHER_BANDEAU`) **et** la taille de la marque (`MARQUE_BANDEAU`) — le plancher seul ne réduit rien, la hauteur valant `max(plancher, contenu)`. `sm` = 25 % ; mesuré 270px sur 1080 |
+| « À la une » et « Territoires » côte à côte | nouveau `gridLayout` `home-une-territoires`, territoires à GAUCHE |
+| Pas de vide blanc sous la colonne courte | `gridLayout.align: "stretch"` (prop **générique** ajoutée, défaut `start` = historique) : le bloc marine occupe l'espace au lieu de le laisser blanc |
+| Tenir dans le premier écran, quel que soit le zoom | `gridLayout.from: "md"` (prop **générique**, défaut `lg`) : à 150 % de zoom le viewport CSS tombe à 960px et le bloc s'empilait — deux blocs empilés ne tiennent pas dans 600px. Résultat : **tient jusqu'à 150 %** ; 175 % reste hors de portée (180px de header incompressible sur 514px) |
+| « À la une » en ligne, photo en haut | `FeaturedCarouselSlide` empilée, image remontée par `order` (l'ordre du DOM garde titre avant illustration, pour un lecteur d'écran) |
+| Pastilles alignées | badge « Territoires » déplacé en haut à GAUCHE, accroche laissée à droite ; badge du carrousel sorti du centrage vertical (`flex-1` sur le carrousel seul) — écart mesuré **0px** |
+
+**`MapBubbles` : tous les paliers passent en container queries.** Les breakpoints de viewport mentaient
+dès qu'une carte étroite cohabitait avec un grand écran — le cas dans une colonne de `gridLayout`, et
+plus encore à fort zoom. Un commentaire du fichier affirmait que les paliers bas « ne servent qu'au
+vrai mobile, où les deux mesures coïncident » : c'était faux, il est corrigé.
+
+⚠️ **Deux pastilles de territoire ont été déplacées** (`Boulonnais` x 6→11, `Entre Mer et Terres`
+14→18) à la demande du réseau. Le commentaire du composant demande de **ne pas** retoucher ces
+positions, calibrées à la main sur l'illustration : les deux ronds sont désormais très légèrement
+décalés de leur zone géographique.
+
+### 9sexvicies.2 Modifier / Supprimer une actualité depuis sa fiche
+
+Boutons réservés à qui en a le droit, sur `/blog/:slug`. **Tout est réutilisé, rien n'est réécrit** :
+`useProfilPermissions().canEditProfile` (admin du costum **ou** auteur — choix acté en séance),
+`DynamicEditModal` (résout `edit-parent62-article`, déjà employée par `/admin`), `useDeleteEntity`
+(porte le toast et l'invalidation du fil blog) et le `ConfirmDialog` partagé.
+
+Seul manque comblé : `useArticle` chargeait l'instance SDK mais `toArticle` n'en gardait que
+`serverData` — or `delete()` vit sur l'instance. Elle est désormais exposée à côté (ajout additif).
+Après suppression, on **quitte la fiche** vers `/blog`.
+
+Le composant vit dans le module blog : les **4 sites** déclarant une page `/blog`
+(`maison-sport-sante-la-tampon`, `saint-paul-sport`, `sport-sante-bien-etre`, parent62) en héritent,
+la permission gardant chacun. Chez les 3 autres, `resolveEditModalName` ne trouvera pas de route
+d'article et **retombera sur la modale générique `edit-profile`** — fonctionnel, mais c'est à leur
+config d'ajouter une entrée `editModals` si elles veulent le bon formulaire. **7 tests** couvrent la
+garde, l'absence d'entité, l'entité sans `delete()`, la confirmation obligatoire et la navigation —
+le cas admin n'étant **pas exerçable sans `.env.test`**, ils en sont la seule vérification.
+
+### 9sexvicies.3 « Nos champs d'actions » — contenu officiel repris
+
+La page paraphrasait parent62.org en prose. Le HTML brut de la page a été extrait (le résumé
+automatique condensait) et restitué **mot pour mot** : les 5 valeurs du REAAP, la charte et les
+5 objectifs du CLAS, les âges du LAEP, et **3 liens documentaires absents** (brochure CLAS,
+vidéo mon-enfant.fr, Journée départementale d'Olhain). Deux écarts assumés : « créée » → « créé »
+(accord fautif à la source) et les phrases du REAAP **réordonnées** sans en changer aucune, pour que
+l'annonce de la liste précède les pastilles.
+
+L'actu d'Olhain est tirée **dynamiquement** par son slug (`articleFeed`, `pageSize: 1`, `featured`) :
+titre et visuel suivent la fiche. La couverture du guide CNAF est cliquable vers son PDF.
+
+### 9sexvicies.4 Ce que ces pages ont révélé dans `ContentSection` — et la leçon
+
+Quatre props **génériques**, toutes à défaut = comportement historique :
+
+| Prop | Pourquoi |
+|---|---|
+| `description` en **markdown** (sanitizé) | rendue en `<p>` plat, elle écrasait gras et tirets du texte source. Vérifié sans risque : **aucune** description du parc ne contient de caractère markdown |
+| `imageHref` | l'image n'était pas cliquable ; `NavLink` tranche interne/externe |
+| `imageFit` | `cover` rogne — inadapté à une couverture de document ; `contain` la montre entière |
+| `width` | `prose` (défaut) cale la colonne de lecture à GAUCHE et laisse la forme illustrée pleine largeur ; `wide` donne la même largeur aux deux et les centre |
+
+> **La leçon du lot.** J'ai d'abord « corrigé » un désalignement en centrant les blocs dans le
+> composant — ce qui a changé le rendu de **relief et tiers-lieux**, qui n'avaient rien demandé.
+> Mesure faite sur la page d'accueil de tiers-lieux : bloc illustré `104 → 1336`, bloc de texte
+> `104 → 688` — **les bords gauches coïncidaient déjà**. Le composant était cohérent ; c'est le
+> centrage ajouté qui l'a cassé. Annulé. Deuxième tentative : des `className` à sélecteurs DOM
+> (`[&>div>div]:max-w-6xl`) posés en config — sans toucher au composant, mais en **couplant la config
+> au balisage interne**, qui casserait en silence au premier refactor. Remplacés par les props
+> ci-dessus. **Une différence de rendu entre deux sites n'est pas forcément un défaut à corriger dans
+> le composant partagé ; et une classe de config ne doit jamais dépendre du DOM d'un composant.**
+
+### 9sexvicies.5 `/reseau` — « Du REAAP au Réseau Parentalité » repris à la source
+
+Même principe que `/champs-actions` : le HTML de
+[la page officielle](https://www.parent62.org/du-reaap-au-reseau-parentalite/) est extrait, puis
+restitué. Ce que la version paraphrasée n'avait pas :
+
+| Rétabli | Détail |
+|---|---|
+| L'équipe **nommée** | Sophie Halle (CAF 62), Clarisse Feutry et Antoine Legrand (Fédération des Centres Sociaux) — la page ne donnait que les chiffres 1/2/9 |
+| Le lien avec l'**ADS Caf** | les 9 coordonnatrices sont employées par un centre social et travaillent avec l'Antenne de Développement Social de leur territoire |
+| La définition **intégrale** du CNSP | la FAQ n'en gardait qu'un tiers |
+| Les 3 familles de membres, en entier | l'**EPDEF** et le détail des services (Relais petite enfance, jeunesse, culture, famille, CCAS, PRE) manquaient |
+| L'**objectif** du réseau | phrase officielle absente de la page |
+| **2 PDF officiels** | [circulaire REAAP du 9 mars 1999](https://www.parent62.org/wp-content/uploads/2009/08/circulaire-reaap-9-mars-1999.pdf) (lien dans le texte fondateur) et la **plaquette de communication** (la couverture est cliquable) |
+| 2 visuels | `plaquette-reseau-parentalite-62.jpg` et `inforeso-couverture.jpg`, récupérés depuis le site officiel dans `public/images/parent62/` |
+
+**Deux écarts assumés au texte source**, du même ordre que le « créée → créé » de
+`/champs-actions` : « a été **est** l'un des premiers » → « a été l'un des premiers », et
+« employée chacune » → « employées chacune » (accords fautifs à la source).
+
+**La frise chronologique a été retirée** (demande du réseau) : ses quatre jalons étaient des résumés
+rédigés par nous, et celui de 2004 — la signature de la charte — ne figure pas sur cette page. Les
+deux `content` qu'elle séparait se suivent désormais, ce qui reste sous le seuil que fixe la recette
+`page-editoriale` : *trois* `content` d'affilée fatiguent, deux passent.
+
+> **Un aller-retour éditorial à garder en mémoire.** Une version intermédiaire avait poussé la
+> fidélité jusqu'à ne garder QUE le texte de la source : chapô, intertitres et libellés de cartes
+> supprimés, 8 valeurs en texte intégral, bloc d'ouverture en `html` faute de titre dans la source.
+> Le réseau a préféré revenir à la mise en page habillée, frise exceptée. **L'arbitrage retenu est
+> donc : contenu fidèle à la source, habillage éditorial assumé** (chapô, intertitres, libellés de
+> cartes, valeurs résumées renvoyant vers `/charte`). Ce qui reste vrai de la version abandonnée :
+> `content` exige `title` ET `description`, et `markdown` n'accepte qu'une **string**
+> (`md: z.string()`) — donc pas de couple fr/en, et la parité i18n est un gate bloquant. Pour un
+> corps de texte sans titre, `html` est la seule porte de sortie.
+
+**Les liens de contenu rédigé ne se lisaient pas comme des liens.** `src/index-parent62.css` codait
+`.prose a { color: var(--primary) }` — or le `--primary` du site est un marine désaturé
+(oklch .35 .04 250) tout proche du texte courant : souligné, le lien passait pour du gras. Il prend
+désormais `--secondary-foreground`, le teal de la charte, qui tranche par la **teinte** et reste
+conforme WCAG AA en corps de texte — **8,1:1** sur le fond clair, **12,3:1** en sombre. `--chart-1` et
+`--info`, les deux autres candidats colorés, ont été **écartés après calcul** : ~3,4:1, sous le seuil
+de 4,5:1. Soulignement porté à 2px et état de survol ajouté, pour ne pas faire reposer l'information
+sur la seule couleur (WCAG 1.4.1). Un jeton du thème, pas une valeur en dur : le hook d'override reste
+en place. Une surcharge par `theme.customCSS` avait été tentée d'abord — elle posait bien la variable,
+mais cette règle la court-circuitait ; retirée, pour ne pas laisser deux mécanismes faire le même
+travail. Portée : `index-parent62.css` ne sert qu'à ce site, et c'est aujourd'hui le **seul** lien de
+prose du parc parent62 (vérifié à zéro sur `/mentions-legales`, `/charte`, `/champs-actions`).
+
+Les **8 valeurs** gardent leurs libellés courts en `features-glass` et renvoient vers `/charte`, qui
+porte la charte : les redonner en entier ici dupliquerait une section complète entre deux pages.
+⚠️ **À noter** : sur `/charte` ces textes sont **tronqués** à leur première phrase, parfois coupée en
+plein raisonnement, alors que la source les donne en entier — correction non faite, hors périmètre.
+
+⚠️ **INFORESO renvoie vers `/ressources` en général** : le type de ressource « Inforéso » a été retiré
+du filtre le 02/09 (§9octodecies), il n'y a donc pas de page dédiée vers laquelle pointer.
+
+La définition de la parentalité a ensuite pris le moule de « L'objectif du Réseau Parentalité 62 »
+— un `title` centré plutôt qu'un accordéon à une entrée, les deux énoncés de la page se répondant et
+partageant la même colonne de **768 px**. L'entrée de FAQ « Qu'est-ce qu'un REAAP ? » et le `cta`
+« Envie de rejoindre la dynamique ? », tous deux rédigés par nous, ont été retirés : la page se
+termine sur le bloc INFORESO, qui porte déjà son lien.
+
+Séquence finale :
+`title → content → content → title → categories-grid → features-glass → title → content`
+(recette `page-editoriale` resynchronisée). Vérifié au rendu (1440px, 390px et mode sombre) : markdown
+correctement rendu (`<ul>`, `<strong>`, lien PDF inline), les 2 visuels chargent (`object-contain`,
+aucun recadrage), **aucun débordement horizontal**. Les 3 chiffres 1/2/9 ont été retirés du bloc
+équipe : ils redisaient mot pour mot les 3 puces situées juste au-dessus.
+
+### 9sexvicies.6 `/charte` — les 8 vidéos, les signataires réels, et plus un seul accordéon
+
+Revue par rapport à [la page officielle](https://www.parent62.org/le-reseau-parentalite/la-charte/).
+
+| Manque | Rétabli |
+|---|---|
+| **Les 8 vidéos** | chaque valeur ouvre la sienne — le film « La charte départementale en images », réalisé par le comité local de l'Audomarois. 8 identifiants Dailymotion distincts, tous vérifiés à 200 |
+| Les 8 valeurs **tronquées** | texte **intégral** de la charte, là où la page n'en gardait que la première phrase |
+| Les signataires **condensés, sans lien** | les **16 entrées** officielles, dont 8 renvoient à l'article de blog correspondant et une au dossier photos Drive. Les 8 slugs ont été résolus un par un avant câblage, contrôle négatif compris |
+| **Les 3 photos de cérémonie** | reprises avec leurs légendes. Celle de Noyelles-sous-Lens pesait **5,5 Mo en 4608×3456** : ramenée à 900 px / **115 Ko**, au gabarit des deux autres |
+| Les **3 pièces du dossier** d'adhésion | texte officiel intégral, là où elles tenaient en une ligne chacune |
+
+Le chiffre « 74 acteurs départementaux » pointe vers la **liste officielle des signataires** (PDF
+d'octobre 2021). L'ordre de la page suit désormais la source : signataires et photos **avant** les
+valeurs et les modalités d'adhésion.
+
+**Les deux accordéons ont laissé place à des cartes** (demande du réseau) : les valeurs en
+`cta-card-grid` — icône, nom, texte intégral, bouton « Voir la vidéo » — et les signataires en `cards`
+(grille de 3). **1 846 px** contre ~3 500 en vue liste, essayée d'abord.
+
+> **Deux ajouts au moteur, tous deux à défaut = comportement historique.**
+> `cta-card-grid` imposait `md:grid-cols-2 lg:grid-cols-4` en dur : des paragraphes de charte sur
+> quatre colonnes de ~220 px étaient illisibles. La section accepte désormais **`columns`**
+> (`ResponsiveColumns`, comme `action-tiles`), via le helper partagé `buildGridColsClass` — mapping
+> statique, une classe construite ne serait pas générée par le JIT. Second ajustement : le bouton se
+> cale en **bas de carte** (`flex h-full flex-col` + `mt-auto`, et `gap-4` au lieu de `space-y-4` pour
+> que la marge auto ne soit pas écrasée). **Vérifié sur les 3 autres sites** qui utilisent la section :
+> aucun ne déclare `columns`, tous gardent leurs 4 colonnes, et `rezo-la-mer` a été contrôlé à l'écran.
+
+> **`target="_blank"` est impossible depuis du HTML posé en config — structurellement.**
+> `server/utils/normalizeSiteConfig.js` passe DOMPurify sur tous les champs de `HTML_FIELDS` **au
+> chargement de la config**, `content` compris ; ce profil retire `target` en conservant `class` et
+> `rel`. Le passage aux **cartes règle le problème** : `CardsSection` classe le lien (contrat 4 voies
+> de `linkKind`) et ouvre un externe en nouvel onglet avec `rel="noopener noreferrer"` — vérifié sur
+> le lien Drive ; les liens `/blog` y passent par `NavLink`, donc en navigation SPA. ⚠️ En revanche
+> `cta-card-grid` rend un `Link` react-router sans cible : **les vidéos s'ouvrent dans le même
+> onglet.**
+
+> **« Plus de couleur » — et ce que la palette permet vraiment.** Le rythme des fonds passe par des
+> **jetons du thème** : signataires `bg-secondary/30`, valeurs `bg: "secondary"`, bloc d'adresse en
+> `color-mix` d'`--accent`. Pour les icônes, la première tentative teintait le **glyphe** ; mesure
+> faite, sur le fond `secondary` de la section `accent`, `chart-2` et `chart-3` tombent à
+> **1,6 / 2,3 / 2,2 : 1** — illisibles. La couleur est donc passée dans la **pastille**, le glyphe
+> restant sur `primary` : quatre teintes distinctes ET le contraste. Deux fonctions pures partagées
+> (`iconColorClass`, extraite de `FeaturesGlass` sans changer son comportement, et `iconHaloClass`),
+> **8 tests**, dont un qui vérifie que l'état de survol `group-hover:` fait partie de la classe — il
+> était en dur avant l'extraction et aurait disparu sans cela.
+> ⚠️ Le schéma admet plus de teintes que la table n'en traite (`turquoise`, `cyan-bright`,
+> `turquoise-light` retombent sur `primary`) : c'était déjà le cas, **2 cartes du parc** déclarent
+> `turquoise` et rendent en primary depuis toujours. Le repli est conservé, et couvert par un test.
+
+Le bloc d'adresse (« Votre dossier doit être adressé à la : ») a été retiré puis **remis** à la
+demande du réseau, avec le titre et le texte de la source, la mention du **Livre d'Or du REAAP** et un
+bouton `mailto:`. ⚠️ `CTASection` rend ses boutons en `<button>` avec un `onClick` : le clic ouvre
+bien le client mail, mais ce n'est **pas un `<a href>`**. Comportement partagé par tout le parc.
+
+⚠️ « la ville de Bully-les-Mines **le 15 mai 2019** » est cliquable sur parent62.org, mais aucun slug
+d'article ne m'a été donné — l'entrée est là, sans lien, plutôt qu'avec un slug inventé.
+⚠️ Le lien « dispositif REAAP » de la source (`nord-pas-de-calais.sante.gouv.fr`) **ne répond plus** —
+vérifié. Le texte de l'étape le mentionne sans le lier.
+
+Le paragraphe « Élaborée par des acteurs locaux… » n'a **aucun titre** dans la source, et « Le texte
+fondateur » est déjà la catégorie de la section d'intro : il passe en `html`, pour la même raison que
+`reseau-histoire`. La section d'intro est **centrée** (`content.align: "center"`, 3ᵉ prop ajoutée à
+`content`) : sans visuel, `ContentSection` borne sa colonne à `max-w-3xl` **sans** `mx-auto`, elle se
+collait donc à gauche sur une page par ailleurs centrée. Défaut `left` = comportement historique,
+**aucune autre config du parc ne déclare `align`**, et `tiers-lieux` a été recontrôlé à l'écran.
+
+### 9sexvicies.7 Le Mois de la Parentalité — un index de cartes, une page filtrée par l'URL
+
+La page ne listait **aucun article**. Elle devient un **index**, et une seconde page porte le filtrage :
+
+- **`/mois-parentalite`** — bandeau + 7 cartes, une par édition (2026 → 2020), en `cta-card-grid` :
+  pastille teintée, titre, et un bouton « Voir les actualités ». La frise et le CTA qui suivaient ont
+  été retirés **en dehors de ce lot** (config éditée le 15/09 à 11:43) ;
+- **`/filter-mois-parentalite?tags=<tag>`** — bandeau dont le **titre EST l'édition active**
+  (`headlineFromFilter`, ex. `#MoisdelaParentalité2025`), filtre **Édition**, filtre **Territoires**
+  repris tel quel de `/blog`, recherche plein texte, puis le fil d'articles.
+
+> **Le mécanisme existait déjà — zéro ligne de code.** Un groupe de filtres **sans `field`** range ses
+> valeurs dans `selectedFilters` ; `useArticleFeed` les reverse dans `searchTags` et le backend les
+> applique en `$all`. `computeFiltersFromUrl` mappe un query param sur le groupe de même `id`, en
+> comparant la valeur d'URL à l'**`id` de chaque option** — d'où le point à ne pas manquer : **l'`id`
+> d'option EST le tag en base**, la forme lisible vivant dans `label`. Et `headlineFromFilter` (livré
+> avec `/theme`, §9duovicies) remplace le titre par le libellé de l'option active.
+>
+> Deux essais ont précédé : **6 pages** `/mois-parentalite/<année>` de structure identique, puis une
+> page unique portant à la fois l'index et le filtre. La forme retenue sépare les deux rôles.
+
+> **Les tags ont été RELEVÉS en base, pas déduits du nom affiché.** Filtrer sur « Le Mois de la
+> Parentalité 2025 », le libellé de la page de référence, ne remonte **rien** : la valeur réelle est
+> `MoisdelaParentalité2025`, sans espaces. 3 000 articles ont été balayés via `globalautocomplete` —
+> l'endpoint que le fil interroge, requête recopiée depuis le réseau — pour énumérer les 186 tags du
+> corpus, puis chaque candidat compté un par un.
+
+| Édition | Tag réel en base | Articles |
+|---|---|---|
+| 2026 | `Moisdelaparentalité2026` (graphie **présumée**) | **0** |
+| 2025 | `MoisdelaParentalité2025` | 73 |
+| 2024 | `Moisdelaparentalite2024` | 50 |
+| 2023 | `MoisdelaParentalité2023` | 89 |
+| 2022 | `SemainedelaParentalité2022` | 80 |
+| 2021 | `SemainedelaParentalité2021` | 135 |
+| 2020 | `SemainedelaParentalité2020` | 77 |
+
+⚠️ **La casse et les accents ne sont pas homogènes** : 2024 s'écrit `Moisdelaparentalite2024`, sans
+accent ni majuscule interne. Une graphie normalisée aurait renvoyé une liste vide. Ces tags viennent
+de l'import WordPress : toute correction se fait **en base**, et la config devra suivre.
+
+⚠️ **2026 est exposée alors qu'elle n'a aucun article**, à la demande du réseau, avec la graphie
+reprise de la demande — **rien ne la confirme**. Le jour où des articles seront tagués, la graphie
+devra coïncider au caractère près. Vérifié : la page affiche « Aucun article pour le moment. », et non
+les résultats non filtrés. Un `SemainedelaParentalité2018` existe aussi, avec **1 seul article** —
+hors liste, non exposé.
+
+Vérifié au navigateur : les 7 cartes pointent vers le bon tag encodé ; sur 2025 le fil renvoie
+**12/12** articles portant le tag. À noter : la page filtrée émet **deux** requêtes au chargement —
+une non filtrée au montage, puis la bonne une fois les params d'URL appliqués.
+
+### 9sexvicies.8 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` | ✅ **48 pages · 179 sections** — 5 configs du parc revalidées (`parent62`, `tiers-lieux`, `relief`, `rezo-la-mer`, `rezo-sante-reunion`) |
+| `config:render` | ✅ 48/48 pages · **179/179 sections** avec contenu SSR |
+| `audit:config` · `typecheck` · `lint` | ✅ RAS (0 trou de traduction, 0 lien mort, 0 asset manquant) · ✅ · ✅ 0 erreur |
+| `test:unit` (périmètre du lot) | ✅ **1 557 tests, 0 échec** — 635 préflights + 403 composants/lib/hooks + 519 search/blog. Le seul échec du dépôt, `coform > ProseContent — césure`, **préexiste sur `main`** et n'est pas touché ici (cf. encadré) |
+| Portée inter-sites | ✅ toutes les props ajoutées ont un défaut = comportement historique ; `rezo-la-mer` et `tiers-lieux` contrôlés à l'écran |
+| `test:e2e` | ⏭️ non joué — pas de `.env.test` sur ce poste |
+| `bundle-size` | ⏭️ **skippé faute de build** (`skipIf(!hasBuild())`), donc silencieux à chaque exécution. Joué à la main : **3,04 Mo** contre **3,01 Mo** sur `HEAD`, pour une limite de 2 Mo : **l'échec préexiste** |
+
+⚠️ **La suite doit être lancée PAR LOTS.** `npm run test:unit` d'un seul bloc se fait tuer par l'OOM
+killer sur ce poste (exit 137), tout comme `config:render` enchaîné derrière d'autres gates. Les
+totaux ci-dessus sont la somme de cinq exécutions ciblées.
+
+> **Un test rouge sur `main`, laissé tel quel.** `coform/FormFields.test.tsx > ProseContent — césure`
+> échoue sur `main`, **indépendamment de ce lot** — rejoué sur un worktree propre à `002e71ad`, il
+> tombe à l'identique, et aucun fichier `coform` n'est touché ici. Origine tracée pour qui voudra la
+> reprendre : `eec107fe` (Schumann Juda, « coupe les mots insécables du texte riche ») posait
+> `cn("wrap-anywhere", className)` sur `ProseContent`, alors dans `coform/FormFields.tsx` ;
+> `2689e517` a extrait le composant vers `components/shared/` et **perdu la classe** au passage, tout
+> en ajoutant au même endroit un test affirmant qu'aucun élément ne porte de `class` — les deux
+> assertions sont désormais contradictoires, l'une exigeant la classe sur l'enveloppe, l'autre
+> l'interdisant. **Non corrigé : hors périmètre**, c'est le chantier d'un autre.
+
+> **Piège d'outillage — la config.** `config.prod.parent62.json` n'a **pas** un formatage machine
+> reproductible : ni `json.dump` ni un imprimeur façon Prettier ne le régénèrent à l'identique, et le
+> dépôt n'a pas Prettier. Une réécriture complète a produit **40 711 lignes de diff** pour une seule
+> page modifiée. Remède : réutiliser le **texte brut** page par page puis section par section, et ne
+> resérialiser que ce qui change.
+
+> **Piège d'outillage — ce document.** Une substitution Python bornée par `index()` sur un libellé de
+> ligne présent **plusieurs fois** (`| \`test:unit\` (suite complète) |`) a visé la mauvaise table et
+> supprimé ~1 800 lignes, soit toutes les sections §9sexies à §9quinvicies. Reconstruit depuis
+> `git show HEAD:` et `git show stash@{0}:`, les deux sources intactes. **Leçon : sur un document de
+> 2 800 lignes, ancrer une substitution sur une chaîne dont l'unicité a été VÉRIFIÉE** (`count() == 1`),
+> jamais sur le premier `index()` venu.
+
+
+**Page `/contact` supprimée** (demande du réseau) : `/equipe` portait déjà la même section `team`,
+plus les 9 coordinations. Les 4 liens ont été repris — menu (doublon retiré), footer et bouton de
+`/charte` vers `/equipe`, et le bouton de `/equipe` vers `mailto:contact@parent62.org`, seule donnée
+que la page portait en propre.
+
+Lot **non commité**.
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 1.1 | Site `reseau.parent62.org`, nav + graphisme proches du WP | 🟡 | config réconciliée (24/07) ; doublon nav `/blog` **résolu** (§9.5) ; **06/08 (committé sur `parents62`)** : accueil, header (`stacked`) et footer (`minimal-centered`) entièrement refondus, nav passée à 5 dropdowns dont un nouveau « Publics » (§9quater) ; double entrée `/parents`/`/pro` **rétablie le 02/09** (1.4, §9septendecies), la recette visuelle et le déploiement → 1.10 |
-| 1.2 | Pages statiques réseau / charte / équipe / champs d'action | ✅ | `/reseau` `/charte` `/champs-actions` `/equipe` ; arbitrage éditorial réseau ouvert (§13) |
+| 1.1 | Site `reseau.parent62.org`, nav + graphisme proches du WP | 🟡 | config réconciliée (24/07) ; doublon nav `/blog` **résolu** (§9.5) ; **06/08 (committé sur `parents62`)** : accueil, header (`stacked`) et footer (`minimal-centered`) entièrement refondus, nav passée à 5 dropdowns dont un nouveau « Publics » (§9quater) ; double entrée `/parents`/`/pro` **rétablie le 02/09** (1.4, §9septendecies), la recette visuelle et le déploiement → 1.10. **09-10/09** : haut de page resserré — bandeau au quart de l'écran, « Territoires » et « à la une » côte à côte dans un `gridLayout` qui tient dans le premier écran jusqu'à **150 % de zoom** ; page `/contact` retirée au profit de `/equipe`, qui portait déjà la même section (§9sexvicies.1, §9sexvicies.6) |
+| 1.2 | Pages statiques réseau / charte / équipe / champs d'action | ✅ | `/reseau` `/charte` `/champs-actions` `/equipe` ; arbitrage éditorial réseau ouvert (§13). **10/09** : **deux pages reprises mot pour mot** à la source officielle — `/champs-actions` (5 valeurs du REAAP, charte et 5 objectifs du CLAS, âges du LAEP, 3 liens documentaires, actu d'Olhain tirée par son slug, §9sexvicies.3) et `/reseau` (l'équipe nommée, la définition intégrale du CNSP, les 3 familles de membres, la circulaire de 1999 et la plaquette du réseau en PDF ; frise chronologique retirée, §9sexvicies.5). **Reste à faire** : les 8 valeurs de `/charte` sont **tronquées** à leur première phrase alors que la source les donne en entier |
 | 1.3 | Page par territoire : contact + **liste des communes** | ✅ | cards coordo + accordéon 887 communes + fil filtré + CTA ; navigation depuis l'accueil désormais via `map-bubbles` (carte à bulles, §9quater) au lieu des cartes d'accès rapide ; **03/09** : haut de page refondu — **3 prochaines réunions du comité local** juste après le bandeau, carte « Comptes rendus des réunions » (Drive) et **3 ressources du territoire** avec bouton « Voir toutes les ressources » ; carte « Le comité local » et blocs de liens externes retirés ; saisie des réunions par l'onglet `/admin` dédié (§9novodecies). Les deux blocs de données sont **câblés** ; leur remplissage dépend de la saisie côté costum (§9novodecies.5) |
 | 1.4 | Double entrée parents / pro | ✅ *(était 🟡, régression du 06/08)* | **Rétablie le 02/09** : la section `action-tiles` `home-double-entree` (« Vous êtes… » → `/parents` / `/pro`) est réinsérée sur l'accueil, en 2ᵉ position — juste après le carrousel « à la une », sa place d'origine dans le rythme de la page. Les deux pages existaient toujours mais **n'étaient liées de nulle part** depuis la refonte du 06/08 (vérifié : une seule occurrence de chaque chemin dans la config, sa propre déclaration de page). Elles coexistent avec le dropdown « Publics » (7 pages `/public/*`), qui ne les remplace donc pas — question §13 tranchée |
 | 1.5 | Moteur de recherche : types d'info, public, âges, dates, territoire coloré, carte, thèmes | 🟡 | `/recherche` : types d'info (**searchTargets 6** depuis le 25/07 — « Ressources » ajoutée —, défaut « Actualités »), public, thèmes, territoire coloré, **carte** (`enableMap:true`), `dateRange` **borne début seule**. **25/07** : chaque famille a désormais sa carte et son action au clic (`list.itemRules`, §9bis) ; tri `created:-1` et projection explicite ajoutés. **Âges : livré sur `/temoignages` + form affiche, mais PAS encore dans le groupe de filtres `/recherche`** (à ajouter — `ages` est projeté, il ne manque que le groupe). Borne de fin des dates = demande backend `$lt/$lte` (§11) |
@@ -2466,7 +2786,7 @@ point de dette à part entière — soit par un travail de bundle, soit en actan
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies) |
+| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies). **09/09** : boutons **Modifier / Supprimer** sur la fiche `/blog/:slug`, gardés par `canEditProfile` (admin du costum ou auteur) et réutilisant la modale `edit-parent62-article` déjà en place — hérité par les **4 sites** déclarant une page `/blog`, à charge pour eux de router leur propre `editModals` (§9sexvicies.2) |
 | 2.2 | Actualités filtrables dans le moteur de recherche | ✅ *(était ✅ config, 🟡 UX)* | cible `searchTargets` « Actualités » (`type:article`) dans `/recherche` + filtres territoire/public/thème/dates. **25/07 — UX unifiée** : une actualité de `/recherche` rend une carte dédiée et son clic ouvre le **reader canonique** `/blog/:slug` (repli `/blog/id/:id`), plus un drawer générique |
 | 2.3 | Module événementiel (agenda) + affichage territoire | 🟡 *(diagnostiqué le 14-19/08)* | module agenda complet (calendrier + liste, filtre territoire) ; testé avec des **événements de test locaux** (dev, pas de la production — cf. §9sexies), a révélé 3 bugs backend, **tous corrigés** (§9sexies.1) ; **0 donnée `events` en production, toujours à confirmer** ; pas de carte agenda (`enableMap:false`) |
 | 2.4 | Impression de l'agenda | ❌ | **aucun code print** (`@media print`/`window.print`) — à faire (CSS print ou export iCal/PDF) |

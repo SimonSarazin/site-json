@@ -584,6 +584,10 @@ export const CtaCardGridSchema = z.object({
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     image: z.string().optional(),
     imageAlt: LocalizedString.optional(),
+    /** Colonnes par breakpoint (mobile = 1). Sans lui : `{md:2, lg:4}`, la grille
+     *  historique — à baisser quand les descriptions sont de vrais paragraphes,
+     *  illisibles sur quatre colonnes étroites. */
+    columns: ResponsiveColumns.optional(),
     actions: z.array(
       z.object({
         icon: z.string(),
@@ -591,6 +595,9 @@ export const CtaCardGridSchema = z.object({
         description: LocalizedString,
         ctaLabel: LocalizedString,
         href: z.string(),
+        /** Teinte de l'icône. Mêmes valeurs que `features-glass` (helper partagé
+         *  `iconColorClass`) ; sans elle, `primary` — la teinte historique. */
+        color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light", "accent", "chart-2", "chart-3"]).optional(),
       })
     ).optional(),
     stats: z
@@ -1431,6 +1438,15 @@ const GridLayoutSectionPropsSchema = z.object({
   rightSection: z.lazy(() => SectionSchemaLazy).optional(),
   leftColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
+  /** Alignement vertical des deux colonnes. `start` (défaut, comportement historique) : chacune
+   *  s'arrête à son contenu — une colonne plus courte laisse du vide sous elle. `stretch` : les deux
+   *  prennent la hauteur de la plus haute, et leur section fille est étirée (`h-full`) — à choisir
+   *  quand la colonne courte porte un fond coloré, sinon ce vide se lit comme un trou dans la page. */
+  align: z.enum(["start", "stretch"]).optional(),
+  /** Largeur à partir de laquelle les deux colonnes se placent CÔTE À CÔTE ; en dessous elles
+   *  s'empilent. `lg` (défaut, comportement historique) = 1024px, `md` = 768px — à descendre quand le
+   *  bloc doit rester sur une ligne à fort zoom navigateur, qui rétrécit le viewport CSS. */
+  from: z.enum(["md", "lg"]).optional(),
   gap: z.number().optional(),
   className: z.string().optional(),
   leftWrapperClass: z.string().optional(),
@@ -1455,6 +1471,23 @@ const ContentSectionSchema = z.object({
     description: LocalizedString,
     tags: z.array(LocalizedString).optional(),
     image: z.string().optional(),
+    /** Rend l'image CLIQUABLE. Chemin interne (`/blog/x`) ou URL absolue — une URL externe s'ouvre
+     *  dans un nouvel onglet, avec `rel="noopener noreferrer"`. Sans image, la prop est ignorée. */
+    imageHref: z.string().optional(),
+    /** Cadrage de l'image. `cover` (défaut) remplit la boîte quitte à rogner — le bon choix pour une
+     *  photo ; `contain` la montre ENTIÈRE, pour une couverture de document ou un logo, qu'un
+     *  rognage amputerait. */
+    imageFit: z.enum(["cover", "contain"]).optional(),
+    /** Largeur du bloc. `prose` (défaut, comportement historique) : colonne de lecture calée à
+     *  GAUCHE du conteneur, la forme illustrée occupant elle toute la largeur. `wide` : les deux
+     *  formes prennent la même largeur, celle d'un fil d'articles, et sont CENTRÉES — à choisir pour
+     *  une page qui alterne blocs illustrés et blocs de texte, où deux largeurs différentes se
+     *  lisent comme un décrochage. */
+    width: z.enum(["prose", "wide"]).optional(),
+    /** Alignement du bloc et de son texte. `left` (défaut, comportement historique) :
+     *  colonne calée à gauche. `center` : bloc centré (`mx-auto`) et texte centré — pour une
+     *  section sans visuel posée sur une page par ailleurs centrée. */
+    align: z.enum(["left", "center"]).optional(),
     imagePosition: z.enum(["left", "right"]).default("right"),
     links: z.array(z.object({
       label: LocalizedString,

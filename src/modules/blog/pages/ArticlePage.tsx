@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useArticle } from "../hooks/useArticle";
 import { READER_VARIANTS } from "../variants/readers";
 import { RelatedArticles } from "../components/RelatedArticles";
+import { ArticleAdminActions } from "../components/ArticleAdminActions";
 import { BlogArticleSeo } from "../BlogArticleSeo";
 
 const ReaderSkeleton = () => (
@@ -23,7 +24,7 @@ const ReaderSkeleton = () => (
 export default function ArticlePage() {
   const t = useT("modules/blog");
   const { slug, id } = useParams<{ slug?: string; id?: string }>();
-  const { article, isLoading, isError } = useArticle({ slug, id });
+  const { article, entity, isLoading, isError } = useArticle({ slug, id });
   const { config } = useSite();
   // Variant de reader (lazy, registre READER_VARIANTS) choisi au niveau site — inconnu → `default`.
   const Reader = READER_VARIANTS.get(config.blog?.readerVariant);
@@ -47,6 +48,8 @@ export default function ArticlePage() {
   return (
     <>
       <BlogArticleSeo article={article} url={canonicalUrl} />
+      {/* Au-dessus du reader, aligné sur sa colonne : ne rend rien sans la permission d'édition. */}
+      <ArticleAdminActions entity={entity as never} title={typeof article.name === "string" ? article.name : undefined} />
       <Suspense fallback={<ReaderSkeleton />}>
         {/* eslint-disable-next-line react-hooks/static-components -- `Reader` vient d'un
             REGISTRE, il n'est pas fabriqué ici : `makeVariantRegistry` referme un objet

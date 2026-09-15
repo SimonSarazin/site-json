@@ -112,7 +112,7 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
           verticalement, remontait dessous) : en flux, sa place est réservée par
           construction quelle que soit la hauteur du contenu. */}
       {badgeLabel && (
-        <div className="container mx-auto px-4 sm:px-8 md:px-24 mb-3 md:mb-6">
+        <div className="container mx-auto px-4 mb-2 md:mb-3">
           <Badge
             variant={accentColor ? undefined : "secondary"}
             style={accentStyle}
@@ -122,7 +122,13 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
           </Badge>
         </div>
       )}
-      <Carousel opts={{ loop: renderable.length > 1 }} setApi={setApi} className="container mx-auto px-4 sm:px-8 md:px-24">
+      {/* Le carrousel se centre dans la place RESTANTE, sous un badge qui, lui, reste en haut. Sans ce
+          niveau, un `justify-center` posé sur la section centrait badge ET carrousel d'un bloc, et le
+          badge descendait — désaligné de la pastille du bloc voisin, à hauteur de laquelle il doit se
+          lire. `flex-1` n'agit que si la section est en flex-col contrainte (colonne de `gridLayout`) ;
+          ailleurs il est inerte, le rendu ne bouge pas. */}
+      <div className="flex flex-1 flex-col justify-start">
+      <Carousel opts={{ loop: renderable.length > 1 }} setApi={setApi} className="container mx-auto px-4">
         <CarouselContent>
           {renderable.map((item, index) => (
             <CarouselItem key={getEntryId(item) ?? index}>
@@ -145,7 +151,7 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
               size="icon"
               aria-label="Diapositive précédente"
               onClick={() => api?.scrollPrev()}
-              className="absolute top-1/2 left-2 -translate-y-1/2 rounded-none border-none bg-transparent text-current hover:bg-current/10 md:left-4"
+              className="absolute top-[28%] left-0 -translate-y-1/2 rounded-none border-none bg-transparent text-current hover:bg-current/10 md:left-1"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -155,7 +161,7 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
               size="icon"
               aria-label="Diapositive suivante"
               onClick={() => api?.scrollNext()}
-              className="absolute top-1/2 right-2 -translate-y-1/2 rounded-none border-none bg-transparent text-current hover:bg-current/10 md:right-4"
+              className="absolute top-[28%] right-0 -translate-y-1/2 rounded-none border-none bg-transparent text-current hover:bg-current/10 md:right-1"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -178,6 +184,7 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
           </>
         )}
       </Carousel>
+      </div>
     </section>
   );
 }

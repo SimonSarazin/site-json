@@ -88,30 +88,44 @@ export function MapBubbles({ id, props }: MapBubblesSectionProps) {
                         ))}
                     </div>
 
-                    {/* `top`/`mb` réduits sur mobile : sur une carte étroite, le badge (à taille
-                        desktop) chevauchait les pastilles-labels des items voisins (positions en %
-                        calibrées à la main, cf. doc-projets/parent62.md §9quater — ne pas les
-                        retoucher pour compenser). Réduire le bloc titre/accroche est le seul levier
-                        sûr ici. */}
-                    <div className="absolute top-0 md:top-16 right-10 z-20 flex flex-col items-end gap-1 sm:gap-2 text-right">
-                        {/* `translate-x-2` (au lieu de `translate-x-6`) en xs seulement : rapproche le
-                            titre du bord gauche du bloc — repasse à `translate-x-6` dès `sm:`, desktop
-                            inchangé. */}
-                        <h2 className="translate-x-2 sm:translate-x-6">
+                    {/* `top`/`mb` réduits sur carte étroite : le badge à taille desktop chevauchait
+                        les pastilles-labels des items voisins (positions en % calibrées à la main,
+                        cf. doc-projets/parent62.md §9quater — ne pas les retoucher pour compenser).
+                        Réduire le bloc titre/accroche est le seul levier sûr ici.
+
+                        TOUS les paliers sont des `@`-queries sur `@container/map-bubbles`, jamais des
+                        breakpoints de viewport : ce qui compte est la largeur de LA CARTE, pas celle
+                        de l'écran. Une carte peut être étroite sur un grand écran — c'est le cas dès
+                        qu'un `gridLayout` la met en colonne (accueil parent62) : le viewport valait
+                        alors 1440px, `md:`/`lg:` s'appliquaient, et le bloc reprenait sa taille
+                        desktop par-dessus les bulles. Les paliers BAS ont suivi pour la même raison :
+                        les croire réservés au mobile supposait qu'une carte étroite implique un petit
+                        écran — faux dès qu'un zoom navigateur met une colonne de 350px sous un
+                        viewport de 960px, où `sm:` rendait le texte en taille tablette. */}
+                    {/* TITRE en haut à GAUCHE, et l'accroche seule à droite (bloc suivant) : les deux
+                        vivaient ensemble à droite, ce qui plaçait la pastille « Territoires » à l'opposé
+                        de celle du bloc voisin « À la une ». Les aligner demande de les séparer. Le coin
+                        haut-gauche de l'illustration est la mer — aucune pastille de territoire n'y est
+                        posée, le badge ne masque donc rien. */}
+                    <div className="absolute top-0 left-0 z-20 flex flex-col items-start">
+                        <h2>
                             {/* Couleurs FIXES, même raison que les pastilles d'item ci-dessus : pas
                                 d'adaptatif clair/sombre ici. */}
-                            <Badge className="rounded-none border-none -rotate-4 bg-[oklch(0.20_0.03_265)] text-white border-transparent px-2 py-1 sm:px-4 sm:py-1.5 text-2xl sm:text-3xl md:text-3xl lg:text-5xl font-serif mb-2 sm:mb-4 md:mb-10 ">
+                            <Badge className="rounded-none border-none -rotate-4 bg-[oklch(0.20_0.03_265)] text-white border-transparent px-2 py-1 @sm/map-bubbles:px-4 @sm/map-bubbles:py-1.5 text-xl @sm/map-bubbles:text-3xl @4xl/map-bubbles:text-5xl font-serif mb-2 @sm/map-bubbles:mb-4 @3xl/map-bubbles:mb-10 ">
                                 {t(props.headline)}
                             </Badge>
                         </h2>
-                        {props.subhead && (
-                            // `translate-x-2` en xs seulement : rapproche l'accroche du bord droit,
-                            // dans l'autre sens que le titre ci-dessus (`sm:translate-x-0` = inchangé).
-                            <p className={`max-w-32 sm:max-w-50 text-[0.65rem] sm:text-lg md:max-w-60 text-left translate-x-2 sm:translate-x-0 ${overlay ? "text-white/90" : "text-muted-foreground"}`}>
+                    </div>
+
+                    {/* Accroche : reste à DROITE, en vis-à-vis du titre. Décalée vers le bas d'autant que
+                        le badge est haut, sinon les deux se retrouvent sur la même ligne d'yeux. */}
+                    {props.subhead && (
+                        <div className="absolute top-12 @sm/map-bubbles:top-16 @3xl/map-bubbles:top-28 right-6 @sm/map-bubbles:right-10 z-20 flex justify-end">
+                            <p className={`max-w-32 @sm/map-bubbles:max-w-50 text-[0.65rem] @sm/map-bubbles:text-lg @3xl/map-bubbles:max-w-60 text-left ${overlay ? "text-white/90" : "text-muted-foreground"}`}>
                                 {t(props.subhead)}
                             </p>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </section>

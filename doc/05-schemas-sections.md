@@ -1820,6 +1820,7 @@ export const CtaCardGridSchema = z.object({
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     image: z.string().optional(),
     imageAlt: LocalizedString.optional(),
+    columns: ResponsiveColumns.optional(),
     actions: z.array(
       z.object({
         icon: z.string(),
@@ -1827,6 +1828,7 @@ export const CtaCardGridSchema = z.object({
         description: LocalizedString,
         ctaLabel: LocalizedString,
         href: z.string(),
+        color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light", "accent", "chart-2", "chart-3"]).optional(),
       })
     ).optional(),
     stats: z
@@ -1848,6 +1850,8 @@ export const CtaCardGridSchema = z.object({
 | `subhead`  | `LocalizedString?` | Sous-titre                          |
 | `variant`  | `"primary" \| "accent"` | Tonalité des décorations          |
 | `bg`       | `enum`    | Couleur de fond                            |
+| `columns`  | `ResponsiveColumns?` | Colonnes par breakpoint (mobile = 1). Sans lui : `{md:2, lg:4}`, la grille historique — à baisser quand les descriptions sont de vrais paragraphes, illisibles sur quatre colonnes étroites |
+| `actions[].color` | `enum?` | Teinte de la PASTILLE qui porte l'icône (helper partagé `iconHaloClass`). Sans elle : `bg-primary/10`, la pastille historique. ⚠️ Sur une palette claire, teinter le GLYPHE échoue — `accent`/`chart-2`/`chart-3` tombent à 1,6–2,3 : 1 sur un fond clair ; la pastille teintée avec un glyphe resté sur `primary` garde la couleur ET le contraste |
 | `image`    | `string?` | Image de la section                        |
 | `imageAlt` | `LocalizedString?` | Alt de l'image                     |
 | `actions`  | `array?`  | Actions (icon, title, description, ctaLabel, href) |
@@ -2179,7 +2183,10 @@ const ContentSectionSchema = z.object({
     description: LocalizedString,
     tags: z.array(LocalizedString).optional(),
     image: z.string().optional(),
+    imageHref: z.string().optional(),
+    imageFit: z.enum(["cover", "contain"]).optional(),
     imagePosition: z.enum(["left", "right"]).default("right"),
+    width: z.enum(["prose", "wide"]).optional(),
     links: z.array(z.object({
       label: LocalizedString,
       href: z.string(),
@@ -2204,10 +2211,14 @@ const ContentSectionSchema = z.object({
 | --------- | ---- | ----------- |
 | `category` | `LocalizedString?` | Categorie affichee au-dessus du titre |
 | `title` | `LocalizedString` | Titre de la section |
-| `description` | `LocalizedString` | Description principale |
+| `description` | `LocalizedString` | Description principale — rendue en **markdown** (gras, tirets, retours à la ligne), sanitizé avant injection |
 | `tags` | `LocalizedString[]?` | Liste de tags |
 | `image` | `string?` | URL de l'image |
+| `imageHref` | `string?` | Rend l'image CLIQUABLE — chemin interne ou URL absolue, l'externe s'ouvrant dans un nouvel onglet (`NavLink` tranche). Ignoré sans `image` |
+| `imageFit` | `"cover" \| "contain"?` | Cadrage. `cover` (défaut) remplit la boîte quitte à rogner — bon pour une photo ; `contain` montre l'image ENTIÈRE et plafonne sa hauteur, pour une couverture de document ou un logo qu'un rognage amputerait |
 | `imagePosition` | `"left" \| "right"` | Position de l'image |
+| `width` | `"prose" \| "wide"?` | Largeur du bloc. `prose` (défaut, historique) : colonne de lecture calée à GAUCHE, la forme illustrée occupant toute la largeur. `wide` : les deux formes prennent la même largeur (celle d'un fil d'articles) et sont CENTRÉES — pour une page qui alterne blocs illustrés et blocs de texte, où deux largeurs se lisent comme un décrochage. S'applique aussi à la catégorie, rendue hors du bloc |
+| `align` | `"left" \| "center"?` | Alignement du bloc ET de son texte. `left` (défaut, historique) : colonne calée à gauche. `center` : bloc centré (`mx-auto`) et texte centré, rangées en `flex` comprises (chiffres, tags, liens, `infoText`) — sans quoi elles resteraient à gauche dans un bloc centré. Pour une section SANS visuel posée sur une page par ailleurs centrée : `ContentSection` y borne sa colonne à `max-w-3xl` **sans** `mx-auto`, elle se colle donc à gauche |
 | `links` | `array?` | Liens vers d'autres pages (label, href) |
 | `iconCard` | `object?` | Carte avec icone SVG (`{ svg }`) |
 | `infoText` | `LocalizedString?` | Ligne d'info avec icone (rendue en HTML brut) |
@@ -2317,6 +2328,8 @@ const GridLayoutSectionPropsSchema = z.object({
   rightSection: z.lazy(() => SectionSchemaLazy).optional(),
   leftColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
+  align: z.enum(["start", "stretch"]).optional(),
+  from: z.enum(["md", "lg"]).optional(),
   gap: z.number().optional(),
   className: z.string().optional(),
   leftWrapperClass: z.string().optional(),
@@ -2336,6 +2349,8 @@ const GridLayoutSectionSchema = z.object({
 | `rightSection`      | `Section?` | Section a afficher a droite (lazy)       |
 | `leftColumns`       | `1-4`    | Nombre de colonnes pour la gauche        |
 | `rightColumns`      | `1-4`    | Nombre de colonnes pour la droite        |
+| `align`             | `"start" \| "stretch"?` | Alignement vertical. `start` (défaut, historique) : chaque colonne s'arrête à son contenu — la plus courte laisse du vide sous elle. `stretch` : les deux prennent la hauteur de la plus haute et leur section fille est étirée. À choisir quand la colonne courte porte un fond coloré, sinon ce vide se lit comme un trou. Le stretch ne joue qu'à partir de `lg:` (en dessous les colonnes s'empilent) |
+| `from`              | `"md" \| "lg"?` | Largeur à partir de laquelle les colonnes se placent CÔTE À CÔTE ; en dessous elles s'empilent. `lg` (défaut, historique) = 1024px, `md` = 768px — à descendre quand le bloc doit rester sur une ligne à fort zoom navigateur, qui rétrécit le viewport CSS |
 | `gap`               | `number?` | Espacement entre les colonnes            |
 | `className`         | `string?` | Classes CSS additionnelles               |
 | `leftWrapperClass`  | `string?` | Classes CSS du wrapper gauche            |
