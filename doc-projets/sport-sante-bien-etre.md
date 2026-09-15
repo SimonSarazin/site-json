@@ -13,9 +13,22 @@
 > [Module Articles/Blog](../doc/32-module-articles-blog.md) ·
 > [Module Profil](../doc/08-module-profil.md). Mémoire : `[[project-sport-sante-bien-etre]]`.
 
-Dernière mise à jour : **2026-09-08** (branche `merge-mr51-mr52` : fusion de MR 51 et MR 52,
-11 correctifs mesurés, et la modération des structures — cf. §9). Le lot précédent, du 02/09,
-rendait les créneaux contributifs et modérables et dotait le back-office des documents ressources.
+Dernière mise à jour : **2026-09-15**. Lot du 15/09 (branche `n-dev` : `9deff38a`) : **4 nouvelles
+pages** — `/habilitation-mss`, `/faq`, `/faq-pro`, `/prescription` — avec leurs entrées de nav
+(Professionnels ×3, Grand Public ×1) ; ferme le lien mort `/prescription` (§13, question 1, il ne
+reste que `/strategie`) ; corrige au passage une ancre morte introduite par un renommage manuel
+d'`id` de section, et un bug de lisibilité du composant `heroWithIcon` (texte toujours sombre même
+sur fond image) contourné en CSS scopé plutôt que dans le composant partagé — cf. §9, §12.
+Lot du 10/09 (branche `n-dev` : `518b40e8`) : récupération
+des **pièces justificatives** d'une structure — champ d'origine routé par `subKey` à l'upload
+(le backend écrase le `contentKey` des `doctype:file`), `seedGalleryDefaults` partitionné,
+fiche `PreviewStructure` en emplacements nommés façon fiche legacy (cf. §9). **Prérequis backend** :
+patch `Organization::getById` (jointure `images` + `files`, calqué sur `Poi::getById`) porté sur
+`master` de `citizenToolKit`. Lot du 09/09 (branche `n-dev` : `070a3267`) : refonte du formulaire
+d'ajout de structure aligné sur le dynForm legacy du costum, dérivation `tags` verbatim partagée
+avec Ekilib.re, section « Actions rapides », consolidation du modèle MSS ; puis merge de `main`
+`8bbe35a2` (module AAC, federation-des-cae). Le lot du 08/09, sur `merge-mr51-mr52`, portait la
+fusion MR 51 + MR 52 et la modération des structures.
 **Les décisions de contenu en attente sont listées au §13.**
 
 ---
@@ -26,8 +39,8 @@ Plateforme régionale de promotion du sport-santé à La Réunion : elle met en 
 public** (trouver un créneau, une structure, un équipement), les **professionnels** (labellisation,
 formation, prescription) et la **communauté** des acteurs du réseau.
 
-C'est, par le volume, la **deuxième config du parc** après parent62 : 20 pages, 63 sections,
-7 formulaires costum, un back-office à 9 onglets.
+C'est, par le volume, la **deuxième config du parc** après parent62 : 24 pages, 83 sections,
+6 formulaires costum, un back-office à 10 onglets.
 
 ### Identité
 
@@ -38,9 +51,9 @@ C'est, par le volume, la **deuxième config du parc** après parent62 : 20 pages
 | Config | [`../config.prod.sport-sante-bien-etre.json`](../config.prod.sport-sante-bien-etre.json) |
 | CSS | [`../src/index-sport-sante-bien-etre.css`](../src/index-sport-sante-bien-etre.css) — 75 variables, bloc `theme` **complet** en config |
 | Langues | `fr` (défaut) + `en` |
-| SDK | `@communecter/cocolight-api-client` **1.0.191** (installée, mesurée le 08/09 — `package.json` `^1.0.191`, commit `97aa116d`) |
-| Branche courante | `merge-mr51-mr52` (fusion MR 51 + MR 52, non poussée au 08/09) |
-| Historique | **76 commits** touchant la config (`git log --follow`, 03/08) ; 6 de plus au 08/09 |
+| SDK | `@communecter/cocolight-api-client` **1.0.191** (`package.json` `^1.0.191`, inchangée par le merge du 09/09) |
+| Branche courante | `n-dev` — `070a3267` (lot structure) → `8bbe35a2` (merge de `main`) → `518b40e8` (lot pièces justificatives, 10/09) → `9deff38a` (lot 4 pages pro/public, 15/09). Prérequis backend : `Organization::getById` porté sur `master` de `citizenToolKit` |
+| Historique | **76 commits** touchant la config (`git log --follow`, 03/08) ; `070a3267` réécrit ~2 200 lignes du fichier, le merge de `main` ~1 100 de plus |
 
 ### Historique des chantiers
 
@@ -51,6 +64,10 @@ C'est, par le volume, la **deuxième config du parc** après parent62 : 20 pages
 | 28/07 | Claude | Diagnostic complet, levée de 12 constats (cf. §9), création de ce dossier |
 | 30/07 | Claude | `5ae354d2` — réseaux sociaux au patron `fieldArray` (3 formulaires SSBE + 1 cyber-reunion) ; `59a4b6ee` — retrait de `recepisseDeclaration`, disparu du costum (cf. §9) |
 | 03/08 | Parc | Merge de `fix/institut-bleu-ui` (17 commits, `94251b7b`) dans `main` ; SDK **1.0.172 publiée** (`09e145a0`) — rien de spécifique SSBE, gates re-passés verts (cf. §9) |
+| 02/09 → 08/09 | judi / Nicolas | Créneaux contributifs + modération (`bc99eecc`, `43a93695`), module ressources (`a469da78`), fusion MR 51 + MR 52 et modération des structures (`merge-mr51-mr52`) — cf. §9 |
+| 09/09 | Claude | `070a3267` **feat(ssbe)** : refonte du formulaire d'ajout de structure aligné sur le dynForm legacy du costum ; `structure:tagsFromThematic` → miroir verbatim, clé **partagée Ekilib.re + SSBE** ; section « Actions rapides » sur `/espace-professionnels` ; consolidation MSS (champ `mss`, onglet admin dédié, retrait du form `sport-sante-bienetre-mss`) ; `statusActor`. Puis merge de `main` (`8bbe35a2`) — cf. §9 |
+| 10/09 | Claude | `518b40e8` **feat(ssbe)** : récupération des **pièces justificatives** en édition et sur la fiche publique. Patch backend `Organization::getById` (joint `images` + `files` à la fiche, calqué sur `Poi::getById`, porté sur `master` de `citizenToolKit`) ; `subKey` = clé du champ posée à l'upload (le backend écrase le `contentKey` des `doctype:file` en bucket MIME) ; `seedGalleryDefaults` partitionné par `subKey` ; `PreviewStructure` en emplacements nommés (parité fiche legacy `ssbe/organizations/preview.php`) — cf. §9 |
+| 15/09 | Claude | `9deff38a` **feat(ssbe)** : 4 pages config-only, contenu dérivé de captures d'écran fournies et de recherche web pour les liens officiels (Légifrance, Pôle Ressources National) — `/habilitation-mss`, `/faq`, `/faq-pro`, `/prescription` — + 4 entrées de nav. Ferme le lien mort `/prescription` (question 1, §13). Trois trouvailles en cours de route : une ancre morte (renommage manuel d'`id` de section, hors session), un bug de lisibilité sur `heroWithIcon` (texte toujours sombre sur fond image, contourné en `theme.customCSS` scopé), et un `<Link>` React Router **sans** `classifyHref` dans `HeroQuickAccess.tsx`/`CtaCardGrid.tsx` — signalé, **non corrigé** (composants partagés, changement hors périmètre de cette session) — cf. §9, §12 |
 
 ---
 
@@ -93,7 +110,7 @@ panneau `filters` en colonne gauche — le montage du site frère, adopté à la
 
 Aucun CDC formel n'a été versé au dépôt. Le périmètre se lit dans la config elle-même.
 
-### 4.1 Les 20 pages
+### 4.1 Les 24 pages
 
 | Page | Rôle | Sections |
 |---|---|---|
@@ -103,6 +120,9 @@ Aucun CDC formel n'a été versé au dépôt. Le périmètre se lit dans la conf
 | `/communaute` | Membres + organisations (onglets) | 2 |
 | `/presentation` | Le dispositif | 7 |
 | `/labellisation` | Faire labelliser une activité (timeline) | 7 |
+| `/habilitation-mss` | Procédure d'habilitation officielle MSS (15/09) | 10 |
+| `/faq` · `/faq-pro` | FAQ grand public · FAQ professionnels (15/09) | 2 · 2 |
+| `/prescription` | Aide à la prescription médicale (15/09) | 5 |
 | `/structure` · `/mss` | Structures · Maisons Sport-Santé | 2 · 4 |
 | `/creneaux` · `/equipements-sportifs` · `/mapping` | Jeux de données du territoire | 2 chacune |
 | `/formation` · `/listing-formations` · `/projets` | Formation et projets | 3 · 2 · 2 |
@@ -113,24 +133,32 @@ Aucun CDC formel n'a été versé au dépôt. Le périmètre se lit dans la conf
 
 Le socle légal **existe** — c'est ce qui distingue nettement cette config de rezo-la-mer.
 
-### 4.2 Les 7 formulaires costum
+Les 4 pages du 15/09 sont **config-only** : aucune entité backend, aucun formulaire, aucune
+donnée sondée — du contenu éditorial statique (`hero-quick-access`/`heroWithIcon`/`searchHeader`/
+`accordion`/`categories-grid`/`cards` + quelques sections `html` pour les mises en page non
+couvertes par le catalogue — cartes numérotées, bandeaux dégradés). Détail au §9.
 
-Comptages re-dérivés de la config le **2026-09-08** (`fields{}` déclarés vs référencés dans
-`sections[].fields[]` + `sections[].groups[].fields[]`) — **196 déclarés, 121 placés** :
+### 4.2 Les 6 formulaires costum
+
+Comptages re-dérivés de la config le **2026-09-09** (`fields{}` déclarés vs référencés dans
+`sections[].fields[]` + `sections[].groups[].fields[]`) — **160 déclarés, 108 placés** :
 
 | Formulaire | Entité | Champs déclarés | dont **placés** |
 |---|---|---|---|
-| `sport-sante-bienetre-organizations` | organizations | 42 | 26 |
-| `sport-sante-bienetre-mss` | organizations | 35 | 25 |
-| `sport-sante-bienetre-recovery-center` | poi | 33 | 28 |
-| `sport-sante-bienetre-formation` | projects | 26 | 16 |
-| `sport-sante-bienetre-session-formation` | events | 22 | 14 |
+| `sport-sante-bienetre-organizations` | organizations | 49 | 38 |
+| `sport-sante-bienetre-recovery-center` | poi | 35 | 28 |
+| `sport-sante-bienetre-session-formation` | events | 29 | 14 |
+| `sport-sante-bienetre-formation` | projects | 28 | 16 |
 | `sport-sante-bienetre-article` | poi | 13 | 6 |
 | `sport-sante-bienetre-ressource` | poi | 6 | 6 |
 
-`organizations` est passé de 45/27 à 42/26 le 30/07 : `facebook`/`instagram` retirés (peuplés par
-pure coïncidence de nommage avec l'ancien widget `editSocial` — cf. §9) et `recepisseDeclaration`
-retiré (disparu du costum, jamais porté par aucune donnée).
+`sport-sante-bienetre-mss` a été **supprimé le 09/09** (`070a3267`, §9) : les Maisons Sport-Santé
+sont désormais des structures avec un champ `mss` coché, éditées par le même formulaire.
+`organizations` monte de 42/26 à **49/38** dans le même lot — refonte alignée sur le dynForm
+legacy du costum (assistant 5 étapes, cascade juridique `statusFile`/`responsableCivilePro`/
+`statusPrimaire`·`Secondaire`·`Communale`, champ `mss`, `statusActor`). Les autres formulaires
+gonflent légèrement au merge du 08/09 (`geo`/`geoPosition` déclarés sur les 6 formulaires à widget
+`location`, `payloadEmitEmptyOnEdit`).
 
 > ⚠️ **L'écart « déclarés vs placés » n'est pas anodin.** Le moteur rend en parcourant
 > `sections → groups → fields[]` ([`shared.tsx:47`](../src/modules/formEngine/layouts/shared.tsx),
@@ -143,10 +171,17 @@ retiré (disparu du costum, jamais porté par aucune donnée).
 > clés de l'ancien widget, jamais peuplés), `autreDescription`, `affiliate`/`affiliateTo`… —
 > cf. §13, question 4.
 
-### 4.3 Back-office (`config.admin`, 9 onglets)
+### 4.3 Back-office (`config.admin`, 10 onglets)
 
-`Tableau de bord` · `Membres` · `Organisations` (2 formulaires) · `Lieux & actualités` (2) ·
-`Formations` (2) · `Import / Export` · `Référencement` · `Ressources` (02/09) · `Modération` (02/09).
+`Tableau de bord` · `Membres` · `Organisations` (table « Structures ») · **`Maisons Sport Santé`**
+(09/09 — clone de « Structures » filtré `mss: "true"`, `createDefaults: { mss: "true" }`) ·
+`Lieux & actualités` (2) · `Formations` (2) · `Import / Export` · `Référencement` ·
+`Ressources` (02/09) · `Modération` (02/09).
+
+Avant le 09/09, l'onglet Organisations empilait **deux** tables (Structures + Maisons Sport
+Santé, chacune son formulaire). Depuis `070a3267`, une seule table par onglet ; le formulaire
+MSS dédié est supprimé, les deux tables ouvrent `add-sport-sante-bienetre-organizations` et
+portent le bloc `status` en `statusField` sur `statusActor`.
 
 **Les formulaires costum n'étaient exposés QUE là.** Rien, côté public, n'ouvrait de formulaire
 avant le 28/07. Depuis, `organizations` est ouvert par deux boutons publics et le formulaire de
@@ -197,6 +232,7 @@ jamais posé — **à trancher** (§13, question 5). L'onglet « Membres » vois
 | Modales d'ajout | [`../src/modules/profil/components/add/ModalRegistry.tsx`](../src/modules/profil/components/add/ModalRegistry.tsx) |
 | **Créneaux — contribution & modération (02/09, `bc99eecc` + `43a93695`)** | config (section `/creneaux` : `addButton`, `preview.editButton`, `card.structureAction.audience` ; onglet admin `moderation`) · [`../src/modules/search/schema.ts`](../src/modules/search/schema.ts) (`structureAction.audience`, `kind` optionnel) · [`../src/modules/search/components/card/CardAnswer.tsx`](../src/modules/search/components/card/CardAnswer.tsx) (+ `CardAnswer.test.tsx`, `CardAnswer.ssr.test.tsx`) · [`../src/modules/search/lib/coformAnswer.ts`](../src/modules/search/lib/coformAnswer.ts) (`isCoformAnswerManager`, ex-`canEditCoformAnswer`) · [`../src/modules/admin/schema.ts`](../src/modules/admin/schema.ts) (`columns[].sortable`, + `schema.test.ts`) · [`../src/modules/admin/sections/AdminResourceTable.tsx`](../src/modules/admin/sections/AdminResourceTable.tsx) · docs [07](../doc/07-module-search.md) et [30](../doc/30-module-admin.md) |
 | Rendu des formulaires | [`../src/modules/formEngine/layouts/shared.tsx`](../src/modules/formEngine/layouts/shared.tsx) · [`../src/modules/formEngine/components/GenericForm.tsx`](../src/modules/formEngine/components/GenericForm.tsx) |
+| **Pièces justificatives — structure (10/09, `518b40e8`)** | backend `citizenToolKit/models/Organization.php` (`getById` → jointure `images` + `files`, sur `master`) · [`../src/modules/profil/hooks/useEntityMutation.tsx`](../src/modules/profil/hooks/useEntityMutation.tsx) (`processGalleryFields` → `subKey`) · [`../src/modules/profil/forms/resolveModalSpec.ts`](../src/modules/profil/forms/resolveModalSpec.ts) (`seedGalleryDefaults` partitionné) + [`../src/modules/profil/forms/structure.configDriven.test.ts`](../src/modules/profil/forms/structure.configDriven.test.ts) (tests 16-17) · [`../src/modules/search/components/preview/PreviewStructure.tsx`](../src/modules/search/components/preview/PreviewStructure.tsx) (emplacements nommés par `subKey`) · [`../src/modules/search/constants/queryKeys.ts`](../src/modules/search/constants/queryKeys.ts) (retrait de `DOCUMENTS`) · `../src/modules/search/i18n/{fr,en}.json` |
 
 ---
 
@@ -535,6 +571,214 @@ unitaires ✅ **1 994** · `config:probe` **14 périmètres** — 12 OK, 2 vides
 
 ---
 
+### Lot du 09/09 — le formulaire d'ajout de structure aligné sur le dynForm legacy, MSS consolidé
+
+> Branche `n-dev`. Commit `070a3267` (config + `structure/fns.ts` + son test + `costum-form-drift.ts`
+> + snapshot), puis merge de `main` (`8bbe35a2`).
+
+**Point de départ.** `costumForms["sport-sante-bienetre-organizations"]` était une version allégée
+du formulaire `structure` d'[Ekilib.re](maison-sport-sante-la-tampon.md). Le porteur a fourni le
+**dynForm legacy** du costum (`typeObj.organizations.dynFormCostum`) et des fiches réelles créées
+avant/après : la comparaison a servi d'oracle à chaque écart.
+
+**1. Refonte à parité avec le dynForm legacy.** Assistant 5 étapes (identité / coordonnées / forme
+juridique / représentant / personne chargée du dossier), cascade `visibleIf` sur `legalStatus`
+(`statusFile`, `responsableCivilePro` en widget `file` ; `statusPrimaire`·`Secondaire`·`Communale`
+en `select` — la liste `statusCommunale` reçoit les **36 communes** fournies), `validateFn:
+"validate:addressComplete"`, `scope` sportSanteBienetre, `identity: {type: "Cooperative"}`, chrome
+complet. `openingHours` retiré (absent du legacy).
+
+**2. Stockage aligné sur les fiches legacy** (chaque point vérifié contre une fiche DB réelle) :
+
+| Champ | Avant (n-dev allégé) | Après (= legacy) |
+|---|---|---|
+| Téléphone | `telephone: { mobile: ["…"] }` (serializeGroup) | `mobile: "…"` — champ plat, widget `tel` |
+| `affiliate`, `mss` | `select` → `"Oui"`/`"Non"` | `switch` + `write: "coerce:boolString"` → `"true"`/`"false"` |
+| `representativeTitle`, `personInChargeTitle` | widget `tags` → **array** | widget **`valueSelect` mono** (`multiple: false`, `creatable: true`, `read: "coerce:string"`) → **chaîne** : choisir dans les 5 titres OU saisir librement |
+| `statusActor` | absent | `"En cours"` à la création (`inject.extraFields`, comme Ekilib.re) — modifiable ensuite depuis le panel (bloc `status` `statusField`) |
+
+Le porteur a ajouté `statusActor`, `mss` et `statusPrimaire` au **schéma d'écriture du costum
+en base** pendant la session (le costum d'Ekilib.re les porte déjà) — le canal `inject.extraFields`
+suffit donc, pas de contournement `pathValue`.
+
+**3. `tags` ⇐ `thematic` : miroir verbatim, clé PARTAGÉE.** `structure:tagsFromThematic`
+(`src/modules/profil/forms/costum/structure/fns.ts`) recopiait `thematic` dans `tags` en
+**raccourcissant** les libellés (« Scolaire 1er degré - Maternelle et primaire » →
+« Scolaire 1er degré »). Les fiches réelles montrent `thematic == tags` **à l'identique**. La clé
+devient un miroir verbatim (dédup, ordre préservé) ; plus de préservation de tag « étranger »
+puisque le seul marqueur qui vivait dans `tags` — `mss` — est maintenant un champ. **La clé sert
+les DEUX formulaires `structure` du parc** (Ekilib.re + SSBE) ; l'oracle de
+`structure.configDriven.test.ts` est mis à jour (tags attendus en long). Acté avec le porteur :
+le filtre `/structure` d'Ekilib.re (valeurs courtes) et ses ~14 fiches ne sont pas un blocage,
+`/mapping` SSBE va disparaître.
+
+**4. Consolidation MSS.** `sport-sante-bienetre-mss` (costumForm + route `editModals`
+`edit-sport-sante-bienetre-mss`) **supprimé**. Une Maison Sport-Santé = une structure avec `mss`
+coché. Admin : l'onglet Organisations ne porte plus que « Structures » ; un nouvel onglet
+**`maisons-sport-sante`** est un clone filtré `mss: "true"` + `createDefaults: { mss: "true" }`,
+avec le même bloc `status`/`statusActor` — « même data et même modération que les structures »
+(demande du porteur). `type` passe de `NGO` à `Cooperative` : les listes publiques et l'admin
+l'acceptent déjà (`defaultTypes`), l'onglet Référencement excepté.
+
+**5. Section « Actions rapides »** sur `/espace-professionnels`, juste sous le bandeau :
+`searchHeader` (titre + sous-titre rouge) + 2 boutons `requiresAdmin: false` — « Étape 1 – Ajouter
+sa structure » (`modal: "add-sport-sante-bienetre-organizations"`, Dialog) et « Étape 2 – Ajouter
+son créneau » (`href: "/coform/6928096adf5caf0d230e7f26"`, page). ⚠ Un bouton `searchHeader` ne
+peut **pas** ouvrir un `CoFormModal` (réservé à l'`addButton` de `searchProStatic`) → le créneau
+est une navigation, pas une modale.
+
+**6. Merge de `main` (`8bbe35a2`).** `main` apporte le module **AAC** (appels à communs),
+**federation-des-cae**, et du travail SSBE **parallèle** : il gardait le modèle MSS séparé
+(`type: NGO`, `tags: ["mss"]`) et sa propre page `/ressources` + costumForm
+`sport-sante-bienetre-ressource`. **7 zones de conflit** dans la config, toutes sur la divergence
+de modèle MSS. Résolution : **modèle `n-dev` (unifié) retenu** ; les ajouts additifs de `main`
+(`/ressources`, `sport-sante-bienetre-ressource`, onglet `moderation`, expansions de filtres)
+conservés. Une incohérence corrigée à la relecture : le snapshot
+`tests/preflight/__effective__/sport-sante-bien-etre.json` portait encore `tags: ["mss"]` côté
+`main` alors que la config résolue est `mss: "true"` → régénéré.
+
+**Gates (09/09)** : `config:validate` ✅ **20 pages / 64 sections** · `audit:config` 🟡 3 liens
+morts (§13, inchangés), `strip: 0` · `config:costum-drift` SSBE — 4 formulaires ✅, `-organizations`
+et `-ressource` **sans fantôme** (`mss` inscrit dans `ASSUMES` de `costum-form-drift.ts`, motif :
+exposé via `describeCostumForms` mais pas via le chemin `api.organization` de la garde ;
+8 « non exposés » informatifs) · `tsc -b` ✅ (arbre mergé complet : module AAC, cagnotte, coform) ·
+`test:preflight` ✅ **633** (2 échecs **préexistants hors périmètre** : `bundle-size` — bundle JS
+> 2 Mo, la config n'y entre pas ; `site-assets` — dossier `public/images/associationEkilibre` non
+déclaré) · unitaires ciblés (profil + formEngine + admin + préflight costum) ✅ **749** ·
+`config:probe` / `config:render` **non joués** ce lot.
+
+---
+
+### Lot du 10/09 — récupération des pièces justificatives (modale d'édition + fiche publique)
+
+> Branche `n-dev`, commit `518b40e8` (site-json). Backend : `citizenToolKit/models/Organization.php`
+> porté sur `master`.
+
+**Constat.** En édition d'une structure, les champs `file` (« Statuts », « Responsabilité civile
+pro ») ne re-pré-remplissaient jamais les documents déjà déposés, et la fiche publique les listait
+en vrac (l'image de profil comprise). Deux causes distinctes.
+
+**1. `about.files` absent pour les `organizations`.** `element/about` (SDK `get()`) charge la fiche
+via `Element::getByTypeAndId` → `Organization::getById`, qui — contrairement à `Poi::getById`,
+`Classified::getById`, `Project::getById` — ne joignait ni `images` ni `files`. Correctif calqué
+sur `Poi::getById` : `$organization["images"]` (galerie, `contentKey ≠ mdImage`) + `$organization["files"]`
+(`Document::getListDocumentsWhere([… "doctype" => "file"], "file")`). Aucun impact SDK (endpoint
+`GET_ELEMENTS_ABOUT` sans schéma `responses`, `additionalProperties: true`) ni site-json.
+
+**2. `contentKey` des fichiers écrasé à l'écriture.** `Document::save` remplace le `contentKey` de
+tout `doctype:file` par un bucket MIME (`pdf`/`spreadsheet`/`text`/`presentation`, via
+`getFileContentKey`) — la clé du champ (`statusFile`, `responsableCivilePro`) est perdue. `subKey`,
+lui, est conservé verbatim. On y route donc l'identité du champ :
+
+- `processGalleryFields` (`useEntityMutation`) pose `subKey = contentKey` du champ à l'upload des
+  `doctype:file` (images inchangées : `contentKey:"slider"` survit) ;
+- `seedGalleryDefaults` (`resolveModalSpec`) partitionne `about.files` par `subKey` — chaque widget
+  `file` ne pré-remplit que SES documents ; **repli passe-tout** si aucun fichier ne porte de
+  `subKey`, pour ne pas régresser les costums déjà en place (poi/classifieds/projects) ;
+- `structure.configDriven` tests 16 (partition) et 17 (repli).
+
+**Fiche publique `PreviewStructure`.** La section « Documents » passe d'une liste à plat
+(`getDocuments()` / `DOCUMENT_LIST`, sans `subKey`, sous authentification) à **2 emplacements
+nommés** appariés par `subKey`, repli « Non renseigné », repris de la fiche legacy
+`ssbe/organizations/preview.php` :
+
+| Emplacement | `subKey` acceptés |
+|---|---|
+| Récépissé de déclaration | `statusFile` (form SiteForge) **ou** `recepisseDeclaration` (fiches legacy — champ retiré du form le 30/07, `59a4b6ee`) |
+| Responsabilité civile professionnelle | `responsableCivilePro` |
+
+La fiche complète est rechargée par slug (`useEntityBySlugQuery`, même patron que
+`useResourceEntity`) pour disposer de `about.files`. `element/about` étant **public**, sur `/mss`
+(page publique) les PDF deviennent téléchargeables par un visiteur anonyme — comportement **identique
+à la fiche legacy** (§13). `SEARCH_QUERY_KEYS.DOCUMENTS` devenu orphelin, retiré.
+
+**À refaire.** Les documents déposés avant ce lot n'ont pas de `subKey` → à redéposer.
+
+**Gates (10/09)** : `tsc -b` ✅ · `eslint` ✅ · `config:validate` ✅ **20 pages / 64 sections** ·
+`php -l Organization.php` ✅ · unitaires ciblés — `search` **462**, `i18n-files` (parité fr/en)
+**69**, `profil` **487**, `structure.configDriven` **46** (44 + 2) ✅ · recette navigateur **non
+faite** (dépend du déploiement du patch backend).
+
+---
+
+### Lot du 15/09 — 4 pages éditoriales (Habilitation MSS, FAQ, FAQ Pro, Prescrire & Orienter)
+
+> Branche `n-dev`, commit `9deff38a`. **Config-only** — aucun code, aucune entité backend.
+> Chaque page a été composée à partir d'une capture d'écran fournie par le porteur (design déjà
+> arrêté) plutôt que d'une conception depuis les archétypes ; le travail a consisté à retrouver la
+> composition la plus proche dans le catalogue de sections et à ne jamais inventer un contenu ou
+> une URL absente de la capture.
+
+**1. `/habilitation-mss`** (10 sections) — la procédure d'habilitation administrative d'une
+Maison Sport-Santé (décret 2023-170, arrêté du 25/04/2023) : `hero-quick-access` (fond
+`hero2.jpg`, réutilisé — la photo colle exactement à la capture), bandeau de contact
+(`html`, `bg-gradient-hero`), 3 cartes numérotées « Procédure en 3 étapes » (`html` — cf. ci-dessous
+pourquoi pas `cta-card-grid`), `categories-grid` (engagements), `gridLayout` (rapport annuel +
+checklist), `accordion` (« Aux termes de l'habilitation »), `cards` (textes de référence). Liens
+externes **vérifiés par recherche web**, pas inventés : Légifrance pour le décret
+(`JORFTEXT000047278435`) et l'arrêté (`JORFTEXT000047558874`), `pole-sante.creps-vichy.sports.gouv.fr`
+pour le Pôle Ressources National. Entrée de nav « Habilitation MSS » ajoutée sous Professionnels.
+
+**2. `/faq` et `/faq-pro`** (2 sections chacune) — `searchHeader` (bannière sans image) +
+`accordion`. Contenu réel : la FAQ de `www.ssbe.re/#faq` n'a **pas pu être récupérée** (page
+rendue côté client, `WebFetch` n'y voit qu'un écran de connexion) — le porteur a fourni le texte
+des 7 questions (FAQ) puis des captures des 12 questions (FAQ Pro), retranscrites intégralement,
+liens internes posés vers les pages réelles correspondantes (`/mss`, `/creneaux`, `/mapping`,
+`/labellisation`, `/espace-professionnels`, `/ressources`, `/listing-formations`). Toutes les
+réponses repliées par défaut (`defaultOpen: false`) sur demande explicite — la première version de
+`/faq` les avait toutes ouvertes, corrigé avant `/faq-pro`. Entrées de nav : « FAQ » sous Grand
+Public, « FAQ Pro » sous Professionnels.
+
+**3. `/prescription`** (5 sections) — ferme le lien mort de longue date signalé au §13 (question 1) :
+la tuile « Aide à la prescription » de `/espace-professionnels` pointait vers `/prescription`
+depuis la création de la config, sans que la page existe. `heroWithIcon` (médaillon `stethoscope`),
+2 sections `html` (cartes « Qui / Pour qui / Par qui », cartes « Bonnes pratiques » colorées),
+bandeau CTA dégradé. Fond de hero : posé sur `hero4.png` (réutilisé) faute d'asset dédié au moment
+de la session, puis **remplacé par le porteur** juste après par un asset dédié
+(`public/images/sportSanteBienetre/prescription.png`, ajouté au même commit) — la photo réelle du
+formulaire APA de la capture. Les 2 sections « Guides et modèles » (cartes PDF) de la capture
+**n'ont volontairement pas été posées** : les documents réels n'existaient pas encore au moment de
+la session (ni en fichiers statiques, ni comme entités `ressource` du backend, cf. §4.2/§9 lot
+02/09) — **à compléter** (§13, nouvelle question).
+
+**Trois trouvailles en cours de route, sans rapport direct avec le contenu livré :**
+
+- **Ancre morte.** Le CTA du hero d'`/habilitation-mss` (`#habilitation-procedure-steps`) a cessé
+  de matcher après qu'une édition manuelle du fichier, hors de cette session, a renommé l'`id` de
+  la section cible en `"Dépôt des demandes"` (espaces — invalide comme `id` HTML). Détecté par
+  `audit:config` (catégorie `ancre-morte`), corrigé en restaurant l'`id` d'origine.
+- **`heroWithIcon` illisible sur fond image.** Contrairement à `HeroSection.tsx`, le composant
+  garde toujours `text-foreground` (sombre) même avec `backgroundImage` — jamais de bascule en
+  blanc. **Seul usage de `heroWithIcon` dans tout le parc**, donc corrigé sans toucher au composant
+  partagé : règle CSS scopée à `#prescription-hero` dans `theme.customCSS` (déjà utilisé sur cette
+  config pour d'autres overrides ponctuels, cf. `.ssso-card`/`.sspt-card` plus haut dans la même
+  clé). Vérifié au passage : `page.customCSS` (déclaré au schéma, à côté de `page.customJS`)
+  n'est lu par **aucun composant de rendu** — un correctif posé là aurait été silencieusement sans
+  effet ; c'est `theme.customCSS` (`SiteTheme.tsx`, injection globale) qui fonctionne, d'où le
+  scoping par sélecteur d'`id` de section plutôt qu'un mécanisme par page.
+- **`<Link>` sans `classifyHref` dans `HeroQuickAccess.tsx` et `CtaCardGrid.tsx`.** Les deux
+  composants routent leur CTA via un `<Link to={...}>` React Router nu, sans le contrat à 4 voies
+  que `CardsSection`/`NavLink`/`CTASection` appliquent déjà (`src/lib/linkKind.ts`) : une URL
+  externe posée dans ce CTA est mal routée et retombe **silencieusement** sur la page d'accueil.
+  Constaté à deux reprises pendant la session (CTA du hero d'Habilitation MSS, puis carte de
+  `cta-card-grid` envisagée pour « Procédure en 3 étapes ») ; contourné à chaque fois côté config
+  (ancre interne pour le premier, type `html` conservé pour le second — cf. §13, nouvelle question).
+  **Ni l'un ni l'autre composant n'a été corrigé** : `heroQuickAccess` est utilisé par la moitié du
+  parc, `cta-card-grid` par au moins parent62 — un correctif y engage plus large que cette session.
+
+**Gates (15/09)** : `config:validate` ✅ **24 pages / 83 sections** · `audit:config` 🟡 **2
+constats** — `/strategie` et `/rejoindre`, tous deux préexistants et inchangés (§13, questions
+1 et 2 ; l'audit était à 3 avant ce lot, `/prescription` en sortait) · `config:render` ✅ **24/24
+pages, 83/83 sections** · icônes lucide utilisées (`landmark`\*, `shield-check`, `help-circle`,
+`stethoscope`, `user-round`, `footprints`, `file-text`, `network`, `bell`, `clipboard-check`)
+vérifiées une à une contre `node_modules/lucide-react`. *(\*`landmark` remplacé en session par un
+SVG inline sur demande du porteur, même structure que les badges déjà posés en `html` ailleurs
+dans la config.)* `typecheck`/`lint`/`test:preflight` **non rejoués** ce lot (aucun fichier `.ts`/
+`.tsx` modifié — le seul essai de correction de composant, sur `HeroWithIconSection.tsx`, a été
+annulé avant écriture, cf. ci-dessus).
+
+---
+
 ## 10. Checklist d'avancement
 
 | # | Fonctionnalité | État | Détail |
@@ -544,10 +788,10 @@ unitaires ✅ **1 994** · `config:probe` **14 périmètres** — 12 OK, 2 vides
 | 3 | Socle légal | ✅ | `/mentions-legales`, `/confidentialite`, `/accessibilite` existent |
 | 4 | Jeux de données du territoire | ✅ | Équipements (3 061), créneaux (300), structures (180), MSS (13) — sondés le 03/08 |
 | 5 | Communauté | 🟡 | Onglet « Membres » OK ; onglet « Organisations » **vide** (id en dur, §5) |
-| 6 | Formulaires costum | 🟡 | **7** déclarés et exposés dans `/admin` ; 2 ouverts côté public (structure, créneau) |
+| 6 | Formulaires costum | 🟡 | **6** déclarés (le form `mss` supprimé le 09/09, §9) ; 2 ouverts côté public (structure, créneau) |
 | 7 | Inscription d'une structure | ✅ | Modale branchée sur `/communaute`, gardée par l'authentification |
 | 8 | Connexion | ✅ | Widget `utilities.auth` ; le CTA cassé du header est retiré |
-| 9 | Back-office | ✅ | **9 onglets** (ajout de « Ressources » et « Modération » le 02/09) — **essai UI connecté à faire** |
+| 9 | Back-office | ✅ | **10 onglets** (« Ressources » + « Modération » le 02/09 ; « Maisons Sport Santé » le 09/09) — **essai UI connecté à faire** |
 | 10 | Blog | ✅ | `articleFeed` + RSS + SEO + palette (travaux du 25/07) |
 | 11 | Palette ⌘K | ✅ | `entitySearch` + `articleSearch` |
 | 12 | Grille « professionnels » | ❌ | 3 tuiles sur 6 mènent à des pages inexistantes (§13) |
@@ -563,6 +807,18 @@ unitaires ✅ **1 994** · `config:probe` **14 périmètres** — 12 OK, 2 vides
 | 22 | Modération des structures | ✅ config | Trépied `statusActor` + garde `$nin` sur la palette (08/09, §9) — **1 fiche à valider** : MSS de Saint-Louis |
 | 23 | Filtre « Bénéficiaires » de `/creneaux` | ❌ | Aveugle sur 232 réponses stockées en chaîne collée. Script de normalisation prêt, **non exécuté** — arbitrage de vocabulaire en attente (§13) |
 | 24 | Ressources — saisie réelle | ❌ | `declareRessourceType` joué en DEV (contrat live 23→25 champs) ; **reste à rejouer en PROD**, avec ses trois clés |
+| 25 | Formulaire structure aligné legacy | ✅ config | `070a3267` (§9) : assistant 5 étapes + cascade juridique, `mobile` plat, `affiliate`/`mss` en `"true"`/`"false"`, titres en `valueSelect` chaîne, `statusActor` — vérifié contre 3 fiches DB créées en session. **Recette navigateur à faire** |
+| 26 | MSS consolidé | ✅ config | Form `mss` supprimé, champ `mss` sur la structure, onglet admin `maisons-sport-sante` dédié (filtre `mss: "true"`). Fiches MSS `type: "NGO"` d'avant : à ré-enregistrer via le panel pour porter `mss: "true"` |
+| 27 | `tags` = miroir verbatim de `thematic` | ✅ | Clé `structure:tagsFromThematic` partagée Ekilib.re + SSBE ; oracle de test mis à jour. `mss` n'est plus un tag |
+| 28 | Section « Actions rapides » sur `/espace-professionnels` | ✅ config | 2 boutons (structure en Dialog, créneau en navigation `/coform/…`) — **recette navigateur à faire** |
+| 29 | Merge de `main` dans `n-dev` (`8bbe35a2`) | ✅ | Module AAC + federation-des-cae + travail SSBE parallèle. 7 conflits config résolus vers le modèle unifié `n-dev` ; `tsc -b` et préflight verts (2 échecs préexistants hors périmètre) |
+| 30 | Pièces justificatives récupérées en édition | ✅ code (`518b40e8`) | `subKey` posé à l'upload + `seedGalleryDefaults` partitionné + patch backend `Organization::getById` (`about.files`, sur `master`). **Fonctionnel une fois le backend déployé** ; documents d'avant le 10/09 à redéposer. Recette navigateur à faire |
+| 31 | Documents de la fiche publique en emplacements nommés | ✅ code (`518b40e8`) | `PreviewStructure` : 2 slots par `subKey` (Récépissé / RC pro), repli « Non renseigné », parité fiche legacy. ⚠ expose les PDF publiquement sur `/mss`, comme le legacy — arbitrage §13 |
+| 32 | Page `/habilitation-mss` | ✅ config (`9deff38a`, 15/09) | 10 sections, liens Légifrance/démarches-simplifiées/Pôle Ressources vérifiés par recherche web. Entrée de nav Professionnels — **recette navigateur à faire** |
+| 33 | Pages `/faq` et `/faq-pro` | ✅ config (`9deff38a`, 15/09) | Contenu réel fourni par le porteur (7 + 12 Q/R), tout replié par défaut. Entrées de nav Grand Public / Professionnels — **recette navigateur à faire** |
+| 34 | Page `/prescription` | ✅ config (`9deff38a`, 15/09) | Ferme le lien mort historique de la tuile « Aide à la prescription » (§13, question 1 close). Sections « Guides et modèles » (cartes PDF) **non posées**, documents à fournir — §13 nouvelle question |
+| 35 | Lisibilité `heroWithIcon` sur fond image | ✅ contourné (`9deff38a`, 15/09) | Bug réel du composant (toujours `text-foreground`), corrigé en CSS scopé (`theme.customCSS`) plutôt que dans le composant — seul usage du type dans le parc. **Composant non corrigé** |
+| 36 | `<Link>` sans `classifyHref` (`HeroQuickAccess`, `CtaCardGrid`) | ❌ | Bug identifié deux fois en session (15/09), contourné côté config à chaque fois. Affecte potentiellement tout le parc (parent62 pour `cta-card-grid`) — correctif de composant **non fait**, hors périmètre de la session |
 
 ---
 
@@ -580,6 +836,12 @@ pertinent ici : SSBE a un back-office `/admin` à 9 onglets (§4.3).
 validation AJV, avant tout appel réseau, tant que le costum ne déclare pas le type avec son
 `presetValue`. Ce n'est pas une demande d'évolution du SDK — c'est une écriture en base (§9).
 
+⚠ **Récupération des documents d'une structure** (lot 10/09) : suppose le patch
+`Organization::getById` (jointure `images` + `files`, calqué sur `Poi::getById`) **déployé** —
+il est porté sur `master` de `citizenToolKit`. Sans lui, `about.files` reste vide pour les
+organisations → la modale d'édition et la fiche `PreviewStructure` ne montrent aucun document
+(dégradation silencieuse, pas d'erreur). Modification backend, pas une demande d'évolution du SDK.
+
 ---
 
 ## 12. Points d'attention / limitations
@@ -596,8 +858,36 @@ validation AJV, avant tout appel réseau, tant que le costum ne déclare pas le 
   clé déclarée au schéma mais non lue par le composant est invisible (ni typecheck, ni audit).
 - **`notSourceKey: true`** est employé sur plusieurs périmètres. À chaque fois, vérifier que les
   `defaultFilters` restreignent réellement — sans quoi la page sert la base entière.
+- **`structure:tagsFromThematic` est une clé PARTAGÉE** (`src/modules/profil/forms/costum/structure/fns.ts`) :
+  `costumForms["structure"]` d'Ekilib.re **et** `sport-sante-bienetre-organizations` la référencent.
+  Toucher son comportement impacte les deux sites — l'oracle est
+  `src/modules/profil/forms/structure.configDriven.test.ts`.
+- **Fiches MSS antérieures** (`type: "NGO"`, sans `mss: "true"`) : n'apparaissent plus dans l'onglet
+  `maisons-sport-sante` (filtre `mss: "true"`) tant qu'elles ne sont pas ré-enregistrées. Idem pour
+  la 1ʳᵉ fiche test créée avec `mss: "Oui"` (avant le passage `switch` → `"true"`).
+- **`contentKey` d'un `doctype:file` n'est PAS fiable** : `Document::save` le remplace par un bucket
+  MIME (`pdf`/`spreadsheet`/`text`/`presentation`). Pour rattacher un document à un champ précis, se
+  fier à **`subKey`** (conservé verbatim, posé par `processGalleryFields` = `contentKey` du champ).
+  Les documents déposés **avant le 10/09** n'ont pas de `subKey` → invisibles dans les emplacements
+  partitionnés (modale et fiche), à redéposer.
+- **`PreviewStructure` est partagé Ekilib.re + SSBE** (`preview.type: "structure"` dans les deux
+  configs). Les emplacements documents (`DOCUMENT_SLOTS`) et l'exposition publique de `about.files`
+  valent donc aussi pour la fiche structure du Tampon.
 - Ce site n'a **jamais été regardé en navigateur** dans le cadre de ce dossier. Tous les constats
   ci-dessus sont dérivés de la config, du code et du sondage — pas d'un rendu observé.
+- **`<Link>` sans `classifyHref` dans `HeroQuickAccess.tsx` et `CtaCardGrid.tsx`** (15/09) : une
+  URL externe posée dans leur CTA retombe silencieusement sur la page d'accueil (le React Router
+  `<Link>` nu la traite comme un chemin interne). `CardsSection`/`NavLink`/`CTASection` ont déjà le
+  correctif (`src/lib/linkKind.ts`) ; ces deux-là ne l'ont pas. Avant de poser un lien externe dans
+  un CTA `hero-quick-access` ou `cta-card-grid`, vérifier qu'il reste interne, ou passer par une
+  ancre + lien natif dans une section `html` (contournement employé sur `/habilitation-mss`).
+- **`page.customCSS` (schéma) n'est lu par aucun composant de rendu** — seul `theme.customCSS`
+  (`SiteTheme.tsx`, injection globale) l'est réellement. Pour un override scopé à une page/section,
+  poser la règle dans `theme.customCSS` avec un sélecteur ciblant l'`id` de la section, jamais dans
+  `page.customCSS` (vérifié le 15/09, cf. §9).
+- **Un `id` de section est une ancre potentielle** (CTA `#id`, `theme.customCSS`) — un renommage
+  manuel casse silencieusement ces deux usages ; seul `audit:config` (catégorie `ancre-morte`) le
+  détecte, ni `config:validate` ni le préflight.
 
 ---
 
@@ -605,7 +895,7 @@ validation AJV, avant tout appel réseau, tant que le costum ne déclare pas le 
 
 | # | Question | Responsable |
 |---|---|---|
-| 1 | **Grille « Le réseau Sport Santé »** (`/espace-professionnels`, `features-glass`, 6 tuiles) : 3 tuiles mènent à des pages inexistantes — « Aide à la prescription » (`/prescription`), « Stratégie régionale Sport Santé » (`/strategie`), « Rapports & Publications » (`/ressources`). **Créer les 3 pages, repointer, ou retirer les tuiles ?** Rapprochements possibles mais non équivalents : `/presentation` pour la stratégie, `/blog` pour les publications. **Depuis le 02/09, `/ressources` EXISTE** (question 7) : il ne reste que `/prescription` et `/strategie` | Thomas |
+| 1 | ~~Grille « Le réseau Sport Santé »~~ (`/espace-professionnels`, `features-glass`, 6 tuiles) : 3 tuiles menaient à des pages inexistantes. **`/ressources` FAITE le 02/09** (question 7), **`/prescription` FAITE le 15/09** (§9, `9deff38a`). **Il ne reste que « Stratégie régionale Sport Santé » → `/strategie`** — créer la page, repointer vers `/presentation` (rapprochement possible mais non équivalent), ou retirer la tuile ? | Thomas |
 | 2 | **Hero de `/public`** : le CTA « Sport et santé pour tous » pointe vers `/rejoindre` (inexistant), et le second, « Sport et santé sur ordonnance », vers `/` — un lien vers l'accueil depuis une sous-page. Les deux libellés sont des **slogans, pas des actions** : le hero est à repenser plutôt qu'à rafistoler | Thomas |
 | 3 | Les 5 autres formulaires costum (`mss`, `formation`, `session-formation`, `recovery-center`, `article`) doivent-ils être ouverts au public comme l'a été `organizations`, ou rester réservés au back-office ? | Thomas |
 | 4 | Les 7 formulaires déclarent **196 champs dont 121 placés** (re-dérivé le 08/09 ; trois vestiges purgés le 30/07 : `facebook`, `instagram`, `recepisseDeclaration`). Faut-il purger les vestiges restants — dont `youtube`/`linkedin`/`autreDescription` sur `organizations` —, ou certains sont-ils attendus par le backend en écriture ? | Thomas |
@@ -615,5 +905,11 @@ validation AJV, avant tout appel réseau, tant que le costum ne déclare pas le 
 | 8 | **Thématique affichée en clé** dans le listing admin (`mss`, `has`…) : `formatCell` ne résout aucune énumération, et seul le mode `statusField` sait mapper une valeur vers un libellé. Vit-on avec (compact, sans ambiguïté pour un usage interne), ou ajoute-t-on au schéma des colonnes admin une table de libellés — utile bien au-delà de ce site ? | Thomas |
 | 9 | **Vocabulaire des bénéficiaires** — après normalisation, 215 fiches diront « Personnes de plus de 55 ans » et 2 « Séniors (plus de 55 ans) » pour la même population ; 27 diront « Personnes en perte d'autonomie », absente du référentiel. Réécrire l'existant vers le libellé du formulaire, ou remettre l'ancien au référentiel ? **Bloque le `--apply` du script de normalisation** | Thomas |
 | 10 | **`publicType`** — 7 fiches portent « Mixte »/« Féminin » là où les options disent « mixte »/« femmes ». Doubler les options afficherait deux « Mixte » dans le panneau : c'est une normalisation de donnée, pas une correction de config | Thomas |
-| 11 | **Branche de destination** — la fusion MR 51 + MR 52 vit sur `merge-mr51-mr52`, non poussée. Vers `n-dev` (MR 52 porte tout), vers une MR de fusion dédiée, ou relecture locale d'abord ? Et prévenir Nicolas : son montage `/creneaux` est conservé, mais ses deux listes d'options ont changé | Thomas |
+| 11 | **Branche de destination** — la fusion MR 51 + MR 52 puis le lot structure du 09/09 vivent maintenant sur `n-dev` (merge de `main` `8bbe35a2` fait). Pousser `n-dev` tel quel, ou passer par une MR relue ? Prévenir Nicolas : son montage `/creneaux` est conservé, mais ses deux listes d'options ont changé | Thomas |
+| 13 | **Modèle MSS** — `n-dev` a **unifié** (champ `mss` sur la structure) là où `main` gardait un formulaire `type: "NGO"` séparé. Résolu vers l'unifié au merge. À confirmer avec la personne qui a fait le SSBE sur `main` que c'est bien la direction retenue, et backfiller `mss: "true"` sur les ~13 fiches MSS existantes (ou les passer par le panel) | Thomas / dev SSBE `main` |
+| 14 | **`representativeTitle` / `personInChargeTitle` en `valueSelect` mono** — stocke une chaîne, saisie libre autorisée. Vérifier que l'affichage profil (`ProfileSsbeAbout`) et les exports gèrent bien une valeur hors des 5 titres proposés | Thomas |
 | 12 | **Périmètre de la palette ⌘K** — SSBE cite `equipementsSportifs974` mais jamais `associationEkilibre`, alors que le site du Tampon cite SSBE. L'agrégation ne va que dans un sens : à corriger ou à documenter | Thomas |
+| 15 | **Pièces justificatives publiques sur `/mss`** — depuis le 10/09, `PreviewStructure` lit `about.files` (endpoint `element/about` public) : statuts et attestations d'assurance deviennent téléchargeables par un visiteur anonyme. C'est le comportement de la fiche legacy `ssbe/organizations/preview.php`, repris tel quel. Garde-t-on la parité, ou réserve-t-on la section « Documents » au propriétaire / à un admin ? | Thomas |
+| 16 | **Intitulé du 1er emplacement documents** — la fiche affiche « Récépissé de déclaration » (libellé legacy) alors que le champ du formulaire s'appelle « Statuts » ; l'emplacement accepte les deux `subKey` (`statusFile`, `recepisseDeclaration`). Aligner l'intitulé sur « Statuts » (1 ligne d'i18n) ou garder le libellé legacy ? | Thomas |
+| 17 | **`/prescription` — 4 documents PDF non posés** (« Guides et modèles », « Guide Consultation et prescription… »), présents dans la capture mais volontairement laissés de côté le 15/09 faute de source : fichiers statiques à déposer, ou entités `ressource` du backend (comme `/ressources`, avec un filtre `thematique` dédié) ? | Thomas |
+| 18 | **`<Link>` sans `classifyHref`** sur `HeroQuickAccess.tsx` et `CtaCardGrid.tsx` (§9, §12) — les aligner sur `CardsSection`/`NavLink`/`CTASection` casserait potentiellement des CTA qui comptent aujourd'hui, par accident, sur l'ancien comportement. À planifier comme un lot dédié, testé sur tout le parc (parent62 pour `cta-card-grid`), pas en aparté d'un lot de contenu | Thomas |
