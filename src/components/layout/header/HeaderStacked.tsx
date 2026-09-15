@@ -54,6 +54,43 @@ const SEARCH_BTN = "max-md:text-white/90 max-md:hover:text-white";
  * Comportement identique sur TOUTES les pages : `stuck` ne dépend que de la
  * position de la barre (sentinelle IntersectionObserver), jamais de la route.
  */
+/**
+ * Plancher du bandeau à partir de `xl:`, piloté par `header.height`. Classes écrites EN TOUTES
+ * LETTRES : le JIT Tailwind ne génère pas une classe construite dynamiquement (même contrainte que
+ * `SPLIT_LAYOUTS` dans SearchProStatic).
+ *
+ * `lg` (défaut du schéma : `md`) garde le 50vh d'origine — moitié bandeau / moitié section suivante
+ * au premier écran. `sm` vise le QUART de l'écran, pour une accueil où c'est le CONTENU qui doit
+ * occuper le premier écran, pas la marque. Dans tous les cas le bandeau S'ÉTEND si son contenu
+ * dépasse le plancher : jamais de clipping (cf. la mécanique abandonnée, plus bas).
+ *
+ * Le plancher n'est donc PAS une hauteur garantie, et il ne suffit pas à lui seul : `pt-6` + `pb-16`
+ * (la réserve des 56px de la barre, incompressible) posent déjà 88px, auxquels s'ajoute le bloc
+ * logo/wordmark/sous-titre. C'est la taille de la MARQUE, réglée du même cran juste en dessous, qui
+ * fait réellement descendre le bandeau. Plancher bas de ce composant, mesuré : ~190px avec une
+ * marque minimale — viser moins reviendrait à supprimer le bandeau, pas à le régler.
+ */
+const PLANCHER_BANDEAU = {
+  sm: "xl:min-h-[25vh]",
+  md: "xl:min-h-[37.5vh]",
+  lg: "xl:min-h-[50vh]",
+} as const;
+
+/**
+ * Taille de la marque (logo + wordmark) à partir de `xl:`, même clé que le plancher.
+ *
+ * Le plancher SEUL ne réduit rien : la hauteur du bandeau vaut `max(plancher, contenu)`, et à
+ * `xl:h-40` + wordmark `text-7xl` le contenu mesure ~290px — il dépassait donc un plancher à 25vh
+ * (225px sur un écran de 900) et le bandeau restait à 32% de l'écran. Demander un bandeau plus court
+ * implique une marque plus petite ; les deux se règlent d'un seul cran.
+ * Mobile/tablette inchangés (classes `sm:` communes) : là, le bandeau suit déjà son contenu.
+ */
+const MARQUE_BANDEAU = {
+  sm: { logo: "xl:h-20 xl:w-20", wordmark: "xl:text-4xl xl:mb-1", sous: "xl:text-lg", mt: "xl:mt-1", gap: "xl:gap-7", px: 80 },
+  md: { logo: "xl:h-32 xl:w-32", wordmark: "xl:text-6xl xl:mb-2", sous: "xl:text-2xl", mt: "xl:mt-2", gap: "xl:gap-10", px: 128 },
+  lg: { logo: "xl:h-40 xl:w-40", wordmark: "xl:text-7xl xl:mb-3", sous: "xl:text-3xl", mt: "xl:mt-3", gap: "xl:gap-12", px: 160 },
+} as const;
+
 export default function HeaderStacked({ header }: HeaderStackedProps) {
   useLoadNamespace("components/layout");
   const t = useT("components/layout");
@@ -74,6 +111,8 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
     io.observe(el);
     return () => io.disconnect();
   }, []);
+
+  const marque = MARQUE_BANDEAU[header.height ?? "md"];
 
   const navVisibility = useVisibilityList(header.nav.map((item) => item.visibility));
   const navItemsToDisplay = header.nav.filter((_, idx) => navVisibility[idx]);
@@ -103,29 +142,30 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
           contenu (logo/titre/sous-titre) + son padding. `xl:` est choisi (PAS `lg:`) pour
           matcher exactement le breakpoint où la barre en dessous bascule du hamburger à la
           nav complète (`hidden xl:flex` / `xl:hidden`, cf. plus bas) — sinon, entre 1024 et
-          1279px, le bandeau prendrait sa forme desktop (50vh, gros logo) au-dessus d'une
-          barre encore en mode mobile, un décalage visuel constaté à l'écran. Plancher à 50vh
-          à partir de `xl:` : partage moitié bandeau / moitié section "à la une" au premier
-          écran — le bandeau S'ÉTEND si son contenu dépasse ce plancher, jamais de clipping. */}
+          1279px, le bandeau prendrait sa forme desktop (plancher + gros logo) au-dessus d'une
+          barre encore en mode mobile, un décalage visuel constaté à l'écran. Le plancher lui-même
+          vient de `header.height` (cf. `PLANCHER_BANDEAU`) : il valait 50vh en dur — moitié bandeau
+          / moitié section suivante — jusqu'à ce qu'une accueil demande le quart d'écran. Le bandeau
+          S'ÉTEND si son contenu dépasse ce plancher, jamais de clipping. */}
       <header className="relative bg-neutral-800 bg-cover bg-center" style={bgStyle}>
         <div aria-hidden className="absolute inset-0 pointer-events-none dark:bg-background/90" />
         {/* `pb-16` : réserve les 56px que la barre (en marge négative, cf. plus bas)
             superpose au bas du bandeau + une fine respiration — le wordmark ne
             passe jamais sous la barre. */}
-        <div className="relative flex flex-col items-center justify-center px-4 pt-6 pb-16 xl:min-h-[50vh]">
-          <NavLink to={header.path || "/"} className="flex flex-col sm:flex-row items-center gap-3 sm:gap-5 xl:gap-12 text-center sm:text-left cursor-pointer group">
+        <div className={`relative flex flex-col items-center justify-center px-4 pt-4 pb-16 ${PLANCHER_BANDEAU[header.height ?? "md"]}`}>
+          <NavLink to={header.path || "/"} className={`flex flex-col sm:flex-row items-center gap-3 sm:gap-5 ${marque.gap} text-center sm:text-left cursor-pointer group`}>
             <HeaderLogo
               header={header}
               isOverlay
               iconTone="white"
-              imageClassName="h-11 w-11 sm:h-16 sm:w-16 xl:h-40 xl:w-40 shrink-0 object-contain transition-transform group-hover:scale-110"
-              iconClassName="w-11 h-11 sm:w-16 sm:h-16 xl:w-40 xl:h-40 shrink-0 transition-transform group-hover:scale-110"
-              imageHeight={160}
+              imageClassName={`h-11 w-11 sm:h-12 sm:w-12 ${marque.logo} shrink-0 object-contain transition-transform group-hover:scale-110`}
+              iconClassName={`w-11 h-11 sm:w-12 sm:h-12 ${marque.logo} shrink-0 transition-transform group-hover:scale-110`}
+              imageHeight={marque.px}
             />
             {(header.logoTitle || header.logoSubtitle) && (
               <span className="flex flex-col items-center sm:items-start leading-tight">
                 {header.logoTitle && (
-                  <span className="font-display text-2xl sm:text-3xl xl:text-7xl font-serif mb-1 sm:mb-1.5 xl:mb-3">
+                  <span className={`font-display text-2xl sm:text-2xl font-serif mb-1 sm:mb-1 ${marque.wordmark}`}>
                     {header.logoTitleAccent ? (
                       <>
                         {/* Wordmark 2 segments : `logoTitle` en `header.textColor` (repli noir)
@@ -148,7 +188,7 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
                   </span>
                 )}
                 {header.logoSubtitle && (
-                  <span className="whitespace-pre-line text-sm sm:text-base xl:text-3xl font-medium text-white mt-1 sm:mt-1.5 xl:mt-3">{t(header.logoSubtitle)}</span>
+                  <span className={`whitespace-pre-line text-sm sm:text-sm font-medium text-white mt-1 sm:mt-1 ${marque.mt} ${marque.sous}`}>{t(header.logoSubtitle)}</span>
                 )}
               </span>
             )}

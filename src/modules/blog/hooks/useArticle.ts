@@ -46,8 +46,13 @@ export function useArticle({ slug, id }: { slug?: string; id?: string }) {
     refetchOnWindowFocus: false,
   });
   const useSlug = !!slug;
+  const brut = useSlug ? bySlug.data : byId.data;
   return {
-    article: toArticle(useSlug ? bySlug.data : byId.data),
+    article: toArticle(brut),
+    // L'ENTITÉ SDK, à côté des données aplaties : `toArticle` n'en garde que `serverData`, or éditer
+    // ou supprimer exige l'instance elle-même (`delete()`, et le contrat qu'attend `DynamicEditModal`).
+    // Exposée telle quelle, sans cast : l'appelant décide de ce qu'il en fait.
+    entity: brut,
     isLoading: useSlug ? bySlug.isLoading : byId.isLoading,
     isError: useSlug ? bySlug.isError : byId.isError,
   };

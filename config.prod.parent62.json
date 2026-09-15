@@ -53,7 +53,7 @@
     "sticky": true,
     "transparent": true,
     "transparentMode": "auto",
-    "height": "lg",
+    "height": "sm",
     "utilities": {
       "themeSwitch": true,
       "langSwitch": true,
@@ -128,18 +128,6 @@
             "description": {
               "fr": "Les archives des éditions.",
               "en": "Archive of past editions."
-            }
-          },
-          {
-            "label": {
-              "fr": "Contact",
-              "en": "Contact"
-            },
-            "path": "/contact",
-            "icon": "mail",
-            "description": {
-              "fr": "Écrire au réseau.",
-              "en": "Write to the network."
             }
           },
           {
@@ -442,30 +430,138 @@
       },
       "sections": [
         {
-          "type": "featured-carousel",
-          "id": "home-featured-poi",
+          "type": "gridLayout",
+          "id": "home-une-territoires",
           "props": {
-            "badgeLabel": { "fr": "À la une :", "en": "Featured:" },
-            "ctaLabel": { "fr": "En savoir +", "en": "Learn more" },
-            "baseParams": {
-              "defaultTypes": ["poi"],
-              "defaultTags": ["A la une"],
-              "sourceKey": ["parent62"],
-              "defaultFields": ["name", "description", "shortDescription", "medias", "profilMediumImageUrl", "profilImageUrl", "slug", "tags"],
-              "indexStepList": 8
+            "leftColumns": 2,
+            "rightColumns": 2,
+            "gap": 6,
+            "leftSection": {
+              "type": "map-bubbles",
+              "id": "carte-territoires",
+              "props": {
+                "headline": { "fr": "Territoires", "en": "Territories" },
+                "subhead": {
+                  "fr": "Cliquez sur votre territoire pour en découvrir les actus !",
+                  "en": "Click your territory to discover its news!"
+                },
+                "backgroundImage": "/images/parent62/carte-territoire-teal.webp",
+                "backgroundImageAlt": {
+                  "fr": "Carte du Pas-de-Calais et ses territoires",
+                  "en": "Map of Pas-de-Calais and its territories"
+                },
+                "backgroundOverlay": { "from": "var(--p62-map-bg-from)", "to": "var(--p62-map-bg-to)" },
+                "items": [
+                  {
+                    "label": { "fr": "Calaisis", "en": "Calaisis" },
+                    "href": "/territoire/calaisis",
+                    "image": "/images/parent62/territoires/rond-orange.webp",
+                    "x": 33,
+                    "y": 15,
+                    "size": 15
+                  },
+                  {
+                    "label": { "fr": "Boulonnais", "en": "Boulonnais" },
+                    "href": "/territoire/boulonnais",
+                    "image": "/images/parent62/territoires/rond-rouge.webp",
+                    "x": 11,
+                    "y": 32,
+                    "size": 13
+                  },
+                  {
+                    "label": { "fr": "Audomarois", "en": "Audomarois" },
+                    "href": "/territoire/audomarois",
+                    "image": "/images/parent62/territoires/rond-jaune.webp",
+                    "x": 44,
+                    "y": 41,
+                    "size": 13.5
+                  },
+                  {
+                    "label": { "fr": "Entre Mer et Terres", "en": "Entre Mer et Terres" },
+                    "href": "/territoire/entre-mer-et-terres",
+                    "image": "/images/parent62/territoires/rond-bleu.webp",
+                    "x": 18,
+                    "y": 61,
+                    "size": 13
+                  },
+                  {
+                    "label": { "fr": "Ternois Bruaysis", "en": "Ternois Bruaysis" },
+                    "href": "/territoire/ternois-bruaysis",
+                    "image": "/images/parent62/territoires/rond-rose.webp",
+                    "x": 41,
+                    "y": 67,
+                    "size": 14.5
+                  },
+                  {
+                    "label": { "fr": "Artois", "en": "Artois" },
+                    "href": "/territoire/artois",
+                    "image": "/images/parent62/territoires/rond-vert-jaune.webp",
+                    "x": 63,
+                    "y": 43,
+                    "size": 15.5
+                  },
+                  {
+                    "label": { "fr": "FSM Lens-Liévin", "en": "FSM Lens-Liévin" },
+                    "href": "/territoire/familles-en-sol-mineur-lens-lievin",
+                    "image": "/images/parent62/territoires/rond-marron.webp",
+                    "x": 67,
+                    "y": 63,
+                    "size": 13
+                  },
+                  {
+                    "label": { "fr": "FSM Hénin-Carvin", "en": "FSM Hénin-Carvin" },
+                    "href": "/territoire/familles-en-sol-mineur-henin-carvin",
+                    "image": "/images/parent62/territoires/rond-rose-vif.webp",
+                    "x": 85,
+                    "y": 68,
+                    "size": 13
+                  },
+                  {
+                    "label": { "fr": "Arrageois", "en": "Arrageois" },
+                    "href": "/territoire/arrageois",
+                    "image": "/images/parent62/territoires/rond-violet.webp",
+                    "x": 80,
+                    "y": 82,
+                    "size": 13
+                  }
+                ]
+              }
             },
-            "resource": {
-              "descriptionField": "shortDescription"
+            "rightSection": {
+              "type": "featured-carousel",
+              "id": "home-featured-poi",
+              "props": {
+                "badgeLabel": { "fr": "À la une :", "en": "Featured:" },
+                "ctaLabel": { "fr": "En savoir +", "en": "Learn more" },
+                "baseParams": {
+                  "defaultTypes": ["poi"],
+                  "defaultTags": ["A la une"],
+                  "sourceKey": ["parent62"],
+                  "defaultFields": [
+                    "name",
+                    "description",
+                    "shortDescription",
+                    "medias",
+                    "profilMediumImageUrl",
+                    "profilImageUrl",
+                    "slug",
+                    "tags"
+                  ],
+                  "indexStepList": 8
+                },
+                "resource": { "descriptionField": "shortDescription" },
+                "itemAction": { "kind": "link", "to": "/blog/:slug", "toById": "/blog/id/:id" },
+                "background": "var(--p62-marine)",
+                "accentColor": "var(--p62-turquoise)",
+                "autoplay": true,
+                "autoplayIntervalMs": 6000
+              }
             },
-            "itemAction": {
-              "kind": "link",
-              "to": "/blog/:slug",
-              "toById": "/blog/id/:id"
-            },
-            "background": "var(--p62-marine)",
-            "accentColor": "var(--p62-turquoise)",
-            "autoplay": true,
-            "autoplayIntervalMs": 6000
+            "align": "stretch",
+            "rightWrapperClass": "overflow-hidden rounded-2xl [&>*>section]:py-2 [&>*>section]:flex [&>*>section]:flex-col",
+            "className": "pt-4 pb-0",
+            "leftWrapperClass": "rounded-2xl [&>*>section]:rounded-2xl [&>*>section>div:first-child]:rounded-2xl [&>*>section]:py-2",
+            "from": "md"
           }
         },
         {
@@ -505,103 +601,6 @@
                 },
                 "href": "/pro",
                 "color": "accent"
-              }
-            ]
-          }
-        },
-        {
-          "type": "map-bubbles",
-          "id": "carte-territoires",
-          "props": {
-            "headline": {
-              "fr": "Territoires",
-              "en": "Territories"
-            },
-            "subhead": {
-              "fr": "Cliquez sur votre territoire pour en découvrir les actus !",
-              "en": "Click your territory to discover its news!"
-            },
-            "backgroundImage": "/images/parent62/carte-territoire-teal.webp",
-            "backgroundImageAlt": {
-              "fr": "Carte du Pas-de-Calais et ses territoires",
-              "en": "Map of Pas-de-Calais and its territories"
-            },
-            "backgroundOverlay": {
-              "from": "var(--p62-map-bg-from)",
-              "to": "var(--p62-map-bg-to)"
-            },
-            "items": [
-              {
-                "label": { "fr": "Calaisis", "en": "Calaisis" },
-                "href": "/territoire/calaisis",
-                "image": "/images/parent62/territoires/rond-orange.webp",
-                "x": 33,
-                "y": 15,
-                "size": 15
-              },
-              {
-                "label": { "fr": "Boulonnais", "en": "Boulonnais" },
-                "href": "/territoire/boulonnais",
-                "image": "/images/parent62/territoires/rond-rouge.webp",
-                "x": 6,
-                "y": 32,
-                "size": 13
-              },
-              {
-                "label": { "fr": "Audomarois", "en": "Audomarois" },
-                "href": "/territoire/audomarois",
-                "image": "/images/parent62/territoires/rond-jaune.webp",
-                "x": 44,
-                "y": 41,
-                "size": 13.5
-              },
-              {
-                "label": { "fr": "Entre Mer et Terres", "en": "Entre Mer et Terres" },
-                "href": "/territoire/entre-mer-et-terres",
-                "image": "/images/parent62/territoires/rond-bleu.webp",
-                "x": 14,
-                "y": 61,
-                "size": 13
-              },
-              {
-                "label": { "fr": "Ternois Bruaysis", "en": "Ternois Bruaysis" },
-                "href": "/territoire/ternois-bruaysis",
-                "image": "/images/parent62/territoires/rond-rose.webp",
-                "x": 41,
-                "y": 67,
-                "size": 14.5
-              },
-              {
-                "label": { "fr": "Artois", "en": "Artois" },
-                "href": "/territoire/artois",
-                "image": "/images/parent62/territoires/rond-vert-jaune.webp",
-                "x": 63,
-                "y": 43,
-                "size": 15.5
-              },
-              {
-                "label": { "fr": "FSM Lens-Liévin", "en": "FSM Lens-Liévin" },
-                "href": "/territoire/familles-en-sol-mineur-lens-lievin",
-                "image": "/images/parent62/territoires/rond-marron.webp",
-                "x": 67,
-                "y": 63,
-                "size": 13
-              },
-              {
-                "label": { "fr": "FSM Hénin-Carvin", "en": "FSM Hénin-Carvin" },
-                "href": "/territoire/familles-en-sol-mineur-henin-carvin",
-                "image": "/images/parent62/territoires/rond-rose-vif.webp",
-                "x": 85,
-                "y": 68,
-                "size": 13
-              },
-              {
-                "label": { "fr": "Arrageois", "en": "Arrageois" },
-                "href": "/territoire/arrageois",
-                "image": "/images/parent62/territoires/rond-violet.webp",
-                "x": 80,
-                "y": 82,
-                "size": 13
               }
             ]
           }
@@ -648,114 +647,101 @@
           "type": "title",
           "id": "reseau-hero",
           "props": {
-            "title": {
-              "fr": "Du REAAP au Réseau Parentalité",
-              "en": "From REAAP to the Parenting Network"
-            },
+            "title": { "fr": "Du REAAP au Réseau Parentalité", "en": "From REAAP to the Parenting Network" },
             "subtitle": {
-              "fr": "Depuis 1999, le Pas-de-Calais tisse un réseau d'écoute et d'appui pour les parents — piloté par la CAF, animé par la Fédération des Centres Sociaux.",
-              "en": "Since 1999, Pas-de-Calais has woven a support network for parents — led by the CAF, run by the Federation of Social Centres."
+              "fr": "Le Pas-de-Calais fut l'un des premiers départements de France à organiser le dispositif REAAP. Vingt-cinq ans plus tard, le réseau est piloté par la CAF et animé au plus près des acteurs.",
+              "en": "Pas-de-Calais was one of the first departments in France to set up the REAAP scheme. Twenty-five years on, the network is led by the CAF and run close to the ground."
             },
             "align": "center",
             "size": "xl"
           }
         },
         {
-          "type": "timeline",
-          "id": "reseau-timeline",
+          "type": "content",
+          "id": "reseau-histoire",
           "props": {
-            "alternating": true,
-            "events": [
-              {
-                "title": {
-                  "fr": "1999 — Le 62, département pionnier",
-                  "en": "1999 — 62, a pioneer department"
-                },
-                "text": {
-                  "fr": "Dès la première circulaire REAAP du 9 mars 1999, une organisation multi-partenariale pilotée par la DDASS voit le jour dans le Pas-de-Calais.",
-                  "en": "From the very first REAAP circular of 9 March 1999, a multi-partner organisation led by the DDASS takes shape in Pas-de-Calais."
-                }
-              },
-              {
-                "title": {
-                  "fr": "2004 — La charte du REAAP 62",
-                  "en": "2004 — The REAAP 62 charter"
-                },
-                "text": {
-                  "fr": "Le 9 février 2004, le Préfet, la DDASS, le Conseil Général, la Fé.Dé.Caf 62 et l'Éducation Nationale signent la charte : 8 valeurs partagées.",
-                  "en": "On 9 February 2004, the Prefect, DDASS, County Council, Fé.Dé.Caf 62 and National Education sign the charter: 8 shared values."
-                }
-              },
-              {
-                "title": {
-                  "fr": "2014 — La CAF prend le pilotage",
-                  "en": "2014 — The CAF takes the lead"
-                },
-                "text": {
-                  "fr": "La CAF du Pas-de-Calais crée 9 postes de coordination répartis sur les territoires et impulse une nouvelle dynamique.",
-                  "en": "The CAF of Pas-de-Calais creates 9 coordination positions across the territories and sparks a new momentum."
-                }
-              },
-              {
-                "title": {
-                  "fr": "Aujourd'hui — Le Réseau Parentalité 62",
-                  "en": "Aujourd'hui — The Parenting Network 62"
-                },
-                "text": {
-                  "fr": "Parents, centres sociaux, associations, institutions : un maillage vivant sur les neuf territoires du département.",
-                  "en": "Parents, social centres, associations, institutions: a living web across the department's nine territories."
-                }
-              }
-            ]
+            "category": { "fr": "Depuis 1999", "en": "Since 1999" },
+            "title": { "fr": "Un département pionnier", "en": "A pioneer department" },
+            "description": {
+              "fr": "En 1999, le département du Pas-de-Calais a été l'un des premiers en France à avoir organisé le dispositif REAAP sur son territoire. Ainsi, dès mai 1999 et selon les directives de [la première circulaire REAAP du 9 mars 1999](https://www.parent62.org/wp-content/uploads/2009/08/circulaire-reaap-9-mars-1999.pdf), s'est mise très vite en place une organisation multi partenariale pilotée à l'époque par la Direction Départementale des Affaires Sanitaires et Sociales du Pas-de-Calais (DDASS 62), qui a structuré le réseau avec une animation départementale et locale.\n\nEn 2014, la CAF du Pas-de-Calais prend le pilotage de la démarche, crée 9 postes de coordonnateurs.trices sur l'ensemble du département, ainsi que 2 postes pour l'animation départementale, et impulse une nouvelle dynamique en développant l'animation du Réseau Parentalité 62 au plus près des acteurs.",
+              "en": "In 1999, Pas-de-Calais was one of the first departments in France to organise the REAAP scheme on its territory. From May 1999, following [the first REAAP circular of 9 March 1999](https://www.parent62.org/wp-content/uploads/2009/08/circulaire-reaap-9-mars-1999.pdf), a multi-partner organisation was quickly set up, led at the time by the department's health and social affairs directorate (DDASS 62), which structured the network with both departmental and local coordination.\n\nIn 2014, the CAF of Pas-de-Calais took over the lead, created 9 coordinator posts across the department plus 2 posts for departmental coordination, and gave fresh impetus by running the Parenting Network 62 as close as possible to its members."
+            },
+            "width": "wide"
           }
         },
         {
           "type": "content",
-          "id": "reseau-qui",
+          "id": "reseau-equipe",
           "props": {
-            "category": {
-              "fr": "Qui sommes-nous ?",
-              "en": "Who we are"
-            },
-            "title": {
-              "fr": "Un réseau piloté par la CAF, animé au quotidien",
-              "en": "A network led by the CAF, run day to day"
-            },
+            "category": { "fr": "Qui sommes-nous ?", "en": "Who we are" },
+            "title": { "fr": "L'équipe Réseau Parentalité 62", "en": "The Parenting Network 62 team" },
             "description": {
-              "fr": "Le Réseau Parentalité 62 soutient les parents dans leur rôle éducatif, rompt l'isolement, valorise les ressources des familles et met en réseau les acteurs : associations et groupes de parents, centres sociaux et espaces de vie sociale, CAF, Éducation Nationale, Conseil Départemental, UDAF et collectivités locales.",
-              "en": "The Parenting Network 62 supports parents in their educational role, breaks isolation, values family resources and connects stakeholders: parent groups, social centres, CAF, National Education, County Council, UDAF and local authorities."
+              "fr": "- **Un pilote : la CAF du Pas-de-Calais** — Sophie Halle, Conseillère Thématique Parentalité.\n- **Une coordination départementale** — Clarisse Feutry et Antoine Legrand, coordonnateurs du réseau, Fédération des Centres Sociaux du Nord-Pas-de-Calais.\n- **9 coordonnatrices parentalité** réparties sur l'ensemble des territoires, employées chacune par un centre social, travaillant en lien étroit avec l'Antenne de Développement Social (ADS Caf) de leur territoire.",
+              "en": "- **A lead: the CAF of Pas-de-Calais** — Sophie Halle, Parenting Policy Adviser.\n- **A departmental coordination** — Clarisse Feutry and Antoine Legrand, network coordinators, Federation of Social Centres of Nord-Pas-de-Calais.\n- **9 parenting coordinators** across the territories, each employed by a social centre and working closely with their territory's social development office (ADS Caf)."
             },
+            "image": "/images/parent62/plaquette-reseau-parentalite-62.jpg",
+            "imageHref": "https://www.parent62.org/wp-content/uploads/2023/04/plaket-pro_reseauparent62-2-modifiee.pdf",
+            "imageFit": "contain",
             "imagePosition": "right",
-            "stats": [
+            "links": [{ "label": { "fr": "Rencontrer l'équipe", "en": "Meet the team" }, "href": "/equipe" }],
+            "infoText": {
+              "fr": "Cliquez sur la plaquette pour télécharger la plaquette de communication du Réseau (PDF).",
+              "en": "Click the leaflet to download the network's communication leaflet (PDF)."
+            },
+            "width": "wide"
+          }
+        },
+        {
+          "type": "title",
+          "id": "reseau-objectif",
+          "props": {
+            "title": {
+              "fr": "L'objectif du Réseau Parentalité 62",
+              "en": "The goal of the Parenting Network 62"
+            },
+            "subtitle": {
+              "fr": "Dans le cadre du déploiement de la politique de soutien à la parentalité de la CAF du Pas-de-Calais, notre objectif est de soutenir les parents dans leur rôle éducatif, de rompre leur isolement en organisant rencontres, échanges et partages d'expériences, de valoriser leurs missions et leurs ressources, de susciter de nouvelles initiatives et d'encourager la mise en réseau de tous les acteurs qui contribuent à ces initiatives.",
+              "en": "As part of the CAF of Pas-de-Calais's parenting-support policy, our goal is to support parents in their educational role, to break their isolation by organising meetings, discussions and shared experience, to value their work and their resources, to spark new initiatives and to encourage networking between everyone who contributes to them."
+            },
+            "align": "center",
+            "size": "lg"
+          }
+        },
+        {
+          "type": "categories-grid",
+          "id": "reseau-membres",
+          "props": {
+            "headline": { "fr": "Les membres du réseau", "en": "Network members" },
+            "subhead": {
+              "fr": "Une synergie entre parents, professionnel.le.s et institutionnel.le.s",
+              "en": "A synergy between parents, professionals and institutions"
+            },
+            "variant": "frosted",
+            "columns": 3,
+            "cards": [
               {
-                "value": "1",
-                "label": {
-                  "fr": "pilote : la CAF du Pas-de-Calais",
-                  "en": "lead: the CAF of Pas-de-Calais"
+                "icon": "users",
+                "title": { "fr": "Parents et groupes de parents", "en": "Parents and parent groups" },
+                "subtitle": {
+                  "fr": "Des associations et groupes de parents acteurs (cafés des parents, groupes de pairs, des associations de parents, parents d'élèves…)",
+                  "en": "Parent associations and active parent groups (parent cafés, peer groups, parent associations, school parent bodies…)"
                 }
               },
               {
-                "value": "2",
-                "label": {
-                  "fr": "coordonnateurs départementaux",
-                  "en": "departmental coordinators"
+                "icon": "home",
+                "title": { "fr": "Centres Sociaux et EVS", "en": "Social centres and EVS" },
+                "subtitle": {
+                  "fr": "Des Centres Sociaux et des Espaces de Vie Sociale, associations et/ou établissements spécialisés (accompagnement social, petite enfance, enfance, familles, éducation, adolescence, handicap, situations familiales spécifiques, santé)",
+                  "en": "Social Centres and Social Life Spaces, associations and/or specialised establishments (social support, early years, childhood, families, education, adolescence, disability, specific family situations, health)"
                 }
               },
               {
-                "value": "9",
-                "label": {
-                  "fr": "coordinations territoriales",
-                  "en": "territorial coordinations"
+                "icon": "landmark",
+                "title": { "fr": "Institutions et collectivités", "en": "Institutions and authorities" },
+                "subtitle": {
+                  "fr": "La CAF, l'Éducation Nationale, le Conseil Départemental, l'UDAF, l'EPDEF, les services des collectivités locales (Relais petite enfance, jeunesse, culture, famille, CCAS, PRE)…",
+                  "en": "The CAF, National Education, the County Council, UDAF, EPDEF, local authority services (early-years hubs, youth, culture, family, CCAS, PRE)…"
                 }
-              }
-            ],
-            "links": [
-              {
-                "label": {
-                  "fr": "Rencontrer l'équipe",
-                  "en": "Meet the team"
-                },
-                "href": "/equipe"
               }
             ]
           }
@@ -765,8 +751,8 @@
           "id": "reseau-valeurs",
           "props": {
             "headline": {
-              "fr": "8 valeurs partagées",
-              "en": "8 shared values"
+              "fr": "8 valeurs au service de la « cause des parents »",
+              "en": "8 values serving the parents' cause"
             },
             "subhead": {
               "fr": "Le socle commun de tous les acteurs du réseau, inscrit dans la charte du REAAP 62.",
@@ -776,10 +762,7 @@
             "features": [
               {
                 "icon": "users",
-                "title": {
-                  "fr": "La participation",
-                  "en": "Participation"
-                },
+                "title": { "fr": "La participation", "en": "Participation" },
                 "description": {
                   "fr": "Les parents participent aux actions qui les concernent, eux ou leurs enfants.",
                   "en": "Parents take part in the actions that concern them or their children."
@@ -788,10 +771,7 @@
               },
               {
                 "icon": "heart-handshake",
-                "title": {
-                  "fr": "La co-éducation",
-                  "en": "Co-education"
-                },
+                "title": { "fr": "La co-éducation", "en": "Co-education" },
                 "description": {
                   "fr": "Les parents, premiers éducateurs, entourés d'une chaîne éducative cohérente.",
                   "en": "Parents, the first educators, supported by a coherent educational chain."
@@ -800,10 +780,7 @@
               },
               {
                 "icon": "shapes",
-                "title": {
-                  "fr": "La diversité",
-                  "en": "Diversity"
-                },
+                "title": { "fr": "La diversité", "en": "Diversity" },
                 "description": {
                   "fr": "Toutes les formes d'exercice de la fonction parentale sont prises en compte.",
                   "en": "Every form of parenting is taken into account."
@@ -812,10 +789,7 @@
               },
               {
                 "icon": "users-round",
-                "title": {
-                  "fr": "La mixité sociale",
-                  "en": "Social diversity"
-                },
+                "title": { "fr": "La mixité sociale", "en": "Social diversity" },
                 "description": {
                   "fr": "Des actions ouvertes à tous les parents, pour préserver la cohésion sociale.",
                   "en": "Actions open to all parents, preserving social cohesion."
@@ -824,10 +798,7 @@
               },
               {
                 "icon": "map-pin",
-                "title": {
-                  "fr": "La priorité du territoire",
-                  "en": "Territory first"
-                },
+                "title": { "fr": "La priorité du territoire", "en": "Territory first" },
                 "description": {
                   "fr": "Les réseaux et solidarités grandissent sur les lieux de vie des familles.",
                   "en": "Networks and solidarity grow where families live."
@@ -836,10 +807,7 @@
               },
               {
                 "icon": "sprout",
-                "title": {
-                  "fr": "Le soutien à l'initiative",
-                  "en": "Backing initiative"
-                },
+                "title": { "fr": "Le soutien à l'initiative", "en": "Backing initiative" },
                 "description": {
                   "fr": "Institutions, élus et associations soutiennent les initiatives locales.",
                   "en": "Institutions, elected officials and associations back local initiatives."
@@ -848,10 +816,7 @@
               },
               {
                 "icon": "heart",
-                "title": {
-                  "fr": "La solidarité intergénérationnelle",
-                  "en": "Intergenerational solidarity"
-                },
+                "title": { "fr": "La solidarité intergénérationnelle", "en": "Intergenerational solidarity" },
                 "description": {
                   "fr": "Grands-parents, beaux-parents : la parentalité se partage en famille.",
                   "en": "Grandparents, step-parents: parenting is shared within the family."
@@ -860,10 +825,7 @@
               },
               {
                 "icon": "message-circle",
-                "title": {
-                  "fr": "L'échange",
-                  "en": "Exchange"
-                },
+                "title": { "fr": "L'échange", "en": "Exchange" },
                 "description": {
                   "fr": "Des lieux ressources accessibles pour se rencontrer et échanger.",
                   "en": "Accessible resource centres to meet and share."
@@ -874,86 +836,39 @@
           }
         },
         {
-          "type": "faq",
-          "id": "reseau-faq",
+          "type": "title",
+          "id": "reseau-parentalite",
           "props": {
-            "accordion": true,
-            "items": [
-              {
-                "q": {
-                  "fr": "Qu'est-ce que la parentalité ?",
-                  "en": "What is parenting (« parentalité »)?"
-                },
-                "a": {
-                  "fr": "« L'ensemble des façons d'être et de vivre le fait d'être parent » : le lien entre l'adulte et l'enfant, quelle que soit la structure familiale. Définition validée en 2011 par le Comité National de Soutien à la Parentalité.",
-                  "en": "\"All the ways of being and living as a parent\": the bond between adult and child, whatever the family structure. Definition endorsed in 2011 by the national parenting support committee."
-                }
-              },
-              {
-                "q": {
-                  "fr": "Qu'est-ce qu'un REAAP ?",
-                  "en": "What is a REAAP?"
-                },
-                "a": {
-                  "fr": "Un Réseau d'Écoute, d'Appui et d'Accompagnement des Parents : un cadre national créé en 1999, piloté par la CNAF et mis en œuvre par chaque CAF départementale, qui finance chaque année les initiatives de soutien à la parentalité.",
-                  "en": "A national parents' support network framework created in 1999, steered by the CNAF and implemented by each departmental CAF, funding parenting-support initiatives every year."
-                }
-              },
-              {
-                "q": {
-                  "fr": "Qui sont les membres du réseau ?",
-                  "en": "Who are the network members?"
-                },
-                "a": {
-                  "fr": "Des associations et groupes de parents (cafés des parents, groupes de pairs), des Centres Sociaux et Espaces de Vie Sociale, la CAF, l'Éducation Nationale, le Conseil Départemental, l'UDAF et des collectivités locales.",
-                  "en": "Parent associations and groups, social centres, the CAF, National Education, the County Council, UDAF and local authorities."
-                }
-              },
-              {
-                "q": {
-                  "fr": "Qu'est-ce que l'INFORESO ?",
-                  "en": "What is INFORESO?"
-                },
-                "a": {
-                  "fr": "La lettre d'information du Réseau Parentalité 62 : projets, actions, actualités et agenda des rencontres du réseau.",
-                  "en": "The Parenting Network 62 newsletter: projects, actions, news and the network's meeting agenda."
-                }
-              }
-            ]
+            "title": { "fr": "Qu'est-ce que la parentalité ?", "en": "What is parenting (« parentalité »)?" },
+            "subtitle": {
+              "fr": "La parentalité désigne « l'ensemble des façons d'être et de vivre le fait d'être parent. C'est un processus qui conjugue les différentes dimensions de la fonction parentale, matérielle, psychologique, morale, culturelle, sociale. Elle qualifie le lien entre l'adulte et un enfant, quelle que soit la structure familiale dans laquelle il s'inscrit, dans le but d'assurer le soin, le développement et l'éducation de l'enfant. Cette relation adulte/enfant suppose un ensemble de fonctions, de droits et d'obligations (morales, matérielles, juridiques, éducatives, culturelles) exercés dans l'intérêt supérieur de l'enfant en vertu d'un lien prévu par le droit (autorité parentale). Elle s'inscrit dans l'environnement social et éducatif où vivent la famille et l'enfant ». Définition validée en 2011 par le Comité national de soutien à la parentalité (CNSP), placé auprès du ministre en charge de la famille.",
+              "en": "Parenting means \"all the ways of being and living the fact of being a parent. It is a process combining the different dimensions of the parental role — material, psychological, moral, cultural and social. It describes the bond between an adult and a child, whatever the family structure it belongs to, with the aim of ensuring the child's care, development and education. This adult/child relationship implies a set of functions, rights and obligations (moral, material, legal, educational, cultural) exercised in the child's best interests by virtue of a bond provided for in law (parental authority). It is embedded in the social and educational environment in which the family and the child live.\" Definition endorsed in 2011 by France's national parenting-support committee (CNSP), attached to the minister responsible for family affairs."
+            },
+            "align": "center",
+            "size": "lg"
           }
         },
         {
-          "type": "cta",
-          "id": "reseau-cta",
+          "type": "content",
+          "id": "reseau-inforeso",
           "props": {
-            "headline": {
-              "fr": "Envie de rejoindre la dynamique ?",
-              "en": "Want to join the movement?"
+            "category": { "fr": "La lettre d'information", "en": "The newsletter" },
+            "title": { "fr": "INFORESO", "en": "INFORESO" },
+            "description": {
+              "fr": "**INFORESO**, la lettre d'information du Réseau Parentalité 62, permet à ses membres, mais aussi à un public plus large, de prendre connaissance des projets mis en place par les 9 comités locaux, des actions parentalité engagées sur les territoires, de l'actualité (nationale et départementale), des publications sur la thématique parentalité, de l'agenda des rencontres.",
+              "en": "**INFORESO**, the Parenting Network 62 newsletter, lets members and a wider audience follow the projects run by the 9 local committees, the parenting actions under way across the territories, national and departmental news, publications on parenting, and the network's meeting agenda."
             },
-            "subhead": {
-              "fr": "Partagez les valeurs de la charte, participez aux rencontres de votre territoire.",
-              "en": "Share the charter's values, join your territory's meetings."
-            },
-            "backgroundColor": "color-mix(in oklab, var(--primary) 8%, var(--background))",
-            "buttons": [
+            "image": "/images/parent62/inforeso-couverture.jpg",
+            "imageHref": "/ressources",
+            "imageFit": "contain",
+            "imagePosition": "left",
+            "links": [
               {
-                "label": {
-                  "fr": "Lire la charte",
-                  "en": "Read the charter"
-                },
-                "href": "/charte",
-                "variant": "default"
-              },
-              {
-                "label": {
-                  "fr": "Contacter l'équipe",
-                  "en": "Contact the team"
-                },
-                "href": "/equipe",
-                "variant": "outline"
+                "label": { "fr": "Voir les ressources du réseau", "en": "Browse the network's resources" },
+                "href": "/ressources"
               }
             ],
-            "align": "center"
+            "width": "wide"
           }
         }
       ]
@@ -999,139 +914,311 @@
           "type": "content",
           "id": "charte-intro",
           "props": {
-            "category": {
-              "fr": "Le texte fondateur",
-              "en": "The founding text"
-            },
-            "title": {
-              "fr": "Une alliance autour des familles",
-              "en": "An alliance around families"
-            },
+            "category": { "fr": "Le texte fondateur", "en": "The founding text" },
+            "title": { "fr": "Une alliance autour des familles", "en": "An alliance around families" },
             "description": {
-              "fr": "La charte a été signée le 9 février 2004 par le Préfet du Pas-de-Calais, la DDASS, le Conseil Général, la Fé.Dé.Caf 62 et l'Éducation Nationale. Elle définit les valeurs communes de tous ceux qui accompagnent les familles du département.",
-              "en": "The charter was signed on 9 February 2004 by the Prefect of Pas-de-Calais, the DDASS, the County Council, the Fé.Dé.Caf 62 and National Education. It sets the common values of everyone supporting the department's families."
+              "fr": "La charte a été signée le 9 février 2004 par le Préfet du Pas-de-Calais, la DDASS, le Conseil Général, la Fé.Dé.Caf 62 et l'Éducation Nationale. Elle définit les valeurs communes de tous ceux qui accompagnent les familles du département. À ce jour, [74 acteurs départementaux](https://www.parent62.org/wp-content/uploads/2021/10/signataires_de_la_charte-octobre-2021.pdf) sont signataires de la charte du REAAP du Pas-de-Calais.",
+              "en": "The charter was signed on 9 February 2004 by the Prefect of Pas-de-Calais, the DDASS, the County Council, the Fé.Dé.Caf 62 and National Education. It sets the common values of everyone supporting the department's families. To date, [74 departmental stakeholders](https://www.parent62.org/wp-content/uploads/2021/10/signataires_de_la_charte-octobre-2021.pdf) have signed the REAAP charter of Pas-de-Calais."
             },
             "imagePosition": "right",
             "stats": [
-              {
-                "value": "2004",
-                "label": {
-                  "fr": "année de signature",
-                  "en": "year signed"
-                }
-              },
-              {
-                "value": "74",
-                "label": {
-                  "fr": "acteurs signataires",
-                  "en": "signatories"
-                }
-              },
-              {
-                "value": "8",
-                "label": {
-                  "fr": "valeurs partagées",
-                  "en": "shared values"
-                }
-              }
-            ]
+              { "value": "2004", "label": { "fr": "année de signature", "en": "year signed" } },
+              { "value": "74", "label": { "fr": "acteurs signataires", "en": "signatories" } },
+              { "value": "8", "label": { "fr": "valeurs partagées", "en": "shared values" } }
+            ],
+            "align": "center"
           }
         },
         {
-          "type": "accordion",
-          "id": "charte-valeurs",
+          "type": "cards",
+          "id": "charte-signataires",
           "props": {
-            "allowMultiple": true,
+            "showHeader": true,
+            "headerTitle": { "fr": "Les signataires depuis 2009", "en": "Signatories since 2009" },
+            "layout": "grid",
+            "variant": "default",
+            "columns": 3,
             "items": [
               {
+                "icon": "handshake",
+                "title": { "fr": "6 nouveaux adhérents", "en": "6 new members" },
+                "text": { "fr": "04 décembre 2009", "en": "4 December 2009" },
+                "href": "/blog/laCharteDesReaap6204DecembreAArques"
+              },
+              {
+                "icon": "handshake",
                 "title": {
-                  "fr": "La participation",
-                  "en": "Participation"
+                  "fr": "La communauté de communes de Desvres-Samer",
+                  "en": "The Desvres-Samer community of communes"
                 },
-                "defaultOpen": true,
-                "content": {
-                  "fr": "La participation des parents aux actions qui les concernent, eux ou leurs enfants, est un objectif central du réseau.",
-                  "en": "Parents' participation in the actions that concern them or their children is a central goal of the network."
+                "text": { "fr": "Septembre 2010", "en": "September 2010" }
+              },
+              {
+                "icon": "handshake",
+                "title": { "fr": "La ville de Berck-sur-Mer", "en": "The town of Berck-sur-Mer" },
+                "text": { "fr": "19 novembre 2010", "en": "19 November 2010" }
+              },
+              {
+                "icon": "handshake",
+                "title": {
+                  "fr": "Culture et Liberté, le 9 de Cœur, l'Association Pour la Solidarité Active (APSA)",
+                  "en": "Culture et Liberté, le 9 de Cœur, APSA"
+                },
+                "text": { "fr": "22 mai 2012", "en": "22 May 2012" }
+              },
+              {
+                "icon": "handshake",
+                "title": { "fr": "La Ville d'Arques", "en": "The town of Arques" },
+                "text": { "fr": "14 septembre 2013", "en": "14 September 2013" },
+                "href": "/blog/arLespacePetiteEnfanceDeLaVilleDarquesLeSamedi14Septembre2013"
+              },
+              {
+                "icon": "handshake",
+                "title": {
+                  "fr": "Le Centre de Loisirs de la Porte de Paris – CLAEPP à Calais",
+                  "en": "The Porte de Paris leisure centre – CLAEPP, Calais"
+                },
+                "text": { "fr": "26 novembre 2013", "en": "26 November 2013" },
+                "href": "/blog/arLeClaeppDeCalaisLe26Novembre2013AOlhain"
+              },
+              {
+                "icon": "handshake",
+                "title": { "fr": "La Ville de Lens", "en": "The town of Lens" },
+                "text": { "fr": "5 décembre 2013", "en": "5 December 2013" },
+                "href": "/blog/LensLe5Decembre2013AuCentreSocialDumasALens"
+              },
+              {
+                "icon": "handshake",
+                "title": {
+                  "fr": "Les associations LEA, ADPEP 62 et K-d'Abra",
+                  "en": "The associations LEA, ADPEP 62 and K-d'Abra"
+                },
+                "text": { "fr": "27 novembre 2014", "en": "27 November 2014" }
+              },
+              {
+                "icon": "handshake",
+                "title": {
+                  "fr": "Caféméléon, le café des enfants Nino' Kid, Maisnil-les-Ruitz et Sains-en-Gohelle",
+                  "en": "Caféméléon, the Nino' Kid children's café, Maisnil-les-Ruitz and Sains-en-Gohelle"
+                },
+                "text": {
+                  "fr": "19 novembre 2015 — Sains-en-Gohelle a signé de nouveau la charte",
+                  "en": "19 November 2015 — Sains-en-Gohelle signed the charter again"
+                },
+                "href": "/blog/tementaleParentalite2015ParentsProfessionnelsPartenairesANousDeJouer"
+              },
+              {
+                "icon": "handshake",
+                "title": {
+                  "fr": "Le Centre Social Kaléido à Noyelles-sous-Lens",
+                  "en": "The Kaléido social centre, Noyelles-sous-Lens"
+                },
+                "text": { "fr": "9 septembre 2016", "en": "9 September 2016" },
+                "href": "/blog/communeDeNoyellessouslensLeVendredi9Septembre2016AuCentreSocialKaleido"
+              },
+              {
+                "icon": "handshake",
+                "title": {
+                  "fr": "L'AADCMO et la ville de Lillers",
+                  "en": "The AADCMO and the town of Lillers"
+                },
+                "text": {
+                  "fr": "7 novembre 2016, lors de l'inauguration de la Quinzaine de la Parentalité au Parc départemental d'Olhain",
+                  "en": "7 November 2016, at the opening of the Parenting Fortnight at the Olhain country park"
                 }
               },
               {
+                "icon": "handshake",
                 "title": {
-                  "fr": "Le soutien à l'initiative",
-                  "en": "Backing initiative"
+                  "fr": "Le Centre Socioculturel Intercommunal d'Hucqueliers",
+                  "en": "The Hucqueliers intermunicipal socio-cultural centre"
                 },
-                "defaultOpen": false,
-                "content": {
-                  "fr": "Institutions et professionnels, élus locaux et responsables associatifs ont pour responsabilité d'aider et de soutenir les initiatives des parents et des acteurs locaux.",
-                  "en": "Institutions, professionals, local officials and association leaders have a duty to help and support the initiatives of parents and local actors."
-                }
+                "text": {
+                  "fr": "10 novembre 2016 à Ecuires — voir les photos",
+                  "en": "10 November 2016 in Ecuires — see the photos"
+                },
+                "href": "https://drive.google.com/drive/u/0/folders/0B4jmepbWYs9RT3RpSjBIaHZXYzA"
               },
               {
-                "title": {
-                  "fr": "La co-éducation",
-                  "en": "Co-education"
-                },
-                "defaultOpen": false,
-                "content": {
-                  "fr": "Les parents sont les premiers éducateurs de leurs enfants. À leurs côtés, plusieurs acteurs forment une chaîne éducative cohérente.",
-                  "en": "Parents are their children's first educators. Alongside them, several actors form a coherent educational chain."
-                }
+                "icon": "handshake",
+                "title": { "fr": "La ville de Marquise", "en": "The town of Marquise" },
+                "text": { "fr": "16 novembre 2016", "en": "16 November 2016" }
               },
               {
+                "icon": "handshake",
                 "title": {
-                  "fr": "La mixité sociale",
-                  "en": "Social diversity"
+                  "fr": "Le club de prévention Avenir des cités à Harnes",
+                  "en": "The Avenir des cités prevention club, Harnes"
                 },
-                "defaultOpen": false,
-                "content": {
-                  "fr": "Les interventions des acteurs sociaux doivent veiller à être ouvertes à l'ensemble des parents et à préserver la cohésion sociale.",
-                  "en": "Social actors' interventions must remain open to all parents and preserve social cohesion."
-                }
+                "text": { "fr": "25 octobre 2017", "en": "25 October 2017" },
+                "href": "/blog/clubDePreventionDeHarnesAvenirsDesCites"
               },
               {
-                "title": {
-                  "fr": "La solidarité intergénérationnelle",
-                  "en": "Intergenerational solidarity"
-                },
-                "defaultOpen": false,
-                "content": {
-                  "fr": "Au sein d'une famille, la parentalité est souvent partagée avec les grands-parents, les beaux-parents et les autres membres.",
-                  "en": "Within a family, parenting is often shared with grandparents, step-parents and other members."
-                }
+                "icon": "handshake",
+                "title": { "fr": "La ville de Bully-les-Mines", "en": "The town of Bully-les-Mines" },
+                "text": { "fr": "15 mai 2019", "en": "15 May 2019" }
               },
               {
-                "title": {
-                  "fr": "La diversité",
-                  "en": "Diversity"
+                "icon": "handshake",
+                "title": { "fr": "Le CCAS de Lillers", "en": "The Lillers CCAS" },
+                "text": {
+                  "fr": "22 octobre 2021, à l'occasion de l'inauguration du LAEP « La p'tite bulle », lors de la Semaine de la Parentalité",
+                  "en": "22 October 2021, at the opening of the « La p'tite bulle » LAEP during Parenting Week"
                 },
-                "defaultOpen": false,
-                "content": {
-                  "fr": "Les différentes formes d'exercice de la fonction parentale doivent être prises en compte.",
-                  "en": "The different forms of parenting must be taken into account."
-                }
-              },
-              {
-                "title": {
-                  "fr": "L'échange",
-                  "en": "Exchange"
-                },
-                "defaultOpen": false,
-                "content": {
-                  "fr": "Le développement de centres ressources, décentralisés et facilement accessibles, est souhaitable pour permettre la rencontre et l'échange.",
-                  "en": "Decentralised, easily accessible resource centres foster meeting and exchange."
-                }
-              },
-              {
-                "title": {
-                  "fr": "La priorité du territoire",
-                  "en": "Territory first"
-                },
-                "defaultOpen": false,
-                "content": {
-                  "fr": "C'est sur les territoires de vie des personnes que se développent les réseaux et les solidarités.",
-                  "en": "Networks and solidarity develop where people actually live."
-                }
+                "href": "/blog/signatureDeLaCharteReaapParLeCcasDeLillers"
               }
-            ]
+            ],
+            "className": "bg-secondary/30"
+          }
+        },
+        {
+          "type": "cards",
+          "id": "charte-photos",
+          "props": {
+            "layout": "grid",
+            "variant": "default",
+            "columns": 3,
+            "items": [
+              {
+                "image": "/images/parent62/charte-bully-les-mines-2019.jpg",
+                "title": { "fr": "La ville de Bully-les-Mines", "en": "The town of Bully-les-Mines" },
+                "text": {
+                  "fr": "À l'occasion du temps fort « Printemps des Familles », le 15 mai 2019",
+                  "en": "During the « Printemps des Familles » event, 15 May 2019"
+                }
+              },
+              {
+                "image": "/images/parent62/charte-harnes-2017.jpg",
+                "title": {
+                  "fr": "Le club de prévention « Avenir des cités » à Harnes",
+                  "en": "The « Avenir des cités » prevention club, Harnes"
+                },
+                "text": { "fr": "Le 25 octobre 2017", "en": "25 October 2017" }
+              },
+              {
+                "image": "/images/parent62/charte-noyelles-sous-lens-2016.jpg",
+                "title": {
+                  "fr": "Le Centre Social Kaléido à Noyelles-sous-Lens",
+                  "en": "The Kaléido social centre, Noyelles-sous-Lens"
+                },
+                "text": { "fr": "Le 9 septembre 2016", "en": "9 September 2016" }
+              }
+            ],
+            "className": "bg-background"
+          }
+        },
+        {
+          "type": "html",
+          "id": "charte-elaboration",
+          "props": {
+            "html": {
+              "fr": "<div class=\"py-16\"><div class=\"container mx-auto px-6\"><div class=\"prose prose-theme mx-auto max-w-2xl text-center text-muted-foreground leading-relaxed\"><p>Élaborée par des acteurs locaux associatifs et institutionnels engagés dans le soutien à la parentalité, la charte du REAAP 62 a été validée et signée <strong>le 9 février 2004</strong>, par le Préfet du Pas-de-Calais, la DDASS, le Conseil Général, la Fé.Dé.Caf 62 et l’Éducation Nationale.</p><p>Réalisé par le comité local de l’Audomarois, le film <strong>« La charte départementale en images »</strong> illustre nos valeurs.</p></div></div></div>",
+              "en": "<div class=\"py-16\"><div class=\"container mx-auto px-6\"><div class=\"prose prose-theme mx-auto max-w-2xl text-center text-muted-foreground leading-relaxed\"><p>Drawn up by local voluntary and institutional actors involved in parenting support, the REAAP 62 charter was approved and signed <strong>on 9 February 2004</strong> by the Prefect of Pas-de-Calais, the DDASS, the County Council, the Fé.Dé.Caf 62 and National Education.</p><p>Made by the Audomarois local committee, the film <strong>« The departmental charter in pictures »</strong> illustrates our values.</p></div></div></div>"
+            }
+          }
+        },
+        {
+          "type": "cta-card-grid",
+          "id": "charte-valeurs",
+          "props": {
+            "headline": { "fr": "La Charte du REAAP 62", "en": "The REAAP 62 charter" },
+            "subhead": {
+              "fr": "8 valeurs au service de la « cause des parents ».",
+              "en": "8 values serving the parents' cause."
+            },
+            "variant": "accent",
+            "bg": "secondary",
+            "actions": [
+              {
+                "icon": "users",
+                "title": { "fr": "La participation", "en": "Participation" },
+                "description": {
+                  "fr": "La participation des parents aux actions qui les concernent, eux ou leurs enfants, est un objectif central. Toutes les actions collectives visent à favoriser leur implication avec les professionnels, les autres parents, les enfants eux-mêmes.",
+                  "en": "Parents' participation in the actions that concern them or their children is a central objective. Every collective action aims to encourage their involvement alongside professionals, other parents and the children themselves."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x8q4s0",
+                "color": "primary"
+              },
+              {
+                "icon": "sprout",
+                "title": { "fr": "Le soutien à l'initiative", "en": "Backing initiative" },
+                "description": {
+                  "fr": "Institutions et professionnels, élus locaux et responsables associatifs ont pour responsabilité d'aider et de soutenir les initiatives. Ils doivent les susciter, favoriser leur adaptation et leur inscription dans le temps.",
+                  "en": "Institutions and professionals, elected representatives and association leaders have a responsibility to help and support initiatives. They must prompt them, help them adapt and help them last."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x8q5dk",
+                "color": "accent"
+              },
+              {
+                "icon": "heart-handshake",
+                "title": { "fr": "La co-éducation", "en": "Co-education" },
+                "description": {
+                  "fr": "Les parents sont les premiers éducateurs de leurs enfants. À leur côté, plusieurs acteurs forment une chaîne éducative qui permet à l'enfant de devenir un adulte intégré, autonome, responsable. Les intervenants sociaux et éducatifs veilleront à coordonner leurs interventions, rendant possible une démarche de co-éducation, dans le respect des rôles et des statuts de chacun, en associant les parents et en plaçant l'intérêt de l'enfant au cœur des préoccupations. La mise en synergie de toutes les actions contribue au développement de l'enfant, dans le respect de tous ses droits.",
+                  "en": "Parents are their children's first educators. Alongside them, several actors form an educational chain that helps the child become an integrated, autonomous and responsible adult. Social and educational workers coordinate their action to make co-education possible, respecting each person's role and status, involving parents and placing the child's interest at the heart of their concerns. Bringing all actions into synergy contributes to the child's development, with respect for all their rights."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x8q5qb",
+                "color": "chart-2"
+              },
+              {
+                "icon": "users-round",
+                "title": { "fr": "La mixité sociale", "en": "Social diversity" },
+                "description": {
+                  "fr": "Les interventions des acteurs sociaux, les initiatives locales doivent veiller à être ouvertes à l'ensemble des parents, à préserver la cohésion sociale des territoires et à éviter de stigmatiser ceux qui y participent.",
+                  "en": "The action of social workers and local initiatives must be open to all parents, preserve the social cohesion of the territories and avoid stigmatising those who take part."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x9grwo",
+                "color": "chart-3"
+              },
+              {
+                "icon": "heart",
+                "title": { "fr": "La solidarité intergénérationnelle", "en": "Intergenerational solidarity" },
+                "description": {
+                  "fr": "Au sein d'une famille, la parentalité est souvent partagée avec les grands-parents, les beaux-parents, les autres membres de la fratrie etc… Toute intervention doit respecter et encourager ce partage. Le rôle des grands-parents et la dimension intergénérationnelle de la parentalité sont à promouvoir.",
+                  "en": "Within a family, parenting is often shared with grandparents, step-parents, siblings and others. Every intervention must respect and encourage that sharing. The role of grandparents and the intergenerational dimension of parenting are to be promoted."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x8q6a8",
+                "color": "primary"
+              },
+              {
+                "icon": "shapes",
+                "title": { "fr": "La diversité", "en": "Diversity" },
+                "description": {
+                  "fr": "Les différentes formes d'exercice de la fonction parentale doivent être prises en compte. La diversité et la variété des formes de la famille, la présence sur les territoires de cultures et de modes de vie différents doivent être considérées comme une richesse, dans le respect des droits de l'enfant et dans le cadre de la Loi.",
+                  "en": "The different ways of exercising the parental role must be taken into account. The diversity of family forms and the presence of different cultures and ways of life across the territories are to be seen as a strength, with respect for children's rights and within the law."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x9grw8",
+                "color": "accent"
+              },
+              {
+                "icon": "message-circle",
+                "title": { "fr": "L'échange", "en": "Exchange" },
+                "description": {
+                  "fr": "Le champ de l'aide à la parentalité est vaste, il fait intervenir une multitude d'acteurs, d'initiatives, de projets, qu'il est intéressant de soutenir et de fédérer. Le développement de centres ressources, décentralisés et facilement accessibles, est souhaitable pour favoriser une évaluation partagée, des initiatives et leur valorisation par l'échange, la formation et l'information.",
+                  "en": "Parenting support is a vast field involving a multitude of actors, initiatives and projects that are worth supporting and bringing together. Developing decentralised, easily accessible resource centres is desirable to encourage shared assessment of initiatives and to give them value through exchange, training and information."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x9grww",
+                "color": "chart-2"
+              },
+              {
+                "icon": "map-pin",
+                "title": { "fr": "La priorité du territoire", "en": "Territory first" },
+                "description": {
+                  "fr": "C'est sur les territoires de vie des personnes (commune, quartier, îlot…) que se développent les réseaux et les solidarités de voisinage susceptibles de favoriser l'exercice de responsabilité associations…",
+                  "en": "It is in people's living areas (town, neighbourhood, block…) that the networks and neighbourly solidarity likely to support the exercise of responsibility develop, associations…"
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x8q4z3",
+                "color": "chart-3"
+              }
+            ],
+            "columns": { "md": 2, "lg": 3 }
           }
         },
         {
@@ -1139,12 +1226,12 @@
           "id": "charte-adherer-titre",
           "props": {
             "title": {
-              "fr": "Adhérer à la charte",
-              "en": "Join the charter"
+              "fr": "Adhérer à la Charte du REAAP 62, c'est :",
+              "en": "Joining the REAAP 62 charter means:"
             },
             "subtitle": {
-              "fr": "Collectivités, associations, établissements scolaires : adhérer, c'est défendre les valeurs de la charte et conforter l'alliance avec les familles autour de l'éducation. Le dossier comporte trois pièces :",
-              "en": "Local authorities, associations, schools: joining means standing up for the charter's values. The application includes three documents:"
+              "fr": "Défendre et partager les valeurs qu'elle définit. Conforter l'alliance avec les familles autour de l'éducation de leurs enfants. Qui peut adhérer ? Les collectivités, les associations, les établissements scolaires… Votre dossier de candidature doit comporter :",
+              "en": "Standing up for and sharing the values it sets out. Strengthening the alliance with families around their children's education. Who can join? Local authorities, associations, schools… Your application must include:"
             },
             "align": "center",
             "size": "lg"
@@ -1158,81 +1245,30 @@
             "showProgress": false,
             "steps": [
               {
-                "title": {
-                  "fr": "Le courrier de demande",
-                  "en": "The application letter"
-                },
+                "title": { "fr": "Le courrier de demande", "en": "The application letter" },
                 "completed": false,
                 "icon": "mail",
                 "description": {
-                  "fr": "Un courrier de demande d'adhésion signé du responsable légal, retraçant les actions menées en direction des familles.",
-                  "en": "An application letter signed by the legal representative, describing the actions carried out for families."
+                  "fr": "Un courrier de demande d'adhésion signé du responsable légal. Il retracera les actions déjà menées sur le champ de la parentalité, qu'elles soient ou non financées dans le cadre du dispositif REAAP.",
+                  "en": "An application letter signed by the legal representative, setting out the parenting actions already carried out, whether or not funded under the REAAP scheme."
                 }
               },
               {
-                "title": {
-                  "fr": "La délibération",
-                  "en": "The deliberation"
-                },
+                "title": { "fr": "La délibération", "en": "The deliberation" },
                 "completed": false,
                 "icon": "gavel",
                 "description": {
-                  "fr": "Une délibération de l'instance dirigeante témoignant du débat autour de l'adhésion.",
-                  "en": "A decision of the governing body showing the membership was debated."
+                  "fr": "Une délibération de l'instance dirigeante (Conseil municipal, communautaire, d'administration) qui témoigne du débat autour des valeurs soutenues par la Charte, et de l'engagement de la structure candidate à les défendre dans son action quotidienne.",
+                  "en": "A decision of the governing body (municipal, community or management board) evidencing the debate on the values the charter upholds, and the applicant's commitment to defending them in its daily work."
                 }
               },
               {
-                "title": {
-                  "fr": "Les statuts",
-                  "en": "The statutes"
-                },
+                "title": { "fr": "Les statuts", "en": "The statutes" },
                 "completed": false,
                 "icon": "file-text",
                 "description": {
-                  "fr": "Une copie des statuts de la structure candidate.",
-                  "en": "A copy of the applicant organisation's statutes."
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "accordion",
-          "id": "charte-signataires",
-          "props": {
-            "allowMultiple": false,
-            "items": [
-              {
-                "title": {
-                  "fr": "Ils ont rejoint la charte : 2009 – 2012",
-                  "en": "They joined: 2009 – 2012"
-                },
-                "defaultOpen": false,
-                "content": {
-                  "fr": "6 nouveaux adhérents (décembre 2009) · Communauté de communes de Desvres-Samer (2010) · Ville de Berck-sur-Mer (2010) · Culture et Liberté, le 9 de Cœur, l'APSA (2012).",
-                  "en": "6 new members (December 2009) · Desvres-Samer community of communes (2010) · Town of Berck-sur-Mer (2010) · Culture et Liberté, le 9 de Cœur, APSA (2012)."
-                }
-              },
-              {
-                "title": {
-                  "fr": "2013 – 2016",
-                  "en": "2013 – 2016"
-                },
-                "defaultOpen": false,
-                "content": {
-                  "fr": "Ville d'Arques (2013) · CLAEPP à Calais (2013) · Ville de Lens (2013) · LEA, ADPEP 62, K-d'Abra (2014) · Caféméléon, Nino' Kid, Maisnil-les-Ruitz, Sains-en-Gohelle (2015) · Centre Social Kaléido à Noyelles-sous-Lens (2016) · AADCMO et ville de Lillers (2016) · Centre Socioculturel Intercommunal d'Hucqueliers (2016) · Ville de Marquise (2016).",
-                  "en": "Town of Arques (2013) · CLAEPP in Calais (2013) · Town of Lens (2013) · LEA, ADPEP 62, K-d'Abra (2014) · Caféméléon, Nino' Kid, Maisnil-les-Ruitz, Sains-en-Gohelle (2015) · Kaléido Social Centre (2016) · AADCMO and town of Lillers (2016) · Hucqueliers intermunicipal centre (2016) · Town of Marquise (2016)."
-                }
-              },
-              {
-                "title": {
-                  "fr": "2017 – 2021",
-                  "en": "2017 – 2021"
-                },
-                "defaultOpen": false,
-                "content": {
-                  "fr": "Club de prévention Avenir des cités à Harnes (2017) · Ville de Bully-les-Mines (2019) · CCAS de Lillers (2021).",
-                  "en": "Avenir des cités prevention club in Harnes (2017) · Town of Bully-les-Mines (2019) · Lillers CCAS (2021)."
+                  "fr": "Une copie des statuts (pour les Communautés de communes, d'agglomérations…, les associations) qui établissent leurs champs de compétences et objectifs.",
+                  "en": "A copy of the statutes (for communities of communes, agglomerations…, associations) establishing their remit and objectives."
                 }
               }
             ]
@@ -1242,22 +1278,19 @@
           "type": "cta",
           "id": "charte-cta",
           "props": {
-            "headline": {
-              "fr": "Prêt à rejoindre les 74 signataires ?",
-              "en": "Ready to join the 74 signatories?"
-            },
+            "headline": { "fr": "Votre dossier doit être adressé à la :", "en": "Send your application to:" },
             "subhead": {
-              "fr": "Adressez votre dossier à la CAF du Pas-de-Calais — Service Action Sociale, à l'attention de Sophie Halle, Quai de la gendarmerie, 62908 Calais Cedex · secretariat-action-sociale@caf62.caf.fr",
-              "en": "Send your application to the CAF of Pas-de-Calais — Social Action Department, attn. Sophie Halle, Quai de la gendarmerie, 62908 Calais Cedex · secretariat-action-sociale@caf62.caf.fr"
+              "fr": "CAF du PAS-DE-CALAIS — Site de CALAIS, Service Action Sociale. À l'attention de Sophie Halle, Conseillère Thématique Parentalité. Quai de la gendarmerie, 62908 CALAIS CEDEX. Si elles sont validées, les adhésions sont officialisées à l'occasion d'une cérémonie au cours de laquelle est paraphé le Livre d'Or du REAAP.",
+              "en": "CAF du PAS-DE-CALAIS — Calais site, Social Action Department. For the attention of Sophie Halle, Parenting Policy Adviser. Quai de la gendarmerie, 62908 CALAIS CEDEX. Once approved, memberships are made official at a ceremony where the REAAP's Golden Book is signed."
             },
-            "backgroundColor": "color-mix(in oklab, var(--accent) 12%, var(--background))",
+            "backgroundColor": "color-mix(in oklab, var(--accent) 18%, var(--background))",
             "buttons": [
               {
                 "label": {
-                  "fr": "Écrire au réseau",
-                  "en": "Write to the network"
+                  "fr": "Écrire au service Action Sociale",
+                  "en": "Email the Social Action Department"
                 },
-                "href": "/contact",
+                "href": "mailto:secretariat-action-sociale@caf62.caf.fr",
                 "variant": "default"
               }
             ],
@@ -1307,58 +1340,47 @@
           "type": "content",
           "id": "champs-reaap",
           "props": {
-            "category": {
-              "fr": "Depuis 1999",
-              "en": "Since 1999"
-            },
+            "category": { "fr": "Depuis 1999", "en": "Since 1999" },
             "title": {
               "fr": "REAAP — Réseaux d'Écoute, d'Appui et d'Accompagnement des Parents",
               "en": "REAAP — Parents' support networks"
             },
             "description": {
-              "fr": "Un cadre national fondé sur des valeurs fortes : l'enfant reconnu comme une personne, les parents premiers éducateurs, la cohérence éducative, le respect de la différence et l'ouverture à tous. La CNAF pilote le programme ; la CAF du Pas-de-Calais le met en œuvre et finance chaque année les initiatives locales via des appels à projets.",
-              "en": "A national framework built on strong values: the child recognised as a person, parents as first educators, educational coherence, respect for difference, openness to all. The CNAF steers the programme; the CAF implements it locally and funds initiatives through annual calls for projects."
+              "fr": "Dispositif national créé en 1999, ce dispositif national est piloté par la CNAF et sur chaque département par les CAF. Chaque année, un appel à projet est lancé sur chaque département pour le financement d'actions parentalité. Il s'appuie sur des valeurs fondamentales comme :",
+              "en": "A national scheme created in 1999, steered by the CNAF and, in each département, by the CAF. Every year a call for projects is launched in each département to fund parenting initiatives. It rests on core values such as:"
             },
             "imagePosition": "right",
-            "iconCard": {
-              "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M11 14h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16\"/><path d=\"m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9\"/><path d=\"m2 15 6 6\"/><path d=\"M19.5 8.5c.7-.7 1.5-1.6 1.5-2.7A2.73 2.73 0 0 0 16 4a2.78 2.78 0 0 0-5 1.8c0 1.2.8 2 1.5 2.8L16 12Z\"/></svg>"
-            },
             "tags": [
               {
-                "fr": "Parents",
-                "en": "Parents"
+                "fr": "La reconnaissance de l'enfant en tant que personne",
+                "en": "Recognising the child as a person"
               },
               {
-                "fr": "Appels à projets",
-                "en": "Calls for projects"
-              }
-            ],
-            "links": [
+                "fr": "La reconnaissance des parents comme premiers éducateurs de leur enfant",
+                "en": "Recognising parents as their child's first educators"
+              },
               {
-                "label": {
-                  "fr": "L'histoire du réseau",
-                  "en": "The network's story"
-                },
-                "href": "/reseau"
-              }
-            ]
+                "fr": "L'importance de la cohérence éducative autour de l'enfant",
+                "en": "The importance of educational coherence around the child"
+              },
+              { "fr": "Le respect de la différence", "en": "Respect for difference" },
+              { "fr": "L'ouverture à tous", "en": "Openness to all" }
+            ],
+            "width": "wide"
           }
         },
         {
           "type": "content",
           "id": "champs-clas",
           "props": {
-            "category": {
-              "fr": "Scolarité",
-              "en": "Schooling"
-            },
+            "category": { "fr": "Scolarité", "en": "Schooling" },
             "title": {
               "fr": "CLAS — Contrat Local d'Accompagnement à la Scolarité",
               "en": "CLAS — Local schooling support contract"
             },
             "description": {
-              "fr": "Des actions menées en dehors du temps scolaire, dans des espaces adaptés, en complément du travail de l'école : accompagnement personnalisé en petits groupes, méthodes d'apprentissage, accès au savoir et à la culture, apprentissage de la citoyenneté — et un appui aux parents dans le suivi de la scolarité de leurs enfants.",
-              "en": "Out-of-school actions in dedicated spaces, complementing schoolwork: personalised small-group support, learning methods, access to knowledge and culture, citizenship — and support for parents in following their children's schooling."
+              "fr": "**Il s'agit des actions d'accompagnement à la scolarité inscrites dans le cadre d'une charte nationale CLAS (Contrat Local d'Accompagnement à la Scolarité).**\n\nCes actions ont lieu en dehors du temps scolaire, dans des espaces adaptés, en complémentarité avec l'école.\n\n**Elles proposent aux parents :**\n– un soutien dans leur rôle éducatif,\n– un accompagnement scolaire personnalisé de l'enfant au sein de groupes de travail restreints.\n\n**Les actions d'accompagnement à la scolarité ont pour objectifs :**",
+              "en": "**These are school support activities framed by the national CLAS charter (Local Contract for School Support).**\n\nThey take place outside school hours, in suitable spaces, complementing the school.\n\n**They offer parents:**\n– support in their educational role,\n– personalised school support for the child in small working groups.\n\n**School support activities aim to:**"
             },
             "imagePosition": "left",
             "iconCard": {
@@ -1366,98 +1388,93 @@
             },
             "tags": [
               {
-                "fr": "Enfants",
-                "en": "Children"
+                "fr": "Aider les enfants à acquérir des méthodes",
+                "en": "Help children acquire study methods"
               },
               {
-                "fr": "Parents",
-                "en": "Parents"
+                "fr": "Faciliter leur accès au savoir et à la culture",
+                "en": "Ease their access to knowledge and culture"
+              },
+              {
+                "fr": "Promouvoir leur apprentissage à la citoyenneté",
+                "en": "Foster their learning of citizenship"
+              },
+              {
+                "fr": "Valoriser les acquis afin de renforcer leur autonomie",
+                "en": "Value what they have learnt to build autonomy"
+              },
+              {
+                "fr": "Soutenir les parents dans le suivi scolaire de leurs enfants",
+                "en": "Support parents in following their children's schooling"
               }
             ],
             "links": [
               {
                 "label": {
-                  "fr": "Les actus éducation",
-                  "en": "Education news"
+                  "fr": "Télécharger la brochure CLAS sur mon-enfant.fr",
+                  "en": "Download the CLAS brochure on mon-enfant.fr"
                 },
+                "href": "http://www.mon-enfant.fr/c/document_library/get_file?uuid=d8a3e4a0-5837-4958-85e9-e699da8588ff&groupId=101"
+              },
+              {
+                "label": {
+                  "fr": "La vidéo « l'accompagnement à la scolarité » vue par les parents et les enfants",
+                  "en": "The video “school support” seen by parents and children"
+                },
+                "href": "http://www.mon-enfant.fr/web/guest/espace-doc-parents"
+              },
+              {
+                "label": { "fr": "Les actus éducation", "en": "Education news" },
                 "href": "/theme/leducation"
               }
-            ]
+            ],
+            "width": "wide",
+            "className": "bg-muted/40"
           }
         },
         {
           "type": "content",
           "id": "champs-laep",
           "props": {
-            "category": {
-              "fr": "Petite enfance",
-              "en": "Early childhood"
-            },
+            "category": { "fr": "Petite enfance", "en": "Early childhood" },
             "title": {
               "fr": "LAEP — Lieux d'Accueil Enfants-Parents",
-              "en": "LAEP — Parent-child centres"
+              "en": "LAEP — Parent-Child Drop-in Centres"
             },
             "description": {
-              "fr": "Des espaces ouverts aux jeunes enfants (moins de 4 ou 6 ans selon les lieux) accompagnés d'un adulte — parents, grands-parents, assistantes maternelles. Des accueillants y proposent un cadre convivial de jeu et d'échange, sans inscription ni suivi.",
-              "en": "Open spaces for young children (under 4 or 6 depending on the venue) with an accompanying adult — parents, grandparents, childminders. Hosts offer a friendly setting for play and exchange, with no registration required."
-            },
-            "imagePosition": "right",
-            "iconCard": {
-              "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 12h.01\"/><path d=\"M15 12h.01\"/><path d=\"M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5\"/><path d=\"M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1\"/></svg>"
+              "fr": "Les Lieux d'Accueil Enfant Parent sont ouverts à tous les petits enfants (moins de 4 ans ou moins de 6 ans selon les lieux) et aux adultes qui les accompagnent (parents, grands-parents, éventuellement assistantes maternelles, etc.). Des accueillants sont présents et offrent un espace convivial de jeux et d'échanges.",
+              "en": "Parent-Child Drop-in Centres welcome all young children (under 4 or under 6 depending on the venue) and the adults with them (parents, grandparents, sometimes childminders, etc.). Hosts are on hand and offer a friendly space for play and conversation."
             },
             "tags": [
               {
-                "fr": "0-6 ans",
-                "en": "Ages 0-6"
+                "fr": "Moins de 4 ans ou moins de 6 ans selon les lieux",
+                "en": "Under 4 or under 6 depending on the venue"
               },
               {
-                "fr": "En famille",
-                "en": "With family"
-              }
+                "fr": "Parents, grands-parents, assistantes maternelles",
+                "en": "Parents, grandparents, childminders"
+              },
+              { "fr": "Sans inscription", "en": "No registration" }
             ],
-            "links": [
-              {
-                "label": {
-                  "fr": "Les actions petite enfance",
-                  "en": "Early-childhood actions"
-                },
-                "href": "/theme/la-petite-enfance"
-              }
-            ]
+            "image": "/images/parent62/guide-Creer-un-LAEP-e1678108373559.png",
+            "imageHref": "https://www.caf.fr/sites/default/files/medias/cnaf/Nous_connaitre/qui%20sommes%20nous/Textes%20de%20r%C3%A9f%C3%A9rence/Circulaires/2023/C2023-002_Annexe_Laep_guide_accompagnement_creation.pdf",
+            "imagePosition": "right",
+            "width": "wide",
+            "imageFit": "contain"
           }
         },
         {
-          "type": "cta",
-          "id": "champs-cta",
+          "type": "articleFeed",
+          "id": "champs-laep-actu",
           "props": {
-            "headline": {
-              "fr": "Un projet parentalité sur votre territoire ?",
-              "en": "A parenting project in your territory?"
+            "title": {
+              "fr": "Retour sur la Journée Départementale des accueillants LAEP",
+              "en": "Report on the LAEP hosts' county day"
             },
-            "subhead": {
-              "fr": "Votre coordination territoriale vous accompagne dans le montage et la mise en réseau.",
-              "en": "Your territorial coordination helps you build and connect your project."
-            },
-            "backgroundColor": "color-mix(in oklab, var(--primary) 8%, var(--background))",
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Trouver ma coordination",
-                  "en": "Find my coordinator"
-                },
-                "href": "/equipe",
-                "variant": "default"
-              },
-              {
-                "label": {
-                  "fr": "Voir les actualités",
-                  "en": "See the news"
-                },
-                "href": "/blog",
-                "variant": "outline"
-              }
-            ],
-            "align": "center"
+            "costumSlug": "parent62",
+            "filters": { "slug": "lantsDesLieuxDaccueilEnfantsParentsDu25SeptembreAOlhain" },
+            "pageSize": 1,
+            "featured": true
           }
         }
       ]
@@ -1808,10 +1825,7 @@
           "type": "cta",
           "id": "equipe-cta",
           "props": {
-            "headline": {
-              "fr": "Vous ne savez pas à qui vous adresser ?",
-              "en": "Not sure who to contact?"
-            },
+            "headline": { "fr": "Vous ne savez pas à qui vous adresser ?", "en": "Not sure who to contact?" },
             "subhead": {
               "fr": "Écrivez au réseau, nous vous orienterons vers la bonne personne.",
               "en": "Write to the network — we'll point you to the right person."
@@ -1819,11 +1833,8 @@
             "backgroundColor": "color-mix(in oklab, var(--primary) 8%, var(--background))",
             "buttons": [
               {
-                "label": {
-                  "fr": "Écrire au réseau",
-                  "en": "Write to the network"
-                },
-                "href": "/contact",
+                "label": { "fr": "Écrire au réseau", "en": "Write to the network" },
+                "href": "mailto:contact@parent62.org",
                 "variant": "default"
               }
             ],
@@ -1857,10 +1868,7 @@
           "type": "title",
           "id": "mois-hero",
           "props": {
-            "title": {
-              "fr": "Le Mois de la Parentalité",
-              "en": "Parenting Month"
-            },
+            "title": { "fr": "Le Mois de la Parentalité", "en": "Parenting Month" },
             "subtitle": {
               "fr": "Chaque automne, un mois d'actions et de rencontres pour les familles, partout dans le Pas-de-Calais.",
               "en": "Every autumn, a month of actions and gatherings for families across Pas-de-Calais."
@@ -1870,87 +1878,228 @@
           }
         },
         {
-          "type": "timeline",
-          "id": "mois-timeline",
+          "type": "cta-card-grid",
+          "id": "mois-editions",
           "props": {
-            "alternating": true,
-            "events": [
+            "headline": { "fr": "Les éditions, année par année", "en": "The editions, year by year" },
+            "subhead": {
+              "fr": "Choisissez une édition pour en retrouver toutes les actualités.",
+              "en": "Pick an edition to browse all its news."
+            },
+            "variant": "accent",
+            "bg": "muted",
+            "columns": { "md": 2, "lg": 4 },
+            "actions": [
               {
-                "title": {
-                  "fr": "2020 — La Semaine de la Parentalité",
-                  "en": "2020 — Parenting Week"
+                "icon": "calendar-days",
+                "title": { "fr": "Le Mois de la Parentalité 2026", "en": "Parenting Month 2026" },
+                "description": {
+                  "fr": "Les actions et les temps forts de l'édition 2026.",
+                  "en": "The actions and highlights of the 2026 edition."
                 },
-                "text": {
-                  "fr": "Le réseau fédère ses acteurs autour d'une semaine d'actions dédiées aux familles du département.",
-                  "en": "The network unites its members around a week of actions for the department's families."
-                }
+                "ctaLabel": { "fr": "Voir les actualités", "en": "Browse the news" },
+                "href": "/filter-mois-parentalite?tags=Moisdelaparentalit%C3%A92026",
+                "color": "primary"
               },
               {
-                "title": {
-                  "fr": "2022 — Dernière édition au format semaine",
-                  "en": "2022 — Last week-long edition"
+                "icon": "calendar-days",
+                "title": { "fr": "Le Mois de la Parentalité 2025", "en": "Parenting Month 2025" },
+                "description": {
+                  "fr": "Les actions et les temps forts de l'édition 2025.",
+                  "en": "The actions and highlights of the 2025 edition."
                 },
-                "text": {
-                  "fr": "Une semaine devenue trop courte pour accueillir toutes les initiatives des territoires.",
-                  "en": "One week is no longer enough for all the territories' initiatives."
-                }
+                "ctaLabel": { "fr": "Voir les actualités", "en": "Browse the news" },
+                "href": "/filter-mois-parentalite?tags=MoisdelaParentalit%C3%A92025",
+                "color": "accent"
               },
               {
-                "title": {
-                  "fr": "2023 — La Semaine devient le Mois",
-                  "en": "2023 — The Week becomes the Month"
+                "icon": "calendar-days",
+                "title": { "fr": "Le Mois de la Parentalité 2024", "en": "Parenting Month 2024" },
+                "description": {
+                  "fr": "Les actions et les temps forts de l'édition 2024.",
+                  "en": "The actions and highlights of the 2024 edition."
                 },
-                "text": {
-                  "fr": "Quatre semaines d'actions dans tout le département : ateliers, conférences, rencontres.",
-                  "en": "Four weeks of actions across the department: workshops, talks, gatherings."
-                }
+                "ctaLabel": { "fr": "Voir les actualités", "en": "Browse the news" },
+                "href": "/filter-mois-parentalite?tags=Moisdelaparentalite2024",
+                "color": "chart-2"
               },
               {
-                "title": {
-                  "fr": "2025 — L'édition la plus récente",
-                  "en": "2025 — The latest edition"
+                "icon": "calendar-days",
+                "title": { "fr": "Le Mois de la Parentalité 2023", "en": "Parenting Month 2023" },
+                "description": {
+                  "fr": "Les actions et les temps forts de l'édition 2023.",
+                  "en": "The actions and highlights of the 2023 edition."
                 },
-                "text": {
-                  "fr": "Les temps forts de l'édition 2025 sont à retrouver dans les actualités du réseau.",
-                  "en": "Find the highlights of the 2025 edition in the network's news."
-                }
+                "ctaLabel": { "fr": "Voir les actualités", "en": "Browse the news" },
+                "href": "/filter-mois-parentalite?tags=MoisdelaParentalit%C3%A92023",
+                "color": "chart-3"
+              },
+              {
+                "icon": "calendar-days",
+                "title": { "fr": "La Semaine de la Parentalité 2022", "en": "Parenting Week 2022" },
+                "description": {
+                  "fr": "Les actions et les temps forts de l'édition 2022.",
+                  "en": "The actions and highlights of the 2022 edition."
+                },
+                "ctaLabel": { "fr": "Voir les actualités", "en": "Browse the news" },
+                "href": "/filter-mois-parentalite?tags=SemainedelaParentalit%C3%A92022",
+                "color": "primary"
+              },
+              {
+                "icon": "calendar-days",
+                "title": { "fr": "La Semaine de la Parentalité 2021", "en": "Parenting Week 2021" },
+                "description": {
+                  "fr": "Les actions et les temps forts de l'édition 2021.",
+                  "en": "The actions and highlights of the 2021 edition."
+                },
+                "ctaLabel": { "fr": "Voir les actualités", "en": "Browse the news" },
+                "href": "/filter-mois-parentalite?tags=SemainedelaParentalit%C3%A92021",
+                "color": "accent"
+              },
+              {
+                "icon": "calendar-days",
+                "title": { "fr": "La Semaine de la Parentalité 2020", "en": "Parenting Week 2020" },
+                "description": {
+                  "fr": "Les actions et les temps forts de l'édition 2020.",
+                  "en": "The actions and highlights of the 2020 edition."
+                },
+                "ctaLabel": { "fr": "Voir les actualités", "en": "Browse the news" },
+                "href": "/filter-mois-parentalite?tags=SemainedelaParentalit%C3%A92020",
+                "color": "chart-2"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/filter-mois-parentalite",
+      "title": { "fr": "Le Mois de la Parentalité — par édition", "en": "Parenting Month — by edition" },
+      "layout": "fullwidth",
+      "seo": {
+        "title": { "fr": "Le Mois de la Parentalité — par édition", "en": "Parenting Month — by edition" },
+        "description": {
+          "fr": "Les actualités d'une édition du Mois (ou de la Semaine) de la Parentalité, filtrables par territoire.",
+          "en": "News from one edition of Parenting Month (or Week), filterable by territory."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/parent62/hero-carte.png"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "filter-mois-search",
+          "props": {
+            "headline": { "fr": "Le Mois de la Parentalité", "en": "Parenting Month" },
+            "headlineFromFilter": "tags",
+            "subhead": {
+              "fr": "Les actualités de cette édition, partout dans le Pas-de-Calais.",
+              "en": "News from this edition, across Pas-de-Calais."
+            },
+            "showSearch": true,
+            "searchPlaceholder": { "fr": "Rechercher dans cette édition…", "en": "Search this edition…" },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "tags",
+                "label": { "fr": "Édition", "en": "Edition" },
+                "multiple": true,
+                "allLabel": { "fr": "Toutes les éditions", "en": "All editions" },
+                "options": [
+                  {
+                    "id": "Moisdelaparentalité2026",
+                    "label": { "fr": "#Moisdelaparentalité2026", "en": "#Moisdelaparentalité2026" }
+                  },
+                  {
+                    "id": "MoisdelaParentalité2025",
+                    "label": { "fr": "#MoisdelaParentalité2025", "en": "#MoisdelaParentalité2025" }
+                  },
+                  {
+                    "id": "Moisdelaparentalite2024",
+                    "label": { "fr": "#Moisdelaparentalite2024", "en": "#Moisdelaparentalite2024" }
+                  },
+                  {
+                    "id": "MoisdelaParentalité2023",
+                    "label": { "fr": "#MoisdelaParentalité2023", "en": "#MoisdelaParentalité2023" }
+                  },
+                  {
+                    "id": "SemainedelaParentalité2022",
+                    "label": { "fr": "#SemainedelaParentalité2022", "en": "#SemainedelaParentalité2022" }
+                  },
+                  {
+                    "id": "SemainedelaParentalité2021",
+                    "label": { "fr": "#SemainedelaParentalité2021", "en": "#SemainedelaParentalité2021" }
+                  },
+                  {
+                    "id": "SemainedelaParentalité2020",
+                    "label": { "fr": "#SemainedelaParentalité2020", "en": "#SemainedelaParentalité2020" }
+                  }
+                ]
+              },
+              {
+                "id": "territoire",
+                "label": { "fr": "Territoires", "en": "Territories" },
+                "field": "territoires",
+                "multiple": true,
+                "allLabel": { "fr": "Tous les territoires", "en": "All territories" },
+                "options": [
+                  {
+                    "id": "arrageois",
+                    "value": "Arrageois",
+                    "label": { "fr": "Arrageois", "en": "Arrageois" }
+                  },
+                  { "id": "artois", "value": "Artois", "label": { "fr": "Artois", "en": "Artois" } },
+                  {
+                    "id": "audomarois",
+                    "value": "Audomarois",
+                    "label": { "fr": "Audomarois", "en": "Audomarois" }
+                  },
+                  {
+                    "id": "boulonnais",
+                    "value": "Boulonnais",
+                    "label": { "fr": "Boulonnais", "en": "Boulonnais" }
+                  },
+                  {
+                    "id": "calaisis",
+                    "value": "Calaisis",
+                    "label": { "fr": "Calaisis", "en": "Calaisis" }
+                  },
+                  {
+                    "id": "entre-mer-et-terres",
+                    "value": "Entre Mer et Terres",
+                    "label": { "fr": "Entre Mer et Terres", "en": "Entre Mer et Terres" }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-henin-carvin",
+                    "value": "Familles en sol mineur Hénin Carvin",
+                    "label": {
+                      "fr": "Familles en sol mineur Hénin Carvin",
+                      "en": "Familles en sol mineur Hénin Carvin"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-lens-lievin",
+                    "value": "Familles en sol mineur Lens Liévin",
+                    "label": {
+                      "fr": "Familles en sol mineur Lens Liévin",
+                      "en": "Familles en sol mineur Lens Liévin"
+                    }
+                  },
+                  {
+                    "id": "ternois-bruaysis",
+                    "value": "Ternois Bruaysis",
+                    "label": { "fr": "Ternois Bruaysis", "en": "Ternois Bruaysis" }
+                  }
+                ]
               }
             ]
           }
         },
         {
-          "type": "cta",
-          "id": "mois-cta",
-          "props": {
-            "headline": {
-              "fr": "Ne manquez pas la prochaine édition",
-              "en": "Don't miss the next edition"
-            },
-            "subhead": {
-              "fr": "Le programme est annoncé chaque année dans les actualités et relayé par votre coordination territoriale.",
-              "en": "The programme is announced every year in the news and relayed by your territorial coordination."
-            },
-            "backgroundColor": "color-mix(in oklab, var(--accent) 12%, var(--background))",
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Voir les actualités",
-                  "en": "See the news"
-                },
-                "href": "/blog",
-                "variant": "default"
-              },
-              {
-                "label": {
-                  "fr": "Ma coordination",
-                  "en": "My coordination"
-                },
-                "href": "/equipe",
-                "variant": "outline"
-              }
-            ],
-            "align": "center"
-          }
+          "type": "articleFeed",
+          "id": "filter-mois-feed",
+          "props": { "costumSlug": "parent62", "pageSize": 12, "featured": true, "fullWidth": true }
         }
       ]
     },
@@ -16308,7 +16457,7 @@
           "type": "html",
           "id": "parents-intro",
           "props": {
-            "html": "<section class=\"py-12 px-4\"><div class=\"container mx-auto max-w-3xl space-y-4 text-center\"><p class=\"text-lg text-muted-foreground\">Être parent, ça se partage. Le réseau rassemble les acteurs du soutien à la parentalité du département : trouvez une action près de chez vous, écoutez ce que d'autres parents traversent, ou venez simplement échanger.</p></div></section>"
+            "html": "<section class=\"py-12 px-4\"><div class=\"container mx-auto max-w-2xl space-y-4 text-center\"><p class=\"text-lg text-muted-foreground\">Être parent, ça se partage. Le réseau rassemble les acteurs du soutien à la parentalité du département : trouvez une action près de chez vous, écoutez ce que d'autres parents traversent, ou venez simplement échanger.</p></div></section>"
           }
         },
         {
@@ -16404,7 +16553,7 @@
           "type": "html",
           "id": "pro-intro",
           "props": {
-            "html": "<section class=\"py-12 px-4\"><div class=\"container mx-auto max-w-3xl space-y-4 text-center\"><p class=\"text-lg text-muted-foreground\">Le réseau facilite l'interconnaissance entre acteurs, la mise en réseau et la visibilité des actions menées auprès des familles. Référencez vos actions et événements, et appuyez-vous sur les paroles de parents pour nourrir vos pratiques.</p></div></section>"
+            "html": "<section class=\"py-12 px-4\"><div class=\"container mx-auto max-w-2xl space-y-4 text-center\"><p class=\"text-lg text-muted-foreground\">Le réseau facilite l'interconnaissance entre acteurs, la mise en réseau et la visibilité des actions menées auprès des familles. Référencez vos actions et événements, et appuyez-vous sur les paroles de parents pour nourrir vos pratiques.</p></div></section>"
           }
         },
         {
@@ -17455,125 +17604,6 @@
       }
     },
     {
-      "path": "/contact",
-      "title": {
-        "fr": "Contact",
-        "en": "Contact"
-      },
-      "layout": "fullwidth",
-      "seo": {
-        "title": {
-          "fr": "Contact — Parent62",
-          "en": "Contact — Parent62"
-        },
-        "description": {
-          "fr": "Contactez l'animation départementale et les coordonnateurs du réseau.",
-          "en": "Contact the departmental coordination and network coordinators."
-        },
-        "ogType": "website",
-        "twitterCard": "summary_large_image",
-        "ogImage": "/images/parent62/hero-carte.png"
-      },
-      "sections": [
-        {
-          "type": "title",
-          "id": "contact-hero",
-          "props": {
-            "title": {
-              "fr": "Contact",
-              "en": "Contact"
-            },
-            "subtitle": {
-              "fr": "Une question sur le réseau, une action près de chez vous, un projet à faire connaître ? On vous répond.",
-              "en": "A question about the network, an action near you, a project to share? We'll get back to you."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
-          "type": "content",
-          "id": "contact-general",
-          "props": {
-            "category": {
-              "fr": "Contact général",
-              "en": "General contact"
-            },
-            "title": {
-              "fr": "Écrivez au réseau",
-              "en": "Write to the network"
-            },
-            "description": {
-              "fr": "Pour toute question : contact@parent62.org · 06 98 99 93 09. Pour une question locale, contactez directement votre coordination territoriale — elle connaît les actions près de chez vous.",
-              "en": "For any question: contact@parent62.org · 06 98 99 93 09. For local matters, contact your territorial coordination directly — they know the actions near you."
-            },
-            "imagePosition": "right",
-            "links": [
-              {
-                "label": {
-                  "fr": "Trouver ma coordination territoriale",
-                  "en": "Find my territorial coordination"
-                },
-                "href": "/equipe"
-              }
-            ]
-          }
-        },
-        {
-          "type": "team",
-          "id": "contact-dep",
-          "props": {
-            "layout": "grid",
-            "columns": 2,
-            "members": [
-              {
-                "name": {
-                  "fr": "Antoine Legrand",
-                  "en": "Antoine Legrand"
-                },
-                "role": {
-                  "fr": "Coordonnateur départemental",
-                  "en": "Departmental coordinator"
-                },
-                "bio": {
-                  "fr": "06 98 99 93 09 · Fédération des Centres Sociaux Nord-Pas-de-Calais, Lille",
-                  "en": "06 98 99 93 09 · Federation of Social Centres, Lille"
-                },
-                "avatar": "/images/parent62/equipe/antoine-legrand.svg",
-                "socials": [
-                  {
-                    "platform": "mail",
-                    "url": "mailto:antoine.legrand@parent62.org"
-                  }
-                ]
-              },
-              {
-                "name": {
-                  "fr": "Clarisse Feutry",
-                  "en": "Clarisse Feutry"
-                },
-                "role": {
-                  "fr": "Coordonnatrice départementale",
-                  "en": "Departmental coordinator"
-                },
-                "bio": {
-                  "fr": "06 11 21 40 75 · Fédération des Centres Sociaux Nord-Pas-de-Calais, Lille",
-                  "en": "06 11 21 40 75 · Federation of Social Centres, Lille"
-                },
-                "avatar": "/images/parent62/equipe/clarisse-feutry.svg",
-                "socials": [
-                  {
-                    "platform": "mail",
-                    "url": "mailto:clarisse.feutry@parent62.org"
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
       "path": "/mentions-legales",
       "title": {
         "fr": "Mentions légales",
@@ -17593,8 +17623,8 @@
           "id": "mentions",
           "props": {
             "html": {
-              "fr": "<div class=\"prose prose-slate mx-auto max-w-3xl px-4 py-12\"><h1>Mentions légales</h1><p>*Contenu à compléter :* éditeur, hébergeur, directeur de publication, propriété intellectuelle.</p></div>",
-              "en": "<div class=\"prose prose-slate mx-auto max-w-3xl px-4 py-12\"><h1>Legal notice</h1><p>*To be completed:* publisher, host, publication director, intellectual property.</p></div>"
+              "fr": "<div class=\"prose prose-slate mx-auto max-w-2xl px-4 py-12\"><h1>Mentions légales</h1><p>*Contenu à compléter :* éditeur, hébergeur, directeur de publication, propriété intellectuelle.</p></div>",
+              "en": "<div class=\"prose prose-slate mx-auto max-w-2xl px-4 py-12\"><h1>Legal notice</h1><p>*To be completed:* publisher, host, publication director, intellectual property.</p></div>"
             }
           }
         }
@@ -17620,8 +17650,8 @@
           "id": "confid",
           "props": {
             "html": {
-              "fr": "<div class=\"prose prose-slate mx-auto max-w-3xl px-4 py-12\"><h1>Politique de confidentialité</h1><p>*Contenu à compléter.*</p></div>",
-              "en": "<div class=\"prose prose-slate mx-auto max-w-3xl px-4 py-12\"><h1>Privacy policy</h1><p>*To be completed.*</p></div>"
+              "fr": "<div class=\"prose prose-slate mx-auto max-w-2xl px-4 py-12\"><h1>Politique de confidentialité</h1><p>*Contenu à compléter.*</p></div>",
+              "en": "<div class=\"prose prose-slate mx-auto max-w-2xl px-4 py-12\"><h1>Privacy policy</h1><p>*To be completed.*</p></div>"
             }
           }
         }
@@ -17735,7 +17765,7 @@
             }
           },
           {
-            "href": "/contact",
+            "href": "/equipe",
             "label": {
               "fr": "Contact",
               "en": "Contact"

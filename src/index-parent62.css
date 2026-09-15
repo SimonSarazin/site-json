@@ -138,7 +138,13 @@ footer nav { font-family: var(--font-serif); }
 .prose p, .prose li { line-height: 1.7; margin: 0.5em 0; }
 .prose ul { list-style: disc; padding-left: 1.4rem; }
 .prose ol { list-style: decimal; padding-left: 1.4rem; }
-.prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+/* Liens de contenu rédigé. --primary est un marine désaturé (oklch .35 .04 250), trop proche du
+   texte courant : souligné, il se lisait comme du gras plutôt que comme un lien. --secondary-foreground
+   (le teal de la charte) tranche par la TEINTE et tient WCAG AA en corps de texte — 8,1:1 sur le fond
+   clair, 12,3:1 en sombre ; --chart-1 et --info échouent tous deux à ~3,4:1, donc exclus. Le
+   soulignement est épaissi pour ne pas faire reposer l'information sur la seule couleur (WCAG 1.4.1). */
+.prose a { color: var(--secondary-foreground); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.prose a:hover { color: var(--primary); }
 .prose strong { font-weight: 600; }
 
 /* Custom scrollbar (même bloc que les autres thèmes — pistes/pouces aux tokens,
