@@ -54,18 +54,6 @@
         "children": [
           {
             "label": {
-              "fr": "Espace Public",
-              "en": "Public Space"
-            },
-            "path": "/public",
-            "icon": "users",
-            "description": {
-              "fr": "Le sport santé pour tous les Réunionnais.",
-              "en": "Sport health for everyone in Réunion."
-            }
-          },
-          {
-            "label": {
               "fr": "Qu'est-ce que le Sport Santé",
               "en": "What is Sport Health"
             },
@@ -123,6 +111,18 @@
               "fr": "Explorer l'offre sport santé sur la carte.",
               "en": "Explore the sport-health offer on the map."
             }
+          },
+          {
+            "label": {
+              "fr": "FAQ",
+              "en": "FAQ"
+            },
+            "path": "/faq",
+            "icon": "help-circle",
+            "description": {
+              "fr": "Les réponses aux questions les plus fréquentes.",
+              "en": "Answers to the most frequently asked questions."
+            }
           }
         ]
       },
@@ -134,18 +134,6 @@
         "path": "/espace-professionnels",
         "icon": "network",
         "children": [
-          {
-            "label": {
-              "fr": "Espace professionnels",
-              "en": "Professionals"
-            },
-            "path": "/espace-professionnels",
-            "icon": "briefcase",
-            "description": {
-              "fr": "Ressources et outils pour les pros.",
-              "en": "Resources and tools for professionals."
-            }
-          },
           {
             "label": {
               "fr": "Ressources",
@@ -172,6 +160,18 @@
           },
           {
             "label": {
+              "fr": "Habilitation MSS",
+              "en": "MSS Accreditation"
+            },
+            "path": "/habilitation-mss",
+            "icon": "shield-check",
+            "description": {
+              "fr": "La procédure d'habilitation officielle des Maisons Sport-Santé.",
+              "en": "The official accreditation procedure for Sport-Health Houses."
+            }
+          },
+          {
+            "label": {
               "fr": "Formation",
               "en": "Training"
             },
@@ -192,6 +192,30 @@
             "description": {
               "fr": "Les organismes de formation labellisés.",
               "en": "The labeled training organizations."
+            }
+          },
+          {
+            "label": {
+              "fr": "FAQ Pro",
+              "en": "Pro FAQ"
+            },
+            "path": "/faq-pro",
+            "icon": "help-circle",
+            "description": {
+              "fr": "Les réponses aux questions fréquentes pour les professionnels.",
+              "en": "Answers to frequently asked questions for professionals."
+            }
+          },
+          {
+            "label": {
+              "fr": "Prescrire & Orienter",
+              "en": "Prescribe & Guide"
+            },
+            "path": "/prescription",
+            "icon": "clipboard-list",
+            "description": {
+              "fr": "Guide et outils pour prescrire et orienter vers le sport santé.",
+              "en": "Guide and tools for prescribing and guiding towards sport health."
             }
           }
         ]
@@ -1585,6 +1609,354 @@
       ]
     },
     {
+      "path": "/faq",
+      "title": {
+        "fr": "Foire aux questions",
+        "en": "FAQ"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "faq-header",
+          "props": {
+            "headline": {
+              "fr": "Foire aux questions",
+              "en": "FAQ"
+            },
+            "subhead": {
+              "fr": "Retrouvez ici les réponses aux questions fréquentes sur les activités et dispositifs Sport Santé Bien-être. Cette FAQ vous aide à comprendre l’accès aux installations, les pratiques proposées et les démarches pour en bénéficier.",
+              "en": "Find here the answers to frequently asked questions about Sport Health Wellness activities and schemes. This FAQ helps you understand access to facilities, the activities on offer and the steps to benefit from them."
+            }
+          }
+        },
+        {
+          "type": "accordion",
+          "id": "faq-accordion",
+          "props": {
+            "allowMultiple": true,
+            "items": [
+              {
+                "title": {
+                  "fr": "Qu’est-ce que le sport santé bien-être ?",
+                  "en": "What is sport-health wellness?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Le sport santé bien-être correspond à une pratique physique régulière qui vise à améliorer la santé globale, en favorisant le bien-être physique, mental et social.</p>",
+                  "en": "<p>Sport-health wellness refers to regular physical activity aimed at improving overall health by promoting physical, mental and social well-being.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Je souffre d’hypertension et d’arthrose. Puis-je pratiquer une activité physique adaptée dans le cadre du sport santé ?",
+                  "en": "I have high blood pressure and arthrosis. Can I practise adapted physical activity as part of sport-health?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Oui. Le sport santé peut être bénéfique pour les personnes souffrant de problèmes articulaires ou d’hypertension.</p><p>Nous vous conseillons de demander l’avis de votre médecin afin qu’il vous prescrive une activité adaptée à votre état de santé, puis de vous rapprocher d’une Maison Sport Santé pour être accompagné.</p><p><a href=\"/mss\" class=\"text-primary font-semibold hover:underline\">👉 Trouvez une Maison Sport Santé près de chez vous</a></p><p class=\"text-error font-medium\">⚠️ Attention : la prescription médicale ne donne pas droit au remboursement de l’activité physique.</p>",
+                  "en": "<p>Yes. Sport-health can be beneficial for people with joint problems or high blood pressure.</p><p>We recommend asking your doctor to prescribe an activity suited to your health, then getting in touch with a Maison Sport Santé for support.</p><p><a href=\"/mss\" class=\"text-primary font-semibold hover:underline\">👉 Find a Maison Sport Santé near you</a></p><p class=\"text-error font-medium\">⚠️ Warning: a medical prescription does not entitle you to reimbursement of the physical activity.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Où trouver un lieu qui fait une activité physique sur St Leu pour le cancer du sein – mastectomie ?",
+                  "en": "Where can I find a place offering physical activity in St Leu for breast cancer – mastectomy?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>ODYSSEA RÉUNION pourra vous aiguiller sur votre secteur en termes d’offre de pratique adaptée à votre situation. Leur adresse mail : <a href=\"mailto:contact@run-odyssea.org\" class=\"text-primary hover:underline\">contact@run-odyssea.org</a></p><p>N’hésitez pas à consulter la <a href=\"/mapping\" class=\"text-primary font-semibold hover:underline\">cartographie</a> sur laquelle vous trouverez tous les <strong>créneaux labellisés</strong>.</p>",
+                  "en": "<p>ODYSSEA RÉUNION can guide you on your area in terms of adapted practice offers. Their email address: <a href=\"mailto:contact@run-odyssea.org\" class=\"text-primary hover:underline\">contact@run-odyssea.org</a></p><p>Feel free to check the <a href=\"/mapping\" class=\"text-primary font-semibold hover:underline\">map</a>, where you will find all the labeled slots.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Où trouver un lieu qui fait de la balnéothérapie sur ordonnance ?",
+                  "en": "Where can I find a place offering prescribed balneotherapy?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Se rapprocher des représentants des Masseurs Kinésithérapeutes de la Réunion qui sont aptes à répondre aux besoins, consultez le site urmkoi.fr</p>",
+                  "en": "<p>Get in touch with the representatives of the Masseurs Kinésithérapeutes de la Réunion, who are able to help — visit urmkoi.fr</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Je souhaite pratiquer une activité physique. Vers qui puis-je me tourner afin de trouver des créneaux labellisés « sport santé bien-être » sur le territoire ?",
+                  "en": "I want to practise a physical activity. Who can I contact to find labeled “sport-health wellness” slots across the territory?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Que vous souhaitiez pratiquer une activité pour le plaisir, la convivialité ou pour améliorer et renforcer votre santé, des structures proposent des créneaux sur toute l’île.</p><p>Ces créneaux labellisés « sport santé bien-être » (sport santé pour tous et sport santé sur ordonnance) sont consultables en ligne <a href=\"/creneaux\" class=\"text-primary font-semibold hover:underline\">ici</a>. Pour accéder à ces informations, il convient de cliquer sur la rubrique « <strong>Trouver une activité</strong> », puis d’utiliser les filtres proposés afin d’identifier les activités correspondant à vos besoins et à votre situation.</p>",
+                  "en": "<p>Whether you want to practise an activity for fun, for social connection or to improve and strengthen your health, structures offer slots across the whole island.</p><p>These labeled “sport-health wellness” slots (sport-health for all and sport-health on prescription) can be browsed online <a href=\"/creneaux\" class=\"text-primary font-semibold hover:underline\">here</a>. To access this information, click on the “<strong>Find an activity</strong>” section, then use the filters to identify the activities matching your needs and situation.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Quelle est la différence entre sport santé pour tous (SSpT) et sport santé sur ordonnance (SSsO) ?",
+                  "en": "What is the difference between sport-health for all (SSpT) and sport-health on prescription (SSsO)?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p><strong>Sport Santé pour Tous :</strong> pour tout public disposant d’un certificat d’absence de contre-indication à la pratique d’activités physiques et sportives (APS).</p><p><strong>Sport Santé sur Ordonnance :</strong> pour les personnes atteintes d’une affection de longue durée ou d’une maladie chronique ou présentant des facteurs de risques et des personnes en perte d’autonomie.</p><p>L’activité physique adaptée (APA) peut être prescrite par le médecin intervenant dans la prise en charge.</p>",
+                  "en": "<p><strong>Sport-Health for All:</strong> for anyone holding a certificate confirming no contraindication to physical and sporting activity (APS).</p><p><strong>Sport-Health on Prescription:</strong> for people with a long-term condition, a chronic illness, risk factors, or a loss of autonomy.</p><p>Adapted physical activity (APA) can be prescribed by the doctor involved in the care pathway.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Sur quels domaines peuvent porter les activités proposées ?",
+                  "en": "What areas can the activities offered cover?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Les activités proposées peuvent relever de divers domaines, tels que les activités de pleine nature, les activités aquatiques, les sports collectifs, les activités gymniques ou encore les arts martiaux.</p>",
+                  "en": "<p>The activities offered can cover various areas, such as outdoor activities, water-based activities, team sports, gymnastic activities or martial arts.</p>"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/faq-pro",
+      "title": {
+        "fr": "Foire aux questions professionnel",
+        "en": "Professional FAQ"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "faq-pro-header",
+          "props": {
+            "headline": {
+              "fr": "Foire aux questions professionnel",
+              "en": "Professional FAQ"
+            },
+            "subhead": {
+              "fr": "Retrouvez ici les réponses aux questions fréquentes sur les activités et dispositifs Sport Santé Bien-être. Cette FAQ vous aide à comprendre l’accès aux installations, les pratiques proposées et les démarches pour en bénéficier.",
+              "en": "Find here the answers to frequently asked questions about Sport Health Wellness activities and schemes. This FAQ helps you understand access to facilities, the activities on offer and the steps to benefit from them."
+            }
+          }
+        },
+        {
+          "type": "accordion",
+          "id": "faq-pro-accordion",
+          "props": {
+            "allowMultiple": true,
+            "items": [
+              {
+                "title": {
+                  "fr": "J’aimerais m’inscrire à une formation sport santé bien-être. Merci de me faire savoir vers quel organisme de formation me tourner ?",
+                  "en": "I would like to enrol in a sport-health wellness training course. Which training organization should I contact?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Nous vous remercions de cliquer <a href=\"/listing-formations\" class=\"text-primary font-semibold hover:underline\">ici</a> afin d’accéder à la liste des organismes habilités pour dispenser la formation (SSpT- SSsO) dans le respect du cahier des charges régional et national.</p><p>Ils vous proposeront un devis précis et adapté à votre demande.</p>",
+                  "en": "<p>Please click <a href=\"/listing-formations\" class=\"text-primary font-semibold hover:underline\">here</a> to access the list of organizations authorized to provide the training (SSpT- SSsO) in line with the regional and national specifications.</p><p>They will offer you a precise quote tailored to your request.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Je suis médecin généraliste, pourriez-vous m’orienter dans ma recherche pour une patiente qui souhaite faire de l’activité physique pour la santé éventuellement avec une ordonnance et une ALD afin d’améliorer la santé physique et aussi la santé morale par le biais d’activité de sport et de loisirs.",
+                  "en": "I am a general practitioner. Could you help me find a solution for a patient who wants to do physical activity for health reasons, possibly with a prescription and a long-term condition (ALD), to improve both her physical and mental health through sport and leisure activities?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Dans le cadre légal actuel, les patients en Affection Longue Durée (ALD) peuvent bénéficier du dispositif Sport Santé sur Ordonnance (SSsO), sur prescription médicale, cette prescription permet d’orienter la patiente vers des activités sécurisées et adaptées, encadrées par des enseignants en APA ou des éducateurs sportifs spécialisés.</p><p>À La Réunion, plusieurs dispositifs existent :</p><ul class=\"list-disc pl-5 space-y-1\"><li>La plateforme <strong>www.ssbe.re</strong> qui permet de consulter les créneaux labellisés Sport Santé Bien-Être (SSBE) disponibles sur le territoire, classés en deux niveaux :<ul class=\"list-disc pl-5 space-y-1 mt-1\"><li>SSpT (Sport Santé pour Tous) : pour une reprise en douceur et sécurisée ;</li><li>SSsO (Sport Santé sur Ordonnance) : public personnes atteintes d’une affection de longue durée ou d’une maladie chronique ou présentant des facteurs de risques et des personnes en perte d’autonomie, sur orientation médicale.</li></ul></li><li>Les Maisons Sport Santé (MSS), au nombre de 13 dans le département, qui assurent l’accueil, l’orientation et le suivi personnalisé des patients, en articulation avec les prescripteurs.</li></ul><p><strong>Démarche conseillée :</strong></p><ol class=\"list-decimal pl-5 space-y-1\"><li>Rédiger une ordonnance d’APA pour votre patiente (modèle disponible sur HAS – prescription APA).</li><li>Orienter la patiente vers la <a href=\"/mss\" class=\"text-primary font-semibold hover:underline\">Maison Sport Santé</a> la plus proche de son domicile ou vers un <a href=\"/creneaux\" class=\"text-primary font-semibold hover:underline\">créneau labellisé</a>.</li><li>L’équipe encadrante assurera le bilan initial, le suivi des séances et la transmission des informations utiles au médecin prescripteur.</li></ol><p>Ces structures proposent non seulement un travail sur la santé physique, mais également une amélioration du bien-être psychologique et social par l’activité physique régulière.</p>",
+                  "en": "<p>Under the current legal framework, patients with a long-term condition (ALD) can benefit from the Sport-Health on Prescription scheme (SSsO); with a medical prescription, the patient can be directed towards safe, adapted activities supervised by APA instructors or specialized sports educators.</p><p>In Réunion, several schemes exist:</p><ul class=\"list-disc pl-5 space-y-1\"><li>The <strong>www.ssbe.re</strong> platform, which lists the labeled Sport-Health Wellness (SSBE) slots available across the territory, in two levels:<ul class=\"list-disc pl-5 space-y-1 mt-1\"><li>SSpT (Sport-Health for All): for a gentle, safe return to activity;</li><li>SSsO (Sport-Health on Prescription): for people with a long-term condition, a chronic illness, risk factors, or a loss of autonomy, on medical referral.</li></ul></li><li>The Maisons Sport Santé (MSS) — 13 in the department — which handle patient reception, referral and personalized follow-up, in coordination with prescribers.</li></ul><p><strong>Recommended approach:</strong></p><ol class=\"list-decimal pl-5 space-y-1\"><li>Write an APA prescription for your patient (template available on the HAS website – APA prescription).</li><li>Refer the patient to the nearest <a href=\"/mss\" class=\"text-primary font-semibold hover:underline\">Maison Sport Santé</a> or to a <a href=\"/creneaux\" class=\"text-primary font-semibold hover:underline\">labeled slot</a>.</li><li>The supervising team will carry out the initial assessment, follow the sessions and share the relevant information with the prescribing doctor.</li></ol><p>These structures work not only on physical health but also improve psychological and social well-being through regular physical activity.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Combien de seniors un éducateur peut-il encadrer lors d’une séance de sports santé bien-être ?",
+                  "en": "How many seniors can one instructor supervise during a sport-health wellness session?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>La sécurisation d’une séance Sport Santé auprès du public senior dépend de plusieurs éléments : le niveau d’autonomie des participants, la nature de l’activité proposée, le lieu de pratique, et surtout la qualification de l’encadrant.</p><p>Selon le cahier des charges du label SSBE, il est recommandé pour <strong>un groupe de 8 à 12 seniors</strong> :</p><ul class=\"list-disc pl-5 space-y-1\"><li>qu’une séance destinée à un public senior ou fragile (personnes âgées, à risque de chute etc.) soit encadrée par un professionnel spécifiquement formé à l’Activité Physique Adaptée (APA) ou disposant de compétences Sport Santé pour Tous ou Sport Santé sur Ordonnance reconnues ;</li><li>qu’il sache gérer les adaptations individuelles, repérer les signes de fragilité et gérer les situations à risque.</li></ul><p>Si le groupe est plus important, ou si les bénéficiaires présentent des <strong>fragilités accrues</strong> (troubles de l’équilibre, maladies chroniques avancées...), <strong>la présence d’un binôme encadrant ou d’un accompagnant formé</strong> peut être nécessaire pour assurer la sécurité et la qualité de la séance.</p>",
+                  "en": "<p>Ensuring the safety of a Sport-Health session for seniors depends on several factors: participants’ level of autonomy, the nature of the activity, the venue, and above all the instructor’s qualification.</p><p>According to the SSBE label specifications, it is recommended for <strong>a group of 8 to 12 seniors</strong>:</p><ul class=\"list-disc pl-5 space-y-1\"><li>that a session aimed at a senior or frail public (elderly people, fall risk, etc.) be supervised by a professional specifically trained in Adapted Physical Activity (APA) or holding recognized Sport-Health for All or Sport-Health on Prescription skills;</li><li>that they be able to manage individual adaptations, spot signs of frailty and handle at-risk situations.</li></ul><p>If the group is larger, or if participants show <strong>increased frailty</strong> (balance disorders, advanced chronic illnesses...), <strong>a second supervisor or a trained assistant</strong> may be needed to ensure the safety and quality of the session.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Je suis médecin en EHPAD. Pourriez-vous me faire savoir si les résidents peuvent bénéficier d’activité physique adaptée ?",
+                  "en": "I am a doctor in a nursing home (EHPAD). Can residents benefit from adapted physical activity?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Certains résidents d’EHPAD peuvent bénéficier du Sport Santé sur Ordonnance (SSsO), à condition qu’ils présentent une Affection de Longue Durée (ALD), une pathologie chronique ou des facteurs de risque (sédentarité, risque de chute, etc.). Ces critères sont fréquemment rencontrés en EHPAD.</p><p>Le SSsO, c’est de l’Activité Physique Adaptée (APA), encadrée par des professionnels qualifiés (enseignants APA ou éducateurs sportifs formés en sport santé).</p><p>En tant que médecin, vous pouvez tout à fait prescrire une activité physique adaptée, dans le cadre légal du décret de 2016. À La Réunion, les structures labellisées SSBE (Sport Santé Bien-Être) assurent ce type de prise en charge, en toute sécurité, via la plateforme <strong>www.ssbe.re</strong></p><p>et vous pouvez vous appuyer sur les programmes APA en ESMS de nos Maisons Sport Santé. Retrouvez toutes les coordonnées des maisons sport santé <a href=\"/mss\" class=\"text-primary font-semibold hover:underline\">ici</a>.</p>",
+                  "en": "<p>Some nursing home residents can benefit from Sport-Health on Prescription (SSsO), provided they have a long-term condition (ALD), a chronic illness or risk factors (sedentary lifestyle, fall risk, etc.). These criteria are frequently found in nursing homes.</p><p>SSsO means Adapted Physical Activity (APA), supervised by qualified professionals (APA instructors or sports educators trained in sport-health).</p><p>As a doctor, you can fully prescribe adapted physical activity, under the legal framework of the 2016 decree. In Réunion, SSBE-labeled structures provide this type of care safely, via the <strong>www.ssbe.re</strong> platform,</p><p>and you can rely on the APA programs in medico-social facilities run by our Maisons Sport Santé. Find all the Maisons Sport Santé contact details <a href=\"/mss\" class=\"text-primary font-semibold hover:underline\">here</a>.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Le SSBE peut-il fournir une activité physique à une personne diabétique de type 2 ?",
+                  "en": "Can SSBE provide a physical activity for a person with type 2 diabetes?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>La dynamique portée par les institutions devrait permettre de couvrir à terme tout le territoire de la Réunion pour répondre à cet enjeu majeur de santé publique.</p><p>Une personne diabétique de type 2 peut bien entendu prétendre à ces activités à condition que l’offre d’activité physique puisse :</p><ul class=\"list-disc pl-5 space-y-1\"><li>être disponible ;</li><li>être à proximité du lieu de résidence ;</li><li>être adaptée à la pathologie de la personne ;</li><li>lui convenir.</li></ul>",
+                  "en": "<p>The dynamic driven by the institutions should eventually cover the whole of Réunion to address this major public health issue.</p><p>A person with type 2 diabetes can of course take part in these activities, provided the physical activity offer:</p><ul class=\"list-disc pl-5 space-y-1\"><li>is available;</li><li>is close to their place of residence;</li><li>is suited to their condition;</li><li>suits them.</li></ul>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Une labellisation de créneaux peut-elle être suspendue ?",
+                  "en": "Can a slot’s labeling be suspended?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>En cas de non-respect par la structure titulaire du label des obligations résultant du cahier des charges, le label sera suspendu sans délai par la DRAJES et l’ARS La Réunion et retiré de la cartographie du site ssbe.re.</p>",
+                  "en": "<p>If the structure holding the label fails to meet the obligations set out in the specifications, the label will be suspended without delay by the DRAJES and the ARS La Réunion, and removed from the ssbe.re site map.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Quelle est la durée de validité d’une labellisation de créneaux ?",
+                  "en": "How long is a slot labeling valid for?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<ul class=\"list-disc pl-5 space-y-1\"><li><strong>3 ans</strong> pour le label SSBE « Sport Santé pour Tous – SSpT »</li><li><strong>2 ans</strong> pour le label SSBE « Sport Santé sur Ordonnance – SSsO »</li></ul>",
+                  "en": "<ul class=\"list-disc pl-5 space-y-1\"><li><strong>3 years</strong> for the SSBE “Sport-Health for All – SSpT” label</li><li><strong>2 years</strong> for the SSBE “Sport-Health on Prescription – SSsO” label</li></ul>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Quelle est la période de l’année durant laquelle il est possible de répondre à l’appel à candidatures pour le label sport santé bien-être ?",
+                  "en": "What time of year can applications be submitted for the sport-health wellness label call for applications?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>L’appel à candidatures pour le label sport santé bien-être est permanent. Les demandes de labellisation des créneaux peuvent être effectuées tout au long de l’année par voie dématérialisée <a href=\"/labellisation\" class=\"text-primary font-semibold hover:underline\">ici</a>.</p>",
+                  "en": "<p>The call for applications for the sport-health wellness label is ongoing. Slot labeling requests can be submitted online at any time of year <a href=\"/labellisation\" class=\"text-primary font-semibold hover:underline\">here</a>.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Comment solliciter la labellisation des créneaux SSBE ?",
+                  "en": "How can I request SSBE slot labeling?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Pour soumettre une demande de labellisation des créneaux SSBE, il convient de renseigner votre demande sur la plateforme dédiée à cet effet, accessible <a href=\"/espace-professionnels\" class=\"text-primary font-semibold hover:underline\">ici</a> : <strong>Espace professionnels</strong> en cliquant sur le bouton « Étape 1 : Ajouter sa structure ».</p><p>Par ailleurs, des informations complémentaires peuvent être consultées en téléchargeant le cahier des charges afférent au label dans la partie « <a href=\"/ressources\" class=\"text-primary font-semibold hover:underline\">Ressources</a> » du site.</p>",
+                  "en": "<p>To submit an SSBE slot labeling request, fill in your request on the dedicated platform, accessible <a href=\"/espace-professionnels\" class=\"text-primary font-semibold hover:underline\">here</a>: <strong>Espace professionnels</strong>, by clicking the “Step 1: Add your structure” button.</p><p>Additional information can also be found by downloading the label’s specifications in the “<a href=\"/ressources\" class=\"text-primary font-semibold hover:underline\">Resources</a>” section of the site.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Quel est l’intérêt du label Sport Santé Bien Être ?",
+                  "en": "What is the benefit of the Sport-Health Wellness label?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<ul class=\"list-disc pl-5 space-y-1\"><li><strong>Pour les pratiquants</strong> : identifier facilement une structure « sport santé bien-être » de qualité, de proximité et répondant aux besoins ;</li><li><strong>Pour les professionnels de santé</strong> : assurer une meilleure visibilité et lisibilité de l’offre « sport santé bien-être » ;</li><li><strong>Pour les acteurs du sport</strong> : valoriser les structures dispensant des activités « sport santé bien-être » à travers le réseau SSBE la Réunion ;</li><li><strong>Pour les financeurs potentiels</strong> : identifier les structures s’investissant dans la mise en place d’activités « sport santé pour tous » et/ou « sport santé sur ordonnance » dans le cadre d’une démarche de qualité.</li></ul>",
+                  "en": "<ul class=\"list-disc pl-5 space-y-1\"><li><strong>For participants</strong>: easily identify a quality, nearby “sport-health wellness” structure that meets their needs;</li><li><strong>For health professionals</strong>: ensure better visibility and clarity of the “sport-health wellness” offer;</li><li><strong>For sport stakeholders</strong>: promote structures providing “sport-health wellness” activities through the SSBE Réunion network;</li><li><strong>For potential funders</strong>: identify structures investing in “sport-health for all” and/or “sport-health on prescription” activities as part of a quality approach.</li></ul>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Quel est l’intérêt pour une structure de demander la labellisation de créneaux Sport Santé ?",
+                  "en": "What is the benefit for a structure of requesting Sport-Health slot labeling?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Avoir des créneaux labellisés permet d’améliorer sa visibilité sur le territoire réunionnais par le référencement sur le site ssbe.re. Cela permet à la structure :</p><ul class=\"list-disc pl-5 space-y-1\"><li>de faire valoir la qualité de son offre, de son encadrement et la sécurité du pratiquant ;</li><li>de participer à l’amélioration de la qualité de vie des réunionnais par la mise en mouvement ;</li><li>de promouvoir son activité auprès du grand public mais aussi des professionnels de santé.</li></ul>",
+                  "en": "<p>Having labeled slots improves visibility across Réunion through listing on the ssbe.re site. This allows the structure to:</p><ul class=\"list-disc pl-5 space-y-1\"><li>highlight the quality of its offer, its supervision and participant safety;</li><li>contribute to improving Réunion residents’ quality of life by getting them moving;</li><li>promote its activity to the general public as well as to health professionals.</li></ul>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "À quoi sert le label sport santé bien-être ?",
+                  "en": "What is the sport-health wellness label for?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Le label permet d’attester de la qualité de l’offre proposée et justifie d’un encadrement professionnel et sécuritaire par :</p><ul class=\"list-disc pl-5 space-y-1\"><li><strong>Les critères de qualité</strong> : partenariat et proximité, accessibilité géographique et financière, démarche d’éducation pour la santé, évaluation régulière, communication et visibilité.</li><li><strong>Les critères de sécurité</strong> : encadrants qualifiés et formés, groupes restreints, lieux et matériel adaptés, accueil et suivi individuel, liaisons régulières avec le médecin prescripteur.</li></ul>",
+                  "en": "<p>The label certifies the quality of the offer and demonstrates professional, secure supervision through:</p><ul class=\"list-disc pl-5 space-y-1\"><li><strong>Quality criteria</strong>: partnership and proximity, geographic and financial accessibility, health education approach, regular evaluation, communication and visibility.</li><li><strong>Safety criteria</strong>: qualified, trained supervisors, small groups, suitable venues and equipment, individual reception and follow-up, regular liaison with the prescribing doctor.</li></ul>"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/prescription",
+      "title": {
+        "fr": "Aide à la prescription médicale",
+        "en": "Medical prescription assistance"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "heroWithIcon",
+          "id": "prescription-hero",
+          "props": {
+            "headline": {
+              "fr": "Aide à la prescription médicale",
+              "en": "Medical prescription assistance"
+            },
+            "subhead": {
+              "fr": "Ressources et outils pour accompagner les professionnels de santé dans la prescription d’activité physique adaptée",
+              "en": "Resources and tools to support health professionals in prescribing adapted physical activity"
+            },
+            "icon": {
+              "show": true,
+              "name": "stethoscope",
+              "size": 64,
+              "backdrop": true
+            },
+            "backgroundImage": "images/sportSanteBienetre/prescription.png",
+            "align": "center",
+            "overlay": true
+          }
+        },
+        {
+          "type": "html",
+          "id": "prescription-qui-pour-qui-par-qui",
+          "props": {
+            "html": {
+              "fr": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-6xl\"><div class=\"grid gap-6 md:grid-cols-3 items-stretch\"><div class=\"rounded-2xl border border-primary/30 bg-card p-6 flex flex-col\"><div class=\"flex items-center gap-3 mb-4\"><div class=\"w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0\">1</div><h3 class=\"font-display text-lg font-bold text-foreground\">Qui peut prescrire ?</h3></div><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Depuis 2016, les médecins peuvent prescrire une activité physique adaptée (APA) aux personnes atteintes d’une affection de longue durée (ALD), afin de répondre à leurs besoins de santé spécifiques. Depuis 2022, cette possibilité a été étendue à tous les médecins impliqués dans le suivi du patient, et les masseurs-kinésithérapeutes peuvent également renouveler ou adapter cette prescription, sauf opposition du médecin.</span></li></ul></div><div class=\"rounded-2xl border border-accent/30 bg-card p-6 flex flex-col\"><div class=\"flex items-center gap-3 mb-4\"><div class=\"w-9 h-9 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold shrink-0\">2</div><h3 class=\"font-display text-lg font-bold text-foreground\">Pour qui ?</h3></div><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Personnes atteintes d’une affection de longue durée (ALD)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Personnes atteintes d’une maladie chronique</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Personnes présentant des facteurs de risque</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Personnes en perte d’autonomie</span></li></ul></div><div class=\"rounded-2xl border border-primary/30 bg-card p-6 flex flex-col\"><div class=\"flex items-center gap-3 mb-4\"><div class=\"w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0\">3</div><h3 class=\"font-display text-lg font-bold text-foreground\">Par qui ?</h3></div><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Médecins généralistes</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Médecins spécialistes</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Infirmier(ère)s en pratique avancée</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>…</span></li></ul></div></div></div></section>",
+              "en": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-6xl\"><div class=\"grid gap-6 md:grid-cols-3 items-stretch\"><div class=\"rounded-2xl border border-primary/30 bg-card p-6 flex flex-col\"><div class=\"flex items-center gap-3 mb-4\"><div class=\"w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0\">1</div><h3 class=\"font-display text-lg font-bold text-foreground\">Who can prescribe?</h3></div><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Since 2016, doctors have been able to prescribe adapted physical activity (APA) to people with a long-term condition (ALD), to meet their specific health needs. Since 2022, this has been extended to all doctors involved in the patient’s care, and physiotherapists can also renew or adjust this prescription, unless the doctor objects.</span></li></ul></div><div class=\"rounded-2xl border border-accent/30 bg-card p-6 flex flex-col\"><div class=\"flex items-center gap-3 mb-4\"><div class=\"w-9 h-9 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold shrink-0\">2</div><h3 class=\"font-display text-lg font-bold text-foreground\">For whom?</h3></div><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>People with a long-term condition (ALD)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>People with a chronic illness</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>People with risk factors</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>People with a loss of autonomy</span></li></ul></div><div class=\"rounded-2xl border border-primary/30 bg-card p-6 flex flex-col\"><div class=\"flex items-center gap-3 mb-4\"><div class=\"w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0\">3</div><h3 class=\"font-display text-lg font-bold text-foreground\">By whom?</h3></div><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>General practitioners</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Specialist doctors</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Advanced practice nurses</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>…</span></li></ul></div></div></div></section>"
+            }
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "prescription-comment-header",
+          "props": {
+            "headline": {
+              "fr": "Comment ? Bonnes pratiques de prescription",
+              "en": "How? Prescription best practices"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "prescription-comment-cards",
+          "props": {
+            "html": {
+              "fr": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-6xl\"><div class=\"grid gap-6 md:grid-cols-3\"><div class=\"rounded-2xl bg-primary/10 p-6\"><div class=\"w-11 h-11 rounded-full bg-primary flex items-center justify-center mb-4\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" class=\"w-5 h-5\"><path d=\"M18 20a6 6 0 0 0-12 0\"/><circle cx=\"12\" cy=\"10\" r=\"4\"/><circle cx=\"12\" cy=\"12\" r=\"10\"/></svg></div><h3 class=\"font-display text-lg font-bold text-foreground mb-3\">Consultation Médicale</h3><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Réaliser un examen clinique complet</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Identifier les contre-indications absolues et relatives</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Évaluer la condition physique de base</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Prendre en compte les préférences du patient</span></li></ul></div><div class=\"rounded-2xl bg-accent/10 p-6\"><div class=\"w-11 h-11 rounded-full bg-accent flex items-center justify-center mb-4\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" class=\"w-5 h-5\"><path d=\"M11 2v2\"/><path d=\"M5 2v2\"/><path d=\"M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1\"/><path d=\"M8 15a6 6 0 0 0 12 0v-3\"/><circle cx=\"20\" cy=\"10\" r=\"2\"/></svg></div><h3 class=\"font-display text-lg font-bold text-foreground mb-3\">Prescription d’activité physique</h3><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Préciser le type d’activité recommandé</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Indiquer l’intensité et la fréquence souhaitées</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Mentionner les précautions particulières</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Définir la durée du programme</span></li></ul></div><div class=\"rounded-2xl bg-chart-3/15 p-6\"><div class=\"w-11 h-11 rounded-full bg-chart-3 flex items-center justify-center mb-4\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" class=\"w-5 h-5\"><path d=\"M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4-6 1.87 0 2.36 1.5 3.5 1.5C11.5 3.5 12 2 12 2s.5 1.5 1.5 1.5c1.14 0 1.63-1.5 3.5-1.5 2.51 0 3.97 3.28 4 6 .03 2.5-1 3.5-1 5.62V16\"/><path d=\"M4 20a2 2 0 0 1 4 0\"/><path d=\"M12 20a2 2 0 0 1 4 0\"/></svg></div><h3 class=\"font-display text-lg font-bold text-foreground mb-3\">Dispensation d’activité physique</h3><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Prévoir des consultations de suivi régulières</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Orienter vers le professionnel de l’APA</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Adapter la prescription selon l’évolution</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Évaluer les bénéfices et ajuster si nécessaire</span></li></ul></div></div></div></section>",
+              "en": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-6xl\"><div class=\"grid gap-6 md:grid-cols-3\"><div class=\"rounded-2xl bg-primary/10 p-6\"><div class=\"w-11 h-11 rounded-full bg-primary flex items-center justify-center mb-4\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" class=\"w-5 h-5\"><path d=\"M18 20a6 6 0 0 0-12 0\"/><circle cx=\"12\" cy=\"10\" r=\"4\"/><circle cx=\"12\" cy=\"12\" r=\"10\"/></svg></div><h3 class=\"font-display text-lg font-bold text-foreground mb-3\">Medical consultation</h3><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Carry out a full clinical examination</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Identify absolute and relative contraindications</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Assess baseline physical condition</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Take the patient’s preferences into account</span></li></ul></div><div class=\"rounded-2xl bg-accent/10 p-6\"><div class=\"w-11 h-11 rounded-full bg-accent flex items-center justify-center mb-4\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" class=\"w-5 h-5\"><path d=\"M11 2v2\"/><path d=\"M5 2v2\"/><path d=\"M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1\"/><path d=\"M8 15a6 6 0 0 0 12 0v-3\"/><circle cx=\"20\" cy=\"10\" r=\"2\"/></svg></div><h3 class=\"font-display text-lg font-bold text-foreground mb-3\">Physical activity prescription</h3><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Specify the recommended type of activity</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Indicate the desired intensity and frequency</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Mention any specific precautions</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Define the length of the program</span></li></ul></div><div class=\"rounded-2xl bg-chart-3/15 p-6\"><div class=\"w-11 h-11 rounded-full bg-chart-3 flex items-center justify-center mb-4\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" class=\"w-5 h-5\"><path d=\"M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4-6 1.87 0 2.36 1.5 3.5 1.5C11.5 3.5 12 2 12 2s.5 1.5 1.5 1.5c1.14 0 1.63-1.5 3.5-1.5 2.51 0 3.97 3.28 4 6 .03 2.5-1 3.5-1 5.62V16\"/><path d=\"M4 20a2 2 0 0 1 4 0\"/><path d=\"M12 20a2 2 0 0 1 4 0\"/></svg></div><h3 class=\"font-display text-lg font-bold text-foreground mb-3\">Delivering the physical activity</h3><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Plan regular follow-up consultations</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Refer to an APA professional</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Adjust the prescription as needed</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Assess benefits and adapt if necessary</span></li></ul></div></div></div></section>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "prescription-cta",
+          "props": {
+            "html": {
+              "fr": "<section class=\"relative py-16 px-4 text-center bg-gradient-hero text-primary-foreground\"><div class=\"container mx-auto max-w-2xl\"><h2 class=\"font-display text-3xl font-bold mb-4\">Besoin d’accompagnement ?</h2><p class=\"opacity-90 leading-relaxed mb-8\">Notre équipe est disponible pour vous aider dans vos démarches de prescription et vous mettre en relation avec les structures adaptées.</p><a href=\"/contact\" class=\"inline-flex items-center justify-center bg-background text-foreground font-semibold rounded-full shadow-lg hover:scale-105 transition-all px-6 py-3\">Contacter l’équipe SSBE</a></div></section>",
+              "en": "<section class=\"relative py-16 px-4 text-center bg-gradient-hero text-primary-foreground\"><div class=\"container mx-auto max-w-2xl\"><h2 class=\"font-display text-3xl font-bold mb-4\">Need support?</h2><p class=\"opacity-90 leading-relaxed mb-8\">Our team is available to help you with your prescription process and put you in touch with the right structures.</p><a href=\"/contact\" class=\"inline-flex items-center justify-center bg-background text-foreground font-semibold rounded-full shadow-lg hover:scale-105 transition-all px-6 py-3\">Contact the SSBE team</a></div></section>"
+            }
+          }
+        }
+      ]
+    },
+    {
       "path": "/presentation",
       "title": {
         "fr": "Présentation - Sport Santé Bien-être",
@@ -2084,6 +2456,246 @@
                 "html": "<section class=\"relative py-20 px-4 md:py-28 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"lg:col-span-2\"><div class=\"bg-gradient-hero text-primary-foreground rounded-3xl shadow-2xl sticky top-24 overflow-hidden\"><div class=\"absolute top-0 right-0 w-32 h-32 bg-primary-foreground/5 rounded-full -translate-y-1/2 translate-x-1/2\"></div><div class=\"absolute bottom-10 left-5 w-20 h-20 bg-primary-foreground/5 rounded-full\"></div><div class=\"relative p-8 md:p-10\"><span class=\"text-5xl mb-4 block\">🚀</span><h3 class=\"font-display text-2xl font-bold mb-4\">Prêt à vous lancer ?</h3><p class=\"mb-8 opacity-90 leading-relaxed\">Déposez votre demande en ligne. Notre équipe vous accompagne de A à Z, de la constitution du dossier à l'obtention du label !</p><div class=\"space-y-3\"><a href=\"/pro/labellisation/demande\" class=\"w-full inline-flex items-center justify-center bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full shadow-lg hover:scale-105 transition-all px-4 py-2\">Faire une demande<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"ml-2 h-4 w-4\"><path d=\"M5 12h14\"/><path d=\"m12 5 7-5-7-5\"/></svg></a><button class=\"w-full inline-flex items-center justify-center bg-transparent border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 rounded-full px-4 py-2\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"mr-2 h-4 w-4\"><path d=\"M12 3v12\"/><path d=\"m7-5-7 7-7-7\"/><path d=\"M5 21h14\"/></svg>Télécharger le guide</button></div></div></div></div></div></section>"
               }
             }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/habilitation-mss",
+      "title": {
+        "fr": "Habilitation Maisons Sport-Santé",
+        "en": "Sport-Health Houses Accreditation"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-quick-access",
+          "id": "habilitation-hero",
+          "props": {
+            "headline": {
+              "fr": "Habilitation Maisons Sport-Santé",
+              "en": "Sport-Health Houses Accreditation"
+            },
+            "subhead": {
+              "fr": "Pour se prévaloir du titre « Maison Sport-Santé », les structures doivent obtenir une habilitation administrative délivrée par l’ARS et la DRAJES, selon la procédure fixée par le décret 2023-170 du 8 mars 2023 et sur la base des critères du cahier des charges du 25 avril 2023.",
+              "en": "To use the title “Maison Sport-Santé”, structures must obtain an administrative accreditation issued by the ARS and DRAJES, under the procedure set by decree 2023-170 of 8 March 2023 and the specifications of 25 April 2023."
+            },
+            "backgroundImage": "images/sportSanteBienetre/hero2.jpg",
+            "badges": [
+              {
+                "label": {
+                  "fr": "Dispositif national officiel",
+                  "en": "Official national scheme"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z\"/><path d=\"M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2\"/><path d=\"M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2\"/><path d=\"M10 6h4\"/><path d=\"M10 10h4\"/><path d=\"M10 14h4\"/><path d=\"M10 18h4\"/></svg>"
+              }
+            ],
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "Déposer une demande",
+                  "en": "Submit an application"
+                },
+                "path": "#habilitation-procedure-steps",
+                "variant": "accent"
+              }
+            ]
+          }
+        },
+        {
+          "type": "html",
+          "id": "habilitation-banner-avant-depot",
+          "props": {
+            "html": "<section class=\"relative py-12 px-4\"><div class=\"container mx-auto max-w-4xl\"><div class=\"relative overflow-hidden bg-gradient-hero text-primary-foreground rounded-3xl shadow-2xl p-8 md:p-10 text-center\"><div class=\"absolute top-0 right-0 w-32 h-32 bg-primary-foreground/5 rounded-full -translate-y-1/2 translate-x-1/2\"></div><div class=\"absolute bottom-10 left-5 w-20 h-20 bg-primary-foreground/5 rounded-full\"></div><div class=\"relative\"><span class=\"text-5xl mb-4 block\">💡</span><h2 class=\"font-display text-2xl md:text-3xl font-bold mb-4\">Avant de déposer votre dossier</h2><p class=\"max-w-2xl mx-auto opacity-90 leading-relaxed mb-8\">En dehors de la période d’appel à habilitation, il est recommandé de vous rapprocher des services de l’ARS et de la DRAJES. Ils peuvent vous accompagner dans l’élaboration de votre projet préalablement au dépôt de la demande, afin de vous assurer du respect du cahier des charges.</p><a href=\"mailto:drajes.sport-sante@ac-reunion.fr\" class=\"inline-flex items-center gap-2 bg-background text-foreground font-medium rounded-full shadow-lg hover:scale-105 transition-all px-6 py-3\">✉️ drajes.sport-sante@ac-reunion.fr</a></div></div></div></section>"
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "habilitation-procedure-header",
+          "props": {
+            "headline": {
+              "fr": "La procédure d’habilitation d’une MSS",
+              "en": "The MSS accreditation procedure"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "habilitation-procedure-steps",
+          "props": {
+            "html": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-6xl\"><div class=\"grid gap-6 md:grid-cols-3 items-stretch\"><div class=\"rounded-2xl border border-border bg-card p-6 flex flex-col\"><div class=\"w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4\">1</div><h3 class=\"font-display text-lg font-bold mb-3 text-foreground\">Dépôt des demandes</h3><p class=\"text-sm font-semibold text-foreground mb-1\">Du 1er mars au 31 mai</p><p class=\"text-sm text-muted-foreground mb-6 flex-1\">La demande d’habilitation se dépose sur la plateforme démarches-simplifiées.fr durant la fenêtre annuelle.</p><a href=\"https://www.demarches-simplifiees.fr/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"inline-flex items-center justify-center w-full border border-border rounded-full px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors\">Accéder à la plateforme</a></div><div class=\"rounded-2xl border border-primary/30 bg-primary/5 p-6 flex flex-col\"><div class=\"w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold mb-4\">2</div><h3 class=\"font-display text-lg font-bold mb-3 text-foreground\">Réponse au cahier des charges</h3><p class=\"text-sm font-semibold text-foreground mb-1\">Arrêté du 25 avril 2023</p><p class=\"text-sm text-muted-foreground mb-6 flex-1\">Le projet doit répondre aux critères définis par le cahier des charges fixé par arrêté ministériel.</p><a href=\"https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000047558874\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"inline-flex items-center justify-center w-full border border-primary/40 text-primary rounded-full px-4 py-2 text-sm font-medium hover:bg-primary/10 transition-colors\">Consulter l’arrêté</a></div><div class=\"rounded-2xl border border-accent/30 bg-accent/5 p-6 flex flex-col\"><div class=\"w-10 h-10 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold mb-4\">3</div><h3 class=\"font-display text-lg font-bold mb-3 text-foreground\">Traitement et réponse</h3><p class=\"text-sm font-semibold text-foreground mb-1\">Délai : 2 mois</p><p class=\"text-sm text-muted-foreground flex-1\">Les réponses seront apportées dans un délai de 2 mois à compter du 31 mai par les services ARS et DRAJES.</p></div></div></div></section>"
+          }
+        },
+        {
+          "type": "categories-grid",
+          "id": "habilitation-engagements",
+          "props": {
+            "headline": {
+              "fr": "Les engagements d’une MSS habilitée",
+              "en": "Commitments of an accredited MSS"
+            },
+            "subhead": {
+              "fr": "Devenir Maison Sport-Santé, c’est s’engager durablement dans une démarche de qualité et de coopération territoriale.",
+              "en": "Becoming a Maison Sport-Santé means a lasting commitment to quality and territorial cooperation."
+            },
+            "variant": "primary",
+            "columns": 3,
+            "cards": [
+              {
+                "icon": "file-text",
+                "title": {
+                  "fr": "Respecter le cahier des charges",
+                  "en": "Comply with the specifications"
+                },
+                "subtitle": {
+                  "fr": "Cadre d’intervention, modalités de fonctionnement, rapports et bilans à transmettre, tels que précisés dans l’arrêté du 25 avril 2023.",
+                  "en": "Scope of action, operating procedures, reports and assessments to submit, as set out in the 25 April 2023 order."
+                }
+              },
+              {
+                "icon": "network",
+                "title": {
+                  "fr": "Intégrer le réseau SSBE La Réunion",
+                  "en": "Join the SSBE Réunion network"
+                },
+                "subtitle": {
+                  "fr": "Participer aux comités techniques des MSS La Réunion et contribuer à la dynamique régionale du Sport-Santé.",
+                  "en": "Take part in the Réunion MSS technical committees and contribute to the regional Sport-Health dynamic."
+                }
+              },
+              {
+                "icon": "bell",
+                "title": {
+                  "fr": "Déclarer toute modification",
+                  "en": "Report any change"
+                },
+                "subtitle": {
+                  "fr": "Signaler tout changement en lien avec l’habilitation aux services ARS et DRAJES par email.",
+                  "en": "Report any change related to the accreditation to the ARS and DRAJES services by email."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "gridLayout",
+          "id": "habilitation-rapport-annuel",
+          "props": {
+            "leftColumns": 2,
+            "rightColumns": 2,
+            "gap": 4,
+            "leftSection": {
+              "type": "html",
+              "id": "habilitation-rapport-annuel-left",
+              "props": {
+                "html": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-xl\"><h2 class=\"font-display text-3xl font-bold mb-6 text-foreground\">Le rapport <span class=\"text-primary\">annuel</span> d’activité</h2><p class=\"text-muted-foreground leading-relaxed mb-4\">Chaque année, <strong class=\"text-foreground\">au plus tard le 30 juin</strong>, la MSS adresse à l’ARS et à la DRAJES un rapport annuel d’activité N-1 et de financement N-1.</p><p class=\"text-muted-foreground leading-relaxed mb-8\">La MSS participe également à l’évaluation du dispositif selon les protocoles mis en place par les ministères, notamment dans le cadre d’enquêtes périodiques menées par le <strong class=\"text-foreground\">Pôle Ressources National Sport Santé Bien-Être</strong>.</p><a href=\"https://pole-sante.creps-vichy.sports.gouv.fr/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"inline-flex items-center justify-center border border-border rounded-full px-6 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors\">Pôle Ressources National</a></div></section>"
+              }
+            },
+            "rightSection": {
+              "type": "html",
+              "id": "habilitation-rapport-annuel-right",
+              "props": {
+                "html": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-xl\"><div class=\"rounded-2xl border border-primary/30 bg-primary/5 p-6 md:p-8\"><div class=\"flex items-center gap-2 mb-1\"><span class=\"text-xl\">📊</span><h3 class=\"font-display text-lg font-bold text-foreground\">Éléments à transmettre</h3></div><p class=\"text-sm text-muted-foreground mb-4\">Contenu du rapport annuel</p><ul class=\"space-y-2 text-sm text-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Données administratives et structure juridique</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Responsable et personne référente de la MSS</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Ressources humaines (professionnels et bénévoles, ETP, qualifications)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Territoire(s) d'intervention (périmètre, antennes, équipes mobiles)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Interventions hors les murs (lieux, nombre de bénéficiaires)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Nombre et profil des personnes accueillies (âge, sexe, publics spécifiques)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Services proposés et nombre de bénéficiaires (bilans, entretiens, séances APS/APA)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Parcours sport-santé de proximité et orientations</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Partenaires de la MSS</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Bilan financier</span></li></ul></div></div></section>"
+              }
+            }
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "habilitation-termes-header",
+          "props": {
+            "headline": {
+              "fr": "Aux termes de l’habilitation",
+              "en": "At the end of the accreditation"
+            }
+          }
+        },
+        {
+          "type": "accordion",
+          "id": "habilitation-termes-accordion",
+          "props": {
+            "allowMultiple": true,
+            "items": [
+              {
+                "title": {
+                  "fr": "📊 Bilan global d’activité",
+                  "en": "📊 Overall activity report"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>La MSS adresse à l’ARS et à la DRAJES un bilan global de son activité et de son financement durant son habilitation, au plus tard 8 mois avant la date d’expiration de l’habilitation.</p>",
+                  "en": "<p>The MSS sends the ARS and DRAJES an overall report of its activity and funding during its accreditation, no later than 8 months before the accreditation expires.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "📝 Demande de renouvellement",
+                  "en": "📝 Renewal application"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>La MSS adresse à l’ARS et à la DRAJES un bilan global de son activité et de son financement durant son habilitation, au plus tard 8 mois avant la date d’expiration de l’habilitation.</p><div class=\"mt-4 pt-4 border-t border-border flex items-start gap-2 text-sm\"><span>⚠️</span><span>Attention : à défaut du respect de ces délais, une nouvelle demande d’habilitation (au lieu d’un renouvellement) devra être déposée, et vous ne pourrez plus vous prévaloir de votre habilitation « Maison Sport-Santé » jusqu’à obtention de la nouvelle habilitation.</span></div>",
+                  "en": "<p>The MSS sends the ARS and DRAJES an overall report of its activity and funding during its accreditation, no later than 8 months before the accreditation expires.</p><div class=\"mt-4 pt-4 border-t border-border flex items-start gap-2 text-sm\"><span>⚠️</span><span>Warning: failure to meet these deadlines will require a new accreditation application (instead of a renewal), and you will no longer be able to use the “Maison Sport-Santé” accreditation until the new one is obtained.</span></div>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "⏳ En cas de manquement au cahier des charges",
+                  "en": "⏳ In case of non-compliance with the specifications"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>En cas de manquement au cahier des charges ou aux autres dispositions législatives et réglementaires applicables aux Maisons Sport-Santé, la MSS devra présenter des observations écrites dans un délai d’un mois à réception de la demande de l’ARS et de la DRAJES de La Réunion.</p>",
+                  "en": "<p>In case of non-compliance with the specifications or other legislative and regulatory provisions applicable to Maisons Sport-Santé, the MSS must submit written observations within one month of receiving the request from the ARS and DRAJES of Réunion.</p>"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "habilitation-textes-header",
+          "props": {
+            "headline": {
+              "fr": "Textes de référence",
+              "en": "Reference texts"
+            }
+          }
+        },
+        {
+          "type": "cards",
+          "id": "habilitation-textes-cards",
+          "props": {
+            "columns": 2,
+            "layout": "grid",
+            "items": [
+              {
+                "icon": "file-text",
+                "title": {
+                  "fr": "Décret 2023-170",
+                  "en": "Decree 2023-170"
+                },
+                "text": {
+                  "fr": "Décret du 8 mars 2023 fixant la procédure d’habilitation des Maisons Sport-Santé.",
+                  "en": "Decree of 8 March 2023 setting the accreditation procedure for Sport-Health Houses."
+                },
+                "href": "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000047278435",
+                "target": "_blank"
+              },
+              {
+                "icon": "clipboard-check",
+                "title": {
+                  "fr": "Cahier des charges",
+                  "en": "Specifications"
+                },
+                "text": {
+                  "fr": "Arrêté ministériel du 25 avril 2023 fixant les critères d’habilitation des MSS.",
+                  "en": "Ministerial order of 25 April 2023 setting the MSS accreditation criteria."
+                },
+                "href": "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000047558874",
+                "target": "_blank"
+              }
+            ]
           }
         }
       ]
@@ -4891,7 +5503,7 @@
         "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
       }
     },
-    "customCSS": ".ssso-card .header-gradient {\n  background: linear-gradient(135deg, var(--accent), var(--warning))!important;\n}\n\n .sspt-card .header-gradient {\n background: linear-gradient(135deg, var(--primary), var(--muted-foreground))!important;\n} \n\n .ssso-card .border-card-border-left {\n border-color: var(--accent)!important;}"
+    "customCSS": ".ssso-card .header-gradient {\n  background: linear-gradient(135deg, var(--accent), var(--warning))!important;\n}\n\n .sspt-card .header-gradient {\n background: linear-gradient(135deg, var(--primary), var(--muted-foreground))!important;\n} \n\n .ssso-card .border-card-border-left {\n border-color: var(--accent)!important;}\n\n/* Page /prescription — hero avec photo de fond : HeroWithIconSection garde toujours\n   text-foreground (sombre), illisible sur une photo claire. Corrigé ici en CSS scopé\n   à la section (id: prescription-hero) plutôt que dans le composant partagé, dont\n   c'est l'unique usage dans le parc. */\n#prescription-hero h1 {\n  color: #ffffff !important;\n  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);\n}\n#prescription-hero p {\n  color: rgba(255, 255, 255, 0.92) !important;\n  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);\n}"
   },
   "auth": {
     "menu": {
