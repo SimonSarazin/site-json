@@ -355,6 +355,27 @@ describe("buildResourceFromAnswer", () => {
     expect(buildResourceFromAnswer(null)).toBeNull();
   });
 
+  /**
+   * `depense` à clés creuses : la densification jette les clés et la dépense `"3"` passe en
+   * position `1`. Le serveur indexant par la clé, la ressource la garde à côté de la position.
+   */
+  it("garde la CLÉ du document, pas seulement la position, sur un depense à clés creuses", () => {
+    const creux = {
+      id: "answer-4",
+      answers: {
+        aapStep1: {
+          depense: {
+            "0": { poste: "Palier A", priceInt: 100 },
+            "3": { poste: "Palier D", priceInt: 400 },
+          },
+        },
+      },
+    };
+    const items = buildResourceFromAnswer(creux)!.items;
+    expect(items.map((i) => i.depenseIndex)).toEqual([0, 1]);
+    expect(items.map((i) => i.depenseKey)).toEqual(["0", "3"]);
+  });
+
   it("lit l'étape demandée quand le commun n'utilise pas aapStep1", () => {
     const autreEtape = { id: "answer-3", answers: { etapeX: { titre: "Ailleurs", depense: [{ poste: "P", priceInt: 7 }] } } };
     expect(buildResourceFromAnswer(autreEtape, "etapeX")!.resourceTotalAmount).toBe(7);
@@ -386,6 +407,61 @@ describe("buildResourceFromAnswer — financeurs servis en objet keyé par id", 
     const resource = buildResourceFromAnswer(answer)!;
     expect(resource.resourceFinancedAmount).toBe(350);
     expect(resource.items[0].allFunding.map((f) => f.financerId)).toEqual(["u1", "u2"]);
+  });
+});
+
+/**
+ * Le repli hors enveloppe est le chemin COURANT d'un AAC : y figer `paymentStatus` afficherait
+ * payée toute ligne, promesse pure comprise. Le statut vient du bloc `payment`, avec repli sur
+ * `fundingType`.
+ */
+describe("buildResourceFromAnswer — statut de paiement des financeurs bruts", () => {
+  const answerAvec = (financer: unknown) => ({
+    id: "answer-5",
+    answers: { aapStep1: { depense: [{ poste: "Dev", price: 1000, financer: [financer] }] } },
+  });
+
+  it("n'annonce plus « payé » sur une promesse sans versement", () => {
+    const resource = buildResourceFromAnswer(answerAvec({ id: "u1", name: "Alice", amount: 250 }))!;
+
+    expect(resource.items[0].allFunding[0].paymentStatus).toBe("pending");
+  });
+
+  it("dit « partiel » quand une part seulement est validée", () => {
+    const resource = buildResourceFromAnswer(
+      answerAvec({
+        id: "u1",
+        name: "Alice",
+        amount: 1000,
+        finkey: "a-w171hEa1bvz9",
+        payment: { logs: [{ amount: 500, confirmation: "validated" }] },
+      }),
+    )!;
+    const [fund] = resource.items[0].allFunding;
+
+    expect(fund.paymentStatus).toBe("partial");
+    expect(fund.paidAmount).toBe(500);
+    expect(fund.finkey).toBe("a-w171hEa1bvz9");
+  });
+
+  it("dit « payé » quand le versement validé couvre l'engagement", () => {
+    const resource = buildResourceFromAnswer(
+      answerAvec({
+        id: "u1",
+        amount: 300,
+        payment: { logs: [{ amount: 300, confirmation: "validated" }] },
+      }),
+    )!;
+
+    expect(resource.items[0].allFunding[0].paymentStatus).toBe("paid");
+  });
+
+  it("conserve le repli legacy `fundingType: \"prepaid\"`", () => {
+    const resource = buildResourceFromAnswer(
+      answerAvec({ id: "u1", amount: 300, fundingType: "prepaid" }),
+    )!;
+
+    expect(resource.items[0].allFunding[0].paymentStatus).toBe("paid");
   });
 });
 
@@ -479,6 +555,16 @@ describe("buildItemsFromRawDepenses — la ligne brute (saisie) prime sur la pho
     const items = buildItemsFromRawDepenses(normalizeDepenseValue(local), server());
     expect(items.map((i) => i.name)).toEqual(["Développement", "Hébergement", "Formation"]);
     expect(items.map((i) => i.depenseIndex)).toEqual([0, 1, 2]);
+  });
+
+  /**
+   * Sans clés fournies, aucune n'est inventée : sur une liste éditée LOCALEMENT, les
+   * positions ne sont plus celles du document, et une clé fausse viserait une autre
+   * dépense à l'écriture. C'est le contrat de `MilestoneListField`.
+   */
+  it("n'invente aucune clé de dépense quand l'appelant n'en fournit pas", () => {
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(localInitial()), server());
+    expect(items.every((i) => i.depenseKey === undefined)).toBe(true);
   });
 
   it("cascade « Modifier » : l'item affiché et la ligne relue par `list[depenseIndex]` sont la même", () => {

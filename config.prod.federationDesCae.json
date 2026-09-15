@@ -235,6 +235,8 @@
       }
     ],
     "utilities": {
+      "piggyBank": true,
+      "pledge": true,
       "themeSwitch": true,
       "langSwitch": false,
       "auth": true

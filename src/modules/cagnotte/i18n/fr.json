@@ -87,7 +87,8 @@
     },
     "orgPicker": {
       "searchPlaceholder": "Rechercher une organisation...",
-      "selectPlaceholder": "Choisir une organisation...",
+      "listLabel": "Organisation qui contribue",
+      "noMatch": "Aucune organisation ne correspond à « {{query}} »",
       "notAdminTitle": "Vous n'êtes admin d'aucune organisation",
       "notAdminHelp": "Pour contribuer en tant qu'organisation, vous devez être administrateur"
     },
@@ -799,6 +800,16 @@
     "payform" : {
       "selectedPledge" : "engagement sélectionnée",
       "selectedPledge_plural" : "engagements sélectionnées"
+    }
+  },
+  "HeaderButtons": {
+    "piggyBank": {
+      "aria": "Cagnotte participative",
+      "tooltip": "Ouvrir la cagnotte participative"
+    },
+    "pledge": {
+      "aria": "Voir les promesses",
+      "tooltip": "Voir et payer mes promesses en cours"
     }
   },
   "PaymentReceivedScreen": {

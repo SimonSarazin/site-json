@@ -9,8 +9,16 @@
  * Toutes les fonctions sont pures (aucun side-effect) — adaptées à `utils/` plutôt qu'à `lib/`.
  */
 import type { CagnotteFundableItem, CagnotteResource, FundingActionStatus } from "../types";
+import { asRecord, toArrayOrValues, toNumber, toString, type UnknownRecord } from "./coerce";
+import { listDepenseKeys } from "./depenseKey";
+import { readFinancerPaymentState, toDisplayPaymentStatus } from "./financerPayment";
 
-export type UnknownRecord = Record<string, unknown>;
+/**
+ * Les coercions de base vivent dans `coerce.ts` (socle sans dépendance) et sont ré-exportées
+ * ici : elles font partie de la surface publique de ce module.
+ */
+export { asRecord, toArrayOrValues, toNumber, toString };
+export type { UnknownRecord };
 
 /**
  * Étape par défaut des données d'un commun AAC.
@@ -27,14 +35,6 @@ export type UnknownRecord = Record<string, unknown>;
 export const DEFAULT_AAC_STEP = "aapStep1";
 
 /**
- * Coerce une valeur en `Record<string, unknown>`. Retourne `{}` pour `null`, `undefined`,
- * les primitives ou les valeurs non-objet. À utiliser comme garde-fou avant un accès dynamique.
- */
-export function asRecord(value: unknown): UnknownRecord {
-  return value && typeof value === "object" ? (value as UnknownRecord) : {};
-}
-
-/**
  * Retourne le record s'il est non-vide, sinon `null`. Pratique pour les fallbacks
  * « prendre la première source non-vide » (cf. `getServerData`, `extractPaymentMethods`).
  */
@@ -42,16 +42,6 @@ export function getNonEmptyRecord(value: unknown): UnknownRecord | null {
   if (!value || typeof value !== "object") return null;
   const record = value as UnknownRecord;
   return Object.keys(record).length > 0 ? record : null;
-}
-
-/**
- * Coerce en tableau : tableaux pass-through, objets → `Object.values`, sinon `[]`.
- * Utile pour les structures backend qui sont parfois sérialisées en `{ "0": ..., "1": ... }`.
- */
-export function toArrayOrValues<T>(value: unknown): T[] {
-  if (Array.isArray(value)) return value as T[];
-  if (value && typeof value === "object") return Object.values(value as Record<string, T>);
-  return [];
 }
 
 /**
@@ -69,22 +59,6 @@ export function normalizeTags(value: unknown): string[] {
     (tag): tag is string => typeof tag === "string" && tag.length > 0,
   );
   return Array.from(new Set(tags));
-}
-
-/**
- * Coerce en `number` finite. Retourne `0` pour `null`, `undefined`, `NaN`, `Infinity`.
- */
-export function toNumber(value: unknown): number {
-  const parsed = Number(value ?? 0);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-/**
- * Coerce en `string`. Retourne `''` pour toute valeur non-string (y compris numbers,
- * pour éviter les `"[object Object]"`).
- */
-export function toString(value: unknown): string {
-  return typeof value === "string" ? value : "";
 }
 
 /**
@@ -261,18 +235,27 @@ function buildFallbackFundingFromRawFinancers(rawFinancer: unknown): {
   allFunding: CagnotteFundableItem["allFunding"];
 } {
   const financers = toArrayOrValues<unknown>(rawFinancer).map(asRecord);
-  const allFunding = financers.map((f, index) => ({
-    id: toString(f.id) || `financer-${index}`,
-    financerName: toString(f.name) || toString(f.financerName) || "",
-    financerId: toString(f.id) || toString(f.financerId) || undefined,
-    financerType: toString(f.type) || toString(f.financerType) || undefined,
-    amount: toNumber(f.amount),
-    date: toTimestampOrNow(f.date),
-    paymentStatus: "paid" as const,
-    transactionId: toString(f.transactionId) || toString(f.id) || `TX-${index}`,
-    fundingType: toString(f.fundingType) || undefined,
-    fundingIndex: index,
-  }));
+  const allFunding = financers.map((f, index) => {
+    // Ce chemin est le COURANT d'un AAC : y figer `paymentStatus` afficherait payée
+    // toute ligne, promesse pure comprise.
+    const paymentState = readFinancerPaymentState(f);
+
+    return {
+      id: toString(f.id) || `financer-${index}`,
+      financerName: toString(f.name) || toString(f.financerName) || "",
+      financerId: toString(f.id) || toString(f.financerId) || undefined,
+      financerType: toString(f.type) || toString(f.financerType) || undefined,
+      amount: toNumber(f.amount),
+      date: toTimestampOrNow(f.date),
+      paymentStatus: toDisplayPaymentStatus(paymentState.status),
+      transactionId: toString(f.transactionId) || toString(f.id) || `TX-${index}`,
+      fundingType: toString(f.fundingType) || undefined,
+      fundingIndex: index,
+      finkey: toString(f.finkey) || undefined,
+      paidAmount: paymentState.paidAmount,
+      pendingAmount: paymentState.pendingAmount,
+    };
+  });
   const currentFunding = financers.reduce((sum, f) => sum + toNumber(f.amount), 0);
   return { currentFunding, allFunding };
 }
@@ -309,7 +292,9 @@ export function buildResourceFromAnswer(
   // `toArrayOrValues` couvre les deux formes, `toArray` viderait la liste en silence.
   const rawDepenses = toArrayOrValues<unknown>(stepAnswers.depense).map(asRecord);
 
-  const items = buildItemsFromRawDepenses(rawDepenses, []);
+  // Le document est encore là : on garde les clés que la densification jette, seul moyen de
+  // viser une dépense ORPHELINE à l'écriture (cf. `utils/depenseKey.ts`).
+  const items = buildItemsFromRawDepenses(rawDepenses, [], listDepenseKeys(stepAnswers.depense));
   const openItems = items.filter((item) => item.status !== "close");
 
   const project = asRecord(answer.project);
@@ -355,6 +340,9 @@ export function buildResourceFromAnswer(
  * la stabilité. `depenseIndex` est l'index LOCAL : c'est lui que les gestes du
  * champ relisent (`list[item.depenseIndex]`).
  *
+ * `depenseKeys` porte les clés du DOCUMENT (`listDepenseKeys`) : à ne fournir que si
+ * `rawDepenses` en sort, jamais depuis une liste éditée localement.
+ *
  * Pour les appelants qui passent des dépenses SERVEUR (`CommunFinancingSection`,
  * `CommunFinancingCard`, `CommunCofinancersTable`), brut et enrichi décrivent la
  * même ligne du même document : la fusion y est sans effet.
@@ -362,6 +350,7 @@ export function buildResourceFromAnswer(
 export function buildItemsFromRawDepenses(
   rawDepenses: UnknownRecord[],
   enrichedItems: CagnotteFundableItem[],
+  depenseKeys?: string[],
 ): CagnotteFundableItem[] {
   return rawDepenses.map((d, index) => {
     const milestoneId = toString(d.milestone);
@@ -373,6 +362,9 @@ export function buildItemsFromRawDepenses(
       itemId: toString(d.id) || String(index),
       milestoneId,
       depenseIndex: index,
+      // Absente sur une liste LOCALE (`MilestoneListField`), dont les positions ne sont
+      // plus celles du document : mieux vaut pas de clé qu'une clé fausse.
+      depenseKey: depenseKeys?.[index],
       name: toString(d.poste),
       description: toString(d.description),
       price: toSafeInt(d.priceInt ?? d.price),

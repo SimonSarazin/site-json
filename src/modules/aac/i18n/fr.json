@@ -118,6 +118,7 @@
       "collectedPercent": "{{percent}}% collecté",
       "paid": "Payé",
       "pledged": "Promesse",
+      "partiallyPaid": "Partiel",
       "done": "Terminée",
       "inProgress": "En cours",
       "actionsButtons": {

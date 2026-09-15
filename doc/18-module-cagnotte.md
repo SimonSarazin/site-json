@@ -147,8 +147,13 @@ src/modules/cagnotte/
 │   └── paymentDataProcessor.ts         # @deprecated SCHEMA OBSOLÈTE
 │
 └── utils/
-    ├── dataTransform.ts                # asRecord, getServerData, getEntityId, toNumber, toString, toArray, toArrayOrValues, toSafeInt, normalizeIdOrNull, getNonEmptyRecord, readEntityPreferences
+    ├── coerce.ts                       # SOCLE sans dépendance : asRecord, toNumber, toString, toArrayOrValues (ré-exportés par dataTransform)
+    ├── dataTransform.ts                # getServerData, getEntityId, toArray, toSafeInt, normalizeIdOrNull, getNonEmptyRecord, readEntityPreferences (+ ré-exports de coerce)
     ├── dataTransform.test.ts           # Tests unitaires de tous les helpers dataTransform
+    ├── financerPayment.ts              # readFinancerPaymentState, unpaidAmountOf, toDisplayPaymentStatus — LA lecture du bloc `payment`
+    ├── financerPayment.test.ts         # Tests unitaires financerPayment
+    ├── depenseKey.ts                   # resolveDepenseKey — la CLÉ d'une dépense, ≠ sa position
+    ├── depenseKey.test.ts              # Tests unitaires depenseKey
     ├── format.ts                       # formatCurrency (Intl.NumberFormat), formatDate, initials
     ├── format.test.ts                  # Tests unitaires format
     ├── actionDateHelpers.ts            # parseFrenchDateToIso, frenchDate↔pickerValue, timestampToFrenchDate
@@ -169,6 +174,7 @@ Chaque jalon cagnotte existe en **double** dans deux collections backend distinc
 |---|---|---|
 | **`projects`** | `oceco.milestones[]` | Définition du jalon : `{ milestoneId, name, description, status: open\|done\|close }` |
 | **`answers`** (CoForm) | `answers.aapStep1.depense[]` | Miroir financier : `{ poste, price, description, milestone, financer[], include }` |
+| **`answers`** (CoForm) | `…depense[].financer[]` | Une ligne de financement, **écrite par le serveur** : `{ line, amount, user, date, name, id, type, status, finkey, payment{logs[], paidAmount, pendingAmount, status} }`. En lecture, passer par `utils/financerPayment.ts` — jamais d'accès direct à `payment`. Cf. `doc/34` §2 |
 
 → Toute mutation milestone doit être **propagée des deux côtés** :
 
