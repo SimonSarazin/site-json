@@ -457,12 +457,16 @@ src/modules/aac/
   lib/communSeo.ts          # resolveCommunSeo : titre / résumé / image de la fiche (§3.3)
   lib/filterCommuns.ts      # filtrage + tri CLIENT du chemin balayage (usageSubKey / parseUsageSubKey)
   lib/associateExistingProject.ts # rattacher un commun à un projet DÉJÀ existant (§9 piège n°11)
+  lib/communDeletion.ts     # resolveCommunDeletionPlan : ce qu'une suppression emporterait, et
+                            #   quand elle est INTERDITE (dès qu'un versement existe, §6)
   hooks/useAacConfig.ts     # résolveur câblé (api.form ×2, 0 nouvel endpoint)
   hooks/useCommunFundingContext.ts # où vit un commun : l'appel où il a été DÉPOSÉ
   hooks/useCommunFundingHost.ts    # l'entité de ce contexte — celle qui détient l'enveloppe
   hooks/useCommunProjectEntity.ts  # le Project lié : droits + oceco.milestones
   hooks/useCommunRawDepenses.ts    # depense[] : ...RawDepenses pour l'affichage,
                                    #   ...RawDepensesDocument (brut) pour l'écriture
+  hooks/useDeleteCommun.ts  # cascade EXPLICITE commun → actions → projet : le backend n'en fait
+                            #   AUCUNE (`Element::deleteSimple` laisse les actions orphelines)
   hooks/useAacPermissions.ts
   permissions/              # types, defaults, calculators/aac.ts, register, index
   constants/queryKeys.ts    # AAC_QUERY_KEYS
@@ -537,17 +541,40 @@ ajouter une action sur SON commun.
 Droit final : **admin du projet lié OU déposant du commun**. L'admin de l'appel n'y est pas — voir
 ci-dessous.
 
-⚠️ **Deux règles voisines mais DISTINCTES**, à ne pas réunifier :
+⚠️ **Des règles voisines mais DISTINCTES**, à ne pas réunifier :
 
 | Action | Qui | Où |
 |---|---|---|
 | Sélectionner / valider un commun | admin de l'appel | `aac` (`canSelectCommun`) |
 | **Générer / Associer un projet** | admin de l'appel **ou** déposant | `CommunProjectControl.canManageProject` |
 | **Ajouter / éditer palier et action** | admin du **projet lié** **ou** déposant | `cagnotte` + `ownerIds` |
+| **Supprimer DÉFINITIVEMENT un commun** | auteur **ou** admin | `aac` (`canDeleteCommun`) |
 
 Porter l'appel autorise à instruire et à **promouvoir** un commun, pas à écrire dans le plan de
 financement d'autrui. L'admin de l'appel retrouve les paliers dès qu'il administre le projet lié —
 ce qui est le cas courant quand c'est lui qui l'a généré.
+
+**`canDeleteCommun` est une FONCTION**, seule du namespace : le droit dépend du commun visé,
+puisqu'il s'ouvre à son auteur. Volontairement distinct de `canEditCommun`, qui porte
+`anyOnewithLinkCanAnswer` — « avoir le lien suffit pour répondre » ouvre l'édition à tout
+**connecté**, et un geste irréversible n'hérite pas d'un gate pensé pour la saisie. Le backend ne
+l'hérite pas non plus : les branches d'`Answer::canEdit` (`survey/models/Answer.php:143`) sont admin
+d'interface, auteur, admin `parentSlug`, admin `context`, `Form::canAdmin`, hook costum.
+
+Deux garde-fous s'ajoutent au droit, côté front :
+
+- **L'argent bloque.** `resolveCommunDeletionPlan` ([`lib/communDeletion.ts`](../src/modules/aac/lib/communDeletion.ts))
+  refuse la suppression dès qu'un versement existe — compté sur `items[].allFunding`, **jamais** sur
+  `resourceFinancedAmount`, qui ne somme que les paliers OUVERTS : un commun financé puis clôturé
+  afficherait 0 € et redeviendrait supprimable. Le retrait de l'annuaire
+  (`CommunSelectionControl`) reste la voie non destructive.
+- **La cascade est EXPLICITE et sur demande** : le backend n'en fait aucune (`Element::deleteSimple`
+  retire le document, ses commentaires et ses fichiers, mais ni les actions d'un projet ni les liens
+  croisés). `useDeleteCommun` supprime le commun d'abord — seul échec qui fait échouer le geste —
+  puis, si l'utilisateur l'a demandé, les actions **avant** le projet, en best-effort compté.
+
+⚠️ Gate d'**affichage** uniquement, comme les autres : le backend reste la source de vérité
+(`Authorisation::canDeleteElement`).
 
 ## 7. Query keys
 

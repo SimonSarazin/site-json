@@ -37,11 +37,34 @@ const contextState = {
   isFormLoading: false,
   configError: null as Error | null,
   refetchConfig: (() => {}) as () => void,
+  api: null,
+  // Droits du visiteur. Au repos : aucun — l'annuaire se rend d'abord pour un
+  // visiteur ordinaire, la suppression est l'exception qu'on active au cas par cas.
+  permissions: { isAdmin: false, canDeleteCommun: () => false },
 };
 const CONTEXT_AT_REST = { ...contextState };
 
 vi.mock("../hooks/useAacDirectoryContext", () => ({
   useAacDirectoryContext: () => contextState,
+}));
+// La suppression a ses propres tests (`useDeleteCommun`, `communDeletion`,
+// `CommunDeleteDialog`, `AacDirectoryResults`, cartes et lignes) : ici on
+// neutralise la mutation, la section n'est observée que sur son listing.
+vi.mock("../hooks/useDeleteCommun", () => ({
+  useDeleteCommun: () => ({ mutate: vi.fn(), isPending: false }),
+}));
+// L'enveloppe du commun ciblé n'est résolue qu'à l'ouverture du dialogue ; elle
+// passe par `useCocolight`, hors du périmètre de CE composant.
+vi.mock("../hooks/useAacFundingResource", () => ({
+  useAacFundingResource: () => ({ targetResource: undefined, isLoading: false }),
+}));
+vi.mock("@/hooks/useCocolight", () => ({
+  useCocolight: () => ({ api: null }),
+}));
+// Le dialogue a son propre test (règle de refus, cascade) et charge son bundle
+// i18n : hors périmètre ici.
+vi.mock("../components/pageDetail/CommunDeleteDialog", () => ({
+  CommunDeleteDialog: () => null,
 }));
 /**
  * État du listing, MUTABLE d'un test à l'autre : c'est l'état de la requête

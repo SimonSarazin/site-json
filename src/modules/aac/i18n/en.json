@@ -63,7 +63,8 @@
       "interested_other": "interested",
       "viewDetail": "View details for “{{name}}”",
       "showMoreTags_one": "Show the hidden keyword",
-      "showMoreTags_other": "Show the {{count}} hidden keywords"
+      "showMoreTags_other": "Show the {{count}} hidden keywords",
+      "deleteAria": "Delete the common “{{title}}”"
     },
     "sort": {
       "alpha": "Alphabetical order",
@@ -161,13 +162,13 @@
     },
     "contributorsSection": {
       "empty": "Nobody has joined this commun's project yet.",
-      "error": "Contributors could not be loaded.",
+      "error": "Project members could not be loaded.",
       "admin": "Project admin",
       "author": "Submitter",
       "contributor": "Contributor",
       "organization": "Organization",
       "more": "+{{count}} not shown.",
-      "addCta": "Add contributors",
+      "addCta": "Add members",
       "addUnavailable": "The linked project is still loading, or is not accessible.",
       "pendingTitle": "Pending invitations",
       "pendingInvitation": "Invitation sent",
@@ -180,13 +181,14 @@
       "navigation": "Navigation",
       "financialNeeds": "Funding needs",
       "actions": "Action tracking",
-      "contributors": "Contributors",
+      "contributors": "Project members",
       "cofinancers": "Co-funders",
       "gallery": "Gallery"
     },
     "gallery": {
       "empty": "No images available.",
-      "imageAlt": "Image {{index}}"
+      "imageAlt": "Image {{index}}",
+      "openImage": "Enlarge image {{index}}"
     },
     "selection": {
       "selectCta": "Select",
@@ -239,6 +241,34 @@
     },
     "origin": {
       "deposedOn": "Submitted on “{{name}}”"
+    }
+  },
+  "delete": {
+    "cta": "Delete the common",
+    "cancel": "Cancel",
+    "confirm": {
+      "title": "Delete this common?",
+      "description": "“{{title}}” will be permanently deleted, along with its files and comments. This action cannot be undone.",
+      "descriptionNoTitle": "This common will be permanently deleted, along with its files and comments. This action cannot be undone.",
+      "projectWarning": "The project linked to this common will not be deleted.",
+      "confirm": "Yes, delete",
+      "confirmWithProject": "Yes, delete everything"
+    },
+    "toasts": {
+      "success": "The common has been deleted",
+      "error": "The deletion could not be completed"
+    },
+    "checking": "Checking funding…",
+    "blocked": {
+      "title": "This common cannot be deleted",
+      "description": "It has already received {{count}} contribution(s), totalling {{amount}}. Deleting it would erase the counterpart of funds that were actually committed.",
+      "hint": "To remove it from the directory without destroying anything, use “Remove from directory”.",
+      "close": "Close"
+    },
+    "withProject": {
+      "label": "Also delete the linked project and its {{count}} action(s)",
+      "checkedHint": "The project, its actions and its tracking will be deleted along with the common.",
+      "uncheckedHint": "Without this option, the project and its actions will remain, without the common they came from."
     }
   },
   "toasts": {

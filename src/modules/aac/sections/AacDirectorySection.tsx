@@ -2,13 +2,17 @@
 // chunk de la section (le point d'entrée section n'importe pas index.ts).
 import "../i18n";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { ArrowRight, LayoutGrid, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useT } from "@/hooks/useT";
+import { useDeleteCommun } from "../hooks/useDeleteCommun";
+import { useAacFundingResource } from "../hooks/useAacFundingResource";
+import { resolveCommunDeletionPlan } from "../lib/communDeletion";
+import { CommunDeleteDialog } from "../components/pageDetail/CommunDeleteDialog";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAacDirectoryContext } from "../hooks/useAacDirectoryContext";
@@ -21,6 +25,7 @@ import { AacDirectoryFilters } from "../components/directory/AacDirectoryFilters
 import { AacDirectoryResults } from "../components/directory/AacDirectoryResults";
 import { AacDepositButton } from "../components/directory/AacDepositButton";
 import type { AacDirectorySectionProps, AacDisplayMode } from "../schema";
+import type { AacCommunCard as CommunCard } from "../lib/parseAacAnswer";
 
 interface Props {
   id?: string;
@@ -91,6 +96,8 @@ export default function AacDirectorySection({ id, props }: Props) {
     contextId,
     formParams,
     visibility,
+    api,
+    permissions,
     baseUrl,
     isFormLoading,
     configError,
@@ -173,6 +180,37 @@ export default function AacDirectorySection({ id, props }: Props) {
     }
     void (isFetchNextPageError ? fetchNextPage() : refetch());
   };
+
+  // Suppression d'un commun. La cible, la confirmation et la mutation vivent ICI, une seule
+  // fois : trente cartes n'installent pas trente dialogues, et une suppression en cours n'est
+  // pas rattachée à une carte qui va disparaître. Parité du geste legacy
+  // (`configSearchObj.js:106-137`).
+  const [toDelete, setToDelete] = useState<CommunCard | null>(null);
+
+  // Le listing ne porte ni le financement ni le projet : on résout l'enveloppe du seul commun
+  // ciblé, à l'ouverture du dialogue. `useAacFundingResource` reste inactif sans `answerId`,
+  // donc l'annuaire au repos ne paie rien, et la fiche a déjà la réponse en cache.
+  const { targetResource, isLoading: isPlanLoading } = useAacFundingResource(toDelete?.id);
+  const plan = useMemo(() => resolveCommunDeletionPlan(targetResource), [targetResource]);
+
+  const suppression = useDeleteCommun({ api });
+
+  const confirmerSuppression = (withProject: boolean) => {
+    if (!toDelete) return;
+    suppression.mutate(
+      {
+        answerId: toDelete.id,
+        withProject,
+        projectId: plan.projectId,
+        actionIds: plan.actionIds,
+      },
+      { onSuccess: () => setToDelete(null) }
+    );
+  };
+
+  // Un APERÇU ne propose aucune commande — ni filtres, ni compteur, ni bascule d'affichage :
+  // la suppression appartient à l'annuaire complet, pas à une vitrine.
+  const canDeleteCommun = isPreview ? undefined : permissions.canDeleteCommun;
 
   if (!formId) {
     return (
@@ -297,10 +335,29 @@ export default function AacDirectorySection({ id, props }: Props) {
               isRetrying={isFetching || isFormLoading}
               lastItemRef={lastItemRef}
               emptyText={emptyText ? localize(emptyText) : undefined}
+              canDeleteCommun={canDeleteCommun}
+              onRequestDelete={setToDelete}
+              isDeleting={suppression.isPending}
             />
           </div>
         </div>
       )}
+
+      <CommunDeleteDialog
+        open={toDelete !== null}
+        onOpenChange={(open) => {
+          // Ne jamais lâcher la cible pendant l'appel : la fermeture ne doit pas
+          // laisser une suppression en vol sans son dialogue de progression.
+          if (!open && !suppression.isPending) setToDelete(null);
+        }}
+        // Le backend pose « (No title) » quand le titre n'est pas renseigné : `hasTitle`
+        // distingue ce cas, et le dialogue bascule sur sa phrase sans titre.
+        communTitle={toDelete?.hasTitle ? toDelete.title : null}
+        plan={plan}
+        isPlanLoading={isPlanLoading}
+        isPending={suppression.isPending}
+        onConfirm={confirmerSuppression}
+      />
     </section>
   );
 }
