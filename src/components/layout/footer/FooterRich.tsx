@@ -4,6 +4,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { Footer } from '@/types/site-schema';
 import NavLink from '../NavLink';
 import SocialLinks from './SocialLinks';
+import { useFooterLinks } from './useFooterLinks';
 
 interface FooterRichProps {
   footer: Footer;
@@ -54,22 +55,7 @@ export function FooterRich({ footer }: FooterRichProps) {
         {/* Footer Links */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {(footer.columns ?? []).map((column, index) => (
-            <div key={index}>
-              <h4 className="font-semibold mb-4 text-foreground">{t(column.title)}</h4>
-              <ul className="space-y-2">
-                {column.links.map((link, linkIndex) => (
-                  <li key={linkIndex}>
-                    <NavLink
-                      to={link.href}
-                      external={link.external}
-                      className="text-muted-foreground dark:text-gray-400 hover:text-foreground dark:hover:text-primary transition-colors"
-                    >
-                      {t(link.label)}
-                    </NavLink>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <FooterLinkColumn key={index} column={column} />
           ))}
         </div>
 
@@ -91,6 +77,33 @@ export function FooterRich({ footer }: FooterRichProps) {
         )}
       </div>
     </footer>
+  );
+}
+
+/** Composant à part : `useFooterLinks` est un hook, il ne s'appelle pas dans un `.map()`. */
+function FooterLinkColumn({ column }: { column: NonNullable<Footer['columns']>[number] }) {
+  const { t } = useLocalization();
+  const links = useFooterLinks(column.links);
+
+  if (links.length === 0) return null;
+
+  return (
+    <div>
+      <h4 className="font-semibold mb-4 text-foreground">{t(column.title)}</h4>
+      <ul className="space-y-2">
+        {links.map((link, linkIndex) => (
+          <li key={linkIndex}>
+            <NavLink
+              to={link.href}
+              external={link.external}
+              className="text-muted-foreground dark:text-gray-400 hover:text-foreground dark:hover:text-primary transition-colors"
+            >
+              {t(link.label)}
+            </NavLink>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

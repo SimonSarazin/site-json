@@ -415,17 +415,405 @@
           }
         }
       ]
+    },
+    {
+      "path": "/mentions-legales",
+      "title": {
+        "fr": "Mentions légales — Fédération des CAE"
+      },
+      "sections": [
+        {
+          "type": "html",
+          "id": "mentions-legales",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Mentions légales</h1>\n<p class=\"text-muted-foreground mb-8\">Informations publiées pour le site de l'Appel à Communs de la Fédération des CAE en application de l'article 6-III de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN). Les éléments qui restent à établir sont signalés par la mention « [à compléter] ».</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Éditeur du site</h2>\n<p class=\"text-muted-foreground mb-2\">Fédération des CAE — les SCOP</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Forme juridique : [à compléter]</li>\n<li>Numéro d'immatriculation (SIREN, SIRET ou RNA) : [à compléter]</li>\n<li>Adresse du siège : [à compléter]</li>\n<li>Téléphone : [à compléter]</li>\n<li>Courriel : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Directeur de la publication</h2>\n<p class=\"text-muted-foreground mb-6\">Directeur ou directrice de la publication : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Hébergeur</h2>\n<p class=\"text-muted-foreground mb-6\">Dénomination, adresse complète et numéro de téléphone de l'hébergeur du site : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Conception et réalisation</h2>\n<p class=\"text-muted-foreground mb-6\">Ce site s'appuie sur la plateforme libre Communecter. Licence applicable aux développements propres à ce site : [à compléter]. Prestataires ayant participé à la conception et à la réalisation : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Propriété intellectuelle</h2>\n<p class=\"text-muted-foreground mb-6\">Les textes, images, logos et éléments graphiques propres au site sont protégés par le droit de la propriété intellectuelle. Toute reproduction ou représentation, totale ou partielle, sans autorisation préalable de l'éditeur est interdite.</p>\n<p class=\"text-muted-foreground mb-6\">Le site publie par ailleurs des contenus fournis par des tiers : les communs déposés en réponse à l'Appel à Communs, et les réponses à l'observatoire des besoins et solutions des CAE à partir desquelles est constitué le <a href=\"/usages\" class=\"text-primary hover:underline\">catalogue des besoins et solutions</a>. Leurs auteurs en conservent les droits. Licence applicable aux contenus publiés et aux données diffusées par le site : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Liens hypertextes</h2>\n<p class=\"text-muted-foreground mb-6\">Le site peut renvoyer vers des ressources extérieures, notamment depuis les fiches des <a href=\"/aac/communs\" class=\"text-primary hover:underline\">communs</a> et les fiches d'outils du <a href=\"/usages\" class=\"text-primary hover:underline\">catalogue des besoins et solutions</a>. L'éditeur n'exerce aucun contrôle sur ces ressources extérieures et ne saurait être tenu responsable de leur contenu ni des traitements qu'elles mettent en œuvre. Adresse à laquelle adresser toute demande relative à un lien : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Signalement d'un contenu</h2>\n<p class=\"text-muted-foreground mb-4\">Le site permet la création de comptes utilisateur et le dépôt de communs. Si vous estimez qu'un contenu accessible sur le site est illicite ou porte atteinte à vos droits, vous pouvez le signaler à l'adresse suivante : [à compléter]. Pour en permettre le traitement, la notification prévue à l'article 6-I-5 de la LCEN doit comporter notamment :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>la date de la notification ;</li>\n<li>vos nom, prénom et coordonnées, ou la dénomination et le siège s'il s'agit d'une personne morale ;</li>\n<li>la description du contenu litigieux et son adresse (URL) exacte ;</li>\n<li>les motifs pour lesquels il devrait être retiré, y compris la mention des dispositions légales invoquées.</li></ul>\n<p class=\"text-muted-foreground mb-6\">Modalités de traitement des signalements (procédure, délais, modération éventuelle des contenus publiés) : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Accessibilité</h2>\n<p class=\"text-muted-foreground mb-6\">État de conformité au Référentiel général d'amélioration de l'accessibilité (RGAA) et statut de l'audit correspondant : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Données personnelles</h2>\n<p class=\"text-muted-foreground mb-6\">Les traitements de données personnelles mis en œuvre sur le site sont décrits dans la <a href=\"/confidentialite\" class=\"text-primary hover:underline\">politique de confidentialité</a>. Coordonnées du délégué à la protection des données, s'il en a été désigné un : [à compléter].</p>\n<p class=\"text-muted-foreground mb-6\">Dernière mise à jour : [à compléter]</p>\n</div>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/confidentialite",
+      "title": {
+        "fr": "Politique de confidentialité — Fédération des CAE"
+      },
+      "sections": [
+        {
+          "type": "html",
+          "id": "confidentialite",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Politique de confidentialité</h1>\n<p class=\"text-muted-foreground mb-8\">Cette politique décrit les traitements de données personnelles réalisés dans le cadre du site de l'Appel à Communs de la Fédération des CAE, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés. Elle complète les <a href=\"/mentions-legales\" class=\"text-primary hover:underline\">mentions légales</a>. Les éléments qui restent à établir sont signalés par la mention « [à compléter] » : ils seront renseignés dans une prochaine version de ce document.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Responsable du traitement</h2>\n<p class=\"text-muted-foreground mb-2\">Le responsable des traitements décrits ci-dessous est la Fédération des CAE — les SCOP.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Forme juridique et numéro d'immatriculation (SIREN ou RNA) : [à compléter]</li>\n<li>Adresse du siège : [à compléter]</li>\n<li>Courriel : [à compléter]</li>\n<li>Délégué à la protection des données, ou personne chargée des questions relatives aux données personnelles : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Données traitées</h2>\n<p class=\"text-muted-foreground mb-4\">Le site permet la création d'un compte utilisateur et la connexion, le dépôt d'un commun en réponse à l'Appel à Communs au moyen d'un formulaire accessible une fois connecté, la consultation de l'<a href=\"/aac/communs\" class=\"text-primary hover:underline\">annuaire des communs</a> et de leurs fiches, ainsi que la consultation du <a href=\"/usages\" class=\"text-primary hover:underline\">catalogue des besoins et solutions</a>, constitué à partir des réponses des CAE à un observatoire. Des fonctionnalités de financement participatif des communs (cagnotte, promesses de financement) sont également intégrées au site. Des données personnelles sont donc traitées à ces occasions ; leur détail reste à établir.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Données collectées lors de la création d'un compte, de la connexion et de la récupération d'un mot de passe : [à compléter]</li>\n<li>Données saisies dans le formulaire de dépôt d'un commun, et données publiées dans l'annuaire et les fiches des communs : [à compléter]</li>\n<li>Données issues des réponses à l'observatoire des besoins et solutions et publiées dans le catalogue : [à compléter]</li>\n<li>Données traitées lors d'une promesse de financement ou d'un don, et prestataires de paiement éventuellement utilisés : [à compléter]</li>\n<li>Données éventuellement collectées automatiquement lors de la consultation du site, notamment par les journaux de connexion : [à compléter]</li>\n<li>Données éventuellement transmises à des services tiers intégrés au site : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Finalités et bases légales</h2>\n<p class=\"text-muted-foreground mb-4\">Les finalités qui ressortent des fonctionnalités actuellement mises en ligne sont les suivantes :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>permettre la création, la gestion et la récupération d'un compte utilisateur ;</li>\n<li>recueillir, présenter et suivre les communs déposés en réponse à l'Appel à Communs ;</li>\n<li>permettre le financement des communs ;</li>\n<li>publier le catalogue des besoins et solutions des CAE.</li></ul>\n<p class=\"text-muted-foreground mb-6\">La base légale retenue pour chacune de ces finalités — exécution du contrat, consentement, intérêt légitime ou obligation légale — ainsi que les éventuelles autres finalités poursuivies et les destinataires des données : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\" id=\"cookies\">4. Cookies et stockage local</h2>\n<p class=\"text-muted-foreground mb-4\">Aucun bandeau de recueil du consentement aux cookies n'est affiché sur les pages du site. Cette absence ne permet pas de conclure qu'aucun traceur n'est déposé : l'inventaire des cookies et des informations enregistrées dans votre navigateur reste à réaliser.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Cookies et traceurs éventuellement déposés, avec pour chacun l'émetteur, la finalité et la durée de vie : [à compléter]</li>\n<li>Informations éventuellement enregistrées dans le stockage local ou le stockage de session du navigateur : [à compléter]</li>\n<li>Outils de mesure d'audience et services tiers éventuellement utilisés : [à compléter]</li></ul>\n<p class=\"text-muted-foreground mb-6\">Si cet inventaire fait apparaître des traceurs soumis à consentement, un dispositif permettant de recueillir et de retirer ce consentement devra être mis en place avant leur dépôt. Les modalités de paramétrage de vos préférences seront alors décrites ici : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Durées de conservation</h2>\n<p class=\"text-muted-foreground mb-6\">Les durées de conservation applicables à chaque catégorie de données, ainsi que les critères permettant de les déterminer, restent à établir : [à compléter]. Le sort réservé aux données et aux contenus publiés à la suppression d'un compte ou d'un commun déposé : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Vos droits</h2>\n<p class=\"text-muted-foreground mb-4\">Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation du traitement, d'opposition et de portabilité sur les données qui vous concernent, ainsi que du droit de définir des directives relatives à leur sort après votre décès. Lorsqu'un traitement repose sur votre consentement, vous pouvez le retirer à tout moment.</p>\n<p class=\"text-muted-foreground mb-6\">Adresse à laquelle exercer ces droits : [à compléter]. Vous pouvez également introduire une réclamation auprès de la Commission nationale de l'informatique et des libertés (<a href=\"https://www.cnil.fr\" class=\"text-primary hover:underline\" rel=\"noopener\" target=\"_blank\">cnil.fr</a>).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Sécurité</h2>\n<p class=\"text-muted-foreground mb-6\">L'article 32 du RGPD impose au responsable du traitement de mettre en œuvre les mesures techniques et organisationnelles appropriées pour assurer la sécurité des données. La description des mesures effectivement en place sur ce site — hébergement, protection des échanges, gestion des accès et des habilitations, sauvegardes, conduite à tenir en cas de violation de données — reste à fournir : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">8. Transferts hors Union européenne</h2>\n<p class=\"text-muted-foreground mb-6\">L'existence de transferts de données en dehors de l'Union européenne dépend du lieu d'hébergement du site et des services tiers éventuellement utilisés, qui ne sont pas documentés à ce stade. Le cas échéant, les destinataires concernés, les pays de destination et les garanties encadrant ces transferts (décision d'adéquation, clauses contractuelles types ou autre garantie appropriée) sont les suivants : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">9. Modification de la politique</h2>\n<p class=\"text-muted-foreground mb-6\">La présente politique peut être modifiée, notamment pour tenir compte des évolutions du site, des traitements mis en œuvre ou de la réglementation applicable. La version qui vous est opposable est celle publiée sur cette page au moment de votre consultation.</p>\n<p class=\"text-muted-foreground mb-6\">Dernière mise à jour : [à compléter]</p>\n</div>"
+            }
+          }
+        }
+      ]
     }
   ],
   "footer": {
-    "type": "default",
+    "type": "sidebar-columns",
+    "logo": "images/federationDesCae/logo.png",
+    "logoAlt": {
+      "fr": "Fédération des CAE — les SCOP"
+    },
+    "logoTitle": {
+      "fr": "Fédération des CAE"
+    },
     "description": {
       "fr": "Fédération des coopératives d'activité et d'emploi — les SCOP. Réseau des CAE engagées dans l'entrepreneuriat collectif."
     },
     "copyright": {
       "fr": "© Fédération des CAE — les SCOP. Tous droits réservés."
     },
-    "socials": [],
-    "columns": []
+    "columns": [
+      {
+        "title": {
+          "fr": "L'appel à communs"
+        },
+        "links": [
+          {
+            "href": "/",
+            "label": {
+              "fr": "Accueil"
+            }
+          },
+          {
+            "href": "/aac/communs",
+            "label": {
+              "fr": "Les communs"
+            }
+          },
+          {
+            "href": "/usages",
+            "label": {
+              "fr": "Besoins et solutions"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "Participer"
+        },
+        "links": [
+          {
+            "href": "/aac/communs",
+            "label": {
+              "fr": "Déposer un commun"
+            }
+          },
+          {
+            "href": "/register",
+            "label": {
+              "fr": "Créer un compte"
+            },
+            "visibility": {
+              "auth": "anonymous"
+            }
+          },
+          {
+            "href": "/login",
+            "label": {
+              "fr": "Se connecter"
+            },
+            "visibility": {
+              "auth": "anonymous"
+            }
+          },
+          {
+            "href": "@profile",
+            "label": {
+              "fr": "Mon profil"
+            },
+            "visibility": {
+              "auth": "required"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "Informations"
+        },
+        "links": [
+          {
+            "href": "/profil/federationDesCae",
+            "label": {
+              "fr": "La Fédération"
+            }
+          },
+          {
+            "href": "/mentions-legales",
+            "label": {
+              "fr": "Mentions légales"
+            }
+          },
+          {
+            "href": "/confidentialite",
+            "label": {
+              "fr": "Confidentialité"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "profiles": {
+    "default": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete"
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Localisation"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "projects": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-event-dates"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "contributors",
+          "label": {
+            "fr": "Contributeurs"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   }
 }
