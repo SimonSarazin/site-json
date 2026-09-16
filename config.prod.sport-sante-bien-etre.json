@@ -78,18 +78,6 @@
           },
           {
             "label": {
-              "fr": "Équipements sportifs",
-              "en": "Sports Facilities"
-            },
-            "path": "/equipements-sportifs",
-            "icon": "dumbbell",
-            "description": {
-              "fr": "Tous les équipements de l'île, géolocalisés.",
-              "en": "All the island's facilities, geolocated."
-            }
-          },
-          {
-            "label": {
               "fr": "Créneaux",
               "en": "Activity Slots"
             },
@@ -98,18 +86,6 @@
             "description": {
               "fr": "Les activités labellisées près de chez vous.",
               "en": "Labeled activities near you."
-            }
-          },
-          {
-            "label": {
-              "fr": "Cartographie",
-              "en": "Map"
-            },
-            "path": "/mapping",
-            "icon": "map",
-            "description": {
-              "fr": "Explorer l'offre sport santé sur la carte.",
-              "en": "Explore the sport-health offer on the map."
             }
           },
           {
@@ -184,18 +160,6 @@
           },
           {
             "label": {
-              "fr": "Organismes de formation",
-              "en": "Training Organizations"
-            },
-            "path": "/listing-formations",
-            "icon": "school",
-            "description": {
-              "fr": "Les organismes de formation labellisés.",
-              "en": "The labeled training organizations."
-            }
-          },
-          {
-            "label": {
               "fr": "FAQ Pro",
               "en": "Pro FAQ"
             },
@@ -216,52 +180,6 @@
             "description": {
               "fr": "Guide et outils pour prescrire et orienter vers le sport santé.",
               "en": "Guide and tools for prescribing and guiding towards sport health."
-            }
-          }
-        ]
-      },
-      {
-        "label": {
-          "fr": "Communauté",
-          "en": "Community"
-        },
-        "path": "/communaute",
-        "icon": "users",
-        "children": [
-          {
-            "label": {
-              "fr": "Projets",
-              "en": "Projects"
-            },
-            "path": "/projets",
-            "icon": "rocket",
-            "description": {
-              "fr": "Les projets sport santé du territoire.",
-              "en": "Sport-health projects across the territory."
-            }
-          },
-          {
-            "label": {
-              "fr": "Structures",
-              "en": "Structures"
-            },
-            "path": "/structure",
-            "icon": "building",
-            "description": {
-              "fr": "Les acteurs et structures du réseau.",
-              "en": "The network's actors and facilities."
-            }
-          },
-          {
-            "label": {
-              "fr": "Communauté",
-              "en": "Community"
-            },
-            "path": "/communaute",
-            "icon": "users",
-            "description": {
-              "fr": "Rejoindre et échanger avec le réseau.",
-              "en": "Join and connect with the network."
             }
           }
         ]
@@ -565,6 +483,9 @@
         "en": "The Sport Health Network"
       },
       "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
       "sections": [
         {
           "type": "hero-quick-access",
@@ -1725,6 +1646,9 @@
         "en": "Professional FAQ"
       },
       "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
       "sections": [
         {
           "type": "searchHeader",
@@ -1888,6 +1812,9 @@
       "title": {
         "fr": "Aide à la prescription médicale",
         "en": "Medical prescription assistance"
+      },
+      "auth": {
+        "required": true
       },
       "layout": "fullwidth",
       "sections": [
@@ -2196,6 +2123,9 @@
         "en": "Label your activity"
       },
       "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
       "sections": [
         {
           "type": "hero-quick-access",
@@ -2467,6 +2397,9 @@
         "en": "Sport-Health Houses Accreditation"
       },
       "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
       "sections": [
         {
           "type": "hero-quick-access",
@@ -2728,14 +2661,6 @@
                 },
                 "href": "/",
                 "variant": "primary"
-              },
-              {
-                "label": {
-                  "fr": "Voir les équipements sportifs",
-                  "en": "View sports facilities"
-                },
-                "href": "/equipements-sportifs",
-                "variant": "outline"
               }
             ]
           }
@@ -3313,6 +3238,9 @@
         "en": "Training"
       },
       "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
       "sections": [
         {
           "type": "hero-quick-access",
@@ -3397,6 +3325,9 @@
         "en": "Training offers - Sport Health Wellness"
       },
       "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
       "sections": [
         {
           "type": "searchHeader",
@@ -4918,6 +4849,9 @@
         "en": "Resources"
       },
       "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
       "seo": {
         "title": {
           "fr": "Ressources — Sport Santé Bien-être La Réunion",
