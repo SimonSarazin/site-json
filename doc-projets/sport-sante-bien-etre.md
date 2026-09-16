@@ -13,8 +13,9 @@
 > [Module Articles/Blog](../doc/32-module-articles-blog.md) ·
 > [Module Profil](../doc/08-module-profil.md). Mémoire : `[[project-sport-sante-bien-etre]]`.
 
-Dernière mise à jour : **2026-09-02** (branche `judi-ssbe` : les créneaux deviennent
-contributifs et modérables, et le back-office gagne les documents ressources — cf. §9). Le lot précédent, du 03/08, portait les
+Dernière mise à jour : **2026-09-16** (les admins du costum sont notifiés par mail à chaque dépôt
+ou modification de créneau — cf. §9, lot du 16/09). Le 02/09, sur `judi-ssbe`, les créneaux étaient
+devenus contributifs et modérables, et le back-office avait gagné les documents ressources. Le lot précédent, du 03/08, portait les
 réseaux sociaux au patron `fieldArray`, le retrait de `recepisseDeclaration` et le re-sondage
 des périmètres.
 **4 décisions de contenu sont en attente** — cf. §13.
@@ -448,6 +449,72 @@ C'est ce qui rend tenable le choix de stocker la clé sur un site bilingue.
 depuis), plus `/ressources` — vide tant qu'aucun document n'est saisi, ce qui est l'état attendu. `/creneaux` remonte bien ses **285** réponses, ce qui valide au passage le `notSourceKey`
 du lot précédent.
 
+### Lot du 16/09 — mail aux admins du costum à chaque dépôt ou modification de créneau
+
+> Commits backend — dépôt `citizenToolKit` : `cca008fb` · dépôt `costum` : `3021c73fa`, `077a1e7f1`,
+> `2c4d99742`, + `addContactMail`. Aucun changement dans `site-json`.
+
+**Ce qui est livré.** À chaque dépôt **et** à chaque modification d'un créneau (choix du porteur),
+un mail part vers **`costum.contactMail`** — la liste déjà destinataire du formulaire de contact —,
+repli `costum.admin.email`. Il porte l'intitulé, la structure, le type, le statut, l'auteur et un lien
+vers la modération (`costum.host`), au **gabarit exact de `ssbeAdminMailHtml`**
+(`sportSanteBienetre_index.js`) : les mails serveur sont indiscernables de ceux que le front envoie
+déjà à l'inscription d'une structure.
+
+**Le mécanisme, en deux couches.** (1) Un dispatcher générique
+`Coform::notifyAnswerChange`, appelé aux deux points d'écriture réussie de `SaveAnswerAction`
+(`create` / `update`), **opt-in** : inerte tant que le costum ne déclare pas `notifyAnswerChange`
+dans `costum.class.function`. (2) L'implémentation `SportSanteBienetre::notifyAnswerChange`, gardée
+sur le seul formulaire de créneau (le champ `form` de la réponse fait foi, pas le `formId` posté).
+
+**Le piège structurant — et pourquoi le dispatcher ne passe pas par `Costum::sameFunction`.**
+Le mécanisme maison lit le costum **ambiant** ; or `SAVE_COFORM_ANSWER` ne transporte pas
+`costumSlug` (contrat fermé — la cause déjà identifiée du `source` manquant, §9 du 02/09). Une
+réponse déposée depuis le front arrive donc **sans costum résolu** : le hook ne serait jamais parti,
+en silence. Le costum est résolu **depuis la donnée** (l'orga porteuse du formulaire), et la classe
+sur le slug de l'**orga** (`SportSanteBienetre`) — `costum.slug` du document vaut `costumize`, le
+template, qui n'a pas ces méthodes. Le contexte est ensuite forcé par `$_GET["slug"]` avant
+`getCustomMail` ; vérifié que `CacheHelper::getCostum` cache **par slug**, donc l'appel antérieur
+sans slug de `saveAnswer` ne mémoïse pas de vide.
+
+**Trois découvertes sur le courrier, mesurées.** (a) **Aucun mail SSBE n'était jamais parti de
+l'instance de dev** : 32 mails de contact en `pending` dans `cron`, aucun `processed` ; le rappel
+annuel (`runInsuranceReminder`) n'y a jamais tourné. Le formulaire de contact « réussit » parce qu'il
+ne fait que mettre en file. (b) Le SMTP de plateforme (`paramsconfig.php`, câblé `main.php:161`) est
+un **compte Gmail de test** (`testmail.pixelhumain`) : c'est lui qui a refusé l'authentification lors du
+premier envoi direct. (c) `Mail::send` sait charger un **SMTP par costum** depuis la collection
+`smtpConfig` (clé `slug = source.key`, précédent : `meir` sur Mailgun) — la porte de sortie propre si
+SSBE doit expédier avec sa propre identité, sans toucher à la config plateforme.
+
+**Deux revirements assumés.** Le premier jet envoyait en **direct** (`Mail::send`), déduit de la
+file morte en dev ; le porteur a confirmé que **le cron tourne en prod** → bascule vers
+`Mail::createAndSend` → `Mail::schedule`, le chemin du contact et de `sendStatusNotif`. Le SMTP
+sort de la requête de dépôt ; en dev le mail reste `pending`, c'est là qu'on recette.
+`runInsuranceReminder` reste en direct pour une raison qui tient : la file est bornée à
+`EXEC_COUNT` par passage et il écrit à toutes les structures d'un coup. Le second : la promesse
+« ne lève jamais » était fausse (`Mail::send` n'a aucun `try/catch`, l'exception Swift remontait
+jusqu'à la route de prévisualisation) — corrigé, puis rendu sans objet par la file.
+
+**Destinataires alignés sur le JS.** `SSBE_STRUCT_ADMIN_MAILS` compte **trois** adresses,
+`costum.contactMail` deux : `vincent.hoareau@ac-reunion.fr` manquait. Action `addContactMail` (URL,
+`$addToSet`, idempotente) — **à jouer en dev et en prod** ; à noter qu'il recevra aussi le formulaire
+de contact, c'est la même liste.
+
+**Recette.** `…/ssbeMigration/previewAnswerNotification/answer/<answerId>` montre destinataires,
+objet et corps sans rien mettre en file ; `/send/1` met en file. Vérifier ensuite
+`db.cron.find({type:"mail", subject:/Nouveau créneau/}).sort({_id:-1})` : le document doit porter
+`source.key: "sportSanteBienetre"` et les destinataires. **État au 16/09** : `notifyAnswerChange`
+**déclaré en dev** (vérifié en base), `addContactMail` pas encore joué, aucun mail réel constaté —
+impossible depuis le dev (pas de cron). **À rejouer en PROD** : `declareAnswerNotification/apply/1`
+et `addContactMail?email=vincent.hoareau@ac-reunion.fr&apply=1` — en **query string** : un point
+dans un segment d'URL (`/email/x@y.fr`) est pris pour une extension de fichier et répond 404,
+sondé sur les quatre formes.
+
+**Gates.** `php -l` sur les 4 fichiers touchés ; les 4 routes répondent HTTP 200 derrière le gate
+super-admin. Pas de gate front : `site-json` n'est pas modifié. Le guide `bonnes-pratiques-code.md`
+n'a pas de partie PHP — revue limitée à ce qui s'y transpose (réutilisation de l'existant, commentaires
+du pourquoi, fail-safe).
+
 ---
 
 ## 10. Checklist d'avancement
@@ -473,6 +540,7 @@ du lot précédent.
 | 17 | Créneaux — « Fiche structure » réservée aux gestionnaires | ✅ | `card.structureAction.audience: "managers"` + gate `isCoformAnswerManager` sous `useHydrated` (02/09, §9) ; 12 tests dont 2 de parité SSR |
 | 18 | Créneaux — modération dans le back-office | ✅ config | Onglet `moderation` en mode `statusField`, 57 en attente à traiter (02/09, §9) — **recette à faire** : passer un « En attente » à « Validé » et vérifier qu'il apparaît sur `/creneaux` |
 | 19 | Ressources — listing et ajout côté admin | ✅ config | Onglet « Ressources » + `costumForms` dédié (02/09, §9) — **bloqué tant que `declareRessourceType` n'est pas joué en base** |
+| 20 | Créneaux — mail aux admins du costum au dépôt / à la modification | 🟡 | Hook + impl. livrés et déclarés en dev (16/09, §9) ; **aucun envoi réel vérifiable depuis le dev** (pas de cron) — recette en prod via `previewAnswerNotification` puis `db.cron` ; `addContactMail` (Vincent) à jouer |
 | 20 | Ressources — page publique `/ressources` | ✅ config | Filtre latéral par thématique + recherche par nom, publiés seulement (02/09, §9) ; ferme le lien mort de la tuile « Rapports & Publications ». Périmètre vide tant qu'aucun document n'est saisi |
 
 ---
@@ -520,3 +588,4 @@ pertinent ici : SSBE a un back-office `/admin` à 7 onglets (§4.3).
 | 6 | Rendu navigateur et mode sombre : à parcourir sur les 19 pages | Thomas |
 | 7 | ~~Page publique `/ressources`~~ — **FAITE le 02/09** (§9) : filtre latéral par thématique + recherche par nom. Elle a fermé le lien mort « Rapports & Publications » de la question 1 (audit 4 → 3). Entrée de nav ajoutée le 02/09 dans le dropdown Professionnels. **Reste un point de rédaction** : le hub « Espace professionnels » se décrit comme « Ressources et outils pour les pros », juste au-dessus d'une entrée « Ressources » — redondance légère, à retoucher si elle gêne | Thomas |
 | 8 | **Thématique affichée en clé** dans le listing admin (`mss`, `has`…) : `formatCell` ne résout aucune énumération, et seul le mode `statusField` sait mapper une valeur vers un libellé. Vit-on avec (compact, sans ambiguïté pour un usage interne), ou ajoute-t-on au schéma des colonnes admin une table de libellés — utile bien au-delà de ce site ? | Thomas |
+| 9 | **Identité SMTP en prod pour SSBE** : la plateforme expédie avec son compte global (`paramsconfig.php`). Faut-il une identité propre (`expéditeur @ssbe.re`) via un document `smtpConfig` `{slug:"sportSanteBienetre", host, username, password, port, encryption}` — zéro code, précédent `meir` —, et si oui avec quels identifiants ? À trancher avant la première campagne de mails de créneaux | Thomas |
