@@ -15,8 +15,10 @@
 > 06/07) · [`ENDPOINT.md`](../../ENDPOINT.md) (fiches d'endpoints SDK à créer). Mémoire :
 > `[[project-maison-sport-sante-la-tampon]]`.
 
-Dernière mise à jour : **2026-09-08** (§9.15 : compteurs statistiques dynamiques sur la home,
-1ᵉʳ lot — `21f0d53f`).
+Dernière mise à jour : **2026-09-15** (§9.17/§9.17 bis : formulaire `structure` aligné sur la refonte
+dynForm-legacy de sport-sante-bienetre-organizations — SSBE, 09/09 — puis recette navigateur et
+correctif d'un bug d'édition des pièces jointes dans `PreviewStructure.tsx` (partagé SSBE), session en
+cours non commitée).
 
 **Chiffres clés de la home passés en partie au dynamique** (§9.15, Nicolas, `21f0d53f`, 08/09) : le
 schéma `cta-card-grid.props.stats[]` accepte désormais un `source` optionnel (`searchCount` /
@@ -1368,6 +1370,122 @@ validées), mais SSBE a dû poser la garde pour 32 fiches.
 
 ---
 
+### 9.17 Formulaire `structure` aligné sur la refonte dynForm-legacy de SSBE (15/09, session en cours)
+
+**Demande utilisateur** : « mettre le formulaire structure en marche comme celui du
+sportSanteBienetre (champ, formulaire ainsi que `statusActor`) ». Point de départ vérifié avant tout
+changement : `statusActor` était **déjà** fonctionnel côté Ekilib.re, à l'identique de SSBE — inject
+create-only (`mutation.inject.extraFields.statusActor: "En cours"`) et blocage `statusField` dans
+l'onglet admin Structures (mêmes 4 états/tons). Ce qui manquait réellement, c'est l'alignement du
+**schéma** du formulaire lui-même : `costumForms.structure` était resté à la version du 06/08
+(§9.5 bis, 44 champs) pendant que `sport-sante-bienetre-organizations` passait à 49 champs le 09/09
+([Sport Santé Bien-être](sport-sante-bien-etre.md), §9 lot du 09/09).
+
+**Vérification décisive avant d'implémenter** : le contrat live réel du costum `associationEkilibre`
+(`tests/preflight/__contract__/costum-types.live.json`) a été inspecté pour trancher un doute sur le
+téléphone — l'oracle de test existant défendait explicitement la forme objet `telephone:{mobile:[…]}`
+comme correspondant à la donnée majoritaire du réseau SSBE (128/138 orgs), alors que SSBE avait basculé
+sur un champ plat `mobile` le 09/09. Le contrat live tranche : `associationEkilibre` déclare **`mobile`**
+et **`link`**, jamais `telephone` ni `url` — ces deux renommages n'étaient donc pas qu'un alignement
+cosmétique sur le site frère, mais une correction d'un écart avec le contrat backend réel du costum
+d'Ekilib.re lui-même. Le contrat confirme aussi la présence de `infoGeneral`/`similarLink`/
+`formLocality`/`location`/`image`/`youtube`/`linkedin` — ce ne sont donc pas des vestiges propres au
+costum `sportSanteBienetre`, contrairement à ce qu'on aurait pu supposer en les voyant seulement dans
+la config SSBE.
+
+**Changements appliqués à `costumForms.structure`** :
+
+| Point | Avant (06/08) | Après (15/09) |
+|---|---|---|
+| Téléphone | `telephone` (widget `tel`, `group`) + `_telSlot`/`_telRest` cachés, `serializeGroups.telephone` → `{mobile:[…]}` | champ plat `mobile` (widget `tel`) |
+| Site web | `url` | renommé `link` (le contrat live n'a jamais connu `url`) |
+| `affiliate` | `select` "Oui"/"Non" | `switch` + `write:coerce:boolString` (`affiliateTo.visibleIf` passe de `eq:"Oui"` à `truthy`) |
+| Titres représentant/responsable | `select` + champ « Autre... » séparé (`otherRepresentativeTitle`/`otherPersonInChargeTitle`, codec de groupe `enumOrOther`) | un seul champ `valueSelect` mono `creatable` — même clé serveur, saisie libre directe |
+| `responsableSameAsRepresent` | `switch` sans coercion d'écriture | + `write:coerce:boolString` |
+| Domaine d'intervention (`thematic`) | `checkboxGroup` (variante cartes) | `multiselect`, identique à SSBE — même widget, mêmes options, même clé serveur |
+| Champs ajoutés | — | `description` (textarea) et 7 champs cachés non placés (`infoGeneral`, `similarLink`, `formLocality`, `location`, `image`, `youtube`, `linkedin`) pour la parité déclarative |
+
+**Deux écarts volontairement NON alignés sur SSBE**, chacun avec une raison métier ou technique propre
+à Ekilib.re, pas une simple préférence :
+
+- **`_imageFile` conservé** (pas de renommage en `profil_avatar`) : c'est un pattern déjà en usage et
+  testé ailleurs dans le parc (`equipements-sportifs`, `tiers-lieux`) ; aucun gain fonctionnel à le
+  renommer, et cela aurait cassé des assertions de test qui verrouillent ce nom depuis le 06/08.
+- **`statusCommunale` garde sa liste à 2 valeurs** (97418/97430) plutôt que les 36 communes de SSBE :
+  c'est la décision produit du 20/08 (§9.9, « territoire = Le Tampon seul »), sans rapport avec
+  l'alignement de formulaire — la reprendre aurait réintroduit tout le territoire régional dans un
+  champ de ce site.
+
+**Un « fantôme » de drift attendu, non bloquant.** Le nœud `costum.typeObj.organizations`
+d'`associationEkilibre` a été amendé le 20/08 (§9.9) avec **trois propriétés que la whitelist rabotait
+en silence** : `otherRepresentativeTitle`, `otherPersonInChargeTitle`, `statusActor` — précisément pour
+que l'ancien formulaire (split en 2 champs) ne perde pas de données au save. En retirant ces deux
+champs du formulaire, ils deviennent des clés déclarées côté backend mais plus jamais écrites — même
+catégorie que les vestiges `youtube`/`linkedin` déjà tolérés côté SSBE (§4.2 de sa doc). Non bloquant,
+mais à garder en tête si `config:costum-drift` les signale un jour côté `associationEkilibre`.
+
+**Tests** : `structure.configDriven.test.ts` (oracle dédié, chargé via `loadCostumForm("structure")`
+depuis ce même fichier de config) mis à jour en conséquence — `FILLED` et les assertions de payload
+(`mobile` plat, `affiliate` en chaîne `"true"`/`"false"`), le describe « 15. enumOrOther » remplacé par
+un describe équivalent pour le `valueSelect` mono, les cas `visibleIf` des champs « other* » disparus
+retirés.
+
+**Gates (15/09)** : `config:validate` ✅ **13 pages / 49 sections** · `audit:config` ✅ RAS (`strip:0`)
+· `structure.configDriven.test.ts` ✅ **42/42** · suite `profil`+`formEngine`+`search`+`admin` ✅
+**1118/1118** (zéro régression sur SSBE, qui partage `structure:tagsFromThematic`) · `test:unit` complet
+✅ **4252/4254** — les 2 échecs restants sont **préexistants et sans lien** (`bundle-size` > 2 Mo,
+`site-assets` dossier `associationEkilibre` non déclaré — déjà documentés au lot SSBE du 09/09 et en
+§12 de ce document) · `typecheck` ✅ 0 erreur · `lint` ✅ 0 erreur.
+
+**Reste sur ce lot** : commit — la recette navigateur a eu lieu dans la foulée (§9.17 bis) et a
+directement validé le wizard modifié (`affiliate`, titres en saisie libre, champ téléphone renommé,
+domaine d'intervention).
+
+---
+
+### 9.17 bis Recette navigateur du lot précédent — bug d'édition des pièces jointes trouvé et corrigé (15/09)
+
+**Recette réelle en navigateur** (première recette de ce formulaire depuis le 06/08, cf. checklist
+A.8) : création d'une structure réussie de bout en bout, `statusActor` posé à « En cours » comme
+attendu. Deux trouvailles en cours de route, toutes deux réglées le jour même :
+
+**1. `thematic` en `checkboxGroup` au lieu de `multiselect`.** Écart de widget par rapport à SSBE
+laissé de côté lors du lot précédent en le jugeant purement cosmétique (même sortie serveur, tableau
+`thematic`) — erreur de méthode : la demande portait explicitement sur une parité formulaire **et**
+donnée avec SSBE, pas seulement sur la donnée. Corrigé : `thematic` passe en `multiselect`, identique
+à SSBE (même widget, mêmes options, même clé). Aucun impact sur `structure:tagsFromThematic` ni sur
+les tests (la forme des données ne change pas).
+
+**2. Édition — les pièces jointes déjà uploadées ne réapparaissaient pas dans le formulaire, mais
+uniquement depuis le bouton Modifier de la fiche `/structure`** (l'édition depuis l'onglet admin
+Structures fonctionnait, elle). Testé comparativement sur SSBE (`/mss`) : le même bouton y fonctionne
+partout. Cause identifiée dans le code partagé
+[`PreviewStructure.tsx`](../src/modules/search/components/preview/PreviewStructure.tsx) : le
+composant recharge bien la fiche complète avec `about.files` via `useEntityBySlugQuery` (`fullEntity`,
+ligne ~290), mais seulement pour l'affichage de la section Documents — le bouton Modifier ouvrait
+`DynamicEditModal` avec l'`item` de recherche original (tronqué, sans `about.files`), jamais remplacé
+par `fullEntity`. Un garde-fou existant (`org.refresh()`) était censé recharger l'entité au besoin,
+mais sa condition de déclenchement (`siren`/`sigle`/`thematic` absents) ne dit rien sur la présence
+des DOCUMENTS, qu'aucune projection de recherche ne porte jamais — sur Ekilib.re, la projection
+`/structure` complète (55 champs, §9.13) contient toujours ces trois champs, donc le refresh ne
+partait jamais ; sur SSBE, ce n'était apparemment pas le cas, ce qui masquait le bug. **Correctif** :
+`DynamicEditModal` reçoit désormais `fullEntity.data ?? item` — l'entité déjà rechargée avec
+`about.files` dès qu'elle est disponible, repli sur `item` pendant le chargement. Bug préexistant dans
+un composant **partagé** (Ekilib.re + SSBE), pas introduit par ce lot ; **recette confirmée par
+l'utilisateur** après correctif, sur les deux chemins d'édition (`/structure` et l'onglet admin).
+
+**Gates** : `config:validate`/`audit:config` ✅ RAS · `config:costum-drift` (`--json`, avec
+`VITE_COSTUM_FORCE_LIVE=true` pour une résolution réellement live plutôt que l'artefact SDK bundlé) ✅
+**0 fantôme** sur `structure` · `typecheck` ✅ 0 erreur · `lint` ✅ 0 erreur · suite `search` ✅
+**462/462** (aucun test dédié à `PreviewStructure` dans le dépôt à ce jour — recette faite en
+navigateur).
+
+⚠️ **Leçon retenue pour la suite** : `config:costum-drift` doit toujours être lancé avec
+`VITE_COSTUM_FORCE_LIVE=true` explicitement exporté — sans lui, la garde compare au bundle SDK figé et
+peut signaler un faux « fantôme » (constaté sur ce lot, cause d'un aller-retour évitable).
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Lot A — Vitrine & annuaires (config)
@@ -1381,7 +1499,7 @@ validées), mais SSBE a dû poser la garde pour 32 fiches.
 | A.5 | Auth / Espace Pro | ✅ | CTA header → `/espace-pro`, **gardée** (`auth.required`). Depuis le 21/08 : plus de saut vers `/login`, la modale s'ouvre **sur place** (§9.13). ⚠️ garde de **session** : tout compte connecté entre (§12) |
 | A.6 | Chiffres clés de la home | 🟡 | **1/4 dynamique** depuis le 08/09 (§9.15) : « Créneaux disponibles » compte réellement les réponses validées du form dédié. Les 3 autres (Activités proposées, Participants actifs, Partenaires) restent codés en dur — aucune source confirmée pour eux |
 | A.7 | Formulaire de contact | 🟡 | **câblé le 23/08** sur `CONTACT_SEND` (SDK → `/co2/mailmanagement/createandsend`), clés `action`/`method` retirées (§9.13). Reste **hors `site-json`** : renseigner **`costum.contactMail`** sur le costum (`admin.email` n'est qu'un repli), sinon le legacy renvoie le message à son auteur |
-| A.8 | Auto-inscription structure (`/structure`, bouton public + wizard) | 🟡 | **commité** (`9fbe7c02` 31/07 + renommé/complété `253dec37` 06/08, Nicolas) — costumForm `structure` (§9.5/§9.5 bis) + fiche détail `PreviewStructure` ; 40 tests config-driven ✅ ; recette navigateur (upload logo, soumission réelle) à faire |
+| A.8 | Auto-inscription structure (`/structure`, bouton public + wizard) | ✅ | costumForm `structure` **aligné le 15/09** sur la refonte dynForm-legacy de SSBE (§9.17 : `mobile`/`link` plats, titres en `valueSelect` libre, `thematic` en `multiselect`, `description`) — 42 tests config-driven ✅ ; **recette navigateur faite le 15/09** (§9.17 bis) : création réelle réussie, bug d'édition des pièces jointes trouvé et corrigé |
 
 ### Lot B — Gestion des créneaux (admins)
 

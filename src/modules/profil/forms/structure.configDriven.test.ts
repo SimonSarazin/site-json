@@ -36,7 +36,7 @@ const FILLED = {
   siren: "",
   name: "NOUT' SPORT ADAPTÉ",
   sigle: "",
-  affiliate: "Oui",
+  affiliate: true,
   thematic: [
     "Sport",
     "Santé/prévention",
@@ -54,7 +54,7 @@ const FILLED = {
   streetAddress: "79 A, chemin Philomar",
   localityId: "54c0965cf6b95c141800a51e",
   email: "jeremy.enseignant.apa@gmail.com",
-  telephone: "692211490",
+  mobile: "692211490",
   legalStatus: "Entreprise, Auto-entrepreneur, Sisa",
   representativeTitle: "Chef.fe d'entreprise",
   representativeCivility: "M.",
@@ -92,6 +92,7 @@ describe("costum structure Ekilib.re — document de config", () => {
     // points sensibles : ancres composites + champs dérivés
     expect(d2.fields.address).toMatchObject({ widget: "location", renderOnly: true });
     expect(d2.fields._imageFile).toMatchObject({ widget: "image", renderOnly: true });
+    expect(d2.fields.representativeTitle).toMatchObject({ widget: "valueSelect", type: "string" });
     expect(d2.fields.postalCode).toMatchObject({ group: "address" });
     expect(d2.fields.geo).toMatchObject({ writeOnly: true, write: "geo:write" });
     // tags n'est pas writeOnly : sa valeur courante est seedée, mais uniquement pour distinguer
@@ -124,12 +125,13 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
   it("4. émet les champs métier de la structure et du représentant", () => {
     expect(payload).toMatchObject({
       name: "NOUT' SPORT ADAPTÉ",
-      affiliate: "Oui",
+      // switch + coerce:boolString (alignement 15/09, ex-select "Oui"/"Non") → chaîne "true"/"false".
+      affiliate: "true",
       email: "jeremy.enseignant.apa@gmail.com",
-      // saisie `telephone` (codec de groupe LOSSLESS partagé du parc, _telSlot par défaut mobile)
-      // → objet legacy {mobile:[…]} (128/138 orgs
-      // réelles) — plus de clé racine plate.
-      telephone: { mobile: ["692211490"] },
+      // champ plat `mobile` — aligné le 15/09 sur le contrat live `associationEkilibre`
+      // (tests/preflight/__contract__/costum-types.live.json déclare `mobile`, jamais `telephone`)
+      // et sur sport-sante-bienetre-organizations depuis son propre alignement dynForm du 09/09.
+      mobile: "692211490",
       legalStatus: "Entreprise, Auto-entrepreneur, Sisa",
       representativeTitle: "Chef.fe d'entreprise",
       representativeCivility: "M.",
@@ -201,9 +203,9 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
     expect(p.siren).toBe("123 456 789 00012");
     expect(p.representativeTelephone).toBe("+261 34 25 363 35");
     expect(p.personInChargeTelephone).toBe("06 92 00 11 22");
-    // la saisie `telephone` (groupe) sort en objet serveur — jamais de clé plate `mobile`.
-    expect(p.telephone).toEqual({ mobile: ["692211490"] });
-    expect(p).not.toHaveProperty("mobile");
+    // champ plat `mobile` — jamais de clé `telephone` (ex-groupe, retiré le 15/09).
+    expect(p.mobile).toBe("692211490");
+    expect(p).not.toHaveProperty("telephone");
   });
 
   it("9ter. omet les champs VIDES à la création (coerce:orUndef, patron email/url)", () => {
@@ -222,10 +224,10 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
     expect(e.siren).toBe("");
   });
 
-  it("10. omet `email`/`url` vides (le schéma backend impose un format sur ces champs)", () => {
-    const p = buildPayload(formSpec, { ...FILLED, email: "", url: "" }) as Record<string, unknown>;
+  it("10. omet `email`/`link` vides (le schéma backend impose un format sur ces champs)", () => {
+    const p = buildPayload(formSpec, { ...FILLED, email: "", link: "" }) as Record<string, unknown>;
     expect(p).not.toHaveProperty("email");
-    expect(p).not.toHaveProperty("url");
+    expect(p).not.toHaveProperty("link");
   });
 });
 
@@ -282,7 +284,8 @@ describe("costum structure Ekilib.re — READ + visibleIf (parité avec l'ancien
     }));
     expect(values).toMatchObject({
       name: "NOUT' SPORT ADAPTÉ",
-      affiliate: "Oui",
+      // widget switch : coercion de lecture par défaut, "Oui" (donnée legacy) → booléen true.
+      affiliate: true,
       postalCode: "97430",
       streetAddress: "79 A, chemin Philomar",
       legalStatus: "Entreprise, Auto-entrepreneur, Sisa",
@@ -310,59 +313,49 @@ describe("costum structure Ekilib.re — READ + visibleIf (parité avec l'ancien
     ["responsableCivilePro", { legalStatus: "Groupement d'Intérêt Publique" }, true],
     ["responsableCivilePro", { legalStatus: "Collectivité" }, false],
     ["responsableCivilePro", { legalStatus: "" }, false],
-    ["affiliateTo", { affiliate: "Oui" }, true],
-    ["affiliateTo", { affiliate: "Non" }, false],
-    ["otherRepresentativeTitle", { representativeTitle: "Autre..." }, true],
-    ["otherRepresentativeTitle", { representativeTitle: "Président" }, false],
+    ["affiliateTo", { affiliate: true }, true],
+    ["affiliateTo", { affiliate: false }, false],
     ["personInChargeName", { responsableSameAsRepresent: false }, true],
     ["personInChargeName", { responsableSameAsRepresent: true }, false],
-    ["otherPersonInChargeTitle", { responsableSameAsRepresent: false, personInChargeTitle: "Autre..." }, true],
-    ["otherPersonInChargeTitle", { responsableSameAsRepresent: true, personInChargeTitle: "Autre..." }, false],
   ])("14. %s visible=%o → %s", (field, values, expected) => {
     expect(check(descriptor.fields[field].visibleIf, values)).toBe(expected);
   });
   /**
-   * 15. Groupes `enumOrOther` sur les deux titres : le serveur stocke le titre RÉEL dans la clé que
-   * lit la fiche publique (PreviewStructure ne lit QUE `representativeTitle`/`personInChargeTitle`,
-   * jamais les `other*`). Avant ce codec, une présidente qui choisissait « Autre... » et saisissait
-   * « Coordinatrice » voyait sa fiche afficher « Autre... ».
+   * 15. Titres représentant/responsable en `valueSelect` mono creatable (alignement dynForm legacy,
+   * 15/09) : plus de couple select + champ « Autre... » séparé — la saisie libre écrit DIRECTEMENT
+   * dans `representativeTitle`/`personInChargeTitle`, la même clé que lit la fiche publique
+   * (PreviewStructure). Remplace l'ancien codec de groupe `enumOrOther`.
    */
-  describe("15. titres « Autre... » — codec de groupe enumOrOther", () => {
-    it("écrit le texte libre DANS la clé lue par la fiche", () => {
+  describe("15. titres représentant/responsable — `valueSelect` mono creatable", () => {
+    it("écrit une valeur libre directement dans la clé lue par la fiche", () => {
       const payload = buildEditPayload(formSpec, {
         ...FILLED,
-        representativeTitle: "Autre...",
-        otherRepresentativeTitle: "Coordinatrice",
+        representativeTitle: "Coordinatrice",
         responsableSameAsRepresent: false,
-        personInChargeTitle: "Autre...",
-        otherPersonInChargeTitle: "Éducatrice APA",
+        personInChargeTitle: "Éducatrice APA",
       }) as Record<string, unknown>;
       expect(payload.representativeTitle).toBe("Coordinatrice");
       expect(payload.personInChargeTitle).toBe("Éducatrice APA");
-      // Les porteurs de saisie ne partent PLUS comme clés serveur séparées (le groupe recompose).
-      expect(payload).not.toHaveProperty("otherRepresentativeTitle");
-      expect(payload).not.toHaveProperty("otherPersonInChargeTitle");
     });
 
-    it("laisse passer une valeur connue sans la déplacer", () => {
+    it("laisse passer une valeur connue de la liste telle quelle", () => {
       const payload = buildEditPayload(formSpec, {
         ...FILLED,
         representativeTitle: "Président",
-        otherRepresentativeTitle: "",
       }) as Record<string, unknown>;
       expect(payload.representativeTitle).toBe("Président");
     });
 
-    it("relit un titre libre stocké en base vers le couple select + texte", () => {
+    it("relit une valeur libre stockée en base telle quelle (pas de champ « other » séparé)", () => {
       const values = seedEntity(formSpec, orgLike({ representativeTitle: "Coordinatrice" })) as Record<string, unknown>;
-      expect(values.representativeTitle).toBe("Autre...");
-      expect(values.otherRepresentativeTitle).toBe("Coordinatrice");
+      expect(values.representativeTitle).toBe("Coordinatrice");
+      expect(values).not.toHaveProperty("otherRepresentativeTitle");
     });
 
-    it("relit une valeur connue telle quelle, sans texte libre", () => {
+    it("relit une valeur connue de la liste telle quelle", () => {
       const values = seedEntity(formSpec, orgLike({ personInChargeTitle: "Maire.sse" })) as Record<string, unknown>;
       expect(values.personInChargeTitle).toBe("Maire.sse");
-      expect(values.otherPersonInChargeTitle).toBe("");
+      expect(values).not.toHaveProperty("otherPersonInChargeTitle");
     });
   });
 });

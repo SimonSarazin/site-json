@@ -3497,45 +3497,6 @@
           "serverKey": "address",
           "read": "address:read",
           "write": "address:write"
-        },
-        "telephone": {
-          "serverKey": "telephone",
-          "read": "telephone:read",
-          "write": "telephone:write"
-        },
-        "representativeTitle": {
-          "serverKey": "representativeTitle",
-          "read": "enumOrOther:read",
-          "write": "enumOrOther:write",
-          "params": {
-            "valueField": "representativeTitle",
-            "otherField": "otherRepresentativeTitle",
-            "known": [
-              "Président",
-              "Maire.sse",
-              "Chef.fe d'entreprise",
-              "Chef.fe d'établissement",
-              "Autre..."
-            ],
-            "other": "Autre..."
-          }
-        },
-        "personInChargeTitle": {
-          "serverKey": "personInChargeTitle",
-          "read": "enumOrOther:read",
-          "write": "enumOrOther:write",
-          "params": {
-            "valueField": "personInChargeTitle",
-            "otherField": "otherPersonInChargeTitle",
-            "known": [
-              "Président",
-              "Maire.sse",
-              "Chef.fe d'entreprise",
-              "Chef.fe d'établissement",
-              "Autre..."
-            ],
-            "other": "Autre..."
-          }
         }
       },
       "fields": {
@@ -3578,31 +3539,12 @@
           }
         },
         "affiliate": {
-          "widget": "select",
+          "widget": "switch",
+          "write": "coerce:boolString",
           "label": {
             "fr": "Structure affiliée à une union, à une fédération ou à un réseau",
             "en": "Structure affiliated with a union, federation or network"
-          },
-          "placeholder": {
-            "fr": "Faites votre choix",
-            "en": "Make your choice"
-          },
-          "enum": [
-            {
-              "value": "Oui",
-              "label": {
-                "fr": "Oui",
-                "en": "Yes"
-              }
-            },
-            {
-              "value": "Non",
-              "label": {
-                "fr": "Non",
-                "en": "No"
-              }
-            }
-          ]
+          }
         },
         "affiliateTo": {
           "widget": "text",
@@ -3616,19 +3558,35 @@
           },
           "visibleIf": {
             "field": "affiliate",
-            "op": "eq",
-            "value": "Oui"
+            "op": "truthy"
           }
         },
+        "_imageFile": {
+          "widget": "image",
+          "label": {
+            "fr": "Votre logo",
+            "en": "Your logo"
+          },
+          "info": {
+            "fr": "Format carré recommandé · PNG ou JPG",
+            "en": "Square format recommended · PNG or JPG"
+          },
+          "widgetProps": {
+            "shape": "square",
+            "aspect": 1
+          }
+        },
+        "tags": {
+          "widget": "hidden",
+          "type": "array",
+          "write": "structure:tagsFromThematic"
+        },
         "thematic": {
-          "widget": "checkboxGroup",
+          "widget": "multiselect",
           "type": "array",
           "label": {
             "fr": "Domaine d'intervention (plusieurs choix possibles)",
             "en": "Field of action (multiple choices possible)"
-          },
-          "widgetProps": {
-            "variant": "card"
           },
           "enum": [
             {
@@ -3710,45 +3668,23 @@
             }
           ]
         },
-        "_imageFile": {
-          "widget": "image",
+        "description": {
+          "widget": "textarea",
           "label": {
-            "fr": "Votre logo",
-            "en": "Your logo"
-          },
-          "info": {
-            "fr": "Format carré recommandé · PNG ou JPG",
-            "en": "Square format recommended · PNG or JPG"
-          },
-          "widgetProps": {
-            "shape": "square",
-            "aspect": 1
+            "fr": "Description",
+            "en": "Description"
           }
         },
-        "tags": {
-          "widget": "hidden",
-          "type": "array",
-          "write": "structure:tagsFromThematic"
-        },
-        "telephone": {
+        "mobile": {
           "widget": "tel",
-          "group": "telephone",
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
           },
           "placeholder": {
-            "fr": "0692001122",
-            "en": "0692001122"
+            "fr": "0692 22 90 80",
+            "en": "0692 22 90 80"
           }
-        },
-        "_telSlot": {
-          "widget": "hidden",
-          "group": "telephone"
-        },
-        "_telRest": {
-          "widget": "hidden",
-          "group": "telephone"
         },
         "address": {
           "widget": "location",
@@ -3815,7 +3751,7 @@
           },
           "write": "coerce:orUndef"
         },
-        "url": {
+        "link": {
           "widget": "text",
           "label": {
             "fr": "Site web",
@@ -4133,18 +4069,13 @@
           }
         },
         "representativeTitle": {
-          "widget": "select",
-          "label": {
-            "fr": "Titre (fonction, statut...)",
-            "en": "Title (role, status...)"
-          },
-          "info": {
-            "fr": "Si autre, vous pourrez le préciser juste en dessous",
-            "en": "If other, you can specify it just below"
-          },
-          "placeholder": {
-            "fr": "Faites votre choix",
-            "en": "Make your choice"
+          "widget": "valueSelect",
+          "type": "string",
+          "default": "",
+          "read": "coerce:string",
+          "widgetProps": {
+            "multiple": false,
+            "creatable": true
           },
           "enum": [
             {
@@ -4183,20 +4114,14 @@
               }
             }
           ],
-          "group": "representativeTitle"
-        },
-        "otherRepresentativeTitle": {
-          "widget": "text",
           "label": {
-            "fr": "Précisez le titre",
-            "en": "Specify the title"
+            "fr": "Titre (fonction, statut...)",
+            "en": "Title (role, status...)"
           },
-          "visibleIf": {
-            "field": "representativeTitle",
-            "op": "eq",
-            "value": "Autre..."
-          },
-          "group": "representativeTitle"
+          "info": {
+            "fr": "Choisissez dans la liste ou saisissez directement",
+            "en": "Pick from the list or type it directly"
+          }
         },
         "representativeCivility": {
           "widget": "select",
@@ -4281,28 +4206,20 @@
         },
         "responsableSameAsRepresent": {
           "widget": "switch",
+          "write": "coerce:boolString",
           "label": {
             "fr": "Le représentant est aussi la personne en charge du dossier",
             "en": "The representative is also the person in charge of the file"
           }
         },
         "personInChargeTitle": {
-          "widget": "select",
-          "label": {
-            "fr": "Titre (fonction, statut...)",
-            "en": "Title (role, status...)"
-          },
-          "info": {
-            "fr": "Si autre, vous pourrez le préciser juste en dessous",
-            "en": "If other, you can specify it just below"
-          },
-          "placeholder": {
-            "fr": "Faites votre choix",
-            "en": "Make your choice"
-          },
-          "visibleIf": {
-            "field": "responsableSameAsRepresent",
-            "op": "falsy"
+          "widget": "valueSelect",
+          "type": "string",
+          "default": "",
+          "read": "coerce:string",
+          "widgetProps": {
+            "multiple": false,
+            "creatable": true
           },
           "enum": [
             {
@@ -4341,28 +4258,18 @@
               }
             }
           ],
-          "group": "personInChargeTitle"
-        },
-        "otherPersonInChargeTitle": {
-          "widget": "text",
           "label": {
-            "fr": "Précisez le titre",
-            "en": "Specify the title"
+            "fr": "Titre (fonction, statut...)",
+            "en": "Title (role, status...)"
+          },
+          "info": {
+            "fr": "Choisissez dans la liste ou saisissez directement",
+            "en": "Pick from the list or type it directly"
           },
           "visibleIf": {
-            "and": [
-              {
-                "field": "responsableSameAsRepresent",
-                "op": "falsy"
-              },
-              {
-                "field": "personInChargeTitle",
-                "op": "eq",
-                "value": "Autre..."
-              }
-            ]
-          },
-          "group": "personInChargeTitle"
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
         },
         "personInChargeCivility": {
           "widget": "select",
@@ -4464,6 +4371,58 @@
             "field": "responsableSameAsRepresent",
             "op": "falsy"
           }
+        },
+        "infoGeneral": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Info general",
+            "en": "General information"
+          }
+        },
+        "similarLink": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Lien similaire",
+            "en": "Similar link"
+          }
+        },
+        "formLocality": {
+          "widget": "hidden",
+          "label": {
+            "fr": "Localité",
+            "en": "Locality"
+          }
+        },
+        "location": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          }
+        },
+        "image": {
+          "widget": "hidden",
+          "label": {
+            "fr": "Image",
+            "en": "Image"
+          }
+        },
+        "youtube": {
+          "widget": "hidden",
+          "label": {
+            "fr": "Youtube",
+            "en": "YouTube"
+          }
+        },
+        "linkedin": {
+          "widget": "hidden",
+          "label": {
+            "fr": "Linkedin",
+            "en": "LinkedIn"
+          }
         }
       },
       "sections": [
@@ -4498,6 +4457,12 @@
             {
               "columns": 1,
               "fields": [
+                "description"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
                 "_imageFile"
               ]
             }
@@ -4523,14 +4488,14 @@
             {
               "columns": 2,
               "fields": [
-                "telephone",
+                "mobile",
                 "email"
               ]
             },
             {
               "columns": 1,
               "fields": [
-                "url"
+                "link"
               ]
             },
             {
@@ -4591,8 +4556,7 @@
             {
               "columns": 1,
               "fields": [
-                "representativeTitle",
-                "otherRepresentativeTitle"
+                "representativeTitle"
               ]
             },
             {
@@ -4628,8 +4592,7 @@
             {
               "columns": 1,
               "fields": [
-                "personInChargeTitle",
-                "otherPersonInChargeTitle"
+                "personInChargeTitle"
               ]
             },
             {

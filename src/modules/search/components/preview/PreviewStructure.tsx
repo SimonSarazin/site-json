@@ -572,7 +572,12 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
         <DynamicEditModal
           open={editModalOpen}
           onOpenChange={setEditModalOpen}
-          entity={item}
+          // `fullEntity` (rechargée par slug, ligne ~290) porte `about.files` — `item` (résultat de
+          // recherche, tronqué) ne l'a jamais. Le garde-fou `hasStructureFormData` ci-dessus ne
+          // suffit pas : il ne détecte que l'absence de champs MÉTIER (siren/sigle/thematic), pas
+          // l'absence des DOCUMENTS, qu'aucune projection de recherche ne porte jamais. Repli sur
+          // `item` tant que `fullEntity` n'a pas fini de charger.
+          entity={fullEntity.data ?? item}
         />
       )}
     </div>
