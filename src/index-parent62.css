@@ -234,6 +234,39 @@ footer nav { font-family: var(--font-serif); }
   --territoire-fsm-lens-lievin: #97776b;
   --territoire-ternois-bruaysis: #d492a9;
 
+  /* ---- Fond et encre des CARTES de personne, par territoire ---------------
+     Les teintes ci-dessus sont des couleurs de MARQUE, pensées pour des
+     pastilles et des bandeaux — pas pour porter du texte. Cinq d'entre elles
+     échouent au contraste AA quelle que soit l'encre choisie (mesuré : blanc
+     sur Boulonnais 4,80, sur FSM Lens-Liévin 4,06 ; marine sur Calaisis 4,36,
+     sur Entre Mer et Terres 4,44, sur Ternois-Bruaysis 4,44 — le seuil est
+     4,5). `*-carte` est donc la même teinte RAMENÉE au contraste : assombrie
+     vers le noir ou éclaircie vers le blanc, jamais décalée en teinte, et
+     `*-encre` est l'encre qui va avec. Chaque couple tient ≥ 6,1:1, ce qui
+     laisse un texte secondaire à 85 % d'opacité au-dessus de 4,6:1.
+     Les libellés sont les SLUGS DE PAGE (`/territoire/<slug>`) : c'est ce que
+     `CardTeamMember` sait dériver du champ `territoires` d'un profil. Les deux
+     « Familles en sol mineur » ont donc ici leur nom long, là où les variables
+     de marque ci-dessus utilisent l'abrégé `fsm-`. */
+  --territoire-arrageois-carte: #66579e;              /* blanc  6,14:1 */
+  --territoire-arrageois-encre: #ffffff;
+  --territoire-artois-carte: #b7cb6b;                 /* marine 7,87:1 — inchangé */
+  --territoire-artois-encre: #1f2d3a;
+  --territoire-audomarois-carte: #e5af32;             /* marine 7,03:1 — inchangé */
+  --territoire-audomarois-encre: #1f2d3a;
+  --territoire-boulonnais-carte: #a63f38;             /* blanc  6,20:1 */
+  --territoire-boulonnais-encre: #ffffff;
+  --territoire-calaisis-carte: #ef955c;               /* marine 6,10:1 */
+  --territoire-calaisis-encre: #1f2d3a;
+  --territoire-entre-mer-et-terres-carte: #4ebac3;    /* marine 6,11:1 */
+  --territoire-entre-mer-et-terres-encre: #1f2d3a;
+  --territoire-familles-en-sol-mineur-henin-carvin-carte: #904a70;  /* blanc 6,18:1 */
+  --territoire-familles-en-sol-mineur-henin-carvin-encre: #ffffff;
+  --territoire-familles-en-sol-mineur-lens-lievin-carte: #745c52;   /* blanc 6,19:1 */
+  --territoire-familles-en-sol-mineur-lens-lievin-encre: #ffffff;
+  --territoire-ternois-bruaysis-carte: #d79aaf;       /* marine 6,11:1 */
+  --territoire-ternois-bruaysis-encre: #1f2d3a;
+
   /* Dégradé de fond de la section « Carte à bulles » (accueil), échantillonné
      sur la maquette source (HP Maquette v4). Couleur de MARQUE, ne suit pas le thème. */
   --p62-map-bg-from: #1fae98;

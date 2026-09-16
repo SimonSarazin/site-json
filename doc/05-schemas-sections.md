@@ -1090,7 +1090,7 @@ Section d'affichage des membres d'une organisation ou d'un projet.
 
 ```ts
 const MemberCardConfSchema = z.object({
-  type: z.enum(["default", "profile"]).default("default"),
+  type: z.enum(["default", "profile", "team"]).default("default"),
   showDescription: z.boolean().optional().default(true),
   showAddress: z.boolean().optional().default(true),
   detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
@@ -1125,7 +1125,24 @@ const MemberSectionSchema = z.object({
 | `showMap`        | `boolean` | Afficher la carte (defaut: `false`)        |
 | `enableMap`      | `boolean` | Charger la carte (defaut: `false`)         |
 | `limit`          | `number?` | Limite du nombre de membres                |
+| `roles`          | `string[]?` | Restreint aux membres portant l'un de ces rôles de lien (`links.<famille>[].roles`, texte libre) |
+| `territoire`     | `string?` | Restreint aux membres dont `territoires` vaut ce libellé. Filtré **côté client** : la projection de `getMembers` ne ramène pas ce champ |
+| `hideWhenEmpty`  | `boolean?` | Efface la section entière quand la liste finit vide, au lieu d'afficher « Aucun membre ». Avec `footerText`, seule la LISTE s'efface — le pied garderait sinon un contenu invisible |
+| `footerText`     | `LocalizedString?` | Canal de contact de l'ÉQUIPE, sauts de ligne respectés. Posé sous la liste, **et seulement si aucune carte « équipe » n'est rendue** — sinon c'est `cardText` qui parle |
+| `cardText`       | `LocalizedString?` | Texte posé DANS chaque carte `card.type: "team"`, sous les contacts de la personne, et dédoublonné d'eux. La carte porte déjà le courriel et le téléphone DU MEMBRE : n'y mettre que ce que sa fiche ignore (le lieu de permanence, typiquement) |
+| `className`      | `string?` | Classes utilitaires sur l'enveloppe de la section — espacement d'une page, surtout |
+| `showTabs`       | `boolean?` | Barre d'onglets Membres/Admins (défaut: `true`) |
+| `showTitle`      | `boolean?` | Titre interne de la liste (défaut: `true`)  |
+| `showInvite`     | `boolean?` | Bouton « Inviter » (défaut: `true`)         |
 | `card`           | `object?` | Configuration de la carte membre           |
+
+`card.type` accepte une troisième valeur, `"team"` : carte VITRINE (photo entière, territoire, rôles,
+contacts, lien vers la page du territoire). `card.layout` en règle la disposition — `"stack"`
+(défaut) : portrait 4/3 pleine largeur, texte dessous ; `"row"` : vignette RONDE à gauche de
+l'identité, pour une colonne étroite où le grand portrait déséquilibrerait la rangée. Elle lit la fiche COMPLÈTE de
+chaque membre par un GET dédié — la projection de la liste ne porte ni `territoires` ni l'adresse.
+`roles` + `territoire` + `card.type: "team"` est la combinaison qui compose une page équipe ou la
+coordination d'un territoire.
 
 ---
 
@@ -2320,12 +2337,16 @@ export const FiltersSectionSchema = z.object({
 
 ## `gridLayout`
 
-Layout en grille avec deux colonnes configurable.
+Layout en grille. **Deux modes**, exclusifs : le couple `leftSection`/`rightSection`, asymétrique
+(un contenu principal et un aparté, largeurs réglées en quarts) ; ou la **rangée** `sections`, N
+blocs de MÊME largeur sur une ligne. `sections` prime quand les deux sont donnés.
 
 ```ts
 const GridLayoutSectionPropsSchema = z.object({
   leftSection: z.lazy(() => SectionSchemaLazy).optional(),
   rightSection: z.lazy(() => SectionSchemaLazy).optional(),
+  sections: z.array(z.lazy(() => SectionSchemaLazy)).optional(),
+  columns: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
   leftColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   align: z.enum(["start", "stretch"]).optional(),
@@ -2347,6 +2368,8 @@ const GridLayoutSectionSchema = z.object({
 | ------------------- | --------- | ---------------------------------------- |
 | `leftSection`       | `Section?` | Section a afficher a gauche (lazy)       |
 | `rightSection`      | `Section?` | Section a afficher a droite (lazy)       |
+| `sections`          | `Section[]?` | Mode RANGÉE : N sections de même largeur sur une ligne. Prime sur `leftSection`/`rightSection`. Sous `sm:` elles s'empilent, puis passent à 2 colonnes, puis à `columns` à partir de `from` |
+| `columns`           | `2 \| 3 \| 4?` | Colonnes du mode rangée (défaut : le nombre de `sections`, plafonné à 4) |
 | `leftColumns`       | `1-4`    | Nombre de colonnes pour la gauche        |
 | `rightColumns`      | `1-4`    | Nombre de colonnes pour la droite        |
 | `align`             | `"start" \| "stretch"?` | Alignement vertical. `start` (défaut, historique) : chaque colonne s'arrête à son contenu — la plus courte laisse du vide sous elle. `stretch` : les deux prennent la hauteur de la plus haute et leur section fille est étirée. À choisir quand la colonne courte porte un fond coloré, sinon ce vide se lit comme un trou. Le stretch ne joue qu'à partir de `lg:` (en dessous les colonnes s'empilent) |
@@ -2355,6 +2378,12 @@ const GridLayoutSectionSchema = z.object({
 | `className`         | `string?` | Classes CSS additionnelles               |
 | `leftWrapperClass`  | `string?` | Classes CSS du wrapper gauche            |
 | `rightWrapperClass` | `string?` | Classes CSS du wrapper droit             |
+
+> ⚠️ **Un container est traversé par le prefetch SSR et les gardes** via
+> `SECTION_EXTRACTORS` (`src/lib/sectionContainers.ts`, dupliqué dans
+> `src/modules/search/prefetch/prefetchFilters.ts`). Une section imbriquée dans `sections` y est
+> déjà déclarée ; tout NOUVEAU container doit l'être aussi, sans quoi ses filles sont ratées
+> silencieusement — elles ne seront ni préchargées ni vues par les préflights.
 
 ---
 

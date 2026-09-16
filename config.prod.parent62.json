@@ -1521,324 +1521,80 @@
           "id": "equipe-dep-titre",
           "props": {
             "title": {
-              "fr": "L'animation départementale",
-              "en": "Departmental coordination"
-            },
-            "subtitle": {
-              "fr": "Fédération des Centres Sociaux Nord-Pas-de-Calais — 199-201 rue Colbert, centre Vauban, bâtiment Rochefort, 59000 Lille.",
-              "en": "Federation of Social Centres Nord-Pas-de-Calais — 199-201 rue Colbert, centre Vauban, bâtiment Rochefort, 59000 Lille."
+              "fr": "L'animation départementale du Réseau Parentalité 62",
+              "en": "Departmental coordination of the Parenting Network 62"
             },
             "align": "center",
             "size": "lg"
           }
         },
         {
-          "type": "team",
+          "type": "member",
           "id": "equipe-dep",
           "props": {
-            "layout": "grid",
-            "columns": 2,
-            "members": [
-              {
-                "name": {
-                  "fr": "Antoine Legrand",
-                  "en": "Antoine Legrand"
-                },
-                "role": {
-                  "fr": "Coordonnateur départemental",
-                  "en": "Departmental coordinator"
-                },
-                "bio": {
-                  "fr": "06 98 99 93 09 · Fédération des Centres Sociaux Nord-Pas-de-Calais, Lille",
-                  "en": "06 98 99 93 09 · Federation of Social Centres, Lille"
-                },
-                "avatar": "/images/parent62/equipe/antoine-legrand.svg",
-                "socials": [
-                  {
-                    "platform": "mail",
-                    "url": "mailto:antoine.legrand@parent62.org"
-                  }
-                ]
-              },
-              {
-                "name": {
-                  "fr": "Clarisse Feutry",
-                  "en": "Clarisse Feutry"
-                },
-                "role": {
-                  "fr": "Coordonnatrice départementale",
-                  "en": "Departmental coordinator"
-                },
-                "bio": {
-                  "fr": "06 11 21 40 75 · Fédération des Centres Sociaux Nord-Pas-de-Calais, Lille",
-                  "en": "06 11 21 40 75 · Federation of Social Centres, Lille"
-                },
-                "avatar": "/images/parent62/equipe/clarisse-feutry.svg",
-                "socials": [
-                  {
-                    "platform": "mail",
-                    "url": "mailto:clarisse.feutry@parent62.org"
-                  }
-                ]
-              }
-            ]
+            "roles": [
+              "Coordonnateur(trice) départemental du réseau à la Fédération des Centres Sociaux Nord Pas-de-Calais"
+            ],
+            "showRole": true,
+            "showManagement": false,
+            "showCard": false,
+            "search": false,
+            "showTabs": false,
+            "showTitle": false,
+            "showInvite": false,
+            "card": { "type": "team", "detailsMode": "link" }
           }
         },
         {
           "type": "title",
           "id": "equipe-terr-titre",
           "props": {
+            "title": { "fr": "L'équipe de Coordonnateurs (trices)", "en": "The team of coordinators" },
+            "align": "center",
+            "size": "lg"
+          }
+        },
+        {
+          "type": "member",
+          "id": "equipe-terr",
+          "props": {
+            "roles": ["Coordonnateur(trice)"],
+            "showRole": true,
+            "showManagement": false,
+            "showCard": false,
+            "search": false,
+            "showTabs": false,
+            "showTitle": false,
+            "showInvite": false,
+            "card": { "type": "team", "detailsMode": "link" }
+          }
+        },
+        {
+          "type": "title",
+          "id": "equipe-caf-titre",
+          "props": {
             "title": {
-              "fr": "Les coordinations territoriales",
-              "en": "Territorial coordinations"
-            },
-            "subtitle": {
-              "fr": "Neuf coordinations, neuf territoires : trouvez la vôtre et écrivez-lui directement.",
-              "en": "Nine coordinations, nine territories: find yours and get in touch directly."
+              "fr": "Le contact à la CAF du Pas-de-Calais",
+              "en": "The contact at the CAF of Pas-de-Calais"
             },
             "align": "center",
             "size": "lg"
           }
         },
         {
-          "type": "team",
-          "id": "equipe-terr",
-          "props": {
-            "layout": "grid",
-            "columns": 3,
-            "members": [
-              {
-                "name": {
-                  "fr": "Bénédicte Porcaro",
-                  "en": "Bénédicte Porcaro"
-                },
-                "role": {
-                  "fr": "Arrageois",
-                  "en": "Arrageois"
-                },
-                "bio": {
-                  "fr": "07 52 03 41 26 · Centre Socioculturel d'Achicourt, rue de Roubaix, 62217 Achicourt",
-                  "en": "07 52 03 41 26 · Centre Socioculturel d'Achicourt, rue de Roubaix, 62217 Achicourt"
-                },
-                "avatar": "/images/parent62/equipe/benedicte-porcaro.svg",
-                "socials": [
-                  {
-                    "platform": "mail",
-                    "url": "mailto:arrageois@parent62.org"
-                  }
-                ]
-              },
-              {
-                "name": {
-                  "fr": "Margaux Daron",
-                  "en": "Margaux Daron"
-                },
-                "role": {
-                  "fr": "Artois",
-                  "en": "Artois"
-                },
-                "bio": {
-                  "fr": "07 67 16 84 28 · Centre Social La Maison pour Tous, place des FFI, 62190 Lillers",
-                  "en": "07 67 16 84 28 · Centre Social La Maison pour Tous, place des FFI, 62190 Lillers"
-                },
-                "avatar": "/images/parent62/equipe/margaux-daron.svg",
-                "socials": [
-                  {
-                    "platform": "mail",
-                    "url": "mailto:artois@parent62.org"
-                  }
-                ]
-              },
-              {
-                "name": {
-                  "fr": "Ludivine Dupire Fait",
-                  "en": "Ludivine Dupire Fait"
-                },
-                "role": {
-                  "fr": "Audomarois",
-                  "en": "Audomarois"
-                },
-                "bio": {
-                  "fr": "07 88 15 57 38 · Centre Social Inter-Générations, rue Brueghel, Longuenesse",
-                  "en": "07 88 15 57 38 · Centre Social Inter-Générations, rue Brueghel, Longuenesse"
-                },
-                "avatar": "/images/parent62/equipe/ludivine-dupire-fait.svg",
-                "socials": [
-                  {
-                    "platform": "mail",
-                    "url": "mailto:audomarois@parent62.org"
-                  }
-                ]
-              },
-              {
-                "name": {
-                  "fr": "Céline Devillard",
-                  "en": "Céline Devillard"
-                },
-                "role": {
-                  "fr": "Boulonnais",
-                  "en": "Boulonnais"
-                },
-                "bio": {
-                  "fr": "06 72 61 17 12 · Centre Social Espace Carnot, 46 rue du Général San Martin, 62480 Le Portel",
-                  "en": "06 72 61 17 12 · Centre Social Espace Carnot, 46 rue du Général San Martin, 62480 Le Portel"
-                },
-                "avatar": "/images/parent62/equipe/celine-devillard.svg",
-                "socials": [
-                  {
-                    "platform": "mail",
-                    "url": "mailto:boulonnais@parent62.org"
-                  }
-                ]
-              },
-              {
-                "name": {
-                  "fr": "Laëtitia Dumoulin",
-                  "en": "Laëtitia Dumoulin"
-                },
-                "role": {
-                  "fr": "Calaisis",
-                  "en": "Calaisis"
-                },
-                "bio": {
-                  "fr": "07 85 51 27 40 · Centre social et culturel Marie-Jeanne Bassot, 1578 CD 940, 62231 Sangatte",
-                  "en": "07 85 51 27 40 · Centre social et culturel Marie-Jeanne Bassot, 1578 CD 940, 62231 Sangatte"
-                },
-                "avatar": "/images/parent62/equipe/laetitia-dumoulin.svg",
-                "socials": [
-                  {
-                    "platform": "mail",
-                    "url": "mailto:calaisis@parent62.org"
-                  }
-                ]
-              },
-              {
-                "name": {
-                  "fr": "Adeline Cadet",
-                  "en": "Adeline Cadet"
-                },
-                "role": {
-                  "fr": "Entre Mer et Terres",
-                  "en": "Entre Mer et Terres"
-                },
-                "bio": {
-                  "fr": "07 49 35 93 15 · Centre Socioculturel Intercommunal d'Hucqueliers, 9 bis rue de la Longeville, 62650 Hucqueliers",
-                  "en": "07 49 35 93 15 · Centre Socioculturel Intercommunal d'Hucqueliers, 9 bis rue de la Longeville, 62650 Hucqueliers"
-                },
-                "avatar": "/images/parent62/equipe/adeline-cadet.svg",
-                "socials": [
-                  {
-                    "platform": "mail",
-                    "url": "mailto:entremeretterres@parent62.org"
-                  }
-                ]
-              },
-              {
-                "name": {
-                  "fr": "Fiona Karkri",
-                  "en": "Fiona Karkri"
-                },
-                "role": {
-                  "fr": "Familles en sol mineur Hénin Carvin",
-                  "en": "Familles en sol mineur Hénin Carvin"
-                },
-                "bio": {
-                  "fr": "06 73 75 40 49 · Centre Social, rue du Maréchal Leclerc, Noyelles-sous-Lens",
-                  "en": "06 73 75 40 49 · Centre Social, rue du Maréchal Leclerc, Noyelles-sous-Lens"
-                },
-                "avatar": "/images/parent62/equipe/fiona-karkri.svg",
-                "socials": [
-                  {
-                    "platform": "mail",
-                    "url": "mailto:fsm.henincarvin@parent62.org"
-                  }
-                ]
-              },
-              {
-                "name": {
-                  "fr": "Guillaume Mondot",
-                  "en": "Guillaume Mondot"
-                },
-                "role": {
-                  "fr": "Familles en sol mineur Lens Liévin",
-                  "en": "Familles en sol mineur Lens Liévin"
-                },
-                "bio": {
-                  "fr": "06 43 33 41 31 · Centre Social des Brebis, place de la Marne, 62670 Mazingarbe",
-                  "en": "06 43 33 41 31 · Centre Social des Brebis, place de la Marne, 62670 Mazingarbe"
-                },
-                "avatar": "/images/parent62/equipe/guillaume-mondot.svg",
-                "socials": [
-                  {
-                    "platform": "mail",
-                    "url": "mailto:famillesensolmineur@parent62.org"
-                  }
-                ]
-              },
-              {
-                "name": {
-                  "fr": "Sarah Darras",
-                  "en": "Sarah Darras"
-                },
-                "role": {
-                  "fr": "Ternois Bruaysis",
-                  "en": "Ternois Bruaysis"
-                },
-                "bio": {
-                  "fr": "07 46 29 04 60",
-                  "en": "07 46 29 04 60"
-                },
-                "avatar": "/images/parent62/equipe/sarah-darras.svg",
-                "socials": [
-                  {
-                    "platform": "mail",
-                    "url": "mailto:ternoisbruaysis@parent62.org"
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "type": "content",
+          "type": "member",
           "id": "equipe-caf",
           "props": {
-            "category": {
-              "fr": "Côté CAF",
-              "en": "At the CAF"
-            },
-            "title": {
-              "fr": "CAF du Pas-de-Calais — conseil thématique Parentalité",
-              "en": "CAF of Pas-de-Calais — parenting advisory"
-            },
-            "description": {
-              "fr": "Sophie Halle, conseillère thématique Parentalité, pilote la démarche pour la CAF du Pas-de-Calais. 03 21 46 93 85 · sophie.halle@caf62.caf.fr · Rue de Beauffort, 62015 Arras Cedex / Quai de la gendarmerie, 62908 Calais.",
-              "en": "Sophie Halle, parenting advisor, leads the approach for the CAF of Pas-de-Calais. 03 21 46 93 85 · sophie.halle@caf62.caf.fr · Rue de Beauffort, 62015 Arras Cedex / Quai de la gendarmerie, 62908 Calais."
-            },
-            "imagePosition": "right",
-            "iconCard": {
-              "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect width=\"16\" height=\"20\" x=\"4\" y=\"2\" rx=\"2\" ry=\"2\"/><path d=\"M9 22v-4h6v4\"/><path d=\"M8 6h.01\"/><path d=\"M16 6h.01\"/><path d=\"M12 6h.01\"/><path d=\"M12 10h.01\"/><path d=\"M12 14h.01\"/><path d=\"M16 10h.01\"/><path d=\"M16 14h.01\"/><path d=\"M8 10h.01\"/><path d=\"M8 14h.01\"/></svg>"
-            }
-          }
-        },
-        {
-          "type": "cta",
-          "id": "equipe-cta",
-          "props": {
-            "headline": { "fr": "Vous ne savez pas à qui vous adresser ?", "en": "Not sure who to contact?" },
-            "subhead": {
-              "fr": "Écrivez au réseau, nous vous orienterons vers la bonne personne.",
-              "en": "Write to the network — we'll point you to the right person."
-            },
-            "backgroundColor": "color-mix(in oklab, var(--primary) 8%, var(--background))",
-            "buttons": [
-              {
-                "label": { "fr": "Écrire au réseau", "en": "Write to the network" },
-                "href": "mailto:contact@parent62.org",
-                "variant": "default"
-              }
-            ],
-            "align": "center"
+            "className": "pb-16",
+            "roles": ["Conseillère thématique Parentalité CAF"],
+            "showRole": true,
+            "showManagement": false,
+            "showCard": false,
+            "search": false,
+            "showTabs": false,
+            "showTitle": false,
+            "showInvite": false,
+            "card": { "type": "team", "detailsMode": "link" }
           }
         }
       ]
@@ -10886,79 +10642,115 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/arrageois-comite",
+          "type": "gridLayout",
+          "id": "arrageois-comite-rangee",
           "props": {
-            "customHeader": {
-              "title": {
-                "fr": "Dates du comité local",
-                "en": "Local committee dates"
-              }
-            },
-            "description": {
-              "fr": "La prochaine réunion du comité local Arrageois.",
-              "en": "Next meeting of the Arrageois local committee."
-            },
-            "showViewToggle": false,
-            "showTabs": false,
-            "defaultTab": "upcoming",
-            "limit": 3,
-            "filters": {
-              "type": false,
-              "text": false
-            },
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3,
-              "xl": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "costumSlug": "parent62",
-              "indexStepList": 30,
-              "filters": {
-                "type": "meeting",
-                "territoires": {
-                  "$in": [
-                    "Arrageois"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "cards",
-          "props": {
-            "columns": 2,
-            "className": "whitespace-pre-line",
-            "items": [
+            "columns": 3,
+            "align": "stretch",
+            "gap": 6,
+            "sections": [
               {
-                "icon": "user",
-                "title": {
-                  "fr": "Bénédicte Porcaro, coordonnatrice",
-                  "en": "Bénédicte Porcaro, coordinator"
-                },
-                "text": {
-                  "fr": "Coordonnatrice du comité local\narrageois@parent62.org\n07 52 03 41 26 · 03 21 24 27 95\nCentre Socioculturel d'Achicourt, rue de Roubaix, 62217 Achicourt",
-                  "en": "Local committee coordinator\narrageois@parent62.org\n07 52 03 41 26 · 03 21 24 27 95\nCentre Socioculturel d'Achicourt, rue de Roubaix, 62217 Achicourt"
+                "type": "agenda",
+                "id": "/territoire/arrageois-comite",
+                "props": {
+                  "customHeader": {
+                    "title": {
+                      "fr": "Dates du comité local",
+                      "en": "Local committee dates"
+                    }
+                  },
+                  "description": {
+                    "fr": "La prochaine réunion du comité local Arrageois.",
+                    "en": "Next meeting of the Arrageois local committee."
+                  },
+                  "showViewToggle": false,
+                  "showTabs": false,
+                  "defaultTab": "upcoming",
+                  "limit": 2,
+                  "filters": {
+                    "type": false,
+                    "text": false
+                  },
+                  "columns": {
+                    "sm": 1,
+                    "md": 1,
+                    "lg": 1,
+                    "xl": 1
+                  },
+                  "baseParams": {
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "indexStepList": 30,
+                    "filters": {
+                      "type": "meeting",
+                      "territoires": {
+                        "$in": [
+                          "Arrageois"
+                        ]
+                      }
+                    }
+                  }
                 }
               },
               {
-                "icon": "folder-open",
-                "title": {
-                  "fr": "Comptes rendus des réunions",
-                  "en": "Minutes of the meetings"
-                },
-                "text": {
-                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
-                },
-                "href": "https://drive.google.com/drive/folders/1-xR70C3jtA6XK7bAhzVyysK-8_Gx-Hy_",
-                "target": "_blank"
+                "type": "member",
+                "id": "arrageois-coordination",
+                "props": {
+                  "className": "pt-8",
+                  "title": {
+                    "fr": "La coordination du territoire",
+                    "en": "Territory coordination"
+                  },
+                  "roles": [
+                    "Coordonnateur(trice)"
+                  ],
+                  "territoire": "Arrageois",
+                  "hideWhenEmpty": true,
+              "cardText": {
+                "fr": "Centre Socioculturel d'Achicourt, rue de Roubaix, 62217 Achicourt",
+                "en": "Centre Socioculturel d'Achicourt, rue de Roubaix, 62217 Achicourt"
+              },
+                  "showRole": true,
+                  "showManagement": false,
+                  "showCard": false,
+                  "search": false,
+                  "showTabs": false,
+                  "showTitle": true,
+                  "showInvite": false,
+                  "card": {
+                    "type": "team",
+                    "layout": "row",
+                    "detailsMode": "link"
+                  },
+                  "footerText": {
+                    "fr": "arrageois@parent62.org\n07 52 03 41 26 · 03 21 24 27 95\nCentre Socioculturel d'Achicourt, rue de Roubaix, 62217 Achicourt",
+                    "en": "arrageois@parent62.org\n07 52 03 41 26 · 03 21 24 27 95\nCentre Socioculturel d'Achicourt, rue de Roubaix, 62217 Achicourt"
+                  }
+                }
+              },
+              {
+                "type": "cards",
+                "props": {
+                  "columns": 1,
+                  "className": "whitespace-pre-line",
+                  "items": [
+                    {
+                      "icon": "folder-open",
+                      "title": {
+                        "fr": "Comptes rendus des réunions",
+                        "en": "Minutes of the meetings"
+                      },
+                      "text": {
+                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                      },
+                      "href": "https://drive.google.com/drive/folders/1-xR70C3jtA6XK7bAhzVyysK-8_Gx-Hy_",
+                      "target": "_blank"
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -11504,79 +11296,115 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/artois-comite",
+          "type": "gridLayout",
+          "id": "artois-comite-rangee",
           "props": {
-            "customHeader": {
-              "title": {
-                "fr": "Dates du comité local",
-                "en": "Local committee dates"
-              }
-            },
-            "description": {
-              "fr": "La prochaine réunion du comité local Artois.",
-              "en": "Next meeting of the Artois local committee."
-            },
-            "showViewToggle": false,
-            "showTabs": false,
-            "defaultTab": "upcoming",
-            "limit": 3,
-            "filters": {
-              "type": false,
-              "text": false
-            },
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3,
-              "xl": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "costumSlug": "parent62",
-              "indexStepList": 30,
-              "filters": {
-                "type": "meeting",
-                "territoires": {
-                  "$in": [
-                    "Artois"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "cards",
-          "props": {
-            "columns": 2,
-            "className": "whitespace-pre-line",
-            "items": [
+            "columns": 3,
+            "align": "stretch",
+            "gap": 6,
+            "sections": [
               {
-                "icon": "user",
-                "title": {
-                  "fr": "Margaux Daron, coordonnatrice",
-                  "en": "Margaux Daron, coordinator"
-                },
-                "text": {
-                  "fr": "Coordonnatrice du comité local\nartois@parent62.org\n07 67 16 84 28\nCentre Social La Maison pour Tous, place des FFI, 62190 Lillers",
-                  "en": "Local committee coordinator\nartois@parent62.org\n07 67 16 84 28\nCentre Social La Maison pour Tous, place des FFI, 62190 Lillers"
+                "type": "agenda",
+                "id": "/territoire/artois-comite",
+                "props": {
+                  "customHeader": {
+                    "title": {
+                      "fr": "Dates du comité local",
+                      "en": "Local committee dates"
+                    }
+                  },
+                  "description": {
+                    "fr": "La prochaine réunion du comité local Artois.",
+                    "en": "Next meeting of the Artois local committee."
+                  },
+                  "showViewToggle": false,
+                  "showTabs": false,
+                  "defaultTab": "upcoming",
+                  "limit": 2,
+                  "filters": {
+                    "type": false,
+                    "text": false
+                  },
+                  "columns": {
+                    "sm": 1,
+                    "md": 1,
+                    "lg": 1,
+                    "xl": 1
+                  },
+                  "baseParams": {
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "indexStepList": 30,
+                    "filters": {
+                      "type": "meeting",
+                      "territoires": {
+                        "$in": [
+                          "Artois"
+                        ]
+                      }
+                    }
+                  }
                 }
               },
               {
-                "icon": "folder-open",
-                "title": {
-                  "fr": "Comptes rendus des réunions",
-                  "en": "Minutes of the meetings"
-                },
-                "text": {
-                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
-                },
-                "href": "https://drive.google.com/drive/folders/1P9CBZfe71ri7FU8Vc9H_8e_yF_v6_hye?usp=sharing",
-                "target": "_blank"
+                "type": "member",
+                "id": "artois-coordination",
+                "props": {
+                  "className": "pt-8",
+                  "title": {
+                    "fr": "La coordination du territoire",
+                    "en": "Territory coordination"
+                  },
+                  "roles": [
+                    "Coordonnateur(trice)"
+                  ],
+                  "territoire": "Artois",
+                  "hideWhenEmpty": true,
+              "cardText": {
+                "fr": "Centre Social La Maison pour Tous, place des FFI, 62190 Lillers",
+                "en": "Centre Social La Maison pour Tous, place des FFI, 62190 Lillers"
+              },
+                  "showRole": true,
+                  "showManagement": false,
+                  "showCard": false,
+                  "search": false,
+                  "showTabs": false,
+                  "showTitle": true,
+                  "showInvite": false,
+                  "card": {
+                    "type": "team",
+                    "layout": "row",
+                    "detailsMode": "link"
+                  },
+                  "footerText": {
+                    "fr": "artois@parent62.org\n07 67 16 84 28\nCentre Social La Maison pour Tous, place des FFI, 62190 Lillers",
+                    "en": "artois@parent62.org\n07 67 16 84 28\nCentre Social La Maison pour Tous, place des FFI, 62190 Lillers"
+                  }
+                }
+              },
+              {
+                "type": "cards",
+                "props": {
+                  "columns": 1,
+                  "className": "whitespace-pre-line",
+                  "items": [
+                    {
+                      "icon": "folder-open",
+                      "title": {
+                        "fr": "Comptes rendus des réunions",
+                        "en": "Minutes of the meetings"
+                      },
+                      "text": {
+                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                      },
+                      "href": "https://drive.google.com/drive/folders/1P9CBZfe71ri7FU8Vc9H_8e_yF_v6_hye?usp=sharing",
+                      "target": "_blank"
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -12122,79 +11950,115 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/audomarois-comite",
+          "type": "gridLayout",
+          "id": "audomarois-comite-rangee",
           "props": {
-            "customHeader": {
-              "title": {
-                "fr": "Dates du comité local",
-                "en": "Local committee dates"
-              }
-            },
-            "description": {
-              "fr": "La prochaine réunion du comité local Audomarois.",
-              "en": "Next meeting of the Audomarois local committee."
-            },
-            "showViewToggle": false,
-            "showTabs": false,
-            "defaultTab": "upcoming",
-            "limit": 3,
-            "filters": {
-              "type": false,
-              "text": false
-            },
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3,
-              "xl": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "costumSlug": "parent62",
-              "indexStepList": 30,
-              "filters": {
-                "type": "meeting",
-                "territoires": {
-                  "$in": [
-                    "Audomarois"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "cards",
-          "props": {
-            "columns": 2,
-            "className": "whitespace-pre-line",
-            "items": [
+            "columns": 3,
+            "align": "stretch",
+            "gap": 6,
+            "sections": [
               {
-                "icon": "user",
-                "title": {
-                  "fr": "Ludivine Dupire Fait, coordonnatrice",
-                  "en": "Ludivine Dupire Fait, coordinator"
-                },
-                "text": {
-                  "fr": "Coordonnatrice du comité local\naudomarois@parent62.org\n07 88 15 57 38 · 03 21 98 19 98\nCentre Social Inter-Générations, rue Brueghel, Longuenesse",
-                  "en": "Local committee coordinator\naudomarois@parent62.org\n07 88 15 57 38 · 03 21 98 19 98\nCentre Social Inter-Générations, rue Brueghel, Longuenesse"
+                "type": "agenda",
+                "id": "/territoire/audomarois-comite",
+                "props": {
+                  "customHeader": {
+                    "title": {
+                      "fr": "Dates du comité local",
+                      "en": "Local committee dates"
+                    }
+                  },
+                  "description": {
+                    "fr": "La prochaine réunion du comité local Audomarois.",
+                    "en": "Next meeting of the Audomarois local committee."
+                  },
+                  "showViewToggle": false,
+                  "showTabs": false,
+                  "defaultTab": "upcoming",
+                  "limit": 2,
+                  "filters": {
+                    "type": false,
+                    "text": false
+                  },
+                  "columns": {
+                    "sm": 1,
+                    "md": 1,
+                    "lg": 1,
+                    "xl": 1
+                  },
+                  "baseParams": {
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "indexStepList": 30,
+                    "filters": {
+                      "type": "meeting",
+                      "territoires": {
+                        "$in": [
+                          "Audomarois"
+                        ]
+                      }
+                    }
+                  }
                 }
               },
               {
-                "icon": "folder-open",
-                "title": {
-                  "fr": "Comptes rendus des réunions",
-                  "en": "Minutes of the meetings"
-                },
-                "text": {
-                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
-                },
-                "href": "https://drive.google.com/drive/folders/15CKV2rLe8fGPRcAveEjSP9PtZTLKY3c5?usp=sharing",
-                "target": "_blank"
+                "type": "member",
+                "id": "audomarois-coordination",
+                "props": {
+                  "className": "pt-8",
+                  "title": {
+                    "fr": "La coordination du territoire",
+                    "en": "Territory coordination"
+                  },
+                  "roles": [
+                    "Coordonnateur(trice)"
+                  ],
+                  "territoire": "Audomarois",
+                  "hideWhenEmpty": true,
+              "cardText": {
+                "fr": "Centre Social Inter-Générations, rue Brueghel, Longuenesse",
+                "en": "Centre Social Inter-Générations, rue Brueghel, Longuenesse"
+              },
+                  "showRole": true,
+                  "showManagement": false,
+                  "showCard": false,
+                  "search": false,
+                  "showTabs": false,
+                  "showTitle": true,
+                  "showInvite": false,
+                  "card": {
+                    "type": "team",
+                    "layout": "row",
+                    "detailsMode": "link"
+                  },
+                  "footerText": {
+                    "fr": "audomarois@parent62.org\n07 88 15 57 38 · 03 21 98 19 98\nCentre Social Inter-Générations, rue Brueghel, Longuenesse",
+                    "en": "audomarois@parent62.org\n07 88 15 57 38 · 03 21 98 19 98\nCentre Social Inter-Générations, rue Brueghel, Longuenesse"
+                  }
+                }
+              },
+              {
+                "type": "cards",
+                "props": {
+                  "columns": 1,
+                  "className": "whitespace-pre-line",
+                  "items": [
+                    {
+                      "icon": "folder-open",
+                      "title": {
+                        "fr": "Comptes rendus des réunions",
+                        "en": "Minutes of the meetings"
+                      },
+                      "text": {
+                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                      },
+                      "href": "https://drive.google.com/drive/folders/15CKV2rLe8fGPRcAveEjSP9PtZTLKY3c5?usp=sharing",
+                      "target": "_blank"
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -12740,79 +12604,115 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/boulonnais-comite",
+          "type": "gridLayout",
+          "id": "boulonnais-comite-rangee",
           "props": {
-            "customHeader": {
-              "title": {
-                "fr": "Dates du comité local",
-                "en": "Local committee dates"
-              }
-            },
-            "description": {
-              "fr": "La prochaine réunion du comité local Boulonnais.",
-              "en": "Next meeting of the Boulonnais local committee."
-            },
-            "showViewToggle": false,
-            "showTabs": false,
-            "defaultTab": "upcoming",
-            "limit": 3,
-            "filters": {
-              "type": false,
-              "text": false
-            },
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3,
-              "xl": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "costumSlug": "parent62",
-              "indexStepList": 30,
-              "filters": {
-                "type": "meeting",
-                "territoires": {
-                  "$in": [
-                    "Boulonnais"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "cards",
-          "props": {
-            "columns": 2,
-            "className": "whitespace-pre-line",
-            "items": [
+            "columns": 3,
+            "align": "stretch",
+            "gap": 6,
+            "sections": [
               {
-                "icon": "user",
-                "title": {
-                  "fr": "Céline Devillard, coordonnatrice",
-                  "en": "Céline Devillard, coordinator"
-                },
-                "text": {
-                  "fr": "Coordonnatrice du comité local\nboulonnais@parent62.org\n06 72 61 17 12 · 03 21 10 31 10\nCentre Social Espace Carnot, 46 rue du Général San Martin, 62480 Le Portel",
-                  "en": "Local committee coordinator\nboulonnais@parent62.org\n06 72 61 17 12 · 03 21 10 31 10\nCentre Social Espace Carnot, 46 rue du Général San Martin, 62480 Le Portel"
+                "type": "agenda",
+                "id": "/territoire/boulonnais-comite",
+                "props": {
+                  "customHeader": {
+                    "title": {
+                      "fr": "Dates du comité local",
+                      "en": "Local committee dates"
+                    }
+                  },
+                  "description": {
+                    "fr": "La prochaine réunion du comité local Boulonnais.",
+                    "en": "Next meeting of the Boulonnais local committee."
+                  },
+                  "showViewToggle": false,
+                  "showTabs": false,
+                  "defaultTab": "upcoming",
+                  "limit": 2,
+                  "filters": {
+                    "type": false,
+                    "text": false
+                  },
+                  "columns": {
+                    "sm": 1,
+                    "md": 1,
+                    "lg": 1,
+                    "xl": 1
+                  },
+                  "baseParams": {
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "indexStepList": 30,
+                    "filters": {
+                      "type": "meeting",
+                      "territoires": {
+                        "$in": [
+                          "Boulonnais"
+                        ]
+                      }
+                    }
+                  }
                 }
               },
               {
-                "icon": "folder-open",
-                "title": {
-                  "fr": "Comptes rendus des réunions",
-                  "en": "Minutes of the meetings"
-                },
-                "text": {
-                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
-                },
-                "href": "https://drive.google.com/open?id=1eUFrIrM-fUOJ0nWkNcm7VDidfrszZrLg",
-                "target": "_blank"
+                "type": "member",
+                "id": "boulonnais-coordination",
+                "props": {
+                  "className": "pt-8",
+                  "title": {
+                    "fr": "La coordination du territoire",
+                    "en": "Territory coordination"
+                  },
+                  "roles": [
+                    "Coordonnateur(trice)"
+                  ],
+                  "territoire": "Boulonnais",
+                  "hideWhenEmpty": true,
+              "cardText": {
+                "fr": "Centre Social Espace Carnot, 46 rue du Général San Martin, 62480 Le Portel",
+                "en": "Centre Social Espace Carnot, 46 rue du Général San Martin, 62480 Le Portel"
+              },
+                  "showRole": true,
+                  "showManagement": false,
+                  "showCard": false,
+                  "search": false,
+                  "showTabs": false,
+                  "showTitle": true,
+                  "showInvite": false,
+                  "card": {
+                    "type": "team",
+                    "layout": "row",
+                    "detailsMode": "link"
+                  },
+                  "footerText": {
+                    "fr": "boulonnais@parent62.org\n06 72 61 17 12 · 03 21 10 31 10\nCentre Social Espace Carnot, 46 rue du Général San Martin, 62480 Le Portel",
+                    "en": "boulonnais@parent62.org\n06 72 61 17 12 · 03 21 10 31 10\nCentre Social Espace Carnot, 46 rue du Général San Martin, 62480 Le Portel"
+                  }
+                }
+              },
+              {
+                "type": "cards",
+                "props": {
+                  "columns": 1,
+                  "className": "whitespace-pre-line",
+                  "items": [
+                    {
+                      "icon": "folder-open",
+                      "title": {
+                        "fr": "Comptes rendus des réunions",
+                        "en": "Minutes of the meetings"
+                      },
+                      "text": {
+                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                      },
+                      "href": "https://drive.google.com/open?id=1eUFrIrM-fUOJ0nWkNcm7VDidfrszZrLg",
+                      "target": "_blank"
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -13358,79 +13258,115 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/calaisis-comite",
+          "type": "gridLayout",
+          "id": "calaisis-comite-rangee",
           "props": {
-            "customHeader": {
-              "title": {
-                "fr": "Dates du comité local",
-                "en": "Local committee dates"
-              }
-            },
-            "description": {
-              "fr": "La prochaine réunion du comité local Calaisis.",
-              "en": "Next meeting of the Calaisis local committee."
-            },
-            "showViewToggle": false,
-            "showTabs": false,
-            "defaultTab": "upcoming",
-            "limit": 3,
-            "filters": {
-              "type": false,
-              "text": false
-            },
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3,
-              "xl": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "costumSlug": "parent62",
-              "indexStepList": 30,
-              "filters": {
-                "type": "meeting",
-                "territoires": {
-                  "$in": [
-                    "Calaisis"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "cards",
-          "props": {
-            "columns": 2,
-            "className": "whitespace-pre-line",
-            "items": [
+            "columns": 3,
+            "align": "stretch",
+            "gap": 6,
+            "sections": [
               {
-                "icon": "user",
-                "title": {
-                  "fr": "Laëtitia Dumoulin, coordonnatrice",
-                  "en": "Laëtitia Dumoulin, coordinator"
-                },
-                "text": {
-                  "fr": "Coordonnatrice du comité local\ncalaisis@parent62.org\n07 85 51 27 40 · 03 21 34 16 85\nCentre social et culturel Marie-Jeanne Bassot, 1578 chemin Départemental 940, 62231 Sangatte",
-                  "en": "Local committee coordinator\ncalaisis@parent62.org\n07 85 51 27 40 · 03 21 34 16 85\nCentre social et culturel Marie-Jeanne Bassot, 1578 chemin Départemental 940, 62231 Sangatte"
+                "type": "agenda",
+                "id": "/territoire/calaisis-comite",
+                "props": {
+                  "customHeader": {
+                    "title": {
+                      "fr": "Dates du comité local",
+                      "en": "Local committee dates"
+                    }
+                  },
+                  "description": {
+                    "fr": "La prochaine réunion du comité local Calaisis.",
+                    "en": "Next meeting of the Calaisis local committee."
+                  },
+                  "showViewToggle": false,
+                  "showTabs": false,
+                  "defaultTab": "upcoming",
+                  "limit": 2,
+                  "filters": {
+                    "type": false,
+                    "text": false
+                  },
+                  "columns": {
+                    "sm": 1,
+                    "md": 1,
+                    "lg": 1,
+                    "xl": 1
+                  },
+                  "baseParams": {
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "indexStepList": 30,
+                    "filters": {
+                      "type": "meeting",
+                      "territoires": {
+                        "$in": [
+                          "Calaisis"
+                        ]
+                      }
+                    }
+                  }
                 }
               },
               {
-                "icon": "folder-open",
-                "title": {
-                  "fr": "Comptes rendus des réunions",
-                  "en": "Minutes of the meetings"
-                },
-                "text": {
-                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
-                },
-                "href": "https://drive.google.com/open?id=1AsrYqbr9j1lQsr-8NhtEPUH4V_axjGzK",
-                "target": "_blank"
+                "type": "member",
+                "id": "calaisis-coordination",
+                "props": {
+                  "className": "pt-8",
+                  "title": {
+                    "fr": "La coordination du territoire",
+                    "en": "Territory coordination"
+                  },
+                  "roles": [
+                    "Coordonnateur(trice)"
+                  ],
+                  "territoire": "Calaisis",
+                  "hideWhenEmpty": true,
+              "cardText": {
+                "fr": "Centre social et culturel Marie-Jeanne Bassot, 1578 chemin Départemental 940, 62231 Sangatte",
+                "en": "Centre social et culturel Marie-Jeanne Bassot, 1578 chemin Départemental 940, 62231 Sangatte"
+              },
+                  "showRole": true,
+                  "showManagement": false,
+                  "showCard": false,
+                  "search": false,
+                  "showTabs": false,
+                  "showTitle": true,
+                  "showInvite": false,
+                  "card": {
+                    "type": "team",
+                    "layout": "row",
+                    "detailsMode": "link"
+                  },
+                  "footerText": {
+                    "fr": "calaisis@parent62.org\n07 85 51 27 40 · 03 21 34 16 85\nCentre social et culturel Marie-Jeanne Bassot, 1578 chemin Départemental 940, 62231 Sangatte",
+                    "en": "calaisis@parent62.org\n07 85 51 27 40 · 03 21 34 16 85\nCentre social et culturel Marie-Jeanne Bassot, 1578 chemin Départemental 940, 62231 Sangatte"
+                  }
+                }
+              },
+              {
+                "type": "cards",
+                "props": {
+                  "columns": 1,
+                  "className": "whitespace-pre-line",
+                  "items": [
+                    {
+                      "icon": "folder-open",
+                      "title": {
+                        "fr": "Comptes rendus des réunions",
+                        "en": "Minutes of the meetings"
+                      },
+                      "text": {
+                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                      },
+                      "href": "https://drive.google.com/open?id=1AsrYqbr9j1lQsr-8NhtEPUH4V_axjGzK",
+                      "target": "_blank"
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -13976,79 +13912,115 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/entre-mer-et-terres-comite",
+          "type": "gridLayout",
+          "id": "entre-mer-et-terres-comite-rangee",
           "props": {
-            "customHeader": {
-              "title": {
-                "fr": "Dates du comité local",
-                "en": "Local committee dates"
-              }
-            },
-            "description": {
-              "fr": "La prochaine réunion du comité local Entre Mer et Terres.",
-              "en": "Next meeting of the Entre Mer et Terres local committee."
-            },
-            "showViewToggle": false,
-            "showTabs": false,
-            "defaultTab": "upcoming",
-            "limit": 3,
-            "filters": {
-              "type": false,
-              "text": false
-            },
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3,
-              "xl": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "costumSlug": "parent62",
-              "indexStepList": 30,
-              "filters": {
-                "type": "meeting",
-                "territoires": {
-                  "$in": [
-                    "Entre Mer et Terres"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "cards",
-          "props": {
-            "columns": 2,
-            "className": "whitespace-pre-line",
-            "items": [
+            "columns": 3,
+            "align": "stretch",
+            "gap": 6,
+            "sections": [
               {
-                "icon": "user",
-                "title": {
-                  "fr": "Adeline Cadet, coordonnatrice",
-                  "en": "Adeline Cadet, coordinator"
-                },
-                "text": {
-                  "fr": "Coordonnatrice du comité local\nentremeretterres@parent62.org\n07 49 35 93 15 · 03 21 90 91 10\nCentre Socioculturel Intercommunal d'Hucqueliers, 9 bis rue de la Longeville, 62650 Hucqueliers",
-                  "en": "Local committee coordinator\nentremeretterres@parent62.org\n07 49 35 93 15 · 03 21 90 91 10\nCentre Socioculturel Intercommunal d'Hucqueliers, 9 bis rue de la Longeville, 62650 Hucqueliers"
+                "type": "agenda",
+                "id": "/territoire/entre-mer-et-terres-comite",
+                "props": {
+                  "customHeader": {
+                    "title": {
+                      "fr": "Dates du comité local",
+                      "en": "Local committee dates"
+                    }
+                  },
+                  "description": {
+                    "fr": "La prochaine réunion du comité local Entre Mer et Terres.",
+                    "en": "Next meeting of the Entre Mer et Terres local committee."
+                  },
+                  "showViewToggle": false,
+                  "showTabs": false,
+                  "defaultTab": "upcoming",
+                  "limit": 2,
+                  "filters": {
+                    "type": false,
+                    "text": false
+                  },
+                  "columns": {
+                    "sm": 1,
+                    "md": 1,
+                    "lg": 1,
+                    "xl": 1
+                  },
+                  "baseParams": {
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "indexStepList": 30,
+                    "filters": {
+                      "type": "meeting",
+                      "territoires": {
+                        "$in": [
+                          "Entre Mer et Terres"
+                        ]
+                      }
+                    }
+                  }
                 }
               },
               {
-                "icon": "folder-open",
-                "title": {
-                  "fr": "Comptes rendus des réunions",
-                  "en": "Minutes of the meetings"
-                },
-                "text": {
-                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
-                },
-                "href": "https://drive.google.com/drive/folders/1vDZliknVKG2QukWnVQ5-WxSvaiW2O4en?usp=sharing",
-                "target": "_blank"
+                "type": "member",
+                "id": "entre-mer-et-terres-coordination",
+                "props": {
+                  "className": "pt-8",
+                  "title": {
+                    "fr": "La coordination du territoire",
+                    "en": "Territory coordination"
+                  },
+                  "roles": [
+                    "Coordonnateur(trice)"
+                  ],
+                  "territoire": "Entre Mer et Terres",
+                  "hideWhenEmpty": true,
+              "cardText": {
+                "fr": "Centre Socioculturel Intercommunal d'Hucqueliers, 9 bis rue de la Longeville, 62650 Hucqueliers",
+                "en": "Centre Socioculturel Intercommunal d'Hucqueliers, 9 bis rue de la Longeville, 62650 Hucqueliers"
+              },
+                  "showRole": true,
+                  "showManagement": false,
+                  "showCard": false,
+                  "search": false,
+                  "showTabs": false,
+                  "showTitle": true,
+                  "showInvite": false,
+                  "card": {
+                    "type": "team",
+                    "layout": "row",
+                    "detailsMode": "link"
+                  },
+                  "footerText": {
+                    "fr": "entremeretterres@parent62.org\n07 49 35 93 15 · 03 21 90 91 10\nCentre Socioculturel Intercommunal d'Hucqueliers, 9 bis rue de la Longeville, 62650 Hucqueliers",
+                    "en": "entremeretterres@parent62.org\n07 49 35 93 15 · 03 21 90 91 10\nCentre Socioculturel Intercommunal d'Hucqueliers, 9 bis rue de la Longeville, 62650 Hucqueliers"
+                  }
+                }
+              },
+              {
+                "type": "cards",
+                "props": {
+                  "columns": 1,
+                  "className": "whitespace-pre-line",
+                  "items": [
+                    {
+                      "icon": "folder-open",
+                      "title": {
+                        "fr": "Comptes rendus des réunions",
+                        "en": "Minutes of the meetings"
+                      },
+                      "text": {
+                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                      },
+                      "href": "https://drive.google.com/drive/folders/1vDZliknVKG2QukWnVQ5-WxSvaiW2O4en?usp=sharing",
+                      "target": "_blank"
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -14594,79 +14566,115 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/familles-en-sol-mineur-henin-carvin-comite",
+          "type": "gridLayout",
+          "id": "familles-en-sol-mineur-henin-carvin-comite-rangee",
           "props": {
-            "customHeader": {
-              "title": {
-                "fr": "Dates du comité local",
-                "en": "Local committee dates"
-              }
-            },
-            "description": {
-              "fr": "La prochaine réunion du comité local Familles en sol mineur Hénin Carvin.",
-              "en": "Next meeting of the Familles en sol mineur Hénin Carvin local committee."
-            },
-            "showViewToggle": false,
-            "showTabs": false,
-            "defaultTab": "upcoming",
-            "limit": 3,
-            "filters": {
-              "type": false,
-              "text": false
-            },
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3,
-              "xl": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "costumSlug": "parent62",
-              "indexStepList": 30,
-              "filters": {
-                "type": "meeting",
-                "territoires": {
-                  "$in": [
-                    "Familles en sol mineur Hénin Carvin"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "cards",
-          "props": {
-            "columns": 2,
-            "className": "whitespace-pre-line",
-            "items": [
+            "columns": 3,
+            "align": "stretch",
+            "gap": 6,
+            "sections": [
               {
-                "icon": "user",
-                "title": {
-                  "fr": "Fiona Karkri, coordonnatrice",
-                  "en": "Fiona Karkri, coordinator"
-                },
-                "text": {
-                  "fr": "Coordonnatrice du comité local\nfsm.henincarvin@parent62.org\n06 73 75 40 49 · 03 21 70 90 20\nCentre Social, rue du Maréchal Leclerc, Noyelles-sous-Lens",
-                  "en": "Local committee coordinator\nfsm.henincarvin@parent62.org\n06 73 75 40 49 · 03 21 70 90 20\nCentre Social, rue du Maréchal Leclerc, Noyelles-sous-Lens"
+                "type": "agenda",
+                "id": "/territoire/familles-en-sol-mineur-henin-carvin-comite",
+                "props": {
+                  "customHeader": {
+                    "title": {
+                      "fr": "Dates du comité local",
+                      "en": "Local committee dates"
+                    }
+                  },
+                  "description": {
+                    "fr": "La prochaine réunion du comité local Familles en sol mineur Hénin Carvin.",
+                    "en": "Next meeting of the Familles en sol mineur Hénin Carvin local committee."
+                  },
+                  "showViewToggle": false,
+                  "showTabs": false,
+                  "defaultTab": "upcoming",
+                  "limit": 2,
+                  "filters": {
+                    "type": false,
+                    "text": false
+                  },
+                  "columns": {
+                    "sm": 1,
+                    "md": 1,
+                    "lg": 1,
+                    "xl": 1
+                  },
+                  "baseParams": {
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "indexStepList": 30,
+                    "filters": {
+                      "type": "meeting",
+                      "territoires": {
+                        "$in": [
+                          "Familles en sol mineur Hénin Carvin"
+                        ]
+                      }
+                    }
+                  }
                 }
               },
               {
-                "icon": "folder-open",
-                "title": {
-                  "fr": "Comptes rendus des réunions",
-                  "en": "Minutes of the meetings"
-                },
-                "text": {
-                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
-                },
-                "href": "https://drive.google.com/drive/folders/1DwrBRmRVZTrGDAmfHhgeUIPRcQIvElIl",
-                "target": "_blank"
+                "type": "member",
+                "id": "familles-en-sol-mineur-henin-carvin-coordination",
+                "props": {
+                  "className": "pt-8",
+                  "title": {
+                    "fr": "La coordination du territoire",
+                    "en": "Territory coordination"
+                  },
+                  "roles": [
+                    "Coordonnateur(trice)"
+                  ],
+                  "territoire": "Familles en sol mineur Hénin Carvin",
+                  "hideWhenEmpty": true,
+              "cardText": {
+                "fr": "Centre Social, rue du Maréchal Leclerc, Noyelles-sous-Lens",
+                "en": "Centre Social, rue du Maréchal Leclerc, Noyelles-sous-Lens"
+              },
+                  "showRole": true,
+                  "showManagement": false,
+                  "showCard": false,
+                  "search": false,
+                  "showTabs": false,
+                  "showTitle": true,
+                  "showInvite": false,
+                  "card": {
+                    "type": "team",
+                    "layout": "row",
+                    "detailsMode": "link"
+                  },
+                  "footerText": {
+                    "fr": "fsm.henincarvin@parent62.org\n06 73 75 40 49 · 03 21 70 90 20\nCentre Social, rue du Maréchal Leclerc, Noyelles-sous-Lens",
+                    "en": "fsm.henincarvin@parent62.org\n06 73 75 40 49 · 03 21 70 90 20\nCentre Social, rue du Maréchal Leclerc, Noyelles-sous-Lens"
+                  }
+                }
+              },
+              {
+                "type": "cards",
+                "props": {
+                  "columns": 1,
+                  "className": "whitespace-pre-line",
+                  "items": [
+                    {
+                      "icon": "folder-open",
+                      "title": {
+                        "fr": "Comptes rendus des réunions",
+                        "en": "Minutes of the meetings"
+                      },
+                      "text": {
+                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                      },
+                      "href": "https://drive.google.com/drive/folders/1DwrBRmRVZTrGDAmfHhgeUIPRcQIvElIl",
+                      "target": "_blank"
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -15212,79 +15220,115 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/familles-en-sol-mineur-lens-lievin-comite",
+          "type": "gridLayout",
+          "id": "familles-en-sol-mineur-lens-lievin-comite-rangee",
           "props": {
-            "customHeader": {
-              "title": {
-                "fr": "Dates du comité local",
-                "en": "Local committee dates"
-              }
-            },
-            "description": {
-              "fr": "La prochaine réunion du comité local Familles en sol mineur Lens Liévin.",
-              "en": "Next meeting of the Familles en sol mineur Lens Liévin local committee."
-            },
-            "showViewToggle": false,
-            "showTabs": false,
-            "defaultTab": "upcoming",
-            "limit": 3,
-            "filters": {
-              "type": false,
-              "text": false
-            },
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3,
-              "xl": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "costumSlug": "parent62",
-              "indexStepList": 30,
-              "filters": {
-                "type": "meeting",
-                "territoires": {
-                  "$in": [
-                    "Familles en sol mineur Lens Liévin"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "cards",
-          "props": {
-            "columns": 2,
-            "className": "whitespace-pre-line",
-            "items": [
+            "columns": 3,
+            "align": "stretch",
+            "gap": 6,
+            "sections": [
               {
-                "icon": "user",
-                "title": {
-                  "fr": "Guillaume Mondot, coordonnateur",
-                  "en": "Guillaume Mondot, coordinator"
-                },
-                "text": {
-                  "fr": "Coordonnateur du comité local\nfamillesensolmineur@parent62.org\n06 43 33 41 31\nCentre Social des Brebis, place de la Marne, 62670 Mazingarbe",
-                  "en": "Local committee coordinator\nfamillesensolmineur@parent62.org\n06 43 33 41 31\nCentre Social des Brebis, place de la Marne, 62670 Mazingarbe"
+                "type": "agenda",
+                "id": "/territoire/familles-en-sol-mineur-lens-lievin-comite",
+                "props": {
+                  "customHeader": {
+                    "title": {
+                      "fr": "Dates du comité local",
+                      "en": "Local committee dates"
+                    }
+                  },
+                  "description": {
+                    "fr": "La prochaine réunion du comité local Familles en sol mineur Lens Liévin.",
+                    "en": "Next meeting of the Familles en sol mineur Lens Liévin local committee."
+                  },
+                  "showViewToggle": false,
+                  "showTabs": false,
+                  "defaultTab": "upcoming",
+                  "limit": 2,
+                  "filters": {
+                    "type": false,
+                    "text": false
+                  },
+                  "columns": {
+                    "sm": 1,
+                    "md": 1,
+                    "lg": 1,
+                    "xl": 1
+                  },
+                  "baseParams": {
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "indexStepList": 30,
+                    "filters": {
+                      "type": "meeting",
+                      "territoires": {
+                        "$in": [
+                          "Familles en sol mineur Lens Liévin"
+                        ]
+                      }
+                    }
+                  }
                 }
               },
               {
-                "icon": "folder-open",
-                "title": {
-                  "fr": "Comptes rendus des réunions",
-                  "en": "Minutes of the meetings"
-                },
-                "text": {
-                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
-                },
-                "href": "https://drive.google.com/drive/u/4/folders/18FsQlISmxbXIkeduz6ZXD6yL8TI8dKU8",
-                "target": "_blank"
+                "type": "member",
+                "id": "familles-en-sol-mineur-lens-lievin-coordination",
+                "props": {
+                  "className": "pt-8",
+                  "title": {
+                    "fr": "La coordination du territoire",
+                    "en": "Territory coordination"
+                  },
+                  "roles": [
+                    "Coordonnateur(trice)"
+                  ],
+                  "territoire": "Familles en sol mineur Lens Liévin",
+                  "hideWhenEmpty": true,
+              "cardText": {
+                "fr": "Centre Social des Brebis, place de la Marne, 62670 Mazingarbe",
+                "en": "Centre Social des Brebis, place de la Marne, 62670 Mazingarbe"
+              },
+                  "showRole": true,
+                  "showManagement": false,
+                  "showCard": false,
+                  "search": false,
+                  "showTabs": false,
+                  "showTitle": true,
+                  "showInvite": false,
+                  "card": {
+                    "type": "team",
+                    "layout": "row",
+                    "detailsMode": "link"
+                  },
+                  "footerText": {
+                    "fr": "famillesensolmineur@parent62.org\n06 43 33 41 31\nCentre Social des Brebis, place de la Marne, 62670 Mazingarbe",
+                    "en": "famillesensolmineur@parent62.org\n06 43 33 41 31\nCentre Social des Brebis, place de la Marne, 62670 Mazingarbe"
+                  }
+                }
+              },
+              {
+                "type": "cards",
+                "props": {
+                  "columns": 1,
+                  "className": "whitespace-pre-line",
+                  "items": [
+                    {
+                      "icon": "folder-open",
+                      "title": {
+                        "fr": "Comptes rendus des réunions",
+                        "en": "Minutes of the meetings"
+                      },
+                      "text": {
+                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                      },
+                      "href": "https://drive.google.com/drive/u/4/folders/18FsQlISmxbXIkeduz6ZXD6yL8TI8dKU8",
+                      "target": "_blank"
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -15830,79 +15874,111 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/ternois-bruaysis-comite",
+          "type": "gridLayout",
+          "id": "ternois-bruaysis-comite-rangee",
           "props": {
-            "customHeader": {
-              "title": {
-                "fr": "Dates du comité local",
-                "en": "Local committee dates"
-              }
-            },
-            "description": {
-              "fr": "La prochaine réunion du comité local Ternois Bruaysis.",
-              "en": "Next meeting of the Ternois Bruaysis local committee."
-            },
-            "showViewToggle": false,
-            "showTabs": false,
-            "defaultTab": "upcoming",
-            "limit": 3,
-            "filters": {
-              "type": false,
-              "text": false
-            },
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3,
-              "xl": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "costumSlug": "parent62",
-              "indexStepList": 30,
-              "filters": {
-                "type": "meeting",
-                "territoires": {
-                  "$in": [
-                    "Ternois Bruaysis"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "cards",
-          "props": {
-            "columns": 2,
-            "className": "whitespace-pre-line",
-            "items": [
+            "columns": 3,
+            "align": "stretch",
+            "gap": 6,
+            "sections": [
               {
-                "icon": "user",
-                "title": {
-                  "fr": "Sarah Darras, coordonnatrice",
-                  "en": "Sarah Darras, coordinator"
-                },
-                "text": {
-                  "fr": "Coordonnatrice du comité local\nternoisbruaysis@parent62.org\n07 46 29 04 60",
-                  "en": "Local committee coordinator\nternoisbruaysis@parent62.org\n07 46 29 04 60"
+                "type": "agenda",
+                "id": "/territoire/ternois-bruaysis-comite",
+                "props": {
+                  "customHeader": {
+                    "title": {
+                      "fr": "Dates du comité local",
+                      "en": "Local committee dates"
+                    }
+                  },
+                  "description": {
+                    "fr": "La prochaine réunion du comité local Ternois Bruaysis.",
+                    "en": "Next meeting of the Ternois Bruaysis local committee."
+                  },
+                  "showViewToggle": false,
+                  "showTabs": false,
+                  "defaultTab": "upcoming",
+                  "limit": 2,
+                  "filters": {
+                    "type": false,
+                    "text": false
+                  },
+                  "columns": {
+                    "sm": 1,
+                    "md": 1,
+                    "lg": 1,
+                    "xl": 1
+                  },
+                  "baseParams": {
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "indexStepList": 30,
+                    "filters": {
+                      "type": "meeting",
+                      "territoires": {
+                        "$in": [
+                          "Ternois Bruaysis"
+                        ]
+                      }
+                    }
+                  }
                 }
               },
               {
-                "icon": "folder-open",
-                "title": {
-                  "fr": "Comptes rendus des réunions",
-                  "en": "Minutes of the meetings"
-                },
-                "text": {
-                  "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                  "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
-                },
-                "href": "https://drive.google.com/drive/folders/1hHM5Es-SJFBBlnbPugZAuHe0dY40T88w",
-                "target": "_blank"
+                "type": "member",
+                "id": "ternois-bruaysis-coordination",
+                "props": {
+                  "className": "pt-8",
+                  "title": {
+                    "fr": "La coordination du territoire",
+                    "en": "Territory coordination"
+                  },
+                  "roles": [
+                    "Coordonnateur(trice)"
+                  ],
+                  "territoire": "Ternois Bruaysis",
+                  "hideWhenEmpty": true,
+                  "showRole": true,
+                  "showManagement": false,
+                  "showCard": false,
+                  "search": false,
+                  "showTabs": false,
+                  "showTitle": true,
+                  "showInvite": false,
+                  "card": {
+                    "type": "team",
+                    "layout": "row",
+                    "detailsMode": "link"
+                  },
+                  "footerText": {
+                    "fr": "ternoisbruaysis@parent62.org\n07 46 29 04 60",
+                    "en": "ternoisbruaysis@parent62.org\n07 46 29 04 60"
+                  }
+                }
+              },
+              {
+                "type": "cards",
+                "props": {
+                  "columns": 1,
+                  "className": "whitespace-pre-line",
+                  "items": [
+                    {
+                      "icon": "folder-open",
+                      "title": {
+                        "fr": "Comptes rendus des réunions",
+                        "en": "Minutes of the meetings"
+                      },
+                      "text": {
+                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
+                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                      },
+                      "href": "https://drive.google.com/drive/folders/1hHM5Es-SJFBBlnbPugZAuHe0dY40T88w",
+                      "target": "_blank"
+                    }
+                  ]
+                }
               }
             ]
           }

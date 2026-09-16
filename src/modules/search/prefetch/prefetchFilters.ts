@@ -21,29 +21,13 @@ import {
   fetchFiltersByPath,
   type FiltersByPathOptions,
 } from "../hooks/useFiltersByPath";
+import { enfantsDeSection, type SectionLike } from "@/lib/sectionContainers";
 
 /**
  * Section JSON minimaliste pour les helpers de découverte. Le schéma complet
  * est validé ailleurs (cf. `src/types/site-schema.ts`).
  */
-interface RawSection {
-  type: string;
-  id?: string;
-  props?: Record<string, unknown>;
-}
-
-/**
- * Registry d'extracteurs de sections imbriquées — mêmes containers que
- * `findSearchSections` (`src/lib/buildRoutes.tsx`). Toute extension d'un côté
- * doit être reportée de l'autre.
- */
-const SECTION_EXTRACTORS: Record<string, (props: Record<string, unknown>) => unknown[]> = {
-  gridLayout: (p) => [p.leftSection, p.rightSection],
-  tabs: (p) =>
-    (Array.isArray(p.tabs) ? p.tabs : []).flatMap((t: { content: unknown }) =>
-      Array.isArray(t.content) ? t.content : []
-    ),
-};
+type RawSection = SectionLike & { id?: string };
 
 /**
  * Recherche récursive des sections de type `filters` dans une arborescence de
@@ -60,10 +44,10 @@ export function findFiltersSections(sections: RawSection[]): RawSection[] {
     if (props.filterGroups || props.filtersByAnswers || props.filtersByPath) {
       result.push(section);
     }
-    if (SECTION_EXTRACTORS[section.type] && section.props) {
-      const nested = SECTION_EXTRACTORS[section.type](section.props).filter(Boolean) as RawSection[];
-      result.push(...findFiltersSections(nested));
-    }
+    // Les containers viennent du registre PARTAGÉ : la liste vivait ici ET dans
+    // `sectionContainers.ts`, avec la consigne de reporter toute extension des deux côtés — un
+    // container ajouté d'un seul côté serait raté silencieusement par l'autre parcours.
+    result.push(...findFiltersSections(enfantsDeSection(section) as RawSection[]));
   }
   return result;
 }

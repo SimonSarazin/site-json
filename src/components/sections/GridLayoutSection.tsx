@@ -1,6 +1,7 @@
 import { SectionRenderer } from "./SectionRenderer";
 import type { Section, GridLayoutSectionProps } from "@/types/site";
 import { cn } from "@/lib/utils";
+import { buildGridColsClass } from "./responsiveGridCols";
 
 export function GridLayoutSection({
   id,
@@ -20,6 +21,7 @@ export function GridLayoutSection({
   // Cast nécessaire car z.lazy() infère unknown (même pattern que TabsSection)
   const leftSection = props.leftSection as Section | undefined;
   const rightSection = props.rightSection as Section | undefined;
+  const sections = props.sections as Section[] | undefined;
 
   // Classes LITTÉRALES par palier : le JIT Tailwind ne génère pas une classe construite dynamiquement.
   const COL_SPAN = {
@@ -27,6 +29,35 @@ export function GridLayoutSection({
     md: { 1: "md:col-span-1", 2: "md:col-span-2", 3: "md:col-span-3", 4: "md:col-span-4" },
   } as const;
   const getColSpan = (cols: number) => COL_SPAN[from][cols as 1 | 2 | 3 | 4];
+
+  // Mode « rangée » : N colonnes de MÊME largeur — 3 colonnes égales ne se découpent pas en quarts,
+  // donc `grid-cols-N` et non des `col-span` sur une base de 4. Les classes viennent du mapping
+  // statique partagé `buildGridColsClass`, déjà utilisé par `stats`, `action-tiles` et `cta` : une
+  // seule table de classes littérales à tenir pour tout le parc (le JIT ne génère pas une classe
+  // construite). Palier intermédiaire à 2 colonnes : à 3 blocs, `sm` en empilerait un tout seul.
+  if (sections && sections.length > 0) {
+    const nb = props.columns ?? Math.min(sections.length, 4);
+    return (
+      <section id={id} className={cn("py-4", className)}>
+        <div className="container mx-auto px-6">
+          <div
+            className={cn(
+              "grid",
+              buildGridColsClass(from === "md" ? { sm: 2, md: nb } : { sm: 2, lg: nb }),
+              align === "stretch" ? "items-stretch" : "items-start",
+            )}
+            style={{ gap: `${gap * 0.25}rem` }}
+          >
+            {sections.map((sec, i) => (
+              <div key={sec.id ?? `${sec.type}-${i}`} className={cn(stretchClass, leftWrapperClass)}>
+                <SectionRenderer section={sec} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id={id} className={cn("py-4", className)}>

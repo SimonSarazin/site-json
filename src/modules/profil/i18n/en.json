@@ -355,7 +355,10 @@
       "description": "Reject {{name}}'s request?",
       "cancel": "Cancel",
       "confirm": "Reject"
-    }
+    },
+    "rolesLabel": "Roles in the organisation",
+    "rolesPlaceholder": "Add a role (press Enter)…",
+    "rolesHint": "Free text — e.g. “Parenting coordinator, Arrageois”."
   },
   "MemberManagementDialog": {
     "title": "Member Management",
@@ -1423,5 +1426,8 @@
   "AuthRequired": {
     "title": "Sign in to continue",
     "description": "A new listing is tied to your account, so you can edit and complete it later."
+  },
+  "CardTeamMember": {
+    "territoryNews": "Territory news"
   }
 }

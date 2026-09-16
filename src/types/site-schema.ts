@@ -1436,6 +1436,13 @@ export type TitleSectionProps = z.infer<typeof TitleSectionSchema>["props"];
 const GridLayoutSectionPropsSchema = z.object({
   leftSection: z.lazy(() => SectionSchemaLazy).optional(),
   rightSection: z.lazy(() => SectionSchemaLazy).optional(),
+  /** Mode « rangée » : N sections de MÊME largeur sur une ligne, au lieu du couple
+   *  gauche/droite. Présent, il prime sur `leftSection`/`rightSection` — c'est ce qu'il faut
+   *  quand trois blocs de même rang (un agenda, une équipe, un lien) doivent se lire comme une
+   *  seule bande, là où le couple asymétrique impose un contenu principal et un aparté. */
+  sections: z.array(z.lazy(() => SectionSchemaLazy)).optional(),
+  /** Nombre de colonnes du mode « rangée » (défaut : autant que de `sections`, plafonné à 4). */
+  columns: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
   leftColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   /** Alignement vertical des deux colonnes. `start` (défaut, comportement historique) : chacune

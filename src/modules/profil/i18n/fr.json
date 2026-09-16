@@ -355,7 +355,10 @@
       "description": "Rejeter la demande de {{name}} ?",
       "cancel": "Annuler",
       "confirm": "Rejeter"
-    }
+    },
+    "rolesLabel": "Rôles dans l'organisation",
+    "rolesPlaceholder": "Ajouter un rôle (Entrée pour valider)…",
+    "rolesHint": "Texte libre — ex. « Coordonnatrice parentalité Arrageois »."
   },
   "MemberManagementDialog": {
     "title": "Gestion des membres",
@@ -1423,5 +1426,8 @@
   "AuthRequired": {
     "title": "Connectez-vous pour continuer",
     "description": "La création d’une fiche est rattachée à votre compte : elle vous permettra de la modifier et de la compléter plus tard."
+  },
+  "CardTeamMember": {
+    "territoryNews": "Les actualités du territoire"
   }
 }
