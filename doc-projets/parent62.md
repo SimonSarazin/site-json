@@ -2765,6 +2765,314 @@ Lot **non commité**.
 
 ---
 
+## 9septvicies. Impacts — `/equipe` et les coordinations de territoire branchées sur les VRAIS membres (16/09)
+
+**Ce que ça change.** `/equipe` et le bloc « coordonnateur·rice » des 9 pages de territoire ne
+recopiaient plus la réalité : noms, photos et coordonnées étaient **écrits en dur dans la config**, à
+remettre à jour à la main à chaque mouvement d'équipe. Les deux lisent désormais les **membres de
+l'entité `parent62`**, filtrés par **rôle de lien** et, sur un territoire, par **territoire**.
+
+### 9septvicies.1 Le rôle de lien devient une donnée d'affichage
+
+Un rôle, ici, n'est ni un droit ni un statut de plateforme : c'est le **texte libre porté par le
+LIEN** entre la personne et l'entité (`links.<famille>[id].roles`). Il dit la fonction dans CE
+réseau. Trois rôles sont en service :
+
+| Rôle | Où il s'affiche |
+|---|---|
+| `Coordonnateur(trice) départemental du réseau à la Fédération des Centres Sociaux Nord Pas-de-Calais` | `/equipe` — « L'animation départementale » |
+| `Coordonnateur(trice)` | `/equipe` — « L'équipe de Coordonnateurs (trices) » · et chaque `/territoire/*` |
+| `Conseillère thématique Parentalité CAF` | `/equipe` — « Le contact à la CAF » |
+
+- `src/modules/profil/lib/memberRoles.ts` (+ 6 tests) — `rolesDuMembre()` lit le rôle depuis **deux
+  sources** : le contexte de lien porté par le membre lui-même, sinon les `links` de l'entité
+  parente. Couvre les trois familles (`members` / `contributors` / `attendees`).
+- `MemberSectionSchema.props.roles: string[]` — la section se restreint aux membres portant l'un de
+  ces rôles. Absent → tous les membres, comportement historique inchangé.
+- Les rôles apparaissent aussi **dans le listing de gestion** (`UserListItem` a gagné un `extra`) et
+  **au moment de l'invitation** (`InviteMemberDialog`, une ligne `TagsInput` par invité).
+
+> ⚠️ **L'invitation SIMPLE (sans e-mail) ne peut pas porter de rôle.** Le contrat SDK `CONNECT`
+> n'expose pas `roles`, et `link/removerole` n'existe pas. Seul le chemin par e-mail transmet les
+> rôles aujourd'hui ; lever la limite demande une évolution du SDK, hors de ce dépôt.
+
+### 9septvicies.2 Une carte « équipe », et pourquoi elle fait un GET par personne
+
+`src/modules/profil/components/members/CardTeamMember.tsx` (`card.type: "team"`).
+
+La projection de `getMembers` **ne ramène ni `territoires` ni l'adresse**, et son contrat n'accepte
+pas de `fields` : rien ne permet de lui demander un champ de plus. La carte va donc chercher la
+**fiche entière** de la personne par `entityBySlug` ; React Query dédoublonne et garde 5 minutes,
+donc N cartes = N requêtes une seule fois.
+
+- Image **entière** (`object-contain`) en **3/2**, plafonnée à 192 px : les portraits du réseau
+  portent le logo parent62 **à gauche du visage**, un avatar rond le coupait.
+- `shrink-0` sur le bandeau image — sans lui la carte, conteneur flex en colonne, **écrasait**
+  l'image quand la grille imposait sa hauteur (mesuré : 121 px au lieu de 192).
+  `overflow-hidden` est tout aussi obligatoire : un bloc `aspect-ratio` en `overflow: visible` garde
+  une **hauteur minimale basée sur son contenu**, si bien que les cartes AVEC photo devenaient plus
+  hautes que les cartes sans.
+- Que des **jetons de thème** (`muted`, `primary`, `secondary`, `border`, `card`) : le mode sombre
+  bascule seul, sans variante `dark:` à maintenir. Vérifié à l'écran dans les deux modes.
+- Grille **plafonnée par le nombre de cartes** (`GRILLE_CARTES`) et `mx-auto` : 1 carte (contact CAF)
+  ou 2 (animation départementale) se centrent au lieu de se tasser à gauche d'une grille à 4 colonnes.
+
+### 9septvicies.3 La coordination de chaque territoire
+
+Les trois blocs de tête de la page — l'agenda du comité, la coordination, les comptes rendus — ne
+s'empilent plus : ils tiennent dans **une seule section**, une rangée à 3 colonnes.
+
+```json
+{ "type": "gridLayout", "id": "audomarois-comite-rangee",
+  "props": { "columns": 3, "align": "stretch", "gap": 6,
+             "sections": [ { "type": "agenda", … },
+                           { "type": "member", "id": "audomarois-coordination",
+                             "props": { "title": { "fr": "La coordination du territoire", … },
+                                        "roles": ["Coordonnateur(trice)"], "territoire": "Audomarois",
+                                        "footerText": { "fr": "audomarois@parent62.org\n07 88 15 57 38 …", … },
+                                        "hideWhenEmpty": true, "showCard": false, "showTabs": false,
+                                        "showInvite": false, "card": { "type": "team" } } },
+                           { "type": "cards", … } ] } }
+```
+
+- `src/modules/profil/lib/teamDirectory.ts` (+ 6 tests) — `cheminTerritoire()` relie un libellé de
+  profil à sa page (`Audomarois` → `/territoire/audomarois`, vérifié sur les 9 vraies pages) et
+  `memeTerritoire()` apparie deux écritures d'un même territoire **par slug** : casse, accents et
+  ponctuation ne désignent pas autre chose. Deux valeurs vides ne s'apparient JAMAIS — sinon un
+  profil sans territoire tomberait dans les 9 pages.
+- `src/modules/profil/hooks/useMembresDuTerritoire.tsx` — le filtre territoire est **forcément côté
+  client** : `getMembers` reconstruit ses propres `filters` et **écrase ceux de l'appelant**, et sa
+  projection ne porte de toute façon pas `territoires`. Le hook réutilise **à l'identique** la clé et
+  la fonction de requête de `useEntityBySlugQuery`, donc il partage le cache des cartes : aucune
+  requête en double.
+- **« Le contact du comité local, c'est la coordination du territoire »** — les deux blocs n'en font
+  plus qu'un. La carte de contact disparaît ; son texte (courriel du territoire, téléphones, lieu)
+  descend en `footerText` **sous** la carte du coordonnateur, dans la même colonne. Le nom, la photo
+  et le rôle ne sont plus écrits qu'une fois, et viennent du membre.
+- `hideWhenEmpty` — sur une page publique, « Aucun membre » ressemble à une panne. Sans
+  coordonnateur rattaché, **la liste s'efface** ; le titre et le pied de contact restent, sans quoi
+  l'information de contact des 7 territoires sans membre serait perdue. La section entière ne
+  disparaît que s'il n'y a PAS de `footerText`.
+- Le bouton « Les actualités du territoire » se masque quand il pointe sur la page courante — sur
+  une page de territoire, il renverrait sur elle-même.
+
+**Le gabarit territoire passe de 9 à 8 sections de premier niveau** (3 fusionnées en 1) —
+`page-recipes.json` (recettes `page-annuaire-grille` et `page-territoire`) mis à jour en conséquence.
+
+### 9septvicies.3bis `gridLayout` apprend la RANGÉE — apport moteur
+
+`gridLayout` ne savait faire qu'un couple asymétrique gauche/droite, réglé en quarts : trois
+colonnes égales ne se découpent pas en quarts. Deux props **additives** :
+
+| Prop | Effet |
+|---|---|
+| `sections: Section[]` | N sections de MÊME largeur sur une ligne. Prime sur `leftSection`/`rightSection` |
+| `columns: 2 \| 3 \| 4` | Colonnes de la rangée (défaut : le nombre de `sections`, plafonné à 4) |
+
+Absent `sections`, le composant emprunte **exactement** l'ancien chemin de rendu — les 19 usages de
+`gridLayout` des 7 autres configs du parc sont inchangés (toutes revalidées).
+
+⚠️ Un container se déclare **en deux endroits** : `SECTION_EXTRACTORS` de
+`src/lib/sectionContainers.ts` (prefetch SSR + gardes) ET sa copie dans
+`src/modules/search/prefetch/prefetchFilters.ts`. Les deux portent désormais `p.sections` ; sans ça
+une section imbriquée serait ratée **silencieusement** — ni préchargée, ni vue par les préflights.
+
+### 9septvicies.3ter La carte prend la couleur de SON territoire
+
+La carte reprend la maquette fournie : photo posée sur une plaque claire en retrait, territoire en
+petites capitales, nom, rôle, adresse, bouton pleine largeur — et **le fond aux couleurs du
+territoire**.
+
+Les 9 teintes `--territoire-*` sont des couleurs de MARQUE, faites pour des pastilles et des
+bandeaux, pas pour porter du texte : **5 sur 9 échouent au contraste AA quelle que soit l'encre**
+(blanc sur Boulonnais 4,80, sur FSM Lens-Liévin 4,06 ; marine sur Calaisis 4,36, Entre Mer et
+Terres 4,44, Ternois-Bruaysis 4,44 — le seuil est 4,5). `src/index-parent62.css` expose donc un
+second jeu, `--territoire-<slug>-carte` / `--territoire-<slug>-encre` : **la même teinte ramenée au
+contraste**, assombrie vers le noir ou éclaircie vers le blanc, jamais décalée en teinte.
+
+| Territoire | Fond | Encre | Contraste |
+|---|---|---|---|
+| Arrageois | `#66579e` | blanc | 6,14:1 |
+| Artois | `#b7cb6b` *(inchangé)* | marine | 7,87:1 |
+| Audomarois | `#e5af32` *(inchangé)* | marine | 7,03:1 |
+| Boulonnais | `#a63f38` | blanc | 6,20:1 |
+| Calaisis | `#ef955c` | marine | 6,10:1 |
+| Entre Mer et Terres | `#4ebac3` | marine | 6,11:1 |
+| FSM Hénin-Carvin | `#904a70` | blanc | 6,18:1 |
+| FSM Lens-Liévin | `#745c52` | blanc | 6,19:1 |
+| Ternois-Bruaysis | `#d79aaf` | marine | 6,11:1 |
+
+Le plancher à 6,1:1 n'est pas gratuit : il laisse le texte secondaire (rôle, adresse) à 85 %
+d'opacité **au-dessus de 4,6:1**. Le bouton est INVERSÉ — l'encre devient le fond, le fond devient
+le texte — donc il réutilise le même couple validé, sans troisième couleur à vérifier.
+
+`couleursTerritoire()` (`teamDirectory.ts`, + 2 tests) dérive les deux variables du slug de page.
+Repli sur `--card` / `--card-foreground` quand le profil n'a pas de territoire : une carte NEUTRE et
+lisible, pas une carte transparente. Ces couples sont **identiques en clair et en sombre**, et c'est
+voulu — un fond de marque qui basculerait avec le thème ne serait plus la couleur du territoire.
+Tout le reste de la carte se peint en `currentColor`, donc aucune variante `dark:` à maintenir.
+
+### 9septvicies.3quater La carte porte les coordonnées, celles de la personne ET celles du comité
+
+Deuxième passe de design, sur retour de maquette :
+
+- **Plaque de la photo** — même fond que la carte, détachée par un filet de 2 px et un rayon de
+  13 px, au lieu de la plaque claire de la première passe. Le filet est le jeton `--border`, pas un
+  blanc fixe : il suit clair/sombre, là où le blanc restait blanc sur fond nuit.
+- **Contacts de la PERSONNE** — courriel (cliquable, `mailto:`), téléphone et adresse, lus sur sa
+  fiche. `contactProfil.ts` (+ 10 tests) normalise le champ `telephone`, qui **n'a pas une forme
+  unique en base** : chaîne pour la plupart des fiches, objet `{ mobile: [], fixe: [] }` pour
+  certaines organisations, `mobile` plat à la racine sur les fiches anciennes. Rendre la valeur
+  brute ferait planter React — un objet ne peut pas être un enfant.
+- **Deux textes, deux rôles** — la section `member` porte désormais `cardText` ET `footerText`, et
+  ils ne disent pas la même chose :
+
+  | Prop | Contenu | Quand |
+  |---|---|---|
+  | `cardText` | le **lieu de permanence** seul | dans chaque carte, sous les contacts de la personne |
+  | `footerText` | courriel + téléphones + lieu | sous le titre, **uniquement si aucune carte n'est rendue** |
+
+  La carte donne déjà le courriel et le téléphone **de la personne**, lus sur sa fiche : y répéter
+  ceux du comité était redondant. Il n'y reste à dire que ce que la fiche ignore — l'adresse de la
+  permanence. Quand personne n'est rattaché au territoire, `footerText` reprend la main avec le
+  contact complet : c'est alors le seul moyen de joindre le comité.
+
+  ⚠️ **Ternois-Bruaysis n'a pas de `cardText`** : sa fiche source ne publie que le courriel et un
+  téléphone, aucun lieu. Ce n'est pas un oubli de config — la donnée n'existe pas.
+
+- **Dédoublonnage** — `lignesContactEquipe()` retire du bloc d'équipe les lignes que la fiche
+  affiche déjà. Le cas s'était produit avant la séparation ci-dessus : la fiche de Ludivine Dupire
+  Fait porte `audomarois@parent62.org`, que le bloc comité redonnait mot pour mot — la même adresse
+  deux fois dans une carte de 320 px. Le garde reste en place pour toute config qui remettrait un
+  contact déjà porté par la fiche. La comparaison ignore casse, espaces et ponctuation
+  (« 07 88 15 57 38 » = « 0788155738 ») mais reste stricte sur le reste : deux libellés d'adresse
+  proches mais distincts portent chacun leur information, et on ne devine pas laquelle garder.
+- **Bordure des cartes NEUTRES** — `couleursTerritoire()` rend une 3ᵉ valeur, `bordure`, sur la même
+  chaîne de repli que le fond : `var(--territoire-<slug>-carte, var(--border))`. Sur un territoire
+  connu elle vaut la couleur de la carte, donc elle ne se voit pas ; sinon elle retombe sur le jeton
+  de thème `--border`. C'est ce qui détache les cartes sans territoire — l'animation départementale
+  et le contact CAF — du fond de la page, **dans les deux modes** ; sans elle, une carte neutre se
+  dissout dans le fond sombre.
+- **Espacement** — la section `member` accepte `className` ; `equipe-caf` porte `pb-16`, le bloc CAF
+  touchait le pied de page.
+
+> ⚠️ **Trois lectures INLINE du même champ `telephone`** existaient déjà (`CardContact`,
+> `PreviewStructure`, `coformAnswer`), chacune avec son propre repli et sa propre notion de
+> « téléphone principal ». `contactProfil.ts` est la première version **exportée et testée** ; les
+> trois autres ne sont **pas** reprises — hors périmètre de la carte d'équipe. À fusionner dans un
+> lot dédié, sans quoi la 4ᵉ copie naîtra toute seule.
+
+### 9septvicies.3quinquies Deux dispositions pour une même carte
+
+La carte vitrine de `/equipe` — grand portrait 4/3 au-dessus du texte — ne convenait pas à la
+colonne du milieu d'une page de territoire : elle y faisait une colonne **deux fois plus haute** que
+ses voisines, et la rangée de trois perdait tout équilibre. `card.layout` tranche :
+
+| Valeur | Rendu | Où |
+|---|---|---|
+| `stack` *(défaut, historique)* | portrait 4/3 pleine largeur, texte dessous | `/equipe` |
+| `row` | vignette **ronde** de 80 px à gauche de l'identité (territoire, nom, rôles), contacts dessous | les 9 pages `/territoire/*` |
+
+Le cadrage suit la forme, et c'est un arbitrage, pas un détail : `stack` garde `object-contain`
+parce que les portraits du réseau portent le logo parent62 **à gauche du visage**, qu'un `cover`
+rognerait. En `row` c'est l'inverse — `contain` mettrait le portrait en boîte aux lettres à
+l'intérieur du cercle, donc `cover`, au prix du logo. **La vignette ronde coupe le logo** : c'est le
+prix de la forme demandée, pas un défaut de cadrage.
+
+Mesuré après coup, les trois colonnes d'une page de territoire font désormais **la même hauteur**
+(464 px à 1440, 570 à 1024), contre une colonne du milieu deux fois plus haute avant.
+
+Reste un décalage que la grille ne corrige pas : les trois sections n'ont pas le même retrait haut
+(l'`agenda` place son titre à 32 px, le `cards` du Drive porte un `py-16`, le `member` ne portait
+rien et collait au bord). La section `member` des 9 territoires prend donc `className: "pt-8"` —
+les deux titres de colonne s'alignent alors **au pixel** (32 px), et les deux cartes à 20 px près.
+C'est de l'ajustement de config, pas de moteur : chaque type de section garde son rythme vertical.
+
+### 9septvicies.3sexies Passe de revue — ce que le lot devait encore à `bonnes-pratiques-code.md`
+
+Relecture du lot contre le guide de revue. Six points corrigés, tous **sans changement de
+comportement** (portes rejouées après chaque).
+
+| Règle | Ce qui n'allait pas | Correction |
+|---|---|---|
+| §1 Lazy-loading | `CardTeamMember` était en import statique alors que `card.type` ne rend **qu'une** variante à la fois : tout le parc embarquait la carte d'un seul site | `lazy()` de **`vite-preload`** (pas `React.lazy` : on garde le tracking SSR et l'injection de `<link modulepreload>`), constante de module, `Suspense` avec un repli à la hauteur de la carte |
+| §11 Déduplication | `SECTION_EXTRACTORS` existait **en double** — `sectionContainers.ts` et `prefetchFilters.ts` — avec la consigne écrite de reporter tout ajout des deux côtés | `enfantsDeSection()` exporté, le prefetch l'importe. Un container ajouté est vu des deux parcours, par construction |
+| §11 Déduplication | `GridLayoutSection` s'était fabriqué sa propre table de classes de colonnes | réutilise `buildGridColsClass`, déjà partagé par `stats`, `action-tiles` et `cta` |
+| §11 + §13 | La `queryFn` de lecture de fiche était **recopiée** dans `useMembresDuTerritoire` : deux clés identiques par coïncidence, pas par contrat | `optionsFicheParSlug()` extraite ; le hook de fiche ET la lecture en lot la consomment. Recopier ces lignes créerait une 2ᵉ entrée de cache, donc une requête de plus par membre |
+| §12 Logique hors composants | `CardTeamMember` calculait la fusion liste/fiche, la chaîne de replis d'avatar, les initiales et la ligne d'adresse dans son corps | `vueMembre()`, `initiales()`, `ligneAdresse()` — trois helpers purs, **17 tests** ; le composant ne porte plus que du JSX et des appels de hooks |
+| §15 Génériques | Le module `profil`, générique, codait en dur `/territoire/` et `--territoire-*` : du métier parent62 dans le moteur | `ConventionRattachement`, preset surchargeable depuis la config (`card.rattachement`). Un site qui regroupe par région ou par filière branche ses gabarits sans toucher au code |
+
+**Non fusionné, à dessein** (§11 dit de documenter le non-merge) :
+- L'assemblage `[streetAddress, postalCode, addressLocality]` est recopié dans une dizaine de
+  composants du parc, avec des séparateurs différents — espace ici, virgule là — et parfois un champ
+  de plus. Changer le séparateur d'une carte modifierait le rendu de sites qui n'ont rien demandé.
+  `ligneAdresse(valeur, separateur)` prend le séparateur en paramètre : la migration se fera sans
+  nouvelle divergence, dans un lot qui l'assume.
+- Même raisonnement pour l'initiale d'avatar (`AmpliUserCard`, `UserListItem`,
+  `ProfileHeaderComplete` en affichent **une**, la carte d'équipe **deux**) : `initiales(nom, max)`
+  reproduit les deux sorties, personne n'est migré d'office.
+- Les trois lectures inline du champ `telephone` restent en place : chacune a son propre repli et sa
+  propre notion de « téléphone principal ».
+
+**Tests ajoutés par la passe** : `sectionContainers` (11 — le registre n'en avait AUCUN alors qu'il
+commande le prefetch SSR et les gardes), `initiales` (5), `ficheMembre` (6), `ligneAdresse` (5),
+convention de rattachement surchargeable (3).
+
+### 9septvicies.4 Données encore manquantes côté réseau
+
+À ce jour l'entité `parent62` porte **10 membres liés**, dont **5** avec un rôle de coordination.
+Conséquence directe à l'écran, mesurée page par page :
+
+| Territoire | Coordination affichée |
+|---|---|
+| Audomarois | ✅ Ludivine Dupire Fait |
+| Artois | ✅ Margaux Daron |
+| Arrageois, Boulonnais, Calaisis, Entre Mer et Terres, FSM Hénin-Carvin, FSM Lens-Liévin, Ternois-Bruaysis | ⬜ section masquée — aucun membre avec ce `territoires` |
+
+Bénédicte Porcaro porte bien le rôle `Coordonnateur(trice)` mais **aucun territoire** : elle apparaît
+sur `/equipe`, sur aucune page de territoire. **Ce n'est pas un défaut de code** : il manque
+l'invitation des 6 autres coordinations et le champ `territoires` sur les fiches existantes.
+
+### 9septvicies.5 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` | ✅ **48 pages · 170 sections** de premier niveau · les 6 autres configs à `gridLayout` revalidées |
+| `config:render` | ✅ 48/48 pages · **170/170 sections** avec du contenu SSR |
+| `test:preflight` | ✅ **634 tests** — recettes de page resynchronisées. 1 échec, `site-assets`, **étranger au lot** (cf. encadré) |
+| `test:unit` | ✅ **4 411 tests**, 2 échecs étrangers au lot : `ProseContent — césure` (**préexistant sur `main`**, cf. §9sexvicies.8) et `site-assets` |
+| `test:integration` | ✅ **728 tests**, 2 échecs étrangers : les specs génériques comparent `config.prod.json` alors que `.env` fait booter le serveur sur **parent62** (cf. encadré) |
+| `test:e2e` | ✅ **23 passés** dont les **9 de `parent62.spec.ts`** (`/territoire/arrageois`, mode sombre, deep-link territoire). 7 échecs étrangers, même cause : `e2e/helpers/config.ts` retombe sur `config.prod.json`, et `auth-flow` réclame un `.env.test` absent de ce poste |
+| `typecheck` · `lint` | ✅ · ✅ **0 erreur** (25 avertissements `react-hooks` préexistants) |
+| `audit:config` | ✅ parent62 — RAS : 0 trou de traduction, 0 lien mort, 0 asset manquant, 0 réglage inerte |
+| Contraste | ✅ les 9 couples fond/encre relevés **dans le navigateur** : ≥ 6,10:1 en clair ET en sombre |
+| Écran | ✅ `/equipe` et `/territoire/*` dans les deux modes ; rangée 1 → 2 → 3 colonnes à 375 / 768 / 1024 px, aucun débordement horizontal |
+| Portée inter-sites | ✅ toutes les props ajoutées (`roles`, `territoire`, `hideWhenEmpty`, `footerText`, `showTabs`, `showTitle`, `showInvite`, `card.type: "team"`, `gridLayout.sections`/`columns`) sont optionnelles ; sans `sections`, `gridLayout` emprunte le chemin de rendu d'avant, inchangé |
+
+> **Les specs génériques tournent contre la MAUVAISE config sur ce poste.** Le serveur de test
+> hérite de `process.env`, donc du `VITE_SLUG=parent62` du `.env` ; mais `e2e/helpers/config.ts` et
+> les tests d'intégration retombent, eux, sur `./config.prod.json` — la config SiteForge par défaut.
+> Ils comparent donc le `<title>`, les libellés de nav et le copyright du pied de page **d'un site à
+> ceux d'un autre**. Aucun de ces champs n'est touché par le lot (vérifié : 0 ligne de `meta` ou de
+> copyright dans le diff), et les 9 specs `parent62.spec.ts` passent. Réparation propre pour qui
+> voudra : exporter `SITE_CONFIG_PATH=./config.prod.parent62.json` avant de lancer ces deux tiers.
+
+> **Un préflight rouge qui n'appartient pas à ce lot.** `site-assets > tout dossier de
+> public/images/ est déclaré par au moins un slug` signale `public/images/EcosystemeSanteReunion`.
+> Ce dossier est **vide**, donc invisible de Git, et il est apparu sur le disque le 16/09 à 08:30 —
+> hors de ce lot, qui ne touche ni `sites.json` ni `public/`. Non supprimé : effacer un dossier
+> qu'on n'a pas créé n'est pas une réparation. À trancher par qui l'a posé — le déclarer, le
+> supprimer, ou l'inscrire dans `KNOWN_UNCLAIMED`.
+
+> **Le lot « agenda » n'est PAS dans l'arbre de travail.** `eventDateSpan.ts`, son test et la reprise
+> de `CardEvent` (affichage des dates de début ET de fin) dorment dans `stash@{0}` (« On parents62 »).
+> Rien n'est perdu, mais rien n'est actif non plus : à réappliquer avant de commiter ce lot, sinon les
+> plages de dates de l'agenda restent au comportement d'avant.
+
+Lot **non commité**.
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
