@@ -13,8 +13,9 @@
 > [Module Articles/Blog](../doc/32-module-articles-blog.md) ·
 > [Module Profil](../doc/08-module-profil.md). Mémoire : `[[project-sport-sante-bien-etre]]`.
 
-Dernière mise à jour : **2026-09-16** (les admins du costum sont notifiés par mail à chaque dépôt
-ou modification de créneau — cf. §9, lot du 16/09). Le 02/09, sur `judi-ssbe`, les créneaux étaient
+Dernière mise à jour : **2026-09-16** (deux lots : les admins du costum sont notifiés par mail à
+chaque dépôt ou modification de créneau, et le demandeur + sa structure le sont à chaque **modération**
+— le serveur devient l'émetteur unique, les envois clients legacy sont retirés ; cf. §9). Le 02/09, sur `judi-ssbe`, les créneaux étaient
 devenus contributifs et modérables, et le back-office avait gagné les documents ressources. Le lot précédent, du 03/08, portait les
 réseaux sociaux au patron `fieldArray`, le retrait de `recepisseDeclaration` et le re-sondage
 des périmètres.
@@ -515,6 +516,61 @@ super-admin. Pas de gate front : `site-json` n'est pas modifié. Le guide `bonne
 n'a pas de partie PHP — revue limitée à ce qui s'y transpose (réutilisation de l'existant, commentaires
 du pourquoi, fail-safe).
 
+### Lot du 16/09 (2) — mail de modération : le serveur devient l'émetteur unique
+
+> Commits — dépôt `citizenToolKit` : `0a7c3b68` · dépôt `costum` : `73cf33dd3` (PHP + JS sources).
+> La copie publiée `pixelhumain/ph/assets/d50986/…` est **gitignorée** (cache d'assets Yii) : éditée
+> en dev pour effet immédiat, régénérée en prod à la publication des assets. Aucun changement `site-json`.
+
+**Ce qui est livré.** Quand le **statut** d'un créneau change — depuis SiteForge, le back-office
+legacy ou la page publique —, un mail part au **demandeur** (champ e-mail du créneau,
+`…mdn1ig2jv4k64zff71s`, 282/286 réponses) et à sa **structure** (finder → `organizations.email`,
+283/286), dédoublonnés. Sujets et corps sont repris **verbatim** de l'ex-`ssbeCreneauStatusMails`
+d'`admin.js` (référence demandée) : « En attente » / « Validé » / « Réfusé » ; **« En cours » n'a pas
+de modèle → aucun mail**, comme avant. Envoi par la file cron, contexte costum forcé.
+
+**La question de conception, et pourquoi elle a été tranchée par le porteur.** Le legacy envoyait
+déjà ces mails **côté client**, à deux endroits (`admin.js` `.changeActiviteStatus`,
+`sportSanteBienetre_index.js` `.state-dropdown-item`), après la même écriture
+`/co2/element/updatepathvalue` que SiteForge. Un envoi serveur en plus = **doublon** depuis le legacy.
+Le discriminant envisagé — « `costumSlug` posté ⇔ legacy » — est **faux** : le SDK 1.0.189
+(`BaseEntity.updateField`, commit 6f81284) envoie lui aussi `costumSlug`, résolu de
+`source.key`, identique. Aucun signal de requête ne distingue les fronts. Deux options ont été
+soumises au porteur ; il a retenu **le serveur émetteur unique** : les deux envois clients sont
+retirés (2 fichiers × 2 copies), un seul gabarit, plus de dérive. `sendStatusNotif` reste (inscriptions
+de structure).
+
+**Le mécanisme.** Dispatcher générique `Coform::notifyAnswerModeration`, appelé (1) dans
+`Element::updatePathValue` après `$res=true`, sur le document **pré**-écriture (encore en mémoire)
+et le document rechargé, gardé sur `answers` + path `answers*`/`allToRoot`, lui-même encapsulé ;
+(2) dans la branche update de `SaveAnswerAction` (un admin du contexte est exempté du strip
+`isAdminOnly` et peut changer le statut par le save coform). Le champ modéré est **déclaré en code**
+par `SportSanteBienetre::answerModerationPath()` ; le dispatcher compare ancien/nouveau et ne
+dispatche qu'au changement réel. Le résolveur de costum est **partagé** avec le hook de dépôt
+(`resolveAnswerHook`, mémoïsé par formId). Opt-in : `notifyAnswerModeration` dans
+`costum.class.function` — **pas encore déclaré en dev** (vérifié) ; `declareAnswerNotification`
+déclare désormais la liste des deux hooks, idempotente.
+
+**Correctifs des sceptiques, repliés dans le code** : garde élargie à `"answers"` (bloc entier) et
+`allToRoot` ; `try/catch` autour de l'appel du hook dans `Element` (une classe absente sur un
+déploiement partiel ne casse pas l'écriture) ; `$_POST["costumSlug"]` forcé **en plus** de
+`$_GET["slug"]` (`CacheHelper::getCostum` fait primer le POST — le mail doit porter le costum
+**porteur**, pas celui de la requête) ; `saveanyway: true` dans les deux handlers legacy
+(`answersPath2Value` court-circuitait la requête, wizard ouvert). Verdict final : **0 défaut grave**.
+
+**Ordre de déploiement — contrainte dure.** Déployer **PHP + déclaration en base AVANT les JS** :
+des JS sans envoi client publiés avant le hook = mails **perdus** ; PHP avant les JS = doublon
+transitoire tant qu'un navigateur garde l'ancien `admin.js` en cache (purger/republier les assets).
+
+**Recette.** `…/ssbeMigration/previewAnswerModeration/answer/<id>/state/Valid%C3%A9` simule
+« statut actuel → Validé » **sans écrire** ; `/send/1` met en file vers les **vrais** destinataires
+(réponse de test uniquement). Vérifier `db.cron.find({type:"mail", subject:/labellisation/})`.
+
+**Écarts assumés / dette voisine.** « rien » → « En attente » ne maile plus (`admin.js` mailait,
+`index.js` non) ; dédoublonnage insensible à la casse + `FILTER_VALIDATE_EMAIL` (le JS testait
+« contient @ »). **Dette préexistante rendue visible** : `Element::updatePathValue` n'applique pas
+`isAdminOnly` — l'auteur d'un créneau pourrait poster lui-même son statut (§13, question 10).
+
 ---
 
 ## 10. Checklist d'avancement
@@ -541,6 +597,7 @@ du pourquoi, fail-safe).
 | 18 | Créneaux — modération dans le back-office | ✅ config | Onglet `moderation` en mode `statusField`, 57 en attente à traiter (02/09, §9) — **recette à faire** : passer un « En attente » à « Validé » et vérifier qu'il apparaît sur `/creneaux` |
 | 19 | Ressources — listing et ajout côté admin | ✅ config | Onglet « Ressources » + `costumForms` dédié (02/09, §9) — **bloqué tant que `declareRessourceType` n'est pas joué en base** |
 | 20 | Créneaux — mail aux admins du costum au dépôt / à la modification | 🟡 | Hook + impl. livrés et déclarés en dev (16/09, §9) ; **aucun envoi réel vérifiable depuis le dev** (pas de cron) — recette en prod via `previewAnswerNotification` puis `db.cron` ; `addContactMail` (Vincent) à jouer |
+| 21 | Créneaux — mail au demandeur et à sa structure à la **modération** | 🟡 | Hook + impl. livrés, envois clients legacy retirés (16/09, §9) ; **`notifyAnswerModeration` pas encore déclaré** (`declareAnswerNotification/apply/1`) ; recette via `previewAnswerModeration` ; ordre de déploiement PHP → JS à respecter |
 | 20 | Ressources — page publique `/ressources` | ✅ config | Filtre latéral par thématique + recherche par nom, publiés seulement (02/09, §9) ; ferme le lien mort de la tuile « Rapports & Publications ». Périmètre vide tant qu'aucun document n'est saisi |
 
 ---
@@ -589,3 +646,4 @@ pertinent ici : SSBE a un back-office `/admin` à 7 onglets (§4.3).
 | 7 | ~~Page publique `/ressources`~~ — **FAITE le 02/09** (§9) : filtre latéral par thématique + recherche par nom. Elle a fermé le lien mort « Rapports & Publications » de la question 1 (audit 4 → 3). Entrée de nav ajoutée le 02/09 dans le dropdown Professionnels. **Reste un point de rédaction** : le hub « Espace professionnels » se décrit comme « Ressources et outils pour les pros », juste au-dessus d'une entrée « Ressources » — redondance légère, à retoucher si elle gêne | Thomas |
 | 8 | **Thématique affichée en clé** dans le listing admin (`mss`, `has`…) : `formatCell` ne résout aucune énumération, et seul le mode `statusField` sait mapper une valeur vers un libellé. Vit-on avec (compact, sans ambiguïté pour un usage interne), ou ajoute-t-on au schéma des colonnes admin une table de libellés — utile bien au-delà de ce site ? | Thomas |
 | 9 | **Identité SMTP en prod pour SSBE** : la plateforme expédie avec son compte global (`paramsconfig.php`). Faut-il une identité propre (`expéditeur @ssbe.re`) via un document `smtpConfig` `{slug:"sportSanteBienetre", host, username, password, port, encryption}` — zéro code, précédent `meir` —, et si oui avec quels identifiants ? À trancher avant la première campagne de mails de créneaux | Thomas |
+| 10 | **`Element::updatePathValue` n'applique pas `isAdminOnly`** (rendu visible par le hook de modération) : l'autorisation laisse passer l'**auteur** d'une réponse (`canEditItemOrOpenEdition`), qui pourrait poster lui-même `answers.S.<statut>=Validé` — et déclencher le mail de modération. `SaveAnswerAction`, lui, strippe le champ pour un non-admin. Faut-il refuser côté serveur l'écriture d'un champ `isAdminOnly` par un non-admin du contexte (réutiliser `Coform::computeAdminOnlyFields`) ? Hors périmètre du lot mail, mais à traiter avant d'ouvrir la contribution plus largement | Thomas |
