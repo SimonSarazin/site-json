@@ -181,6 +181,18 @@
               "fr": "Guide et outils pour prescrire et orienter vers le sport santé.",
               "en": "Guide and tools for prescribing and guiding towards sport health."
             }
+          },
+          {
+            "label": {
+              "fr": "Programmes et dispositifs",
+              "en": "Programs and devices"
+            },
+            "path": "/programmes-dispositifs",
+            "icon": "stethoscope",
+            "description": {
+              "fr": "Les dispositifs Sport sur ordonnance accessibles à La Réunion.",
+              "en": "Sport-on-prescription devices available in Réunion."
+            }
           }
         ]
       },
@@ -2384,6 +2396,126 @@
               "id": "documents-right-section",
               "props": {
                 "html": "<section class=\"relative py-20 px-4 md:py-28 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"lg:col-span-2\"><div class=\"bg-gradient-hero text-primary-foreground rounded-3xl shadow-2xl sticky top-24 overflow-hidden\"><div class=\"absolute top-0 right-0 w-32 h-32 bg-primary-foreground/5 rounded-full -translate-y-1/2 translate-x-1/2\"></div><div class=\"absolute bottom-10 left-5 w-20 h-20 bg-primary-foreground/5 rounded-full\"></div><div class=\"relative p-8 md:p-10\"><span class=\"text-5xl mb-4 block\">🚀</span><h3 class=\"font-display text-2xl font-bold mb-4\">Prêt à vous lancer ?</h3><p class=\"mb-8 opacity-90 leading-relaxed\">Déposez votre demande en ligne. Notre équipe vous accompagne de A à Z, de la constitution du dossier à l'obtention du label !</p><div class=\"space-y-3\"><a href=\"/pro/labellisation/demande\" class=\"w-full inline-flex items-center justify-center bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full shadow-lg hover:scale-105 transition-all px-4 py-2\">Faire une demande<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"ml-2 h-4 w-4\"><path d=\"M5 12h14\"/><path d=\"m12 5 7-5-7-5\"/></svg></a><button class=\"w-full inline-flex items-center justify-center bg-transparent border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 rounded-full px-4 py-2\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"mr-2 h-4 w-4\"><path d=\"M12 3v12\"/><path d=\"m7-5-7 7-7-7\"/><path d=\"M5 21h14\"/></svg>Télécharger le guide</button></div></div></div></div></div></section>"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/programmes-dispositifs",
+      "title": {
+        "fr": "Programmes et dispositifs - Sport Santé Bien-être",
+        "en": "Programs and devices - Sport Health Wellness"
+      },
+      "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
+      "seo": {
+        "title": {
+          "fr": "Programmes et dispositifs — Sport Santé Bien-être La Réunion",
+          "en": "Programs and devices — Sport Health Wellness Réunion"
+        },
+        "description": {
+          "fr": "Les dispositifs Sport sur ordonnance à La Réunion : Maisons Sport-Santé et programmes qui accompagnent les patients vers l'activité physique adaptée.",
+          "en": "Sport-on-prescription devices in Réunion: Sport-Health Houses and programs guiding patients towards adapted physical activity."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image"
+      },
+      "sections": [
+        {
+          "type": "hero",
+          "id": "programmes-dispositifs-hero",
+          "props": {
+            "headline": {
+              "fr": "Les programmes qui font bouger La Réunion",
+              "en": "The programs that get Réunion moving"
+            },
+            "subhead": {
+              "fr": "Découvrez les projets structurants portés par le réseau Sport-Santé Bien-Être pour transformer le quotidien des Réunionnais 🌟",
+              "en": "Discover the structuring projects led by the Sport-Health Wellness network to transform the daily lives of Réunion residents 🌟"
+            },
+            "backgroundImage": "/images/sportSanteBienetre/dispositif.png",
+            "align": "left",
+            "overlay": true
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "programmes-dispositifs-search",
+          "props": {
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un dispositif ou un programme…",
+              "en": "Search a device or program…"
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "programmes-dispositifs-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "disableInfiniteScroll": false,
+            "defaultViewMode": "list",
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "sourceKey": [
+                "sportSanteBienetre"
+              ],
+              "defaultFilters": {
+                "type": "ressource",
+                "thematique": "dispositifs",
+                "status": "Visible"
+              },
+              "defaultFields": [
+                "name",
+                "thematique",
+                "description",
+                "urls",
+                "medias",
+                "status",
+                "created",
+                "type",
+                "source",
+                "profilMediumImageUrl",
+                "profilImageUrl"
+              ],
+              "searchBy": [
+                "name",
+                "description"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              }
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 2
+              },
+              "card": {
+                "type": "resource",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "resource",
+                "width": "2xl"
+              },
+              "resource": {
+                "design": "card",
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "created",
+                "imageField": "profilMediumImageUrl",
+                "urlsField": "urls"
               }
             }
           }
@@ -6538,6 +6670,7 @@
               "fields": [
                 "name",
                 "thematique",
+                "profil_avatar",
                 "description",
                 "documents",
                 "urls",
@@ -6578,8 +6711,30 @@
             { "value": "guides", "label": { "fr": "Guides & référentiels", "en": "Guides & frameworks" } },
             { "value": "outils", "label": { "fr": "Outils pratiques", "en": "Practical tools" } },
             { "value": "communication", "label": { "fr": "Communication", "en": "Communication" } },
-            { "value": "financements", "label": { "fr": "Financements & aides", "en": "Funding & support" } }
+            { "value": "financements", "label": { "fr": "Financements & aides", "en": "Funding & support" } },
+            { "value": "dispositifs", "label": { "fr": "Dispositifs", "en": "Devices" } },
+            { "value": "prescription", "label": { "fr": "Prescription", "en": "Prescription" } }
           ]
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Photo de profil",
+            "en": "Profile picture"
+          },
+          "info": {
+            "fr": "Visible uniquement pour la thématique « Dispositifs ».",
+            "en": "Shown only for the \"Devices\" topic."
+          },
+          "widgetProps": {
+            "shape": "square",
+            "aspect": 1
+          },
+          "visibleIf": {
+            "field": "thematique",
+            "op": "eq",
+            "value": "dispositifs"
+          }
         },
         "description": {
           "widget": "markdown",
@@ -6595,16 +6750,16 @@
         "documents": {
           "widget": "file",
           "label": {
-            "fr": "Fichier PDF",
-            "en": "PDF file"
+            "fr": "Fichiers PDF",
+            "en": "PDF files"
           },
           "info": {
-            "fr": "PDF uploadé (10 Mo max) — ou renseigner un lien web ci-dessous.",
-            "en": "Uploaded PDF (10 MB max) — or provide a web link below."
+            "fr": "PDF uploadés (10 Mo max chacun, jusqu'à 2) — ou renseigner un lien web ci-dessous.",
+            "en": "Uploaded PDFs (10 MB max each, up to 2) — or provide a web link below."
           },
           "widgetProps": {
             "contentKey": "file",
-            "maxItems": 1,
+            "maxItems": 2,
             "accept": "application/pdf"
           },
           "renderOnly": true
@@ -6668,6 +6823,10 @@
       },
       "scope": {
         "slugFrom": "carrier"
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
       },
       "mutation": {
         "entityType": "poi",

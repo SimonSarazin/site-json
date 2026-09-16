@@ -285,6 +285,41 @@
         }
       }
     },
+    "/programmes-dispositifs/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "sportSanteBienetre"
+        ],
+        "defaultFilters": {
+          "type": "ressource",
+          "thematique": "dispositifs",
+          "status": "Visible"
+        },
+        "defaultFields": [
+          "name",
+          "thematique",
+          "description",
+          "urls",
+          "medias",
+          "status",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        }
+      }
+    },
     "/creneaux/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
