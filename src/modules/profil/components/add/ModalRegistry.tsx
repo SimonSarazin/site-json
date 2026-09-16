@@ -15,20 +15,22 @@ export interface ModalProps {
   onOpenChange: (open: boolean) => void;
   parent?: EntityTypes | null;
   formConfig?: JsonFormModalConfig;
+  /** Valeurs semées dans le formulaire d'AJOUT, par-dessus ses défauts dérivés (cf. EntityFormModal). */
+  createDefaults?: Record<string, unknown>;
 }
 
 const modalRegistry: Record<string, () => Promise<{ default: ComponentType<ModalProps> }>> = {
   "add-organization": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/addStandard")]).then(([m, c]) => ({
-    default: (props: ModalProps) => <m.EntityFormModal config={c.addOrganizationConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+    default: (props: ModalProps) => <m.EntityFormModal config={c.addOrganizationConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} createDefaults={props.createDefaults} />,
   })),
   "add-project": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/addStandard")]).then(([m, c]) => ({
-    default: (props: ModalProps) => <m.EntityFormModal config={c.addProjectConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+    default: (props: ModalProps) => <m.EntityFormModal config={c.addProjectConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} createDefaults={props.createDefaults} />,
   })),
   "add-event": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/addStandard")]).then(([m, c]) => ({
-    default: (props: ModalProps) => <m.EntityFormModal config={c.addEventConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+    default: (props: ModalProps) => <m.EntityFormModal config={c.addEventConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} createDefaults={props.createDefaults} />,
   })),
   "add-poi": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/addStandard")]).then(([m, c]) => ({
-    default: (props: ModalProps) => <m.EntityFormModal config={c.addPoiConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+    default: (props: ModalProps) => <m.EntityFormModal config={c.addPoiConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} createDefaults={props.createDefaults} />,
   })),
   // add-equipements-sportifs / add-tiers-lieux : résolus DYNAMIQUEMENT par la table runtime costum (cf.
   // costumModalThunk) — id = identité costum. Permet aussi les costums de config (config.costumForms) sans entrée ici.
@@ -43,7 +45,7 @@ function costumModalThunk(modalName: string): (() => Promise<{ default: Componen
     const spec = reg.getCostumModalSpec(id);
     return {
       default: (props: ModalProps) =>
-        spec ? <mod.EntityFormModal spec={spec} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} /> : null,
+        spec ? <mod.EntityFormModal spec={spec} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} createDefaults={props.createDefaults} /> : null,
     };
   });
 }
@@ -138,12 +140,14 @@ export function DynamicModal({
   onOpenChange,
   parent,
   formConfig,
+  createDefaults,
 }: {
   modalName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   parent?: EntityTypes | null;
   formConfig?: JsonFormModalConfig;
+  createDefaults?: Record<string, unknown>;
 }) {
   ensureLazyModal(modalName);
   const ModalComponent = lazyComponents[modalName];
@@ -177,7 +181,7 @@ export function DynamicModal({
         </div>
       }
     >
-      <ModalComponent open={open} onOpenChange={onOpenChange} parent={parent} formConfig={formConfig} />
+      <ModalComponent open={open} onOpenChange={onOpenChange} parent={parent} formConfig={formConfig} createDefaults={createDefaults} />
     </Suspense>
   );
 }

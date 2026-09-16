@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FieldError, HintText } from "./FormFields";
+import { FieldError, FieldLabel, HintText } from "./FormFields";
 import type { FormFieldMapping, MultiCheckboxPlusValue, MultiCheckboxPlusSelectedOption } from "../types";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -207,10 +207,7 @@ export function MultiCheckboxPlusField({
     <div className={cn("space-y-3", field.width)}>
       {/* En-tête : label principal + compteur de sélection */}
       <div className="flex items-start justify-between gap-3">
-        <Label className="text-sm font-medium text-foreground">
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </Label>
+        <FieldLabel field={field} />
 
         {config?.nbAnswersMax && (
           <span

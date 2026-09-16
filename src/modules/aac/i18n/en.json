@@ -1,0 +1,256 @@
+{
+  "page": {
+    "backHome": "Back to home",
+    "backToAac": "Back to AAC",
+    "communDetail": "Commun details",
+    "communDetailDescription": "View all answers and related information for this commun.",
+    "loading": "Loading…",
+    "error": "Unable to load this commun.",
+    "errorMessage": "An error occurred while loading the commun.",
+    "configErrorMessage": "The call's configuration could not be loaded: the sections of this page cannot be resolved.",
+    "notFound": "Commun not found",
+    "notFoundMessage": "The requested commun could not be found.",
+    "missingAnswer": "No answer identifier was provided.",
+    "communLabel": "Commun #{{number}}",
+    "updated": "Updated on",
+    "directoryTitle": "Call for commons"
+  },
+  "section": {
+    "noForm": "No Call for Commons declared for this site (missing \"config.aac.formId\")."
+  },
+  "directory": {
+    "count_one": "result",
+    "count_other": "results",
+    "empty": "No commons match your search.",
+    "error": "Unable to load the commons.",
+    "loadMoreError": "Failed to load more commons.",
+    "retry": "Retry",
+    "loading": "Loading…",
+    "display": {
+      "label": "Display",
+      "grid": "Show as grid",
+      "list": "Show as list"
+    },
+    "search": {
+      "label": "Search a commons by name",
+      "placeholder": "Search by name"
+    },
+    "deposit": {
+      "cta": "Submit a common",
+      "modalTitle": "Submit a common",
+      "closed": "This call for commons is closed: submissions are no longer accepted."
+    },
+    "filters": {
+      "all": "All",
+      "title": "Filters",
+      "usage": "Filter by needs",
+      "usageCategory": "Usage category",
+      "usageSubCategory": "Usage sub-category",
+      "tags": "Filter by tag",
+      "maturity": "Usable",
+      "sort": "Sort by",
+      "reset": "Clear"
+    },
+    "card": {
+      "untitled": "Untitled commons",
+      "noDescription": "(No description)",
+      "pending": "Pending",
+      "collected": "Collected on ongoing co-funding",
+      "noFunding": "No co-funding request currently pending",
+      "user": "user",
+      "users": "users",
+      "interested_one": "interested",
+      "interested_other": "interested",
+      "viewDetail": "View details for “{{name}}”",
+      "showMoreTags_one": "Show the hidden keyword",
+      "showMoreTags_other": "Show the {{count}} hidden keywords"
+    },
+    "sort": {
+      "alpha": "Alphabetical order",
+      "interest_desc": "Interested count (descending)",
+      "interest_asc": "Interested count (ascending)",
+      "created_asc": "Creation date (ascending)",
+      "created_desc": "Creation date (descending)",
+      "updated_asc": "Update date (ascending)",
+      "updated_desc": "Update date (descending)"
+    },
+    "more": "See all commons"
+  },
+  "detail": {
+    "noname": "(Unnamed)",
+    "nodesc": "(No description)",
+    "noShortDesc": "(No summary)",
+    "showLess": "Show less",
+    "showMore": "Show more",
+    "contributors": "Contributors",
+    "votes": "Interested",
+    "tls": "Users",
+    "contribute": "I contribute",
+    "alreadyContributor": "Already a contributor",
+    "vote": "I'm interested",
+    "alreadyInterested": "Already interested",
+    "use": "I use it",
+    "namesLoading": "Loading…",
+    "namesUnavailable": "Names unavailable",
+    "actionsStat": "Actions",
+    "addAction": "Add an action",
+    "edit": {
+      "cta": "Edit",
+      "title": "Edit this commun",
+      "successToast": "Your changes have been saved."
+    },
+    "financing": {
+      "title": "Community funding",
+      "outOf": "of {{amount}}",
+      "collected": "Collected",
+      "cofinancers": "Co-funders",
+      "remaining": "Remaining to fund",
+      "cta": "Fund this commun",
+      "goalReached": "Goal reached",
+      "selectOrganization": "Select an organization",
+      "noOrganizationFound": "No organization found."
+    },
+    "objectives": {
+      "milestone": "Milestone {{number}}",
+      "tasksLabel": "tasks",
+      "tabFunding": "Funding",
+      "tabTasks": "Tasks",
+      "collectedPercent": "{{percent}}% collected",
+      "paid": "Paid",
+      "pledged": "Pledged",
+      "done": "Done",
+      "inProgress": "In progress",
+      "actionsButtons": {
+        "candidate": "Volunteer for this action",
+        "edit": "Edit action",
+        "delete": "Delete action"
+      },
+      "addMilestone": "Add a milestone",
+      "deleteMilestoneConfirm": {
+        "title": "Delete this milestone?",
+        "description": "The milestone \"{{name}}\" will be permanently deleted.",
+        "confirm": "Yes, delete",
+        "cancel": "Cancel"
+      },
+      "deleteActionConfirm": {
+        "title": "Delete this action?",
+        "description": "The action \"{{name}}\" will be permanently deleted.",
+        "confirm": "Yes, delete",
+        "cancel": "Cancel"
+      },
+      "noFundingYet": "No partner has contributed to this commun yet.",
+      "noTasksYet": "No task has been added to this commun yet.",
+      "archivedMilestones": "{{count}} archived milestone(s)",
+      "closedBadge": "Closed",
+      "closedBadgeHint": "Closed milestone: excluded from the amounts and cofinancers counted in the card.",
+      "milestoneField": {
+        "saveFirst": "Save this commun first to add and manage its milestones.",
+        "history": "Amount history",
+        "historyEmpty": "No amount change recorded.",
+        "deleteWithActionsWarning": "The milestone \"{{name}}\" and its {{count}} associated action(s) will be permanently deleted."
+      }
+    },
+    "cofinancers": {
+      "unknownContributor": "Unknown contributor",
+      "organizations": "Organizations",
+      "empty": "No partner has contributed to this commun yet.",
+      "partner": "Partner",
+      "type": "Type",
+      "contribution": "Contribution"
+    },
+    "contributorsSection": {
+      "empty": "Nobody has joined this commun's project yet.",
+      "error": "Contributors could not be loaded.",
+      "admin": "Project admin",
+      "author": "Submitter",
+      "contributor": "Contributor",
+      "organization": "Organization",
+      "more": "+{{count}} not shown.",
+      "addCta": "Add contributors",
+      "addUnavailable": "The linked project is still loading, or is not accessible.",
+      "pendingTitle": "Pending invitations",
+      "pendingInvitation": "Invitation sent",
+      "seeProject": "See the project"
+    },
+    "prose": {
+      "empty": "No information available."
+    },
+    "toc": {
+      "navigation": "Navigation",
+      "financialNeeds": "Funding needs",
+      "actions": "Action tracking",
+      "contributors": "Contributors",
+      "cofinancers": "Co-funders",
+      "gallery": "Gallery"
+    },
+    "gallery": {
+      "empty": "No images available.",
+      "imageAlt": "Image {{index}}"
+    },
+    "selection": {
+      "selectCta": "Select",
+      "deselectCta": "Remove from directory",
+      "selected": "Selected",
+      "pending": "Pending",
+      "cancel": "Cancel",
+      "confirmSelect": {
+        "title": "Publish this commun in the directory?",
+        "description": "It will appear in the “{{name}}” directory, visible to all visitors.",
+        "confirm": "Yes, select"
+      },
+      "confirmDeselect": {
+        "title": "Remove this commun from the directory?",
+        "description": "It will no longer appear in the “{{name}}” directory. The commun and its answers are kept.",
+        "confirm": "Yes, remove"
+      },
+      "descriptionNoName": {
+        "confirmSelect": "It will appear in this call's directory, visible to all visitors.",
+        "confirmDeselect": "It will no longer appear in this call's directory. The commun and its answers are kept."
+      }
+    },
+    "project": {
+      "openCta": "Open the project",
+      "openFullPage": "View full page",
+      "generateCta": "Generate the project",
+      "associateCta": "Associate an existing project",
+      "proposalPhaseBadge": "Proposal phase",
+      "confirmGenerate": {
+        "title": "Generate a project from this commun?",
+        "description": "A project and a tracking space will be created from this answer. This action is irreversible.",
+        "confirm": "Yes, generate",
+        "cancel": "Cancel"
+      },
+      "associate": {
+        "finderLabel": "Project",
+        "finderButton": "Search and associate",
+        "finderPlaceholder": "Enter the name of the project to associate"
+      },
+      "toasts": {
+        "generateSuccess": "The project was generated successfully.",
+        "generateError": "Unable to generate the project.",
+        "associateSuccess": "The commun was associated with the project.",
+        "associateError": "Unable to associate this project.",
+        "alreadyLinked": "This project is already linked to another commun. Choose another one or generate a new project.",
+        "projectWithoutId": "The selected project has no identifier.",
+        "incompleteContext": "Incomplete context: session or commun not found.",
+        "openError": "Unable to open the project preview."
+      }
+    },
+    "origin": {
+      "deposedOn": "Submitted on “{{name}}”"
+    }
+  },
+  "toasts": {
+    "errors": {
+      "noApiClient": "API client unavailable.",
+      "noReactor": "No identified user.",
+      "noAnswerId": "Missing answer identifier."
+    },
+    "reactionFailed": {
+      "title": "Unable to save your reaction"
+    }
+  },
+  "highlight": {
+    "communs": "Commons submitted"
+  }
+}

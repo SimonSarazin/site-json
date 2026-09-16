@@ -1,10 +1,17 @@
-import { Fragment, useCallback, useRef, useEffect, useMemo, useState } from "react";
+import { ChooseProposalField } from "./ChooseProposalField";
+import { resolveChooseContext, type ChooseProposalValue } from "../utils/chooseProposal";
+import { AapEvaluationField } from "./AapEvaluationField";
+import type { RawAapEvaluationConfig, AapEvaluationValue } from "../utils/aapEvaluation";
+import { PourContreField } from "./PourContreField";
+import type { PourContreValue } from "../utils/pourContre";
+import { SelectionField } from "./SelectionField";
+import { DEPOSIT_STEP_ID, type RawSelectionConfig, type SelectionValue } from "../utils/selection";
+import { useCallback, useRef, useEffect, useMemo, useState } from "react";
 import { Controller, type FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
@@ -14,7 +21,9 @@ import { CoFormProvider } from "../contexts/CoFormProvider";
 import { useCoForm } from "../hooks/useCoForm";
 import { useCoFormStep } from "../hooks/useCoFormStep";
 import { useCoFormNavigation, useCoFormSubmit } from "../hooks/useCoFormNavigation";
-import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField } from "./FormFields";
+import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField, TitleSeparatorField } from "./FormFields";
+import { TagsField } from "./TagsField";
+import type { DepenseEntry } from "../utils/depense";
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
@@ -29,12 +38,17 @@ import { AnswerActivityDialog } from "./AnswerActivityDialog";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
+import { MilestoneListField } from "./MilestoneListField";
+import { UnsupportedField } from "./UnsupportedField";
 import { CoFormBanner } from "./CoFormBanner";
+import { StepsNav } from "./StepsNav";
 import { useConditionalFields } from "../hooks/useConditionalFields";
+import { ConditionalField } from "./ConditionalField";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
 import { getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
+import { buildStepItems, invalidSteps, isSubFormValid } from "../utils/stepsNav";
 import { scrollToFieldByName } from "../utils/helpers";
-import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, CategorizedCheckboxValue, FinderValue, SimpleTableValue, ExistingAnswerMeta } from "../types";
+import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, CategorizedCheckboxValue, FinderValue, SimpleTableValue, ExistingAnswerMeta, TagsValue } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
 
 interface MultiStepCoFormProps {
@@ -44,8 +58,20 @@ interface MultiStepCoFormProps {
   onFinalSubmit?: (allData: AllStepsData) => Promise<void>;
   onSuccess?: () => void;
   variant?: CoFormVariant;
+  /**
+   * Affiche l'en-tête d'étapes : pastilles cliquables, compteur et sommaire.
+   * Le mettre à `false` retire donc aussi la navigation directe — mais SANS EFFET
+   * quand `variant === "stepper"`, qui force l'en-tête, ni sur un formulaire à une
+   * seule étape, où il n'est jamais rendu.
+   */
   showProgress?: boolean;
   showStepNumbers?: boolean;
+  /**
+   * Navigation directe entre étapes depuis l'en-tête. Défaut : **true** —
+   * décision produit du 4 septembre : toutes les étapes sont cliquables, en
+   * création comme en édition ; sauter la 2 la laisse « À faire », c'est la
+   * soumission finale qui contrôle, pas l'en-tête.
+   */
   allowFreeNavigation?: boolean;
   className?: string;
   /** Valeurs par défaut pour pré-remplir le formulaire (mode édition) */
@@ -56,6 +82,11 @@ interface MultiStepCoFormProps {
   initialStepKey?: string;
   /** Appelé quand l'état "modifié" change (utilisable par CoFormModal) */
   onDirtyChange?: (isDirty: boolean) => void;
+  /**
+   * Ref vers le rejet explicite du brouillon — renseignée par `CoFormProvider`,
+   * détenteur de `useCoFormDraft` sur ce chemin. Cf. `SmartCoForm`.
+   */
+  discardDraftRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
   /**
@@ -68,6 +99,15 @@ interface MultiStepCoFormProps {
   restrictedFields?: string[];
   /** ID du formulaire — clé de draft localStorage. */
   formId?: string;
+  /** Périmètre du brouillon quand une seule étape est rendue. Cf. `useCoFormDraft`. */
+  draftScope?: string | null;
+  /**
+   * Élément auquel la réponse est rattachée (lieu, projet…) — entre dans la clé
+   * du brouillon, pour qu'une saisie faite depuis un élément ne soit pas
+   * proposée sur un autre. Cf. `useCoFormDraft`.
+   */
+  elementId?: string | null;
+  elementType?: string | null;
   /** ID utilisateur connecté — clé de draft localStorage. */
   userId?: string | null;
   /** updatedAt serveur (édition) — pour détecter les drafts obsolètes. */
@@ -80,6 +120,11 @@ interface MultiStepCoFormProps {
    * ouvre la modale AnswerActivityDialog avec l'historique des modifs.
    */
   existingAnswerMeta?: ExistingAnswerMeta | null;
+  /**
+   * Comment rendre un champ dont le type n'a pas de composant. Défaut :
+   * `"error"`. Cf. `UnsupportedField`.
+   */
+  unknownFieldVariant?: "error" | "placeholder";
 }
 
 /**
@@ -96,19 +141,24 @@ export function MultiStepCoForm({
   variant = "wizard",
   showProgress = true,
   showStepNumbers = true,
-  allowFreeNavigation = false,
+  allowFreeNavigation = true,
   className,
   defaultValues,
   answerId,
   initialStepKey,
   onDirtyChange,
+  discardDraftRef,
   lockedFields,
   restrictedFields,
   formId,
+  draftScope,
+  elementId,
+  elementType,
   userId,
   baseUpdatedAt,
   enableDraft = true,
   existingAnswerMeta,
+  unknownFieldVariant = "error",
 }: MultiStepCoFormProps) {
   return (
     <CoFormProvider
@@ -120,9 +170,13 @@ export function MultiStepCoForm({
       answerId={answerId}
       initialStepKey={initialStepKey}
       formId={formId}
+      draftScope={draftScope}
+      elementId={elementId}
+      elementType={elementType}
       userId={userId}
       baseUpdatedAt={baseUpdatedAt}
       enableDraft={enableDraft}
+      discardDraftRef={discardDraftRef}
     >
       <MultiStepCoFormContent
         variant={variant}
@@ -135,6 +189,7 @@ export function MultiStepCoForm({
         restrictedFields={restrictedFields}
         className={className}
         existingAnswerMeta={existingAnswerMeta}
+        unknownFieldVariant={unknownFieldVariant}
       />
     </CoFormProvider>
   );
@@ -154,6 +209,7 @@ function MultiStepCoFormContent({
   restrictedFields,
   className,
   existingAnswerMeta,
+  unknownFieldVariant,
 }: {
   variant: CoFormVariant;
   showProgress: boolean;
@@ -165,6 +221,7 @@ function MultiStepCoFormContent({
   restrictedFields?: string[];
   className?: string;
   existingAnswerMeta?: ExistingAnswerMeta | null;
+  unknownFieldVariant: "error" | "placeholder";
 }) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -173,7 +230,7 @@ function MultiStepCoFormContent({
   const { submit: submitAll, isSubmitting: isFinalSubmitting } = useCoFormSubmit({
     onSuccess: () => onSuccess?.(),
   });
-  const { form, fields, stepName, isSubmitting, submitStep } = useCoFormStep();
+  const { form, fields, stepName, subFormId, isSubmitting, submitStep, saveStep } = useCoFormStep();
 
   // Multi-eval radar : on affiche un bouton "Voir les évaluations" dans le
   // header de la step si elle contient au moins un input avec
@@ -186,7 +243,7 @@ function MultiStepCoFormContent({
   const showMultiEvalButton = stepHasMultiEval && !!coform.answerId;
 
   // Logique conditionnelle pour l'étape courante
-  const { isFieldVisible } = useConditionalFields(fields?.fields ?? [], form.control);
+  const { isFieldVisible, hasConditionalRule } = useConditionalFields(fields?.fields ?? [], form.control);
 
   const lockedSet = useMemo(() => new Set(lockedFields ?? []), [lockedFields]);
   const restrictedSet = useMemo(() => new Set(restrictedFields ?? []), [restrictedFields]);
@@ -210,8 +267,15 @@ function MultiStepCoFormContent({
     containerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [navigation.currentStepIndex]);
 
-  // Propager isDirty vers le parent (CoFormModal)
-  const isDirty = form.formState.isDirty;
+  // Propager isDirty vers le parent (CoFormModal).
+  //
+  // `isDirty` ne vaut que pour l'étape courante, et changer d'étape remonte le
+  // formulaire à zéro (`form.reset` dans `useCoFormStep`) : sans mémoire, taper
+  // dans l'étape 1 puis cliquer l'étape 2 dans l'en-tête rendrait la modale
+  // fermable sans confirmation, et la saisie serait perdue sans un mot — la
+  // modale désactive le brouillon localStorage.
+  const [hasEditedAnyStep, setHasEditedAnyStep] = useState(false);
+  const isDirty = form.formState.isDirty || hasEditedAnyStep;
   useEffect(() => {
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
@@ -222,6 +286,10 @@ function MultiStepCoFormContent({
   // Affiche le récap d'erreurs (ErrorSummary) uniquement après une tentative
   // de soumission échouée — évite de polluer la lecture initiale.
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+
+  // Action stable du provider : dépendre de `coform` entier ferait re-créer les
+  // callbacks à chaque changement d'état.
+  const { markStepInvalid } = coform;
 
   // Activity dialog (historique de modifications de la réponse).
   const [activityDialogOpen, setActivityDialogOpen] = useState(false);
@@ -242,6 +310,59 @@ function MultiStepCoFormContent({
     return map;
   }, [formInputs]);
 
+  // Étapes telles que l'en-tête les voit. `errorSteps` porte aussi bien un envoi
+  // raté qu'une validation ratée (cf. `markStepInvalid`), les deux se lisent
+  // « à corriger » pour celui qui remplit.
+  const stepItems = useMemo(
+    () =>
+      buildStepItems({
+        steps: coform.subFormsFields,
+        currentIndex: navigation.currentStepIndex,
+        completedIds: navigation.completedSteps,
+        errorIds: coform.stepState.errorSteps,
+        navigable: allowFreeNavigation,
+      }),
+    [
+      coform.subFormsFields,
+      coform.stepState.errorSteps,
+      navigation.currentStepIndex,
+      navigation.completedSteps,
+      allowFreeNavigation,
+    ]
+  );
+
+  // Changer d'étape depuis l'en-tête.
+  const handleStepSelect = (index: number) => {
+    if (index === navigation.currentStepIndex) return;
+    // Une étape réservée à un autre rôle n'est pas atteignable, quel que soit le
+    // chemin emprunté dans l'en-tête (pastille, sommaire, raccourci d'erreur).
+    if (!stepItems[index]?.clickable) return;
+
+    // Le brouillon d'abord : sinon la saisie en cours (non soumise, donc jamais
+    // validée) disparaît au `form.reset` du changement d'étape. Uniquement si
+    // l'user a touché à quelque chose — traverser une étape ne doit pas
+    // matérialiser ses valeurs par défaut dans la réponse.
+    if (form.formState.isDirty) {
+      saveStep();
+      setHasEditedAnyStep(true);
+    }
+
+    // Aucun « Suivant » n'est franchi en navigation libre : c'est ici qu'on
+    // constate si l'étape quittée passerait sa validation. On ne LÈVE jamais
+    // d'erreur au passage (une étape simplement traversée reste « à faire ») —
+    // seule une tentative de soumission peut peindre une étape en rouge.
+    if (fields && subFormId) {
+      const valide = isSubFormValid(fields, form.getValues());
+      coform.setStepCompleted(subFormId, valide);
+      if (valide) coform.markStepInvalid(subFormId, false);
+    }
+
+    // Le récap d'erreurs appartient à l'étape qu'on a tenté de soumettre : sans
+    // ce reset, il ressurgirait sur l'étape suivante au premier champ quitté.
+    setHasAttemptedSubmit(false);
+    navigation.goTo(index);
+  };
+
   // Gérer la soumission de l'étape ou la soumission finale.
   // Note : la validation Zod est interceptée en amont par RHF via le
   // 2e arg de `form.handleSubmit(handleSubmit, handleInvalid)`. Ce bloc
@@ -251,6 +372,33 @@ function MultiStepCoFormContent({
   // un état d'étape incohérent.
   const handleSubmit = async () => {
     setHasAttemptedSubmit(false);
+
+    // Garde de la soumission finale, AVANT toute écriture. En navigation libre on
+    // peut atteindre la dernière étape sans avoir validé les autres : `submitStep`
+    // ne contrôle que l'étape courante et `submitAllData` ne valide rien. Elle
+    // passe avant `submitStep()` parce qu'en mode "step"/"both" celui-ci écrit
+    // déjà au serveur : refuser après avoir persisté serait pire que ne rien faire.
+    //
+    // L'étape COURANTE est exclue : react-hook-form vient de la valider (ce bloc
+    // est la branche valide de `handleSubmit`), et ses valeurs fraîches ne sont pas
+    // encore dans `stepsData`. Les autres étapes, elles, y sont : on les lit par
+    // `getStepsData()`, qui rend la donnée du ref et non celle du rendu courant.
+    if (navigation.isLastStep) {
+      const autres = coform.subFormsFields.filter((sf) => sf.subFormId !== subFormId);
+      const aCorriger = invalidSteps(autres, coform.getStepsData(), restrictedFields);
+      if (aCorriger.length > 0) {
+        aCorriger.forEach((step) => coform.markStepInvalid(step.subFormId, true));
+        const premier = aCorriger[0];
+        toast.error(
+          premier.subFormName
+            ? t("coform.errors.stepIncomplete", undefined, { name: premier.subFormName })
+            : t("coform.errors.summary.toast")
+        );
+        navigation.goTo(coform.subFormsFields.indexOf(premier));
+        return;
+      }
+    }
+
     const ok = await submitStep();
     if (!ok) return;
 
@@ -261,10 +409,11 @@ function MultiStepCoFormContent({
 
   const handleInvalid = useCallback((invalidErrors: FieldErrors) => {
     setHasAttemptedSubmit(true);
+    if (subFormId) markStepInvalid(subFormId, true);
     const firstErrorName = Object.keys(invalidErrors)[0];
     if (firstErrorName) scrollToFieldByName(firstErrorName);
     toast.error(t("coform.errors.summary.toast"));
-  }, [t]);
+  }, [t, subFormId, markStepInvalid]);
 
   const handleErrorFieldClick = useCallback((name: string) => {
     scrollToFieldByName(name);
@@ -281,25 +430,16 @@ function MultiStepCoFormContent({
     <div ref={containerRef} className={cn("space-y-6", className)}>
       <CoFormBanner formData={coform.formData} />
 
-      {/* Barre de progression - Style amélioré */}
-      {showProgress && (
-        <div className="space-y-3 pb-4 border-b">
-          <div className="flex justify-between items-center text-sm">
-            <span className="font-medium text-foreground">
-              {stepName}
-            </span>
-            <span className="text-muted-foreground">
-              {t("coform.steps.step")} {navigation.currentStepIndex + 1} {t("coform.steps.of")} {navigation.totalSteps}
-            </span>
-          </div>
-          <Progress 
-            value={navigation.progressPercent} 
-            className="h-2 bg-muted"
-          />
-          <div className="text-xs text-muted-foreground text-right">
-            {t("coform.progress.percent", undefined, { percent: navigation.progressPercent })}
-          </div>
-        </div>
+      {/* En-tête d'étapes : fenêtre cliquable sur ordinateur, étape courante +
+          sommaire sur téléphone. Il porte aussi le compteur « Étape 3 sur 11 »,
+          d'où le remplacement de l'ancienne barre de progression. */}
+      {(showProgress || variant === "stepper") && navigation.totalSteps > 1 && (
+        <StepsNav
+          steps={stepItems}
+          currentIndex={navigation.currentStepIndex}
+          onStepSelect={handleStepSelect}
+          showStepNumbers={showStepNumbers}
+        />
       )}
 
       {/* Banner de récupération de draft (s'il y en a un en localStorage).
@@ -317,19 +457,6 @@ function MultiStepCoFormContent({
           mode="stale"
           timestamp={coform.staleDraftInfo.timestamp}
           onAcknowledge={coform.acknowledgeStaleDraft}
-        />
-      )}
-
-      {/* Indicateurs d'étapes */}
-      {variant === "stepper" && (
-        <StepIndicator
-          totalSteps={navigation.totalSteps}
-          currentStep={navigation.currentStepIndex}
-          completedSteps={navigation.completedSteps}
-          subFormsFields={coform.subFormsFields}
-          allowFreeNavigation={allowFreeNavigation}
-          showStepNumbers={showStepNumbers}
-          onStepClick={allowFreeNavigation ? navigation.goTo : undefined}
         />
       )}
 
@@ -353,8 +480,12 @@ function MultiStepCoFormContent({
           </div>
           {coform.formData?.inputs?.[fields.subFormId]?.info && (
             <CardDescription className="text-base">
+              {/* `inputs[subFormId].info` = description de l'étape, écrite par
+                  l'admin de l'AAP dans la définition du formulaire → profil
+                  DOMPurify par défaut. Cf. `ProseContent` / `@/lib/sanitize`. */}
               <ProseContent
                 text={coform.formData.inputs[fields.subFormId].info as string}
+                source="formDefinition"
                 className="prose prose-sm dark:prose-invert max-w-none"
               />
             </CardDescription>
@@ -365,14 +496,44 @@ function MultiStepCoFormContent({
           <form id="step-form" onSubmit={form.handleSubmit(handleSubmit, handleInvalid)}>
             <div className="grid grid-cols-12 gap-6">
               {fields.fields.map((field) => {
-                if (!isFieldVisible(field.name)) return null;
                 // Skip total : l'user n'a pas le droit selon les listes
                 // place(Admin|Member)OnlyFields. Calculé serveur-side dans
                 // `access.restrictedFields`. Aligné sur le legacy isAdminOnly
                 // qui hide entirely (pas de readonly cosmétique).
+                //
+                // Seconde barrière en pratique : `parseCoFormFields` filtre DÉJÀ
+                // `formData.access.restrictedFields`, source que `SmartCoForm`
+                // passe aussi à cette prop — sur ce chemin la garde ne matche
+                // donc plus jamais. Elle ne couvre que le consommateur externe
+                // qui fournirait une liste par un autre chemin (les deux
+                // composants sont exportés publiquement, cf. `index.ts`).
+                //
+                // Attention si on la retire : elle teste la clé RÉSOLUE
+                // (`getOriginalFieldKey`), là où le parse teste la clé BRUTE.
+                // Sur un input `multiDecide` réindexé les deux diffèrent.
+                //
+                // La visibilité conditionnelle, elle, N'est PLUS gardée ici : un
+                // `return null` sec démonterait le champ avant que
+                // `ConditionalField` puisse animer sa sortie. Elle est traitée
+                // juste en dessous, par `!estConditionnel && !visible`.
                 if (restrictedSet.has(getOriginalFieldKey(field))) return null;
+                // Un champ PILOTÉ par une règle conditionnelle passe par
+                // `ConditionalField`, qui anime sa venue et son départ ; les
+                // autres gardent strictement le rendu d'origine.
+                const estConditionnel = hasConditionalRule(field.name);
+                const visible = isFieldVisible(field.name);
+                // Garde DÉFENSIVE : un champ sans règle est toujours visible
+                // (les deux fonctions lisent la même table). Elle n'est là que
+                // pour le jour où un masquage viendrait d'une autre source —
+                // invariant verrouillé par `useConditionalFields.test.ts`.
+                if (!estConditionnel && !visible) return null;
                 const isLocked = lockedSet.has(field.name);
-                const fieldElement = (() => { switch (field.componentType) {
+                // Fonction NON invoquée ici : `ConditionalField` ne l'appelle
+                // que lorsque le champ doit exister, sinon tous les champs
+                // conditionnels seraient montés en permanence — et ceux qui
+                // interrogent le réseau (`finder`, `commonTable`) le feraient
+                // pour rien.
+                const rendreChamp = () => { switch (field.componentType) {
                 case "text":
                   return (
                     <TextField
@@ -651,20 +812,173 @@ function MultiStepCoFormContent({
                     />
                   );
 
+                case "tags":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <TagsField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value as TagsValue}
+                          onChange={controllerField.onChange}
+                          readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
+                case "titleSeparator":
+                  return <TitleSeparatorField key={field.name} field={field} />;
+
+                // `selection` ne passe PAS par `Controller` : la valeur est
+                // scopée par évaluateur et s'écrit par chemin ciblé, hors
+                // soumission (cf. `utils/selection.ts`). On l'alimente donc
+                // depuis les réponses BRUTES du contexte, pas depuis l'état RHF
+                // — où la clé est délibérément absente.
+                // Même contrat encore : hors RHF, écriture ciblée. La config vient
+                // de `form.evaluationCriteria`, pas de `params`.
+                case "aapEvaluation": {
+                  const brutEval = (coform.stepState.stepsData[fields.subFormId] ?? {}) as Record<string, unknown>;
+                  return (
+                    <AapEvaluationField
+                      key={field.name}
+                      field={field}
+                      subFormId={fields.subFormId}
+                      formId={formId}
+                      config={coform.formData?.evaluationCriteria as RawAapEvaluationConfig | undefined}
+                      value={brutEval.evaluation as AapEvaluationValue | undefined}
+                      answerId={coform.answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
+
+                // Hors RHF également, mais scopé par CONTEXTE et non par évaluateur.
+                // Le contexte est le parent du FORMULAIRE — la clé que lit
+                // l'annuaire — pas l'entité du site (cf. `resolveChooseContext`).
+                case "chooseProposal": {
+                  const brutChoose = (coform.stepState.stepsData[fields.subFormId] ?? {}) as Record<string, unknown>;
+                  return (
+                    <ChooseProposalField
+                      key={field.name}
+                      field={field}
+                      subFormId={fields.subFormId}
+                      formId={formId}
+                      value={brutChoose.choose as ChooseProposalValue | undefined}
+                      context={resolveChooseContext(coform.formData)}
+                      answerId={coform.answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
+
+                // Même contrat que `selection` : hors RHF, écriture ciblée.
+                case "pourContre": {
+                  const brutVote = (coform.stepState.stepsData[fields.subFormId] ?? {}) as Record<string, unknown>;
+                  return (
+                    <PourContreField
+                      key={field.name}
+                      field={field}
+                      subFormId={fields.subFormId}
+                      formId={formId}
+                      value={brutVote.pourContre as PourContreValue | undefined}
+                      inputConfig={undefined}
+                      answerId={coform.answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
+
+                case "selection": {
+                  const brut = (coform.stepState.stepsData[fields.subFormId] ??
+                    {}) as Record<string, unknown>;
+                  const depot = (coform.stepState.stepsData[DEPOSIT_STEP_ID] ??
+                    {}) as Record<string, unknown>;
+                  const labelsDepot: Record<string, string> = {};
+                  const inputsDepot = coform.formData?.inputs?.[DEPOSIT_STEP_ID]?.inputs ?? {};
+                  for (const [cle, def] of Object.entries(inputsDepot)) {
+                    if (def?.label) labelsDepot[cle] = def.label;
+                  }
+                  return (
+                    <SelectionField
+                      key={field.name}
+                      field={field}
+                      subFormId={fields.subFormId}
+                      formId={formId}
+                      config={
+                        coform.formData?.params?.configSelectionCriteria as
+                          | RawSelectionConfig
+                          | undefined
+                      }
+                      value={brut.selection as SelectionValue | undefined}
+                      admissibility={brut.admissibility as Record<string, unknown> | undefined}
+                      depositAnswers={depot}
+                      depositLabels={labelsDepot}
+                      answerId={coform.answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
+
                 case "sectionTitle":
                   return <SectionTitleField key={field.name} field={field} />;
 
                 case "sectionDescription":
                   return <SectionDescriptionField key={field.name} field={field} />;
 
+                case "milestoneList":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <MilestoneListField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value as DepenseEntry[]}
+                          onChange={controllerField.onChange}
+                          answerId={coform.answerId}
+                          readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
                 default:
                   return (
-                    <div key={field.name} role="alert" className="col-span-12 flex flex-col gap-1 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                      <p className="font-semibold">{field.label}</p>
-                      <p>{t("coform.errors.unknownFieldType", undefined, { type: field.type })}</p>
-                    </div>
+                    <UnsupportedField
+                      key={field.name}
+                      label={field.label}
+                      type={field.type}
+                      variant={unknownFieldVariant}
+                    />
                   );
-              } })();
+              } };
+
+                if (estConditionnel) {
+                  // Les champs décoratifs ne reçoivent pas d'ancre
+                  // `data-field-name`, comme sur le chemin non animé ci-dessous.
+                  const estDecoratif =
+                    field.componentType === "sectionTitle" ||
+                    field.componentType === "sectionDescription";
+                  return (
+                    <ConditionalField
+                      key={field.name}
+                      visible={visible}
+                      width={field.width}
+                      fieldName={estDecoratif ? undefined : field.name}
+                      isLocked={isLocked}
+                    >
+                      {rendreChamp}
+                    </ConditionalField>
+                  );
+                }
+
+                const fieldElement = rendreChamp();
 
                 // Wrapper avec `data-field-name` pour permettre au récap
                 // d'erreurs (`ErrorSummary`) de scroller + highlight via
@@ -675,7 +989,8 @@ function MultiStepCoFormContent({
                 if (!fieldElement) return null;
                 if (
                   field.componentType === "sectionTitle" ||
-                  field.componentType === "sectionDescription"
+                  field.componentType === "sectionDescription" ||
+                  field.componentType === "titleSeparator"
                 ) {
                   return fieldElement;
                 }
@@ -816,89 +1131,6 @@ function MultiStepCoFormContent({
         />
       )}
     </div>
-  );
-};
-
-/**
- * Indicateur visuel des étapes (stepper)
- */
-function StepIndicator({
-  totalSteps,
-  currentStep,
-  completedSteps,
-  subFormsFields,
-  allowFreeNavigation,
-  showStepNumbers,
-  onStepClick,
-}: {
-  totalSteps: number;
-  currentStep: number;
-  completedSteps: string[];
-  subFormsFields: { subFormId: string; subFormName: string }[];
-  allowFreeNavigation: boolean;
-  showStepNumbers: boolean;
-  onStepClick?: (index: number) => void;
-}) {
-  return (
-    <nav aria-label="Étapes du formulaire">
-      <ol className="flex items-center justify-between list-none p-0 m-0">
-        {Array.from({ length: totalSteps }).map((_, index) => {
-          const subForm = subFormsFields[index];
-          const isCompleted = subForm && completedSteps.includes(subForm.subFormId);
-          const isCurrent = index === currentStep;
-          const isPending = !isCompleted && !isCurrent;
-
-          // Contenu du bouton: ✓ si complété, numéro si showStepNumbers, sinon point
-          const buttonContent = isCompleted
-            ? "✓"
-            : showStepNumbers
-              ? index + 1
-              : "•";
-
-          // Label parlant pour SR : "Étape X : Nom du sub-form (complétée|en cours|à venir)"
-          const stateLabel = isCompleted
-            ? "complétée"
-            : isCurrent
-              ? "en cours"
-              : "à venir";
-          const stepLabel = `Étape ${index + 1}${subForm?.subFormName ? ` : ${subForm.subFormName}` : ""} (${stateLabel})`;
-
-          return (
-            <Fragment key={index}>
-              <li className="contents">
-                <button
-                  type="button"
-                  onClick={() => allowFreeNavigation && onStepClick?.(index)}
-                  disabled={!allowFreeNavigation}
-                  aria-current={isCurrent ? "step" : undefined}
-                  aria-label={stepLabel}
-                  className={cn(
-                    "flex items-center justify-center w-10 h-10 rounded-full border-2 font-medium transition-colors",
-                    isCompleted && "bg-primary border-primary text-primary-foreground",
-                    isCurrent && "border-primary text-primary",
-                    isPending && "border-muted text-muted-foreground",
-                    allowFreeNavigation && "cursor-pointer hover:border-primary/80"
-                  )}
-                >
-                  <span aria-hidden="true">{buttonContent}</span>
-                </button>
-              </li>
-
-              {index < totalSteps - 1 && (
-                <li aria-hidden="true" className="contents">
-                  <div
-                    className={cn(
-                      "flex-1 h-1 mx-2",
-                      isCompleted ? "bg-primary" : "bg-muted"
-                    )}
-                  />
-                </li>
-              )}
-            </Fragment>
-          );
-        })}
-      </ol>
-    </nav>
   );
 };
 

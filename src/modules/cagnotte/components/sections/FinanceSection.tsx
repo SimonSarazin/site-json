@@ -8,7 +8,7 @@ import {
     type MilestoneEditFormData,
 } from '@/modules/cagnotte/schemaForm';
 import {useFundingEnvelope} from '@/modules/cagnotte/hooks/useFundingEnvelope';
-import {useCagnotteAdapter} from '@/modules/cagnotte/hooks/useCagnotteAdapter';
+import {useCagnotteAdapter, useOrphanDepenseRepair} from '@/modules/cagnotte/hooks/useCagnotteAdapter';
 import {useCocolight} from '@/hooks/useCocolight';
 import {useT} from '@/hooks/useT';
 import {useLoadNamespace} from '@/hooks/useLoadNamespace';
@@ -142,7 +142,7 @@ export default function FinanceSection({id, props}: { id?: string; props: Financ
         enabled: !!entity,
     });
 
-    const {resources, savedSelectedResource} = useCagnotteAdapter(
+    const {resources, savedSelectedResource, pendingMilestoneRepairs} = useCagnotteAdapter(
         fundingData,
         allProjects,
         cagnotteConfig,
@@ -246,6 +246,13 @@ export default function FinanceSection({id, props}: { id?: string; props: Financ
     const cagnottePerms = useCagnottePermissions(permissionEntity, {
         hasActiveItems: openMilestones.length > 0,
         resourceId: projectId,
+    });
+    // Surface d'édition : les dépenses orphelines de la ressource affichée sont
+    // réparées ici, par qui peut créer un palier — l'adaptateur n'écrit plus (M40).
+    useOrphanDepenseRepair({
+        resource: targetResource,
+        repairs: pendingMilestoneRepairs,
+        enabled: cagnottePerms.canCreateMilestone,
     });
     const cagnotteCtx = useCagnotteContext();
 

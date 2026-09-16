@@ -47,6 +47,11 @@ export default function CoFormSection({ id, props }: CoFormSectionProps) {
         formId={props.formId}
         forceMultiStep={props.variant === "wizard"}
         forceSingleStep={props.variant === "default"}
+        // Ces deux clés existent dans le schéma de section et sont renseignées
+        // par des configs en production : sans ce passage, elles ne faisaient
+        // rien — un réglage ignoré en silence.
+        showProgress={props.showProgress}
+        showStepNumbers={props.showStepNumbers}
         onAfterSubmit={props.redirectAfterSubmit ? handleAfterSubmit : undefined}
       />
     </section>

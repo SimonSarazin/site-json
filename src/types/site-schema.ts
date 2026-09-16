@@ -554,6 +554,24 @@ export const ActionTilesSchema = z.object({
 export type ActionTiles = z.infer<typeof ActionTilesSchema>;
 export type ActionTilesProps = z.infer<typeof ActionTilesSchema>["props"];
 
+/**
+ * Source dynamique d'un compteur `cta-card-grid.props.stats[]`
+ * `searchCount` compte un périmètre de recherche déjà public (même contrat que les KPIs admin) ; 
+ * `membersCount` compte les membres de l'entité, validés par défaut (`toBeValidated: true` = en attente).
+ */
+const StatDynamicSourceSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("searchCount"),
+    entityType: z.string(), // answers | organizations | poi | events | …
+    baseParams: SearchBaseParamsSchema.partial().optional(),
+  }),
+  z.object({
+    type: z.literal("membersCount"),
+    toBeValidated: z.boolean().default(false),
+  }),
+]);
+export type StatDynamicSource = z.infer<typeof StatDynamicSourceSchema>;
+
 //──────────────── Community Rézo la Mer
 export const CtaCardGridSchema = z.object({
   type: z.literal("cta-card-grid"),
@@ -578,9 +596,15 @@ export const CtaCardGridSchema = z.object({
     stats: z
       .array(
         z.object({
-          value: z.string(),
+          // Optionnel seulement si `source` est fourni (cf. refine ci-dessous). Avec
+          // `source`, `value` sert de repli immédiat le temps du chargement ; sans lui,
+          // un skeleton s'affiche à sa place (cf. StatTile dans CtaCardGrid.tsx).
+          value: z.string().optional(),
           label: LocalizedString,
           color: z.enum(["primary", "turquoise", "cyan-bright", "accent", "teal", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]).optional(),
+          source: StatDynamicSourceSchema.optional(),
+        }).refine((stat) => stat.value !== undefined || stat.source !== undefined, {
+          message: "Un stat doit avoir soit `value` (statique) soit `source` (dynamique).",
         })
       )
       .optional(),
@@ -1474,6 +1498,11 @@ import {
 import { CoFormSectionSchema } from "@/modules/coform/schema";
 import { ToolsCatalogSectionSchema } from "@/modules/toolsCatalog/schema";
 import {
+  AacConfigSchema,
+  AacDirectorySectionSchema,
+  AacHighlightSectionSchema,
+} from "@/modules/aac/schema";
+import {
   LoginFormSectionSchema,
   RegisterFormSectionSchema,
   RecoverPasswordFormSectionSchema,
@@ -1591,6 +1620,8 @@ export const Section = z.discriminatedUnion("type", [
   CagnotteLayoutSectionSchema,
   CoFormSectionSchema,
   ToolsCatalogSectionSchema,
+  AacDirectorySectionSchema,
+  AacHighlightSectionSchema,
   DataObservatorySectionSchema,
   AgendaSectionSchema,
   ArticleFeedSectionSchema,
@@ -1688,6 +1719,25 @@ const MegaMenu = z.object({
   width: z.enum(["sm", "md", "lg", "xl", "full"]).default("lg"),
 });
 
+// Génère `children` depuis une liste `costum.lists.<list>` au lieu de les écrire à la main
+// (cf. Document de spécification « Menu dynamique costum.lists dans le header »). `children`
+// déclaré en parallèle sert de repli statique tant que la liste n'est pas résolue (absente,
+// vide, ou `filterId` introuvable en config) — résolu par `useResolveDynamicNav`, câblé dans
+// `SiteHeader` : aucune variante de header n'a besoin de connaître ce champ.
+const DynamicNavList = z.object({
+  // Nom de la liste costum.lists à lire (ex. "themes") — statique ou recette dynamique, détecté
+  // automatiquement. Plusieurs noms = fusion dans l'ordre déclaré (cf. @/lib/listSources), cas d'un
+  // même champ alimenté depuis plusieurs collections : une recette par collection.
+  list: z.union([z.string().min(1), z.array(z.string().min(1)).min(1)]),
+  // id du dropdownFilter/filterGroup cible (résolu via getDropdownFilterOwner) : détermine
+  // à la fois la page de destination et le champ filtré par chaque entrée générée.
+  filterId: z.string().min(1),
+  // Slug du costum porteur de la liste, si différent du site courant.
+  costumSlug: z.string().optional(),
+  // Plafond d'entrées affichées (défaut : DEFAULT_DYNAMIC_NAV_LIMIT, cf. lib/dynamicNav.ts).
+  limit: z.number().int().positive().optional(),
+});
+
 // Enhanced NavItem with mega menu support
 // Define interface for EnhancedNavItem to avoid 'any'
 export interface EnhancedNavItemType {
@@ -1706,6 +1756,7 @@ export interface EnhancedNavItemType {
   description?: LocalizedString;
   /** Affiche le sous-menu en mise en avant (colonne "lien principal" via `path` + grille). */
   featured?: boolean;
+  dynamicList?: z.infer<typeof DynamicNavList>;
 }
 
 const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
@@ -1721,8 +1772,9 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
     megaMenu: MegaMenu.optional(),
     description: LocalizedString.optional(),
     featured: z.boolean().optional(),
-  }).refine(d => d.path || d.href || d.children || d.megaMenu, {
-    message: "NavItem : path, href, children ou megaMenu obligatoire"
+    dynamicList: DynamicNavList.optional(),
+  }).refine(d => d.path || d.href || d.children || d.megaMenu || d.dynamicList, {
+    message: "NavItem : path, href, children, megaMenu ou dynamicList obligatoire"
   })
 );
 
@@ -2199,6 +2251,11 @@ export const SiteConfig = z.object({
     condition: VisibilityConditionSchema,
   }).optional(),
   ampli: z.array(AmpliConfigSchema).optional(),
+  // Config site-level de l'Appel à Communs — SINGULIER (un seul AAC par site,
+  // contrairement à `ampli` qui est un tableau). Le site déclare son `formId` ;
+  // les sections `aac-directory`/`aac-highlight` et les routes `/aac` le lisent
+  // depuis ici (les routes ne sont montées que si ce bloc existe). cf. modules/aac.
+  aac: AacConfigSchema.optional(),
   commandPalette: CommandPaletteConfigSchema.optional(),
   // Config site-level du blog : défauts des variants extensibles (card/reader/feedLayout). cf. modules/blog.
   blog: BlogConfigSchema.optional(),

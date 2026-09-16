@@ -19,6 +19,15 @@ interface EntityPreviewDrawerProps {
   entity: EntityTypes;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /**
+   * Lien "aller sur la page" affiché dans l'en-tête du drawer (`CustomDrawer`) —
+   * optionnel : les appelants no-slug (POI importés) n'ont justement pas de page
+   * `/profil/:slug` à proposer. Un appelant qui A un slug (ex. un projet ouvert
+   * en aperçu depuis une action plutôt qu'un `EntityCard`) peut le fournir pour
+   * offrir la même bascule "aperçu ↔ page complète" que `DetailsModeDrawer`.
+   */
+  link?: string;
+  openPageTitle?: string;
 }
 
 /**
@@ -30,7 +39,7 @@ interface EntityPreviewDrawerProps {
  * `DynamicEditModal`, et Email — plus infos + carte. Ne dépend ni du slug ni de
  * `ProfileEntityProvider`.
  */
-export function EntityPreviewDrawer({ entity, open, onOpenChange }: EntityPreviewDrawerProps) {
+export function EntityPreviewDrawer({ entity, open, onOpenChange, link, openPageTitle }: EntityPreviewDrawerProps) {
   const t = useT("modules/profil");
   const { canEditProfile } = useProfilPermissions(entity);
   // `EntityTypes` est un sous-ensemble de `SearchEntity` au runtime (mêmes serverData/geo/address).
@@ -76,6 +85,8 @@ export function EntityPreviewDrawer({ entity, open, onOpenChange }: EntityPrevie
       openAndCloseDrawer={() => onOpenChange(false)}
       direction="right"
       overflowType="overflow-y-auto"
+      link={link}
+      openPageTitle={openPageTitle}
     >
       <div className="p-4 space-y-4">
         {/* En-tête : image + nom + type + localité */}

@@ -21,7 +21,7 @@ export const Historique = () => (
         },
         {
           title: { fr: "Aujourd'hui — Le Réseau Parentalité 62" },
-          text: { fr: "Parents, centres sociaux, associations, institutions : un maillage vivant sur les dix territoires du département." },
+          text: { fr: "Parents, centres sociaux, associations, institutions : un maillage vivant sur les neuf territoires du département." },
         },
       ],
     }}

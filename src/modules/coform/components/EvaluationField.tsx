@@ -9,7 +9,7 @@ import type {
 } from "../types";
 import { EvaluationVoteCell } from "./EvaluationVoteCell";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { FieldError, HintText } from "./FormFields";
+import { FieldError, FieldLabel, HintText } from "./FormFields";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import "../i18n/i18n";
@@ -158,18 +158,7 @@ export function EvaluationField({
       {/* Label — `<div>` car le control n'est pas un input ciblable
           (la <table> ne peut pas être focusée). `aria-labelledby` ci-dessous
           lie le titre à la table pour les screen readers. */}
-      {!hideLabel && (
-        <div
-          id={`${field.name}-label`}
-          className={cn(
-            "block text-sm font-medium",
-            hasError && "text-destructive"
-          )}
-        >
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </div>
-      )}
+      {!hideLabel && <FieldLabel field={field} id={`${field.name}-label`} hasError={hasError} />}
 
       {/* Info/description */}
       {field.info && <HintText text={field.info} />}

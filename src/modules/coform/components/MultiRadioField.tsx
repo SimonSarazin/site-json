@@ -4,7 +4,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { FieldError, HintText } from "./FormFields";
+import { FieldError, FieldLabel, HintText } from "./FormFields";
 import type { FormFieldMapping, MultiRadioValue } from "../types";
 
 interface MultiRadioFieldProps {
@@ -67,10 +67,7 @@ export function MultiRadioField({
 
   return (
     <div className={cn("space-y-3", field.width)}>
-      <Label className="text-sm font-medium text-foreground">
-        {field.label}
-        {field.isRequired && <span className="text-destructive ml-1">*</span>}
-      </Label>
+      <FieldLabel field={field} />
       {field.info && <HintText text={field.info} />}
 
       <RadioGroup

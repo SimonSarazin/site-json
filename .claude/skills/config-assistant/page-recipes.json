@@ -3,16 +3,17 @@
  "recipes": [
   {
    "id": "home-a-la-une",
-   "titre": "Home « à la une » 100% data-driven",
-   "quand": "Le réseau produit déjà du contenu (articles, POI tagués) et veut une home qui vit sans maintenance éditoriale : tout est requêté, rien n'est rédigé dans la config.",
+   "titre": "Home « à la une » data-driven + orientation par public",
+   "quand": "Le réseau produit déjà du contenu (articles, POI tagués) et veut une home qui vit presque sans maintenance éditoriale — tout le corps est requêté — mais doit quand même orienter d'emblée deux publics distincts vers leur parcours.",
    "source": "config.prod.parent62.json",
    "path": "/",
    "sequence": [
     "featured-carousel",
+    "action-tiles",
     "map-bubbles",
     "articleTeaser"
    ],
-   "rythme": "Trois blocs, zéro texte statique : le carrousel plein écran met en avant les POI tagués « A la une » (le contenu choisit la vitrine), la carte à bulles donne l'entrée géographique vers les pages territoire, et l'aperçu d'articles ferme la page en preuve de vie avec son CTA « voir tout » vers /blog. L'identité est portée par le header stacked (wordmark plein écran) : la home n'a pas besoin de hero."
+   "rythme": "Quatre blocs, un seul statique : le carrousel plein écran met en avant les POI tagués « A la une » (le contenu choisit la vitrine), puis DEUX tuiles « Vous êtes… » aiguillent parent / professionnel vers leur page d'entrée — seul texte rédigé de la page, et la garantie que ces pages ne dépendent pas de la seule nav. La carte à bulles donne ensuite l'entrée géographique vers les pages territoire, et l'aperçu d'articles ferme la page en preuve de vie avec son CTA « voir tout » vers /blog. L'identité est portée par le header stacked (wordmark plein écran) : la home n'a pas besoin de hero."
   },
   {
    "id": "home-vitrine-dense",
@@ -95,13 +96,19 @@
    "titre": "Page thématique ou territoriale (grille)",
    "quand": "Décliner un même annuaire par thème / territoire / catégorie, avec un contexte éditorial propre à chaque déclinaison.",
    "source": "config.prod.parent62.json",
-   "path": "/territoire/familles-en-sol-mineur",
+   "path": "/territoire/familles-en-sol-mineur-henin-carvin",
    "sequence": [
-    "title",
+    "html",
+    "agenda",
+    "cards",
+    "searchProStatic",
     "searchHeader",
-    "gridLayout"
+    "articleFeed",
+    "accordion",
+    "searchProStatic",
+    "cta"
    ],
-   "rythme": "`title` porte le contexte éditorial spécifique à la déclinaison (ce que searchHeader ne sait pas faire), searchHeader filtre, gridLayout présente. parent62 décline ce motif sur ses territoires et thématiques — c'est un gabarit, pas une page unique. Certaines déclinaisons s'enrichissent ensuite (cf. /territoire/arrageois, passée à 8 sections) : le gabarit est un POINT DE DÉPART."
+   "rythme": "`html` porte le bandeau hero (couleur propre au territoire) ; `agenda` enchaîne aussitôt sur les dates du comité local (teaser `baseParams.filters` `type:meeting` + `territoires`, sans onglets ni toggle) ; `cards` (2 colonnes) porte le·la coordonnateur·rice et la carte cliquable « Comptes rendus des réunions » qui ouvre le dossier Drive du territoire (`href` + `target:_blank`) ; `searchProStatic` liste les RESSOURCES du territoire (POI `recoveryCenter` filtrés `territoires`, presenter `resource`) ; `searchHeader` (recherche active, filtres thèmes/publics) et `articleFeed` (filtré sur ce territoire) portent l'actualité ; `accordion` liste les communes ; un second `searchProStatic` met en avant « les actions sur le territoire » ; `cta` referme sur `/recherche`. parent62 décline ce motif sur ses 9 territoires — c'est un gabarit, pas une page unique. Les 9 déclinaisons partagent désormais EXACTEMENT ces 9 sections (les blocs `html` de liens externes propres à 5 territoires ont été retirés le 03/09) : le gabarit est stable d'une page à l'autre."
   },
   {
    "id": "page-agenda",
@@ -186,14 +193,16 @@
    "path": "/territoire/artois",
    "sequence": [
     "html",
+    "agenda",
     "cards",
+    "searchProStatic",
     "searchHeader",
     "articleFeed",
     "accordion",
     "searchProStatic",
     "cta"
    ],
-   "rythme": "Sept sections, répétées à l'identique sur 9 territoires — c'est le gabarit le plus dupliqué du parc. L'alternance est délibérée : deux blocs éditoriaux posent le contexte, puis deux blocs de données (articles, acteurs) encadrés par un accordéon de questions, et un CTA ferme. Le searchHeader sert les DEUX blocs de données qui le suivent."
+   "rythme": "Neuf sections, répétées à l'identique sur 9 territoires — c'est le gabarit le plus dupliqué du parc. L'alternance est délibérée : le bandeau annonce le territoire, l'agenda du comité local vient AUSSITÔT après (l'information la plus périssable en premier), puis les cartes de contact (coordonnateur·rice, « Comptes rendus des réunions » vers le Drive) et les ressources du territoire précèdent le couple `searchHeader` + `articleFeed` de l'actualité ; l'accordéon des communes et la sélection d'acteurs ferment le corps, le CTA la page. ⚠ `searchHeader` alimente le `PageFilters` de la PAGE ENTIÈRE : les deux blocs placés AVANT lui reçoivent eux aussi ses facettes (thèmes/publics) — cf. Agenda.tsx (effectiveBaseParams) et SearchProStatic.tsx (searchByFieldsToQuery)."
   },
   {
    "id": "page-liste-nue",

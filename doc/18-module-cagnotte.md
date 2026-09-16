@@ -65,6 +65,9 @@ src/modules/cagnotte/
 │   ├── PaymentConfigPage.tsx           # Page configuration Stripe + HelloAsso
 │   ├── StripePaymentForm.tsx           # Formulaire carte Stripe Elements
 │   ├── PiggyBankHeaderButton.tsx       # Bouton piggy-bank header (montant live + dialog)
+│   │                                   #   ⚠️ jamais importé directement par un header : cf. le
+│   │                                   #   wrapper lazy src/components/layout/header/CagnotteHeaderButtons.tsx
+│   ├── PledgeHeaderButton.tsx          # Bouton « promesses » header (même wrapper lazy)
 │   ├── ProjectsFinancingDisplay.tsx    # @deprecated PLACEHOLDER vide
 │   ├── parts/                          # Sous-composants de CagnotteDialog
 │   │   ├── CagnotteAmountPicker.tsx
@@ -165,20 +168,71 @@ Chaque jalon cagnotte existe en **double** dans deux collections backend distinc
 | Collection | Chemin | Rôle |
 |---|---|---|
 | **`projects`** | `oceco.milestones[]` | Définition du jalon : `{ milestoneId, name, description, status: open\|done\|close }` |
-| **`answers`** (CoForm) | `answers.aapStep1.depense[]` | Miroir financier : `{ poste, price, milestone, financer[], include }` |
+| **`answers`** (CoForm) | `answers.aapStep1.depense[]` | Miroir financier : `{ poste, price, description, milestone, financer[], include }` |
 
 → Toute mutation milestone doit être **propagée des deux côtés** :
 
 | Action | Côté project | Côté answer |
 |---|---|---|
-| Édition | `updateProjectMilestoneFields({ name, description, status })` | `updateAnswerDepenseFields({ poste, price })` |
+| Création | `appendProjectMilestone({ milestoneId, name, description, status })` — seulement si un projet est lié | `appendAnswerDepense({ poste, description, price, date, user, milestone, financer: [] })` — `description` est écrite **dès la création**, comme à l'édition et pour la même raison |
+| Édition | `updateProjectMilestoneFields({ name, description, status })` | `updateAnswerDepenseFields({ poste, price, description })` — `description` tenue en double comme `poste`/`name` : c'est `depense.description` que relisent la fiche et la modale (`useCagnotteAdapter`, `buildItemsFromRawDepenses`, `fundableItemToMilestone`), projet lié ou non |
 | Clôture | `status: "close"` | `include: false` |
 | Restauration | `status: "open"` | `include: true` |
 | Suppression | `deleteProjectMilestoneAtIndex` | `deleteAnswerDepenseAtIndex` + suppression des actions liées |
 
+⚠️ **La propagation « des deux côtés » n'est pas la même exigence selon le geste.**
+
+- **Édition et clôture** écrivent des deux côtés : elles exigent donc les deux, et lèvent
+  `incompleteForEdit.*` / `incompleteForClose.*` à défaut.
+- **Suppression : chaque côté se supprime INDÉPENDAMMENT.** Un seul suffit, et le refus
+  (`noIndexForDelete`) ne tombe que s'il n'y en a **aucun**. Exiger les deux rendait indéracinable un
+  jalon présent d'un seul côté : `useCreateMilestone` écrit le projet **puis** la réponse, sans
+  compensation — si la seconde écriture échoue, `oceco.milestones[]` garde un jalon sans dépense
+  miroir et, comme éditer ou clore exige le côté réponse, plus aucun geste ne l'atteignait (M38). Le
+  cas symétrique (dépense dont le jalon projet a disparu) se supprime de même, côté réponse seul.
+  Les messages `incompleteForDelete.missingProjectSide` / `.missingAnswerSide` **ne sont plus émis**.
+  Restent en place les deux refus qui, eux, protègent la donnée : `cannotDeleteIfFunded`, et
+  `cannotDeleteWithoutEnvelope` quand les actions du palier sont invisibles (cf. Pièges § 6).
+- **Restauration : aucune condition sur les actions.** `cannotCloseWithOpenActions` n'est levée que
+  par la **clôture**. Le cas typique est précisément l'inverse : un palier clos alors que son action
+  était `done`, l'action repassée en `todo`, et le palier qu'il faut rouvrir — conditionner la
+  réouverture à `canClose` la refusait là où elle était le plus nécessaire (M39).
+
 Cette orchestration est centralisée dans :
 - `lib/milestoneMutationHandlers.ts` — `editMilestoneWithSync`, `closeMilestoneWithSync`, `restoreMilestoneWithSync`, `deleteMilestoneWithSync`
 - `lib/milestoneSyncContext.ts` — `resolveMilestoneSyncContext({ rawEnvelope, projectId, answerId, milestoneId })` retourne `{ projectMilestoneIndex, answerDepenseIndex }` ou `null`
+
+Un palier **answer-only** (`milestoneId` vide — commun sans projet lié, dont `buildItemsFromRawDepenses`
+produit `{ milestoneId: "", depenseIndex }`) est désigné par `answerDepenseIndex` : les handlers
+court-circuitent la résolution (qui rend `null` sur un id vide) et n'écrivent que côté answer, à cet
+index. Un id vide SANS index reste refusé (`syncContextMissing`).
+
+Avec projet lié, un id vide + index n'est PAS conclu answer-only d'emblée : les handlers relisent
+d'abord `depense[index].milestone` (ligne de la ressource dans l'enveloppe, puis `docs`) et, s'il
+existe, traitent le palier des deux côtés (`withRecoveredMilestoneId`). C'est le cas d'une dépense
+legacy que la réparation des dépenses orphelines vient de doter d'un id (écrit sur le projet ET la
+dépense, puis invalidation de l'enveloppe et du cache brut `useCommunRawDepenses`) alors que l'écran
+tient encore l'item d'avant. Sans id nulle part, le côté projet manque vraiment (`missingProjectSide`).
+
+#### Réparation des dépenses orphelines — qui écrit, et quand
+
+**`useCagnotteAdapter` n'écrit plus** (M40) : il est PUR. Les dépenses sans palier projet qu'il
+détecte sont **rendues** (`pendingMilestoneRepairs`), et c'est
+**`useOrphanDepenseRepair({ resource, repairs, enabled })`** qui écrit — seules les **surfaces
+d'édition** le montent, et seulement avec un droit :
+
+| Monté par | Droit exigé |
+|---|---|
+| `useAacFundingResource` (fiche commun, `MilestoneListField`) | `canCreateMilestone` calculé sur l'entité du **projet lié** + `ownerIds` (le déposant) |
+| `FinanceSection` | idem, sur la ressource affichée |
+
+Le hook ne répare que les dépenses de **la ressource affichée** (`answerId` + `projectId`), et une
+garde d'identité stable (`milestoneRepairKey`, jamais l'identifiant généré) empêche la boucle
+infinie : `generateMilestoneId` repose sur `Date.now()`/`Math.random()`, une clé qui le contiendrait
+serait neuve à chaque recalcul du memo.
+
+⚠️ Le **header** (`PiggyBankHeaderButton`) et **`CagnotteDialog`** ne réparent plus rien. Tout passage
+disant que la réparation part « au rendu » ou « à l'ouverture de la modale » est faux.
 
 > Le nom `aapStep1` vient de « Appel À Projet, étape 1 ». Le module suppose que le CoForm cible contient cette structure. **Non généralisé** pour d'autres structures.
 
@@ -247,9 +301,23 @@ export function getServerData(value: unknown): UnknownRecord {
 | `toNumber(value)` | Coerce en number fini, retourne `0` pour NaN/Infinity |
 | `toString(value)` | Retourne la string identique, `''` pour tout non-string |
 | `normalizeIdOrNull(value)` | Trim + retourne `null` si vide ou non-string |
-| `toSafeInt(value)` | `Math.trunc` + parse string FR (`"1 234,5"` → `1234`) |
+| `toSafeInt(value)` | `Math.trunc` + parse string FR (`"1 234,5"` → `1234`) — **le lecteur UNIQUE des montants** sur un document |
 | `getEntityId(value)` | Extrait un id depuis string, `{ id }`, `{ _id.$id }`, `{ _id._str }`, `{ $id }` |
+| `resolveActionAuthorId(actionLike)` | Auteur d'une action : `creator` → `idUserAuthor` → `authorId` (ce dernier couvre une action **déjà normalisée**, `FundingAction` ne transportant plus `creator`), `""` à défaut |
+| `normalizeActionStatus(value)` | Statut ramené aux deux valeurs du domaine (`todo` \| `done`, casse ignorée) — tout ce qui n'est pas `done` vaut `todo` |
 | `readEntityPreferences(entity, source)` | Lit `entity.data.preferences` ou `entity.serverData.preferences` |
+
+> **`normalizeActionStatus` n'est plus une fonction privée de `useFundingEnvelope`.** Elle vit ici,
+> exportée, à côté de `resolveActionAuthorId`, et sert **les deux** lectures : l'enveloppe **et** la
+> fiche commun du module AAC (`normalizeActionForEdit`). Un statut lu différemment selon l'écran
+> donnerait des droits différents sur la même action — les gardes de permission testent des égalités
+> strictes (`status === "done"`, `status !== "todo"`).
+
+**Lecture du montant d'une dépense** : `readDepensePrice` (`useCagnotteAdapter`) fait
+`toSafeInt(depense.priceInt || depense.price)` — **sur les deux branches** de l'adaptateur (`project`
+et `proposition`). `||` et non `??` : un `priceInt` à 0 est aussi ce que `$convert` rend d'une chaîne
+non numérique (« 1 500 »), que `toSafeInt` sait lire. `priceInt` n'est **jamais stocké** sur un
+document : c'est un champ calculé par l'enveloppe, où il fait autorité quand il est là.
 
 Cas piège : accéder à `entity.oceco.milestones` retourne `undefined` car `oceco` est sous `entity.serverData.oceco`. Ce bug a été corrigé dans `milestoneSyncContext.ts` et `useFundingEnvelope.ts` (cf. [Pièges connus](#pièges-connus)).
 
@@ -270,7 +338,7 @@ Exports principaux consommés hors du module :
 | `useCagnotteContext`, `useCagnotteContextSafe` | Hooks | Composants dans un `CagnotteLayout` |
 | `useUserAdminOrganizations` | Hook | `PaymentConfigPage` |
 | `useSaveCagnotteContribution` | Hook | `PaymentConfigPage` |
-| `useProjectModalCagnotte` | Hook | `PiggyBankHeaderButton` / headers |
+| `useProjectModalCagnotte` | Hook | `PiggyBankHeaderButton` (les headers ne le consomment pas) |
 | `CagnotteProvider`, `CagnotteContext` | Context | Usage avancé externe |
 | `createMilestoneMutation` + 5 hooks mutation milestone | Hooks | `FinanceSection`, `ActionsSection` |
 | `createActionMutation` + 6 hooks mutation action (incl. `useCreateAction`) | Hooks | `ActionsSection` |
@@ -317,7 +385,23 @@ Les **sections JSON** (`ActionsSection`, `FinanceSection`, etc.) ne sont **pas**
 |---|---|
 | `useCagnotteContext()` / `useCagnotteContextSafe()` | Accès à l'event-bus typé du `CagnotteProvider` (`requestEditMilestone`, `requestDeleteMilestone`, `requestScrollToMilestone`, + 3 `on*` listeners avec `Unsubscribe`) |
 | `useCagnottePermissions(entity, data?)` | Wrapper sur `usePermissions(["cagnotte"], entity, ...)` avec mémoisation |
-| `useActionGuards({ isConnected, apiClient, projectId, answerId })` | Retourne `{ requireConnected(suffix), requireApiContext(namespace) }` — centralise les gardes répétés dans 6+ handlers |
+| `useActionGuards({ isConnected, apiClient, projectId, answerId, project? })` | Retourne `{ requireConnected(suffix), requireApiContext(ns), requireApiAacContext(ns), requireProjectEntity(ns) }` — centralise les gardes répétés dans 6+ handlers. Chacun rend `true` si le garde passe, `false` après avoir affiché son toast |
+
+**Trois gardes, trois questions distinctes** :
+
+1. **`requireConnected(suffix)`** — l'utilisateur est-il connecté (toast
+   `ActionsSection.toasts.loginRequired.{suffix}`) ;
+2. **`requireApiContext(ns)`** — `apiClient` + `projectId` + `answerId` ; sa variante
+   **`requireApiAacContext(ns)`** ne teste que `apiClient` + `answerId`, un commun sans projet lié
+   restant manipulable côté réponse ;
+3. **`requireProjectEntity(ns)`** — l'entité `Project` du SDK est-elle en main **dès qu'un projet est
+   lié** (sans projet lié : rien à exiger, le garde passe). Le contexte porte pour cela un champ
+   **optionnel `project`**. Les mutations d'action (`useMarkActionDone`, `useDeleteAction`,
+   `useCandidateAction`) lèvent `milestone.errors.projectMissing` sans elle ; or les droits d'action
+   (auteur, contributeur) ne dépendent pas de l'entité, et sur la fiche commun elle est résolue de
+   façon **asynchrone** et reste `null` quand la résolution échoue. La fiche commun appelle donc ce
+   garde avant **terminer / supprimer / candidater** : le motif est dit AVANT `mutate()`, au lieu
+   d'une mutation vouée à l'échec.
 
 ---
 
@@ -467,7 +551,20 @@ Sans state interne, callbacks remontés au parent :
 
 ### `PiggyBankHeaderButton`
 
-Composant header (`components/PiggyBankHeaderButton.tsx`) affiché dans les headers de site (ex. `HeaderTransparentScroll`) :
+Composant header (`components/PiggyBankHeaderButton.tsx`), **rendu par les headers via un wrapper
+lazy** — `src/components/layout/header/CagnotteHeaderButtons.tsx`, qui exporte
+`PiggyBankHeaderButton` et `PledgeHeaderButton` sur le modèle de `NotificationBell` :
+
+> Les headers sont eux-mêmes des chunks `lazy()` préchargés sur **chaque** page. Un import statique
+> depuis un header y embarquait la fermeture complète du module cagnotte (`CagnotteDialog` et ses
+> parts, adaptateur, permissions, bundles i18n… ~35 fichiers) pour **tous** les sites, y compris ceux
+> qui n'activent ni `piggyBank` ni `pledge` : le `&&` du header n'empêche pas un import statique
+> d'être téléchargé, parsé et exécuté. Avec le wrapper, le chunk cagnotte n'est chargé **que** si
+> `header.utilities.piggyBank` / `.pledge` est activé, et **après hydratation** (gate `useHydrated` —
+> les deux boutons sont member-only et n'ont rien à rendre au SSR, ce qui rend le `ClientOnly` d'avant
+> inutile).
+
+Comportement du bouton lui-même :
 
 - Lit `entity.serverData.preferences.projectModalId` via `useReactiveProperty` (réactif aux mutations live)
 - Consomme `useFundingEnvelope(projectModalId)` — partage le cache React Query avec `CagnotteDialog` (0 fetch supplémentaire à l'ouverture)
@@ -480,6 +577,13 @@ Composant header (`components/PiggyBankHeaderButton.tsx`) affiché dans les head
 En plus des 4 parts documentés, `components/parts/` contient :
 - `CagnotteContributeButton.tsx` — bouton "Contribuer" (standalone)
 - `CagnotteResourceProgressCard.tsx` — carte de progression d'un projet sélectionné
+
+**Un seul calcul de « financé / cible » dans la modale.** Le sélecteur de ressource affiche ces deux
+montants via `buildFundingByResourceId(resources)` (`lib/resourceFundingTotals.ts`), qui les somme sur
+les **items ouverts** de chaque ressource avec `computeResourceFundingTotals` — exactement la source
+de la carte de progression et du plafond de contribution (`remainingAmount`). Lire ici les agrégats
+bruts (`resourceFinancedAmount` / `resourceTotalAmount`) faisait afficher **deux chiffres différents
+pour la même ressource** entre la liste déroulante et la carte (C10).
 
 ---
 
@@ -496,12 +600,29 @@ Le module enregistre un namespace `cagnotte` via `register.ts` (side-effect). 11
 | `canRestoreMilestone(m)` | admin + milestone en statut `close` exactement |
 | `canDeleteMilestone(m)` | admin + `m.hasTransactions !== true` |
 | `canCreateAction(m)` | admin + milestone non `close` |
-| `canEditAction(a)` | si `a.status === "done"` : admin uniquement ; sinon : admin OU contributeur (`a.contributorIds.includes(currentUserId)`) |
-| `canMarkActionDone(a)` | (admin OU contributeur) + `a.status === "todo"` |
-| `canDeleteAction(a)` | admin uniquement (signature `(action) => isAdmin` — le paramètre `action` est ignoré) |
+| `canEditAction(a)` | si `a.status === "done"` : admin uniquement ; sinon : admin OU **auteur** (`a.authorId`) OU contributeur (`a.contributorIds.includes(currentUserId)`) |
+| `canMarkActionDone(a)` | (admin OU **auteur** OU contributeur) + `a.status === "todo"` |
+| `canDeleteAction(a)` | si `a.status === "done"` : admin uniquement ; sinon : admin OU **auteur** (`a.authorId`) — les contributeurs assignés, non (supprimer est plus fort que corriger ; aligné sur le garde backend `Action.delete()`, `isAuthorOrAdmin`) |
 | `canCandidateAction(a)` | `currentUserId` non vide + `a.status === "todo"` + pas déjà contributeur |
 
 Métadonnées exposées : `isConnected`, `isAdmin`, `isContributor`, `currentUserId`.
+
+**« admin » = admin de l'entité passée OU porteur déclaré de la ressource.**
+`data.ownerIds` (optionnel, vide par défaut) liste les ids qui font autorité sur CETTE
+ressource : `isAdmin = entity.isAdmin() || ownerIds.includes(currentUserId)`. Les 11 permissions
+en dérivent, gardes d'état comprises (un palier `close` reste figé, un palier financé reste
+indestructible). Voir [Pièges connus](#pièges-connus) §4 pour le pourquoi.
+
+**Un droit d'action ne dit rien de la DISPONIBILITÉ du contexte.** `canEditAction`, `canDeleteAction`,
+`canMarkActionDone` et `canCandidateAction` ne dépendent que de l'auteur, des contributeurs et du
+statut : ils restent accordés même quand l'entité `Project` n'est pas (encore) résolue. C'est voulu —
+les afficher grisés en attendant une résolution asynchrone serait un cul-de-sac. La disponibilité est
+vérifiée **au clic**, par `requireProjectEntity` (cf. [Context/Permissions/Guards](#contextpermissionsguards)).
+
+**Barre de gestion d'un palier** : les cartes affichent la barre `MilestoneManageActions` dès qu'**UN**
+des trois droits est acquis — `canEditMilestone`, `canDeleteMilestone` ou `canRestoreMilestone` — et
+passent `canRestore = canRestoreMilestone(status)`. Conséquence directe de la table ci-dessus :
+un palier **clos ET financé** n'est ni éditable ni supprimable, mais reste **restaurable**.
 
 **Note sur `canContribute`** : `canContribute` requiert que `me` soit connecté (`isConnected`). Si l'utilisateur n'est pas connecté ou si `entity` est absent, le calculateur fait un early-return vers `DEFAULT_CAGNOTTE_PERMISSIONS` (`canContribute: false`). La condition complète est : connecté + `projectId` non vide + `hasActiveMilestones === true`.
 
@@ -559,7 +680,7 @@ launchConfettiBurst + toast succès
 
 ## React Query
 
-6 clés (dont 3 préfixes pour invalidations) dans `constants/queryKeys.ts` :
+8 clés (dont 4 préfixes pour invalidations) dans `constants/queryKeys.ts` :
 
 | Key | Forme |
 |---|---|
@@ -569,8 +690,18 @@ launchConfettiBurst + toast succès
 | `ORGANIZATION_PROJECTS_WITH_ANSWERS_PREFIX()` | `["organization-projects-with-answers"]` |
 | `PROJECT_MODAL_CAGNOTTE(entityId, projectModalId)` | `["projectModalCagnotte", entityId, projectModalId]` |
 | `PROJECT_MODAL_CAGNOTTE_PREFIX()` | `["projectModalCagnotte"]` |
+| `COMMUN_RAW_DEPENSES(answerId, step)` | `["aac-milestone-list-depenses", answerId, step]` |
+| `COMMUN_RAW_DEPENSES_PREFIX(answerId)` | `["aac-milestone-list-depenses", answerId]` (l'étape, 3ᵉ segment, est couverte par le préfixe) |
 
-**Invalidation** : toutes les mutations milestone/action invalident `FUNDING_ENVELOPE_PREFIX()` via la factory. `CagnotteDialog` invalide en plus `ORGANIZATION_PROJECTS_WITH_ANSWERS_PREFIX` après contribution.
+**`COMMUN_RAW_DEPENSES`** est le `answers.<step>.depense` d'une réponse **tel que le document le
+porte** — la seconde entrée de cache (staleTime 60 s) par laquelle la fiche commun et
+`MilestoneListField` relisent les paliers, distincte de l'enveloppe. Producteur :
+`modules/aac/hooks/useCommunRawDepenses`, qui **ré-exporte** la constante
+`COMMUN_RAW_DEPENSES_QUERY_KEY` (valeur historique `"aac-milestone-list-depenses"`, conservée).
+La clé vit **ici**, et non côté `aac`, parce que c'est cagnotte qui l'invalide : `aac` dépend de
+`cagnotte`, jamais l'inverse — il n'y a donc pas de « première dépendance cagnotte → aac ».
+
+**Invalidation** : toutes les mutations milestone/action invalident `FUNDING_ENVELOPE_PREFIX()` via la factory. `CagnotteDialog` invalide en plus `ORGANIZATION_PROJECTS_WITH_ANSWERS_PREFIX` après contribution. `COMMUN_RAW_DEPENSES` est invalidée par la réparation des dépenses orphelines, par les mutations de paliers de la fiche commun (`extraInvalidate`), par `useGenerateAacProject` et par `useAssociateExistingAacProject`.
 
 **Pourquoi `userId` dans la queryKey ?** Le `queryFn` de `useFundingEnvelope` enrichit via `getFormData` avec `financerId: me.id` ; sans cette dimension dans la clé, deux utilisateurs distincts dans la même session pourraient se voir servir les données enrichies du premier depuis le cache. Bug corrigé.
 
@@ -609,7 +740,7 @@ Sections dans `i18n/fr.json` et `i18n/en.json` :
 
 - `validation.*` — erreurs Zod (milestone/action/amount/date/id/contribution)
 - `toasts.*` — succès/erreurs des mutations contribution (`contributionSaved`, `contributionPartial`, `errors.*`)
-- `milestone.errors.*` — messages levés depuis les handlers `lib/` (apiClientUnavailable, projectIdMissing, answerIdMissing, syncContextMissing, cannotCloseWithOpenActions, cannotDeleteIfFunded, noIndexForDelete, actionIdMissing, deleteActionUnavailable, projectMissing)
+- `milestone.errors.*` — messages levés depuis les handlers `lib/` (apiClientUnavailable, projectIdMissing, answerIdMissing, syncContextMissing, cannotCloseWithOpenActions, cannotDeleteIfFunded, cannotDeleteWithoutEnvelope, noIndexForDelete, actionIdMissing, deleteActionUnavailable, projectMissing)
 - `CreateMilestoneDialog.*` — labels + toasts de création milestone
 - `MilestoneCreateTrigger.*` — toast connexion requise (trigger)
 - `MilestoneManageActions.*` — labels boutons admin
@@ -641,6 +772,47 @@ Symptôme du bug initial : impossible d'éditer un jalon avec message « ce jalo
 
 Fix : utiliser `getServerData(entity)` (`utils/dataTransform.ts`) qui résout l'indirection.
 
+### 2bis. L'enveloppe est scopée à l'entité APPELANTE — pas au corps de la requête
+
+`entity.fundingEnvelope({...})` passe par `BaseEntity._withCostumContext`, qui **écrase**
+`contextId`/`contextType` par ceux de l'entité sur laquelle la méthode est appelée. Un `contextId`
+placé dans le payload est donc du code mort : l'enveloppe décrit toujours le contexte de l'entité
+appelante.
+
+Conséquence : lue depuis l'entité du site, elle ne contient que les ressources de CE contexte. Une
+réponse déposée sous un autre contexte (un commun AAC déposé sur l'appel d'une autre organisation,
+seulement *sélectionné* ici) n'y figure pas — `savedSelectedResource` sort `undefined`, sans erreur.
+
+Fix : `useFundingEnvelope(id, { hostEntity })` prend l'entité à interroger ; côté AAC,
+`useCommunFundingHost` la résout depuis le contexte du commun. Deux replis existent pour ne pas
+dépendre de cette lecture de masse :
+
+- `buildResourceFromAnswer` (`utils/dataTransform.ts`) reconstruit la ressource depuis le document
+  réponse (projet lié + `depense[]`) ;
+- `MilestoneMutationContext.docs` alimente `resolveMilestoneSyncContextFromDocs`, sans quoi
+  éditer / clôturer un palier échoue sur `milestone.errors.syncContextMissing`.
+
+**Deux limites du repli, à connaître avant de s'en servir :**
+
+1. **Les index sont des chemins Mongo.** `resolveMilestoneSyncContextFromDocs` rend des positions
+   qui deviennent `oceco.milestones.<i>.<champ>` et `answers.<step>.depense.<i>.<champ>`. Un champ
+   tableau sérialisé en objet (pollution `{}` ↔ `[]`, cf. `doc/34` §Pièges) n'est donc **pas**
+   indexable : `Object.values` le redenserait et l'écriture toucherait la mauvaise entrée. Les deux
+   chemins refusent tout ce qui n'est pas un vrai tableau et retombent sur `syncContextMissing` —
+   d'où le type `MilestoneSyncDocs`, volontairement `unknown` et non `unknown[]` : **ne pas coercer
+   avant de le remplir**.
+2. **Les actions sont invisibles.** Elles ne vivent ni dans `oceco.milestones[]` ni dans
+   `depense[]`, et le SDK n'expose aucun listage des actions d'un projet hors enveloppe. Deux
+   conséquences, tranchées différemment :
+   - **Suppression refusée** (`milestone.errors.cannotDeleteWithoutEnvelope`) : supprimer un palier
+     doit supprimer ses actions, et une liste vide qu'on ne sait pas distinguer de « aucune action »
+     les laisserait orphelines. `MilestoneSyncContext.fromDocs` porte cette provenance.
+   - **Clôture permise** : la garde `cannotCloseWithOpenActions` est levée ici, faute de pouvoir
+     l'évaluer — compromis assumé plutôt que bloquer la clôture d'un palier légitime.
+
+   BACKLOG : une lecture des actions du projet lèverait la restriction de suppression **et** rendrait
+   la garde de clôture exacte.
+
 ### 2. `useFundingEnvelope` fait deux appels backend
 
 `getEnvelopeData` toujours appelé. `getFormData` appelé en plus si `formId` extractible **et** `me?.id` non null. Le merge (`mergeEnvelopePayloads`) écrase certains champs : `projects`, `links`, `contextData`, `nopropProject`. Implication : côté SSR (sans auth), seul `getEnvelopeData` est consommé ; le client ré-appelle si l'utilisateur est connecté.
@@ -663,6 +835,38 @@ const perms = useCagnottePermissions(permissionEntity, { ... });
 ```
 
 `CagnotteDialog` (header) reste sur l'entité site car son action (préférence `projectModalId`) cible l'org.
+
+**Troisième cas : ni le site, ni le profil — la RESSOURCE.** Une cagnotte adossée à une réponse
+(AAC) est portée par quelqu'un qui n'est admin d'aucune des deux entités : le **déposant** du
+commun (il n'est pas non plus admin du projet lié quand un autre l'a généré, cf. piège n°5). D'où
+`CagnottePermissionData.ownerIds` : une liste d'ids qui valent `isAdmin` sur cette ressource-ci. Le
+calculateur ne sait pas ce qu'est une ressource côté métier — c'est à l'appelant de dire qui la
+porte (`resolveCommunOwnerIds`, module AAC). Vide par défaut : les call-sites qui ne le renseignent
+pas sont inchangés.
+
+```ts
+const perms = useCagnottePermissions(projectEntity, {
+  hasActiveItems,
+  resourceId,
+  ownerIds: resolveCommunOwnerIds(answer),
+});
+```
+
+⚠️ **Deux points sur lesquels il est facile de se tromper :**
+
+1. **Pas d'entité de repli.** On passe `projectEntity` SEUL, jamais `projectEntity ?? entity`.
+   L'org du site répondrait `isAdmin() === true` à tous ses administrateurs, qui obtiendraient
+   paliers et actions sur le commun de n'importe qui — exactement ce que le piège n°4 interdit.
+   `projectEntity` vaut légitimement `null` (projet non résolu, ou proposition pas encore promue).
+2. **`ownerIds` ne dépend d'aucune entité.** `isResourceOwner` est donc évalué AVANT le garde
+   d'entrée, qui ne rejette plus que `!entity && !isResourceOwner`. Sans ça, il fallait fournir une
+   entité juste pour franchir le garde — d'où le repli du point 1.
+
+**L'admin de l'appel n'est PAS dans `ownerIds`** : porter l'appel donne
+le droit de sélectionner, valider et **promouvoir** un commun en projet
+(`CommunProjectControl.canManageProject`), pas d'écrire dans son plan de financement à la place du
+déposant. Il obtient paliers et actions quand il administre le projet lié — par l'entité, pas par
+sa qualité d'admin de l'appel.
 
 ### 5. `checkHierarchy` non utilisé pour project
 

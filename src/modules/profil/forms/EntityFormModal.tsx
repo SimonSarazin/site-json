@@ -26,6 +26,7 @@ import "./registerSpecFns"; // side-effect : enregistre descripteurs + fns costu
 import { useUnsavedGuard } from "./useUnsavedGuard";
 import { useEntityMutation, type EntityMutationSpec } from "../hooks/useEntityMutation";
 import { specToConfig } from "./resolveModalSpec";
+import { applyCreateDefaults } from "./createDefaults";
 import type { EntityModalCtx, EntityModalSpec } from "./entityModalSpec";
 
 export type { EntityModalCtx };
@@ -83,9 +84,11 @@ export interface EntityFormModalProps {
   mode?: "add" | "edit";
   entity?: EntityTypes | null;
   parent?: EntityTypes | null;
+  /** Valeurs semées en mode AJOUT, par-dessus les défauts du descripteur (cf. `createDefaults.ts`). */
+  createDefaults?: Record<string, unknown>;
 }
 
-export function EntityFormModal({ config: configProp, spec, open, onOpenChange, mode = "add", entity, parent }: EntityFormModalProps): ReactNode {
+export function EntityFormModal({ config: configProp, spec, open, onOpenChange, mode = "add", entity, parent, createDefaults }: EntityFormModalProps): ReactNode {
   const config = useMemo(() => configProp ?? specToConfig(spec as EntityModalSpec), [configProp, spec]);
   const t = useT("modules/profil");
   const tr = (k: I18n) => t(k); // résout clé i18n OU LocalizedString inline (useT route selon le type)
@@ -104,7 +107,16 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
   // connecté : useEntityBySlugQuery renvoie `me` (jamais re-instancié, l'invalidation react-query
   // re-renvoie la même référence). Sans ce dep, le seed du PREMIER rendu restait figé et la
   // modale ré-ouvrait sur l'ANCIENNE adresse après un save pourtant réussi (save() → refresh()).
-  const defaultValues = useMemo(() => config.buildDefaults(ctx), [config, effMode, entity, scope, open]); // eslint-disable-line react-hooks/exhaustive-deps
+  // `createDefaults` n'est semé qu'en AJOUT : en édition le seed vient de l'entité, et l'écraser par
+  // une valeur d'onglet réécrirait une fiche existante à l'insu de l'admin.
+  const defaultValues = useMemo(
+    () => applyCreateDefaults(
+      config.buildDefaults(ctx),
+      effMode === "add" ? createDefaults : undefined,
+      Object.keys(descriptor.fields),
+    ),
+    [config, effMode, entity, scope, open, createDefaults, descriptor], // eslint-disable-line react-hooks/exhaustive-deps
+  );
   const schema = useMemo(() => config.getSchema?.(ctx), [config, effMode, entity]); // eslint-disable-line react-hooks/exhaustive-deps
   // Listes de valeurs du costum PORTEUR (cf. `costumListsOf` pour les deux emplacements et leur
   // histoire). Ne sont exploitables comme options QUE les listes STATIQUES : une déclaration

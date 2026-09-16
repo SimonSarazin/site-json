@@ -70,6 +70,18 @@ export function createEntityMutation<TParams = void>(config: EntityMutationConfi
             throw new Error(`Invalid entity type: expected ${config.entityTypes.join(" or ")}`);
           }
         }
+        // ⚠️ NE PAS poser ici de scope costum sur l'entité (`ensureCostumScope`/`setCostumScope`).
+        // Ces actions déclenchent bien des e-mails côté legacy (CONNECT / DISCONNECT / LINK_VALIDATE / FOLLOW), et c'est le
+        // `costumSlug` de la requête qui décide du sujet, du logo, de l'expéditeur et du domaine des
+        // liens — mais ce contexte est désormais posé UNE fois pour toutes sur le client API
+        // (`applySiteCostum` → `ApiClient.setSiteCostum`, cf. src/lib/siteCostum.ts) et injecté par la
+        // lib sur tout endpoint marqué `costumContext` au contrat.
+        // Le poser en plus sur l'entité serait au mieux redondant, au pire NUISIBLE : `setCostumScope`
+        // écrit AUSSI `_costumCtx`, qui gouverne le SCHÉMA D'ÉDITION de l'entité — on changerait donc
+        // autre chose que le branding. Et la raison historique de le faire a disparu : depuis la
+        // v1.0.192, le contexte de requête d'une entité ne lit plus que `_adminScope` (le scope POSÉ
+        // explicitement), jamais `_costumCtx` (sa provenance) — une entité non scopée ne propose donc
+        // plus rien et laisse s'appliquer le costum DU SITE, qui est la bonne réponse.
         await config.action(entity, params);
       },
       namespace: "modules/profil",
@@ -126,6 +138,18 @@ export function createUserMutation(config: UserMutationConfig) {
 
     return useMutationWithToast<void, User>({
       mutationFn: async (user) => {
+        // ⚠️ NE PAS poser ici de scope costum sur l'entité (`ensureCostumScope`/`setCostumScope`).
+        // Ces actions déclenchent bien des e-mails côté legacy (LINK_VALIDATE / CONNECT / DISCONNECT / DEMOTE_ADMIN), et c'est le
+        // `costumSlug` de la requête qui décide du sujet, du logo, de l'expéditeur et du domaine des
+        // liens — mais ce contexte est désormais posé UNE fois pour toutes sur le client API
+        // (`applySiteCostum` → `ApiClient.setSiteCostum`, cf. src/lib/siteCostum.ts) et injecté par la
+        // lib sur tout endpoint marqué `costumContext` au contrat.
+        // Le poser en plus sur l'entité serait au mieux redondant, au pire NUISIBLE : `setCostumScope`
+        // écrit AUSSI `_costumCtx`, qui gouverne le SCHÉMA D'ÉDITION de l'entité — on changerait donc
+        // autre chose que le branding. Et la raison historique de le faire a disparu : depuis la
+        // v1.0.192, le contexte de requête d'une entité ne lit plus que `_adminScope` (le scope POSÉ
+        // explicitement), jamais `_costumCtx` (sa provenance) — une entité non scopée ne propose donc
+        // plus rien et laisse s'appliquer le costum DU SITE, qui est la bonne réponse.
         await config.action(user);
       },
       namespace: "modules/profil",

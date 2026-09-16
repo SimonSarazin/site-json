@@ -159,11 +159,54 @@ export interface CoFormInputField {
   placeholder?: string;
   info?: string;
   position?: string;
+  /**
+   * Position d'affichage **par formulaire parent**, `positions[<formId>]`.
+   *
+   * Un même document d'étape sert parfois plusieurs formulaires (766 inputs du
+   * parc portent une position pour au moins deux parents), d'où la map. Elle
+   * fait AUTORITÉ sur `position`, qui n'est alors souvent même pas écrite :
+   * mesuré sur l'étape 2 d'« Appel à commun des tiers lieux », 15 inputs sur 17
+   * n'ont que `positions`. Les lire comme des zéros regroupait les titres de
+   * section en tête au lieu de les intercaler. Cf. `resolveInputOrder`.
+   */
+  positions?: Record<string, string>;
   type: string;
   isRequired?: boolean;
   activeComments?: boolean;
   width?: string;
-  enableMarkdown?: boolean;
+  /**
+   * Éditeur markdown sur un textarea. ACTIF PAR DÉFAUT : seul un `false`
+   * explicite le désactive (cf. `parseCoFormFields`).
+   *
+   * Typé `boolean | string` parce que le parc stocke volontiers ses booléens en
+   * chaînes (`activateLocalCriteria` vaut `"true"` sur des formulaires réels) ;
+   * un `"false"` écrit demain doit désactiver, pas activer.
+   */
+  enableMarkdown?: boolean | string;
+  /**
+   * L'input n'est pas rendu dans le formulaire. Statique (indépendant de
+   * l'utilisateur), contrairement à `isAdminOnly`. Sert à sortir du parcours
+   * de dépôt la partie *instruction* d'un dossier — 42 inputs du parc, dont
+   * les 19 champs de suivi de `fondationTerritorialeDesLumieres` et le
+   * `decide` (multiDecide) des étapes de jury AAP.
+   *
+   * La valeur déjà saisie n'est pas perdue pour autant : le champ absent du
+   * payload, `SaveAnswerAction` fusionne clé par clé et conserve l'existant.
+   */
+  hideInForm?: boolean | string;
+  /**
+   * L'input est **masqué à l'affichage** pour qui n'est pas admin du contexte,
+   * et son écriture est refusée côté serveur (`SaveAnswerAction` strippe la
+   * clé du payload). Ce n'est PAS de la confidentialité : la valeur déjà
+   * enregistrée continue de transiter dans le payload de la réponse, comme
+   * pour les listes place-level et comme dans le legacy.
+   *
+   * Contrairement à `hideInForm`, la décision dépend de l'utilisateur : elle
+   * est prise côté serveur (`Coform::computeAdminOnlyFields`) et arrive au
+   * client fondue dans `access.restrictedFields`. Présent ici pour documenter
+   * le champ tel qu'il est stocké — React ne le lit pas lui-même.
+   */
+  isAdminOnly?: boolean | string;
   conditionalDisplay?: ConditionalDisplay;
   [key: string]: unknown;
 }
@@ -174,6 +217,45 @@ export interface CoFormSubFormInputs {
   id: string;
   formParent: string;
   hasMultiEval?: boolean;
+  /**
+   * Étape masquée — case « Cacher etape » du wizard de config AAP. L'étape
+   * disparaît du parcours ET du sommaire, en réponse comme en lecture, **pour
+   * tout le monde**.
+   *
+   * Écart assumé avec le legacy, qui exempte l'admin de la réponse
+   * (`Formv2::getParamsWizard`) : arbitrage user du 25/08 — une étape cochée
+   * « cachée » l'est pour tous, c'est plus simple à expliquer et à vérifier.
+   * Le legacy ne masque en outre que si une réponse existe déjà ; ici la règle
+   * vaut aussi à la création, sans quoi l'étape apparaîtrait puis
+   * disparaîtrait au premier enregistrement.
+   *
+   * Le drapeau vit dans le doc `aapConfig` (`subForms.<step>.hideStep`) et
+   * n'atteint le client que parce que `Coform::getCompleteFormData` le recopie
+   * — **uniquement dans la branche `aap`/`templatechild`**. Sur un formulaire
+   * non-aap, la projection ne le remonte pas et le drapeau reste inopérant ;
+   * c'est sans conséquence aujourd'hui (0 occurrence hors `aapConfig` en base)
+   * mais ce serait le point à étendre le jour où un form générique en aurait
+   * besoin.
+   *
+   * Typé `boolean | string` par prudence, comme `hideInForm` : le backend
+   * normalise bien en booléen, mais le parse lit via `isTruthyFlag` et rien
+   * n'empêche une écriture directe en base de poser une chaîne.
+   *
+   * Une lecture STRUCTURELLE (où se trouve tel champ, par opposition à quoi
+   * afficher) doit passer `includeHiddenSteps` à `parseCoFormFields` —
+   * cf. `getSharedFinderInfo`.
+   */
+  hideStep?: boolean | string;
+  /**
+   * Case « Cacher etape sur le standalone ». **Volontairement non appliqué** :
+   * le `standAlone` du legacy désigne la page de réponse dédiée
+   * (`survey/views/tpls/forms/standalone/`), qui n'a pas d'équivalent ici. Le
+   * mode « standalone » de site-json est autre chose — une étape que la config
+   * du site demande explicitement par `stepKey` ; y appliquer ce drapeau
+   * viderait une page qu'on vient tout juste de réclamer. Exposé pour que la
+   * donnée soit disponible le jour où un mode équivalent existera.
+   */
+  hideStepStandalone?: boolean | string;
   inputs: Record<string, CoFormInputField>;
 }
 
@@ -547,7 +629,23 @@ export interface CoFormParams {
 }
 
 export interface CoFormData {
-  _id: { $id: string };
+  /**
+   * ⚠️ **Ne pas s'en servir pour identifier le formulaire — utiliser `id`.**
+   *
+   * Le backend sérialise le `MongoId` legacy en `{ "_str": "<24hex>" }`, PAS en
+   * `{ "$id": … }` (mesuré sur `Form.get` pour les formulaires `677e7e38…` et
+   * `6525865c…`). Le type l'a longtemps déclaré `{ $id: string }` et les fixtures
+   * de test reproduisaient ce mensonge : quatre champs de `MultiStepCoForm` lisaient
+   * `_id.$id`, recevaient `undefined`, et échouaient à l'enregistrement sur
+   * « errors.formIdMissing » — vert au typecheck comme aux tests.
+   */
+  _id: { _str: string };
+  /**
+   * Identifiant à utiliser. ⚠️ Il ne vient PAS de la base — les 196 formulaires
+   * `aap` n'ont aucun champ `id` — mais du SDK, qui y réinjecte l'identifiant
+   * demandé. C'est donc la source fiable côté client, et celle que consomment déjà
+   * `CommonTableField` et `UploaderField`.
+   */
   id: string;
   name?: string;
   parent?: CoFormParent | null;
@@ -557,6 +655,24 @@ export interface CoFormData {
   updated?: number;
   params?: CoFormParams | null;
   inputs?: Record<string, CoFormSubFormInputs> | null;
+  /**
+   * Configuration portée par le formulaire PARENT. `multiDecide` y désigne le
+   * type d'input de décision réellement rendu à la place du placeholder
+   * `tpls.forms.ocecoform.multiDecide` — cf. `resolveMultiDecide`.
+   */
+  inputConfig?: { multiDecide?: string } & Record<string, unknown>;
+  /**
+   * Critères de l'input `tpls.forms.aap.evaluation`, portés par le formulaire
+   * PARENT. Le legacy les fait primer sur ceux du document de configuration
+   * partagé quand `activateLocalCriteria` est vrai — ce qui est le cas de 125
+   * des 126 formulaires configurés. Cf. `utils/aapEvaluation.ts`.
+   */
+  evaluationCriteria?: {
+    type?: unknown;
+    criterions?: unknown;
+    activateLocalCriteria?: unknown;
+    whoCanEvaluate?: unknown;
+  } | null;
   type: string;
   profilBannerUrl?: string;
   profilRealBannerUrl?: string;
@@ -588,13 +704,34 @@ export interface CoFormData {
 }
 
 /**
+ * Valeur d'un champ `tags` — liste plate de libellés libres.
+ *
+ * Le legacy écrit `$("#key").val().split(",")`, donc toujours un tableau de
+ * chaînes ; vérifié sur les réponses réelles du formulaire CAE
+ * (`["open source"]`, `["peertube"]`).
+ */
+export type TagsValue = string[];
+
+/**
+ * Config d'un champ `tags`, dérivée de `form.params.<inputKey>`.
+ */
+export interface TagsConfig {
+  /**
+   * Vocabulaire partagé du formulaire (`params.<inputKey>.list`) : les tags
+   * déjà saisis par d'autres répondants, proposés en autocomplétion. Vide
+   * quand le formulaire n'en a pas encore accumulé.
+   */
+  list: string[];
+}
+
+/**
  * Types pour le mapping des champs CoForm vers react-hook-form
  */
 export interface FormFieldMapping {
   name: string; // Nom du champ pour react-hook-form
   label: string;
   type: string; // Type CoForm (text, textarea, tpls.forms.cplx.radioNew, etc.)
-  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "commonTable" | "categorizedCheckbox" | "finder" | "simpleTable" | "uploader" | "timeSlots" | "dynamicFields" | "location" | "sectionTitle" | "sectionDescription" | "unknown";
+  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "commonTable" | "categorizedCheckbox" | "finder" | "simpleTable" | "uploader" | "timeSlots" | "dynamicFields" | "location" | "sectionTitle" | "sectionDescription" | "milestoneList" | "titleSeparator" | "tags" | "selection" | "pourContre" | "aapEvaluation" | "chooseProposal" | "unknown";
   inputType?: string; // Type HTML pour l'input (url, email, tel, etc.) - utilisé quand componentType est "text"
   placeholder?: string;
   info?: string;
@@ -675,6 +812,19 @@ export interface FormFieldMapping {
   commonTableConfig?: CommonTableConfig;
   // Spécifique categorizedCheckbox
   categorizedCheckboxConfig?: CategorizedCheckboxConfig;
+  /**
+   * Spécifique `tags` (`tpls.forms.tags`) — vocabulaire partagé du formulaire.
+   *
+   * Le legacy accumule dans `form.params.<inputKey>.list` chaque tag saisi par
+   * un répondant, et s'en sert comme source d'autocomplétion pour les suivants.
+   * Comme `params` est déjà chargé avec le formulaire, la liste arrive
+   * gratuitement — aucune requête n'est nécessaire pour suggérer.
+   *
+   * Mesuré (2026-08-19) : peuplée sur 40 des 124 inputs `tags` du parc,
+   * médiane 83 entrées, max 166. Vide ailleurs → repli sur l'index global
+   * (`api.searchTags`), qui est la branche non-aap du legacy.
+   */
+  tagsConfig?: TagsConfig;
   /**
    * Si `true`, l'input radio active le mode "évaluation multiple" : la valeur
    * de chaque user est stockée séparément dans `_multiEval.{userId}` au lieu
@@ -865,6 +1015,24 @@ export interface SubFormDataWithMeta {
 export type AllStepsData = Record<string, SubFormData>;
 
 /**
+ * Fichier de la collection `documents`, tel que renvoyé (map keyée par `_id`) dans
+ * `answer.documents`. `subKey` porte le chemin `<subFormId>.<field.name>` du champ
+ * uploader qui l'a créé — c'est le seul moyen fiable de rattacher un document à
+ * SON champ (plusieurs uploaders peuvent coexister dans la même réponse).
+ */
+export interface AnswerDocumentFile {
+  id?: string;
+  name: string;
+  /** Chemin relatif sous `/upload/<moduleId>/` (ex: `answers/<formId>/restricted`) */
+  folder: string;
+  moduleId?: string;
+  subKey?: string;
+  doctype?: string;
+  size?: number;
+  [key: string]: unknown;
+}
+
+/**
  * Données d'une réponse CoForm retournée par l'API (findanswered)
  */
 export interface CoFormAnswer {
@@ -873,7 +1041,19 @@ export interface CoFormAnswer {
   answers: AllStepsData;
   /** ID du formulaire parent */
   form?: string;
-  /** ID de l'utilisateur qui a répondu */
+  /**
+   * ID BRUT du déposant, posé par `FindAnsweredByIdAction` avant tout
+   * remaniement. C'est la seule source fiable pour « qui a déposé ce commun » :
+   * cf. l'avertissement sur `user` juste en dessous.
+   */
+  userId?: string;
+  /**
+   * ⚠️ PAS l'id du déposant en général. Le backend ÉCRASE ce champ par l'entité
+   * résolue pour l'affichage, en prenant d'abord `links.organizations`, puis
+   * `links.answered[0]` (`FindAnsweredByIdAction`). Sur une réponse portée par
+   * une organisation, on y trouve donc l'ORGANISATION, pas la personne.
+   * Pour une comparaison d'auteur, lire `userId`.
+   */
   user?: string | { _id?: string; name?: string; profilMediumImageUrl?: string };
   /** Timestamp de création */
   created?: number;
@@ -883,14 +1063,16 @@ export interface CoFormAnswer {
   draft?: boolean;
   /** Terminé ? */
   finished?: boolean;
-  /** Documents joints */
-  documents?: unknown[];
+  /** Documents joints — Mongo rend indifféremment une map keyée `_id` ou un tableau */
+  documents?: Record<string, AnswerDocumentFile> | AnswerDocumentFile[];
   /** Commentaires */
   comments?: unknown[];
   /** L'utilisateur courant peut-il éditer cette réponse ? (calculé côté serveur) */
   canEdit?: boolean;
   /** Raison du refus d'édition (not_logged_in, not_owner, form_inactive, form_closed) */
   editDeniedReason?: string | null;
+  vote?: VotesRecord;
+  links?: LinksRecord;
 }
 
 // ============================================================================
@@ -1116,4 +1298,30 @@ export interface FinderSearchResult {
     postalCode?: string;
     addressLocality?: string;
   };
+}
+
+type VoteStatus = 'love' | 'like' | 'dislike';
+
+interface VoteDetail {
+  status: VoteStatus;
+  date: Date;
+}
+
+type VotesRecord = Record<string, VoteDetail>;
+
+/**
+ * Métadonnées d'un lien (`canEdit`, `contributors`, `organizations`, `tls`) : le
+ * backend y met ce qu'il veut selon le type. `unknown` plutôt qu'`any` — rien ne
+ * lit ces champs aujourd'hui, et le jour où on le fera, le narrowing sera exigé.
+ */
+interface MetaDetails {
+  [key: string]: unknown;
+}
+
+interface LinksRecord {
+  answered: string[];
+  canEdit: Record<string, MetaDetails>;
+  contributors: Record<string, MetaDetails>;
+  organizations: Record<string, MetaDetails>;
+  tls: Record<string, MetaDetails>;
 }

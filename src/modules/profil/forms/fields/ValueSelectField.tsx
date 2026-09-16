@@ -5,9 +5,8 @@ import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/for
 // simple <p> et rejetait la prop (les autres champs du moteur importent déjà celui-ci).
 import { FormMessage } from "@/modules/formEngine/components/FormMessage";
 import { SelectObject } from "@/components/ui/select-objet";
-import { useCocolight } from "@/hooks/useCocolight";
-import { useCostumListValues } from "@/hooks/useCostumListValues";
-import { capitaliser, costumSlugOf } from "@/lib/costumLists";
+import { useListSources } from "@/hooks/useListSources";
+import { capitaliser } from "@/lib/costumLists";
 
 interface ValueSelectFieldProps<T extends FieldValues> {
   control: Control<T>;
@@ -15,10 +14,14 @@ interface ValueSelectFieldProps<T extends FieldValues> {
   label?: string;
   placeholder?: string;
   placeholderSearch?: string;
-  /** Propositions déjà résolues par le moteur de formulaire (liste STATIQUE du costum). */
+  /** SOCLE déclaré en config (`enum` du champ), déjà résolu par le moteur de formulaire — première
+   *  source, prioritaire sur les listes costum (cf. docstring du composant). */
   options?: string[];
-  /** Nom de la liste déclarée dans `costum.lists` (défaut : le nom du champ). */
-  list?: string;
+  /** Nom de la ou des listes déclarées dans `costum.lists` (défaut : le nom du champ). Plusieurs
+   *  listes sont FUSIONNÉES dans l'ordre déclaré — cas d'un même champ alimenté depuis plusieurs
+   *  collections (parent62 : `themes` est écrit sur `poi` ET sur `events`, donc une recette par
+   *  collection). La forme de chacune (statique ou recette) est détectée automatiquement. */
+  list?: string | string[];
   /** Slug du costum ; par défaut celui du porteur du site. */
   costumSlug?: string;
   /** Sélection multiple (défaut) ou valeur unique. En mono, la valeur stockée est une CHAÎNE. */
@@ -43,9 +46,27 @@ interface ValueSelectFieldProps<T extends FieldValues> {
  * même popover, mêmes hauteurs. Un champ ne doit pas trahir par son allure quel composant l'implémente ;
  * l'unique différence fonctionnelle, la saisie libre, passe par `creatable`.
  *
- * DEUX SOURCES. Une liste STATIQUE arrive par `options`, le chemin ordinaire du moteur de formulaire.
- * Le hook n'est sollicité que si ce chemin repart vide, c'est-à-dire pour une liste DYNAMIQUE, dont seul
- * le serveur peut tirer les valeurs — donc celles réellement employées, fraîches.
+ * SAISIE LIBRE OUVERTE À TOUS (`creatable`, `true` par défaut ; `creatable: false` la ferme). Ce champ
+ * n'ÉCRIT rien : `costum.lists` est en lecture seule depuis site-json. Une valeur saisie vit sur la
+ * fiche, et c'est la recette `distinct` qui la fait remonter aux suivants — une fois la fiche visible
+ * et modérée, gate appliquée par le serveur (`ListValuesAction`, GARDE 3). Une valeur qu'aucune fiche
+ * ne porte encore s'ajoute donc en config (le socle ci-dessous), pas depuis l'application.
+ *
+ * SOURCES — toutes FUSIONNÉES, dans cet ordre de priorité (`useListSources` / `resolveListSources`) :
+ *  1. `options` — l'`enum` DÉCLARÉ dans la config (le moteur de formulaire le résout normalement).
+ *     C'est le SOCLE : les valeurs qu'un site veut proposer d'emblée, même si aucune fiche ne les
+ *     porte encore. Le défaut se déclare donc là où vit le champ, pas en base.
+ *  2. chaque liste de `list`, sous la forme où elle est déclarée — statique (lue en mémoire, telle que
+ *     le costum la porte) ou recette résolue par le serveur
+ *     (`costum/co/listvalues` — les valeurs RÉELLEMENT saisies, ex. `auteurs`/`territoires` sur
+ *     institut-bleu). Abonné aux signaux réactifs natifs du SDK : tout rafraîchissement du carrier met
+ *     ce champ à jour sans reload.
+ *
+ * FUSION, PAS SUBSTITUTION — et c'est un changement délibéré. Le serveur n'était auparavant interrogé
+ * QUE si (1) et (2) étaient vides : un champ à `enum` non vide ne voyait donc JAMAIS les valeurs
+ * réellement employées, et un thème inédit accepté chez l'un restait invisible pour le suivant, qui
+ * retapait la même idée sous une autre graphie. Le dédoublonnage casse/accents et l'ordre de priorité
+ * font que le socle garde sa graphie (donc son libellé) quand la base porte la même valeur autrement.
  */
 export function ValueSelectField<T extends FieldValues>({
   control,
@@ -63,14 +84,11 @@ export function ValueSelectField<T extends FieldValues>({
   required,
   errorTranslate,
 }: ValueSelectFieldProps<T>) {
-  const { entity: carrier } = useCocolight();
-  const slug = costumSlug ?? costumSlugOf(carrier);
-  const statiques = options ?? [];
-  const { data: resultat } = useCostumListValues(slug, list ?? String(name), {
-    enabled: statiques.length === 0,
-  });
-  const dynamiques = resultat?.values ?? [];
-  const valeurs = statiques.length > 0 ? statiques : dynamiques;
+  const listNames = list ?? String(name);
+  // Socle déclaré + liste(s) costum, fusionnés — la forme de chaque liste (statique/recette) est
+  // détectée par le hook, ce champ n'a pas à la connaître. `variants` n'est pas exploité ici : il sert
+  // à INTERROGER un groupe de graphies (filtres), pas à en saisir une.
+  const { values: valeurs } = useListSources(listNames, { declared: options, costumSlug });
 
   // Identité stable tant que le contenu ne bouge pas : `SelectObject` recopie ses `options` dans un
   // état interne à chaque changement de référence.

@@ -49,6 +49,7 @@ const LIST: Record<string, string> = {
   "testimonial.design": "Paire Card+Preview du témoignage (repli code : bubble).",
   "testimonial.quoteField": "Champ serverData de la citation — le héros du témoignage (repli code : description).",
   "testimonial.audioField": "Champ du média audio [{type:audio, url}] → lecteur AudioPlayer (repli code : medias).",
+  "testimonial.imageField": "Champ de l'illustration (bannière card + preview) — repli code : profilMediumImageUrl, puis profilImageUrl, puis la 1re image de medias.",
   "testimonial.badge": "Catégorie : teinte de la bulle + pastille ; colors = map valeur→couleur (var() ou hex), repli palette déterministe.",
   "testimonial.accent": "Accent secondaire (ex. territoire) : point coloré ; colors = map valeur→couleur.",
   "testimonial.facets": "Repères/taxonomies data-driven du témoignage (réutilise le mécanisme facettes générique).",
@@ -273,6 +274,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
 
   "section:searchHeader": {
     "props.headline": "Titre du bandeau (h1 si le searchHeader EST le héro de la page).",
+    "props.headlineFromFilter": "id d'un dropdownFilters dont la valeur sélectionnée REMPLACE le headline (qui reste le repli) — ex. /theme?theme=…. Le filtre peut être hidden ; le titre devient le LIBELLÉ de l'option, à traduire dans chaque langue.",
     "props.headlineClassName": "Override de la couleur du titre — pour un fond fixe sombre où --foreground devient illisible (ex. text-white dark:text-foreground).",
     "props.subheadClassName": "Override de la couleur du sous-titre (chaîne vide pour ne pas forcer text-foreground).",
     "props.filtersClassName": "Override du conteneur flex de la rangée filtres (ex. centrer au lieu d'étaler).",
@@ -330,7 +332,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
   },
   "section:agenda": {
     "props.customHeader": "En-tête teaser avec lien « voir tous » — même convention que searchProStatic.customHeader (home → /evenements).",
-    "props.limit": "Limite d'events par bucket (teaser home) ; absent = tous + « charger plus » pour Passés.",
+    "props.limit": "Plafond d'AFFICHAGE par bucket (teaser) ; absent = tous + « charger plus ». ⚠ PAS la taille du fetch : appliqué APRÈS le partitionnement d'un flux DESC — garder `baseParams.indexStepList` bien au-dessus.",
     "props.showViewToggle": "Toggle Liste/Calendrier (false = teaser figé sur defaultMode). Défaut code : true.",
     "props.showTabs": "Onglets temporels (false = teaser : un seul bucket = defaultTab). Défaut code : true.",
     "props.defaultMode": "Vue par défaut : list (onglets temporels) ou calendar (grille mois maison).",
@@ -340,7 +342,8 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.maxWidth": "Largeur du conteneur. ABSENT = `container` historique (plafond 1536 px), pour une page agenda dédiée. À RENSEIGNER dès que l'agenda est un teaser parmi d'autres sections, sinon il déborde de ses voisines.",
     "props.tabs": "Onglets affichés parmi ongoing/upcoming/past (défaut code : upcoming, ongoing, past).",
     "props.defaultTab": "Onglet initial (défaut code : upcoming).",
-    "props.upcomingWindowMonths": "Fenêtre (mois) du fetch calendrier now→futur (défaut code 12).",
+    "props.upcomingWindowMonths": "Borne haute (mois) du bucket « À venir » : filtre CLIENT sur le flux liste — au-delà, l'event est chargé puis écarté (défaut code 12).",
+    "props.baseParams.indexStepList": "Taille de page du flux LISTE (searchEventsCostum, startDate DESC, les 3 buckets mêlés). Sur un teaser, c'est ELLE qui décide de ce que le bucket peut contenir — pas `limit`.",
     "props.baseParams": "Scope searchEventsCostum — passthrough : sourceKey multi-sources (vide → costum courant) ; defaultTypes/SortBy tolérés mais IGNORÉS (searchType forcé events).",
     "props.filters": "Filtres activés : type + text (backend), tags (client).",
     "props.detailsMode": "Conteneur du détail au clic : drawer (défaut code) ou dialog.",
@@ -390,6 +393,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "tabs[].sections[].rowActions": "Actions par ligne ; défaut code [\"edit\",\"delete\"] ; validate bascule la table en MODE ADMIN (endpoint admin, documents complets, badge + filtre En attente/Validé).",
     "tabs[].sections[].bulkActions": "Actions groupées sur la sélection (lignes chargées seulement) ; défaut code : aucune ; export = CSV côté client des lignes sélectionnées (pas le plancher super-admin de la section export).",
     "tabs[].sections[].create": "Form d'ajout : false (pas de création), \"inherit\" (défaut code : form costum du site pour ce type, sinon standard), \"standard\" forcé, ou clé add-<key> explicite.",
+    "tabs[].sections[].createDefaults": "Valeurs semées dans la modale d'AJOUT de cette section (jamais en édition), par-dessus les défauts du form : ouvre le form sur le sous-type que l'onglet impose déjà, sans cloner un form par sous-type.",
     "tabs[].sections[].edit": "Form d'édition : \"inherit\" (défaut code : résolution publique editModalMatch par-ligne), \"standard\", clé edit-<key> forcée ou false (lecture seule) ; l'entité est rechargée complète avant le form.",
     "tabs[].sections[].status": "⚠ CONTRAT FUTUR : seule sa PRÉSENCE (lue en booléen) active le mode admin — sous-champs non câblés, cascade/notifyEmail seront retirés ; ne rien configurer d'ici l'implémentation (SSBE).",
     "tabs[].sections[].filters": "members : onglets/outils rendus (les requêtes des onglets non listés ne partent pas) ; défaut code : à-valider + admins + recherche — l'onglet « tous » est toujours présent.",
