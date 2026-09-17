@@ -26,7 +26,9 @@ const prefix = (p: string, descs: Record<string, string>): Record<string, string
  * searchPro et searchProStatic ; monté sous `props.list.` dans chaque section.
  */
 const LIST: Record<string, string> = {
-  layout: "Disposition : grid (défaut CÔTÉ CODE) ou timeline (frise verticale — bulle-date sur ligne pointillée, cartes alternées) ; à coupler à defaultSortBy {startDate:-1} ; ignorée en vue détaillée et en mode split.",
+  layout: "Disposition : grid (défaut CÔTÉ CODE), timeline (frise verticale, avec defaultSortBy {startDate:-1}) ou grouped (grille en blocs titrés par groupBy.field) ; ignorée en vue détaillée et en mode split.",
+  groupBy: "Blocs de layout grouped : field = chemin serverData (à projeter dans defaultFields), order = ordre des BLOCS ; fiches sans valeur dans un dernier bloc (emptyLabel).",
+  "groupBy.itemsSortBy": "Tri CLIENT des fiches dans chaque bloc : le backend ne lit que la 1re clé de defaultSortBy. Ne trie que les résultats chargés.",
   columns: "Colonnes de la grille par breakpoint (sm/md/lg/xl, 1-6).",
   "card.type": "Presenter de carte (voir table SKILL) ; ⚠ défaut CÔTÉ CODE : overlay — le schéma dit default mais n'est jamais appliqué.",
   "card.variant": "Surcharge card.type pour le SEUL dispatch visuel (sous-ensemble sans overlay/news/testimonial/resource).",
@@ -53,7 +55,8 @@ const LIST: Record<string, string> = {
   "testimonial.badge": "Catégorie : teinte de la bulle + pastille ; colors = map valeur→couleur (var() ou hex), repli palette déterministe.",
   "testimonial.accent": "Accent secondaire (ex. territoire) : point coloré ; colors = map valeur→couleur.",
   "testimonial.facets": "Repères/taxonomies data-driven du témoignage (réutilise le mécanisme facettes générique).",
-  "resource.design": "Paire Card+Preview de la ressource (repli code : card).",
+  "resource.design": "Look de la ressource : card (repli code), document (ligne qui ouvre le fichier, sinon le lien) ou portrait (personne présentée en entier, non cliquable).",
+  "resource.subtitleField": "Champ du sous-titre lu par le design portrait (ex. fonction) ; pas de repli — absent, pas de sous-titre.",
   "resource.badge": "Catégorie de la ressource : pastille + icône de type ; colors/icons = maps valeur→(couleur|icône lucide) ; repli field=category.",
   "resource.mediasField": "Champ des médias [{type,url,name}] → galerie images, documents, audio, vidéo (repli code : medias).",
   "resource.cityField": "Champ de la ville affichée (repli code : address.addressLocality).",

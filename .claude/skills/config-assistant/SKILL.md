@@ -152,7 +152,12 @@ site à confirmer avec l'utilisateur — ne PAS l'imposer à une petite vitrine 
    + `baseParams.defaultFields` couvrant tous les champs testés par les `when`.
    Disposition : `list.layout: "timeline"` (frise verticale à bulles-dates, carte
    dédiée événement) remplace la grille — à coupler à `defaultSortBy {"startDate": -1}` ;
-   défaut CÔTÉ CODE = grille.
+   `list.layout: "grouped"` + `list.groupBy` découpe la grille en blocs titrés (archive
+   par année…) — le backend ne triant que sur la 1re clé de `defaultSortBy`, un ordre
+   dans les blocs passe par `groupBy.itemsSortBy` ; défaut CÔTÉ CODE = grille.
+   Designs `list.resource.design` : `card` (défaut), `document` (archive de fichiers en
+   lignes), `portrait` (annuaire de personnes, `subtitleField`). Tout champ nommé par
+   `groupBy`/`resource` doit figurer dans `baseParams.defaultFields`.
 5. **Sections raisonnées** : 8-18 types dont des « premium » (`data-observatory`,
    `agenda`, `hero-*`, `features-glass`) — pas 5 sections génériques.
 6. **Visibilité conditionnelle** (`condition`/`visibleIf`/`role`) là où le

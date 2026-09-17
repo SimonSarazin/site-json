@@ -163,6 +163,7 @@ source .env.test && npm run test:e2e
 │   │   ├── i18n-files.test.ts       # Parité des clés fr↔en par namespace + valeurs non vides
 │   │   ├── lcp-preload.test.ts     # Chaîne de preload LCP
 │   │   ├── list-item-rules.test.ts # `list.itemRules` de toutes les configs
+│   │   ├── list-projected-fields.test.ts # Champs lus par l'affichage ⊂ `baseParams.defaultFields`
 │   │   ├── module-routes.test.ts   # Préfixes de routes de modules (dérivés du code)
 │   │   ├── no-config-comments.test.ts # Pas de clé de commentaire dans les configs
 │   │   ├── no-import-star-lucide.test.ts  # Anti-régression tree-shaking lucide-react
@@ -785,6 +786,16 @@ Scanne statiquement tous les fichiers `src/` (`.ts`, `.tsx`, `.js`, `.jsx`) pour
 - Garde-fou : vérifie que le scan a effectivement trouvé plus de 100 fichiers (détecte un walk silencieusement vide)
 
 Voir [CLAUDE.md§Known Issues 1](../CLAUDE.md#known-issues--gotchas) pour le contexte : ce pattern défait le tree-shaking et injecte ~1 MB d'icônes dans le chunk concerné.
+
+#### Champs lus par l'affichage projetés (`tests/preflight/list-projected-fields.test.ts`)
+
+Une section qui déclare `baseParams.defaultFields` ne reçoit QUE ces champs : un champ nommé par la
+présentation mais non projeté vaut `undefined`, sans erreur (sous-titre `portrait` vide, tout rangé dans le
+bloc « Non classé », tri dans les blocs sans effet). Vérifie, pour chaque config de `sites.json`, que les
+champs EXPLICITEMENT déclarés — `list.groupBy.field`, `list.groupBy.itemsSortBy.field`, les `*Field`, le
+`badge.field` et les `facets[].field` de `list.resource` / `props.resource` — sont projetés (la racine d'un
+chemin pointé suffit). Les replis de code (`titleField` → `name`…) ne sont pas vérifiés. Vérifié en échec
+sur deux fautes injectées.
 
 #### Règles de rendu par item (`tests/preflight/list-item-rules.test.ts`)
 

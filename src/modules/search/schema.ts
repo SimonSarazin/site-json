@@ -379,10 +379,18 @@ export type TestimonialConf = z.infer<typeof TestimonialConfSchema>;
  * par `useResourceData` (défauts génériques : name/description/created/profilMediumImageUrl/urls/address).
  */
 export const ResourceConfSchema = z.object({
-  /** Look — sélectionne `CardResource{Design}` + `PreviewResource{Design}` (repli code : "card"). */
-  design: z.enum(["card"]).default("card"),
+  /** Look — sélectionne `CardResource{Design}` + `PreviewResource{Design}` (repli code : "card").
+   *  `document` : ligne compacte qui ouvre directement le document hébergé, sinon le lien — pour une
+   *  archive de publications où chaque entrée n'est qu'un titre et un fichier.
+   *  `portrait` : une PERSONNE présentée en entier — photo ronde (initiales à défaut), nom,
+   *  `subtitleField`, puis la présentation markdown (`descriptionField`) et ses liens. Carte non
+   *  cliquable : pas de preview. */
+  design: z.enum(["card", "document", "portrait"]).default("card"),
   /** Champ du titre. Repli code : "name". */
   titleField: z.string().optional(),
+  /** Champ du sous-titre (ex. la fonction d'une personne), lu par `portrait`. Pas de repli : absent =
+   *  pas de sous-titre — un repli sur la description répéterait le texte affiché juste dessous. */
+  subtitleField: z.string().optional(),
   /** Champ de la description (extrait card / markdown preview). Repli code : "description". */
   descriptionField: z.string().optional(),
   /** Champ de la date. Repli code : "created". */
@@ -592,8 +600,26 @@ export const ListConfSchema = z.object({
    * posée sur la ligne, cartes alternées gauche/droite en desktop, colonne unique avec ligne à
    * gauche en mobile. Pensée pour des événements triés par `baseParams.defaultSortBy:
    * {"startDate": -1}`. Ignorée en vue détaillée (`isDetailedView`) et en mode split (`onFocusItem`).
+   * `"grouped"` : la grille découpée en blocs titrés par la valeur de `groupBy.field` (une année,
+   * un territoire…) — pour une archive qui se parcourt par période plutôt que d'un seul tenant.
    */
-  layout: z.enum(["grid", "timeline"]).optional(),
+  layout: z.enum(["grid", "timeline", "grouped"]).optional(),
+  /**
+   * Regroupement de `layout: "grouped"`. `field` : chemin pointé dans `serverData`. `order` : ordre
+   * des GROUPES (défaut `asc`). Les items d'un groupe gardent l'ordre du serveur, sauf `itemsSortBy`
+   * — nécessaire dès que cet ordre tient à une 2e clé : le backend ne lit que la PREMIÈRE clé de
+   * `baseParams.defaultSortBy`. `itemsSortBy` ne trie que les résultats chargés. Les fiches sans
+   * valeur forment un dernier bloc, libellé `emptyLabel`, plutôt que d'être écartées en silence.
+   */
+  groupBy: z.object({
+    field: z.string(),
+    order: z.enum(["asc", "desc"]).optional(),
+    itemsSortBy: z.object({
+      field: z.string(),
+      order: z.enum(["asc", "desc"]).optional(),
+    }).optional(),
+    emptyLabel: LocalizedString.optional(),
+  }).optional(),
   columns: z.object({
     lg: z.number().int().min(1).max(6).optional(),
     md: z.number().int().min(1).max(6).optional(),
