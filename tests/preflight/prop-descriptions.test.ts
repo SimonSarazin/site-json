@@ -64,6 +64,7 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
     meta: 10,
     page: 17,
     profiles: 25,
+    "section:action-tiles": 5,
     "section:agenda": 15,
     "section:cardCountCT": 4,
     "section:data-observatory": 4,

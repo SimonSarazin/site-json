@@ -309,6 +309,14 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.scope": "Périmètre compté. auto (défaut code) = comportement historique : le $or est élargi à la localité ET au slug du costum — mesuré à 530 au lieu de 49. costum = strictement le costum ; config = le $or écrit tel quel.",
   },
 
+  "section:action-tiles": {
+    "props.columns": "Colonnes par breakpoint (mobile = 1) ; sans lui, défaut code sm:2 lg:4. À régler quand le nombre de tuiles ne tombe pas juste (3 → lg:3).",
+    "props.size": "Taille des tuiles : md (défaut code, rendu historique : titre 14 px, icône 16 px) ou lg (titre 18 px, sous-titre 16 px, icône 32 px, contenu calé en haut).",
+    "props.width": "Largeur de la grille : default (1024 px max) ou wide (1280 px max) — pour 4 tuiles et plus en size lg, sinon les titres passent sur 3 lignes.",
+    "props.actions[].background": "Fond PLEIN de la tuile (couleur CSS, var(--jeton) recommandé) : remplace la teinte à 20 % de color, fixe en clair comme en sombre.",
+    "props.actions[].textColor": "Texte et icône d'une tuile à fond plein — obligatoire en pratique avec background, contraste AA (4,5:1) à mesurer.",
+  },
+
   "section:thematics": {
     "props.title": "Titre de la grille des filières (lues depuis serverData.filiere de l'entité costum — aucune requête).",
     "props.emptyMessage": "Message affiché quand l'entité n'a pas de filières.",

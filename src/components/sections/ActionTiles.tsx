@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link } from "react-router";
 import { buildGridColsClass } from "./responsiveGridCols";
+import { solidTileStyle, tileSizeClasses, tilesContainerWidth } from "./actionTileStyle";
 
 interface ActionTilesSectionProps {
     id?: string;
@@ -47,7 +48,7 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
         return svg.replace("<svg", `<svg class="${className}"`);
     };
 
-    const renderIcon = (icon: string, colorClass: string) => {
+    const renderIcon = (icon: string, colorClass: string, sizeClass: string) => {
         if (isSvgIcon(icon)) {
             const sizeInPixels = getSvgSize(icon);
             const svgWithSizeClass = ensureSvgHasClass(icon, getSizeClass(sizeInPixels));
@@ -64,7 +65,7 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
         return (
             <DynamicIcon
                 name={icon as IconName}
-                className={`w-8 h-8 ${colorClass}`}
+                className={`${sizeClass} ${colorClass}`}
             />
         );
     };
@@ -109,6 +110,9 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
         eco: { button: "bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/30 hover:border-emerald-500/50", icon: "text-emerald-500" },
     };
 
+    const tileSize = tileSizeClasses(props.size);
+    const containerWidth = tilesContainerWidth(props.width);
+
     const tileStyle = (color?: string) => TILE_STYLES[color ?? ""] ?? TILE_STYLES.primary;
 
     const getButtonClasses = (color?: string) => tileStyle(color).button;
@@ -132,7 +136,7 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
 
     return (
         <section id={id} className={`px-4 ${sectionBg} py-16 `}>
-            <div className="container mx-auto max-w-5xl">
+            <div className={`container mx-auto ${containerWidth}`}>
                 <div className="text-center mb-10">
                     {props.headline && (
                         <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
@@ -147,25 +151,33 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
                 </div>
 
                 <div className={`grid ${gridColsClass} gap-4`}>
-                    {props.actions.map((action, index) => (
-                        <Link key={index} to={action.href}>
-                            <Button
-                                size="lg"
-                                // `whitespace-normal` : la base du Button pose `whitespace-nowrap`,
-                                // qui empêche titre et sous-titre de passer à la ligne — sur mobile,
-                                // un sous-titre plus large que l'écran débordait de la tuile.
-                                className={`h-auto w-full py-6 flex flex-col items-center gap-3 text-foreground border transition-all whitespace-normal text-center ${getButtonClasses(action.color)}`}
-                            >
-                                {renderIcon(action.icon, getIconColorClass(action.color))}
-                                <span className="font-semibold">{t(action.title)}</span>
-                                {action.subtitle && (
-                                    <span className="text-xs text-muted-foreground">
-                                        {t(action.subtitle)}
-                                    </span>
-                                )}
-                            </Button>
-                        </Link>
-                    ))}
+                    {props.actions.map((action, index) => {
+                        // Fond plein (`background`) : le style en ligne remplace la teinte de thème, et
+                        // icône comme sous-titre héritent de `textColor` au lieu des couleurs du thème.
+                        const solid = solidTileStyle(action.background, action.textColor);
+                        return (
+                            // `h-full` sur le lien et la tuile : toutes les tuiles d'une rangée prennent la
+                            // hauteur de la plus haute, quelle que soit la longueur de leurs textes.
+                            <Link key={index} to={action.href} className="h-full">
+                                <Button
+                                    size="lg"
+                                    style={solid}
+                                    // `whitespace-normal` : la base du Button pose `whitespace-nowrap`,
+                                    // qui empêche titre et sous-titre de passer à la ligne — sur mobile,
+                                    // un sous-titre plus large que l'écran débordait de la tuile.
+                                    className={`h-full w-full ${tileSize.box} flex flex-col items-center gap-3 text-foreground border transition-all whitespace-normal text-center ${solid ? "hover:brightness-95" : getButtonClasses(action.color)}`}
+                                >
+                                    {renderIcon(action.icon, solid ? "" : getIconColorClass(action.color), tileSize.icon)}
+                                    <span className={tileSize.title}>{t(action.title)}</span>
+                                    {action.subtitle && (
+                                        <span className={solid ? tileSize.subtitle : `${tileSize.subtitle} text-muted-foreground`}>
+                                            {t(action.subtitle)}
+                                        </span>
+                                    )}
+                                </Button>
+                            </Link>
+                        );
+                    })}
                 </div>
             </div>
         </section>

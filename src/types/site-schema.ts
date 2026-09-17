@@ -526,6 +526,11 @@ export const ActionTilesSchema = z.object({
     // Colonnes par breakpoint (mobile = 1). Sans lui : défaut sm:2 lg:4 (idéal
     // pour 4/8 tuiles). À régler quand le compte ne tombe pas sur 4 (ex. 3 → lg:3).
     columns: ResponsiveColumns.optional(),
+    /** Taille des tuiles : `md` (défaut : titre 14 px, sous-titre 12 px, icône 16 px) ou `lg` (18 px, 16 px,
+     *  icône 32 px, marges verticales élargies, contenu calé en haut pour aligner les icônes d'une rangée). */
+    size: z.enum(["md", "lg"]).optional(),
+    /** Largeur de la grille : `default` (1024 px max) ou `wide` (1280 px max), pour 4 tuiles et plus en `lg`. */
+    width: z.enum(["default", "wide"]).optional(),
     actions: z.array(
       z.object({
         icon: z.string(),
@@ -546,6 +551,13 @@ export const ActionTilesSchema = z.object({
           // alias historiques
           "turquoise", "cyan-bright", "teal", "amber", "eco",
         ]).optional(),
+        /**
+         * Fond PLEIN de la tuile — couleur CSS, `var(--jeton)` recommandé. Remplace la teinte à 20 % de
+         * `color`. Fixe en clair comme en sombre : fournir `textColor`, dont le contraste est à vérifier.
+         */
+        background: z.string().optional(),
+        /** Couleur du texte et de l'icône d'une tuile à fond plein (`background`). */
+        textColor: z.string().optional(),
       })
     ),
   }),

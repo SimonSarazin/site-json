@@ -1799,13 +1799,22 @@ export const ActionTilesSchema = z.object({
     subhead: LocalizedString.optional(),
     variant: z.enum(["primary", "accent"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    columns: ResponsiveColumns.optional(),
+    size: z.enum(["md", "lg"]).optional(),
+    width: z.enum(["default", "wide"]).optional(),
     actions: z.array(
       z.object({
         icon: z.string(),
         title: LocalizedString,
         subtitle: LocalizedString.optional(),
         href: z.string(),
-        color: z.enum(["primary", "turquoise", "amber", "cyan-bright", "teal", "accent", "eco", "chart-2"]).optional(),
+        color: z.enum([
+          "primary", "accent", "destructive",
+          "chart-1", "chart-2", "chart-3", "chart-4", "chart-5",
+          "turquoise", "cyan-bright", "teal", "amber", "eco", // alias historiques
+        ]).optional(),
+        background: z.string().optional(),
+        textColor: z.string().optional(),
       })
     ),
   }),
@@ -1818,7 +1827,15 @@ export const ActionTilesSchema = z.object({
 | `subhead`  | `LocalizedString?` | Sous-titre                       |
 | `variant`  | `"primary" \| "accent"` | Tonalité des décorations       |
 | `bg`       | `enum`    | Couleur de fond                          |
-| `actions`  | `array`   | Boutons d'action (icon, title, subtitle, href, color) |
+| `columns`  | `ResponsiveColumns?` | Colonnes par breakpoint (défaut sm:2 lg:4) |
+| `size` | `"md" \| "lg"` | Taille des tuiles : `md` (défaut : titre 14 px, sous-titre 12 px, icône 16 px) ou `lg` (18 px, 16 px, icône 32 px, marges verticales élargies, contenu calé en haut pour aligner les icônes d'une rangée) |
+| `width` | `"default" \| "wide"` | Largeur de la grille : `default` (1024 px max) ou `wide` (1280 px max) |
+
+Les tuiles d'une même rangée ont toutes la hauteur de la plus haute.
+| `actions`  | `array`   | Boutons d'action (icon, title, subtitle, href, color, background, textColor) |
+| `actions[].color` | `enum?` | Teinte de la tuile à 20 % — jeton du thème (`primary` par défaut) |
+| `actions[].background` | `string?` | Fond PLEIN (couleur CSS, `var(--jeton)` recommandé) : remplace la teinte de `color`. Fixe en clair comme en sombre |
+| `actions[].textColor` | `string?` | Texte et icône d'une tuile à fond plein — contraste à vérifier (AA ≥ 4,5:1) |
 
 ---
 
