@@ -244,7 +244,10 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
               />
             </NavLink>
 
-            <div className="hidden xl:flex items-center justify-center gap-12">
+            {/* Écart entre entrées resserré de `xl` à `2xl` : à 1280px, 6 entrées de premier niveau espacées de
+                48px (`gap-12`) poussaient le groupe d'actions (recherche, thème, langue, connexion) 3px hors
+                de l'écran — débordement horizontal mesuré sur toutes les pages. 32px jusqu'à 1535px, 48px au-delà. */}
+            <div className="hidden xl:flex items-center justify-center gap-8 2xl:gap-12">
               {navItemsToDisplay.map((item, idx) => {
                 const isActive = isNavItemActive(item.path);
                 const hasChildren = !!item.children?.length;
