@@ -742,8 +742,8 @@ via `header.utilities.search` (⌘K, `CommandTriggerButton`, inchangé).
 | `audit:config` parent62 | ✅ RAS |
 | `typecheck` | ✅ 0 erreur |
 | `lint` | ✅ **0 erreur** / 18 warnings — **0 sur les fichiers du lot** (tous les warnings sont dans `EntityFormModal.tsx`, pré-existant hors périmètre) |
-| `test:unit` (suite complète, inclut `test:preflight`) | ✅ **2 227/2 229** — 2 échecs restants, **pré-existants et hors périmètre** (`bundle-size` : bundle principal **2,56 Mo** > 2 Mo ; `.claude/agents/siteforge-config-auditor.md` manquant — confirmés identiques sur `HEAD` via `git stash`) |
-| `test:integration` (SSR) | ❌ **2 échecs / 56 tests** dans `config-driven-ssr.test.ts` (title + footer copyright) — **pré-existants et sans rapport avec ce chantier** : le test lit ses valeurs attendues dans `config.prod.json` (générique, repli par défaut de `SITE_CONFIG_PATH`, non défini dans cet environnement) alors que le serveur SSR réel sert `config.prod.parent62.json` (`VITE_SLUG=parent62` dans `.env`) — mismatch d'environnement de test, **confirmé identique sur `HEAD`** via `git stash` (2/56 déjà rouges avant ce chantier) |
+| `test:unit` (suite complète, inclut `test:preflight`) | ✅ **2 227/2 229** — 2 échecs restants, **pré-existants et hors périmètre** (`bundle-size` : bundle principal **2,56 Mo** > 2 Mo ; `.claude/agents/siteforge-config-auditor.md` manquant — confirmés identiques sur `HEAD`) |
+| `test:integration` (SSR) | ❌ **2 échecs / 56 tests** dans `config-driven-ssr.test.ts` (title + footer copyright) — **pré-existants et sans rapport avec ce chantier** : le test lit ses valeurs attendues dans `config.prod.json` (générique, repli par défaut de `SITE_CONFIG_PATH`, non défini dans cet environnement) alors que le serveur SSR réel sert `config.prod.parent62.json` (`VITE_SLUG=parent62` dans `.env`) — mismatch d'environnement de test, **confirmé identique sur `HEAD`** (2/56 déjà rouges avant ce chantier) |
 | `e2e` ciblé (`npx playwright test e2e/parent62.spec.ts`) | ❌ **2 échecs / 8** (6 ✅) — `page.locator("nav.fixed")` se résout ; les 2 mêmes tests restent rouges pour des raisons **distinctes** (pas des bugs de composant) — « Professionnels » désormais dans le header (contredit la décision du 23/07) et assertion `bg-background/90` écrite pour l'ancien header `transparent-scroll`, pas pour la mécanique d'opacité de `stacked`. Le test « accueil : bandeau à la une » (nouveau du 06/08) passe |
 
 ---
@@ -1735,7 +1735,7 @@ Mesurés le 03/09, APRÈS le merge du chantier « listes » (§9undecies→§9qu
 | Gate | Résultat |
 |---|---|
 | `typecheck` | ✅ 0 erreur |
-| `lint` (suite complète) | ✅ 0 erreur, 22 warnings — **comptage identique avec et sans ce lot** (vérifié par `git stash`), donc aucun introduit |
+| `lint` (suite complète) | ✅ 0 erreur, 22 warnings — **comptage identique avec et sans ce lot** (vérifié sur `HEAD`), donc aucun introduit |
 | `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ **46 pages, 161 sections** |
 | `audit:config --file config.prod.parent62.json --json` | ✅ RAS (0 constat) |
 | `test:unit` (suite complète) | ✅ **2 945 passés** / 2 952 — 1 échec **pré-existant sans rapport** (`site-assets` : dossier vide `public/images/transiter`, reproduit sans ce lot), 6 skip |
@@ -2447,7 +2447,7 @@ point de dette à part entière — soit par un travail de bundle, soit en actan
 
 ## 9sexvicies. Impacts — accueil resserré, actions admin sur les actualités, pages du réseau reprises à la source, Mois de la Parentalité (09-15/09)
 
-> **Réconcilié avec `main` le 11/09** (`git stash apply` sur `002e71ad`, la branche `parents62` étant
+> **Réconcilié avec `main` le 11/09** (sur `002e71ad`, la branche `parents62` étant
 > alors à jour avec `main`). **Un seul conflit** : ce document — les deux lots ajoutaient une section
 > d'impacts au même endroit. `config.prod.parent62.json` a fusionné sans heurt, les deux lots touchant
 > des pages disjointes : `/reseau`, `/charte`, `/mois-parentalite` et l'accueil d'un côté,
@@ -2752,7 +2752,7 @@ totaux ci-dessus sont la somme de cinq exécutions ciblées.
 > **Piège d'outillage — ce document.** Une substitution Python bornée par `index()` sur un libellé de
 > ligne présent **plusieurs fois** (`| \`test:unit\` (suite complète) |`) a visé la mauvaise table et
 > supprimé ~1 800 lignes, soit toutes les sections §9sexies à §9quinvicies. Reconstruit depuis
-> `git show HEAD:` et `git show stash@{0}:`, les deux sources intactes. **Leçon : sur un document de
+> `git show HEAD:` et la copie de travail sauvegardée, les deux sources intactes. **Leçon : sur un document de
 > 2 800 lignes, ancrer une substitution sur une chaîne dont l'unicité a été VÉRIFIÉE** (`count() == 1`),
 > jamais sur le premier `index()` venu.
 
@@ -3065,11 +3065,6 @@ l'invitation des 6 autres coordinations et le champ `territoires` sur les fiches
 > qu'on n'a pas créé n'est pas une réparation. À trancher par qui l'a posé — le déclarer, le
 > supprimer, ou l'inscrire dans `KNOWN_UNCLAIMED`.
 
-> **Le lot « agenda » n'est PAS dans l'arbre de travail.** `eventDateSpan.ts`, son test et la reprise
-> de `CardEvent` (affichage des dates de début ET de fin) dorment dans `stash@{0}` (« On parents62 »).
-> Rien n'est perdu, mais rien n'est actif non plus : à réappliquer avant de commiter ce lot, sinon les
-> plages de dates de l'agenda restent au comportement d'avant.
-
 Lot **non commité**.
 
 ---
@@ -3203,6 +3198,23 @@ Pour que l'aperçu de saisie reste fidèle à la publication, l'aperçu de l'**�
 **Périmètre** : d'autres affichages passent encore par `renderMarkdown` et échappent le HTML brut —
 présentation de profil (`ProfileAbout`), modales de ressource, d'événement et génériques. Aucun contenu
 concerné n'y a été constaté.
+
+### 9octovicies.5ter Cartes d'événement : dates de début et de fin
+
+Une carte d'événement (`CardEvent`, cible « Événements » de `/recherche`) n'affichait que sa date de début :
+« Mois de la parentalité » se lisait « 1 oct. 2026 ». Un événement de plusieurs jours affiche désormais ses
+deux bornes, en taisant à gauche ce que la droite répète :
+
+| Événement | Affichage |
+|---|---|
+| un seul jour | « 1 » · « oct. 2026 » |
+| même mois | « 1 – 31 » · « oct. 2026 » |
+| deux mois | « 28 sept. – 3 » · « oct. 2026 » |
+| deux années | « 30 déc. 2026 – 2 » · « janv. 2027 » |
+
+Un créneau de nuit de moins de 24 h (`21:00` → `01:00`) reste un seul jour. Logique pure dans
+`src/modules/search/lib/eventDateSpan.ts` (`porteeDate`, `libellesDate`), testée en locale française.
+Vérifié sur `/recherche` : « Mois de la parentalité » affiche **1 – 31 oct. 2026**.
 
 ### 9octovicies.6 Prérequis de mise en production
 
