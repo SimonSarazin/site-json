@@ -3216,6 +3216,78 @@ Un créneau de nuit de moins de 24 h (`21:00` → `01:00`) reste un seul jour. L
 `src/modules/search/lib/eventDateSpan.ts` (`porteeDate`, `libellesDate`), testée en locale française.
 Vérifié sur `/recherche` : « Mois de la parentalité » affiche **1 – 31 oct. 2026**.
 
+### 9octovicies.5quater Accueil : bloc « Vous êtes… »
+
+Le bloc ouvre désormais l'accueil, avant la rangée « Territoires » / « À la une ».
+
+| Case | Texte | Couleur |
+|---|---|---|
+| Parent | « Trouvez du soutien, des activités et des témoignages de parents. » | **aplat `#1eae98`**, texte et icône **noirs** — contraste **7,56:1** (AAA), clair comme sombre |
+| Professionnel·le ou bénévole | « Référencez vos actions, rejoignez le réseau et suivez l'agenda de votre territoire » | teinte turquoise inchangée |
+
+La case Parent était grise : sa teinte à 20 % du `primary` clair (marine peu saturé). Les couleurs sont
+deux jetons de marque de `index-parent62.css`, `--p62-vert` et `--p62-vert-encre`, fixes en clair et en
+sombre. La section `action-tiles` accepte pour cela, par case, `background` (fond plein) et `textColor`,
+optionnels : les 9 autres usages du parc gardent leur rendu (doc/05).
+
+### 9octovicies.5quinquies Page « Vous êtes parent » (`/parents`)
+
+- **Texte principal** : le bandeau sous le titre porte désormais « Être parent, ça se partage. Le réseau
+  rassemble les acteurs du soutien à la parentalité du département : trouvez une action près de chez vous,
+  écoutez ce que d'autres parents traversent, ou venez simplement échanger. » Le bloc HTML qui répétait ce
+  texte sous le bandeau est supprimé, ainsi que l'ancien sous-titre « Des lieux, des rencontres… ».
+- **Cases « Par où commencer ? »** : quatre cases, sur 4 colonnes dès 1024 px (2 sur tablette, 1 sur mobile), toutes en aplat
+  `#1eae98`, texte et icône noirs (7,56:1, AAA), avec les jetons de la case Parent de l'accueil. Grille élargie
+  (1 280 px max), cases de même hauteur, contenu calé en haut pour aligner icônes et titres ; titre 18 px,
+  sous-titre 16 px, icône 32 px.
+
+| Case | Sous-texte | Lien |
+|---|---|---|
+| Retrouvez des témoignages de parents du Pas-de-Calais | Des audios et des écrits pour découvrir leurs réalités. | `/temoignages` |
+| Trouver une action près de chez moi | Mise en place par les partenaires du territoire | `/recherche` (actions, public parents) |
+| Voir l'agenda | La semaine ou le weekend, découvrez les actions proches de chez vous | `/agenda` |
+| **Ressources** (nouvelle) | Retrouvez ici des outils, des sites ressources et des contacts de partenaires | `/ressources` |
+
+Taille et largeur viennent de deux options de la section `action-tiles`, `size: "lg"` et `width: "wide"` ;
+sans elles, les autres usages du parc et l'accueil parent62 gardent leur rendu (doc/05). La hauteur égale des
+cases d'une rangée vaut pour tout le parc : vérifié sur l'accueil et `/pro` de parent62 et sur l'accueil de
+rezo-sante-reunion, où seules des cases trop courtes s'allongent. Le lien Ressources est
+relatif : il suit le domaine où tourne le site.
+
+### 9octovicies.5sexies Page « Vous accompagnez des familles » (`/pro`)
+
+- **Texte principal** : le bandeau sous le titre porte désormais « Le réseau facilite l'interconnaissance entre
+  acteurs, la mise en réseau et la visibilité des actions menées auprès des familles. » Le bloc HTML placé sous
+  le bandeau (« … Référencez vos actions et événements, et appuyez-vous sur les paroles de parents pour nourrir
+  vos pratiques. ») est supprimé, ainsi que l'ancien sous-titre « Professionnel·les et bénévoles de la
+  parentalité… ».
+- **Cases « Par où commencer ? »** : même mise en forme que sur `/parents` (`size: "lg"`, `width: "wide"`,
+  4 colonnes dès 1024 px, 2 sur tablette, 1 sur mobile), dans la couleur de la case « Professionnel·le ou
+  bénévole » de l'accueil (`color: "accent"`). Contraste mesuré : titre 13,04:1 et sous-titre 5,04:1 en clair,
+  10,14:1 et 4,9:1 en sombre (AA).
+
+| Case | Sous-texte | Lien |
+|---|---|---|
+| Référencer une action | Faites connaître vos initiatives | `/recherche` (actions) |
+| Rejoindre le réseau | Structures et professionnel·les | `/communaute` |
+| **Zoom sur les ressources départementales et nationales** (ex « Explorer les événements pro ») | Colloques, appels à projets, offres d'emploi… | `/recherche` (événements, public pro), inchangé |
+| Écouter les parents | Paroles recueillies par le réseau et ses partenaires. | `/temoignages` |
+
+### 9octovicies.5septies Vérifications des cases (accueil, `/parents`, `/pro`)
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` | ✅ **51 pages · 174 sections** (les deux blocs HTML d'introduction de `/parents` et `/pro` en moins) |
+| `audit:config` | ✅ parent62 — RAS |
+| `config:render` | ✅ parent62 ; et les 6 autres sites qui emploient `action-tiles` : rezo-sante-reunion, rezo-la-mer, institut-bleu, cyber-reunion et eXtremeDefiAdeme rendent chaque page. nos-commune rend son accueil (qui porte les cases) ; sa page `/manifeste`, un seul bloc HTML et une config que le lot ne touche pas, répond 404 |
+| `test:unit` (préflight compris) | ✅ **4 553 tests**, 3 échecs **étrangers au lot** : `site-assets`, `ProseContent — césure` et `bundle-size` |
+| `test:integration` | ✅ `config-driven-ssr` avec `SITE_CONFIG_PATH=./config.prod.parent62.json` : **98/98**. Suite complète non relancée : sur 7 Go, elle dépasse la mémoire disponible quand le serveur de dev tourne |
+| `test:e2e` ciblé (`parent62.spec.ts`) | ✅ **2 nouveaux tests** sur `/parents` et `/pro` à 1 280 px (4 cases sur une rangée, même hauteur, icônes alignées) : rouges sans la hauteur égale (« même hauteur ») et sans le calage en haut (« icônes alignées »), verts avec. 11/14 au total : les 3 échecs (`/blog`, `/zoomcat`, carrousel « à la une ») tiennent à la base MongoDB locale arrêtée — le backend répond `MongoConnectionException`, ces pages n'ont aucune donnée |
+| `typecheck` · `lint` | ✅ · ✅ **0 message** sur les fichiers du lot |
+| Gardes vérifiées en échec | ✅ préflight `prop-descriptions` : le bloc `section:action-tiles` ajouté au registre sans plancher de couverture fait rougir « aucun bloc hors ratchet » |
+| Écran | ✅ 360, 700, 1 024, 1 280 et 1 536 px, clair et sombre, sans débordement. Contrastes : case Parent de l'accueil et cases de `/parents` **7,56:1** ; cases de `/pro` titre **13,04:1** et sous-titre **5,04:1** en clair, **10,14:1** et **4,9:1** en sombre. Leurs icônes turquoise tiennent **1,54:1** en clair (décoratives : le titre porte le sens) |
+| Portée inter-sites | ✅ `size`, `width`, `background`, `textColor` : optionnels, employés par parent62 seul ; sans eux, classes identiques à l'historique (test unitaire). **La hauteur égale par rangée vaut pour les 7 sites** : sur l'accueil de rezo-sante-reunion, deux cases sur cinq dépassaient de 16 px, les cinq sont désormais alignées |
+
 ### 9octovicies.6 Prérequis de mise en production
 
 | # | Prérequis | Pourquoi | Qui |
@@ -3244,7 +3316,7 @@ Vérifié sur `/recherche` : « Mois de la parentalité » affiche **1 – 31 oc
 | Écran | ✅ `/inforeso` (ordre dans l'année), annuaire en clair, sombre et 360 px, sans débordement. Contraste de l'annuaire : fonction **8,16:1** (clair) / **12,28:1** (sombre), texte **5,64:1** / **7,01:1** |
 | Portée inter-sites | ✅ `grouped`, `groupBy`, `document`, `portrait`, `subtitleField` : optionnels, utilisés par parent62 seul. Le `lazy` de `vite-preload` concerne aussi les cartes `resource` de **institut-bleu, rezo-sante-reunion, maison-sport-sante-la-tampon, sport-sante-bien-etre** |
 
-Lot **non commité**.
+Lot commité le 17/09/2026.
 
 ---
 
