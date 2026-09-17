@@ -1671,7 +1671,11 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
         // « Invalid input: expected object, received string » s'affichait sous le
         // champ dès l'ouverture d'un formulaire vierge. Le `.optional()` du
         // schéma ne rattrape rien, car `""` n'est pas `undefined` ; et pour un
-        // champ requis (le cas courant) il n'y a même pas d'`optional`.
+        // champ requis (le cas courant) il n'y a même pas d'`optional`. Le composant
+        // ne sème rien au montage (à dessein : il ne doit pas salir le formulaire),
+        // donc la valeur vide se construit ICI — et ici seulement : une seconde
+        // clause identique, héritée d'une fusion, était du code mort (esbuild :
+        // « This case clause will never be evaluated »).
         case "categorizedCheckbox":
           defaultValues[field.name] = { list: [], sublist: {} } satisfies CategorizedCheckboxValue;
           break;
@@ -2085,6 +2089,19 @@ export function normalizeAnswerData(
       // sert de baseline react-hook-form, donc le formulaire ne naît pas sale.
       if (field.componentType === "dynamicFields" && field.name in subFormData) {
         subFormData[field.name] = seedDynamicRows(field, subFormData[field.name]);
+        continue;
+      }
+
+      // `categorizedCheckbox` : une réponse vide revient en `[]` ou `""` selon
+      // l'ancienneté de la donnée, formes que le schéma rejette. On rend la
+      // valeur conforme dès la lecture — jamais une forme à moitié comprise.
+      if (field.componentType === "categorizedCheckbox" && field.name in subFormData) {
+        const brut = subFormData[field.name];
+        const conforme =
+          isPlainObject(brut) && Array.isArray((brut as { list?: unknown }).list);
+        subFormData[field.name] = conforme
+          ? { sublist: {}, ...(brut as Record<string, unknown>) }
+          : { list: [], sublist: {} };
         continue;
       }
 

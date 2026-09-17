@@ -1348,6 +1348,7 @@ export const TestimonialConfSchema = z.object({
   dateField: z.string().optional(),
   subtitleField: z.string().optional(),
   audioField: z.string().optional(),
+  imageField: z.string().optional(),
   badge: z.object({ field: z.string(), colors: z.record(z.string(), z.string()).optional() }).optional(),
   accent: z.object({ field: z.string(), colors: z.record(z.string(), z.string()).optional() }).optional(),
   facets: z.array(PreviewFacetSchema).optional(),
@@ -1360,6 +1361,7 @@ export const TestimonialConfSchema = z.object({
 * **`dateField`** : champ de la date. Repli code `created`.
 * **`subtitleField`** : champ secondaire affiché en pied de carte teaser (ex. thème) — optionnel.
 * **`audioField`** : champ du média audio (`[{type:"audio", url}]`). Repli code `medias`.
+* **`imageField`** : champ de l'illustration, rendue en bannière de la carte (`aspect-[16/9]`) et de la preview (`aspect-[21/9]`, plafonnée à `30vh`). Cascade de replis code : `profilMediumImageUrl`, puis `profilImageUrl`, puis la 1re image de `medias` — une image déposée en galerie n'alimente pas `profil*ImageUrl`. Sans image, card et preview gardent leur composition d'origine (aucune réserve d'espace vide). La pastille de catégorie reste posée SOUS l'image, jamais en surimpression : son contraste ne peut pas dépendre de la photo déposée.
 * **`badge`** : `{ field, colors? }` — catégorie pilotant la teinte de la bulle + la pastille ; `colors` = map `valeur → couleur` (`var()` ou hex), matchée via `normalizeFilterValue`, sinon palette déterministe.
 * **`accent`** : `{ field, colors? }` — accent (ex. territoire) pilotant le point coloré ; même mécanisme `colors`.
 * **`facets`** : repères (taxonomies) data-driven, réutilise `PreviewFacetSchema` (aucun champ en dur).
@@ -1922,6 +1924,7 @@ export const ActionButtonSchema = z.object({
 // src/modules/search/schema.ts
 const SearchHeaderProps = z.object({
   headline: LocalizedString.optional(),
+  headlineFromFilter: z.string().optional(),
   subhead: LocalizedString.optional(),
   headlineClassName: z.string().optional(),
   subheadClassName: z.string().optional(),
@@ -1950,6 +1953,7 @@ export const SearchHeaderSectionSchema = z.object({
 | Propriete          | Type              | Description                            |
 | ------------------ | ----------------- | -------------------------------------- |
 | `headline`         | `LocalizedString?` | Titre                                 |
+| `headlineFromFilter` | `string?`       | `id` d'un `dropdownFilters` dont la VALEUR SÉLECTIONNÉE remplace le `headline` (qui reste le repli quand rien n'est sélectionné). Pour une page dont l'identité EST ce filtre — ex. `/theme?theme=…` atteinte depuis le menu dynamique du header. Le filtre visé peut être `hidden` ; plusieurs valeurs sont jointes par « · ». Logique pure : `lib/headlineFromFilter.ts`. ⚠️ Le `h1` devient le **libellé de l'option**, pas le `headline` : ce libellé doit donc être renseigné dans **toutes les locales déclarées** (`meta.languages`), sans quoi la page affiche un titre dans une langue et un `<title>` dans l'autre. ⚠️ Le titre n'est calculé qu'**après hydratation** (la sélection vient de l'URL par effet) : le HTML rendu côté serveur porte le `headline` de repli |
 | `subhead`          | `LocalizedString?` | Sous-titre                            |
 | `headlineClassName` | `string?`        | Override de la classe couleur du `h1` (def. `text-foreground`) — utile sur fond fixe sombre, ou `--foreground` devient illisible en light |
 | `subheadClassName` | `string?`         | Override de la classe couleur du sous-titre (def. `text-foreground`) ; `""` pour ne rien forcer |
