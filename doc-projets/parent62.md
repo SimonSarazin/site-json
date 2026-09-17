@@ -15,7 +15,7 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-09-15** — les cinq lots du 09/09 (§9vicies à §9quatervicies, validés en §9quinvicies), puis la refonte de l'accueil, les actions admin sur les actualités, les pages du réseau reprises à la source et le Mois de la Parentalité (§9sexvicies).
+Dernière mise à jour : **2026-09-17** — INFORESO et « Elles et ils ont marqué le réseau » en pages dédiées avec leurs formulaires d'admin, types d'actualité « À la une » / « Zoom sur le réseau » en choix multiple, taxonomie facultative hors réunions (§9octovicies). Précédemment : **2026-09-15** — les cinq lots du 09/09 (§9vicies à §9quatervicies, validés en §9quinvicies), puis la refonte de l'accueil, les actions admin sur les actualités, les pages du réseau reprises à la source et le Mois de la Parentalité (§9sexvicies).
 
 **(d) Haut des 9 pages territoire refondu + saisie admin des réunions** — chaque page
 `/territoire/*` ouvre désormais, juste après son bandeau, sur les **3 prochaines réunions du comité
@@ -2581,8 +2581,9 @@ porte la charte : les redonner en entier ici dupliquerait une section complète 
 ⚠️ **À noter** : sur `/charte` ces textes sont **tronqués** à leur première phrase, parfois coupée en
 plein raisonnement, alors que la source les donne en entier — correction non faite, hors périmètre.
 
-⚠️ **INFORESO renvoie vers `/ressources` en général** : le type de ressource « Inforéso » a été retiré
-du filtre le 02/09 (§9octodecies), il n'y a donc pas de page dédiée vers laquelle pointer.
+~~⚠️ **INFORESO renvoie vers `/ressources` en général**~~ — **caduc le 17/09** : la page dédiée `/inforeso`
+existe, le bloc y pointe désormais (§9octovicies.1). _(Constat d'origine : le type de ressource « Inforéso »
+avait été retiré du filtre le 02/09, §9octodecies, sans page dédiée vers laquelle pointer.)_
 
 La définition de la parentalité a ensuite pris le moule de « L'objectif du Réseau Parentalité 62 »
 — un `title` centré plutôt qu'un accordéon à une entrée, les deux énoncés de la page se répondant et
@@ -3073,6 +3074,168 @@ Lot **non commité**.
 
 ---
 
+## 9octovicies. Impacts — INFORESO et « Elles et ils ont marqué le réseau » en pages dédiées, types d'actualité multiples, taxonomie facultative (16-17/09)
+
+**Ce que ça change.** Deux contenus que le réseau avait retirés des catégories de ressources le 09/09
+(§9unvicies.2) reviennent en **pages dédiées, chacune avec son formulaire d'admin** : la lettre
+**INFORESO** (`/inforeso`) et **« Elles et ils ont marqué le réseau »**
+(`/elles-et-ils-ont-marque-le-reseau`). Le formulaire d'actualité gagne deux types, **« À la une »** et
+**« Zoom sur le réseau »**, et le type devient un **choix multiple**. Territoires, publics et thèmes
+deviennent **facultatifs** partout, sauf dans « Réunion du comité ».
+
+Config : **48 → 51 pages**, **170 → 176 sections**, **5 → 7 formulaires costum**, **9 → 11 onglets
+`/admin`**, **3 → 5 modales d'édition** de POI. Les fiches se saisissent **à la main dans l'admin**.
+
+### 9octovicies.1 INFORESO — `/inforeso`
+
+| Élément | Réalisation |
+|---|---|
+| Fiche | POI `type:"doc"` — la clé NATIVE du type « Documentation » du backend (`Poi::$types`), pas son libellé |
+| Formulaire `parent62-inforeso` | titre (requis), **année** en saisie libre bornée 1900–2100 (requise), **PDF hébergé** sur la plateforme (rattaché dans `medias`, type `pdf`) **ou lien** (`urls`) — règle `validate:documentOuLien` : au moins l'un des deux. Section sans titre |
+| Onglet `/admin` « INFORESO » | colonnes titre / année / ajouté le, tri serveur par année |
+| Page | titre et sous-titre, puis la liste **groupée par année** (`list.layout: "grouped"`, plus récente en tête) en lignes compactes (`resource.design: "document"`) qui ouvrent directement le PDF, sinon le lien, dans un nouvel onglet |
+| Ordre dans une année | numéro le plus récemment saisi en tête (`groupBy.itemsSortBy: created desc`) — cf. encadré |
+| Menu | entrée de premier niveau « INFORESO », à côté de « Contenus ». Cette 6ᵉ entrée faisait déborder la page de **3 px à 1280 px** (le groupe recherche/thème/langue/« Se connecter » sortait de l'écran, sur toutes les pages) : l'écart entre entrées du header `stacked` passe de 48 à **32 px entre 1280 et 1535 px** (`gap-8 2xl:gap-12`, `HeaderStacked.tsx` — parent62 est le seul site sur ce header). Mesuré en fr et en en de 1280 à 1920 px : plus de débordement, ≥ 43 px de marge avant les actions |
+| `/reseau` | le bloc INFORESO (image et bouton, désormais « Voir tous les numéros INFORESO ») pointe `/inforeso` au lieu de `/ressources` |
+
+> **Le backend ne trie que sur la PREMIÈRE clé de `sortBy`.** `SearchNew.php` lit `array_keys($post["sortBy"])[0]` :
+> `defaultSortBy: {annee:-1, created:-1}` y vaut `{annee:-1}`, sans erreur, et une année ressortait dans
+> l'ordre d'insertion. Le paramètre `sort` multi-clés du même fichier est refusé par la validation du SDK
+> (`GLOBAL_AUTOCOMPLETE_COSTUM … unexpected property, sort`). D'où le tri CLIENT dans les blocs, qui ne trie
+> que les résultats chargés (`indexStepList: 60`). Le `created` inutile a été retiré de la page ET de
+> l'onglet admin, qui ne le lisait pas davantage.
+
+### 9octovicies.2 « Elles et ils ont marqué le réseau »
+
+| Élément | Réalisation |
+|---|---|
+| Fiche | POI `type:"intervenant"` — clé costum, sur le modèle d'`affiche` (hors `Poi::$types`, le backend l'accepte) |
+| Formulaire `parent62-intervenant` | nom (requis — une ou plusieurs personnes), **fonction** courte (`shortDescription`, requise), photo (`profil_avatar`), **présentation** markdown (requise) |
+| Onglet `/admin` | colonnes nom / fonction / ajouté le, dernier ajouté en tête |
+| Page | liste d'**annuaire** (`resource.design: "portrait"`) : photo ronde, nom, fonction en petites capitales, puis la présentation complète et ses liens ; entrées séparées par un filet ; **non cliquable** (tout est affiché). Dernier ajouté en tête |
+| Menu | « Contenus » → « Elles et ils ont marqué le réseau » |
+
+Itérations du 17/09, à la demande : grille + modale → carte affichant la présentation → annuaire sur
+maquette, élargi ensuite pour montrer plus de personnes par écran (hauteur moyenne d'une entrée
+401 → 273 px à 1280 px de large).
+
+### 9octovicies.3 Types d'actualité « À la une » et « Zoom sur le réseau », en choix multiple
+
+- `parent62-article.category` passe de `select` à **`multiselect`** et gagne `a-la-une` (« À la une ») et
+  `zoom` (« Zoom sur le réseau »). **Stocké en texte** `a-la-une, zoom` (`write: "joinCsv"`) : le contrat
+  `ADD_POI` type `category` en **chaîne**, un tableau ferait échouer la création. Une ancienne valeur unique
+  (`appel-projet`) se relit comme un choix coché. Les `createDefaults` des onglets « Appels à projets » et
+  « Offres d'emploi » passent en tableau.
+- Chaque type coché pose son **mot-clé** : `Appels à projets`, `Offres d'emploi`, **`A la une`** (exactement le
+  tag que filtre le carrousel `home-featured-poi` de l'accueil) et **`Zoom`**.
+- **Le mot-clé suit désormais le type.** Le `mutation.stamps` `op:"append"` de §9sexdecies refusionnait les
+  tags SERVEUR à chaque enregistrement : retirer un type ne retirait pas son tag (impossible de sortir une
+  actualité du bandeau « À la une »). Il est **remplacé** par les codecs du champ `tags`
+  (`p62article:tagsRead`/`tagsWrite`, table dans
+  [`forms/costum/parent62-article/fns.ts`](../src/modules/profil/forms/costum/parent62-article/fns.ts), logique
+  générique dans [`forms/costum/derivedTags.ts`](../src/modules/profil/forms/costum/derivedTags.ts)) : à
+  l'édition, « Mots-clés » masque les tags des types enregistrés ; au save, on renvoie les tags saisis plus
+  ceux des types cochés. Un tag posé À LA MAIN sur un autre type (ex. « A la une » sur un article simple)
+  reste visible et modifiable.
+- **Accueil — « Zoom sur le réseau »** (`articleTeaser` `zoom-reseau`) filtre désormais `tags: "Zoom"` au lieu
+  des 6 dernières actualités. Les actualités existantes portaient déjà ce tag (certaines avec « A la une » en
+  même temps) : la section est remplie. Son bouton « En voir plus » (`viewAllHref`) mène à **`/zoomcat`**
+  (auparavant `/blog`, qui ne filtre pas par mot-clé).
+- **Page `/zoomcat` — « Zoom sur le réseau »** : un titre puis la liste des actualités portant le mot-clé
+  `Zoom` (`articleFeed` filtré `tags: "Zoom"`, 12 par page, **sans aucun filtre** visible). Sur le patron de
+  `/appels-a-projets`, sans son bandeau de recherche. Vérifié : 12 résultats, tous tagués `Zoom`. **Atteinte depuis le bouton
+  « En voir plus » de la section d'accueil** (vérifié au clic) ; absente du menu.
+
+### 9octovicies.4 Territoires, publics et thèmes facultatifs
+
+| Formulaire | Avant | Après |
+|---|---|---|
+| `parent62-article` | territoires, publics, thèmes requis | facultatifs |
+| `parent62-recovery-center` | territoires, publics, thèmes requis | facultatifs |
+| `parent62-event` | territoires requis | facultatif |
+| `parent62-affiche` | déjà facultatifs | inchangé |
+| **`parent62-reunion`** | territoires requis | **inchangé** — une réunion appartient toujours au comité d'un territoire |
+
+### 9octovicies.5 Apports génériques au moteur
+
+Tous **optionnels** : une config qui ne les déclare pas garde son rendu.
+
+| Apport | Où | Garde |
+|---|---|---|
+| `list.layout: "grouped"` + `list.groupBy` (`field`, `order`, `itemsSortBy`, `emptyLabel`) | `lib/groupResults.ts`, `SearchListView`, `GroupHeading` | `groupResults.test.ts`, `SearchListView.test.tsx` (ids `useId` : une valeur avec espaces cassait `aria-labelledby`) |
+| `resource.design: "document"` — ligne qui ouvre le fichier puis le lien, format réel affiché (`PDF`, `DOCX`…) | `CardResourceDocument`, `lib/resourceLink.ts` | `CardResourceDocument.test.tsx`, `resourceLink.test.ts` |
+| `resource.design: "portrait"` + `resource.subtitleField` | `CardResourcePortrait` (photo intégrée : l'extraction `PortraitPhoto` n'avait plus qu'un consommateur une fois la preview portrait retirée) | `CardResourcePortrait.test.tsx` (HTML injecté neutralisé, non cliquable) |
+| Mots-clés dérivés d'un type (codecs de champ) | `forms/costum/derivedTags.ts` | `derivedTags.test.ts`, `article.configDriven.test.ts` — vérifié en échec sans les codecs (5/9) |
+| Règle « au moins un de ces champs » | `profil/forms/validators.ts` (`auMoinsUnRenseigne`) | `validators.test.ts` |
+| Préflight : champs lus par l'affichage ⊂ `baseParams.defaultFields` | `tests/preflight/list-projected-fields.test.ts` | vérifié en échec sur 2 fautes injectées |
+
+Au passage, `CardResource` et `PreviewResource` chargent leurs designs par le `lazy` de `vite-preload`, comme
+`SearchCard` (ils étaient les deux seules coques du module sur `React.lazy`). Documentés dans
+[doc/07](../doc/07-module-search.md) (table `list`, vue groupée, designs), [doc/15](../doc/15-tests.md)
+(préflight), [doc/28](../doc/28-module-formengine.md) (inventaire et codecs), le registre
+`prop-descriptions` et le skill `config-assistant`.
+
+### 9octovicies.5bis Corps d'article : le HTML brut s'affichait en texte
+
+**Constat (17/09)** : sur `/blog/moisDeLaParentalite2026`, le bloc « Une proposition départementale pour 2026 »
+s'affichait en texte brut (`<table border="1" width="907"…`). Le corps des articles (`description`) mêle
+titres markdown et HTML repris de WordPress, et les deux readers le rendaient par `renderMarkdown`, dont
+markdown-it est en `html: false` : tout HTML y est **échappé**.
+
+**Correction** : un composant `ArticleBody` (`src/modules/blog/components/ArticleBody.tsx`), partagé par
+`ArticleReader` et `ArticleReaderPoster` qui dupliquaient ce bloc, rend le corps par `ProseContent` en
+**markdown forcé** (markdown-it `html: true`) puis le profil d'assainissement **strict** `sanitizeProse` — un
+article peut être écrit par un auteur non administrateur. `forceMarkdown` est indispensable : sans lui,
+`ProseContent` détecte une balise et traite TOUT le texte en HTML, titres `#` compris.
+`renderMarkdown` n'est PAS modifié : il sert 11 appelants avec le profil permissif, et y activer le HTML
+ouvrirait de faux écrans de connexion dans des textes de visiteurs.
+
+Pour que l'aperçu de saisie reste fidèle à la publication, l'aperçu de l'**éditeur markdown**
+(`MarkdownEditor`) et la présentation de la carte **`portrait`** passent par le même rendu.
+
+| Vérification | Résultat |
+|---|---|
+| Test `ArticleBody.test.tsx` | ✅ 4/4 (tableau au milieu du markdown, titres `#`, HTML dangereux neutralisé, corps vide) — **rouge avec l'ancien rendu** |
+| Page réelle, clair / sombre / 360 px | ✅ tableau rendu (titre, texte, lien « Kit Mois de la Parentalité 2026 »), plus de HTML en texte, largeur de colonne respectée, aucun débordement |
+| Rendu serveur | ✅ le HTML servi contient le vrai `<table>` |
+| Annuaire après passage à `ProseContent` | ✅ mêmes contrastes (8,16 / 5,64 en clair, 12,28 / 7,01 en sombre), aucun débordement |
+
+**Périmètre** : d'autres affichages passent encore par `renderMarkdown` et échappent le HTML brut —
+présentation de profil (`ProfileAbout`), modales de ressource, d'événement et génériques. Aucun contenu
+concerné n'y a été constaté.
+
+### 9octovicies.6 Prérequis de mise en production
+
+| # | Prérequis | Pourquoi | Qui |
+|---|---|---|---|
+| 1 | Déclarer **`costum.typeObj.doc`** et **`costum.typeObj.intervenant`** dans la base de PROD, chacun avec `dynFormCostum.onload.actions.presetValue.type` ET un `beforeBuild.properties` non vide (déjà posés en base locale) | sans `presetValue`, le SDK n'autorise pas ces types (liste fermée d'`ADD_POI`) : « /type must be equal to one of the allowed values » ; sans `properties`, il ignore la déclaration | Thomas / backend |
+| 2 | ✅ **Posé dans `sites.json` le 17/09** : `"env": { "VITE_COSTUM_FORCE_LIVE": "true" }` sur l'entrée `parent62` (comme `sportSanteBienetre`, `associationEkilibre`, `institutBleu`). **Reste à le pousser** vers Coolify : `npm run deploy:env -- parent62` (à blanc) puis `--write`, et redéployer (`deploy:rollout`). Alternative à terme : une version du SDK dont l'artefact connaît `doc`/`intervenant`/`annee`, qui permettrait de retirer le drapeau | le SDK 1.0.193 embarque un contrat parent62 FIGÉ (sans `doc`, `intervenant` ni `annee`) et ignore le `typeObj` écrit ensuite en base : sans le drapeau, la création d'un numéro échoue (`annee` refusé) et celle d'un intervenant aussi (`type` refusé). Contrepartie : le contexte costum attend la réponse du backend au démarrage | Peterson (déploiement) / Thomas (SDK) |
+| 3 | Confirmer la **limite de téléversement** de la prod | en local `upload_max_filesize = 2M` : un PDF plus lourd est refusé — il faut le compresser avant de le joindre | Thomas |
+| 4 | Saisir les numéros INFORESO et les intervenants dans l'admin | les pages sont vides tant qu'aucune fiche n'existe | réseau |
+
+### 9octovicies.7 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` | ✅ **51 pages · 176 sections** |
+| `audit:config` | ✅ parent62 — RAS |
+| `config:costum-drift` (mode live) | ✅ **0 champ fantôme** sur les 7 formulaires parent62 |
+| `config:render` | ✅ parent62 **51/51 pages · 176/176 sections** avec du contenu SSR ; institut-bleu (autre consommateur de la carte `resource`) **13/13 · 26/26** |
+| `test:unit` (préflight compris) | ✅ **4 532 tests** — 3 échecs **étrangers au lot** : `site-assets` (dossier vide `public/images/EcosystemeSanteReunion`, cf. §9septvicies.5), `ProseContent — césure` (préexistant sur `main`) et `bundle-size` (cf. ligne dédiée) |
+| `test:integration` | ✅ **753 tests** — 4 échecs étrangers : `site-assets`, `bundle-size` et les 2 specs génériques de `config-driven-ssr` qui comparent `config.prod.json` ; **relancée avec `SITE_CONFIG_PATH=./config.prod.parent62.json`, `config-driven-ssr` passe 98/98** |
+| `test:e2e` ciblé (`parent62.spec.ts`) | ✅ **12/12**, dont 4 nouveaux : `/zoomcat` (titre, aucun filtre, liste), `/inforeso` (blocs d'année, liens en nouvel onglet), annuaire sans bouton, et **aucun débordement horizontal à 1280 px** — rouge sans la correction du header (1 283 px), vert avec. Le test d'accueil décrit la nav à **6 entrées** (5 avant INFORESO) |
+| `test:e2e` complet | ✅ **26 passés**, 8 ignorés, 6 échecs étrangers : 4 specs génériques contre `config.prod.json` et `auth-flow` sans `.env.test`. Relancés sur la config parent62, `i18n` et le pied de page passent ; restent 2 échecs de `config-nav`, qui cherche la nav dans `<header>` alors que le header `stacked` la rend dans un `<nav class="sticky">` séparé — structure non touchée par le lot |
+| `typecheck` · `lint` | ✅ · ✅ **0 erreur** — 25 avertissements préexistants sur 17 fichiers, **aucun dans un fichier du lot** |
+| `build` | ✅ client + serveur, 0 erreur ; chaque design a son chunk (`CardResourcePortrait` 1,75 ko, `CardResourceDocument` 1,93 ko — < 1 ko gzip), téléchargé par les seules pages qui l'utilisent |
+| Préflight `bundle-size` | ⚠️ **rouge, mais préexistant** — ce test ne s'active que si un `dist/` existe (ignoré lors du passage `test:unit`). Bundle principal : **3,39 Mo au commit `9f1a38c9`** (limite 2 Mo), **+756 octets** avec le lot. Mesuré en construisant ce commit dans un worktree AVEC le même `.env` (sans lui, l'écart apparaît faussement à ~38 ko) |
+| Gardes vérifiées en échec | ✅ préflight `list-projected-fields` (2 fautes injectées) · codecs de tags (5/9 tests rouges sans eux) · ids de blocs (test rouge avec l'ancien id construit sur la valeur) |
+| Écran | ✅ `/inforeso` (ordre dans l'année), annuaire en clair, sombre et 360 px, sans débordement. Contraste de l'annuaire : fonction **8,16:1** (clair) / **12,28:1** (sombre), texte **5,64:1** / **7,01:1** |
+| Portée inter-sites | ✅ `grouped`, `groupBy`, `document`, `portrait`, `subtitleField` : optionnels, utilisés par parent62 seul. Le `lazy` de `vite-preload` concerne aussi les cartes `resource` de **institut-bleu, rezo-sante-reunion, maison-sport-sante-la-tampon, sport-sante-bien-etre** |
+
+Lot **non commité**.
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -3094,7 +3257,7 @@ Lot **non commité**.
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies). **09/09** : boutons **Modifier / Supprimer** sur la fiche `/blog/:slug`, gardés par `canEditProfile` (admin du costum ou auteur) et réutilisant la modale `edit-parent62-article` déjà en place — hérité par les **4 sites** déclarant une page `/blog`, à charge pour eux de router leur propre `editModals` (§9sexvicies.2) |
+| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies). **09/09** : boutons **Modifier / Supprimer** sur la fiche `/blog/:slug`, gardés par `canEditProfile` (admin du costum ou auteur) et réutilisant la modale `edit-parent62-article` déjà en place — hérité par les **4 sites** déclarant une page `/blog`, à charge pour eux de router leur propre `editModals` (§9sexvicies.2). **17/09** : types **« À la une »** et **« Zoom sur le réseau »**, type en **choix multiple** ; le mot-clé suit désormais le type (codecs à la place du stamp) ; section d'accueil « Zoom sur le réseau » filtrée sur `Zoom` ; territoires/publics/thèmes facultatifs (§9octovicies.3-4) |
 | 2.2 | Actualités filtrables dans le moteur de recherche | ✅ *(était ✅ config, 🟡 UX)* | cible `searchTargets` « Actualités » (`type:article`) dans `/recherche` + filtres territoire/public/thème/dates. **25/07 — UX unifiée** : une actualité de `/recherche` rend une carte dédiée et son clic ouvre le **reader canonique** `/blog/:slug` (repli `/blog/id/:id`), plus un drawer générique |
 | 2.3 | Module événementiel (agenda) + affichage territoire | 🟡 *(diagnostiqué le 14-19/08)* | module agenda complet (calendrier + liste, filtre territoire) ; testé avec des **événements de test locaux** (dev, pas de la production — cf. §9sexies), a révélé 3 bugs backend, **tous corrigés** (§9sexies.1) ; **0 donnée `events` en production, toujours à confirmer** ; pas de carte agenda (`enableMap:false`) |
 | 2.4 | Impression de l'agenda | ❌ | **aucun code print** (`@media print`/`window.print`) — à faire (CSS print ou export iCal/PDF) |
@@ -3106,7 +3269,7 @@ Lot **non commité**.
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 3.1 | Module ressources (POI `recoveryCenter`) | 🟡 | `/ressources` + form `parent62-recovery-center` (catégories Vidéo/Photo/Compte-rendu/Doc/Lien, **02/09 : + Inforéso et Elles et ils ont marqué le réseau ; « Jeu » remplacé par « Les jeux du réseau »** — formulaire, filtre « Type » et pastilles de carte ; galerie/docs). **À vérifier en base** : les POI déjà enregistrés en `category: "Jeu"` ne sont pas migrés et sortent du filtre « Type ». **Données observées le 25/07** : `/ressources` affiche « Toutes les ressources (**4**) » — la mention « 0 donnée » du 24/07 est caduque. Création **admin-only** (pas de bouton public → le « formulaire simple partenaire » du CDC n'est pas exposé) |
+| 3.1 | Module ressources (POI `recoveryCenter`) | 🟡 | `/ressources` + form `parent62-recovery-center` (catégories Vidéo/Photo/Compte-rendu/Doc/Lien, **02/09 : + Inforéso et Elles et ils ont marqué le réseau ; « Jeu » remplacé par « Les jeux du réseau »** — formulaire, filtre « Type » et pastilles de carte ; galerie/docs). **À vérifier en base** : les POI déjà enregistrés en `category: "Jeu"` ne sont pas migrés et sortent du filtre « Type ». **Données observées le 25/07** : `/ressources` affiche « Toutes les ressources (**4**) » — la mention « 0 donnée » du 24/07 est caduque. Création **admin-only** (pas de bouton public → le « formulaire simple partenaire » du CDC n'est pas exposé). **17/09** : **INFORESO** (`/inforeso`, POI `doc`, par année) et **« Elles et ils ont marqué le réseau »** (annuaire, POI `intervenant`) passent en **pages dédiées** avec formulaire et onglet `/admin` ; saisie des fiches à faire, prérequis prod en §9octovicies.6 |
 | 3.2 | Recherche dans les ressources (territoire/**ville**) | ✅ config *(était ❌)* | `/ressources` filtre `category` + `territoires` + **`commune`** (`address.addressLocality`) + public/thème + `searchBy:[name,description]`. **25/07** : les ressources sont aussi atteignables depuis `/recherche` (cible « Ressources » + règle de rendu dédiée) |
 | 3.3 | Votes « utile » / contributeurs | ❌ | pas de vote sur les ressources (`ADD_VOTE`/`links` à câbler + UI card) ; les votes n'existent que sur le fil news social |
 
@@ -3117,7 +3280,8 @@ Hors périmètre engagé : publication RS, mailing, migration GoGoCarto, fiches 
 ## 11. Dépendances site-json ↔ cocolight-api-client
 
 Le SDK est en **lecture seule** : toute évolution passe par une spec `.md` transmise à Aboire
-(`spec-cocolight-api-parents62.md`). Version courante : **1.0.172, publiée sur npm** (`^1.0.172`,
+(`spec-cocolight-api-parents62.md`). Version courante au 17/09 : **1.0.193 installée** (`^1.0.192` dans
+`package.json`). Historique : **1.0.172, publiée sur npm** (`^1.0.172`,
 commit `09e145a0` du 03/08, résolue depuis `registry.npmjs.org` dans le lockfile — fini le tarball
 `npm pack` local). La 1.0.172 règle notamment la **pose du scope costum côté back-office**
 (`setCostumScope`, présent dans le dist installé, consommé par
