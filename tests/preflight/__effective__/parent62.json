@@ -52,6 +52,16 @@
           "declare": "edit-parent62-recovery-center",
           "native": "edit-parent62-recovery-center",
           "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-parent62-inforeso",
+          "native": "edit-parent62-inforeso",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-parent62-intervenant",
+          "native": "edit-parent62-intervenant",
+          "horsPerimetre": "edit-profile"
         }
       ]
     }
@@ -94,7 +104,9 @@
       },
       "create": "add-parent62-article",
       "createDefaults": {
-        "category": "appel-projet"
+        "category": [
+          "appel-projet"
+        ]
       },
       "edit": {
         "enabled": true,
@@ -119,7 +131,9 @@
       },
       "create": "add-parent62-article",
       "createDefaults": {
-        "category": "offre-emploi"
+        "category": [
+          "offre-emploi"
+        ]
       },
       "edit": {
         "enabled": true,
@@ -159,6 +173,44 @@
         ]
       },
       "create": "add-parent62-recovery-center",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "inforeso/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "doc"
+        },
+        "defaultSortBy": {
+          "annee": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-inforeso",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "intervenants/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "intervenant"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-intervenant",
       "edit": {
         "enabled": true,
         "modalName": null
@@ -303,6 +355,59 @@
         "defaultSortBy": {
           "created": -1
         }
+      }
+    },
+    "/inforeso/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "doc"
+        },
+        "defaultSortBy": {
+          "annee": -1
+        },
+        "defaultFields": [
+          "name",
+          "annee",
+          "medias",
+          "urls",
+          "type",
+          "created",
+          "source"
+        ],
+        "indexStepList": 60
+      }
+    },
+    "/elles-et-ils-ont-marque-le-reseau/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "intervenant"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "defaultFields": [
+          "name",
+          "shortDescription",
+          "description",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "type",
+          "created",
+          "source"
+        ],
+        "indexStepList": 60
       }
     },
     "/agenda/agenda": {
@@ -1088,25 +1193,6 @@
         ]
       }
     }
-  },
-  "stamps": {
-    "parent62-article": [
-      {
-        "field": "tags",
-        "value": {
-          "$mapLabels": {
-            "from": "category",
-            "map": {
-              "appel-projet": "Appels à projets",
-              "offre-emploi": "Offres d'emploi"
-            }
-          }
-        },
-        "op": "append",
-        "on": "both",
-        "channel": "payload"
-      }
-    ]
   },
   "referencement": {},
   "membership": {

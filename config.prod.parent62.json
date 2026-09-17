@@ -361,6 +361,18 @@
           },
           {
             "label": {
+              "fr": "Elles et ils ont marqué le réseau",
+              "en": "They left their mark on the network"
+            },
+            "path": "/elles-et-ils-ont-marque-le-reseau",
+            "icon": "award",
+            "description": {
+              "fr": "Les intervenantes et intervenants du réseau",
+              "en": "The network's speakers"
+            }
+          },
+          {
+            "label": {
               "fr": "Agenda",
               "en": "Agenda"
             },
@@ -396,8 +408,17 @@
             }
           }
         ]
+      },
+      {          
+        "label": {
+          "fr": "INFORESO",
+          "en": "INFORESO"
+        },
+        "path": "/inforeso"
+          
       }
     ],
+    
     "logoSize": "lg"
   },
   "pages": [
@@ -615,7 +636,10 @@
             },
             "costumSlug": "parent62",
             "limit": 6,
-            "viewAllHref": "/blog",
+            "filters": {
+              "tags": "Zoom"
+            },
+            "viewAllHref": "/zoomcat",
             "background": "var(--p62-marine)",
             "accentColor": "var(--p62-turquoise)"
           }
@@ -859,13 +883,13 @@
               "en": "**INFORESO**, the Parenting Network 62 newsletter, lets members and a wider audience follow the projects run by the 9 local committees, the parenting actions under way across the territories, national and departmental news, publications on parenting, and the network's meeting agenda."
             },
             "image": "/images/parent62/inforeso-couverture.jpg",
-            "imageHref": "/ressources",
+            "imageHref": "/inforeso",
             "imageFit": "contain",
             "imagePosition": "left",
             "links": [
               {
-                "label": { "fr": "Voir les ressources du réseau", "en": "Browse the network's resources" },
-                "href": "/ressources"
+                "label": { "fr": "Voir tous les numéros INFORESO", "en": "Browse all INFORESO issues" },
+                "href": "/inforeso"
               }
             ],
             "width": "wide"
@@ -3435,6 +3459,54 @@
       ]
     },
     {
+      "path": "/zoomcat",
+      "title": {
+        "fr": "Zoom sur le réseau",
+        "en": "Network spotlight"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Zoom sur le réseau — Parent62",
+          "en": "Network spotlight — Parent62"
+        },
+        "description": {
+          "fr": "Les actualités « Zoom sur le réseau » du Réseau Parentalité 62.",
+          "en": "The “Network spotlight” news of the Parenting Network 62."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/parent62/hero-carte.png"
+      },
+      "sections": [
+        {
+          "type": "title",
+          "id": "zoomcat-titre",
+          "props": {
+            "title": {
+              "fr": "Zoom sur le réseau",
+              "en": "Network spotlight"
+            },
+            "align": "center",
+            "size": "lg"
+          }
+        },
+        {
+          "type": "articleFeed",
+          "id": "zoomcat-feed",
+          "props": {
+            "costumSlug": "parent62",
+            "pageSize": 12,
+            "featured": true,
+            "fullWidth": true,
+            "filters": {
+              "tags": "Zoom"
+            }
+          }
+        }
+      ]
+    },
+    {
       "path": "/temoignages",
       "title": {
         "fr": "Paroles de parents",
@@ -4669,6 +4741,187 @@
               }
             },
             "enableMap": false
+          }
+        }
+      ]
+    },
+    {
+      "path": "/inforeso",
+      "title": {
+        "fr": "INFORESO",
+        "en": "INFORESO"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "INFORESO — Parent62",
+          "en": "INFORESO — Parent62"
+        },
+        "description": {
+          "fr": "INFORESO est la lettre d’information du Réseau Parentalité 62",
+          "en": "INFORESO is the newsletter of the Réseau Parentalité 62"
+        }
+      },
+      "sections": [
+        {
+          "type": "title",
+          "id": "inforeso-titre",
+          "props": {
+            "title": {
+              "fr": "INFORESO",
+              "en": "INFORESO"
+            },
+            "subtitle": {
+              "fr": "INFORESO est la lettre d’information du Réseau Parentalité 62",
+              "en": "INFORESO is the newsletter of the Réseau Parentalité 62"
+            },
+            "align": "center",
+            "size": "lg"
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "inforeso-numeros",
+          "props": {
+            "width": "container",
+            "enableMap": false,
+            "showMap": false,
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "sourceKey": [
+                "parent62"
+              ],
+              "defaultFilters": {
+                "type": "doc"
+              },
+              "defaultSortBy": {
+                "annee": -1
+              },
+              "defaultFields": [
+                "name",
+                "annee",
+                "medias",
+                "urls",
+                "type",
+                "created",
+                "source"
+              ],
+              "indexStepList": 60
+            },
+            "list": {
+              "layout": "grouped",
+              "groupBy": {
+                "field": "annee",
+                "order": "desc",
+                "itemsSortBy": {
+                  "field": "created",
+                  "order": "desc"
+                },
+                "emptyLabel": {
+                  "fr": "Année non renseignée",
+                  "en": "Year not set"
+                }
+              },
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "resource"
+              },
+              "resource": {
+                "design": "document",
+                "titleField": "name",
+                "mediasField": "medias",
+                "urlsField": "urls"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/elles-et-ils-ont-marque-le-reseau",
+      "title": {
+        "fr": "Elles et ils ont marqué le réseau",
+        "en": "They left their mark on the network"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Elles et ils ont marqué le réseau — Parent62",
+          "en": "They left their mark on the network — Parent62"
+        },
+        "description": {
+          "fr": "Les intervenantes et intervenants qui ont marqué le Réseau Parentalité 62",
+          "en": "The speakers who left their mark on the Réseau Parentalité 62"
+        }
+      },
+      "sections": [
+        {
+          "type": "title",
+          "id": "intervenants-titre",
+          "props": {
+            "title": {
+              "fr": "Elles et ils ont marqué le réseau",
+              "en": "They left their mark on the network"
+            },
+            "align": "center",
+            "size": "lg"
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "intervenants-liste",
+          "props": {
+            "width": "container",
+            "enableMap": false,
+            "showMap": false,
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "sourceKey": [
+                "parent62"
+              ],
+              "defaultFilters": {
+                "type": "intervenant"
+              },
+              "defaultSortBy": {
+                "created": -1
+              },
+              "defaultFields": [
+                "name",
+                "shortDescription",
+                "description",
+                "profilImageUrl",
+                "profilMediumImageUrl",
+                "type",
+                "created",
+                "source"
+              ],
+              "indexStepList": 60
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 1,
+                "lg": 1
+              },
+              "card": {
+                "type": "resource"
+              },
+              "resource": {
+                "design": "portrait",
+                "titleField": "name",
+                "subtitleField": "shortDescription",
+                "descriptionField": "description",
+                "imageField": "profilMediumImageUrl"
+              }
+            }
           }
         }
       ]
@@ -19285,6 +19538,46 @@
               { "field": "reference.costum", "op": "contains", "value": "parent62" }
             ]
           }
+        },
+        {
+          "editModal": "edit-parent62-inforeso",
+          "editModalMatch": {
+            "type": "doc"
+          },
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "parent62"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "parent62"
+              }
+            ]
+          }
+        },
+        {
+          "editModal": "edit-parent62-intervenant",
+          "editModalMatch": {
+            "type": "intervenant"
+          },
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "parent62"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "parent62"
+              }
+            ]
+          }
         }
       ]
     }
@@ -19359,18 +19652,24 @@
           }
         },
         "category": {
-          "widget": "select",
+          "widget": "multiselect",
+          "multiple": true,
+          "write": "joinCsv",
           "label": {
             "fr": "Type d'actualité",
             "en": "News type"
           },
           "placeholder": {
-            "fr": "Choisir un type",
-            "en": "Choose a type"
+            "fr": "Choisir un ou plusieurs types",
+            "en": "Choose one or more types"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
           },
           "info": {
-            "fr": "« Appel à projets » et « Offre d'emploi » ajoutent automatiquement le mot-clé correspondant et font apparaître l'article sur sa page dédiée ; « Article simple » n'en pose aucun.",
-            "en": "“Call for projects” and “Job offer” auto-add the matching tag and list the article on its dedicated page; “Standard article” adds none."
+            "fr": "Plusieurs types possibles. « Appel à projets » et « Offre d'emploi » ajoutent automatiquement le mot-clé correspondant et font apparaître l'article sur sa page dédiée ; « À la une » le met dans le bandeau « À la une » de l'accueil ; « Zoom sur le réseau » ajoute le mot-clé « Zoom » ; « Article simple » n'en pose aucun.",
+            "en": "Several types allowed. “Call for projects” and “Job offer” auto-add the matching tag and list the article on its dedicated page; “Featured” puts it in the home page “Featured” banner; “Network spotlight” adds the “Zoom” tag; “Standard article” adds none."
           },
           "enum": [
             {
@@ -19392,6 +19691,20 @@
               "label": {
                 "fr": "Offre d'emploi",
                 "en": "Job offer"
+              }
+            },
+            {
+              "value": "a-la-une",
+              "label": {
+                "fr": "À la une",
+                "en": "Featured"
+              }
+            },
+            {
+              "value": "zoom",
+              "label": {
+                "fr": "Zoom sur le réseau",
+                "en": "Network spotlight"
               }
             }
           ]
@@ -19421,6 +19734,8 @@
         },
         "tags": {
           "widget": "tags",
+          "read": "p62article:tagsRead",
+          "write": "p62article:tagsWrite",
           "label": {
             "fr": "Mots-clés",
             "en": "Tags"
@@ -19508,8 +19823,7 @@
                 "en": "Ternois Bruaysis"
               }
             }
-          ],
-          "required": true
+          ]
         },
         "publics": {
           "widget": "multiselect",
@@ -19590,8 +19904,7 @@
                 "en": "Professionnels"
               }
             }
-          ],
-          "required": true
+          ]
         },
         "themes": {
           "widget": "valueSelect",
@@ -19737,8 +20050,7 @@
                 "en": "Les violences"
               }
             }
-          ],
-          "required": true
+          ]
         },
         "galerie": {
           "widget": "gallery",
@@ -19800,22 +20112,6 @@
         "existingUrlFrom": "image:profilUrl"
       },
       "mutation": {
-        "stamps": [
-          {
-            "field": "tags",
-            "op": "append",
-            "on": "both",
-            "value": {
-              "$mapLabels": {
-                "from": "category",
-                "map": {
-                  "appel-projet": "Appels à projets",
-                  "offre-emploi": "Offres d'emploi"
-                }
-              }
-            }
-          }
-        ],
         "entityType": "poi",
         "navigateOnSuccess": false,
         "inject": {
@@ -20658,8 +20954,7 @@
                 "en": "Ternois Bruaysis"
               }
             }
-          ],
-          "required": true
+          ]
         },
         "publics": {
           "widget": "multiselect",
@@ -20740,8 +21035,7 @@
                 "en": "Professionnels"
               }
             }
-          ],
-          "required": true
+          ]
         },
         "themes": {
           "widget": "valueSelect",
@@ -20887,8 +21181,7 @@
                 "en": "Les violences"
               }
             }
-          ],
-          "required": true
+          ]
         },
         "galerie": {
           "widget": "gallery",
@@ -21297,8 +21590,7 @@
                 "en": "Ternois Bruaysis"
               }
             }
-          ],
-          "required": true
+          ]
         },
         "publics": {
           "widget": "multiselect",
@@ -22255,6 +22547,307 @@
           }
         }
       }
+    },
+    "parent62-inforeso": {
+      "id": "parent62-inforeso",
+      "entityType": "poi",
+      "collection": "poi",
+      "costumSlug": "parent62",
+      "layout": {
+        "kind": "flat"
+      },
+      "validateFn": "validate:documentOuLien",
+      "sections": [
+        {
+          "id": "numero",
+          "icon": "newspaper",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "annee",
+                "documents",
+                "urls"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Titre",
+            "en": "Title"
+          },
+          "placeholder": {
+            "fr": "INFORESO n°75 – Octobre 2026",
+            "en": "INFORESO n°75 – October 2026"
+          }
+        },
+        "annee": {
+          "widget": "number",
+          "required": true,
+          "label": {
+            "fr": "Année",
+            "en": "Year"
+          },
+          "placeholder": {
+            "fr": "ex. 2022",
+            "en": "e.g. 2022"
+          },
+          "info": {
+            "fr": "Année de parution, sur 4 chiffres. Sert à ranger le numéro dans la bonne année sur la page INFORESO.",
+            "en": "Year of publication, 4 digits. Files the issue under the right year on the INFORESO page."
+          },
+          "rules": {
+            "min": 1900,
+            "max": 2100
+          },
+          "messages": {
+            "min": "validation.annee.invalid",
+            "max": "validation.annee.invalid"
+          }
+        },
+        "documents": {
+          "widget": "file",
+          "label": {
+            "fr": "Document PDF",
+            "en": "PDF document"
+          },
+          "info": {
+            "fr": "Le PDF du numéro, hébergé sur la plateforme. Sinon, renseignez un lien ci-dessous.",
+            "en": "The issue's PDF, hosted on the platform. Otherwise, provide a link below."
+          },
+          "widgetProps": {
+            "contentKey": "file",
+            "maxItems": 1,
+            "accept": "application/pdf",
+            "docType": "file",
+            "mediaTarget": {
+              "field": "medias",
+              "type": "pdf"
+            }
+          },
+          "renderOnly": true
+        },
+        "urls": {
+          "widget": "urlList",
+          "label": {
+            "fr": "Lien",
+            "en": "Link"
+          },
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un lien",
+              "en": "Add a link"
+            },
+            "removeLabel": {
+              "fr": "Retirer",
+              "en": "Remove"
+            }
+          },
+          "info": {
+            "fr": "Pour un numéro publié ailleurs (Calameo, Google Drive…). Sinon, joignez le PDF ci-dessus.",
+            "en": "For an issue published elsewhere (Calameo, Google Drive…). Otherwise, attach the PDF above."
+          }
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter un numéro INFORESO",
+            "en": "Add an INFORESO issue"
+          },
+          "edit": {
+            "fr": "Modifier le numéro INFORESO",
+            "en": "Edit INFORESO issue"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Publier",
+            "en": "Publish"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "mutation": {
+        "entityType": "poi",
+        "navigateOnSuccess": false,
+        "inject": {
+          "extraFields": {
+            "type": "doc"
+          }
+        },
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_POI",
+          "edit": "EntityFormModal · UPDATE_POI"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "pois",
+            "searchKeys": [
+              "admin-poi",
+              "searchCostumStatic"
+            ]
+          }
+        }
+      }
+    },
+    "parent62-intervenant": {
+      "id": "parent62-intervenant",
+      "entityType": "poi",
+      "collection": "poi",
+      "costumSlug": "parent62",
+      "layout": {
+        "kind": "flat"
+      },
+      "sections": [
+        {
+          "id": "intervenant",
+          "icon": "award",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "shortDescription",
+                "profil_avatar",
+                "description"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom",
+            "en": "Name"
+          },
+          "placeholder": {
+            "fr": "Prénom Nom",
+            "en": "First name Last name"
+          },
+          "info": {
+            "fr": "Une ou plusieurs personnes, si elles sont intervenues ensemble.",
+            "en": "One or more people, if they spoke together."
+          }
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "required": true,
+          "label": {
+            "fr": "Fonction",
+            "en": "Role"
+          },
+          "placeholder": {
+            "fr": "ex. Psychologue clinicienne",
+            "en": "e.g. Clinical psychologist"
+          },
+          "info": {
+            "fr": "Quelques mots, affichés sous le nom sur la carte.",
+            "en": "A few words, shown under the name on the card."
+          }
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Photo",
+            "en": "Photo"
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "required": true,
+          "label": {
+            "fr": "Présentation",
+            "en": "Presentation"
+          },
+          "info": {
+            "fr": "Parcours et interventions dans le réseau, avec les liens vers les ressources.",
+            "en": "Background and talks in the network, with links to the resources."
+          },
+          "widgetProps": {
+            "height": 320,
+            "preview": "edit"
+          }
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une personne qui a marqué le réseau",
+            "en": "Add someone who left their mark"
+          },
+          "edit": {
+            "fr": "Modifier la fiche",
+            "en": "Edit profile"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Publier",
+            "en": "Publish"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "poi",
+        "navigateOnSuccess": false,
+        "inject": {
+          "extraFields": {
+            "type": "intervenant"
+          }
+        },
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_POI",
+          "edit": "EntityFormModal · UPDATE_POI"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "pois",
+            "searchKeys": [
+              "admin-poi",
+              "searchCostumStatic"
+            ]
+          }
+        }
+      }
     }
   },
   "admin": {
@@ -22410,7 +23003,7 @@
             ],
             "create": "add-parent62-article",
             "createDefaults": {
-              "category": "appel-projet"
+              "category": ["appel-projet"]
             },
             "edit": "inherit"
           }
@@ -22474,7 +23067,7 @@
             ],
             "create": "add-parent62-article",
             "createDefaults": {
-              "category": "offre-emploi"
+              "category": ["offre-emploi"]
             },
             "edit": "inherit"
           }
@@ -22619,6 +23212,132 @@
               "delete"
             ],
             "create": "add-parent62-recovery-center",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "inforeso",
+        "label": {
+          "fr": "INFORESO",
+          "en": "INFORESO"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "INFORESO",
+              "en": "INFORESO"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "doc"
+              },
+              "defaultSortBy": {
+                "annee": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "annee",
+                "label": {
+                  "fr": "Année",
+                  "en": "Year"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Ajouté le",
+                  "en": "Added on"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete"
+            ],
+            "bulkActions": [
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-inforeso",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "intervenants",
+        "label": {
+          "fr": "Elles et ils ont marqué le réseau",
+          "en": "They left their mark on the network"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Elles et ils ont marqué le réseau",
+              "en": "They left their mark on the network"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "intervenant"
+              },
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "shortDescription",
+                "label": {
+                  "fr": "Fonction",
+                  "en": "Role"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Ajouté le",
+                  "en": "Added on"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete"
+            ],
+            "bulkActions": [
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-intervenant",
             "edit": "inherit"
           }
         ]

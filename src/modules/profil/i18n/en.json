@@ -1268,6 +1268,12 @@
     "address": {
       "required": "Complete address required: city, postal code and street"
     },
+    "annee": {
+      "invalid": "Enter a 4-digit year, for example 2022"
+    },
+    "documentOuLien": {
+      "required": "Attach a document or provide a link"
+    },
     "minLength": "Too short",
     "maxLength": "Too long",
     "min": "Value too small",

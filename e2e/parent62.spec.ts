@@ -63,7 +63,7 @@ async function waitForHydration(page: Page) {
 }
 
 test.describe("Parent62 — Partie 1 (lecture seule)", () => {
-  test("accueil : titre, nav à 5 entrées, dropdown Publics, 9 bulles territoire", async ({
+  test("accueil : titre, nav à 6 entrées, dropdown Publics, 9 bulles territoire", async ({
     page,
   }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
@@ -75,7 +75,8 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     const headerNav = page.locator("nav.sticky").first();
     await expect(headerNav).toBeVisible();
 
-    expect(config.header.nav, "la nav de la config doit rester à 5 entrées").toHaveLength(5);
+    // 17/09 : « INFORESO » rejoint le premier niveau, à côté de « Contenus » (6 entrées au lieu de 5).
+    expect(config.header.nav, "la nav de la config doit rester à 6 entrées").toHaveLength(6);
     const headerText = (await headerNav.textContent()) ?? "";
     for (const item of config.header.nav) {
       expect(headerText, `entrée « ${item.label.fr} » attendue dans le header`).toContain(
@@ -191,6 +192,23 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     }
   });
 
+  test("/zoomcat : liste des actualités « Zoom sur le réseau », sans filtre, atteinte depuis l'accueil", async ({ page }) => {
+    // Le bouton « voir tout » de la section « Zoom sur le réseau » de l'accueil mène à cette page.
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+    await expect(page.locator('[data-section-type="articleTeaser"] a[href="/zoomcat"]')).toHaveCount(1);
+
+    await page.goto("/zoomcat", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    await expect(page.getByRole("heading", { name: "Zoom sur le réseau" }).first()).toBeVisible();
+    // Page de listing pure : ni champ de recherche ni liste déroulante de filtres.
+    await expect(page.locator("main input[type=search], main [role=combobox]")).toHaveCount(0);
+    if (backendUp) {
+      await expect(page.locator("main h3").first()).toBeVisible();
+    }
+  });
+
   test("mode sombre : header stacked — nav lisible, wordmark collapse au scroll", async ({
     page,
   }) => {
@@ -231,6 +249,48 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     const section = page.locator('[data-section-type="featured-carousel"]');
     if (backendUp && (await section.count()) > 0) {
       await expect(section.getByRole("link").first()).toBeVisible();
+    }
+  });
+
+  test("header à 1280px (seuil de la nav complète) : aucun débordement horizontal", async ({ page }) => {
+    // À `xl` pile, la nav de premier niveau et le groupe d'actions partagent la ligne : une entrée de plus
+    // (INFORESO, 17/09) poussait « Se connecter » 3px hors de l'écran, sur toutes les pages.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/blog", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }));
+    expect(scrollWidth, "la page ne doit pas défiler horizontalement").toBeLessThanOrEqual(clientWidth);
+    await expect(page.getByRole("button", { name: "Se connecter" }).first()).toBeInViewport({ ratio: 1 });
+  });
+
+  test("/inforeso : les numéros rangés par année s'ouvrent dans un nouvel onglet", async ({ page }) => {
+    await page.goto("/inforeso", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    await expect(page.getByRole("heading", { name: "INFORESO" }).first()).toBeVisible();
+    // Les blocs d'année n'existent que si des numéros sont saisis : l'assertion suit la donnée.
+    const annee = page.getByRole("region", { name: /^\d{4}$/ }).first();
+    if (backendUp && (await annee.count()) > 0) {
+      const numero = annee.getByRole("link").first();
+      await expect(numero).toHaveAttribute("target", "_blank");
+      await expect(numero).toHaveAttribute("rel", "noopener noreferrer");
+    }
+  });
+
+  test("/elles-et-ils-ont-marque-le-reseau : annuaire affiché en entier, sans clic ni modale", async ({ page }) => {
+    await page.goto("/elles-et-ils-ont-marque-le-reseau", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    await expect(page.getByRole("heading", { name: "Elles et ils ont marqué le réseau" }).first()).toBeVisible();
+    const personne = page.locator("main article").first();
+    if (backendUp && (await personne.count()) > 0) {
+      await expect(personne.getByRole("heading", { level: 3 })).toBeVisible();
+      // Design `portrait` : tout est sur la carte — aucun bouton d'ouverture de détail.
+      await expect(personne.getByRole("button")).toHaveCount(0);
     }
   });
 });
