@@ -528,7 +528,7 @@ Props : `{ value, onChange?, height=200, preview="edit"|"live"|"preview" }`.
 
 **Toolbar réduite** (`commands` / `extraCommands`). La barre par défaut (~25 boutons) est ramenée à l'essentiel article : gras, italique, barré, titres, lien, citation, listes (à puces / numérotée / cochée), image, code, + bascule édition/aperçu (`codeEdit`/`codePreview`). Sont retirés table, code block, comment, et surtout **`fullscreen`** — volontairement, car c'est lui qui manipule `body.style.overflow` (cf. `overflow={false}`).
 
-**Preview sanitisée** (`components.preview`). L'aperçu est rendu via `helpers/renderMarkdown` (markdown-it + DOMPurify de `lib/sanitize`) dans un `<div className="wmde-markdown">` — **exactement le même pipeline** que le rendu public de l'article (`ArticleReader`). Remplace le rendu rehype par défaut de la lib (non assaini) → **anti-XSS** + WYSIWYG fidèle à la publication.
+**Preview sanitisée** (`components.preview`). L'aperçu est rendu par `ProseContent` en markdown forcé (markdown-it `html: true` + profil strict `sanitizeProse` de `lib/sanitize`) dans un `wmde-markdown` — **exactement le même pipeline** que le rendu public de l'article (`ArticleBody`, partagé par `ArticleReader` et `ArticleReaderPoster`) : un tableau HTML collé dans le texte s'affiche pareil dans l'aperçu et une fois publié. Remplace le rendu rehype par défaut de la lib (non assaini) → **anti-XSS** + WYSIWYG fidèle à la publication.
 
 ---
 
