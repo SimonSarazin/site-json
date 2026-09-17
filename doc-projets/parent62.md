@@ -3090,7 +3090,7 @@ Config : **48 → 51 pages**, **170 → 176 sections**, **5 → 7 formulaires co
 | Onglet `/admin` « INFORESO » | colonnes titre / année / ajouté le, tri serveur par année |
 | Page | titre et sous-titre, puis la liste **groupée par année** (`list.layout: "grouped"`, plus récente en tête) en lignes compactes (`resource.design: "document"`) qui ouvrent directement le PDF, sinon le lien, dans un nouvel onglet |
 | Ordre dans une année | numéro le plus récemment saisi en tête (`groupBy.itemsSortBy: created desc`) — cf. encadré |
-| Menu | entrée de premier niveau « INFORESO », à côté de « Contenus ». Cette 6ᵉ entrée faisait déborder la page de **3 px à 1280 px** (le groupe recherche/thème/langue/« Se connecter » sortait de l'écran, sur toutes les pages) : l'écart entre entrées du header `stacked` passe de 48 à **32 px entre 1280 et 1535 px** (`gap-8 2xl:gap-12`, `HeaderStacked.tsx` — parent62 est le seul site sur ce header). Mesuré en fr et en en de 1280 à 1920 px : plus de débordement, ≥ 43 px de marge avant les actions |
+| Menu | entrée de premier niveau « INFORESO », à côté de « Contenus ». Cette 6ᵉ entrée faisait déborder la page de **3 px à 1280 px** (le groupe recherche/thème/langue/« Se connecter » sortait de l'écran, sur toutes les pages) : l'écart entre entrées du header `stacked` passe de 48 à **32 px entre 1280 et 1535 px** (`HeaderStacked.tsx` — parent62 est le seul site sur ce header ; **ramené à 24 px le 17/09** avec la loupe de recherche, §9novovicies). Mesuré en fr et en en de 1280 à 1920 px : plus de débordement |
 | `/reseau` | le bloc INFORESO (image et bouton, désormais « Voir tous les numéros INFORESO ») pointe `/inforeso` au lieu de `/ressources` |
 
 > **Le backend ne trie que sur la PREMIÈRE clé de `sortBy`.** `SearchNew.php` lit `array_keys($post["sortBy"])[0]` :
@@ -3317,6 +3317,35 @@ relatif : il suit le domaine où tourne le site.
 | Portée inter-sites | ✅ `grouped`, `groupBy`, `document`, `portrait`, `subtitleField` : optionnels, utilisés par parent62 seul. Le `lazy` de `vite-preload` concerne aussi les cartes `resource` de **institut-bleu, rezo-sante-reunion, maison-sport-sante-la-tampon, sport-sante-bien-etre** |
 
 Lot commité le 17/09/2026.
+
+---
+
+## 9novovicies. Loupe de recherche dans le menu
+
+Une **7ᵉ entrée de menu, en icône seule** (une loupe), suit « INFORESO » et mène à `/recherche` — comme sur
+l'ancien site, où la loupe du header ouvrait la page d'archives. Son libellé « Recherche » / « Search » reste
+le nom lu par les lecteurs d'écran et l'infobulle au survol ; le menu mobile l'affiche avec son libellé.
+Le bouton `Ctrl+K` du groupe d'actions, qui ouvre la palette de commandes, est conservé : les deux coexistent.
+
+Côté moteur, une entrée de nav accepte `iconOnly: true` (avec `icon`). Seule la barre desktop du header
+`stacked` l'honore ; les autres variantes et le menu mobile affichent le libellé (doc/04).
+
+**Place dans la barre.** Cette entrée ajoute 56 px au menu et ne laissait plus que **5 px** avant débordement
+à 1 280 px en français ; avec une barre de défilement classique (17 px, Windows), le contenu dépassait de
+**20 px** et « Se connecter » touchait le bord. L'écart entre entrées passe donc de 32 à **24 px entre 1 280 et
+1 535 px** (48 px au-delà, inchangé) : il reste **45 px** de marge à 1 280 px en français, **28 px** avec la
+barre de défilement, et **54 px** en anglais.
+
+### 9novovicies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` | ✅ 51 pages · 174 sections |
+| `test:e2e` ciblé (`parent62.spec.ts`) | ✅ **15/15**. Le test d'accueil décrit la nav à **7 entrées** et vérifie que la loupe n'affiche aucun texte, porte le nom accessible « Recherche » et pointe `/recherche` ; **nouveau test** « barre de défilement classique » : rouge avec l'écart de 32 px (1 243 px de contenu pour 1 223 px de barre), vert à 24 px |
+| `test:e2e` complet | ✅ **30 passés**, 8 ignorés, 7 échecs étrangers : les specs génériques comparées à `config.prod.json` (un autre site) et `auth-flow` sans `.env.test`. Sur la config parent62, `config-nav` en garde 2, qui cherchent la nav dans `<header>` alors que le header `stacked` la rend dans un `<nav class="sticky">` séparé. Le test générique « chaque libellé de menu apparaît dans le header » sait désormais qu'une entrée `iconOnly` expose son libellé en nom accessible |
+| `config:render` | ✅ parent62 : chaque page sert au moins une section avec du contenu |
+| `typecheck` · `lint` | ✅ · ✅ 0 message sur les fichiers du lot |
+| Écran | ✅ 1 280, 1 366, 1 440, 1 535, 1 536 et 1 920 px, en français et en anglais, bandeau haut et barre compacte, clair et sombre : aucun débordement, loupe à ≥ 16 px du groupe d'actions. Menu mobile : entrée « Recherche » avec icône et libellé |
 
 ---
 
