@@ -991,7 +991,7 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 | `overlay` | `CardOverlay` | Image en fond + overlay gradient |
 | `image-cover` | `CardImageCover` | Image de couverture en haut |
 | `image-panel` | `CardImagePanel` | Image en panneau latéral |
-| `event` | `CardEvent` | Événement (dates, lieu, organisateur) |
+| `event` | `CardEvent` | Événement (dates, lieu, organisateur) — un événement de plusieurs jours affiche ses deux bornes (« 1 – 31 oct. 2026 », `lib/eventDateSpan.ts`) ; un créneau de nuit de moins de 24 h reste un seul jour |
 | `event-featured` | `CardEventFeatured` | Événement mis en avant |
 | `funding` | `CardFunding` | Financement / cagnotte |
 | `resource-booking` | `CardResourceBooking` | Ressource réservable |
