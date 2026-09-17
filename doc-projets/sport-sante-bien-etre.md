@@ -13,7 +13,16 @@
 > [Module Articles/Blog](../doc/32-module-articles-blog.md) ·
 > [Module Profil](../doc/08-module-profil.md). Mémoire : `[[project-sport-sante-bien-etre]]`.
 
-Dernière mise à jour : **2026-09-15**. Lot du 15/09 (branche `n-dev` : `9deff38a`) : **4 nouvelles
+Dernière mise à jour : **2026-09-17**. Lot du 16-17/09 (branche `n-dev` : `16922f73` →
+`ae133e6a` → merge de `main` `c3f347aa`) : Nicolas restreint l'accès de 8 pages
+(`auth.required: true`) et élague 4 entrées de nav devenues secondaires (`/equipements-sportifs`,
+`/mapping`, `/listing-formations`, le dropdown « Communauté ») ; Claude enrichit le formulaire
+`sport-sante-bienetre-ressource` (2 nouvelles thématiques — `dispositifs`/`prescription` —, upload
+PDF porté à 2 fichiers, photo de profil `profil_avatar` affichée seulement pour « Dispositifs » via
+`visibleIf`) et livre la page `/programmes-dispositifs` (réservée aux connectés) qui liste ces
+ressources en cartes ; puis merge de `main` dans `n-dev`, qui embarque une montée SDK **1.0.192**
+sans rapport avec SSBE — cf. §9, §13 (question 17 partiellement répondue).
+Lot du 15/09 (branche `n-dev` : `9deff38a`) : **4 nouvelles
 pages** — `/habilitation-mss`, `/faq`, `/faq-pro`, `/prescription` — avec leurs entrées de nav
 (Professionnels ×3, Grand Public ×1) ; ferme le lien mort `/prescription` (§13, question 1, il ne
 reste que `/strategie`) ; corrige au passage une ancre morte introduite par un renommage manuel
@@ -39,7 +48,7 @@ Plateforme régionale de promotion du sport-santé à La Réunion : elle met en 
 public** (trouver un créneau, une structure, un équipement), les **professionnels** (labellisation,
 formation, prescription) et la **communauté** des acteurs du réseau.
 
-C'est, par le volume, la **deuxième config du parc** après parent62 : 24 pages, 83 sections,
+C'est, par le volume, la **deuxième config du parc** après parent62 : 25 pages, 86 sections,
 6 formulaires costum, un back-office à 10 onglets.
 
 ### Identité
@@ -51,8 +60,8 @@ C'est, par le volume, la **deuxième config du parc** après parent62 : 24 pages
 | Config | [`../config.prod.sport-sante-bien-etre.json`](../config.prod.sport-sante-bien-etre.json) |
 | CSS | [`../src/index-sport-sante-bien-etre.css`](../src/index-sport-sante-bien-etre.css) — 75 variables, bloc `theme` **complet** en config |
 | Langues | `fr` (défaut) + `en` |
-| SDK | `@communecter/cocolight-api-client` **1.0.191** (`package.json` `^1.0.191`, inchangée par le merge du 09/09) |
-| Branche courante | `n-dev` — `070a3267` (lot structure) → `8bbe35a2` (merge de `main`) → `518b40e8` (lot pièces justificatives, 10/09) → `9deff38a` (lot 4 pages pro/public, 15/09). Prérequis backend : `Organization::getById` porté sur `master` de `citizenToolKit` |
+| SDK | `@communecter/cocolight-api-client` **1.0.192** (`package.json` `^1.0.192`, mesurée le 17/09 — montée arrivée via le merge de `main`, sans rapport avec SSBE ; expose `setSiteCostum`/`hasCostumContext`, cf. commit `ac05a227`) |
+| Branche courante | `n-dev` — `070a3267` (lot structure) → `8bbe35a2` (merge de `main`) → `518b40e8` (lot pièces justificatives, 10/09) → `9deff38a` (lot 4 pages pro/public, 15/09) → `16922f73` (restriction d'accès + clean nav, 16/09) → `ae133e6a` (ressource enrichie + page `/programmes-dispositifs`, 16/09) → `c3f347aa` (merge de `main`, 17/09). Prérequis backend : `Organization::getById` porté sur `master` de `citizenToolKit` |
 | Historique | **76 commits** touchant la config (`git log --follow`, 03/08) ; `070a3267` réécrit ~2 200 lignes du fichier, le merge de `main` ~1 100 de plus |
 
 ### Historique des chantiers
@@ -68,6 +77,9 @@ C'est, par le volume, la **deuxième config du parc** après parent62 : 24 pages
 | 09/09 | Claude | `070a3267` **feat(ssbe)** : refonte du formulaire d'ajout de structure aligné sur le dynForm legacy du costum ; `structure:tagsFromThematic` → miroir verbatim, clé **partagée Ekilib.re + SSBE** ; section « Actions rapides » sur `/espace-professionnels` ; consolidation MSS (champ `mss`, onglet admin dédié, retrait du form `sport-sante-bienetre-mss`) ; `statusActor`. Puis merge de `main` (`8bbe35a2`) — cf. §9 |
 | 10/09 | Claude | `518b40e8` **feat(ssbe)** : récupération des **pièces justificatives** en édition et sur la fiche publique. Patch backend `Organization::getById` (joint `images` + `files` à la fiche, calqué sur `Poi::getById`, porté sur `master` de `citizenToolKit`) ; `subKey` = clé du champ posée à l'upload (le backend écrase le `contentKey` des `doctype:file` en bucket MIME) ; `seedGalleryDefaults` partitionné par `subKey` ; `PreviewStructure` en emplacements nommés (parité fiche legacy `ssbe/organizations/preview.php`) — cf. §9 |
 | 15/09 | Claude | `9deff38a` **feat(ssbe)** : 4 pages config-only, contenu dérivé de captures d'écran fournies et de recherche web pour les liens officiels (Légifrance, Pôle Ressources National) — `/habilitation-mss`, `/faq`, `/faq-pro`, `/prescription` — + 4 entrées de nav. Ferme le lien mort `/prescription` (question 1, §13). Trois trouvailles en cours de route : une ancre morte (renommage manuel d'`id` de section, hors session), un bug de lisibilité sur `heroWithIcon` (texte toujours sombre sur fond image, contourné en `theme.customCSS` scopé), et un `<Link>` React Router **sans** `classifyHref` dans `HeroQuickAccess.tsx`/`CtaCardGrid.tsx` — signalé, **non corrigé** (composants partagés, changement hors périmètre de cette session) — cf. §9, §12 |
+| 16/09 | Nicolas | `16922f73` « Restriction d'accès des pages et clean dans le menu » : `auth.required: true` posé sur 8 pages (`/espace-professionnels`, `/faq-pro`, `/prescription`, `/labellisation`, `/habilitation-mss`, `/formation`, `/listing-formations`, `/ressources`) ; 4 entrées de nav retirées (`/equipements-sportifs`, `/mapping`, `/listing-formations`, tout le dropdown « Communauté » — `/projets`/`/structure`/`/communaute`) et un CTA mort vers `/equipements-sportifs`. Les pages elles-mêmes restent déclarées (atteignables par URL directe), seule la nav et l'auth changent — cf. §9 |
+| 16/09 | Claude | `ae133e6a` **feat(ssbe)** : formulaire `sport-sante-bienetre-ressource` — 2 nouvelles thématiques (`dispositifs`, `prescription`, posées par Nicolas juste avant la session), upload `documents` porté à 2 fichiers PDF, champ `profil_avatar` (widget `image`) affiché seulement pour « Dispositifs » via `visibleIf`. Nouvelle page `/programmes-dispositifs` (réservée aux connectés) : hero + recherche libre + cartes `resource` filtrées `thematique: dispositifs`, alimentées par `profil_avatar`. Entrée de nav sous Professionnels — cf. §9 |
+| 17/09 | Parc | Merge de `main` dans `n-dev` (`c3f347aa`) — apporte notamment `chore(deps)` SDK **1.0.192** (`ac05a227`, `setSiteCostum`/`hasCostumContext`) et une grosse refonte de `parent62`. Rien de spécifique SSBE ; gates re-passés verts (cf. §9) |
 
 ---
 
@@ -110,7 +122,7 @@ panneau `filters` en colonne gauche — le montage du site frère, adopté à la
 
 Aucun CDC formel n'a été versé au dépôt. Le périmètre se lit dans la config elle-même.
 
-### 4.1 Les 24 pages
+### 4.1 Les 25 pages
 
 | Page | Rôle | Sections |
 |---|---|---|
@@ -123,6 +135,7 @@ Aucun CDC formel n'a été versé au dépôt. Le périmètre se lit dans la conf
 | `/habilitation-mss` | Procédure d'habilitation officielle MSS (15/09) | 10 |
 | `/faq` · `/faq-pro` | FAQ grand public · FAQ professionnels (15/09) | 2 · 2 |
 | `/prescription` | Aide à la prescription médicale (15/09) | 5 |
+| `/programmes-dispositifs` | Cartes des dispositifs « Sport sur ordonnance » (16/09, réservée aux connectés) | 3 |
 | `/structure` · `/mss` | Structures · Maisons Sport-Santé | 2 · 4 |
 | `/creneaux` · `/equipements-sportifs` · `/mapping` | Jeux de données du territoire | 2 chacune |
 | `/formation` · `/listing-formations` · `/projets` | Formation et projets | 3 · 2 · 2 |
@@ -138,10 +151,17 @@ donnée sondée — du contenu éditorial statique (`hero-quick-access`/`heroWit
 `accordion`/`categories-grid`/`cards` + quelques sections `html` pour les mises en page non
 couvertes par le catalogue — cartes numérotées, bandeaux dégradés). Détail au §9.
 
+⚠️ **Depuis le 16/09** (`16922f73`, §9), `/equipements-sportifs`, `/mapping`, `/listing-formations`,
+`/projets`, `/structure` et `/communaute` restent déclarées ici (atteignables par URL directe) mais
+**ne sont plus reliées à la nav** — Nicolas a élagué le dropdown « Communauté » et 3 entrées jugées
+secondaires. La table ci-dessus liste les pages **de la config**, pas celles **du menu** ; se référer
+au bloc `header.nav` pour l'état réel de la navigation.
+
 ### 4.2 Les 6 formulaires costum
 
 Comptages re-dérivés de la config le **2026-09-09** (`fields{}` déclarés vs référencés dans
-`sections[].fields[]` + `sections[].groups[].fields[]`) — **160 déclarés, 108 placés** :
+`sections[].fields[]` + `sections[].groups[].fields[]`) — **160 déclarés, 108 placés** ; `ressource`
+actualisée le **16/09** (`profil_avatar` ajouté, §9) → **161 déclarés, 109 placés** :
 
 | Formulaire | Entité | Champs déclarés | dont **placés** |
 |---|---|---|---|
@@ -150,7 +170,7 @@ Comptages re-dérivés de la config le **2026-09-09** (`fields{}` déclarés vs 
 | `sport-sante-bienetre-session-formation` | events | 29 | 14 |
 | `sport-sante-bienetre-formation` | projects | 28 | 16 |
 | `sport-sante-bienetre-article` | poi | 13 | 6 |
-| `sport-sante-bienetre-ressource` | poi | 6 | 6 |
+| `sport-sante-bienetre-ressource` | poi | 7 | 7 |
 
 `sport-sante-bienetre-mss` a été **supprimé le 09/09** (`070a3267`, §9) : les Maisons Sport-Santé
 sont désormais des structures avec un champ `mss` coché, éditées par le même formulaire.
@@ -779,6 +799,114 @@ annulé avant écriture, cf. ci-dessus).
 
 ---
 
+### Lot du 16/09 — restriction d'accès + clean nav (Nicolas)
+
+> Commit `16922f73`, config-only.
+
+**1. `auth.required: true` posé sur 8 pages** : `/espace-professionnels`, `/faq-pro`,
+`/prescription`, `/labellisation`, `/habilitation-mss`, `/formation`, `/listing-formations`,
+`/ressources`. Le site se referme : une bonne partie du contenu « Professionnels » (et `/ressources`,
+déjà gardée depuis le 02/09) passe derrière la connexion.
+
+**2. Nav élaguée** : retrait de 4 entrées jugées secondaires — « Équipements sportifs »
+(`/equipements-sportifs`), « Cartographie » (`/mapping`), « Organismes de formation »
+(`/listing-formations`), et tout le dropdown « Communauté » (`/projets`, `/structure`,
+`/communaute`) — ainsi qu'un CTA mort vers `/equipements-sportifs` sur `/presentation`. **Les pages
+elles-mêmes ne sont pas supprimées** de `pages[]` : diff mesuré 24 insertions / 90 suppressions sur
+114 lignes, aucune section de page touchée — seul `header.nav` et les blocs `auth` bougent. Elles
+restent donc atteignables par URL directe, orphelines de menu (cf. §4.1).
+
+**Gates (16/09)** : `config:validate` ✅ **24 pages / 83 sections** (inchangé, aucune page
+ajoutée/retirée) · revérifié le 17/09.
+
+---
+
+### Lot du 16/09 (2) — formulaire ressource enrichi + page `/programmes-dispositifs`
+
+> Branche `n-dev`, commit `ae133e6a`. Deux demandes du porteur traitées dans la même session :
+> élargir l'upload et la photo du formulaire `sport-sante-bienetre-ressource`, puis publier une
+> page dédiée aux dispositifs « Sport sur ordonnance », sur maquette fournie.
+
+**1. Formulaire `sport-sante-bienetre-ressource`.** Le porteur avait déjà ajouté deux valeurs à
+l'énum `thematique` (`dispositifs`, `prescription`) juste avant la session — restées non commitées,
+embarquées dans ce même commit. Deux changements dessus :
+
+- `documents` (widget `file`, PDF) : `widgetProps.maxItems` **1 → 2**, libellés/info passés au
+  pluriel (« Fichiers PDF », « jusqu'à 2 ») — patron déjà employé ailleurs dans le parc
+  (`institut-bleu`/`parent62`/`saint-paul-sport`, `maxItems: 8`).
+- Nouveau champ **`profil_avatar`** (widget `image`, `shape: square`) affiché **seulement** si
+  `thematique === "dispositifs"`, via `visibleIf: { field: "thematique", op: "eq", value:
+  "dispositifs" }` (moteur `formEngine`, `doc/28-module-formengine.md`). `profil_avatar` est le nom
+  de champ déjà utilisé 5× ailleurs dans **cette même config** (organizations, article, équipements
+  sportifs, session-formation) — champ **cœur** du POI, pas spécifique au sous-type `ressource`,
+  donc a priori non soumis au piège `costum.typeObj.ressource` non déclaré (§9, lot 02/09 (2)) qui
+  avait fait écarter `thematique`/`status` en silence. **Non vérifié en navigateur** — à confirmer
+  en créant/éditant une ressource « Dispositifs » que la photo survit bien en base.
+- Bloc racine `image: { field: "profil_avatar", existingUrlFrom: "image:profilUrl" }` ajouté au
+  costumForm (même patron que les 5 usages existants), sans quoi le fichier saisi ne serait jamais
+  routé vers `profil_avatar` à la sauvegarde.
+
+**2. Nouvelle page `/programmes-dispositifs`** (réservée aux connectés, cohérent avec le lot du
+16/09 de Nicolas ci-dessus). Composée à partir d'une maquette fournie, mais **simplifiée sur
+instruction explicite du porteur** pour le contenu : la maquette montrait des cartes riches
+(logo, « Comment ça marche », « Pour qui », bouton de prescription) — le porteur a demandé de
+réutiliser **le type de carte de `/ressources`** (`card.type: "resource"`) plutôt que de
+construire ce design dédié.
+
+- `hero` (pas `heroWithIcon` — évite le bug de lisibilité texte du 15/09, §12) : titre/sous-titre
+  de la maquette, fond `/images/sportSanteBienetre/dispositif.png` (~2,9 Mo, plus lourd que les
+  `.jpg` des autres heros — à optimiser si le poids de page devient un sujet), `overlay: true`.
+- `searchHeader` réduit à une simple zone de texte libre (`showSearch` seul, pas de titre ni de
+  filtres) — demande explicite du porteur, contrairement au filtre latéral par thématique de
+  `/ressources`.
+- `searchProStatic` : mêmes réglages que `/ressources` (`card.type`/`preview.type: "resource"`,
+  colonnes `sm:1/md:2/lg:2`) mais `defaultFilters` **figé** sur `thematique: "dispositifs"` (en plus
+  de `type: "ressource"` et `status: "Visible"`) — pas de filtre thématique proposé à
+  l'utilisateur, il n'y en a qu'une. `badge` volontairement **omis** (`ResourceConfSchema.badge` est
+  optionnel) : toutes les cartes partageant la même thématique, la pastille colorée serait
+  redondante et n'apparaît pas dans la maquette.
+- Image des cartes : `profilMediumImageUrl`, dérivée du champ `profil_avatar` ajouté au point 1 —
+  les deux livrables du lot se rejoignent, une ressource « Dispositifs » sans photo retombe sur le
+  visuel de repli standard du composant.
+- Entrée de nav « Programmes et dispositifs » sous Professionnels, après « Prescrire & Orienter ».
+
+**Répond partiellement à la question 17 (§13)** : la direction choisie pour les documents de
+`/prescription` — des entités `ressource` avec un filtre `thematique` dédié plutôt que des fichiers
+statiques — est celle-ci, mais concrétisée comme une **page séparée** (`/programmes-dispositifs`)
+plutôt qu'intégrée aux sections « Guides et modèles » de `/prescription` elle-même. Cette dernière ne
+lie pas encore vers la nouvelle page — question laissée ouverte, reformulée au §13.
+
+**Écart non traité, à trancher** : les 2 nouvelles valeurs de `thematique` (`dispositifs`,
+`prescription`) ne sont mappées ni dans les cases à cocher du filtre latéral de `/ressources`
+(`filterGroups[0].options`), ni dans ses `badge.colors`/`icons`/`labels` — une ressource
+« Dispositifs » ou « Prescription » saisie via le formulaire enrichi n'apparaîtra donc sur
+`/ressources` qu'avec une pastille non stylée (clé brute affichée, cf. le mécanisme documenté au
+lot 02/09 (2)). Nouvelle question au §13.
+
+**Gates (16/09)** : `config:validate` ✅ **25 pages / 86 sections** · `audit:config` 🟡 **2 constats
+préexistants inchangés** (`/strategie`, `/rejoindre`, §13) · `typecheck` ✅ · `lint` ✅ **0 erreur**
+(24 warnings React Compiler préexistants, fichiers non touchés) · `test:preflight` ✅ **633** (2
+échecs préexistants hors périmètre, identiques au lot du 09/09) · snapshot
+`tests/preflight/__effective__/sport-sante-bien-etre.json` régénéré (diff limité à la nouvelle
+route `/programmes-dispositifs/searchProStatic`) · **recette navigateur non faite**.
+
+---
+
+### Lot du 17/09 — merge de `main` dans `n-dev`
+
+> Commit `c3f347aa`, sans commit SSBE dédié — fusion de routine après le lot ci-dessus.
+
+Apporte notamment `chore(deps)` **SDK 1.0.192** (`ac05a227`, expose `setSiteCostum`/
+`hasCostumContext` — active le branding costum des e-mails, cf. §11) et une refonte importante de
+`config.prod.parent62.json`, sans rapport avec SSBE. `config.prod.sport-sante-bien-etre.json`
+lui-même **non touché** par le merge (aucun conflit).
+
+**Gates (17/09, revérifiés post-merge)** : `config:validate` ✅ **25 pages / 86 sections** ·
+`typecheck` ✅ · `test:preflight` ✅ **636/638** (2 mêmes échecs préexistants hors périmètre — le
+nombre total de tests monte avec le merge, sans lien avec SSBE).
+
+---
+
 ## 10. Checklist d'avancement
 
 | # | Fonctionnalité | État | Détail |
@@ -819,6 +947,9 @@ annulé avant écriture, cf. ci-dessus).
 | 34 | Page `/prescription` | ✅ config (`9deff38a`, 15/09) | Ferme le lien mort historique de la tuile « Aide à la prescription » (§13, question 1 close). Sections « Guides et modèles » (cartes PDF) **non posées**, documents à fournir — §13 nouvelle question |
 | 35 | Lisibilité `heroWithIcon` sur fond image | ✅ contourné (`9deff38a`, 15/09) | Bug réel du composant (toujours `text-foreground`), corrigé en CSS scopé (`theme.customCSS`) plutôt que dans le composant — seul usage du type dans le parc. **Composant non corrigé** |
 | 36 | `<Link>` sans `classifyHref` (`HeroQuickAccess`, `CtaCardGrid`) | ❌ | Bug identifié deux fois en session (15/09), contourné côté config à chaque fois. Affecte potentiellement tout le parc (parent62 pour `cta-card-grid`) — correctif de composant **non fait**, hors périmètre de la session |
+| 37 | Restriction d'accès + clean nav | ✅ config (`16922f73`, 16/09, Nicolas) | `auth.required: true` sur 8 pages, 4 entrées de nav retirées (§9) — **recette navigateur à faire** (vérifier qu'un visiteur non connecté est bien redirigé/invité à se connecter sur les 8 pages) |
+| 38 | Formulaire ressource — upload 2 fichiers + photo conditionnelle | ✅ config (`ae133e6a`, 16/09) | `documents.maxItems` 1→2 ; `profil_avatar` affiché seulement si `thematique: "dispositifs"` (§9) — **recette navigateur à faire** : créer/éditer une ressource « Dispositifs », vérifier que la photo est bien envoyée et relue en édition |
+| 39 | Page `/programmes-dispositifs` | ✅ config (`ae133e6a`, 16/09) | Hero + recherche libre + cartes `resource` filtrées `thematique: dispositifs`, entrée de nav Professionnels (§9). Répond partiellement à la question 17 (§13) — **recette navigateur à faire**, et aucune ressource « Dispositifs » saisie à ce jour donc page vide en pratique |
 
 ---
 
@@ -827,7 +958,9 @@ annulé avant écriture, cf. ci-dessus).
 Aucune demande en cours. La config n'emploie que des méthodes publiques déjà disponibles
 (`searchCostum`, `coformAnswersSearch`).
 
-Version installée : **1.0.191** (`package.json` `^1.0.191`, mesurée le 08/09). Le poste sensible
+Version installée : **1.0.192** (`package.json` `^1.0.192`, mesurée le 17/09 — montée arrivée par le
+merge de `main` du 17/09, `ac05a227`, sans action ni impact spécifique SSBE ; expose
+`setSiteCostum`/`hasCostumContext` pour le branding costum des e-mails). Le poste sensible
 reste la pose du scope costum côté admin (`setCostumScope`, cf.
 [`../src/modules/admin/lib/ensureCostumScope.ts`](../src/modules/admin/lib/ensureCostumScope.ts)) —
 pertinent ici : SSBE a un back-office `/admin` à 9 onglets (§4.3).
@@ -888,6 +1021,17 @@ organisations → la modale d'édition et la fiche `PreviewStructure` ne montren
 - **Un `id` de section est une ancre potentielle** (CTA `#id`, `theme.customCSS`) — un renommage
   manuel casse silencieusement ces deux usages ; seul `audit:config` (catégorie `ancre-morte`) le
   détecte, ni `config:validate` ni le préflight.
+- **`thematique` de `/ressources` n'est mappée que pour 7 valeurs sur 9** (16/09, §9) — le filtre
+  latéral (`filterGroups[0].options`) et le `resource.badge` (`colors`/`icons`/`labels`) de la page
+  n'ont pas été mis à jour avec les 2 valeurs ajoutées au formulaire (`dispositifs`, `prescription`).
+  Une ressource saisie avec l'une de ces thématiques reste invisible du filtre et affiche une
+  pastille non stylée (clé brute) sur `/ressources` — cf. §13, nouvelle question.
+- **`profil_avatar` est un nom de champ CONVENTIONNEL, pas arbitraire** (`doc/28-module-formengine.md`,
+  widget `image`) : il doit être répété **à l'identique** comme nom de champ ET dans le bloc racine
+  `image.field` du costumForm pour que `useEntityMutation` route le fichier au bon endroit
+  (`payload.profil_avatar`). Un autre nom (ex. `_imageFile`, employé côté Ekilib.re) fonctionne aussi
+  tant que les deux occurrences concordent — mais **cette config-ci** utilise `profil_avatar` partout
+  (5 formulaires avant le lot du 16/09, 6 depuis) : y rester pour la cohérence interne du fichier.
 
 ---
 
@@ -911,5 +1055,7 @@ organisations → la modale d'édition et la fiche `PreviewStructure` ne montren
 | 12 | **Périmètre de la palette ⌘K** — SSBE cite `equipementsSportifs974` mais jamais `associationEkilibre`, alors que le site du Tampon cite SSBE. L'agrégation ne va que dans un sens : à corriger ou à documenter | Thomas |
 | 15 | **Pièces justificatives publiques sur `/mss`** — depuis le 10/09, `PreviewStructure` lit `about.files` (endpoint `element/about` public) : statuts et attestations d'assurance deviennent téléchargeables par un visiteur anonyme. C'est le comportement de la fiche legacy `ssbe/organizations/preview.php`, repris tel quel. Garde-t-on la parité, ou réserve-t-on la section « Documents » au propriétaire / à un admin ? | Thomas |
 | 16 | **Intitulé du 1er emplacement documents** — la fiche affiche « Récépissé de déclaration » (libellé legacy) alors que le champ du formulaire s'appelle « Statuts » ; l'emplacement accepte les deux `subKey` (`statusFile`, `recepisseDeclaration`). Aligner l'intitulé sur « Statuts » (1 ligne d'i18n) ou garder le libellé legacy ? | Thomas |
-| 17 | **`/prescription` — 4 documents PDF non posés** (« Guides et modèles », « Guide Consultation et prescription… »), présents dans la capture mais volontairement laissés de côté le 15/09 faute de source : fichiers statiques à déposer, ou entités `ressource` du backend (comme `/ressources`, avec un filtre `thematique` dédié) ? | Thomas |
+| 17 | ~~`/prescription` — 4 documents PDF non posés~~ — **direction tranchée le 16/09** (§9, `ae133e6a`) : entités `ressource` avec filtre `thematique` dédié plutôt que fichiers statiques, comme pressenti. Concrétisé comme une **page séparée** `/programmes-dispositifs` plutôt qu'intégré aux sections « Guides et modèles » de `/prescription`. **Reste à trancher** : `/prescription` doit-elle lier vers `/programmes-dispositifs` (CTA, carte…), ou les deux pages restent-elles indépendantes ? Et les 4 documents de la capture d'origine (« Guide Consultation et prescription… ») sont-ils à saisir comme ressources `dispositifs`/`prescription`, ou visaient-ils autre chose ? | Thomas |
 | 18 | **`<Link>` sans `classifyHref`** sur `HeroQuickAccess.tsx` et `CtaCardGrid.tsx` (§9, §12) — les aligner sur `CardsSection`/`NavLink`/`CTASection` casserait potentiellement des CTA qui comptent aujourd'hui, par accident, sur l'ancien comportement. À planifier comme un lot dédié, testé sur tout le parc (parent62 pour `cta-card-grid`), pas en aparté d'un lot de contenu | Thomas |
+| 19 | **`/ressources` pas à jour des 2 nouvelles thématiques** (16/09, §9, §12) : `dispositifs`/`prescription` absentes du filtre latéral et du `resource.badge` de la page. Faut-il les y ajouter (une ressource « Dispositifs » resterait alors visible aux deux endroits, `/ressources` **et** `/programmes-dispositifs`), ou `/ressources` doit-elle au contraire **exclure** ces 2 thématiques puisqu'elles ont désormais leur page dédiée ? | Thomas |
+| 20 | **Photo `profil_avatar` sur une ressource « Dispositifs »** — jamais vérifié en navigateur (§9) : l'upload est-il bien accepté par le costum backend (champ cœur POI, a priori non soumis au filtre `typeObj.ressource`, mais non confirmé empiriquement), et l'image survit-elle bien au cycle création → édition ? | Thomas / dev SSBE |
