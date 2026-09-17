@@ -8,11 +8,11 @@
    "source": "config.prod.parent62.json",
    "path": "/",
    "sequence": [
-    "gridLayout",
     "action-tiles",
+    "gridLayout",
     "articleTeaser"
    ],
-   "rythme": "Trois blocs de premier niveau, un seul statique. Le premier est un `gridLayout` 2/2 qui met CÔTE À CÔTE le carrousel « à la une » (les POI tagués — le contenu choisit la vitrine) et la carte à bulles des territoires : les deux entrées principales, éditoriale et géographique, tiennent ainsi dans le premier écran au lieu de s'empiler. Viennent ensuite les DEUX tuiles « Vous êtes… » qui aiguillent parent / professionnel vers leur page d'entrée — seul texte rédigé de la page, et la garantie que ces pages ne dépendent pas de la seule nav — puis l'aperçu d'articles, qui ferme en preuve de vie avec son CTA vers /blog. L'identité est portée par le header stacked, réglé ici au QUART de l'écran (`header.height: \"sm\"`) précisément pour laisser ce premier écran au contenu : la home n'a pas besoin de hero."
+   "rythme": "Trois blocs de premier niveau, un seul statique. La page OUVRE sur les DEUX tuiles « Vous êtes… » qui aiguillent parent / professionnel vers leur page d'entrée — seul texte rédigé de la page, la case parent en aplat de la couleur de marque (`background`/`textColor`), et la garantie que ces pages ne dépendent pas de la seule nav. Vient ensuite un `gridLayout` 2/2 qui met CÔTE À CÔTE le carrousel « à la une » (les POI tagués — le contenu choisit la vitrine) et la carte à bulles des territoires : les deux entrées éditoriale et géographique tiennent sur une même rangée au lieu de s'empiler. L'aperçu d'articles « Zoom sur le réseau », filtré sur un mot-clé, ferme en preuve de vie avec son CTA vers la liste complète de ce mot-clé. L'identité est portée par le header stacked, réglé au QUART de l'écran (`header.height: \"sm\"`) pour laisser le premier écran au contenu : la home n'a pas besoin de hero."
   },
   {
    "id": "home-vitrine-dense",

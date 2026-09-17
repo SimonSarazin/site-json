@@ -451,6 +451,48 @@
       },
       "sections": [
         {
+          "type": "action-tiles",
+          "id": "home-double-entree",
+          "props": {
+            "headline": {
+              "fr": "Vous êtes…",
+              "en": "You are…"
+            },
+            "columns": {
+              "lg": 2
+            },
+            "actions": [
+              {
+                "icon": "heart-handshake",
+                "title": {
+                  "fr": "Parent",
+                  "en": "A parent"
+                },
+                "subtitle": {
+                  "fr": "Trouvez du soutien, des activités et des témoignages de parents.",
+                  "en": "Find support, activities and testimonies from parents."
+                },
+                "href": "/parents",
+                "background": "var(--p62-vert)",
+                "textColor": "var(--p62-vert-encre)"
+              },
+              {
+                "icon": "briefcase",
+                "title": {
+                  "fr": "Professionnel·le ou bénévole",
+                  "en": "A professional or volunteer"
+                },
+                "subtitle": {
+                  "fr": "Référencez vos actions, rejoignez le réseau et suivez l'agenda de votre territoire",
+                  "en": "List your activities, join the network and follow your territory's agenda"
+                },
+                "href": "/pro",
+                "color": "accent"
+              }
+            ]
+          }
+        },
+        {
           "type": "gridLayout",
           "id": "home-une-territoires",
           "props": {
@@ -583,47 +625,6 @@
             "className": "pt-4 pb-0",
             "leftWrapperClass": "rounded-2xl [&>*>section]:rounded-2xl [&>*>section>div:first-child]:rounded-2xl [&>*>section]:py-2",
             "from": "md"
-          }
-        },
-        {
-          "type": "action-tiles",
-          "id": "home-double-entree",
-          "props": {
-            "headline": {
-              "fr": "Vous êtes…",
-              "en": "You are…"
-            },
-            "columns": {
-              "lg": 2
-            },
-            "actions": [
-              {
-                "icon": "heart-handshake",
-                "title": {
-                  "fr": "Parent",
-                  "en": "A parent"
-                },
-                "subtitle": {
-                  "fr": "Trouver du soutien, des activités et des paroles de parents près de chez vous",
-                  "en": "Find support, activities and parents' voices near you"
-                },
-                "href": "/parents",
-                "color": "primary"
-              },
-              {
-                "icon": "briefcase",
-                "title": {
-                  "fr": "Professionnel·le ou bénévole",
-                  "en": "A professional or volunteer"
-                },
-                "subtitle": {
-                  "fr": "Référencer vos actions, rejoindre le réseau et suivre l'agenda pro",
-                  "en": "List your activities, join the network and follow the professional agenda"
-                },
-                "href": "/pro",
-                "color": "accent"
-              }
-            ]
           }
         },
         {
@@ -16776,17 +16777,10 @@
               "en": "You are a parent in Pas-de-Calais"
             },
             "subhead": {
-              "fr": "Des lieux, des rencontres et des ressources près de chez vous, pour vivre votre parentalité plus sereinement.",
-              "en": "Places, meet-ups and resources near you, to live your parenthood more serenely."
+              "fr": "Être parent, ça se partage. Le réseau rassemble les acteurs du soutien à la parentalité du département : trouvez une action près de chez vous, écoutez ce que d'autres parents traversent, ou venez simplement échanger.",
+              "en": "Being a parent is something to share. The network brings together the département's parenting support players: find an activity near you, hear what other parents are going through, or simply come and talk."
             },
             "showSearch": false
-          }
-        },
-        {
-          "type": "html",
-          "id": "parents-intro",
-          "props": {
-            "html": "<section class=\"py-12 px-4\"><div class=\"container mx-auto max-w-2xl space-y-4 text-center\"><p class=\"text-lg text-muted-foreground\">Être parent, ça se partage. Le réseau rassemble les acteurs du soutien à la parentalité du département : trouvez une action près de chez vous, écoutez ce que d'autres parents traversent, ou venez simplement échanger.</p></div></section>"
           }
         },
         {
@@ -16798,21 +16792,25 @@
               "en": "Where to start?"
             },
             "columns": {
-              "lg": 3
+              "sm": 2,
+              "lg": 4
             },
+            "size": "lg",
+            "width": "wide",
             "actions": [
               {
                 "icon": "message-circle-heart",
                 "title": {
-                  "fr": "Écouter des paroles de parents",
-                  "en": "Listen to parents' voices"
+                  "fr": "Retrouvez des témoignages de parents du Pas-de-Calais",
+                  "en": "Find testimonies from parents in Pas-de-Calais"
                 },
                 "subtitle": {
-                  "fr": "Ce que les parents du 62 racontent de leur quotidien",
-                  "en": "What parents in Pas-de-Calais say about daily life"
+                  "fr": "Des audios et des écrits pour découvrir leurs réalités.",
+                  "en": "Audio and written accounts to discover their realities."
                 },
                 "href": "/temoignages",
-                "color": "primary"
+                "background": "var(--p62-vert)",
+                "textColor": "var(--p62-vert-encre)"
               },
               {
                 "icon": "search",
@@ -16821,11 +16819,12 @@
                   "en": "Find an activity near me"
                 },
                 "subtitle": {
-                  "fr": "Filtrée par territoire et par âge",
-                  "en": "Filtered by territory and age"
+                  "fr": "Mise en place par les partenaires du territoire",
+                  "en": "Run by partners in your territory"
                 },
                 "href": "/recherche?typeInfo=typeinfo-actions&public=public:parents",
-                "color": "primary"
+                "background": "var(--p62-vert)",
+                "textColor": "var(--p62-vert-encre)"
               },
               {
                 "icon": "calendar",
@@ -16834,11 +16833,26 @@
                   "en": "See the agenda"
                 },
                 "subtitle": {
-                  "fr": "Rencontres et ateliers familles",
-                  "en": "Family meet-ups and workshops"
+                  "fr": "La semaine ou le weekend, découvrez les actions proches de chez vous",
+                  "en": "Weekdays or weekends, discover activities near you"
                 },
                 "href": "/agenda",
-                "color": "primary"
+                "background": "var(--p62-vert)",
+                "textColor": "var(--p62-vert-encre)"
+              },
+              {
+                "icon": "folder",
+                "title": {
+                  "fr": "Ressources",
+                  "en": "Resources"
+                },
+                "subtitle": {
+                  "fr": "Retrouvez ici des outils, des sites ressources et des contacts de partenaires",
+                  "en": "Find tools, resource websites and partner contacts here"
+                },
+                "href": "/ressources",
+                "background": "var(--p62-vert)",
+                "textColor": "var(--p62-vert-encre)"
               }
             ]
           }
@@ -16872,17 +16886,10 @@
               "en": "You support families"
             },
             "subhead": {
-              "fr": "Professionnel·les et bénévoles de la parentalité : rendez vos actions visibles et rejoignez le réseau départemental.",
-              "en": "Parenting professionals and volunteers: make your activities visible and join the county-wide network."
+              "fr": "Le réseau facilite l'interconnaissance entre acteurs, la mise en réseau et la visibilité des actions menées auprès des familles.",
+              "en": "The network helps stakeholders get to know each other, connect and make the work they do with families visible."
             },
             "showSearch": false
-          }
-        },
-        {
-          "type": "html",
-          "id": "pro-intro",
-          "props": {
-            "html": "<section class=\"py-12 px-4\"><div class=\"container mx-auto max-w-2xl space-y-4 text-center\"><p class=\"text-lg text-muted-foreground\">Le réseau facilite l'interconnaissance entre acteurs, la mise en réseau et la visibilité des actions menées auprès des familles. Référencez vos actions et événements, et appuyez-vous sur les paroles de parents pour nourrir vos pratiques.</p></div></section>"
           }
         },
         {
@@ -16894,8 +16901,11 @@
               "en": "Where to start?"
             },
             "columns": {
+              "sm": 2,
               "lg": 4
             },
+            "size": "lg",
+            "width": "wide",
             "actions": [
               {
                 "icon": "plus-circle",
@@ -16908,7 +16918,7 @@
                   "en": "Make your initiatives known"
                 },
                 "href": "/recherche?typeInfo=typeinfo-actions",
-                "color": "primary"
+                "color": "accent"
               },
               {
                 "icon": "users",
@@ -16921,20 +16931,20 @@
                   "en": "Organisations and professionals"
                 },
                 "href": "/communaute",
-                "color": "primary"
+                "color": "accent"
               },
               {
                 "icon": "search",
                 "title": {
-                  "fr": "Explorer les événements pro",
-                  "en": "Browse professional events"
+                  "fr": "Zoom sur les ressources départementales et nationales",
+                  "en": "Focus on county-wide and national resources"
                 },
                 "subtitle": {
-                  "fr": "Formations, rencontres réseau",
-                  "en": "Training courses, network meet-ups"
+                  "fr": "Colloques, appels à projets, offres d'emploi…",
+                  "en": "Conferences, calls for projects, job offers…"
                 },
                 "href": "/recherche?typeInfo=typeinfo-evenements&public=public:pro",
-                "color": "primary"
+                "color": "accent"
               },
               {
                 "icon": "message-circle-heart",
@@ -16943,11 +16953,11 @@
                   "en": "Listen to parents"
                 },
                 "subtitle": {
-                  "fr": "Paroles recueillies par le réseau",
-                  "en": "Voices collected by the network"
+                  "fr": "Paroles recueillies par le réseau et ses partenaires.",
+                  "en": "Voices collected by the network and its partners."
                 },
                 "href": "/temoignages",
-                "color": "primary"
+                "color": "accent"
               }
             ]
           }

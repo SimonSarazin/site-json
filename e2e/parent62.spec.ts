@@ -293,4 +293,26 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
       await expect(personne.getByRole("button")).toHaveCount(0);
     }
   });
+
+  for (const url of ["/parents", "/pro"]) {
+    test(`${url} : « Par où commencer ? » — 4 cases sur une rangée, de même hauteur, icônes alignées`, async ({ page }) => {
+      // Un titre qui passe sur une ligne de plus ne doit ni faire dépasser sa case ni décaler l'icône voisine.
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(url, { waitUntil: "domcontentloaded" });
+      await waitForHydration(page);
+
+      const tuiles = page.locator('[data-section-type="action-tiles"] a > button');
+      await expect(tuiles).toHaveCount(4);
+      const boites = await tuiles.evaluateAll((els) =>
+        els.map((el) => {
+          const tuile = el.getBoundingClientRect();
+          const icone = el.querySelector("svg")?.getBoundingClientRect();
+          return { y: Math.round(tuile.y), h: Math.round(tuile.height), iconeY: icone && Math.round(icone.y) };
+        }),
+      );
+      expect(new Set(boites.map((b) => b.y)).size, "une seule rangée").toBe(1);
+      expect(new Set(boites.map((b) => b.h)).size, "même hauteur").toBe(1);
+      expect(new Set(boites.map((b) => b.iconeY)).size, "icônes alignées").toBe(1);
+    });
+  }
 });

@@ -280,6 +280,11 @@ footer nav { font-family: var(--font-serif); }
      commentaire/parent62-unite-couleurs-home.md. Fixes clair/sombre. */
   --p62-marine: #2c3e50;
   --p62-turquoise: #4ecdc4;
+
+  /* Case « Parent » du bloc « Vous êtes… » (accueil) : fond plein vert de marque et son texte noir,
+     le plus lisible sur ce vert : 7,56:1 (AAA). Le blanc n'y tient que 2,78:1, sous AA. Fixes clair/sombre. */
+  --p62-vert: #1eae98;
+  --p62-vert-encre: #000000;
 }
 
 /* Mode sombre : le halo de la carte à bulles passe en « lueur douce » — les
