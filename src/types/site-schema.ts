@@ -1809,6 +1809,11 @@ export interface EnhancedNavItemType {
   /** Affiche le sous-menu en mise en avant (colonne "lien principal" via `path` + grille). */
   featured?: boolean;
   dynamicList?: z.infer<typeof DynamicNavList>;
+  /**
+   * Barre desktop du header `stacked` : icône SEULE, le libellé devenant le nom accessible (`aria-label`) et
+   * l'infobulle. Ignoré sans `icon`. Le menu mobile et les autres variantes de header affichent le libellé.
+   */
+  iconOnly?: boolean;
 }
 
 const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
@@ -1825,6 +1830,7 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
     description: LocalizedString.optional(),
     featured: z.boolean().optional(),
     dynamicList: DynamicNavList.optional(),
+    iconOnly: z.boolean().optional(),
   }).refine(d => d.path || d.href || d.children || d.megaMenu || d.dynamicList, {
     message: "NavItem : path, href, children, megaMenu ou dynamicList obligatoire"
   })

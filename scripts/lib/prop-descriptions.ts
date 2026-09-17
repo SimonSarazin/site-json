@@ -171,6 +171,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     logoSubtitle: "Sous-titre sous le titre du logo (marque sur 2 lignes : titre + baseline/localité).",
     entityLogoOverride: "Opt-in : remplace logo/titre par ceux de l'entité costum au runtime (plateforme transparentCommune).",
     nav: "Arbre de navigation (NavItem récursif) — chaque item exige path | href | children | megaMenu (refinement non exportable).",
+    "nav[].iconOnly": "Barre desktop du header stacked : icône SEULE (le libellé devient aria-label + infobulle). Ignoré sans icon ; menu mobile et autres variantes affichent le libellé.",
     navVisibleOnlyForListedPages: "La nav ne s'affiche que sur les pages qu'elle référence (sites à sous-espaces).",
     mobileNavDisplay: "Sous-nav du menu mobile : sections (groupes déployés, défaut) ou accordion (groupes pliables).",
     transparent: "Autorise l'overlay du header sur le héro — combiné à transparentMode/opaqueOnPaths/overlayOnPaths.",

@@ -246,16 +246,22 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
 
             {/* Écart entre entrées resserré de `xl` à `2xl` : à 1280px, 6 entrées de premier niveau espacées de
                 48px (`gap-12`) poussaient le groupe d'actions (recherche, thème, langue, connexion) 3px hors
-                de l'écran — débordement horizontal mesuré sur toutes les pages. 32px jusqu'à 1535px, 48px au-delà. */}
-            <div className="hidden xl:flex items-center justify-center gap-8 2xl:gap-12">
+                de l'écran — débordement horizontal mesuré sur toutes les pages. 24px jusqu'à 1535px, 48px au-delà :
+                avec une 7ᵉ entrée en icône seule, 32px ne laissaient que 5px à 1280px en français, et le contenu
+                dépassait de 20px sous une barre de défilement classique (17px). 24px en laissent 45 (28 avec la barre). */}
+            <div className="hidden xl:flex items-center justify-center gap-6 2xl:gap-12">
               {navItemsToDisplay.map((item, idx) => {
                 const isActive = isNavItemActive(item.path);
                 const hasChildren = !!item.children?.length;
+                // Icône seule (ex. la loupe vers la recherche) : le libellé reste le nom lu et l'infobulle.
+                const iconOnly = !!(item.iconOnly && item.icon);
                 return (
                   <div key={idx} className="relative group">
                     <NavLink
                       to={item.path ?? item.href}
                       ariaCurrent={isActive ? "page" : undefined}
+                      aria-label={iconOnly ? t(item.label) : undefined}
+                      title={iconOnly ? t(item.label) : undefined}
                       className={cn(
                         "font-display transition-all relative inline-flex items-center gap-1.5 whitespace-nowrap font-serif",
                         stuck ? "text-xl" : "text-2xl",
@@ -264,8 +270,8 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
                           : "text-white/90 hover:text-white"
                       )}
                     >
-                      <NavIcon icon={item.icon} />
-                      {t(item.label)}
+                      <NavIcon icon={item.icon} className={iconOnly ? (stuck ? "size-5 shrink-0" : "size-6 shrink-0") : undefined} />
+                      {!iconOnly && t(item.label)}
                       {item.badge && <Badge className="text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
                       {hasChildren && <ChevronDown className="w-3 h-3" />}
                       <span className={cn("absolute -bottom-1 left-0 h-0.5 bg-white transition-all", isActive ? "w-full" : "w-0 group-hover:w-full")}></span>

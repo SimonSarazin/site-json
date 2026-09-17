@@ -248,7 +248,7 @@ Pour corriger/améliorer un config existant :
 | `minimal` | barre compacte, typo uppercase espacée | petite vitrine épurée — ex. julie-pot-vin | `logoTitle`, `logoIcon` |
 | `underline-nav` | nav soulignée animée, fond marqué | identité marquée, communes/collectivités — ex. nos-commune | `piggyBank`, `urgenceButton`, `ctaButton` |
 | `transparent-dark` | barre sombre fixe (teinte : token `--header-bar`) | site à dominante sombre — ex. commune-transparente | `logoTitle`, `entityLogoOverride` |
-| `stacked` | 2 bandeaux sur image de fond : wordmark plein écran (~50vh) puis nav, collapse en barre compacte au scroll | identité "marque-territoire" forte, home sans section hero (le header EST le hero) — ex. parent62 | `backgroundImage`, `textColor`, `logoTitleAccent`, `logoSubtitle` |
+| `stacked` | 2 bandeaux sur image de fond : wordmark plein écran (~50vh) puis nav, collapse en barre compacte au scroll | identité "marque-territoire" forte, home sans section hero (le header EST le hero) — ex. parent62 | `backgroundImage`, `textColor`, `logoTitleAccent`, `logoSubtitle`, `nav[].iconOnly` (icône seule dans la barre, ex. une loupe vers `/recherche`) |
 | `default` | **alias, pas un design** : rend `HeaderStandard` | héritage — n'en produis JAMAIS pour un site neuf, écris `standard` | ceux de `standard` |
 
 ### Footers (`footer.type`)
