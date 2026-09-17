@@ -416,6 +416,15 @@
         },
         "path": "/inforeso"
           
+      },
+      {
+        "label": {
+          "fr": "Recherche",
+          "en": "Search"
+        },
+        "path": "/recherche",
+        "icon": "search",
+        "iconOnly": true
       }
     ],
     

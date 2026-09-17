@@ -20,6 +20,7 @@ const PROJECT_ROOT = path.resolve(__dirname, "..");
 interface NavItem {
   label: Record<string, string>;
   path?: string;
+  iconOnly?: boolean;
 }
 
 // Config chargée explicitement : SITE_CONFIG_PATH est absent du .env, donc
@@ -63,7 +64,7 @@ async function waitForHydration(page: Page) {
 }
 
 test.describe("Parent62 — Partie 1 (lecture seule)", () => {
-  test("accueil : titre, nav à 6 entrées, dropdown Publics, 9 bulles territoire", async ({
+  test("accueil : titre, nav à 7 entrées dont la loupe, dropdown Publics, 9 bulles territoire", async ({
     page,
   }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
@@ -75,10 +76,18 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     const headerNav = page.locator("nav.sticky").first();
     await expect(headerNav).toBeVisible();
 
-    // 17/09 : « INFORESO » rejoint le premier niveau, à côté de « Contenus » (6 entrées au lieu de 5).
-    expect(config.header.nav, "la nav de la config doit rester à 6 entrées").toHaveLength(6);
+    // 17/09 : « INFORESO » rejoint le premier niveau, à côté de « Contenus », puis la loupe vers la recherche,
+    // en icône seule comme sur l'ancien site (7 entrées).
+    expect(config.header.nav, "la nav de la config doit rester à 7 entrées").toHaveLength(7);
     const headerText = (await headerNav.textContent()) ?? "";
     for (const item of config.header.nav) {
+      if (item.iconOnly) {
+        // Icône seule : le libellé est le nom accessible du lien, pas un texte affiché.
+        const lien = headerNav.locator(`a[aria-label="${item.label.fr}"]`).first();
+        await expect(lien, `lien icône « ${item.label.fr} »`).toHaveAttribute("href", item.path ?? "");
+        await expect(lien).toHaveText("");
+        continue;
+      }
       expect(headerText, `entrée « ${item.label.fr} » attendue dans le header`).toContain(
         item.label.fr,
       );
@@ -265,6 +274,21 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     }));
     expect(scrollWidth, "la page ne doit pas défiler horizontalement").toBeLessThanOrEqual(clientWidth);
     await expect(page.getByRole("button", { name: "Se connecter" }).first()).toBeInViewport({ ratio: 1 });
+  });
+
+  test("header à 1280px sous une barre de défilement classique : les actions tiennent dans la barre", async ({ page }) => {
+    // Chromium de test a des barres de défilement en surimpression ; sous Windows, la barre prend 17px alors
+    // que la nav complète (`xl`) reste affichée. Avec la loupe (7ᵉ entrée), le contenu dépassait alors de 20px.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/blog", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+    await page.addStyleTag({ content: "html { padding-right: 17px !important; box-sizing: border-box; }" });
+
+    const { contenu, boite } = await page.locator("nav.sticky .grid").first().evaluate((grille) => ({
+      contenu: grille.scrollWidth,
+      boite: grille.clientWidth,
+    }));
+    expect(contenu, "le contenu de la barre ne doit pas dépasser sa largeur").toBeLessThanOrEqual(boite);
   });
 
   test("/inforeso : les numéros rangés par année s'ouvrent dans un nouvel onglet", async ({ page }) => {
