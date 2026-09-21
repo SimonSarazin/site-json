@@ -1835,9 +1835,14 @@ export const ActionTilesSchema = z.object({
 `articleTeaser`, `map-bubbles` et `featured-carousel` partagent le réglage `headlineStyle` (`badge` par
 défaut, étiquette inclinée ; `pill` en arrondi droit). `map-bubbles` et `featured-carousel` acceptent en
 plus `badgeColor`/`badgeTextColor` : la teinte de l'ÉTIQUETTE, indépendante de `accentColor` qui, elle,
-teinte les boutons. `design` (`sticker` par défaut, `card`) règle à part
-le PLACEMENT sur `map-bubbles` et `featured-carousel` : titre débordant du haut du bloc, et pour le
-carrousel, points de position à gauche et bouton compact à droite, en pied de carte. `articleTeaser` accepte
+teinte les boutons. Sur `featured-carousel`, `background` impose un texte BLANC (rendu historique, pensé
+pour un fond sombre) : fournir `textColor` dès que la carte est claire. Ce même bloc accepte
+`backgroundOverlay` (même grammaire que `map-bubbles`) pour poser la diapositive sur un PANNEAU dégradé,
+avec `overlayTextColor` — l'encre du texte posé sur le panneau, qui doit suivre le DÉGRADÉ (pas l'encre
+de la carte) : si le dégradé a une variante sombre, lui donner un jeton qui change avec lui. `design`
+(`sticker` par défaut, `card`) règle à part le PLACEMENT sur `map-bubbles` et `featured-carousel` : titre
+débordant du haut du bloc, et pour le carrousel, points de position au centre et bouton compact à droite,
+en pied de carte (dans le panneau quand `backgroundOverlay` est posé). `articleTeaser` accepte
 aussi `maxWidth` (défaut `4xl`), même échelle que `gridLayout`.
 | `accentColor` | `string?` | Couleur de la pastille de titre (`headlineStyle: "badge"`). Son encre est blanche : à choisir assez foncée, contraste AA à mesurer |
 | `width` | `"default" \| "wide"` | Largeur de la grille : `default` (1024 px max) ou `wide` (1280 px max) |

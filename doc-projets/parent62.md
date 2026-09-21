@@ -3560,23 +3560,24 @@ les couleurs de parent62.
 | Titres | étiquettes inclinées, posées dans le bloc | **étiquettes inclinées pour les quatre blocs**, « Zoom sur le réseau » compris ; celles de « Territoires » et « À la une » débordent du haut de leur carte (la variante en pilule arrondie existe : `headlineStyle: "pill"`) |
 | Cases « Vous êtes… » | icône puis textes centrés | **icône en pastille, titre à côté, sous-titre dessous**, aligné à gauche, coins arrondis et ombre légère |
 | Territoires | dégradé de marque sur tout le bloc, accroche à droite | **carte blanche, encre sombre** ; le dégradé de marque n'habille plus que le panneau de l'illustration, accroche sous le titre |
-| À la une | flèches de navigation, bouton pleine largeur | **points de position à gauche et bouton compact à droite**, sur une seule ligne de pied de carte |
+| À la une | carte marine, texte blanc, flèches de navigation, bouton pleine largeur | **copie de « Territoires »** : carte claire, étiquette débordante, et l'actualité posée sur le **même panneau dégradé vert** (marge de 16 px des deux côtés, comme l'illustration). Le bouton « En savoir + » et les points de position vivent **dans** ce panneau, 32 px au-dessus de son bord bas — points au centre, bouton à droite, **marine à texte blanc** (la turquoise se fondait dans le vert) ; sous 640 px, le bouton passe à la ligne, sinon il mordrait sur les points |
 
 Le texte de la case « Parent » reste **noir sur le vert de marque** (7,56:1) : la maquette le met en blanc,
 qui n'y tient que 2,78:1.
 
-Le bas du panneau de l'illustration et le bouton « En savoir + » se lisent **sur la même ligne** (1 221 px
-à 1 440 comme à 1 280 px de large) : le panneau s'étire jusqu'au bas de sa carte, l'illustration s'y centre
-— ses bulles restant positionnées en % de l'ILLUSTRATION, sinon elles dérivent — et le pied de la carte
-voisine se cale au bas de la sienne.
+Les **deux panneaux verts sont au même niveau** — même haut, même bas — à 1 024, 1 280 comme à 1 440 px.
+Chaque panneau s'étire jusqu'au bas de sa carte ; celui de l'actu descend en plus de la hauteur de
+l'accroche que « Territoires » porte au-dessus de son illustration. Dans la carte des territoires,
+l'illustration se centre dans son panneau, ses bulles restant positionnées en % de l'ILLUSTRATION (sinon
+elles dérivent dès que le panneau est plus haut qu'elle).
 
 Les **trois bandes de l'accueil partagent la même largeur** (1 280 px) : la grille garde la sienne, « Vous
 êtes… » passe en `width: "wide"` et « Zoom sur le réseau » en `maxWidth: "7xl"` — ils faisaient 1 024 et
 896 px.
 
 **Couleur des étiquettes** : « Vous êtes… » et « À la une » en marine, « Territoires » et « Zoom sur le
-réseau » en turquoise. Étiquette et bouton se teintent séparément (`badgeColor` vs `accentColor`), sans quoi
-le bouton du carrousel aurait suivi le marine de son étiquette.
+réseau » en turquoise. Étiquette et bouton se teignent séparément (`badgeColor` vs `accentColor`) ; sur « À la
+une », les deux sont marine.
 
 Côté moteur, options facultatives employées par parent62 seul : `tileLayout: "inline"` sur `action-tiles`,
 `design: "card"` sur `map-bubbles` et `featured-carousel`, `maxWidth` sur `gridLayout` et `articleTeaser`,
@@ -3588,14 +3589,14 @@ carte, c'est la SECTION qui le pose, à côté des points — sans quoi il défi
 
 | Gate | Résultat |
 |---|---|
-| Écran | ✅ 1 440, 768 et 390 px, clair et sombre, sans débordement. Étiquettes : « Vous êtes… » **10,98:1**, « Territoires » **5,68:1**, « À la une » **10,98:1**, « Zoom » **5,68:1** ; cases **7,56:1** et **13,04:1** ; bouton du carrousel **5,68:1** |
+| Écran | ✅ 1 440, 768 et 390 px, clair et sombre, sans débordement. Étiquettes : « Vous êtes… » **10,98:1**, « Territoires » **5,68:1**, « À la une » **10,98:1**, « Zoom » **5,68:1** ; cases **7,56:1** et **13,04:1** ; carte « À la une » : texte sur le panneau vert **7,57:1** (bord foncé) à **9,95:1** (bord clair), en sombre, le dégradé fonce et son encre passe au blanc : **6,12:1** à **4,82:1** (l'encre noire y tombait à 3,43:1) ; bouton marine, texte **10,98:1**, forme contre le panneau **3,96:1** à **5,2:1** en clair, **1,79:1** à **2,28:1** en sombre ; points centrés au pixel (écart 0) à 1 440 comme à 390 px |
 | `validate-config` · `audit:config` · `typecheck` · `lint` | ✅ 51 pages · 183 sections · RAS · 0 message sur les 17 fichiers du lot |
 | `test:unit` (préflight compris) | ✅ **4 582 tests**, 3 échecs **étrangers au lot** : `bundle-size`, `site-assets`, `ProseContent — césure` |
 | `test:integration` (`config-driven-ssr`, config parent62) | ✅ **99/99** |
 | `test:e2e` complet | ✅ **35 passés**, 8 ignorés, 6 échecs étrangers (specs génériques contre `config.prod.json`, `auth-flow` sans `.env.test`) |
 | `config:render` | ✅ parent62, institut-bleu, rezo-la-mer, saint-paul-sport |
-| Alignement | ✅ bas du panneau et bouton « En savoir + » au même pixel, à 1 440 comme à 1 280 px ; les 3 bandes à **1 280 px**, calées au même bord |
-| `test:e2e` ciblé | ✅ **19/19**, dont une garde sur l'accueil : les trois bandes partagent largeur et bord, et le panneau de l'illustration finit à la hauteur du bouton — **rouge sans la largeur posée sur « Zoom sur le réseau »** (896 px contre 1 280) |
+| Alignement | ✅ bouton « En savoir + » dans le panneau, à 32 px de son bord bas, à 1 440 comme à 1 280 px ; les 3 bandes à **1 280 px**, calées au même bord |
+| `test:e2e` ciblé | ✅ **19/19**, dont une garde sur l'accueil : les trois bandes partagent largeur et bord (**rouge sans la largeur posée sur « Zoom sur le réseau »**, 896 px contre 1 280), les deux panneaux verts ont même haut et même bas, et le bouton de l'actu est dans son panneau (**rouge sans le décalage haut** du panneau de l'actu) |
 
 ---
 
