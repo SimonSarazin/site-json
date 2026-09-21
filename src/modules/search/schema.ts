@@ -273,11 +273,21 @@ export const ReservationsConfSchema = z.object({
     startHour: z.number().int().min(0).max(23).optional(),
     /** Dernière heure affichée, exclue (1-24). Défaut code : 22. */
     endHour: z.number().int().min(1).max(24).optional(),
-    /** Pas de la grille, en minutes. Défaut code : 60. */
-    slotMinutes: z.number().int().positive().optional(),
+    /** Pas de la grille, en minutes (5-240). Défaut code : 60. Borné : `positive()` laissait
+     *  passer `slotMinutes: 1`, soit 840 rangées × 7 = 5 880 cases cliquables sur une amplitude
+     *  8 h–22 h, pour un pas qui n'a aucun sens sur un équipement sportif. */
+    slotMinutes: z.number().int().min(5).max(240).optional(),
     /** Réserver réservé aux admins de l'entité du site. Défaut code : true. */
     adminOnly: z.boolean().optional(),
-  }).optional(),
+  })
+    // Les deux bornes étaient valides SÉPARÉMENT (0-23 et 1-24) mais jamais l'une par rapport à
+    // l'autre : `startHour: 22, endHour: 8` passait la validation et donnait une grille réduite à
+    // la rangée de repli. C'est à `config:validate` de l'attraper, pas au rendu.
+    .refine(
+      (b) => b.startHour === undefined || b.endHour === undefined || b.startHour < b.endHour,
+      { message: "booking.startHour doit être strictement inférieur à booking.endHour", path: ["startHour"] },
+    )
+    .optional(),
 });
 export type ReservationsConf = z.infer<typeof ReservationsConfSchema>;
 

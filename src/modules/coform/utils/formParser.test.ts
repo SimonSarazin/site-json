@@ -314,9 +314,15 @@ describe("parseCoFormFields", () => {
           inputs: {
             remplace: { type: "text", label: "Ancien champ", hide: true },
             remplaceLegacy: { type: "text", label: "Ancien champ (saisie ancienne)", hide: "true" },
+            // Les autres graphies que le back-office écrit réellement — `isTruthyFlag` les couvre
+            // toutes, là où un `=== true || === "true"` écrit à la main les laissait passer.
+            remplaceUnTexte: { type: "text", label: "Ancien champ (1)", hide: "1" },
+            remplaceCasse: { type: "text", label: "Ancien champ (casse)", hide: "True" },
+            remplaceOn: { type: "text", label: "Ancien champ (on)", hide: " on " },
             // `hide: false` et l'absence de clé ne masquent rien : le parc n'a que des `true`,
             // mais la garde doit rester stricte pour ne pas escamoter un champ par accident.
             garde: { type: "text", label: "Faux", hide: false },
+            gardeTexte: { type: "text", label: "Faux (chaîne)", hide: "false" },
             visible: { type: "text", label: "Visible" },
           },
         },
@@ -324,7 +330,34 @@ describe("parseCoFormFields", () => {
     });
 
     const result = parseCoFormFields(formData);
-    expect(result[0].fields.map((f) => f.label)).toEqual(["Faux", "Visible"]);
+    // Les champs SUIVANTS continuent d'être parsés : la garde est un `return` de callback, pas
+    // une sortie de fonction — `visible` est en dernier, et il est bien là.
+    expect(result[0].fields.map((f) => f.label)).toEqual(["Faux", "Faux (chaîne)", "Visible"]);
+  });
+
+  it("`includeHiddenFields` rouvre les champs masqués — lectures structurelles et relecture", () => {
+    const formData = makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: {
+            remplace: { type: "text", label: "Ancien champ", hide: true },
+            visible: { type: "text", label: "Visible" },
+          },
+        },
+      },
+    });
+
+    // Sans l'option : le champ est retiré de la SAISIE (comportement par défaut).
+    expect(parseCoFormFields(formData)[0].fields.map((f) => f.label)).toEqual(["Visible"]);
+
+    // Avec : `getSharedFinderInfo` retrouve un finder partagé masqué, et `CoFormReadOnly`
+    // réaffiche les réponses déjà enregistrées sous la clé du champ — c'est la raison d'être de
+    // `hide`, qui retire un champ du formulaire SANS toucher aux données.
+    const ouvert = parseCoFormFields(formData, { includeHiddenFields: true });
+    expect(ouvert[0].fields.map((f) => f.label)).toEqual(["Ancien champ", "Visible"]);
   });
 
   it("préfixe correctement les champs finder/multiCheckboxPlus/etc.", () => {
