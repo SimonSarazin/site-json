@@ -3550,6 +3550,55 @@ bandeau de filtres, accueil en bandes, infobulles de la carte, formulaire évén
 
 ---
 
+## 9sextricies. Accueil : mise en forme des trois blocs du haut
+
+Les trois blocs du haut (« Vous êtes… », « Territoires », « À la une ») suivent la maquette du réseau, dans
+les couleurs de parent62.
+
+| Bloc | Avant | Maintenant |
+|---|---|---|
+| Titres | étiquettes inclinées, posées dans le bloc | **étiquettes inclinées pour les quatre blocs**, « Zoom sur le réseau » compris ; celles de « Territoires » et « À la une » débordent du haut de leur carte (la variante en pilule arrondie existe : `headlineStyle: "pill"`) |
+| Cases « Vous êtes… » | icône puis textes centrés | **icône en pastille, titre à côté, sous-titre dessous**, aligné à gauche, coins arrondis et ombre légère |
+| Territoires | dégradé de marque sur tout le bloc, accroche à droite | **carte blanche, encre sombre** ; le dégradé de marque n'habille plus que le panneau de l'illustration, accroche sous le titre |
+| À la une | flèches de navigation, bouton pleine largeur | **points de position à gauche et bouton compact à droite**, sur une seule ligne de pied de carte |
+
+Le texte de la case « Parent » reste **noir sur le vert de marque** (7,56:1) : la maquette le met en blanc,
+qui n'y tient que 2,78:1.
+
+Le bas du panneau de l'illustration et le bouton « En savoir + » se lisent **sur la même ligne** (1 221 px
+à 1 440 comme à 1 280 px de large) : le panneau s'étire jusqu'au bas de sa carte, l'illustration s'y centre
+— ses bulles restant positionnées en % de l'ILLUSTRATION, sinon elles dérivent — et le pied de la carte
+voisine se cale au bas de la sienne.
+
+Les **trois bandes de l'accueil partagent la même largeur** (1 280 px) : la grille garde la sienne, « Vous
+êtes… » passe en `width: "wide"` et « Zoom sur le réseau » en `maxWidth: "7xl"` — ils faisaient 1 024 et
+896 px.
+
+**Couleur des étiquettes** : « Vous êtes… » et « À la une » en marine, « Territoires » et « Zoom sur le
+réseau » en turquoise. Étiquette et bouton se teintent séparément (`badgeColor` vs `accentColor`), sans quoi
+le bouton du carrousel aurait suivi le marine de son étiquette.
+
+Côté moteur, options facultatives employées par parent62 seul : `tileLayout: "inline"` sur `action-tiles`,
+`design: "card"` sur `map-bubbles` et `featured-carousel`, `maxWidth` sur `gridLayout` et `articleTeaser`,
+et `headlineStyle` (`badge`/`pill`) sur les quatre sections à pastille.
+Le bouton du carrousel vit désormais dans un composant partagé (`FeaturedCarouselCta`) : en habillage
+carte, c'est la SECTION qui le pose, à côté des points — sans quoi il défilerait avec le contenu.
+
+### 9sextricies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| Écran | ✅ 1 440, 768 et 390 px, clair et sombre, sans débordement. Étiquettes : « Vous êtes… » **10,98:1**, « Territoires » **5,68:1**, « À la une » **10,98:1**, « Zoom » **5,68:1** ; cases **7,56:1** et **13,04:1** ; bouton du carrousel **5,68:1** |
+| `validate-config` · `audit:config` · `typecheck` · `lint` | ✅ 51 pages · 183 sections · RAS · 0 message sur les 17 fichiers du lot |
+| `test:unit` (préflight compris) | ✅ **4 582 tests**, 3 échecs **étrangers au lot** : `bundle-size`, `site-assets`, `ProseContent — césure` |
+| `test:integration` (`config-driven-ssr`, config parent62) | ✅ **99/99** |
+| `test:e2e` complet | ✅ **35 passés**, 8 ignorés, 6 échecs étrangers (specs génériques contre `config.prod.json`, `auth-flow` sans `.env.test`) |
+| `config:render` | ✅ parent62, institut-bleu, rezo-la-mer, saint-paul-sport |
+| Alignement | ✅ bas du panneau et bouton « En savoir + » au même pixel, à 1 440 comme à 1 280 px ; les 3 bandes à **1 280 px**, calées au même bord |
+| `test:e2e` ciblé | ✅ **19/19**, dont une garde sur l'accueil : les trois bandes partagent largeur et bord, et le panneau de l'illustration finit à la hauteur du bouton — **rouge sans la largeur posée sur « Zoom sur le réseau »** (896 px contre 1 280) |
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
