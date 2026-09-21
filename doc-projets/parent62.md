@@ -3280,9 +3280,9 @@ relatif : il suit le domaine où tourne le site.
 | `validate-config` | ✅ **51 pages · 174 sections** (les deux blocs HTML d'introduction de `/parents` et `/pro` en moins) |
 | `audit:config` | ✅ parent62 — RAS |
 | `config:render` | ✅ parent62 ; et les 6 autres sites qui emploient `action-tiles` : rezo-sante-reunion, rezo-la-mer, institut-bleu, cyber-reunion et eXtremeDefiAdeme rendent chaque page. nos-commune rend son accueil (qui porte les cases) ; sa page `/manifeste`, un seul bloc HTML et une config que le lot ne touche pas, répond 404 |
-| `test:unit` (préflight compris) | ✅ **4 553 tests**, 3 échecs **étrangers au lot** : `site-assets`, `ProseContent — césure` et `bundle-size` |
+| `test:unit` (préflight compris) | ✅ suite complète verte hors les 3 échecs **étrangers au lot** : `site-assets`, `ProseContent — césure` et `bundle-size` (chiffres finaux en §9quinquiestricies) |
 | `test:integration` | ✅ `config-driven-ssr` avec `SITE_CONFIG_PATH=./config.prod.parent62.json` : **98/98**. Suite complète non relancée : sur 7 Go, elle dépasse la mémoire disponible quand le serveur de dev tourne |
-| `test:e2e` ciblé (`parent62.spec.ts`) | ✅ **2 nouveaux tests** sur `/parents` et `/pro` à 1 280 px (4 cases sur une rangée, même hauteur, icônes alignées) : rouges sans la hauteur égale (« même hauteur ») et sans le calage en haut (« icônes alignées »), verts avec. 11/14 au total : les 3 échecs (`/blog`, `/zoomcat`, carrousel « à la une ») tiennent à la base MongoDB locale arrêtée — le backend répond `MongoConnectionException`, ces pages n'ont aucune donnée |
+| `test:e2e` ciblé (`parent62.spec.ts`) | ✅ **2 nouveaux tests** sur `/parents` et `/pro` à 1 280 px (4 cases sur une rangée, même hauteur, icônes alignées) : rouges sans la hauteur égale (« même hauteur ») et sans le calage en haut (« icônes alignées »), verts avec |
 | `typecheck` · `lint` | ✅ · ✅ **0 message** sur les fichiers du lot |
 | Gardes vérifiées en échec | ✅ préflight `prop-descriptions` : le bloc `section:action-tiles` ajouté au registre sans plancher de couverture fait rougir « aucun bloc hors ratchet » |
 | Écran | ✅ 360, 700, 1 024, 1 280 et 1 536 px, clair et sombre, sans débordement. Contrastes : case Parent de l'accueil et cases de `/parents` **7,56:1** ; cases de `/pro` titre **13,04:1** et sous-titre **5,04:1** en clair, **10,14:1** et **4,9:1** en sombre. Leurs icônes turquoise tiennent **1,54:1** en clair (décoratives : le titre porte le sens) |
@@ -3346,6 +3346,207 @@ barre de défilement, et **54 px** en anglais.
 | `config:render` | ✅ parent62 : chaque page sert au moins une section avec du contenu |
 | `typecheck` · `lint` | ✅ · ✅ 0 message sur les fichiers du lot |
 | Écran | ✅ 1 280, 1 366, 1 440, 1 535, 1 536 et 1 920 px, en français et en anglais, bandeau haut et barre compacte, clair et sombre : aucun débordement, loupe à ≥ 16 px du groupe d'actions. Menu mobile : entrée « Recherche » avec icône et libellé |
+
+---
+
+## 9tricies. Agenda par territoire et sous-menu agrandi
+
+### 9tricies.1 L'agenda du territoire sur les 9 pages
+
+Chaque page de territoire porte une section **« L'agenda du territoire »**, posée entre la rangée du comité
+local et les ressources. Elle liste **tous les événements rattachés au territoire** (`type: "others"`,
+`territoires` du territoire), en onglets **À venir / Passés**, et son en-tête renvoie vers
+`/agenda?territoire=<id d'option>` — l'identifiant, jamais le libellé : un libellé retouché cesserait d'être
+reconnu et la page cible s'ouvrirait non filtrée (garde préflight `deeplink-filters`). Les dates du comité
+local, filtrées `type: "meeting"`, restent dans leur bloc au-dessus : les deux ne font pas doublon.
+
+Le gabarit de territoire passe donc de 8 à **9 sections de premier niveau**, identiques sur les 9 pages.
+`searchHeader` alimentant le `PageFilters` de la page entière, un thème ou un public coché filtre aussi
+cet agenda.
+
+### 9tricies.2 Sous-menu du header
+
+Dans les colonnes du sous-menu (header `stacked`), le titre d'entrée passe de **16 à 18 px** et sa
+description de **12 à 14 px**.
+
+### 9tricies.3 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` · `audit:config` | ✅ 51 pages · **183 sections** (9 de plus) · parent62 RAS |
+| `config:render` | ✅ chaque page sert au moins une section avec du contenu |
+| Filtre par territoire | ✅ prouvé : en pointant la section d'Arrageois sur un territoire inexistant, elle affiche « Aucun événement » ; rétablie, elle réaffiche l'événement. Le lien d'en-tête arrive sur `/agenda` avec le filtre « Arrageois » sélectionné (compteur « Filtres 1 ») |
+| Gardes préflight | ✅ 3 gardes ont rougi sur ce lot et ont été traitées : `deeplink-filters` (les 9 liens portaient le libellé du territoire, remplacés par l'id d'option), `page-recipes` (séquence des 2 recettes de territoire resynchronisée) et l'instantané `effective-config` de parent62 (9 sections ajoutées, aucun autre écart) |
+| `test:unit` (préflight) | ✅ 659 tests, hors les 2 échecs connus (`bundle-size`, `site-assets`) |
+| `test:e2e` ciblé | ✅ **16/16**, dont un nouveau test : la page d'Arrageois porte 2 agendas, celui du territoire affiche son titre et pointe `/agenda?territoire=arrageois` |
+| Écran | ✅ pages territoire à 1 280 px sans débordement ; sous-menu mesuré à 18 px / 14 px |
+
+**Donnée locale** : la base de développement ne contient qu'un événement, « Mois de la parentalité »,
+rattaché aux 9 territoires — il apparaît donc sur les 9 pages.
+
+---
+
+## 9untricies. Panneau du sous-menu et couleurs de territoire
+
+### 9untricies.1 Le panneau du sous-menu tient dans l'écran
+
+Les panneaux de sous-menu du header `stacked` se centrent désormais sous le MENU entier, et non sous leur
+seule entrée : la rangée porte le `relative`, les entrées ne le portent plus. Centré sur sa propre entrée, le
+panneau du premier menu (« Le Réseau parentalité ») sortait de l'écran par la gauche — **180 px coupés à
+1 280 px**, 100 px à 1 440 px — et sa première colonne était illisible. Le soulignement d'une entrée reste
+ancré sur son lien, qui porte déjà `relative`.
+
+### 9untricies.2 Chaque territoire colore ses sections
+
+Une page peut porter une couleur d'accent (`page.accent`, couleur CSS) : le moteur la pose sur son `<main>`
+en `--page-accent`, avec son aplat léger `--page-accent-soft` (16 % sur le fond du thème). Les sections qui
+acceptent `bg: "page-accent"` prennent cet aplat **et un filet supérieur à la couleur pleine**. Header et pied
+de page ne sont pas touchés, et sans accent la valeur reste transparente : une page ne prend jamais une
+couleur au hasard.
+
+Les 9 pages de territoire portent la couleur de marque de leur territoire (`var(--territoire-<slug>)`, la
+même que leur bandeau de titre). Trois bandeaux teintés rythment la page, séparés par des sections au fond
+neutre : **l'agenda du territoire**, **le bandeau de filtres des actualités** et **l'accordéon des communes**.
+« Les actions sur le territoire » reste neutre, pour ne pas coller deux bandeaux teintés l'un à l'autre. Le
+bandeau de filtres portait jusque-là le dégradé du thème, le même sur les 9 territoires.
+
+Au passage, `bg` était **déclaré au schéma de la section `agenda` mais ignoré au rendu** (fond toujours
+`bg-background`) : il est désormais honoré. Aucun site du parc ne le posait, leur rendu est inchangé.
+`accordion` et `searchHeader` acceptent maintenant `bg` eux aussi, et `agenda`, `searchProStatic`,
+`accordion` et `searchHeader` partagent une seule table de fonds (`sectionBg.ts`, testée). Sans `bg`, chacun
+garde son fond d'origine — dégradé du thème pour le bandeau de filtres : les 9 autres `searchHeader` de
+parent62 et ceux des autres sites sont inchangés.
+
+### 9untricies.3 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` · `audit:config` · `config:render` | ✅ 51 pages · 183 sections · parent62 RAS · chaque page rend |
+| Écran | ✅ panneaux de sous-menu entiers à 1 280 et 1 440 px, pour les 3 menus mesurés (0 px coupé). Pages territoire en clair et en sombre : contraste d'un titre sur bandeau teinté **11,7:1 à 13,5:1** selon la teinte ; champ de recherche et listes déroulantes du bandeau de filtres à **14,4:1** en clair |
+| Portée inter-sites | ✅ `page.accent` et `bg: "page-accent"` ne sont employés que par parent62, et seulement sur ses 9 pages de territoire ; le seul autre `bg` du parc sur ces sections est un `default` de rezo-sante-reunion, rendu à l'identique |
+| `test:unit` (préflight compris) | ✅ préflight et sections vertes, hors les 2 échecs connus (`bundle-size`, `site-assets`) |
+| `test:e2e` ciblé | ✅ **17/17**, dont un nouveau test : la page du Boulonnais porte `--page-accent: #c34a42` et ses trois bandeaux teintés (agenda, filtres d'actualités, communes) se distinguent du fond — **rouge sans l'accent** posé sur le `<main>` |
+| `typecheck` · `lint` | ✅ · ✅ 0 message sur les fichiers du lot |
+
+---
+
+## 9duotricies. Villes au survol des bulles de la carte
+
+Sur l'accueil, survoler une bulle de territoire affiche les **villes principales** du territoire, comme sur
+l'ancien site : « Calaisis » → *Calais – Audruicq – Guînes*. Les listes sont reprises telles quelles de
+`parent62.org`. L'infobulle apparaît aussi au **focus clavier** et sert de description accessible du lien
+(`aria-describedby`) ; au toucher elle ne s'affiche pas, l'appui suivant le lien.
+
+**Entre Mer et Terres n'a pas d'infobulle** : l'ancien site n'y déclarait aucune ville. La liste est à fournir
+par le réseau.
+
+Côté moteur, une bulle accepte `items[].cities` (texte localisé). L'infobulle s'ouvre **juste sous la pastille
+du nom** (6 px), et non sous le bas du rond, où elle tombait 40 px plus bas, détachée de la bulle survolée. Son
+ancrage horizontal suit la position de la bulle sur la carte : centrée au milieu, calée à gauche ou à droite
+près des bords — centrée sur une bulle de bord, elle sortait de la carte.
+
+### 9duotricies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| Écran | ✅ 1 440, 1 280, 768 et 360 px : les 8 infobulles apparaissent au survol, **aucune ne sort de la carte ni de la page** |
+| `test:e2e` ciblé | ✅ **18/18**, dont un nouveau test : l'infobulle de Calaisis porte les 3 villes, reste à `opacity: 0` au repos, passe à 1 au survol, et décrit le lien |
+| `validate-config` · `typecheck` · `lint` | ✅ 51 pages · 183 sections · 0 erreur |
+| Gardes préflight | ✅ 659 tests, hors les 2 échecs connus |
+
+---
+
+## 9tertricies. Accueil : trois bandes, un seul repère de titre
+
+L'accueil se lit désormais en **trois bandes pleine largeur**, au même rythme vertical (64 px) :
+
+| Bande | Fond | Contenu |
+|---|---|---|
+| « Vous êtes… » | clair | les deux cases d'entrée, inchangées |
+| « Territoires » / « À la une » | **turquoise clair** (aplat de `page.accent`, la turquoise de marque) | la carte et le carrousel, cartes arrondies et ombrées |
+| « Zoom sur le réseau » | marine | les 6 articles taggés Zoom |
+
+Les **quatre titres portent la même pastille inclinée** : « Vous êtes… » l'adopte à son tour (option
+`headlineStyle: "badge"` de la section `action-tiles`, en marine). La section `gridLayout` accepte un `bg`,
+ce qui lui permet de poser une bande colorée sans bloc supplémentaire.
+
+**Contraste corrigé, et il était mauvais.** Les pastilles et les boutons turquoise portaient un texte blanc :
+**1,93:1**, très en dessous du seuil AA. Ils prennent l'encre marine du site, soit **5,68:1**. Les deux
+sections concernées (`articleTeaser`, `featured-carousel`) codaient le blanc en dur ; elles acceptent
+maintenant `accentTextColor`, dont le défaut reste le blanc — les autres sites ne bougent pas. Les deux
+sections et les tuiles partagent désormais la même fabrique de style d'accent (`accentStyle.ts`, testée).
+
+### 9tertricies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| Écran | ✅ 1 440, 768 et 360 px, clair et sombre, sans débordement. Pastilles : « Vous êtes… » **10,98:1**, « Territoires » **18,09:1**, « Zoom sur le réseau » **5,68:1** (1,93 avant). Boutons d'accent « En savoir + » : **5,68:1** |
+| `validate-config` · `typecheck` · `lint` | ✅ 51 pages · 183 sections · 0 erreur |
+| `test:unit` (préflight compris) | ✅ préflight et sections vertes, hors les 2 échecs connus |
+| `test:e2e` ciblé | ✅ 18/18 |
+| Portée inter-sites | ✅ `headlineStyle`, `bg` de `gridLayout` et `accentTextColor` sont optionnels et employés par parent62 seul ; sans eux, titre centré, bande transparente et encre blanche — le rendu historique |
+
+**Donnée locale** : les vignettes d'articles de l'accueil ne s'affichent pas en développement (le proxy
+d'images répond 502 sur les fichiers de `communecter-dev`). Rien à voir avec la mise en page.
+
+---
+
+## 9quattuortricies. Dépôt d'un événement : dispense de validation et période récurrente
+
+### 9quattuortricies.1 Un admin du site publie sans validation
+
+Jusqu'ici, TOUT événement déposé par le formulaire « Proposer un événement » partait en attente de
+validation, y compris celui d'un administrateur du site. Le drapeau (`preferences.toBeValidated`) est
+désormais posé **sauf pour les admins du site** : `mutation.inject.extraFieldsUnlessCostumAdmin`. La
+qualité d'admin est lue sur le porteur du costum (`isCostumHostAdmin`), la même définition que le
+`siteAdmin` de l'admin et que l'`isCostumAdmin` du backend. Porteur pas encore chargé → la fiche part en
+attente : une dispense ne s'accorde jamais par défaut.
+
+⚠ **C'est un filtre d'affichage, pas une barrière de sécurité.** Ce drapeau est posé par le navigateur —
+il l'était déjà avant ce lot. Une requête forgée peut s'en passer, admin ou pas. Une vraie garantie
+demanderait que le backend impose lui-même la modération selon l'auteur.
+
+### 9quattuortricies.2 Un événement récurrent peut porter sa période
+
+Le champ de dates masquait début et fin dès qu'on cochait « récurrent », et le codec d'écriture les
+supprimait volontairement. Sur le formulaire événement de parent62, les deux dates restent maintenant
+affichées en récurrent, sous les libellés **« Début de la période »** et **« Fin de la période »** : elles
+bornent la période sur laquelle les occurrences se déroulent, ce que le backend lit déjà
+(`searchEventsCostum` déroule les occurrences dans `[startDate, endDate]`).
+
+Deux garde-fous pour ne rien changer ailleurs : l'affichage est **opt-in** (`widgetProps.datesWhenRecurrent`)
+et l'écriture passe par un codec dédié (`eventDatePeriod:write`, qui conserve la date, là où
+`eventDate:write` l'omet en récurrent, pour éviter qu'une date rémanente d'une bascule parte au serveur).
+La « Réunion du comité » de parent62 et les 3 autres sites qui emploient ce champ (institut-bleu,
+saint-paul-sport, sport-sante-bien-etre) gardent donc leur formulaire actuel.
+
+### 9quattuortricies.3 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| Contrat SDK `ADD_EVENT` | ✅ dates ET récurrence sont compatibles : le contrat n'exige les dates qu'en ponctuel (`if recurrency=false → then required startDate/endDate`), les horaires en récurrent (`else required openingHours`) ; `startDate`/`endDate` restent des propriétés déclarées, donc acceptées |
+| `test:unit` | ✅ suite complète verte hors les 3 échecs connus. Nouveaux : dispense de modération (3 cas : visiteur, admin, porteur non chargé), codec de période (3 cas), rendu du champ de dates (3 cas), câblage de la config (3 cas) |
+| `validate-config` · `typecheck` · `lint` | ✅ · ✅ · ✅ |
+| **Non vérifié** | l'enregistrement RÉEL d'un événement récurrent daté, qui prouverait que le backend legacy l'accepte : il demande un compte de test (`.env.test`), absent de ce poste. C'est le test d'intégration `costum-forms` qui le couvrirait |
+
+---
+
+## 9quinquiestricies. Vérifications du lot (21/09/2026)
+
+Portes passées sur l'ENSEMBLE du lot — loupe du menu, panneau de sous-menu, couleurs de territoire,
+bandeau de filtres, accueil en bandes, infobulles de la carte, formulaire événement.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` · `lint` | ✅ · ✅ **0 message** sur les 41 fichiers du lot |
+| `validate-config` · `audit:config` | ✅ **51 pages · 183 sections** · parent62 RAS |
+| `test:unit` (préflight compris) | ✅ **4 573 tests**, 3 échecs **étrangers au lot** et antérieurs : `bundle-size`, `site-assets`, `ProseContent — césure` |
+| `test:integration` (`config-driven-ssr`, `SITE_CONFIG_PATH=./config.prod.parent62.json`) | ✅ **99/99** |
+| `test:e2e` ciblé (`parent62.spec.ts`) | ✅ **18/18** |
+| `test:e2e` complet | ✅ **33 passés**, 8 ignorés, **7 échecs étrangers** : specs génériques comparées à `config.prod.json` (un autre site) et `auth-flow` sans `.env.test` |
+| `config:render` | ✅ **6 sites** : parent62, institut-bleu, rezo-la-mer, rezo-sante-reunion, saint-paul-sport, sport-sante-bien-etre — chaque page sert au moins une section avec du contenu |
+| Gardes vérifiées EN ÉCHEC | ✅ hauteur égale des cases · calage en haut (icônes alignées) · débordement du header sous barre de défilement · accent de page absent · plancher du registre `prop-descriptions` |
+| Briques partagées | ✅ `sectionBg` (5 sections), `accentStyle` (4 appels), `SECTION_BADGE_CLASS` (2) et `isCostumHostAdmin` (4) remplacent des recopies ; toutes les nouveautés sont optionnelles, employées par parent62 seul |
 
 ---
 
