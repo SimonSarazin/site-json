@@ -6,7 +6,7 @@ import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link } from "react-router";
 import { buildGridColsClass } from "./responsiveGridCols";
 import { solidTileStyle, tileSizeClasses, tilesContainerWidth } from "./actionTileStyle";
-import { SECTION_BADGE_CLASS } from "./sectionBadge";
+import { sectionBadgeClass } from "./sectionBadge";
 import { accentStyle } from "@/lib/accentStyle";
 
 interface ActionTilesSectionProps {
@@ -113,7 +113,9 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
         eco: { button: "bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/30 hover:border-emerald-500/50", icon: "text-emerald-500" },
     };
 
-    const enPastille = props.headlineStyle === "badge";
+    const enPastille = props.headlineStyle === "badge" || props.headlineStyle === "pill";
+    const classePastille = sectionBadgeClass(props.headlineStyle);
+    const enLigne = props.tileLayout === "inline";
     const tileSize = tileSizeClasses(props.size);
     const containerWidth = tilesContainerWidth(props.width);
 
@@ -144,12 +146,12 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
                 <div className={`mb-10 ${enPastille ? "" : "text-center"}`}>
                     {props.headline &&
                         (enPastille ? (
-                            // Même pastille que les autres bandes de la page (cf. `SECTION_BADGE_CLASS`).
+                            // Même pastille que les autres bandes de la page (cf. `sectionBadgeClass`).
                             <h2 className="mb-4">
                                 <Badge
                                     variant={props.accentColor ? undefined : "secondary"}
                                     style={accentStyle(props.accentColor)}
-                                    className={SECTION_BADGE_CLASS}
+                                    className={classePastille}
                                 >
                                     {t(props.headline)}
                                 </Badge>
@@ -181,10 +183,23 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
                                     // `whitespace-normal` : la base du Button pose `whitespace-nowrap`,
                                     // qui empêche titre et sous-titre de passer à la ligne — sur mobile,
                                     // un sous-titre plus large que l'écran débordait de la tuile.
-                                    className={`h-full w-full ${tileSize.box} flex flex-col items-center gap-3 text-foreground border transition-all whitespace-normal text-center ${solid ? "hover:brightness-95" : getButtonClasses(action.color)}`}
+                                    className={`h-full w-full ${tileSize.box} flex flex-col gap-3 text-foreground border transition-all whitespace-normal ${enLigne ? "items-start rounded-2xl px-6 text-left shadow-sm" : "items-center text-center"} ${solid ? "hover:brightness-95" : getButtonClasses(action.color)}`}
                                 >
-                                    {renderIcon(action.icon, solid ? "" : getIconColorClass(action.color), tileSize.icon)}
-                                    <span className={tileSize.title}>{t(action.title)}</span>
+                                    {enLigne ? (
+                                        // Icône en pastille, titre à côté : `bg-current/10` suit l'encre de la
+                                        // tuile, donc tient aussi bien sur un aplat que sur une teinte claire.
+                                        <span className="flex items-center gap-3">
+                                            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-current/10">
+                                                {renderIcon(action.icon, solid ? "" : getIconColorClass(action.color), "size-5")}
+                                            </span>
+                                            <span className={tileSize.title}>{t(action.title)}</span>
+                                        </span>
+                                    ) : (
+                                        <>
+                                            {renderIcon(action.icon, solid ? "" : getIconColorClass(action.color), tileSize.icon)}
+                                            <span className={tileSize.title}>{t(action.title)}</span>
+                                        </>
+                                    )}
                                     {action.subtitle && (
                                         <span className={solid ? tileSize.subtitle : `${tileSize.subtitle} text-muted-foreground`}>
                                             {t(action.subtitle)}

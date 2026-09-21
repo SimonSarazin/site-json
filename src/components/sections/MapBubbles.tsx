@@ -4,6 +4,8 @@ import { type MapBubblesProps } from "@/types/site-schema";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router";
 import { tooltipAnchorClass } from "./mapBubbleTooltip";
+import { sectionBadgeClass } from "./sectionBadge";
+import { accentStyle } from "@/lib/accentStyle";
 
 interface MapBubblesSectionProps {
     id?: string;
@@ -19,22 +21,63 @@ const BG_MAP: Record<string, string> = {
     transparent: "bg-transparent",
 };
 
+/** Marine des pastilles de la carte — couleur FIXE, identique en clair et en sombre (cf. items). */
+const MARINE_FIXE = "oklch(0.20 0.03 265)";
+
 export function MapBubbles({ id, props }: MapBubblesSectionProps) {
     const { t } = useLocalization();
     const idInfobulles = useId();
+    const enCarte = props.design === "card";
     const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : "";
     const overlay = props.backgroundOverlay;
+    // En habillage « carte », le dégradé (`backgroundOverlay`) habille la SEULE illustration : la carte qui
+    // porte le bloc garde son fond, et titre comme accroche s'y lisent en encre de thème.
+    const voileIllustration = enCarte && overlay
+        ? { background: `linear-gradient(${overlay.angle ?? 90}deg, ${overlay.from}, ${overlay.to})` }
+        : undefined;
 
     return (
-        <section id={id} className={`relative py-16 px-4 ${sectionBg}`}>
-            {overlay && (
+        <section id={id} className={`relative px-4 ${enCarte ? "flex h-full flex-col rounded-2xl pt-8 pb-6" : "py-16"} ${sectionBg}`}>
+            {overlay && !enCarte && (
                 <div
-                    className="absolute inset-0 z-0"
+                    // `rounded-[inherit]` : le voile suit les coins de la section, qui les porte en
+                    // habillage « carte » — sinon ses angles carrés dépassent de la carte arrondie.
+                    className="absolute inset-0 z-0 rounded-[inherit]"
                     style={{ background: `linear-gradient(${overlay.angle ?? 90}deg, ${overlay.from}, ${overlay.to})` }}
                 />
             )}
 
-            <div className="relative z-10 container mx-auto max-w-4xl">
+            <div className={`relative z-10 container mx-auto max-w-4xl ${enCarte ? "flex flex-1 flex-col" : ""}`}>
+                {/* Habillage « carte » : l'étiquette déborde du haut de la carte qui porte le bloc, et
+                    l'accroche se lit dessous — l'illustration vit alors sur son propre aplat arrondi,
+                    au lieu de servir de fond au titre. */}
+                {enCarte && (
+                    <>
+                        {/* Étiquette remontée de sorte que son bas ne morde pas sur l'accroche juste en
+                            dessous — inclinée, sa boîte est plus haute que le texte. Couleurs FIXES (config
+                            ou marine par défaut), comme les pastilles d'item : pas d'adaptatif clair/sombre. */}
+                        <h2 className="absolute -top-16 left-0 z-20">
+                            <Badge
+                                style={accentStyle(props.badgeColor ?? MARINE_FIXE, props.badgeTextColor)}
+                                className={sectionBadgeClass(props.headlineStyle)}
+                            >
+                                {t(props.headline)}
+                            </Badge>
+                        </h2>
+                        {props.subhead && (
+                            <p className="mb-3 text-sm text-muted-foreground">{t(props.subhead)}</p>
+                        )}
+                    </>
+                )}
+                {/* Habillage « carte » : le panneau (dégradé ou aplat) s'étire jusqu'au bas de la carte,
+                    et l'illustration s'y centre — les bulles, elles, restent positionnées en % de
+                    l'ILLUSTRATION, sinon elles dérivent dès que le panneau est plus haut qu'elle. */}
+                <div
+                    style={voileIllustration}
+                    // `contents` hors habillage carte : la boîte disparaît de la mise en page, le rendu
+                    // historique (illustration et bulles directement dans le conteneur) est intact.
+                    className={enCarte ? `flex flex-1 items-center rounded-2xl p-3 ${voileIllustration ? "" : "bg-[var(--page-accent-soft,transparent)]"}` : "contents"}
+                >
                 <div className="relative w-full @container/map-bubbles">
                     {props.backgroundImage ? (
                         // `dark:brightness-75` : l'illustration (carte + lavis, cuits dans
@@ -123,7 +166,7 @@ export function MapBubbles({ id, props }: MapBubblesSectionProps) {
                         de celle du bloc voisin « À la une ». Les aligner demande de les séparer. Le coin
                         haut-gauche de l'illustration est la mer — aucune pastille de territoire n'y est
                         posée, le badge ne masque donc rien. */}
-                    <div className="absolute top-0 left-0 z-20 flex flex-col items-start">
+                    <div className={`z-20 flex flex-col items-start ${enCarte ? "hidden" : "absolute top-0 left-0"}`}>
                         <h2>
                             {/* Couleurs FIXES, même raison que les pastilles d'item ci-dessus : pas
                                 d'adaptatif clair/sombre ici. */}
@@ -136,12 +179,13 @@ export function MapBubbles({ id, props }: MapBubblesSectionProps) {
                     {/* Accroche : reste à DROITE, en vis-à-vis du titre. Décalée vers le bas d'autant que
                         le badge est haut, sinon les deux se retrouvent sur la même ligne d'yeux. */}
                     {props.subhead && (
-                        <div className="absolute top-12 @sm/map-bubbles:top-16 @3xl/map-bubbles:top-28 right-6 @sm/map-bubbles:right-10 z-20 flex justify-end">
+                        <div className={`z-20 flex justify-end ${enCarte ? "hidden" : "absolute top-12 @sm/map-bubbles:top-16 @3xl/map-bubbles:top-28 right-6 @sm/map-bubbles:right-10"}`}>
                             <p className={`max-w-32 @sm/map-bubbles:max-w-50 text-[0.65rem] @sm/map-bubbles:text-lg @3xl/map-bubbles:max-w-60 text-left ${overlay ? "text-white/90" : "text-muted-foreground"}`}>
                                 {t(props.subhead)}
                             </p>
                         </div>
                     )}
+                </div>
                 </div>
             </div>
         </section>

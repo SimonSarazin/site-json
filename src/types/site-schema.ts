@@ -532,11 +532,18 @@ export const ActionTilesSchema = z.object({
     /** Largeur de la grille : `default` (1024 px max) ou `wide` (1280 px max), pour 4 tuiles et plus en `lg`. */
     width: z.enum(["default", "wide"]).optional(),
     /**
-     * Rendu du titre : `plain` (défaut, titre centré) ou `badge` — la pastille inclinée d'`articleTeaser`
-     * et de `map-bubbles`, calée à gauche, pour une page dont toutes les bandes portent le même repère.
-     * `accentColor` (couleur CSS) teinte la pastille ; sans elle, la pastille prend le ton `secondary`.
+     * Rendu du titre : `plain` (défaut, titre centré), `badge` — la pastille inclinée d'`articleTeaser`
+     * et de `map-bubbles` — ou `pill`, la même en arrondi droit. Les deux se calent à gauche, pour une
+     * page dont toutes les bandes portent le même repère. `accentColor` (couleur CSS) les teinte ; sans
+     * elle, la pastille prend le ton `secondary`.
      */
-    headlineStyle: z.enum(["plain", "badge"]).optional(),
+    headlineStyle: z.enum(["plain", "badge", "pill"]).optional(),
+    /**
+     * Disposition d'une tuile : `centered` (défaut, icône puis textes centrés) ou `inline` — icône dans
+     * une pastille, titre à côté d'elle, sous-titre dessous, le tout aligné à gauche. `inline` se lit
+     * mieux dès que les sous-titres font une phrase entière.
+     */
+    tileLayout: z.enum(["centered", "inline"]).optional(),
     accentColor: z.string().optional(),
     actions: z.array(
       z.object({
@@ -1363,6 +1370,19 @@ export const MapBubblesSchema = z.object({
     backgroundImage: z.string().optional(),
     backgroundImageAlt: LocalizedString.optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    /**
+     * Habillage : `sticker` (défaut, historique) — titre posé SUR l'illustration, accroche en vis-à-vis à
+     * droite — ou `card` : titre débordant du haut du bloc, accroche dessous, illustration sur son propre
+     * aplat (le dégradé de `backgroundOverlay` s'il est fourni, sinon celui de `page.accent`). `card`
+     * suppose que le bloc est DANS une carte (colonne de `gridLayout`), sinon le titre flotte dans le vide.
+     */
+    design: z.enum(["sticker", "card"]).optional(),
+    /** Forme du titre : `badge` (défaut, étiquette inclinée) ou `pill` (arrondi droit). */
+    headlineStyle: z.enum(["badge", "pill"]).optional(),
+    /** Fond de l'étiquette de titre (couleur CSS). Défaut : le marine fixe de la carte. */
+    badgeColor: z.string().optional(),
+    /** Encre de l'étiquette de titre. Défaut blanc — contraste AA à mesurer sur `badgeColor`. */
+    badgeTextColor: z.string().optional(),
     // Dégradé décoratif optionnel derrière l'illustration. Couleurs CSS arbitraires
     // (typiquement des var() de thème du site) : le composant ne code aucune couleur en dur.
     backgroundOverlay: z
@@ -1463,6 +1483,8 @@ export type TitleSectionProps = z.infer<typeof TitleSectionSchema>["props"];
 const GridLayoutSectionPropsSchema = z.object({
   /** Fond de la bande (jetons du thème + `page-accent`, l'aplat de `page.accent`). Défaut : fond hérité. */
   bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
+  /** Largeur max du contenu. Défaut : toute la largeur du `container`. À aligner sur les bandes voisines. */
+  maxWidth: z.enum(["3xl", "4xl", "5xl", "6xl", "7xl", "full"]).optional(),
   leftSection: z.lazy(() => SectionSchemaLazy).optional(),
   rightSection: z.lazy(() => SectionSchemaLazy).optional(),
   /** Mode « rangée » : N sections de MÊME largeur sur une ligne, au lieu du couple

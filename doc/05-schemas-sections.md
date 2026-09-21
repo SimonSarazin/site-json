@@ -1829,7 +1829,16 @@ export const ActionTilesSchema = z.object({
 | `bg`       | `enum`    | Couleur de fond                          |
 | `columns`  | `ResponsiveColumns?` | Colonnes par breakpoint (défaut sm:2 lg:4) |
 | `size` | `"md" \| "lg"` | Taille des tuiles : `md` (défaut : titre 14 px, sous-titre 12 px, icône 16 px) ou `lg` (18 px, 16 px, icône 32 px, marges verticales élargies, contenu calé en haut pour aligner les icônes d'une rangée) |
-| `headlineStyle` | `"plain" \| "badge"` | Rendu du titre : `plain` (défaut, centré) ou `badge` — la pastille inclinée d'`articleTeaser`/`map-bubbles`, calée à gauche, pour une page dont toutes les bandes portent le même repère |
+| `headlineStyle` | `"plain" \| "badge" \| "pill"` | Rendu du titre : `plain` (défaut, centré), `badge` (pastille inclinée d'`articleTeaser`/`map-bubbles`) ou `pill` (la même en arrondi droit). Les deux pastilles se calent à gauche, pour une page dont toutes les bandes portent le même repère |
+| `tileLayout` | `"centered" \| "inline"` | Disposition d'une tuile : `centered` (défaut, icône puis textes centrés) ou `inline` — icône en pastille, titre à côté, sous-titre dessous, aligné à gauche. `inline` se lit mieux dès que les sous-titres font une phrase |
+
+`articleTeaser`, `map-bubbles` et `featured-carousel` partagent le réglage `headlineStyle` (`badge` par
+défaut, étiquette inclinée ; `pill` en arrondi droit). `map-bubbles` et `featured-carousel` acceptent en
+plus `badgeColor`/`badgeTextColor` : la teinte de l'ÉTIQUETTE, indépendante de `accentColor` qui, elle,
+teinte les boutons. `design` (`sticker` par défaut, `card`) règle à part
+le PLACEMENT sur `map-bubbles` et `featured-carousel` : titre débordant du haut du bloc, et pour le
+carrousel, points de position à gauche et bouton compact à droite, en pied de carte. `articleTeaser` accepte
+aussi `maxWidth` (défaut `4xl`), même échelle que `gridLayout`.
 | `accentColor` | `string?` | Couleur de la pastille de titre (`headlineStyle: "badge"`). Son encre est blanche : à choisir assez foncée, contraste AA à mesurer |
 | `width` | `"default" \| "wide"` | Largeur de la grille : `default` (1024 px max) ou `wide` (1280 px max) |
 
@@ -2396,6 +2405,7 @@ const GridLayoutSectionSchema = z.object({
 | `from`              | `"md" \| "lg"?` | Largeur à partir de laquelle les colonnes se placent CÔTE À CÔTE ; en dessous elles s'empilent. `lg` (défaut, historique) = 1024px, `md` = 768px — à descendre quand le bloc doit rester sur une ligne à fort zoom navigateur, qui rétrécit le viewport CSS |
 | `gap`               | `number?` | Espacement entre les colonnes            |
 | `bg`                | `enum?`   | Fond de la bande (jetons du thème + `page-accent`, l'aplat de `page.accent`). Défaut : fond hérité — une grille pose une bande colorée sans wrapper supplémentaire |
+| `maxWidth`          | `"3xl"…"7xl" \| "full"?` | Largeur max du contenu (défaut : toute celle du `container`). À aligner sur les bandes voisines — deux largeurs différentes se lisent comme un décrochage |
 | `className`         | `string?` | Classes CSS additionnelles               |
 | `leftWrapperClass`  | `string?` | Classes CSS du wrapper gauche            |
 | `rightWrapperClass` | `string?` | Classes CSS du wrapper droit             |

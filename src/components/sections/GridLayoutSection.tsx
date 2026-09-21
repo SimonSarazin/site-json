@@ -3,6 +3,7 @@ import type { Section, GridLayoutSectionProps } from "@/types/site";
 import { cn } from "@/lib/utils";
 import { buildGridColsClass } from "./responsiveGridCols";
 import { sectionBgClass } from "./sectionBg";
+import { sectionMaxWidthClass } from "./sectionWidth";
 
 export function GridLayoutSection({
   id,
@@ -11,9 +12,11 @@ export function GridLayoutSection({
   id?: string;
   props: GridLayoutSectionProps;
 }) {
-  const { leftColumns = 1, rightColumns = 3, gap = 8, align = "start", from = "lg", className, leftWrapperClass, rightWrapperClass, bg } = props;
+  const { leftColumns = 1, rightColumns = 3, gap = 8, align = "start", from = "lg", className, leftWrapperClass, rightWrapperClass, bg, maxWidth } = props;
   // Fond de bande : sans `bg`, `py-4` et le fond hérité — le rendu historique de toutes les grilles du parc.
   const bandeau = cn(sectionBgClass(bg), "py-4");
+  // Largeur du contenu : toute celle du `container` par défaut (rendu historique).
+  const largeur = cn("container mx-auto px-6", sectionMaxWidthClass(maxWidth));
   // `stretch` : les colonnes prennent la hauteur de la plus haute, et la SECTION fille est étirée
   // avec elles — sans quoi le wrapper s'allonge mais la section garde sa hauteur de contenu, et le
   // vide reste, simplement déplacé d'un cran.
@@ -42,7 +45,7 @@ export function GridLayoutSection({
     const nb = props.columns ?? Math.min(sections.length, 4);
     return (
       <section id={id} className={cn(bandeau, className)}>
-        <div className="container mx-auto px-6">
+        <div className={largeur}>
           <div
             className={cn(
               "grid",
@@ -64,7 +67,7 @@ export function GridLayoutSection({
 
   return (
     <section id={id} className={cn(bandeau, className)}>
-      <div className="container mx-auto px-6">
+      <div className={largeur}>
         <div
           className={cn(
             "grid grid-cols-1",

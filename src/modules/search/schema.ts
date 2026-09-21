@@ -1295,6 +1295,20 @@ export const FeaturedCarouselSectionSchema = z.object({
     /** Encre posée SUR `accentColor` (badge, bouton). Défaut blanc — à fournir dès que l'accent est clair :
      *  blanc sur la turquoise de parent62 ne tient que 1,93:1, contre 5,68:1 pour son marine. */
     accentTextColor: z.string().optional(),
+    /**
+     * Habillage : `sticker` (défaut, historique) — badge incliné dans le flux, flèches de navigation, CTA
+     * pleine largeur — ou `card` : badge en pilule débordant du haut du bloc, points de position à gauche
+     * (les flèches disparaissent) et CTA compact à droite. `card` suppose un bloc DANS une carte, dont le
+     * conteneur ne rogne pas (`overflow` visible), sinon la pilule est coupée.
+     */
+    design: z.enum(["sticker", "card"]).optional(),
+    /** Forme du badge : `badge` (défaut, étiquette inclinée) ou `pill` (arrondi droit). */
+    headlineStyle: z.enum(["badge", "pill"]).optional(),
+    /** Fond du badge de titre, quand il doit différer de `accentColor` (qui teinte le bouton).
+     *  Défaut : `accentColor`. */
+    badgeColor: z.string().optional(),
+    /** Encre du badge de titre. Défaut : `accentTextColor`, sinon blanc. */
+    badgeTextColor: z.string().optional(),
     /** Puces de pagination sous le carrousel, entre les flèches précédent/suivant (celles-ci
      *  restent toujours affichées). Défaut masquées — à activer explicitement si besoin. */
     showControls: z.boolean().default(false),

@@ -1,11 +1,7 @@
-import { Link } from "react-router";
-import { Button } from "@/components/ui/button";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { useT } from "@/hooks/useT";
 import { useResourceData } from "../hooks/useResourceData";
-import { resolveItemClick } from "../lib/itemAction";
 import type { FeaturedCarouselSectionProps, SearchListEntity } from "../schema";
-import { accentStyle } from "@/lib/accentStyle";
+import FeaturedCarouselCta from "./FeaturedCarouselCta";
 
 interface FeaturedCarouselSlideProps {
   item: SearchListEntity;
@@ -14,6 +10,8 @@ interface FeaturedCarouselSlideProps {
   itemAction: NonNullable<FeaturedCarouselSectionProps["itemAction"]>;
   accentColor: FeaturedCarouselSectionProps["accentColor"];
   accentTextColor: FeaturedCarouselSectionProps["accentTextColor"];
+  /** Habillage « carte » : le bouton n'est plus ici — la section le pose en pied, avec les points. */
+  enCarte?: boolean;
   priority?: boolean;
 }
 
@@ -25,14 +23,8 @@ interface FeaturedCarouselSlideProps {
  * car `useResourceData` est un hook — impossible à appeler dans un `.map()` du parent (règle des
  * hooks), même découpage que `CardResource`/`CardResourceCard`.
  */
-export default function FeaturedCarouselSlide({ item, ctaLabel, resource, itemAction, accentColor, accentTextColor, priority }: FeaturedCarouselSlideProps) {
-  const t = useT();
+export default function FeaturedCarouselSlide({ item, ctaLabel, resource, itemAction, accentColor, accentTextColor, enCarte = false, priority }: FeaturedCarouselSlideProps) {
   const data = useResourceData(item, resource);
-  const click = resolveItemClick(item, itemAction);
-  const newTab = click.kind === "link" && click.newTab;
-  // Fond et encre du CTA pilotés par la config (`accentStyle`), indépendants du thème.
-  const styleAccent = accentStyle(accentColor, accentTextColor);
-  const ctaText = t(ctaLabel ?? "En savoir plus");
 
   // Colonne unique, image EN PREMIER (`order` plutôt qu'un déplacement du JSX : l'image reste après
   // le texte dans l'ordre du DOM, donc dans l'ordre de lecture d'un lecteur d'écran, où le titre doit
@@ -46,16 +38,14 @@ export default function FeaturedCarouselSlide({ item, ctaLabel, resource, itemAc
             le texte complet reste lisible au survol (`title`) et via le CTA. */}
         <h2 className="line-clamp-3 text-xl font-bold md:text-2xl" title={data.title}>{data.title}</h2>
         {data.description && <p className="line-clamp-2 text-sm opacity-90 md:text-base">{data.description}</p>}
-        {click.kind !== "details" && (
-          <Button asChild size="lg" style={styleAccent} className="rounded-full px-5 py-2 sm:px-6 font-bold w-full text-base sm:text-lg">
-            {newTab ? (
-              <a href={click.href} target="_blank" rel="noopener noreferrer">
-                {ctaText}
-              </a>
-            ) : (
-              <Link to={click.href}>{ctaText}</Link>
-            )}
-          </Button>
+        {!enCarte && (
+          <FeaturedCarouselCta
+            item={item}
+            ctaLabel={ctaLabel}
+            itemAction={itemAction}
+            accentColor={accentColor}
+            accentTextColor={accentTextColor}
+          />
         )}
       </div>
       {data.image && (

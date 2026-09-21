@@ -126,6 +126,11 @@ export const ArticleTeaserSectionSchema = z.object({
     /** Encre posée SUR `accentColor` (pastille de titre, boutons). Défaut blanc — à fournir dès que l'accent
      *  est clair : blanc sur la turquoise de parent62 ne tient que 1,93:1, contre 5,68:1 pour son marine. */
     accentTextColor: z.string().optional(),
+    /** Pastille de titre : `badge` (défaut, étiquette inclinée) ou `pill` — la même en arrondi droit, pour
+     *  une page dont toutes les bandes portent le même repère. */
+    headlineStyle: z.enum(["badge", "pill"]).optional(),
+    /** Largeur max du contenu (défaut `4xl`). À aligner sur les bandes voisines. */
+    maxWidth: z.enum(["3xl", "4xl", "5xl", "6xl", "7xl", "full"]).optional(),
   }),
 });
 export type ArticleTeaserSectionProps = z.infer<typeof ArticleTeaserSectionSchema>["props"];

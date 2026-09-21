@@ -9,7 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { cn } from "@/lib/utils";
 import { accentStyle } from "@/lib/accentStyle";
-import { SECTION_BADGE_CLASS } from "@/components/sections/sectionBadge";
+import { sectionBadgeClass } from "@/components/sections/sectionBadge";
+import { sectionMaxWidthClass } from "@/components/sections/sectionWidth";
 import { useArticleFeed } from "../hooks/useArticleFeed";
 import { normalizeArticleResult, articleHref } from "../lib/articleLink";
 import type { ArticleTeaserSectionProps } from "../schema";
@@ -138,12 +139,12 @@ export default function ArticleTeaser({ id, props }: { id?: string; props: Artic
 
   return (
     <section id={id} style={sectionStyle} className={cn("py-16 px-4", sectionClassName)}>
-      <div className="container mx-auto max-w-4xl">
+      <div className={cn("container mx-auto", sectionMaxWidthClass(props.maxWidth, "max-w-4xl"))}>
         <h2 className="mb-10">
           <Badge
             variant={accentColor ? undefined : "secondary"}
             style={styleAccent}
-            className={SECTION_BADGE_CLASS}
+            className={sectionBadgeClass(props.headlineStyle)}
           >
             {t(props.headline)}
           </Badge>

@@ -313,6 +313,10 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
 
   "section:map-bubbles": {
     "props.items[].cities": "Villes principales, en infobulle au survol et au focus clavier de la bulle (et description accessible du lien). Absent = pas d'infobulle ; jamais montrée au toucher, où l'appui suit le lien.",
+    "props.design": "Habillage : sticker (défaut, titre incliné sur l'illustration) ou card (titre débordant du haut, accroche dessous, illustration sur son propre aplat) — card suppose un bloc posé DANS une carte.",
+    "props.badgeColor": "Fond de l'étiquette de titre (couleur CSS). Défaut : le marine fixe de la carte. Indépendant du fond du bloc.",
+    "props.badgeTextColor": "Encre de l'étiquette de titre. Défaut blanc : contraste AA à mesurer sur badgeColor.",
+    "props.headlineStyle": "Forme du titre : badge (défaut, étiquette inclinée) ou pill (arrondi droit) — à aligner sur les autres bandes de la page.",
   },
 
   "section:action-tiles": {
@@ -321,7 +325,8 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.width": "Largeur de la grille : default (1024 px max) ou wide (1280 px max) — pour 4 tuiles et plus en size lg, sinon les titres passent sur 3 lignes.",
     "props.actions[].background": "Fond PLEIN de la tuile (couleur CSS, var(--jeton) recommandé) : remplace la teinte à 20 % de color, fixe en clair comme en sombre.",
     "props.actions[].textColor": "Texte et icône d'une tuile à fond plein — obligatoire en pratique avec background, contraste AA (4,5:1) à mesurer.",
-    "props.headlineStyle": "Rendu du titre : plain (défaut, centré) ou badge, la pastille inclinée d'articleTeaser/map-bubbles calée à gauche — pour une page dont toutes les bandes portent le même repère.",
+    "props.headlineStyle": "Rendu du titre : plain (défaut, centré), badge (pastille inclinée d'articleTeaser/map-bubbles) ou pill (la même en arrondi droit), calées à gauche — pour une page dont toutes les bandes portent le même repère.",
+    "props.tileLayout": "Disposition d'une tuile : centered (défaut, icône puis textes centrés) ou inline (icône en pastille, titre à côté, sous-titre dessous, aligné à gauche) — inline se lit mieux quand les sous-titres font une phrase.",
     "props.accentColor": "Couleur de la pastille de titre (headlineStyle: badge) ; son encre est blanche, donc teinte foncée et contraste AA à mesurer.",
   },
 

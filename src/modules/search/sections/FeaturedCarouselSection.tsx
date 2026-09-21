@@ -11,9 +11,11 @@ import { useSearchQuery } from "../hooks/useSearchQuery";
 import { hasRenderableTitle } from "../lib/featuredCarouselFilters";
 import { getEntryId } from "../lib/searchMapSelection";
 import FeaturedCarouselSlide from "./FeaturedCarouselSlide";
+import FeaturedCarouselCta from "./FeaturedCarouselCta";
 import type { FeaturedCarouselSectionProps } from "../schema";
 import "@/modules/search/i18n";
 import { accentStyle } from "@/lib/accentStyle";
+import { sectionBadgeClass } from "@/components/sections/sectionBadge";
 
 export interface FeaturedCarouselSectionWrapperProps {
   id?: string;
@@ -24,10 +26,10 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
   const { loaded } = useLoadNamespace("modules/search");
   const { entity } = useCocolight();
   const t = useT();
-  const { badgeLabel, ctaLabel, baseParams, resource, itemAction = { kind: "profil" }, autoplay, autoplayIntervalMs, background, accentColor, accentTextColor, showControls } = props;
-  // Fond et encre du badge pilotés par la config (`accentStyle`), comme le CTA des diapositives
-  // (`FeaturedCarouselSlide`), indépendants du thème.
-  const styleAccent = accentStyle(accentColor, accentTextColor);
+  const { badgeLabel, ctaLabel, baseParams, resource, itemAction = { kind: "profil" }, autoplay, autoplayIntervalMs, background, accentColor, accentTextColor, showControls, design } = props;
+  const enCarte = design === "card";
+  // Le badge peut se teinter à part du bouton (`badgeColor`), sinon il suit l'accent.
+  const styleBadge = accentStyle(props.badgeColor ?? accentColor, props.badgeTextColor ?? accentTextColor);
 
   const [searchType] = useState<Record<string, string[]> | null>(
     baseParams.defaultTypes ? { type: baseParams.defaultTypes } : null
@@ -76,7 +78,7 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
 
   if (!loaded || !entity || (isLoading && renderable.length === 0)) {
     return (
-      <section id={id} style={sectionStyle} className={cn("py-6 md:py-10", sectionClassName)}>
+      <section id={id} style={sectionStyle} className={cn(enCarte && "relative rounded-2xl", "py-6 md:py-10", sectionClassName)}>
         <div className="container mx-auto animate-pulse px-4">
           <div className="grid items-center gap-8 md:grid-cols-2">
             <div className="space-y-4">
@@ -99,7 +101,11 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
     <section
       id={id}
       style={sectionStyle}
-      className={cn("relative overflow-hidden py-6 md:py-10", sectionClassName)}
+      // Habillage « carte » : la section porte ses propres coins et ne rogne plus — sinon la pilule de
+      // titre, qui déborde du haut, serait coupée.
+      // En habillage « carte », même marge basse que le bloc voisin (`pb-6`) : le pied de carte se lit
+      // alors à la hauteur du bas de son illustration.
+      className={cn("relative pt-6 md:pt-10", enCarte ? "rounded-2xl pb-6" : "overflow-hidden pb-6 md:pb-10", sectionClassName)}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -113,11 +119,11 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
           verticalement, remontait dessous) : en flux, sa place est réservée par
           construction quelle que soit la hauteur du contenu. */}
       {badgeLabel && (
-        <div className="container mx-auto px-4 mb-2 md:mb-3">
+        <div className={enCarte ? "absolute -top-5 left-6 z-20" : "container mx-auto px-4 mb-2 md:mb-3"}>
           <Badge
-            variant={accentColor ? undefined : "secondary"}
-            style={styleAccent}
-            className="-rotate-4 rounded-none border-none px-3 py-1 sm:px-4 sm:py-1.5 text-xl sm:text-2xl md:text-3xl font-serif"
+            variant={styleBadge ? undefined : "secondary"}
+            style={styleBadge}
+            className={sectionBadgeClass(props.headlineStyle)}
           >
             {t(badgeLabel)}
           </Badge>
@@ -140,6 +146,7 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
                 itemAction={itemAction}
                 accentColor={accentColor}
                 accentTextColor={accentTextColor}
+                enCarte={enCarte}
                 priority={index === 0}
               />
             </CarouselItem>
@@ -147,27 +154,32 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
         </CarouselContent>
         {renderable.length > 1 && (
           <>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Diapositive précédente"
-              onClick={() => api?.scrollPrev()}
-              className="absolute top-[28%] left-0 -translate-y-1/2 rounded-none border-none bg-transparent text-current hover:bg-current/10 md:left-1"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Diapositive suivante"
-              onClick={() => api?.scrollNext()}
-              className="absolute top-[28%] right-0 -translate-y-1/2 rounded-none border-none bg-transparent text-current hover:bg-current/10 md:right-1"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            {showControls && (
+            {/* Habillage « carte » : pas de flèches — les points suffisent, et la carte reste calme. */}
+            {!enCarte && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label="Diapositive précédente"
+                  onClick={() => api?.scrollPrev()}
+                  className="absolute top-[28%] left-0 -translate-y-1/2 rounded-none border-none bg-transparent text-current hover:bg-current/10 md:left-1"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label="Diapositive suivante"
+                  onClick={() => api?.scrollNext()}
+                  className="absolute top-[28%] right-0 -translate-y-1/2 rounded-none border-none bg-transparent text-current hover:bg-current/10 md:right-1"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+            {showControls && !enCarte && (
               <div className="mt-6 flex justify-center gap-2">
                 {renderable.map((item, index) => (
                   <button
@@ -186,6 +198,38 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
           </>
         )}
       </Carousel>
+      {/* Pied de la carte : les points de position à gauche, le bouton de la diapositive COURANTE à
+          droite — une seule ligne, comme la maquette. Le bouton vit ici (et non dans la diapositive)
+          pour partager sa ligne avec les points, sans quoi il défilerait avec le contenu. */}
+      {enCarte && (
+        <div className="container mx-auto mt-auto flex items-center justify-between gap-4 px-4 pt-4">
+          <div className="flex gap-2">
+            {renderable.length > 1 &&
+              renderable.map((item, index) => (
+                <button
+                  key={getEntryId(item) ?? index}
+                  type="button"
+                  aria-label={`Diapositive ${index + 1}`}
+                  onClick={() => api?.scrollTo(index)}
+                  className={cn(
+                    "h-2 w-2 rounded-full transition-colors",
+                    index === selectedIndex ? "bg-current" : "bg-current/30",
+                  )}
+                />
+              ))}
+          </div>
+          {renderable[selectedIndex] && (
+            <FeaturedCarouselCta
+              item={renderable[selectedIndex]}
+              ctaLabel={ctaLabel}
+              itemAction={itemAction}
+              accentColor={accentColor}
+              accentTextColor={accentTextColor}
+              compact
+            />
+          )}
+        </div>
+      )}
       </div>
     </section>
   );
