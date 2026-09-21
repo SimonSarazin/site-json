@@ -318,6 +318,69 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     }
   });
 
+  test("/territoire/arrageois : l'agenda du territoire liste les événements du territoire", async ({ page }) => {
+    await page.goto("/territoire/arrageois", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    // Deux agendas sur la page : les dates du comité local (réunions) puis l'agenda du territoire.
+    const agendas = page.locator('[data-section-type="agenda"]');
+    await expect(agendas).toHaveCount(2);
+    const agendaTerritoire = agendas.last();
+    await expect(agendaTerritoire.getByText("L'agenda du territoire")).toBeVisible();
+    await expect(agendaTerritoire.getByRole("link", { name: /Voir tout l'agenda/ })).toHaveAttribute(
+      "href",
+      // L'ID de l'option, pas le libellé : un libellé retouché cesserait d'être reconnu (garde préflight
+      // `deeplink-filters`), et la page cible s'ouvrirait NON filtrée.
+      "/agenda?territoire=arrageois",
+    );
+
+    // Le contenu dépend des données : n'assertionner qu'avec un backend qui répond.
+    if (backendUp) {
+      const vide = await agendaTerritoire.getByText(/Aucun événement/i).count();
+      if (vide === 0) await expect(agendaTerritoire.locator("article, a[href]").first()).toBeVisible();
+    }
+  });
+
+  test("accueil : survoler une bulle de territoire montre ses villes", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    // Dans la CARTE, pas le lien du même chemin dans le menu déroulant du header.
+    const calaisis = page.locator('main a[href="/territoire/calaisis"]').first();
+    const villes = calaisis.locator("span[id]");
+    await expect(villes).toHaveText("Calais – Audruicq – Guînes");
+    // Cachée au repos, montrée au survol — et elle décrit le lien pour un lecteur d'écran.
+    await expect(villes).toHaveCSS("opacity", "0");
+    await expect(calaisis).toHaveAttribute("aria-describedby", await villes.getAttribute("id") ?? "");
+    await calaisis.hover();
+    await expect(villes).toHaveCSS("opacity", "1");
+  });
+
+  test("/territoire/boulonnais : la page porte la couleur du territoire et en teinte des sections", async ({ page }) => {
+    await page.goto("/territoire/boulonnais", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    const accent = await page.locator("main").evaluate((m) => getComputedStyle(m).getPropertyValue("--page-accent").trim());
+    expect(accent, "l'accent de la page est la couleur du territoire").toBe("#c34a42");
+
+    // Deux bandeaux teintés (agenda du territoire, communes) se distinguent du fond de page.
+    const fonds = await page.evaluate(() => {
+      const fond = (el: Element | null) => (el ? getComputedStyle(el).backgroundColor : "");
+      const sections = [...document.querySelectorAll("[data-section-index]")];
+      const teinte = (type: string) => fond(sections.find((d) => (d as HTMLElement).dataset.sectionType === type)?.querySelector("section") ?? null);
+      return {
+        page: fond(document.body),
+        agenda: teinte("agenda"),
+        accordion: teinte("accordion"),
+        filtres: teinte("searchHeader"),
+      };
+    });
+    expect(fonds.agenda, "l'agenda est teinté").not.toBe(fonds.page);
+    expect(fonds.accordion, "les communes sont teintées").toBe(fonds.agenda);
+    expect(fonds.filtres, "les filtres d'actualités sont teintés").toBe(fonds.agenda);
+  });
+
   for (const url of ["/parents", "/pro"]) {
     test(`${url} : « Par où commencer ? » — 4 cases sur une rangée, de même hauteur, icônes alignées`, async ({ page }) => {
       // Un titre qui passe sur une ligne de plus ne doit ni faire dépasser sa case ni décaler l'icône voisine.

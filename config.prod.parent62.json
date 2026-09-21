@@ -438,6 +438,7 @@
         "en": "Home — Parent62"
       },
       "layout": "fullwidth",
+      "accent": "var(--p62-turquoise)",
       "seo": {
         "title": {
           "fr": "Parent62 — Réseau Parentalité du Pas-de-Calais",
@@ -470,6 +471,8 @@
             "columns": {
               "lg": 2
             },
+            "headlineStyle": "badge",
+            "accentColor": "var(--p62-marine)",
             "actions": [
               {
                 "icon": "heart-handshake",
@@ -527,6 +530,10 @@
                   {
                     "label": { "fr": "Calaisis", "en": "Calaisis" },
                     "href": "/territoire/calaisis",
+              "cities": {
+                "fr": "Calais – Audruicq – Guînes",
+                "en": "Calais – Audruicq – Guînes"
+              },
                     "image": "/images/parent62/territoires/rond-orange.webp",
                     "x": 33,
                     "y": 15,
@@ -535,6 +542,10 @@
                   {
                     "label": { "fr": "Boulonnais", "en": "Boulonnais" },
                     "href": "/territoire/boulonnais",
+              "cities": {
+                "fr": "Boulogne-sur-Mer – Marquise – Desvres",
+                "en": "Boulogne-sur-Mer – Marquise – Desvres"
+              },
                     "image": "/images/parent62/territoires/rond-rouge.webp",
                     "x": 11,
                     "y": 32,
@@ -543,6 +554,10 @@
                   {
                     "label": { "fr": "Audomarois", "en": "Audomarois" },
                     "href": "/territoire/audomarois",
+              "cities": {
+                "fr": "Saint-Omer – Aire-sur-la-Lys – Lumbres – Thérouanne – Fauquembergues",
+                "en": "Saint-Omer – Aire-sur-la-Lys – Lumbres – Thérouanne – Fauquembergues"
+              },
                     "image": "/images/parent62/territoires/rond-jaune.webp",
                     "x": 44,
                     "y": 41,
@@ -559,6 +574,10 @@
                   {
                     "label": { "fr": "Ternois Bruaysis", "en": "Ternois Bruaysis" },
                     "href": "/territoire/ternois-bruaysis",
+              "cities": {
+                "fr": "Bruay-la-Buissière – Saint-Pol-sur-Ternoise – Frévent – Auchel – Avesnes-le-Comte",
+                "en": "Bruay-la-Buissière – Saint-Pol-sur-Ternoise – Frévent – Auchel – Avesnes-le-Comte"
+              },
                     "image": "/images/parent62/territoires/rond-rose.webp",
                     "x": 41,
                     "y": 67,
@@ -567,6 +586,10 @@
                   {
                     "label": { "fr": "Artois", "en": "Artois" },
                     "href": "/territoire/artois",
+              "cities": {
+                "fr": "Béthune – Sailly-sur-la-Lys",
+                "en": "Béthune – Sailly-sur-la-Lys"
+              },
                     "image": "/images/parent62/territoires/rond-vert-jaune.webp",
                     "x": 63,
                     "y": 43,
@@ -575,6 +598,10 @@
                   {
                     "label": { "fr": "FSM Lens-Liévin", "en": "FSM Lens-Liévin" },
                     "href": "/territoire/familles-en-sol-mineur-lens-lievin",
+              "cities": {
+                "fr": "Lens – Liévin",
+                "en": "Lens – Liévin"
+              },
                     "image": "/images/parent62/territoires/rond-marron.webp",
                     "x": 67,
                     "y": 63,
@@ -583,6 +610,10 @@
                   {
                     "label": { "fr": "FSM Hénin-Carvin", "en": "FSM Hénin-Carvin" },
                     "href": "/territoire/familles-en-sol-mineur-henin-carvin",
+              "cities": {
+                "fr": "Hénin-Beaumont – Carvin",
+                "en": "Hénin-Beaumont – Carvin"
+              },
                     "image": "/images/parent62/territoires/rond-rose-vif.webp",
                     "x": 85,
                     "y": 68,
@@ -591,6 +622,10 @@
                   {
                     "label": { "fr": "Arrageois", "en": "Arrageois" },
                     "href": "/territoire/arrageois",
+              "cities": {
+                "fr": "Arras – Achicourt – Saint-Laurent-Blangy – Dainville – Beaurains",
+                "en": "Arras – Achicourt – Saint-Laurent-Blangy – Dainville – Beaurains"
+              },
                     "image": "/images/parent62/territoires/rond-violet.webp",
                     "x": 80,
                     "y": 82,
@@ -625,14 +660,16 @@
                 "itemAction": { "kind": "link", "to": "/blog/:slug", "toById": "/blog/id/:id" },
                 "background": "var(--p62-marine)",
                 "accentColor": "var(--p62-turquoise)",
+            "accentTextColor": "var(--p62-marine)",
                 "autoplay": true,
                 "autoplayIntervalMs": 6000
               }
             },
             "align": "stretch",
-            "rightWrapperClass": "overflow-hidden rounded-2xl [&>*>section]:py-2 [&>*>section]:flex [&>*>section]:flex-col",
-            "className": "pt-4 pb-0",
-            "leftWrapperClass": "rounded-2xl [&>*>section]:rounded-2xl [&>*>section>div:first-child]:rounded-2xl [&>*>section]:py-2",
+            "rightWrapperClass": "overflow-hidden rounded-2xl shadow-lg [&>*>section]:py-2 [&>*>section]:flex [&>*>section]:flex-col",
+            "bg": "page-accent",
+            "className": "py-16",
+            "leftWrapperClass": "rounded-2xl shadow-lg [&>*>section]:rounded-2xl [&>*>section>div:first-child]:rounded-2xl [&>*>section]:py-2",
             "from": "md"
           }
         },
@@ -651,7 +688,8 @@
             },
             "viewAllHref": "/zoomcat",
             "background": "var(--p62-marine)",
-            "accentColor": "var(--p62-turquoise)"
+            "accentColor": "var(--p62-turquoise)",
+            "accentTextColor": "var(--p62-marine)"
           }
         }
       ]
@@ -10884,6 +10922,7 @@
         "en": "Arrageois"
       },
       "layout": "fullwidth",
+      "accent": "var(--territoire-arrageois)",
       "seo": {
         "title": {
           "fr": "Arrageois — Parent62",
@@ -11019,6 +11058,62 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/arrageois-agenda",
+          "props": {
+            "bg": "page-accent",
+            "customHeader": {
+              "title": {
+                "fr": "L'agenda du territoire",
+                "en": "The territory's agenda"
+              },
+              "linkText": {
+                "fr": "Voir tout l'agenda",
+                "en": "See the full agenda"
+              },
+              "linkHref": "/agenda?territoire=arrageois"
+            },
+            "description": {
+              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Arrageois.",
+              "en": "Events open to families and professionals across the Arrageois area."
+            },
+            "defaultMode": "list",
+            "showViewToggle": false,
+            "tabs": [
+              "upcoming",
+              "past"
+            ],
+            "defaultTab": "upcoming",
+            "upcomingWindowMonths": 12,
+            "filters": {
+              "type": false,
+              "text": false,
+              "tags": false
+            },
+            "detailsMode": "drawer",
+            "enableMap": false,
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "indexStepList": 60,
+              "filters": {
+                "type": "others",
+                "territoires": {
+                  "$in": [
+                    "Arrageois"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "searchProStatic",
           "id": "/territoire/arrageois-ressources",
           "props": {
@@ -11140,6 +11235,7 @@
           "type": "searchHeader",
           "id": "/territoire/arrageois-search",
           "props": {
+            "bg": "page-accent",
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -11420,6 +11516,7 @@
         {
           "type": "accordion",
           "props": {
+            "bg": "page-accent",
             "items": [
               {
                 "title": {
@@ -11538,6 +11635,7 @@
         "en": "Artois"
       },
       "layout": "fullwidth",
+      "accent": "var(--territoire-artois)",
       "seo": {
         "title": {
           "fr": "Artois — Parent62",
@@ -11673,6 +11771,62 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/artois-agenda",
+          "props": {
+            "bg": "page-accent",
+            "customHeader": {
+              "title": {
+                "fr": "L'agenda du territoire",
+                "en": "The territory's agenda"
+              },
+              "linkText": {
+                "fr": "Voir tout l'agenda",
+                "en": "See the full agenda"
+              },
+              "linkHref": "/agenda?territoire=artois"
+            },
+            "description": {
+              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Artois.",
+              "en": "Events open to families and professionals across the Artois area."
+            },
+            "defaultMode": "list",
+            "showViewToggle": false,
+            "tabs": [
+              "upcoming",
+              "past"
+            ],
+            "defaultTab": "upcoming",
+            "upcomingWindowMonths": 12,
+            "filters": {
+              "type": false,
+              "text": false,
+              "tags": false
+            },
+            "detailsMode": "drawer",
+            "enableMap": false,
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "indexStepList": 60,
+              "filters": {
+                "type": "others",
+                "territoires": {
+                  "$in": [
+                    "Artois"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "searchProStatic",
           "id": "/territoire/artois-ressources",
           "props": {
@@ -11794,6 +11948,7 @@
           "type": "searchHeader",
           "id": "/territoire/artois-search",
           "props": {
+            "bg": "page-accent",
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -12074,6 +12229,7 @@
         {
           "type": "accordion",
           "props": {
+            "bg": "page-accent",
             "items": [
               {
                 "title": {
@@ -12192,6 +12348,7 @@
         "en": "Audomarois"
       },
       "layout": "fullwidth",
+      "accent": "var(--territoire-audomarois)",
       "seo": {
         "title": {
           "fr": "Audomarois — Parent62",
@@ -12327,6 +12484,62 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/audomarois-agenda",
+          "props": {
+            "bg": "page-accent",
+            "customHeader": {
+              "title": {
+                "fr": "L'agenda du territoire",
+                "en": "The territory's agenda"
+              },
+              "linkText": {
+                "fr": "Voir tout l'agenda",
+                "en": "See the full agenda"
+              },
+              "linkHref": "/agenda?territoire=audomarois"
+            },
+            "description": {
+              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Audomarois.",
+              "en": "Events open to families and professionals across the Audomarois area."
+            },
+            "defaultMode": "list",
+            "showViewToggle": false,
+            "tabs": [
+              "upcoming",
+              "past"
+            ],
+            "defaultTab": "upcoming",
+            "upcomingWindowMonths": 12,
+            "filters": {
+              "type": false,
+              "text": false,
+              "tags": false
+            },
+            "detailsMode": "drawer",
+            "enableMap": false,
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "indexStepList": 60,
+              "filters": {
+                "type": "others",
+                "territoires": {
+                  "$in": [
+                    "Audomarois"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "searchProStatic",
           "id": "/territoire/audomarois-ressources",
           "props": {
@@ -12448,6 +12661,7 @@
           "type": "searchHeader",
           "id": "/territoire/audomarois-search",
           "props": {
+            "bg": "page-accent",
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -12728,6 +12942,7 @@
         {
           "type": "accordion",
           "props": {
+            "bg": "page-accent",
             "items": [
               {
                 "title": {
@@ -12846,6 +13061,7 @@
         "en": "Boulonnais"
       },
       "layout": "fullwidth",
+      "accent": "var(--territoire-boulonnais)",
       "seo": {
         "title": {
           "fr": "Boulonnais — Parent62",
@@ -12981,6 +13197,62 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/boulonnais-agenda",
+          "props": {
+            "bg": "page-accent",
+            "customHeader": {
+              "title": {
+                "fr": "L'agenda du territoire",
+                "en": "The territory's agenda"
+              },
+              "linkText": {
+                "fr": "Voir tout l'agenda",
+                "en": "See the full agenda"
+              },
+              "linkHref": "/agenda?territoire=boulonnais"
+            },
+            "description": {
+              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Boulonnais.",
+              "en": "Events open to families and professionals across the Boulonnais area."
+            },
+            "defaultMode": "list",
+            "showViewToggle": false,
+            "tabs": [
+              "upcoming",
+              "past"
+            ],
+            "defaultTab": "upcoming",
+            "upcomingWindowMonths": 12,
+            "filters": {
+              "type": false,
+              "text": false,
+              "tags": false
+            },
+            "detailsMode": "drawer",
+            "enableMap": false,
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "indexStepList": 60,
+              "filters": {
+                "type": "others",
+                "territoires": {
+                  "$in": [
+                    "Boulonnais"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "searchProStatic",
           "id": "/territoire/boulonnais-ressources",
           "props": {
@@ -13102,6 +13374,7 @@
           "type": "searchHeader",
           "id": "/territoire/boulonnais-search",
           "props": {
+            "bg": "page-accent",
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -13382,6 +13655,7 @@
         {
           "type": "accordion",
           "props": {
+            "bg": "page-accent",
             "items": [
               {
                 "title": {
@@ -13500,6 +13774,7 @@
         "en": "Calaisis"
       },
       "layout": "fullwidth",
+      "accent": "var(--territoire-calaisis)",
       "seo": {
         "title": {
           "fr": "Calaisis — Parent62",
@@ -13635,6 +13910,62 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/calaisis-agenda",
+          "props": {
+            "bg": "page-accent",
+            "customHeader": {
+              "title": {
+                "fr": "L'agenda du territoire",
+                "en": "The territory's agenda"
+              },
+              "linkText": {
+                "fr": "Voir tout l'agenda",
+                "en": "See the full agenda"
+              },
+              "linkHref": "/agenda?territoire=calaisis"
+            },
+            "description": {
+              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Calaisis.",
+              "en": "Events open to families and professionals across the Calaisis area."
+            },
+            "defaultMode": "list",
+            "showViewToggle": false,
+            "tabs": [
+              "upcoming",
+              "past"
+            ],
+            "defaultTab": "upcoming",
+            "upcomingWindowMonths": 12,
+            "filters": {
+              "type": false,
+              "text": false,
+              "tags": false
+            },
+            "detailsMode": "drawer",
+            "enableMap": false,
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "indexStepList": 60,
+              "filters": {
+                "type": "others",
+                "territoires": {
+                  "$in": [
+                    "Calaisis"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "searchProStatic",
           "id": "/territoire/calaisis-ressources",
           "props": {
@@ -13756,6 +14087,7 @@
           "type": "searchHeader",
           "id": "/territoire/calaisis-search",
           "props": {
+            "bg": "page-accent",
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -14036,6 +14368,7 @@
         {
           "type": "accordion",
           "props": {
+            "bg": "page-accent",
             "items": [
               {
                 "title": {
@@ -14154,6 +14487,7 @@
         "en": "Entre Mer et Terres"
       },
       "layout": "fullwidth",
+      "accent": "var(--territoire-entre-mer-et-terres)",
       "seo": {
         "title": {
           "fr": "Entre Mer et Terres — Parent62",
@@ -14289,6 +14623,62 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/entre-mer-et-terres-agenda",
+          "props": {
+            "bg": "page-accent",
+            "customHeader": {
+              "title": {
+                "fr": "L'agenda du territoire",
+                "en": "The territory's agenda"
+              },
+              "linkText": {
+                "fr": "Voir tout l'agenda",
+                "en": "See the full agenda"
+              },
+              "linkHref": "/agenda?territoire=entre-mer-et-terres"
+            },
+            "description": {
+              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Entre Mer et Terres.",
+              "en": "Events open to families and professionals across the Entre Mer et Terres area."
+            },
+            "defaultMode": "list",
+            "showViewToggle": false,
+            "tabs": [
+              "upcoming",
+              "past"
+            ],
+            "defaultTab": "upcoming",
+            "upcomingWindowMonths": 12,
+            "filters": {
+              "type": false,
+              "text": false,
+              "tags": false
+            },
+            "detailsMode": "drawer",
+            "enableMap": false,
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "indexStepList": 60,
+              "filters": {
+                "type": "others",
+                "territoires": {
+                  "$in": [
+                    "Entre Mer et Terres"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "searchProStatic",
           "id": "/territoire/entre-mer-et-terres-ressources",
           "props": {
@@ -14410,6 +14800,7 @@
           "type": "searchHeader",
           "id": "/territoire/entre-mer-et-terres-search",
           "props": {
+            "bg": "page-accent",
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -14690,6 +15081,7 @@
         {
           "type": "accordion",
           "props": {
+            "bg": "page-accent",
             "items": [
               {
                 "title": {
@@ -14808,6 +15200,7 @@
         "en": "Familles en sol mineur Hénin Carvin"
       },
       "layout": "fullwidth",
+      "accent": "var(--territoire-fsm-henin-carvin)",
       "seo": {
         "title": {
           "fr": "Familles en sol mineur Hénin Carvin — Parent62",
@@ -14943,6 +15336,62 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/familles-en-sol-mineur-henin-carvin-agenda",
+          "props": {
+            "bg": "page-accent",
+            "customHeader": {
+              "title": {
+                "fr": "L'agenda du territoire",
+                "en": "The territory's agenda"
+              },
+              "linkText": {
+                "fr": "Voir tout l'agenda",
+                "en": "See the full agenda"
+              },
+              "linkHref": "/agenda?territoire=familles-en-sol-mineur-henin-carvin"
+            },
+            "description": {
+              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Familles en sol mineur Hénin Carvin.",
+              "en": "Events open to families and professionals across the Familles en sol mineur Hénin Carvin area."
+            },
+            "defaultMode": "list",
+            "showViewToggle": false,
+            "tabs": [
+              "upcoming",
+              "past"
+            ],
+            "defaultTab": "upcoming",
+            "upcomingWindowMonths": 12,
+            "filters": {
+              "type": false,
+              "text": false,
+              "tags": false
+            },
+            "detailsMode": "drawer",
+            "enableMap": false,
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "indexStepList": 60,
+              "filters": {
+                "type": "others",
+                "territoires": {
+                  "$in": [
+                    "Familles en sol mineur Hénin Carvin"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "searchProStatic",
           "id": "/territoire/familles-en-sol-mineur-henin-carvin-ressources",
           "props": {
@@ -15064,6 +15513,7 @@
           "type": "searchHeader",
           "id": "/territoire/familles-en-sol-mineur-henin-carvin-search",
           "props": {
+            "bg": "page-accent",
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -15344,6 +15794,7 @@
         {
           "type": "accordion",
           "props": {
+            "bg": "page-accent",
             "items": [
               {
                 "title": {
@@ -15462,6 +15913,7 @@
         "en": "Familles en sol mineur Lens Liévin"
       },
       "layout": "fullwidth",
+      "accent": "var(--territoire-fsm-lens-lievin)",
       "seo": {
         "title": {
           "fr": "Familles en sol mineur Lens Liévin — Parent62",
@@ -15597,6 +16049,62 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/familles-en-sol-mineur-lens-lievin-agenda",
+          "props": {
+            "bg": "page-accent",
+            "customHeader": {
+              "title": {
+                "fr": "L'agenda du territoire",
+                "en": "The territory's agenda"
+              },
+              "linkText": {
+                "fr": "Voir tout l'agenda",
+                "en": "See the full agenda"
+              },
+              "linkHref": "/agenda?territoire=familles-en-sol-mineur-lens-lievin"
+            },
+            "description": {
+              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Familles en sol mineur Lens Liévin.",
+              "en": "Events open to families and professionals across the Familles en sol mineur Lens Liévin area."
+            },
+            "defaultMode": "list",
+            "showViewToggle": false,
+            "tabs": [
+              "upcoming",
+              "past"
+            ],
+            "defaultTab": "upcoming",
+            "upcomingWindowMonths": 12,
+            "filters": {
+              "type": false,
+              "text": false,
+              "tags": false
+            },
+            "detailsMode": "drawer",
+            "enableMap": false,
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "indexStepList": 60,
+              "filters": {
+                "type": "others",
+                "territoires": {
+                  "$in": [
+                    "Familles en sol mineur Lens Liévin"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "searchProStatic",
           "id": "/territoire/familles-en-sol-mineur-lens-lievin-ressources",
           "props": {
@@ -15718,6 +16226,7 @@
           "type": "searchHeader",
           "id": "/territoire/familles-en-sol-mineur-lens-lievin-search",
           "props": {
+            "bg": "page-accent",
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -15998,6 +16507,7 @@
         {
           "type": "accordion",
           "props": {
+            "bg": "page-accent",
             "items": [
               {
                 "title": {
@@ -16116,6 +16626,7 @@
         "en": "Ternois Bruaysis"
       },
       "layout": "fullwidth",
+      "accent": "var(--territoire-ternois-bruaysis)",
       "seo": {
         "title": {
           "fr": "Ternois Bruaysis — Parent62",
@@ -16247,6 +16758,62 @@
           }
         },
         {
+          "type": "agenda",
+          "id": "/territoire/ternois-bruaysis-agenda",
+          "props": {
+            "bg": "page-accent",
+            "customHeader": {
+              "title": {
+                "fr": "L'agenda du territoire",
+                "en": "The territory's agenda"
+              },
+              "linkText": {
+                "fr": "Voir tout l'agenda",
+                "en": "See the full agenda"
+              },
+              "linkHref": "/agenda?territoire=ternois-bruaysis"
+            },
+            "description": {
+              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Ternois Bruaysis.",
+              "en": "Events open to families and professionals across the Ternois Bruaysis area."
+            },
+            "defaultMode": "list",
+            "showViewToggle": false,
+            "tabs": [
+              "upcoming",
+              "past"
+            ],
+            "defaultTab": "upcoming",
+            "upcomingWindowMonths": 12,
+            "filters": {
+              "type": false,
+              "text": false,
+              "tags": false
+            },
+            "detailsMode": "drawer",
+            "enableMap": false,
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parent62"
+              ],
+              "indexStepList": 60,
+              "filters": {
+                "type": "others",
+                "territoires": {
+                  "$in": [
+                    "Ternois Bruaysis"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
           "type": "searchProStatic",
           "id": "/territoire/ternois-bruaysis-ressources",
           "props": {
@@ -16368,6 +16935,7 @@
           "type": "searchHeader",
           "id": "/territoire/ternois-bruaysis-search",
           "props": {
+            "bg": "page-accent",
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -16648,6 +17216,7 @@
         {
           "type": "accordion",
           "props": {
+            "bg": "page-accent",
             "items": [
               {
                 "title": {
@@ -21882,6 +22451,9 @@
           "label": {
             "fr": "Dates",
             "en": "Dates"
+          },
+          "widgetProps": {
+            "datesWhenRecurrent": true
           }
         },
         "startDate": {
@@ -21891,12 +22463,12 @@
             "field": "recurrency",
             "op": "falsy"
           },
-          "write": "eventDate:write"
+          "write": "eventDatePeriod:write"
         },
         "endDate": {
           "widget": "hidden",
           "type": "string",
-          "write": "eventDate:write",
+          "write": "eventDatePeriod:write",
           "requiredIf": {
             "field": "recurrency",
             "op": "falsy"
@@ -21956,7 +22528,9 @@
         "navigateOnSuccess": false,
         "inject": {
           "extraFields": {
-            "type": "others",
+            "type": "others"
+          },
+          "extraFieldsUnlessCostumAdmin": {
             "preferences": {
               "toBeValidated": true
             }

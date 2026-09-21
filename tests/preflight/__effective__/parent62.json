@@ -438,6 +438,22 @@
         }
       }
     },
+    "/territoire/arrageois/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
+          "territoires": {
+            "$in": [
+              "Arrageois"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/arrageois/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
@@ -508,6 +524,22 @@
         "indexStepList": 30,
         "filters": {
           "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Artois"
+            ]
+          }
+        }
+      }
+    },
+    "/territoire/artois/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
           "territoires": {
             "$in": [
               "Artois"
@@ -594,6 +626,22 @@
         }
       }
     },
+    "/territoire/audomarois/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
+          "territoires": {
+            "$in": [
+              "Audomarois"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/audomarois/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
@@ -664,6 +712,22 @@
         "indexStepList": 30,
         "filters": {
           "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Boulonnais"
+            ]
+          }
+        }
+      }
+    },
+    "/territoire/boulonnais/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
           "territoires": {
             "$in": [
               "Boulonnais"
@@ -750,6 +814,22 @@
         }
       }
     },
+    "/territoire/calaisis/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
+          "territoires": {
+            "$in": [
+              "Calaisis"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/calaisis/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
@@ -820,6 +900,22 @@
         "indexStepList": 30,
         "filters": {
           "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Entre Mer et Terres"
+            ]
+          }
+        }
+      }
+    },
+    "/territoire/entre-mer-et-terres/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
           "territoires": {
             "$in": [
               "Entre Mer et Terres"
@@ -906,6 +1002,22 @@
         }
       }
     },
+    "/territoire/familles-en-sol-mineur-henin-carvin/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
+          "territoires": {
+            "$in": [
+              "Familles en sol mineur Hénin Carvin"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/familles-en-sol-mineur-henin-carvin/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
@@ -984,6 +1096,22 @@
         }
       }
     },
+    "/territoire/familles-en-sol-mineur-lens-lievin/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
+          "territoires": {
+            "$in": [
+              "Familles en sol mineur Lens Liévin"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/familles-en-sol-mineur-lens-lievin/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
@@ -1054,6 +1182,22 @@
         "indexStepList": 30,
         "filters": {
           "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Ternois Bruaysis"
+            ]
+          }
+        }
+      }
+    },
+    "/territoire/ternois-bruaysis/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
           "territoires": {
             "$in": [
               "Ternois Bruaysis"
