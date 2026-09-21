@@ -267,14 +267,17 @@ footer nav { font-family: var(--font-serif); }
   --territoire-ternois-bruaysis-carte: #d79aaf;       /* marine 6,11:1 */
   --territoire-ternois-bruaysis-encre: #1f2d3a;
 
-  /* Dégradé de fond de la section « Carte à bulles » (accueil), échantillonné
-     sur la maquette source (HP Maquette v4). Couleur de MARQUE, ne suit pas le thème. */
+  /* Dégradé des panneaux de l'accueil (carte des territoires, actu « À la une »), échantillonné sur la
+     maquette source (HP Maquette v4). Couleur de MARQUE, qui s'assombrit en mode sombre (bloc `.dark` plus
+     bas) — d'où `--p62-map-bg-encre`, l'encre du texte posé dessus, qui change AVEC lui : noir sur le
+     dégradé clair (7,57 à 9,95:1), blanc sur le sombre (4,82 à 6,12:1). Le noir n'y tenait que 3,43:1. */
   --p62-map-bg-from: #1fae98;
   --p62-map-bg-to: #87bf9a;
+  --p62-map-bg-encre: #000000;
 
-  /* Couleurs de MARQUE de la home refaite (maquette v4) : bandeaux marine
-     (featured-carousel, articleTeaser, wordmark du header) et accent turquoise
-     des CTA/badges. Consommées par la config (`background`/`accentColor`/
+  /* Couleurs de MARQUE de la home refaite (maquette v4) : marine des étiquettes et
+     du bouton de « À la une », de l'articleTeaser et du wordmark du header, accent
+     turquoise des CTA/badges. Consommées par la config (`background`/`accentColor`/
      `header.textColor` en var()) ET reprises par le THÈME (config.theme :
      primary clair ≈ marine, accent ≈ turquoise) — cf.
      commentaire/parent62-unite-couleurs-home.md. Fixes clair/sombre. */
@@ -295,6 +298,7 @@ footer nav { font-family: var(--font-serif); }
 .dark {
   --p62-map-bg-from: #146e60;
   --p62-map-bg-to: #567a62;
+  --p62-map-bg-encre: #ffffff;
 }
 
 /* Panneau sombre de la bande « Votre territoire » (charte parent62.org). */

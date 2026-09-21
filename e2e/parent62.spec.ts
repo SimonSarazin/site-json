@@ -341,10 +341,12 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     }
   });
 
-  test("accueil : les trois bandes ont la même largeur, et la carte finit à la hauteur du bouton", async ({ page }) => {
+  test("accueil : les trois bandes ont la même largeur, et les deux panneaux verts sont au même niveau", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForHydration(page);
+    // Le panneau de l'actu n'existe qu'une fois les actualités chargées : l'attendre avant de mesurer.
+    await page.locator('[data-section-type="featured-carousel"] div[style*="linear-gradient"]').first().waitFor();
 
     const mesures = await page.evaluate(() => {
       const bande = (type: string) => {
@@ -354,13 +356,18 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
         const c = sec?.querySelector(".container")?.getBoundingClientRect();
         return c ? { largeur: Math.round(c.width), x: Math.round(c.x) } : null;
       };
-      const grille = document.querySelector('[data-section-type="gridLayout"]');
-      const panneau = grille?.querySelector("div[style*='linear-gradient']")?.getBoundingClientRect();
-      const cta = [...(grille?.querySelectorAll("a") ?? [])].find((a) => /En savoir/.test(a.textContent ?? ""));
+      const panneau = (type: string) => {
+        const p = document.querySelector(`[data-section-type="${type}"] div[style*='linear-gradient']`);
+        const r = p?.getBoundingClientRect();
+        return r ? { haut: Math.round(r.top), bas: Math.round(r.bottom) } : null;
+      };
+      const une = document.querySelector('[data-section-type="featured-carousel"] div[style*=\'linear-gradient\']');
+      const cta = [...(une?.querySelectorAll("a") ?? [])].find((a) => /En savoir/.test(a.textContent ?? ""));
       return {
         bandes: [bande("action-tiles"), bande("gridLayout"), bande("articleTeaser")],
-        panneauBas: panneau ? Math.round(panneau.bottom) : null,
-        ctaBas: cta ? Math.round(cta.getBoundingClientRect().bottom) : null,
+        territoires: panneau("map-bubbles"),
+        alaune: panneau("featured-carousel"),
+        ctaDansLaCarte: Boolean(cta),
       };
     });
 
@@ -370,8 +377,10 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     expect(largeurs.size, `largeurs : ${JSON.stringify(mesures.bandes)}`).toBe(1);
     expect(bords.size, `bords : ${JSON.stringify(mesures.bandes)}`).toBe(1);
 
-    // Le panneau de l'illustration et le bouton de la carte voisine finissent à la même hauteur.
-    expect(Math.abs((mesures.panneauBas ?? 0) - (mesures.ctaBas ?? 0))).toBeLessThanOrEqual(2);
+    // Les deux panneaux verts (illustration et actualité) commencent et finissent à la même hauteur,
+    // et le bouton de l'actu vit DANS son panneau.
+    expect(mesures.alaune, "panneau de l'actu").toEqual(mesures.territoires);
+    expect(mesures.ctaDansLaCarte, "bouton « En savoir » dans le panneau de l'actu").toBe(true);
   });
 
   test("accueil : survoler une bulle de territoire montre ses villes", async ({ page }) => {
