@@ -179,5 +179,11 @@
     "images": "federationDesCae",
     "coolifyApp": "site-json-federation-des-cae",
     "domain": "federation-des-cae.00.re"
+  },
+  {
+    "slug": "kpacite",
+    "config": "config.prod.kpacite.json",
+    "css": "index-tiers-lieux",
+    "images": "kpacite"
   }
 ]

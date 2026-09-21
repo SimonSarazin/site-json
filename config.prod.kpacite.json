@@ -1,0 +1,484 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-09-21T14:43:17.519Z",
+  "meta": {
+    "title": {
+      "fr": "Réseau KPA-Cité",
+      "en": "Réseau KPA-Cité"
+    },
+    "description": {
+      "fr": "Site Réseau KPA-Cité",
+      "en": "Site Réseau KPA-Cité"
+    },
+    "defaultLang": "fr",
+    "languages": [
+      "fr",
+      "en"
+    ],
+    "favicon": "images/kpacite/logo.svg",
+    "themeColor": "#D52A40",
+    "keywords": [
+      "communauté",
+      "POI",
+      "collaboration",
+      "territoire"
+    ]
+  },
+  "theme": {
+    "defaultMode": "light",
+    "colors": {
+      "light": {
+        "primary": "hsl(348, 67%, 50%)",
+        "primaryForeground": "hsl(0, 0%, 100%)",
+        "secondary": "hsl(41, 100%, 94%)",
+        "secondaryForeground": "hsl(35, 35%, 20%)",
+        "accent": "hsl(168, 35%, 86%)",
+        "accentForeground": "hsl(182, 56%, 22%)",
+        "background": "hsl(0, 0%, 100%)",
+        "foreground": "hsl(210, 20%, 14%)",
+        "muted": "hsl(182, 18%, 94%)",
+        "mutedForeground": "hsl(182, 12%, 42%)",
+        "border": "hsl(182, 18%, 88%)",
+        "input": "hsl(182, 18%, 88%)",
+        "ring": "hsl(182, 56%, 40%)",
+        "card": "hsl(0, 0%, 100%)",
+        "cardForeground": "hsl(210, 20%, 14%)",
+        "popover": "hsl(0, 0%, 100%)",
+        "popoverForeground": "hsl(210, 20%, 14%)",
+        "destructive": "hsl(0, 72%, 51%)",
+        "destructiveForeground": "hsl(0, 0%, 100%)",
+        "success": "hsl(142, 60%, 40%)",
+        "successForeground": "hsl(142, 30%, 12%)",
+        "warning": "hsl(43, 91%, 52%)",
+        "warningForeground": "hsl(25, 20%, 12%)",
+        "info": "hsl(200, 70%, 48%)",
+        "infoForeground": "hsl(200, 30%, 12%)",
+        "chart1": "hsl(182, 56%, 40%)",
+        "chart2": "hsl(43, 91%, 52%)",
+        "chart3": "hsl(182, 40%, 60%)",
+        "chart4": "hsl(43, 70%, 70%)",
+        "chart5": "hsl(200, 60%, 50%)",
+        "sidebar": "hsl(182, 18%, 96%)",
+        "sidebarForeground": "hsl(210, 20%, 14%)",
+        "sidebarPrimary": "hsl(182, 56%, 40%)",
+        "sidebarPrimaryForeground": "hsl(0, 0%, 100%)",
+        "sidebarAccent": "hsl(182, 40%, 88%)",
+        "sidebarAccentForeground": "hsl(182, 56%, 22%)",
+        "sidebarBorder": "hsl(182, 18%, 88%)",
+        "sidebarRing": "hsl(182, 56%, 40%)"
+      },
+      "dark": {
+        "primary": "hsl(348, 67%, 60%)",
+        "primaryForeground": "hsl(0, 0%, 100%)",
+        "secondary": "hsl(38, 22%, 24%)",
+        "secondaryForeground": "hsl(43, 38%, 88%)",
+        "accent": "hsl(168, 30%, 22%)",
+        "accentForeground": "hsl(182, 56%, 80%)",
+        "background": "hsl(210, 20%, 8%)",
+        "foreground": "hsl(182, 10%, 93%)",
+        "muted": "hsl(182, 15%, 16%)",
+        "mutedForeground": "hsl(182, 12%, 62%)",
+        "border": "hsl(182, 15%, 22%)",
+        "input": "hsl(182, 15%, 22%)",
+        "ring": "hsl(182, 56%, 50%)",
+        "card": "hsl(210, 20%, 11%)",
+        "cardForeground": "hsl(182, 10%, 93%)",
+        "popover": "hsl(210, 20%, 11%)",
+        "popoverForeground": "hsl(182, 10%, 93%)",
+        "destructive": "hsl(0, 65%, 55%)",
+        "destructiveForeground": "hsl(0, 0%, 100%)",
+        "success": "hsl(142, 55%, 45%)",
+        "successForeground": "hsl(142, 30%, 12%)",
+        "warning": "hsl(43, 85%, 48%)",
+        "warningForeground": "hsl(25, 20%, 10%)",
+        "info": "hsl(200, 65%, 52%)",
+        "infoForeground": "hsl(200, 30%, 12%)",
+        "chart1": "hsl(182, 56%, 50%)",
+        "chart2": "hsl(43, 85%, 48%)",
+        "chart3": "hsl(182, 40%, 65%)",
+        "chart4": "hsl(43, 70%, 65%)",
+        "chart5": "hsl(200, 60%, 55%)",
+        "sidebar": "hsl(210, 20%, 10%)",
+        "sidebarForeground": "hsl(182, 10%, 93%)",
+        "sidebarPrimary": "hsl(182, 56%, 50%)",
+        "sidebarPrimaryForeground": "hsl(0, 0%, 100%)",
+        "sidebarAccent": "hsl(182, 30%, 22%)",
+        "sidebarAccentForeground": "hsl(182, 56%, 80%)",
+        "sidebarBorder": "hsl(182, 15%, 22%)",
+        "sidebarRing": "hsl(182, 56%, 50%)"
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "sans": [
+          "Inter"
+        ],
+        "serif": [
+          "Roboto Slab"
+        ],
+        "mono": [
+          "Roboto Mono"
+        ]
+      },
+      "letterSpacing": "0em"
+    },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.5rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0px 1px 4px 0px hsl(182 56% 40% / 0.08)",
+        "shadowXs": "0px 1px 4px 0px hsl(182 56% 40% / 0.10)",
+        "shadowSm": "0px 1px 4px 0px hsl(182 56% 40% / 0.12), 0px 1px 2px -1px hsl(182 56% 40% / 0.10)",
+        "shadow": "0px 2px 6px 0px hsl(182 56% 40% / 0.12), 0px 1px 3px -1px hsl(182 56% 40% / 0.10)",
+        "shadowMd": "0px 4px 10px 0px hsl(182 56% 40% / 0.12), 0px 2px 4px -1px hsl(182 56% 40% / 0.10)",
+        "shadowLg": "0px 8px 20px 0px hsl(182 56% 40% / 0.12), 0px 4px 8px -2px hsl(182 56% 40% / 0.10)",
+        "shadowXl": "0px 12px 28px 0px hsl(182 56% 40% / 0.14), 0px 6px 12px -2px hsl(182 56% 40% / 0.10)",
+        "shadow2xl": "0px 20px 48px 0px hsl(182 56% 40% / 0.18)"
+      },
+      "dark": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0 0% 0% / 0.20)",
+        "shadowXs": "0px 1px 4px 0px hsl(0 0% 0% / 0.22)",
+        "shadowSm": "0px 1px 4px 0px hsl(0 0% 0% / 0.30), 0px 1px 2px -1px hsl(0 0% 0% / 0.25)",
+        "shadow": "0px 2px 6px 0px hsl(0 0% 0% / 0.32), 0px 1px 3px -1px hsl(0 0% 0% / 0.25)",
+        "shadowMd": "0px 4px 10px 0px hsl(0 0% 0% / 0.32), 0px 2px 4px -1px hsl(0 0% 0% / 0.25)",
+        "shadowLg": "0px 8px 20px 0px hsl(0 0% 0% / 0.35), 0px 4px 8px -2px hsl(0 0% 0% / 0.25)",
+        "shadowXl": "0px 12px 28px 0px hsl(0 0% 0% / 0.38), 0px 6px 12px -2px hsl(0 0% 0% / 0.25)",
+        "shadow2xl": "0px 20px 48px 0px hsl(0 0% 0% / 0.50)"
+      }
+    },
+    "customCSS": ""
+  },
+  "header": {
+    "type": "mega-menu",
+    "logo": "images/kpacite/logo.svg",
+    "logoAlt": {
+      "fr": "Réseau KPA-Cité",
+      "en": "KPA-Cité network"
+    },
+    "nav": [
+      {
+        "label": {
+          "fr": "Les KPAs",
+          "en": "The KPAs"
+        },
+        "icon": "map",
+        "path": "/kpas"
+      },
+      {
+        "label": {
+          "fr": "Diagnostic collectif",
+          "en": "Diagnostic collectif"
+        },
+        "icon": "eye",
+        "path": "/diagnostic-collectif"
+      },
+      {
+        "label": {
+          "fr": "Outils et ressources",
+          "en": "Tools & Resources"
+        },
+        "icon": "wrench",
+        "children": [
+          {
+            "label": {
+              "fr": "Forum",
+              "en": "Forum"
+            },
+            "description": {
+              "fr": "Échangez avec le réseau KPA-Cité.",
+              "en": "Connect with the KPA-Cité network."
+            },
+            "path": "https://forum.kpacite.fr/"
+          },
+          {
+            "label": {
+              "fr": "Le site KPA-Cité",
+              "en": "The KPA-Cité website"
+            },
+            "description": {
+              "fr": "Accédez au site principal de KPA-Cité.",
+              "en": "Visit the main KPA-Cité website."
+            },
+            "path": "https://kpacite.fr"
+          },
+          {
+            "label": {
+              "fr": "Wiki",
+              "en": "Wiki"
+            },
+            "description": {
+              "fr": "Consultez la documentation et les ressources du réseau.",
+              "en": "Browse the network's documentation and resources."
+            },
+            "path": "https://wiki.kpacite.fr"
+          }
+        ]
+      }
+    ],
+    "sticky": true,
+    "transparent": false,
+    "height": "lg",
+    "utilities": {
+      "themeSwitch": true,
+      "langSwitch": true,
+      "search": true,
+      "auth": true,
+      "cart": false,
+      "notifications": true
+    }
+  },
+  "footer": {
+    "type": "minimal-centered",
+    "logo": "images/kpacite/logo.svg",
+    "logoAlt": {
+      "fr": "Réseau KPA-Cité",
+      "en": "KPA-Cité network"
+    },
+    "copyright": {
+      "fr": "© 2026 Réseau KPA-Cité",
+      "en": "© 2026 Réseau KPA-Cité"
+    }
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": {
+        "fr": "Réseau KPA-Cité",
+        "en": "Réseau KPA-Cité"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title",
+          "id": "kpacite-home-title",
+          "props": {
+            "title": {
+              "fr": "Le réseau KPA-Cité",
+              "en": "The KPA-Cité network"
+            },
+            "subtitle": {
+              "fr": "Découvrez les KPAs et participez au diagnostic collectif.",
+              "en": "Discover the KPAs and take part in the collective assessment."
+            }
+          }
+        },
+        {
+          "type": "cards",
+          "id": "kpacite-home-links",
+          "props": {
+            "columns": 2,
+            "items": [
+              {
+                "icon": "map",
+                "title": {
+                  "fr": "Les KPAs",
+                  "en": "The KPAs"
+                },
+                "text": {
+                  "fr": "Consultez l'annuaire des KPAs du réseau.",
+                  "en": "Browse the network's KPA directory."
+                },
+                "href": "/kpas"
+              },
+              {
+                "icon": "clipboard-check",
+                "title": {
+                  "fr": "Diagnostic collectif",
+                  "en": "Collective assessment"
+                },
+                "text": {
+                  "fr": "Réalisez le diagnostic collectif KPA-Cité.",
+                  "en": "Complete the KPA-Cité collective assessment."
+                },
+                "href": "/diagnostic-collectif"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/kpas",
+      "title": {
+        "fr": "Les KPAs",
+        "en": "The KPAs"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title",
+          "id": "kpas-title",
+          "props": {
+            "title": {
+              "fr": "Les KPAs",
+              "en": "The KPAs"
+            },
+            "subtitle": {
+              "fr": "Les structures du réseau KPA-Cité.",
+              "en": "The organizations in the KPA-Cité network."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "kpas-directory",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Annuaire des KPAs",
+                "en": "KPA directory"
+              }
+            },
+            "useFilter": true,
+            "showMap": true,
+            "enableMap": true,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": ["organizations"],
+              "sourceKey": ["kpacite"],
+              "indexStepList": 20,
+              "defaultSortBy": {
+                "updated": -1
+              },
+              "defaultFields": [
+                "name",
+                "slug",
+                "profilMediumImageUrl",
+                "profilThumbImageUrl",
+                "address",
+                "shortDescription",
+                "tags"
+              ]
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 4,
+                "xl": 4
+              },
+              "card": {
+                "type": "image-cover",
+                "variant": "image-cover",
+                "detailsMode": "drawer",
+                "imageFit": "contain"
+              }
+            },
+            "map": {
+              "layout": "split",
+              "marker": {
+                "useItemImage": true,
+                "style": "circle",
+                "color": "secondary",
+                "borderColor": "background"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/diagnostic-collectif",
+      "title": {
+        "fr": "Diagnostic collectif",
+        "en": "Diagnostic collectif"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title",
+          "id": "diagnostic-collectif-title",
+          "props": {
+            "title": {
+              "fr": "Diagnostic collectif KPA-Cité",
+              "en": "KPA-Cité collective assessment"
+            },
+            "subtitle": {
+              "fr": "Un outil pour construire une vision partagée du réseau.",
+              "en": "A tool for building a shared vision of the network."
+            }
+          }
+        },
+        {
+          "type": "coform",
+          "id": "diagnostic-collectif-form",
+          "props": {
+            "formId": "69307ce54d830127904c6ee5",
+            "variant": "wizard",
+            "submitMode": "final",
+            "title": {
+              "fr": "Auto-diagnostic collectif",
+              "en": "Collective self-assessment"
+            },
+            "description": {
+              "fr": "Répondez aux questions pour contribuer au diagnostic collectif KPA-Cité.",
+              "en": "Answer the questions to contribute to the KPA-Cité collective assessment."
+            },
+            "showProgress": true,
+            "showStepNumbers": true
+          }
+        }
+      ]
+    }
+  ],
+  "profiles": {
+    "organizations": {
+      "layout": "full-width",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete"
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info-tl",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "forms": {
+                    "69307ce54d830127904c6ee5": {
+                      "name": "Auto-diagnostic collectif KPA-Cité",
+                      "finder": "answers.kpacite3122025_199_0.finderkpacite3122025_199_0miqbst6k1klz500mpv2",
+                      "linked": true,
+                      "category": "evaluation",
+                      "openMode": "modal"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "site": "kpacite",
+  "slug": "kpacite",
+  "addMenus": {},
+  "editModals": {},
+  "adminResources": {},
+  "pages": {
+    "/kpas/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "sourceKey": [
+          "kpacite"
+        ],
+        "indexStepList": 20,
+        "defaultSortBy": {
+          "updated": -1
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "address",
+          "shortDescription",
+          "tags"
+        ]
+      }
+    }
+  },
+  "referencement": {},
+  "membership": {},
+  "profileRelated": {}
+}
