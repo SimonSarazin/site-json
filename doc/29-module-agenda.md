@@ -19,7 +19,7 @@ Expérience **événementielle** d'un costum, config-driven, alignée sur les pa
 - **Détail + actions** : clic event → `PreviewEvent` (search) + `EntityActionButtons` (Participer / Suivre / Éditer).
 - **Île client** : pas de prefetch SSR des données (l'agenda est `now`-relatif) — le serveur rend un squelette, le client charge après hydratation.
 
-Branche d'origine : `feat/agenda-event`. Câblé en prod dans `config.prod.eXtremeDefiAdeme.json` (`/agenda`) et `config.prod.tiers-lieux.json` (home teaser + `/evenements`).
+Branche d'origine : `feat/agenda-event`. Câblé en prod dans `config.prod.eXtremeDefiAdeme.json` (`/agenda`) et `config.prod.tiers-lieux.json` (home teaser + onglet « Événements » de `/actualites`).
 
 ---
 

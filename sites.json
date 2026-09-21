@@ -154,7 +154,7 @@
     }
   },
   {
-    "slug": "rezoSanteReunion",
+    "slug": "EcosystemeSanteReunion",
     "config": "config.prod.rezo-sante-reunion.json",
     "css": "index-rezo-sante-reunion",
     "images": "rezoSanteReunion",

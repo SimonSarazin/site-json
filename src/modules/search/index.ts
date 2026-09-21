@@ -22,6 +22,7 @@ export {
   CardCountCTSectionSchema,
   ThematicsSectionSchema,
   SearchHeaderSectionSchema,
+  CoformResourceDirectorySectionSchema,
   // Variants SDK (searchCostum)
   SearchVariantSchema,
   SearchBySchema,
@@ -43,6 +44,8 @@ export type {
   CardCountCTSectionProps,
   ThematicsSection,
   ThematicsSectionProps,
+  CoformResourceDirectorySection,
+  CoformResourceDirectorySectionProps,
   // Variants SDK
   SearchVariant,
   SearchBy,

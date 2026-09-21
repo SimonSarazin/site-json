@@ -632,6 +632,16 @@
     "cancel": "Cancel",
     "confirmLeave": "Leave"
   },
+  "PendingInvitationModal": {
+    "title": "Pending invitation",
+    "titleAdmin": "Admin invitation",
+    "descriptionOrganization": "You have been invited to join the organization {{name}}.",
+    "descriptionProject": "You have been invited to join the project {{name}}.",
+    "descriptionOrganizationAdmin": "You have been invited to administer the organization {{name}}.",
+    "descriptionProjectAdmin": "You have been invited to administer the project {{name}}.",
+    "accept": "Accept",
+    "decline": "Decline"
+  },
   "toast": {
     "relationship": {
       "followSuccess": "User followed successfully",

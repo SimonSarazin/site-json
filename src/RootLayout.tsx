@@ -23,6 +23,7 @@ import { useLegacyHashRedirect } from "@/hooks/useLegacyHashRedirect";
 const FloatingQRCode = lazy(() => import("@/components/layout/FloatingQRCode"));
 const FloatingActionButton = lazy(() => import("@/components/layout/FloatingActionButton"));
 const DiscourseGlobalModal = lazy(() => import("@/modules/interop/components/DiscourseGlobalModal"));
+const PendingInvitationModal = lazy(() => import("@/modules/profil/components/PendingInvitationModal"));
 
 const AdminPanel = import.meta.env.DEV
   ? lazy(() => import("@/components/admin/AdminPanel"))
@@ -50,6 +51,7 @@ function SiteShell() {
         <IntegrationsLoader />
         <Toaster />
         <DiscourseGlobalModal />
+        <PendingInvitationModal />
 
         {AdminPanel && (
           <Suspense fallback={null}>
