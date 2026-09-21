@@ -1304,6 +1304,19 @@ export const FeaturedCarouselSectionSchema = z.object({
     design: z.enum(["sticker", "card"]).optional(),
     /** Forme du badge : `badge` (défaut, étiquette inclinée) ou `pill` (arrondi droit). */
     headlineStyle: z.enum(["badge", "pill"]).optional(),
+    /** Encre de la section, posée avec `background`. Sans elle, un fond fourni impose le texte BLANC
+     *  (rendu historique, pensé pour un fond sombre) — à fournir dès que le fond est clair. */
+    textColor: z.string().optional(),
+    /**
+     * Habillage `card` : dégradé du PANNEAU qui porte la diapositive — même grammaire que
+     * `map-bubbles.backgroundOverlay`, pour qu'une carte et un carrousel côte à côte se répondent.
+     * Absent, la diapositive vit à même la carte.
+     */
+    backgroundOverlay: z.object({ from: z.string(), to: z.string(), angle: z.number().optional() }).optional(),
+    /** Encre du texte POSÉ SUR le panneau (`backgroundOverlay`) : elle doit suivre le DÉGRADÉ, pas l'encre
+     *  de la carte — donner un jeton qui change avec lui si le dégradé a une variante sombre. Sans elle,
+     *  l'encre de la carte s'applique. Contraste AA à mesurer en clair ET en sombre. */
+    overlayTextColor: z.string().optional(),
     /** Fond du badge de titre, quand il doit différer de `accentColor` (qui teinte le bouton).
      *  Défaut : `accentColor`. */
     badgeColor: z.string().optional(),

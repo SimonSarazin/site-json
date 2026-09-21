@@ -28,6 +28,14 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
   const t = useT();
   const { badgeLabel, ctaLabel, baseParams, resource, itemAction = { kind: "profil" }, autoplay, autoplayIntervalMs, background, accentColor, accentTextColor, showControls, design } = props;
   const enCarte = design === "card";
+  // Panneau de contenu : même dégradé que l'illustration de `map-bubbles`, pour deux blocs qui se répondent.
+  const voilePanneau = enCarte && props.backgroundOverlay
+    ? {
+        background: `linear-gradient(${props.backgroundOverlay.angle ?? 90}deg, ${props.backgroundOverlay.from}, ${props.backgroundOverlay.to})`,
+        // Encre propre au panneau : elle suit le dégradé, pas l'encre de la carte qui l'entoure.
+        ...(props.overlayTextColor ? { color: props.overlayTextColor } : {}),
+      }
+    : undefined;
   // Le badge peut se teinter à part du bouton (`badgeColor`), sinon il suit l'accent.
   const styleBadge = accentStyle(props.badgeColor ?? accentColor, props.badgeTextColor ?? accentTextColor);
 
@@ -70,11 +78,15 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
     return () => clearInterval(interval);
   }, [api, autoplay, paused, autoplayIntervalMs, renderable.length]);
 
-  // Fond FIXE (config-driven, identique clair/sombre) → texte blanc fixe, jamais `text-foreground`
-  // (qui s'inverserait en mode clair et deviendrait illisible sur ce fond sombre). Sans `background`
-  // configuré, repli sur l'encre du thème pour rester lisible sur le fond de page par défaut.
-  const sectionStyle = background ? { backgroundColor: background } : undefined;
-  const sectionClassName = background ? "text-white" : "bg-foreground text-background";
+  // Fond fourni : texte blanc par défaut, jamais `text-foreground` — le fond attendu est sombre et FIXE,
+  // l'encre du thème s'y inverserait en mode clair. `textColor` prend le dessus dès que le fond est clair.
+  // Sans fond du tout : le couple sombre du thème.
+  const sectionStyle = background
+    ? { backgroundColor: background, ...(props.textColor ? { color: props.textColor } : {}) }
+    : undefined;
+  const sectionClassName = background
+    ? (props.textColor ? "" : "text-white")
+    : "bg-foreground text-background";
 
   if (!loaded || !entity || (isLoading && renderable.length === 0)) {
     return (
@@ -102,10 +114,10 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
       id={id}
       style={sectionStyle}
       // Habillage « carte » : la section porte ses propres coins et ne rogne plus — sinon la pilule de
-      // titre, qui déborde du haut, serait coupée.
-      // En habillage « carte », même marge basse que le bloc voisin (`pb-6`) : le pied de carte se lit
-      // alors à la hauteur du bas de son illustration.
-      className={cn("relative pt-6 md:pt-10", enCarte ? "rounded-2xl pb-6" : "overflow-hidden pb-6 md:pb-10", sectionClassName)}
+      // titre, qui déborde du haut, serait coupée. Ses marges calent le panneau sur celui de `map-bubbles`
+      // voisin : même marge basse, et en haut la même marge plus la ligne d'accroche que ce bloc porte
+      // au-dessus de son illustration.
+      className={cn("relative", enCarte ? "rounded-2xl pt-16 pb-6" : "overflow-hidden pt-6 pb-6 md:pt-10 md:pb-10", sectionClassName)}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -134,8 +146,20 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
           badge descendait — désaligné de la pastille du bloc voisin, à hauteur de laquelle il doit se
           lire. `flex-1` n'agit que si la section est en flex-col contrainte (colonne de `gridLayout`) ;
           ailleurs il est inerte, le rendu ne bouge pas. */}
-      <div className="flex flex-1 flex-col justify-start">
-      <Carousel opts={{ loop: renderable.length > 1 }} setApi={setApi} className="container mx-auto px-4">
+      {/* Avec panneau (`backgroundOverlay`) : le dégradé habille la diapositive ET son pied — points et
+          bouton vivent DANS la carte de l'actu. Marge latérale comme l'illustration de `map-bubbles`, pour
+          que la carte blanche respire autour ; `flex-1` descend le panneau au bas de la carte, à la hauteur
+          de celui du bloc voisin. */}
+      <div
+        style={voilePanneau}
+        // `pb-8` : la ligne points + bouton se lit un peu au-dessus du bord bas du panneau, pas collée à lui.
+        className={cn("flex flex-1 flex-col justify-start", voilePanneau && "mx-4 rounded-2xl p-3 pb-8 md:p-4 md:pb-8")}
+      >
+      <Carousel
+        opts={{ loop: renderable.length > 1 }}
+        setApi={setApi}
+        className={cn("container mx-auto", voilePanneau ? "px-0" : "px-4")}
+      >
         <CarouselContent>
           {renderable.map((item, index) => (
             <CarouselItem key={getEntryId(item) ?? index}>
@@ -198,12 +222,15 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
           </>
         )}
       </Carousel>
-      {/* Pied de la carte : les points de position à gauche, le bouton de la diapositive COURANTE à
-          droite — une seule ligne, comme la maquette. Le bouton vit ici (et non dans la diapositive)
-          pour partager sa ligne avec les points, sans quoi il défilerait avec le contenu. */}
+      {/* Pied : les points de position au centre, le bouton de la diapositive COURANTE à droite. Le bouton
+          vit ici (et non dans la diapositive) pour partager sa ligne avec les points, sans quoi il
+          défilerait avec le contenu. */}
       {enCarte && (
-        <div className="container mx-auto mt-auto flex items-center justify-between gap-4 px-4 pt-4">
-          <div className="flex gap-2">
+        <div className={cn("container mx-auto mt-auto flex flex-col items-center gap-3 pt-4 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4", voilePanneau ? "px-0" : "px-4")}>
+          {/* Colonnes latérales de même largeur : les points restent au CENTRE quelle que soit la largeur
+              du bouton. Sous `sm:`, le bouton passe à la ligne — à cette largeur il mordrait sur eux. */}
+          <span aria-hidden className="hidden sm:block" />
+          <div className="flex justify-center gap-2">
             {renderable.length > 1 &&
               renderable.map((item, index) => (
                 <button
@@ -218,6 +245,7 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
                 />
               ))}
           </div>
+          <div className="flex justify-center sm:justify-end">
           {renderable[selectedIndex] && (
             <FeaturedCarouselCta
               item={renderable[selectedIndex]}
@@ -228,6 +256,7 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
               compact
             />
           )}
+          </div>
         </div>
       )}
       </div>
