@@ -249,14 +249,18 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
                 de l'écran — débordement horizontal mesuré sur toutes les pages. 24px jusqu'à 1535px, 48px au-delà :
                 avec une 7ᵉ entrée en icône seule, 32px ne laissaient que 5px à 1280px en français, et le contenu
                 dépassait de 20px sous une barre de défilement classique (17px). 24px en laissent 45 (28 avec la barre). */}
-            <div className="hidden xl:flex items-center justify-center gap-6 2xl:gap-12">
+            {/* `relative` porté par la RANGÉE (et non par chaque entrée) : les panneaux de sous-menu se
+                centrent sous le menu entier, jamais sous leur seule entrée. Centrés sur la 1re entrée, ils
+                sortaient de l'écran par la gauche — 180 px coupés à 1280 px, 100 px à 1440 px. Le soulignement
+                d'une entrée reste ancré sur son lien, qui porte déjà `relative`. */}
+            <div className="relative hidden xl:flex items-center justify-center gap-6 2xl:gap-12">
               {navItemsToDisplay.map((item, idx) => {
                 const isActive = isNavItemActive(item.path);
                 const hasChildren = !!item.children?.length;
                 // Icône seule (ex. la loupe vers la recherche) : le libellé reste le nom lu et l'infobulle.
                 const iconOnly = !!(item.iconOnly && item.icon);
                 return (
-                  <div key={idx} className="relative group">
+                  <div key={idx} className="group">
                     <NavLink
                       to={item.path ?? item.href}
                       ariaCurrent={isActive ? "page" : undefined}
@@ -281,8 +285,8 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
                         <div className="grid grid-cols-2 gap-6">
                           {item.children.map((sub, i) => (
                             <NavLink key={i} to={sub.path ?? sub.href} className="block">
-                              <h4 className="flex items-center gap-1.5 font-serif text-popover-foreground mb-2"><NavIcon icon={sub.icon} />{t(sub.label)}</h4>
-                              <p className="text-muted-foreground text-xs leading-relaxed">
+                              <h4 className="flex items-center gap-1.5 font-serif text-lg text-popover-foreground mb-2"><NavIcon icon={sub.icon} />{t(sub.label)}</h4>
+                              <p className="text-muted-foreground text-sm leading-relaxed">
                                 {sub.description ? t(sub.description) : ""}
                               </p>
                             </NavLink>
