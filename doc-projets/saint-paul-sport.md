@@ -13,7 +13,7 @@
 > [Module Agenda](../doc/29-module-agenda.md).
 > Mémoire : `[[project-cocolight-siteforge]]` (le projet y est suivi — pas de fiche dédiée).
 
-Dernière mise à jour : **2026-07-30** (création du dossier — lot « page Actualités à onglets »).
+Dernière mise à jour : **2026-09-02** (lot « usagers des équipements » — annuaire, événements, réservation).
 
 ---
 
@@ -52,6 +52,12 @@ commune **ou** de la source `saintpaulSport1` (union `$or`).
 | 2026-07-08 | Peterson | Slug renommé `saintpaulSport1` ; ajout pages `/actualites` (news, bloquée par l'enum) et `/agenda` |
 | 2026-07-20 | Aboire | SDK : `news` ajouté à l'enum `searchType` de `GLOBAL_AUTOCOMPLETE_COSTUM` (commit `ceaff2a`, livré en 1.0.170) |
 | 2026-07-30 | Peterson (+ Claude) | **Lot « page Actualités à onglets »** : `/actualites` = tabs Actus (POI `article`) / Événements (layout `timeline` développé dans le module search) ; plan `../.claude/plans/plan-saint-paul-sport-actualites-onglets.md` |
+| 2026-08-15 | Peterson | Onglet admin « Migration » (reprise de propriété des fiches communales) — cf. section dédiée en fin de page |
+| 2026-09-01 | Peterson | Script de génération des **organisations usagères** (41 orgas taguées `usagerEquipementSportif`) côté `communecter74-dev` |
+| 2026-09-01/02 | Peterson (+ Claude) | **Lot « usagers des équipements »** : annuaire `/annuaire`, organisateur des événements, grille de réservation ; plan `../../.claude/plans/plan-saint-paul-sport-usagers-annuaire-events-reservation.md` |
+| 2026-09-09 | Peterson (+ Claude) | **Lot « lien créneau ↔ organisation »** : champ `finder` sur les organisations taguées ajouté au formulaire de créneaux, champ texte « Usager » masqué, 63 réponses historiques rattachées par identifiant ; 7 associations manquantes taguées (48 au total) ; plan `../../.claude/plans/plan-creneaux-lien-organisation-usagere.md` |
+| 2026-09-10 | Peterson (+ Claude) | **Outillage de mise en production** : action de migration `creneauxlienorga` (`communecter-php74`, calquée sur `CreneauxUsagersOrgsAction`) — taguer, poser le champ, reprendre l'historique, en simulation puis application, idempotente ; éprouvée en local par un aller-retour complet. Scripts mongo de secours et retours arrière dans `../../scripts-prod-creneaux/` |
+| 2026-09-07 | Peterson (+ Claude) | **Recette complète du lot** : `oneAnswerPerPers` repassé à `false` par Peterson, deux réservations créées et vérifiées de bout en bout, portes rejouées (rendu 12/12, sonde 6/6, `config:validate` ✅), recette en éventail sur 5 dimensions — 3 constats mineurs confirmés (§12) |
 
 ## 2. Objectifs de la configuration
 
@@ -124,8 +130,13 @@ symétrie avec `/agenda` (inoffensif, et prêt si des articles géolocalisés ap
 | Layout timeline (moteur, réutilisable) | `../src/modules/search/schema.ts` (clé `list.layout`) · `../src/modules/search/components/SearchListView.tsx` (dispatch lazy) · `../src/modules/search/components/TimelineListView.tsx` (nouveau) · `../src/modules/search/components/card/CardEventTimeline.tsx` (nouveau) |
 | Tests | `TimelineListView.test.tsx` · `card/CardEventTimeline.test.tsx` · `SearchListView.test.tsx` (étendu) · `../tests/preflight/prop-descriptions.test.ts` (planchers relevés) |
 | Outillage / doc moteur | `../scripts/lib/prop-descriptions.ts` (description `list.layout`) · [`../doc/07-module-search.md`](../doc/07-module-search.md) (table + §SearchListView) · skill `config-assistant` (checklist presenters) |
-| Plan approuvé | `../../.claude/plans/plan-saint-paul-sport-actualites-onglets.md` |
+| Plan approuvé (30/07) | `../../.claude/plans/plan-saint-paul-sport-actualites-onglets.md` |
+| Plan approuvé (01/09) | `../../.claude/plans/plan-saint-paul-sport-usagers-annuaire-events-reservation.md` |
 | Spec Aboire (historique) | `../../spec-cocolight-api-saintpaul-news.md` (cf. §11) |
+| Spec Aboire (01/09) | `../../spec-cocolight-api-saintpaul-usagers.md` (cf. §11) |
+| **Lot usagers — config** | `../config.prod.saint-paul-sport.json` : page `/annuaire` + entrée de nav · champ `organizer` de `costumForms["saintpaul-event"]` · clé `booking` sur les 4 blocs `reservations` |
+| **Lot usagers — moteur** | `../src/modules/search/lib/reservations.ts` (conflit + grille horaire) · `../src/modules/search/lib/reservationPrefill.ts` (nouveau) · `../src/modules/search/components/preview/PreviewReservations.tsx` · `../src/modules/search/components/preview/PreviewPoiAmenities.tsx` (passe `resourceName`) · `../src/modules/search/schema.ts` (clé `reservations.booking`) · `../src/components/ui/select-objet.tsx` (correctif du filtre client) · i18n `fr`/`en` |
+| **Lot usagers — tests** | `../src/modules/search/lib/reservations.test.ts` (étendu) · `../src/modules/search/lib/reservationPrefill.test.ts` (nouveau) · `../tests/preflight/__effective__/saint-paul-sport.json` · `../.claude/skills/config-assistant/examples/data-observatory.json` (resynchronisé) |
 
 ## 7. Choix techniques et justifications
 
@@ -153,6 +164,64 @@ symétrie avec `/agenda` (inoffensif, et prêt si des articles géolocalisés ap
 4. Déploiement : inchangé (`SITE_CONFIG_PATH` en prod, cf. checklist du site parent).
 
 ## 9. Impacts des modifications
+
+### 01–02/09/2026 — lot « usagers des équipements » (branche `peter-dev`, non committé)
+
+Trois fonctionnalités, livrées par lots successifs.
+
+**Lot 1 — annuaire `/annuaire` (config seule).** Page + entrée de nav. Périmètre = **tag seul**
+(`{"$or": {"tags": {"$in": ["usagerEquipementSportif"]}}}`) avec `notSourceKey: true` et **sans**
+`sourceKey` : les organisations générées sont volontairement **neutres** (décision Peterson du
+01/09, elles ne portent plus de `source`). Carte `profile`, détail en drawer `structure`.
+Recherche texte seule — l'activité n'existe que dans le texte de `shortDescription` (§13).
+
+**Lot 2 — organisateur des événements (config seule).** La machinerie existait déjà :
+`costumForms["saintpaul-event"]`, bouton `/agenda`, contexte costum, modération, onglet admin.
+Seul manquait un champ `organizer` (widget `finder`, requis, restreint aux `organizations`).
+`requiresAdmin` reste à `true` : aucun contrôle serveur ne vérifie encore qui réserve pour qui
+(§11). C'est le **premier usage du widget `finder` dans un `costumForms` du parc**.
+
+**Lot 3 — filtrer les événements par organisation : aucun changement.** L'objectif est atteint par
+l'existant — `profiles.organizations.tabs[events]` (`profile-related`, `relationType: "events"`)
+lit `links.events`, que le lot 2 alimente. Chaîne vérifiée : annuaire → drawer → « Aller sur la
+page » → `/profil/<slug>/events`. Un filtre déroulant « Organisateur » sur `/agenda` serait
+**inexprimable en config** (l'organisateur est une clé dynamique `organizer.<id>` avec `$exists`,
+or les filtres dynamiques ne produisent que `{champ: {$in: […]}}`) — arbitrage : on s'en passe.
+
+**Lot 4 — réservation d'un créneau (moteur, opt-in).** Nouvelle clé `reservations.booking` : sans
+elle, rien ne change (le site parent Équipements sportifs est intact). Avec elle, la grille en
+blocs empilés est remplacée par une **grille à l'échelle horaire** dont les cases libres ouvrent le
+formulaire CoForm pré-rempli (équipement verrouillé, jour et heures repris). Helpers purs ajoutés :
+`slotsOverlap`, `periodsOverlap`, `reservationConflicts`, `buildBookingGrid`, `minutesToLabel`,
+`buildReservationPrefill`.
+
+**Correctif hors périmètre initial, assumé** : `select-objet.tsx` activait le filtre client de
+`cmdk` **par-dessus** une recherche serveur — toute frappe vidait la liste. Une ligne
+(`shouldFilter={!onSearch && …}`). Sans ce correctif le sélecteur d'organisateur est inutilisable.
+Bénéficie aussi à `SelectMember` et aux recherches de ville/rue (`AddressEditor`,
+`EditLocationTab`).
+
+**Intouché** : `/actualites`, `/observatoire`, `/data`, `/blog`, les pages légales, `sites.json`,
+les dépendances, les 17 autres configs, `cocolight-api-client` (lecture seule).
+
+#### Gates au 02/09/2026
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 12 pages / 20 sections |
+| `audit:config --file …saint-paul-sport.json` | ✅ **RAS** (0 constat) |
+| `npx tsc --noEmit` | ✅ 0 erreur |
+| `npx eslint` (fichiers modifiés) | ✅ 0 constat |
+| `test:unit` | ✅ **2820/2823** — 3 échecs préexistants (`bundle-size`, `environment`, `site-assets`) |
+| dont nouveaux tests | ✅ 31 (conflit 17, grille horaire 8, préremplissage 6) |
+| `config:render` | ✅ 12/12 pages à 200, 20/20 sections avec contenu SSR |
+| `config:probe --slug saintpaulSport1` | ✅ **6 périmètres, 0 vide** (annuaire → 41 ; agenda et onglet Événements passés de 0 à 1) |
+| Recette navigateur | ✅ annuaire, création d'événement de bout en bout, grille de réservation · ⛔ création de réservation bloquée (§12) |
+
+⚠ Deux artefacts partagés ont été resynchronisés **en conscience** : la fixture
+`tests/preflight/__effective__/saint-paul-sport.json` (garde d'impact inter-configs) et l'exemple
+`config-assistant/examples/data-observatory.json` — `saintpaulSport1` étant un archétype, son bloc
+Observatoire sert de snapshot canonique. Les deux diffs se limitent au lot.
 
 ### 30/07/2026 — lot « page Actualités à onglets » (branche `peter-dev`, non committé)
 
@@ -190,7 +259,12 @@ symétrie avec `/agenda` (inoffensif, et prêt si des articles géolocalisés ap
 | 4 | Onglet Actus en POI `article` | 🟡 | Config ✅ ; **données absentes** (prérequis §8.2) ; rendu réel à vérifier au probe |
 | 5 | Onglet Événements en timeline | 🟡 | Moteur + config ✅, 27 tests verts ; contrôle visuel navigateur à faire (backend down) |
 | 6 | Recherche texte sur `/actualites` | ✅ | `showSearch` ajouté (pilote l'onglet visible) |
-| 7 | Création d'articles depuis le site | ❌ | Aucune voie (ni admin, ni costumForm) — question §14 |
+| 7 | Création d'articles depuis le site | ❌ | Aucune voie (ni admin, ni costumForm) — question §13 |
+| 8 | Annuaire des organisations usagères (`/annuaire`) | ✅ | 41 organisations, sonde à 41, drawer `structure` vérifié au navigateur (02/09) |
+| 9 | Création d'événements avec organisateur | ✅ | Événement créé de bout en bout : `source.key saintpaulSport1`, `links.organizer`, lien réciproque, modération puis publication sur `/agenda` **et** `/actualites` (02/09) |
+| 10 | Filtrer les événements par organisation | ✅ | Par l'onglet « Événements » de la fiche d'organisation — aucun développement (arbitrage : pas de filtre sur `/agenda`) |
+| 12 | Lien créneau ↔ organisation par identifiant | ✅ | Sélecteur filtré sur le tag, texte masqué, 63 réponses reprises, 64/64 portent l'identifiant et le lien ; vérifié au navigateur (création + affichage d'une réservation historique) |
+| 11 | Réservation d'un créneau depuis la fiche | ✅ | `oneAnswerPerPers` passé à `false` le 07/09 → **deux réservations créées de bout en bout** sur un même équipement (mardi 18 h, jeudi 10 h) par le même compte, stockées à la forme historique (`finder<step>` + tableau de créneaux), grille passée de 98 à 96 cases libres et créneaux pris rendus non réservables |
 
 ## 11. Dépendances SDK ↔ `cocolight-api-client`
 
@@ -200,6 +274,9 @@ symétrie avec `/agenda` (inoffensif, et prêt si des articles géolocalisés ap
 | Demande 2 : le backend `globalautocomplete` **retourne** des news filtrables localityId/source | 🟡 Non vérifiée | **Rendue sans objet pour `/actualites`** par la bascule POI article. La voie news reste théoriquement utile ailleurs — statut de la spec à clore/archiver, décision Peterson (§14) |
 | Lecture des POI `type:"article"` | ✅ Aucune demande | `poi` déjà dans l'enum ; `filters` libre (`additionalProperties:true`) |
 | Création d'articles depuis le site (si retenue) | ❌ À spécifier | `ADD_POI` n'accepte pas `type:"article"` sans variant costum (`costum-extensions.json`) — nouvelle demande Aboire à rédiger le cas échéant |
+| Spec `spec-cocolight-api-saintpaul-usagers.md` — **autoriser l'organisateur côté serveur** (`ADD_EVENT`) | ❌ Transmise le 02/09 | Le backend reprend `organizer` tel quel : n'importe quel appel direct peut publier au nom d'un club. Condition pour ouvrir le bouton `/agenda` au public (`requiresAdmin: false`) |
+| Modération des événements sous costum (`preferences.toBeValidated`) | ✅ Conforme | Vérifié en base : `{"toBeValidated": {"saintpaulSport1": true}}`, invisible avant validation, publié après. Aucune demande |
+| Estampillage `source.key` des créations sous costum | ✅ Conforme | Vérifié : `{"insertOrign":"costum","key":"saintpaulSport1"}` + stamps `reference.costum`. Aucune demande |
 
 ## 12. Points d'attention / limitations
 
@@ -217,6 +294,66 @@ symétrie avec `/agenda` (inoffensif, et prêt si des articles géolocalisés ap
 - **Préflights rouges préexistants** (hors lot) : cf. table des gates §9 — dont
   `public/images/saintpaulSport1` non déclaré dans `sites.json` (à déclarer, supprimer, ou
   ajouter à `KNOWN_UNCLAIMED` — décision Peterson).
+- **⛔ `oneAnswerPerPers: true` sur le formulaire de créneaux `6a4e4e4105e5972f7b4b1823`** — appliqué
+  **côté serveur** (`Coform::getFormAccessInfo` → `PHDB::find(answers, {form, user})`, puis
+  `SaveAnswerAction`), et pas seulement par le garde-fou client que la modale contourne. Un même
+  utilisateur ne peut donc créer qu'**une seule** réservation, jamais plus : la fonctionnalité est
+  inopérante tant que le drapeau n'est pas à `false`. Les mises à jour d'une réponse existante
+  restent autorisées.
+- **Les 14 équipements porteurs de réservations sont hors du périmètre du site** : ils sont en
+  `source.keys: ["equipementsSportifs974"]`, alors que `/equipements-sportifs` liste les POI
+  estampillés `saintpaulSport1`. **Mesure du 09/09 (corrige le constat du 02/09)** : 16 équipements
+  portent au moins une réservation, dont **3 sont dans le périmètre** — `Gymnase de vue belle`
+  (3 réservations réelles : BADMINTON DE LA SALINE, JS SALINE, SALINE VOLLEY BALL), `Boulodrome`
+  (1) et `Plateau Vert Synthétique` (les 2 réservations de recette). Les **13 autres restent hors
+  périmètre** : la section Réservations est donc alimentée sur 2 fiches visibles seulement, et vide
+  sur les 205 autres. À traiter par la migration de propriété (§ Onglet admin « Migration ») ou par
+  un élargissement du périmètre de la page (§13).
+- ~~**Une réservation ne porte aucun identifiant d'organisation**~~ — **RÉSOLU le 09/09.** Le
+  formulaire porte désormais un champ `finder` sur les organisations, filtré sur le tag
+  `usagerEquipementSportif`, qui enregistre `{<id>: {id, name, type}}` et pose
+  `links.organizations` sur la réponse. Le champ texte « Usager » est **masqué** (`hide: true`),
+  ses valeurs conservées. Les 63 réponses historiques ont été rattachées (55 au nom exact, 8 après
+  pliage casse/accents), sans un seul cas ambigu. Le suffixe du nouveau champ est
+  `n0a7usagerorga1k9z`, déclaré sous `reservations.fields.userOrga` dans les **3** configs qui
+  consomment ce formulaire.
+- **Le site ignorait `hide`** : découvert à cette occasion, `formParser` affichait les champs que
+  le back-office masque. Corrigé (garde + test). Aucun effet sur le parc : aucun des formulaires
+  consommés par site-json ne portait de champ masqué.
+- **Le sélecteur d'association plafonne à 30 propositions** (`FINDER_INDEX_STEP`, en dur, sans
+  pagination) pour 48 associations taguées : une saisie très large peut en masquer une partie,
+  sans message. Limitation **assumée** (décision du 09/09) — taper le nom du club suffit.
+- **48 usagers distincts dans les créneaux, 41 organisations générées.** Manquent : `KARATE CLUB
+  LEO`, `EN FORME` et `MONTAGNE REUNION` (existent en base sous `cressReunion` /
+  `sportSanteBienetre`, **sans** le tag) ; `JKA Réunion`, `EN MOUV EN`, `BDN SAINT-PAUL SPORTS` et
+  `BASKET CLUB  SAINT-PAULOIS` (aucune organisation). Dette assumée pour ce lot.
+- **La grille de réservation est une grille de RÉFÉRENCE** (8 h–22 h par défaut) : aucun horaire
+  d'ouverture n'existe sur les équipements en base (0 POI avec `openingHours`). Une case libre
+  signifie « aucune réservation connue », pas « l'équipement est ouvert ». L'amplitude est élargie
+  automatiquement pour ne jamais masquer une réservation hors cadre.
+- **Le correctif `select-objet.tsx` a un effet de bord clavier**, vérifié au navigateur le 07/09.
+  En passant `shouldFilter` à `false` dès qu'un `onSearch` est fourni, on rend bien visibles les
+  résultats serveur (c'était le blocage), mais on désactive aussi le **tri par score** et le
+  **masquage des options à score nul** de `cmdk`. Conséquences mesurées : sur « Organisateur »,
+  des résultats sans rapport restent listés (`Lingaya's vidyapeeth` pour « BAD ») et **aucune
+  option n'est présélectionnée** — la touche Entrée ne valide rien, la sélection est à la souris ;
+  sur « Entité parente » (`includeMe`), la ligne présélectionnée reste **le compte de
+  l'utilisateur** au lieu du meilleur résultat. Le composant est partagé : 3 des 9 appelants sont
+  concernés (`EditLocationTab` ville et rue, `SelectParent`). Arbitrage à rendre (§13).
+- **Le champ « Organisateur » n'affiche pas l'astérisque de champ requis** alors qu'il est
+  `required: true`. La validation, elle, **s'applique** (`buildZodSchema` → « Ce champ est
+  requis », 0 appel `element/save` déclenché à la soumission vide, vérifié le 07/09). Le manque est
+  strictement visuel : le widget `finder` de `registerWidgets.tsx:150` est le seul à ne pas relayer
+  `required` à son `FormLabel`. `organizer` est le **seul champ `finder` requis du dépôt** — le cas
+  n'avait jamais été exercé.
+- **Le drawer de détail est bridé à 384 px**, ce qui tronque le contenu sur `/annuaire`
+  (764 px de contenu hors champ, sans barre de défilement). Conflit de classes préexistant, hors
+  lot : `CustomDrawer.tsx` demande `lg:w-1/3` mais `drawer.tsx` impose
+  `data-[vaul-drawer-direction=right]:sm:max-w-sm`, qui l'emporte. Défaut de mise en page, sans
+  effet fonctionnel.
+- **Les créneaux créés depuis le site ne portent pas `duree`**, contrairement à 123 des 126
+  créneaux historiques. C'est **conforme** : `duree` et `prix` sont des champs d'import legacy que
+  la couche coform préserve en relecture mais n'écrit pas (cf. `formParser.ts:1118`).
 
 ## 13. Évolutions à prévoir & questions en attente
 
@@ -227,6 +364,14 @@ symétrie avec `/agenda` (inoffensif, et prêt si des articles géolocalisés ap
 | Synchro URL de l'onglet actif (`?tab=`) pour des deep-links complets | à prioriser |
 | Harmoniser la carte de `/agenda` (`card.type:"profile"` → `"event"`, voire timeline) | hors scope noté, décision Peterson |
 | Dossier `public/images/saintpaulSport1` non déclaré (préflight `site-assets`) | Peterson |
+| **`oneAnswerPerPers` → `false`** sur le formulaire de créneaux (bloquant pour la réservation, cf. §12) | Peterson (back-office CoForm) |
+| Rendre les champs du formulaire de créneaux **obligatoires** (équipement, créneau, dates, usager, activité) — aucun ne l'est aujourd'hui | Peterson (back-office CoForm) |
+| Rattacher les 14 équipements réservés au périmètre `saintpaulSport1` (migration de propriété) ou élargir le périmètre de `/equipements-sportifs` | Peterson |
+| Champ `finder` vers `organizations` sur le formulaire de créneaux, pour lier une réservation à une organisation | Peterson (back-office CoForm) |
+| Écrire l'**activité** dans `tags` des organisations générées, pour rendre le filtre possible dans l'annuaire sans développement | Peterson (script) |
+| Compléter les **7 usagers sans organisation taguée** (cf. §12) | Peterson (script) |
+| Rattacher des comptes aux 41 organisations (aucune n'a de `links.members`) — condition pour que les clubs agissent eux-mêmes | Peterson (+ Aboire) |
+| Conserver ou retirer le correctif `select-objet.tsx` (hors périmètre initial du lot, cf. §9) | Peterson |
 
 ## Onglet admin « Migration » (2026-08-15)
 

@@ -304,6 +304,29 @@ describe("parseCoFormFields", () => {
     expect(result[0].fields[0].label).toBe("Real");
   });
 
+  it("écarte les champs masqués depuis le back-office (`hide`), booléen ou chaîne", () => {
+    const formData = makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: {
+            remplace: { type: "text", label: "Ancien champ", hide: true },
+            remplaceLegacy: { type: "text", label: "Ancien champ (saisie ancienne)", hide: "true" },
+            // `hide: false` et l'absence de clé ne masquent rien : le parc n'a que des `true`,
+            // mais la garde doit rester stricte pour ne pas escamoter un champ par accident.
+            garde: { type: "text", label: "Faux", hide: false },
+            visible: { type: "text", label: "Visible" },
+          },
+        },
+      },
+    });
+
+    const result = parseCoFormFields(formData);
+    expect(result[0].fields.map((f) => f.label)).toEqual(["Faux", "Visible"]);
+  });
+
   it("préfixe correctement les champs finder/multiCheckboxPlus/etc.", () => {
     const formData = makeCoFormData({
       inputs: {
