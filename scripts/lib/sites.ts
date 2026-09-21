@@ -52,11 +52,21 @@ export interface SiteEntry {
   coolifyServer?: string;
   coolifyProject?: string;
   /**
-   * Surcharge du build pour ce site : dépôt, branche, moteur, port. Absent, les
-   * valeurs communes de `deploy-config.ts` s'appliquent. Sert au site de recette
-   * sur une autre branche, ou repris d'un autre dépôt.
+   * Surcharge du build pour ce site : dépôt, branche, moteur, port, App GitHub.
+   * Absent, les valeurs communes de `deploy-config.ts` s'appliquent. Sert au
+   * site de recette sur une autre branche, ou repris d'un autre dépôt.
+   *
+   * `githubApp` est le NOM de l'App dans Coolify, jamais son uuid — même raison
+   * que `coolifyApp` : un uuid lierait le dépôt à une instance. Mis à `""`, le
+   * site est créé en source publique (`depot` doit alors être une URL complète).
    */
-  build?: Partial<{ depot: string; branche: string; buildPack: string; port: string }>;
+  build?: Partial<{
+    depot: string;
+    branche: string;
+    buildPack: string;
+    port: string;
+    githubApp: string;
+  }>;
   /**
    * Surcharge, pour CE site, d'une variable d'environnement déployée.
    *
