@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Images } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { getBaseUrl } from "@/lib/constant/common";
 import {
   Carousel,
   CarouselContent,
@@ -69,9 +70,10 @@ export function ResourcePhotoCarousel({
     );
   }
   if (images.length === 1) {
+    const imageSrc = resolveResourceImageUrl(images[0]);
     return (
       <div className={cn("relative w-full overflow-hidden bg-muted", heightClass)}>
-        <OptimizedImage src={images[0]} alt={alt ?? ""} className="h-full w-full object-cover" />
+        <OptimizedImage src={imageSrc} alt={alt ?? ""} className="h-full w-full object-cover" />
         {overlay}
       </div>
     );
@@ -88,7 +90,7 @@ export function ResourcePhotoCarousel({
       <CarouselContent className={cn("ml-0", heightClass)}>
         {images.map((src, i) => (
           <CarouselItem key={i} className={cn("pl-0", heightClass)}>
-            <OptimizedImage src={src} alt={alt ?? ""} className="h-full w-full object-cover" />
+            <OptimizedImage src={resolveResourceImageUrl(src)} alt={alt ?? ""} className="h-full w-full object-cover" />
           </CarouselItem>
         ))}
       </CarouselContent>
@@ -115,4 +117,8 @@ export function ResourcePhotoCarousel({
       {overlay}
     </Carousel>
   );
+}
+
+function resolveResourceImageUrl(src: string): string {
+  return src.startsWith("/upload/") ? `${getBaseUrl()}${src}` : src;
 }
