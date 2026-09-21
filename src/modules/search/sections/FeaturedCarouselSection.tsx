@@ -13,6 +13,7 @@ import { getEntryId } from "../lib/searchMapSelection";
 import FeaturedCarouselSlide from "./FeaturedCarouselSlide";
 import type { FeaturedCarouselSectionProps } from "../schema";
 import "@/modules/search/i18n";
+import { accentStyle } from "@/lib/accentStyle";
 
 export interface FeaturedCarouselSectionWrapperProps {
   id?: string;
@@ -23,10 +24,10 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
   const { loaded } = useLoadNamespace("modules/search");
   const { entity } = useCocolight();
   const t = useT();
-  const { badgeLabel, ctaLabel, baseParams, resource, itemAction = { kind: "profil" }, autoplay, autoplayIntervalMs, background, accentColor, showControls } = props;
-  // `accentColor` config-driven (badge) — même couple fond fixe/texte blanc fixe que sur les CTA
-  // des diapositives (`FeaturedCarouselSlide`), indépendant du thème.
-  const accentStyle = accentColor ? { backgroundColor: accentColor, color: "#fff" } : undefined;
+  const { badgeLabel, ctaLabel, baseParams, resource, itemAction = { kind: "profil" }, autoplay, autoplayIntervalMs, background, accentColor, accentTextColor, showControls } = props;
+  // Fond et encre du badge pilotés par la config (`accentStyle`), comme le CTA des diapositives
+  // (`FeaturedCarouselSlide`), indépendants du thème.
+  const styleAccent = accentStyle(accentColor, accentTextColor);
 
   const [searchType] = useState<Record<string, string[]> | null>(
     baseParams.defaultTypes ? { type: baseParams.defaultTypes } : null
@@ -115,7 +116,7 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
         <div className="container mx-auto px-4 mb-2 md:mb-3">
           <Badge
             variant={accentColor ? undefined : "secondary"}
-            style={accentStyle}
+            style={styleAccent}
             className="-rotate-4 rounded-none border-none px-3 py-1 sm:px-4 sm:py-1.5 text-xl sm:text-2xl md:text-3xl font-serif"
           >
             {t(badgeLabel)}
@@ -138,6 +139,7 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
                 resource={resource}
                 itemAction={itemAction}
                 accentColor={accentColor}
+                accentTextColor={accentTextColor}
                 priority={index === 0}
               />
             </CarouselItem>

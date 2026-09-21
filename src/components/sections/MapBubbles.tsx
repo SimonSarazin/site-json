@@ -1,7 +1,9 @@
+import { useId } from "react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { type MapBubblesProps } from "@/types/site-schema";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router";
+import { tooltipAnchorClass } from "./mapBubbleTooltip";
 
 interface MapBubblesSectionProps {
     id?: string;
@@ -19,6 +21,7 @@ const BG_MAP: Record<string, string> = {
 
 export function MapBubbles({ id, props }: MapBubblesSectionProps) {
     const { t } = useLocalization();
+    const idInfobulles = useId();
     const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : "";
     const overlay = props.backgroundOverlay;
 
@@ -53,6 +56,7 @@ export function MapBubbles({ id, props }: MapBubblesSectionProps) {
                             <Link
                                 key={index}
                                 to={item.href}
+                                aria-describedby={item.cities ? `${idInfobulles}-${index}` : undefined}
                                 className="group absolute z-0 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center hover:z-20 focus-visible:z-20"
                                 style={{ left: `${item.x}%`, top: `${item.y}%`, width: `${item.size}%` }}
                             >
@@ -84,6 +88,18 @@ export function MapBubbles({ id, props }: MapBubblesSectionProps) {
                                 >
                                     {t(item.label)}
                                 </span>
+                                {item.cities && (
+                                    <span
+                                        id={`${idInfobulles}-${index}`}
+                                        // Villes du territoire, au survol comme au focus clavier.
+                                        // `pointer-events-none` : ne jamais intercepter le clic du lien.
+                                        // Dès `md:`, l'infobulle part du MILIEU de la bulle, où la pastille du nom
+                                        // est ancrée : sous le bas du rond, elle s'en détachait de 40 px.
+                                        className={`pointer-events-none absolute top-full z-30 mt-2 w-44 md:top-1/2 md:mt-4 rounded-lg bg-[oklch(0.20_0.03_265)] px-3 py-2 text-center text-xs leading-snug text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 ${tooltipAnchorClass(item.x)}`}
+                                    >
+                                        {t(item.cities)}
+                                    </span>
+                                )}
                             </Link>
                         ))}
                     </div>

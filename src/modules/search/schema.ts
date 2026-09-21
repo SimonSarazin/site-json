@@ -1021,7 +1021,7 @@ export const SearchProStaticSectionSchema = z.object({
 
     list: ListConfSchema.optional(),
     map:  MapConfSchema.optional(),
-    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   }),
 });
 
@@ -1209,6 +1209,10 @@ const TitleWithFiltersDropdownSchema = z.object({
 
 // Props partagées entre le type canonique `searchHeader` et son alias.
 const SearchHeaderProps = z.object({
+  /** Fond du bandeau. Défaut : le dégradé du thème (`--gradient-section`). `page-accent` = l'aplat de
+   *  `page.accent` et son filet, pour un bandeau aux couleurs de la page (ex. filtres d'actualités
+   *  d'une page de territoire parent62). */
+  bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   headline: LocalizedString.optional(),
   /** `id` d'un `dropdownFilters` dont la VALEUR SÉLECTIONNÉE remplace le `headline` (qui reste le repli
    *  quand rien n'est sélectionné). Pour une page dont l'identité EST ce filtre — `/theme?theme=…`,
@@ -1288,6 +1292,9 @@ export const FeaturedCarouselSectionSchema = z.object({
     background: z.string().optional(),
     /** Couleur du badge et du bouton CTA — CSS libre, même logique que `background`. Repli : `--primary`. */
     accentColor: z.string().optional(),
+    /** Encre posée SUR `accentColor` (badge, bouton). Défaut blanc — à fournir dès que l'accent est clair :
+     *  blanc sur la turquoise de parent62 ne tient que 1,93:1, contre 5,68:1 pour son marine. */
+    accentTextColor: z.string().optional(),
     /** Puces de pagination sous le carrousel, entre les flèches précédent/suivant (celles-ci
      *  restent toujours affichées). Défaut masquées — à activer explicitement si besoin. */
     showControls: z.boolean().default(false),

@@ -5,6 +5,7 @@ import { useT } from "@/hooks/useT";
 import { useResourceData } from "../hooks/useResourceData";
 import { resolveItemClick } from "../lib/itemAction";
 import type { FeaturedCarouselSectionProps, SearchListEntity } from "../schema";
+import { accentStyle } from "@/lib/accentStyle";
 
 interface FeaturedCarouselSlideProps {
   item: SearchListEntity;
@@ -12,6 +13,7 @@ interface FeaturedCarouselSlideProps {
   resource: FeaturedCarouselSectionProps["resource"];
   itemAction: NonNullable<FeaturedCarouselSectionProps["itemAction"]>;
   accentColor: FeaturedCarouselSectionProps["accentColor"];
+  accentTextColor: FeaturedCarouselSectionProps["accentTextColor"];
   priority?: boolean;
 }
 
@@ -23,14 +25,13 @@ interface FeaturedCarouselSlideProps {
  * car `useResourceData` est un hook — impossible à appeler dans un `.map()` du parent (règle des
  * hooks), même découpage que `CardResource`/`CardResourceCard`.
  */
-export default function FeaturedCarouselSlide({ item, ctaLabel, resource, itemAction, accentColor, priority }: FeaturedCarouselSlideProps) {
+export default function FeaturedCarouselSlide({ item, ctaLabel, resource, itemAction, accentColor, accentTextColor, priority }: FeaturedCarouselSlideProps) {
   const t = useT();
   const data = useResourceData(item, resource);
   const click = resolveItemClick(item, itemAction);
   const newTab = click.kind === "link" && click.newTab;
-  // `accentColor` config-driven (CTA) — cf. `background` sur la section : même couple fond
-  // fixe/texte blanc fixe, indépendant du thème.
-  const accentStyle = accentColor ? { backgroundColor: accentColor, color: "#fff" } : undefined;
+  // Fond et encre du CTA pilotés par la config (`accentStyle`), indépendants du thème.
+  const styleAccent = accentStyle(accentColor, accentTextColor);
   const ctaText = t(ctaLabel ?? "En savoir plus");
 
   // Colonne unique, image EN PREMIER (`order` plutôt qu'un déplacement du JSX : l'image reste après
@@ -46,7 +47,7 @@ export default function FeaturedCarouselSlide({ item, ctaLabel, resource, itemAc
         <h2 className="line-clamp-3 text-xl font-bold md:text-2xl" title={data.title}>{data.title}</h2>
         {data.description && <p className="line-clamp-2 text-sm opacity-90 md:text-base">{data.description}</p>}
         {click.kind !== "details" && (
-          <Button asChild size="lg" style={accentStyle} className="rounded-full px-5 py-2 sm:px-6 font-bold w-full text-base sm:text-lg">
+          <Button asChild size="lg" style={styleAccent} className="rounded-full px-5 py-2 sm:px-6 font-bold w-full text-base sm:text-lg">
             {newTab ? (
               <a href={click.href} target="_blank" rel="noopener noreferrer">
                 {ctaText}

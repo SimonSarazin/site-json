@@ -123,6 +123,9 @@ export const ArticleTeaserSectionSchema = z.object({
     background: z.string().optional(),
     /** Couleur d'accent FIXE (hex) du badge/boutons, ex. `#4ecdc4` — sans valeur, repli sur `primary` (thème). */
     accentColor: z.string().optional(),
+    /** Encre posée SUR `accentColor` (pastille de titre, boutons). Défaut blanc — à fournir dès que l'accent
+     *  est clair : blanc sur la turquoise de parent62 ne tient que 1,93:1, contre 5,68:1 pour son marine. */
+    accentTextColor: z.string().optional(),
   }),
 });
 export type ArticleTeaserSectionProps = z.infer<typeof ArticleTeaserSectionSchema>["props"];

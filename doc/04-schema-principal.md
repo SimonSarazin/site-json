@@ -254,6 +254,15 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
 | `featured`    | `boolean`             | Non      | Affiche le sous-menu en mise en avant (colonne "lien principal" + grille)|
 | `iconOnly`    | `boolean`             | Non      | Barre desktop du header `stacked` : icône seule, le libellé devenant le nom accessible (`aria-label`) et l'infobulle. Ignoré sans `icon` ; le menu mobile et les autres variantes affichent le libellé |
 
+#### Accent de page (`page.accent`)
+
+`accent` (couleur CSS, `var(--jeton)` recommandé) est posé sur le `<main>` de la page en `--page-accent`,
+avec son aplat léger `--page-accent-soft` (16 % sur le fond du thème). Les sections qui acceptent
+`bg: "page-accent"` — `agenda`, `searchProStatic`, `accordion`, `searchHeader` — s'en servent pour alterner les fonds :
+elles prennent l'aplat et un filet supérieur à la couleur pleine. Sans `accent`, `bg: "page-accent"` reste
+transparent : une page ne prend jamais une couleur au hasard. Header et pied de page ne sont pas touchés.
+Exemple : les 9 pages de territoire de parent62, chacune à la couleur de son territoire.
+
 ### `NavBadge`
 
 ```ts

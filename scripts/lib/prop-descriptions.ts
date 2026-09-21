@@ -277,6 +277,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
   },
 
   "section:searchHeader": {
+    "props.bg": "Fond du bandeau. Défaut : le dégradé du thème. page-accent = l'aplat de page.accent et son filet, pour un bandeau aux couleurs de la page.",
     "props.headline": "Titre du bandeau (h1 si le searchHeader EST le héro de la page).",
     "props.headlineFromFilter": "id d'un dropdownFilters dont la valeur sélectionnée REMPLACE le headline (qui reste le repli) — ex. /theme?theme=…. Le filtre peut être hidden ; le titre devient le LIBELLÉ de l'option, à traduire dans chaque langue.",
     "props.headlineClassName": "Override de la couleur du titre — pour un fond fixe sombre où --foreground devient illisible (ex. text-white dark:text-foreground).",
@@ -310,12 +311,18 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.scope": "Périmètre compté. auto (défaut code) = comportement historique : le $or est élargi à la localité ET au slug du costum — mesuré à 530 au lieu de 49. costum = strictement le costum ; config = le $or écrit tel quel.",
   },
 
+  "section:map-bubbles": {
+    "props.items[].cities": "Villes principales, en infobulle au survol et au focus clavier de la bulle (et description accessible du lien). Absent = pas d'infobulle ; jamais montrée au toucher, où l'appui suit le lien.",
+  },
+
   "section:action-tiles": {
     "props.columns": "Colonnes par breakpoint (mobile = 1) ; sans lui, défaut code sm:2 lg:4. À régler quand le nombre de tuiles ne tombe pas juste (3 → lg:3).",
     "props.size": "Taille des tuiles : md (défaut code, rendu historique : titre 14 px, icône 16 px) ou lg (titre 18 px, sous-titre 16 px, icône 32 px, contenu calé en haut).",
     "props.width": "Largeur de la grille : default (1024 px max) ou wide (1280 px max) — pour 4 tuiles et plus en size lg, sinon les titres passent sur 3 lignes.",
     "props.actions[].background": "Fond PLEIN de la tuile (couleur CSS, var(--jeton) recommandé) : remplace la teinte à 20 % de color, fixe en clair comme en sombre.",
     "props.actions[].textColor": "Texte et icône d'une tuile à fond plein — obligatoire en pratique avec background, contraste AA (4,5:1) à mesurer.",
+    "props.headlineStyle": "Rendu du titre : plain (défaut, centré) ou badge, la pastille inclinée d'articleTeaser/map-bubbles calée à gauche — pour une page dont toutes les bandes portent le même repère.",
+    "props.accentColor": "Couleur de la pastille de titre (headlineStyle: badge) ; son encre est blanche, donc teinte foncée et contraste AA à mesurer.",
   },
 
   "section:thematics": {
@@ -343,6 +350,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.showScrollIndicator": "Chevron animé en bas de section. Il se décale au-dessus de la barre de puces dès qu'il y a plusieurs diapositives.",
   },
   "section:agenda": {
+    "props.bg": "Fond de la section : jetons du thème, ou page-accent (aplat + filet supérieur à page.accent) pour alterner les bandeaux d'une page colorée.",
     "props.customHeader": "En-tête teaser avec lien « voir tous » — même convention que searchProStatic.customHeader (home → /evenements).",
     "props.limit": "Plafond d'AFFICHAGE par bucket (teaser) ; absent = tous + « charger plus ». ⚠ PAS la taille du fetch : appliqué APRÈS le partitionnement d'un flux DESC — garder `baseParams.indexStepList` bien au-dessus.",
     "props.showViewToggle": "Toggle Liste/Calendrier (false = teaser figé sur defaultMode). Défaut code : true.",

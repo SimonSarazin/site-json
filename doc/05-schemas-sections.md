@@ -1829,6 +1829,8 @@ export const ActionTilesSchema = z.object({
 | `bg`       | `enum`    | Couleur de fond                          |
 | `columns`  | `ResponsiveColumns?` | Colonnes par breakpoint (défaut sm:2 lg:4) |
 | `size` | `"md" \| "lg"` | Taille des tuiles : `md` (défaut : titre 14 px, sous-titre 12 px, icône 16 px) ou `lg` (18 px, 16 px, icône 32 px, marges verticales élargies, contenu calé en haut pour aligner les icônes d'une rangée) |
+| `headlineStyle` | `"plain" \| "badge"` | Rendu du titre : `plain` (défaut, centré) ou `badge` — la pastille inclinée d'`articleTeaser`/`map-bubbles`, calée à gauche, pour une page dont toutes les bandes portent le même repère |
+| `accentColor` | `string?` | Couleur de la pastille de titre (`headlineStyle: "badge"`). Son encre est blanche : à choisir assez foncée, contraste AA à mesurer |
 | `width` | `"default" \| "wide"` | Largeur de la grille : `default` (1024 px max) ou `wide` (1280 px max) |
 
 Les tuiles d'une même rangée ont toutes la hauteur de la plus haute.
@@ -2368,6 +2370,7 @@ const GridLayoutSectionPropsSchema = z.object({
   rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   align: z.enum(["start", "stretch"]).optional(),
   from: z.enum(["md", "lg"]).optional(),
+  bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   gap: z.number().optional(),
   className: z.string().optional(),
   leftWrapperClass: z.string().optional(),
@@ -2392,6 +2395,7 @@ const GridLayoutSectionSchema = z.object({
 | `align`             | `"start" \| "stretch"?` | Alignement vertical. `start` (défaut, historique) : chaque colonne s'arrête à son contenu — la plus courte laisse du vide sous elle. `stretch` : les deux prennent la hauteur de la plus haute et leur section fille est étirée. À choisir quand la colonne courte porte un fond coloré, sinon ce vide se lit comme un trou. Le stretch ne joue qu'à partir de `lg:` (en dessous les colonnes s'empilent) |
 | `from`              | `"md" \| "lg"?` | Largeur à partir de laquelle les colonnes se placent CÔTE À CÔTE ; en dessous elles s'empilent. `lg` (défaut, historique) = 1024px, `md` = 768px — à descendre quand le bloc doit rester sur une ligne à fort zoom navigateur, qui rétrécit le viewport CSS |
 | `gap`               | `number?` | Espacement entre les colonnes            |
+| `bg`                | `enum?`   | Fond de la bande (jetons du thème + `page-accent`, l'aplat de `page.accent`). Défaut : fond hérité — une grille pose une bande colorée sans wrapper supplémentaire |
 | `className`         | `string?` | Classes CSS additionnelles               |
 | `leftWrapperClass`  | `string?` | Classes CSS du wrapper gauche            |
 | `rightWrapperClass` | `string?` | Classes CSS du wrapper droit             |

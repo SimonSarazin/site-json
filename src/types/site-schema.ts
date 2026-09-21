@@ -531,6 +531,13 @@ export const ActionTilesSchema = z.object({
     size: z.enum(["md", "lg"]).optional(),
     /** Largeur de la grille : `default` (1024 px max) ou `wide` (1280 px max), pour 4 tuiles et plus en `lg`. */
     width: z.enum(["default", "wide"]).optional(),
+    /**
+     * Rendu du titre : `plain` (défaut, titre centré) ou `badge` — la pastille inclinée d'`articleTeaser`
+     * et de `map-bubbles`, calée à gauche, pour une page dont toutes les bandes portent le même repère.
+     * `accentColor` (couleur CSS) teinte la pastille ; sans elle, la pastille prend le ton `secondary`.
+     */
+    headlineStyle: z.enum(["plain", "badge"]).optional(),
+    accentColor: z.string().optional(),
     actions: z.array(
       z.object({
         icon: z.string(),
@@ -1076,6 +1083,8 @@ const AccordionSectionSchema = z.object({
       defaultOpen: z.boolean().default(false),
     })),
     allowMultiple: z.boolean().default(false),
+    /** Fond de la section (jetons du thème + `page-accent`, l'aplat de `page.accent`). */
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   }),
 });
 
@@ -1371,6 +1380,12 @@ export const MapBubblesSchema = z.object({
         size: z.number().min(0).max(100), // % de la largeur du conteneur
         x: z.number().min(0).max(100),
         y: z.number().min(0).max(100),
+        /**
+         * Villes principales du territoire, affichées en INFOBULLE au survol et au focus clavier de la
+         * bulle (jamais au toucher : un appui suit le lien). Le texte est aussi la description accessible
+         * du lien. Absent = pas d'infobulle.
+         */
+        cities: LocalizedString.optional(),
       })
     ),
   }),
@@ -1446,6 +1461,8 @@ export type TitleSection = z.infer<typeof TitleSectionSchema>;
 export type TitleSectionProps = z.infer<typeof TitleSectionSchema>["props"];
 
 const GridLayoutSectionPropsSchema = z.object({
+  /** Fond de la bande (jetons du thème + `page-accent`, l'aplat de `page.accent`). Défaut : fond hérité. */
+  bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   leftSection: z.lazy(() => SectionSchemaLazy).optional(),
   rightSection: z.lazy(() => SectionSchemaLazy).optional(),
   /** Mode « rangée » : N sections de MÊME largeur sur une ligne, au lieu du couple
@@ -1749,6 +1766,13 @@ export const Page = z.object({
   hideFooter: z.boolean().optional(),
   customCSS: z.string().optional(),
   customJS: z.string().optional(),
+  /**
+   * Couleur d'ACCENT de la page (couleur CSS, `var(--jeton)` recommandé) : posée sur son `<main>` en
+   * `--page-accent`, avec son aplat léger `--page-accent-soft` (12 % sur le fond du thème). Les sections
+   * qui acceptent `bg: "page-accent"` s'en servent pour alterner les fonds — ex. les 9 pages de territoire
+   * de parent62, chacune à la couleur de son territoire. Sans accent, `bg: "page-accent"` reste transparent.
+   */
+  accent: z.string().optional(),
 });
 export type Page = z.infer<typeof Page>;
 

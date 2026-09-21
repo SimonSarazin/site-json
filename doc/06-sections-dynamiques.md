@@ -224,7 +224,7 @@ de la table `lazy()` de `SectionRenderer.tsx` et de `SECTION_META`, dont
 | **hero-search** | `HeroSearch`       | Hero avec recherche intégrée (autocomplete d’entités), applicateur de filtres headless (`filterGroups`/`filtersByAnswers`) et autocompletion scopée réseau (`searchVariant`/`baseParams`). Le mode sous-site (`/s/`) et ses props (`headlineSubsite`, `subheadSubsite`) ont été supprimés. |
 | **hero-quick-access**      | `HeroQuickAccess`               | Variante hero pour le site Sport-Santé-Bien-Être (SSBE)               |
 | **hero-carousel**  | `HeroCarousel`           | Hero plein écran à diapositives (scroll-snap, puces, auto-avance optionnelle) |
-| **map-bubbles**    | `MapBubbles`             | Illustration de carte avec bulles-marqueurs cliquables positionnées en % |
+| **map-bubbles**    | `MapBubbles`             | Illustration de carte avec bulles-marqueurs cliquables positionnées en % ; `items[].cities` ajoute une infobulle (villes du territoire) au survol et au focus clavier |
 | **categories-grid**| `CategoriesGridSection`  | Grille de catégories cliquables avec icônes et liens                   |
 | **cards**          | `CardsSection`           | Grille de cartes (grid/masonry/carousel/list)                          |
 | **content**        | `ContentSection`         | Bloc de contenu riche avec image, texte, tags et liens                 |

@@ -457,6 +457,13 @@ modifie une palette. L'essentiel :
   `--hero-tint`, `--gradient-section`) viennent de `src/styles/shared.css`
   (tokens par défaut) — un thème les surcharge en `:root`/`.dark`, on ne
   recopie JAMAIS de classe.
+- **Une PAGE peut porter sa propre couleur** : `page.accent` (couleur CSS,
+  `var(--jeton)` recommandé) pose `--page-accent` et son aplat léger
+  `--page-accent-soft` sur le `<main>`. Les sections qui acceptent
+  `bg: "page-accent"` (`agenda`, `searchProStatic`, `accordion`, `searchHeader`,
+  `gridLayout`) s'en servent pour alterner les bandes — ex. les 9 pages de
+  territoire de parent62, chacune à sa couleur. Sans `accent`, la valeur reste
+  transparente.
 
 ## Maintenance (anti-dérive)
 

@@ -1,10 +1,13 @@
 import { useLocalization } from "@/hooks/useLocalization";
 import { type ActionTilesProps } from "@/types/site-schema";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link } from "react-router";
 import { buildGridColsClass } from "./responsiveGridCols";
 import { solidTileStyle, tileSizeClasses, tilesContainerWidth } from "./actionTileStyle";
+import { SECTION_BADGE_CLASS } from "./sectionBadge";
+import { accentStyle } from "@/lib/accentStyle";
 
 interface ActionTilesSectionProps {
     id?: string;
@@ -110,6 +113,7 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
         eco: { button: "bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/30 hover:border-emerald-500/50", icon: "text-emerald-500" },
     };
 
+    const enPastille = props.headlineStyle === "badge";
     const tileSize = tileSizeClasses(props.size);
     const containerWidth = tilesContainerWidth(props.width);
 
@@ -137,12 +141,24 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
     return (
         <section id={id} className={`px-4 ${sectionBg} py-16 `}>
             <div className={`container mx-auto ${containerWidth}`}>
-                <div className="text-center mb-10">
-                    {props.headline && (
-                        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-                            {t(props.headline)}
-                        </h2>
-                    )}
+                <div className={`mb-10 ${enPastille ? "" : "text-center"}`}>
+                    {props.headline &&
+                        (enPastille ? (
+                            // Même pastille que les autres bandes de la page (cf. `SECTION_BADGE_CLASS`).
+                            <h2 className="mb-4">
+                                <Badge
+                                    variant={props.accentColor ? undefined : "secondary"}
+                                    style={accentStyle(props.accentColor)}
+                                    className={SECTION_BADGE_CLASS}
+                                >
+                                    {t(props.headline)}
+                                </Badge>
+                            </h2>
+                        ) : (
+                            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+                                {t(props.headline)}
+                            </h2>
+                        ))}
                     {props.subhead && (
                         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                             {t(props.subhead)}
