@@ -473,6 +473,9 @@
             },
             "headlineStyle": "badge",
             "accentColor": "var(--p62-marine)",
+            "width": "wide",
+            "tileLayout": "inline",
+            "size": "lg",
             "actions": [
               {
                 "icon": "heart-handshake",
@@ -521,11 +524,14 @@
                   "en": "Click your territory to discover its news!"
                 },
                 "backgroundImage": "/images/parent62/carte-territoire-teal.webp",
+                "backgroundOverlay": { "from": "var(--p62-map-bg-from)", "to": "var(--p62-map-bg-to)" },
+                "badgeColor": "var(--p62-turquoise)",
+                "badgeTextColor": "var(--p62-marine)",
                 "backgroundImageAlt": {
                   "fr": "Carte du Pas-de-Calais et ses territoires",
                   "en": "Map of Pas-de-Calais and its territories"
                 },
-                "backgroundOverlay": { "from": "var(--p62-map-bg-from)", "to": "var(--p62-map-bg-to)" },
+                "design": "card",
                 "items": [
                   {
                     "label": { "fr": "Calaisis", "en": "Calaisis" },
@@ -662,14 +668,18 @@
                 "accentColor": "var(--p62-turquoise)",
             "accentTextColor": "var(--p62-marine)",
                 "autoplay": true,
-                "autoplayIntervalMs": 6000
+                "autoplayIntervalMs": 6000,
+                "design": "card",
+                "showControls": true,
+                "badgeColor": "var(--p62-marine)",
+                "badgeTextColor": "#ffffff"
               }
             },
             "align": "stretch",
-            "rightWrapperClass": "overflow-hidden rounded-2xl shadow-lg [&>*>section]:py-2 [&>*>section]:flex [&>*>section]:flex-col",
+            "rightWrapperClass": "rounded-2xl shadow-lg bg-[var(--p62-marine)] [&>*>section]:flex [&>*>section]:flex-col",
             "bg": "page-accent",
             "className": "py-16",
-            "leftWrapperClass": "rounded-2xl shadow-lg [&>*>section]:rounded-2xl [&>*>section>div:first-child]:rounded-2xl [&>*>section]:py-2",
+            "leftWrapperClass": "rounded-2xl shadow-lg bg-card [&>*>section]:rounded-2xl",
             "from": "md"
           }
         },
@@ -687,9 +697,11 @@
               "tags": "Zoom"
             },
             "viewAllHref": "/zoomcat",
+            "maxWidth": "7xl",
             "background": "var(--p62-marine)",
             "accentColor": "var(--p62-turquoise)",
-            "accentTextColor": "var(--p62-marine)"
+            "accentTextColor": "var(--p62-marine)",
+            "headlineStyle": "badge"
           }
         }
       ]

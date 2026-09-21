@@ -341,6 +341,39 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     }
   });
 
+  test("accueil : les trois bandes ont la même largeur, et la carte finit à la hauteur du bouton", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    const mesures = await page.evaluate(() => {
+      const bande = (type: string) => {
+        const sec = [...document.querySelectorAll("[data-section-index]")].find(
+          (d) => (d as HTMLElement).dataset.sectionType === type,
+        );
+        const c = sec?.querySelector(".container")?.getBoundingClientRect();
+        return c ? { largeur: Math.round(c.width), x: Math.round(c.x) } : null;
+      };
+      const grille = document.querySelector('[data-section-type="gridLayout"]');
+      const panneau = grille?.querySelector("div[style*='linear-gradient']")?.getBoundingClientRect();
+      const cta = [...(grille?.querySelectorAll("a") ?? [])].find((a) => /En savoir/.test(a.textContent ?? ""));
+      return {
+        bandes: [bande("action-tiles"), bande("gridLayout"), bande("articleTeaser")],
+        panneauBas: panneau ? Math.round(panneau.bottom) : null,
+        ctaBas: cta ? Math.round(cta.getBoundingClientRect().bottom) : null,
+      };
+    });
+
+    // Trois bandes de même largeur, calées au même bord : deux largeurs se lisent comme un décrochage.
+    const largeurs = new Set(mesures.bandes.map((b) => b?.largeur));
+    const bords = new Set(mesures.bandes.map((b) => b?.x));
+    expect(largeurs.size, `largeurs : ${JSON.stringify(mesures.bandes)}`).toBe(1);
+    expect(bords.size, `bords : ${JSON.stringify(mesures.bandes)}`).toBe(1);
+
+    // Le panneau de l'illustration et le bouton de la carte voisine finissent à la même hauteur.
+    expect(Math.abs((mesures.panneauBas ?? 0) - (mesures.ctaBas ?? 0))).toBeLessThanOrEqual(2);
+  });
+
   test("accueil : survoler une bulle de territoire montre ses villes", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/", { waitUntil: "domcontentloaded" });
