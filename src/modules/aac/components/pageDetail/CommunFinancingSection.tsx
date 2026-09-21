@@ -125,7 +125,7 @@ function FinancingMilestoneCard({
                     <Progress
                         value={pct}
                         className="h-1.5 bg-background border border-border"
-                        indicatorClassName={done ? "bg-success" : "bg-primary"}
+                        indicatorClassName="bg-primary"
                     />
                     <div className="mt-1 text-right text-[10px] uppercase tracking-widest text-muted-foreground tabular-nums">
                         {String(c("detail.objectives.collectedPercent", undefined, { percent: pct }))}

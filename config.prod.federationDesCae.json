@@ -146,6 +146,8 @@
     },
     "detail": {
       "gallery": "aapStep1.image",
+      "usageFormId": "6525865cdeaf281bbc7280e9",
+      "placeKind": "cae",
       "sections": [
         {
           "id": "modele",
@@ -405,6 +407,7 @@
             "showUsageFilter": true,
             "showOpenSourceToggle": true,
             "defaultView": "grid",
+            "placeKind": "cae",
             "showCommunInfo": true,
             "communFormId": "677e7e389058e31575550ac8",
             "showAnswerButton": true,

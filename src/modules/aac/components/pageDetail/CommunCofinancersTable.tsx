@@ -71,7 +71,7 @@ export function CommunCofinancersTable({formData: _formData, answerQuery, aacCon
         return {
             key: agg.key,
             name: agg.name || summary?.name || String(t("detail.cofinancers.unknownContributor")),
-            type: type === "tl" ? String(t("detail.cofinancers.organizations")) : type,
+            type: type === "tl" ? String(t("detail.cofinancers.organizations")) : (type === "organizations" ? String(t("detail.cofinancers.organizations")) : type),
             featured: !!agg.financerId && porteurId === agg.financerId,
             totalAmount: agg.totalAmount,
             imageUrl: summary?.img,

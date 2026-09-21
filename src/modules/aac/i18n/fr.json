@@ -191,7 +191,7 @@
       "openImage": "Agrandir l'image {{index}}"
     },
     "selection": {
-      "selectCta": "Sélectionner",
+      "selectCta": "Ajouter à l'annuaire",
       "deselectCta": "Retirer de l'annuaire",
       "selected": "Sélectionné",
       "pending": "En attente",

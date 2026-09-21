@@ -191,7 +191,7 @@
       "openImage": "Enlarge image {{index}}"
     },
     "selection": {
-      "selectCta": "Select",
+      "selectCta": "Add from directory",
       "deselectCta": "Remove from directory",
       "selected": "Selected",
       "pending": "Pending",

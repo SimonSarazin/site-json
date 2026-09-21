@@ -9,6 +9,7 @@ import { useMemo } from "react";
 import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
 import type { LocalizedString } from "@/types/locale-schema";
+import { placeKindSourceKeys } from "@/modules/coform/utils/finderFilters";
 import { useAacFormMeta } from "./useAacFormMeta";
 import {
   resolveAacDetailSections,
@@ -46,4 +47,22 @@ export function useAacDetailSections(formId: string | null): UseAacDetailSection
 export function useAacGallerySubKey(): string | null {
   const { config: siteConfig } = useSite();
   return siteConfig.aac?.detail?.gallery ?? null;
+}
+
+/** Le form d'usage dont le finder partagé filtre « J'utilise » (`config.aac.detail.usageFormId`). */
+export function useAacUsageFormId(): string | null {
+  const { config: siteConfig } = useSite();
+  return siteConfig.aac?.detail?.usageFormId ?? null;
+}
+
+/**
+ * Le périmètre des lieux de « J'utilise » : `config.aac.detail.placeSourceKeys`
+ * s'il est déclaré, sinon le préréglage de `config.aac.detail.placeKind`
+ * (défaut : tiers-lieux). Même résolution que `PlacesListView`.
+ */
+export function useAacPlaceSourceKeys(): string[] {
+  const { config: siteConfig } = useSite();
+  const placeKind = siteConfig.aac?.detail?.placeKind;
+  const override = siteConfig.aac?.detail?.placeSourceKeys;
+  return useMemo(() => placeKindSourceKeys(placeKind, override), [placeKind, override]);
 }

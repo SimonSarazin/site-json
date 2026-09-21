@@ -398,19 +398,29 @@
     },
     "placeView": {
       "title": "Choisissez un lieu",
+      "title_cae": "Choisissez une CAE",
       "description": "Cliquez sur un lieu pour compléter ou modifier sa réponse au formulaire.",
+      "description_cae": "Cliquez sur une CAE pour compléter ou modifier sa réponse au formulaire.",
       "myPlaces": "Mes lieux",
+      "myPlaces_cae": "Mes CAEs",
       "pendingPlaces": "En attente",
       "joinSection": {
         "title": "Rejoindre un autre lieu",
+        "title_cae": "Rejoindre une autre CAE",
         "description": "Recherchez un lieu et envoyez une demande pour y participer.",
+        "description_cae": "Recherchez une CAE et envoyez une demande pour y participer.",
         "searchButton": "Rechercher un lieu…",
-        "elementLabel": "lieu"
+        "searchButton_cae": "Rechercher une CAE…",
+        "elementLabel": "lieu",
+        "elementLabel_cae": ""
       },
       "openSection": {
         "title": "Ouvrir un autre lieu",
+        "title_cae": "Ouvrir une autre CAE",
         "description": "Recherchez un lieu pour ouvrir directement sa réponse au formulaire.",
-        "searchButton": "Rechercher un lieu…"
+        "description_cae": "Recherchez une CAE pour ouvrir directement sa réponse au formulaire.",
+        "searchButton": "Rechercher un lieu…",
+        "searchButton_cae": "Rechercher une CAE…"
       },
       "roleBadge": {
         "admin": "Admin",
@@ -430,7 +440,9 @@
       },
       "empty": {
         "noPlaces": "Vous n'avez pas encore de lieu correspondant à ce formulaire.",
-        "notApplicable": "Ce formulaire n'est pas configuré pour la vue par lieu."
+        "noPlaces_cae": "Vous n'avez pas encore de CAE correspondant à ce formulaire.",
+        "notApplicable": "Ce formulaire n'est pas configuré pour la vue par lieu.",
+        "notApplicable_cae": "Ce formulaire n'est pas configuré pour la vue par CAE."
       },
       "confirmLeave": {
         "title": "Quitter sans enregistrer ?",
@@ -440,10 +452,12 @@
       },
       "join": {
         "alreadyMember": "Vous êtes déjà membre de ce lieu.",
+        "alreadyMember_cae": "Vous êtes déjà membre de cette CAE.",
         "alreadyPending": "Demande déjà envoyée — en attente de validation.",
         "alreadyInvited": "Une invitation est en attente — accepte-la dans la section En attente.",
         "confirmTitle": "Rejoindre {{name}}",
         "confirmDescription": "Comment souhaitez-vous rejoindre ce lieu ?",
+        "confirmDescription_cae": "Comment souhaitez-vous rejoindre cette CAE ?",
         "requestMember": "Demander à devenir membre",
         "requestAdmin": "Demander les droits admin",
         "confirmCancel": "Annuler",
@@ -452,6 +466,7 @@
       },
       "guard": {
         "notAuthorized": "Vous n'êtes ni admin ni membre de ce lieu.",
+        "notAuthorized_cae": "Vous n'êtes ni admin ni membre de cette CAE.",
         "pendingValidation": "Demande en attente — patientez la validation par un admin."
       }
     },
