@@ -346,6 +346,7 @@ prises du contexte par `resolveModalSpec`. Le bloc entier est **strippé en édi
 | `organizerFallback` | `organizer` vide → `buildOrganizerReference(ctx.parent, ctx.me)` (event) |
 | `dropEmptyEmail` | supprime `payload.email === ""` |
 | `extraFields` | valeurs fixes ajoutées au payload au CREATE (stamp statique) |
+| `extraFieldsUnlessCostumAdmin` | comme `extraFields`, mais SEULEMENT si l'utilisateur n'est pas admin du site (`isCostumHostAdmin`, lu sur le porteur). Sert la modération a priori : `{ preferences: { toBeValidated: true } }` met la fiche en attente pour le public et laisse l'admin publier directement. ⚠ Filtre d'AFFICHAGE, pas barrière de sécurité — le drapeau est posé par le client, une requête forgée peut s'en passer. Porteur pas encore chargé → la valeur EST posée (jamais de dispense par défaut) |
 | `extraFieldsFromScope` | `{ champPayload: cléScope }` → `payload[champ] = ctx.scope[cléScope]` |
 
 > ⚠️ **Panne silencieuse sans parent.** Sans `parent` ni `parentFromCarrier`, le parent repose sur le default

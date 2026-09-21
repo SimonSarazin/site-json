@@ -982,6 +982,14 @@
         "opens": "Start",
         "closes": "End",
         "noDaysSelected": "Select days to define the schedule"
+      },
+      "periodStart": {
+        "label": "Period start",
+        "placeholder": "Select the period start"
+      },
+      "periodEnd": {
+        "label": "Period end",
+        "placeholder": "Select the period end"
       }
     }
   },

@@ -982,6 +982,14 @@
         "opens": "Début",
         "closes": "Fin",
         "noDaysSelected": "Sélectionnez des jours pour définir les horaires"
+      },
+      "periodStart": {
+        "label": "Début de la période",
+        "placeholder": "Sélectionner le début de la période"
+      },
+      "periodEnd": {
+        "label": "Fin de la période",
+        "placeholder": "Sélectionner la fin de la période"
       }
     }
   },

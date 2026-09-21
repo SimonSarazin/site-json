@@ -170,6 +170,6 @@ registerWidget("finder", (p) => (
 ));
 
 // composites edit-profil (gèrent leurs champs via le form).
-registerWidget("eventDates", (p) => <Suspense fallback={<WidgetFallback />}><EditEventDatesTab form={p.form} /></Suspense>);
+registerWidget("eventDates", (p) => <Suspense fallback={<WidgetFallback />}><EditEventDatesTab form={p.form} datesWhenRecurrent={p.field.widgetProps?.datesWhenRecurrent as boolean | undefined} /></Suspense>);
 registerWidget("editSocial", (p) => <Suspense fallback={<WidgetFallback />}><EditSocialTab form={p.form} /></Suspense>);
 registerWidget("editSchedule", (p) => <Suspense fallback={<WidgetFallback />}><EditScheduleTab form={p.form} /></Suspense>);

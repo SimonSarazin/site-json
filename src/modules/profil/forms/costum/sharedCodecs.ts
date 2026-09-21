@@ -169,6 +169,17 @@ registerTransform("eventDate:write", (v, all) => {
   const d = new Date(v);
   return isNaN(d.getTime()) ? undefined : formatISO(d);
 });
+// `eventDatePeriod:write` : même normalisation ISO, mais la date SURVIT à la récurrence — elle borne alors
+// la PÉRIODE sur laquelle les occurrences se déroulent (le backend les déroule dans `[startDate, endDate]`,
+// cf. `searchEventsCostum`), et le contrat ADD_EVENT accepte les deux ensemble (il n'EXIGE les dates qu'en
+// ponctuel, les horaires qu'en récurrent). À réserver aux formulaires qui MONTRENT les dates en récurrent
+// (`widgetProps.datesWhenRecurrent`) : ailleurs, une date rémanente d'une bascule ponctuel→récurrent
+// partirait au serveur, ce qu'évite justement `eventDate:write`.
+registerTransform("eventDatePeriod:write", (v) => {
+  if (typeof v !== "string" || v.trim() === "") return undefined;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? undefined : formatISO(d);
+});
 // RECURRENCY-AWARE : en PONCTUEL, `openingHours` (rémanent) est OMIS ; en RÉCURRENT, on NORMALISE l'array
 // partiel du composite (jours cochés uniquement) en EXACTEMENT 7 entrées Mo→Su (jour vide → `""`), comme
 // le form event de base (`editProfilePayload.buildOpeningHours`) — le contrat ADD_EVENT exige `minItems:7`.
