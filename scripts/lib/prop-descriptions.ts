@@ -46,6 +46,9 @@ const LIST: Record<string, string> = {
   "preview.facets": "Preview générique type facets : champs serverData affichés, cliquables s'ils sont indexés par un dropdownFilter.",
   "preview.facets[].field": "Chemin serverData de la facette (dot-path supporté, ex. address.postalCode).",
   "preview.showDetailLink": "Lien « Voir en page » (permalien profil/détail) dans l'en-tête de la modale ; défaut code : affiché.",
+  "preview.reservations": "Section réservations d'une fiche poi-amenities : ancrage du formulaire CoForm (form, étape, rôles→suffixes de champs). Sert aussi d'ancrage à preview.bookedResources sur une fiche structure.",
+  "preview.reservations.orgaLink": "Bouton « fiche » du club usager sur sa rangée : page de l'annuaire + param d'ouverture. N'apparaît QUE sur les réservations rattachées par identifiant (finder userOrga).",
+  "preview.bookedResources": "Fiche structure : section « équipements réservés » de l'organisation affichée. Requiert preview.reservations ET son champ userOrga ; link pointe la page qui porte les fiches équipement.",
   "testimonial.design": "Paire Card+Preview du témoignage (repli code : bubble).",
   "testimonial.quoteField": "Champ serverData de la citation — le héros du témoignage (repli code : description).",
   "testimonial.audioField": "Champ du média audio [{type:audio, url}] → lecteur AudioPlayer (repli code : medias).",
@@ -59,6 +62,7 @@ const LIST: Record<string, string> = {
   "resource.cityField": "Champ de la ville affichée (repli code : address.addressLocality).",
   "resource.urlsField": "Champ des liens externes string[] (repli code : urls).",
   previewParam: "Nom du paramètre URL de synchro du détail (défaut code : preview) — à différencier quand plusieurs sections cohabitent sur la page.",
+  previewFetch: "Charge l'item visé par previewParam PAR IDENTIFIANT quand il n'est pas dans la page déjà chargée (poi, organizations…) — sans lui, un lien venu d'une AUTRE page n'ouvre rien.",
   // Rendu PAR ITEM. ⚠ Ne décrire QUE le dernier segment de chaque règle : les sous-schémas sont
   // PARTAGÉS avec le bloc de base (CardConfSchema, PreviewConfSchema…), donc `itemRules[].card.type`
   // et `card.type` désignent le MÊME nœud du dump — décrire les deux ferait s'écraser l'un l'autre.

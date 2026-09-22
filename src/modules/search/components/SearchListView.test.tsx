@@ -19,6 +19,10 @@ const renderInRouter = (ui: ReactElement) => render(<MemoryRouter>{ui}</MemoryRo
 // `useNavigate` est espionné (action `itemAction.kind: "link"`) ; le reste de react-router — dont
 // `useSearchParams`, indispensable au wrapper — reste RÉEL sous le MemoryRouter.
 const navigateMock = vi.fn();
+const entityByIdMock = vi.fn(() => ({ data: null }));
+vi.mock("../hooks/useEntityByIdQuery", () => ({
+  useEntityByIdQuery: (kind?: string, id?: string) => entityByIdMock(kind, id),
+}));
 vi.mock("react-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("react-router")>()),
   useNavigate: () => navigateMock,
@@ -230,5 +234,46 @@ describe("SearchListView (list.layout: timeline)", () => {
     renderInRouter(<SearchListView results={results} list={{ layout: "timeline" }} />);
     fireEvent.click(await screen.findByText("TL-Bravo"));
     expect(screen.getByTestId("details-modal").getAttribute("data-item")).toBe("Bravo");
+  });
+});
+
+/**
+ * Ouverture d'une fiche par IDENTIFIANT (`list.previewFetch`) : `?preview=<id>`
+ * vise un item ABSENT de la tranche chargée — le cas de tout lien venu d'une
+ * autre page (fiche équipement ↔ fiche du club usager).
+ */
+describe("SearchListView (ouverture par identifiant, list.previewFetch)", () => {
+  const renderAt = (ui: ReactElement, url: string) =>
+    render(<MemoryRouter initialEntries={[url]}>{ui}</MemoryRouter>);
+
+  beforeEach(() => {
+    entityByIdMock.mockReset();
+    entityByIdMock.mockReturnValue({ data: null });
+  });
+
+  it("charge par id et ouvre la fiche quand l'item n'est pas dans les résultats", () => {
+    const absent = item("42", "Club absent de la page");
+    entityByIdMock.mockReturnValue({ data: absent });
+    renderAt(
+      <SearchListView results={results} list={{ previewFetch: "organizations" }} />,
+      "/?preview=42",
+    );
+    expect(entityByIdMock).toHaveBeenCalledWith("organizations", "42");
+    expect(screen.getByTestId("details-modal")).toHaveAttribute(
+      "data-item",
+      "Club absent de la page",
+    );
+  });
+
+  it("n'interroge PAS quand l'item est déjà dans les résultats", () => {
+    renderAt(<SearchListView results={results} list={{ previewFetch: "poi" }} />, "/?preview=2");
+    expect(entityByIdMock).toHaveBeenCalledWith("poi", undefined);
+    expect(screen.getByTestId("details-modal")).toHaveAttribute("data-item", "Bravo");
+  });
+
+  it("sans previewFetch, un id inconnu n'ouvre rien (comportement historique)", () => {
+    renderAt(<SearchListView results={results} />, "/?preview=42");
+    expect(entityByIdMock).toHaveBeenCalledWith(undefined, "42");
+    expect(screen.queryByTestId("details-modal")).toBeNull();
   });
 });

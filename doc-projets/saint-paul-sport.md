@@ -58,6 +58,7 @@ commune **ou** de la source `saintpaulSport1` (union `$or`).
 | 2026-09-09 | Peterson (+ Claude) | **Lot « lien créneau ↔ organisation »** : champ `finder` sur les organisations taguées ajouté au formulaire de créneaux, champ texte « Usager » masqué, 63 réponses historiques rattachées par identifiant ; 7 associations manquantes taguées (48 au total) ; plan `../../.claude/plans/plan-creneaux-lien-organisation-usagere.md` |
 | 2026-09-10 | Peterson (+ Claude) | **Outillage de mise en production** : action de migration `creneauxlienorga` (`communecter-php74`, calquée sur `CreneauxUsagersOrgsAction`) — taguer, poser le champ, reprendre l'historique, en simulation puis application, idempotente ; éprouvée en local par un aller-retour complet. Scripts mongo de secours et retours arrière dans `../../scripts-prod-creneaux/` |
 | 2026-09-07 | Peterson (+ Claude) | **Recette complète du lot** : `oneAnswerPerPers` repassé à `false` par Peterson, deux réservations créées et vérifiées de bout en bout, portes rejouées (rendu 12/12, sonde 6/6, `config:validate` ✅), recette en éventail sur 5 dimensions — 3 constats mineurs confirmés (§12) |
+| 2026-09-23 | Peterson (+ Claude) | **Lot « liens croisés équipement ↔ organisation »** : bouton vers la fiche du club dans la section réservations, section « équipements réservés » dans la fiche d'une organisation, ouverture d'une fiche par identifiant (`list.previewFetch`) — cf. section dédiée en fin de page |
 
 ## 2. Objectifs de la configuration
 
@@ -434,3 +435,48 @@ et défile seule.
 Détail du mécanisme : [doc/27-module-observatoire.md](../doc/27-module-observatoire.md),
 section « Split view ».
 
+## Liens croisés équipement ↔ organisation (2026-09-23)
+
+Les deux bouts du formulaire de créneaux se répondent enfin. Dans la fiche d'un **équipement**,
+chaque club de la section réservations porte un bouton « Fiche » qui ouvre sa fiche sur
+`/annuaire`. Dans la fiche d'une **organisation**, une section « Équipements réservés » liste
+les équipements du club, leurs créneaux et leur période, chacun avec un bouton qui ouvre la
+fiche de l'équipement sur `/equipements-sportifs`.
+
+**Le lien passe par l'identifiant, jamais par le nom.** Sondage du 2026-09-22 sur
+`communecter74-dev` avant la reprise : 0 réponse sur 62 portait l'identifiant du club, 7 noms
+d'usagers sur 48 correspondaient exactement à une organisation de l'annuaire (pliage casse,
+accents et ponctuation), et les « quasi-correspondances » étaient fausses — `TWIRL CLUB OUEST
+974` ≈ `Fight Club de l'Ouest (FCO 974)`. La recherche texte du backend ne rattrape pas l'écart
+non plus : `BASKET CLUB  SAINT-PAULOIS` (double espace, trait d'union) renvoie 0 résultat, là où
+`BASKET CLUB SAINT PAULOIS` en renvoie 1. D'où la règle : **pas d'identifiant, pas de bouton**.
+
+**Après la reprise** (`/co2/migration/creneauxlienorga?apply=1&step=reprise`, jouée par Peterson
+le 2026-09-22) : 61 réponses sur 62 rattachées, 47 organisations distinctes, toutes dans le
+périmètre de l'annuaire (233 fiches taguées). Reste « MONTAGNE REUNION » (mur d'escalade), dont
+la fiche existe et a dû être taguée après le passage — un second passage la rattachera.
+
+**Le socle : ouvrir une fiche par son identifiant.** `?preview=<id>` n'était résolu que DANS la
+page de résultats chargée — 10 items par défaut, 24 sur l'annuaire. Un lien venu d'une autre
+page n'ouvrait donc presque jamais rien, en silence. `list.previewFetch` (`"poi"` sur
+`/equipements-sportifs`, `"organizations"` sur `/annuaire`) charge la fiche complète par son id
+quand la liste ne la porte pas. Effet de bord bienvenu : les liens « Partager » d'une fiche
+profonde dans la pagination deviennent fiables.
+
+**Config ajoutée** : `orgaLink: {path: "/annuaire"}` sur les TROIS blocs `reservations` du site
+(page équipements, `/observatoire`, `/data`) ; sur `/annuaire`, le bloc `reservations` (même
+formulaire, `maxAnswers: 500`) + `bookedResources: {link: {path: "/equipements-sportifs"}}` ;
+`previewFetch` sur les deux pages. Rien sur les sites Équipements Sportifs et Scolaires : ils
+n'ont pas de page annuaire.
+
+**Vérifié** : `tsc`, `eslint`, 638 tests des modules search et observatoire — dont 3 nouveaux
+cas sur l'ouverture par identifiant (chargé et ouvert quand absent de la liste ; pas de requête
+quand présent ; rien sans `previewFetch`) et 3 sur le regroupement par équipement. Préflights au
+vert après régénération de l'exemple `data-observatory` de la skill ; les 3 échecs restants
+(`bundle-size`, `environment`, `site-assets`) sont préexistants. Requête inverse éprouvée sur
+les données réelles : `BOUGER O` → 1 réservation (dojo salle de combat), `CENTRE ETUDE KARATE
+SALINE` → 2 (dojo, salle de danse). **Non vérifié** : le rendu à l'écran (aucun navigateur
+installé sur le poste) — pages servies en 200, config présente dans le HTML.
+
+Détail du mécanisme : [doc/07-module-search.md](../doc/07-module-search.md), section « Liens
+croisés équipement ↔ organisation usagère ».

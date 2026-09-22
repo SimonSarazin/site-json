@@ -46,6 +46,7 @@
     - [CardProfile — authentification requise](#cardprofile--authentification-requise)
   - [Mode détails — conteneur (`detailsMode`) vs contenu (`preview.type`)](#mode-détails--conteneur-detailsmode-vs-contenu-previewtype)
     - [PreviewPoiAmenities — fiche détail POI (`preview.type: "poi-amenities"`)](#previewpoiamenities--fiche-détail-poi-previewtype-poi-amenities)
+    - [Liens croisés équipement ↔ organisation usagère](#liens-croisés-équipement--organisation-usagère)
   - [Facettes cliquables & navigation par filtre (`dropdownFilters`)](#facettes-cliquables--navigation-par-filtre-dropdownfilters)
   - [Cartes news dans la recherche (CardNews et PreviewNews)](#cartes-news-dans-la-recherche-cardnews-et-previewnews)
   - [Cartes et previews génériques config-driven (testimonial, resource)](#cartes-et-previews-génériques-config-driven-testimonial-resource)
@@ -1129,6 +1130,8 @@ Grille responsive des résultats. Propriétés CSS grid pilotées par `list.colu
 
 **Config `list` tuyautée d'un bout à l'autre** : depuis l'introduction des cartes typées (`testimonial` / `resource`), la config `list` COMPLÈTE (`list?: ListConf`, `ListConfSchema` désormais **exporté**) descend tout le pipeline — `SearchListView` → `SearchCard` et `SearchListView` → `SwitchDetailsMode` → `DetailsModeDialog` / `DetailsModeDrawer` → `Preview`. `list` est transmis à **TOUS** les variants de `SearchCard` et de `Preview` (et non aux seuls presenters typés) ; chacun y lit **sa** tranche (`list.testimonial`, `list.resource`), les autres l'ignorent. `SearchMapWrapper` / `SearchMap` le reçoivent aussi désormais — sans quoi un détail ouvert depuis la carte géographique retombait sur les presenters génériques. `SearchListView` / `SwitchDetailsMode` gardent des props `columns` / `card` / `preview` / `previewParam` optionnelles (agenda, observatoire, profil… qui appellent sans objet `list`) et dérivent chaque valeur via `prop ?? list?.x` ; les call-sites search ne passent plus que `list={list}`. Conséquence : **`SearchPro` honore désormais `list.previewParam`** (auparavant ignoré — il ne transmettait pas ce champ à `SearchListView`).
 
+**Ouverture par IDENTIFIANT** (`list.previewFetch`, opt-in) : l'effet ci-dessus ne résout `?<previewParam>=<id>` que **dans `results`**, c'est-à-dire dans la tranche chargée — 10 items par défaut (`indexStepList`). Un lien venu d'une **autre page** vise donc presque toujours en dehors, et n'ouvrait alors rien, en silence. Avec `previewFetch` (`"poi" | "organizations" | "projects" | "events" | "citoyens"`), `useEntityByIdQuery` charge la fiche **complète** par son id (`api.poi` / `api.organization` / …) et l'ouvre — la liste derrière reste ce qu'elle est. Garde-fous : requête paresseuse (rien ne part tant qu'aucun id manquant n'est demandé), `retry: false` (un id périmé est un cas normal d'un lien partagé), `useCocolightOptional` (hors provider — agenda, observatoire, tests — la feature se dégrade au lieu de jeter). Sans la clé, comportement historique strictement inchangé.
+
 **Layout timeline** (`list.layout: "timeline"`) : `SearchListView` dispatche vers `TimelineListView` (chunk `lazy()`, même convention que les variants de carte) — frise verticale avec ligne pointillée (à gauche en mobile, centrée dès `md`), **bulle-date** (jour/mois abrégé/année, repli icône calendrier + `bg-muted` sans `startDate`) posée sur la ligne, cartes **alternées gauche/droite par index** (pur : stable en scroll infini et identique SSR/client), rendues par `CardEventTimeline` (titre, heure `HH:mm`, chip catégorie — `card.tagLimit` défaut 1, `card.tagColors` honoré —, extrait 3 lignes, visuel à droite, bouton « En savoir plus »). Pensé pour des événements triés `defaultSortBy: {"startDate": -1}`. La **vue détaillée** (`isDetailedView`) et le **mode split** (`onFocusItem`) gardent la priorité (la timeline n'y a pas de sens) ; le détail, le deep-link `?<previewParam>=` et les `itemRules` passent par le MÊME flux que la grille. Défaut **côté code** = grille : la clé absente ou inconnue rend la grille historique (la config n'est jamais parsée par Zod au runtime).
 
 ### Cartes (card variants)
@@ -1312,6 +1315,23 @@ Colonne latérale :
 **Labels traduits** : tous les libellés passent par `t("PreviewPoiAmenities.*")` (namespace `modules/search`). La fonction helper `yesNo(value?)` retourne `t("PreviewPoiAmenities.yes")` / `t("PreviewPoiAmenities.no")` / `"—"` pour les champs booléens des tableaux PMR/PSHS.
 
 **Valeurs cliquables** : catégorie, type de propriété, locaux, utilisateurs et code postal sont rendus via `<ClickableFacet>` (cf. section suivante) — un clic applique le filtre correspondant sur le listing. `PreviewPoiAmenities` n'embarque **plus** de logique de navigation : plus de `getSiteDropdownFilters`/`findFilterOption`/`handleFilterNavigation`/`setTimeout`/path en dur — tout passe par le mécanisme générique ci-dessous.
+
+#### Liens croisés équipement ↔ organisation usagère
+
+Deux sections se répondent d'un bout à l'autre du **même** formulaire de créneaux : la fiche d'un **équipement** liste les clubs qui le réservent, la fiche d'une **organisation** liste les équipements qu'elle réserve. Chacune porte un bouton vers l'autre.
+
+| Sens | Config | Composant | Requête |
+|---|---|---|---|
+| équipement → club | `preview.reservations.orgaLink` | `PreviewReservations` (bouton sur la rangée usager) | aucune (l'id est déjà dans la réponse) |
+| club → équipements | `preview.bookedResources` (+ `preview.reservations`) | `PreviewBookedResources` (lazy, monté par `PreviewStructure`) | `useOrgaReservationsQuery` |
+
+**Tout repose sur l'IDENTIFIANT, jamais sur le nom.** Le champ texte historique (« Usager ») ne désigne aucune fiche : deux clubs peuvent porter le même nom, et un nom saisi à la main diverge de celui de l'annuaire (« BASKET CLUB  SAINT-PAULOIS » contre « BASKET CLUB SAINT PAULOIS » — double espace, trait d'union). Sondé sur les données Saint-Paul : 7 noms sur 48 correspondaient exactement, et la recherche texte du backend ne rattrape pas l'écart (0 résultat sur la forme saisie). Le rattachement vient donc du finder `reservations.fields.userOrga`, rempli par la migration backend `CreneauxLienOrgaAction` — **pas d'identifiant, pas de bouton**, jamais de rapprochement approximatif.
+
+**Côté équipement** : le bouton vit à côté du déclencheur d'accordéon, dans une grille à deux colonnes — un lien DANS le déclencheur serait un bouton dans un bouton (HTML invalide) et replierait la rangée au clic.
+
+**Côté organisation** : `useOrgaReservationsQuery` filtre côté serveur sur `answers.<step>.finder<step><userOrga>.<orgaId>` (idiome `$exists`, même famille que `useReservationsQuery` qui part, lui, d'une ressource ; clés de cache distinctes). Le **nom de chaque équipement** vient du finder de la réponse elle-même (`Reservation.resources`, id + libellé) : aucune requête POI par ligne. `groupReservationsByResource` (pur, testé) fait le regroupement ; une réservation multi-ressources compte dans **chaque** équipement. Sans réservation, la section ne s'affiche pas du tout — la plupart des fiches de l'annuaire n'en ont aucune.
+
+**Les deux boutons exigent `list.previewFetch` sur la page VISÉE** (cf. [§SearchListView](#searchlistview)) : sans lui, `?preview=<id>` ne trouverait l'item que dans la tranche déjà chargée, et le lien resterait sans effet.
 
 ### Facettes cliquables & navigation par filtre (`dropdownFilters`)
 

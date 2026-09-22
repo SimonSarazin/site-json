@@ -193,7 +193,18 @@
         "bookAria": "Réserver le {{day}} de {{start}} à {{end}}",
         "bookTitle": "Réserver un créneau",
         "conflict": "Ce créneau est déjà réservé par {{user}}.",
-        "referenceNotice": "Grille de référence : une case libre signifie qu'aucune réservation n'est enregistrée — pas que l'équipement est ouvert."
+        "referenceNotice": "Grille de référence : une case libre signifie qu'aucune réservation n'est enregistrée — pas que l'équipement est ouvert.",
+        "orgaSheet": "Fiche",
+        "orgaSheetAria": "Ouvrir la fiche de {{name}} dans l'annuaire"
+    },
+    "PreviewBookedResources": {
+        "title": "Équipements réservés",
+        "error": "Impossible de charger les équipements réservés.",
+        "unknownResource": "Équipement non renseigné",
+        "slotCount_one": "{{count}} créneau",
+        "slotCount_other": "{{count}} créneaux",
+        "sheet": "Fiche",
+        "sheetAria": "Ouvrir la fiche de {{name}}"
     },
     "Filtres actifs :": "Filtres actifs :",
     "À partir du": "À partir du",

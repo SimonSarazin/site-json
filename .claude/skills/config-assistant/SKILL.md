@@ -293,7 +293,7 @@ Dispatch : `src/modules/search/components/Preview.tsx` ; conteneur = `card.detai
 | `news` | détail actualité | `preview.showDetailLink` |
 | `testimonial` | détail témoignage (leaf `PreviewTestimonialBubble`) | bloc `list.testimonial` |
 | `resource` | détail ressource (leaf `PreviewResourceCard`) | bloc `list.resource` |
-| `structure` | fiche détail organisation (coordonnées, carte, docs, bouton Éditer) | annuaires de structures |
+| `structure` | fiche détail organisation (coordonnées, carte, docs, bouton Éditer) | annuaires de structures ; `preview.bookedResources` ajoute les équipements réservés |
 | `resource-directory` | modal ressource de tiers-lieu (gabarit du « En savoir plus » d'un profil TL) — carrousel + pastille capacité, nom, tarifs (toutes unités), surface, À propos, équipements, services, CTA « Réserver » / « Voir le tiers-lieu » | section `coform-resource-directory` uniquement ; bloc `list.resourceDirectory` |
 
 ⚠ **Une option de `card`/`preview` n'a d'effet que sur CERTAINS types** — posée
@@ -303,6 +303,17 @@ seul ; `imageFit`/`overlayStats`/`servicePricing` → `image-cover` seul ;
 `showFunding` → `funding` seul ; `tagLimit` → `overlay`+`default` ;
 `showAddress`/`showDescription` → 4 types ; les autres cartes n'ont aucune
 option propre (leur rendu ne dépend que de la donnée).
+
+**Liens croisés équipement ↔ club usager** (sites sportifs) : `preview.reservations.orgaLink`
+`{path, previewParam?}` pose un bouton « fiche » sur la rangée du club, dans la
+section réservations d'une fiche équipement ; en sens inverse,
+`preview.bookedResources` `{link, label?}` liste les équipements réservés dans la
+fiche d'une organisation (exige `preview.reservations` dans le MÊME bloc, avec son
+`fields.userOrga`). Les deux reposent sur l'IDENTIFIANT du club : une réservation
+qui ne porte que le nom saisi à la main n'a pas de bouton — jamais de rapprochement
+approximatif. ⚠ La page VISÉE doit déclarer `list.previewFetch`
+(`poi`\|`organizations`\|…), sinon `?preview=<id>` ne trouve l'item que dans la
+tranche déjà chargée (10 résultats) et le lien reste sans effet.
 
 Variantes transverses : `preview.width` (`sm`…`5xl`\|`full`, défaut code `5xl`, dialog
 seulement) ; `card.variant` surcharge `card.type` pour le dispatch (sous-ensemble

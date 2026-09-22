@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
+import { lazy } from "vite-preload";
 import { useQuery } from "@tanstack/react-query";
 import type { Organization } from "@communecter/cocolight-api-client";
 import {
@@ -35,6 +36,10 @@ import { DynamicEditModal } from "@/modules/profil/components/profile-edit/EditM
 import { useT } from "@/hooks/useT";
 import { PreviewProps } from "@/modules/search/schema";
 import { SEARCH_QUERY_KEYS } from "@/modules/search/constants/queryKeys";
+
+// Section « équipements réservés » : lazy — le chunk (query answers + grille des
+// créneaux) n'est chargé que si le site configure `preview.bookedResources`.
+const PreviewBookedResources = lazy(() => import("./PreviewBookedResources"));
 
 /**
  * Fiche détail « structure » (organisation) — `preview.type: "structure"`.
@@ -149,7 +154,7 @@ function PersonCard({
   );
 }
 
-const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
+const PreviewStructure: React.FC<PreviewProps> = ({ item, preview }) => {
   const t = useT("modules/search");
   const org = item as unknown as Organization;
   const sd = (org?.serverData ?? {}) as Record<string, unknown>;
@@ -160,6 +165,13 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
   // (repli "edit-profile" générique si absent).
   const { canEditProfile } = useProfilPermissions(item ?? null);
   const [editModalOpen, setEditModalOpen] = useState(false);
+
+  // Équipements réservés par CETTE organisation (opt-in `preview.bookedResources`).
+  // `reservations` porte l'ancrage du formulaire, `fields.userOrga` le finder qui
+  // relie une réponse à un club : sans lui, rien ne serait rattachable.
+  const bookedConf = preview?.bookedResources;
+  const reservationsConf = preview?.reservations;
+  const showBooked = Boolean(bookedConf && reservationsConf?.fields.userOrga && org?.id);
 
   // L'entité de résultat de recherche est TRONQUÉE aux champs listés dans
   // `baseParams.defaultFields` (cf. buildSearchPayload) — suffisant pour cette fiche en
@@ -527,6 +539,20 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
             )}
           </div>
         </div>
+
+        {/* Équipements réservés — pleine largeur sous les deux colonnes : une
+            liste de créneaux ne tient pas dans une colonne d'infos. */}
+        {showBooked && (
+          <div className="px-6 pb-6 md:px-10 md:pb-8">
+            <Suspense fallback={null}>
+              <PreviewBookedResources
+                orgaId={org!.id as string}
+                conf={reservationsConf!}
+                booked={bookedConf!}
+              />
+            </Suspense>
+          </div>
+        )}
       </div>
 
       {canEditProfile && item && (

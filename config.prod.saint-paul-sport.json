@@ -1826,6 +1826,9 @@
                     "endHour": 22,
                     "slotMinutes": 60,
                     "adminOnly": true
+                  },
+                  "orgaLink": {
+                    "path": "/annuaire"
                   }
                 },
                 "installationDashboard": {
@@ -1844,7 +1847,8 @@
                   },
                   "activityMetric": "hours"
                 }
-              }
+              },
+              "previewFetch": "poi"
             },
             "map": {
               "marker": {
@@ -1875,7 +1879,7 @@
           "id": "annuaire-header",
           "props": {
             "headline": {
-              "fr": "Les associations utilisatrices",
+              "fr": "Les associations sportifs de Saint-Paul",
               "en": "User associations"
             },
             "subhead": {
@@ -1967,14 +1971,35 @@
                 "showDescription": true,
                 "showAddress": true,
                 "showStats": false,
-                "detailsMode": "drawer"
+                "detailsMode": "dialog"
               },
               "preview": {
-                "type": "structure"
+                "type": "structure",
+                "reservations": {
+                  "form": "6a4e4e4105e5972f7b4b1823",
+                  "step": "equipementsSportifs974872026_1619_0",
+                  "fields": {
+                    "finder": "mrc3ungb2a9vu945ik8",
+                    "user": "mrc3w4o7rguvxc2vkyq",
+                    "userOrga": "n0a7usagerorga1k9z",
+                    "activity": "mrc3xumnggn5f530i9",
+                    "slots": "mrc40jaxu06fjaa6ngn",
+                    "periodStart": "mrc41scujf3aq9ppw1l",
+                    "periodEnd": "mrc4259ir2xnu4vp2fq",
+                    "bookingType": "mrc3zgl902y2fpfcby3y"
+                  },
+                  "maxAnswers": 500
+                },
+                "bookedResources": {
+                  "link": {
+                    "path": "/equipements-sportifs"
+                  }
+                }
               },
               "itemAction": {
                 "kind": "preview"
-              }
+              },
+              "previewFetch": "organizations"
             },
             "map": {
               "marker": {
@@ -2876,6 +2901,9 @@
                     "endHour": 22,
                     "slotMinutes": 60,
                     "adminOnly": true
+                  },
+                  "orgaLink": {
+                    "path": "/annuaire"
                   }
                 },
                 "installationDashboard": {
@@ -3297,6 +3325,9 @@
                       "endHour": 22,
                       "slotMinutes": 60,
                       "adminOnly": true
+                    },
+                    "orgaLink": {
+                      "path": "/annuaire"
                     }
                   },
                   "installationDashboard": {

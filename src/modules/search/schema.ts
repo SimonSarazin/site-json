@@ -220,6 +220,26 @@ export const PreviewFacetSchema = z.object({
 export type PreviewFacetConfig = z.infer<typeof PreviewFacetSchema>;
 
 /**
+ * Lien vers la fiche d'une entité portée par une AUTRE page du site : le chemin
+ * de la page + le param d'URL qui y ouvre le détail.
+ *
+ * ⚠️ La page visée doit savoir charger l'item PAR IDENTIFIANT
+ * (`list.previewFetch`) : sans ça, le param n'ouvre que ce que sa liste a déjà
+ * chargé (10 résultats par défaut) et le lien resterait sans effet, en silence.
+ */
+export const EntitySheetLinkSchema = z.object({
+  /** Chemin de la page qui porte la fiche (ex. `/annuaire`). */
+  path: z.string(),
+  /** Param d'URL qui y ouvre le détail — doit valoir le `list.previewParam` de
+   *  cette page. Défaut : "preview". */
+  previewParam: z.string().optional(),
+});
+export type EntitySheetLink = z.infer<typeof EntitySheetLinkSchema>;
+
+/** Param d'URL par défaut d'ouverture d'une fiche (cf. `list.previewParam`). */
+export const DEFAULT_PREVIEW_PARAM = "preview";
+
+/**
  * Réservations récurrentes d'une ressource : answers d'un formulaire CoForm
  * reliées à l'entité affichée par un champ finder. Tout l'ancrage (form, étape,
  * suffixes de champs) vient de la CONFIG du site — le code ne connaît que des
@@ -258,6 +278,15 @@ export const ReservationsConfSchema = z.object({
   }),
   /** Plafond d'answers chargées (garde de pagination). Défaut : 200. */
   maxAnswers: z.number().int().positive().optional(),
+  /**
+   * Bouton « fiche » de l'ORGANISATION usagère, sur sa rangée dans la section
+   * réservations (OPT-IN). Il n'apparaît que sur les réservations rattachées par
+   * IDENTIFIANT (finder `userOrga`) : le texte historique ne désigne aucune
+   * fiche — deux clubs peuvent porter le même nom, et un nom saisi à la main ne
+   * correspond pas toujours à une organisation existante. Pas d'identifiant,
+   * pas de bouton : jamais de lien mort.
+   */
+  orgaLink: EntitySheetLinkSchema.optional(),
   /**
    * Prise de réservation depuis la fiche (OPT-IN). Absent = comportement
    * historique : grille hebdo en blocs empilés, lecture seule. Présent = grille
@@ -333,6 +362,24 @@ export type InstallationDashboardConf = z.infer<typeof InstallationDashboardConf
 /** Param d'URL par défaut de la fiche installation (cf. `installationDashboard.param`). */
 export const DEFAULT_INSTALLATION_PARAM = "installation";
 
+/**
+ * Section « équipements réservés » du preview `structure` : les réservations de
+ * l'ORGANISATION affichée, lues dans le même formulaire que la fiche
+ * équipement. Le sens inverse de `reservations.orgaLink`.
+ *
+ * Requiert, dans le MÊME bloc preview, un `reservations` (l'ancrage
+ * form/étape/champs) dont les `fields.userOrga` sont renseignés : c'est ce
+ * finder qui relie une réservation à un club.
+ */
+export const BookedResourcesConfSchema = z.object({
+  /** Lien « fiche » de l'équipement (ex. `{ path: "/equipements-sportifs" }`).
+   *  Absent = les équipements sont listés sans bouton. */
+  link: EntitySheetLinkSchema.optional(),
+  /** Titre de la section. Défaut : libellé i18n du module search. */
+  label: LocalizedString.optional(),
+});
+export type BookedResourcesConf = z.infer<typeof BookedResourcesConfSchema>;
+
 export const PreviewConfSchema = z.object({
   type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource", "resource-directory", "structure"]).default("default"),
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
@@ -354,6 +401,9 @@ export const PreviewConfSchema = z.object({
   reservations: ReservationsConfSchema.optional(),
   /** Modal tableau de bord installation (requiert `reservations`). */
   installationDashboard: InstallationDashboardConfSchema.optional(),
+  /** Section « équipements réservés » du preview `structure` (requiert
+   *  `reservations` + `reservations.fields.userOrga`). Absente = masquée. */
+  bookedResources: BookedResourcesConfSchema.optional(),
   /**
    * Affiche le lien « Voir en page » (permalien vers le détail/profil) dans l'en-tête de la
    * modal de détail. Défaut : affiché (mettre `false` pour le masquer). Lu par `PreviewNews`.
@@ -685,6 +735,17 @@ export const ListConfSchema = z.object({
    * Utile pour plusieurs sections sur une même page (ex. "preview-equipements").
    */
   previewParam: z.string().optional(),
+  /**
+   * Charge l'item visé par `previewParam` PAR IDENTIFIANT quand il n'est pas
+   * dans la page de résultats déjà chargée (10 items par défaut) — la valeur dit
+   * QUELLE collection interroger. Absent = comportement historique : le param
+   * n'ouvre que ce que la liste porte déjà.
+   *
+   * Indispensable à tout lien venu d'une AUTRE page (fiche équipement → fiche du
+   * club usager, et retour), et accessoirement aux liens « Partager » d'une
+   * fiche profonde dans la pagination.
+   */
+  previewFetch: z.enum(["poi", "organizations", "projects", "events", "citoyens"]).optional(),
   /**
    * Règles de rendu PAR ITEM (cf. {@link ListItemRuleSchema}) — pour les listes hétérogènes.
    * ABSENT = comportement mono-carte historique (`card`/`preview` valent pour toute la liste).
