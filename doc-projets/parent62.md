@@ -15,7 +15,7 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-09-22** — annuaire des partenaires et filtre « Villes » des actualités, page « La communauté » retirée (§9octotricies). Précédemment : **2026-09-17** — INFORESO et « Elles et ils ont marqué le réseau » en pages dédiées avec leurs formulaires d'admin, types d'actualité « À la une » / « Zoom sur le réseau » en choix multiple, taxonomie facultative hors réunions (§9octovicies). Précédemment : **2026-09-15** — les cinq lots du 09/09 (§9vicies à §9quatervicies, validés en §9quinvicies), puis la refonte de l'accueil, les actions admin sur les actualités, les pages du réseau reprises à la source et le Mois de la Parentalité (§9sexvicies).
+Dernière mise à jour : **2026-09-23** — bandeaux de filtres en deux lignes, filtre par ville réservé aux actualités et tiré de l'adresse (§9novotricies). Précédemment : **2026-09-22** — annuaire des partenaires et filtre « Villes » des actualités, page « La communauté » retirée (§9octotricies). Précédemment : **2026-09-17** — INFORESO et « Elles et ils ont marqué le réseau » en pages dédiées avec leurs formulaires d'admin, types d'actualité « À la une » / « Zoom sur le réseau » en choix multiple, taxonomie facultative hors réunions (§9octovicies). Précédemment : **2026-09-15** — les cinq lots du 09/09 (§9vicies à §9quatervicies, validés en §9quinvicies), puis la refonte de l'accueil, les actions admin sur les actualités, les pages du réseau reprises à la source et le Mois de la Parentalité (§9sexvicies).
 
 **(d) Haut des 9 pages territoire refondu + saisie admin des réunions** — chaque page
 `/territoire/*` ouvre désormais, juste après son bandeau, sur les **3 prochaines réunions du comité
@@ -3708,6 +3708,42 @@ Aucune organisation n'est rattachée à parent62 à la livraison : l'annuaire se
 
 ---
 
+## 9novotricies. Bandeaux de filtres : recherche en haut, ville des actualités tirée de l'adresse
+
+Les **33 bandeaux de filtres** du site (actualités, ressources, agenda, appels à projets, offres d'emploi,
+Mois de la Parentalité, `/theme` et ses 8 déclinaisons, les 9 pages `/public/*` et les 9 pages de
+territoire) suivent la disposition de `/blog` : la recherche sur sa propre ligne, les filtres en une
+rangée centrée dessous (`filtersClassName: "flex flex-col gap-3"`).
+
+Le filtre par ville n'existe plus que sur `/blog`. `/ressources` perd son filtre « Commune »
+(`address.addressLocality`, 11 villes) et garde type, territoires, publics et thèmes — l'exigence
+« recherche par territoire / ville » des ressources (3.2) n'est donc plus couverte que pour le territoire.
+
+Sur `/blog`, le filtre « Villes » porte désormais sur la **ville de l'adresse** (`address.addressLocality`)
+et le formulaire d'actualité gagne un onglet **« Lieu »** avec un champ adresse facultatif (autocomplétion
+des communes, même codec que le formulaire des paroles). Le champ `villes` du formulaire est retiré. Les
+33 villes du filtre portent exactement le nom officiel que le champ adresse enregistre (vérifié une à une
+contre la base des communes), le filtre retrouve donc toute actualité localisée dans l'une d'elles.
+
+Accueil, carte **« À la une »** : la diapositive respire désormais autant sous le bord haut de son panneau
+vert (32 px, contre 16) que la ligne points + bouton au-dessus de son bord bas. Les deux panneaux verts
+(Territoires, À la une) restent au même niveau, haut et bas.
+
+### 9novotricies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` · `audit:config` | ✅ 51 pages · 183 sections · RAS |
+| Préflight | ✅ hors les 2 échecs étrangers au lot (`bundle-size`, `site-assets`) |
+| `test:integration` (`config-driven-ssr`, config parent62) | ✅ **98/98** |
+| `test:e2e` parent62 | ✅ **21/21** |
+| Accueil « À la une » | ✅ à 1 440 px : 32 px entre le bord haut du panneau et la diapositive, 32 px entre le bouton et le bord bas ; panneaux alignés |
+| Écran | ✅ à 1 280 px, une seule rangée de filtres sous la recherche sur `/ressources`, `/agenda`, `/territoire/calaisis`, `/theme/la-sante`, `/public/parents`, `/appels-a-projets` |
+| Backend | ✅ le filtre sur `address.addressLocality` est appliqué (paroles : 5 sans filtre, 1 avec « Saint-Denis », 0 avec « Arras ») |
+| Non vérifié | l'enregistrement réel d'une actualité avec adresse (pas de compte de test sur ce poste) |
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -3729,7 +3765,7 @@ Aucune organisation n'est rattachée à parent62 à la livraison : l'annuaire se
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies). **09/09** : boutons **Modifier / Supprimer** sur la fiche `/blog/:slug`, gardés par `canEditProfile` (admin du costum ou auteur) et réutilisant la modale `edit-parent62-article` déjà en place — hérité par les **4 sites** déclarant une page `/blog`, à charge pour eux de router leur propre `editModals` (§9sexvicies.2). **17/09** : types **« À la une »** et **« Zoom sur le réseau »**, type en **choix multiple** ; le mot-clé suit désormais le type (codecs à la place du stamp) ; section d'accueil « Zoom sur le réseau » filtrée sur `Zoom` ; territoires/publics/thèmes facultatifs (§9octovicies.3-4). **22/09** : filtre **« Villes »** sur `/blog` (33 villes du survol des territoires) et champ `villes` du formulaire (§9octotricies.1) |
+| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies). **09/09** : boutons **Modifier / Supprimer** sur la fiche `/blog/:slug`, gardés par `canEditProfile` (admin du costum ou auteur) et réutilisant la modale `edit-parent62-article` déjà en place — hérité par les **4 sites** déclarant une page `/blog`, à charge pour eux de router leur propre `editModals` (§9sexvicies.2). **17/09** : types **« À la une »** et **« Zoom sur le réseau »**, type en **choix multiple** ; le mot-clé suit désormais le type (codecs à la place du stamp) ; section d'accueil « Zoom sur le réseau » filtrée sur `Zoom` ; territoires/publics/thèmes facultatifs (§9octovicies.3-4). **22/09** : filtre **« Villes »** sur `/blog` (33 villes du survol des territoires, **23/09** : sur la ville de l'adresse) et champ adresse du formulaire (§9octotricies.1, §9novotricies) |
 | 2.2 | Actualités filtrables dans le moteur de recherche | ✅ *(était ✅ config, 🟡 UX)* | cible `searchTargets` « Actualités » (`type:article`) dans `/recherche` + filtres territoire/public/thème/dates. **25/07 — UX unifiée** : une actualité de `/recherche` rend une carte dédiée et son clic ouvre le **reader canonique** `/blog/:slug` (repli `/blog/id/:id`), plus un drawer générique |
 | 2.3 | Module événementiel (agenda) + affichage territoire | 🟡 *(diagnostiqué le 14-19/08)* | module agenda complet (calendrier + liste, filtre territoire) ; testé avec des **événements de test locaux** (dev, pas de la production — cf. §9sexies), a révélé 3 bugs backend, **tous corrigés** (§9sexies.1) ; **0 donnée `events` en production, toujours à confirmer** ; pas de carte agenda (`enableMap:false`) |
 | 2.4 | Impression de l'agenda | ❌ | **aucun code print** (`@media print`/`window.print`) — à faire (CSS print ou export iCal/PDF) |
@@ -3742,7 +3778,7 @@ Aucune organisation n'est rattachée à parent62 à la livraison : l'annuaire se
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
 | 3.1 | Module ressources (POI `recoveryCenter`) | 🟡 | `/ressources` + form `parent62-recovery-center` (catégories Vidéo/Photo/Compte-rendu/Doc/Lien, **02/09 : + Inforéso et Elles et ils ont marqué le réseau ; « Jeu » remplacé par « Les jeux du réseau »** — formulaire, filtre « Type » et pastilles de carte ; galerie/docs). **À vérifier en base** : les POI déjà enregistrés en `category: "Jeu"` ne sont pas migrés et sortent du filtre « Type ». **Données observées le 25/07** : `/ressources` affiche « Toutes les ressources (**4**) » — la mention « 0 donnée » du 24/07 est caduque. Création **admin-only** (pas de bouton public → le « formulaire simple partenaire » du CDC n'est pas exposé). **17/09** : **INFORESO** (`/inforeso`, POI `doc`, par année) et **« Elles et ils ont marqué le réseau »** (annuaire, POI `intervenant`) passent en **pages dédiées** avec formulaire et onglet `/admin` ; saisie des fiches à faire, prérequis prod en §9octovicies.6 |
-| 3.2 | Recherche dans les ressources (territoire/**ville**) | ✅ config *(était ❌)* | `/ressources` filtre `category` + `territoires` + **`commune`** (`address.addressLocality`) + public/thème + `searchBy:[name,description]`. **25/07** : les ressources sont aussi atteignables depuis `/recherche` (cible « Ressources » + règle de rendu dédiée) |
+| 3.2 | Recherche dans les ressources (territoire/**ville**) | 🟡 *(était ✅ config)* | `/ressources` filtre `category` + `territoires` + public/thème + `searchBy:[name,description]` ; **23/09** : filtre « Commune » retiré, le filtre par ville étant réservé aux actualités (§9novotricies). **25/07** : les ressources sont aussi atteignables depuis `/recherche` (cible « Ressources » + règle de rendu dédiée) |
 | 3.3 | Votes « utile » / contributeurs | ❌ | pas de vote sur les ressources (`ADD_VOTE`/`links` à câbler + UI card) ; les votes n'existent que sur le fil news social |
 
 Hors périmètre engagé : publication RS, mailing, migration GoGoCarto, fiches de jeux.
@@ -3857,7 +3893,7 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | **Votes « utile » + contributeurs** des ressources (3.3) — câbler `ADD_VOTE`/`links` + UI card | Peterson / Thomas |
 | **Transcription / sous-titres des paroles** (1.6) — champ dédié à ajouter au form + affichage | Peterson / réseau |
 | **Masquage public des events *pending*** (2.6) — `searchEventsCostum` applique-t-il un gate `toBeValidated` ? sinon à faire côté backend | Thomas |
-| **`typeObj` de production** (2.7, 2.1) — déclarer sur le costum parent62 de production `typeObj.organizations` (`territoires`, `publics`, `themes`) et `villes` dans `typeObj.article`, comme en base locale (§9octotricies) | Thomas / backend |
+| **`typeObj` de production** (2.7) — déclarer sur le costum parent62 de production `typeObj.organizations` (`territoires`, `publics`, `themes`) comme en base locale (§9octotricies) | Thomas / backend |
 | **Données P2/P3** — relevé du 25/07 : 3 paroles, 4 ressources ; events et organisations à confirmer. Volumétrie réelle à créer/importer | réseau / Thomas |
 | **Géolocalisation** — aucune donnée ne porte de coordonnées : la vue carte de `/recherche` est vide et le `colorBy` par territoire est invérifiable | réseau / Thomas |
 | Borne de fin des dates (`$lt`/`$lte`) dans `SearchNew::getQueries` | Thomas / backend |

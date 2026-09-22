@@ -804,8 +804,8 @@ Un filtre à options FIXES posé sur un champ qu'un formulaire costum du même s
 fermée (`enum`) ne doit proposer que des valeurs que ce formulaire sait enregistrer : une option hors liste
 ne ramène jamais rien, sans rien dire. Couvre les `dropdownFilters` (valeur envoyée : `value ?? id`) et les
 groupes de la sidebar `filters` (`name || id`), où qu'ils soient imbriqués ; les options dynamiques
-(`optionsFrom`/`optionsKey`) sortent du gate. Né des villes de parent62, recopiées dans le champ
-`villes` du formulaire d'actualité et dans le filtre de `/blog`. Vérifié en échec sur une ville mal
+(`optionsFrom`/`optionsKey`) sortent du gate. Né d'une liste de villes que parent62 recopiait dans un
+champ du formulaire d'actualité et dans le filtre de `/blog`. Vérifié en échec sur une ville mal
 orthographiée dans le filtre.
 
 #### Règles de rendu par item (`tests/preflight/list-item-rules.test.ts`)
