@@ -385,3 +385,52 @@ serveur : `cocolight-backend/docs/28-OWNERSHIP-MIGRATION.md`. ⚠ Ordre : **migr
 déploiement de la config communale** (aucune coupure) ; BUG-L-236 (l'update d'import écrasait
 `reference` des deux côtés) est CORRIGÉ en miroir L+B le 2026-08-17 — déployer le fix legacy
 avant tout rafraîchissement RES d'un dataset migré.
+
+## Observatoire en split view (2026-09-10)
+
+Refonte de l’AFFICHAGE de `/observatoire` sur la proposition de Tibor (message du 09/09) :
+KPI en bandeau sous les filtres, puis liste des équipements à gauche et graphes à droite.
+Aucune fonctionnalité retirée du
+site — le moteur gagne trois options opt-in, dont le défaut reproduit l’existant à l’identique
+(les 3 autres consommateurs de `data-observatory` — Institut Bleu, Relief, Tiers-Lieux — sont
+inchangés).
+
+**Ce que la page fait maintenant.** La colonne de gauche liste les équipements (nom, puis
+installation et commune en sous-titre), par tranches de 50. Un clic sur le libellé filtre les
+KPI, les graphes et la liste ; un bouton « Fiche » ouvre le détail habituel — même
+`SwitchDetailsMode`, mêmes réservations, même tableau de bord d’installation. Le tableau
+quitte cette page ; il reste ENTIER sur `/data` (tri par colonne, pagination, export CSV),
+d’où le « zéro perte » à l’échelle du site. L’export CSV est aussi repris en tête de liste.
+
+**Sélection ≠ recherche texte.** Arbitrage Peterson du 10/09 : le champ de recherche garde son
+comportement historique (`?q=`, `contains` sur la saisie entière). Le clic est un filtre
+DISTINCT (`?selection=`) qui découpe le libellé en mots et exige chaque mot dans la réunion du
+nom de l’équipement ET du nom de son installation — « pour qu’on ne rate rien ». Les deux
+filtres se cumulent et s’effacent séparément ; `resetAll` les efface tous.
+
+**Config** (page `/observatoire` seulement) : `layout: "split"` + `list`
+(`titleDimension: "equipName"`, `subtitleDimensions: ["name","commune"]`,
+`selectDimensions: ["equipName","name"]`, `splitRatio: "40-60"`, `pageSize: 50`), et le bloc
+`rowAction` REMONTE de `table` au niveau de la section — il alimente la liste et le deep-link
+`?installation=`. Le bloc `table` est supprimé de cette page.
+
+**Mesuré, pas supposé.** Sur `saintpaulSport1` (207 équipements, serveur de dev réel) : un clic
+sur « base Nautique » ramène 2 équipements dans deux installations distinctes, là où la
+recherche texte de la même chaîne n’en ramène qu’1 — le clic élargit, il ne restreint jamais.
+`config:validate`, `audit:config` (RAS) et `config:render` au vert sur les 3 sites ; 704 tests
+passent, les 3 échecs restants (`bundle-size`, `environment`, `site-assets`) étant
+préexistants et sans lien.
+
+**Non vérifié à ce stade** : le rendu MOBILE (repli de la liste sous le tableau de bord) —
+aucun navigateur Playwright installé sur le poste, la vérification s’est faite sur le HTML
+servi par le serveur de dev, qui rend la variante desktop.
+
+**Ajustements du 2026-09-10 (retour sur capture).** `maxWidth: "full"` sur la page : le défaut
+`8xl` (1440 px) bridait le contenu et laissait de larges marges sur un écran plus grand — en
+`full`, la section occupe la largeur moins le seul padding (`lg:px-8`), soit ~96 %. Et le scroll
+a été inversé : le tableau de bord se déroule entier, c'est la liste qui s'adapte à sa hauteur
+et défile seule.
+
+Détail du mécanisme : [doc/27-module-observatoire.md](../doc/27-module-observatoire.md),
+section « Split view ».
+

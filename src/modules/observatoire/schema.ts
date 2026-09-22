@@ -146,25 +146,57 @@ export const FilterDefSchema = z.object({
 });
 export type FilterDef = z.infer<typeof FilterDefSchema>;
 
+/** Ouverture d'une FICHE depuis une ligne de table ou un item de liste —
+ *  CHOIX déclaratif :
+ *  - "profil"  : navigation vers /profil/<slug>
+ *  - "preview" : ouvre le détail du module search (drawer/dialog + preview),
+ *    le comportement de la liste /equipements-sportifs au clic sur une carte. */
+export const RowActionSchema = z.object({
+  kind: z.enum(["profil", "preview"]),
+  /** preview : conteneur du détail (défaut "drawer"). */
+  detailsMode: z.enum(["drawer", "dialog"]).optional(),
+  /** preview : contenu (schéma du module search — poi-amenities…). */
+  preview: PreviewConfSchema.optional(),
+});
+export type RowActionDef = z.infer<typeof RowActionSchema>;
+
 export const TableDefSchema = z.object({
   columns: z.array(TableColumnSchema).min(1),
   /** Dimension du tri initial (défaut : la 1ʳᵉ colonne). */
   defaultSort: z.string().optional(),
-  /** Action au clic sur une ligne — CHOIX déclaratif :
-   *  - "profil"  : navigation vers /profil/<slug>
-   *  - "preview" : ouvre le détail du module search (drawer/dialog + preview),
-   *    le comportement de la liste /equipements-sportifs au clic sur une carte. */
-  rowAction: z
-    .object({
-      kind: z.enum(["profil", "preview"]),
-      /** preview : conteneur du détail (défaut "drawer"). */
-      detailsMode: z.enum(["drawer", "dialog"]).optional(),
-      /** preview : contenu (schéma du module search — poi-amenities…). */
-      preview: PreviewConfSchema.optional(),
-    })
-    .optional(),
+  /** Cf. RowActionSchema. Repli de `props.rowAction` : une config antérieure au
+   *  mode `split` déclare son action ICI, et continue de fonctionner. */
+  rowAction: RowActionSchema.optional(),
 });
 export type TableDef = z.infer<typeof TableDefSchema>;
+
+/**
+ * Liste latérale du mode `layout: "split"` — l'équivalent « une ligne, un
+ * item » de la table, pensé pour un panneau étroit : pas de colonnes, un
+ * libellé, un sous-titre, un bouton fiche.
+ */
+export const ObservatoryListSchema = z.object({
+  /** Dimension du libellé d'une ligne (ex. le nom de l'équipement). */
+  titleDimension: z.string(),
+  /** Dimensions du sous-titre, jointes par « · » (valeurs vides ignorées). */
+  subtitleDimensions: z.array(z.string()).optional(),
+  /**
+   * Dimensions interrogées par la SÉLECTION (clic sur une ligne) : chaque MOT
+   * du libellé cliqué doit s'y trouver. Défaut : `titleDimension` seule.
+   * En déclarer plusieurs (ex. équipement ET installation) ÉLARGIT le
+   * résultat — les mots sont cherchés dans leur réunion, pas dans chacune.
+   */
+  selectDimensions: z.array(z.string()).optional(),
+  /** Titre du panneau (défaut : i18n `list.title`). */
+  label: LocalizedString.optional(),
+  /** Répartition liste / tableau de bord en `split` (défaut "40-60"). */
+  splitRatio: z.enum(["40-60", "50-50", "60-40"]).optional(),
+  /** Lignes rendues avant « Voir plus » (défaut 50). Sans virtualisation dans
+   *  le parc, tout rendre d'un coup coûte trop cher au-delà de quelques
+   *  centaines d'items. */
+  pageSize: z.number().int().positive().optional(),
+});
+export type ObservatoryListDef = z.infer<typeof ObservatoryListSchema>;
 
 /*───────────────────────────────────────────────────────────────*/
 /* 3. Filtres — valeurs dynamiques (clé = id de dimension)       */
@@ -268,6 +300,24 @@ export const DataObservatorySectionSchema = z.object({
     maxWidth: z.enum(["4xl", "5xl", "6xl", "7xl", "8xl", "full"]).optional(),
     charts: z.array(ChartDefSchema).optional(),
     table: TableDefSchema.optional(),
+    /**
+     * Agencement de la section. `stacked` (défaut) : filtres, KPI, graphes puis
+     * table empilés — le rendu historique, inchangé. `split` : KPI en bandeau
+     * pleine largeur sous les filtres, puis liste des items à GAUCHE et graphes
+     * à DROITE, sur le patron du split liste+carte du module search (desktop
+     * seulement — sous 768 px les deux colonnes sont illisibles, la liste
+     * repasse alors SOUS les graphes, à la place qu'occupait la table).
+     * Demande `list`.
+     */
+    layout: z.enum(["stacked", "split"]).optional(),
+    list: ObservatoryListSchema.optional(),
+    /**
+     * Ouverture de la fiche, PARTAGÉE par la table et la liste. Historiquement
+     * déclarée sous `table.rowAction` — toujours lue en repli, donc une page qui
+     * remplace sa table par une liste déplace simplement son bloc ici, sans rien
+     * dupliquer (le deep-link `?installation=` y puise aussi sa config).
+     */
+    rowAction: RowActionSchema.optional(),
   }),
 });
 

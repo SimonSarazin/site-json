@@ -367,7 +367,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 | `commandPalette` | palette ⌘K | `config.commandPalette`, `header.utilities.search` | — |
 | `ampli` | routes ampli | `config.ampli` | campagne ampli |
 | `interop` | pods Discourse/Mediawiki | clés interop | instances externes |
-| `observatoire` | section `data-observatory` (dashboard déclaratif : dimensions, KPI, charts, table, filtres) | `props.baseParams` (périmètre) + `dimensions`/`filters`/`kpis`/`charts`/`table` | données indexées (sourceKey + type) |
+| `observatoire` | section `data-observatory` (dashboard déclaratif : dimensions, KPI, charts, table **ou liste en split view**, filtres) | `props.baseParams` (périmètre) + `dimensions`/`filters`/`kpis`/`charts`/`table` ; `layout:"split"` + `list` pour les KPI en bandeau puis la liste à gauche et les graphes à droite (desktop ; mobile → empilé), `rowAction` au niveau section (repli `table.rowAction`) | données indexées (sourceKey + type) |
 | `formEngine` | modales costum **add/edit pilotées par données** (moteur de formulaire générique) | `config.costumForms.<id>` (document `CostumFormSchema`) + déclencheur `floatingActionButton.modal:"add-<id>"` / `profiles.<type>.editModal:"edit-<id>"` | entité costum porteuse (`costumSlug`) ; clés read/write/scope déjà enregistrées (sinon `fns.ts`) — cf. § Recettes avancées |
 | `admin` | page `/admin` config-driven (onglets Membres/Contenu/Import-Export/Validation) | `config.admin` (`tabs[].sections[]`, `access.min`) | endpoints admin (`getMembersAdmin`, import/export, `validategroup`…) ; accès siteAdmin/superAdmin — cf. commentaire/plan-module-admin-generique.md |
 

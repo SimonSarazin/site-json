@@ -129,9 +129,18 @@ salles/tarifs) ne sont pas encore lus.
         { "dimension": "access", "kind": "boolBadge" },
         { "dimension": "surface", "kind": "number", "unit": "m²" }
       ],
-      "defaultSort": "ville",
-      "rowAction": { "kind": "preview", "detailsMode": "dialog",
-                     "preview": { "type": "poi-amenities" } }   // ou {"kind": "profil"}
+      "defaultSort": "ville"
+    },
+    "rowAction": { "kind": "preview", "detailsMode": "dialog",
+                   "preview": { "type": "poi-amenities" } },    // ou {"kind": "profil"}
+    "layout": "split",                           // "stacked" (défaut) ou "split"
+    "list": {                                    // requis par "split"
+      "titleDimension": "ville",                 // libellé d'une ligne
+      "subtitleDimensions": ["type"],            // sous-titre, joint par « · »
+      "selectDimensions": ["ville", "type"],     // fouillées par le clic (défaut : titleDimension)
+      "label": { "fr": "Équipements" },          // titre du panneau
+      "splitRatio": "40-60",                     // 40-60 (défaut) · 50-50 · 60-40
+      "pageSize": 50                             // lignes avant « Voir plus »
     }
   }
 }
@@ -163,6 +172,67 @@ valeur. **Toujours nommer les valeurs** plutôt que compter sur le repli
 automatique : celui-ci colore par RANG dans la liste triée, si bien qu'une
 valeur change de couleur dès que les comptes bougent.
 
+## Split view : la liste à gauche, les graphes à droite
+
+`layout: "split"` (+ `list`) réorganise la section en trois étages : les
+filtres, puis les KPI en **bandeau pleine largeur**, puis deux colonnes — la
+liste des items à gauche, les graphes à droite. `splitRatio` reprend le
+vocabulaire du split liste+carte de `searchProStatic` et de l'agenda.
+
+**Pourquoi les KPI sortent des colonnes** (arbitrage Peterson du 2026-09-16) :
+ce sont les chiffres de synthèse du résultat filtré, ils se lisent avant
+d'entrer dans le détail. Logés dans la colonne de droite, ils se tassaient sur
+plusieurs lignes ; en bandeau, la grille `auto-fit` les aligne sur une seule.
+
+**Ce sont les graphes qui commandent la hauteur.** La colonne de droite se
+déroule ENTIÈREMENT, sans scroll propre : on doit pouvoir lire tous les graphes
+d'une traite. La liste s'adapte à cette hauteur et devient, elle, l'unique zone
+défilante de la section (arbitrage Peterson du 2026-09-10 sur capture).
+
+Mécanique, non devinable : la colonne de gauche est `relative` et son contenu
+est posé en `absolute inset-0 overflow-y-auto`. `items-stretch` (défaut flex)
+étire la colonne à la hauteur des graphes, et le panneau absolu en
+épouse les bornes — ce qui lui donne enfin une hauteur DÉFINIE. Sans ce
+détour, un enfant flex étiré grandit avec son contenu et `overflow-y` reste
+lettre morte : la liste pousserait la page au lieu de défiler. Un
+`min-h-[60vh]` sur le conteneur sert de filet quand la colonne droite est
+courte (une section sans graphe la réduirait à rien).
+
+**Desktop seulement.** Sous 768 px (`useIsMobile`), deux colonnes sont
+illisibles : tout s'empile — filtres, KPI, graphes, puis la liste à la place
+qu'occupait la table. Elle n'est jamais escamotée.
+
+**Deux gestes par ligne, volontairement distincts** : le libellé applique le
+filtre de SÉLECTION, le bouton fiche ouvre le détail (même `rowAction`, même
+`SwitchDetailsMode` que la table — réservations et tableau de bord
+d'installation compris).
+
+**Sélection ≠ recherche texte.** La recherche (`?q=`) cherche la saisie
+ENTIÈRE en sous-chaîne : c'est son comportement historique, inchangé. La
+sélection (`?selection=`, `applySelection`) découpe le libellé en MOTS et
+exige chaque mot dans la réunion des `selectDimensions` — ET entre les mots,
+OU entre les dimensions. Les deux filtres se cumulent et s'effacent
+séparément.
+
+Ce découpage n'est pas un confort : le libellé d'un équipement et celui de son
+installation ne coïncident jamais mot pour mot. Mesuré sur `saintpaulSport1`
+(207 équipements), un clic sur « base Nautique » ramène **2** équipements avec
+`selectDimensions: ["equipName", "name"]`, là où la recherche texte de la même
+chaîne n'en ramène **1** — élargir les dimensions élargit le résultat, jamais
+l'inverse. Deux propriétés en découlent, couvertes par `dashboard.test.ts` :
+l'item cliqué est TOUJOURS dans le résultat, et aucun clic ne peut vider la
+liste.
+
+**`rowAction` vit au niveau de la section**, partagée par la table, la liste et
+le deep-link `?installation=`. Déclarée sous `table.rowAction` dans les configs
+antérieures, elle y est toujours lue en repli : une page qui remplace sa table
+par une liste déplace simplement le bloc d'un cran, sans rien dupliquer.
+
+**Retirer la table d'une page ne perd rien** si le site expose déjà une page
+`/data` sur le même périmètre : tri par colonne, pagination et export CSV y
+restent entiers. C'est le choix fait le 2026-09-10 pour les trois sites
+d'équipements sportifs — `/observatoire` en split, `/data` inchangée.
+
 **`maxWidth`** aligne le tableau de bord sur les autres sections de la page.
 Le défaut `8xl` (1440 px) convient à une page dédiée ; sur une page qui mêle
 plusieurs sections, reprendre la largeur des voisines (souvent `5xl` ou `6xl`)
@@ -182,10 +252,10 @@ avec export CSV et détail au clic).
 |---|---|
 | `dimensions.ts` | moteur : résolution des dimensions (chemins pointés via le `getValueByPath` du repo), coercions (`isTrue`, `toNumber`, `toStringList`, `asDisplayString` — gère les `Date` SDK), `fieldsFromDimensions` (projection API DÉRIVÉE des déclarations : on ne demande au backend que ce que le dashboard consomme), maps jetons→classes/var(--…) |
 | `hooks/useObservatoryItemsQuery` | délègue à **`useSearchAllResults`** (module search — « charger tout » : pages séquentielles auto-régulées, plafond, progress, **cache 30 min/1 h** : revenir sur la page ne re-chaîne pas les appels) ; retourne `items` = `serverData` BRUT (seuls les champs déclarés sont lus) + `entities` SDK **alignées** (rowAction preview) |
-| `hooks/useObservatoryFilters` | filtrage CLIENT par kind (égalité / appartenance / booléen, multi par virgule), ET strict, **sync URL** `?<id>=<valeur>` et `?q=…` (permaliens) — la saisie immédiate et son debounce (250 ms) vivent dans `<Filters>` (isolation d'état : la frappe ne re-rend que l'input) |
+| `hooks/useObservatoryFilters` | filtrage CLIENT par kind (égalité / appartenance / booléen, multi par virgule), ET strict, **sync URL** `?<id>=<valeur>`, `?q=…` et `?selection=…` (permaliens) — la saisie immédiate et son debounce (250 ms) vivent dans `<Filters>` (isolation d'état : la frappe ne re-rend que l'input) ; `resetAll` efface filtres + recherche + sélection (l'état « aucun résultat » doit pouvoir se déverrouiller quelle qu'en soit la cause) |
 | `prefetch.ts` | prefetch **SSR de la 1ʳᵉ page** (loader `buildRoutes`) — même queryKey que le client via `buildObservatoryBaseParams` (fonction partagée) |
-| `dashboard.ts` | logique PURE (filtrage, recherche texte insensible casse/accents, formes de KPI, décomptes/couleurs/agencement graphes, lignes/tri table, `buildCsv`) — testée sans rendu (`dashboard.test.ts`) |
-| `components/` | rendus déclaratifs : `Filters` (matrice Select/dropdown-checkbox/MultipleSelector, options dérivées des données, recherche texte, badge filtres actifs, badge « données partielles » ; **mobile : bouton « Filtres » + compteur → Sheet bas**, pattern du searchHeader), `KpiCards` (7 formes de calcul, icônes DynamicIcon), `Charts` (5 formes via `ui/chart.tsx`, composition full/half, drill-down ; **client-only** : recharts ne s'hydrate pas — Skeleton SSR identique au 1er rendu, animations coupées pendant le chargement progressif), `ObservatoryTable` (colonnes/tri/badges déclarés, export CSV, rowAction) |
+| `dashboard.ts` | logique PURE (filtrage, recherche texte insensible casse/accents, **sélection mot à mot** `applySelection`, formes de KPI, décomptes/couleurs/agencement graphes, lignes/tri table, `buildCsv`) — testée sans rendu (`dashboard.test.ts`) |
+| `components/` | rendus déclaratifs : `Filters` (matrice Select/dropdown-checkbox/MultipleSelector, options dérivées des données, recherche texte, badge filtres actifs, badge « données partielles » ; **mobile : bouton « Filtres » + compteur → Sheet bas**, pattern du searchHeader), `KpiCards` (7 formes de calcul, icônes DynamicIcon), `Charts` (5 formes via `ui/chart.tsx`, composition full/half, drill-down ; **client-only** : recharts ne s'hydrate pas — Skeleton SSR identique au 1er rendu, animations coupées pendant le chargement progressif), `ObservatoryTable` (colonnes/tri/badges déclarés, export CSV, rowAction), `ObservatoryList` (mode `split` : une ligne = libellé + sous-titre + bouton fiche, tri alphabétique, « Voir plus » par tranches faute de virtualisation dans le parc, badge de sélection active) |
 
 Le filtrage est côté client **par design** : le dashboard agrège tout le
 dataset en mémoire — le module search reste l'outil des listes paginées

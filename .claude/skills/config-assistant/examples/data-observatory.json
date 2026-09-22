@@ -846,102 +846,67 @@
           "layout": "full"
         }
       ],
-      "table": {
-        "columns": [
-          {
-            "dimension": "name",
-            "kind": "title",
-            "subtitleDimension": "numero",
-            "label": {
-              "fr": "Installation",
-              "en": "Facility"
-            }
-          },
-          {
-            "dimension": "equipName",
-            "kind": "title",
-            "label": {
-              "fr": "Nom de l'équipement",
-              "en": "Equipment name"
-            }
-          },
-          {
-            "dimension": "type"
-          },
-          {
-            "dimension": "commune"
-          },
-          {
-            "dimension": "epci"
-          },
-          {
-            "dimension": "nature",
-            "kind": "badge",
-            "colors": {
-              "Intérieur": "chart-1",
-              "Découvert": "chart-2",
-              "Site naturel": "chart-3",
-              "Site naturel aménagé": "chart-4",
-              "Donnée non renseignée": "muted"
-            }
-          },
-          {
-            "dimension": "surface",
-            "kind": "number",
-            "unit": "m²"
-          },
-          {
-            "dimension": "pmr",
-            "kind": "boolBadge"
-          },
-          {
-            "dimension": "prop"
-          }
-        ],
-        "defaultSort": "commune",
-        "rowAction": {
-          "kind": "preview",
-          "detailsMode": "dialog",
-          "preview": {
-            "type": "poi-amenities",
-            "reservations": {
-              "form": "6a4e4e4105e5972f7b4b1823",
-              "step": "equipementsSportifs974872026_1619_0",
-              "fields": {
-                "finder": "mrc3ungb2a9vu945ik8",
-                "user": "mrc3w4o7rguvxc2vkyq",
-                "userOrga": "n0a7usagerorga1k9z",
-                "activity": "mrc3xumnggn5f530i9",
-                "slots": "mrc40jaxu06fjaa6ngn",
-                "periodStart": "mrc41scujf3aq9ppw1l",
-                "periodEnd": "mrc4259ir2xnu4vp2fq",
-                "bookingType": "mrc3zgl902y2fpfcby3y"
-              },
-              "booking": {
-                "startHour": 8,
-                "endHour": 22,
-                "slotMinutes": 60,
-                "adminOnly": true
-              }
+      "rowAction": {
+        "kind": "preview",
+        "detailsMode": "dialog",
+        "preview": {
+          "type": "poi-amenities",
+          "reservations": {
+            "form": "6a4e4e4105e5972f7b4b1823",
+            "step": "equipementsSportifs974872026_1619_0",
+            "fields": {
+              "finder": "mrc3ungb2a9vu945ik8",
+              "user": "mrc3w4o7rguvxc2vkyq",
+              "userOrga": "n0a7usagerorga1k9z",
+              "activity": "mrc3xumnggn5f530i9",
+              "slots": "mrc40jaxu06fjaa6ngn",
+              "periodStart": "mrc41scujf3aq9ppw1l",
+              "periodEnd": "mrc4259ir2xnu4vp2fq",
+              "bookingType": "mrc3zgl902y2fpfcby3y"
             },
-            "installationDashboard": {
-              "groupKey": "inst_numero",
-              "labelKey": "inst_nom",
-              "referenceAmplitude": {
-                "startHour": 8,
-                "endHour": 22,
-                "days": 7
-              },
-              "sourceKey": [
-                "saintpaulSport1"
-              ],
-              "poiFilters": {
-                "type": "recoveryCenter"
-              },
-              "activityMetric": "hours"
+            "booking": {
+              "startHour": 8,
+              "endHour": 22,
+              "slotMinutes": 60,
+              "adminOnly": true
             }
+          },
+          "installationDashboard": {
+            "groupKey": "inst_numero",
+            "labelKey": "inst_nom",
+            "referenceAmplitude": {
+              "startHour": 8,
+              "endHour": 22,
+              "days": 7
+            },
+            "sourceKey": [
+              "saintpaulSport1"
+            ],
+            "poiFilters": {
+              "type": "recoveryCenter"
+            },
+            "activityMetric": "hours"
           }
         }
+      },
+      "maxWidth": "full",
+      "layout": "split",
+      "list": {
+        "titleDimension": "equipName",
+        "subtitleDimensions": [
+          "name",
+          "commune"
+        ],
+        "selectDimensions": [
+          "equipName",
+          "name"
+        ],
+        "label": {
+          "fr": "Équipements",
+          "en": "Facilities"
+        },
+        "splitRatio": "40-60",
+        "pageSize": 50
       }
     }
   }
