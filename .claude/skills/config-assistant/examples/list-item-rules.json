@@ -196,12 +196,7 @@
               "audioField": "medias",
               "subtitleField": "themes",
               "badge": {
-                "field": "category",
-                "colors": {
-                  "Compliqué": "var(--chart-3)",
-                  "Difficile": "var(--chart-2)",
-                  "À changer": "var(--chart-4)"
-                }
+                "field": "category"
               },
               "accent": {
                 "field": "territoires",
@@ -294,16 +289,9 @@
                   "Vidéo": "var(--chart-1)",
                   "Photo": "var(--chart-2)",
                   "Compte-rendu": "var(--chart-3)",
-                  "Les jeux du réseau": "var(--chart-4)",
+                  "Jeu": "var(--chart-4)",
                   "Document": "var(--chart-5)",
-                  "Lien": "var(--primary)",
-                  "Inforéso": "var(--info)",
-                  "Elles et ils ont marqué le réseau": "var(--success)"
-                },
-                "icons": {
-                  "Inforéso": "newspaper",
-                  "Elles et ils ont marqué le réseau": "award",
-                  "Les jeux du réseau": "gamepad-2"
+                  "Lien": "var(--primary)"
                 }
               },
               "facets": [

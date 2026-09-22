@@ -515,6 +515,56 @@ describe("buildBookingGrid", () => {
       ]),
     );
 
+  /** Grille hebdo à partir d'une réservation à durée NULLE ou inversée (donnée dégradée). */
+  const semaineDegradee = (startMinutes: number, endMinutes: number) =>
+    buildWeeklyGrid(
+      groupReservationsByUser([
+        {
+          id: "rz",
+          resourceIds: ["poi1"],
+          user: "CLUB Z",
+          slots: [
+            { day: "monday", start: "09:00", end: "05:00", startMinutes, endMinutes },
+          ],
+        } as Reservation,
+      ]),
+    );
+
+  it("un créneau à durée nulle ou inversée occupe la case de son heure de début", () => {
+    // Format legacy 12 h dont `parseSlot` ignore l'AmPm : « 09 AM → 05 PM » ressort en 540 → 300.
+    // Par le seul test d'intersection, ce bloc ne recouvrait AUCUNE rangée : la case 09:00–10:00
+    // était rendue LIBRE et réservable alors que l'équipement est occupé.
+    const rows = buildBookingGrid(semaineDegradee(540, 300), { startHour: 8, endHour: 22, slotMinutes: 60 });
+    const lundi = (h: number) =>
+      rows.find((r) => r.startMinutes === h * 60)!.cells.find((c) => c.dayKey === "monday")!;
+    expect(lundi(9).blocks).toHaveLength(1);
+    expect(lundi(10).blocks).toHaveLength(0);
+    // Durée nulle : même règle.
+    const nul = buildBookingGrid(semaineDegradee(600, 600), { startHour: 8, endHour: 22, slotMinutes: 60 });
+    const dixHeures = nul.find((r) => r.startMinutes === 600)!.cells.find((c) => c.dayKey === "monday")!;
+    expect(dixHeures.blocks).toHaveLength(1);
+  });
+
+  it("l'élargissement des bornes est plafonné à la journée", () => {
+    // `parseSlot` ne borne ni les heures ni les minutes : un `endHour: "30"` importé de travers
+    // faisait descendre la grille jusqu'à 30:00, avec des libellés « 29:00 – 30:00 ».
+    const rows = buildBookingGrid(
+      buildWeeklyGrid(
+        groupReservationsByUser([
+          {
+            id: "rh",
+            resourceIds: ["poi1"],
+            user: "CLUB H",
+            slots: [{ day: "monday", start: "28:00", end: "30:00", startMinutes: 1680, endMinutes: 1800 }],
+          } as Reservation,
+        ]),
+      ),
+      { startHour: 8, endHour: 22, slotMinutes: 60 },
+    );
+    expect(rows[rows.length - 1].endMinutes).toBeLessThanOrEqual(24 * 60);
+    expect(rows.every((r) => !r.label.includes("25:00") && !r.label.includes("30:00"))).toBe(true);
+  });
+
   it("découpe l'amplitude configurée en rangées régulières, 7 cases chacune", () => {
     const rows = buildBookingGrid(semaine(), { startHour: 8, endHour: 22, slotMinutes: 60 });
     expect(rows).toHaveLength(14);

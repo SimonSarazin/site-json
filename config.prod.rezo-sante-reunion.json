@@ -7,8 +7,8 @@
       "en": "RéseauSanté"
     },
     "description": {
-      "fr": "Le réseau qui rassemble citoyens, associations et professionnels autour d'une santé globale : nutrition, activité physique, sommeil, addictions et bien-être mental.",
-      "en": "The network bringing together citizens, associations and professionals around whole-person health: nutrition, physical activity, sleep, addiction and mental wellbeing."
+      "fr": "Le réseau qui rassemble citoyens, associations et professionnels autour d'une santé globale : nutrition, activité physique, sommeil, addictions, bien-être mental et culture.",
+      "en": "The network bringing together citizens, associations and professionals around whole-person health: nutrition, physical activity, sleep, addiction, mental wellbeing and culture."
     },
     "defaultLang": "fr",
     "languages": [
@@ -26,6 +26,7 @@
       "addictions",
       "santé mentale",
       "bien-être",
+      "culture",
       "La Réunion",
       "réseau santé",
       "annuaire santé"
@@ -122,16 +123,13 @@
     "typography": {
       "fontFamily": {
         "sans": [
-          "Hanken Grotesk",
-          "sans-serif"
+          "Inter"
         ],
         "serif": [
-          "Fraunces",
-          "serif"
+          "Roboto Slab"
         ],
         "mono": [
-          "Spline Sans Mono",
-          "monospace"
+          "Roboto Mono"
         ]
       },
       "letterSpacing": "0em"
@@ -190,7 +188,7 @@
       "search": true,
       "auth": true,
       "cart": false,
-      "notifications": false
+      "notifications": true
     },
     "ctaButton": {
       "label": {
@@ -266,6 +264,18 @@
             "description": {
               "fr": "Prendre soin du moral autant que du corps.",
               "en": "Caring for your mind as much as your body."
+            }
+          },
+          {
+            "label": {
+              "fr": "Culture & Santé",
+              "en": "Culture & Health"
+            },
+            "path": "/theme/culture-sante",
+            "icon": "palette",
+            "description": {
+              "fr": "Créer, s'exprimer, se ressourcer : la culture comme autre façon de prendre soin de soi.",
+              "en": "Create, express, recharge: culture as another way to care for yourself."
             }
           }
         ]
@@ -383,6 +393,27 @@
         }
       ]
     },
+
+    "partners": {
+      "logos": [
+        {
+          "image": "images/rezoSanteReunion/ars.jpeg",
+          "alt": {
+            "fr": "ARS La Réunion",
+            "en": "Regional Health Agency of Réunion"
+          },
+          "href": "https://www.ars.sante.fr/la-reunion"
+        },
+        {
+          "image": "images/rezoSanteReunion/promotionsante.png",
+          "alt": {
+            "fr": "Promotion santé la Réunion",
+            "en": "Health promotion in Réunion"
+          },
+          "href": "https://promotionsante.re/"
+        }
+      ]
+    },
     "columns": [
       {
         "title": {
@@ -430,6 +461,13 @@
             "label": {
               "fr": "Bien-être mental",
               "en": "Mental wellbeing"
+            }
+          },
+          {
+            "href": "/theme/culture-sante",
+            "label": {
+              "fr": "Culture & Santé",
+              "en": "Culture & Health"
             }
           }
         ]
@@ -577,8 +615,8 @@
             "ctaButtons": [
               {
                 "label": {
-                  "fr": "Découvrir les 5 thématiques",
-                  "en": "Explore the 5 topics"
+                  "fr": "Découvrir les 6 thématiques",
+                  "en": "Explore the 6 topics"
                 },
                 "path": "/thematiques",
                 "variant": "default"
@@ -668,19 +706,19 @@
           "id": "home-thematiques",
           "props": {
             "headline": {
-              "fr": "Cinq portes d'entrée vers une santé globale",
-              "en": "Five ways into whole-person health"
+              "fr": "Six portes d'entrée vers une santé globale",
+              "en": "Six ways into whole-person health"
             },
             "subhead": {
-              "fr": "Tout est lié : ce que l'on mange, comment on bouge, comment on dort, ce dont on se libère et comment on se sent. Choisissez votre porte d'entrée.",
-              "en": "Everything is connected: what we eat, how we move, how we sleep, what we free ourselves from and how we feel. Pick your way in."
+              "fr": "Tout est lié : ce que l'on mange, comment on bouge, comment on dort, ce dont on se libère, comment on se sent et ce qu'on crée. Choisissez votre porte d'entrée.",
+              "en": "Everything is connected: what we eat, how we move, how we sleep, what we free ourselves from, how we feel and what we create. Pick your way in."
             },
             "variant": "primary",
             "bg": "default",
             "columns": {
               "sm": 2,
               "md": 3,
-              "lg": 5
+              "lg": 6
             },
             "actions": [
               {
@@ -747,6 +785,19 @@
                 },
                 "href": "/theme/bien-etre-mental",
                 "color": "chart-5"
+              },
+              {
+                "icon": "palette",
+                "title": {
+                  "fr": "Culture & Santé",
+                  "en": "Culture & Health"
+                },
+                "subtitle": {
+                  "fr": "Créer, s'exprimer, se ressourcer",
+                  "en": "Create, express, recharge"
+                },
+                "href": "/theme/culture-sante",
+                "color": "accent"
               }
             ]
           }
@@ -956,8 +1007,8 @@
           "en": "Themes — RéseauSanté"
         },
         "description": {
-          "fr": "Cinq portes d'entrée vers la santé globale à La Réunion : nutrition, activité physique, sommeil, addictions, bien-être mental.",
-          "en": "Five ways into whole-person health in Réunion: nutrition, physical activity, sleep, addiction and mental wellbeing."
+          "fr": "Six portes d'entrée vers la santé globale à La Réunion : nutrition, activité physique, sommeil, addictions, bien-être mental et culture.",
+          "en": "Six ways into whole-person health in Réunion: nutrition, physical activity, sleep, addiction, mental wellbeing and culture."
         },
         "keywords": [
           "thématiques",
@@ -967,6 +1018,7 @@
           "sommeil",
           "addictions",
           "bien-être mental",
+          "culture",
           "La Réunion"
         ],
         "ogType": "website",
@@ -1044,6 +1096,26 @@
               },
               {
                 "headline": {
+                  "fr": "Addictions",
+                  "en": "Addiction"
+                },
+                "subhead": {
+                  "fr": "Tabac, alcool, cannabis, écrans, jeux : prévenir sans faire peur, accompagner sans juger.",
+                  "en": "Tobacco, alcohol, cannabis, screens, gambling: prevention without fear, support without judgement."
+                },
+                "backgroundImage": "/images/rezoSanteReunion/hero-addictions-sante-reunion.jpg",
+                "backgroundImageAlt": {
+                  "fr": "Cercle d'écoute et d'entraide en extérieur, à l'ombre des arbres",
+                  "en": "Outdoor listening and mutual-support circle, in the shade of the trees"
+                },
+                "ctaLabel": {
+                  "fr": "Voir les acteurs",
+                  "en": "See the actors"
+                },
+                "ctaPath": "/theme/addictions"
+              },
+              {
+                "headline": {
                   "fr": "Bien-être mental",
                   "en": "Mental wellbeing"
                 },
@@ -1061,6 +1133,26 @@
                   "en": "See the actors"
                 },
                 "ctaPath": "/theme/bien-etre-mental"
+              },
+              {
+                "headline": {
+                  "fr": "Culture & Santé",
+                  "en": "Culture & Health"
+                },
+                "subhead": {
+                  "fr": "Ateliers créatifs, pratiques artisanales, culture vivante : la créativité comme autre façon de prendre soin de soi.",
+                  "en": "Creative workshops, craft practices, living culture: creativity as another way to care for yourself."
+                },
+                "backgroundImage": "/images/rezoSanteReunion/hero-culture-sante-reunion.jpg",
+                "backgroundImageAlt": {
+                  "fr": "Cercle de danse et de percussions traditionnelles en extérieur, lumière dorée",
+                  "en": "Outdoor traditional dance and drumming circle, golden light"
+                },
+                "ctaLabel": {
+                  "fr": "Voir les acteurs",
+                  "en": "See the actors"
+                },
+                "ctaPath": "/theme/culture-sante"
               }
             ],
             "autoplay": false,
@@ -1076,12 +1168,12 @@
           "id": "thematiques-titre",
           "props": {
             "title": {
-              "fr": "Cinq thématiques, une même santé",
-              "en": "Five themes, one health"
+              "fr": "Six thématiques, une même santé",
+              "en": "Six themes, one health"
             },
             "subtitle": {
-              "fr": "Ce qu'on mange, comment on bouge, comment on dort, ce dont on dépend, comment on va : cinq entrées pour trouver les acteurs près de chez vous.",
-              "en": "What we eat, how we move, how we sleep, what we depend on, how we feel: five ways in to find the people acting near you."
+              "fr": "Ce qu'on mange, comment on bouge, comment on dort, ce dont on dépend, comment on va et ce qu'on crée : six entrées pour trouver les acteurs près de chez vous.",
+              "en": "What we eat, how we move, how we sleep, what we depend on, how we feel and what we create: six ways in to find the people acting near you."
             },
             "align": "center",
             "size": "xl"
@@ -1100,7 +1192,7 @@
               "en": "Each theme gathers the associations, professionals and projects working on that ground in Réunion."
             },
             "variant": "primary",
-            "columns": 5,
+            "columns": 6,
             "cards": [
               {
                 "icon": "salad",
@@ -1161,6 +1253,18 @@
                   "en": "Listening, mutual aid, connection"
                 },
                 "link": "/theme/bien-etre-mental"
+              },
+              {
+                "icon": "palette",
+                "title": {
+                  "fr": "Culture & Santé",
+                  "en": "Culture & Health"
+                },
+                "subtitle": {
+                  "fr": "Créer, s'exprimer, se ressourcer",
+                  "en": "Create, express, recharge"
+                },
+                "link": "/theme/culture-sante"
               }
             ]
           }
@@ -1323,9 +1427,9 @@
             "width": "container",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "organizations",
                 "projects"
@@ -1392,7 +1496,9 @@
                     "Addictions": "var(--chart-4)",
                     "addictions": "var(--chart-4)",
                     "Bien-être mental": "var(--chart-5)",
-                    "bien-etre-mental": "var(--chart-5)"
+                    "bien-etre-mental": "var(--chart-5)",
+                    "Culture & Santé": "var(--accent)",
+                    "culture-sante": "var(--accent)"
                   }
                 }
               },
@@ -1511,9 +1617,9 @@
             "width": "container",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "organizations",
                 "projects"
@@ -1580,7 +1686,9 @@
                     "Addictions": "var(--chart-4)",
                     "addictions": "var(--chart-4)",
                     "Bien-être mental": "var(--chart-5)",
-                    "bien-etre-mental": "var(--chart-5)"
+                    "bien-etre-mental": "var(--chart-5)",
+                    "Culture & Santé": "var(--accent)",
+                    "culture-sante": "var(--accent)"
                   }
                 }
               },
@@ -1699,9 +1807,9 @@
             "width": "container",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "organizations",
                 "projects"
@@ -1766,7 +1874,9 @@
                     "Addictions": "var(--chart-4)",
                     "addictions": "var(--chart-4)",
                     "Bien-être mental": "var(--chart-5)",
-                    "bien-etre-mental": "var(--chart-5)"
+                    "bien-etre-mental": "var(--chart-5)",
+                    "Culture & Santé": "var(--accent)",
+                    "culture-sante": "var(--accent)"
                   }
                 }
               },
@@ -1823,19 +1933,23 @@
       },
       "sections": [
         {
-          "type": "title",
+          "type": "hero-tinted-overlay",
           "id": "theme-addictions-titre",
           "props": {
-            "title": {
+            "headline": {
               "fr": "Addictions",
               "en": "Addiction"
             },
-            "subtitle": {
+            "subhead": {
               "fr": "Tabac, alcool, cannabis, écrans, jeux : prévenir sans faire peur, accompagner sans juger.",
               "en": "Tobacco, alcohol, cannabis, screens, gambling: prevention without fear, support without judgement."
             },
-            "align": "center",
-            "size": "xl"
+            "backgroundImage": "/images/rezoSanteReunion/hero-addictions-sante-reunion.jpg",
+            "backgroundImageAlt": {
+              "fr": "Cercle d'écoute et d'entraide en extérieur, à l'ombre des arbres",
+              "en": "Outdoor listening and mutual-support circle, in the shade of the trees"
+            },
+            "showScrollIndicator": false
           }
         },
         {
@@ -1881,9 +1995,9 @@
             "width": "container",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "organizations",
                 "projects"
@@ -1950,7 +2064,9 @@
                     "Addictions": "var(--chart-4)",
                     "addictions": "var(--chart-4)",
                     "Bien-être mental": "var(--chart-5)",
-                    "bien-etre-mental": "var(--chart-5)"
+                    "bien-etre-mental": "var(--chart-5)",
+                    "Culture & Santé": "var(--accent)",
+                    "culture-sante": "var(--accent)"
                   }
                 }
               },
@@ -2069,9 +2185,9 @@
             "width": "container",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "organizations",
                 "projects"
@@ -2138,7 +2254,9 @@
                     "Addictions": "var(--chart-4)",
                     "addictions": "var(--chart-4)",
                     "Bien-être mental": "var(--chart-5)",
-                    "bien-etre-mental": "var(--chart-5)"
+                    "bien-etre-mental": "var(--chart-5)",
+                    "Culture & Santé": "var(--accent)",
+                    "culture-sante": "var(--accent)"
                   }
                 }
               },
@@ -2168,6 +2286,198 @@
       ]
     },
     {
+      "path": "/theme/culture-sante",
+      "title": {
+        "fr": "Culture & Santé",
+        "en": "Culture & Health"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Culture & Santé — RéseauSanté",
+          "en": "Culture & Health — RéseauSanté"
+        },
+        "description": {
+          "fr": "Associations, professionnels et projets réunionnais qui utilisent la création et la pratique culturelle comme leviers de bien-être.",
+          "en": "Réunion associations, professionals and projects using creative and cultural practice as levers for wellbeing."
+        },
+        "keywords": [
+          "culture",
+          "santé",
+          "bien-être",
+          "La Réunion",
+          "santé globale"
+        ],
+        "ogType": "website",
+        "twitterCard": "summary"
+      },
+      "sections": [
+        {
+          "type": "hero-tinted-overlay",
+          "id": "theme-culture-sante-titre",
+          "props": {
+            "headline": {
+              "fr": "Culture & Santé",
+              "en": "Culture & Health"
+            },
+            "subhead": {
+              "fr": "Ateliers créatifs, pratiques artistiques, culture vivante : quand créer et s'exprimer deviennent aussi des façons de prendre soin de soi.",
+              "en": "Creative workshops, artistic practice, living culture: when creating and expressing yourself become ways to care for yourself too."
+            },
+            "backgroundImage": "/images/rezoSanteReunion/hero-culture-sante-reunion.jpg",
+            "backgroundImageAlt": {
+              "fr": "Cercle de danse et de percussions traditionnelles en extérieur, lumière dorée",
+              "en": "Outdoor traditional dance and drumming circle, golden light"
+            },
+            "showScrollIndicator": false
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "theme-culture-sante-recherche",
+          "props": {
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une association, un professionnel, un projet…",
+              "en": "Search for an association, a professional, a project…"
+            },
+            "compact": true,
+            "showActiveFiltersTags": false
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "theme-culture-sante-liste",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Les acteurs et projets de la culture au service de la santé",
+                "en": "Culture-and-health actors and projects"
+              },
+              "linkText": {
+                "fr": "Tout l'annuaire",
+                "en": "The whole directory"
+              },
+              "linkHref": "/annuaire"
+            },
+            "showSearch": false,
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": true,
+            "enableRegions": false,
+            "enableGraph": false,
+            "graphDetailsMode": "drawer",
+            "defaultViewMode": "list",
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "showDetailedViewToggle": false,
+            "width": "container",
+            "baseParams": {
+              "sourceKey": [
+                "EcosystemeSanteReunion"
+              ],
+              "costumSlug": "EcosystemeSanteReunion",
+              "defaultTypes": [
+                "organizations",
+                "projects"
+              ],
+              "defaultFilters": {
+                "tags": {
+                  "$in": [
+                    "Culture & Santé",
+                    "Culture et Santé",
+                    "Culture",
+                    "culture",
+                    "Santé",
+                    "santé"
+                  ]
+                }
+              },
+              "defaultFields": [
+                "name",
+                "slug",
+                "collection",
+                "type",
+                "shortDescription",
+                "description",
+                "tags",
+                "address",
+                "geo",
+                "geoPosition",
+                "profilThumbImageUrl",
+                "profilMediumImageUrl",
+                "profilImageUrl",
+                "links",
+                "created"
+              ],
+              "defaultSortBy": {
+                "name": 1
+              },
+              "searchBy": [
+                "name",
+                "shortDescription",
+                "description",
+                "tags"
+              ],
+              "indexStepList": 24
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 3
+              },
+              "card": {
+                "type": "default",
+                "detailsMode": "drawer",
+                "showDescription": true,
+                "showAddress": true,
+                "tagLimit": 4,
+                "tagColors": {
+                  "mapping": {
+                    "Nutrition": "var(--chart-1)",
+                    "nutrition": "var(--chart-1)",
+                    "Activité physique": "var(--chart-2)",
+                    "activite-physique": "var(--chart-2)",
+                    "Sommeil": "var(--chart-3)",
+                    "sommeil": "var(--chart-3)",
+                    "Addictions": "var(--chart-4)",
+                    "addictions": "var(--chart-4)",
+                    "Bien-être mental": "var(--chart-5)",
+                    "bien-etre-mental": "var(--chart-5)",
+                    "Culture & Santé": "var(--accent)",
+                    "culture-sante": "var(--accent)"
+                  }
+                }
+              },
+              "preview": {
+                "type": "default"
+              },
+              "itemAction": {
+                "kind": "preview"
+              }
+            },
+            "map": {
+              "cluster": true,
+              "layout": "full",
+              "popup": {
+                "type": "default"
+              },
+              "itemAction": {
+                "kind": "preview"
+              },
+              "marker": {
+                "style": "pin",
+                "color": "accent"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "path": "/annuaire",
       "title": {
         "fr": "Annuaire des acteurs — RéseauSanté",
@@ -2176,8 +2486,8 @@
       "layout": "fullwidth",
       "seo": {
         "description": {
-          "fr": "Associations, professionnels, collectifs et institutions de la santé globale à La Réunion : nutrition, activité physique, sommeil, addictions, bien-être mental.",
-          "en": "Associations, professionals, citizen groups and institutions for whole-person health in Réunion: nutrition, physical activity, sleep, addiction, mental wellbeing."
+          "fr": "Associations, professionnels, collectifs et institutions de la santé globale à La Réunion : nutrition, activité physique, sommeil, addictions, bien-être mental et culture.",
+          "en": "Associations, professionals, citizen groups and institutions for whole-person health in Réunion: nutrition, physical activity, sleep, addiction, mental wellbeing and culture."
         }
       },
       "sections": [
@@ -2269,6 +2579,15 @@
                       "en": "Mental wellbeing"
                     },
                     "icon": "brain"
+                  },
+                  {
+                    "id": "culture-sante",
+                    "value": "Culture & Santé",
+                    "label": {
+                      "fr": "Culture & Santé",
+                      "en": "Culture & Health"
+                    },
+                    "icon": "palette"
                   }
                 ]
               },
@@ -2563,9 +2882,9 @@
             "bg": "default",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "organizations"
               ],
@@ -2727,8 +3046,8 @@
       "layout": "fullwidth",
       "seo": {
         "description": {
-          "fr": "Les projets de santé globale portés par le réseau à La Réunion : nutrition, activité physique, sommeil, addictions, bien-être mental.",
-          "en": "Whole-person health projects run by the network in Réunion: nutrition, physical activity, sleep, addiction, mental wellbeing."
+          "fr": "Les projets de santé globale portés par le réseau à La Réunion : nutrition, activité physique, sommeil, addictions, bien-être mental et culture.",
+          "en": "Whole-person health projects run by the network in Réunion: nutrition, physical activity, sleep, addiction, mental wellbeing and culture."
         }
       },
       "sections": [
@@ -2820,6 +3139,15 @@
                       "en": "Mental wellbeing"
                     },
                     "icon": "brain"
+                  },
+                  {
+                    "id": "culture-sante",
+                    "value": "Culture & Santé",
+                    "label": {
+                      "fr": "Culture & Santé",
+                      "en": "Culture & Health"
+                    },
+                    "icon": "palette"
                   }
                 ]
               },
@@ -3059,9 +3387,9 @@
             "bg": "default",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "projects"
               ],
@@ -3146,7 +3474,8 @@
                     "Activité physique": "var(--chart-2)",
                     "Sommeil": "var(--chart-3)",
                     "Addictions": "var(--chart-4)",
-                    "Bien-être mental": "var(--chart-5)"
+                    "Bien-être mental": "var(--chart-5)",
+                    "Culture & Santé": "var(--accent)"
                   }
                 },
                 "detailsMode": "dialog"
@@ -3330,6 +3659,15 @@
                       "en": "Mental wellbeing"
                     },
                     "icon": "brain"
+                  },
+                  {
+                    "id": "culture-sante",
+                    "value": "Culture & Santé",
+                    "label": {
+                      "fr": "Culture & Santé",
+                      "en": "Culture & Health"
+                    },
+                    "icon": "palette"
                   }
                 ]
               }
@@ -3360,9 +3698,9 @@
             "width": "container",
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "defaultTypes": [
                 "poi",
                 "projects"
@@ -3604,8 +3942,8 @@
           "en": "Whole-person health events in Réunion"
         },
         "description": {
-          "fr": "Ateliers, marches, conférences, formations et permanences proposés par les membres de RéseauSanté à La Réunion : nutrition, activité physique, sommeil, addictions et bien-être mental.",
-          "en": "Workshops, group walks, talks, training sessions and drop-ins run by RéseauSanté members across Réunion Island: nutrition, physical activity, sleep, addiction and mental wellbeing."
+          "fr": "Ateliers, marches, conférences, formations et permanences proposés par les membres de RéseauSanté à La Réunion : nutrition, activité physique, sommeil, addictions, bien-être mental et culture.",
+          "en": "Workshops, group walks, talks, training sessions and drop-ins run by RéseauSanté members across Réunion Island: nutrition, physical activity, sleep, addiction, mental wellbeing and culture."
         },
         "keywords": [
           "agenda santé",
@@ -3615,7 +3953,8 @@
           "nutrition",
           "sommeil",
           "addictions",
-          "bien-être mental"
+          "bien-être mental",
+          "culture"
         ],
         "ogType": "website",
         "twitterCard": "summary",
@@ -3686,16 +4025,16 @@
             },
             "baseParams": {
               "sourceKey": [
-                "rezoSanteReunion"
+                "EcosystemeSanteReunion"
               ],
-              "costumSlug": "rezoSanteReunion",
+              "costumSlug": "EcosystemeSanteReunion",
               "indexStepList": 12,
               "fediverse": false,
               "filters": {
-                "preferences.toBeValidated.rezoSanteReunion": {
+                "preferences.toBeValidated.EcosystemeSanteReunion": {
                   "$exists": false
                 },
-                "source.toBeValidated.rezoSanteReunion": {
+                "source.toBeValidated.EcosystemeSanteReunion": {
                   "$exists": false
                 }
               }
@@ -3717,8 +4056,8 @@
           "en": "About RéseauSanté — Réunion’s whole-person health network"
         },
         "description": {
-          "fr": "Qui nous sommes, comment le réseau fonctionne et comment le rejoindre : citoyens, associations et professionnels réunis autour de la nutrition, de l’activité physique, du sommeil, des addictions et du bien-être mental.",
-          "en": "Who we are, how the network runs and how to join: citizens, associations and professionals gathered around nutrition, physical activity, sleep, addiction and mental wellbeing."
+          "fr": "Qui nous sommes, comment le réseau fonctionne et comment le rejoindre : citoyens, associations et professionnels réunis autour de la nutrition, de l’activité physique, du sommeil, des addictions, du bien-être mental et de la culture.",
+          "en": "Who we are, how the network runs and how to join: citizens, associations and professionals gathered around nutrition, physical activity, sleep, addiction, mental wellbeing and culture."
         },
         "keywords": [
           "santé globale",
@@ -3743,8 +4082,8 @@
               "en": "Health we build together"
             },
             "subtitle": {
-              "fr": "RéseauSanté relie les citoyens, les associations et les professionnels de La Réunion autour de cinq portes d’entrée : nutrition, activité physique, sommeil, addictions et bien-être mental.",
-              "en": "RéseauSanté connects the citizens, associations and professionals of Réunion Island around five entry points: nutrition, physical activity, sleep, addiction and mental wellbeing."
+              "fr": "RéseauSanté relie les citoyens, les associations et les professionnels de La Réunion autour de six portes d’entrée : nutrition, activité physique, sommeil, addictions, bien-être mental et culture.",
+              "en": "RéseauSanté connects the citizens, associations and professionals of Réunion Island around six entry points: nutrition, physical activity, sleep, addiction, mental wellbeing and culture."
             },
             "align": "center",
             "size": "xl"
@@ -3835,12 +4174,16 @@
               {
                 "fr": "Bien-être mental",
                 "en": "Mental wellbeing"
+              },
+              {
+                "fr": "Culture & Santé",
+                "en": "Culture & Health"
               }
             ],
             "imagePosition": "right",
             "stats": [
               {
-                "value": "5",
+                "value": "6",
                 "label": {
                   "fr": "portes d’entrée thématiques",
                   "en": "thematic entry points"
@@ -3864,8 +4207,8 @@
             "links": [
               {
                 "label": {
-                  "fr": "Explorer les cinq thématiques",
-                  "en": "Explore the five themes"
+                  "fr": "Explorer les six thématiques",
+                  "en": "Explore the six themes"
                 },
                 "href": "/thematiques"
               },
@@ -3953,12 +4296,12 @@
               {
                 "icon": "compass",
                 "title": {
-                  "fr": "Cinq portes d’entrée",
-                  "en": "Five entry points"
+                  "fr": "Six portes d’entrée",
+                  "en": "Six entry points"
                 },
                 "description": {
-                  "fr": "Nutrition, activité physique, sommeil, addictions, bien-être mental : chaque thématique a sa page et ses acteurs.",
-                  "en": "Nutrition, physical activity, sleep, addiction, mental wellbeing: each theme has its own page and its own players."
+                  "fr": "Nutrition, activité physique, sommeil, addictions, bien-être mental, culture : chaque thématique a sa page et ses acteurs.",
+                  "en": "Nutrition, physical activity, sleep, addiction, mental wellbeing, culture: each theme has its own page and its own players."
                 },
                 "color": "primary",
                 "link": "/thematiques"
@@ -4107,7 +4450,7 @@
           "id": "mentions-legales",
           "props": {
             "html": {
-              "fr": "<div class=\"mx-auto max-w-3xl px-4 py-16\">\n<h1 class=\"text-3xl md:text-4xl font-bold mb-4 text-foreground\">Mentions légales</h1>\n<p class=\"text-muted-foreground mb-8 leading-relaxed\">Conformément à l'article 6-III de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN), les informations suivantes sont portées à la connaissance des personnes qui consultent RéseauSanté.</p>\n<div class=\"rounded-lg border border-primary/30 bg-primary/5 p-5 mb-10\"><p class=\"text-sm text-muted-foreground leading-relaxed\">Les informations d'identité de cette page sont signalées <em class=\"font-medium text-foreground\">à compléter</em> tant qu'elles n'ont pas été fournies par l'éditeur. Elles doivent toutes être renseignées avant la mise en ligne publique du site.</p></div>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Éditeur du site</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Dénomination et forme juridique : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Adresse du siège social : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Numéro d'identification (RNA pour une association, SIRET ou RCS le cas échéant) : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Courriel de contact : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Téléphone : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Directeur ou directrice de la publication : <em class=\"font-medium text-foreground\">à compléter</em></li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Hébergeur</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Le site est hébergé par :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Dénomination : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Adresse : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Téléphone : <em class=\"font-medium text-foreground\">à compléter</em></li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Conception et réalisation</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Le site s'appuie sur le logiciel libre <strong class=\"text-foreground\">Communecter</strong>. Prestataire de conception et de réalisation technique : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Nature de l'information diffusée</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">RéseauSanté rassemble citoyens, associations et professionnels autour d'une santé globale : nutrition, activité physique, sommeil, addictions et bien-être mental. Les contenus publiés relèvent de l'information générale et de la prévention.</p>\n<div class=\"rounded-lg border-l-4 border-primary bg-primary/5 p-5 mb-8\"><p class=\"text-sm text-muted-foreground leading-relaxed\">Les informations diffusées sur ce site ne constituent ni un avis médical, ni un diagnostic, ni une prescription, et ne remplacent pas une consultation auprès d'un professionnel de santé. En cas d'urgence vitale, composez le 15 (Samu) ou le 112 (numéro d'urgence européen).</p></div>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Contenus publiés par les membres</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Les fiches de l'<a href=\"/annuaire\" class=\"text-primary hover:underline\">annuaire</a>, les <a href=\"/projets\" class=\"text-primary hover:underline\">projets</a>, les <a href=\"/agenda\" class=\"text-primary hover:underline\">événements</a> et les <a href=\"/ressources\" class=\"text-primary hover:underline\">ressources</a> sont renseignés par leurs auteurs, qui en demeurent responsables. L'éditeur n'exerce pas de contrôle systématique a priori sur ces contributions, mais retire tout contenu manifestement illicite, trompeur ou contraire à la vocation du réseau dès qu'il en a connaissance.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Adresse de signalement d'un contenu : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Propriété intellectuelle</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">La structure du site, sa charte graphique et les textes rédigés par l'éditeur sont protégés par le droit de la propriété intellectuelle. Toute reproduction ou représentation, totale ou partielle, à d'autres fins que la consultation individuelle et privée, requiert l'autorisation préalable de l'éditeur.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Les contenus déposés par les membres restent la propriété de leurs auteurs, qui autorisent leur diffusion sur le site. Les marques, dénominations et logos des structures partenaires appartiennent à leurs titulaires respectifs et ne peuvent être réutilisés sans leur accord.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Licence de réutilisation applicable aux données de l'annuaire : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Liens hypertextes</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Le site renvoie vers des sites tiers dont l'éditeur ne maîtrise ni le contenu ni les pratiques en matière de données personnelles. Ces liens sont proposés à titre d'information et n'emportent aucune approbation de leur contenu.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Accessibilité</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">L'éditeur s'attache à rendre le site consultable par le plus grand nombre. Le niveau de conformité au référentiel général d'amélioration de l'accessibilité (RGAA) et la déclaration d'accessibilité correspondante sont <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Données personnelles et cookies</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Le traitement des données personnelles, les durées de conservation, les traceurs déposés et les modalités d'exercice de vos droits sont décrits dans la <a href=\"/confidentialite\" class=\"text-primary hover:underline\">politique de confidentialité</a>.</p>\n</div>",
+              "fr": "<div class=\"mx-auto max-w-3xl px-4 py-16\">\n<h1 class=\"text-3xl md:text-4xl font-bold mb-4 text-foreground\">Mentions légales</h1>\n<p class=\"text-muted-foreground mb-8 leading-relaxed\">Conformément à l'article 6-III de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN), les informations suivantes sont portées à la connaissance des personnes qui consultent RéseauSanté.</p>\n<div class=\"rounded-lg border border-primary/30 bg-primary/5 p-5 mb-10\"><p class=\"text-sm text-muted-foreground leading-relaxed\">Les informations d'identité de cette page sont signalées <em class=\"font-medium text-foreground\">à compléter</em> tant qu'elles n'ont pas été fournies par l'éditeur. Elles doivent toutes être renseignées avant la mise en ligne publique du site.</p></div>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Éditeur du site</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Dénomination et forme juridique : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Adresse du siège social : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Numéro d'identification (RNA pour une association, SIRET ou RCS le cas échéant) : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Courriel de contact : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Téléphone : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Directeur ou directrice de la publication : <em class=\"font-medium text-foreground\">à compléter</em></li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Hébergeur</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Le site est hébergé par :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Dénomination : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Adresse : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Téléphone : <em class=\"font-medium text-foreground\">à compléter</em></li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Conception et réalisation</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Le site s'appuie sur le logiciel libre <strong class=\"text-foreground\">Communecter</strong>. Prestataire de conception et de réalisation technique : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Nature de l'information diffusée</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">RéseauSanté rassemble citoyens, associations et professionnels autour d'une santé globale : nutrition, activité physique, sommeil, addictions, bien-être mental et culture. Les contenus publiés relèvent de l'information générale et de la prévention.</p>\n<div class=\"rounded-lg border-l-4 border-primary bg-primary/5 p-5 mb-8\"><p class=\"text-sm text-muted-foreground leading-relaxed\">Les informations diffusées sur ce site ne constituent ni un avis médical, ni un diagnostic, ni une prescription, et ne remplacent pas une consultation auprès d'un professionnel de santé. En cas d'urgence vitale, composez le 15 (Samu) ou le 112 (numéro d'urgence européen).</p></div>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Contenus publiés par les membres</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Les fiches de l'<a href=\"/annuaire\" class=\"text-primary hover:underline\">annuaire</a>, les <a href=\"/projets\" class=\"text-primary hover:underline\">projets</a>, les <a href=\"/agenda\" class=\"text-primary hover:underline\">événements</a> et les <a href=\"/ressources\" class=\"text-primary hover:underline\">ressources</a> sont renseignés par leurs auteurs, qui en demeurent responsables. L'éditeur n'exerce pas de contrôle systématique a priori sur ces contributions, mais retire tout contenu manifestement illicite, trompeur ou contraire à la vocation du réseau dès qu'il en a connaissance.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Adresse de signalement d'un contenu : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Propriété intellectuelle</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">La structure du site, sa charte graphique et les textes rédigés par l'éditeur sont protégés par le droit de la propriété intellectuelle. Toute reproduction ou représentation, totale ou partielle, à d'autres fins que la consultation individuelle et privée, requiert l'autorisation préalable de l'éditeur.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Les contenus déposés par les membres restent la propriété de leurs auteurs, qui autorisent leur diffusion sur le site. Les marques, dénominations et logos des structures partenaires appartiennent à leurs titulaires respectifs et ne peuvent être réutilisés sans leur accord.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Licence de réutilisation applicable aux données de l'annuaire : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Liens hypertextes</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Le site renvoie vers des sites tiers dont l'éditeur ne maîtrise ni le contenu ni les pratiques en matière de données personnelles. Ces liens sont proposés à titre d'information et n'emportent aucune approbation de leur contenu.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Accessibilité</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">L'éditeur s'attache à rendre le site consultable par le plus grand nombre. Le niveau de conformité au référentiel général d'amélioration de l'accessibilité (RGAA) et la déclaration d'accessibilité correspondante sont <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Données personnelles et cookies</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Le traitement des données personnelles, les durées de conservation, les traceurs déposés et les modalités d'exercice de vos droits sont décrits dans la <a href=\"/confidentialite\" class=\"text-primary hover:underline\">politique de confidentialité</a>.</p>\n</div>",
               "en": "<div class=\"mx-auto max-w-3xl px-4 py-16\">\n<h1 class=\"text-3xl md:text-4xl font-bold mb-4 text-foreground\">Legal notice</h1>\n<p class=\"text-muted-foreground mb-8 leading-relaxed\">In accordance with Article 6-III of French Act No. 2004-575 of 21 June 2004 on confidence in the digital economy (LCEN), the following information is provided to visitors of RéseauSanté.</p>\n<div class=\"rounded-lg border border-primary/30 bg-primary/5 p-5 mb-10\"><p class=\"text-sm text-muted-foreground leading-relaxed\">The identification details on this page are marked <em class=\"font-medium text-foreground\">to be completed</em> until the publisher has provided them. They must all be filled in before the site goes live publicly.</p></div>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Publisher</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Name and legal form: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Registered office address: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Registration number (RNA for a non-profit association, SIRET or RCS where applicable): <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Contact email: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Phone: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Publication director: <em class=\"font-medium text-foreground\">to be completed</em></li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Host</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">The site is hosted by:</p>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Name: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Address: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Phone: <em class=\"font-medium text-foreground\">to be completed</em></li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Design and development</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">The site is built on the open-source software <strong class=\"text-foreground\">Communecter</strong>. Design and technical development provider: <em class=\"font-medium text-foreground\">to be completed</em></p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Nature of the information published</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">RéseauSanté brings together citizens, associations and professionals around whole-person health: nutrition, physical activity, sleep, addiction and mental wellbeing. The content published is general information and prevention material.</p>\n<div class=\"rounded-lg border-l-4 border-primary bg-primary/5 p-5 mb-8\"><p class=\"text-sm text-muted-foreground leading-relaxed\">The information published on this site is neither medical advice, nor a diagnosis, nor a prescription, and does not replace a consultation with a healthcare professional. In a life-threatening emergency, call 15 (Samu) or 112 (European emergency number).</p></div>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Content published by members</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Entries in the <a href=\"/annuaire\" class=\"text-primary hover:underline\">directory</a>, the <a href=\"/projets\" class=\"text-primary hover:underline\">projects</a>, the <a href=\"/agenda\" class=\"text-primary hover:underline\">events</a> and the <a href=\"/ressources\" class=\"text-primary hover:underline\">resources</a> are supplied by their authors, who remain responsible for them. The publisher does not systematically review contributions before publication, but removes any manifestly unlawful or misleading content, or content contrary to the purpose of the network, as soon as it becomes aware of it.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Address for reporting content: <em class=\"font-medium text-foreground\">to be completed</em></p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Intellectual property</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">The structure of the site, its visual identity and the texts written by the publisher are protected by intellectual property law. Any reproduction or representation, in whole or in part, for purposes other than individual and private consultation requires the publisher's prior authorisation.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Content submitted by members remains the property of its authors, who authorise its publication on the site. The trademarks, names and logos of partner organisations belong to their respective owners and may not be reused without their consent.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Reuse licence applicable to directory data: <em class=\"font-medium text-foreground\">to be completed</em></p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Hypertext links</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">The site links to third-party websites over whose content and personal-data practices the publisher has no control. These links are provided for information only and imply no endorsement of their content.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Accessibility</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">The publisher strives to make the site usable by as many people as possible. The level of compliance with the French accessibility framework (RGAA) and the corresponding accessibility statement are <em class=\"font-medium text-foreground\">to be completed</em></p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Personal data and cookies</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">The processing of personal data, retention periods, trackers used and how to exercise your rights are described in our <a href=\"/confidentialite\" class=\"text-primary hover:underline\">privacy policy</a>.</p>\n</div>"
             }
           }
@@ -4138,7 +4481,7 @@
           "id": "confidentialite",
           "props": {
             "html": {
-              "fr": "<div class=\"mx-auto max-w-3xl px-4 py-16\">\n<h1 class=\"text-3xl md:text-4xl font-bold mb-4 text-foreground\">Politique de confidentialité</h1>\n<p class=\"text-muted-foreground mb-8 leading-relaxed\">RéseauSanté traite des données personnelles dans le respect du règlement (UE) 2016/679 du 27 avril 2016 (RGPD) et de la loi n° 78-17 du 6 janvier 1978 modifiée, dite « Informatique et Libertés ». Cette page explique quelles données sont collectées, pourquoi, combien de temps, et comment exercer vos droits.</p>\n<div class=\"rounded-lg border border-primary/30 bg-primary/5 p-5 mb-10\"><p class=\"text-sm text-muted-foreground leading-relaxed\">Dernière mise à jour de la présente politique : <em class=\"font-medium text-foreground\">à compléter</em>. Les éléments signalés <em class=\"font-medium text-foreground\">à compléter</em> doivent être renseignés par le responsable de traitement avant la mise en ligne publique du site.</p></div>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Données de santé : ce que ce site ne collecte pas</h2>\n<div class=\"rounded-lg border-l-4 border-primary bg-primary/5 p-5 mb-8\"><p class=\"text-sm text-muted-foreground leading-relaxed\">Les données concernant la santé sont des données sensibles au sens de l'<strong class=\"text-foreground\">article 9 du RGPD</strong> : leur traitement est en principe interdit, sauf exception encadrée. <strong class=\"text-foreground\">RéseauSanté ne recueille aucune donnée de santé individuelle.</strong> Le réseau référence des structures, des professionnels, des actions et des ressources : l'annuaire décrit des organisations et des activités, jamais l'état de santé des personnes. Aucun dossier patient, aucun questionnaire médical, aucun bilan et aucun parcours de soins ne sont gérés sur ce site.</p></div>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">En conséquence, nous vous demandons de <strong class=\"text-foreground\">ne renseigner aucune information relative à votre santé</strong> — pathologie, traitement, suivi, handicap — dans les champs libres du site : formulaires, descriptions, messages ou commentaires. Une information de cette nature transmise spontanément serait supprimée dès que nous en aurions connaissance.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Le fait qu'une personne consulte une page thématique (nutrition, activité physique, sommeil, addictions, bien-être mental) n'est pas rattaché à son compte et n'est pas exploité pour en déduire une situation de santé.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Responsable de traitement</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Identité et coordonnées du responsable de traitement : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Point de contact « données personnelles » ou délégué à la protection des données (DPO), le cas échéant : <em class=\"font-medium text-foreground\">à compléter</em></li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Données collectées et finalités</h2>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Compte membre</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Nom ou pseudonyme, adresse électronique, mot de passe conservé sous forme chiffrée, et le cas échéant photo de profil. Finalité : créer et sécuriser l'accès à l'espace membre, permettre de contribuer au réseau. Base légale : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Fiches publiées dans l'annuaire, projets, événements et ressources</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Nom de la structure ou du professionnel, coordonnées de contact professionnelles, description de l'activité, thématiques, localisation, liens et documents joints. Finalité : alimenter un annuaire public de l'offre de santé globale à La Réunion. Base légale : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Formulaires et échanges</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Contenu des formulaires proposés sur le site et des messages adressés à l'équipe. Finalité : traiter la demande. Base légale : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Données techniques de connexion</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Adresse IP, horodatage, type de navigateur, pages consultées, consignés dans les journaux du serveur. Finalité : sécurité, prévention des abus, diagnostic des incidents. Base légale : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Mesure d'audience</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Outil de mesure d'audience utilisé, paramétrage retenu et caractère exempté ou non de consentement : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Lettre d'information</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Existence d'une lettre d'information, outil d'envoi et modalités de recueil du consentement : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Durées de conservation</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Chaque durée doit être arrêtée par le responsable de traitement et ne peut excéder ce qui est nécessaire aux finalités décrites ci-dessus :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Compte membre actif : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Compte inactif, avant suppression ou anonymisation : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Fiches et contributions publiées : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Journaux techniques de connexion : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Demandes de contact : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Traceurs et mesure d'audience : <em class=\"font-medium text-foreground\">à compléter</em></li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Destinataires et sous-traitants</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Les données ne sont ni vendues, ni louées, ni cédées à des tiers à des fins commerciales. Elles sont accessibles à l'équipe d'animation du réseau, habilitée et tenue à la confidentialité, ainsi qu'aux prestataires techniques agissant sur instruction du responsable de traitement :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Hébergeur : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Prestataire de maintenance technique : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Outil de mesure d'audience : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Service d'envoi de courriels : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Transferts de données hors Union européenne et garanties encadrant ces transferts : <em class=\"font-medium text-foreground\">à compléter</em></li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Contenus publics</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Les fiches publiées dans l'annuaire, les projets, les événements et les ressources sont <strong class=\"text-foreground\">publics</strong> : ils sont visibles de toute personne visitant le site et peuvent être indexés par les moteurs de recherche. Ne renseignez dans ces fiches que des coordonnées destinées à être diffusées, de préférence professionnelles.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Cookies et stockage local</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Pour les membres connectés, un identifiant de session est conservé par votre navigateur afin de maintenir la connexion d'une page à l'autre. Le navigateur mémorise également vos préférences d'affichage — langue et thème. Ces éléments sont strictement nécessaires au fonctionnement du service et ne requièrent pas votre consentement.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Liste des éventuels traceurs de mesure d'audience ou de réseaux sociaux, leur finalité, leur durée de vie et les modalités de recueil du consentement : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Vous pouvez à tout moment configurer votre navigateur pour refuser ou effacer les cookies ; le fonctionnement de l'espace membre peut alors être dégradé.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Sécurité</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Les échanges avec le site sont chiffrés, les mots de passe sont stockés sous forme chiffrée et l'accès aux données d'administration est restreint aux personnes habilitées. Les mesures techniques et organisationnelles complémentaires sont adaptées à mesure de l'évolution du service.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Vos droits</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation du traitement, d'opposition, de portabilité de vos données, du droit de retirer votre consentement à tout moment lorsque le traitement repose sur celui-ci, et du droit de définir des directives relatives au sort de vos données après votre décès.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Adresse électronique pour exercer vos droits : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Adresse postale : <em class=\"font-medium text-foreground\">à compléter</em></li>\n</ul>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Une réponse vous est adressée dans un délai d'un mois à compter de la réception de la demande, ce délai pouvant être prolongé de deux mois en cas de demande complexe. Un justificatif d'identité peut vous être demandé en cas de doute raisonnable sur l'identité du demandeur.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Si vous estimez, après nous avoir contactés, que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de la Commission nationale de l'informatique et des libertés (CNIL), 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07 — <a href=\"https://www.cnil.fr\" class=\"text-primary hover:underline\">www.cnil.fr</a>.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Mineurs</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Le site ne s'adresse pas spécifiquement aux mineurs. En France, lorsqu'un traitement repose sur le consentement, celui d'un mineur de moins de 15 ans doit être recueilli conjointement avec celui du titulaire de l'autorité parentale.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Évolution de la politique</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">La présente politique peut être mise à jour pour tenir compte des évolutions du service ou de la réglementation. La date de dernière mise à jour figure en haut de cette page. Les informations d'identité de l'éditeur et de l'hébergeur sont précisées dans les <a href=\"/mentions-legales\" class=\"text-primary hover:underline\">mentions légales</a>.</p>\n</div>",
+              "fr": "<div class=\"mx-auto max-w-3xl px-4 py-16\">\n<h1 class=\"text-3xl md:text-4xl font-bold mb-4 text-foreground\">Politique de confidentialité</h1>\n<p class=\"text-muted-foreground mb-8 leading-relaxed\">RéseauSanté traite des données personnelles dans le respect du règlement (UE) 2016/679 du 27 avril 2016 (RGPD) et de la loi n° 78-17 du 6 janvier 1978 modifiée, dite « Informatique et Libertés ». Cette page explique quelles données sont collectées, pourquoi, combien de temps, et comment exercer vos droits.</p>\n<div class=\"rounded-lg border border-primary/30 bg-primary/5 p-5 mb-10\"><p class=\"text-sm text-muted-foreground leading-relaxed\">Dernière mise à jour de la présente politique : <em class=\"font-medium text-foreground\">à compléter</em>. Les éléments signalés <em class=\"font-medium text-foreground\">à compléter</em> doivent être renseignés par le responsable de traitement avant la mise en ligne publique du site.</p></div>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Données de santé : ce que ce site ne collecte pas</h2>\n<div class=\"rounded-lg border-l-4 border-primary bg-primary/5 p-5 mb-8\"><p class=\"text-sm text-muted-foreground leading-relaxed\">Les données concernant la santé sont des données sensibles au sens de l'<strong class=\"text-foreground\">article 9 du RGPD</strong> : leur traitement est en principe interdit, sauf exception encadrée. <strong class=\"text-foreground\">RéseauSanté ne recueille aucune donnée de santé individuelle.</strong> Le réseau référence des structures, des professionnels, des actions et des ressources : l'annuaire décrit des organisations et des activités, jamais l'état de santé des personnes. Aucun dossier patient, aucun questionnaire médical, aucun bilan et aucun parcours de soins ne sont gérés sur ce site.</p></div>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">En conséquence, nous vous demandons de <strong class=\"text-foreground\">ne renseigner aucune information relative à votre santé</strong> — pathologie, traitement, suivi, handicap — dans les champs libres du site : formulaires, descriptions, messages ou commentaires. Une information de cette nature transmise spontanément serait supprimée dès que nous en aurions connaissance.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Le fait qu'une personne consulte une page thématique (nutrition, activité physique, sommeil, addictions, bien-être mental, culture) n'est pas rattaché à son compte et n'est pas exploité pour en déduire une situation de santé.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Responsable de traitement</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Identité et coordonnées du responsable de traitement : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Point de contact « données personnelles » ou délégué à la protection des données (DPO), le cas échéant : <em class=\"font-medium text-foreground\">à compléter</em></li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Données collectées et finalités</h2>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Compte membre</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Nom ou pseudonyme, adresse électronique, mot de passe conservé sous forme chiffrée, et le cas échéant photo de profil. Finalité : créer et sécuriser l'accès à l'espace membre, permettre de contribuer au réseau. Base légale : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Fiches publiées dans l'annuaire, projets, événements et ressources</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Nom de la structure ou du professionnel, coordonnées de contact professionnelles, description de l'activité, thématiques, localisation, liens et documents joints. Finalité : alimenter un annuaire public de l'offre de santé globale à La Réunion. Base légale : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Formulaires et échanges</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Contenu des formulaires proposés sur le site et des messages adressés à l'équipe. Finalité : traiter la demande. Base légale : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Données techniques de connexion</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Adresse IP, horodatage, type de navigateur, pages consultées, consignés dans les journaux du serveur. Finalité : sécurité, prévention des abus, diagnostic des incidents. Base légale : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Mesure d'audience</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Outil de mesure d'audience utilisé, paramétrage retenu et caractère exempté ou non de consentement : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Lettre d'information</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Existence d'une lettre d'information, outil d'envoi et modalités de recueil du consentement : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Durées de conservation</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Chaque durée doit être arrêtée par le responsable de traitement et ne peut excéder ce qui est nécessaire aux finalités décrites ci-dessus :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Compte membre actif : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Compte inactif, avant suppression ou anonymisation : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Fiches et contributions publiées : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Journaux techniques de connexion : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Demandes de contact : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Traceurs et mesure d'audience : <em class=\"font-medium text-foreground\">à compléter</em></li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Destinataires et sous-traitants</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Les données ne sont ni vendues, ni louées, ni cédées à des tiers à des fins commerciales. Elles sont accessibles à l'équipe d'animation du réseau, habilitée et tenue à la confidentialité, ainsi qu'aux prestataires techniques agissant sur instruction du responsable de traitement :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Hébergeur : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Prestataire de maintenance technique : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Outil de mesure d'audience : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Service d'envoi de courriels : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Transferts de données hors Union européenne et garanties encadrant ces transferts : <em class=\"font-medium text-foreground\">à compléter</em></li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Contenus publics</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Les fiches publiées dans l'annuaire, les projets, les événements et les ressources sont <strong class=\"text-foreground\">publics</strong> : ils sont visibles de toute personne visitant le site et peuvent être indexés par les moteurs de recherche. Ne renseignez dans ces fiches que des coordonnées destinées à être diffusées, de préférence professionnelles.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Cookies et stockage local</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Pour les membres connectés, un identifiant de session est conservé par votre navigateur afin de maintenir la connexion d'une page à l'autre. Le navigateur mémorise également vos préférences d'affichage — langue et thème. Ces éléments sont strictement nécessaires au fonctionnement du service et ne requièrent pas votre consentement.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Liste des éventuels traceurs de mesure d'audience ou de réseaux sociaux, leur finalité, leur durée de vie et les modalités de recueil du consentement : <em class=\"font-medium text-foreground\">à compléter</em></p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Vous pouvez à tout moment configurer votre navigateur pour refuser ou effacer les cookies ; le fonctionnement de l'espace membre peut alors être dégradé.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Sécurité</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Les échanges avec le site sont chiffrés, les mots de passe sont stockés sous forme chiffrée et l'accès aux données d'administration est restreint aux personnes habilitées. Les mesures techniques et organisationnelles complémentaires sont adaptées à mesure de l'évolution du service.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Vos droits</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation du traitement, d'opposition, de portabilité de vos données, du droit de retirer votre consentement à tout moment lorsque le traitement repose sur celui-ci, et du droit de définir des directives relatives au sort de vos données après votre décès.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Adresse électronique pour exercer vos droits : <em class=\"font-medium text-foreground\">à compléter</em></li>\n<li>Adresse postale : <em class=\"font-medium text-foreground\">à compléter</em></li>\n</ul>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Une réponse vous est adressée dans un délai d'un mois à compter de la réception de la demande, ce délai pouvant être prolongé de deux mois en cas de demande complexe. Un justificatif d'identité peut vous être demandé en cas de doute raisonnable sur l'identité du demandeur.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Si vous estimez, après nous avoir contactés, que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de la Commission nationale de l'informatique et des libertés (CNIL), 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07 — <a href=\"https://www.cnil.fr\" class=\"text-primary hover:underline\">www.cnil.fr</a>.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Mineurs</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Le site ne s'adresse pas spécifiquement aux mineurs. En France, lorsqu'un traitement repose sur le consentement, celui d'un mineur de moins de 15 ans doit être recueilli conjointement avec celui du titulaire de l'autorité parentale.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Évolution de la politique</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">La présente politique peut être mise à jour pour tenir compte des évolutions du service ou de la réglementation. La date de dernière mise à jour figure en haut de cette page. Les informations d'identité de l'éditeur et de l'hébergeur sont précisées dans les <a href=\"/mentions-legales\" class=\"text-primary hover:underline\">mentions légales</a>.</p>\n</div>",
               "en": "<div class=\"mx-auto max-w-3xl px-4 py-16\">\n<h1 class=\"text-3xl md:text-4xl font-bold mb-4 text-foreground\">Privacy policy</h1>\n<p class=\"text-muted-foreground mb-8 leading-relaxed\">RéseauSanté processes personal data in accordance with Regulation (EU) 2016/679 of 27 April 2016 (GDPR) and the amended French Data Protection Act of 6 January 1978. This page explains which data is collected, why, for how long, and how to exercise your rights.</p>\n<div class=\"rounded-lg border border-primary/30 bg-primary/5 p-5 mb-10\"><p class=\"text-sm text-muted-foreground leading-relaxed\">Last update of this policy: <em class=\"font-medium text-foreground\">to be completed</em>. Every item marked <em class=\"font-medium text-foreground\">to be completed</em> must be filled in by the data controller before the site goes live publicly.</p></div>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Health data: what this site does not collect</h2>\n<div class=\"rounded-lg border-l-4 border-primary bg-primary/5 p-5 mb-8\"><p class=\"text-sm text-muted-foreground leading-relaxed\">Data concerning health is sensitive data within the meaning of <strong class=\"text-foreground\">Article 9 of the GDPR</strong>: processing it is prohibited in principle, save for strictly framed exceptions. <strong class=\"text-foreground\">RéseauSanté collects no individual health data.</strong> The network lists organisations, professionals, initiatives and resources: the directory describes organisations and activities, never a person's state of health. No patient record, no medical questionnaire, no assessment and no care pathway is managed on this site.</p></div>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Accordingly, we ask you <strong class=\"text-foreground\">not to enter any information about your health</strong> — condition, treatment, follow-up, disability — in the free-text fields of the site: forms, descriptions, messages or comments. Any such information sent spontaneously will be deleted as soon as we become aware of it.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">The fact that someone browses a topic page (nutrition, physical activity, sleep, addiction, mental wellbeing) is not linked to their account and is not used to infer any health situation.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Data controller</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Identity and contact details of the data controller: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Personal-data contact point or Data Protection Officer (DPO), where applicable: <em class=\"font-medium text-foreground\">to be completed</em></li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Data collected and purposes</h2>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Member account</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Name or pseudonym, email address, password stored in encrypted form, and where applicable a profile picture. Purpose: to create and secure access to the member area and to allow contributions to the network. Legal basis: <em class=\"font-medium text-foreground\">to be completed</em></p>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Directory entries, projects, events and resources</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Name of the organisation or professional, professional contact details, description of the activity, topics, location, links and attached documents. Purpose: to maintain a public directory of the whole-person health offer in Réunion. Legal basis: <em class=\"font-medium text-foreground\">to be completed</em></p>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Forms and messages</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Content of the forms offered on the site and of messages sent to the team. Purpose: to handle the request. Legal basis: <em class=\"font-medium text-foreground\">to be completed</em></p>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Technical connection data</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">IP address, timestamp, browser type, pages viewed, recorded in the server logs. Purpose: security, abuse prevention, incident diagnosis. Legal basis: <em class=\"font-medium text-foreground\">to be completed</em></p>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Audience measurement</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Audience measurement tool used, configuration chosen and whether or not it is exempt from consent: <em class=\"font-medium text-foreground\">to be completed</em></p>\n<h3 class=\"text-base font-semibold mb-2 mt-6 text-foreground\">Newsletter</h3>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Whether a newsletter exists, the sending tool used and how consent is collected: <em class=\"font-medium text-foreground\">to be completed</em></p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Retention periods</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Each period must be set by the data controller and may not exceed what is necessary for the purposes described above:</p>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Active member account: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Inactive account, before deletion or anonymisation: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Published entries and contributions: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Technical connection logs: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Contact requests: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Trackers and audience measurement: <em class=\"font-medium text-foreground\">to be completed</em></li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Recipients and processors</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Data is never sold, rented or transferred to third parties for commercial purposes. It is accessible to the network's coordination team, who are authorised and bound by confidentiality, and to the technical providers acting on the controller's instructions:</p>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Host: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Technical maintenance provider: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Audience measurement tool: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Email sending service: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Transfers outside the European Union and the safeguards framing them: <em class=\"font-medium text-foreground\">to be completed</em></li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Public content</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Directory entries, projects, events and resources are <strong class=\"text-foreground\">public</strong>: they are visible to any visitor and may be indexed by search engines. Only enter contact details that are meant to be published, preferably professional ones.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Cookies and local storage</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">For logged-in members, a session identifier is kept by your browser in order to maintain your connection from one page to the next. Your browser also stores your display preferences — language and theme. These items are strictly necessary for the service to work and do not require your consent.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">List of any audience-measurement or social-network trackers, their purpose, their lifetime and how consent is collected: <em class=\"font-medium text-foreground\">to be completed</em></p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">You may at any time configure your browser to refuse or delete cookies; the member area may then work in a degraded manner.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Security</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">Exchanges with the site are encrypted, passwords are stored in encrypted form and access to administration data is restricted to authorised staff. Additional technical and organisational measures are adapted as the service evolves.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Your rights</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">You have the right to access, rectify, erase, restrict the processing of and object to the processing of your data, the right to data portability, the right to withdraw your consent at any time where processing is based on it, and the right to give instructions about what happens to your data after your death.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-2 list-disc pl-5 leading-relaxed\">\n<li>Email address for exercising your rights: <em class=\"font-medium text-foreground\">to be completed</em></li>\n<li>Postal address: <em class=\"font-medium text-foreground\">to be completed</em></li>\n</ul>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">You will receive a reply within one month of receipt of the request; this period may be extended by two months for complex requests. Proof of identity may be requested where there is reasonable doubt as to the identity of the person making the request.</p>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">If, after contacting us, you consider that your rights are not being respected, you may lodge a complaint with the French data protection authority (CNIL), 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07 — <a href=\"https://www.cnil.fr\" class=\"text-primary hover:underline\">www.cnil.fr</a>.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Minors</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">The site is not specifically aimed at minors. In France, where processing is based on consent, the consent of a minor under the age of 15 must be obtained jointly with that of the holder of parental authority.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-10 text-foreground\">Changes to this policy</h2>\n<p class=\"text-muted-foreground mb-4 leading-relaxed\">This policy may be updated to reflect changes in the service or in the applicable regulations. The date of the last update appears at the top of this page. The identity of the publisher and the host is set out in the <a href=\"/mentions-legales\" class=\"text-primary hover:underline\">legal notice</a>.</p>\n</div>"
             }
           }
@@ -4146,6 +4489,1156 @@
       ]
     }
   ],
+  "costumForms": {
+    "rezo-sante-acteur": {
+      "id": "rezo-sante-acteur",
+      "entityType": "organizations",
+      "collection": "organizations",
+      "costumSlug": "EcosystemeSanteReunion",
+      "icon": "building-2",
+      "layout": {
+        "kind": "flat"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        },
+        "telephone": {
+          "serverKey": "telephone",
+          "read": "telephone:read",
+          "write": "telephone:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "identite",
+          "label": {
+            "fr": "L'acteur",
+            "en": "The organisation"
+          },
+          "icon": "building-2",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "profil_avatar",
+                "name",
+                "type",
+                "role",
+                "shortDescription",
+                "description"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contact",
+          "label": {
+            "fr": "Contact",
+            "en": "Contact"
+          },
+          "icon": "mail",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "email",
+                "telephone",
+                "url"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "qualification",
+          "label": {
+            "fr": "Thématiques",
+            "en": "Topics"
+          },
+          "icon": "tags",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "thematic",
+                "tags"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "localisation",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Image",
+            "en": "Image"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "read": "rezoSante:tagsHorsThematiques",
+          "write": "rezoSante:tagsAvecThematiques",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          },
+          "info": {
+            "fr": "Mots-clés libres. Les thématiques cochées ci-dessus sont ajoutées automatiquement à l'enregistrement — et retirées si vous les décochez.",
+            "en": "Free keywords. The topics ticked above are added automatically on save — and removed if you untick them."
+          },
+          "widgetProps": {
+            "searchable": true
+          }
+        },
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom",
+            "en": "Name"
+          },
+          "placeholder": {
+            "fr": "Nom de la structure ou du professionnel",
+            "en": "Organisation or practitioner name"
+          }
+        },
+        "role": {
+          "widget": "select",
+          "required": true,
+          "default": "admin",
+          "label": {
+            "fr": "Votre rôle dans cette structure",
+            "en": "Your role in this organisation"
+          },
+          "info": {
+            "fr": "Requis par le serveur à la création. « Administrateur » vous permet de modifier la fiche ensuite.",
+            "en": "Required by the server on creation. “Administrator” lets you edit the entry afterwards."
+          },
+          "enum": [
+            {
+              "value": "admin",
+              "label": {
+                "fr": "Administrateur",
+                "en": "Administrator"
+              }
+            },
+            {
+              "value": "member",
+              "label": {
+                "fr": "Membre",
+                "en": "Member"
+              }
+            }
+          ]
+        },
+        "type": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Type d'acteur",
+            "en": "Organisation type"
+          },
+          "placeholder": {
+            "fr": "Choisir un type…",
+            "en": "Pick a type…"
+          },
+          "enum": [
+            {
+              "value": "NGO",
+              "label": {
+                "fr": "Association",
+                "en": "Non-profit"
+              }
+            },
+            {
+              "value": "Group",
+              "label": {
+                "fr": "Collectif / groupe",
+                "en": "Group"
+              }
+            },
+            {
+              "value": "LocalBusiness",
+              "label": {
+                "fr": "Professionnel / entreprise",
+                "en": "Business"
+              }
+            },
+            {
+              "value": "Cooperative",
+              "label": {
+                "fr": "Coopérative",
+                "en": "Cooperative"
+              }
+            },
+            {
+              "value": "GovernmentOrganization",
+              "label": {
+                "fr": "Institution publique",
+                "en": "Public institution"
+              }
+            }
+          ]
+        },
+        "shortDescription": {
+          "widget": "text",
+          "label": {
+            "fr": "Description courte",
+            "en": "Short description"
+          },
+          "info": {
+            "fr": "Une phrase qui résume l'activité.",
+            "en": "One sentence summing up the activity."
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          },
+          "widgetProps": {
+            "height": 280,
+            "preview": "edit"
+          }
+        },
+        "email": {
+          "widget": "email",
+          "write": "omitEmpty",
+          "label": {
+            "fr": "Email",
+            "en": "Email"
+          }
+        },
+        "telephone": {
+          "widget": "tel",
+          "group": "telephone",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          }
+        },
+        "_telSlot": {
+          "widget": "hidden",
+          "group": "telephone"
+        },
+        "_telRest": {
+          "widget": "hidden",
+          "group": "telephone"
+        },
+        "url": {
+          "widget": "text",
+          "label": {
+            "fr": "Site web",
+            "en": "Website"
+          }
+        },
+        "thematic": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Thématiques",
+            "en": "Topics"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          },
+          "info": {
+            "fr": "Les thématiques choisies sont aussi ajoutées aux mots-clés à l'enregistrement — c'est ce qui fait apparaître la fiche sur la page de thématique correspondante.",
+            "en": "The selected topics are also added to the tags on save — that is what makes the entry show up on the matching topic page."
+          },
+          "enum": [
+            {
+              "value": "Nutrition",
+              "label": {
+                "fr": "Nutrition",
+                "en": "Nutrition"
+              }
+            },
+            {
+              "value": "Activité physique",
+              "label": {
+                "fr": "Activité physique",
+                "en": "Physical activity"
+              }
+            },
+            {
+              "value": "Sommeil",
+              "label": {
+                "fr": "Sommeil",
+                "en": "Sleep"
+              }
+            },
+            {
+              "value": "Addictions",
+              "label": {
+                "fr": "Addictions",
+                "en": "Addiction"
+              }
+            },
+            {
+              "value": "Bien-être mental",
+              "label": {
+                "fr": "Bien-être mental",
+                "en": "Mental wellbeing"
+              }
+            },
+            {
+              "value": "Culture & Santé",
+              "label": {
+                "fr": "Culture & Santé",
+                "en": "Culture & health"
+              }
+            }
+          ]
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter un acteur",
+            "en": "Add an organisation"
+          },
+          "edit": {
+            "fr": "Modifier l'acteur",
+            "en": "Edit organisation"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer la fiche",
+            "en": "Create entry"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "organizations",
+        "payloadEmitEmptyOnEdit": true,
+        "navigateOnSuccess": false,
+        "successKey": {
+          "add": "toast.add.organizationSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.organizationError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_ORGANIZATION",
+          "edit": "EntityFormModal · UPDATE_ORGANIZATION"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "organizations",
+            "searchKeys": [
+              "admin-organizations",
+              "searchCostumStatic"
+            ]
+          }
+        }
+      }
+    },
+    "rezo-sante-projet": {
+      "id": "rezo-sante-projet",
+      "entityType": "projects",
+      "collection": "projects",
+      "costumSlug": "EcosystemeSanteReunion",
+      "icon": "sprout",
+      "layout": {
+        "kind": "flat"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "contenu",
+          "label": {
+            "fr": "Le projet",
+            "en": "The project"
+          },
+          "icon": "sprout",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "profil_avatar",
+                "name",
+                "shortDescription",
+                "description",
+                "url"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "qualification",
+          "label": {
+            "fr": "Thématiques & bénéficiaires",
+            "en": "Topics & beneficiaries"
+          },
+          "icon": "tags",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "thematic",
+                "beneficiaires",
+                "tags"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "localisation",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Image",
+            "en": "Image"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "read": "rezoSante:tagsHorsThematiques",
+          "write": "rezoSante:tagsAvecThematiques",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          },
+          "info": {
+            "fr": "Mots-clés libres. Les thématiques cochées ci-dessus sont ajoutées automatiquement à l'enregistrement — et retirées si vous les décochez.",
+            "en": "Free keywords. The topics ticked above are added automatically on save — and removed if you untick them."
+          },
+          "widgetProps": {
+            "searchable": true
+          }
+        },
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom du projet",
+            "en": "Project name"
+          },
+          "placeholder": {
+            "fr": "Le nom tel qu'il sera affiché",
+            "en": "The name as it will be displayed"
+          }
+        },
+        "shortDescription": {
+          "widget": "text",
+          "label": {
+            "fr": "Description courte",
+            "en": "Short description"
+          },
+          "info": {
+            "fr": "Une phrase qui résume le projet.",
+            "en": "One sentence summing up the project."
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          },
+          "widgetProps": {
+            "height": 280,
+            "preview": "edit"
+          }
+        },
+        "url": {
+          "widget": "text",
+          "label": {
+            "fr": "Site web",
+            "en": "Website"
+          }
+        },
+        "thematic": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Thématiques",
+            "en": "Topics"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          },
+          "info": {
+            "fr": "Les thématiques choisies sont aussi ajoutées aux mots-clés à l'enregistrement — c'est ce qui fait apparaître la fiche sur la page de thématique correspondante.",
+            "en": "The selected topics are also added to the tags on save — that is what makes the entry show up on the matching topic page."
+          },
+          "enum": [
+            {
+              "value": "Nutrition",
+              "label": {
+                "fr": "Nutrition",
+                "en": "Nutrition"
+              }
+            },
+            {
+              "value": "Activité physique",
+              "label": {
+                "fr": "Activité physique",
+                "en": "Physical activity"
+              }
+            },
+            {
+              "value": "Sommeil",
+              "label": {
+                "fr": "Sommeil",
+                "en": "Sleep"
+              }
+            },
+            {
+              "value": "Addictions",
+              "label": {
+                "fr": "Addictions",
+                "en": "Addiction"
+              }
+            },
+            {
+              "value": "Bien-être mental",
+              "label": {
+                "fr": "Bien-être mental",
+                "en": "Mental wellbeing"
+              }
+            },
+            {
+              "value": "Culture & Santé",
+              "label": {
+                "fr": "Culture & Santé",
+                "en": "Culture & health"
+              }
+            }
+          ]
+        },
+        "beneficiaires": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Bénéficiaires",
+            "en": "Beneficiaries"
+          },
+          "placeholder": {
+            "fr": "À qui s'adresse ce projet ?",
+            "en": "Who is this project for?"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          },
+          "enum": [
+            {
+              "value": "0 à 3 ans",
+              "label": {
+                "fr": "0 à 3 ans",
+                "en": "0 to 3 years"
+              }
+            },
+            {
+              "value": "3 à 6 ans",
+              "label": {
+                "fr": "3 à 6 ans",
+                "en": "3 to 6 years"
+              }
+            },
+            {
+              "value": "6 à 12 ans",
+              "label": {
+                "fr": "6 à 12 ans",
+                "en": "6 to 12 years"
+              }
+            },
+            {
+              "value": "12 à 18 ans",
+              "label": {
+                "fr": "12 à 18 ans",
+                "en": "12 to 18 years"
+              }
+            },
+            {
+              "value": "Enfants (2-9 ans)",
+              "label": {
+                "fr": "Enfants (2-9 ans)",
+                "en": "Children (2-9 years)"
+              }
+            },
+            {
+              "value": "Pré-adolescents/Adolescents (10-17 ans)",
+              "label": {
+                "fr": "Pré-adolescents/Adolescents (10-17 ans)",
+                "en": "Teens (10-17 years)"
+              }
+            },
+            {
+              "value": "Personnes en perte d’autonomie",
+              "label": {
+                "fr": "Personnes en perte d’autonomie",
+                "en": "People losing autonomy"
+              }
+            },
+            {
+              "value": "Femmes enceintes",
+              "label": {
+                "fr": "Femmes enceintes",
+                "en": "Pregnant women"
+              }
+            },
+            {
+              "value": "Personnes en situation de handicap",
+              "label": {
+                "fr": "Personnes en situation de handicap",
+                "en": "People with disabilities"
+              }
+            },
+            {
+              "value": "Personnes de plus de 55 ans",
+              "label": {
+                "fr": "Personnes de plus de 55 ans",
+                "en": "People over 55"
+              }
+            }
+          ]
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter un projet",
+            "en": "Add a project"
+          },
+          "edit": {
+            "fr": "Modifier le projet",
+            "en": "Edit project"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer le projet",
+            "en": "Create project"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "projects",
+        "navigateOnSuccess": false,
+        "successKey": {
+          "add": "toast.add.projectSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.projectError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_PROJECT",
+          "edit": "EntityFormModal · UPDATE_PROJECT"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "projects",
+            "searchKeys": [
+              "admin-projects",
+              "searchCostumStatic"
+            ]
+          }
+        }
+      }
+    },
+    "rezo-sante-ressource": {
+      "id": "rezo-sante-ressource",
+      "entityType": "poi",
+      "collection": "poi",
+      "costumSlug": "EcosystemeSanteReunion",
+      "icon": "book-open",
+      "layout": {
+        "kind": "flat"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "contenu",
+          "label": {
+            "fr": "La ressource",
+            "en": "The resource"
+          },
+          "icon": "book-open",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "profil_avatar",
+                "name",
+                "type",
+                "shortDescription",
+                "description",
+                "urls"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "qualification",
+          "label": {
+            "fr": "Thématiques",
+            "en": "Topics"
+          },
+          "icon": "tags",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "thematic",
+                "tags"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "localisation",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Image",
+            "en": "Image"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "read": "rezoSante:tagsHorsThematiques",
+          "write": "rezoSante:tagsAvecThematiques",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          },
+          "info": {
+            "fr": "Mots-clés libres. Les thématiques cochées ci-dessus sont ajoutées automatiquement à l'enregistrement — et retirées si vous les décochez.",
+            "en": "Free keywords. The topics ticked above are added automatically on save — and removed if you untick them."
+          },
+          "widgetProps": {
+            "searchable": true
+          }
+        },
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Titre",
+            "en": "Title"
+          },
+          "placeholder": {
+            "fr": "Titre de la ressource",
+            "en": "Resource title"
+          }
+        },
+        "type": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Nature",
+            "en": "Kind"
+          },
+          "placeholder": {
+            "fr": "Lien / Vidéo / Document / Outil",
+            "en": "Link / Video / Document / Tool"
+          },
+          "enum": [
+            {
+              "value": "link",
+              "label": {
+                "fr": "Lien",
+                "en": "Link"
+              }
+            },
+            {
+              "value": "video",
+              "label": {
+                "fr": "Vidéo",
+                "en": "Video"
+              }
+            },
+            {
+              "value": "Resource material",
+              "label": {
+                "fr": "Document",
+                "en": "Document"
+              }
+            },
+            {
+              "value": "tool",
+              "label": {
+                "fr": "Outil",
+                "en": "Tool"
+              }
+            }
+          ]
+        },
+        "shortDescription": {
+          "widget": "text",
+          "label": {
+            "fr": "Description courte",
+            "en": "Short description"
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          },
+          "widgetProps": {
+            "height": 240,
+            "preview": "edit"
+          }
+        },
+        "urls": {
+          "widget": "urlList",
+          "label": {
+            "fr": "Liens",
+            "en": "Links"
+          },
+          "info": {
+            "fr": "URL de la ressource en ligne.",
+            "en": "URL of the online resource."
+          },
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un lien",
+              "en": "Add a link"
+            },
+            "removeLabel": {
+              "fr": "Retirer",
+              "en": "Remove"
+            }
+          }
+        },
+        "thematic": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Thématiques",
+            "en": "Topics"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          },
+          "info": {
+            "fr": "Les thématiques choisies sont aussi ajoutées aux mots-clés à l'enregistrement — c'est ce qui fait apparaître la fiche sur la page de thématique correspondante.",
+            "en": "The selected topics are also added to the tags on save — that is what makes the entry show up on the matching topic page."
+          },
+          "enum": [
+            {
+              "value": "Nutrition",
+              "label": {
+                "fr": "Nutrition",
+                "en": "Nutrition"
+              }
+            },
+            {
+              "value": "Activité physique",
+              "label": {
+                "fr": "Activité physique",
+                "en": "Physical activity"
+              }
+            },
+            {
+              "value": "Sommeil",
+              "label": {
+                "fr": "Sommeil",
+                "en": "Sleep"
+              }
+            },
+            {
+              "value": "Addictions",
+              "label": {
+                "fr": "Addictions",
+                "en": "Addiction"
+              }
+            },
+            {
+              "value": "Bien-être mental",
+              "label": {
+                "fr": "Bien-être mental",
+                "en": "Mental wellbeing"
+              }
+            },
+            {
+              "value": "Culture & Santé",
+              "label": {
+                "fr": "Culture & Santé",
+                "en": "Culture & health"
+              }
+            }
+          ]
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une ressource",
+            "en": "Add a resource"
+          },
+          "edit": {
+            "fr": "Modifier la ressource",
+            "en": "Edit resource"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer la ressource",
+            "en": "Create resource"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "poi",
+        "navigateOnSuccess": false,
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_POI",
+          "edit": "EntityFormModal · UPDATE_POI"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "pois",
+            "searchKeys": [
+              "admin-poi",
+              "searchCostumStatic"
+            ]
+          }
+        }
+      }
+    }
+  },
   "profiles": {
     "default": {
       "layout": "default",
@@ -4337,6 +5830,25 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
+      "editModals": [
+        {
+          "editModal": "edit-rezo-sante-acteur",
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "EcosystemeSanteReunion"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "EcosystemeSanteReunion"
+              }
+            ]
+          }
+        }
+      ],
       "sections": [
         {
           "type": "profile-header",
@@ -4686,6 +6198,25 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
+      "editModals": [
+        {
+          "editModal": "edit-rezo-sante-projet",
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "EcosystemeSanteReunion"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "EcosystemeSanteReunion"
+              }
+            ]
+          }
+        }
+      ],
       "sections": [
         {
           "type": "profile-header",
@@ -5134,6 +6665,25 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
+      "editModals": [
+        {
+          "editModal": "edit-rezo-sante-ressource",
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "EcosystemeSanteReunion"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "EcosystemeSanteReunion"
+              }
+            ]
+          }
+        }
+      ],
       "sections": [
         {
           "type": "profile-header",
@@ -5485,13 +7035,13 @@
       "limit": 8,
       "params": {
         "sourceKey": [
-          "rezoSanteReunion"
+          "EcosystemeSanteReunion"
         ],
         "filters": {
-          "preferences.toBeValidated.rezoSanteReunion": {
+          "preferences.toBeValidated.EcosystemeSanteReunion": {
             "$exists": false
           },
-          "source.toBeValidated.rezoSanteReunion": {
+          "source.toBeValidated.EcosystemeSanteReunion": {
             "$exists": false
           }
         },
@@ -5637,9 +7187,9 @@
               "notSourceKey": true,
               "defaultFilters": {
                 "$or": {
-                  "source.key": "rezoSanteReunion",
-                  "source.keys": "rezoSanteReunion",
-                  "reference.costum": "rezoSanteReunion"
+                  "source.key": "EcosystemeSanteReunion",
+                  "source.keys": "EcosystemeSanteReunion",
+                  "reference.costum": "EcosystemeSanteReunion"
                 }
               },
               "defaultSortBy": {
@@ -5719,9 +7269,9 @@
               "notSourceKey": true,
               "defaultFilters": {
                 "$or": {
-                  "source.key": "rezoSanteReunion",
-                  "source.keys": "rezoSanteReunion",
-                  "reference.costum": "rezoSanteReunion"
+                  "source.key": "EcosystemeSanteReunion",
+                  "source.keys": "EcosystemeSanteReunion",
+                  "reference.costum": "EcosystemeSanteReunion"
                 }
               },
               "defaultSortBy": {
@@ -5787,9 +7337,9 @@
               "notSourceKey": true,
               "defaultFilters": {
                 "$or": {
-                  "source.key": "rezoSanteReunion",
-                  "source.keys": "rezoSanteReunion",
-                  "reference.costum": "rezoSanteReunion"
+                  "source.key": "EcosystemeSanteReunion",
+                  "source.keys": "EcosystemeSanteReunion",
+                  "reference.costum": "EcosystemeSanteReunion"
                 }
               },
               "defaultSortBy": {
@@ -5862,9 +7412,9 @@
               "notSourceKey": true,
               "defaultFilters": {
                 "$or": {
-                  "source.key": "rezoSanteReunion",
-                  "source.keys": "rezoSanteReunion",
-                  "reference.costum": "rezoSanteReunion"
+                  "source.key": "EcosystemeSanteReunion",
+                  "source.keys": "EcosystemeSanteReunion",
+                  "reference.costum": "EcosystemeSanteReunion"
                 }
               },
               "defaultSortBy": {

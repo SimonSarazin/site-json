@@ -5,6 +5,11 @@ import { getSlug } from "@/lib/constant/common";
  * le consomme (`_requireCostumCtx` : slug + costumId + costumType) — `validateGroup`,
  * `addReference`/`removeReference`, `previewImport`, `importElements`, `exportElements`.
  *
+ * Vit dans `src/lib` (et non plus dans `modules/admin/lib`) depuis que les mutations de `profil`
+ * l'appellent aussi : le scope gouverne également le `costumSlug` posté sur les endpoints MAILANTS
+ * (multiconnect, connect/disconnect, link/validate…), d'où l'e-mail brandé du costum. Un import
+ * `modules/profil` → `modules/admin` aurait été une dépendance inversée entre modules pairs.
+ *
  * Deux problèmes distincts, un seul point de passage :
  *
  * 1. Hôte SANS `source.key` (cas majoritaire : c'est elle la source) → la lib ne lui auto-dérive
@@ -42,7 +47,10 @@ export function ensureCostumScope(
   const slug = getSlug();
   if (!slug || slug === "default" || !ctx.contextId || !ctx.contextType) return;
   const holder = entity as {
-    setCostumScope: (slug: string, opts?: { costumId?: string; costumType?: string }) => void;
+    setCostumScope?: (slug: string, opts?: { costumId?: string; costumType?: string }) => void;
   };
+  // Appelé désormais sur des carriers quelconques (User d'une liste de membres, entité de profil) :
+  // on vérifie la méthode plutôt que de faire planter une mutation sur un objet nu.
+  if (typeof holder.setCostumScope !== "function") return;
   holder.setCostumScope(slug, { costumId: ctx.contextId, costumType: ctx.contextType });
 }

@@ -256,10 +256,18 @@
         "children": [
           {
             "label": {
+              "fr": "Adolescence",
+              "en": "Adolescence"
+            },
+            "path": "/public/adolescence?public=adolescence",
+            "icon": "backpack"
+          },
+          {
+            "label": {
               "fr": "Bénévoles",
               "en": "Volunteers"
             },
-            "path": "/public/benevoles",
+            "path": "/public/benevoles?public=benevoles",
             "icon": "hand-heart"
           },
           {
@@ -267,7 +275,7 @@
               "fr": "En famille",
               "en": "As a family"
             },
-            "path": "/public/en-famille",
+            "path": "/public/en-famille?public=en-famille",
             "icon": "home"
           },
           {
@@ -275,7 +283,7 @@
               "fr": "Enfance",
               "en": "Childhood"
             },
-            "path": "/public/enfance",
+            "path": "/public/enfance?public=enfance",
             "icon": "baby"
           },
           {
@@ -283,7 +291,7 @@
               "fr": "Futurs parents",
               "en": "Parents-to-be"
             },
-            "path": "/public/futurs-parents",
+            "path": "/public/futurs-parents?public=futurs-parents",
             "icon": "heart"
           },
           {
@@ -291,7 +299,7 @@
               "fr": "Parents",
               "en": "Parents"
             },
-            "path": "/public/parents",
+            "path": "/public/parents?public=parents",
             "icon": "user"
           },
           {
@@ -299,15 +307,23 @@
               "fr": "Parents-enfants",
               "en": "Parents & children"
             },
-            "path": "/public/parents-enfants",
+            "path": "/public/parents-enfants?public=parents-enfants",
             "icon": "users"
+          },
+          {
+            "label": {
+              "fr": "Petite enfance",
+              "en": "Early childhood"
+            },
+            "path": "/public/petite-enfance?public=petite-enfance",
+            "icon": "toy-brick"
           },
           {
             "label": {
               "fr": "Professionnels",
               "en": "Professionals"
             },
-            "path": "/public/professionnels",
+            "path": "/public/professionnels?public=professionnels",
             "icon": "briefcase"
           }
         ]
@@ -365,6 +381,30 @@
             "description": {
               "fr": "Ateliers, rencontres et rendez-vous",
               "en": "Workshops and meetups"
+            }
+          },
+          {
+            "label": {
+              "fr": "Appels à projets",
+              "en": "Calls for projects"
+            },
+            "path": "/appels-a-projets",
+            "icon": "megaphone",
+            "description": {
+              "fr": "Les appels à projets du réseau",
+              "en": "Network calls for projects"
+            }
+          },
+          {
+            "label": {
+              "fr": "Offres d'emploi",
+              "en": "Job offers"
+            },
+            "path": "/offres-emploi",
+            "icon": "briefcase",
+            "description": {
+              "fr": "Les offres d'emploi du réseau",
+              "en": "Network job offers"
             }
           }
         ]
@@ -1943,9 +1983,10 @@
               "fr": "Nos thèmes",
               "en": "Our topics"
             },
+            "headlineFromFilter": "theme",
             "subhead": {
-              "fr": "Explorez les ressources du réseau par thème, public ou territoire.",
-              "en": "Explore the network's resources by topic, audience or territory."
+              "fr": "Les actions autour de ce thème",
+              "en": "Initiatives related to this topic"
             },
             "showSearch": true,
             "searchPlaceholder": {
@@ -1960,7 +2001,6 @@
                   "list": ["themes", "themesPoi", "themesEvents"],
                   "withDeclared": true
                 },
-                "hidden": true,
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -2132,11 +2172,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -2144,7 +2192,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -2152,7 +2200,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -2160,7 +2208,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -2176,7 +2224,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -2184,7 +2240,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -2508,11 +2564,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -2520,7 +2584,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -2528,7 +2592,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -2536,7 +2600,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -2552,7 +2616,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -2560,7 +2632,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -2884,11 +2956,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -2896,7 +2976,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -2904,7 +2984,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -2912,7 +2992,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -2928,7 +3008,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -2936,7 +3024,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -3263,11 +3351,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -3275,7 +3371,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -3283,7 +3379,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -3291,7 +3387,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -3307,7 +3403,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -3315,7 +3419,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -3441,552 +3545,585 @@
               "fr": "Paroles de parents",
               "en": "Parents' testimonies"
             },
-            "showSearch": true,
-            "searchPlaceholder": {
-              "fr": "Rechercher une parole…",
-              "en": "Search a testimony…"
-            },
-            "showActiveFiltersTags": "desktop",
-            "dropdownFilters": [
-              {
-                "id": "category",
-                "optionsFrom": {
-                  "list": ["categoriesParole"],
-                  "withDeclared": true
-                },
-                "label": {
-                  "fr": "Catégorie",
-                  "en": "Category"
-                },
-                "field": "category",
-                "multiple": true,
-                "options": [
-                  {
-                    "id": "complique",
-                    "value": "Compliqué",
-                    "label": {
-                      "fr": "Compliqué",
-                      "en": "Compliqué"
-                    }
-                  },
-                  {
-                    "id": "difficile",
-                    "value": "Difficile",
-                    "label": {
-                      "fr": "Difficile",
-                      "en": "Difficile"
-                    }
-                  },
-                  {
-                    "id": "a-changer",
-                    "value": "À changer",
-                    "label": {
-                      "fr": "À changer",
-                      "en": "À changer"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "territoire",
-                "label": {
-                  "fr": "Territoires",
-                  "en": "Territories"
-                },
-                "field": "territoires",
-                "multiple": true,
-                "allLabel": {
-                  "fr": "Tous les territoires",
-                  "en": "All territories"
-                },
-                "options": [
-                  {
-                    "id": "arrageois",
-                    "value": "Arrageois",
-                    "label": {
-                      "fr": "Arrageois",
-                      "en": "Arrageois"
-                    }
-                  },
-                  {
-                    "id": "artois",
-                    "value": "Artois",
-                    "label": {
-                      "fr": "Artois",
-                      "en": "Artois"
-                    }
-                  },
-                  {
-                    "id": "audomarois",
-                    "value": "Audomarois",
-                    "label": {
-                      "fr": "Audomarois",
-                      "en": "Audomarois"
-                    }
-                  },
-                  {
-                    "id": "boulonnais",
-                    "value": "Boulonnais",
-                    "label": {
-                      "fr": "Boulonnais",
-                      "en": "Boulonnais"
-                    }
-                  },
-                  {
-                    "id": "calaisis",
-                    "value": "Calaisis",
-                    "label": {
-                      "fr": "Calaisis",
-                      "en": "Calaisis"
-                    }
-                  },
-                  {
-                    "id": "entre-mer-et-terres",
-                    "value": "Entre Mer et Terres",
-                    "label": {
-                      "fr": "Entre Mer et Terres",
-                      "en": "Entre Mer et Terres"
-                    }
-                  },
-                  {
-                    "id": "familles-en-sol-mineur-henin-carvin",
-                    "value": "Familles en sol mineur Hénin Carvin",
-                    "label": {
-                      "fr": "Familles en sol mineur Hénin Carvin",
-                      "en": "Familles en sol mineur Hénin Carvin"
-                    }
-                  },
-                  {
-                    "id": "familles-en-sol-mineur-lens-lievin",
-                    "value": "Familles en sol mineur Lens Liévin",
-                    "label": {
-                      "fr": "Familles en sol mineur Lens Liévin",
-                      "en": "Familles en sol mineur Lens Liévin"
-                    }
-                  },
-                  {
-                    "id": "ternois-bruaysis",
-                    "value": "Ternois Bruaysis",
-                    "label": {
-                      "fr": "Ternois Bruaysis",
-                      "en": "Ternois Bruaysis"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "public",
-                "label": {
-                  "fr": "Publics",
-                  "en": "Audiences"
-                },
-                "field": "publics",
-                "multiple": true,
-                "allLabel": {
-                  "fr": "Tous les publics",
-                  "en": "All audiences"
-                },
-                "options": [
-                  {
-                    "id": "benevoles",
-                    "value": "Bénévoles",
-                    "label": {
-                      "fr": "Bénévoles",
-                      "en": "Bénévoles"
-                    }
-                  },
-                  {
-                    "id": "en-famille",
-                    "value": "En famille",
-                    "label": {
-                      "fr": "En famille",
-                      "en": "En famille"
-                    }
-                  },
-                  {
-                    "id": "enfance",
-                    "value": "Enfance",
-                    "label": {
-                      "fr": "Enfance",
-                      "en": "Enfance"
-                    }
-                  },
-                  {
-                    "id": "futurs-parents",
-                    "value": "Futurs parents",
-                    "label": {
-                      "fr": "Futurs parents",
-                      "en": "Futurs parents"
-                    }
-                  },
-                  {
-                    "id": "parents",
-                    "value": "Parents",
-                    "label": {
-                      "fr": "Parents",
-                      "en": "Parents"
-                    }
-                  },
-                  {
-                    "id": "parents-enfants",
-                    "value": "Parents-enfants",
-                    "label": {
-                      "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
-                    }
-                  },
-                  {
-                    "id": "professionnels",
-                    "value": "Professionnels",
-                    "label": {
-                      "fr": "Professionnels",
-                      "en": "Professionnels"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "ages",
-                "label": {
-                  "fr": "Âges",
-                  "en": "Ages"
-                },
-                "field": "ages",
-                "multiple": true,
-                "options": [
-                  {
-                    "id": "0-3-ans",
-                    "value": "0-3 ans",
-                    "label": {
-                      "fr": "0-3 ans",
-                      "en": "0-3 ans"
-                    }
-                  },
-                  {
-                    "id": "3-6-ans",
-                    "value": "3-6 ans",
-                    "label": {
-                      "fr": "3-6 ans",
-                      "en": "3-6 ans"
-                    }
-                  },
-                  {
-                    "id": "6-11-ans",
-                    "value": "6-11 ans",
-                    "label": {
-                      "fr": "6-11 ans",
-                      "en": "6-11 ans"
-                    }
-                  },
-                  {
-                    "id": "adolescence",
-                    "value": "adolescence",
-                    "label": {
-                      "fr": "adolescence",
-                      "en": "adolescence"
-                    }
-                  },
-                  {
-                    "id": "jeune-adulte",
-                    "value": "jeune adulte",
-                    "label": {
-                      "fr": "jeune adulte",
-                      "en": "jeune adulte"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "theme",
-                "optionsFrom": {
-                  "list": ["themes", "themesPoi", "themesEvents"],
-                  "withDeclared": true
-                },
-                "label": {
-                  "fr": "Thèmes",
-                  "en": "Topics"
-                },
-                "field": "themes",
-                "multiple": true,
-                "allLabel": {
-                  "fr": "Tous les thèmes",
-                  "en": "All topics"
-                },
-                "options": [
-                  {
-                    "id": "la-citoyennete",
-                    "value": "La citoyenneté",
-                    "label": {
-                      "fr": "La citoyenneté",
-                      "en": "La citoyenneté"
-                    }
-                  },
-                  {
-                    "id": "la-communication",
-                    "value": "La communication",
-                    "label": {
-                      "fr": "La communication",
-                      "en": "La communication"
-                    }
-                  },
-                  {
-                    "id": "la-culture",
-                    "value": "La culture",
-                    "label": {
-                      "fr": "La culture",
-                      "en": "La culture"
-                    }
-                  },
-                  {
-                    "id": "la-petite-enfance",
-                    "value": "La petite enfance",
-                    "label": {
-                      "fr": "La petite enfance",
-                      "en": "La petite enfance"
-                    }
-                  },
-                  {
-                    "id": "la-sante",
-                    "value": "La santé",
-                    "label": {
-                      "fr": "La santé",
-                      "en": "La santé"
-                    }
-                  },
-                  {
-                    "id": "ladolescence",
-                    "value": "L’adolescence",
-                    "label": {
-                      "fr": "L’adolescence",
-                      "en": "L’adolescence"
-                    }
-                  },
-                  {
-                    "id": "larrivee-dun-enfant",
-                    "value": "L’arrivée d’un enfant",
-                    "label": {
-                      "fr": "L’arrivée d’un enfant",
-                      "en": "L’arrivée d’un enfant"
-                    }
-                  },
-                  {
-                    "id": "le-deuil",
-                    "value": "Le deuil",
-                    "label": {
-                      "fr": "Le deuil",
-                      "en": "Le deuil"
-                    }
-                  },
-                  {
-                    "id": "le-handicap",
-                    "value": "Le handicap",
-                    "label": {
-                      "fr": "Le handicap",
-                      "en": "Le handicap"
-                    }
-                  },
-                  {
-                    "id": "le-repit",
-                    "value": "Le répit",
-                    "label": {
-                      "fr": "Le répit",
-                      "en": "Le répit"
-                    }
-                  },
-                  {
-                    "id": "lecole",
-                    "value": "L’école",
-                    "label": {
-                      "fr": "L’école",
-                      "en": "L’école"
-                    }
-                  },
-                  {
-                    "id": "leducation",
-                    "value": "L’éducation",
-                    "label": {
-                      "fr": "L’éducation",
-                      "en": "L’éducation"
-                    }
-                  },
-                  {
-                    "id": "les-activites-supports-a-la-relation",
-                    "value": "Les activités supports à la relation",
-                    "label": {
-                      "fr": "Les activités supports à la relation",
-                      "en": "Les activités supports à la relation"
-                    }
-                  },
-                  {
-                    "id": "les-ecrans-le-numerique",
-                    "value": "Les écrans – Le numérique",
-                    "label": {
-                      "fr": "Les écrans – Le numérique",
-                      "en": "Les écrans – Le numérique"
-                    }
-                  },
-                  {
-                    "id": "les-emotions",
-                    "value": "Les émotions",
-                    "label": {
-                      "fr": "Les émotions",
-                      "en": "Les émotions"
-                    }
-                  },
-                  {
-                    "id": "les-jeux",
-                    "value": "Les jeux",
-                    "label": {
-                      "fr": "Les jeux",
-                      "en": "Les jeux"
-                    }
-                  },
-                  {
-                    "id": "les-situations-de-separation",
-                    "value": "Les situations de séparation",
-                    "label": {
-                      "fr": "Les situations de séparation",
-                      "en": "Les situations de séparation"
-                    }
-                  },
-                  {
-                    "id": "les-violences",
-                    "value": "Les violences",
-                    "label": {
-                      "fr": "Les violences",
-                      "en": "Les violences"
-                    }
-                  }
-                ]
-              }
-            ]
+            "showSearch": false
           }
         },
         {
-          "type": "searchProStatic",
-          "id": "paroles-list",
+          "type": "gridLayout",
+          "id": "paroles-grid",
           "props": {
-            "customHeader": {
-              "title": {
-                "fr": "Toutes les paroles",
-                "en": "All testimonies"
-              }
-            },
-            "useFilter": true,
-            "showMap": false,
-            "enableMap": false,
-            "baseParams": {
-              "defaultTypes": [
-                "poi"
-              ],
-              "sourceKey": [
-                "parent62"
-              ],
-              "defaultFilters": {
-                "type": "affiche"
-              },
-              "defaultFields": [
-                "name",
-                "category",
-                "description",
-                "medias",
-                "territoires",
-                "publics",
-                "ages",
-                "themes",
-                "tags",
-                "created",
-                "type",
-                "source"
-              ],
-              "searchBy": [
-                "name",
-                "description"
-              ],
-              "defaultSortBy": {
-                "created": -1
-              }
-            },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 2,
-                "lg": 3
-              },
-              "card": {
-                "type": "testimonial",
-                "detailsMode": "dialog"
-              },
-              "preview": {
-                "type": "testimonial",
-                "width": "2xl"
-              },
-              "testimonial": {
-                "design": "bubble",
-                "quoteField": "description",
-                "titleField": "name",
-                "dateField": "created",
-                "audioField": "medias",
-                "subtitleField": "themes",
-                "badge": {
-                  "field": "category",
-                  "colors": {
-                    "Compliqué": "var(--chart-3)",
-                    "Difficile": "var(--chart-2)",
-                    "À changer": "var(--chart-4)"
-                  }
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftSection": {
+              "type": "filters",
+              "id": "paroles-filtres",
+              "props": {
+                "title": {
+                  "fr": "Filtres",
+                  "en": "Filters"
                 },
-                "accent": {
-                  "field": "territoires",
-                  "colors": {
-                    "Arrageois": "var(--territoire-arrageois)",
-                    "Artois": "var(--territoire-artois)",
-                    "Audomarois": "var(--territoire-audomarois)",
-                    "Boulonnais": "var(--territoire-boulonnais)",
-                    "Calaisis": "var(--territoire-calaisis)",
-                    "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
-                    "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
-                    "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
-                    "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
-                  }
-                },
-                "facets": [
+                "defaultOpenGroups": [
+                  "category",
+                  "territoire"
+                ],
+                "className": "lg:sticky lg:top-20",
+                "filterGroups": [
                   {
+                    "id": "category",
+                    "label": {
+                      "fr": "Catégorie",
+                      "en": "Category"
+                    },
+                    "field": "category",
+                    "optionsFrom": {
+                      "list": [
+                        "categoriesParole"
+                      ]
+                    },
+                    "options": []
+                  },
+                  {
+                    "id": "territoire",
+                    "label": {
+                      "fr": "Territoire",
+                      "en": "Territory"
+                    },
                     "field": "territoires",
-                    "label": {
-                      "fr": "Territoires",
-                      "en": "Territories"
-                    }
+                    "options": [
+                      {
+                        "id": "arrageois",
+                        "label": {
+                          "fr": "Arrageois",
+                          "en": "Arrageois"
+                        },
+                        "name": "Arrageois",
+                        "color": "var(--territoire-arrageois)"
+                      },
+                      {
+                        "id": "artois",
+                        "label": {
+                          "fr": "Artois",
+                          "en": "Artois"
+                        },
+                        "name": "Artois",
+                        "color": "var(--territoire-artois)"
+                      },
+                      {
+                        "id": "audomarois",
+                        "label": {
+                          "fr": "Audomarois",
+                          "en": "Audomarois"
+                        },
+                        "name": "Audomarois",
+                        "color": "var(--territoire-audomarois)"
+                      },
+                      {
+                        "id": "boulonnais",
+                        "label": {
+                          "fr": "Boulonnais",
+                          "en": "Boulonnais"
+                        },
+                        "name": "Boulonnais",
+                        "color": "var(--territoire-boulonnais)"
+                      },
+                      {
+                        "id": "calaisis",
+                        "label": {
+                          "fr": "Calaisis",
+                          "en": "Calaisis"
+                        },
+                        "name": "Calaisis",
+                        "color": "var(--territoire-calaisis)"
+                      },
+                      {
+                        "id": "entre-mer-et-terres",
+                        "label": {
+                          "fr": "Entre Mer et Terres",
+                          "en": "Entre Mer et Terres"
+                        },
+                        "name": "Entre Mer et Terres",
+                        "color": "var(--territoire-entre-mer-et-terres)"
+                      },
+                      {
+                        "id": "fsm-henin-carvin",
+                        "label": {
+                          "fr": "Familles en sol mineur Hénin Carvin",
+                          "en": "Familles en sol mineur Hénin Carvin"
+                        },
+                        "name": "Familles en sol mineur Hénin Carvin",
+                        "color": "var(--territoire-fsm-henin-carvin)"
+                      },
+                      {
+                        "id": "fsm-lens-lievin",
+                        "label": {
+                          "fr": "Familles en sol mineur Lens Liévin",
+                          "en": "Familles en sol mineur Lens Liévin"
+                        },
+                        "name": "Familles en sol mineur Lens Liévin",
+                        "color": "var(--territoire-fsm-lens-lievin)"
+                      },
+                      {
+                        "id": "ternois-bruaysis",
+                        "label": {
+                          "fr": "Ternois Bruaysis",
+                          "en": "Ternois Bruaysis"
+                        },
+                        "name": "Ternois Bruaysis",
+                        "color": "var(--territoire-ternois-bruaysis)"
+                      }
+                    ]
                   },
                   {
+                    "id": "public",
+                    "label": {
+                      "fr": "Public",
+                      "en": "Audience"
+                    },
                     "field": "publics",
-                    "label": {
-                      "fr": "Publics",
-                      "en": "Audiences"
-                    }
+                    "options": [
+                      {
+                        "id": "adolescence",
+                        "label": {
+                          "fr": "Adolescence",
+                          "en": "Adolescence"
+                        },
+                        "name": "Adolescence"
+                      },
+                      {
+                        "id": "benevoles",
+                        "label": {
+                          "fr": "Bénévoles",
+                          "en": "Volunteers"
+                        },
+                        "name": "Bénévoles"
+                      },
+                      {
+                        "id": "en-famille",
+                        "label": {
+                          "fr": "En famille",
+                          "en": "As a family"
+                        },
+                        "name": "En famille"
+                      },
+                      {
+                        "id": "enfance",
+                        "label": {
+                          "fr": "Enfance",
+                          "en": "Childhood"
+                        },
+                        "name": "Enfance"
+                      },
+                      {
+                        "id": "futurs-parents",
+                        "label": {
+                          "fr": "Futurs parents",
+                          "en": "Parents-to-be"
+                        },
+                        "name": "Futurs parents"
+                      },
+                      {
+                        "id": "parents",
+                        "label": {
+                          "fr": "Parents",
+                          "en": "Parents"
+                        },
+                        "name": "Parents"
+                      },
+                      {
+                        "id": "parents-enfants",
+                        "label": {
+                          "fr": "Parents-enfants",
+                          "en": "Parents & children"
+                        },
+                        "name": "Parents-enfants"
+                      },
+                      {
+                        "id": "petite-enfance",
+                        "label": {
+                          "fr": "Petite enfance",
+                          "en": "Early childhood"
+                        },
+                        "name": "Petite enfance"
+                      },
+                      {
+                        "id": "professionnels",
+                        "label": {
+                          "fr": "Professionnels",
+                          "en": "Professionals"
+                        },
+                        "name": "Professionnels"
+                      }
+                    ]
                   },
                   {
-                    "field": "ages",
+                    "id": "ages",
                     "label": {
                       "fr": "Âges",
                       "en": "Ages"
-                    }
+                    },
+                    "field": "ages",
+                    "options": [
+                      {
+                        "id": "0-3-ans",
+                        "label": {
+                          "fr": "0-3 ans",
+                          "en": "0-3 ans"
+                        },
+                        "name": "0-3 ans"
+                      },
+                      {
+                        "id": "3-6-ans",
+                        "label": {
+                          "fr": "3-6 ans",
+                          "en": "3-6 ans"
+                        },
+                        "name": "3-6 ans"
+                      },
+                      {
+                        "id": "6-11-ans",
+                        "label": {
+                          "fr": "6-11 ans",
+                          "en": "6-11 ans"
+                        },
+                        "name": "6-11 ans"
+                      },
+                      {
+                        "id": "adolescence",
+                        "label": {
+                          "fr": "adolescence",
+                          "en": "adolescence"
+                        },
+                        "name": "adolescence"
+                      },
+                      {
+                        "id": "jeune-adulte",
+                        "label": {
+                          "fr": "jeune adulte",
+                          "en": "jeune adulte"
+                        },
+                        "name": "jeune adulte"
+                      }
+                    ]
                   },
                   {
-                    "field": "themes",
+                    "id": "themes",
+                    "optionsFrom": {
+                      "list": [
+                        "themes",
+                        "themesPoi",
+                        "themesEvents"
+                      ],
+                      "withDeclared": true
+                    },
                     "label": {
                       "fr": "Thèmes",
-                      "en": "Themes"
-                    }
-                  },
-                  {
-                    "field": "tags",
-                    "label": {
-                      "fr": "Mots-clés",
-                      "en": "Keywords"
-                    }
+                      "en": "Topics"
+                    },
+                    "field": "themes",
+                    "options": [
+                      {
+                        "id": "la-citoyennete",
+                        "label": {
+                          "fr": "La citoyenneté",
+                          "en": "La citoyenneté"
+                        },
+                        "name": "La citoyenneté"
+                      },
+                      {
+                        "id": "la-communication",
+                        "label": {
+                          "fr": "La communication",
+                          "en": "La communication"
+                        },
+                        "name": "La communication"
+                      },
+                      {
+                        "id": "la-culture",
+                        "label": {
+                          "fr": "La culture",
+                          "en": "La culture"
+                        },
+                        "name": "La culture"
+                      },
+                      {
+                        "id": "la-petite-enfance",
+                        "label": {
+                          "fr": "La petite enfance",
+                          "en": "La petite enfance"
+                        },
+                        "name": "La petite enfance"
+                      },
+                      {
+                        "id": "la-sante",
+                        "label": {
+                          "fr": "La santé",
+                          "en": "La santé"
+                        },
+                        "name": "La santé"
+                      },
+                      {
+                        "id": "l-adolescence",
+                        "label": {
+                          "fr": "L’adolescence",
+                          "en": "L’adolescence"
+                        },
+                        "name": "L’adolescence"
+                      },
+                      {
+                        "id": "l-arrivee-d-un-enfant",
+                        "label": {
+                          "fr": "L’arrivée d’un enfant",
+                          "en": "L’arrivée d’un enfant"
+                        },
+                        "name": "L’arrivée d’un enfant"
+                      },
+                      {
+                        "id": "le-deuil",
+                        "label": {
+                          "fr": "Le deuil",
+                          "en": "Le deuil"
+                        },
+                        "name": "Le deuil"
+                      },
+                      {
+                        "id": "le-handicap",
+                        "label": {
+                          "fr": "Le handicap",
+                          "en": "Le handicap"
+                        },
+                        "name": "Le handicap"
+                      },
+                      {
+                        "id": "le-repit",
+                        "label": {
+                          "fr": "Le répit",
+                          "en": "Le répit"
+                        },
+                        "name": "Le répit"
+                      },
+                      {
+                        "id": "l-ecole",
+                        "label": {
+                          "fr": "L’école",
+                          "en": "L’école"
+                        },
+                        "name": "L’école"
+                      },
+                      {
+                        "id": "l-education",
+                        "label": {
+                          "fr": "L’éducation",
+                          "en": "L’éducation"
+                        },
+                        "name": "L’éducation"
+                      },
+                      {
+                        "id": "les-activites-supports-a-la-relation",
+                        "label": {
+                          "fr": "Les activités supports à la relation",
+                          "en": "Les activités supports à la relation"
+                        },
+                        "name": "Les activités supports à la relation"
+                      },
+                      {
+                        "id": "les-ecrans-le-numerique",
+                        "label": {
+                          "fr": "Les écrans – Le numérique",
+                          "en": "Les écrans – Le numérique"
+                        },
+                        "name": "Les écrans – Le numérique"
+                      },
+                      {
+                        "id": "les-emotions",
+                        "label": {
+                          "fr": "Les émotions",
+                          "en": "Les émotions"
+                        },
+                        "name": "Les émotions"
+                      },
+                      {
+                        "id": "les-jeux",
+                        "label": {
+                          "fr": "Les jeux",
+                          "en": "Les jeux"
+                        },
+                        "name": "Les jeux"
+                      },
+                      {
+                        "id": "les-situations-de-separation",
+                        "label": {
+                          "fr": "Les situations de séparation",
+                          "en": "Les situations de séparation"
+                        },
+                        "name": "Les situations de séparation"
+                      },
+                      {
+                        "id": "les-violences",
+                        "label": {
+                          "fr": "Les violences",
+                          "en": "Les violences"
+                        },
+                        "name": "Les violences"
+                      }
+                    ]
                   }
                 ]
+              }
+            },
+            "rightSection": {
+              "type": "searchProStatic",
+              "id": "paroles-list",
+              "props": {
+                "customHeader": {
+                  "title": {
+                    "fr": "Toutes les paroles",
+                    "en": "All testimonies"
+                  }
+                },
+                "useFilter": true,
+                "showMap": false,
+                "enableMap": true,
+                "baseParams": {
+                  "defaultTypes": [
+                    "poi"
+                  ],
+                  "sourceKey": [
+                    "parent62"
+                  ],
+                  "defaultFilters": {
+                    "type": "affiche"
+                  },
+                  "defaultFields": [
+                    "name",
+                    "slug",
+                    "category",
+                    "description",
+                    "medias",
+                    "profilImageUrl",
+                    "profilMediumImageUrl",
+                    "address",
+                    "geo",
+                    "geoPosition",
+                    "territoires",
+                    "publics",
+                    "ages",
+                    "themes",
+                    "tags",
+                    "created",
+                    "type",
+                    "source"
+                  ],
+                  "searchBy": [
+                    "name",
+                    "description"
+                  ],
+                  "defaultSortBy": {
+                    "created": -1
+                  }
+                },
+                "map": {
+                  "layout": "split",
+                  "cluster": true,
+                  "itemAction": {
+                    "kind": "preview"
+                  },
+                  "marker": {
+                    "style": "pin",
+                    "colorBy": {
+                      "path": "territoires",
+                      "mapping": {
+                        "Arrageois": "var(--territoire-arrageois)",
+                        "Artois": "var(--territoire-artois)",
+                        "Audomarois": "var(--territoire-audomarois)",
+                        "Boulonnais": "var(--territoire-boulonnais)",
+                        "Calaisis": "var(--territoire-calaisis)",
+                        "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
+                        "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
+                        "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
+                        "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
+                      }
+                    }
+                  }
+                },
+                "list": {
+                  "columns": {
+                    "sm": 1,
+                    "md": 2,
+                    "lg": 3
+                  },
+                  "card": {
+                    "type": "testimonial",
+                    "detailsMode": "dialog"
+                  },
+                  "preview": {
+                    "type": "testimonial",
+                    "width": "2xl"
+                  },
+                  "testimonial": {
+                    "design": "bubble",
+                    "quoteField": "description",
+                    "titleField": "name",
+                    "dateField": "created",
+                    "audioField": "medias",
+                    "subtitleField": "themes",
+                    "badge": {
+                      "field": "category"
+                    },
+                    "accent": {
+                      "field": "territoires",
+                      "colors": {
+                        "Arrageois": "var(--territoire-arrageois)",
+                        "Artois": "var(--territoire-artois)",
+                        "Audomarois": "var(--territoire-audomarois)",
+                        "Boulonnais": "var(--territoire-boulonnais)",
+                        "Calaisis": "var(--territoire-calaisis)",
+                        "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
+                        "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
+                        "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
+                        "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
+                      }
+                    },
+                    "facets": [
+                      {
+                        "field": "territoires",
+                        "label": {
+                          "fr": "Territoires",
+                          "en": "Territories"
+                        }
+                      },
+                      {
+                        "field": "publics",
+                        "label": {
+                          "fr": "Publics",
+                          "en": "Audiences"
+                        }
+                      },
+                      {
+                        "field": "ages",
+                        "label": {
+                          "fr": "Âges",
+                          "en": "Ages"
+                        }
+                      },
+                      {
+                        "field": "themes",
+                        "label": {
+                          "fr": "Thèmes",
+                          "en": "Themes"
+                        }
+                      },
+                      {
+                        "field": "tags",
+                        "label": {
+                          "fr": "Mots-clés",
+                          "en": "Keywords"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "showActiveFiltersTags": true
               }
             }
           }
@@ -4050,11 +4187,11 @@
                     }
                   },
                   {
-                    "id": "les-jeux-du-reseau",
-                    "value": "Les jeux du réseau",
+                    "id": "jeu",
+                    "value": "Jeu",
                     "label": {
-                      "fr": "Les jeux du réseau",
-                      "en": "Les jeux du réseau"
+                      "fr": "Jeu",
+                      "en": "Game"
                     }
                   },
                   {
@@ -4071,22 +4208,6 @@
                     "label": {
                       "fr": "Lien",
                       "en": "Lien"
-                    }
-                  },
-                  {
-                    "id": "inforeso",
-                    "value": "Inforéso",
-                    "label": {
-                      "fr": "Inforéso",
-                      "en": "Inforéso"
-                    }
-                  },
-                  {
-                    "id": "elles-et-ils-ont-marque-le-reseau",
-                    "value": "Elles et ils ont marqué le réseau",
-                    "label": {
-                      "fr": "Elles et ils ont marqué le réseau",
-                      "en": "Elles et ils ont marqué le réseau"
                     }
                   }
                 ]
@@ -4192,11 +4313,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -4204,7 +4333,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -4212,7 +4341,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -4220,7 +4349,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -4236,7 +4365,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -4244,7 +4381,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -4589,16 +4726,9 @@
                     "Vidéo": "var(--chart-1)",
                     "Photo": "var(--chart-2)",
                     "Compte-rendu": "var(--chart-3)",
-                    "Les jeux du réseau": "var(--chart-4)",
+                    "Jeu": "var(--chart-4)",
                     "Document": "var(--chart-5)",
-                    "Lien": "var(--primary)",
-                    "Inforéso": "var(--info)",
-                    "Elles et ils ont marqué le réseau": "var(--success)"
-                  },
-                  "icons": {
-                    "Inforéso": "newspaper",
-                    "Elles et ils ont marqué le réseau": "award",
-                    "Les jeux du réseau": "gamepad-2"
+                    "Lien": "var(--primary)"
                   }
                 },
                 "facets": [
@@ -4762,11 +4892,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -4774,7 +4912,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -4782,7 +4920,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -4790,7 +4928,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -4806,7 +4944,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -4814,7 +4960,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -5093,11 +5239,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -5105,7 +5259,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -5113,7 +5267,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -5121,7 +5275,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -5137,7 +5291,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -5145,7 +5307,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -5313,11 +5475,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -5325,7 +5495,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -5333,7 +5503,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -5341,7 +5511,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -5357,7 +5527,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -5365,7 +5543,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -5533,11 +5711,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -5545,7 +5731,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -5553,7 +5739,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -5561,7 +5747,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -5577,7 +5763,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -5585,7 +5779,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -5753,11 +5947,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -5765,7 +5967,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -5773,7 +5975,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -5781,7 +5983,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -5797,7 +5999,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -5805,7 +6015,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -5973,11 +6183,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -5985,7 +6203,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -5993,7 +6211,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -6001,7 +6219,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -6017,7 +6235,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -6025,7 +6251,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -6193,11 +6419,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -6205,7 +6439,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -6213,7 +6447,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -6221,7 +6455,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -6237,7 +6471,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -6245,7 +6487,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -6413,11 +6655,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -6425,7 +6675,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -6433,7 +6683,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -6441,7 +6691,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -6457,7 +6707,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -6465,7 +6723,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -6633,11 +6891,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -6645,7 +6911,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -6653,7 +6919,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -6661,7 +6927,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -6677,7 +6943,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -6685,7 +6959,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -6829,8 +7103,8 @@
               "en": "Volunteers"
             },
             "subhead": {
-              "fr": "Ressources et actions pour les bénévoles du réseau.",
-              "en": "Resources and actions for network volunteers."
+              "fr": "Les actions autour de ce public",
+              "en": "Initiatives related to this audience"
             },
             "showSearch": true,
             "searchPlaceholder": {
@@ -6840,9 +7114,100 @@
             "showActiveFiltersTags": true,
             "dropdownFilters": [
               {
+                "id": "public",
+                "label": {
+                  "fr": "Publics",
+                  "en": "Audiences"
+                },
+                "field": "publics",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les publics",
+                  "en": "All audiences"
+                },
+                "options": [
+                  {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
+                    "id": "benevoles",
+                    "value": "Bénévoles",
+                    "label": {
+                      "fr": "Bénévoles",
+                      "en": "Volunteers"
+                    }
+                  },
+                  {
+                    "id": "en-famille",
+                    "value": "En famille",
+                    "label": {
+                      "fr": "En famille",
+                      "en": "As a family"
+                    }
+                  },
+                  {
+                    "id": "enfance",
+                    "value": "Enfance",
+                    "label": {
+                      "fr": "Enfance",
+                      "en": "Childhood"
+                    }
+                  },
+                  {
+                    "id": "futurs-parents",
+                    "value": "Futurs parents",
+                    "label": {
+                      "fr": "Futurs parents",
+                      "en": "Parents-to-be"
+                    }
+                  },
+                  {
+                    "id": "parents",
+                    "value": "Parents",
+                    "label": {
+                      "fr": "Parents",
+                      "en": "Parents"
+                    }
+                  },
+                  {
+                    "id": "parents-enfants",
+                    "value": "Parents-enfants",
+                    "label": {
+                      "fr": "Parents-enfants",
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
+                    }
+                  },
+                  {
+                    "id": "professionnels",
+                    "value": "Professionnels",
+                    "label": {
+                      "fr": "Professionnels",
+                      "en": "Professionals"
+                    }
+                  }
+                ]
+              },
+              {
                 "id": "theme",
                 "optionsFrom": {
-                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "list": [
+                    "themes",
+                    "themesPoi",
+                    "themesEvents"
+                  ],
                   "withDeclared": true
                 },
                 "label": {
@@ -7089,7 +7454,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "headlineFromFilter": "public"
           }
         },
         {
@@ -7141,8 +7507,8 @@
               "en": "As a family"
             },
             "subhead": {
-              "fr": "Ressources et actions à vivre en famille.",
-              "en": "Resources and actions to enjoy as a family."
+              "fr": "Les actions autour de ce public",
+              "en": "Initiatives related to this audience"
             },
             "showSearch": true,
             "searchPlaceholder": {
@@ -7152,9 +7518,100 @@
             "showActiveFiltersTags": true,
             "dropdownFilters": [
               {
+                "id": "public",
+                "label": {
+                  "fr": "Publics",
+                  "en": "Audiences"
+                },
+                "field": "publics",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les publics",
+                  "en": "All audiences"
+                },
+                "options": [
+                  {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
+                    "id": "benevoles",
+                    "value": "Bénévoles",
+                    "label": {
+                      "fr": "Bénévoles",
+                      "en": "Volunteers"
+                    }
+                  },
+                  {
+                    "id": "en-famille",
+                    "value": "En famille",
+                    "label": {
+                      "fr": "En famille",
+                      "en": "As a family"
+                    }
+                  },
+                  {
+                    "id": "enfance",
+                    "value": "Enfance",
+                    "label": {
+                      "fr": "Enfance",
+                      "en": "Childhood"
+                    }
+                  },
+                  {
+                    "id": "futurs-parents",
+                    "value": "Futurs parents",
+                    "label": {
+                      "fr": "Futurs parents",
+                      "en": "Parents-to-be"
+                    }
+                  },
+                  {
+                    "id": "parents",
+                    "value": "Parents",
+                    "label": {
+                      "fr": "Parents",
+                      "en": "Parents"
+                    }
+                  },
+                  {
+                    "id": "parents-enfants",
+                    "value": "Parents-enfants",
+                    "label": {
+                      "fr": "Parents-enfants",
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
+                    }
+                  },
+                  {
+                    "id": "professionnels",
+                    "value": "Professionnels",
+                    "label": {
+                      "fr": "Professionnels",
+                      "en": "Professionals"
+                    }
+                  }
+                ]
+              },
+              {
                 "id": "theme",
                 "optionsFrom": {
-                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "list": [
+                    "themes",
+                    "themesPoi",
+                    "themesEvents"
+                  ],
                   "withDeclared": true
                 },
                 "label": {
@@ -7401,7 +7858,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "headlineFromFilter": "public"
           }
         },
         {
@@ -7453,8 +7911,8 @@
               "en": "Childhood"
             },
             "subhead": {
-              "fr": "Ressources et actions dédiées à l'enfance.",
-              "en": "Resources and actions dedicated to childhood."
+              "fr": "Les actions autour de ce public",
+              "en": "Initiatives related to this audience"
             },
             "showSearch": true,
             "searchPlaceholder": {
@@ -7464,9 +7922,100 @@
             "showActiveFiltersTags": true,
             "dropdownFilters": [
               {
+                "id": "public",
+                "label": {
+                  "fr": "Publics",
+                  "en": "Audiences"
+                },
+                "field": "publics",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les publics",
+                  "en": "All audiences"
+                },
+                "options": [
+                  {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
+                    "id": "benevoles",
+                    "value": "Bénévoles",
+                    "label": {
+                      "fr": "Bénévoles",
+                      "en": "Volunteers"
+                    }
+                  },
+                  {
+                    "id": "en-famille",
+                    "value": "En famille",
+                    "label": {
+                      "fr": "En famille",
+                      "en": "As a family"
+                    }
+                  },
+                  {
+                    "id": "enfance",
+                    "value": "Enfance",
+                    "label": {
+                      "fr": "Enfance",
+                      "en": "Childhood"
+                    }
+                  },
+                  {
+                    "id": "futurs-parents",
+                    "value": "Futurs parents",
+                    "label": {
+                      "fr": "Futurs parents",
+                      "en": "Parents-to-be"
+                    }
+                  },
+                  {
+                    "id": "parents",
+                    "value": "Parents",
+                    "label": {
+                      "fr": "Parents",
+                      "en": "Parents"
+                    }
+                  },
+                  {
+                    "id": "parents-enfants",
+                    "value": "Parents-enfants",
+                    "label": {
+                      "fr": "Parents-enfants",
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
+                    }
+                  },
+                  {
+                    "id": "professionnels",
+                    "value": "Professionnels",
+                    "label": {
+                      "fr": "Professionnels",
+                      "en": "Professionals"
+                    }
+                  }
+                ]
+              },
+              {
                 "id": "theme",
                 "optionsFrom": {
-                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "list": [
+                    "themes",
+                    "themesPoi",
+                    "themesEvents"
+                  ],
                   "withDeclared": true
                 },
                 "label": {
@@ -7713,7 +8262,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "headlineFromFilter": "public"
           }
         },
         {
@@ -7765,8 +8315,8 @@
               "en": "Parents-to-be"
             },
             "subhead": {
-              "fr": "Ressources et actions pour préparer l'arrivée d'un enfant.",
-              "en": "Resources and actions to prepare for a new child."
+              "fr": "Les actions autour de ce public",
+              "en": "Initiatives related to this audience"
             },
             "showSearch": true,
             "searchPlaceholder": {
@@ -7776,9 +8326,100 @@
             "showActiveFiltersTags": true,
             "dropdownFilters": [
               {
+                "id": "public",
+                "label": {
+                  "fr": "Publics",
+                  "en": "Audiences"
+                },
+                "field": "publics",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les publics",
+                  "en": "All audiences"
+                },
+                "options": [
+                  {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
+                    "id": "benevoles",
+                    "value": "Bénévoles",
+                    "label": {
+                      "fr": "Bénévoles",
+                      "en": "Volunteers"
+                    }
+                  },
+                  {
+                    "id": "en-famille",
+                    "value": "En famille",
+                    "label": {
+                      "fr": "En famille",
+                      "en": "As a family"
+                    }
+                  },
+                  {
+                    "id": "enfance",
+                    "value": "Enfance",
+                    "label": {
+                      "fr": "Enfance",
+                      "en": "Childhood"
+                    }
+                  },
+                  {
+                    "id": "futurs-parents",
+                    "value": "Futurs parents",
+                    "label": {
+                      "fr": "Futurs parents",
+                      "en": "Parents-to-be"
+                    }
+                  },
+                  {
+                    "id": "parents",
+                    "value": "Parents",
+                    "label": {
+                      "fr": "Parents",
+                      "en": "Parents"
+                    }
+                  },
+                  {
+                    "id": "parents-enfants",
+                    "value": "Parents-enfants",
+                    "label": {
+                      "fr": "Parents-enfants",
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
+                    }
+                  },
+                  {
+                    "id": "professionnels",
+                    "value": "Professionnels",
+                    "label": {
+                      "fr": "Professionnels",
+                      "en": "Professionals"
+                    }
+                  }
+                ]
+              },
+              {
                 "id": "theme",
                 "optionsFrom": {
-                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "list": [
+                    "themes",
+                    "themesPoi",
+                    "themesEvents"
+                  ],
                   "withDeclared": true
                 },
                 "label": {
@@ -8025,7 +8666,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "headlineFromFilter": "public"
           }
         },
         {
@@ -8077,8 +8719,8 @@
               "en": "Parents"
             },
             "subhead": {
-              "fr": "Ressources et actions dédiées aux parents.",
-              "en": "Resources and actions dedicated to parents."
+              "fr": "Les actions autour de ce public",
+              "en": "Initiatives related to this audience"
             },
             "showSearch": true,
             "searchPlaceholder": {
@@ -8088,9 +8730,100 @@
             "showActiveFiltersTags": true,
             "dropdownFilters": [
               {
+                "id": "public",
+                "label": {
+                  "fr": "Publics",
+                  "en": "Audiences"
+                },
+                "field": "publics",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les publics",
+                  "en": "All audiences"
+                },
+                "options": [
+                  {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
+                    "id": "benevoles",
+                    "value": "Bénévoles",
+                    "label": {
+                      "fr": "Bénévoles",
+                      "en": "Volunteers"
+                    }
+                  },
+                  {
+                    "id": "en-famille",
+                    "value": "En famille",
+                    "label": {
+                      "fr": "En famille",
+                      "en": "As a family"
+                    }
+                  },
+                  {
+                    "id": "enfance",
+                    "value": "Enfance",
+                    "label": {
+                      "fr": "Enfance",
+                      "en": "Childhood"
+                    }
+                  },
+                  {
+                    "id": "futurs-parents",
+                    "value": "Futurs parents",
+                    "label": {
+                      "fr": "Futurs parents",
+                      "en": "Parents-to-be"
+                    }
+                  },
+                  {
+                    "id": "parents",
+                    "value": "Parents",
+                    "label": {
+                      "fr": "Parents",
+                      "en": "Parents"
+                    }
+                  },
+                  {
+                    "id": "parents-enfants",
+                    "value": "Parents-enfants",
+                    "label": {
+                      "fr": "Parents-enfants",
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
+                    }
+                  },
+                  {
+                    "id": "professionnels",
+                    "value": "Professionnels",
+                    "label": {
+                      "fr": "Professionnels",
+                      "en": "Professionals"
+                    }
+                  }
+                ]
+              },
+              {
                 "id": "theme",
                 "optionsFrom": {
-                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "list": [
+                    "themes",
+                    "themesPoi",
+                    "themesEvents"
+                  ],
                   "withDeclared": true
                 },
                 "label": {
@@ -8337,7 +9070,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "headlineFromFilter": "public"
           }
         },
         {
@@ -8389,8 +9123,8 @@
               "en": "Parents & children"
             },
             "subhead": {
-              "fr": "Ressources et actions à partager entre parents et enfants.",
-              "en": "Resources and actions to share between parents and children."
+              "fr": "Les actions autour de ce public",
+              "en": "Initiatives related to this audience"
             },
             "showSearch": true,
             "searchPlaceholder": {
@@ -8400,9 +9134,100 @@
             "showActiveFiltersTags": true,
             "dropdownFilters": [
               {
+                "id": "public",
+                "label": {
+                  "fr": "Publics",
+                  "en": "Audiences"
+                },
+                "field": "publics",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les publics",
+                  "en": "All audiences"
+                },
+                "options": [
+                  {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
+                    "id": "benevoles",
+                    "value": "Bénévoles",
+                    "label": {
+                      "fr": "Bénévoles",
+                      "en": "Volunteers"
+                    }
+                  },
+                  {
+                    "id": "en-famille",
+                    "value": "En famille",
+                    "label": {
+                      "fr": "En famille",
+                      "en": "As a family"
+                    }
+                  },
+                  {
+                    "id": "enfance",
+                    "value": "Enfance",
+                    "label": {
+                      "fr": "Enfance",
+                      "en": "Childhood"
+                    }
+                  },
+                  {
+                    "id": "futurs-parents",
+                    "value": "Futurs parents",
+                    "label": {
+                      "fr": "Futurs parents",
+                      "en": "Parents-to-be"
+                    }
+                  },
+                  {
+                    "id": "parents",
+                    "value": "Parents",
+                    "label": {
+                      "fr": "Parents",
+                      "en": "Parents"
+                    }
+                  },
+                  {
+                    "id": "parents-enfants",
+                    "value": "Parents-enfants",
+                    "label": {
+                      "fr": "Parents-enfants",
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
+                    }
+                  },
+                  {
+                    "id": "professionnels",
+                    "value": "Professionnels",
+                    "label": {
+                      "fr": "Professionnels",
+                      "en": "Professionals"
+                    }
+                  }
+                ]
+              },
+              {
                 "id": "theme",
                 "optionsFrom": {
-                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "list": [
+                    "themes",
+                    "themesPoi",
+                    "themesEvents"
+                  ],
                   "withDeclared": true
                 },
                 "label": {
@@ -8649,7 +9474,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "headlineFromFilter": "public"
           }
         },
         {
@@ -8701,8 +9527,8 @@
               "en": "Professionals"
             },
             "subhead": {
-              "fr": "Ressources et actions dédiées aux professionnels de la parentalité.",
-              "en": "Resources and actions dedicated to parenting professionals."
+              "fr": "Les actions autour de ce public",
+              "en": "Initiatives related to this audience"
             },
             "showSearch": true,
             "searchPlaceholder": {
@@ -8712,9 +9538,100 @@
             "showActiveFiltersTags": true,
             "dropdownFilters": [
               {
+                "id": "public",
+                "label": {
+                  "fr": "Publics",
+                  "en": "Audiences"
+                },
+                "field": "publics",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les publics",
+                  "en": "All audiences"
+                },
+                "options": [
+                  {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
+                    "id": "benevoles",
+                    "value": "Bénévoles",
+                    "label": {
+                      "fr": "Bénévoles",
+                      "en": "Volunteers"
+                    }
+                  },
+                  {
+                    "id": "en-famille",
+                    "value": "En famille",
+                    "label": {
+                      "fr": "En famille",
+                      "en": "As a family"
+                    }
+                  },
+                  {
+                    "id": "enfance",
+                    "value": "Enfance",
+                    "label": {
+                      "fr": "Enfance",
+                      "en": "Childhood"
+                    }
+                  },
+                  {
+                    "id": "futurs-parents",
+                    "value": "Futurs parents",
+                    "label": {
+                      "fr": "Futurs parents",
+                      "en": "Parents-to-be"
+                    }
+                  },
+                  {
+                    "id": "parents",
+                    "value": "Parents",
+                    "label": {
+                      "fr": "Parents",
+                      "en": "Parents"
+                    }
+                  },
+                  {
+                    "id": "parents-enfants",
+                    "value": "Parents-enfants",
+                    "label": {
+                      "fr": "Parents-enfants",
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
+                    }
+                  },
+                  {
+                    "id": "professionnels",
+                    "value": "Professionnels",
+                    "label": {
+                      "fr": "Professionnels",
+                      "en": "Professionals"
+                    }
+                  }
+                ]
+              },
+              {
                 "id": "theme",
                 "optionsFrom": {
-                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "list": [
+                    "themes",
+                    "themesPoi",
+                    "themesEvents"
+                  ],
                   "withDeclared": true
                 },
                 "label": {
@@ -8961,7 +9878,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "headlineFromFilter": "public"
           }
         },
         {
@@ -8975,6 +9893,814 @@
               "publics": {
                 "$in": [
                   "Professionnels"
+                ]
+              }
+            },
+            "fullWidth": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "/public/petite-enfance",
+      "title": {
+        "fr": "Petite enfance",
+        "en": "Early childhood"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Petite enfance — Parent62",
+          "en": "Early childhood — Parent62"
+        },
+        "description": {
+          "fr": "Ressources et actions dédiées à la petite enfance.",
+          "en": "Resources and actions dedicated to early childhood."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/parent62/hero-carte.png"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "/public/petite-enfance-header",
+          "props": {
+            "headline": {
+              "fr": "Petite enfance",
+              "en": "Early childhood"
+            },
+            "subhead": {
+              "fr": "Les actions autour de ce public",
+              "en": "Initiatives related to this audience"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher…",
+              "en": "Search…"
+            },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "public",
+                "label": {
+                  "fr": "Publics",
+                  "en": "Audiences"
+                },
+                "field": "publics",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les publics",
+                  "en": "All audiences"
+                },
+                "options": [
+                  {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
+                    "id": "benevoles",
+                    "value": "Bénévoles",
+                    "label": {
+                      "fr": "Bénévoles",
+                      "en": "Volunteers"
+                    }
+                  },
+                  {
+                    "id": "en-famille",
+                    "value": "En famille",
+                    "label": {
+                      "fr": "En famille",
+                      "en": "As a family"
+                    }
+                  },
+                  {
+                    "id": "enfance",
+                    "value": "Enfance",
+                    "label": {
+                      "fr": "Enfance",
+                      "en": "Childhood"
+                    }
+                  },
+                  {
+                    "id": "futurs-parents",
+                    "value": "Futurs parents",
+                    "label": {
+                      "fr": "Futurs parents",
+                      "en": "Parents-to-be"
+                    }
+                  },
+                  {
+                    "id": "parents",
+                    "value": "Parents",
+                    "label": {
+                      "fr": "Parents",
+                      "en": "Parents"
+                    }
+                  },
+                  {
+                    "id": "parents-enfants",
+                    "value": "Parents-enfants",
+                    "label": {
+                      "fr": "Parents-enfants",
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
+                    }
+                  },
+                  {
+                    "id": "professionnels",
+                    "value": "Professionnels",
+                    "label": {
+                      "fr": "Professionnels",
+                      "en": "Professionals"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "theme",
+                "optionsFrom": {
+                  "list": [
+                    "themes",
+                    "themesPoi",
+                    "themesEvents"
+                  ],
+                  "withDeclared": true
+                },
+                "label": {
+                  "fr": "Thèmes",
+                  "en": "Topics"
+                },
+                "field": "themes",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les thèmes",
+                  "en": "All topics"
+                },
+                "options": [
+                  {
+                    "id": "la-citoyennete",
+                    "value": "La citoyenneté",
+                    "label": {
+                      "fr": "La citoyenneté",
+                      "en": "La citoyenneté"
+                    }
+                  },
+                  {
+                    "id": "la-communication",
+                    "value": "La communication",
+                    "label": {
+                      "fr": "La communication",
+                      "en": "La communication"
+                    }
+                  },
+                  {
+                    "id": "la-culture",
+                    "value": "La culture",
+                    "label": {
+                      "fr": "La culture",
+                      "en": "La culture"
+                    }
+                  },
+                  {
+                    "id": "la-petite-enfance",
+                    "value": "La petite enfance",
+                    "label": {
+                      "fr": "La petite enfance",
+                      "en": "La petite enfance"
+                    }
+                  },
+                  {
+                    "id": "la-sante",
+                    "value": "La santé",
+                    "label": {
+                      "fr": "La santé",
+                      "en": "La santé"
+                    }
+                  },
+                  {
+                    "id": "ladolescence",
+                    "value": "L’adolescence",
+                    "label": {
+                      "fr": "L’adolescence",
+                      "en": "L’adolescence"
+                    }
+                  },
+                  {
+                    "id": "larrivee-dun-enfant",
+                    "value": "L’arrivée d’un enfant",
+                    "label": {
+                      "fr": "L’arrivée d’un enfant",
+                      "en": "L’arrivée d’un enfant"
+                    }
+                  },
+                  {
+                    "id": "le-deuil",
+                    "value": "Le deuil",
+                    "label": {
+                      "fr": "Le deuil",
+                      "en": "Le deuil"
+                    }
+                  },
+                  {
+                    "id": "le-handicap",
+                    "value": "Le handicap",
+                    "label": {
+                      "fr": "Le handicap",
+                      "en": "Le handicap"
+                    }
+                  },
+                  {
+                    "id": "le-repit",
+                    "value": "Le répit",
+                    "label": {
+                      "fr": "Le répit",
+                      "en": "Le répit"
+                    }
+                  },
+                  {
+                    "id": "lecole",
+                    "value": "L’école",
+                    "label": {
+                      "fr": "L’école",
+                      "en": "L’école"
+                    }
+                  },
+                  {
+                    "id": "leducation",
+                    "value": "L’éducation",
+                    "label": {
+                      "fr": "L’éducation",
+                      "en": "L’éducation"
+                    }
+                  },
+                  {
+                    "id": "les-activites-supports-a-la-relation",
+                    "value": "Les activités supports à la relation",
+                    "label": {
+                      "fr": "Les activités supports à la relation",
+                      "en": "Les activités supports à la relation"
+                    }
+                  },
+                  {
+                    "id": "les-ecrans-le-numerique",
+                    "value": "Les écrans – Le numérique",
+                    "label": {
+                      "fr": "Les écrans – Le numérique",
+                      "en": "Les écrans – Le numérique"
+                    }
+                  },
+                  {
+                    "id": "les-emotions",
+                    "value": "Les émotions",
+                    "label": {
+                      "fr": "Les émotions",
+                      "en": "Les émotions"
+                    }
+                  },
+                  {
+                    "id": "les-jeux",
+                    "value": "Les jeux",
+                    "label": {
+                      "fr": "Les jeux",
+                      "en": "Les jeux"
+                    }
+                  },
+                  {
+                    "id": "les-situations-de-separation",
+                    "value": "Les situations de séparation",
+                    "label": {
+                      "fr": "Les situations de séparation",
+                      "en": "Les situations de séparation"
+                    }
+                  },
+                  {
+                    "id": "les-violences",
+                    "value": "Les violences",
+                    "label": {
+                      "fr": "Les violences",
+                      "en": "Les violences"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "territoire",
+                "label": {
+                  "fr": "Territoires",
+                  "en": "Territories"
+                },
+                "field": "territoires",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les territoires",
+                  "en": "All territories"
+                },
+                "options": [
+                  {
+                    "id": "arrageois",
+                    "value": "Arrageois",
+                    "label": {
+                      "fr": "Arrageois",
+                      "en": "Arrageois"
+                    }
+                  },
+                  {
+                    "id": "artois",
+                    "value": "Artois",
+                    "label": {
+                      "fr": "Artois",
+                      "en": "Artois"
+                    }
+                  },
+                  {
+                    "id": "audomarois",
+                    "value": "Audomarois",
+                    "label": {
+                      "fr": "Audomarois",
+                      "en": "Audomarois"
+                    }
+                  },
+                  {
+                    "id": "boulonnais",
+                    "value": "Boulonnais",
+                    "label": {
+                      "fr": "Boulonnais",
+                      "en": "Boulonnais"
+                    }
+                  },
+                  {
+                    "id": "calaisis",
+                    "value": "Calaisis",
+                    "label": {
+                      "fr": "Calaisis",
+                      "en": "Calaisis"
+                    }
+                  },
+                  {
+                    "id": "entre-mer-et-terres",
+                    "value": "Entre Mer et Terres",
+                    "label": {
+                      "fr": "Entre Mer et Terres",
+                      "en": "Entre Mer et Terres"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-henin-carvin",
+                    "value": "Familles en sol mineur Hénin Carvin",
+                    "label": {
+                      "fr": "Familles en sol mineur Hénin Carvin",
+                      "en": "Familles en sol mineur Hénin Carvin"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-lens-lievin",
+                    "value": "Familles en sol mineur Lens Liévin",
+                    "label": {
+                      "fr": "Familles en sol mineur Lens Liévin",
+                      "en": "Familles en sol mineur Lens Liévin"
+                    }
+                  },
+                  {
+                    "id": "ternois-bruaysis",
+                    "value": "Ternois Bruaysis",
+                    "label": {
+                      "fr": "Ternois Bruaysis",
+                      "en": "Ternois Bruaysis"
+                    }
+                  }
+                ]
+              }
+            ],
+            "headlineFromFilter": "public"
+          }
+        },
+        {
+          "type": "articleFeed",
+          "id": "/public/petite-enfance-feed",
+          "props": {
+            "costumSlug": "parent62",
+            "pageSize": 12,
+            "featured": false,
+            "filters": {
+              "publics": {
+                "$in": [
+                  "Petite enfance"
+                ]
+              }
+            },
+            "fullWidth": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "/public/adolescence",
+      "title": {
+        "fr": "Adolescence",
+        "en": "Adolescence"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Adolescence — Parent62",
+          "en": "Adolescence — Parent62"
+        },
+        "description": {
+          "fr": "Ressources et actions dédiées à l'adolescence.",
+          "en": "Resources and actions dedicated to adolescence."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/parent62/hero-carte.png"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "/public/adolescence-header",
+          "props": {
+            "headline": {
+              "fr": "Adolescence",
+              "en": "Adolescence"
+            },
+            "subhead": {
+              "fr": "Les actions autour de ce public",
+              "en": "Initiatives related to this audience"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher…",
+              "en": "Search…"
+            },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "public",
+                "label": {
+                  "fr": "Publics",
+                  "en": "Audiences"
+                },
+                "field": "publics",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les publics",
+                  "en": "All audiences"
+                },
+                "options": [
+                  {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
+                    "id": "benevoles",
+                    "value": "Bénévoles",
+                    "label": {
+                      "fr": "Bénévoles",
+                      "en": "Volunteers"
+                    }
+                  },
+                  {
+                    "id": "en-famille",
+                    "value": "En famille",
+                    "label": {
+                      "fr": "En famille",
+                      "en": "As a family"
+                    }
+                  },
+                  {
+                    "id": "enfance",
+                    "value": "Enfance",
+                    "label": {
+                      "fr": "Enfance",
+                      "en": "Childhood"
+                    }
+                  },
+                  {
+                    "id": "futurs-parents",
+                    "value": "Futurs parents",
+                    "label": {
+                      "fr": "Futurs parents",
+                      "en": "Parents-to-be"
+                    }
+                  },
+                  {
+                    "id": "parents",
+                    "value": "Parents",
+                    "label": {
+                      "fr": "Parents",
+                      "en": "Parents"
+                    }
+                  },
+                  {
+                    "id": "parents-enfants",
+                    "value": "Parents-enfants",
+                    "label": {
+                      "fr": "Parents-enfants",
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
+                    }
+                  },
+                  {
+                    "id": "professionnels",
+                    "value": "Professionnels",
+                    "label": {
+                      "fr": "Professionnels",
+                      "en": "Professionals"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "theme",
+                "optionsFrom": {
+                  "list": [
+                    "themes",
+                    "themesPoi",
+                    "themesEvents"
+                  ],
+                  "withDeclared": true
+                },
+                "label": {
+                  "fr": "Thèmes",
+                  "en": "Topics"
+                },
+                "field": "themes",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les thèmes",
+                  "en": "All topics"
+                },
+                "options": [
+                  {
+                    "id": "la-citoyennete",
+                    "value": "La citoyenneté",
+                    "label": {
+                      "fr": "La citoyenneté",
+                      "en": "La citoyenneté"
+                    }
+                  },
+                  {
+                    "id": "la-communication",
+                    "value": "La communication",
+                    "label": {
+                      "fr": "La communication",
+                      "en": "La communication"
+                    }
+                  },
+                  {
+                    "id": "la-culture",
+                    "value": "La culture",
+                    "label": {
+                      "fr": "La culture",
+                      "en": "La culture"
+                    }
+                  },
+                  {
+                    "id": "la-petite-enfance",
+                    "value": "La petite enfance",
+                    "label": {
+                      "fr": "La petite enfance",
+                      "en": "La petite enfance"
+                    }
+                  },
+                  {
+                    "id": "la-sante",
+                    "value": "La santé",
+                    "label": {
+                      "fr": "La santé",
+                      "en": "La santé"
+                    }
+                  },
+                  {
+                    "id": "ladolescence",
+                    "value": "L’adolescence",
+                    "label": {
+                      "fr": "L’adolescence",
+                      "en": "L’adolescence"
+                    }
+                  },
+                  {
+                    "id": "larrivee-dun-enfant",
+                    "value": "L’arrivée d’un enfant",
+                    "label": {
+                      "fr": "L’arrivée d’un enfant",
+                      "en": "L’arrivée d’un enfant"
+                    }
+                  },
+                  {
+                    "id": "le-deuil",
+                    "value": "Le deuil",
+                    "label": {
+                      "fr": "Le deuil",
+                      "en": "Le deuil"
+                    }
+                  },
+                  {
+                    "id": "le-handicap",
+                    "value": "Le handicap",
+                    "label": {
+                      "fr": "Le handicap",
+                      "en": "Le handicap"
+                    }
+                  },
+                  {
+                    "id": "le-repit",
+                    "value": "Le répit",
+                    "label": {
+                      "fr": "Le répit",
+                      "en": "Le répit"
+                    }
+                  },
+                  {
+                    "id": "lecole",
+                    "value": "L’école",
+                    "label": {
+                      "fr": "L’école",
+                      "en": "L’école"
+                    }
+                  },
+                  {
+                    "id": "leducation",
+                    "value": "L’éducation",
+                    "label": {
+                      "fr": "L’éducation",
+                      "en": "L’éducation"
+                    }
+                  },
+                  {
+                    "id": "les-activites-supports-a-la-relation",
+                    "value": "Les activités supports à la relation",
+                    "label": {
+                      "fr": "Les activités supports à la relation",
+                      "en": "Les activités supports à la relation"
+                    }
+                  },
+                  {
+                    "id": "les-ecrans-le-numerique",
+                    "value": "Les écrans – Le numérique",
+                    "label": {
+                      "fr": "Les écrans – Le numérique",
+                      "en": "Les écrans – Le numérique"
+                    }
+                  },
+                  {
+                    "id": "les-emotions",
+                    "value": "Les émotions",
+                    "label": {
+                      "fr": "Les émotions",
+                      "en": "Les émotions"
+                    }
+                  },
+                  {
+                    "id": "les-jeux",
+                    "value": "Les jeux",
+                    "label": {
+                      "fr": "Les jeux",
+                      "en": "Les jeux"
+                    }
+                  },
+                  {
+                    "id": "les-situations-de-separation",
+                    "value": "Les situations de séparation",
+                    "label": {
+                      "fr": "Les situations de séparation",
+                      "en": "Les situations de séparation"
+                    }
+                  },
+                  {
+                    "id": "les-violences",
+                    "value": "Les violences",
+                    "label": {
+                      "fr": "Les violences",
+                      "en": "Les violences"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "territoire",
+                "label": {
+                  "fr": "Territoires",
+                  "en": "Territories"
+                },
+                "field": "territoires",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les territoires",
+                  "en": "All territories"
+                },
+                "options": [
+                  {
+                    "id": "arrageois",
+                    "value": "Arrageois",
+                    "label": {
+                      "fr": "Arrageois",
+                      "en": "Arrageois"
+                    }
+                  },
+                  {
+                    "id": "artois",
+                    "value": "Artois",
+                    "label": {
+                      "fr": "Artois",
+                      "en": "Artois"
+                    }
+                  },
+                  {
+                    "id": "audomarois",
+                    "value": "Audomarois",
+                    "label": {
+                      "fr": "Audomarois",
+                      "en": "Audomarois"
+                    }
+                  },
+                  {
+                    "id": "boulonnais",
+                    "value": "Boulonnais",
+                    "label": {
+                      "fr": "Boulonnais",
+                      "en": "Boulonnais"
+                    }
+                  },
+                  {
+                    "id": "calaisis",
+                    "value": "Calaisis",
+                    "label": {
+                      "fr": "Calaisis",
+                      "en": "Calaisis"
+                    }
+                  },
+                  {
+                    "id": "entre-mer-et-terres",
+                    "value": "Entre Mer et Terres",
+                    "label": {
+                      "fr": "Entre Mer et Terres",
+                      "en": "Entre Mer et Terres"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-henin-carvin",
+                    "value": "Familles en sol mineur Hénin Carvin",
+                    "label": {
+                      "fr": "Familles en sol mineur Hénin Carvin",
+                      "en": "Familles en sol mineur Hénin Carvin"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-lens-lievin",
+                    "value": "Familles en sol mineur Lens Liévin",
+                    "label": {
+                      "fr": "Familles en sol mineur Lens Liévin",
+                      "en": "Familles en sol mineur Lens Liévin"
+                    }
+                  },
+                  {
+                    "id": "ternois-bruaysis",
+                    "value": "Ternois Bruaysis",
+                    "label": {
+                      "fr": "Ternois Bruaysis",
+                      "en": "Ternois Bruaysis"
+                    }
+                  }
+                ]
+              }
+            ],
+            "headlineFromFilter": "public"
+          }
+        },
+        {
+          "type": "articleFeed",
+          "id": "/public/adolescence-feed",
+          "props": {
+            "costumSlug": "parent62",
+            "pageSize": 12,
+            "featured": false,
+            "filters": {
+              "publics": {
+                "$in": [
+                  "Adolescence"
                 ]
               }
             },
@@ -9174,16 +10900,9 @@
                     "Vidéo": "var(--chart-1)",
                     "Photo": "var(--chart-2)",
                     "Compte-rendu": "var(--chart-3)",
-                    "Les jeux du réseau": "var(--chart-4)",
+                    "Jeu": "var(--chart-4)",
                     "Document": "var(--chart-5)",
-                    "Lien": "var(--primary)",
-                    "Inforéso": "var(--info)",
-                    "Elles et ils ont marqué le réseau": "var(--success)"
-                  },
-                  "icons": {
-                    "Inforéso": "newspaper",
-                    "Elles et ils ont marqué le réseau": "award",
-                    "Les jeux du réseau": "gamepad-2"
+                    "Lien": "var(--primary)"
                   }
                 },
                 "facets": [
@@ -9401,11 +11120,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -9413,7 +11140,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -9421,7 +11148,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -9429,7 +11156,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -9445,7 +11172,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -9453,7 +11188,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -9783,16 +11518,9 @@
                     "Vidéo": "var(--chart-1)",
                     "Photo": "var(--chart-2)",
                     "Compte-rendu": "var(--chart-3)",
-                    "Les jeux du réseau": "var(--chart-4)",
+                    "Jeu": "var(--chart-4)",
                     "Document": "var(--chart-5)",
-                    "Lien": "var(--primary)",
-                    "Inforéso": "var(--info)",
-                    "Elles et ils ont marqué le réseau": "var(--success)"
-                  },
-                  "icons": {
-                    "Inforéso": "newspaper",
-                    "Elles et ils ont marqué le réseau": "award",
-                    "Les jeux du réseau": "gamepad-2"
+                    "Lien": "var(--primary)"
                   }
                 },
                 "facets": [
@@ -10010,11 +11738,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -10022,7 +11758,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -10030,7 +11766,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -10038,7 +11774,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -10054,7 +11790,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -10062,7 +11806,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -10392,16 +12136,9 @@
                     "Vidéo": "var(--chart-1)",
                     "Photo": "var(--chart-2)",
                     "Compte-rendu": "var(--chart-3)",
-                    "Les jeux du réseau": "var(--chart-4)",
+                    "Jeu": "var(--chart-4)",
                     "Document": "var(--chart-5)",
-                    "Lien": "var(--primary)",
-                    "Inforéso": "var(--info)",
-                    "Elles et ils ont marqué le réseau": "var(--success)"
-                  },
-                  "icons": {
-                    "Inforéso": "newspaper",
-                    "Elles et ils ont marqué le réseau": "award",
-                    "Les jeux du réseau": "gamepad-2"
+                    "Lien": "var(--primary)"
                   }
                 },
                 "facets": [
@@ -10619,11 +12356,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -10631,7 +12376,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -10639,7 +12384,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -10647,7 +12392,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -10663,7 +12408,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -10671,7 +12424,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -11001,16 +12754,9 @@
                     "Vidéo": "var(--chart-1)",
                     "Photo": "var(--chart-2)",
                     "Compte-rendu": "var(--chart-3)",
-                    "Les jeux du réseau": "var(--chart-4)",
+                    "Jeu": "var(--chart-4)",
                     "Document": "var(--chart-5)",
-                    "Lien": "var(--primary)",
-                    "Inforéso": "var(--info)",
-                    "Elles et ils ont marqué le réseau": "var(--success)"
-                  },
-                  "icons": {
-                    "Inforéso": "newspaper",
-                    "Elles et ils ont marqué le réseau": "award",
-                    "Les jeux du réseau": "gamepad-2"
+                    "Lien": "var(--primary)"
                   }
                 },
                 "facets": [
@@ -11228,11 +12974,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -11240,7 +12994,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -11248,7 +13002,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -11256,7 +13010,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -11272,7 +13026,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -11280,7 +13042,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -11610,16 +13372,9 @@
                     "Vidéo": "var(--chart-1)",
                     "Photo": "var(--chart-2)",
                     "Compte-rendu": "var(--chart-3)",
-                    "Les jeux du réseau": "var(--chart-4)",
+                    "Jeu": "var(--chart-4)",
                     "Document": "var(--chart-5)",
-                    "Lien": "var(--primary)",
-                    "Inforéso": "var(--info)",
-                    "Elles et ils ont marqué le réseau": "var(--success)"
-                  },
-                  "icons": {
-                    "Inforéso": "newspaper",
-                    "Elles et ils ont marqué le réseau": "award",
-                    "Les jeux du réseau": "gamepad-2"
+                    "Lien": "var(--primary)"
                   }
                 },
                 "facets": [
@@ -11837,11 +13592,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -11849,7 +13612,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -11857,7 +13620,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -11865,7 +13628,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -11881,7 +13644,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -11889,7 +13660,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -12219,16 +13990,9 @@
                     "Vidéo": "var(--chart-1)",
                     "Photo": "var(--chart-2)",
                     "Compte-rendu": "var(--chart-3)",
-                    "Les jeux du réseau": "var(--chart-4)",
+                    "Jeu": "var(--chart-4)",
                     "Document": "var(--chart-5)",
-                    "Lien": "var(--primary)",
-                    "Inforéso": "var(--info)",
-                    "Elles et ils ont marqué le réseau": "var(--success)"
-                  },
-                  "icons": {
-                    "Inforéso": "newspaper",
-                    "Elles et ils ont marqué le réseau": "award",
-                    "Les jeux du réseau": "gamepad-2"
+                    "Lien": "var(--primary)"
                   }
                 },
                 "facets": [
@@ -12446,11 +14210,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -12458,7 +14230,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -12466,7 +14238,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -12474,7 +14246,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -12490,7 +14262,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -12498,7 +14278,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -12828,16 +14608,9 @@
                     "Vidéo": "var(--chart-1)",
                     "Photo": "var(--chart-2)",
                     "Compte-rendu": "var(--chart-3)",
-                    "Les jeux du réseau": "var(--chart-4)",
+                    "Jeu": "var(--chart-4)",
                     "Document": "var(--chart-5)",
-                    "Lien": "var(--primary)",
-                    "Inforéso": "var(--info)",
-                    "Elles et ils ont marqué le réseau": "var(--success)"
-                  },
-                  "icons": {
-                    "Inforéso": "newspaper",
-                    "Elles et ils ont marqué le réseau": "award",
-                    "Les jeux du réseau": "gamepad-2"
+                    "Lien": "var(--primary)"
                   }
                 },
                 "facets": [
@@ -13055,11 +14828,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -13067,7 +14848,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -13075,7 +14856,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -13083,7 +14864,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -13099,7 +14880,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -13107,7 +14896,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -13437,16 +15226,9 @@
                     "Vidéo": "var(--chart-1)",
                     "Photo": "var(--chart-2)",
                     "Compte-rendu": "var(--chart-3)",
-                    "Les jeux du réseau": "var(--chart-4)",
+                    "Jeu": "var(--chart-4)",
                     "Document": "var(--chart-5)",
-                    "Lien": "var(--primary)",
-                    "Inforéso": "var(--info)",
-                    "Elles et ils ont marqué le réseau": "var(--success)"
-                  },
-                  "icons": {
-                    "Inforéso": "newspaper",
-                    "Elles et ils ont marqué le réseau": "award",
-                    "Les jeux du réseau": "gamepad-2"
+                    "Lien": "var(--primary)"
                   }
                 },
                 "facets": [
@@ -13664,11 +15446,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -13676,7 +15466,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -13684,7 +15474,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -13692,7 +15482,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -13708,7 +15498,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -13716,7 +15514,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -14046,16 +15844,9 @@
                     "Vidéo": "var(--chart-1)",
                     "Photo": "var(--chart-2)",
                     "Compte-rendu": "var(--chart-3)",
-                    "Les jeux du réseau": "var(--chart-4)",
+                    "Jeu": "var(--chart-4)",
                     "Document": "var(--chart-5)",
-                    "Lien": "var(--primary)",
-                    "Inforéso": "var(--info)",
-                    "Elles et ils ont marqué le réseau": "var(--success)"
-                  },
-                  "icons": {
-                    "Inforéso": "newspaper",
-                    "Elles et ils ont marqué le réseau": "award",
-                    "Les jeux du réseau": "gamepad-2"
+                    "Lien": "var(--primary)"
                   }
                 },
                 "facets": [
@@ -14273,11 +16064,19 @@
                 },
                 "options": [
                   {
+                    "id": "adolescence",
+                    "value": "Adolescence",
+                    "label": {
+                      "fr": "Adolescence",
+                      "en": "Adolescence"
+                    }
+                  },
+                  {
                     "id": "benevoles",
                     "value": "Bénévoles",
                     "label": {
                       "fr": "Bénévoles",
-                      "en": "Bénévoles"
+                      "en": "Volunteers"
                     }
                   },
                   {
@@ -14285,7 +16084,7 @@
                     "value": "En famille",
                     "label": {
                       "fr": "En famille",
-                      "en": "En famille"
+                      "en": "As a family"
                     }
                   },
                   {
@@ -14293,7 +16092,7 @@
                     "value": "Enfance",
                     "label": {
                       "fr": "Enfance",
-                      "en": "Enfance"
+                      "en": "Childhood"
                     }
                   },
                   {
@@ -14301,7 +16100,7 @@
                     "value": "Futurs parents",
                     "label": {
                       "fr": "Futurs parents",
-                      "en": "Futurs parents"
+                      "en": "Parents-to-be"
                     }
                   },
                   {
@@ -14317,7 +16116,15 @@
                     "value": "Parents-enfants",
                     "label": {
                       "fr": "Parents-enfants",
-                      "en": "Parents-enfants"
+                      "en": "Parents & children"
+                    }
+                  },
+                  {
+                    "id": "petite-enfance",
+                    "value": "Petite enfance",
+                    "label": {
+                      "fr": "Petite enfance",
+                      "en": "Early childhood"
                     }
                   },
                   {
@@ -14325,7 +16132,7 @@
                     "value": "Professionnels",
                     "label": {
                       "fr": "Professionnels",
-                      "en": "Professionnels"
+                      "en": "Professionals"
                     }
                   }
                 ]
@@ -14523,8 +16330,8 @@
                   "en": "Listen to parents' voices"
                 },
                 "subtitle": {
-                  "fr": "Compliqué, difficile… et à changer",
-                  "en": "Complicated, difficult… and what needs to change"
+                  "fr": "Ce que les parents du 62 racontent de leur quotidien",
+                  "en": "What parents in Pas-de-Calais say about daily life"
                 },
                 "href": "/temoignages",
                 "color": "primary"
@@ -14922,10 +16729,18 @@
                     "field": "publics",
                     "options": [
                       {
+                        "id": "adolescence",
+                        "label": {
+                          "fr": "Adolescence",
+                          "en": "Adolescence"
+                        },
+                        "name": "Adolescence"
+                      },
+                      {
                         "id": "benevoles",
                         "label": {
                           "fr": "Bénévoles",
-                          "en": "Bénévoles"
+                          "en": "Volunteers"
                         },
                         "name": "Bénévoles"
                       },
@@ -14933,7 +16748,7 @@
                         "id": "en-famille",
                         "label": {
                           "fr": "En famille",
-                          "en": "En famille"
+                          "en": "As a family"
                         },
                         "name": "En famille"
                       },
@@ -14941,7 +16756,7 @@
                         "id": "enfance",
                         "label": {
                           "fr": "Enfance",
-                          "en": "Enfance"
+                          "en": "Childhood"
                         },
                         "name": "Enfance"
                       },
@@ -14949,7 +16764,7 @@
                         "id": "futurs-parents",
                         "label": {
                           "fr": "Futurs parents",
-                          "en": "Futurs parents"
+                          "en": "Parents-to-be"
                         },
                         "name": "Futurs parents"
                       },
@@ -14965,15 +16780,23 @@
                         "id": "parents-enfants",
                         "label": {
                           "fr": "Parents-enfants",
-                          "en": "Parents-enfants"
+                          "en": "Parents & children"
                         },
                         "name": "Parents-enfants"
+                      },
+                      {
+                        "id": "petite-enfance",
+                        "label": {
+                          "fr": "Petite enfance",
+                          "en": "Early childhood"
+                        },
+                        "name": "Petite enfance"
                       },
                       {
                         "id": "professionnels",
                         "label": {
                           "fr": "Professionnels",
-                          "en": "Professionnels"
+                          "en": "Professionals"
                         },
                         "name": "Professionnels"
                       }
@@ -15341,12 +17164,7 @@
                         "audioField": "medias",
                         "subtitleField": "themes",
                         "badge": {
-                          "field": "category",
-                          "colors": {
-                            "Compliqué": "var(--chart-3)",
-                            "Difficile": "var(--chart-2)",
-                            "À changer": "var(--chart-4)"
-                          }
+                          "field": "category"
                         },
                         "accent": {
                           "field": "territoires",
@@ -15439,16 +17257,9 @@
                             "Vidéo": "var(--chart-1)",
                             "Photo": "var(--chart-2)",
                             "Compte-rendu": "var(--chart-3)",
-                            "Les jeux du réseau": "var(--chart-4)",
+                            "Jeu": "var(--chart-4)",
                             "Document": "var(--chart-5)",
-                            "Lien": "var(--primary)",
-                            "Inforéso": "var(--info)",
-                            "Elles et ils ont marqué le réseau": "var(--success)"
-                          },
-                          "icons": {
-                            "Inforéso": "newspaper",
-                            "Elles et ils ont marqué le réseau": "award",
-                            "Les jeux du réseau": "gamepad-2"
+                            "Lien": "var(--primary)"
                           }
                         },
                         "facets": [
@@ -16221,16 +18032,9 @@
                   "Vidéo": "var(--chart-1)",
                   "Photo": "var(--chart-2)",
                   "Compte-rendu": "var(--chart-3)",
-                  "Les jeux du réseau": "var(--chart-4)",
+                  "Jeu": "var(--chart-4)",
                   "Document": "var(--chart-5)",
-                  "Lien": "var(--primary)",
-                  "Inforéso": "var(--info)",
-                  "Elles et ils ont marqué le réseau": "var(--success)"
-                },
-                "icons": {
-                  "Inforéso": "newspaper",
-                  "Elles et ils ont marqué le réseau": "award",
-                  "Les jeux du réseau": "gamepad-2"
+                  "Lien": "var(--primary)"
                 }
               },
               "facets": [
@@ -16285,12 +18089,7 @@
               "audioField": "medias",
               "subtitleField": "themes",
               "badge": {
-                "field": "category",
-                "colors": {
-                  "Compliqué": "var(--chart-3)",
-                  "Difficile": "var(--chart-2)",
-                  "À changer": "var(--chart-4)"
-                }
+                "field": "category"
               },
               "accent": {
                 "field": "territoires",
@@ -17623,6 +19422,13 @@
           },
           "enum": [
             {
+              "value": "Adolescence",
+              "label": {
+                "fr": "Adolescence",
+                "en": "Adolescence"
+              }
+            },
+            {
               "value": "Bénévoles",
               "label": {
                 "fr": "Bénévoles",
@@ -17662,6 +19468,13 @@
               "label": {
                 "fr": "Parents-enfants",
                 "en": "Parents-enfants"
+              }
+            },
+            {
+              "value": "Petite enfance",
+              "label": {
+                "fr": "Petite enfance",
+                "en": "Early childhood"
               }
             },
             {
@@ -17936,7 +19749,13 @@
       "layout": {
         "kind": "flat"
       },
-      "serializeGroups": {},
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
       "sections": [
         {
           "id": "contenu",
@@ -17952,7 +19771,24 @@
                 "name",
                 "category",
                 "description",
-                "audio"
+                "audio",
+                "profil_avatar"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "lieu",
+          "label": {
+            "fr": "Lieu",
+            "en": "Location"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
               ]
             }
           ]
@@ -18026,30 +19862,7 @@
           "placeholder": {
             "fr": "Choisir une catégorie",
             "en": "Choose a category"
-          },
-          "enum": [
-            {
-              "value": "Compliqué",
-              "label": {
-                "fr": "Compliqué",
-                "en": "Compliqué"
-              }
-            },
-            {
-              "value": "Difficile",
-              "label": {
-                "fr": "Difficile",
-                "en": "Difficile"
-              }
-            },
-            {
-              "value": "À changer",
-              "label": {
-                "fr": "À changer",
-                "en": "À changer"
-              }
-            }
-          ]
+          }
         },
         "description": {
           "widget": "textarea",
@@ -18086,6 +19899,60 @@
               "type": "audio"
             }
           }
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Image (facultatif)",
+            "en": "Image (optional)"
+          },
+          "info": {
+            "fr": "Illustration affichée en bannière de la vignette et de la fiche. Ne diffusez pas de photo permettant d'identifier une famille sans son accord.",
+            "en": "Banner image shown on the card and in the detail view. Do not publish a photo identifying a family without their consent."
+          }
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Lieu de recueil (facultatif)",
+            "en": "Where it was collected (optional)"
+          },
+          "info": {
+            "fr": "Renseigner une commune place la parole sur la carte de la page « Paroles de parents ».",
+            "en": "Filling in a town places the testimony on the map of the “Parents' testimonies” page."
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
         },
         "territoires": {
           "widget": "multiselect",
@@ -18177,6 +20044,13 @@
           },
           "enum": [
             {
+              "value": "Adolescence",
+              "label": {
+                "fr": "Adolescence",
+                "en": "Adolescence"
+              }
+            },
+            {
               "value": "Bénévoles",
               "label": {
                 "fr": "Bénévoles",
@@ -18216,6 +20090,13 @@
               "label": {
                 "fr": "Parents-enfants",
                 "en": "Parents-enfants"
+              }
+            },
+            {
+              "value": "Petite enfance",
+              "label": {
+                "fr": "Petite enfance",
+                "en": "Early childhood"
               }
             },
             {
@@ -18459,6 +20340,10 @@
           }
         }
       },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
       "mutation": {
         "entityType": "poi",
         "navigateOnSuccess": false,
@@ -18687,6 +20572,13 @@
           },
           "enum": [
             {
+              "value": "Adolescence",
+              "label": {
+                "fr": "Adolescence",
+                "en": "Adolescence"
+              }
+            },
+            {
               "value": "Bénévoles",
               "label": {
                 "fr": "Bénévoles",
@@ -18726,6 +20618,13 @@
               "label": {
                 "fr": "Parents-enfants",
                 "en": "Parents-enfants"
+              }
+            },
+            {
+              "value": "Petite enfance",
+              "label": {
+                "fr": "Petite enfance",
+                "en": "Early childhood"
               }
             },
             {
@@ -18951,10 +20850,10 @@
               }
             },
             {
-              "value": "Les jeux du réseau",
+              "value": "Jeu",
               "label": {
-                "fr": "Les jeux du réseau",
-                "en": "Les jeux du réseau"
+                "fr": "Jeu",
+                "en": "Game"
               }
             },
             {
@@ -18969,20 +20868,6 @@
               "label": {
                 "fr": "Lien",
                 "en": "Lien"
-              }
-            },
-            {
-              "value": "Inforéso",
-              "label": {
-                "fr": "Inforéso",
-                "en": "Inforéso"
-              }
-            },
-            {
-              "value": "Elles et ils ont marqué le réseau",
-              "label": {
-                "fr": "Elles et ils ont marqué le réseau",
-                "en": "Elles et ils ont marqué le réseau"
               }
             }
           ]
@@ -19326,6 +21211,13 @@
           },
           "enum": [
             {
+              "value": "Adolescence",
+              "label": {
+                "fr": "Adolescence",
+                "en": "Adolescence"
+              }
+            },
+            {
               "value": "Bénévoles",
               "label": {
                 "fr": "Bénévoles",
@@ -19365,6 +21257,13 @@
               "label": {
                 "fr": "Parents-enfants",
                 "en": "Parents-enfants"
+              }
+            },
+            {
+              "value": "Petite enfance",
+              "label": {
+                "fr": "Petite enfance",
+                "en": "Early childhood"
               }
             },
             {
@@ -19893,6 +21792,13 @@
           },
           "enum": [
             {
+              "value": "Adolescence",
+              "label": {
+                "fr": "Adolescence",
+                "en": "Adolescence"
+              }
+            },
+            {
               "value": "Bénévoles",
               "label": {
                 "fr": "Bénévoles",
@@ -19932,6 +21838,13 @@
               "label": {
                 "fr": "Parents-enfants",
                 "en": "Parents-enfants"
+              }
+            },
+            {
+              "value": "Petite enfance",
+              "label": {
+                "fr": "Petite enfance",
+                "en": "Early childhood"
               }
             },
             {

@@ -28,6 +28,7 @@ import {
   reservationColor,
   reservationConflicts,
   type BookingCell,
+  type Reservation,
   type WeeklySlotBlock,
 } from "../../lib/reservations";
 import { buildReservationPrefill } from "../../lib/reservationPrefill";
@@ -176,17 +177,39 @@ export default function PreviewReservations({
   );
 
   const handleBook = useCallback(
-    (cell: BookingCell) => {
+    async (cell: BookingCell) => {
       if (!me) {
+        // NB : le créneau cliqué n'est PAS repris après connexion — l'utilisateur doit recliquer.
+        // Le faire demanderait de rejouer l'action depuis `onSuccess`, ce que les règles de hooks
+        // du dépôt (`react-hooks/immutability`, `set-state-in-effect`) interdisent d'écrire ici ;
+        // la reprise a sa place dans `AuthModalProvider`, pas dans ce composant. Branche par
+        // ailleurs inatteignable tant qu'aucune config ne pose `booking.adminOnly: false`.
         openLogin();
         return;
       }
-      // Garde de fraîcheur : la grille peut dater d'avant une réservation
-      // concurrente. On revérifie le candidat contre les données chargées.
-      const conflits = reservationConflicts(
-        { slots: [{ day: cell.dayKey, startMinutes: cell.startMinutes, endMinutes: cell.endMinutes }] },
-        data ?? [],
-      );
+      const candidat = {
+        slots: [{ day: cell.dayKey, startMinutes: cell.startMinutes, endMinutes: cell.endMinutes }],
+      };
+      // GARDE DE FRAÎCHEUR — elle ne vaut que si elle interroge des données FRAÎCHES.
+      // Rejouée sur `data`, elle ne pouvait rien détecter : la case n'est cliquable que si
+      // `cell.blocks` est vide, et `blocks` sort du MÊME instantané avec un test d'intersection
+      // strictement plus large que celui de `reservationConflicts` — le message de conflit était
+      // donc inatteignable. `useReservationsQuery` posant `staleTime: 5 min`, deux gestionnaires
+      // pouvaient réserver le même créneau sans le moindre avertissement. On refetche donc le
+      // créneau avant d'ouvrir le formulaire.
+      // NB : cela RÉDUIT la fenêtre de course, sans la fermer — seul un contrôle serveur le ferait,
+      // et il n'existe pas aujourd'hui côté backend.
+      let frais = data ?? [];
+      try {
+        frais = await queryClient.fetchQuery<Reservation[]>({
+          queryKey: SEARCH_QUERY_KEYS.RESERVATIONS(conf.form, resourceId),
+          staleTime: 0,
+        });
+      } catch {
+        // Réseau indisponible : on retombe sur l'instantané chargé plutôt que de bloquer la
+        // réservation — le contrôle redevient ce qu'il était, faute de mieux.
+      }
+      const conflits = reservationConflicts(candidat, frais);
       if (conflits.length > 0) {
         setConflict(conflits[0].user || t("PreviewReservations.unknownUser"));
         return;
@@ -194,7 +217,7 @@ export default function PreviewReservations({
       setConflict(null);
       setSlot({ day: cell.dayKey, startMinutes: cell.startMinutes, endMinutes: cell.endMinutes });
     },
-    [data, me, openLogin, t],
+    [conf.form, data, me, openLogin, queryClient, resourceId, t],
   );
 
   const prefill = useMemo(
@@ -213,8 +236,12 @@ export default function PreviewReservations({
   /* Grille à l'échelle horaire — remplace la grille en blocs empilés quand la
      prise de réservation est activée. Rendue MÊME sans réservation : c'est là
      qu'on crée la première. */
+  /* `hidden md:block` : la grille horaire est un tableau de 46rem, illisible sous `md`.
+     Elle ne remplace donc PLUS le repli mobile (liste groupée par jour), qui reste rendu
+     en dessous de ce point de rupture — sans quoi un visiteur de téléphone n'avait plus
+     qu'un tableau de 736 px à faire défiler latéralement dans le dialogue de fiche. */
   const bookingGrid = booking ? (
-    <div className="mt-6">
+    <div className="mt-6 hidden md:block">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[46rem] border-separate border-spacing-1 text-xs">
           <caption className="sr-only">{t("PreviewReservations.gridCaption")}</caption>
@@ -296,9 +323,16 @@ export default function PreviewReservations({
         <>
           {/* Usagers — la rangée (pastille couleur + nom en texte) tient aussi
               lieu de légende de la grille hebdo. */}
+          {/* Clé par IDENTIFIANT d'abord : depuis le regroupement en deux passes, la clé de groupe
+              est `userId` — deux clubs HOMONYMES (même nom, ids différents) forment donc deux
+              groupes au `user` identique. Sans ce repli, clés React et `value` de Radix étaient
+              dupliquées : un clic ouvrait les deux fiches à la fois. */}
           <Accordion type="multiple" className="mt-4">
             {groups.map((g) => (
-              <AccordionItem key={g.user || "__unknown"} value={g.user || "__unknown"}>
+              <AccordionItem
+                key={g.userId || g.user || "__unknown"}
+                value={g.userId || g.user || "__unknown"}
+              >
                 <AccordionTrigger className="gap-3 hover:no-underline">
                   <span className="flex min-w-0 flex-1 items-center gap-2 text-left">
                     <span
@@ -375,7 +409,9 @@ export default function PreviewReservations({
           )}
 
           {/* Repli mobile — liste groupée par jour (jours vides omis). */}
-          {!booking && hasSlots && (
+          {/* Repli mobile — rendu AUSSI quand `booking` est posé : la grille horaire est
+              masquée sous `md`, ce repli est alors la seule vue des créneaux. */}
+          {hasSlots && (
             <div className="mt-6 space-y-4 md:hidden">
               {grid
                 .filter((day) => day.blocks.length > 0)
@@ -396,13 +432,22 @@ export default function PreviewReservations({
 
       {prefill && (
         <Suspense fallback={null}>
+          {/* `elementId`/`elementType` QUALIFIENT LE BROUILLON, et ce n'est pas optionnel ici :
+              `useCoFormDraft` range l'autosave sous `coform-draft:v1:<form>:<user>:new`, sans segment
+              élément quand on ne les passe pas. Le formulaire étant partagé par tous les équipements
+              du site, un brouillon abandonné sur le gymnase A se proposerait à la réouverture sur le
+              boulodrome B — et « Reprendre » écraserait le finder PRÉ-REMPLI ET VERROUILLÉ, posant la
+              réservation sur le mauvais équipement sans que rien ne le signale. Même idiome que
+              `PlaceFormView`. */}
           <CoFormModal
             formId={conf.form}
             open
-            onOpenChange={(next) => { if (!next) setSlot(null); }}
+            onOpenChange={(next) => { if (!next) { setSlot(null); setConflict(null); } }}
             title={t("PreviewReservations.bookTitle")}
             defaultValues={prefill.defaultValues}
             lockedFields={prefill.lockedFields}
+            elementId={resourceId}
+            elementType="poi"
             onAfterSubmit={handleSaved}
           />
         </Suspense>
