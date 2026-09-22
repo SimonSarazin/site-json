@@ -643,6 +643,75 @@
             "edit": "inherit"
           }
         ]
+      },
+      {
+        "id": "partenaires",
+        "label": {
+          "fr": "Partenaires",
+          "en": "Partners"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "organizations",
+            "label": {
+              "fr": "Partenaires",
+              "en": "Partners"
+            },
+            "source": {
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Structure",
+                  "en": "Organisation"
+                }
+              },
+              {
+                "path": "type",
+                "label": {
+                  "fr": "Type",
+                  "en": "Type"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune",
+                  "en": "Town"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Proposé le",
+                  "en": "Submitted"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-partenaire",
+            "edit": "inherit"
+          }
+        ]
       }
     ]
   }

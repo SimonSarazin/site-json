@@ -4,7 +4,7 @@
   "addMenus": {
     "citoyens": {
       "builtins": {
-        "organization": "add-organization",
+        "organization": "add-parent62-partenaire",
         "project": "add-project",
         "event": "add-event",
         "poi": "add-poi"
@@ -25,6 +25,16 @@
     }
   },
   "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-parent62-partenaire",
+          "native": "edit-parent62-partenaire",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
     "events": {
       "vierge": "edit-profile",
       "routes": [
@@ -249,6 +259,22 @@
         ]
       },
       "create": "add-parent62-reunion",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "partenaires/organizations": {
+      "source": {
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-partenaire",
       "edit": {
         "enabled": true,
         "modalName": null
@@ -1314,27 +1340,50 @@
           "geo",
           "geoPosition"
         ],
-        "indexStepList": 20
+        "indexStepList": 20,
+        "costumSlug": "parent62"
       }
     },
-    "/communaute/searchProStatic": {
-      "baseParams": {
-        "defaultTypes": [
-          "citoyens"
-        ],
-        "sourceKey": [
-          "parent62"
-        ]
-      }
-    },
-    "/communaute/searchProStatic#1": {
+    "/annuaire/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
           "organizations"
         ],
         "sourceKey": [
           "parent62"
-        ]
+        ],
+        "costumSlug": "parent62",
+        "defaultFields": [
+          "name",
+          "slug",
+          "type",
+          "collection",
+          "source",
+          "reference",
+          "shortDescription",
+          "description",
+          "email",
+          "telephone",
+          "url",
+          "address",
+          "geo",
+          "geoPosition",
+          "territoires",
+          "publics",
+          "themes",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "indexStepList": 24
       }
     }
   },

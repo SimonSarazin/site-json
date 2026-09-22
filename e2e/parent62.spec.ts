@@ -423,6 +423,49 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     expect(fonds.filtres, "les filtres d'actualités sont teintés").toBe(fonds.agenda);
   });
 
+  test("/annuaire : bouton d'ajout, filtres, et liste qui ne montre que les fiches validées", async ({ page }) => {
+    await page.goto("/annuaire", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    await expect(page.getByRole("heading", { name: "Annuaire des partenaires" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Ajouter un partenaire/ })).toBeVisible();
+    const filtres = page.locator('[data-section-type="filters"]');
+    for (const groupe of ["Territoire", "Type de structure", "Public", "Thèmes"]) {
+      await expect(filtres.getByText(groupe, { exact: true }).first()).toBeVisible();
+    }
+
+    // Une fiche proposée porte `toBeValidated` : sans `costumSlug`, la liste n'envoie pas la porte de
+    // validation et la fiche s'afficherait dès sa création, avant tout contrôle.
+    const recherche = page.waitForRequest(
+      (r) => r.url().includes("globalautocomplete") && decodeURIComponent(r.postData() ?? "").includes("filters[type]"),
+    );
+    await filtres.getByText("Association", { exact: true }).click();
+    const corps = decodeURIComponent((await recherche).postData() ?? "");
+    expect(corps).toContain("filters[type][$in][]=NGO");
+    expect(corps).toContain("filters[preferences.toBeValidated.parent62][$exists]=false");
+    expect(corps).toContain("searchType[]=organizations");
+  });
+
+  test("/blog : le filtre « Villes » propose les villes des territoires et filtre sur `villes`", async ({ page }) => {
+    await page.goto("/blog", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    await page.getByRole("button", { name: /^Villes/ }).first().click();
+    await page.getByPlaceholder("Rechercher…").last().fill("Arras");
+    const arras = page.getByRole("option", { name: "Arras", exact: true });
+    await expect(arras).toBeVisible();
+
+    const recherche = page.waitForRequest(
+      (r) => r.url().includes("globalautocomplete") && decodeURIComponent(r.postData() ?? "").includes("filters[villes]"),
+    );
+    await arras.click();
+    const corps = decodeURIComponent((await recherche).postData() ?? "");
+    expect(corps).toContain("filters[villes][$in][]=Arras");
+    // Le fil reste borné aux actualités : un filtre de page ne peut pas écraser `type`.
+    expect(corps).toContain("filters[type]=article");
+    await expect(page).toHaveURL(/ville=arras/);
+  });
+
   for (const url of ["/parents", "/pro"]) {
     test(`${url} : « Par où commencer ? » — 4 cases sur une rangée, de même hauteur, icônes alignées`, async ({ page }) => {
       // Un titre qui passe sur une ligne de plus ne doit ni faire dépasser sa case ni décaler l'icône voisine.

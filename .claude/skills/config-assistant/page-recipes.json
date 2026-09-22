@@ -231,7 +231,7 @@
    "id": "page-communaute-onglets",
    "titre": "Communauté répartie en onglets",
    "quand": "Présenter des populations de nature différente — personnes et structures — sans les mélanger dans une même liste.",
-   "source": "config.prod.parent62.json",
+   "source": "config.prod.eXtremeDefiAdeme.json",
    "path": "/communaute",
    "sequence": [
     "searchHeader",
