@@ -8,9 +8,9 @@ import { describe, it, expect } from "vitest";
  * sait enregistrer. Une option hors liste ne ramène jamais rien — l'utilisateur la coche, la page se
  * vide, et rien ne dit pourquoi.
  *
- * Cas qui l'a fait naître : les villes de parent62, recopiées à la fois dans le champ `villes` du
- * formulaire d'actualité et dans le filtre « Villes » de /blog. Retoucher l'une sans l'autre
- * (orthographe, ville ajoutée d'un seul côté) casse le filtre en silence.
+ * Né d'une liste de villes que parent62 recopiait à la fois dans un champ du formulaire d'actualité et
+ * dans le filtre « Villes » de /blog : retoucher l'une sans l'autre (orthographe, ville ajoutée d'un
+ * seul côté) cassait le filtre en silence.
  *
  * Valeur envoyée par une option : `value ?? id` pour un `dropdownFilters` (`dropdownFilters.ts`),
  * `name || id` pour un groupe de la sidebar `filters` (`computeFiltersFromUrl.ts`). Les filtres à

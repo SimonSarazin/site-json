@@ -1940,7 +1940,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -2328,7 +2329,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -2723,7 +2725,7 @@
               {
                 "id": "ville",
                 "label": { "fr": "Villes", "en": "Cities" },
-                "field": "villes",
+                "field": "address.addressLocality",
                 "multiple": true,
                 "allLabel": { "fr": "Toutes les villes", "en": "All cities" },
                 "options": [
@@ -3155,7 +3157,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -3550,7 +3553,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -4635,107 +4639,9 @@
                     }
                   }
                 ]
-              },
-              {
-                "id": "resource-commune",
-                "label": {
-                  "fr": "Commune",
-                  "en": "City"
-                },
-                "field": "address.addressLocality",
-                "multiple": true,
-                "options": [
-                  {
-                    "id": "arras",
-                    "value": "Arras",
-                    "label": {
-                      "fr": "Arras",
-                      "en": "Arras"
-                    }
-                  },
-                  {
-                    "id": "calais",
-                    "value": "Calais",
-                    "label": {
-                      "fr": "Calais",
-                      "en": "Calais"
-                    }
-                  },
-                  {
-                    "id": "boulogne-sur-mer",
-                    "value": "Boulogne-sur-Mer",
-                    "label": {
-                      "fr": "Boulogne-sur-Mer",
-                      "en": "Boulogne-sur-Mer"
-                    }
-                  },
-                  {
-                    "id": "lens",
-                    "value": "Lens",
-                    "label": {
-                      "fr": "Lens",
-                      "en": "Lens"
-                    }
-                  },
-                  {
-                    "id": "lievin",
-                    "value": "Liévin",
-                    "label": {
-                      "fr": "Liévin",
-                      "en": "Liévin"
-                    }
-                  },
-                  {
-                    "id": "henin-beaumont",
-                    "value": "Hénin-Beaumont",
-                    "label": {
-                      "fr": "Hénin-Beaumont",
-                      "en": "Hénin-Beaumont"
-                    }
-                  },
-                  {
-                    "id": "bethune",
-                    "value": "Béthune",
-                    "label": {
-                      "fr": "Béthune",
-                      "en": "Béthune"
-                    }
-                  },
-                  {
-                    "id": "saint-omer",
-                    "value": "Saint-Omer",
-                    "label": {
-                      "fr": "Saint-Omer",
-                      "en": "Saint-Omer"
-                    }
-                  },
-                  {
-                    "id": "berck",
-                    "value": "Berck",
-                    "label": {
-                      "fr": "Berck",
-                      "en": "Berck"
-                    }
-                  },
-                  {
-                    "id": "montreuil",
-                    "value": "Montreuil",
-                    "label": {
-                      "fr": "Montreuil",
-                      "en": "Montreuil"
-                    }
-                  },
-                  {
-                    "id": "carvin",
-                    "value": "Carvin",
-                    "label": {
-                      "fr": "Carvin",
-                      "en": "Carvin"
-                    }
-                  }
-                ]
               }
-            ]
+            ],
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -5412,7 +5318,8 @@
             "searchPlaceholder": {
               "fr": "Rechercher un événement…",
               "en": "Search an event…"
-            }
+            },
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -5667,7 +5574,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -5903,7 +5811,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -6139,7 +6048,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -6375,7 +6285,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -6611,7 +6522,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -6847,7 +6759,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -7083,7 +6996,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -7319,7 +7233,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -7723,7 +7638,8 @@
                 ]
               }
             ],
-            "headlineFromFilter": "public"
+            "headlineFromFilter": "public",
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -8127,7 +8043,8 @@
                 ]
               }
             ],
-            "headlineFromFilter": "public"
+            "headlineFromFilter": "public",
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -8531,7 +8448,8 @@
                 ]
               }
             ],
-            "headlineFromFilter": "public"
+            "headlineFromFilter": "public",
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -8935,7 +8853,8 @@
                 ]
               }
             ],
-            "headlineFromFilter": "public"
+            "headlineFromFilter": "public",
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -9339,7 +9258,8 @@
                 ]
               }
             ],
-            "headlineFromFilter": "public"
+            "headlineFromFilter": "public",
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -9743,7 +9663,8 @@
                 ]
               }
             ],
-            "headlineFromFilter": "public"
+            "headlineFromFilter": "public",
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -10147,7 +10068,8 @@
                 ]
               }
             ],
-            "headlineFromFilter": "public"
+            "headlineFromFilter": "public",
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -10551,7 +10473,8 @@
                 ]
               }
             ],
-            "headlineFromFilter": "public"
+            "headlineFromFilter": "public",
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -10955,7 +10878,8 @@
                 ]
               }
             ],
-            "headlineFromFilter": "public"
+            "headlineFromFilter": "public",
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -11556,7 +11480,8 @@
                 ]
               }
             ],
-            "compact": true
+            "compact": true,
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -12269,7 +12194,8 @@
                 ]
               }
             ],
-            "compact": true
+            "compact": true,
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -12982,7 +12908,8 @@
                 ]
               }
             ],
-            "compact": true
+            "compact": true,
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -13695,7 +13622,8 @@
                 ]
               }
             ],
-            "compact": true
+            "compact": true,
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -14408,7 +14336,8 @@
                 ]
               }
             ],
-            "compact": true
+            "compact": true,
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -15121,7 +15050,8 @@
                 ]
               }
             ],
-            "compact": true
+            "compact": true,
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -15834,7 +15764,8 @@
                 ]
               }
             ],
-            "compact": true
+            "compact": true,
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -16547,7 +16478,8 @@
                 ]
               }
             ],
-            "compact": true
+            "compact": true,
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -17256,7 +17188,8 @@
                 ]
               }
             ],
-            "compact": true
+            "compact": true,
+            "filtersClassName": "flex flex-col gap-3"
           }
         },
         {
@@ -19182,7 +19115,7 @@
   ],
   "footer": {
     "type": "minimal-centered",
-    "logo": "images/parent62/logo.png",
+    "logo": "/images/parent62/Logo-Aquarelle.png",
     "logoAlt": {
       "fr": "Réseau Parentalité 62",
       "en": "Parenting Network 62"
@@ -20733,7 +20666,7 @@
       "layout": {
         "kind": "flat"
       },
-      "serializeGroups": {},
+      "serializeGroups": { "address": { "serverKey": "address", "read": "address:read", "write": "address:write" } },
       "sections": [
         {
           "id": "content",
@@ -20759,6 +20692,22 @@
           ]
         },
         {
+          "id": "lieu",
+          "label": {
+            "fr": "Lieu",
+            "en": "Place"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            }
+          ]
+        },
+        {
           "id": "taxo",
           "label": {
             "fr": "Territoire, public & thèmes",
@@ -20768,7 +20717,7 @@
           "groups": [
             {
               "columns": 1,
-              "fields": ["territoires", "villes", "publics", "themes"]
+              "fields": ["territoires", "publics", "themes"]
             }
           ]
         }
@@ -21223,49 +21172,14 @@
           },
           "renderOnly": true
         },
-        "villes": {
-          "widget": "multiselect",
-          "multiple": true,
-          "label": { "fr": "Villes (facultatif)", "en": "Cities (optional)" },
-          "info": { "fr": "Permet de retrouver l'actualité avec le filtre « Villes » de la page Actualités.", "en": "Lets the article be found with the “Cities” filter of the News page." },
-          "placeholder": { "fr": "Sélectionner…", "en": "Select…" },
-          "placeholderSearch": { "fr": "Rechercher une ville…", "en": "Search a city…" },
-          "enum": [
-            { "value": "Achicourt", "label": { "fr": "Achicourt", "en": "Achicourt" } },
-            { "value": "Aire-sur-la-Lys", "label": { "fr": "Aire-sur-la-Lys", "en": "Aire-sur-la-Lys" } },
-            { "value": "Arras", "label": { "fr": "Arras", "en": "Arras" } },
-            { "value": "Auchel", "label": { "fr": "Auchel", "en": "Auchel" } },
-            { "value": "Audruicq", "label": { "fr": "Audruicq", "en": "Audruicq" } },
-            { "value": "Avesnes-le-Comte", "label": { "fr": "Avesnes-le-Comte", "en": "Avesnes-le-Comte" } },
-            { "value": "Beaurains", "label": { "fr": "Beaurains", "en": "Beaurains" } },
-            { "value": "Berck", "label": { "fr": "Berck", "en": "Berck" } },
-            { "value": "Béthune", "label": { "fr": "Béthune", "en": "Béthune" } },
-            { "value": "Boulogne-sur-Mer", "label": { "fr": "Boulogne-sur-Mer", "en": "Boulogne-sur-Mer" } },
-            { "value": "Bruay-la-Buissière", "label": { "fr": "Bruay-la-Buissière", "en": "Bruay-la-Buissière" } },
-            { "value": "Calais", "label": { "fr": "Calais", "en": "Calais" } },
-            { "value": "Carvin", "label": { "fr": "Carvin", "en": "Carvin" } },
-            { "value": "Dainville", "label": { "fr": "Dainville", "en": "Dainville" } },
-            { "value": "Desvres", "label": { "fr": "Desvres", "en": "Desvres" } },
-            { "value": "Étaples", "label": { "fr": "Étaples", "en": "Étaples" } },
-            { "value": "Fauquembergues", "label": { "fr": "Fauquembergues", "en": "Fauquembergues" } },
-            { "value": "Frévent", "label": { "fr": "Frévent", "en": "Frévent" } },
-            { "value": "Fruges", "label": { "fr": "Fruges", "en": "Fruges" } },
-            { "value": "Guînes", "label": { "fr": "Guînes", "en": "Guînes" } },
-            { "value": "Hénin-Beaumont", "label": { "fr": "Hénin-Beaumont", "en": "Hénin-Beaumont" } },
-            { "value": "Hesdin", "label": { "fr": "Hesdin", "en": "Hesdin" } },
-            { "value": "Hucqueliers", "label": { "fr": "Hucqueliers", "en": "Hucqueliers" } },
-            { "value": "Lens", "label": { "fr": "Lens", "en": "Lens" } },
-            { "value": "Liévin", "label": { "fr": "Liévin", "en": "Liévin" } },
-            { "value": "Lumbres", "label": { "fr": "Lumbres", "en": "Lumbres" } },
-            { "value": "Marquise", "label": { "fr": "Marquise", "en": "Marquise" } },
-            { "value": "Montreuil", "label": { "fr": "Montreuil", "en": "Montreuil" } },
-            { "value": "Sailly-sur-la-Lys", "label": { "fr": "Sailly-sur-la-Lys", "en": "Sailly-sur-la-Lys" } },
-            { "value": "Saint-Laurent-Blangy", "label": { "fr": "Saint-Laurent-Blangy", "en": "Saint-Laurent-Blangy" } },
-            { "value": "Saint-Omer", "label": { "fr": "Saint-Omer", "en": "Saint-Omer" } },
-            { "value": "Saint-Pol-sur-Ternoise", "label": { "fr": "Saint-Pol-sur-Ternoise", "en": "Saint-Pol-sur-Ternoise" } },
-            { "value": "Thérouanne", "label": { "fr": "Thérouanne", "en": "Thérouanne" } }
-          ]
-        }
+        "address": { "widget": "location", "label": { "fr": "Adresse (facultatif)", "en": "Address (optional)" }, "info": { "fr": "La ville de l'adresse permet de retrouver l'actualité avec le filtre « Villes » de la page Actualités.", "en": "The address's city lets the article be found with the “Cities” filter of the News page." } },
+        "addressCountry": { "widget": "hidden", "group": "address" },
+        "addressLocality": { "widget": "hidden", "group": "address" },
+        "postalCode": { "widget": "hidden", "group": "address" },
+        "streetAddress": { "widget": "hidden", "group": "address" },
+        "localityId": { "widget": "hidden", "group": "address" },
+        "geo": { "widget": "hidden", "type": "object", "writeOnly": true, "write": "geo:write" },
+        "geoPosition": { "widget": "hidden", "type": "object", "writeOnly": true, "write": "geoPosition:write" }
       },
       "chrome": {
         "title": {

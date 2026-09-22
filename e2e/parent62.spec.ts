@@ -446,7 +446,7 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     expect(corps).toContain("searchType[]=organizations");
   });
 
-  test("/blog : le filtre « Villes » propose les villes des territoires et filtre sur `villes`", async ({ page }) => {
+  test("/blog : le filtre « Villes » propose les villes des territoires et filtre sur la ville de l'adresse", async ({ page }) => {
     await page.goto("/blog", { waitUntil: "domcontentloaded" });
     await waitForHydration(page);
 
@@ -456,11 +456,11 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     await expect(arras).toBeVisible();
 
     const recherche = page.waitForRequest(
-      (r) => r.url().includes("globalautocomplete") && decodeURIComponent(r.postData() ?? "").includes("filters[villes]"),
+      (r) => r.url().includes("globalautocomplete") && decodeURIComponent(r.postData() ?? "").includes("filters[address.addressLocality]"),
     );
     await arras.click();
     const corps = decodeURIComponent((await recherche).postData() ?? "");
-    expect(corps).toContain("filters[villes][$in][]=Arras");
+    expect(corps).toContain("filters[address.addressLocality][$in][]=Arras");
     // Le fil reste borné aux actualités : un filtre de page ne peut pas écraser `type`.
     expect(corps).toContain("filters[type]=article");
     await expect(page).toHaveURL(/ville=arras/);
