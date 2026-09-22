@@ -159,6 +159,7 @@ source .env.test && npm run test:e2e
 │   │   ├── edit-modal-scope.test.ts # Périmètre costum des modales d'édition
 │   │   ├── effective-config.test.ts # Comportement résolu par site (garde d'impact inter-configs)
 │   │   ├── environment.test.ts     # Vérification Node, deps, fichiers config
+│   │   ├── filter-form-values.test.ts # Options d'un filtre ⊂ valeurs saisissables par le formulaire du champ
 │   │   ├── header-offset.test.ts   # `headerStickyOffsetPx` ⇄ JSX des headers
 │   │   ├── i18n-files.test.ts       # Parité des clés fr↔en par namespace + valeurs non vides
 │   │   ├── lcp-preload.test.ts     # Chaîne de preload LCP
@@ -796,6 +797,16 @@ champs EXPLICITEMENT déclarés — `list.groupBy.field`, `list.groupBy.itemsSor
 `badge.field` et les `facets[].field` de `list.resource` / `props.resource` — sont projetés (la racine d'un
 chemin pointé suffit). Les replis de code (`titleField` → `name`…) ne sont pas vérifiés. Vérifié en échec
 sur deux fautes injectées.
+
+#### Filtres ⇄ formulaires (`tests/preflight/filter-form-values.test.ts`)
+
+Un filtre à options FIXES posé sur un champ qu'un formulaire costum du même site saisit par une liste
+fermée (`enum`) ne doit proposer que des valeurs que ce formulaire sait enregistrer : une option hors liste
+ne ramène jamais rien, sans rien dire. Couvre les `dropdownFilters` (valeur envoyée : `value ?? id`) et les
+groupes de la sidebar `filters` (`name || id`), où qu'ils soient imbriqués ; les options dynamiques
+(`optionsFrom`/`optionsKey`) sortent du gate. Né des villes de parent62, recopiées dans le champ
+`villes` du formulaire d'actualité et dans le filtre de `/blog`. Vérifié en échec sur une ville mal
+orthographiée dans le filtre.
 
 #### Règles de rendu par item (`tests/preflight/list-item-rules.test.ts`)
 
