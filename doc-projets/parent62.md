@@ -15,7 +15,7 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-09-17** — INFORESO et « Elles et ils ont marqué le réseau » en pages dédiées avec leurs formulaires d'admin, types d'actualité « À la une » / « Zoom sur le réseau » en choix multiple, taxonomie facultative hors réunions (§9octovicies). Précédemment : **2026-09-15** — les cinq lots du 09/09 (§9vicies à §9quatervicies, validés en §9quinvicies), puis la refonte de l'accueil, les actions admin sur les actualités, les pages du réseau reprises à la source et le Mois de la Parentalité (§9sexvicies).
+Dernière mise à jour : **2026-09-22** — annuaire des partenaires et filtre « Villes » des actualités, page « La communauté » retirée (§9octotricies). Précédemment : **2026-09-17** — INFORESO et « Elles et ils ont marqué le réseau » en pages dédiées avec leurs formulaires d'admin, types d'actualité « À la une » / « Zoom sur le réseau » en choix multiple, taxonomie facultative hors réunions (§9octovicies). Précédemment : **2026-09-15** — les cinq lots du 09/09 (§9vicies à §9quatervicies, validés en §9quinvicies), puis la refonte de l'accueil, les actions admin sur les actualités, les pages du réseau reprises à la source et le Mois de la Parentalité (§9sexvicies).
 
 **(d) Haut des 9 pages territoire refondu + saisie admin des réunions** — chaque page
 `/territoire/*` ouvre désormais, juste après son bandeau, sur les **3 prochaines réunions du comité
@@ -327,7 +327,7 @@ moteur de recherche performant · centraliser les ressources · faciliter la con
 | **Articles** | forte activité, filtrage + liens ressources | WordPress pour la rédaction, **une entrée réseau par article** (moteur de recherche) |
 | **Événements** | agenda par territoire · impression · récurrence · **ajout partenaires modéré** | `/agenda` + form `parent62-event` ; récurrence côté réseau social |
 | **Ressources** | vidéos/photos, PDF, jeux ; filtres fins par territoire/ville | `/ressources` + form `parent62-recovery-center` (POI `recoveryCenter`) |
-| **Annuaire partenaires** | référencement + cartographie | — (P2/P3) |
+| **Annuaire partenaires** | référencement + cartographie | `/annuaire` + form `parent62-partenaire` modéré (P2, livré le 22/09, §9octotricies) |
 | **Publication RS / Mailing** | — | **Non engagé** (conseil : n8n) |
 
 ### 4.3 Déroulé et budget
@@ -423,6 +423,7 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
 | **Type d'actualité — appels à projets / offres d'emploi (02/09)** | **Config** `config.prod.parent62.json` : champ `category` (`select`, 3 valeurs) + `mutation.stamps` `$mapLabels` sur `tags` dans `costumForms.parent62-article`, 2 onglets `admin.tabs` (`appels-projets`, `offres-emploi` — `source.defaultTags`, `createDefaults`). **Moteur** (générique, tout site) : `src/modules/profil/forms/createDefaults.ts` (+ `.test.ts`, neufs), `src/modules/profil/forms/EntityFormModal.tsx`, `src/modules/profil/components/add/ModalRegistry.tsx`, `src/modules/admin/schema.ts`, `src/modules/admin/sections/AdminResourceTable.tsx`, `scripts/lib/prop-descriptions.ts` ; snapshots `tests/preflight/{stamps.test.ts,effective-config.test.ts,__effective__/parent62.json}`, `.claude/skills/config-assistant/examples/admin.json` — doc moteur : [doc/28](../doc/28-module-formengine.md) §`mutation.stamps` et [doc/30](../doc/30-module-admin.md) §`createDefaults` (§9sexdecies) |
 | **Double entrée parents / pro rétablie sur l'accueil (02/09)** | `config.prod.parent62.json` (section `action-tiles` `home-double-entree` réinsérée sur `pages[/].sections[1]`) ; `.claude/skills/config-assistant/page-recipes.json` (recette `home-a-la-une` resynchronisée : séquence + `titre`/`quand`/`rythme`) — gate `tests/preflight/page-recipes.test.ts` (§9septendecies) |
 | **Types de ressources — 2 ajouts + renommage (03/09)** | `config.prod.parent62.json` : `costumForms.parent62-recovery-center.fields.category.enum` (6 → 8 valeurs) et les 3 blocs `list.resource.badge` (`/ressources`, `/recherche` via `itemRules[2]`, `commandPalette.entitySearch.itemActionBySubType.recoveryCenter`) ; snapshots `.claude/skills/config-assistant/examples/{command-palette,list-item-rules,list-resource}.json` resynchronisés (§9octodecies) |
+| **Annuaire des partenaires + filtre « Villes » (22/09)** | `config.prod.parent62.json` : page `/annuaire`, `costumForms.parent62-partenaire`, `profiles.organizations.editModals`, onglet `admin.tabs` « partenaires », entrée de menu, page `/communaute` et son entrée de menu retirées, case « Rejoindre le réseau » de `/pro` vers `/annuaire`, villes au survol de « Entre Mer et Terres », `costumSlug` sur la liste de `/recherche`, champ `villes` de `parent62-article` et filtre de `/blog` ; `tests/preflight/filter-form-values.test.ts` (neuf) ; `e2e/parent62.spec.ts` ; skill `config-assistant` : `page-recipes.json` (recette `page-communaute-onglets` → eXtremeDefiAdeme), exemples `admin.json` et `list-item-rules.json` ; instantané `tests/preflight/__effective__/parent62.json` ; base locale : `costum.typeObj.organizations` et `typeObj.article.villes` (§9octotricies) |
 | **Tests** | `e2e/parent62.spec.ts`, `src/modules/search/lib/colorBy.test.ts`, `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` |
 | **Déploiement** | `server/prod-server.js`, `server/lib/sitemap.js`, `.env` (`VITE_SLUG`, `VITE_BASE_URL_BACKEND`, `SITE_CONFIG_PATH`, `VITE_SITE_PUBLIC_URL`) — dérivable via `npm run deploy:env` (`scripts/lib/sites.ts`) |
 
@@ -3638,6 +3639,75 @@ C'est une option de config, `widgetProps.allowOriginal: true` sur le champ `prof
 
 ---
 
+## 9octotricies. Annuaire des partenaires et filtre « Villes » des actualités
+
+### 9octotricies.1 Actualités : filtre par ville
+
+La page `/blog` gagne un filtre **« Villes »** : les **33 villes** que la carte de l'accueil affiche au
+survol des 9 territoires, avec recherche au clavier. « Entre Mer et Terres » affiche désormais les siennes
+au survol, comme les autres territoires : Montreuil, Étaples, Berck, Hesdin, Fruges, Hucqueliers. Le
+filtre porte sur un champ `villes` que le formulaire d'actualité saisit désormais (onglet
+« Territoire, public & thèmes », facultatif), avec **la même liste et la même orthographe** : le filtre ne
+propose que des valeurs que le formulaire sait enregistrer.
+
+Les 6 438 actualités existantes n'ont pas de ville : le filtre ne ramène que les actualités saisies ou
+retouchées depuis.
+
+La recherche occupe désormais sa propre ligne et les quatre filtres (thèmes, publics, territoires,
+villes) tiennent sur une rangée, à 1 280 comme à 1 440 px — le quatrième passait seul à la ligne.
+
+`villes` est déclaré dans `costum.typeObj.article` de la base locale, sans liste rattachée : une liste
+absente viderait les valeurs autorisées.
+
+### 9octotricies.2 Annuaire des partenaires
+
+| Élément | Contenu |
+|---|---|
+| Page `/annuaire` | bandeau et bouton **« Ajouter un partenaire »** ; filtres à gauche (territoire, type de structure, public, thèmes, recherche par nom) ; organisations rattachées à parent62 en cartes profil, fiche détaillée en fenêtre (territoires, publics, thèmes, e-mail, téléphone, site), vue carte colorée par territoire — composition d'institut-bleu et de `/temoignages` |
+| Formulaire `parent62-partenaire` | organisation : nom, type de structure, logo (image entière), présentations courte et longue, territoires, publics, thèmes, e-mail, téléphone, site, adresse. Compte requis ; le déposant devient administrateur de la fiche |
+| Modération | une fiche proposée reste en attente, hors de l'annuaire ; celle d'un administrateur du site est publiée directement — même mécanisme que l'agenda, donc filtre d'affichage et non garantie serveur (§9quattuortricies) |
+| Admin | onglet « Partenaires » : liste, validation, modification, suppression, création |
+| Menu | « Annuaire des partenaires » dans « Le Réseau parentalité » ; le panneau tient à 1 280 × 720, barre en haut comme collée |
+| Édition | une organisation rattachée à parent62 s'édite par ce formulaire ; les autres gardent l'éditeur standard |
+
+Types de structure → type d'organisation Communecter : Association → `NGO` ; Collectivité / service
+public → `GovernmentOrganization` ; Établissement (crèche, école, centre social…) → `Group` ; Entreprise →
+`LocalBusiness`. Hors parent62, Communecter affiche ces types sous ses propres libellés (« Groupe » pour un
+établissement).
+
+**La page « La communauté » (`/communaute`) est retirée**, avec son entrée du menu « Le Réseau
+parentalité ». La case « Rejoindre le réseau » de `/pro` (« Structures et professionnel·les »), qui y
+menait, mène désormais à l'annuaire. La recette de page `page-communaute-onglets` de la skill
+`config-assistant` prend pour modèle la page identique d'eXtremeDefiAdeme.
+
+Deux effets voulus hors de l'annuaire :
+- `/recherche` masque aussi les fiches en attente (`costumSlug` posé sur sa liste) : une fiche proposée y
+  serait sinon apparue avant validation. Le masquage est posé côté client parce que le backend ne le fait
+  pas de façon déterministe (`src/modules/search/lib/validationGate.ts`).
+- « Créer une organisation » depuis un profil ouvre le formulaire partenaire (règle du moteur : un site qui
+  déclare un seul formulaire pour un type l'emploie partout) — une organisation créée sur le site passe
+  donc par la même modération.
+
+`territoires`, `publics` et `themes` des organisations sont déclarés dans `costum.typeObj.organizations`
+de la base locale.
+
+Aucune organisation n'est rattachée à parent62 à la livraison : l'annuaire se remplit par le formulaire.
+
+### 9octotricies.3 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` · `audit:config` · `typecheck` · `lint` | ✅ 51 pages · 183 sections · RAS (aucun lien mort après le retrait de `/communaute`) |
+| `test:unit` (préflight compris) | ✅ **4 691 tests**, 3 échecs **étrangers au lot** : `bundle-size`, `site-assets`, `ProseContent — césure` |
+| Garde `filter-form-values` (nouvelle) | ✅ sur toutes les configs ; **rouge** sur une ville mal orthographiée dans le filtre |
+| `test:integration` (`config-driven-ssr`, config parent62) | ✅ **98/98** |
+| `test:e2e` parent62 | ✅ **21/21**, dont 2 nouveaux, chacun **rouge sans sa correction** : `/annuaire` (filtre de type et masquage des fiches en attente), `/blog` (filtre « Villes ») |
+| Écran | ✅ `/annuaire` à 1 440 px en clair et en sombre, à 390 px sans débordement ; `/blog` à 1 280 et 1 440 px ; bouton anonyme → fenêtre de connexion |
+| Backend | ✅ le filtre `type` est appliqué (institut-bleu : 74 `LocalBusiness`, 0 `NGO`) ; `villes` part dans les filtres sans écraser `type: article` |
+| Non vérifié | l'enregistrement réel d'une fiche partenaire et d'une actualité avec villes (pas de compte de test sur ce poste) |
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -3659,13 +3729,13 @@ C'est une option de config, `widgetProps.allowOriginal: true` sur le champ `prof
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies). **09/09** : boutons **Modifier / Supprimer** sur la fiche `/blog/:slug`, gardés par `canEditProfile` (admin du costum ou auteur) et réutilisant la modale `edit-parent62-article` déjà en place — hérité par les **4 sites** déclarant une page `/blog`, à charge pour eux de router leur propre `editModals` (§9sexvicies.2). **17/09** : types **« À la une »** et **« Zoom sur le réseau »**, type en **choix multiple** ; le mot-clé suit désormais le type (codecs à la place du stamp) ; section d'accueil « Zoom sur le réseau » filtrée sur `Zoom` ; territoires/publics/thèmes facultatifs (§9octovicies.3-4) |
+| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies). **09/09** : boutons **Modifier / Supprimer** sur la fiche `/blog/:slug`, gardés par `canEditProfile` (admin du costum ou auteur) et réutilisant la modale `edit-parent62-article` déjà en place — hérité par les **4 sites** déclarant une page `/blog`, à charge pour eux de router leur propre `editModals` (§9sexvicies.2). **17/09** : types **« À la une »** et **« Zoom sur le réseau »**, type en **choix multiple** ; le mot-clé suit désormais le type (codecs à la place du stamp) ; section d'accueil « Zoom sur le réseau » filtrée sur `Zoom` ; territoires/publics/thèmes facultatifs (§9octovicies.3-4). **22/09** : filtre **« Villes »** sur `/blog` (33 villes du survol des territoires) et champ `villes` du formulaire (§9octotricies.1) |
 | 2.2 | Actualités filtrables dans le moteur de recherche | ✅ *(était ✅ config, 🟡 UX)* | cible `searchTargets` « Actualités » (`type:article`) dans `/recherche` + filtres territoire/public/thème/dates. **25/07 — UX unifiée** : une actualité de `/recherche` rend une carte dédiée et son clic ouvre le **reader canonique** `/blog/:slug` (repli `/blog/id/:id`), plus un drawer générique |
 | 2.3 | Module événementiel (agenda) + affichage territoire | 🟡 *(diagnostiqué le 14-19/08)* | module agenda complet (calendrier + liste, filtre territoire) ; testé avec des **événements de test locaux** (dev, pas de la production — cf. §9sexies), a révélé 3 bugs backend, **tous corrigés** (§9sexies.1) ; **0 donnée `events` en production, toujours à confirmer** ; pas de carte agenda (`enableMap:false`) |
 | 2.4 | Impression de l'agenda | ❌ | **aucun code print** (`@media print`/`window.print`) — à faire (CSS print ou export iCal/PDF) |
 | 2.5 | Événements récurrents | ✅ *(était « config+code, non observable » le 24/07)* | `parent62-event` : `recurrency` + `openingHours` + `eventDates` + codecs/validators + calendrier « récurrents dépliés ». **Testé le 14-19/08 avec des événements de test locaux (dev, pas la production)** — a révélé 3 bugs backend dans `AgendaAction.php`, **tous corrigés** : matching par jour de semaine, mode LISTE excluant les récurrents, occurrence du jour en cours jamais renvoyée / onglet « En cours ». Front `site-json` entièrement corrigé et testé (899/899) — cf. §9sexies et les 2 documents de spécification à la racine du monorepo |
 | 2.6 | Ajout partenaires + **modération a priori** | ✅ *(était ❌, confirmé le 19/08)* | bouton public `requiresAdmin:false`, form injecte `preferences.toBeValidated:true`, onglet admin Agenda `validate` + « Proposé le ». `searchEventsCostum` masque bien les events *pending* côté public — confirmé (cf. §9sexies, §12) |
-| 2.7 | Annuaire partenaires (référencement + cartographie) | 🟡 *(était ❌)* | cible `searchTargets` « Structures & partenaires » (`organizations`) + carte + templates profils ; **25/07** : règle de rendu dédiée (`image-cover`, `imageFit:"contain"` pour des logos hétérogènes) ; **manque page `/annuaire` dédiée + données** (0 org) |
+| 2.7 | Annuaire partenaires (référencement + cartographie) | ✅ *(était 🟡)* | cible `searchTargets` « Structures & partenaires » (`organizations`) + carte + templates profils ; **25/07** : règle de rendu dédiée (`image-cover`, `imageFit:"contain"` pour des logos hétérogènes) ; **22/09** : page **`/annuaire`** (filtres territoire / type / public / thèmes, vue carte), formulaire `parent62-partenaire` modéré (dispense pour les admins du site), onglet admin « Partenaires » ; page « La communauté » retirée (§9octotricies.2). **0 organisation rattachée** à la livraison |
 
 ### Partie 3 (2 000 €) — statuts revus par l'audit du 24/07
 
@@ -3787,7 +3857,7 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | **Votes « utile » + contributeurs** des ressources (3.3) — câbler `ADD_VOTE`/`links` + UI card | Peterson / Thomas |
 | **Transcription / sous-titres des paroles** (1.6) — champ dédié à ajouter au form + affichage | Peterson / réseau |
 | **Masquage public des events *pending*** (2.6) — `searchEventsCostum` applique-t-il un gate `toBeValidated` ? sinon à faire côté backend | Thomas |
-| **Page `/annuaire` dédiée** (2.7) — au-delà du filtre « Structures » de `/recherche` | Peterson / réseau |
+| **`typeObj` de production** (2.7, 2.1) — déclarer sur le costum parent62 de production `typeObj.organizations` (`territoires`, `publics`, `themes`) et `villes` dans `typeObj.article`, comme en base locale (§9octotricies) | Thomas / backend |
 | **Données P2/P3** — relevé du 25/07 : 3 paroles, 4 ressources ; events et organisations à confirmer. Volumétrie réelle à créer/importer | réseau / Thomas |
 | **Géolocalisation** — aucune donnée ne porte de coordonnées : la vue carte de `/recherche` est vide et le `colorBy` par territoire est invérifiable | réseau / Thomas |
 | Borne de fin des dates (`$lt`/`$lte`) dans `SearchNew::getQueries` | Thomas / backend |
