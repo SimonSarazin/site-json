@@ -8,7 +8,9 @@
   "ImageUploadField": {
     "dropHint": "Glisser-déposer ou cliquer pour choisir",
     "remove": "Retirer l'image",
-    "imageOnly": "Seules les images sont acceptées."
+    "imageOnly": "Seules les images sont acceptées.",
+    "crop": "Recadrer",
+    "preparing": "Préparation de l'image…"
   },
   "EntityGridView": {
     "gridView": "Grille",

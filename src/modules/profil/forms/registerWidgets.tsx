@@ -86,6 +86,7 @@ registerWidget("image", (p) => (
         onRemoveExisting={() => p.form.setValue(fname("_imageDeleted"), true)}
         aspect={(p.field.widgetProps?.aspect as number) ?? 1}
         shape={p.field.widgetProps?.shape as "square" | "circle" | undefined}
+        allowOriginal={p.field.widgetProps?.allowOriginal === true}
         label={lbl(p)}
         hint={p.field.info ? p.t(p.field.info) : undefined}
       />
