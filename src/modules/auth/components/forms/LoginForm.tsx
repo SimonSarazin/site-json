@@ -1,7 +1,7 @@
 import React, {
   useState,
   useEffect,
-  useMemo,
+  useMemo, 
   type ChangeEvent,
 } from "react";
 
@@ -45,7 +45,7 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
   // Page visée mémorisée par la garde (usePageGuards) — repli sur l'accueil, comportement
   // historique. `returnToOrHome` refuse toute destination externe (cf. lib/authRedirect).
   const returnTo                     = returnToOrHome(location.state);
-  const { userApi, loading, me, entity }     = useCocolight();
+  const { userApi, apiClient, loading, me, entity }     = useCocolight();
   const { config }                   = useSite();
   const { loaded }                   = useLoadNamespace("modules/auth");
   const t                            = useT("modules/auth");
@@ -155,6 +155,11 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
     try {
       await userApi.login(email, password);     // ← optionnel
       if (userApi.isConnected) {
+        // Contrairement au flux SSO (useSSOAuth.ts), userApi.login() n'émet pas
+        // "userLoggedIn" — sans ça, CocolightProvider ne rafraîchit jamais
+        // me/entity après une connexion classique (header, notifications,
+        // popup d'invitation restent sur l'état "déconnecté" jusqu'au reload).
+        apiClient?.emit("userLoggedIn");
         onSuccess?.();
         if (!hideBackButton) navigate(returnTo);
       }

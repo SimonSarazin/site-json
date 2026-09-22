@@ -42,12 +42,31 @@ export type { SiteEntry };
  *
  * `status` vérifie que les applications déployées s'y conforment encore : si
  * l'une d'elles dérive, c'est visible plutôt que silencieux.
+ *
+ * ⚠ CE N'EST PAS LE DÉPÔT DE RÉFÉRENCE (2026-09-16). GitLab Adullact limite les
+ * clones — `HTTP 429` sur `ls-remote` ET sur `clone`, quelle que soit
+ * l'authentification (anonyme, deploy token, oauth2 : les trois mesurés) — et
+ * notre modèle y est exposé par construction : un déploiement = un clone,
+ * `force` est en dur, donc un rollout du parc = N clones à la file. Coolify bâtit
+ * donc le MIROIR GitHub `aboire/site-json` (privé, source « GitHub App »).
+ *
+ * GitLab reste la source de vérité : c'est là qu'on pousse, c'est `origin/main`
+ * que `reference()` prend pour cible, et le miroir n'est qu'un relais de build.
+ * D'où le contrôle de retard du miroir dans `status` et la garde dans `push` —
+ * sans eux, Coolify bâtirait un vieux commit sans que rien ne le dise.
  */
 export const BUILD_DEFAUT = {
-  depot: "https://gitlab.adullact.net/pixelhumain/site-json.git",
+  /** Forme `owner/repo` : celle qu'attend une source GitHub App. */
+  depot: "aboire/site-json",
   branche: "main",
   buildPack: "dockerfile",
   port: "3000",
+  /**
+   * NOM de l'App GitHub dans Coolify, résolu en uuid à chaud — jamais l'uuid
+   * lui-même, qui lierait le dépôt à une instance (même principe que
+   * `coolifyApp`). `""` = source publique, `depot` doit alors être une URL.
+   */
+  githubApp: "site-json",
 };
 
 export type Build = typeof BUILD_DEFAUT;
