@@ -359,9 +359,9 @@
             "list": {
               "columns": {
                 "sm": 1,
-                "md": 2,
-                "lg": 4,
-                "xl": 4
+                "md": 1,
+                "lg": 2,
+                "xl": 2
               },
               "card": {
                 "type": "image-cover",
@@ -372,6 +372,7 @@
             },
             "map": {
               "layout": "split",
+              "splitRatio": "50-50",
               "marker": {
                 "useItemImage": true,
                 "style": "circle",
