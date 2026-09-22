@@ -152,8 +152,9 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
           de celui du bloc voisin. */}
       <div
         style={voilePanneau}
-        // `pb-8` : la ligne points + bouton se lit un peu au-dessus du bord bas du panneau, pas collée à lui.
-        className={cn("flex flex-1 flex-col justify-start", voilePanneau && "mx-4 rounded-2xl p-3 pb-8 md:p-4 md:pb-8")}
+        // `py-8` : la ligne points + bouton se lit un peu au-dessus du bord bas du panneau, pas collée à lui,
+        // et la diapositive respire d'autant sous son bord haut.
+        className={cn("flex flex-1 flex-col justify-start", voilePanneau && "mx-4 rounded-2xl px-3 py-8 md:px-4")}
       >
       <Carousel
         opts={{ loop: renderable.length > 1 }}
