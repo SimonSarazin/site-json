@@ -52,6 +52,7 @@ export function MilestoneManageActions({
     <>
       {showEdit && canEdit && !isClosed ? (
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           className="h-7 text-[11px] gap-1 px-2 text-muted-foreground hover:text-foreground"
@@ -64,6 +65,7 @@ export function MilestoneManageActions({
 
       {isClosed && canRestore ? (
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           className="h-7 text-[11px] gap-1 px-2 text-muted-foreground hover:text-success"
@@ -77,6 +79,7 @@ export function MilestoneManageActions({
 
       {!isClosed && canClose ? (
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           className="h-7 text-[11px] gap-1 px-2 text-muted-foreground hover:text-success"
@@ -90,6 +93,7 @@ export function MilestoneManageActions({
 
       {showDelete && canDelete && !isClosed ? (
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           className="h-7 text-[11px] gap-1 px-2 text-muted-foreground hover:text-destructive"

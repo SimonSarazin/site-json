@@ -167,6 +167,17 @@
     "css": "index-equipements-sportifs",
     "images": "equipementsSportifs974",
     "coolifyApp": "site-json-equipements-sportifs-scolaires",
-    "domain": "equipements-sportifs-scolaires.00.re"
+    "domain": "equipements-sportifs-scolaires.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
+  },
+  {
+    "slug": "federationDesCae",
+    "config": "config.prod.federationDesCae.json",
+    "css": "index-rezo-la-mer",
+    "images": "federationDesCae",
+    "coolifyApp": "site-json-federation-des-cae",
+    "domain": "federation-des-cae.00.re"
   }
 ]

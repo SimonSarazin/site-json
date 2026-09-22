@@ -1,6 +1,12 @@
 /**
  * Mutations pour la gestion des membres (admin actions)
  * Remplace useMemberMutations.tsx et useInviteMutations.tsx
+ *
+ * Ces actions peuvent notifier par e-mail (validation d'une demande de membre/admin, promotion,
+ * retrait) : l'e-mail n'est brandé du costum que si la requête porte `costumSlug`. Ce contexte est
+ * posé UNE fois sur le client API (`applySiteCostum` → `setSiteCostum`, cf. lib/siteCostum.ts) et
+ * injecté par la lib sur les endpoints marqués — RIEN à faire ici ni dans `createUserMutation`
+ * (core.ts explique pourquoi on n'y pose PAS de `setCostumScope`).
  */
 import { createUserMutation } from "./core";
 

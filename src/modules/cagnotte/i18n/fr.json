@@ -64,8 +64,13 @@
         "missingProjectSide": "Restauration impossible : ce jalon est absent de projects.oceco.milestones (côté projet).",
         "missingAnswerSide": "Restauration impossible : aucune dépense liée à ce jalon dans answers.aapStep1.depense (côté answer)."
       },
+      "incompleteForDelete": {
+        "missingProjectSide": "Suppression impossible : ce jalon est absent de projects.oceco.milestones (côté projet).",
+        "missingAnswerSide": "Suppression impossible : aucune dépense liée à ce jalon dans answers.aapStep1.depense (côté answer)."
+      },
       "cannotCloseWithOpenActions": "Clôture impossible : toutes les actions doivent être terminées.",
       "cannotDeleteIfFunded": "Suppression impossible : ce jalon est déjà financé.",
+      "cannotDeleteWithoutEnvelope": "Suppression impossible depuis cette page : les actions de ce jalon n'y sont pas lisibles, et les supprimer avec lui est nécessaire. Ouvrez le commun depuis l'appel où il a été déposé.",
       "noIndexForDelete": "Aucun index valide trouvé pour supprimer ce jalon.",
       "actionIdMissing": "Certaines actions du jalon n'ont pas d'identifiant valide.",
       "deleteActionUnavailable": "Suppression action indisponible : apiClient manquant.",
@@ -355,6 +360,7 @@
       "apiClientUnavailable": "Client API indisponible.",
       "projectNotFoundForAction": "Projet introuvable pour la création de l'action.",
       "noMilestoneSelected": "Aucun jalon sélectionné.",
+      "actionFormInvalid": "Le formulaire n'a pas pu être soumis. Vérifie les champs, ou recharge la page si le problème persiste.",
       "actionNameRequired": "Le nom de l'action est obligatoire.",
       "invalidCredits": "Le montant des crédits doit être supérieur ou égal à 0.",
       "invalidDates": "Les dates doivent être au format dd/MM/aaaa et la date de fin doit être supérieure ou égale à la date de début.",
@@ -387,6 +393,10 @@
         "deleteAction": "Vous devez être connecté pour supprimer une action.",
         "completeAction": "Vous devez être connecté pour terminer une action.",
         "candidate": "Vous devez être connecté pour candidater."
+      },
+      "createMilestone": {
+        "title": "Création impossible",
+        "description": "Contexte API incomplet (projet/answer)."
       },
       "restoreImpossible": {
         "title": "Restauration impossible",
@@ -526,6 +536,8 @@
       "loadingResources_proposition": "Chargement des propositions...",
       "noResource": "Aucun projet disponible pour cette organisation",
       "noResource_proposition": "Aucune proposition disponible pour cette organisation",
+      "resourceOutOfScope": "Ce projet n'est pas finançable depuis cette page : sa cagnotte est portée par un autre contexte.",
+      "resourceOutOfScope_proposition": "Ce commun n'est pas finançable depuis cette page : sa cagnotte est portée par un autre contexte.",
       "selectResourcePlaceholder": "Sélectionner un projet...",
       "selectResourcePlaceholder_proposition": "Sélectionner une proposition...",
       "setAsMainCagnotte": "Définir comme cagnotte principale",

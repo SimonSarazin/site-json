@@ -103,6 +103,29 @@ describe("useDynamicFilterOptions — formes historiques (non-régression)", () 
     await waitFor(() => expect(result.current[0].optionsReady).toBe(true));
     expect(result.current[0].options).toEqual(declarees);
   });
+
+  /**
+   * Filtre 100 % DYNAMIQUE : aucune option écrite en config. Le `.default([])` du schéma ne s'applique
+   * pas — la config JSON n'est jamais parsée par Zod au runtime — donc `options` arrivait ici à
+   * `undefined` et ressortait tel quel. `SearchHeaderSection` lit `filter.options.filter(…)` sans garde :
+   * la section « Paroles de parents » entière tombait en erreur au retrait des catégories déclarées.
+   */
+  it("SANS aucune option déclarée : `options` ressort en tableau, jamais `undefined`", async () => {
+    poser({ categoriesParole: { collection: "poi", distinct: "category" } }, { categoriesParole: { values: [] } });
+    const { result } = renderHook(
+      () => useDynamicFilterOptions([{ id: "category", optionsFrom: { list: ["categoriesParole"] } }]),
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current[0].optionsReady).toBe(true));
+    expect(result.current[0].options).toEqual([]);
+  });
+
+  it("SANS aucune option déclarée ET sans source : `options` vaut `[]` (chemin sans requête)", async () => {
+    poser({});
+    const { result } = renderHook(() => useDynamicFilterOptions([{ id: "libre" }]), { wrapper });
+    expect(result.current[0].optionsReady).toBe(true);
+    expect(result.current[0].options).toEqual([]);
+  });
 });
 
 describe("useDynamicFilterOptions — socle déclaré (`withDeclared`)", () => {

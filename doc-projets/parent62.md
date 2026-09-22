@@ -15,7 +15,7 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-09-03** — quatre lots.
+Dernière mise à jour : **2026-09-09** — cinq lots : « Paroles de parents » (§9vicies), les ajustements demandés par le réseau (§9unvicies), la page `/theme` (§9duovicies), les pages Publics (§9tervicies puis §9quatervicies).
 
 **(d) Haut des 9 pages territoire refondu + saisie admin des réunions** — chaque page
 `/territoire/*` ouvre désormais, juste après son bandeau, sur les **3 prochaines réunions du comité
@@ -443,7 +443,7 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
 | **Une règle de rendu porte SA tranche complète** (carte + preview + contrat + action) | carte et détail sortent de la MÊME résolution → l'incohérence entre ce qu'on voit dans la grille et ce qu'on voit au clic devient impossible par construction |
 | **Faire varier la valeur de `list`, plutôt qu'ajouter une prop** | tout l'aval (`SearchCard`, `Preview`, `SwitchDetailsMode`, presenters typés) reste inchangé ; sans règles, `list` est renvoyé **par identité référentielle** → non-régression prouvable (`toBe(list)`) pour les ~13 autres sections search du site |
 | **Une actualité ouvre le reader blog, pas un drawer** | un POI `type:"article"` a déjà sa page canonique `/blog/:slug` (SSR + SEO) ; la rouvrir en drawer dupliquerait l'UX et perdrait le référencement |
-| **`/public/*` scope par le champ `publics` existant, pas un nouveau champ** (06/08) | les 7 valeurs de `publics` (§5.2) sont déjà portées par les articles ; une page par valeur (`filters:{publics:{$in:[...]}}` sur `articleFeed`) est purement config-driven, zéro donnée/costum neuf |
+| **`/public/*` scope par le champ `publics` existant, pas un nouveau champ** (06/08) | les valeurs de `publics` (§5.2 — 7 à l'origine, **9 depuis le 09/09**, cf. §9tervicies) sont déjà portées par les articles ; une page par valeur (`filters:{publics:{$in:[...]}}` sur `articleFeed`) est purement config-driven, zéro donnée/costum neuf |
 | **`/appels-a-projets` et `/offres-emploi` filtrent par `tags`, pas par un champ dédié** (06/08) | même convention que les pages `/theme/*` existantes (mots-clés WordPress libres, cf. §2) ; pas de nouvelle taxonomie pour deux catégories de contenu ponctuelles |
 | **`background`/`accentColor` en couleur FIXE (hex), jamais `text-foreground`** (`featured-carousel`, `articleTeaser`, 06/08) | ces blocs posent un fond marine fixe pour rester de la même famille visuelle sur toute la home ; `text-foreground` s'inverserait en mode clair et deviendrait illisible sur un fond sombre qui, lui, ne s'inverse pas |
 | **Wordmark header en 2 segments (`logoTitle`+`logoTitleAccent`)** (`stacked`, 06/08) | rendre « parent » (contour) + « 62 » (plein) séparément, en couleurs fixes indépendantes du mode, sans dupliquer tout le champ `logoTitle` ni coder le découpage en dur dans le composant |
@@ -722,7 +722,7 @@ n'étaient pas dans ce dropdown avant), « Territoires » (10, inchangé), « Th
 via `header.utilities.search` (⌘K, `CommandTriggerButton`, inchangé).
 
 **11 pages ajoutées** (35→46 pages, 153→176 sections, `config:validate` ✅ le 06/08) :
-- **7 pages `/public/<slug>`** (`benevoles`, `en-famille`, `enfance`, `futurs-parents`,
+- **7 pages `/public/<slug>`** (**9 depuis le 09/09** : `petite-enfance` et `adolescence` ajoutées, cf. §9tervicies) (`benevoles`, `en-famille`, `enfance`, `futurs-parents`,
   `parents`, `parents-enfants`, `professionnels`) — une par valeur du champ `publics` déjà
   présent en base (cf. §5.2, mêmes 7 valeurs). Chacune : `title` + `searchHeader` (filtres
   thème/territoire) + `articleFeed` scopé `filters:{publics:{$in:["<Valeur>"]}}`. Purement
@@ -1184,7 +1184,9 @@ Perte du maillage interne vers ces pages, pas de leur contenu.
 - Retour arrière du navigateur vers `/theme` sans paramètre : requête serveur suivante sans plus
   aucun filtre `themes` (sélection bien vidée).
 - Filtre masqué (`hidden`) : 0 bouton « Thèmes »/valeur sélectionnée visible sur `/theme`, `Publics`
-  toujours visible normalement.
+  toujours visible normalement. ⚠️ **Annulé le 09/09** (cf. §9duovicies.1) : le réseau a demandé
+  l'inverse — le filtre « Thèmes » est de nouveau visible sur `/theme`. La capacité `hidden` reste
+  dans le moteur, simplement plus employée par ce site.
 - `costum.lists.themes` est aujourd'hui **statique** côté backend parent62 (cf. §9septies /
   document de spec `costum.lists.themes statique bloque les filtres dynamiques`) : seule cette
   branche a été exercée en conditions réelles. La branche RECETTE DYNAMIQUE (`costum/co/listvalues`)
@@ -1752,7 +1754,7 @@ Non commité à ce stade.
 `/parents` et `/pro` existaient toujours comme pages, mais **plus aucun lien n'y menait** : chaque
 chemin n'apparaissait qu'**une seule fois** dans la config — sa propre déclaration de page. La
 section qui les exposait (`action-tiles` `home-double-entree`, « Vous êtes… ») avait disparu de
-l'accueil à la refonte du 06/08, sans remplacement. Le dropdown « Publics » (7 pages `/public/*`)
+l'accueil à la refonte du 06/08, sans remplacement. Le dropdown « Publics » (7 pages `/public/*`, **9 depuis le 09/09**)
 ajouté au même moment couvre un axe **différent** (public visé : parents, enfance, professionnels…),
 pas l'orientation parent / professionnel — il ne les remplaçait donc pas. Question ouverte du §13
 depuis le 06/08, **tranchée** : les deux coexistent.
@@ -1783,6 +1785,10 @@ Non commité à ce stade.
 
 ## 9octodecies. Impacts — deux nouveaux types de ressources + renommage « Jeu » (03/09)
 
+> ⚠️ **Annulé pour partie le 09/09** (cf. §9unvicies) : les deux types ajoutés ici sont supprimés et
+> « Les jeux du réseau » redevient « Jeu ». Section conservée pour l'historique de la décision et
+> pour son §9octodecies.3, dont le point d'attention s'est réalisé.
+>
 > Périmètre : **config parent62 uniquement**, zéro code. Étend la taxonomie du champ `category` des
 > fiches ressource (`parent62-recovery-center`), consommée par la page `/ressources`, la cible
 > « Ressources » de `/recherche` et la palette ⌘K.
@@ -1964,6 +1970,481 @@ Lot **non commité**.
 
 ---
 
+## 9vicies. Impacts — lot « Paroles de parents » : catégories libérées, adresse, image, carte (09/09)
+
+> Périmètre : **`config.prod.parent62.json`** (page `/temoignages`, formulaire `parent62-affiche`,
+> CTA d'accueil, 3 contrats `testimonial`) + **4 fichiers du moteur** — l'illustration manquait au
+> contrat `testimonial`, qui n'avait pas d'`imageField` là où `resource` en a un depuis l'origine.
+> Demande du réseau en 4 points : retirer les 3 catégories par défaut, ajouter une adresse et une
+> image à la saisie d'une parole, poser la carto sur `/temoignages`.
+> Nombre de pages/sections **inchangé** (46 / 174) : rien n'est ajouté à la page, la carte est une
+> vue de la section existante.
+
+### 9vicies.1 Les 3 catégories par défaut retirées
+
+« Compliqué / Difficile / À changer » étaient déclarées **deux fois comme socle** et **trois fois
+comme couleurs**. Depuis le 25/08 (§9septies) la catégorie est en saisie libre et la liste
+`categoriesParole` est une **recette `distinct`** (§9terdecies) : le socle n'était plus un défaut
+utile, il réinjectait trois valeurs que la donnée ne portait pas nécessairement.
+
+| Emplacement | Avant | Après |
+|---|---|---|
+| Form `parent62-affiche`, `fields.category` | `enum` de 3 valeurs (socle du `valueSelect`) | plus d'`enum` — seule la recette alimente, la **saisie libre reste ouverte** (`creatable` par défaut) |
+| `/temoignages`, filtre `category` | `options` (3) + `optionsFrom.withDeclared:true` | `optionsFrom.list:["categoriesParole"]` seul (`withDeclared` retiré : sans socle il n'a plus d'objet) |
+| 3 contrats `testimonial` (`/temoignages`, itemRule `poi-parole` de `/recherche`, preset `affiche` de la palette) | `badge.colors` mappant ces 3 valeurs | `badge: {field:"category"}` nu — `valueColor` retombe sur la **palette déterministe** du thème, donc toute catégorie reçoit une couleur stable |
+| Accueil, CTA « Écouter des paroles de parents » | sous-titre « Compliqué, difficile… et à changer » | « Ce que les parents du 62 racontent de leur quotidien » |
+
+Plus aucune occurrence de ces trois libellés dans la config. **Conséquence à surveiller** :
+`category` reste `required` — si la recette ne remonte encore rien, le sélecteur s'ouvre vide et la
+catégorie doit être **tapée**. C'est le comportement demandé, pas un défaut.
+
+### 9vicies.2 Un bug du moteur révélé par ce retrait
+
+Retirer les `options` du filtre a fait **tomber la section `searchHeader` entière** :
+`Cannot read properties of undefined (reading 'filter')`. `TitleWithFiltersDropdownSchema.options`
+porte un `.default([])`, mais **la config JSON n'est jamais parsée par Zod au runtime** — le défaut
+n'agit pas, et les **7 lectures** de `filter.options` de
+[`SearchHeaderSection.tsx`](../src/modules/search/sections/SearchHeaderSection.tsx) supposaient le
+tableau présent. Un filtre 100 % dynamique (`optionsFrom` seul) était donc **structurellement
+impossible**, sur tous les sites.
+
+Corrigé **à la source**, dans
+[`useDynamicFilterOptions.ts`](../src/modules/search/hooks/useDynamicFilterOptions.ts) : c'est ce
+hook qui normalise la liste consommée par le rendu, et ses deux chemins de retour anticipé
+(`!res`, `!values.length`) laissaient passer `options: undefined`. Le défaut se pose là, une fois —
+`FiltersSection` en bénéficie aussi. 2 tests de régression ajoutés, **vérifiés en échec sans le
+correctif**.
+
+### 9vicies.3 Adresse et image dans le formulaire de parole
+
+`address`/`geo` sont des champs **cœur** du POI : hors contrat costum (`typeObj`), donc **aucune
+demande backend** — c'est ce qui distingue ce lot de §9septies. Idiome repris tel quel de
+`parent62-event` et `parent62-article` :
+
+| Apport | Déclaration |
+|---|---|
+| **Adresse** | nouvelle section `lieu` (icône `map-pin`) ; champ `address` en widget `location`, 5 membres plats cachés (`addressCountry`/`addressLocality`/`postalCode`/`streetAddress`/`localityId`) en `group:"address"`, `geo` + `geoPosition` en `writeOnly`, et `serializeGroups.address` (`address:read`/`address:write`) |
+| **Image** | champ `profil_avatar` (widget `image`) ajouté à la section « La parole », + bloc `image: {field:"profil_avatar", existingUrlFrom:"image:profilUrl"}` |
+
+Vérifié sur le descripteur compilé : le pipeline recompose bien
+`address → {"@type":"PostalAddress", …}`, `geo → {"@type":"GeoCoordinates", …}` et
+`geoPosition → {type:"Point", coordinates:[lng,lat]}` — soit exactement ce que lit
+`searchMapSelection` pour poser un marqueur. La chaîne saisie → stockage → carte est bouclée.
+
+Le champ image porte un `info` **RGPD** (« ne pas diffuser de photo identifiant une famille sans
+son accord ») : la parole est un contenu sensible, et le formulaire portait déjà un consentement.
+
+### 9vicies.4 `imageField` au contrat `testimonial` (apport moteur)
+
+Le contrat n'avait aucune notion d'image. Ajouté par symétrie exacte avec `resource` :
+
+- [`schema.ts`](../src/modules/search/schema.ts) — `imageField` optionnel ;
+- [`useTestimonialData.ts`](../src/modules/search/hooks/useTestimonialData.ts) — `image`, avec la
+  **cascade à trois niveaux** de `useResourceData` : `profilMediumImageUrl` → `profilImageUrl` →
+  1re image de `medias` (une image déposée en galerie n'alimente pas `profil*ImageUrl`) ;
+- [`CardTestimonialBubble.tsx`](../src/modules/search/components/card/testimonial/CardTestimonialBubble.tsx) —
+  bannière `aspect-[16/9]` en tête ; le corps passe dans un wrapper `p-5` (le `p-5` quittant la `Card`)
+  pour que la bannière soit pleine largeur ;
+- [`PreviewTestimonialBubble.tsx`](../src/modules/search/components/preview/testimonial/PreviewTestimonialBubble.tsx) —
+  bannière `aspect-[21/9] max-h-[30vh]` (même plafond que `PreviewResourceCard`, sans quoi la hauteur
+  dérive de la largeur du dialogue et écrase la zone de contenu).
+
+**Décision de design** : la pastille de catégorie reste **sous** l'image, pas en surimpression. Un
+overlay de texte sur une photo arbitraire ne peut pas garantir son contraste — et sur la carte
+`bubble`, la catégorie porte aussi la teinte de la bulle, donc elle doit rester sur la surface.
+Sans image, card et preview gardent leur composition d'origine (aucune réserve d'espace vide).
+
+`defaultFields` de `paroles-list` complété : `slug`, `profilImageUrl`, `profilMediumImageUrl`
+(l'image) + `address`, `geo`, `geoPosition` (la carte). `/recherche` et la palette les projetaient
+déjà.
+
+### 9vicies.5 La carte de `/temoignages`, en vue split
+
+`enableMap:true` + `map.layout:"split"` sur `paroles-list` (elle était à `false`), `showMap:false`
+conservé — la page **démarre en liste**, le bouton bascule vers liste + carte côte à côte
+(ratio `40-60` par défaut : liste 1 colonne à gauche, carte à droite, sélection synchronisée). Sur
+mobile, le split ne s'applique pas (`!isMobile`) : c'est la carte plein écran. Bloc `map` calqué sur
+`/recherche` (cluster, `marker.colorBy` par territoire, `itemAction:"preview"` → la modale de parole).
+
+Aucun centre/zoom n'est imposé, comme sur `/recherche` : la carte cadre sur les données.
+
+### 9vicies.6 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ 46 pages · **174 sections** (inchangé) |
+| `audit:config` | ✅ `config.prod.parent62.json — RAS` |
+| `typecheck` · `lint` | ✅ · ✅ 0 erreur (22 warnings préexistants, aucun sur les fichiers touchés) |
+| `test:unit` — préflight | ✅ 562/562 (6 skipped) |
+| `test:unit` — `src/` + `server/` (lancé en 4 lots, la suite complète saturant la mémoire du poste) | ✅ 473 (`search`) + 789 (`profil`/`formEngine`/`components`/`lib`) + 1176 (reste de `src/`) + 81 (`server/`) — **0 échec** |
+| Rendu réel (dev-server, 4 paroles en base) | ✅ liste clair **et** sombre, split desktop (1 marqueur, la seule parole géolocalisée), modale avec bannière, mobile 360px et tablette 768px **sans débordement horizontal** |
+| `test:e2e` | non rejoué — **pas de `.env.test` sur ce poste** (auth réelle indisponible) ; `e2e/parent62.spec.ts:148` n'assied rien sur les catégories ni le nombre de cartes |
+
+Tests **ajoutés** : `useTestimonialData.test.tsx` (9 cas — le hook n'en avait aucun, alors qu'il est
+le seul point où la config décide des champs affichés) et 2 cas de régression dans
+`useDynamicFilterOptions.test.tsx`.
+
+Resynchronisés : `__effective__/parent62.json` (6 lignes — les seuls `defaultFields`, aucun autre
+site impacté) et 3 exemples de la skill `config-assistant` (`command-palette`, `list-item-rules`,
+`list-testimonial`, via `config:example -- <feature> --write`).
+
+Lot **non commité**.
+
+---
+
+## 9unvicies. Impacts — filtres à gauche sur `/temoignages`, retour à 6 types de ressources, 2 entrées de menu (09/09)
+
+> Périmètre : **`config.prod.parent62.json` uniquement, zéro code.** Trois demandes du réseau, reçues
+> après le lot §9vicies. Pages/sections **inchangées** (46 / 174) : `/temoignages` échange ses deux
+> sections de rang 1 contre un `gridLayout` qui en contient deux.
+
+### 9unvicies.1 `/temoignages` passe au gabarit « filtres à gauche »
+
+La page portait ses 5 filtres en **dropdowns horizontaux** dans le `searchHeader`. Elle adopte le
+gabarit déjà en place sur **`/recherche`** (lui-même celui de `/lieux` sur tiers-lieux) :
+
+| | Avant | Après |
+|---|---|---|
+| Sections | `searchHeader` (5 dropdowns) · `searchProStatic` | `searchHeader` (titre seul) · `gridLayout` `paroles-grid` |
+| Filtres | dropdowns en barre | panneau `filters` `paroles-filtres` à gauche (`leftColumns:1` / `rightColumns:3`, `className:"lg:sticky lg:top-20"`), groupes ouverts par défaut : `category`, `territoire` |
+| Résultats | pleine largeur | `rightSection` = le `searchProStatic` `paroles-list` **inchangé** |
+
+**La conversion `dropdownFilters` → `filterGroups` n'est pas un copier-coller** : la valeur stockée
+change de clé, `value` → **`name`** (c'est `name` que le `filterGroup` envoie en
+`{<field>: {$in: […]}}`). `territoire`, `public` et `themes` sont **repris de `/recherche`** plutôt
+que convertis — mêmes options, mêmes pastilles de couleur de territoire, une seule source pour les
+deux pages. `category` et `ages` sont convertis depuis les dropdowns (ils n'existent pas sur
+`/recherche` — cf. checklist 1.5 pour `ages`).
+
+**Un seul champ de recherche, celui du panneau.** Le `searchHeader` passe à `showSearch:false`
+(comme `/recherche`) : son champ et celui de `FiltersSection` écrivent tous deux dans le **même**
+`searchQuery` du contexte `PageFilters` — les garder tous les deux affichait deux entrées pour un
+seul état. Contrepartie assumée : le placeholder devient le générique « Rechercher par nom… » du
+moteur, alors que `searchBy` de la section porte `["name","description"]`. `FiltersSection` n'expose
+aucune option pour masquer son propre champ ; corriger ce placeholder demanderait une prop de
+moteur, hors périmètre de la demande.
+
+`showActiveFiltersTags:true` déplacé sur `paroles-list` (les tags de filtres actifs se lisaient sur
+le `searchHeader`, qui ne les porte plus).
+
+**La carte tient dans la colonne réduite** — vérifié : le split (`40-60`) dans les 3/4 de largeur
+restants donne une liste d'environ 340 px, soit la largeur d'une carte à 1 colonne. Pas d'ajustement
+de `splitRatio` nécessaire. Sur mobile, le panneau se replie en bouton « Filtres » (comportement
+natif de la section).
+
+### 9unvicies.2 Retour à 6 types de ressources — §9octodecies annulé pour partie
+
+Le réseau revient sur les deux types ajoutés le 03/09 et sur le renommage :
+
+| Type | 03/09 (§9octodecies) | 09/09 |
+|---|---|---|
+| **Inforéso** | ajouté | **supprimé** |
+| **Elles et ils ont marqué le réseau** | ajouté | **supprimé** |
+| **Les jeux du réseau** | renommé (ex-« Jeu ») | **rétabli en « Jeu »** |
+
+Touche l'énumération de `costumForms.parent62-recovery-center.fields.category`, l'option du filtre
+« Type » de `/ressources` (id `les-jeux-du-reseau` → `jeu`) et **13 blocs `list.resource.badge`** —
+et non 3 : §9octodecies en recensait 3, mais §9novodecies a depuis doté les **9 pages territoire**
+d'une section ressources, chacune avec sa copie du badge. Toute évolution de cette taxonomie doit
+désormais compter 13 emplacements.
+
+`badge.icons` **disparaît entièrement** : il n'existait que pour les 3 types que le moteur ne sait
+pas deviner, et « Jeu » est servi par le repli interne `RESOURCE_TYPE_ICON` (`jeu` → `gamepad-2`).
+Du même coup, le trou d'audit de §9octodecies.2 (les noms d'icônes de `badge.icons` échappent au
+contrôle `icone-inconnue`) ne concerne plus cette config.
+
+**Le point d'attention de §9octodecies.3 se retourne, et il est désormais OBSERVÉ** : le renommage
+portait sur la valeur **stockée**. Une fiche saisie entre le 03/09 et aujourd'hui garde
+`category:"Inforéso"` ou `"Les jeux du réseau"` en base — vérifié sur le dev : la fiche « teste
+ressources » affiche toujours son badge « Inforéso », rendu avec la couleur de repli de la palette
+et l'icône générique `file`, et elle est **injoignable par le filtre**. À reprendre en base ; hors
+périmètre ici (aucune écriture de données depuis cet environnement).
+
+### 9unvicies.3 « Appels à projets » et « Offres d'emploi » entrent dans le menu « Contenus »
+
+Les deux pages existaient (`/appels-a-projets`, `/offres-emploi`) mais n'étaient liées que depuis le
+**footer**. Ajoutées au menu « Contenus » du header (icônes `megaphone` et `briefcase`), qui passe de
+4 à 6 entrées et se rend sur 2 colonnes. Les liens du footer sont conservés. Contrairement à
+`badge.icons`, un `icon` de nav **est** couvert par le contrôle `icone-inconnue` d'`audit:config`
+(la clé finit par `icon`) — l'audit RAS vaut donc vérification des deux noms.
+
+### 9unvicies.4 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ 46 pages · **174 sections** (inchangé) |
+| `audit:config` · `typecheck` | ✅ RAS · ✅ |
+| `test:unit` — préflight | ✅ 562/562 (6 skipped) |
+| Rendu réel (dev-server) | ✅ `/temoignages` filtres à gauche (catégories = les 5 valeurs réellement en base, aucune valeur par défaut), split desktop, mobile 360 px et tablette 768 px sans débordement · `/ressources` filtre « Type » à 6 valeurs dont « Jeu » · menu « Contenus » à 6 entrées |
+| `test:e2e` | non rejoué — pas de `.env.test` sur ce poste |
+
+Resynchronisés : 4 exemples de la skill `config-assistant` (`command-palette`, `list-item-rules`,
+`list-resource`, `admin`). Le **sélecteur** de `list-testimonial` a dû être corrigé
+(`pages[path=/temoignages].sections[id=paroles-list]` →
+`…sections[id=paroles-grid].props.rightSection`) : la section est désormais imbriquée dans le
+`gridLayout`, et le gate d'archétypes échouait sur un sélecteur introuvable — le signal a bien
+fonctionné.
+
+Lot **non commité**.
+
+---
+
+## 9duovicies. Impacts — page `/theme` : filtre visible, sous-titre, titre = le thème actif (09/09)
+
+> Trois demandes. **Les deux premières étaient déjà appliquées dans l'arbre de travail à l'ouverture
+> du lot** (retrait de `"hidden": true` sur le filtre `theme`, et `subhead` passé de « Explorez les
+> ressources du réseau par thème, public ou territoire. » à « Les actions autour de ce thème ») —
+> modifications non commitées, faites hors de la session qui écrit ce paragraphe. Elles sont
+> constatées ici, pas revendiquées. Seule la troisième a demandé du travail.
+
+### 9duovicies.1 Le filtre « Thèmes » redevient visible — ce que ça annule
+
+`/theme` posait `hidden: true` sur son filtre `theme`, capacité ajoutée par §9decies précisément
+pour cette page : « afficher un sélecteur redondant avec le contexte de la page n'a pas de sens ».
+Le réseau demande l'inverse — pouvoir changer de thème sans repasser par le menu. Le dropdown
+affiche alors la valeur active en guise de libellé (« La petite enfance » au lieu de « Thèmes »).
+
+Deux effets de bord du retrait, tous deux voulus mais à connaître, car `hidden` les pilotait :
+le thème compte désormais dans le **compteur de filtres actifs** et dans les **chips** de filtres
+actifs, et « **Réinitialiser** » l'efface — alors qu'il définit l'identité de la page. Un
+« Réinitialiser » ramène donc `/theme` sans thème, où le titre retombe sur « Nos thèmes ».
+La capacité `hidden` reste dans le moteur, simplement plus employée par ce site.
+
+### 9duovicies.2 Le titre affiche le thème actif — nouvelle capacité moteur
+
+Le `headline` d'un `searchHeader` est un `LocalizedString` statique : aucun mécanisme n'existait pour
+qu'un titre reflète l'état des filtres. Ajouté, **générique** :
+
+| Fichier | Apport |
+|---|---|
+| [`schema.ts`](../src/modules/search/schema.ts) | `headlineFromFilter: z.string().optional()` — l'`id` d'un `dropdownFilters` |
+| [`lib/headlineFromFilter.ts`](../src/modules/search/lib/headlineFromFilter.ts) **(nouveau)** | `optionsDuTitre(filtres, id, selection)` — pure, générique sur le type de filtre, **8 cas de test** |
+| [`SearchHeaderSection.tsx`](../src/modules/search/sections/SearchHeaderSection.tsx) | calcule `headlineTexte` et le rend à la place de `t(props.headline)` |
+
+Config : `"headlineFromFilter": "theme"` sur `theme-search`. Le `headline` « Nos thèmes » est
+**conservé** — il devient le repli.
+
+Trois décisions inscrites dans le helper, chacune couverte par un test :
+
+- **ordre des OPTIONS, pas de la sélection** — sinon le titre d'une page changerait selon l'ordre des
+  clics ou l'ordre des valeurs dans l'URL ;
+- **id périmé ignoré** — un lien partagé après qu'une liste dynamique a bougé retombe sur le titre
+  déclaré plutôt que d'afficher un id brut au `h1` ;
+- **le filtre est cherché dans la liste COMPLÈTE, pas les visibles** — un filtre `hidden` doit pouvoir
+  titrer sa page ; c'était même le cas d'usage d'origine, et ça garde la capacité utilisable si
+  `hidden` revenait un jour sur cette page.
+
+Vérifié dans le navigateur, les trois branches : `?theme=La petite enfance` → « La petite enfance » ·
+`/theme` nu → « Nos thèmes » · deux thèmes → « La petite enfance · Les écrans – Le numérique ».
+
+### 9duovicies.3 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` · `audit:config` · `typecheck` · `lint` | ✅ 46 pages / 174 sections · RAS · ✅ · ✅ 0 erreur |
+| `test:unit` — préflight · `search` | ✅ 562/562 · ✅ 481/481 (+8 : `headlineFromFilter`) |
+| Portée | ✅ `headlineFromFilter` n'est employé par **aucune** autre `config.prod.*.json` |
+| `test:e2e` | non rejoué — pas de `.env.test` sur ce poste |
+
+`prop-descriptions` et [`doc/05-schemas-sections.md`](../doc/05-schemas-sections.md) complétés.
+
+Lot **non commité**.
+
+---
+
+## 9tervicies. Impacts — deux publics de plus, et les pages Publics suivent leur filtre (09/09)
+
+> Périmètre : **`config.prod.parent62.json` uniquement, zéro code** — la capacité nécessaire
+> (`headlineFromFilter`) venait d'être ajoutée au moteur par §9duovicies, elle est ici simplement
+> réemployée. **46 → 48 pages, 174 → 178 sections.**
+
+### 9tervicies.1 « Petite enfance » et « Adolescence » : 31 emplacements, pas 2
+
+Ajouter une valeur de taxonomie `publics` sur ce site ne se fait pas à un seul endroit. Inventaire
+réel, à connaître pour toute évolution future de cette liste :
+
+| Emplacement | Nombre | Forme de l'option |
+|---|---|---|
+| `dropdownFilters` (searchHeader) | **23** | `{id, value, label}` |
+| `filterGroups` (panneaux `filters` de `/recherche` et `/temoignages`) | **2** | `{id, label, name}` — la valeur stockée est sous **`name`**, pas `value` |
+| `enum` du champ `publics` des formulaires | **5** | `{value, label}` |
+| `header.nav` → « Publics » | 1 | 7 → 9 `children` |
+
+**Les 5 formulaires sont le point le plus facile à oublier** : sans eux, la valeur est filtrable mais
+jamais saisissable — aucune fiche ne pourrait la porter, et les deux nouvelles pages resteraient
+vides pour toujours.
+
+Ordre alphabétique conservé partout : `Adolescence` en tête, `Petite enfance` entre
+`Parents-enfants` et `Professionnels`. Icône de nav `toy-brick` pour Petite enfance (et non `baby`,
+déjà pris par « Enfance ») et `backpack` pour Adolescence — les deux validées par le contrôle
+`icone-unknown` d'`audit:config`, qui inspecte bien les clés `icon` de la nav.
+
+### 9tervicies.2 Les 9 pages Publics adoptent le patron de `/theme`
+
+Deux pages créées (`/public/petite-enfance`, `/public/adolescence`) sur le gabarit exact des sept
+existantes — `searchHeader` + `articleFeed` scopé par `filters.publics.$in`.
+
+Sur les **9**, le `searchHeader` reçoit le dropdown **« Publics »** (en tête : c'est l'axe de la page,
+`Thèmes`/`Territoires` restent des affinages) et **`headlineFromFilter: "public"`**. Le `headline`
+propre à chaque page est conservé : il devient le repli.
+
+**Pourquoi ça reste cohérent dans les quatre cas** — c'est ce qui a décidé du choix :
+
+| Sélection | Titre | Fil |
+|---|---|---|
+| rien (état initial) | `headline` de la page, ex. « Enfance » | `filters` dur de la page |
+| un autre public | ce public | ce public (le contexte écrase le `filters` dur, cf. `mergeMongoFilters` : spread, `extra` gagne) |
+| plusieurs | « A · B » | A et B |
+| on décoche tout | retour au `headline` | retour au `filters` dur |
+
+Le `filters` dur de l'`articleFeed` est **conservé** et non remplacé : il scope le fil tant que le
+contexte de filtres n'a rien à dire (avant hydratation, ou après un décochage), ce qui évite un flash
+de contenu tous-publics au chargement.
+
+**Pas de `defaultChecked`**, et c'est délibéré : la prop est déclarée au schéma
+(`schema.ts:65`) mais **`SearchHeaderSection` ne la lit jamais** — seul `FiltersSection` l'applique
+(le seul `defaultChecked` du site, sur le groupe `typeInfo` de `/recherche`, est bien dans un
+`filterGroups`). Elle est donc inerte sur un `dropdownFilters`, et l'implémenter toucherait
+l'hydratation URL des 25 filtres du site et de tout le parc. Elle aurait de plus l'effet documenté en
+§9duovicies.1 : compteur à 1 et « Réinitialiser » affichés en permanence sur les 9 pages.
+
+> **Suite (§9quatervicies)** : le pré-cochage a finalement été demandé, et obtenu **sans** toucher à
+> `defaultChecked` — par le query param dans les liens du menu. La parité `defaultChecked`
+> searchHeader ⇄ filters reste une incohérence réelle du moteur, mais plus aucun besoin ne la porte.
+
+### 9tervicies.3 Le sous-titre devenait un mensonge — rendu invariant
+
+Effet induit repéré au rendu : le titre suivant le filtre, un `subhead` nommant le public de la page
+(« Ressources et actions dédiées à **l'enfance**. ») contredisait le titre dès qu'on sélectionnait un
+autre public. Les 9 pages passent donc à un sous-titre **invariant**, aligné mot pour mot sur celui
+de `/theme` : « **Les actions autour de ce public** » (première rédaction « Ressources et actions
+dédiées à ce public. », reformulée dans la foulée par le réseau, cf. §9quatervicies).
+
+### 9tervicies.4 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` | ✅ **48 pages · 178 sections** |
+| `audit:config` · `typecheck` | ✅ RAS (dont les 2 nouveaux liens de nav, morts jusqu'à la création des pages) · ✅ |
+| `test:unit` — préflight | ✅ 562/562 (6 skipped) |
+| Intégrité | ✅ diff des pages **`46 → 48`, aucune page supprimée** — les 2 attendues, vérifié par comparaison des chemins avec `HEAD` |
+| Rendu réel | ✅ `/public/adolescence` et `/public/petite-enfance` rendent (fil **vide** : aucune fiche ne porte encore ces valeurs) · sur `/public/enfance`, choisir « Parents » fait passer le titre de « Enfance » à « Parents » et le fil suit · mobile 360 px sans débordement |
+| Portée | ✅ aucune autre `config.prod.*.json` modifiée |
+| `test:e2e` | non rejoué — pas de `.env.test` sur ce poste |
+
+**Les deux nouvelles pages resteront vides** tant qu'aucune fiche ne portera « Petite enfance » ou
+« Adolescence » : les valeurs viennent d'être ouvertes à la saisie, elles n'existent pas en base. Le
+rattachement des contenus existants à ces deux publics est un travail de données, hors périmètre ici.
+
+Lot **non commité**.
+
+---
+
+## 9quatervicies. Impacts — le menu Publics porte son filtre dans l'URL (09/09)
+
+> **Zéro code, 10 lignes de config** — et la réponse à « comment pré-activer le filtre public » n'était
+> pas celle qu'on croyait.
+
+### 9quatervicies.1 Le pré-cochage n'avait pas besoin de `defaultChecked`
+
+§9tervicies.2 avait écarté le pré-cochage du dropdown faute de `defaultChecked` fonctionnel sur un
+`searchHeader`, en le présentant comme un manque du moteur. **C'était passer à côté du mécanisme
+déjà en place** : l'hydratation URL → filtre (`resolveFilterHydration`, §9decies), qui fait
+exactement ce travail depuis le menu Thèmes.
+
+Il suffit que le lien porte le filtre. Les 9 `children` du menu « Publics » passent donc de
+`/public/<slug>` à **`/public/<slug>?public=<slug>`** — le nom du param est l'`id` du filtre
+(`dropdownFilterToParam`), et les `id` d'options coïncident déjà avec les slugs de page.
+
+Ce que ça donne, vérifié par un clic réel dans le menu :
+
+| | Résultat |
+|---|---|
+| Clic « Adolescence » | URL `/public/adolescence?public=adolescence` · titre « Adolescence » · **bouton du filtre « Adolescence »** · chip actif |
+| **2ᵉ clic** vers « Parents », page déjà montée | URL, titre et filtre suivent — le cas que §9decies avait dû corriger pour `/theme` fonctionne ici sans rien ajouter |
+| Arrivée SANS query (lien direct, sitemap, SEO) | filtre non coché, mais titre (`headline`) et fil (`filters` dur) restent justes : dégradation propre |
+
+Aucun `path` de page n'est touché (l'ancrage du remplacement est l'indentation des `children`, 12
+espaces, contre 6 pour une page) et `audit:config` accepte les liens à query : **RAS**.
+
+**La leçon** : avant d'ajouter une capacité au moteur, vérifier qu'un mécanisme générique existant ne
+la couvre pas déjà par la config. Ici la bonne réponse était un query param, pas une prop.
+
+### 9quatervicies.2 Sous-titre aligné sur `/theme`
+
+Les 9 pages Publics : « Les actions autour de ce public » (en : « Initiatives related to this
+audience »), strictement parallèle au « Les actions autour de ce thème » de `/theme`.
+
+### 9quatervicies.3 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` · `audit:config` · `typecheck` | ✅ 48 pages / 178 sections · ✅ RAS · ✅ |
+| `test:unit` — préflight | ✅ 562/562 (6 skipped) |
+| Parcours réel (clic depuis le menu, 1ᵉʳ et 2ᵉ) | ✅ cf. tableau ci-dessus |
+| Portée | ✅ `config.prod.parent62.json` seule |
+
+Lot **non commité**.
+
+---
+
+## 9quinvicies. Validation d'ensemble des cinq lots du 09/09 (avant commit)
+
+Les tableaux de gates ci-dessus relèvent ce qui a été vérifié **à chaque étape**, avec des découpages
+de suite de tests différents. Voici la mesure **unique et finale**, dépôt entier, après le dernier lot.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` (`tsc -b --noEmit`) | ✅ 0 erreur |
+| `lint` | ✅ **0 erreur**, 22 warnings — tous préexistants (`react-hooks/preserve-manual-memoization`), aucun sur un fichier de ces lots |
+| `test:unit` — préflight | ✅ **562** (6 skipped) |
+| `test:unit` — `search`+`profil`+`formEngine` | ✅ **1 003** |
+| `test:unit` — reste de `src/` | ✅ **1 443** |
+| `test:unit` — `server/` | ✅ **81** |
+| **Total unitaires** | ✅ **3 089 · 0 échec** |
+| `build:client` + `build:server` | ✅ les deux passent (lancés séparément : `npm run build` d'un seul tenant sature les 7 Go du poste) |
+| `config:validate` | ✅ **48 pages · 178 sections** |
+| `config:render` (SSR réel, backend réel) | ✅ **48/48 pages · 0 échec · 177/178 sections avec contenu SSR** — la 178ᵉ est le `featured-carousel` de l'accueil, **déjà** non rendu en SSR avant ces lots (cf. §9novodecies) |
+| `audit:config` | ✅ RAS (`trad:0 liens:0 inerte:0 assets:0 strip:0 prereq:0 theme:complet`) |
+| `map:functions` | ✅ aucun signalement sur les fichiers de ces lots. Les deux seuls pointés dans `useTestimonialData.ts` (`readString`, `firstToken`) **préexistent** — vérifié contre `HEAD`. L'unique chevauchement de couches (`imageUtils.ts`) est préexistant et sans rapport |
+| Portée inter-sites | ✅ **une seule** `config.prod.*.json` modifiée (parent62) ; les 3 apports moteur sont génériques et inemployés ailleurs |
+| Intégrité des pages | ✅ `46 → 48`, **aucune page supprimée** — comparaison des chemins avec `HEAD` |
+| `test:e2e` | ⏭️ **non joué** — pas de `.env.test` sur ce poste, l'auth réelle est indisponible. **À rejouer avant fusion dans `main`** |
+| `preflight/bundle-size` | ❌ **en échec — défaut PRÉEXISTANT, pas une régression de ces lots** (cf. encadré ci-dessous) |
+
+### ⚠️ `bundle-size` : un gate en échec que ces lots n'ont pas causé
+
+Ce test est `skipIf(!hasBuild())` : il ne s'exécute **que si `dist/client/assets/` existe**. Il était
+donc silencieusement ignoré dans tous les relevés « préflight 562/567 » de ce document, y compris
+ceux des lots antérieurs. Lancer `npm run build` dans ce lot l'a réveillé — et il échoue :
+
+```
+bundle principal index-*.js = 3.04MB dépasse 2MB
+```
+
+**Mesuré des deux côtés** (build du même `vite.config.ts`, une fois sur un worktree détaché sur
+`HEAD`, une fois sur l'arbre de travail) :
+
+| | bundle principal |
+|---|---|
+| `HEAD` (31c3e57c, avant les lots) | **3,01 Mo** |
+| après les cinq lots | **3,04 Mo** |
+
+Le seuil de 2 Mo était donc **déjà** dépassé de 50 %. Ces lots y ajoutent ~30 Ko (≈ 1 %), ce qui
+correspond au volume de code réellement introduit. **Non corrigé ici** : ramener le bundle sous
+2 Mo est un chantier de performance (code-splitting) sans rapport avec le périmètre demandé, et le
+faire au passage contreviendrait à la règle « ne pas refactorer ce que la tâche n'exige pas ».
+
+**Conséquence pratique** : tant que `dist/` est présent localement, `npm run test:preflight` sort en
+échec sur ce seul test. `rm -rf dist` le remet au vert (il redevient ignoré). À traiter comme un
+point de dette à part entière — soit par un travail de bundle, soit en actant le seuil réel.
+
+
+> `doc/cartographie-fonctions/` a été **régénéré pour vérification puis restauré** : sa mise à jour
+> (~39 000 lignes) est un artefact périmé sans rapport avec ces lots, elle n'a pas à noyer leur diff.
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -1975,7 +2456,7 @@ Lot **non commité**.
 | 1.3 | Page par territoire : contact + **liste des communes** | ✅ | cards coordo + accordéon 887 communes + fil filtré + CTA ; navigation depuis l'accueil désormais via `map-bubbles` (carte à bulles, §9quater) au lieu des cartes d'accès rapide ; **03/09** : haut de page refondu — **3 prochaines réunions du comité local** juste après le bandeau, carte « Comptes rendus des réunions » (Drive) et **3 ressources du territoire** avec bouton « Voir toutes les ressources » ; carte « Le comité local » et blocs de liens externes retirés ; saisie des réunions par l'onglet `/admin` dédié (§9novodecies). Les deux blocs de données sont **câblés** ; leur remplissage dépend de la saisie côté costum (§9novodecies.5) |
 | 1.4 | Double entrée parents / pro | ✅ *(était 🟡, régression du 06/08)* | **Rétablie le 02/09** : la section `action-tiles` `home-double-entree` (« Vous êtes… » → `/parents` / `/pro`) est réinsérée sur l'accueil, en 2ᵉ position — juste après le carrousel « à la une », sa place d'origine dans le rythme de la page. Les deux pages existaient toujours mais **n'étaient liées de nulle part** depuis la refonte du 06/08 (vérifié : une seule occurrence de chaque chemin dans la config, sa propre déclaration de page). Elles coexistent avec le dropdown « Publics » (7 pages `/public/*`), qui ne les remplace donc pas — question §13 tranchée |
 | 1.5 | Moteur de recherche : types d'info, public, âges, dates, territoire coloré, carte, thèmes | 🟡 | `/recherche` : types d'info (**searchTargets 6** depuis le 25/07 — « Ressources » ajoutée —, défaut « Actualités »), public, thèmes, territoire coloré, **carte** (`enableMap:true`), `dateRange` **borne début seule**. **25/07** : chaque famille a désormais sa carte et son action au clic (`list.itemRules`, §9bis) ; tri `created:-1` et projection explicite ajoutés. **Âges : livré sur `/temoignages` + form affiche, mais PAS encore dans le groupe de filtres `/recherche`** (à ajouter — `ages` est projeté, il ne manque que le groupe). Borne de fin des dates = demande backend `$lt/$lte` (§11) |
-| 1.6 | Paroles de parents (3 catégories, audio+écrit, transcription, ajout admin) | 🟡 | brique complète (Thomas) : `/temoignages`, form `parent62-affiche` (3 catégories, audio→`medias`, ages, consentement RGPD), pile audio `media/*`, card/preview `testimonial`. **Ajout admin-only ✅** (modération a priori retirée volontairement, commit `17aea3e`). **25/07** : la cible « Paroles » de `/recherche` renvoyait **0 résultat** (filtre `status:"validated"` sur un champ inexistant) — corrigé, et les paroles y rendent en bulles avec leur dialog (§9bis). **Données observées le 25/07** : `/temoignages` affiche « Toutes les paroles (**3**) » — la mention « 0 POI `affiche` » du 24/07 est caduque. **25/08** : catégorie **et** thèmes passés en saisie libre, valeur inédite promue vers la liste partagée par un admin (§9septies). **Manque** : **transcription/sous-titres NON implémentée** (`description` sert d'écrit) |
+| 1.6 | Paroles de parents (catégories libres, audio+écrit+image, adresse/carte, transcription, ajout admin) | 🟡 | brique complète (Thomas) : `/temoignages`, form `parent62-affiche` (catégorie, audio→`medias`, ages, consentement RGPD), pile audio `media/*`, card/preview `testimonial`. **Ajout admin-only ✅** (modération a priori retirée volontairement, commit `17aea3e`). **25/07** : la cible « Paroles » de `/recherche` renvoyait **0 résultat** (filtre `status:"validated"` sur un champ inexistant) — corrigé, et les paroles y rendent en bulles avec leur dialog (§9bis). **Données observées le 25/07** : `/temoignages` affiche « Toutes les paroles (**3**) » — la mention « 0 POI `affiche` » du 24/07 est caduque. **25/08** : catégorie **et** thèmes passés en saisie libre, valeur inédite promue vers la liste partagée par un admin (§9septies). **09/09** : les 3 catégories par défaut (« Compliqué / Difficile / À changer ») **retirées** du socle du form, du filtre et des `badge.colors` — seule la recette `categoriesParole` alimente, saisie libre ouverte ; **adresse** (widget `location` + `geo`/`geoPosition`) et **image** (`profil_avatar`, en bannière de card ET de modale via le nouveau `testimonial.imageField`) ajoutées à la saisie ; **carte en vue split** sur `/temoignages` (§9vicies). **Manque** : **transcription/sous-titres NON implémentée** (`description` sert d'écrit) ; les paroles déjà saisies n'ont **pas d'adresse**, donc aucun marqueur tant qu'elles ne sont pas rééditées. |
 | 1.7 | Navigation territoriale (recherche V2) | ✅ | 9 bulles → `/territoire/<slug>` + filtre territoire coloré dans `/recherche` |
 | 1.8 | Référencement (SEO, JSON-LD, sitemap, robots, RSS) | ✅ | sitemap/robots (MR) + JSON-LD `BlogPosting` et `/blog/feed.xml` (Thomas) |
 | 1.9 | Tests E2E (Playwright) | ✅ *(était 🟡 6/8 le 06/08)* | **13/08 : 8/8 verts** — les 2 désaccords contenu/test relevés le 06/08 (« Professionnels » dans le header, mécanique d'opacité `stacked` vs `transparent-scroll`) sont résolus, cf. §9quinquies. `npx playwright test e2e/parent62.spec.ts` (jamais la suite complète) |
@@ -2040,8 +2521,11 @@ attendue par le test parole ; périmètre `prepData`/`validategroup`.
   depuis le menu — remplacées par des liens `/blog?theme=<valeur>` générés depuis
   `costum.lists.themes`. Choix assumé (remplacement complet, pas de fusion) ; elles restent en
   ligne et indexables, joignables par URL directe/sitemap.
-- **Vue cartographique** : uniquement sur `/recherche` (`enableMap:true`, cluster + marker colorBy) ;
-  `/agenda`, `/ressources`, `/temoignages` ont `enableMap:false`.
+- **Vue cartographique** : `/recherche` (`enableMap:true`, bascule plein écran) et, depuis le 09/09,
+  `/temoignages` (`enableMap:true` + `map.layout:"split"` — liste étroite et carte côte à côte, dans
+  les 3/4 de largeur laissés par le panneau de filtres, cf. §9vicies et §9unvicies.1) ; `/agenda` et `/ressources` ont toujours `enableMap:false`. **Une parole sans adresse
+  n'a pas de marqueur** : la vue carte de `/temoignages` ne montre que les paroles géolocalisées,
+  et reste donc quasi vide tant que le champ « Lieu de recueil » n'a pas été renseigné sur l'existant.
 - **Modération a priori des events** (2.6) : le form pose `preferences.toBeValidated:true` ; l'agenda
   public (`searchEventsCostum`) n'applique aucun gate côté client, mais le masquage des events *en
   attente* est **confirmé fonctionnel côté backend** (19/08, cf. §9sexies) — déclenché par

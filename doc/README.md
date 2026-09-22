@@ -25,6 +25,7 @@
 | Module ampli (amplification) | [Module Ampli](22-module-ampli.md) |
 | Module interop (Discourse/Mediawiki) | [Module Interop](20-module-interop.md) |
 | Module CoForm (formulaires dynamiques) | [Module CoForm](21-module-coform.md) — voir aussi `src/modules/coform/README.md` |
+| Module AAC (Appel à Communs) | [Module AAC](34-module-aac.md) — annuaire des communs (`aac-directory`/`aac-highlight`, `/aac`), fiche d'un commun (financement si `coremu`, paliers et actions, contributeurs), dépôt et édition CoForm, droits, endpoint `directoryproposal` ; pièges & roadmap (campagnes, panier, doublonnage) |
 | Module auth (connexion/inscription/SSO) | [Module Auth](23-module-auth.md) |
 | Module notification (cloche + section) | [Module Notification](25-module-notification.md) |
 | Composants média (audio/galerie/fichiers) | [Media Components](33-media-components.md) |

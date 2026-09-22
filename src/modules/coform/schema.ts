@@ -40,7 +40,6 @@ export const CoFormSectionSchema = z.object({
     description: LocalizedString.optional(),
     showProgress: z.boolean().optional().default(true),
     showStepNumbers: z.boolean().optional().default(true),
-    allowFreeNavigation: z.boolean().optional().default(false),
     redirectAfterSubmit: z.string().optional(),
     className: z.string().optional(),
   }),

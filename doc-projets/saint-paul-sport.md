@@ -237,5 +237,6 @@ régional restant référencé — le geste que le script CLI `tools/commune-own
 (désormais secours offline) faisait en Mongo direct. Dry-run, contrôles bloquants, snapshot +
 rollback serveur, historique. Doc : [ownership-migration.md](ownership-migration.md) ; spec
 serveur : `cocolight-backend/docs/28-OWNERSHIP-MIGRATION.md`. ⚠ Ordre : **migration avant
-déploiement de la config communale** (aucune coupure) ; ré-imports RES via le backend Node
-uniquement tant que BUG-L-236 (legacy) n'est pas déployé.
+déploiement de la config communale** (aucune coupure) ; BUG-L-236 (l'update d'import écrasait
+`reference` des deux côtés) est CORRIGÉ en miroir L+B le 2026-08-17 — déployer le fix legacy
+avant tout rafraîchissement RES d'un dataset migré.

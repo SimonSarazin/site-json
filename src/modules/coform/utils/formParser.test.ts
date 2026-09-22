@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  DIRECT_WRITE_RAW_KEYS,
   denormalizeAnswerData,
   extractFinderLinks,
   generateDefaultValues,
@@ -7,10 +8,15 @@ import {
   getFieldNameWithPrefix,
   getOriginalFieldKey,
   hasFieldPrefix,
+  isDirectWriteField,
   isRootLevelField,
   mapCoFormTypeToComponentType,
+  getSharedFinderInfo,
+  isTruthyFlag,
   normalizeAnswerData,
+  omitHiddenSteps,
   parseCoFormFields,
+  resolveInputOrder,
 } from "./formParser";
 import type {
   CoFormData,
@@ -56,7 +62,7 @@ function makeSubFormFields(fields: FormFieldMapping[], subFormId = "step1"): Sub
 
 function makeCoFormData(overrides: Partial<CoFormData> = {}): CoFormData {
   return {
-    _id: { $id: "form123" },
+    _id: { _str: "form123" },
     id: "form123",
     name: "Test Form",
     created: 0,
@@ -64,6 +70,28 @@ function makeCoFormData(overrides: Partial<CoFormData> = {}): CoFormData {
     type: "form",
     inputs: {},
     ...overrides,
+  };
+}
+
+/**
+ * `access` complet tel que le renvoie `Coform::getFormAccessInfo`. Seul
+ * `restrictedFields` nous intéresse ici, mais le type exige le reste.
+ */
+function makeAccess(restrictedFields: string[]): NonNullable<CoFormData["access"]> {
+  return {
+    canAnswer: true,
+    reason: null,
+    formStatus: "open",
+    existingAnswerId: null,
+    existingAnswer: null,
+    requiresLogin: false,
+    allowTemporary: false,
+    withConfirmation: false,
+    isOnlyMember: false,
+    isOneAnswerPerPers: false,
+    isActive: true,
+    dates: { start: null, end: null, startNoConfirmation: null, endNoConfirmation: null },
+    restrictedFields,
   };
 }
 
@@ -815,6 +843,282 @@ describe("generateZodSchema", () => {
 // normalizeAnswerData
 // ============================================================================
 
+describe("tags et titleSeparator (port des inputs legacy)", () => {
+  // Fixtures issues du formulaire réel « Les communs des CAEs »
+  // `677e7e389058e31575550ac8` (base `pixelhumain1`, 2026-08-19).
+  const formCae = () =>
+    makeCoFormData({
+      params: {
+        // Vocabulaire partagé réellement présent sur ce formulaire (extrait).
+        tags: { list: ["Commun", "coopération", "peertube", "  ", "opensource"] },
+      },
+      inputs: {
+        aapStep1: {
+          name: "Le commun",
+          id: "aapStep1",
+          formParent: "677e7e389058e31575550ac8",
+          inputs: {
+            tags: {
+              label: "Tags",
+              type: "tpls.forms.tags",
+              placeholder: "Ajoutez les tags qui facilitent l'identification du commun",
+              isRequired: false,
+            },
+            aapStep1m0dia6b7r0panzlwqvk: {
+              label: "Le commun",
+              type: "tpls.forms.titleSeparator",
+              // Tel quel en base sur 57 des 78 séparateurs du parc.
+              isRequired: true,
+            },
+          },
+        },
+      },
+    } as unknown as Partial<CoFormData>);
+
+  it("mappe les deux types legacy vers leurs composants", () => {
+    expect(mapCoFormTypeToComponentType("tpls.forms.tags")).toBe("tags");
+    expect(mapCoFormTypeToComponentType("tpls.forms.titleSeparator")).toBe("titleSeparator");
+  });
+
+  it("extrait le vocabulaire partagé depuis `params.<key>.list`, nettoyé", () => {
+    const [step] = parseCoFormFields(formCae());
+    const tags = step.fields.find((f) => f.name === "tags");
+    expect(tags?.componentType).toBe("tags");
+    // Les entrées vides sont retirées, l'ordre et la casse préservés.
+    expect(tags?.tagsConfig?.list).toEqual(["Commun", "coopération", "peertube", "opensource"]);
+  });
+
+  it("donne un vocabulaire vide (et non `undefined`) quand `params` n'en a pas", () => {
+    // 84 des 124 inputs `tags` du parc sont dans ce cas — ils basculent alors
+    // sur l'index global, ce que le hook décide sur `list.length === 0`.
+    const data = formCae();
+    (data as unknown as { params?: unknown }).params = {};
+    const [step] = parseCoFormFields(data);
+    expect(step.fields.find((f) => f.name === "tags")?.tagsConfig?.list).toEqual([]);
+  });
+
+  it("n'attribue AUCUNE valeur par défaut au séparateur", () => {
+    const defaults = generateDefaultValues([
+      makeSubFormFields([
+        makeField({ name: "sep", componentType: "titleSeparator", isRequired: true }),
+        makeField({ name: "tags", componentType: "tags" }),
+      ]),
+    ]);
+    expect("sep" in defaults).toBe(false);
+    expect(defaults.tags).toEqual([]);
+  });
+
+  it("laisse le séparateur HORS du schéma Zod, même marqué requis", () => {
+    // Le point dur : `isRequired: true` est posé sur un input qui ne produit
+    // aucune valeur. L'honorer rendrait les formulaires concernés
+    // insoumettables — un formulaire vide doit rester valide.
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({ name: "sep", componentType: "titleSeparator", isRequired: true, label: "Le commun" }),
+      ]),
+    ]);
+    expect(schema.safeParse({}).success).toBe(true);
+    // Et la clé est strippée si elle traîne dans les données.
+    const parsed = schema.safeParse({ sep: "valeur parasite" });
+    expect(parsed.success).toBe(true);
+    expect("sep" in (parsed.data as object)).toBe(false);
+  });
+
+  it("valide les réponses `tags` réellement en base (round-trip safeParse)", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([makeField({ name: "tags", componentType: "tags", label: "Tags" })]),
+    ]);
+    // Les 2 seules réponses enregistrées sur le formulaire CAE.
+    for (const reelle of [["open source"], ["peertube"]]) {
+      const parsed = schema.safeParse({ tags: reelle });
+      expect(parsed.success).toBe(true);
+      expect((parsed.data as { tags: string[] }).tags).toEqual(reelle);
+    }
+    // Champ non requis laissé vide.
+    expect(schema.safeParse({}).success).toBe(true);
+    expect(schema.safeParse({ tags: [] }).success).toBe(true);
+  });
+
+  it("refuse un `tags` requis laissé vide", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({ name: "tags", componentType: "tags", isRequired: true, label: "Tags" }),
+      ]),
+    ]);
+    expect(schema.safeParse({ tags: [] }).success).toBe(false);
+    expect(schema.safeParse({ tags: ["a"] }).success).toBe(true);
+  });
+
+  it("coerce un `{}` serveur en tableau vide pour un champ tags", () => {
+    // `getFieldShape("tags") === "array"` : sans ça la valeur `{}` que PHP
+    // sérialise pour un tableau vide ferait échouer le parse Zod.
+    const fields = [makeSubFormFields([makeField({ name: "tags", componentType: "tags" })])];
+    const normalized = normalizeAnswerData({ step1: { tags: {} } } as never, fields) as Record<
+      string,
+      Record<string, unknown>
+    >;
+    expect(normalized.step1.tags).toEqual([]);
+  });
+});
+
+/**
+ * H17 (rapport MR 53) : le schéma `milestoneList` exige `z.array`, mais le type
+ * manquait à `getFieldShape` — un `depense = {}` (tableau vide sérialisé par PHP,
+ * cas que `normalizeDepenseValue` absorbe côté composant) traversait
+ * `coerceServerAnswerShape` intact et faisait échouer `zodResolver` sur toute
+ * l'étape. Le champ s'affichait vide et correct ; l'étape était insoumettable.
+ */
+describe("milestoneList — coercion du `{}` serveur (H17)", () => {
+  const fields = [
+    makeSubFormFields(
+      [makeField({ name: "depense", componentType: "milestoneList", type: "tpls.forms.ocecoform.newDepenseList" })],
+      "aapStep1"
+    ),
+  ];
+
+  it("coerce un `{}` serveur en tableau vide", () => {
+    const normalized = normalizeAnswerData({ aapStep1: { depense: {} } } as never, fields) as Record<
+      string,
+      Record<string, unknown>
+    >;
+    expect(normalized.aapStep1.depense).toEqual([]);
+  });
+
+  it("l'étape normalisée passe le schéma Zod", () => {
+    const normalized = normalizeAnswerData({ aapStep1: { depense: {} } } as never, fields) as Record<
+      string,
+      Record<string, unknown>
+    >;
+    const schema = generateZodSchema(fields);
+    expect(schema.safeParse(normalized.aapStep1).success).toBe(true);
+  });
+
+  it("laisse un vrai tableau intact — les clés hors contrat (financer, historique) survivent", () => {
+    const depense = [{ poste: "Serveur", price: 120, financer: [{ id: "f1" }], historique: [] }];
+    const normalized = normalizeAnswerData({ aapStep1: { depense } } as never, fields) as Record<
+      string,
+      Record<string, unknown>
+    >;
+    expect(normalized.aapStep1.depense).toEqual(depense);
+  });
+});
+
+/**
+ * Régression du correctif H17 : ranger `milestoneList` dans la branche `array`
+ * de `getFieldShape` l'a soumis à `coerceValueToShape`, qui JETAIT toute map
+ * serveur (`if (isPlainObject(value)) return []`). Or PHP/Mongo sérialise en
+ * map à clés d'index une liste NON VIDE dès que les index ne sont plus
+ * contigus (`{"0":…,"2":…}` après une suppression legacy). Le champ paliers
+ * s'affichait vide, et le premier enregistrement écrasait la clé en base :
+ * toutes les dépenses, leurs `financer[]` et `historique[]` détruits sans
+ * message. On CONVERTIT désormais (`Object.values`, cf. `toArray` de
+ * `aac/lib/parseAacAnswer` et `toArrayOrValues` de `cagnotte`).
+ */
+describe("branche `array` — une map serveur non vide est convertie, jamais jetée", () => {
+  const milestoneFields = [
+    makeSubFormFields(
+      [makeField({ name: "depense", componentType: "milestoneList", type: "tpls.forms.ocecoform.newDepenseList" })],
+      "aapStep1"
+    ),
+  ];
+
+  const normalizeDepense = (depense: unknown) =>
+    (normalizeAnswerData({ aapStep1: { depense } } as never, milestoneFields) as Record<
+      string,
+      Record<string, unknown>
+    >).aapStep1.depense;
+
+  it("convertit une map à index NON contigus en tableau, dans l'ordre des index", () => {
+    const palier0 = { poste: "Serveur", price: 120 };
+    const palier2 = { poste: "Dev", price: 300 };
+    expect(normalizeDepense({ "0": palier0, "2": palier2 })).toEqual([palier0, palier2]);
+  });
+
+  it("trie NUMÉRIQUEMENT les clés d'index (\"2\" avant \"10\")", () => {
+    expect(
+      normalizeDepense({ "10": { poste: "dix" }, "2": { poste: "deux" }, "1": { poste: "un" } })
+    ).toEqual([{ poste: "un" }, { poste: "deux" }, { poste: "dix" }]);
+  });
+
+  it("garde `{}` → `[]` (tableau vide sérialisé par PHP, cas H17)", () => {
+    expect(normalizeDepense({})).toEqual([]);
+  });
+
+  it("laisse un vrai tableau intact", () => {
+    const depenses = [{ poste: "A" }, { poste: "B" }];
+    expect(normalizeDepense(depenses)).toEqual(depenses);
+  });
+
+  it("écarte les trous (`null`) de la sérialisation", () => {
+    expect(normalizeDepense({ "0": { poste: "A" }, "1": null, "3": { poste: "B" } })).toEqual([
+      { poste: "A" },
+      { poste: "B" },
+    ]);
+  });
+
+  it("conserve l'ordre d'insertion quand les clés ne sont pas des index", () => {
+    expect(normalizeDepense({ b1: { poste: "B" }, a1: { poste: "A" } })).toEqual([
+      { poste: "B" },
+      { poste: "A" },
+    ]);
+  });
+
+  it("bout en bout : le contenu d'une `depense` en map survit et passe le schéma Zod", () => {
+    const palier0 = {
+      poste: "Serveur",
+      price: 120,
+      financer: [{ id: "f1", amount: 50 }],
+      historique: [{ date: 1700000000 }],
+      milestone: "m1",
+    };
+    const palier2 = { poste: "Dev", price: 300, financer: [], historique: [] };
+
+    const normalized = normalizeAnswerData(
+      { aapStep1: { depense: { "0": palier0, "2": palier2 } } } as never,
+      milestoneFields
+    ) as Record<string, Record<string, unknown>>;
+
+    // Le contenu est INTACT : clés hors contrat comprises (le backend
+    // remplace la clé en bloc au save — les perdre ici les détruit en base).
+    expect(normalized.aapStep1.depense).toEqual([palier0, palier2]);
+
+    const parsed = generateZodSchema(milestoneFields).safeParse(normalized.aapStep1);
+    expect(parsed.success).toBe(true);
+    expect((parsed.data as { depense: unknown[] }).depense).toEqual([palier0, palier2]);
+  });
+
+  it("ne régresse pas les autres componentTypes de la branche `array`", () => {
+    const fields = [
+      makeSubFormFields([
+        makeField({ name: "tags", componentType: "tags" }),
+        makeField({ name: "cb", componentType: "checkbox" }),
+        makeField({ name: "slots", componentType: "timeSlots" }),
+        makeField({ name: "tbl", componentType: "simpleTable" }),
+      ]),
+    ];
+    const slot = { day: "monday", startHour: "09", startMinute: "00", endHour: "10", endMinute: "00" };
+    const normalized = normalizeAnswerData(
+      {
+        step1: {
+          // `{}` (vide) inchangé, vrai tableau inchangé…
+          tags: {},
+          cb: ["a", "b"],
+          // …et map non vide désormais convertie au lieu d'être jetée.
+          slots: { "0": slot },
+          tbl: { "0": ["T", "Col1"], "1": ["Row1", ""] },
+        },
+      } as never,
+      fields
+    ) as Record<string, Record<string, unknown>>;
+
+    expect(normalized.step1.tags).toEqual([]);
+    expect(normalized.step1.cb).toEqual(["a", "b"]);
+    expect(normalized.step1.slots).toEqual([slot]);
+    expect(normalized.step1.tbl).toEqual([["T", "Col1"], ["Row1", ""]]);
+    expect(generateZodSchema(fields).safeParse(normalized.step1).success).toBe(true);
+  });
+});
+
 describe("normalizeAnswerData", () => {
   it("retourne undefined pour null/undefined", () => {
     expect(normalizeAnswerData(null, [])).toBeUndefined();
@@ -1436,5 +1740,1097 @@ describe("finder image stripping (normalize + denormalize)", () => {
       (denormalizeAnswerData({ step1: { finderXYZ: null } }, finderFields) as { step1: Record<string, unknown> })
         .step1.finderXYZ,
     ).toBeNull();
+  });
+});
+
+/**
+ * Régression : un formulaire VIERGE affichait « Invalid input: expected object,
+ * received string » sous le champ, avant toute saisie.
+ *
+ * Cause : `categorizedCheckbox` n'avait aucun cas dans `generateDefaultValues`
+ * et tombait sur le `default` qui pose `""`, alors que son schéma attend
+ * `{ list, sublist }`. Le `.optional()` ne rattrape pas — `""` n'est pas
+ * `undefined` — et un champ requis n'a même pas d'`optional`.
+ *
+ * Le test exerce la chaîne réellement cassée (norme 11) : défauts → `safeParse`.
+ */
+describe("categorizedCheckbox — défaut compatible avec son schéma", () => {
+  const champ = (isRequired: boolean) =>
+    makeField({
+      name: "besoins",
+      label: "À quels besoins répond le commun ?",
+      type: "tpls.forms.cplx.categorizedCheckbox",
+      componentType: "categorizedCheckbox",
+      isRequired,
+    });
+
+  it("pose `{ list: [], sublist: {} }`, pas une chaîne", () => {
+    const valeurs = generateDefaultValues([makeSubFormFields([champ(false)])]);
+    expect(valeurs.besoins).toEqual({ list: [], sublist: {} });
+  });
+
+  it("le défaut passe le schéma quand le champ est FACULTATIF", () => {
+    const fields = [makeSubFormFields([champ(false)])];
+    const res = generateZodSchema(fields).safeParse(generateDefaultValues(fields));
+    expect(res.success).toBe(true);
+  });
+
+  it("un champ REQUIS échoue sur « requis », pas sur un conflit de type", () => {
+    // Le formulaire vierge doit bien réclamer une réponse — mais avec le message
+    // de champ obligatoire, pas « expected object, received string ».
+    const fields = [makeSubFormFields([champ(true)])];
+    const res = generateZodSchema(fields).safeParse(generateDefaultValues(fields));
+    expect(res.success).toBe(false);
+    const message = res.success ? "" : res.error.issues[0].message;
+    expect(message).not.toMatch(/expected object/i);
+  });
+
+  it("une valeur saisie reste valide, `sublist` comprise", () => {
+    const fields = [makeSubFormFields([champ(true)])];
+    const res = generateZodSchema(fields).safeParse({
+      besoins: { list: ["4_autres-outils"], sublist: { "4_autres-outils": ["0_gestion"] } },
+    });
+    expect(res.success).toBe(true);
+  });
+});
+
+/**
+ * L'indirection `multiDecide` est testée unitairement dans `multiDecide.test.ts`.
+ * Ici on vérifie qu'elle s'applique RÉELLEMENT au parsing — c'est ce chemin-là
+ * qui décide de la clé sous laquelle la réponse est lue et écrite, et un helper
+ * juste mais jamais branché ne servirait à rien.
+ *
+ * Relevé en base : 266 inputs `multiDecide`, et AUCUNE réponse ne porte la clé
+ * d'origine (`decide` : 0). Les clés réelles sont celles d'après substitution.
+ */
+describe("parseCoFormFields — résolution de multiDecide", () => {
+  const formAvec = (multiDecide?: string) =>
+    makeCoFormData({
+      inputConfig: multiDecide ? { multiDecide } : undefined,
+      inputs: {
+        aapStep2: {
+          id: "aapStep2",
+          name: "Évaluation",
+          formParent: "form123",
+          inputs: {
+            // Cas réel : clé `decide`, libellé « Dépenses », type placeholder.
+            decide: { type: "tpls.forms.ocecoform.multiDecide", label: "Dépenses" },
+          },
+        },
+      },
+    });
+
+  it("substitue le type ET RÉINDEXE le champ sous la clé du type cible", () => {
+    const [etape] = parseCoFormFields(formAvec("tpls.forms.aap.selection"));
+    expect(etape.fields).toHaveLength(1);
+    expect(etape.fields[0]).toMatchObject({
+      name: "selection", // ← pas `decide` : c'est là que tout se joue
+      componentType: "selection",
+      type: "tpls.forms.aap.selection",
+      label: "Dépenses",
+    });
+  });
+
+  it("résout aussi vers pourContre", () => {
+    const [etape] = parseCoFormFields(formAvec("tpls.forms.ocecoform.pourContre"));
+    expect(etape.fields[0]).toMatchObject({ name: "pourContre", componentType: "pourContre" });
+  });
+
+  it("SANS config : le champ n'est pas rendu du tout", () => {
+    // Parité legacy : `multiDecide.php` n'affiche qu'un <select> réservé à
+    // l'admin du formulaire. Un répondant ne doit rien voir — surtout pas le
+    // bandeau « template introuvable ». 130 formulaires sont dans ce cas.
+    const [etape] = parseCoFormFields(formAvec(undefined));
+    expect(etape.fields).toHaveLength(0);
+  });
+
+  it("un type custom de costum est résolu comme les autres", () => {
+    // Présent une fois en base.
+    const [etape] = parseCoFormFields(
+      formAvec("custom.fondationTerritorialeDesLumieres.selection")
+    );
+    expect(etape.fields[0].name).toBe("selection");
+  });
+
+  it("n'affecte pas les inputs ordinaires du même formulaire", () => {
+    const data = makeCoFormData({
+      inputConfig: { multiDecide: "tpls.forms.aap.selection" },
+      inputs: {
+        aapStep2: {
+          id: "aapStep2",
+          name: "Évaluation",
+          formParent: "form123",
+          inputs: {
+            decide: { type: "tpls.forms.ocecoform.multiDecide", label: "Dépenses" },
+            commentaire: { type: "tpls.forms.textarea", label: "Commentaire" },
+          },
+        },
+      },
+    });
+    const [etape] = parseCoFormFields(data);
+    expect(etape.fields.map((f) => f.name).sort()).toEqual(["commentaire", "selection"]);
+  });
+});
+
+/**
+ * `selection` et `pourContre` ne doivent JAMAIS transiter par le formulaire :
+ * leur valeur est indexée par évaluateur et le backend remplace la clé en bloc
+ * (`SaveAnswerAction:214` ne deep-merge que les clés `_multiEval`). Une entrée
+ * au schéma ou aux valeurs par défaut suffirait à effacer, à chaque
+ * enregistrement, les notes de tous les autres évaluateurs.
+ */
+describe("selection / pourContre — jamais soumis", () => {
+  const champEval = (componentType: "selection" | "pourContre") =>
+    makeSubFormFields([
+      makeField({
+        name: componentType,
+        label: "Évaluation",
+        type: `tpls.forms.aap.${componentType}`,
+        componentType,
+        isRequired: true, // même requis, aucune entrée ne doit apparaître
+      }),
+    ]);
+
+  for (const ct of ["selection", "pourContre"] as const) {
+    it(`\`${ct}\` n'entre pas dans les valeurs par défaut`, () => {
+      const valeurs = generateDefaultValues([champEval(ct)]);
+      expect(ct in valeurs).toBe(false);
+    });
+
+    it(`\`${ct}\` n'entre pas dans le schéma — une valeur parasite est STRIPPÉE`, () => {
+      const res = generateZodSchema([champEval(ct)]).safeParse({
+        [ct]: { autreEvaluateur: { critere: 5 } },
+      });
+      expect(res.success).toBe(true);
+      // `z.object` strippe ce qui n'est pas déclaré : la clé ne repart pas au
+      // serveur, donc les notes des autres évaluateurs survivent.
+      expect(res.success && ct in (res.data as Record<string, unknown>)).toBe(false);
+    });
+  }
+});
+
+/**
+ * Clés d'écriture directe — JAMAIS soumises, quel que soit le chemin.
+ *
+ * L'absence au schéma Zod (ci-dessus) ne protège que le bouton mono-étape :
+ * le wizard (`submitAllData`) et l'autosave soumettent `getValues()` brut, et
+ * la valeur y entre par les RÉPONSES SERVEUR (`normalizeAnswerData` recopie
+ * `answers.<étape>` en bloc), pas par les défauts générés. Le point unique
+ * traversé par les trois chemins est `denormalizeAnswerData` : c'est lui qui
+ * doit stripper, sinon un « Enregistrer » du jury ré-émet un instantané périmé
+ * de `selection` et efface les notes posées entre-temps par les autres.
+ */
+describe("denormalizeAnswerData — clés d'écriture directe jamais soumises", () => {
+  // Formulaire AAP réel : dépôt (aapStep1) + jury (aapStep2) portant les quatre
+  // inputs de décision, dont `selection` via l'indirection `multiDecide`.
+  function makeParcoursJury(): CoFormData {
+    return makeCoFormData({
+      inputConfig: { multiDecide: "tpls.forms.aap.selection" },
+      inputs: {
+        aapStep1: {
+          id: "aapStep1",
+          name: "Dépôt",
+          formParent: "form123",
+          inputs: { titre: { type: "text", label: "Titre", placeholder: "" } },
+        },
+        aapStep2: {
+          id: "aapStep2",
+          name: "Jury",
+          formParent: "form123",
+          inputs: {
+            commentaire: { type: "text", label: "Commentaire", placeholder: "" },
+            decide: { type: "tpls.forms.ocecoform.multiDecide", label: "Sélection" },
+            pourContre: { type: "tpls.forms.ocecoform.pourContre", label: "Vote" },
+            evaluation: { type: "tpls.forms.aap.evaluation", label: "Évaluation" },
+            choose: { type: "tpls.forms.aap.chooseProposal", label: "Choix" },
+          },
+        },
+      },
+    });
+  }
+
+  // Ce qu'on lit en base à l'ouverture : userB a déjà noté, voté, choisi.
+  const REPONSES_SERVEUR = {
+    aapStep1: { titre: "Mon commun" },
+    aapStep2: {
+      commentaire: "ok",
+      selection: { userB: { c1: 4 } },
+      admissibility: { userB: true },
+      admissibilityTime: { userB: "2026-01-01" },
+      pourContre: { userB: "pour" },
+      evaluation: { userB: { 0: { note: 3 } } },
+      choose: { ctx1: { value: "selected" } },
+    },
+  };
+
+  it("le parse porte bien les quatre types d'écriture directe sur aapStep2", () => {
+    const fields = parseCoFormFields(makeParcoursJury());
+    const jury = fields.find((s) => s.subFormId === "aapStep2")!;
+    expect(jury.fields.map((f) => [f.name, f.componentType]).sort()).toEqual([
+      ["choose", "chooseProposal"],
+      ["commentaire", "text"],
+      ["evaluation", "aapEvaluation"],
+      ["pourContre", "pourContre"],
+      ["selection", "selection"],
+    ]);
+    for (const ct of ["selection", "pourContre", "aapEvaluation", "chooseProposal"] as const) {
+      expect(isDirectWriteField(ct)).toBe(true);
+    }
+    expect(isDirectWriteField("text")).toBe(false);
+  });
+
+  it("strippe les clés même quand la valeur vient des réponses serveur (chemin wizard)", () => {
+    const fields = parseCoFormFields(makeParcoursJury());
+    // Exactement ce que le wizard soumet : les réponses normalisées, relues
+    // telles quelles depuis `stepState.stepsData` (aucun passage par Zod).
+    const stepsData = normalizeAnswerData(REPONSES_SERVEUR, fields, "userA") as Record<string, unknown>;
+    // Sanity : la valeur est bien ENTRÉE par ce chemin — c'est ce que les
+    // champs lisent pour s'afficher, on ne la retire pas de la lecture.
+    expect((stepsData.aapStep2 as Record<string, unknown>).selection).toEqual({ userB: { c1: 4 } });
+
+    const payload = denormalizeAnswerData(stepsData, fields, "userA");
+    const jury = payload.aapStep2 as Record<string, unknown>;
+    for (const cle of DIRECT_WRITE_RAW_KEYS) {
+      expect(jury, `\`${cle}\` ne doit jamais repartir au serveur`).not.toHaveProperty(cle);
+    }
+    // Les champs ordinaires de la même étape, eux, partent normalement.
+    expect(jury.commentaire).toBe("ok");
+    expect(payload.aapStep1).toEqual({ titre: "Mon commun" });
+  });
+
+  it("strippe sur le chemin mono-étape / autosave (`{ [subFormId]: getValues() }`)", () => {
+    const fields = parseCoFormFields(makeParcoursJury());
+    const jury = fields.find((s) => s.subFormId === "aapStep2")!;
+    // `SmartCoForm.onSubmit` enveloppe la sortie de `getValues()` sous l'id
+    // d'étape — l'autosave y arrive sans validation Zod, donc avec `selection`.
+    const brut = { aapStep2: { ...REPONSES_SERVEUR.aapStep2 } };
+    const payload = denormalizeAnswerData(brut, [jury], "userA");
+    expect(payload.aapStep2).toEqual({ commentaire: "ok" });
+  });
+
+  it("strippe les clés brutes legacy même sans champ parsé (input sans config)", () => {
+    // `multiDecide` SANS `inputConfig` → le parse ne produit aucun champ de
+    // décision ; la valeur serveur, elle, est bien là et passerait sinon.
+    const data = makeCoFormData({
+      inputs: {
+        aapStep2: {
+          id: "aapStep2",
+          name: "Jury",
+          formParent: "form123",
+          inputs: {
+            commentaire: { type: "text", label: "Commentaire", placeholder: "" },
+            decide: { type: "tpls.forms.ocecoform.multiDecide", label: "Sélection" },
+          },
+        },
+      },
+    });
+    const fields = parseCoFormFields(data);
+    expect(fields[0].fields.map((f) => f.name)).toEqual(["commentaire"]);
+
+    const stepsData = normalizeAnswerData(REPONSES_SERVEUR, fields, "userA") as Record<string, unknown>;
+    const payload = denormalizeAnswerData(stepsData, fields, "userA");
+    expect(payload.aapStep2).toEqual({ commentaire: "ok" });
+  });
+
+  /**
+   * Étapes ABSENTES DU PARSE — ne partent PAS, du tout.
+   *
+   * Leur bloc est pourtant dans ce que soumet le wizard : `normalizeAnswerData`
+   * clone `answers` EN ENTIER, `CoFormProvider` installe ce clone dans
+   * `stepsData`, et `submitAllData` dénormalise `stepsData` entier. Fait
+   * backend (mainteneur du legacy, 9 sept. 2026) : une étape absente du payload
+   * est PRÉSERVÉE à la sauvegarde (PHP et port Node), une étape présente est
+   * écrasée clé par clé. Ré-émettre une étape non rendue, c'est donc écraser
+   * avec l'instantané périmé de l'ouverture — notes du jury, `_multiEval`,
+   * champs ordinaires compris — alors que ne rien émettre la conserve intacte.
+   */
+  it("une étape retirée du parse par l'appelant (`omitHiddenSteps`, wizard) est absente du payload", () => {
+    // Cas nominal AAC (`AacCommunDetailPage`) : l'étape de jury est masquée au
+    // déposant non-admin. Avec ≥ 2 étapes visibles on est en wizard, donc sur
+    // le chemin `submitAllData` qui soumet TOUTES les étapes de `stepsData`.
+    const parcours = makeParcoursJury();
+    parcours.inputs!.aapStep3 = {
+      id: "aapStep3",
+      name: "Suivi",
+      formParent: "form123",
+      inputs: { suivi: { type: "text", label: "Suivi", placeholder: "" } },
+    };
+    const fields = parseCoFormFields(omitHiddenSteps(parcours, ["aapStep2"]));
+    expect(fields.map((s) => s.subFormId)).toEqual(["aapStep1", "aapStep3"]);
+
+    const stepsData = normalizeAnswerData(
+      { ...REPONSES_SERVEUR, aapStep3: { suivi: "en cours" } },
+      fields,
+      "userA",
+    ) as Record<string, unknown>;
+    // Sanity : le bloc de l'étape masquée EST dans ce que le wizard soumet —
+    // décision du jury ET champ ordinaire.
+    expect(stepsData.aapStep2).toMatchObject({ selection: { userB: { c1: 4 } }, commentaire: "ok" });
+
+    const payload = denormalizeAnswerData(stepsData, fields, "userA");
+    // Pas seulement ses clés de décision : l'étape entière, `commentaire`
+    // compris, sinon le backend l'écraserait clé par clé.
+    expect(payload).not.toHaveProperty("aapStep2");
+    expect(Object.keys(payload).sort()).toEqual(["aapStep1", "aapStep3"]);
+    // Les étapes visibles ne sont pas affectées.
+    expect(payload.aapStep1).toEqual({ titre: "Mon commun" });
+    expect(payload.aapStep3).toEqual({ suivi: "en cours" });
+  });
+
+  it("une étape marquée `hideStep` par le formulaire est absente du payload", () => {
+    const parcours = makeParcoursJury();
+    parcours.inputs!.aapStep2.hideStep = true;
+    const fields = parseCoFormFields(parcours);
+    expect(fields.map((s) => s.subFormId)).toEqual(["aapStep1"]);
+
+    const stepsData = normalizeAnswerData(REPONSES_SERVEUR, fields, "userA") as Record<string, unknown>;
+    expect(stepsData).toHaveProperty("aapStep2");
+
+    const payload = denormalizeAnswerData(stepsData, fields, "userA");
+    expect(payload).toEqual({ aapStep1: { titre: "Mon commun" } });
+  });
+
+  it("conserve le rangement root-level `evaluation{key}` d'un champ parsé", () => {
+    // `evaluation{key}` est une map `{ [categoryPath]: { [criteriaId]: vote } }`
+    // dont les clés sont les NOMS DE CATÉGORIES saisis par l'admin — une
+    // catégorie « selection » ou « evaluation » y est légitime. La clé est
+    // produite par la boucle à partir d'un champ parsé : elle part telle quelle.
+    const fields: SubFormFields[] = [
+      makeSubFormFields(
+        [
+          makeField({ name: "evaluationCrit", componentType: "evaluation", type: "tpls.forms.cplx.evaluation" }),
+          makeField({ name: "commentaire", componentType: "text" }),
+        ],
+        "aapStep1",
+      ),
+      makeSubFormFields([makeField({ name: "suivi", componentType: "text" })], "aapStep3"),
+    ];
+    const notes = { selection: { c1: "OK" }, evaluation: { c1: 3 }, pertinence: { c1: "" } };
+    const stepsData = normalizeAnswerData(
+      {
+        evaluationCrit: notes,
+        aapStep1: { commentaire: "ok" },
+        aapStep3: { suivi: "en cours" },
+        // Étape masquée, non parsée : absente du payload, elle.
+        aapStep2: { selection: { userB: { c1: 4 } }, note: "x" },
+      },
+      fields,
+      "userA",
+    ) as Record<string, unknown>;
+    const payload = denormalizeAnswerData(stepsData, fields, "userA");
+    expect(payload.evaluationCrit).toEqual(notes);
+    expect(payload.aapStep1).toEqual({ commentaire: "ok" });
+    expect(payload.aapStep3).toEqual({ suivi: "en cours" });
+    expect(payload).not.toHaveProperty("aapStep2");
+  });
+
+  it("retire le rangement root-level d'un champ NON parsé (porté par une étape masquée)", () => {
+    // L'étape de jury porte un `evaluation` (rangé `evaluation{key}`) et un
+    // commonTable (rangé `yesOrNo{key}` + `criterias{key}`) : trois clés
+    // RACINE, hors du bloc de l'étape. Le parse complet en atteste.
+    const parcours = makeParcoursJury();
+    parcours.inputs!.aapStep2.inputs.grille = { type: "tpls.forms.cplx.evaluation", label: "Grille" };
+    parcours.inputs!.aapStep2.inputs.besoins = { type: "tpls.forms.evaluation.commonTableV2", label: "Besoins" };
+    const juryComplet = parseCoFormFields(parcours).find((s) => s.subFormId === "aapStep2")!;
+    expect(juryComplet.fields.map((f) => [f.name, f.componentType])).toEqual(
+      expect.arrayContaining([
+        ["evaluationgrille", "evaluation"],
+        ["yesOrNobesoins", "commonTable"],
+      ]),
+    );
+
+    // Le déposant ne voit pas l'étape de jury : ces trois clés ne sont
+    // produites par aucun champ parsé.
+    const fields = parseCoFormFields(omitHiddenSteps(parcours, ["aapStep2"]));
+    expect(fields.map((s) => s.subFormId)).toEqual(["aapStep1"]);
+
+    const stepsData = normalizeAnswerData(
+      {
+        ...REPONSES_SERVEUR,
+        evaluationgrille: { impact: { c1: 3 } },
+        yesOrNobesoins: { crit1: { note: 2 } },
+        criteriasbesoins: { crit1: { usage: "Bureautique", usageKey: "crit1", coeff: 1, label: "" } },
+      },
+      fields,
+      "userA",
+    ) as Record<string, unknown>;
+    // Sanity : `normalizeAnswerData` les a bien recopiées telles quelles.
+    expect(stepsData).toHaveProperty("evaluationgrille");
+    expect(stepsData).toHaveProperty("yesOrNobesoins");
+    expect(stepsData).toHaveProperty("criteriasbesoins");
+
+    const payload = denormalizeAnswerData(stepsData, fields, "userA");
+    expect(payload).toEqual({ aapStep1: { titre: "Mon commun" } });
+  });
+
+  it("conserve une étape parsée nommée `evaluationStep` (ancien angle mort de l'heuristique par préfixe)", () => {
+    // Le tri se fait sur ce que le parse CONNAÎT, pas sur la forme du nom : une
+    // étape dont l'id commence par `evaluation` est une étape si elle est
+    // parsée (conservée avec ses données), et rien du tout sinon (retirée).
+    const parcours = makeParcoursJury();
+    parcours.inputs!.evaluationStep = {
+      id: "evaluationStep",
+      name: "Auto-évaluation",
+      formParent: "form123",
+      inputs: { bilan: { type: "text", label: "Bilan", placeholder: "" } },
+    };
+    parcours.inputs!.evaluationJury = {
+      id: "evaluationJury",
+      name: "Jury bis",
+      formParent: "form123",
+      inputs: { verdict: { type: "text", label: "Verdict", placeholder: "" } },
+    };
+    const fields = parseCoFormFields(omitHiddenSteps(parcours, ["aapStep2", "evaluationJury"]));
+    expect(fields.map((s) => s.subFormId)).toEqual(["aapStep1", "evaluationStep"]);
+
+    const stepsData = normalizeAnswerData(
+      {
+        ...REPONSES_SERVEUR,
+        evaluationStep: { bilan: "positif" },
+        evaluationJury: { verdict: "retenu", selection: { userB: { c1: 4 } } },
+      },
+      fields,
+      "userA",
+    ) as Record<string, unknown>;
+    const payload = denormalizeAnswerData(stepsData, fields, "userA");
+    expect(payload).toEqual({
+      aapStep1: { titre: "Mon commun" },
+      evaluationStep: { bilan: "positif" },
+    });
+  });
+
+  it("laisse intacts le pack `_multiEval` et les `dynamicFields` d'une étape parsée", () => {
+    // Le périmètre ne retire que des clés RACINE : à l'intérieur d'une étape
+    // parsée, les traitements existants (pack multi-eval de l'user courant,
+    // filtrage des lignes vides) produisent exactement ce qu'ils produisaient.
+    const fields: SubFormFields[] = [
+      makeSubFormFields(
+        [
+          makeField({ name: "avis", componentType: "radio", options: ["oui", "non"], activeMultieval: true }),
+          makeField({
+            name: "partenaires",
+            componentType: "dynamicFields",
+            dynamicFieldsConfig: {
+              enableMultipleRows: true,
+              minRows: 1,
+              maxRows: 3,
+              fieldsConfig: [{ key: "nom", label: "Nom", type: "text" }],
+            },
+          }),
+        ],
+        "aapStep1",
+      ),
+    ];
+    const stepsData = normalizeAnswerData(
+      {
+        aapStep1: {
+          avis_multiEval: { userB: { value: "non", date: "d", answer: "1_non" } },
+          partenaires: [{ nom: "ADAPTETONSPORT" }],
+        },
+        // Étape masquée : son `_multiEval` ne repart pas non plus, le backend
+        // le préserve tel quel.
+        aapStep2: { avis_multiEval: { userB: { value: "non", date: "d", answer: "1_non" } } },
+      },
+      fields,
+      "userA",
+    ) as Record<string, unknown>;
+    (stepsData.aapStep1 as Record<string, unknown>).avis = "oui";
+    (stepsData.aapStep1 as Record<string, unknown>).partenaires = [{ nom: "ADAPTETONSPORT" }, { nom: "" }];
+
+    const payload = denormalizeAnswerData(stepsData, fields, "userA");
+    expect(payload).toEqual({
+      aapStep1: {
+        avis_multiEval: { userA: { value: "oui", date: "now", answer: "0_oui" } },
+        partenaires: [{ nom: "ADAPTETONSPORT" }],
+      },
+    });
+  });
+
+  it("préserve un champ ORDINAIRE déclaré sous une clé homonyme", () => {
+    // Un `text` nommé `selection` est un vrai champ du formulaire : il n'a
+    // rien à voir avec l'input de jury et doit être soumis comme les autres.
+    const fields: SubFormFields[] = [
+      makeSubFormFields(
+        [makeField({ name: "selection", componentType: "text" })],
+        "step1",
+      ),
+    ];
+    const payload = denormalizeAnswerData({ step1: { selection: "libre" } }, fields);
+    expect(payload.step1).toEqual({ selection: "libre" });
+  });
+
+  it("ne touche pas au pack `_multiEval` d'un radio de la même étape", () => {
+    const fields: SubFormFields[] = [
+      makeSubFormFields(
+        [
+          makeField({
+            name: "avis",
+            componentType: "radio",
+            options: ["oui", "non"],
+            activeMultieval: true,
+          }),
+          makeField({ name: "selection", componentType: "selection", type: "tpls.forms.aap.selection" }),
+        ],
+        "aapStep2",
+      ),
+    ];
+    const payload = denormalizeAnswerData(
+      { aapStep2: { avis: "oui", selection: { userB: { c1: 4 } } } },
+      fields,
+      "userA",
+    );
+    const jury = payload.aapStep2 as Record<string, unknown>;
+    expect(jury).not.toHaveProperty("selection");
+    expect(jury).not.toHaveProperty("avis");
+    expect(jury.avis_multiEval).toEqual({ userA: { value: "oui", date: "now", answer: "0_oui" } });
+  });
+
+  it("ne mute pas l'objet d'entrée (les champs continuent de lire `stepsData`)", () => {
+    const fields = parseCoFormFields(makeParcoursJury());
+    const stepsData = normalizeAnswerData(REPONSES_SERVEUR, fields, "userA") as Record<string, unknown>;
+    const avant = JSON.stringify(stepsData);
+    denormalizeAnswerData(stepsData, fields, "userA");
+    expect(JSON.stringify(stepsData)).toBe(avant);
+  });
+});
+
+/**
+ * L'éditeur markdown est ACTIF PAR DÉFAUT sur les textarea.
+ *
+ * Relevé sur le parc : 754 textarea, dont AUCUN ne porte `enableMarkdown: true`
+ * et un seul le porte à `false`. Inverser le défaut fait donc basculer 753
+ * champs — d'où des tests sur les trois cas, y compris la désactivation
+ * explicite qui doit survivre.
+ */
+describe("textarea — markdown actif par défaut", () => {
+  const parse = (enableMarkdown?: boolean | string) =>
+    parseCoFormFields(
+      makeCoFormData({
+        inputs: {
+          step1: {
+            id: "step1",
+            name: "Étape",
+            formParent: "form123",
+            inputs: {
+              texte: { type: "tpls.forms.textarea", label: "Texte", enableMarkdown },
+            },
+          },
+        },
+      })
+    )[0].fields[0];
+
+  it("actif quand l'option est absente — le cas de 753 champs sur 754", () => {
+    expect(parse(undefined).markdown).toBe(true);
+  });
+
+  it("actif quand l'option vaut true", () => {
+    expect(parse(true).markdown).toBe(true);
+  });
+
+  it("DÉSACTIVÉ par un false explicite", () => {
+    expect(parse(false).markdown).toBe(false);
+  });
+
+  it("désactivé aussi par la CHAÎNE \"false\"", () => {
+    // Le parc stocke volontiers ses booléens en chaînes : une telle valeur doit
+    // désactiver, pas activer par accident.
+    expect(parse("false").markdown).toBe(false);
+  });
+});
+
+// ============================================================================
+// Visibilité des inputs : `hideInForm` et `access.restrictedFields`
+// ============================================================================
+
+describe("isTruthyFlag", () => {
+  it("accepte les formes vraies du parc, booléen comme chaîne", () => {
+    // Le PHP lit ces drapeaux avec `filter_var(FILTER_VALIDATE_BOOLEAN)`.
+    for (const v of [true, 1, "true", "TRUE", " true ", "1", "on", "yes"]) {
+      expect(isTruthyFlag(v)).toBe(true);
+    }
+  });
+
+  it("refuse la CHAÎNE \"false\" — là où le legacy la prend pour vraie", () => {
+    // `\"false\" == true` vaut true en PHP : le legacy masquerait le champ.
+    expect(isTruthyFlag("false")).toBe(false);
+  });
+
+  it("refuse les valeurs vides, absentes ou inattendues", () => {
+    for (const v of [false, 0, "", "0", "off", null, undefined, {}, []]) {
+      expect(isTruthyFlag(v)).toBe(false);
+    }
+  });
+});
+
+/**
+ * Topologie relevée en base sur l'étape `677e7e389058e31575550aca` du form
+ * « Les communs des CAEs » : deux inputs, `decide` masqué par `hideInForm` et
+ * `choose` réservé aux admins. Le motif est celui de 12 formulaires AAP.
+ */
+function makeEtapeJury(overrides: Partial<CoFormData> = {}): CoFormData {
+  return makeCoFormData({
+    inputs: {
+      aapStep2: {
+        name: "Décision",
+        id: "aapStep2",
+        formParent: "form123",
+        inputs: {
+          decide: { label: "Décision", type: "tpls.forms.ocecoform.multiDecide", hideInForm: true },
+          choose: { label: "Publier dans l'annuaire", type: "tpls.forms.aap.chooseProposal" },
+          // Champ ordinaire masqué : `decide` seul ne prouverait rien, un
+          // multiDecide sans `inputConfig` étant de toute façon écarté par
+          // `resolveMultiDecide`.
+          note: { label: "Note d'instruction", type: "text", hideInForm: true },
+          libre: { label: "Commentaire", type: "textarea" },
+        },
+      },
+    },
+    ...overrides,
+  });
+}
+
+describe("parseCoFormFields — hideInForm", () => {
+  it("écarte l'input marqué, garde les autres", () => {
+    const fields = parseCoFormFields(makeEtapeJury())[0].fields;
+    expect(fields.map((f) => f.name)).toEqual(["choose", "libre"]);
+  });
+
+  it("s'applique AVANT la résolution multiDecide", () => {
+    // `decide` est un placeholder qui se réindexe sous le type visé. Si le
+    // masquage passait après, l'input reparaîtrait sous son nouveau nom.
+    const data = makeEtapeJury({ inputConfig: { multiDecide: "tpls.forms.aap.selection" } });
+    const fields = parseCoFormFields(data)[0].fields;
+    expect(fields.map((f) => f.name)).toEqual(["choose", "libre"]);
+  });
+
+  it("un champ masqué ne peut plus rendre le formulaire insoumettable", () => {
+    // 2 inputs du parc cumulent hideInForm + isRequired. Laissés au schéma, ils
+    // exigeraient une saisie sur un champ que personne ne voit.
+    const data = makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: {
+            cache: { label: "Caché", type: "text", isRequired: true, hideInForm: true },
+            visible: { label: "Visible", type: "text" },
+          },
+        },
+      },
+    });
+    const parsed = parseCoFormFields(data);
+    expect(generateZodSchema(parsed).safeParse({ step1: { visible: "ok" } }).success).toBe(true);
+    const defauts = generateDefaultValues(parsed);
+    expect(defauts).toHaveProperty("visible");
+    expect(defauts).not.toHaveProperty("cache");
+  });
+
+  it("ne masque pas sur une valeur fausse ou absente", () => {
+    const data = makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: {
+            a: { label: "A", type: "text", hideInForm: false },
+            b: { label: "B", type: "text", hideInForm: "false" },
+            c: { label: "C", type: "text" },
+          },
+        },
+      },
+    });
+    expect(parseCoFormFields(data)[0].fields.map((f) => f.name)).toEqual(["a", "b", "c"]);
+  });
+});
+
+describe("parseCoFormFields — access.restrictedFields", () => {
+  it("écarte les champs que le serveur a déclarés interdits", () => {
+    // `choose` porte `isAdminOnly` en base ; c'est le backend qui tranche et le
+    // renvoie ici (`Coform::computeAdminOnlyFields`).
+    const data = makeEtapeJury({ access: makeAccess(["choose"]) });
+    expect(parseCoFormFields(data)[0].fields.map((f) => f.name)).toEqual(["libre"]);
+  });
+
+  it("laisse tout passer quand la liste est vide ou absente", () => {
+    expect(
+      parseCoFormFields(makeEtapeJury({ access: makeAccess([]) }))[0]
+        .fields.map((f) => f.name)
+    ).toEqual(["choose", "libre"]);
+    expect(parseCoFormFields(makeEtapeJury())[0].fields.map((f) => f.name)).toEqual([
+      "choose",
+      "libre",
+    ]);
+  });
+
+  it("sort aussi du schéma et des valeurs par défaut, pas seulement du rendu", () => {
+    // Sans ça, un champ restreint ET requis bloquerait la soumission sur une
+    // erreur portant un champ que l'utilisateur ne voit nulle part.
+    const data = makeCoFormData({
+      access: makeAccess(["secret"]),
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: {
+            secret: { label: "Secret", type: "text", isRequired: true },
+            visible: { label: "Visible", type: "text" },
+          },
+        },
+      },
+    });
+    const parsed = parseCoFormFields(data);
+    expect(generateZodSchema(parsed).safeParse({ step1: { visible: "ok" } }).success).toBe(true);
+    const defauts = generateDefaultValues(parsed);
+    expect(defauts).toHaveProperty("visible");
+    expect(defauts).not.toHaveProperty("secret");
+  });
+});
+
+/**
+ * Topologie relevée sur `677e7e389058e31575550ac7` (le doc `aapConfig` du form
+ * « Les communs des CAEs ») : aapStep3 « Financement » et aapStep4 « Suivi »
+ * sont cochées « Cacher etape ». 5 forms du parc masquent ainsi 7 étapes.
+ */
+function makeParcoursAap(hidden: Record<string, boolean> = {}): CoFormData {
+  const etape = (id: string, nom: string) => ({
+    name: nom,
+    id,
+    formParent: "form123",
+    hideStep: hidden[id] ?? false,
+    inputs: { [`${id}_champ`]: { label: nom, type: "text" } },
+  });
+  return makeCoFormData({
+    inputs: {
+      aapStep1: etape("aapStep1", "Dépôt"),
+      aapStep2: etape("aapStep2", "Évaluation"),
+      aapStep3: etape("aapStep3", "Financement"),
+      aapStep4: etape("aapStep4", "Suivi"),
+    },
+  });
+}
+
+describe("parseCoFormFields — étapes masquées (hideStep)", () => {
+  it("retire l'étape entière, sommaire du wizard compris", () => {
+    // Le stepper de `MultiStepCoForm` dérive du même parse : retirer ici suffit
+    // à faire disparaître l'étape du sommaire ET de son contenu.
+    const parsed = parseCoFormFields(makeParcoursAap({ aapStep3: true, aapStep4: true }));
+    expect(parsed.map((s) => s.subFormId)).toEqual(["aapStep1", "aapStep2"]);
+  });
+
+  it("emporte les champs de l'étape hors du schéma et des défauts", () => {
+    const parsed = parseCoFormFields(makeParcoursAap({ aapStep3: true }));
+    const defauts = generateDefaultValues(parsed);
+    expect(defauts).not.toHaveProperty("aapStep3_champ");
+    expect(generateZodSchema(parsed).safeParse({}).success).toBe(true);
+  });
+
+  it("ne masque rien quand aucune étape n'est cochée", () => {
+    expect(parseCoFormFields(makeParcoursAap()).map((s) => s.subFormId)).toEqual([
+      "aapStep1",
+      "aapStep2",
+      "aapStep3",
+      "aapStep4",
+    ]);
+  });
+
+  it("masque pour TOUT LE MONDE — aucune exemption admin", () => {
+    // Écart assumé avec le legacy, qui laisse l'étape visible à l'admin de la
+    // réponse. Le parse ne reçoit aucune identité d'utilisateur : l'assertion
+    // porte sur le comportement, pas sur l'arité de la fonction — un paramètre
+    // à valeur par défaut (la forme qu'aurait une exemption) laisserait
+    // `Function.length` inchangé.
+    const parsed = parseCoFormFields(makeParcoursAap({ aapStep1: true }));
+    expect(parsed.map((s) => s.subFormId)).not.toContain("aapStep1");
+  });
+
+  it("n'est PAS déclenché par hideStepStandalone", () => {
+    // Le `standAlone` du legacy désigne la page de réponse dédiée, sans
+    // équivalent ici ; le « standalone » de site-json est une étape réclamée
+    // explicitement par la config du site — la masquer viderait la page.
+    const data = makeParcoursAap();
+    (data.inputs as Record<string, { hideStepStandalone?: boolean }>).aapStep3.hideStepStandalone =
+      true;
+    expect(parseCoFormFields(data).map((s) => s.subFormId)).toContain("aapStep3");
+  });
+});
+
+describe("parseCoFormFields — contrat de clé des champs restreints", () => {
+  /**
+   * Les deux producteurs PHP (`extractKuniksFromPaths`, `computeAdminOnlyFields`)
+   * émettent des **kuniks bruts**. Or un finder d'input `k1` s'appelle
+   * `finderk1` une fois parsé : c'est exactement là que la garde de parse (clé
+   * brute) et l'ancienne garde de rendu (`getOriginalFieldKey`) divergeaient.
+   */
+  const avecPrefixe = (restricted: string[]) =>
+    parseCoFormFields(
+      makeCoFormData({
+        access: makeAccess(restricted),
+        inputs: {
+          step1: {
+            name: "Step 1",
+            id: "step1",
+            formParent: "form123",
+            inputs: {
+              k1: { label: "Lieu", type: "tpls.forms.cplx.finder" },
+              k2: { label: "Libre", type: "text" },
+            },
+          },
+        },
+      })
+    )[0].fields.map((f) => f.name);
+
+  it("le kunik BRUT suffit à écarter un champ dont le nom parsé est préfixé", () => {
+    expect(avecPrefixe([])).toEqual(["finderk1", "k2"]);
+    expect(avecPrefixe(["k1"])).toEqual(["k2"]);
+  });
+
+  it("le nom PARSÉ ne déclenche rien — ce n'est pas le contrat du backend", () => {
+    expect(avecPrefixe(["finderk1"])).toEqual(["finderk1", "k2"]);
+  });
+});
+
+describe("getSharedFinderInfo — lecture structurelle", () => {
+  const dansEtape = (hideStep: boolean) =>
+    getSharedFinderInfo(
+      makeCoFormData({
+        sharedQuestionPath: ["step1.finderk1"],
+        // `finderConfig` n'est monté que si `params.finder<kunik>` existe — et
+        // `getSharedFinderInfo` retourne `null` sans lui.
+        params: { finderk1: { type: "organizations", multiple: false } },
+        inputs: {
+          step1: {
+            name: "Step 1",
+            id: "step1",
+            formParent: "form123",
+            hideStep,
+            inputs: { k1: { label: "Lieu", type: "tpls.forms.cplx.finder" } },
+          },
+        },
+      })
+    );
+
+  it("trouve le finder partagé MÊME dans une étape masquée", () => {
+    // Le finder partagé désigne le lieu auquel la réponse se rattache : il
+    // pilote pré-remplissage, verrouillage et filtres du mode collaboratif.
+    // Le perdre parce qu'un admin a coché « cacher l'étape » dégraderait le
+    // mode par lieu en silence.
+    expect(dansEtape(false)?.fieldName).toBe("finderk1");
+    expect(dansEtape(true)?.fieldName).toBe("finderk1");
+  });
+});
+
+// ============================================================================
+// Ordre d'affichage des champs
+// ============================================================================
+
+const FORM_PARENT = "6438366673d20a0de1533c77";
+
+/**
+ * Étape d'analyse collective d'« Appel à commun des tiers lieux », réduite mais
+ * FIDÈLE aux données réelles :
+ *
+ *  - l'ordre d'insertion Mongo place les titres de section AVANT les questions ;
+ *  - aucun de ces inputs ne porte `position` — seulement `positions[formParent]`.
+ *
+ * C'est la conjonction des deux qui produisait le bug : 15 inputs sur 17
+ * retombaient à 0, et le tri stable rendait alors l'ordre d'insertion — les 6
+ * titres groupés en tête, puis les 9 questions.
+ */
+function makeAnalyseCollective(): CoFormData {
+  const titre = (n: string) => ({ label: n, type: "tpls.forms.sectionTitle" });
+  const question = (n: string) => ({ label: n, type: "tpls.forms.cplx.radioNew" });
+  return makeCoFormData({
+    inputs: {
+      aapStep2: {
+        name: "Analyse collective",
+        id: "aapStep2",
+        formParent: FORM_PARENT,
+        inputs: {
+          titreJuridique: { ...titre("Juridique"), positions: { [FORM_PARENT]: "2" } },
+          titreEco: { ...titre("Economique"), positions: { [FORM_PARENT]: "7" } },
+          titreUsage: { ...titre("Usage"), positions: { [FORM_PARENT]: "23" } },
+          qStructuration: { ...question("Structuration juridique"), positions: { [FORM_PARENT]: "3" } },
+          qLicences: { ...question("Licences"), positions: { [FORM_PARENT]: "5" } },
+          qModele: { ...question("Modèle économique"), positions: { [FORM_PARENT]: "8" } },
+          qUsage: { ...question("Utilisé par"), positions: { [FORM_PARENT]: "24" } },
+        },
+      },
+    },
+  });
+}
+
+describe("resolveInputOrder", () => {
+  it("préfère la position du formulaire parent à la clé plate", () => {
+    expect(resolveInputOrder({ position: "9", positions: { [FORM_PARENT]: "2" } }, FORM_PARENT)).toBe(2);
+  });
+
+  it("retombe sur `position` quand ce parent n'a pas d'entrée", () => {
+    // 766 inputs du parc portent des positions pour PLUSIEURS parents : lire la
+    // map sans la scoper mélangerait l'ordre de deux formulaires distincts.
+    expect(resolveInputOrder({ position: "9", positions: { autreForm: "2" } }, FORM_PARENT)).toBe(9);
+  });
+
+  it("rend 0 quand aucune position n'est connue", () => {
+    expect(resolveInputOrder({}, FORM_PARENT)).toBe(0);
+    expect(resolveInputOrder({ position: "abc" }, FORM_PARENT)).toBe(0);
+  });
+
+  it("rend 0 sans formulaire parent, même si des positions existent", () => {
+    expect(resolveInputOrder({ positions: { [FORM_PARENT]: "5" } }, undefined)).toBe(0);
+  });
+});
+
+describe("parseCoFormFields — ordre des champs", () => {
+  it("intercale les titres de section au lieu de les grouper en tête", () => {
+    const fields = parseCoFormFields(makeAnalyseCollective())[0].fields;
+    expect(fields.map((f) => f.name)).toEqual([
+      "titreJuridique", // 2
+      "qStructuration", // 3
+      "qLicences", // 5
+      "titreEco", // 7
+      "qModele", // 8
+      "titreUsage", // 23
+      "qUsage", // 24
+    ]);
+  });
+
+  it("ignore les positions déclarées pour un AUTRE formulaire parent", () => {
+    const data = makeCoFormData({
+      inputs: {
+        aapStep1: {
+          name: "Dépôt",
+          id: "aapStep1",
+          formParent: FORM_PARENT,
+          inputs: {
+            // Ordre voulu par CET AAP : titre puis description. L'autre parent
+            // les veut dans l'ordre inverse — il ne doit pas s'imposer ici.
+            description: { label: "Description", type: "textarea", positions: { [FORM_PARENT]: "2", autreForm: "1" } },
+            titre: { label: "Titre", type: "text", positions: { [FORM_PARENT]: "1", autreForm: "2" } },
+          },
+        },
+      },
+    });
+    expect(parseCoFormFields(data)[0].fields.map((f) => f.name)).toEqual(["titre", "description"]);
+  });
+
+  it("continue de trier sur `position` quand `positions` est absent", () => {
+    const data = makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: {
+            second: { label: "Second", type: "text", position: "2" },
+            premier: { label: "Premier", type: "text", position: "1" },
+          },
+        },
+      },
+    });
+    expect(parseCoFormFields(data)[0].fields.map((f) => f.name)).toEqual(["premier", "second"]);
+  });
+
+  it("conserve l'ordre de déclaration à position égale", () => {
+    // Les deux premiers inputs de l'étape 2 réelle partagent `positions = "1"`.
+    const data = makeCoFormData({
+      inputs: {
+        aapStep2: {
+          name: "Décision",
+          id: "aapStep2",
+          formParent: FORM_PARENT,
+          inputs: {
+            premier: { label: "Dépenses", type: "text", positions: { [FORM_PARENT]: "1" } },
+            second: { label: "Sélection", type: "text", positions: { [FORM_PARENT]: "1" } },
+          },
+        },
+      },
+    });
+    expect(parseCoFormFields(data)[0].fields.map((f) => f.name)).toEqual(["premier", "second"]);
+  });
+
+  it("garde sa position à un multiDecide réindexé", () => {
+    // `decide` se rend sous la clé `selection` : relire sa position par la clé
+    // du champ APRÈS coup échouait, et le renvoyait en tête avec un 0.
+    const data = makeCoFormData({
+      inputConfig: { multiDecide: "tpls.forms.aap.selection" },
+      inputs: {
+        aapStep2: {
+          name: "Décision",
+          id: "aapStep2",
+          formParent: FORM_PARENT,
+          inputs: {
+            decide: { label: "Décision", type: "tpls.forms.ocecoform.multiDecide", positions: { [FORM_PARENT]: "5" } },
+            libre: { label: "Commentaire", type: "textarea", positions: { [FORM_PARENT]: "1" } },
+          },
+        },
+      },
+    });
+    expect(parseCoFormFields(data)[0].fields.map((f) => f.name)).toEqual(["libre", "selection"]);
+  });
+});
+
+describe("omitHiddenSteps (masquage décidé par l'appelant)", () => {
+  const deuxEtapes = () =>
+    makeCoFormData({
+      inputs: {
+        aapStep1: {
+          name: "Dépôt",
+          id: "aapStep1",
+          formParent: FORM_PARENT,
+          inputs: { titre: { label: "Titre", type: "text" } },
+        },
+        aapStep2: {
+          name: "Analyse collective",
+          id: "aapStep2",
+          formParent: FORM_PARENT,
+          inputs: {
+            critere: { label: "Critère", type: "text", isRequired: true },
+            libre: { label: "Commentaire", type: "textarea" },
+          },
+        },
+      },
+    });
+
+  it("retire l'étape demandée de la DONNÉE, pas seulement du parse", () => {
+    // C'est tout l'enjeu : `CoFormProvider`, `DynamicCoForm` et `CoFormReadOnly`
+    // reparsent le formData qu'on leur passe. Une option de parse se serait
+    // perdue à la frontière du composant, et l'étape serait restée rendue.
+    const filtre = omitHiddenSteps(deuxEtapes(), ["aapStep2"]);
+    expect(Object.keys(filtre.inputs ?? {})).toEqual(["aapStep1"]);
+    expect(parseCoFormFields(filtre).map((e) => e.subFormId)).toEqual(["aapStep1"]);
+  });
+
+  it("sort l'étape du schéma Zod, pas seulement du rendu", () => {
+    // Sans ça, le `critere` requis de l'étape masquée rendrait le formulaire
+    // insoumettable pour un déposant qui ne voit même pas l'étape.
+    const etapes = parseCoFormFields(omitHiddenSteps(deuxEtapes(), ["aapStep2"]));
+    expect(generateZodSchema(etapes).safeParse({ titre: "Un commun" }).success).toBe(true);
+  });
+
+  it("sort l'étape des valeurs par défaut", () => {
+    const defauts = generateDefaultValues(
+      parseCoFormFields(omitHiddenSteps(deuxEtapes(), ["aapStep2"]))
+    );
+    expect(defauts).toHaveProperty("titre");
+    expect(defauts).not.toHaveProperty("critere");
+    expect(defauts).not.toHaveProperty("libre");
+  });
+
+  it("rend l'objet D'ORIGINE quand il n'y a rien à retirer", () => {
+    // Identité préservée : les mémoïsations en aval ne sont pas invalidées
+    // pour rien à chaque rendu.
+    const data = deuxEtapes();
+    expect(omitHiddenSteps(data, undefined)).toBe(data);
+    expect(omitHiddenSteps(data, [])).toBe(data);
+    expect(omitHiddenSteps(data, ["etapeInexistante"])).toBe(data);
+  });
+
+  it("ne modifie jamais l'objet reçu", () => {
+    const data = deuxEtapes();
+    omitHiddenSteps(data, ["aapStep2"]);
+    expect(Object.keys(data.inputs ?? {})).toEqual(["aapStep1", "aapStep2"]);
   });
 });
