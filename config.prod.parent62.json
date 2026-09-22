@@ -20241,6 +20241,7 @@
       "fields": {
         "profil_avatar": {
           "widget": "image",
+          "widgetProps": { "allowOriginal": true },
           "label": {
             "fr": "Image",
             "en": "Image"
@@ -20907,6 +20908,7 @@
         },
         "profil_avatar": {
           "widget": "image",
+          "widgetProps": { "allowOriginal": true },
           "label": {
             "fr": "Image (facultatif)",
             "en": "Image (optional)"
@@ -21443,6 +21445,7 @@
       "fields": {
         "profil_avatar": {
           "widget": "image",
+          "widgetProps": { "allowOriginal": true },
           "label": {
             "fr": "Image",
             "en": "Image"
@@ -22079,6 +22082,7 @@
       "fields": {
         "profil_avatar": {
           "widget": "image",
+          "widgetProps": { "allowOriginal": true },
           "label": {
             "fr": "Image",
             "en": "Image"
@@ -22664,6 +22668,7 @@
       "fields": {
         "profil_avatar": {
           "widget": "image",
+          "widgetProps": { "allowOriginal": true },
           "label": {
             "fr": "Image",
             "en": "Image"
