@@ -3600,6 +3600,44 @@ carte, c'est la SECTION qui le pose, à côté des points — sans quoi il défi
 
 ---
 
+## 9septtricies. Upload d'image : image entière, recadrage facultatif
+
+Tout visuel déposé dans un formulaire costum passait obligatoirement par un recadrage **au carré**. Sur
+cinq formulaires parent62 — actualité, affiche, lieu ressource, événement, réunion — l'image déposée est
+désormais **gardée entière**, sans modale. Un bouton **« Recadrer »** sous l'aperçu permet ensuite de la
+cadrer au ratio 1:1 ; chaque recadrage repart de l'image d'origine, et « Utiliser l'image entière » y
+revient sans la redéposer. L'aperçu montre l'image entière.
+
+La photo d'**intervenant** garde le recadrage obligatoire : c'est un portrait, affiché dans un cadre fixe.
+
+À l'envoi, une image de plus de 1 Mo est **allégée** : ramenée à 1 920 px de côté au plus, en qualité 0,85
+— le réglage des images d'actualité. Une image plus légère part telle quelle.
+
+| Image déposée | Envoyée |
+|---|---|
+| Photo JPEG 4 032×3 024, 6,7 Mo | 1 920×1 440, **0,46 Mo** |
+| Affiche PNG A4 2 480×3 508, 6,5 Mo | 1 357×1 920, **1,27 Mo** |
+| Photo WebP 3 024×4 032, 6,2 Mo | 1 440×1 920, **0,44 Mo** |
+| JPEG 1 200×900, 0,47 Mo | inchangée |
+| Photo enregistrée en PNG, 18,6 Mo | 1 357×1 920, **5,1 Mo** — le PNG est sans perte, seule la taille baisse |
+
+Une image **déjà enregistrée** ne se recadre pas depuis le formulaire : servie par un autre domaine, elle
+rend le canvas inexportable. Pour la recadrer, la redéposer.
+
+C'est une option de config, `widgetProps.allowOriginal: true` sur le champ `profil_avatar` (doc/28),
+**désactivée par défaut** : les autres sites gardent le recadrage obligatoire.
+
+### 9septtricies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `test:unit` | ✅ **9 nouveaux tests**, chacun **rouge sous la régression qu'il garde** : image déposée entière sans modale ; « Recadrer » repart de l'original et « image entière » y revient ; champ remonté (original perdu) : « Recadrer » part de l'image en place, sans « image entière » ; recadrage obligatoire sans l'option ; allègement d'une image lourde, image légère et GIF épargnés, original gardé si la compression n'allège pas ou échoue |
+| Compression en navigateur réel (canvas) | ✅ mesures du tableau ci-dessus, 0,3 à 1,4 s par image (le WebP est le plus lent) |
+| `typecheck` · `lint` · `validate-config` · `audit:config` | ✅ RAS |
+| `test:unit` (préflight compris) · `test:integration` (config parent62) | ✅ **4 591 tests**, 3 échecs **étrangers au lot** (`bundle-size`, `site-assets`, `ProseContent — césure`) · **99/99** |
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)

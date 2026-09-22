@@ -131,7 +131,12 @@ domaine **injecte** les siens par side-effect (`profil/forms/registerWidgets.tsx
 Widgets **composites** (une valeur structurée par-dessous) : `openingHours`/`editSchedule` = `{ [jour]:
 {enabled,start,end} }` ; `location` = adresse plate + `geo`/`geoPosition` (autocomplétion BAN/villes) ;
 `fieldArray` = `Array<{ <sous-champ>: string }>` (`widgetProps.itemFields`) ; `finder` = `{ id: {type,name} }` ;
-`image` = `File | null` (+ flag `_imageDeleted`) routé vers `profil_avatar` ;
+`image` = `File | null` (+ flag `_imageDeleted`) routé vers `profil_avatar` — recadrage obligatoire au
+ratio `widgetProps.aspect` (1:1 par défaut) ; `widgetProps.allowOriginal: true` (opt-in) garde l'image
+ENTIÈRE au dépôt et rend le recadrage facultatif (bouton « Recadrer », toujours depuis l'original ; la
+modale y ajoute « Utiliser l'image entière ») — l'image envoyée est allégée au-delà de 1 Mo par
+`lightenImage` (`src/utils/imageUtils.ts` : 1 920 px, qualité 0,85, GIF épargné). Une image déjà enregistrée
+ne se recadre pas (canvas bloqué par l'origine) : il faut la redéposer ;
 `gallery`/`file` = `GalleryValue { existing, added, removedDocIds, contentKey, docType }` (collecte locale ;
 upload/suppression APRÈS le save par `processGalleryFields` → `uploadDocument`/`deleteFile`). `gallery` =
 images (grille + preview, `GalleryUploadField`, `docType:"image"`), `file` = documents non-image (lignes
