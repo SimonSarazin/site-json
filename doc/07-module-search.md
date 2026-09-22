@@ -607,6 +607,13 @@ par la section, non destinés à être écrits à la main), qui lisent leur tran
 pure est dans `lib/resourceDirectory.ts` (`parseResourceDirectoryItem`), testée
 (`resourceDirectory.test.ts`).
 
+**Photos** : documents de la réponse (`/upload/communecter/<folder>/<name>`) ou
+images de la salle (colonne 8) sont des chemins **relatifs au backend**, que le SDK
+ne rend pas absolus (ils ne passent par aucun champ image nommé, comme `docPath`).
+`parseResourceDirectoryItem` les préfixe donc avec l'option **obligatoire**
+`baseUrl` (`getBaseUrl()`, via `toBackendUrl`). Laissés relatifs, `/img` les
+chercherait parmi les fichiers statiques du site → 404.
+
 **La carte** (`CardResourceDirectory`) : image en **carrousel** partagé
 (`ResourcePhotoCarousel`) — sur la carte il **défile seul** (4 s, pause au survol)
 et **sans flèches** (`autoPlay controls="none"`), compteur conservé ; badge type en
