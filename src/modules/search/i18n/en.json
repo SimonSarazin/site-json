@@ -190,7 +190,14 @@
     "periodLabel": "Period",
     "period": "From {{start}} to {{end}}",
     "periodFrom": "From {{start}}",
-    "periodUntil": "Until {{end}}"
+    "periodUntil": "Until {{end}}",
+    "hourColumn": "Time",
+    "gridCaption": "Booking slots, by day and hour",
+    "free": "Free slot",
+    "bookAria": "Book {{day}} from {{start}} to {{end}}",
+    "bookTitle": "Book a time slot",
+    "conflict": "This slot is already booked by {{user}}.",
+    "referenceNotice": "Reference grid: an empty cell means no booking is on record — not that the facility is open."
   },
   "Filtres actifs :": "Active filters:",
   "À partir du": "From",

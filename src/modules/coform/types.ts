@@ -208,6 +208,14 @@ export interface CoFormInputField {
    */
   isAdminOnly?: boolean | string;
   conditionalDisplay?: ConditionalDisplay;
+  /**
+   * Champ masqué depuis le back-office CoForm. Le rendu legacy pose la classe CSS `hide` sur le
+   * conteneur de l'input (`step_v2.php:256`) ; côté site le champ est simplement écarté du
+   * formulaire. Sert à retirer un champ de la saisie SANS toucher aux réponses déjà enregistrées
+   * sous sa clé — c'est la voie de sortie d'un champ remplacé par un autre.
+   * Stocké tantôt en booléen, tantôt en chaîne "true" selon l'ancienneté de la saisie.
+   */
+  hide?: boolean | string;
   [key: string]: unknown;
 }
 
