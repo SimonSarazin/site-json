@@ -60,6 +60,7 @@ export async function compressImage(
       canvas.width = width;
       canvas.height = height;
       ctx?.drawImage(img, 0, 0, width, height);
+      URL.revokeObjectURL(img.src);
 
       canvas.toBlob(
         (blob) => {
@@ -79,7 +80,10 @@ export async function compressImage(
       );
     };
 
-    img.onerror = () => reject(new Error('Failed to load image'));
+    img.onerror = () => {
+      URL.revokeObjectURL(img.src);
+      reject(new Error('Failed to load image'));
+    };
     img.src = URL.createObjectURL(file);
   });
 }
