@@ -278,7 +278,7 @@
   },
   "AdminAnswerCopySection": {
     "title": "Answer copy",
-    "hint": "Answers submitted on another site (source form). “Copy” takes an answer over into this site's form, under its identity. An answer already taken over is marked “Copied” and cannot be duplicated; a “Probable duplicate” shares title, organization and postal code with an answer of this site that has no copy trace.",
+    "hint": "Answers submitted on another site (source form). “Copy” takes an answer over into this site's form, under its identity. Answers already taken over are hidden; a “Probable duplicate” shares title, organization and postal code with an answer of this site.",
     "searchPlaceholder": "Search…",
     "candidates": "{{count}} source answer(s)",
     "indexing": "Reading existing answers…",
@@ -287,18 +287,17 @@
     "colStatus": "Copy",
     "colAction": "Action",
     "copy": "Copy",
-    "copied": "Copied",
     "status": {
-      "copied": "Copied",
       "probable": "Probable duplicate",
       "new": "To copy"
     },
-    "empty": "No answer to take over.",
+    "empty": "No answer to take over: everything is already copied.",
     "confirmTitle": "Copy “{{name}}” despite a probable duplicate?",
     "confirmDescription": "An answer with the same title, organization and postal code already exists in the target form, without any copy trace (direct entry or taken over through another channel). Copying will create a second record.",
     "confirmAction": "Copy anyway",
     "cancel": "Cancel",
-    "indexError": "Failed to read the target form's answers: copy disabled"
+    "indexError": "Failed to read the target form's answers: copy disabled",
+    "hiddenCopied": "{{count}} already copied, hidden"
   },
   "useCopyAnswer": {
     "success": "“{{name}}” copied into the site's form.",

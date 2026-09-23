@@ -278,7 +278,7 @@
   },
   "AdminAnswerCopySection": {
     "title": "Reprise de réponses",
-    "hint": "Réponses déposées sur un autre site (formulaire source). « Copier » reprend une réponse dans le formulaire de ce site, sous son identité. Une réponse déjà reprise est marquée « Copié » et ne peut pas être dupliquée ; un « Doublon probable » partage intitulé, structure et code postal avec une réponse du site sans trace de copie.",
+    "hint": "Réponses déposées sur un autre site (formulaire source). « Copier » reprend une réponse dans le formulaire de ce site, sous son identité. Les réponses déjà reprises sont masquées ; un « Doublon probable » partage intitulé, structure et code postal avec une réponse du site.",
     "searchPlaceholder": "Rechercher…",
     "candidates": "{{count}} réponse(s) source",
     "indexing": "Lecture des réponses déjà présentes…",
@@ -287,18 +287,17 @@
     "colStatus": "Copie",
     "colAction": "Action",
     "copy": "Copier",
-    "copied": "Copié",
     "status": {
-      "copied": "Copié",
       "probable": "Doublon probable",
       "new": "À copier"
     },
-    "empty": "Aucune réponse à reprendre.",
+    "empty": "Aucune réponse à reprendre : tout est déjà copié.",
     "confirmTitle": "Copier « {{name}} » malgré un doublon probable ?",
     "confirmDescription": "Une réponse au même intitulé, même structure et même code postal existe déjà dans le formulaire cible, sans trace de copie (saisie directe ou reprise par un autre canal). Copier créera une seconde fiche.",
     "confirmAction": "Copier quand même",
     "cancel": "Annuler",
-    "indexError": "Lecture des réponses du formulaire cible en échec : copie désactivée"
+    "indexError": "Lecture des réponses du formulaire cible en échec : copie désactivée",
+    "hiddenCopied": "{{count}} déjà copié(s), masqué(s)"
   },
   "useCopyAnswer": {
     "success": "« {{name}} » copié dans le formulaire du site.",

@@ -1,4 +1,4 @@
-import { Check, Copy, Loader2, TriangleAlert } from "lucide-react";
+import { Copy, Loader2, TriangleAlert } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -33,9 +33,8 @@ const EMPTY_TAGS: Record<string, string[]> = {};
 /** Plafond de l'index cible : au-delà, une candidate pourrait passer pour « À copier » à tort. */
 const TARGET_MAX_RESULTS = 2000;
 
-/** Ton du badge par état — mêmes tokens que la modération (`STATUS_TONE_CLASS`). */
-const STATUS_BADGE_CLASS: Record<CopyStatus, string | undefined> = {
-  copied: STATUS_TONE_CLASS.positive,
+/** Ton du badge des états AFFICHÉS — mêmes tokens que la modération (`STATUS_TONE_CLASS`). */
+const STATUS_BADGE_CLASS: Record<Exclude<CopyStatus, "copied">, string | undefined> = {
   probable: STATUS_TONE_CLASS.pending,
   new: undefined,
 };
@@ -56,9 +55,12 @@ const STATUS_BADGE_CLASS: Record<CopyStatus, string | undefined> = {
  *    confirmation — le serveur ne connaît pas l'empreinte, seule la trace `copiedFrom` le protège.
  *    Une ligne copiée passe « Copié » immédiatement (mémoire locale), sans attendre le refetch.
  *
- * Affichage : les lignes CHARGÉES sont ordonnées par état (« À copier » en tête, « Copié » en
- * queue — `rankByCopyStatus`), l'ordre serveur restant celui de chaque groupe. Le tri porte sur
- * les pages déjà reçues : une page suivante se range à son tour, une ligne copiée descend.
+ * Affichage : les lignes « Copié » sont MASQUÉES (leur nombre est dit), les autres ordonnées —
+ * « À copier » avant « Doublon probable » (`rankByCopyStatus`), l'ordre serveur restant celui de
+ * chaque groupe. Le masquage est CLIENT (le serveur ne connaît pas la trace, portée par le form
+ * cible) : la sentinelle du scroll infini est donc une ligne dédiée, rendue dès qu'une page suit —
+ * une page entièrement copiée ne rend aucune ligne et bloquerait sinon le chargement de la suivante.
+ * Rien n'est listé tant que l'index cible n'est pas prêt : sans lui, on ne sait pas quoi masquer.
  */
 export default function AdminAnswerCopySection({ section }: { section: AdminSection }) {
   const cfg = section as AdminAnswerCopySectionConfig;
@@ -70,26 +72,6 @@ export default function AdminAnswerCopySection({ section }: { section: AdminSect
 
   const [q, setQ] = useState("");
   const searchText = useDebounce(q, 300);
-
-  // ── Candidates (form source) ───────────────────────────────────────────────────────────────
-  const sourceParams = useMemo(
-    () => ({
-      ...cfg.source,
-      defaultTypes: ["answers"] as SearchType[],
-      notSourceKey: true,
-      defaultFilters: { ...(cfg.source?.defaultFilters ?? {}), form: cfg.sourceForm },
-    }),
-    [cfg.source, cfg.sourceForm],
-  );
-  const candidates = useSearchQuery({
-    queryKeyPrefix: ADMIN_QUERY_KEYS.ANSWER_COPY_SOURCE_PREFIX(cfg.sourceForm),
-    searchText,
-    searchTags: EMPTY_TAGS,
-    searchType: ANSWERS_TYPE,
-    mapUsed: false,
-    baseParams: sourceParams,
-    variant: "admin",
-  });
 
   // ── Index du form cible (complet) ──────────────────────────────────────────────────────────
   const targetParams = useMemo(
@@ -121,6 +103,28 @@ export default function AdminAnswerCopySection({ section }: { section: AdminSect
         ? "loading"
         : "ready";
 
+  // ── Candidates (form source) ───────────────────────────────────────────────────────────────
+  const sourceParams = useMemo(
+    () => ({
+      ...cfg.source,
+      defaultTypes: ["answers"] as SearchType[],
+      notSourceKey: true,
+      defaultFilters: { ...(cfg.source?.defaultFilters ?? {}), form: cfg.sourceForm },
+    }),
+    [cfg.source, cfg.sourceForm],
+  );
+  const candidates = useSearchQuery({
+    queryKeyPrefix: ADMIN_QUERY_KEYS.ANSWER_COPY_SOURCE_PREFIX(cfg.sourceForm),
+    searchText,
+    searchTags: EMPTY_TAGS,
+    searchType: ANSWERS_TYPE,
+    mapUsed: false,
+    baseParams: sourceParams,
+    variant: "admin",
+    // Sans index prêt, on ne sait pas quoi masquer : pas de fetch (les données déjà reçues restent).
+    enabled: indexState === "ready",
+  });
+
   // ── Copie ──────────────────────────────────────────────────────────────────────────────────
   const mutation = useCopyAnswer(cfg.targetForm, (sourceId, copyId) =>
     setLocalCopies((prev) => new Map(prev).set(sourceId, copyId)),
@@ -135,8 +139,12 @@ export default function AdminAnswerCopySection({ section }: { section: AdminSect
     setPendingConfirm(null);
   };
 
-  const rows = candidates.transformedResults ?? [];
-  const ranked = useMemo(() => rankByCopyStatus(rows, index, duplicateKeys), [rows, index, duplicateKeys]);
+  const ranked = useMemo(
+    () => rankByCopyStatus(candidates.transformedResults ?? [], index, duplicateKeys),
+    [candidates.transformedResults, index, duplicateKeys],
+  );
+  const visible = useMemo(() => ranked.filter((r) => r.verdict.status !== "copied"), [ranked]);
+  const hiddenCopied = ranked.length - visible.length;
   const canCopy = indexState === "ready" && !mutation.isPending;
 
   const indexStatus = (
@@ -169,39 +177,44 @@ export default function AdminAnswerCopySection({ section }: { section: AdminSect
     </TableRow>
   );
 
-  const body = ranked.map(({ row: item, verdict }, i) => {
-    const data = rowData(item);
-    const id = rowId(item);
-    const name = (typeof data.name === "string" && data.name) || id;
-    return (
-      // La sentinelle du scroll infini reste sur la DERNIÈRE ligne rendue, quel que soit son état.
-      <TableRow key={id || i} ref={i === ranked.length - 1 ? candidates.lastItemRef : undefined}>
-        {columns.map((col) => (
-          <TableCell key={col.path} className="max-w-[14rem] truncate">
-            {formatColumnCell(data, col.path, tSearch)}
+  const body = (
+    <>
+      {visible.map(({ row: item, verdict }, i) => {
+        const data = rowData(item);
+        const id = rowId(item);
+        const name = (typeof data.name === "string" && data.name) || id;
+        const status = verdict.status as Exclude<CopyStatus, "copied">; // les « Copié » sont filtrés plus haut
+        return (
+          <TableRow key={id || i}>
+            {columns.map((col) => (
+              <TableCell key={col.path} className="max-w-[14rem] truncate">
+                {formatColumnCell(data, col.path, tSearch)}
+              </TableCell>
+            ))}
+            <TableCell>
+              <Badge variant={status === "new" ? "outline" : "default"} className={STATUS_BADGE_CLASS[status]}>
+                {tAdmin(`AdminAnswerCopySection.status.${status}`)}
+              </Badge>
+            </TableCell>
+            <TableCell className="text-right">
+              <Button size="sm" variant="outline" disabled={!canCopy || !id} onClick={() => requestCopy({ answerId: id, name }, status)}>
+                <Copy className="mr-1.5 h-3.5 w-3.5" />
+                {tAdmin("AdminAnswerCopySection.copy")}
+              </Button>
+            </TableCell>
+          </TableRow>
+        );
+      })}
+      {candidates.hasNextPage && (
+        // Sentinelle du scroll infini : une ligne dédiée, indépendante des lignes masquées.
+        <TableRow ref={candidates.lastItemRef} data-testid="answer-copy-sentinel">
+          <TableCell colSpan={columns.length + 2} className="py-2 text-center text-xs text-muted-foreground">
+            {candidates.isFetchingNextPage ? <Loader2 className="mx-auto h-3.5 w-3.5 animate-spin" /> : null}
           </TableCell>
-        ))}
-        <TableCell>
-          <Badge variant={verdict.status === "new" ? "outline" : "default"} className={STATUS_BADGE_CLASS[verdict.status]}>
-            {tAdmin(`AdminAnswerCopySection.status.${verdict.status}`)}
-          </Badge>
-        </TableCell>
-        <TableCell className="text-right">
-          {verdict.status === "copied" ? (
-            <Button size="sm" variant="ghost" disabled>
-              <Check className="mr-1.5 h-3.5 w-3.5" />
-              {tAdmin("AdminAnswerCopySection.copied")}
-            </Button>
-          ) : (
-            <Button size="sm" variant="outline" disabled={!canCopy || !id} onClick={() => requestCopy({ answerId: id, name }, verdict.status)}>
-              <Copy className="mr-1.5 h-3.5 w-3.5" />
-              {tAdmin("AdminAnswerCopySection.copy")}
-            </Button>
-          )}
-        </TableCell>
-      </TableRow>
-    );
-  });
+        </TableRow>
+      )}
+    </>
+  );
 
   return (
     <Card>
@@ -217,6 +230,7 @@ export default function AdminAnswerCopySection({ section }: { section: AdminSect
           <SearchTextInput className="max-w-xs" placeholder={tAdmin("AdminAnswerCopySection.searchPlaceholder")} value={q} onChange={setQ} />
           <span className="text-sm text-muted-foreground">
             {candidates.totalCount != null && tAdmin("AdminAnswerCopySection.candidates", undefined, { count: String(candidates.totalCount) })}
+            {hiddenCopied > 0 && ` · ${tAdmin("AdminAnswerCopySection.hiddenCopied", undefined, { count: String(hiddenCopied) })}`}
           </span>
           {indexStatus}
         </div>
@@ -224,8 +238,8 @@ export default function AdminAnswerCopySection({ section }: { section: AdminSect
         <AdminTableShell
           head={head}
           body={body}
-          loading={candidates.isLoading}
-          empty={rows.length === 0}
+          loading={indexState === "loading" || candidates.isLoading}
+          empty={indexState === "ready" && visible.length === 0}
           emptyMessage={tAdmin("AdminAnswerCopySection.empty")}
           maxHeightClass="max-h-[60vh]"
         />

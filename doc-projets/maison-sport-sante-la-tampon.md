@@ -1424,8 +1424,8 @@ liste + bouton « Copier », avec déduplication.
   surfaces publiques), `AdminAnswerCopySection.tsx` (candidates en scroll infini `variant:"admin"` +
   `notSourceKey` d'office ; index cible chargé EN ENTIER à chaque montage, « Copier » désactivé
   tant qu'il charge, refetch ou erreur ; « Doublon probable » → confirmation ; lignes ordonnées
-  par état, « À copier » en tête — demande du 23/09 après recette, `rankByCopyStatus` ; 10 tests de
-  câblage).
+  par état, « À copier » en tête, et **« Copié » masquées** avec leur compte — demandes du 23/09
+  après recette, `rankByCopyStatus` + sentinelle de scroll dédiée ; 12 tests de câblage).
   Dédup : `STATUS_TONE_CLASS` et `normalizeColumns` dans `resourceHelpers` (partagés avec
   resource/reference), `components/AdminTableShell.tsx` (partagé avec reference).
 - **Config** : onglet `creneaux-ssbe` « Créneaux SSBE » (siteAdmin, icône `copy`) — source = form SSBE
@@ -1452,7 +1452,7 @@ liste + bouton « Copier », avec déduplication.
   requis ^1.0.193, cf. §12) · `config:validate` ✅ 13 p/49 s · `audit:config` RAS · préflight
   effective-config/i18n/strip/integrity/prop-descriptions/section-meta ✅ · `php -l` ✅ ×4.
 
-**Les 3 états, et ce qu'ils protègent** — « Copié » = trace `copiedFrom` (certain, bouton inerte) ;
+**Les 3 états, et ce qu'ils protègent** — « Copié » = trace `copiedFrom` (certain, ligne masquée) ;
 « Doublon probable » = une réponse cible partage intitulé + structure + CP (copie faite par un autre
 canal, saisie directe, ou **second dépôt homonyme côté SSBE** — ex. les deux « Pilates » de la Mairie
 → confirmation) ; « À copier ». Conséquence pour la prod : les 44 copies du 20/08 portent

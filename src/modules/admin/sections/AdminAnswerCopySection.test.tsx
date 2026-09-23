@@ -17,6 +17,9 @@ const ctx = vi.hoisted(() => ({
   targetPending: false,
   targetFetching: false,
   targetError: null as unknown,
+  hasNextPage: false,
+  /** `enabled` reçu par le mock de useSearchQuery : le fetch des candidates est gaté par l'index. */
+  candidatesEnabled: undefined as boolean | undefined,
   mutate: vi.fn(),
   isPending: false,
   /** Callback `onCopied` capturé par le mock de useCopyAnswer (simule un succès serveur). */
@@ -24,12 +27,17 @@ const ctx = vi.hoisted(() => ({
 }));
 
 vi.mock("@/modules/search/hooks/useSearchQuery", () => ({
-  useSearchQuery: () => ({
-    transformedResults: ctx.candidates,
-    isLoading: false,
-    totalCount: ctx.candidates.length,
-    lastItemRef: () => undefined,
-  }),
+  useSearchQuery: (params: { enabled?: boolean }) => {
+    ctx.candidatesEnabled = params.enabled;
+    return {
+      transformedResults: ctx.candidates,
+      isLoading: false,
+      totalCount: ctx.candidates.length,
+      lastItemRef: () => undefined,
+      hasNextPage: ctx.hasNextPage,
+      isFetchingNextPage: false,
+    };
+  },
 }));
 vi.mock("@/modules/search/hooks/useSearchAllResults", () => ({
   useSearchAllResults: () => ({
@@ -66,7 +74,6 @@ const SECTION = {
 } as never;
 
 const COPY = "AdminAnswerCopySection.copy";
-const COPIED = "AdminAnswerCopySection.copied";
 
 beforeEach(() => {
   ctx.candidates = [
@@ -84,25 +91,43 @@ beforeEach(() => {
   ctx.targetFetching = false;
   ctx.targetError = null;
   ctx.isPending = false;
+  ctx.hasNextPage = false;
+  ctx.candidatesEnabled = undefined;
   ctx.onCopied = null;
   ctx.mutate.mockReset();
 });
 
 describe("AdminAnswerCopySection — états et actions", () => {
-  it("rend un badge par état et une action cohérente", () => {
-    const { getAllByText, getByText } = render(<AdminAnswerCopySection section={SECTION} />);
-    expect(getByText("AdminAnswerCopySection.status.copied")).toBeTruthy();
+  it("masque les « Copié », en dit le nombre, et propose « Copier » sur les autres", () => {
+    const { getAllByText, getByText, queryByText } = render(<AdminAnswerCopySection section={SECTION} />);
+    expect(queryByText("Pilates")).toBeNull(); // s1 est copiée → masquée
+    expect(queryByText("AdminAnswerCopySection.status.copied")).toBeNull();
     expect(getByText("AdminAnswerCopySection.status.probable")).toBeTruthy();
     expect(getByText("AdminAnswerCopySection.status.new")).toBeTruthy();
-    // « Copié » = bouton inerte ; deux « Copier » (probable + nouveau).
-    expect((getByText(COPIED).closest("button") as HTMLButtonElement).disabled).toBe(true);
+    expect(getByText(/AdminAnswerCopySection\.hiddenCopied/)).toBeTruthy();
     expect(getAllByText(COPY)).toHaveLength(2);
   });
 
-  it("les lignes sont rendues « À copier » d'abord, « Copié » en dernier (ordre serveur : s1, s2, s3)", () => {
+  it("les lignes sont rendues « À copier » d'abord (ordre serveur : s1, s2, s3)", () => {
     const { getAllByRole } = render(<AdminAnswerCopySection section={SECTION} />);
     const cells = getAllByRole("row").slice(1).map((r) => r.querySelector("td")?.textContent);
-    expect(cells).toEqual(["Marche", "Zumba", "Pilates"]);
+    expect(cells).toEqual(["Marche", "Zumba"]);
+  });
+
+  it("le fetch des candidates est gaté par l'index cible (rien à masquer sans lui)", () => {
+    render(<AdminAnswerCopySection section={SECTION} />);
+    expect(ctx.candidatesEnabled).toBe(true);
+    ctx.targetComplete = false;
+    render(<AdminAnswerCopySection section={SECTION} />);
+    expect(ctx.candidatesEnabled).toBe(false);
+  });
+
+  it("une page suivante → une ligne sentinelle dédiée, même si toutes les lignes sont masquées", () => {
+    ctx.hasNextPage = true;
+    ctx.candidates = [row("s1", { name: "Pilates" })]; // entièrement copiée
+    const { getByTestId, queryByText } = render(<AdminAnswerCopySection section={SECTION} />);
+    expect(queryByText("Pilates")).toBeNull();
+    expect(getByTestId("answer-copy-sentinel")).toBeTruthy();
   });
 
   it("« À copier » → mutation immédiate avec l'id source et l'intitulé", () => {
@@ -149,17 +174,17 @@ describe("AdminAnswerCopySection — états et actions", () => {
     for (const b of getAllByText(COPY)) expect((b.closest("button") as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it("une copie réussie marque la ligne « Copié » sans attendre le refetch de l'index", () => {
+  it("une copie réussie retire la ligne sans attendre le refetch de l'index", () => {
     const { getAllByText, queryByText } = render(<AdminAnswerCopySection section={SECTION} />);
     expect(getAllByText(COPY)).toHaveLength(2);
     act(() => ctx.onCopied?.("s3", "c9"));
-    expect(getAllByText(COPY)).toHaveLength(1); // s3 est passée « Copié »
-    expect(getAllByText(COPIED)).toHaveLength(2);
+    expect(getAllByText(COPY)).toHaveLength(1); // s3 copiée → masquée
+    expect(queryByText("Marche")).toBeNull();
     expect(queryByText("AdminAnswerCopySection.status.new")).toBeNull();
   });
 
-  it("sans candidate : état vide", () => {
-    ctx.candidates = [];
+  it("sans candidate visible : état vide (tout est copié)", () => {
+    ctx.candidates = [row("s1", { name: "Pilates" })];
     const { getByText } = render(<AdminAnswerCopySection section={SECTION} />);
     expect(getByText("AdminAnswerCopySection.empty")).toBeTruthy();
   });

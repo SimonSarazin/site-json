@@ -432,14 +432,17 @@ qu'il n'est pas complet, sinon une copie faite passerait pour « À copier ») :
 
 | État | Règle | Action |
 |---|---|---|
-| **Copié** | une réponse cible porte `copiedFrom` = id de la ligne | aucune (bouton inerte) |
+| **Copié** | une réponse cible porte `copiedFrom` = id de la ligne | ligne **masquée** (le nombre de masquées est affiché) |
 | **Doublon probable** | une réponse cible (tracée ou non) partage l'empreinte `duplicateKeys` (valeurs trimées, casse et espaces repliés) — copie faite par un autre canal, saisie directe, ou **second dépôt homonyme** côté source | « Copier » → confirmation |
 | **À copier** | ni l'un ni l'autre | « Copier » |
 
-Les lignes chargées sont **ordonnées par état** (« À copier » en tête, « Copié » en queue —
-`rankByCopyStatus`, tri stable : l'ordre serveur reste celui de chaque groupe) ; le tri porte sur
-les pages déjà reçues, d'où un `indexStepList` dimensionné au stock quand on veut l'ordre exact
-d'emblée. La trace est testée AVANT l'empreinte : la propre source d'une copie reste « Copié ». L'index est
+Les lignes chargées sont **ordonnées par état** (« À copier » avant « Doublon probable » —
+`rankByCopyStatus`, tri stable : l'ordre serveur reste celui de chaque groupe) et les « Copié »
+sont **masquées côté client** (la trace vit sur le form cible, le serveur ne peut pas les exclure) :
+la sentinelle du scroll infini est une ligne dédiée, rendue dès qu'une page suit — une page
+entièrement copiée ne bloque pas le chargement de la suivante. Les candidates ne sont pas
+chargées tant que l'index cible n'est pas prêt (sans lui, on ne sait pas quoi masquer). La trace
+est testée AVANT l'empreinte : la propre source d'une copie reste « Copié ». L'index est
 relu à chaque montage de l'onglet (`cache: { staleTime: 0 }`) — une copie supprimée par un autre
 canal cesse de compter — et « Copier » reste désactivé pendant tout fetch (première page, refetch
 après une copie) ou en erreur. Après copie : la ligne passe « Copié » localement, puis invalidation
