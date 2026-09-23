@@ -1,3 +1,4 @@
+import type { InfiniteEntityQueryParams } from "@/hooks/useInfiniteEntityQuery";
 /**
  * Types centralisés pour le module profil
  *
@@ -117,10 +118,9 @@ export interface MemberQueryOptions {
 /**
  * Paramètres de pagination pour les requêtes de membres
  */
-export interface MemberQueryParams {
-  indexStep?: number;
-  search?: string;
-}
+// Même forme que le hook générique (`filters`/`fields` compris, SDK ≥ 1.0.194) : une seule
+// déclaration, la garde « non vide » vivant dans `useInfiniteEntityQuery`.
+export type MemberQueryParams = InfiniteEntityQueryParams;
 
 /**
  * Paramètres pour la requête d'amis

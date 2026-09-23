@@ -6,6 +6,7 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { PermissionContext } from "./types";
 import { getCalculator } from "./registry";
+import { isCostumHostAdmin } from "./isCostumHostAdmin";
 
 /**
  * Hook pour calculer les permissions des namespaces demandés
@@ -36,7 +37,7 @@ export function usePermissions<T extends Record<string, unknown>>(
   // `carrier.isAdmin()` SANS checkHierarchy = admin DIRECT du host — même définition que le siteAdmin canonique
   // (adminEntry.resolveAdminAccessLevel) et que le backend isCostumAdmin (isElementAdmin du host, sans récursion).
   const costumHost = carrier as { isAdmin?: () => boolean; slug?: string } | null;
-  const isCostumAdmin = costumHost?.isAdmin?.() ?? false;
+  const isCostumAdmin = isCostumHostAdmin(costumHost);
   const costumSlug = costumHost?.slug ?? undefined;
 
   // Si l'utilisateur est admin du costum ET que l'entité affichée appartient à ce costum (source.keys ∋ slug),

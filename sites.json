@@ -5,7 +5,10 @@
     "css": "index-parent62",
     "images": "parent62",
     "coolifyApp": "site-json-parent62",
-    "domain": "parent62.00.re"
+    "domain": "parent62.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "cyberReunion",

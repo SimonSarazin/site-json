@@ -25,6 +25,8 @@ export interface ResourceDocument {
 /** Contrat de données NORMALISÉ d'une ressource — source unique nourrissant tous les designs/blocs. */
 export interface ResourceData {
   title: string;
+  /** Sous-titre (`subtitleField`), chaîne vide sans champ configuré. */
+  subtitle: string;
   description: string;
   date: Date | null;
   /** Vignette « héros » (image du POI, ou 1re image de galerie), ou `null`. */
@@ -143,6 +145,7 @@ export function useResourceData(item: SearchListEntity, cfg: ResourceConf | unde
 
     return {
       title: readString(c.titleField ?? "name"),
+      subtitle: c.subtitleField ? readString(c.subtitleField) : "",
       description: readString(c.descriptionField ?? "description"),
       date: toValidDate(resolveServerDataPath(sd, c.dateField ?? "created")),
       image: readString(c.imageField ?? "profilMediumImageUrl") || readString("profilImageUrl") || media.images[0] || null,

@@ -163,12 +163,25 @@ registerTransform("omitEmpty", (v) =>
 // shouldUnregister=false) → une startDate/endDate rémanente d'un mode ponctuel survivrait en récurrent.
 // On l'OMET donc dès que `recurrency` est vrai (branche récurrente du contrat = openingHours, PAS de dates),
 // ignorant toute valeur rémanente. Sinon : `.000Z` (composite) → offset local sans millis (accepté legacy).
-registerTransform("eventDate:write", (v, all) => {
-  if ((all as Record<string, unknown> | undefined)?.recurrency) return undefined; // récurrent → date omise
+// Normalisation ISO partagée par les deux codecs de date : offset LOCAL, sans millis — le legacy
+// rejette `…:05.000Z` (« The start date is not well formated »). Une seule copie : un correctif ici
+// vaut pour `eventDate:write` ET `eventDatePeriod:write`, qui ne diffèrent que par leur garde.
+function normaliseDateIso(v: unknown): string | undefined {
   if (typeof v !== "string" || v.trim() === "") return undefined;
   const d = new Date(v);
   return isNaN(d.getTime()) ? undefined : formatISO(d);
+}
+registerTransform("eventDate:write", (v, all) => {
+  if ((all as Record<string, unknown> | undefined)?.recurrency) return undefined; // récurrent → date omise
+  return normaliseDateIso(v);
 });
+// `eventDatePeriod:write` : même normalisation ISO, mais la date SURVIT à la récurrence — elle borne alors
+// la PÉRIODE sur laquelle les occurrences se déroulent (le backend les déroule dans `[startDate, endDate]`,
+// cf. `searchEventsCostum`), et le contrat ADD_EVENT accepte les deux ensemble (il n'EXIGE les dates qu'en
+// ponctuel, les horaires qu'en récurrent). À réserver aux formulaires qui MONTRENT les dates en récurrent
+// (`widgetProps.datesWhenRecurrent`) : ailleurs, une date rémanente d'une bascule ponctuel→récurrent
+// partirait au serveur, ce qu'évite justement `eventDate:write`.
+registerTransform("eventDatePeriod:write", (v) => normaliseDateIso(v));
 // RECURRENCY-AWARE : en PONCTUEL, `openingHours` (rémanent) est OMIS ; en RÉCURRENT, on NORMALISE l'array
 // partiel du composite (jours cochés uniquement) en EXACTEMENT 7 entrées Mo→Su (jour vide → `""`), comme
 // le form event de base (`editProfilePayload.buildOpeningHours`) — le contrat ADD_EVENT exige `minItems:7`.

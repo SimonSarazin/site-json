@@ -11,6 +11,7 @@ import {
 import { Users, Check, X, MoreVertical } from "lucide-react";
 import { useUserStatusBadge } from "../../hooks/useUserStatusBadge";
 import { useAdminActions } from "../../actions";
+import { rolesDuMembre } from "../../lib/memberRoles";
 import { LoadingState, EmptyState, UserListItem } from "../shared";
 
 interface MemberListRendererProps {
@@ -165,6 +166,31 @@ export function MemberListRenderer({
     );
   };
 
+  /** Rôles du membre DANS cette entité — texte libre, descriptif : aucun droit n'en découle
+   *  (les permissions viennent d'`isAdmin`, rendu par `getUserStatusBadge`). Rien à afficher
+   *  tant que personne ne les a saisis, ce qui est le cas par défaut. */
+  const renderRoles = (member: User | Organization) => {
+    const roles = rolesDuMembre(
+      member.serverData?.links as Record<string, unknown> | undefined,
+      entity?.id,
+      entity?.serverData?.links as Record<string, unknown> | undefined,
+      member.id,
+    );
+    if (roles.length === 0) return null;
+    return (
+      <div className="mt-1 flex flex-wrap gap-1">
+        {roles.map((role) => (
+          <span
+            key={role}
+            className="rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground"
+          >
+            {role}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-3">
       {members.map((member: User | Organization, index: number) => (
@@ -174,6 +200,7 @@ export function MemberListRenderer({
           user={member}
           subtitle={member.serverData?.email}
           variant="card"
+          extra={renderRoles(member)}
           badge={showBadges ? getUserStatusBadge(member, entity) : undefined}
           actions={renderMemberActions(member)}
         />

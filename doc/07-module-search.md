@@ -299,7 +299,8 @@ Même structure que `searchPro` mais avec état local. Plusieurs instances peuve
 | `baseParams.contextId` + `contextType` | string | — | Scope de recherche à une entité |
 | `baseParams.costumSlug` + `costumEditMode` | string | — | Config multi-costum |
 | `baseParams.sourceKey` | string[] | — | Filtrer par sourceKey |
-| `list.layout` | `"grid"\|"timeline"` | `"grid"` (code) | Disposition des résultats : `timeline` = frise verticale (bulle-date, cartes alternées) — cf. [§SearchListView](#searchlistview) |
+| `list.layout` | `"grid"\|"timeline"\|"grouped"` | `"grid"` (code) | Disposition des résultats : `timeline` = frise verticale (bulle-date, cartes alternées) ; `grouped` = grille découpée en blocs titrés — cf. [§SearchListView](#searchlistview) |
+| `list.groupBy` | `{ field, order?, itemsSortBy?, emptyLabel? }` | — | Blocs de `layout: "grouped"` : `field` = chemin `serverData` du regroupement, `order` = ordre des blocs, `itemsSortBy` = tri client des fiches dans chaque bloc |
 
 **Lien « voir sur la page complète »** : si `customHeader.linkText` est renseigné, un bouton `<Link>` est rendu dans le cluster du `customHeader`. La href est construite depuis `customHeader.linkHref` (défaut `/lieux`) en recopiant les query params courants (`useSearchParams`) PLUS `?search=` si une recherche texte est active — de sorte que les filtres posés par le hero (typologies, services) et le texte saisi soient tous transportés vers la page de liste.
 
@@ -1136,6 +1137,8 @@ Grille responsive des résultats. Propriétés CSS grid pilotées par `list.colu
 
 **Config `list` tuyautée d'un bout à l'autre** : depuis l'introduction des cartes typées (`testimonial` / `resource`), la config `list` COMPLÈTE (`list?: ListConf`, `ListConfSchema` désormais **exporté**) descend tout le pipeline — `SearchListView` → `SearchCard` et `SearchListView` → `SwitchDetailsMode` → `DetailsModeDialog` / `DetailsModeDrawer` → `Preview`. `list` est transmis à **TOUS** les variants de `SearchCard` et de `Preview` (et non aux seuls presenters typés) ; chacun y lit **sa** tranche (`list.testimonial`, `list.resource`), les autres l'ignorent. `SearchMapWrapper` / `SearchMap` le reçoivent aussi désormais — sans quoi un détail ouvert depuis la carte géographique retombait sur les presenters génériques. `SearchListView` / `SwitchDetailsMode` gardent des props `columns` / `card` / `preview` / `previewParam` optionnelles (agenda, observatoire, profil… qui appellent sans objet `list`) et dérivent chaque valeur via `prop ?? list?.x` ; les call-sites search ne passent plus que `list={list}`. Conséquence : **`SearchPro` honore désormais `list.previewParam`** (auparavant ignoré — il ne transmettait pas ce champ à `SearchListView`).
 
+**Layout grouped** (`list.layout: "grouped"` + `list.groupBy`) : la grille habituelle (même carte, même `wrap`, même détail) découpée en blocs titrés par la valeur de `groupBy.field` — une archive qui se parcourt par année ou par territoire. Logique pure dans `lib/groupResults.ts` (`grouperParChamp`, `comparerValeurs`) : une valeur numérique se compare en NOMBRE (« 9 » avant « 10 »), une `Date` par son instant, un texte à la française ; un tableau range la fiche sous sa PREMIÈRE valeur (jamais en double) ; les fiches sans valeur forment un DERNIER bloc, libellé `emptyLabel` (repli i18n `resource.ungrouped`), jamais écartées. `groupBy.itemsSortBy` trie les fiches de chaque bloc CÔTÉ CLIENT, tri stable, valeurs absentes en dernier : il existe parce que le backend ne lit que la **première clé** de `sortBy` (`SearchNew.php`) — `defaultSortBy: {annee:-1, created:-1}` y vaut `{annee:-1}` — et que le paramètre `sort` multi-clés est refusé par la validation du SDK. Il ne trie donc que les résultats CHARGÉS. Titres de bloc : `GroupHeading` (`h3`), ids tirés de `useId` (une valeur avec espaces casserait `aria-labelledby`). Même priorité que la timeline : vue détaillée et mode split gardent leur rendu. Les champs `groupBy.field` et `itemsSortBy.field` doivent être projetés (`tests/preflight/list-projected-fields.test.ts`).
+
 **Layout timeline** (`list.layout: "timeline"`) : `SearchListView` dispatche vers `TimelineListView` (chunk `lazy()`, même convention que les variants de carte) — frise verticale avec ligne pointillée (à gauche en mobile, centrée dès `md`), **bulle-date** (jour/mois abrégé/année, repli icône calendrier + `bg-muted` sans `startDate`) posée sur la ligne, cartes **alternées gauche/droite par index** (pur : stable en scroll infini et identique SSR/client), rendues par `CardEventTimeline` (titre, heure `HH:mm`, chip catégorie — `card.tagLimit` défaut 1, `card.tagColors` honoré —, extrait 3 lignes, visuel à droite, bouton « En savoir plus »). Pensé pour des événements triés `defaultSortBy: {"startDate": -1}`. La **vue détaillée** (`isDetailedView`) et le **mode split** (`onFocusItem`) gardent la priorité (la timeline n'y a pas de sens) ; le détail, le deep-link `?<previewParam>=` et les `itemRules` passent par le MÊME flux que la grille. Défaut **côté code** = grille : la clé absente ou inconnue rend la grille historique (la config n'est jamais parsée par Zod au runtime).
 
 ### Cartes (card variants)
@@ -1154,7 +1157,7 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 | `overlay` | `CardOverlay` | Image en fond + overlay gradient |
 | `image-cover` | `CardImageCover` | Image de couverture en haut |
 | `image-panel` | `CardImagePanel` | Image en panneau latéral |
-| `event` | `CardEvent` | Événement (dates, lieu, organisateur) |
+| `event` | `CardEvent` | Événement (dates, lieu, organisateur) — un événement de plusieurs jours affiche ses deux bornes (« 1 – 31 oct. 2026 », `lib/eventDateSpan.ts`) ; un créneau de nuit de moins de 24 h reste un seul jour |
 | `event-featured` | `CardEventFeatured` | Événement mis en avant |
 | `funding` | `CardFunding` | Financement / cagnotte |
 | `resource-booking` | `CardResourceBooking` | Ressource réservable |
@@ -1164,9 +1167,13 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 | `card-answer` | `CardAnswer` | Réponse CoForm (activité avec horaires) |
 | `news` | `CardNews` | Carte éditoriale **text-first** (l'item est une `News`, cast au point de dispatch) — cf. [§Cartes news](#cartes-news-dans-la-recherche-cardnews-et-previewnews) |
 | `testimonial` | `CardTestimonial` | Coque (`export default`) → dispatch sur `list.testimonial.design` (repli `bubble`) → `CardTestimonialBubble` — cf. [§génériques config-driven](#cartes-et-previews-génériques-config-driven-testimonial-resource) |
-| `resource` | `CardResource` | Coque → dispatch sur `list.resource.design` (repli `card`) → `CardResourceCard` (média-library, **distinct** de `resource-booking`/`CardResourceBooking`) |
+| `resource` | `CardResource` | Coque → dispatch sur `list.resource.design` (repli `card`) → `CardResourceCard` (média-library, **distinct** de `resource-booking`/`CardResourceBooking`), `CardResourceDocument` (`document`) ou `CardResourcePortrait` (`portrait`) |
 
 > `news`, `testimonial` et `resource` ne sont acceptées **que** par `card.type` : l'enum `card.variant` (schema.ts) ne les inclut pas (comme `overlay`).
+
+**Designs `resource` hors `card`** :
+- **`document`** — une LIGNE compacte (icône, titre, format) qui ouvre directement le fichier, sinon le lien, dans un nouvel onglet annoncé aux lecteurs d'écran. Pour une archive de publications où chaque entrée n'est qu'un titre et un fichier : `card` y mettrait une grande couverture identique par entrée. Le document hébergé (`medias`) passe avant le lien externe (`urls`) — il survit à la disparition du site d'origine (`lib/resourceLink.ts`, `lienPrincipal`) ; le format affiché est l'extension réelle (`formatDocument`), repli `resource.document`. Sans fichier ni lien, la ligne est un bouton qui ouvre le détail.
+- **`portrait`** — une PERSONNE présentée en entier, en ligne d'annuaire séparée par un filet : photo ronde (initiales à défaut, `alt` vide car le nom est écrit à côté), nom, `resource.subtitleField` (ex. fonction, couleur `secondary-foreground`) puis la présentation markdown (`descriptionField`, rendue par `ProseContent` en markdown forcé — HTML brut accepté puis assaini par le profil strict, comme le corps d'article et l'aperçu de l'éditeur —, `prose-theme` pour que le gras reste lisible en sombre). **Non cliquable** : aucune preview, les seuls éléments interactifs sont les liens du texte. Largeur de lecture portée par le design (entrée `max-w-5xl` centrée).
 
 **`card.structureAction`** (carte `card-answer` uniquement, `schema.ts:476`) — le bouton « Fiche structure », **deux axes orthogonaux**, tous deux optionnels : un site peut ne régler que la visibilité sans toucher à l'action.
 
@@ -1246,7 +1253,7 @@ Le détail d'une entité sélectionnée est **découplé en deux axes** (commit 
 | `facets` | `PreviewFacets` | **Preview générique data-driven** : rend `preview.facets` (champs `serverData` cliquables) — voir [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters) |
 | `news` | `PreviewNews` | Détail actualité — embarque `NewsDetailPage` (mode `embedded`) + permalien « Voir en page » (cf. `preview.showDetailLink`) |
 | `testimonial` | `PreviewTestimonial` | Coque → `PreviewTestimonialBubble` (dispatch `list.testimonial.design`) |
-| `resource` | `PreviewResource` | Coque → `PreviewResourceCard` (dispatch `list.resource.design`) |
+| `resource` | `PreviewResource` | Coque → `PreviewResourceCard` (dispatch `list.resource.design`) ; `document` y retombe (détail d'une ligne sans fichier ni lien), `portrait` n'ouvre jamais de preview |
 | `structure` | `PreviewStructure` | Fiche détail d'une **organisation** : hero (statut / type / logo), affiliation, adresse + carte, représentant légal, infos, documents — champs custom du costum lus via l'index signature de `serverData`. Utilisée par `/structure` (`config.prod.maison-sport-sante-la-tampon.json:2125`) **et** par le bouton « Fiche structure » de `CardAnswer` (cf. `card.structureAction`) |
 
 Chaque contenu de `Preview` borne lui-même sa hauteur/scroll (indépendant du conteneur). `list.preview.fields` surcharge le mappage des IDs de champ CoForm (voir « parser CoForm » ci-dessous).
@@ -1885,7 +1892,7 @@ PreviewPoiAmenities.tracking.created / .lastSurvey / .lastUpdate
 
 **Bloc `testimonial`** (Card/PreviewTestimonial) — clés : `listen` (`"Écouter"` / `"Listen"`), `listenTitle` (`"Écouter le témoignage"` / `"Listen to the testimony"`).
 
-**Bloc `resource`** (Card/PreviewResource) — clés : `open`, `watch`, `download`, `gallery`, `documents`, `audio`, `video`, `links`.
+**Bloc `resource`** (Card/PreviewResource) — clés : `open`, `watch`, `download`, `gallery`, `documents`, `audio`, `video`, `links`, `ungrouped` (bloc sans valeur de `layout: "grouped"`), `document`, `externalLink`, `newTab` (design `document`).
 
 **Clés plates news** (`CardNews` / `PreviewNews`) : `Actualité`, `Voir en page`, `Lire`, `Aperçu détaillé indisponible pour cette actualité.`, les verbes activity-stream (`a créé`, `a partagé`, `a modifié`, `a publié`, `sur`, `Quelqu'un`) et les libellés de portée (`Privé`, `Réservé aux membres`).
 

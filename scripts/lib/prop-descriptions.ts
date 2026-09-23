@@ -26,7 +26,9 @@ const prefix = (p: string, descs: Record<string, string>): Record<string, string
  * searchPro et searchProStatic ; monté sous `props.list.` dans chaque section.
  */
 const LIST: Record<string, string> = {
-  layout: "Disposition : grid (défaut CÔTÉ CODE) ou timeline (frise verticale — bulle-date sur ligne pointillée, cartes alternées) ; à coupler à defaultSortBy {startDate:-1} ; ignorée en vue détaillée et en mode split.",
+  layout: "Disposition : grid (défaut CÔTÉ CODE), timeline (frise verticale, avec defaultSortBy {startDate:-1}) ou grouped (grille en blocs titrés par groupBy.field) ; ignorée en vue détaillée et en mode split.",
+  groupBy: "Blocs de layout grouped : field = chemin serverData (à projeter dans defaultFields), order = ordre des BLOCS ; fiches sans valeur dans un dernier bloc (emptyLabel).",
+  "groupBy.itemsSortBy": "Tri CLIENT des fiches dans chaque bloc : le backend ne lit que la 1re clé de defaultSortBy. Ne trie que les résultats chargés.",
   columns: "Colonnes de la grille par breakpoint (sm/md/lg/xl, 1-6).",
   "card.type": "Presenter de carte (voir table SKILL) ; ⚠ défaut CÔTÉ CODE : overlay — le schéma dit default mais n'est jamais appliqué.",
   "card.variant": "Surcharge card.type pour le SEUL dispatch visuel (sous-ensemble sans overlay/news/testimonial/resource).",
@@ -53,7 +55,8 @@ const LIST: Record<string, string> = {
   "testimonial.badge": "Catégorie : teinte de la bulle + pastille ; colors = map valeur→couleur (var() ou hex), repli palette déterministe.",
   "testimonial.accent": "Accent secondaire (ex. territoire) : point coloré ; colors = map valeur→couleur.",
   "testimonial.facets": "Repères/taxonomies data-driven du témoignage (réutilise le mécanisme facettes générique).",
-  "resource.design": "Paire Card+Preview de la ressource (repli code : card).",
+  "resource.design": "Look de la ressource : card (repli code), document (ligne qui ouvre le fichier, sinon le lien) ou portrait (personne présentée en entier, non cliquable).",
+  "resource.subtitleField": "Champ du sous-titre lu par le design portrait (ex. fonction) ; pas de repli — absent, pas de sous-titre.",
   "resource.badge": "Catégorie de la ressource : pastille + icône de type ; colors/icons = maps valeur→(couleur|icône lucide) ; repli field=category.",
   "resource.mediasField": "Champ des médias [{type,url,name}] → galerie images, documents, audio, vidéo (repli code : medias).",
   "resource.cityField": "Champ de la ville affichée (repli code : address.addressLocality).",
@@ -168,6 +171,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     logoSubtitle: "Sous-titre sous le titre du logo (marque sur 2 lignes : titre + baseline/localité).",
     entityLogoOverride: "Opt-in : remplace logo/titre par ceux de l'entité costum au runtime (plateforme transparentCommune).",
     nav: "Arbre de navigation (NavItem récursif) — chaque item exige path | href | children | megaMenu (refinement non exportable).",
+    "nav[].iconOnly": "Barre desktop du header stacked : icône SEULE (le libellé devient aria-label + infobulle). Ignoré sans icon ; menu mobile et autres variantes affichent le libellé.",
     navVisibleOnlyForListedPages: "La nav ne s'affiche que sur les pages qu'elle référence (sites à sous-espaces).",
     mobileNavDisplay: "Sous-nav du menu mobile : sections (groupes déployés, défaut) ou accordion (groupes pliables).",
     transparent: "Autorise l'overlay du header sur le héro — combiné à transparentMode/opaqueOnPaths/overlayOnPaths.",
@@ -273,6 +277,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
   },
 
   "section:searchHeader": {
+    "props.bg": "Fond du bandeau. Défaut : le dégradé du thème. page-accent = l'aplat de page.accent et son filet, pour un bandeau aux couleurs de la page.",
     "props.headline": "Titre du bandeau (h1 si le searchHeader EST le héro de la page).",
     "props.headlineFromFilter": "id d'un dropdownFilters dont la valeur sélectionnée REMPLACE le headline (qui reste le repli) — ex. /theme?theme=…. Le filtre peut être hidden ; le titre devient le LIBELLÉ de l'option, à traduire dans chaque langue.",
     "props.headlineClassName": "Override de la couleur du titre — pour un fond fixe sombre où --foreground devient illisible (ex. text-white dark:text-foreground).",
@@ -306,6 +311,25 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.scope": "Périmètre compté. auto (défaut code) = comportement historique : le $or est élargi à la localité ET au slug du costum — mesuré à 530 au lieu de 49. costum = strictement le costum ; config = le $or écrit tel quel.",
   },
 
+  "section:map-bubbles": {
+    "props.items[].cities": "Villes principales, en infobulle au survol et au focus clavier de la bulle (et description accessible du lien). Absent = pas d'infobulle ; jamais montrée au toucher, où l'appui suit le lien.",
+    "props.design": "Habillage : sticker (défaut, titre incliné sur l'illustration) ou card (titre débordant du haut, accroche dessous, illustration sur son propre aplat) — card suppose un bloc posé DANS une carte.",
+    "props.badgeColor": "Fond de l'étiquette de titre (couleur CSS). Défaut : le marine fixe de la carte. Indépendant du fond du bloc.",
+    "props.badgeTextColor": "Encre de l'étiquette de titre. Défaut blanc : contraste AA à mesurer sur badgeColor.",
+    "props.headlineStyle": "Forme du titre : badge (défaut, étiquette inclinée) ou pill (arrondi droit) — à aligner sur les autres bandes de la page.",
+  },
+
+  "section:action-tiles": {
+    "props.columns": "Colonnes par breakpoint (mobile = 1) ; sans lui, défaut code sm:2 lg:4. À régler quand le nombre de tuiles ne tombe pas juste (3 → lg:3).",
+    "props.size": "Taille des tuiles : md (défaut code, rendu historique : titre 14 px, icône 16 px) ou lg (titre 18 px, sous-titre 16 px, icône 32 px, contenu calé en haut).",
+    "props.width": "Largeur de la grille : default (1024 px max) ou wide (1280 px max) — pour 4 tuiles et plus en size lg, sinon les titres passent sur 3 lignes.",
+    "props.actions[].background": "Fond PLEIN de la tuile (couleur CSS, var(--jeton) recommandé) : remplace la teinte à 20 % de color, fixe en clair comme en sombre.",
+    "props.actions[].textColor": "Texte et icône d'une tuile à fond plein — obligatoire en pratique avec background, contraste AA (4,5:1) à mesurer.",
+    "props.headlineStyle": "Rendu du titre : plain (défaut, centré), badge (pastille inclinée d'articleTeaser/map-bubbles) ou pill (la même en arrondi droit), calées à gauche — pour une page dont toutes les bandes portent le même repère.",
+    "props.tileLayout": "Disposition d'une tuile : centered (défaut, icône puis textes centrés) ou inline (icône en pastille, titre à côté, sous-titre dessous, aligné à gauche) — inline se lit mieux quand les sous-titres font une phrase.",
+    "props.accentColor": "Couleur de la pastille de titre (headlineStyle: badge) ; son encre est blanche, donc teinte foncée et contraste AA à mesurer.",
+  },
+
   "section:thematics": {
     "props.title": "Titre de la grille des filières (lues depuis serverData.filiere de l'entité costum — aucune requête).",
     "props.emptyMessage": "Message affiché quand l'entité n'a pas de filières.",
@@ -331,6 +355,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.showScrollIndicator": "Chevron animé en bas de section. Il se décale au-dessus de la barre de puces dès qu'il y a plusieurs diapositives.",
   },
   "section:agenda": {
+    "props.bg": "Fond de la section : jetons du thème, ou page-accent (aplat + filet supérieur à page.accent) pour alterner les bandeaux d'une page colorée.",
     "props.customHeader": "En-tête teaser avec lien « voir tous » — même convention que searchProStatic.customHeader (home → /evenements).",
     "props.limit": "Plafond d'AFFICHAGE par bucket (teaser) ; absent = tous + « charger plus ». ⚠ PAS la taille du fetch : appliqué APRÈS le partitionnement d'un flux DESC — garder `baseParams.indexStepList` bien au-dessus.",
     "props.showViewToggle": "Toggle Liste/Calendrier (false = teaser figé sur defaultMode). Défaut code : true.",

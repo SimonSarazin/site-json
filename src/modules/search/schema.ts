@@ -235,8 +235,19 @@ export const ReservationsConfSchema = z.object({
   fields: z.object({
     /** Finder vers la ressource (valeur = objet `{<id>: {id, name, type}}`). */
     finder: z.string(),
-    /** Nom de l'usager (texte). */
+    /** Nom de l'usager (texte). Champ HISTORIQUE : conservé en repli tant que
+     *  toutes les réponses n'ont pas été rattachées par `userOrga`. */
     user: z.string(),
+    /**
+     * Finder vers l'ORGANISATION usagère (valeur = objet `{<id>: {id, name, type}}`),
+     * qui rattache la réservation à un club par IDENTIFIANT et non plus par son nom.
+     * Optionnel : sans lui, la lecture retombe sur le texte de `user`, et un même club
+     * saisi des deux façons ne fait qu'un seul groupe (la clé de regroupement plie
+     * casse et accents à défaut d'identifiant).
+     * Noter que la valeur est rangée sous la clé PRÉFIXÉE `finder<step><suffixe>`,
+     * comme `finder` — pas sous `<step><suffixe>`.
+     */
+    userOrga: z.string().optional(),
     /** Activité pratiquée (texte). */
     activity: z.string(),
     /** Créneaux hebdo récurrents (timeSlots `{day, startHour, …}`). */
@@ -247,6 +258,36 @@ export const ReservationsConfSchema = z.object({
   }),
   /** Plafond d'answers chargées (garde de pagination). Défaut : 200. */
   maxAnswers: z.number().int().positive().optional(),
+  /**
+   * Prise de réservation depuis la fiche (OPT-IN). Absent = comportement
+   * historique : grille hebdo en blocs empilés, lecture seule. Présent = grille
+   * à l'échelle horaire, cases libres cliquables ouvrant le formulaire CoForm
+   * pré-rempli (équipement verrouillé, créneau repris).
+   *
+   * L'amplitude n'est qu'une GRILLE DE RÉFÉRENCE : aucun horaire d'ouverture
+   * n'existe sur les équipements en base. Une case libre signifie « aucune
+   * réservation connue », pas « l'équipement est ouvert ».
+   */
+  booking: z.object({
+    /** Première heure affichée (0-23). Défaut code : 8. */
+    startHour: z.number().int().min(0).max(23).optional(),
+    /** Dernière heure affichée, exclue (1-24). Défaut code : 22. */
+    endHour: z.number().int().min(1).max(24).optional(),
+    /** Pas de la grille, en minutes (5-240). Défaut code : 60. Borné : `positive()` laissait
+     *  passer `slotMinutes: 1`, soit 840 rangées × 7 = 5 880 cases cliquables sur une amplitude
+     *  8 h–22 h, pour un pas qui n'a aucun sens sur un équipement sportif. */
+    slotMinutes: z.number().int().min(5).max(240).optional(),
+    /** Réserver réservé aux admins de l'entité du site. Défaut code : true. */
+    adminOnly: z.boolean().optional(),
+  })
+    // Les deux bornes étaient valides SÉPARÉMENT (0-23 et 1-24) mais jamais l'une par rapport à
+    // l'autre : `startHour: 22, endHour: 8` passait la validation et donnait une grille réduite à
+    // la rangée de repli. C'est à `config:validate` de l'attraper, pas au rendu.
+    .refine(
+      (b) => b.startHour === undefined || b.endHour === undefined || b.startHour < b.endHour,
+      { message: "booking.startHour doit être strictement inférieur à booking.endHour", path: ["startHour"] },
+    )
+    .optional(),
 });
 export type ReservationsConf = z.infer<typeof ReservationsConfSchema>;
 
@@ -384,10 +425,18 @@ export type TestimonialConf = z.infer<typeof TestimonialConfSchema>;
  * par `useResourceData` (défauts génériques : name/description/created/profilMediumImageUrl/urls/address).
  */
 export const ResourceConfSchema = z.object({
-  /** Look — sélectionne `CardResource{Design}` + `PreviewResource{Design}` (repli code : "card"). */
-  design: z.enum(["card"]).default("card"),
+  /** Look — sélectionne `CardResource{Design}` + `PreviewResource{Design}` (repli code : "card").
+   *  `document` : ligne compacte qui ouvre directement le document hébergé, sinon le lien — pour une
+   *  archive de publications où chaque entrée n'est qu'un titre et un fichier.
+   *  `portrait` : une PERSONNE présentée en entier — photo ronde (initiales à défaut), nom,
+   *  `subtitleField`, puis la présentation markdown (`descriptionField`) et ses liens. Carte non
+   *  cliquable : pas de preview. */
+  design: z.enum(["card", "document", "portrait"]).default("card"),
   /** Champ du titre. Repli code : "name". */
   titleField: z.string().optional(),
+  /** Champ du sous-titre (ex. la fonction d'une personne), lu par `portrait`. Pas de repli : absent =
+   *  pas de sous-titre — un repli sur la description répéterait le texte affiché juste dessous. */
+  subtitleField: z.string().optional(),
   /** Champ de la description (extrait card / markdown preview). Repli code : "description". */
   descriptionField: z.string().optional(),
   /** Champ de la date. Repli code : "created". */
@@ -623,8 +672,26 @@ export const ListConfSchema = z.object({
    * posée sur la ligne, cartes alternées gauche/droite en desktop, colonne unique avec ligne à
    * gauche en mobile. Pensée pour des événements triés par `baseParams.defaultSortBy:
    * {"startDate": -1}`. Ignorée en vue détaillée (`isDetailedView`) et en mode split (`onFocusItem`).
+   * `"grouped"` : la grille découpée en blocs titrés par la valeur de `groupBy.field` (une année,
+   * un territoire…) — pour une archive qui se parcourt par période plutôt que d'un seul tenant.
    */
-  layout: z.enum(["grid", "timeline"]).optional(),
+  layout: z.enum(["grid", "timeline", "grouped"]).optional(),
+  /**
+   * Regroupement de `layout: "grouped"`. `field` : chemin pointé dans `serverData`. `order` : ordre
+   * des GROUPES (défaut `asc`). Les items d'un groupe gardent l'ordre du serveur, sauf `itemsSortBy`
+   * — nécessaire dès que cet ordre tient à une 2e clé : le backend ne lit que la PREMIÈRE clé de
+   * `baseParams.defaultSortBy`. `itemsSortBy` ne trie que les résultats chargés. Les fiches sans
+   * valeur forment un dernier bloc, libellé `emptyLabel`, plutôt que d'être écartées en silence.
+   */
+  groupBy: z.object({
+    field: z.string(),
+    order: z.enum(["asc", "desc"]).optional(),
+    itemsSortBy: z.object({
+      field: z.string(),
+      order: z.enum(["asc", "desc"]).optional(),
+    }).optional(),
+    emptyLabel: LocalizedString.optional(),
+  }).optional(),
   columns: z.object({
     lg: z.number().int().min(1).max(6).optional(),
     md: z.number().int().min(1).max(6).optional(),
@@ -1033,7 +1100,7 @@ export const SearchProStaticSectionSchema = z.object({
 
     list: ListConfSchema.optional(),
     map:  MapConfSchema.optional(),
-    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   }),
 });
 
@@ -1308,6 +1375,10 @@ const TitleWithFiltersDropdownSchema = z.object({
 
 // Props partagées entre le type canonique `searchHeader` et son alias.
 const SearchHeaderProps = z.object({
+  /** Fond du bandeau. Défaut : le dégradé du thème (`--gradient-section`). `page-accent` = l'aplat de
+   *  `page.accent` et son filet, pour un bandeau aux couleurs de la page (ex. filtres d'actualités
+   *  d'une page de territoire parent62). */
+  bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   headline: LocalizedString.optional(),
   /** `id` d'un `dropdownFilters` dont la VALEUR SÉLECTIONNÉE remplace le `headline` (qui reste le repli
    *  quand rien n'est sélectionné). Pour une page dont l'identité EST ce filtre — `/theme?theme=…`,
@@ -1387,6 +1458,36 @@ export const FeaturedCarouselSectionSchema = z.object({
     background: z.string().optional(),
     /** Couleur du badge et du bouton CTA — CSS libre, même logique que `background`. Repli : `--primary`. */
     accentColor: z.string().optional(),
+    /** Encre posée SUR `accentColor` (badge, bouton). Défaut blanc — à fournir dès que l'accent est clair :
+     *  blanc sur la turquoise de parent62 ne tient que 1,93:1, contre 5,68:1 pour son marine. */
+    accentTextColor: z.string().optional(),
+    /**
+     * Habillage : `sticker` (défaut, historique) — badge incliné dans le flux, flèches de navigation, CTA
+     * pleine largeur — ou `card` : badge en pilule débordant du haut du bloc, points de position à gauche
+     * (les flèches disparaissent) et CTA compact à droite. `card` suppose un bloc DANS une carte, dont le
+     * conteneur ne rogne pas (`overflow` visible), sinon la pilule est coupée.
+     */
+    design: z.enum(["sticker", "card"]).optional(),
+    /** Forme du badge : `badge` (défaut, étiquette inclinée) ou `pill` (arrondi droit). */
+    headlineStyle: z.enum(["badge", "pill"]).optional(),
+    /** Encre de la section, posée avec `background`. Sans elle, un fond fourni impose le texte BLANC
+     *  (rendu historique, pensé pour un fond sombre) — à fournir dès que le fond est clair. */
+    textColor: z.string().optional(),
+    /**
+     * Habillage `card` : dégradé du PANNEAU qui porte la diapositive — même grammaire que
+     * `map-bubbles.backgroundOverlay`, pour qu'une carte et un carrousel côte à côte se répondent.
+     * Absent, la diapositive vit à même la carte.
+     */
+    backgroundOverlay: z.object({ from: z.string(), to: z.string(), angle: z.number().optional() }).optional(),
+    /** Encre du texte POSÉ SUR le panneau (`backgroundOverlay`) : elle doit suivre le DÉGRADÉ, pas l'encre
+     *  de la carte — donner un jeton qui change avec lui si le dégradé a une variante sombre. Sans elle,
+     *  l'encre de la carte s'applique. Contraste AA à mesurer en clair ET en sombre. */
+    overlayTextColor: z.string().optional(),
+    /** Fond du badge de titre, quand il doit différer de `accentColor` (qui teinte le bouton).
+     *  Défaut : `accentColor`. */
+    badgeColor: z.string().optional(),
+    /** Encre du badge de titre. Défaut : `accentTextColor`, sinon blanc. */
+    badgeTextColor: z.string().optional(),
     /** Puces de pagination sous le carrousel, entre les flèches précédent/suivant (celles-ci
      *  restent toujours affichées). Défaut masquées — à activer explicitement si besoin. */
     showControls: z.boolean().default(false),

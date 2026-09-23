@@ -20,7 +20,11 @@
         "documents": "Documents",
         "audio": "Audio",
         "video": "Vidéo",
-        "links": "Liens"
+        "links": "Liens",
+        "ungrouped": "Non classé",
+        "document": "Document",
+        "externalLink": "Lien externe",
+        "newTab": "s'ouvre dans un nouvel onglet"
     },
     "CardResourceBooking": {
         "price": "Prix d'usage:",
@@ -186,7 +190,14 @@
         "periodLabel": "Période",
         "period": "Du {{start}} au {{end}}",
         "periodFrom": "À partir du {{start}}",
-        "periodUntil": "Jusqu'au {{end}}"
+        "periodUntil": "Jusqu'au {{end}}",
+        "hourColumn": "Horaire",
+        "gridCaption": "Créneaux de réservation, par jour et par heure",
+        "free": "Créneau libre",
+        "bookAria": "Réserver le {{day}} de {{start}} à {{end}}",
+        "bookTitle": "Réserver un créneau",
+        "conflict": "Ce créneau est déjà réservé par {{user}}.",
+        "referenceNotice": "Grille de référence : une case libre signifie qu'aucune réservation n'est enregistrée — pas que l'équipement est ouvert."
     },
     "Filtres actifs :": "Filtres actifs :",
     "À partir du": "À partir du",

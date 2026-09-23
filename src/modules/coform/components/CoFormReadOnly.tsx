@@ -63,7 +63,14 @@ export function CoFormReadOnly({
   // courant (`_multiEval.{id}`) ; sans user, le champ multi-eval reste vide.
   const currentUserId = useCocolightOptional()?.me?.id ?? null;
 
-  const subFormsFields = useMemo(() => parseCoFormFields(formData), [formData]);
+  // `includeHiddenFields` : on RELIT une réponse enregistrée, on ne la saisit pas. Un champ
+  // `hide` (retiré de la saisie parce que remplacé) garde des valeurs en base, et tout
+  // l'intérêt du drapeau est de les préserver — les escamoter ici reviendrait à les perdre
+  // pour le lecteur, alors qu'elles sont toujours là.
+  const subFormsFields = useMemo(
+    () => parseCoFormFields(formData, { includeHiddenFields: true }),
+    [formData],
+  );
 
   // Normaliser les données de réponse (déplacer les champs root-level dans leurs subforms)
   const normalizedAnswers = useMemo(

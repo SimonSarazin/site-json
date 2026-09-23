@@ -152,7 +152,12 @@ site à confirmer avec l'utilisateur — ne PAS l'imposer à une petite vitrine 
    + `baseParams.defaultFields` couvrant tous les champs testés par les `when`.
    Disposition : `list.layout: "timeline"` (frise verticale à bulles-dates, carte
    dédiée événement) remplace la grille — à coupler à `defaultSortBy {"startDate": -1}` ;
-   défaut CÔTÉ CODE = grille.
+   `list.layout: "grouped"` + `list.groupBy` découpe la grille en blocs titrés (archive
+   par année…) — le backend ne triant que sur la 1re clé de `defaultSortBy`, un ordre
+   dans les blocs passe par `groupBy.itemsSortBy` ; défaut CÔTÉ CODE = grille.
+   Designs `list.resource.design` : `card` (défaut), `document` (archive de fichiers en
+   lignes), `portrait` (annuaire de personnes, `subtitleField`). Tout champ nommé par
+   `groupBy`/`resource` doit figurer dans `baseParams.defaultFields`.
 5. **Sections raisonnées** : 8-18 types dont des « premium » (`data-observatory`,
    `agenda`, `hero-*`, `features-glass`) — pas 5 sections génériques.
 6. **Visibilité conditionnelle** (`condition`/`visibleIf`/`role`) là où le
@@ -243,7 +248,7 @@ Pour corriger/améliorer un config existant :
 | `minimal` | barre compacte, typo uppercase espacée | petite vitrine épurée — ex. julie-pot-vin | `logoTitle`, `logoIcon` |
 | `underline-nav` | nav soulignée animée, fond marqué | identité marquée, communes/collectivités — ex. nos-commune | `piggyBank`, `urgenceButton`, `ctaButton` |
 | `transparent-dark` | barre sombre fixe (teinte : token `--header-bar`) | site à dominante sombre — ex. commune-transparente | `logoTitle`, `entityLogoOverride` |
-| `stacked` | 2 bandeaux sur image de fond : wordmark plein écran (~50vh) puis nav, collapse en barre compacte au scroll | identité "marque-territoire" forte, home sans section hero (le header EST le hero) — ex. parent62 | `backgroundImage`, `textColor`, `logoTitleAccent`, `logoSubtitle` |
+| `stacked` | 2 bandeaux sur image de fond : wordmark plein écran (~50vh) puis nav, collapse en barre compacte au scroll | identité "marque-territoire" forte, home sans section hero (le header EST le hero) — ex. parent62 | `backgroundImage`, `textColor`, `logoTitleAccent`, `logoSubtitle`, `nav[].iconOnly` (icône seule dans la barre, ex. une loupe vers `/recherche`) |
 | `default` | **alias, pas un design** : rend `HeaderStandard` | héritage — n'en produis JAMAIS pour un site neuf, écris `standard` | ceux de `standard` |
 
 ### Footers (`footer.type`)
@@ -454,6 +459,13 @@ modifie une palette. L'essentiel :
   `--hero-tint`, `--gradient-section`) viennent de `src/styles/shared.css`
   (tokens par défaut) — un thème les surcharge en `:root`/`.dark`, on ne
   recopie JAMAIS de classe.
+- **Une PAGE peut porter sa propre couleur** : `page.accent` (couleur CSS,
+  `var(--jeton)` recommandé) pose `--page-accent` et son aplat léger
+  `--page-accent-soft` sur le `<main>`. Les sections qui acceptent
+  `bg: "page-accent"` (`agenda`, `searchProStatic`, `accordion`, `searchHeader`,
+  `gridLayout`) s'en servent pour alterner les bandes — ex. les 9 pages de
+  territoire de parent62, chacune à sa couleur. Sans `accent`, la valeur reste
+  transparente.
 
 ## Maintenance (anti-dérive)
 
