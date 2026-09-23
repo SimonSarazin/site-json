@@ -421,6 +421,8 @@ export interface BookingAmplitude {
 const DEFAULT_START_HOUR = 8;
 const DEFAULT_END_HOUR = 22;
 const DEFAULT_SLOT_MINUTES = 60;
+/** Plafond d'une grille : une journée. Borne l'élargissement automatique des bornes. */
+const JOURNEE_MINUTES = 24 * 60;
 
 /** Minutes depuis minuit → "HH:MM" (24 h, zéro-paddé). */
 export function minutesToLabel(minutes: number): string {
@@ -448,14 +450,20 @@ export function buildBookingGrid(
   const confEnd = (amplitude.endHour ?? DEFAULT_END_HOUR) * 60;
 
   const all = grid.flatMap((d) => d.blocks);
-  // Bornes élargies aux réservations hors cadre, alignées sur le pas.
+  // Bornes élargies aux réservations hors cadre, alignées sur le pas, mais BORNÉES À LA JOURNÉE
+  // dans les deux sens. `parseSlot` ne contraint ni les heures ni les minutes : un `endHour: "30"`
+  // (saisie ou import erroné) faisait descendre la grille jusqu'à 30:00, avec des rangées
+  // « 26:00 – 27:00 » que `minutesToLabel` produit sans broncher, et une donnée franchement
+  // aberrante donnait des dizaines de milliers de rangées à rendre. La borne basse était déjà
+  // plafonnée (`Math.max(0, …)`) ; la haute ne l'était pas.
   let from = confStart;
   let to = Math.max(confEnd, confStart + step);
   for (const b of all) {
     from = Math.min(from, Math.floor(b.startMinutes / step) * step);
     to = Math.max(to, Math.ceil(b.endMinutes / step) * step);
   }
-  from = Math.max(0, from);
+  from = Math.min(Math.max(0, from), JOURNEE_MINUTES - step);
+  to = Math.min(to, JOURNEE_MINUTES);
 
   const byDay = new Map<DayKey, WeeklySlotBlock[]>(grid.map((d) => [d.dayKey, d.blocks]));
   const rows: BookingGridRow[] = [];
@@ -472,8 +480,16 @@ export function buildBookingGrid(
         endMinutes: end,
         start: minutesToLabel(start),
         end: minutesToLabel(end),
-        blocks: (byDay.get(dayKey) ?? []).filter(
-          (b) => b.startMinutes < end && start < b.endMinutes,
+        // `b.endMinutes <= b.startMinutes` : créneau à durée nulle ou inversée — donnée dégradée
+        // (format legacy 12 h dont `parseSlot` ignore l'AmPm : « 09 AM → 05 PM » ressort en
+        // 540 → 300). Un tel bloc ne recouvre AUCUNE rangée par le test d'intersection, donc sa
+        // case était rendue LIBRE et réservable alors qu'elle est occupée. On le rattache à la
+        // rangée de son heure de début : la case cesse d'être proposée, et l'occupation redevient
+        // visible — c'est le comportement qu'avait la grille historique, en lecture seule.
+        blocks: (byDay.get(dayKey) ?? []).filter((b) =>
+          b.endMinutes <= b.startMinutes
+            ? b.startMinutes >= start && b.startMinutes < end
+            : b.startMinutes < end && start < b.endMinutes,
         ),
       })),
     });

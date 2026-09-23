@@ -9,9 +9,10 @@
  *  5. contribution financière
  *
  * + bypass admin-org TOTAL (résolu centralement par `usePermissions` via
- *   `isCostumAdmin`) ; + gate MAÎTRE `coremu` (OFF ⇒ pas de financement, ni
- *   affiché ni possible) ; + gate dépôt 3 modes (ouvert / membres / rôles),
- *   toujours connecté ; + tolérance compte temporaire (answer sans `userId`).
+ *   `isCostumAdmin`) ; + le financement suit l'ÉTAPE de financement de l'appel
+ *   (`hasFundingStep`), pas `coremu` ; + gate dépôt 3 modes (ouvert / membres /
+ *   rôles), toujours connecté ; + tolérance compte temporaire (answer sans
+ *   `userId`).
  */
 
 /**
@@ -23,8 +24,13 @@ export interface AacGateFlags {
   onlyMemberAccess?: boolean;
   oneAnswerPerPers?: boolean;
   /**
-   * Gate MAÎTRE du financement (`form.coremu`) : OFF ⇒ pas de financeur, pas
-   * d'objet finançable, pas de paiement — et rien d'affiché, admin compris.
+   * Corémunération (`form.coremu`, préconfiguration « Système de coremuneration »).
+   *
+   * ⚠️ Ne garde PAS le financement : côté legacy il ne masque que l'onglet
+   * `#proposition-contribution` (`detailProposal.php:105`), pas
+   * `#proposition-funding` (l.100-104) dont les blocs de la fiche sont la
+   * traduction. Résolu et exposé, mais aucun bloc de site-json n'en dépend tant
+   * que la corémunération n'est pas portée.
    */
   coremu?: boolean;
   /**
@@ -45,6 +51,12 @@ export interface AacPermissionData {
   isCommunityMember?: boolean;
   /** Rôles de l'utilisateur sur l'élément hôte. */
   userRoles?: string[];
+  /**
+   * L'appel porte-t-il une étape de financement ? (`roles.financementStepKey`,
+   * l'étape de l'input `financer` — `aapStep3` dans le gabarit legacy.)
+   * Gate d'affichage des blocs financement, parité `#proposition-funding`.
+   */
+  hasFundingStep?: boolean;
 }
 
 export interface AacCommunLike {
@@ -63,10 +75,10 @@ export interface AacPermissions {
   /** 4. Participer aux actions (connecté ; détail par action ailleurs). */
   canParticipateActions: boolean;
   /**
-   * 5a. Voir le financement d'un commun — le gate MAÎTRE `coremu` seul, sans
-   * condition de compte ni d'admin : c'est ce que fait le legacy avec l'onglet
-   * Contributions (`detailProposal.php:105`). Gate d'AFFICHAGE des blocs
-   * financement de la fiche.
+   * 5a. Voir le financement d'un commun — l'appel a une étape de financement
+   * (`hasFundingStep`), sans condition de compte ni d'admin : c'est ce que fait
+   * le legacy avec l'onglet `#proposition-funding` (`detailProposal.php:100-104`).
+   * Gate d'AFFICHAGE des blocs financement de la fiche.
    */
   canViewFunding: boolean;
   /** 5b. Contribuer financièrement (`canViewFunding` + connexion). */

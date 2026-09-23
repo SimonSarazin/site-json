@@ -92,7 +92,7 @@ de hero sur une page à panneau, cela produit deux champs de recherche.
 
 ## 4. Ce que la config met en œuvre
 
-### 4.1 Les 12 pages
+### 4.1 Les 14 pages
 
 | Page | Sections | Rôle |
 |---|---|---|
@@ -101,7 +101,9 @@ de hero sur une page à panneau, cela produit deux champs de recherche.
 | `/observatoire` | 1 | `data-observatory` — cf. §4.3 |
 | `/reseaux-regionaux` · `/reseaux-thematiques` | 1 chacune | même périmètre, **deux angles** (cf. §4.2) |
 | `/communaute` | 1 | `searchProStatic` |
-| `/evenements` | 1 | `agenda` |
+| `/actualites` | 2 | `searchHeader` + `tabs` — onglet **Actus** (`articleFeed`) / onglet **Événements** (`agenda`, 3 `sourceKey`). **Remplace `/evenements`** (07/09, cf. §9) |
+| `/blog` | 1 | `articleFeed` — liste canonique du module blog : cible du repli du lecteur `/blog/:slug` et du `<link>` de canal du flux RSS |
+| `/annuaire-ressources` | 2 | `title` + `coform-resource-directory` |
 | `/usages` | 1 | `toolsCatalog` — catalogue d'outils d'usage (livré 06/08, review 10/08 — cf. §9) |
 | `/api-donnees` | 1 | `html` — API et données ouvertes |
 | `/mentions-legales` · `/confidentialite` · `/cgu` | 1 chacune | socle légal **présent et fourni** (≈ 3,5 k · 11 k · 12 k caractères) |
@@ -149,7 +151,7 @@ périmètres ne sont pas identiques.
 |---|---|
 | `/observatoire` | **4 322** |
 | `/` (hero + résultats) · `/lieux` | **4 303** (les trois) |
-| `/` (teaser agenda) · `/evenements` | **358** événements |
+| `/` (teaser agenda) · `/actualites` (onglet Événements) | **358** événements |
 | `/communaute` | 31 |
 | `/reseaux-regionaux` · `/reseaux-thematiques` · filtre `entityList` de `/lieux` | 19 (les trois) |
 
@@ -166,9 +168,10 @@ rezo-la-mer 79.
 | Thème | [`../src/index-tiers-lieux.css`](../src/index-tiers-lieux.css) |
 | Déclaration | [`../sites.json`](../sites.json) → `navigatorDesTierslieux` |
 | Formulaire costum | [`../src/modules/profil/forms/costum/`](../src/modules/profil/forms/costum) — id `tiers-lieux` |
-| Panneau de filtres | [`../src/modules/search/sections/FiltersSection.tsx`](../src/modules/search/sections/FiltersSection.tsx) |
+| Panneau de filtres | [`../src/modules/search/sections/FiltersSection.tsx`](../src/modules/search/sections/FiltersSection.tsx) — + flag `keepOptionOrder` |
 | Observatoire | [`../src/modules/observatoire/`](../src/modules/observatoire) |
 | Ampli | [`../src/modules/ampli/`](../src/modules/ampli) |
+| Annuaire ressources (`/annuaire-ressources`, 08/09) | Section `coform-resource-directory` (module `search`), variant `searchCostum` `navigator-tl-ressource` — cf. `../doc/07-module-search.md` § `coform-resource-directory` |
 
 ---
 
@@ -199,6 +202,136 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 08/09ter — admin : onglet « Référencement »
+
+**Config seule** (`config.prod.tiers-lieux.json`). Onglet `admin.tabs[]` `referencement` (icône
+`link-2`, `access: siteAdmin`), section `type: "reference"` — `entityTypes: ["organizations",
+"citoyens"]`, colonnes Nom / Commune / Provenance (`source.key`). Deux sous-onglets natifs :
+**Rechercher & référencer** (recherche globale hors costum, politique open-data `optIn`) et
+**Référencés** (+ retrait). Le bouton pose `reference.costum ∋ navigatorDesTierslieux` via
+`setsource` (`Admin::addSourceInElement`, collection-agnostique — `citoyens` traité comme
+`organizations`). Le costum ne déclarant pas de `subType` sur ces collections, le référencement est
+nu (`reference.costumTypes` non posé). Fixture `__effective__/tiers-lieux.json` régénérée.
+
+**Gates** : `config:validate` ✅ (14 pages, 26 sections) · `audit:config` RAS · `config:render`
+14/14 · module `admin` + `effective-config` ✅.
+
+### 08/09 — page `/annuaire-ressources`
+
+Ajout de la page **`/annuaire-ressources`** (menu « Les lieux » → « Coworking, salles &
+hébergements ») : annuaire à plat des ressources d'un tiers-lieu (coworking / salle de réunion /
+hébergement), portage du bloc costum `franceTierslieux#annuaires-ressources-tiers-lieux`. Section
+moteur config-agnostique **`coform-resource-directory`** (module `search`), variant `searchCostum`
+`navigator-tl-ressource` (endpoint `/costum/navigator/getsressourcetl`, `Navigator::getRessourceTL`).
+**Détail moteur : `doc/07-module-search.md` § `coform-resource-directory`.**
+
+Contenu : facettes « type » + 3 groupes prix (heure / demi-journée / journée, calqués Communecter) ;
+carte à carrousel automatique, clic sur le tiers-lieu porteur = filtre « porté par » ; modal « En
+savoir plus » (gabarit `ProfilTiersLieuxAbout`) avec bouton **« Réserver »** (lien de résa) ou
+**« Contacter par e-mail »** (`mailto:` de l'e-mail du tiers-lieu) sinon.
+
+**Gates** : `config:validate` ✅ (14 pages, 26 sections) · `audit:config` RAS · `config:render`
+14/14 · `tsc -b` / `eslint` / préflights `search` ✅.
+
+### 07/09bis — l'admin peut publier actus et événements · le jaune sort de `secondary`
+
+**Config seule**, deux lots indépendants.
+
+**a) Back-office — deux onglets de publication** (calqués sur `config.prod.saint-paul-sport.json`,
+qui porte le patron le plus propre du parc : formulaires sans taxonomie site-spécifique) :
+
+- `costumForms["tiers-lieux-article"]` (poi `type:"article"`) et `costumForms["tiers-lieux-event"]`
+  (events), copiés de `saintpaul-article` / `saintpaul-event`. **Retiré à la copie** : les `stamps`
+  de référencement croisé vers `equipementsSportifs974` (propres à saint-paul, sans équivalent ici).
+- `admin.tabs` : `actualites` (resource poi, `create: "add-tiers-lieux-article"`) et `agenda`
+  (resource events, `create: "add-tiers-lieux-event"`), `edit: "inherit"` — d'où deux routes
+  `profiles.poi.editModals` / `profiles.events.editModals` (`edit: "inherit"` lit
+  `profiles[type].editModals`, jamais `profiles.default`).
+- **Effet de bord du moteur** : déclarer un form costum fait qu'il sert AUSSI aux boutons d'ajout
+  des profils, dès qu'il est l'**unique** form de sa collection (`costumCreateKey`,
+  `AddEntityDropdown.tsx` — « un site qui déclare un formulaire pour ses événements ne veut pas du
+  formulaire standard »). D'où le contraste observé : parent62 (3 forms `poi`), saint-paul (2) et
+  Ekilib.re (2) gardent le form POI **générique** ; tiers-lieux n'en a qu'un, il capturait donc le
+  bouton.
+  - **Événements** : « Ajouter un événement » ouvre le form tiers-lieux — voulu.
+    `preferences.toBeValidated` **conservé** comme sur saint-paul : la soumission publique reste
+    modérée, l'admin valide en un clic depuis son onglet.
+  - **POI** : `addConfig.poi` passé à **`false`** sur `citoyens`/`organizations`/`projects`
+    (07/09, décision utilisateur révisée). Motif : le bouton ouvrait le form actualité, **qui ne
+    peut rien enregistrer** tant que le SDK refuse `type:"article"` (cf. point suivant) — un bouton
+    absent vaut mieux qu'un bouton qui plante. Aucune perte fonctionnelle : aucune page du site
+    n'affiche de POI générique (tous les `defaultTypes` sont `organizations`/`citoyens`).
+    À rouvrir si besoin une fois le SDK publié.
+
+**b) Couleurs — le jaune quittait son rôle.** `secondary` porte, dans la convention shadcn, une
+surface **discrète** (badges, boutons secondaires, `bg-secondary/40` du champ de recherche du
+`searchHeader`). Le thème y logeait le jaune saturé de la marque (`hsl(43,91%,52%)`) : chaque
+surface calme criait, et sur le dégradé teal de `/actualites` le champ de recherche virait à
+l'aplat olive.
+
+| token | avant | après |
+|---|---|---|
+| `light.secondary` | `hsl(43, 91%, 52%)` | `hsl(43, 68%, 90%)` |
+| `light.secondaryForeground` | `hsl(25, 20%, 12%)` | `hsl(35, 35%, 20%)` |
+| `dark.secondary` | `hsl(43, 85%, 48%)` | `hsl(38, 22%, 24%)` |
+| `dark.secondaryForeground` | `hsl(25, 20%, 10%)` | `hsl(43, 38%, 88%)` |
+
+La FAMILLE chaude est conservée (l'identité tiers-lieux), en version sourde ; le jaune vif reste
+disponible **inchangé** sous `warning` et `chart2`.
+
+- **Bug préexistant corrigé au passage** : en sombre, `secondaryForeground` était un quasi-noir alors
+  qu'il sert de couleur de TEXTE (`text-secondary-foreground` dans `SearchPro`/`SearchProStatic` —
+  « Aucun résultat trouvé », « Chargement… ») sur fond sombre. Contraste mesuré **1,06:1**. Il est
+  maintenant à **14,74:1**.
+- **Contrastes mesurés** sur les éléments réellement rendus (badge de tag de `/actualites`) :
+  **10:1** en clair, **7,98:1** en sombre.
+- **Section `html` de la home (`tiers-lieux-actions`)** : trois pastilles `bg-yellow-400` codées en
+  dur portant des icônes `text-white` — **1,53:1**, échec AA franc. Passées à `bg-warning` /
+  `text-warning-foreground` (le jaune vif de la marque, via le token). Découverte au passage :
+  **Font Awesome n'est chargé nulle part sur ce site**, les six `<i class="fa-solid …">` de cette
+  section n'ont donc JAMAIS rendu (trois pastilles vides + trois flèches absentes) — remplacés par
+  du SVG inline, sans dépendance.
+
+**Gates** : `config:validate` ✅ · `audit:config` RAS (1 assumé) · `config:render` 14/14 pages,
+26/26 sections · `config:probe` 10/10 périmètres peuplés · `test:preflight` — seuls restent 4 échecs
+**étrangers à ce lot** (chantier `resource-directory` en cours + `config.prod.rezo-sante-reunion.json`).
+
+---
+
+### 07/09 — page « Actus & Événements » : le blog rejoint l'agenda, `/evenements` disparaît
+
+**Config seule** (`config.prod.tiers-lieux.json`), sur le patron de `/actualites` de
+saint-paul-sport : `searchHeader` + `tabs`. Le costum porte déjà des articles (`type:"article"`
+scopés `navigatorDesTierslieux`) que le site n'exposait nulle part — le module `blog` étant `core`,
+seule la surface manquait.
+
+- **`/evenements` est remplacée par `/actualites`**, pas doublée : la section `agenda` déménage
+  telle quelle dans l'onglet « Événements » (ses 3 `sourceKey` — `franceTierslieux`,
+  `tierslieuxbelgique`, `navigatorDesTierslieux` — et sa gestion à venir/en cours/passés sont
+  conservées). Les **trois liens entrants** ont suivi : menu « Se gouverner », colonne du footer,
+  et le bouton « voir tous » du teaser agenda de la home.
+- **Une seule barre de recherche pour les deux onglets** : le `searchHeader` produit le
+  `PageFilters` que lisent `articleFeed` (`useArticleFeed`) **et** `agenda` (`Agenda.tsx` — d'où le
+  passage de son `filters.text` à `false` : sans ça, deux champs de recherche cohabitaient). Vérifié
+  au navigateur : « évaluation » → 1 actu / 0 événement, « phare » → 1 événement.
+- **`config.blog` ajouté** (`feedCostumSlug: navigatorDesTierslieux`) — ouvre `/blog/feed.xml` et la
+  commande ⌘K `blog:articles`. **Sans `publicFilters`** : les 2 articles du costum n'ont pas de
+  `publicationStatus`, un filtre `{publicationStatus:"Publié"}` viderait flux ET palette.
+- **Pas de `featured`** sur les fils : les articles n'ont pas d'image, et la « une » du variant
+  `default` rendait un aplat vide de ~640 px de haut. Grille simple à la place.
+- **Pas de `headlineClassName: "text-white …"`** recopié de saint-paul : `--gradient-section` va ici
+  de `primary` (teal foncé) à `accent` (teal très clair) — du blanc y serait illisible à droite. Le
+  défaut `text-foreground` tient l'AA sur la partie la plus sombre (≈ 4,6:1), vérifié au navigateur
+  en clair **et** en sombre, et à 390/320 px sans débordement horizontal.
+- **Gates** : `config:validate` ✅ · `audit:config` RAS (1 assumé) · `config:render` 14/14 pages,
+  26/26 sections · `config:probe` 10/10 périmètres peuplés (l'agenda de l'onglet ramène 359 events).
+  Deux snapshots resynchronisés en conséquence : `tests/preflight/__effective__/tiers-lieux.json` et
+  l'exemple `agenda-multi-sources` de la skill (son sélecteur pointait `pages[path=/evenements]`).
+- **⚠️ `/evenements` n'a pas de redirection** — la config ne sait pas en poser. Un lien externe vers
+  l'ancienne URL tombe sur le 404. À arbitrer si l'URL était partagée.
+
+---
 
 ### 31/08 — un usage non évalué n'était pas compté comme tel
 
@@ -443,7 +576,7 @@ d'autres projets, tous vérifiés non régressifs à son égard :
 | 3 | Recherche des lieux | ✅ | `/lieux` — panneau à 5 groupes sur 4 303 entités |
 | 4 | Observatoire | ✅ | 10 dimensions, 7 filtres, 6 graphes, table, export CSV, drill-down |
 | 5 | Réseaux régionaux / thématiques | ✅ | Deux angles sur 19 réseaux |
-| 6 | Agenda | ✅ | Teaser sur `/` + page dédiée — 358 événements |
+| 6 | Agenda | ✅ | Teaser sur `/` + onglet « Événements » de `/actualites` (ex-page `/evenements`, cf. §9 07/09) — 359 événements |
 | 7 | Ajout d'un tiers-lieu | ✅ | Formulaire costum (27 champs) + bouton flottant |
 | 8 | Campagne `ampli` | ✅ | « amplifions » — **seul emploi du module dans le parc** |
 | 9 | Palette ⌘K | ✅ | `entitySearch` |
@@ -454,6 +587,11 @@ d'autres projets, tous vérifiés non régressifs à son égard :
 | 14 | Propagation des tags depuis le form (typologie/portage/surface) | 🟡 | 3 stamps `$mapLabels`/`$bucket` + test d'intégration vraie chaîne (6/6) — commité (`9bbd7a4d`) ; reste l'e2e navigateur live (créer un lieu → facettes) |
 | 15 | Middleware `imageUpload` : dossier ← champ `images` de `sites.json` | ✅ | `imageFolderForSlug` + test 7/7 ; tue le dossier fantôme + l'upload dans un dossier non servi. Commité (`4831f146`) |
 | 16 | Catalogue d'outils `/usages` (module `toolsCatalog`) | 🟡 | Livré 06/08 (`85520742`, corrections `2a1803ea`) ; review MR#33 le 10/08 : **15 constats corrigés** (`252b50e8`), SDK `1.0.183` (`36b4a7dd`), fix readonly `commonTable` (`914dcec0`) — gates verts. Puis 10/08bis : **bug de données du détail corrigé** (`b69071c3`, `20a28d9c`, `e3cb6a6a`, `d98b6a79`) avec SDK `1.0.184` (`c12f2e43`). Reste : **aucun test de non-régression sur `normalizedName`** (cf. §9 10/08bis) et l'e2e navigateur du parcours complet |
+| 17 | Actus & Événements (`/actualites` + `/blog`) | 🟡 | Livré 07/09 — `searchHeader` + `tabs` (`articleFeed` / `agenda`), `config.blog` posé. Gates verts, rendu vérifié clair/sombre/mobile. Reste : **le costum n'a que 2 articles, sans image ni `publicationStatus`** — page maigre tant que la rédaction ne suit pas ; et pas de redirection pour l'ancienne URL `/evenements` |
+| 18 | Publication depuis `/admin` (actus + événements) | ⛔ | Onglets et formulaires livrés 07/09 (calqués sur saint-paul, routes `editModals` posées, `parentFromCarrier` ajouté). **La création d'ACTUALITÉ est bloquée par le SDK** : `POI_TYPES` (1.0.191) ne contient pas `"article"`, `ADD_POI` échoue à la validation AVANT l'appel réseau — cf. `Document de spécification — POI_TYPES sans « article »…`. Touche AUSSI saint-paul, parent62 et Ekilib.re. Le volet **événements** n'est pas concerné (`EVENT_TYPES` couvre les 20 valeurs du form). Bouton « Ajouter un POI » des profils désactivé (`addConfig.poi: false`) tant que le SDK bloque, sinon il ouvrait un formulaire incapable d'enregistrer |
+| 19 | Palette : le jaune hors de `secondary` | ✅ | 07/09 — `secondary` passé en sable sourd (clair et sombre), jaune vif conservé sous `warning`. Corrige un `text-secondary-foreground` à **1,06:1** en sombre et trois pastilles `bg-yellow-400`/`text-white` à **1,53:1** sur la home. Contrastes remesurés au navigateur |
+| 20 | Annuaire des ressources (`/annuaire-ressources`) | ✅ | 08/09 — page ajoutée : section `coform-resource-directory` (module `search`, variant `navigator-tl-ressource`). Facettes type + 3 groupes prix, carte carrousel + filtre « porté par », modal « En savoir plus » (bouton « Réserver » / `mailto:`). Détail moteur : `doc/07-module-search.md`. Gates config/tsc/eslint/préflights ✅ |
+| 21 | Admin — onglet « Référencement » | ✅ | 08/09 — `admin.tabs[]` `referencement` + section `type: "reference"`, `entityTypes: ["organizations", "citoyens"]` (config seule). `setsource` add/remove collection-agnostique. Gates config/effective-config/admin ✅ |
 
 ---
 
@@ -476,8 +614,9 @@ dans `commentaire/sdk-tools-catalog.md` (notes locales, hors dépôt).
 | Upload de l'image d'un outil | ✅ présent | `entity.uploadDocument(file, {contentKey: "icons", docType: "image"})` — même `contentKey` que le legacy |
 | `BaseEntity.setCostumScope(slug, {pinSchema})` — **épingle du schéma** pour ÉDITER un lieu de l'annuaire | ⛔ **À DEMANDER** | Bloque l'édition d'un lieu (`[DraftProxy] Le champ "holderOrganization" n'est pas autorisé.`). Mesuré sur 3 lieux réels : 2 échouent. Cf. §11.2 |
 
-La config dépend par ailleurs du variant **`navigator-tl`** : toute évolution de cet endpoint la
-touche en premier.
+La config dépend par ailleurs des variants `searchCostum` **`navigator-tl`** (pages `/lieux` etc.) et
+**`navigator-tl-ressource`** (page `/annuaire-ressources` → endpoint `/costum/navigator/getsressourcetl`,
+`Navigator::getRessourceTL`) : toute évolution de ces endpoints touche la config en premier.
 
 ### 11.1 ✅ Livrée le 11/08 — `normalizedName` sur `COSTUM_TOOL_USERS`
 
