@@ -108,3 +108,23 @@ export function copyStatusOf(row: RowLike, index: CopyIndex, keys: readonly stri
   if (sig !== null && index.signatures.has(sig)) return { status: "probable" };
   return { status: "new" };
 }
+
+/** Ordre d'affichage des états : ce que l'admin peut encore faire remonte en tête. */
+const STATUS_RANK: Record<CopyStatus, number> = { new: 0, probable: 1, copied: 2 };
+
+export interface RankedRow<T extends RowLike> {
+  row: T;
+  verdict: CopyVerdict;
+}
+
+/**
+ * Candidates ordonnées par état — « À copier », puis « Doublon probable », puis « Copié » — l'ordre
+ * d'arrivée (tri serveur, ex. plus récent d'abord) étant conservé DANS chaque groupe (tri stable).
+ * Le verdict est calculé une fois par ligne ici, pas à chaque rendu de cellule.
+ */
+export function rankByCopyStatus<T extends RowLike>(rows: readonly T[], index: CopyIndex, keys: readonly string[]): RankedRow<T>[] {
+  return rows
+    .map((row) => ({ row, verdict: copyStatusOf(row, index, keys) }))
+    .sort((a, b) => STATUS_RANK[a.verdict.status] - STATUS_RANK[b.verdict.status]);
+}
+

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildCopyIndex, copyStatusOf, DEFAULT_DUPLICATE_KEYS, rowId, rowSignature } from "./answerCopy";
+import { buildCopyIndex, copyStatusOf, DEFAULT_DUPLICATE_KEYS, rankByCopyStatus, rowId, rowSignature } from "./answerCopy";
 
 /**
  * Trois états décident de ce que l'admin PEUT faire (copier, confirmer, rien) : la trace
@@ -85,3 +85,28 @@ describe("buildCopyIndex / copyStatusOf", () => {
     expect(copyStatusOf(row("s1", { name: "A" }), both, ["name"])).toEqual({ status: "copied", copyId: "c1" });
   });
 });
+
+describe("rankByCopyStatus — ordre d'affichage", () => {
+  it("« À copier » d'abord, puis « probable », puis « Copié » ; ordre d'arrivée conservé dans chaque groupe", () => {
+    const index = buildCopyIndex(
+      [row("c1", { copiedFrom: "s1" }), row("c2", { name: "Zumba" })],
+      ["name"],
+    );
+    const rows = [
+      row("s1", { name: "Pilates" }), // copié
+      row("s2", { name: "Zumba" }), // probable
+      row("s3", { name: "Marche" }), // nouveau
+      row("s4", { name: "Vélo" }), // nouveau
+      row("s5", { name: "zumba " }), // probable (normalisation)
+    ];
+    const ranked = rankByCopyStatus(rows, index, ["name"]);
+    expect(ranked.map((r) => `${r.row.id}:${r.verdict.status}`)).toEqual([
+      "s3:new", "s4:new", "s2:probable", "s5:probable", "s1:copied",
+    ]);
+  });
+
+  it("liste vide → liste vide", () => {
+    expect(rankByCopyStatus([], buildCopyIndex([], ["name"]), ["name"])).toEqual([]);
+  });
+});
+

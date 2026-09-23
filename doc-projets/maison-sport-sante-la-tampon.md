@@ -1423,7 +1423,9 @@ liste + bouton « Copier », avec déduplication.
   déjà copié / inputs inconnus / erreur, marquage local « Copié », invalidation `admin-*` +
   surfaces publiques), `AdminAnswerCopySection.tsx` (candidates en scroll infini `variant:"admin"` +
   `notSourceKey` d'office ; index cible chargé EN ENTIER à chaque montage, « Copier » désactivé
-  tant qu'il charge, refetch ou erreur ; « Doublon probable » → confirmation — 9 tests de câblage).
+  tant qu'il charge, refetch ou erreur ; « Doublon probable » → confirmation ; lignes ordonnées
+  par état, « À copier » en tête — demande du 23/09 après recette, `rankByCopyStatus` ; 10 tests de
+  câblage).
   Dédup : `STATUS_TONE_CLASS` et `normalizeColumns` dans `resourceHelpers` (partagés avec
   resource/reference), `components/AdminTableShell.tsx` (partagé avec reference).
 - **Config** : onglet `creneaux-ssbe` « Créneaux SSBE » (siteAdmin, icône `copy`) — source = form SSBE
@@ -1431,8 +1433,11 @@ liste + bouton « Copier », avec déduplication.
   (`$or` — revue : **7 créneaux validés du Tampon** n'ont leur CP que dans les lieux, adresse
   principale `[]` : Multi activités, Remise en forme en salle équipée, Éveil sportif, Gym : yogging,
   Hatha yoga, Marche et remise en forme ×2 ; périmètre mesuré : 46 → **53** ; `copyCreneaux` aligné),
-  tri `created` desc, recherche sur l'intitulé ; colonnes Activité / Structure / CP / Statut SSBE /
-  Déposé le. Placé avant « Modération » : copier, puis modérer.
+  tri `created` desc, page de 60 (le stock tient en une page → l'ordre par état est exact
+  d'emblée), recherche sur l'intitulé ; colonnes Activité / Structure / CP / Statut SSBE /
+  Déposé le. Placé avant « Modération » : copier, puis modérer. **Recette du 23/09 (Peterson)** :
+  après `declareCopySources/apply/1`, le créneau « TEST BASKET » déposé sur SSBE apparaît dans
+  l'onglet.
 - **Revue adversariale** (workflow, 4 dimensions : PHP, bonnes pratiques, fonctionnel, contrat de bout
   en bout) → 29 constats, tous instruits : 2 HIGH (garde contournable, source non bornée — corrigés),
   4 MEDIUM (hook non borné, 7 créneaux invisibles, index en erreur pris pour vide, « Copié » figé

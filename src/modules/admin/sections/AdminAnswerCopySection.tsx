@@ -17,7 +17,7 @@ import type { SearchType } from "@/modules/search/schema";
 import { AdminTableShell } from "../components/AdminTableShell";
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
 import { useCopyAnswer, type CopyAnswerVariables } from "../hooks/useCopyAnswer";
-import { buildCopyIndex, copyStatusOf, DEFAULT_DUPLICATE_KEYS, rowData, rowId, type CopyStatus } from "../lib/answerCopy";
+import { buildCopyIndex, DEFAULT_DUPLICATE_KEYS, rankByCopyStatus, rowData, rowId, type CopyStatus } from "../lib/answerCopy";
 import type { AdminAnswerCopySection as AdminAnswerCopySectionConfig, AdminSection } from "../schema";
 import { formatColumnCell, normalizeColumns, STATUS_TONE_CLASS } from "./resourceHelpers";
 
@@ -55,6 +55,10 @@ const STATUS_BADGE_CLASS: Record<CopyStatus, string | undefined> = {
  *  - **copie** : `useCopyAnswer` (serveur, idempotente). Un « Doublon probable » demande
  *    confirmation — le serveur ne connaît pas l'empreinte, seule la trace `copiedFrom` le protège.
  *    Une ligne copiée passe « Copié » immédiatement (mémoire locale), sans attendre le refetch.
+ *
+ * Affichage : les lignes CHARGÉES sont ordonnées par état (« À copier » en tête, « Copié » en
+ * queue — `rankByCopyStatus`), l'ordre serveur restant celui de chaque groupe. Le tri porte sur
+ * les pages déjà reçues : une page suivante se range à son tour, une ligne copiée descend.
  */
 export default function AdminAnswerCopySection({ section }: { section: AdminSection }) {
   const cfg = section as AdminAnswerCopySectionConfig;
@@ -132,6 +136,7 @@ export default function AdminAnswerCopySection({ section }: { section: AdminSect
   };
 
   const rows = candidates.transformedResults ?? [];
+  const ranked = useMemo(() => rankByCopyStatus(rows, index, duplicateKeys), [rows, index, duplicateKeys]);
   const canCopy = indexState === "ready" && !mutation.isPending;
 
   const indexStatus = (
@@ -164,13 +169,13 @@ export default function AdminAnswerCopySection({ section }: { section: AdminSect
     </TableRow>
   );
 
-  const body = rows.map((item, i) => {
+  const body = ranked.map(({ row: item, verdict }, i) => {
     const data = rowData(item);
     const id = rowId(item);
     const name = (typeof data.name === "string" && data.name) || id;
-    const verdict = copyStatusOf(item, index, duplicateKeys);
     return (
-      <TableRow key={id || i} ref={i === rows.length - 1 ? candidates.lastItemRef : undefined}>
+      // La sentinelle du scroll infini reste sur la DERNIÈRE ligne rendue, quel que soit son état.
+      <TableRow key={id || i} ref={i === ranked.length - 1 ? candidates.lastItemRef : undefined}>
         {columns.map((col) => (
           <TableCell key={col.path} className="max-w-[14rem] truncate">
             {formatColumnCell(data, col.path, tSearch)}

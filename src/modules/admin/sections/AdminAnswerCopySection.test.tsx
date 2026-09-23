@@ -99,16 +99,22 @@ describe("AdminAnswerCopySection — états et actions", () => {
     expect(getAllByText(COPY)).toHaveLength(2);
   });
 
+  it("les lignes sont rendues « À copier » d'abord, « Copié » en dernier (ordre serveur : s1, s2, s3)", () => {
+    const { getAllByRole } = render(<AdminAnswerCopySection section={SECTION} />);
+    const cells = getAllByRole("row").slice(1).map((r) => r.querySelector("td")?.textContent);
+    expect(cells).toEqual(["Marche", "Zumba", "Pilates"]);
+  });
+
   it("« À copier » → mutation immédiate avec l'id source et l'intitulé", () => {
     const { getAllByText } = render(<AdminAnswerCopySection section={SECTION} />);
-    const [, nouveau] = getAllByText(COPY); // ordre des candidates : s2 (probable), s3 (new)
+    const [nouveau] = getAllByText(COPY); // ordre AFFICHÉ : s3 (new) puis s2 (probable)
     fireEvent.click(nouveau);
     expect(ctx.mutate).toHaveBeenCalledWith({ answerId: "s3", name: "Marche" });
   });
 
   it("« Doublon probable » → confirmation d'abord, mutation après", () => {
     const { getAllByText, getByText } = render(<AdminAnswerCopySection section={SECTION} />);
-    const [probable] = getAllByText(COPY);
+    const [, probable] = getAllByText(COPY);
     fireEvent.click(probable);
     expect(ctx.mutate).not.toHaveBeenCalled();
     fireEvent.click(getByText("AdminAnswerCopySection.confirmAction"));
