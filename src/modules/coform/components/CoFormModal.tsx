@@ -248,7 +248,6 @@ export function CoFormModal({
               elementType={elementType}
               unknownFieldVariant={unknownFieldVariant}
               hideBanner={hideBanner}
-              inModal
             />
           </div>
         </DialogContent>
