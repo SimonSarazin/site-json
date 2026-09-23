@@ -139,6 +139,13 @@
       "cancel": "Annuler",
       "confirm": "Ne plus participer"
     },
+    "deleteEvent": "Supprimer",
+    "deleteEventDialog": {
+      "title": "Supprimer cet événement ?",
+      "description": "« {{name}} » sera supprimé pour tout le monde, avec ses participants et ses liens. Cette action est définitive.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer définitivement"
+    },
     "membershipPending": "Demande en attente",
     "contributorPending": "Demande en attente",
     "participationPending": "Demande en attente",
@@ -778,6 +785,10 @@
       "eventError": "Impossible de créer l'événement",
       "poiSuccess": "Lieu créé avec succès",
       "poiError": "Impossible de créer le lieu"
+    },
+    "element": {
+      "deleteEventSuccess": "Événement supprimé",
+      "deleteEventError": "Impossible de supprimer l'événement"
     },
     "gallery": {
       "addSuccess": "Image ajoutée à la galerie",

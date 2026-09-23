@@ -139,6 +139,13 @@
       "cancel": "Cancel",
       "confirm": "Stop participating"
     },
+    "deleteEvent": "Delete",
+    "deleteEventDialog": {
+      "title": "Delete this event?",
+      "description": "“{{name}}” will be deleted for everyone, along with its attendees and links. This cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete permanently"
+    },
     "membershipPending": "Request pending",
     "contributorPending": "Request pending",
     "participationPending": "Request pending",
@@ -778,6 +785,10 @@
       "eventError": "Failed to create event",
       "poiSuccess": "Location created successfully",
       "poiError": "Failed to create location"
+    },
+    "element": {
+      "deleteEventSuccess": "Event deleted",
+      "deleteEventError": "Unable to delete the event"
     },
     "gallery": {
       "addSuccess": "Image added to gallery",
