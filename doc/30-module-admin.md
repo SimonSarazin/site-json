@@ -343,7 +343,7 @@ Export CSV du costum (`exportElements` + `toCsv`), filtre par statut de validati
   "search": {                                    // ciblage des CANDIDATES (optionnel)
     "openData": "optOut",                        // "optIn" (défaut code) | "optOut" | "off"
     "defaultFilters": {                          // vivier commun à toutes les collections
-      "source.keys": "sportSanteBienetre",
+      "source.key": "sportSanteBienetre",       // provenance PRINCIPALE (voir ⚠ ci-dessous)
       "address.postalCode": { "$in": ["97430", "97418"] } },
     "defaultFiltersByType": { "events": { "…": "…" } } },   // ciblage PAR collection
   "moderateReferenced": false }   // opt-in : les référencés arrivent "à modérer"
@@ -361,6 +361,17 @@ trois couches, dont deux seulement sont configurables :
 | Politique **open-data** (`search.openData`) | oui, au niveau section | `optIn` = fidèle legacy (`preferences.isOpenData: true`) · `optOut` = tout sauf refus EXPLICITE (`{ $nin: [false, "false"] }`) · `off` = aucun filtre open-data |
 | Ciblage du vivier | oui | `search.defaultFilters` (commun à toutes les collections) ⊕ `search.defaultFiltersByType.<collection>` fusionné **par-dessus** le commun |
 | Garde-fous du déjà rattaché/référencé | **non** | `$nin` sur `reference.costum` et `source.keys` (le costum courant), fusionnés **même-clé** par-dessus la config : un ciblage `source.keys` devient `$in` et s'unionne au `$nin` de garde |
+
+⚠ **Cibler la provenance : `source.key` (principale), pas `source.keys`.** `source.keys` est le
+tableau de TOUS les costums auxquels l'élément est rattaché ; `source.key` est sa source principale
+(colonne « Provenance »). Un ciblage `source.keys` est fusionné avec la garde `$nin` sur la même clé →
+`{ $in, $nin }`. Or `SearchNew::searchFilters` (backend) n'appliquait **qu'un opérateur par clé** :
+`$nin` gagnait, le `$in` était perdu **en silence** et tout le vivier remontait (autres provenances,
+provenance vide). Corrigé côté backend (branche `fix/search-filters-in-nin-combined` de
+`citizenToolKit`, à déployer) ; en attendant — et pour exclure aussi les éléments **sans**
+provenance — cibler `source.key` (scalaire, clé distincte de la garde). Constaté sur Ekilib.re le
+21/09/2026 (organisations transiter / cocityPrez / LaReunionDesTiersLieux dans le vivier
+`sportSanteBienetre`).
 
 ⚠ Le `.default("optIn")` du schéma **ne tourne jamais** (la config n'est pas parsée par Zod au
 runtime) : sans clé `openData` écrite explicitement, c'est le repli **code** `search?.openData ?? "optIn"`

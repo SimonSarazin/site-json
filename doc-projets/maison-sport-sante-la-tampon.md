@@ -15,7 +15,7 @@
 > 06/07) · [`ENDPOINT.md`](../../ENDPOINT.md) (fiches d'endpoints SDK à créer). Mémoire :
 > `[[project-maison-sport-sante-la-tampon]]`.
 
-Dernière mise à jour : **2026-09-15** (§9.17/§9.17 bis : formulaire `structure` aligné sur la refonte
+Dernière mise à jour : **2026-09-21** (§9.18 : vivier de l'onglet admin Référencement réellement restreint à la provenance `sportSanteBienetre` — cause backend trouvée ; §9.17/§9.17 bis : formulaire `structure` aligné sur la refonte
 dynForm-legacy de sport-sante-bienetre-organizations — SSBE, 09/09 — puis recette navigateur et
 correctif d'un bug d'édition des pièces jointes dans `PreviewStructure.tsx` (partagé SSBE), session en
 cours non commitée).
@@ -1034,6 +1034,12 @@ Le back-office passe à **six onglets** — Tableau de bord, Membres, Actualité
   (tout sauf refus explicite). **Sans ce réglage la vue serait vide** — le garde-fou legacy par
   défaut exige `preferences.isOpenData: true`, que le stock ne porte pas.
 
+> ⚠️ **Correction du 21/09 — le ciblage `source.keys: sportSanteBienetre` décrit ci-dessus n'a jamais
+> filtré quoi que ce soit.** Le serveur ignorait le `$in` dès qu'un `$nin` de garde figurait sur la même
+> clé (cf. §9.18) : le vivier remontait toutes les provenances. Le vivier est désormais ciblé sur
+> `source.key` (provenance principale). Les 14 fiches référencées le 20/08 ne sont pas concernées
+> (référencement fiche par fiche, pas par ce filtre).
+
 **14 organisations du Tampon** ont été référencées le 20/08 sur la base de **DEV**, par le canal de
 l'action admin et non par écriture Mongo directe.
 
@@ -1483,6 +1489,44 @@ navigateur).
 ⚠️ **Leçon retenue pour la suite** : `config:costum-drift` doit toujours être lancé avec
 `VITE_COSTUM_FORCE_LIVE=true` explicitement exporté — sans lui, la garde compare au bundle SDK figé et
 peut signaler un faux « fantôme » (constaté sur ce lot, cause d'un aller-retour évitable).
+
+### 9.18 Onglet admin « Référencement » : le vivier n'était pas restreint à `sportSanteBienetre` (21/09)
+
+**Symptôme** (signalé par Nicolas, capture réseau à l'appui) : dans le sous-onglet « Rechercher &
+référencer », des organisations de provenance `transiter`, `cocityPrez`, `LaReunionDesTiersLieux` — et
+même **sans provenance** — remontaient, alors que la config cible `sportSanteBienetre`.
+
+**Cause** : la requête partait bien avec `filters[source.keys][$in]=sportSanteBienetre` **et**
+`filters[source.keys][$nin]=associationEkilibre` (la garde « déjà rattaché » du composant, fusionnée sur
+la même clé — [`buildOpenSearchFilters`](../src/modules/admin/sections/AdminReferenceSection.tsx)). Mais
+`SearchNew::searchFilters` (backend, `citizenToolKit/models/SearchNew.php`) est une chaîne de `else if` :
+**un seul opérateur par clé**, et `$nin` est testé avant `$in`. Le `$in` était donc jeté en silence ; la
+requête réelle se réduisait à « `source.keys` ne contient pas associationEkilibre » — ce qui accepte aussi
+les documents où le champ est absent (d'où la provenance vide). Reproduit en isolant `searchFilters`
+(script PHP + stubs Mongo) avant toute modification.
+
+**Correctifs** (trois couches, non commités) :
+
+| Couche | Changement |
+|---|---|
+| Config | `search.defaultFilters` de l'onglet Référencement : `"source.keys"` → **`"source.key"`** (provenance principale, scalaire, clé distincte de la garde). Fonctionne **avec ou sans** le correctif backend, et exclut aussi la provenance vide |
+| Backend (`citizenToolKit`, branche locale `fix/search-filters-in-nin-combined`) | branche `$nin` de `searchFilters` : combine `$in` + `$nin` sur une même clé (y compris conversion `MongoId` pour `_id`). `$nin` seul et `$in` seul inchangés. Aucun appelant existant ne combinait les deux via ce chemin |
+| site-json | commentaire de `buildOpenSearchFilters` (dépendance au correctif backend + repli `source.key`), test de non-régression sur `source.key`, [doc/30](../doc/30-module-admin.md) |
+
+**Gates** : `config:validate` ✅ (13 pages / 49 sections) · `audit:config` ✅ RAS pour ce site ·
+`typecheck` ✅ · test `buildOpenSearchFilters` ✅ 6/6 · lint : 0 erreur (1 warning préexistant,
+`react-refresh/only-export-components`) · backend : `php -l` ✅ + 5 cas isolés ✅ (dont le cas du bug,
+d'abord rouge). **Rendu navigateur non rejoué** : l'endpoint admin exige une session — à vérifier en
+rechargeant l'onglet (le payload doit porter `filters[source.key]=sportSanteBienetre`, la colonne
+Provenance ne doit contenir que cette valeur).
+
+⚠️ **À confirmer** : les organisations dont `source.keys` contient `sportSanteBienetre` mais dont
+`source.key` est vide ou autre sont désormais **exclues** du vivier — c'est la demande (« uniquement ce qui
+provient de `sportSanteBienetre` »), mais le volume exact n'a pas été mesuré en base.
+
+⚠️ **Déploiement** : le correctif backend est **indépendant** de la config (la config seule suffit ici).
+Il corrige le défaut pour tout autre appelant de `searchFilters` ; à livrer avec le prochain
+déploiement de `citizenToolKit`.
 
 ---
 
