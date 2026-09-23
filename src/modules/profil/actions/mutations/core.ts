@@ -22,6 +22,11 @@ export function getEntityType(entity: EntityTypes): EntityType | null {
   return null;
 }
 
+interface ToastKeys {
+  successKey: string;
+  errorKey: string;
+}
+
 /**
  * Configuration pour créer une mutation d'entité
  */
@@ -30,10 +35,13 @@ export interface EntityMutationConfig<TParams = void> {
   entityTypes?: EntityType[];
   /** Action à exécuter */
   action: (entity: EntityTypes, params: TParams) => Promise<void>;
-  /** Clés i18n pour les toasts */
-  i18n: {
-    successKey: string;
-    errorKey: string;
+  /**
+   * Clés i18n pour les toasts. `byType` surcharge par type d'entité : une même action
+   * (`requestToJoin`, `leave`) n'a pas le même sens sur une organisation (membre), un projet
+   * (contributeur) ou un événement (participation).
+   */
+  i18n: ToastKeys & {
+    byType?: Partial<Record<EntityType, ToastKeys>>;
   };
   /** Fonction pour calculer les query keys à invalider */
   invalidate: (entity: EntityTypes, me: User | null) => QueryKey[];
@@ -58,6 +66,8 @@ export function createEntityMutation<TParams = void>(config: EntityMutationConfi
   return function useEntityMutation(entity: EntityTypes | null) {
     const queryClient = useQueryClient();
     const { me } = useCocolight();
+    const entityType = entity ? getEntityType(entity) : null;
+    const toastKeys = (entityType && config.i18n.byType?.[entityType]) || config.i18n;
 
     return useMutationWithToast<void, TParams>({
       mutationFn: async (params) => {
@@ -85,8 +95,8 @@ export function createEntityMutation<TParams = void>(config: EntityMutationConfi
         await config.action(entity, params);
       },
       namespace: "modules/profil",
-      successKey: config.i18n.successKey,
-      errorKey: config.i18n.errorKey,
+      successKey: toastKeys.successKey,
+      errorKey: toastKeys.errorKey,
       getSuccessParams: config.getSuccessParams
         ? (_, params) => config.getSuccessParams!(entity!, params)
         : undefined,
