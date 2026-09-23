@@ -1,4 +1,5 @@
 import type { AdminResourceSection } from "../schema";
+import type { LocalizedString } from "@/types/locale-schema";
 import { formatDateLong, resolveEventStartDate } from "@/helpers/formatDate";
 import { formatRecurrenceLabel, type Translate } from "@/modules/search/lib/openingHoursDays";
 
@@ -120,6 +121,36 @@ export function resolveEditModal(section: AdminResourceSection): { enabled: bool
   if (edit === "standard") return { enabled: true, modalName: "edit-profile" };
   if (typeof edit === "string" && edit !== "inherit") return { enabled: true, modalName: edit };
   return { enabled: true, modalName: null }; // inherit → résolution publique
+}
+
+/** Tons de badge d'un STATUT — MÊMES tokens `bg-badge-*` que les badges des cartes publiques
+ *  (`getStatusStyle`, search/lib/coformAnswer) : modération (`statusField`), reprise de réponses
+ *  (`answerCopy`) et annuaire racontent un état avec les mêmes couleurs. */
+export const STATUS_TONE_CLASS: Record<string, string> = {
+  positive: "bg-badge-valid text-primary-foreground",
+  pending: "bg-badge-waiting text-primary-foreground",
+  progress: "bg-badge-in-progress text-primary-foreground",
+  negative: "bg-badge-refused text-primary-foreground",
+};
+
+/** Colonne de table admin, forme longue (la forme courte `"path"` est normalisée en `{ path }`). */
+export interface AdminColumn {
+  path: string;
+  label?: LocalizedString;
+  type?: "text" | "audio";
+  sortable?: boolean;
+}
+
+/**
+ * Normalise `columns` (config `AdminColumnsSchema` : chaîne brute ou objet) vers la forme longue —
+ * même règle pour les sections resource, reference et answerCopy. `defaults` quand la config n'en
+ * déclare pas.
+ */
+export function normalizeColumns(
+  columns: ReadonlyArray<string | AdminColumn> | undefined,
+  defaults: ReadonlyArray<string | AdminColumn>,
+): AdminColumn[] {
+  return (columns ?? defaults).map((c) => (typeof c === "string" ? { path: c } : { ...c }));
 }
 
 /** Lit un chemin pointé (ex. `"address.city"`) dans un objet. */
