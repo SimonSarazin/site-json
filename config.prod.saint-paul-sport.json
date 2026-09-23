@@ -80,6 +80,14 @@
       },
       {
         "label": {
+          "fr": "Annuaire",
+          "en": "Directory"
+        },
+        "path": "/annuaire",
+        "icon": "users"
+      },
+      {
+        "label": {
           "fr": "Observatoire",
           "en": "Observatory"
         },
@@ -1868,11 +1876,18 @@
                   "fields": {
                     "finder": "mrc3ungb2a9vu945ik8",
                     "user": "mrc3w4o7rguvxc2vkyq",
+                    "userOrga": "n0a7usagerorga1k9z",
                     "activity": "mrc3xumnggn5f530i9",
                     "slots": "mrc40jaxu06fjaa6ngn",
                     "periodStart": "mrc41scujf3aq9ppw1l",
                     "periodEnd": "mrc4259ir2xnu4vp2fq",
                     "bookingType": "mrc3zgl902y2fpfcby3y"
+                  },
+                  "booking": {
+                    "startHour": 8,
+                    "endHour": 22,
+                    "slotMinutes": 60,
+                    "adminOnly": true
                   }
                 },
                 "installationDashboard": {
@@ -2375,6 +2390,136 @@
         "description": {
           "fr": "Annuaire des équipements sportifs de Saint-Paul — filtres par secteur, type, aménagements et accès PMR.",
           "en": "Directory of sports facilities in Saint-Paul — filter by area, type, amenities and accessibility."
+        }
+      }
+    },
+    {
+      "path": "/annuaire",
+      "title": {
+        "fr": "Annuaire des associations - Saint-Paul Sport",
+        "en": "Clubs directory - Saint-Paul Sport"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "annuaire-header",
+          "props": {
+            "headline": {
+              "fr": "Les associations utilisatrices",
+              "en": "User associations"
+            },
+            "subhead": {
+              "fr": "Les structures qui réservent les équipements sportifs de Saint-Paul",
+              "en": "Organisations booking Saint-Paul sports facilities"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une association…",
+              "en": "Search an association…"
+            },
+            "showActiveFiltersTags": false
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-annuaire-orgas",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Toutes les associations",
+                "en": "All associations"
+              }
+            },
+            "showSearch": false,
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": true,
+            "defaultViewMode": "list",
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "showDetailedViewToggle": false,
+            "baseParams": {
+              "costumSlug": "saintpaulSport1",
+              "notSourceKey": true,
+              "defaultTypes": [
+                "organizations"
+              ],
+              "defaultFilters": {
+                "$or": {
+                  "tags": {
+                    "$in": [
+                      "usagerEquipementSportif"
+                    ]
+                  }
+                }
+              },
+              "defaultSortBy": {
+                "name": 1
+              },
+              "searchBy": [
+                "name",
+                "shortDescription",
+                "tags"
+              ],
+              "indexStepList": 24,
+              "indexStepMap": 500,
+              "defaultFields": [
+                "name",
+                "slug",
+                "collection",
+                "type",
+                "source",
+                "shortDescription",
+                "description",
+                "tags",
+                "address",
+                "geo",
+                "geoPosition",
+                "profilImageUrl",
+                "profilMediumImageUrl",
+                "profilThumbImageUrl",
+                "links",
+                "counts",
+                "created"
+              ]
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 3
+              },
+              "previewParam": "preview",
+              "card": {
+                "type": "profile",
+                "showDescription": true,
+                "showAddress": true,
+                "showStats": false,
+                "detailsMode": "drawer"
+              },
+              "preview": {
+                "type": "structure"
+              },
+              "itemAction": {
+                "kind": "preview"
+              }
+            },
+            "map": {
+              "marker": {
+                "style": "pin",
+                "color": "primary"
+              }
+            }
+          }
+        }
+      ],
+      "seo": {
+        "description": {
+          "fr": "Annuaire des associations qui réservent les équipements sportifs de Saint-Paul.",
+          "en": "Directory of the clubs booking Saint-Paul sports facilities."
         }
       }
     },
@@ -3303,11 +3448,18 @@
                     "fields": {
                       "finder": "mrc3ungb2a9vu945ik8",
                       "user": "mrc3w4o7rguvxc2vkyq",
+                      "userOrga": "n0a7usagerorga1k9z",
                       "activity": "mrc3xumnggn5f530i9",
                       "slots": "mrc40jaxu06fjaa6ngn",
                       "periodStart": "mrc41scujf3aq9ppw1l",
                       "periodEnd": "mrc4259ir2xnu4vp2fq",
                       "bookingType": "mrc3zgl902y2fpfcby3y"
+                    },
+                    "booking": {
+                      "startHour": 8,
+                      "endHour": 22,
+                      "slotMinutes": 60,
+                      "adminOnly": true
                     }
                   },
                   "installationDashboard": {
@@ -3699,11 +3851,18 @@
                     "fields": {
                       "finder": "mrc3ungb2a9vu945ik8",
                       "user": "mrc3w4o7rguvxc2vkyq",
+                      "userOrga": "n0a7usagerorga1k9z",
                       "activity": "mrc3xumnggn5f530i9",
                       "slots": "mrc40jaxu06fjaa6ngn",
                       "periodStart": "mrc41scujf3aq9ppw1l",
                       "periodEnd": "mrc4259ir2xnu4vp2fq",
                       "bookingType": "mrc3zgl902y2fpfcby3y"
+                    },
+                    "booking": {
+                      "startHour": 8,
+                      "endHour": 22,
+                      "slotMinutes": 60,
+                      "adminOnly": true
                     }
                   },
                   "installationDashboard": {
@@ -4586,11 +4745,18 @@
             "fields": {
               "finder": "mrc3ungb2a9vu945ik8",
               "user": "mrc3w4o7rguvxc2vkyq",
+              "userOrga": "n0a7usagerorga1k9z",
               "activity": "mrc3xumnggn5f530i9",
               "slots": "mrc40jaxu06fjaa6ngn",
               "periodStart": "mrc41scujf3aq9ppw1l",
               "periodEnd": "mrc4259ir2xnu4vp2fq",
               "bookingType": "mrc3zgl902y2fpfcby3y"
+            },
+            "booking": {
+              "startHour": 8,
+              "endHour": 22,
+              "slotMinutes": 60,
+              "adminOnly": true
             }
           },
           "installationDashboard": {
@@ -6900,6 +7066,7 @@
               "columns": 1,
               "fields": [
                 "name",
+                "organizer",
                 "type",
                 "shortDescription",
                 "description",
@@ -6978,6 +7145,28 @@
           "label": {
             "fr": "Titre de l'événement",
             "en": "Event title"
+          }
+        },
+        "organizer": {
+          "widget": "finder",
+          "type": "object",
+          "required": true,
+          "label": {
+            "fr": "Organisateur",
+            "en": "Organizer"
+          },
+          "placeholder": {
+            "fr": "Rechercher une association…",
+            "en": "Search an organisation…"
+          },
+          "info": {
+            "fr": "L'association qui organise cet événement — elle en devient l'organisateur.",
+            "en": "The club running this event — it becomes the event organiser."
+          },
+          "widgetProps": {
+            "searchTypes": [
+              "organizations"
+            ]
           }
         },
         "type": {

@@ -154,7 +154,7 @@
     }
   },
   {
-    "slug": "rezoSanteReunion",
+    "slug": "EcosystemeSanteReunion",
     "config": "config.prod.rezo-sante-reunion.json",
     "css": "index-rezo-sante-reunion",
     "images": "rezoSanteReunion",
@@ -167,7 +167,10 @@
     "css": "index-equipements-sportifs",
     "images": "equipementsSportifs974",
     "coolifyApp": "site-json-equipements-sportifs-scolaires",
-    "domain": "equipements-sportifs-scolaires.00.re"
+    "domain": "equipements-sportifs-scolaires.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "federationDesCae",

@@ -186,6 +186,53 @@
         ]
       }
     },
+    "/annuaire/searchProStatic": {
+      "baseParams": {
+        "costumSlug": "saintpaulSport1",
+        "notSourceKey": true,
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "tags": {
+              "$in": [
+                "usagerEquipementSportif"
+              ]
+            }
+          }
+        },
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "tags"
+        ],
+        "indexStepList": 24,
+        "indexStepMap": 500,
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "shortDescription",
+          "description",
+          "tags",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "links",
+          "counts",
+          "created"
+        ]
+      }
+    },
     "/observatoire/data-observatory": {
       "baseParams": {
         "defaultTypes": [
