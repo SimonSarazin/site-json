@@ -59,8 +59,9 @@ export const routes: ModuleRouteFactory = (_queryClient, config): RouteObject[] 
     path: "co2/person/validateinvitation/user/:user/validationKey/:validationKey",
     element: <ValidateInvitationPage />,
   },
-  // Réponse Accepter/Refuser d'une invitation par e-mail (≠ passerelle validateinvitation) :
-  // l'action n'est déclenchée qu'au clic.
+  // Réponse Accepter/Refuser par e-mail (≠ passerelle validateinvitation) — à une invitation
+  // (`invitation.php`) ou, pour un administrateur, à une DEMANDE (`askToBecome.php`, segments
+  // `linkOption`/`key` en plus, absorbés par le même splat) : l'action n'est déclenchée qu'au clic.
   //
   // ⚠️ `answer` N'EST PAS un segment de position fixe. `invitation.php` construit `$urlActions`
   // AVANT d'y coller la réponse : il y insère d'abord `/costum/true` (l.23) ou
@@ -70,7 +71,7 @@ export const routes: ModuleRouteFactory = (_queryClient, config): RouteObject[] 
   // Une route `…/targetId/:targetId/answer/:answer/*` ne matche pas cette forme : mesuré, elle
   // retombait sur la page d'accueil du site, sans erreur — donc silencieusement.
   // D'où le SPLAT unique : tout ce qui suit `targetId` est absorbé, et la page extrait `answer`
-  // du splat quel que soit l'ordre des segments (cf. `lireReponse` dans AcceptInvitationPage).
+  // du splat quel que soit l'ordre des segments (cf. `lireReponse`, `lib/reponseParMail.ts`).
   {
     path: "co2/link/validateinvitationbymail/userId/:userId/targetType/:targetType/targetId/:targetId/*",
     element: <AcceptInvitationPage />,

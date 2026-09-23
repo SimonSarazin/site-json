@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import { matchRoutes } from "react-router";
 
 import { routes } from "../routes";
-import { lireReponse } from "../pages/AcceptInvitationPage";
+import { lireReponse, lireSegment } from "../lib/reponseParMail";
 
 /**
  * Les liens de validation des e-mails DÉJÀ ENVOYÉS doivent résoudre sur
@@ -121,6 +121,19 @@ describe("routes de validation de compte (liens d'e-mails)", () => {
         expect(lireReponse(params["*"] ?? params.answer), forme).toBe(answer);
       }
     }
+  });
+
+  it("réponse à une DEMANDE : la forme émise par askToBecome.php est servie, linkOption et key relus", () => {
+    const TID = "5f8d0a1b2c3d4e5f60718293";
+    const lien =
+      `/co2/link/validateinvitationbymail/userId/${ID}/targetType/organizations/targetId/${TID}` +
+      "/linkOption/isAdminPending/key/abc123/costumSlug/navigatorDesTierslieux/answer/true";
+    const m = matcher(lien);
+    expect(m).not.toBeNull();
+    const reste = (m![m!.length - 1]!.params as Record<string, string | undefined>)["*"];
+    expect(lireSegment(reste, "linkOption")).toBe("isAdminPending");
+    expect(lireSegment(reste, "key")).toBe("abc123");
+    expect(lireReponse(reste)).toBe("true");
   });
 
   it("lireReponse ne confond pas `/costum/true` avec la réponse", () => {
