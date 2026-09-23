@@ -2,8 +2,8 @@ import { z } from "zod";
 import { LocalizedString } from "@/types/locale-schema";
 
 /**
- * Bloc de config AAC AU NIVEAU DU SITE (`config.aac`) — même patron que
- * `config.ampli`, mais **SINGULIER : un seul AAC par site**.
+ * Bloc de config AAC AU NIVEAU DU SITE (`config.aac`) — **SINGULIER : un seul
+ * AAC par site**.
  *
  * Le site déclare simplement SON formulaire (form parent `type:aap,
  * aapType:aac`). Les sections `aac-directory`/`aac-highlight` et les routes

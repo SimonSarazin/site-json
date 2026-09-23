@@ -1,0 +1,242 @@
+import { describe, expect, it } from "vitest";
+import {
+  ampliSourceMode,
+  ampliTitle,
+  collectAmpliTags,
+  filterAmplis,
+  findAmpli,
+  listAmplis,
+  listCostumAmplis,
+  listLegacyAmplis,
+  resolveAmpliInput,
+} from "./costumAmpli";
+import type { AmpliModel } from "../types";
+
+/**
+ * Lecture des amplis d'un site. Les fixtures reprennent les documents RÉELS :
+ * `costum.ampli.sinistre` tel que `element/about` le renvoie sur le backend de
+ * dev (coform posé), et l'entrée tableau historique de `config.prod.tiers-lieux.json`.
+ */
+
+const SINISTRE_PATH = {
+  name: "franckiOrga27112025_0604_0.franckiOrga27112025_0604_0mih13r7khz08pr",
+  description: "franckiOrga27112025_0604_0.franckiOrga27112025_0604_0mih13r7k7nhhzl",
+  address: "franckiOrga27112025_0604_0.franckiOrga27112025_0604_0mih13r7kk0of9s",
+  tags: "franckiOrga27112025_0604_0.franckiOrga27112025_0604_0mih13r7kmkg9ow",
+  image: "franckiOrga27112025_0604_0.franckiOrga27112025_0604_0mih13r7k23mgbw",
+};
+
+const SINISTRE_ENTRY = {
+  pages: ["#sinistre-welcome", "#messages-sinistre", "#reseau-sinistre", "#statistique-sinistre", "#actualites-sinistre"],
+  description: "Sinistre config",
+  tags: ["Sinistre", "Ampli", "Francki"],
+  path: SINISTRE_PATH,
+  slug: "sinistre",
+  name: "Sinistre",
+  home: "#sinistre-welcome",
+  coform: "6927e9f0db22da724360303c",
+};
+
+const LEGACY_TIERS_LIEUX = {
+  slug: "amplifions",
+  layout: "fullwidth",
+  props: {
+    coform: "69426516f7a7f229f7399da2",
+    path: {
+      name: "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9c7qpi",
+      address: "navigatorDesTierslieux17122025_0808_0.adresse",
+    },
+  },
+};
+
+const model = (overrides: Partial<AmpliModel> = {}): AmpliModel => ({
+  slug: "sinistre",
+  name: "Sinistre",
+  description: "Sinistre config",
+  tags: ["Sinistre", "Ampli", "Francki"],
+  path: SINISTRE_PATH,
+  coform: "6927e9f0db22da724360303c",
+  ...overrides,
+});
+
+describe("ampliSourceMode", () => {
+  it("`true` lit le costum, un tableau la forme historique, le reste désactive", () => {
+    expect(ampliSourceMode(true)).toBe("costum");
+    expect(ampliSourceMode([])).toBe("legacy");
+    expect(ampliSourceMode([LEGACY_TIERS_LIEUX])).toBe("legacy");
+    expect(ampliSourceMode(false)).toBe("off");
+    expect(ampliSourceMode(undefined)).toBe("off");
+    // La config n'est pas parsée par Zod au runtime : une chaîne n'active rien.
+    expect(ampliSourceMode("true")).toBe("off");
+  });
+});
+
+describe("listCostumAmplis", () => {
+  it("lit l'entrée réelle de costum.ampli", () => {
+    expect(listCostumAmplis({ ampli: { sinistre: SINISTRE_ENTRY } })).toEqual([model()]);
+  });
+
+  it("rend une liste vide sans costum ou sans bloc ampli", () => {
+    expect(listCostumAmplis(undefined)).toEqual([]);
+    expect(listCostumAmplis({})).toEqual([]);
+    expect(listCostumAmplis({ ampli: [] })).toEqual([]);
+  });
+
+  it("prend la clé comme slug quand le champ `slug` manque", () => {
+    const { slug: _slug, ...withoutSlug } = SINISTRE_ENTRY;
+    void _slug;
+    const [ampli] = listCostumAmplis({ ampli: { "sinistre-bis": withoutSlug } });
+    expect(ampli.slug).toBe("sinistre-bis");
+  });
+
+  // Le champ `slug` fait foi : c'est lui que Co affiche et édite.
+  it("préfère le champ `slug` à la clé", () => {
+    const [ampli] = listCostumAmplis({ ampli: { autreCle: SINISTRE_ENTRY } });
+    expect(ampli.slug).toBe("sinistre");
+  });
+
+  it("ignore une entrée sans mapping exploitable, garde les autres", () => {
+    const amplis = listCostumAmplis({
+      ampli: {
+        casse: { name: "Sans path" },
+        sinistre: SINISTRE_ENTRY,
+      },
+    });
+    expect(amplis.map((ampli) => ampli.slug)).toEqual(["sinistre"]);
+  });
+
+  it("garde la première entrée quand deux partagent un slug", () => {
+    const amplis = listCostumAmplis({
+      ampli: {
+        a: SINISTRE_ENTRY,
+        b: { ...SINISTRE_ENTRY, name: "Doublon" },
+      },
+    });
+    expect(amplis).toHaveLength(1);
+    expect(amplis[0].name).toBe("Sinistre");
+  });
+
+  describe("formulaire", () => {
+    it("reprend le coform de l'entrée", () => {
+      expect(listCostumAmplis({ ampli: { sinistre: SINISTRE_ENTRY } })[0].coform).toBe("6927e9f0db22da724360303c");
+    });
+
+    // Décision : aucun repli sur les blocs CMS — un ampli sans coform reste
+    // LISTÉ, sa page dit qu'il n'est pas configuré.
+    it("un coform absent donne un ampli listé mais non configuré", () => {
+      const { coform: _coform, ...sansCoform } = SINISTRE_ENTRY;
+      void _coform;
+      const amplis = listCostumAmplis({ ampli: { sinistre: sansCoform } });
+      expect(amplis).toHaveLength(1);
+      expect(amplis[0].coform).toBeNull();
+    });
+
+    it("un coform qui n'est pas un ObjectId est traité comme absent", () => {
+      const [ampli] = listCostumAmplis({ ampli: { sinistre: { ...SINISTRE_ENTRY, coform: "pas-un-id" } } });
+      expect(ampli.coform).toBeNull();
+    });
+  });
+
+  describe("champs souples", () => {
+    // Un tableau PHP à trous revient sérialisé en objet.
+    it("accepte des tags sérialisés en objet, dédoublonne et retire les vides", () => {
+      const [ampli] = listCostumAmplis({
+        ampli: { sinistre: { ...SINISTRE_ENTRY, tags: { 0: "Ampli", 2: " Ampli ", 3: "", 4: 12 } } },
+      });
+      expect(ampli.tags).toEqual(["Ampli"]);
+    });
+
+    it("des tags illisibles ne font pas disparaître l'ampli", () => {
+      const [ampli] = listCostumAmplis({ ampli: { sinistre: { ...SINISTRE_ENTRY, tags: "Ampli" } } });
+      expect(ampli.tags).toEqual([]);
+    });
+
+    it("un nom vide est traité comme absent", () => {
+      const [ampli] = listCostumAmplis({ ampli: { sinistre: { ...SINISTRE_ENTRY, name: "   " } } });
+      expect(ampli.name).toBeUndefined();
+      expect(ampliTitle(ampli)).toBe("sinistre");
+    });
+  });
+});
+
+describe("listLegacyAmplis (forme historique dépréciée)", () => {
+  it("convertit l'entrée tableau de la prod, sans nom", () => {
+    expect(listLegacyAmplis([LEGACY_TIERS_LIEUX])).toEqual([
+      {
+        slug: "amplifions",
+        tags: [],
+        path: LEGACY_TIERS_LIEUX.props.path,
+        coform: "69426516f7a7f229f7399da2",
+      },
+    ]);
+  });
+
+  it("ignore une entrée invalide", () => {
+    expect(listLegacyAmplis([{ slug: "x" }, LEGACY_TIERS_LIEUX]).map((ampli) => ampli.slug)).toEqual(["amplifions"]);
+  });
+});
+
+describe("listAmplis", () => {
+  it("aiguille sur la valeur de config.ampli", () => {
+    const costum = { ampli: { sinistre: SINISTRE_ENTRY } };
+    expect(listAmplis(true, costum).map((ampli) => ampli.slug)).toEqual(["sinistre"]);
+    // En forme historique, le costum n'est PAS lu.
+    expect(listAmplis([LEGACY_TIERS_LIEUX], costum).map((ampli) => ampli.slug)).toEqual(["amplifions"]);
+    expect(listAmplis(undefined, costum)).toEqual([]);
+  });
+});
+
+describe("findAmpli / resolveAmpliInput", () => {
+  const amplis = [model(), model({ slug: "amplifions", name: "Amplifions" })];
+
+  it("trouve par slug exact", () => {
+    expect(findAmpli(amplis, "amplifions")?.name).toBe("Amplifions");
+    expect(findAmpli(amplis, "inconnu")).toBeNull();
+  });
+
+  it("résout une saisie libre : espaces et casse tolérés", () => {
+    expect(resolveAmpliInput(amplis, "  Sinistre ")?.slug).toBe("sinistre");
+  });
+
+  it("rien pour une saisie vide ou inconnue", () => {
+    expect(resolveAmpliInput(amplis, "   ")).toBeNull();
+    expect(resolveAmpliInput(amplis, "inconnu")).toBeNull();
+  });
+});
+
+describe("filterAmplis", () => {
+  const amplis = [
+    model(),
+    model({ slug: "idees", name: "Idées citoyennes", description: "Pour la ville", tags: ["Ville"] }),
+    model({ slug: "sans-nom", name: undefined, description: undefined, tags: [] }),
+  ];
+  const slugs = (list: AmpliModel[]) => list.map((ampli) => ampli.slug);
+
+  it("sans filtre, tout passe", () => {
+    expect(slugs(filterAmplis(amplis, {}))).toEqual(["sinistre", "idees", "sans-nom"]);
+  });
+
+  it("cherche dans le titre et la description, sans tenir compte de la casse ni des accents", () => {
+    expect(slugs(filterAmplis(amplis, { query: "IDEE" }))).toEqual(["idees"]);
+    expect(slugs(filterAmplis(amplis, { query: "ville" }))).toEqual(["idees"]);
+  });
+
+  it("cherche dans le slug quand l'ampli n'a pas de nom (c'est son titre affiché)", () => {
+    expect(slugs(filterAmplis(amplis, { query: "sans-nom" }))).toEqual(["sans-nom"]);
+  });
+
+  it("combine les tags en OU", () => {
+    expect(slugs(filterAmplis(amplis, { tags: ["Ville", "Francki"] }))).toEqual(["sinistre", "idees"]);
+  });
+
+  it("combine recherche ET tags", () => {
+    expect(slugs(filterAmplis(amplis, { query: "sinistre", tags: ["Ville"] }))).toEqual([]);
+  });
+});
+
+describe("collectAmpliTags", () => {
+  it("union dédoublonnée et triée", () => {
+    const amplis = [model({ tags: ["Sinistre", "Ampli"] }), model({ slug: "b", tags: ["Ampli", "Ville"] })];
+    expect(collectAmpliTags(amplis)).toEqual(["Ampli", "Sinistre", "Ville"]);
+  });
+});

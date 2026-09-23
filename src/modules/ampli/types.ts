@@ -7,6 +7,33 @@
  */
 
 import type { Answer, User } from "@communecter/cocolight-api-client";
+import type { AmpliPath } from "./schema";
+
+/**
+ * Un ampli prêt à l'emploi — le modèle UNIQUE que consomment la page, la liste
+ * et les sections, quelle que soit la source (`costum.ampli` ou la forme tableau
+ * historique de la config). Construit par `lib/costumAmpli.ts`.
+ */
+export interface AmpliModel {
+  /** Segment d'URL : `/ampli/<slug>`. */
+  slug: string;
+  /** Nom affiché (titre du hero, carte de la liste). Absent en forme historique. */
+  name?: string;
+  description?: string;
+  tags: string[];
+  path: AmpliPath;
+  /** Formulaire des propositions. `null` = non configuré : la page le DIT au
+   *  lieu d'interroger le backend avec un id vide. */
+  coform: string | null;
+}
+
+/** Un ampli dont le formulaire est connu — seul type que reçoivent le contexte
+ *  et les sections : aucune d'elles n'a à se demander si `coform` existe. */
+export type ConfiguredAmpli = AmpliModel & { coform: string };
+
+export function isConfiguredAmpli(ampli: AmpliModel): ampli is ConfiguredAmpli {
+  return ampli.coform !== null;
+}
 
 /** Modes d'affichage du composant MeeteemSection. */
 export type MeeteemViewMode = "answers" | "map" | "split";

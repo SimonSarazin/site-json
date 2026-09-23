@@ -27,6 +27,16 @@ export const AMPLI_QUERY_KEYS = {
   /** Préfixe minimal — invalide toutes les vues d'un coform donné. */
   FETCH_ANSWERS_PREFIX: (coformId: string) => ["ampli-meeteem", coformId] as const,
   /**
+   * Nombre de propositions d'un ampli, pour la page liste `/ampli`.
+   *
+   * Producteur : `useAmpliAnswerCounts`
+   * Sous le préfixe `FETCH_ANSWERS_PREFIX` À DESSEIN : l'invalidation que pose
+   * `AmpliIdeaForm` après une soumission rafraîchit aussi ce compteur. Le segment
+   * `"count"` ne peut pas entrer en collision avec une vue (`answers`/`map`/`split`).
+   */
+  ANSWERS_COUNT: (coformId: string, namePath: string) =>
+    ["ampli-meeteem", coformId, "count", namePath] as const,
+  /**
    * Coordonnées d'une commune (`cityAutocompleteByCountry`), pour placer les
    * contributeurs dont le profil n'a qu'une adresse.
    *

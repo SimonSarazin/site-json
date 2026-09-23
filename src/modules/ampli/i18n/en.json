@@ -102,8 +102,61 @@
   },
   "AmpliPage": {
     "notFoundTitle": "Ampli not found",
-    "notFoundDescription": "The configuration for ampli \"{{slug}}\" cannot be found.",
-    "backHome": "Back to home"
+    "notFoundDescription": "No ampli \"{{slug}}\" exists on this site.",
+    "backHome": "Back to home",
+    "backToList": "See all amplis",
+    "notConfiguredTitle": "Ampli in preparation",
+    "notConfiguredDescription": "\"{{name}}\" does not accept proposals yet: its form is not configured."
+  },
+  "AmpliList": {
+    "title": "All amplis",
+    "searchLabel": "Search an ampli",
+    "searchPlaceholder": "Search an ampli…",
+    "filterByTags": "Filter by tags:",
+    "clearFilters": "Clear filters",
+    "noResults": "No ampli matches these filters.",
+    "empty": "No ampli has been declared on this site yet.",
+    "proposals_one": "{{count}} proposal",
+    "proposals_other": "{{count}} proposals",
+    "moreTags": "+{{count}}",
+    "join": {
+      "title": "Go to an ampli",
+      "description": "Enter an ampli identifier, or pick one from the list.",
+      "label": "Ampli identifier",
+      "placeholder": "Ampli identifier",
+      "button": "Go to the ampli",
+      "notFound": "No ampli \"{{slug}}\" on this site."
+    },
+    "welcome": "New here? Join an ampli to share your ideas.",
+    "create": {
+      "open": "Create an ampli",
+      "title": "Create an ampli",
+      "description": "The submission form is created along with the ampli: title, description, address, tags and image.",
+      "nameLabel": "Ampli name",
+      "namePlaceholder": "Ideas for the city",
+      "nameHint": "The name gives the ampli its identifier, hence its address.",
+      "slugHint": "Identifier: {{slug}}",
+      "invalidName": "This name does not produce a usable identifier.",
+      "duplicate": "An ampli already uses the identifier “{{slug}}”: creating this one would overwrite it.",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "What is this ampli for?",
+      "tagsLabel": "Tags",
+      "tagsPlaceholder": "urban planning, mobility",
+      "tagsHint": "Separated by commas.",
+      "cancel": "Cancel",
+      "submit": "Create the ampli",
+      "success": "Ampli “{{name}}” created",
+      "error": "Could not create the ampli"
+    },
+    "delete": {
+      "label": "Delete the ampli {{name}}",
+      "title": "Delete “{{name}}”?",
+      "description": "The ampli disappears from the site and from Co, with its pages and menu button. The submission form and the proposals already sent are kept.",
+      "cancel": "Cancel",
+      "confirm": "Delete",
+      "success": "Ampli “{{name}}” deleted",
+      "error": "Could not delete the ampli"
+    }
   },
   "AmpliUserCard": {
     "noLocation": "Location not provided",

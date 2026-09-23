@@ -34,11 +34,11 @@
             },
             {
                 "label": {
-                    "fr": "Sinistre",
-                    "en": "Sinistre"
+                    "fr": "Amplis",
+                    "en": "Amplis"
                 },
-                "path": "/ampli/sinistre",
-                "icon": "home"
+                "path": "/ampli",
+                "icon": "megaphone"
             }
         ],
         "sticky": true,
@@ -295,20 +295,5 @@
             }
         }
     },
-    "ampli": [
-        {
-            "slug": "sinistre",
-            "layout": "fullwidth",
-            "props": {
-                "coform": "6927e9f0db22da724360303c",
-                "path": {
-                    "name": "franckiOrga27112025_0604_0.franckiOrga27112025_0604_0mih13r7khz08pr",
-                    "description": "franckiOrga27112025_0604_0.franckiOrga27112025_0604_0mih13r7k7nhhzl",
-                    "address": "franckiOrga27112025_0604_0.franckiOrga27112025_0604_0mih13r7kk0of9s",
-                    "tags": "franckiOrga27112025_0604_0.franckiOrga27112025_0604_0mih13r7kmkg9ow",
-                    "image": "franckiOrga27112025_0604_0.franckiOrga27112025_0604_0mih13r7k23mgbw"
-                }
-            }
-        }
-    ]
+    "ampli": true
 }

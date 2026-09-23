@@ -7,7 +7,6 @@ import { MapPinIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { User } from "@communecter/cocolight-api-client";
-import { AmpliConfig } from "../../schema";
 import { getSummaryData } from "../../helpers/summary";
 import type { UserWithContributions } from "../../helpers/summary";
 import AmpliUserCard from "../AmpliUserCard";
@@ -18,7 +17,6 @@ import AmpliUserCard from "../AmpliUserCard";
 const AmpliContributorsMap = lazy(() => import("./parts/AmpliContributorsMap"));
 
 interface AmpliCommunityProps {
-    props: AmpliConfig["props"]["community"];
     data: Parameters<typeof getSummaryData>[0];
     /** Query du renderer en cours — la carte doit distinguer « ça charge » de
      *  « personne n'est localisé ». */
@@ -31,12 +29,10 @@ interface AmpliCommunityProps {
     isError?: boolean;
 }
 
-export default function AmpliCommunity({ props, data, isLoading = false, isPending = false, isError = false }: AmpliCommunityProps) {
+export default function AmpliCommunity({ data, isLoading = false, isPending = false, isError = false }: AmpliCommunityProps) {
     useLoadNamespace("modules/ampli");
     const t = useT("modules/ampli");
     const [viewMode, setViewMode] = useState<"list" | "map">("list");
-
-    const { headline, subhead } = props || {};
 
     // Mémoïsé : l'agrégation parcourt tout le périmètre, et `data` est un
     // tableau recréé à chaque rendu par le renderer — sans ce mémo, la carte
@@ -47,10 +43,10 @@ export default function AmpliCommunity({ props, data, isLoading = false, isPendi
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16" id="ampli-community-section">
             <div className="text-center my-4 sm:my-6 md:my-10">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground text-balance mb-4 sm:mb-6">
-                    {headline ? t(headline) : t("AmpliCommunity.headline")}
+                    {t("AmpliCommunity.headline")}
                 </h2>
                 <p className="text-base sm:text-lg md:text-xl text-muted-foreground text-pretty max-w-3xl mx-auto leading-relaxed">
-                    {subhead ? t(subhead) : t("AmpliCommunity.subhead")}
+                    {t("AmpliCommunity.subhead")}
                 </p>
                 {/* Switch de vues */}
                 <div className="mt-6 mx-auto flex items-center justify-center w-fit gap-1 p-1 rounded-lg border border-border">

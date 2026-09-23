@@ -7,9 +7,11 @@ import { Helmet } from "@dr.pogodin/react-helmet";
 interface AmpliSeoProps {
     isLoading: boolean;
     activeTab?: string;
+    /** Nom de l'ampli : titre de l'onglet et du partage. Sans lui, « Ampli ». */
+    name?: string;
 }
 
-export function AmpliSeo({ isLoading, activeTab = 'home' }: AmpliSeoProps) {
+export function AmpliSeo({ isLoading, activeTab = 'home', name }: AmpliSeoProps) {
     const { config } = useSite();
     const { currentLocale, t: tLocale } = useLocalization();
     useLoadNamespace("modules/ampli");
@@ -50,7 +52,10 @@ export function AmpliSeo({ isLoading, activeTab = 'home' }: AmpliSeoProps) {
             : `${window.location.href}`
         : "";
 
-    const pageTitle = activeTab !== "home" ? `${getTabLabel(activeTab)} - Ampli` : "Ampli";
+    // Plusieurs amplis par site : sans leur nom, tous les onglets du navigateur
+    // s'appelleraient « Ampli ».
+    const ampliTitle = name ?? "Ampli";
+    const pageTitle = activeTab !== "home" ? `${getTabLabel(activeTab)} - ${ampliTitle}` : ampliTitle;
     const description = getTabLabel(activeTab);
 
     return (

@@ -46,26 +46,11 @@ describe("AmpliFeatures", () => {
   });
 
   it("rend le formulaire de proposition dans la colonne gauche", async () => {
-    renderWithProviders(<AmpliFeatures props={undefined} coform="coform-1" data={[]} />);
+    renderWithProviders(<AmpliFeatures coform="coform-1" data={[]} />);
 
     expect(await screen.findByTestId("idea-form")).toBeInTheDocument();
     expect(ideaFormProps).toHaveBeenCalledWith(
       expect.objectContaining({ coformId: "coform-1", submitLabel: "Soumettre à la communauté" }),
-    );
-  });
-
-  it("passe le libellé de bouton de la config au formulaire", async () => {
-    renderWithProviders(
-      <AmpliFeatures
-        props={{ button: { fr: "Envoyer mon idée", en: "Send my idea" } }}
-        coform="coform-1"
-        data={[]}
-      />,
-    );
-
-    await screen.findByTestId("idea-form");
-    expect(ideaFormProps).toHaveBeenCalledWith(
-      expect.objectContaining({ submitLabel: "Envoyer mon idée" }),
     );
   });
 
@@ -74,7 +59,7 @@ describe("AmpliFeatures", () => {
   // formulaire, lui, ne dépend pas de ces données.
   it("reste montée pendant le chargement des réponses", async () => {
     renderWithProviders(
-      <AmpliFeatures props={undefined} coform="coform-1" isLoading data={[]} />,
+      <AmpliFeatures coform="coform-1" isLoading data={[]} />,
     );
 
     expect(screen.getByText("Proposez votre idée")).toBeInTheDocument();
@@ -84,14 +69,14 @@ describe("AmpliFeatures", () => {
   it("met les compteurs en squelette pendant le chargement, puis les affiche", async () => {
     const data = [makeAnswer("u1", true), makeAnswer("u2")];
     const { container, rerender } = renderWithProviders(
-      <AmpliFeatures props={undefined} coform="coform-1" isLoading data={data} />,
+      <AmpliFeatures coform="coform-1" isLoading data={data} />,
     );
     await screen.findByTestId("idea-form");
 
     // 4 compteurs en squelette (le squelette du chunk formulaire a déjà disparu).
     expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBe(4);
 
-    rerender(<AmpliFeatures props={undefined} coform="coform-1" data={data} />);
+    rerender(<AmpliFeatures coform="coform-1" data={data} />);
 
     expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBe(0);
     // 2 réponses, 2 auteurs distincts, 1 « amplifiée », 0 discussion.

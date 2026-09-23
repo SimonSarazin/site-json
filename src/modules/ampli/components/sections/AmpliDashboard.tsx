@@ -7,13 +7,11 @@ import { ClientOnly } from "@/components/layout/ClientOnly";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { AmpliConfig } from "../../schema";
 import type { AmpliDataResponse } from "../../types";
 import type { AmpliTopAnswer } from "../../utils/dashboardStats";
 import { getDashboardStats } from "../../utils/dashboardStats";
 
 interface AmpliDashboardProps {
-    props: AmpliConfig["props"]["dashboard"];
     data: AmpliDataResponse[];
     /** Périmètre encore en cours de chargement : chiffres en squelette. */
     isLoading?: boolean;
@@ -110,11 +108,9 @@ function TopAnswers({ title, icon, accent, entries, unit, emptyLabel, anonymousL
  * Consomme le MÊME périmètre de réponses que les autres tabs (une seule query
  * dans `AmpliSectionRenderer`) : aucun appel réseau supplémentaire.
  */
-export default function AmpliDashboard({ props, data, isLoading = false }: AmpliDashboardProps) {
+export default function AmpliDashboard({ data, isLoading = false }: AmpliDashboardProps) {
     useLoadNamespace("modules/ampli");
     const t = useT("modules/ampli");
-
-    const { headline, subhead } = props || {};
 
     // `data` est un tableau recréé à chaque rendu par le renderer : sans mémo,
     // l'agrégation (et le modèle du graphe) repartirait de zéro à chaque fois.
@@ -130,10 +126,10 @@ export default function AmpliDashboard({ props, data, isLoading = false }: Ampli
         >
             <div className="my-4 text-center sm:my-6 md:my-10">
                 <h2 className="mb-4 text-3xl font-bold text-balance text-foreground sm:mb-6 sm:text-4xl md:text-5xl">
-                    {headline ? t(headline) : t("AmpliDashboard.headline")}
+                    {t("AmpliDashboard.headline")}
                 </h2>
                 <p className="mx-auto max-w-3xl text-base leading-relaxed text-pretty text-muted-foreground sm:text-lg md:text-xl">
-                    {subhead ? t(subhead) : t("AmpliDashboard.subhead")}
+                    {t("AmpliDashboard.subhead")}
                 </p>
             </div>
 

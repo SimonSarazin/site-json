@@ -2,14 +2,15 @@ import { useMemo } from "react";
 import { lazy } from "vite-preload";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { AmpliConfig } from "./schema";
+import type { ConfiguredAmpli } from "./types";
 import { useFetchAnswerQuery } from "./hooks/useFetchAnswerQuery";
 import { AmpliDataResponse } from "./helpers/summary";
+import { ampliAnswerFields, ampliAnswerFilters } from "./lib/answersQuery";
 import AmpliCommunity from "./components/sections/AmpliCommunity";
 
 interface AmpliSectionRendererProps {
     activeTab: string;
-    config: AmpliConfig["props"];
+    ampli: ConfiguredAmpli;
 }
 
 const AmpliHeader = lazy(() => import("./components/sections/AmpliHeader"));
@@ -19,45 +20,33 @@ const AmpliMessages = lazy(() => import("./components/sections/AmpliMessages"));
 const AmpliDashboard = lazy(() => import("./components/sections/AmpliDashboard"));
 
 
-export function AmpliSectionRenderer({ activeTab, config }: AmpliSectionRendererProps) {
+export function AmpliSectionRenderer({ activeTab, ampli }: AmpliSectionRendererProps) {
     useLoadNamespace("modules/ampli");
     const t = useT("modules/ampli");
+    const { coform, path } = ampli;
+
     // MÉMOÏSÉS — ces deux objets entrent dans la queryKey ET dans les deps du
     // `useMemo` qui transforme les résultats. En littéral inline, ils changeaient
     // d'identité à chaque rendu : `transformedResults` était un tableau NEUF à
     // chaque fois, ce qui invalidait en cascade toutes les mémoïsations en aval
     // (agrégation des contributeurs, modèle carto, index de clustering, mémo de
     // chaque marqueur). Même précaution que `MeeteemSection`.
+    // Filtres et champs partagés avec les compteurs de `/ampli` (cf. `answersQuery`).
     const baseParams = useMemo(() => ({
         indexStepList: 6,
         indexStepMap: 0,
-        defaultFilters: {
-            form: config.coform,
-            finderPath: config.path.finder || "",
-            ...(
-                config.path.name != "" ? {
-                    [`answers.${config.path.name}`]: {
-                        '$exists': true
-                    }
-                } : {}
-            )
-        },
-        defaultFields: [
-            ...(Object.values(config.path).map((value) => `answers.${value}`)),
-            "user",
-            "vote",
-            "voteCount"
-        ],
+        defaultFilters: ampliAnswerFilters(coform, path),
+        defaultFields: ampliAnswerFields(path),
         defaultSortBy: {
             created: -1 as const
         }
-    }), [config.coform, config.path]);
+    }), [coform, path]);
 
     const extractionConfig = useMemo(() => ({
-        dataPath: config.path,
+        dataPath: path,
         prefix: "answers",
         includeUserInfo: true
-    }), [config.path]);
+    }), [path]);
 
     const {
         transformedResults,
@@ -65,7 +54,7 @@ export function AmpliSectionRenderer({ activeTab, config }: AmpliSectionRenderer
         isPending,
         error
     } = useFetchAnswerQuery({
-        coformId: config.coform,
+        coformId: coform,
         view: "map",
         baseParams,
         extractionConfig
@@ -75,16 +64,15 @@ export function AmpliSectionRenderer({ activeTab, config }: AmpliSectionRenderer
         case "home":
             return (
                 <>
-                    <AmpliHeader props={config.hero} />
-                    <AmpliIntro props={config.intro} />
-                    <AmpliFeatures props={config.features} coform={config.coform} isLoading={isLoading} data={transformedResults as AmpliDataResponse[]} />
-                    <AmpliMessages props={config.message} coform={config.coform} path={config.path} />
+                    <AmpliHeader name={ampli.name} />
+                    <AmpliIntro />
+                    <AmpliFeatures coform={coform} isLoading={isLoading} data={transformedResults as AmpliDataResponse[]} />
+                    <AmpliMessages coform={coform} path={path} />
                 </>
             );
         case "community":
             return (
                 <AmpliCommunity
-                    props={config.community}
                     data={transformedResults as AmpliDataResponse[]}
                     isLoading={isLoading}
                     isPending={isPending}
@@ -94,7 +82,6 @@ export function AmpliSectionRenderer({ activeTab, config }: AmpliSectionRenderer
         case "stats":
             return (
                 <AmpliDashboard
-                    props={config.dashboard}
                     data={transformedResults as AmpliDataResponse[]}
                     isLoading={isLoading || isPending}
                 />

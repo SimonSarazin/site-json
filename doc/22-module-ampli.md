@@ -6,8 +6,10 @@
 
 - [Vue d'ensemble](#vue-densemble)
 - [Architecture interne](#architecture-interne)
-- [Configuration JSON (`schema.ts`)](#configuration-json-schemats)
+- [Activation et source des amplis (`costum.ampli`)](#activation-et-source-des-amplis-costumampli)
 - [Routes](#routes)
+- [Page liste `/ampli`](#page-liste-ampli)
+  - [Créer et supprimer un ampli](#créer-et-supprimer-un-ampli)
 - [Rendu et sections](#rendu-et-sections)
   - [AmpliPage](#amplipage)
   - [AmpliRenderer](#amplirenderer)
@@ -48,7 +50,9 @@ Le concept "Ampli" est directement lié au système **Meeteem** — une interfac
 
 **Type de module** : `core` — chargé en eager.
 
-**Particularité centrale** : contrairement aux modules profil/search, Ampli repose entièrement sur des **réponses CoForm** (via `entity.coformAnswersSearch()`) et non sur des entités directes. Les données affichées sont extractées via un mapping de chemins (`path.*`) configurable en JSON.
+**Particularité centrale** : contrairement aux modules profil/search, Ampli repose entièrement sur des **réponses CoForm** (via `entity.coformAnswersSearch()`) et non sur des entités directes. Les données affichées sont extraites via un mapping de chemins (`path.*`).
+
+**Les amplis sont déclarés dans Co, pas dans la config du site** : `costum.ampli.<slug>` du porteur est la source de vérité, la config ne fait que les activer (`"ampli": true`). Cf. [Activation et source des amplis](#activation-et-source-des-amplis-costumampli).
 
 ---
 
@@ -58,9 +62,9 @@ Le concept "Ampli" est directement lié au système **Meeteem** — une interfac
 src/modules/ampli/
 ├── module.config.ts                # name: "ampli", type: "core", enabled: true
 ├── index.ts                        # API publique
-├── schema.ts                       # AmpliConfigSchema (Zod) + AmpliLayoutVariantSchema
-├── types.ts                        # Types canoniques : MeeteemCard, MeeteemViewMode, AmpliSummaryData, …
-├── routes.tsx                      # Route /ampli/:slug + sous-routes (community, stats, news)
+├── schema.ts                       # CostumAmpliEntrySchema (costum.ampli) + LegacyAmpliConfigSchema (déprécié) + AmpliPathSchema
+├── types.ts                        # Types canoniques : AmpliModel, ConfiguredAmpli, MeeteemCard, AmpliSummaryData, …
+├── routes.tsx                      # /ampli (liste) + /ampli/:slug et ses onglets — gatés sur config.ampli
 │
 ├── AmpliRenderer.tsx               # Wrapper Suspense + dispatch vers AmpliSectionRenderer
 ├── AmpliSectionRenderer.tsx        # Switch entre tabs (home, community, stats, news)
@@ -68,9 +72,16 @@ src/modules/ampli/
 │
 ├── contexts/
 │   ├── AmpliContext.tsx            # Définition du Context React
-│   └── AmpliProvider.tsx          # Provider minimal (injecte config)
+│   └── AmpliProvider.tsx          # Provider minimal (injecte l'ampli configuré)
+│
+├── lib/
+│   ├── costumAmpli.ts             # Lecture de costum.ampli / forme historique → AmpliModel, filtres de la liste (purs, testés)
+│   └── answersQuery.ts            # Filtres et champs des réponses — PARTAGÉS par la page et les compteurs de la liste
 │
 ├── hooks/
+│   ├── useAmplis.ts               # useAmplis() / useAmpli(slug) — aiguillage costum / tableau historique
+│   ├── useAmpliAdmin.ts           # Gate admin + création/suppression d'un ampli (SDK : createAmpli / removeAmpli)
+│   ├── useAmpliAnswerCounts.ts    # « N propositions » de chaque carte de /ampli
 │   ├── useAmpliContext.tsx         # useAmpliContext() — throw si hors Provider
 │   ├── useFetchAnswerQuery.ts     # Hook principal : coformAnswersSearch + infinite scroll + extraction
 │   ├── useAmpliAllAnswers.ts      # Périmètre COMPLET page par page (vues carte/split de Meeteem)
@@ -90,6 +101,8 @@ src/modules/ampli/
 │
 ├── components/
 │   ├── AmpliUserCard.tsx          # Card d'un contributeur (avatar + compteur)
+│   ├── AmpliCreateDialog.tsx      # Création d'un ampli depuis /ampli (admins du costum)
+│   ├── AmpliDeleteButton.tsx      # Suppression d'un ampli depuis sa carte (confirmation)
 │   └── sections/
 │       ├── AmpliHeader.tsx        # Section hero de la page Ampli (tab home)
 │       ├── AmpliIntro.tsx         # Section introduction (tab home) — délègue à <CardsSection>
@@ -109,12 +122,14 @@ src/modules/ampli/
 │           └── AmpliJoinButton.tsx       # CTA « Rejoindre » du hero → demande d'adhésion réelle
 │
 ├── constants/
-│   ├── queryKeys.ts               # AMPLI_QUERY_KEYS — FETCH_ANSWERS + FETCH_ANSWERS_PREFIX
+│   ├── queryKeys.ts               # AMPLI_QUERY_KEYS — FETCH_ANSWERS(+_PREFIX), ANSWERS_COUNT, CITY_GEO
 │   │                              # (préfixe figé "ampli-meeteem", utilisé par useFetchAnswerQuery)
-│   └── sectionIds.ts              # AMPLI_SECTION_IDS — ancres DOM visées par les CTA du hero
+│   ├── sectionIds.ts              # AMPLI_SECTION_IDS — ancres DOM visées par les CTA du hero
+│   └── tabs.ts                    # AMPLI_TABS + ampliTabPath
 │
 ├── pages/
-│   └── AmpliPage.tsx              # Page principale (RR v7 route handler)
+│   ├── AmpliListPage.tsx          # /ampli — liste des amplis du costum (mode `ampli: true`)
+│   └── AmpliPage.tsx              # /ampli/:slug — page d'un ampli (RR v7 route handler)
 │
 └── i18n/
     ├── fr.json
@@ -123,74 +138,142 @@ src/modules/ampli/
 
 ---
 
-## Configuration JSON (`schema.ts`)
+## Activation et source des amplis (`costum.ampli`)
 
-Un site peut déclarer plusieurs instances Ampli sous la clé `ampli` du JSON racine. Chaque instance est un objet `AmpliConfig` :
+### Côté config du site : un interrupteur
 
-```ts
-// schema.ts
-export const AmpliConfigSchema = z.object({
-  layout: AmpliLayoutVariantSchema.optional().default("default"),
-  // "default" | "modern" | "compact" | "fullwidth"
-
-  seo: z.object({
-    titleTemplate: z.string().optional(),
-    descriptionTemplate: z.string().optional(),
-  }).optional(),
-
-  slug: z.string().min(1),  // Identifiant de l'instance, visible dans l'URL
-
-  props: z.object({
-    coform: z.string().min(1),  // ID du CoForm source des réponses
-
-    // Mapping des champs dans la réponse CoForm
-    path: z.object({
-      name: z.string().min(1),        // Champ "nom" dans answers.*
-      description: z.string().optional(),
-      address: z.string().min(1),     // Champ "adresse" dans answers.*
-      image: z.string().optional(),
-      finder: z.string().optional(),  // Chemin finder (pour le finderPath filter)
-      tags: z.string().optional(),    // Champ tags dans answers.*
-    }),
-
-    // Contenu de chaque section (tous optionnels, avec fallback i18n)
-    hero: z.object({ ... }).optional(),      // AmpliHeader
-    intro: z.object({ ... }).optional(),     // AmpliIntro
-    features: z.object({                     // AmpliFeatures
-      headline, subhead, button,
-      summary: { headline, submitted, members, amplified, comments },
-      howItWork: { headline, stepOne, stepTwo, stepThree }
-    }).optional(),
-    message: z.object({ ... }).optional(),   // AmpliMessages
-    community: z.object({ ... }).optional(), // AmpliCommunity
-    dashboard: z.object({ ... }).optional(), // (réservé)
-    news: z.object({ ... }).optional(),      // (réservé)
-  }),
-});
+```json
+{ "ampli": true }
 ```
 
-**Variantes de layout** : `default` (max-w-4xl), `modern` (max-w-6xl), `compact` (max-w-3xl), `fullwidth` (pleine largeur).
+La config n'**active** que la fonctionnalité. Trois valeurs, lues **brutes** (la config n'est jamais parsée par Zod au runtime — `ampliSourceMode` dans `lib/costumAmpli.ts`) :
 
-**Section JSON publique `meeteem`** : en plus de la page `/ampli/:slug`, le module expose une section de type `"meeteem"` utilisable dans n'importe quelle page JSON. Voir [`MeeteemSectionProps`](#section-meeteem-section-json-publique).
+| `config.ampli` | Source des amplis | Routes montées |
+|---|---|---|
+| `true` | `costum.ampli` du porteur du site | `/ampli` (liste) + `/ampli/:slug` |
+| tableau | la forme statique historique — **dépréciée** | `/ampli/:slug` seul |
+| absent / `false` / autre | aucun | aucune (catch-all du site) |
+
+### Côté Co : `costum.ampli.<slug>`
+
+Les amplis vivent dans le costum du porteur, là où l'outil legacy de Co les écrit. `element/about` — l'appel de `entity.get()` pour l'entité porteuse — renvoie le champ tel quel : il est **déjà** dans `useCocolight().entity.serverData.costum`, au SSR comme au client, **aucune requête** n'est ajoutée.
+
+```json
+"ampli": {
+  "sinistre": {
+    "slug": "sinistre",
+    "name": "Sinistre",
+    "description": "Sinistre config",
+    "tags": ["Sinistre", "Ampli", "Francki"],
+    "coform": "6927e9f0db22da724360303c",
+    "path": {
+      "name": "franckiOrga27112025_0604_0.franckiOrga27112025_0604_0mih13r7khz08pr",
+      "description": "franckiOrga27112025_0604_0.franckiOrga27112025_0604_0mih13r7k7nhhzl",
+      "address": "franckiOrga27112025_0604_0.franckiOrga27112025_0604_0mih13r7kk0of9s",
+      "tags": "franckiOrga27112025_0604_0.franckiOrga27112025_0604_0mih13r7kmkg9ow",
+      "image": "franckiOrga27112025_0604_0.franckiOrga27112025_0604_0mih13r7k23mgbw"
+    },
+    "pages": ["#sinistre-welcome", "…"],
+    "home": "#sinistre-welcome"
+  }
+}
+```
+
+Lecture par `CostumAmpliEntrySchema` (`safeParse`, donnée backend) puis `listCostumAmplis` → `AmpliModel` :
+
+| Champ | Rôle | Si absent ou invalide |
+|---|---|---|
+| `slug` | segment d'URL (`/ampli/<slug>`) — **fait foi** | la clé de l'entrée |
+| `name` | titre du hero, carte de la liste, titre SEO | titre générique (`AmpliHero.headline`) ; la liste montre le slug |
+| `description`, `tags` | carte de la liste, recherche, puces de filtre | ignorés (des tags sérialisés en objet PHP à trous sont acceptés) |
+| **`coform`** | formulaire des propositions (ObjectId) | ampli **listé** mais « non configuré » : sa page le dit, aucune section n'est rendue |
+| `path.name` + `path.address` | mapping des réponses (requis) | entrée **ignorée** (avertissement en DEV) |
+| `pages`, `home` | hashes des pages legacy | non lus : les onglets sont ceux de `constants/tabs.ts` |
+
+⚠ **`coform` n'est pas écrit par l'outil legacy de Co** : il ne connaît le formulaire qu'à travers les blocs CMS des pages de l'ampli (`costum.app[<page>].cms…` → `tpls.blockCms.coform.*`). Choix délibéré : **aucun repli** sur ces blocs — le champ est posé dans la config de l'ampli en base. Un ampli créé par l'outil legacy reste « non configuré » tant qu'on ne l'a pas ajouté. Un ampli créé **depuis `/ampli`**, lui, a toujours son `coform` : le serveur fabrique le formulaire et l'écrit dans l'entrée (cf. [Créer et supprimer un ampli](#créer-et-supprimer-un-ampli)).
+
+Doublon de slug : la première entrée gagne (avertissement en DEV).
+
+### Forme tableau historique (dépréciée)
+
+`LegacyAmpliConfigSchema` — `{ slug, layout?, props: { coform, path } }`, une entrée par ampli, recopiée à la main depuis Co. Conservée **uniquement** pour la prod (`config.prod.tiers-lieux.json`) : sa config doit rester valide (`tests/preflight/sites-configs.test.ts`) et le site se comporter à l'identique — pas de nom (hero et SEO génériques), pas de page liste. `layout` est accepté mais ignoré (la page est toujours pleine largeur, valeur de toutes les configs).
+
+Les anciennes surcharges de textes (`hero`, `intro`, `features`, `message`, `community`, `dashboard`, `news`, `seo`) ont disparu : aucune config ne les employait. Les sections n'ont plus que leurs libellés i18n.
+
+**Pour migrer un site** : déclarer ses amplis dans `costum.ampli` (avec `coform`), puis remplacer le tableau par `"ampli": true`. Une fois la prod migrée, supprimer `LegacyAmpliConfigSchema`, `listLegacyAmplis` et les branches `legacy` des hooks et des routes.
+
+**Section JSON publique `meeteem`** : en plus de la page `/ampli/:slug`, le module expose une section de type `"meeteem"` utilisable dans n'importe quelle page JSON — elle porte ses propres `coform`/`path`, indépendamment de `config.ampli`. Voir [`MeeteemSectionProps`](#section-meeteem-section-json-publique).
 
 ---
 
 ## Routes
 
 ```
+/ampli                 → AmpliListPage — liste des amplis (seulement avec "ampli": true)
 /ampli/:slug           → AmpliPage (index) — tab "home"
 /ampli/:slug/community → AmpliPage — tab "community"
 /ampli/:slug/stats     → AmpliPage — tab "stats" (Vision Globale)
 /ampli/:slug/news      → AmpliPage — tab "news" (coming soon)
 ```
 
+**Gate sur `config.ampli`** (même patron que `aac/routes.tsx`) : le module est `core`, donc découvert sur TOUS les sites. Sans gate, `/ampli/:slug` était servi partout avec une page « ampli introuvable » ; désormais, sans `config.ampli`, la factory rend `[]` et l'URL tombe sur le catch-all du site. `/ampli` n'est monté qu'en mode `true` — la forme tableau historique ne gagne pas de page nouvelle.
+
 Le loader (`ampliLoader`) extrait `slug` depuis les paramètres d'URL et dérive `activeTab` depuis les segments du pathname (`pathSegments[2]` si présent, sinon `'home'`). Le composant `AmpliPage` combine `loaderData.activeTab` (SSR) avec un fallback `useLocation()` pour la navigation client-side.
 
-`AmpliPage` cherche la configuration via `siteConfig.ampli?.find(a => a.slug === slug)`.
-
-Si le slug est introuvable, `<AmpliNotFound>` est rendu (avec le slug dans le message d'erreur).
-
 Les sous-routes (`community`, `stats`, `news`) ont toutes `element: null` — le rendu est entièrement géré par `AmpliSectionRenderer` via le switch sur `activeTab`.
+
+---
+
+## Page liste `/ampli`
+
+`pages/AmpliListPage.tsx` — tous les amplis de `costum.ampli`, en **deux colonnes** (maquette de référence) : la liste filtrable à gauche, le panneau de marque et l'accès direct à droite. Sur mobile, une colonne : panneau d'abord (il porte le `<h1>`), liste ensuite. Couleurs en tokens de thème uniquement.
+
+| Zone | Contenu |
+|---|---|
+| Recherche | filtre client sur le titre affiché (nom, sinon slug) et la description — casse et accents neutralisés (`filterAmplis`) |
+| Puces de tags | union des `tags` (`collectAmpliTags`), sélection multiple en **OU** (même sémantique que `MeeteemFilters`), `aria-pressed` |
+| Carte | tuile à l'initiale (les entrées n'ont pas d'image), nom en lien étiré vers `/ampli/:slug` (toute la carte est cliquable, mais le nom accessible du lien reste le titre), description sur une ligne, « N propositions », 3 tags puis « +N » |
+| Panneau de marque | tuile mégaphone + `AmpliHero.headline` / `AmpliHero.subhead` |
+| Accès direct | saisie d'un slug (espaces et casse tolérés, `resolveAmpliInput`) → navigation ; slug inconnu → **erreur en ligne** (`role="alert"`), la liste étant déjà en mémoire |
+
+- **Compteurs** (`useAmpliAnswerCounts`) : une requête par ampli, `indexStep: 1` (le backend compte tout, ne renvoie qu'une réponse). Les filtres viennent de `ampliAnswerFilters` — la **même** fonction qu'`AmpliSectionRenderer` —, donc le chiffre de la carte est celui du compteur « Idées soumises » de la page. Le SDK retire `spam` du `count` et en fait la somme dans `total`. Clé `AMPLI_QUERY_KEYS.ANSWERS_COUNT`, sous le préfixe `FETCH_ANSWERS_PREFIX` : l'invalidation posée par `AmpliIdeaForm` après une soumission rafraîchit aussi la carte. Non préchargés au SSR ; squelette tant que le chiffre n'est pas connu (serveur et 1er rendu client identiques), rien pour un ampli sans formulaire ou en erreur.
+- **Créer / supprimer** : réservé aux admins du costum, cf. ci-dessous.
+- États : aucun ampli → message explicite (ni recherche ni puces) ; filtres sans résultat → message + « Effacer les filtres ».
+
+### Créer et supprimer un ampli
+
+Deux actions legacy du module costum, exposées par le SDK sur l'élément porteur —
+`BaseEntity.createAmpli()` / `BaseEntity.removeAmpli()` (`POST /costum/costumize/{createampli,removeampli}`,
+Bearer + gate serveur `isInterfaceAdmin`). Elles écrivent dans `costum.ampli` **sans passer par l'interface Co**.
+
+| | Création | Suppression |
+|---|---|---|
+| Déclencheur | bouton « Créer un ampli » du panneau de droite (`AmpliCreateDialog`) | icône corbeille sur la carte (`AmpliDeleteButton`), avec confirmation |
+| Envoi | `name`, `description`, `tags` | le **slug** (la clé de l'entrée), pas un ObjectId |
+| Effet serveur | entrée `costum.ampli.<slug>` **et** le formulaire de dépôt avec ses 5 questions (titre, description, adresse, mots-clés, image) — l'ampli est utilisable tout de suite | retire l'entrée, ses pages CMS et son bouton de menu |
+| Retour | `slug` + l'entrée complète → redirection vers `/ampli/<slug>` | — |
+
+**Le gate d'affichage** (`useCanManageAmplis`) : `siteAdmin` au sens du back-office — admin du porteur ou
+super-admin de la plateforme (`resolveAdminAccessLevel`) —, en mode `costum` **seulement** (en forme tableau
+les amplis viennent du fichier de config : rien à écrire en base), et jamais avant l'hydratation (`me` et les
+liens de l'entité sont vides au SSR). Le serveur revérifie le droit : ce gate n'est qu'un confort d'affichage.
+
+**Collision de slug — garde CLIENT obligatoire.** Le serveur dérive la clé du `name` et **écrase sans
+prévenir** une entrée de même clé ; aucune garde n'existe côté legacy. Le dialogue calcule donc le slug à la
+saisie avec `ampliSlug` (SDK, miroir exact du calcul serveur), l'affiche, et bloque l'envoi quand il est déjà
+pris — la liste est déjà en mémoire, la vérification ne coûte rien.
+
+**Rafraîchissement.** `costum` arrive AVEC l'entité porteuse (`element/about`), et cette entité est du *state*
+dans `CocolightProvider` : aucune invalidation React Query ne la remettrait à jour. Les deux mutations
+appellent donc `refreshEntity()` (nouveau, sur le contexte Cocolight) juste après l'écriture — il résout à
+nouveau l'entité par son slug et en pose une **nouvelle instance**, là où `entity.get()` mettrait `serverData`
+à jour en place, sans rendu. Le serveur ayant déjà réinitialisé son cache costum, la relecture voit l'écriture.
+C'est aussi ce qui garantit que la page vers laquelle on redirige trouve le nouvel ampli.
+
+**Ce que la suppression NE supprime PAS** : le formulaire de dépôt et les propositions déjà déposées
+survivent (le legacy ne les touche pas). Le dialogue de confirmation le dit. Autre effet de bord legacy,
+documenté côté SDK : la suppression réécrit `costum.app` et le `buttonList` du menu à partir du costum
+résolu en cache.
 
 ---
 
@@ -201,15 +284,15 @@ Les sous-routes (`community`, `stats`, `news`) ont toutes `element: null` — le
 `src/modules/ampli/pages/AmpliPage.tsx` — point d'entrée de la route. Rôles :
 
 1. Lit `slug` et `activeTab` depuis `useLoaderData()` + fallback `useLocation()`
-2. Cherche la config dans `siteConfig.ampli`
-3. Rend `<AmpliSeo isLoading={false} activeTab={activeTab} />`, `<SiteHeader />`, `<SiteFooter />`
-4. Applique un wrapper container/fullwidth selon `ampliConfig.layout` (`container mx-auto` sauf `fullwidth`)
-5. Enveloppe dans `<AmpliProvider config={ampliConfig}>` pour injecter le contexte
-6. Délègue le contenu à `<AmpliRenderer activeTab={activeTab} />`
+2. Résout l'ampli avec `useAmpli(slug)` (costum ou forme historique, selon `config.ampli`)
+3. Slug absent ou inconnu → `<AmpliNotFound>` ; en mode `costum`, il propose aussi « Voir tous les amplis » (`/ampli` n'existe pas en forme historique : pas de lien mort)
+4. Rend `<AmpliSeo name={ampli.name} …/>`, `<SiteHeader />`, `<AmpliTabs />`, `<SiteFooter />` — toujours en pleine largeur
+5. Ampli **sans formulaire** (`coform: null`) → état « Ampli en préparation » dans le cadre de la page, onglets compris ; les sections ne sont PAS rendues (elles interrogeraient le backend avec un id vide)
+6. Sinon `<AmpliProvider ampli={ampli}>` (type `ConfiguredAmpli` : `coform` garanti) → `<AmpliRenderer activeTab={activeTab} />`
 
 ### AmpliRenderer
 
-`src/modules/ampli/AmpliRenderer.tsx` — applique la classe CSS du layout (selon `config.layout`) via `layoutClass` et enveloppe `<AmpliSectionRenderer config={config.props} activeTab={activeTab}>` dans un `<Suspense>` avec un spinner de fallback (`<Spinner label={t("a11y.loading")}>`) à l'intérieur d'un `<div className="ampli-container {layoutClass}">`.
+`src/modules/ampli/AmpliRenderer.tsx` — lit l'ampli du contexte et enveloppe `<AmpliSectionRenderer ampli={ampli} activeTab={activeTab}>` dans un `<Suspense>` avec un spinner de fallback (`<Spinner label={t("a11y.loading")}>`).
 
 ### AmpliSectionRenderer — tabs et sections
 
@@ -271,10 +354,10 @@ Les onglets sont déclarés une seule fois dans `constants/tabs.ts` (`AMPLI_TABS
 
 ## Contexte `AmpliProvider`
 
-`src/modules/ampli/contexts/AmpliProvider.tsx` — Provider React minimal qui injecte `config: AmpliConfig` dans `AmpliContext`.
+`src/modules/ampli/contexts/AmpliProvider.tsx` — Provider React minimal qui injecte `ampli: ConfiguredAmpli` (un `AmpliModel` dont le `coform` est garanti) dans `AmpliContext`. Valeur mémoïsée.
 
 ```tsx
-<AmpliProvider config={ampliConfig}>
+<AmpliProvider ampli={ampli}>
   <AmpliRenderer activeTab={activeTab} />
 </AmpliProvider>
 ```
@@ -517,11 +600,8 @@ function filterCards(
 
 ### AmpliHeader
 
-`components/sections/AmpliHeader.tsx` — Héro de la page Ampli. Accepte les props de `config.props.hero` :
-- `headline`, `subhead` : textes (LocalizedString avec fallback sur les clés `AmpliHero.headline` / `AmpliHero.subhead`)
-- `icon.show`, `icon.name`, `icon.size`, `icon.backdrop` : icône configurable via `DynamicIcon` de `lucide-react/dynamic` (fallback `"megaphone"`, taille 64)
-- `backgroundImage`, `videoBg` : fond optionnel (fallback `/images/ampli/background.jpg`)
-- `listContent.items[]` + `listContent.layout` : liste de points clés (layout `rows`/`columns`)
+`components/sections/AmpliHeader.tsx` — Héro de la page Ampli. Une seule prop, `name` (`costum.ampli.<slug>.name`) : **c'est le titre du hero** — avec plusieurs amplis par site, un titre générique identique partout ne dirait pas où l'on est. Sans nom (forme de config historique), `AmpliHero.headline` reprend sa place. Sous-titre `AmpliHero.subhead`, icône mégaphone et fond `/images/ampli/background.jpg` fixes.
+
 **Trois boutons CTA fixes** (non configurables), tous actifs :
 
 | Bouton | Clé | Action |
@@ -546,9 +626,7 @@ Les ancres viennent de `constants/sectionIds.ts`, partagées entre la section qu
 
 ### AmpliIntro
 
-`components/sections/AmpliIntro.tsx` — Section introduction. Accepte les props de `config.props.intro` :
-- `headline`, `subhead`
-- `items[]` : tableau de `{ title, text, icon }` — si absent, un tableau de 6 cartes par défaut est utilisé
+`components/sections/AmpliIntro.tsx` — Section introduction, sans props : titre et sous-titre `AmpliIntro.*`, 6 cartes fixes.
 
 Le rendu des cartes est **délégué** au composant partagé `<CardsSection>` (layout `grid`, 3 colonnes, variant `default`).
 
@@ -558,11 +636,11 @@ Le rendu des cartes est **délégué** au composant partagé `<CardsSection>` (l
 - Colonne gauche : **le formulaire de proposition, rendu en ligne** — `<AmpliIdeaForm>` chargé en `lazy()` (le moteur coform est lourd, il ne doit pas peser sur le chunk de l'onglet home)
 - Colonne droite : carte "Comment ça marche" (3 étapes, icône `Lightbulb`) + carte "Statistiques live" (4 compteurs : soumissions, membres, amplifiées `totalLikes`, discussions `totalComments`)
 
-La carte summary utilise `summary.amplified` (et `AmpliFeatures.summary.amplified`) pour le compteur de likes, et `summary.comments` pour les commentaires.
+La carte summary utilise `AmpliFeatures.summary.amplified` pour le compteur de likes, et `AmpliFeatures.summary.comments` pour les commentaires.
 
 Les statistiques sont calculées en direct depuis `transformedResults` via `getSummaryData()`. **La section ne retourne plus `null` pendant le chargement** : le formulaire ne dépend pas des réponses, seuls les 4 compteurs passent en squelette — sinon la colonne gauche restait vide le temps du fetch.
 
-`features.button` n'est plus le libellé d'un bouton mort : c'est celui du **bouton d'envoi du formulaire** (passé en `submitButtonText` à `SmartCoForm`). La section reçoit `coform` (l'id du formulaire) depuis `AmpliSectionRenderer`.
+`AmpliFeatures.button` (« Soumettre à la communauté ») est le libellé du **bouton d'envoi du formulaire** (passé en `submitButtonText` à `SmartCoForm`). La section reçoit `coform` (l'id du formulaire) depuis `AmpliSectionRenderer`.
 
 ### AmpliIdeaForm — le formulaire en ligne
 
@@ -580,22 +658,22 @@ Réutilise TELLE QUELLE la chaîne du module coform :
 Ce que le composant ajoute, et **pourquoi** :
 
 - **`hideBanner`** — sans lui, le nom du formulaire s'afficherait en `<h1>` 4xl au milieu de la colonne, en doublon du `<h2>` de la section. Prop ajoutée à `SmartCoForm` (et à `MultiStepCoForm`, qui rendait sa bannière sans condition).
-- **`submitButtonText`** — le libellé vient de la config du site ("Soumettre à la communauté"), pas du générique `coform.navigation.submit`.
+- **`submitButtonText`** — le libellé est celui de l'ampli (`AmpliFeatures.button`, « Soumettre à la communauté »), pas le générique `coform.navigation.submit`.
 - **Invalidation du cache ampli** (`AMPLI_QUERY_KEYS.FETCH_ANSWERS_PREFIX`) après soumission : `useCoFormFinalMutation` n'invalide que **ses** caches (`FORM` / `FORM_ANSWERS`). Sans ça, l'idée tout juste soumise n'apparaîtrait ni dans les compteurs à droite ni dans l'annuaire Meeteem plus bas, jusqu'au prochain rechargement de page.
 - **`formId` ET `formData` passés à `SmartCoForm`** : `formData` évite une seconde souscription à la structure (même entrée de cache → le garde et le formulaire ne peuvent pas diverger), mais `formId` reste indispensable — la mutation interne de `SmartCoForm` part sinon sur un id vide.
 - **Après l'envoi** : une seule réponse autorisée (`access.isOneAnswerPerPers`) → on propose de la **modifier** (le garde est court-circuité par `access={null}`, sinon il refuserait sur `already_answered`) ; sinon → d'en **proposer une autre** (le formulaire est remonté, donc vierge ; le brouillon local a été purgé au succès).
 
 ### AmpliMessages
 
-`components/sections/AmpliMessages.tsx` — Section affichant les contributions récentes. Accepte `props` (`headline`/`subhead`), `path` et `coform`.
+`components/sections/AmpliMessages.tsx` — Section affichant les contributions récentes. Accepte `path` et `coform`.
 
-**C'est un wrapper fin** autour de `<MeeteemSection>` : rend un en-tête avec titre/sous-titre (fallback `AmpliMessage.headline` / `AmpliMessage.subhead`), puis passe les `props.coform` et `props.path` à `MeeteemSection` qui gère son propre état et chargement.
+**C'est un wrapper fin** autour de `<MeeteemSection>` : rend un en-tête (`AmpliMessage.headline` / `AmpliMessage.subhead`), puis passe `coform` et `path` à `MeeteemSection` qui gère son propre état et chargement.
 
 **Ne gère pas** de données ou d'état propre — toute la logique est dans `MeeteemSection`.
 
 ### AmpliCommunity
 
-`components/sections/AmpliCommunity.tsx` — Tab "community". Accepte `props` (`headline`/`subhead`), `data` (résultats bruts de `useFetchAnswerQuery`) et `isLoading` / `isPending`. Affiche :
+`components/sections/AmpliCommunity.tsx` — Tab "community". Accepte `data` (résultats bruts de `useFetchAnswerQuery`) et `isLoading` / `isPending` / `isError` ; titres `AmpliCommunity.*`. Affiche :
 - Un toggle **deux vues** (liste / carte) : deux `<Button>` inline (pas `MeeteemViewToggle`)
 - Vue liste (`viewMode === "list"`) : grille de `AmpliUserCard` (un par contributeur unique, avec compteur de contributions)
 - Vue carte (`viewMode === "map"`) : `AmpliContributorsMap`, chargé en `lazy()` — cf. [Carte des contributeurs](#carte-des-contributeurs-tab-community)
@@ -606,7 +684,7 @@ Données : agrégées via `getSummaryData(data).users`, mémoïsées (`data` est
 
 ### AmpliDashboard
 
-`components/sections/AmpliDashboard.tsx` — Tab "stats" (« Vision Globale »). Accepte `props` (`dashboard.headline`/`subhead` de la config), `data` (mêmes résultats que les autres tabs) et `isLoading`. Affiche :
+`components/sections/AmpliDashboard.tsx` — Tab "stats" (« Vision Globale »). Accepte `data` (mêmes résultats que les autres tabs) et `isLoading` ; titres `AmpliDashboard.*`. Affiche :
 - **Quatre KPI** : participants, commentaires, likes, tags utilisés
 - **Deux classements** : réponses les plus aimées / les plus commentées (rang, titre, auteur, décompte)
 - **Répartition des tags** : `BarChart` recharts, palette `--chart-1..5` du thème du site
@@ -653,6 +731,19 @@ Le bouton « Modifier » vit dans le header de `MeeteemAnswerModal` (`CoFormModa
 ## Types canoniques (`types.ts`)
 
 ```ts
+// Un ampli prêt à l'emploi — construit par lib/costumAmpli.ts, quelle que soit la source
+interface AmpliModel {
+  slug: string;            // segment d'URL
+  name?: string;           // absent en forme de config historique
+  description?: string;
+  tags: string[];
+  path: AmpliPath;         // mapping des réponses (z.infer<typeof AmpliPathSchema>)
+  coform: string | null;   // null = formulaire non configuré
+}
+
+// Seul type que reçoivent le contexte et les sections (isConfiguredAmpli)
+type ConfiguredAmpli = AmpliModel & { coform: string };
+
 // Modes d'affichage MeeteemSection
 type MeeteemViewMode = "answers" | "map" | "split";
 
@@ -699,15 +790,16 @@ Groupes de clés dans `fr.json` / `en.json` :
 - `AmpliTemplateDefault.comingSoon.*` — message placeholder du tab news
 - `AmpliTabs.label` — libellé accessible de la barre d'onglets
 - `AmpliDashboard.*` — titres, libellés des KPI (`kpi.*`), des classements et du graphe des tags
-- `AmpliHero.*` — textes par défaut du hero (headline, subhead, proposal, browse, join, joinPending, joined, …)
-- `AmpliIntro.*` — textes par défaut de l'intro (headline, subhead)
-- `AmpliFeatures.*` — textes par défaut des features
+- `AmpliHero.*` — hero (headline — titre générique quand l'ampli n'a pas de nom —, subhead, proposal, browse, join, joinPending, joined, …) ; headline/subhead servent aussi au panneau de marque de `/ampli`
+- `AmpliIntro.*` — intro (headline, subhead)
+- `AmpliFeatures.*` — section « Proposez votre idée » (headline, subhead, button = libellé d'envoi du formulaire)
 - `AmpliFeatures.form.error` — échec de chargement du formulaire de proposition
 - `AmpliFeatures.summary.*` — labels stats (headline, submitted, members, amplified, comments)
 - `AmpliFeatures.howItWork.*` — étapes (headline, stepOne, stepTwo, stepThree)
-- `AmpliMessage.*` — textes par défaut de la section messages (headline, subhead)
-- `AmpliCommunity.*` — textes par défaut de la section communauté
-- `AmpliPage.*` — messages de la page (notFoundTitle, notFoundDescription, backHome)
+- `AmpliMessage.*` — section messages (headline, subhead)
+- `AmpliCommunity.*` — section communauté
+- `AmpliPage.*` — page d'un ampli : introuvable (notFoundTitle, notFoundDescription, backHome, backToList) et non configuré (notConfiguredTitle, notConfiguredDescription)
+- `AmpliList.*` — page `/ampli` : titre, recherche, puces (filterByTags, clearFilters), états (noResults, empty), compteur (proposals_one, proposals_other), `moreTags`, accès direct (`join.*`), `welcome`
 - `AmpliUserCard.*` — carte contributeur (noLocation, contributions_one, contributions_other)
 - `MeeteemSection.viewToggle.*` — labels des boutons de vue (answers/map/split)
 - `MeeteemSection.filters.*` — titre de l'accordéon de filtres
@@ -733,9 +825,18 @@ Groupes de clés dans `fr.json` / `en.json` :
 | `components/sections/parts/MeeteemFilters.test.tsx` | Affichage filtres, toggle actif/inactif |
 | `utils/ampliUsersGeo.test.ts` | Conversion contributeurs → entités carto : id hexadécimal (rejet de la forme `ObjectID("…")`), coordonnées en string, préférence geoPosition/geo, garde Null Island, auteur non résolu, `name` vide OMIS, libellé de contributions, déduplication, compteurs localisés/total |
 | `components/sections/parts/MeeteemViewToggle.test.tsx` | Toggle vues, état actif |
-| `components/sections/AmpliFeatures.test.tsx` | Formulaire rendu dans la colonne gauche avec le bon coform et le libellé de la config ; section qui reste montée pendant le chargement (régression du `return null`) ; compteurs en squelette puis chiffrés |
+| `components/sections/AmpliFeatures.test.tsx` | Formulaire rendu dans la colonne gauche avec le bon coform et le libellé d'envoi ; section qui reste montée pendant le chargement (régression du `return null`) ; compteurs en squelette puis chiffrés |
 | `utils/scrollToSection.test.ts` | Défilement vers une ancre : cible absente (pas de throw), `prefers-reduced-motion`, focus sur le premier élément interactif, section réduite à un squelette |
-| `components/sections/AmpliHeader.test.tsx` | Les 3 CTA du hero, et les ancres visées par « Proposer une idée » (avec focus) et « Voir les propositions » |
+| `components/sections/AmpliHeader.test.tsx` | Les 3 CTA du hero, nom de l'ampli en titre (repli sur le titre générique), et les ancres visées par « Proposer une idée » (avec focus) et « Voir les propositions » |
+| `lib/costumAmpli.test.ts` | Fixtures RÉELLES (`costum.ampli.sinistre`, entrée tableau de tiers-lieux) : aiguillage `ampliSourceMode` (dont `"true"` en chaîne), slug du champ ou de la clé, entrée sans `path` ignorée, doublon de slug, `coform` absent ou mal formé → ampli listé non configuré, tags en objet PHP, nom vide ; forme historique ; `resolveAmpliInput` ; `filterAmplis` (casse, accents, OU des tags, slug comme titre) ; `collectAmpliTags` |
+| `lib/answersQuery.test.ts` | Filtres partagés (formulaire, existence du nom, finder) et champs projetés sans `answers.undefined` |
+| `hooks/useAmplis.test.tsx` | Aiguillage costum / tableau (le costum n'est pas lu) / désactivé, liste stable d'un rendu à l'autre, `useAmpli` par slug |
+| `routes.test.tsx` | Gate : aucune route sans `config.ampli` ; `true` → `/ampli` + `/ampli/:slug` et ses onglets ; tableau → `/ampli/:slug` seul |
+| `pages/AmpliListPage.test.tsx` | Cartes (lien, description, 3 tags + « +N », « N propositions » au singulier/pluriel, squelette, rien sans formulaire), navigation au clic, recherche, puces `aria-pressed`, « Effacer les filtres », accès direct (slug connu → page ; inconnu → alerte en ligne, effacée à la saisie), état vide ; gestion : rien pour un visiteur, création → page du nouvel ampli, suppression après confirmation |
+| `hooks/useAmpliAdmin.test.tsx` | Gate de gestion (admin du porteur, super-admin, anonyme, forme tableau, avant hydratation) ; création puis rechargement de l'entité DANS CET ORDRE, échec sans entité porteuse ; suppression par le slug |
+| `components/AmpliCreateDialog.test.tsx` | Identifiant dérivé du nom, refus d'un slug déjà pris et d'un nom sans identifiant, envoi vide bloqué, brouillon envoyé (mots-clés découpés) + redirection, saisie oubliée à la fermeture |
+| `components/AmpliDeleteButton.test.tsx` | Rien sans confirmation, ce qui survit annoncé, renoncement, suppression de CET ampli, confirmation verrouillée pendant l'appel |
+| `pages/AmpliPage.test.tsx` | Rendu normal (onglets, sections, SEO au nom), slug inconnu avec lien vers la liste (pas en forme historique), ampli sans formulaire → « en préparation » sans sections |
 | `utils/dashboardStats.test.ts` | `getDashboardStats` — participants uniques, TOTAUX likes/commentaires (vs réponses concernées de `getSummaryData`), repli `vote` sans `voteCount.like`, agrégation/tri des tags (valeur unique, espaces), classements bornés et zéros exclus, auteur depuis l'entité User, `_id` non exploitable |
 | `components/AmpliTabs.test.tsx` | Barre d'onglets : quatre entrées (sans « Messages »), URLs de chaque tab, `aria-current` sur l'onglet courant |
 | `components/sections/parts/AmpliJoinButton.test.tsx` | Demande d'adhésion envoyée + retour local immédiat, cas projet (`canRequestContributor`), anonyme → connexion sans appel, états membre / contributeur / demande en attente, entité non résolue |
@@ -746,48 +847,20 @@ Groupes de clés dans `fr.json` / `en.json` :
 
 ## Exemple de configuration JSON
 
+Config du site — c'est tout :
+
 ```json
 {
-  "ampli": [
-    {
-      "slug": "ma-communaute",
-      "layout": "modern",
-      "seo": {
-        "titleTemplate": "Ma Communauté - {headline}"
-      },
-      "props": {
-        "coform": "6789abc123def456",
-        "path": {
-          "name": "nom",
-          "description": "presentation",
-          "address": "adresse",
-          "finder": "monFinderPath",
-          "tags": "themes"
-        },
-        "hero": {
-          "headline": { "fr": "Rejoignez la communauté", "en": "Join the community" },
-          "subhead": { "fr": "Soumettez votre projet", "en": "Submit your project" },
-          "icon": { "show": true, "name": "Users", "size": 72, "backdrop": true }
-        },
-        "features": {
-          "summary": {
-            "headline": { "fr": "En chiffres", "en": "By the numbers" },
-            "submitted": { "fr": "Soumissions", "en": "Submissions" },
-            "members": { "fr": "Membres", "en": "Members" },
-            "amplified": { "fr": "Amplifiées", "en": "Amplified" },
-            "comments": { "fr": "Discussions", "en": "Discussions" }
-          }
-        },
-        "community": {
-          "headline": { "fr": "Notre communauté", "en": "Our community" }
-        }
-      }
-    }
-  ]
+  "ampli": true,
+  "header": {
+    "nav": [
+      { "label": { "fr": "Amplis", "en": "Amplis" }, "path": "/ampli", "icon": "megaphone" }
+    ]
+  }
 }
 ```
 
-Accès à la page : `https://monsite.fr/ampli/ma-communaute`
+Les amplis eux-mêmes sont déclarés dans Co, sous `costum.ampli` du porteur (forme complète : [Côté Co](#côté-co--costumamplislug)). Accès : `https://monsite.fr/ampli` (liste), `https://monsite.fr/ampli/<slug>` (un ampli).
 
 **Section standalone** (dans n'importe quelle page) :
 
@@ -838,7 +911,15 @@ Le hook est `enabled: !!entity`. Tant que le `CocolightProvider` n'a pas initial
 
 ### 4. Extraction de données via `path.*`
 
-Le mapping `config.props.path.*` doit correspondre exactement aux noms des champs dans `answers.*` du CoForm. Une erreur de typo résulte en champs `undefined` dans les cartes. Aucune validation runtime n'est faite sur ces chemins.
+Le mapping `costum.ampli.<slug>.path.*` doit correspondre exactement aux noms des champs dans `answers.*` du CoForm. Une erreur de typo résulte en champs `undefined` dans les cartes. Seule la présence de `path.name` et `path.address` est vérifiée, pas l'existence des chemins dans le formulaire.
+
+### 4 bis. `coform` absent de `costum.ampli` = ampli « en préparation »
+
+L'outil legacy de Co n'écrit pas `coform` dans l'entrée (il le range dans les blocs CMS des pages de l'ampli). Sans repli volontaire, un ampli créé par cet outil apparaît dans la liste mais sa page affiche « Ampli en préparation » tant que le champ n'est pas posé en base.
+
+### 4 ter. Prod encore en forme tableau
+
+`config.prod.tiers-lieux.json` garde la forme `ampli: [...]` : l'entrée du costum de prod porte un autre slug (`amplifiions`) et pas de `coform`. Migrer = corriger le costum en base PUIS passer la config à `true` — dans l'autre ordre, `/ampli/amplifions` tomberait en 404.
 
 ### 5. Cache des answers via `AMPLI_QUERY_KEYS.FETCH_ANSWERS`
 

@@ -580,7 +580,16 @@ D'autres tests CoForm couvrent : `formParser.test.ts` (parsing schéma de form),
 - `components/sections/AmpliHeader.test.tsx` : les 3 CTA du hero et leurs ancres
 - `components/sections/parts/AmpliJoinButton.test.tsx` : demande d'adhésion (organisation ou projet)
 - `utils/scrollToSection.test.ts` : défilement + focus vers une section
-- `components/sections/parts/MeeteemAnswerModal.test.tsx` : détail d'une réponse en lecture seule
+- `components/sections/parts/MeeteemAnswerModal.test.tsx` : détail d'une réponse, lecture seule et édition de sa réponse
+- `lib/costumAmpli.test.ts` : lecture de `costum.ampli` (fixtures réelles), forme historique, filtres de la liste
+- `lib/answersQuery.test.ts` : filtres et champs partagés par la page et les compteurs
+- `hooks/useAmplis.test.tsx` : aiguillage costum / tableau / désactivé
+- `routes.test.tsx` : gate des routes sur `config.ampli`
+- `pages/AmpliListPage.test.tsx` : page `/ampli` (cartes, compteurs, filtres, accès direct, gestion)
+- `pages/AmpliPage.test.tsx` : introuvable, non configuré, rendu normal
+- `hooks/useAmpliAdmin.test.tsx` : gate de gestion (admin du costum) + création/suppression via le SDK
+- `components/AmpliCreateDialog.test.tsx` : création d'un ampli (garde anti-collision de slug)
+- `components/AmpliDeleteButton.test.tsx` : suppression d'un ampli (confirmation obligatoire)
 
 #### Cagnotte (`src/modules/cagnotte/`)
 

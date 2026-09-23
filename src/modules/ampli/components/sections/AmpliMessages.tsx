@@ -1,17 +1,15 @@
-import { AmpliConfig } from "../../schema";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import MeeteemSection from "./MeeteemSection";
 import { AMPLI_SECTION_IDS } from "../../constants/sectionIds";
+import type { AmpliPath } from "../../schema";
 
 interface AmpliMessagesProps {
-    props: AmpliConfig["props"]["message"];
-    path: AmpliConfig["props"]["path"];
-    coform: AmpliConfig["props"]["coform"];
+    path: AmpliPath;
+    coform: string;
 }
 
-export default function AmpliMessages({ props, path, coform }: AmpliMessagesProps) {
-    const { headline, subhead } = props || {};
+export default function AmpliMessages({ path, coform }: AmpliMessagesProps) {
     useLoadNamespace("modules/ampli");
     const t = useT("modules/ampli");
 
@@ -22,10 +20,10 @@ export default function AmpliMessages({ props, path, coform }: AmpliMessagesProp
         >
             <div className="text-center my-4 sm:my-6 md:my-10">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground text-balance mb-4 sm:mb-6">
-                    {headline ? t(headline) : t("AmpliMessage.headline")}
+                    {t("AmpliMessage.headline")}
                 </h2>
                 <p className="text-base sm:text-lg md:text-xl text-muted-foreground text-pretty max-w-3xl mx-auto leading-relaxed">
-                    {subhead ? t(subhead) : t("AmpliMessage.subhead")}
+                    {t("AmpliMessage.subhead")}
                 </p>
             </div>
             <MeeteemSection id={`meeteem-section-${coform}`} props={{ coform, path }} />

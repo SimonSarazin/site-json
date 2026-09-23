@@ -363,7 +363,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 | `auth` | `loginForm`/`registerForm`/`recoverPasswordForm`, `<AuthMenu>` (dont entrée « Kanban » plateforme via `auth.menu.kanban`, admins du costum) | `config.auth`, `header.utilities.auth` | comptes/SSO Communecter |
 | `notification` | cloche header, section `notifications` | `header.utilities.notifications` | notifications backend |
 | `commandPalette` | palette ⌘K | `config.commandPalette`, `header.utilities.search` | — |
-| `ampli` | routes ampli | `config.ampli` | campagne ampli |
+| `ampli` | routes `/ampli` (liste des amplis) + `/ampli/:slug` (onglets home/community/stats/news), montées seulement si `config.ampli` est posé | `"ampli": true` — rien d'autre : les amplis sont lus dans `costum.ampli` du porteur. **Ne plus générer la forme tableau** (dépréciée, conservée pour la prod tiers-lieux qui ne monte que `/ampli/:slug`) | entrées `costum.ampli.<slug>` côté Co, AVEC `coform` (ObjectId du formulaire) et `path.name`/`path.address` — sans `coform`, l'ampli s'affiche « en préparation ». Un admin du costum peut aussi créer/supprimer un ampli DEPUIS `/ampli` (le serveur fabrique alors le formulaire) — cf. doc/22 |
 | `interop` | pods Discourse/Mediawiki | clés interop | instances externes |
 | `observatoire` | section `data-observatory` (dashboard déclaratif : dimensions, KPI, charts, table, filtres) | `props.baseParams` (périmètre) + `dimensions`/`filters`/`kpis`/`charts`/`table` | données indexées (sourceKey + type) |
 | `formEngine` | modales costum **add/edit pilotées par données** (moteur de formulaire générique) | `config.costumForms.<id>` (document `CostumFormSchema`) + déclencheur `floatingActionButton.modal:"add-<id>"` / `profiles.<type>.editModal:"edit-<id>"` | entité costum porteuse (`costumSlug`) ; clés read/write/scope déjà enregistrées (sinon `fns.ts`) — cf. § Recettes avancées |
@@ -425,7 +425,8 @@ Ne lis ces fichiers QUE quand la tâche les concerne :
   modules — **aucun chemin inventé**. ⚠ Une route à paramètre exige une valeur
   concrète : `/profil/:slug`, `/coform/:formId`, `/blog/:slug`, `/ampli/:slug`
   ne sont PAS navigables nus (`/profil` seul est un 404) ; nues et valides :
-  `/login`, `/register`, `/recover-password`, `/admin`. L'audit dérive ces
+  `/login`, `/register`, `/recover-password`, `/admin`, `/ampli` (avec
+  `"ampli": true` seulement). L'audit dérive ces
   préfixes de `src/modules/*/routes.tsx` (`scripts/lib/module-routes.ts`).
 - **Aucune URL d'image inventée** : asset fourni (copié dans
   `public/images/<slug>/`, référencé en absolu `/images/<slug>/…`), asset

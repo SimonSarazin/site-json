@@ -2,22 +2,27 @@ import { Link, useLoaderData, useLocation } from "react-router";
 import { AmpliSeo } from "../AmpliSeo";
 import { AmpliProvider } from "../contexts/AmpliProvider";
 import { AmpliRenderer } from "../AmpliRenderer";
-import { useSite } from "@/hooks/useSite";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
-import { AlertCircle, Home } from "lucide-react";
+import { AlertCircle, FilePen, Home, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { AmpliTabs } from "../components/AmpliTabs";
+import { useAmpli, useAmplis } from "../hooks/useAmplis";
+import { ampliTitle } from "../lib/costumAmpli";
+import { isConfiguredAmpli } from "../types";
 
 /**
  * Page d'erreur "Ampli non trouvé" — extraite pour éviter la duplication
- * du JSX entre les deux cas (slug absent et config absente).
+ * du JSX entre les deux cas (slug absent et ampli inconnu).
  */
 function AmpliNotFound({ slug }: { slug?: string }) {
     useLoadNamespace("modules/ampli");
     const t = useT("modules/ampli");
+    // La liste n'existe qu'en mode `costum` : en forme de config historique,
+    // `/ampli` n'est pas une route.
+    const { mode } = useAmplis();
     return (
         <div className="min-h-screen flex flex-col bg-background">
             <SiteHeader />
@@ -36,7 +41,15 @@ function AmpliNotFound({ slug }: { slug?: string }) {
                             {String(t("AmpliPage.notFoundDescription", undefined, { slug: slug ?? "" }))}
                         </p>
                     </div>
-                    <div className="pt-4">
+                    <div className="pt-4 flex flex-wrap justify-center gap-3">
+                        {mode === "costum" && (
+                            <Button asChild className="gap-2">
+                                <Link to="/ampli">
+                                    <LayoutGrid className="w-4 h-4" />
+                                    {String(t("AmpliPage.backToList"))}
+                                </Link>
+                            </Button>
+                        )}
                         <Button asChild variant="outline" className="gap-2">
                             <Link to="/">
                                 <Home className="w-4 h-4" />
@@ -51,10 +64,35 @@ function AmpliNotFound({ slug }: { slug?: string }) {
     );
 }
 
+/**
+ * Ampli déclaré sans formulaire exploitable (`coform` absent ou mal formé).
+ * On le DIT, dans le cadre de la page (onglets compris) : rendre les sections
+ * les ferait interroger le backend avec un id vide, pour une page muette.
+ */
+function AmpliNotConfigured({ name }: { name: string }) {
+    const t = useT("modules/ampli");
+    return (
+        <div className="container mx-auto px-4 py-16 sm:py-24 text-center">
+            <div className="mx-auto max-w-md space-y-4">
+                <div className="flex justify-center">
+                    <div className="p-5 rounded-full bg-muted/50 ring-1 ring-border">
+                        <FilePen className="w-10 h-10 text-muted-foreground" />
+                    </div>
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+                    {String(t("AmpliPage.notConfiguredTitle"))}
+                </h1>
+                <p className="text-muted-foreground leading-relaxed">
+                    {String(t("AmpliPage.notConfiguredDescription", undefined, { name }))}
+                </p>
+            </div>
+        </div>
+    );
+}
+
 export default function AmpliPage() {
     const location = useLocation();
     const loaderData = useLoaderData() as { slug: string; activeTab?: string } | null;
-    const { config: siteConfig } = useSite();
 
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const activeTab =
@@ -67,28 +105,33 @@ export default function AmpliPage() {
                 ? pathSegments[pathSegments.length - 1]
                 : undefined);
 
+    const ampli = useAmpli(slug);
+
     if (!slug) {
         return <AmpliNotFound />;
     }
 
-    const ampliConfig = siteConfig.ampli?.find((ampli) => ampli.slug === slug);
-    if (!ampliConfig) {
+    if (!ampli) {
         return <AmpliNotFound slug={slug} />;
     }
 
     return (
         <div className="min-h-screen flex flex-col">
-            <AmpliSeo isLoading={false} activeTab={activeTab} />
+            <AmpliSeo isLoading={false} activeTab={activeTab} name={ampli.name} />
             <SiteHeader />
             {/* Hors du conteneur du `main` : la barre d'onglets court sur toute
                 la largeur, comme l'en-tête du site au-dessus d'elle. */}
             <AmpliTabs slug={slug} activeTab={activeTab} />
             <main className="flex-1">
-                <div className={ampliConfig.layout === 'fullwidth' ? 'mx-auto' : 'container mx-auto'}>
-                    <AmpliProvider config={ampliConfig}>
-                        <AmpliRenderer activeTab={activeTab} />
-                    </AmpliProvider>
-                </div>
+                {isConfiguredAmpli(ampli) ? (
+                    <div className="mx-auto">
+                        <AmpliProvider ampli={ampli}>
+                            <AmpliRenderer activeTab={activeTab} />
+                        </AmpliProvider>
+                    </div>
+                ) : (
+                    <AmpliNotConfigured name={ampliTitle(ampli)} />
+                )}
             </main>
             <SiteFooter />
         </div>
