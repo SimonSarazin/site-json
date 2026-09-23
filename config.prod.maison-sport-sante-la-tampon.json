@@ -79,14 +79,6 @@
       },
       {
         "label": {
-          "fr": "Structure référentes",
-          "en": "Reference structures"
-        },
-        "path": "/structure",
-        "icon": "building-2"
-      },
-      {
-        "label": {
           "fr": "Partenaires",
           "en": "Partners"
         },
@@ -397,6 +389,7 @@
               "en": "News"
             },
             "featured": "flag",
+            "cardVariant": "poster",
             "pageSize": 7
           }
         },
@@ -418,7 +411,7 @@
                   "fr": "En savoir plus sur les MSS",
                   "en": "Learn more about MSS"
                 },
-                "href": "https://ssbe.re/maison-sport-sante-mss/",
+                "href": "https://www.ssbe.re/#maisons-sport-sante",
                 "variant": "default"
               }
             ],
@@ -1403,7 +1396,7 @@
                   "fr": "Sport Santé Bien-Être à La Réunion : labels SSpT et SSsO, annuaire des créneaux sport santé de l'île.",
                   "en": "Sport Health Well-Being in Réunion: SSpT and SSsO labels, directory of the island's sport health slots."
                 },
-                "href": "https://ssbe.re/",
+                "href": "https://www.ssbe.re/",
                 "target": "_blank"
               },
               {
@@ -1581,7 +1574,7 @@
                   "fr": "En savoir plus sur ssbe.re",
                   "en": "Learn more on ssbe.re"
                 },
-                "href": "https://ssbe.re/",
+                "href": "https://www.ssbe.re/",
                 "variant": "default"
               }
             ],
@@ -1708,7 +1701,7 @@
                   "en": "Role and missions of MSS, reference document from the French Ministry of Sports."
                 },
                 "color": "primary",
-                "link": "https://ssbe.re/maison-sport-sante-mss/"
+                "link": "https://www.ssbe.re/#maisons-sport-sante"
               },
               {
                 "icon": "stethoscope",
@@ -1734,7 +1727,7 @@
                   "en": "The regional Sport Health Well-Being labeling process for operators."
                 },
                 "color": "accent",
-                "link": "https://ssbe.re/"
+                "link": "https://www.ssbe.re/"
               }
             ]
           }
@@ -1897,18 +1890,6 @@
               "fr": "Rechercher une structure...",
               "en": "Search for a structure..."
             },
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Ajouter ma structure",
-                  "en": "Add my structure"
-                },
-                "icon": "plus",
-                "modal": "add-structure",
-                "requiresAdmin": false,
-                "variant": "outline"
-              }
-            ],
             "dropdownFilters": [
               {
                 "id": "structure-postalCode",
@@ -2043,6 +2024,10 @@
           "type": "searchProStatic",
           "id": "section-structure-cards",
           "props": {
+            "title": {
+              "fr": "Structures référencées",
+              "en": "Referenced structures"
+            },
             "useFilter": true,
             "showMap": true,
             "enableMap": true,
@@ -2131,10 +2116,10 @@
             },
             "list": {
               "columns": {
-                "sm": 1,
-                "md": 1,
-                "lg": 1,
-                "xl": 1
+                "sm": 2,
+                "md": 3,
+                "lg": 3,
+                "xl": 3
               },
               "card": {
                 "type": "contact-card",
@@ -2145,6 +2130,7 @@
               }
             },
             "map": {
+              "splitRatio": "50-50",
               "marker": {
                 "useItemImage": true,
                 "style": "pin",
@@ -2523,6 +2509,7 @@
               "publicationDate": -1
             },
             "featured": "flag",
+            "cardVariant": "poster",
             "pageSize": 12,
             "fullWidth": true
           }
@@ -2729,8 +2716,12 @@
               "en": "Ekilib.re Sport Health House"
             },
             {
-              "fr": "Commune du Tampon – La Réunion, 97430",
-              "en": "Le Tampon – Réunion Island, 97430"
+              "fr": "34 rue Hubert Delisle",
+              "en": "34 rue Hubert Delisle"
+            },
+            {
+              "fr": "97430 Le Tampon",
+              "en": "97430 Le Tampon – Réunion Island"
             }
           ]
         },
@@ -2765,10 +2756,25 @@
             "fr": "Maison Sport Santé du Tampon",
             "en": "Sport Health House of Le Tampon"
           },
-          "href": "https://ssbe.re/maison-sport-sante-mss/"
+          "href": "https://www.ssbe.re/#maisons-sport-sante"
         }
       ]
     },
+
+    "socials": [
+      {
+        "platform": "facebook",
+        "url": "https://www.facebook.com/101136301493344"
+      },
+      {
+        "platform": "linkedin",
+        "url": "https://www.linkedin.com/company/association-ekilib-re/"
+      },
+      {
+        "platform": "mail",
+        "url": "mailto:contact@cyber-reunion.fr"
+      }
+    ],
     "legalLinks": [
       {
         "href": "/mentions-legales",
@@ -2793,8 +2799,8 @@
       }
     ],
     "copyright": {
-      "fr": "© 2026 Ekilib.re – Association Maison Sport Santé du Tampon. Tous droits réservés.",
-      "en": "© 2026 Ekilib.re – Sport Health House of Le Tampon. All rights reserved."
+      "fr": "© 2026 Association Ekilib.re – Maison Sport Santé du Tampon. Tous droits réservés.",
+      "en": "© 2026 Association Ekilib.re – Sport Health House of Le Tampon. All rights reserved."
     }
   },
   "features": [
@@ -2835,88 +2841,88 @@
     },
     "colors": {
       "light": {
-        "background": "oklch(0.99 0.008 180)",
-        "foreground": "oklch(0.25 0.03 210)",
+        "background": "oklch(0.99 0.008 242)",
+        "foreground": "oklch(0.25 0.03 242)",
         "card": "oklch(1 0 0)",
-        "cardForeground": "oklch(0.25 0.03 210)",
+        "cardForeground": "oklch(0.25 0.03 242)",
         "popover": "oklch(1 0 0)",
-        "popoverForeground": "oklch(0.25 0.03 210)",
-        "primary": "oklch(0.56 0.105 185)",
-        "primaryForeground": "oklch(0.99 0.01 185)",
-        "secondary": "oklch(0.95 0.03 184)",
-        "secondaryForeground": "oklch(0.38 0.07 186)",
-        "muted": "oklch(0.965 0.01 182)",
-        "mutedForeground": "oklch(0.50 0.025 200)",
-        "accent": "oklch(0.62 0.145 55)",
-        "accentForeground": "oklch(0.99 0.012 55)",
+        "popoverForeground": "oklch(0.25 0.03 242)",
+        "primary": "oklch(0.411 0.080 242)",
+        "primaryForeground": "oklch(0.99 0.01 242)",
+        "secondary": "oklch(0.95 0.03 242)",
+        "secondaryForeground": "oklch(0.38 0.07 242)",
+        "muted": "oklch(0.965 0.01 242)",
+        "mutedForeground": "oklch(0.50 0.025 242)",
+        "accent": "oklch(0.804 0.156 82.5)",
+        "accentForeground": "oklch(0.30 0.06 84)",
         "destructive": "oklch(0.55 0.20 27)",
         "destructiveForeground": "oklch(0.99 0.02 27)",
-        "border": "oklch(0.905 0.015 184)",
-        "input": "oklch(0.905 0.015 184)",
-        "ring": "oklch(0.56 0.105 185)",
+        "border": "oklch(0.905 0.015 242)",
+        "input": "oklch(0.905 0.015 242)",
+        "ring": "oklch(0.411 0.080 242)",
         "warning": "oklch(0.80 0.145 79)",
         "warningForeground": "oklch(0.30 0.06 70)",
-        "success": "oklch(0.545 0.12 160)",
-        "successForeground": "oklch(0.99 0.012 160)",
+        "success": "oklch(0.516 0.104 162)",
+        "successForeground": "oklch(0.99 0.012 162)",
         "info": "oklch(0.55 0.12 235)",
         "infoForeground": "oklch(0.99 0.012 235)",
         "error": "oklch(0.55 0.20 27)",
         "errorForeground": "oklch(0.99 0.02 27)",
-        "chart1": "oklch(0.58 0.11 185)",
-        "chart2": "oklch(0.68 0.145 55)",
-        "chart3": "oklch(0.80 0.145 79)",
+        "chart1": "oklch(0.45 0.085 242)",
+        "chart2": "oklch(0.75 0.150 82.5)",
+        "chart3": "oklch(0.55 0.105 162)",
         "chart4": "oklch(0.45 0.08 220)",
         "chart5": "oklch(0.58 0.12 160)",
-        "sidebar": "oklch(0.975 0.012 182)",
-        "sidebarForeground": "oklch(0.29 0.03 205)",
-        "sidebarPrimary": "oklch(0.56 0.105 185)",
-        "sidebarPrimaryForeground": "oklch(0.99 0.01 185)",
-        "sidebarAccent": "oklch(0.95 0.03 184)",
-        "sidebarAccentForeground": "oklch(0.38 0.07 186)",
-        "sidebarBorder": "oklch(0.905 0.015 184)",
-        "sidebarRing": "oklch(0.56 0.105 185)"
+        "sidebar": "oklch(0.975 0.012 242)",
+        "sidebarForeground": "oklch(0.29 0.03 242)",
+        "sidebarPrimary": "oklch(0.411 0.080 242)",
+        "sidebarPrimaryForeground": "oklch(0.99 0.01 242)",
+        "sidebarAccent": "oklch(0.95 0.03 242)",
+        "sidebarAccentForeground": "oklch(0.38 0.07 242)",
+        "sidebarBorder": "oklch(0.905 0.015 242)",
+        "sidebarRing": "oklch(0.411 0.080 242)"
       },
       "dark": {
-        "background": "oklch(0.16 0.02 210)",
-        "foreground": "oklch(0.95 0.008 180)",
-        "card": "oklch(0.20 0.022 210)",
-        "cardForeground": "oklch(0.95 0.008 180)",
-        "popover": "oklch(0.20 0.022 210)",
-        "popoverForeground": "oklch(0.95 0.008 180)",
-        "primary": "oklch(0.72 0.10 185)",
-        "primaryForeground": "oklch(0.17 0.03 205)",
-        "secondary": "oklch(0.27 0.03 200)",
-        "secondaryForeground": "oklch(0.86 0.05 184)",
-        "muted": "oklch(0.26 0.02 205)",
-        "mutedForeground": "oklch(0.72 0.02 190)",
-        "accent": "oklch(0.72 0.14 58)",
-        "accentForeground": "oklch(0.20 0.05 55)",
+        "background": "oklch(0.16 0.02 242)",
+        "foreground": "oklch(0.95 0.008 242)",
+        "card": "oklch(0.20 0.022 242)",
+        "cardForeground": "oklch(0.95 0.008 242)",
+        "popover": "oklch(0.20 0.022 242)",
+        "popoverForeground": "oklch(0.95 0.008 242)",
+        "primary": "oklch(0.70 0.095 242)",
+        "primaryForeground": "oklch(0.17 0.03 242)",
+        "secondary": "oklch(0.27 0.03 242)",
+        "secondaryForeground": "oklch(0.86 0.05 242)",
+        "muted": "oklch(0.26 0.02 242)",
+        "mutedForeground": "oklch(0.72 0.02 242)",
+        "accent": "oklch(0.82 0.150 82.5)",
+        "accentForeground": "oklch(0.20 0.05 84)",
         "destructive": "oklch(0.575 0.19 28)",
         "destructiveForeground": "oklch(0.99 0.012 28)",
-        "border": "oklch(0.29 0.022 205)",
-        "input": "oklch(0.29 0.022 205)",
-        "ring": "oklch(0.72 0.10 185)",
+        "border": "oklch(0.29 0.022 242)",
+        "input": "oklch(0.29 0.022 242)",
+        "ring": "oklch(0.70 0.095 242)",
         "warning": "oklch(0.82 0.14 80)",
         "warningForeground": "oklch(0.28 0.06 70)",
-        "success": "oklch(0.68 0.13 160)",
-        "successForeground": "oklch(0.17 0.03 160)",
+        "success": "oklch(0.70 0.120 162)",
+        "successForeground": "oklch(0.17 0.03 162)",
         "info": "oklch(0.68 0.11 235)",
         "infoForeground": "oklch(0.17 0.03 235)",
         "error": "oklch(0.575 0.19 28)",
         "errorForeground": "oklch(0.99 0.012 28)",
-        "chart1": "oklch(0.72 0.10 185)",
-        "chart2": "oklch(0.74 0.14 58)",
-        "chart3": "oklch(0.82 0.14 80)",
+        "chart1": "oklch(0.70 0.095 242)",
+        "chart2": "oklch(0.78 0.150 82.5)",
+        "chart3": "oklch(0.70 0.120 162)",
         "chart4": "oklch(0.60 0.09 220)",
         "chart5": "oklch(0.68 0.13 160)",
-        "sidebar": "oklch(0.19 0.022 208)",
-        "sidebarForeground": "oklch(0.92 0.01 185)",
-        "sidebarPrimary": "oklch(0.72 0.10 185)",
-        "sidebarPrimaryForeground": "oklch(0.17 0.03 205)",
-        "sidebarAccent": "oklch(0.27 0.03 200)",
-        "sidebarAccentForeground": "oklch(0.86 0.05 184)",
-        "sidebarBorder": "oklch(0.29 0.022 205)",
-        "sidebarRing": "oklch(0.72 0.10 185)"
+        "sidebar": "oklch(0.19 0.022 242)",
+        "sidebarForeground": "oklch(0.92 0.01 242)",
+        "sidebarPrimary": "oklch(0.70 0.095 242)",
+        "sidebarPrimaryForeground": "oklch(0.17 0.03 242)",
+        "sidebarAccent": "oklch(0.27 0.03 242)",
+        "sidebarAccentForeground": "oklch(0.86 0.05 242)",
+        "sidebarBorder": "oklch(0.29 0.022 242)",
+        "sidebarRing": "oklch(0.70 0.095 242)"
       }
     },
     "spacing": {
@@ -2947,7 +2953,7 @@
         "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
       }
     },
-    "customCSS": ".ssso-card .header-gradient {\n  background: linear-gradient(135deg, var(--accent), var(--warning))!important;\n}\n\n .sspt-card .header-gradient {\n background: linear-gradient(135deg, var(--primary), var(--muted-foreground))!important;\n} \n\n .ssso-card .border-card-border-left {\n border-color: var(--accent)!important;}"
+    "customCSS": "/* En-tete des cartes SSsO : jaune de la charte, CREUSE en mode clair — le titre\n   est ecrit en text-primary-foreground (quasi-blanc en clair), le jaune plein n'y\n   ferait que 1,9:1. En sombre ce texte devient fonce, donc le jaune reste plein. */\n.ssso-card .header-gradient {\n  background: linear-gradient(135deg, color-mix(in oklch, var(--accent) 65%, black), color-mix(in oklch, var(--accent) 55%, black))!important;\n}\n\n.dark .ssso-card .header-gradient {\n  background: linear-gradient(135deg, var(--accent), color-mix(in oklch, var(--accent) 80%, black))!important;\n}\n\n .sspt-card .header-gradient {\n background: linear-gradient(135deg, var(--primary), var(--muted-foreground))!important;\n} \n\n .ssso-card .border-card-border-left {\n border-color: var(--accent)!important;}"
   },
   "auth": {
     "login": {
@@ -3226,6 +3232,7 @@
               "fr": "Structures du site",
               "en": "Site structures"
             },
+            "create": false,
             "restrictActionsToOwned": true,
             "rowActions": [
               "edit",
