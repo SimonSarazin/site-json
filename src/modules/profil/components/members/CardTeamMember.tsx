@@ -2,8 +2,8 @@ import { ArrowRight, Mail, MapPin, Phone } from "lucide-react";
 import { Link, useLocation } from "react-router";
 
 import { Card } from "@/components/ui/card";
+import NavLink from "@/components/layout/NavLink";
 import { cn } from "@/lib/utils";
-import { useEntityBySlugQuery } from "@/hooks/useEntityBySlugQuery";
 import { useT } from "@/hooks/useT";
 import { cheminTerritoire, couleursTerritoire, type ConventionRattachement } from "../../lib/teamDirectory";
 import { rolesDuMembre } from "../../lib/memberRoles";
@@ -16,10 +16,10 @@ import type { EntityTypes, Organization, User } from "@communecter/cocolight-api
 /**
  * Carte d'un membre d'ÉQUIPE — pensée pour une page vitrine (« Notre équipe »), pas pour la gestion.
  *
- * Pourquoi un GET par membre plutôt que la liste : la projection de `getMembers` ne ramène ni
- * `territoires` ni l'adresse complète, et son contrat n'accepte pas de `fields` — rien ne permet de
- * lui demander un champ de plus. `entityBySlug` rend la fiche ENTIÈRE ; React Query dédoublonne et
- * met en cache 5 minutes, donc N cartes = N requêtes une seule fois.
+ * Tout est lu sur la LISTE : la section projette les champs que la projection par défaut ne
+ * ramène pas (`fields: ["territoires", "telephone", …]`, SDK ≥ 1.0.194). La carte ne fait donc
+ * aucune requête à elle — une lecture de fiche par carte, c'était N requêtes pour des champs que la
+ * liste sait ramener en une.
  *
  * Les RÔLES ne viennent pas de la fiche mais du LIEN avec l'entité (`links.<famille>[id].roles`) —
  * ils disent la fonction de la personne DANS ce réseau, pas dans l'absolu.
@@ -48,18 +48,15 @@ export function CardTeamMember({
    *  à côté d'autres blocs, où le grand portrait ferait une colonne deux fois plus haute que ses
    *  voisines. */
   layout?: "stack" | "row";
-  /** Convention de rattachement (chemin de page, préfixe des variables de couleur). Absente, on
-   *  garde le preset en service — cf. `CONVENTION_RATTACHEMENT_DEFAUT`. */
-  rattachement?: ConventionRattachement;
+  /** Convention de rattachement (chemin de page, préfixe des variables de couleur). OBLIGATOIRE :
+   *  elle vient de la config (`card.rattachement`), jamais d'un repli codé ici. */
+  rattachement: ConventionRattachement;
 }) {
   const t = useT("modules/profil");
   const { pathname } = useLocation();
-  const slugListe = member.serverData?.slug as string | undefined;
-  const { data: fiche } = useEntityBySlugQuery({ slug: slugListe });
 
   const { nom, slug, photo, rattachement: territoire, donnees: sd } = vueMembre(
     member.serverData as Record<string, unknown> | undefined,
-    (fiche as { serverData?: Record<string, unknown> } | undefined)?.serverData,
   );
   const roles = rolesDuMembre(
     sd.links as Record<string, unknown> | undefined,
@@ -151,7 +148,7 @@ export function CardTeamMember({
       <div className="flex flex-1 flex-col gap-1 px-2 pt-4">
         {!enLigne && identite}
 
-        {/* Contacts de la PERSONNE, lus sur sa fiche. Icônes plutôt que libellés : la colonne est
+        {/* Contacts de la PERSONNE, lus sur la liste projetée. Icônes plutôt que libellés : la colonne est
             étroite, et « Courriel : » y mangerait une ligne entière. */}
         {(email || telephone || adresse) && (
           <div className="mt-3 flex flex-col gap-1 text-sm leading-snug opacity-85">
@@ -193,15 +190,18 @@ export function CardTeamMember({
             est déjà validé à ≥ 6,1:1 dans un sens, donc il l'est dans l'autre — aucune troisième
             couleur à valider. `mt-auto` le cale en bas quelle que soit la longueur des rôles.
             Masqué quand on EST déjà sur la page visée (carte posée sur `/territoire/<slug>`). */}
+        {/* `NavLink`, pas `Link` : le chemin vient de la CONFIG (`card.rattachement.cheminGabarit`)
+            et doit passer par le contrat de lien (`classifyHref`) — un gabarit externe (`https://…`)
+            tomberait sinon dans le catch-all du routeur et servirait l'accueil en 200. */}
         {lienTerritoire && lienTerritoire !== pathname && (
-          <Link
+          <NavLink
             to={lienTerritoire}
             className="mt-auto flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90"
             style={{ background: encre, color: fond }}
           >
             {t("CardTeamMember.territoryNews")}
             <ArrowRight className="h-4 w-4" />
-          </Link>
+          </NavLink>
         )}
       </div>
     </Card>

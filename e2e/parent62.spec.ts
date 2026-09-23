@@ -177,6 +177,53 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     await expect(panneau.getByPlaceholder(/Rechercher par nom/i)).toBeVisible();
   });
 
+  // ── Coordination territoriale : filtre serveur + projection (SDK ≥ 1.0.194) ──────────────
+  // Navigateur NON connecté : chemin public `globalautocomplete` (projection additive), complément
+  // du contrôle manuel sur le chemin admin. Les cas « carte présente » dépendent du semis local
+  // documenté en doc-projets/parent62.md §9septvicies.6 (Mirana → Audomarois, Legrand → Hénin
+  // Carvin, Judicael sans territoire) : sans lui, ils sont IGNORÉS explicitement, pas verts à vide.
+  test("/territoire/arrageois : sans coordination rattachée, le repli de contact et rien d'autre", async ({ page }) => {
+    await page.goto("/territoire/arrageois", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+    const section = page.locator("#arrageois-coordination");
+    await expect(section.getByText("arrageois@parent62.org")).toBeVisible({ timeout: 45_000 });
+    await expect(section.getByText(/Aucun membre/i)).toHaveCount(0);
+    await expect(section.getByText("Coordonnateur(trice)")).toHaveCount(0);
+  });
+
+  test("/territoire/audomarois : la coordination filtrée serveur, sans repli", async ({ page }) => {
+    await page.goto("/territoire/audomarois", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+    const section = page.locator("#audomarois-coordination");
+    // La liste se résout côté client : on attend la carte OU le repli, puis on tranche.
+    await expect(section.getByText(/Mirana Sylvany|audomarois@parent62.org/)).toBeVisible({ timeout: 45_000 });
+    test.skip(
+      (await section.getByText("Mirana Sylvany").count()) === 0,
+      "semis local absent (doc-projets/parent62.md §9septvicies.6)",
+    );
+    await expect(section.getByText("Coordonnateur(trice)")).toBeVisible();
+    await expect(section.getByText("audomarois@parent62.org")).toHaveCount(0); // pas de repli quand une carte est rendue
+    await expect(section.getByText("Centre Social Inter-Générations", { exact: false })).toBeVisible(); // cardText
+    await expect(section.getByRole("link", { name: /actualités du territoire/i })).toHaveCount(0); // déjà sur la page
+  });
+
+  test("/equipe : l'équipe de coordination, avec et sans territoire", async ({ page }) => {
+    await page.goto("/equipe", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+    const section = page.locator("#equipe-terr");
+    await expect(section.getByText(/Legrand Antoine|Aucun membre/)).toBeVisible({ timeout: 45_000 });
+    test.skip(
+      (await section.getByText("Legrand Antoine").count()) === 0,
+      "semis local absent (doc-projets/parent62.md §9septvicies.6)",
+    );
+    for (const nom of ["Mirana Sylvany", "Legrand Antoine", "Judicael RAKOTOMALALA"]) {
+      await expect(section.getByText(nom)).toBeVisible();
+    }
+    // Deux rattachés → deux boutons vers leur territoire ; le troisième, sans territoire, n'en a pas.
+    await expect(section.getByRole("link", { name: /actualités du territoire/i })).toHaveCount(2);
+    await expect(section.locator('a[href="/territoire/familles-en-sol-mineur-henin-carvin"]')).toHaveCount(1);
+  });
+
   test("/territoire/arrageois : bandeau et liste des communes", async ({ page }) => {
     await page.goto("/territoire/arrageois", { waitUntil: "domcontentloaded" });
     await waitForHydration(page);

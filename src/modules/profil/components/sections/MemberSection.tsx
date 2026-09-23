@@ -29,7 +29,8 @@ export default function MemberSection({ id, props }: MemberSectionComponentProps
         search={props.search}
         card={props.card}
         roles={props.roles}
-        territoire={props.territoire}
+        filters={props.filters}
+        fields={props.fields}
         hideWhenEmpty={props.hideWhenEmpty}
         footerText={props.footerText}
         cardText={props.cardText}

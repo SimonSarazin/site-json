@@ -166,7 +166,10 @@ export function MapBubbles({ id, props }: MapBubblesSectionProps) {
                         de celle du bloc voisin « À la une ». Les aligner demande de les séparer. Le coin
                         haut-gauche de l'illustration est la mer — aucune pastille de territoire n'y est
                         posée, le badge ne masque donc rien. */}
-                    <div className={`z-20 flex flex-col items-start ${enCarte ? "hidden" : "absolute top-0 left-0"}`}>
+                    {/* Rendu CONDITIONNEL et non `hidden` : `hidden` et `flex` sont deux utilitaires
+                        `display` de la même couche, c'est l'ordre d'émission Tailwind qui tranchait. */}
+                    {!enCarte && (
+                    <div className="z-20 flex flex-col items-start absolute top-0 left-0">
                         <h2>
                             {/* Couleurs FIXES, même raison que les pastilles d'item ci-dessus : pas
                                 d'adaptatif clair/sombre ici. */}
@@ -175,11 +178,12 @@ export function MapBubbles({ id, props }: MapBubblesSectionProps) {
                             </Badge>
                         </h2>
                     </div>
+                    )}
 
                     {/* Accroche : reste à DROITE, en vis-à-vis du titre. Décalée vers le bas d'autant que
                         le badge est haut, sinon les deux se retrouvent sur la même ligne d'yeux. */}
-                    {props.subhead && (
-                        <div className={`z-20 flex justify-end ${enCarte ? "hidden" : "absolute top-12 @sm/map-bubbles:top-16 @3xl/map-bubbles:top-28 right-6 @sm/map-bubbles:right-10"}`}>
+                    {!enCarte && props.subhead && (
+                        <div className="z-20 flex justify-end absolute top-12 @sm/map-bubbles:top-16 @3xl/map-bubbles:top-28 right-6 @sm/map-bubbles:right-10">
                             <p className={`max-w-32 @sm/map-bubbles:max-w-50 text-[0.65rem] @sm/map-bubbles:text-lg @3xl/map-bubbles:max-w-60 text-left ${overlay ? "text-white/90" : "text-muted-foreground"}`}>
                                 {t(props.subhead)}
                             </p>

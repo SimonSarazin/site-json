@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { cheminTerritoire, couleursTerritoire, memeTerritoire } from "./teamDirectory";
+import { cheminTerritoire, couleursTerritoire, exigerConvention } from "./teamDirectory";
+
+// La convention vient de la config : le module n'en code aucune. Celle-ci est celle de parent62.
+const territoire = { cheminGabarit: "/territoire/{slug}", prefixeCouleur: "--territoire" };
 
 describe("cheminTerritoire", () => {
   it("retrouve les 9 pages territoire de parent62 à partir du libellé de profil", () => {
@@ -16,53 +19,38 @@ describe("cheminTerritoire", () => {
       "Ternois Bruaysis": "/territoire/ternois-bruaysis",
     };
     for (const [libelle, chemin] of Object.entries(attendu)) {
-      expect(cheminTerritoire(libelle), libelle).toBe(chemin);
+      expect(cheminTerritoire(libelle, territoire), libelle).toBe(chemin);
     }
   });
 
+  it("retire les diacritiques par échappements \\u, pas par caractères combinants bruts", () => {
+    // Une normalisation NFC du fichier source ne doit rien pouvoir casser ici.
+    expect(cheminTerritoire("Hénin-Carvin", territoire)).toBe("/territoire/henin-carvin");
+    expect(cheminTerritoire("Liévin Éàü", territoire)).toBe("/territoire/lievin-eau");
+  });
+
   it("tolère les espaces superflus et la casse", () => {
-    expect(cheminTerritoire("  AUDOMAROIS  ")).toBe("/territoire/audomarois");
+    expect(cheminTerritoire("  AUDOMAROIS  ", territoire)).toBe("/territoire/audomarois");
   });
 
   it("rend null quand il n'y a rien à lier", () => {
-    expect(cheminTerritoire(null)).toBeNull();
-    expect(cheminTerritoire(undefined)).toBeNull();
-    expect(cheminTerritoire("")).toBeNull();
-    expect(cheminTerritoire("   ")).toBeNull();
-    expect(cheminTerritoire("!!!")).toBeNull();
-  });
-});
-
-describe("memeTerritoire", () => {
-  it("apparie deux écritures du même territoire", () => {
-    expect(memeTerritoire("Audomarois", "audomarois")).toBe(true);
-    expect(memeTerritoire("Familles en sol mineur Hénin Carvin", "Familles en sol mineur Henin-Carvin")).toBe(true);
-    expect(memeTerritoire("  Entre Mer et Terres ", "entre mer et terres")).toBe(true);
-  });
-
-  it("distingue deux territoires différents", () => {
-    expect(memeTerritoire("Artois", "Arrageois")).toBe(false);
-    expect(memeTerritoire("Familles en sol mineur Lens Liévin", "Familles en sol mineur Hénin Carvin")).toBe(false);
-  });
-
-  it("ne rapproche jamais deux valeurs vides", () => {
-    // Sans ce garde-fou, un profil sans territoire tomberait dans TOUTES les pages territoire.
-    expect(memeTerritoire(null, null)).toBe(false);
-    expect(memeTerritoire("", "")).toBe(false);
-    expect(memeTerritoire(undefined, "Artois")).toBe(false);
-    expect(memeTerritoire("Artois", null)).toBe(false);
+    expect(cheminTerritoire(null, territoire)).toBeNull();
+    expect(cheminTerritoire(undefined, territoire)).toBeNull();
+    expect(cheminTerritoire("", territoire)).toBeNull();
+    expect(cheminTerritoire("   ", territoire)).toBeNull();
+    expect(cheminTerritoire("!!!", territoire)).toBeNull();
   });
 });
 
 describe("couleursTerritoire", () => {
   it("indexe les variables sur le slug de page, pas sur le libellé", () => {
-    expect(couleursTerritoire("Audomarois")).toEqual({
+    expect(couleursTerritoire("Audomarois", territoire)).toEqual({
       fond: "var(--territoire-audomarois-carte, var(--card))",
       encre: "var(--territoire-audomarois-encre, var(--card-foreground))",
       bordure: "var(--territoire-audomarois-carte, var(--border))",
     });
     // Le nom long, et non l'abrégé `fsm-` des variables de marque.
-    expect(couleursTerritoire("Familles en sol mineur Hénin Carvin").fond).toBe(
+    expect(couleursTerritoire("Familles en sol mineur Hénin Carvin", territoire).fond).toBe(
       "var(--territoire-familles-en-sol-mineur-henin-carvin-carte, var(--card))",
     );
   });
@@ -70,14 +58,14 @@ describe("couleursTerritoire", () => {
   it("retombe sur une carte neutre quand le territoire est absent", () => {
     // Sans ce repli, une carte sans territoire serait TRANSPARENTE, pas neutre.
     const neutre = { fond: "var(--card)", encre: "var(--card-foreground)", bordure: "var(--border)" };
-    expect(couleursTerritoire(null)).toEqual(neutre);
-    expect(couleursTerritoire("  ")).toEqual(neutre);
+    expect(couleursTerritoire(null, territoire)).toEqual(neutre);
+    expect(couleursTerritoire("  ", territoire)).toEqual(neutre);
   });
 });
 
-describe("convention de rattachement surchargeable", () => {
-  // Le module `profil` est générique : un autre site doit pouvoir brancher ses propres gabarits
-  // sans toucher au code. Sans ce test, le `/territoire/` de parent62 pourrait se re-figer en dur.
+describe("convention de rattachement fournie par la config", () => {
+  // Le module `profil` est générique : un autre site branche ses propres gabarits sans toucher au
+  // code — et parent62 n'est pas un repli caché dans le moteur.
   const region = { cheminGabarit: "/region/{slug}", prefixeCouleur: "--region" };
 
   it("suit le gabarit de chemin fourni", () => {
@@ -91,9 +79,21 @@ describe("convention de rattachement surchargeable", () => {
       bordure: "var(--region-hauts-de-france-carte, var(--border))",
     });
   });
+});
 
-  it("retombe sur la convention parent62 quand rien n'est fourni", () => {
-    expect(cheminTerritoire("Artois")).toBe("/territoire/artois");
-    expect(couleursTerritoire("Artois").fond).toBe("var(--territoire-artois-carte, var(--card))");
+describe("exigerConvention", () => {
+  it("rend la convention telle quelle quand elle est complète", () => {
+    expect(exigerConvention(territoire)).toBe(territoire);
+  });
+
+  it("échoue tôt, avec le nom de la clé de config, quand elle manque ou est incomplète", () => {
+    // Une carte « équipe » sans convention rendrait sans lien ni couleur, sans que rien ne le dise.
+    const message = /member\.card\.rattachement/;
+    expect(() => exigerConvention(undefined)).toThrow(message);
+    expect(() => exigerConvention({ cheminGabarit: "/x/{slug}" } as never)).toThrow(message);
+    expect(() => exigerConvention({ prefixeCouleur: "--x" } as never)).toThrow(message);
+    // Même contrat que le préflight : sans `{slug}` toutes les cartes iraient sur la même page.
+    expect(() => exigerConvention({ cheminGabarit: "/territoire", prefixeCouleur: "--territoire" })).toThrow(message);
+    expect(() => exigerConvention({ cheminGabarit: "/x/{slug}", prefixeCouleur: "territoire" })).toThrow(message);
   });
 });

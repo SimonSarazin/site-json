@@ -15,7 +15,29 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-09-23** — bandeaux de filtres en deux lignes, filtre par ville réservé aux actualités et tiré de l'adresse (§9novotricies). Précédemment : **2026-09-22** — annuaire des partenaires et filtre « Villes » des actualités, page « La communauté » retirée (§9octotricies). Précédemment : **2026-09-17** — INFORESO et « Elles et ils ont marqué le réseau » en pages dédiées avec leurs formulaires d'admin, types d'actualité « À la une » / « Zoom sur le réseau » en choix multiple, taxonomie facultative hors réunions (§9octovicies). Précédemment : **2026-09-15** — les cinq lots du 09/09 (§9vicies à §9quatervicies, validés en §9quinvicies), puis la refonte de l'accueil, les actions admin sur les actualités, les pages du réseau reprises à la source et le Mois de la Parentalité (§9sexvicies).
+Dernière mise à jour : **2026-09-23** — passe de revue du lot membres (§9septvicies.7 : 9 correctifs, 5 nettoyages transverses, césure coform rétablie — plus aucun test rouge) ; coordination territoriale lue en une requête serveur (§9septvicies.6) ; bandeaux de filtres en deux lignes, filtre par ville réservé aux actualités et tiré de l'adresse (§9novotricies). Précédemment : **2026-09-22** — annuaire des partenaires et filtre « Villes » des actualités, page « La communauté » retirée (§9octotricies). Précédemment : **2026-09-17** — INFORESO et « Elles et ils ont marqué le réseau » en pages dédiées avec leurs formulaires d'admin, types d'actualité « À la une » / « Zoom sur le réseau » en choix multiple, taxonomie facultative hors réunions (§9octovicies). Précédemment : **2026-09-15** — les cinq lots du 09/09 (§9vicies à §9quatervicies, validés en §9quinvicies), puis la refonte de l'accueil, les actions admin sur les actualités, les pages du réseau reprises à la source et le Mois de la Parentalité (§9sexvicies).
+
+**(f) Passe de revue du lot membres, et le dépôt sans test rouge** — `/code-review` rejoué sur la
+branche : 9 constats, tous corrigés (`territoires` en tableau lu par la carte, `NavLink` sur le lien de
+territoire, buckets `pending`/`admins` gatés sans onglets, `exigerConvention` au même contrat que le
+préflight, gate élargi aux configs `dev`/`site-config`/`SITE_CONFIG_PATH` + **labels parent62
+exacts**, recette de la skill, garde « non vide » unique dans le hook). Cinq nettoyages transverses de
+la première revue (`ActionTiles` SVG, `MapBubbles` `hidden`+`flex`, commentaire `sectionBadge`,
+codec ISO dupliqué, `as never` d'`ArticlePage`). Et la **césure des textes riches de formulaire**
+(`wrap-anywhere`, perdue à l'extraction de `ProseContent`) est rétablie côté coform : `test:unit`
+**4 776/4 776**, le seul rouge du dépôt est résolu. Détail : §9septvicies.7.
+
+**(e) Coordination territoriale lue en UNE requête serveur** — la section `member` ne filtre plus
+le territoire côté client sur une liste paginée (une lecture de fiche par membre, et une sentinelle
+de pagination jamais montée quand la page courante ne contenait aucun rattaché : le 21ᵉ
+coordonnateur n'aurait jamais été trouvé). `filters` (égalité Mongo, fusionné **sous** le filtre de
+lien) et `fields` (projection **additive**) partent au serveur, portés par le SDK **1.0.194** —
+`getMembers`/`getContributors`/`getAttendees` fusionnent les filtres appelant au lieu de les écraser,
+les 6 schémas AJV de requête acceptent des clés de filtre étrangères et déclarent `fields`. La carte
+« équipe » lit tout sur la liste (plus d'`entityBySlug` par carte) et `card.rattachement` devient
+**obligatoire** (gate préflight `member-team-card`, `exigerConvention` à l'exécution) : le module
+`profil` ne code plus la convention parent62 en repli. Supprimés : `useMembresDuTerritoire`,
+`memeTerritoire`, la sentinelle. SDK `1.0.194` publié le 22/09, dépendance bumpée (§9septvicies.6).
 
 **(d) Haut des 9 pages territoire refondu + saisie admin des réunions** — chaque page
 `/territoire/*` ouvre désormais, juste après son bandeau, sur les **3 prochaines réunions du comité
@@ -2742,7 +2764,9 @@ totaux ci-dessus sont la somme de cinq exécutions ciblées.
 > `2689e517` a extrait le composant vers `components/shared/` et **perdu la classe** au passage, tout
 > en ajoutant au même endroit un test affirmant qu'aucun élément ne porte de `class` — les deux
 > assertions sont désormais contradictoires, l'une exigeant la classe sur l'enveloppe, l'autre
-> l'interdisant. **Non corrigé : hors périmètre**, c'est le chantier d'un autre.
+> l'interdisant. **Résolu le 23/09** (§9septvicies.7) : la césure est remise **côté coform**
+> (`PROSE_CESURE` sur les 5 appels de `ProseContent` dans `FormFields.tsx`), `ProseContent` reste
+> nu, et le test vise désormais les composants coform.
 
 > **Piège d'outillage — la config.** `config.prod.parent62.json` n'a **pas** un formatage machine
 > reproductible : ni `json.dump` ni un imprimeur façon Prettier ne le régénèrent à l'identique, et le
@@ -3069,6 +3093,148 @@ l'invitation des 6 autres coordinations et le champ `territoires` sur les fiches
 Lot **non commité**.
 
 ---
+
+### 9septvicies.6 La coordination d'un territoire, en une requête serveur (22/09)
+
+**Ce qui n'allait pas.** « Le coordonnateur d'Arrageois » est une *recherche*, et le lot précédent
+l'avait écrite comme un *filtre sur une page de résultats* : `useMembresDuTerritoire` lisait la fiche
+complète de chaque membre chargé (N requêtes `entityBySlug` pour tester une chaîne), puis filtrait
+la page courante de `getMembers`. Deux défauts, dont un invisible en prod par chance d'effectif :
+la sentinelle de pagination n'était montée que si la page contenait déjà une carte — donc jamais
+dans le seul cas où elle servait — et avec `hideWhenEmpty` la section s'effaçait avant même
+d'essayer. Une fiche en échec (500 passager, membre sans slug) sortait silencieusement du filtre.
+Et tout cela vivait dans `EntityMembers`, composant global (onglet profil, admin, 14 sections du
+parc), pour un champ (`territoires`) qui n'existe que chez parent62.
+
+**Pourquoi le serveur ne savait pas le faire.** `getMembers` (SDK) *écrasait* `data.filters` par son
+filtre de lien — alors que `getMemberOf`, quarante lignes plus bas, fusionnait déjà les filtres
+appelant — et le schéma AJV de requête de `GET_MEMBERS_*` refusait toute clé étrangère
+(`additionalProperties: false`) **avant même d'émettre la requête**. Le backend, lui, est le même
+endpoint que `searchCostum` (`/co2/search/globalautocomplete`) et honore les filtres arbitraires ;
+le legacy PHP (`SearchNew::globalAutoComplete`) ajoute `fields` à la liste par défaut
+(`array_merge`), `checkFields` ne retirant que `preferences`. Lu dans le PHP, puis mesuré sur le
+legacy : même document, `links`/`name`/`slug` conservés avec `fields`, `email` n'arrivant *que*
+projeté.
+
+**Ce qui change.**
+
+| Où | Quoi |
+|---|---|
+| SDK `1.0.194` (non publié) | `getMembers`, `getContributors`, `getAttendees` : `finalData.filters = { ...callerFilters, ...filtreDeLien }` (le lien reste prioritaire). `endpoints-copie.json` : `filters.additionalProperties: true` et `fields: string[]` sur les 6 endpoints `GET_MEMBERS_*`/`GET_CONTRIBUTORS_*`/`GET_ATTENDEES_*` ; gardes `allOf`/`patternProperties` du lien intactes. **Chemin admin** (`isMe` → `searchAdmin`) : `fields` est **retiré** avant l'appel — le PHP en fait là une projection EXACTE (`$fields = $_POST["fields"] ?: []`, sans liste par défaut), les documents revenaient sans `collection` et le SDK les ignorait ; sans `fields`, ce chemin renvoie les documents complets. 10 tests d'intégration (filtre appliqué · lien prioritaire · `fields` additif · documents complets sur le chemin admin) |
+| `member` (schéma, section, `EntityMembers`) | `territoire: string` → **`filters: object`** + **`fields: string[]`**, génériques, transmis tels quels par `useInfiniteEntityQuery` → `useEntityMembers`. Le vocabulaire parent62 ne vit plus que dans la config |
+| `CardTeamMember` | lit la liste projetée ; plus d'`useEntityBySlugQuery` par carte. `rattachement` **requis** |
+| `teamDirectory` | `CONVENTION_RATTACHEMENT_DEFAUT` supprimée, `exigerConvention` ajoutée, `memeTerritoire` supprimée, plage de diacritiques en `\u0300-\u036f` (des combinants bruts, qu'un éditeur normalise en NFC) |
+| `ficheMembre` | `vueMembre(liste)` — une source |
+| Supprimé | `hooks/useMembresDuTerritoire.tsx`, `refSentinelle` et la sentinelle, la plomberie `enCours` |
+| Gate | `tests/preflight/member-team-card.test.ts` : `card.rattachement` complet sur toute carte « équipe », plus aucun `territoire` |
+| Config | 12 sections : `"filters": { "territoires": "<libellé>" }`, `"fields": ["territoires","telephone","phone","mobile","email"]`, `card.rattachement: { "/territoire/{slug}", "--territoire" }` |
+
+**Deux corrections de revue embarquées.** La grille plafonnée (`GRILLE_CARTES`) ne s'applique plus
+qu'à la carte « équipe » — les deux sections `card.type: "profile"` du parc (cyber-reunion,
+sport-sante-bien-etre) retrouvent leur grille pleine largeur. Et `footerText` s'affiche dès
+qu'**aucune carte n'est rendue**, `hideWhenEmpty` ou non (avant : `!masquerListe`, qui le
+supprimait précisément quand la liste était vide sans `hideWhenEmpty`).
+
+**Un changement de sémantique à connaître.** Le filtre serveur est une égalité Mongo : la valeur
+de `filters.territoires` doit être **exactement** celle stockée sur les profils, là où
+`memeTerritoire` tolérait casse, accents et tirets. Vérifié : les 9 valeurs de la config sont
+lettre pour lettre les `label` de `src/data/territoires62.ts` (« valeur EXACTE stockée en base »).
+
+**Vérifications.**
+
+| Gate | Résultat |
+|---|---|
+| SDK : `typecheck` · `lint` · intégration | ✅ · ✅ 0 erreur · **36 passés**, 9 nouveaux, 4 échecs « Admin Actions » **préexistants** (identiques sans le patch, vérifié par `stash`) |
+| SDK : `build` · `pack` | ✅ `communecter-cocolight-api-client-1.0.194.tgz`, installé dans site-json en `--no-save` |
+| `typecheck` · `lint` | ✅ · ✅ 0 erreur (25 avertissements `react-hooks` préexistants) |
+| `test:preflight` | ✅ **730 tests**, dont le gate `member-team-card` (25 cas : convention, typage, labels parent62) |
+| `test:unit` | ✅ **4 763 passés**, 1 échec préexistant (`ProseContent — césure`, hérité du merge de `main`) |
+| `config:validate` | ✅ 51 pages · 183 sections |
+| `config:render` | ✅ 51/51 pages · **183/183 sections** avec du contenu SSR, `/equipe` 7/7, `/territoire/arrageois` 9/9 |
+| `test:e2e` `parent62.spec.ts` | ✅ **24 passés**, dont 3 nouveaux sur la coordination (voir ci-dessous) |
+| Sonde SDK depuis site-json (legacy `:5080`) | ✅ filtre appelant appliqué (0 résultat sur champ inexistant), `fields` additif (`telephone` arrive, `name`/`slug`/`links` conservés), lien prioritaire |
+| Navigateur (dev server `parent62`, semis ci-dessous) | ✅ `/territoire/audomarois` : carte Mirana (libellé, rôle, courriel, adresse, `cardText`, couleurs `--territoire-audomarois-*`, pas de bouton — on est sur sa page), **sans** `footerText` · `/territoire/familles-en-sol-mineur-henin-carvin` : Legrand, téléphone projeté (égalité exacte sur le libellé le plus piégeux) · `/territoire/arrageois` : `footerText` seul, ni carte ni « Aucun membre » · `/equipe` : les 3, Judicael en carte neutre sans bouton. Réseau : **zéro** `slug/getinfo` ni `element/about` par carte (avant : un de chaque par membre) |
+
+**Le résultat métier, vérifié sur un semis local.** Ni la base locale `:5080` ni
+`www.communecter.org` ne portent les données de §9septvicies.4 (sur les deux, `parent62` n'a que
+l'équipe de dev : 7 et 8 membres, aucun rôle `Coordonnateur(trice)`, aucun `territoires`). Trois
+membres locaux ont donc été **semés** dans le Mongo du legacy (conteneur
+`pixelhumain-docker-php7-mongo42-1`, base `communecter`) — conservés comme fixtures :
+
+| Membre (`citoyens._id`) | `links.memberOf.<org>.roles` (+ miroir `organizations.links.members`) | `territoires` | Cas couvert |
+|---|---|---|---|
+| Mirana Sylvany (`5efb039b69086495368b46d7`) | `["Coordonnateur(trice)"]` | `"Audomarois"` | filtre exact + carte complète |
+| Legrand Antoine (`6a4671343dcd8c54f34ddb8e`) | idem | `"Familles en sol mineur Hénin Carvin"` | égalité exacte, accents et espaces |
+| Judicael Rakotomalala (`6448f244ecf6e50e4b539677`) | idem | *(aucun)* | sur `/equipe`, sur aucune page territoire |
+
+Rejouable : `docker exec pixelhumain-docker-php7-mongo42-1 mongo communecter --eval '…updateOne({_id: ObjectId(<id>)}, {$set: {"links.memberOf.6a450f0ac34c7070327d2a64.roles": ["Coordonnateur(trice)"], territoires: "<libellé>"}})…'`
+(et `$set` de `links.members.<id>.roles` sur l'orga `6a450f0ac34c7070327d2a64`). Les 3 tests e2e
+« coordination » de `parent62.spec.ts` s'appuient dessus et **s'ignorent explicitement** (`test.skip`
+avec le renvoi ici) si le semis manque — jamais verts à vide. Le cas Arrageois (repli) ne dépend
+d'aucun semis.
+
+> **Ce que le navigateur a révélé, que les sondes ne montraient pas.** Connecté en admin de
+> `parent62`, le SDK passe par `globalautocompleteadmin`, où le legacy fait de `fields` une
+> projection EXACTE : la première version rendait le repli au lieu de la carte, les documents
+> revenant sans `collection` et étant ignorés. D'où le 4ᵉ volet SDK (retrait de `fields` sur ce
+> chemin) et son test. Playwright, lui, n'est pas connecté : ses 3 tests exercent le chemin public.
+
+> **Dépendance.** Le SDK `1.0.194` (commit `55e7680`, branche `feat/members-filters-fields-1.0.194`
+> du dépôt `cocolight-api-endpoint`) est **publié** sur npm le 2026-09-22 14:19 Z, et la dépendance de
+> site-json est bumpée (`^1.0.194`, lock résolu sur le registre avec les 4 volets) : le lot est
+> installable par `npm ci`. Reste, côté backend : recopier `endpoints-copie.json` dans
+> `cocolight-backend/src/contract/` (miroir tenu à chaque release).
+
+> **Égalité exacte, gardée.** Le préflight `member-team-card` vérifie désormais que chaque
+> `filters.territoires` de parent62 est, lettre pour lettre, un `label` de `territoires62.ts`. La
+> dérive côté PROFIL (une saisie « Hénin-Carvin » avec tiret) n'est pas couvrable par un gate de
+> config : c'est une règle de saisie du réseau, à tenir dans le référentiel.
+
+### 9septvicies.7 Passe de revue (23/09) — 9 correctifs, 5 nettoyages, césure coform
+
+`/code-review` rejoué sur `parents62` vs `main` après §9septvicies.6 ; 9 constats, tous repris :
+
+| Constat | Correctif |
+|---|---|
+| Égalité Mongo exacte sans garde | gate préflight : chaque `filters.territoires` de parent62 est un `label` de `territoires62.ts` (9 cas + sentinelle) |
+| `territoires` en TABLEAU : apparié par le filtre, rejeté par la carte | `vueMembre` lit le premier libellé exploitable d'un tableau — cohérent avec ce que Mongo retient |
+| Lien de territoire en `<Link to>` depuis la config | `NavLink` (contrat `classifyHref`, règle CLAUDE.md) |
+| `pending`/`admins` fetchés même sans onglets (3 appels par section vitrine, dont l'adhésion entière) | `entity: null` quand `!showTabs` (et `!canManage` pour pending) — hook inerte, motif de l'admin |
+| Gate limité à `config.prod*` et à tout objet `type: member` | périmètre = résolution serveur à 3 niveaux ; section = `type: member` **avec** `props` objet |
+| `exigerConvention` n'exigeait pas `{slug}` | même contrat que le préflight (`{slug}`, préfixe `--…`) + 2 tests |
+| Encadré « SDK non publié » faux | réécrit (publié le 22/09 14:19 Z, dépendance bumpée par Thomas) |
+| Recette `page-territoire` citait encore `territoire` | `filters` + `fields` + `card.rattachement` obligatoire |
+| Garde « non vide » de `filters`/`fields` en trois endroits | une seule, dans `useInfiniteEntityQuery` ; `MemberQueryParams` = alias du type du hook |
+
+**Cinq nettoyages transverses**, restés ouverts de la première revue (hors lot membres) : `ActionTiles`
+— le SVG inline suit `sizeClass` (helpers de taille intrinsèque supprimés) ; `MapBubbles` — rendu
+conditionnel au lieu de `hidden`+`flex` dans la même classe ; `sectionBadge` — commentaire aligné sur
+ses 4 vrais appelants ; `sharedCodecs` — `normaliseDateIso` unique pour les deux codecs de date ;
+`ArticlePage` — `useArticle().entity` typé `EntityTypes | null`, plus de `as never`.
+
+**Césure des textes riches de formulaire** (cf. §9sexvicies.8) : `PROSE_CESURE = "wrap-anywhere"`
+posé sur les 5 appels de `ProseContent` dans `coform/FormFields.tsx`, avec la mesure d'origine (352 px
+dans une colonne de 308, modale qui défile latéralement) ; `ProseContent` reste nu (« le className de
+l'appelant reste le seul habillage ») ; le test vise les composants coform. **Plus aucun test rouge.**
+
+**`ArticleBody` — profil strict assumé (analyse, pas de changement).** La revue signalait la perte de
+`class`/`style`/`id` sur les articles. Prémisse fausse pour moitié : sur `main`, `renderMarkdown`
+était en `html: false` — le HTML d'un article s'affichait **en texte** (`<table>` littéral). Le lot
+rend enfin les tables, et applique le profil `sanitizeProse` (faux écran de connexion impossible depuis
+un article d'auteur non admin). Mesuré sur 2 000 des 6 434 articles (base locale) : **12** portent du
+HTML (des tables), 5 un `style=` (couleurs violet/magenta, hauteurs de ligne), 4 un `class=` (résidus
+Gmail/Thunderbird/WordPress), **0** `id=` ni ancre interne. Reste à trancher (§13) : assumer, ou
+rétablir le profil permissif via `source`.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` · `lint` | ✅ · ✅ 0 erreur |
+| `test:unit` | ✅ **4 776 / 4 776** — 0 échec (était 1) |
+| `test:preflight` | ✅ **730** |
+| `test:e2e` `parent62.spec.ts` | ✅ **24 / 24** |
+| `config:validate` · `config:render` | ✅ 51 pages · 183 sections · 183/183 avec contenu SSR |
+
+Arbre `parents62` : 26 fichiers + `tests/preflight/member-team-card.test.ts`, **non commités**.
 
 ## 9octovicies. Impacts — INFORESO et « Elles et ils ont marqué le réseau » en pages dédiées, types d'actualité multiples, taxonomie facultative (16-17/09)
 
@@ -3752,7 +3918,7 @@ vert (32 px, contre 16) que la ligne points + bouton au-dessus de son bord bas. 
 |---|---|---|---|
 | 1.1 | Site `reseau.parent62.org`, nav + graphisme proches du WP | 🟡 | config réconciliée (24/07) ; doublon nav `/blog` **résolu** (§9.5) ; **06/08 (committé sur `parents62`)** : accueil, header (`stacked`) et footer (`minimal-centered`) entièrement refondus, nav passée à 5 dropdowns dont un nouveau « Publics » (§9quater) ; double entrée `/parents`/`/pro` **rétablie le 02/09** (1.4, §9septendecies), la recette visuelle et le déploiement → 1.10. **09-10/09** : haut de page resserré — bandeau au quart de l'écran, « Territoires » et « à la une » côte à côte dans un `gridLayout` qui tient dans le premier écran jusqu'à **150 % de zoom** ; page `/contact` retirée au profit de `/equipe`, qui portait déjà la même section (§9sexvicies.1, §9sexvicies.6) |
 | 1.2 | Pages statiques réseau / charte / équipe / champs d'action | ✅ | `/reseau` `/charte` `/champs-actions` `/equipe` ; arbitrage éditorial réseau ouvert (§13). **10/09** : **deux pages reprises mot pour mot** à la source officielle — `/champs-actions` (5 valeurs du REAAP, charte et 5 objectifs du CLAS, âges du LAEP, 3 liens documentaires, actu d'Olhain tirée par son slug, §9sexvicies.3) et `/reseau` (l'équipe nommée, la définition intégrale du CNSP, les 3 familles de membres, la circulaire de 1999 et la plaquette du réseau en PDF ; frise chronologique retirée, §9sexvicies.5). **Reste à faire** : les 8 valeurs de `/charte` sont **tronquées** à leur première phrase alors que la source les donne en entier |
-| 1.3 | Page par territoire : contact + **liste des communes** | ✅ | cards coordo + accordéon 887 communes + fil filtré + CTA ; navigation depuis l'accueil désormais via `map-bubbles` (carte à bulles, §9quater) au lieu des cartes d'accès rapide ; **03/09** : haut de page refondu — **3 prochaines réunions du comité local** juste après le bandeau, carte « Comptes rendus des réunions » (Drive) et **3 ressources du territoire** avec bouton « Voir toutes les ressources » ; carte « Le comité local » et blocs de liens externes retirés ; saisie des réunions par l'onglet `/admin` dédié (§9novodecies). Les deux blocs de données sont **câblés** ; leur remplissage dépend de la saisie côté costum (§9novodecies.5) |
+| 1.3 | Page par territoire : contact + **liste des communes** | ✅ | cards coordo + accordéon 887 communes + fil filtré + CTA ; navigation depuis l'accueil désormais via `map-bubbles` (carte à bulles, §9quater) au lieu des cartes d'accès rapide ; **03/09** : haut de page refondu — **3 prochaines réunions du comité local** juste après le bandeau, carte « Comptes rendus des réunions » (Drive) et **3 ressources du territoire** avec bouton « Voir toutes les ressources » ; carte « Le comité local » et blocs de liens externes retirés ; saisie des réunions par l'onglet `/admin` dédié (§9novodecies). Les deux blocs de données sont **câblés** ; leur remplissage dépend de la saisie côté costum (§9novodecies.5) ; **22-23/09** : coordination lue en UNE requête serveur (`filters`+`fields`, SDK 1.0.194), plus d'appel par carte, `card.rattachement` obligatoire, gate labels exacts (§9septvicies.6-7) |
 | 1.4 | Double entrée parents / pro | ✅ *(était 🟡, régression du 06/08)* | **Rétablie le 02/09** : la section `action-tiles` `home-double-entree` (« Vous êtes… » → `/parents` / `/pro`) est réinsérée sur l'accueil, en 2ᵉ position — juste après le carrousel « à la une », sa place d'origine dans le rythme de la page. Les deux pages existaient toujours mais **n'étaient liées de nulle part** depuis la refonte du 06/08 (vérifié : une seule occurrence de chaque chemin dans la config, sa propre déclaration de page). Elles coexistent avec le dropdown « Publics » (7 pages `/public/*`), qui ne les remplace donc pas — question §13 tranchée |
 | 1.5 | Moteur de recherche : types d'info, public, âges, dates, territoire coloré, carte, thèmes | 🟡 | `/recherche` : types d'info (**searchTargets 6** depuis le 25/07 — « Ressources » ajoutée —, défaut « Actualités »), public, thèmes, territoire coloré, **carte** (`enableMap:true`), `dateRange` **borne début seule**. **25/07** : chaque famille a désormais sa carte et son action au clic (`list.itemRules`, §9bis) ; tri `created:-1` et projection explicite ajoutés. **Âges : livré sur `/temoignages` + form affiche, mais PAS encore dans le groupe de filtres `/recherche`** (à ajouter — `ages` est projeté, il ne manque que le groupe). Borne de fin des dates = demande backend `$lt/$lte` (§11) |
 | 1.6 | Paroles de parents (catégories libres, audio+écrit+image, adresse/carte, transcription, ajout admin) | 🟡 | brique complète (Thomas) : `/temoignages`, form `parent62-affiche` (catégorie, audio→`medias`, ages, consentement RGPD), pile audio `media/*`, card/preview `testimonial`. **Ajout admin-only ✅** (modération a priori retirée volontairement, commit `17aea3e`). **25/07** : la cible « Paroles » de `/recherche` renvoyait **0 résultat** (filtre `status:"validated"` sur un champ inexistant) — corrigé, et les paroles y rendent en bulles avec leur dialog (§9bis). **Données observées le 25/07** : `/temoignages` affiche « Toutes les paroles (**3**) » — la mention « 0 POI `affiche` » du 24/07 est caduque. **25/08** : catégorie **et** thèmes passés en saisie libre, valeur inédite promue vers la liste partagée par un admin (§9septies). **09/09** : les 3 catégories par défaut (« Compliqué / Difficile / À changer ») **retirées** du socle du form, du filtre et des `badge.colors` — seule la recette `categoriesParole` alimente, saisie libre ouverte ; **adresse** (widget `location` + `geo`/`geoPosition`) et **image** (`profil_avatar`, en bannière de card ET de modale via le nouveau `testimonial.imageField`) ajoutées à la saisie ; **carte en vue split** sur `/temoignages` (§9vicies). **Manque** : **transcription/sous-titres NON implémentée** (`description` sert d'écrit) ; les paroles déjà saisies n'ont **pas d'adresse**, donc aucun marqueur tant qu'elles ne sont pas rééditées. |
@@ -3788,8 +3954,8 @@ Hors périmètre engagé : publication RS, mailing, migration GoGoCarto, fiches 
 ## 11. Dépendances site-json ↔ cocolight-api-client
 
 Le SDK est en **lecture seule** : toute évolution passe par une spec `.md` transmise à Aboire
-(`spec-cocolight-api-parents62.md`). Version courante au 17/09 : **1.0.193 installée** (`^1.0.192` dans
-`package.json`). Historique : **1.0.172, publiée sur npm** (`^1.0.172`,
+(`spec-cocolight-api-parents62.md`). Version courante au 23/09 : **1.0.194 installée** (`^1.0.194` dans
+`package.json`, publiée le 22/09 — §9septvicies.6). Historique : **1.0.172, publiée sur npm** (`^1.0.172`,
 commit `09e145a0` du 03/08, résolue depuis `registry.npmjs.org` dans le lockfile — fini le tarball
 `npm pack` local). La 1.0.172 règle notamment la **pose du scope costum côté back-office**
 (`setCostumScope`, présent dans le dist installé, consommé par
@@ -3803,7 +3969,14 @@ le `/admin` du blog parent62 en dépend). Le **1.0.168** (mergé le 24/07) avait
 | digest costum **variant-aware** (`6fab52d`) | un POI costum multi-type (article + affiche) expose chaque sous-type |
 | `news` dans `globalautocomplete` (`ceaff2a`) | débloque la page Actualités |
 
-**Restant côté Thomas / backend** : confirmer le **`typeObj.affiche` déployé en base** (le dump
+| Apport SDK 1.0.194 (commit `55e7680`) | Effet parent62 |
+|---|---|
+| `getMembers`/`getContributors`/`getAttendees` : `data.filters` FUSIONNÉ sous le filtre de lien (avant : écrasé) | « le coordonnateur DE ce territoire » en une requête serveur exacte |
+| 6 schémas AJV `GET_MEMBERS_*`/`GET_CONTRIBUTORS_*`/`GET_ATTENDEES_*` : `filters.additionalProperties: true`, `fields: string[]` | la validation client ne refuse plus un filtre de profil ; projection additive des champs que la carte lit |
+| chemin admin (`isMe`) : `fields` retiré (projection EXACTE de `searchAdmin` → documents sans `collection`, ignorés) | un admin connecté voit la même carte qu'un visiteur |
+
+**Restant côté Thomas / backend** : recopier `endpoints-copie.json` (1.0.194) dans
+`cocolight-backend/src/contract/` ; confirmer le **`typeObj.affiche` déployé en base** (le dump
 local du 20/07 ne contient que `article`) ; whitelist audio `Document.php` (demande 5) ; opérateurs
 `$gte`/`$lt`/`$lte` dans `SearchNew::getQueries` (demande 6, borne de fin des dates) ; liste `ages`
 attendue par le test parole ; périmètre `prepData`/`validategroup`.
@@ -3882,6 +4055,11 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 
 | Évolution / question | Pour qui |
 |---|---|
+| **[23/09] `ArticleBody` — profil strict ou permissif ?** — le corps d'article est en `sanitizeProse` (pas de `style`/`class`/`id`) ; impact mesuré : 5 `style=` et 4 `class=` résiduels sur 2 000 articles, 0 ancre (§9septvicies.7). Assumer (recommandé), ou rétablir via `source` | Thomas / Peterson |
+| **[23/09] Quatre constats de revue à arbitrer** — `validators.ts` : contrôle `start ≤ end` en récurrent ; `GridLayoutSection` mode rangée : `wrapperClass` propre ou retrait de `rightWrapperClass`/`leftColumns`/`rightColumns` du contrat ; `ActionTiles` : `accentTextColor` (schéma + `prop-descriptions` + doc) ; `sectionBadge` : rétablir la taille historique du badge `sticker` du carousel | Peterson |
+| **[23/09] Rejouer « Audomarois → Ludivine » sur le backend qui porte le réseau** — ni `:5080` ni `www.communecter.org` n'ont les 10 membres / 5 coordinations de §9septvicies.4 ; vérifié localement sur un semis (§9septvicies.6) | Thomas |
+| **[23/09] Miroir `endpoints-copie.json` 1.0.194 → `cocolight-backend/src/contract/`** | Thomas |
+| **[23/09] Dérive de saisie du champ `territoires`** — le filtre est une égalité exacte ; le gate couvre la config, pas les profils (« Hénin-Carvin » avec tiret n'apparaîtrait plus). Règle de saisie à tenir dans le référentiel | réseau |
 | **[03/09] Portée des facettes d'une page** — `PageFilters` est page-scopé : les facettes du `searchHeader` s'appliquent à TOUTES les sections de données de la page, y compris celles placées au-dessus de lui. Sur une page territoire, filtrer par thème restreint donc aussi les volets du haut. Faut-il une prop moteur d'isolation (`ignorePageFilters`, générique), renseigner `themes`/`publics` sur les réunions à la saisie, ou garder ce comportement uniforme ? | Peterson / Thomas |
 | **[03/09] Qui saisit les réunions de comité local ?** — le « comment » est réglé (onglet `/admin` « Réunions du comité » + formulaire `parent62-reunion`, §9novodecies.3) ; reste le « qui » : les 9 coordinations ont-elles un accès `siteAdmin` à `/admin`, et qui les forme ? Sans saisie, le volet reste vide | réseau / Peterson |
 | **[03/09] Réunions publiées sans modération** — `parent62-reunion` n'injecte pas `preferences.toBeValidated` (sinon la porte `costumSlug` du volet masquerait la réunion à l'admin qui vient de la créer). Acceptable puisque le formulaire n'est atteignable que depuis `/admin` ; à revoir si un bouton public devait un jour l'ouvrir | Peterson |

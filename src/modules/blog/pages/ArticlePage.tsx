@@ -49,7 +49,7 @@ export default function ArticlePage() {
     <>
       <BlogArticleSeo article={article} url={canonicalUrl} />
       {/* Au-dessus du reader, aligné sur sa colonne : ne rend rien sans la permission d'édition. */}
-      <ArticleAdminActions entity={entity as never} title={typeof article.name === "string" ? article.name : undefined} />
+      <ArticleAdminActions entity={entity} title={typeof article.name === "string" ? article.name : undefined} />
       <Suspense fallback={<ReaderSkeleton />}>
         {/* eslint-disable-next-line react-hooks/static-components -- `Reader` vient d'un
             REGISTRE, il n'est pas fabriqué ici : `makeVariantRegistry` referme un objet

@@ -1091,6 +1091,11 @@ Section d'affichage des membres d'une organisation ou d'un projet.
 ```ts
 const MemberCardConfSchema = z.object({
   type: z.enum(["default", "profile", "team"]).default("default"),
+  layout: z.enum(["stack", "row"]).optional(),                       // carte « équipe »
+  rattachement: z.object({                                            // OBLIGATOIRE si type "team"
+    cheminGabarit: z.string(),                                        // ex. "/territoire/{slug}"
+    prefixeCouleur: z.string(),                                       // ex. "--territoire"
+  }).optional(),
   showDescription: z.boolean().optional().default(true),
   showAddress: z.boolean().optional().default(true),
   detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
@@ -1126,7 +1131,8 @@ const MemberSectionSchema = z.object({
 | `enableMap`      | `boolean` | Charger la carte (defaut: `false`)         |
 | `limit`          | `number?` | Limite du nombre de membres                |
 | `roles`          | `string[]?` | Restreint aux membres portant l'un de ces rôles de lien (`links.<famille>[].roles`, texte libre) |
-| `territoire`     | `string?` | Restreint aux membres dont `territoires` vaut ce libellé. Filtré **côté client** : la projection de `getMembers` ne ramène pas ce champ |
+| `filters` | `object?` | Filtre **serveur** complémentaire sur les documents des membres, fusionné côté SDK sous le filtre d'appartenance (ex. `{ "territoires": "Arrageois" }`). Égalité Mongo : la valeur doit être EXACTEMENT celle stockée sur les profils (SDK ≥ 1.0.194) ; un tableau contenant la valeur est apparié aussi, et la carte lit alors le premier libellé |
+| `fields` | `string[]?` | Champs AJOUTÉS à la projection par défaut de la liste — ceux que la carte « équipe » lit et que la liste ne ramène pas seule : `territoires`, `telephone`, `phone`, `mobile`, `email` (`address` y est déjà). Sans effet pour un visiteur connecté admin de l'entité : ce chemin renvoie les documents complets, le SDK y retire `fields` |
 | `hideWhenEmpty`  | `boolean?` | Efface la section entière quand la liste finit vide, au lieu d'afficher « Aucun membre ». Avec `footerText`, seule la LISTE s'efface — le pied garderait sinon un contenu invisible |
 | `footerText`     | `LocalizedString?` | Canal de contact de l'ÉQUIPE, sauts de ligne respectés. Posé sous la liste, **et seulement si aucune carte « équipe » n'est rendue** — sinon c'est `cardText` qui parle |
 | `cardText`       | `LocalizedString?` | Texte posé DANS chaque carte `card.type: "team"`, sous les contacts de la personne, et dédoublonné d'eux. La carte porte déjà le courriel et le téléphone DU MEMBRE : n'y mettre que ce que sa fiche ignore (le lieu de permanence, typiquement) |
@@ -1139,10 +1145,12 @@ const MemberSectionSchema = z.object({
 `card.type` accepte une troisième valeur, `"team"` : carte VITRINE (photo entière, territoire, rôles,
 contacts, lien vers la page du territoire). `card.layout` en règle la disposition — `"stack"`
 (défaut) : portrait 4/3 pleine largeur, texte dessous ; `"row"` : vignette RONDE à gauche de
-l'identité, pour une colonne étroite où le grand portrait déséquilibrerait la rangée. Elle lit la fiche COMPLÈTE de
-chaque membre par un GET dédié — la projection de la liste ne porte ni `territoires` ni l'adresse.
-`roles` + `territoire` + `card.type: "team"` est la combinaison qui compose une page équipe ou la
-coordination d'un territoire.
+l'identité, pour une colonne étroite où le grand portrait déséquilibrerait la rangée. `card.rattachement`
+est **obligatoire** avec `"team"` (gabarit du lien + préfixe des variables de couleur) : le module ne
+code aucune convention de repli. La carte lit tout sur la LISTE — d'où `fields`, qui projette les champs
+que la liste ne ramène pas seule ; aucune requête par carte. `roles` + `filters` + `fields` +
+`card.type: "team"` est la combinaison qui compose une page équipe ou la coordination d'un territoire,
+en une requête serveur exacte quel que soit l'effectif.
 
 ---
 

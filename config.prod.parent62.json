@@ -1633,7 +1633,8 @@
             "showTabs": false,
             "showTitle": false,
             "showInvite": false,
-            "card": { "type": "team", "detailsMode": "link" }
+            "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+            "card": { "type": "team", "detailsMode": "link", "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" } }
           }
         },
         {
@@ -1657,7 +1658,8 @@
             "showTabs": false,
             "showTitle": false,
             "showInvite": false,
-            "card": { "type": "team", "detailsMode": "link" }
+            "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+            "card": { "type": "team", "detailsMode": "link", "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" } }
           }
         },
         {
@@ -1685,7 +1687,8 @@
             "showTabs": false,
             "showTitle": false,
             "showInvite": false,
-            "card": { "type": "team", "detailsMode": "link" }
+            "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+            "card": { "type": "team", "detailsMode": "link", "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" } }
           }
         }
       ]
@@ -10994,7 +10997,8 @@
                   "roles": [
                     "Coordonnateur(trice)"
                   ],
-                  "territoire": "Arrageois",
+                  "filters": { "territoires": "Arrageois" },
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Socioculturel d'Achicourt, rue de Roubaix, 62217 Achicourt",
@@ -11010,7 +11014,8 @@
                   "card": {
                     "type": "team",
                     "layout": "row",
-                    "detailsMode": "link"
+                    "detailsMode": "link",
+                    "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" }
                   },
                   "footerText": {
                     "fr": "arrageois@parent62.org\n07 52 03 41 26 · 03 21 24 27 95\nCentre Socioculturel d'Achicourt, rue de Roubaix, 62217 Achicourt",
@@ -11708,7 +11713,8 @@
                   "roles": [
                     "Coordonnateur(trice)"
                   ],
-                  "territoire": "Artois",
+                  "filters": { "territoires": "Artois" },
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Social La Maison pour Tous, place des FFI, 62190 Lillers",
@@ -11724,7 +11730,8 @@
                   "card": {
                     "type": "team",
                     "layout": "row",
-                    "detailsMode": "link"
+                    "detailsMode": "link",
+                    "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" }
                   },
                   "footerText": {
                     "fr": "artois@parent62.org\n07 67 16 84 28\nCentre Social La Maison pour Tous, place des FFI, 62190 Lillers",
@@ -12422,7 +12429,8 @@
                   "roles": [
                     "Coordonnateur(trice)"
                   ],
-                  "territoire": "Audomarois",
+                  "filters": { "territoires": "Audomarois" },
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Social Inter-Générations, rue Brueghel, Longuenesse",
@@ -12438,7 +12446,8 @@
                   "card": {
                     "type": "team",
                     "layout": "row",
-                    "detailsMode": "link"
+                    "detailsMode": "link",
+                    "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" }
                   },
                   "footerText": {
                     "fr": "audomarois@parent62.org\n07 88 15 57 38 · 03 21 98 19 98\nCentre Social Inter-Générations, rue Brueghel, Longuenesse",
@@ -13136,7 +13145,8 @@
                   "roles": [
                     "Coordonnateur(trice)"
                   ],
-                  "territoire": "Boulonnais",
+                  "filters": { "territoires": "Boulonnais" },
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Social Espace Carnot, 46 rue du Général San Martin, 62480 Le Portel",
@@ -13152,7 +13162,8 @@
                   "card": {
                     "type": "team",
                     "layout": "row",
-                    "detailsMode": "link"
+                    "detailsMode": "link",
+                    "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" }
                   },
                   "footerText": {
                     "fr": "boulonnais@parent62.org\n06 72 61 17 12 · 03 21 10 31 10\nCentre Social Espace Carnot, 46 rue du Général San Martin, 62480 Le Portel",
@@ -13850,7 +13861,8 @@
                   "roles": [
                     "Coordonnateur(trice)"
                   ],
-                  "territoire": "Calaisis",
+                  "filters": { "territoires": "Calaisis" },
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre social et culturel Marie-Jeanne Bassot, 1578 chemin Départemental 940, 62231 Sangatte",
@@ -13866,7 +13878,8 @@
                   "card": {
                     "type": "team",
                     "layout": "row",
-                    "detailsMode": "link"
+                    "detailsMode": "link",
+                    "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" }
                   },
                   "footerText": {
                     "fr": "calaisis@parent62.org\n07 85 51 27 40 · 03 21 34 16 85\nCentre social et culturel Marie-Jeanne Bassot, 1578 chemin Départemental 940, 62231 Sangatte",
@@ -14564,7 +14577,8 @@
                   "roles": [
                     "Coordonnateur(trice)"
                   ],
-                  "territoire": "Entre Mer et Terres",
+                  "filters": { "territoires": "Entre Mer et Terres" },
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Socioculturel Intercommunal d'Hucqueliers, 9 bis rue de la Longeville, 62650 Hucqueliers",
@@ -14580,7 +14594,8 @@
                   "card": {
                     "type": "team",
                     "layout": "row",
-                    "detailsMode": "link"
+                    "detailsMode": "link",
+                    "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" }
                   },
                   "footerText": {
                     "fr": "entremeretterres@parent62.org\n07 49 35 93 15 · 03 21 90 91 10\nCentre Socioculturel Intercommunal d'Hucqueliers, 9 bis rue de la Longeville, 62650 Hucqueliers",
@@ -15278,7 +15293,8 @@
                   "roles": [
                     "Coordonnateur(trice)"
                   ],
-                  "territoire": "Familles en sol mineur Hénin Carvin",
+                  "filters": { "territoires": "Familles en sol mineur Hénin Carvin" },
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Social, rue du Maréchal Leclerc, Noyelles-sous-Lens",
@@ -15294,7 +15310,8 @@
                   "card": {
                     "type": "team",
                     "layout": "row",
-                    "detailsMode": "link"
+                    "detailsMode": "link",
+                    "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" }
                   },
                   "footerText": {
                     "fr": "fsm.henincarvin@parent62.org\n06 73 75 40 49 · 03 21 70 90 20\nCentre Social, rue du Maréchal Leclerc, Noyelles-sous-Lens",
@@ -15992,7 +16009,8 @@
                   "roles": [
                     "Coordonnateur(trice)"
                   ],
-                  "territoire": "Familles en sol mineur Lens Liévin",
+                  "filters": { "territoires": "Familles en sol mineur Lens Liévin" },
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Social des Brebis, place de la Marne, 62670 Mazingarbe",
@@ -16008,7 +16026,8 @@
                   "card": {
                     "type": "team",
                     "layout": "row",
-                    "detailsMode": "link"
+                    "detailsMode": "link",
+                    "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" }
                   },
                   "footerText": {
                     "fr": "famillesensolmineur@parent62.org\n06 43 33 41 31\nCentre Social des Brebis, place de la Marne, 62670 Mazingarbe",
@@ -16706,7 +16725,8 @@
                   "roles": [
                     "Coordonnateur(trice)"
                   ],
-                  "territoire": "Ternois Bruaysis",
+                  "filters": { "territoires": "Ternois Bruaysis" },
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
                   "hideWhenEmpty": true,
                   "showRole": true,
                   "showManagement": false,
@@ -16718,7 +16738,8 @@
                   "card": {
                     "type": "team",
                     "layout": "row",
-                    "detailsMode": "link"
+                    "detailsMode": "link",
+                    "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" }
                   },
                   "footerText": {
                     "fr": "ternoisbruaysis@parent62.org\n07 46 29 04 60",

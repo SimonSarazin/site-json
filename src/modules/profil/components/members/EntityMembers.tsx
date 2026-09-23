@@ -24,8 +24,7 @@ import { MemberManagementDialog } from "./MemberManagementDialog";
 import { InviteMemberDialog } from "./InviteMemberDialog";
 import { ConfirmationDialog } from "./ConfirmationDialog";
 import CardProfile from "@/modules/search/components/card/CardProfile";
-import { useMembresDuTerritoire } from "../../hooks/useMembresDuTerritoire";
-import type { ConventionRattachement } from "../../lib/teamDirectory";
+import { exigerConvention, type ConventionRattachement } from "../../lib/teamDirectory";
 
 // Variante EXCLUSIVE : `card.type` n'en rend qu'une à la fois, et « team » ne sert qu'aux pages
 // vitrines d'un seul site. En statique, tout le parc embarquait la carte, sa lecture de fiche et
@@ -76,10 +75,14 @@ interface EntityMembersProps {
   /** Restreint la liste aux membres portant l'un de ces rôles (texte libre du lien).
    *  Absent → tous les membres, comme avant. */
   roles?: string[];
-  /** Restreint la liste aux membres rattachés à ce territoire (`citoyens.territoires`).
-   *  Filtré CÔTÉ CLIENT sur la fiche complète — le champ n'existe pas dans la projection de la
-   *  liste. Combiné à `roles`, c'est ce qui donne « le coordonnateur DE ce territoire ». */
-  territoire?: string;
+  /** Filtre SERVEUR complémentaire sur les documents des membres (`{ territoires: "Arrageois" }`),
+   *  fusionné côté SDK sous le filtre d'appartenance. Combiné à `roles`, c'est ce qui donne « le
+   *  coordonnateur DE ce territoire » — en une requête, exacte quel que soit l'effectif. Égalité
+   *  Mongo : la valeur doit être EXACTEMENT celle stockée sur les profils. */
+  filters?: Record<string, unknown>;
+  /** Champs AJOUTÉS à la projection de la liste — ceux que la carte lit et que la projection par
+   *  défaut ne ramène pas (`territoires`, `telephone`, `email`…). */
+  fields?: string[];
   /** Texte libre sous la liste (canal de contact d'une équipe). Sauts de ligne respectés.
    *  Ne s'affiche que si AUCUNE carte n'est rendue — sinon `cardText` prend le relais. */
   footerText?: LocalizedString | string;
@@ -94,8 +97,8 @@ interface EntityMembersProps {
 
 type MemberItem = User | Organization;
 
-/** Grille de cartes "profile" (CardProfile) avec ouverture de détail (drawer/dialog). */
-/** Colonnes selon le nombre de cartes — au-delà de 4, on garde la grille pleine. */
+/** Colonnes selon le nombre de cartes — au-delà de 4, on garde la grille pleine. Réservé à la
+ *  carte « équipe » : la grille `profile` historique reste pleine largeur quel que soit l'effectif. */
 const GRILLE_CARTES: Record<number, string> = {
   1: "max-w-sm grid-cols-1",
   2: "max-w-2xl grid-cols-1 sm:grid-cols-2",
@@ -103,6 +106,7 @@ const GRILLE_CARTES: Record<number, string> = {
   4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
 };
 
+/** Grille de cartes "profile" (CardProfile) avec ouverture de détail (drawer/dialog). */
 function ProfileCardList({
   members,
   isLoading,
@@ -111,7 +115,6 @@ function ProfileCardList({
   isPending,
   card,
   contactText,
-  refSentinelle,
   entity,
   lastItemRef,
   emptyLabel,
@@ -125,9 +128,6 @@ function ProfileCardList({
   card?: MemberCardConfig;
   /** Coordonnées d'équipe posées DANS chaque carte (déjà traduites). */
   contactText?: string;
-  /** La liste reçue est déjà filtrée : l'observateur de pagination va sur une sentinelle
-   *  placée après la grille, et non sur la dernière carte visible. */
-  refSentinelle?: boolean;
   /** Entité porteuse : source des rôles de lien pour la carte « équipe ». */
   entity?: EntityTypes | null;
   lastItemRef?: (node: HTMLElement | null) => void;
@@ -137,6 +137,9 @@ function ProfileCardList({
   const [openDetails, setOpenDetails] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MemberItem | null>(null);
   const detailsMode = card?.detailsMode || "link";
+  const enEquipe = card?.type === "team";
+  // Convention OBLIGATOIRE pour la carte « équipe » : lue une fois, échoue tôt si la config l'omet.
+  const conventionEquipe = enEquipe ? exigerConvention(card?.rattachement) : null;
 
   const handleOpenDetails = (member: MemberItem) => {
     if (detailsMode === "link") return;
@@ -158,16 +161,15 @@ function ProfileCardList({
 
   return (
     <div className="space-y-4">
-      {/* Le nombre de colonnes est PLAFONNÉ par le nombre de cartes : avec une seule fiche (le
-          contact CAF) ou deux (l'animation départementale), une grille à 4 colonnes les tasse à
-          gauche et laisse les trois quarts vides. `mx-auto` recentre alors le bloc. Classes
+      {/* En « équipe », le nombre de colonnes est PLAFONNÉ par le nombre de cartes : avec une seule
+          fiche (le contact CAF) ou deux (l'animation départementale), une grille à 4 colonnes les
+          tasse à gauche et laisse les trois quarts vides. `mx-auto` recentre alors le bloc. Classes
           littérales — le JIT ne génère pas de classe construite. */}
-      <div className={cn("mx-auto grid w-full gap-4", GRILLE_CARTES[Math.min(members.length, 4)] ?? GRILLE_CARTES[4])}>
+      <div className={cn("mx-auto grid w-full gap-4", enEquipe ? GRILLE_CARTES[Math.min(members.length, 4)] : GRILLE_CARTES[4])}>
         {members.map((member, index) => {
-          const isLastItem = !refSentinelle && index === members.length - 1;
-          // Variante « équipe » : carte vitrine, qui va chercher la fiche COMPLÈTE de la personne
-          // (la projection de la liste ne ramène ni `territoires` ni l'adresse).
-          const cardElement = card?.type === "team" ? (
+          const isLastItem = index === members.length - 1;
+          // Variante « équipe » : carte vitrine, lue sur la liste projetée (`fields`).
+          const cardElement = conventionEquipe ? (
             // Repli à la MÊME hauteur que la carte : sans lui, la grille se replierait le temps du
             // chunk et la page sauterait sous les yeux du visiteur.
             <Suspense key={member.id || index} fallback={<div className="h-80 animate-pulse rounded-2xl bg-muted" />}>
@@ -176,7 +178,7 @@ function ProfileCardList({
                 entity={entity ?? null}
                 contactText={contactText}
                 layout={card?.layout}
-                rattachement={card?.rattachement}
+                rattachement={conventionEquipe}
               />
             </Suspense>
           ) : (
@@ -206,12 +208,6 @@ function ProfileCardList({
           return cardElement;
         })}
       </div>
-
-      {/* Sentinelle de pagination : sans elle, un coordonnateur situé sur la page suivante de la
-          liste ne serait jamais chargé, puisqu'aucune carte visible ne porte le ref. */}
-      {refSentinelle && lastItemRef && (
-        <div ref={lastItemRef as (node: HTMLDivElement | null) => void} aria-hidden="true" />
-      )}
 
       {isFetchingNextPage && (
         <div className="flex items-center justify-center py-4">
@@ -249,7 +245,8 @@ export function EntityMembers({
   showCard = true,
   card,
   roles,
-  territoire,
+  filters,
+  fields,
   footerText,
   cardText,
   hideWhenEmpty = false,
@@ -281,14 +278,16 @@ export function EntityMembers({
   // membres portant l'un de ces rôles : c'est ce qui permet à une page de composer une équipe
   // par fonction plutôt que de lister tout le monde.
   const filtreRoles = roles && roles.length > 0 ? { roles } : {};
-  const all = useEntityMembers(entity, { toBeValidated: false, ...filtreRoles }, selectedTab === "all" ? searchParams : {});
-  const pending = useEntityMembers(entity, { toBeValidated: true }, selectedTab === "pending" ? searchParams : {});
-  const admins = useEntityMembers(entity, { isAdmin: true, ...filtreRoles }, selectedTab === "admins" ? searchParams : {});
-
-  // Le territoire ne vit que sur la fiche complète : il se filtre donc ici, après la liste.
-  // Seul l'onglet « tous » est concerné — c'est le seul qu'une page vitrine affiche.
-  const { membres: membresTerritoire, enCours: territoireEnCours, actif: filtreTerritoire } =
-    useMembresDuTerritoire((all.members || []) as MemberItem[], territoire);
+  // Filtre et projection SERVEUR (SDK ≥ 1.0.194), posés sur les listes que la page affiche
+  // (« tous » et « admins »), jamais sur « à valider », écran de gestion. La garde « non vide »
+  // vit dans `useInfiniteEntityQuery`, pas ici.
+  const projection = { filters, fields };
+  // Buckets GATÉS : sans onglets, seule « tous » est rendue — `pending` et `admins` partaient
+  // quand même (dont un fetch de l'adhésion entière par section vitrine). `entity: null` = hook
+  // inerte, même motif que `admin/sections/MembersSection`.
+  const all = useEntityMembers(entity, { toBeValidated: false, ...filtreRoles }, { ...(selectedTab === "all" ? searchParams : {}), ...projection });
+  const pending = useEntityMembers(showTabs && canManage ? entity : null, { toBeValidated: true }, selectedTab === "pending" ? searchParams : {});
+  const admins = useEntityMembers(showTabs ? entity : null, { isAdmin: true, ...filtreRoles }, { ...(selectedTab === "admins" ? searchParams : {}), ...projection });
 
   /** Rafraîchit la liste après invitation/gestion — clé basée sur le slug + type (bug historique : clé par ID). */
   const refresh = () => {
@@ -307,8 +306,8 @@ export function EntityMembers({
 
   // Rien à montrer : on efface plutôt que d'afficher un état vide sur une page publique. Le
   // chargement reste visible, sinon le bloc clignoterait à chaque navigation.
-  const listeVide = filtreTerritoire ? membresTerritoire.length === 0 : (all.members || []).length === 0;
-  const masquerListe = hideWhenEmpty && !all.isLoading && !territoireEnCours && listeVide;
+  const aucuneCarte = !all.isLoading && (all.members || []).length === 0;
+  const masquerListe = hideWhenEmpty && aucuneCarte;
   // …sauf si un pied porte encore du contenu : effacer la section entière emporterait avec elle
   // le canal de contact, qui doit justement survivre à l'absence de membre rattaché.
   if (masquerListe && !footerText) return null;
@@ -322,22 +321,21 @@ export function EntityMembers({
   // téléphone DE LA PERSONNE, il n'y reste à dire que ce que sa fiche ignore (le lieu de
   // permanence). `footerText` est le repli quand AUCUNE carte n'est rendue — sans lui, un
   // territoire sans coordonnateur rattaché perdrait tout moyen de contact.
-  const cartesAffichees = card?.type === "team" && !masquerListe;
+  // « Au moins une carte rendue », et non « liste non masquée » : sans `hideWhenEmpty`, une liste
+  // vide affiche l'état « Aucun membre » ET doit garder le pied — sinon plus aucun contact.
+  const cartesAffichees = card?.type === "team" && !aucuneCarte;
   const texteCarte = cartesAffichees && cardText ? t(cardText) : undefined;
 
   const renderList = (
     bucket: ReturnType<typeof useEntityMembers>,
-    isPending: boolean,
-    /** Liste déjà filtrée à substituer à celle du bucket (onglet « tous » + filtre territoire). */
-    liste?: MemberItem[]
+    isPending: boolean
   ) => {
-    const members = liste ?? ((bucket.members || []) as MemberItem[]);
+    const members = (bucket.members || []) as MemberItem[];
     if (useProfileCard) {
       return (
         <ProfileCardList
           members={members}
-          refSentinelle={liste !== undefined}
-          isLoading={bucket.isLoading || (liste !== undefined && territoireEnCours)}
+          isLoading={bucket.isLoading}
           isFetchingNextPage={bucket.isFetchingNextPage}
           showRole={showRole}
           isPending={isPending}
@@ -415,12 +413,10 @@ export function EntityMembers({
     </div>
   );
 
-  // Sans onglets : la seule liste utile est « tous », déjà restreinte par `roles` le cas échéant.
-  const listeAll = filtreTerritoire ? membresTerritoire : undefined;
-
+  // Sans onglets : la seule liste utile est « tous », déjà restreinte par `roles`/`filters`.
   // `masquerListe` : la liste s'efface, le pied reste — c'est lui qui porte alors le bloc.
   const tabs = masquerListe ? null : !showTabs ? (
-    <div className="mt-2">{renderList(all, false, listeAll)}</div>
+    <div className="mt-2">{renderList(all, false)}</div>
   ) : (
     <Tabs value={selectedTab} onValueChange={setSelectedTab}>
       <TabsList className={cn("grid w-full", canManage ? "grid-cols-3" : "grid-cols-2")}>
@@ -437,7 +433,7 @@ export function EntityMembers({
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="all" className="mt-4">{renderList(all, false, listeAll)}</TabsContent>
+      <TabsContent value="all" className="mt-4">{renderList(all, false)}</TabsContent>
       {canManage && <TabsContent value="pending" className="mt-4">{renderList(pending, true)}</TabsContent>}
       <TabsContent value="admins" className="mt-4">{renderList(admins, false)}</TabsContent>
     </Tabs>

@@ -2,9 +2,9 @@
  * Rattachement d'un membre à une PAGE de regroupement (un territoire pour parent62, une région ou
  * une filière ailleurs) : chemin de la page, et couleurs de sa carte.
  *
- * Le module `profil` est générique — il ne doit rien savoir de parent62. La convention vit donc
- * dans un PRESET surchargeable, pas dans le corps des fonctions : un autre site branche ses propres
- * gabarits depuis sa config (`card.rattachement`) sans toucher au code.
+ * Le module `profil` est générique — il ne doit rien savoir de parent62. La convention vient donc
+ * TOUJOURS de la config (`card.rattachement`, obligatoire dès que `card.type: "team"`) : aucun
+ * gabarit n'est codé ici en repli, sinon le métier d'un site reviendrait se figer dans le moteur.
  */
 export interface ConventionRattachement {
   /** Gabarit du chemin de la page de rattachement. `{slug}` est remplacé par le slug normalisé. */
@@ -13,11 +13,25 @@ export interface ConventionRattachement {
   prefixeCouleur: string;
 }
 
-/** Convention en service : les 9 pages `/territoire/*` de parent62 et leurs teintes de marque. */
-export const CONVENTION_RATTACHEMENT_DEFAUT: ConventionRattachement = {
-  cheminGabarit: "/territoire/{slug}",
-  prefixeCouleur: "--territoire",
-};
+/**
+ * Garde d'entrée de la carte « équipe » : la convention est OBLIGATOIRE, et son absence est une
+ * erreur de config à faire échouer tôt (préflight, `config:render`) plutôt qu'une carte rendue sans
+ * lien ni couleur, qui passerait inaperçue en revue.
+ */
+export function exigerConvention(convention: ConventionRattachement | undefined): ConventionRattachement {
+  // Même contrat que le gate préflight `member-team-card` : un gabarit sans `{slug}` enverrait
+  // toutes les cartes vers la même page, un préfixe sans `--` ne nommerait aucune variable CSS.
+  const ok =
+    !!convention &&
+    typeof convention.cheminGabarit === "string" && convention.cheminGabarit.includes("{slug}") &&
+    typeof convention.prefixeCouleur === "string" && /^--[a-z][a-z0-9-]*$/.test(convention.prefixeCouleur);
+  if (!ok) {
+    throw new Error(
+      'member.card.rattachement est requis avec card.type "team" : { cheminGabarit avec "{slug}", prefixeCouleur "--…" }.',
+    );
+  }
+  return convention;
+}
 
 /**
  * Slug canonique d'un rattachement à partir du libellé porté par un profil
@@ -25,12 +39,14 @@ export const CONVENTION_RATTACHEMENT_DEFAUT: ConventionRattachement = {
  *
  * Les 9 pages `/territoire/*` portent en titre EXACTEMENT ce libellé : la correspondance est donc
  * une simple normalisation, pas une table à maintenir en double. Vérifié sur les 9 valeurs réelles.
+ * Plage des diacritiques écrite en échappements `\u` : des caractères combinants bruts, qu'un
+ * éditeur normalise en NFC, feraient silencieusement disparaître la classe.
  */
 function slugRattachement(nom: string | null | undefined): string | null {
   if (!nom || typeof nom !== "string") return null;
   const slug = nom
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")   // accents
+    .replace(/[\u0300-\u036f]/g, "")   // accents
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
@@ -41,25 +57,10 @@ function slugRattachement(nom: string | null | undefined): string | null {
 /** Chemin de la page de rattachement, ou `null` s'il n'y a rien à lier. */
 export function cheminTerritoire(
   nom: string | null | undefined,
-  convention: ConventionRattachement = CONVENTION_RATTACHEMENT_DEFAUT,
+  convention: ConventionRattachement,
 ): string | null {
   const slug = slugRattachement(nom);
   return slug ? convention.cheminGabarit.replace("{slug}", slug) : null;
-}
-
-/**
- * Deux libellés désignent-ils le même rattachement ?
- *
- * Comparaison sur le SLUG et non sur le texte : la valeur saisie dans le profil
- * (« Familles en sol mineur Hénin Carvin ») et celle écrite dans la config d'une page
- * (« Familles en sol mineur Hénin-Carvin ») diffèrent par la casse, les accents et la ponctuation
- * sans désigner autre chose. Même normalisation que le lien, pour que les deux usages — lien vers
- * la page, appariement — ne puissent pas diverger.
- */
-export function memeTerritoire(a: string | null | undefined, b: string | null | undefined): boolean {
-  const sa = slugRattachement(a);
-  const sb = slugRattachement(b);
-  return sa !== null && sa === sb;
 }
 
 /**
@@ -76,7 +77,7 @@ export function memeTerritoire(a: string | null | undefined, b: string | null | 
  */
 export function couleursTerritoire(
   nom: string | null | undefined,
-  convention: ConventionRattachement = CONVENTION_RATTACHEMENT_DEFAUT,
+  convention: ConventionRattachement,
 ): { fond: string; encre: string; bordure: string } {
   const slug = slugRattachement(nom);
   const neutre = { fond: "var(--card)", encre: "var(--card-foreground)", bordure: "var(--border)" };

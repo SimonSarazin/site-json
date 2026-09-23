@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useEntityBySlugQuery } from "@/hooks/useEntityBySlugQuery";
 import { BLOG_QUERY_KEYS } from "../constants/queryKeys";
@@ -35,7 +36,9 @@ function toArticle(raw: unknown): ArticleData | null {
 export function useArticle({ slug, id }: { slug?: string; id?: string }) {
   const { api, loading } = useCocolight();
   const bySlug = useEntityBySlugQuery({ slug, options: { enabled: !!slug } });
-  const byId = useQuery<unknown>({
+  // Typé sur l'instance SDK : c'est ce que `ArticleAdminActions` (permissions, édition, suppression)
+  // consomme — un `unknown` ici forçait un `as never` à l'appel, qui désactivait tout contrôle.
+  const byId = useQuery<EntityTypes>({
     queryKey: BLOG_QUERY_KEYS.ARTICLE_BY_ID(id ?? ""),
     enabled: !slug && !!id && !loading && !!api,
     queryFn: async () => {
@@ -47,12 +50,13 @@ export function useArticle({ slug, id }: { slug?: string; id?: string }) {
   });
   const useSlug = !!slug;
   const brut = useSlug ? bySlug.data : byId.data;
+  const entity: EntityTypes | null = brut ?? null;
   return {
     article: toArticle(brut),
     // L'ENTITÉ SDK, à côté des données aplaties : `toArticle` n'en garde que `serverData`, or éditer
     // ou supprimer exige l'instance elle-même (`delete()`, et le contrat qu'attend `DynamicEditModal`).
     // Exposée telle quelle, sans cast : l'appelant décide de ce qu'il en fait.
-    entity: brut,
+    entity,
     isLoading: useSlug ? bySlug.isLoading : byId.isLoading,
     isError: useSlug ? bySlug.isError : byId.isError,
   };

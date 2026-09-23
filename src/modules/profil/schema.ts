@@ -515,9 +515,10 @@ const MemberCardConfSchema = z.object({
    *  voisines. Sans effet sur les autres types de carte. */
   layout: z.enum(["stack", "row"]).optional(),
   /** Convention de rattachement de la carte « équipe » : où pointe le bouton, et d'où viennent
-   *  ses couleurs. Absente, le preset en service s'applique (`/territoire/{slug}` et les
-   *  variables `--territoire-*`). C'est ce qui rend la carte réutilisable par un site qui
-   *  regroupe ses membres par région, filière ou antenne plutôt que par territoire. */
+   *  ses couleurs. OBLIGATOIRE dès que `type: "team"` (gate préflight `member-team-card` ; à
+   *  l'exécution, la section échoue tôt plutôt que de rendre une carte sans lien ni couleur) —
+   *  aucun gabarit n'est codé en repli dans le module, qui reste générique : un site regroupe ses
+   *  membres par territoire, région, filière ou antenne en le déclarant ici. */
   rattachement: z.object({
     /** Gabarit du chemin de la page de regroupement ; `{slug}` est remplacé. */
     cheminGabarit: z.string(),
@@ -551,10 +552,15 @@ export const MemberSectionSchema = z.object({
      *  texte libre). Absent → tous les membres. Permet de composer une page équipe par
      *  fonction : une section par rôle. */
     roles: z.array(z.string()).optional(),
-    /** Restreint la liste aux membres dont `territoires` vaut ce libellé. Filtré côté client
-     *  (la projection de la liste ne le ramène pas) ; combiné à `roles`, donne « le
-     *  coordonnateur DE ce territoire » sur les pages `/territoire/*`. */
-    territoire: z.string().optional(),
+    /** Filtre SERVEUR complémentaire sur les documents des membres, fusionné côté SDK sous le
+     *  filtre d'appartenance (ex. `{ "territoires": "Arrageois" }`). Égalité Mongo : la valeur
+     *  doit être EXACTEMENT celle stockée sur les profils. Combiné à `roles`, donne « le
+     *  coordonnateur DE ce territoire » sur les pages `/territoire/*` (SDK ≥ 1.0.194). */
+    filters: z.record(z.string(), z.unknown()).optional(),
+    /** Champs AJOUTÉS à la projection par défaut de la liste — ceux que la carte « équipe » lit
+     *  et que la liste ne ramène pas seule : `territoires`, `telephone`, `phone`, `mobile`,
+     *  `email` (`address` y est déjà). */
+    fields: z.array(z.string()).optional(),
     /** Efface la section quand la liste finit vide, au lieu d'afficher « Aucun membre ». */
     hideWhenEmpty: z.boolean().optional(),
     /** Texte libre posé SOUS la liste, sauts de ligne respectés. Sert à garder, dans le même

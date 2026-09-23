@@ -24,25 +24,8 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
         ? buildGridColsClass(props.columns)
         : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4";
 
-    const DEFAULT_ICON_SIZE = 32;
 
     const isSvgIcon = (icon: string) => icon.trim().startsWith("<svg");
-
-    const getSvgSize = (svg: string) => {
-        const widthMatch = svg.match(/width=["'](\d+(?:\.\d+)?)["']/i);
-        return widthMatch ? Number(widthMatch[1]) : DEFAULT_ICON_SIZE;
-    };
-
-    const getSizeClass = (size: number) => {
-        if (size <= 20) return "size-5";
-        if (size <= 24) return "size-6";
-        if (size <= 28) return "size-7";
-        if (size <= 32) return "size-8";
-        if (size <= 40) return "size-10";
-        if (size <= 48) return "size-12";
-        if (size <= 56) return "size-14";
-        return "size-16";
-    };
 
     const ensureSvgHasClass = (svg: string, className: string) => {
         if (/class=["'][^"']*["']/i.test(svg)) {
@@ -51,16 +34,15 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
         return svg.replace("<svg", `<svg class="${className}"`);
     };
 
+    // `sizeClass` est le SEUL contrat de taille, SVG inline compris : la taille intrinsèque du SVG
+    // (`width="48"`) ne compte pas, sinon `size: "lg"` et la pastille `inline` (`size-10`, qui attend
+    // un `size-5`) n'auraient d'effet que sur les icônes lucide — grille désalignée, SVG qui déborde.
     const renderIcon = (icon: string, colorClass: string, sizeClass: string) => {
         if (isSvgIcon(icon)) {
-            const sizeInPixels = getSvgSize(icon);
-            const svgWithSizeClass = ensureSvgHasClass(icon, getSizeClass(sizeInPixels));
-
             return (
                 <div
-                    className={`inline-flex items-center justify-center ${colorClass}`}
-                    style={{ width: sizeInPixels, height: sizeInPixels }}
-                    dangerouslySetInnerHTML={{ __html: svgWithSizeClass }}
+                    className={`inline-flex shrink-0 items-center justify-center ${sizeClass} ${colorClass}`}
+                    dangerouslySetInnerHTML={{ __html: ensureSvgHasClass(icon, "h-full w-full") }}
                 />
             );
         }
