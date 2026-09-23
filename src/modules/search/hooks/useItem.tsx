@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import type { Organization, Poi, Project, User, Event as EventType} from "@communecter/cocolight-api-client";
 import getDateFnsLocale from "@/dateFns";
 import { resolveEventStartDate, toValidDate } from "@/helpers/formatDate";
+import { countActiveLinks } from "../lib/countActiveLinks";
 
 const useItem = (item: User | Organization | Project | Poi | EventType) => {
   /**
@@ -88,7 +89,7 @@ const useItem = (item: User | Organization | Project | Poi | EventType) => {
 
     merged.countProjects = countLinks("projects");
     merged.countMembers = countLinks("members");
-    merged.countContributors = countLinks("contributors");
+    merged.countContributors = countActiveLinks(merged.links?.contributors);
 
     // Sélection de l'image : on préfère les déclinaisons dérivées (plus légères),
     // et à défaut l'originale.

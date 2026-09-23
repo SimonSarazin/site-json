@@ -74,3 +74,12 @@ describe("useItem — date d'événement", () => {
     expect(startDate({ name: "Sans date" })).toBeNull();
   });
 });
+
+describe("useItem — nombre de contributeurs", () => {
+  it("branché sur links.contributors, invitations en attente exclues (règle : countActiveLinks)", () => {
+    const { countContributors } = renderHook(() =>
+      useItem(ent({ links: { contributors: { a: { type: "citoyens" }, b: { type: "citoyens", isInviting: true } } } }))
+    ).result.current;
+    expect(countContributors).toBe(1);
+  });
+});
