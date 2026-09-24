@@ -1917,6 +1917,7 @@ export const ActionButtonSchema = z.object({
   modal: z.string().optional(),
   formConfig: JsonFormModalConfigSchema.optional(),
   requiresAdmin: z.boolean().optional(),
+  createDefaults: z.record(z.string(), z.unknown()).optional(),
 });
 
 // src/modules/search/schema.ts
@@ -1956,7 +1957,7 @@ export const SearchHeaderSectionSchema = z.object({
 | `filtersClassName` | `string?`         | Override du conteneur flex de la rangee de filtres (def. `flex flex-col lg:flex-row lg:items-center`) |
 | `types`            | `array?`          | Types de filtre (id, label)            |
 | `dropdownFilters`  | `array?`          | Filtres en menu deroulant (`id`, `label`, `field?`, `multiple?`, `allLabel?`, `options[]`, `optionsFrom?` — `{list: string \| string[], costumSlug?, withDeclared?}`, cf. `doc/07-module-search.md`) |
-| `buttons`          | `ActionButton[]?` | Boutons d'action                       |
+| `buttons`          | `ActionButton[]?` | Boutons d'action. Un bouton de modale (`action: "add-*"` ou `modal`) est réservé aux admins du site sauf `requiresAdmin: false` (un visiteur non connecté passe alors par la connexion, puis la modale s'ouvre). `createDefaults` sème des valeurs dans la modale d'ajout (ex. `{ "type": "Cooperative" }`) ; une clé que le formulaire ne déclare pas est ignorée |
 | `showSearch`       | `boolean?`        | Afficher le champ de recherche         |
 | `searchPlaceholder` | `LocalizedString?` | Placeholder de la recherche          |
 | `compact`          | `boolean?`        | Padding vertical REDUIT (`py-4` au lieu de `py-12`) — a activer quand une section `title` au-dessus tient lieu de hero. Defaut `false` |

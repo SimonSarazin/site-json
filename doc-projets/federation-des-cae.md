@@ -16,9 +16,9 @@
 > vit sur la branche `aac-dev` et n'a rien à voir avec le site des tiers-lieux, qui vit sur `jdev`
 > et `main` : leurs dossiers devaient être séparés. Cf. §10 31/08.
 
-Dernière mise à jour : **2026-09-15** (liens du footer selon l'état de connexion — cf. §10 15/09 ;
-lots du 14/09 : routes du footer, 2 pages légales, marges et colonnes, diagnostic du bug « nouvel
-onglet » du header).
+Dernière mise à jour : **2026-09-24** (page `/annuaire` — annuaire de la communauté avec bouton
+« Ajouter une organisation », cf. §10 24/09 ; modale d'ajout d'organisation sans mention d'entité
+parente ; correction de la ligne « Costum backend » du §1).
 
 ---
 
@@ -41,7 +41,7 @@ formulaire d'observatoire distinct de l'appel lui-même (cf. §5).
 | Config | [`../config.prod.federationDesCae.json`](../config.prod.federationDesCae.json) |
 | Feuille CSS | `index-rezo-la-mer` (partagée — les couleurs vivent dans `config.theme`) |
 | Entité Cocolight | `organizations` / `677e7e13bd08b2478f5f5314` — « Fédération des CAE » |
-| Costum backend | **aucun** (pas d'entrée `costum` pour ce slug) |
+| Costum backend | **embarqué sur l'entité** : `costum.slug: "costumize"`, hôte `communs.les-cae.coop`, `connectOnlyBySSO` + SSO `lescaecoop` (sondé en production le 24/09 — la mention « aucun » des versions précédentes était inexacte). Un élément créé sous ce costum reçoit `source.keys: ["federationDesCae"]` (cf. §5) |
 | Formulaire de l'appel | `677e7e389058e31575550ac8` — « Les communs des CAEs » (type `aap`), **20 réponses** |
 | Formulaire d'observatoire | `6525865cdeaf281bbc7280e9` — « Observatoire des besoins et solutions des CAEs », **35 réponses** |
 | Branche | **`main`** depuis le 09/09 (merge `287bb35a` de `fix/mr-53-bloquants`) — le config venait de `aac-dev` |
@@ -62,6 +62,7 @@ n'est donc pas ancré sur l'entité du site — ne pas déduire l'un de l'autre.
 | 03/09 | Schumann + Claude | Cagnotte d'un commun déposé sur un autre appel (cf. §10 03/09) |
 | 08-09/09 | Anatole (MR 53) · Aboire · Claude | Revue de la MR 53 « module AAC » puis **112 commits de correctifs** en deux lots, mergés dans `main` (cf. §10 08-09/09) |
 | 14/09 | Anatole + Claude | Footer `sidebar-columns` recopié de Rézo la mer remis aux routes du site ; pages `/mentions-legales` et `/confidentialite` (cf. §10 14/09) |
+| 24/09 | Anatole + Claude | Page `/annuaire` — annuaire de la communauté et bouton « Ajouter une organisation » (cf. §10 24/09) |
 
 ---
 
@@ -69,6 +70,8 @@ n'est donc pas ancré sur l'entité du site — ne pas déduire l'un de l'autre.
 
 - Présenter l'Appel à Communs de la Fédération et son avancement (page d'accueil).
 - Offrir l'**annuaire des communs** déposés, avec fiche de détail par commun.
+- Offrir l'**annuaire de la communauté** (page `/annuaire`) : les CAE et organisations rattachées au
+  site, et l'ajout d'une organisation par un utilisateur connecté.
 - Publier le **catalogue des besoins et solutions** des CAE (page `/usages`), avec le détail par
   outil : qui l'utilise, pour quel besoin, avec quelle satisfaction.
 - Permettre à un administrateur d'**enrichir** un outil (lien, description, rattachement à un
@@ -86,13 +89,17 @@ config.prod.federationDesCae.json
    ├── page /aac/communs → aac-directory (annuaire complet)
    ├── page /usages      → toolsCatalog (module partagé avec tiers-lieux / RELIEF)
    │                          formId 6525865c… (observatoire), pas le formulaire de l'appel
+   ├── page /annuaire    → searchHeader (titre, recherche, bouton d'ajout) · searchProStatic
+   │                          organisations du périmètre sourceKey federationDesCae
    ├── pages /mentions-legales · /confidentialite → html (socle légal, à compléter)
    └── footer sidebar-columns → uniquement des routes servies par le site
 ```
 
 Deux chaînes de données **indépendantes** cohabitent : le module AAC lit le formulaire de l'appel,
 le module `toolsCatalog` lit celui de l'observatoire. Elles ne partagent ni formulaire, ni
-organisation porteuse, ni collection de réponses.
+organisation porteuse, ni collection de réponses. L'annuaire de la communauté lit, lui, les
+**organisations** du périmètre costum (`sourceKey: ["federationDesCae"]`) — le même ensemble que
+le finder « J'utilise » de la fiche d'un commun (`aac.detail.placeKind: "cae"`).
 
 Côté backend, le catalogue d'usages est servi par deux actions du costum `franceTierslieux`
 (`ToolsCatalogListAction`, `ToolUsersAction`) qui servent **aussi** le Navigateur des tiers-lieux et
@@ -107,18 +114,20 @@ RELIEF : tout changement s'y répercute sur trois sites (cf. §10 31/08 et §13)
 | `/` | 4 | `hero` · `aac-highlight` · `aac-directory` · `aac-highlight` |
 | `/aac/communs` | 1 | `aac-directory` — annuaire complet des communs déposés |
 | `/usages` | 1 | `toolsCatalog` — catalogue des besoins et solutions |
+| `/annuaire` | 2 | `searchHeader` (titre, recherche, bouton « Ajouter une organisation ») · `searchProStatic` — annuaire de la communauté (cf. §10 24/09) |
 | `/mentions-legales` | 1 | `html` — mentions légales (LCEN) : faits établis seulement, le reste en `[à compléter]` (cf. §10 14/09) |
 | `/confidentialite` | 1 | `html` — politique de confidentialité (RGPD), même règle |
 | `/profil/:slug` | — | servie par le module `profil`, pas déclarée dans `pages[]` — cf. §10 09/09 |
 | `/login` · `/register` | — | servies par le module `auth`, pas déclarées dans `pages[]` |
 
-Blocs racine présents : `meta`, `theme`, `header` (`standard` ; `utilities` : `auth`, `themeSwitch`,
+Blocs racine présents : `meta`, `theme` (dont `customCSS` depuis le 24/09 : la bande des
+`searchHeader` suit la charte du site, cf. §7), `header` (`standard` ; `utilities` : `auth`, `themeSwitch`,
 `piggyBank`, `pledge`), `footer` (`sidebar-columns`), `aac`, `cagnotteModuleConfig`
 (`defaultType: "aac"`), `profiles` (`projects` + `default`).
 **Absents** : `auth`, `admin`, `commandPalette`, `costumForms` — le site est en lecture publique,
 l'enrichissement d'un outil reposant sur le droit admin du costum côté backend.
 
-**Largeur** : les 5 pages n'ont pas de `layout` (gabarit `default`, 1280 px) et les deux profils sont
+**Largeur** : les 6 pages n'ont pas de `layout` (gabarit `default`, 1280 px) et les deux profils sont
 en `layout: "default"`. Ce gabarit enveloppe aussi le header et le footer ; les pages de module (fiche
 d'un commun, connexion, coform) ont leur propre enveloppe, pleine largeur. ⚠️ Ne pas passer ce site en
 `fullwidth` sans traiter les deux régressions mesurées le 14/09 (cf. §10 14/09bis).
@@ -127,8 +136,8 @@ Footer (`sidebar-columns`, libellés `fr` seuls comme le reste du site) :
 
 | Colonne | Liens |
 |---|---|
-| L'appel à communs | Accueil `/` · Les communs `/aac/communs` · Besoins et solutions `/usages` |
-| Participer | Déposer un commun `/aac/communs` · Créer un compte `/register` **(anonyme)** · Se connecter `/login` **(anonyme)** · Mon profil `@profile` **(connecté)** |
+| L'appel à communs | Accueil `/` · Les communs `/aac/communs` · Besoins et solutions `/usages` · Annuaire `/annuaire` |
+| Participer | Déposer un commun `/aac/communs` · Rejoindre l'annuaire `/annuaire` · Créer un compte `/register` **(anonyme)** · Se connecter `/login` **(anonyme)** · Mon profil `@profile` **(connecté)** |
 | Informations | La Fédération `/profil/federationDesCae` · Mentions légales `/mentions-legales` · Confidentialité `/confidentialite` |
 
 Ni `socials` ni `legalLinks` : la fiche Communecter de l'organisation ne porte ni e-mail, ni site, ni
@@ -172,6 +181,16 @@ Réglages notables de la section `toolsCatalog` :
    `criteria1747166631` vaut « Agenda événementiel » en Communication externe et « Chat de discussion
    entre membres » en Coopération interne.
 
+**Organisations de la communauté** (sondé en production le 2026-09-24, lecture seule) :
+
+| Objet | Mesure |
+|---|---|
+| Organisations du périmètre `sourceKey: federationDesCae` | **9**, toutes `type: "Cooperative"`, toutes `source: {insertOrign: "costum", key: "federationDesCae"}` (aucune par `reference.costum`) |
+| Membres de l'entité Fédération (`links.members`) | 9 citoyens, **0 organisation** |
+
+Les deux ensembles ne se recoupent pas : aucune des 9 coopératives n'est membre de la Fédération au
+sens des liens. L'annuaire s'appuie sur le premier (cf. §7).
+
 ---
 
 ## 6. Fichiers concernés
@@ -182,6 +201,8 @@ Réglages notables de la section `toolsCatalog` :
 | Module AAC | [`../src/modules/aac/`](../src/modules/aac/) — cf. [`../doc/34-module-aac.md`](../doc/34-module-aac.md) |
 | Catalogue d'usages | [`../src/modules/toolsCatalog/`](../src/modules/toolsCatalog/) (partagé — cf. [tiers-lieux.md](tiers-lieux.md)) |
 | Lien de commun | `../src/modules/toolsCatalog/utils/communLink.ts`, `toolHref.ts`, `enrichmentResult.ts` |
+| Annuaire (bouton d'ajout) | [`../src/types/action-button-schema.ts`](../src/types/action-button-schema.ts) (`createDefaults`), [`../src/modules/profil/components/ActionButtonGroup.tsx`](../src/modules/profil/components/ActionButtonGroup.tsx) + `ActionButtonGroup.test.tsx` |
+| Modale d'ajout d'organisation | [`../src/modules/profil/forms/addOrganization.descriptor.ts`](../src/modules/profil/forms/addOrganization.descriptor.ts), `forms/configs/addStandard.tsx` (`addOrganizationConfig`) — sans mention d'entité parente |
 | Backend costum | `modules/costum/controllers/actions/franceTierslieux/ToolsCatalogListAction.php`, `ToolUsersAction.php`, `CommunInfoAction.php` |
 | Backend citizenToolKit | `modules/citizenToolKit/models/Coform.php` (`criteriaUsageCatalog`, `resolvePlaceMeta`) |
 
@@ -196,6 +217,10 @@ Réglages notables de la section `toolsCatalog` :
 | Le backend reconnaît le **segment** `commun/<24hex>`, pas un préfixe en dur | ce qui précède appartient au routeur du site et n'a pas à être connu du costum ; couvre du même coup la forme absolue |
 | La règle de satisfaction est **inconditionnelle**, sans paramètre | c'est une règle d'honnêteté de la donnée, pas un réglage de site ; et s'en passer évite un paramètre de contrat côté SDK — cf. §10 31/08 |
 | Le catalogue de besoins est un **helper partagé** (`Coform::criteriaUsageCatalog`) | c'est l'asymétrie entre la liste et le détail qui produisait le bug ; le dupliquer l'aurait reproduit |
+| L'annuaire lit le **périmètre costum** (`sourceKey`), pas les membres de l'entité (`links.memberOf`) | c'est l'ensemble que le site utilise déjà pour les CAE (« J'utilise ») ; les membres ne comptent aucune organisation (§5), l'annuaire serait vide. Et une organisation créée depuis le site y entre d'elle-même : la création passe par le scope costum, le legacy estampille `source.keys`. Les membres auraient demandé ≈ 2 jours : `ADD_ORGANIZATION` n'accepte pas de parent, pas de wrapper SDK pour rattacher une organisation (`INVITE_MEMBERS` le permet), et un créateur non membre produit une demande `toBeValidated` qu'aucune page de ce site ne valide |
+| Bouton d'ajout dans le `searchHeader`, pas dans `searchProStatic.addButton` | recette du parc (`searchHeader > searchProStatic`) ; un visiteur non connecté passe par la connexion puis la modale s'ouvre, là où `addButton` le laisse re-cliquer |
+| `createDefaults: { "type": "Cooperative" }` sur le bouton | la modale d'ajout part sur `NGO` ; les 9 organisations existantes sont des coopératives. Nouvelle clé d'`ActionButtonSchema`, même canal que `admin.tabs[].sections[].createDefaults` |
+| `--gradient-section` surchargé dans `theme.customCSS` | la feuille `index-rezo-la-mer.css` est partagée et teinte ce jeton en turquoise. Seuls `searchHeader` et `cta-newsletter` le consomment, et ce site n'avait ni l'un ni l'autre. Le dégradé est mélangé à `--background` pour suivre le mode clair/sombre. Précédent : `equipements-Sportifs-Scolaire` |
 
 ---
 
@@ -228,6 +253,7 @@ Réglages notables de la section `toolsCatalog` :
 | 13 | Campagnes de l'appel | ❌ | `POST /survey/coform/getformbyid` répond **500** sur un form de type `aapConfig` — bug legacy **corrigé mais non déployé**. Tant qu'il l'est, `campagne` et tout `config.*` sont invisibles côté front, avalés en best-effort silencieux (cf. §14) |
 | 14 | Vérification navigateur du lot 08-09/09 | 🟡 | SSR de production vérifié (4 pages + un site sans AAC) et l'en-tête inspecté à l'écran ; `test:integration` et `test:e2e` **jamais lancés** |
 | 15 | Footer et socle légal | 🟡 | 14/09 — 9 liens, tous vers une route servie par le site ; `/mentions-legales` et `/confidentialite` posées mais **à compléter par la Fédération avant publication** ; réseaux sociaux et contact retirés faute de coordonnées (cf. §10 14/09 et §14) |
+| 16 | Annuaire de la communauté `/annuaire` | 🟡 | 24/09 — 9 coopératives listées, rendu vérifié (SSR + navigateur, clair/sombre, mobile). **Création d'une organisation depuis le bouton non vérifiée** : aucun compte de test disponible (cf. §10 24/09 et §14) |
 
 **Gates au merge `287bb35a` (09/09)** : `typecheck` ✅ · `eslint` ✅ **0 erreur** (24 avertissements
 préexistants) · `test:unit` **4 230** ✅ dont préflight **635** ✅ · `build` ✅ · `config:validate` ✅
@@ -242,6 +268,54 @@ rouge — `public/images/federationDesCae/` vide et non déclaré. Réglé le 09
 ---
 
 ## 10. Impacts des modifications
+
+### 24/09 — l'annuaire de la communauté
+
+**Le besoin.** Une page d'annuaire de la communauté, avec un bouton pour ajouter une nouvelle
+organisation.
+
+**Le périmètre.** « Communauté » recouvre deux ensembles disjoints (§5) : les 9 coopératives du
+périmètre costum, et les membres de l'entité, qui ne comptent aucune organisation. Le premier a été
+retenu (§7) : il est non vide, c'est celui de « J'utilise », et une organisation créée depuis le site
+y entre sans code supplémentaire.
+
+**Ce qui change.**
+
+- **Config** : page `/annuaire` (`searchHeader` puis `searchProStatic`, carte `profile` en tiroir,
+  compteur de projets masqué, carte activable) ; entrée « Annuaire » au header ; liens « Annuaire » et
+  « Rejoindre l'annuaire » au footer (le lien mène à la page, il n'ouvre pas la modale : un libellé
+  d'action l'aurait promis) ; `theme.customCSS` pour la bande du `searchHeader`.
+- **Bouton** : `action: "add-organization"`, `requiresAdmin: false` (tout utilisateur connecté ; un
+  visiteur passe par la connexion), `createDefaults: { "type": "Cooperative" }`.
+- **Code** : `ActionButtonSchema` accepte `createDefaults`, transmis par `ActionButtonGroup` à la
+  modale — partagé par `searchHeader` et `hero-parallax` sur tout le parc, sans effet là où la clé est
+  absente. Documenté dans [`../doc/05-schemas-sections.md`](../doc/05-schemas-sections.md).
+- **Modale d'ajout d'organisation** : elle n'affiche plus « Entité parente : <entité du site> ».
+  `ADD_ORGANIZATION` n'a pas de champ `parent` (contrat en `additionalProperties: false`) et rien ne
+  rattache l'organisation créée : la mention était fausse sur tout le parc, mais seuls les admins la
+  voyaient. Retrait du `$slot:parentInfo` dans `addOrganization.descriptor.ts` et des `slots` dans
+  `addOrganizationConfig` ; projet, POI et événement la gardent, eux reçoivent bien leur parent.
+
+**Vérifié.** SSR : les 6 pages rendent (`config:render`, 10/10 sections avec contenu). Navigateur
+(Chrome, serveur de dev) : header, footer, 9 cartes, bouton ; captures à 1440 px en clair et en
+sombre, et à 390 px. `config:probe` : 9 résultats sur `communecter-dev`.
+
+**Non vérifié.** La **création réelle** d'une organisation depuis le bouton — aucun compte de test
+n'est configuré, et l'entité impose le SSO `lescaecoop`. Le raisonnement (scope costum ⇒
+`costumSlug` ⇒ `source.keys` estampillé par `Element.php`) s'appuie sur le code et sur les 9
+organisations existantes, toutes créées ainsi, pas sur un essai. À contrôler : `source.keys` posé,
+apparition sans rechargement, redirection vers `/profil/<slug>`, présence dans « J'utilise ».
+
+**Observé en passant.** La carte affiche `Coop&amp;Bât` : le nom est stocké encodé en base (donnée,
+pas rendu).
+
+**Gates** (branche `aac-dev`, non commité) : `typecheck` ✅ · `eslint` ✅ sur les fichiers
+touchés · `config:validate` ✅ 6 pages / 10 sections · `audit:config` ✅ **RAS** · `test:unit`
+**4 453/4 454** (dont 2 nouveaux tests) — le seul échec, `site-assets.test.ts`, vient d'un dossier
+vide `public/images/projetsre/` présent sur la machine et absent du dépôt ; snapshot
+`__effective__/federationDesCae.json` mis à jour (la seule différence est la nouvelle page).
+`build` et `test:e2e` **non lancés**. Note : `config:render` échoue au premier lancement sur cette
+machine (préchauffage SSR ≈ 147 s, délai de l'outil 120 s) ; un second passage réussit.
 
 ### 15/09 — les liens du footer suivent l'état de connexion
 
@@ -996,6 +1070,12 @@ une affirmation fausse. Aucun appelant ne lit `mutation.data` ; seul le verdict 
   vérifier à l'écran.
 - ⚠️ **`CLAUDE.md` est gitignoré** : le préflight `section-meta` le contrôle *s'il est présent*. Un
   compteur périmé rougit en local sans rien dire de la CI.
+- ⚠️ **L'ajout d'une organisation n'est pas modéré** : avec `requiresAdmin: false`, toute personne
+  connectée crée une organisation qui entre aussitôt dans l'annuaire **et** dans le finder
+  « J'utilise » des communs, les deux lisant le même périmètre.
+- ⚠️ **`--gradient-section` est surchargé pour tout le site** (`theme.customCSS`) : toute future
+  section `searchHeader` ou `cta-newsletter` prendra la bande rose, pas le turquoise de la feuille
+  partagée.
 
 ---
 
@@ -1022,3 +1102,7 @@ une affirmation fausse. Aucun appelant ne lit `mutation.data` ; seul le verdict 
 | Le header `standard`, celui de ce site, **ignore la clé `visibility`** de ses entrées de menu, contrairement à `transparent-scroll` et `stacked` — écarté le 15/09, à traiter si une entrée de menu doit dépendre de la connexion | à arbitrer |
 | **Bug « nouvel onglet » du header, mis de côté le 14/09** : « Profil » et « Administration » du menu du compte (`AuthMenu`, visible une fois connecté) naviguent par `navigate()` et ne s'ouvrent pas dans un nouvel onglet ; « Se connecter » (`LoginButton`) et le CTA du hero (`HeroSection`) sont aussi des boutons. Correctif : les rendre en `<Link>` (pattern de l'entrée Kanban). Composants partagés par tout le parc (cf. §10 14/09ter) | à arbitrer |
 | Aligner les pages de module (fiche d'un commun, connexion, coform) sur le gabarit 1280 px ? Leur header et leur footer restent plus larges que ceux des pages de config : trait de bordure plus long au-delà de 1280 px, contenu décalé de 128 px à partir de 1536 px (cf. §10 14/09bis). Le passage inverse, tout en pleine largeur, a été tenté et annulé le 14/09 | à arbitrer |
+| **Qui peut ajouter une organisation depuis `/annuaire` ?** `requiresAdmin: false` posé le 24/09 (tout utilisateur connecté, sans modération — cf. §13). Le passer à `true` réserve le bouton aux admins du site | Fédération |
+| **Vérifier une création réelle depuis `/annuaire`** : `source.keys: ["federationDesCae"]` posé, type « Coopérative » présélectionné, apparition sans rechargement, présence dans « J'utilise ». Demande un compte de test (SSO `lescaecoop`) | à confirmer |
+| Ajouter à l'annuaire un onglet « Personnes » (les 9 membres de l'entité, via `links.memberOf`) ? | à arbitrer |
+| Nom `Coop&amp;Bât` stocké encodé en base — à corriger dans la fiche de l'organisation | Fédération |

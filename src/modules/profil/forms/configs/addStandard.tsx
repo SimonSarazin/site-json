@@ -91,7 +91,6 @@ export const addOrganizationConfig: EntityModalConfig = {
   buildDefaults: () => ({
     name: "", type: "NGO", role: "admin", shortDescription: "", email: undefined, url: "", tags: [], ...ADDR_EMPTY,
   }) as FieldValues,
-  slots: ({ parent }) => parentSlot(parent),
   buildSpec: ({ parent, me }) => {
     const target = parent ?? me;
     return {

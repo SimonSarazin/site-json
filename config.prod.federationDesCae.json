@@ -131,7 +131,8 @@
         "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
         "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
       }
-    }
+    },
+    "customCSS": "/* Bande des searchHeader : charte du site plutôt que le turquoise de index-rezo-la-mer.css (feuille partagée). Mélangée au fond pour suivre le mode. */\n:root:root { --gradient-section: linear-gradient(135deg, color-mix(in oklab, var(--primary) 10%, var(--background)), color-mix(in oklab, var(--accent) 60%, var(--background))); }\n"
   },
   "aac": {
     "formId": "677e7e389058e31575550ac8",
@@ -234,6 +235,12 @@
           "fr": "Besoins et solutions"
         },
         "path": "/usages"
+      },
+      {
+        "label": {
+          "fr": "Annuaire"
+        },
+        "path": "/annuaire"
       }
     ],
     "utilities": {
@@ -422,6 +429,133 @@
       ]
     },
     {
+      "path": "/annuaire",
+      "title": {
+        "fr": "Annuaire de la communauté"
+      },
+      "seo": {
+        "title": {
+          "fr": "Annuaire de la communauté — Fédération des CAE"
+        },
+        "description": {
+          "fr": "Les coopératives d'activité et d'emploi et les organisations de la communauté de la Fédération des CAE : recherche par nom, ville ou thématique."
+        }
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "annuaire-header",
+          "props": {
+            "headline": {
+              "fr": "L'annuaire de la communauté"
+            },
+            "subhead": {
+              "fr": "Les coopératives d'activité et d'emploi et les organisations de la communauté de la Fédération."
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une organisation, une ville, une thématique…"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Ajouter une organisation"
+                },
+                "icon": "plus",
+                "action": "add-organization",
+                "variant": "primary",
+                "requiresAdmin": false,
+                "createDefaults": {
+                  "type": "Cooperative"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "annuaire-list",
+          "props": {
+            "showSearch": false,
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": true,
+            "defaultViewMode": "list",
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "sourceKey": [
+                "federationDesCae"
+              ],
+              "defaultTypes": [
+                "organizations"
+              ],
+              "defaultFields": [
+                "name",
+                "slug",
+                "collection",
+                "type",
+                "source",
+                "shortDescription",
+                "profilImageUrl",
+                "profilMediumImageUrl",
+                "profilThumbImageUrl",
+                "address",
+                "tags",
+                "geo",
+                "geoPosition"
+              ],
+              "defaultSortBy": {
+                "name": 1
+              },
+              "searchBy": [
+                "name",
+                "shortDescription",
+                "address.addressLocality",
+                "tags"
+              ],
+              "indexStepList": 24,
+              "indexStepMap": 500
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 3
+              },
+              "card": {
+                "type": "profile",
+                "variant": "profile",
+                "showDescription": true,
+                "showAddress": true,
+                "detailsMode": "drawer",
+                "showStats": false
+              },
+              "preview": {
+                "type": "default"
+              },
+              "itemAction": {
+                "kind": "preview"
+              }
+            },
+            "map": {
+              "layout": "full",
+              "cluster": true,
+              "itemAction": {
+                "kind": "preview"
+              },
+              "marker": {
+                "style": "pin",
+                "color": "primary"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "path": "/mentions-legales",
       "title": {
         "fr": "Mentions légales — Fédération des CAE"
@@ -494,6 +628,12 @@
             "label": {
               "fr": "Besoins et solutions"
             }
+          },
+          {
+            "href": "/annuaire",
+            "label": {
+              "fr": "Annuaire"
+            }
           }
         ]
       },
@@ -506,6 +646,12 @@
             "href": "/aac/communs",
             "label": {
               "fr": "Déposer un commun"
+            }
+          },
+          {
+            "href": "/annuaire",
+            "label": {
+              "fr": "Rejoindre l'annuaire"
             }
           },
           {
