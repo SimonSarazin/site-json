@@ -67,7 +67,8 @@
           "fr": "Actualités",
           "en": "News"
         },
-        "path": "/blog"
+        "path": "/blog",
+        "icon": "newspaper"
       },
       {
         "label": {
@@ -1619,16 +1620,6 @@
                 },
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M11 2v2\"/><path d=\"M5 2v2\"/><path d=\"M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1\"/><path d=\"M8 15a6 6 0 0 0 12 0v-3\"/><circle cx=\"20\" cy=\"10\" r=\"2\"/></svg>"
               }
-            ],
-            "ctaButtons": [
-              {
-                "label": {
-                  "fr": "Se connecter",
-                  "en": "Sign in"
-                },
-                "path": "/login",
-                "variant": "default"
-              }
             ]
           }
         },
@@ -2340,8 +2331,8 @@
                   "en": "Address"
                 },
                 "text": {
-                  "fr": "Maison Sport Santé Ekilib.re\nCommune du Tampon, La Réunion 97430",
-                  "en": "Ekilib.re Sport Health House\nLe Tampon, Réunion Island 97430"
+                  "fr": "Maison Sport Santé Ekilib.re\n34 rue Hubert Delisle\n97430 Le Tampon",
+                  "en": "Ekilib.re Sport Health House\n34 rue Hubert Delisle\n97430 Le Tampon – Réunion Island"
                 }
               }
             ]
@@ -2772,7 +2763,7 @@
       },
       {
         "platform": "mail",
-        "url": "mailto:contact@cyber-reunion.fr"
+        "url": "mailto:contact@ekilib.re"
       }
     ],
     "legalLinks": [
