@@ -26,6 +26,7 @@ import { asRecord, getServerData, normalizeTags, toArrayOrValues, toNumber, toSa
 import { generateMilestoneId } from "@/modules/cagnotte/utils/idGeneration";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { appendProjectMilestone, updateAnswerDepenseFields } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
+import { unpaidAmountOf } from "@/modules/cagnotte/utils/financerPayment";
 
 /** Financeur d'une dépense tel que l'enveloppe le sert, avant enrichissement. */
 type RawDepenseFinancer = FundingTransaction & { method?: string };
@@ -103,6 +104,14 @@ export const findMetadataById = (id?: string, links?: GlobalLinks): EntityMetada
     return null;
 };
 
+/**
+ * Répartit les montants d'un palier entre engagé, non acquis et part de l'utilisateur.
+ *
+ * `unpaidFunding` se lit ligne par ligne (`readFinancerPaymentState`), ce qui rend le versement
+ * PARTIEL représentable : une promesse de 1000 € dont 500 validés compte 500 en non-acquis.
+ * `currentFunding` reste la somme des montants ENGAGÉS, promesses comprises — c'est ce que
+ * mesurent les barres de progression.
+ */
 export const calculateFundingStatus = (
     transactions: FundingTransaction[],
     fallbackCurrent: number,
@@ -113,15 +122,12 @@ export const calculateFundingStatus = (
         return { currentFunding: fallbackCurrent, unpaidFunding: 0, userPledge: 0 };
     }
     return transactions.reduce((acc, t) => {
-        const amount = Number(t.amount) || 0;
+        const amount = toNumber(t.amount);
+        const unpaid = unpaidAmountOf(t);
 
-        const isUnpaid = t.fundingType !== "prepaid" || (t.paymentStatus as string) === "unpaid";
-
-        if (isUnpaid) {
-            acc.unpaidFunding += amount;
-            if(t.id === userId || orgsId.indexOf(t.id) > -1 ){
-                acc.userPledge += amount;
-            }
+        acc.unpaidFunding += unpaid;
+        if (t.id === userId || orgsId.indexOf(t.id) > -1) {
+            acc.userPledge += unpaid;
         }
         acc.currentFunding += amount;
         return acc;
@@ -607,21 +613,30 @@ export function useOrphanDepenseRepair(params: {
     }, [enabled, targetedRepairs, api, queryClient]);
 }
 
+/**
+ * Les promesses de l'utilisateur (et de ses organisations) encore à régler : une ligne
+ * partiellement versée reste une promesse pour son solde, d'où le filtre sur
+ * `unpaidAmountOf(fund) > 0`. `remainingAmount` porte ce solde ; `fundingAmount` reste le
+ * montant engagé, pour l'affichage seul — payer dessus surfacturerait.
+ */
 export function computePledgesFromResources(resources: CagnotteResource[], userId?: string, orgsIds: string[] = []): Pledge[] {
 
     return resources.flatMap((resource) =>
         (resource.items ?? [])
             .flatMap((item) =>
                 item.funding
-                    .filter((fund) => fund?.fundingType !== "prepaid" && (fund.financerId === userId || orgsIds.includes(fund.financerId || "")))
+                    .filter((fund) => unpaidAmountOf(fund) > 0 && (fund.financerId === userId || orgsIds.includes(fund.financerId || "")))
                     .map((fund) => ({
-                        id: `${resource.id}-${item.itemId}-${fund.fundingIndex}`,
+                        id: `${resource.id}-${item.itemId}-${fund.finkey || fund.fundingIndex}`,
                         resourceId: resource.answerId,
                         resourceName: resource.name,
                         depenseIndex: item.depenseIndex,
                         depenseName: item.name,
                         fundingIndex: fund.fundingIndex,
+                        finkey: fund.finkey,
+                        depenseKey: fund.depenseKey,
                         fundingAmount: toNumber(fund.amount),
+                        remainingAmount: unpaidAmountOf(fund),
                         financerId: fund.financerId || "unknown_id",
                         financerName: fund.financerName,
                         userPledge: item.userPledge,

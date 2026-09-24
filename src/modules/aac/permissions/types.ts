@@ -95,6 +95,17 @@ export interface AacPermissions {
    * sécurité. Durcissement au BACKLOG.
    */
   canSelectCommun: boolean;
+  /**
+   * 7. Supprimer DÉFINITIVEMENT un commun (auteur OU admin). Fonction et non booléen : le droit
+   * dépend du commun visé, puisqu'il s'ouvre à son auteur.
+   *
+   * Distinct de `canEditCommun`, qui porte `anyOnewithLinkCanAnswer` et ouvre l'édition à tout
+   * connecté : un geste irréversible n'hérite pas d'un gate pensé pour la saisie, et aucune
+   * branche d'`Answer::canEdit` (`survey/models/Answer.php:143`) ne l'accorde.
+   *
+   * Gate d'AFFICHAGE : le backend reste la source de vérité (`Authorisation::canDeleteElement`).
+   */
+  canDeleteCommun: (commun?: AacCommunLike | null) => boolean;
 
   isConnected: boolean;
   isAdmin: boolean;

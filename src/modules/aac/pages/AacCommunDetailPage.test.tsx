@@ -30,9 +30,22 @@ vi.mock("@/components/layout/SiteFooter", () => ({ SiteFooter: () => null }));
 vi.mock("@/lib/constant/common", () => ({ getBaseUrl: () => "http://backend.test" }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
+// La suppression d'un commun fait QUITTER la fiche : la navigation est capturée
+// pour pouvoir vérifier où elle mène, sans embarquer un routeur.
+const navigate = vi.fn();
 vi.mock("react-router", () => ({
   useParams: () => ({ answerId: "a1" }),
+  useNavigate: () => navigate,
   Link: ({ children }: { children: ReactNode }) => <a>{children}</a>,
+}));
+
+// La suppression a son propre test (`CommunDeleteControl.test.tsx`) ; la page
+// n'est observée que sur ce qu'elle COMPOSE. Sans ce mock, la mutation atteindrait
+// `useMutation`, que le mock partiel de react-query de ce fichier n'expose pas.
+// C'est bien le HOOK qu'on coupe : mocker `mutations/answer` priverait au passage
+// `useDeleteCommun` de `deleteElementById`.
+vi.mock("../hooks/useDeleteCommun", () => ({
+  useDeleteCommun: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
 }));
 
 const CONNECTED = { id: "u1", isConnected: true };
@@ -133,8 +146,15 @@ vi.mock("../hooks/useCommunFundingContext", () => ({
 vi.mock("../hooks/useCommunFundingHost", () => ({
   useCommunFundingHost: () => ({ hostEntity: null, isLoading: false }),
 }));
+/**
+ * `isLoading` des deux hooks de données : c'est lui qui commande les squelettes.
+ * Mutables, remis à `false` par le `beforeEach` — seuls les tests de chargement
+ * les lèvent.
+ */
+let isFundingLoading = false;
+let isDetailSectionsLoading = false;
 vi.mock("../hooks/useAacFundingResource", () => ({
-  useAacFundingResource: () => ({ targetResource: null, projectSlug: null }),
+  useAacFundingResource: () => ({ targetResource: null, projectSlug: null, isLoading: isFundingLoading }),
 }));
 vi.mock("../hooks/useCommunObjectivesController", () => ({
   useCommunObjectivesController: () => ({}),
@@ -147,7 +167,7 @@ const CONTEXTE_SECTION: AacDetailSection = {
 };
 let detailSections: AacDetailSection[] = [];
 vi.mock("../hooks/useAacDetailSections", () => ({
-  useAacDetailSections: () => detailSections,
+  useAacDetailSections: () => ({ sections: detailSections, isLoading: isDetailSectionsLoading }),
   useAacGallerySubKey: () => null,
 }));
 // La modale d'édition expose la LIGNÉE de péremption qu'elle reçoit : c'est
@@ -163,6 +183,9 @@ vi.mock("@/modules/coform/components/CoFormModal", () => ({
 // du périmètre de CE test : on ne vérifie que leur PRÉSENCE dans l'arbre.
 vi.mock("../components/pageDetail/CommunSelectionControl.tsx", () => ({ CommunSelectionControl: () => null }));
 vi.mock("../components/pageDetail/CommunProjectControl.tsx", () => ({ CommunProjectControl: () => null }));
+// La suppression a ses propres tests (règle de refus, cascade, garde de droit) ;
+// ici elle apporterait sa mutation et son bundle i18n, hors périmètre.
+vi.mock("../components/pageDetail/CommunDeleteControl", () => ({ CommunDeleteControl: () => null }));
 vi.mock("../components/pageDetail/CommunHero.tsx", () => ({ CommunHero: () => <div data-testid="hero" /> }));
 // La carte expose son crochet `onFunded` — ce que `CagnotteDialog` joue après
 // une contribution enregistrée (`onRefresh`) — et l'intention post-connexion,
@@ -204,11 +227,13 @@ vi.mock("../components/pageDetail/CommunTocNav.tsx", () => ({
   CommunTocNav: ({
     sections,
     activeSection,
+    isLoading,
   }: {
     sections: Array<{ id: string; icon: React.ElementType }>;
     activeSection: string;
+    isLoading?: boolean;
   }) => (
-    <nav data-testid="toc" data-active={activeSection}>
+    <nav data-testid="toc" data-active={activeSection} data-loading={String(!!isLoading)}>
       {sections.map((s) => (
         <span key={s.id} data-testid={`toc-${s.id}`}>
           <s.icon className="toc-icon" />
@@ -253,6 +278,8 @@ beforeEach(() => {
   config = makeConfig(false);
   isConfigLoading = false;
   configError = null;
+  isFundingLoading = false;
+  isDetailSectionsLoading = false;
   detailSections = [];
   refetchAnswer.mockClear();
   invalidateQueries.mockClear();
@@ -291,6 +318,39 @@ describe("AacCommunDetailPage — le financement suit l'étape de financement", 
     for (const id of FUNDING_IDS) {
       expect(screen.getByTestId(id)).toBeTruthy();
     }
+  });
+});
+
+/**
+ * « Objectifs » et « Membres du projet » dépendent de la PHASE, que seule l'enveloppe résout —
+ * après la config, donc après la garde de chargement de la page. En vol, la section garde son
+ * titre et son ancre (l'`IntersectionObserver` reste câblé) et n'expose qu'un squelette : sans
+ * ce troisième état, elles surgissent après coup et le sommaire s'allonge sous le curseur.
+ */
+describe("AacCommunDetailPage — la phase du commun en cours de résolution", () => {
+  it("enveloppe en vol : les deux sections gardent titre et ancre, le sommaire est en squelette", () => {
+    isFundingLoading = true;
+    render(<AacCommunDetailPage />);
+
+    expect(screen.getByText("detail.toc.actions")).toBeTruthy();
+    expect(screen.getByText("detail.toc.contributors")).toBeTruthy();
+    expect(screen.getByTestId("toc").getAttribute("data-loading")).toBe("true");
+  });
+
+  it("phase résolue sans projet lié : les deux sections disparaissent, le sommaire est arrêté", () => {
+    isFundingLoading = false;
+    render(<AacCommunDetailPage />);
+
+    expect(screen.queryByText("detail.toc.actions")).toBeNull();
+    expect(screen.queryByText("detail.toc.contributors")).toBeNull();
+    expect(screen.getByTestId("toc").getAttribute("data-loading")).toBe("false");
+  });
+
+  it("blocs déclarés en vol : le sommaire attend, sans changer de longueur ensuite", () => {
+    isDetailSectionsLoading = true;
+    render(<AacCommunDetailPage />);
+
+    expect(screen.getByTestId("toc").getAttribute("data-loading")).toBe("true");
   });
 });
 
