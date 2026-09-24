@@ -83,7 +83,7 @@
      le texte reposait nu sur l'image, illisible sur un cliché clair — défaut
      silencieux, qu'aucun test ne voit. Même logique de repli que `--color-header-bar`
      juste au-dessus. Sans effet sur les 3 configs qui consomment ces sections
-     aujourd'hui (nos-commune, commune-transparente, rezoSanteReunion) : toutes
+     aujourd'hui (nos-commune, commune-transparente, EcosystemeSanteReunion) : toutes
      définissent déjà `--hero-tint` et l'emportent donc sur ce repli.
 
      ⚠ Noir INVARIANT, surtout pas `var(--foreground)` : ce token bascule avec le
@@ -95,9 +95,34 @@
 }
 
 :root {
+  /* Ombre de texte des héros pleine image (`HeroTintedOverlay`, `HeroCarousel`,
+     `HeroEntityBanner` — même motif "texte blanc sur photo" que `--color-hero-tint`
+     ci-dessus, MÊME mécanique de repli : custom property invariante, un thème
+     peut la surcharger via `theme.customCSS` sans toucher ce fichier — ce n'est
+     PAS `theme.shadows` (box-shadow d'élévation des cartes/boutons, une échelle
+     par thème avec sa propre teinte) : ombre de TEXTE, propriété CSS différente,
+     rôle différent (garantir un contraste sur une photo, pas suggérer un relief).
+     `drop-shadow`/`drop-shadow-lg` de Tailwind (0.1–0.15 d'opacité, 1 à 4px de
+     flou) sont calibrés pour l'élévation discrète d'une carte, pas pour garantir
+     la lecture d'un titre sur une photo claire : sur un ciel ou une plage au
+     soleil, l'effet est quasi invisible tout en laissant un léger flou parasite
+     sur le bord des lettres. Deux couches ici : une resserrée et sombre pour la
+     netteté du contour, une large et diffuse pour assombrir la zone derrière le
+     texte, quelle que soit la photo. Noir invariant, même raison que
+     `--color-hero-tint` : ces héros écrivent toujours en blanc par-dessus l'image. */
+  --hero-text-shadow-strong: 0 2px 6px rgb(0 0 0 / 0.55), 0 6px 28px rgb(0 0 0 / 0.35);
+  --hero-text-shadow: 0 1px 4px rgb(0 0 0 / 0.5), 0 4px 18px rgb(0 0 0 / 0.3);
+
   /* Fond de bande décoré (`cta-newsletter`, `searchHeader`) — ex-
      `bg-ocean-gradient`. Consommé via `bg-[image:var(--gradient-section)]`. */
   --gradient-section: linear-gradient(135deg, var(--primary), var(--accent));
+}
+
+@utility hero-text-shadow-strong {
+  text-shadow: var(--hero-text-shadow-strong);
+}
+@utility hero-text-shadow {
+  text-shadow: var(--hero-text-shadow);
 }
 
 /* ── Plancher des cartes d'accès rapide (`HeroQuickAccess`) ──────────────────

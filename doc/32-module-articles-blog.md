@@ -43,6 +43,7 @@ src/modules/blog/
 │   └── useRelatedArticles.ts# articles liés (mêmes tags, même costum)
 ├── components/
 │   ├── ArticleCard.tsx · ArticleCardCompact.tsx  # variants de carte
+│   ├── ArticleBody.tsx                           # corps d'article (markdown + HTML brut assaini), partagé par les readers
 │   ├── ArticleReader.tsx                         # variant de reader (default)
 │   ├── ArticleGallery.tsx                        # galerie d'images de l'article (about.images contentKey=slider → GalleryGrid + lightbox)
 │   ├── ArticleDocuments.tsx                      # documents/fichiers joints (about.files objet keyé _id → FilesList, téléchargement)
@@ -74,7 +75,7 @@ champs costum) dans `constants/fields.ts` (cf. [Projection](#projection--constan
 | Champ | Rôle |
 |---|---|
 | `name` | titre |
-| `description` | corps **markdown** (rendu par `ArticleReader`) |
+| `description` | corps **markdown, HTML brut accepté** — rendu par `ArticleBody` (commun aux deux readers) : `ProseContent` en markdown forcé + profil strict `sanitizeProse`. Un article repris de WordPress qui mêle titres `#` et `<table>` s'affiche entier ; l'aperçu de l'éditeur markdown utilise le même rendu |
 | `shortDescription` | **extrait** édité (chapô des cartes / RSS ; sinon dérivé de `description`) |
 | `profilImageUrl` / `profilMediumImageUrl` | image de couverture (16/9) |
 | `created` / `updated` | dates de **saisie** backend (secondes epoch) — `created` n'est plus que le **repli** de la date éditoriale |

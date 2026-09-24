@@ -36,6 +36,35 @@ export interface CoolifyApp {
   ports_exposes?: string;
   environment_id?: number;
   destination?: { uuid?: string; server?: { uuid?: string; name?: string } };
+  /**
+   * D'OÙ l'application clone. `source_type` vaut `App\Models\GithubApp` quand
+   * une App GitHub est attachée, `null` en source publique — et `git_repository`
+   * change de forme avec lui : `owner/repo` dans le premier cas, URL complète
+   * dans le second. Les deux viennent déjà de `GET /applications`, donc les
+   * lire ne coûte aucun appel supplémentaire.
+   *
+   * ⚠ AUCUN des deux n'est modifiable : `PATCH /applications/{uuid}` refuse
+   * `source_id`, `source_type`, `source_uuid` ET `github_app_uuid` en 422
+   * « This field is not allowed » (mesuré sur 4.3.21 — la doc publique décrit
+   * une version plus récente). Changer la source d'une application existante
+   * passe obligatoirement par l'UI ; à la création, c'est la route qui décide.
+   */
+  source_id?: number | null;
+  source_type?: string | null;
+  /**
+   * Réglages de l'application. `is_auto_deploy_enabled` y est LISIBLE depuis la
+   * 4.3.x — il ne l'était pas en 4.1.1, d'où le « vérifier dans l'UI » qui
+   * traînait dans `lock` et masquait son inversion.
+   */
+  settings?: { is_auto_deploy_enabled?: boolean };
+}
+
+/** Une App GitHub déclarée sur l'instance — la source des dépôts privés. */
+export interface CoolifyGithubApp {
+  id: number;
+  uuid: string;
+  name: string;
+  is_public: boolean;
 }
 
 export interface CoolifyProject {
@@ -371,6 +400,31 @@ async function appel<T>(
 export const listApplications = (ctx: CoolifyContext): Promise<CoolifyApp[]> =>
   api<CoolifyApp[]>(ctx, "GET", "/applications");
 
+export const listGithubApps = (ctx: CoolifyContext): Promise<CoolifyGithubApp[]> =>
+  api<CoolifyGithubApp[]>(ctx, "GET", "/github-apps");
+
+/**
+ * Résout le NOM d'une App GitHub vers son uuid.
+ *
+ * Par le nom, comme `coolifyApp` : un uuid versionné lierait le dépôt à une
+ * instance et deviendrait faux à la première recréation de l'App.
+ */
+export async function githubAppParNom(
+  ctx: CoolifyContext,
+  nom: string,
+): Promise<CoolifyGithubApp> {
+  const apps = await listGithubApps(ctx);
+  const trouvee = apps.find((a) => a.name === nom);
+  if (!trouvee) {
+    throw new CoolifyError(
+      `App GitHub "${nom}" inconnue sur cette instance. ` +
+        `Disponibles : ${apps.map((a) => a.name).join(", ") || "aucune"}.\n` +
+        `  Une App se crée dans Coolify (Sources), puis s'installe sur le dépôt côté GitHub.`,
+    );
+  }
+  return trouvee;
+}
+
 export const getApplication = (ctx: CoolifyContext, uuid: string): Promise<CoolifyApp> =>
   api<CoolifyApp>(ctx, "GET", `/applications/${uuid}`);
 
@@ -477,7 +531,13 @@ export async function upsertEnv(
 }
 
 /**
- * Crée une application depuis un dépôt git public.
+ * Crée une application. La ROUTE porte la source, et elle seule.
+ *
+ * `/applications/private-github-app` attache l'App (`github_app_uuid` +
+ * `git_repository` en `owner/repo`), `/applications/public` prend une URL de
+ * dépôt public. Le choix est définitif : la source d'une application existante
+ * n'est PAS rattrapable par PATCH (422, cf. `CoolifyApp.source_type`) — se
+ * tromper de route oblige à corriger dans l'UI, ou à supprimer et recréer.
  *
  * `instant_deploy` est volontairement absent : déployer avant d'avoir posé les
  * variables produirait le thème par défaut et une config non figée. L'ordre
@@ -486,7 +546,8 @@ export async function upsertEnv(
 export const createApplication = (
   ctx: CoolifyContext,
   payload: Record<string, unknown>,
-): Promise<{ uuid: string }> => api(ctx, "POST", "/applications/public", payload);
+  route: "private-github-app" | "public" = "private-github-app",
+): Promise<{ uuid: string }> => api(ctx, "POST", `/applications/${route}`, payload);
 
 /** Index nom → application, pour résoudre les `coolifyApp` de sites.json. */
 export async function indexByName(ctx: CoolifyContext): Promise<Map<string, CoolifyApp>> {

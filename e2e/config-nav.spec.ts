@@ -30,6 +30,17 @@ test.describe("Config-driven Navigation (E2E)", () => {
       const label = item.label[defaultLang];
       if (!label) continue;
 
+      // Entrée en icône seule (`iconOnly`) : son libellé est le NOM ACCESSIBLE du lien, jamais un texte
+      // affiché — le chercher dans le texte du header échouerait alors que la nav est correcte.
+      if (item.iconOnly) {
+        const lien = page.locator(`header a[aria-label="${label}"], nav a[aria-label="${label}"]`);
+        expect(
+          await lien.count(),
+          `Nav icon "${label}" should expose its label as accessible name`
+        ).toBeGreaterThan(0);
+        continue;
+      }
+
       // Check that the label text exists somewhere in the header (may be in desktop nav or accessible text)
       const headerText = await page.locator("header").textContent();
       expect(

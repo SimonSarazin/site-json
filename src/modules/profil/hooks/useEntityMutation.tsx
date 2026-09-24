@@ -19,6 +19,7 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 import type { QueryKey } from "@tanstack/react-query";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { useCocolight } from "@/hooks/useCocolight";
+import { isCostumHostAdmin } from "@/lib/permissions";
 import { COSTUM_QUERY_KEYS } from "@/constants/queryKeys";
 import { costumSlugOf } from "@/lib/costumLists";
 import { useNavigate } from "react-router";
@@ -86,6 +87,9 @@ export interface EntityMutationSpec {
     dropEmptyEmail?: boolean;
     /** valeurs fixes ajoutées au payload (preset costum). */
     extraFields?: Data;
+    /** Comme `extraFields`, mais seulement pour un NON-admin du site — modération a priori (cf.
+     *  entityModalSpec : filtre d'affichage, pas barrière de sécurité). */
+    extraFieldsUnlessCostumAdmin?: Data;
   };
   /** Stamps déclaratifs ($scope DÉJÀ résolus par buildSpec) — canal payload appliqué après
    *  buildPayload (add+edit), canal pathValue après le save (entité PROPRE, échec non bloquant). */
@@ -298,6 +302,10 @@ export async function runEntityMutation(
   }
   if (spec.inject?.dropEmptyEmail && payload.email === "") delete payload.email;
   if (spec.inject?.extraFields) Object.assign(payload, spec.inject.extraFields);
+  // Modération a priori : le drapeau n'est posé que pour les NON-admins du site (cf. entityModalSpec).
+  if (spec.inject?.extraFieldsUnlessCostumAdmin && !isCostumHostAdmin(deps.contextEntity)) {
+    Object.assign(payload, spec.inject.extraFieldsUnlessCostumAdmin);
+  }
   if (imageFile) payload.profil_avatar = imageFile;
 
   const method = SDK_METHOD[spec.entityType];

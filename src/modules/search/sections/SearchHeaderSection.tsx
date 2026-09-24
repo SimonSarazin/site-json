@@ -34,6 +34,7 @@ import { ChevronDown, RotateCcw, SlidersHorizontal, X } from "lucide-react";
 import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
 import { useCocolight } from "@/hooks/useCocolight";
 import { ActionButtonGroup } from "@/modules/profil/components/ActionButtonGroup";
+import { sectionBgClass } from "@/components/sections/sectionBg";
 interface SearchHeaderSectionComponentProps {
     id?: string;
     props: SearchHeaderSectionProps;
@@ -391,7 +392,11 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     };
 
     return (
-        <section id={id} className="relative pt-10 px-4 bg-[image:var(--gradient-section)] overflow-hidden">
+        <section
+            id={id}
+            // Sans `bg`, le dégradé du thème : le rendu historique de tous les bandeaux du parc.
+            className={`relative pt-10 px-4 overflow-hidden ${sectionBgClass(props.bg) || "bg-[image:var(--gradient-section)]"}`}
+        >
             {/* Bulles décoratives floutées — purement visuelles : `pointer-events-none`
                 sinon la bulle bas-droite (absolute) peint AU-DESSUS de la barre de
                 filtres statique et intercepte les clics du dernier dropdown. */}

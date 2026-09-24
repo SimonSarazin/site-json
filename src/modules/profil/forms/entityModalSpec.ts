@@ -62,6 +62,15 @@ export interface SpecInject {
   dropEmptyEmail?: boolean;
   /** valeurs fixes ajoutées au payload au CREATE (STAMP costum statique). */
   extraFields?: Record<string, unknown>;
+  /**
+   * Comme `extraFields`, mais SEULEMENT si l'utilisateur n'est pas ADMIN DU SITE (`isCostumHostAdmin`).
+   * Sert la modération a priori : `{ preferences: { toBeValidated: true } }` met la fiche en attente pour
+   * le public, et l'admin qui dépose publie directement.
+   *
+   * ⚠ Filtre d'AFFICHAGE, pas barrière de sécurité : le drapeau est posé par le client, donc une requête
+   * forgée peut s'en passer — c'était déjà le cas avant. Une vraie garantie se poserait côté backend.
+   */
+  extraFieldsUnlessCostumAdmin?: Record<string, unknown>;
   /** STAMP depuis le scope résolu : { champPayload: cléScope } → payload[champ] = ctx.scope[cléScope].
    *  Évite de dupliquer une valeur déjà dans `scope.defaults` (ex. poi : { type: "poiType" }). */
   extraFieldsFromScope?: Record<string, string>;
