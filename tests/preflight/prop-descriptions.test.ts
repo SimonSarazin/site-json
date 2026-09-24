@@ -68,6 +68,7 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
     "section:map-bubbles": 5,
     "section:agenda": 15,
     "section:cardCountCT": 4,
+    "section:content": 1,
     "section:data-observatory": 4,
     "section:filters": 10,
     "section:hero-carousel": 11,

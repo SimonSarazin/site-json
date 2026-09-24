@@ -203,6 +203,58 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 ## 9. Impacts des modifications
 
+### 24/09 — home : en-tête « Découvrir les lieux » sous l'illustration, aligné sur les cartes · libellés en pastille
+
+**Code + config.** L'illustration du `hero-search` (style complet : `ctaButtons` + `subhead`)
+déborde de 40 px sous la section (`-bottom-10`) et recouvrait le titre et le bouton « Voir tous les
+resultats ». La section réserve désormais cette place (`mb-10` quand `backgroundImage` est posé) :
+le contenu qui suit descend de 40 px, le hero ne change pas. Nouvelle option opt-in
+**Changement de DÉFAUT** sur l'en-tête de `searchProStatic` (`customHeader`) : plus de `container`
+ni de marge latérale, et 12 px sous l'en-tête (`mb-3` au lieu de `mb-6`) — titre et boutons
+commencent au même bord que les cartes. Ce n'est pas une option : **48 sections de 10 sites** sont
+concernées (parent62 21, rezo-sante-reunion 8, tiers-lieux 5, relief 3, sport-sante-bien-etre 3,
+institut-bleu / maison-sport-sante / saint-paul-sport 2, équipements sportifs ×2 1). Retirer les
+seuls `px-*` n'aurait pas suffi : c'est le `container` (max 1280) qui rentrait le titre de 64 px à
+1440. Nouvelle option opt-in `categoryVariant: "pill"` (section `content`) : le libellé au-dessus du titre devient une pastille bordée (`rounded-full border
+border-border`) ; posée sur les 4 sections qui en ont un (Les lieux, Outils et ressources,
+S'entraider, Observatoire). Le texte passe dans un `<span>` INTERNE au `<p>` : la bordure se réduit
+au texte sans que le libellé perde la largeur ni l'alignement du bloc, que le `<p>` continue de
+porter (`width: "wide"`, `align: "center"`). Les deux props sont décrites dans le registre
+`scripts/lib/prop-descriptions.ts` (plancher `section:content` posé à 1) — donc servie par
+`config:schema` et la skill `config-assistant`.
+
+**Autres sites** : le correctif du hero touche aussi la home de **relief** (même design, même défaut
+constaté) ; aucun autre site n'utilise `hero-search`. L'alignement de l'en-tête, lui, touche les
+10 sites ci-dessus — vérifié sur parent62 (`/ressources`, `/temoignages`) et rezo-sante-reunion
+(`/theme/nutrition`, sections en `width: "container"`) : dans chaque cas le titre part du bord de SA
+grille, y compris quand un panneau de filtres la décale (432 px sur `/lieux` et `/temoignages`). Sur
+une page dont le chrome reste centré (parent62 `/ressources`), le titre est désormais au bord.
+`categoryVariant` n'est posé nulle part ailleurs : les libellés de parent62, relief
+et rezo-sante-reunion restent en texte simple. Détail moteur : `doc/07-module-search.md`
+(`customHeader`), `doc/05-schemas-sections.md` (`content`).
+
+**Vérifié** : mesures + captures à 1440 / 768 / 390 px, clair et sombre (titre à 16 px sous
+l'illustration, bords du titre et du bouton = bords de la grille, 12 px au-dessus d'elle ; 4
+pastilles bordées à 0 px du bord du paragraphe, bordure au token du thème en clair comme en
+sombre) ; relief contrôlé à 1440 / 390 px. Garde de clé strippée **vérifiée en échec** : une faute
+injectée sur `categoryVariant` sort en `cle-strippee` à l'audit.
+**Gates** : `config:validate` ✅ (14 pages, 26 sections) · `audit:config` RAS (`strip: 0` sur les
+4 configs qui consomment ces briques) · `config:render` ✅ 4/4 (tiers-lieux et relief re-joués après le
+passage en défaut ; parent62 et rezo-sante-reunion vérifiés en NAVIGATEUR sur cette version) · `typecheck` ✅ · `eslint` ✅ 0 erreur sur les fichiers du lot · `build` ✅
+23,9 s · `test:unit` 4 774/4 776 (`--maxWorkers=2`, `--max-old-space-size=4096` : 7 Go de RAM) —
+2 échecs d'environnement local sans lien avec ce lot (bundle principal 3,24 Mo > 2 Mo, déjà
+au-dessus du plafond sur le build du 23/09 ; dossier VIDE et non suivi `public/images/
+EcosystemeSanteReunion`).
+
+### 21/09 — `/annuaire-ressources` : les photos des ressources s'affichent
+
+**Code seul** (module `search`, pas de config). Les photos d'une ressource (documents de la
+réponse, ou images de la salle) sont des chemins `/upload/communecter/…` **relatifs au backend** ;
+laissés relatifs, `/img` les cherchait dans les fichiers du site → 404. `parseResourceDirectoryItem`
+les préfixe avec `getBaseUrl()` (option `baseUrl` obligatoire, `toBackendUrl`) ; carte, détail et
+section la passent. Seule la section `coform-resource-directory` est touchée (ce site seulement).
+Détail : `doc/07-module-search.md` § `coform-resource-directory`.
+
 ### 08/09ter — admin : onglet « Référencement »
 
 **Config seule** (`config.prod.tiers-lieux.json`). Onglet `admin.tabs[]` `referencement` (icône

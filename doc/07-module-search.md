@@ -293,7 +293,7 @@ Même structure que `searchPro` mais avec état local. Plusieurs instances peuve
 | `zoneSelector` | `ZoneSelectorConfig` | — | Sélecteur de zones géographiques |
 | `tagSelector` | `TagSelectorConfig` | — | Sélecteur de tags prédéfinis |
 | `csvButton` | `CsvButtonConfig` | — | Export CSV (colonnes configurables) |
-| `customHeader` | objet | — | En-tête (titre + lien + icône). Affiche aussi un lien « voir sur la page complète » qui reporte les filtres courants et la recherche texte (`?search=`) via `linkText`/`linkHref`/`linkIcon` |
+| `customHeader` | objet | — | En-tête (titre + lien + icône). Affiche aussi un lien « voir sur la page complète » qui reporte les filtres courants et la recherche texte (`?search=`) via `linkText`/`linkHref`/`linkIcon`. Titre et boutons sont alignés sur les bords de la grille de résultats (sans `container` ni marge latérale, `mb-3`) |
 | `bg` | string | — | Fond de section |
 | `width` | `"container"` | — | Contrainte de largeur |
 | `baseParams.contextId` + `contextType` | string | — | Scope de recherche à une entité |

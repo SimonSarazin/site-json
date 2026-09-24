@@ -904,6 +904,7 @@
               "fr": "Les lieux",
               "en": "The places"
             },
+            "categoryVariant": "pill",
             "title": {
               "fr": "Découvrez les tiers-lieux, explorez leurs spécificités et contribuez à la vie d'un lieu.",
               "en": "Discover third places, explore their specificities and contribute to the life of a place."
@@ -965,6 +966,7 @@
               "fr": "Outils et ressources",
               "en": "Tools and resources"
             },
+            "categoryVariant": "pill",
             "title": {
               "fr": "Se mettre en lien, discuter, proposer et diffuser des informations sur les tiers-lieux.",
               "en": "Connect, discuss, propose and disseminate information about third places."
@@ -1046,6 +1048,7 @@
               "fr": "S'entraider",
               "en": "Help each other"
             },
+            "categoryVariant": "pill",
             "title": {
               "fr": "Cofinancer nos infrastructures communes et accompagner les nouveaux projets.",
               "en": "Co-finance our common infrastructures and support new projects."
@@ -1088,6 +1091,7 @@
               "fr": "Observatoire",
               "en": "Observatory"
             },
+            "categoryVariant": "pill",
             "title": {
               "fr": "Observer les données",
               "en": "Observe the data"

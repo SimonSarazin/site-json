@@ -1525,6 +1525,8 @@ const ContentSectionSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     category: LocalizedString.optional(),
+    /** Rendu de `category` : `"pill"` = pastille bordée. Défaut `"text"` (texte simple, historique). */
+    categoryVariant: z.enum(["text", "pill"]).optional(),
     title: LocalizedString,
     description: LocalizedString,
     tags: z.array(LocalizedString).optional(),

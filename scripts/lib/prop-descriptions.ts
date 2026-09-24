@@ -354,6 +354,9 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.ariaLabel": "Nom accessible de la région. À renseigner dès que deux carrousels coexistent sur une page, sinon les régions sont homonymes.",
     "props.showScrollIndicator": "Chevron animé en bas de section. Il se décale au-dessus de la barre de puces dès qu'il y a plusieurs diapositives.",
   },
+  "section:content": {
+    "props.categoryVariant": "Rendu du libellé au-dessus du titre : pill = pastille bordée, à réserver aux pages qui empilent des bandes. Défaut : texte simple.",
+  },
   "section:agenda": {
     "props.bg": "Fond de la section : jetons du thème, ou page-accent (aplat + filet supérieur à page.accent) pour alterner les bandeaux d'une page colorée.",
     "props.customHeader": "En-tête teaser avec lien « voir tous » — même convention que searchProStatic.customHeader (home → /evenements).",
