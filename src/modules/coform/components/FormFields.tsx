@@ -52,12 +52,25 @@ export { ProseContent };
  * formulaires du parc mettent leurs aides en forme. Cf. `@/lib/sanitize` et
  * `ProseContent`.
  */
+/**
+ * `wrap-anywhere` (overflow-wrap: anywhere) sur TOUT texte riche du formulaire : ces textes sont
+ * saisis par des admins et contiennent des URL entières. Un mot insécable plus large que sa colonne
+ * pousse toute la grille — mesuré à 352 px dans une colonne de 308 — et la modale, qui a
+ * `overflow-y: auto` (donc `overflow-x: auto` imposé par CSS), se met à défiler latéralement.
+ * `anywhere` plutôt que `break-words` : lui seul réduit aussi la largeur min-content, ce qui compte
+ * ici puisque ces blocs sont des items de grille. Posé ICI et non dans `ProseContent` (composant
+ * partagé, volontairement nu : « le className de l'appelant reste le seul habillage ») — la césure
+ * est un choix du formulaire, pas de tous ses consommateurs. Perdu une fois à l'extraction de
+ * `ProseContent` vers `shared/` (`2689e517`) : le test « césure » garde ce contrat.
+ */
+export const PROSE_CESURE = "wrap-anywhere";
+
 export function HintText({ text }: { text: string }) {
   return (
     <ProseContent
       text={text}
       source="formDefinition"
-      className="text-xs text-muted-foreground -mt-1 mb-1 prose prose-xs dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0"
+      className={`${PROSE_CESURE} text-xs text-muted-foreground -mt-1 mb-1 prose prose-xs dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0`}
     />
   );
 }
@@ -301,7 +314,7 @@ export function SectionTitleField({ field }: { field: FormFieldMapping }) {
         <ProseContent
           text={field.info}
           source="formDefinition"
-          className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none mt-1"
+          className={`${PROSE_CESURE} text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none mt-1`}
         />
       )}
       {cfg.showBar && cfg.barPosition === "below" && (
@@ -339,7 +352,7 @@ export function TitleSeparatorField({ field }: { field: FormFieldMapping }) {
           <ProseContent
             text={field.info}
             source="formDefinition"
-            className="mt-1 text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none [&>p]:m-0"
+            className={`${PROSE_CESURE} mt-1 text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none [&>p]:m-0`}
           />
         )}
         <ChevronDown
@@ -368,7 +381,7 @@ export function SectionDescriptionField({ field }: { field: FormFieldMapping }) 
           text={field.label}
           forceMarkdown
           source="formDefinition"
-          className="text-sm text-foreground prose prose-sm dark:prose-invert max-w-none mb-1"
+          className={`${PROSE_CESURE} text-sm text-foreground prose prose-sm dark:prose-invert max-w-none mb-1`}
         />
       )}
       {field.info && (
@@ -376,7 +389,7 @@ export function SectionDescriptionField({ field }: { field: FormFieldMapping }) 
           text={field.info}
           forceMarkdown
           source="formDefinition"
-          className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none"
+          className={`${PROSE_CESURE} text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none`}
         />
       )}
     </div>

@@ -131,7 +131,12 @@ domaine **injecte** les siens par side-effect (`profil/forms/registerWidgets.tsx
 Widgets **composites** (une valeur structurée par-dessous) : `openingHours`/`editSchedule` = `{ [jour]:
 {enabled,start,end} }` ; `location` = adresse plate + `geo`/`geoPosition` (autocomplétion BAN/villes) ;
 `fieldArray` = `Array<{ <sous-champ>: string }>` (`widgetProps.itemFields`) ; `finder` = `{ id: {type,name} }` ;
-`image` = `File | null` (+ flag `_imageDeleted`) routé vers `profil_avatar` ;
+`image` = `File | null` (+ flag `_imageDeleted`) routé vers `profil_avatar` — recadrage obligatoire au
+ratio `widgetProps.aspect` (1:1 par défaut) ; `widgetProps.allowOriginal: true` (opt-in) garde l'image
+ENTIÈRE au dépôt et rend le recadrage facultatif (bouton « Recadrer », toujours depuis l'original ; la
+modale y ajoute « Utiliser l'image entière ») — l'image envoyée est allégée au-delà de 1 Mo par
+`lightenImage` (`src/utils/imageUtils.ts` : 1 920 px, qualité 0,85, GIF épargné). Une image déjà enregistrée
+ne se recadre pas (canvas bloqué par l'origine) : il faut la redéposer ;
 `gallery`/`file` = `GalleryValue { existing, added, removedDocIds, contentKey, docType }` (collecte locale ;
 upload/suppression APRÈS le save par `processGalleryFields` → `uploadDocument`/`deleteFile`). `gallery` =
 images (grille + preview, `GalleryUploadField`, `docType:"image"`), `file` = documents non-image (lignes
@@ -231,6 +236,13 @@ interne, le backend `$unset` les vides — **pas de diff côté client** (plus d
 | validate (cross-champ) | `registerValidate`/`getValidate`/`resolveValidate` | `(values) => [{ path, message }]` |
 | options (enum dynamique) | `registerOptions`/`getOptions` | `() => EnumOption[]` |
 | compute (valeur dérivée) | `registerCompute`/`getCompute` | `(deps[]) => unknown` |
+
+**« Au moins un de ces champs »** — `auMoinsUnRenseigne(champs, cible, message)`
+(`profil/forms/validators.ts`) fabrique la règle ; le registre n'acceptant pas de paramètre, chaque
+couple s'enregistre sous sa propre clé sans recopier la logique. « Renseigné » se lit selon la FORME
+de la valeur (`estRenseigne`) : un champ fichier compte les fichiers qui RESTENT (un document retiré
+pendant l'édition ne compte plus), un tableau exige une entrée non vide. Clé en service :
+`validate:documentOuLien` (`documents` ou `urls`, erreur sur `documents`).
 
 Génériques fournis : `identity`/`toNumber`/`toString`/`toBoolean`/`toStringArray`/`splitCsv`/`joinCsv` (transforms)
 et `multiply` (compute). `GenericForm` résout les options d'un champ dans l'ordre
@@ -339,6 +351,7 @@ prises du contexte par `resolveModalSpec`. Le bloc entier est **strippé en édi
 | `organizerFallback` | `organizer` vide → `buildOrganizerReference(ctx.parent, ctx.me)` (event) |
 | `dropEmptyEmail` | supprime `payload.email === ""` |
 | `extraFields` | valeurs fixes ajoutées au payload au CREATE (stamp statique) |
+| `extraFieldsUnlessCostumAdmin` | comme `extraFields`, mais SEULEMENT si l'utilisateur n'est pas admin du site (`isCostumHostAdmin`, lu sur le porteur). Sert la modération a priori : `{ preferences: { toBeValidated: true } }` met la fiche en attente pour le public et laisse l'admin publier directement. ⚠ Filtre d'AFFICHAGE, pas barrière de sécurité — le drapeau est posé par le client, une requête forgée peut s'en passer. Porteur pas encore chargé → la valeur EST posée (jamais de dispense par défaut) |
 | `extraFieldsFromScope` | `{ champPayload: cléScope }` → `payload[champ] = ctx.scope[cléScope]` |
 
 > ⚠️ **Panne silencieuse sans parent.** Sans `parent` ni `parentFromCarrier`, le parent repose sur le default
@@ -426,18 +439,26 @@ dispatchent vers les registres (`forms/specRegistries.ts`, peuplés par `forms/r
 observatoire est passé aux `mutation.stamps` (`append` + `$costum`, cf. § dédié) ; `buildTiersLieuxPayload`
 subsiste comme export mais n'est plus registré — il ne sert que d'ORACLE de parité aux tests.
 
-Le parc porte aujourd'hui **23 déclarations `costumForms` (21 ids uniques) réparties sur 9 `config.prod.*.json`** —
+Le parc porte aujourd'hui **28 déclarations `costumForms` (26 ids uniques) réparties sur 9 `config.prod.*.json`** —
 `tiers-lieux` et `equipements-sportifs` sont déclarés par deux sites chacun. Toutes sont compilées au boot par
 `registerCostumForms.ts` et posées à blanc par `tests/preflight/costum-forms.test.ts`, qui énumère tous les
 `config.prod*.json`.
 
-**Trois seulement ont un dossier TS** (`forms/costum/<id>/`), réduit à un `fns.ts` (plus ses tests) :
-`equipements-sportifs`, `tiers-lieux`, `structure` — tous importés par `forms/registerSpecFns.ts`. Les 18 autres
-sont **0 code**.
+**Quatre seulement ont un dossier TS** (`forms/costum/<id>/`), réduit à un `fns.ts` (plus ses tests) :
+`equipements-sportifs`, `tiers-lieux`, `structure`, `parent62-article` — tous importés par
+`forms/registerSpecFns.ts`. Les 22 autres sont **0 code**.
+
+**Mots-clés dérivés d'un type (`parent62-article`)** — un type d'actualité (choix multiple `category`) pose un
+tag public lu par les pages. Ce n'est PAS un `mutation.stamps` `op:"append"` : il refusionne les tags serveur à
+chaque save, donc le tag d'un type retiré revenait. Ce sont les codecs du CHAMP `tags`
+(`p62article:tagsRead`/`tagsWrite`) sur les helpers purs génériques `forms/costum/derivedTags.ts` :
+lecture = tags serveur − tags des types ENREGISTRÉS, écriture = tags saisis ∪ tags des types CHOISIS. La table
+type → tag vit dans le `fns.ts` : un codec de champ ne reçoit pas de `params`, et un `serializeGroups` (qui en
+reçoit) vidé en édition s'émet `""` — une chaîne là où `tags` attend un tableau.
 
 > ⚠️ Ne pas confondre avec la table `CONFIG_FILE` de `forms/costum/__fixtures__/configCostum.ts`, qui ne résout
-> que 5 ids (`equipements-sportifs`, `tiers-lieux`, `institut-bleu-acteur`, `structure`, `actualite`). C'est la
-> liste que les TESTS savent charger par id, pas l'inventaire du parc.
+> que 12 ids (`equipements-sportifs`, `tiers-lieux`, `institut-bleu-acteur`, `structure`, `actualite` et 7 formulaires
+> `parent62-*`). C'est la liste que les TESTS savent charger par id, pas l'inventaire du parc.
 
 > **`buildDefaults` seede les champs galerie DANS LES DEUX MODES.** `specToConfig.buildDefaults` appelle
 > `seedGalleryDefaults(defaults, jsonConfig, entity)` : les champs `widget:"gallery"` (et `file`) sont `renderOnly`

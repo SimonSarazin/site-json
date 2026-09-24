@@ -43,6 +43,15 @@ describe("parseLegacyHash — formes réelles des templates legacy", () => {
     });
   });
 
+  it("pied de page de TOUS les e-mails : #settings.redirect → réglages du compte connecté", () => {
+    // footer.php:87 — « pour ne plus recevoir ces e-mails, cliquez ici ». Mesuré en rejeu réel :
+    // présent dans l'inscription, l'invitation et le mot de passe oublié.
+    expect(parseLegacyHash("#settings.redirect")).toEqual({ kind: "settings" });
+    expect(parseLegacyHash("settings.redirect")).toEqual({ kind: "settings" });
+    expect(parseLegacyHash("#settings.redirect.notifications")).toEqual({ kind: "settings" });
+    expect(parseLegacyHash("#settingsX")).toBeNull();
+  });
+
   it("#@slug → profil par slug, sans appel réseau", () => {
     expect(parseLegacyHash("#@mon-tiers-lieu")).toEqual({ kind: "slug", slug: "mon-tiers-lieu" });
     expect(parseLegacyHash("#@monTiersLieu_2")).toEqual({ kind: "slug", slug: "monTiersLieu_2" });

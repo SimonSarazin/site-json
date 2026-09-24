@@ -5,7 +5,7 @@ import { useT } from "@/hooks/useT";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { renderMarkdown } from "@/helpers/renderMarkdown";
+import { ArticleBody } from "./ArticleBody";
 import { ArticleGallery } from "./ArticleGallery";
 import { ArticleDocuments } from "./ArticleDocuments";
 import { estimateReadingTime } from "../lib/readingTime";
@@ -35,7 +35,6 @@ export function ArticleReader({ article, backTo = "/blog", hideBack = false, tit
   const minutes = estimateReadingTime(article.description);
   const chapo = typeof article.shortDescription === "string" ? article.shortDescription.trim() : "";
   const tags = Array.isArray(article.tags) ? article.tags : [];
-  const bodyHtml = typeof article.description === "string" ? renderMarkdown(article.description, { markdownEnabled: true }) : "";
 
   return (
     <article className="mx-auto w-full max-w-3xl px-4 py-8">
@@ -57,13 +56,7 @@ export function ArticleReader({ article, backTo = "/blog", hideBack = false, tit
           <OptimizedImage src={image} alt={article.name || ""} width={900} priority className="h-full w-full object-cover" />
         </AspectRatio>
       )}
-      {bodyHtml && (
-        <div
-          className="prose prose-lg max-w-none dark:prose-invert prose-img:rounded-lg prose-a:text-primary"
-          // renderMarkdown sanitize déjà (DOMPurify) → sûr
-          dangerouslySetInnerHTML={{ __html: bodyHtml }}
-        />
-      )}
+      <ArticleBody text={article.description} />
       <ArticleGallery images={(article as { images?: unknown }).images} className="mt-10" />
       <ArticleDocuments files={(article as { files?: unknown }).files} className="mt-10" />
       {tags.length > 0 && (

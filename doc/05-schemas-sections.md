@@ -1090,7 +1090,12 @@ Section d'affichage des membres d'une organisation ou d'un projet.
 
 ```ts
 const MemberCardConfSchema = z.object({
-  type: z.enum(["default", "profile"]).default("default"),
+  type: z.enum(["default", "profile", "team"]).default("default"),
+  layout: z.enum(["stack", "row"]).optional(),                       // carte « équipe »
+  rattachement: z.object({                                            // OBLIGATOIRE si type "team"
+    cheminGabarit: z.string(),                                        // ex. "/territoire/{slug}"
+    prefixeCouleur: z.string(),                                       // ex. "--territoire"
+  }).optional(),
   showDescription: z.boolean().optional().default(true),
   showAddress: z.boolean().optional().default(true),
   detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
@@ -1125,7 +1130,27 @@ const MemberSectionSchema = z.object({
 | `showMap`        | `boolean` | Afficher la carte (defaut: `false`)        |
 | `enableMap`      | `boolean` | Charger la carte (defaut: `false`)         |
 | `limit`          | `number?` | Limite du nombre de membres                |
+| `roles`          | `string[]?` | Restreint aux membres portant l'un de ces rôles de lien (`links.<famille>[].roles`, texte libre) |
+| `filters` | `object?` | Filtre **serveur** complémentaire sur les documents des membres, fusionné côté SDK sous le filtre d'appartenance (ex. `{ "territoires": "Arrageois" }`). Égalité Mongo : la valeur doit être EXACTEMENT celle stockée sur les profils (SDK ≥ 1.0.194) ; un tableau contenant la valeur est apparié aussi, et la carte lit alors le premier libellé |
+| `fields` | `string[]?` | Champs AJOUTÉS à la projection par défaut de la liste — ceux que la carte « équipe » lit et que la liste ne ramène pas seule : `territoires`, `telephone`, `phone`, `mobile`, `email` (`address` y est déjà). Sans effet pour un visiteur connecté admin de l'entité : ce chemin renvoie les documents complets, le SDK y retire `fields` |
+| `hideWhenEmpty`  | `boolean?` | Efface la section entière quand la liste finit vide, au lieu d'afficher « Aucun membre ». Avec `footerText`, seule la LISTE s'efface — le pied garderait sinon un contenu invisible |
+| `footerText`     | `LocalizedString?` | Canal de contact de l'ÉQUIPE, sauts de ligne respectés. Posé sous la liste, **et seulement si aucune carte « équipe » n'est rendue** — sinon c'est `cardText` qui parle |
+| `cardText`       | `LocalizedString?` | Texte posé DANS chaque carte `card.type: "team"`, sous les contacts de la personne, et dédoublonné d'eux. La carte porte déjà le courriel et le téléphone DU MEMBRE : n'y mettre que ce que sa fiche ignore (le lieu de permanence, typiquement) |
+| `className`      | `string?` | Classes utilitaires sur l'enveloppe de la section — espacement d'une page, surtout |
+| `showTabs`       | `boolean?` | Barre d'onglets Membres/Admins (défaut: `true`) |
+| `showTitle`      | `boolean?` | Titre interne de la liste (défaut: `true`)  |
+| `showInvite`     | `boolean?` | Bouton « Inviter » (défaut: `true`)         |
 | `card`           | `object?` | Configuration de la carte membre           |
+
+`card.type` accepte une troisième valeur, `"team"` : carte VITRINE (photo entière, territoire, rôles,
+contacts, lien vers la page du territoire). `card.layout` en règle la disposition — `"stack"`
+(défaut) : portrait 4/3 pleine largeur, texte dessous ; `"row"` : vignette RONDE à gauche de
+l'identité, pour une colonne étroite où le grand portrait déséquilibrerait la rangée. `card.rattachement`
+est **obligatoire** avec `"team"` (gabarit du lien + préfixe des variables de couleur) : le module ne
+code aucune convention de repli. La carte lit tout sur la LISTE — d'où `fields`, qui projette les champs
+que la liste ne ramène pas seule ; aucune requête par carte. `roles` + `filters` + `fields` +
+`card.type: "team"` est la combinaison qui compose une page équipe ou la coordination d'un territoire,
+en une requête serveur exacte quel que soit l'effectif.
 
 ---
 
@@ -1348,6 +1373,7 @@ export const TestimonialConfSchema = z.object({
   dateField: z.string().optional(),
   subtitleField: z.string().optional(),
   audioField: z.string().optional(),
+  imageField: z.string().optional(),
   badge: z.object({ field: z.string(), colors: z.record(z.string(), z.string()).optional() }).optional(),
   accent: z.object({ field: z.string(), colors: z.record(z.string(), z.string()).optional() }).optional(),
   facets: z.array(PreviewFacetSchema).optional(),
@@ -1360,6 +1386,7 @@ export const TestimonialConfSchema = z.object({
 * **`dateField`** : champ de la date. Repli code `created`.
 * **`subtitleField`** : champ secondaire affiché en pied de carte teaser (ex. thème) — optionnel.
 * **`audioField`** : champ du média audio (`[{type:"audio", url}]`). Repli code `medias`.
+* **`imageField`** : champ de l'illustration, rendue en bannière de la carte (`aspect-[16/9]`) et de la preview (`aspect-[21/9]`, plafonnée à `30vh`). Cascade de replis code : `profilMediumImageUrl`, puis `profilImageUrl`, puis la 1re image de `medias` — une image déposée en galerie n'alimente pas `profil*ImageUrl`. Sans image, card et preview gardent leur composition d'origine (aucune réserve d'espace vide). La pastille de catégorie reste posée SOUS l'image, jamais en surimpression : son contraste ne peut pas dépendre de la photo déposée.
 * **`badge`** : `{ field, colors? }` — catégorie pilotant la teinte de la bulle + la pastille ; `colors` = map `valeur → couleur` (`var()` ou hex), matchée via `normalizeFilterValue`, sinon palette déterministe.
 * **`accent`** : `{ field, colors? }` — accent (ex. territoire) pilotant le point coloré ; même mécanisme `colors`.
 * **`facets`** : repères (taxonomies) data-driven, réutilise `PreviewFacetSchema` (aucun champ en dur).
@@ -1780,13 +1807,22 @@ export const ActionTilesSchema = z.object({
     subhead: LocalizedString.optional(),
     variant: z.enum(["primary", "accent"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    columns: ResponsiveColumns.optional(),
+    size: z.enum(["md", "lg"]).optional(),
+    width: z.enum(["default", "wide"]).optional(),
     actions: z.array(
       z.object({
         icon: z.string(),
         title: LocalizedString,
         subtitle: LocalizedString.optional(),
         href: z.string(),
-        color: z.enum(["primary", "turquoise", "amber", "cyan-bright", "teal", "accent", "eco", "chart-2"]).optional(),
+        color: z.enum([
+          "primary", "accent", "destructive",
+          "chart-1", "chart-2", "chart-3", "chart-4", "chart-5",
+          "turquoise", "cyan-bright", "teal", "amber", "eco", // alias historiques
+        ]).optional(),
+        background: z.string().optional(),
+        textColor: z.string().optional(),
       })
     ),
   }),
@@ -1799,7 +1835,31 @@ export const ActionTilesSchema = z.object({
 | `subhead`  | `LocalizedString?` | Sous-titre                       |
 | `variant`  | `"primary" \| "accent"` | Tonalité des décorations       |
 | `bg`       | `enum`    | Couleur de fond                          |
-| `actions`  | `array`   | Boutons d'action (icon, title, subtitle, href, color) |
+| `columns`  | `ResponsiveColumns?` | Colonnes par breakpoint (défaut sm:2 lg:4) |
+| `size` | `"md" \| "lg"` | Taille des tuiles : `md` (défaut : titre 14 px, sous-titre 12 px, icône 16 px) ou `lg` (18 px, 16 px, icône 32 px, marges verticales élargies, contenu calé en haut pour aligner les icônes d'une rangée) |
+| `headlineStyle` | `"plain" \| "badge" \| "pill"` | Rendu du titre : `plain` (défaut, centré), `badge` (pastille inclinée d'`articleTeaser`/`map-bubbles`) ou `pill` (la même en arrondi droit). Les deux pastilles se calent à gauche, pour une page dont toutes les bandes portent le même repère |
+| `tileLayout` | `"centered" \| "inline"` | Disposition d'une tuile : `centered` (défaut, icône puis textes centrés) ou `inline` — icône en pastille, titre à côté, sous-titre dessous, aligné à gauche. `inline` se lit mieux dès que les sous-titres font une phrase |
+
+`articleTeaser`, `map-bubbles` et `featured-carousel` partagent le réglage `headlineStyle` (`badge` par
+défaut, étiquette inclinée ; `pill` en arrondi droit). `map-bubbles` et `featured-carousel` acceptent en
+plus `badgeColor`/`badgeTextColor` : la teinte de l'ÉTIQUETTE, indépendante de `accentColor` qui, elle,
+teinte les boutons. Sur `featured-carousel`, `background` impose un texte BLANC (rendu historique, pensé
+pour un fond sombre) : fournir `textColor` dès que la carte est claire. Ce même bloc accepte
+`backgroundOverlay` (même grammaire que `map-bubbles`) pour poser la diapositive sur un PANNEAU dégradé,
+avec `overlayTextColor` — l'encre du texte posé sur le panneau, qui doit suivre le DÉGRADÉ (pas l'encre
+de la carte) : si le dégradé a une variante sombre, lui donner un jeton qui change avec lui. `design`
+(`sticker` par défaut, `card`) règle à part le PLACEMENT sur `map-bubbles` et `featured-carousel` : titre
+débordant du haut du bloc, et pour le carrousel, points de position au centre et bouton compact à droite,
+en pied de carte (dans le panneau quand `backgroundOverlay` est posé). `articleTeaser` accepte
+aussi `maxWidth` (défaut `4xl`), même échelle que `gridLayout`.
+| `accentColor` | `string?` | Couleur de la pastille de titre (`headlineStyle: "badge"`). Son encre est blanche : à choisir assez foncée, contraste AA à mesurer |
+| `width` | `"default" \| "wide"` | Largeur de la grille : `default` (1024 px max) ou `wide` (1280 px max) |
+
+Les tuiles d'une même rangée ont toutes la hauteur de la plus haute.
+| `actions`  | `array`   | Boutons d'action (icon, title, subtitle, href, color, background, textColor) |
+| `actions[].color` | `enum?` | Teinte de la tuile à 20 % — jeton du thème (`primary` par défaut) |
+| `actions[].background` | `string?` | Fond PLEIN (couleur CSS, `var(--jeton)` recommandé) : remplace la teinte de `color`. Fixe en clair comme en sombre |
+| `actions[].textColor` | `string?` | Texte et icône d'une tuile à fond plein — contraste à vérifier (AA ≥ 4,5:1) |
 
 ---
 
@@ -1818,6 +1878,7 @@ export const CtaCardGridSchema = z.object({
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     image: z.string().optional(),
     imageAlt: LocalizedString.optional(),
+    columns: ResponsiveColumns.optional(),
     actions: z.array(
       z.object({
         icon: z.string(),
@@ -1825,6 +1886,7 @@ export const CtaCardGridSchema = z.object({
         description: LocalizedString,
         ctaLabel: LocalizedString,
         href: z.string(),
+        color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light", "accent", "chart-2", "chart-3"]).optional(),
       })
     ).optional(),
     stats: z
@@ -1846,6 +1908,8 @@ export const CtaCardGridSchema = z.object({
 | `subhead`  | `LocalizedString?` | Sous-titre                          |
 | `variant`  | `"primary" \| "accent"` | Tonalité des décorations          |
 | `bg`       | `enum`    | Couleur de fond                            |
+| `columns`  | `ResponsiveColumns?` | Colonnes par breakpoint (mobile = 1). Sans lui : `{md:2, lg:4}`, la grille historique — à baisser quand les descriptions sont de vrais paragraphes, illisibles sur quatre colonnes étroites |
+| `actions[].color` | `enum?` | Teinte de la PASTILLE qui porte l'icône (helper partagé `iconHaloClass`). Sans elle : `bg-primary/10`, la pastille historique. ⚠️ Sur une palette claire, teinter le GLYPHE échoue — `accent`/`chart-2`/`chart-3` tombent à 1,6–2,3 : 1 sur un fond clair ; la pastille teintée avec un glyphe resté sur `primary` garde la couleur ET le contraste |
 | `image`    | `string?` | Image de la section                        |
 | `imageAlt` | `LocalizedString?` | Alt de l'image                     |
 | `actions`  | `array?`  | Actions (icon, title, description, ctaLabel, href) |
@@ -1923,6 +1987,7 @@ export const ActionButtonSchema = z.object({
 // src/modules/search/schema.ts
 const SearchHeaderProps = z.object({
   headline: LocalizedString.optional(),
+  headlineFromFilter: z.string().optional(),
   subhead: LocalizedString.optional(),
   headlineClassName: z.string().optional(),
   subheadClassName: z.string().optional(),
@@ -1951,6 +2016,7 @@ export const SearchHeaderSectionSchema = z.object({
 | Propriete          | Type              | Description                            |
 | ------------------ | ----------------- | -------------------------------------- |
 | `headline`         | `LocalizedString?` | Titre                                 |
+| `headlineFromFilter` | `string?`       | `id` d'un `dropdownFilters` dont la VALEUR SÉLECTIONNÉE remplace le `headline` (qui reste le repli quand rien n'est sélectionné). Pour une page dont l'identité EST ce filtre — ex. `/theme?theme=…` atteinte depuis le menu dynamique du header. Le filtre visé peut être `hidden` ; plusieurs valeurs sont jointes par « · ». Logique pure : `lib/headlineFromFilter.ts`. ⚠️ Le `h1` devient le **libellé de l'option**, pas le `headline` : ce libellé doit donc être renseigné dans **toutes les locales déclarées** (`meta.languages`), sans quoi la page affiche un titre dans une langue et un `<title>` dans l'autre. ⚠️ Le titre n'est calculé qu'**après hydratation** (la sélection vient de l'URL par effet) : le HTML rendu côté serveur porte le `headline` de repli |
 | `subhead`          | `LocalizedString?` | Sous-titre                            |
 | `headlineClassName` | `string?`        | Override de la classe couleur du `h1` (def. `text-foreground`) — utile sur fond fixe sombre, ou `--foreground` devient illisible en light |
 | `subheadClassName` | `string?`         | Override de la classe couleur du sous-titre (def. `text-foreground`) ; `""` pour ne rien forcer |
@@ -2176,7 +2242,10 @@ const ContentSectionSchema = z.object({
     description: LocalizedString,
     tags: z.array(LocalizedString).optional(),
     image: z.string().optional(),
+    imageHref: z.string().optional(),
+    imageFit: z.enum(["cover", "contain"]).optional(),
     imagePosition: z.enum(["left", "right"]).default("right"),
+    width: z.enum(["prose", "wide"]).optional(),
     links: z.array(z.object({
       label: LocalizedString,
       href: z.string(),
@@ -2201,10 +2270,14 @@ const ContentSectionSchema = z.object({
 | --------- | ---- | ----------- |
 | `category` | `LocalizedString?` | Categorie affichee au-dessus du titre |
 | `title` | `LocalizedString` | Titre de la section |
-| `description` | `LocalizedString` | Description principale |
+| `description` | `LocalizedString` | Description principale — rendue en **markdown** (gras, tirets, retours à la ligne), sanitizé avant injection |
 | `tags` | `LocalizedString[]?` | Liste de tags |
 | `image` | `string?` | URL de l'image |
+| `imageHref` | `string?` | Rend l'image CLIQUABLE — chemin interne ou URL absolue, l'externe s'ouvrant dans un nouvel onglet (`NavLink` tranche). Ignoré sans `image` |
+| `imageFit` | `"cover" \| "contain"?` | Cadrage. `cover` (défaut) remplit la boîte quitte à rogner — bon pour une photo ; `contain` montre l'image ENTIÈRE et plafonne sa hauteur, pour une couverture de document ou un logo qu'un rognage amputerait |
 | `imagePosition` | `"left" \| "right"` | Position de l'image |
+| `width` | `"prose" \| "wide"?` | Largeur du bloc. `prose` (défaut, historique) : colonne de lecture calée à GAUCHE, la forme illustrée occupant toute la largeur. `wide` : les deux formes prennent la même largeur (celle d'un fil d'articles) et sont CENTRÉES — pour une page qui alterne blocs illustrés et blocs de texte, où deux largeurs se lisent comme un décrochage. S'applique aussi à la catégorie, rendue hors du bloc |
+| `align` | `"left" \| "center"?` | Alignement du bloc ET de son texte. `left` (défaut, historique) : colonne calée à gauche. `center` : bloc centré (`mx-auto`) et texte centré, rangées en `flex` comprises (chiffres, tags, liens, `infoText`) — sans quoi elles resteraient à gauche dans un bloc centré. Pour une section SANS visuel posée sur une page par ailleurs centrée : `ContentSection` y borne sa colonne à `max-w-3xl` **sans** `mx-auto`, elle se colle donc à gauche |
 | `links` | `array?` | Liens vers d'autres pages (label, href) |
 | `iconCard` | `object?` | Carte avec icone SVG (`{ svg }`) |
 | `infoText` | `LocalizedString?` | Ligne d'info avec icone (rendue en HTML brut) |
@@ -2306,14 +2379,21 @@ export const FiltersSectionSchema = z.object({
 
 ## `gridLayout`
 
-Layout en grille avec deux colonnes configurable.
+Layout en grille. **Deux modes**, exclusifs : le couple `leftSection`/`rightSection`, asymétrique
+(un contenu principal et un aparté, largeurs réglées en quarts) ; ou la **rangée** `sections`, N
+blocs de MÊME largeur sur une ligne. `sections` prime quand les deux sont donnés.
 
 ```ts
 const GridLayoutSectionPropsSchema = z.object({
   leftSection: z.lazy(() => SectionSchemaLazy).optional(),
   rightSection: z.lazy(() => SectionSchemaLazy).optional(),
+  sections: z.array(z.lazy(() => SectionSchemaLazy)).optional(),
+  columns: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
   leftColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
+  align: z.enum(["start", "stretch"]).optional(),
+  from: z.enum(["md", "lg"]).optional(),
+  bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   gap: z.number().optional(),
   className: z.string().optional(),
   leftWrapperClass: z.string().optional(),
@@ -2331,12 +2411,24 @@ const GridLayoutSectionSchema = z.object({
 | ------------------- | --------- | ---------------------------------------- |
 | `leftSection`       | `Section?` | Section a afficher a gauche (lazy)       |
 | `rightSection`      | `Section?` | Section a afficher a droite (lazy)       |
+| `sections`          | `Section[]?` | Mode RANGÉE : N sections de même largeur sur une ligne. Prime sur `leftSection`/`rightSection`. Sous `sm:` elles s'empilent, puis passent à 2 colonnes, puis à `columns` à partir de `from` |
+| `columns`           | `2 \| 3 \| 4?` | Colonnes du mode rangée (défaut : le nombre de `sections`, plafonné à 4) |
 | `leftColumns`       | `1-4`    | Nombre de colonnes pour la gauche        |
 | `rightColumns`      | `1-4`    | Nombre de colonnes pour la droite        |
+| `align`             | `"start" \| "stretch"?` | Alignement vertical. `start` (défaut, historique) : chaque colonne s'arrête à son contenu — la plus courte laisse du vide sous elle. `stretch` : les deux prennent la hauteur de la plus haute et leur section fille est étirée. À choisir quand la colonne courte porte un fond coloré, sinon ce vide se lit comme un trou. Le stretch ne joue qu'à partir de `lg:` (en dessous les colonnes s'empilent) |
+| `from`              | `"md" \| "lg"?` | Largeur à partir de laquelle les colonnes se placent CÔTE À CÔTE ; en dessous elles s'empilent. `lg` (défaut, historique) = 1024px, `md` = 768px — à descendre quand le bloc doit rester sur une ligne à fort zoom navigateur, qui rétrécit le viewport CSS |
 | `gap`               | `number?` | Espacement entre les colonnes            |
+| `bg`                | `enum?`   | Fond de la bande (jetons du thème + `page-accent`, l'aplat de `page.accent`). Défaut : fond hérité — une grille pose une bande colorée sans wrapper supplémentaire |
+| `maxWidth`          | `"3xl"…"7xl" \| "full"?` | Largeur max du contenu (défaut : toute celle du `container`). À aligner sur les bandes voisines — deux largeurs différentes se lisent comme un décrochage |
 | `className`         | `string?` | Classes CSS additionnelles               |
 | `leftWrapperClass`  | `string?` | Classes CSS du wrapper gauche            |
 | `rightWrapperClass` | `string?` | Classes CSS du wrapper droit             |
+
+> ⚠️ **Un container est traversé par le prefetch SSR et les gardes** via
+> `SECTION_EXTRACTORS` (`src/lib/sectionContainers.ts`, dupliqué dans
+> `src/modules/search/prefetch/prefetchFilters.ts`). Une section imbriquée dans `sections` y est
+> déjà déclarée ; tout NOUVEAU container doit l'être aussi, sans quoi ses filles sont ratées
+> silencieusement — elles ne seront ni préchargées ni vues par les préflights.
 
 ---
 
