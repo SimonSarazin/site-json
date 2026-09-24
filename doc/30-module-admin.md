@@ -91,7 +91,7 @@ NB : l'export a un plancher **backend** `superAdmin` non contournable par config
 
 ## Les sections
 
-7 types builtin (résolus par le `switch` d'`AdminSectionRenderer`) + **2 sections génériques
+8 types builtin (résolus par le `switch` d'`AdminSectionRenderer`) + **2 sections génériques
 pré-enregistrées par le module lui-même** — `invitation` et `ownershipMigration` : elles
 s'activent par simple JSON, **sans une ligne de code costum** (`registerAdminSection` appelé en
 side-effect au chargement du module, core/eager) —
@@ -392,6 +392,74 @@ d'élément : le Node durci refuserait). Échec visible (toast `referencedUnmode
 `{ "type": "moderation" }` — file des news + commentaires signalés (`getModerationQueue`),
 votes « Laisser publié / C'est un abus » (consolidate + saveModerate byte-compatibles, seuil
 legacy 3 votes majoritaires), modale de détail des signalements.
+
+### `answerCopy` — reprise de réponses d'un autre form
+
+```jsonc
+{ "type": "answerCopy",
+  "title": { "fr": "Créneaux du Tampon déposés sur Sport Santé Bien-être" },
+  "sourceForm": "6928096adf5caf0d230e7f26",        // form SOURCE (autre site) — ses réponses sont les candidates
+  "targetForm": "6a85af345d898a57cb49f029",        // form CIBLE (ce site) — DUPLICATA du source
+  "source": {                                       // requête des candidates, même forme que resource.source
+    "defaultFilters": { "answers.<section>.<sectionAdresse>.address.postalCode": { "$in": ["97430", "97418"] } },
+    "defaultSortBy": { "created": -1 }, "indexStepList": 30,
+    "searchBy": ["answers.<section>.<sectionIntitulé>"] },
+  "columns": ["name", "structure.name", "address.postalCode", "created"],   // lignes APLATIES (hook costum)
+  "duplicateKeys": ["name", "structure.name", "address.postalCode"] }      // empreinte d'un « doublon probable » (défaut)
+```
+
+Un tableau des réponses du form **source**, un bouton **« Copier »** par ligne : la copie est faite
+**côté serveur** par l'action `copy` de `survey/answer/newanswer/form/<cible>` (`Coform::copyAnswer`,
+legacy) — renommage du préfixe de section (le form cible est un duplicata : **mêmes ids d'inputs**),
+`context`/`cterSlug`/`source` du site cible, provenance conservée (`user`, `links`, `created`),
+trace **`copiedFrom`** + `copiedAt`. Idempotente : une source déjà copiée renvoie la copie existante
+(`alreadyCopied`), jamais un doublon. Les inputs que le form cible ne déclare pas sont copiés quand
+même et remontés (`unknownInputs` → toast d'avertissement). Les fichiers uploadés ne sont **pas**
+dupliqués ; un brouillon source n'est pas copiable. **Autorisation en deux temps** (serveur) :
+*qui* — super admin ou admin de l'élément porteur du form cible, lu dans **ses liens**
+(`Coform::canCopyIntoForm` ; jamais le raccourci « admin du costum ambiant », qu'un admin d'un
+autre costum obtiendrait en postant son `costumSlug`) ; *quoi* — le form cible **déclare ses
+sources admises** dans `params.copySources` (ids de forms ; liste vide = aucune copie). Sans cette
+liste blanche, une copie lirait et dupliquerait n'importe quelle réponse de la base par son id.
+
+Le front ne passe par **aucun nouvel endpoint** : `api.endpointApi.generateAnswerFromForm({ action: "copy",
+copyFrom, costumSlug })` — le contrat `GENERATE_ANSWER_FROM_FORM` tolère les clés supplémentaires
+(fiche d'extension dans [`ENDPOINT.md`](../../ENDPOINT.md)). `hooks/useCopyAnswer.ts`.
+
+**Trois états par ligne** (`lib/answerCopy.ts`, pur, testé) — calculés à partir de l'index du form
+cible chargé **en entier** (`useSearchAllResults`, plafond 2 000 ; « Copier » reste désactivé tant
+qu'il n'est pas complet, sinon une copie faite passerait pour « À copier ») :
+
+| État | Règle | Action |
+|---|---|---|
+| **Copié** | une réponse cible porte `copiedFrom` = id de la ligne | ligne **masquée** (le nombre de masquées est affiché) |
+| **Doublon probable** | une réponse cible (tracée ou non) partage l'empreinte `duplicateKeys` (valeurs trimées, casse et espaces repliés) — copie faite par un autre canal, saisie directe, ou **second dépôt homonyme** côté source | « Copier » → confirmation |
+| **À copier** | ni l'un ni l'autre | « Copier » |
+
+Les lignes chargées sont **ordonnées par état** (« À copier » avant « Doublon probable » —
+`rankByCopyStatus`, tri stable : l'ordre serveur reste celui de chaque groupe) et les « Copié »
+sont **masquées côté client** (la trace vit sur le form cible, le serveur ne peut pas les exclure) :
+la sentinelle du scroll infini est une ligne dédiée, rendue dès qu'une page suit — une page
+entièrement copiée ne bloque pas le chargement de la suivante. Les candidates ne sont pas
+chargées tant que l'index cible n'est pas prêt (sans lui, on ne sait pas quoi masquer). La trace
+est testée AVANT l'empreinte : la propre source d'une copie reste « Copié ». L'index est
+relu à chaque montage de l'onglet (`cache: { staleTime: 0 }`) — une copie supprimée par un autre
+canal cesse de compter — et « Copier » reste désactivé pendant tout fetch (première page, refetch
+après une copie) ou en erreur. Après copie : la ligne passe « Copié » localement, puis invalidation
+de toutes les tables `admin-*` (l'index compris) et des surfaces publiques (`publicSurfaceKeys`) —
+la copie hérite du statut de la source et peut être « Validé » d'emblée. Limite connue : deux POST
+strictement concurrents pour la même source (double clic au-delà du `isPending`, retry réseau)
+peuvent créer deux copies — l'idempotence est un `findOne` puis `insert`, sans index unique.
+
+Prérequis backend, côté costum du site cible : le hook `searchAnswers` doit **aplatir la section de la
+réponse** (résolution par suffixe d'input, **bornée aux forms de `params.copySources`** — sans borne un
+admin lirait n'importe quel form de la base) et projeter `copiedFrom` — sinon les lignes du form source
+n'ont ni colonnes ni état (`AssociationEkilibre::searchAnswers` le fait ; `SportSanteBienetre` non).
+Un filtre `defaultFilters` peut être un `$or` (map chemin → opérateur, cf. `SearchNew::searchFilters`) :
+Ekilib.re l'utilise pour attraper le CP dans l'adresse principale **ou** dans les lignes « lieu de pratique ».
+`notSourceKey: true` est posé d'office sur la requête des candidates (elles appartiennent à un autre
+site) ; la garde « non-admin → Validé » du hook exclut les réponses étrangères du public.
+(`src/modules/admin/sections/AdminAnswerCopySection.tsx`, `lib/answerCopy.ts`, `hooks/useCopyAnswer.ts`)
 
 ### `invitation` (générique, pré-enregistrée par le module)
 
