@@ -666,6 +666,8 @@ export const ProfileHeaderSectionSchema = z.object({
   addConfig: AddConfigSchema,
   addDropdownLabel: LocalizedString.optional(),
   showEmailButton: z.boolean().optional().default(true),
+  showDeleteButton: z.boolean().optional().default(false),   // cf. encart « Supprimer une fiche »
+  deleteRedirectPath: z.string().optional().default("/"),
   showReservationButton: z.boolean().optional().default(false),
   // Opt-in : le bouton « Voir toutes les photos » ne s'affiche QUE si le type de
   // profil courant possède un onglet `gallery` dans sa config (`profiles[type].tabs`).
@@ -674,6 +676,27 @@ export const ProfileHeaderSectionSchema = z.object({
   showAllPhotosButton: z.boolean().optional().default(true),
 });
 ```
+
+### Supprimer une fiche depuis son profil
+
+`showDeleteButton: true` ajoute « Supprimer cette fiche » **en dernier** dans le menu d'actions de
+l'en-tête, derrière un séparateur, avec un dialogue de confirmation. Deux conditions, jamais une
+seule : l'option posée par le site ET `permissions.isAdmin` sur CETTE fiche. `deleteRedirectPath`
+(défaut `/`) dit où atterrir, la page de la fiche n'existant plus après coup.
+
+⚠️ **Ce n'est pas le « retrait » du référencement.** L'action appelle `element/delete` via
+`Organization.delete()` : la fiche quitte Communecter en entier, pour tous les sites, pas seulement
+celui qui l'affichait. Pour détacher une fiche d'un costum en la laissant vivre, c'est l'onglet
+« Référencement » de l'admin qu'il faut (`reference.costum`).
+
+Trois gardes se superposent et aucune ne remplace les autres : l'option + `isAdmin` côté client, la
+garde SDK `isAuthorOrAdmin` (auteur ou administrateur, hiérarchie comprise), puis `canDeleteElement`
+côté backend. La mutation (`actions/mutations/lifecycle.ts`) invalide la fiche ET les listes de
+recherche — sans quoi le lieu supprimé resterait affiché dans l'annuaire.
+
+Sentinelle de parc : `tests/preflight/profile-delete-button.test.ts` liste les sites qui l'ouvrent,
+vérifie que la destination est une page réelle et que l'option ne vit que sur un profil
+d'organisation (les autres types n'ont pas d'« admin de la fiche »).
 
 ## ProfileRenderer
 

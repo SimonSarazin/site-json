@@ -63,6 +63,15 @@ export const ProfileHeaderSectionSchema = z.object({
   addConfig: AddConfigSchema,
   addDropdownLabel: LocalizedString.optional(),
   showEmailButton: z.boolean().optional().default(true),
+  /**
+   * Propose « Supprimer » dans le menu d'actions, aux ADMINISTRATEURS de la fiche seulement.
+   * Défaut `false` : la suppression est DÉFINITIVE et sort l'élément de tout Communecter (ce n'est
+   * pas le « retrait » du référencement, qui se contente de le détacher du costum). Le SDK
+   * (`isAuthorOrAdmin`) puis le backend (`canDeleteElement`) restent juges en dernier ressort.
+   */
+  showDeleteButton: z.boolean().optional().default(false),
+  /** Destination après suppression — la page de la fiche n'existe plus. Défaut `/`. */
+  deleteRedirectPath: z.string().optional().default("/"),
   showReservationButton: z.boolean().optional().default(false),
   // Le bouton « Voir toutes les photos » s'affiche automatiquement quand le type de
   // profil a un onglet `gallery` (cf. ProfileHeaderComplete → lien vers cet onglet).

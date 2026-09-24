@@ -84,6 +84,7 @@
     "member": "Member",
     "admin": "Administrator",
     "leaveOrganization": "Leave organization",
+    "deleteOrganization": "Delete this page",
     "unfollowDialog": {
       "title": "Unfollow this organization",
       "description": "Are you sure you want to unfollow this organization? You will no longer receive its updates.",
@@ -214,7 +215,13 @@
     "openSince": "Open since",
     "register": "Register",
     "comingSoon": "Coming soon",
-    "sectionLabel": "{{name}} Section"
+    "sectionLabel": "{{name}} Section",
+    "deleteDialog": {
+      "title": "Permanently delete this page?",
+      "description": "The page will be deleted from Communecter, not just from this site: it will disappear for everyone, along with its information. This cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete permanently"
+    }
   },
   "ProfileMembers": {
     "title": "Members",

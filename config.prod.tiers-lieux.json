@@ -4672,7 +4672,9 @@
             "project": true,
             "event": true,
             "poi": false
-          }
+          },
+          "showDeleteButton": true,
+          "deleteRedirectPath": "/lieux"
         },
         {
           "type": "profile-template-dynamic"

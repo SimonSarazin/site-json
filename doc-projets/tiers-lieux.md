@@ -203,6 +203,36 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 ## 9. Impacts des modifications
 
+### 24/09ter — un administrateur peut supprimer sa fiche
+
+**Code + config.** L'en-tête de profil propose « Supprimer cette fiche » **en dernier** dans le menu
+d'actions, derrière un séparateur, avec un dialogue de confirmation ; retour sur `/lieux` ensuite, la
+page de la fiche n'existant plus. Option opt-in `profile-header.showDeleteButton` (+
+`deleteRedirectPath`), posée sur le seul profil `organizations` de ce site.
+
+⚠️ **L'action supprime la fiche de Communecter en entier**, pas seulement de tiers-lieux.org : c'est
+`element/delete` via `Organization.delete()`, à ne pas confondre avec le « retrait » de l'onglet
+Référencement, qui détache du costum en laissant la fiche vivre.
+
+Quatre gardes superposées : option de config absente par défaut · `permissions.isAdmin` sur CETTE
+fiche côté client · `isAuthorOrAdmin` côté SDK · `canDeleteElement` côté backend. La mutation
+(`actions/mutations/lifecycle.ts`) invalide la fiche ET les listes de recherche, sinon le lieu
+supprimé resterait affiché dans l'annuaire. Libellés neutres dans le moteur (« cette fiche », pas
+« ce tiers-lieu ») : le module `profil` sert les 10 sites.
+
+**Vérifié** : 11 tests — la mutation (appel SDK avec raison, invalidations, échec clair si le SDK ne
+sait pas supprimer), l'ouverture de l'action (absente par défaut même pour un admin, absente pour un
+non-admin, présente et destructive sinon, toujours en dernier) et le GESTE (un clic ouvre la
+confirmation, rien ne part avant « Supprimer définitivement »). Page de fiche servie en SSR à un
+visiteur anonyme : aucune trace du bouton. Garde de parc `tests/preflight/profile-delete-button.test.ts`
+**vérifiée en échec** sur 3 fautes injectées (un autre site qui l'ouvre, une destination inexistante,
+un profil non-organisation), configs restaurées à l'octet près (`cmp`).
+**Gates** : `typecheck` ✅ · `eslint` ✅ · `config:validate` ✅ · `audit:config` RAS · `test:unit`
+5 051/5 053 (après merge de `main` du 24/09) — 2 échecs d'environnement local sans lien.
+
+**Rollback** : retirer `showDeleteButton` de la config suffit à faire disparaître le bouton, sans
+toucher au moteur.
+
 ### 24/09bis — home : les 3 cartes d'action deviennent des liens · les mots-clés d'un lieu s'éditent
 
 **Cartes d'action (config seule).** La section `html` `tiers-lieux-actions` affichait trois cartes

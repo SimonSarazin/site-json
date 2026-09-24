@@ -84,6 +84,7 @@
     "member": "Membre",
     "admin": "Administrateur",
     "leaveOrganization": "Quitter l'organisation",
+    "deleteOrganization": "Supprimer cette fiche",
     "unfollowDialog": {
       "title": "Ne plus suivre cette organisation",
       "description": "Êtes-vous sûr de vouloir ne plus suivre cette organisation ? Vous ne recevrez plus ses actualités.",
@@ -214,7 +215,13 @@
     "openSince": "Ouvert depuis",
     "register": "Inscription",
     "comingSoon": "En construction",
-    "sectionLabel": "Section {{name}}"
+    "sectionLabel": "Section {{name}}",
+    "deleteDialog": {
+      "title": "Supprimer définitivement cette fiche ?",
+      "description": "La fiche sera supprimée de Communecter, et pas seulement de ce site : elle disparaîtra pour tout le monde, avec ses informations. Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer définitivement"
+    }
   },
   "ProfileMembers": {
     "title": "Membres",
