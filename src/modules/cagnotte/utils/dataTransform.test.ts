@@ -26,6 +26,8 @@ import {
   toSafeInt,
   toString,
 } from "./dataTransform";
+import { readFinancerPaymentState } from "./financerPayment";
+import { normalizeFundingEnvelope } from "../hooks/useFundingEnvelope";
 
 describe("asRecord", () => {
   it("retourne {} pour null/undefined/primitives", () => {
@@ -462,6 +464,46 @@ describe("buildResourceFromAnswer — statut de paiement des financeurs bruts", 
     )!;
 
     expect(resource.items[0].allFunding[0].paymentStatus).toBe("paid");
+  });
+
+  it("garde le bloc `payment` : une relecture de la ligne produite reste canonique", () => {
+    const resource = buildResourceFromAnswer(
+      answerAvec({
+        id: "u1",
+        amount: 300,
+        payment: { logs: [{ amount: 300, confirmation: "validated" }] },
+      }),
+    )!;
+
+    const state = readFinancerPaymentState(resource.items[0].allFunding[0]);
+    expect(state).toMatchObject({ isLegacy: false, status: "payed", paidAmount: 300 });
+  });
+});
+
+describe("normalizeFundingEnvelope — bloc `payment` des financeurs", () => {
+  it("garde le bloc `payment` sur la transaction produite", () => {
+    const envelope = {
+      projects: [
+        {
+          id: "answer-5",
+          project: { id: "project-5" },
+          depenses: [
+            {
+              milestone: "m1",
+              price: 300,
+              financer: [
+                { id: "u1", amount: 300, payment: { logs: [{ amount: 300, confirmation: "validated" }] } },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const { projects } = normalizeFundingEnvelope(envelope);
+    const fund = projects[0].milestones[0].transactions[0];
+
+    expect(readFinancerPaymentState(fund)).toMatchObject({ isLegacy: false, status: "payed", paidAmount: 300 });
   });
 });
 

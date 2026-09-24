@@ -45,7 +45,7 @@ import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
 import { useAacDetailSections, useAacGallerySubKey } from "../hooks/useAacDetailSections";
 import type { AacDetailSection } from "../lib/resolveAacDetailSections";
 import { resolveCommunSeo } from "../lib/communSeo";
-import { COMMUN_ANSWER_QUERY_KEY, COMMUN_FORM_QUERY_KEY } from "../prefetch/prefetchCommun";
+import { COMMUN_ANSWER_QUERY_KEY, COMMUN_FORM_QUERY_KEY, fetchCommunAnswer } from "../prefetch/prefetchCommun";
 import { AacSeo, type AacSeoProps } from "../AacSeo";
 // Enregistre le bundle i18n "modules/aac". Les SECTIONS le font déjà ; sans cet
 // import, une arrivée DIRECTE sur la route (lien partagé, F5) rendait la page
@@ -169,8 +169,7 @@ export default function AacCommunDetailPage() {
         staleTime: 2 * 60 * 1000,
         queryFn: async (): Promise<CoFormAnswer> => {
             if (!api || !answerId) throw new Error("Missing answer id");
-            const answer = await api.answer({ id: answerId });
-            return answer.serverData as unknown as CoFormAnswer;
+            return fetchCommunAnswer(api, answerId);
         },
     });
 
@@ -547,17 +546,8 @@ export default function AacCommunDetailPage() {
                         // versements et ce que la cascade emporterait.
                         resource={targetResource}
                         isResourceLoading={isFundingLoading}
-                        onDeleted={() => {
-                            // RETIRER, et non invalider : une invalidation relancerait un
-                            // fetch sur un document supprimé, et l'`ErrorCard`
-                            // « introuvable » clignoterait avant la navigation.
-                            queryClient.removeQueries({
-                                queryKey: COMMUN_ANSWER_QUERY_KEY(answerId ?? null, me?.id ?? null),
-                            });
-                            // Retour à l'annuaire, et non à l'accueil comme le legacy :
-                            // c'est de là qu'on vient, et là que la disparition se constate.
-                            void navigate("/aac");
-                        }}
+                        // Retour à l'annuaire ; `useDeleteCommun` a déjà retiré le document du cache.
+                        onDeleted={() => void navigate("/aac")}
                     />
                 </div>
 

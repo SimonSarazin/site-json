@@ -296,7 +296,8 @@ export function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?
             // Le ciblage d'un versement passe par `finkey`, pas par la position.
             finkey: toString(financer.finkey) || undefined,
             paidAmount: paymentState.paidAmount,
-            pendingAmount: paymentState.pendingAmount
+            pendingAmount: paymentState.pendingAmount,
+            payment: financer.payment
           };
         });
       });

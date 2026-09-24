@@ -447,9 +447,10 @@ export function PlacesListView({
     sourceKey: placeSourceKeys,
     myContacts: false,
     initCurrentUser: false,
-    // FinderSearchModal préfixe automatiquement avec "Rechercher un " → on
-    // passe juste le mot-cible ("lieu" / "place").
+    // Mot-cible seul ("lieu" / "CAE"), inséré dans les messages du finder.
     elementLabel: t("coform.placeView.joinSection.elementLabel", undefined, { context: placeKind }),
+    // Titre complet, accordé selon la nature du lieu.
+    title: t("coform.placeView.joinSection.modalTitle", undefined, { context: placeKind }),
     buttonLabel: t("coform.placeView.joinSection.searchButton", undefined, { context: placeKind }),
     placeholderSearchField: t("coform.placeView.joinSection.searchButton", undefined, { context: placeKind }),
     field: "place",

@@ -254,6 +254,7 @@ function buildFallbackFundingFromRawFinancers(rawFinancer: unknown): {
       finkey: toString(f.finkey) || undefined,
       paidAmount: paymentState.paidAmount,
       pendingAmount: paymentState.pendingAmount,
+      payment: f.payment,
     };
   });
   const currentFunding = financers.reduce((sum, f) => sum + toNumber(f.amount), 0);

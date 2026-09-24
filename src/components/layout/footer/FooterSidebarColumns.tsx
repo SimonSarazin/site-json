@@ -5,7 +5,10 @@ import NavLink from "../NavLink";
 import SocialLinks from "./SocialLinks";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
-import { useFooterLinks } from "./useFooterLinks";
+import { FooterLinkColumn } from "./FooterLinkColumn";
+import { useFooterColumns, useFooterLinks } from "./useFooterLinks";
+
+const COLUMN_LINK_CLASS = "text-muted-foreground hover:text-primary transition-colors text-sm";
 
 /**
  * Parts de la grille à partir de `lg` : le bloc logo + une par colonne de liens. Classes écrites
@@ -47,6 +50,7 @@ export default function FooterSidebarColumns({ footer, style }: FooterSidebarCol
     // Au-delà de 5 colonnes, la grille plafonne à 6 parts et les colonnes suivantes passent à la ligne.
     const lgGridCols = LG_GRID_COLS[footer.columns?.length ?? 0] ?? "lg:grid-cols-6";
 
+    const columns = useFooterColumns(footer.columns);
     const legalLinks = useFooterLinks(footer.legalLinks);
     const bottomLinks = useFooterLinks(footer.bottomLinks);
 
@@ -101,8 +105,8 @@ export default function FooterSidebarColumns({ footer, style }: FooterSidebarCol
                         />
                     </div>
 
-                    {footer.columns?.map((column, index) => (
-                        <FooterLinkColumn key={index} column={column} />
+                    {columns.map(({ column, links }, index) => (
+                        <FooterLinkColumn key={index} column={column} links={links} linkClassName={COLUMN_LINK_CLASS} />
                     ))}
                 </div>
 
@@ -133,35 +137,5 @@ export default function FooterSidebarColumns({ footer, style }: FooterSidebarCol
                 </div>
             </div>
         </footer>
-    );
-}
-
-/**
- * Composant à part : `useFooterLinks` est un hook, il ne s'appelle pas dans un `.map()`.
- * Une colonne dont tous les liens sont filtrés n'est pas rendue, plutôt qu'un titre seul.
- */
-function FooterLinkColumn({ column }: { column: NonNullable<Footer["columns"]>[number] }) {
-    const { t } = useLocalization();
-    const links = useFooterLinks(column.links);
-
-    if (links.length === 0) return null;
-
-    return (
-        <div>
-            <h3 className="font-semibold mb-4 text-foreground">{t(column.title)}</h3>
-            <ul className="space-y-2">
-                {links.map((link, linkIdx) => (
-                    <li key={linkIdx}>
-                        <NavLink
-                            to={link.href}
-                            external={link.external}
-                            className="text-muted-foreground hover:text-primary transition-colors text-sm"
-                        >
-                            {t(link.label)}
-                        </NavLink>
-                    </li>
-                ))}
-            </ul>
-        </div>
     );
 }

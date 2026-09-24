@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { CagnotteFundableItem } from "@/modules/cagnotte/types";
+import { buildResourceFromAnswer } from "@/modules/cagnotte/utils/dataTransform";
 import { aggregateCofinancers } from "./cofinancers";
 
 type Ligne = Partial<CagnotteFundableItem["allFunding"][number]> & { name?: string; type?: string };
@@ -162,6 +163,27 @@ describe("aggregateCofinancers — M16", () => {
       ]);
 
       expect(rows).toHaveLength(2);
+    });
+
+    it("lit le versement validé d'une ligne passée par `buildResourceFromAnswer`", () => {
+      const resource = buildResourceFromAnswer({
+        id: "answer-1",
+        answers: {
+          aapStep1: {
+            depense: [
+              {
+                poste: "Dev",
+                price: 500,
+                financer: [
+                  { id: "o1", name: "A", amount: 500, payment: { logs: [{ amount: 500, confirmation: "validated" }] } },
+                ],
+              },
+            ],
+          },
+        },
+      })!;
+
+      expect(aggregateCofinancers(resource.items)[0]).toMatchObject({ paidAmount: 500, pledgedAmount: 0 });
     });
   });
 });

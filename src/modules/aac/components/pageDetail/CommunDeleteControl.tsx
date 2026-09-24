@@ -58,7 +58,7 @@ export function CommunDeleteControl({
 
   const plan = useMemo(() => resolveCommunDeletionPlan(resource), [resource]);
 
-  const suppression = useDeleteCommun({ api });
+  const suppression = useDeleteCommun({ api, onDeleted });
 
   // Rien à montrer sans le droit — contrairement à la sélection, dont le badge
   // de statut reste une information utile au visiteur. Une suppression dont on
@@ -73,12 +73,7 @@ export function CommunDeleteControl({
         projectId: plan.projectId,
         actionIds: plan.actionIds,
       },
-      {
-        onSuccess: () => {
-          setConfirmOpen(false);
-          onDeleted?.();
-        },
-      }
+      { onSuccess: () => setConfirmOpen(false) }
     );
   };
 

@@ -105,8 +105,9 @@ export const AacDetailSchema = z.object({
   /**
    * Nature des lieux proposés par « J'utilise » — même valeur que
    * `toolsCatalog.props.placeKind`. Fixe le PÉRIMÈTRE par défaut : `cae` ⇒
-   * organisations de source `federationDesCae`, `tiersLieu` (défaut) ⇒ source
-   * `franceTierslieux` (cf. `PLACE_KIND_SOURCE_KEYS`).
+   * organisations de source `federationDesCae`, `tiersLieu` ⇒ source
+   * `franceTierslieux` (cf. `PLACE_KIND_SOURCE_KEYS`). Omis ⇒ le `typeCoFinancer`
+   * du form décide, puis tiers-lieux.
    */
   placeKind: z.enum(PLACE_KINDS).optional(),
   /**

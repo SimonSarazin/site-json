@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { Heart, ArrowRight, Check, X, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import type { CoFormData, CoFormAnswer } from "@/modules/coform/types";
 import type { AacResolvedConfig } from "../../types";
 import { useT } from "@/hooks/useT";
@@ -36,6 +37,7 @@ import { useReactorNames } from "@/modules/aac/hooks/useReactorNames";
 import { useAacPlaceSourceKeys, useAacUsageFormId } from "@/modules/aac/hooks/useAacDetailSections";
 import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
 import { aggregateCofinancers } from "@/modules/aac/lib/cofinancers";
+import { AAC_QUERY_KEYS } from "@/modules/aac/constants/queryKeys";
 import { useCoFormQuery } from "@/modules/coform/hooks/useCoFormQuery";
 import { getSharedFinderInfo } from "@/modules/coform/utils/formParser";
 import { buildFinderSearchParams } from "@/modules/coform/utils/finderFilters";
@@ -46,6 +48,8 @@ import { buildFinderSearchParams } from "@/modules/coform/utils/finderFilters";
  * l'emporte toujours.
  */
 const SANS_FINDER = { type: "organizations" as const, filters: [], excludeFilters: [], notSourceKey: false };
+
+const AUCUNE_ORGANISATION: OrganisationCofinanceuse[] = [];
 
 /**
  * Ce qu'un visiteur NON connecté a demandé, et qu'on rejoue quand sa session
@@ -197,10 +201,8 @@ export function CommunFinancingCard({
     });
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [orgs, setOrgs] = useState<OrganisationCofinanceuse[]>([]);
-    const [isLoadingOrgs, setIsLoadingOrgs] = useState(false);
     const usageFormId = useAacUsageFormId();
-    const placeSourceKeys = useAacPlaceSourceKeys();
+    const placeSourceKeys = useAacPlaceSourceKeys(aacConfig?.typeCoFinancer);
     const { formData: usageForm, error: usageFormError } = useCoFormQuery({
         formId: usageFormId ?? "",
         enabled: !!usageFormId && isModalOpen,
@@ -224,35 +226,32 @@ export function CommunFinancingCard({
         setInterestedOrgIds(new Set(Object.keys(answerQuery?.links?.tls || {})));
     }, [answerId, answerQuery, me?.serverData?.id]);
 
-    const loadOrganizations = async () => {
-        if (!entity) {
-            console.error(String(t("toasts.errors.noApiClient")));
-            return;
-        }
-        setIsLoadingOrgs(true);
-        try {
+    const orgSearchParams = useMemo<Partial<GlobalAutocompleteCostumData>>(() => {
+        const params = buildFinderSearchParams({
+            ...(usageFinder ?? SANS_FINDER),
+            sourceKey: placeSourceKeys,
+        });
+        return { ...params, searchType: params.searchType as GlobalAutocompleteCostumData["searchType"] };
+    }, [usageFinder, placeSourceKeys]);
+
+    // Liste relue à chaque ouverture, une fois le form d'usage résolu.
+    const orgsQuery = useQuery({
+        queryKey: AAC_QUERY_KEYS.COFINANCER_ORGS(entity?.id ?? null, orgSearchParams),
+        enabled: isModalOpen && !!entity && !usageFormPending,
+        staleTime: 0,
+        queryFn: async (): Promise<OrganisationCofinanceuse[]> => {
+            if (!entity) return [];
             if (usageFormId && !usageFinder) {
                 console.warn(
                     `[CommunFinancingCard] form d'usage ${usageFormId} illisible ou sans finder partagé — périmètre ${placeSourceKeys.join(", ")} seul.`,
                 );
             }
-            const params = buildFinderSearchParams({
-                ...(usageFinder ?? SANS_FINDER),
-                sourceKey: placeSourceKeys,
-            });
-            const orgParam: Partial<GlobalAutocompleteCostumData> = {
-                ...params,
-                searchType: params.searchType as GlobalAutocompleteCostumData["searchType"],
-            };
-
-            const result = await entity.searchCostum(orgParam);
-            setOrgs(result && result?.results ? Object.values(result?.results).map(res => res?.serverData || {}) : []);
-        } catch (error) {
-            console.error("Erreur lors du chargement des organisations:", error);
-        } finally {
-            setIsLoadingOrgs(false);
-        }
-    };
+            const result = await entity.searchCostum(orgSearchParams);
+            return result?.results ? Object.values(result.results).map((res) => res?.serverData || {}) : [];
+        },
+    });
+    const orgs = orgsQuery.data ?? AUCUNE_ORGANISATION;
+    const isLoadingOrgs = usageFormPending || (!!entity && orgsQuery.isPending);
 
     const executeToggle = async (
         type: CommunReactionType,
@@ -338,19 +337,11 @@ export function CommunFinancingCard({
         if (type === "interesse") {
             // Le bouton se contente d'ouvrir le modal — la sélection/désélection se
             // fait organisation par organisation dans la liste (cf. handleOrgClick).
-            // Les organisations sont chargées par l'effet ci-dessous.
             setIsModalOpen(true);
             return;
         }
         executeToggle(type);
     };
-
-    // Charge la liste à chaque ouverture, une fois le form d'usage résolu.
-    useEffect(() => {
-        if (!isModalOpen || usageFormPending) return;
-        void loadOrganizations();
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- `loadOrganizations` est recréé à chaque rendu ; seuls l'ouverture et le finder résolu doivent relancer la recherche
-    }, [isModalOpen, usageFormPending, usageFinder]);
 
     const handleOrgClick = (org: OrganisationCofinanceuse) => {
         const orgId = org._id?.$id || org.id || "";
@@ -651,7 +642,7 @@ export function CommunFinancingCard({
                         </button>
                         <h3 className="text-lg font-bold mb-4 font-display">{String(t("detail.financing.selectOrganization"))}</h3>
                         
-                        {isLoadingOrgs || usageFormPending ? (
+                        {isLoadingOrgs ? (
                             <div className="flex justify-center py-8">
                                 <Loader2 className="size-6 animate-spin text-primary" />
                             </div>

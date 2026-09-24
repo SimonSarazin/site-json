@@ -430,7 +430,7 @@ Les règles qu'il reproduit — **chacune est un piège du legacy** :
 | **Priorité des critères** | `formParent.evaluationCriteria` (si `activateLocalCriteria`) **>** `aapConfig…params.config.criterions`. Exposé via `criteriaSource`. |
 | **Coercions** | `coeff` string → number, rôles **CSV → array**, flags `"true"` → bool. |
 | **Config org-spécifique** | Deux configs CoForm coexistent (**template héritable** vs **org-spécifique**) → on lit **celle pointée par `form.config`**. |
-| **`typeCoFinancer` à la RACINE du form** | Nature des organisations cofinanceuses : `"tiersLieux"` (le défaut legacy FTL) ou un **TAG d'organisation** (`"cae"`…, `Organization::get_cofinancer_bytags`). Clé racine du form parent, comme les gates — `financer.php:835` lit `costum.mainFormData.typeCoFinancer` puis `parentForm.typeCoFinancer`, `AnswerAction.php:268` teste `$params["parentForm"]["typeCoFinancer"]` : **ni `params`, ni l'aapConfig**. Absent ⇒ `null` ; le repli `"tiersLieux"` appartient à l'**affichage** (`CommunFinancingCard`), pas au résolveur. |
+| **`typeCoFinancer` à la RACINE du form** | Nature des organisations cofinanceuses : `"tiersLieux"` (le défaut legacy FTL) ou un **TAG d'organisation** (`"cae"`…, `Organization::get_cofinancer_bytags`). Clé racine du form parent, comme les gates — `financer.php:835` lit `costum.mainFormData.typeCoFinancer` puis `parentForm.typeCoFinancer`, `AnswerAction.php:268` teste `$params["parentForm"]["typeCoFinancer"]` : **ni `params`, ni l'aapConfig**. Absent ⇒ `null` ; le repli appartient à l'**affichage**, pas au résolveur. Périmètre de « J'utilise » (`useAacPlaceSourceKeys`), par priorité : `aac.detail.placeSourceKeys`, `aac.detail.placeKind`, ce `typeCoFinancer` (`"cae"` sans casse ⇒ CAE, toute autre valeur ⇒ tiers-lieux), puis tiers-lieux. |
 
 Sortie (`AacResolvedConfig`) : `steps[]`, `roles{depenseStepKey, evalStepKey, financementStepKey,
 suiviStepKey}`, `criteria[]`, `criteriaSource`, `gates`, `campaigns[]`, `typeCoFinancer`.
@@ -572,6 +572,12 @@ Deux garde-fous s'ajoutent au droit, côté front :
   retire le document, ses commentaires et ses fichiers, mais ni les actions d'un projet ni les liens
   croisés). `useDeleteCommun` supprime le commun d'abord — seul échec qui fait échouer le geste —
   puis, si l'utilisateur l'a demandé, les actions **avant** le projet, en best-effort compté.
+  Au succès, il retire du cache le document supprimé (tous lecteurs) et le projet supprimé, appelle
+  `onDeleted`, puis invalide listes et enveloppes.
+
+Depuis l'annuaire, le plan vient de `useCommunDeletionPlan` : document réponse, hôte de son contexte
+(`useCommunFundingHost`), enveloppe, repli sur le document. Au repos, ni le commun ni son enveloppe ne
+sont lus ; le dialogue reste en attente tant que le plan n'est pas résolu.
 
 ⚠️ Gate d'**affichage** uniquement, comme les autres : le backend reste la source de vérité
 (`Authorisation::canDeleteElement`).

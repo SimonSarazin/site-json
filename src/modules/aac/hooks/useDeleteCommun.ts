@@ -1,6 +1,8 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { deleteElementById, type AnswerDeletionEndpoint } from "@/modules/coform/actions/mutations/answer";
 import { AAC_QUERY_KEYS } from "../constants/queryKeys";
+import { COMMUN_ANSWER_PREFIX } from "../prefetch/prefetchCommun";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import type { Api } from "@communecter/cocolight-api-client";
 
@@ -78,14 +80,20 @@ export async function applyCommunDeletion(
 
 export interface UseDeleteCommunOptions {
   api: Api | null;
+  /** Appelé au succès, après le retrait du cache et avant les invalidations. */
+  onDeleted?: (outcome: CommunDeletionOutcome, params: DeleteCommunParams) => void;
 }
 
 /**
- * Les invalidations vivent sur la MUTATION, pas dans le `onSuccess` de l'appel : une suppression
- * démonte son appelant, et React Query saute alors les callbacks par appel. Les clés cagnotte en
- * sont, dès qu'un projet peut partir — l'enveloppe et la liste des projets le portent encore.
+ * Les callbacks vivent sur la MUTATION, pas sur l'appel : une suppression démonte souvent son
+ * appelant, et React Query saute alors les callbacks par appel.
+ *
+ * Au succès : retrait des entrées des éléments supprimés (pour tous les lecteurs), `onDeleted`,
+ * puis invalidation des listes et des enveloppes.
  */
-export function useDeleteCommun({ api }: UseDeleteCommunOptions) {
+export function useDeleteCommun({ api, onDeleted }: UseDeleteCommunOptions) {
+  const queryClient = useQueryClient();
+
   return useMutationWithToast<CommunDeletionOutcome, DeleteCommunParams>({
     mutationFn: async (params) => {
       if (!api) throw new Error("API indisponible");
@@ -97,11 +105,17 @@ export function useDeleteCommun({ api }: UseDeleteCommunOptions) {
     namespace: "modules/aac",
     successKey: "delete.toasts.success",
     errorKey: "delete.toasts.error",
+    onSuccessCallback: (outcome, params) => {
+      queryClient.removeQueries({ queryKey: COMMUN_ANSWER_PREFIX(params.answerId) });
+      if (outcome.projectDeleted && params.projectId) {
+        queryClient.removeQueries({ queryKey: [...AAC_QUERY_KEYS.COMMUN_PROJECT_PREFIX(), params.projectId] });
+      }
+      onDeleted?.(outcome, params);
+    },
     invalidateQueries: [
       AAC_QUERY_KEYS.COMMUNS_PREFIX(),
       AAC_QUERY_KEYS.COUNT_PREFIX(),
       AAC_QUERY_KEYS.FACETS_PREFIX(),
-      AAC_QUERY_KEYS.COMMUN_PROJECT_PREFIX(),
       CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX(),
     ],
   });

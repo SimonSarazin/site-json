@@ -412,7 +412,9 @@
         "searchButton": "Rechercher un lieu…",
         "searchButton_cae": "Rechercher une CAE…",
         "elementLabel": "lieu",
-        "elementLabel_cae": ""
+        "elementLabel_cae": "CAE",
+        "modalTitle": "Rechercher un lieu",
+        "modalTitle_cae": "Rechercher une CAE"
       },
       "openSection": {
         "title": "Ouvrir un autre lieu",

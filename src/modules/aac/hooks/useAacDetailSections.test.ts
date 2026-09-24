@@ -16,7 +16,7 @@ vi.mock("@/hooks/useSite", () => ({
 vi.mock("@/hooks/useT", () => ({ useT: () => (k: string) => k }));
 vi.mock("./useAacFormMeta", () => ({ useAacFormMeta: () => ({ meta: null, isLoading: false }) }));
 
-const { useAacPlaceSourceKeys } = await import("./useAacDetailSections");
+const { useAacPlaceSourceKeys, placeKindFromTypeCoFinancer } = await import("./useAacDetailSections");
 
 beforeEach(() => {
   detail = undefined;
@@ -40,11 +40,38 @@ describe("useAacPlaceSourceKeys", () => {
     expect(result.current).toEqual(["federationDesCae", "autreReseauCae"]);
   });
 
+  it("sans `placeKind`, le `typeCoFinancer` du form décide", () => {
+    const { result } = renderHook(() => useAacPlaceSourceKeys("CAE"));
+    expect(result.current).toEqual(["federationDesCae"]);
+  });
+
+  it("`placeKind` l'emporte sur le `typeCoFinancer` du form", () => {
+    detail = { placeKind: "tiersLieu" };
+    const { result } = renderHook(() => useAacPlaceSourceKeys("cae"));
+    expect(result.current).toEqual(["franceTierslieux"]);
+  });
+
   it("référence stable d'un rendu à l'autre (pas de refetch par identité)", () => {
     detail = { placeKind: "cae" };
     const { result, rerender } = renderHook(() => useAacPlaceSourceKeys());
     const premier = result.current;
     rerender();
     expect(result.current).toBe(premier);
+  });
+});
+
+describe("placeKindFromTypeCoFinancer", () => {
+  it("`cae`, sans casse ni espaces → CAE", () => {
+    expect(placeKindFromTypeCoFinancer(" Cae ")).toBe("cae");
+  });
+
+  it("toute autre valeur → tiers-lieux", () => {
+    expect(placeKindFromTypeCoFinancer("tiersLieux")).toBe("tiersLieu");
+    expect(placeKindFromTypeCoFinancer("autre")).toBe("tiersLieu");
+  });
+
+  it("absent ou vide → indéterminé", () => {
+    expect(placeKindFromTypeCoFinancer(null)).toBeUndefined();
+    expect(placeKindFromTypeCoFinancer("  ")).toBeUndefined();
   });
 });

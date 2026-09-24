@@ -1,6 +1,7 @@
 import NavLink from "../NavLink";
 import SocialLinks from "./SocialLinks";
-import { useFooterLinks } from "./useFooterLinks";
+import { FooterLinkColumn } from "./FooterLinkColumn";
+import { useFooterColumns, useFooterLinks } from "./useFooterLinks";
 import { MapPin, Phone, Mail, Globe, Building2, Clock } from "lucide-react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -11,6 +12,8 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 interface FooterContactPartnersProps {
   footer: Footer;
 }
+
+const COLUMN_LINK_CLASS = "text-muted-foreground hover:text-primary transition-colors text-sm";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   "map-pin": MapPin,
@@ -27,33 +30,6 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   building: Building2,
   clock: Clock,
 };
-
-/** Composant à part : `useFooterLinks` est un hook, il ne s'appelle pas dans un `.map()`. */
-function FooterLinkColumn({ column }: { column: NonNullable<Footer["columns"]>[number] }) {
-  const { t } = useLocalization();
-  const links = useFooterLinks(column.links);
-
-  if (links.length === 0) return null;
-
-  return (
-    <div>
-      <h3 className="font-semibold mb-4 text-foreground">{t(column.title)}</h3>
-      <ul className="space-y-2">
-        {links.map((link, linkIdx) => (
-          <li key={linkIdx}>
-            <NavLink
-              to={link.href}
-              external={link.external}
-              className="text-muted-foreground hover:text-primary transition-colors text-sm"
-            >
-              {t(link.label)}
-            </NavLink>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
 
 function getIconComponent(icon?: string) {
   if (!icon) {
@@ -73,7 +49,7 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
   const tKey = useT("components/layout");
   const contactItems = footer.contactSection?.items ?? [];
   const partnerLogos = footer.partners?.logos ?? [];
-  const columns = footer.columns ?? [];
+  const columns = useFooterColumns(footer.columns);
   const legalLinks = useFooterLinks(footer.legalLinks);
 
   return (
@@ -215,8 +191,8 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
           <div className="mt-10 pt-8 border-t border-border flex flex-col gap-8 md:flex-row md:justify-between">
             {columns.length > 0 && (
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                {columns.map((column, index) => (
-                  <FooterLinkColumn key={index} column={column} />
+                {columns.map(({ column, links }, index) => (
+                  <FooterLinkColumn key={index} column={column} links={links} linkClassName={COLUMN_LINK_CLASS} />
                 ))}
               </div>
             )}

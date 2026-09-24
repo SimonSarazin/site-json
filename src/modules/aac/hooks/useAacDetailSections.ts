@@ -9,7 +9,7 @@ import { useMemo } from "react";
 import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
 import type { LocalizedString } from "@/types/locale-schema";
-import { placeKindSourceKeys } from "@/modules/coform/utils/finderFilters";
+import { placeKindSourceKeys, type PlaceKind } from "@/modules/coform/utils/finderFilters";
 import { useAacFormMeta } from "./useAacFormMeta";
 import {
   resolveAacDetailSections,
@@ -56,13 +56,22 @@ export function useAacUsageFormId(): string | null {
 }
 
 /**
- * Le périmètre des lieux de « J'utilise » : `config.aac.detail.placeSourceKeys`
- * s'il est déclaré, sinon le préréglage de `config.aac.detail.placeKind`
- * (défaut : tiers-lieux). Même résolution que `PlacesListView`.
+ * Nature des lieux déduite du `typeCoFinancer` du form AAC : `"cae"` (sans casse) → CAE,
+ * toute autre valeur → tiers-lieux, absente → `undefined`.
  */
-export function useAacPlaceSourceKeys(): string[] {
+export function placeKindFromTypeCoFinancer(typeCoFinancer: string | null | undefined): PlaceKind | undefined {
+  const valeur = (typeCoFinancer ?? "").trim().toLowerCase();
+  if (!valeur) return undefined;
+  return valeur === "cae" ? "cae" : "tiersLieu";
+}
+
+/**
+ * Le périmètre des lieux de « J'utilise », par priorité : `config.aac.detail.placeSourceKeys`,
+ * `config.aac.detail.placeKind`, le `typeCoFinancer` du form, puis tiers-lieux.
+ */
+export function useAacPlaceSourceKeys(typeCoFinancer?: string | null): string[] {
   const { config: siteConfig } = useSite();
-  const placeKind = siteConfig.aac?.detail?.placeKind;
+  const placeKind = siteConfig.aac?.detail?.placeKind ?? placeKindFromTypeCoFinancer(typeCoFinancer);
   const override = siteConfig.aac?.detail?.placeSourceKeys;
   return useMemo(() => placeKindSourceKeys(placeKind, override), [placeKind, override]);
 }

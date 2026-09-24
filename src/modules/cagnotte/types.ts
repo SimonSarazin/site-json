@@ -65,6 +65,8 @@ export type FundingTransaction = {
   paidAmount?: number;
   /** Montant versé, en attente de validation du porteur. */
   pendingAmount?: number;
+  /** Bloc `payment` brut de la ligne serveur — à lire via `readFinancerPaymentState`. */
+  payment?: unknown;
 };
 
 export type FundingAction = {

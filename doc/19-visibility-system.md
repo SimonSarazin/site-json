@@ -257,10 +257,9 @@ silencieux pour qui la pose ailleurs. Deux points le distinguent des autres usag
 - **Jeton d'adresse `@profile`** : remplacé par `/profil/<slug>` de l'utilisateur connecté. Un lien
   de config est une chaîne FIXE ; sans ce jeton, « Mon profil » ne peut pas s'écrire en config. Le
   lien disparaît tant que le slug est inconnu.
-- **Colonnes** : une colonne dont tous les liens sont masqués n'est pas rendue du tout. Les colonnes
-  sont extraites en sous-composant (`FooterLinkColumn`), parce qu'un hook ne s'appelle pas dans un
-  `.map()` — même contrainte que `AddEntityDropdown`, résolue ici par le découpage plutôt que par
-  une passe unique.
+- **Colonnes** : `useFooterColumns` évalue toutes les colonnes en une seule passe et omet celle dont
+  tous les liens sont masqués. Le rendu passe par le composant partagé
+  [`FooterLinkColumn`](../src/components/layout/footer/FooterLinkColumn.tsx).
 
 Le masquage SSR s'applique comme ailleurs : ces liens n'existent pas dans le HTML servi et
 apparaissent à l'hydratation (cf. [Comportement SSR](#comportement-ssr)).

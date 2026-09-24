@@ -263,9 +263,9 @@ visiteur déjà connecté.
   pouvait pas s'écrire en config. Le lien disparaît tant que le slug est inconnu.
 - **Les 4 designs de footer** qui rendent des liens (`sidebar-columns`, `rich`, `minimal-centered`,
   `contact-partners`) passent par ce hook — une clé honorée par un seul composant serait un piège
-  silencieux pour qui la pose ailleurs. Les colonnes sont extraites en sous-composant : un hook ne
-  s'appelle pas dans un `.map()`. Une colonne dont tous les liens sont masqués n'est plus rendue,
-  plutôt qu'un titre sans liens.
+  silencieux pour qui la pose ailleurs. Les colonnes passent par `useFooterColumns` (une seule
+  évaluation pour toutes) et le composant partagé `FooterLinkColumn`. Une colonne dont tous les
+  liens sont masqués n'est plus rendue, plutôt qu'un titre sans liens.
 - **Config** : `visibility: { "auth": "anonymous" }` sur « Créer un compte » et « Se connecter » ;
   nouveau lien « Mon profil » (`@profile`) en `{ "auth": "required" }`.
 

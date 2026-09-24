@@ -1145,6 +1145,8 @@ export interface FinderConfig {
   initCurrentUser: boolean;
   /** Label de l'élément recherché (ex: "Organisation", "Tiers-lieu") */
   elementLabel: string;
+  /** Titre de la modale, déjà traduit — prioritaire sur « Rechercher un {{label}} ». */
+  title?: string;
   /** Texte du bouton de recherche */
   buttonLabel: string;
   /** Placeholder du champ de recherche */

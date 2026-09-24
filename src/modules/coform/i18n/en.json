@@ -412,7 +412,9 @@
         "searchButton": "Search a place…",
         "searchButton_cae": "Search a cooperative…",
         "elementLabel": "place",
-        "elementLabel_cae": "cooperative"
+        "elementLabel_cae": "cooperative",
+        "modalTitle": "Search for a place",
+        "modalTitle_cae": "Search for a cooperative"
       },
       "openSection": {
         "title": "Open another place",

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode, type MouseEvent } from "react";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
 import type { AacResolvedConfig } from "../../types";
@@ -61,11 +62,13 @@ let usageFormId: string | null = null;
 // VRAIE fonction : les attentes portent sur `placeKind` / `placeSourceKeys` de la config.
 let placeKind: "tiersLieu" | "cae" | undefined = undefined;
 let placeSourceKeysOverride: string[] | undefined = undefined;
-vi.mock("@/modules/aac/hooks/useAacDetailSections", async () => {
+vi.mock("@/modules/aac/hooks/useAacDetailSections", async (importOriginal) => {
   const { placeKindSourceKeys } = await import("@/modules/coform/utils/finderFilters");
+  const { placeKindFromTypeCoFinancer } = await importOriginal<typeof import("@/modules/aac/hooks/useAacDetailSections")>();
   return {
     useAacUsageFormId: () => usageFormId,
-    useAacPlaceSourceKeys: () => placeKindSourceKeys(placeKind, placeSourceKeysOverride),
+    useAacPlaceSourceKeys: (typeCoFinancer?: string | null) =>
+      placeKindSourceKeys(placeKind ?? placeKindFromTypeCoFinancer(typeCoFinancer), placeSourceKeysOverride),
   };
 });
 let usageForm: unknown = null;
@@ -151,7 +154,9 @@ function PageHarness({
   ...over
 }: Partial<Parameters<typeof CommunFinancingCard>[0]> & { carteMontee?: boolean }) {
   const [intent, setIntent] = useState<PostLoginIntent>(null);
+  const [queryClient] = useState(() => new QueryClient({ defaultOptions: { queries: { retry: false } } }));
   return (
+    <QueryClientProvider client={queryClient}>
     <LocalizationProvider>
       {carteMontee ? (
         <CommunFinancingCard
@@ -165,6 +170,7 @@ function PageHarness({
         />
       ) : null}
     </LocalizationProvider>
+    </QueryClientProvider>
   );
 }
 
@@ -356,9 +362,8 @@ describe("CommunFinancingCard — les CTA de réaction hors connexion ouvrent la
 });
 
 /**
- * « J'utilise » propose les organisations du PÉRIMÈTRE de la plateforme, piloté
- * par `config.aac.detail.placeKind` —. Le même
- * préréglage borne la liste et la recherche de `PlacesListView`.
+ * « J'utilise » propose les organisations du périmètre de la plateforme :
+ * `config.aac.detail.placeKind`, à défaut le `typeCoFinancer` du form.
  */
 describe("CommunFinancingCard — le périmètre de « J'utilise » suit `placeKind`", () => {
   async function ouvrirLaListe() {
@@ -396,7 +401,19 @@ describe("CommunFinancingCard — le périmètre de « J'utilise » suit `placeK
     });
   });
 
-  it("le `typeCoFinancer` du form ne pilote plus rien", async () => {
+  it("sans `placeKind`, le `typeCoFinancer` du form décide", async () => {
+    renderCard({ aacConfig: makeConfig("etapeA", "cae") });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /detail\.use/ }));
+    });
+    expect(ENTITY.searchCostum).toHaveBeenCalledWith({
+      searchType: ["organizations"],
+      sourceKey: ["federationDesCae"],
+    });
+  });
+
+  it("`placeKind` l'emporte sur le `typeCoFinancer` du form", async () => {
+    placeKind = "tiersLieu";
     renderCard({ aacConfig: makeConfig("etapeA", "cae") });
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /detail\.use/ }));

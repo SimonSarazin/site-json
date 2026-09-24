@@ -53,10 +53,12 @@ vi.mock("../hooks/useAacDirectoryContext", () => ({
 vi.mock("../hooks/useDeleteCommun", () => ({
   useDeleteCommun: () => ({ mutate: vi.fn(), isPending: false }),
 }));
-// L'enveloppe du commun ciblé n'est résolue qu'à l'ouverture du dialogue ; elle
-// passe par `useCocolight`, hors du périmètre de CE composant.
-vi.mock("../hooks/useAacFundingResource", () => ({
-  useAacFundingResource: () => ({ targetResource: undefined, isLoading: false }),
+// Le plan du commun ciblé a son propre test (`useCommunDeletionPlan`).
+vi.mock("../hooks/useCommunDeletionPlan", () => ({
+  useCommunDeletionPlan: () => ({
+    plan: { projectId: null, actionIds: [], paymentCount: 0, paymentAmount: 0, isBlocked: false },
+    isLoading: false,
+  }),
 }));
 vi.mock("@/hooks/useCocolight", () => ({
   useCocolight: () => ({ api: null }),

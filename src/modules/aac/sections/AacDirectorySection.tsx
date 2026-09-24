@@ -2,7 +2,7 @@
 // chunk de la section (le point d'entrée section n'importe pas index.ts).
 import "../i18n";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 import { ArrowRight, LayoutGrid, List } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,8 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useT } from "@/hooks/useT";
 import { useDeleteCommun } from "../hooks/useDeleteCommun";
-import { useAacFundingResource } from "../hooks/useAacFundingResource";
-import { resolveCommunDeletionPlan } from "../lib/communDeletion";
+import { useCommunDeletionPlan } from "../hooks/useCommunDeletionPlan";
 import { CommunDeleteDialog } from "../components/pageDetail/CommunDeleteDialog";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -187,11 +186,11 @@ export default function AacDirectorySection({ id, props }: Props) {
   // (`configSearchObj.js:106-137`).
   const [toDelete, setToDelete] = useState<CommunCard | null>(null);
 
-  // Le listing ne porte ni le financement ni le projet : on résout l'enveloppe du seul commun
-  // ciblé, à l'ouverture du dialogue. `useAacFundingResource` reste inactif sans `answerId`,
-  // donc l'annuaire au repos ne paie rien, et la fiche a déjà la réponse en cache.
-  const { targetResource, isLoading: isPlanLoading } = useAacFundingResource(toDelete?.id);
-  const plan = useMemo(() => resolveCommunDeletionPlan(targetResource), [targetResource]);
+  // Plan du seul commun ciblé, résolu à l'ouverture du dialogue ; au repos, ni commun ni enveloppe lus.
+  const { plan, isLoading: isPlanLoading } = useCommunDeletionPlan(
+    toDelete?.id ?? null,
+    config?.roles.depenseStepKey ?? undefined,
+  );
 
   const suppression = useDeleteCommun({ api });
 
