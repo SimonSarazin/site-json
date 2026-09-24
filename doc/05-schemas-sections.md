@@ -871,6 +871,17 @@ const HTMLSectionSchema = z.object({
 });
 ```
 
+HTML d'ADMIN, passé au profil `sanitize()` par défaut (scripts et handlers retirés, `style`/`class`/`svg`
+conservés — cf. `src/lib/sanitize.ts`).
+
+**Les liens internes naviguent en SPA**, comme ceux du menu : la section délègue le clic à
+`destinationSpa` (`components/sections/htmlSectionLinks.ts`), qui s'appuie sur le `classifyHref`
+commun au parc. Un `<a href="/lieux?services=…">` écrit dans le HTML ne recharge donc plus la page.
+Gardent leur comportement natif : les ancres `#`, `mailto:`/`tel:`/`sms:`, l'externe (`http(s)://`),
+les ancres `target`/`download`, et tout clic d'ouverture parallèle (clic milieu, Ctrl/Cmd, Maj, Alt).
+Écrire la query ENCODÉE (`?services=Salle%20de%20R%C3%A9union`) : c'est du HTML valide, et les deux
+chemins (clic SPA, URL ouverte directement) donnent le même résultat.
+
 ## `banner`
 
 ```ts

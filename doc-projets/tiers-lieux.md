@@ -203,6 +203,56 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 ## 9. Impacts des modifications
 
+### 24/09bis — home : les 3 cartes d'action deviennent des liens · les mots-clés d'un lieu s'éditent
+
+**Cartes d'action (config seule).** La section `html` `tiers-lieux-actions` affichait trois cartes
+(« Découvrir », « Se réunir », « Se reconnaître ») avec `cursor-pointer` et une flèche, mais aucun
+lien. Chaque carte est maintenant un `<a>` : `/lieux`, `/lieux?services=Salle de Réunion` (le filtre
+que pose déjà le bouton du hero) et `/lieux?licoop=Oui`. Mesuré : 22 résultats pour les salles de
+réunion, 19 pour Licoop, contre 4 311 sans filtre.
+
+**Et ces liens ne rechargent plus la page** (code, moteur) : `HTMLSection` délègue le clic à
+`destinationSpa` (`components/sections/htmlSectionLinks.ts`), bâti sur le `classifyHref` déjà commun
+à `NavLink`/`CTASection`/`CardsSection` — un lien interne écrit dans une section `html` navigue donc
+comme celui du menu. Ancres `#`, `mailto:`/`tel:`, externes, `target`/`download` et clics
+d'ouverture parallèle (Ctrl/Cmd, Maj, Alt, clic milieu) gardent le comportement natif. **Toutes les
+sections `html` du parc en bénéficient** (mentions légales, CGU, pages éditoriales de 8 autres
+sites) ; aucune n'y perd, le comportement ne change que pour un `href` interne.
+
+**Mots-clés du lieu (code + config).** Le champ `tags` du formulaire `tiers-lieux` devient
+SAISISSABLE (onglet « Détails », widget `tags`, autocomplétion sur les mots-clés du réseau), et la
+dérivation passe des `mutation.stamps` aux codecs `tl:tagsRead`/`tl:tagsWrite`
+(`forms/costum/tiers-lieux/fns.ts`, helpers partagés `derivedTags.ts`) :
+
+| | |
+|---|---|
+| Lecture (édition) | tags serveur − dérivés des valeurs ENREGISTRÉES (`typePlace`, `manageModel`, `buildingSurfaceArea`) |
+| Écriture (save) | mots-clés affichés ∪ dérivés des valeurs CHOISIES (`family`, `managementType`, `surfaceBuilt`) |
+
+Motif : `op:"append"` refusionne les tags DU SERVEUR, donc changer de typologie gardait l'ancien
+libellé — le lieu ressortait dans deux facettes — et un mot-clé retiré revenait au save. Les 3
+estampilles dérivées sont retirées ; les 2 MARQUEURS de réseau (`$costum.mainTag`, `$costum.compagnon`)
+restent des estampilles et restent VISIBLES dans le champ : les masquer les supprimerait au premier
+enregistrement, l'estampille compagnon ne s'appliquant qu'à la création. Libellés inchangés (mêmes
+tables que les estampilles), donc les facettes de `/lieux` et l'observatoire continuent de filtrer.
+**`config.prod.relief.json`, qui recopie ce formulaire, garde ses 5 estampilles** — la bascule n'a eu
+lieu que sur ce site. Détail moteur : `doc/28-module-formengine.md` § mots-clés dérivés.
+
+**Vérifié** : 15 tests sur la chaîne réelle (`tags-propagation.test.ts`), dont la SUPPRESSION
+(changer de typologie retire l'ancien tag ; un mot-clé retiré ne revient pas) et l'aller-retour
+d'édition sans rien toucher, qui rend exactement les tags de la fiche — le point sensible, puisque le
+formulaire ENVOIE désormais `tags`. Gardes de non-retour : `spec.test.ts` (les 2 estampilles
+restantes portent une valeur littérale) et la sentinelle d'inventaire `tests/preflight/stamps.test.ts`
+(`tiers-lieux/tiers-lieux:2`, `relief/tiers-lieux:5`). Instantanés régénérés : descripteur + spec
+figés, `__effective__/tiers-lieux.json`.
+**Gates** : `typecheck` ✅ · `eslint` ✅ 0 erreur 0 avertissement sur les fichiers du lot ·
+`config:validate` ✅ (14 pages, 26 sections) · `audit:config` RAS (`strip: 0`) · `config:render` ✅ ·
+`test:unit` 4 788/4 790 — 2 échecs d'environnement local sans lien (bundle principal 3,24 Mo,
+dossier vide non suivi `public/images/EcosystemeSanteReunion`). Navigation vérifiée en navigateur sur
+les 3 cartes : aucun rechargement (un marqueur posé sur `window` survit au clic ET au retour
+arrière), URL et comptes attendus (4 311 / 22 / 19). `config:render` ✅ aussi sur institut-bleu, qui
+porte des sections `html` à liens internes.
+
 ### 24/09 — home : en-tête « Découvrir les lieux » sous l'illustration, aligné sur les cartes · libellés en pastille
 
 **Code + config.** L'illustration du `hero-search` (style complet : `ctaButtons` + `subhead`)

@@ -955,7 +955,7 @@
           "type": "html",
           "id": "tiers-lieux-actions",
           "props": {
-            "html": "<div class=\"container mx-auto px-6\"><div class=\"grid md:grid-cols-3 gap-8\">\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-warning rounded-full flex items-center justify-center flex-shrink-0 shadow-md transform rotate-y-180\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Découvrir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Explorez la carte des lieux et découvrez leur diversité.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </div>\n\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-warning flex items-center justify-center flex-shrink-0 shadow-md\" style=\"clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se réunir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Trouvez la salle de réunion idéale pour organiser votre rencontre.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </div>\n\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-warning rounded-full flex items-center justify-center flex-shrink-0 shadow-md\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se reconnaître</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Via les marques collectives, identifiez les lieux qui vous inspirent.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </div>\n</div></div>"
+            "html": "<div class=\"container mx-auto px-6\"><div class=\"grid md:grid-cols-3 gap-8\">\n  <a href=\"/lieux\" class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary\">\n    <div class=\"w-14 h-14 bg-warning rounded-full flex items-center justify-center flex-shrink-0 shadow-md transform rotate-y-180\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Découvrir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Explorez la carte des lieux et découvrez leur diversité.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </a>\n\n  <a href=\"/lieux?services=Salle%20de%20R%C3%A9union\" class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary\">\n    <div class=\"w-14 h-14 bg-warning flex items-center justify-center flex-shrink-0 shadow-md\" style=\"clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se réunir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Trouvez la salle de réunion idéale pour organiser votre rencontre.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </a>\n\n  <a href=\"/lieux?licoop=Oui\" class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary\">\n    <div class=\"w-14 h-14 bg-warning rounded-full flex items-center justify-center flex-shrink-0 shadow-md\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se reconnaître</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Via les marques collectives, identifiez les lieux qui vous inspirent.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </a>\n</div></div>"
           }
         },
         {
@@ -3414,6 +3414,15 @@
             ]
           }
         },
+        "tags": {
+          "widget": "tags",
+          "read": "tl:tagsRead",
+          "write": "tl:tagsWrite",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          }
+        },
         "hours": {
           "widget": "openingHours",
           "label": {
@@ -3638,6 +3647,13 @@
               "fields": [
                 "description"
               ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "fields": [
+                "tags"
+              ]
             }
           ]
         }
@@ -3731,71 +3747,6 @@
               "$costum": "compagnon"
             },
             "op": "append"
-          },
-          {
-            "field": "tags",
-            "op": "append",
-            "on": "both",
-            "value": {
-              "$mapLabels": {
-                "from": "typePlace",
-                "sep": ",",
-                "map": {
-                  "ateliers-artisanaux": "Ateliers artisanaux partagés",
-                  "coworking": "Bureaux partagés / Coworking",
-                  "foodlab": "Cuisine partagée / Foodlab",
-                  "fablab": "Fablab / Makerspace / Hackerspace (Espaces du Faire)",
-                  "livinglab": "LivingLab / Laboratoire d'innovation sociale",
-                  "nourricier": "Tiers-lieu nourricier",
-                  "culturel": "Tiers-lieu culturel / Lieux intermédiaires et indépendants",
-                  "autre": "Autre famille de tiers-lieux"
-                }
-              }
-            }
-          },
-          {
-            "field": "tags",
-            "op": "append",
-            "on": "both",
-            "value": {
-              "$mapLabels": {
-                "from": "manageModel",
-                "map": {
-                  "association": "Association",
-                  "collectif-citoyen": "Collectif citoyen",
-                  "universites": "Universités / Écoles d'ingénieurs ou de commerce / EPST",
-                  "etablissements-scolaires": "Établissements scolaires (Lycée, Collège, Ecole)",
-                  "collectivites": "Collectivités (Département, Intercommunalité, Région, etc)",
-                  "sarl-sa-sas": "SARL-SA-SAS",
-                  "scic": "SCIC",
-                  "scop": "SCOP",
-                  "autre-gestion": "Autre mode de gestion"
-                }
-              }
-            }
-          },
-          {
-            "field": "tags",
-            "op": "append",
-            "on": "both",
-            "value": {
-              "$bucket": {
-                "from": "buildingSurfaceArea",
-                "buckets": [
-                  {
-                    "lt": 60,
-                    "label": "Moins de 60m²"
-                  },
-                  {
-                    "lt": 201,
-                    "label": "Entre 60 et 200m²"
-                  },
-                  {
-                    "label": "Plus de 200m²"
-                  }
-                ]
-              }
-            }
           }
         ],
         "successKey": {

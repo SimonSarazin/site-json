@@ -15,7 +15,8 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 
 import { specToConfig } from "../../resolveModalSpec";
 import { applyPayloadStamps } from "../../stamps";
-import { getDefaultTiersLieuxValues, type CostumConfig } from "./fns";
+import { applyTransform } from "@/modules/formEngine/engine/transforms";
+import { getDefaultTiersLieuxValues, tagTrancheSurface, TAG_PAR_FAMILLE, TAG_PAR_PORTAGE, type CostumConfig } from "./fns";
 import type { EntityModalCtx } from "../../entityModalSpec";
 import { loadCostumForm } from "../__fixtures__/configCostum";
 
@@ -123,5 +124,112 @@ describe("tiers-lieux — propagation des tags → matche les facettes du search
     const vide = buildTags({ ...getDefaultTiersLieuxValues(), name: "x", shortDescription: "d", email: "a@b.fr", managementType: "public" });
     // managementType "public" n'est pas une clé de la map portage → aucun libellé propagé
     expect(vide.filter((t) => portage.has(t) || typologies.has(t) || surfaces.has(t))).toEqual([]);
+  });
+});
+
+/**
+ * Deuxième temps du même sujet : les tags ne sont plus seulement POSÉS à la création, ils SUIVENT la
+ * fiche. Ce que l'estampille `op:"append"` ne savait pas faire (elle refusionne les tags serveur, donc
+ * l'ancien libellé revenait), et qui se vérifie ici sur les codecs du champ — y compris la SUPPRESSION,
+ * qui ne se déduit pas du fait qu'une valeur s'enregistre.
+ */
+describe("tiers-lieux — les mots-clés suivent la fiche (codecs du champ `tags`)", () => {
+  // Mêmes fixtures que le bloc ci-dessus (la vraie spec compilée depuis la config du site).
+  const config = specToConfig(loadCostumForm("tiers-lieux").spec);
+  const carrier = { id: "c", serverData: { slug: "franceTiersLieux" } } as unknown as EntityTypes;
+  const costum: CostumConfig = { mainTag: "TiersLieux" };
+  const scope = config.resolveScope!(carrier);
+
+  const read = (tags: unknown, serveur: Record<string, unknown>) =>
+    applyTransform("tl:tagsRead", tags, serveur as never) as string[];
+  const write = (tags: unknown, valeurs: Record<string, unknown>) =>
+    applyTransform("tl:tagsWrite", tags, valeurs as never) as string[];
+
+  it("à l'édition, le champ montre les mots-clés LIBRES, pas les dérivés de la fiche", () => {
+    const affiche = read(
+      ["TiersLieux", "Bureaux partagés / Coworking", "SCIC", "Plus de 200m²", "Ressourcerie"],
+      { typePlace: "coworking", manageModel: "scic", buildingSurfaceArea: 350 },
+    );
+    // Les marqueurs de réseau restent visibles : ils ne viennent d'aucun champ, et les masquer les
+    // supprimerait au premier enregistrement (l'estampille compagnon ne joue qu'à la création).
+    expect(affiche).toEqual(["TiersLieux", "Ressourcerie"]);
+  });
+
+  it("un libellé de facette posé à la main sur une fiche d'un AUTRE type reste modifiable", () => {
+    // On ne soustrait que les dérivés RÉELLEMENT enregistrés, jamais toute la table.
+    expect(read(["SCIC", "Ressourcerie"], { typePlace: "coworking" })).toEqual(["SCIC", "Ressourcerie"]);
+  });
+
+  it("à l'enregistrement, les dérivés de la fiche sont rajoutés aux mots-clés saisis", () => {
+    expect(write(["Ressourcerie"], { family: ["fablab"], managementType: "scop", surfaceBuilt: "45" })).toEqual([
+      "Ressourcerie",
+      "Fablab / Makerspace / Hackerspace (Espaces du Faire)",
+      "SCOP",
+      "Moins de 60m²",
+    ]);
+  });
+
+  it("changer de typologie RETIRE l'ancien tag (le bug de l'estampille)", () => {
+    const serveur = { typePlace: "coworking", manageModel: "scic", buildingSurfaceArea: 350 };
+    const affiche = read(["TiersLieux", "Bureaux partagés / Coworking", "SCIC", "Plus de 200m²"], serveur);
+    const enregistre = write(affiche, { family: ["fablab"], managementType: "scic", surfaceBuilt: "350" });
+    expect(enregistre).not.toContain("Bureaux partagés / Coworking");
+    expect(enregistre).toContain("Fablab / Makerspace / Hackerspace (Espaces du Faire)");
+    expect(enregistre).toEqual(expect.arrayContaining(["TiersLieux", "SCIC", "Plus de 200m²"]));
+  });
+
+  it("un mot-clé libre retiré ne revient pas", () => {
+    const serveur = { typePlace: "coworking", manageModel: "scic", buildingSurfaceArea: 350 };
+    const affiche = read(["Bureaux partagés / Coworking", "Ressourcerie"], serveur);
+    expect(affiche).toEqual(["Ressourcerie"]);
+    const sansRessourcerie = affiche.filter((t) => t !== "Ressourcerie");
+    expect(write(sansRessourcerie, { family: ["coworking"], managementType: "scic", surfaceBuilt: "350" })).toEqual([
+      "Bureaux partagés / Coworking",
+      "SCIC",
+      "Plus de 200m²",
+    ]);
+  });
+
+  it("aller-retour sans rien toucher = payload identique aux tags de la fiche", () => {
+    const serveurTags = ["TiersLieux", "Bureaux partagés / Coworking", "SCIC", "Entre 60 et 200m²", "Ressourcerie"];
+    const serveur = { typePlace: "coworking", manageModel: "scic", buildingSurfaceArea: 120 };
+    const valeurs = { family: ["coworking"], managementType: "scic", surfaceBuilt: "120" };
+    expect(new Set(write(read(serveurTags, serveur), valeurs))).toEqual(new Set(serveurTags));
+  });
+
+  it("les libellés dérivés restent ceux des facettes (couplage verrouillé plus haut)", () => {
+    expect(new Set(Object.values(TAG_PAR_FAMILLE))).toEqual(typologies);
+    for (const tag of Object.values(TAG_PAR_PORTAGE)) expect(portage.has(tag)).toBe(true);
+    expect(new Set([tagTrancheSurface(10), tagTrancheSurface(100), tagTrancheSurface(1000)])).toEqual(surfaces);
+  });
+
+  it("ÉDITION : le champ est pré-rempli depuis la fiche — un enregistrement sans rien toucher ne perd rien", () => {
+    // Le point sensible du chantier : `tags` est désormais ENVOYÉ par le formulaire, donc un champ mal
+    // seedé effacerait les mots-clés de la fiche au premier enregistrement. `buildDefaults` passe par
+    // `seedFromEntity`, donc par `tl:tagsRead` — on le vérifie sur la vraie spec, pas sur le codec seul.
+    const entity = {
+      slug: "tl-x",
+      serverData: {
+        name: "TL X", typePlace: "coworking", manageModel: "scic", buildingSurfaceArea: 120,
+        tags: ["TiersLieux", "Bureaux partagés / Coworking", "SCIC", "Entre 60 et 200m²", "Ressourcerie"],
+      },
+    } as unknown as EntityTypes;
+    const ctx: EntityModalCtx = { mode: "edit", parent: null, scope, me: { id: "m" } as unknown as EntityTypes, carrier, costum, entity };
+    const mut = config.buildSpec(ctx);
+    const defaults = config.buildDefaults(ctx) as Record<string, unknown>;
+    expect(defaults.tags).toEqual(["TiersLieux", "Ressourcerie"]);
+
+    const payload = applyPayloadStamps(
+      mut.buildPayload({ ...defaults, name: "TL X" } as never),
+      mut.stamps,
+      { mode: "edit", targetServerData: entity.serverData as Record<string, unknown> },
+    );
+    expect(new Set(payload.tags as string[])).toEqual(new Set(entity.serverData!.tags as string[]));
+  });
+
+  it("surface non renseignée → aucun tag de tranche", () => {
+    expect(tagTrancheSurface("")).toBeUndefined();
+    expect(tagTrancheSurface(undefined)).toBeUndefined();
+    expect(write([], { family: [], managementType: "", surfaceBuilt: "" })).toEqual([]);
   });
 });
