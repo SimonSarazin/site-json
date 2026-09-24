@@ -15,8 +15,8 @@
 > 06/07) · [`ENDPOINT.md`](../../ENDPOINT.md) (fiches d'endpoints SDK à créer). Mémoire :
 > `[[project-maison-sport-sante-la-tampon]]`.
 
-Dernière mise à jour : **2026-09-08** (§9.15 : compteurs statistiques dynamiques sur la home,
-1ᵉʳ lot — `21f0d53f`).
+Dernière mise à jour : **2026-09-23** (§9.17 : reprise des créneaux SSBE du Tampon depuis l'admin —
+section `answerCopy`, copie serveur idempotente).
 
 **Chiffres clés de la home passés en partie au dynamique** (§9.15, Nicolas, `21f0d53f`, 08/09) : le
 schéma `cta-card-grid.props.stats[]` accepte désormais un `source` optionnel (`searchCount` /
@@ -423,6 +423,7 @@ site pour porter un contenu structuré sans code nouveau.
 | **Back-office `/admin` + KPIs (06/08, `2bf0007d`)** | `config.prod.maison-sport-sante-la-tampon.json` (bloc `admin`) · `src/modules/admin/schema.ts` (`AdminDashboardKpiSchema`) · `src/modules/admin/sections/DashboardKpis.tsx` (nouveau) · `src/modules/admin/sections/DashboardSection.tsx` · `src/modules/admin/lib/kpiTrend.ts` + `.test.ts` (nouveaux) · `src/modules/admin/constants/queryKeys.ts` (`KPI_SEARCH_PREFIX`) · `src/modules/admin/i18n/{fr,en}.json` — détail §9.6 |
 | **Actualités (10/08, codé — §9.7)** | `config.prod.maison-sport-sante-la-tampon.json` (`costumForms["actualite"]`, onglet admin, sections home + `/espace-pro`) · `src/modules/admin/schema.ts` (`rowActions:"setFeatured"`, `exclusiveField`) · `src/modules/admin/lib/exclusiveFlag.ts` (+ `.test.ts`, nouveau) · `src/modules/admin/hooks/useSetExclusiveFlag.ts` (nouveau) · `src/modules/admin/sections/AdminResourceTable.tsx` (bouton « Mettre à la une ») · `src/modules/admin/i18n/{fr,en}.json` · `src/modules/profil/forms/actualite.configDriven.test.ts` (nouveau, 8 tests) · `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` (+1 ligne) — **2 correctifs moteur** : `src/modules/formEngine/config/schema.ts` (`WidgetKind` + `"markdown"`), `src/modules/profil/forms/costum/compileCostumSchema.ts` (`WIDGET_DEFAULTS` + `"markdown"`) — aucun nouveau composant de carte (réutilise `card.type/preview.type:"resource"`, existant) |
 | **Ressources pro (24/08, `edb20de6` — §9.14)** | `config.prod.maison-sport-sante-la-tampon.json` (`costumForms["ekilibre-ressource"]`, page `/ressources`, entrée de nav, onglet admin `ressources`, route `profiles.poi.editModals`) — **0 code front** : réutilise `formEngine` (widgets `file`/`urlList`/`select`), presenters `card.type/preview.type:"resource"`, table admin `resource` en mode `statusField` · backend : `EkilibreMigrationController::declarePoiTypes` (costum repo `7ce80d9f0`) |
+| **Reprise des créneaux SSBE — `answerCopy` (23/09, §9.17)** | `config.prod.maison-sport-sante-la-tampon.json` (onglet admin `creneaux-ssbe`) · `src/modules/admin/schema.ts` (`AdminAnswerCopySectionSchema`) · `src/modules/admin/lib/answerCopy.ts` (+ `.test.ts`) · `src/modules/admin/hooks/useCopyAnswer.ts` · `src/modules/admin/sections/AdminAnswerCopySection.tsx` (+ `.test.tsx`) · `AdminSectionRenderer.tsx`, `constants/queryKeys.ts`, `sections/resourceHelpers.ts` (`STATUS_TONE_CLASS` partagé), `i18n/{fr,en}.json` · [`doc/30-module-admin.md`](../doc/30-module-admin.md) · backend : `citizenToolKit/models/Coform.php` (`copyAnswer`, `resolveAnswerSource`), `survey/controllers/answer/NewanswerAction.php` (`action:copy`), `costum/models/AssociationEkilibre.php` (hook par suffixe), `costum/controllers/EkilibreMigrationController.php` (`copyAnswer` URL) · [`../../ENDPOINT.md`](../../ENDPOINT.md) (extension `GENERATE_ANSWER_FROM_FORM`) · `src/modules/admin/components/AdminTableShell.tsx` (nouveau, partagé avec `reference`) · `src/modules/search/hooks/{useSearchQuery,useSearchAllResults}.ts` (additif : `isFetching`, `isPending`, `cache`, `capped` exact) |
 | **Compteurs stats dynamiques (08/09, `21f0d53f` — §9.15)** | `src/types/site-schema.ts` (`StatDynamicSourceSchema`, `source` sur `CtaCardGridSchema.props.stats[]`) · `src/components/sections/useStatDynamicValue.ts` (nouveau) + `.test.ts` (nouveau, 6 tests) · `src/components/sections/CtaCardGrid.tsx` (`StatTile`) · `config.prod.maison-sport-sante-la-tampon.json` (item « Créneaux disponibles ») — moteur générique, **aucun autre site impacté** (4 autres configs `cta-card-grid` toujours valides sans `source`) |
 | **Assets** | `public/images/maisonSportSanteLaTampon/` (hero, hero2/3, logo, logo-mss, pictogramme) |
 | **Docs workspace** | [`../../FONCTIONNALITES-EKILIBRE.md`](../../FONCTIONNALITES-EKILIBRE.md) · [`../../ENDPOINT.md`](../../ENDPOINT.md) |
@@ -1368,6 +1369,114 @@ validées), mais SSBE a dû poser la garde pour 32 fiches.
 
 ---
 
+### 9.17 Reprise des créneaux SSBE du Tampon depuis l'admin — section `answerCopy` (23/09, Peterson)
+
+**Constat de départ (23/09)** : 20 créneaux du Tampon ont été déposés sur le site régional SSBE (form
+`6928096adf5caf0d230e7f26`) les 27–28/08, APRÈS la copie par CP du 19–20/08 (§9.8) ; en prod, 18
+réponses homonymes existaient dans le form dédié (créées le 22/09) et 2 manquaient (« Gymnastique
+Tao », « Sport Santé Seniors » Plaine des Cafres). Jusqu'ici la seule reprise était l'URL super-admin
+`copyCreneaux` par CP — hors de portée de l'admin de la MSS. Demande : **une fonctionnalité d'admin**,
+liste + bouton « Copier », avec déduplication.
+
+**Ce qui est livré**
+
+- **Backend — copie SERVEUR, idempotente.** `Coform::copyAnswer` (citizenToolKit) : renommage du
+  préfixe de section (sections appariées par position, le form cible est un duplicata du source),
+  `context`/`cterSlug`/`source` du site cible, provenance conservée quand elle existe (`user`,
+  `links`, `created` — jamais inventée : 277 des 286 réponses SSBE n'ont pas de `user`), trace
+  `copiedFrom` + `copiedAt` ; une source déjà copiée renvoie la copie existante (`alreadyCopied`),
+  jamais un doublon ; un brouillon n'est pas copiable ; les inputs non déclarés dans la section cible
+  sont copiés et remontés (`unknownInputs` — mesuré en base locale : le form SSBE a **1 input de
+  plus** que le dédié, `…mtcqn5z1x1op08yg3ia`). Fichiers uploadés non dupliqués (comme la
+  migration). Le `source` suit la règle de `saveAnswer`, désormais **extraite** en
+  `Coform::resolveAnswerSource` (costum ambiant, sinon orga porteuse à costum) — une seule règle de
+  scope pour dépôt et reprise.
+- **Backend — exposition.** Pas de nouvel endpoint : l'action legacy `survey/answer/newanswer/form/<cible>`
+  gagne une branche `action: "copy"` (+ `copyFrom`, `costumSlug`) ; le contrat SDK
+  `GENERATE_ANSWER_FROM_FORM` tolère les clés supplémentaires → **utilisable avec la lib installée**.
+  Extension documentée dans [`ENDPOINT.md`](../../ENDPOINT.md) pour déclaration. **Autorisation en
+  deux temps** (revue adversariale du 23/09, 2 constats HIGH corrigés) : *qui* = super admin ou admin
+  de l'élément porteur du form cible lu dans **ses liens** (`Coform::canCopyIntoForm` — le raccourci
+  « admin du costum ambiant » d'`isInterfaceAdmin`/`isElementAdmin` était contournable par
+  n'importe quel admin d'un autre costum postant son `costumSlug`) ; *quoi* = **liste blanche des
+  forms sources** déclarée sur le form cible (`params.copySources`) — sans elle, une copie lisait et
+  dupliquait n'importe quelle réponse de la base par son id. Déclaration par URL super-admin
+  **`costum/ekilibreMigration/declareCopySources`** (dry run) · `/apply/1` — **écriture Mongo à
+  rejouer en PROD** (runbook §9.11). Vérifié anonymement en dev : `{result:false, msg:"copie
+  réservée aux administrateurs…"}`. URL de recette/dépannage super-admin :
+  `costum/ekilibreMigration/copyAnswer/id/<idSSBE>` (dry run) · `/apply/1` — même routine.
+- **Backend — hook `AssociationEkilibre::searchAnswers` généralisé** : aplatit la section **de la
+  réponse** (résolution par SUFFIXE d'input, constantes `SUFFIX_*` ; `FIELD_*` inchangées) au lieu
+  de la seule section Ekilibre → les réponses du form SSBE listées sous le costum Ekilibre ont les
+  mêmes colonnes (`name`, `structure`, adresse, statut) ; `copiedFrom`/`copiedAt` projetés (la
+  projection du hook est une **whitelist** : c'est pourquoi la prod montrait 0 `copiedFrom` sur 61
+  alors qu'ils existent). Aplatissement des forms étrangers **borné à `params.copySources`** (revue :
+  sans borne, un admin du costum lisait n'importe quel form par un filtre `form`). Garde « non-admin
+  → Validé » inchangée sur LE champ Ekilibre : une réponse SSBE ne le porte pas, **0 ligne servie au
+  public** (mesuré). Le listing public du form dédié est inchangé (mesuré, `copiedFrom` visible sur
+  « Wing Chun »).
+- **Front — section admin générique `answerCopy`** (moteur, réutilisable par tout site dont le form
+  est un duplicata d'un autre) : schéma (`sourceForm`, `targetForm` ≠, `source` = même forme que
+  `resource.source`, `columns` = `path` + `label`, `duplicateKeys`), `lib/answerCopy.ts` pur (id via
+  `getEntityId`, empreinte normalisée et séparée, index `copiedFrom` + empreintes, 3 états — 12
+  tests), `hooks/useCopyAnswer.ts` (façade `endpointApi.generateAnswerFromForm`, toasts succès /
+  déjà copié / inputs inconnus / erreur, marquage local « Copié », invalidation `admin-*` +
+  surfaces publiques), `AdminAnswerCopySection.tsx` (candidates en scroll infini `variant:"admin"` +
+  `notSourceKey` d'office ; index cible chargé EN ENTIER à chaque montage, « Copier » désactivé
+  tant qu'il charge, refetch ou erreur ; « Doublon probable » → confirmation ; lignes ordonnées
+  par état, « À copier » en tête, et **« Copié » masquées** avec leur compte — demandes du 23/09
+  après recette, `rankByCopyStatus` + sentinelle de scroll dédiée ; 12 tests de câblage).
+  Dédup : `STATUS_TONE_CLASS` et `normalizeColumns` dans `resourceHelpers` (partagés avec
+  resource/reference), `components/AdminTableShell.tsx` (partagé avec reference).
+- **Config** : onglet `creneaux-ssbe` « Créneaux SSBE » (siteAdmin, icône `copy`) — source = form SSBE
+  filtré CP 97430/97418 **dans l'adresse principale OU dans les lignes « lieu de pratique »**
+  (`$or` — revue : **7 créneaux validés du Tampon** n'ont leur CP que dans les lieux, adresse
+  principale `[]` : Multi activités, Remise en forme en salle équipée, Éveil sportif, Gym : yogging,
+  Hatha yoga, Marche et remise en forme ×2 ; périmètre mesuré : 46 → **53** ; `copyCreneaux` aligné),
+  tri `created` desc, page de 60 (le stock tient en une page → l'ordre par état est exact
+  d'emblée), recherche sur l'intitulé ; colonnes Activité / Structure / CP / Statut SSBE /
+  Déposé le. Placé avant « Modération » : copier, puis modérer. **Recette du 23/09 (Peterson)** :
+  après `declareCopySources/apply/1`, le créneau « TEST BASKET » déposé sur SSBE apparaît dans
+  l'onglet.
+- **Revue adversariale** (workflow, 4 dimensions : PHP, bonnes pratiques, fonctionnel, contrat de bout
+  en bout) → 29 constats, tous instruits : 2 HIGH (garde contournable, source non bornée — corrigés),
+  4 MEDIUM (hook non borné, 7 créneaux invisibles, index en erreur pris pour vide, « Copié » figé
+  30 min — corrigés), le reste LOW (dédup `normalizeColumns`/`AdminTableShell`/`getEntityId`,
+  séparateur d'empreinte, homonymes « probables », brouillons refusés, auteur jamais inventé, clés
+  `multiCheckboxPlus…` dans `unknownInputs`, plafond exact de `useSearchAllResults`, `isFetching`
+  exposé par `useSearchQuery`) — corrigés, sauf 2 assumés : idempotence non atomique (pas d'index
+  unique) et CP numérique (aucun en base). Les hooks partagés `useSearchQuery`/`useSearchAllResults`
+  gagnent `isFetching`, `isPending`, un `cache` optionnel et un `capped` exact (additif).
+- **Gates (après revue)** : vitest admin + search hooks **219/219** (dont 24 nouveaux) · eslint ✅ ·
+  `tsc -b` ✅ sur le lot (12 erreurs **pré-existantes** `src/modules/aac` : SDK installé 1.0.189 <
+  requis ^1.0.193, cf. §12) · `config:validate` ✅ 13 p/49 s · `audit:config` RAS · préflight
+  effective-config/i18n/strip/integrity/prop-descriptions/section-meta ✅ · `php -l` ✅ ×4.
+
+**Les 3 états, et ce qu'ils protègent** — « Copié » = trace `copiedFrom` (certain, ligne masquée) ;
+« Doublon probable » = une réponse cible partage intitulé + structure + CP (copie faite par un autre
+canal, saisie directe, ou **second dépôt homonyme côté SSBE** — ex. les deux « Pilates » de la Mairie
+→ confirmation) ; « À copier ». Conséquence pour la prod : les 44 copies du 20/08 portent
+`copiedFrom` (mesuré en dev sur leurs jumelles) → « Copié » ; les 18 du 22/09 apparaîtront « Copié »
+si elles viennent de `copyCreneaux`, sinon « Doublon probable » — l'onglet le dira, sans rien écrire.
+
+**Écarts assumés** : la copie hérite du **statut** de la source (une source « Validé » est publiée
+d'emblée sur Ekilib.re — c'est le comportement de la migration du 19/08 ; si la MSS veut re-modérer,
+poser le statut cible à « En attente » dans `copyAnswer` est un ajout de 2 lignes) ; aucune
+notification costum à la copie ; l'empreinte est heuristique (deux créneaux distincts de même nom,
+même structure, même CP seront signalés « probables » : la confirmation est là pour ça) ;
+l'idempotence est un `findOne` puis `insert` sans index unique (deux POST strictement concurrents
+pour la même source peuvent créer deux copies — le front désactive les boutons pendant l'appel).
+
+**Déploiement** : PHP (survey + citizenToolKit + costum) **avant** le front ; **une écriture Mongo**
+à rejouer en dev ET en prod : `costum/ekilibreMigration/declareCopySources/apply/1` (super admin —
+sans elle : « Copier » refusé et lignes SSBE sans colonnes). Pas de hook `class.function` à déclarer.
+Recette : onglet « Créneaux SSBE » connecté siteAdmin → ~27 lignes validées attendues en prod (20
+déposées après le 19/08 + 7 « lieux seulement »), dont 18 « Copié »/« probable » et au moins 2 « À
+copier » → copier « Gymnastique Tao » → ligne « Copié », toast, créneau visible dans Modération puis
+`/creneaux`.
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Lot A — Vitrine & annuaires (config)
@@ -1392,6 +1501,7 @@ validées), mais SSBE a dû poser la garde pour 32 fiches.
 | B.2b | Inputs CoForm `date` / `timeSlots` / `dynamicFields` | 🟡 | **portés le 31/07** (§9.2 ter) — le formulaire créneau est maintenant complet (91 inputs rendus) ; recette à faire |
 | B.3 | Suppression de fichiers à l'édition | ✅ SDK | **résolu** : le SDK **1.0.169** (installé le 31/07) expose `Answer.deleteFiles(docIds[])` — l'erreur typecheck `file.ts:167` a disparu. La fiche `DELETE_COFORM_ANSWER_FILE` ([`ENDPOINT.md`](../../ENDPOINT.md)) est **satisfaite** ; reste à recetter la suppression réelle |
 | B.4 | Suppression d'un créneau | ❌ | non câblé (SDK `Answer.delete()` existe ; hook front `useDeleteAnswer` à créer via `createCoFormMutation`) |
+| B.6 | Reprise des créneaux déposés sur SSBE (liste + « Copier », dédup) | ✅ code | §9.17 — onglet admin `creneaux-ssbe` (section moteur `answerCopy`), copie serveur idempotente ; **recette connectée siteAdmin à faire** (20 lignes attendues en prod, 2 « À copier ») |
 | B.5 | Commit + MR du lot | 🟡 | **commité le 31/07** (`20fc3529` coform · `2bf81496` search+config · `e163b6d9` doc) ; reste **push + MR** vers `main` |
 
 ### Lot D — Back-office & pilotage (CDC §4.2)
@@ -1616,6 +1726,10 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 | **Recette création/modification d'un créneau** en admin (navigateur, backend réel) | Peterson / MSS |
 | **Volumétrie réelle** : combien de créneaux à saisir dans le form dédié Tampon (les anciens créneaux SSBE ne sont plus listés, §9.8) ? de structures ? | MSS / réseau SSBE |
 | **Qui valide les créneaux** : le process est désormais **outillé** (onglet Modération de `/admin`, §9.6 bis) — reste à désigner qui l'opère à la MSS | MSS / réseau SSBE |
+| 🔴 **Rejouer `declareCopySources/apply/1` en PROD** (form dédié : `params.copySources` = form SSBE) avant d'ouvrir l'onglet « Créneaux SSBE » — sans elle, « Copier » est refusé et les lignes SSBE n'ont pas de colonnes (§9.17) | Peterson |
+| **Copie = statut hérité de la source** (§9.17) : une source « Validé » est publiée d'emblée sur Ekilib.re. Garder, ou forcer « En attente » à la copie pour re-modérer localement ? | MSS / Peterson |
+| **Déclarer l'extension `action:"copy"` de `GENERATE_ANSWER_FROM_FORM` dans le SDK** (fiche `ENDPOINT.md`) — fonctionne déjà, mais le contrat ne la documente pas | mainteneur SDK |
+| **Les 18 réponses créées en prod le 22/09** dans le form dédié : par `copyCreneaux` (→ « Copié ») ou autrement (→ « Doublon probable ») ? L'onglet « Créneaux SSBE » le montrera sans écrire | Peterson |
 | **`useDeleteAnswer`** (suppression de créneau) — si le besoin est confirmé | Peterson |
 | **Spec e2e Ekilibre** (lecture seule, modèle parent62) | Peterson |
 | ~~**Chiffres clés dynamiques** sur la home~~ **1/4 fait le 08/09** (§9.15) : « Créneaux disponibles ». **Reste à trancher** : source (si une existe) des 3 autres — Activités proposées, Participants actifs, Partenaires | Peterson / MSS |

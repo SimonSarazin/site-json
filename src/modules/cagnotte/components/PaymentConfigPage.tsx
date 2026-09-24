@@ -3,29 +3,19 @@ import { useNavigate } from "react-router";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import {
     CreditCard,
     Users,
     ArrowLeft,
     Check,
     ExternalLink,
-    Search,
     Info,
     Clock,
 } from "lucide-react";
 import { showErrorToast, showSuccessToast } from "@/lib/toastUtils";
 import { useCocolight } from "@/hooks/useCocolight";
-import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { formatNumber } from "@/modules/cagnotte/utils/format";
@@ -40,7 +30,8 @@ import { openHelloAssoPaymentWithCheckout } from "@/modules/cagnotte/services/he
 import { verifyHelloAssoCheckoutStatus } from "@/modules/cagnotte/services/helloAssoVerification";
 import { getStripePublicKey } from "@/modules/cagnotte/services/stripeService";
 import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope";
-import { useUserAdminOrganizations } from "@/modules/cagnotte/hooks/useUserAdminOrganizations";
+import { useUserAdminOrganizationsQuery } from "@/modules/cagnotte/hooks/useUserAdminOrganizations";
+import { CagnotteOrganizationPicker } from "./parts/CagnotteOrganizationPicker";
 import { useSaveCagnotteContribution } from "@/modules/cagnotte/hooks/useSaveCagnotteContribution";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { useQueryClient } from "@tanstack/react-query";
@@ -118,7 +109,6 @@ const PaymentConfigPage = ({
     const [contributorType, setContributorType] = useState<ContributorType>(cagnotteConfig.allowPersonToFinance ? "citoyens" : "organizations");
     const [contributorId, setContributorId] = useState<string>(cagnotteConfig.allowPersonToFinance ? (me?.serverData?.id || "") : "");
     const [contributorName, setContributorName] = useState<string>(me?.serverData?.name || "");
-    const [searchOrgQuery, setSearchOrgQuery] = useState("");
     const [isHelloAssoProcessing, setIsHelloAssoProcessing] = useState(false);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
     const [helloAssoPaymentId, setHelloAssoPaymentId] = useState<string | null>(null);
@@ -185,6 +175,12 @@ const PaymentConfigPage = ({
             return {
                 depenseIndex: item.depenseIndex,
                 amount: allocatedAmount,
+                // Transmis au serveur, qui en déduit la clé de la dépense — plus
+                // fiable que la position, cf. `utils/depenseKey.ts`.
+                milestoneId: item.milestoneId,
+                // Repli pour une dépense ORPHELINE (sans jalon) : la clé réelle du
+                // document, quand la ressource a pu la lire à la source.
+                depenseKey: item.depenseKey,
             };
         });
 
@@ -271,6 +267,8 @@ const PaymentConfigPage = ({
                 const itemFundingData = fundingData.map((f) => ({
                     depenseIndex: f.depenseIndex,
                     amount: f.amount,
+                    milestoneId: f.milestoneId,
+                    depenseKey: f.depenseKey,
                 }));
 
                 // `saveContribution` accepte directement un id — il charge l'Answer
@@ -308,12 +306,25 @@ const PaymentConfigPage = ({
         }
     }, [itemAnswerId, api, contributorType, contributorName, contributorId, t, onPaymentSuccess, saveContribution, refreshAfterContributionSave]);
 
-    // Récupérer les organisations où l'utilisateur courant est admin (recherche server-side)
+    // Organisations où l'utilisateur courant est admin. Sans `search` : même clé de
+    // requête que CagnotteDialog → cache déjà chaud ; le picker filtre côté client.
     const currentUserEntity = (me && isUser(me) ? me : null) as User | null;
-    const debouncedSearchOrgQuery = useDebounce(searchOrgQuery, 300);
-    const userAdminOrganizations = useUserAdminOrganizations(currentUserEntity, {
-        search: debouncedSearchOrgQuery,
-    });
+    const {
+        organizations: userAdminOrganizations,
+        isLoading: isAdminOrganizationsLoading,
+    } = useUserAdminOrganizationsQuery(currentUserEntity, {});
+
+    // Une seule orga administrée : la choisir d'office, un clic de moins.
+    // Pattern "adjust state during render" (cf. CagnotteDialog) plutôt qu'un effet.
+    if (
+        contributorType === "organizations" &&
+        !contributorId &&
+        !isAdminOrganizationsLoading &&
+        userAdminOrganizations.length === 1
+    ) {
+        setContributorId(userAdminOrganizations[0].id);
+        setContributorName(userAdminOrganizations[0].name);
+    }
 
     // Callback réel depuis /api/helloasso/callback (popup -> parent)
     useEffect(() => {
@@ -404,7 +415,8 @@ const PaymentConfigPage = ({
     const isFormComplete = Boolean(
         paymentMethod &&
         contributorType &&
-        (contributorType === "citoyens" || (contributorType === "organizations" && contributorId))
+        (contributorType === "citoyens" ||
+            (contributorType === "organizations" && userAdminOrganizations.some((org) => org.id === contributorId)))
     );
 
     const buildContributionData = () => ({
@@ -636,6 +648,9 @@ const PaymentConfigPage = ({
                                 setContributorName(currentUserEntity?.serverData?.name || "");
                             } else if (value === "organizations") {
                                 setContributorType("organizations");
+                                // L'id de la personne ne doit pas survivre au changement de type.
+                                setContributorId("");
+                                setContributorName("");
                             }
                         }}
                         className="grid grid-cols-1 sm:grid-cols-2 gap-3"
@@ -665,55 +680,16 @@ const PaymentConfigPage = ({
 
 
             {contributorType === "organizations" && (
-                <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border/50">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                        <Input
-                            type="text"
-                            placeholder={String(t("PaymentConfigPage.orgPicker.searchPlaceholder"))}
-                            value={searchOrgQuery}
-                            onChange={(e) => setSearchOrgQuery(e.target.value)}
-                            className="h-10 pl-10"
-                        />
-                    </div>
-
-                    {userAdminOrganizations.length === 0 ? (
-                        <div className="py-4 text-center text-sm text-muted-foreground">
-                            <p>{t("PaymentConfigPage.orgPicker.notAdminTitle")}</p>
-                            <p className="text-xs mt-2">
-                                {t("PaymentConfigPage.orgPicker.notAdminHelp")}
-                            </p>
-                        </div>
-                    ) : (
-                        <Select
-                            value={contributorId}
-                            onValueChange={(value) => {
-                                setContributorId(value);
-                                const selectedOrg = userAdminOrganizations.find((org) => org.id === value);
-                                setContributorName(selectedOrg?.name || "");
-                            }}
-                        >
-                            <SelectTrigger className="h-10">
-                                <SelectValue placeholder={String(t("PaymentConfigPage.orgPicker.selectPlaceholder"))} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {userAdminOrganizations.map((org) => (
-                                    <SelectItem key={org.id} value={org.id}>
-                                        <div className="flex items-center gap-2">
-                                            {org.profilThumbImageUrl && (
-                                                <img
-                                                    src={org.profilThumbImageUrl}
-                                                    alt={org.name}
-                                                    className="w-4 h-4 rounded-full object-cover"
-                                                />
-                                            )}
-                                            <span>{org.name}</span>
-                                        </div>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
+                <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
+                    <CagnotteOrganizationPicker
+                        organizations={userAdminOrganizations}
+                        isLoading={isAdminOrganizationsLoading}
+                        selectedId={contributorId}
+                        onSelect={(org) => {
+                            setContributorId(org.id);
+                            setContributorName(org.name);
+                        }}
+                    />
                 </div>
             )}
 
@@ -833,7 +809,7 @@ const PaymentConfigPage = ({
                 )}
 
                 {paymentMethod === "pledge" && (
-                    <div className="rounded-xl border bg-[var(--color-surface)] p-4 space-y-4">
+                    <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/50">
                         <h3 className="text-sm font-medium">{String(t("PaymentConfigPage.pledge.pledge"))}</h3>
                         <p className="text-sm text-muted-foreground">
                             {String(t("PaymentConfigPage.pledge.confirm", undefined, { amount: effectiveAmount }))}
@@ -842,19 +818,22 @@ const PaymentConfigPage = ({
                             <input type="checkbox" required className="mt-1 accent-[var(--color-primary)]" onChange={acceptCondition}  />
                             <span>{String(t("PaymentConfigPage.pledge.checkbox"))}</span>
                         </label>
-                        <Button
-                            onClick={saveContributionAsPromise}
-                            disabled={!isFormComplete || !acceptPledgeCondition}
-                            size="lg"
-                            className="w-full h-12 bg-success hover:bg-success/90 text-success-foreground"
-                        >
-                            {t("PaymentConfigPage.pledge.button", undefined,
-                                {
-                                    amount: effectiveAmount,
-                                    context: cagnotteConfig.selectorType+context
-                                }
-                            )}
-                        </Button>
+                        {/* Même rendu que le bouton « Contribuer » (CagnotteContributeButton). */}
+                        <div className="flex justify-center">
+                            <Button
+                                onClick={saveContributionAsPromise}
+                                disabled={!isFormComplete || !acceptPledgeCondition}
+                                className="h-12 px-8"
+                                size="lg"
+                            >
+                                {t("PaymentConfigPage.pledge.button", undefined,
+                                    {
+                                        amount: effectiveAmount,
+                                        context: cagnotteConfig.selectorType+context
+                                    }
+                                )}
+                            </Button>
+                        </div>
                     </div>
 
                 )}

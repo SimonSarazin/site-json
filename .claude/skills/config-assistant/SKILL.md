@@ -434,6 +434,14 @@ Ne lis ces fichiers QUE quand la tâche les concerne :
   ne sont PAS navigables nus (`/profil` seul est un 404) ; nues et valides :
   `/login`, `/register`, `/recover-password`, `/admin`. L'audit dérive ces
   préfixes de `src/modules/*/routes.tsx` (`scripts/lib/module-routes.ts`).
+- **Affichage conditionnel** : `visibility` (`auth` / `routes` / `excludeRoutes` /
+  `permissions`, cf. doc/19) se pose sur une entrée de nav **et** sur un lien de
+  footer — les 3 listes (`columns[].links`, `legalLinks`, `bottomLinks`) partagent
+  le même objet `FooterLink`. Un « Se connecter » / « Créer un compte » de footer
+  prend `{ "auth": "anonymous" }`. Seul jeton d'adresse admis dans un `href` de
+  footer : `@profile` → la fiche de l'utilisateur connecté, à coupler avec
+  `{ "auth": "required" }` (ce n'est pas un chemin : ne pas le déclarer en page).
+  ⚠ Ces liens sont masqués au rendu SERVEUR et apparaissent à l'hydratation.
 - **Aucune URL d'image inventée** : asset fourni (copié dans
   `public/images/<slug>/`, référencé en absolu `/images/<slug>/…`), asset
   existant, ou rien. Sans logo : `logoIcon` (nom Lucide ou SVG inline).

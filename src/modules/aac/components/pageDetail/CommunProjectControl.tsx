@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { showErrorToast } from "@/lib/toastUtils";
 import { useGenerateAacProject } from "../../hooks/useGenerateAacProject";
 import { useAssociateExistingAacProject } from "../../hooks/useAssociateExistingAacProject";
+import { ActionButtonSkeleton } from "./CommunSkeletons";
 
 /**
  * Bouton "Ouvrir le projet" / "Générer le projet" / "Associer un projet
@@ -28,6 +29,12 @@ export interface CommunProjectControlProps {
   answerId: string | null;
   /** `targetResource?.projectId` — présence = projet déjà lié (généré ou associé). */
   projectId?: string | null;
+  /**
+   * Vrai tant que l'enveloppe n'a pas répondu, donc tant que `projectId` est `undefined` SANS
+   * que cela signifie « pas de projet ». Sans cet état, le contrôle propose « Générer » — un
+   * bouton qui CRÉE un projet sur un commun qui en a déjà un.
+   */
+  isLoading?: boolean;
   /** Slug résolu du projet (pour le lien "aller sur la page" du drawer). */
   projectSlug?: string | null;
   /** `directory.contextId` — costum.contextId legacy. */
@@ -71,6 +78,7 @@ export function CommunProjectControl({
   canManageProject,
   answerId,
   projectId,
+  isLoading = false,
   projectSlug,
   parentId,
   parentType,
@@ -117,6 +125,11 @@ export function CommunProjectControl({
     }
     setPreviewOpen(true);
   };
+
+  // Avant toute décision d'état : on ne sait pas encore s'il y a un projet.
+  if (isLoading) {
+    return <ActionButtonSkeleton className={className} />;
+  }
 
   if (hasProject) {
     return (

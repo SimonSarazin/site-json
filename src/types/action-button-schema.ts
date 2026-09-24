@@ -19,6 +19,10 @@ export const ActionButtonSchema = z.object({
   modal: z.string().optional(),
   formConfig: JsonFormModalConfigSchema.optional(),
   requiresAdmin: z.boolean().optional(),
+  // Valeurs semées dans la modale d'ajout (ex. `{ "type": "Cooperative" }`) — même
+  // canal que `admin.tabs[].sections[].createDefaults` : une clé que le formulaire
+  // ne déclare pas est ignorée.
+  createDefaults: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type ActionButton = z.infer<typeof ActionButtonSchema>;

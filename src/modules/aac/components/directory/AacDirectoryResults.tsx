@@ -30,6 +30,19 @@ interface AacDirectoryResultsProps {
   /** Sentinelle du scroll infini, posée après le dernier commun. */
   lastItemRef: (node: HTMLElement | null) => void;
   emptyText?: string;
+  /**
+   * Qui peut supprimer QUEL commun — le droit dépend de l'item, puisqu'il
+   * s'ouvre à son auteur. Absent, aucun item ne porte de bouton.
+   *
+   * Passé en fonction plutôt qu'en booléen global pour la même raison que
+   * `canDeleteCommun` côté permissions : un visiteur peut être l'auteur d'un
+   * commun de la liste et pas des vingt-neuf autres.
+   */
+  canDeleteCommun?: (commun: CommunCard) => boolean;
+  /** Demande la suppression — la confirmation appartient à l'appelant. */
+  onRequestDelete?: (commun: CommunCard) => void;
+  /** Une suppression est en vol : les boutons de la liste se neutralisent. */
+  isDeleting?: boolean;
 }
 
 /** Classes de grille figées : Tailwind ne peut pas générer `md:grid-cols-${n}`. */
@@ -69,6 +82,9 @@ export function AacDirectoryResults({
   isRetrying = false,
   lastItemRef,
   emptyText,
+  canDeleteCommun,
+  onRequestDelete,
+  isDeleting,
 }: AacDirectoryResultsProps) {
   const t = useT("modules/aac");
 
@@ -103,18 +119,35 @@ export function AacDirectoryResults({
     );
   }
 
+  // Le droit se résout ITEM PAR ITEM, et `onRequestDelete` reste `undefined`
+  // quand il est refusé : c'est son absence qui retire le bouton, côté carte
+  // comme côté ligne. Un booléen `canDelete` par item obligerait les deux
+  // composants à porter la même condition, et à la faire diverger un jour.
+  const demandeSuppression = (commun: CommunCard) =>
+    onRequestDelete && canDeleteCommun?.(commun) ? onRequestDelete : undefined;
+
   return (
     <>
       {display === "list" ? (
         <div className="space-y-3">
           {communs.map((commun) => (
-            <AacCommunRow key={commun.id} commun={commun} />
+            <AacCommunRow
+              key={commun.id}
+              commun={commun}
+              onRequestDelete={demandeSuppression(commun)}
+              isDeleting={isDeleting}
+            />
           ))}
         </div>
       ) : (
         <div className={cn("grid gap-6", GRID_COLS[columns] ?? GRID_COLS[3])}>
           {communs.map((commun) => (
-            <AacCommunCard key={commun.id} commun={commun} />
+            <AacCommunCard
+              key={commun.id}
+              commun={commun}
+              onRequestDelete={demandeSuppression(commun)}
+              isDeleting={isDeleting}
+            />
           ))}
         </div>
       )}
