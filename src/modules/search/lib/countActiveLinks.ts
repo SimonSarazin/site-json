@@ -1,5 +1,5 @@
 /**
- * Nombre de liens ACTIFS d'une section de `links` (`contributors`, `attendees`…).
+ * Nombre de liens ACTIFS d'une section de `links` (`members`, `projects`, `contributors`, `attendees`…).
  *
  * Une invitation en attente (`isInviting`) ou une demande non validée (`toBeValidated`) n'est pas
  * encore un lien : la compter afficherait « 2 participant·es » pour un événement où une seule

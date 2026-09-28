@@ -81,15 +81,12 @@ const useItem = (item: User | Organization | Project | Poi | EventType) => {
       merged.description = merged.shortDescription;
     }
 
-    // Comptages dynamiques
-    const countLinks = (section: string) =>
-      merged.links?.[section] && typeof merged.links[section] === "object"
-        ? Object.keys(merged.links[section]).length
-        : 0;
+    // Comptages dynamiques : liens ACTIFS seulement, pour les trois sections
+    const countLinks = (section: string) => countActiveLinks(merged.links?.[section]);
 
     merged.countProjects = countLinks("projects");
     merged.countMembers = countLinks("members");
-    merged.countContributors = countActiveLinks(merged.links?.contributors);
+    merged.countContributors = countLinks("contributors");
 
     // Sélection de l'image : on préfère les déclinaisons dérivées (plus légères),
     // et à défaut l'originale.
