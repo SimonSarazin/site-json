@@ -43,8 +43,17 @@ export interface EntityMutationConfig<TParams = void> {
   i18n: ToastKeys & {
     byType?: Partial<Record<EntityType, ToastKeys>>;
   };
-  /** Fonction pour calculer les query keys à invalider */
+  /**
+   * Query keys à invalider. Évaluée APRÈS l'action : une suppression a déjà vidé l'instance
+   * (`slug` → `null`), d'où `remove` pour tout ce qui dépend de l'entité supprimée.
+   */
   invalidate: (entity: EntityTypes, me: User | null) => QueryKey[];
+  /**
+   * Query keys à RETIRER du cache une fois l'action réussie — pour une entité qui n'existe plus,
+   * où invalider relancerait un fetch vers un 404. Évaluée AVANT l'action, tant que l'instance
+   * porte encore ses identifiants.
+   */
+  remove?: (entity: EntityTypes) => QueryKey[];
   /** Type d'action émis sur le bus post-succès (entityActionBus) — opt-in, additif */
   actionType?: EntityActionType;
   /** Paramètres dynamiques pour les messages (optionnel) */
@@ -92,7 +101,9 @@ export function createEntityMutation<TParams = void>(config: EntityMutationConfi
         // v1.0.192, le contexte de requête d'une entité ne lit plus que `_adminScope` (le scope POSÉ
         // explicitement), jamais `_costumCtx` (sa provenance) — une entité non scopée ne propose donc
         // plus rien et laisse s'appliquer le costum DU SITE, qui est la bonne réponse.
+        const goneKeys = config.remove?.(entity) ?? [];
         await config.action(entity, params);
+        goneKeys.forEach((queryKey) => queryClient.removeQueries({ queryKey }));
       },
       namespace: "modules/profil",
       successKey: toastKeys.successKey,

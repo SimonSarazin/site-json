@@ -28,8 +28,10 @@ export const useDeleteEvent = createEntityMutation({
     successKey: "toast.element.deleteEventSuccess",
     errorKey: "toast.element.deleteEventError",
   },
-  invalidate: (entity, me) => [
-    PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
+  // La fiche est RETIRÉE, pas invalidée : l'invalider relancerait `entityBySlug` sur la page encore
+  // montée, vers un élément qui n'existe plus.
+  remove: (entity) => [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)],
+  invalidate: (_entity, me) => [
     ...(me ? [PROFIL_QUERY_KEYS.USER_EVENTS_PREFIX(me.slug)] : []),
     ...EVENT_LISTS_INVALIDATION,
   ],
