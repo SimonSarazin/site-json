@@ -20,7 +20,11 @@
     "documents": "Documents",
     "audio": "Audio",
     "video": "Video",
-    "links": "Links"
+    "links": "Links",
+    "ungrouped": "Unsorted",
+    "document": "Document",
+    "externalLink": "External link",
+    "newTab": "opens in a new tab"
   },
   "CardResourceBooking": {
     "price": "Usage price:",

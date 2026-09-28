@@ -15,9 +15,11 @@ import {
   resolveAnswerServices,
   resolveAnswerType,
   resolveResourceName,
+  toBackendUrl,
   type ResourceTypeConf,
 } from "./resourceDirectory";
 import { extractServicePricingAnswers } from "../helpers/servicePricingAnswers";
+import { getBaseUrl } from "@/lib/constant/common";
 
 const FINDER = "miem3epsztzcm9dgim";
 const EQUIP = "mieg8j24m89gm99t5mi";
@@ -47,6 +49,8 @@ const ACCOMMODATION: ResourceTypeConf = {
 };
 const TYPES = [COWORKING, MEETING, ACCOMMODATION];
 const SUFFIXES = { finder: FINDER, name: NAME, equipments: EQUIP, area: AREA };
+// Même source que le code (`VITE_BASE_URL_BACKEND`) : le test ne fige aucun backend.
+const BASE = getBaseUrl();
 
 // Réponse coworking réelle abrégée (probe `getsressourcetl` sur communecter-dev).
 // Le champ NOM (`…mieg4k7yxrito5j9e6`) est absent → repli attendu.
@@ -351,12 +355,25 @@ describe("buildServicePricingOverride", () => {
   });
 });
 
+describe("toBackendUrl", () => {
+  it("préfixe un chemin relatif au backend, avec ou sans / de part et d'autre", () => {
+    expect(toBackendUrl("/upload/communecter/a.jpg", BASE)).toBe(`${BASE}/upload/communecter/a.jpg`);
+    expect(toBackendUrl("upload/communecter/a.jpg", `${BASE}/`)).toBe(`${BASE}/upload/communecter/a.jpg`);
+  });
+
+  it("laisse une URL http(s) inchangée", () => {
+    expect(toBackendUrl("https://cdn.example.org/a.jpg", BASE)).toBe("https://cdn.example.org/a.jpg");
+    expect(toBackendUrl("http://cdn.example.org/a.jpg", BASE)).toBe("http://cdn.example.org/a.jpg");
+  });
+});
+
 describe("parseResourceDirectoryItem", () => {
   it("coworking : type + parent + équipements + capacité + tarif + repli de nom", () => {
     const model = parseResourceDirectoryItem(COWORKING_ANSWER, {
       resourceTypes: TYPES,
       finderSuffix: FINDER,
       fieldSuffixes: SUFFIXES,
+      baseUrl: BASE,
     });
     expect(model.type).toBe(COWORKING);
     expect(model.parent?.name).toBe("Coroutine (La)");
@@ -379,11 +396,26 @@ describe("parseResourceDirectoryItem", () => {
     expect(model.roomIndex).toBeUndefined();
   });
 
+  it("photos des documents : URL complète du backend, pas le chemin relatif", () => {
+    const withDocs = {
+      ...COWORKING_ANSWER,
+      documents: { d1: { folder: "answers/cw1/album", name: "vue.jpg", doctype: "image" } },
+    };
+    const model = parseResourceDirectoryItem(withDocs, {
+      resourceTypes: TYPES,
+      finderSuffix: FINDER,
+      fieldSuffixes: SUFFIXES,
+      baseUrl: BASE,
+    });
+    expect(model.photos).toEqual([`${BASE}/upload/communecter/answers/cw1/album/vue.jpg`]);
+  });
+
   it("hébergement : services proposés + tous les tarifs (lit / chambre)", () => {
     const model = parseResourceDirectoryItem(ACCOMMODATION_ANSWER, {
       resourceTypes: TYPES,
       finderSuffix: FINDER,
       fieldSuffixes: SUFFIXES,
+      baseUrl: BASE,
     });
     expect(model.type).toBe(ACCOMMODATION);
     expect(model.extraServices).toEqual(["Petit-déjeuner", "Linge de lit fourni"]);
@@ -398,13 +430,15 @@ describe("parseResourceDirectoryItem", () => {
       resourceTypes: TYPES,
       finderSuffix: FINDER,
       fieldSuffixes: SUFFIXES,
+      baseUrl: BASE,
     });
     expect(model.type).toBe(MEETING);
     expect(model.name).toBe("Petite salle");
     expect(model.roomIndex).toBe(2);
     expect(model.rooms).toHaveLength(1);
-    // photos = colonne 8 de la salle (priment sur les documents).
-    expect(model.photos).toEqual(["/upload/communecter/answers/meet1/album/p.jpg"]);
+    // photos = colonne 8 de la salle (priment sur les documents), en URL backend.
+    expect(model.photos).toEqual([`${BASE}/upload/communecter/answers/meet1/album/p.jpg`]);
+    expect(model.rooms[0].images).toEqual([`${BASE}/upload/communecter/answers/meet1/album/p.jpg`]);
     // capacité + tarif de LA salle : 2-8 pers., 20 €/h.
     expect(model.stats).toEqual([{ kind: "meeting", count: 0, range: { min: 2, max: 8 } }]);
     expect(model.services).toEqual([{ kind: "meeting", unit: "hour", price: 20 }]);
@@ -415,6 +449,7 @@ describe("parseResourceDirectoryItem", () => {
     const model = parseResourceDirectoryItem(undefined, {
       resourceTypes: TYPES,
       finderSuffix: FINDER,
+      baseUrl: BASE,
     });
     expect(model).toEqual({
       type: undefined,

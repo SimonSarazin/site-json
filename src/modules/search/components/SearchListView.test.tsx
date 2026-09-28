@@ -5,6 +5,7 @@ import { MemoryRouter } from "react-router";
 import type { ReactElement } from "react";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import SearchListView from "./SearchListView";
+import { renderWithProviders } from "../../../../tests/test-utils-ui";
 
 // SearchListView appelle useSearchParams() → il DOIT être rendu sous un Router.
 const renderInRouter = (ui: ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
@@ -234,6 +235,95 @@ describe("SearchListView (list.layout: timeline)", () => {
     renderInRouter(<SearchListView results={results} list={{ layout: "timeline" }} />);
     fireEvent.click(await screen.findByText("TL-Bravo"));
     expect(screen.getByTestId("details-modal").getAttribute("data-item")).toBe("Bravo");
+  });
+});
+
+/**
+ * Dispatch `list.layout: "grouped"` : la grille découpée en blocs titrés par `groupBy.field`.
+ * La logique de regroupement est testée à part (`groupResults.test.ts`) ; ici, le CÂBLAGE.
+ */
+describe("SearchListView (list.layout: grouped)", () => {
+  const numero = (id: string, name: string, annee?: number) =>
+    ({ serverData: { id, name, ...(annee ? { annee } : {}) } } as unknown as SearchEntity);
+  const numeros = [
+    numero("1", "INFORESO n°74", 2022),
+    numero("2", "INFORESO n°70", 2021),
+    numero("3", "INFORESO n°73", 2022),
+    numero("4", "Fiche sans année"),
+  ];
+  const grouped = { layout: "grouped" as const, groupBy: { field: "annee", order: "desc" as const } };
+  // Le titre d'un bloc traduit son libellé : fournisseur de localisation en plus du routeur.
+  const renderGrouped = (ui: ReactElement) => renderWithProviders(<MemoryRouter>{ui}</MemoryRouter>);
+
+  it("titre chaque bloc par sa valeur, du plus récent au plus ancien, fiches sans valeur en dernier", () => {
+    renderGrouped(<SearchListView results={numeros} list={grouped} />);
+    const titres = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
+    expect(titres).toEqual(["2022", "2021", "Non classé"]);
+  });
+
+  it("range chaque item sous son bloc, dans l'ordre du serveur", () => {
+    renderGrouped(<SearchListView results={numeros} list={grouped} />);
+    const bloc2022 = screen.getByRole("region", { name: "2022" });
+    const cartes = Array.from(bloc2022.querySelectorAll("button")).map((b) => b.textContent);
+    expect(cartes).toEqual(["INFORESO n°74", "INFORESO n°73"]);
+  });
+
+  it("`groupBy.itemsSortBy` retrie les items de chaque bloc — le serveur ne lit qu'une clé de tri", () => {
+    const tries = { ...grouped, groupBy: { ...grouped.groupBy, itemsSortBy: { field: "name", order: "asc" as const } } };
+    renderGrouped(<SearchListView results={numeros} list={tries} />);
+    const bloc2022 = screen.getByRole("region", { name: "2022" });
+    const cartes = Array.from(bloc2022.querySelectorAll("button")).map((b) => b.textContent);
+    expect(cartes).toEqual(["INFORESO n°73", "INFORESO n°74"]);
+  });
+
+  it("clic sur une carte retriée → le détail s'ouvre sur CET item, pas sur celui de sa position d'origine", () => {
+    const tries = { ...grouped, groupBy: { ...grouped.groupBy, itemsSortBy: { field: "name", order: "asc" as const } } };
+    renderGrouped(<SearchListView results={numeros} list={tries} />);
+    fireEvent.click(screen.getByText("INFORESO n°73"));
+    expect(screen.getByTestId("details-modal").getAttribute("data-item")).toBe("INFORESO n°73");
+  });
+
+  it("nomme chaque bloc par sa valeur même avec des espaces, sans id en double entre deux listes", () => {
+    // Un id construit sur la valeur (« groupe-Entre Mer et Terres ») serait lu par `aria-labelledby`
+    // comme TROIS ids — le bloc perdrait son nom accessible.
+    const territoires = [
+      { serverData: { id: "a", name: "Fiche A", territoire: "Entre Mer et Terres" } },
+      { serverData: { id: "b", name: "Fiche B", territoire: "Artois" } },
+    ] as unknown as SearchEntity[];
+    const parTerritoire = { layout: "grouped" as const, groupBy: { field: "territoire" } };
+    const { container } = renderGrouped(
+      <>
+        <SearchListView results={territoires} list={parTerritoire} />
+        <SearchListView results={territoires} list={parTerritoire} />
+      </>,
+    );
+    expect(screen.getAllByRole("region", { name: "Entre Mer et Terres" })).toHaveLength(2);
+    const ids = [...container.querySelectorAll("h3[id]")].map((h) => h.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("utilise `emptyLabel` pour le bloc des fiches sans valeur", () => {
+    renderGrouped(
+      <SearchListView results={numeros} list={{ ...grouped, groupBy: { ...grouped.groupBy, emptyLabel: { fr: "Année inconnue", en: "Unknown year" } } }} />,
+    );
+    expect(screen.getByRole("heading", { name: "Année inconnue" })).toBeInTheDocument();
+  });
+
+  it("clic sur une carte d'un bloc → le détail s'ouvre sur CET item", () => {
+    renderGrouped(<SearchListView results={numeros} list={grouped} />);
+    fireEvent.click(screen.getByText("INFORESO n°70"));
+    expect(screen.getByTestId("details-modal").getAttribute("data-item")).toBe("INFORESO n°70");
+  });
+
+  it("sans `groupBy.field`, retombe sur la grille", () => {
+    renderGrouped(<SearchListView results={numeros} list={{ layout: "grouped" }} />);
+    expect(screen.queryAllByRole("heading", { level: 3 })).toHaveLength(0);
+    expect(screen.getByText("INFORESO n°74")).toBeInTheDocument();
+  });
+
+  it("mode split (`onFocusItem`) : la grille garde la priorité", () => {
+    renderGrouped(<SearchListView results={numeros} list={grouped} onFocusItem={vi.fn()} />);
+    expect(screen.queryAllByRole("heading", { level: 3 })).toHaveLength(0);
   });
 });
 

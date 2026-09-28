@@ -11,8 +11,11 @@ import { useSearchQuery } from "../hooks/useSearchQuery";
 import { hasRenderableTitle } from "../lib/featuredCarouselFilters";
 import { getEntryId } from "../lib/searchMapSelection";
 import FeaturedCarouselSlide from "./FeaturedCarouselSlide";
+import FeaturedCarouselCta from "./FeaturedCarouselCta";
 import type { FeaturedCarouselSectionProps } from "../schema";
 import "@/modules/search/i18n";
+import { accentStyle } from "@/lib/accentStyle";
+import { sectionBadgeClass } from "@/components/sections/sectionBadge";
 
 export interface FeaturedCarouselSectionWrapperProps {
   id?: string;
@@ -23,10 +26,18 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
   const { loaded } = useLoadNamespace("modules/search");
   const { entity } = useCocolight();
   const t = useT();
-  const { badgeLabel, ctaLabel, baseParams, resource, itemAction = { kind: "profil" }, autoplay, autoplayIntervalMs, background, accentColor, showControls } = props;
-  // `accentColor` config-driven (badge) — même couple fond fixe/texte blanc fixe que sur les CTA
-  // des diapositives (`FeaturedCarouselSlide`), indépendant du thème.
-  const accentStyle = accentColor ? { backgroundColor: accentColor, color: "#fff" } : undefined;
+  const { badgeLabel, ctaLabel, baseParams, resource, itemAction = { kind: "profil" }, autoplay, autoplayIntervalMs, background, accentColor, accentTextColor, showControls, design } = props;
+  const enCarte = design === "card";
+  // Panneau de contenu : même dégradé que l'illustration de `map-bubbles`, pour deux blocs qui se répondent.
+  const voilePanneau = enCarte && props.backgroundOverlay
+    ? {
+        background: `linear-gradient(${props.backgroundOverlay.angle ?? 90}deg, ${props.backgroundOverlay.from}, ${props.backgroundOverlay.to})`,
+        // Encre propre au panneau : elle suit le dégradé, pas l'encre de la carte qui l'entoure.
+        ...(props.overlayTextColor ? { color: props.overlayTextColor } : {}),
+      }
+    : undefined;
+  // Le badge peut se teinter à part du bouton (`badgeColor`), sinon il suit l'accent.
+  const styleBadge = accentStyle(props.badgeColor ?? accentColor, props.badgeTextColor ?? accentTextColor);
 
   const [searchType] = useState<Record<string, string[]> | null>(
     baseParams.defaultTypes ? { type: baseParams.defaultTypes } : null
@@ -67,15 +78,19 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
     return () => clearInterval(interval);
   }, [api, autoplay, paused, autoplayIntervalMs, renderable.length]);
 
-  // Fond FIXE (config-driven, identique clair/sombre) → texte blanc fixe, jamais `text-foreground`
-  // (qui s'inverserait en mode clair et deviendrait illisible sur ce fond sombre). Sans `background`
-  // configuré, repli sur l'encre du thème pour rester lisible sur le fond de page par défaut.
-  const sectionStyle = background ? { backgroundColor: background } : undefined;
-  const sectionClassName = background ? "text-white" : "bg-foreground text-background";
+  // Fond fourni : texte blanc par défaut, jamais `text-foreground` — le fond attendu est sombre et FIXE,
+  // l'encre du thème s'y inverserait en mode clair. `textColor` prend le dessus dès que le fond est clair.
+  // Sans fond du tout : le couple sombre du thème.
+  const sectionStyle = background
+    ? { backgroundColor: background, ...(props.textColor ? { color: props.textColor } : {}) }
+    : undefined;
+  const sectionClassName = background
+    ? (props.textColor ? "" : "text-white")
+    : "bg-foreground text-background";
 
   if (!loaded || !entity || (isLoading && renderable.length === 0)) {
     return (
-      <section id={id} style={sectionStyle} className={cn("py-6 md:py-10", sectionClassName)}>
+      <section id={id} style={sectionStyle} className={cn(enCarte && "relative rounded-2xl", "py-6 md:py-10", sectionClassName)}>
         <div className="container mx-auto animate-pulse px-4">
           <div className="grid items-center gap-8 md:grid-cols-2">
             <div className="space-y-4">
@@ -98,7 +113,11 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
     <section
       id={id}
       style={sectionStyle}
-      className={cn("relative overflow-hidden py-6 md:py-10", sectionClassName)}
+      // Habillage « carte » : la section porte ses propres coins et ne rogne plus — sinon la pilule de
+      // titre, qui déborde du haut, serait coupée. Ses marges calent le panneau sur celui de `map-bubbles`
+      // voisin : même marge basse, et en haut la même marge plus la ligne d'accroche que ce bloc porte
+      // au-dessus de son illustration.
+      className={cn("relative", enCarte ? "rounded-2xl pt-16 pb-6" : "overflow-hidden pt-6 pb-6 md:pt-10 md:pb-10", sectionClassName)}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -112,17 +131,36 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
           verticalement, remontait dessous) : en flux, sa place est réservée par
           construction quelle que soit la hauteur du contenu. */}
       {badgeLabel && (
-        <div className="container mx-auto px-4 sm:px-8 md:px-24 mb-3 md:mb-6">
+        <div className={enCarte ? "absolute -top-5 left-6 z-20" : "container mx-auto px-4 mb-2 md:mb-3"}>
           <Badge
-            variant={accentColor ? undefined : "secondary"}
-            style={accentStyle}
-            className="-rotate-4 rounded-none border-none px-3 py-1 sm:px-4 sm:py-1.5 text-xl sm:text-2xl md:text-3xl font-serif"
+            variant={styleBadge ? undefined : "secondary"}
+            style={styleBadge}
+            className={sectionBadgeClass(props.headlineStyle)}
           >
             {t(badgeLabel)}
           </Badge>
         </div>
       )}
-      <Carousel opts={{ loop: renderable.length > 1 }} setApi={setApi} className="container mx-auto px-4 sm:px-8 md:px-24">
+      {/* Le carrousel se centre dans la place RESTANTE, sous un badge qui, lui, reste en haut. Sans ce
+          niveau, un `justify-center` posé sur la section centrait badge ET carrousel d'un bloc, et le
+          badge descendait — désaligné de la pastille du bloc voisin, à hauteur de laquelle il doit se
+          lire. `flex-1` n'agit que si la section est en flex-col contrainte (colonne de `gridLayout`) ;
+          ailleurs il est inerte, le rendu ne bouge pas. */}
+      {/* Avec panneau (`backgroundOverlay`) : le dégradé habille la diapositive ET son pied — points et
+          bouton vivent DANS la carte de l'actu. Marge latérale comme l'illustration de `map-bubbles`, pour
+          que la carte blanche respire autour ; `flex-1` descend le panneau au bas de la carte, à la hauteur
+          de celui du bloc voisin. */}
+      <div
+        style={voilePanneau}
+        // `py-8` : la ligne points + bouton se lit un peu au-dessus du bord bas du panneau, pas collée à lui,
+        // et la diapositive respire d'autant sous son bord haut.
+        className={cn("flex flex-1 flex-col justify-start", voilePanneau && "mx-4 rounded-2xl px-3 py-8 md:px-4")}
+      >
+      <Carousel
+        opts={{ loop: renderable.length > 1 }}
+        setApi={setApi}
+        className={cn("container mx-auto", voilePanneau ? "px-0" : "px-4")}
+      >
         <CarouselContent>
           {renderable.map((item, index) => (
             <CarouselItem key={getEntryId(item) ?? index}>
@@ -132,6 +170,8 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
                 resource={resource}
                 itemAction={itemAction}
                 accentColor={accentColor}
+                accentTextColor={accentTextColor}
+                enCarte={enCarte}
                 priority={index === 0}
               />
             </CarouselItem>
@@ -139,27 +179,32 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
         </CarouselContent>
         {renderable.length > 1 && (
           <>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Diapositive précédente"
-              onClick={() => api?.scrollPrev()}
-              className="absolute top-1/2 left-2 -translate-y-1/2 rounded-none border-none bg-transparent text-current hover:bg-current/10 md:left-4"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Diapositive suivante"
-              onClick={() => api?.scrollNext()}
-              className="absolute top-1/2 right-2 -translate-y-1/2 rounded-none border-none bg-transparent text-current hover:bg-current/10 md:right-4"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            {showControls && (
+            {/* Habillage « carte » : pas de flèches — les points suffisent, et la carte reste calme. */}
+            {!enCarte && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label="Diapositive précédente"
+                  onClick={() => api?.scrollPrev()}
+                  className="absolute top-[28%] left-0 -translate-y-1/2 rounded-none border-none bg-transparent text-current hover:bg-current/10 md:left-1"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label="Diapositive suivante"
+                  onClick={() => api?.scrollNext()}
+                  className="absolute top-[28%] right-0 -translate-y-1/2 rounded-none border-none bg-transparent text-current hover:bg-current/10 md:right-1"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+            {showControls && !enCarte && (
               <div className="mt-6 flex justify-center gap-2">
                 {renderable.map((item, index) => (
                   <button
@@ -178,6 +223,44 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
           </>
         )}
       </Carousel>
+      {/* Pied : les points de position au centre, le bouton de la diapositive COURANTE à droite. Le bouton
+          vit ici (et non dans la diapositive) pour partager sa ligne avec les points, sans quoi il
+          défilerait avec le contenu. */}
+      {enCarte && (
+        <div className={cn("container mx-auto mt-auto flex flex-col items-center gap-3 pt-4 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4", voilePanneau ? "px-0" : "px-4")}>
+          {/* Colonnes latérales de même largeur : les points restent au CENTRE quelle que soit la largeur
+              du bouton. Sous `sm:`, le bouton passe à la ligne — à cette largeur il mordrait sur eux. */}
+          <span aria-hidden className="hidden sm:block" />
+          <div className="flex justify-center gap-2">
+            {renderable.length > 1 &&
+              renderable.map((item, index) => (
+                <button
+                  key={getEntryId(item) ?? index}
+                  type="button"
+                  aria-label={`Diapositive ${index + 1}`}
+                  onClick={() => api?.scrollTo(index)}
+                  className={cn(
+                    "h-2 w-2 rounded-full transition-colors",
+                    index === selectedIndex ? "bg-current" : "bg-current/30",
+                  )}
+                />
+              ))}
+          </div>
+          <div className="flex justify-center sm:justify-end">
+          {renderable[selectedIndex] && (
+            <FeaturedCarouselCta
+              item={renderable[selectedIndex]}
+              ctaLabel={ctaLabel}
+              itemAction={itemAction}
+              accentColor={accentColor}
+              accentTextColor={accentTextColor}
+              compact
+            />
+          )}
+          </div>
+        </div>
+      )}
+      </div>
     </section>
   );
 }

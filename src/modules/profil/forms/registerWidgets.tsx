@@ -86,6 +86,7 @@ registerWidget("image", (p) => (
         onRemoveExisting={() => p.form.setValue(fname("_imageDeleted"), true)}
         aspect={(p.field.widgetProps?.aspect as number) ?? 1}
         shape={p.field.widgetProps?.shape as "square" | "circle" | undefined}
+        allowOriginal={p.field.widgetProps?.allowOriginal === true}
         label={lbl(p)}
         hint={p.field.info ? p.t(p.field.info) : undefined}
       />
@@ -170,6 +171,6 @@ registerWidget("finder", (p) => (
 ));
 
 // composites edit-profil (gèrent leurs champs via le form).
-registerWidget("eventDates", (p) => <Suspense fallback={<WidgetFallback />}><EditEventDatesTab form={p.form} /></Suspense>);
+registerWidget("eventDates", (p) => <Suspense fallback={<WidgetFallback />}><EditEventDatesTab form={p.form} datesWhenRecurrent={p.field.widgetProps?.datesWhenRecurrent as boolean | undefined} /></Suspense>);
 registerWidget("editSocial", (p) => <Suspense fallback={<WidgetFallback />}><EditSocialTab form={p.form} /></Suspense>);
 registerWidget("editSchedule", (p) => <Suspense fallback={<WidgetFallback />}><EditScheduleTab form={p.form} /></Suspense>);

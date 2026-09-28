@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { getBaseUrl } from "@/lib/constant/common";
 import type { SearchCardProps } from "../../schema";
 import { parseResourceDirectoryItem, type ResourceKind } from "../../lib/resourceDirectory";
 import { formatCapacityRange } from "../../helpers/servicePricingAnswers";
@@ -42,6 +43,7 @@ export default function CardResourceDirectory({ item, onClick, list }: SearchCar
             resourceTypes: conf.resourceTypes,
             finderSuffix: conf.finderSuffix,
             fieldSuffixes: { finder: conf.finderSuffix, ...conf.fieldSuffixes },
+            baseUrl: getBaseUrl(),
           })
         : null,
     [conf, serverData],

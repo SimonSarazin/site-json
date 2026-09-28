@@ -60,7 +60,8 @@
           "geo",
           "geoPosition"
         ],
-        "indexStepList": 20
+        "indexStepList": 20,
+        "costumSlug": "parent62"
       },
       "map": {
         "cluster": true,

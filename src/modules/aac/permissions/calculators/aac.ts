@@ -129,6 +129,18 @@ export function calculateAacPermissions(
   // Affichage seulement : le chemin d'écriture backend n'exige que la connexion.
   const canSelectCommun = isAdmin;
 
+  // 7. Supprimer un commun — auteur OU admin, parité des deux gates legacy qui convergent :
+  // l'annuaire (`federationDesCae_index.js:479-484`) et la fiche (`campDetail.php:2590`).
+  //
+  // Surtout pas `canEditCommun`, qui ouvre l'édition à tout connecté sous
+  // `anyOnewithLinkCanAnswer` : il montrerait « Supprimer » à n'importe quel visiteur, pour un
+  // droit qu'aucune branche d'`Answer::canEdit` n'accorde.
+  const canDeleteCommun = (commun?: AacCommunLike | null): boolean => {
+    if (isAdmin) return true;
+    if (!commun || !currentUserId) return false;
+    return commun.authorId === currentUserId;
+  };
+
   return {
     canCreateCommun,
     canCreateCommunReason,
@@ -139,6 +151,7 @@ export function calculateAacPermissions(
     canContributeFunding,
     canContributeFundingReason,
     canSelectCommun,
+    canDeleteCommun,
     isConnected,
     isAdmin,
     currentUserId,

@@ -1,6 +1,6 @@
 import "@/modules/search/i18n"; // Required: registers i18n resources — la LISTE/cards est montée hors
 // section search (agenda, split map…) ; import explicite (indépendant de la chaîne SwitchDetailsMode).
-import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo, useId, Suspense } from "react";
 import { useSearchParams, useNavigate } from "react-router";
 import { lazy } from "vite-preload";
 import SearchCard from "./SearchCard";
@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { getEntryId } from "../lib/searchMapSelection";
 import { resolveListItemConf, resolveListItemConfs } from "../lib/resolveListItemConf";
 import { resolveItemClick } from "../lib/itemAction";
+import { grouperParChamp } from "../lib/groupResults";
+import GroupHeading from "./GroupHeading";
 
 // Vue timeline en `lazy()` (même convention que les variants de SearchCard) : le chunk
 // n'est téléchargé que par les pages qui posent `list.layout: "timeline"`.
@@ -50,6 +52,24 @@ export default function SearchListView({
   // Conf de liste EFFECTIVE par item : sans `list.itemRules`, chaque entrée vaut `list` lui-même
   // (identité référentielle → comportement mono-carte historique strictement inchangé).
   const itemLists = useMemo(() => resolveListItemConfs(results, list), [results, list]);
+  // Groupes de `layout: "grouped"` — on regroupe des PAIRES {item, index} pour garder, après
+  // découpage, la conf résolue de chaque item (`itemLists[i]`), indexée sur la liste d'origine.
+  const groupBy = list?.layout === "grouped" ? list.groupBy : undefined;
+  const groupes = useMemo(
+    () => (groupBy?.field
+      ? grouperParChamp(
+        results.map((it, i) => ({ serverData: it.serverData, it, i })),
+        groupBy.field,
+        groupBy.order,
+        groupBy.itemsSortBy && { champ: groupBy.itemsSortBy.field, ordre: groupBy.itemsSortBy.order },
+      )
+      : null),
+    [results, groupBy],
+  );
+  // Préfixe des ids de titre de bloc : un id construit sur la VALEUR (« groupe-2022 ») casse dès qu'elle
+  // contient une espace — `aria-labelledby` lit une LISTE d'ids séparés par des espaces — et se répète
+  // si deux listes groupées partagent la page. `useId` est stable entre le rendu serveur et le client.
+  const idListe = useId();
   // Mémorise le dernier id traité pour éviter de rouvrir si l'URL ne change pas.
   const lastHandledPreviewId = useRef<string | null>(null);
 
@@ -260,6 +280,34 @@ export default function SearchListView({
         </Suspense>
 
         {/* Conteneur (dialog/drawer) choisi par `card.detailsMode` de la conf RÉSOLUE de l'item ouvert. */}
+        {selected && (
+          <PreviewNavContext.Provider value={previewNavValue}>
+            <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={selected.item} card={selected.list?.card ?? card} preview={selected.list?.preview ?? preview} list={selected.list ?? list} />
+          </PreviewNavContext.Provider>
+        )}
+      </>
+    );
+  }
+
+  // Vue groupée (`list.layout: "grouped"`) — même grille, même carte, même `wrap` que la vue grille,
+  // simplement découpée en blocs titrés. Même règle de priorité que la timeline : vue détaillée et
+  // mode split gardent leur rendu.
+  if (groupes && !onFocusItem) {
+    return (
+      <>
+        <div ref={containerRef} className="space-y-8">
+          {groupes.map((groupe, rang) => (
+            <section key={groupe.cle ?? "__sans-valeur__"} aria-labelledby={`${idListe}-groupe-${rang}`}>
+              <GroupHeading id={`${idListe}-groupe-${rang}`} cle={groupe.cle} emptyLabel={groupBy?.emptyLabel} />
+              <div className={gridClasses}>
+                {groupe.items.map(({ it, i }) =>
+                  wrap(it, <SearchCard item={it} onClick={() => handleCardClick(it, itemLists[i])} card={itemLists[i]?.card ?? card} list={itemLists[i] ?? list} />),
+                )}
+              </div>
+            </section>
+          ))}
+        </div>
+
         {selected && (
           <PreviewNavContext.Provider value={previewNavValue}>
             <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={selected.item} card={selected.list?.card ?? card} preview={selected.list?.preview ?? preview} list={selected.list ?? list} />

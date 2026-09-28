@@ -43,22 +43,51 @@ part côté SDK**. La source de vérité locale est **[`src/modules/aac/types.ts
 |---|---|---|
 | **Commun** | `answers.aapStep<N>.<key>` | `status` = **TABLEAU append-only** (verbes empilés), pas un scalaire. États : `créé / pending / validé`. |
 | **Dépense** | `answers.<depenseStepKey>.depense[]` | `{ poste, price, milestone: <milestoneId>, financer[] }`. ⚠️ **L'étape n'est PAS toujours `aapStep1`** (cf. §4). Les **logs vivent DANS la dépense** (`historique`). |
-| **Financer** | `depense.financer[]` | `{ amount, date, user, id, name, type, fundingType }` — **deux axes distincts** (cf. encadré). |
+| **Financer** | `depense.financer[]` | `{ line, amount, date, user, id, name, type, status, finkey, payment{…} }` — format **canonique**, écrit par le serveur (cf. encadré). |
 | **Milestone** | `project.oceco.milestones[]` | Lien **1:1** avec la dépense via `depense.milestone === milestone.milestoneId`. Le montant reste porté par la **dépense** (jamais dupliqué). |
 | **Action** | `milestone.actions[]` | Contrainte **Σ(actions.montant) ≤ depense.montant**. |
 | **Campagne** | déclarée sur l'`aapConfig` (`campagne.<id>`) | `{ type: simple\|doublonnage, dates{début, fin, débutCofinancement, ouverturePaiement}, montantDisponibleDoublonnage, porteur, provider }`. |
 
-> ### ⚠️ `financer` : deux axes à NE PAS confondre
-> - **`type`** = nature de l'**entité** (`citoyen` \| `organisation`)
-> - **`fundingType`** = nature du **financement** (aujourd'hui `prepaid` en dur)
+> ### ⚠️ `financer` : les axes à NE PAS confondre
+> - **`type`** = la **collection** de l'entité financeuse (`citoyens` \| `organizations` \|
+>   `projects`), au pluriel — c'est le nom de collection que le serveur écrit.
+> - **`status`** = statut de l'**engagement** (`pending` à la création).
+> - **`payment.status`** = statut du **paiement** (`unpaid` \| `partial` \| **`payed`**, sic).
+>   Rien à voir avec `status` : une promesse `pending` peut être `payed`.
+> - **`fundingType`** = LEGACY, lecture seule. `prepaid` était le marqueur binaire de « payé »
+>   avant le bloc `payment` ; il n'est **plus jamais écrit**.
 >
 > Le **porteur / doublonnage est un `fundingType`**, PAS un type d'entité. Un doublonnage =
 > une **2ᵉ entrée `financer` SÉPARÉE** (500 € financeur + 100 € porteur = **600 €**, jamais
 > fusionnés).
 
+### Le bloc `payment` — le serveur en est l'unique auteur
+
+```jsonc
+"payment": {
+  "logs": [{ "invoiceId", "financerId", "financerName", "finkey", "amount",
+             "type": "manual|stripe|helloasso", "date", "confirmation": "pending|validated",
+             "paidBy", "validatedAt", "validatedBy" }],
+  "paidAmount": 500,      // Σ des logs `validated` — le seul montant ACQUIS
+  "pendingAmount": 0,     // Σ des logs en attente de validation du porteur
+  "status": "partial"
+}
+```
+
+`finkey` (`a-` + 12 caractères) est la **clé stable de la ligne** : c'est par elle qu'on vise un
+versement, jamais par la position dans `financer[]`, qu'une insertion concurrente décale.
+
+**Ne jamais écrire ce bloc côté client** : `finkey`, `invoiceId` et les agrégats sont générés
+par `Aap::addFinancerEngagement` / `payFinancerEngagement` / `recomputeFinancerPayment`. Le
+front passe par `/co2/aap/coremuoperation/`. **En lecture**, tout passe par
+[`readFinancerPaymentState`](../src/modules/cagnotte/utils/financerPayment.ts) — une seule
+fonction, qui gère les trois formes en base (canonique, engagement neuf `{logs:[]}`, et legacy
+sans `payment`) et traduit `payed` → `paid` pour l'affichage. Aucune migration n'étant prévue,
+ce repli est permanent.
+
 **Champs RÉSERVÉS** (déclarés dans `types.ts`, **absents des données actuelles** — à confirmer
-au GATE §9) : `financer.paymentStatus`, `financer.campaign`, `financer.finkey`,
-`depense.paiements[]`, `depense.historique[]`, et les entités net-new `Campagne`, `Panier`, `AacLog`.
+au GATE §9) : `financer.campaign`, `depense.paiements[]`, `depense.historique[]`, et les entités
+net-new `Campagne`, `Panier`, `AacLog`.
 
 ---
 
@@ -401,7 +430,7 @@ Les règles qu'il reproduit — **chacune est un piège du legacy** :
 | **Priorité des critères** | `formParent.evaluationCriteria` (si `activateLocalCriteria`) **>** `aapConfig…params.config.criterions`. Exposé via `criteriaSource`. |
 | **Coercions** | `coeff` string → number, rôles **CSV → array**, flags `"true"` → bool. |
 | **Config org-spécifique** | Deux configs CoForm coexistent (**template héritable** vs **org-spécifique**) → on lit **celle pointée par `form.config`**. |
-| **`typeCoFinancer` à la RACINE du form** | Nature des organisations cofinanceuses : `"tiersLieux"` (le défaut legacy FTL) ou un **TAG d'organisation** (`"cae"`…, `Organization::get_cofinancer_bytags`). Clé racine du form parent, comme les gates — `financer.php:835` lit `costum.mainFormData.typeCoFinancer` puis `parentForm.typeCoFinancer`, `AnswerAction.php:268` teste `$params["parentForm"]["typeCoFinancer"]` : **ni `params`, ni l'aapConfig**. Absent ⇒ `null` ; le repli `"tiersLieux"` appartient à l'**affichage** (`CommunFinancingCard`), pas au résolveur. |
+| **`typeCoFinancer` à la RACINE du form** | Nature des organisations cofinanceuses : `"tiersLieux"` (le défaut legacy FTL) ou un **TAG d'organisation** (`"cae"`…, `Organization::get_cofinancer_bytags`). Clé racine du form parent, comme les gates — `financer.php:835` lit `costum.mainFormData.typeCoFinancer` puis `parentForm.typeCoFinancer`, `AnswerAction.php:268` teste `$params["parentForm"]["typeCoFinancer"]` : **ni `params`, ni l'aapConfig**. Absent ⇒ `null` ; le repli appartient à l'**affichage**, pas au résolveur. Périmètre de « J'utilise » (`useAacPlaceSourceKeys`), par priorité : `aac.detail.placeSourceKeys`, `aac.detail.placeKind`, ce `typeCoFinancer` (`"cae"` sans casse ⇒ CAE, toute autre valeur ⇒ tiers-lieux), puis tiers-lieux. |
 
 Sortie (`AacResolvedConfig`) : `steps[]`, `roles{depenseStepKey, evalStepKey, financementStepKey,
 suiviStepKey}`, `criteria[]`, `criteriaSource`, `gates`, `campaigns[]`, `typeCoFinancer`.
@@ -428,12 +457,16 @@ src/modules/aac/
   lib/communSeo.ts          # resolveCommunSeo : titre / résumé / image de la fiche (§3.3)
   lib/filterCommuns.ts      # filtrage + tri CLIENT du chemin balayage (usageSubKey / parseUsageSubKey)
   lib/associateExistingProject.ts # rattacher un commun à un projet DÉJÀ existant (§9 piège n°11)
+  lib/communDeletion.ts     # resolveCommunDeletionPlan : ce qu'une suppression emporterait, et
+                            #   quand elle est INTERDITE (dès qu'un versement existe, §6)
   hooks/useAacConfig.ts     # résolveur câblé (api.form ×2, 0 nouvel endpoint)
   hooks/useCommunFundingContext.ts # où vit un commun : l'appel où il a été DÉPOSÉ
   hooks/useCommunFundingHost.ts    # l'entité de ce contexte — celle qui détient l'enveloppe
   hooks/useCommunProjectEntity.ts  # le Project lié : droits + oceco.milestones
   hooks/useCommunRawDepenses.ts    # depense[] : ...RawDepenses pour l'affichage,
                                    #   ...RawDepensesDocument (brut) pour l'écriture
+  hooks/useDeleteCommun.ts  # cascade EXPLICITE commun → actions → projet : le backend n'en fait
+                            #   AUCUNE (`Element::deleteSimple` laisse les actions orphelines)
   hooks/useAacPermissions.ts
   permissions/              # types, defaults, calculators/aac.ts, register, index
   constants/queryKeys.ts    # AAC_QUERY_KEYS
@@ -508,17 +541,46 @@ ajouter une action sur SON commun.
 Droit final : **admin du projet lié OU déposant du commun**. L'admin de l'appel n'y est pas — voir
 ci-dessous.
 
-⚠️ **Deux règles voisines mais DISTINCTES**, à ne pas réunifier :
+⚠️ **Des règles voisines mais DISTINCTES**, à ne pas réunifier :
 
 | Action | Qui | Où |
 |---|---|---|
 | Sélectionner / valider un commun | admin de l'appel | `aac` (`canSelectCommun`) |
 | **Générer / Associer un projet** | admin de l'appel **ou** déposant | `CommunProjectControl.canManageProject` |
 | **Ajouter / éditer palier et action** | admin du **projet lié** **ou** déposant | `cagnotte` + `ownerIds` |
+| **Supprimer DÉFINITIVEMENT un commun** | auteur **ou** admin | `aac` (`canDeleteCommun`) |
 
 Porter l'appel autorise à instruire et à **promouvoir** un commun, pas à écrire dans le plan de
 financement d'autrui. L'admin de l'appel retrouve les paliers dès qu'il administre le projet lié —
 ce qui est le cas courant quand c'est lui qui l'a généré.
+
+**`canDeleteCommun` est une FONCTION**, seule du namespace : le droit dépend du commun visé,
+puisqu'il s'ouvre à son auteur. Volontairement distinct de `canEditCommun`, qui porte
+`anyOnewithLinkCanAnswer` — « avoir le lien suffit pour répondre » ouvre l'édition à tout
+**connecté**, et un geste irréversible n'hérite pas d'un gate pensé pour la saisie. Le backend ne
+l'hérite pas non plus : les branches d'`Answer::canEdit` (`survey/models/Answer.php:143`) sont admin
+d'interface, auteur, admin `parentSlug`, admin `context`, `Form::canAdmin`, hook costum.
+
+Deux garde-fous s'ajoutent au droit, côté front :
+
+- **L'argent bloque.** `resolveCommunDeletionPlan` ([`lib/communDeletion.ts`](../src/modules/aac/lib/communDeletion.ts))
+  refuse la suppression dès qu'un versement existe — compté sur `items[].allFunding`, **jamais** sur
+  `resourceFinancedAmount`, qui ne somme que les paliers OUVERTS : un commun financé puis clôturé
+  afficherait 0 € et redeviendrait supprimable. Le retrait de l'annuaire
+  (`CommunSelectionControl`) reste la voie non destructive.
+- **La cascade est EXPLICITE et sur demande** : le backend n'en fait aucune (`Element::deleteSimple`
+  retire le document, ses commentaires et ses fichiers, mais ni les actions d'un projet ni les liens
+  croisés). `useDeleteCommun` supprime le commun d'abord — seul échec qui fait échouer le geste —
+  puis, si l'utilisateur l'a demandé, les actions **avant** le projet, en best-effort compté.
+  Au succès, il retire du cache le document supprimé (tous lecteurs) et le projet supprimé, appelle
+  `onDeleted`, puis invalide listes et enveloppes.
+
+Depuis l'annuaire, le plan vient de `useCommunDeletionPlan` : document réponse, hôte de son contexte
+(`useCommunFundingHost`), enveloppe, repli sur le document. Au repos, ni le commun ni son enveloppe ne
+sont lus ; le dialogue reste en attente tant que le plan n'est pas résolu.
+
+⚠️ Gate d'**affichage** uniquement, comme les autres : le backend reste la source de vérité
+(`Authorisation::canDeleteElement`).
 
 ## 7. Query keys
 
@@ -693,8 +755,10 @@ avant de construire le financement** (base `pixelhumain1` ; AAC de référence :
 
 - la **clé de référence CAMPAGNE portée par l'answer** — **introuvable dans le code** ; sans elle
   **tout le scope financement est indéfini** (bloquant) ;
-- la forme réelle de `depense[].financer[]` sur un **answer déjà financé** (présence de
-  `paymentStatus` / `campaign` / porteur) ;
+- ~~la forme réelle de `depense[].financer[]` sur un **answer déjà financé**~~ — **TRANCHÉ** :
+  c'est le format canonique décrit au §2 (`line`, `status`, `finkey`, `payment{…}`), celui
+  qu'écrivent `Aap::addFinancerEngagement` et `payFinancerEngagement`. Reste ouvert sur cette
+  ligne : le rattachement d'une `campaign` et le porteur (doublonnage) ;
 - les clés réelles des **9 domaines** de l'`aapConfig` — le flag de financement, lui, est
   **tranché** : `form.coremu` (§6), et non `coRemuneration` ;
 - les gates `annuaire` / `standalone` — **tranché** : clés fantômes, retirées du résolveur (§6) ;

@@ -5,6 +5,23 @@ import NavLink from "../NavLink";
 import SocialLinks from "./SocialLinks";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
+import { FooterLinkColumn } from "./FooterLinkColumn";
+import { useFooterColumns, useFooterLinks } from "./useFooterLinks";
+
+const COLUMN_LINK_CLASS = "text-muted-foreground hover:text-primary transition-colors text-sm";
+
+/**
+ * Parts de la grille à partir de `lg` : le bloc logo + une par colonne de liens. Classes écrites
+ * en toutes lettres — Tailwind ne génère que celles qu'il trouve littéralement dans le source.
+ */
+const LG_GRID_COLS: Record<number, string> = {
+    0: "lg:grid-cols-1",
+    1: "lg:grid-cols-2",
+    2: "lg:grid-cols-3",
+    3: "lg:grid-cols-4",
+    4: "lg:grid-cols-5",
+    5: "lg:grid-cols-6",
+};
 
 interface FooterSidebarColumnsProps {
     footer: Footer;
@@ -30,10 +47,19 @@ export default function FooterSidebarColumns({ footer, style }: FooterSidebarCol
 
     const DefaultIcon = isCard ? Shield : Waves;
 
+    // Au-delà de 5 colonnes, la grille plafonne à 6 parts et les colonnes suivantes passent à la ligne.
+    const lgGridCols = LG_GRID_COLS[footer.columns?.length ?? 0] ?? "lg:grid-cols-6";
+
+    const columns = useFooterColumns(footer.columns);
+    const legalLinks = useFooterLinks(footer.legalLinks);
+    const bottomLinks = useFooterLinks(footer.bottomLinks);
+
     return (
         <footer className={footerClasses}>
-            <div className="container mx-auto px-4 py-16">
-                <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+            {/* Mêmes marges latérales que le header : `px-4` seul décale le pied de page
+                vers l'extérieur au-delà de `sm`. */}
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div className={`grid md:grid-cols-2 ${lgGridCols} gap-8 mb-12`}>
                     <div className="lg:col-span-1">
                         <NavLink to="/" className="flex items-center gap-3 mb-4">
                             {footer.logo ? (
@@ -79,22 +105,8 @@ export default function FooterSidebarColumns({ footer, style }: FooterSidebarCol
                         />
                     </div>
 
-                    {footer.columns?.map((column, index) => (
-                        <div key={index}>
-                            <h3 className="font-semibold mb-4 text-foreground">{t(column.title)}</h3>
-                            <ul className="space-y-2">
-                                {column.links?.map((link, linkIdx) => (
-                                    <li key={linkIdx}>
-                                        <NavLink
-                                            to={link.href}
-                                            className="text-muted-foreground hover:text-primary transition-colors text-sm"
-                                        >
-                                            {t(link.label)}
-                                        </NavLink>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
+                    {columns.map(({ column, links }, index) => (
+                        <FooterLinkColumn key={index} column={column} links={links} linkClassName={COLUMN_LINK_CLASS} />
                     ))}
                 </div>
 
@@ -103,7 +115,7 @@ export default function FooterSidebarColumns({ footer, style }: FooterSidebarCol
                         {t(footer.copyright)}
                     </p>
                     <div className="flex gap-6 text-sm text-muted-foreground">
-                        {footer.legalLinks?.map((link, idx) => (
+                        {legalLinks.map((link, idx) => (
                             <NavLink
                                 key={idx}
                                 to={link.href}
@@ -112,7 +124,7 @@ export default function FooterSidebarColumns({ footer, style }: FooterSidebarCol
                                 {t(link.label)}
                             </NavLink>
                         ))}
-                        {footer.bottomLinks?.map((link, idx) => (
+                        {bottomLinks.map((link, idx) => (
                             <NavLink
                                 key={`bottom-${idx}`}
                                 to={link.href}

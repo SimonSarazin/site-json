@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { buildFinderMongoFilters } from "./finderFilters";
+import {
+  buildFinderMongoFilters,
+  buildFinderSearchParams,
+  placeKindSourceKeys,
+  PLACE_KIND_SOURCE_KEYS,
+} from "./finderFilters";
 import type { FinderFilter } from "../types";
 
 describe("buildFinderMongoFilters", () => {
@@ -92,5 +97,105 @@ describe("buildFinderMongoFilters", () => {
       tags: { $nin: ["X"] },
       category: { $nin: ["Y"] },
     });
+  });
+});
+
+describe("buildFinderSearchParams", () => {
+  it("finder sans filtre, global → searchType seul + notSourceKey", () => {
+    expect(
+      buildFinderSearchParams({ type: "organizations", filters: [], notSourceKey: true }),
+    ).toEqual({ searchType: ["organizations"], notSourceKey: true });
+  });
+
+  it("inclusions + exclusions → même DSL que buildFinderMongoFilters", () => {
+    const filters: FinderFilter[] = [{ attributeName: "tags", valueName: "CAE" }];
+    const excludeFilters: FinderFilter[] = [{ attributeName: "tags", valueName: "Réseau" }];
+    expect(
+      buildFinderSearchParams({ type: "organizations", filters, excludeFilters, notSourceKey: true }),
+    ).toEqual({
+      searchType: ["organizations"],
+      filters: buildFinderMongoFilters(filters, excludeFilters),
+      notSourceKey: true,
+    });
+  });
+
+  // `false` partirait en chaîne "false" (form-urlencoded), lue comme ACTIVE par
+  // la garde serveur : la clé doit être ABSENTE pour que le SDK borne au costum.
+  it("notSourceKey à false → clé absente, jamais `false`", () => {
+    const out = buildFinderSearchParams({ type: "organizations", filters: [], notSourceKey: false });
+    expect(out).toEqual({ searchType: ["organizations"] });
+    expect("notSourceKey" in out).toBe(false);
+  });
+
+  it("type déjà en tableau → conservé tel quel", () => {
+    expect(
+      buildFinderSearchParams({ type: ["organizations", "projects"], filters: [], notSourceKey: true })
+        .searchType,
+    ).toEqual(["organizations", "projects"]);
+  });
+
+  // La seule PRÉSENCE de `notSourceKey` désarme le périmètre côté serveur : avec
+  // un `sourceKey`, il doit disparaître, même si le finder le déclare à `true`.
+  it("sourceKey non vide → émis, et notSourceKey absent même si le finder le veut", () => {
+    const out = buildFinderSearchParams({
+      type: "organizations",
+      filters: [{ attributeName: "tags", valueName: "TiersLieux" }],
+      notSourceKey: true,
+      sourceKey: ["franceTierslieux"],
+    });
+    expect(out).toEqual({
+      searchType: ["organizations"],
+      filters: { tags: "TiersLieux" },
+      sourceKey: ["franceTierslieux"],
+    });
+    expect("notSourceKey" in out).toBe(false);
+  });
+
+  it("sourceKey vide → comportement sans périmètre explicite", () => {
+    expect(
+      buildFinderSearchParams({ type: "organizations", filters: [], notSourceKey: true, sourceKey: [] }),
+    ).toEqual({ searchType: ["organizations"], notSourceKey: true });
+  });
+});
+
+describe("placeKindSourceKeys", () => {
+  it("défaut → tiers-lieux (source franceTierslieux)", () => {
+    expect(placeKindSourceKeys()).toEqual(["franceTierslieux"]);
+    expect(placeKindSourceKeys("tiersLieu")).toEqual(["franceTierslieux"]);
+  });
+
+  it("cae → source federationDesCae", () => {
+    expect(placeKindSourceKeys("cae")).toEqual(["federationDesCae"]);
+  });
+
+  it("rend une copie : le préréglage partagé n'est jamais muté", () => {
+    placeKindSourceKeys("cae").push("autre");
+    expect(PLACE_KIND_SOURCE_KEYS.cae).toEqual(["federationDesCae"]);
+  });
+
+  it("surcharge de config non vide → l'emporte sur le préréglage de la nature", () => {
+    expect(placeKindSourceKeys("tiersLieu", ["franceTierslieux", "tierslieuxbelgique"])).toEqual([
+      "franceTierslieux",
+      "tierslieuxbelgique",
+    ]);
+    expect(placeKindSourceKeys(undefined, ["autreCostum"])).toEqual(["autreCostum"]);
+  });
+
+  // La config n'est pas parsée au runtime : la surcharge arrive brute du JSON.
+  it("surcharge vide ou invalide → préréglage (chaînes vides et non-chaînes écartées)", () => {
+    expect(placeKindSourceKeys("cae", [])).toEqual(["federationDesCae"]);
+    expect(placeKindSourceKeys("cae", ["", "  ", 42, null])).toEqual(["federationDesCae"]);
+    expect(placeKindSourceKeys("cae", ["", "ok", 42])).toEqual(["ok"]);
+  });
+
+  it("surcharge rendue en copie : le tableau de la config n'est jamais muté", () => {
+    const config = ["a"];
+    placeKindSourceKeys("cae", config).push("b");
+    expect(config).toEqual(["a"]);
+  });
+
+  it("nature inconnue (config brute) → tiers-lieux, sans exception", () => {
+    expect(placeKindSourceKeys("scic" as never)).toEqual(["franceTierslieux"]);
+    expect(placeKindSourceKeys("toString" as never)).toEqual(["franceTierslieux"]);
   });
 });

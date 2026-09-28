@@ -51,7 +51,7 @@ personnaliser textes, header/footer et SEO via la section `config.auth`.
 ```
 src/modules/auth/
   module.config.ts          { name: "auth", type: "core", enabled: true }
-  routes.tsx                routes: ModuleRouteFactory (_queryClient, config) → 12 routes (11 montées + `recover/:user/:code` en mode `node`) (cf. « Routes fournies par le module »)
+  routes.tsx                routes: ModuleRouteFactory (_queryClient, config) → 11 routes (10 montées + `recover/:user/:code` en mode `node`) (cf. « Routes fournies par le module »)
   index.ts                  barrel (composants, contexte, hooks, sections, schema…)
   i18n.ts                   addResourceBundle("fr"/"en", "modules/auth", …, true, true)
   i18n/{fr,en}.json
@@ -86,6 +86,8 @@ src/modules/auth/
     ValidateInvitationPage.tsx   passerelle d'invitation → inscription
     AcceptInvitationPage.tsx     réponse Accepter/Refuser d'une invitation par e-mail
     JoinByLinkPage.tsx           lien d'adhésion partageable (connect/ref/:ref)
+  lib/
+    reponseParMail.ts       lecture du lien Accepter/Refuser (lireSegment, lireReponse) + charge utile (chargeReponseParMail)
   sections/
     LoginFormSection.tsx
     RegisterFormSection.tsx
@@ -213,7 +215,7 @@ useEffect(() => {
 `routes.tsx` exporte une `ModuleRouteFactory` injectée par la découverte de
 modules (`src/lib/modules.ts` → `src/lib/buildRoutes.tsx`). La factory reçoit
 `(_queryClient, config)` — elle lit donc la config du site pour monter (ou non)
-une de ses routes. `src/modules/auth/routes.tsx:32-72` déclare :
+une de ses routes. `src/modules/auth/routes.tsx:32-80` déclare :
 
 | path | page | rôle |
 |---|---|---|
@@ -224,11 +226,31 @@ une de ses routes. `src/modules/auth/routes.tsx:32-72` déclare :
 | `validate/:user/:validationKey?` | `ActivateAccountPage` | activation de compte (liens du backend Node) |
 | `co2/person/activate/user/:user/validationKey/:validationKey` (+ forme avec splat `/*`) | `ActivateAccountPage` | mêmes liens, forme LEGACY Yii — le splat absorbe les suffixes `/costum/true`, `/redirect/…` |
 | `co2/person/validateinvitation/user/:user/validationKey/:validationKey` (+ splat `/*`) | `ValidateInvitationPage` | passerelle d'invitation vers l'inscription (compte *pending*) |
-| `co2/link/validateinvitationbymail/userId/:userId/targetType/:targetType/targetId/:targetId/answer/:answer` (+ splat `/*`) | `AcceptInvitationPage` | réponse Accepter/Refuser d'une invitation reçue par e-mail |
+| `co2/link/validateinvitationbymail/userId/:userId/targetType/:targetType/targetId/:targetId/*` | `AcceptInvitationPage` | réponse Accepter/Refuser reçue par e-mail : à une invitation, ou à une **demande** d'adhésion/d'administration (voir ci-dessous) |
 | `co2/link/connect/ref/:ref` | `JoinByLinkPage` | lien d'adhésion partageable (`costum.invitationLink`) |
 
 Les deux formes (moderne et legacy) sont servies pour que les e-mails **déjà
 envoyés** restent valides quand le domaine d'un costum pointe sur site-json.
+
+**Lien Accepter/Refuser (`AcceptInvitationPage`).** Tout ce qui suit `targetId` est
+absorbé par un seul splat : les gabarits de mail y collent leurs suffixes dans un
+ordre non garanti (`/costum/true`, `/costumSlug/<slug>`, `/redirect/…`, `/answer/…`).
+La page relit chaque valeur par le segment qui la précède (`lireSegment`,
+`lib/reponseParMail.ts`). Le même lien sert deux mails :
+
+- `invitation.php` : l'invité répond à une invitation (flag `isInviting`) ;
+- `askToBecome.php` : un administrateur tranche la **demande** de quelqu'un d'autre. Le
+  lien porte en plus `/linkOption/<isAdminPending|toBeValidated>/key/<signature>`. La
+  page relaie ces deux champs à `VALIDATE_INVITATION_BY_MAIL` (`chargeReponseParMail`) :
+  sans `linkOption`, le backend répond à une invitation, ne trouve pas `isInviting` et
+  n'écrit rien. Un `linkOption` hors de ces deux valeurs n'est pas transmis. Les
+  libellés passent en « demande ».
+
+L'appel passe par `apiClient.callEndpoint` et non par
+`userApi.validateInvitationByMail`, qui ne transmet que `userId`/`targetType`/
+`targetId`/`answer`. À rebasculer quand le contrat du SDK déclarera `linkOption` et
+`key`. L'action n'est déclenchée qu'**au clic**, jamais au montage, pour qu'un scanner
+anti-spam ne réponde pas à la place du destinataire.
 
 Ces paths sont montés en enfants de `/`. Les pages auth ne doivent donc **pas**
 être déclarées dans `config.pages` — sinon elles entreraient en collision avec

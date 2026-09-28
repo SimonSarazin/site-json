@@ -33,6 +33,7 @@ import {
 } from "../lib/resolveAacCardFields";
 import type { AacVisibility } from "../lib/aacQueryParams";
 import type { AacResolvedConfig } from "../types";
+import type { AacPermissionData, AacPermissions } from "../permissions";
 
 export interface AacDirectoryContext {
   /** `config.aac.formId` — `null` si le site n'a pas déclaré d'AAC. */
@@ -58,6 +59,16 @@ export interface AacDirectoryContext {
   formParams: unknown;
   /** Qui regarde : entre dans les query keys, la population visible en dépend. */
   visibility: AacVisibility;
+  /**
+   * Client API du contexte — le même que `useCocolight().api`, exposé ici plutôt que re-résolu
+   * par chaque section, qui exigerait alors le provider une seconde fois.
+   */
+  api: ReturnType<typeof useCocolight>["api"];
+  /**
+   * Droits AAC du visiteur, résolus AVEC les gates de l'appel. Exposés parce que l'annuaire en a
+   * besoin par ITEM (supprimer un commun), que chaque carte recalculerait sinon.
+   */
+  permissions: AacPermissions;
   baseUrl: string;
   /**
    * La résolution du formulaire est EN VOL.
@@ -81,7 +92,7 @@ export interface AacDirectoryContext {
 
 export function useAacDirectoryContext(): AacDirectoryContext {
   const { config: siteConfig } = useSite();
-  const { entity } = useCocolight();
+  const { entity, api } = useCocolight();
 
   const formId = siteConfig.aac?.formId ?? null;
 
@@ -103,7 +114,10 @@ export function useAacDirectoryContext(): AacDirectoryContext {
 
   // Un visiteur NON ADMINISTRATEUR ne voit que les communs sélectionnés, plus
   // les siens — parité avec le filtre `applyFor: "forUser"` du bloc legacy.
-  const perms = useAacPermissions(entity);
+  // Les gates DOIVENT entrer dans le calcul : sans eux, `anyOnewithLinkCanAnswer` est lu comme
+  // absent et `canEditCommun` répond faux là où la fiche répond vrai.
+  const permData = useMemo<AacPermissionData>(() => ({ gates: config?.gates }), [config?.gates]);
+  const perms = useAacPermissions(entity, permData);
   const visibility = useMemo<AacVisibility>(
     () => ({
       isAdmin: perms.isAdmin,
@@ -127,6 +141,8 @@ export function useAacDirectoryContext(): AacDirectoryContext {
     context,
     formParams,
     visibility,
+    api,
+    permissions: perms,
     baseUrl: getBaseUrl(),
     isFormLoading,
     configError,

@@ -4,10 +4,12 @@
  * Le SDK type `answers` en `Record<string, unknown>` : le contrat AAP/oceco
  * (aapStepN, depense[], financer[], campagne…) n'est typé nulle part côté SDK.
  *
- * ⚠️ GATE (cf. plan SOCLE §6) : plusieurs formes ci-dessous sont RÉSERVÉES
- * (déclarées, non construites) et devront être confirmées sur données réelles
- * (form FTL 6438366673d20a0de1533c77) — notamment la clé de référence CAMPAGNE
- * portée par l'answer et les sous-champs `financer` (paymentStatus/campaign/porteur).
+ * Plusieurs formes ci-dessous sont RÉSERVÉES — déclarées, jamais construites, à confirmer sur
+ * données réelles ; la clé de référence CAMPAGNE en fait partie.
+ *
+ * `financer[]`, lui, est tranché : format canonique du serveur (`line`, `status`, `finkey`,
+ * `payment{…}`), dont il est l'unique auteur. `fundingType` et `paymentStatus` ne subsistent
+ * qu'en lecture seule, pour les documents antérieurs.
  *
  * On RÉUTILISE les types financiers de cagnotte (ne pas redéfinir).
  */
@@ -24,33 +26,80 @@ export type { FundingMilestone, FundingAction, FundingPaymentStatus };
 /** État d'un commun. NB : `status` legacy = TABLEAU append-only (verbes empilés). */
 export type CommunState = "cree" | "pending" | "valide";
 
-/** Nature de l'ENTITÉ financeuse (≠ nature du financement, cf. `fundingType`). */
-export type FinancerEntityType = "citoyen" | "organisation";
+/**
+ * Nature de l'ENTITÉ financeuse : le nom de la COLLECTION Mongo au pluriel, tel que le serveur
+ * l'écrit (`Aap::addFinancerEngagement` résout en cascade). Un projet peut y figurer, mais il
+ * reçoit du financement, il n'en accorde pas.
+ */
+export type FinancerEntityType = "citoyens" | "organizations" | "projects";
 
 /**
- * Nature du FINANCEMENT. `prepaid` = seule valeur observée aujourd'hui.
+ * Nature du FINANCEMENT. LEGACY, lecture seule : `prepaid` marquait « payé » avant le bloc
+ * `payment` et n'est plus jamais écrit. Seul le repli de `readFinancerPaymentState` le lit,
+ * pour les lignes antérieures — aucune migration prévue, ce repli est permanent.
+ *
  * Le « porteur » (doublonnage) est un `fundingType`, PAS un type d'entité :
  * un doublonnage = une 2ᵉ entrée `financer` SÉPARÉE (jamais fusionnée).
  */
 export type FundingType = "prepaid" | "porteur" | (string & {});
 
-/** Une entrée de financement (`depense.financer[]`). Forme réelle + champs RÉSERVÉS. */
+/**
+ * Le bloc de paiement d'une ligne, tenu par le serveur (`Aap::recomputeFinancerPayment`) : ne
+ * jamais l'écrire côté client. Il peut être absent (ligne legacy) ou réduit à `{ logs: [] }`
+ * (engagement tout juste créé) — le lire par `readFinancerPaymentState`, jamais en direct.
+ */
+export interface FinancerPaymentLog {
+  invoiceId?: string;
+  financerId?: string;
+  financerName?: string;
+  finkey?: string;
+  amount?: number;
+  /** `manual` | `stripe` | `helloasso`. */
+  type?: string;
+  date?: unknown;
+  confirmation?: "pending" | "validated";
+  paidBy?: string;
+  validatedAt?: unknown;
+  validatedBy?: string;
+}
+
+export interface FinancerPayment {
+  logs?: FinancerPaymentLog[];
+  /** Somme des logs `validated` — le seul montant réellement acquis. */
+  paidAmount?: number;
+  /** Somme des logs en attente de validation du porteur. */
+  pendingAmount?: number;
+  /** `payed` (sic) est la valeur écrite par le serveur — jamais `paid`. */
+  status?: "unpaid" | "partial" | "payed";
+}
+
+/** Une entrée de financement (`depense.financer[]`), au format canonique du serveur. */
 export interface Financer {
   amount: number;
   date?: string;
   user?: string;
   id?: string;
   name?: string;
-  /** Nature de l'entité (citoyen|organisation). */
+  /** Collection de l'entité financeuse (`citoyens` | `organizations` | `projects`). */
   type?: FinancerEntityType;
-  /** Nature du financement (prepaid | porteur…). Axe DISTINCT de `type`. */
+  /** Ligne budgétaire ; le serveur la pose à `""` à la création. */
+  line?: string;
+  /**
+   * Statut de l'ENGAGEMENT (`pending` à la création), à ne pas confondre avec
+   * `payment.status`, qui est le statut du PAIEMENT. Deux axes distincts.
+   */
+  status?: "pending" | (string & {});
+  /** Clé stable de CETTE ligne, générée par le serveur — le seul ciblage fiable. */
+  finkey?: string;
+  /** Bloc de paiement tenu par le serveur. Absent sur les lignes legacy. */
+  payment?: FinancerPayment;
+  /** LEGACY, lecture seule — cf. `FundingType`. */
   fundingType?: FundingType;
-  // ── RÉSERVÉ (GATE) — absents des données actuelles ──
+  /** LEGACY, lecture seule : précédait `payment.status`. */
   paymentStatus?: FundingPaymentStatus;
+  // ── RÉSERVÉ (GATE) — absent des données actuelles ──
   /** Réf de la campagne portée par le financement (à confirmer au GATE). */
   campaign?: string;
-  /** Clé stable d'un financement (finkey) — à introduire côté écriture. */
-  finkey?: string;
 }
 
 /** Une dépense/objectif finançable (`answers.<depenseStepKey>.depense[]`). */
