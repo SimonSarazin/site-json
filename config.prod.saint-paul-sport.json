@@ -1851,10 +1851,239 @@
               "previewFetch": "poi"
             },
             "map": {
+              "layout": "split",
+              "splitRatio": "30-70",
               "marker": {
                 "style": "pin",
                 "color": "primary"
               }
+            },
+            "observatory": {
+              "dimensions": {
+                "commune": {
+                  "paths": [
+                    "address.addressLocality"
+                  ],
+                  "label": {
+                    "fr": "Commune",
+                    "en": "Municipality"
+                  }
+                },
+                "type": {
+                  "paths": [
+                    "equip_type_name",
+                    "equip_type_famille",
+                    "type",
+                    "categorie"
+                  ],
+                  "label": {
+                    "fr": "Type",
+                    "en": "Type"
+                  }
+                },
+                "nature": {
+                  "paths": [
+                    "equip_nature",
+                    "nature"
+                  ],
+                  "label": {
+                    "fr": "Nature",
+                    "en": "Nature"
+                  }
+                },
+                "aps": {
+                  "paths": [
+                    "aps_name"
+                  ],
+                  "kind": "list",
+                  "label": {
+                    "fr": "Sport pratiqué",
+                    "en": "Sport activity"
+                  }
+                },
+                "surface": {
+                  "paths": [
+                    "equip_surf"
+                  ],
+                  "kind": "number",
+                  "label": {
+                    "fr": "Surface",
+                    "en": "Area"
+                  }
+                },
+                "pmr": {
+                  "paths": [
+                    "equip_pmr_acc",
+                    "equip_pmr_chem",
+                    "equip_pmr_douche",
+                    "equip_pmr_sanit",
+                    "equip_pmr_vest",
+                    "equip_pmr_trib"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PMR",
+                    "en": "Reduced mobility"
+                  }
+                },
+                "pshs": {
+                  "paths": [
+                    "equip_pshs_aire",
+                    "equip_pshs_chem",
+                    "equip_pshs_sanit",
+                    "equip_pshs_vest",
+                    "equip_pshs_trib",
+                    "equip_pshs_sign"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PSHS",
+                    "en": "Sensory disability"
+                  }
+                },
+                "handi": {
+                  "paths": [
+                    "inst_acc_handi_bool"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "Handi.",
+                    "en": "Disability"
+                  }
+                }
+              },
+              "kpis": [
+                {
+                  "kind": "count",
+                  "label": {
+                    "fr": "Équipements",
+                    "en": "Equipment"
+                  },
+                  "icon": "activity",
+                  "accent": "primary"
+                },
+                {
+                  "kind": "distinct",
+                  "dimension": "commune",
+                  "label": {
+                    "fr": "Communes",
+                    "en": "Municipalities"
+                  },
+                  "icon": "map-pin",
+                  "accent": "accent"
+                },
+                {
+                  "kind": "percentTrue",
+                  "dimension": "pmr",
+                  "label": {
+                    "fr": "Accessible PMR",
+                    "en": "PMR Accessible"
+                  },
+                  "icon": "accessibility",
+                  "accent": "chart-2"
+                },
+                {
+                  "kind": "percentTrue",
+                  "dimension": "pshs",
+                  "label": {
+                    "fr": "Accessible PSHS",
+                    "en": "PSHS Accessible"
+                  },
+                  "icon": "eye",
+                  "accent": "chart-4"
+                },
+                {
+                  "kind": "valueSplit",
+                  "dimension": "nature",
+                  "value": "Intérieur",
+                  "label": {
+                    "fr": "Intérieur",
+                    "en": "Indoor"
+                  },
+                  "icon": "home",
+                  "accent": "chart-3"
+                },
+                {
+                  "kind": "top",
+                  "dimension": "type",
+                  "label": {
+                    "fr": "Type principal",
+                    "en": "Top type"
+                  },
+                  "icon": "trophy",
+                  "accent": "chart-5"
+                },
+                {
+                  "kind": "sum",
+                  "dimension": "surface",
+                  "unit": "m²",
+                  "label": {
+                    "fr": "Surface totale",
+                    "en": "Total surface"
+                  },
+                  "icon": "ruler",
+                  "accent": "chart-1"
+                }
+              ],
+              "charts": [
+                {
+                  "kind": "donut",
+                  "dimension": "type",
+                  "label": {
+                    "fr": "Répartition par type d'équipement",
+                    "en": "Distribution by equipment type"
+                  },
+                  "layout": "full"
+                },
+                {
+                  "kind": "pie",
+                  "dimension": "nature",
+                  "label": {
+                    "fr": "Intérieur / Extérieur",
+                    "en": "Indoor / Outdoor"
+                  },
+                  "layout": "half",
+                  "colors": {
+                    "Intérieur": "chart-1",
+                    "Découvert": "chart-2",
+                    "Site naturel": "chart-3",
+                    "Site naturel aménagé": "chart-4",
+                    "Donnée non renseignée": "muted"
+                  }
+                },
+                {
+                  "kind": "booleanGroups",
+                  "dimensions": [
+                    "pmr",
+                    "pshs",
+                    "handi"
+                  ],
+                  "label": {
+                    "fr": "Accessibilité (oui / non)",
+                    "en": "Accessibility (yes / no)"
+                  },
+                  "layout": "half"
+                },
+                {
+                  "kind": "barsHorizontal",
+                  "dimension": "aps",
+                  "top": 10,
+                  "label": {
+                    "fr": "Top 10 activités sportives (APS)",
+                    "en": "Top 10 sport activities (APS)"
+                  },
+                  "layout": "full"
+                },
+                {
+                  "kind": "bars",
+                  "dimension": "commune",
+                  "label": {
+                    "fr": "Équipements par commune",
+                    "en": "Equipment by commune"
+                  },
+                  "layout": "full"
+                }
+              ]
             }
           }
         }

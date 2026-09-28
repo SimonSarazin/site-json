@@ -9,6 +9,7 @@
 - [Sections JSON exposées](#sections-json-exposées)
   - [`searchPro` — avec synchronisation URL](#searchpro--avec-synchronisation-url)
   - [`searchProStatic` — sans synchronisation URL](#searchprostatic--sans-synchronisation-url)
+    - [Vue observatoire — le tableau de bord dans la section](#vue-observatoire--le-tableau-de-bord-dans-la-section)
   - [`cardCountCT` — compteurs par type](#cardcountct--compteurs-par-type)
   - [`thematics` — filières dynamiques](#thematics--filières-dynamiques)
   - [`filters` — sidebar de filtres partagée](#filters--sidebar-de-filtres-partagée)
@@ -287,7 +288,7 @@ Même structure que `searchPro` mais avec état local. Plusieurs instances peuve
 | `graphDetailsMode` | `"drawer"\|"dialog"\|"link"` | `"drawer"` | Mode ouverture depuis graphique |
 | `enableRegions` | boolean | `false` | Activer la carte des régions France |
 | `regionsTarget` | `{ path, filterId }` | — | Cible de navigation au clic sur une région |
-| `defaultViewMode` | `"list"\|"map"\|"graph"\|"regions"\|"thematics"` | — | Vue par défaut |
+| `defaultViewMode` | `"list"\|"map"\|"graph"\|"regions"\|"thematics"\|"split"` | — | Vue par défaut |
 | `thematicSource` | `{ thematicPath, finderPath?, notSourceKey? }` | — | Source pour la vue thematics (coformFilterByPath) |
 | `thematicsTarget` | `{ path, filterId }` | — | Cible de navigation au clic sur une card thématique |
 | `addButton` | `AddButtonConfig` | — | Bouton ajout entité (show, label, types) |
@@ -297,6 +298,7 @@ Même structure que `searchPro` mais avec état local. Plusieurs instances peuve
 | `customHeader` | objet | — | En-tête (titre + lien + icône). Affiche aussi un lien « voir sur la page complète » qui reporte les filtres courants et la recherche texte (`?search=`) via `linkText`/`linkHref`/`linkIcon` |
 | `bg` | string | — | Fond de section |
 | `width` | `"container"` | — | Contrainte de largeur |
+| `observatory` | `ObservatoryPanelConf` | — | Tableau de bord (KPI + graphes) en 3ᵉ vue, à côté de liste et carte — cf. [§Vue observatoire](#vue-observatoire--le-tableau-de-bord-dans-la-section) |
 | `baseParams.contextId` + `contextType` | string | — | Scope de recherche à une entité |
 | `baseParams.costumSlug` + `costumEditMode` | string | — | Config multi-costum |
 | `baseParams.sourceKey` | string[] | — | Filtrer par sourceKey |
@@ -306,6 +308,35 @@ Même structure que `searchPro` mais avec état local. Plusieurs instances peuve
 **Lien « voir sur la page complète »** : si `customHeader.linkText` est renseigné, un bouton `<Link>` est rendu dans le cluster du `customHeader`. La href est construite depuis `customHeader.linkHref` (défaut `/lieux`) en recopiant les query params courants (`useSearchParams`) PLUS `?search=` si une recherche texte est active — de sorte que les filtres posés par le hero (typologies, services) et le texte saisi soient tous transportés vers la page de liste.
 
 **Lecture de `?search=`** : c'est `FiltersSection` (ligne ~190) qui lit `searchParams.get("search")` pour reporter la recherche texte dans son champ local quand on arrive depuis un lien — voir [§`filters` — sidebar de filtres partagée](#filters--sidebar-de-filtres-partagée).
+
+#### Vue observatoire — le tableau de bord dans la section
+
+`props.observatory` ajoute une **troisième vue** au couple liste / carte : les graphes prennent la place de la carte, la liste des résultats reste à gauche. Sa seule présence affiche le bouton de bascule (icône camembert) dans l'en-tête, standard comme `customHeader`.
+
+```jsonc
+"map": { "layout": "split", "marker": { "style": "pin", "color": "primary" } },
+"observatory": {
+  "dimensions": { "type": { "paths": ["equip_type_name"], "label": { "fr": "Type" } } },
+  "kpis":   [{ "kind": "count", "label": { "fr": "Équipements" }, "icon": "activity" }],
+  "charts": [{ "kind": "donut", "dimension": "type", "layout": "full" }]
+}
+```
+
+Le vocabulaire (`dimensions`, `kpis`, `charts`) est EXACTEMENT celui de la section `data-observatory` — cf. [doc/27](./27-module-observatoire.md). Ce qui change est la provenance des données :
+
+- **le panneau n'a pas de périmètre à lui.** Il lit les résultats que la section a déjà chargés — les mêmes que la carte (`useSearchAllResults`, périmètre complet, même cache). Bascule carte ↔ observatoire instantanée, et surtout : les chiffres suivent la recherche et les filtres courants. Deux requêtes donneraient deux totaux sur le même écran ;
+- **tout champ lu par une dimension doit être dans `baseParams.defaultFields`.** Un champ non projeté n'est pas dans le document : la dimension le lira vide, sans le moindre signal ;
+- **ni filtres, ni table, ni export** : ce sont ceux de la section hôte. Pour une page dont le tableau de bord EST le sujet, c'est la section `data-observatory` qu'il faut.
+
+Le rendu vit dans `observatoire/components/ObservatoryPanel.tsx`, monté en `lazy()` : le chunk recharts n'est téléchargé qu'au premier clic sur le bouton. Sur mobile, la colonne latérale disparaît (comme pour le split carte) et le tableau de bord prend toute la largeur.
+
+**Agencement** — calqué sur la page observatoire : les KPI en BANDEAU pleine largeur (une colonne étroite les tasse sur plusieurs lignes), puis liste à gauche et graphes à droite. L'hôte monte donc `ObservatoryPanel` deux fois, `part: "kpis"` puis `part: "charts"` : c'est lui qui décide de l'agencement, le panneau ne fournit que ses blocs.
+
+**Qui commande la hauteur** : les GRAPHES. Ils se déroulent entièrement, sans scroll propre — on doit pouvoir tous les lire d'une traite. C'est la LISTE qui s'adapte : colonne `relative` + contenu en `absolute inset-0 overflow-y-auto`. Mécanique non devinable mais nécessaire : un enfant flex simplement étiré grandit avec son contenu et `overflow-y` n'y fait rien ; l'absolu lui donne une hauteur DÉFINIE, celle de sa colonne. Même mécanique que le split de la page observatoire. Le split CARTE, lui, garde `h-[78vh]` sur ses deux colonnes : la carte Leaflet a besoin d'une hauteur définie pour cadrer son `fitBounds`.
+
+**Bascules depuis une vue plein panneau** (`panelViewSwitch`) : avec un `customHeader`, l'en-tête de la section — et donc les boutons de vue — n'est rendu QUE dans la vue liste. Carte et observatoire portent donc leurs propres sorties : vers l'autre vue plein panneau, et vers la liste. Seule exception, le split CANONIQUE (`defaultViewMode: "split"`) n'offre pas de sortie liste — il n'y a pas de « retour » à proposer.
+
+**Liste à gauche de la carte** : `map.layout: "split"` (+ `map.splitRatio`) existait déjà — la vue « Carte » devient liste + carte synchronisées (clic carte → `flyTo`, clic marqueur → highlight). Les deux vues partagent la même colonne de gauche et le même jeu de résultats. `splitRatio` accepte désormais `"30-70"` (liste resserrée) : à cette largeur, la colonne est trop étroite pour une carte pleine, et la liste passe automatiquement en cartes DENSES (`card.compact` — mêmes informations, vignette et interlignes réduits). Les ratios historiques gardent la carte pleine, leur rendu ne bouge pas.
 
 ### `cardCountCT` — compteurs par type
 

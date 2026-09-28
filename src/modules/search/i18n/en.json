@@ -237,6 +237,8 @@
   "+{{count}} autres — précisez la recherche": "+{{count}} more — refine your search",
   "Carte": "Map",
   "Voir en liste": "See in list",
+  "Observatoire": "Observatory",
+  "Chargement des données… {{loaded}} / {{total}}": "Loading data… {{loaded}} / {{total}}",
   "type.NGO": "NGO",
   "type.LocalBusiness": "Local Business",
   "type.Group": "Group",

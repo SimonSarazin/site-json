@@ -257,9 +257,39 @@ avec export CSV et détail au clic).
 | `dashboard.ts` | logique PURE (filtrage, recherche texte insensible casse/accents, **sélection mot à mot** `applySelection`, formes de KPI, décomptes/couleurs/agencement graphes, lignes/tri table, `buildCsv`) — testée sans rendu (`dashboard.test.ts`) |
 | `components/` | rendus déclaratifs : `Filters` (matrice Select/dropdown-checkbox/MultipleSelector, options dérivées des données, recherche texte, badge filtres actifs, badge « données partielles » ; **mobile : bouton « Filtres » + compteur → Sheet bas**, pattern du searchHeader), `KpiCards` (7 formes de calcul, icônes DynamicIcon), `Charts` (5 formes via `ui/chart.tsx`, composition full/half, drill-down ; **client-only** : recharts ne s'hydrate pas — Skeleton SSR identique au 1er rendu, animations coupées pendant le chargement progressif), `ObservatoryTable` (colonnes/tri/badges déclarés, export CSV, rowAction), `ObservatoryList` (mode `split` : une ligne = libellé + sous-titre + bouton fiche, tri alphabétique, « Voir plus » par tranches faute de virtualisation dans le parc, badge de sélection active) |
 
+| `components/ObservatoryPanel` | le tableau de bord **sans sa page** : KPI puis graphes, calculés sur des résultats que l'APPELANT a déjà chargés — cf. [§Panneau réutilisable](#panneau-réutilisable--lobservatoire-dans-une-autre-section) |
+| `dashboardSchema.ts` | primitives déclaratives (dimensions, KPI, graphes) + `ObservatoryPanelConfSchema`. Sorties de `schema.ts` pour rester importables par le module search : `schema.ts` importe search (PreviewConfSchema), l'inverse fermerait le cycle et Zod y lirait des `undefined`. `schema.ts` les ré-exporte — `from "../schema"` reste la voie normale |
+
 Le filtrage est côté client **par design** : le dashboard agrège tout le
 dataset en mémoire — le module search reste l'outil des listes paginées
 filtrées serveur.
+
+## Panneau réutilisable — l'observatoire dans une autre section
+
+`ObservatoryPanel` est le tableau de bord détaché de sa page : il reçoit
+`results` (des entités du module search) et une conf `{dimensions, kpis,
+charts}`, applique la convention `serverData` (`toItems`, partagée avec le
+hook de la section) et rend KPI puis graphes. **Ni requête, ni état, ni
+filtres** — c'est ce qui le rend appelable ailleurs.
+
+Premier appelant : `searchProStatic.observatory` (cf.
+[doc/07](./07-module-search.md#vue-observatoire--le-tableau-de-bord-dans-la-section)),
+où la page Équipements de Saint-Paul propose une troisième vue à côté de la
+liste et de la carte. Les chiffres y portent sur les résultats COURANTS de la
+section : la recherche et les filtres de l'hôte les traversent sans qu'aucun
+câblage ne soit nécessaire.
+
+`part` (`all` par défaut, `kpis`, `charts`) découpe le rendu : en deux colonnes,
+les KPI se lisent en bandeau pleine largeur au-dessus et les graphes occupent la
+colonne de droite. L'hôte monte alors le panneau deux fois — le recalcul est
+négligeable (une projection des résultats ; `buildLabelMaps` ne travaille que
+pour les dimensions à `keyPaths`) et l'agencement reste sa décision.
+
+`DataObservatorySection` n'utilise PAS le panneau : en mode `split`, les KPI
+vont en bandeau pleine largeur et les graphes dans la colonne de droite — deux
+emplacements distincts, qu'un bloc unique ne saurait occuper. Ce sont les
+briques du dessous (`KpiCards`, `ObservatoryCharts`, `buildLabelMaps`) qui
+sont partagées, et le partage se fait à ce niveau-là.
 
 ## Règles tenues
 

@@ -20,7 +20,12 @@ const renderInRouter = (ui: ReactElement) => render(<MemoryRouter>{ui}</MemoryRo
 // `useNavigate` est espionné (action `itemAction.kind: "link"`) ; le reste de react-router — dont
 // `useSearchParams`, indispensable au wrapper — reste RÉEL sous le MemoryRouter.
 const navigateMock = vi.fn();
-const entityByIdMock = vi.fn(() => ({ data: null }));
+// Typé EXPLICITEMENT : sans signature, TS infère `() => { data: null }` —
+// zéro paramètre et `data` littéralement `null`, ce qui rejette aussi bien
+// l'appel à deux arguments que `mockReturnValue({ data: <entité> })`.
+const entityByIdMock = vi.fn(
+  (_kind?: string, _id?: string): { data: SearchEntity | null } => ({ data: null }),
+);
 vi.mock("../hooks/useEntityByIdQuery", () => ({
   useEntityByIdQuery: (kind?: string, id?: string) => entityByIdMock(kind, id),
 }));

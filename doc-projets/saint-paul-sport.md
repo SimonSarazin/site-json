@@ -13,7 +13,7 @@
 > [Module Agenda](../doc/29-module-agenda.md).
 > Mémoire : `[[project-cocolight-siteforge]]` (le projet y est suivi — pas de fiche dédiée).
 
-Dernière mise à jour : **2026-09-02** (lot « usagers des équipements » — annuaire, événements, réservation).
+Dernière mise à jour : **2026-09-23** (lot « observatoire embarqué » — 3ᵉ vue dans la page Équipements).
 
 ---
 
@@ -59,6 +59,7 @@ commune **ou** de la source `saintpaulSport1` (union `$or`).
 | 2026-09-10 | Peterson (+ Claude) | **Outillage de mise en production** : action de migration `creneauxlienorga` (`communecter-php74`, calquée sur `CreneauxUsagersOrgsAction`) — taguer, poser le champ, reprendre l'historique, en simulation puis application, idempotente ; éprouvée en local par un aller-retour complet. Scripts mongo de secours et retours arrière dans `../../scripts-prod-creneaux/` |
 | 2026-09-07 | Peterson (+ Claude) | **Recette complète du lot** : `oneAnswerPerPers` repassé à `false` par Peterson, deux réservations créées et vérifiées de bout en bout, portes rejouées (rendu 12/12, sonde 6/6, `config:validate` ✅), recette en éventail sur 5 dimensions — 3 constats mineurs confirmés (§12) |
 | 2026-09-23 | Peterson (+ Claude) | **Lot « liens croisés équipement ↔ organisation »** : bouton vers la fiche du club dans la section réservations, section « équipements réservés » dans la fiche d'une organisation, ouverture d'une fiche par identifiant (`list.previewFetch`) — cf. section dédiée en fin de page |
+| 2026-09-23 | Peterson (+ Claude) | **Lot « observatoire embarqué »** : le tableau de bord devient une configuration réutilisable (`ObservatoryPanel`), appelable depuis une section search ; page Équipements → 3ᵉ vue « Observatoire » à côté de liste et carte, et liste à gauche en mode carte — cf. section dédiée en fin de page |
 
 ## 2. Objectifs de la configuration
 
@@ -480,3 +481,67 @@ installé sur le poste) — pages servies en 200, config présente dans le HTML.
 
 Détail du mécanisme : [doc/07-module-search.md](../doc/07-module-search.md), section « Liens
 croisés équipement ↔ organisation usagère ».
+
+---
+
+## Observatoire embarqué dans la page Équipements (2026-09-23)
+
+**Demande.** Pouvoir consulter l'observatoire **sans quitter la page Équipements** : une icône
+de plus à côté des bascules annuaire / carte. En mode carte, la liste des équipements doit
+apparaître à gauche, comme sur la page Observatoire ; en mode observatoire, les graphes
+remplacent la carte et la liste reste en place. Deux chantiers, donc : rendre l'observatoire
+appelable depuis une autre section, et poser la liste à gauche de la carte.
+
+**Liste à gauche de la carte : rien à écrire.** Le split liste + carte existait déjà dans
+`searchProStatic` (`map.layout: "split"`, `map.splitRatio`), éprouvé sur d'autres sites. Une
+ligne de config a suffi. Clic sur une carte → `flyTo` + popup ; clic sur un marqueur →
+highlight et scroll dans la liste.
+
+**L'observatoire réutilisable.** `ObservatoryPanel` est le tableau de bord détaché de sa page :
+il reçoit des résultats DÉJÀ CHARGÉS et une conf `{dimensions, kpis, charts}`, et rend les KPI
+puis les graphes. Ni requête, ni filtres, ni table — c'est ce qui le rend appelable ailleurs.
+`searchProStatic` l'expose sous `props.observatory` ; sa seule présence affiche le bouton.
+
+**La décision qui compte : aucune donnée en propre.** Le panneau lit les résultats que la
+section a déjà chargés — exactement ceux de la carte, même cache. Conséquences : la bascule
+carte ↔ observatoire ne recharge rien, et surtout les chiffres suivent la recherche et les
+filtres courants de la page. Une requête séparée aurait affiché deux totaux différents sur le
+même écran, sans le moindre signal. Contrepartie assumée : tout champ lu par une dimension doit
+figurer dans `baseParams.defaultFields` de la section — c'était déjà le cas pour les huit
+dimensions reprises (type, nature, commune, APS, surface, PMR, PSHS, handi).
+
+**Une contrainte d'architecture rencontrée en chemin.** `observatoire/schema.ts` importe le
+module search (`PreviewConfSchema`) ; faire importer l'inverse aurait fermé un cycle, et Zod,
+évalué au chargement du module, y aurait lu des `undefined`. Les primitives du dashboard
+(dimensions, KPI, graphes) sont donc passées dans `observatoire/dashboardSchema.ts`, qui
+n'importe que zod — `schema.ts` les ré-exporte, aucun import existant ne bouge.
+
+**Config ajoutée** (page `/equipements-sportifs` uniquement) : `map.layout: "split"`, et un bloc
+`observatory` reprenant les 7 KPI et 5 graphes de la page `/observatoire`, restreint aux 8
+dimensions qu'ils consomment. La page `/observatoire` n'est pas touchée : elle garde ses
+filtres, sa liste latérale et son export.
+
+**Vérifié** : `tsc` (le typecheck du dépôt était rouge sur deux lignes du test ajouté au lot
+précédent — corrigées), `eslint`, `config:validate`, `audit:config` (site sans constat), 74
+tests du module observatoire dont 5 nouveaux (convention `serverData` partagée, schéma du
+panneau), préflights archétypes / prop-descriptions / skill-integrity / i18n au vert. Plafond
+de taille des dumps de la skill relevé de 60 à 70 Ko, raison écrite dans le test : le bloc
+`page` passe de 59 à 61 Ko. **Non vérifié** : le rendu à l'écran (aucun navigateur installé sur
+le poste).
+
+**Ajustements du 2026-09-23 (retour sur capture).** Quatre points, tous sur la même vue.
+Les bascules de vue sont désormais portées par les vues plein panneau elles-mêmes
+(`panelViewSwitch`) : depuis la carte on atteint l'observatoire, depuis l'observatoire on
+revient à la carte, et les deux offrent le retour à la liste. C'était nécessaire parce qu'avec
+un `customHeader`, l'en-tête de la section n'est rendu que dans la vue liste — le piège ne se
+voit pas en lisant la branche de rendu. Le scroll suit maintenant la page observatoire : les
+graphes se déroulent entiers, sans scroll propre, et c'est la liste de gauche qui s'ajuste à
+leur hauteur. Les KPI passent en bandeau au-dessus des deux colonnes, ce qui a demandé de
+découper le panneau en deux blocs (`part`). Enfin la colonne de gauche est resserrée à 30 %
+(`splitRatio: "30-70"`, valeur nouvelle) et ses cartes passent en mode dense — même
+information, vignette et interlignes réduits. La densité suit la LARGEUR, pas le site : les
+cinq autres configurations en split gardent le ratio 40-60 et leur carte pleine.
+
+Détail du mécanisme : [doc/07-module-search.md](../doc/07-module-search.md), section « Vue
+observatoire », et [doc/27-module-observatoire.md](../doc/27-module-observatoire.md), section
+« Panneau réutilisable ».

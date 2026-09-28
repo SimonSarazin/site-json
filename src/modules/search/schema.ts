@@ -3,6 +3,9 @@ import { ActionButtonSchema } from "@/types/action-button-schema";
 import { PredicateJson } from "@/modules/formEngine/config";
 import type { SearchEntity, News } from "@communecter/cocolight-api-client";
 import { IconName } from "lucide-react/dynamic";
+// Primitives du tableau de bord (dimensions/KPI/graphes) : fichier SANS import
+// search — `observatoire/schema.ts`, lui, importe celui-ci (cf. son en-tête).
+import { ObservatoryPanelConfSchema } from "@/modules/observatoire/dashboardSchema";
 import { z } from "zod";
 
 /**
@@ -654,6 +657,11 @@ export const CardConfSchema = z.object({
     /** Rend l'installation de la carte (`poi-amenities`) cliquable → filtre le
      *  listing. Absent = valeur affichée en texte simple. */
     installationFilter: InstallationFilterConfSchema.optional(),
+    /** Carte DENSE : mêmes informations, moins de place (vignette et interlignes
+     *  réduits, puces d'équipement resserrées). Pour une colonne étroite — liste
+     *  latérale d'un split, grille à 4 colonnes. Honoré aujourd'hui par
+     *  `poi-amenities` ; les autres variantes l'ignorent. */
+    compact: z.boolean().optional(),
     // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
     // axe séparé (`preview.type`/`detailsMode`).
     type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer", "news", "testimonial", "resource", "resource-directory"]).default("default"),
@@ -824,10 +832,11 @@ export const MapConfSchema = z.object({
   /** Disposition de la vue carte (SearchProStatic) : "full" (défaut, plein
    *  écran) ou "split" (liste + carte côte à côte, sélection synchronisée). */
   layout: z.enum(["full", "split"]).optional(),
-  /** En mode split, répartition de largeur liste/carte : "40-60" (défaut —
-   *  liste étroite 1 colonne + carte large, aligné sur l'agenda), "50-50" ou
-   *  "60-40" (liste plus large, 2 colonnes). Pilote aussi les colonnes de la liste. */
-  splitRatio: z.enum(["40-60", "50-50", "60-40"]).optional(),
+  /** En mode split, répartition de largeur liste/carte : "30-70" (liste
+   *  resserrée), "40-60" (défaut — liste étroite 1 colonne + carte large,
+   *  aligné sur l'agenda), "50-50" ou "60-40" (liste plus large, 2 colonnes).
+   *  Pilote aussi les colonnes de la liste. */
+  splitRatio: z.enum(["30-70", "40-60", "50-50", "60-40"]).optional(),
   popup: z.object({
     type: z.enum(["default"]).default("default"),
   }).partial().optional(),
@@ -1161,6 +1170,19 @@ export const SearchProStaticSectionSchema = z.object({
 
     list: ListConfSchema.optional(),
     map:  MapConfSchema.optional(),
+    /**
+     * Tableau de bord (KPI + graphes) affiché DANS la section, en troisième vue
+     * à côté de la liste et de la carte — sa présence suffit à faire
+     * apparaître le bouton de bascule.
+     *
+     * Il n'a pas de périmètre à lui : il lit les résultats déjà chargés par la
+     * section, donc les mêmes que la carte, et suit la recherche et les filtres
+     * courants. Les champs consommés par ses dimensions doivent donc figurer
+     * dans `baseParams.defaultFields` — un champ non projeté ne se compte pas.
+     * Pour une page dont le tableau de bord EST le sujet (filtres propres,
+     * table, export), c'est la section `data-observatory` qu'il faut.
+     */
+    observatory: ObservatoryPanelConfSchema.optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   }),
 });
