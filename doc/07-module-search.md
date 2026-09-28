@@ -1136,7 +1136,8 @@ même `id` sont fusionnées et dédoublonnées par `_id` : c'est ainsi qu'on exp
 n'a pas (ses filtres sont ANDés).
 
 Rendu : `MapShapeLayers` (un `<Source>` GeoJSON + fill + line par couche), `MapShapeLegend` (affichée
-seulement pour les couches qui portent un `label`) et `MapShapeNames` (`showNames: true` → le nom de
+seulement pour les couches qui portent un `label` ; filtre et pastille partagés avec la section
+`map-shapes` via `components/shared/ShapeLegend`) et `MapShapeNames` (`showNames: true` → le nom de
 chaque contour posé dessus). Les couleurs sont des JETONS de thème, convertis en sRGB par
 `resolveThemeColor` — MapLibre peint en WebGL et refuse l'`oklch` de `config.theme.colors`.
 

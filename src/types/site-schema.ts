@@ -1371,7 +1371,7 @@ export type MapBubblesProps = z.infer<typeof MapBubblesSchema>["props"];
  * À ne pas confondre avec `map.shapes`, qui superpose les mêmes contours À la carte MapLibre : ici
  * il n'y a ni fond de plan, ni marqueurs, ni résultats — donc aucune requête de recherche.
  */
-export const MapShapesSchema = z.object({
+const MapShapesSchema = z.object({
   type: z.literal("map-shapes"),
   id: z.string().optional(),
   props: z.object({

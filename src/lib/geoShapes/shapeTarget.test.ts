@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { GeoJsonProperties } from "geojson";
 
-import { isLayerInteractive, shapeHref, shapeValue, type ShapeTarget } from "./shapeTarget";
+import { isLayerInteractive, isShapeTarget, shapeHref, shapeValue, type ShapeTarget } from "./shapeTarget";
 
 /**
  * Ce que garantit ce fichier : le LIEN que porte un contour cliquable.
@@ -164,5 +164,23 @@ describe("isLayerInteractive", () => {
     expect(isLayerInteractive("communes", cible)).toBe(true);
     expect(isLayerInteractive("regions", cible)).toBe(false);
     expect(isLayerInteractive("", cible)).toBe(false);
+  });
+});
+
+describe("isShapeTarget", () => {
+  // La config arrive par `JSON.parse` : ces formes-là passent, malgré le `required` du schéma.
+  it("refuse une cible absente, non objet, ou amputée de `path` / `filterId`", () => {
+    expect(isShapeTarget(undefined)).toBe(false);
+    expect(isShapeTarget(null)).toBe(false);
+    expect(isShapeTarget("/lieux")).toBe(false);
+    expect(isShapeTarget({ filterId: "communes" })).toBe(false);
+    expect(isShapeTarget({ path: "/lieux" })).toBe(false);
+    expect(isShapeTarget({ path: "", filterId: "communes" })).toBe(false);
+    expect(isShapeTarget({ path: "/lieux", filterId: 42 })).toBe(false);
+  });
+
+  it("accepte une cible complète, options comprises", () => {
+    expect(isShapeTarget(CIBLE)).toBe(true);
+    expect(isShapeTarget({ ...CIBLE, valueFrom: "insee", layers: ["communes"] })).toBe(true);
   });
 });

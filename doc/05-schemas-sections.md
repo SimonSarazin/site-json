@@ -708,7 +708,7 @@ couche décalerait le contour englobant des communes qu'il contient ; constructi
 [`src/lib/geoShapes/shapeTarget.ts`](../src/lib/geoShapes/shapeTarget.ts).
 
 ```ts
-export const MapShapesSchema = z.object({
+const MapShapesSchema = z.object({
   type: z.literal("map-shapes"),
   id: z.string().optional(),
   props: z.object({
@@ -736,7 +736,7 @@ export const MapShapesSchema = z.object({
 | `bg` | `enum?` | Fond de section (`default` \| `card` \| `muted` \| `primary` \| `secondary` \| `accent` \| `transparent`) |
 | `maxHeight` | `number?` | Hauteur MAXIMALE en px (min 160, defaut code `520`). Le SVG garde son ratio via son `viewBox`, il est seulement borné |
 | `shapes` | `GeoShapeSource[]` | Couches de contours, **au moins une**. Cf. [`map.shapes`](07-module-search.md) (§ `useGeoShapes`) pour les trois `source`, leurs filtres et leur volumétrie |
-| `target` | `object` | **Obligatoire** — cible de navigation au clic (cf. le piège ci-dessous) |
+| `target` | `object` | **Obligatoire** — cible de navigation au clic (cf. le piège ci-dessous). La config n'étant pas revalidée au runtime, une cible absente ou sans `path`/`filterId` laisse tous les contours INERTES au lieu de faire tomber la section |
 | `target.path` | `string` | Chemin de la page de recherche (ex. `/lieux`) |
 | `target.filterId` | `string` | Nom du query param écrit = **`id` d'un groupe de `filterGroups` de la page cible** |
 | `target.valueFrom` | `enum?` | Propriété du contour utilisée comme valeur : `name` (defaut), `insee`, `_id` (ObjectId du contour), `countryCode`, `level` — les seules exposées par `toFeatureCollection` |
