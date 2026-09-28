@@ -16,8 +16,9 @@
 > vit sur la branche `aac-dev` et n'a rien à voir avec le site des tiers-lieux, qui vit sur `jdev`
 > et `main` : leurs dossiers devaient être séparés. Cf. §10 31/08.
 
-Dernière mise à jour : **2026-09-28** (profil dédié `profiles.organizations` avec onglet « Membres »,
-sur le modèle de tiers-lieux, cf. §10 28/09).
+Dernière mise à jour : **2026-09-28** (annuaire filtré au tag `CAE` sur tout le réseau, `sourceKey`
+remplacé par `notSourceKey`, cf. §10 28/09bis ; profil dédié `profiles.organizations` avec onglet
+« Membres », sur le modèle de tiers-lieux, cf. §10 28/09).
 
 ---
 
@@ -62,7 +63,7 @@ n'est donc pas ancré sur l'entité du site — ne pas déduire l'un de l'autre.
 | 08-09/09 | Anatole (MR 53) · Aboire · Claude | Revue de la MR 53 « module AAC » puis **112 commits de correctifs** en deux lots, mergés dans `main` (cf. §10 08-09/09) |
 | 14/09 | Anatole + Claude | Footer `sidebar-columns` recopié de Rézo la mer remis aux routes du site ; pages `/mentions-legales` et `/confidentialite` (cf. §10 14/09) |
 | 24/09 | Anatole + Claude | Page `/annuaire` — annuaire de la communauté et bouton « Ajouter une organisation » (cf. §10 24/09) |
-| 28/09 | Mirana + Claude | Onglet « Membres » sur le profil de l'entité Fédération (cf. §10 28/09) |
+| 28/09 | Mirana + Claude | Onglet « Membres » sur le profil de l'entité Fédération (cf. §10 28/09) ; annuaire passé au tag `CAE` réseau entier, `sourceKey` retiré (cf. §10 28/09bis) |
 
 ---
 
@@ -90,7 +91,7 @@ config.prod.federationDesCae.json
    ├── page /usages      → toolsCatalog (module partagé avec tiers-lieux / RELIEF)
    │                          formId 6525865c… (observatoire), pas le formulaire de l'appel
    ├── page /annuaire    → searchHeader (titre, recherche, bouton d'ajout) · searchProStatic
-   │                          organisations du périmètre sourceKey federationDesCae
+   │                          organisations taguées CAE, réseau entier (notSourceKey, depuis le 28/09)
    ├── pages /mentions-legales · /confidentialite → html (socle légal, à compléter)
    └── footer sidebar-columns → uniquement des routes servies par le site
 ```
@@ -98,8 +99,10 @@ config.prod.federationDesCae.json
 Deux chaînes de données **indépendantes** cohabitent : le module AAC lit le formulaire de l'appel,
 le module `toolsCatalog` lit celui de l'observatoire. Elles ne partagent ni formulaire, ni
 organisation porteuse, ni collection de réponses. L'annuaire de la communauté lit, lui, les
-**organisations** du périmètre costum (`sourceKey: ["federationDesCae"]`) — le même ensemble que
-le finder « J'utilise » de la fiche d'un commun (`aac.detail.placeKind: "cae"`).
+**organisations taguées `CAE`** sur tout le réseau (`notSourceKey: true`, depuis le 28/09, cf. §10
+28/09bis) — un ensemble désormais **plus large** que le périmètre costum (`sourceKey:
+["federationDesCae"]`) utilisé par le finder « J'utilise » de la fiche d'un commun
+(`aac.detail.placeKind: "cae"`) : les deux ne coïncident plus.
 
 Côté backend, le catalogue d'usages est servi par deux actions du costum `franceTierslieux`
 (`ToolsCatalogListAction`, `ToolUsersAction`) qui servent **aussi** le Navigateur des tiers-lieux et
@@ -188,9 +191,13 @@ Réglages notables de la section `toolsCatalog` :
 |---|---|
 | Organisations du périmètre `sourceKey: federationDesCae` | **9**, toutes `type: "Cooperative"`, toutes `source: {insertOrign: "costum", key: "federationDesCae"}` (aucune par `reference.costum`) |
 | Membres de l'entité Fédération (`links.members`) | 9 citoyens, **0 organisation** |
+| … dont taguées `CAE` (sondé le 2026-09-28 sur `communecter-dev`) | **8 sur 9** — la seule exception, « Coopla », ne porte **aucun** tag |
+| Organisations taguées `CAE` sur **tout le réseau** (sondé le 28/09, `notSourceKey`) | **16** — les 8 du périmètre costum, plus 8 CAE non rattachées à ce costum (Coopaname, Antigone, Artenréel, CAE Possible, Cooproduction, Coopénates, Inter'Activ, OPTEOS) |
 
-Les deux ensembles ne se recoupent pas : aucune des 9 coopératives n'est membre de la Fédération au
-sens des liens. L'annuaire s'appuie sur le premier (cf. §7).
+Les trois ensembles ne se recoupent pas totalement : aucune des 9 coopératives du périmètre costum
+n'est membre de la Fédération au sens des liens (`links.memberOf`), et l'ensemble réseau des CAE
+taguées dépasse largement le périmètre costum. L'annuaire lit ce dernier ensemble depuis le 28/09
+(cf. §7 et §10 28/09bis).
 
 ---
 
@@ -218,9 +225,10 @@ sens des liens. L'annuaire s'appuie sur le premier (cf. §7).
 | Le backend reconnaît le **segment** `commun/<24hex>`, pas un préfixe en dur | ce qui précède appartient au routeur du site et n'a pas à être connu du costum ; couvre du même coup la forme absolue |
 | La règle de satisfaction est **inconditionnelle**, sans paramètre | c'est une règle d'honnêteté de la donnée, pas un réglage de site ; et s'en passer évite un paramètre de contrat côté SDK — cf. §10 31/08 |
 | Le catalogue de besoins est un **helper partagé** (`Coform::criteriaUsageCatalog`) | c'est l'asymétrie entre la liste et le détail qui produisait le bug ; le dupliquer l'aurait reproduit |
-| L'annuaire lit le **périmètre costum** (`sourceKey`), pas les membres de l'entité (`links.memberOf`) | c'est l'ensemble que le site utilise déjà pour les CAE (« J'utilise ») ; les membres ne comptent aucune organisation (§5), l'annuaire serait vide. Et une organisation créée depuis le site y entre d'elle-même : la création passe par le scope costum, le legacy estampille `source.keys`. Les membres auraient demandé ≈ 2 jours : `ADD_ORGANIZATION` n'accepte pas de parent, pas de wrapper SDK pour rattacher une organisation (`INVITE_MEMBERS` le permet), et un créateur non membre produit une demande `toBeValidated` qu'aucune page de ce site ne valide |
-| Bouton d'ajout dans le `searchHeader`, pas dans `searchProStatic.addButton` | recette du parc (`searchHeader > searchProStatic`) ; un visiteur non connecté passe par la connexion puis la modale s'ouvre, là où `addButton` le laisse re-cliquer |
-| `createDefaults: { "type": "Cooperative" }` sur le bouton | la modale d'ajout part sur `NGO` ; les 9 organisations existantes sont des coopératives. Nouvelle clé d'`ActionButtonSchema`, même canal que `admin.tabs[].sections[].createDefaults` |
+| L'annuaire ne lit **ni** les membres de l'entité (`links.memberOf`), **ni** un `addButton` dédié | les membres ne comptent aucune organisation (§5), l'annuaire serait vide avec `links.memberOf`. Bouton d'ajout posé dans le `searchHeader`, pas dans `searchProStatic.addButton` : recette du parc (`searchHeader > searchProStatic`) ; un visiteur non connecté passe par la connexion puis la modale s'ouvre, là où `addButton` le laisse re-cliquer |
+| `createDefaults: { "type": "Cooperative" }` sur le bouton | la modale d'ajout part sur `NGO` ; les organisations existantes sont des coopératives. Nouvelle clé d'`ActionButtonSchema`, même canal que `admin.tabs[].sections[].createDefaults` |
+| **24/09** : l'annuaire lisait le périmètre costum (`sourceKey`) | c'était l'ensemble déjà utilisé pour les CAE (« J'utilise ») ; une organisation créée depuis le site y entrait d'elle-même (scope costum, legacy estampillant `source.keys`). **Révisé le 28/09** (cf. ligne suivante et §10 28/09bis) |
+| **28/09** : `notSourceKey: true` + `defaultTags: ["CAE"]`, remplaçant le `sourceKey` | décidé pour couvrir les CAE du réseau entier, pas seulement celles déjà rattachées au costum de la Fédération — passe de 9 à 16 résultats sondés. Contrepartie assumée : le bouton d'ajout ne pose pas le tag `CAE` (cf. §10 28/09bis), et le lien avec le finder « J'utilise » (resté sur `sourceKey`) est rompu |
 | `--gradient-section` surchargé dans `theme.customCSS` | la feuille `index-rezo-la-mer.css` est partagée et teinte ce jeton en turquoise. Seuls `searchHeader` et `cta-newsletter` le consomment, et ce site n'avait ni l'un ni l'autre. Le dégradé est mélangé à `--background` pour suivre le mode clair/sombre. Précédent : `equipements-Sportifs-Scolaire` |
 
 ---
@@ -254,7 +262,7 @@ sens des liens. L'annuaire s'appuie sur le premier (cf. §7).
 | 13 | Campagnes de l'appel | ❌ | `POST /survey/coform/getformbyid` répond **500** sur un form de type `aapConfig` — bug legacy **corrigé mais non déployé**. Tant qu'il l'est, `campagne` et tout `config.*` sont invisibles côté front, avalés en best-effort silencieux (cf. §14) |
 | 14 | Vérification navigateur du lot 08-09/09 | 🟡 | SSR de production vérifié (4 pages + un site sans AAC) et l'en-tête inspecté à l'écran ; `test:integration` et `test:e2e` **jamais lancés** |
 | 15 | Footer et socle légal | 🟡 | 14/09 — 9 liens, tous vers une route servie par le site ; `/mentions-legales` et `/confidentialite` posées mais **à compléter par la Fédération avant publication** ; réseaux sociaux et contact retirés faute de coordonnées (cf. §10 14/09 et §14) |
-| 16 | Annuaire de la communauté `/annuaire` | 🟡 | 24/09 — 9 coopératives listées, rendu vérifié (SSR + navigateur, clair/sombre, mobile). **Création d'une organisation depuis le bouton non vérifiée** : aucun compte de test disponible (cf. §10 24/09 et §14) |
+| 16 | Annuaire de la communauté `/annuaire` | 🟡 | 24/09 — rendu vérifié (SSR + navigateur, clair/sombre, mobile) ; passé au tag `CAE` réseau entier le 28/09 : 16 organisations, au-delà du périmètre costum initial (cf. §10 28/09bis). **Création d'une organisation depuis le bouton non vérifiée**, et son résultat n'apparaîtrait plus dans l'annuaire sans le tag `CAE` posé manuellement (cf. §10 24/09 et §10 28/09bis) |
 | 17 | Profil dédié `organizations` — onglet Membres | 🟡 | 28/09 — 9 membres et rôles vérifiés côté organisation (SSR + navigateur, clair/sombre, desktop/mobile). **Gestion des membres (`showManagement`) non vérifiée** faute de compte admin de test, cf. §10 28/09 |
 
 **Gates au merge `287bb35a` (09/09)** : `typecheck` ✅ · `eslint` ✅ **0 erreur** (24 avertissements
@@ -308,11 +316,45 @@ sidebar Informations, en clair et en sombre à 1440 px, et en mobile à 390 px. 
 **Non vérifié.** La gestion des membres via `showManagement` (actions réservées à un admin) — aucun
 compte de test disponible, comme pour l'annuaire (cf. §10 24/09).
 
-**Gates (28/09, arbre de travail non commité)** : `config:validate` ✅ · `audit:config` ✅ RAS ·
+**Gates (28/09, commité en `5bce5f71`)** : `config:validate` ✅ · `audit:config` ✅ RAS ·
 `test:preflight` ✅ 1304/1306 (2 échecs préexistants, cf. ci-dessus) · `test:unit` (module `profil`)
 ✅ 576 · `typecheck` ✅ · SSR (`/profil/federationDesCae/members`) ✅ · navigateur ✅
 clair/sombre/mobile. `eslint`, `test:unit` complet, `test:integration`, `test:e2e`, `build` **non
 relancés** : aucun fichier de code touché.
+
+### 28/09bis — l'annuaire filtré au tag `CAE`, réseau entier (plus de `sourceKey`)
+
+**Le besoin.** L'annuaire de la communauté (§10 24/09) listait les 9 organisations du périmètre
+costum sans condition sur leur nature. Décidé ensuite : retenir toute organisation taguée `CAE` sur
+**tout le réseau Communecter**, pas seulement celles déjà rattachées au costum de la Fédération.
+
+**Le constat.** Sondage direct (`entity.searchCostum`, `communecter-dev`) : sur les 9 organisations
+du périmètre costum, 8 portent `tags: ["CAE", …]` et une, « Coopla », ne porte **aucun** tag.
+
+**Ce qui change (config seule, aucun code).** Dans le `baseParams` de la section `searchProStatic`
+de `/annuaire` : `sourceKey: ["federationDesCae"]` **remplacé** par `notSourceKey: true` (recherche
+non scopée à un costum), `defaultTags: ["CAE"]` ajouté comme seul filtre. `tags` figurait déjà dans
+`defaultFields` et `searchBy` (les badges de tag étaient déjà affichés sur les cartes).
+
+**Effet de bord repéré, non traité.** Le bouton « Ajouter une organisation » (`createDefaults: {
+"type": "Cooperative" }`, cf. §10 24/09) ne pose pas le tag `CAE` — le champ `tags` du formulaire
+d'ajout reste à la saisie de l'utilisateur. Une organisation créée depuis ce bouton sans taper
+« CAE » **n'apparaîtra plus** dans l'annuaire, alors qu'avec l'ancien filtre (`sourceKey` seul) elle y
+entrait automatiquement (cf. §10 24/09). À confirmer avec la Fédération : ajouter `"tags": ["CAE"]`
+à `createDefaults`, ou laisser la saisie manuelle.
+
+**Vérifié.** `config:validate` ✅ 6 pages / 10 sections. `audit:config` ✅ RAS. `config:probe` :
+périmètre passé de 9 (`sourceKey`) à **16** résultats réseau (`notSourceKey` + tag `CAE`) sur
+`communecter-dev` — 8 de plus que le périmètre costum initial (Coopaname, Antigone, Artenréel, CAE
+Possible, Cooproduction, Coopénates, Inter'Activ, OPTEOS). `test:preflight` ✅ 1304/1306 (2 échecs
+préexistants et sans rapport, cf. §10 28/09) ; fixture `__effective__/federationDesCae.json` mise à
+jour (`sourceKey` → `notSourceKey`). Navigateur (Playwright, Chromium, 1440 px) : 16 cartes, badges
+de tag visibles, rendu correct.
+
+**Gates (28/09, arbre de travail non commité)** : `config:validate` ✅ · `audit:config` ✅ RAS ·
+`config:probe` ✅ 16/16 · `test:preflight` ✅ 1304/1306 (2 échecs préexistants, cf. §10 28/09) ·
+navigateur ✅. `eslint`, `typecheck`, `test:unit` complet, `test:integration`, `test:e2e`, `build`
+**non relancés** : aucun fichier de code touché.
 
 ### 24/09 — l'annuaire de la communauté
 

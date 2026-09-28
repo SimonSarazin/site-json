@@ -466,7 +466,8 @@
                 "variant": "primary",
                 "requiresAdmin": false,
                 "createDefaults": {
-                  "type": "Cooperative"
+                  "type": "Cooperative",
+                  "tags": ["CAE"]
                 }
               }
             ]
@@ -485,11 +486,12 @@
             "showActiveFiltersTags": false,
             "disableInfiniteScroll": false,
             "baseParams": {
-              "sourceKey": [
-                "federationDesCae"
-              ],
+              "notSourceKey": true,
               "defaultTypes": [
                 "organizations"
+              ],
+              "defaultTags": [
+                "CAE"
               ],
               "defaultFields": [
                 "name",
