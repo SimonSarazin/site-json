@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { CagnotteFundableItem } from "@/modules/cagnotte/types";
+import { buildResourceFromAnswer } from "@/modules/cagnotte/utils/dataTransform";
 import { aggregateCofinancers } from "./cofinancers";
 
 type Ligne = Partial<CagnotteFundableItem["allFunding"][number]> & { name?: string; type?: string };
@@ -89,5 +90,100 @@ describe("aggregateCofinancers — M16", () => {
     ]);
     expect(row.name).toBe("Ancien");
     expect(row.type).toBe("tl");
+  });
+
+  describe("répartition acquis / encore dû", () => {
+    it("scinde une ligne partiellement validée sans changer son total", () => {
+      const [row] = aggregateCofinancers([
+        item({
+          allFunding: [
+            {
+              financerId: "o1",
+              financerName: "CAE Sud",
+              amount: 1000,
+              payment: { logs: [{ amount: 400, confirmation: "validated" }] },
+            } as never,
+          ],
+        }),
+      ]);
+
+      expect(row.totalAmount).toBe(1000);
+      expect(row.paidAmount).toBe(400);
+      expect(row.pledgedAmount).toBe(600);
+    });
+
+    it("cumule la répartition sur plusieurs lignes d'un même cofinanceur", () => {
+      const [row] = aggregateCofinancers([
+        item({
+          allFunding: [
+            {
+              financerId: "o1",
+              financerName: "CAE Sud",
+              amount: 500,
+              payment: { logs: [{ amount: 500, confirmation: "validated" }] },
+            } as never,
+            { financerId: "o1", financerName: "CAE Sud", amount: 300 } as never,
+          ],
+        }),
+      ]);
+
+      expect(row.totalAmount).toBe(800);
+      expect(row.paidAmount).toBe(500);
+      expect(row.pledgedAmount).toBe(300);
+    });
+
+    it("classe une ligne legacy selon `fundingType`", () => {
+      const rows = aggregateCofinancers([
+        item({
+          allFunding: [
+            { financerId: "o1", financerName: "Payé", amount: 200, fundingType: "prepaid" } as never,
+            { financerId: "o2", financerName: "Promis", amount: 300 } as never,
+          ],
+        }),
+      ]);
+
+      expect(rows[0]).toMatchObject({ paidAmount: 200, pledgedAmount: 0 });
+      expect(rows[1]).toMatchObject({ paidAmount: 0, pledgedAmount: 300 });
+    });
+
+    it("le décompte de cofinanceurs reste inchangé, quel que soit le statut", () => {
+      // La règle du module : on compte les cofinanceurs, pas les paiements.
+      const rows = aggregateCofinancers([
+        item({
+          allFunding: [
+            { financerId: "o1", financerName: "A", amount: 100 } as never,
+            {
+              financerId: "o2",
+              financerName: "B",
+              amount: 100,
+              payment: { logs: [{ amount: 100, confirmation: "validated" }] },
+            } as never,
+          ],
+        }),
+      ]);
+
+      expect(rows).toHaveLength(2);
+    });
+
+    it("lit le versement validé d'une ligne passée par `buildResourceFromAnswer`", () => {
+      const resource = buildResourceFromAnswer({
+        id: "answer-1",
+        answers: {
+          aapStep1: {
+            depense: [
+              {
+                poste: "Dev",
+                price: 500,
+                financer: [
+                  { id: "o1", name: "A", amount: 500, payment: { logs: [{ amount: 500, confirmation: "validated" }] } },
+                ],
+              },
+            ],
+          },
+        },
+      })!;
+
+      expect(aggregateCofinancers(resource.items)[0]).toMatchObject({ paidAmount: 500, pledgedAmount: 0 });
+    });
   });
 });

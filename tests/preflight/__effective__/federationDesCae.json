@@ -4,7 +4,44 @@
   "addMenus": {},
   "editModals": {},
   "adminResources": {},
-  "pages": {},
+  "pages": {
+    "/annuaire/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "federationDesCae"
+        ],
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "shortDescription",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "address",
+          "tags",
+          "geo",
+          "geoPosition"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "address.addressLocality",
+          "tags"
+        ],
+        "indexStepList": 24,
+        "indexStepMap": 500
+      }
+    }
+  },
   "referencement": {},
   "membership": {},
   "profileRelated": {}

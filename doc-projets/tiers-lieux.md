@@ -203,6 +203,15 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 ## 9. Impacts des modifications
 
+### 21/09 — `/annuaire-ressources` : les photos des ressources s'affichent
+
+**Code seul** (module `search`, pas de config). Les photos d'une ressource (documents de la
+réponse, ou images de la salle) sont des chemins `/upload/communecter/…` **relatifs au backend** ;
+laissés relatifs, `/img` les cherchait dans les fichiers du site → 404. `parseResourceDirectoryItem`
+les préfixe avec `getBaseUrl()` (option `baseUrl` obligatoire, `toBackendUrl`) ; carte, détail et
+section la passent. Seule la section `coform-resource-directory` est touchée (ce site seulement).
+Détail : `doc/07-module-search.md` § `coform-resource-directory`.
+
 ### 08/09ter — admin : onglet « Référencement »
 
 **Config seule** (`config.prod.tiers-lieux.json`). Onglet `admin.tabs[]` `referencement` (icône

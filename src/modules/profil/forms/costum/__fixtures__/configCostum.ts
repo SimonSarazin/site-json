@@ -27,6 +27,13 @@ const CONFIG_FILE: Record<string, string> = {
   "rezo-sante-acteur": "config.prod.rezo-sante-reunion.json",
   "rezo-sante-projet": "config.prod.rezo-sante-reunion.json",
   "rezo-sante-ressource": "config.prod.rezo-sante-reunion.json",
+  "parent62-inforeso": "config.prod.parent62.json",
+  "parent62-intervenant": "config.prod.parent62.json",
+  "parent62-article": "config.prod.parent62.json",
+  "parent62-recovery-center": "config.prod.parent62.json",
+  "parent62-event": "config.prod.parent62.json",
+  "parent62-reunion": "config.prod.parent62.json",
+  "parent62-affiche": "config.prod.parent62.json",
 };
 
 /** Document costum BRUT (JSON config), tel que servi au runtime via `window.__CONFIG__.costumForms`. */

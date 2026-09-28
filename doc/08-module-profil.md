@@ -1401,6 +1401,9 @@ profil de l'entité (`EntityStatusButton`).
 - Réponse obligatoire : pas de croix de fermeture, Échap et clic extérieur neutralisés
   (`showCloseButton={false}` + `onEscapeKeyDown`/`onInteractOutside`) — seuls Accepter/Refuser referment
   la modale (`onSuccess` de la mutation).
+- Après la réponse (acceptée ou refusée), retour à l'accueil (`navigate("/")`), quelle que soit la page.
+  La modale s'ouvre aussi par-dessus la page du lien Accepter/Refuser du mail (`AcceptInvitationPage`),
+  dont elle masque le bouton : une fois l'invitation tranchée, cette page n'a plus d'objet.
 - `useHydrated()` : `me` est toujours `null` au SSR, donc `open` reste `false` au 1er render client pour
   rester identique au HTML serveur — sinon Radix marque `aria-hidden` sur les autres éléments de la page dès
   le montage d'un Dialog ouvert, ce qui produit un mismatch d'hydratation sur des nœuds sans rapport.

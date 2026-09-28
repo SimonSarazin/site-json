@@ -13,7 +13,11 @@
     "by": "par",
     "readingTime": "{{count}} min de lecture",
     "notFound": "Article introuvable",
-    "related": "Articles liés"
+    "related": "Articles liés",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "deleteTitle": "Supprimer cette actualité ?",
+    "deleteDescription": "« {{title}} » sera définitivement supprimée. Cette action est irréversible."
   },
   "teaser": {
     "cta": "En savoir plus",

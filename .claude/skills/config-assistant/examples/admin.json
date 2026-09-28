@@ -157,7 +157,9 @@
             ],
             "create": "add-parent62-article",
             "createDefaults": {
-              "category": "appel-projet"
+              "category": [
+                "appel-projet"
+              ]
             },
             "edit": "inherit"
           }
@@ -221,7 +223,9 @@
             ],
             "create": "add-parent62-article",
             "createDefaults": {
-              "category": "offre-emploi"
+              "category": [
+                "offre-emploi"
+              ]
             },
             "edit": "inherit"
           }
@@ -371,6 +375,132 @@
         ]
       },
       {
+        "id": "inforeso",
+        "label": {
+          "fr": "INFORESO",
+          "en": "INFORESO"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "INFORESO",
+              "en": "INFORESO"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "doc"
+              },
+              "defaultSortBy": {
+                "annee": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "annee",
+                "label": {
+                  "fr": "Année",
+                  "en": "Year"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Ajouté le",
+                  "en": "Added on"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete"
+            ],
+            "bulkActions": [
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-inforeso",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "intervenants",
+        "label": {
+          "fr": "Elles et ils ont marqué le réseau",
+          "en": "They left their mark on the network"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Elles et ils ont marqué le réseau",
+              "en": "They left their mark on the network"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "intervenant"
+              },
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "shortDescription",
+                "label": {
+                  "fr": "Fonction",
+                  "en": "Role"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Ajouté le",
+                  "en": "Added on"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete"
+            ],
+            "bulkActions": [
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-intervenant",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
         "id": "agenda",
         "label": {
           "fr": "Agenda",
@@ -510,6 +640,75 @@
               "delete"
             ],
             "create": "add-parent62-reunion",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "partenaires",
+        "label": {
+          "fr": "Partenaires",
+          "en": "Partners"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "organizations",
+            "label": {
+              "fr": "Partenaires",
+              "en": "Partners"
+            },
+            "source": {
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Structure",
+                  "en": "Organisation"
+                }
+              },
+              {
+                "path": "type",
+                "label": {
+                  "fr": "Type",
+                  "en": "Type"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune",
+                  "en": "Town"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Proposé le",
+                  "en": "Submitted"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-partenaire",
             "edit": "inherit"
           }
         ]

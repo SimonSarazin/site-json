@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { FinderSearchModal } from "./FinderSearchModal";
 import { getSharedFinderInfo } from "../utils/formParser";
-import { buildFinderMongoFilters } from "../utils/finderFilters";
+import { buildFinderMongoFilters, placeKindSourceKeys, type PlaceKind } from "../utils/finderFilters";
 import { pickProfileImageUrl } from "../utils/helpers";
 import type { CoFormData, FinderConfig, FinderElement } from "../types";
 import type { Organization } from "@communecter/cocolight-api-client";
@@ -46,6 +46,10 @@ interface PlacesListViewProps {
    * `DialogTitle` remplace le h1.
    */
   hidePageChrome?: boolean;
+  /** Libellés ET périmètre par défaut des lieux (cf. `PLACE_KIND_SOURCE_KEYS`). Défaut : tiers-lieux. */
+  placeKind?: PlaceKind;
+  /** Surcharge du périmètre (costums des lieux), prioritaire sur le préréglage de `placeKind`. */
+  placeSourceKeys?: string[];
 }
 
 // ─── Sub-component : ligne d'un lieu (Admin / Membre) ──────────────────────
@@ -168,9 +172,10 @@ interface JoinConfirmDialogProps {
   org: Organization | null;
   onClose: () => void;
   onSuccess: () => void;
+  placeKind?: PlacesListViewProps["placeKind"];
 }
 
-function JoinConfirmDialog({ org, onClose, onSuccess }: JoinConfirmDialogProps) {
+function JoinConfirmDialog({ org, onClose, onSuccess, placeKind }: JoinConfirmDialogProps) {
   const t = useT("modules/coform");
   const requestMemberMutation = useRequestToJoin(org);
   const requestAdminMutation = useRequestToJoinAdmin(org);
@@ -205,7 +210,7 @@ function JoinConfirmDialog({ org, onClose, onSuccess }: JoinConfirmDialogProps) 
             {t("coform.placeView.join.confirmTitle", undefined, { name })}
           </DialogTitle>
           <DialogDescription>
-            {t("coform.placeView.join.confirmDescription")}
+            {t("coform.placeView.join.confirmDescription", undefined, { context: placeKind })}
           </DialogDescription>
         </DialogHeader>
 
@@ -258,6 +263,8 @@ export function PlacesListView({
   formId,
   onOpenPlace,
   hidePageChrome = false,
+  placeKind,
+  placeSourceKeys: sourceKeysOverride,
 }: PlacesListViewProps) {
   const t = useT("modules/coform");
   const navigate = useNavigate();
@@ -291,6 +298,15 @@ export function PlacesListView({
     [sharedFinderInfo]
   );
 
+  // Périmètre piloté par la config (`placeSourceKeys`, sinon le préréglage de
+  // `placeKind`), et NON par le `notSourceKey` du finder : la liste, la recherche
+  // `searchConfig` et « J'utilise » de la fiche commun partagent ainsi le même
+  // périmètre.
+  const placeSourceKeys = useMemo(
+    () => placeKindSourceKeys(placeKind, sourceKeysOverride),
+    [placeKind, sourceKeysOverride]
+  );
+
   const {
     organizations,
     isLoading,
@@ -299,7 +315,7 @@ export function PlacesListView({
     lastItemRef,
   } = useUserEligiblePlaces(me, {
     filters: mongoFilters,
-    notSourceKey: sharedFinderInfo?.notSourceKey,
+    sourceKey: placeSourceKeys,
     enabled: !!sharedFinderInfo,
   });
 
@@ -381,7 +397,7 @@ export function PlacesListView({
       if (alreadyOwned) {
         const perms = calculateOrganizationPermissions(alreadyOwned);
         if (perms.isAdmin || perms.isMember) {
-          toast.info(t("coform.placeView.join.alreadyMember"));
+          toast.info(t("coform.placeView.join.alreadyMember", undefined, { context: placeKind }));
           goToPlace(picked.id);
           return;
         }
@@ -403,7 +419,7 @@ export function PlacesListView({
         console.warn("[PlacesListView] organization fetch failed", err);
       }
     },
-    [api, organizations, goToPlace, t, formData.publicCanEditSharedAnswer]
+    [api, organizations, goToPlace, t, formData.publicCanEditSharedAnswer, placeKind]
   );
 
   // Si pas de finder partagé, on ne peut pas filtrer / pré-remplir → message.
@@ -412,7 +428,7 @@ export function PlacesListView({
       <div className="space-y-4 max-w-3xl mx-auto p-6">
         {!hidePageChrome && <h1 className="text-2xl font-bold">{formData.name}</h1>}
         <p className="text-sm text-muted-foreground">
-          {t("coform.placeView.empty.notApplicable")}
+          {t("coform.placeView.empty.notApplicable", undefined, { context: placeKind })}
         </p>
       </div>
     );
@@ -427,13 +443,16 @@ export function PlacesListView({
     // cohérent avec la liste (sinon un réseau réapparaîtrait à la recherche).
     excludeFilters: sharedFinderInfo.excludeFilters,
     notSourceKey: sharedFinderInfo.notSourceKey,
+    // Même périmètre que la liste : prioritaire sur `notSourceKey`.
+    sourceKey: placeSourceKeys,
     myContacts: false,
     initCurrentUser: false,
-    // FinderSearchModal préfixe automatiquement avec "Rechercher un " → on
-    // passe juste le mot-cible ("lieu" / "place").
-    elementLabel: t("coform.placeView.joinSection.elementLabel"),
-    buttonLabel: t("coform.placeView.joinSection.searchButton"),
-    placeholderSearchField: t("coform.placeView.joinSection.searchButton"),
+    // Mot-cible seul ("lieu" / "CAE"), inséré dans les messages du finder.
+    elementLabel: t("coform.placeView.joinSection.elementLabel", undefined, { context: placeKind }),
+    // Titre complet, accordé selon la nature du lieu.
+    title: t("coform.placeView.joinSection.modalTitle", undefined, { context: placeKind }),
+    buttonLabel: t("coform.placeView.joinSection.searchButton", undefined, { context: placeKind }),
+    placeholderSearchField: t("coform.placeView.joinSection.searchButton", undefined, { context: placeKind }),
     field: "place",
     multiple: false,
     addNew: false,
@@ -446,10 +465,10 @@ export function PlacesListView({
     addToLinks: { value: false, links: "" },
   };
 
-  const documentTitle = formData.name ?? t("coform.placeView.title");
+  const documentTitle = formData.name ?? t("coform.placeView.title", undefined, { context: placeKind });
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto p-6">
+    <div className="space-y-6 max-w-5xl mx-auto p-6">
       {!hidePageChrome && (
         <Helmet>
           <title>{documentTitle}</title>
@@ -460,14 +479,14 @@ export function PlacesListView({
       {!hidePageChrome && (
         <div className="space-y-1">
           <h1 className="text-2xl font-bold">{documentTitle}</h1>
-          <p className="text-sm text-muted-foreground">{t("coform.placeView.description")}</p>
+          <p className="text-sm text-muted-foreground">{t("coform.placeView.description", undefined, { context: placeKind })}</p>
         </div>
       )}
 
       {/* Mes lieux */}
       <section className="space-y-2">
         <h2 className="text-sm font-semibold text-foreground">
-          {t("coform.placeView.myPlaces")} ({myPlaces.length})
+          {t("coform.placeView.myPlaces", undefined, { context: placeKind })} ({myPlaces.length})
         </h2>
         {isLoading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -475,7 +494,7 @@ export function PlacesListView({
           </div>
         ) : myPlaces.length === 0 ? (
           <p className="text-sm text-muted-foreground italic">
-            {t("coform.placeView.empty.noPlaces")}
+            {t("coform.placeView.empty.noPlaces", undefined, { context: placeKind })}
           </p>
         ) : (
           <div className="space-y-2">
@@ -542,19 +561,19 @@ export function PlacesListView({
       <section className="space-y-2 pt-4 border-t">
         <h2 className="text-sm font-semibold text-foreground">
           {formData.publicCanEditSharedAnswer
-            ? t("coform.placeView.openSection.title")
-            : t("coform.placeView.joinSection.title")}
+            ? t("coform.placeView.openSection.title", undefined, { context: placeKind })
+            : t("coform.placeView.joinSection.title", undefined, { context: placeKind })}
         </h2>
         <p className="text-sm text-muted-foreground">
           {formData.publicCanEditSharedAnswer
-            ? t("coform.placeView.openSection.description")
-            : t("coform.placeView.joinSection.description")}
+            ? t("coform.placeView.openSection.description", undefined, { context: placeKind })
+            : t("coform.placeView.joinSection.description", undefined, { context: placeKind })}
         </p>
         <Button variant="outline" onClick={() => setSearchOpen(true)} className="gap-2">
           <Search className="h-4 w-4" />
           {formData.publicCanEditSharedAnswer
-            ? t("coform.placeView.openSection.searchButton")
-            : t("coform.placeView.joinSection.searchButton")}
+            ? t("coform.placeView.openSection.searchButton", undefined, { context: placeKind })
+            : t("coform.placeView.joinSection.searchButton", undefined, { context: placeKind })}
           {!formData.publicCanEditSharedAnswer && <UserPlus className="h-4 w-4 ml-1" />}
         </Button>
       </section>
@@ -575,6 +594,7 @@ export function PlacesListView({
         org={confirmOrg}
         onClose={() => setConfirmOrg(null)}
         onSuccess={() => setConfirmOrg(null)}
+        placeKind={placeKind}
       />
     </div>
   );

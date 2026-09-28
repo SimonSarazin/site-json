@@ -508,7 +508,23 @@ export type ProfileToolsSection = z.infer<typeof ProfileToolsSectionSchema>;
 // participants d'une entité. L'entité est résolue par `useSectionEntity`
 // (slug → fetch, sinon contexte). Rendu par le cœur générique `<EntityMembers>`.
 const MemberCardConfSchema = z.object({
-  type: z.enum(["default", "profile"]).default("default"),
+  type: z.enum(["default", "profile", "team"]).default("default"),
+  /** Disposition de la carte « équipe ». `stack` (défaut) : grand portrait 4/3 au-dessus du texte.
+   *  `row` : vignette RONDE à gauche de l'identité — pour une carte posée dans une colonne étroite
+   *  à côté d'autres blocs, où le grand portrait ferait une colonne bien plus haute que ses
+   *  voisines. Sans effet sur les autres types de carte. */
+  layout: z.enum(["stack", "row"]).optional(),
+  /** Convention de rattachement de la carte « équipe » : où pointe le bouton, et d'où viennent
+   *  ses couleurs. OBLIGATOIRE dès que `type: "team"` (gate préflight `member-team-card` ; à
+   *  l'exécution, la section échoue tôt plutôt que de rendre une carte sans lien ni couleur) —
+   *  aucun gabarit n'est codé en repli dans le module, qui reste générique : un site regroupe ses
+   *  membres par territoire, région, filière ou antenne en le déclarant ici. */
+  rattachement: z.object({
+    /** Gabarit du chemin de la page de regroupement ; `{slug}` est remplacé. */
+    cheminGabarit: z.string(),
+    /** Préfixe des variables CSS : `<prefixe>-<slug>-carte` et `<prefixe>-<slug>-encre`. */
+    prefixeCouleur: z.string(),
+  }).optional(),
   showDescription: z.boolean().optional().default(true),
   showAddress: z.boolean().optional().default(true),
   // Bloc de compteurs de `CardProfile` (projets liés). Absent = affiché.
@@ -532,6 +548,41 @@ export const MemberSectionSchema = z.object({
     showCard: z.boolean().optional().default(true),
     // Recherche affichée par défaut (l'ancienne section l'affichait toujours).
     search: z.boolean().optional().default(true),
+    /** Restreint la liste aux membres portant l'un de ces rôles (`links.<famille>[].roles`,
+     *  texte libre). Absent → tous les membres. Permet de composer une page équipe par
+     *  fonction : une section par rôle. */
+    roles: z.array(z.string()).optional(),
+    /** Filtre SERVEUR complémentaire sur les documents des membres, fusionné côté SDK sous le
+     *  filtre d'appartenance (ex. `{ "territoires": "Arrageois" }`). Égalité Mongo : la valeur
+     *  doit être EXACTEMENT celle stockée sur les profils. Combiné à `roles`, donne « le
+     *  coordonnateur DE ce territoire » sur les pages `/territoire/*` (SDK ≥ 1.0.194). */
+    filters: z.record(z.string(), z.unknown()).optional(),
+    /** Champs AJOUTÉS à la projection par défaut de la liste — ceux que la carte « équipe » lit
+     *  et que la liste ne ramène pas seule : `territoires`, `telephone`, `phone`, `mobile`,
+     *  `email` (`address` y est déjà). */
+    fields: z.array(z.string()).optional(),
+    /** Efface la section quand la liste finit vide, au lieu d'afficher « Aucun membre ». */
+    hideWhenEmpty: z.boolean().optional(),
+    /** Texte libre posé SOUS la liste, sauts de ligne respectés. Sert à garder, dans le même
+     *  bloc, le canal de contact d'une équipe (adresse, courriel, téléphones) que les fiches
+     *  des membres ne portent pas — et qui doit rester visible même sans membre rattaché. */
+    footerText: LocalizedString.optional(),
+    /** Texte libre posé DANS chaque carte « équipe », sous les contacts de la personne. Distinct
+     *  de `footerText` parce qu'il ne dit pas la même chose : la carte porte déjà le courriel et le
+     *  téléphone DE LA PERSONNE, lus sur sa fiche — il n'y reste à donner que ce que la fiche
+     *  ignore, typiquement le lieu de permanence de l'équipe. */
+    cardText: LocalizedString.optional(),
+    /** Classes utilitaires sur l'enveloppe de la section — espacement d'une page, surtout. */
+    className: z.string().optional(),
+    /** Barre d'onglets Membres/Admins. Défaut `true` (historique) ; `false` sur une page qui
+     *  n'expose qu'une liste filtrée. */
+    showTabs: z.boolean().optional(),
+    /** Titre interne de la liste. Défaut `true` (historique) ; `false` quand la page porte
+     *  déjà son propre titre de section. */
+    showTitle: z.boolean().optional(),
+    /** Bouton « Inviter ». Défaut `true` (historique) ; `false` sur une page vitrine. */
+    showInvite: z.boolean().optional(),
+
     card: MemberCardConfSchema.optional(),
   }),
 });

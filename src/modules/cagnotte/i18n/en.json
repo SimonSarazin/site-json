@@ -87,7 +87,8 @@
     },
     "orgPicker": {
       "searchPlaceholder": "Search an organization...",
-      "selectPlaceholder": "Choose an organization...",
+      "listLabel": "Contributing organization",
+      "noMatch": "No organization matches “{{query}}”",
       "notAdminTitle": "You are not admin of any organization",
       "notAdminHelp": "To contribute as an organization, you must be an administrator"
     },
@@ -799,6 +800,16 @@
     "payform": {
       "selectedPledge": "selected pledge",
       "selectedPledge_plural": "selected pledges"
+    }
+  },
+  "HeaderButtons": {
+    "piggyBank": {
+      "aria": "Participatory funding",
+      "tooltip": "Open the participatory funding"
+    },
+    "pledge": {
+      "aria": "View pledges",
+      "tooltip": "View and pay my pending pledges"
     }
   },
   "PaymentReceivedScreen": {
