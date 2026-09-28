@@ -1102,7 +1102,8 @@ posé par le résolveur), `zoniris` → `getZoniris` (`co2/zone/getzoniris`). Sc
 **`countryCode` accepte une LISTE** (`zones` et `zoniris`). Le legacy, lui, ne lit qu'un scalaire :
 `countryCode: "FR,RE"` lui renvoie 0 document (mesuré le 2026-08-28). Une liste est donc résolue
 côté client en autant d'appels, mis en parallèle puis fusionnés et dédoublonnés par `_id` — le même
-mécanisme que deux couches partageant un `id`, sans dupliquer toute la déclaration. La clé de cache
+mécanisme que deux couches partageant un `id`, sans dupliquer toute la déclaration. Un code SEUL,
+même écrit en liste, part en scalaire (`getZoniris` refuse un tableau). La clé de cache
 normalise et TRIE les codes : `"FR"`, `["FR"]` et `["RE","FR"]` vs `["FR","RE"]` ne créent pas
 quatre entrées pour la même donnée.
 

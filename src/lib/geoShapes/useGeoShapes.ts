@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useQueries, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import type { Feature, FeatureCollection } from "geojson";
 
@@ -22,11 +22,13 @@ export interface GeoShapeLayer {
   /** Poser le nom de chaque contour sur la carte (cf. `showNames` en config). */
   showNames?: boolean;
   data: FeatureCollection;
+  /** Au moins une des requêtes de la couche n'a pas encore de réponse. */
   isLoading: boolean;
   /**
-   * Au moins une des requêtes de la couche a ÉCHOUÉ. Sans ce drapeau, un échec réseau est
-   * indiscernable d'un périmètre vide (React Query rend `{isLoading:false, data:undefined}` dans
-   * les deux cas) — et une vue affirmerait « aucun contour ici » là où elle n'a rien pu lire.
+   * Au moins une des requêtes de la couche a ÉCHOUÉ, ou ne pourra jamais partir (API du site non
+   * résolue). Sans ce drapeau, un échec réseau est indiscernable d'un périmètre vide (React Query
+   * rend `{isLoading:false, data:undefined}` dans les deux cas) — et une vue affirmerait « aucun
+   * contour ici » là où elle n'a rien pu lire.
    */
   isError: boolean;
 }
@@ -37,6 +39,7 @@ const EMPTY_LAYERS: GeoShapeLayer[] = [];
 function combineLayers(
   sources: GeoShapeSource[],
   results: UseQueryResult<FeatureCollection, Error>[],
+  apiUnavailable: boolean,
 ): GeoShapeLayer[] {
   if (sources.length === 0) return EMPTY_LAYERS;
 
@@ -60,7 +63,12 @@ function combineLayers(
       };
       byId.set(source.id, entry);
     }
-    if (result?.isLoading) entry.layer.isLoading = true;
+    // `isPending` et non `isLoading` : une requête DÉSACTIVÉE faute d'entité reste `pending` sans
+    // jamais charger — ni en cours ni en échec pour React Query, elle passerait pour « chargée, vide ».
+    if (result?.isPending) {
+      if (apiUnavailable) entry.layer.isError = true;
+      else entry.layer.isLoading = true;
+    }
     if (result?.isError) entry.layer.isError = true;
     for (const feature of result?.data?.features ?? []) {
       const key = feature.id == null ? "" : String(feature.id);
@@ -83,16 +91,26 @@ function combineLayers(
  */
 export function useGeoShapes(sources: GeoShapeSource[] | undefined): GeoShapeLayer[] {
   const { entity } = useCocolight();
+  const hydrated = useHydrated();
   const list = sources ?? EMPTY_SOURCES;
+  // Sans entité, rien ne partira : c'est une PANNE — mais seulement une fois hydraté. Avant, le
+  // serveur et le 1er rendu client doivent sortir le même squelette : le client résout sa propre
+  // entité, et peut réussir là où le serveur a échoué.
+  const apiUnavailable = hydrated && !entity;
+  // React Query ne rejoue `combine` que si SA référence ou celle des `results` change. Inline, il
+  // serait recréé à chaque render : la fusion des couches, puis la comparaison profonde de toutes
+  // les géométries (`replaceEqualDeep`), se rejoueraient à chaque pan, zoom ou survol de la carte.
+  const combine = useCallback(
+    (results: UseQueryResult<FeatureCollection, Error>[]) => combineLayers(list, results, apiUnavailable),
+    [list, apiUnavailable],
+  );
 
   return useQueries({
     queries: list.map((source) => ({
       ...geoShapeQueryOptions((entity as GeoShapeEntity | null) ?? null, source),
       enabled: Boolean(entity),
     })),
-    // `combine` mémoïse le résultat sur l'identité des `results` : sans lui, fusionner et
-    // dédoublonner des milliers de features se rejouerait à CHAQUE render de la carte.
-    combine: (results) => combineLayers(list, results as UseQueryResult<FeatureCollection, Error>[]),
+    combine,
   });
 }
 
@@ -113,8 +131,10 @@ export function useGeoShapesWarmup(sources: GeoShapeSource[] | undefined): void 
   const queryClient = useQueryClient();
   const hydrated = useHydrated();
 
-  // Signature sérialisée : `map.shapes` est une littérale de config, sa RÉFÉRENCE change à chaque
-  // render du parent alors que son contenu, lui, ne bouge jamais.
+  // Signature sérialisée : l'effet ne dépend que du CONTENU des couches à préchauffer. La référence
+  // de `map.shapes` est stable tant que la config l'est (elle vit dans l'état de `SiteProvider`),
+  // mais une config remplacée à chaud (`setConfig`) en recrée une à contenu égal : pas de second
+  // préchauffage pour autant.
   const signature = useMemo(
     () => JSON.stringify((sources ?? []).filter((source) => source.load === "page" || source.load === "idle")),
     [sources],

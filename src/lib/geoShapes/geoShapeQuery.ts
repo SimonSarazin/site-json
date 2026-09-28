@@ -173,9 +173,11 @@ export async function fetchGeoShapes(
 
   if (source.source === "zoniris") {
     const filters = source.filters as ZoneGetZonirisData & { countryCode?: string | string[] };
-    if (countries.length <= 1) {
+    if (countries.length === 0) {
       return toFeatureCollection((await entity.getZoniris(filters as ZoneGetZonirisData)) ?? [], source);
     }
+    // Même un pays SEUL passe par l'éventail : `["RE"]` n'est pas une chaîne, et `getZoniris` lève
+    // une ApiError 400 avant tout appel réseau quand c'est son seul filtre identifiant.
     const pages = await Promise.all(
       countries.map((countryCode) => entity.getZoniris({ ...filters, countryCode })),
     );
