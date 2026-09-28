@@ -16,8 +16,8 @@
 > vit sur la branche `aac-dev` et n'a rien à voir avec le site des tiers-lieux, qui vit sur `jdev`
 > et `main` : leurs dossiers devaient être séparés. Cf. §10 31/08.
 
-Dernière mise à jour : **2026-09-28** (profil de l'entité Fédération : onglet « Membres » ajouté à
-`profiles.default.tabs`, cf. §10 28/09).
+Dernière mise à jour : **2026-09-28** (profil dédié `profiles.organizations` avec onglet « Membres »,
+sur le modèle de tiers-lieux, cf. §10 28/09).
 
 ---
 
@@ -123,8 +123,8 @@ RELIEF : tout changement s'y répercute sur trois sites (cf. §10 31/08 et §13)
 Blocs racine présents : `meta`, `theme` (dont `customCSS` depuis le 24/09 : la bande des
 `searchHeader` suit la charte du site, cf. §7), `header` (`standard` ; `utilities` : `auth`, `themeSwitch`,
 `piggyBank`, `pledge`), `footer` (`sidebar-columns`), `aac`, `cagnotteModuleConfig`
-(`defaultType: "aac"`), `profiles` (`projects` + `default`, ce dernier avec un onglet « Membres »
-depuis le 28/09, cf. §10 28/09).
+(`defaultType: "aac"`), `profiles` (`default`, `projects`, et depuis le 28/09 `organizations`,
+cf. §10 28/09).
 **Absents** : `auth`, `admin`, `commandPalette`, `costumForms` — le site est en lecture publique,
 l'enrichissement d'un outil reposant sur le droit admin du costum côté backend.
 
@@ -255,7 +255,7 @@ sens des liens. L'annuaire s'appuie sur le premier (cf. §7).
 | 14 | Vérification navigateur du lot 08-09/09 | 🟡 | SSR de production vérifié (4 pages + un site sans AAC) et l'en-tête inspecté à l'écran ; `test:integration` et `test:e2e` **jamais lancés** |
 | 15 | Footer et socle légal | 🟡 | 14/09 — 9 liens, tous vers une route servie par le site ; `/mentions-legales` et `/confidentialite` posées mais **à compléter par la Fédération avant publication** ; réseaux sociaux et contact retirés faute de coordonnées (cf. §10 14/09 et §14) |
 | 16 | Annuaire de la communauté `/annuaire` | 🟡 | 24/09 — 9 coopératives listées, rendu vérifié (SSR + navigateur, clair/sombre, mobile). **Création d'une organisation depuis le bouton non vérifiée** : aucun compte de test disponible (cf. §10 24/09 et §14) |
-| 17 | Onglet « Membres » du profil de l'entité | ✅ | 28/09 — 9 membres, rôles affichés (« Conseil d'administration »), rendu vérifié (SSR + navigateur, clair/sombre, desktop/mobile), cf. §10 28/09 |
+| 17 | Profil dédié `organizations` — onglet Membres | 🟡 | 28/09 — 9 membres et rôles vérifiés côté organisation (SSR + navigateur, clair/sombre, desktop/mobile). **Gestion des membres (`showManagement`) non vérifiée** faute de compte admin de test, cf. §10 28/09 |
 
 **Gates au merge `287bb35a` (09/09)** : `typecheck` ✅ · `eslint` ✅ **0 erreur** (24 avertissements
 préexistants) · `test:unit` **4 230** ✅ dont préflight **635** ✅ · `build` ✅ · `config:validate` ✅
@@ -271,49 +271,47 @@ rouge — `public/images/federationDesCae/` vide et non déclaré. Réglé le 09
 
 ## 10. Impacts des modifications
 
-### 28/09 — onglet « Membres » sur le profil de l'entité
+### 28/09 — profil dédié `profiles.organizations` avec l'onglet « Membres »
 
-**Le besoin.** Afficher les membres de l'entité Fédération (organisation) sur son propre profil
-(`/profil/federationDesCae`), à côté de « À propos », « Galerie » et « Localisation ».
+**Le besoin.** Afficher les membres de l'entité Fédération sur son profil
+(`/profil/federationDesCae`) — sur le modèle déjà en place chez tiers-lieux, où le type
+`organizations` a son propre bloc `profiles.organizations` plutôt que de dépendre de
+`profiles.default`, partagé par tous les types sans bloc dédié.
 
-**Ce qui change (config seule, aucun code).** Un onglet `members` ajouté à
-`profiles.default.tabs` :
+**Ce qui change (config seule, aucun code).** `profiles.organizations` (nouveau, copie de l'ancien
+`profiles.default`) : mêmes onglets `about` / `gallery` / `map`, plus un onglet `members` —
+`profile-tab-layout` avec `profile-members` (`showRole: true`, `showManagement: true`) à gauche et
+`profile-info` (`variant: "sidebar"`, `sticky`, `showCounts`, `showAddress`, `showOrganizer`) à
+droite. Structure identique, prop pour prop, à l'onglet `members` de `profiles.organizations` chez
+tiers-lieux. `profiles.default` reste inchangé dans son contenu (`about` / `gallery` / `map`) et
+continue de servir de repli pour tout type sans bloc dédié (`citoyens`, `events`, `poi`, sans usage
+réel aujourd'hui sur ce site). `profile-members` et `profile-tab-layout` existent déjà dans
+`src/modules/profil/schema.ts`, utilisés par 13 autres configs du parc : aucune divergence de props
+introduite ici, aucun fichier de code touché.
 
-- `profile-tab-layout` avec, à gauche, `profile-members` (`showRole: true`, `showManagement: true`)
-  et à droite, en barre latérale, `profile-info` (`variant: "sidebar"`, `sticky: true`,
-  `showCounts`, `showAddress`, `showOrganizer`) — même agencement que les autres onglets du profil.
-- Les deux types de section (`profile-members`, `profile-tab-layout`) existent déjà dans
-  `src/modules/profil/schema.ts` et sont utilisés par 13 autres configs du parc (parent62,
-  rezo-la-mer, tiers-lieux, institut-bleu…) : aucune divergence de props introduite ici.
-- Il atterrit sur `profiles.default`, donc partagé par tout type d'entité sans `profiles.<type>`
-  dédié sur ce site — ici, seule l'organisation Fédération l'utilise en pratique (`profiles.projects`
-  reste inchangé, sans onglet membres).
-
-**Correction apportée pendant la revue.** Le libellé de l'onglet portait une clé `en` (« Members »)
-alors que `meta.languages` de ce site vaut `["fr"]` — la même règle déjà appliquée à tout le site le
-09/09 (cf. §10 09/09). `audit:config` l'a signalé en `locale-extra` ; clé `en` retirée, l'audit
-repasse à ✅ RAS.
+**Correction apportée pendant la revue.** Le libellé de l'onglet `members` portait une clé `en`
+(« Members ») alors que `meta.languages` de ce site vaut `["fr"]` — la même règle déjà appliquée à
+tout le site le 09/09 (cf. §10 09/09). `audit:config` l'a signalé en `locale-extra` ; clé `en`
+retirée, l'audit repasse à ✅ RAS.
 
 **Vérifié.** `config:validate` ✅ 6 pages / 10 sections (le compte ne change pas : l'onglet vit sous
-`profiles`, hors `pages[]`, comme les autres onglets — cf. §9 09/09). `audit:config` ✅ RAS.
-`test:preflight` ✅ 728/730 (2 échecs préexistants et sans rapport, confirmés reproductibles hors de
-ce lot par `git stash` : `bundle-size` dépasse 2 Mo sur ce poste, et un dossier
-`public/images/EcosystemeSanteReunion` non déclaré par `sites.json` — aucun des deux n'a de lien avec
-`federationDesCae`). Module `profil` ✅ 53 fichiers / 576 tests. `typecheck` ✅. SSR de production
-(`config:render`) ✅ sur les 6 pages de `pages[]` — le profil n'y figurant pas, vérifié séparément :
-`/profil/federationDesCae/members` sert 200 avec le contenu de l'onglet. Navigateur (Playwright,
-Chromium) : 9 membres listés avec rôle (« Conseil d'administration ») et sidebar Informations
-(9 membres, 6 projets), en clair et en sombre à 1440 px, et en mobile à 390 px (défilement, cartes
-lisibles). Aucun échec, aucun `ErrorBoundary`.
+`profiles`, hors `pages[]` — cf. §9 09/09). `audit:config` ✅ RAS. `test:preflight` ✅ 1304/1306
+(2 échecs préexistants et sans rapport, confirmés reproductibles hors de ce lot par `git stash` :
+`bundle-size` dépasse 2 Mo sur ce poste, et un dossier `public/images/EcosystemeSanteReunion` non
+déclaré par `sites.json` — aucun des deux n'a de lien avec `federationDesCae`) ; la fixture
+`__effective__/federationDesCae.json` inchangée. Module `profil` ✅ 53 fichiers / 576 tests.
+`typecheck` ✅. SSR : `/profil/federationDesCae/members` sert 200 avec le contenu de l'onglet.
+Navigateur (Playwright, Chromium) : 9 membres listés avec rôle (« Conseil d'administration ») et
+sidebar Informations, en clair et en sombre à 1440 px, et en mobile à 390 px. Aucun échec, aucun
+`ErrorBoundary`.
 
-**Non vérifié.** Le comportement pour un visiteur **admin connecté** (`showManagement: true`
-autorise des actions de gestion des membres depuis cet onglet) — aucun compte de test disponible,
-comme pour l'annuaire (cf. §10 24/09).
+**Non vérifié.** La gestion des membres via `showManagement` (actions réservées à un admin) — aucun
+compte de test disponible, comme pour l'annuaire (cf. §10 24/09).
 
 **Gates (28/09, arbre de travail non commité)** : `config:validate` ✅ · `audit:config` ✅ RAS ·
-`test:preflight` ✅ 728/730 (2 échecs préexistants, cf. ci-dessus) · `test:unit` (module `profil`)
-✅ 576 · `typecheck` ✅ · SSR (`config:render` + sondage direct de la route de profil) ✅ · navigateur
-✅ clair/sombre/mobile. `eslint`, `test:unit` complet, `test:integration`, `test:e2e`, `build` **non
+`test:preflight` ✅ 1304/1306 (2 échecs préexistants, cf. ci-dessus) · `test:unit` (module `profil`)
+✅ 576 · `typecheck` ✅ · SSR (`/profil/federationDesCae/members`) ✅ · navigateur ✅
+clair/sombre/mobile. `eslint`, `test:unit` complet, `test:integration`, `test:e2e`, `build` **non
 relancés** : aucun fichier de code touché.
 
 ### 24/09 — l'annuaire de la communauté
@@ -1138,7 +1136,7 @@ une affirmation fausse. Aucun appelant ne lit `mutation.data` ; seul le verdict 
 | Rendre configurables les `FIELD_*` de `CommunInfoAction` | à arbitrer |
 | Vérification navigateur des lots 27/08, 31/08 et 03/09 — **jamais faite** (celui du 08-09/09 a été vérifié en SSR de production) ; **s'y ajoute le profil projet du 09/09**, bloqué ce jour-là par un `git stash pop` non résolu sur `src/modules/aac/routes.tsx` | Schumann |
 | **Réactiver les onglets « Actions » et « Financements » du profil projet** (retirés le 09/09) — ≈ 30 min de config, mais subordonné à l'activation de `form.coremu` ci-dessus, faute de quoi ils s'affichent vides | Schumann / Fédération |
-| Étendre `profiles` aux types `organizations` / `citoyens` / `events` / `poi` si des liens du site s'y mettent à pointer — aujourd'hui ils tombent sur `default`, dont les sous-routes de détail ne sont pas résolues (cf. §10 09/09) | à arbitrer |
+| ~~Étendre `profiles` au type `organizations`~~ — **fait le 28/09** (onglet Membres, cf. §10 28/09) ; reste `citoyens` / `events` / `poi`, qui tombent toujours sur `default` si des liens du site s'y mettent à pointer, dont les sous-routes de détail ne sont pas résolues (cf. §10 09/09) | à arbitrer |
 | **Fournir les coordonnées publiques** (e-mail de contact, site web, réseaux sociaux) — le footer n'en affiche aucune depuis le 14/09, la fiche Communecter de l'organisation n'en portant pas | Fédération |
 | **Compléter les 2 pages légales avant publication** : forme juridique, SIREN/RNA, siège, téléphone, courriel, directeur de la publication, hébergeur, prestataires, licence des contenus, cookies et traceurs, durées de conservation, prestataires de paiement, statut RGAA | Fédération |
 | Créer les pages CGU, licences et accessibilité ? Non créées le 14/09 : les 2 pages obligatoires d'abord | à arbitrer |
