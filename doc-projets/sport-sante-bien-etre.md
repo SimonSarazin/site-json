@@ -194,7 +194,7 @@ gonflent légèrement au merge du 08/09 (`geo`/`geoPosition` déclarés sur les 
 ### 4.3 Back-office (`config.admin`, 10 onglets)
 
 `Tableau de bord` · `Membres` · `Organisations` (table « Structures ») · **`Maisons Sport Santé`**
-(09/09 — clone de « Structures » filtré `mss: "true"`, `createDefaults: { mss: "true" }`) ·
+(09/09 — clone de « Structures » filtré `mss: "true"`, `createDefaults: { mss: true }` — booléen, valeur de formulaire, corrigé le 24/09) ·
 `Lieux & actualités` (2) · `Formations` (2) · `Import / Export` · `Référencement` ·
 `Ressources` (02/09) · `Modération` (02/09).
 
@@ -635,7 +635,7 @@ le filtre `/structure` d'Ekilib.re (valeurs courtes) et ses ~14 fiches ne sont p
 **4. Consolidation MSS.** `sport-sante-bienetre-mss` (costumForm + route `editModals`
 `edit-sport-sante-bienetre-mss`) **supprimé**. Une Maison Sport-Santé = une structure avec `mss`
 coché. Admin : l'onglet Organisations ne porte plus que « Structures » ; un nouvel onglet
-**`maisons-sport-sante`** est un clone filtré `mss: "true"` + `createDefaults: { mss: "true" }`,
+**`maisons-sport-sante`** est un clone filtré `mss: "true"` + `createDefaults: { mss: "true" }` (⚠ corrigé le 24/09 en `mss: true` : la chaîne bloquait la création, cf. `doc/30`),
 avec le même bloc `status`/`statusActor` — « même data et même modération que les structures »
 (demande du porteur). `type` passe de `NGO` à `Cooperative` : les listes publiques et l'admin
 l'acceptent déjà (`defaultTypes`), l'onglet Référencement excepté.
@@ -708,9 +708,12 @@ nommés** appariés par `subKey`, repli « Non renseigné », repris de la fiche
 | Responsabilité civile professionnelle | `responsableCivilePro` |
 
 La fiche complète est rechargée par slug (`useEntityBySlugQuery`, même patron que
-`useResourceEntity`) pour disposer de `about.files`. `element/about` étant **public**, sur `/mss`
+`useResourceEntity`) pour disposer de `about.files`. ~~`element/about` étant **public**, sur `/mss`
 (page publique) les PDF deviennent téléchargeables par un visiteur anonyme — comportement **identique
-à la fiche legacy** (§13). `SEARCH_QUERY_KEYS.DOCUMENTS` devenu orphelin, retiré.
+à la fiche legacy** (§13).~~ **Faux, corrigé le 24/09** (review de la MR) : la fiche legacy
+`ssbe/organizations/preview.php` réserve le bloc Documents à `$ssbeCanManage` (admin de la structure
+ou du costum). Parité rétablie des deux côtés — cf. §13 question 15. `SEARCH_QUERY_KEYS.DOCUMENTS`
+devenu orphelin, retiré.
 
 **À refaire.** Les documents déposés avant ce lot n'ont pas de `subKey` → à redéposer.
 
@@ -936,16 +939,16 @@ nombre total de tests monte avec le merge, sans lien avec SSBE).
 | 23 | Filtre « Bénéficiaires » de `/creneaux` | ❌ | Aveugle sur 232 réponses stockées en chaîne collée. Script de normalisation prêt, **non exécuté** — arbitrage de vocabulaire en attente (§13) |
 | 24 | Ressources — saisie réelle | ❌ | `declareRessourceType` joué en DEV (contrat live 23→25 champs) ; **reste à rejouer en PROD**, avec ses trois clés |
 | 25 | Formulaire structure aligné legacy | ✅ config | `070a3267` (§9) : assistant 5 étapes + cascade juridique, `mobile` plat, `affiliate`/`mss` en `"true"`/`"false"`, titres en `valueSelect` chaîne, `statusActor` — vérifié contre 3 fiches DB créées en session. **Recette navigateur à faire** |
-| 26 | MSS consolidé | ✅ config | Form `mss` supprimé, champ `mss` sur la structure, onglet admin `maisons-sport-sante` dédié (filtre `mss: "true"`). Fiches MSS `type: "NGO"` d'avant : à ré-enregistrer via le panel pour porter `mss: "true"` |
+| 26 | MSS consolidé | ✅ config | Form `mss` supprimé, champ `mss` sur la structure, onglet admin `maisons-sport-sante` dédié (filtre `mss: "true"`). Les 13 fiches MSS d'avant (`type: "NGO"`, `tags: ["mss"]`) : `mss: "true"` **posé à la main en base, dev + prod** (Nicolas) — sondé le 24/09 : `/mss` → 13 en prod, 16 en dev |
 | 27 | `tags` = miroir verbatim de `thematic` | ✅ | Clé `structure:tagsFromThematic` partagée Ekilib.re + SSBE ; oracle de test mis à jour. `mss` n'est plus un tag |
 | 28 | Section « Actions rapides » sur `/espace-professionnels` | ✅ config | 2 boutons (structure en Dialog, créneau en navigation `/coform/…`) — **recette navigateur à faire** |
 | 29 | Merge de `main` dans `n-dev` (`8bbe35a2`) | ✅ | Module AAC + federation-des-cae + travail SSBE parallèle. 7 conflits config résolus vers le modèle unifié `n-dev` ; `tsc -b` et préflight verts (2 échecs préexistants hors périmètre) |
 | 30 | Pièces justificatives récupérées en édition | ✅ code (`518b40e8`) | `subKey` posé à l'upload + `seedGalleryDefaults` partitionné + patch backend `Organization::getById` (`about.files`, sur `master`). **Fonctionnel une fois le backend déployé** ; documents d'avant le 10/09 à redéposer. Recette navigateur à faire |
-| 31 | Documents de la fiche publique en emplacements nommés | ✅ code (`518b40e8`) | `PreviewStructure` : 2 slots par `subKey` (Récépissé / RC pro), repli « Non renseigné », parité fiche legacy. ⚠ expose les PDF publiquement sur `/mss`, comme le legacy — arbitrage §13 |
+| 31 | Documents de la fiche publique en emplacements nommés | ✅ code (`518b40e8`) | `PreviewStructure` : 2 slots par `subKey` (Récépissé / RC pro), repli « Non renseigné », parité fiche legacy. Réservé aux gestionnaires depuis le 24/09 (front `canEditProfile` + garde backend `Organization::getById`) — §13 question 15 |
 | 32 | Page `/habilitation-mss` | ✅ config (`9deff38a`, 15/09) | 10 sections, liens Légifrance/démarches-simplifiées/Pôle Ressources vérifiés par recherche web. Entrée de nav Professionnels — **recette navigateur à faire** |
 | 33 | Pages `/faq` et `/faq-pro` | ✅ config (`9deff38a`, 15/09) | Contenu réel fourni par le porteur (7 + 12 Q/R), tout replié par défaut. Entrées de nav Grand Public / Professionnels — **recette navigateur à faire** |
 | 34 | Page `/prescription` | ✅ config (`9deff38a`, 15/09) | Ferme le lien mort historique de la tuile « Aide à la prescription » (§13, question 1 close). Sections « Guides et modèles » (cartes PDF) **non posées**, documents à fournir — §13 nouvelle question |
-| 35 | Lisibilité `heroWithIcon` sur fond image | ✅ contourné (`9deff38a`, 15/09) | Bug réel du composant (toujours `text-foreground`), corrigé en CSS scopé (`theme.customCSS`) plutôt que dans le composant — seul usage du type dans le parc. **Composant non corrigé** |
+| 35 | ~~Lisibilité `heroWithIcon` sur fond image~~ | ✅ sans objet (25/09) | Le héros de `/prescription` est passé en **`hero-quick-access`** (review de la MR : `heroWithIcon` posait l'image en `url()` CSS brut → 3,9 Mo téléchargés ; `hero-quick-access` passe par `/img`, 13–58 Ko, + preload LCP). Même `id`, titre, sous-titre et image ; icône et centrage abandonnés (choix de Nicolas). Les 2 règles CSS blanches de `#prescription-hero` sont **retirées** (texte blanc illisible sur le voile clair de `hero-quick-access`). `heroWithIcon` n'est plus utilisé nulle part dans le parc — composant toujours non corrigé (image brute + texte sombre) : à éviter |
 | 36 | `<Link>` sans `classifyHref` (`HeroQuickAccess`, `CtaCardGrid`) | ❌ | Bug identifié deux fois en session (15/09), contourné côté config à chaque fois. Affecte potentiellement tout le parc (parent62 pour `cta-card-grid`) — correctif de composant **non fait**, hors périmètre de la session |
 | 37 | Restriction d'accès + clean nav | ✅ config (`16922f73`, 16/09, Nicolas) | `auth.required: true` sur 8 pages, 4 entrées de nav retirées (§9) — **recette navigateur à faire** (vérifier qu'un visiteur non connecté est bien redirigé/invité à se connecter sur les 8 pages) |
 | 38 | Formulaire ressource — upload 2 fichiers + photo conditionnelle | ✅ config (`ae133e6a`, 16/09) | `documents.maxItems` 1→2 ; `profil_avatar` affiché seulement si `thematique: "dispositifs"` (§9) — **recette navigateur à faire** : créer/éditer une ressource « Dispositifs », vérifier que la photo est bien envoyée et relue en édition |
@@ -995,17 +998,77 @@ organisations → la modale d'édition et la fiche `PreviewStructure` ne montren
   `costumForms["structure"]` d'Ekilib.re **et** `sport-sante-bienetre-organizations` la référencent.
   Toucher son comportement impacte les deux sites — l'oracle est
   `src/modules/profil/forms/structure.configDriven.test.ts`.
-- **Fiches MSS antérieures** (`type: "NGO"`, sans `mss: "true"`) : n'apparaissent plus dans l'onglet
-  `maisons-sport-sante` (filtre `mss: "true"`) tant qu'elles ne sont pas ré-enregistrées. Idem pour
-  la 1ʳᵉ fiche test créée avec `mss: "Oui"` (avant le passage `switch` → `"true"`).
+- **Le marqueur MSS est le champ `mss: "true"`, plus le tag `"mss"`** — la page publique `/mss`
+  **et** l'onglet admin `maisons-sport-sante` filtrent dessus. Les 13 fiches MSS de prod
+  (`type: "NGO"`, `tags: ["mss"]`) ont été migrées **à la main en base, dev + prod** (pas de script
+  dans le dépôt). Toute autre base (backend local, nouvelle instance) doit recevoir la même mise à
+  jour, sinon `/mss` et l'onglet sortent vides (constaté en review de la MR sur un backend local non
+  migré : 12 avec l'ancien filtre, 0 avec le nouveau).
 - **`contentKey` d'un `doctype:file` n'est PAS fiable** : `Document::save` le remplace par un bucket
   MIME (`pdf`/`spreadsheet`/`text`/`presentation`). Pour rattacher un document à un champ précis, se
   fier à **`subKey`** (conservé verbatim, posé par `processGalleryFields` = `contentKey` du champ).
-  Les documents déposés **avant le 10/09** n'ont pas de `subKey` → invisibles dans les emplacements
-  partitionnés (modale et fiche), à redéposer.
+  Les documents déposés **avant le 10/09** n'ont pas de `subKey` : dans la **modale d'édition**, ils
+  restent proposés dans chaque champ fichier (visibles et supprimables — corrigé le 24/09 en review de
+  la MR, avant ils disparaissaient dès le premier nouvel upload, sur tous les costums) ; sur la **fiche
+  publique** (`PreviewStructure`, emplacements nommés), ils n'apparaissent pas — à redéposer.
+- **Téléphone des structures : on écrit `mobile` à plat, on lit aussi `telephone`.** Le costum ne
+  déclare que `mobile` (contrat live), et le backend ne recopie pas ce `mobile` dans `telephone.mobile`
+  lors d'un enregistrement complet. Or 123 fiches sur 148 en prod n'ont que `telephone.mobile`/`fixe`
+  (mesuré le 24/09). La lecture passe donc par `telephonePrincipal` (`src/lib/`) : `mobile` plat
+  d'abord (valeur la plus récente quand les deux coexistent), sinon `telephone`. Utilisé par
+  `PreviewStructure`, `CardContact` et le pré-remplissage du formulaire (`read: "structure:mobileRead"`,
+  dans les deux configs). Vérifié en lecture seule sur toutes les fiches SSBE et Ekilib.re, en dev et
+  en prod : aucun numéro perdu ; en prod SSBE, le formulaire s'ouvrait vide sur 123 fiches, il ne
+  reste que les 9 sans aucun numéro.
+- **Site web des structures : on écrit `link`, on lit aussi `url`.** Même schéma que le téléphone :
+  le formulaire écrit `link` — comme le legacy ssbe.re (vérifié le 24/09 sur une fiche créée par
+  l'ancien site : `link` seul, valeur telle que saisie, sans `https://` ajouté) —, mais 43 fiches
+  sur 148 en prod n'ont que `url`. `siteWebPrincipal` (`src/lib/`) lit `link` d'abord puis `url` ;
+  utilisé par `PreviewStructure` et le pré-remplissage (`read: "structure:linkRead"`, deux configs,
+  valeur relue telle que stockée). Le lien AFFICHÉ passe par `normalizeToolHref` (`https://` ajouté
+  s'il manque : 8 liens relatifs cassés en prod → 0). Vérifié en lecture seule, dev et prod : aucun
+  site web perdu ; formulaire vide 140 → 97 fiches (celles sans aucun site).
+- **Sections `html` : `props.html` en `{ fr, en }`, pas en chaîne brute** — une chaîne brute s'affiche
+  en français dans les deux langues. Les 4 blocs de `/habilitation-mss` (bandeau « Avant de déposer »,
+  3 étapes, colonnes du rapport annuel) sont traduits depuis le 25/09 (review de la MR ; seuls les
+  textes remplacés, balises/liens identiques). **Restent en français seul** (déjà le cas sur `main`) :
+  `/espace-professionnels` `#mission`, `#national-plan`, `#declinaison-regionale`, et `/formation`
+  `#formation-html-section`. `audit:config` ne signale pas ce cas (`trad: 0`).
+- **`geo` / `geoPosition` du formulaire structure : `writeOnly`** (contrat de `geoTransforms.ts`, comme
+  le Tampon et l'édition de profil). Le merge de `main` avait laissé ces deux clés **en double** dans
+  `fields` (bloc `writeOnly` d'`e14ef18e`, 08/09, puis bloc sans `writeOnly` de `070a3267`, 09/09) ; en
+  JSON la DERNIÈRE gagne, donc les coordonnées étaient relues et renvoyées à chaque édition. Doublon
+  retiré le 25/09 (review de la MR) : édition sans toucher l'adresse → `geo` omis, coordonnées en base
+  préservées. ⚠ Une clé dupliquée dans un JSON de config ne fait échouer NI `config:validate` NI
+  l'audit — seul un scan du texte brut la voit.
+- **`affiliate` a deux formes en base** : `"Oui"`/`"Non"` (fiches historiques, majoritaires) et
+  `"true"`/`"false"` (formulaire actuel ET legacy ssbe.re — vérifié le 24/09), ces dernières
+  **livrées en booléens par l'API**. Toute lecture passe par `coerceBool`
+  (`formEngine/engine/coercions`), jamais `=== "Oui"`. Le badge « Affiliée » de `PreviewStructure`
+  testait `"Oui"` (comme `preview.php` legacy) : corrigé le 25/09 — en prod, 14 structures affiliées
+  retrouvent leur badge (49 → 63), aucune ne le perd. `ProfileSsbeAbout` avait déjà son `toBoolean`
+  équivalent.
+- **⚠ Contraste des cartes d'accès rapide de l'accueil — NON corrigé ici** (« Professionnels » /
+  « Grand Public », `hero-quick-access` de `/`). Même cause que sur Ekilib.re (corrigé là-bas le 25/09) :
+  la règle de base `h1…h6, p { text-foreground }` d'`index-sport-sante-bien-etre.css` impose le texte
+  foncé au titre et à la description au lieu de la couleur de la carte → 2,25 à 3,11:1 (sous AA), en
+  clair comme en sombre. Correctif prêt, décidé hors MR le 25/09 : la même règle hors `@layer` que le
+  Tampon (`.access-card h3, .access-card p, .access-card span { color: inherit; opacity: 1 }`) →
+  4,63 à 5,79:1.
+- **Image de fond d'un héros : passer par un type qui utilise `HeroBackgroundImage`** (`hero`,
+  `hero-quick-access`, `hero-parallax`, `hero-tinted-overlay`, `hero-carousel`) — ils servent l'image
+  via `/img` (srcSet AVIF/WebP) et ont le preload LCP. **`heroWithIcon` ne le fait pas** : `url()` CSS
+  brut, l'original est téléchargé tel quel (`prescription.png`, 1400×700 : 3,9 Mo, contre 13–58 Ko
+  optimisé). Constaté en review de la MR le 25/09 ; `/prescription` est passé en `hero-quick-access`.
+  Note : le preload LCP ne tient pas compte de `page.auth` — sur une page réservée, un visiteur non
+  connecté télécharge l'image préchargée (≈ 50 Ko) avant d'être redirigé.
 - **`PreviewStructure` est partagé Ekilib.re + SSBE** (`preview.type: "structure"` dans les deux
-  configs). Les emplacements documents (`DOCUMENT_SLOTS`) et l'exposition publique de `about.files`
-  valent donc aussi pour la fiche structure du Tampon.
+  configs). Les emplacements documents (`DOCUMENT_SLOTS`) et la réservation aux gestionnaires des blocs
+  Informations + Documents (24/09, §13 q.15) valent donc aussi pour la fiche structure du Tampon.
+  Pour un gestionnaire, la fiche **affiche la fiche complète rechargée par slug** — celle que la
+  modale d'édition modifie — et la **recharge à la fermeture** de la modale (avant le 24/09, elle
+  affichait l'item de recherche et restait sur les anciennes valeurs après enregistrement). Couvert
+  par `PreviewStructure.test.tsx`.
 - Ce site n'a **jamais été regardé en navigateur** dans le cadre de ce dossier. Tous les constats
   ci-dessus sont dérivés de la config, du code et du sondage — pas d'un rendu observé.
 - **`<Link>` sans `classifyHref` dans `HeroQuickAccess.tsx` et `CtaCardGrid.tsx`** (15/09) : une
@@ -1050,12 +1113,12 @@ organisations → la modale d'édition et la fiche `PreviewStructure` ne montren
 | 9 | **Vocabulaire des bénéficiaires** — après normalisation, 215 fiches diront « Personnes de plus de 55 ans » et 2 « Séniors (plus de 55 ans) » pour la même population ; 27 diront « Personnes en perte d'autonomie », absente du référentiel. Réécrire l'existant vers le libellé du formulaire, ou remettre l'ancien au référentiel ? **Bloque le `--apply` du script de normalisation** | Thomas |
 | 10 | **`publicType`** — 7 fiches portent « Mixte »/« Féminin » là où les options disent « mixte »/« femmes ». Doubler les options afficherait deux « Mixte » dans le panneau : c'est une normalisation de donnée, pas une correction de config | Thomas |
 | 11 | **Branche de destination** — la fusion MR 51 + MR 52 puis le lot structure du 09/09 vivent maintenant sur `n-dev` (merge de `main` `8bbe35a2` fait). Pousser `n-dev` tel quel, ou passer par une MR relue ? Prévenir Nicolas : son montage `/creneaux` est conservé, mais ses deux listes d'options ont changé | Thomas |
-| 13 | **Modèle MSS** — `n-dev` a **unifié** (champ `mss` sur la structure) là où `main` gardait un formulaire `type: "NGO"` séparé. Résolu vers l'unifié au merge. À confirmer avec la personne qui a fait le SSBE sur `main` que c'est bien la direction retenue, et backfiller `mss: "true"` sur les ~13 fiches MSS existantes (ou les passer par le panel) | Thomas / dev SSBE `main` |
+| 13 | ~~**Modèle MSS**~~ — **tranché** : le modèle unifié de `n-dev` (champ `mss` sur la structure) est la direction retenue, à la place du formulaire `type: "NGO"` séparé de `main`. Les 13 fiches MSS existantes portent `mss: "true"` (posé à la main, dev + prod) | Thomas / dev SSBE `main` |
 | 14 | **`representativeTitle` / `personInChargeTitle` en `valueSelect` mono** — stocke une chaîne, saisie libre autorisée. Vérifier que l'affichage profil (`ProfileSsbeAbout`) et les exports gèrent bien une valeur hors des 5 titres proposés | Thomas |
 | 12 | **Périmètre de la palette ⌘K** — SSBE cite `equipementsSportifs974` mais jamais `associationEkilibre`, alors que le site du Tampon cite SSBE. L'agrégation ne va que dans un sens : à corriger ou à documenter | Thomas |
-| 15 | **Pièces justificatives publiques sur `/mss`** — depuis le 10/09, `PreviewStructure` lit `about.files` (endpoint `element/about` public) : statuts et attestations d'assurance deviennent téléchargeables par un visiteur anonyme. C'est le comportement de la fiche legacy `ssbe/organizations/preview.php`, repris tel quel. Garde-t-on la parité, ou réserve-t-on la section « Documents » au propriétaire / à un admin ? | Thomas |
+| 15 | ~~**Pièces justificatives publiques sur `/mss`**~~ — **tranché le 24/09** (review de la MR) : parité avec la fiche legacy `ssbe/organizations/preview.php`, qui réserve à `$ssbeCanManage` (admin de la structure ou du costum) les boutons Modifier/Supprimer et les blocs **Informations** (identifiant, catégorie, membre de, créé le), **Documents** et **Activités rattachées** (la doc disait à tort que le legacy montrait les documents). `PreviewStructure` réserve donc Informations et Documents à `canEditProfile` (Modifier l'était déjà ; Supprimer et créneaux n'y existent pas) et ne recharge la fiche complète que pour ce droit. Backend : `Organization::getById` (`citizenToolKit`) ne joint `files` que pour `isElementAdmin` ou `isCostumAdmin` — **modifié en local, à committer et déployer** ; vérifié en anonyme sur le dev (11 fiches SSBE avec documents en base, 0 exposée). **Recette à faire connecté en gestionnaire** : Informations + Documents visibles, pièces jointes présentes dans la modale d'édition | Nicolas |
 | 16 | **Intitulé du 1er emplacement documents** — la fiche affiche « Récépissé de déclaration » (libellé legacy) alors que le champ du formulaire s'appelle « Statuts » ; l'emplacement accepte les deux `subKey` (`statusFile`, `recepisseDeclaration`). Aligner l'intitulé sur « Statuts » (1 ligne d'i18n) ou garder le libellé legacy ? | Thomas |
 | 17 | ~~`/prescription` — 4 documents PDF non posés~~ — **direction tranchée le 16/09** (§9, `ae133e6a`) : entités `ressource` avec filtre `thematique` dédié plutôt que fichiers statiques, comme pressenti. Concrétisé comme une **page séparée** `/programmes-dispositifs` plutôt qu'intégré aux sections « Guides et modèles » de `/prescription`. **Reste à trancher** : `/prescription` doit-elle lier vers `/programmes-dispositifs` (CTA, carte…), ou les deux pages restent-elles indépendantes ? Et les 4 documents de la capture d'origine (« Guide Consultation et prescription… ») sont-ils à saisir comme ressources `dispositifs`/`prescription`, ou visaient-ils autre chose ? | Thomas |
-| 18 | **`<Link>` sans `classifyHref`** sur `HeroQuickAccess.tsx` et `CtaCardGrid.tsx` (§9, §12) — les aligner sur `CardsSection`/`NavLink`/`CTASection` casserait potentiellement des CTA qui comptent aujourd'hui, par accident, sur l'ancien comportement. À planifier comme un lot dédié, testé sur tout le parc (parent62 pour `cta-card-grid`), pas en aparté d'un lot de contenu | Thomas |
+| 18 | **`<Link>` sans `classifyHref`** sur `HeroQuickAccess.tsx` et `CtaCardGrid.tsx` (§9, §12) — les aligner sur `CardsSection`/`NavLink`/`CTASection` casserait potentiellement des CTA qui comptent aujourd'hui, par accident, sur l'ancien comportement. À planifier comme un lot dédié, testé sur tout le parc (parent62 pour `cta-card-grid`), pas en aparté d'un lot de contenu. **Fait partiellement le 25/09** (review de la MR) : les **boutons-ancres** (`#id`) de `HeroQuickAccess` font désormais défiler vers la section (comme `CTASection`) — le bouton « Déposer une demande » de `/habilitation-mss` ne bougeait pas ; seul bouton-ancre de `hero-quick-access` du parc, donc sans risque (`HeroQuickAccess.test.tsx`). **Reste** : voies externe / `tel:` / `mailto:` des boutons et des cartes de `HeroQuickAccess`, et tout `CtaCardGrid` | Thomas |
 | 19 | **`/ressources` pas à jour des 2 nouvelles thématiques** (16/09, §9, §12) : `dispositifs`/`prescription` absentes du filtre latéral et du `resource.badge` de la page. Faut-il les y ajouter (une ressource « Dispositifs » resterait alors visible aux deux endroits, `/ressources` **et** `/programmes-dispositifs`), ou `/ressources` doit-elle au contraire **exclure** ces 2 thématiques puisqu'elles ont désormais leur page dédiée ? | Thomas |
 | 20 | **Photo `profil_avatar` sur une ressource « Dispositifs »** — jamais vérifié en navigateur (§9) : l'upload est-il bien accepté par le costum backend (champ cœur POI, a priori non soumis au filtre `typeObj.ressource`, mais non confirmé empiriquement), et l'image survit-elle bien au cycle création → édition ? | Thomas / dev SSBE |

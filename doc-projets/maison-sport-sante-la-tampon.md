@@ -1060,11 +1060,12 @@ Le back-office passe à **six onglets** — Tableau de bord, Membres, Actualité
   (tout sauf refus explicite). **Sans ce réglage la vue serait vide** — le garde-fou legacy par
   défaut exige `preferences.isOpenData: true`, que le stock ne porte pas.
 
-> ⚠️ **Correction du 21/09 — le ciblage `source.keys: sportSanteBienetre` décrit ci-dessus n'a jamais
-> filtré quoi que ce soit.** Le serveur ignorait le `$in` dès qu'un `$nin` de garde figurait sur la même
-> clé (cf. §9.18) : le vivier remontait toutes les provenances. Le vivier est désormais ciblé sur
-> `source.key` (provenance principale). Les 14 fiches référencées le 20/08 ne sont pas concernées
-> (référencement fiche par fiche, pas par ce filtre).
+> ⚠️ **Correction du 21/09 — jusqu'au correctif backend `7b19f871`, le ciblage `source.keys:
+> sportSanteBienetre` décrit ci-dessus ne filtrait rien.** Le serveur ignorait le `$in` dès qu'un `$nin`
+> de garde figurait sur la même clé (cf. §9.18) : le vivier remontait toutes les provenances. Le
+> correctif est sur `master` de `citizenToolKit` et le ciblage `source.keys` est **conservé** (vérifié le
+> 24/09 : vivier 100 % `sportSanteBienetre` en dev et en prod). Les 14 fiches référencées le 20/08 ne
+> sont pas concernées (référencement fiche par fiche, pas par ce filtre).
 
 **14 organisations du Tampon** ont été référencées le 20/08 sur la base de **DEV**, par le canal de
 l'action admin et non par écriture Mongo directe.
@@ -1546,13 +1547,22 @@ d'abord rouge). **Rendu navigateur non rejoué** : l'endpoint admin exige une se
 rechargeant l'onglet (le payload doit porter `filters[source.key]=sportSanteBienetre`, la colonne
 Provenance ne doit contenir que cette valeur).
 
-⚠️ **À confirmer** : les organisations dont `source.keys` contient `sportSanteBienetre` mais dont
-`source.key` est vide ou autre sont désormais **exclues** du vivier — c'est la demande (« uniquement ce qui
-provient de `sportSanteBienetre` »), mais le volume exact n'a pas été mesuré en base.
+~~⚠️ **À confirmer** : les organisations dont `source.keys` contient `sportSanteBienetre` mais dont
+`source.key` est vide ou autre seraient **exclues** du vivier par `source.key`.~~ Sans objet depuis la
+décision du 24/09 (ci-dessous) de garder `source.keys` — et mesuré : aucune fiche dans ce cas sur les
+deux codes postaux (même vivier avec les deux clés, en dev comme en prod).
 
 ⚠️ **Déploiement** : le correctif backend est **indépendant** de la config (la config seule suffit ici).
 Il corrige le défaut pour tout autre appelant de `searchFilters` ; à livrer avec le prochain
 déploiement de `citizenToolKit`.
+
+**Décision du 24/09 (review de la MR `n-dev` → `main`) : on garde `source.keys`.** La couche Config du
+tableau ci-dessus n'a finalement **pas** été appliquée (`6378660c` ne porte que la doc, le commentaire
+et le test) : c'est le correctif backend, commité sur `origin/master` de `citizenToolKit` (`7b19f871`),
+qui répare le filtre. Sondage en lecture seule du vivier (mêmes filtres via `buildOpenSearchFilters`,
+recherche publique) : `source.keys` et `source.key` renvoient **le même vivier, 100 %
+`sportSanteBienetre`** — 11 candidates en dev, 14 en prod. Conséquence : ce site **dépend** du correctif
+backend ; sur un backend qui ne l'a pas, le vivier redevient non filtré (repli : `source.key`).
 
 ---
 
@@ -1610,6 +1620,56 @@ en-têtes de cartes SSsO/SSpT. ⚠️ **Incohérence à trancher** : le lien soc
 `contact@cyber-reunion.fr` alors que **tout le reste du site** (contact, mentions légales,
 confidentialité, accessibilité) affiche `contact@ekilib.re` (§13). Les **mentions légales** portent
 encore « Commune du Tampon, La Réunion (97430) », non alignées sur la nouvelle adresse postale.
+
+### 9.20 Corrections de la review de la MR `n-dev` → `main` touchant ce site (24/09)
+
+Composants et clés **partagés avec SSBE** — le détail vit dans `sport-sante-bien-etre.md` (§12, §13 q.15) :
+
+- **Fiche structure (`PreviewStructure`)** : les blocs **Informations** (identifiant, catégorie, membre
+  de, créé le) et **Documents** ne sont plus affichés qu'aux **gestionnaires** (admin de la structure
+  ou du costum, `canEditProfile`), en parité avec la fiche legacy SSBE (`$ssbeCanManage`). Validé par
+  Nicolas pour le Tampon aussi. Côté backend, `Organization::getById` ne joint plus `files` qu'à ces
+  mêmes gestionnaires (`citizenToolKit`, modifié en local, à committer et déployer).
+- **Téléphone** : le champ `mobile` du formulaire `structure` est pré-rempli par
+  `read: "structure:mobileRead"` (repli sur `telephone.mobile`/`fixe`) ; `PreviewStructure` et
+  `CardContact` lisent `mobile` plat en priorité.
+- **Site web** : le champ `link` du formulaire `structure` est pré-rempli par
+  `read: "structure:linkRead"` (repli sur `url`) ; `PreviewStructure` lit `link` puis `url` et ajoute
+  `https://` au lien affiché s'il manque. Utile surtout pour les fiches SSBE référencées, que ce site
+  affiche. Le champ garde sa règle `url` (un `link` sans `https://` doit être complété avant
+  d'enregistrer — cas de la seule fiche du périmètre en prod, COMMUNE DU TAMPON).
+- **Badge « Affiliée »** (`PreviewStructure`) : testait `affiliate === "Oui"`, alors que le formulaire
+  actuel écrit `"true"` (livré en booléen par l'API) — lu désormais par `coerceBool`. En dev, 3 des 4
+  structures affiliées du périmètre n'avaient pas leur badge. En prod, aucun changement visible
+  aujourd'hui : le périmètre ne compte qu'une fiche (COMMUNE DU TAMPON), affiliée mais sans
+  `affiliateTo`, donc sans bandeau d'affiliation. Le correctif comptera quand des fiches SSBE seront
+  référencées en prod (les 14 référencements du 20/08 sont sur le dev).
+- **Contraste des cartes d'accès rapide de l'accueil** (« Trouver un créneau » / « Professionnels de
+  santé ») : la règle de base `h1…h6, p { text-foreground }` de `index-maison-sport-sante-la-tampon.css`
+  imposait le texte foncé du site au titre et à la description, au lieu de la couleur de la carte
+  (2,14:1 sur le vert en clair, 1,53:1 sur le jaune en sombre), et l'`opacity-90` de `HeroQuickAccess`
+  faisait tomber le petit texte sous 4,5:1. Règle ajoutée HORS `@layer` (`.access-card h3, p, span {
+  color: inherit; opacity: 1 }`, vérifiée non-layered dans le CSS compilé) : 4,76 à 6,63:1, AA partout.
+  Visible : le texte de la carte jaune en clair passe du bleu nuit au brun de `accent-foreground`.
+- **Chiffre « 340+ » (section `#chiffres-ekilibre` de l'accueil)** : posé en `color: "accent"`, soit du
+  jaune de la charte en TEXTE sur fond clair → 1,83:1 (sous le seuil AA de 3:1 du grand texte ; 10,77:1
+  en sombre). Passé en `"primary"` comme les trois autres chiffres : 8,53:1 en clair, 7,21:1 en sombre.
+  Le jaune reste une couleur de SURFACE sur ce site ; `chart-2`, l'autre option du composant, est aussi
+  un jaune (2,21:1).
+- **Pièces jointes à l'édition** : un document ancien sans `subKey` reste proposé dans chaque champ
+  fichier (il disparaissait dès le premier nouvel upload).
+- **Référencement** : le vivier reste ciblé sur `source.keys` (§9.18, décision du 24/09).
+- **Création de structures fermée sur ce site** (décision du responsable MSS Tampon, rappelée par
+  Nicolas le 24/09) : les fiches de `/structure` viennent **uniquement du référencement** de fiches
+  SSBE. Vérifié : `create: false` sur les deux onglets admin structure, plus aucune référence à
+  `add-structure` dans les pages. Conséquence : ce qu'affiche le site dépend des **données SSBE**
+  (formulaire SSBE et legacy ssbe.re), pas du formulaire `structure` d'ici.
+- **Filtre « Domaine d'intervention » de `/structure` RETIRÉ** (24/09, décision de Nicolas). Il
+  filtrait `tags`, or en prod seules 25 fiches SSBE sur 148 portent des `tags` (144 portent
+  `thematic`), et les valeurs de domaine sont mélangées : 87 valeurs **courtes** historiques
+  (« Scolaire 1er degré » ×27, « Periscolaire 1er degré » ×23…) à côté des valeurs **longues** du
+  formulaire actuel, plus 18 fiches dont `thematic` est une chaîne unique à virgules. Aucune valeur
+  d'option ne pouvait tout couvrir. Seul reste le filtre code postal. Pour le remettre : cf. §13.
 
 ---
 
@@ -1890,3 +1950,4 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 | ~~Filtres pathologies : pré-appliquer un filtre depuis les cartes ?~~ **FAIT** (§9.12). **Reste à valider** : les **regroupements médicaux** composés au passage — « Problème cardiaque » = 4 ALD, « Cancer » = 4 ALD, « Stress / santé mentale » à cheval sur les deux champs. Ce sont des choix de rédaction, pas des choix cliniques | **MSS** |
 | **Backend de prod + domaine** : la cible existe (Coolify `site-json-ekilibre`, `ekilibre.00.re`, §9.13) mais le **domaine propre** et le **backend de prod** restent à trancher — `VITE_COSTUM_FORCE_LIVE` pointe aujourd'hui vers le backend par défaut du parc | MSS / Thomas |
 | Chef de projet / budget / phasage du CDC | à confirmer |
+| **Remettre le filtre « Domaine d'intervention » sur `/structure`** (retiré le 24/09, §9.20) : le filtrer sur `thematic` (pas `tags`), après avoir **harmonisé les données SSBE** — valeurs courtes historiques → libellés longs de l'`enum`, chaînes à virgules → tableaux (`thematic` et `tags`). Migration à jouer en base comme celle de `mss` ; ou, sans migration, un filtre qui interroge les deux graphies (demande un ajout au schéma du `dropdownFilter`) | Nicolas |
