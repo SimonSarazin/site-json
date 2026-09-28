@@ -23,6 +23,7 @@ const CONFIG_FILE: Record<string, string> = {
   "tiers-lieux": "config.prod.tiers-lieux.json",
   "institut-bleu-acteur": "config.prod.institut-bleu.json",
   "structure": "config.prod.maison-sport-sante-la-tampon.json",
+  "sport-sante-bienetre-organizations": "config.prod.sport-sante-bien-etre.json",
   "actualite": "config.prod.maison-sport-sante-la-tampon.json",
   "rezo-sante-acteur": "config.prod.rezo-sante-reunion.json",
   "rezo-sante-projet": "config.prod.rezo-sante-reunion.json",

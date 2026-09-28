@@ -100,7 +100,7 @@
       },
       "create": "add-sport-sante-bienetre-organizations",
       "createDefaults": {
-        "mss": "true"
+        "mss": true
       },
       "edit": {
         "enabled": true,

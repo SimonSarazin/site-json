@@ -16,6 +16,8 @@
  * générique, garanti par `../sharedRegistrations`.
  */
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
+import { telephonePrincipal } from "@/lib/telephonePrincipal";
+import { siteWebPrincipal } from "@/lib/siteWebPrincipal";
 import "../sharedRegistrations"; // side-effect : clés génériques (address/social/geo/coerce/invalidate…)
 
 /** `thematic` → `tags` : dédoublonné, ordre d'entrée préservé, valeurs recopiées telles quelles. */
@@ -38,6 +40,25 @@ registerTransform("structure:tagsFromThematic", (v, all) => {
   if (next.length === 0) return hadTags ? [] : undefined;
   return next;
 });
+
+/**
+ * READ du champ `mobile` : le formulaire écrit un `mobile` PLAT (seule clé déclarée par les deux
+ * costums), mais la plupart des fiches ne portent que `telephone.mobile`/`telephone.fixe` (123/148 en
+ * prod SSBE, 24/09) et s'ouvraient avec un téléphone vide. On pré-remplit avec le même numéro que
+ * celui affiché sur la fiche : `mobile` plat s'il existe, sinon `telephone`.
+ */
+registerTransform("structure:mobileRead", (_v, all) =>
+  telephonePrincipal(all as Record<string, unknown> | undefined),
+);
+
+/**
+ * READ du champ `link` (site web) : le formulaire écrit `link`, comme le legacy ssbe.re, mais le site
+ * web de la plupart des fiches anciennes vit dans `url` (43/148 fiches SSBE n'ont que `url` en prod,
+ * 24/09), qui s'ouvraient avec un champ vide. Même valeur que celle affichée sur la fiche.
+ */
+registerTransform("structure:linkRead", (_v, all) =>
+  siteWebPrincipal(all as Record<string, unknown> | undefined),
+);
 
 // NB : le contournement `number:fromDigits` (siren/téléphones coercés en NOMBRE tronqué — perte du
 // 0 initial et du « + ») a été SUPPRIMÉ : sa prémisse était fausse. L'artefact costum livré déclare

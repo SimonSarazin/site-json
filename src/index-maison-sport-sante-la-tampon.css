@@ -288,3 +288,14 @@ html { scroll-behavior: smooth; }
     background: linear-gradient(135deg, var(--accent), color-mix(in oklch, var(--accent) 85%, black));
   }
 }
+
+/* Titre, description et étiquette des cartes d'accès rapide prennent la couleur de la CARTE : la règle
+   de base `h1…h6, p { text-foreground }` l'emportait sur la couleur héritée (texte foncé sur le vert :
+   2,1:1 ; sur le jaune en sombre : 1,5:1), et l'`opacity-90` de HeroQuickAccess faisait tomber le petit
+   texte sous 4,5:1. Hors @layer pour primer sur la base ET sur l'utilitaire. Après : 4,76 à 6,63:1. */
+.access-card h3,
+.access-card p,
+.access-card span {
+  color: inherit;
+  opacity: 1;
+}

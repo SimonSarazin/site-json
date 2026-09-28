@@ -96,13 +96,13 @@ function seedGalleryDefaults(defaults: FieldValues, jsonConfig: unknown, entity:
         ? Object.values(filesObj as Record<string, Record<string, unknown>>)
         : Array.isArray(filesObj) ? (filesObj as Array<Record<string, unknown>>) : [];
       // Rattachement au CHAMP via `subKey` (posé à l'upload = clé du champ ; le backend écrase le
-      // `contentKey` des doctype:file par un bucket MIME pdf/spreadsheet/…). Dès qu'un document porte
-      // un `subKey`, on partitionne strictement : chaque widget `file` ne voit que SES documents.
-      // Fonds ancien sans aucun `subKey` → comportement inchangé (passe-tout), pour ne pas masquer
-      // l'existant des costums déjà en place. Champs AUDIO (`mediaTarget`) : hors partitionnement,
-      // ils corrèlent par nom de fichier via `medias[]` juste après.
-      if (!mediaTarget && raw.some((f) => typeof f.subKey === "string" && f.subKey)) {
-        raw = raw.filter((f) => f.subKey === contentKey);
+      // `contentKey` des doctype:file par un bucket MIME pdf/spreadsheet/…) : un document qui porte un
+      // `subKey` n'apparaît que dans SON widget. Un document SANS `subKey` (déposé avant le 10/09) n'est
+      // rattachable à aucun champ : il reste proposé dans CHAQUE widget `file`, comme avant, sinon il
+      // deviendrait invisible et insupprimable dès le premier nouvel upload. Champs AUDIO
+      // (`mediaTarget`) : hors partitionnement, ils corrèlent par nom de fichier via `medias[]` juste après.
+      if (!mediaTarget) {
+        raw = raw.filter((f) => !(typeof f.subKey === "string" && f.subKey) || f.subKey === contentKey);
       }
       let existing = raw
         .map((f) => {

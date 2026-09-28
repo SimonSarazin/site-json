@@ -295,6 +295,29 @@ describe("costum structure Ekilib.re — READ + visibleIf (parité avec l'ancien
     expect(values.tags).toBeUndefined();
   });
 
+  it("13b. téléphone : fiche ancienne relue depuis `telephone`, `mobile` plat prioritaire quand il existe", () => {
+    // Forme majoritaire en base (123/148 orgs SSBE en prod) : seul `telephone.mobile` est renseigné.
+    expect(seedEntity(formSpec, orgLike({ telephone: { mobile: ["0692 11 22 33"] } })).mobile).toBe("0692 11 22 33");
+    expect(seedEntity(formSpec, orgLike({ telephone: { fixe: ["0262 57 87 07"] } })).mobile).toBe("0262 57 87 07");
+    // Fiche ré-éditée : le `mobile` plat écrit par ce formulaire est la valeur la plus récente.
+    expect(seedEntity(formSpec, orgLike({ mobile: "0693668540", telephone: { mobile: ["693668540"] } })).mobile).toBe("0693668540");
+    // Aucun numéro → champ vide.
+    expect(seedEntity(formSpec, orgLike({})).mobile ?? "").toBe("");
+  });
+
+  it("13c. site web : fiche ancienne relue depuis `url`, `link` prioritaire quand il existe", () => {
+    // Forme des fiches anciennes (43/148 orgs SSBE en prod n'ont que `url`).
+    expect(seedEntity(formSpec, orgLike({ url: "https://letampon.fr" })).link).toBe("https://letampon.fr");
+    // Clé écrite par ce formulaire ET par le legacy ssbe.re : la plus récente quand les deux coexistent,
+    // relue telle que stockée.
+    expect(seedEntity(formSpec, orgLike({ url: "https://letampon.fr", link: "www.letampon.fr" })).link).toBe("www.letampon.fr");
+    expect(seedEntity(formSpec, orgLike({})).link ?? "").toBe("");
+    // L'écriture reste sur `link` : relire `url` ne recrée jamais de clé `url`.
+    const p = buildEditPayload(formSpec, { ...FILLED, link: "https://letampon.fr" }) as Record<string, unknown>;
+    expect(p.link).toBe("https://letampon.fr");
+    expect(p).not.toHaveProperty("url");
+  });
+
   it.each([
     ["statusPrimaire", { legalStatus: "Collectivité" }, true],
     ["statusPrimaire", { legalStatus: "Autre" }, false],
@@ -364,8 +387,8 @@ describe("costum structure Ekilib.re — READ + visibleIf (parité avec l'ancien
  * 16-17. Seed ÉDITION des pièces jointes : `seedGalleryDefaults` PARTITIONNE `about.files` par CHAMP
  * via `subKey` (posé à l'upload = clé du champ ; le backend écrase `contentKey` des doctype:file par
  * un bucket MIME, mais conserve `subKey`). Sans ça, chaque widget `file` affichait TOUS les documents
- * de la structure (Statuts ET RC pro montraient la même liste). Repli : un fonds 100 % ancien sans
- * `subKey` garde le comportement passe-tout (costums déjà en place non régressés).
+ * de la structure (Statuts ET RC pro montraient la même liste). Un document ancien sans `subKey`
+ * reste proposé dans chaque widget (passe-tout) : jamais masqué, donc toujours supprimable.
  */
 describe("costum structure Ekilib.re — seed ÉDITION des pièces jointes (partition par subKey)", () => {
   const editCtx = (entity: unknown) =>
@@ -379,17 +402,14 @@ describe("costum structure Ekilib.re — seed ÉDITION des pièces jointes (part
   });
   type SeedFile = { existing: Array<{ name: string }> };
 
-  it("16. chaque widget `file` ne reçoit que SES documents quand `subKey` est renseigné", () => {
+  it("16. un document avec `subKey` ne va que dans SON widget ; le fonds ancien reste proposé partout", () => {
     const d = specToConfig(spec).buildDefaults(editCtx(orgWithFiles([
       fileDoc("a".repeat(24), "statuts.pdf", "statusFile"),
       fileDoc("b".repeat(24), "assurance.pdf", "responsableCivilePro"),
       fileDoc("c".repeat(24), "fonds-ancien.pdf"),
     ]))) as Record<string, SeedFile>;
-    expect(d.statusFile.existing.map((e) => e.name)).toEqual(["statuts.pdf"]);
-    expect(d.responsableCivilePro.existing.map((e) => e.name)).toEqual(["assurance.pdf"]);
-    // Dès qu'un doc porte un subKey, le fonds ancien non rattachable n'apparaît nulle part.
-    expect([...d.statusFile.existing, ...d.responsableCivilePro.existing].map((e) => e.name))
-      .not.toContain("fonds-ancien.pdf");
+    expect(d.statusFile.existing.map((e) => e.name)).toEqual(["statuts.pdf", "fonds-ancien.pdf"]);
+    expect(d.responsableCivilePro.existing.map((e) => e.name)).toEqual(["assurance.pdf", "fonds-ancien.pdf"]);
   });
 
   it("17. fonds 100 % ancien (aucun `subKey`) → passe-tout inchangé (costums existants non régressés)", () => {
