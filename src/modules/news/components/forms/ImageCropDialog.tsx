@@ -18,6 +18,12 @@ interface ImageCropDialogProps {
   onOpenChange: (open: boolean) => void;
   onCrop: (croppedImageBlob: Blob, cropArea: CropArea) => void;
   aspect?: number;
+  /**
+   * Fourni, un bouton « Utiliser l'image entière » s'ajoute : l'appelant reprend l'image sans la rogner.
+   * Absent (défaut), le recadrage reste obligatoire — le comportement historique des visuels dont le
+   * cadrage est imposé (avatar rond, bannières).
+   */
+  onUseOriginal?: () => void;
 }
 
 interface CropArea {
@@ -33,6 +39,7 @@ export function ImageCropDialog({
   onOpenChange,
   onCrop,
   aspect = 16 / 9,
+  onUseOriginal,
 }: ImageCropDialogProps) {
   const t = useT("modules/news");
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -138,6 +145,11 @@ export function ImageCropDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("forms.imageCrop.cancel")}
           </Button>
+          {onUseOriginal && (
+            <Button variant="secondary" onClick={onUseOriginal}>
+              {t("forms.imageCrop.useOriginal")}
+            </Button>
+          )}
           <Button onClick={createCroppedImage}>
             {t("forms.imageCrop.apply")}
           </Button>

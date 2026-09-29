@@ -64,6 +64,8 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
     meta: 10,
     page: 17,
     profiles: 25,
+    "section:action-tiles": 8,
+    "section:map-bubbles": 5,
     "section:agenda": 15,
     "section:cardCountCT": 4,
     "section:data-observatory": 4,
@@ -93,7 +95,11 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
     // Avant `reused: "ref"` + repli de l'union Section, `profiles` sortait
     // 683 Ko et `page` 509 Ko : l'outil central de la skill était inutilisable
     // sur les blocs les plus courants. Plafond large (60 Ko ≈ 15k tokens, le
-    // maximum actuel étant ~40 Ko) : il n'attrape que la vraie régression.
+    // maximum actuel étant ~37 Ko pour `searchPro`) : il n'attrape que la vraie
+    // régression. Les enveloppes (`page`, `tabs`, `gridLayout`) sont, elles,
+    // sous 10 Ko depuis que `collapseSectionUnions` purge les `$defs` orphelins
+    // (scripts/lib/config-blocks.test.ts) — avant, chaque contrat partagé entre
+    // sections y survivait sans lecteur et les avait poussées à 68 Ko.
     const CEILING = 60_000;
     const selectors = [...ROOT_BLOCK_SELECTORS, ...[...sectionOptions().keys()].map((t) => `section:${t}`)];
     const oversized = selectors

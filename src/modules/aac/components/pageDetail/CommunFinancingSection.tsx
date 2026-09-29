@@ -18,6 +18,8 @@ import { toSafeInt, buildItemsFromRawDepenses } from "@/modules/cagnotte/utils/d
 import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
 import type { CagnottePermissions } from "@/modules/cagnotte/permissions/types";
 import type { CommunObjectivesController } from "./CommunMilestoneDialogs";
+import { MilestoneCardsSkeleton } from "./CommunSkeletons";
+import { readFinancerPaymentState } from "@/modules/cagnotte/utils/financerPayment";
 import {
   toMilestoneStatus,
   fundableItemToMilestone,
@@ -123,7 +125,7 @@ function FinancingMilestoneCard({
                     <Progress
                         value={pct}
                         className="h-1.5 bg-background border border-border"
-                        indicatorClassName={done ? "bg-success" : "bg-primary"}
+                        indicatorClassName="bg-primary"
                     />
                     <div className="mt-1 text-right text-[10px] uppercase tracking-widest text-muted-foreground tabular-nums">
                         {String(c("detail.objectives.collectedPercent", undefined, { percent: pct }))}
@@ -161,16 +163,30 @@ function FinancingMilestoneCard({
                                 {String(c("detail.objectives.noFundingYet"))}
                             </li>
                         )}
-                        {(item?.allFunding || []).map((fund: CagnotteFundableItem["allFunding"][number], i: number) => (
-                            <li key={i} className="flex p-3 rounded-md border text-sm">
-                                <span className="w-[35%]">{fund.financerName}</span>
-                                <span className="w-[25%]">{formatCurrency(toSafeInt(fund.amount))}</span>
-                                <span className="w-[25%]">{fund?.date ? new Date(fund.date).toLocaleDateString("fr-FR") : ""}</span>
-                                <span className={fund.fundingType === "prepaid" ? "w-[15%] text-success" : "w-[15%]"}>
-                                    {fund.fundingType === "prepaid" ? String(c("detail.objectives.paid")) : String(c("detail.objectives.pledged"))}
-                                </span>
-                            </li>
-                        ))}
+                        {(item?.allFunding || []).map((fund: CagnotteFundableItem["allFunding"][number], i: number) => {
+                            // Trois états : un versement partiel validé n'est ni « payé »
+                            // ni une simple promesse.
+                            const { status } = readFinancerPaymentState(fund);
+                            const label =
+                                status === "payed" ? c("detail.objectives.paid")
+                                : status === "partial" ? c("detail.objectives.partiallyPaid")
+                                : c("detail.objectives.pledged");
+
+                            return (
+                                <li key={i} className="flex p-3 rounded-md border text-sm">
+                                    <span className="w-[35%]">{fund.financerName}</span>
+                                    <span className="w-[25%]">{formatCurrency(toSafeInt(fund.amount))}</span>
+                                    <span className="w-[25%]">{fund?.date ? new Date(fund.date).toLocaleDateString("fr-FR") : ""}</span>
+                                    <span className={
+                                        status === "payed" ? "w-[15%] text-success"
+                                        : status === "partial" ? "w-[15%] text-primary"
+                                        : "w-[15%]"
+                                    }>
+                                        {String(label)}
+                                    </span>
+                                </li>
+                            );
+                        })}
                     </ul>
                 </div>
             )}
@@ -216,12 +232,16 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl }: CommunFinan
     //
     // L'étape est celle que la page a RÉSOLUE (`config.roles.depenseStepKey`) :
     // `aapStep1` en dur vidait la liste sur tout appel dont `depense` vit ailleurs.
-    const { data: depenses } = useCommunRawDepenses(
+    const { data: depenses, isLoading: isDepensesLoading } = useCommunRawDepenses(
         ctrl.resolvedAnswerId,
         aacConfig?.roles?.depenseStepKey ?? undefined,
     );
 
     const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
+
+    // Les paliers viennent des dépenses OU de l'enveloppe : tant que l'une des deux est en
+    // vol et qu'aucun palier n'est là, une grille vide se lirait « aucun besoin financier ».
+    const isLoading = (isDepensesLoading || ctrl.isLoadingData) && items.length === 0;
 
     return (
         <div className="grid gap-4">
@@ -232,6 +252,7 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl }: CommunFinan
                     </Button>
                 </div>
             ) : null}
+            {isLoading ? <MilestoneCardsSkeleton /> : null}
             {items.map((o: CagnotteFundableItem, i: number) => (
                 <FinancingMilestoneCard
                     key={i}

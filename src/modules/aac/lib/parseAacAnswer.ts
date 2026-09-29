@@ -24,6 +24,7 @@
 import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
 import type { AacCardFieldRef, AacCardFields } from "./resolveAacCardFields";
 import { readUsageAnswer, type AacUsageAnswer } from "./aacUsage";
+import { resolveAnswerAuthorId } from "./answerAuthor";
 
 type Rec = Record<string, unknown>;
 
@@ -179,6 +180,12 @@ export interface AacCommunCard {
   isSelected: boolean | null;
   /** Usage catégorisé — alimente le filtre « Filtrer par besoins ». */
   usage: AacUsageAnswer;
+  /**
+   * Qui a DÉPOSÉ le commun, pas l'entité d'affichage : c'est le gate du bouton de suppression
+   * dans l'annuaire. `undefined` quand la source ne le porte pas (compte temporaire, projection
+   * allégée) — l'auteur ne se voit alors pas proposer la suppression, repli sûr.
+   */
+  authorId?: string;
   /** Horodatages Unix en SECONDES, `0` si absents. Servent au tri. */
   createdAt: number;
   updatedAt: number;
@@ -314,6 +321,9 @@ export function parseAacAnswer(
     // L'usage vit dans l'étape de DÉPÔT, celle que porte `fields.title` — jamais
     // une clé d'étape en dur.
     usage: readUsageAnswer(answers[fields.title?.stepKey ?? mainStepKey(answers)], usageId),
+    // Jamais `a.user` en premier : selon la route, ce champ porte l'entité d'AFFICHAGE, pas
+    // le déposant. `resolveAnswerAuthorId` applique la règle — `userId` d'abord.
+    authorId: resolveAnswerAuthorId(a as Parameters<typeof resolveAnswerAuthorId>[0]),
     createdAt: toEpochSeconds(a.created),
     updatedAt: toEpochSeconds(a.updated),
   };

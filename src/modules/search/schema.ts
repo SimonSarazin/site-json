@@ -425,10 +425,18 @@ export type TestimonialConf = z.infer<typeof TestimonialConfSchema>;
  * par `useResourceData` (défauts génériques : name/description/created/profilMediumImageUrl/urls/address).
  */
 export const ResourceConfSchema = z.object({
-  /** Look — sélectionne `CardResource{Design}` + `PreviewResource{Design}` (repli code : "card"). */
-  design: z.enum(["card"]).default("card"),
+  /** Look — sélectionne `CardResource{Design}` + `PreviewResource{Design}` (repli code : "card").
+   *  `document` : ligne compacte qui ouvre directement le document hébergé, sinon le lien — pour une
+   *  archive de publications où chaque entrée n'est qu'un titre et un fichier.
+   *  `portrait` : une PERSONNE présentée en entier — photo ronde (initiales à défaut), nom,
+   *  `subtitleField`, puis la présentation markdown (`descriptionField`) et ses liens. Carte non
+   *  cliquable : pas de preview. */
+  design: z.enum(["card", "document", "portrait"]).default("card"),
   /** Champ du titre. Repli code : "name". */
   titleField: z.string().optional(),
+  /** Champ du sous-titre (ex. la fonction d'une personne), lu par `portrait`. Pas de repli : absent =
+   *  pas de sous-titre — un repli sur la description répéterait le texte affiché juste dessous. */
+  subtitleField: z.string().optional(),
   /** Champ de la description (extrait card / markdown preview). Repli code : "description". */
   descriptionField: z.string().optional(),
   /** Champ de la date. Repli code : "created". */
@@ -664,8 +672,26 @@ export const ListConfSchema = z.object({
    * posée sur la ligne, cartes alternées gauche/droite en desktop, colonne unique avec ligne à
    * gauche en mobile. Pensée pour des événements triés par `baseParams.defaultSortBy:
    * {"startDate": -1}`. Ignorée en vue détaillée (`isDetailedView`) et en mode split (`onFocusItem`).
+   * `"grouped"` : la grille découpée en blocs titrés par la valeur de `groupBy.field` (une année,
+   * un territoire…) — pour une archive qui se parcourt par période plutôt que d'un seul tenant.
    */
-  layout: z.enum(["grid", "timeline"]).optional(),
+  layout: z.enum(["grid", "timeline", "grouped"]).optional(),
+  /**
+   * Regroupement de `layout: "grouped"`. `field` : chemin pointé dans `serverData`. `order` : ordre
+   * des GROUPES (défaut `asc`). Les items d'un groupe gardent l'ordre du serveur, sauf `itemsSortBy`
+   * — nécessaire dès que cet ordre tient à une 2e clé : le backend ne lit que la PREMIÈRE clé de
+   * `baseParams.defaultSortBy`. `itemsSortBy` ne trie que les résultats chargés. Les fiches sans
+   * valeur forment un dernier bloc, libellé `emptyLabel`, plutôt que d'être écartées en silence.
+   */
+  groupBy: z.object({
+    field: z.string(),
+    order: z.enum(["asc", "desc"]).optional(),
+    itemsSortBy: z.object({
+      field: z.string(),
+      order: z.enum(["asc", "desc"]).optional(),
+    }).optional(),
+    emptyLabel: LocalizedString.optional(),
+  }).optional(),
   columns: z.object({
     lg: z.number().int().min(1).max(6).optional(),
     md: z.number().int().min(1).max(6).optional(),
@@ -1074,7 +1100,7 @@ export const SearchProStaticSectionSchema = z.object({
 
     list: ListConfSchema.optional(),
     map:  MapConfSchema.optional(),
-    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   }),
 });
 
@@ -1349,6 +1375,10 @@ const TitleWithFiltersDropdownSchema = z.object({
 
 // Props partagées entre le type canonique `searchHeader` et son alias.
 const SearchHeaderProps = z.object({
+  /** Fond du bandeau. Défaut : le dégradé du thème (`--gradient-section`). `page-accent` = l'aplat de
+   *  `page.accent` et son filet, pour un bandeau aux couleurs de la page (ex. filtres d'actualités
+   *  d'une page de territoire parent62). */
+  bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   headline: LocalizedString.optional(),
   /** `id` d'un `dropdownFilters` dont la VALEUR SÉLECTIONNÉE remplace le `headline` (qui reste le repli
    *  quand rien n'est sélectionné). Pour une page dont l'identité EST ce filtre — `/theme?theme=…`,
@@ -1428,6 +1458,36 @@ export const FeaturedCarouselSectionSchema = z.object({
     background: z.string().optional(),
     /** Couleur du badge et du bouton CTA — CSS libre, même logique que `background`. Repli : `--primary`. */
     accentColor: z.string().optional(),
+    /** Encre posée SUR `accentColor` (badge, bouton). Défaut blanc — à fournir dès que l'accent est clair :
+     *  blanc sur la turquoise de parent62 ne tient que 1,93:1, contre 5,68:1 pour son marine. */
+    accentTextColor: z.string().optional(),
+    /**
+     * Habillage : `sticker` (défaut, historique) — badge incliné dans le flux, flèches de navigation, CTA
+     * pleine largeur — ou `card` : badge en pilule débordant du haut du bloc, points de position à gauche
+     * (les flèches disparaissent) et CTA compact à droite. `card` suppose un bloc DANS une carte, dont le
+     * conteneur ne rogne pas (`overflow` visible), sinon la pilule est coupée.
+     */
+    design: z.enum(["sticker", "card"]).optional(),
+    /** Forme du badge : `badge` (défaut, étiquette inclinée) ou `pill` (arrondi droit). */
+    headlineStyle: z.enum(["badge", "pill"]).optional(),
+    /** Encre de la section, posée avec `background`. Sans elle, un fond fourni impose le texte BLANC
+     *  (rendu historique, pensé pour un fond sombre) — à fournir dès que le fond est clair. */
+    textColor: z.string().optional(),
+    /**
+     * Habillage `card` : dégradé du PANNEAU qui porte la diapositive — même grammaire que
+     * `map-bubbles.backgroundOverlay`, pour qu'une carte et un carrousel côte à côte se répondent.
+     * Absent, la diapositive vit à même la carte.
+     */
+    backgroundOverlay: z.object({ from: z.string(), to: z.string(), angle: z.number().optional() }).optional(),
+    /** Encre du texte POSÉ SUR le panneau (`backgroundOverlay`) : elle doit suivre le DÉGRADÉ, pas l'encre
+     *  de la carte — donner un jeton qui change avec lui si le dégradé a une variante sombre. Sans elle,
+     *  l'encre de la carte s'applique. Contraste AA à mesurer en clair ET en sombre. */
+    overlayTextColor: z.string().optional(),
+    /** Fond du badge de titre, quand il doit différer de `accentColor` (qui teinte le bouton).
+     *  Défaut : `accentColor`. */
+    badgeColor: z.string().optional(),
+    /** Encre du badge de titre. Défaut : `accentTextColor`, sinon blanc. */
+    badgeTextColor: z.string().optional(),
     /** Puces de pagination sous le carrousel, entre les flèches précédent/suivant (celles-ci
      *  restent toujours affichées). Défaut masquées — à activer explicitement si besoin. */
     showControls: z.boolean().default(false),

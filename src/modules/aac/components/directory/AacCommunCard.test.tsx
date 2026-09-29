@@ -184,3 +184,32 @@ describe("AacCommunCard — affordances de la moitié basse", () => {
     expect(screen.queryByRole("button")).toBeNull();
   });
 });
+
+/**
+ * Le bouton de suppression est en SURIMPRESSION, jamais dans le flux : le rythme
+ * vertical de la carte est figé, et tout ce qui s'y insère décale les voisines.
+ * Il n'apparaît que si l'appelant a jugé le geste permis pour CE commun.
+ */
+describe("AacCommunCard — suppression", () => {
+  it("aucun bouton sans `onRequestDelete`", () => {
+    renderCard(<AacCommunCard commun={card()} />);
+    expect(screen.queryByLabelText("directory.card.deleteAria")).toBeNull();
+  });
+
+  it("demande la suppression DE CE commun, sans naviguer vers sa fiche", () => {
+    const onRequestDelete = vi.fn();
+    renderCard(<AacCommunCard commun={card()} onRequestDelete={onRequestDelete} />);
+
+    const bouton = screen.getByLabelText("directory.card.deleteAria");
+    // La carte entière mène au commun : le clic ne doit pas suivre le lien.
+    const clic = fireEvent.click(bouton);
+    expect(clic).toBe(false); // preventDefault() a bien été appelé
+    expect(onRequestDelete).toHaveBeenCalledTimes(1);
+    expect(onRequestDelete.mock.calls[0][0].id).toBe("a1");
+  });
+
+  it("se neutralise pendant qu'une suppression est en vol", () => {
+    renderCard(<AacCommunCard commun={card()} onRequestDelete={vi.fn()} isDeleting />);
+    expect(screen.getByLabelText("directory.card.deleteAria")).toBeDisabled();
+  });
+});

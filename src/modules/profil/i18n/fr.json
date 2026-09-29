@@ -8,7 +8,9 @@
   "ImageUploadField": {
     "dropHint": "Glisser-déposer ou cliquer pour choisir",
     "remove": "Retirer l'image",
-    "imageOnly": "Seules les images sont acceptées."
+    "imageOnly": "Seules les images sont acceptées.",
+    "crop": "Recadrer",
+    "preparing": "Préparation de l'image…"
   },
   "EntityGridView": {
     "gridView": "Grille",
@@ -355,7 +357,10 @@
       "description": "Rejeter la demande de {{name}} ?",
       "cancel": "Annuler",
       "confirm": "Rejeter"
-    }
+    },
+    "rolesLabel": "Rôles dans l'organisation",
+    "rolesPlaceholder": "Ajouter un rôle (Entrée pour valider)…",
+    "rolesHint": "Texte libre — ex. « Coordonnatrice parentalité Arrageois »."
   },
   "MemberManagementDialog": {
     "title": "Gestion des membres",
@@ -989,6 +994,14 @@
         "opens": "Début",
         "closes": "Fin",
         "noDaysSelected": "Sélectionnez des jours pour définir les horaires"
+      },
+      "periodStart": {
+        "label": "Début de la période",
+        "placeholder": "Sélectionner le début de la période"
+      },
+      "periodEnd": {
+        "label": "Fin de la période",
+        "placeholder": "Sélectionner la fin de la période"
       }
     }
   },
@@ -1275,6 +1288,12 @@
     "address": {
       "required": "Adresse complète obligatoire : ville, code postal et rue"
     },
+    "annee": {
+      "invalid": "Saisissez une année sur 4 chiffres, par exemple 2022"
+    },
+    "documentOuLien": {
+      "required": "Joignez un document ou renseignez un lien"
+    },
     "minLength": "Valeur trop courte",
     "maxLength": "Valeur trop longue",
     "min": "Valeur trop petite",
@@ -1433,5 +1452,8 @@
   "AuthRequired": {
     "title": "Connectez-vous pour continuer",
     "description": "La création d’une fiche est rattachée à votre compte : elle vous permettra de la modifier et de la compléter plus tard."
+  },
+  "CardTeamMember": {
+    "territoryNews": "Les actualités du territoire"
   }
 }

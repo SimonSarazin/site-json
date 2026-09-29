@@ -31,6 +31,24 @@ describe("eventDate:write (recurrency-aware)", () => {
   });
 });
 
+describe("eventDatePeriod:write (la date borne la période d'une récurrence)", () => {
+  it("RÉCURRENT → la date est CONSERVÉE (elle borne la période de déroulement)", () => {
+    const out = w("eventDatePeriod:write", "2026-07-25T11:20:05.000Z", { recurrency: true }) as string;
+    expect(out).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
+  });
+  it("même normalisation qu'en ponctuel : offset local, sans millis ni Z", () => {
+    const rec = w("eventDatePeriod:write", "2026-07-25T11:20:05.000Z", { recurrency: true });
+    const ponctuel = w("eventDatePeriod:write", "2026-07-25T11:20:05.000Z", { recurrency: false });
+    expect(rec).toBe(ponctuel);
+    expect(String(rec)).not.toContain(".000");
+  });
+  it("vide ou invalide → omis, quelle que soit la récurrence", () => {
+    expect(w("eventDatePeriod:write", "", { recurrency: true })).toBeUndefined();
+    expect(w("eventDatePeriod:write", "   ", { recurrency: false })).toBeUndefined();
+    expect(w("eventDatePeriod:write", "pas une date", { recurrency: true })).toBeUndefined();
+  });
+});
+
 describe("eventOpeningHours:write (recurrency-aware, pad à 7)", () => {
   it("PONCTUEL → omet openingHours (undefined), même array rémanent de 2 jours", () => {
     const stale = [{ dayOfWeek: "Mo", hours: [] }, { dayOfWeek: "Tu", hours: [] }];

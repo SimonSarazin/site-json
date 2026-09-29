@@ -6,6 +6,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link } from "react-router";
 import { useStatDynamicValue } from "./useStatDynamicValue";
+import { buildGridColsClass } from "./responsiveGridCols";
+import { iconHaloClass } from "./iconColorClass";
+import { cn } from "@/lib/utils";
 
 interface CtaCardGridSectionProps {
     id?: string;
@@ -122,16 +125,30 @@ export function CtaCardGrid({ id, props }: CtaCardGridSectionProps) {
                     </div>
                 )}
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* `columns` absent → `{md:2, lg:4}`, la grille historique. Le défaut vit ICI
+                    et pas dans le schéma : la config JSON n'est jamais parsée par Zod au
+                    runtime, un `.default()` n'y agirait pas. Classes via le helper partagé
+                    (mapping statique, sinon le JIT ne génère pas la classe). */}
+                <div className={cn("grid gap-6", buildGridColsClass(props.columns ?? { md: 2, lg: 4 }))}>
                     {props.actions?.map((action, index) => (
                         <Card
                             key={index}
                             className={cardClasses}
                             style={{ animationDelay: `${index * 100}ms` }}
                         >
-                            <div className="text-center space-y-4">
+                            {/* `flex h-full flex-col` + `mt-auto` sur le CTA : les cartes d'une
+                                même ligne s'étirent déjà à la hauteur de la plus haute (grille),
+                                mais le bouton suivait le texte — il se retrouvait à mi-hauteur dès
+                                que deux descriptions n'avaient pas la même longueur. `gap-4`
+                                plutôt que `space-y-4` : la marge auto n'entre pas en conflit. */}
+                            <div className="flex h-full flex-col gap-4 text-center">
                                 <div className="flex justify-center">
-                                    <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                                    {/* `color` absent → `text-primary`, la teinte historique. Même
+                                        table que `FeaturesGlass` (helper partagé) : deux grilles de
+                                        cartes voisines doivent se teinter pareil. Le halo reste sur
+                                        `primary` — le faire suivre la teinte demanderait une classe
+                                        construite, que le JIT ne générerait pas. */}
+                                    <div className={cn("p-4 rounded-full transition-colors", iconHaloClass(action.color))}>
                                         <DynamicIcon
                                             name={action.icon as IconName}
                                             className="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
@@ -144,7 +161,7 @@ export function CtaCardGrid({ id, props }: CtaCardGridSectionProps) {
                                 <p className="text-sm text-muted-foreground">
                                     {t(action.description)}
                                 </p>
-                                <Link to={action.href}>
+                                <Link to={action.href} className="mt-auto">
                                     {/* Les variantes `dark:` doivent être RÉPÉTÉES ici.
                                         Le variant `outline` du Button porte
                                         `dark:border-input` et `dark:hover:bg-input/50` : en mode

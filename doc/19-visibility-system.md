@@ -14,6 +14,7 @@
 - [Visibilité des données (recherche / validation)](#visibilité-des-données-recherchevalidation)
 - [Usages dans la config JSON](#usages-dans-la-config-json)
   - [FloatingActionButton (bouton global)](#floatingactionbutton-bouton-global)
+  - [Liens de pied de page](#liens-de-pied-de-page)
   - [Items custom du dropdown "Ajouter" (profil)](#items-custom-du-dropdown-ajouter-profil)
   - [NavItem.roles (navigation)](#navitemroles-navigation)
   - [Tabs de profil (ProfileTabConditionSchema)](#tabs-de-profil-profiletabconditionschema)
@@ -224,6 +225,44 @@ Exemple JSON — bouton affiché uniquement pour les utilisateurs connectés ave
 ```
 
 Le composant `FloatingActionButton` (`src/components/layout/FloatingActionButton.tsx`) appelle `useVisibility(condition)` et retourne `null` si la condition n'est pas satisfaite. Il est chargé laziment depuis `RootLayout`.
+
+### Liens de pied de page
+
+Les **trois** listes de liens du footer (`columns[].links`, `legalLinks`, `bottomLinks`) partagent
+l'objet `FooterLink`, qui porte une `visibility` — même grammaire que partout ailleurs (cf.
+[Schéma principal](04-schema-principal.md#footerschema)).
+
+```json
+{
+  "footer": {
+    "columns": [
+      {
+        "title": { "fr": "Participer" },
+        "links": [
+          { "href": "/register", "label": { "fr": "Créer un compte" }, "visibility": { "auth": "anonymous" } },
+          { "href": "/login",    "label": { "fr": "Se connecter" },    "visibility": { "auth": "anonymous" } },
+          { "href": "@profile",  "label": { "fr": "Mon profil" },      "visibility": { "auth": "required" } }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Le filtrage est fait par le hook [`useFooterLinks`](../src/components/layout/footer/useFooterLinks.ts),
+partagé par les **quatre** designs qui rendent des liens (`sidebar-columns`, `rich`,
+`minimal-centered`, `contact-partners`) — une clé honorée par un seul composant serait un piège
+silencieux pour qui la pose ailleurs. Deux points le distinguent des autres usages :
+
+- **Jeton d'adresse `@profile`** : remplacé par `/profil/<slug>` de l'utilisateur connecté. Un lien
+  de config est une chaîne FIXE ; sans ce jeton, « Mon profil » ne peut pas s'écrire en config. Le
+  lien disparaît tant que le slug est inconnu.
+- **Colonnes** : `useFooterColumns` évalue toutes les colonnes en une seule passe et omet celle dont
+  tous les liens sont masqués. Le rendu passe par le composant partagé
+  [`FooterLinkColumn`](../src/components/layout/footer/FooterLinkColumn.tsx).
+
+Le masquage SSR s'applique comme ailleurs : ces liens n'existent pas dans le HTML servi et
+apparaissent à l'hydratation (cf. [Comportement SSR](#comportement-ssr)).
 
 ### Items custom du dropdown "Ajouter" (profil)
 

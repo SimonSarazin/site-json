@@ -9,6 +9,7 @@
  */
 import type { ChangeEvent } from "react";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useT } from "@/hooks/useT";
 import { formatNumber } from "@/modules/cagnotte/utils/format";
@@ -25,6 +26,11 @@ export interface CagnotteAmountPickerProps {
   isProcessing: boolean;
   onPredefinedAmountClick: (amount: number) => void;
   onCustomAmountChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  /**
+   * Vrai tant que l'enveloppe n'a pas répondu : `maxContributionAmount` y vaut 0, ce qui grise
+   * et barre chaque pastille — un sélecteur qui paraît interdit.
+   */
+  isLoading?: boolean;
 }
 
 export function CagnotteAmountPicker({
@@ -37,8 +43,34 @@ export function CagnotteAmountPicker({
   isProcessing,
   onPredefinedAmountClick,
   onCustomAmountChange,
+  isLoading = false,
 }: CagnotteAmountPickerProps) {
   const t = useT("modules/cagnotte");
+
+  if (isLoading) {
+    return (
+      <>
+        <div className="space-y-3" aria-busy="true">
+          <p className="text-sm font-medium text-foreground">
+            {t("CagnotteDialog.labels.amountSection")}
+          </p>
+          <Skeleton className="h-[58px] w-full rounded-lg" />
+          <div className="grid grid-cols-4 gap-3">
+            {predefinedAmounts.map((amount) => (
+              <Skeleton key={amount} className="h-14 rounded-md" />
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-3" aria-busy="true">
+          <p className="text-sm font-medium text-foreground">
+            {t("CagnotteDialog.labels.customAmountSection")}
+          </p>
+          <Skeleton className="h-12 w-full rounded-md" />
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

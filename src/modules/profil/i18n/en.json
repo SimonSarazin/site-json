@@ -8,7 +8,9 @@
   "ImageUploadField": {
     "dropHint": "Drag & drop or click to choose",
     "remove": "Remove image",
-    "imageOnly": "Only images are accepted."
+    "imageOnly": "Only images are accepted.",
+    "crop": "Crop",
+    "preparing": "Preparing image…"
   },
   "EntityGridView": {
     "gridView": "Grid",
@@ -355,7 +357,10 @@
       "description": "Reject {{name}}'s request?",
       "cancel": "Cancel",
       "confirm": "Reject"
-    }
+    },
+    "rolesLabel": "Roles in the organisation",
+    "rolesPlaceholder": "Add a role (press Enter)…",
+    "rolesHint": "Free text — e.g. “Parenting coordinator, Arrageois”."
   },
   "MemberManagementDialog": {
     "title": "Member Management",
@@ -989,6 +994,14 @@
         "opens": "Start",
         "closes": "End",
         "noDaysSelected": "Select days to define the schedule"
+      },
+      "periodStart": {
+        "label": "Period start",
+        "placeholder": "Select the period start"
+      },
+      "periodEnd": {
+        "label": "Period end",
+        "placeholder": "Select the period end"
       }
     }
   },
@@ -1275,6 +1288,12 @@
     "address": {
       "required": "Complete address required: city, postal code and street"
     },
+    "annee": {
+      "invalid": "Enter a 4-digit year, for example 2022"
+    },
+    "documentOuLien": {
+      "required": "Attach a document or provide a link"
+    },
     "minLength": "Too short",
     "maxLength": "Too long",
     "min": "Value too small",
@@ -1433,5 +1452,8 @@
   "AuthRequired": {
     "title": "Sign in to continue",
     "description": "A new listing is tied to your account, so you can edit and complete it later."
+  },
+  "CardTeamMember": {
+    "territoryNews": "Territory news"
   }
 }
