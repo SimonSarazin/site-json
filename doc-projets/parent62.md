@@ -3910,6 +3910,48 @@ vert (32 px, contre 16) que la ligne points + bouton au-dessus de son bord bas. 
 
 ---
 
+## 9quadragies. Fils d'actualités : deux lignes visibles sans défiler, réseau sans titres de carte
+
+Demande : diminuer la place que prennent les articles pour qu'au moins deux rangées se lisent sans
+défiler, sur l'ensemble des pages à fil d'actus — et retirer les intitulés des trois cartes « Les
+membres du réseau » (`/reseau`), qui répétaient le contenu déjà lisible dans leur texte.
+
+**Fils d'actualités** — nouvelle option moteur `articleFeed.density: "compact"` (opt-in, sans effet par
+défaut ailleurs sur le parc), posée sur les **33 sections `articleFeed`** du site (`/blog`, `/theme` et ses
+8 déclinaisons, les 9 pages `/public/*`, les 9 pages de territoire, Mois de la Parentalité, appels à
+projets, offres d'emploi, Zoom sur le réseau, comptes rendus de réunion) :
+
+- Grille à **2 colonnes dès le mobile** (au lieu d'1, comme le reste du parc) et **4 au maximum** à
+  partir de `lg:` (plafond retenu après essai à 5 colonnes, jugées trop étroites).
+- Carte `poster` (celle que porte parent62, `config.blog.defaultCardVariant`) : image ramenée du 3/4
+  portrait historique à un cadre 3/2, nettement plus court. La carte `default` du moteur (16/9, non
+  utilisée ici) suit le même principe à 5/2, pour rester cohérente si un autre site l'adopte un jour.
+- `py-6`/`gap-6` du `Card` de base **retirés** en compact — c'était du vide autour du seul enfant de la
+  carte (48 px perdus pour rien), pas un espacement entre plusieurs blocs.
+- **Titre, date, temps de lecture, extrait et tags restent tous affichés**, ramenés à une ligne chacun :
+  après plusieurs essais (masquer puis remettre ces informations), l'arbitrage retenu resserre la carte
+  par la hauteur de l'image et par le vide de `Card`, jamais par la disparition d'une information.
+- La carte « à la une » (la première du fil, en tête de page) garde son gabarit plein quel que soit
+  `density` — seules les cartes du fil en dessous se resserrent.
+
+**Réseau** — page `/reseau`, section `categories-grid` `reseau-membres` : les trois titres (« Parents et
+groupes de parents », « Centres Sociaux et EVS », « Institutions et collectivités ») sont retirés ; les
+cartes gardent leur icône et leur texte descriptif, `title` étant déjà optionnel dans le schéma.
+
+### 9quadragies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` · `audit:config` | ✅ 51 pages · 183 sections · RAS |
+| `typecheck` · `lint` | ✅ 0 erreur |
+| `test:unit` (préflight compris) | ✅ **5 028 tests**, 2 échecs **étrangers au lot** (`bundle-size`, `site-assets`) ; test de schéma ajouté sur `density` (accepté/rejeté) |
+| `test:integration` (`config-driven-ssr`, config parent62) | ✅ **98/98** |
+| `test:e2e` parent62 | ✅ **23/23**, dont une garde ajoutée (2 colonnes mobile, 4 en grand écran, `py-6` retiré, titre/tags toujours présents), **vérifiée rouge** sans `density` sur la section |
+| Écran | ✅ 1 440, 768 et 390 px, clair et sombre, sans débordement horizontal ; 2 rangées entières visibles sur `/blog` dès le haut de la grille |
+| Relecture | config resynchronisée avec `main` après une restauration de secours qui avait accidentellement fait régresser 3 points sans lien avec ce lot (texte du Mois de la Parentalité, texte des cartes « comptes rendus » sur les 9 pages de territoire, 2 liens de pied de page) — les trois retrouvent le texte/lien de `main`, seuls les changements de ce lot restent dans le diff |
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
