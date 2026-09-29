@@ -54,7 +54,10 @@ function sectionFieldNames(section: SectionDescriptor | undefined): string[] {
 }
 
 function renderEntry(f: string, p: LayoutProps): ReactNode {
-  return isSlot(f) ? <div key={f}>{p.renderSlot(slotName(f))}</div> : <div key={f}>{p.renderField(f)}</div>;
+  // `empty:hidden` : un slot qui ne rend RIEN (inerte en édition, rien à signaler) ne doit pas
+  // laisser une cellule vide dans la grille `gap-4` — soit 16 px de blanc sous le champ voisin.
+  // L'hôte ne peut pas le savoir à l'avance : le slot décide au rendu, d'où la règle CSS.
+  return isSlot(f) ? <div key={f} className="empty:hidden">{p.renderSlot(slotName(f))}</div> : <div key={f}>{p.renderField(f)}</div>;
 }
 
 /** Rend une section : ses groupes (grille N colonnes + titre + séparateur + conditionnel de bloc). */

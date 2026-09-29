@@ -1455,5 +1455,30 @@
   },
   "CardTeamMember": {
     "territoryNews": "Les actualités du territoire"
+  },
+  "EntityDuplicates": {
+    "title_one": "Une fiche au nom proche existe déjà",
+    "title_other": "{{count}} fiches au nom proche existent déjà",
+    "titleStrong_one": "Une fiche du même nom existe déjà à ce code postal",
+    "titleStrong_other": "{{count}} fiches au nom proche existent déjà, dont une au même code postal",
+    "description": "Vérifiez qu'il ne s'agit pas de la vôtre avant de continuer. Vous pouvez poursuivre la création.",
+    "error": "La recherche de fiches existantes a échoué. Vous pouvez poursuivre la création.",
+    "placeUnknown": "Commune non renseignée",
+    "hint": {
+      "sameNameSamePostalCode": "Même nom, même code postal",
+      "sameName": "Même nom",
+      "samePostalCode": "Même code postal"
+    },
+    "preview": "Aperçu",
+    "open": "Ouvrir la fiche",
+    "newTab": "(nouvel onglet)",
+    "more_one": "et une autre fiche au nom proche",
+    "more_other": "et {{count}} autres fiches au nom proche",
+    "confirm": {
+      "title": "Cette fiche existe peut-être déjà",
+      "description": "« {{name}} » existe déjà ({{place}}), avec le même nom et le même code postal. Créer quand même une nouvelle fiche ?",
+      "create": "Créer quand même",
+      "cancel": "Revenir au formulaire"
+    }
   }
 }

@@ -7,6 +7,8 @@
  */
 import { z } from "zod";
 
+import { SearchTypeSchema } from "@/modules/search/schema";
+
 /** clé seule OU {fn, params} (cf. entityModalSpec.FnRef). */
 const FnRefZod = z.union([
   z.string(),
@@ -68,6 +70,27 @@ export const CostumFormSchemaZod = z.object({
   scope: z.object({}).passthrough().optional(),
   defaultsBase: z.string().optional(),
   slots: z.record(z.string(), z.string()).optional(),
+  /**
+   * Détection de doublons à la création (cf. `DuplicateCheckSpec`, entityModalSpec.ts). STRICT : le
+   * bloc est lu par deux consommateurs, une clé mal orthographiée (`confirmOnSumbit`) serait ignorée
+   * en silence et désarmerait la confirmation sans que rien ne le dise.
+   */
+  duplicateCheck: z.object({
+    nameField: z.string().min(1),
+    postalCodeField: z.string().min(1).optional(),
+    minChars: z.number().int().min(1).optional(),
+    limit: z.number().int().min(1).optional(),
+    fetchLimit: z.number().int().min(1).optional(),
+    confirmOnSubmit: z.boolean().optional(),
+    detailsMode: z.enum(["dialog", "drawer"]).optional(),
+    search: z.object({
+      types: z.array(SearchTypeSchema).min(1),
+      from: z.object({ page: z.string().min(1), sectionId: z.string().min(1) }).strict().optional(),
+      filters: z.record(z.string(), z.unknown()).optional(),
+      notSourceKey: z.boolean().optional(),
+      sourceKey: z.array(z.string()).optional(),
+    }).strict(),
+  }).strict().optional(),
   schemaFn: z.string().optional(),
   cleanValues: FnRefZod.optional(),
   afterSubmit: z.string().optional(),

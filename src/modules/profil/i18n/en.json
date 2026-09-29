@@ -1455,5 +1455,30 @@
   },
   "CardTeamMember": {
     "territoryNews": "Territory news"
+  },
+  "EntityDuplicates": {
+    "title_one": "A record with a similar name already exists",
+    "title_other": "{{count}} records with a similar name already exist",
+    "titleStrong_one": "A record with the same name already exists at this postal code",
+    "titleStrong_other": "{{count}} records with a similar name already exist, one of them at the same postal code",
+    "description": "Check that it is not yours before continuing. You can carry on with the creation.",
+    "error": "The search for existing records failed. You can carry on with the creation.",
+    "placeUnknown": "Municipality not provided",
+    "hint": {
+      "sameNameSamePostalCode": "Same name, same postal code",
+      "sameName": "Same name",
+      "samePostalCode": "Same postal code"
+    },
+    "preview": "Preview",
+    "open": "Open the record",
+    "newTab": "(new tab)",
+    "more_one": "and one more record with a similar name",
+    "more_other": "and {{count}} more records with a similar name",
+    "confirm": {
+      "title": "This record may already exist",
+      "description": "“{{name}}” already exists ({{place}}), with the same name and the same postal code. Create a new record anyway?",
+      "create": "Create anyway",
+      "cancel": "Back to the form"
+    }
   }
 }

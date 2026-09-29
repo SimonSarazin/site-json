@@ -65,6 +65,8 @@ export interface CostumFormSchema {
   /** clé → `defaultsRegistry` (socle structuré/scope-aware) ; absent → buildConfigDefaults. */
   defaultsBase?: string;
   slots?: Record<string, string>;
+  /** Détection de doublons à la création — cf. `DuplicateCheckSpec`. */
+  duplicateCheck?: EntityModalSpec["duplicateCheck"];
   schemaFn?: string;
   cleanValues?: FnRef;
   afterSubmit?: string;
@@ -195,6 +197,7 @@ function buildSpec(s: CostumFormSchema): EntityModalSpec {
     ...(s.listsFromCarrier ? { listsFromCarrier: s.listsFromCarrier } : {}),
     ...(s.scope ? { scope: s.scope } : {}),
     ...(s.slots ? { slots: s.slots } : {}),
+    ...(s.duplicateCheck ? { duplicateCheck: s.duplicateCheck } : {}),
     ...(s.schemaFn ? { schemaFn: s.schemaFn } : {}),
     mutation: s.mutation,
     ...(s.afterSubmit ? { afterSubmit: s.afterSubmit } : {}),

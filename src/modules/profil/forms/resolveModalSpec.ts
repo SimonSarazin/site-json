@@ -240,10 +240,11 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
     slots: spec.slots
       ? (ctx) => {
           const out: Record<string, ReactNode> = {};
-          for (const [id, key] of Object.entries(spec.slots!)) out[id] = getSlotFn(key)?.(ctx) ?? null;
+          for (const [id, key] of Object.entries(spec.slots!)) out[id] = getSlotFn(key)?.(ctx, spec) ?? null;
           return out;
         }
       : undefined,
+    duplicateCheck: spec.duplicateCheck,
     buildSpec,
   };
 }
