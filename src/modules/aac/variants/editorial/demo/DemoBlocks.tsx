@@ -26,7 +26,7 @@ import {
 export function DemoImpactBlock() {
   const t = useT("modules/aac");
   return (
-    <EditorialSection title={String(t("editorial.detail.impact"))}>
+    <EditorialSection demo title={String(t("editorial.detail.impact"))}>
       <DemoNotice />
       <dl className="mt-3 space-y-3">
         {DEMO_IMPACT.map((item) => (
@@ -45,6 +45,7 @@ export function DemoCallsBlock() {
   const t = useT("modules/aac");
   return (
     <EditorialSection
+      demo
       title={String(t("editorial.detail.calls.title"))}
       icon={<Sparkles className="size-4 text-primary" aria-hidden="true" />}
     >
@@ -61,7 +62,7 @@ export function DemoCallsBlock() {
 export function DemoFeedbackBlock() {
   const t = useT("modules/aac");
   return (
-    <EditorialSection title={String(t("editorial.detail.feedback.title", undefined, { count: DEMO_FEEDBACK.length }))}>
+    <EditorialSection demo title={String(t("editorial.detail.feedback.title", undefined, { count: DEMO_FEEDBACK.length }))}>
       <DemoNotice />
       <ul className="mt-4 space-y-3">
         {DEMO_FEEDBACK.map((item) => (
@@ -86,7 +87,7 @@ export function DemoFeedbackBlock() {
 export function DemoSupportsBlock() {
   const t = useT("modules/aac");
   return (
-    <EditorialSection title={String(t("editorial.detail.supports.title", undefined, { count: DEMO_SUPPORTS.length }))}>
+    <EditorialSection demo title={String(t("editorial.detail.supports.title", undefined, { count: DEMO_SUPPORTS.length }))}>
       <DemoNotice />
       <ul className="mt-4 space-y-3">
         {DEMO_SUPPORTS.map((support) => (
@@ -111,7 +112,7 @@ export function DemoMaturationTab() {
   const t = useT("modules/aac");
   return (
     <div className="grid gap-8 lg:grid-cols-2">
-      <EditorialSection title={String(t("editorial.detail.maturation.title"))}>
+      <EditorialSection demo title={String(t("editorial.detail.maturation.title"))}>
         <DemoNotice />
         <p className="mt-1 text-sm text-muted-foreground">{String(t("editorial.detail.maturation.intro"))}</p>
         <ul className="mt-5 space-y-5">
@@ -153,6 +154,7 @@ export function DemoMaturationTab() {
       </EditorialSection>
 
       <EditorialSection
+        demo
         title={String(t("editorial.detail.maturation.assistantTitle"))}
         icon={<Sparkles className="size-4 text-primary" aria-hidden="true" />}
       >
@@ -187,7 +189,7 @@ export function DemoCooperationsTab() {
           <Handshake className="size-5" aria-hidden="true" />
           <span className="text-sm font-semibold">{String(t("editorial.detail.cooperations.kicker"))}</span>
         </div>
-        <h2 className="mt-2 font-display text-3xl md:text-4xl">{String(t("editorial.detail.cooperations.title"))}</h2>
+        <h2 className="mt-2 font-display text-3xl text-destructive md:text-4xl">{String(t("editorial.detail.cooperations.title"))}</h2>
         <DemoNotice />
         <p className="mt-3 text-muted-foreground">{String(t("editorial.detail.cooperations.intro"))}</p>
       </div>

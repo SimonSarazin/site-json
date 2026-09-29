@@ -170,8 +170,13 @@ export default function CommunDetailEditorial({ vm }: CommunDetailViewProps) {
               )}
               <TabsTrigger value="communaute" className="flex-none">{String(t("editorial.detail.tabs.communaute"))}</TabsTrigger>
               <TabsTrigger value="vie" className="flex-none">{String(t("editorial.detail.tabs.vie"))}</TabsTrigger>
-              <TabsTrigger value="maturation" className="flex-none">{String(t("editorial.detail.tabs.maturation"))}</TabsTrigger>
-              <TabsTrigger value="cooperations" className="flex-none">{String(t("editorial.detail.tabs.cooperations"))}</TabsTrigger>
+              {/* Onglets de démonstration : libellé en rouge. */}
+              <TabsTrigger value="maturation" className="flex-none">
+                <span className="text-destructive">{String(t("editorial.detail.tabs.maturation"))}</span>
+              </TabsTrigger>
+              <TabsTrigger value="cooperations" className="flex-none">
+                <span className="text-destructive">{String(t("editorial.detail.tabs.cooperations"))}</span>
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="fiche" className="mt-6 grid gap-8 lg:grid-cols-3">
