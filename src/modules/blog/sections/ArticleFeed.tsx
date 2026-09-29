@@ -6,17 +6,21 @@ import { useHydrated } from "@/hooks/useHydrated";
 import { useSite } from "@/hooks/useSite";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useArticleFeed, usePinnedArticle } from "../hooks/useArticleFeed";
 import { CARD_VARIANTS } from "../variants/cards";
 import { normalizeArticleResult, articleHref } from "../lib/articleLink";
 import { pickFeatured } from "../lib/pickFeatured";
 import type { ArticleFeedSectionProps } from "../schema";
 
-function FeedSkeleton() {
+/** `compact` : squelette plus court et à 2 colonnes DÈS le mobile, à la hauteur de la carte resserrée
+ *  (`density: "compact"`) — sinon le chargement montrerait un gabarit plus grand/plus large que le
+ *  contenu qui le remplace ensuite. */
+function FeedSkeleton({ compact }: { compact?: boolean }) {
   return (
-    <div role="status" aria-busy="true" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div role="status" aria-busy="true" className={cn("grid gap-6 sm:grid-cols-2 lg:grid-cols-3", compact && "grid-cols-2 gap-3 lg:grid-cols-4")}>
       <span className="sr-only">Chargement…</span>
-      {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-72 w-full rounded-xl" />)}
+      {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className={cn("w-full rounded-xl", compact ? "h-28" : "h-72")} />)}
     </div>
   );
 }
@@ -43,10 +47,11 @@ function Feed({ props, base, cardVariant, feedLayout }: {
     : undefined;
   // Variant de carte (lazy, registre CARD_VARIANTS) — un variant inconnu retombe sur `default`.
   const Card = CARD_VARIANTS.get(cardVariant);
+  const compactMode = props.density === "compact";
 
   // En mode flag, attendre AUSSI l'épinglée : sinon le repli (plus récent) s'affiche puis se fait
   // remplacer par l'épinglée au retour de la micro-requête — flash de héros.
-  if (isLoading || (flagMode && pinnedQuery.isLoading)) return <FeedSkeleton />;
+  if (isLoading || (flagMode && pinnedQuery.isLoading)) return <FeedSkeleton compact={compactMode} />;
   // Erreur AVANT le test "vide" : une panne du search ne doit pas être déguisée en fil vide.
   if (error && !items.length) {
     return (
@@ -59,13 +64,22 @@ function Feed({ props, base, cardVariant, feedLayout }: {
   if (!items.length) return <p className="py-10 text-center text-muted-foreground">{t("feed.empty")}</p>;
 
   const { hero: featured, rest } = pickFeatured(items, pinned, props.featured);
+  // `compactMode` : DEUX colonnes dès le mobile (pas une, comme le reste du parc), QUATRE au maximum
+  // à partir de `lg:` — gap resserré, colonnes ÉTROITES : c'est la largeur de la carte, pas seulement
+  // son contenu, qui commande combien de rangées tiennent à l'écran. Écrit APRÈS `fullWidth` dans
+  // `cn()` : twMerge lui donne le dernier mot sur le même palier (`xl:grid-cols-4` de `fullWidth` ne
+  // fait alors plus rien de nouveau, `lg:grid-cols-4` de `compactMode` l'a déjà posé).
   const containerCls =
     feedLayout === "list"
       ? "flex flex-col gap-4"
-      : `grid gap-6 sm:grid-cols-2 lg:grid-cols-3${props.fullWidth ? " xl:grid-cols-4" : ""}`;
+      : cn(
+          "grid gap-6 sm:grid-cols-2 lg:grid-cols-3",
+          props.fullWidth && "xl:grid-cols-4",
+          compactMode && "grid-cols-2 gap-3 lg:grid-cols-4",
+        );
   return (
     // Suspense : le chunk de la carte (lazy) est chargé (préchargé en amont via `preload`, cf. section).
-    <Suspense fallback={<FeedSkeleton />}>
+    <Suspense fallback={<FeedSkeleton compact={compactMode} />}>
       {/* eslint-disable-next-line react-hooks/static-components -- `Card` vient d'un
           REGISTRE, il n'est pas fabriqué ici : `makeVariantRegistry` referme un objet
           construit au chargement du module et `get()` n'est qu'un `variants[key] ?? default`.
@@ -74,7 +88,7 @@ function Feed({ props, base, cardVariant, feedLayout }: {
       {featured && <div className="mb-8"><Card article={featured} href={articleHref(featured, base)} featured /></div>}
       <div className={containerCls}>
         {rest.map((a, i) => (
-          <Card key={a.id ?? i} article={a} href={articleHref(a, base)} lastRef={i === rest.length - 1 ? (lastItemRef as never) : undefined} />
+          <Card key={a.id ?? i} article={a} href={articleHref(a, base)} density={props.density} lastRef={i === rest.length - 1 ? (lastItemRef as never) : undefined} />
         ))}
       </div>
       {isFetchingNextPage && <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>}
@@ -110,7 +124,7 @@ export default function ArticleFeed({ id, props }: { id?: string; props: Article
             {props.description && <p className="text-muted-foreground">{t(props.description as never)}</p>}
           </header>
         )}
-        {hydrated ? <Feed props={props} base={base} cardVariant={cardVariant} feedLayout={feedLayout} /> : <FeedSkeleton />}
+        {hydrated ? <Feed props={props} base={base} cardVariant={cardVariant} feedLayout={feedLayout} /> : <FeedSkeleton compact={props.density === "compact"} />}
       </div>
     </section>
   );

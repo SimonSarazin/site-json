@@ -812,7 +812,6 @@
             "cards": [
               {
                 "icon": "users",
-                "title": { "fr": "Parents et groupes de parents", "en": "Parents and parent groups" },
                 "subtitle": {
                   "fr": "Des associations et groupes de parents acteurs (cafés des parents, groupes de pairs, des associations de parents, parents d'élèves…)",
                   "en": "Parent associations and active parent groups (parent cafés, peer groups, parent associations, school parent bodies…)"
@@ -820,7 +819,6 @@
               },
               {
                 "icon": "home",
-                "title": { "fr": "Centres Sociaux et EVS", "en": "Social centres and EVS" },
                 "subtitle": {
                   "fr": "Des Centres Sociaux et des Espaces de Vie Sociale, associations et/ou établissements spécialisés (accompagnement social, petite enfance, enfance, familles, éducation, adolescence, handicap, situations familiales spécifiques, santé)",
                   "en": "Social Centres and Social Life Spaces, associations and/or specialised establishments (social support, early years, childhood, families, education, adolescence, disability, specific family situations, health)"
@@ -828,7 +826,6 @@
               },
               {
                 "icon": "landmark",
-                "title": { "fr": "Institutions et collectivités", "en": "Institutions and authorities" },
                 "subtitle": {
                   "fr": "La CAF, l'Éducation Nationale, le Conseil Départemental, l'UDAF, l'EPDEF, les services des collectivités locales (Relais petite enfance, jeunesse, culture, famille, CCAS, PRE)…",
                   "en": "The CAF, National Education, the County Council, UDAF, EPDEF, local authority services (early-years hubs, youth, culture, family, CCAS, PRE)…"
@@ -1457,6 +1454,10 @@
               { "fr": "Le respect de la différence", "en": "Respect for difference" },
               { "fr": "L'ouverture à tous", "en": "Openness to all" }
             ],
+            "infoText": {
+              "fr": "À partir du 1ᵉʳ janvier 2025, le REAAP devient l'axe 1 du Fonds National Parentalité (FNP) — « Implication et participation des parents à travers des modalités d'interventions collectives » — et se décline en deux volets :<br/>— Volet 1 : actions collectives d'échanges et d'entraide entre parents<br/>— Volet 2 : activités et ateliers partagés « Parents-Enfants »",
+              "en": "As of 1 January 2025, the REAAP becomes strand 1 of the National Parenting Fund (Fonds National Parentalité, FNP) — “Involving and engaging parents through collective forms of intervention” — with two strands:<br/>— Strand 1: collective activities for exchange and mutual support between parents<br/>— Strand 2: shared “Parent-Child” activities and workshops"
+            },
             "width": "wide"
           }
         },
@@ -1565,7 +1566,8 @@
             "costumSlug": "parent62",
             "filters": { "slug": "lantsDesLieuxDaccueilEnfantsParentsDu25SeptembreAOlhain" },
             "pageSize": 1,
-            "featured": true
+            "featured": true,
+            "density": "compact"
           }
         }
       ]
@@ -1950,7 +1952,9 @@
         {
           "type": "articleFeed",
           "id": "filter-mois-feed",
-          "props": { "costumSlug": "parent62", "pageSize": 12, "featured": true, "fullWidth": true }
+          "props": { "costumSlug": "parent62", "pageSize": 12, "featured": true, "fullWidth": true,
+            "density": "compact"
+          }
         }
       ]
     },
@@ -2343,7 +2347,8 @@
             "costumSlug": "parent62",
             "pageSize": 12,
             "featured": false,
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -2778,7 +2783,8 @@
             "costumSlug": "parent62",
             "pageSize": 12,
             "featured": true,
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -3174,7 +3180,8 @@
             "fullWidth": true,
             "filters": {
               "tags": "Appels à projets"
-            }
+            },
+            "density": "compact"
           }
         }
       ]
@@ -3570,7 +3577,8 @@
             "fullWidth": true,
             "filters": {
               "tags": "Offres d'emploi"
-            }
+            },
+            "density": "compact"
           }
         }
       ]
@@ -3618,7 +3626,8 @@
             "fullWidth": true,
             "filters": {
               "tags": "Zoom"
-            }
+            },
+            "density": "compact"
           }
         }
       ]
@@ -5595,7 +5604,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -5832,7 +5842,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -6069,7 +6080,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -6306,7 +6318,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -6543,7 +6556,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -6780,7 +6794,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -7017,7 +7032,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -7254,7 +7270,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -7659,7 +7676,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -8064,7 +8082,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -8469,7 +8488,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -8874,7 +8894,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -9279,7 +9300,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -9684,7 +9706,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -10089,7 +10112,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -10494,7 +10518,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -10899,7 +10924,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -11502,7 +11528,8 @@
                   "Arrageois"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -12218,7 +12245,8 @@
                   "Artois"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -12934,7 +12962,8 @@
                   "Audomarois"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -13650,7 +13679,8 @@
                   "Boulonnais"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -14366,7 +14396,8 @@
                   "Calaisis"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -15082,7 +15113,8 @@
                   "Entre Mer et Terres"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -15798,7 +15830,8 @@
                   "Familles en sol mineur Hénin Carvin"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -16514,7 +16547,8 @@
                   "Familles en sol mineur Lens Liévin"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -17226,7 +17260,8 @@
                   "Ternois Bruaysis"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {

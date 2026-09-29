@@ -62,6 +62,17 @@ export const ArticleFeedSectionSchema = z.object({
      * « magazine », comportement historique partagé par tous les costums).
      */
     fullWidth: z.boolean().optional(),
+    /**
+     * Densité de la carte : `"compact"` réduit son gabarit — image très courte (4/1 en `default`, 16/9
+     * en `poster`, contre 16/9 et 3/4 par défaut) — et resserre la grille à DEUX colonnes dès le mobile
+     * (quatre à partir de `lg:`, plafond du parc), pour que plusieurs rangées tiennent à l'écran sans
+     * défiler. Titre, extrait et tags restent tous affichés, ramenés à une seule ligne chacun : c'est la
+     * hauteur de l'image qui porte le resserrement, pas la disparition de l'information. Défaut : le
+     * gabarit éditorial historique (une colonne sur mobile, image pleine hauteur). Lu par les cartes
+     * `default` et `poster` ; sans effet sur `cardVariant: "compact"` (déjà une ligne dense par
+     * construction).
+     */
+    density: z.enum(["compact"]).optional(),
   }),
 });
 export type ArticleFeedSectionProps = z.infer<typeof ArticleFeedSectionSchema>["props"];

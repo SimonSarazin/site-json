@@ -248,6 +248,36 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     }
   });
 
+  test("/blog : le fil en densité compacte tient sur 2 colonnes mobile, 4 en grand écran, sans info perdue", async ({ page }) => {
+    // `articleFeed.density: "compact"` (posé sur les 33 fils d'actus du site) : grille resserrée,
+    // mais date/titre/extrait/tags restent tous affichés — c'est la hauteur de l'image qui se
+    // resserre, pas le contenu. Assertion sur les DEUX viewports : la densité change de colonnes à
+    // `lg:`, un test à une seule taille ne verrait qu'une moitié du contrat.
+    await page.goto("/blog", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+    if (!backendUp) test.skip(true, "fil d'actualités indisponible sans backend");
+
+    const grid = page.locator("#blog-feed .grid").first();
+    await grid.locator(":scope > *").first().waitFor();
+
+    const desktopCols = await grid.evaluate((g) => getComputedStyle(g).gridTemplateColumns.split(" ").length);
+    expect(desktopCols, "4 colonnes à partir de lg: (1440px, viewport par défaut)").toBe(4);
+
+    const premiere = grid.locator(":scope > *").first();
+    // Titre, extrait ET tags coexistent (aucun n'est sacrifié pour la densité) — un `h3` retrouvable,
+    // une pastille de tag, et une carte SANS le padding `py-6` de base (retiré en compact : cf.
+    // `ArticleCard`/`ArticleCardPoster`, sinon 48px de vide pour rien sur une carte déjà resserrée).
+    await expect(premiere.locator("h3")).toBeVisible();
+    await expect(premiere.locator('[data-slot="badge"]').first()).toBeVisible();
+    const paddingTop = await premiere.evaluate((c) => getComputedStyle(c).paddingTop);
+    expect(paddingTop, "py-6 retiré en compact").toBe("0px");
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(200);
+    const mobileCols = await grid.evaluate((g) => getComputedStyle(g).gridTemplateColumns.split(" ").length);
+    expect(mobileCols, "2 colonnes dès le mobile (pas 1, comme le reste du parc)").toBe(2);
+  });
+
   test("/zoomcat : liste des actualités « Zoom sur le réseau », sans filtre, atteinte depuis l'accueil", async ({ page }) => {
     // Le bouton « voir tout » de la section « Zoom sur le réseau » de l'accueil mène à cette page.
     await page.goto("/", { waitUntil: "domcontentloaded" });
