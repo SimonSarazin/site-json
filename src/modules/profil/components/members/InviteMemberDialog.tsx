@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { TagsInput } from "@/components/form/TagsInput";
 import { toast } from "sonner";
 import { UserPlus, Search, Loader2, Mail, MoreVertical, Plus, X } from "lucide-react";
 
@@ -40,8 +41,11 @@ interface InviteRow {
   name: string;
   message: string;
   admin: boolean;
+  /** Rôles du futur membre DANS l'entité — texte libre, comme sur Communecter. Portés par
+   *  `listInvite.invites[].roles` jusqu'au lien, où `Link::connectByUrl` les pose à l'acceptation. */
+  roles: string[];
 }
-const EMPTY_INVITE: InviteRow = { email: "", name: "", message: "", admin: false };
+const EMPTY_INVITE: InviteRow = { email: "", name: "", message: "", admin: false, roles: [] };
 
 
 interface InviteMemberDialogProps {
@@ -92,6 +96,9 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
         mail: r.email,
         ...(r.message.trim() ? { msg: r.message.trim() } : {}),
         isAdmin: (r.admin ? "admin" : "") as "" | "admin",
+        // Omis quand vide : le contrat lib accepte `roles?`, et une clé vide ferait écrire un
+        // tableau vide sur le lien là où l'absence le laisse intact.
+        ...(r.roles.length > 0 ? { roles: r.roles } : {}),
       })),
       { onSuccess: () => setInvites([{ ...EMPTY_INVITE }]) },
     );
@@ -323,6 +330,25 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
                           />
                           {t("InviteMemberDialog.inviteAsAdmin", undefined, { role: labels.admin })}
                         </label>
+
+                        {/* Rôles : `searchable={false}` — ce ne sont PAS les tags globaux du réseau
+                            (`useSearchTags`), mais des libellés propres à CETTE entité. Le backend
+                            n'expose pas d'endpoint de suggestions au SDK (`element/getroleslist`
+                            n'y est pas), donc saisie libre — ce que fait aussi Communecter. */}
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">
+                            {t("InviteMemberDialog.rolesLabel")}
+                          </Label>
+                          <TagsInput
+                            tags={row.roles}
+                            onTagsChange={(roles) => updateInvite(i, { roles })}
+                            searchable={false}
+                            texts={{ placeholder: t("InviteMemberDialog.rolesPlaceholder") }}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            {t("InviteMemberDialog.rolesHint")}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>

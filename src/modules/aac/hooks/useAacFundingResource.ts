@@ -47,9 +47,18 @@ export function useAacFundingResource(
   targetResource: CagnotteResource | undefined;
   /** Slug du projet lié — résolu depuis `fundingData.projects[]`, 0 requête réseau supplémentaire. */
   projectSlug: string | undefined;
+  /**
+   * Vrai tant que la ressource n'est pas résolue (hôte, enveloppe, projets de l'organisation).
+   * `isProjectPhase` en dépend : sans lui, « Objectifs » et « Contributeurs » sont absentes
+   * puis surgissent.
+   *
+   * `isLoading` et non `isPending` : ces requêtes sont désactivées au SSR et pour un visiteur
+   * anonyme, où `isPending` resterait vrai à jamais.
+   */
+  isLoading: boolean;
 } {
   const { entity } = useCocolight();
-  const { data: fundingData } = useFundingEnvelope(answerId, {
+  const { data: fundingData, isLoading: isEnvelopeLoading } = useFundingEnvelope(answerId, {
     hostEntity: options?.hostEntity,
     enabled: !options?.isHostLoading,
   });
@@ -69,7 +78,7 @@ export function useAacFundingResource(
    * fiche comme à celle de la modale de dépôt (`MilestoneListField`). On ne le
    * déclenche que pour le mode qui le lit.
    */
-  const { projects: allProjects } = useOrganizationProjectsWithAnswers({
+  const { projects: allProjects, isLoading: isProjectsLoading } = useOrganizationProjectsWithAnswers({
     entity: entity || null,
     enabled: !!entity && cagnotteConfig.selectorType === "project",
   });
@@ -111,5 +120,7 @@ export function useAacFundingResource(
     (project) => project.id === targetResource?.projectId
   )?.slug || undefined;
 
-  return { targetResource, projectSlug };
+  const isLoading = !!options?.isHostLoading || isEnvelopeLoading || isProjectsLoading;
+
+  return { targetResource, projectSlug, isLoading };
 }

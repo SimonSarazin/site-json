@@ -3,8 +3,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
 
 /**
- * Trois états à couvrir (cf. doc/34-module-aac.md §1 — génération IRRÉVERSIBLE,
+ * Quatre états à couvrir (cf. doc/34-module-aac.md §1 — génération IRRÉVERSIBLE,
  * jamais gatée sur le statut du commun) :
+ *  0. l'enveloppe n'a pas répondu → on ne SAIT PAS s'il y a un projet, donc aucune action
+ *     n'est proposée : lire `projectId` undefined comme « pas de projet » ferait générer un
+ *     second projet, irréversible, sur un commun qui en a déjà un ;
  *  1. un projet existe déjà → bouton "Ouvrir le projet", visible de TOUS (pas de
  *     gate admin) — ouvre le drawer d'aperçu partagé du module profil
  *     (`EntityPreviewDrawer`), PAS une navigation `/profil/:slug` ;
@@ -109,6 +112,49 @@ beforeEach(() => {
   associateMutate.mockClear();
   isPending = false;
   isAssociatePending = false;
+});
+
+describe("CommunProjectControl — état non résolu (enveloppe en vol)", () => {
+  it("ne propose AUCUNE action tant que la présence d'un projet est inconnue", () => {
+    renderControl({ canManageProject: true, projectId: null, isLoading: true });
+
+    // Ni génération, ni association : ce sont les actions de l'état « pas de projet »,
+    // et cet état n'est pas encore établi.
+    expect(screen.queryByRole("button")).toBeNull();
+    expect(screen.queryByText("detail.project.proposalPhaseBadge")).toBeNull();
+  });
+
+  it("n'affiche pas non plus le badge « Phase proposition » à un non-admin", () => {
+    renderControl({ canManageProject: false, projectId: null, isLoading: true });
+    expect(screen.queryByText("detail.project.proposalPhaseBadge")).toBeNull();
+  });
+
+  it("signale l'attente aux technologies d'assistance", () => {
+    const { container } = renderControl({ canManageProject: true, projectId: null, isLoading: true });
+    expect(container.querySelector('[aria-busy="true"]')).toBeTruthy();
+  });
+
+  it("bascule sur « Ouvrir le projet » — et jamais sur « Générer » — quand l'enveloppe répond", () => {
+    const { rerender } = renderControl({ canManageProject: true, projectId: null, isLoading: true });
+    expect(screen.queryByRole("button")).toBeNull();
+
+    rerender(
+      <CommunProjectControl
+        api={makeApi()}
+        canManageProject
+        answerId="answer-1"
+        projectId="proj-1"
+        projectSlug="mon-projet"
+        parentId="677e7e13bd08b2478f5f5314"
+        parentType="organizations"
+        userId="user-1"
+        isLoading={false}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /detail\.project\.openCta/ })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /detail\.project\.generateCta/ })).toBeNull();
+  });
 });
 
 describe("CommunProjectControl — pas de projet", () => {

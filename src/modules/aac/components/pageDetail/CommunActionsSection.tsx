@@ -20,6 +20,7 @@ import { MilestoneManageActions } from "@/modules/cagnotte/components/sections/M
 import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
 import type { CagnottePermissions } from "@/modules/cagnotte/permissions/types";
 import type { CommunObjectivesController } from "./CommunMilestoneDialogs";
+import { MilestoneCardsSkeleton } from "./CommunSkeletons";
 import {
   normalizeActionForEdit,
   resolveAacActionEntityId,
@@ -371,6 +372,7 @@ export function CommunActionsSection({ funding, ctrl }: CommunActionsSectionProp
                     </Button>
                 </div>
             ) : null}
+            {ctrl.isLoadingData && !funding?.items?.length ? <MilestoneCardsSkeleton /> : null}
             {funding?.items?.map((o: CagnotteFundableItem, i: number) => (
                 <ActionsMilestoneCard
                     key={i}

@@ -96,17 +96,24 @@ describe("préflight mutation.stamps", () => {
     const parc = SITES.flatMap(({ site, cfg }) => stampsDe(cfg).map(({ formId, stamps }) => `${site.replace("config.prod.", "").replace(".json", "")}/${formId}:${stamps.length}`));
     expect(parc).toEqual([
       "institut-bleu/institut-bleu-acteur:2",
-      // parent62 : le champ `category` du form d'article (Appel à projets / Offre d'emploi) dérive
-      // le mot-clé public via 1 stamp `tags` `append` `on:"both"` + `$mapLabels`. `category` est un
-      // vrai champ du schéma d'écriture POI (déjà écrit par `parent62-affiche` et
-      // `parent62-recovery-center`) : il persiste et revient à l'édition, donc le stamp repose le
-      // tag aux deux temps. Les pages /appels-a-projets et /offres-emploi filtrent ce tag.
-      "parent62/parent62-article:1",
+      // parent62 n'a PLUS de stamp : le mot-clé dérivé du type d'actualité (`category` → Appels à
+      // projets / Offres d'emploi / A la une / Zoom) est porté par les codecs `p62article:tagsRead`/
+      // `tagsWrite` du champ `tags`. Le stamp `append` refusionnait les tags serveur, donc l'ancien tag
+      // revenait quand on changeait de type (impossible de sortir une actu du bandeau « à la une »).
+      // Garde de non-retour : `src/modules/profil/forms/article.configDriven.test.ts`.
       // MSS structure n'a PLUS de stamp : `statusActor` est déclaré au dynForm du costum
       // `associationEkilibre` depuis la copie du chantier A (plan mss-la-tampon) — l'inject
       // payload « En cours » passe la whitelist, le stamp pathValue de contournement a été retiré.
       // RELIEF dérive de la config tiers-lieux, dont il reprend le form et ses 5 stamps.
       "relief/tiers-lieux:5",
+      // EcosystemeSanteReunion n'apparaît PAS ici, et c'est un choix documenté : ses 3 forms recopient
+      // aussi les thématiques dans `tags` (toute la surface de filtrage du site interroge `tags`,
+      // jamais `thematic`), mais par les codecs `read`/`write` du CHAMP, pas par une estampille.
+      // Motif : `op:"append"` ne sait qu'ajouter et refusionne `targetServerData`, si bien qu'une
+      // thématique DÉCOCHÉE ne perdait jamais son tag — la fiche restait sur son ancienne page de
+      // thématique. La réconciliation (retrait compris) appartient donc au champ.
+      // cf. `src/modules/profil/forms/costum/rezo-sante/fns.ts` et sa garde de non-retour dans
+      // `rezo-sante.configDriven.test.ts` (« aucun formulaire ne porte d'estampille tags »).
       // Référencement régional posé à la création : la fiche appartient au costum COMMUNAL
       // (`source.key`) et est RÉFÉRENCÉE par `equipementsSportifs974`, qui la voit via la
       // traduction serveur `sourceKey` → `$or[source.keys, reference.costum]`.

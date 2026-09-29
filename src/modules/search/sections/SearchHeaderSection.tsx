@@ -10,6 +10,7 @@ import "@/modules/search/i18n";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useDynamicFilterOptions } from "@/modules/search/hooks/useDynamicFilterOptions";
 import { resolveFilterHydration } from "@/modules/search/lib/hydrateDropdownFilter";
+import { optionsDuTitre, SEPARATEUR_TITRE } from "@/modules/search/lib/headlineFromFilter";
 import { useSearchParams } from "react-router";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -33,6 +34,7 @@ import { ChevronDown, RotateCcw, SlidersHorizontal, X } from "lucide-react";
 import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
 import { useCocolight } from "@/hooks/useCocolight";
 import { ActionButtonGroup } from "@/modules/profil/components/ActionButtonGroup";
+import { sectionBgClass } from "@/components/sections/sectionBg";
 interface SearchHeaderSectionComponentProps {
     id?: string;
     props: SearchHeaderSectionProps;
@@ -244,6 +246,14 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
         0
     );
 
+    // Titre reflétant la valeur active d'un filtre (`headlineFromFilter`) — cherché dans la liste
+    // COMPLÈTE, un filtre `hidden` devant pouvoir titrer sa page. Repli : le `headline` déclaré.
+    const headlineTexte = (() => {
+        const options = optionsDuTitre(dropdownFilters, props.headlineFromFilter, getDropdownSelectedValues);
+        if (options.length) return options.map((o) => t(o.label as Parameters<typeof t>[0])).join(SEPARATEUR_TITRE);
+        return props.headline ? t(props.headline) : "";
+    })();
+
     const resetAllDropdownFilters = () => {
         // Filtres `hidden` exclus : "Réinitialiser" ne doit pas effacer le filtre qui définit
         // l'identité de la page (ex. `?theme=` posé par le menu, pas par l'utilisateur ici).
@@ -382,7 +392,11 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     };
 
     return (
-        <section id={id} className="relative pt-10 px-4 bg-[image:var(--gradient-section)] overflow-hidden">
+        <section
+            id={id}
+            // Sans `bg`, le dégradé du thème : le rendu historique de tous les bandeaux du parc.
+            className={`relative pt-10 px-4 overflow-hidden ${sectionBgClass(props.bg) || "bg-[image:var(--gradient-section)]"}`}
+        >
             {/* Bulles décoratives floutées — purement visuelles : `pointer-events-none`
                 sinon la bulle bas-droite (absolute) peint AU-DESSUS de la barre de
                 filtres statique et intercepte les clics du dernier dropdown. */}
@@ -403,9 +417,9 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                     props.compact ? "py-4" : "py-12"
                 }`}
             >
-                {props.headline && (
+                {headlineTexte && (
                     <h1 className={`text-4xl md:text-6xl font-bold mb-6 ${props.headlineClassName ?? "text-foreground"} animate-fade-in`}>
-                        {t(props.headline)}
+                        {headlineTexte}
                     </h1>
                 )}
                 {props.subhead && (

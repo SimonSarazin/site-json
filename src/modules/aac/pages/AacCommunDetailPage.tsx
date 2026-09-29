@@ -1,5 +1,5 @@
 import { ReactNode, type ElementType, useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { AlertCircle, Home, Sparkles, ListChecks, Handshake, FileText, HeartHandshake, Pencil, Image as ImageIcon } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
@@ -25,6 +25,7 @@ import { CommunSelectionControl } from "../components/pageDetail/CommunSelection
 import { CommunProjectControl } from "../components/pageDetail/CommunProjectControl.tsx";
 
 import { CommunHero } from "../components/pageDetail/CommunHero.tsx";
+import { CommunDeleteControl } from "../components/pageDetail/CommunDeleteControl";
 import { CommunFinancingCard, type PostLoginIntent } from "../components/pageDetail/CommunFinancingCard.tsx";
 import { CommunTocNav, type TocSection } from "../components/pageDetail/CommunTocNav.tsx";
 import { CommunFinancingSection } from "../components/pageDetail/CommunFinancingSection.tsx";
@@ -36,6 +37,7 @@ import { CommunContributorsSection } from "../components/pageDetail/CommunContri
 import { CommunCofinancersTable } from "../components/pageDetail/CommunCofinancersTable.tsx";
 import { CommunProse } from "../components/pageDetail/CommunProse.tsx";
 import { GallerySection, type GalleryImage } from "../components/pageDetail/CommunContentSections.tsx";
+import { SectionBodySkeleton } from "../components/pageDetail/CommunSkeletons.tsx";
 import { useAacFundingResource } from "../hooks/useAacFundingResource";
 import { useCommunFundingHost } from "../hooks/useCommunFundingHost";
 import { useCommunFundingContext } from "../hooks/useCommunFundingContext";
@@ -43,7 +45,7 @@ import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
 import { useAacDetailSections, useAacGallerySubKey } from "../hooks/useAacDetailSections";
 import type { AacDetailSection } from "../lib/resolveAacDetailSections";
 import { resolveCommunSeo } from "../lib/communSeo";
-import { COMMUN_ANSWER_QUERY_KEY, COMMUN_FORM_QUERY_KEY } from "../prefetch/prefetchCommun";
+import { COMMUN_ANSWER_QUERY_KEY, COMMUN_FORM_QUERY_KEY, fetchCommunAnswer } from "../prefetch/prefetchCommun";
 import { AacSeo, type AacSeoProps } from "../AacSeo";
 // Enregistre le bundle i18n "modules/aac". Les SECTIONS le font déjà ; sans cet
 // import, une arrivée DIRECTE sur la route (lien partagé, F5) rendait la page
@@ -126,13 +128,14 @@ export default function AacCommunDetailPage() {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
     const { answerId } = useParams();
+    const navigate = useNavigate();
     const { api, loading, entity, me, refreshMe } = useCocolight();
     const queryClient = useQueryClient();
 
     // Section active du sommaire. `null` tant que l'observateur n'a rien vu :
     // l'affichage retombe alors sur la PREMIÈRE entrée de `SECTIONS` (cf. le
     // rendu de `CommunTocNav`). L'ancienne valeur en dur `"besoins-financiers"`
-    // désignait une ancre qui n'existe pas sans le gate `coremu`.
+    // désignait une ancre qui n'existe pas sans étape de financement.
     const [activeSection, setActiveSection] = useState<string | null>(null);
     // Édition de la réponse CoForm à l'intérieur de la page (pas de navigation).
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -166,8 +169,7 @@ export default function AacCommunDetailPage() {
         staleTime: 2 * 60 * 1000,
         queryFn: async (): Promise<CoFormAnswer> => {
             if (!api || !answerId) throw new Error("Missing answer id");
-            const answer = await api.answer({ id: answerId });
-            return answer.serverData as unknown as CoFormAnswer;
+            return fetchCommunAnswer(api, answerId);
         },
     });
 
@@ -223,19 +225,22 @@ export default function AacCommunDetailPage() {
     //
     // `isLoading` entre dans la garde de chargement plus bas : la config enchaîne
     // DEUX appels séquentiels (form parent, puis aapConfig) et arrive donc après
-    // `formQuery`. Sans l'attendre, la fiche d'un form `coremu` se peignait
+    // `formQuery`. Sans l'attendre, la fiche d'un appel financé se peignait
     // d'abord SANS financement — héros pleine largeur —, puis basculait en grille
     // 12 colonnes quand `config.gates` arrivait enfin.
     const { config, isLoading: isConfigLoading, error: configError } = useAacConfig(formId ?? null);
 
     /**
-     * Les droits se calculent avec les gates DU FORM (`coremu`…). Appelé sans
-     * eux, le calculateur ne voyait aucun gate : `canViewFunding` restait faux et
-     * les blocs financement ne pouvaient jamais s'afficher. Mémoïsé sur l'objet
-     * `gates` — stable tant que la requête ne change pas — parce que
+     * Les droits se calculent avec la config DU FORM : ses gates, et l'étape de
+     * financement. Appelé sans eux, le calculateur ne voyait rien — et les blocs
+     * financement ne pouvaient jamais s'afficher. Mémoïsé sur `gates` et la clé
+     * d'étape — stables tant que la requête ne change pas — parce que
      * `useAacPermissions` recalcule sur l'identité de `data`.
      */
-    const permData = useMemo<AacPermissionData>(() => ({ gates: config?.gates }), [config?.gates]);
+    const permData = useMemo<AacPermissionData>(
+        () => ({ gates: config?.gates, hasFundingStep: Boolean(config?.roles.financementStepKey) }),
+        [config?.gates, config?.roles.financementStepKey]
+    );
     const perms = useAacPermissions(entity, permData);
 
     /**
@@ -250,7 +255,7 @@ export default function AacCommunDetailPage() {
     const { hostEntity: fundingHost, isLoading: isFundingHostLoading } =
         useCommunFundingHost(fundingContext);
 
-    const { targetResource, projectSlug } = useAacFundingResource(answerId, {
+    const { targetResource, projectSlug, isLoading: isFundingLoading } = useAacFundingResource(answerId, {
         hostEntity: fundingHost,
         isHostLoading: isFundingHostLoading,
         // Repli : le document réponse porte déjà son projet et ses dépenses.
@@ -258,6 +263,12 @@ export default function AacCommunDetailPage() {
         step: config?.roles.depenseStepKey ?? undefined,
     });
 
+    /**
+     * La phase n'est pas connue tant que l'enveloppe est en vol : `isProjectPhase` y vaut faux
+     * par défaut, et sans cette distinction « Objectifs » et « Membres du projet » surgiraient
+     * après coup, entrées de sommaire comprises.
+     */
+    const isPhaseUnresolved = isFundingLoading || isConfigLoading;
     const isProjectPhase = canManageObjectiveActions(targetResource?.projectId);
 
     /**
@@ -268,7 +279,10 @@ export default function AacCommunDetailPage() {
      * réutilise `parseFieldPath` et l'entrée de cache de `aacConfigQuery` : aucune
      * requête supplémentaire.
      */
-    const detailSections = useAacDetailSections(formId ?? null);
+    // Destructuré : `sections` est mémoïsé par le hook, l'objet de retour ne l'est pas —
+    // le passer tel quel en dépendance du `useMemo` de `SECTIONS` l'annulerait.
+    const { sections: detailSections, isLoading: isDetailSectionsLoading } =
+        useAacDetailSections(formId ?? null);
     const gallerySubKey = useAacGallerySubKey();
 
     /**
@@ -290,11 +304,12 @@ export default function AacCommunDetailPage() {
     });
 
     /**
-     * Le financement n'existe sur cette fiche que si l'appel a levé le gate
-     * MAÎTRE `coremu` (`perms.canViewFunding`) — parité `detailProposal.php:105`,
-     * qui masque l'onglet Contributions à tout le monde, admin compris. Une seule
-     * variable pour les trois blocs ET leurs entrées de sommaire : un lien vers
-     * une ancre absente serait un lien mort.
+     * Le financement n'existe sur cette fiche que si l'appel porte une étape de
+     * financement (`perms.canViewFunding`) — parité `detailProposal.php:100-104`,
+     * l'onglet `#proposition-funding`, ouvert à tous, anonymes compris. Ce n'est
+     * PAS `coremu`, qui ne garde que l'onglet Contributions (l.105-108). Une
+     * seule variable pour les trois blocs ET leurs entrées de sommaire : un lien
+     * vers une ancre absente serait un lien mort.
      */
     const showFunding = perms.canViewFunding;
 
@@ -511,6 +526,7 @@ export default function AacCommunDetailPage() {
                         canManageProject={canManageProject}
                         answerId={answerId ?? null}
                         projectId={targetResource?.projectId}
+                        isLoading={isPhaseUnresolved}
                         projectSlug={projectSlug}
                         parentId={directory.contextId}
                         parentType={directory.context?.type ?? null}
@@ -519,6 +535,19 @@ export default function AacCommunDetailPage() {
                         onGenerated={async () => {
                             await Promise.all([answerQuery.refetch(), refreshMe()]);
                         }}
+                    />
+
+                    <CommunDeleteControl
+                        api={api}
+                        canDelete={perms.canDeleteCommun({ authorId })}
+                        answerId={answerId ?? null}
+                        communTitle={communSeo.title}
+                        // L'enveloppe, déjà résolue par la fiche, dit s'il y a eu des
+                        // versements et ce que la cascade emporterait.
+                        resource={targetResource}
+                        isResourceLoading={isFundingLoading}
+                        // Retour à l'annuaire ; `useDeleteCommun` a déjà retiré le document du cache.
+                        onDeleted={() => void navigate("/aac")}
                     />
                 </div>
 
@@ -551,7 +580,11 @@ export default function AacCommunDetailPage() {
                 <div className="grid lg:grid-cols-12 gap-8 lg:gap-12">
                     {/* Tant que l'observateur n'a rien signalé, la première entrée
                         est active — quelle qu'elle soit. */}
-                    <CommunTocNav sections={SECTIONS} activeSection={activeSection ?? SECTIONS[0]?.id ?? ""} />
+                    <CommunTocNav
+                        sections={SECTIONS}
+                        activeSection={activeSection ?? SECTIONS[0]?.id ?? ""}
+                        isLoading={isPhaseUnresolved || isDetailSectionsLoading}
+                    />
 
                     <div className="lg:col-span-9 space-y-20">
 
@@ -566,7 +599,14 @@ export default function AacCommunDetailPage() {
                             </Section>
                         )}
 
-                        {isProjectPhase && (
+                        {/* Tant que la phase n'est pas résolue, la section garde son titre et
+                            son ancre — l'`IntersectionObserver` reste câblé — et n'expose
+                            qu'un squelette de corps. */}
+                        {isPhaseUnresolved ? (
+                            <Section id="objectifs" title={String(t("detail.toc.actions"))}>
+                                <SectionBodySkeleton rows={2} />
+                            </Section>
+                        ) : isProjectPhase ? (
                             <Section id="objectifs" title={String(t("detail.toc.actions"))}>
                                 <CommunActionsSection
                                     formData={formData}
@@ -575,9 +615,13 @@ export default function AacCommunDetailPage() {
                                     ctrl={objectivesCtrl}
                                 />
                             </Section>
-                        )}
+                        ) : null}
 
-                        {isProjectPhase && (
+                        {isPhaseUnresolved ? (
+                            <Section id="contributeurs" title={String(t("detail.toc.contributors"))}>
+                                <SectionBodySkeleton rows={2} />
+                            </Section>
+                        ) : isProjectPhase ? (
                             <Section id="contributeurs" title={String(t("detail.toc.contributors"))}>
                                 <CommunContributorsSection
                                     projectId={targetResource?.projectId}
@@ -586,7 +630,7 @@ export default function AacCommunDetailPage() {
                                     authorId={authorId}
                                 />
                             </Section>
-                        )}
+                        ) : null}
 
                         {showFunding && (
                             <Section id="cofinanceurs" title={String(t("detail.toc.cofinancers"))}>

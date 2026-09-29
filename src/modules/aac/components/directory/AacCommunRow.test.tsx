@@ -143,3 +143,21 @@ describe("AacCommunRow — densité et états", () => {
     expect(screen.getByText("directory.card.untitled")).toBeInTheDocument();
   });
 });
+
+/** Même geste que la carte, en bout de ligne — cf. `AacCommunCard.test.tsx`. */
+describe("AacCommunRow — suppression", () => {
+  it("aucun bouton sans `onRequestDelete`", () => {
+    renderRow(<AacCommunRow commun={commun()} />);
+    expect(screen.queryByLabelText("directory.card.deleteAria")).toBeNull();
+  });
+
+  it("demande la suppression DE CE commun, sans naviguer vers sa fiche", () => {
+    const onRequestDelete = vi.fn();
+    renderRow(<AacCommunRow commun={commun()} onRequestDelete={onRequestDelete} />);
+
+    const clic = fireEvent.click(screen.getByLabelText("directory.card.deleteAria"));
+    expect(clic).toBe(false);
+    expect(onRequestDelete).toHaveBeenCalledTimes(1);
+    expect(onRequestDelete.mock.calls[0][0].id).toBe("a1");
+  });
+});

@@ -243,7 +243,7 @@ export function SelectObject({
           onWheel={(e) => e.stopPropagation()}
           onTouchMove={(e) => e.stopPropagation()}
         >
-          <Command shouldFilter={(arrayOptions?.length ?? 0) > 0} className="w-full">
+          <Command shouldFilter={!onSearch && (arrayOptions?.length ?? 0) > 0} className="w-full">
             <CommandInput
               placeholder={placeholderSearch}
               value={search}

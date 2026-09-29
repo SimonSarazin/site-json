@@ -15,6 +15,7 @@ export const DEFAULT_AAC_PERMISSIONS: AacPermissions = {
   canContributeFunding: false,
   canContributeFundingReason: "No entity or user provided",
   canSelectCommun: false,
+  canDeleteCommun: NEVER,
   isConnected: false,
   isAdmin: false,
   currentUserId: "",

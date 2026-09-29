@@ -1,35 +1,23 @@
 /**
- * Hook pour sauvegarder les données de contribution cagnotte dans Answer
- * Utilise `Answer.updateField` (atomique par milestone) avec fallback vers `answer.save()`
+ * Enregistrement des contributions de cagnotte. Le serveur est l'unique auteur des lignes de
+ * financement : tout passe par `/co2/aap/coremuoperation/` (`answer.addFinancer`,
+ * `answer.payFinancer`), qui génère `finkey`, `invoiceId` et les agrégats de `payment` et
+ * vérifie les droits.
  *
- * Signature : le caller passe l'entité `Answer` déjà chargée (évite un GET en double).
+ * Ne jamais réécrire `depense.N.financer` en direct : une ligne fabriquée côté client n'a pas de
+ * `finkey`, et plus rien — versement, validation, doublonnage — ne sait la cibler ensuite.
+ * Aucun repli non plus sur `saveCoformAnswer`, qui réécrasait le sous-arbre `answers` entier et
+ * pouvait effacer des versements déjà journalisés. Un échec remonte en erreur.
  */
 
 import { useCallback } from "react";
-import type {
-  Answer,
-  AnswerItemNormalized,
-} from "@communecter/cocolight-api-client";
+import type { Answer } from "@communecter/cocolight-api-client";
 import { showErrorToast, showSuccessToast } from "@/lib/toastUtils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolight } from "@/hooks/useCocolight";
 import { launchConfettiBurst } from "@/lib/confetti";
-import {asRecord as toRecord} from "@/modules/cagnotte/utils/dataTransform";
-import {DepenseFunding, Pledge} from "@/modules/cagnotte/types.ts";
-
-interface FinancerEntry {
-  amount: number;
-  date: string;
-  user: string;
-  id: string;
-  name: string;
-  type: string;
-  fundingType?: string;
-  method?: string;
-  transactionId?: string;
-  [k: string]: unknown;
-}
+import { DepenseFunding, Pledge } from "@/modules/cagnotte/types.ts";
 
 interface FinancerData {
   id: string;
@@ -37,105 +25,24 @@ interface FinancerData {
   type: string;
 }
 
-function createFinancerEntry({
- amount,
- financerData,
- userId,
- method,
- transactionId
-}: {
-  amount: number;
-  financerData: FinancerData;
-  userId: string;
-  method?: string;
-  transactionId?: string;
-}): FinancerEntry {
-  const entry: FinancerEntry = {
-    amount,
-    date: "now",
-    user: userId,
-    id: financerData.id,
-    name: financerData.name,
-    type: financerData.type,
-  };
+/**
+ * Moyens qui donnent lieu à un versement journalisé. Sans `method`, la contribution est une
+ * PROMESSE : elle s'arrête à l'engagement (`status:"pending"`, `payment.logs: []`).
+ */
+const MOYENS_AVEC_VERSEMENT = new Set(["stripe", "helloasso"]);
 
-  // On n'enregistre method et transactionId que si il y a paiement via Stripe ou HelloAsso.
-  // Pour un pledge (où method est undefined), ces champs n'existeront pas en base.
-  if (method === "stripe" || method === "helloasso") {
-    entry.method = method;
-    entry.fundingType = "prepaid";
-    if (transactionId) {
-      entry.transactionId = transactionId;
-    }
+/**
+ * Comment viser la dépense côté serveur. `milestoneId` d'abord : le serveur résout la clé
+ * lui-même (`Aap::findDepenseKeyForMilestone`). Sinon `depenseKey`, lue à la source par
+ * `buildResourceFromAnswer`. En dernier repli la position, exacte seulement si `depense` est un
+ * vrai tableau (cf. `utils/depenseKey.ts`).
+ */
+function cibleDepense(funding: DepenseFunding): { milestoneId?: string; depenseKey?: string } {
+  if (funding.milestoneId) return { milestoneId: funding.milestoneId };
+  if (funding.depenseKey !== undefined && funding.depenseKey !== "") {
+    return { depenseKey: funding.depenseKey };
   }
-
-  return entry;
-}
-
-export function getFormIdFromAnswerData(currentAnswerData: AnswerItemNormalized): string {
-  const project = toRecord(currentAnswerData.project);
-  const answers = toRecord(currentAnswerData.answers);
-  const answerMeta = toRecord(currentAnswerData.answer);
-
-  const candidates = [
-    // `form` est le champ canonique de AnswerItemNormalized ; les autres alias couvrent
-    // les variantes legacy (form_id snake_case, formId imbriqué) renvoyées par
-    // certains endpoints backend.
-    currentAnswerData.form,
-    currentAnswerData.formId,
-    currentAnswerData.form_id,
-    answerMeta.formId,
-    project.formId,
-    project.parentFormId,
-    project.form_id,
-    answers.formId,
-    answers.parentFormId,
-  ];
-
-  for (const candidate of candidates) {
-    if (typeof candidate === "string" && candidate.trim()) {
-      return candidate.trim();
-    }
-  }
-
-  return "";
-}
-
-function applyDepenseFundingsToAnswerData(
-    currentAnswerData: AnswerItemNormalized,
-    depenseFundings: DepenseFunding[],
-    financerData: FinancerData,
-    userId: string,
-    method?: string,
-    transactionId?: string
-) {
-  const cloned = structuredClone ? structuredClone(currentAnswerData) : JSON.parse(JSON.stringify(currentAnswerData ?? {}));
-
-  if (!cloned.answers) cloned.answers = {};
-  if (!cloned.answers.aapStep1) cloned.answers.aapStep1 = {};
-
-  let depenses = cloned.answers.aapStep1.depense;
-  depenses = Array.isArray(depenses) ? depenses : depenses ? [depenses] : [];
-
-  // `appliedCount` distingue « rien appliqué » (depenseIndex introuvable / montant nul)
-  // d'un vrai enregistrement : l'appelant s'en sert pour ne pas simuler un succès à vide.
-  let appliedCount = 0;
-  depenseFundings.forEach(({ depenseIndex, amount }) => {
-    if (amount <= 0 || depenseIndex === undefined) return;
-
-    const depense = depenses[depenseIndex];
-    if (!depense) return;
-
-    const currentFinancers = Array.isArray(depense.financer) ? depense.financer : [];
-    const financerEntry = createFinancerEntry({ amount, financerData, userId, method, transactionId });
-
-    depense.financer = [...currentFinancers, financerEntry];
-    depenses[depenseIndex] = depense;
-    appliedCount++;
-  });
-
-  cloned.answers.aapStep1.depense = depenses;
-  return { data: cloned, appliedCount };
+  return { depenseKey: String(funding.depenseIndex) };
 }
 
 export const useSaveCagnotteContribution = () => {
@@ -144,114 +51,12 @@ export const useSaveCagnotteContribution = () => {
   const { api, me } = useCocolight();
 
   /**
-   * Approche 1 : Atomique avec `Answer.updateField`
-   * Plus fiable en cas de concurrence (pas de risque de overwrite)
+   * Enregistre une contribution : un engagement par dépense allouée, suivi du versement si
+   * l'argent a été encaissé (`method` absent = promesse).
+   *
+   * De `financerData`, seul `id` part : le serveur résout `name` et `type` depuis la
+   * collection de l'entité. Rend `true` si au moins une dépense a été enregistrée.
    */
-  const saveViaUpdatePathValue = useCallback(
-      async (
-          answer: Answer,
-          depenseFundings: DepenseFunding[],
-          financerData: FinancerData,
-          method?: string,
-          transactionId?: string
-      ): Promise<boolean> => {
-        if (!api) throw new Error(String(t("toasts.errors.noApiClient")));
-
-        const userId = me?.serverData?.id;
-        if (!userId) throw new Error(String(t("toasts.errors.notLoggedIn")));
-
-        let successCount = 0;
-        const errors: string[] = [];
-
-        // Parallélisation possible via Promise.allSettled si l'API le supporte,
-        // mais le for...of garde la séquentialité sécurisée.
-        for (const { depenseIndex, amount } of depenseFundings) {
-          if (amount <= 0) continue;
-          if (depenseIndex === -1) {
-            errors.push(String(t("toasts.errors.noMilestoneForId", undefined, { depenseIndex })));
-            continue;
-          }
-
-          const financerEntry = createFinancerEntry({ amount, financerData, userId, method, transactionId });
-
-          if (!financerEntry.id || !financerEntry.user) {
-            errors.push(String(t("toasts.errors.invalidFinancer", undefined, { depenseIndex })));
-            continue;
-          }
-
-          try {
-            await answer.updateField(
-                `answers.aapStep1.depense.${depenseIndex}.financer`,
-                financerEntry,
-                {
-                  arrayForm: true,
-                  setType: [
-                    { path: "amount", type: "int" },
-                    { path: "date", type: "isoDate" },
-                  ],
-                },
-            );
-            successCount++;
-          } catch (error) {
-            errors.push(`Échec index ${depenseIndex}`);
-            console.error(error);
-          }
-        }
-
-        if (errors.length > 0 && successCount === 0) {
-          throw new Error(String(t("toasts.errors.noneSaved", undefined, { reasons: errors.join(" | ") })));
-        }
-
-        if (errors.length > 0) {
-          console.warn(`${errors.length} milestone(s) non enregistre(s): ${errors.join(" | ")}`);
-        }
-
-        return successCount > 0;
-      },
-      [api, me, t]
-  );
-
-  /**
-   * Approche 2 : Fallback vers `answer.save()` (modifications brouillons)
-   * À utiliser si Answer.updateField n'est pas disponible
-   */
-  const saveViaDraftAndSave = useCallback(
-      async (
-          answer: Answer,
-          depenseFundings: DepenseFunding[],
-          financerData: FinancerData,
-          method?: string,
-          transactionId?: string
-      ): Promise<boolean> => {
-        const userId = me?.serverData?.id;
-        if (!userId) throw new Error(String(t("toasts.errors.notLoggedIn")));
-
-        const currentAnswerData = answer.serverData;
-        const { data: updatedAnswerData, appliedCount } = applyDepenseFundingsToAnswerData(currentAnswerData, depenseFundings, financerData, userId, method, transactionId);
-
-        // Aucun financer effectivement appliqué (ex. depenseIndex introuvable) :
-        // ne PAS enregistrer ni renvoyer `true`, sinon on afficherait un succès
-        // alors que l'argent a déjà été débité et que rien n'est persisté.
-        if (appliedCount === 0) return false;
-
-        const formId = getFormIdFromAnswerData(currentAnswerData);
-
-        if (api && formId) {
-          await api.endpointApi.saveCoformAnswer({
-            formId,
-            answerId: answer.id ?? undefined,
-            answers: JSON.stringify(updatedAnswerData.answers ?? {}),
-            links: JSON.stringify(updatedAnswerData.links ?? currentAnswerData.links ?? {}),
-          });
-          return true;
-        }
-
-        await answer.save();
-        return true;
-      },
-      [api, me, t]
-  );
-
   const saveContribution = useCallback(
       async (
           answerOrId: Answer | string,
@@ -263,28 +68,68 @@ export const useSaveCagnotteContribution = () => {
         try {
           if (!depenseFundings.length) throw new Error(String(t("toasts.errors.noMilestoneFundings")));
           if (!api) throw new Error(String(t("toasts.errors.noApiClient")));
+          if (!me?.serverData?.id) throw new Error(String(t("toasts.errors.notLoggedIn")));
+          if (!financerData?.id) throw new Error(String(t("toasts.errors.invalidFinancer", undefined, { depenseIndex: "" })));
 
           const answerIdStr = typeof answerOrId === "string" ? answerOrId : answerOrId.id;
           if (!answerIdStr?.trim()) throw new Error(String(t("toasts.errors.noAnswerId")));
 
           const answer = typeof answerOrId === "string" ? await api.answer({ id: answerIdStr }) : answerOrId;
+          const versementAttendu = Boolean(method && MOYENS_AVEC_VERSEMENT.has(method));
 
-          let success = false;
-          try {
-            success = await saveViaUpdatePathValue(answer, depenseFundings, financerData, method, transactionId);
-          } catch (pathError) {
-            console.warn("Answer.updateField échoué, essai du fallback...", pathError);
-            success = await saveViaDraftAndSave(answer, depenseFundings, financerData, method, transactionId);
+          let successCount = 0;
+          const errors: string[] = [];
+
+          // Séquentiel : `addFinancer` fait un read-modify-write sur le tableau
+          // `financer` d'une dépense. Deux appels concurrents sur la MÊME dépense
+          // s'écraseraient l'un l'autre.
+          for (const funding of depenseFundings) {
+            if (funding.amount <= 0) continue;
+
+            try {
+              const engagement = await answer.addFinancer({
+                ...cibleDepense(funding),
+                financerId: financerData.id,
+                amount: funding.amount,
+              });
+
+              // Paiement réellement encaissé : on le journalise sur l'engagement
+              // qu'on vient de créer, ciblé par sa `finkey`.
+              if (versementAttendu) {
+                await answer.payFinancer({
+                  depenseKey: engagement.depenseKey,
+                  financerId: financerData.id,
+                  finkey: engagement.finkey,
+                  amount: funding.amount,
+                  paymentType: method,
+                  transactionId,
+                });
+              }
+
+              successCount++;
+            } catch (error) {
+              // Jamais de retry sur `addFinancer` : l'engagement a pu être créé alors que le
+              // versement échouait, le rejouer doublonnerait la promesse. Le message serveur
+              // est remonté tel quel — seul indice exploitable sur un paiement déjà encaissé.
+              const detail = error instanceof Error ? error.message : String(error);
+              errors.push(`Dépense ${funding.depenseIndex} : ${detail}`);
+              console.error("Enregistrement du financement échoué", { funding, error });
+            }
           }
 
-          if (success) {
-            showSuccessToast("toasts.contributionSaved.title", t, { count: String(depenseFundings.length) });
-            // Formule de confettis factorisée
-            launchConfettiBurst({ originY: 0.36, spread: 78, count: Math.min(36, 18 + depenseFundings.length * 6) });
-            return true;
+          if (successCount === 0) {
+            throw new Error(String(t("toasts.errors.noneSaved", undefined, { reasons: errors.join(" | ") })));
           }
 
-          throw new Error(String(t("toasts.errors.updatePathValueFailed")));
+          if (errors.length > 0) {
+            showErrorToast(new Error(errors.join(" | ")), "toasts.contributionPartial.title", t,
+                { succeeded: String(successCount), total: String(depenseFundings.length) });
+          } else {
+            showSuccessToast("toasts.contributionSaved.title", t, { count: String(successCount) });
+          }
+
+          launchConfettiBurst({ originY: 0.36, spread: 78, count: Math.min(36, 18 + successCount * 6) });
+          return true;
         } catch (error) {
           const msg = error instanceof Error ? error.message : "Erreur inconnue";
           showErrorToast(
@@ -296,9 +141,15 @@ export const useSaveCagnotteContribution = () => {
           return false;
         }
       },
-      [api, saveViaUpdatePathValue, saveViaDraftAndSave, t]
+      [api, me, t]
   );
 
+  /**
+   * Règle des promesses existantes : un versement par promesse, ciblé par `finkey`, seule clé
+   * stable — une insertion concurrente décale les positions. Le montant versé est
+   * `remainingAmount`, et non `fundingAmount`, qui surfacturerait une promesse déjà réglée
+   * en partie.
+   */
   const payContribution = useCallback(
       async (
           pledges: Pledge[],
@@ -309,7 +160,7 @@ export const useSaveCagnotteContribution = () => {
           if (!pledges.length) throw new Error(String(t("toasts.errors.noMilestoneFundings")));
           if (!api) throw new Error(String(t("toasts.errors.noApiClient")));
 
-          // Une seule Answer récupérée par ressource, même si plusieurs pledges y pointent.
+          // Une seule Answer chargée par ressource, même si plusieurs promesses y pointent.
           const pledgesByResource = new Map<string, Pledge[]>();
           for (const pledge of pledges) {
             if (typeof pledge.resourceId === "undefined") continue;
@@ -318,87 +169,51 @@ export const useSaveCagnotteContribution = () => {
             pledgesByResource.set(pledge.resourceId, group);
           }
 
-          let success = false;
           let successCount = 0;
           const errors: string[] = [];
 
-          try {
-            for (const [resourceId, resourcePledges] of pledgesByResource) {
-              const answer = await api.answer({ id: resourceId }); // 1 fetch par ressource, pas par pledge
+          for (const [resourceId, resourcePledges] of pledgesByResource) {
+            const answer = await api.answer({ id: resourceId });
 
-              for (const pledge of resourcePledges) {
-                try {
-                  await answer.updateField(
-                      `answers.aapStep1.depense.${pledge.depenseIndex}.financer.${pledge.fundingIndex}`,
-                      {
-                        fundingType : "prepaid",
-                        transactionId,
-                        method
-                      },
-                      { updatePartial: true }
-                  );
-                  successCount++;
-                } catch (error) {
-                  errors.push(`Échec index ${pledge.depenseIndex}`);
-                  console.error(error);
-                }
-              }
-            }
+            for (const pledge of resourcePledges) {
+              const montant = pledge.remainingAmount ?? pledge.fundingAmount;
+              if (!(montant > 0)) continue;
 
-            if (errors.length > 0 && successCount === 0) {
-              throw new Error(String(t("toasts.errors.noneSaved", undefined, { reasons: errors.join(" | ") })));
-            }
-
-            success = successCount > 0;
-
-          } catch (pathError) {
-            console.warn("Answer.updateField échoué, essai du fallback...", pathError);
-
-            for (const [resourceId, resourcePledges] of pledgesByResource) {
-              const answer = await api.answer({ id: resourceId }); // idem : 1 fetch par ressource
-              const currentAnswerData = answer.serverData;
-              const cloned = structuredClone ? structuredClone(currentAnswerData) : JSON.parse(JSON.stringify(currentAnswerData ?? {}));
-
-              if (cloned?.answers?.aapStep1?.depense) {
-                let depenses = cloned.answers.aapStep1.depense;
-                depenses = Array.isArray(depenses) ? depenses : [depenses];
-
-                for (const pledge of resourcePledges) { // uniquement les pledges de CETTE ressource
-                  const depense = depenses[pledge.depenseIndex];
-                  if (depense && Array.isArray(depense.financer) && pledge.fundingIndex !== undefined && depense.financer[pledge.fundingIndex]) {
-                    depense.financer[pledge.fundingIndex].fundingType = "prepaid";
-                    if (transactionId) depense.financer[pledge.fundingIndex].transactionId = transactionId;
-                    if (method) depense.financer[pledge.fundingIndex].method = method;
-                    success = true;
-                  }
-                }
-                cloned.answers.aapStep1.depense = depenses;
-
-                const formId = getFormIdFromAnswerData(currentAnswerData);
-                if (api && formId && success) {
-                  await api.endpointApi.saveCoformAnswer({
-                    formId,
-                    answerId: answer.id ?? undefined,
-                    answers: JSON.stringify(cloned.answers ?? {}),
-                    links: JSON.stringify(cloned.links ?? currentAnswerData.links ?? {}),
-                  });
-                }
+              try {
+                await answer.payFinancer({
+                  depenseKey: pledge.depenseKey ?? String(pledge.depenseIndex),
+                  financerId: pledge.financerId,
+                  finkey: pledge.finkey,
+                  // Repli pour les promesses antérieures à `finkey`, qui n'en portent pas.
+                  finIndex: pledge.finkey ? undefined : pledge.fundingIndex,
+                  amount: montant,
+                  paymentType: method ?? "manual",
+                  transactionId,
+                });
+                successCount++;
+              } catch (error) {
+                // Message serveur remonté tel quel : seul indice sur un versement refusé
+                // alors que l'argent est déjà parti.
+                const detail = error instanceof Error ? error.message : String(error);
+                errors.push(`Dépense ${pledge.depenseIndex} : ${detail}`);
+                console.error("Versement sur promesse échoué", { pledge, error });
               }
             }
           }
 
-          if (success) {
-            if (errors.length > 0) {
-              showErrorToast(new Error(errors.join(" | ")), "toasts.contributionPartial.title", t,
-                  { succeeded: String(successCount), total: String(pledges.length) });
-            } else {
-              showSuccessToast("toasts.contributionSaved.title", t, { count: String(successCount) });
-            }
-            launchConfettiBurst({ originY: 0.36, spread: 78, count: Math.min(36, 18 + pledges.length * 6) });
-            return true;
+          if (successCount === 0) {
+            throw new Error(String(t("toasts.errors.noneSaved", undefined, { reasons: errors.join(" | ") })));
           }
 
-          throw new Error(String(t("toasts.errors.updatePathValueFailed")));
+          if (errors.length > 0) {
+            showErrorToast(new Error(errors.join(" | ")), "toasts.contributionPartial.title", t,
+                { succeeded: String(successCount), total: String(pledges.length) });
+          } else {
+            showSuccessToast("toasts.contributionSaved.title", t, { count: String(successCount) });
+          }
+
+          launchConfettiBurst({ originY: 0.36, spread: 78, count: Math.min(36, 18 + pledges.length * 6) });
+          return true;
         } catch (error) {
           const msg = error instanceof Error ? error.message : "Erreur inconnue";
           showErrorToast(
@@ -413,5 +228,5 @@ export const useSaveCagnotteContribution = () => {
       [api, t]
   );
 
-  return { saveContribution, saveViaUpdatePathValue, saveViaDraftAndSave, payContribution };
+  return { saveContribution, payContribution };
 };

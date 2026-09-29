@@ -138,9 +138,10 @@ export function FinderSearchModal({
     toast.info(`Fonctionnalité à implémenter : créer un nouvel élément de type « ${config.elementLabel} »`);
   };
 
-  const dialogTitle = config.elementLabel
-    ? String(t("coform.finder.modal.titleWithLabel", undefined, { label: config.elementLabel }))
-    : String(t("coform.finder.modal.title"));
+  const dialogTitle = config.title
+    ?? (config.elementLabel
+      ? String(t("coform.finder.modal.titleWithLabel", undefined, { label: config.elementLabel }))
+      : String(t("coform.finder.modal.title")));
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>

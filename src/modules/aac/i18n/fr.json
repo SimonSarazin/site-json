@@ -63,7 +63,8 @@
       "interested_other": "intéressés",
       "viewDetail": "Voir la fiche de « {{name}} »",
       "showMoreTags_one": "Voir le mot-clé masqué",
-      "showMoreTags_other": "Voir les {{count}} mots-clés masqués"
+      "showMoreTags_other": "Voir les {{count}} mots-clés masqués",
+      "deleteAria": "Supprimer le commun « {{title}} »"
     },
     "sort": {
       "alpha": "Ordre alphabétique",
@@ -118,6 +119,7 @@
       "collectedPercent": "{{percent}}% collecté",
       "paid": "Payé",
       "pledged": "Promesse",
+      "partiallyPaid": "Partiel",
       "done": "Terminée",
       "inProgress": "En cours",
       "actionsButtons": {
@@ -160,13 +162,13 @@
     },
     "contributorsSection": {
       "empty": "Personne n'a encore rejoint le projet de ce commun.",
-      "error": "Les contributeur·rices n'ont pas pu être chargé·es.",
+      "error": "Les membres du projet n'ont pas pu être chargés.",
       "admin": "Admin du projet",
       "author": "Déposant·e",
       "contributor": "Contributeur·rice",
       "organization": "Organisation",
       "more": "+{{count}} autre·s non affiché·es.",
-      "addCta": "Ajouter des contributeur·rices",
+      "addCta": "Ajouter des membres",
       "addUnavailable": "Le projet lié est encore en cours de chargement, ou n'est pas accessible.",
       "pendingTitle": "Invitations en attente",
       "pendingInvitation": "Invitation envoyée",
@@ -179,16 +181,17 @@
       "navigation": "Navigation",
       "financialNeeds": "Besoins financiers",
       "actions": "Suivi des actions",
-      "contributors": "Contributeurs",
+      "contributors": "Membres du projet",
       "cofinancers": "Cofinanceurs",
       "gallery": "Galerie"
     },
     "gallery": {
       "empty": "Aucune image disponible.",
-      "imageAlt": "Image {{index}}"
+      "imageAlt": "Image {{index}}",
+      "openImage": "Agrandir l'image {{index}}"
     },
     "selection": {
-      "selectCta": "Sélectionner",
+      "selectCta": "Ajouter à l'annuaire",
       "deselectCta": "Retirer de l'annuaire",
       "selected": "Sélectionné",
       "pending": "En attente",
@@ -238,6 +241,34 @@
     },
     "origin": {
       "deposedOn": "Déposé sur « {{name}} »"
+    }
+  },
+  "delete": {
+    "cta": "Supprimer le commun",
+    "cancel": "Annuler",
+    "confirm": {
+      "title": "Supprimer ce commun ?",
+      "description": "« {{title}} » sera définitivement supprimé, avec ses fichiers et ses commentaires. Cette action est irréversible.",
+      "descriptionNoTitle": "Ce commun sera définitivement supprimé, avec ses fichiers et ses commentaires. Cette action est irréversible.",
+      "projectWarning": "Le projet associé à ce commun, lui, ne sera pas supprimé.",
+      "confirm": "Oui, supprimer",
+      "confirmWithProject": "Oui, tout supprimer"
+    },
+    "toasts": {
+      "success": "Le commun a bien été supprimé",
+      "error": "La suppression n'a pas pu aboutir"
+    },
+    "checking": "Vérification des financements en cours…",
+    "blocked": {
+      "title": "Ce commun ne peut pas être supprimé",
+      "description": "Il a déjà reçu {{count}} financement(s), pour un total de {{amount}}. Supprimer ce commun effacerait la contrepartie de sommes réellement engagées.",
+      "hint": "Pour le faire disparaître de l'annuaire sans rien détruire, utilisez « Retirer de l'annuaire ».",
+      "close": "Fermer"
+    },
+    "withProject": {
+      "label": "Supprimer aussi le projet associé et ses {{count}} action(s)",
+      "checkedHint": "Le projet, ses actions et son suivi seront supprimés avec le commun.",
+      "uncheckedHint": "Sans cette option, le projet et ses actions resteront en place, sans le commun dont ils sont issus."
     }
   },
   "toasts": {

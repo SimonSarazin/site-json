@@ -47,9 +47,9 @@ import { useSetExclusiveFlag, type ExclusiveFlagEntity } from "../hooks/useSetEx
 import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateGroup";
 import type { AdminResourceSection, AdminSection } from "../schema";
 import { downloadCsv } from "../lib/downloadCsv";
-import { ensureCostumScope } from "../lib/ensureCostumScope";
+import { ensureCostumScope } from "@/lib/ensureCostumScope";
 import { AudioPlayer } from "@/components/media/AudioPlayer";
-import { formatColumnCell, getColumnValue, getPath, readStatusValue, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
+import { STATUS_TONE_CLASS, formatColumnCell, getColumnValue, getPath, normalizeColumns, readStatusValue, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
 
 /** Cellule audio : lecteur du 1er `medias[].url` de type audio de la ligne (ou d'une URL directe). */
 function AudioCell({ value }: { value: unknown }) {
@@ -73,16 +73,6 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
  */
 /** Statut de validation costum, par filtre serveur : Tous / À valider / Validés. */
 type StatusFilter = "all" | "pending" | "validated";
-
-/** Tons du badge en mode `statusField` — MÊMES tokens `bg-badge-*` que les badges des cartes
- *  publiques (`getStatusStyle`, search/lib/coformAnswer) : la modération et l'annuaire racontent
- *  le même statut avec les mêmes couleurs. */
-const STATUS_TONE_CLASS: Record<string, string> = {
-  positive: "bg-badge-valid text-primary-foreground",
-  pending: "bg-badge-waiting text-primary-foreground",
-  progress: "bg-badge-in-progress text-primary-foreground",
-  negative: "bg-badge-refused text-primary-foreground",
-};
 
 /** Icône d'une action « Marquer <état> » selon le ton (repère visuel, jamais seule : le libellé porte l'état). */
 const STATUS_TONE_ICON: Record<string, typeof CircleDot> = {
@@ -130,9 +120,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   // pour la colonne `startDate` d'un event récurrent — cf. import "@/modules/search/i18n" plus haut).
   const tSearch = useT("modules/search");
   // Colonnes : `"path"` brut OU `{path, label}` (libellé localisé) — cf. AdminColumnSchema.
-  const columns = (resource.columns ?? ["name"]).map((c) =>
-    typeof c === "string" ? { path: c, label: undefined, type: undefined, sortable: undefined } : c,
-  );
+  const columns = normalizeColumns(resource.columns, ["name"]);
   const rowActions = resource.rowActions ?? ["edit", "delete"];
   const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
   // Mode `statusField` (status.mode) : le statut est un CHAMP MÉTIER de serverData (states config),

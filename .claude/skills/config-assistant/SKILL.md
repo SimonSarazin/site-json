@@ -152,7 +152,12 @@ site à confirmer avec l'utilisateur — ne PAS l'imposer à une petite vitrine 
    + `baseParams.defaultFields` couvrant tous les champs testés par les `when`.
    Disposition : `list.layout: "timeline"` (frise verticale à bulles-dates, carte
    dédiée événement) remplace la grille — à coupler à `defaultSortBy {"startDate": -1}` ;
-   défaut CÔTÉ CODE = grille.
+   `list.layout: "grouped"` + `list.groupBy` découpe la grille en blocs titrés (archive
+   par année…) — le backend ne triant que sur la 1re clé de `defaultSortBy`, un ordre
+   dans les blocs passe par `groupBy.itemsSortBy` ; défaut CÔTÉ CODE = grille.
+   Designs `list.resource.design` : `card` (défaut), `document` (archive de fichiers en
+   lignes), `portrait` (annuaire de personnes, `subtitleField`). Tout champ nommé par
+   `groupBy`/`resource` doit figurer dans `baseParams.defaultFields`.
 5. **Sections raisonnées** : 8-18 types dont des « premium » (`data-observatory`,
    `agenda`, `hero-*`, `features-glass`) — pas 5 sections génériques.
 6. **Visibilité conditionnelle** (`condition`/`visibleIf`/`role`) là où le
@@ -243,7 +248,7 @@ Pour corriger/améliorer un config existant :
 | `minimal` | barre compacte, typo uppercase espacée | petite vitrine épurée — ex. julie-pot-vin | `logoTitle`, `logoIcon` |
 | `underline-nav` | nav soulignée animée, fond marqué | identité marquée, communes/collectivités — ex. nos-commune | `piggyBank`, `urgenceButton`, `ctaButton` |
 | `transparent-dark` | barre sombre fixe (teinte : token `--header-bar`) | site à dominante sombre — ex. commune-transparente | `logoTitle`, `entityLogoOverride` |
-| `stacked` | 2 bandeaux sur image de fond : wordmark plein écran (~50vh) puis nav, collapse en barre compacte au scroll | identité "marque-territoire" forte, home sans section hero (le header EST le hero) — ex. parent62 | `backgroundImage`, `textColor`, `logoTitleAccent`, `logoSubtitle` |
+| `stacked` | 2 bandeaux sur image de fond : wordmark plein écran (~50vh) puis nav, collapse en barre compacte au scroll | identité "marque-territoire" forte, home sans section hero (le header EST le hero) — ex. parent62 | `backgroundImage`, `textColor`, `logoTitleAccent`, `logoSubtitle`, `nav[].iconOnly` (icône seule dans la barre, ex. une loupe vers `/recherche`) |
 | `default` | **alias, pas un design** : rend `HeaderStandard` | héritage — n'en produis JAMAIS pour un site neuf, écris `standard` | ceux de `standard` |
 
 ### Footers (`footer.type`)
@@ -277,6 +282,7 @@ Dispatch : `src/modules/search/components/SearchCard.tsx` (clé = `card.variant 
 | `news` | carte actualité (item `News`) | fils d'actus en recherche |
 | `testimonial` | témoignage (leaf `CardTestimonialBubble`) | paroles/citations ; bloc `list.testimonial` (`design: "bubble"`) |
 | `resource` | ressource image-first (leaf `CardResourceCard`) | médiathèques/ressources ; bloc `list.resource` (`design: "card"`) |
+| `resource-directory` | carte ressource de tiers-lieu (coworking / salle / hébergement) — nom, localité, capacité + tarif « à partir de », porteur | section `coform-resource-directory` uniquement ; bloc `list.resourceDirectory` |
 
 ### Presenters — previews (`list.preview.type`)
 
@@ -293,6 +299,7 @@ Dispatch : `src/modules/search/components/Preview.tsx` ; conteneur = `card.detai
 | `testimonial` | détail témoignage (leaf `PreviewTestimonialBubble`) | bloc `list.testimonial` |
 | `resource` | détail ressource (leaf `PreviewResourceCard`) | bloc `list.resource` |
 | `structure` | fiche détail organisation (coordonnées, carte, docs, bouton Éditer) | annuaires de structures |
+| `resource-directory` | modal ressource de tiers-lieu (gabarit du « En savoir plus » d'un profil TL) — carrousel + pastille capacité, nom, tarifs (toutes unités), surface, À propos, équipements, services, CTA « Réserver » / « Voir le tiers-lieu » | section `coform-resource-directory` uniquement ; bloc `list.resourceDirectory` |
 
 ⚠ **Une option de `card`/`preview` n'a d'effet que sur CERTAINS types** — posée
 ailleurs, elle est ignorée en silence. `config:schema section:searchPro` imprime
@@ -351,7 +358,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 
 | module | surface | clés JSON | prérequis backend |
 |---|---|---|---|
-| `search` | sections `searchPro`/`searchProStatic`/`filters`/`searchHeader`/`cardCountCT`/`thematics` | `baseParams` (`sourceKey`, `defaultFields`…), `list` (card/detailsMode/preview, `itemRules`/`itemAction` si liste hétérogène), `map` (`itemAction`/`marker`), `filters[].select`/`optionStyle`/`order` (widgets par groupe) | données indexées (sourceKey) ; carte : fond MapTiler via env `VITE_MAPTILER_API_KEY` (sinon repli OSM/Carto) + `integrations.map.styleLight/Dark` |
+| `search` | sections `searchPro`/`searchProStatic`/`filters`/`searchHeader`/`cardCountCT`/`thematics` | `baseParams` (`sourceKey`, `defaultFields`…), `list` (card/detailsMode/preview, `itemRules`/`itemAction` si liste hétérogène), `map` (`itemAction`/`marker`), `filters[].select`/`optionStyle`/`order`/`keepOptionOrder` (widgets & ordre par groupe) | données indexées (sourceKey) ; carte : fond MapTiler via env `VITE_MAPTILER_API_KEY` (sinon repli OSM/Carto) + `integrations.map.styleLight/Dark` |
 | `agenda` | section `agenda` (vues liste/calendrier/carte/split) | `baseParams`, `filters` (text/type/tags), `defaultMode`/`tabs`/`detailsMode`, `enableMap`/`map` | événements indexés (`searchEventsCostum`) |
 | `news` | section `news` | `props.entitySlug`, `maxItems` | fil d'actus de l'entité |
 | `blog` | routes `/blog/:slug` (+ `/blog/id/:id`) + sections `articleFeed`/`articleReader` | `config.blog` (`feedCostumSlug`, variants card/reader), `costumForms.<article>`, `commandPalette.articleSearch` | POI `type:"article"` scopés costum (`source.key`) |
@@ -377,8 +384,8 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 - **`.design-sync/previews/` — la ressource la plus utile, et elle est dans git** :
   154 stories portant des compositions de props RÉELLES (valeurs plausibles,
   commentaire d'usage : « Usage réel : home de Rézo la mer »). Le JSON Schema
-  donne la FORME, la story donne la COMPOSITION — **43 des 77 sections** en ont
-  une (les 34 sans sont surtout data-driven : search\*, agenda, cagnotte, blog,
+  donne la FORME, la story donne la COMPOSITION — **43 des 78 sections** en ont
+  une (les 35 sans sont surtout data-driven : search\*, agenda, cagnotte, blog,
   aac, coform — une composition statique n'y montrerait rien), ainsi que **les 7
   headers et les 4 footers**. Copie la story, ne réinvente pas le remplissage.
 - **Vérité versionnée : `.design-sync/`** — `config.json` (`componentSrcMap` :
@@ -427,6 +434,14 @@ Ne lis ces fichiers QUE quand la tâche les concerne :
   ne sont PAS navigables nus (`/profil` seul est un 404) ; nues et valides :
   `/login`, `/register`, `/recover-password`, `/admin`. L'audit dérive ces
   préfixes de `src/modules/*/routes.tsx` (`scripts/lib/module-routes.ts`).
+- **Affichage conditionnel** : `visibility` (`auth` / `routes` / `excludeRoutes` /
+  `permissions`, cf. doc/19) se pose sur une entrée de nav **et** sur un lien de
+  footer — les 3 listes (`columns[].links`, `legalLinks`, `bottomLinks`) partagent
+  le même objet `FooterLink`. Un « Se connecter » / « Créer un compte » de footer
+  prend `{ "auth": "anonymous" }`. Seul jeton d'adresse admis dans un `href` de
+  footer : `@profile` → la fiche de l'utilisateur connecté, à coupler avec
+  `{ "auth": "required" }` (ce n'est pas un chemin : ne pas le déclarer en page).
+  ⚠ Ces liens sont masqués au rendu SERVEUR et apparaissent à l'hydratation.
 - **Aucune URL d'image inventée** : asset fourni (copié dans
   `public/images/<slug>/`, référencé en absolu `/images/<slug>/…`), asset
   existant, ou rien. Sans logo : `logoIcon` (nom Lucide ou SVG inline).
@@ -452,6 +467,13 @@ modifie une palette. L'essentiel :
   `--hero-tint`, `--gradient-section`) viennent de `src/styles/shared.css`
   (tokens par défaut) — un thème les surcharge en `:root`/`.dark`, on ne
   recopie JAMAIS de classe.
+- **Une PAGE peut porter sa propre couleur** : `page.accent` (couleur CSS,
+  `var(--jeton)` recommandé) pose `--page-accent` et son aplat léger
+  `--page-accent-soft` sur le `<main>`. Les sections qui acceptent
+  `bg: "page-accent"` (`agenda`, `searchProStatic`, `accordion`, `searchHeader`,
+  `gridLayout`) s'en servent pour alterner les bandes — ex. les 9 pages de
+  territoire de parent62, chacune à sa couleur. Sans `accent`, la valeur reste
+  transparente.
 
 ## Maintenance (anti-dérive)
 

@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode, type MouseEvent } from "react";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
 import type { AacResolvedConfig } from "../../types";
 import type { CoFormAnswer } from "@/modules/coform/types";
+import type { SharedFinderInfo } from "@/modules/coform/utils/formParser";
 
 /**
  * La carte de financement de la fiche d'un commun (review MR 53, lot 2).
@@ -54,6 +56,35 @@ vi.mock("@/modules/aac/hooks/useReactorNames", () => ({
 
 const openLogin = vi.fn();
 vi.mock("@/modules/auth", () => ({ useAuthModal: () => ({ openLogin }) }));
+
+let usageFormId: string | null = null;
+// Le hook du périmètre est mocké à sa frontière (`useSite`), mais résout avec la
+// VRAIE fonction : les attentes portent sur `placeKind` / `placeSourceKeys` de la config.
+let placeKind: "tiersLieu" | "cae" | undefined = undefined;
+let placeSourceKeysOverride: string[] | undefined = undefined;
+vi.mock("@/modules/aac/hooks/useAacDetailSections", async (importOriginal) => {
+  const { placeKindSourceKeys } = await import("@/modules/coform/utils/finderFilters");
+  const { placeKindFromTypeCoFinancer } = await importOriginal<typeof import("@/modules/aac/hooks/useAacDetailSections")>();
+  return {
+    useAacUsageFormId: () => usageFormId,
+    useAacPlaceSourceKeys: (typeCoFinancer?: string | null) =>
+      placeKindSourceKeys(placeKind ?? placeKindFromTypeCoFinancer(typeCoFinancer), placeSourceKeysOverride),
+  };
+});
+let usageForm: unknown = null;
+let usageFormError: Error | null = null;
+const useCoFormQuery = vi.fn((opts: { formId: string; enabled?: boolean }) => ({
+  formData: opts.enabled ? usageForm : null,
+  error: opts.enabled ? usageFormError : null,
+}));
+vi.mock("@/modules/coform/hooks/useCoFormQuery", () => ({
+  useCoFormQuery: (opts: { formId: string; enabled?: boolean }) => useCoFormQuery(opts),
+}));
+let sharedFinder: SharedFinderInfo | null = null;
+vi.mock("@/modules/coform/utils/formParser", async (importActual) => ({
+  ...(await importActual<typeof import("@/modules/coform/utils/formParser")>()),
+  getSharedFinderInfo: () => sharedFinder,
+}));
 
 /**
  * `CagnotteDialog` réel enveloppe son enfant dans un `DialogTrigger asChild`
@@ -123,7 +154,9 @@ function PageHarness({
   ...over
 }: Partial<Parameters<typeof CommunFinancingCard>[0]> & { carteMontee?: boolean }) {
   const [intent, setIntent] = useState<PostLoginIntent>(null);
+  const [queryClient] = useState(() => new QueryClient({ defaultOptions: { queries: { retry: false } } }));
   return (
+    <QueryClientProvider client={queryClient}>
     <LocalizationProvider>
       {carteMontee ? (
         <CommunFinancingCard
@@ -137,6 +170,7 @@ function PageHarness({
         />
       ) : null}
     </LocalizationProvider>
+    </QueryClientProvider>
   );
 }
 
@@ -151,6 +185,13 @@ beforeEach(() => {
   useCommunRawDepenses.mockClear();
   toggleReaction.mockClear();
   openLogin.mockClear();
+  usageFormId = null;
+  placeKind = undefined;
+  placeSourceKeysOverride = undefined;
+  usageForm = null;
+  usageFormError = null;
+  sharedFinder = null;
+  useCoFormQuery.mockClear();
 });
 
 describe("CommunFinancingCard — l'étape des dépenses est celle que la page a résolue (M13)", () => {
@@ -321,58 +362,166 @@ describe("CommunFinancingCard — les CTA de réaction hors connexion ouvrent la
 });
 
 /**
- * Depuis que `resolveTypeCoFinancer` rend la valeur RÉELLE du form parent (et non
- * plus `null` systématiquement), le `if/else if` sans `else` de `loadOrganizations`
- * est atteignable : toute valeur inconnue — ou d'une autre casse — laissait
- * `orgParam` vide, `searchCostum({})` levait (le SDK exige `searchType`), l'erreur
- * était avalée et la modale annonçait « aucune organisation ».
+ * « J'utilise » propose les organisations du périmètre de la plateforme :
+ * `config.aac.detail.placeKind`, à défaut le `typeCoFinancer` du form.
  */
-describe("CommunFinancingCard — la population cofinanceuse a toujours un repli", () => {
-  const TIERS_LIEUX = {
-    searchType: ["organizations"],
-    filters: {
-      $or: {
-        "source.keys": "franceTierslieux",
-        "reference.costum": "franceTierslieux",
-        mainTag: "TiersLieux",
-      },
-    },
-    notSourceKey: true,
-  };
-  const CAE = {
-    searchType: ["organizations"],
-    filters: { tags: { $in: ["CAE", "cae", "Cae"] } },
-    notSourceKey: true,
-  };
-
-  /** « J'utilise » ouvre le modal de sélection, qui charge les organisations. */
-  async function ouvrirLaListe(typeCoFinancer: string | null) {
-    renderCard({ aacConfig: makeConfig("etapeA", typeCoFinancer) });
+describe("CommunFinancingCard — le périmètre de « J'utilise » suit `placeKind`", () => {
+  async function ouvrirLaListe() {
+    renderCard();
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /detail\.use/ }));
     });
   }
 
-  it("`cae` : la recherche porte sur les organisations taguées CAE", async () => {
-    await ouvrirLaListe("cae");
-    expect(ENTITY.searchCostum).toHaveBeenCalledWith(CAE);
-  });
-
-  it("`CAE` : la casse du form parent n'est pas un contrat — même recherche", async () => {
-    await ouvrirLaListe("CAE");
-    expect(ENTITY.searchCostum).toHaveBeenCalledWith(CAE);
-  });
-
-  it("non déclaré (`null`) : repli tiers-lieux, le défaut legacy", async () => {
-    await ouvrirLaListe(null);
-    expect(ENTITY.searchCostum).toHaveBeenCalledWith(TIERS_LIEUX);
-  });
-
-  it("valeur inconnue : repli tiers-lieux — JAMAIS une requête sans `searchType`", async () => {
-    await ouvrirLaListe("scic");
+  it("non déclaré : mes tiers-lieux (source franceTierslieux)", async () => {
+    await ouvrirLaListe();
     expect(ENTITY.searchCostum).toHaveBeenCalledTimes(1);
-    expect(ENTITY.searchCostum).toHaveBeenCalledWith(TIERS_LIEUX);
-    // Le défaut d'origine : `{}` — et la modale vide qui s'ensuivait.
-    expect(ENTITY.searchCostum).not.toHaveBeenCalledWith({});
+    expect(ENTITY.searchCostum).toHaveBeenCalledWith({
+      searchType: ["organizations"],
+      sourceKey: ["franceTierslieux"],
+    });
+  });
+
+  it("`cae` : mes CAE (source federationDesCae)", async () => {
+    placeKind = "cae";
+    await ouvrirLaListe();
+    expect(ENTITY.searchCostum).toHaveBeenCalledWith({
+      searchType: ["organizations"],
+      sourceKey: ["federationDesCae"],
+    });
+  });
+
+  it("`placeSourceKeys` en config : l'emporte sur le préréglage de `placeKind`", async () => {
+    placeKind = "cae";
+    placeSourceKeysOverride = ["federationDesCae", "autreReseauCae"];
+    await ouvrirLaListe();
+    expect(ENTITY.searchCostum).toHaveBeenCalledWith({
+      searchType: ["organizations"],
+      sourceKey: ["federationDesCae", "autreReseauCae"],
+    });
+  });
+
+  it("sans `placeKind`, le `typeCoFinancer` du form décide", async () => {
+    renderCard({ aacConfig: makeConfig("etapeA", "cae") });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /detail\.use/ }));
+    });
+    expect(ENTITY.searchCostum).toHaveBeenCalledWith({
+      searchType: ["organizations"],
+      sourceKey: ["federationDesCae"],
+    });
+  });
+
+  it("`placeKind` l'emporte sur le `typeCoFinancer` du form", async () => {
+    placeKind = "tiersLieu";
+    renderCard({ aacConfig: makeConfig("etapeA", "cae") });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /detail\.use/ }));
+    });
+    expect(ENTITY.searchCostum).toHaveBeenCalledWith({
+      searchType: ["organizations"],
+      sourceKey: ["franceTierslieux"],
+    });
+  });
+});
+
+/**
+ * Avec un form d'usage déclaré, « J'utilise » applique AUSSI les filtres de son
+ * finder partagé (tags, exclusions) — comme la recherche « rejoindre un lieu » de
+ * `PlacesListView` (`searchConfig`) —, toujours dans le périmètre `placeKind`.
+ */
+describe("CommunFinancingCard — « J'utilise » suit le finder du form d'usage", () => {
+  const FINDER: SharedFinderInfo = {
+    subFormId: "etape",
+    fieldName: "finderLieu",
+    fullPath: "etape.finderLieu",
+    type: "organizations",
+    filters: [{ attributeName: "tags", valueName: "CAE" }],
+    excludeFilters: [{ attributeName: "tags", valueName: "Réseau" }],
+    notSourceKey: true,
+  };
+  const FILTRES_FINDER = { $or: { tags: { $in: ["CAE"] } }, tags: { $nin: ["Réseau"] } };
+
+  function ouvrir() {
+    return renderCard();
+  }
+
+  async function cliquerJUtilise() {
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /detail\.use/ }));
+    });
+  }
+
+  it("le form d'usage n'est demandé qu'à l'ouverture de la modale", async () => {
+    usageFormId = "usage1";
+    ouvrir();
+    expect(useCoFormQuery).toHaveBeenLastCalledWith({ formId: "usage1", enabled: false });
+    await cliquerJUtilise();
+    expect(useCoFormQuery).toHaveBeenLastCalledWith({ formId: "usage1", enabled: true });
+  });
+
+  it("finder partagé + `cae` ⇒ filtres du finder ($or + $nin) dans le périmètre CAE, sans notSourceKey", async () => {
+    usageFormId = "usage1";
+    usageForm = { id: "usage1" };
+    sharedFinder = FINDER;
+    placeKind = "cae";
+    ouvrir();
+    await cliquerJUtilise();
+    expect(ENTITY.searchCostum).toHaveBeenCalledTimes(1);
+    // `notSourceKey: true` du finder NE doit PAS partir : sa présence désarmerait le périmètre.
+    expect(ENTITY.searchCostum).toHaveBeenCalledWith({
+      searchType: ["organizations"],
+      filters: FILTRES_FINDER,
+      sourceKey: ["federationDesCae"],
+    });
+  });
+
+  it("form encore en vol ⇒ aucune recherche sans ses filtres, puis celle du finder à son arrivée", async () => {
+    usageFormId = "usage1";
+    const { rerender } = ouvrir();
+    await cliquerJUtilise();
+    expect(ENTITY.searchCostum).not.toHaveBeenCalled();
+
+    usageForm = { id: "usage1" };
+    sharedFinder = FINDER;
+    await act(async () => {
+      rerender(<PageHarness />);
+    });
+    expect(ENTITY.searchCostum).toHaveBeenCalledTimes(1);
+    expect(ENTITY.searchCostum).toHaveBeenCalledWith({
+      searchType: ["organizations"],
+      filters: FILTRES_FINDER,
+      sourceKey: ["franceTierslieux"],
+    });
+  });
+
+  it("form sans finder partagé ⇒ périmètre seul, avec un avertissement", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    usageFormId = "usage1";
+    usageForm = { id: "usage1" };
+    sharedFinder = null;
+    placeKind = "cae";
+    ouvrir();
+    await cliquerJUtilise();
+    expect(ENTITY.searchCostum).toHaveBeenCalledWith({
+      searchType: ["organizations"],
+      sourceKey: ["federationDesCae"],
+    });
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it("form en erreur ⇒ périmètre seul plutôt qu'une modale bloquée", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    usageFormId = "usage1";
+    usageFormError = new Error("boom");
+    ouvrir();
+    await cliquerJUtilise();
+    expect(ENTITY.searchCostum).toHaveBeenCalledTimes(1);
+    expect(ENTITY.searchCostum).toHaveBeenCalledWith({
+      searchType: ["organizations"],
+      sourceKey: ["franceTierslieux"],
+    });
+    warn.mockRestore();
   });
 });
