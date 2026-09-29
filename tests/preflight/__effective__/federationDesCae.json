@@ -7,12 +7,11 @@
   "pages": {
     "/annuaire/searchProStatic": {
       "baseParams": {
-        "notSourceKey": true,
+        "sourceKey": [
+          "federationDesCae"
+        ],
         "defaultTypes": [
           "organizations"
-        ],
-        "defaultTags": [
-          "CAE"
         ],
         "defaultFields": [
           "name",
