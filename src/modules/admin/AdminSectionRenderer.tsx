@@ -1,5 +1,6 @@
 import { createElement } from "react";
 
+import AdminAnswerCopySection from "./sections/AdminAnswerCopySection";
 import AdminExportSection from "./sections/AdminExportSection";
 import AdminImportSection from "./sections/AdminImportSection";
 import AdminModerationSection from "./sections/AdminModerationSection";
@@ -47,6 +48,8 @@ export function AdminSectionRenderer({ section }: { section: AdminSection }) {
       return <AdminReferenceSection section={section} />;
     case "moderation":
       return <AdminModerationSection section={section} />;
+    case "answerCopy":
+      return <AdminAnswerCopySection section={section} />;
     default:
       // Section costum enregistrée via `registerAdminSection`, sinon fallback.
       return createElement(getAdminSection(section.type) ?? PlaceholderSection, { section });

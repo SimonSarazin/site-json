@@ -28,7 +28,13 @@ vi.mock("@/modules/cagnotte/lib/actionMilestonePathUpdates", async (importOrigin
   updateAnswerDepenseFields: vi.fn().mockResolvedValue(undefined),
 }));
 
-import { milestoneRepairKey, useCagnotteAdapter, useOrphanDepenseRepair } from "./useCagnotteAdapter";
+import {
+  calculateFundingStatus,
+  computePledgesFromResources,
+  milestoneRepairKey,
+  useCagnotteAdapter,
+  useOrphanDepenseRepair,
+} from "./useCagnotteAdapter";
 import { generateMilestoneId } from "../utils/idGeneration";
 import { CAGNOTTE_QUERY_KEYS } from "../constants/queryKeys";
 import { appendProjectMilestone, updateAnswerDepenseFields } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
@@ -93,6 +99,159 @@ describe("milestoneRepairKey", () => {
     expect(milestoneRepairKey({ answerId: "ans1", depenseIndex: 0 })).not.toBe(
       milestoneRepairKey({ answerId: "ans2", depenseIndex: 0 })
     );
+  });
+});
+
+/** Le versement PARTIEL : les montants viennent du bloc `payment` tenu par le serveur. */
+describe("calculateFundingStatus — versements partiels", () => {
+  const ligne = (over: Record<string, unknown> = {}) =>
+    ({ id: "u1", amount: 1000, ...over }) as never;
+
+  it("ne compte en non-acquis que le solde d'une promesse partiellement validée", () => {
+    const { currentFunding, unpaidFunding, userPledge } = calculateFundingStatus(
+      [
+        ligne({
+          payment: {
+            logs: [{ amount: 500, confirmation: "validated" }],
+            paidAmount: 500,
+            pendingAmount: 0,
+            status: "partial",
+          },
+        }),
+      ],
+      0,
+      [],
+      "u1",
+    );
+
+    // Engagé 1000, acquis 500 : il reste 500 dus.
+    expect(currentFunding).toBe(1000);
+    expect(unpaidFunding).toBe(500);
+    expect(userPledge).toBe(500);
+  });
+
+  it("compte un versement NON validé comme encore dû", () => {
+    const { unpaidFunding } = calculateFundingStatus(
+      [ligne({ payment: { logs: [{ amount: 1000, confirmation: "pending" }] } })],
+      0,
+      [],
+      "u1",
+    );
+
+    expect(unpaidFunding).toBe(1000);
+  });
+
+  it("ne compte rien en non-acquis quand tout est validé", () => {
+    const { currentFunding, unpaidFunding } = calculateFundingStatus(
+      [ligne({ payment: { logs: [{ amount: 1000, confirmation: "validated" }] } })],
+      0,
+      [],
+      "u1",
+    );
+
+    expect(currentFunding).toBe(1000);
+    expect(unpaidFunding).toBe(0);
+  });
+
+  it("conserve le comportement legacy sur une ligne sans bloc `payment`", () => {
+    const prepaid = calculateFundingStatus([ligne({ fundingType: "prepaid" })], 0, [], "u1");
+    const promesse = calculateFundingStatus([ligne()], 0, [], "u1");
+
+    expect(prepaid.unpaidFunding).toBe(0);
+    expect(promesse.unpaidFunding).toBe(1000);
+  });
+
+  it("n'impute au `userPledge` que les lignes de l'utilisateur ou de ses organisations", () => {
+    const transactions = [ligne({ id: "u1" }), ligne({ id: "autre" }), ligne({ id: "org1" })];
+    const { unpaidFunding, userPledge } = calculateFundingStatus(transactions, 0, ["org1"], "u1");
+
+    expect(unpaidFunding).toBe(3000);
+    expect(userPledge).toBe(2000);
+  });
+
+  it("garde le repli sur le total fourni quand la liste est vide", () => {
+    expect(calculateFundingStatus([], 750, [], "u1")).toEqual({
+      currentFunding: 750,
+      unpaidFunding: 0,
+      userPledge: 0,
+    });
+  });
+});
+
+describe("computePledgesFromResources — le panier des promesses", () => {
+  const ressource = (funding: unknown[]) =>
+    ({
+      id: "res1",
+      answerId: "ans1",
+      name: "Commun",
+      items: [
+        {
+          itemId: "it1",
+          name: "Palier",
+          depenseIndex: 0,
+          userPledge: 0,
+          funding,
+        },
+      ],
+    }) as never;
+
+  it("écarte une ligne intégralement validée", () => {
+    const pledges = computePledgesFromResources(
+      [
+        ressource([
+          {
+            financerId: "u1",
+            amount: 1000,
+            payment: { logs: [{ amount: 1000, confirmation: "validated" }] },
+          },
+        ]),
+      ],
+      "u1",
+    );
+
+    expect(pledges).toHaveLength(0);
+  });
+
+  it("garde une ligne partiellement validée, pour son SOLDE", () => {
+    const pledges = computePledgesFromResources(
+      [
+        ressource([
+          {
+            financerId: "u1",
+            finkey: "a-w171hEa1bvz9",
+            amount: 1000,
+            payment: { logs: [{ amount: 400, confirmation: "validated" }] },
+          },
+        ]),
+      ],
+      "u1",
+    );
+
+    expect(pledges).toHaveLength(1);
+    // `fundingAmount` reste l'engagement affiché ; `remainingAmount` est ce qui est dû.
+    // Payer sur `fundingAmount` surfacturerait une promesse déjà entamée.
+    expect(pledges[0].fundingAmount).toBe(1000);
+    expect(pledges[0].remainingAmount).toBe(600);
+    expect(pledges[0].finkey).toBe("a-w171hEa1bvz9");
+  });
+
+  it("garde une promesse legacy pour son montant entier", () => {
+    const pledges = computePledgesFromResources(
+      [ressource([{ financerId: "u1", amount: 250 }])],
+      "u1",
+    );
+
+    expect(pledges[0].remainingAmount).toBe(250);
+    expect(pledges[0].finkey).toBeUndefined();
+  });
+
+  it("n'expose pas les promesses d'un autre financeur", () => {
+    const pledges = computePledgesFromResources(
+      [ressource([{ financerId: "autre", amount: 250 }])],
+      "u1",
+    );
+
+    expect(pledges).toHaveLength(0);
   });
 });
 

@@ -6,7 +6,7 @@ import type { AdminSection } from "../schema";
  * Registre des sections admin COSTUM (calqué sur `registerPermissions`/`costumFormRegistry`).
  * Un costum injecte son propre dashboard/section admin via `registerAdminSection(type, Component)` —
  * comme `ProfileTiersLieuxInfo` injecte une section profil, sans toucher au cœur.
- * Les sections BUILTIN (dashboard/members/resource/import/export/reference/moderation) sont résolues
+ * Les sections BUILTIN (dashboard/members/resource/import/export/reference/moderation/answerCopy) sont résolues
  * directement par `AdminSectionRenderer` ; ce registre ne sert qu'aux `type` costum.
  */
 export type AdminSectionComponent = ComponentType<{ section: AdminSection }>;

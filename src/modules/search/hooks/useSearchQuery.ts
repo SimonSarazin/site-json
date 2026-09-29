@@ -112,6 +112,7 @@ export function useSearchQuery({
     lastItemRef,
     fetchNextPage,
     hasNextPage,
+    isFetching,
     isFetchingNextPage,
     isLoading,
     isPending,
@@ -199,6 +200,9 @@ export function useSearchQuery({
     lastItemRef,
     fetchNextPage,
     hasNextPage,
+    /** Vrai pendant TOUT fetch (1ʳᵉ page, pages suivantes, refetch après invalidation) — `isLoading`
+     *  ne couvre que le premier chargement, quand aucune donnée n'est encore en cache. */
+    isFetching,
     isFetchingNextPage,
     isLoading,
     isPending,

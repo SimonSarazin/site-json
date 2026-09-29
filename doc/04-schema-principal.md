@@ -457,26 +457,43 @@ Les valeurs de `type` sont des **noms de design** (pas des noms de sites) :
 | `logoTitle`        | `LocalizedString`             | Non      | Titre affiché à côté du logo                                         |
 | `logoAlt`          | `LocalizedString`             | Non      | Texte alternatif du logo                                             |
 | `description`      | `LocalizedString`             | Non      | Texte descriptif du footer                                           |
-| `legalLinks`       | `{ href, label }[]`           | Non      | Liens légaux (CGU, politique de confidentialité, etc.)               |
-| `bottomLinks`      | `{ href, label }[]`           | Non      | Liens en bas du footer                                               |
+| `legalLinks`       | `FooterLink[]`                | Non      | Liens légaux (CGU, politique de confidentialité, etc.)               |
+| `bottomLinks`      | `FooterLink[]`                | Non      | Liens en bas du footer                                               |
 | `paymentMethods`   | `string[]`                    | Non      | Icônes de moyens de paiement                                         |
 | `website`          | `string`                      | Non      | URL du site web                                                      |
 | `contactSection`   | `FooterContactSection`        | Non      | Bloc contacts (utilisé par `contact-partners`)                       |
 | `partners`         | `FooterPartnersSection`       | Non      | Bloc logos partenaires (utilisé par `contact-partners`)              |
 
-`FooterColumn` :
+`FooterLink` — le même objet pour les **trois** listes de liens (`columns[].links`, `legalLinks`,
+`bottomLinks`) :
 
 ```ts
+const FooterLink = z.object({
+  href: z.string(),
+  label: LocalizedString,
+  external: z.boolean().optional(),
+  icon: z.string().optional(),
+  visibility: VisibilityConditionSchema,   // cf. doc/19
+});
+
 const FooterColumn = z.object({
   title: LocalizedString,
-  links: z.array(z.object({
-    href: z.string(),
-    label: LocalizedString,
-    external: z.boolean().optional(),
-    icon: z.string().optional(),
-  })),
+  links: z.array(FooterLink),
 });
 ```
+
+`visibility` suit la **même grammaire** que les entrées de nav des headers (`auth`, `routes`,
+`excludeRoutes`, `permissions` — cf. [Visibility System](19-visibility-system.md)) : typiquement
+`{ "auth": "anonymous" }` sur « Se connecter », `{ "auth": "required" }` sur « Mon profil ». Une
+colonne dont **tous** les liens sont masqués n'est pas rendue, plutôt qu'un titre sans liens.
+
+Le `href` accepte un **jeton d'adresse** : `@profile` est remplacé par la fiche de l'utilisateur
+connecté (`/profil/<slug>`), un lien de config étant sinon une chaîne fixe. Le lien disparaît tant
+que le slug est inconnu — à coupler avec `visibility: { "auth": "required" }`.
+
+⚠️ **Rendu serveur** : toute condition dépendant de l'authentification est masquée jusqu'à
+l'hydratation, pour ne jamais laisser filtrer un état privé. Ces liens apparaissent donc juste après
+l'affichage de la page.
 
 `FooterContactSection` (utilisée par `contact-partners`) :
 

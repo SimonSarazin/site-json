@@ -7,10 +7,15 @@ import {
   progressBarWidth,
 } from "../../lib/aacDisplay";
 import { AacHiddenTagsBadge } from "./AacHiddenTagsBadge";
+import { AacCommunDeleteButton } from "./AacCommunDeleteButton";
 import type { AacCommunCard as CommunCard } from "../../lib/parseAacAnswer";
 
 interface AacCommunRowProps {
   commun: CommunCard;
+  /** Demande la suppression de CE commun. Absent ⇒ aucun bouton (le cas courant). */
+  onRequestDelete?: (commun: CommunCard) => void;
+  /** Une suppression est déjà en vol dans l'annuaire. */
+  isDeleting?: boolean;
   className?: string;
 }
 
@@ -37,7 +42,7 @@ interface AacCommunRowProps {
  * mur ; la couleur est gardée pour le survol et pour l'état « en attente », les
  * deux moments où elle dit quelque chose.
  */
-export function AacCommunRow({ commun, className }: AacCommunRowProps) {
+export function AacCommunRow({ commun, onRequestDelete, isDeleting, className }: AacCommunRowProps) {
   const t = useT("modules/aac");
 
   const hiddenTags = commun.tags.slice(AAC_VISIBLE_TAGS);
@@ -160,6 +165,18 @@ export function AacCommunRow({ commun, className }: AacCommunRowProps) {
           )}
         </span>
       </div>
+
+      {onRequestDelete && (
+        // Frère du bloc `ml-auto`, donc toujours en BOUT de ligne : la colonne
+        // de chiffres garde son alignement d'une ligne à l'autre.
+        <div className="shrink-0">
+          <AacCommunDeleteButton
+            communTitle={commun.title}
+            onClick={() => onRequestDelete(commun)}
+            disabled={isDeleting}
+          />
+        </div>
+      )}
     </article>
   );
 }

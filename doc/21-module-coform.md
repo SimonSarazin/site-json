@@ -82,7 +82,11 @@ src/modules/coform/
 ├── actions/mutations/
 │   ├── core.ts              # Factory createCoFormMutation
 │   ├── file.ts              # useCoFormFinalMutation — délègue à Answer.processUploads + Answer.save
-│   └── index.ts             # Barrel export mutations
+│   ├── selection.ts         # Notes d'un jury (`tpls.forms.aap.selection`) — écriture par CHEMIN ciblé
+│   ├── answer.ts            # deleteElementById — suppression DÉFINITIVE d'un élément (answers,
+│   │                        #   actions, projects), appel DIRECT à l'endpoint. Pas un hook : le seul
+│   │                        #   appelant (`useDeleteCommun`, AAC) n'a pas de contexte CoForm
+│   └── index.ts             # Barrel export mutations (core + file)
 ├── components/
 │   ├── AnswerActivityDialog.tsx # Historique d'audit d'une réponse (useCoFormAnswerHistory)
 │   ├── CategorizedCheckboxField.tsx # Cases à cocher 2 niveaux (options manuelles ou commonTable distant)

@@ -24,6 +24,8 @@ export const ELEMENT_SUMMARY_STALE_TIME_MS = 5 * 60 * 1000;
 export interface ElementSummary {
   name?: string;
   img?: string;
+  /** Pour ouvrir `/profil/<slug>` — absent si la fiche n'en porte pas. */
+  slug?: string;
 }
 
 /**
@@ -44,7 +46,7 @@ export async function fetchElementSummary(
   id: string,
   type: FinderElementType,
 ): Promise<ElementSummary> {
-  let entity: { serverData?: Record<string, unknown> };
+  let entity: { slug?: unknown; serverData?: Record<string, unknown> };
   switch (type) {
     case "organizations":
       entity = await api.organization({ id });
@@ -66,7 +68,9 @@ export async function fetchElementSummary(
   }
   const sd = entity.serverData ?? {};
   const name = typeof sd.name === "string" && sd.name.trim() !== "" ? sd.name : undefined;
-  return { name, img: pickProfileImageUrl(sd) };
+  const rawSlug = entity.slug ?? sd.slug;
+  const slug = typeof rawSlug === "string" && rawSlug.trim() !== "" ? rawSlug : undefined;
+  return { name, img: pickProfileImageUrl(sd), slug };
 }
 
 /**

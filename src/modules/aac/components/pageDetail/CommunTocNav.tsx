@@ -1,10 +1,17 @@
 import {ElementType} from "react";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { TocEntriesSkeleton } from "./CommunSkeletons";
 
 interface CommunTocNavProps {
     activeSection: string
     sections: TocSection[]
+    /**
+     * Vrai tant que la liste des entrées n'est pas arrêtée : « Objectifs » et
+     * « Membres du projet » dépendent de la phase du commun, les blocs déclarés des
+     * métadonnées du formulaire. Sans cet état, le sommaire s'allongeait après coup.
+     */
+    isLoading?: boolean
 }
 
 export interface TocSection {
@@ -13,7 +20,7 @@ export interface TocSection {
     icon: ElementType;
 }
 
-export function CommunTocNav({activeSection, sections}: CommunTocNavProps) {
+export function CommunTocNav({activeSection, sections, isLoading = false}: CommunTocNavProps) {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
 
@@ -23,7 +30,7 @@ export function CommunTocNav({activeSection, sections}: CommunTocNavProps) {
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3 px-3">
                     {String(t("detail.toc.navigation"))}
                 </p>
-                {sections.map((s) => {
+                {isLoading ? <TocEntriesSkeleton /> : sections.map((s) => {
                     const active = activeSection === s.id;
                     const Icon = s.icon;
                     return (

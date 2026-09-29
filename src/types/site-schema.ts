@@ -1989,14 +1989,23 @@ export const Header = z.object({
 });
 export type Header = z.infer<typeof Header>;
 
+/** Lien de pied de page — commun aux colonnes, aux `legalLinks` et aux `bottomLinks`. */
+const FooterLink = z.object({
+  href: z.string(),
+  label: LocalizedString,
+  external: z.boolean().optional(),
+  icon: z.string().optional(),
+  /**
+   * Condition d'affichage, même grammaire que les entrées de nav (cf. `@/lib/visibility`).
+   * Ce qui dépend de l'auth est masqué au rendu serveur et apparaît à l'hydratation.
+   */
+  visibility: VisibilityConditionSchema,
+});
+export type FooterLink = z.infer<typeof FooterLink>;
+
 const FooterColumn = z.object({
   title: LocalizedString,
-  links: z.array(z.object({
-    href: z.string(),
-    label: LocalizedString,
-    external: z.boolean().optional(),
-    icon: z.string().optional(),
-  })),
+  links: z.array(FooterLink),
 });
 
 const FooterContactItem = z.object({
@@ -2051,14 +2060,8 @@ export const Footer = z.object({
   // Purement décorative (CSS background) : pas d'alternative textuelle — un
   // `aria-label` sur le <footer> renommerait le landmark contentinfo.
   backgroundImage: z.string().optional(),
-  legalLinks: z.array(z.object({
-    href: z.string(),
-    label: LocalizedString,
-  })).optional(),
-  bottomLinks: z.array(z.object({
-    href: z.string(),
-    label: LocalizedString,
-  })).optional(),
+  legalLinks: z.array(FooterLink).optional(),
+  bottomLinks: z.array(FooterLink).optional(),
   paymentMethods: z.array(z.string()).optional(), // Array of payment method icons
   website: z.string().optional(),
   contactSection: FooterContactSection.optional(),
