@@ -424,7 +424,8 @@
         },
         "path": "/recherche",
         "icon": "search",
-        "iconOnly": true
+        "iconOnly": true,
+        "placement": "actions"
       }
     ],
     
@@ -1636,7 +1637,12 @@
             "showTitle": false,
             "showInvite": false,
             "fields": ["territoires", "telephone", "phone", "mobile", "email"],
-            "card": { "type": "team", "detailsMode": "link", "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" } }
+            "card": {
+              "type": "team",
+              "detailsMode": "link",
+              "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" },
+              "fixedColors": { "fond": "var(--p62-vert)", "encre": "var(--p62-vert-encre)" }
+            }
           }
         },
         {
@@ -1690,7 +1696,12 @@
             "showTitle": false,
             "showInvite": false,
             "fields": ["territoires", "telephone", "phone", "mobile", "email"],
-            "card": { "type": "team", "detailsMode": "link", "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" } }
+            "card": {
+              "type": "team",
+              "detailsMode": "link",
+              "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" },
+              "fixedColors": { "fond": "var(--p62-caf)", "encre": "var(--p62-caf-encre)" }
+            }
           }
         }
       ]
@@ -5312,6 +5323,48 @@
                       "en": "Les violences"
                     }
                   }
+                ]
+              },
+              {
+                "id": "ville",
+                "label": { "fr": "Villes", "en": "Cities" },
+                "field": "address.addressLocality",
+                "multiple": true,
+                "allLabel": { "fr": "Toutes les villes", "en": "All cities" },
+                "options": [
+                  { "id": "achicourt", "value": "Achicourt", "label": { "fr": "Achicourt", "en": "Achicourt" } },
+                  { "id": "aire-sur-la-lys", "value": "Aire-sur-la-Lys", "label": { "fr": "Aire-sur-la-Lys", "en": "Aire-sur-la-Lys" } },
+                  { "id": "arras", "value": "Arras", "label": { "fr": "Arras", "en": "Arras" } },
+                  { "id": "auchel", "value": "Auchel", "label": { "fr": "Auchel", "en": "Auchel" } },
+                  { "id": "audruicq", "value": "Audruicq", "label": { "fr": "Audruicq", "en": "Audruicq" } },
+                  { "id": "avesnes-le-comte", "value": "Avesnes-le-Comte", "label": { "fr": "Avesnes-le-Comte", "en": "Avesnes-le-Comte" } },
+                  { "id": "beaurains", "value": "Beaurains", "label": { "fr": "Beaurains", "en": "Beaurains" } },
+                  { "id": "berck", "value": "Berck", "label": { "fr": "Berck", "en": "Berck" } },
+                  { "id": "bethune", "value": "Béthune", "label": { "fr": "Béthune", "en": "Béthune" } },
+                  { "id": "boulogne-sur-mer", "value": "Boulogne-sur-Mer", "label": { "fr": "Boulogne-sur-Mer", "en": "Boulogne-sur-Mer" } },
+                  { "id": "bruay-la-buissiere", "value": "Bruay-la-Buissière", "label": { "fr": "Bruay-la-Buissière", "en": "Bruay-la-Buissière" } },
+                  { "id": "calais", "value": "Calais", "label": { "fr": "Calais", "en": "Calais" } },
+                  { "id": "carvin", "value": "Carvin", "label": { "fr": "Carvin", "en": "Carvin" } },
+                  { "id": "dainville", "value": "Dainville", "label": { "fr": "Dainville", "en": "Dainville" } },
+                  { "id": "desvres", "value": "Desvres", "label": { "fr": "Desvres", "en": "Desvres" } },
+                  { "id": "etaples", "value": "Étaples", "label": { "fr": "Étaples", "en": "Étaples" } },
+                  { "id": "fauquembergues", "value": "Fauquembergues", "label": { "fr": "Fauquembergues", "en": "Fauquembergues" } },
+                  { "id": "frevent", "value": "Frévent", "label": { "fr": "Frévent", "en": "Frévent" } },
+                  { "id": "fruges", "value": "Fruges", "label": { "fr": "Fruges", "en": "Fruges" } },
+                  { "id": "guines", "value": "Guînes", "label": { "fr": "Guînes", "en": "Guînes" } },
+                  { "id": "henin-beaumont", "value": "Hénin-Beaumont", "label": { "fr": "Hénin-Beaumont", "en": "Hénin-Beaumont" } },
+                  { "id": "hesdin", "value": "Hesdin", "label": { "fr": "Hesdin", "en": "Hesdin" } },
+                  { "id": "hucqueliers", "value": "Hucqueliers", "label": { "fr": "Hucqueliers", "en": "Hucqueliers" } },
+                  { "id": "lens", "value": "Lens", "label": { "fr": "Lens", "en": "Lens" } },
+                  { "id": "lievin", "value": "Liévin", "label": { "fr": "Liévin", "en": "Liévin" } },
+                  { "id": "lumbres", "value": "Lumbres", "label": { "fr": "Lumbres", "en": "Lumbres" } },
+                  { "id": "marquise", "value": "Marquise", "label": { "fr": "Marquise", "en": "Marquise" } },
+                  { "id": "montreuil", "value": "Montreuil", "label": { "fr": "Montreuil", "en": "Montreuil" } },
+                  { "id": "sailly-sur-la-lys", "value": "Sailly-sur-la-Lys", "label": { "fr": "Sailly-sur-la-Lys", "en": "Sailly-sur-la-Lys" } },
+                  { "id": "saint-laurent-blangy", "value": "Saint-Laurent-Blangy", "label": { "fr": "Saint-Laurent-Blangy", "en": "Saint-Laurent-Blangy" } },
+                  { "id": "saint-omer", "value": "Saint-Omer", "label": { "fr": "Saint-Omer", "en": "Saint-Omer" } },
+                  { "id": "saint-pol-sur-ternoise", "value": "Saint-Pol-sur-Ternoise", "label": { "fr": "Saint-Pol-sur-Ternoise", "en": "Saint-Pol-sur-Ternoise" } },
+                  { "id": "therouanne", "value": "Thérouanne", "label": { "fr": "Thérouanne", "en": "Thérouanne" } }
                 ]
               }
             ],

@@ -224,6 +224,22 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     await expect(section.locator('a[href="/territoire/familles-en-sol-mineur-henin-carvin"]')).toHaveCount(1);
   });
 
+  test("/equipe : couleurs fixes des cartes « animation départementale » et « contact CAF »", async ({ page }) => {
+    // Ces deux sections n'ont pas de territoire à résoudre (`card.fixedColors` prime alors sur
+    // `couleursTerritoire`, qui serait retombée sur le neutre du thème) — cf. `CardTeamMember`.
+    await page.goto("/equipe", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    const fond = (sel: string) => page.locator(sel).first().evaluate((el) => getComputedStyle(el).backgroundColor);
+    await expect(page.locator("#equipe-dep")).toBeVisible({ timeout: 45_000 });
+    const [dep, caf] = await Promise.all([
+      fond('#equipe-dep [data-slot="card"]'),
+      fond('#equipe-caf [data-slot="card"]'),
+    ]);
+    expect(dep, "vert de marque (--p62-vert)").toBe("rgb(30, 174, 152)");
+    expect(caf, "jaune-vert de marque (--p62-caf)").toBe("rgb(215, 216, 114)");
+  });
+
   test("/territoire/arrageois : bandeau et liste des communes", async ({ page }) => {
     await page.goto("/territoire/arrageois", { waitUntil: "domcontentloaded" });
     await waitForHydration(page);
@@ -541,6 +557,44 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     // Le fil reste borné aux actualités : un filtre de page ne peut pas écraser `type`.
     expect(corps).toContain("filters[type]=article");
     await expect(page).toHaveURL(/ville=arras/);
+  });
+
+  test("/agenda : le filtre « Villes » (même liste que /blog) applique le paramètre d'URL", async ({ page }) => {
+    await page.goto("/agenda", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    await page.getByRole("button", { name: /^Villes/ }).first().click();
+    await page.getByPlaceholder("Rechercher…").last().fill("Arras");
+    const arras = page.getByRole("option", { name: "Arras", exact: true });
+    await expect(arras).toBeVisible();
+    await arras.click();
+    await expect(page).toHaveURL(/ville=arras/);
+  });
+
+  test("accueil : le menu se centre sous le logo et le titre du bandeau, sans « Ctrl+K »", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    // Aucun déclencheur de palette de commandes dans la barre : la loupe (nav « Recherche »,
+    // `placement: "actions"`) le remplace — cf. `HeaderStacked`.
+    await expect(page.locator("nav.sticky kbd", { hasText: /Ctrl|⌘/ })).toHaveCount(0);
+    const loupe = page.locator('nav.sticky a[aria-label="Recherche"]').first();
+    await expect(loupe).toHaveAttribute("href", "/recherche");
+
+    // Le menu centré (colonnes de flanc `1fr` égales) tombe exactement sous le centre du bandeau
+    // wordmark au-dessus — décalé dès que les deux colonnes de flanc n'ont pas la même largeur
+    // (l'ancien `auto_1fr_auto`, qui centrait dans l'espace RESTANT après le logo).
+    const ecart = await page.evaluate(() => {
+      const wordmark = document.querySelector("header .relative.flex.flex-col.items-center")!;
+      const menu = [...document.querySelectorAll("nav.sticky .grid > div")].find(
+        (d) => d.className.includes("xl:flex") && d.className.includes("justify-center"),
+      )!;
+      const w = wordmark.getBoundingClientRect();
+      const m = menu.getBoundingClientRect();
+      return Math.round(w.left + w.width / 2 - (m.left + m.width / 2));
+    });
+    expect(Math.abs(ecart), "menu centré sous le logo/titre à 1440px").toBeLessThanOrEqual(2);
   });
 
   for (const url of ["/parents", "/pro"]) {

@@ -1861,6 +1861,13 @@ export interface EnhancedNavItemType {
    * l'infobulle. Ignoré sans `icon`. Le menu mobile et les autres variantes de header affichent le libellé.
    */
   iconOnly?: boolean;
+  /**
+   * Barre desktop du header `stacked` : `"actions"` sort l'entrée du menu centré pour la poser dans le
+   * groupe d'actions de droite (thème, langue, connexion…), à la place d'un bouton de header — typiquement
+   * une loupe icône seule vers une page de recherche. Ignoré par les autres variantes de header (le menu
+   * mobile affiche toujours l'entrée dans la liste).
+   */
+  placement?: "actions";
 }
 
 const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
@@ -1878,6 +1885,7 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
     featured: z.boolean().optional(),
     dynamicList: DynamicNavList.optional(),
     iconOnly: z.boolean().optional(),
+    placement: z.literal("actions").optional(),
   }).refine(d => d.path || d.href || d.children || d.megaMenu || d.dynamicList, {
     message: "NavItem : path, href, children, megaMenu ou dynamicList obligatoire"
   })

@@ -40,6 +40,8 @@ export interface MemberCardConfig {
   layout?: "stack" | "row";
   /** Convention de rattachement — cf. `MemberCardConfSchema.rattachement`. */
   rattachement?: ConventionRattachement;
+  /** Couleur fixe de la carte « équipe », prime sur `rattachement` — cf. `MemberCardConfSchema.fixedColors`. */
+  fixedColors?: { fond: string; encre: string; bordure?: string };
   showDescription?: boolean;
   showAddress?: boolean;
   /** Bloc de compteurs de `CardProfile`. Absent = affiché — cf. `MemberCardConfSchema.showStats`. */
@@ -179,6 +181,7 @@ function ProfileCardList({
                 contactText={contactText}
                 layout={card?.layout}
                 rattachement={conventionEquipe}
+                fixedColors={card?.fixedColors}
               />
             </Suspense>
           ) : (

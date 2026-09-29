@@ -525,6 +525,17 @@ const MemberCardConfSchema = z.object({
     /** Préfixe des variables CSS : `<prefixe>-<slug>-carte` et `<prefixe>-<slug>-encre`. */
     prefixeCouleur: z.string(),
   }).optional(),
+  /** Couleur FIXE de la carte « équipe », pour une section sans territoire (ex. l'animation
+   *  départementale, un contact unique) où `couleursTerritoire` retomberait sur le neutre du
+   *  thème faute de valeur à résoudre. Prime sur `rattachement` : posée, elle s'applique à TOUTES
+   *  les cartes de la section, quel que soit le territoire porté par chaque membre. `bordure`
+   *  reprend `fond` si absente (même convention que `couleursTerritoire`). Couleurs CSS libres
+   *  (`var(--jeton)` recommandé) — contraste AA à vérifier entre `fond` et `encre`. */
+  fixedColors: z.object({
+    fond: z.string(),
+    encre: z.string(),
+    bordure: z.string().optional(),
+  }).optional(),
   showDescription: z.boolean().optional().default(true),
   showAddress: z.boolean().optional().default(true),
   // Bloc de compteurs de `CardProfile` (projets liés). Absent = affiché.
