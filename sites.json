@@ -184,7 +184,7 @@
     "domain": "federation-des-cae.00.re"
   },
   {
-    "slug": "projetsre",
+    "slug": "projetsre1",
     "config": "config.prod.projetsre.json",
     "css": "index-projetsre",
     "images": "projetsre"
