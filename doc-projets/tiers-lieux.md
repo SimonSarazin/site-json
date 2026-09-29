@@ -203,6 +203,34 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 ## 9. Impacts des modifications
 
+### 24/09quater — encart d'une fiche : le nombre de PLACES d'hébergement, pas le nombre d'offres
+
+**Bug.** L'encart « Réserver en ligne » affichait « 1 chambre » sur La Plume à Loup, qui déclare
+10 places. Le compteur d'hébergement était réglé sur `bedRoomPath.type: "answer"` — « compte les
+RÉPONSES au formulaire » — et le lieu n'a déposé qu'une offre. Les deux autres lignes du même encart
+ne comptent pas ça : le coworking additionne le champ `place` (`single`), les salles comptent les
+lignes d'un tableau (`array`).
+
+**Correctif (config, une ligne)** : `profile-info-tl.bedRoomPath.type` passe à `"single"`, donc la
+somme du champ `place` — le même champ que le coworking, qui affiche déjà des « postes de travail ».
+**Libellés** alignés : « chambre / chambres » devient « place d'hébergement / places d'hébergement »
+(`room/rooms` → `accommodation space(s)`), sans quoi on afficherait « 10 chambres » pour 10 places.
+`profile-about-tl` garde `"answer"` : il LISTE les offres, et ses branches `single` et `answer` y sont
+identiques.
+
+**Racine du bug, traitée** : rien ne documentait ce que valent `single`, `array` et `answer` — le
+schéma typait ces objets en `z.record(z.string(), z.string())`. Les trois modes sont désormais
+décrits dans le schéma et dans `doc/08-module-profil.md`, et la logique, qui était **recopiée trois
+fois** dans le composant (la copie des salles ayant perdu la branche `answer` au passage), vit dans
+une fonction pure testée, `compteRessources.ts` — 7 tests dont celui du bug.
+
+**Non vérifiable en local** : ni la fiche ni le formulaire d'hébergement ne sont dans la base locale,
+le nombre affiché ne peut donc être contrôlé que sur un environnement qui porte la donnée.
+**Gates** : `typecheck` ✅ 0 erreur · `eslint` ✅ · `config:validate` ✅ (15 pages, 27 sections) ·
+`audit:config` RAS (`config.prod.tiers-lieux.json` : trad 0, liens 0, inerte 0, assets 0, strip 0,
+prereq 0) · `test:unit` 5 105/5 107 (les 2 échecs d'environnement habituels, étrangers au lot ;
++7 tests nets, `compteRessources.test.ts`).
+
 ### 28/09 — « Mes lieux » : page à 5 onglets (portage du legacy `listOrga`)
 
 **Bouton demandé** : « Mes lieux », dans le sous-menu « Les lieux » du header ET le tiroir mobile

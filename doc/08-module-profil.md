@@ -611,6 +611,26 @@ Le module profil propose **21 types de sections** configurables:
 | `profile-template-dynamic` | ProfileTemplateDynamicSchema | —                                              | Template dynamique basé sur config        |
 | `profile-tools`            | ProfileToolsSectionSchema    | title, sticky                                  | « Nos outils » générique (`ourTools`), éditable par les admins — équivalent sans vocabulaire tiers-lieux du bloc de `profile-info-tl` |
 
+### Compteurs de l'encart « Réserver en ligne » (`profile-info-tl`)
+
+`roomPath`, `coworkingPath` et `bedRoomPath` décrivent chacun une ressource réservable :
+`{ id, place, type, … }` — `id` est le formulaire CoForm dont on lit les réponses, `place` le chemin
+du champ. **`type` décide de ce qu'on compte**, et c'est le piège :
+
+| `type` | Compte | À utiliser pour |
+|---|---|---|
+| `single` (défaut) | la SOMME du champ numérique sur toutes les réponses | une capacité saisie : places d'hébergement, postes de travail |
+| `array` | la somme des longueurs du tableau, moins son en-tête | une liste de lignes : salles de réunion |
+| `answer` | le NOMBRE DE RÉPONSES | des offres, quand aucune capacité n'est saisie |
+
+Se tromper de mode donne un chiffre **plausible et faux** : `answer` sur l'hébergement affichait « 1 »
+sur un lieu déclarant 10 places dans son unique offre (24/09). Les trois modes vivent dans une seule
+fonction pure, `components/sections/custom/compteRessources.ts`, testée — le corps était auparavant
+recopié trois fois dans le composant, et celui des salles avait perdu la branche `answer`.
+
+⚠️ Le libellé affiché doit suivre le mode : compter des places et écrire « chambres » est un second
+bug. Les clés sont `ProfileTiersLieuxInfo.accommodation`/`accommodationPlural`.
+
 ### `profile-fields` — champs d'entité config-driven
 
 Pendant profil de `preview.type: "facets"` (module search) : rend **les champs déclarés en config**,

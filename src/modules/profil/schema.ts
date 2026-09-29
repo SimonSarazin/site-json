@@ -109,6 +109,13 @@ export const ProfileTiersLieuxInfoSectionSchema = z.object({
   showEmail: z.boolean().optional().default(true),
   showPhone: z.boolean().optional().default(true),
   showWebsite: z.boolean().optional().default(true),
+  /**
+   * Ressources réservables comptées dans l'encart (`compteRessources`) : `{ id, place, type, … }`.
+   * `id` = formulaire CoForm lu, `place` = chemin du champ, et `type` décide de CE QU'ON COMPTE :
+   * `single` (défaut) additionne la CAPACITÉ saisie (places, postes), `array` compte les lignes d'un
+   * tableau (moins son en-tête), `answer` compte les OFFRES déposées. Se tromper de mode affiche un
+   * chiffre plausible et faux — « 1 » pour un lieu qui déclare 10 places dans une seule offre.
+   */
   bedRoomPath: z.record(z.string(), z.string()).optional(),
   coworkingPath: z.record(z.string(), z.string()).optional(),
   roomPath: z.record(z.string(), z.string()).optional(),
@@ -139,6 +146,13 @@ export const ProfileTiersLieuxAboutSectionSchema = z.object({
   showAccommodation: z.boolean().optional().default(true),
   activity: z.record(z.string(), z.string()).optional(),
   equipement: z.record(z.string(), z.string()).optional(),
+  /**
+   * Ressources réservables comptées dans l'encart (`compteRessources`) : `{ id, place, type, … }`.
+   * `id` = formulaire CoForm lu, `place` = chemin du champ, et `type` décide de CE QU'ON COMPTE :
+   * `single` (défaut) additionne la CAPACITÉ saisie (places, postes), `array` compte les lignes d'un
+   * tableau (moins son en-tête), `answer` compte les OFFRES déposées. Se tromper de mode affiche un
+   * chiffre plausible et faux — « 1 » pour un lieu qui déclare 10 places dans une seule offre.
+   */
   bedRoomPath: z.record(z.string(), z.string()).optional(),
   coworkingPath: z.record(z.string(), z.string()).optional(),
   roomPath: z.record(z.string(), z.string()).optional(),
