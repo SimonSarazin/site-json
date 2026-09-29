@@ -3952,6 +3952,50 @@ cartes gardent leur icône et leur texte descriptif, `title` étant déjà optio
 
 ---
 
+## 9unquadragies. Couleurs fixes de l'équipe, filtre Villes sur l'agenda, loupe dans les actions du header
+
+`/equipe` — les deux sections sans territoire (« L'animation départementale », « Le contact à la CAF »)
+portent désormais une couleur de marque FIXE au lieu du neutre du thème (`couleursTerritoire` sans valeur
+à résoudre) : vert `--p62-vert` (déjà utilisé par les cases « Vous êtes… », 7,56:1) pour l'animation
+départementale, nouveau jaune-vert `--p62-caf` (`#d7d872`, 13,95:1) pour le contact CAF. Nouvelle option
+moteur `card.fixedColors: { fond, encre, bordure? }` (`MemberCardConfSchema`) : prime sur `rattachement`
+pour TOUTES les cartes de la section, quel que soit le territoire porté par chaque membre — la carte
+« L'équipe de Coordonnateurs (trices) », qui garde ses couleurs de territoire, n'y touche pas.
+
+`/agenda` — filtre « Villes » ajouté au `searchHeader`, même liste des 33 villes et même champ
+(`address.addressLocality`) que `/blog` : le formulaire « Proposer un événement » collecte déjà une
+adresse complète, aucune donnée à ajouter côté base. Le filtre rejoint le `PageFilters` partagé que
+l'agenda lit déjà pour territoire/public/thème — aucun changement moteur, ajout de config pur.
+
+En-tête — deux ajustements du header `stacked` (le seul à en avoir besoin, `main` n'en portait aucune
+trace malgré une tentative antérieure abandonnée, cf. [[project-parent62-accueil-bande-unique]]) :
+
+- **Menu centré** : la grille de la barre passe de `auto_1fr_auto` à `1fr_auto_1fr` — les deux colonnes
+  de FLANC (logo, actions) sont désormais de MÊME largeur quel que soit leur contenu, donc le menu
+  (colonne du milieu) se centre sur la barre entière, exactement sous le logo/titre du bandeau au-dessus.
+  Avec `auto_1fr_auto`, le menu ne se centrait que dans l'espace restant après le logo, décalé vers la
+  gauche dès que le groupe d'actions (plus large que le logo) l'emportait — systématique, mesuré à
+  111px d'écart avant correction.
+- **Loupe à la place de « Ctrl+K »** : nouvelle option moteur générique `nav[].placement: "actions"`
+  (`EnhancedNavItemType`, header `stacked` uniquement) — sort une entrée du menu centré pour la poser
+  dans le groupe d'actions de droite, en icône seule. Posée sur l'entrée « Recherche » existante, elle
+  y remplace le déclencheur de palette de commandes (`CommandTriggerButton`, retiré de ce header). Le
+  menu mobile garde la liste complète (pas de groupe d'actions séparé dans le tiroir).
+
+### 9unquadragies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` · `audit:config` | ✅ 51 pages · 183 sections · RAS |
+| `typecheck` · `lint` | ✅ 0 erreur |
+| `test:unit` | ✅ **5 028 tests**, 2 échecs étrangers au lot |
+| `test:integration` (`config-driven-ssr`, config parent62) | ✅ **98/98** |
+| `test:e2e` parent62 | ✅ **25/25**, dont 3 nouvelles gardes (couleurs fixes équipe, filtre Villes agenda, menu centré + absence de « Ctrl+K »), chacune **vérifiée rouge** sans sa correction. 2 échecs **étrangers au lot** sur `/territoire/arrageois` et `/equipe` : le backend local a gagné un coordonnateur pour l'Arrageois depuis l'écriture de ces tests (donnée, pas code) |
+| Écran | ✅ 1 280 px avec barre de défilement de 17px : aucun débordement (budget déjà tendu, cf. [[reference-header-stacked-budget-1280]]) ; 1 440 px : écart menu/logo 0px |
+| Contraste | ✅ noir sur `--p62-vert` 7,56:1, noir sur `--p62-caf` 13,95:1 (AAA les deux) |
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
