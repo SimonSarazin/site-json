@@ -26,6 +26,8 @@ export interface UseCommunFundingContextResult {
   originFormName: string | null;
   /** Le commun a été déposé sur un AUTRE appel que celui de ce site. */
   isCommunEtranger: boolean;
+  /** Le formulaire d'origine d'un commun étranger est en cours de lecture. */
+  isLoading: boolean;
 }
 
 /**
@@ -42,7 +44,7 @@ export function useCommunFundingContext(
     originFormId && directory.formId && originFormId !== directory.formId,
   );
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: AAC_QUERY_KEYS.ORIGIN_FORM(originFormId ?? null),
     enabled: !loading && !!api && isCommunEtranger && !!originFormId,
     staleTime: 5 * 60 * 1000,
@@ -58,5 +60,6 @@ export function useCommunFundingContext(
     context: isCommunEtranger ? (data?.context ?? null) : null,
     originFormName: isCommunEtranger ? (data?.name ?? null) : null,
     isCommunEtranger,
+    isLoading: isCommunEtranger && isLoading,
   };
 }

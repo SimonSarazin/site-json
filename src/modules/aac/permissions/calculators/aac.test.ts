@@ -185,6 +185,36 @@ describe("calculateAacPermissions — lecture, édition, financement", () => {
     expect(calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: {} }).canSelectCommun).toBe(false);
   });
 
+  it("supprimer un commun : son auteur et l'admin, personne d'autre", () => {
+    const admin = calculateAacPermissions(makeEntity(true), makeMe("a"), { gates: {} });
+    // L'admin n'a pas besoin de connaître le commun visé.
+    expect(admin.canDeleteCommun()).toBe(true);
+    expect(admin.canDeleteCommun({ authorId: "u" })).toBe(true);
+
+    const auteur = calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: {} });
+    expect(auteur.canDeleteCommun({ authorId: "u" })).toBe(true);
+    expect(auteur.canDeleteCommun({ authorId: "autre" })).toBe(false);
+    // Sans auteur connu (compte temporaire), un non-admin ne passe pas.
+    expect(auteur.canDeleteCommun({})).toBe(false);
+    expect(auteur.canDeleteCommun(null)).toBe(false);
+
+    const anonyme = calculateAacPermissions(NON_ADMIN(), ANON, { gates: {} });
+    expect(anonyme.canDeleteCommun({ authorId: "u" })).toBe(false);
+  });
+
+  /**
+   * Le garde qui sépare la suppression de l'édition : brancher la suppression sur
+   * `anyOnewithLinkCanAnswer` donnerait à tout connecté un bouton irréversible sur le commun
+   * d'autrui, droit qu'aucune branche d'`Answer::canEdit` n'accorde.
+   */
+  it("`anyOnewithLinkCanAnswer` ouvre l'édition à tout connecté, JAMAIS la suppression", () => {
+    const perms = calculateAacPermissions(NON_ADMIN(), makeMe("tiers"), {
+      gates: { anyOnewithLinkCanAnswer: true },
+    });
+    expect(perms.canEditCommun({ authorId: "auteur" })).toBe(true);
+    expect(perms.canDeleteCommun({ authorId: "auteur" })).toBe(false);
+  });
+
   it("l'admin costum passe par le drapeau parapluie, sans rôle sur l'entité", () => {
     const perms = calculateAacPermissions(NON_ADMIN(), makeMe("a"), { gates: { active: true } }, true);
     expect(perms.isAdmin).toBe(true);

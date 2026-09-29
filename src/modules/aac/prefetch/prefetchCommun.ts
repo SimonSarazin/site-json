@@ -14,6 +14,7 @@
  * `form.serverData` sont des documents JSON, pas des instances du SDK.
  */
 import type { QueryClient } from "@tanstack/react-query";
+import type { Api } from "@communecter/cocolight-api-client";
 import { getBaseUrl } from "@/lib/constant/common";
 import { initApi, type InitApiResult } from "@/lib/apiClient";
 import type { CoFormAnswer, CoFormData } from "@/modules/coform/types";
@@ -30,6 +31,15 @@ import type { CoFormAnswer, CoFormData } from "@/modules/coform/types";
  */
 export const COMMUN_ANSWER_QUERY_KEY = (answerId: string | null, userId: string | null = null) =>
   ["aac-commun-detail", answerId, userId] as const;
+
+/** Toutes les entrées d'une réponse, quel que soit le lecteur. */
+export const COMMUN_ANSWER_PREFIX = (answerId: string) => ["aac-commun-detail", answerId] as const;
+
+/** Le document d'une réponse, tel que la fiche le met en cache. */
+export async function fetchCommunAnswer(api: Api, answerId: string): Promise<CoFormAnswer> {
+  const res = await api.answer({ id: answerId });
+  return res.serverData as unknown as CoFormAnswer;
+}
 
 export const COMMUN_FORM_QUERY_KEY = (formId: string | null, userId: string | null = null) =>
   ["aac-commun-form", formId, userId] as const;
@@ -66,10 +76,7 @@ export async function prefetchCommunDetail(
 
   const answer = await queryClient.ensureQueryData({
     queryKey: COMMUN_ANSWER_QUERY_KEY(answerId, userId),
-    queryFn: async (): Promise<CoFormAnswer> => {
-      const res = await api.answer({ id: answerId });
-      return res.serverData as unknown as CoFormAnswer;
-    },
+    queryFn: () => fetchCommunAnswer(api, answerId),
   });
 
   const formId = siteFormId || answer?.form || null;

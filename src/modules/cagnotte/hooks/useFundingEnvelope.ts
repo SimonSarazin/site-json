@@ -3,6 +3,7 @@ import type { Action, ActionItemNormalized, EntityTypes } from '@communecter/coc
 import { useCocolight } from '@/hooks/useCocolight';
 import { CAGNOTTE_QUERY_KEYS } from '@/modules/cagnotte/constants/queryKeys';
 import { getProfileSlugFromLocation } from '@/lib/fundingProjectUtils';
+import { readFinancerPaymentState, toDisplayPaymentStatus } from '@/modules/cagnotte/utils/financerPayment';
 import {
   asRecord,
   getEntityId,
@@ -114,12 +115,13 @@ function getTimestamp(value: unknown): number | undefined {
   return undefined;
 }
 
-function normalizePaymentStatus(value: unknown): FundingPaymentStatus {
-  const status = toString(value).toLowerCase();
-  if (status === 'pending' || status === 'paid' || status === 'failed' || status === 'refunded') {
-    return status;
-  }
-  return 'paid';
+/**
+ * Statut d'affichage d'une ligne, dérivé de son bloc `payment`. Ne jamais le lire sur
+ * `financer.status`, qui est le statut de l'ENGAGEMENT (`"pending"` à la création), ni le
+ * faire défaut à `paid`, ce qui compterait payé un financement inconnu.
+ */
+function normalizePaymentStatus(financer: UnknownRecord): FundingPaymentStatus {
+  return toDisplayPaymentStatus(readFinancerPaymentState(financer).status);
 }
 
 function getNameFromLinks(links: UnknownRecord, id: string, type?: string): string {
@@ -277,6 +279,8 @@ export function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?
             getAvatarFromLinks(links, financerId, financerType) ||
             undefined;
 
+          const paymentState = readFinancerPaymentState(financer);
+
           return {
             id: `${milestoneId}-${depenseIndex}-${financerIndex}`,
             financerName,
@@ -285,10 +289,15 @@ export function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?
             financerAvatar,
             amount: toNumber(financer.amount),
             date: getTimestamp(financer.date) || getTimestamp(depense.date) || Date.now(),
-            paymentStatus: normalizePaymentStatus(financer.paymentStatus || financer.status),
+            paymentStatus: normalizePaymentStatus(financer),
             transactionId: toString(financer.transactionId) || financerId || `TX-${milestoneId}-${depenseIndex}-${financerIndex}`,
             fundingType: toString(financer.fundingType) || undefined,
-            fundingIndex: financerIndex
+            fundingIndex: financerIndex,
+            // Le ciblage d'un versement passe par `finkey`, pas par la position.
+            finkey: toString(financer.finkey) || undefined,
+            paidAmount: paymentState.paidAmount,
+            pendingAmount: paymentState.pendingAmount,
+            payment: financer.payment
           };
         });
       });

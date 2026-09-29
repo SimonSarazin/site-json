@@ -229,7 +229,11 @@ export interface MeetingRoom {
   fullDay?: number;
   /** Colonne 7 « Tarif solidaire possible » (valeur libre : « Oui »…). */
   solidaire?: string;
-  /** Colonne 8 : URLs d'images DÉJÀ absolues (`/upload/communecter/…`). */
+  /**
+   * Colonne 8 : images de la salle. Chemins RELATIFS AU BACKEND
+   * (`/upload/communecter/…`) en sortie de {@link parseMeetingRooms} ; URLs
+   * complètes dans le modèle de {@link parseResourceDirectoryItem}.
+   */
   images: string[];
 }
 
@@ -420,8 +424,9 @@ export function resolveAnswerParentEmail(
 
 /**
  * Photos rattachées à la réponse (`serverData.documents`, objet OU tableau).
- * URL construite `/upload/communecter/<folder>/<name>` — même schéma que le
- * legacy (`ph/upload/communecter/answers/<id>/…`).
+ * Chemin construit `/upload/communecter/<folder>/<name>` — même schéma que le
+ * legacy (`ph/upload/communecter/answers/<id>/…`). Relatif au BACKEND : à passer
+ * par {@link toBackendUrl} avant affichage.
  */
 export function resolveAnswerPhotos(serverData: Record<string, unknown> | undefined): string[] {
   const docs = serverData?.documents;
@@ -442,6 +447,17 @@ export function resolveAnswerPhotos(serverData: Record<string, unknown> | undefi
       return "";
     })
     .filter((u) => u.length > 0);
+}
+
+/**
+ * URL complète d'un fichier servi par le backend. Le legacy affiche
+ * `/upload/communecter/…` tel quel parce qu'il est servi depuis le backend ; un
+ * site SiteForge a son propre domaine, où ce chemin n'existe pas (`/img` le lit
+ * comme un fichier statique local → 404). Une URL `http(s)` passe inchangée.
+ */
+export function toBackendUrl(path: string, baseUrl: string): string {
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${baseUrl.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
 }
 
 /** Repli i18n du nom quand l'input dédié est vide (cf. `tlCardRessourcePanelHtml`). */
@@ -518,6 +534,8 @@ export interface ParseResourceDirectoryItemOptions {
   fieldSuffixes?: ResourceDirectoryFieldSuffixes;
   /** Surcharge des chemins service-pricing (déf. dérivée des `resourceTypes`). */
   servicePricing?: ServicePricingPathsOverride;
+  /** URL du backend (`getBaseUrl()`) : préfixe les photos, relatives au backend. */
+  baseUrl: string;
 }
 
 /** Normalise une réponse `serverData` en {@link ResourceCardModel}. Fonction pure. */
@@ -525,7 +543,7 @@ export function parseResourceDirectoryItem(
   serverData: Record<string, unknown> | undefined,
   opts: ParseResourceDirectoryItemOptions,
 ): ResourceCardModel {
-  const { resourceTypes, finderSuffix, fieldSuffixes, servicePricing } = opts;
+  const { resourceTypes, finderSuffix, fieldSuffixes, servicePricing, baseUrl } = opts;
   const type = resolveAnswerType(serverData, resourceTypes);
   const parent = resolveAnswerParent(serverData, resourceTypes, finderSuffix);
   const { name, nameFallback } = resolveResourceName(serverData, type, fieldSuffixes?.name);
@@ -535,8 +553,11 @@ export function parseResourceDirectoryItem(
   const extraServices = resolveAnswerServices(serverData, type);
   const bookingUrl = resolveAnswerBookingUrl(serverData, type, fieldSuffixes?.bookingUrl);
   const parentEmail = resolveAnswerParentEmail(serverData);
-  const documentPhotos = resolveAnswerPhotos(serverData);
-  const rooms = type?.kind === "meeting" ? parseMeetingRooms(serverData, type) : [];
+  const documentPhotos = resolveAnswerPhotos(serverData).map((u) => toBackendUrl(u, baseUrl));
+  const rooms = (type?.kind === "meeting" ? parseMeetingRooms(serverData, type) : []).map((room) => ({
+    ...room,
+    images: room.images.map((u) => toBackendUrl(u, baseUrl)),
+  }));
   // Salle de réunion : les photos de la SALLE (colonne 8) priment sur les documents.
   const photos = rooms[0]?.images.length ? rooms[0].images : documentPhotos;
   const roomIndex = typeof serverData?.roomIndex === "number" ? serverData.roomIndex : undefined;

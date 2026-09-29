@@ -27,7 +27,13 @@ import type { Action, ActionStatus } from "@communecter/cocolight-api-client";
  *  - Lien explicite documenté avec le type SDK.
  */
 export type FundingActionStatus = Extract<ActionStatus, "todo" | "done">;
-export type FundingPaymentStatus = "pending" | "paid" | "failed" | "refunded";
+
+/**
+ * Statut de paiement d'AFFICHAGE — le vocabulaire de l'UI, pas celui du document. À ne pas
+ * confondre avec `financer.payment.status` (`unpaid | partial | payed`, sic) : la traduction
+ * se fait dans `toDisplayPaymentStatus`, et nulle part ailleurs.
+ */
+export type FundingPaymentStatus = "pending" | "paid" | "partial" | "failed" | "refunded";
 export type FundingMilestoneStatus = "open" | "done" | "close";
 
 export type FundingContributor = {
@@ -48,6 +54,19 @@ export type FundingTransaction = {
   transactionId: string;
   fundingType?: string;
   fundingIndex?: number;
+  /**
+   * Clé stable de la ligne côté serveur : un versement se cible par elle, jamais par
+   * `fundingIndex`, qu'une insertion concurrente décale. Absente des lignes antérieures.
+   */
+  finkey?: string;
+  /** Clé de la dépense porteuse (≠ `depenseIndex`, cf. `lib/depenseKey.ts`). */
+  depenseKey?: string;
+  /** Montant encaissé ET validé (cf. `lib/financerPayment.ts`). */
+  paidAmount?: number;
+  /** Montant versé, en attente de validation du porteur. */
+  pendingAmount?: number;
+  /** Bloc `payment` brut de la ligne serveur — à lire via `readFinancerPaymentState`. */
+  payment?: unknown;
 };
 
 export type FundingAction = {
@@ -191,6 +210,11 @@ export interface CagnotteFundableItem {
   itemId: string;
   milestoneId: string;
   depenseIndex: number;
+  /**
+   * Clé du sous-document dépense, lue à la source par `buildResourceFromAnswer`. ≠ `depenseIndex`,
+   * une POSITION : les deux ne coïncident que si `depense` est un vrai tableau.
+   */
+  depenseKey?: string;
   name: string;
   description?: string;
   price: number;
@@ -209,6 +233,13 @@ export interface DepenseFunding {
   amount: number;
   name?: string;
   price?: number;
+  /**
+   * Jalon de la dépense, à renseigner dès qu'il est connu : le serveur résout alors la clé
+   * lui-même, au lieu de retomber sur la position (cf. `utils/depenseKey.ts`).
+   */
+  milestoneId?: string;
+  /** Clé du sous-document dépense, quand elle est connue et qu'il n'y a pas de jalon. */
+  depenseKey?: string;
 }
 
 export interface Pledge {
@@ -223,6 +254,15 @@ export interface Pledge {
   fundingAmount: number,
   userPledge: number,
   userfundingPledge:  FundingTransaction[];
+  /** Ciblage de la ligne : `finkey` fait foi, `fundingIndex` ne sert qu'aux lignes antérieures. */
+  finkey?: string,
+  /** Clé de la dépense porteuse, attendue par le serveur (≠ `depenseIndex`). */
+  depenseKey?: string,
+  /**
+   * Reste dû : `fundingAmount` moins ce qui est déjà validé. Sans lui, « payer ma promesse »
+   * surfacture une promesse partiellement réglée.
+   */
+  remainingAmount?: number,
 }
 
 export interface Objective {

@@ -1,9 +1,11 @@
+import { Suspense, type ReactNode } from "react";
 import { lazy } from "vite-preload";
 import type { LoaderFunctionArgs, RouteObject } from "react-router";
 import type { QueryClient } from "@tanstack/react-query";
 import type { SiteConfig } from "@/types/site-schema";
 import type { ModuleRouteFactory } from "@/lib/modules";
 import { prefetchCommunDetail } from "./prefetch/prefetchCommun";
+import { AacRouteFallback } from "./components/AacRouteFallback";
 
 /**
  * Routes du module AAC (injectées dans le router principal via `discoverModules`).
@@ -15,8 +17,15 @@ import { prefetchCommunDetail } from "./prefetch/prefetchCommun";
  * statiquement : la fiche détail et ses composants pèsent ~3 100 lignes et tirent
  * derrière eux les dialogues et mutations de cagnotte. Importés en tête, ils
  * partaient dans le bundle principal — donc chez les 16 sites du parc qui n'ont pas
- * d'AAC. Le `<Suspense>` qui les couvre est celui de `RootLayout.tsx:96`, et le
- * module suit ainsi la convention déjà tenue par `SectionRenderer` pour les sections.
+ * d'AAC. Le module suit ainsi la convention déjà tenue par `SectionRenderer` pour les
+ * sections.
+ *
+ * Le `<Suspense>` est LOCAL, et non plus celui de `RootLayout.tsx:96` : ce dernier ne
+ * rend qu'un `<p>loading</p>` brut. `AacRouteFallback` est volontairement un fichier à
+ * part, sans dépendance vers les pages — sans quoi l'import statique ici annulerait le
+ * `lazy()` ci-dessous. Il n'entre pas en conflit avec le préchargement : `preloadAll()`
+ * résout les chunks AVANT le rendu SSR, la frontière ne se voit donc qu'à la navigation
+ * client.
  *
  * Le `lazy` est celui de **`vite-preload`**, pas de React (CLAUDE.md) : lui seul
  * enregistre le chunk auprès du `ChunkCollectorContext`, ce qui donne les
@@ -57,16 +66,20 @@ const communDetailLoader = async (
   return null;
 };
 
+function withFallback(element: ReactNode): ReactNode {
+  return <Suspense fallback={<AacRouteFallback />}>{element}</Suspense>;
+}
+
 export const routes: ModuleRouteFactory = (queryClient, config): RouteObject[] => {
   if (!config?.aac) return [];
   return [
     {
       path: "/aac",
-      element: <AacPage />,
+      element: withFallback(<AacPage />),
     },
     {
       path: "/aac/commun/:answerId",
-      element: <AacCommunDetailPage />,
+      element: withFallback(<AacCommunDetailPage />),
       loader: (args) => communDetailLoader(args, queryClient, config),
     },
   ];

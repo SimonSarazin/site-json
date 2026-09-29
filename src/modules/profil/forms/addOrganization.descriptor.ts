@@ -3,6 +3,8 @@
  * champs que AddOrganizationFormData → useAddOrganization consommé tel quel. Layout tabs (info / loc).
  * NB : `role` (admin/member) est le rôle d'appartenance du créateur, pas un champ du document — il
  * transite tel quel dans le payload SDK (le moteur renvoie toutes les valeurs plates).
+ * Pas de `$slot:parentInfo`, contrairement à projet/poi : `ADD_ORGANIZATION` n'accepte pas de parent,
+ * l'afficher annoncerait un rattachement qui n'a pas lieu.
  */
 import { ORGANIZATION_TYPES } from "@communecter/cocolight-api-client";
 import type { FieldDescriptor, FormDescriptor } from "@/modules/formEngine";
@@ -36,7 +38,7 @@ export const addOrganizationDescriptor: FormDescriptor = {
   layout: { kind: "tabs" },
   sections: [
     { id: "info", label: "AddEntity.tabs.info", groups: [
-      { columns: 1, fields: ["$slot:parentInfo", "name", "type", "role", "shortDescription", "email", "url", "tags"] },
+      { columns: 1, fields: ["name", "type", "role", "shortDescription", "email", "url", "tags"] },
     ] },
     locationSection,
   ],

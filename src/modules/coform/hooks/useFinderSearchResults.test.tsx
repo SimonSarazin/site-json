@@ -174,6 +174,22 @@ describe("useFinderSearchResults", () => {
       await waitFor(() => expect(searchCostumMock).toHaveBeenCalledTimes(1));
       expect(searchCostumMock.mock.calls[0][0].notSourceKey).toBeUndefined();
     });
+
+    it("config.sourceKey → périmètre explicite émis, notSourceKey retiré même à true", async () => {
+      searchCostumMock.mockResolvedValue({ results: [] });
+      renderHook(
+        () =>
+          useFinderSearchResults({
+            query: "test5",
+            config: makeConfig({ notSourceKey: true, sourceKey: ["federationDesCae"] }),
+            enabled: true,
+          }),
+        { wrapper: makeWrapper() }
+      );
+      await waitFor(() => expect(searchCostumMock).toHaveBeenCalledTimes(1));
+      expect(searchCostumMock.mock.calls[0][0].sourceKey).toEqual(["federationDesCae"]);
+      expect(searchCostumMock.mock.calls[0][0].notSourceKey).toBeUndefined();
+    });
   });
 
   describe("transformation des résultats", () => {

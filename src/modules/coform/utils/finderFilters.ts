@@ -1,4 +1,4 @@
-import type { FinderFilter } from "../types";
+import type { FinderConfig, FinderElementType, FinderFilter } from "../types";
 
 /**
  * Construit les filtres MongoDB (DSL legacy `SearchNew::searchFilters`) à partir
@@ -70,4 +70,86 @@ export function buildFinderMongoFilters(
   }
 
   return out;
+}
+
+/**
+ * Natures de lieux d'un dispositif « par lieu » (form d'usage à réponse
+ * partagée) : pilotent les libellés ET, par défaut, le périmètre des listes de
+ * lieux. Source UNIQUE des `z.enum` de config (`toolsCatalog`, `aac.detail`).
+ * Absent ⇒ `tiersLieu`, le dispositif historique.
+ */
+export const PLACE_KINDS = ["tiersLieu", "cae"] as const;
+export type PlaceKind = (typeof PLACE_KINDS)[number];
+
+/**
+ * Périmètre PAR DÉFAUT de chaque nature de lieu : les costums dont les
+ * organisations relèvent. Le serveur borne à
+ * `$or[source.keys ∈, reference.costum ∈]` (`SearchNew::buildSourceKey`).
+ *
+ * Une source ajoutée ici vaut pour TOUS les sites de cette nature ; pour un seul
+ * site, la config déclare `placeSourceKeys` (cf. `placeKindSourceKeys`).
+ */
+export const PLACE_KIND_SOURCE_KEYS: Record<PlaceKind, readonly string[]> = {
+  cae: ["federationDesCae"],
+  tiersLieu: ["franceTierslieux"],
+};
+
+/**
+ * Clés de source du périmètre des lieux : la surcharge de config
+ * (`placeSourceKeys`) si elle porte au moins une clé, sinon le préréglage de
+ * `kind` (défaut : tiers-lieux).
+ *
+ * Défensif sur les DEUX entrées : la config n'est pas parsée au runtime (les
+ * props arrivent brutes du JSON). Une surcharge est donc nettoyée (non-chaînes et
+ * chaînes vides écartées), et une nature inconnue retombe sur tiers-lieux au lieu
+ * de planter sur un préréglage `undefined`.
+ */
+export function placeKindSourceKeys(kind?: PlaceKind, override?: readonly unknown[]): string[] {
+  const surcharge = Array.isArray(override)
+    ? override.filter((k): k is string => typeof k === "string" && k.trim() !== "")
+    : [];
+  if (surcharge.length > 0) return surcharge;
+  const nature: PlaceKind = kind && (PLACE_KINDS as readonly string[]).includes(kind) ? kind : "tiersLieu";
+  return [...PLACE_KIND_SOURCE_KEYS[nature]];
+}
+
+/** Paramètres `searchCostum` qu'un finder impose à la recherche d'éléments. */
+export interface FinderSearchParams {
+  searchType: FinderElementType[];
+  filters?: Record<string, unknown>;
+  notSourceKey?: true;
+  sourceKey?: string[];
+}
+
+/**
+ * Paramètres de recherche `searchCostum` d'un finder : type(s) cherché(s),
+ * filtres DSL (inclusions + exclusions, via `buildFinderMongoFilters`) et
+ * périmètre. Source UNIQUE pour tout écran qui propose « les éléments de ce
+ * finder » — la modale de recherche (`useFinderSearchResults`) comme la liste
+ * « J'utilise » de la fiche commun, qui doivent rester strictement alignées.
+ *
+ * - `filters` est OMIS quand le finder n'en déclare aucun (pas de `filters: {}`).
+ * - Périmètre : un `sourceKey` non vide l'emporte — il est émis tel quel et
+ *   `notSourceKey` est alors OMIS (sa seule présence désarmerait le périmètre).
+ * - Sans `sourceKey`, `notSourceKey` n'est posé qu'à `true`. Absent, le SDK borne
+ *   la recherche au costum courant (`_withCostumContext`) ; un `false` partirait
+ *   en chaîne `"false"` (form-urlencoded), que la garde serveur `empty()` lit
+ *   comme ACTIF — il ferait donc exactement l'inverse de ce qu'il dit.
+ */
+export function buildFinderSearchParams(
+  finder: Pick<FinderConfig, "filters" | "excludeFilters" | "notSourceKey" | "sourceKey"> & {
+    type: FinderElementType | FinderElementType[];
+  },
+): FinderSearchParams {
+  const filters = buildFinderMongoFilters(finder.filters ?? [], finder.excludeFilters ?? []);
+  const scope: Pick<FinderSearchParams, "notSourceKey" | "sourceKey"> = finder.sourceKey?.length
+    ? { sourceKey: [...finder.sourceKey] }
+    : finder.notSourceKey
+      ? { notSourceKey: true }
+      : {};
+  return {
+    searchType: Array.isArray(finder.type) ? finder.type : [finder.type],
+    ...(Object.keys(filters).length > 0 ? { filters } : {}),
+    ...scope,
+  };
 }

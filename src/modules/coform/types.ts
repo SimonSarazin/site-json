@@ -1141,12 +1141,20 @@ export interface FinderConfig {
   excludeFilters?: FinderFilter[];
   /** Recherche globale (true) ou sourcée (false) */
   notSourceKey: boolean;
+  /**
+   * Périmètre EXPLICITE (clés de costum) — prioritaire sur `notSourceKey` quand
+   * il est non vide. Posé par l'appelant (ex. `PlacesListView` via `placeKind`),
+   * jamais lu depuis le form.
+   */
+  sourceKey?: string[];
   /** Chercher parmi mes contacts */
   myContacts: boolean;
   /** Initialiser avec l'utilisateur connecté */
   initCurrentUser: boolean;
   /** Label de l'élément recherché (ex: "Organisation", "Tiers-lieu") */
   elementLabel: string;
+  /** Titre de la modale, déjà traduit — prioritaire sur « Rechercher un {{label}} ». */
+  title?: string;
   /** Texte du bouton de recherche */
   buttonLabel: string;
   /** Placeholder du champ de recherche */

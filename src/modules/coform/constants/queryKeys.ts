@@ -249,7 +249,8 @@ export const COFORM_QUERY_KEYS = {
     query: string,
     filters: Record<string, unknown> | undefined,
     notSourceKey: boolean,
-  ) => ["coform", "finderSearch", searchType, query, filters, notSourceKey] as const,
+    sourceKey?: readonly string[],
+  ) => ["coform", "finderSearch", searchType, query, filters, notSourceKey, sourceKey ?? null] as const,
   FINDER_SEARCH_PREFIX: () => ["coform", "finderSearch"] as const,
 
   /**
