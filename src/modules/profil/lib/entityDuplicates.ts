@@ -3,9 +3,10 @@
  * des formulaires costum) : ce que l'utilisateur saisit (nom, code postal) est comparé aux
  * entités que la recherche a ramenées. Aucune dépendance React — testé à part.
  *
- * Le nom SEUL ne prouve rien : sur le réseau des tiers-lieux, 67 noms existent plusieurs fois
- * (« L'Archipel » dans 6 villes) et 5 seulement partagent aussi le code postal. D'où trois
- * niveaux, et une alerte qui informe au lieu de bloquer.
+ * Le nom SEUL ne prouve rien : dans l'annuaire des tiers-lieux (4 305 fiches, mesuré le 29/09/2026
+ * avec le repli de `foldText`), 114 noms existent plusieurs fois — « L'Archipel » dans 7 villes —
+ * et 34 seulement partagent aussi un code postal. D'où trois niveaux, et une alerte qui informe au
+ * lieu de bloquer.
  */
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 
@@ -119,6 +120,20 @@ export function rankDuplicates<T extends SearchEntity>(
     ranked.push({ entity, candidate, ...verdict });
   }
   return ranked.sort((a, b) => LEVEL_RANK[a.level] - LEVEL_RANK[b.level]).slice(0, Math.max(0, limit));
+}
+
+/**
+ * Entités dont le nom a encore un rapport avec la saisie : l'un contient l'autre, une fois repliés.
+ * Sert à trier des résultats reçus pour un nom PRÉCÉDENT pendant que le nom courant charge — la
+ * liste de « La Plume » reste juste pour « La Plume à », pas pour « Zèbre ».
+ */
+export function stillRelevant<T extends SearchEntity>(name: unknown, entities: readonly T[]): T[] {
+  const typed = foldText(name);
+  if (!typed) return [];
+  return entities.filter((entity) => {
+    const other = foldText(asRecord(entity.serverData).name);
+    return other !== "" && (other.includes(typed) || typed.includes(other));
+  });
 }
 
 /** La première candidate `strong`, s'il y en a une — c'est elle qui justifie une confirmation. */

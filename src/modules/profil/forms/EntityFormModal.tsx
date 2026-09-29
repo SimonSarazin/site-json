@@ -149,7 +149,7 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
   const mutation = useEntityMutation(config.buildSpec(ctx));
   const guard = useUnsavedGuard(onOpenChange);
   // Création seulement : en édition l'entité existe, il n'y a rien à confirmer.
-  const duplicateGuard = useDuplicateSubmitGuard(effMode === "add" ? config.duplicateCheck : undefined);
+  const duplicateGuard = useDuplicateSubmitGuard(effMode === "add" ? config.duplicateCheck : undefined, open);
 
   const commit = async (cleaned: FieldValues) => {
     await mutation.mutateAsync(cleaned as Record<string, unknown>);

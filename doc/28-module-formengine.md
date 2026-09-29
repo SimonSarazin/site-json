@@ -178,8 +178,10 @@ type LayoutSpec =
 > chaque groupe : les champs `widget:"hidden"`, ceux masqués par LEUR `visibleIf`, et ceux dont le nom n'a
 > **aucune déclaration** dans `descriptor.fields` — ces derniers sont retirés de la grille **en silence** (un
 > `$slot:<id>` compte toujours comme affichable — le moteur ne sait pas à l'avance si le slot rendra quelque
-> chose ; son enveloppe porte `empty:hidden`, donc un slot qui ne rend RIEN ne laisse pas de cellule vide dans
-> la grille). Si plus aucun champ ne reste, le groupe entier disparaît,
+> chose. Sa cellule ne laisse pas de vide dans la grille pour autant : `empty:hidden` quand le slot ne rend
+> RIEN, et sortie du flux (`absolute`) quand son seul enfant est marqué **`data-slot-quiet`** — le contrat d'un
+> slot qui garde montée une région d'annonce invisible, qu'un `display:none` retirerait de l'arbre
+> d'accessibilité). Si plus aucun champ ne reste, le groupe entier disparaît,
 > titre et séparateur compris — sinon le titre resterait orphelin (ex. « Pièces justificatives » quand la forme
 > juridique choisie n'en exige pas). Les champs `hidden` restent volontairement PLACÉS dans une section pour
 > que le badge d'erreur d'onglet les voie (`sectionHasError` ne teste que les champs placés). Garde :
@@ -478,9 +480,9 @@ reçoit) vidé en édition s'émet `""` — une chaîne là où `tags` attend un
 
 Pendant la saisie d'une CRÉATION, signale les entités existantes dont le nom approche celui saisi, puis
 demande confirmation à la soumission quand nom ET code postal coïncident. **Non bloquant** : le nom seul
-ne prouve rien (sur le réseau des tiers-lieux, 67 noms existent plusieurs fois et 5 seulement partagent
-aussi le code postal — « L'Archipel » est dans six villes). Générique : tout formulaire costum l'active
-par config, sans code.
+ne prouve rien — dans l'annuaire des tiers-lieux (4 305 fiches, mesuré le 29/09 avec le repli que le code
+applique), 114 noms existent plusieurs fois et 34 seulement partagent aussi un code postal ;
+« L'Archipel » est dans sept villes. Générique : tout formulaire costum l'active par config, sans code.
 
 ```jsonc
 // costumForms["<id>"]
@@ -522,7 +524,10 @@ sont **inertes en édition** — le même document sert `add-<id>` et `edit-<id>
   vérification le bouton de soumission reste désactivé (`submitting={mutation.isPending || checking}`),
   sinon un second clic ferait une double création. Une vérification qui échoue (réseau) laisse créer.
   La boîte de confirmation se ferme dès le clic (le bouton d'action d'un `AlertDialog` ferme toujours) :
-  pendant la création, l'attente est portée par le bouton de soumission du formulaire.
+  pendant la création, l'attente est portée par le bouton de soumission du formulaire. La garde lit
+  jusqu'à **3 pages** (un homonyme exact ancien d'un nom générique tombe hors des 50 premières), et
+  reçoit l'état `open` de la modale : celle-ci reste montée une fois fermée, une vérification dont la
+  réponse arrive après la fermeture est **abandonnée** — ni confirmation sur une page vide, ni création.
 
 **La requête** (`lib/duplicateSearch.ts`, `hooks/useEntityDuplicates.ts`) — aucun nouvel endpoint, c'est la
 recherche du site (`useSearchQuery`), avec quatre règles mesurées sur le backend :
@@ -538,10 +543,14 @@ recherche du site (`useSearchQuery`), avec quatre règles mesurées sur le backe
   résultats pour « Lyon », 22 sur le nom) ;
 - on demande **50** résultats, on classe côté client, on en affiche 5 : le serveur trie par date de mise à
   jour, pas par pertinence — les homonymes exacts de « La Fabrique » arrivent aux rangs 9, 18, 29 et 30 ;
-- le terme est **nettoyé, pas replié** (`toSearchTerm` : apostrophes et tirets → espace). « L’Archipel »
-  tapé sur mobile ne retrouvait rien ; à l'inverse un terme replié perd des fiches. On plie pour comparer,
-  on nettoie pour chercher. Le **code postal ne part jamais au serveur** : il reclasse ce qui a été reçu,
-  saisir une adresse ne coûte donc aucune requête.
+- le terme est **nettoyé, pas replié** (`toSearchTerm` : chaque apostrophe et chaque tiret devient UN
+  espace). « L’Archipel » tapé sur mobile ne retrouvait rien ; à l'inverse un terme replié perd des fiches.
+  On plie pour comparer, on nettoie pour chercher. **Les espaces ne sont pas repliés** : le serveur traduit
+  chaque espace en UN séparateur optionnel (`[\s'-]?`), un nom stocké « A - B » exige donc trois espaces.
+  Les replier rendait introuvables par leur propre nom 243 fiches de l'annuaire (5,6 %), dont
+  « Coworking Haute-Deûle - En cours » ;
+- le **code postal ne part jamais au serveur** : il reclasse ce qui a été reçu, saisir une adresse ne
+  coûte donc aucune requête.
 
 Coût : une requête par nom stabilisé (debounce 400 ms, seuil de 3 caractères utiles) — la lib n'annule pas
 une requête en vol. La fraîcheur du cache est portée à **5 minutes** : le slot étant démonté puis remonté à
@@ -551,7 +560,27 @@ nouveau nom, les derniers résultats reçus restent affichés, reclassés contre
 panneau ne clignote pas à chaque pause de frappe. Rafraîchissement après création : ajouter
 `"searchKeys": ["entityDuplicates"]` aux `params` de `mutation.invalidateFn` (`SEARCH_DUPLICATES_PREFIX`).
 
-**Limites connues.** Une fiche que le backend masque (en attente de validation) n'est pas signalée. Le
+**Garde-fous de config.** Le bloc se désarme en silence quand il est incohérent ; deux gates le disent :
+- le zod du document (`superRefine`) refuse un `nameField`/`postalCodeField` absent de `fields`, un
+  `confirmOnSubmit` sans `postalCodeField`, un slot déclaré mais ancré dans aucune section, et un bloc
+  sans effet (ni slot, ni confirmation) ;
+- le préflight `tests/preflight/duplicate-check.test.ts` vérifie, config par config, que `search.from`
+  résout une section exploitable et que le périmètre est borné.
+
+**Accessibilité.** L'annonce passe par une région `role="status"` invisible, montée AVANT tout message
+(WCAG 4.1.3 : une région créée avec son contenu n'est pas lue de façon fiable) ; le panneau visible n'est
+pas une région vivante. Le niveau est dit en texte, jamais par la couleur seule. L'aperçu rend le focus au
+bouton qui l'a ouvert, la confirmation annulée au bouton de soumission. Tout lien cliqué dans l'aperçu
+s'ouvre dans un nouvel onglet. ⚠ La pastille de l'alerte forte utilise `bg-warning` +
+`text-warning-foreground` : le thème du site doit définir un couple contrasté — les tokens sombres par
+défaut du moteur ne donnent que 1,94:1.
+
+**Déploiement.** Le code AVANT ou AVEC la config : servie par un build qui ne connaît pas la clé
+`slot:entityDuplicates`, la config fait rejeter le document entier et la modale ne s'ouvre plus, en
+création comme en édition.
+
+**Limites connues.** L'idempotence n'existe pas : deux personnes qui créent le même lieu en même temps ne
+se voient pas. Une fiche que le backend masque (en attente de validation) n'est pas signalée. Le
 périmètre hérité porte les filtres de l'annuaire (pays, tags) : une fiche hors de ces filtres n'est pas vue.
 La règle serveur `organizationSameName` (nom + code postal + commune, comparaison EXACTE et sensible à la
 casse) reste le dernier filet et n'a pas été modifiée — elle vit dans le socle partagé.

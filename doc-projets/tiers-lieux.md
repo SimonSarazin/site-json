@@ -211,10 +211,11 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 **Demande** (Peterson) : « Alerte si le tiers-lieu est déjà existant à la création ». **Constat
 mesuré** : « La Plume à Loup » existe (Attin, 62170) ; saisir « La Plume à loup » créait un doublon
 — la seule garde était la règle serveur `organizationSameName` (nom + code postal + commune),
-comparaison EXACTE et sensible à la casse, jouée à la fin des 5 étapes. Sur la base locale : 4 321
-organisations taguées `TiersLieux`, **67 noms présents plusieurs fois**, dont **5 seulement** avec le
-même code postal (« L'Archipel » existe dans six villes). Le nom seul ne prouve rien : l'alerte
-informe, elle ne bloque pas.
+comparaison EXACTE et sensible à la casse, jouée à la fin des 5 étapes. Sur la base locale, périmètre
+de l'annuaire (4 305 fiches), avec le repli que le code applique : **114 noms présents plusieurs
+fois**, dont **34 seulement** partagent aussi un code postal (« L'Archipel » existe dans sept
+villes). Le nom seul ne prouve rien : l'alerte informe, elle ne bloque pas. *(Les chiffres 67 / 5 /
+six villes d'une première mesure étaient en égalité stricte de chaînes — corrigés par la revue.)*
 
 **Ce que voit l'utilisateur.** Sous le nom (étape Infos), dès 3 caractères, puis de nouveau sous
 l'adresse (étape Contact) : jusqu'à 5 fiches au nom proche, avec code postal et commune, un bouton
@@ -250,27 +251,37 @@ création ». Les choix qui comptent, tous mesurés :
   résultat, inutiles ici).
 - **50 résultats demandés, classés côté client, 5 affichés** : le serveur trie par date de mise à
   jour — les homonymes exacts de « La Fabrique » arrivent aux rangs 9, 18, 29 et 30.
-- **Terme nettoyé avant envoi** : « L’Archipel » tapé sur mobile (apostrophe typographique) ne
-  retrouvait rien.
+- **Terme nettoyé avant envoi, espaces conservés** : « L’Archipel » tapé sur mobile (apostrophe
+  typographique) ne retrouvait rien. Et le serveur traduit chaque espace en UN séparateur optionnel :
+  replier les espaces rendait **243 fiches (5,6 %) introuvables par leur propre nom** — constat GRAVE
+  de la revue, reproduit sur « Coworking Haute-Deûle - En cours ».
 - **Le wizard démonte l'étape inactive** : le slot est posé à deux étapes, et la confirmation vit
   dans la modale (elle refait une recherche sur les valeurs soumises).
 - **Inerte en édition** : le même document sert `add-tiers-lieux` et `edit-tiers-lieux`.
 
-**Revue adversariale** (workflow). Dimension « bonnes pratiques » : 10 constats, tous corrigés —
-dont un `$or` en ligne qui écrasait le `$or` de périmètre hérité (`mergeMongoFilters`), un périmètre
-hérité partiel, un panneau qui disparaissait à chaque nouvelle recherche, et une affirmation fausse
-sur le coût réseau (fraîcheur de cache portée à 5 min). Dimensions fonctionnel, pipeline,
-accessibilité et données réelles : **en cours au moment du commit** (deux coupures réseau) — leurs
-constats feront l'objet d'un commit de suivi.
+**Revue adversariale** (workflow, 5 dimensions, chaque constat soumis à 2 sceptiques) —
+**29 constats, tous instruits** :
+
+| Dimension | Constats | Ce qui a été corrigé |
+|---|---|---|
+| Bonnes pratiques | 10 | `$or` en ligne qui écrasait le `$or` de périmètre (`mergeMongoFilters`) ; périmètre hérité partiel ; panneau qui disparaissait à chaque recherche ; affirmation fausse sur le coût réseau (cache porté à 5 min) ; logique pure sortie du composant ; helper dupliqué |
+| Données réelles | 3 | 🔴 repli des espaces (ci-dessus) ; la garde lit jusqu'à 3 pages ; chiffres remesurés avec le repli |
+| Fonctionnel | 6 | soumission abandonnée si la modale est fermée pendant la vérification ; résultats d'un ancien nom qui réapparaissaient ; aperçu démonté quand la liste se vide ; liens de l'aperçu qui faisaient perdre la saisie ; texte de la confirmation qui se vidait à la fermeture |
+| Accessibilité | 8 | région d'annonce montée avant le message ; lien à 3,25:1 en thème clair ; texte secondaire à 4,37:1 sur l'alerte forte ; focus rendu après annulation ; débordement à 375 px ; libellés qui comptaient faux |
+| Pipeline | 2 | cohérence du bloc vérifiée par le zod et par un préflight dédié ; ordre de déploiement documenté |
+
+Commit de suivi après le commit initial `c114a91d`. Deux écarts assumés : pas d'index unique côté
+serveur (deux créations simultanées ne se voient pas) ; tokens `warning` sombres par défaut du moteur
+non corrigés (sans effet sur ce site, dont le thème les redéfinit — documenté dans `doc/28`).
 
 | Gate | Résultat |
 |---|---|
 | `config:validate` | ✅ 14 pages, 26 sections |
 | `audit:config` | ✅ RAS |
-| Préflight | ✅ 725 tests |
-| Tests du lot (lib, hook, slot, garde, moteur, registres) | ✅ 221 tests |
+| Préflight | ✅ 727 tests (dont le nouveau gate `duplicate-check`) |
+| Tests du lot (lib, hook, slot, garde, schéma, moteur, registres) | ✅ 530 tests sur les dossiers touchés |
 | `tsc -b`, eslint | ✅ sur le lot (erreurs pré-existantes `aac`/`cagnotte` : SDK installé 1.0.189 < requis ^1.0.195) |
-| `vite build` (client) | ✅ — slot dans son propre fichier, 5,8 ko |
+| `vite build` (client) | ✅ — slot dans son propre fichier, 6,2 ko ; règle CSS `:has(>[data-slot-quiet]:only-child)` générée |
 | `npm run build` | ⛔ non rejouable sur ce poste : son `tsc` bute sur les erreurs pré-existantes ci-dessus |
 | Snapshot `compiled.byteparity` | régénéré — diff = `slots`, `duplicateCheck`, 2 ancres `$slot:`, `searchKeys` |
 | Fixture `__effective__/tiers-lieux.json` | inchangée |
@@ -676,7 +687,7 @@ d'autres projets, tous vérifiés non régressifs à son égard :
 | 19 | Palette : le jaune hors de `secondary` | ✅ | 07/09 — `secondary` passé en sable sourd (clair et sombre), jaune vif conservé sous `warning`. Corrige un `text-secondary-foreground` à **1,06:1** en sombre et trois pastilles `bg-yellow-400`/`text-white` à **1,53:1** sur la home. Contrastes remesurés au navigateur |
 | 20 | Annuaire des ressources (`/annuaire-ressources`) | ✅ | 08/09 — page ajoutée : section `coform-resource-directory` (module `search`, variant `navigator-tl-ressource`). Facettes type + 3 groupes prix, carte carrousel + filtre « porté par », modal « En savoir plus » (bouton « Réserver » / `mailto:`). Détail moteur : `doc/07-module-search.md`. Gates config/tsc/eslint/préflights ✅ |
 | 21 | Admin — onglet « Référencement » | ✅ | 08/09 — `admin.tabs[]` `referencement` + section `type: "reference"`, `entityTypes: ["organizations", "citoyens"]` (config seule). `setsource` add/remove collection-agnostique. Gates config/effective-config/admin ✅ |
-| 22 | Alerte « tiers-lieu déjà existant » à la création | 🟡 | 29/09 — slot générique `slot:entityDuplicates` + bloc `duplicateCheck` (config) + confirmation à la soumission. Gates verts ; **reste** : fin de la revue adversariale (4 dimensions) et recette navigateur |
+| 22 | Alerte « tiers-lieu déjà existant » à la création | 🟡 | 29/09 — slot générique `slot:entityDuplicates` + bloc `duplicateCheck` (config) + confirmation à la soumission. Gates verts, revue adversariale close (29 constats instruits) ; **reste** : recette navigateur |
 
 ---
 

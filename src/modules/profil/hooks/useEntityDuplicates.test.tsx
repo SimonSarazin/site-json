@@ -8,11 +8,13 @@ import type { SearchEntity } from "@communecter/cocolight-api-client";
  * aller-retour complet (la lib n'annule rien) : sous le seuil rien ne doit partir, et le code
  * postal ne doit jamais entrer dans la requête — il reclasse ce qui est déjà en cache.
  */
-const ctx = vi.hoisted(() => ({ calls: [] as Record<string, unknown>[], results: [] as unknown[], isLoading: false, error: null as unknown }));
+const ctx = vi.hoisted(() => ({
+  calls: [] as Record<string, unknown>[], results: [] as unknown[], isLoading: false, error: null as unknown, hasNextPage: false,
+}));
 vi.mock("@/modules/search/hooks/useSearchQuery", () => ({
   useSearchQuery: (params: Record<string, unknown>) => {
     ctx.calls.push(params);
-    return { transformedResults: ctx.results, isLoading: ctx.isLoading, error: ctx.error };
+    return { transformedResults: ctx.results, isLoading: ctx.isLoading, error: ctx.error, hasNextPage: ctx.hasNextPage };
   },
 }));
 vi.mock("@/hooks/useDebounce", () => ({ useDebounce: <T,>(v: T) => v }));
@@ -30,6 +32,7 @@ beforeEach(() => {
   ctx.results = [ent("p1", "La Plume d'or", "75011"), ent("p2", "La Plume à Loup", "62170")];
   ctx.isLoading = false;
   ctx.error = null;
+  ctx.hasNextPage = false;
 });
 
 describe("useEntityDuplicates", () => {
@@ -82,11 +85,37 @@ describe("useEntityDuplicates", () => {
     ctx.results = [];
     rerender({ name: "La Plume à" });
     expect(result.current.isLoading).toBe(true);
-    expect(result.current.matches.map((m) => m.candidate.id)).toEqual(["p1", "p2"]);
+    // « La Plume d'or » n'a plus de rapport avec « La Plume à » : seule p2 reste affichée.
+    expect(result.current.matches.map((m) => m.candidate.id)).toEqual(["p2"]);
     // Réponse reçue : elle remplace les résultats gardés, même vide.
     ctx.isLoading = false;
     rerender({ name: "La Plume à" });
     expect(result.current.matches).toHaveLength(0);
+  });
+
+  it("après un passage sous le seuil, un nouveau nom ne réaffiche PAS les résultats de l'ancien", () => {
+    const { result, rerender } = renderHook(({ name }) => useEntityDuplicates({ name, baseParams, active: true }), { initialProps: { name: "La Plume" } });
+    expect(result.current.matches).toHaveLength(2);
+    rerender({ name: "" });
+    expect(result.current.matches).toHaveLength(0);
+    ctx.isLoading = true;
+    ctx.results = [];
+    rerender({ name: "Plume" }); // aurait un rapport avec les anciens résultats, mais ils ont été vidés
+    expect(result.current.matches).toHaveLength(0);
+  });
+
+  it("un nom sans rapport, tapé d'une traite, ne garde rien pendant son chargement", () => {
+    const { result, rerender } = renderHook(({ name }) => useEntityDuplicates({ name, baseParams, active: true }), { initialProps: { name: "La Plume" } });
+    ctx.isLoading = true;
+    ctx.results = [];
+    rerender({ name: "Zèbre" });
+    expect(result.current.matches).toHaveLength(0);
+  });
+
+  it("signale que le serveur en a d'autres (le décompte est alors un plancher)", () => {
+    ctx.hasNextPage = true;
+    const { result } = renderHook(() => useEntityDuplicates({ name: "La Plume", baseParams, active: true }));
+    expect(result.current).toMatchObject({ found: 2, hasMore: true });
   });
 
   it("fraîcheur de cache allongée : le remontage du slot à l'étape suivante ne relance pas la requête", () => {

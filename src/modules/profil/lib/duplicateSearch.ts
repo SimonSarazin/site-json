@@ -33,8 +33,15 @@ const DUPLICATE_FIELDS = ["name", "collection", "slug", "address", "profilImageU
 /**
  * Terme de recherche : la saisie, débarrassée de ce qui la ferait échouer côté serveur. Le serveur
  * cherche par expression régulière insensible à la casse et aux accents, mais PAS à la ponctuation :
- * « L’Archipel » tapé sur mobile (apostrophe typographique) ne retrouve pas « L'Archipel ». Les
- * apostrophes et tirets deviennent des espaces, les espaces sont repliés.
+ * « L’Archipel » tapé sur mobile (apostrophe typographique) ne retrouve pas « L'Archipel ». Chaque
+ * apostrophe et chaque tiret devient donc UN espace.
+ *
+ * Les espaces ne sont PAS repliés. Le serveur traduit chaque espace du terme en UN séparateur
+ * optionnel (`[\s'-]?`, `SearchNew::accentToRegex`) : un nom stocké « A - B » porte trois caractères
+ * entre A et B et exige trois espaces. Replier rendait introuvables par leur propre nom les fiches
+ * à séparateur espacé — 243 des 4 305 fiches de l'annuaire des tiers-lieux (5,6 %), dont
+ * « Coworking Haute-Deûle - En cours ». Garder les espaces donne un motif plus large, jamais plus
+ * étroit (« A   B » retrouve « A - B », « A-B » et « A B »).
  *
  * N'est PAS `foldText` : celui-ci retire toute la ponctuation et perd des fiches (« archipel l »
  * ne retrouve rien, « Archipel (L ) » si). On plie pour comparer, on nettoie pour chercher.
@@ -44,7 +51,6 @@ export function toSearchTerm(name: unknown): string {
   return name
     .replace(/[\u0027\u2018\u2019\u02bc\u0060\u00b4]/g, " ") // apostrophes droite, typographiques, accents isolés
     .replace(/[\u002d\u2010-\u2015]/g, " ") // tirets
-    .replace(/\s+/g, " ")
     .trim();
 }
 

@@ -1460,7 +1460,7 @@
     "title_one": "Une fiche au nom proche existe déjà",
     "title_other": "{{count}} fiches au nom proche existent déjà",
     "titleStrong_one": "Une fiche du même nom existe déjà à ce code postal",
-    "titleStrong_other": "{{count}} fiches au nom proche existent déjà, dont une au même code postal",
+    "titleStrong_other": "{{count}} fiches au nom proche existent déjà, dont au moins une du même nom au même code postal",
     "description": "Vérifiez qu'il ne s'agit pas de la vôtre avant de continuer. Vous pouvez poursuivre la création.",
     "error": "La recherche de fiches existantes a échoué. Vous pouvez poursuivre la création.",
     "placeUnknown": "Commune non renseignée",
@@ -1479,6 +1479,9 @@
       "description": "« {{name}} » existe déjà ({{place}}), avec le même nom et le même code postal. Créer quand même une nouvelle fiche ?",
       "create": "Créer quand même",
       "cancel": "Revenir au formulaire"
-    }
+    },
+    "titleMany": "Plus de {{count}} fiches au nom proche existent déjà",
+    "titleStrongMany": "Plus de {{count}} fiches au nom proche existent déjà, dont au moins une du même nom au même code postal",
+    "moreMany": "et d'autres fiches au nom proche, non affichées"
   }
 }

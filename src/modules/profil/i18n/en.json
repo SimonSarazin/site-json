@@ -1460,7 +1460,7 @@
     "title_one": "A record with a similar name already exists",
     "title_other": "{{count}} records with a similar name already exist",
     "titleStrong_one": "A record with the same name already exists at this postal code",
-    "titleStrong_other": "{{count}} records with a similar name already exist, one of them at the same postal code",
+    "titleStrong_other": "{{count}} records with a similar name already exist, at least one of them with the same name at the same postal code",
     "description": "Check that it is not yours before continuing. You can carry on with the creation.",
     "error": "The search for existing records failed. You can carry on with the creation.",
     "placeUnknown": "Municipality not provided",
@@ -1479,6 +1479,9 @@
       "description": "“{{name}}” already exists ({{place}}), with the same name and the same postal code. Create a new record anyway?",
       "create": "Create anyway",
       "cancel": "Back to the form"
-    }
+    },
+    "titleMany": "More than {{count}} records with a similar name already exist",
+    "titleStrongMany": "More than {{count}} records with a similar name already exist, at least one of them with the same name at the same postal code",
+    "moreMany": "and other records with a similar name, not shown"
   }
 }

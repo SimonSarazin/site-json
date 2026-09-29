@@ -7,7 +7,7 @@ import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 
 import type { DuplicateBaseParams } from "../lib/duplicateSearch";
 import { toSearchTerm } from "../lib/duplicateSearch";
-import { DUPLICATE_DISPLAY_LIMIT, DUPLICATE_MIN_CHARS, isSearchableName, rankDuplicates, type RankedDuplicate } from "../lib/entityDuplicates";
+import { DUPLICATE_DISPLAY_LIMIT, DUPLICATE_MIN_CHARS, isSearchableName, rankDuplicates, stillRelevant, type RankedDuplicate } from "../lib/entityDuplicates";
 
 export interface UseEntityDuplicatesParams {
   /** Nom en cours de saisie. */
@@ -26,8 +26,10 @@ export interface UseEntityDuplicatesParams {
 
 export interface EntityDuplicatesState {
   matches: RankedDuplicate<SearchEntity>[];
-  /** Nombre de correspondances avant bornage à `limit`. */
+  /** Nombre de correspondances REÇUES, avant bornage à `limit`. */
   found: number;
+  /** Le serveur en a d'autres au-delà de celles reçues : `found` est un plancher, pas un total. */
+  hasMore: boolean;
   isLoading: boolean;
   isError: boolean;
   /** Une recherche a été demandée pour le nom courant (seuil atteint, périmètre connu). */
@@ -70,7 +72,7 @@ export function useEntityDuplicates({
   const searchable = active && baseParams !== null && isSearchableName(dName, minChars);
   const term = searchable ? toSearchTerm(dName) : "";
 
-  const { transformedResults, isLoading, error } = useSearchQuery({
+  const { transformedResults, isLoading, error, hasNextPage } = useSearchQuery({
     queryKeyPrefix: SEARCH_DUPLICATES_PREFIX,
     searchText: term,
     searchTags: NO_TAGS,
@@ -84,18 +86,25 @@ export function useEntityDuplicates({
 
   // Chaque nom cherché a SA clé de cache : pendant qu'il charge, il n'a encore aucun résultat, et
   // le panneau disparaîtrait à chaque pause de frappe pour réapparaître 300 ms plus tard. On garde
-  // donc les derniers résultats REÇUS, reclassés contre la saisie courante, le temps du chargement.
+  // donc les derniers résultats REÇUS, le temps du chargement — ceux qui ont encore un rapport avec
+  // la saisie seulement (`stillRelevant`), et rien du tout après un passage sous le seuil : sans ces
+  // deux gardes, effacer « La Fabrique » puis taper « Zèbre » réaffichait les fiches « La Fabrique ».
   // État ajusté pendant le rendu (et non dans un effet) : pas de rendu intermédiaire avec une liste vide.
   const [received, setReceived] = useState<SearchEntity[]>(NO_RESULTS);
   const fresh = transformedResults ?? NO_RESULTS;
-  if (searchable && !isLoading && fresh !== received) setReceived(fresh);
-  const shown = !searchable ? NO_RESULTS : isLoading ? received : fresh;
+  if (!searchable) {
+    if (received !== NO_RESULTS) setReceived(NO_RESULTS);
+  } else if (!isLoading && fresh !== received) {
+    setReceived(fresh);
+  }
+  const shown = !searchable ? NO_RESULTS : isLoading ? stillRelevant(dName, received) : fresh;
 
   const ranked = rankDuplicates({ name: dName, postalCode: dPostal }, shown, { limit: Number.MAX_SAFE_INTEGER, excludeId });
 
   return {
     matches: ranked.slice(0, Math.max(0, limit)),
     found: ranked.length,
+    hasMore: searchable && !isLoading && Boolean(hasNextPage),
     // `isPending` reste vrai sur une requête désactivée : l'état de chargement vient d'`isLoading`.
     isLoading: searchable && isLoading,
     isError: searchable && Boolean(error),

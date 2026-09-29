@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
-import { candidatePlace, duplicateHintKey, duplicateLevel, isSearchableName, rankDuplicates, strongestDuplicate, toDuplicateCandidate } from "./entityDuplicates";
+import { candidatePlace, duplicateHintKey, duplicateLevel, isSearchableName, rankDuplicates, stillRelevant, strongestDuplicate, toDuplicateCandidate } from "./entityDuplicates";
 
 /**
  * Le niveau décide de ce que l'utilisateur voit (simple information, alerte, confirmation à la
@@ -117,6 +117,20 @@ describe("candidatePlace / duplicateHintKey — ce que l'utilisateur lit", () =>
     expect(duplicateHintKey({ sameName: true, samePostalCode: false })).toBe("EntityDuplicates.hint.sameName");
     expect(duplicateHintKey({ sameName: false, samePostalCode: true })).toBe("EntityDuplicates.hint.samePostalCode");
     expect(duplicateHintKey({ sameName: false, samePostalCode: false })).toBeNull();
+  });
+});
+
+describe("stillRelevant — résultats d'un nom précédent", () => {
+  const held = [ent("p1", "La Plume d'or"), ent("p2", "La Plume à Loup"), ent("p3", "Plume")];
+
+  it("garde ce qui contient la saisie, ou que la saisie contient", () => {
+    expect(stillRelevant("La Plume à", held).map((e) => e.id)).toEqual(["p2", "p3"]);
+    expect(stillRelevant("plume", held).map((e) => e.id)).toEqual(["p1", "p2", "p3"]);
+  });
+
+  it("écarte tout pour un nom sans rapport, ou une saisie vide", () => {
+    expect(stillRelevant("Zèbre", held)).toEqual([]);
+    expect(stillRelevant("  ", held)).toEqual([]);
   });
 });
 

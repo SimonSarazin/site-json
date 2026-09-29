@@ -39,8 +39,15 @@ describe("toSearchTerm", () => {
   });
 
   it("garde casse, accents et parenthèses : le serveur les gère, le repli les perdrait", () => {
-    expect(toSearchTerm("  La  Plume à Loup ")).toBe("La Plume à Loup");
+    expect(toSearchTerm("  La Plume à Loup ")).toBe("La Plume à Loup");
     expect(toSearchTerm("Archipel (L')")).toBe("Archipel (L )");
+  });
+
+  it("ne replie PAS les espaces : « A - B » exige trois séparateurs côté serveur", () => {
+    // Le serveur traduit chaque espace en UN séparateur optionnel. Cas réel : la fiche
+    // « Coworking Haute-Deûle - En cours » était introuvable par son propre nom avec un seul espace.
+    expect(toSearchTerm("Coworking Haute-Deûle - En cours")).toBe("Coworking Haute Deûle   En cours");
+    expect(toSearchTerm("L' Avoir")).toBe("L  Avoir");
   });
 
   it("chaîne vide pour une valeur non textuelle", () => {
