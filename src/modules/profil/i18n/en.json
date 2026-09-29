@@ -1462,5 +1462,23 @@
   },
   "CardTeamMember": {
     "territoryNews": "Territory news"
+  },
+  "MyPlacesSection": {
+    "title": "My places",
+    "loginRequired": "Log in to see your third places.",
+    "empty": "You aren't a member of any third place yet.",
+    "emptyHint": "Join a third place from its page to find it here.",
+    "needPlaceFirst": "Join a third place first to see its content here.",
+    "emptyNews": "No news from your third places yet.",
+    "emptyAgenda": "No event linked to your third places yet.",
+    "emptyProjects": "No project linked to your third places yet.",
+    "emptySimilar": "No similar third place found yet.",
+    "tabs": {
+      "places": "My third places",
+      "news": "News",
+      "agenda": "Agenda",
+      "projects": "Projects",
+      "similar": "Similar"
+    }
   }
 }

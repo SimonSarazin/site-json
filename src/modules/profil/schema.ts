@@ -313,6 +313,37 @@ export const ProfileToolsSectionSchema = z.object({
   sticky: z.boolean().optional(),
 });
 
+/**
+ * « Mes lieux » — portage de `costum.views.custom.franceTierslieux.listOrga` (legacy) : les
+ * organisations dont le compte connecté est MEMBRE (`links.members.<id>` existe, `isInviting`
+ * absent — exactement le filtre par défaut de `getOrganizations()`, cf. `useUserOrganizations`),
+ * PAS les fiches suivies (`links.follows`/`getSubscriptions` — une confusion initiale de ce
+ * chantier, corrigée après relecture du code source legacy). Onglets secondaires (actus, agenda,
+ * projets liés à ces lieux, lieux similaires) : cf. `MyPlacesSection.tsx`.
+ *
+ * Section GÉNÉRIQUE (pas un `Profile*Section` : elle ne lit pas `useProfileEntity()`, mais `me`
+ * directement) — page dédiée, pas un onglet de profil, pour rester adressable (`/mes-lieux`) sans
+ * dépendre du slug — inconnu en config — du compte connecté. Enregistrée dans le `SectionRenderer`
+ * générique, PAS dans `ProfileSectionRenderer`.
+ */
+export const MyPlacesSectionSchema = z.object({
+  type: z.literal("my-places"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString.optional(),
+    emptyStateText: LocalizedString.optional(),
+    /**
+     * PÉRIMÈTRE costum du réseau tiers-lieux — même convention que `MembershipQueryParams.sourceKey`
+     * (`$or[source.keys ∈, reference.costum ∈]`). Sur tiers-lieux.org : `["franceTierslieux",
+     * "tierslieuxbelgique", "navigatorDesTierslieux"]` (déjà utilisé ailleurs dans cette config,
+     * ex. `hero-search`). Absent = réseau Communecter entier.
+     */
+    sourceKey: z.array(z.string()).optional(),
+  }),
+});
+export type MyPlacesSection = z.infer<typeof MyPlacesSectionSchema>;
+export type MyPlacesSectionProps = MyPlacesSection["props"];
+
 // Profile-specific sections union
 export const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileHeaderSectionSchema,

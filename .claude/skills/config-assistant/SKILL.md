@@ -384,8 +384,8 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 - **`.design-sync/previews/` — la ressource la plus utile, et elle est dans git** :
   154 stories portant des compositions de props RÉELLES (valeurs plausibles,
   commentaire d'usage : « Usage réel : home de Rézo la mer »). Le JSON Schema
-  donne la FORME, la story donne la COMPOSITION — **43 des 78 sections** en ont
-  une (les 35 sans sont surtout data-driven : search\*, agenda, cagnotte, blog,
+  donne la FORME, la story donne la COMPOSITION — **43 des 79 sections** en ont
+  une (les 36 sans sont surtout data-driven : search\*, agenda, cagnotte, blog,
   aac, coform — une composition statique n'y montrerait rien), ainsi que **les 7
   headers et les 4 footers**. Copie la story, ne réinvente pas le remplissage.
 - **Vérité versionnée : `.design-sync/`** — `config.json` (`componentSrcMap` :

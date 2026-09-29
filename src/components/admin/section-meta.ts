@@ -123,6 +123,7 @@ const SECTION_META: Record<string, SectionMeta> = {
 
   // profil
   member: { label: "Member", desc: "Section membre / profil", image: "https://placehold.co/300x180/6c5ce7/eee?text=Member", family: "profil" },
+  "my-places": { label: "Mes lieux", desc: "Organisations dont le compte connecté est MEMBRE (links.members), 4 onglets (lieux/news/agenda/projets) — page dédiée, invite à se connecter si anonyme", image: "https://placehold.co/300x180/6c5ce7/eee?text=Mes+Lieux", family: "profil" },
 
   // ampli
   meeteem: { label: "Meeteem", desc: "Annuaire participatif des réponses d'un coform : cartes filtrables par tags et auteur, vues Annuaire/Carte/Split (carte en placeholder ; requiert id du coform et mapping path)", image: "https://placehold.co/300x180/a29bfe/eee?text=Meeteem", family: "ampli" },

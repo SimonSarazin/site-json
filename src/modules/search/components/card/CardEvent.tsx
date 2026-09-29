@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Building2 } from "lucide-react";
 import { SearchCardProps } from "../../schema";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { getEntityColorClasses, getEntityIconName } from "@/lib/entityIcons";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { formatRecurrenceLabel } from "../../lib/openingHoursDays";
 import { libellesDate } from "../../lib/eventDateSpan";
+import { getEntryId } from "../../lib/searchMapSelection";
 
 // Map des tags vers des icônes spécifiques aux événements
 const TAG_ICON_MAP: Record<string, string> = {
@@ -70,6 +72,8 @@ interface EventCardPlainProps {
   /** « Chaque vendredi » — événement récurrent : préféré à la date d'occurrence, qui change chaque semaine. */
   recurrenceLabel: string | null;
   organizerName: string | null;
+  /** `list.linkedLabels` résolu pour cet item — cf. le commentaire du schéma (`ListConfSchema`). */
+  linkedLabel: string | null;
   location: string | null;
   avatarIcon: string;
   avatarColorClasses: string;
@@ -95,6 +99,7 @@ function EventCardPlain({
   endDate,
   recurrenceLabel,
   organizerName,
+  linkedLabel,
   location,
   avatarIcon,
   avatarColorClasses,
@@ -123,6 +128,12 @@ function EventCardPlain({
         </div>
         <div className="min-w-0 flex-1">
           {organizerName && <p className="truncate text-sm font-bold">{organizerName}</p>}
+          {linkedLabel && (
+            <p className="flex items-center truncate text-xs text-muted-foreground">
+              <Building2 className="h-3 w-3 mr-1 flex-shrink-0" aria-hidden="true" />
+              {linkedLabel}
+            </p>
+          )}
           {location && <p className="truncate text-xs text-muted-foreground">{location}</p>}
         </div>
       </CardFooter>
@@ -133,6 +144,7 @@ function EventCardPlain({
 export default function CardEvent({
   item,
   onClick,
+  list,
 }: SearchCardProps) {
   const data = useItem(item);
   const t = useT("modules/search");
@@ -148,6 +160,7 @@ export default function CardEvent({
     tags = [],
   } = data;
 
+  const linkedLabel = list?.linkedLabels?.[getEntryId(item) ?? ""] ?? null;
   const location = address?.addressLocality || null;
   const avatarIcon = getEventAvatarIcon(tags);
   const avatarColorClasses = getEntityColorClasses("events");
@@ -179,6 +192,7 @@ export default function CardEvent({
         endDate={endDate}
         recurrenceLabel={recurrenceLabel}
         organizerName={organizerName}
+        linkedLabel={linkedLabel}
         location={location}
         avatarIcon={avatarIcon}
         avatarColorClasses={avatarColorClasses}
@@ -247,6 +261,12 @@ export default function CardEvent({
           <h3 className="font-bold text-foreground text-sm mb-1 truncate">
             {organizerName || name}
           </h3>
+          {linkedLabel && (
+            <p className="flex items-center text-muted-foreground text-xs truncate">
+              <Building2 className="h-3 w-3 mr-1 flex-shrink-0" aria-hidden="true" />
+              {linkedLabel}
+            </p>
+          )}
           {location && (
             <p className="text-muted-foreground text-xs truncate">
               {location}

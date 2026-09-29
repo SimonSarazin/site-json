@@ -8,6 +8,7 @@
 // ------------------------------------------------------------
 import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema, MarkerConfSchema, FeaturedCarouselSectionSchema, CoformResourceDirectorySectionSchema } from "@/modules/search/schema";
 import { DataObservatorySectionSchema } from "@/modules/observatoire/schema";
+import { MyPlacesSectionSchema } from "@/modules/profil/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { NotificationsSectionSchema } from "@/modules/notification/schema";
 import { JsonFormModalConfigSchema } from "./form-modal-schema";
@@ -1721,6 +1722,7 @@ export const Section = z.discriminatedUnion("type", [
   ArticleFeedSectionSchema,
   ArticleReaderSectionSchema,
   ArticleTeaserSectionSchema,
+  MyPlacesSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 

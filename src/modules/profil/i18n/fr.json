@@ -1462,5 +1462,23 @@
   },
   "CardTeamMember": {
     "territoryNews": "Les actualités du territoire"
+  },
+  "MyPlacesSection": {
+    "title": "Mes lieux",
+    "loginRequired": "Connectez-vous pour voir vos tiers-lieux.",
+    "empty": "Vous n'êtes membre d'aucun tiers-lieu pour l'instant.",
+    "emptyHint": "Rejoignez un tiers-lieu depuis sa fiche pour le retrouver ici.",
+    "needPlaceFirst": "Rejoignez d'abord un tiers-lieu pour voir son contenu ici.",
+    "emptyNews": "Aucune actualité de vos tiers-lieux pour l'instant.",
+    "emptyAgenda": "Aucun événement lié à vos tiers-lieux pour l'instant.",
+    "emptyProjects": "Aucun projet lié à vos tiers-lieux pour l'instant.",
+    "emptySimilar": "Aucun tiers-lieu similaire trouvé pour l'instant.",
+    "tabs": {
+      "places": "Mes tiers-lieux",
+      "news": "Actus",
+      "agenda": "Agenda",
+      "projects": "Projets",
+      "similar": "Similaires"
+    }
   }
 }

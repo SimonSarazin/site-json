@@ -17,6 +17,8 @@ import type { LogoSize } from "./logoSize";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
+import { useVisibilityList } from "@/lib/visibility";
+import { conditionsDeVisibiliteNav, filtrerNavParVisibilite } from "./navVisibility";
 
 interface HeaderMegaMenuProps {
     header: Header;
@@ -32,7 +34,11 @@ const MEGA_LOGO_CLASS: Record<LogoSize, string> = {
 export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
-    const nav = header.nav;
+    // Filtré par `visibility` (item ET enfants) — desktop et burger partagent ce même `nav`, donc
+    // une entrée réservée aux connectés (« Mes lieux ») disparaît des deux à la fois. Contrairement
+    // à `header.nav` brut, `HeaderMegaMenu` ne consultait `visibility` nulle part avant ce correctif.
+    const navVisibility = useVisibilityList(conditionsDeVisibiliteNav(header.nav));
+    const nav = filtrerNavParVisibilite(header.nav, navVisibility);
 
     return (
         <header className={`${header.transparent ? "bg-transparent" : "bg-background"} rounded-b-2xl border-b border-border ${header.sticky ? "sticky top-0 z-50" : ""}`}>
