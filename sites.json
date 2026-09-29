@@ -176,5 +176,11 @@
     "images": "federationDesCae",
     "coolifyApp": "site-json-federation-des-cae",
     "domain": "federation-des-cae.00.re"
+  },
+  {
+    "slug": "projetsre",
+    "config": "config.prod.projetsre.json",
+    "css": "index-projetsre",
+    "images": "projetsre"
   }
 ]

@@ -28,7 +28,9 @@ const FIELDS: AacCardFields = {
   image: null,
   depense: null,
   choose: null,
+  adresse: null,
   users: null,
+  keywords: null,
 };
 
 const SCAN_FILTERS: AacDirectoryFiltersState = { ...EMPTY_AAC_FILTERS, maturity: ["Oui"] };

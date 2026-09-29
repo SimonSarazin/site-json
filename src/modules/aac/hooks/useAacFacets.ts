@@ -34,6 +34,8 @@ import { fetchAacCommunsPage, AAC_SCAN_SIZE } from "../lib/communsTransport";
 import { EMPTY_AAC_FILTERS } from "../lib/filtersKey";
 import { PUBLIC_AAC_VISIBILITY, type AacVisibility } from "../lib/aacQueryParams";
 import { buildUsageTree, countTagFacets, readUsageLabels, type AacUsageOption } from "../lib/aacUsage";
+import { countCommuneFacets } from "../lib/communAddress";
+import type { AacFacetOption } from "../lib/directoryFilterActions";
 import type { AacCardFields } from "../lib/resolveAacCardFields";
 
 export interface UseAacFacetsParams {
@@ -62,6 +64,8 @@ export interface UseAacFacetsParams {
 export interface UseAacFacetsResult {
   usageTree: AacUsageOption[];
   tagOptions: { id: string; label: string; count: number }[];
+  /** Communes présentes avec leur décompte ; vide sans `directory.fields.adresse`. */
+  communeOptions: AacFacetOption[];
   isLoading: boolean;
   error: Error | null;
   /** Le balayage a atteint sa borne : les décomptes sont des MINORANTS. */
@@ -113,9 +117,12 @@ export function useAacFacets({
 
   const tagOptions = useMemo(() => countTagFacets(communs), [communs]);
 
+  const communeOptions = useMemo(() => countCommuneFacets(communs), [communs]);
+
   return {
     usageTree,
     tagOptions,
+    communeOptions,
     isLoading,
     error: (error as Error) ?? null,
     truncated: data?.truncated ?? false,

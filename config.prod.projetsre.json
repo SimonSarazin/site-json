@@ -1,0 +1,734 @@
+{
+  "version": "1.0.0",
+  "meta": {
+    "title": {
+      "fr": "projets.re — les projets du territoire"
+    },
+    "description": {
+      "fr": "projets.re présente, soutient et finance les projets d'intérêt général et d'économie sociale et solidaire de La Réunion : une fiche unique par projet, enrichie au fil du temps."
+    },
+    "defaultLang": "fr",
+    "languages": [
+      "fr"
+    ],
+    "keywords": [
+      "La Réunion",
+      "projets",
+      "communs",
+      "économie sociale et solidaire",
+      "financement participatif"
+    ]
+  },
+  "theme": {
+    "colors": {
+      "light": {
+        "background": "oklch(0.975 0.01 88)",
+        "foreground": "oklch(0.19 0.018 55)",
+        "card": "oklch(0.995 0.004 88)",
+        "cardForeground": "oklch(0.19 0.018 55)",
+        "popover": "oklch(0.995 0.004 88)",
+        "popoverForeground": "oklch(0.19 0.018 55)",
+        "primary": "oklch(0.52 0.2 32)",
+        "primaryForeground": "oklch(0.99 0.008 88)",
+        "secondary": "oklch(0.925 0.024 87)",
+        "secondaryForeground": "oklch(0.22 0.02 55)",
+        "muted": "oklch(0.94 0.014 86)",
+        "mutedForeground": "oklch(0.42 0.025 58)",
+        "accent": "oklch(0.89 0.055 190)",
+        "accentForeground": "oklch(0.22 0.055 215)",
+        "destructive": "oklch(0.55 0.2 25)",
+        "destructiveForeground": "oklch(0.99 0.01 88)",
+        "border": "oklch(0.82 0.022 75)",
+        "input": "oklch(0.82 0.022 75)",
+        "ring": "oklch(0.52 0.2 32)",
+        "chart1": "oklch(0.57 0.192 33)",
+        "chart2": "oklch(0.6 0.105 197)",
+        "chart3": "oklch(0.63 0.12 145)",
+        "chart4": "oklch(0.75 0.14 80)",
+        "chart5": "oklch(0.45 0.09 300)",
+        "sidebar": "oklch(0.97 0.016 88)",
+        "sidebarForeground": "oklch(0.24 0.018 60)",
+        "sidebarPrimary": "oklch(0.57 0.192 33)",
+        "sidebarPrimaryForeground": "oklch(0.99 0.01 88)",
+        "sidebarAccent": "oklch(0.92 0.035 190)",
+        "sidebarAccentForeground": "oklch(0.27 0.04 220)",
+        "sidebarBorder": "oklch(0.9 0.018 78)",
+        "sidebarRing": "oklch(0.57 0.192 33)"
+      },
+      "dark": {
+        "background": "oklch(0.16 0.016 58)",
+        "foreground": "oklch(0.97 0.012 88)",
+        "card": "oklch(0.21 0.018 58)",
+        "cardForeground": "oklch(0.96 0.014 88)",
+        "popover": "oklch(0.25 0.018 58)",
+        "popoverForeground": "oklch(0.96 0.014 88)",
+        "primary": "oklch(0.65 0.18 35)",
+        "primaryForeground": "oklch(0.18 0.016 58)",
+        "secondary": "oklch(0.3 0.02 58)",
+        "secondaryForeground": "oklch(0.96 0.014 88)",
+        "muted": "oklch(0.3 0.02 58)",
+        "mutedForeground": "oklch(0.78 0.02 70)",
+        "accent": "oklch(0.35 0.045 210)",
+        "accentForeground": "oklch(0.96 0.014 88)",
+        "destructive": "oklch(0.65 0.19 25)",
+        "destructiveForeground": "oklch(0.18 0.016 58)",
+        "border": "oklch(1 0 0 / 20%)",
+        "input": "oklch(1 0 0 / 24%)",
+        "ring": "oklch(0.65 0.18 35)",
+        "chart1": "oklch(0.65 0.18 35)",
+        "chart2": "oklch(0.66 0.1 197)",
+        "chart3": "oklch(0.68 0.12 145)",
+        "chart4": "oklch(0.78 0.14 80)",
+        "chart5": "oklch(0.6 0.12 300)",
+        "sidebar": "oklch(0.25 0.018 58)",
+        "sidebarForeground": "oklch(0.96 0.014 88)",
+        "sidebarPrimary": "oklch(0.65 0.18 35)",
+        "sidebarPrimaryForeground": "oklch(0.18 0.016 58)",
+        "sidebarAccent": "oklch(0.35 0.045 210)",
+        "sidebarAccentForeground": "oklch(0.96 0.014 88)",
+        "sidebarBorder": "oklch(1 0 0 / 12%)",
+        "sidebarRing": "oklch(0.65 0.18 35)"
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "sans": [
+          "Manrope"
+        ],
+        "serif": [
+          "Instrument Serif"
+        ]
+      },
+      "letterSpacing": "0em"
+    },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.5rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0 1px rgb(0 0 0 / 0.05)",
+        "shadowXs": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "shadowSm": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+        "shadow": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+        "shadowMd": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+        "shadowLg": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+        "shadowXl": "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+        "shadow2xl": "0 25px 50px -12px rgb(0 0 0 / 0.25)"
+      },
+      "dark": {
+        "shadow2xs": "0 1px rgb(0 0 0 / 0.05)",
+        "shadowXs": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "shadowSm": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+        "shadow": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+        "shadowMd": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+        "shadowLg": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+        "shadowXl": "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+        "shadow2xl": "0 25px 50px -12px rgb(0 0 0 / 0.25)"
+      }
+    },
+    "defaultMode": "light"
+  },
+  "aac": {
+    "formId": "6ab104ffa43c9446fb595a86",
+    "directory": {
+      "fields": {
+        "title": "answers.aapStep1.titre",
+        "description": "answers.aapStep1.aapStep1lzi62x3etw49gyc424d",
+        "tags": "answers.aapStep1.aapStep1m03ot9qymmfgashp7l",
+        "keywords": "answers.aapStep1.tags",
+        "maturity": "answers.aapStep1.aapStep1m2ucu54mopm33osqxpd",
+        "choose": "answers.aapStep2.choose",
+        "adresse": "answers.aapStep1.aapStep1mud6k0tblptwdgxwd5a"
+      },
+      "defaultCardVariant": "editorial",
+      "defaultShellVariant": "editorial"
+    },
+    "detail": {
+      "gallery": "aapStep1.image",
+      "sections": [
+        {
+          "id": "usages",
+          "title": {
+            "fr": "Cas d'usages"
+          },
+          "icon": "users",
+          "field": "answers.aapStep1.aapStep1lusoklfzokkn4svl1ei"
+        },
+        {
+          "id": "equipe",
+          "title": {
+            "fr": "Équipe & communauté"
+          },
+          "icon": "user-check",
+          "field": "answers.aapStep1.aapStep1m0w49vpl5jm001xwvsv"
+        }
+      ],
+      "pageVariant": "editorial"
+    }
+  },
+  "cagnotteModuleConfig": {
+    "defaultType": "aac"
+  },
+  "header": {
+    "type": "standard",
+    "logoTitle": {
+      "fr": "projets.re"
+    },
+    "nav": [
+      {
+        "label": {
+          "fr": "Accueil"
+        },
+        "path": "/"
+      },
+      {
+        "label": {
+          "fr": "Les projets"
+        },
+        "path": "/aac/communs"
+      }
+    ],
+    "utilities": {
+      "piggyBank": true,
+      "pledge": true,
+      "themeSwitch": false,
+      "langSwitch": false,
+      "auth": true
+    },
+    "logo": "images/projetsre/logo.svg",
+    "logoSize": "lg",
+    "height": "md"
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": {
+        "fr": "projets.re"
+      },
+      "sections": [
+        {
+          "type": "hero",
+          "id": "intro",
+          "props": {
+            "headline": {
+              "fr": "Déposez votre projet une fois, faites-le grandir ensemble."
+            },
+            "subhead": {
+              "fr": "Une fiche unique par projet, enrichie au fil du temps. Les porteurs y présentent leurs besoins ; les habitants et les institutions y apportent leur avis, du temps ou de l'argent."
+            },
+            "align": "center",
+            "cta": [
+              {
+                "label": {
+                  "fr": "Découvrir les projets"
+                },
+                "href": "/aac/communs",
+                "variant": "default"
+              }
+            ]
+          }
+        },
+        {
+          "type": "aac-highlight",
+          "id": "contribuer",
+          "props": {
+            "title": {
+              "fr": "Soutenir les projets"
+            },
+            "description": {
+              "fr": "Vous voulez donner un coup de main, tester, relayer ou cofinancer un projet du territoire ?"
+            },
+            "tone": "primary",
+            "cta": {
+              "label": {
+                "fr": "Découvrir les projets"
+              },
+              "href": "/aac/communs"
+            },
+            "count": {
+              "source": "communs",
+              "label": {
+                "fr": "Projets déposés"
+              }
+            }
+          }
+        },
+        {
+          "type": "aac-directory",
+          "id": "apercu",
+          "props": {
+            "title": {
+              "fr": "Projets à la une"
+            },
+            "description": {
+              "fr": "Des initiatives d'intérêt général et d'économie sociale et solidaire à La Réunion."
+            },
+            "variant": "preview",
+            "columns": 3,
+            "pageSize": 6,
+            "showDepositButton": false,
+            "moreLink": {
+              "href": "/aac/communs",
+              "label": {
+                "fr": "Voir tous les projets"
+              }
+            },
+            "className": "max-w-7xl mx-auto px-6",
+            "emptyText": {
+              "fr": "Aucun projet ne correspond à cette recherche."
+            }
+          }
+        },
+        {
+          "type": "aac-highlight",
+          "id": "deposer",
+          "props": {
+            "title": {
+              "fr": "Vous portez un projet ?"
+            },
+            "description": {
+              "fr": "Décrivez votre projet, sa communauté et ses besoins de financement : il rejoindra l'annuaire des projets du territoire."
+            },
+            "tone": "muted",
+            "cta": {
+              "label": {
+                "fr": "Déposer un projet"
+              },
+              "href": "/aac/communs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/aac/communs",
+      "title": {
+        "fr": "Les projets du territoire"
+      },
+      "seo": {
+        "title": {
+          "fr": "Les projets du territoire — projets.re"
+        },
+        "description": {
+          "fr": "L'annuaire des projets de La Réunion : recherche, filtres par thème et par stade, financement participatif."
+        }
+      },
+      "sections": [
+        {
+          "type": "aac-directory",
+          "id": "aac",
+          "props": {
+            "title": {
+              "fr": "Les projets du territoire"
+            },
+            "description": {
+              "fr": "Chaque fiche est déposée une seule fois par son porteur, puis enrichie au fil des questions et des appels à projets."
+            },
+            "depositButtonLabel": {
+              "fr": "Déposer un projet"
+            },
+            "columns": 3,
+            "pageSize": 12,
+            "className": "max-w-7xl mx-auto px-6 pb-20",
+            "variant": "full",
+            "emptyText": {
+              "fr": "Aucun projet ne correspond à cette recherche."
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/mentions-legales",
+      "title": {
+        "fr": "Mentions légales — projets.re"
+      },
+      "sections": [
+        {
+          "type": "html",
+          "id": "mentions-legales",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Mentions légales</h1>\n<p class=\"text-muted-foreground mb-8\">Informations publiées pour le site projets.re en application de l'article 6-III de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN). Les éléments qui restent à établir sont signalés par la mention « [à compléter] ».</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Éditeur du site</h2>\n<p class=\"text-muted-foreground mb-2\">ProjetsRe</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Forme juridique : [à compléter]</li>\n<li>Numéro d'immatriculation (SIREN, SIRET ou RNA) : [à compléter]</li>\n<li>Adresse du siège : [à compléter]</li>\n<li>Téléphone : [à compléter]</li>\n<li>Courriel : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Directeur de la publication</h2>\n<p class=\"text-muted-foreground mb-6\">Directeur ou directrice de la publication : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Hébergeur</h2>\n<p class=\"text-muted-foreground mb-6\">Dénomination, adresse complète et numéro de téléphone de l'hébergeur du site : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Conception et réalisation</h2>\n<p class=\"text-muted-foreground mb-6\">Ce site s'appuie sur la plateforme libre Communecter. Licence applicable aux développements propres à ce site : [à compléter]. Prestataires ayant participé à la conception et à la réalisation : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Propriété intellectuelle</h2>\n<p class=\"text-muted-foreground mb-6\">Les textes, images, logos et éléments graphiques propres au site sont protégés par le droit de la propriété intellectuelle. Toute reproduction ou représentation, totale ou partielle, sans autorisation préalable de l'éditeur est interdite.</p>\n<p class=\"text-muted-foreground mb-6\">Le site publie par ailleurs des contenus fournis par des tiers : les projets déposés par leurs porteurs et présentés dans l'<a href=\"/aac/communs\" class=\"text-primary hover:underline\">annuaire des projets</a>. Leurs auteurs en conservent les droits. Licence applicable aux contenus publiés et aux données diffusées par le site : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Liens hypertextes</h2>\n<p class=\"text-muted-foreground mb-6\">Le site peut renvoyer vers des ressources extérieures, notamment depuis les fiches des projets. L'éditeur n'exerce aucun contrôle sur ces ressources et ne saurait être tenu responsable de leur contenu ni des traitements qu'elles mettent en œuvre. Adresse à laquelle adresser toute demande relative à un lien : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Signalement d'un contenu</h2>\n<p class=\"text-muted-foreground mb-6\">Le site permet la création de comptes utilisateur et le dépôt de projets. Si vous estimez qu'un contenu publié est illicite ou porte atteinte à vos droits, vous pouvez le signaler à l'adresse suivante : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Données personnelles</h2>\n<p class=\"text-muted-foreground\">Les traitements de données personnelles réalisés par le site sont décrits dans la <a href=\"/confidentialite\" class=\"text-primary hover:underline\">politique de confidentialité</a>.</p>\n</div>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/confidentialite",
+      "title": {
+        "fr": "Politique de confidentialité — projets.re"
+      },
+      "sections": [
+        {
+          "type": "html",
+          "id": "confidentialite",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Politique de confidentialité</h1>\n<p class=\"text-muted-foreground mb-8\">Cette politique décrit les traitements de données personnelles réalisés dans le cadre du site projets.re, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés. Elle complète les <a href=\"/mentions-legales\" class=\"text-primary hover:underline\">mentions légales</a>. Les éléments qui restent à établir sont signalés par la mention « [à compléter] ».</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Responsable du traitement</h2>\n<p class=\"text-muted-foreground mb-2\">Le responsable des traitements décrits ci-dessous est ProjetsRe.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Forme juridique et numéro d'immatriculation (SIREN ou RNA) : [à compléter]</li>\n<li>Adresse du siège : [à compléter]</li>\n<li>Courriel : [à compléter]</li>\n<li>Délégué à la protection des données, ou personne chargée des questions relatives aux données personnelles : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Données traitées</h2>\n<p class=\"text-muted-foreground mb-4\">Le site permet la création d'un compte utilisateur et la connexion, le dépôt d'un projet au moyen d'un formulaire accessible une fois connecté, la consultation de l'<a href=\"/aac/communs\" class=\"text-primary hover:underline\">annuaire des projets</a> et de leurs fiches, ainsi que le financement participatif des projets (cagnotte, promesses de financement). Des données personnelles sont donc traitées à ces occasions ; leur détail reste à établir.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Données collectées lors de la création d'un compte, de la connexion et de la récupération d'un mot de passe : [à compléter]</li>\n<li>Données saisies dans le formulaire de dépôt d'un projet, et données publiées dans l'annuaire et les fiches des projets : [à compléter]</li>\n<li>Données traitées lors d'une promesse de financement ou d'un don, et prestataires de paiement éventuellement utilisés : [à compléter]</li>\n<li>Données éventuellement collectées automatiquement lors de la consultation du site, notamment par les journaux de connexion : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Finalités et bases légales</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>permettre la création, la gestion et la récupération d'un compte utilisateur ;</li>\n<li>recueillir, présenter et suivre les projets déposés ;</li>\n<li>permettre le financement des projets.</li></ul>\n<p class=\"text-muted-foreground mb-6\">La base légale retenue pour chacune de ces finalités, les éventuelles autres finalités poursuivies et les destinataires des données : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">4. Durées de conservation</h2>\n<p class=\"text-muted-foreground mb-6\">Durée de conservation de chaque catégorie de données : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Vos droits</h2>\n<p class=\"text-muted-foreground mb-6\">Vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité de vos données, ainsi que du droit d'introduire une réclamation auprès de la CNIL. Adresse à laquelle exercer ces droits : [à compléter].</p>\n</div>"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "sidebar-columns",
+    "logoTitle": {
+      "fr": "projets.re"
+    },
+    "description": {
+      "fr": "Les projets d'intérêt général et d'économie sociale et solidaire de La Réunion, présentés, soutenus et financés ensemble."
+    },
+    "copyright": {
+      "fr": "© projets.re. Tous droits réservés."
+    },
+    "columns": [
+      {
+        "title": {
+          "fr": "projets.re"
+        },
+        "links": [
+          {
+            "href": "/",
+            "label": {
+              "fr": "Accueil"
+            }
+          },
+          {
+            "href": "/aac/communs",
+            "label": {
+              "fr": "Les projets"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "Participer"
+        },
+        "links": [
+          {
+            "href": "/aac/communs",
+            "label": {
+              "fr": "Déposer un projet"
+            }
+          },
+          {
+            "href": "/register",
+            "label": {
+              "fr": "Créer un compte"
+            },
+            "visibility": {
+              "auth": "anonymous"
+            }
+          },
+          {
+            "href": "/login",
+            "label": {
+              "fr": "Se connecter"
+            },
+            "visibility": {
+              "auth": "anonymous"
+            }
+          },
+          {
+            "href": "@profile",
+            "label": {
+              "fr": "Mon profil"
+            },
+            "visibility": {
+              "auth": "required"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "Informations"
+        },
+        "links": [
+          {
+            "href": "/profil/projetsre",
+            "label": {
+              "fr": "ProjetsRe"
+            }
+          },
+          {
+            "href": "/mentions-legales",
+            "label": {
+              "fr": "Mentions légales"
+            }
+          },
+          {
+            "href": "/confidentialite",
+            "label": {
+              "fr": "Confidentialité"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "profiles": {
+    "default": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete"
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Localisation"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "projects": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-event-dates"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "contributors",
+          "label": {
+            "fr": "Contributeurs"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

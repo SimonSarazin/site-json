@@ -1,10 +1,15 @@
+import { type ReactNode, Suspense, useEffect } from "react";
 import { Loader2, SearchX } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { allEmbedded } from "@/lib/variants";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
-import { AacCommunCard } from "./AacCommunCard";
-import { AacCommunRow } from "./AacCommunRow";
 import { AacDirectorySkeleton } from "./AacDirectorySkeleton";
+import {
+  AAC_DIRECTORY_CARD_VARIANTS,
+  AAC_DIRECTORY_ROW_VARIANTS,
+  AAC_DIRECTORY_SKELETON_VARIANTS,
+} from "./variants/items";
 import type { AacDisplayMode } from "../../schema";
 import type { AacCommunCard as CommunCard } from "../../lib/parseAacAnswer";
 
@@ -43,6 +48,10 @@ interface AacDirectoryResultsProps {
   onRequestDelete?: (commun: CommunCard) => void;
   /** Une suppression est en vol : les boutons de la liste se neutralisent. */
   isDeleting?: boolean;
+  /** Interface des communs (carte, ligne, squelette ; cf. `variants/items`). Inconnue ⇒ `default`. */
+  itemVariant?: string;
+  /** Libellés exacts des usages, transmis aux communs. */
+  usageLabels?: Readonly<Record<string, string>>;
 }
 
 /** Classes de grille figées : Tailwind ne peut pas générer `md:grid-cols-${n}`. */
@@ -85,8 +94,29 @@ export function AacDirectoryResults({
   canDeleteCommun,
   onRequestDelete,
   isDeleting,
+  itemVariant,
+  usageLabels,
 }: AacDirectoryResultsProps) {
   const t = useT("modules/aac");
+
+  const Card = AAC_DIRECTORY_CARD_VARIANTS.get(itemVariant);
+  const Row = AAC_DIRECTORY_ROW_VARIANTS.get(itemVariant);
+  const Skeleton = AAC_DIRECTORY_SKELETON_VARIANTS.get(itemVariant);
+
+  // Précharge carte, ligne et squelette ensemble : la bascule grille/liste n'attend pas le réseau.
+  useEffect(() => {
+    void AAC_DIRECTORY_CARD_VARIANTS.preload(itemVariant);
+    void AAC_DIRECTORY_ROW_VARIANTS.preload(itemVariant);
+    void AAC_DIRECTORY_SKELETON_VARIANTS.preload(itemVariant);
+  }, [itemVariant]);
+
+  // Une frontière pour tous les états, aucune si tout est embarqué ; repli : le squelette par défaut (embarqué).
+  const bounded = (node: ReactNode) =>
+    allEmbedded(Card, Row, Skeleton) ? (
+      node
+    ) : (
+      <Suspense fallback={<AacDirectorySkeleton display={display} columns={columns} />}>{node}</Suspense>
+    );
 
   const retryButton = onRetry ? (
     <Button type="button" variant="outline" size="sm" disabled={isRetrying} onClick={onRetry}>
@@ -95,7 +125,7 @@ export function AacDirectoryResults({
   ) : null;
 
   if (error && communs.length === 0) {
-    return (
+    return bounded(
       <div
         role="alert"
         className="flex flex-col items-center gap-3 rounded-lg border border-destructive/40 p-6 text-center text-sm text-destructive"
@@ -107,11 +137,12 @@ export function AacDirectoryResults({
   }
 
   if (isLoading) {
-    return <AacDirectorySkeleton display={display} columns={columns} />;
+    // eslint-disable-next-line react-hooks/static-components -- `Skeleton` vient d'un registre, il n'est pas créé ici.
+    return bounded(<Skeleton display={display} columns={columns} />);
   }
 
   if (communs.length === 0) {
-    return (
+    return bounded(
       <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed p-12 text-center text-muted-foreground">
         <SearchX className="h-8 w-8" aria-hidden="true" />
         <p className="text-sm">{emptyText || String(t("directory.empty"))}</p>
@@ -126,27 +157,29 @@ export function AacDirectoryResults({
   const demandeSuppression = (commun: CommunCard) =>
     onRequestDelete && canDeleteCommun?.(commun) ? onRequestDelete : undefined;
 
-  return (
+  return bounded(
     <>
       {display === "list" ? (
         <div className="space-y-3">
           {communs.map((commun) => (
-            <AacCommunRow
+            <Row
               key={commun.id}
               commun={commun}
               onRequestDelete={demandeSuppression(commun)}
               isDeleting={isDeleting}
+              usageLabels={usageLabels}
             />
           ))}
         </div>
       ) : (
         <div className={cn("grid gap-6", GRID_COLS[columns] ?? GRID_COLS[3])}>
           {communs.map((commun) => (
-            <AacCommunCard
+            <Card
               key={commun.id}
               commun={commun}
               onRequestDelete={demandeSuppression(commun)}
               isDeleting={isDeleting}
+              usageLabels={usageLabels}
             />
           ))}
         </div>

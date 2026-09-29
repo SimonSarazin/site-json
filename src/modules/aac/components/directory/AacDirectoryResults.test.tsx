@@ -35,6 +35,7 @@ function commun(id: string, title: string): CommunCard {
     hasTitle: true,
     description: "",
     tags: [],
+    keywords: [],
     maturity: null,
     imageUrl: null,
     funds: [],
@@ -46,6 +47,7 @@ function commun(id: string, title: string): CommunCard {
     interestCount: 0,
     isSelected: null,
     usage: EMPTY_AAC_USAGE,
+    address: null,
     createdAt: 0,
     updatedAt: 0,
   };

@@ -695,3 +695,73 @@ describe("parseAacAnswer — horodatages", () => {
     }
   });
 });
+
+describe("parseAacAnswer — adresse", () => {
+  /** Les champs du même form, PLUS le rôle `adresse` pointé par la config. */
+  const withAddress = resolveAacCardFields(
+    buildAacFormMeta("f1", {
+      subForms: ["etapeA"],
+      inputs: {
+        etapeA: {
+          inputs: {
+            q_titre: { type: "text", label: "Nom", position: 1 },
+            q_adr: { type: "tpls.forms.cplx.address", label: "Adresse", position: 2 },
+          },
+        },
+      },
+      params: {},
+    }),
+    { depenseStepKey: "etapeA", evalStepKey: null, financementStepKey: null, suiviStepKey: null },
+    { adresse: "answers.etapeA.q_adr" }
+  ).fields;
+
+  const withAddressOf = (value: unknown) =>
+    parseAacAnswer(
+      { _id: { $id: "a1" }, answers: { etapeA: { q_titre: "Un commun", q_adr: value } } },
+      { fields: withAddress }
+    );
+
+  it("lit la valeur composite du champ adresse et n'en garde que ce que l'UI consomme", () => {
+    const card = withAddressOf({
+      formLocality: [
+        {
+          address: {
+            addressCountry: "RE",
+            addressLocality: "Saint-Denis",
+            postalCode: "97400",
+            streetAddress: "12 rue Juliette Dodu",
+            localityId: "c1",
+          },
+          geo: { "@type": "GeoCoordinates", latitude: "-20.88", longitude: "55.45" },
+          geoPosition: { type: "Point", coordinates: [55.45, -20.88] },
+          center: true,
+        },
+      ],
+    });
+
+    expect(card.address).toEqual({
+      locality: "Saint-Denis",
+      postalCode: "97400",
+      streetAddress: "12 rue Juliette Dodu",
+      country: "RE",
+      localityId: "c1",
+      label: "12 rue Juliette Dodu, 97400, Saint-Denis",
+    });
+  });
+
+  it("champ vide ou réponse sans adresse ⇒ `null`, jamais un objet à blanc", () => {
+    expect(withAddressOf(undefined)?.address).toBeNull();
+    expect(withAddressOf({}).address).toBeNull();
+  });
+
+  // Aucun repli backend possible : `parsePropositionData` ne pré-calcule pas
+  // d'adresse. Sans le rôle, la carte n'en a donc pas — et le filtre se masque.
+  it("rôle NON configuré : `null`, même si la réponse porte une adresse", () => {
+    const card = parse({
+      _id: { $id: "a1" },
+      answers: { aapStep1: { q_adr: { formLocality: [{ address: { addressLocality: "Le Port" } }] } } },
+    });
+
+    expect(card.address).toBeNull();
+  });
+});

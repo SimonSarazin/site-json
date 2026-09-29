@@ -48,6 +48,20 @@ export function MilestoneCardsSkeleton({ count = 2 }: { count?: number }) {
     );
 }
 
+/** Lignes d'une liste sobre (libellé à gauche, montant à droite) : rendu `list` des dépenses et des cofinanceurs. */
+export function ListRowsSkeleton({ count = 3 }: { count?: number }) {
+    return (
+        <ul className="divide-y divide-border" aria-busy="true">
+            {Array.from({ length: count }, (_, index) => (
+                <li key={index} className="flex items-center justify-between gap-3 py-2.5">
+                    <Skeleton className="h-4 w-2/5" />
+                    <Skeleton className="h-4 w-16" />
+                </li>
+            ))}
+        </ul>
+    );
+}
+
 /**
  * Lignes du tableau des cofinanceurs. L'en-tête est conservé par l'appelant :
  * seules les lignes sont en attente.

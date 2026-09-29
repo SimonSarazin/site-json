@@ -4,23 +4,27 @@ import type { CoFormData, CoFormAnswer } from "@/modules/coform/types";
 import type { FinderElementType } from "@/modules/coform/types";
 import type { AacResolvedConfig } from "../../types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { toSafeInt, buildItemsFromRawDepenses, getEntityId } from "@/modules/cagnotte/utils/dataTransform";
-import { initials } from "@/modules/cagnotte/utils/format";
+import { formatCurrency, initials } from "@/modules/cagnotte/utils/format";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
 import { aggregateCofinancers } from "@/modules/aac/lib/cofinancers";
 import { COFORM_QUERY_KEYS } from "@/modules/coform/constants/queryKeys";
 import { ELEMENT_SUMMARY_STALE_TIME_MS, fetchElementSummary } from "@/modules/coform/hooks/useElementSummary";
 import type { CagnotteResource } from "@/modules/cagnotte/types";
-import { CofinancersRowsSkeleton } from "./CommunSkeletons";
+import { CofinancersRowsSkeleton, ListRowsSkeleton } from "./CommunSkeletons";
 
 interface CommunCofinancersTableProps {
     formData: CoFormData;
     answerQuery: CoFormAnswer| null;
     aacConfig: AacResolvedConfig | null;
     funding?: CagnotteResource | null;
+    /** `table` (défaut) : tableau partenaire / type / contribution. `list` : lignes sobres nom + type à gauche, montant à droite. */
+    layout?: "table" | "list";
 }
 
 /**
@@ -31,7 +35,7 @@ interface CommunCofinancersTableProps {
 const financerEntityType = (type: string): FinderElementType =>
     type === "citoyens" ? "citoyens" : "organizations";
 
-export function CommunCofinancersTable({formData: _formData, answerQuery, aacConfig, funding}: CommunCofinancersTableProps) {
+export function CommunCofinancersTable({formData: _formData, answerQuery, aacConfig, funding, layout = "table"}: CommunCofinancersTableProps) {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
     const { entity, api } = useCocolight();
@@ -79,8 +83,53 @@ export function CommunCofinancersTable({formData: _formData, answerQuery, aacCon
         };
     });
 
-    // Le vide n'est un vide qu'une fois les dépenses lues, sinon « aucun cofinanceur »
-    // s'affiche pendant le fetch.
+    if (layout === "list") {
+        if (cofinancersTotalsArray.length === 0) {
+            return isLoading ? (
+                <ListRowsSkeleton />
+            ) : (
+                <p className="text-sm text-muted-foreground">{String(t("detail.cofinancers.empty"))}</p>
+            );
+        }
+        return (
+            <ul className="divide-y divide-border">
+                {cofinancersTotalsArray.map((c) => (
+                    <li
+                        key={c.key}
+                        className={cn(
+                            "flex items-center justify-between gap-3 py-2.5",
+                            c.featured && "-mx-2 rounded-md bg-primary/5 px-2",
+                        )}
+                    >
+                        <span className="flex min-w-0 items-center gap-2 text-sm">
+                            <Avatar className="size-6 shrink-0 rounded-md">
+                                <AvatarImage src={c.imageUrl} alt={c.name} className="object-cover" />
+                                <AvatarFallback
+                                    className={cn(
+                                        "rounded-md text-[9px] font-bold",
+                                        c.featured ? "bg-primary text-primary-foreground" : "bg-surface-2 text-muted-foreground",
+                                    )}
+                                >
+                                    {initials(c.name)}
+                                </AvatarFallback>
+                            </Avatar>
+                            {c.slug ? (
+                                <Link to={`/profil/${c.slug}`} className="truncate hover:underline">
+                                    {c.name}
+                                </Link>
+                            ) : (
+                                <span className="truncate">{c.name}</span>
+                            )}
+                            <Badge variant="outline" className="hidden shrink-0 sm:inline-flex">{c.type}</Badge>
+                        </span>
+                        <span className="shrink-0 font-medium tabular-nums">{formatCurrency(toSafeInt(c.totalAmount))}</span>
+                    </li>
+                ))}
+            </ul>
+        );
+    }
+
+    // « Aucun cofinanceur » seulement une fois les dépenses lues.
     if (cofinancersTotalsArray.length === 0 && !isLoading) {
         return (
             <div className="p-5 rounded-lg border border-border bg-surface/60">

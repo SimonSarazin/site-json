@@ -17,11 +17,15 @@ import type { Project } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { AAC_QUERY_KEYS } from "../constants/queryKeys";
 
-export function useCommunProjectEntity(projectId?: string | null): Project | null {
+/** Même requête, avec son état : `isLoading` distingue « en cours » de « non résolu » (`project: null`). */
+export function useCommunProjectEntityQuery(projectId?: string | null): {
+  project: Project | null;
+  isLoading: boolean;
+} {
   const { api, me } = useCocolight();
   const normalizedProjectId = String(projectId ?? "").trim();
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: AAC_QUERY_KEYS.COMMUN_PROJECT(normalizedProjectId || null, me?.id ?? null),
     enabled: !!normalizedProjectId && (!!me || !!api),
     staleTime: 2 * 60 * 1000,
@@ -38,5 +42,9 @@ export function useCommunProjectEntity(projectId?: string | null): Project | nul
     },
   });
 
-  return data ?? null;
+  return { project: data ?? null, isLoading };
+}
+
+export function useCommunProjectEntity(projectId?: string | null): Project | null {
+  return useCommunProjectEntityQuery(projectId).project;
 }

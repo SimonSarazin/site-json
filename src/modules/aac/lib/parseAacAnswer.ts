@@ -24,6 +24,7 @@
 import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
 import type { AacCardFieldRef, AacCardFields } from "./resolveAacCardFields";
 import { readUsageAnswer, type AacUsageAnswer } from "./aacUsage";
+import { readCommunAddress, type AacCommunAddress } from "./communAddress";
 import { resolveAnswerAuthorId } from "./answerAuthor";
 
 type Rec = Record<string, unknown>;
@@ -146,6 +147,8 @@ export interface AacCommunCard {
   hasTitle: boolean;
   description: string;
   tags: string[];
+  /** Mots-clés du chemin configuré (`fields.keywords`), sans repli backend. */
+  keywords: string[];
   maturity: string | null;
   /** URL absolue, ou `null` ⇒ l'UI met SON placeholder. */
   imageUrl: string | null;
@@ -180,6 +183,8 @@ export interface AacCommunCard {
   isSelected: boolean | null;
   /** Usage catégorisé — alimente le filtre « Filtrer par besoins ». */
   usage: AacUsageAnswer;
+  /** Adresse du commun (filtre « Commune ») ; `null` sans `directory.fields.adresse` ou sans réponse. */
+  address: AacCommunAddress | null;
   /**
    * Qui a DÉPOSÉ le commun, pas l'entité d'affichage : c'est le gate du bouton de suppression
    * dans l'annuaire. `undefined` quand la source ne le porte pas (compte temporaire, projection
@@ -308,6 +313,7 @@ export function parseAacAnswer(
     hasTitle: rawTitle !== "",
     description,
     tags,
+    keywords: toStringList(readField(a, fields.keywords)),
     maturity,
     imageUrl,
     funds,
@@ -321,6 +327,8 @@ export function parseAacAnswer(
     // L'usage vit dans l'étape de DÉPÔT, celle que porte `fields.title` — jamais
     // une clé d'étape en dur.
     usage: readUsageAnswer(answers[fields.title?.stepKey ?? mainStepKey(answers)], usageId),
+    // Lue par `readField` : le chemin configuré peut viser n'importe quelle étape.
+    address: readCommunAddress(readField(a, fields.adresse)),
     // Jamais `a.user` en premier : selon la route, ce champ porte l'entité d'AFFICHAGE, pas
     // le déposant. `resolveAnswerAuthorId` applique la règle — `userId` d'abord.
     authorId: resolveAnswerAuthorId(a as Parameters<typeof resolveAnswerAuthorId>[0]),

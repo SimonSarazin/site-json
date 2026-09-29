@@ -9,6 +9,7 @@ import {
 import { AacHiddenTagsBadge } from "./AacHiddenTagsBadge";
 import { AacCommunDeleteButton } from "./AacCommunDeleteButton";
 import type { AacCommunCard as CommunCard } from "../../lib/parseAacAnswer";
+import { communPath } from "../../lib/communPath";
 
 interface AacCommunRowProps {
   commun: CommunCard;
@@ -78,7 +79,7 @@ export function AacCommunRow({ commun, onRequestDelete, isDeleting, className }:
           base à 0 et les colonnes ne passeraient jamais à la ligne en étroit. */}
       <div className="min-w-0 grow basis-48">
         <div className="flex items-center gap-2">
-          <Link to={`/aac/commun/${commun.id}`} className="min-w-0">
+          <Link to={communPath(commun.id)} className="min-w-0">
             <h3 className="truncate text-sm font-bold tracking-wide uppercase transition-colors hover:text-primary">
               {commun.hasTitle ? commun.title : String(t("directory.card.untitled"))}
             </h3>

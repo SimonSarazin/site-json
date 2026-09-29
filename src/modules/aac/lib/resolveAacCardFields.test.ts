@@ -277,6 +277,52 @@ describe("resolveAacCardFields", () => {
     expect(fields.title?.stepKey).toBe("etapeA");
   });
 
+  describe("rôle `adresse` — strictement opt-in", () => {
+    /** Le même form, plus la question adresse que projets.re a ajoutée. */
+    const withAddress = () =>
+      buildAacFormMeta("f1", {
+        ...FORM,
+        inputs: {
+          ...FORM.inputs,
+          etapeA: {
+            inputs: {
+              ...FORM.inputs.etapeA.inputs,
+              q_adr: { type: "tpls.forms.cplx.address", label: "Adresse", position: 7 },
+            },
+          },
+        },
+      });
+
+    it("l'override de config le résout, avec les métadonnées de la question", () => {
+      const { fields, source } = resolveAacCardFields(withAddress(), ROLES, {
+        adresse: "answers.etapeA.q_adr",
+      });
+
+      expect(fields.adresse).toMatchObject({
+        stepKey: "etapeA",
+        id: "q_adr",
+        path: "answers.etapeA.q_adr",
+        label: "Adresse",
+      });
+      expect(source.adresse).toBe("config");
+    });
+
+    // `adresse` n'est jamais deviné par le scan, même si une question `location` existe.
+    it("le form porte une question adresse mais la config se tait ⇒ AUCUNE devinette", () => {
+      const { fields, source } = resolveAacCardFields(withAddress(), ROLES);
+
+      expect(fields.adresse).toBeNull();
+      expect(source.adresse).toBe("none");
+    });
+
+    it("un chemin RACINE est honoré comme pour les autres rôles", () => {
+      const { fields, source } = resolveAacCardFields(meta(), ROLES, { adresse: "address" });
+
+      expect(fields.adresse).toMatchObject({ stepKey: null, id: "address", path: "address" });
+      expect(source.adresse).toBe("config");
+    });
+  });
+
   it("form vide : tous les rôles à null, aucune exception", () => {
     const empty = buildAacFormMeta("f1", undefined);
     const { fields } = resolveAacCardFields(empty, {

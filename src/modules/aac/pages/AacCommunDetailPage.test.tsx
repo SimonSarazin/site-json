@@ -138,6 +138,7 @@ vi.mock("../hooks/useAacDirectoryContext", () => ({
     visibility: { isAdmin: false, currentUserId: "u1", contextId: "ctx" },
     baseUrl: "",
     isFormLoading: false,
+    variants: {},
   }),
 }));
 vi.mock("../hooks/useCommunFundingContext", () => ({

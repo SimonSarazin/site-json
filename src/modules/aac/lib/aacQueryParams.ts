@@ -16,11 +16,10 @@
  *  - **serveur** : la portée AAC (injectée par la façade), la recherche par nom,
  *    les tags, le tri, la pagination. Ce sont les cas courants, et ils sont
  *    exacts ;
- *  - **client** : `usage`, `usageSub` et `maturity`. `usage` et `usageSub`
- *    réclameraient tous deux le créneau `$or`, qui les combinerait en OU là où
- *    il faut un ET ; et une maturité en sous-chaîne ferait matcher « Oui » dans
- *    « Non, mais d'ici 6 mois oui ». Les envoyer serait pire que de ne pas les
- *    envoyer.
+ *  - **client** : `usage`, `usageSub`, `maturity` et `commune`. `usage` et
+ *    `usageSub` réclameraient tous deux le créneau `$or` (OU au lieu de ET) ; une
+ *    maturité ou une commune en sous-chaîne matcherait trop (« Saint-Denis » dans
+ *    « Saint-Denis-de-la-Réunion »).
  *
  * Conséquence assumée : dès qu'un filtre client est actif, la pagination serveur
  * devient impossible — `count` et `hasNext` décriraient l'ensemble AVANT
@@ -108,6 +107,7 @@ const EMPTY_CLIENT: AacDirectoryFiltersState = {
   q: "",
   tags: [],
   maturity: [],
+  commune: [],
   usage: [],
   usageSub: [],
   sort: "",
@@ -232,8 +232,9 @@ export function splitAacFilters(
     }
   }
 
-  // Ces trois-là ne sont pas exprimables sans fausser le résultat — cf. l'en-tête.
+  // Non exprimables côté serveur sans fausser le résultat (cf. l'en-tête).
   client.maturity = filters.maturity;
+  client.commune = filters.commune;
   client.usage = filters.usage;
   client.usageSub = filters.usageSub;
 
@@ -244,6 +245,7 @@ export function splitAacFilters(
     client.q !== "" ||
     client.tags.length > 0 ||
     client.maturity.length > 0 ||
+    client.commune.length > 0 ||
     client.usage.length > 0 ||
     client.usageSub.length > 0;
 
