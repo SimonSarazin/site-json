@@ -127,6 +127,36 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
     expect((entity as { slug?: string }).slug).toBe("new-slug");
   });
 
+  it("CREATE : la modération a priori ne vise QUE les non-admins du site", async () => {
+    const values = { name: "Event", url: "", tags: [], shortDescription: "" };
+    const spec: EntityMutationSpec = {
+      ...base, mode: "add", entityType: "organizations",
+      buildPayload: (d) => buildProfileUpdateData("organizations", d),
+      inject: { extraFieldsUnlessCostumAdmin: { preferences: { toBeValidated: true } } },
+    };
+
+    // Visiteur ou membre simple : la fiche part en attente de validation.
+    const visiteur = makeSdk();
+    await runEntityMutation(spec, values, {
+      me: visiteur.me,
+      contextEntity: { isAdmin: () => false } as unknown as EntityTypes,
+    });
+    expect(visiteur.calls[0].payload).toMatchObject({ preferences: { toBeValidated: true } });
+
+    // Admin du site : publication directe.
+    const admin = makeSdk();
+    await runEntityMutation(spec, values, {
+      me: admin.me,
+      contextEntity: { isAdmin: () => true } as unknown as EntityTypes,
+    });
+    expect(admin.calls[0].payload).not.toHaveProperty("preferences");
+
+    // Porteur pas encore chargé : on ne dispense jamais par défaut.
+    const sansPorteur = makeSdk();
+    await runEntityMutation(spec, values, { me: sansPorteur.me });
+    expect(sansPorteur.calls[0].payload).toMatchObject({ preferences: { toBeValidated: true } });
+  });
+
   it("CREATE projet : parent injecté (buildParentReference)", async () => {
     const sdk = makeSdk();
     const values = { name: "Proj", url: "", tags: [], shortDescription: "" };

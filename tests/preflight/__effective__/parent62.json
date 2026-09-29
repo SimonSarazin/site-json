@@ -4,7 +4,7 @@
   "addMenus": {
     "citoyens": {
       "builtins": {
-        "organization": "add-organization",
+        "organization": "add-parent62-partenaire",
         "project": "add-project",
         "event": "add-event",
         "poi": "add-poi"
@@ -25,6 +25,16 @@
     }
   },
   "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-parent62-partenaire",
+          "native": "edit-parent62-partenaire",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
     "events": {
       "vierge": "edit-profile",
       "routes": [
@@ -51,6 +61,16 @@
         {
           "declare": "edit-parent62-recovery-center",
           "native": "edit-parent62-recovery-center",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-parent62-inforeso",
+          "native": "edit-parent62-inforeso",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-parent62-intervenant",
+          "native": "edit-parent62-intervenant",
           "horsPerimetre": "edit-profile"
         }
       ]
@@ -94,7 +114,9 @@
       },
       "create": "add-parent62-article",
       "createDefaults": {
-        "category": "appel-projet"
+        "category": [
+          "appel-projet"
+        ]
       },
       "edit": {
         "enabled": true,
@@ -119,7 +141,9 @@
       },
       "create": "add-parent62-article",
       "createDefaults": {
-        "category": "offre-emploi"
+        "category": [
+          "offre-emploi"
+        ]
       },
       "edit": {
         "enabled": true,
@@ -164,6 +188,44 @@
         "modalName": null
       }
     },
+    "inforeso/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "doc"
+        },
+        "defaultSortBy": {
+          "annee": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-inforeso",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "intervenants/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "intervenant"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-intervenant",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
     "agenda/events": {
       "source": {
         "defaultFilters": {
@@ -197,6 +259,22 @@
         ]
       },
       "create": "add-parent62-reunion",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "partenaires/organizations": {
+      "source": {
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-partenaire",
       "edit": {
         "enabled": true,
         "modalName": null
@@ -241,9 +319,15 @@
         },
         "defaultFields": [
           "name",
+          "slug",
           "category",
           "description",
           "medias",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "address",
+          "geo",
+          "geoPosition",
           "territoires",
           "publics",
           "ages",
@@ -299,6 +383,59 @@
         }
       }
     },
+    "/inforeso/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "doc"
+        },
+        "defaultSortBy": {
+          "annee": -1
+        },
+        "defaultFields": [
+          "name",
+          "annee",
+          "medias",
+          "urls",
+          "type",
+          "created",
+          "source"
+        ],
+        "indexStepList": 60
+      }
+    },
+    "/elles-et-ils-ont-marque-le-reseau/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "intervenant"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "defaultFields": [
+          "name",
+          "shortDescription",
+          "description",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "type",
+          "created",
+          "source"
+        ],
+        "indexStepList": 60
+      }
+    },
     "/agenda/agenda": {
       "baseParams": {
         "sourceKey": [
@@ -319,6 +456,22 @@
         "indexStepList": 30,
         "filters": {
           "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Arrageois"
+            ]
+          }
+        }
+      }
+    },
+    "/territoire/arrageois/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
           "territoires": {
             "$in": [
               "Arrageois"
@@ -405,6 +558,22 @@
         }
       }
     },
+    "/territoire/artois/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
+          "territoires": {
+            "$in": [
+              "Artois"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/artois/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
@@ -475,6 +644,22 @@
         "indexStepList": 30,
         "filters": {
           "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Audomarois"
+            ]
+          }
+        }
+      }
+    },
+    "/territoire/audomarois/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
           "territoires": {
             "$in": [
               "Audomarois"
@@ -561,6 +746,22 @@
         }
       }
     },
+    "/territoire/boulonnais/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
+          "territoires": {
+            "$in": [
+              "Boulonnais"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/boulonnais/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
@@ -631,6 +832,22 @@
         "indexStepList": 30,
         "filters": {
           "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Calaisis"
+            ]
+          }
+        }
+      }
+    },
+    "/territoire/calaisis/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
           "territoires": {
             "$in": [
               "Calaisis"
@@ -717,6 +934,22 @@
         }
       }
     },
+    "/territoire/entre-mer-et-terres/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
+          "territoires": {
+            "$in": [
+              "Entre Mer et Terres"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/entre-mer-et-terres/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
@@ -787,6 +1020,22 @@
         "indexStepList": 30,
         "filters": {
           "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Familles en sol mineur Hénin Carvin"
+            ]
+          }
+        }
+      }
+    },
+    "/territoire/familles-en-sol-mineur-henin-carvin/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
           "territoires": {
             "$in": [
               "Familles en sol mineur Hénin Carvin"
@@ -873,6 +1122,22 @@
         }
       }
     },
+    "/territoire/familles-en-sol-mineur-lens-lievin/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
+          "territoires": {
+            "$in": [
+              "Familles en sol mineur Lens Liévin"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/familles-en-sol-mineur-lens-lievin/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
@@ -943,6 +1208,22 @@
         "indexStepList": 30,
         "filters": {
           "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Ternois Bruaysis"
+            ]
+          }
+        }
+      }
+    },
+    "/territoire/ternois-bruaysis/agenda#1": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 60,
+        "filters": {
+          "type": "others",
           "territoires": {
             "$in": [
               "Ternois Bruaysis"
@@ -1059,48 +1340,52 @@
           "geo",
           "geoPosition"
         ],
-        "indexStepList": 20
+        "indexStepList": 20,
+        "costumSlug": "parent62"
       }
     },
-    "/communaute/searchProStatic": {
-      "baseParams": {
-        "defaultTypes": [
-          "citoyens"
-        ],
-        "sourceKey": [
-          "parent62"
-        ]
-      }
-    },
-    "/communaute/searchProStatic#1": {
+    "/annuaire/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
           "organizations"
         ],
         "sourceKey": [
           "parent62"
-        ]
+        ],
+        "costumSlug": "parent62",
+        "defaultFields": [
+          "name",
+          "slug",
+          "type",
+          "collection",
+          "source",
+          "reference",
+          "shortDescription",
+          "description",
+          "email",
+          "telephone",
+          "url",
+          "address",
+          "geo",
+          "geoPosition",
+          "territoires",
+          "publics",
+          "themes",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "indexStepList": 24
       }
     }
-  },
-  "stamps": {
-    "parent62-article": [
-      {
-        "field": "tags",
-        "value": {
-          "$mapLabels": {
-            "from": "category",
-            "map": {
-              "appel-projet": "Appels à projets",
-              "offre-emploi": "Offres d'emploi"
-            }
-          }
-        },
-        "op": "append",
-        "on": "both",
-        "channel": "payload"
-      }
-    ]
   },
   "referencement": {},
   "membership": {

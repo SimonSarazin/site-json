@@ -20,6 +20,7 @@ const PROJECT_ROOT = path.resolve(__dirname, "..");
 interface NavItem {
   label: Record<string, string>;
   path?: string;
+  iconOnly?: boolean;
 }
 
 // Config chargée explicitement : SITE_CONFIG_PATH est absent du .env, donc
@@ -63,7 +64,7 @@ async function waitForHydration(page: Page) {
 }
 
 test.describe("Parent62 — Partie 1 (lecture seule)", () => {
-  test("accueil : titre, nav à 5 entrées, dropdown Publics, 9 bulles territoire", async ({
+  test("accueil : titre, nav à 7 entrées dont la loupe, dropdown Publics, 9 bulles territoire", async ({
     page,
   }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
@@ -75,9 +76,18 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     const headerNav = page.locator("nav.sticky").first();
     await expect(headerNav).toBeVisible();
 
-    expect(config.header.nav, "la nav de la config doit rester à 5 entrées").toHaveLength(5);
+    // 17/09 : « INFORESO » rejoint le premier niveau, à côté de « Contenus », puis la loupe vers la recherche,
+    // en icône seule comme sur l'ancien site (7 entrées).
+    expect(config.header.nav, "la nav de la config doit rester à 7 entrées").toHaveLength(7);
     const headerText = (await headerNav.textContent()) ?? "";
     for (const item of config.header.nav) {
+      if (item.iconOnly) {
+        // Icône seule : le libellé est le nom accessible du lien, pas un texte affiché.
+        const lien = headerNav.locator(`a[aria-label="${item.label.fr}"]`).first();
+        await expect(lien, `lien icône « ${item.label.fr} »`).toHaveAttribute("href", item.path ?? "");
+        await expect(lien).toHaveText("");
+        continue;
+      }
       expect(headerText, `entrée « ${item.label.fr} » attendue dans le header`).toContain(
         item.label.fr,
       );
@@ -145,17 +155,73 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     await expect(artois).toHaveAttribute("data-state", "unchecked");
   });
 
-  test("/temoignages : la page « Paroles de parents » rend (recherche)", async ({ page }) => {
+  test("/temoignages : la page « Paroles de parents » rend (filtres à gauche)", async ({ page }) => {
     // Réconciliation 24/07 (main canonique) : la parole passe par la page
-    // /temoignages de Thomas (searchHeader + searchProStatic) — l'ancienne
-    // /paroles du MR a été retirée comme doublon.
+    // /temoignages de Thomas — l'ancienne /paroles du MR a été retirée comme doublon.
+    // 09/09 : la page échange son searchHeader à 5 dropdowns contre un searchHeader
+    // titre-seul (`showSearch:false`) + un `gridLayout` filtres/liste. Le champ de
+    // recherche « Rechercher une parole… » du bandeau n'existe donc plus : c'est le
+    // panneau `filters` qui porte désormais la recherche.
     await page.goto("/temoignages", { waitUntil: "domcontentloaded" });
     await waitForHydration(page);
 
     await expect(
       page.getByRole("heading", { name: "Paroles de parents" }).first(),
     ).toBeVisible();
-    await expect(page.getByPlaceholder("Rechercher une parole…")).toBeVisible();
+    // Gabarit « filtres à gauche » : la sidebar desktop de `FiltersSection` est le marqueur
+    // stable du nouveau rendu. Scopé à l'`aside` — le champ de recherche du panneau est
+    // rendu DEUX fois (bloc mobile `lg:hidden` + sidebar `hidden lg:block`), donc un
+    // `getByPlaceholder` global viserait la copie masquée.
+    const panneau = page.locator("aside").first();
+    await expect(panneau.getByRole("heading", { name: "Filtres" })).toBeVisible();
+    await expect(panneau.getByPlaceholder(/Rechercher par nom/i)).toBeVisible();
+  });
+
+  // ── Coordination territoriale : filtre serveur + projection (SDK ≥ 1.0.194) ──────────────
+  // Navigateur NON connecté : chemin public `globalautocomplete` (projection additive), complément
+  // du contrôle manuel sur le chemin admin. Les cas « carte présente » dépendent du semis local
+  // documenté en doc-projets/parent62.md §9septvicies.6 (Mirana → Audomarois, Legrand → Hénin
+  // Carvin, Judicael sans territoire) : sans lui, ils sont IGNORÉS explicitement, pas verts à vide.
+  test("/territoire/arrageois : sans coordination rattachée, le repli de contact et rien d'autre", async ({ page }) => {
+    await page.goto("/territoire/arrageois", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+    const section = page.locator("#arrageois-coordination");
+    await expect(section.getByText("arrageois@parent62.org")).toBeVisible({ timeout: 45_000 });
+    await expect(section.getByText(/Aucun membre/i)).toHaveCount(0);
+    await expect(section.getByText("Coordonnateur(trice)")).toHaveCount(0);
+  });
+
+  test("/territoire/audomarois : la coordination filtrée serveur, sans repli", async ({ page }) => {
+    await page.goto("/territoire/audomarois", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+    const section = page.locator("#audomarois-coordination");
+    // La liste se résout côté client : on attend la carte OU le repli, puis on tranche.
+    await expect(section.getByText(/Mirana Sylvany|audomarois@parent62.org/)).toBeVisible({ timeout: 45_000 });
+    test.skip(
+      (await section.getByText("Mirana Sylvany").count()) === 0,
+      "semis local absent (doc-projets/parent62.md §9septvicies.6)",
+    );
+    await expect(section.getByText("Coordonnateur(trice)")).toBeVisible();
+    await expect(section.getByText("audomarois@parent62.org")).toHaveCount(0); // pas de repli quand une carte est rendue
+    await expect(section.getByText("Centre Social Inter-Générations", { exact: false })).toBeVisible(); // cardText
+    await expect(section.getByRole("link", { name: /actualités du territoire/i })).toHaveCount(0); // déjà sur la page
+  });
+
+  test("/equipe : l'équipe de coordination, avec et sans territoire", async ({ page }) => {
+    await page.goto("/equipe", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+    const section = page.locator("#equipe-terr");
+    await expect(section.getByText(/Legrand Antoine|Aucun membre/)).toBeVisible({ timeout: 45_000 });
+    test.skip(
+      (await section.getByText("Legrand Antoine").count()) === 0,
+      "semis local absent (doc-projets/parent62.md §9septvicies.6)",
+    );
+    for (const nom of ["Mirana Sylvany", "Legrand Antoine", "Judicael RAKOTOMALALA"]) {
+      await expect(section.getByText(nom)).toBeVisible();
+    }
+    // Deux rattachés → deux boutons vers leur territoire ; le troisième, sans territoire, n'en a pas.
+    await expect(section.getByRole("link", { name: /actualités du territoire/i })).toHaveCount(2);
+    await expect(section.locator('a[href="/territoire/familles-en-sol-mineur-henin-carvin"]')).toHaveCount(1);
   });
 
   test("/territoire/arrageois : bandeau et liste des communes", async ({ page }) => {
@@ -177,6 +243,23 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
 
     // TitleSection rend un h2 (pas de h1 sur les pages de liste).
     await expect(page.getByRole("heading", { name: "Les actualités du réseau" })).toBeVisible();
+    if (backendUp) {
+      await expect(page.locator("main h3").first()).toBeVisible();
+    }
+  });
+
+  test("/zoomcat : liste des actualités « Zoom sur le réseau », sans filtre, atteinte depuis l'accueil", async ({ page }) => {
+    // Le bouton « voir tout » de la section « Zoom sur le réseau » de l'accueil mène à cette page.
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+    await expect(page.locator('[data-section-type="articleTeaser"] a[href="/zoomcat"]')).toHaveCount(1);
+
+    await page.goto("/zoomcat", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    await expect(page.getByRole("heading", { name: "Zoom sur le réseau" }).first()).toBeVisible();
+    // Page de listing pure : ni champ de recherche ni liste déroulante de filtres.
+    await expect(page.locator("main input[type=search], main [role=combobox]")).toHaveCount(0);
     if (backendUp) {
       await expect(page.locator("main h3").first()).toBeVisible();
     }
@@ -224,4 +307,231 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
       await expect(section.getByRole("link").first()).toBeVisible();
     }
   });
+
+  test("header à 1280px (seuil de la nav complète) : aucun débordement horizontal", async ({ page }) => {
+    // À `xl` pile, la nav de premier niveau et le groupe d'actions partagent la ligne : une entrée de plus
+    // (INFORESO, 17/09) poussait « Se connecter » 3px hors de l'écran, sur toutes les pages.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/blog", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }));
+    expect(scrollWidth, "la page ne doit pas défiler horizontalement").toBeLessThanOrEqual(clientWidth);
+    await expect(page.getByRole("button", { name: "Se connecter" }).first()).toBeInViewport({ ratio: 1 });
+  });
+
+  test("header à 1280px sous une barre de défilement classique : les actions tiennent dans la barre", async ({ page }) => {
+    // Chromium de test a des barres de défilement en surimpression ; sous Windows, la barre prend 17px alors
+    // que la nav complète (`xl`) reste affichée. Avec la loupe (7ᵉ entrée), le contenu dépassait alors de 20px.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/blog", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+    await page.addStyleTag({ content: "html { padding-right: 17px !important; box-sizing: border-box; }" });
+
+    const { contenu, boite } = await page.locator("nav.sticky .grid").first().evaluate((grille) => ({
+      contenu: grille.scrollWidth,
+      boite: grille.clientWidth,
+    }));
+    expect(contenu, "le contenu de la barre ne doit pas dépasser sa largeur").toBeLessThanOrEqual(boite);
+  });
+
+  test("/inforeso : les numéros rangés par année s'ouvrent dans un nouvel onglet", async ({ page }) => {
+    await page.goto("/inforeso", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    await expect(page.getByRole("heading", { name: "INFORESO" }).first()).toBeVisible();
+    // Les blocs d'année n'existent que si des numéros sont saisis : l'assertion suit la donnée.
+    const annee = page.getByRole("region", { name: /^\d{4}$/ }).first();
+    if (backendUp && (await annee.count()) > 0) {
+      const numero = annee.getByRole("link").first();
+      await expect(numero).toHaveAttribute("target", "_blank");
+      await expect(numero).toHaveAttribute("rel", "noopener noreferrer");
+    }
+  });
+
+  test("/elles-et-ils-ont-marque-le-reseau : annuaire affiché en entier, sans clic ni modale", async ({ page }) => {
+    await page.goto("/elles-et-ils-ont-marque-le-reseau", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    await expect(page.getByRole("heading", { name: "Elles et ils ont marqué le réseau" }).first()).toBeVisible();
+    const personne = page.locator("main article").first();
+    if (backendUp && (await personne.count()) > 0) {
+      await expect(personne.getByRole("heading", { level: 3 })).toBeVisible();
+      // Design `portrait` : tout est sur la carte — aucun bouton d'ouverture de détail.
+      await expect(personne.getByRole("button")).toHaveCount(0);
+    }
+  });
+
+  test("/territoire/arrageois : l'agenda du territoire liste les événements du territoire", async ({ page }) => {
+    await page.goto("/territoire/arrageois", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    // Deux agendas sur la page : les dates du comité local (réunions) puis l'agenda du territoire.
+    const agendas = page.locator('[data-section-type="agenda"]');
+    await expect(agendas).toHaveCount(2);
+    const agendaTerritoire = agendas.last();
+    await expect(agendaTerritoire.getByText("L'agenda du territoire")).toBeVisible();
+    await expect(agendaTerritoire.getByRole("link", { name: /Voir tout l'agenda/ })).toHaveAttribute(
+      "href",
+      // L'ID de l'option, pas le libellé : un libellé retouché cesserait d'être reconnu (garde préflight
+      // `deeplink-filters`), et la page cible s'ouvrirait NON filtrée.
+      "/agenda?territoire=arrageois",
+    );
+
+    // Le contenu dépend des données : n'assertionner qu'avec un backend qui répond.
+    if (backendUp) {
+      const vide = await agendaTerritoire.getByText(/Aucun événement/i).count();
+      if (vide === 0) await expect(agendaTerritoire.locator("article, a[href]").first()).toBeVisible();
+    }
+  });
+
+  test("accueil : les trois bandes ont la même largeur, et les deux panneaux verts sont au même niveau", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+    // Le panneau de l'actu n'existe qu'une fois les actualités chargées : l'attendre avant de mesurer.
+    await page.locator('[data-section-type="featured-carousel"] div[style*="linear-gradient"]').first().waitFor();
+
+    const mesures = await page.evaluate(() => {
+      const bande = (type: string) => {
+        const sec = [...document.querySelectorAll("[data-section-index]")].find(
+          (d) => (d as HTMLElement).dataset.sectionType === type,
+        );
+        const c = sec?.querySelector(".container")?.getBoundingClientRect();
+        return c ? { largeur: Math.round(c.width), x: Math.round(c.x) } : null;
+      };
+      const panneau = (type: string) => {
+        const p = document.querySelector(`[data-section-type="${type}"] div[style*='linear-gradient']`);
+        const r = p?.getBoundingClientRect();
+        return r ? { haut: Math.round(r.top), bas: Math.round(r.bottom) } : null;
+      };
+      const une = document.querySelector('[data-section-type="featured-carousel"] div[style*=\'linear-gradient\']');
+      const cta = [...(une?.querySelectorAll("a") ?? [])].find((a) => /En savoir/.test(a.textContent ?? ""));
+      return {
+        bandes: [bande("action-tiles"), bande("gridLayout"), bande("articleTeaser")],
+        territoires: panneau("map-bubbles"),
+        alaune: panneau("featured-carousel"),
+        ctaDansLaCarte: Boolean(cta),
+      };
+    });
+
+    // Trois bandes de même largeur, calées au même bord : deux largeurs se lisent comme un décrochage.
+    const largeurs = new Set(mesures.bandes.map((b) => b?.largeur));
+    const bords = new Set(mesures.bandes.map((b) => b?.x));
+    expect(largeurs.size, `largeurs : ${JSON.stringify(mesures.bandes)}`).toBe(1);
+    expect(bords.size, `bords : ${JSON.stringify(mesures.bandes)}`).toBe(1);
+
+    // Les deux panneaux verts (illustration et actualité) commencent et finissent à la même hauteur,
+    // et le bouton de l'actu vit DANS son panneau.
+    expect(mesures.alaune, "panneau de l'actu").toEqual(mesures.territoires);
+    expect(mesures.ctaDansLaCarte, "bouton « En savoir » dans le panneau de l'actu").toBe(true);
+  });
+
+  test("accueil : survoler une bulle de territoire montre ses villes", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    // Dans la CARTE, pas le lien du même chemin dans le menu déroulant du header.
+    const calaisis = page.locator('main a[href="/territoire/calaisis"]').first();
+    const villes = calaisis.locator("span[id]");
+    await expect(villes).toHaveText("Calais – Audruicq – Guînes");
+    // Cachée au repos, montrée au survol — et elle décrit le lien pour un lecteur d'écran.
+    await expect(villes).toHaveCSS("opacity", "0");
+    await expect(calaisis).toHaveAttribute("aria-describedby", await villes.getAttribute("id") ?? "");
+    await calaisis.hover();
+    await expect(villes).toHaveCSS("opacity", "1");
+  });
+
+  test("/territoire/boulonnais : la page porte la couleur du territoire et en teinte des sections", async ({ page }) => {
+    await page.goto("/territoire/boulonnais", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    const accent = await page.locator("main").evaluate((m) => getComputedStyle(m).getPropertyValue("--page-accent").trim());
+    expect(accent, "l'accent de la page est la couleur du territoire").toBe("#c34a42");
+
+    // Deux bandeaux teintés (agenda du territoire, communes) se distinguent du fond de page.
+    const fonds = await page.evaluate(() => {
+      const fond = (el: Element | null) => (el ? getComputedStyle(el).backgroundColor : "");
+      const sections = [...document.querySelectorAll("[data-section-index]")];
+      const teinte = (type: string) => fond(sections.find((d) => (d as HTMLElement).dataset.sectionType === type)?.querySelector("section") ?? null);
+      return {
+        page: fond(document.body),
+        agenda: teinte("agenda"),
+        accordion: teinte("accordion"),
+        filtres: teinte("searchHeader"),
+      };
+    });
+    expect(fonds.agenda, "l'agenda est teinté").not.toBe(fonds.page);
+    expect(fonds.accordion, "les communes sont teintées").toBe(fonds.agenda);
+    expect(fonds.filtres, "les filtres d'actualités sont teintés").toBe(fonds.agenda);
+  });
+
+  test("/annuaire : bouton d'ajout, filtres, et liste qui ne montre que les fiches validées", async ({ page }) => {
+    await page.goto("/annuaire", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    await expect(page.getByRole("heading", { name: "Annuaire des partenaires" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Ajouter un partenaire/ })).toBeVisible();
+    const filtres = page.locator('[data-section-type="filters"]');
+    for (const groupe of ["Territoire", "Type de structure", "Public", "Thèmes"]) {
+      await expect(filtres.getByText(groupe, { exact: true }).first()).toBeVisible();
+    }
+
+    // Une fiche proposée porte `toBeValidated` : sans `costumSlug`, la liste n'envoie pas la porte de
+    // validation et la fiche s'afficherait dès sa création, avant tout contrôle.
+    const recherche = page.waitForRequest(
+      (r) => r.url().includes("globalautocomplete") && decodeURIComponent(r.postData() ?? "").includes("filters[type]"),
+    );
+    await filtres.getByText("Association", { exact: true }).click();
+    const corps = decodeURIComponent((await recherche).postData() ?? "");
+    expect(corps).toContain("filters[type][$in][]=NGO");
+    expect(corps).toContain("filters[preferences.toBeValidated.parent62][$exists]=false");
+    expect(corps).toContain("searchType[]=organizations");
+  });
+
+  test("/blog : le filtre « Villes » propose les villes des territoires et filtre sur la ville de l'adresse", async ({ page }) => {
+    await page.goto("/blog", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    await page.getByRole("button", { name: /^Villes/ }).first().click();
+    await page.getByPlaceholder("Rechercher…").last().fill("Arras");
+    const arras = page.getByRole("option", { name: "Arras", exact: true });
+    await expect(arras).toBeVisible();
+
+    const recherche = page.waitForRequest(
+      (r) => r.url().includes("globalautocomplete") && decodeURIComponent(r.postData() ?? "").includes("filters[address.addressLocality]"),
+    );
+    await arras.click();
+    const corps = decodeURIComponent((await recherche).postData() ?? "");
+    expect(corps).toContain("filters[address.addressLocality][$in][]=Arras");
+    // Le fil reste borné aux actualités : un filtre de page ne peut pas écraser `type`.
+    expect(corps).toContain("filters[type]=article");
+    await expect(page).toHaveURL(/ville=arras/);
+  });
+
+  for (const url of ["/parents", "/pro"]) {
+    test(`${url} : « Par où commencer ? » — 4 cases sur une rangée, de même hauteur, icônes alignées`, async ({ page }) => {
+      // Un titre qui passe sur une ligne de plus ne doit ni faire dépasser sa case ni décaler l'icône voisine.
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(url, { waitUntil: "domcontentloaded" });
+      await waitForHydration(page);
+
+      const tuiles = page.locator('[data-section-type="action-tiles"] a > button');
+      await expect(tuiles).toHaveCount(4);
+      const boites = await tuiles.evaluateAll((els) =>
+        els.map((el) => {
+          const tuile = el.getBoundingClientRect();
+          const icone = el.querySelector("svg")?.getBoundingClientRect();
+          return { y: Math.round(tuile.y), h: Math.round(tuile.height), iconeY: icone && Math.round(icone.y) };
+        }),
+      );
+      expect(new Set(boites.map((b) => b.y)).size, "une seule rangée").toBe(1);
+      expect(new Set(boites.map((b) => b.h)).size, "même hauteur").toBe(1);
+      expect(new Set(boites.map((b) => b.iconeY)).size, "icônes alignées").toBe(1);
+    });
+  }
 });

@@ -61,4 +61,10 @@ describe("ensureCostumScope", () => {
     expect(() => ensureCostumScope(null, CTX)).not.toThrow();
     expect(() => ensureCostumScope(undefined, CTX)).not.toThrow();
   });
+
+  it("ignore un objet qui n'est pas un carrier lib", () => {
+    // Appelé désormais depuis les factories de mutation de `profil` (membres, demandes de
+    // rattachement) : la cible n'est plus garantie être une entité de la lib.
+    expect(() => ensureCostumScope({ name: "pas un carrier" }, CTX)).not.toThrow();
+  });
 });

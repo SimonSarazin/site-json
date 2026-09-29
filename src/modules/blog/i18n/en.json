@@ -13,7 +13,11 @@
     "by": "by",
     "readingTime": "{{count}} min read",
     "notFound": "Article not found",
-    "related": "Related articles"
+    "related": "Related articles",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteTitle": "Delete this article?",
+    "deleteDescription": "“{{title}}” will be permanently deleted. This action cannot be undone."
   },
   "teaser": {
     "cta": "Learn more",

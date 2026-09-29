@@ -5,14 +5,7 @@ vi.mock("@/hooks/useT", () => ({
   useT: () => (key: string, fallback?: string) => fallback ?? key,
 }));
 
-import {
-  FieldLabel,
-  HintText,
-  ProseContent,
-  SectionDescriptionField,
-  SectionTitleField,
-  TitleSeparatorField,
-} from "./FormFields";
+import { FieldLabel, HintText, ProseContent, SectionDescriptionField, SectionTitleField, TitleSeparatorField, PROSE_CESURE } from "./FormFields";
 import type { FormFieldMapping } from "../types";
 
 /**
@@ -146,6 +139,40 @@ describe("contenu de la définition du formulaire — mise en forme préservée"
  * copie inline sur deux champs neufs, avec tous les gates au vert).
  * Une régression ici se propage à tout le formulaire, d'où ces tests.
  */
+/**
+ * Césure des mots insécables.
+ *
+ * jsdom ne fait pas de mise en page : ce test ne peut que vérifier que la classe
+ * est posée. Ce qu'elle produit a été mesuré dans un vrai navigateur, sur le vrai
+ * composant à 390 px : une URL de 84 caractères occupait 352 px dans une colonne
+ * de 308 (soit 44 px de débordement, qui remontaient jusqu'à faire défiler la
+ * modale latéralement), et 308 px avec la classe. Rendu du texte normal
+ * inchangé au pixel près.
+ */
+describe("texte riche du formulaire — césure", () => {
+  // Contrat coform, pas ProseContent (partagé et volontairement nu) : chaque bloc de texte riche
+  // du formulaire coupe les mots insécables (URL entières saisies par les admins), sans perdre
+  // son propre habillage. Perdu une fois à l'extraction de ProseContent (`2689e517`).
+  const champ = { name: "s", label: "Un libellé", info: "https://exemple.org/un/chemin/tres/long/sans/espace", isRequired: false } as FormFieldMapping;
+
+  it("HintText porte wrap-anywhere en plus de ses classes", () => {
+    const { container } = render(<HintText text={"Un texte"} />);
+    const div = container.firstElementChild!;
+    expect(div.className).toContain(PROSE_CESURE);
+    expect(div.className).toContain("text-xs");
+    expect(div.className).toContain("prose");
+  });
+
+  it("les blocs de section (titre, séparateur, description) le portent sur libellé ET info", () => {
+    for (const Bloc of [SectionTitleField, TitleSeparatorField, SectionDescriptionField]) {
+      const { container } = render(<Bloc field={champ} />);
+      const riches = Array.from(container.querySelectorAll(".prose"));
+      expect(riches.length, Bloc.name).toBeGreaterThan(0);
+      for (const el of riches) expect(el.className, Bloc.name).toContain(PROSE_CESURE);
+    }
+  });
+});
+
 describe("FieldLabel", () => {
   const champ = (over: Partial<FormFieldMapping> = {}) =>
     ({ name: "q1", label: "Ma question", isRequired: false, ...over }) as FormFieldMapping;

@@ -13,6 +13,7 @@
   - [`thematics` — filières dynamiques](#thematics--filières-dynamiques)
   - [`filters` — sidebar de filtres partagée](#filters--sidebar-de-filtres-partagée)
   - [`searchHeader` — header de filtres horizontal](#searchheader--header-de-filtres-horizontal)
+  - [`coform-resource-directory` — annuaire à plat de ressources CoForm](#coform-resource-directory--annuaire-à-plat-de-ressources-coform)
 - [Context et filtres page-scoped (`pageFilters.ts`)](#context-et-filtres-page-scoped-pagefiltersts)
 - [Helpers purs partagés (`lib/`)](#helpers-purs-partagés-lib)
   - [buildSearchPayload](#buildsearchpayload)
@@ -298,7 +299,8 @@ Même structure que `searchPro` mais avec état local. Plusieurs instances peuve
 | `baseParams.contextId` + `contextType` | string | — | Scope de recherche à une entité |
 | `baseParams.costumSlug` + `costumEditMode` | string | — | Config multi-costum |
 | `baseParams.sourceKey` | string[] | — | Filtrer par sourceKey |
-| `list.layout` | `"grid"\|"timeline"` | `"grid"` (code) | Disposition des résultats : `timeline` = frise verticale (bulle-date, cartes alternées) — cf. [§SearchListView](#searchlistview) |
+| `list.layout` | `"grid"\|"timeline"\|"grouped"` | `"grid"` (code) | Disposition des résultats : `timeline` = frise verticale (bulle-date, cartes alternées) ; `grouped` = grille découpée en blocs titrés — cf. [§SearchListView](#searchlistview) |
+| `list.groupBy` | `{ field, order?, itemsSortBy?, emptyLabel? }` | — | Blocs de `layout: "grouped"` : `field` = chemin `serverData` du regroupement, `order` = ordre des blocs, `itemsSortBy` = tri client des fiches dans chaque bloc |
 
 **Lien « voir sur la page complète »** : si `customHeader.linkText` est renseigné, un bouton `<Link>` est rendu dans le cluster du `customHeader`. La href est construite depuis `customHeader.linkHref` (défaut `/lieux`) en recopiant les query params courants (`useSearchParams`) PLUS `?search=` si une recherche texte est active — de sorte que les filtres posés par le hero (typologies, services) et le texte saisi soient tous transportés vers la page de liste.
 
@@ -356,6 +358,11 @@ ne joue qu'en mode accordéon (`filterGroups[]`) :
 | `"select": {"multiple": true}` | combobox multi coche-à-droite (`ui/multi-combobox`) |
 | `"select": {"searchable": true}` | recherche + sélection unique (MultipleSelector, remplace) |
 | `"select": {"multiple": true, "searchable": true}` | recherche + badges multi (MultipleSelector) |
+
+**Ordre des options** : par défaut TOUTES les options d'un groupe sont triées
+par libellé localisé (`localeCompare`). `"keepOptionOrder": true` sur le groupe
+conserve l'**ordre déclaré** — indispensable quand l'ordre porte du sens
+(tranches de prix croissantes de `coform-resource-directory`, étapes, etc.).
 
 Mobile (< `lg`, le breakpoint d'empilement du gridLayout) : champ de
 recherche AU-DESSUS d'un bouton « Filtres » + compteur ouvrant un Sheet bas —
@@ -468,6 +475,7 @@ Section bandeau de filtres **horizontal** (variante de `FiltersSection` présent
 | Prop | Type | Défaut | Description |
 |------|------|--------|-------------|
 | `headline` | LocalizedString | — | Titre principal `h1` |
+| `headlineFromFilter` | string | — | `id` d'un `dropdownFilters` dont la **valeur sélectionnée remplace** le `headline` (qui reste le repli quand rien n'est sélectionné). Pour une page dont l'identité EST ce filtre (`/theme?theme=…`, `/public/*?public=…`). Le filtre visé est cherché dans la liste **complète**, donc il peut être `hidden` ; plusieurs valeurs sont jointes par « · », **dans l'ordre des options** (pas des clics), et une valeur dont l'option n'existe plus est ignorée. Logique pure : `lib/headlineFromFilter.ts`. ⚠️ Le titre devient le **libellé de l'option** : il doit donc être traduit dans toutes les locales déclarées, sans quoi le `h1` diverge du `<title>` |
 | `subhead` | LocalizedString | — | Sous-titre |
 | `headlineClassName` | string | `"text-foreground"` | Override classe couleur du `h1`. Utile sur fonds sombres fixes (`bg-ocean-gradient`) : `"text-white dark:text-foreground"` |
 | `subheadClassName` | string | `"text-foreground"` | Override classe couleur du sous-titre. Mettre `""` pour hériter sans forcer `text-foreground` |
@@ -501,6 +509,166 @@ Section bandeau de filtres **horizontal** (variante de `FiltersSection` présent
           { "id": "terrain-football", "label": { "fr": "Terrain de football" } }
         ]
       }
+    ]
+  }
+}
+```
+
+### `coform-resource-directory` — annuaire à plat de ressources CoForm
+
+Section **autonome** (elle monte son propre `PageFiltersProvider`, ne se pose
+pas dans un `gridLayout`) : un annuaire des **ressources d'un tiers-lieu**
+— coworking / salle de réunion / hébergement — avec une facette « type » et une
+facette « prix » à gauche, la grille de résultats à droite. **Une carte par
+réponse CoForm**, SAUF pour les salles de réunion où l'endpoint **éclate** chaque
+réponse en **une carte par salle** (cf. plus bas).
+
+Portage config-agnostique de `Navigator::getRessourceTL` (costum
+`franceTierslieux`), consommé via le **variant SDK dédié `navigator-tl-ressource`**
+(`/costum/navigator/getsressourcetl`) : un `SearchNew::globalAutoComplete` suivi
+d'un post-traitement **serveur** — résolution du tiers-lieu **porteur** depuis
+l'input « finder » de la réponse, remontée de son adresse/image/géo/email, garde
+région, filtre prix, filtre « porté par », éclatement des salles, `documents`
+attachés. La section ne refait côté client qu'un appel groupé
+(`useResourceParentsQuery`) pour le **`slug`** du lieu (non remonté par l'endpoint,
+nécessaire au lien « Voir le tiers-lieu »). Divergence assumée avec
+`searchProStatic` (règle 9 des bonnes pratiques) : liste d'`answers` +
+jointure sur le lieu porteur + garde région + éclatement, pour quoi
+`searchProStatic` n'offre aucun point d'accroche.
+
+| Prop | Type | Rôle |
+|------|------|------|
+| `resourceTypes` | `Array<{ id, kind, formId, stepPrefix, label, linkSuffix?, descriptionSuffix?, servicesSuffix? }>` (≥ 1) | Un type = une option de facette **et** un formulaire. `kind` ∈ `coworking\|meeting\|accommodation` → pilote la capacité/tarif (cf. `helpers/servicePricingAnswers`). Suffixes PROPRES au formulaire : `linkSuffix` = URL de réservation (`linkPath`), `descriptionSuffix` = « À propos » (meeting `miolbscdcrucb5a8uuq`, hébergement `miq88plgleoln5tmc7b`), `servicesSuffix` = « Services proposés » `string[]` (hébergement `miq86g5vaw1kavrapkb`) |
+| `finderSuffix` | string | Suffixe de l'input « finder » (tiers-lieu porteur), **commun** aux formulaires copie. Ex. `miem3epsztzcm9dgim` |
+| `fieldSuffixes` | `{ name?, equipments?, area?, bookingUrl? }` | Suffixes d'inputs COMMUNS. `name` (`mieg4k7yxrito5j9e6`) = titre coworking/hébergement (repli → « Espace de coworking » / « Hébergement »). Pour une salle éclatée, le titre = `serverData.roomName` (colonne 0 du tableau des salles) — repli « Salle de réunion ». `area` (`mieg4k7zslc8awrql2`) = surface (détail) |
+| `scope.addressLevel1` | string | Garde géo : ne garde que les ressources dont le **lieu porteur** est dans cette zone (`address.level1`). Passé dans `defaultFilters["address.level1"]` → l'endpoint `getsressourcetl` **filtre côté serveur** (il retire la clé du payload puis post-filtre sur le lieu porteur). Scroll infini natif conservé |
+| `costumSlug` / `contextId` / `contextType` | string | Périmètre costum (comme le payload legacy) |
+| `columns` | `{ sm?, md?, lg?, xl? }` | Grille de résultats (déf. `1/2/3`) |
+
+Le filtre Mongo FIXE (`buildResourceDirectoryFilters`) émet `form.$in` + un `$or`
+en **forme MAP** (`{ "answers.<step>.finder…": { "$exists": true }, … }`) — **pas
+un tableau** : `SearchNew::searchFilters` lit `$or` comme une map `champ→op`, et
+la forme tableau Mongo standard fait un **HTTP 500** sur le backend legacy
+(cf. [§mongoFilters](#mongofilters--fusion-des-filtres-or)).
+
+**Filtre « porté par » (serveur, piloté depuis les cartes)** : le clic sur
+« Porté par {tiers-lieu} » d'une carte pose `filters.parentId` (`{ $in: [id] }`,
+post-filtré par `Navigator::getRessourceTL` sur les parents résolus), il n'ouvre
+PAS le détail. Ce n'est pas une facette configurée : `CoformResourceDirectorySection`
+tient l'état `activeParent` et le distribue aux cartes via
+`ResourceDirectoryActionsProvider` ; une puce « Ressources portées par {nom} ✕ »
+au-dessus de la grille le retire. La facette « type » (client) s'applique par-dessus.
+
+**Quatre facettes** (`hideSearch: true` — pas de recherche texte). Un annuaire de
+ressources est BORNÉ : la section charge l'ensemble (`indexStepList: 500`,
+`defaultFields` inclut **`"form"`** — indispensable à l'éclatement serveur et au
+routage du filtre prix), parse chaque résultat (`parseResourceDirectoryItem`),
+puis :
+- **`resourceType`** — groupe `filters` SANS `field` : options = les
+  `resourceTypes` (`name` = `id`) → filtre **CÔTÉ CLIENT** sur `model.type.id`
+  (`pageFilters.selectedFilters`). Le compteur reflète le nombre filtré ;
+- **3 groupes prix** — **calqués sur Communecter** (`PRICE_FILTER_GROUPS` dans
+  `lib/resourceDirectory.ts`), un par unité de tarif, chacun avec SES tranches :
+  - `priceHourly` « Tarif à l'heure » : `0-20` / `20-50` / `50-100` / `100-`
+  - `priceHalfDay` « Tarif à la demi-journée » : `0-50` / `50-100` / `100-200` / `200-`
+  - `priceFullDay` « Tarif à la journée » : `0-100` / `100-200` / `200-400` / `400-`
+
+  Groupes `filters` AVEC `field` (= le nom du champ backend). `searchByFields` est
+  keyé par `option.name` : comme les tranches `50-100` / `100-200` reviennent
+  entre groupes, `name` est **préfixé du field** (`"priceHourly:50-100"`) et
+  `variants: ["50-100"]` porte la vraie valeur envoyée. `keepOptionOrder: true`
+  (tranches croissantes). → `searchByFields` → `{ priceHourly: { $in: [...] }, … }`
+  → filtre **CÔTÉ SERVEUR**. Le backend interprète chaque tranche `"min-max"`
+  (côté vide = borne absente) en intervalle semi-ouvert `[min, max[`, applique le
+  filtre par salle pour les salles de réunion, sur le chemin de prix du formulaire
+  sinon. Deux unités cochées se combinent en **ET** (le backend teste chaque
+  champ). Une réponse sans tarif dans une unité cochée sort → tout filtre prix
+  horaire/journée écarte les hébergements (tarifiés à la nuitée).
+
+**Éclatement « 1 salle = 1 réponse »** (serveur, formulaire salle de réunion
+uniquement) : chaque ligne du tableau des salles (`roomPath`, ligne 0 = libellés)
+devient une réponse `<answerId>.room<N>` portant `roomIndex` (1-based), `roomName`
+(colonne 0), `parentAnswerId`, et le tableau réduit à `[libellés, laSalle]`. Comme
+plusieurs cartes partagent alors le `_id` de l'answer source, la section **re-clé**
+ses items en `<_id>-room<N>` (clés React + deep-link `?resource=` uniques) ; carte
+et détail ne lisent que `serverData`. Une answer salle sans tableau n'est pas
+éclatée (repli titre « Salle de réunion »).
+
+**Variant SDK `navigator-tl-ressource`** → endpoint dédié
+`/costum/navigator/getsressourcetl` (`Navigator::getRessourceTL`) : `globalautocomplete`
++ post-traitement serveur (tiers-lieu porteur résolu, adresse/geo/image/email
+remontés, garde `address.level1`, filtres `parentId` / `price{Hourly,HalfDay,FullDay}`,
+éclatement des salles, `documents` attachés). `answers` reste un **blob brut** keyé
+par étape — surtout PAS `navigator-tl` (qui re-clé `answers` par les 3 form ids).
+`fields` doit inclure `"form"` (routage éclatement + filtre prix côté serveur).
+
+Cartes/détail : `card.type` / `preview.type` **`resource-directory`** (remplis
+par la section, non destinés à être écrits à la main), qui lisent leur tranche
+`list.resourceDirectory` et le contexte `ResourceParentsProvider`. La logique
+pure est dans `lib/resourceDirectory.ts` (`parseResourceDirectoryItem`), testée
+(`resourceDirectory.test.ts`).
+
+**Photos** : documents de la réponse (`/upload/communecter/<folder>/<name>`) ou
+images de la salle (colonne 8) sont des chemins **relatifs au backend**, que le SDK
+ne rend pas absolus (ils ne passent par aucun champ image nommé, comme `docPath`).
+`parseResourceDirectoryItem` les préfixe donc avec l'option **obligatoire**
+`baseUrl` (`getBaseUrl()`, via `toBackendUrl`). Laissés relatifs, `/img` les
+chercherait parmi les fichiers statiques du site → 404.
+
+**La carte** (`CardResourceDirectory`) : image en **carrousel** partagé
+(`ResourcePhotoCarousel`) — sur la carte il **défile seul** (4 s, pause au survol)
+et **sans flèches** (`autoPlay controls="none"`), compteur conservé ; badge type en
+overlay, nom, localité, ligne capacité + tarif « à partir de », pied « Porté par
+{tiers-lieu} » : le NOM est un bouton qui pose le **filtre « porté par »** de la
+section (`stopPropagation` — n'ouvre pas le détail), à côté du lien « Voir le
+tiers-lieu » (profil). Hors section (pas de `ResourceDirectoryActionsProvider`), le
+nom retombe en texte simple.
+
+**Le détail** (`PreviewResourceDirectory`) reprend **le même gabarit que le modal
+« En savoir plus » d'un tiers-lieu** (`ProfilTiersLieuxAbout`), `preview.width:
+"2xl"`, adapté aux jetons de thème clair/sombre : carrousel `h-56` + **pastille de
+capacité** en coin → nom (`h3`, **pas d'étiquette de type**) + « Porté par
+{tiers-lieu} » + localité → **Tarifs** en pastilles (`{prix}€` + suffixe
+`resourceDirectory.priceSuffix.*` — TOUS les tarifs non nuls) + pastille « Tarif
+solidaire » → **Surface** (`area` commun, repli sur la colonne 1 de la salle) →
+**À propos** (`descriptionSuffix`) → **Équipements** (pastilles) → **Services
+proposés** (`servicesSuffix`, hébergement) → boutons.
+
+**Bouton d'action** — trois cas : (a) `bookingUrl` présent → **« Réserver »**
+(`https://` préfixé, `window.open`) ; (b) pas de `bookingUrl` mais un e-mail de
+tiers-lieu connu (`model.parentEmail` = `serverData.email` remonté par le backend,
+repli `parentEmails`) → **« Contacter par e-mail »** = un simple `<a href="mailto:…">`
+vers l'adresse du tiers-lieu (objet pré-rempli `resourceDirectory.mailtoSubject`,
+corps laissé au visiteur — **aucun formulaire, aucun envoi côté site**) ; (c) ni
+l'un ni l'autre → pas de bouton d'action. Toujours **« Voir le tiers-lieu »** si
+`slug`. Pas de section « Les salles » : l'éclatement serveur fait qu'un modal =
+une salle, ses champs (capacité / surface / tarifs / solidaire) sont posés
+directement dans le corps.
+
+```json
+{
+  "type": "coform-resource-directory",
+  "props": {
+    "title": { "fr": "Annuaire des ressources tiers-lieux" },
+    "costumSlug": "transiter",
+    "contextId": "65df30c185682029fd7e42bf",
+    "contextType": "organizations",
+    "finderSuffix": "miem3epsztzcm9dgim",
+    "fieldSuffixes": {
+      "name": "mieg4k7yxrito5j9e6", "equipments": "mieg8j24m89gm99t5mi", "area": "mieg4k7zslc8awrql2"
+    },
+    "scope": { "addressLevel1": "58be4af494ef47df1d0ddbcc" },
+    "resourceTypes": [
+      { "id": "coworking", "kind": "coworking", "formId": "6925e2b05dd63b02ca70d6d9",
+        "stepPrefix": "navigatorDesTierslieux25112025_209_0", "linkSuffix": "miq8118cmkh16zjwmt",
+        "label": { "fr": "Coworking" } },
+      { "id": "meeting-room", "kind": "meeting", "formId": "6925869ad76aaf6c5a2b2f8a",
+        "stepPrefix": "navigatorDesTierslieux25112025_1436_0", "linkSuffix": "miq81uh4gat3vgbtgkj",
+        "descriptionSuffix": "miolbscdcrucb5a8uuq", "label": { "fr": "Salle de réunion" } },
+      { "id": "accommodation", "kind": "accommodation", "formId": "6925ee8ac537f8056114aec7",
+        "stepPrefix": "navigatorDesTierslieux25112025_2059_0", "linkSuffix": "miq83c8getjt3lcz64f",
+        "descriptionSuffix": "miq88plgleoln5tmc7b", "servicesSuffix": "miq86g5vaw1kavrapkb",
+        "label": { "fr": "Hébergement" } }
     ]
   }
 }
@@ -969,6 +1137,8 @@ Grille responsive des résultats. Propriétés CSS grid pilotées par `list.colu
 
 **Config `list` tuyautée d'un bout à l'autre** : depuis l'introduction des cartes typées (`testimonial` / `resource`), la config `list` COMPLÈTE (`list?: ListConf`, `ListConfSchema` désormais **exporté**) descend tout le pipeline — `SearchListView` → `SearchCard` et `SearchListView` → `SwitchDetailsMode` → `DetailsModeDialog` / `DetailsModeDrawer` → `Preview`. `list` est transmis à **TOUS** les variants de `SearchCard` et de `Preview` (et non aux seuls presenters typés) ; chacun y lit **sa** tranche (`list.testimonial`, `list.resource`), les autres l'ignorent. `SearchMapWrapper` / `SearchMap` le reçoivent aussi désormais — sans quoi un détail ouvert depuis la carte géographique retombait sur les presenters génériques. `SearchListView` / `SwitchDetailsMode` gardent des props `columns` / `card` / `preview` / `previewParam` optionnelles (agenda, observatoire, profil… qui appellent sans objet `list`) et dérivent chaque valeur via `prop ?? list?.x` ; les call-sites search ne passent plus que `list={list}`. Conséquence : **`SearchPro` honore désormais `list.previewParam`** (auparavant ignoré — il ne transmettait pas ce champ à `SearchListView`).
 
+**Layout grouped** (`list.layout: "grouped"` + `list.groupBy`) : la grille habituelle (même carte, même `wrap`, même détail) découpée en blocs titrés par la valeur de `groupBy.field` — une archive qui se parcourt par année ou par territoire. Logique pure dans `lib/groupResults.ts` (`grouperParChamp`, `comparerValeurs`) : une valeur numérique se compare en NOMBRE (« 9 » avant « 10 »), une `Date` par son instant, un texte à la française ; un tableau range la fiche sous sa PREMIÈRE valeur (jamais en double) ; les fiches sans valeur forment un DERNIER bloc, libellé `emptyLabel` (repli i18n `resource.ungrouped`), jamais écartées. `groupBy.itemsSortBy` trie les fiches de chaque bloc CÔTÉ CLIENT, tri stable, valeurs absentes en dernier : il existe parce que le backend ne lit que la **première clé** de `sortBy` (`SearchNew.php`) — `defaultSortBy: {annee:-1, created:-1}` y vaut `{annee:-1}` — et que le paramètre `sort` multi-clés est refusé par la validation du SDK. Il ne trie donc que les résultats CHARGÉS. Titres de bloc : `GroupHeading` (`h3`), ids tirés de `useId` (une valeur avec espaces casserait `aria-labelledby`). Même priorité que la timeline : vue détaillée et mode split gardent leur rendu. Les champs `groupBy.field` et `itemsSortBy.field` doivent être projetés (`tests/preflight/list-projected-fields.test.ts`).
+
 **Layout timeline** (`list.layout: "timeline"`) : `SearchListView` dispatche vers `TimelineListView` (chunk `lazy()`, même convention que les variants de carte) — frise verticale avec ligne pointillée (à gauche en mobile, centrée dès `md`), **bulle-date** (jour/mois abrégé/année, repli icône calendrier + `bg-muted` sans `startDate`) posée sur la ligne, cartes **alternées gauche/droite par index** (pur : stable en scroll infini et identique SSR/client), rendues par `CardEventTimeline` (titre, heure `HH:mm`, chip catégorie — `card.tagLimit` défaut 1, `card.tagColors` honoré —, extrait 3 lignes, visuel à droite, bouton « En savoir plus »). Pensé pour des événements triés `defaultSortBy: {"startDate": -1}`. La **vue détaillée** (`isDetailedView`) et le **mode split** (`onFocusItem`) gardent la priorité (la timeline n'y a pas de sens) ; le détail, le deep-link `?<previewParam>=` et les `itemRules` passent par le MÊME flux que la grille. Défaut **côté code** = grille : la clé absente ou inconnue rend la grille historique (la config n'est jamais parsée par Zod au runtime).
 
 ### Cartes (card variants)
@@ -987,7 +1157,7 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 | `overlay` | `CardOverlay` | Image en fond + overlay gradient |
 | `image-cover` | `CardImageCover` | Image de couverture en haut |
 | `image-panel` | `CardImagePanel` | Image en panneau latéral |
-| `event` | `CardEvent` | Événement (dates, lieu, organisateur) |
+| `event` | `CardEvent` | Événement (dates, lieu, organisateur) — un événement de plusieurs jours affiche ses deux bornes (« 1 – 31 oct. 2026 », `lib/eventDateSpan.ts`) ; un créneau de nuit de moins de 24 h reste un seul jour |
 | `event-featured` | `CardEventFeatured` | Événement mis en avant |
 | `funding` | `CardFunding` | Financement / cagnotte |
 | `resource-booking` | `CardResourceBooking` | Ressource réservable |
@@ -997,9 +1167,13 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 | `card-answer` | `CardAnswer` | Réponse CoForm (activité avec horaires) |
 | `news` | `CardNews` | Carte éditoriale **text-first** (l'item est une `News`, cast au point de dispatch) — cf. [§Cartes news](#cartes-news-dans-la-recherche-cardnews-et-previewnews) |
 | `testimonial` | `CardTestimonial` | Coque (`export default`) → dispatch sur `list.testimonial.design` (repli `bubble`) → `CardTestimonialBubble` — cf. [§génériques config-driven](#cartes-et-previews-génériques-config-driven-testimonial-resource) |
-| `resource` | `CardResource` | Coque → dispatch sur `list.resource.design` (repli `card`) → `CardResourceCard` (média-library, **distinct** de `resource-booking`/`CardResourceBooking`) |
+| `resource` | `CardResource` | Coque → dispatch sur `list.resource.design` (repli `card`) → `CardResourceCard` (média-library, **distinct** de `resource-booking`/`CardResourceBooking`), `CardResourceDocument` (`document`) ou `CardResourcePortrait` (`portrait`) |
 
 > `news`, `testimonial` et `resource` ne sont acceptées **que** par `card.type` : l'enum `card.variant` (schema.ts) ne les inclut pas (comme `overlay`).
+
+**Designs `resource` hors `card`** :
+- **`document`** — une LIGNE compacte (icône, titre, format) qui ouvre directement le fichier, sinon le lien, dans un nouvel onglet annoncé aux lecteurs d'écran. Pour une archive de publications où chaque entrée n'est qu'un titre et un fichier : `card` y mettrait une grande couverture identique par entrée. Le document hébergé (`medias`) passe avant le lien externe (`urls`) — il survit à la disparition du site d'origine (`lib/resourceLink.ts`, `lienPrincipal`) ; le format affiché est l'extension réelle (`formatDocument`), repli `resource.document`. Sans fichier ni lien, la ligne est un bouton qui ouvre le détail.
+- **`portrait`** — une PERSONNE présentée en entier, en ligne d'annuaire séparée par un filet : photo ronde (initiales à défaut, `alt` vide car le nom est écrit à côté), nom, `resource.subtitleField` (ex. fonction, couleur `secondary-foreground`) puis la présentation markdown (`descriptionField`, rendue par `ProseContent` en markdown forcé — HTML brut accepté puis assaini par le profil strict, comme le corps d'article et l'aperçu de l'éditeur —, `prose-theme` pour que le gras reste lisible en sombre). **Non cliquable** : aucune preview, les seuls éléments interactifs sont les liens du texte. Largeur de lecture portée par le design (entrée `max-w-5xl` centrée).
 
 **`card.structureAction`** (carte `card-answer` uniquement, `schema.ts:476`) — le bouton « Fiche structure », **deux axes orthogonaux**, tous deux optionnels : un site peut ne régler que la visibilité sans toucher à l'action.
 
@@ -1079,7 +1253,7 @@ Le détail d'une entité sélectionnée est **découplé en deux axes** (commit 
 | `facets` | `PreviewFacets` | **Preview générique data-driven** : rend `preview.facets` (champs `serverData` cliquables) — voir [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters) |
 | `news` | `PreviewNews` | Détail actualité — embarque `NewsDetailPage` (mode `embedded`) + permalien « Voir en page » (cf. `preview.showDetailLink`) |
 | `testimonial` | `PreviewTestimonial` | Coque → `PreviewTestimonialBubble` (dispatch `list.testimonial.design`) |
-| `resource` | `PreviewResource` | Coque → `PreviewResourceCard` (dispatch `list.resource.design`) |
+| `resource` | `PreviewResource` | Coque → `PreviewResourceCard` (dispatch `list.resource.design`) ; `document` y retombe (détail d'une ligne sans fichier ni lien), `portrait` n'ouvre jamais de preview |
 | `structure` | `PreviewStructure` | Fiche détail d'une **organisation** : hero (statut / type / logo), affiliation, adresse + carte, représentant légal, infos, documents — champs custom du costum lus via l'index signature de `serverData`. Utilisée par `/structure` (`config.prod.maison-sport-sante-la-tampon.json:2125`) **et** par le bouton « Fiche structure » de `CardAnswer` (cf. `card.structureAction`) |
 
 Chaque contenu de `Preview` borne lui-même sa hauteur/scroll (indépendant du conteneur). `list.preview.fields` surcharge le mappage des IDs de champ CoForm (voir « parser CoForm » ci-dessous).
@@ -1300,11 +1474,12 @@ contrat de config lu par un hook normalizer.
 
 - **`TestimonialConfSchema`** (`TestimonialConf`) — champs `.partial()` : `design`
   (enum `["bubble"]`), `quoteField`, `titleField`, `dateField`, `subtitleField`,
-  `audioField`, `badge` (`{field, colors?}`), `accent` (`{field, colors?}`),
+  `audioField`, `imageField`, `badge` (`{field, colors?}`), `accent` (`{field, colors?}`),
   `facets` (`PreviewFacetSchema[]`). Replis **code** appliqués par
   `useTestimonialData` (config jamais parsée par Zod au runtime) : `design`→`bubble`,
   `quoteField`→`description`, `titleField`→`name`, `dateField`→`created`,
-  `audioField`→`medias`.
+  `audioField`→`medias`, `imageField`→`profilMediumImageUrl` puis `profilImageUrl`
+  puis la 1re image de `medias`.
 - **`ResourceConfSchema`** (`ResourceConf`) — `.partial()` : `design` (enum
   `["card"]`), `titleField`, `descriptionField`, `dateField`, `imageField`, `badge`
   (`{field, colors?, icons?}`), `cityField`, `urlsField`, `mediasField`, `facets`.
@@ -1639,9 +1814,10 @@ La carte de liste est pilotée par `list.card.variant` (sinon `list.card.type` �
 
 ## Variante SDK `searchVariant`
 
-`searchVariant: "navigator-tl"` change l'endpoint backend utilisé :
+`searchVariant` change l'endpoint backend utilisé :
 - `default` (absent) : `/co2/search/globalautocomplete`
 - `navigator-tl` : `/costum/navigator/gettl` — enrichit chaque résultat avec `serverData.answers` (réponses CoForm auto-linkées)
+- `navigator-tl-ressource` : `/costum/navigator/getsressourcetl` — annuaire À PLAT des ressources d'un tiers-lieu (`searchType: ["answers"]`, `fields` DOIT inclure `"form"`) : `globalautocomplete` + post-traitement serveur — résolution du tiers-lieu porteur (adresse/geo/image/email remontées), garde `address.level1`, filtres `parentId` et `price{Hourly,HalfDay,FullDay}` (tranches `"min-max"`), **éclatement 1 salle = 1 réponse** (`<answerId>.room<N>` + `roomIndex`/`roomName`/`parentAnswerId`), `documents` attachés, `indexStep` par défaut `"all"`. Consommé UNIQUEMENT par la section `coform-resource-directory` (variant posé par la section, pas par la config).
 
 Utilisé pour les sites tiers-lieux qui enrichissent les fiches avec des données CoForm sans étape de lookup supplémentaire.
 
@@ -1716,7 +1892,7 @@ PreviewPoiAmenities.tracking.created / .lastSurvey / .lastUpdate
 
 **Bloc `testimonial`** (Card/PreviewTestimonial) — clés : `listen` (`"Écouter"` / `"Listen"`), `listenTitle` (`"Écouter le témoignage"` / `"Listen to the testimony"`).
 
-**Bloc `resource`** (Card/PreviewResource) — clés : `open`, `watch`, `download`, `gallery`, `documents`, `audio`, `video`, `links`.
+**Bloc `resource`** (Card/PreviewResource) — clés : `open`, `watch`, `download`, `gallery`, `documents`, `audio`, `video`, `links`, `ungrouped` (bloc sans valeur de `layout: "grouped"`), `document`, `externalLink`, `newTab` (design `document`).
 
 **Clés plates news** (`CardNews` / `PreviewNews`) : `Actualité`, `Voir en page`, `Lire`, `Aperçu détaillé indisponible pour cette actualité.`, les verbes activity-stream (`a créé`, `a partagé`, `a modifié`, `a publié`, `sur`, `Quelqu'un`) et les libellés de portée (`Privé`, `Réservé aux membres`).
 
