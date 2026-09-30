@@ -1950,8 +1950,35 @@
                     "fr": "Handi.",
                     "en": "Disability"
                   }
+                },
+                "equipName": {
+                  "paths": [
+                    "name"
+                  ],
+                  "label": {
+                    "fr": "Nom de l'équipement",
+                    "en": "Equipment name"
+                  }
+                },
+                "name": {
+                  "paths": [
+                    "inst_nom",
+                    "equip_nom"
+                  ],
+                  "label": {
+                    "fr": "Installation",
+                    "en": "Facility"
+                  }
                 }
               },
+              "select": {
+                "titleDimension": "equipName",
+                "dimensions": [
+                  "equipName",
+                  "name"
+                ]
+              },
+              "drilldown": true,
               "kpis": [
                 {
                   "kind": "count",

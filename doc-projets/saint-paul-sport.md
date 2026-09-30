@@ -542,6 +542,24 @@ découper le panneau en deux blocs (`part`). Enfin la colonne de gauche est ress
 information, vignette et interlignes réduits. La densité suit la LARGEUR, pas le site : les
 cinq autres configurations en split gardent le ratio 40-60 et leur carte pleine.
 
+**Ajustements du 2026-09-30 (retour sur capture).** Les cartes de la colonne latérale sont
+désormais PLIABLES et repliées par défaut : une ligne titre + sous-titre, la lecture de la liste
+de la page observatoire, qu'un chevron déplie en carte complète. Le clic sur la ligne ouvre
+toujours la fiche ; seul le chevron plie. Et le split carte reçoit une marge haute et basse, ses
+deux colonnes collant jusque-là aux bords de la fenêtre — la hauteur des colonnes retranche
+exactement cette marge, la section étant en `overflow-hidden`. Comme la densité, le pliage suit
+la LARGEUR (ratio 30-70), pas le site.
+
+**Parité avec la page Observatoire (2026-09-30).** Deux fonctions manquaient à la vue embarquée :
+le clic sur une carte doit RESTREINDRE le tableau de bord (et non ouvrir la fiche — d'où un bouton
+« Fiche » sur chaque carte), et le clic sur un graphe doit filtrer. Le panneau porte désormais ce
+raffinement, donc il rend aussi l'agencement et reçoit la liste de la section par `renderList` :
+une sélection qui ne toucherait que les graphes, en laissant la liste intacte, n'aurait aucun
+sens. Chaque raffinement actif est rappelé par une puce retirable — sans barre de filtres à côté,
+c'est le seul moyen de défaire un clic. La config reprend le vocabulaire de `/observatoire` :
+`select: {titleDimension: "equipName", dimensions: ["equipName", "name"]}` et `drilldown: true`,
+avec les deux dimensions de nom ajoutées au bloc.
+
 Détail du mécanisme : [doc/07-module-search.md](../doc/07-module-search.md), section « Vue
 observatoire », et [doc/27-module-observatoire.md](../doc/27-module-observatoire.md), section
 « Panneau réutilisable ».

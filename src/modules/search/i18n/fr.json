@@ -67,7 +67,10 @@
         "showers": "Douches",
         "freeAccess": "Libre accès",
         "yearsAgo": "Il y a {{count}} ans",
-        "filterByInstallation": "Filtrer par l'installation {{name}}"
+        "filterByInstallation": "Filtrer par l'installation {{name}}",
+        "expand": "Déplier la fiche",
+        "collapse": "Replier la fiche",
+        "sheet": "Fiche"
     },
     "PreviewPoiAmenities": {
         "edit": "Éditer",

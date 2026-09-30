@@ -662,6 +662,12 @@ export const CardConfSchema = z.object({
      *  latérale d'un split, grille à 4 colonnes. Honoré aujourd'hui par
      *  `poi-amenities` ; les autres variantes l'ignorent. */
     compact: z.boolean().optional(),
+    /** Carte PLIABLE, repliée par défaut : une ligne titre + sous-titre, dépliée
+     *  par un chevron. Une colonne latérale devient ainsi parcourable d'un coup
+     *  d'œil — même lecture que la liste de la section `data-observatory` — sans
+     *  renoncer au détail. Le clic sur la ligne ouvre la fiche comme d'habitude ;
+     *  seul le chevron déplie. Honoré aujourd'hui par `poi-amenities`. */
+    collapsible: z.boolean().optional(),
     // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
     // axe séparé (`preview.type`/`detailsMode`).
     type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer", "news", "testimonial", "resource", "resource-directory"]).default("default"),
@@ -1594,6 +1600,10 @@ export interface SearchListViewProps<T extends SearchListEntity = SearchEntity> 
   focusedItemId?: string | null;
   /** Synchro split : clic sur une carte de liste → focus carte (au lieu d'ouvrir le détail). */
   onFocusItem?: (id: string) => void;
+  /** Tableau de bord embarqué : clic sur une carte → SÉLECTION (au lieu d'ouvrir le
+   *  détail), et chaque carte reçoit alors un bouton « Fiche » qui, lui, ouvre le
+   *  détail. Sans cette prop, rien ne change : le clic ouvre la fiche. */
+  onSelectItem?: (item: SearchEntity) => void;
   /**
    * Nom du paramètre URL utilisé pour synchroniser l'item affiché en preview.
    * Défaut : "preview". Permet d'avoir plusieurs sections sur une même page
@@ -1632,6 +1642,11 @@ export interface DetailsModeProps<T extends SearchListEntity = SearchEntity> {
 export interface SearchCardProps<T extends SearchListEntity = SearchEntity> {
   item: T;
   onClick?: () => void;
+  /** Ouverture EXPLICITE de la fiche, quand le clic sur la carte fait autre chose
+   *  (sélection du tableau de bord embarqué). Fourni par `SearchListView` avec
+   *  `onSelectItem`, jamais autrement : sans lui la carte n'affiche pas le bouton
+   *  et son clic ouvre la fiche, comme partout ailleurs. */
+  onOpenSheet?: () => void;
   card?: ListConf["card"];
   /** Config `list` complète — le CardX typé y lit SA tranche (`list.testimonial`, `list.resource`, …). */
   list?: ListConf;

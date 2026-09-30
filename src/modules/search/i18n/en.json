@@ -67,7 +67,10 @@
     "showers": "Showers",
     "freeAccess": "Free access",
     "yearsAgo": "{{count}} years ago",
-    "filterByInstallation": "Filter by facility {{name}}"
+    "filterByInstallation": "Filter by facility {{name}}",
+    "expand": "Expand card",
+    "collapse": "Collapse card",
+    "sheet": "Details"
   },
   "PreviewPoiAmenities": {
     "edit": "Edit",

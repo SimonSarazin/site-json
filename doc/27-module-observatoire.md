@@ -293,11 +293,32 @@ liste et de la carte. Les chiffres y portent sur les résultats COURANTS de la
 section : la recherche et les filtres de l'hôte les traversent sans qu'aucun
 câblage ne soit nécessaire.
 
-`part` (`all` par défaut, `kpis`, `charts`) découpe le rendu : en deux colonnes,
-les KPI se lisent en bandeau pleine largeur au-dessus et les graphes occupent la
-colonne de droite. L'hôte monte alors le panneau deux fois — le recalcul est
-négligeable (une projection des résultats ; `buildLabelMaps` ne travaille que
-pour les dimensions à `keyPaths`) et l'agencement reste sa décision.
+Le panneau POSSÈDE en revanche le RAFFINEMENT : sélection d'un item
+(`conf.select`) et drill-down sur un graphe (`conf.drilldown`), avec leurs puces
+retirables — sans barre de filtres à côté, la puce est le seul moyen de défaire
+un clic. C'est pourquoi il rend aussi l'agencement complet : une sélection qui
+ne toucherait que les graphes, en laissant la liste intacte, n'aurait aucun
+sens. L'hôte fournit donc SA liste par la prop `renderList`, et reçoit en retour
+les entités survivantes :
+
+```tsx
+<ObservatoryPanel
+  results={results} conf={conf}
+  listClass="w-[30%]" panelClass="w-[70%]"
+  renderList={({ entities, select }) => <MaListe results={entities} onSelect={select} />}
+/>
+```
+
+`select` est `null` quand la config ne déclare pas `conf.select` : la liste garde
+alors son clic normal. Sinon, le clic sélectionne — et c'est à la liste de
+proposer une autre porte vers la fiche (dans le module search, le bouton
+« Fiche » que `SearchListView` ajoute avec `onSelectItem`). Re-cliquer l'item
+sélectionné annule la sélection.
+
+Le raffinement est un état LOCAL, pas un paramètre d'URL, contrairement à
+`useObservatoryFilters` : `searchProStatic` est la variante SANS synchronisation
+URL du module search — plusieurs instances coexistent sur une page et ne peuvent
+pas partager les mêmes clés.
 
 `DataObservatorySection` n'utilise PAS le panneau : en mode `split`, les KPI
 vont en bandeau pleine largeur et les graphes dans la colonne de droite — deux

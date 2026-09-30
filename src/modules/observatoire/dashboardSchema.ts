@@ -147,5 +147,26 @@ export const ObservatoryPanelConfSchema = z.object({
   kpiLayout: z.enum(["cards", "inline"]).optional(),
   /** Libellé du bouton de bascule (défaut : i18n « Observatoire »). */
   label: LocalizedString.optional(),
+  /**
+   * SÉLECTION par clic sur un item de la liste — le pendant embarqué de
+   * `list.selectDimensions` de la section. Déclaré, le clic sur une carte
+   * RESTREINT le tableau de bord à sa famille (et un bouton « Fiche » prend en
+   * charge l'ouverture du détail) ; absent, le clic ouvre la fiche comme
+   * partout ailleurs.
+   */
+  select: z
+    .object({
+      /** Dimension qui donne le libellé de la sélection (ex. le nom de l'équipement). */
+      titleDimension: z.string(),
+      /** Dimensions où chercher les MOTS de ce libellé. Défaut : `titleDimension`
+       *  seule. En déclarer plusieurs ÉLARGIT le résultat — les mots sont
+       *  cherchés dans leur réunion (ex. équipement ET installation). */
+      dimensions: z.array(z.string()).optional(),
+    })
+    .optional(),
+  /** Clic sur une part ou une barre → restreint le tableau de bord à cette
+   *  valeur (retirable). Sans filtres affichés à côté, c'est le seul moyen
+   *  d'entrer dans un graphe — d'où l'opt-in explicite. */
+  drilldown: z.boolean().optional(),
 });
 export type ObservatoryPanelConf = z.infer<typeof ObservatoryPanelConfSchema>;

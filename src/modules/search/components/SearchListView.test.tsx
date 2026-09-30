@@ -37,10 +37,28 @@ vi.mock("react-router", async (importOriginal) => ({
 // Stubs : on isole la logique du wrapper (les variants réels sont lazy + lourds). Ils exposent la
 // conf REÇUE (card.type / preview.type) pour vérifier la résolution par item.
 vi.mock("./SearchCard", () => ({
-  default: ({ item, onClick, card }: { item: SearchEntity; onClick?: () => void; card?: { type?: string } }) => (
-    <button onClick={onClick} data-card-type={card?.type}>
-      {String((item.serverData as { name?: string }).name)}
-    </button>
+  default: ({
+    item,
+    onClick,
+    onOpenSheet,
+    card,
+  }: {
+    item: SearchEntity;
+    onClick?: () => void;
+    onOpenSheet?: () => void;
+    card?: { type?: string };
+  }) => (
+    <div>
+      <button onClick={onClick} data-card-type={card?.type}>
+        {String((item.serverData as { name?: string }).name)}
+      </button>
+      {/* La vraie carte ne rend ce bouton que si la prop lui parvient. */}
+      {onOpenSheet && (
+        <button onClick={onOpenSheet}>
+          fiche:{String((item.serverData as { name?: string }).name)}
+        </button>
+      )}
+    </div>
   ),
 }));
 vi.mock("./SearchCardDetailed", () => ({
@@ -89,6 +107,33 @@ const results = [item("1", "Alpha"), item("2", "Bravo")];
 beforeEach(() => {
   // jsdom n'implémente pas scrollIntoView → on l'espionne.
   Element.prototype.scrollIntoView = vi.fn();
+});
+
+describe("SearchListView (tableau de bord embarqué, onSelectItem)", () => {
+  it("clic sur une carte → onSelectItem(item), sans ouvrir le détail", () => {
+    const onSelectItem = vi.fn();
+    renderInRouter(<SearchListView results={results} onSelectItem={onSelectItem} />);
+
+    fireEvent.click(screen.getByText("Bravo"));
+    expect(onSelectItem).toHaveBeenCalledTimes(1);
+    expect(onSelectItem.mock.calls[0][0]).toBe(results[1]);
+    expect(screen.queryByTestId("details-modal")).toBeNull();
+  });
+
+  it("chaque carte reçoit alors un bouton « Fiche », qui OUVRE le détail", () => {
+    renderInRouter(<SearchListView results={results} onSelectItem={vi.fn()} />);
+
+    fireEvent.click(screen.getByText("fiche:Bravo"));
+    expect(screen.getByTestId("details-modal")).toHaveAttribute("data-item", "Bravo");
+  });
+
+  it("sans onSelectItem, aucun bouton « Fiche » et le clic ouvre le détail", () => {
+    renderInRouter(<SearchListView results={results} />);
+
+    expect(screen.queryByText("fiche:Bravo")).toBeNull();
+    fireEvent.click(screen.getByText("Bravo"));
+    expect(screen.getByTestId("details-modal")).toHaveAttribute("data-item", "Bravo");
+  });
 });
 
 describe("SearchListView (mode split / focus)", () => {

@@ -8,13 +8,16 @@ import {
 	Lightbulb,
 	Droplet,
 	DoorOpen,
+	ChevronDown,
 } from "lucide-react";
+import { useState } from "react";
 import { format } from "date-fns";
 import type { Poi } from "@communecter/cocolight-api-client";
 import getDateFnsLocale from "@/dateFns";
 import "@/modules/search/i18n";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -61,7 +64,7 @@ function getPoiImage(seed: string) {
 	return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-export default function CardPoiAmenities({ item, onClick, card }: SearchCardProps) {
+export default function CardPoiAmenities({ item, onClick, onOpenSheet, card }: SearchCardProps) {
 	useLoadNamespace("modules/search");
 	const t = useT("modules/search");
 	const instFilter = useInstallationFilter(card?.installationFilter);
@@ -69,6 +72,12 @@ export default function CardPoiAmenities({ item, onClick, card }: SearchCardProp
 	// interlignes et puces réduits. Pensé pour une colonne étroite (liste
 	// latérale d'un split) ; rien n'est masqué, une carte dense reste lisible.
 	const compact = card?.compact === true;
+	// Pliable (`card.collapsible`) : REPLIÉE par défaut. Une colonne latérale se
+	// parcourt alors comme la liste de la section `data-observatory` — une ligne
+	// par item — et se déplie au besoin. État LOCAL par carte : rien à
+	// coordonner, et l'ordre n'a pas à être mémorisé d'un rendu à l'autre.
+	const collapsible = card?.collapsible === true;
+	const [open, setOpen] = useState(!collapsible);
 
 	// La variante `poi-ssbe` n'est routée que pour des POI (registry `SearchCard`),
 	// mais le switch runtime passe un `SearchEntity` → on narrow vers `Poi`.
@@ -105,6 +114,48 @@ export default function CardPoiAmenities({ item, onClick, card }: SearchCardProp
 		.filter(Boolean)
 		.join(" ");
 
+	// Sous-titre de la ligne REPLIÉE : même composition que les
+	// `subtitleDimensions` de la liste observatoire (valeurs vides ignorées,
+	// jointes par « · »).
+	const collapsedSubtitle = [categorie, installation].filter(Boolean).join(" · ");
+
+	// Bouton « Fiche » : présent UNIQUEMENT quand le clic sur la carte a été
+	// détourné (sélection du tableau de bord embarqué) — sinon il doublerait le
+	// clic sur la carte. Même rôle et même allure que celui de la liste de la
+	// section `data-observatory`.
+	const sheetButton = onOpenSheet ? (
+		<Button
+			type="button"
+			variant="outline"
+			size="sm"
+			// stopPropagation : la <Card> parente porte onClick (ici, la sélection).
+			onClick={(e) => {
+				e.stopPropagation();
+				onOpenSheet();
+			}}
+			className="h-7 shrink-0 px-2 text-xs"
+		>
+			{t("CardPoiAmenities.sheet")}
+		</Button>
+	) : null;
+
+	const toggle = collapsible ? (
+		<button
+			type="button"
+			// stopPropagation : la <Card> parente porte onClick (ouvre la fiche) —
+			// le chevron ne fait QUE plier.
+			onClick={(e) => {
+				e.stopPropagation();
+				setOpen((v) => !v);
+			}}
+			aria-expanded={open}
+			aria-label={open ? t("CardPoiAmenities.collapse") : t("CardPoiAmenities.expand")}
+			className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+		>
+			<ChevronDown className={cn("h-4 w-4 transition-transform", open && "rotate-180")} />
+		</button>
+	) : null;
+
 	const createdDate = toValidDate(serverData.inst_date_creation ?? serverData.created);
 	const formattedDate = createdDate
 		? format(createdDate, "d MMMM yyyy", { locale: getDateFnsLocale() })
@@ -112,6 +163,32 @@ export default function CardPoiAmenities({ item, onClick, card }: SearchCardProp
 	const yearsSinceCreation = createdDate
 		? new Date().getFullYear() - createdDate.getFullYear()
 		: null;
+
+	if (!open) {
+		// REPLIÉE : titre + sous-titre tronqués, comme une ligne de la liste de la
+		// section `data-observatory`. `py-0` + padding propre : <Card> porte un
+		// padding vertical par défaut, dimensionné pour un en-tête complet.
+		return (
+			<Card
+				onClick={onClick}
+				className="cursor-pointer gap-0 overflow-hidden border-l-4 py-0 transition-shadow hover:shadow-md"
+				style={{ borderLeftColor: "var(--card-border-left)" }}
+			>
+				<div className="flex items-center gap-2 px-3 py-2.5">
+					<div className="min-w-0 flex-1">
+						<p className="truncate text-sm font-medium text-foreground">{name}</p>
+						{collapsedSubtitle && (
+							<p className="truncate text-xs text-muted-foreground">{collapsedSubtitle}</p>
+						)}
+					</div>
+					<div className="flex shrink-0 items-center gap-1.5">
+						{sheetButton}
+						{toggle}
+					</div>
+				</div>
+			</Card>
+		);
+	}
 
 	return (
 		<Card
@@ -146,6 +223,10 @@ export default function CardPoiAmenities({ item, onClick, card }: SearchCardProp
 							<Tag className="h-3 w-3" />
 							<span className="truncate">{categorie}</span>
 						</div>
+					</div>
+					<div className="flex shrink-0 items-center gap-1.5">
+						{sheetButton}
+						{toggle}
 					</div>
 				</div>
 

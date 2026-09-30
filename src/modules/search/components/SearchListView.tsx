@@ -32,6 +32,7 @@ export default function SearchListView({
   isDetailedView = false,
   focusedItemId,
   onFocusItem,
+  onSelectItem,
   previewParam: previewParamProp,
 }: SearchListViewProps) {
   // Config EFFECTIVE : prop explicite (agenda/observatoire/profil… passent card/preview/columns
@@ -171,6 +172,13 @@ export default function SearchListView({
   // absente, on retombe sur l'ouverture du détail (comportement historique).
   const handleCardClick = (it: SearchEntity, itemList?: ListConf) => {
     const id = getEntryId(it);
+    // Tableau de bord embarqué : le clic SÉLECTIONNE. L'ouverture de la fiche
+    // passe alors par le bouton dédié de la carte (`onOpenSheet` ci-dessous) —
+    // sans quoi elle deviendrait inaccessible.
+    if (onSelectItem) {
+      onSelectItem(it);
+      return;
+    }
     if (onFocusItem && id) {
       onFocusItem(id);
       return;
@@ -322,7 +330,18 @@ export default function SearchListView({
     <>
       <div ref={containerRef} className={gridClasses}>
         {results.map((it, i) =>
-          wrap(it, <SearchCard item={it} onClick={() => handleCardClick(it, itemLists[i])} card={itemLists[i]?.card ?? card} list={itemLists[i] ?? list} />),
+          wrap(
+            it,
+            <SearchCard
+              item={it}
+              onClick={() => handleCardClick(it, itemLists[i])}
+              // Bouton « Fiche » : uniquement quand le clic a été détourné vers la
+              // sélection. Ailleurs, il ferait double emploi avec le clic.
+              onOpenSheet={onSelectItem ? () => handleOpenDetails(it, itemLists[i]) : undefined}
+              card={itemLists[i]?.card ?? card}
+              list={itemLists[i] ?? list}
+            />,
+          ),
         )}
       </div>
 

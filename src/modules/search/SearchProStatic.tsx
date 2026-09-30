@@ -76,16 +76,18 @@ import {
  * carte large). Les ratios plus larges passent la liste à 2 colonnes (largeur
  * suffisante).
  *
- * `compact` suit mécaniquement la largeur : à 30 %, la colonne est trop étroite
- * pour une carte pleine — la carte dense y tient les mêmes informations en
- * moins de hauteur (cf. `card.compact`). Les ratios historiques gardent la
- * carte pleine : leur rendu ne bouge pas.
+ * `compact` et `collapsible` suivent mécaniquement la largeur : à 30 %, la
+ * colonne est trop étroite pour une carte pleine. Les cartes y sont DENSES
+ * (mêmes informations, moins de hauteur) et REPLIÉES par défaut — la colonne se
+ * parcourt alors comme la liste de la section `data-observatory`, une ligne par
+ * item, et chaque carte se déplie d'un chevron. Les ratios historiques gardent
+ * la carte pleine, dépliée : leur rendu ne bouge pas.
  */
 const SPLIT_LAYOUTS = {
-  "30-70": { list: "w-[30%]", map: "w-[70%]", columns: { sm: 1, md: 1, lg: 1, xl: 1 }, compact: true },
-  "40-60": { list: "w-2/5", map: "w-3/5", columns: { sm: 1, md: 1, lg: 1, xl: 1 }, compact: false },
-  "50-50": { list: "w-1/2", map: "w-1/2", columns: { sm: 1, md: 2, lg: 2, xl: 2 }, compact: false },
-  "60-40": { list: "w-3/5", map: "w-2/5", columns: { sm: 1, md: 2, lg: 2, xl: 2 }, compact: false },
+  "30-70": { list: "w-[30%]", map: "w-[70%]", columns: { sm: 1, md: 1, lg: 1, xl: 1 }, compact: true, collapsible: true },
+  "40-60": { list: "w-2/5", map: "w-3/5", columns: { sm: 1, md: 1, lg: 1, xl: 1 }, compact: false, collapsible: false },
+  "50-50": { list: "w-1/2", map: "w-1/2", columns: { sm: 1, md: 2, lg: 2, xl: 2 }, compact: false, collapsible: false },
+  "60-40": { list: "w-3/5", map: "w-2/5", columns: { sm: 1, md: 2, lg: 2, xl: 2 }, compact: false, collapsible: false },
 } as const;
 
 /**
@@ -503,16 +505,23 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     variant: searchVariant,
   });
 
-  // Conf de liste de la COLONNE LATÉRALE. La densité doit passer par `list` et
-  // non par la prop `card` : `SearchListView` résout la carte par item
+  // Conf de liste de la COLONNE LATÉRALE. Densité et pliage doivent passer par
+  // `list` et non par la prop `card` : `SearchListView` résout la carte par item
   // (`itemLists[i]?.card ?? card`) et, sans `itemRules`, chaque entrée vaut
   // `list` — une prop `card` y serait systématiquement écrasée.
   const splitList = useMemo(
     () =>
-      splitLayout.compact && list
-        ? { ...list, card: { ...list.card, compact: true } }
+      (splitLayout.compact || splitLayout.collapsible) && list
+        ? {
+            ...list,
+            card: {
+              ...list.card,
+              ...(splitLayout.compact ? { compact: true } : {}),
+              ...(splitLayout.collapsible ? { collapsible: true } : {}),
+            },
+          }
         : list,
-    [splitLayout.compact, list],
+    [splitLayout.compact, splitLayout.collapsible, list],
   );
 
   // Split : la liste ne montre que les résultats GÉOLOCALISÉS (= ceux qui ont un
@@ -704,20 +713,13 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
              les chiffres décrivent toujours ce que la liste montre, et la
              bascule carte ↔ observatoire ne recharge rien.
 
-             Agencement calqué sur la page observatoire : les KPI d'abord, en
-             BANDEAU pleine largeur (une colonne étroite les tasserait sur
-             plusieurs lignes), puis les deux colonnes. Ce sont les GRAPHES qui
-             commandent la hauteur — ils se déroulent ENTIÈREMENT, sans scroll
-             propre, on doit pouvoir tous les lire d'une traite. C'est la LISTE
-             qui s'adapte : colonne `relative` + contenu `absolute inset-0
-             overflow-y-auto`. Mécanique non devinable mais nécessaire — un
-             enfant flex simplement étiré grandit avec son contenu et
-             `overflow-y` y reste lettre morte ; l'absolu lui donne enfin une
-             hauteur DÉFINIE, celle de sa colonne. `min-h` : filet si les
-             graphes sont courts.
-
-             Sur mobile, pas de colonne latérale (comme le split carte) : le
-             tableau de bord prend toute la largeur. */
+             L'agencement (KPI en bandeau, deux colonnes, hauteur commandée par
+             les graphes) vit dans `ObservatoryPanel` : c'est lui qui porte le
+             raffinement, il doit donc pouvoir filtrer la liste comme les
+             graphes. Ici ne restent que la barre de bascule, la progression du
+             chargement et la liste elle-même. Sur mobile, pas de colonne
+             latérale (comme le split carte) : le tableau de bord prend toute la
+             largeur. */
           <div className="w-full space-y-6 overflow-y-auto p-4">
             <div className="flex justify-end">{panelViewSwitch("observatory")}</div>
 
@@ -748,46 +750,40 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 <Skeleton className="h-[420px] w-full rounded-2xl" />
               )
             ) : (
-              <>
-                {/* Suspense PAR BLOC : le chunk du tableau de bord (recharts)
-                    ne doit pas faire disparaître la liste ni la barre de
-                    bascule le temps de son téléchargement. */}
-                <Suspense fallback={<Skeleton className="h-28 w-full rounded-2xl" />}>
-                  <ObservatoryPanel
-                    part="kpis"
-                    results={mapAll.results}
-                    conf={observatory}
-                    animate={mapAll.isComplete}
-                  />
-                </Suspense>
+              /* Suspense local : le chunk du tableau de bord (recharts) ne doit
+                 pas faire disparaître la barre de bascule le temps de son
+                 téléchargement.
 
-                <div className="flex w-full gap-4 min-h-[60vh]">
-                  {!isMobile && (
-                    <div className={`relative ${splitLayout.list}`}>
-                      <div className="absolute inset-0 overflow-y-auto pr-1">
-                        {/* Pas de `onFocusItem` ici : sans carte à focaliser, un
-                            clic ouvre la fiche — le comportement de la vue liste.
-                            `card` DENSE : la colonne est étroite. */}
-                        <SearchListView
-                          results={mapAll.results}
-                          columns={splitLayout.columns}
-                          list={splitList}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  <div className={`${isMobile ? "w-full" : splitLayout.map} space-y-6`}>
-                    <Suspense fallback={<Skeleton className="h-[420px] w-full rounded-2xl" />}>
-                      <ObservatoryPanel
-                        part="charts"
-                        results={mapAll.results}
-                        conf={observatory}
-                        animate={mapAll.isComplete}
-                      />
-                    </Suspense>
-                  </div>
-                </div>
-              </>
+                 Le panneau POSSÈDE le raffinement (sélection d'un équipement,
+                 drill-down sur un graphe) : il doit donc commander l'agencement
+                 ET la liste — une sélection qui ne toucherait que les graphes,
+                 en laissant la liste intacte, n'aurait aucun sens. D'où
+                 `renderList` : la section fournit SA liste, le panneau lui
+                 passe les entités survivantes. */
+              <Suspense fallback={<Skeleton className="h-[420px] w-full rounded-2xl" />}>
+                <ObservatoryPanel
+                  results={mapAll.results}
+                  conf={observatory}
+                  animate={mapAll.isComplete}
+                  listClass={splitLayout.list}
+                  panelClass={splitLayout.map}
+                  renderList={
+                    isMobile
+                      ? undefined
+                      : ({ entities, select }) => (
+                          <SearchListView
+                            results={entities as SearchEntity[]}
+                            columns={splitLayout.columns}
+                            list={splitList}
+                            // `select` fourni (config `observatory.select`) : le clic
+                            // sélectionne et la carte gagne son bouton « Fiche ».
+                            // Absent : clic = ouverture de la fiche, comme ailleurs.
+                            onSelectItem={select ?? undefined}
+                          />
+                        )
+                  }
+                />
+              </Suspense>
             )}
           </div>
         ) : ((viewMode === "split") || (viewMode === "map" && isSplit)) && enableMap && !isMobile ? (
@@ -798,10 +794,14 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
              `h-[78vh]` sur les deux colonnes : indispensable pour que la carte
              (`height:100%`) ait une référence et que son canvas = la zone visible
              (sinon fitBounds cadre sur une mauvaise taille). */
-          <div className="flex w-full gap-4 overflow-hidden">
+          /* `px-4 py-4` : sans elle, les deux colonnes collaient au bord haut et
+             bas de la fenêtre. La hauteur des colonnes retranche exactement cette
+             marge (`calc(78vh - 2rem)`) — la section est en `overflow-hidden`, un
+             padding ajouté sans compensation ferait rogner le bas de la carte. */
+          <div className="flex w-full gap-4 overflow-hidden px-4 py-4">
             {/* Liste (gauche) — défile dans sa hauteur ; 2 colonnes max (panneau
                 étroit), pas les colonnes pleines de la vue liste. */}
-            <div className={`h-[78vh] ${splitLayout.list} overflow-y-auto p-4`}>
+            <div className={`h-[calc(78vh-2rem)] ${splitLayout.list} overflow-y-auto pr-2`}>
               {!isPending && mapAll.isComplete && splitGeoResults.length === 0 && (
                 <div className="py-8 text-center text-secondary-foreground">
                   {t("Aucun résultat trouvé.")}
@@ -817,7 +817,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
             </div>
             {/* Carte (droite) : `h-[78vh]` borne la hauteur → la carte embarquée
                 (height:100% via containerClass) la remplit exactement (cf. SearchMap). */}
-            <div className={`relative h-[78vh] ${splitLayout.map} overflow-hidden rounded shadow`}>
+            <div className={`relative h-[calc(78vh-2rem)] ${splitLayout.map} overflow-hidden rounded shadow`}>
               {/* Bascules de vue (cf. `panelViewSwitch`) : vers l'observatoire
                   s'il est déclaré, et vers la liste — sauf quand le split EST la
                   vue canonique (`defaultViewMode: "split"`), où il n'y a pas de

@@ -326,7 +326,8 @@ sans `overlay`/`news`/`testimonial`/`resource`) ; `card.detailedMode`
 (`default`\|`service-pricing`) pour la vue detailed ; `defaultViewMode`
 (`list`\|`map`\|`graph`, + `regions`\|`thematics`\|`split` en static) ;
 `map.layout` (`full`\|`split`) + `map.splitRatio` (`30-70` resserre la liste ET
-passe ses cartes en mode DENSE, cf. `card.compact`) ; `observatory` (KPI + graphes
+passe ses cartes en mode DENSE et REPLIÉ, cf. `card.compact`/`card.collapsible`) ;
+`observatory` (KPI + graphes
 en 3ᵉ vue à côté de liste et carte — même vocabulaire que `data-observatory`,
 mais SANS périmètre propre : il lit les résultats déjà chargés par la section,
 donc tout champ lu par une dimension doit être dans `baseParams.defaultFields`).
