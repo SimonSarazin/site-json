@@ -640,6 +640,7 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
           "columns": 1,
           "fields": [
             "name",
+            "$slot:duplicates",
           ],
         },
         {
@@ -699,6 +700,7 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
           "columns": 1,
           "fields": [
             "address",
+            "$slot:duplicates",
           ],
         },
         {
@@ -861,6 +863,22 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > spec fig
     "ref": "tiers-lieux",
   },
   "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden",
+  "duplicateCheck": {
+    "confirmOnSubmit": true,
+    "limit": 5,
+    "minChars": 3,
+    "nameField": "name",
+    "postalCodeField": "postalCode",
+    "search": {
+      "from": {
+        "page": "/lieux",
+        "sectionId": "section-events",
+      },
+      "types": [
+        "organizations",
+      ],
+    },
+  },
   "gradientHeader": true,
   "icon": "building-2",
   "id": "tiers-lieux",
@@ -890,6 +908,9 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > spec fig
     "invalidateFn": {
       "fn": "invalidate:standard",
       "params": {
+        "searchKeys": [
+          "entityDuplicates",
+        ],
         "userList": "organizations",
       },
     },
@@ -1009,6 +1030,9 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > spec fig
     "derive": "tl:scope",
     "slugFrom": "derived",
     "slugKey": "slug",
+  },
+  "slots": {
+    "duplicates": "slot:entityDuplicates",
   },
   "submitLabel": {
     "add": {
