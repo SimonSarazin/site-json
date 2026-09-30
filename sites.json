@@ -200,6 +200,9 @@
     "images": "federationDesCae",
     "coolifyApp": "site-json-federation-des-cae",
     "domain": "federation-des-cae.00.re",
+    "aliases": [
+      "communs.les-cae.coop"
+    ],
     "env": {
       "VITE_COSTUM_FORCE_LIVE": "true"
     }

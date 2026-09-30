@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import type { Organization, Poi, Project, User, Event as EventType} from "@communecter/cocolight-api-client";
 import getDateFnsLocale from "@/dateFns";
 import { resolveEventStartDate, toValidDate } from "@/helpers/formatDate";
+import { countActiveLinks } from "../lib/countActiveLinks";
 
 const useItem = (item: User | Organization | Project | Poi | EventType) => {
   /**
@@ -80,11 +81,8 @@ const useItem = (item: User | Organization | Project | Poi | EventType) => {
       merged.description = merged.shortDescription;
     }
 
-    // Comptages dynamiques
-    const countLinks = (section: string) =>
-      merged.links?.[section] && typeof merged.links[section] === "object"
-        ? Object.keys(merged.links[section]).length
-        : 0;
+    // Comptages dynamiques : liens ACTIFS seulement, pour les trois sections
+    const countLinks = (section: string) => countActiveLinks(merged.links?.[section]);
 
     merged.countProjects = countLinks("projects");
     merged.countMembers = countLinks("members");

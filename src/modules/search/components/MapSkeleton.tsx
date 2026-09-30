@@ -9,10 +9,12 @@ import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMapContainerClass } from "../hooks/useMapContainerClass";
 
-export default function MapSkeleton({ label }: { label: string }) {
-  const containerClass = useMapContainerClass("w-full");
+/** `containerClass` : même contrat que `SearchMap` — le parent (colonne split,
+ *  section embarquée) dimensionne lui-même, sinon `min-h-screen` déborderait. */
+export default function MapSkeleton({ label, containerClass }: { label: string; containerClass?: string }) {
+  const defaultContainerClass = useMapContainerClass("w-full");
   return (
-    <div className={containerClass}>
+    <div className={containerClass ?? defaultContainerClass}>
       <Skeleton className="absolute inset-0 rounded" />
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
