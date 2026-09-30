@@ -23,7 +23,7 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | **Choix en cours dans une config** (listes figées, chaîne de rattachement…) — pose la question, ne juge pas | `npm run config:besoins -- <config>` · `-- --diff` en revue |
 | **Depuis quand une clé existe, et qui l'a adoptée** | `npm run config:changelog key <nom>` · `since <config>` pour ce qui a bougé depuis |
 | **Ce qui est possible et peu connu** (mécanismes jamais exercés, ou par un seul site — avec son nom) | `npm run config:changelog candidates` |
-| **Composition de props réelle** d'une section / d'un header / d'un footer | `.design-sync/previews/<Composant>.tsx` (154 stories versionnées) — chemin exact imprimé en tête de `config:schema section:<type>`, et `◆` dans le catalogue `sections` |
+| **Composition de props réelle** d'une section / d'un header / d'un footer | `.design-sync/previews/<Composant>.tsx` (155 stories versionnées) — chemin exact imprimé en tête de `config:schema section:<type>`, et `◆` dans le catalogue `sections` |
 | **Recette de composition de PAGE** (gabarit = une page réelle d'archétype) | `npm run config:example -- --recipe <id>` — imprime la page complète, prête à adapter |
 | Forme exacte d'une section | `npm run config:schema section:<type>` (ex. `section:pricing`) |
 | Forme de `header`/`footer`/`theme`/`meta`/`auth`/`page`/`profiles`/`integrations`/`commandPalette` | `npm run config:schema <bloc>` |
@@ -374,7 +374,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 
 | module | surface | clés JSON | prérequis backend |
 |---|---|---|---|
-| `search` | sections `searchPro`/`searchProStatic`/`filters`/`searchHeader`/`cardCountCT`/`thematics` | `baseParams` (`sourceKey`, `defaultFields`…), `list` (card/detailsMode/preview, `itemRules`/`itemAction` si liste hétérogène), `map` (`itemAction`/`marker`), `filters[].select`/`optionStyle`/`order`/`keepOptionOrder` (widgets & ordre par groupe) | données indexées (sourceKey) ; carte : fond MapTiler via env `VITE_MAPTILER_API_KEY` (sinon repli OSM/Carto) + `integrations.map.styleLight/Dark` |
+| `search` | sections `searchPro`/`searchProStatic`/`filters`/`searchHeader`/`cardCountCT`/`thematics` | `baseParams` (`sourceKey`, `defaultFields`…), `list` (card/detailsMode/preview, `itemRules`/`itemAction` si liste hétérogène), `map` (`itemAction`/`marker` — dont `marker.by` : un marqueur par VALEUR d'un attribut de la donnée, avec `default` pour les valeurs non listées — `shapes` : contours géographiques zones/cities/zoniris, cf. doc/07), `filters[].select`/`optionStyle`/`order`/`keepOptionOrder` (widgets & ordre par groupe) | données indexées (sourceKey) ; carte : fond MapTiler via env `VITE_MAPTILER_API_KEY` (sinon repli OSM/Carto) + `integrations.map.styleLight/Dark` |
 | `agenda` | section `agenda` (vues liste/calendrier/carte/split) | `baseParams`, `filters` (text/type/tags), `defaultMode`/`tabs`/`detailsMode`, `enableMap`/`map` | événements indexés (`searchEventsCostum`) |
 | `news` | section `news` | `props.entitySlug`, `maxItems` | fil d'actus de l'entité |
 | `blog` | routes `/blog/:slug` (+ `/blog/id/:id`) + sections `articleFeed`/`articleReader` | `config.blog` (`feedCostumSlug`, variants card/reader), `costumForms.<article>`, `commandPalette.articleSearch` | POI `type:"article"` scopés costum (`source.key`) |
@@ -398,14 +398,14 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 ## Design system (voir le rendu réel avant de choisir)
 
 - **`.design-sync/previews/` — la ressource la plus utile, et elle est dans git** :
-  154 stories portant des compositions de props RÉELLES (valeurs plausibles,
+  155 stories portant des compositions de props RÉELLES (valeurs plausibles,
   commentaire d'usage : « Usage réel : home de Rézo la mer »). Le JSON Schema
-  donne la FORME, la story donne la COMPOSITION — **43 des 78 sections** en ont
+  donne la FORME, la story donne la COMPOSITION — **44 des 79 sections** en ont
   une (les 35 sans sont surtout data-driven : search\*, agenda, cagnotte, blog,
   aac, coform — une composition statique n'y montrerait rien), ainsi que **les 7
   headers et les 4 footers**. Copie la story, ne réinvente pas le remplissage.
 - **Vérité versionnée : `.design-sync/`** — `config.json` (`componentSrcMap` :
-  ~155 composants exportés → chemin source dans `src/`), `conventions.md`
+  ~156 composants exportés → chemin source dans `src/`), `conventions.md`
   (règles : enveloppe `DsProvider`, **tokens CSS d'abord — jamais de couleur en
   dur**, composants de modules props-driven qui ne fetchent rien),
   `NOTES.md` (pièges connus, exclusions volontaires).

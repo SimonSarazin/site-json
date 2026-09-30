@@ -151,7 +151,9 @@
       "requiredField": "Ce champ est requis",
       "elementCard": {
         "edit": "Modifier",
-        "removeAria": "Supprimer"
+        "removeAria": "Supprimer",
+        "selectAria": "Sélectionner {{name}}",
+        "deselectAria": "Désélectionner {{name}}"
       },
       "modal": {
         "title": "Rechercher",

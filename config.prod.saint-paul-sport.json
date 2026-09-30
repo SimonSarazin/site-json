@@ -181,6 +181,49 @@
           }
         },
         {
+          "type": "map-shapes",
+          "id": "bassins-de-vie",
+          "props": {
+            "title": {
+              "fr": "Les bassins de vie de Saint-Paul",
+              "en": "Saint-Paul living areas"
+            },
+            "description": {
+              "fr": "Cliquez un bassin pour explorer ses équipements sportifs.",
+              "en": "Click a living area to browse its sports facilities."
+            },
+            "bg": "muted",
+            "maxHeight": 560,
+            "shapes": [
+              {
+                "id": "bassins-vie",
+                "source": "zoniris",
+                "simplify": 10,
+                "showNames": true,
+                "filters": {
+                  "spec": "bassins_vie_saintpaul"
+                },
+                "label": {
+                  "fr": "Bassins de vie",
+                  "en": "Living areas"
+                },
+                "style": {
+                  "fill": "primary",
+                  "fillOpacity": 0.12,
+                  "stroke": "primary",
+                  "strokeWidth": 1.5,
+                  "strokeOpacity": 0.8
+                }
+              }
+            ],
+            "target": {
+              "path": "/equipements-sportifs",
+              "filterId": "bassin",
+              "valueFrom": "_id"
+            }
+          }
+        },
+        {
           "type": "categories-grid",
           "id": "Convention-section",
           "props": {
@@ -1707,6 +1750,25 @@
                     }
                   }
                 ]
+              },
+              {
+                "id": "bassin",
+                "label": {
+                  "fr": "Bassin de vie",
+                  "en": "Living area"
+                },
+                "field": "address.zonirisId",
+                "multiple": true,
+                "optionsFrom": {
+                  "shapes": {
+                    "id": "bassins-vie",
+                    "source": "zoniris",
+                    "simplify": 10,
+                    "filters": {
+                      "spec": "bassins_vie_saintpaul"
+                    }
+                  }
+                }
               }
             ]
           }
@@ -1855,8 +1917,477 @@
               "splitRatio": "30-70",
               "marker": {
                 "style": "pin",
-                "color": "primary"
-              }
+                "color": "primary",
+                "iconSize": 52,
+                "by": {
+                  "path": "equip_type_name",
+                  "mapping": {
+                    "Multisports/City-stades": {
+                      "color": "chart-2",
+                      "icon": "goal"
+                    },
+                    "Terrain de basket-ball": {
+                      "color": "chart-2",
+                      "icon": "goal"
+                    },
+                    "Terrain de football": {
+                      "color": "chart-2",
+                      "icon": "goal"
+                    },
+                    "Salles polyvalentes / des fêtes / non spécialisées": {
+                      "color": "chart-3",
+                      "icon": "building-2"
+                    },
+                    "Salle de musculation/cardiotraining": {
+                      "color": "chart-3",
+                      "icon": "dumbbell"
+                    },
+                    "Salle multisports (gymnase)": {
+                      "color": "chart-3",
+                      "icon": "warehouse"
+                    },
+                    "Terrain de handball": {
+                      "color": "chart-2",
+                      "icon": "goal"
+                    },
+                    "Terrain de pétanque": {
+                      "color": "chart-2",
+                      "icon": "circle-dot"
+                    },
+                    "Stade d’athlétisme": {
+                      "color": "accent",
+                      "icon": "timer"
+                    },
+                    "Site d'activités aquatiques et nautiques": {
+                      "color": "chart-1",
+                      "icon": "sailboat"
+                    },
+                    "Court de tennis": {
+                      "color": "chart-2",
+                      "icon": "grid-2x2"
+                    },
+                    "Bassin mixte de natation": {
+                      "color": "chart-1",
+                      "icon": "waves-ladder"
+                    },
+                    "Site de plongée": {
+                      "color": "chart-1",
+                      "icon": "shell"
+                    },
+                    "Canyon": {
+                      "color": "chart-1",
+                      "icon": "waves"
+                    },
+                    "Dojo / Salle d'arts martiaux": {
+                      "color": "chart-3",
+                      "icon": "hand-fist"
+                    },
+                    "Parcours sportif/santé": {
+                      "color": "chart-4",
+                      "icon": "heart-pulse"
+                    },
+                    "Boucle de randonnée": {
+                      "color": "chart-4",
+                      "icon": "footprints"
+                    },
+                    "Structure Artificielle d'Escalade": {
+                      "color": "chart-4",
+                      "icon": "triangle"
+                    },
+                    "Site de pêche": {
+                      "color": "chart-1",
+                      "icon": "fish"
+                    },
+                    "Parcours d'obstacles": {
+                      "color": "chart-4",
+                      "icon": "flag-triangle-right"
+                    },
+                    "Refuge de montagne": {
+                      "color": "chart-4",
+                      "icon": "tent-tree"
+                    },
+                    "Salle de danse": {
+                      "color": "chart-3",
+                      "icon": "music"
+                    },
+                    "Carrière": {
+                      "color": "primary",
+                      "icon": "land-plot"
+                    },
+                    "Terrain de kayak polo": {
+                      "color": "chart-1",
+                      "icon": "sailboat"
+                    },
+                    "Aire de saut": {
+                      "color": "accent",
+                      "icon": "move-up"
+                    },
+                    "Mur à gauche": {
+                      "color": "chart-2",
+                      "icon": "square"
+                    },
+                    "Piste d'athlétisme isolée": {
+                      "color": "accent",
+                      "icon": "timer"
+                    },
+                    "Bassin sportif de natation": {
+                      "color": "chart-1",
+                      "icon": "waves-ladder"
+                    },
+                    "Trinquet": {
+                      "color": "chart-2",
+                      "icon": "square"
+                    },
+                    "Aire d'atterrissage": {
+                      "color": "chart-5",
+                      "icon": "plane-landing"
+                    },
+                    "Courses sur piste": {
+                      "color": "primary",
+                      "icon": "trophy"
+                    },
+                    "Salle de boxe": {
+                      "color": "chart-3",
+                      "icon": "hand-fist"
+                    },
+                    "Port de plaisance": {
+                      "color": "chart-1",
+                      "icon": "anchor"
+                    },
+                    "Terrain de boules": {
+                      "color": "chart-2",
+                      "icon": "circle-dot"
+                    },
+                    "Anneau / piste de cyclisme": {
+                      "color": "accent",
+                      "icon": "bike"
+                    },
+                    "Aire mixte (décollage et atterissage)": {
+                      "color": "chart-5",
+                      "icon": "helicopter"
+                    },
+                    "Terrain de soccer": {
+                      "color": "chart-2",
+                      "icon": "goal"
+                    },
+                    "Piste de kart": {
+                      "color": "chart-5",
+                      "icon": "car"
+                    },
+                    "Bassin ludique de natation": {
+                      "color": "chart-1",
+                      "icon": "waves-ladder"
+                    },
+                    "Terrain mixte": {
+                      "color": "chart-2",
+                      "icon": "goal"
+                    },
+                    "Salle de cours collectifs": {
+                      "color": "chart-3",
+                      "icon": "users"
+                    },
+                    "Aire de décollage": {
+                      "color": "chart-5",
+                      "icon": "plane-takeoff"
+                    },
+                    "Salle d'escrime": {
+                      "color": "chart-3",
+                      "icon": "swords"
+                    },
+                    "Site d'escalade en falaise": {
+                      "color": "chart-4",
+                      "icon": "mountain"
+                    },
+                    "Piste de descente": {
+                      "color": "chart-4",
+                      "icon": "trending-down"
+                    },
+                    "Site de blocs d'escalade": {
+                      "color": "chart-4",
+                      "icon": "mountain"
+                    },
+                    "Parcours Acrobatique en Hauteur/Site d'accrobranche": {
+                      "color": "chart-4",
+                      "icon": "tree-pine"
+                    },
+                    "Pumptrack": {
+                      "color": "chart-4",
+                      "icon": "bike"
+                    },
+                    "Terrain de basket-ball 3x3": {
+                      "color": "chart-2",
+                      "icon": "goal"
+                    },
+                    "Piste d’aérodrome / d'aéroport": {
+                      "color": "chart-5",
+                      "icon": "plane"
+                    },
+                    "Salle ou terrain de paintball": {
+                      "color": "chart-3",
+                      "icon": "target"
+                    },
+                    "Baignade aménagée": {
+                      "color": "chart-1",
+                      "icon": "umbrella"
+                    },
+                    "Pas de tir à l'arc": {
+                      "color": "chart-5",
+                      "icon": "target"
+                    },
+                    "Piste de bicross": {
+                      "color": "chart-4",
+                      "icon": "bike"
+                    },
+                    "Aire de fitness/street workout": {
+                      "color": "chart-4",
+                      "icon": "dumbbell"
+                    },
+                    "Site de modélisme automobile": {
+                      "color": "chart-5",
+                      "icon": "toy-brick"
+                    },
+                    "Parcours de cross": {
+                      "color": "chart-4",
+                      "icon": "route"
+                    },
+                    "Circuit de motocross": {
+                      "color": "chart-5",
+                      "icon": "scooter"
+                    },
+                    "Skatepark": {
+                      "color": "chart-4",
+                      "icon": "wind"
+                    },
+                    "Salle de tennis de table": {
+                      "color": "chart-3",
+                      "icon": "table"
+                    },
+                    "Terrain de volley-ball": {
+                      "color": "chart-2",
+                      "icon": "volleyball"
+                    },
+                    "Terrain de foot 5x5": {
+                      "color": "chart-2",
+                      "icon": "goal"
+                    },
+                    "Terrain de futsal extérieur": {
+                      "color": "chart-2",
+                      "icon": "goal"
+                    },
+                    "Salle de blocs artificiels d'escalade": {
+                      "color": "chart-3",
+                      "icon": "triangle"
+                    },
+                    "Piste d'athlétisme 2 à 4 couloirs": {
+                      "color": "accent",
+                      "icon": "timer"
+                    },
+                    "Aire de lancer": {
+                      "color": "accent",
+                      "icon": "target"
+                    },
+                    "Practice": {
+                      "color": "primary",
+                      "icon": "flag"
+                    },
+                    "Bassin de réception de toboggan": {
+                      "color": "chart-1",
+                      "icon": "droplets"
+                    },
+                    "Point d'embarquement et de débarquement isolé": {
+                      "color": "chart-1",
+                      "icon": "anchor"
+                    },
+                    "Mur ou fronton mixte": {
+                      "color": "chart-2",
+                      "icon": "square"
+                    },
+                    "Mur de tennis": {
+                      "color": "chart-2",
+                      "icon": "square"
+                    },
+                    "Terrain de beach-volley": {
+                      "color": "chart-2",
+                      "icon": "volleyball"
+                    },
+                    "Terrain de beach soccer": {
+                      "color": "chart-2",
+                      "icon": "goal"
+                    },
+                    "Salle de volley-ball": {
+                      "color": "chart-3",
+                      "icon": "volleyball"
+                    },
+                    "Salle de gymnastique sportive": {
+                      "color": "chart-3",
+                      "icon": "activity"
+                    },
+                    "Parcours 9 trous": {
+                      "color": "primary",
+                      "icon": "flag"
+                    },
+                    "Salle de culturisme": {
+                      "color": "chart-3",
+                      "icon": "dumbbell"
+                    },
+                    "Vélodrome": {
+                      "color": "accent",
+                      "icon": "bike"
+                    },
+                    "Stade de ski nautique": {
+                      "color": "chart-1",
+                      "icon": "waves"
+                    },
+                    "Parcours d'initiation": {
+                      "color": "primary",
+                      "icon": "flag"
+                    },
+                    "Parcours 18 trous": {
+                      "color": "primary",
+                      "icon": "flag"
+                    },
+                    "Terrain de rugby": {
+                      "color": "chart-2",
+                      "icon": "goal"
+                    },
+                    "Autres équipements divers": {
+                      "color": "secondary",
+                      "icon": "circle-dashed"
+                    },
+                    "Stade d’eau vive": {
+                      "color": "chart-1",
+                      "icon": "waves"
+                    },
+                    "Carrière de dressage/rond de longe": {
+                      "color": "primary",
+                      "icon": "land-plot"
+                    },
+                    "Autres terrains de pratique de tennis": {
+                      "color": "chart-2",
+                      "icon": "grid-2x2"
+                    },
+                    "Stade de canoë-kayak de vitesse": {
+                      "color": "chart-1",
+                      "icon": "sailboat"
+                    },
+                    "Salle ou terrain de squash": {
+                      "color": "chart-3",
+                      "icon": "grid-2x2"
+                    },
+                    "Salle de basket": {
+                      "color": "chart-3",
+                      "icon": "goal"
+                    },
+                    "Bassin d'exercices aquatiques": {
+                      "color": "chart-1",
+                      "icon": "droplets"
+                    },
+                    "Piste de padel": {
+                      "color": "chart-2",
+                      "icon": "grid-2x2"
+                    },
+                    "Anneau de Roller": {
+                      "color": "accent",
+                      "icon": "disc"
+                    },
+                    "Structure de tourisme équestre": {
+                      "color": "primary",
+                      "icon": "signpost-big"
+                    },
+                    "Salle ou terrain de badminton": {
+                      "color": "chart-3",
+                      "icon": "grid-2x2"
+                    },
+                    "Salle de trampoline": {
+                      "color": "chart-3",
+                      "icon": "move-up"
+                    },
+                    "Salle de spectacle / Zenith": {
+                      "color": "chart-3",
+                      "icon": "drama"
+                    },
+                    "Manège": {
+                      "color": "primary",
+                      "icon": "warehouse"
+                    },
+                    "Salle de lutte": {
+                      "color": "chart-3",
+                      "icon": "hand-fist"
+                    },
+                    "Salle d'haltérophilie": {
+                      "color": "chart-3",
+                      "icon": "dumbbell"
+                    },
+                    "Circuit de vitesse": {
+                      "color": "chart-5",
+                      "icon": "gauge"
+                    },
+                    "Salle de patinage sur roulette": {
+                      "color": "chart-3",
+                      "icon": "disc"
+                    },
+                    "Bowling": {
+                      "color": "chart-3",
+                      "icon": "circle-dot"
+                    },
+                    "Terrain de trial": {
+                      "color": "chart-5",
+                      "icon": "scooter"
+                    },
+                    "Piste ULM": {
+                      "color": "chart-5",
+                      "icon": "plane"
+                    },
+                    "Pas de tir aux plateaux": {
+                      "color": "chart-5",
+                      "icon": "crosshair"
+                    },
+                    "Parkour/blocpark": {
+                      "color": "chart-4",
+                      "icon": "person-standing"
+                    },
+                    "Piste de course sur le plat": {
+                      "color": "primary",
+                      "icon": "trophy"
+                    },
+                    "Salle de beach-volley": {
+                      "color": "chart-3",
+                      "icon": "volleyball"
+                    },
+                    "Terrain de hockey sur gazon": {
+                      "color": "chart-2",
+                      "icon": "goal"
+                    }
+                  },
+                  "default": {
+                    "style": "circle",
+                    "color": "secondary"
+                  }
+                }
+              },
+              "shapes": [
+                {
+                  "id": "bassins-vie",
+                  "source": "zoniris",
+                  "load": "idle",
+                  "simplify": 10,
+                  "showNames": true,
+                  "filters": {
+                    "spec": "bassins_vie_saintpaul"
+                  },
+                  "label": {
+                    "fr": "Bassins de vie",
+                    "en": "Living areas"
+                  },
+                  "style": {
+                    "fill": "primary",
+                    "fillOpacity": 0.12,
+                    "stroke": "primary",
+                    "strokeWidth": 1.5,
+                    "strokeOpacity": 0.8
+                  }
+                }
+              ]
             },
             "observatory": {
               "dimensions": {

@@ -178,7 +178,10 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
   par-ligne). Clé forcée `add-<key>`/`edit-<key>` possible ; `false` = lecture seule.
 - **`createDefaults`** (opt-in) : valeurs **semées dans la modale d'AJOUT** ouverte depuis cette
   section, fusionnées **par-dessus** les défauts dérivés du form (`fields.<nom>.default`) — donc une
-  clé absente garde son défaut normal. **Jamais en édition** (l'entité fait foi : écraser son seed
+  clé absente garde son défaut normal. Ce sont des valeurs de **FORMULAIRE**, injectées sans passer
+  par le `read` du champ : un `switch` attend `true`, pas la valeur serveur `"true"` que son `write`
+  (`coerce:boolString`) produira. Une chaîne y fait échouer la validation Zod du champ et bloque
+  « Suivant » (vécu sur l'onglet MSS de SSBE, 24/09 — test `ssbeOrganizations.createDefaults.test.ts`). **Jamais en édition** (l'entité fait foi : écraser son seed
   par une valeur d'onglet réécrirait une fiche à l'insu de l'admin).
   C'est la réponse au patron « un onglet = un sous-ensemble » : une table filtrée par son `source`
   (ex. `defaultTags: ["Appels à projets"]`) ouvre le form **déjà positionné** sur le sous-type que
@@ -343,7 +346,7 @@ Export CSV du costum (`exportElements` + `toCsv`), filtre par statut de validati
   "search": {                                    // ciblage des CANDIDATES (optionnel)
     "openData": "optOut",                        // "optIn" (défaut code) | "optOut" | "off"
     "defaultFilters": {                          // vivier commun à toutes les collections
-      "source.keys": "sportSanteBienetre",
+      "source.keys": "sportSanteBienetre",      // rattaché à ce costum (voir ⚠ ci-dessous)
       "address.postalCode": { "$in": ["97430", "97418"] } },
     "defaultFiltersByType": { "events": { "…": "…" } } },   // ciblage PAR collection
   "moderateReferenced": false }   // opt-in : les référencés arrivent "à modérer"
@@ -361,6 +364,17 @@ trois couches, dont deux seulement sont configurables :
 | Politique **open-data** (`search.openData`) | oui, au niveau section | `optIn` = fidèle legacy (`preferences.isOpenData: true`) · `optOut` = tout sauf refus EXPLICITE (`{ $nin: [false, "false"] }`) · `off` = aucun filtre open-data |
 | Ciblage du vivier | oui | `search.defaultFilters` (commun à toutes les collections) ⊕ `search.defaultFiltersByType.<collection>` fusionné **par-dessus** le commun |
 | Garde-fous du déjà rattaché/référencé | **non** | `$nin` sur `reference.costum` et `source.keys` (le costum courant), fusionnés **même-clé** par-dessus la config : un ciblage `source.keys` devient `$in` et s'unionne au `$nin` de garde |
+
+⚠ **Cibler la provenance : `source.keys` exige un backend récent.** `source.keys` est le tableau de
+TOUS les costums auxquels l'élément est rattaché ; `source.key` est sa source principale (colonne
+« Provenance »). Un ciblage `source.keys` est fusionné avec la garde `$nin` sur la même clé →
+`{ $in, $nin }`. Avant le correctif `7b19f871` de `citizenToolKit` (sur `master`), `SearchNew::searchFilters`
+n'appliquait **qu'un opérateur par clé** : `$nin` gagnait, le `$in` était perdu **en silence** et tout
+le vivier remontait (autres provenances, provenance vide — constaté sur Ekilib.re le 21/09/2026 :
+transiter / cocityPrez / LaReunionDesTiersLieux dans le vivier `sportSanteBienetre`). Depuis ce
+correctif (sondé actif en dev et en prod le 24/09), `source.keys` filtre correctement — c'est le
+ciblage retenu par Ekilib.re. Sur un backend **sans** ce correctif, cibler `source.key` (scalaire, clé
+distincte de la garde) : il marche partout, mais ne retient que la provenance **principale**.
 
 ⚠ Le `.default("optIn")` du schéma **ne tourne jamais** (la config n'est pas parsée par Zod au
 runtime) : sans clé `openData` écrite explicitement, c'est le repli **code** `search?.openData ?? "optIn"`

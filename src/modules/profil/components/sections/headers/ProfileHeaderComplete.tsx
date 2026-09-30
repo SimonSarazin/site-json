@@ -13,6 +13,7 @@ import { DynamicEditModal } from "../../profile-edit/EditModalRegistry";
 import { ProfileImageUpload } from "../../profile-edit/ProfileImageUpload";
 import { EntityActionButtons } from "../../EntityActionButtons";
 import { AddEntityDropdown } from "../../action-buttons/AddEntityDropdown";
+import { DeleteEntityButton } from "../../action-buttons/DeleteEntityButton";
 import { isUser } from "@/lib/getTypedEntity";
 import type { ProfileHeaderSection } from "../../../schema";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -178,6 +179,9 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
                     <span className="hidden sm:inline">{t("ProfileTemplateDefault.editProfile")}</span>
                   </Button>
                 )}
+
+                {/* Suppression définitive (événements) — même droit que l'édition, confirmation obligatoire. */}
+                <DeleteEntityButton entity={entity} compactLabel />
 
 
                 {/* Dropdown pour créer des entités */}

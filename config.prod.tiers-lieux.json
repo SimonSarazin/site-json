@@ -3504,7 +3504,8 @@
             {
               "columns": 1,
               "fields": [
-                "name"
+                "name",
+                "$slot:duplicates"
               ]
             },
             {
@@ -3563,7 +3564,8 @@
             {
               "columns": 1,
               "fields": [
-                "address"
+                "address",
+                "$slot:duplicates"
               ]
             },
             {
@@ -3718,6 +3720,25 @@
         "slugKey": "slug"
       },
       "defaultsBase": "tl:emptyDefaults",
+      "slots": {
+        "duplicates": "slot:entityDuplicates"
+      },
+      "duplicateCheck": {
+        "nameField": "name",
+        "postalCodeField": "postalCode",
+        "minChars": 3,
+        "limit": 5,
+        "confirmOnSubmit": true,
+        "search": {
+          "types": [
+            "organizations"
+          ],
+          "from": {
+            "page": "/lieux",
+            "sectionId": "section-events"
+          }
+        }
+      },
       "mutation": {
         "entityType": "organizations",
         "payloadEmitEmptyOnEdit": true,
@@ -3827,7 +3848,10 @@
         "invalidateFn": {
           "fn": "invalidate:standard",
           "params": {
-            "userList": "organizations"
+            "userList": "organizations",
+            "searchKeys": [
+              "entityDuplicates"
+            ]
           }
         }
       }

@@ -1120,6 +1120,85 @@ const { data, isLoading, error } = useSearchZoneQuery(
 
 `staleTime: 30 minutes` (données rarement modifiées). **SSR-ready** via `searchZoneQueryKey()` + `fetchSearchZones()`.
 
+### useGeoShapes / useGeoShapesWarmup — contours géographiques (`map.shapes`)
+
+Superpose des CONTOURS (`geoShape`) à la carte : bassins de vie, communes, quartiers. Déclaratif,
+dans le `map` de la section (`searchPro`, `searchProStatic`, `agenda`) :
+
+```json
+"map": {
+  "shapes": [
+    { "id": "bassins-vie", "source": "zoniris", "load": "idle", "simplify": 10,
+      "filters": { "spec": "bassins_vie_saintpaul" },
+      "label": { "fr": "Bassins de vie" },
+      "style": { "fill": "primary", "fillOpacity": 0.12, "stroke": "primary" } }
+  ]
+}
+```
+
+Trois `source` pour deux endpoints legacy PUBLICS, les seuls à renvoyer `geoShape` (`co2/search/getzone`
+le projette dehors) : `zones` et `cities` → `getZoneShape` (`co2/zone/getshape` ; `level: "cities"` est
+posé par le résolveur), `zoniris` → `getZoniris` (`co2/zone/getzoniris`). Schéma partagé et commenté :
+[`src/types/geo-shape-schema.ts`](../src/types/geo-shape-schema.ts) ; implémentation : [`src/lib/geoShapes/`](../src/lib/geoShapes/).
+
+**`countryCode` accepte une LISTE** (`zones` et `zoniris`). Le legacy, lui, ne lit qu'un scalaire :
+`countryCode: "FR,RE"` lui renvoie 0 document (mesuré le 2026-08-28). Une liste est donc résolue
+côté client en autant d'appels, mis en parallèle puis fusionnés et dédoublonnés par `_id` — le même
+mécanisme que deux couches partageant un `id`, sans dupliquer toute la déclaration. Un code SEUL,
+même écrit en liste, part en scalaire (`getZoniris` refuse un tableau). La clé de cache
+normalise et TRIE les codes : `"FR"`, `["FR"]` et `["RE","FR"]` vs `["FR","RE"]` ne créent pas
+quatre entrées pour la même donnée.
+
+Le cas qui l'impose : `level: "3"` + `FR` ne rend que les **13 régions métropolitaines** ; l'outre-mer
+vit sous son propre code pays (`RE`, `MQ`, `GP`, `GF`, `YT` — un document chacun ; `PM`, `NC`, `PF`,
+`WF`, `BL`, `MF` n'ont aucun contour). Sans liste, une carte « France entière » oublie l'outre-mer.
+⚠️ `countryCode` multiple et `parentId` sont incompatibles (refus à la validation) : un parent
+n'appartient qu'à un seul pays. `cities` reste scalaire — son `parentId` est obligatoire.
+⚠️ Le CADRAGE reste unique : France + outre-mer dans une seule projection Mercator donne une
+métropole minuscule et des DOM perdus au large. Des cartouches par territoire (comme
+`FranceRegionsMap`) restent à faire.
+
+**Volumétrie — c'est ce qui pilote tout le reste** (mesures live, 2026-08) : 24 communes de La Réunion
+= 57 Ko, mais les 7 bassins de vie de Saint-Paul = 395 Ko (98 % de géométrie, 10 779 points à 13
+décimales), et `level: "QPV"` sans parent = 9,4 Mo (dump national, `countryCode` étant ignoré par le
+serveur sur cette branche). D'où :
+
+- **`load`** décide QUAND : `map` (défaut, à l'ouverture de la vue carte — même politique que
+  `useSearchAllResults`), `idle` (à l'entrée de page mais après le premier paint), `page`
+  (immédiatement, à réserver aux couches légères). **Jamais de SSR** : `getzoniris` est un POST
+  (aucun cache HTTP) et déshydrater des polygones coûterait plus que la page.
+- **`simplify`** (tolérance en mètres, Douglas-Peucker) allège le RENDU, pas le téléchargement :
+  389 Ko / 10 779 points → 37 Ko / 1 757 points à 10 m, sans différence visible à l'échelle communale.
+- Les garde-fous volumétriques sont dans le schéma Zod (QPV et `cities` sans parent sont REFUSÉS à la
+  validation), donc `config:validate` et le préflight les attrapent avant la mise en ligne.
+
+Deux hooks, un seul cache : `useGeoShapes(sources)` est appelé par `SearchMap` (montée seulement en vue
+carte, ce qui réalise `load: "map"` à lui seul) ; `useGeoShapesWarmup(sources)` est appelé par la
+SECTION, toujours montée, et préremplit les mêmes clés pour `page`/`idle`. Plusieurs entrées portant le
+même `id` sont fusionnées et dédoublonnées par `_id` : c'est ainsi qu'on exprime un OU, que le legacy
+n'a pas (ses filtres sont ANDés).
+
+Rendu : `MapShapeLayers` (un `<Source>` GeoJSON + fill + line par couche), `MapShapeLegend` (affichée
+seulement pour les couches qui portent un `label` ; filtre et pastille partagés avec la section
+`map-shapes` via `components/shared/ShapeLegend`) et `MapShapeNames` (`showNames: true` → le nom de
+chaque contour posé dessus). Les couleurs sont des JETONS de thème, convertis en sRGB par
+`resolveThemeColor` — MapLibre peint en WebGL et refuse l'`oklch` de `config.theme.colors`.
+
+Les noms sont des overlays HTML et non un calque `symbol` : sans clé MapTiler, le style de repli
+n'embarque aucun glyphe, un calque de texte y serait muet. Chaque nom est posé au point INTÉRIEUR le
+plus éloigné du bord (`polygonLabelPoint`, recherche par grille) et non au centroïde, qui sort de la
+forme sur un cirque ou une commune en croissant. Au-delà de 60 contours, seuls les plus vastes sont
+nommés.
+
+**Les mêmes couches, un autre rendu** : la section de page
+[`map-shapes`](05-schemas-sections.md#map-shapes) consomme `useGeoShapes` avec le MÊME
+`GeoShapeSourceSchema`, mais les peint en `<path>` SVG **hors carte** — ni fond de plan, ni
+marqueurs, ni requête de recherche — chaque contour étant un lien vers une page de recherche filtrée
+(contrat `regionsTarget`). Composant : `src/components/sections/MapShapes.tsx` ; projection d3-geo
+commune à toutes les couches : `src/lib/geoShapes/projectShapes.ts` (délibérément absent du barrel
+`lib/geoShapes/index.ts`, pour que `d3-geo` n'entre pas dans le chunk maplibre). `load` y est ignoré :
+les contours sont le contenu, il n'y a pas de vue carte à ouvrir.
+
 ### useCsvExport
 
 Export CSV des résultats courants via [PapaParse](https://www.papaparse.com/).
@@ -1683,7 +1762,8 @@ qui joue le rôle de filet.
 **Vues customisables (pattern dispatcher, comme `SearchCard`)** : le **marqueur**
 et la **popup** suivent le modèle dispatcher + composants-variants. Le marqueur :
 `SearchMapMarkers` dispatche sur le `kind` résolu (cf. `markerVisual.ts` ← config
-`map.marker`) vers `mapMarker/MapMarker<X>.tsx` (Pin / Circle / Icon / Avatar) —
+`map.marker`) vers `mapMarker/MapMarker<X>.tsx` (Pin / PinIcon / Circle / CircleIcon /
+Icon / Avatar) —
 **non-lazy** (rendu par point ; un Suspense par marqueur serait coûteux). La
 popup : `SearchMapPopup` dispatche sur `map.popup.type` vers
 `mapPopup/MapPopup<X>.tsx` en **`lazy()`** (un chunk par page, comme
@@ -1742,14 +1822,101 @@ carte depuis la console/les tests navigateur.
 
 **Marqueurs (`MarkerConfSchema`)** — configurables **par site** via
 `integrations.map.marker` (défaut du site) ET **par section** via `map.marker`
-(surcharge champ par champ ; sinon repli sur le défaut intégré). Chaîne de repli
-par **priorité** (cf. `lib/markerVisual.ts`) :
+(surcharge champ par champ ; sinon repli sur le défaut intégré). **Deux étages**
+(cf. `lib/markerVisual.ts`) : `by` **choisit** le marqueur d'après la donnée, la
+chaîne de repli le **rend**.
+
+**Étage A — `by` : un marqueur PAR VALEUR d'attribut.** `path` est un dot-path
+`serverData` (valeur string/nombre/booléen, ou **tableau** → la première valeur
+de l'item présente dans `mapping` gagne, l'ordre de l'item faisant foi) ; chaque
+cas de `mapping` est un marqueur **partiel fusionné** sur le marqueur de base ;
+`default` couvre les valeurs **non listées** (sans lui, le marqueur de base sert
+de défaut).
+
+```jsonc
+"map": {
+  "marker": {
+    "style": "pin", "color": "primary",          // marqueur de BASE (hérité par les cas)
+    "by": {
+      "path": "equip_type_famille",              // ⚠ à projeter dans baseParams.defaultFields
+      "mapping": {
+        "Bassin":                  { "color": "chart-1" },                  // hérite style: pin
+        "Terrain de grands jeux":  { "style": "circle", "color": "chart-2" },
+        "Salle multisports":       { "iconUrl": "/images/x/salle.svg", "iconSize": 28 }
+      },
+      "default": { "color": "chart-5" }          // valeurs non listées
+    }
+  }
+}
+```
+
+Deux pièges, tous deux **silencieux** :
+- `path` **absent de `baseParams.defaultFields`** vaut `undefined` → aucun cas ne
+  matche, tous les marqueurs tombent sur le défaut (même piège que `list.itemRules`) ;
+- un cas qui déclare un **sélecteur de rendu** (`useItemImage`, `colorBy`,
+  `iconUrl`, `style`) remplace **tous** ceux du marqueur de base — sans cette
+  règle, un `iconUrl` de base masquerait le `style: "pin"` d'un cas (l'icône
+  gagne plus haut dans la chaîne). Le cas n'hérite alors que de
+  `color`/`borderColor`/`iconSize`/`iconAnchor`.
+
+**Étage B — chaîne de repli** du marqueur choisi, par **priorité** :
 1. `useItemImage: true` ET l'item a une image → **vignette RONDE** de l'item ;
-2. `iconUrl` → **icône custom** (image/SVG brandée — URL relative préfixée par
-   `baseUrl`, ou absolue ; `iconSize` px déf. 34, `iconAnchor` `"bottom"`/`"center"`) ;
-3. `style: "pin"` / `style: "circle"` (+ `color` en **jeton de thème** :
-   `primary`/`secondary`/`accent`/`chart-1..5`) → goutte SVG ou pastille ronde ;
-4. sinon → pin par défaut (primary).
+2. `colorBy` ET une valeur de l'item mappée → pin (ou pastille si
+   `style: "circle"`) **coloré par valeur** (code couleur par territoire) —
+   prioritaire sur le jeton `color`, seul le remplissage vient du mapping ;
+3. `iconUrl` → **icône custom** (image/SVG brandée — URL relative préfixée par
+   `baseUrl`, ou absolue ; `iconAnchor` `"bottom"`/`"center"`) ;
+4. `style: "pin"` / `style: "circle"` / `icon` (+ `color` en **jeton de thème** :
+   `primary`/`secondary`/`accent`/`chart-1..5` ; `borderColor` déf. `background`)
+   → goutte SVG ou pastille ronde, portant le **pictogramme lucide** d'`icon`
+   en son centre quand il est déclaré (`icon` seul implique la goutte) ;
+5. sinon → pin par défaut (primary).
+
+**`iconSize` — taille de TOUTES les formes.** Le champ ne concerne pas que
+`iconUrl` : il dimensionne la forme retenue par la chaîne ci-dessus, quelle
+qu'elle soit, et met le pictogramme lucide à l'échelle avec elle. Sans lui,
+chaque forme garde sa taille historique :
+
+| Forme | Déclencheur | Défaut |
+| --- | --- | --- |
+| vignette de l'item | `useItemImage` | 36 px |
+| pastille ronde | `style: "circle"` | 30 px |
+| goutte | `style: "pin"`, `icon`, ou aucun | 34 px |
+| icône custom | `iconUrl` | 34 px |
+
+Bornes : 8–128 px. Déclaré dans `integrations.map.marker`, il s'applique donc à
+toutes les sections du site — y compris aux vignettes et aux pastilles, pas
+seulement aux icônes custom. Comme tout champ de `MarkerVisualConf`, un cas de
+`by` peut le surcharger au cas par cas (ce n'est pas un sélecteur de rendu : il
+se fusionne sur le marqueur de base au lieu de le remplacer).
+
+**`icon` vs `iconUrl`** — les deux mettent un pictogramme sur la carte, mais
+`icon` est un nom **lucide** (kebab-case, catalogue de 1901 noms validé par
+l'audit `icone-inconnue`) rendu par `DynamicIcon` DANS la goutte ou la pastille :
+aucun asset à fournir, le marqueur reste aux **jetons de thème** et suit
+light/dark. `iconUrl` est une **image** servie par le backend, qui remplace la
+forme entière et ignore le thème — et dont le chemin relatif est préfixé par
+`getBaseUrl()` (backend), pas par le site : un `/images/<slug>/x.svg` ne
+résoudra pas. `iconUrl` gagne sur `icon` s'ils sont déclarés ensemble.
+
+```jsonc
+"marker": {
+  "style": "pin", "color": "primary",
+  "by": {
+    "path": "equip_type_name",
+    "mapping": {
+      "Bassin sportif de natation": { "color": "chart-1", "icon": "waves" },
+      "Terrain de football":        { "color": "chart-2", "icon": "goal" },
+      "Boucle de randonnée":        { "style": "circle", "color": "chart-4", "icon": "footprints" }
+    },
+    "default": { "color": "secondary", "icon": "circle-dashed" }
+  }
+}
+```
+
+`colorBy` ne change que la COULEUR d'un même marqueur ; `by` change le marqueur
+ENTIER (forme, icône, vignette) — les deux se combinent (un cas de `by` peut
+porter son propre `colorBy`).
 
 ```jsonc
 // par site (config racine) :

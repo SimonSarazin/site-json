@@ -1,8 +1,13 @@
 import { useMemo, useRef } from "react";
+import { useQueries } from "@tanstack/react-query";
+import type { FeatureCollection } from "geojson";
+import { useCocolight } from "@/hooks/useCocolight";
 import { useListEntries, type EntreeDeListe } from "@/hooks/useListSources";
 import { capitaliser } from "@/lib/costumLists";
+import { geoShapeQueryOptions, type GeoShapeEntity } from "@/lib/geoShapes/geoShapeQuery";
 import { resolveListSources, type SourceDeValeurs } from "@/lib/listSources";
 import { normalizeFilterValue } from "@/modules/search/lib/dropdownFilters";
+import type { GeoShapeSource } from "@/types/geo-shape-schema";
 
 /** Une option de filtre telle qu'elle circule ici — `dropdownFilters` comme `filterGroups`. */
 interface OptionFiltre {
@@ -20,11 +25,13 @@ interface FiltreAOptions {
   optionsFrom?: {
     /** Une liste `costum.lists`, ou PLUSIEURS à fusionner (un même champ alimenté depuis plusieurs
      *  collections = une recette par collection). Forme de chacune détectée automatiquement. */
-    list: string | string[];
+    list?: string | string[];
     costumSlug?: string;
     /** Les `options` déclarées deviennent le SOCLE (fusionné, libellés i18n conservés) au lieu d'un
-     *  simple repli de chargement. Opt-in — cf. le commentaire de `resoudreSources` ci-dessous. */
+     *  simple repli de chargement. Opt-in — cf. le commentaire de `useDynamicFilterOptions`. */
     withDeclared?: boolean;
+    /** Couche de contours servant de référentiel — exclusive de `list` (cf. `OptionsFromSchema`). */
+    shapes?: GeoShapeSource;
   };
   /** DÉPRÉCIÉ — alias de `optionsFrom.list`. Distinguait autrefois la source STATIQUE de la source
    *  dynamique ; la forme est désormais détectée à la lecture, le rédacteur de config n'a plus à
@@ -33,13 +40,21 @@ interface FiltreAOptions {
 }
 
 /**
- * Résout les options des filtres qui tirent leurs valeurs d'une ou plusieurs listes `costum.lists`.
+ * Résout les options des filtres qui déclarent une source DYNAMIQUE.
  *
- * UNE SEULE MÉCANIQUE, N SOURCES (cf. `@/lib/listSources`) : les `options` déclarées en config
- * peuvent servir de SOCLE
- * (`withDeclared`), puis chaque liste nommée est résolue SELON SA FORME — statique lue en mémoire,
- * recette envoyée à `costum/co/listvalues`. `optionsKey` n'est plus qu'un alias de `optionsFrom.list` :
- * se tromper de clé ne produisait aucune erreur, juste un repli silencieux sur les options figées.
+ * DEUX ORIGINES, exclusives (cf. `OptionsFromSchema`) :
+ *
+ *  • `list` / `optionsKey` — UNE SEULE MÉCANIQUE, N SOURCES (cf. `@/lib/listSources`) : les `options`
+ *    déclarées en config peuvent servir de SOCLE (`withDeclared`), puis chaque liste nommée est
+ *    résolue SELON SA FORME — statique lue en mémoire, recette envoyée à `costum/co/listvalues`.
+ *    `optionsKey` n'est plus qu'un alias de `optionsFrom.list` : se tromper de clé ne produisait
+ *    aucune erreur, juste un repli silencieux sur les options figées.
+ *
+ *  • `shapes` — le référentiel d'une couche de contours. L'option porte l'`_id` du document et
+ *    AFFICHE son `name` : les deux sont dissociés, ce qui est tout l'intérêt — on filtre sur un
+ *    identifiant stable (`address.zonirisId`) pendant que le libellé, lui, suit les corrections de
+ *    nom faites en base. La requête est celle de la carte (`geoShapeQueryOptions`), à la clé près :
+ *    quand la page dessine déjà la couche, le filtre ne coûte AUCUN octet de plus.
  *
  * POURQUOI DES VALEURS DYNAMIQUES : le filtre suit la donnée réelle au lieu d'une liste figée qui
  * dérive (mesuré sur institutBleu : 12 territoires déclarés contre 64 en base, soit 52 valeurs
@@ -60,9 +75,13 @@ interface FiltreAOptions {
  * l'hydratation URL s'exécute trop tôt : elle rejette les valeurs qu'elle ne connaît pas encore, puis
  * se marque comme faite. C'est exactement ce qui perdait le deep-link.
  */
-/** `options` est GARANTI présent en sortie, même quand le filtre d'entrée n'en déclarait aucune :
- *  `SearchHeaderSection` en fait 7 lectures directes, et un filtre 100 % dynamique n'en a pas. */
-export type FiltreResolu<T> = T & { optionsReady: boolean; options: OptionFiltre[] };
+export type FiltreResolu<T extends { options?: unknown }> = T & {
+  optionsReady: boolean;
+  /** TOUJOURS un tableau, même avant réception : une config qui ne déclare qu'`optionsFrom` n'en
+   *  écrit pas, et les consommateurs lisent `filter.options` sans garde — `SearchHeaderSection`
+   *  en fait 7 lectures directes, et un filtre 100 % dynamique n'a aucune option déclarée. */
+  options: NonNullable<T["options"]>;
+};
 
 /**
  * Plafond demandé au serveur. En deçà, la liste arrive ENTIÈRE et la recherche se fait dans le
@@ -86,11 +105,40 @@ function valeurDe(o: OptionFiltre): string {
   return o.value ?? o.name ?? o.id;
 }
 
+/**
+ * Contours → options. Le libellé est le `name` du document, l'identité son `_id` : c'est cette
+ * DISSOCIATION qui fait tout l'intérêt de la source — le filtre interroge un identifiant que les
+ * corrections de nom ne bougent pas, pendant que l'affichage, lui, suit ces corrections.
+ *
+ * `value` ET `name` pour la même raison que la branche `list` : un `dropdownFilter` lit `value`, un
+ * `filterGroup` à `field` lit `name`. Un contour sans nom retombe sur son `_id` — mieux vaut une
+ * option laide qu'une option muette, qu'on ne saurait ni lire ni retirer.
+ */
+export function optionsDepuisContours(
+  data: FeatureCollection | undefined,
+): Array<{ id: string; label: string; value: string; name: string }> {
+  const options: Array<{ id: string; label: string; value: string; name: string }> = [];
+  for (const contour of data?.features ?? []) {
+    const id = contour.id == null ? "" : String(contour.id);
+    if (!id) continue;
+    const nom = contour.properties?.name;
+    options.push({
+      id,
+      label: typeof nom === "string" && nom.trim() ? nom : id,
+      value: id,
+      name: id,
+    });
+  }
+  return options;
+}
+
 export function useDynamicFilterOptions<T extends FiltreAOptions>(
   filtres: readonly T[] | undefined,
   /** Terme cherché par filtre (`{ [id du filtre]: terme }`) — DÉJÀ débouncé par l'appelant. */
   recherches?: Record<string, string>,
 ): FiltreResolu<T>[] {
+  const { entity: carrier } = useCocolight();
+
   // UNE entrée par couple (filtre, liste) — un filtre peut en nommer plusieurs, et `useListEntries`
   // exige un nombre et un ordre d'entrées constants d'un rendu à l'autre.
   //
@@ -122,18 +170,62 @@ export function useDynamicFilterOptions<T extends FiltreAOptions>(
     for (const nom of res.tronquees) tronquees.current[`${id}/${nom}`] = true;
   }
 
+  // Référentiel géographique : EXACTEMENT la requête de la carte — même clé, même fetcher, même
+  // fraîcheur (`geoShapeQueryOptions`). Quand la page dessine déjà cette couche, le filtre la lit dans
+  // le cache et n'ajoute AUCUN appel ; sinon c'est lui qui la déclenche, et la carte la trouvera prête.
+  // Ordre STABLE, comme pour les listes : `useQueries` exige un nombre et un ordre constants.
+  const contours = useMemo(
+    () => (filtres ?? []).filter((f) => !!f.optionsFrom?.shapes),
+    [filtres],
+  );
+  const resultatsContours = useQueries({
+    queries: contours.map((f) => ({
+      ...geoShapeQueryOptions(
+        (carrier as GeoShapeEntity | null) ?? null,
+        f.optionsFrom?.shapes as GeoShapeSource,
+      ),
+      // Même garde que `useGeoShapes` : sans entité, le fetcher jetterait. La requête reste `idle`,
+      // donc RÉGLÉE au sens ci-dessous — l'hydratation URL n'est pas gelée pour autant.
+      enabled: Boolean(carrier),
+    })),
+  });
+  const reglesContours = resultatsContours.map((r) => r.isFetched || r.fetchStatus === "idle");
+  // `dataUpdatedAt` plutôt que le contenu : une couche peut porter des milliers de contours, sérialiser
+  // leurs identifiants à chaque rendu coûterait plus que le mémo n'économise.
+  const empreinteContours = resultatsContours
+    .map((r, i) => `${reglesContours[i] ? "1" : "0"}:${r.dataUpdatedAt}`)
+    .join("|");
+
   return useMemo(() => {
     if (!filtres?.length) return [];
 
+    const parIdContours = new Map<string, { options: ReturnType<typeof optionsDepuisContours>; regle: boolean }>();
+    contours.forEach((f, i) => parIdContours.set(f.id, {
+      options: optionsDepuisContours(resultatsContours[i]?.data),
+      regle: reglesContours[i] ?? false,
+    }));
+
     return filtres.map((f) => {
-      const res = parFiltre.get(f.id);
       // `options` est OBLIGATOIRE dans le type de sortie du schéma (`.default([])`), mais la config JSON
       // n'est jamais parsée par Zod au runtime : un filtre 100 % dynamique (`optionsFrom` seul, aucune
       // option écrite à la main — le cas du filtre « Catégorie » de parent62 depuis le retrait des
       // catégories par défaut) arrive donc ici avec `options: undefined`, et les 7 lectures de
-      // `filter.options` de `SearchHeaderSection` plantaient la section entière. Ce hook est le
-      // normaliseur de la liste consommée par le rendu : le défaut se pose ICI, une fois.
+      // `filter.options` de `SearchHeaderSection` (`getDropdownSelectedValues`) plantaient la section
+      // entière. Ce hook est le normaliseur de la liste consommée par le rendu : le défaut se pose
+      // ICI, au seul point qui résout les options.
       const declarees = f.options ?? [];
+
+      if (f.optionsFrom?.shapes) {
+        const res = parIdContours.get(f.id);
+        // Même règle de repli que pour une liste : tant que les contours ne sont pas arrivés, les
+        // options DÉCLARÉES continuent de servir, mais le filtre est signalé NON PRÊT pour que
+        // l'hydratation URL attende les vraies valeurs. Une requête réglée sans contour dessinable
+        // débloque l'hydratation plutôt que de figer la page.
+        if (!res?.options.length) return { ...f, options: declarees, optionsReady: res?.regle ?? false };
+        return { ...f, optionsReady: true, options: res.options };
+      }
+
+      const res = parFiltre.get(f.id);
       if (!res) return { ...f, options: declarees, optionsReady: true };
 
       const socle: SourceDeValeurs[] = f.optionsFrom?.withDeclared
@@ -180,5 +272,6 @@ export function useDynamicFilterOptions<T extends FiltreAOptions>(
         }),
       };
     });
-  }, [filtres, parFiltre]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtres, parFiltre, contours, empreinteContours]);
 }

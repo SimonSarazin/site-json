@@ -10,6 +10,7 @@ export const DEFAULT_AAC_PERMISSIONS: AacPermissions = {
   canCreateCommunReason: "No entity or user provided",
   canReadCommuns: false,
   canEditCommun: NEVER,
+  canManageEditors: NEVER,
   canParticipateActions: false,
   canViewFunding: false,
   canContributeFunding: false,

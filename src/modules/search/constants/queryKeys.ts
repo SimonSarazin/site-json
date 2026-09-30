@@ -30,6 +30,14 @@
 export const SEARCH_STATIC_LIST_PREFIX = "searchCostumStatic";
 export const SEARCH_STATIC_MAP_PREFIX = "searchCostumStaticMapAll";
 
+/**
+ * Préfixe de la recherche de DOUBLONS à la création d'une entité (slot `slot:entityDuplicates`
+ * des formulaires costum). Producteur : `useEntityDuplicates` (module profil). Invalidation :
+ * `invalidate:standard` via `mutation.invalidateFn.params.searchKeys` du formulaire — une entité
+ * tout juste créée doit apparaître à la saisie suivante du même nom.
+ */
+export const SEARCH_DUPLICATES_PREFIX = "entityDuplicates";
+
 export interface SearchQueryKeyParams {
   queryKeyPrefix: string;
   searchText: string;
@@ -100,13 +108,6 @@ export const SEARCH_QUERY_KEYS = {
    */
   ENTITY_BY_ID: (kind: string, id: string) =>
     ["search-entity-by-id", kind, id] as const,
-  /**
-   * Documents (fichiers non-image) d'une structure, pour le preview `structure`.
-   *
-   * Producteur : `PreviewStructure` (via `item.getGalleryFiles()`). Données
-   * PUBLIQUES au même titre que la fiche — pas d'invalidation, staleTime suffit.
-   */
-  DOCUMENTS: (id: string | null) => ["search-structure-documents", id] as const,
 } as const;
 
 export type SearchQueryKeyType = ReturnType<

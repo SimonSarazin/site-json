@@ -6,7 +6,10 @@
  *  - dépôt PAS ouvert par défaut : active + CONNECTÉ + gate communauté/rôles +
  *    unicité (`oneAnswerPerPers`) — les gardes de `Coform::getFormAccessInfo`
  *  - lecture publique, sauf `onlyMemberAccess` (membres + admins)
- *  - modification : auteur OU admin, OU tout connecté si `anyOnewithLinkCanAnswer`
+ *  - modification : auteur OU admin OU contributeur à l'édition (`links.canEdit`), OU tout
+ *    connecté si `anyOnewithLinkCanAnswer` ; le bouton qui gère la liste des contributeurs est
+ *    réservé à l'auteur et à l'admin (la question « Référent » reliée à la liste, elle, reste
+ *    modifiable par tout éditeur — parité legacy, doc/34 §3.4)
  *  - financement affiché si l'appel a une étape de financement (`aapStep3`),
  *    jamais gardé par `coremu` — qui ne garde que la corémunération (§6)
  *  - tolère l'auteur temporaire (answer sans `userId`)
@@ -91,10 +94,26 @@ export function calculateAacPermissions(
   // l'édition à tout CONNECTÉ, sans lien au contexte : c'est ce que fait le
   // legacy sur une réponse existante (`IndexAction.php:237`, sous
   // `session['userId']`). Jamais un anonyme — ce n'est pas un dépôt sans compte.
+  //
+  // Les contributeurs à l'édition (`links.canEdit`, ajoutés depuis la fiche ou par la question
+  // « Référent du commun ») passent aussi — c'est ce que `Coform::canAdminAnswer` accepte à
+  // l'enregistrement. Connectés seulement, comme tout le reste de ce droit.
   const canEditCommun = (commun?: AacCommunLike | null): boolean => {
     if (isAdmin) return true;
     if (!commun || !currentUserId) return false;
     if (gates.anyOnewithLinkCanAnswer && isConnected) return true;
+    if (isConnected && commun.editorIds?.includes(currentUserId)) return true;
+    return commun.authorId === currentUserId;
+  };
+
+  // 3 bis. Le bouton « Contributeurs à l'édition » — auteur OU admin, et eux seuls : ni
+  // `anyOnewithLinkCanAnswer` ni la liste elle-même n'y ouvrent (arbitrage du 29/09). Garde
+  // d'AFFICHAGE, pas frontière de droit : quand une question finder alimente `links.canEdit`
+  // (`addToLinks`), tout éditeur change la liste par elle — parité legacy, assumée le 30/09.
+  // Même garde que la suppression, mais un droit à part : les deux n'ont pas à évoluer ensemble.
+  const canManageEditors = (commun?: AacCommunLike | null): boolean => {
+    if (isAdmin) return true;
+    if (!commun || !currentUserId) return false;
     return commun.authorId === currentUserId;
   };
 
@@ -146,6 +165,7 @@ export function calculateAacPermissions(
     canCreateCommunReason,
     canReadCommuns,
     canEditCommun,
+    canManageEditors,
     canParticipateActions,
     canViewFunding,
     canContributeFunding,

@@ -86,15 +86,24 @@ function seedGalleryDefaults(defaults: FieldValues, jsonConfig: unknown, entity:
       (defaults as Record<string, unknown>)[name] = { existing, added: [], removedDocIds: [], contentKey, docType };
     } else if (cfg?.widget === "file") {
       // Widget FICHIER : `existing` lu SYNC depuis about.files (objet keyé _id, présent pour poi/
-      // classifieds/projects ; buildDefaults est sync donc pas de getGalleryFiles async ici). Pour les
-      // types sans about.files (org/citoyen/event), `existing` reste vide → ajout seul dans le form
-      // (l'affichage/suppression des fichiers existants passe par la section profil / la vue article).
+      // classifieds/projects/organizations ; buildDefaults est sync donc pas de getGalleryFiles async
+      // ici). Pour les types sans about.files (citoyen/event), `existing` reste vide → ajout seul dans
+      // le form (l'affichage/suppression des fichiers existants passe par la section profil / la vue article).
       const contentKey = (cfg.widgetProps?.contentKey as string) ?? "file";
       const mediaTarget = cfg.widgetProps?.mediaTarget as { field: string; type: string } | undefined;
       const filesObj = ent.data?.files;
-      const raw = filesObj && typeof filesObj === "object" && !Array.isArray(filesObj)
+      let raw = filesObj && typeof filesObj === "object" && !Array.isArray(filesObj)
         ? Object.values(filesObj as Record<string, Record<string, unknown>>)
         : Array.isArray(filesObj) ? (filesObj as Array<Record<string, unknown>>) : [];
+      // Rattachement au CHAMP via `subKey` (posé à l'upload = clé du champ ; le backend écrase le
+      // `contentKey` des doctype:file par un bucket MIME pdf/spreadsheet/…) : un document qui porte un
+      // `subKey` n'apparaît que dans SON widget. Un document SANS `subKey` (déposé avant le 10/09) n'est
+      // rattachable à aucun champ : il reste proposé dans CHAQUE widget `file`, comme avant, sinon il
+      // deviendrait invisible et insupprimable dès le premier nouvel upload. Champs AUDIO
+      // (`mediaTarget`) : hors partitionnement, ils corrèlent par nom de fichier via `medias[]` juste après.
+      if (!mediaTarget) {
+        raw = raw.filter((f) => !(typeof f.subKey === "string" && f.subKey) || f.subKey === contentKey);
+      }
       let existing = raw
         .map((f) => {
           const _id = f._id as { $id?: string } | string | undefined;
@@ -240,10 +249,11 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
     slots: spec.slots
       ? (ctx) => {
           const out: Record<string, ReactNode> = {};
-          for (const [id, key] of Object.entries(spec.slots!)) out[id] = getSlotFn(key)?.(ctx) ?? null;
+          for (const [id, key] of Object.entries(spec.slots!)) out[id] = getSlotFn(key)?.(ctx, spec) ?? null;
           return out;
         }
       : undefined,
+    duplicateCheck: spec.duplicateCheck,
     buildSpec,
   };
 }

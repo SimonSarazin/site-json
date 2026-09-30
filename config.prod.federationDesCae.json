@@ -603,8 +603,9 @@
       "fr": "Fédération des coopératives d'activité et d'emploi — les SCOP. Réseau des CAE engagées dans l'entrepreneuriat collectif."
     },
     "copyright": {
-      "fr": "© Fédération des CAE — les SCOP. Tous droits réservés."
+      "fr": "© Fédération des CAE. Contenu en CC BY-SA 4.0 et open data"
     },
+    "extra": "<a href=\"https://gitlab.adullact.net/pixelhumain/site-json/-/blob/main/config.prod.federationDesCae.json\">Logiciel libre sous licence MIT</a>, développé par l'association <a href=\"https://www.open-atlas.org/\">Open Atlas</a>",
     "columns": [
       {
         "title": {
@@ -766,6 +767,148 @@
                   "showAddress": true,
                   "showOpeningDate": true,
                   "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Localisation"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "organizations": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete"
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "members",
+          "label": {
+            "fr": "Membres"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
                   "showOrganizer": true
                 }
               ]

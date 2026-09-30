@@ -7,11 +7,29 @@
  */
 import { z } from "zod";
 
+import { SearchTypeSchema } from "@/modules/search/schema";
+
 /** clé seule OU {fn, params} (cf. entityModalSpec.FnRef). */
 const FnRefZod = z.union([
   z.string(),
   z.object({ fn: z.string(), params: z.record(z.string(), z.unknown()).optional() }),
 ]);
+
+/** Clé de registre du slot générique « doublons à la création » (cf. costum/sharedFns.ts). */
+const DUPLICATES_SLOT_KEY = "slot:entityDuplicates";
+
+const isStringArray = (value: unknown): value is string[] => Array.isArray(value) && value.every((v) => typeof v === "string");
+
+/** Entrées (`champ` ou `"$slot:<id>"`) placées par une section, format `groups` ou à plat. */
+function sectionEntries(section: Record<string, unknown>): string[] {
+  const flat = isStringArray(section.fields) ? section.fields : [];
+  const groups = Array.isArray(section.groups) ? section.groups : [];
+  const grouped = groups.flatMap((g: unknown) => {
+    const fields = g && typeof g === "object" && "fields" in g ? g.fields : undefined;
+    return isStringArray(fields) ? fields : [];
+  });
+  return [...flat, ...grouped];
+}
 
 /** Champ TERSE : seul `widget` est requis (le reste est dérivé/optionnel). */
 const TerseFieldZod = z.object({ widget: z.string() }).passthrough();
@@ -68,6 +86,27 @@ export const CostumFormSchemaZod = z.object({
   scope: z.object({}).passthrough().optional(),
   defaultsBase: z.string().optional(),
   slots: z.record(z.string(), z.string()).optional(),
+  /**
+   * Détection de doublons à la création (cf. `DuplicateCheckSpec`, entityModalSpec.ts). STRICT : le
+   * bloc est lu par deux consommateurs, une clé mal orthographiée (`confirmOnSumbit`) serait ignorée
+   * en silence et désarmerait la confirmation sans que rien ne le dise.
+   */
+  duplicateCheck: z.object({
+    nameField: z.string().min(1),
+    postalCodeField: z.string().min(1).optional(),
+    minChars: z.number().int().min(1).optional(),
+    limit: z.number().int().min(1).optional(),
+    fetchLimit: z.number().int().min(1).optional(),
+    confirmOnSubmit: z.boolean().optional(),
+    detailsMode: z.enum(["dialog", "drawer"]).optional(),
+    search: z.object({
+      types: z.array(SearchTypeSchema).min(1),
+      from: z.object({ page: z.string().min(1), sectionId: z.string().min(1) }).strict().optional(),
+      filters: z.record(z.string(), z.unknown()).optional(),
+      notSourceKey: z.boolean().optional(),
+      sourceKey: z.array(z.string()).optional(),
+    }).strict(),
+  }).strict().optional(),
   schemaFn: z.string().optional(),
   cleanValues: FnRefZod.optional(),
   afterSubmit: z.string().optional(),
@@ -86,4 +125,28 @@ export const CostumFormSchemaZod = z.object({
       channel: z.enum(["payload", "pathValue"]).optional(),
     }).strict()).optional(),
   }).passthrough(),
-}).passthrough();
+}).passthrough().superRefine((doc, ctx) => {
+  // COHÉRENCE de `duplicateCheck` avec le reste du document. Le `.strict()` du bloc n'attrape que
+  // l'orthographe des CLÉS ; une VALEUR fausse (champ inexistant, slot jamais ancré) laisse le
+  // document valide et la détection muette, sans aucun signal — exactement ce que le bloc veut éviter.
+  const check = doc.duplicateCheck;
+  if (!check) return;
+  const issue = (path: string[], message: string) => ctx.addIssue({ code: "custom", path: ["duplicateCheck", ...path], message });
+
+  for (const key of ["nameField", "postalCodeField"] as const) {
+    const field = check[key];
+    if (field && !(field in doc.fields)) issue([key], `« ${field} » n'est pas un champ déclaré dans \`fields\``);
+  }
+  if (check.confirmOnSubmit && !check.postalCodeField) {
+    issue(["confirmOnSubmit"], "exige `postalCodeField` : la confirmation porte sur « même nom ET même code postal »");
+  }
+
+  const slotIds = Object.entries(doc.slots ?? {}).filter(([, key]) => key === DUPLICATES_SLOT_KEY).map(([id]) => id);
+  if (slotIds.length === 0 && !check.confirmOnSubmit) {
+    issue([], `bloc sans effet : ni slot \`${DUPLICATES_SLOT_KEY}\` déclaré dans \`slots\`, ni \`confirmOnSubmit\``);
+  }
+  const anchored = new Set(doc.sections.flatMap(sectionEntries).filter((f) => f.startsWith("$slot:")).map((f) => f.slice("$slot:".length)));
+  for (const id of slotIds) {
+    if (!anchored.has(id)) issue([], `slot « ${id} » déclaré mais ancré dans aucune section (\`"$slot:${id}"\`) : l'alerte ne s'affichera jamais`);
+  }
+});

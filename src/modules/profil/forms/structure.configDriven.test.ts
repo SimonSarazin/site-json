@@ -36,7 +36,7 @@ const FILLED = {
   siren: "",
   name: "NOUT' SPORT ADAPTÉ",
   sigle: "",
-  affiliate: "Oui",
+  affiliate: true,
   thematic: [
     "Sport",
     "Santé/prévention",
@@ -54,7 +54,7 @@ const FILLED = {
   streetAddress: "79 A, chemin Philomar",
   localityId: "54c0965cf6b95c141800a51e",
   email: "jeremy.enseignant.apa@gmail.com",
-  telephone: "692211490",
+  mobile: "692211490",
   legalStatus: "Entreprise, Auto-entrepreneur, Sisa",
   representativeTitle: "Chef.fe d'entreprise",
   representativeCivility: "M.",
@@ -92,10 +92,12 @@ describe("costum structure Ekilib.re — document de config", () => {
     // points sensibles : ancres composites + champs dérivés
     expect(d2.fields.address).toMatchObject({ widget: "location", renderOnly: true });
     expect(d2.fields._imageFile).toMatchObject({ widget: "image", renderOnly: true });
+    expect(d2.fields.representativeTitle).toMatchObject({ widget: "valueSelect", type: "string" });
     expect(d2.fields.postalCode).toMatchObject({ group: "address" });
     expect(d2.fields.geo).toMatchObject({ writeOnly: true, write: "geo:write" });
-    // tags n'est plus writeOnly : sa valeur courante est seedée pour que le write MERGE (préservation
-    // des tags étrangers — « mss ») au lieu de remplacer. cf. fns.ts structure:tagsFromThematic.
+    // tags n'est pas writeOnly : sa valeur courante est seedée, mais uniquement pour distinguer
+    // « rien à écrire » (création) de « effacer » (édition). cf. fns.ts structure:tagsFromThematic
+    // (miroir verbatim de thematic — plus de merge de tags étrangers).
     expect(d2.fields.tags).toMatchObject({ write: "structure:tagsFromThematic" });
     expect(d2.fields.tags.writeOnly).toBeUndefined();
     expect(d2.fields.socialLinks).toMatchObject({ path: "socialNetwork", read: "social:read", write: "social:write" });
@@ -123,12 +125,13 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
   it("4. émet les champs métier de la structure et du représentant", () => {
     expect(payload).toMatchObject({
       name: "NOUT' SPORT ADAPTÉ",
-      affiliate: "Oui",
+      // switch + coerce:boolString (alignement 15/09, ex-select "Oui"/"Non") → chaîne "true"/"false".
+      affiliate: "true",
       email: "jeremy.enseignant.apa@gmail.com",
-      // saisie `telephone` (codec de groupe LOSSLESS partagé du parc, _telSlot par défaut mobile)
-      // → objet legacy {mobile:[…]} (128/138 orgs
-      // réelles) — plus de clé racine plate.
-      telephone: { mobile: ["692211490"] },
+      // champ plat `mobile` — aligné le 15/09 sur le contrat live `associationEkilibre`
+      // (tests/preflight/__contract__/costum-types.live.json déclare `mobile`, jamais `telephone`)
+      // et sur sport-sante-bienetre-organizations depuis son propre alignement dynForm du 09/09.
+      mobile: "692211490",
       legalStatus: "Entreprise, Auto-entrepreneur, Sisa",
       representativeTitle: "Chef.fe d'entreprise",
       representativeCivility: "M.",
@@ -140,12 +143,8 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
     expect(payload.thematic).toEqual(FILLED.thematic);
   });
 
-  it("5. dérive `tags` (libellés courts) depuis `thematic` (libellés longs)", () => {
-    // Exactement les tags de l'organisation réelle : « Periscolaire » sans accent, « 2eme » en toutes lettres.
-    expect(payload.tags).toEqual([
-      "Sport", "Santé/prévention", "Social", "Insertion", "Culture",
-      "Scolaire 1er degré", "Scolaire 2nd degré", "Periscolaire 1er degré", "Periscolaire 2eme degré",
-    ]);
+  it("5. recopie `tags` = `thematic` À L'IDENTIQUE (miroir dédoublonné, cf. hook legacy)", () => {
+    expect(payload.tags).toEqual(FILLED.thematic);
   });
 
   it("6. omet `tags` quand aucune thématique n'est cochée (jamais d'écrasement accidentel)", () => {
@@ -204,9 +203,9 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
     expect(p.siren).toBe("123 456 789 00012");
     expect(p.representativeTelephone).toBe("+261 34 25 363 35");
     expect(p.personInChargeTelephone).toBe("06 92 00 11 22");
-    // la saisie `telephone` (groupe) sort en objet serveur — jamais de clé plate `mobile`.
-    expect(p.telephone).toEqual({ mobile: ["692211490"] });
-    expect(p).not.toHaveProperty("mobile");
+    // champ plat `mobile` — jamais de clé `telephone` (ex-groupe, retiré le 15/09).
+    expect(p.mobile).toBe("692211490");
+    expect(p).not.toHaveProperty("telephone");
   });
 
   it("9ter. omet les champs VIDES à la création (coerce:orUndef, patron email/url)", () => {
@@ -225,10 +224,10 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
     expect(e.siren).toBe("");
   });
 
-  it("10. omet `email`/`url` vides (le schéma backend impose un format sur ces champs)", () => {
-    const p = buildPayload(formSpec, { ...FILLED, email: "", url: "" }) as Record<string, unknown>;
+  it("10. omet `email`/`link` vides (le schéma backend impose un format sur ces champs)", () => {
+    const p = buildPayload(formSpec, { ...FILLED, email: "", link: "" }) as Record<string, unknown>;
     expect(p).not.toHaveProperty("email");
-    expect(p).not.toHaveProperty("url");
+    expect(p).not.toHaveProperty("link");
   });
 });
 
@@ -285,7 +284,8 @@ describe("costum structure Ekilib.re — READ + visibleIf (parité avec l'ancien
     }));
     expect(values).toMatchObject({
       name: "NOUT' SPORT ADAPTÉ",
-      affiliate: "Oui",
+      // widget switch : coercion de lecture par défaut, "Oui" (donnée legacy) → booléen true.
+      affiliate: true,
       postalCode: "97430",
       streetAddress: "79 A, chemin Philomar",
       legalStatus: "Entreprise, Auto-entrepreneur, Sisa",
@@ -293,6 +293,29 @@ describe("costum structure Ekilib.re — READ + visibleIf (parité avec l'ancien
     });
     // `tags` est writeOnly (dérivé de thematic) → jamais relu dans le formulaire
     expect(values.tags).toBeUndefined();
+  });
+
+  it("13b. téléphone : fiche ancienne relue depuis `telephone`, `mobile` plat prioritaire quand il existe", () => {
+    // Forme majoritaire en base (123/148 orgs SSBE en prod) : seul `telephone.mobile` est renseigné.
+    expect(seedEntity(formSpec, orgLike({ telephone: { mobile: ["0692 11 22 33"] } })).mobile).toBe("0692 11 22 33");
+    expect(seedEntity(formSpec, orgLike({ telephone: { fixe: ["0262 57 87 07"] } })).mobile).toBe("0262 57 87 07");
+    // Fiche ré-éditée : le `mobile` plat écrit par ce formulaire est la valeur la plus récente.
+    expect(seedEntity(formSpec, orgLike({ mobile: "0693668540", telephone: { mobile: ["693668540"] } })).mobile).toBe("0693668540");
+    // Aucun numéro → champ vide.
+    expect(seedEntity(formSpec, orgLike({})).mobile ?? "").toBe("");
+  });
+
+  it("13c. site web : fiche ancienne relue depuis `url`, `link` prioritaire quand il existe", () => {
+    // Forme des fiches anciennes (43/148 orgs SSBE en prod n'ont que `url`).
+    expect(seedEntity(formSpec, orgLike({ url: "https://letampon.fr" })).link).toBe("https://letampon.fr");
+    // Clé écrite par ce formulaire ET par le legacy ssbe.re : la plus récente quand les deux coexistent,
+    // relue telle que stockée.
+    expect(seedEntity(formSpec, orgLike({ url: "https://letampon.fr", link: "www.letampon.fr" })).link).toBe("www.letampon.fr");
+    expect(seedEntity(formSpec, orgLike({})).link ?? "").toBe("");
+    // L'écriture reste sur `link` : relire `url` ne recrée jamais de clé `url`.
+    const p = buildEditPayload(formSpec, { ...FILLED, link: "https://letampon.fr" }) as Record<string, unknown>;
+    expect(p.link).toBe("https://letampon.fr");
+    expect(p).not.toHaveProperty("url");
   });
 
   it.each([
@@ -313,59 +336,88 @@ describe("costum structure Ekilib.re — READ + visibleIf (parité avec l'ancien
     ["responsableCivilePro", { legalStatus: "Groupement d'Intérêt Publique" }, true],
     ["responsableCivilePro", { legalStatus: "Collectivité" }, false],
     ["responsableCivilePro", { legalStatus: "" }, false],
-    ["affiliateTo", { affiliate: "Oui" }, true],
-    ["affiliateTo", { affiliate: "Non" }, false],
-    ["otherRepresentativeTitle", { representativeTitle: "Autre..." }, true],
-    ["otherRepresentativeTitle", { representativeTitle: "Président" }, false],
+    ["affiliateTo", { affiliate: true }, true],
+    ["affiliateTo", { affiliate: false }, false],
     ["personInChargeName", { responsableSameAsRepresent: false }, true],
     ["personInChargeName", { responsableSameAsRepresent: true }, false],
-    ["otherPersonInChargeTitle", { responsableSameAsRepresent: false, personInChargeTitle: "Autre..." }, true],
-    ["otherPersonInChargeTitle", { responsableSameAsRepresent: true, personInChargeTitle: "Autre..." }, false],
   ])("14. %s visible=%o → %s", (field, values, expected) => {
     expect(check(descriptor.fields[field].visibleIf, values)).toBe(expected);
   });
   /**
-   * 15. Groupes `enumOrOther` sur les deux titres : le serveur stocke le titre RÉEL dans la clé que
-   * lit la fiche publique (PreviewStructure ne lit QUE `representativeTitle`/`personInChargeTitle`,
-   * jamais les `other*`). Avant ce codec, une présidente qui choisissait « Autre... » et saisissait
-   * « Coordinatrice » voyait sa fiche afficher « Autre... ».
+   * 15. Titres représentant/responsable en `valueSelect` mono creatable (alignement dynForm legacy,
+   * 15/09) : plus de couple select + champ « Autre... » séparé — la saisie libre écrit DIRECTEMENT
+   * dans `representativeTitle`/`personInChargeTitle`, la même clé que lit la fiche publique
+   * (PreviewStructure). Remplace l'ancien codec de groupe `enumOrOther`.
    */
-  describe("15. titres « Autre... » — codec de groupe enumOrOther", () => {
-    it("écrit le texte libre DANS la clé lue par la fiche", () => {
+  describe("15. titres représentant/responsable — `valueSelect` mono creatable", () => {
+    it("écrit une valeur libre directement dans la clé lue par la fiche", () => {
       const payload = buildEditPayload(formSpec, {
         ...FILLED,
-        representativeTitle: "Autre...",
-        otherRepresentativeTitle: "Coordinatrice",
+        representativeTitle: "Coordinatrice",
         responsableSameAsRepresent: false,
-        personInChargeTitle: "Autre...",
-        otherPersonInChargeTitle: "Éducatrice APA",
+        personInChargeTitle: "Éducatrice APA",
       }) as Record<string, unknown>;
       expect(payload.representativeTitle).toBe("Coordinatrice");
       expect(payload.personInChargeTitle).toBe("Éducatrice APA");
-      // Les porteurs de saisie ne partent PLUS comme clés serveur séparées (le groupe recompose).
-      expect(payload).not.toHaveProperty("otherRepresentativeTitle");
-      expect(payload).not.toHaveProperty("otherPersonInChargeTitle");
     });
 
-    it("laisse passer une valeur connue sans la déplacer", () => {
+    it("laisse passer une valeur connue de la liste telle quelle", () => {
       const payload = buildEditPayload(formSpec, {
         ...FILLED,
         representativeTitle: "Président",
-        otherRepresentativeTitle: "",
       }) as Record<string, unknown>;
       expect(payload.representativeTitle).toBe("Président");
     });
 
-    it("relit un titre libre stocké en base vers le couple select + texte", () => {
+    it("relit une valeur libre stockée en base telle quelle (pas de champ « other » séparé)", () => {
       const values = seedEntity(formSpec, orgLike({ representativeTitle: "Coordinatrice" })) as Record<string, unknown>;
-      expect(values.representativeTitle).toBe("Autre...");
-      expect(values.otherRepresentativeTitle).toBe("Coordinatrice");
+      expect(values.representativeTitle).toBe("Coordinatrice");
+      expect(values).not.toHaveProperty("otherRepresentativeTitle");
     });
 
-    it("relit une valeur connue telle quelle, sans texte libre", () => {
+    it("relit une valeur connue de la liste telle quelle", () => {
       const values = seedEntity(formSpec, orgLike({ personInChargeTitle: "Maire.sse" })) as Record<string, unknown>;
       expect(values.personInChargeTitle).toBe("Maire.sse");
-      expect(values.otherPersonInChargeTitle).toBe("");
+      expect(values).not.toHaveProperty("otherPersonInChargeTitle");
     });
+  });
+});
+
+/**
+ * 16-17. Seed ÉDITION des pièces jointes : `seedGalleryDefaults` PARTITIONNE `about.files` par CHAMP
+ * via `subKey` (posé à l'upload = clé du champ ; le backend écrase `contentKey` des doctype:file par
+ * un bucket MIME, mais conserve `subKey`). Sans ça, chaque widget `file` affichait TOUS les documents
+ * de la structure (Statuts ET RC pro montraient la même liste). Un document ancien sans `subKey`
+ * reste proposé dans chaque widget (passe-tout) : jamais masqué, donc toujours supprimable.
+ */
+describe("costum structure Ekilib.re — seed ÉDITION des pièces jointes (partition par subKey)", () => {
+  const editCtx = (entity: unknown) =>
+    ({ mode: "edit", entity, parent: null, scope: undefined, me: null, carrier: null, costum: undefined }) as unknown as EntityModalCtx;
+  // `serverData` alimente seedEntity ; `data.files` = about.files lu par seedGalleryDefaults.
+  const orgWithFiles = (files: Array<Record<string, unknown>>) =>
+    ({ serverData: { name: "x", legalStatus: "Entreprise, Auto-entrepreneur, Sisa" }, data: { files } }) as unknown;
+  const fileDoc = (hex: string, name: string, subKey?: string) => ({
+    _id: { $id: hex }, id: hex, name, docPath: `/upload/${name}`,
+    doctype: "file", contentKey: "pdf", ...(subKey ? { subKey } : {}),
+  });
+  type SeedFile = { existing: Array<{ name: string }> };
+
+  it("16. un document avec `subKey` ne va que dans SON widget ; le fonds ancien reste proposé partout", () => {
+    const d = specToConfig(spec).buildDefaults(editCtx(orgWithFiles([
+      fileDoc("a".repeat(24), "statuts.pdf", "statusFile"),
+      fileDoc("b".repeat(24), "assurance.pdf", "responsableCivilePro"),
+      fileDoc("c".repeat(24), "fonds-ancien.pdf"),
+    ]))) as Record<string, SeedFile>;
+    expect(d.statusFile.existing.map((e) => e.name)).toEqual(["statuts.pdf", "fonds-ancien.pdf"]);
+    expect(d.responsableCivilePro.existing.map((e) => e.name)).toEqual(["assurance.pdf", "fonds-ancien.pdf"]);
+  });
+
+  it("17. fonds 100 % ancien (aucun `subKey`) → passe-tout inchangé (costums existants non régressés)", () => {
+    const d = specToConfig(spec).buildDefaults(editCtx(orgWithFiles([
+      fileDoc("a".repeat(24), "doc1.pdf"),
+      fileDoc("b".repeat(24), "doc2.pdf"),
+    ]))) as Record<string, SeedFile>;
+    expect(d.statusFile.existing.map((e) => e.name)).toEqual(["doc1.pdf", "doc2.pdf"]);
+    expect(d.responsableCivilePro.existing.map((e) => e.name)).toEqual(["doc1.pdf", "doc2.pdf"]);
   });
 });

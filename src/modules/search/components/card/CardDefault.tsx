@@ -1,4 +1,4 @@
-import { Lightbulb, MapPin } from "lucide-react";
+import { Lightbulb, MapPin, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,7 +29,9 @@ export default function CardDefault({
     shortDescription,
     tags = [],
     image,
+    collection,
     countProjects = 0,
+    countContributors = 0,
   } = data;
 
   // Initiales du nom (max 3 caractères)
@@ -95,11 +97,24 @@ export default function CardDefault({
               </p>
             )}
 
+            {/* Un projet ne porte pas de sous-projets : « 0 projets » n'y informe de rien,
+                ce sont ses contributeurs qui comptent. */}
             <div className="flex items-center space-x-1 mb-3">
-              <Lightbulb className="h-4 w-4 text-primary" />
-              <span className="text-xs text-muted-foreground">
-                {countProjects} {t("projets")}
-              </span>
+              {collection === "projects" ? (
+                <>
+                  <Users className="h-4 w-4 text-primary" />
+                  <span className="text-xs text-muted-foreground">
+                    {t("CardDefault.contributorCount", undefined, { count: countContributors })}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Lightbulb className="h-4 w-4 text-primary" />
+                  <span className="text-xs text-muted-foreground">
+                    {t("CardDefault.projectCount", undefined, { count: countProjects })}
+                  </span>
+                </>
+              )}
             </div>
 
             {displayTags.length > 0 && (
