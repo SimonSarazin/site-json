@@ -1481,7 +1481,9 @@
     "emptyHint": "Join a third place from its page to find it here.",
     "needPlaceFirst": "Join a third place first to see its content here.",
     "emptyNews": "No news from your third places yet.",
-    "emptyAgenda": "No event linked to your third places yet.",
+    "emptyAgenda": "No upcoming event linked to your third places yet.",
+    "emptyAgendaOngoing": "No ongoing event linked to your third places.",
+    "emptyAgendaPast": "No past event linked to your third places.",
     "emptyProjects": "No project linked to your third places yet.",
     "emptySimilar": "No similar third place found yet.",
     "tabs": {

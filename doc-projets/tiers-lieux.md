@@ -250,7 +250,7 @@ scopées au réseau (`$or[source.keys, reference.costum]` sur `franceTierslieux`
 Corrigé sur `useUserOrganizations` (déjà dans le SDK, aucun ajout) + `sourceKey` de config. Le hook
 `useUserSubscriptions` écrit par erreur a été supprimé (aucun autre appelant, jamais commité).
 
-**5 onglets**, portés depuis le contrôleur PHP réel (lu en local, `~/dev/communecter-dev`, lecture
+**4 onglets**, portés depuis le contrôleur PHP réel (lu en local, `~/dev/communecter-dev`, lecture
 seule) :
 
 | Onglet | Source de donnée | État |
@@ -259,7 +259,6 @@ seule) :
 | News | `useMemberNewsQuery` — `org.getNews()` **par lieu**, fusionné/trié (PAS un filtre `source.key` sur `news` : une 2ᵉ hypothèse invalidée en lisant `GetLikedNewsAction.php`, qui boucle par organisation) | ✅ livré |
 | Agenda | `useLinkedEntitiesQuery` — `entity.searchCostum()` + filtre `$or` sur `links.attendees`/`links.organizer` des lieux membres | ✅ livré |
 | Projets | idem, filtre `links.contributors` | ✅ livré |
-| Tiers-lieux similaires | legacy `answerdirectory`, une méthode costum-spécifique (`FranceTierslieux::globalAutocomplete`, PAS un alias de `searchCostum` — vérifié en lisant `AnswerDirectoryAction.php`) | 🟡 retiré de l'UI (29/09, décision produit) ; code conservé (`useSimilarPlacesQuery.ts`), `cocolight-api-client` sans modification locale |
 
 Les onglets 2 à 4 ne se chargent qu'une fois VISITÉS (`enabled` sur l'onglet actif) — pas de rafale
 de requêtes au premier rendu. Helpers purs testés séparément : `buildLinkedEntitiesFilter` (filtre
@@ -468,6 +467,26 @@ pas seulement à « Mes lieux ».
 **Vérifié** : `typecheck` ✅ · `eslint` ✅ · +2 tests (nouveau `CardDefault.test.tsx` — masqué pour un
 projet, inchangé pour une organisation) · `test:unit` 5 100/5 102 (mêmes 2 échecs d'environnement,
 étrangers au lot). Rien commité.
+
+### 30/09 — onglet Agenda de « Mes lieux » : sous-onglets À venir/En cours/Passés ; nav « Mes lieux » déplacée
+
+**Onglet Agenda.** Par défaut, ne montre plus que les événements À VENIR (le legacy et l'ancien
+comportement mélangeaient tout, passés compris, sans repère). Câblé en 3 sous-onglets — mêmes
+libellés et même règle de répartition que le composant Agenda du site (`partitionByTime`,
+`src/modules/agenda/lib/partitionByTime.ts`, réutilisé tel quel, aucune règle de bucketing
+réinventée) : « À venir » (défaut), « En cours », « Passés ». Bucketing CLIENT sur les items déjà
+chargés par `useLinkedEntitiesQuery` (digest personnel, volume faible) — pas un nouvel appel réseau.
+
+**Nav « Mes lieux ».** Déplacée en dernière position du sous-menu « Les lieux » (desktop et tiroir
+mobile partagent la même donnée `header.nav`), juste après « Coworking, salles & hébergements ».
+Au passage, description corrigée : « Les tiers-lieux que vous suivez » → « … dont vous êtes membre »
+(texte resté sur l'ancienne sémantique « suivi », déjà corrigée dans le code depuis le 28/09).
+
+**Vérifié** : `typecheck` ✅ · `eslint` ✅ · `config:validate` ✅ (15 pages, 27 sections) ·
+`audit:config` RAS · +4 tests (2 sur le câblage des sous-onglets Agenda, dates de mock ajoutées aux
+2 tests existants qui en manquaient) · `test:unit` 5449/5451 (mêmes 2 échecs d'environnement,
+étrangers au lot) · exemple `header-mega-menu` (assistant config) resynchronisé
+(`config:example -- header-mega-menu --write`) après déplacement de l'entrée de nav. Rien commité.
 
 ### 29/09 — onglet « Similaires » retiré de l'UI (décision produit)
 

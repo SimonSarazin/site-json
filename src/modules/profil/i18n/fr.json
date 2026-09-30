@@ -1481,7 +1481,9 @@
     "emptyHint": "Rejoignez un tiers-lieu depuis sa fiche pour le retrouver ici.",
     "needPlaceFirst": "Rejoignez d'abord un tiers-lieu pour voir son contenu ici.",
     "emptyNews": "Aucune actualité de vos tiers-lieux pour l'instant.",
-    "emptyAgenda": "Aucun événement lié à vos tiers-lieux pour l'instant.",
+    "emptyAgenda": "Aucun événement à venir lié à vos tiers-lieux pour l'instant.",
+    "emptyAgendaOngoing": "Aucun événement en cours lié à vos tiers-lieux.",
+    "emptyAgendaPast": "Aucun événement passé lié à vos tiers-lieux.",
     "emptyProjects": "Aucun projet lié à vos tiers-lieux pour l'instant.",
     "emptySimilar": "Aucun tiers-lieu similaire trouvé pour l'instant.",
     "tabs": {

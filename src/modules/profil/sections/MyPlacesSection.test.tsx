@@ -195,7 +195,7 @@ describe("MyPlacesSection — onglets Agenda/Projets : la carte porte le lieu me
   it("Agenda : le tiers-lieu ORGANISATEUR de l'événement (links.organizer), pas les participants", async () => {
     derivesState = {
       ...REPOS,
-      items: [{ id: "evt-1", serverData: { id: "evt-1", links: { organizer: { "org-1": true }, attendees: { "org-2": true } } } } as unknown as EntityTypes],
+      items: [{ id: "evt-1", serverData: { id: "evt-1", startDate: "2099-01-01T10:00:00Z", links: { organizer: { "org-1": true }, attendees: { "org-2": true } } } } as unknown as EntityTypes],
     };
     poser();
     await userEvent.click(screen.getByRole("tab", { name: /Agenda/i }));
@@ -217,12 +217,46 @@ describe("MyPlacesSection — onglets Agenda/Projets : la carte porte le lieu me
   it("un item lié à aucun de mes lieux (autre organisateur) n'a pas de libellé", async () => {
     derivesState = {
       ...REPOS,
-      items: [{ id: "evt-2", serverData: { id: "evt-2", links: { organizer: { "org-inconnu": true } } } } as unknown as EntityTypes],
+      items: [{ id: "evt-2", serverData: { id: "evt-2", startDate: "2099-01-01T10:00:00Z", links: { organizer: { "org-inconnu": true } } } } as unknown as EntityTypes],
     };
     poser();
     await userEvent.click(screen.getByRole("tab", { name: /Agenda/i }));
 
     expect(screen.getByTestId("item-evt-2").dataset.linkedLabel).toBe("");
+  });
+});
+
+describe("MyPlacesSection — onglet Agenda : sous-onglets À venir/En cours/Passés (comme le composant Agenda)", () => {
+  beforeEach(() => {
+    me = { slug: "moi" } as unknown as EntityTypes;
+    mesLieuxState = {
+      ...REPOS,
+      organizations: [{ id: "org-1", slug: "la-plume-a-loup", serverData: { name: "La Plume à Loup" } } as unknown as Organization],
+    };
+    derivesState = {
+      ...REPOS,
+      items: [
+        { id: "evt-futur", serverData: { id: "evt-futur", startDate: "2099-01-01T10:00:00Z" } } as unknown as EntityTypes,
+        { id: "evt-passe", serverData: { id: "evt-passe", startDate: "2000-01-01T10:00:00Z", endDate: "2000-01-01T18:00:00Z" } } as unknown as EntityTypes,
+      ],
+    };
+  });
+
+  it("affiche « À venir » par défaut — le passé n'y apparaît pas", async () => {
+    poser();
+    await userEvent.click(screen.getByRole("tab", { name: /^Agenda$/i }));
+
+    expect(screen.getByTestId("item-evt-futur")).toBeDefined();
+    expect(screen.queryByTestId("item-evt-passe")).toBeNull();
+  });
+
+  it("l'onglet « Passés » montre l'événement passé, pas le futur", async () => {
+    poser();
+    await userEvent.click(screen.getByRole("tab", { name: /^Agenda$/i }));
+    await userEvent.click(screen.getByRole("tab", { name: /Passés/i }));
+
+    expect(screen.getByTestId("item-evt-passe")).toBeDefined();
+    expect(screen.queryByTestId("item-evt-futur")).toBeNull();
   });
 });
 

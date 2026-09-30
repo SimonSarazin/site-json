@@ -55,21 +55,6 @@
           },
           {
             "label": {
-              "fr": "Mes lieux",
-              "en": "My places"
-            },
-            "description": {
-              "fr": "Les tiers-lieux que vous suivez",
-              "en": "The third places you follow"
-            },
-            "icon": "heart",
-            "path": "/mes-lieux",
-            "visibility": {
-              "auth": "required"
-            }
-          },
-          {
-            "label": {
               "fr": "Se réunir",
               "en": "Meet up"
             },
@@ -140,6 +125,21 @@
               "en": "Coworking, rooms & stays"
             },
             "path": "/annuaire-ressources"
+          },
+          {
+            "label": {
+              "fr": "Mes lieux",
+              "en": "My places"
+            },
+            "description": {
+              "fr": "Les tiers-lieux dont vous êtes membre",
+              "en": "The third places you're a member of"
+            },
+            "icon": "heart",
+            "path": "/mes-lieux",
+            "visibility": {
+              "auth": "required"
+            }
           }
         ]
       },

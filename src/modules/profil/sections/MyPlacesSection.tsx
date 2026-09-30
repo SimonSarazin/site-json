@@ -1,6 +1,7 @@
 import "@/modules/profil/i18n";
 import "@/modules/news/i18n";
 import "@/modules/search/i18n";
+import "@/modules/agenda/i18n";
 import { useMemo, useState } from "react";
 import { Heart, Building2, Newspaper, Calendar, Briefcase, Sparkles } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,12 +17,13 @@ import { useLinkedEntitiesQuery, buildLinkedEntitiesFilter } from "../hooks/useL
 import { useMemberNewsQuery } from "../hooks/useMemberNewsQuery";
 import { resolveLinkedLabels } from "../lib/resolveLinkedLabels";
 import { buildNewsDetailUrl } from "../hooks/useNewsDetailUrlGenerator";
+import { partitionByTime, type TimeBucket } from "@/modules/agenda/lib/partitionByTime";
 import { NewsItem } from "@/modules/news/components/NewsItem";
 import { NewsProvider } from "@/modules/news/contexts/NewsProvider";
 import SearchListView from "@/modules/search/components/SearchListView";
 import type { ListConf } from "@/modules/search/schema";
 import type { MyPlacesSectionProps } from "../schema";
-import type { EntityTypes, SearchEntity } from "@communecter/cocolight-api-client";
+import type { EntityTypes, Event as EventType, SearchEntity } from "@communecter/cocolight-api-client";
 
 /** Aucune action de gestion depuis ce digest multi-lieux — partager/signaler restent sûrs sans droit
  *  vérifié par organisation ; ajouter/éditer/modérer resteraient à faire DEPUIS la fiche du lieu. */
@@ -75,8 +77,13 @@ type Onglet = "lieux" | "news" | "agenda" | "projets";
  */
 export function MyPlacesSection({ id, props }: { id?: string; props: MyPlacesSectionProps }) {
   const t = useT("modules/profil");
+  const tAgenda = useT("modules/agenda");
   const { me } = useCocolight();
   const [onglet, setOnglet] = useState<Onglet>("lieux");
+  // Défaut « À venir » (demandé explicitement), avec accès direct aux 2 autres — mêmes 3 onglets et
+  // même vocabulaire que le composant Agenda du site (`tab.upcoming`/`tab.ongoing`/`tab.past`,
+  // `partitionByTime` réutilisé tel quel, aucune règle de bucketing réinventée).
+  const [agendaOnglet, setAgendaOnglet] = useState<TimeBucket>("upcoming");
 
   const { config: siteConfig } = useSite();
   const mesLieux = useUserOrganizations(me, { enabled: !!me, sourceKey: props.sourceKey });
@@ -100,6 +107,10 @@ export function MyPlacesSection({ id, props }: { id?: string; props: MyPlacesSec
   const agendaLinkedLabels = useMemo(
     () => resolveLinkedLabels(agenda.items as unknown as SearchEntity[], ["organizer"], orgsById),
     [agenda.items, orgsById],
+  );
+  const agendaBuckets = useMemo(
+    () => partitionByTime(agenda.items as unknown as EventType[]),
+    [agenda.items],
   );
   const projets = useLinkedEntitiesQuery({
     filters: useMemo(() => buildLinkedEntitiesFilter(orgIds, ["links.contributors"]), [orgIds]),
@@ -140,6 +151,22 @@ export function MyPlacesSection({ id, props }: { id?: string; props: MyPlacesSec
         preview={preview}
         previewParam={previewParam}
         list={{ linkedLabels }}
+      />
+    );
+
+  /** Un bucket temporel (À venir/En cours/Passés) de l'onglet Agenda — sans état de chargement/
+   *  aucun-lieu, déjà tranchés une fois avant les sous-onglets (cf. le rendu de l'onglet). */
+  const blocAgenda = (items: EntityTypes[], videTitre: string) =>
+    items.length === 0 ? (
+      <EntityEmptyState icon={<Sparkles className="w-12 h-12 mx-auto" />} title={videTitre} />
+    ) : (
+      <SearchListView
+        results={items as unknown as SearchEntity[]}
+        columns={COLUMNS_3}
+        card={CARD_EVENT}
+        preview={PREVIEW_EVENT}
+        previewParam="mes-lieux-agenda"
+        list={{ linkedLabels: agendaLinkedLabels }}
       />
     );
 
@@ -221,7 +248,28 @@ export function MyPlacesSection({ id, props }: { id?: string; props: MyPlacesSec
           </TabsContent>
 
           <TabsContent value="agenda" className="mt-6">
-            {listeAvecApercu(agenda, orgIds.length === 0, t("MyPlacesSection.emptyAgenda"), CARD_EVENT, PREVIEW_EVENT, "mes-lieux-agenda", agendaLinkedLabels)}
+            {orgIds.length === 0 ? (
+              <EntityEmptyState icon={<Building2 className="w-12 h-12 mx-auto" />} title={t("MyPlacesSection.needPlaceFirst")} />
+            ) : agenda.isLoading ? (
+              <div className="text-center py-12 sm:py-16 animate-pulse text-muted-foreground">{t("common.loading")}</div>
+            ) : (
+              <Tabs value={agendaOnglet} onValueChange={(v) => setAgendaOnglet(v as TimeBucket)}>
+                <TabsList>
+                  <TabsTrigger value="upcoming">{tAgenda("tab.upcoming")}</TabsTrigger>
+                  <TabsTrigger value="ongoing">{tAgenda("tab.ongoing")}</TabsTrigger>
+                  <TabsTrigger value="past">{tAgenda("tab.past")}</TabsTrigger>
+                </TabsList>
+                <TabsContent value="upcoming" className="mt-4">
+                  {blocAgenda(agendaBuckets.upcoming as unknown as EntityTypes[], t("MyPlacesSection.emptyAgenda"))}
+                </TabsContent>
+                <TabsContent value="ongoing" className="mt-4">
+                  {blocAgenda(agendaBuckets.ongoing as unknown as EntityTypes[], t("MyPlacesSection.emptyAgendaOngoing"))}
+                </TabsContent>
+                <TabsContent value="past" className="mt-4">
+                  {blocAgenda(agendaBuckets.past as unknown as EntityTypes[], t("MyPlacesSection.emptyAgendaPast"))}
+                </TabsContent>
+              </Tabs>
+            )}
           </TabsContent>
 
           <TabsContent value="projets" className="mt-6">
