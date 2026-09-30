@@ -36,6 +36,12 @@ const DEFAULT_TYPES = ["organizations", "projects", "events", "poi"];
  * un scalaire/tableau config devient `$in`, les objets d'opérateurs sont fusionnés, le `$nin`
  * de garde s'unionne à un éventuel `$nin` config. Les DEUX moteurs (L searchNew / B buildQuery)
  * passent les objets d'opérateurs tels quels (le referenceTable legacy envoie déjà des `$nin`).
+ *
+ * ⚠ `{ $in, $nin }` sur UNE clé n'est honoré que par un backend dont `SearchNew::searchFilters`
+ * combine les deux opérateurs (correctif `7b19f871` de citizenToolKit) : avant lui, le `$nin`
+ * gagnait et le ciblage `$in` était ignoré EN SILENCE (tout le vivier remontait). Ekilib.re cible
+ * `source.keys` et compte donc sur ce correctif ; sur un backend qui ne l'a pas, cibler la source
+ * PRINCIPALE `source.key` (scalaire, clé distincte de la garde `source.keys`).
  */
 export function buildOpenSearchFilters(
   search: { openData?: "optIn" | "optOut" | "off"; defaultFilters?: Record<string, unknown>; defaultFiltersByType?: Record<string, Record<string, unknown>> } | undefined,

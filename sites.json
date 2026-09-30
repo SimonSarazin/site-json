@@ -57,7 +57,7 @@
   {
     "slug": "associationEkilibre",
     "config": "config.prod.maison-sport-sante-la-tampon.json",
-    "css": "index-sport-sante-bien-etre",
+    "css": "index-maison-sport-sante-la-tampon",
     "images": "maisonSportSanteLaTampon",
     "coolifyApp": "site-json-ekilibre",
     "domain": "ekilibre.00.re",
@@ -200,6 +200,9 @@
     "images": "federationDesCae",
     "coolifyApp": "site-json-federation-des-cae",
     "domain": "federation-des-cae.00.re",
+    "aliases": [
+      "communs.les-cae.coop"
+    ],
     "env": {
       "VITE_COSTUM_FORCE_LIVE": "true"
     }

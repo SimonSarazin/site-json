@@ -42,6 +42,18 @@ describe("buildOpenSearchFilters", () => {
     expect(events["address.postalCode"]).toEqual({ $in: ["97430"] });
   });
 
+  it("ciblage de la provenance PRINCIPALE `source.key` : scalaire laissé tel quel, jamais fusionné avec la garde `source.keys`", () => {
+    // Deux clés distinctes = aucun `{ $in, $nin }` sur la même clé, que les backends antérieurs au
+    // correctif `searchFilters` traitaient en ignorant le `$in` (le vivier n'était alors pas ciblé).
+    const f = buildOpenSearchFilters(
+      { defaultFilters: { "source.key": "sportSanteBienetre" } },
+      "organizations",
+      "monSite",
+    );
+    expect(f["source.key"]).toBe("sportSanteBienetre");
+    expect(f["source.keys"]).toEqual({ $nin: ["monSite"] });
+  });
+
   it("la garde $nin est NON écrasable : un $nin config s'unionne, le slug du site reste exclu", () => {
     const f = buildOpenSearchFilters(
       { defaultFilters: { "reference.costum": { $nin: ["autreSite"] } } },

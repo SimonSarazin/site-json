@@ -40,7 +40,7 @@ export function isValidGeoPoint(coords: unknown): coords is [number, number] {
  * Piège évité : `Number("")` / `Number(null)` valent 0 → on rejette les chaînes
  * vides/blanches (sinon un champ absent passerait pour l'équateur/méridien 0).
  */
-function toFiniteCoord(v: unknown): number | null {
+export function toFiniteCoord(v: unknown): number | null {
   if (typeof v === "number") return Number.isFinite(v) ? v : null;
   if (typeof v === "string") {
     const s = v.trim();
