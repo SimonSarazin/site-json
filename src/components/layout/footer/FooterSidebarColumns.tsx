@@ -116,7 +116,7 @@ export default function FooterSidebarColumns({ footer, style }: FooterSidebarCol
                     </p>
                     <div className="flex flex-col items-end gap-3">
                         {footer.extra && (
-                            <p
+                            <div
                                 className="text-sm text-muted-foreground text-right"
                                 dangerouslySetInnerHTML={{ __html: footer.extra }}
                             />
