@@ -186,7 +186,10 @@
     "memberOfCount_one": "{{count}} organization",
     "memberOfCount_other": "{{count}} organizations",
     "createdOn": "Created on",
-    "documents": "Documents"
+    "documents": "Documents",
+    "docRecepisse": "Declaration receipt",
+    "docResponsableCivilePro": "Professional liability insurance",
+    "notProvided": "Not provided"
   },
   "PreviewReservations": {
     "title": "Bookings",

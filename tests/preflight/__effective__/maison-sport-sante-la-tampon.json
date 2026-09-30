@@ -94,7 +94,7 @@
           "name": 1
         }
       },
-      "create": "add-structure",
+      "create": null,
       "edit": {
         "enabled": true,
         "modalName": null
