@@ -215,6 +215,39 @@ describe("calculateAacPermissions — lecture, édition, financement", () => {
     expect(perms.canDeleteCommun({ authorId: "auteur" })).toBe(false);
   });
 
+  /**
+   * Contributeurs à l'édition (`links.canEdit`) : parité de ce que `Coform::canAdminAnswer`
+   * accepte à l'enregistrement — modifier (arbitrage du 29/09). Le bouton de gestion de la liste
+   * leur reste fermé ; la question « Référent » la leur ouvre (parité legacy, 30/09).
+   */
+  it("un contributeur à l'édition modifie le commun — connecté seulement", () => {
+    const commun = { authorId: "auteur", editorIds: ["contrib"] };
+    expect(calculateAacPermissions(NON_ADMIN(), makeMe("contrib"), { gates: {} }).canEditCommun(commun)).toBe(true);
+    expect(calculateAacPermissions(NON_ADMIN(), makeMe("tiers"), { gates: {} }).canEditCommun(commun)).toBe(false);
+    // Session tombée : l'identité seule n'ouvre rien.
+    expect(calculateAacPermissions(NON_ADMIN(), makeMe("contrib", false), { gates: {} }).canEditCommun(commun)).toBe(false);
+  });
+
+  it("un contributeur à l'édition n'a ni le bouton de gestion de la liste, ni la suppression", () => {
+    const commun = { authorId: "auteur", editorIds: ["contrib"] };
+    const contrib = calculateAacPermissions(NON_ADMIN(), makeMe("contrib"), { gates: {} });
+    expect(contrib.canManageEditors(commun)).toBe(false);
+    expect(contrib.canDeleteCommun(commun)).toBe(false);
+  });
+
+  it("gérer les contributeurs à l'édition : l'auteur et l'admin, jamais `anyOnewithLinkCanAnswer`", () => {
+    const commun = { authorId: "auteur" };
+    expect(calculateAacPermissions(NON_ADMIN(), makeMe("auteur"), { gates: {} }).canManageEditors(commun)).toBe(true);
+    expect(calculateAacPermissions(makeEntity(true), makeMe("a"), { gates: {} }).canManageEditors(commun)).toBe(true);
+
+    const parLien = calculateAacPermissions(NON_ADMIN(), makeMe("tiers"), { gates: { anyOnewithLinkCanAnswer: true } });
+    expect(parLien.canEditCommun(commun)).toBe(true);
+    expect(parLien.canManageEditors(commun)).toBe(false);
+
+    expect(calculateAacPermissions(NON_ADMIN(), ANON, { gates: {} }).canManageEditors(commun)).toBe(false);
+    expect(calculateAacPermissions(NON_ADMIN(), makeMe("auteur"), { gates: {} }).canManageEditors(null)).toBe(false);
+  });
+
   it("l'admin costum passe par le drapeau parapluie, sans rôle sur l'entité", () => {
     const perms = calculateAacPermissions(NON_ADMIN(), makeMe("a"), { gates: { active: true } }, true);
     expect(perms.isAdmin).toBe(true);

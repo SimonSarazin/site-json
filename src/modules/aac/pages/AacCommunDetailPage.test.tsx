@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { render, screen, fireEvent, act, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import type { AacResolvedConfig } from "../types";
 import type { AacDetailSection } from "../lib/resolveAacDetailSections";
@@ -73,6 +73,7 @@ type TestAnswer = {
   name: string;
   descriptionStr: string;
   image: string;
+  links?: Record<string, unknown>;
 };
 const BASE_ANSWER: TestAnswer = { _id: { $id: "a1" }, form: "f1", user: "u1", answers: {}, documents: [], name: "", descriptionStr: "", image: "" };
 let ANSWER: TestAnswer = { ...BASE_ANSWER };
@@ -170,6 +171,12 @@ vi.mock("../hooks/useAacDetailSections", () => ({
   useAacDetailSections: () => ({ sections: detailSections, isLoading: isDetailSectionsLoading }),
   useAacGallerySubKey: () => null,
 }));
+// La question liée aux contributeurs à l'édition se résout par la même entrée de cache que la
+// config : sans formulaire déclaré ici, aucune question.
+vi.mock("../hooks/useAacFormMeta", () => ({
+  useAacFormMeta: () => ({ meta: null, isLoading: false, error: null }),
+  useAacFormParams: () => undefined,
+}));
 // La modale d'édition expose la LIGNÉE de péremption qu'elle reçoit : c'est
 // elle que `SmartCoForm` exige pour activer le brouillon, et qu'il grave dans
 // l'entrée localStorage (cf. `useCoFormDraft.computeDraftState`).
@@ -186,6 +193,13 @@ vi.mock("../components/pageDetail/CommunProjectControl.tsx", () => ({ CommunProj
 // La suppression a ses propres tests (règle de refus, cascade, garde de droit) ;
 // ici elle apporterait sa mutation et son bundle i18n, hors périmètre.
 vi.mock("../components/pageDetail/CommunDeleteControl", () => ({ CommunDeleteControl: () => null }));
+// Les contributeurs à l'édition ont leurs propres tests (dialogue, mutation) : la page n'est
+// observée que sur le droit qu'elle leur passe.
+vi.mock("../components/pageDetail/CommunEditorsControl.tsx", () => ({
+  CommunEditorsControl: (props: { canManage: boolean }) => (
+    <div data-testid="editors-control" data-can-manage={String(props.canManage)} />
+  ),
+}));
 vi.mock("../components/pageDetail/CommunHero.tsx", () => ({ CommunHero: () => <div data-testid="hero" /> }));
 // La carte expose son crochet `onFunded` — ce que `CagnotteDialog` joue après
 // une contribution enregistrée (`onRefresh`) — et l'intention post-connexion,
@@ -576,5 +590,39 @@ describe("AacCommunDetailPage — lignée de péremption du brouillon d'édition
     render(<AacCommunDetailPage />);
 
     expect(baseUpdatedAt()).toBe("null");
+  });
+});
+
+/**
+ * Contributeurs à l'édition (`links.canEdit`) : ils MODIFIENT le commun — la modale d'édition est
+ * montée pour eux —, mais le BOUTON qui gère la liste est réservé à l'auteur et aux admins (par la
+ * question « Référent », ils la changent : parité legacy, décision du 30/09).
+ * Identifiants au format Mongo : `editorIdsOf` écarte toute autre clé.
+ */
+describe("AacCommunDetailPage — contributeurs à l'édition", () => {
+  const CONTRIB = "57618d6640bb4ece776308aa";
+  const TIERS = "64785065919b8815ad72cf94";
+
+  it("l'auteur gère la liste ; un tiers connecté, non", () => {
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("editors-control")).toHaveAttribute("data-can-manage", "true");
+    cleanup();
+
+    me = { id: TIERS, isConnected: true };
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("editors-control")).toHaveAttribute("data-can-manage", "false");
+  });
+
+  it("un contributeur listé obtient « Modifier » sans le bouton de gestion de la liste ; un tiers, rien", () => {
+    ANSWER = { ...BASE_ANSWER, links: { canEdit: { [CONTRIB]: { name: "Contrib", type: "citoyens" } } } };
+    me = { id: CONTRIB, isConnected: true };
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("edit-modal")).toBeInTheDocument();
+    expect(screen.getByTestId("editors-control")).toHaveAttribute("data-can-manage", "false");
+    cleanup();
+
+    me = { id: TIERS, isConnected: true };
+    render(<AacCommunDetailPage />);
+    expect(screen.queryByTestId("edit-modal")).not.toBeInTheDocument();
   });
 });

@@ -151,7 +151,9 @@
       "requiredField": "This field is required",
       "elementCard": {
         "edit": "Edit",
-        "removeAria": "Remove"
+        "removeAria": "Remove",
+        "selectAria": "Select {{name}}",
+        "deselectAria": "Deselect {{name}}"
       },
       "modal": {
         "title": "Search",
