@@ -220,16 +220,18 @@ export const DataObservatorySectionSchema = z.object({
      * pleine largeur sous les filtres, puis liste des items à GAUCHE et graphes
      * à DROITE, sur le patron du split liste+carte du module search (desktop
      * seulement — sous 768 px les deux colonnes sont illisibles, la liste
-     * repasse alors SOUS les graphes, à la place qu'occupait la table).
+     * repasse alors SOUS les graphes, avant la table éventuelle). Une `table`
+     * déclarée avec `split` vient SOUS les deux colonnes, en pleine largeur.
      * Demande `list`.
      */
     layout: z.enum(["stacked", "split"]).optional(),
     list: ObservatoryListSchema.optional(),
     /**
-     * Ouverture de la fiche, PARTAGÉE par la table et la liste. Historiquement
-     * déclarée sous `table.rowAction` — toujours lue en repli, donc une page qui
-     * remplace sa table par une liste déplace simplement son bloc ici, sans rien
-     * dupliquer (le deep-link `?installation=` y puise aussi sa config).
+     * Ouverture de la fiche depuis la LISTE (le deep-link `?installation=` y
+     * puise aussi sa config). Historiquement déclarée sous `table.rowAction` —
+     * toujours lue en repli, donc une page qui remplace sa table par une liste
+     * déplace simplement son bloc ici, sans rien dupliquer. La table, elle, ne
+     * lit QUE `table.rowAction` : une page qui GARDE sa table y laisse le bloc.
      */
     rowAction: RowActionSchema.optional(),
   }),

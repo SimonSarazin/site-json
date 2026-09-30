@@ -78,7 +78,9 @@ export default function DataObservatorySection({
 
   // Ouverture de la fiche : déclarée au niveau de la section (`props.rowAction`)
   // ou, pour les configs antérieures au mode `split`, sous `table.rowAction`.
-  // Table et liste consomment la MÊME, tout comme le deep-link `?installation=`.
+  // La liste et le deep-link `?installation=` consomment cette résolution ; la
+  // table, elle, ne lit que `table.rowAction` — une page qui GARDE sa table y
+  // laisse donc le bloc.
   const rowAction = props.rowAction ?? props.table?.rowAction;
 
   // Fiche installation partagée : montée seulement si le param est présent.
@@ -144,8 +146,8 @@ export default function DataObservatorySection({
 
   // Liste latérale : demandée par la config (`layout: "split"` + `list`), rendue
   // CÔTE À CÔTE sur desktop seulement. Sous 768 px, deux colonnes sont
-  // illisibles : la liste repasse alors sous le tableau de bord, à la place
-  // qu'occupait la table — elle n'est jamais escamotée.
+  // illisibles : la liste repasse alors sous le tableau de bord, avant la table
+  // éventuelle — elle n'est jamais escamotée.
   const isMobile = useIsMobile();
   const wantsList = props.layout === "split" && !!props.list;
   if (import.meta.env.DEV && props.list && props.layout !== "split") {
@@ -329,9 +331,13 @@ export default function DataObservatorySection({
                   </div>
                   <div className={`${splitLayout.panel} space-y-6`}>
                     {chartsBlock}
-                    {tableBlock}
                   </div>
                 </div>
+                {/* La table éventuelle vient SOUS les deux colonnes, en pleine
+                    largeur : dans la colonne droite, elle allongerait la liste
+                    de toute sa hauteur — seuls les graphes doivent la commander
+                    — et ses colonnes s'y serreraient. */}
+                {tableBlock}
               </>
             ) : (
               <>

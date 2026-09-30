@@ -361,7 +361,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.list.splitRatio": "Répartition liste/tableau de bord : 40-60 (défaut code), 50-50 ou 60-40. Même vocabulaire que le split liste+carte de searchProStatic.",
     "props.list.pageSize": "Lignes rendues avant « Voir plus » (défaut code 50). Sans virtualisation dans le parc, tout rendre d'un coup coûte cher au-delà de quelques centaines d'items.",
     "props.list.label": "Titre du panneau de liste (défaut : i18n du module). À renseigner pour nommer les items — « Équipements » plutôt que « Liste ».",
-    "props.rowAction": "Ouverture de la fiche, PARTAGÉE par le tableau et la liste. Historiquement sous `table.rowAction`, toujours lue en repli : une page qui remplace sa table par une liste déplace simplement ce bloc ici.",
+    "props.rowAction": "Ouverture de la fiche depuis la liste (repli : `table.rowAction`). Le tableau ne lit QUE `table.rowAction` : une page qui garde son tableau y laisse ce bloc ; une page qui le remplace par une liste le déplace ici.",
   },
   "section:hero-carousel": {
     "props.slides": "Les diapositives, dans l'ordre. Chacune est un mini-héro (titre, sous-titre, image, CTA). Requis — une section carrousel sans diapositive ne rend rien du tout.",

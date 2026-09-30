@@ -132,7 +132,7 @@ salles/tarifs) ne sont pas encore lus.
       "defaultSort": "ville"
     },
     "rowAction": { "kind": "preview", "detailsMode": "dialog",
-                   "preview": { "type": "poi-amenities" } },    // ou {"kind": "profil"}
+                   "preview": { "type": "poi-amenities" } },    // ou {"kind": "profil"} — LISTE ; la table lit table.rowAction
     "layout": "split",                           // "stacked" (défaut) ou "split"
     "list": {                                    // requis par "split"
       "titleDimension": "ville",                 // libellé d'une ligne
@@ -177,7 +177,9 @@ valeur change de couleur dès que les comptes bougent.
 `layout: "split"` (+ `list`) réorganise la section en trois étages : les
 filtres, puis les KPI en **bandeau pleine largeur**, puis deux colonnes — la
 liste des items à gauche, les graphes à droite. `splitRatio` reprend le
-vocabulaire du split liste+carte de `searchProStatic` et de l'agenda.
+vocabulaire du split liste+carte de `searchProStatic` et de l'agenda. Une
+`table` déclarée vient ensuite SOUS les deux colonnes, en pleine largeur
+(cf. « Sans page `/data`, la table reste » plus bas).
 
 **Pourquoi les KPI sortent des colonnes** (arbitrage Peterson du 2026-09-16) :
 ce sont les chiffres de synthèse du résultat filtré, ils se lisent avant
@@ -199,11 +201,11 @@ lettre morte : la liste pousserait la page au lieu de défiler. Un
 courte (une section sans graphe la réduirait à rien).
 
 **Desktop seulement.** Sous 768 px (`useIsMobile`), deux colonnes sont
-illisibles : tout s'empile — filtres, KPI, graphes, puis la liste à la place
-qu'occupait la table. Elle n'est jamais escamotée.
+illisibles : tout s'empile — filtres, KPI, graphes, puis la liste, avant la
+table éventuelle. Elle n'est jamais escamotée.
 
 **Deux gestes par ligne, volontairement distincts** : le libellé applique le
-filtre de SÉLECTION, le bouton fiche ouvre le détail (même `rowAction`, même
+filtre de SÉLECTION, le bouton fiche ouvre le détail (`rowAction` résolu, même
 `SwitchDetailsMode` que la table — réservations et tableau de bord
 d'installation compris).
 
@@ -223,15 +225,27 @@ l'inverse. Deux propriétés en découlent, couvertes par `dashboard.test.ts` :
 l'item cliqué est TOUJOURS dans le résultat, et aucun clic ne peut vider la
 liste.
 
-**`rowAction` vit au niveau de la section**, partagée par la table, la liste et
-le deep-link `?installation=`. Déclarée sous `table.rowAction` dans les configs
-antérieures, elle y est toujours lue en repli : une page qui remplace sa table
-par une liste déplace simplement le bloc d'un cran, sans rien dupliquer.
+**`rowAction` vit au niveau de la section** pour la liste et le deep-link
+`?installation=`. Déclarée sous `table.rowAction` dans les configs antérieures,
+elle y est toujours lue en repli : une page qui remplace sa table par une liste
+déplace simplement le bloc d'un cran, sans rien dupliquer. **La table, elle, ne
+lit QUE `table.rowAction`** (`ObservatoryTable`) : une page qui GARDE sa table
+y laisse le bloc — hissé au niveau de la section, il priverait la table de son
+clic, sans le moindre signal.
 
 **Retirer la table d'une page ne perd rien** si le site expose déjà une page
 `/data` sur le même périmètre : tri par colonne, pagination et export CSV y
 restent entiers. C'est le choix fait le 2026-09-10 pour les trois sites
 d'équipements sportifs — `/observatoire` en split, `/data` inchangée.
+
+**Sans page `/data`, la table reste** — cas de tiers-lieux (2026-09-30), où
+elle porte seule l'export CSV, le tri par colonne, la pagination et les badges.
+Elle est alors rendue SOUS les deux colonnes, en pleine largeur : dans la
+colonne droite, elle allongerait la liste de toute sa hauteur (seuls les
+graphes doivent la commander) et ses colonnes s'y serreraient. Le bouton CSV
+reste le sien : celui de la liste n'apparaît qu'avec `export.fields`, et
+déclarer `fields` changerait AUSSI le CSV de la table (export des données
+détail au lieu de ses colonnes).
 
 **`maxWidth`** aligne le tableau de bord sur les autres sections de la page.
 Le défaut `8xl` (1440 px) convient à une page dédiée ; sur une page qui mêle
