@@ -272,6 +272,8 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.baseParams.notSourceKey": "true → cherche dans tout le réseau (ignore la source) ; nombre accepté (compat historique).",
     ...prefix("props.baseParams", BASE_PARAMS),
     "props.map": "Config carte : layout full|split, splitRatio, cluster, marker (surcharge integrations.map du site), itemAction popup.",
+    "props.map.marker": "Apparence des marqueurs — chaîne useItemImage > colorBy > iconUrl > style/color, avec icon (pictogramme lucide) au centre de la goutte ou de la pastille.",
+    "props.map.marker.by": "Marqueur PAR VALEUR d'un attribut : path + mapping valeur→marqueur partiel (fusionné sur le marqueur de base) + default. path DOIT être dans baseParams.defaultFields, sinon tout tombe sur le défaut.",
     "props.bg": "Fond de la section (token sémantique ou gradient).",
     ...prefix("props.list", LIST),
   },

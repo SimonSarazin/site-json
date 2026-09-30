@@ -4,10 +4,9 @@
  */
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import type { FieldValues } from "react-hook-form";
-import type { QueryKey } from "@tanstack/react-query";
 import { PROFIL_QUERY_KEYS } from "../../constants";
-import { SEARCH_QUERY_KEYS } from "@/modules/search/constants";
 import { AGENDA_QUERY_KEYS } from "@/modules/agenda/constants/queryKeys";
+import { SEARCH_LISTS_INVALIDATION } from "../../constants/listInvalidation";
 import { ParentInfoReadonly } from "../../components/profile-edit/fields";
 import { addPoiDescriptor } from "../addPoi.descriptor";
 import { MERGED_ADD_PROJECT, MERGED_ADD_ORGANIZATION, buildMergedAddEvent } from "../profilMerged";
@@ -20,19 +19,6 @@ const parentSlot = (parent: EntityTypes | null | undefined, organizerLabelKey?: 
   organizerInfo: <ParentInfoReadonly parent={parent ?? null} labelKey={organizerLabelKey} />,
 });
 const ADDR_EMPTY = { addressCountry: "", addressLocality: "", localityId: "", postalCode: "", streetAddress: "" };
-
-// Listes de RECHERCHE (annuaire/carte) à rafraîchir après toute création/édition — préfixes FIXES
-// (cf. SearchProStatic "searchCostumStatic"/"…MapAll", SearchPro "searchCostum"/"…MapAll", CardCount).
-// Sans ça, la liste search (ex. /projets) reste périmée au retour : la mutation n'invalidait que les
-// listes du PROFIL (USER_*_PREFIX), pas la query search. RESULTS_PREFIX = partial-match → toutes les
-// variations de filtres ; invalidation niveau queryClient → persiste malgré le navigate post-création.
-const SEARCH_LISTS_INVALIDATION: QueryKey[] = [
-  SEARCH_QUERY_KEYS.RESULTS_PREFIX("searchCostumStatic"),
-  SEARCH_QUERY_KEYS.RESULTS_PREFIX("searchCostumStaticMapAll"),
-  SEARCH_QUERY_KEYS.RESULTS_PREFIX("searchCostum"),
-  SEARCH_QUERY_KEYS.RESULTS_PREFIX("searchCostumMapAll"),
-  SEARCH_QUERY_KEYS.RESULTS_PREFIX("cardCountCT"),
-];
 
 export const addPoiConfig: EntityModalConfig = {
   descriptor: addPoiDescriptor,

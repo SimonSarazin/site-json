@@ -26,6 +26,16 @@
     "externalLink": "External link",
     "newTab": "opens in a new tab"
   },
+  "CardDefault": {
+    "projectCount_one": "{{count}} project",
+    "projectCount_other": "{{count}} projects",
+    "contributorCount_one": "{{count}} contributor",
+    "contributorCount_other": "{{count}} contributors"
+  },
+  "PreviewEvent": {
+    "attendeeCount_one": "{{count}} participant",
+    "attendeeCount_other": "{{count}} participants"
+  },
   "CardResourceBooking": {
     "price": "Usage price:",
     "location": "Location:",
