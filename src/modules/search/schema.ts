@@ -885,7 +885,7 @@ export const MapConfSchema = z.object({
 
 export type MapConf = z.infer<typeof MapConfSchema>;
 
-const SearchTypeSchema = z.enum([
+export const SearchTypeSchema = z.enum([
   "NGO",
   "LocalBusiness",
   "Group",

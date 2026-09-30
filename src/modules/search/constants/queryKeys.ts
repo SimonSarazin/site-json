@@ -30,6 +30,14 @@
 export const SEARCH_STATIC_LIST_PREFIX = "searchCostumStatic";
 export const SEARCH_STATIC_MAP_PREFIX = "searchCostumStaticMapAll";
 
+/**
+ * Préfixe de la recherche de DOUBLONS à la création d'une entité (slot `slot:entityDuplicates`
+ * des formulaires costum). Producteur : `useEntityDuplicates` (module profil). Invalidation :
+ * `invalidate:standard` via `mutation.invalidateFn.params.searchKeys` du formulaire — une entité
+ * tout juste créée doit apparaître à la saisie suivante du même nom.
+ */
+export const SEARCH_DUPLICATES_PREFIX = "entityDuplicates";
+
 export interface SearchQueryKeyParams {
   queryKeyPrefix: string;
   searchText: string;
