@@ -418,6 +418,86 @@ Au passage, description corrigée : « Les tiers-lieux que vous suivez » → «
 étrangers au lot) · exemple `header-mega-menu` (assistant config) resynchronisé
 (`config:example -- header-mega-menu --write`) après déplacement de l'entrée de nav. Rien commité.
 
+### 30/09bis — liens « Se réunir »/« Coworker »/« Séjourner » : `/annuaire-ressources` filtré, pas `/lieux`
+
+**Demande.** Ces 3 entrées du menu « Les lieux » (+ la carte d'accueil « Se réunir ») pointaient vers
+`/lieux?services=…` — l'annuaire des TIERS-LIEUX filtré par service déclaré sur leur fiche. Elles
+doivent pointer vers `/annuaire-ressources` (l'annuaire des RESSOURCES réservables — coworking,
+salles, hébergement, cf. §21/09), filtré sur le bon type.
+
+**Deep-link générique ajouté**, pas un cas spécial. `CoformResourceDirectorySection.tsx`
+(`/annuaire-ressources`) avait déjà sa facette « Type de ressource » (`selectedFilters.resourceType`,
+coché à la main) mais aucune lecture d'URL. Câblé avec `usePageFiltersUrlSync` — le MÊME hook
+générique qui fait déjà fonctionner `/lieux?services=…`/`?typologies=…` (`computeFiltersFromUrl`,
+partagé avec `FiltersSection`) — sur un groupe minimal `{id: "resourceType", options: [...]}`
+dérivé des `resourceTypes` déjà configurés. `?resourceType=meeting-room|coworking|accommodation`
+pré-coche donc la facette au chargement, sans logique de lecture d'URL réinventée.
+
+Liens mis à jour : nav « Se réunir »/« Coworker »/« Séjourner » (`/annuaire-ressources?resourceType=
+meeting-room|coworking|accommodation`) et la carte d'accueil « Se réunir » (seule des 3 à avoir un
+raccourci sur la page d'accueil — pas d'équivalent Coworking/Hébergement à y corriger).
+
+**Vérifié** : `typecheck` ✅ · `eslint` ✅ · `config:validate` ✅ (15 pages, 27 sections) ·
+`test:unit` 5449/5451 (mêmes 2 échecs d'environnement, étrangers au lot) · exemple `header-mega-menu`
+resynchronisé (2e fois du jour, même cause : déplacement/édition d'entrées de `header.nav`). ⚠️ Pas
+de vérification navigateur réelle (pas d'outil de capture d'écran dans cette session) — le mécanisme
+de deep-link est réutilisé tel quel (déjà en service sur `/lieux` et la home), mais son application à
+CETTE page n'a pas été rejouée à l'œil ; à valider avant de considérer le lot terminé. Rien commité.
+
+⚠️ **Corrigé le 30/09ter** : le `usePageFiltersUrlSync` posé ci-dessus était de trop — cf. l'entrée
+suivante, il a été retiré.
+
+
+### 30/09ter — 2 correctifs `/annuaire-ressources` (recherche texte tentée puis retirée)
+
+**Retour utilisateur, 2 bugs.**
+
+1. **Boucle de filtrage infinie au clic sur un lien de menu depuis `/annuaire-ressources`.** Cause :
+   le `usePageFiltersUrlSync` posé en 30/09bis était un DEUXIÈME mécanisme de synchro URL↔filtres,
+   en plus de celui déjà intégré à `FiltersSection` (rendue en sidebar sur cette même page, avec sa
+   propre facette « Type de ressource »). `FiltersSection` a sa propre garde anti-boucle
+   (`lastSyncedSearch`/`urlHydrated`) sur le MÊME état partagé `PageFilters` — deux écrivains non
+   coordonnés sur le même contexte produisaient la boucle observée. Retiré : `FiltersSection` seule
+   suffit, `?resourceType=…` fonctionne déjà par son mécanisme existant (aucun hook à réinventer).
+2. **Croix de fermeture de l'aperçu ressource masquée derrière le badge de capacité.** Les deux sont
+   `absolute … top-3/4 right-3/4` dans le même coin ; la croix (posée par la coque `DetailsModeDialog`,
+   sans z-index explicite) passait dessous. Fix côté coque (`[&>[data-slot=dialog-close]]:z-20`),
+   pas côté preview : protège pareil toute future preview qui poserait un contenu en haut à droite.
+
+Une recherche texte libre (barre dédiée, câblée sur `useSearchQuery`'s `searchText`) avait été
+ajoutée dans ce lot puis **retirée sur demande** : `searchText` reste `""`, docstring de la section
+revenue à « Pas de recherche texte », clés i18n `resourceDirectory.searchPlaceholder`/`clearSearch`
+retirées fr/en. Aucune trace du composant `ResourceDirectorySearchBar` dans le code final.
+
+**Vérifié** : `typecheck` ✅ · `eslint` ✅ · `test:unit -- src/modules/search` 673/673 (module entier,
+après retrait).
+⚠️ Pas de vérification navigateur réelle (pas d'outil de capture d'écran dans cette session) : les 2
+correctifs sont tracés par lecture de code, pas rejoués à l'œil. Rien commité.
+
+
+### 30/09quater — 2 correctifs manqués/insuffisants du lot précédent
+
+**Retour utilisateur, la home pointait encore vers `/lieux?services=…`.** La page d'accueil a en
+réalité **deux** sections de cartes d'action sur `/` : `actions-principales` (type `cards`, corrigée
+en 30/09bis) et une **deuxième section dupliquée**, `tiers-lieux-actions` (type `html`, contenu HTML
+brut), avec sa propre carte « Se réunir » et son propre lien codé en dur — non vue en 30/09bis. Lien
+corrigé (`/annuaire-ressources?resourceType=meeting-room`). ⚠️ Les deux sections coexistent sur `/`,
+aucune masquée — doublon d'affichage apparent, non traité ici (hors périmètre du bug signalé, à
+confirmer si voulu).
+
+**Retour utilisateur, la croix et le badge de capacité se chevauchent encore.** Le `z-20` posé en
+30/09ter (coque `DetailsModeDialog`) résout l'ATTEIGNABILITÉ au clic mais pas le chevauchement
+VISUEL : les deux pastilles restent l'une sur l'autre (`top-3/4 right-3/4`, quasiment le même coin).
+Fix complémentaire côté preview : le badge de capacité de `PreviewResourceDirectory` déplacé de
+`right-3` à `left-3` (même coin que `PreviewEvent`, déjà à gauche) — les deux pastilles n'occupent
+plus le même coin, plus de chevauchement du tout (le `z-20` de la coque reste en place comme filet de
+sécurité générique pour une future preview).
+
+**Vérifié** : `typecheck` ✅ · `eslint` ✅ · `test:unit -- src/modules/search` 673/673 ·
+`config:validate` ✅ (15 pages, 27 sections).
+⚠️ Pas de vérification navigateur réelle (pas d'outil de capture d'écran dans cette session) : les 2
+correctifs sont tracés par lecture de code, pas rejoués à l'œil. Rien commité.
+
 
 ### 24/09ter — un administrateur peut supprimer sa fiche
 

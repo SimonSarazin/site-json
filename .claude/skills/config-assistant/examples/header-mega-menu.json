@@ -42,7 +42,7 @@
               "fr": "Trouver la salle de réunion pour vous accueillir.",
               "en": "Find the meeting room to host you."
             },
-            "path": "/lieux?services=Salle de Réunion"
+            "path": "/annuaire-ressources?resourceType=meeting-room"
           },
           {
             "label": {
@@ -64,7 +64,7 @@
               "fr": "Les bureaux partagés et espaces de Coworking.",
               "en": "Shared offices and coworking spaces."
             },
-            "path": "/lieux?services=Coworking"
+            "path": "/annuaire-ressources?resourceType=coworking"
           },
           {
             "label": {
@@ -97,7 +97,7 @@
               "fr": "Les lieux pouvant vous accueillir pour plusieurs jours.",
               "en": "Places that can host you for several days."
             },
-            "path": "/lieux?services=Hébérgement"
+            "path": "/annuaire-ressources?resourceType=accommodation"
           },
           {
             "label": {

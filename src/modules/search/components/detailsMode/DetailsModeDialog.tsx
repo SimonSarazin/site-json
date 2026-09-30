@@ -37,12 +37,17 @@ export default function DetailsModeDialog({ openDetails, setOpenDetails, item, p
               `absolute top-4 right-4` sans fond ni ombre et à `opacity-70`, se retrouve alors sur une
               photo arbitraire — illisible sur une photo sombre en thème clair, et inversement (WCAG
               1.4.11, contraste d'un contrôle). Le fond est posé ICI, dans la coque, plutôt que dans
-              chaque preview : c'est la coque qui pose la croix. */}
+              chaque preview : c'est la coque qui pose la croix.
+              `z-20` : une preview peut poser sa PROPRE pastille en `absolute top-3 right-3` dans le
+              même coin — sans z-index explicite ici, cette pastille de contenu passait devant la croix
+              (même ancêtre positionné, aucun z-index par défaut côté croix) et la rendait inatteignable
+              au clic. Filet de sécurité générique : `PreviewResourceDirectory` a par ailleurs déplacé sa
+              pastille de capacité à `left-3` pour ne plus partager le coin de la croix du tout. */}
           <DialogContent
             aria-describedby={undefined}
             className={cn(
               "p-0 gap-0 max-h-[90vh] overflow-hidden",
-              "[&>[data-slot=dialog-close]]:rounded-full [&>[data-slot=dialog-close]]:bg-background/80",
+              "[&>[data-slot=dialog-close]]:z-20 [&>[data-slot=dialog-close]]:rounded-full [&>[data-slot=dialog-close]]:bg-background/80",
               "[&>[data-slot=dialog-close]]:p-1.5 [&>[data-slot=dialog-close]]:opacity-100",
               "[&>[data-slot=dialog-close]]:backdrop-blur-sm [&>[data-slot=dialog-close]]:shadow-sm",
               maxWidth,
