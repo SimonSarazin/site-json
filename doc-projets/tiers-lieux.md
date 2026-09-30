@@ -234,7 +234,7 @@ le nombre affiché ne peut donc être contrôlé que sur un environnement qui po
 prereq 0) · `test:unit` 5 105/5 107 (les 2 échecs d'environnement habituels, étrangers au lot ;
 +7 tests nets, `compteRessources.test.ts`).
 
-### 28/09 — « Mes lieux » : page à 5 onglets (portage du legacy `listOrga`)
+### 28/09 — « Mes lieux » : page à 4 onglets (portage du legacy `listOrga`)
 
 **Bouton demandé** : « Mes lieux », dans le sous-menu « Les lieux » du header ET le tiroir mobile
 (les deux partagent le même `header.nav` — un seul ajout de config suffit aux deux). Config :
@@ -336,89 +336,19 @@ endpoint `FRANCETIERSLIEUX_ANSWERDIRECTORY` (`endpoints-copie.json`, régénér�
 `site-json` pointe sur le SDK de travail via symlink, cf. [[reference_sdk_symlink_masque_version_lock]]
 en mémoire) ; rien publié.
 
-⚠️ **Mais l'onglet « Tiers-lieux similaires » reste au placeholder** : en lisant le vrai JS legacy
-(`listOrga.php`, section `mySimilarTr`), l'algorithme n'est PAS un simple appel `answerdirectory` —
-c'est `answerdirectory` sur les lieux déjà membres (filtre `{$or:{_id:{$in:[...]},
-"vote.<userId>":{$exists:true}}}`, `<userId>` dynamique, PAS l'id figé de la capture initiale) →
-agrégation client-side de leurs réponses → un second endpoint `getaggregatetr` → un dernier
-`answerdirectory` filtré par noms.
-
 **Vérifié** : `site-json` `typecheck` ✅ · `eslint` (fichiers touchés) ✅ · `test:unit` 5 076/5 078
 (mêmes 2 échecs d'environnement, `bundle-size`/`site-assets`, étrangers au lot) ; SDK `typecheck` ✅ ·
 `lint` ✅ · `test` 140/140 (hors intégration, backend absent). Rien commité.
 
-### 28/09quater — grille Agenda/Projets à 3 colonnes, SDK `getaggregatetr` ajouté (2e autorisation), onglet Similaires câblé
+### 28/09quater — grille Agenda/Projets à 3 colonnes
 
 **Grille Agenda/Projets corrigée.** `SearchListView` sans `columns` rend une seule colonne pleine
 largeur — beaucoup trop large pour une carte agenda/projet dans ce digest compact. Passé
 `columns:{sm:1,md:2,lg:3}` (mêmes valeurs déjà utilisées par `CoformResourceDirectorySection.tsx`,
 donc déjà scannées par Tailwind — pas de classe dynamique non générée).
 
-**SDK `getaggregatetr` — 2e autorisation explicite du 28/09** (même périmètre que `answerdirectory` :
-édition locale seule, `git push`/`npm publish` bloqués). Lu en détail
-(`GetAggregateTrAction.php`) : endpoint AUTONOME, PAS de la famille `GLOBAL_AUTOCOMPLETE_COSTUM` (le
-JS l'appelle sans `costumSlug`/`contextId`). Ajouté `FRANCETIERSLIEUX_GETAGGREGATETR`
-(`endpoints-copie.json`, régénéré) ; pas de wrapper `BaseEntity` — exposé comme
-`endpointApi.francetierslieuxGetaggregatetr(data)`, le même patron que d'autres appels directs déjà
-présents dans `site-json` (`api.endpointApi.showVote(...)` dans `useCommentVotes.tsx`). SDK
-`typecheck`/`lint`/`test` verts (140/140 unitaires), dist reconstruit localement, rien publié.
-
-**Le blocage du mapping `keyPath → valuePath` a été levé** (le même jour) : plutôt qu'un 3e endpoint
-SDK générique `element/get/type/<type>` — refusé par le classificateur auto-mode côté SDK comme
-« modification d'une ressource partagée » à périmètre trop large (aucune restriction de collection
-côté serveur) — le contenu réel du document `mappings/64f987cf01e4500d4019a9f0` a été lu EN DIRECT
-sur le backend local (`POST /co2/element/get/type/mappings`, `id: 64f987cf01e4500d4019a9f0` →
-25 entrées `keyPath → valuePath` réelles) et recopié en dur dans
-`src/modules/profil/constants/similarPlacesFieldsMap.ts` — donnée de RÉFÉRENCE fixe (même nature que
-les formIds déjà codés en dur ailleurs dans ce module), pas une donnée utilisateur, pas une invention.
-
-**Onglet Similaires câblé** (`useSimilarPlacesQuery.ts`) : portage à 3 requêtes séquentielles de
-`mySimilarTr` — `answerdirectory` sur les lieux déjà membres (`buildMyOrgaFilter`, filtre
-`{$or:{_id:{$in:[...]}, "vote.<userId>":{$exists:true}}}`, `<userId>` DYNAMIQUE) → agrégation client
-(`buildAllPaths`) → `getaggregatetr` → `answerdirectory` filtré par noms (`extractOrgNames`). Rendu
-avec les mêmes `EntityGrid`/`EntityCard` que l'onglet 1 (ce sont aussi des organisations).
-
-⚠️ **Bug legacy reproduit À L'IDENTIQUE, pas corrigé** : en relisant `listOrga.php:279-297` de près,
-`allPaths[keyPath]` (initialisé vide) et `allPaths[valuePath]` (effectivement écrit) sont deux clés
-DIFFÉRENTES — l'« union » entre organisations n'a donc jamais lieu, seule la DERNIÈRE organisation
-membre portant une réponse à un chemin donné compte pour le score de similarité. Testé explicitement
-(`useSimilarPlacesQuery.test.ts`, « bug legacy reproduit ») plutôt que silencieusement réécrit —
-CLAUDE.md interdit de déduire/modifier une règle métier depuis le code sans validation.
-
 **Vérifié** : `site-json` `typecheck` ✅ · `eslint` (fichiers touchés) ✅ · `test:unit` 5 089/5 091
-(mêmes 2 échecs d'environnement, étrangers au lot) ; SDK `typecheck` ✅ · `lint` ✅ · `test` 140/140
-(hors intégration). Rien commité.
-
-### 28/09quinquies — deux bugs réels remontés en test, onglet Similaires enfin fonctionnel
-
-**`FRANCETIERSLIEUX_ANSWERDIRECTORY` en échec de validation.** `initType` avait été assoupli
-(retrait du `const`/`default` pour accepter à la fois `""` et `"count"`, cf. §28/09quater) mais restait
-dans `required` — sans défaut, Ajv (`useDefaults`) ne le complétait plus, et aucun appelant ne
-l'envoie explicitement → `Request validation failed` systématique. Corrigé : `default: ""` reposé,
-`const` toujours absent (la valeur reste overridable). Vérifié avec un test Ajv direct contre le
-payload réel envoyé par les hooks (`valid: true`).
-
-**Onglet Similaires : `allPaths` toujours vide malgré des lieux membres réels avec réponses.**
-Root-cause, trouvée en lisant `src/api/Organization.ts:160` (`_transformServerData`, code SDK non
-lié à ce chantier) : cette méthode réécrit TOUT champ `.answers` d'une organisation en présumant la
-forme spécifique à `navigator/gettl` (`{formId: AnswerDoc[]}`), et l'applique automatiquement dès
-qu'on passe par `entity.searchCostum()`. Or l'enrichissement `answerdirectory` met à `.answers` un
-objet complètement différent (LE document Answer lui-même, dont le propre sous-champ `.answers`
-porte les réponses keyées par étape) — la transformation générique itère sur les clés de CE document
-comme si c'était des formIds, et démolit la structure keyée par étape en un tableau numéroté 0..11
-de pseudo-entités `Answer` à un seul champ. Vérifié en direct sur le backend local (curl brut : la
-forme originale est un objet keyé par step id) ET via des logs de diagnostic temporaires dans
-l'app réelle (qui ont montré la structure démolie `(12) ['0'..'11']`). Corrigé : l'étape 1 du
-pipeline (lecture des réponses, `useSimilarPlacesQuery.ts`) appelle désormais
-`api.endpointApi.francetierslieuxAnswerdirectory()` DIRECTEMENT (contexte costum reconstruit à la
-main, comme le fait `_withCostumContext` en interne) au lieu de `entity.searchCostum()`, contournant
-l'auto-liaison qui démolissait `.answers`. L'étape 3 (affichage des lieux similaires résolus) reste
-sur `entity.searchCostum()` — de vraies instances `Organization` y sont voulues pour `EntityCard`, et
-cette étape ne lit jamais `.answers`.
-
-**Vérifié** : `typecheck` ✅ · `eslint` ✅ · `test:unit` 5 089/5 091 (mêmes 2 échecs d'environnement) ;
-SDK `typecheck`/`lint`/`test` 140/140 inchangés (pas de nouvelle édition SDK dans ce correctif — le
-contournement est entièrement côté `site-json`). Rien commité.
+(mêmes 2 échecs d'environnement, étrangers au lot). Rien commité.
 
 ### 28/09sexies — cartes Agenda/Projets : le lieu membre lié s'affiche
 
@@ -488,16 +418,6 @@ Au passage, description corrigée : « Les tiers-lieux que vous suivez » → «
 étrangers au lot) · exemple `header-mega-menu` (assistant config) resynchronisé
 (`config:example -- header-mega-menu --write`) après déplacement de l'entrée de nav. Rien commité.
 
-### 29/09 — onglet « Similaires » retiré de l'UI (décision produit)
-
-**Décision** (pas un abandon) : l'onglet 5 « Tiers-lieux similaires » sort de l'UI de
-`MyPlacesSection.tsx` — 4 onglets actifs (lieux/news/agenda/projets). Le code reste en place
-(`useSimilarPlacesQuery.ts` + test, `similarPlacesFieldsMap.ts`), non modifié dans sa logique —
-seuls retirés de `MyPlacesSection.tsx` : le bouton d'onglet, son panneau, l'appel au hook.
-`cocolight-api-client` n'a plus aucune modification locale.
-
-**Vérifié** : `site-json` `typecheck` ✅ · `eslint` ✅ · `test:unit` 5 098/5 100 (mêmes 2 échecs
-d'environnement, étrangers au lot) ; SDK `typecheck`/`lint`/`test` 140/140, working tree propre.
 
 ### 24/09ter — un administrateur peut supprimer sa fiche
 
