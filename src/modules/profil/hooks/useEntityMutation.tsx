@@ -145,7 +145,7 @@ function isGalleryFieldValue(v: unknown): v is GalleryFieldValue {
   return !!g && typeof g === "object" && Array.isArray(g.added) && Array.isArray(g.removedDocIds) && typeof g.contentKey === "string";
 }
 interface GalleryCapableEntity {
-  uploadDocument: (file: File, opts: { contentKey: string; docType?: "image" | "file" }) => Promise<{ docId: string; docPath: string }>;
+  uploadDocument: (file: File, opts: { contentKey: string; docType?: "image" | "file"; subKey?: string }) => Promise<{ docId: string; docPath: string }>;
   deleteFile: (docId: string) => Promise<void>;
   data?: Record<string, unknown>;
   save?: () => Promise<unknown>;
@@ -182,7 +182,15 @@ async function processGalleryFields(entity: unknown, values: Data): Promise<void
       }
     }
     for (const file of v.added ?? []) {
-      const res = await ent.uploadDocument!(file, { contentKey: v.contentKey, docType: v.docType });
+      // `subKey` = clé du CHAMP de formulaire (ex. "statusFile", "responsableCivilePro") : le backend
+      // écrase `contentKey` des `doctype:file` par un bucket MIME (pdf/spreadsheet/…), mais conserve
+      // `subKey` verbatim → c'est lui qui permet de rattacher un document à son champ (seed d'édition,
+      // preview). Inutile pour les images (contentKey "slider" survit).
+      const res = await ent.uploadDocument!(file, {
+        contentKey: v.contentKey,
+        docType: v.docType,
+        subKey: v.docType === "file" ? v.contentKey : undefined,
+      });
       if (v.mediaTarget?.field && res?.docPath) {
         (mediaAdds[v.mediaTarget.field] ??= []).push({ type: v.mediaTarget.type, url: res.docPath });
       }
