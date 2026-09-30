@@ -72,7 +72,11 @@ export interface EntityMutationConfig<TParams = void> {
  * });
  */
 export function createEntityMutation<TParams = void>(config: EntityMutationConfig<TParams>) {
-  return function useEntityMutation(entity: EntityTypes | null) {
+  /**
+   * @param options.silentSuccess - tait le toast de succès de la mutation, pour un appelant qui
+   *   affiche le sien (cf. `useMutationWithToast`). Les erreurs restent signalées.
+   */
+  return function useEntityMutation(entity: EntityTypes | null, options?: { silentSuccess?: boolean }) {
     const queryClient = useQueryClient();
     const { me } = useCocolight();
     const entityType = entity ? getEntityType(entity) : null;
@@ -108,6 +112,7 @@ export function createEntityMutation<TParams = void>(config: EntityMutationConfi
       namespace: "modules/profil",
       successKey: toastKeys.successKey,
       errorKey: toastKeys.errorKey,
+      silentSuccess: options?.silentSuccess,
       getSuccessParams: config.getSuccessParams
         ? (_, params) => config.getSuccessParams!(entity!, params)
         : undefined,
