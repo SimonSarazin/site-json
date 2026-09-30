@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import type { Organization } from "@communecter/cocolight-api-client";
 import {
   Award,
@@ -7,8 +6,10 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
+  Download,
   Edit,
   Facebook,
+  FileText,
   FolderOpen,
   Globe,
   IdCard,
@@ -21,20 +22,22 @@ import {
   Phone,
   Scale,
   Tag,
-  Users,
   Youtube,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import LazyImage from "@/components/layout/LazyImage";
-import { FilesList, type DocFile } from "@/components/media/FilesList";
 import ProfileMapLeaflet from "@/modules/profil/components/sections/ProfileMapLeaflet";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { DynamicEditModal } from "@/modules/profil/components/profile-edit/EditModalRegistry";
+import { useEntityBySlugQuery } from "@/hooks/useEntityBySlugQuery";
 import { useT } from "@/hooks/useT";
+import { telephonePrincipal } from "@/lib/telephonePrincipal";
+import { coerceBool } from "@/modules/formEngine/engine/coercions";
+import { siteWebPrincipal } from "@/lib/siteWebPrincipal";
+import { normalizeToolHref } from "@/modules/toolsCatalog/utils/toolHref";
 import { PreviewProps } from "@/modules/search/schema";
-import { SEARCH_QUERY_KEYS } from "@/modules/search/constants/queryKeys";
 
 /**
  * Fiche détail « structure » (organisation) — `preview.type: "structure"`.
@@ -53,17 +56,45 @@ interface StructureAddress {
   addressCountry?: string;
 }
 
-/** `contentKey` des documents-IMAGES (Document.php IMG_*) — exclus de la section « Documents ». */
-const IMAGE_CONTENT_KEYS = new Set([
-  "banner",
-  "bannerAboutForm",
-  "profil",
-  "logo",
-  "slider",
-  "media",
-  "profil-resized",
-  "profil-marker",
-]);
+/**
+ * Section « Documents » de la fiche : emplacements NOMMÉS, appariés aux fichiers par `subKey` (posé à
+ * l'upload = clé du champ formulaire). Reprend la fiche legacy SSBE `ssbe/organizations/preview.php` :
+ * 2 emplacements, repli « Non renseigné ». Le formulaire SiteForge écrit `subKey:"statusFile"` là où
+ * les fiches legacy portent `recepisseDeclaration` → le 1er emplacement accepte les deux.
+ */
+const DOCUMENT_SLOTS: ReadonlyArray<{ subKeys: readonly string[]; labelKey: string }> = [
+  { subKeys: ["statusFile", "recepisseDeclaration"], labelKey: "PreviewStructure.docRecepisse" },
+  { subKeys: ["responsableCivilePro"], labelKey: "PreviewStructure.docResponsableCivilePro" },
+];
+
+interface StructureDoc {
+  docId: string;
+  name?: string;
+  docPath?: string;
+  subKey?: string;
+}
+
+/** `about.files` (objet keyé `_id` OU tableau, cf. Organization::getById) → liste normalisée téléchargeable. */
+function normalizeAboutFiles(files: unknown): StructureDoc[] {
+  const list =
+    files && typeof files === "object" && !Array.isArray(files)
+      ? Object.values(files as Record<string, Record<string, unknown>>)
+      : Array.isArray(files)
+        ? (files as Array<Record<string, unknown>>)
+        : [];
+  return list
+    .map((f) => {
+      const rid = f._id as { $id?: string } | string | undefined;
+      const docId = rid && typeof rid === "object" ? rid.$id : rid;
+      return {
+        docId: String(docId ?? f.id ?? ""),
+        name: typeof f.name === "string" ? f.name : undefined,
+        docPath: typeof f.docPath === "string" ? f.docPath : undefined,
+        subKey: typeof f.subKey === "string" ? f.subKey : undefined,
+      };
+    })
+    .filter((d) => d.docId && d.docPath);
+}
 
 function InfoSectionTitle({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) {
   return (
@@ -151,8 +182,6 @@ function PersonCard({
 
 const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
   const t = useT("modules/search");
-  const org = item as unknown as Organization;
-  const sd = (org?.serverData ?? {}) as Record<string, unknown>;
 
   // Édition — même mécanisme générique config-driven que PreviewPoiAmenities :
   // `useProfilPermissions` calcule les droits sur CETTE entité (pas l'entité du site),
@@ -160,6 +189,21 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
   // (repli "edit-profile" générique si absent).
   const { canEditProfile } = useProfilPermissions(item ?? null);
   const [editModalOpen, setEditModalOpen] = useState(false);
+
+  // Fiche COMPLÈTE rechargée par slug (même patron que useResourceEntity) : l'item de recherche est
+  // tronqué et ne porte jamais `about.files` (avec `subKey`, via Organization::getById backend).
+  // Réservée aux gestionnaires (admin de la structure ou du costum = `canEditProfile`), comme
+  // `$ssbeCanManage` de la fiche legacy : sans ce droit, elle n'est même pas rechargée.
+  const itemSlug = ((item as unknown as Organization | undefined)?.serverData as { slug?: unknown } | undefined)?.slug;
+  const fullEntity = useEntityBySlugQuery({
+    slug: typeof itemSlug === "string" ? itemSlug : undefined,
+    options: { enabled: typeof itemSlug === "string" && itemSlug !== "" && canEditProfile },
+  });
+
+  // On AFFICHE l'entité que la modale MODIFIE : afficher `item` pendant que la modale édite
+  // `fullEntity` laissait la fiche sur les anciennes valeurs après enregistrement.
+  const org = (fullEntity.data ?? item) as unknown as Organization;
+  const sd = (org?.serverData ?? {}) as Record<string, unknown>;
 
   // L'entité de résultat de recherche est TRONQUÉE aux champs listés dans
   // `baseParams.defaultFields` (cf. buildSearchPayload) — suffisant pour cette fiche en
@@ -190,12 +234,15 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
   const type = sd.type as string | undefined;
   const statusActor = sd.statusActor as string | undefined;
   const legalStatus = sd.legalStatus as string | undefined;
-  const affiliate = sd.affiliate as string | undefined;
+  // `affiliate` : "Oui"/"Non" sur les fiches historiques, "true"/"false" depuis le formulaire actuel et le
+  // legacy — livrés en BOOLÉENS par l'API. Tester `=== "Oui"` privait du badge 14 structures affiliées.
+  const isAffiliated = coerceBool(sd.affiliate);
   const affiliateTo = sd.affiliateTo as string | undefined;
   const email = sd.email as string | undefined;
-  // Le site web du parc réel vit dans `url` (49/138 orgs SSBE — la clé qu'écrit aussi le form
-  // structure) ; `link` n'existe que sur 3 fiches historiques → repli.
-  const link = (sd.url as string | undefined) ?? (sd.link as string | undefined);
+  // `link` d'abord (clé écrite par les formulaires structure et le legacy), repli sur `url` (fiches
+  // anciennes). Le href reçoit son schéma : `www.exemple.re`, tel que saisi, serait un lien RELATIF.
+  const link = siteWebPrincipal(sd);
+  const linkHref = normalizeToolHref(link);
   const shortDescription = sd.shortDescription as string | undefined;
   const description = sd.description as string | undefined;
   const profilImageUrl = sd.profilImageUrl as string | undefined;
@@ -210,9 +257,7 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
   const socialNetwork = (sd.socialNetwork ?? {}) as Record<string, string>;
   const youtube = sd.youtube as string | undefined;
 
-  const telephone = (sd.telephone ?? {}) as { mobile?: string[]; fixe?: string[] };
-  // repli sur le `mobile` PLAT historique (4/138 orgs) quand l'objet telephone ne porte rien
-  const mainPhone = telephone.mobile?.[0] ?? telephone.fixe?.[0] ?? (typeof sd.mobile === "string" && sd.mobile ? sd.mobile : undefined);
+  const mainPhone = telephonePrincipal(sd);
 
   const repTitle = sd.representativeTitle as string | undefined;
   const repCivility = (sd.representativeCivility as string | undefined) ?? "";
@@ -256,35 +301,16 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
     .filter(Boolean)
     .join(", ");
 
-  // Documents attachés à la structure — lecture seule, via `getDocuments()` (DOCUMENT_LIST,
-  // co2/document/list) : seul endpoint documents disponible dans la version SDK installée
-  // (getGalleryFiles existe côté source cocolight-api-client mais pas encore dans le build
-  // publié ici). Ne distingue pas docType côté backend → on exclut les contentKey "image"
-  // connus pour ne garder que les vrais documents (PDF, etc.).
-  const documentsQuery = useQuery<DocFile[]>({
-    queryKey: SEARCH_QUERY_KEYS.DOCUMENTS(org?.id ?? null),
-    queryFn: async () => {
-      const docs = await org.getDocuments();
-      return docs
-        .filter((d) => !IMAGE_CONTENT_KEYS.has(d.contentKey ?? ""))
-        .map((d) => ({
-          docId: d.id,
-          // `path` renvoyé par DOCUMENT_LIST est le DOSSIER, pas le fichier (ListAction.php,
-          // contrairement à Document::getDocumentPath utilisé par les autres endpoints
-          // documents) — il faut concaténer le nom pour obtenir une URL téléchargeable.
-          docPath: d.path && d.name ? `${d.path.replace(/\/$/, "")}/${d.name}` : d.path,
-          name: d.name,
-          contentKey: d.contentKey,
-        }));
-    },
-    // `getDocuments()` (DOCUMENT_LIST) exige une session connectée côté backend — pour un
-    // visiteur anonyme la query échoue (ApiAuthenticationError) et la section reste
-    // silencieusement masquée (pas de rendu de `documentsQuery.error`), sans casser la fiche.
-    enabled: Boolean(org?.id && typeof org.getDocuments === "function"),
-    retry: false,
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
-  });
+  // Documents (pièces justificatives) de la fiche complète, répartis par `subKey` dans des
+  // EMPLACEMENTS NOMMÉS, comme la fiche legacy SSBE, plutôt qu'en liste à plat.
+  const docSlots = useMemo(() => {
+    const files = normalizeAboutFiles((fullEntity.data?.serverData as { files?: unknown } | undefined)?.files);
+    return DOCUMENT_SLOTS.map((s) => ({
+      label: t(s.labelKey),
+      files: files.filter((f) => f.subKey && s.subKeys.includes(f.subKey)),
+    }));
+  }, [fullEntity.data, t]);
+  const hasAnyDoc = docSlots.some((s) => s.files.length > 0);
 
   if (!name) return null;
 
@@ -381,7 +407,7 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
                   className="rounded-full border border-white/30 bg-white/10 text-primary-foreground hover:bg-white/20"
                   aria-label={t("PreviewStructure.website")}
                 >
-                  <a href={link} target="_blank" rel="noopener noreferrer">
+                  <a href={linkHref} target="_blank" rel="noopener noreferrer">
                     <Globe className="size-4" />
                   </a>
                 </Button>
@@ -433,7 +459,7 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
               </span>
               <span className="truncate text-sm font-bold text-foreground">{affiliateTo}</span>
             </div>
-            {affiliate === "Oui" && (
+            {isAffiliated && (
               <Badge className="border-success/30 bg-success/15 text-success hover:bg-success/15">
                 <CheckCircle2 />
                 {t("PreviewStructure.affiliated")}
@@ -496,33 +522,67 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
               />
             )}
 
-            <Separator className="my-1" />
-
-            <InfoSectionTitle icon={Building2}>{t("PreviewStructure.information")}</InfoSectionTitle>
-            <div className="grid grid-cols-2 gap-2">
-              {slug && <InfoItem icon={Tag} label={t("PreviewStructure.identifier")} value={slug} />}
-              {typeLabel && <InfoItem icon={FolderOpen} label={t("PreviewStructure.category")} value={typeLabel} />}
-              {memberOfCount > 0 && (
-                <InfoItem
-                  icon={Network}
-                  label={t("PreviewStructure.memberOf")}
-                  value={t("PreviewStructure.memberOfCount", undefined, { count: memberOfCount })}
-                />
-              )}
-              {created && (
-                <InfoItem
-                  icon={Calendar}
-                  label={t("PreviewStructure.createdOn")}
-                  value={new Date(typeof created === "number" ? created * 1000 : created).toLocaleDateString()}
-                />
-              )}
-            </div>
-
-            {(documentsQuery.data?.length ?? 0) > 0 && (
+            {/* Informations + Documents : réservés aux gestionnaires, comme le bloc `$ssbeCanManage` de la
+                fiche legacy ssbe/organizations/preview.php (qui y range aussi Modifier/Supprimer et les créneaux). */}
+            {canEditProfile && (
               <>
                 <Separator className="my-1" />
-                <InfoSectionTitle icon={Users}>{t("PreviewStructure.documents")}</InfoSectionTitle>
-                <FilesList files={documentsQuery.data ?? []} />
+
+                <InfoSectionTitle icon={Building2}>{t("PreviewStructure.information")}</InfoSectionTitle>
+                <div className="grid grid-cols-2 gap-2">
+                  {slug && <InfoItem icon={Tag} label={t("PreviewStructure.identifier")} value={slug} />}
+                  {typeLabel && <InfoItem icon={FolderOpen} label={t("PreviewStructure.category")} value={typeLabel} />}
+                  {memberOfCount > 0 && (
+                    <InfoItem
+                      icon={Network}
+                      label={t("PreviewStructure.memberOf")}
+                      value={t("PreviewStructure.memberOfCount", undefined, { count: memberOfCount })}
+                    />
+                  )}
+                  {created && (
+                    <InfoItem
+                      icon={Calendar}
+                      label={t("PreviewStructure.createdOn")}
+                      value={new Date(typeof created === "number" ? created * 1000 : created).toLocaleDateString()}
+                    />
+                  )}
+                </div>
+              </>
+            )}
+
+            {canEditProfile && hasAnyDoc && (
+              <>
+                <Separator className="my-1" />
+                <InfoSectionTitle icon={FileText}>{t("PreviewStructure.documents")}</InfoSectionTitle>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {docSlots.map((slot) => (
+                    <div key={slot.label} className="rounded-lg border border-border bg-card p-3">
+                      <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                        <FileText className="size-3.5 text-primary" />
+                        {slot.label}
+                      </p>
+                      {slot.files.length > 0 ? (
+                        <ul className="flex flex-col gap-1">
+                          {slot.files.map((f) => (
+                            <li key={f.docId}>
+                              <a
+                                href={f.docPath}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                              >
+                                <Download className="size-3.5 shrink-0" />
+                                <span className="truncate">{f.name ?? f.docPath}</span>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm italic text-muted-foreground">{t("PreviewStructure.notProvided")}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </>
             )}
           </div>
@@ -532,8 +592,19 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item }) => {
       {canEditProfile && item && (
         <DynamicEditModal
           open={editModalOpen}
-          onOpenChange={setEditModalOpen}
-          entity={item}
+          // Rechargement à la fermeture : `save()` met à jour l'entité sur place (même référence, les
+          // useMemo ne se recalculent pas), et les pièces jointes sont envoyées/supprimées APRÈS le
+          // save, sans rafraîchissement. Une nouvelle référence remet toute la fiche à jour.
+          onOpenChange={(open) => {
+            setEditModalOpen(open);
+            if (!open) void fullEntity.refetch();
+          }}
+          // `fullEntity` (rechargée par slug, en tête du composant) porte `about.files` — `item` (résultat de
+          // recherche, tronqué) ne l'a jamais. Le garde-fou `hasStructureFormData` ci-dessus ne
+          // suffit pas : il ne détecte que l'absence de champs MÉTIER (siren/sigle/thematic), pas
+          // l'absence des DOCUMENTS, qu'aucune projection de recherche ne porte jamais. Repli sur
+          // `item` tant que `fullEntity` n'a pas fini de charger.
+          entity={fullEntity.data ?? item}
         />
       )}
     </div>

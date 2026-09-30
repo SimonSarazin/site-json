@@ -12,6 +12,7 @@ import { NewsSectionSchema } from "@/modules/news/schema";
 import { NotificationsSectionSchema } from "@/modules/notification/schema";
 import { JsonFormModalConfigSchema } from "./form-modal-schema";
 import { ActionButtonSchema } from "./action-button-schema";
+import { GeoShapeSourceSchema } from "./geo-shape-schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 import { AgendaSectionSchema } from "@/modules/agenda/schema";
@@ -1415,6 +1416,60 @@ export type MapBubbles = z.infer<typeof MapBubblesSchema>;
 
 export type MapBubblesProps = z.infer<typeof MapBubblesSchema>["props"];
 
+//──────────────── Contours géographiques cliquables, en SVG (hors carte)
+/**
+ * Les MÊMES couches de contours que `map.shapes` (searchPro / agenda), mais rendues comme un bloc
+ * de NAVIGATION plutôt que comme un décor de carte : un `<path>` SVG par contour, cliquable, qui
+ * mène à une page de recherche avec un filtre pré-appliqué.
+ *
+ * À ne pas confondre avec `map.shapes`, qui superpose les mêmes contours À la carte MapLibre : ici
+ * il n'y a ni fond de plan, ni marqueurs, ni résultats — donc aucune requête de recherche.
+ */
+const MapShapesSchema = z.object({
+  type: z.literal("map-shapes"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString.optional(),
+    description: LocalizedString.optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    /** Hauteur MAXIMALE du bloc, en px. Le SVG garde son ratio (`viewBox`), il est juste borné. */
+    maxHeight: z.number().min(160).optional(),
+    /**
+     * Couches de contours — contrat identique à `map.shapes`, cf. `GeoShapeSourceSchema` (sources
+     * `zones` / `cities` / `zoniris`, `filters`, `simplify`, `style`, `label`, `showNames`).
+     *
+     * ⚠️ `load` n'a PAS de sens ici et est ignoré : les contours SONT le contenu de la section, il
+     * n'y a pas de vue carte à ouvrir — ils sont toujours chargés à l'affichage.
+     */
+    shapes: z.array(GeoShapeSourceSchema).min(1),
+    /**
+     * Clic sur un contour → `path?filterId=<valeur>`, exactement comme `regionsTarget` /
+     * `thematicsTarget` de `searchProStatic`.
+     *
+     * ⚠️ PIÈGE : la page cible doit porter un groupe de filtres dont l'`id` vaut `filterId` et dont
+     * une option porte la valeur émise. `computeFiltersFromUrl` résout par
+     * `(o.name || o.id) === v || o.id === v` et **jette silencieusement** ce qui ne matche pas — le
+     * lien « marche » mais ne filtre rien. Choisir `valueFrom` en regardant les options RÉELLES du
+     * groupe cible.
+     */
+    target: z.object({
+      path: z.string().min(1),
+      filterId: z.string().min(1),
+      /** Propriété du contour utilisée comme valeur de filtre. Défaut `name`. */
+      valueFrom: z.enum(["name", "insee", "_id", "countryCode", "level"]).optional(),
+      /**
+       * Restreint la cliquabilité à ces `id` de couche. Absent = toutes. Sert à garder une couche
+       * de DÉCOR (contour régional englobant) inerte sous des communes cliquables.
+       */
+      layers: z.array(z.string()).optional(),
+    }),
+  }),
+});
+
+export type MapShapes = z.infer<typeof MapShapesSchema>;
+
+export type MapShapesProps = z.infer<typeof MapShapesSchema>["props"];
+
 //──────────────── Alert / Banner
 const BannerSectionSchema = z.object({
   type: z.literal("banner"),
@@ -1669,6 +1724,7 @@ export const Section = z.discriminatedUnion("type", [
   TimelineSectionSchema,
   MapSectionSchema,
   MapBubblesSchema,
+  MapShapesSchema,
   BannerSectionSchema,
   NewsletterSectionSchema,
   LoginFormSectionSchema,

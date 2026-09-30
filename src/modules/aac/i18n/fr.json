@@ -100,6 +100,24 @@
       "title": "Modifier ce commun",
       "successToast": "Les modifications ont été enregistrées."
     },
+    "editors": {
+      "cta": "Contributeurs à l'édition",
+      "title": "Contributeurs à l'édition",
+      "description": "Ces personnes peuvent modifier ce commun, mais pas le supprimer.",
+      "questionNote": "Cette liste est aussi la réponse à la question « {{label}} » du formulaire : en modifiant le commun, ces personnes peuvent donc la changer elles aussi.",
+      "empty": "Aucun contributeur à l'édition pour l'instant.",
+      "addCta": "Ajouter des personnes",
+      "finderTitle": "Ajouter des contributeurs à l'édition",
+      "finderLabel": "Personne",
+      "finderPlaceholder": "Entrez le nom de la personne à ajouter",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "toasts": {
+        "saveSuccess": "Les contributeurs à l'édition ont été enregistrés.",
+        "saveError": "Impossible d'enregistrer les contributeurs à l'édition.",
+        "incompleteContext": "Contexte incomplet : session ou commun introuvable."
+      }
+    },
     "financing": {
       "title": "Financement participatif",
       "outOf": "sur {{amount}}",

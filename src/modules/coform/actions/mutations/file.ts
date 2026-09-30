@@ -14,6 +14,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
 import { COFORM_QUERY_KEYS } from "../../constants";
 import type { AllStepsData } from "../../types";
+import { collectAddToLinksFields, computeAddToLinksPatch } from "../../utils/addToLinks";
 
 /**
  * Collecte les `docId` des feuilles uploader, en gérant SYMÉTRIQUEMENT les deux
@@ -181,9 +182,23 @@ export function useCoFormFinalMutation({
       if (addedOptions && Object.keys(addedOptions).length > 0) {
         answer.data.addedOptions = addedOptions;
       }
-      if (links && Object.keys(links).length > 0) {
-        answer.data.links = links;
-      }
+      // `addToLinks` : une question finder qui alimente un lien de la réponse — « Référent du
+      // commun » → `links.canEdit`, les contributeurs à l'édition. Calculé ICI, sur la réponse
+      // relue à l'instant : c'est le seul point que traversent TOUS les chemins d'enregistrement
+      // (le multi-étapes de `SmartCoForm` ne transmet pas les `links` de `CoFormProvider`), et le
+      // seul qui connaisse l'état serveur dont on tire la différence (cf. `utils/addToLinks`).
+      const addToLinksPatch = computeAddToLinksPatch({
+        fields: collectAddToLinksFields((form.serverData as { params?: unknown } | undefined)?.params),
+        submitted: cleanedAnswers,
+        server: (answer.serverData as { answers?: unknown } | undefined)?.answers,
+        serverLinks: (answer.serverData as { links?: unknown } | undefined)?.links,
+      });
+      // Affecté MÊME VIDE : le brouillon d'une réponse relue reprend les `links` du serveur, et
+      // `save()` les renverrait tous. Or ils sont NORMALISÉS par le SDK (vignettes rendues
+      // absolues), et `SaveAnswerAction` remplace chaque type reçu : le renvoi écrasait aussi
+      // l'ajout du modifieur dans `links.answered`. Constaté en base le 29/09. On n'envoie donc que
+      // ce qu'on écrit ; un objet vide n'est pas transmis, les liens en base restent intacts.
+      answer.data.links = { ...(links ?? {}), ...addToLinksPatch };
 
       // 4. Save (POST SAVE_COFORM_ANSWER + refresh automatique avec
       //    canEdit/editDeniedReason calculés backend).

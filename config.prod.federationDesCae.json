@@ -603,8 +603,9 @@
       "fr": "Fédération des coopératives d'activité et d'emploi — les SCOP. Réseau des CAE engagées dans l'entrepreneuriat collectif."
     },
     "copyright": {
-      "fr": "© Fédération des CAE — les SCOP. Tous droits réservés."
+      "fr": "© Fédération des CAE. Contenu en CC BY-SA 4.0 et open data"
     },
+    "extra": "<a href=\"https://gitlab.adullact.net/pixelhumain/site-json/-/blob/main/config.prod.federationDesCae.json\">Logiciel libre sous licence MIT</a>, développé par l'association <a href=\"https://www.open-atlas.org/\">Open Atlas</a>",
     "columns": [
       {
         "title": {
