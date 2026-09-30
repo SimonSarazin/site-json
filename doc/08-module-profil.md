@@ -1293,7 +1293,8 @@ interface EntityMutationConfig<TParams = void> {
   entityTypes?: EntityType[];
   action: (entity: EntityTypes, params: TParams) => Promise<void>;
   i18n: { successKey: string; errorKey: string };
-  invalidate: (entity: EntityTypes, me: User | null) => QueryKey[];
+  invalidate: (entity: EntityTypes, me: User | null) => QueryKey[]; // évaluée APRÈS l'action
+  remove?: (entity: EntityTypes) => QueryKey[]; // évaluée AVANT l'action, appliquée au succès
   getSuccessParams?: (entity, params) => Record<string, string>;
   getErrorParams?: (error, entity, params) => Record<string, string>;
 }
@@ -1305,6 +1306,10 @@ function createEntityMutation<TParams>(config) → (entity: EntityTypes | null) 
 - `useMutationWithToast` (namespace `modules/profil`)
 - Validation entity non-null + validation entityType si `config.entityTypes` défini
 - Invalidation React Query via `config.invalidate(entity, me)` au succès
+- Retrait du cache via `config.remove(entity)` : pour une entité qui n'existe plus, invalider relancerait
+  un fetch vers un 404 sur la page encore montée. ⚠️ Le SDK VIDE l'instance après `delete()` (`slug` →
+  `null`) : `invalidate`, évaluée après l'action, n'y lit plus rien — d'où `remove`, évaluée AVANT.
+  Premier usage : `useDeleteEvent` (`deletion.ts`) retire la fiche `ELEMENT_ABOUT_PREFIX(slug)`.
 
 **Factory `createUserMutation`** — similaire mais reçoit un `User` en paramètre (ex: actions admin sur un membre spécifique).
 

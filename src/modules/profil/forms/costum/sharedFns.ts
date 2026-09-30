@@ -2,8 +2,10 @@
  * Fns de spec COMMUNES aux costums (registre `specRegistries`, pas des transforms) — l'import (side-effect)
  * enregistre les clés partagées. Pendant de `sharedCodecs` mais pour les fns de modale (existingUrl, …).
  */
+import { createElement, Suspense } from "react";
+import { lazy } from "vite-preload";
 import type { QueryKey } from "@tanstack/react-query";
-import { registerExistingUrlFn, registerCleanValuesFn, registerInvalidateFn, type InvalidateFn } from "../specRegistries";
+import { registerExistingUrlFn, registerCleanValuesFn, registerInvalidateFn, registerSlotFn, type InvalidateFn } from "../specRegistries";
 import { PROFIL_QUERY_KEYS } from "../../constants";
 import { SEARCH_QUERY_KEYS } from "@/modules/search/constants";
 import { BLOG_QUERY_KEYS } from "@/modules/blog/constants/queryKeys";
@@ -78,3 +80,21 @@ registerInvalidateFn("invalidate:event", (ctx, params) => [
   AGENDA_QUERY_KEYS.CALENDAR_PREFIX(),
   AGENDA_QUERY_KEYS.LIST_PREFIX(),
 ]);
+
+
+// Chargé à la demande : le slot ne sert qu'aux formulaires qui déclarent `duplicateCheck`, et en
+// création seulement — les autres ne paient rien. Constante de module (pas dans la SlotFn) : un
+// `lazy()` recréé à chaque appel remonterait le composant à chaque rendu.
+const EntityDuplicatesSlot = lazy(() => import("../EntityDuplicatesSlot"));
+
+/**
+ * Slot GÉNÉRIQUE « doublons à la création » (clé `slot:entityDuplicates`) — enregistré ICI, dans le
+ * barrel commun, pour être disponible à tout formulaire costum 100 % config. Paramètres : bloc
+ * `duplicateCheck` de la spec. Inerte (rend `null`) en édition et sans bloc déclaré. La frontière
+ * Suspense est propre au slot : celle du moteur entoure tout le formulaire.
+ */
+registerSlotFn("slot:entityDuplicates", (ctx, spec) =>
+  ctx.mode === "add" && spec?.duplicateCheck
+    ? createElement(Suspense, { fallback: null }, createElement(EntityDuplicatesSlot, { params: spec.duplicateCheck }))
+    : null,
+);

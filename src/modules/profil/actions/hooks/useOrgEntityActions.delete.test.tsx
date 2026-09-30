@@ -35,7 +35,7 @@ function wrapper({ children }: { children: ReactNode }) {
   );
 }
 
-const fiche = { slug: "la-plume-a-loup" } as unknown as Organization;
+const fiche = { slug: "la-plume-a-loup", getEntityType: () => "organizations" } as unknown as Organization;
 const actionsDe = (options?: { allowDelete?: boolean; deleteRedirectPath?: string }) =>
   renderHook(() => useOrgEntityActions(fiche, options), { wrapper }).result.current?.actions ?? [];
 

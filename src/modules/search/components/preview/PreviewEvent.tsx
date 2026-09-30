@@ -10,6 +10,7 @@ import LazyImage from "@/components/layout/LazyImage";
 import { useT } from "@/hooks/useT";
 import getDateFnsLocale from "@/dateFns";
 import useItem from "@/modules/search/hooks/useItem";
+import { countActiveLinks } from "@/modules/search/lib/countActiveLinks";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import { PreviewProps } from "@/modules/search/schema";
 import { renderMarkdown } from "@/helpers/renderMarkdown";
@@ -44,10 +45,7 @@ const PreviewEvent: React.FC<PreviewProps> = ({ item }) => {
   // (useReactiveProperty → useSyncExternalStore). Même pattern que useFormatProfileEntity
   // (membersCount).
   const linksReactive = useReactiveProperty<Record<string, unknown>>(item.serverData, "links");
-  const attendeesCount = useMemo(() => {
-    const att = linksReactive?.attendees;
-    return att && typeof att === "object" ? Object.keys(att as Record<string, unknown>).length : 0;
-  }, [linksReactive]);
+  const attendeesCount = useMemo(() => countActiveLinks(linksReactive?.attendees), [linksReactive]);
 
   // Le PROBLÈME : Participer/Quitter (entity.requestToJoin()/leave()) met à jour `me` mais
   // ne re-fetche PAS le proxy de l'event → `links.attendees` resterait figé. SOLUTION : on
@@ -123,7 +121,7 @@ const PreviewEvent: React.FC<PreviewProps> = ({ item }) => {
             )}
             {attendeesCount > 0 && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Users className="h-4 w-4 text-accent shrink-0" /><span>{attendeesCount} {t("participant·es")}</span>
+                <Users className="h-4 w-4 text-accent shrink-0" /><span>{t("PreviewEvent.attendeeCount", undefined, { count: attendeesCount })}</span>
               </div>
             )}
           </div>

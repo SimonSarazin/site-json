@@ -28,7 +28,7 @@ function wrapper({ children }: { children: ReactNode }) {
 }
 
 const ficheAvecDelete = (suppression: (reason?: string) => Promise<void>) =>
-  ({ slug: "la-plume-a-loup", delete: suppression }) as unknown as EntityTypes;
+  ({ slug: "la-plume-a-loup", delete: suppression, getEntityType: () => "organizations" }) as unknown as EntityTypes;
 
 beforeEach(() => {
   queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
@@ -63,7 +63,7 @@ describe("useDeleteEntity — suppression définitive de la fiche", () => {
   });
 
   it("échoue clairement si l'entité ne sait pas se supprimer (SDK trop ancien)", async () => {
-    const sansDelete = { slug: "x" } as unknown as EntityTypes;
+    const sansDelete = { slug: "x", getEntityType: () => "organizations" } as unknown as EntityTypes;
     const { result } = renderHook(() => useDeleteEntity(sansDelete), { wrapper });
 
     await act(async () => { result.current.mutate(); });

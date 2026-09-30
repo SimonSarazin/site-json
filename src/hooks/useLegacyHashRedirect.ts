@@ -62,6 +62,18 @@ export function useLegacyHashRedirect(): void {
       return;
     }
 
+    // `#detail-un-commun.communId.<id>` (AAC legacy, liens imprimés) : l'id EST celui de la route,
+    // aucune résolution. Seulement si le site déclare `config.aac` — sinon `/aac/commun/:answerId`
+    // n'est pas montée (cf. `modules/aac/routes.tsx`) et on ferait pire que l'accueil. Un commun
+    // disparu affiche la fiche « introuvable » du module : plus parlant que l'accueil pour qui a
+    // scanné un document papier.
+    if (cible.kind === "aacCommun") {
+      if (!config?.aac) return;
+      traite.current = hash;
+      navigate(`/aac/commun/${cible.id}`, { replace: true });
+      return;
+    }
+
     // ⚠️ Le marquage vient APRÈS les garde-fous de disponibilité : tant que l'API n'est pas prête on
     // ne marque rien, sinon le fragment serait consommé sans rien faire et la redirection perdue.
     if (!api || !entity) return;

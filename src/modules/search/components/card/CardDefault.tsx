@@ -1,4 +1,4 @@
-import { Lightbulb, MapPin, Building2 } from "lucide-react";
+import { Lightbulb, MapPin, Users, Building2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,8 +32,9 @@ export default function CardDefault({
     shortDescription,
     tags = [],
     image,
-    countProjects = 0,
     collection,
+    countProjects = 0,
+    countContributors = 0,
   } = data;
 
   // Initiales du nom (max 3 caractères)
@@ -106,17 +107,25 @@ export default function CardDefault({
               </p>
             )}
 
-            {/* Nombre de PROJETS liés — n'a de sens que pour un porteur (organisation, citoyen…),
-                jamais pour un item qui EST déjà lui-même un projet (« 0 projet » sur sa propre
-                carte). Même convention que `CardOverlay.tsx` (`collection === "projects"`). */}
-            {collection !== "projects" && (
-              <div className="flex items-center space-x-1 mb-3">
-                <Lightbulb className="h-4 w-4 text-primary" />
-                <span className="text-xs text-muted-foreground">
-                  {countProjects} {t("projets")}
-                </span>
-              </div>
-            )}
+            {/* Un projet ne porte pas de sous-projets : « 0 projets » n'y informe de rien,
+                ce sont ses contributeurs qui comptent. */}
+            <div className="flex items-center space-x-1 mb-3">
+              {collection === "projects" ? (
+                <>
+                  <Users className="h-4 w-4 text-primary" />
+                  <span className="text-xs text-muted-foreground">
+                    {t("CardDefault.contributorCount", undefined, { count: countContributors })}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Lightbulb className="h-4 w-4 text-primary" />
+                  <span className="text-xs text-muted-foreground">
+                    {t("CardDefault.projectCount", undefined, { count: countProjects })}
+                  </span>
+                </>
+              )}
+            </div>
 
             {displayTags.length > 0 && (
               <div className="flex flex-wrap gap-1">
