@@ -359,6 +359,26 @@ dès que `detail.sections` est absent ou vide, et `useAacGallerySubKey()` rend `
 `detail.gallery`. Une fiche sans prose ni galerie sur un nouveau site n'est pas un bug : c'est le
 bloc `detail` qui manque — et rien ne le signale à `config:validate` (tout y est optionnel).
 
+**La barre d'actions de la fiche** ([`CommunActionBar`](../src/modules/aac/components/pageDetail/CommunActionBar.tsx),
+arbitrage du 01/10) suit quatre règles :
+
+- **l'état se lit, pour tous** — « En attente » / « Sélectionné » et « Phase proposition » à gauche,
+  admin compris : une action ne remplace plus une pastille ;
+- **un seul bouton plein**, la décision encore ouverte : « Ajouter à l'annuaire » (admin, commun non
+  sélectionné), en dernier avant « ⋯ » ;
+- **« ⋯ »** porte le passage en projet (« Générer le projet », « Associer un projet existant »), puis
+  « Retirer de l'annuaire », puis, à l'écart et en rouge, « Supprimer le commun ». Sous `sm`,
+  « Éditeurs » y passe aussi ; « Ouvrir le projet » reste un bouton, visible de tous ;
+- chaque action garde **son** gate et **sa** confirmation : trois hooks
+  (`useCommunSelectionAction`, `useCommunProjectActions`, `useCommunDeleteAction`) portent écriture,
+  dialogue et état ; la barre ne place que les déclencheurs.
+
+Deux pièges : les dialogues sont rendus **hors** du menu (son contenu est démonté à la fermeture), et
+le menu est **non modal** — modal, il laissait `pointer-events: none` sur `<body>` à la fermeture de
+la recherche de projets montée depuis une de ses entrées (page figée). Le passage en projet n'existe
+que si le commun peut encore en recevoir un (`canLink`) : un dialogue ouvert disparaît si un projet
+arrive entre-temps, sinon « Associer » écraserait le lien existant.
+
 ### 3.3 La fiche — financement, paliers, cofinanceurs, SEO
 
 Les blocs structurels de `/aac/commun/:answerId` ne se déclarent pas ; ce qui suit décrit ce
@@ -418,7 +438,7 @@ le commun.
 | | |
 |---|---|
 | Stockage | `answers.<id>.links.canEdit = { <userId>: { name, type } }` — le legacy y range parfois une vignette (`profilThumbImageUrl`), reprise à la réécriture en chemin **relatif** (la lecture SDK la rend absolue, cf. pièges) |
-| Bouton | `CommunEditorsControl`, à côté de « Modifier », gardé par `canManageEditors` (auteur ou admin) |
+| Bouton | « Éditeurs », dans la barre de la fiche à côté de « Modifier » (dans « ⋯ » sous `sm`), dialogue `CommunEditorsDialog` ; gardé par `canManageEditors` (auteur ou admin) |
 | Recherche | `FinderSearchModal`, citoyens, recherche globale (`notSourceKey`) — le `initType: ['citoyens']` du legacy |
 | Droit donné | modifier le commun (`canEditCommun`), pas le supprimer — et, quand la question « Référent » est reliée, changer la liste par elle (ci-dessous) |
 | Écriture | `useSaveCommunEditors` : `updateField("links.canEdit", …)` puis la question liée, chacune seulement si elle change ; une liste vide s'écrit `null` (`$unset`) |
@@ -636,7 +656,7 @@ ci-dessous.
 | Action | Qui | Où |
 |---|---|---|
 | Sélectionner / valider un commun | admin de l'appel | `aac` (`canSelectCommun`) |
-| **Générer / Associer un projet** | admin de l'appel **ou** déposant | `CommunProjectControl.canManageProject` |
+| **Générer / Associer un projet** | admin de l'appel **ou** déposant | `project.canManage` de `CommunActionBar` (entrées de « ⋯ ») |
 | **Ajouter / éditer palier et action** | admin du **projet lié** **ou** déposant | `cagnotte` + `ownerIds` |
 | **Supprimer DÉFINITIVEMENT un commun** | auteur **ou** admin | `aac` (`canDeleteCommun`) |
 | **Gérer les contributeurs à l'édition** | bouton : auteur **ou** admin ; par la question « Référent » reliée : tout éditeur (parité legacy) | `aac` (`canManageEditors`) |
@@ -658,7 +678,7 @@ Deux garde-fous s'ajoutent au droit, côté front :
   refuse la suppression dès qu'un versement existe — compté sur `items[].allFunding`, **jamais** sur
   `resourceFinancedAmount`, qui ne somme que les paliers OUVERTS : un commun financé puis clôturé
   afficherait 0 € et redeviendrait supprimable. Le retrait de l'annuaire
-  (`CommunSelectionControl`) reste la voie non destructive.
+  (« Retirer de l'annuaire », `useCommunSelectionAction`) reste la voie non destructive.
 - **La cascade est EXPLICITE et sur demande** : le backend n'en fait aucune (`Element::deleteSimple`
   retire le document, ses commentaires et ses fichiers, mais ni les actions d'un projet ni les liens
   croisés). `useDeleteCommun` supprime le commun d'abord — seul échec qui fait échouer le geste —
@@ -714,7 +734,7 @@ AAC_QUERY_KEYS.COMMUNS_SCAN(formId, campaignId, serverParams, userId)
 > lèverait `projectMissing` une fois la saisie faite. Le commentaire de `queryKeys.ts` ne cite
 > aujourd'hui que le producteur.
 
-**Invalider après un dépôt ou une sélection** : `AacDepositButton` comme `CommunSelectionControl`
+**Invalider après un dépôt ou une sélection** : `AacDepositButton` comme `useCommunSelectionAction`
 invalident les **TROIS** préfixes `COMMUNS_PREFIX()` / `COUNT_PREFIX()` / `FACETS_PREFIX()`. Les trois,
 parce qu'ils sont volontairement disjoints : le décompte ignore les filtres de l'annuaire (il doit
 survivre à leur changement sans refetch) et les facettes se calculent sur le jeu NON filtré (sinon

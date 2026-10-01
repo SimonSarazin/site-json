@@ -870,7 +870,7 @@ const perms = useCagnottePermissions(projectEntity, {
 
 **L'admin de l'appel n'est PAS dans `ownerIds`** : porter l'appel donne
 le droit de sélectionner, valider et **promouvoir** un commun en projet
-(`CommunProjectControl.canManageProject`), pas d'écrire dans son plan de financement à la place du
+(`project.canManage` de `CommunActionBar`), pas d'écrire dans son plan de financement à la place du
 déposant. Il obtient paliers et actions quand il administre le projet lié — par l'entité, pas par
 sa qualité d'admin de l'appel.
 
