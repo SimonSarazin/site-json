@@ -382,6 +382,9 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.ariaLabel": "Nom accessible de la région. À renseigner dès que deux carrousels coexistent sur une page, sinon les régions sont homonymes.",
     "props.showScrollIndicator": "Chevron animé en bas de section. Il se décale au-dessus de la barre de puces dès qu'il y a plusieurs diapositives.",
   },
+  "section:content": {
+    "props.categoryVariant": "Rendu du libellé au-dessus du titre : pill = pastille bordée, à réserver aux pages qui empilent des bandes. Défaut : texte simple.",
+  },
   "section:agenda": {
     "props.bg": "Fond de la section : jetons du thème, ou page-accent (aplat + filet supérieur à page.accent) pour alterner les bandeaux d'une page colorée.",
     "props.customHeader": "En-tête teaser avec lien « voir tous » — même convention que searchProStatic.customHeader (home → /evenements).",
@@ -420,6 +423,8 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "default.tabs[].condition.auth": "required = visible connecté seulement, anonymous = déconnecté seulement ; ignoré au SSR et au 1er render client, appliqué post-hydration (évite les mismatches — contrairement à entityTypes/userContext).",
     "default.tabs[].subRoutes": "Pages de détail imbriquées du tab (ex. path \":newsId\") rendues par TabDetailRenderer — seul component NewsDetailPage est implémenté, loader non câblé.",
     "default.sections": "Sections toujours rendues (hors onglets) — typiquement profile-header puis profile-template-dynamic ; accepte les sections profil ET n'importe quelle section site.",
+    "default.sections[].showDeleteButton": "profile-header : propose « Supprimer cette fiche » aux ADMINS de la fiche. Défaut false — l'action supprime l'élément de tout Communecter, pas seulement du site (≠ retrait du référencement).",
+    "default.sections[].deleteRedirectPath": "Destination après suppression (défaut /) : la page de la fiche n'existe plus. Doit être une page réelle du site — garde préflight profile-delete-button.",
     "default.sections[].addConfig": "Dropdown « Ajouter » (toutes les variantes de profile-header + profile-actions) : toggles organization/project/event/poi — défaut code actif (!== false), gaté aussi par les permissions.",
     "default.sections[].addConfig.custom": "Entrées d'ajout personnalisées : modalKey du ModalRegistry (ex. add-tiers-lieux), label, icône, condition de visibilité — types costum sans toucher au code.",
     "default.editModal": "Clé EditModalRegistry du modal d'édition (edit-<costumId> résolu dynamiquement) ; absente → edit-profile générique ; lue UNIQUEMENT sur la clé du type réel, jamais via default.",

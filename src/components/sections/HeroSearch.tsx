@@ -404,7 +404,9 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
   }
 
   return (
-    <section id={id} className="relative min-h-112.5 md:min-h-125 flex flex-col -mt-10">
+    // `mb-10` : l'illustration déborde de 40 px sous la section (`-bottom-10`) ; sans cette
+    // réserve, elle recouvre le haut de la section suivante (titre de liste de la home).
+    <section id={id} className={cn("relative min-h-112.5 md:min-h-125 flex flex-col -mt-10", props.backgroundImage && "mb-10")}>
       <div className="relative z-10 flex-1 flex items-center justify-center">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-6xl mx-auto">

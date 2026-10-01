@@ -84,6 +84,7 @@
     "member": "Membre",
     "admin": "Administrateur",
     "leaveOrganization": "Quitter l'organisation",
+    "deleteOrganization": "Supprimer cette fiche",
     "unfollowDialog": {
       "title": "Ne plus suivre cette organisation",
       "description": "Êtes-vous sûr de vouloir ne plus suivre cette organisation ? Vous ne recevrez plus ses actualités.",
@@ -221,7 +222,13 @@
     "openSince": "Ouvert depuis",
     "register": "Inscription",
     "comingSoon": "En construction",
-    "sectionLabel": "Section {{name}}"
+    "sectionLabel": "Section {{name}}",
+    "deleteDialog": {
+      "title": "Supprimer définitivement cette fiche ?",
+      "description": "La fiche sera supprimée de Communecter, et pas seulement de ce site : elle disparaîtra pour tout le monde, avec ses informations. Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer définitivement"
+    }
   },
   "ProfileMembers": {
     "title": "Membres",
@@ -1354,8 +1361,8 @@
     "meetingRoomsPlural": "salles de réunion",
     "workstations": "poste de travail",
     "workstationsPlural": "postes de travail",
-    "accommodation": "chambre",
-    "accommodationPlural": "chambres",
+    "accommodation": "place d'hébergement",
+    "accommodationPlural": "places d'hébergement",
     "reservationSpace": "Espace réservation",
     "reservationNote": "Réserver votre espace directement en ligne",
     "contact": "Contact",
@@ -1466,6 +1473,24 @@
   },
   "CardTeamMember": {
     "territoryNews": "Les actualités du territoire"
+  },
+  "MyPlacesSection": {
+    "title": "Mes lieux",
+    "loginRequired": "Connectez-vous pour voir vos tiers-lieux.",
+    "empty": "Vous n'êtes membre d'aucun tiers-lieu pour l'instant.",
+    "emptyHint": "Rejoignez un tiers-lieu depuis sa fiche pour le retrouver ici.",
+    "needPlaceFirst": "Rejoignez d'abord un tiers-lieu pour voir son contenu ici.",
+    "emptyNews": "Aucune actualité de vos tiers-lieux pour l'instant.",
+    "emptyAgenda": "Aucun événement à venir lié à vos tiers-lieux pour l'instant.",
+    "emptyAgendaOngoing": "Aucun événement en cours lié à vos tiers-lieux.",
+    "emptyAgendaPast": "Aucun événement passé lié à vos tiers-lieux.",
+    "emptyProjects": "Aucun projet lié à vos tiers-lieux pour l'instant.",
+    "tabs": {
+      "places": "Mes tiers-lieux",
+      "news": "Actus",
+      "agenda": "Agenda",
+      "projects": "Projets"
+    }
   },
   "EntityDuplicates": {
     "title_one": "Une fiche au nom proche existe déjà",
