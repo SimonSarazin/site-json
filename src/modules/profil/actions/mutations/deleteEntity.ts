@@ -2,14 +2,15 @@
  * Suppression d'une fiche. Fichier à part des autres mutations parce qu'elles agissent toutes sur un
  * LIEN entre un compte et une fiche (`relationship.ts` : suivre, rejoindre, quitter ; `member.ts` :
  * promouvoir, retirer un membre), là où celle-ci fait disparaître la fiche elle-même.
+ *
+ * Distinct de `@/modules/admin/hooks/useDeleteEntity` (même geste backend) : celui-ci suit la fabrique
+ * `createEntityMutation` du module profil (entité liée au hook, toasts i18n `toast.*`), l'autre prend
+ * l'entité à l'appel pour supprimer ligne par ligne depuis une table. Les deux invalident les mêmes
+ * surfaces publiques (`publicSurfaceKeys`).
  */
 import { createEntityMutation } from "./core";
 import { PROFIL_QUERY_KEYS } from "../../constants/queryKeys";
-import {
-  SEARCH_QUERY_KEYS,
-  SEARCH_STATIC_LIST_PREFIX,
-  SEARCH_STATIC_MAP_PREFIX,
-} from "@/modules/search/constants/queryKeys";
+import { publicSurfaceKeys } from "@/lib/queryKeys";
 
 /**
  * Supprime DÉFINITIVEMENT la fiche : `element/delete`, via le `delete()` de l'entité SDK.
@@ -24,8 +25,8 @@ import {
  *  2. le SDK refuse si le compte n'est ni auteur ni administrateur (`isAuthorOrAdmin`) ;
  *  3. le backend tranche en dernier (`canDeleteElement`).
  *
- * Les listes de RECHERCHE sont invalidées en plus de la fiche : la fiche disparue reste sinon
- * affichée dans l'annuaire jusqu'au prochain rechargement complet. La redirection n'est pas faite
+ * Les surfaces PUBLIQUES (annuaire, carte, compteurs) sont invalidées en plus de la fiche : la fiche
+ * disparue y resterait sinon affichée jusqu'au prochain rechargement complet. La redirection n'est pas faite
  * ici — la page de la fiche n'existe plus, mais seul l'appelant sait vers quoi partir : il la pose
  * en `onSuccess` de son `mutate`.
  */
@@ -46,9 +47,5 @@ export const useDeleteEntity = createEntityMutation({
     successKey: "toast.organization.deleteSuccess",
     errorKey: "toast.organization.deleteError",
   },
-  invalidate: (entity) => [
-    PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
-    SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_LIST_PREFIX),
-    SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_MAP_PREFIX),
-  ],
+  invalidate: (entity) => [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug), ...publicSurfaceKeys()],
 });

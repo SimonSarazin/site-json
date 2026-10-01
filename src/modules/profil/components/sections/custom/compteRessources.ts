@@ -2,13 +2,11 @@ import getValueByPath from "@/helpers/getValueByPath";
 
 /**
  * Compteurs de l'encart « Réserver en ligne » d'une fiche tiers-lieu (salles de réunion, postes de
- * travail, places d'hébergement). Le même corps était recopié TROIS fois dans le composant, à une
- * différence près — et celle des salles avait perdu la branche `answer` en route : une config qui
- * l'aurait demandée aurait affiché 0 sans rien dire.
+ * travail, places d'hébergement) — une seule logique pour les trois.
  *
  * Ce que `type` décide, et c'est tout l'enjeu : on ne compte pas la même chose selon les cas. Le
- * défaut (`single`) additionne une CAPACITÉ saisie ; `answer` compte des OFFRES. Choisir `answer`
- * pour l'hébergement affichait « 1 » sur un lieu qui déclare 10 places dans son unique offre.
+ * défaut (`single`) additionne une CAPACITÉ saisie ; `answer` compte des OFFRES — choisir `answer`
+ * pour l'hébergement afficherait « 1 » sur un lieu qui déclare 10 places dans son unique offre.
  */
 export type ModeDeComptage = "single" | "array" | "answer";
 

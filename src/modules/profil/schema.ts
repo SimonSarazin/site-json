@@ -331,9 +331,8 @@ export const ProfileToolsSectionSchema = z.object({
  * « Mes lieux » — portage de `costum.views.custom.franceTierslieux.listOrga` (legacy) : les
  * organisations dont le compte connecté est MEMBRE (`links.members.<id>` existe, `isInviting`
  * absent — exactement le filtre par défaut de `getOrganizations()`, cf. `useUserOrganizations`),
- * PAS les fiches suivies (`links.follows`/`getSubscriptions` — une confusion initiale de ce
- * chantier, corrigée après relecture du code source legacy). Onglets secondaires (actus, agenda,
- * projets liés à ces lieux, lieux similaires) : cf. `MyPlacesSection.tsx`.
+ * PAS les fiches suivies (`links.follows`/`getSubscriptions`). Onglets secondaires (actus, agenda,
+ * projets liés à ces lieux) : cf. `MyPlacesSection.tsx`.
  *
  * Section GÉNÉRIQUE (pas un `Profile*Section` : elle ne lit pas `useProfileEntity()`, mais `me`
  * directement) — page dédiée, pas un onglet de profil, pour rester adressable (`/mes-lieux`) sans

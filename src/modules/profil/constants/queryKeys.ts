@@ -186,14 +186,6 @@ export const PROFIL_QUERY_KEYS = {
    */
   MEMBER_NEWS: (orgIds: readonly string[]) => ["member-news", [...orgIds].sort()] as const,
 
-  /**
-   * Tiers-lieux similaires aux lieux membres — « Mes lieux », onglet 5 (portage `mySimilarTr` du
-   * legacy `listOrga.php` : `answerdirectory` → agrégation → `getaggregatetr` → `answerdirectory`).
-   * Producteur : `useSimilarPlacesQuery`
-   */
-  SIMILAR_PLACES: (orgIds: readonly string[], userContextId: string | null = null) =>
-    ["similar-places", [...orgIds].sort(), userContextId] as const,
-
 } as const;
 
 export type ProfilQueryKeyType = ReturnType<

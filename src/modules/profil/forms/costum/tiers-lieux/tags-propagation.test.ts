@@ -204,7 +204,7 @@ describe("tiers-lieux — les mots-clés suivent la fiche (codecs du champ `tags
   });
 
   it("ÉDITION : le champ est pré-rempli depuis la fiche — un enregistrement sans rien toucher ne perd rien", () => {
-    // Le point sensible du chantier : `tags` est désormais ENVOYÉ par le formulaire, donc un champ mal
+    // Point sensible : `tags` est ENVOYÉ par le formulaire, donc un champ mal
     // seedé effacerait les mots-clés de la fiche au premier enregistrement. `buildDefaults` passe par
     // `seedFromEntity`, donc par `tl:tagsRead` — on le vérifie sur la vraie spec, pas sur le codec seul.
     const entity = {

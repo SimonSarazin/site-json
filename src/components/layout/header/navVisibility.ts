@@ -8,11 +8,9 @@ export interface NavNodeAvecVisibilite {
 
 /**
  * Filtrage de `header.nav` par `item.visibility`, sur DEUX niveaux (l'item et ses `children`) —
- * pour un header qui affiche encore tout le monde. `HeaderStacked`/`HeaderTransparentScroll` filtrent
- * déjà le niveau racine via `useVisibilityList` ; `HeaderMegaMenu` ne consultait `visibility` nulle
- * part (`const nav = header.nav`, sans filtre) : une entrée posée avec `visibility:{auth:"required"}`
- * s'affichait quand même à un visiteur anonyme, au menu déroulant COMME au tiroir mobile (les deux
- * partagent le même `nav`).
+ * utilisé par `HeaderMegaMenu`, dont le menu déroulant et le tiroir mobile partagent le même `nav`
+ * (`HeaderStacked`/`HeaderTransparentScroll` ne filtrent que le niveau racine, via
+ * `useVisibilityList`).
  *
  * Deux fonctions plutôt qu'une : `useVisibilityList` doit tourner en dehors d'un `.map()` (règle des
  * hooks), donc l'appelant aplatit d'abord les conditions à évaluer (`conditionsDeVisibiliteNav`),

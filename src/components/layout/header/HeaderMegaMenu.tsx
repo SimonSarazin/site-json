@@ -35,8 +35,7 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
     // Filtré par `visibility` (item ET enfants) — desktop et burger partagent ce même `nav`, donc
-    // une entrée réservée aux connectés (« Mes lieux ») disparaît des deux à la fois. Contrairement
-    // à `header.nav` brut, `HeaderMegaMenu` ne consultait `visibility` nulle part avant ce correctif.
+    // une entrée réservée aux connectés (« Mes lieux ») disparaît des deux à la fois.
     const navVisibility = useVisibilityList(conditionsDeVisibiliteNav(header.nav));
     const nav = filtrerNavParVisibilite(header.nav, navVisibility);
 

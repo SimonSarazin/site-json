@@ -1485,13 +1485,11 @@
     "emptyAgendaOngoing": "Aucun événement en cours lié à vos tiers-lieux.",
     "emptyAgendaPast": "Aucun événement passé lié à vos tiers-lieux.",
     "emptyProjects": "Aucun projet lié à vos tiers-lieux pour l'instant.",
-    "emptySimilar": "Aucun tiers-lieu similaire trouvé pour l'instant.",
     "tabs": {
       "places": "Mes tiers-lieux",
       "news": "Actus",
       "agenda": "Agenda",
-      "projects": "Projets",
-      "similar": "Similaires"
+      "projects": "Projets"
     }
   },
   "EntityDuplicates": {

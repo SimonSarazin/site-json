@@ -33,7 +33,7 @@ const PERMISSIONS_LECTURE_SEULE = {
 };
 
 /** Même carte/aperçu que le composant Agenda du site (`Agenda.tsx` : `card:{type:"event"}`,
- *  `preview:{type:"event"}`) — demandé explicitement : « comme sur le composant agenda ». */
+ *  `preview:{type:"event"}`). */
 const CARD_EVENT: ListConf["card"] = { type: "event", detailsMode: "drawer" };
 const PREVIEW_EVENT: ListConf["preview"] = { type: "event" };
 /** Aucune carte/aperçu DÉDIÉE aux projets dans le moteur (vérifié : `SearchCard`/`Preview` n'ont pas
@@ -48,12 +48,10 @@ const COLUMNS_3: ListConf["columns"] = { sm: 1, md: 2, lg: 3 };
 type Onglet = "lieux" | "news" | "agenda" | "projets";
 
 /**
- * « Mes lieux » — portage de `costum.views.custom.franceTierslieux.listOrga` (legacy), 4 onglets
- * actifs sur les 5 du legacy :
+ * « Mes lieux » — portage de `costum.views.custom.franceTierslieux.listOrga` (legacy), 4 onglets :
  *
  *  1. Mes tiers-lieux (défaut) — organisations dont le compte est MEMBRE, cf. `schema.ts`.
- *  2. News — `org.getNews()` fusionné PAR lieu (cf. `useMemberNewsQuery` — PAS un filtre `source.key`
- *     sur `news`, hypothèse initiale invalidée en lisant le vrai contrôleur legacy). Rendu IDENTIQUE
+ *  2. News — `org.getNews()` fusionné PAR lieu (cf. `useMemberNewsQuery`). Rendu IDENTIQUE
  *     à l'onglet « Actualités » d'une fiche (`NewsSection.tsx` / `/profil/<slug>/news`) : même
  *     `NewsItem`, un `NewsProvider` PAR item (scopé à SON organisation, portée par `ActuDeLieu` dès
  *     le fetch — pas reconstruite après coup, cf. le commentaire du hook).
@@ -65,13 +63,6 @@ type Onglet = "lieux" | "news" | "agenda" | "projets";
  *     repère on ne saurait pas lequel a produit quoi. Câblé via `list.linkedLabels` (`ListConfSchema`,
  *     prop générique et rétrocompatible — sans effet sur les autres consommateurs des cartes).
  *
- * ⚠ Onglet 5 (Lieux similaires) RETIRÉ de l'UI le 29/09 (décision produit — pas prêt) mais son code
- * reste EN PLACE, volontairement : `useSimilarPlacesQuery.ts` (+ son test), le mapping
- * `similarPlacesFieldsMap.ts`, et les 2 endpoints SDK (`answerdirectory`/`getaggregatetr`, sur
- * `cocolight-api-client`, mis de côté par `git stash` — cf. `doc-projets/tiers-lieux.md`). Aucun
- * appel dans ce composant tant que l'onglet n'est pas remis ; ne pas supprimer ce code, il repart
- * tel quel le jour où l'onglet revient.
- *
  * Les onglets 2 à 4 ne se chargent qu'une fois VISITÉS (`enabled`), sur la liste d'ids/slugs de
  * l'onglet 1 — pas de rafale de requêtes au premier rendu pour des onglets jamais ouverts.
  */
@@ -80,7 +71,7 @@ export function MyPlacesSection({ id, props }: { id?: string; props: MyPlacesSec
   const tAgenda = useT("modules/agenda");
   const { me } = useCocolight();
   const [onglet, setOnglet] = useState<Onglet>("lieux");
-  // Défaut « À venir » (demandé explicitement), avec accès direct aux 2 autres — mêmes 3 onglets et
+  // Défaut « À venir », avec accès direct aux 2 autres — mêmes 3 onglets et
   // même vocabulaire que le composant Agenda du site (`tab.upcoming`/`tab.ongoing`/`tab.past`,
   // `partitionByTime` réutilisé tel quel, aucune règle de bucketing réinventée).
   const [agendaOnglet, setAgendaOnglet] = useState<TimeBucket>("upcoming");
@@ -124,36 +115,9 @@ export function MyPlacesSection({ id, props }: { id?: string; props: MyPlacesSec
   );
 
   /** Agenda/Projets : liste + panneau de détail au clic (`SearchListView`), même moteur que le site.
-   *  ⚠ Pagination NON câblée ici (`SearchListView` est un pur rendu, sans `hasNextPage`/`lastItemRef`
-   *  — la pagination reste possible côté hook mais n'est pas exposée par ce composant) : seule la
-   *  première page (`indexStep: 20`, cf. `useLinkedEntitiesQuery`) s'affiche. Suffisant pour un digest
-   *  personnel ; à revoir si un lieu très actif dépasse ce plafond en pratique. */
-  const listeAvecApercu = (
-    liste: { items: EntityTypes[]; isLoading: boolean },
-    aucunLieu: boolean,
-    videTitre: string,
-    card: ListConf["card"],
-    preview: ListConf["preview"],
-    previewParam: string,
-    linkedLabels: Record<string, string>,
-  ) =>
-    aucunLieu ? (
-      <EntityEmptyState icon={<Building2 className="w-12 h-12 mx-auto" />} title={t("MyPlacesSection.needPlaceFirst")} />
-    ) : liste.isLoading ? (
-      <div className="text-center py-12 sm:py-16 animate-pulse text-muted-foreground">{t("common.loading")}</div>
-    ) : liste.items.length === 0 ? (
-      <EntityEmptyState icon={<Sparkles className="w-12 h-12 mx-auto" />} title={videTitre} />
-    ) : (
-      <SearchListView
-        results={liste.items as unknown as SearchEntity[]}
-        columns={COLUMNS_3}
-        card={card}
-        preview={preview}
-        previewParam={previewParam}
-        list={{ linkedLabels }}
-      />
-    );
-
+   *  ⚠ Pagination NON câblée (`SearchListView` est un pur rendu, sans `hasNextPage`/`lastItemRef`) :
+   *  seule la première page (`indexStep: 20`, cf. `useLinkedEntitiesQuery`) s'affiche — suffisant pour
+   *  un digest personnel, à revoir si un lieu très actif dépasse ce plafond. */
   /** Un bucket temporel (À venir/En cours/Passés) de l'onglet Agenda — sans état de chargement/
    *  aucun-lieu, déjà tranchés une fois avant les sous-onglets (cf. le rendu de l'onglet). */
   const blocAgenda = (items: EntityTypes[], videTitre: string) =>
@@ -273,7 +237,22 @@ export function MyPlacesSection({ id, props }: { id?: string; props: MyPlacesSec
           </TabsContent>
 
           <TabsContent value="projets" className="mt-6">
-            {listeAvecApercu(projets, orgIds.length === 0, t("MyPlacesSection.emptyProjects"), CARD_DEFAULT, PREVIEW_DEFAULT, "mes-lieux-projets", projetsLinkedLabels)}
+            {orgIds.length === 0 ? (
+              <EntityEmptyState icon={<Building2 className="w-12 h-12 mx-auto" />} title={t("MyPlacesSection.needPlaceFirst")} />
+            ) : projets.isLoading ? (
+              <div className="text-center py-12 sm:py-16 animate-pulse text-muted-foreground">{t("common.loading")}</div>
+            ) : projets.items.length === 0 ? (
+              <EntityEmptyState icon={<Sparkles className="w-12 h-12 mx-auto" />} title={t("MyPlacesSection.emptyProjects")} />
+            ) : (
+              <SearchListView
+                results={projets.items as unknown as SearchEntity[]}
+                columns={COLUMNS_3}
+                card={CARD_DEFAULT}
+                preview={PREVIEW_DEFAULT}
+                previewParam="mes-lieux-projets"
+                list={{ linkedLabels: projetsLinkedLabels }}
+              />
+            )}
           </TabsContent>
         </Tabs>
       </div>

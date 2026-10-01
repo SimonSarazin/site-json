@@ -1485,13 +1485,11 @@
     "emptyAgendaOngoing": "No ongoing event linked to your third places.",
     "emptyAgendaPast": "No past event linked to your third places.",
     "emptyProjects": "No project linked to your third places yet.",
-    "emptySimilar": "No similar third place found yet.",
     "tabs": {
       "places": "My third places",
       "news": "News",
       "agenda": "Agenda",
-      "projects": "Projects",
-      "similar": "Similar"
+      "projects": "Projects"
     }
   },
   "EntityDuplicates": {

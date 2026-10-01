@@ -2,12 +2,8 @@
 /**
  * « Mes lieux » : les organisations dont le compte est MEMBRE (pas suivies), et les 3 onglets qui
  * s'en dérivent (news/agenda/projets, chacun gaté sur les ids/slugs de l'onglet « lieux »). Ce que
- * ce test verrouille : la donnée de base est la bonne (adhésion, pas suivi — la confusion corrigée
- * après relecture du legacy), et les onglets dérivés ne partent PAS tant qu'aucun lieu n'est connu.
- *
- * ⚠ Un 5e onglet (« Lieux similaires ») existe côté code (`useSimilarPlacesQuery.ts`, testé à part)
- * mais est retiré de l'UI depuis le 29/09 (décision produit) — pas de mock/test ici pour lui tant
- * qu'il n'est pas remonté dans `MyPlacesSection.tsx`.
+ * ce test verrouille : la donnée de base est la bonne (adhésion, pas suivi), et les onglets dérivés
+ * ne partent PAS tant qu'aucun lieu n'est connu.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
@@ -175,11 +171,6 @@ describe("MyPlacesSection — onglets dérivés (news / agenda / projets)", () =
     const appelsNews = useMemberNewsQuery.mock.calls;
     const dernierAppelNews = appelsNews[appelsNews.length - 1] as [unknown, { enabled: boolean }];
     expect(dernierAppelNews[1].enabled).toBe(false);
-  });
-
-  it("l'onglet « Lieux similaires » n'est plus proposé (retiré de l'UI le 29/09)", () => {
-    poser();
-    expect(screen.queryByRole("tab", { name: /Similaires/i })).toBeNull();
   });
 });
 

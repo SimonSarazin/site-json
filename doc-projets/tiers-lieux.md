@@ -499,6 +499,20 @@ sécurité générique pour une future preview).
 correctifs sont tracés par lecture de code, pas rejoués à l'œil. Rien commité.
 
 
+
+### 01/10 — revue de `tl-dev` avant MR : réutilisation, commentaires épurés
+
+**Réutilisation** : la suppression d'une fiche (`profil/actions/mutations/deleteEntity.ts`) invalide
+désormais `publicSurfaceKeys()` — le helper partagé que l'admin utilise déjà — au lieu de 2 clés de
+recherche posées à la main ; les compteurs et la recherche du hero sont rafraîchis aussi.
+
+**Commentaires** : retrait des passages qui racontaient l'historique du lot (hypothèses écartées,
+« demandé explicitement », « avant ce correctif »…) ; seul le *pourquoi* est conservé.
+
+**Vérifié** : `typecheck` ✅ · `eslint` (fichiers du lot, sortie JSON) 0 message · `test:unit`
+5438/5439 (seul échec : `bundle-size`, lié à un `dist/` ancien) · `config:validate` ✅ (15 pages,
+27 sections) · `audit:config` RAS.
+
 ### 24/09ter — un administrateur peut supprimer sa fiche
 
 **Code + config.** L'en-tête de profil propose « Supprimer cette fiche » **en dernier** dans le menu

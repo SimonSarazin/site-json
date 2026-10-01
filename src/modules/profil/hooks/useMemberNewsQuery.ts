@@ -9,19 +9,14 @@ export interface ActuDeLieu {
 }
 
 /**
- * Actus des organisations données — portage FIDÈLE de `GetLikedNewsAction.php` (legacy) : PAS un
- * filtre `source.key` sur `news` (une hypothèse initiale de ce chantier, invalidée en lisant le vrai
- * contrôleur, `~/dev/communecter-dev/modules/costum/controllers/actions/franceTierslieux/
- * GetLikedNewsAction.php`), mais un `getNews()` PAR organisation, fusionné et trié — le legacy
- * boucle `$likedElement` et appelle `news\GetAction::run($type, $orgId, …)` pour chacun.
+ * Actus des organisations données — portage de `GetLikedNewsAction.php` (legacy) : un `getNews()` PAR
+ * organisation, fusionné et trié (le legacy boucle `$likedElement` et appelle `news\GetAction::run`
+ * pour chacun) — pas un filtre `source.key` sur `news`.
  *
- * Chaque actu GARDE son organisation d'origine (`ActuDeLieu`) au lieu d'être aplatie en `News[]` nu.
- * Une PREMIÈRE version tentait de la RETROUVER après coup via `source.key` — page blanche en test
- * réel : `source.key` trace le COSTUM AMBIANT du site au moment de la création (cf.
- * `useNewsMutations.tsx`), pas l'organisation propriétaire de l'actu, donc la correspondance échouait
- * systématiquement, et `NewsItem` rend `null` sans `currentEntity` résolue (`!formattedNews ||
- * !currentEntity`) — chaque item invisible, la liste entière en silence. On connaît déjà l'org au
- * moment du fetch (un `getNews()` PAR organisation) : il suffit de ne pas la perdre en aplatissant.
+ * Chaque actu GARDE son organisation d'origine (`ActuDeLieu`) au lieu d'être aplatie en `News[]` :
+ * elle ne se retrouve pas après coup, `source.key` trace le COSTUM AMBIANT à la création (cf.
+ * `useNewsMutations.tsx`), pas l'organisation propriétaire. Or `NewsItem` rend `null` sans
+ * `currentEntity` résolue — la liste entière disparaîtrait en silence.
  *
  * `Organization.getNews()` (`BaseEntity.getNews`) n'est PAS paginé côté SDK (`Promise<News[]>`
  * simple, défaut 12 par organisation) : fusionner un scroll infini par-dessus N appels non alignés

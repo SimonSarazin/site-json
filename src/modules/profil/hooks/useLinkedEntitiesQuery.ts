@@ -18,8 +18,7 @@ export type LinkedEntitiesSearchType = "events" | "projects" | "organizations";
  *
  * ⚠ `$or` en OBJET, pas en tableau Mongo standard — le DSL Communecter n'accepte que cette forme
  * (`doc/05-schemas-sections.md` § `searchProStatic.defaultFilters.$or` : « un tableau provoque une
- * erreur 500 backend »). Confirmé en test réel : la version tableau faisait sortir
- * `MongoException: $or/$and/$nor entries need to be full objects`. Chaque clé
+ * erreur 500 backend » : `MongoException: $or/$and/$nor entries need to be full objects`). Chaque clé
  * (`<champ>.<orgId>`) est déjà unique par construction (les ids diffèrent) : aucune collision
  * n'écrase une clause en repassant par un objet plutôt qu'un tableau.
  */
