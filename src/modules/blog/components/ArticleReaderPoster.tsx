@@ -2,11 +2,11 @@ import { useNavigate, useLocation } from "react-router";
 import { ArrowLeft, Calendar, Clock, User } from "lucide-react";
 import "../i18n";
 import { useT } from "@/hooks/useT";
-import { Badge } from "@/components/ui/badge";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { ArticleBody } from "./ArticleBody";
 import { ArticleGallery } from "./ArticleGallery";
 import { ArticleDocuments } from "./ArticleDocuments";
+import { ArticleTaxonomy } from "./ArticleTaxonomy";
 import { estimateReadingTime } from "../lib/readingTime";
 import type { ArticleData } from "../hooks/useArticle";
 import type { ArticleReaderProps } from "../variants/readers";
@@ -32,7 +32,6 @@ export function ArticleReaderPoster({ article, backTo = "/blog", hideBack = fals
   const author = authorName(article);
   const minutes = estimateReadingTime(article.description);
   const chapo = typeof article.shortDescription === "string" ? article.shortDescription.trim() : "";
-  const tags = Array.isArray(article.tags) ? article.tags : [];
 
   return (
     <article className="mx-auto w-full max-w-3xl px-4 py-8">
@@ -61,11 +60,7 @@ export function ArticleReaderPoster({ article, backTo = "/blog", hideBack = fals
       <ArticleBody text={article.description} />
       <ArticleGallery images={(article as { images?: unknown }).images} className="mt-10" />
       <ArticleDocuments files={(article as { files?: unknown }).files} className="mt-10" />
-      {tags.length > 0 && (
-        <div className="mt-8 flex flex-wrap gap-2 border-t pt-6">
-          {tags.map((tag) => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-        </div>
-      )}
+      <ArticleTaxonomy article={article} />
     </article>
   );
 }

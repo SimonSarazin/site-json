@@ -26,22 +26,23 @@ function FeedSkeleton({ compact }: { compact?: boolean }) {
 }
 
 /** Contenu data-backed du fil — monté APRÈS hydratation (île client, pas de fetch SSR). */
-function Feed({ props, base, cardVariant, feedLayout }: {
+function Feed({ props, base, cardVariant, feedLayout, defaultFields }: {
   props: ArticleFeedSectionProps;
   base: string;
   cardVariant?: string;
   feedLayout: "grid" | "list";
+  defaultFields?: readonly string[];
 }) {
   const t = useT("modules/blog");
   const { transformedResults, lastItemRef, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error, refetch } = useArticleFeed({
     costumSlug: props.costumSlug, pageSize: props.pageSize, filters: props.filters, sortBy: props.sortBy,
-    defaultFields: props.defaultFields,
+    defaultFields,
   });
   const items = ((transformedResults as unknown[]) ?? []).map(normalizeArticleResult);
   // Mode `featured:"flag"` : l'épinglée est cherchée par une MICRO-REQUÊTE serveur dédiée
   // (`{featured:true}`, 1 résultat) — jamais dans la fenêtre chargée (leçon review MR 44).
   const flagMode = props.featured === "flag";
-  const pinnedQuery = usePinnedArticle({ costumSlug: props.costumSlug, filters: props.filters, sortBy: props.sortBy, defaultFields: props.defaultFields, enabled: flagMode });
+  const pinnedQuery = usePinnedArticle({ costumSlug: props.costumSlug, filters: props.filters, sortBy: props.sortBy, defaultFields, enabled: flagMode });
   const pinned = flagMode
     ? (((pinnedQuery.transformedResults as unknown[]) ?? []).map(normalizeArticleResult))[0]
     : undefined;
@@ -107,6 +108,9 @@ export default function ArticleFeed({ id, props }: { id?: string; props: Article
   // Résolution des variants : props de section > défauts config.blog > défaut du registre/enum.
   const cardVariant = props.cardVariant ?? blogCfg?.defaultCardVariant;
   const feedLayout = (props.feedLayout ?? blogCfg?.defaultFeedLayout ?? "grid") as "grid" | "list";
+  // `defaultFields` FUSIONNE (pas d'écrasement) : un site pose les champs costum communs à TOUS ses
+  // fils une fois dans `config.blog`, une section garde la liberté d'en demander d'autres en plus.
+  const defaultFields = [...new Set([...(blogCfg?.defaultFields ?? []), ...(props.defaultFields ?? [])])];
   // vite-preload : chauffe le chunk de la carte tôt (client) → pas de flash Suspense après le fetch.
   useEffect(() => { CARD_VARIANTS.preload(cardVariant); }, [cardVariant]);
 
@@ -124,7 +128,7 @@ export default function ArticleFeed({ id, props }: { id?: string; props: Article
             {props.description && <p className="text-muted-foreground">{t(props.description as never)}</p>}
           </header>
         )}
-        {hydrated ? <Feed props={props} base={base} cardVariant={cardVariant} feedLayout={feedLayout} /> : <FeedSkeleton compact={props.density === "compact"} />}
+        {hydrated ? <Feed props={props} base={base} cardVariant={cardVariant} feedLayout={feedLayout} defaultFields={defaultFields} /> : <FeedSkeleton compact={props.density === "compact"} />}
       </div>
     </section>
   );

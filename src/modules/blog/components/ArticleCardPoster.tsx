@@ -8,6 +8,7 @@ import { useT } from "@/hooks/useT";
 import { cn } from "@/lib/utils";
 import { estimateReadingTime } from "../lib/readingTime";
 import { stripMarkdown } from "../lib/markdown";
+import { cardTaxonomyBadges } from "../lib/articleTaxonomy";
 import type { ArticleCardProps } from "./ArticleCard";
 import { articleDate } from "../lib/articleDate";
 
@@ -18,8 +19,9 @@ import { articleDate } from "../lib/articleDate";
  *
  * `density: "compact"` (cf. `ArticleCard`) : cadre 16/9 (nettement moins haut que le 3/4 portrait
  * historique — `object-contain` évite juste de couper l'affiche, pas de l'agrandir à tout prix), la
- * place gagnée sur l'image revenant au texte : titre, extrait et tags restent tous affichés, juste
- * ramenés à une seule ligne chacun. Ignoré pour la carte `featured`, qui garde son gabarit plein.
+ * place gagnée sur l'image revenant au texte : titre, extrait et pastilles de taxonomie restent tous
+ * affichés, juste ramenés à une seule ligne chacun. Ignoré pour la carte `featured`, qui garde son
+ * gabarit plein.
  */
 export function ArticleCardPoster({ article, href, lastRef, featured = false, density }: ArticleCardProps) {
   const t = useT("modules/blog");
@@ -28,7 +30,7 @@ export function ArticleCardPoster({ article, href, lastRef, featured = false, de
     || (typeof article.description === "string" ? stripMarkdown(article.description).slice(0, 180) : "");
   const date = articleDate(article);
   const minutes = estimateReadingTime(article.description);
-  const tags = Array.isArray(article.tags) ? article.tags.slice(0, 3) : [];
+  const badges = cardTaxonomyBadges(article);
   const compact = density === "compact" && !featured;
 
   const poster = (width: number, containClass: string) => image ? (
@@ -59,12 +61,13 @@ export function ArticleCardPoster({ article, href, lastRef, featured = false, de
       )}>
         {article.name}
       </h3>
-      {/* `compact` : extrait et tags reviennent (demande explicite), ramenés à UNE ligne chacun — c'est
-          la hauteur de l'image, pas la présence de ces informations, qui porte le resserrement. */}
+      {/* `compact` : extrait et pastilles de taxonomie reviennent (demande explicite), ramenés à UNE
+          ligne chacun — c'est la hauteur de l'image, pas la présence de ces informations, qui porte le
+          resserrement. */}
       {excerpt && <p className={cn("text-muted-foreground", compact ? "text-xs line-clamp-1" : `text-sm ${featured ? "line-clamp-4" : "line-clamp-3"}`)}>{excerpt}</p>}
-      {tags.length > 0 && (
+      {badges.length > 0 && (
         <div className="flex flex-wrap gap-1 pt-1">
-          {tags.map((tag) => <Badge key={tag} variant="secondary" className="text-[11px]">{tag}</Badge>)}
+          {badges.map((b) => <Badge key={b} variant="secondary" className="text-[11px]">{b}</Badge>)}
         </div>
       )}
     </>

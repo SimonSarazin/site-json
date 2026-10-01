@@ -8,6 +8,7 @@ import { useT } from "@/hooks/useT";
 import { cn } from "@/lib/utils";
 import { estimateReadingTime } from "../lib/readingTime";
 import type { ArticleData } from "../hooks/useArticle";
+import { cardTaxonomyBadges } from "../lib/articleTaxonomy";
 
 import { stripMarkdown } from "../lib/markdown";
 import { articleDate } from "../lib/articleDate";
@@ -28,7 +29,7 @@ export interface ArticleCardProps {
 }
 
 /**
- * Carte éditoriale d'article (image 16/9, date, titre, extrait, tags). `featured` = grand format —
+ * Carte éditoriale d'article (image 16/9, date, titre, extrait, taxonomie). `featured` = grand format —
  * prioritaire sur `density` : la une reste toujours au gabarit éditorial, seules les cartes du fil se
  * resserrent.
  */
@@ -39,7 +40,9 @@ export function ArticleCard({ article, href, lastRef, featured = false, density 
     || (typeof article.description === "string" ? stripMarkdown(article.description).slice(0, 180) : "");
   const date = articleDate(article);
   const minutes = estimateReadingTime(article.description);
-  const tags = Array.isArray(article.tags) ? article.tags.slice(0, 3) : [];
+  // Territoires + publics (listes courtes, jamais tronquées) puis mots-clés (texte libre, plafonné) —
+  // cf. `cardTaxonomyBadges`. Rendu historique inchangé pour un site sans `territoires`/`publics`.
+  const badges = cardTaxonomyBadges(article);
   const compact = density === "compact" && !featured;
 
   return (
@@ -70,12 +73,13 @@ export function ArticleCard({ article, href, lastRef, featured = false, density 
           )}>
             {article.name}
           </h3>
-          {/* `compact` : extrait et tags reviennent (demande explicite), ramenés à UNE ligne chacun —
-              c'est la hauteur de l'image, pas la présence de ces informations, qui porte le resserrement. */}
+          {/* `compact` : extrait et pastilles de taxonomie reviennent (demande explicite), ramenés à
+              UNE ligne chacun — c'est la hauteur de l'image, pas la présence de ces informations, qui
+              porte le resserrement. */}
           {excerpt && <p className={cn("text-muted-foreground", compact ? "text-xs line-clamp-1" : "line-clamp-3 text-sm")}>{excerpt}</p>}
-          {tags.length > 0 && (
+          {badges.length > 0 && (
             <div className="flex flex-wrap gap-1 pt-1">
-              {tags.map((t) => <Badge key={t} variant="secondary" className="text-[11px]">{t}</Badge>)}
+              {badges.map((b) => <Badge key={b} variant="secondary" className="text-[11px]">{b}</Badge>)}
             </div>
           )}
         </CardContent>

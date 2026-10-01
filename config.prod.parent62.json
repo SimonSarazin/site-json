@@ -19473,7 +19473,8 @@
   "blog": {
     "feedCostumSlug": "parent62",
     "readerVariant": "poster",
-    "defaultCardVariant": "poster"
+    "defaultCardVariant": "poster",
+    "defaultFields": ["territoires", "publics"]
   },
   "commandPalette": {
     "enabled": true,

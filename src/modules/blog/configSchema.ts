@@ -12,6 +12,14 @@ export const BlogConfigSchema = z.object({
   defaultCardVariant: z.string().optional(),
   /** Layout de fil par défaut si une section ne le précise pas. Défaut : `grid`. */
   defaultFeedLayout: z.enum(["grid", "list"]).optional(),
+  /**
+   * Champs costum projetés EN PLUS du contrat du module (`ARTICLE_FIELDS`, constants/fields.ts) sur
+   * TOUTE section `articleFeed` du site — fusionné avec le `props.defaultFields` propre à chacune
+   * (pas d'écrasement). À poser une seule fois ici pour un champ qu'un variant de carte lit sur TOUS
+   * les fils, plutôt que de le répéter sur chaque section (ex. parent62 : `territoires`/`publics`,
+   * lus par `ArticleCard`/`ArticleCardPoster` via `cardTaxonomyBadges`).
+   */
+  defaultFields: z.array(z.string()).optional(),
   /** Costum du flux RSS `/blog/feed.xml` (scope `source.key`). Sans lui, le flux répond 400 (sauf `?costum=`). */
   feedCostumSlug: z.string().optional(),
   /**
