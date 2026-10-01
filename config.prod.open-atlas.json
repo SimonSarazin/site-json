@@ -1,0 +1,1136 @@
+{
+  "version": "1.0.0",
+  "meta": {
+    "title": {
+      "fr": "Open Atlas — des outils libres pour les territoires",
+      "en": "Open Atlas — free tools for territories"
+    },
+    "description": {
+      "fr": "Open Atlas développe des outils sociaux et territoriaux, mutualisés grâce à l'open source et aux logiciels libres. Découvrez la communauté qui les fait vivre.",
+      "en": "Open Atlas develops social and territorial tools, shared through open source and free software. Meet the community that brings them to life."
+    },
+    "defaultLang": "fr",
+    "languages": [
+      "fr",
+      "en"
+    ],
+    "favicon": "/images/openAtlas/favicon.png",
+    "ogImage": "/images/openAtlas/logo.png",
+    "themeColor": "#e2334e",
+    "keywords": [
+      "Open Atlas",
+      "logiciels libres",
+      "open source",
+      "communs",
+      "outils territoriaux",
+      "Communecter",
+      "La Réunion"
+    ],
+    "author": {
+      "fr": "Open Atlas",
+      "en": "Open Atlas"
+    }
+  },
+  "header": {
+    "type": "transparent-scroll",
+    "path": "/",
+    "logo": "/images/openAtlas/logo-symbol.png",
+    "logoDark": "/images/openAtlas/logo-symbol-dark.png",
+    "logoAlt": {
+      "fr": "Open Atlas",
+      "en": "Open Atlas"
+    },
+    "logoTitle": {
+      "fr": "Open Atlas",
+      "en": "Open Atlas"
+    },
+    "logoSize": "md",
+    "nav": [
+      {
+        "label": {
+          "fr": "Accueil",
+          "en": "Home"
+        },
+        "path": "/"
+      },
+      {
+        "label": {
+          "fr": "Projets",
+          "en": "Projects"
+        },
+        "path": "/projets"
+      },
+      {
+        "label": {
+          "fr": "Communauté",
+          "en": "Community"
+        },
+        "path": "/communaute"
+      },
+      {
+        "label": {
+          "fr": "À propos",
+          "en": "About"
+        },
+        "path": "/profil/openAtlas"
+      }
+    ],
+    "sticky": true,
+    "transparent": false,
+    "height": "lg",
+    "utilities": {
+      "piggyBank": false,
+      "pledge": false,
+      "themeSwitch": true,
+      "langSwitch": true,
+      "search": false,
+      "auth": true,
+      "cart": false,
+      "notifications": true
+    }
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": {
+        "fr": "Open Atlas",
+        "en": "Open Atlas"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-parallax",
+          "id": "accueil",
+          "props": {
+            "headline": {
+              "fr": "Open Atlas",
+              "en": "Open Atlas"
+            },
+            "subhead": {
+              "fr": "Développement de territoire et d'outils sociaux et territoriaux, mutualisés grâce à l'open source et aux logiciels libres.",
+              "en": "Territorial development and social and territorial tools, shared through open source and free software."
+            },
+            "badges": [
+              {
+                "label": {
+                  "fr": "Logiciels libres",
+                  "en": "Free software"
+                },
+                "icon": "code-xml"
+              },
+              {
+                "label": {
+                  "fr": "Outils territoriaux",
+                  "en": "Territorial tools"
+                },
+                "icon": "map"
+              },
+              {
+                "label": {
+                  "fr": "Communs",
+                  "en": "Commons"
+                },
+                "icon": "share-2"
+              }
+            ],
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "Découvrir la communauté",
+                  "en": "Meet the community"
+                },
+                "path": "/communaute",
+                "variant": "default"
+              },
+              {
+                "label": {
+                  "fr": "Qui sommes-nous ?",
+                  "en": "Who are we?"
+                },
+                "path": "/profil/openAtlas",
+                "variant": "outline"
+              }
+            ],
+            "showScrollIndicator": true
+          }
+        },
+        {
+          "type": "features-glass",
+          "id": "mission",
+          "props": {
+            "headline": {
+              "fr": "Ce qui nous anime",
+              "en": "What drives us"
+            },
+            "subhead": {
+              "fr": "Des outils pensés pour les territoires, construits en logiciels libres et partagés entre tous ceux qui les utilisent.",
+              "en": "Tools designed for territories, built as free software and shared among everyone who uses them."
+            },
+            "bg": "muted",
+            "features": [
+              {
+                "icon": "code-xml",
+                "title": {
+                  "fr": "Des logiciels libres",
+                  "en": "Free software"
+                },
+                "description": {
+                  "fr": "Nos outils sont open source : chacun peut les utiliser, les étudier, les adapter et les améliorer.",
+                  "en": "Our tools are open source: anyone can use, study, adapt and improve them."
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "map",
+                "title": {
+                  "fr": "Au service des territoires",
+                  "en": "Serving territories"
+                },
+                "description": {
+                  "fr": "Des outils sociaux et territoriaux pour que les acteurs d'un territoire se connaissent, coopèrent et agissent ensemble.",
+                  "en": "Social and territorial tools that help the people and organisations of a territory know each other, cooperate and act together."
+                },
+                "color": "chart-2"
+              },
+              {
+                "icon": "share-2",
+                "title": {
+                  "fr": "Mutualisés",
+                  "en": "Shared"
+                },
+                "description": {
+                  "fr": "Ce qui est développé pour un projet profite aux autres : les outils sont mis en commun plutôt que refaits.",
+                  "en": "What is built for one project benefits the others: tools are pooled rather than rebuilt."
+                },
+                "color": "primary"
+              }
+            ]
+          }
+        },
+        {
+          "type": "aac-highlight",
+          "id": "projets-bande",
+          "props": {
+            "title": {
+              "fr": "Les projets d'Open Atlas",
+              "en": "Open Atlas projects"
+            },
+            "description": {
+              "fr": "Les projets portés et suivis par Open Atlas : leurs objectifs, leur budget et leur avancement.",
+              "en": "The projects led and followed by Open Atlas: their goals, budget and progress."
+            },
+            "tone": "muted",
+            "cta": {
+              "label": {
+                "fr": "Voir les projets",
+                "en": "See the projects"
+              },
+              "href": "/projets"
+            },
+            "count": {
+              "source": "communs",
+              "label": {
+                "fr": "Projets publiés",
+                "en": "Published projects"
+              }
+            }
+          }
+        },
+        {
+          "type": "aac-directory",
+          "id": "projets-apercu",
+          "props": {
+            "title": {
+              "fr": "Projets récents",
+              "en": "Recent projects"
+            },
+            "variant": "preview",
+            "display": "grid",
+            "columns": 3,
+            "pageSize": 6,
+            "filters": {
+              "search": false,
+              "usage": false,
+              "tags": false,
+              "maturity": false,
+              "sort": false
+            },
+            "showDepositButton": false,
+            "emptyText": {
+              "fr": "Aucun projet publié pour le moment.",
+              "en": "No published project yet."
+            },
+            "moreLink": {
+              "href": "/projets",
+              "label": {
+                "fr": "Voir tous les projets",
+                "en": "See all projects"
+              }
+            },
+            "className": "max-w-7xl mx-auto px-6"
+          }
+        },
+        {
+          "type": "cta",
+          "id": "rejoindre",
+          "props": {
+            "headline": {
+              "fr": "Rejoignez la communauté",
+              "en": "Join the community"
+            },
+            "subhead": {
+              "fr": "Personnes et organisations construisent Open Atlas ensemble. Découvrez qui en fait partie.",
+              "en": "People and organisations build Open Atlas together. See who is part of it."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Voir la communauté",
+                  "en": "See the community"
+                },
+                "href": "/communaute",
+                "variant": "default"
+              },
+              {
+                "label": {
+                  "fr": "Créer un compte",
+                  "en": "Create an account"
+                },
+                "href": "/register",
+                "variant": "outline"
+              }
+            ],
+            "align": "center"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/projets",
+      "title": {
+        "fr": "Projets — Open Atlas",
+        "en": "Projects — Open Atlas"
+      },
+      "seo": {
+        "title": {
+          "fr": "Les projets — Open Atlas",
+          "en": "Projects — Open Atlas"
+        },
+        "description": {
+          "fr": "Les projets portés et suivis par Open Atlas : recherche, thématiques, budget et avancement.",
+          "en": "The projects led and followed by Open Atlas: search, topics, budget and progress."
+        }
+      },
+      "sections": [
+        {
+          "type": "aac-directory",
+          "id": "projets",
+          "props": {
+            "title": {
+              "fr": "Les projets",
+              "en": "Projects"
+            },
+            "description": {
+              "fr": "Les projets portés et suivis par Open Atlas et sa communauté.",
+              "en": "The projects led and followed by Open Atlas and its community."
+            },
+            "variant": "full",
+            "display": "grid",
+            "columns": 3,
+            "pageSize": 12,
+            "filters": {
+              "search": true,
+              "usage": false,
+              "tags": true,
+              "maturity": false,
+              "sort": true
+            },
+            "showDepositButton": false,
+            "emptyText": {
+              "fr": "Aucun projet publié pour le moment.",
+              "en": "No published project yet."
+            },
+            "className": "max-w-7xl mx-auto px-6 pb-20"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/communaute",
+      "title": {
+        "fr": "Communauté — Open Atlas",
+        "en": "Community — Open Atlas"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "La communauté — Open Atlas",
+          "en": "The community — Open Atlas"
+        },
+        "description": {
+          "fr": "Les personnes et les organisations membres d'Open Atlas.",
+          "en": "The people and organisations who are members of Open Atlas."
+        }
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "communaute-header",
+          "props": {
+            "headline": {
+              "fr": "La communauté Open Atlas",
+              "en": "The Open Atlas community"
+            },
+            "subhead": {
+              "fr": "Les personnes et les organisations membres d'Open Atlas.",
+              "en": "The people and organisations who are members of Open Atlas."
+            }
+          }
+        },
+        {
+          "type": "tabs",
+          "id": "communaute-onglets",
+          "props": {
+            "defaultTab": "membres",
+            "tabs": [
+              {
+                "id": "membres",
+                "label": {
+                  "fr": "Membres",
+                  "en": "Members"
+                },
+                "icon": "users",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "liste-membres",
+                    "props": {
+                      "showSearch": true,
+                      "useFilter": false,
+                      "showMap": false,
+                      "enableMap": false,
+                      "defaultViewMode": "list",
+                      "showActiveFiltersTypes": false,
+                      "showActiveFiltersTags": false,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "notSourceKey": true,
+                        "defaultTypes": [
+                          "citoyens"
+                        ],
+                        "defaultFilters": {
+                          "links.memberOf.555eba56c655675cdd65bf19": {
+                            "$exists": true
+                          },
+                          "links.memberOf.555eba56c655675cdd65bf19.toBeValidated": {
+                            "$exists": false
+                          },
+                          "links.memberOf.555eba56c655675cdd65bf19.isInviting": {
+                            "$exists": false
+                          }
+                        },
+                        "defaultFields": [
+                          "name",
+                          "slug",
+                          "collection",
+                          "type",
+                          "source",
+                          "shortDescription",
+                          "profilImageUrl",
+                          "profilMediumImageUrl",
+                          "profilThumbImageUrl",
+                          "address",
+                          "tags",
+                          "geo",
+                          "geoPosition"
+                        ],
+                        "defaultSortBy": {
+                          "name": 1
+                        },
+                        "searchBy": [
+                          "name",
+                          "address.addressLocality",
+                          "tags"
+                        ],
+                        "indexStepList": 24
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3,
+                          "xl": 4
+                        },
+                        "card": {
+                          "type": "profile",
+                          "variant": "profile",
+                          "showDescription": true,
+                          "showAddress": true,
+                          "detailsMode": "drawer",
+                          "showStats": false
+                        },
+                        "preview": {
+                          "type": "default"
+                        },
+                        "itemAction": {
+                          "kind": "preview"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "organisations",
+                "label": {
+                  "fr": "Organisations",
+                  "en": "Organisations"
+                },
+                "icon": "building-2",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "liste-organisations",
+                    "props": {
+                      "showSearch": true,
+                      "useFilter": false,
+                      "showMap": false,
+                      "enableMap": false,
+                      "defaultViewMode": "list",
+                      "showActiveFiltersTypes": false,
+                      "showActiveFiltersTags": false,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "notSourceKey": true,
+                        "defaultTypes": [
+                          "NGO",
+                          "LocalBusiness",
+                          "Group",
+                          "GovernmentOrganization",
+                          "Cooperative"
+                        ],
+                        "defaultFilters": {
+                          "links.memberOf.555eba56c655675cdd65bf19": {
+                            "$exists": true
+                          },
+                          "links.memberOf.555eba56c655675cdd65bf19.toBeValidated": {
+                            "$exists": false
+                          },
+                          "links.memberOf.555eba56c655675cdd65bf19.isInviting": {
+                            "$exists": false
+                          }
+                        },
+                        "defaultFields": [
+                          "name",
+                          "slug",
+                          "collection",
+                          "type",
+                          "source",
+                          "shortDescription",
+                          "profilImageUrl",
+                          "profilMediumImageUrl",
+                          "profilThumbImageUrl",
+                          "address",
+                          "tags",
+                          "geo",
+                          "geoPosition"
+                        ],
+                        "defaultSortBy": {
+                          "name": 1
+                        },
+                        "searchBy": [
+                          "name",
+                          "shortDescription",
+                          "address.addressLocality",
+                          "tags"
+                        ],
+                        "indexStepList": 24
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3,
+                          "xl": 4
+                        },
+                        "card": {
+                          "type": "profile",
+                          "variant": "profile",
+                          "showDescription": true,
+                          "showAddress": true,
+                          "detailsMode": "drawer",
+                          "showStats": false
+                        },
+                        "preview": {
+                          "type": "default"
+                        },
+                        "itemAction": {
+                          "kind": "preview"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/mentions-legales",
+      "title": {
+        "fr": "Mentions légales — Open Atlas",
+        "en": "Legal notice — Open Atlas"
+      },
+      "sections": [
+        {
+          "type": "html",
+          "id": "mentions-legales",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Mentions légales</h1>\n<p class=\"text-muted-foreground mb-8\">Informations publiées pour le site d'Open Atlas en application de l'article 6-III de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN). Les éléments qui restent à établir sont signalés par la mention « [à compléter] ».</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Éditeur du site</h2>\n<p class=\"text-muted-foreground mb-2\">Open Atlas</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Forme juridique : [à compléter]</li>\n<li>Numéro d'immatriculation (SIREN, SIRET ou RNA) : [à compléter]</li>\n<li>Adresse du siège : [à compléter]</li>\n<li>Téléphone : [à compléter]</li>\n<li>Courriel : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Directeur de la publication</h2>\n<p class=\"text-muted-foreground mb-6\">Directeur ou directrice de la publication : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Hébergeur</h2>\n<p class=\"text-muted-foreground mb-6\">Dénomination, adresse complète et numéro de téléphone de l'hébergeur du site : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Conception et réalisation</h2>\n<p class=\"text-muted-foreground mb-6\">Ce site s'appuie sur la plateforme libre Communecter. Licence applicable aux développements propres à ce site : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Propriété intellectuelle</h2>\n<p class=\"text-muted-foreground mb-6\">Les textes, images, logos et éléments graphiques propres au site sont protégés par le droit de la propriété intellectuelle. Toute reproduction ou représentation, totale ou partielle, sans autorisation préalable de l'éditeur est interdite.</p>\n<p class=\"text-muted-foreground mb-6\">Le site publie par ailleurs des contenus fournis par des tiers, notamment les <a href=\"/projets\" class=\"text-primary hover:underline\">projets</a> et les fiches des membres et des organisations de la <a href=\"/communaute\" class=\"text-primary hover:underline\">communauté</a>. Leurs auteurs en conservent les droits. Licence applicable aux contenus publiés et aux données diffusées par le site : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Liens hypertextes</h2>\n<p class=\"text-muted-foreground mb-6\">Le site peut renvoyer vers des ressources extérieures, notamment depuis les fiches des membres et des organisations. L'éditeur n'exerce aucun contrôle sur ces ressources extérieures et ne saurait être tenu responsable de leur contenu ni des traitements qu'elles mettent en œuvre. Adresse à laquelle adresser toute demande relative à un lien : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Signalement d'un contenu</h2>\n<p class=\"text-muted-foreground mb-4\">Le site permet la création de comptes utilisateur. Si vous estimez qu'un contenu accessible sur le site est illicite ou porte atteinte à vos droits, vous pouvez le signaler à l'adresse suivante : [à compléter]. Pour en permettre le traitement, la notification prévue à l'article 6-I-5 de la LCEN doit comporter notamment :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>la date de la notification ;</li>\n<li>vos nom, prénom et coordonnées, ou la dénomination et le siège s'il s'agit d'une personne morale ;</li>\n<li>la description du contenu litigieux et son adresse (URL) exacte ;</li>\n<li>les motifs pour lesquels il devrait être retiré, y compris la mention des dispositions légales invoquées.</li></ul>\n<p class=\"text-muted-foreground mb-6\">Modalités de traitement des signalements (procédure, délais, modération éventuelle des contenus publiés) : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Accessibilité</h2>\n<p class=\"text-muted-foreground mb-6\">État de conformité au Référentiel général d'amélioration de l'accessibilité (RGAA) et statut de l'audit correspondant : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Données personnelles</h2>\n<p class=\"text-muted-foreground mb-6\">Les traitements de données personnelles mis en œuvre sur le site sont décrits dans la <a href=\"/confidentialite\" class=\"text-primary hover:underline\">politique de confidentialité</a>. Coordonnées du délégué à la protection des données, s'il en a été désigné un : [à compléter].</p>\n<p class=\"text-muted-foreground mb-6\">Dernière mise à jour : [à compléter]</p>\n</div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Legal notice</h1>\n<p class=\"text-muted-foreground mb-8\">Information published for the Open Atlas website pursuant to article 6-III of French law no. 2004-575 of 21 June 2004 on confidence in the digital economy (LCEN). Items still to be established are marked “[to be completed]”.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Publisher</h2>\n<p class=\"text-muted-foreground mb-2\">Open Atlas</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Legal form: [to be completed]</li>\n<li>Registration number (SIREN, SIRET or RNA): [to be completed]</li>\n<li>Registered office address: [to be completed]</li>\n<li>Telephone: [to be completed]</li>\n<li>Email: [to be completed]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Publication director</h2>\n<p class=\"text-muted-foreground mb-6\">Publication director: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Hosting provider</h2>\n<p class=\"text-muted-foreground mb-6\">Name, full address and telephone number of the website host: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Design and development</h2>\n<p class=\"text-muted-foreground mb-6\">This website is built on the free software platform Communecter. Licence applying to the developments specific to this website: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Intellectual property</h2>\n<p class=\"text-muted-foreground mb-6\">The texts, images, logos and graphic elements specific to this website are protected by intellectual property law. Any reproduction or representation, in whole or in part, without the prior authorisation of the publisher is prohibited.</p>\n<p class=\"text-muted-foreground mb-6\">The website also publishes content provided by third parties, in particular the <a href=\"/projets\" class=\"text-primary hover:underline\">projects</a> and the profiles of the members and organisations of the <a href=\"/communaute\" class=\"text-primary hover:underline\">community</a>. Their authors retain their rights. Licence applying to the published content and data: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Hyperlinks</h2>\n<p class=\"text-muted-foreground mb-6\">The website may link to external resources, in particular from the profiles of members and organisations. The publisher has no control over these external resources and cannot be held responsible for their content or for the processing they carry out. Address for any request regarding a link: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Reporting content</h2>\n<p class=\"text-muted-foreground mb-4\">The website allows users to create an account. If you believe that content available on the website is unlawful or infringes your rights, you can report it at the following address: [to be completed]. To be processed, the notification provided for in article 6-I-5 of the LCEN must include in particular:</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>the date of the notification;</li>\n<li>your surname, first name and contact details, or the name and registered office of a legal entity;</li>\n<li>a description of the disputed content and its exact address (URL);</li>\n<li>the reasons why it should be removed, including the legal provisions relied on.</li></ul>\n<p class=\"text-muted-foreground mb-6\">How reports are handled (procedure, time frames, any moderation of published content): [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Accessibility</h2>\n<p class=\"text-muted-foreground mb-6\">Compliance status with the French accessibility framework (RGAA) and status of the corresponding audit: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Personal data</h2>\n<p class=\"text-muted-foreground mb-6\">The processing of personal data carried out on the website is described in the <a href=\"/confidentialite\" class=\"text-primary hover:underline\">privacy policy</a>. Contact details of the data protection officer, if one has been appointed: [to be completed].</p>\n<p class=\"text-muted-foreground mb-6\">Last updated: [to be completed]</p>\n</div>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/confidentialite",
+      "title": {
+        "fr": "Confidentialité — Open Atlas",
+        "en": "Privacy policy — Open Atlas"
+      },
+      "sections": [
+        {
+          "type": "html",
+          "id": "confidentialite",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Politique de confidentialité</h1>\n<p class=\"text-muted-foreground mb-8\">Cette politique décrit les traitements de données personnelles réalisés dans le cadre du site d'Open Atlas, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés. Elle complète les <a href=\"/mentions-legales\" class=\"text-primary hover:underline\">mentions légales</a>. Les éléments qui restent à établir sont signalés par la mention « [à compléter] » : ils seront renseignés dans une prochaine version de ce document.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Responsable du traitement</h2>\n<p class=\"text-muted-foreground mb-2\">Le responsable des traitements décrits ci-dessous est Open Atlas.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Forme juridique et numéro d'immatriculation (SIREN ou RNA) : [à compléter]</li>\n<li>Adresse du siège : [à compléter]</li>\n<li>Courriel : [à compléter]</li>\n<li>Délégué à la protection des données, ou personne chargée des questions relatives aux données personnelles : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Données traitées</h2>\n<p class=\"text-muted-foreground mb-4\">Le site permet la création d'un compte utilisateur et la connexion, ainsi que la consultation de l'annuaire de la <a href=\"/communaute\" class=\"text-primary hover:underline\">communauté</a> : les fiches des personnes et des organisations membres d'Open Atlas, ainsi que la consultation des <a href=\"/projets\" class=\"text-primary hover:underline\">projets</a> et de leurs fiches. Des données personnelles sont donc traitées à ces occasions ; leur détail reste à établir.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Données collectées lors de la création d'un compte, de la connexion et de la récupération d'un mot de passe : [à compléter]</li>\n<li>Données publiées dans l'annuaire de la communauté et sur les fiches des membres : [à compléter]</li>\n<li>Données éventuellement collectées automatiquement lors de la consultation du site, notamment par les journaux de connexion : [à compléter]</li>\n<li>Données éventuellement transmises à des services tiers intégrés au site : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Finalités et bases légales</h2>\n<p class=\"text-muted-foreground mb-4\">Les finalités qui ressortent des fonctionnalités actuellement mises en ligne sont les suivantes :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>permettre la création, la gestion et la récupération d'un compte utilisateur ;</li>\n<li>présenter les personnes et les organisations membres de la communauté Open Atlas.</li></ul>\n<p class=\"text-muted-foreground mb-6\">La base légale retenue pour chacune de ces finalités — exécution du contrat, consentement, intérêt légitime ou obligation légale — ainsi que les éventuelles autres finalités poursuivies et les destinataires des données : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\" id=\"cookies\">4. Cookies et stockage local</h2>\n<p class=\"text-muted-foreground mb-4\">Aucun bandeau de recueil du consentement aux cookies n'est affiché sur les pages du site. Cette absence ne permet pas de conclure qu'aucun traceur n'est déposé : l'inventaire des cookies et des informations enregistrées dans votre navigateur reste à réaliser.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Cookies et traceurs éventuellement déposés, avec pour chacun l'émetteur, la finalité et la durée de vie : [à compléter]</li>\n<li>Informations éventuellement enregistrées dans le stockage local ou le stockage de session du navigateur : [à compléter]</li>\n<li>Outils de mesure d'audience et services tiers éventuellement utilisés : [à compléter]</li></ul>\n<p class=\"text-muted-foreground mb-6\">Si cet inventaire fait apparaître des traceurs soumis à consentement, un dispositif permettant de recueillir et de retirer ce consentement devra être mis en place avant leur dépôt. Les modalités de paramétrage de vos préférences seront alors décrites ici : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Durées de conservation</h2>\n<p class=\"text-muted-foreground mb-6\">Les durées de conservation applicables à chaque catégorie de données, ainsi que les critères permettant de les déterminer, restent à établir : [à compléter]. Le sort réservé aux données et aux contenus publiés à la suppression d'un compte : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Vos droits</h2>\n<p class=\"text-muted-foreground mb-4\">Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation du traitement, d'opposition et de portabilité sur les données qui vous concernent, ainsi que du droit de définir des directives relatives à leur sort après votre décès. Lorsqu'un traitement repose sur votre consentement, vous pouvez le retirer à tout moment.</p>\n<p class=\"text-muted-foreground mb-6\">Adresse à laquelle exercer ces droits : [à compléter]. Vous pouvez également introduire une réclamation auprès de la Commission nationale de l'informatique et des libertés (<a href=\"https://www.cnil.fr\" class=\"text-primary hover:underline\" rel=\"noopener\" target=\"_blank\">cnil.fr</a>).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Sécurité</h2>\n<p class=\"text-muted-foreground mb-6\">L'article 32 du RGPD impose au responsable du traitement de mettre en œuvre les mesures techniques et organisationnelles appropriées pour assurer la sécurité des données. La description des mesures effectivement en place sur ce site — hébergement, protection des échanges, gestion des accès et des habilitations, sauvegardes, conduite à tenir en cas de violation de données — reste à fournir : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">8. Transferts hors Union européenne</h2>\n<p class=\"text-muted-foreground mb-6\">L'existence de transferts de données en dehors de l'Union européenne dépend du lieu d'hébergement du site et des services tiers éventuellement utilisés, qui ne sont pas documentés à ce stade. Le cas échéant, les destinataires concernés, les pays de destination et les garanties encadrant ces transferts (décision d'adéquation, clauses contractuelles types ou autre garantie appropriée) sont les suivants : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">9. Modification de la politique</h2>\n<p class=\"text-muted-foreground mb-6\">La présente politique peut être modifiée, notamment pour tenir compte des évolutions du site, des traitements mis en œuvre ou de la réglementation applicable. La version qui vous est opposable est celle publiée sur cette page au moment de votre consultation.</p>\n<p class=\"text-muted-foreground mb-6\">Dernière mise à jour : [à compléter]</p>\n</div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Privacy policy</h1>\n<p class=\"text-muted-foreground mb-8\">This policy describes the processing of personal data carried out on the Open Atlas website, in accordance with the General Data Protection Regulation (GDPR) and the French Data Protection Act. It supplements the <a href=\"/mentions-legales\" class=\"text-primary hover:underline\">legal notice</a>. Items still to be established are marked “[to be completed]”: they will be filled in in a future version of this document.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Data controller</h2>\n<p class=\"text-muted-foreground mb-2\">The controller of the processing described below is Open Atlas.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Legal form and registration number (SIREN or RNA): [to be completed]</li>\n<li>Registered office address: [to be completed]</li>\n<li>Email: [to be completed]</li>\n<li>Data protection officer, or person in charge of personal data matters: [to be completed]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Data processed</h2>\n<p class=\"text-muted-foreground mb-4\">The website allows users to create an account and log in, and to browse the directory of the <a href=\"/communaute\" class=\"text-primary hover:underline\">community</a>: the profiles of the people and organisations who are members of Open Atlas, as well as browsing the <a href=\"/projets\" class=\"text-primary hover:underline\">projects</a> and their pages. Personal data is therefore processed on these occasions; the details remain to be established.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Data collected when creating an account, logging in and recovering a password: [to be completed]</li>\n<li>Data published in the community directory and on member profiles: [to be completed]</li>\n<li>Data that may be collected automatically when browsing the website, in particular through connection logs: [to be completed]</li>\n<li>Data that may be transmitted to third-party services integrated into the website: [to be completed]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Purposes and legal bases</h2>\n<p class=\"text-muted-foreground mb-4\">The purposes arising from the features currently online are the following:</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>enabling the creation, management and recovery of a user account;</li>\n<li>presenting the people and organisations who are members of the Open Atlas community.</li></ul>\n<p class=\"text-muted-foreground mb-6\">The legal basis for each of these purposes — performance of a contract, consent, legitimate interest or legal obligation — as well as any other purposes pursued and the recipients of the data: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\" id=\"cookies\">4. Cookies and local storage</h2>\n<p class=\"text-muted-foreground mb-4\">No cookie consent banner is displayed on the website. This does not mean that no tracker is placed: the inventory of cookies and of the information stored in your browser remains to be carried out.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Cookies and trackers that may be placed, with for each the issuer, purpose and lifetime: [to be completed]</li>\n<li>Information that may be stored in the browser's local storage or session storage: [to be completed]</li>\n<li>Audience measurement tools and third-party services that may be used: [to be completed]</li></ul>\n<p class=\"text-muted-foreground mb-6\">If this inventory reveals trackers that require consent, a mechanism for giving and withdrawing consent will have to be put in place before they are placed. How to set your preferences will then be described here: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Retention periods</h2>\n<p class=\"text-muted-foreground mb-6\">The retention periods applying to each category of data, and the criteria used to determine them, remain to be established: [to be completed]. What happens to data and published content when an account is deleted: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Your rights</h2>\n<p class=\"text-muted-foreground mb-4\">Under the GDPR, you have the right to access, rectify and erase your data, to restrict or object to its processing and to data portability, as well as the right to set guidelines for what happens to your data after your death. Where processing is based on your consent, you may withdraw it at any time.</p>\n<p class=\"text-muted-foreground mb-6\">Address for exercising these rights: [to be completed]. You may also lodge a complaint with the French data protection authority, the CNIL (<a href=\"https://www.cnil.fr\" class=\"text-primary hover:underline\" rel=\"noopener\" target=\"_blank\">cnil.fr</a>).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Security</h2>\n<p class=\"text-muted-foreground mb-6\">Article 32 of the GDPR requires the controller to implement appropriate technical and organisational measures to ensure the security of the data. A description of the measures actually in place on this website — hosting, protection of exchanges, access and authorisation management, backups, procedure in the event of a data breach — remains to be provided: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">8. Transfers outside the European Union</h2>\n<p class=\"text-muted-foreground mb-6\">Whether data is transferred outside the European Union depends on where the website is hosted and on any third-party services used, which are not documented at this stage. Where applicable, the recipients concerned, the destination countries and the safeguards governing these transfers (adequacy decision, standard contractual clauses or other appropriate safeguard) are as follows: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">9. Changes to this policy</h2>\n<p class=\"text-muted-foreground mb-6\">This policy may be amended, in particular to reflect changes to the website, to the processing carried out or to the applicable regulations. The version that applies to you is the one published on this page at the time you consult it.</p>\n<p class=\"text-muted-foreground mb-6\">Last updated: [to be completed]</p>\n</div>"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "sidebar-columns",
+    "style": "plain",
+    "logo": "/images/openAtlas/logo-symbol-neutral.png",
+    "logoAlt": {
+      "fr": "Open Atlas",
+      "en": "Open Atlas"
+    },
+    "logoTitle": {
+      "fr": "Open Atlas",
+      "en": "Open Atlas"
+    },
+    "description": {
+      "fr": "Développement de territoire et d'outils sociaux et territoriaux, mutualisés grâce à l'open source et aux logiciels libres.",
+      "en": "Territorial development and social and territorial tools, shared through open source and free software."
+    },
+    "copyright": {
+      "fr": "© Open Atlas",
+      "en": "© Open Atlas"
+    },
+    "columns": [
+      {
+        "title": {
+          "fr": "Le site",
+          "en": "The site"
+        },
+        "links": [
+          {
+            "href": "/",
+            "label": {
+              "fr": "Accueil",
+              "en": "Home"
+            }
+          },
+          {
+            "href": "/projets",
+            "label": {
+              "fr": "Projets",
+              "en": "Projects"
+            }
+          },
+          {
+            "href": "/communaute",
+            "label": {
+              "fr": "Communauté",
+              "en": "Community"
+            }
+          },
+          {
+            "href": "/profil/openAtlas",
+            "label": {
+              "fr": "À propos d'Open Atlas",
+              "en": "About Open Atlas"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "Participer",
+          "en": "Get involved"
+        },
+        "links": [
+          {
+            "href": "/register",
+            "label": {
+              "fr": "Créer un compte",
+              "en": "Create an account"
+            },
+            "visibility": {
+              "auth": "anonymous"
+            }
+          },
+          {
+            "href": "/login",
+            "label": {
+              "fr": "Se connecter",
+              "en": "Log in"
+            },
+            "visibility": {
+              "auth": "anonymous"
+            }
+          },
+          {
+            "href": "@profile",
+            "label": {
+              "fr": "Mon profil",
+              "en": "My profile"
+            },
+            "visibility": {
+              "auth": "required"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "Informations",
+          "en": "Information"
+        },
+        "links": [
+          {
+            "href": "/mentions-legales",
+            "label": {
+              "fr": "Mentions légales",
+              "en": "Legal notice"
+            }
+          },
+          {
+            "href": "/confidentialite",
+            "label": {
+              "fr": "Confidentialité",
+              "en": "Privacy policy"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "theme": {
+    "defaultMode": "light",
+    "colors": {
+      "light": {
+        "background": "oklch(0.9950 0.0020 264)",
+        "foreground": "oklch(0.2200 0.0170 264)",
+        "card": "oklch(1.0000 0 0)",
+        "cardForeground": "oklch(0.2200 0.0170 264)",
+        "popover": "oklch(1.0000 0 0)",
+        "popoverForeground": "oklch(0.2200 0.0170 264)",
+        "primary": "oklch(0.5700 0.2100 18)",
+        "primaryForeground": "oklch(1.0000 0 0)",
+        "secondary": "oklch(0.9600 0.0080 264)",
+        "secondaryForeground": "oklch(0.2800 0.0200 264)",
+        "muted": "oklch(0.9650 0.0050 264)",
+        "mutedForeground": "oklch(0.5000 0.0200 264)",
+        "accent": "oklch(0.9500 0.0300 18)",
+        "accentForeground": "oklch(0.4600 0.1700 18)",
+        "destructive": "oklch(0.5200 0.2000 30)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.9100 0.0080 264)",
+        "input": "oklch(0.9100 0.0080 264)",
+        "ring": "oklch(0.5700 0.2100 18)",
+        "chart1": "oklch(0.5700 0.2100 18)",
+        "chart2": "oklch(0.4500 0.1000 264)",
+        "chart3": "oklch(0.6500 0.1300 200)",
+        "chart4": "oklch(0.7500 0.1500 75)",
+        "chart5": "oklch(0.5500 0.1500 300)",
+        "sidebar": "oklch(0.9800 0.0040 264)",
+        "sidebarForeground": "oklch(0.2200 0.0170 264)",
+        "sidebarPrimary": "oklch(0.5700 0.2100 18)",
+        "sidebarPrimaryForeground": "oklch(1.0000 0 0)",
+        "sidebarAccent": "oklch(0.9500 0.0300 18)",
+        "sidebarAccentForeground": "oklch(0.4600 0.1700 18)",
+        "sidebarBorder": "oklch(0.9100 0.0080 264)",
+        "sidebarRing": "oklch(0.5700 0.2100 18)"
+      },
+      "dark": {
+        "background": "oklch(0.1900 0.0170 264)",
+        "foreground": "oklch(0.9600 0.0050 264)",
+        "card": "oklch(0.2300 0.0180 264)",
+        "cardForeground": "oklch(0.9600 0.0050 264)",
+        "popover": "oklch(0.2200 0.0180 264)",
+        "popoverForeground": "oklch(0.9600 0.0050 264)",
+        "primary": "oklch(0.6600 0.2000 18)",
+        "primaryForeground": "oklch(0.1600 0.0150 264)",
+        "secondary": "oklch(0.3000 0.0250 264)",
+        "secondaryForeground": "oklch(0.9600 0.0050 264)",
+        "muted": "oklch(0.2700 0.0200 264)",
+        "mutedForeground": "oklch(0.7200 0.0200 264)",
+        "accent": "oklch(0.3600 0.0900 18)",
+        "accentForeground": "oklch(0.9600 0.0050 264)",
+        "destructive": "oklch(0.6300 0.2000 30)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.3300 0.0200 264)",
+        "input": "oklch(0.3000 0.0200 264)",
+        "ring": "oklch(0.6600 0.2000 18)",
+        "chart1": "oklch(0.6600 0.2000 18)",
+        "chart2": "oklch(0.6800 0.1000 264)",
+        "chart3": "oklch(0.7200 0.1200 200)",
+        "chart4": "oklch(0.8000 0.1400 75)",
+        "chart5": "oklch(0.6800 0.1400 300)",
+        "sidebar": "oklch(0.2100 0.0180 264)",
+        "sidebarForeground": "oklch(0.9600 0.0050 264)",
+        "sidebarPrimary": "oklch(0.6600 0.2000 18)",
+        "sidebarPrimaryForeground": "oklch(0.1600 0.0150 264)",
+        "sidebarAccent": "oklch(0.3600 0.0900 18)",
+        "sidebarAccentForeground": "oklch(0.9600 0.0050 264)",
+        "sidebarBorder": "oklch(0.3300 0.0200 264)",
+        "sidebarRing": "oklch(0.6600 0.2000 18)"
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "sans": [
+          "Urbanist",
+          "sans-serif"
+        ],
+        "serif": [
+          "Roboto Slab",
+          "serif"
+        ],
+        "mono": [
+          "Roboto Mono",
+          "monospace"
+        ]
+      },
+      "letterSpacing": "0em"
+    },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.625rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.06)",
+        "shadowXs": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.08)",
+        "shadowSm": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.10), 0px 1px 2px -1px oklch(0.22 0.017 264 / 0.10)",
+        "shadow": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.10), 0px 1px 2px -1px oklch(0.22 0.017 264 / 0.10)",
+        "shadowMd": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.10), 0px 2px 4px -1px oklch(0.22 0.017 264 / 0.10)",
+        "shadowLg": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.10), 0px 4px 6px -1px oklch(0.22 0.017 264 / 0.10)",
+        "shadowXl": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.10), 0px 8px 10px -1px oklch(0.22 0.017 264 / 0.10)",
+        "shadow2xl": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.25)"
+      },
+      "dark": {
+        "shadow2xs": "0px 1px 3px 0px oklch(0 0 0 / 0.25)",
+        "shadowXs": "0px 1px 3px 0px oklch(0 0 0 / 0.30)",
+        "shadowSm": "0px 1px 3px 0px oklch(0 0 0 / 0.35), 0px 1px 2px -1px oklch(0 0 0 / 0.35)",
+        "shadow": "0px 1px 3px 0px oklch(0 0 0 / 0.35), 0px 1px 2px -1px oklch(0 0 0 / 0.35)",
+        "shadowMd": "0px 1px 3px 0px oklch(0 0 0 / 0.35), 0px 2px 4px -1px oklch(0 0 0 / 0.35)",
+        "shadowLg": "0px 1px 3px 0px oklch(0 0 0 / 0.35), 0px 4px 6px -1px oklch(0 0 0 / 0.35)",
+        "shadowXl": "0px 1px 3px 0px oklch(0 0 0 / 0.35), 0px 8px 10px -1px oklch(0 0 0 / 0.35)",
+        "shadow2xl": "0px 1px 3px 0px oklch(0 0 0 / 0.60)"
+      }
+    },
+    "customCSS": "/* index-rezo-la-mer.css est PARTAGÉ : ses teintes océan (halo, bandeaux des searchHeader, dégradés) sont recolorées ici aux couleurs d'Open Atlas — rouge du logo sur l'encre bleu nuit. `:root:root` bat le `:root` de la feuille, `:root:root.dark` son `.dark`. */\n:root:root {\n  --ocean-deep: oklch(0.22 0.017 264);\n  --ocean-mid: oklch(0.32 0.030 264);\n  --ocean-light: oklch(0.45 0.120 18);\n  --ocean-surface: oklch(0.60 0.209 18);\n  --ocean-foam: oklch(0.93 0.035 18);\n  --turquoise: var(--primary);\n  --turquoise-light: color-mix(in oklab, var(--primary) 70%, white);\n  --cyan-bright: var(--primary);\n  --shadow-ocean: 0 10px 40px -10px oklch(0.22 0.017 264 / 0.45);\n  --shadow-glow: 0 0 30px color-mix(in oklab, var(--primary) 35%, transparent);\n  --text-shadow-glow: none; /* en clair, le halo rose floute le titre sombre */\n  --gradient-section: linear-gradient(135deg, color-mix(in oklab, var(--primary) 8%, var(--background)), color-mix(in oklab, var(--accent) 70%, var(--background)));\n}\n:root:root.dark {\n  --ocean-deep: oklch(0.16 0.015 264);\n  --ocean-mid: oklch(0.24 0.025 264);\n  --ocean-light: oklch(0.36 0.090 18);\n  --shadow-ocean: 0 10px 40px -10px oklch(0 0 0 / 0.7);\n  --shadow-glow: 0 0 40px color-mix(in oklab, var(--primary) 40%, transparent);\n  --text-shadow-glow: 0 0 24px color-mix(in oklab, var(--primary) 35%, transparent);\n  --gradient-section: linear-gradient(135deg, var(--ocean-deep), color-mix(in oklab, var(--primary) 16%, var(--ocean-mid)));\n}\n/* Héro d'accueil sans photo : halo rouge et bleu nuit, en écho au réseau de nœuds du logo. */\n#accueil {\n  background:\n    radial-gradient(ellipse 60% 50% at 15% 20%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 70%),\n    radial-gradient(ellipse 55% 45% at 85% 85%, color-mix(in oklab, var(--ocean-mid) 12%, transparent), transparent 70%),\n    var(--background);\n}\n"
+  },
+  "profiles": {
+    "default": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete"
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "projects": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-event-dates"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "contributors",
+          "label": {
+            "fr": "Contributeurs",
+            "en": "Contributors"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements",
+            "en": "Events"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements",
+                    "en": "Events"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "aac": {
+    "formId": "618b7b4abc572b35b4505da3",
+    "directory": {
+      "fields": {
+        "title": "answers.aapStep1.titre",
+        "description": "answers.aapStep1.description",
+        "tags": "answers.aapStep1.tags",
+        "depense": "answers.aapStep1.depense"
+      }
+    },
+    "detail": {
+      "gallery": "aapStep1.image"
+    }
+  }
+}
