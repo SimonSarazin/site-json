@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { Heart, Building2, Newspaper, Calendar, Briefcase, Sparkles } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useHydrated } from "@/hooks/useHydrated";
 import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
 import { getEntityIcon } from "@/lib/entityIcons";
@@ -69,7 +70,12 @@ type Onglet = "lieux" | "news" | "agenda" | "projets";
 export function MyPlacesSection({ id, props }: { id?: string; props: MyPlacesSectionProps }) {
   const t = useT("modules/profil");
   const tAgenda = useT("modules/agenda");
-  const { me } = useCocolight();
+  const { me: meBrut } = useCocolight();
+  // `me` est toujours `null` au SSR (stockage mémoire) mais déjà connu au premier rendu client d'un
+  // compte connecté (token en localStorage) : sans cette garde, serveur et client divergent à
+  // l'hydratation. On ne tranche connecté/déconnecté qu'une fois hydraté (cf. gotcha #10).
+  const hydrated = useHydrated();
+  const me = hydrated ? meBrut : null;
   const [onglet, setOnglet] = useState<Onglet>("lieux");
   // Défaut « À venir », avec accès direct aux 2 autres — mêmes 3 onglets et
   // même vocabulaire que le composant Agenda du site (`tab.upcoming`/`tab.ongoing`/`tab.past`,
@@ -141,7 +147,11 @@ export function MyPlacesSection({ id, props }: { id?: string; props: MyPlacesSec
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">
             {props.title ? t(props.title) : t("MyPlacesSection.title")}
           </h1>
-          <EntityEmptyState icon={getEntityIcon("organizations")} title={t("MyPlacesSection.loginRequired")} />
+          {hydrated ? (
+            <EntityEmptyState icon={getEntityIcon("organizations")} title={t("MyPlacesSection.loginRequired")} />
+          ) : (
+            <div className="text-center py-12 sm:py-16 animate-pulse text-muted-foreground">{t("common.loading")}</div>
+          )}
         </div>
       </section>
     );

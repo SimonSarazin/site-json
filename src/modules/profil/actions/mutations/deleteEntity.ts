@@ -47,5 +47,13 @@ export const useDeleteEntity = createEntityMutation({
     successKey: "toast.organization.deleteSuccess",
     errorKey: "toast.organization.deleteError",
   },
-  invalidate: (entity) => [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug), ...publicSurfaceKeys()],
+  // La fiche est RETIRÉE (clé calculée AVANT `delete()`, qui vide l'instance : `slug` → `null`) —
+  // l'invalider relancerait `entityBySlug` vers un élément qui n'existe plus (même choix que
+  // `useDeleteEvent`).
+  remove: (entity) => [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)],
+  // « Mes lieux » (`useUserOrganizations`) + surfaces publiques, fil blog du costum compris.
+  invalidate: (_entity, me, costumSlug) => [
+    ...(me ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
+    ...publicSurfaceKeys(costumSlug),
+  ],
 });
