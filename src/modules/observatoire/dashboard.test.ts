@@ -6,10 +6,11 @@
  */
 import { describe, it, expect } from "vitest";
 import type { ChartDef, DimensionsConfig, ObservatoryItem } from "./schema";
-import { DataObservatorySectionSchema } from "./schema";
+import { DataObservatorySectionSchema, ObservatoryPanelConfSchema } from "./schema";
 import { dimensionLabel } from "./dimensions";
 import {
   applyFilters,
+  applySelection,
   applyTextSearch,
   buildCsv,
   buildEntitiesCsv,
@@ -21,7 +22,7 @@ import {
   computeKpiValue,
   itemsFor,
 } from "./dashboard";
-import { buildObservatoryBaseParams } from "./hooks/useObservatoryItemsQuery";
+import { buildObservatoryBaseParams, toItems } from "./hooks/useObservatoryItemsQuery";
 import { observatoryPrefetchParams } from "./prefetch";
 
 /* ── Fixtures ────────────────────────────────────────────────────────────── */
@@ -78,6 +79,68 @@ describe("applyTextSearch", () => {
     expect(applyTextSearch(items, "cilaos", DIMS, ["type"])).toHaveLength(0);
     expect(applyTextSearch(items, "  ", DIMS)).toHaveLength(3);
     expect(applyTextSearch(items, "120", DIMS)).toHaveLength(0); // surface (number) non cherchée
+  });
+});
+
+/* ── Sélection (clic sur un item de la liste, mode split) ────────────────── */
+
+/** Le cas réel : un équipement porte SON nom, l'installation qui l'abrite en
+ *  porte un autre — les deux ne coïncident jamais mot pour mot. */
+const SELECT_DIMS: DimensionsConfig = {
+  equipName: { paths: ["name"] },
+  installation: { paths: ["inst_nom"] },
+  surface: { paths: ["surf"], kind: "number" },
+};
+
+const NOM_ET_INSTALLATION = ["equipName", "installation"] as const;
+
+const equipments: ObservatoryItem[] = [
+  { name: "Terrain de football n°1", inst_nom: "Stade Municipal de Saint-Paul" },
+  { name: "Salle de judo", inst_nom: "Stade Municipal de Saint-Paul" },
+  { name: "Terrain de football n°1", inst_nom: "Complexe Sportif de Cilaos" },
+  { name: "Piscine", inst_nom: "Centre Aquatique" },
+];
+
+describe("applySelection", () => {
+  it("ET entre les MOTS, OU entre les dimensions", () => {
+    // « Stade Municipal » ne nomme aucun équipement : c'est l'installation qui
+    // le porte → ses deux équipements ressortent.
+    expect(applySelection(equipments, "Stade Municipal", SELECT_DIMS, NOM_ET_INSTALLATION)).toHaveLength(2);
+    // Deux mots venus de DIMENSIONS différentes (l'un du nom, l'autre de
+    // l'installation) : c'est ce que le `contains` de la recherche texte ne sait
+    // pas faire.
+    expect(applySelection(equipments, "judo stade", SELECT_DIMS, NOM_ET_INSTALLATION)).toHaveLength(1);
+    // Un seul mot absent suffit à exclure.
+    expect(applySelection(equipments, "stade municipal piscine", SELECT_DIMS, NOM_ET_INSTALLATION)).toHaveLength(0);
+  });
+
+  it("ordre des mots indifférent ; casse et accents ignorés", () => {
+    expect(applySelection(equipments, "municipal stade", SELECT_DIMS, NOM_ET_INSTALLATION)).toHaveLength(2);
+    expect(applySelection(equipments, "COMPLEXE CILAOS", SELECT_DIMS, NOM_ET_INSTALLATION)).toHaveLength(1);
+  });
+
+  it("élargir les dimensions élargit le résultat, jamais l'inverse", () => {
+    expect(applySelection(equipments, "judo stade", SELECT_DIMS, ["equipName"])).toHaveLength(0);
+    expect(applySelection(equipments, "judo stade", SELECT_DIMS, NOM_ET_INSTALLATION)).toHaveLength(1);
+  });
+
+  it("l'item cliqué est TOUJOURS dans le résultat (aucun clic ne se vide)", () => {
+    for (const equipment of equipments) {
+      const result = applySelection(equipments, equipment.name as string, SELECT_DIMS, NOM_ET_INSTALLATION);
+      expect(result).toContain(equipment);
+    }
+  });
+
+  it("sélection vide, dimensions absentes ou non textuelles : aucun filtrage", () => {
+    expect(applySelection(equipments, "", SELECT_DIMS, NOM_ET_INSTALLATION)).toHaveLength(4);
+    expect(applySelection(equipments, "   ", SELECT_DIMS, NOM_ET_INSTALLATION)).toHaveLength(4);
+    expect(applySelection(equipments, "stade", SELECT_DIMS, [])).toHaveLength(4);
+    expect(applySelection(equipments, "stade", SELECT_DIMS, ["inconnue"])).toHaveLength(4);
+    expect(applySelection(equipments, "120", SELECT_DIMS, ["surface"])).toHaveLength(4);
+  });
+
+  it("dimension `list` : ses valeurs comptent comme du texte", () => {
+    expect(applySelection(items, "judo", DIMS, ["sports"])).toHaveLength(2);
   });
 });
 
@@ -321,5 +384,57 @@ describe("DataObservatorySectionSchema", () => {
     const badKind = structuredClone(valid);
     (badKind.props.kpis[0] as { kind: string }).kind = "median";
     expect(DataObservatorySectionSchema.safeParse(badKind).success).toBe(false);
+  });
+});
+
+/* ── Panneau réutilisable ────────────────────────────────────────────────── */
+
+describe("toItems (convention serverData, partagée section ⇄ panneau)", () => {
+  it("ne garde que les entités porteuses d'un serverData, alignées index à index", () => {
+    const a = { id: "1", serverData: { name: "Stade" } };
+    const b = { id: "2" };
+    const c = { id: "3", serverData: "pas un objet" };
+    const d = { id: "4", serverData: { name: "Gymnase" } };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { items, entities } = toItems([a, b, c, d] as any);
+
+    expect(items).toEqual([{ name: "Stade" }, { name: "Gymnase" }]);
+    // L'alignement porte l'ouverture de la fiche : un décalage d'un cran
+    // ouvrirait la fiche du voisin.
+    expect(entities).toEqual([a, d]);
+  });
+
+  it("supporte un jeu vide sans jeter", () => {
+    expect(toItems([]).items).toEqual([]);
+  });
+});
+
+describe("ObservatoryPanelConfSchema (tableau de bord embarqué)", () => {
+  const valid = {
+    dimensions: { ville: { paths: ["address.addressLocality"], label: { fr: "Ville" } } },
+    kpis: [{ kind: "count", label: { fr: "Total" }, icon: "activity" }],
+    charts: [{ kind: "pie", dimension: "ville", layout: "half" }],
+  };
+
+  it("parse la forme embarquée (dimensions + KPI + graphes)", () => {
+    expect(ObservatoryPanelConfSchema.safeParse(valid).success).toBe(true);
+    // `dimensions` seul suffit : une section peut n'afficher que des KPI.
+    expect(ObservatoryPanelConfSchema.safeParse({ dimensions: valid.dimensions }).success).toBe(true);
+  });
+
+  it("exige les dimensions et garde les mêmes garde-fous que la section", () => {
+    // Sans dimensions, rien n'est lisible sur un item : le panneau n'aurait
+    // aucun chiffre à calculer.
+    expect(ObservatoryPanelConfSchema.safeParse({ kpis: valid.kpis }).success).toBe(false);
+
+    const hex = structuredClone(valid) as typeof valid & {
+      charts: { colors?: Record<string, string> }[];
+    };
+    hex.charts[0].colors = { Cilaos: "#ff0000" };
+    expect(ObservatoryPanelConfSchema.safeParse(hex).success).toBe(false);
+
+    const badKind = structuredClone(valid);
+    (badKind.charts[0] as { kind: string }).kind = "radar";
+    expect(ObservatoryPanelConfSchema.safeParse(badKind).success).toBe(false);
   });
 });
