@@ -13,7 +13,7 @@
 > [Module Agenda](../doc/29-module-agenda.md).
 > Mémoire : `[[project-cocolight-siteforge]]` (le projet y est suivi — pas de fiche dédiée).
 
-Dernière mise à jour : **2026-09-02** (lot « usagers des équipements » — annuaire, événements, réservation).
+Dernière mise à jour : **2026-09-23** (lot « observatoire embarqué » — 3ᵉ vue dans la page Équipements).
 
 ---
 
@@ -58,6 +58,8 @@ commune **ou** de la source `saintpaulSport1` (union `$or`).
 | 2026-09-09 | Peterson (+ Claude) | **Lot « lien créneau ↔ organisation »** : champ `finder` sur les organisations taguées ajouté au formulaire de créneaux, champ texte « Usager » masqué, 63 réponses historiques rattachées par identifiant ; 7 associations manquantes taguées (48 au total) ; plan `../../.claude/plans/plan-creneaux-lien-organisation-usagere.md` |
 | 2026-09-10 | Peterson (+ Claude) | **Outillage de mise en production** : action de migration `creneauxlienorga` (`communecter-php74`, calquée sur `CreneauxUsagersOrgsAction`) — taguer, poser le champ, reprendre l'historique, en simulation puis application, idempotente ; éprouvée en local par un aller-retour complet. Scripts mongo de secours et retours arrière dans `../../scripts-prod-creneaux/` |
 | 2026-09-07 | Peterson (+ Claude) | **Recette complète du lot** : `oneAnswerPerPers` repassé à `false` par Peterson, deux réservations créées et vérifiées de bout en bout, portes rejouées (rendu 12/12, sonde 6/6, `config:validate` ✅), recette en éventail sur 5 dimensions — 3 constats mineurs confirmés (§12) |
+| 2026-09-23 | Peterson (+ Claude) | **Lot « liens croisés équipement ↔ organisation »** : bouton vers la fiche du club dans la section réservations, section « équipements réservés » dans la fiche d'une organisation, ouverture d'une fiche par identifiant (`list.previewFetch`) — cf. section dédiée en fin de page |
+| 2026-09-23 | Peterson (+ Claude) | **Lot « observatoire embarqué »** : le tableau de bord devient une configuration réutilisable (`ObservatoryPanel`), appelable depuis une section search ; page Équipements → 3ᵉ vue « Observatoire » à côté de liste et carte, et liste à gauche en mode carte — cf. section dédiée en fin de page |
 
 ## 2. Objectifs de la configuration
 
@@ -385,3 +387,179 @@ serveur : `cocolight-backend/docs/28-OWNERSHIP-MIGRATION.md`. ⚠ Ordre : **migr
 déploiement de la config communale** (aucune coupure) ; BUG-L-236 (l'update d'import écrasait
 `reference` des deux côtés) est CORRIGÉ en miroir L+B le 2026-08-17 — déployer le fix legacy
 avant tout rafraîchissement RES d'un dataset migré.
+
+## Observatoire en split view (2026-09-10)
+
+Refonte de l’AFFICHAGE de `/observatoire` sur la proposition de Tibor (message du 09/09) :
+KPI en bandeau sous les filtres, puis liste des équipements à gauche et graphes à droite.
+Aucune fonctionnalité retirée du
+site — le moteur gagne trois options opt-in, dont le défaut reproduit l’existant à l’identique
+(les 3 autres consommateurs de `data-observatory` — Institut Bleu, Relief, Tiers-Lieux — sont
+inchangés).
+
+**Ce que la page fait maintenant.** La colonne de gauche liste les équipements (nom, puis
+installation et commune en sous-titre), par tranches de 50. Un clic sur le libellé filtre les
+KPI, les graphes et la liste ; un bouton « Fiche » ouvre le détail habituel — même
+`SwitchDetailsMode`, mêmes réservations, même tableau de bord d’installation. Le tableau
+quitte cette page ; il reste ENTIER sur `/data` (tri par colonne, pagination, export CSV),
+d’où le « zéro perte » à l’échelle du site. L’export CSV est aussi repris en tête de liste.
+
+**Sélection ≠ recherche texte.** Arbitrage Peterson du 10/09 : le champ de recherche garde son
+comportement historique (`?q=`, `contains` sur la saisie entière). Le clic est un filtre
+DISTINCT (`?selection=`) qui découpe le libellé en mots et exige chaque mot dans la réunion du
+nom de l’équipement ET du nom de son installation — « pour qu’on ne rate rien ». Les deux
+filtres se cumulent et s’effacent séparément ; `resetAll` les efface tous.
+
+**Config** (page `/observatoire` seulement) : `layout: "split"` + `list`
+(`titleDimension: "equipName"`, `subtitleDimensions: ["name","commune"]`,
+`selectDimensions: ["equipName","name"]`, `splitRatio: "40-60"`, `pageSize: 50`), et le bloc
+`rowAction` REMONTE de `table` au niveau de la section — il alimente la liste et le deep-link
+`?installation=`. Le bloc `table` est supprimé de cette page.
+
+**Mesuré, pas supposé.** Sur `saintpaulSport1` (207 équipements, serveur de dev réel) : un clic
+sur « base Nautique » ramène 2 équipements dans deux installations distinctes, là où la
+recherche texte de la même chaîne n’en ramène qu’1 — le clic élargit, il ne restreint jamais.
+`config:validate`, `audit:config` (RAS) et `config:render` au vert sur les 3 sites ; 704 tests
+passent, les 3 échecs restants (`bundle-size`, `environment`, `site-assets`) étant
+préexistants et sans lien.
+
+**Non vérifié à ce stade** : le rendu MOBILE (repli de la liste sous le tableau de bord) —
+aucun navigateur Playwright installé sur le poste, la vérification s’est faite sur le HTML
+servi par le serveur de dev, qui rend la variante desktop.
+
+**Ajustements du 2026-09-10 (retour sur capture).** `maxWidth: "full"` sur la page : le défaut
+`8xl` (1440 px) bridait le contenu et laissait de larges marges sur un écran plus grand — en
+`full`, la section occupe la largeur moins le seul padding (`lg:px-8`), soit ~96 %. Et le scroll
+a été inversé : le tableau de bord se déroule entier, c'est la liste qui s'adapte à sa hauteur
+et défile seule.
+
+Détail du mécanisme : [doc/27-module-observatoire.md](../doc/27-module-observatoire.md),
+section « Split view ».
+
+## Liens croisés équipement ↔ organisation (2026-09-23)
+
+Les deux bouts du formulaire de créneaux se répondent enfin. Dans la fiche d'un **équipement**,
+chaque club de la section réservations porte un bouton « Fiche » qui ouvre sa fiche sur
+`/annuaire`. Dans la fiche d'une **organisation**, une section « Équipements réservés » liste
+les équipements du club, leurs créneaux et leur période, chacun avec un bouton qui ouvre la
+fiche de l'équipement sur `/equipements-sportifs`.
+
+**Le lien passe par l'identifiant, jamais par le nom.** Sondage du 2026-09-22 sur
+`communecter74-dev` avant la reprise : 0 réponse sur 62 portait l'identifiant du club, 7 noms
+d'usagers sur 48 correspondaient exactement à une organisation de l'annuaire (pliage casse,
+accents et ponctuation), et les « quasi-correspondances » étaient fausses — `TWIRL CLUB OUEST
+974` ≈ `Fight Club de l'Ouest (FCO 974)`. La recherche texte du backend ne rattrape pas l'écart
+non plus : `BASKET CLUB  SAINT-PAULOIS` (double espace, trait d'union) renvoie 0 résultat, là où
+`BASKET CLUB SAINT PAULOIS` en renvoie 1. D'où la règle : **pas d'identifiant, pas de bouton**.
+
+**Après la reprise** (`/co2/migration/creneauxlienorga?apply=1&step=reprise`, jouée par Peterson
+le 2026-09-22) : 61 réponses sur 62 rattachées, 47 organisations distinctes, toutes dans le
+périmètre de l'annuaire (233 fiches taguées). Reste « MONTAGNE REUNION » (mur d'escalade), dont
+la fiche existe et a dû être taguée après le passage — un second passage la rattachera.
+
+**Le socle : ouvrir une fiche par son identifiant.** `?preview=<id>` n'était résolu que DANS la
+page de résultats chargée — 10 items par défaut, 24 sur l'annuaire. Un lien venu d'une autre
+page n'ouvrait donc presque jamais rien, en silence. `list.previewFetch` (`"poi"` sur
+`/equipements-sportifs`, `"organizations"` sur `/annuaire`) charge la fiche complète par son id
+quand la liste ne la porte pas. Effet de bord bienvenu : les liens « Partager » d'une fiche
+profonde dans la pagination deviennent fiables.
+
+**Config ajoutée** : `orgaLink: {path: "/annuaire"}` sur les TROIS blocs `reservations` du site
+(page équipements, `/observatoire`, `/data`) ; sur `/annuaire`, le bloc `reservations` (même
+formulaire, `maxAnswers: 500`) + `bookedResources: {link: {path: "/equipements-sportifs"}}` ;
+`previewFetch` sur les deux pages. Rien sur les sites Équipements Sportifs et Scolaires : ils
+n'ont pas de page annuaire.
+
+**Vérifié** : `tsc`, `eslint`, 638 tests des modules search et observatoire — dont 3 nouveaux
+cas sur l'ouverture par identifiant (chargé et ouvert quand absent de la liste ; pas de requête
+quand présent ; rien sans `previewFetch`) et 3 sur le regroupement par équipement. Préflights au
+vert après régénération de l'exemple `data-observatory` de la skill ; les 3 échecs restants
+(`bundle-size`, `environment`, `site-assets`) sont préexistants. Requête inverse éprouvée sur
+les données réelles : `BOUGER O` → 1 réservation (dojo salle de combat), `CENTRE ETUDE KARATE
+SALINE` → 2 (dojo, salle de danse). **Non vérifié** : le rendu à l'écran (aucun navigateur
+installé sur le poste) — pages servies en 200, config présente dans le HTML.
+
+Détail du mécanisme : [doc/07-module-search.md](../doc/07-module-search.md), section « Liens
+croisés équipement ↔ organisation usagère ».
+
+---
+
+## Observatoire embarqué dans la page Équipements (2026-09-23)
+
+**Demande.** Pouvoir consulter l'observatoire **sans quitter la page Équipements** : une icône
+de plus à côté des bascules annuaire / carte. En mode carte, la liste des équipements doit
+apparaître à gauche, comme sur la page Observatoire ; en mode observatoire, les graphes
+remplacent la carte et la liste reste en place. Deux chantiers, donc : rendre l'observatoire
+appelable depuis une autre section, et poser la liste à gauche de la carte.
+
+**Liste à gauche de la carte : rien à écrire.** Le split liste + carte existait déjà dans
+`searchProStatic` (`map.layout: "split"`, `map.splitRatio`), éprouvé sur d'autres sites. Une
+ligne de config a suffi. Clic sur une carte → `flyTo` + popup ; clic sur un marqueur →
+highlight et scroll dans la liste.
+
+**L'observatoire réutilisable.** `ObservatoryPanel` est le tableau de bord détaché de sa page :
+il reçoit des résultats DÉJÀ CHARGÉS et une conf `{dimensions, kpis, charts}`, et rend les KPI
+puis les graphes. Ni requête, ni filtres, ni table — c'est ce qui le rend appelable ailleurs.
+`searchProStatic` l'expose sous `props.observatory` ; sa seule présence affiche le bouton.
+
+**La décision qui compte : aucune donnée en propre.** Le panneau lit les résultats que la
+section a déjà chargés — exactement ceux de la carte, même cache. Conséquences : la bascule
+carte ↔ observatoire ne recharge rien, et surtout les chiffres suivent la recherche et les
+filtres courants de la page. Une requête séparée aurait affiché deux totaux différents sur le
+même écran, sans le moindre signal. Contrepartie assumée : tout champ lu par une dimension doit
+figurer dans `baseParams.defaultFields` de la section — c'était déjà le cas pour les huit
+dimensions reprises (type, nature, commune, APS, surface, PMR, PSHS, handi).
+
+**Une contrainte d'architecture rencontrée en chemin.** `observatoire/schema.ts` importe le
+module search (`PreviewConfSchema`) ; faire importer l'inverse aurait fermé un cycle, et Zod,
+évalué au chargement du module, y aurait lu des `undefined`. Les primitives du dashboard
+(dimensions, KPI, graphes) sont donc passées dans `observatoire/dashboardSchema.ts`, qui
+n'importe que zod — `schema.ts` les ré-exporte, aucun import existant ne bouge.
+
+**Config ajoutée** (page `/equipements-sportifs` uniquement) : `map.layout: "split"`, et un bloc
+`observatory` reprenant les 7 KPI et 5 graphes de la page `/observatoire`, restreint aux 8
+dimensions qu'ils consomment. La page `/observatoire` n'est pas touchée : elle garde ses
+filtres, sa liste latérale et son export.
+
+**Vérifié** : `tsc` (le typecheck du dépôt était rouge sur deux lignes du test ajouté au lot
+précédent — corrigées), `eslint`, `config:validate`, `audit:config` (site sans constat), 74
+tests du module observatoire dont 5 nouveaux (convention `serverData` partagée, schéma du
+panneau), préflights archétypes / prop-descriptions / skill-integrity / i18n au vert. Plafond
+de taille des dumps de la skill relevé de 60 à 70 Ko, raison écrite dans le test : le bloc
+`page` passe de 59 à 61 Ko. **Non vérifié** : le rendu à l'écran (aucun navigateur installé sur
+le poste).
+
+**Ajustements du 2026-09-23 (retour sur capture).** Quatre points, tous sur la même vue.
+Les bascules de vue sont désormais portées par les vues plein panneau elles-mêmes
+(`panelViewSwitch`) : depuis la carte on atteint l'observatoire, depuis l'observatoire on
+revient à la carte, et les deux offrent le retour à la liste. C'était nécessaire parce qu'avec
+un `customHeader`, l'en-tête de la section n'est rendu que dans la vue liste — le piège ne se
+voit pas en lisant la branche de rendu. Le scroll suit maintenant la page observatoire : les
+graphes se déroulent entiers, sans scroll propre, et c'est la liste de gauche qui s'ajuste à
+leur hauteur. Les KPI passent en bandeau au-dessus des deux colonnes, ce qui a demandé de
+découper le panneau en deux blocs (`part`). Enfin la colonne de gauche est resserrée à 30 %
+(`splitRatio: "30-70"`, valeur nouvelle) et ses cartes passent en mode dense — même
+information, vignette et interlignes réduits. La densité suit la LARGEUR, pas le site : les
+cinq autres configurations en split gardent le ratio 40-60 et leur carte pleine.
+
+**Ajustements du 2026-09-30 (retour sur capture).** Les cartes de la colonne latérale sont
+désormais PLIABLES et repliées par défaut : une ligne titre + sous-titre, la lecture de la liste
+de la page observatoire, qu'un chevron déplie en carte complète. Le clic sur la ligne ouvre
+toujours la fiche ; seul le chevron plie. Et le split carte reçoit une marge haute et basse, ses
+deux colonnes collant jusque-là aux bords de la fenêtre — la hauteur des colonnes retranche
+exactement cette marge, la section étant en `overflow-hidden`. Comme la densité, le pliage suit
+la LARGEUR (ratio 30-70), pas le site.
+
+**Parité avec la page Observatoire (2026-09-30).** Deux fonctions manquaient à la vue embarquée :
+le clic sur une carte doit RESTREINDRE le tableau de bord (et non ouvrir la fiche — d'où un bouton
+« Fiche » sur chaque carte), et le clic sur un graphe doit filtrer. Le panneau porte désormais ce
+raffinement, donc il rend aussi l'agencement et reçoit la liste de la section par `renderList` :
+une sélection qui ne toucherait que les graphes, en laissant la liste intacte, n'aurait aucun
+sens. Chaque raffinement actif est rappelé par une puce retirable — sans barre de filtres à côté,
+c'est le seul moyen de défaire un clic. La config reprend le vocabulaire de `/observatoire` :
+`select: {titleDimension: "equipName", dimensions: ["equipName", "name"]}` et `drilldown: true`,
+avec les deux dimensions de nom ajoutées au bloc.
+
+Détail du mécanisme : [doc/07-module-search.md](../doc/07-module-search.md), section « Vue
+observatoire », et [doc/27-module-observatoire.md](../doc/27-module-observatoire.md), section
+« Panneau réutilisable ».

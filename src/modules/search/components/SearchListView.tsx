@@ -6,7 +6,8 @@ import { lazy } from "vite-preload";
 import SearchCard from "./SearchCard";
 import SearchCardSkeleton from "./SearchCardSkeleton";
 import SearchListSkeleton from "./SearchListSkeleton";
-import { SearchListViewProps, type ListConf } from "../schema";
+import { DEFAULT_PREVIEW_PARAM, SearchListViewProps, type ListConf } from "../schema";
+import { useEntityByIdQuery } from "../hooks/useEntityByIdQuery";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
 import SearchCardDetailed from "./SearchCardDetailed";
@@ -16,6 +17,7 @@ import { getEntryId } from "../lib/searchMapSelection";
 import { resolveListItemConf, resolveListItemConfs } from "../lib/resolveListItemConf";
 import { resolveItemClick } from "../lib/itemAction";
 import { grouperParChamp } from "../lib/groupResults";
+import { cardHasSheetButton } from "../lib/cardSheetButton";
 import GroupHeading from "./GroupHeading";
 
 // Vue timeline en `lazy()` (même convention que les variants de SearchCard) : le chunk
@@ -31,6 +33,7 @@ export default function SearchListView({
   isDetailedView = false,
   focusedItemId,
   onFocusItem,
+  onSelectItem,
   previewParam: previewParamProp,
 }: SearchListViewProps) {
   // Config EFFECTIVE : prop explicite (agenda/observatoire/profil… passent card/preview/columns
@@ -38,7 +41,7 @@ export default function SearchListView({
   const columns = columnsProp ?? list?.columns;
   const card = cardProp ?? list?.card;
   const preview = previewProp ?? list?.preview;
-  const previewParam = previewParamProp ?? list?.previewParam ?? "preview";
+  const previewParam = previewParamProp ?? list?.previewParam ?? DEFAULT_PREVIEW_PARAM;
   const [openDetails, setOpenDetails] = useState(false);
   // L'item ouvert transporte SA conf résolue : le `SwitchDetailsMode` est monté HORS de la boucle,
   // il n'a donc aucun moyen de la recalculer. Même pattern que `EntityPreviewState` de la palette
@@ -101,6 +104,28 @@ export default function SearchListView({
       setOpenDetails(true);
     }
   }, [results, searchParams, previewParam, openDetails, list]);
+
+  // Repli par IDENTIFIANT (opt-in `list.previewFetch`) : l'effet ci-dessus ne
+  // trouve l'item que dans `results`, c'est-à-dire dans la tranche chargée (10
+  // par défaut). Un lien venu d'une AUTRE page vise presque toujours en dehors
+  // — on charge alors la fiche par son id plutôt que de n'ouvrir rien.
+  const urlPreviewId = searchParams.get(previewParam);
+  const missingPreviewId =
+    urlPreviewId && !results.some((r) => getEntryId(r) === urlPreviewId)
+      ? urlPreviewId
+      : undefined;
+  const { data: fetchedEntity } = useEntityByIdQuery(list?.previewFetch, missingPreviewId);
+
+  useEffect(() => {
+    if (!fetchedEntity) return;
+    const id = getEntryId(fetchedEntity);
+    // Même garde que l'effet URL : ne pas rouvrir ce que l'utilisateur vient de
+    // fermer (la fermeture retire le param, mais la réponse reste en cache).
+    if (!id || id !== searchParams.get(previewParam) || id === lastHandledPreviewId.current) return;
+    lastHandledPreviewId.current = id;
+    setSelected({ item: fetchedEntity, list: resolveListItemConf(fetchedEntity, list) });
+    setOpenDetails(true);
+  }, [fetchedEntity, searchParams, previewParam, list]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleOpenDetails = (it: SearchEntity, itemList?: ListConf) => {
@@ -146,8 +171,17 @@ export default function SearchListView({
   // Mode split (onFocusItem fourni) : un clic sur une carte FOCALISE la carte
   // (flyTo + popup) au lieu d'ouvrir le détail ; sinon `itemAction` de la conf résolue décide —
   // absente, on retombe sur l'ouverture du détail (comportement historique).
-  const handleCardClick = (it: SearchEntity, itemList?: ListConf) => {
+  // `sheetButton` : la carte cliquée affiche le bouton « Fiche » (vue grille + variant qui le
+  // rend, cf. `cardHasSheetButton`). Seul ce cas autorise la sélection au clic.
+  const handleCardClick = (it: SearchEntity, itemList?: ListConf, sheetButton = false) => {
     const id = getEntryId(it);
+    // Tableau de bord embarqué : le clic SÉLECTIONNE, mais SEULEMENT si la carte offre
+    // le bouton « Fiche » (`onOpenSheet` ci-dessous). Sinon (autre variant, vue groupée,
+    // détaillée, timeline) on garde le clic normal — la fiche deviendrait inaccessible.
+    if (onSelectItem && sheetButton) {
+      onSelectItem(it);
+      return;
+    }
     if (onFocusItem && id) {
       onFocusItem(id);
       return;
@@ -298,9 +332,23 @@ export default function SearchListView({
   return (
     <>
       <div ref={containerRef} className={gridClasses}>
-        {results.map((it, i) =>
-          wrap(it, <SearchCard item={it} onClick={() => handleCardClick(it, itemLists[i])} card={itemLists[i]?.card ?? card} list={itemLists[i] ?? list} />),
-        )}
+        {results.map((it, i) => {
+          const itemCard = itemLists[i]?.card ?? card;
+          // Bouton « Fiche » : uniquement quand le clic est détourné vers la sélection,
+          // et seulement pour un variant qui sait le rendre. Ailleurs, il ferait double
+          // emploi avec le clic (ou ne serait pas affiché du tout).
+          const sheetButton = !!onSelectItem && cardHasSheetButton(itemCard);
+          return wrap(
+            it,
+            <SearchCard
+              item={it}
+              onClick={() => handleCardClick(it, itemLists[i], sheetButton)}
+              onOpenSheet={sheetButton ? () => handleOpenDetails(it, itemLists[i]) : undefined}
+              card={itemCard}
+              list={itemLists[i] ?? list}
+            />,
+          );
+        })}
       </div>
 
       {/* Conteneur (dialog/drawer) choisi par `card.detailsMode` de la conf RÉSOLUE de l'item ouvert. */}

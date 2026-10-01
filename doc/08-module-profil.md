@@ -611,6 +611,26 @@ Le module profil propose **21 types de sections** configurables:
 | `profile-template-dynamic` | ProfileTemplateDynamicSchema | —                                              | Template dynamique basé sur config        |
 | `profile-tools`            | ProfileToolsSectionSchema    | title, sticky                                  | « Nos outils » générique (`ourTools`), éditable par les admins — équivalent sans vocabulaire tiers-lieux du bloc de `profile-info-tl` |
 
+### Compteurs de l'encart « Réserver en ligne » (`profile-info-tl`)
+
+`roomPath`, `coworkingPath` et `bedRoomPath` décrivent chacun une ressource réservable :
+`{ id, place, type, … }` — `id` est le formulaire CoForm dont on lit les réponses, `place` le chemin
+du champ. **`type` décide de ce qu'on compte**, et c'est le piège :
+
+| `type` | Compte | À utiliser pour |
+|---|---|---|
+| `single` (défaut) | la SOMME du champ numérique sur toutes les réponses | une capacité saisie : places d'hébergement, postes de travail |
+| `array` | la somme des longueurs du tableau, moins son en-tête | une liste de lignes : salles de réunion |
+| `answer` | le NOMBRE DE RÉPONSES | des offres, quand aucune capacité n'est saisie |
+
+Se tromper de mode donne un chiffre **plausible et faux** : `answer` sur l'hébergement affichait « 1 »
+sur un lieu déclarant 10 places dans son unique offre (24/09). Les trois modes vivent dans une seule
+fonction pure, `components/sections/custom/compteRessources.ts`, testée — le corps était auparavant
+recopié trois fois dans le composant, et celui des salles avait perdu la branche `answer`.
+
+⚠️ Le libellé affiché doit suivre le mode : compter des places et écrire « chambres » est un second
+bug. Les clés sont `ProfileTiersLieuxInfo.accommodation`/`accommodationPlural`.
+
 ### `profile-fields` — champs d'entité config-driven
 
 Pendant profil de `preview.type: "facets"` (module search) : rend **les champs déclarés en config**,
@@ -666,6 +686,8 @@ export const ProfileHeaderSectionSchema = z.object({
   addConfig: AddConfigSchema,
   addDropdownLabel: LocalizedString.optional(),
   showEmailButton: z.boolean().optional().default(true),
+  showDeleteButton: z.boolean().optional().default(false),   // cf. encart « Supprimer une fiche »
+  deleteRedirectPath: z.string().optional().default("/"),
   showReservationButton: z.boolean().optional().default(false),
   // Opt-in : le bouton « Voir toutes les photos » ne s'affiche QUE si le type de
   // profil courant possède un onglet `gallery` dans sa config (`profiles[type].tabs`).
@@ -674,6 +696,27 @@ export const ProfileHeaderSectionSchema = z.object({
   showAllPhotosButton: z.boolean().optional().default(true),
 });
 ```
+
+### Supprimer une fiche depuis son profil
+
+`showDeleteButton: true` ajoute « Supprimer cette fiche » **en dernier** dans le menu d'actions de
+l'en-tête, derrière un séparateur, avec un dialogue de confirmation. Deux conditions, jamais une
+seule : l'option posée par le site ET `permissions.isAdmin` sur CETTE fiche. `deleteRedirectPath`
+(défaut `/`) dit où atterrir, la page de la fiche n'existant plus après coup.
+
+⚠️ **Ce n'est pas le « retrait » du référencement.** L'action appelle `element/delete` via
+`Organization.delete()` : la fiche quitte Communecter en entier, pour tous les sites, pas seulement
+celui qui l'affichait. Pour détacher une fiche d'un costum en la laissant vivre, c'est l'onglet
+« Référencement » de l'admin qu'il faut (`reference.costum`).
+
+Trois gardes se superposent et aucune ne remplace les autres : l'option + `isAdmin` côté client, la
+garde SDK `isAuthorOrAdmin` (auteur ou administrateur, hiérarchie comprise), puis `canDeleteElement`
+côté backend. La mutation (`actions/mutations/lifecycle.ts`) invalide la fiche ET les listes de
+recherche — sans quoi le lieu supprimé resterait affiché dans l'annuaire.
+
+Sentinelle de parc : `tests/preflight/profile-delete-button.test.ts` liste les sites qui l'ouvrent,
+vérifie que la destination est une page réelle et que l'option ne vit que sur un profil
+d'organisation (les autres types n'ont pas d'« admin de la fiche »).
 
 ## ProfileRenderer
 

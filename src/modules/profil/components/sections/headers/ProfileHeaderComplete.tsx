@@ -168,7 +168,13 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
                 <ButtonGroup>
                 
                 {/* Boutons d'action (Follow, Friend, Membership, etc.) */}
-                <EntityActionButtons entity={entity} />
+                <EntityActionButtons
+                  entity={entity}
+                  options={{
+                    allowDelete: section.showDeleteButton === true,
+                    deleteRedirectPath: section.deleteRedirectPath,
+                  }}
+                />
 
                 {canEditProfile && (
                   <Button
