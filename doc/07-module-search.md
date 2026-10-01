@@ -9,6 +9,7 @@
 - [Sections JSON exposées](#sections-json-exposées)
   - [`searchPro` — avec synchronisation URL](#searchpro--avec-synchronisation-url)
   - [`searchProStatic` — sans synchronisation URL](#searchprostatic--sans-synchronisation-url)
+    - [Vue observatoire — le tableau de bord dans la section](#vue-observatoire--le-tableau-de-bord-dans-la-section)
   - [`cardCountCT` — compteurs par type](#cardcountct--compteurs-par-type)
   - [`thematics` — filières dynamiques](#thematics--filières-dynamiques)
   - [`filters` — sidebar de filtres partagée](#filters--sidebar-de-filtres-partagée)
@@ -46,6 +47,7 @@
     - [CardProfile — authentification requise](#cardprofile--authentification-requise)
   - [Mode détails — conteneur (`detailsMode`) vs contenu (`preview.type`)](#mode-détails--conteneur-detailsmode-vs-contenu-previewtype)
     - [PreviewPoiAmenities — fiche détail POI (`preview.type: "poi-amenities"`)](#previewpoiamenities--fiche-détail-poi-previewtype-poi-amenities)
+    - [Liens croisés équipement ↔ organisation usagère](#liens-croisés-équipement--organisation-usagère)
   - [Facettes cliquables & navigation par filtre (`dropdownFilters`)](#facettes-cliquables--navigation-par-filtre-dropdownfilters)
   - [Cartes news dans la recherche (CardNews et PreviewNews)](#cartes-news-dans-la-recherche-cardnews-et-previewnews)
   - [Cartes et previews génériques config-driven (testimonial, resource)](#cartes-et-previews-génériques-config-driven-testimonial-resource)
@@ -286,7 +288,7 @@ Même structure que `searchPro` mais avec état local. Plusieurs instances peuve
 | `graphDetailsMode` | `"drawer"\|"dialog"\|"link"` | `"drawer"` | Mode ouverture depuis graphique |
 | `enableRegions` | boolean | `false` | Activer la carte des régions France |
 | `regionsTarget` | `{ path, filterId }` | — | Cible de navigation au clic sur une région |
-| `defaultViewMode` | `"list"\|"map"\|"graph"\|"regions"\|"thematics"` | — | Vue par défaut |
+| `defaultViewMode` | `"list"\|"map"\|"graph"\|"regions"\|"thematics"\|"split"` | — | Vue par défaut |
 | `thematicSource` | `{ thematicPath, finderPath?, notSourceKey? }` | — | Source pour la vue thematics (coformFilterByPath) |
 | `thematicsTarget` | `{ path, filterId }` | — | Cible de navigation au clic sur une card thématique |
 | `addButton` | `AddButtonConfig` | — | Bouton ajout entité (show, label, types) |
@@ -296,6 +298,7 @@ Même structure que `searchPro` mais avec état local. Plusieurs instances peuve
 | `customHeader` | objet | — | En-tête (titre + lien + icône). Affiche aussi un lien « voir sur la page complète » qui reporte les filtres courants et la recherche texte (`?search=`) via `linkText`/`linkHref`/`linkIcon`. Titre et boutons sont alignés sur les bords de la grille de résultats (sans `container` ni marge latérale, `mb-3`) |
 | `bg` | string | — | Fond de section |
 | `width` | `"container"` | — | Contrainte de largeur |
+| `observatory` | `ObservatoryPanelConf` | — | Tableau de bord (KPI + graphes) en 3ᵉ vue, à côté de liste et carte — cf. [§Vue observatoire](#vue-observatoire--le-tableau-de-bord-dans-la-section) |
 | `baseParams.contextId` + `contextType` | string | — | Scope de recherche à une entité |
 | `baseParams.costumSlug` + `costumEditMode` | string | — | Config multi-costum |
 | `baseParams.sourceKey` | string[] | — | Filtrer par sourceKey |
@@ -305,6 +308,37 @@ Même structure que `searchPro` mais avec état local. Plusieurs instances peuve
 **Lien « voir sur la page complète »** : si `customHeader.linkText` est renseigné, un bouton `<Link>` est rendu dans le cluster du `customHeader`. La href est construite depuis `customHeader.linkHref` (défaut `/lieux`) en recopiant les query params courants (`useSearchParams`) PLUS `?search=` si une recherche texte est active — de sorte que les filtres posés par le hero (typologies, services) et le texte saisi soient tous transportés vers la page de liste.
 
 **Lecture de `?search=`** : c'est `FiltersSection` (ligne ~190) qui lit `searchParams.get("search")` pour reporter la recherche texte dans son champ local quand on arrive depuis un lien — voir [§`filters` — sidebar de filtres partagée](#filters--sidebar-de-filtres-partagée).
+
+#### Vue observatoire — le tableau de bord dans la section
+
+`props.observatory` ajoute une **troisième vue** au couple liste / carte : les graphes prennent la place de la carte, la liste des résultats reste à gauche. Sa seule présence affiche le bouton de bascule (icône camembert) dans l'en-tête, standard comme `customHeader`.
+
+```jsonc
+"map": { "layout": "split", "marker": { "style": "pin", "color": "primary" } },
+"observatory": {
+  "dimensions": { "type": { "paths": ["equip_type_name"], "label": { "fr": "Type" } } },
+  "kpis":   [{ "kind": "count", "label": { "fr": "Équipements" }, "icon": "activity" }],
+  "charts": [{ "kind": "donut", "dimension": "type", "layout": "full" }]
+}
+```
+
+Le vocabulaire (`dimensions`, `kpis`, `charts`) est EXACTEMENT celui de la section `data-observatory` — cf. [doc/27](./27-module-observatoire.md). Ce qui change est la provenance des données :
+
+- **le panneau n'a pas de périmètre à lui.** Il lit les résultats que la section a déjà chargés — les mêmes que la carte (`useSearchAllResults`, périmètre complet, même cache). Bascule carte ↔ observatoire instantanée, et surtout : les chiffres suivent la recherche et les filtres courants. Deux requêtes donneraient deux totaux sur le même écran ;
+- **tout champ lu par une dimension doit être dans `baseParams.defaultFields`.** Un champ non projeté n'est pas dans le document : la dimension le lira vide, sans le moindre signal ;
+- **ni filtres, ni table, ni export** : ce sont ceux de la section hôte. Pour une page dont le tableau de bord EST le sujet, c'est la section `data-observatory` qu'il faut.
+
+Le rendu vit dans `observatoire/components/ObservatoryPanel.tsx`, monté en `lazy()` : le chunk recharts n'est téléchargé qu'au premier clic sur le bouton. Sur mobile, la colonne latérale disparaît (comme pour le split carte) et le tableau de bord prend toute la largeur.
+
+**Agencement** — calqué sur la page observatoire : les KPI en BANDEAU pleine largeur (une colonne étroite les tasse sur plusieurs lignes), puis liste à gauche et graphes à droite. C'est `ObservatoryPanel` qui le rend, la section lui passant SA liste par `renderList` — il porte le raffinement, il doit donc pouvoir filtrer la liste comme les graphes (cf. [doc/27](./27-module-observatoire.md#panneau-réutilisable--lobservatoire-dans-une-autre-section)).
+
+**Sélection et drill-down** — `observatory.select` (`titleDimension` + `dimensions`, mêmes règles que `list.selectDimensions` de la section `data-observatory`) : le clic sur une carte RESTREINT le tableau de bord à sa famille, et `SearchListView` ajoute alors sur chaque carte un bouton « Fiche » qui, lui, ouvre le détail — sans quoi la fiche deviendrait inaccessible. `observatory.drilldown` fait de même depuis une part ou une barre de graphe. Chaque raffinement actif est rappelé par une puce retirable au-dessus des deux colonnes : sans elle, un filtre posé d'un clic serait invisible. Sans `select`, rien ne change — le clic ouvre la fiche, et pas de bouton. **Limite :** la sélection au clic ne vaut qu'en vue grille et pour les cartes qui rendent ce bouton (`lib/cardSheetButton.ts`, aujourd'hui `poi-amenities`) ; avec un autre variant ou une vue groupée/détaillée/timeline, le clic garde l'ouverture de la fiche.
+
+**Qui commande la hauteur** : les GRAPHES. Ils se déroulent entièrement, sans scroll propre — on doit pouvoir tous les lire d'une traite. C'est la LISTE qui s'adapte : colonne `relative` + contenu en `absolute inset-0 overflow-y-auto`. Mécanique non devinable mais nécessaire : un enfant flex simplement étiré grandit avec son contenu et `overflow-y` n'y fait rien ; l'absolu lui donne une hauteur DÉFINIE, celle de sa colonne. Même mécanique que le split de la page observatoire. Le split CARTE, lui, garde `h-[78vh]` sur ses deux colonnes : la carte Leaflet a besoin d'une hauteur définie pour cadrer son `fitBounds`.
+
+**Bascules depuis une vue plein panneau** (`panelViewSwitch`) : avec un `customHeader`, l'en-tête de la section — et donc les boutons de vue — n'est rendu QUE dans la vue liste. Carte et observatoire portent donc leurs propres sorties : vers l'autre vue plein panneau, et vers la liste. Seule exception, le split CANONIQUE (`defaultViewMode: "split"`) n'offre pas de sortie liste — il n'y a pas de « retour » à proposer.
+
+**Liste à gauche de la carte** : `map.layout: "split"` (+ `map.splitRatio`) existait déjà — la vue « Carte » devient liste + carte synchronisées (clic carte → `flyTo`, clic marqueur → highlight). Les deux vues partagent la même colonne de gauche et le même jeu de résultats. `splitRatio` accepte désormais `"30-70"` (liste resserrée) : à cette largeur, la colonne est trop étroite pour une carte pleine. Ses cartes y passent automatiquement en mode DENSE (`card.compact` — mêmes informations, vignette et interlignes réduits) **et PLIABLE, repliée par défaut** (`card.collapsible`) : une ligne titre + sous-titre, la lecture de la liste de `data-observatory`, qu'un chevron déplie en carte complète. Le clic sur la ligne ouvre la fiche comme ailleurs ; seul le chevron plie (`stopPropagation`). Les ratios historiques gardent la carte pleine et dépliée, leur rendu ne bouge pas.
 
 ### `cardCountCT` — compteurs par type
 
@@ -1218,6 +1252,8 @@ Grille responsive des résultats. Propriétés CSS grid pilotées par `list.colu
 
 **Layout grouped** (`list.layout: "grouped"` + `list.groupBy`) : la grille habituelle (même carte, même `wrap`, même détail) découpée en blocs titrés par la valeur de `groupBy.field` — une archive qui se parcourt par année ou par territoire. Logique pure dans `lib/groupResults.ts` (`grouperParChamp`, `comparerValeurs`) : une valeur numérique se compare en NOMBRE (« 9 » avant « 10 »), une `Date` par son instant, un texte à la française ; un tableau range la fiche sous sa PREMIÈRE valeur (jamais en double) ; les fiches sans valeur forment un DERNIER bloc, libellé `emptyLabel` (repli i18n `resource.ungrouped`), jamais écartées. `groupBy.itemsSortBy` trie les fiches de chaque bloc CÔTÉ CLIENT, tri stable, valeurs absentes en dernier : il existe parce que le backend ne lit que la **première clé** de `sortBy` (`SearchNew.php`) — `defaultSortBy: {annee:-1, created:-1}` y vaut `{annee:-1}` — et que le paramètre `sort` multi-clés est refusé par la validation du SDK. Il ne trie donc que les résultats CHARGÉS. Titres de bloc : `GroupHeading` (`h3`), ids tirés de `useId` (une valeur avec espaces casserait `aria-labelledby`). Même priorité que la timeline : vue détaillée et mode split gardent leur rendu. Les champs `groupBy.field` et `itemsSortBy.field` doivent être projetés (`tests/preflight/list-projected-fields.test.ts`).
 
+**Ouverture par IDENTIFIANT** (`list.previewFetch`, opt-in) : l'effet ci-dessus ne résout `?<previewParam>=<id>` que **dans `results`**, c'est-à-dire dans la tranche chargée — 10 items par défaut (`indexStepList`). Un lien venu d'une **autre page** vise donc presque toujours en dehors, et n'ouvrait alors rien, en silence. Avec `previewFetch` (`"poi" | "organizations" | "projects" | "events" | "citoyens"`), `useEntityByIdQuery` charge la fiche **complète** par son id (`api.poi` / `api.organization` / …) et l'ouvre — la liste derrière reste ce qu'elle est. Garde-fous : requête paresseuse (rien ne part tant qu'aucun id manquant n'est demandé), `retry: false` (un id périmé est un cas normal d'un lien partagé), `useCocolightOptional` (hors provider — agenda, observatoire, tests — la feature se dégrade au lieu de jeter). Sans la clé, comportement historique strictement inchangé.
+
 **Layout timeline** (`list.layout: "timeline"`) : `SearchListView` dispatche vers `TimelineListView` (chunk `lazy()`, même convention que les variants de carte) — frise verticale avec ligne pointillée (à gauche en mobile, centrée dès `md`), **bulle-date** (jour/mois abrégé/année, repli icône calendrier + `bg-muted` sans `startDate`) posée sur la ligne, cartes **alternées gauche/droite par index** (pur : stable en scroll infini et identique SSR/client), rendues par `CardEventTimeline` (titre, heure `HH:mm`, chip catégorie — `card.tagLimit` défaut 1, `card.tagColors` honoré —, extrait 3 lignes, visuel à droite, bouton « En savoir plus »). Pensé pour des événements triés `defaultSortBy: {"startDate": -1}`. La **vue détaillée** (`isDetailedView`) et le **mode split** (`onFocusItem`) gardent la priorité (la timeline n'y a pas de sens) ; le détail, le deep-link `?<previewParam>=` et les `itemRules` passent par le MÊME flux que la grille. Défaut **côté code** = grille : la clé absente ou inconnue rend la grille historique (la config n'est jamais parsée par Zod au runtime).
 
 ### Cartes (card variants)
@@ -1405,6 +1441,23 @@ Colonne latérale :
 **Labels traduits** : tous les libellés passent par `t("PreviewPoiAmenities.*")` (namespace `modules/search`). La fonction helper `yesNo(value?)` retourne `t("PreviewPoiAmenities.yes")` / `t("PreviewPoiAmenities.no")` / `"—"` pour les champs booléens des tableaux PMR/PSHS.
 
 **Valeurs cliquables** : catégorie, type de propriété, locaux, utilisateurs et code postal sont rendus via `<ClickableFacet>` (cf. section suivante) — un clic applique le filtre correspondant sur le listing. `PreviewPoiAmenities` n'embarque **plus** de logique de navigation : plus de `getSiteDropdownFilters`/`findFilterOption`/`handleFilterNavigation`/`setTimeout`/path en dur — tout passe par le mécanisme générique ci-dessous.
+
+#### Liens croisés équipement ↔ organisation usagère
+
+Deux sections se répondent d'un bout à l'autre du **même** formulaire de créneaux : la fiche d'un **équipement** liste les clubs qui le réservent, la fiche d'une **organisation** liste les équipements qu'elle réserve. Chacune porte un bouton vers l'autre.
+
+| Sens | Config | Composant | Requête |
+|---|---|---|---|
+| équipement → club | `preview.reservations.orgaLink` | `PreviewReservations` (bouton sur la rangée usager) | aucune (l'id est déjà dans la réponse) |
+| club → équipements | `preview.bookedResources` (+ `preview.reservations`) | `PreviewBookedResources` (lazy, monté par `PreviewStructure`) | `useOrgaReservationsQuery` |
+
+**Tout repose sur l'IDENTIFIANT, jamais sur le nom.** Le champ texte historique (« Usager ») ne désigne aucune fiche : deux clubs peuvent porter le même nom, et un nom saisi à la main diverge de celui de l'annuaire (« BASKET CLUB  SAINT-PAULOIS » contre « BASKET CLUB SAINT PAULOIS » — double espace, trait d'union). Sondé sur les données Saint-Paul : 7 noms sur 48 correspondaient exactement, et la recherche texte du backend ne rattrape pas l'écart (0 résultat sur la forme saisie). Le rattachement vient donc du finder `reservations.fields.userOrga`, rempli par la migration backend `CreneauxLienOrgaAction` — **pas d'identifiant, pas de bouton**, jamais de rapprochement approximatif.
+
+**Côté équipement** : le bouton vit à côté du déclencheur d'accordéon, dans une grille à deux colonnes — un lien DANS le déclencheur serait un bouton dans un bouton (HTML invalide) et replierait la rangée au clic.
+
+**Côté organisation** : `useOrgaReservationsQuery` filtre côté serveur sur `answers.<step>.finder<step><userOrga>.<orgaId>` (idiome `$exists`, même famille que `useReservationsQuery` qui part, lui, d'une ressource ; clés de cache distinctes). Le **nom de chaque équipement** vient du finder de la réponse elle-même (`Reservation.resources`, id + libellé) : aucune requête POI par ligne. `groupReservationsByResource` (pur, testé) fait le regroupement ; une réservation multi-ressources compte dans **chaque** équipement. Sans réservation, la section ne s'affiche pas du tout — la plupart des fiches de l'annuaire n'en ont aucune.
+
+**Les deux boutons exigent `list.previewFetch` sur la page VISÉE** (cf. [§SearchListView](#searchlistview)) : sans lui, `?preview=<id>` ne trouverait l'item que dans la tranche déjà chargée, et le lien resterait sans effet.
 
 ### Facettes cliquables & navigation par filtre (`dropdownFilters`)
 

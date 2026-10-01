@@ -4,6 +4,9 @@ import { GeoShapeSourceSchema } from "@/types/geo-shape-schema";
 import { PredicateJson } from "@/modules/formEngine/config";
 import type { SearchEntity, News } from "@communecter/cocolight-api-client";
 import { IconName } from "lucide-react/dynamic";
+// Primitives du tableau de bord (dimensions/KPI/graphes) : fichier SANS import
+// search — `observatoire/schema.ts`, lui, importe celui-ci (cf. son en-tête).
+import { ObservatoryPanelConfSchema } from "@/modules/observatoire/dashboardSchema";
 import { z } from "zod";
 
 /**
@@ -270,6 +273,26 @@ export const PreviewFacetSchema = z.object({
 export type PreviewFacetConfig = z.infer<typeof PreviewFacetSchema>;
 
 /**
+ * Lien vers la fiche d'une entité portée par une AUTRE page du site : le chemin
+ * de la page + le param d'URL qui y ouvre le détail.
+ *
+ * ⚠️ La page visée doit savoir charger l'item PAR IDENTIFIANT
+ * (`list.previewFetch`) : sans ça, le param n'ouvre que ce que sa liste a déjà
+ * chargé (10 résultats par défaut) et le lien resterait sans effet, en silence.
+ */
+export const EntitySheetLinkSchema = z.object({
+  /** Chemin de la page qui porte la fiche (ex. `/annuaire`). */
+  path: z.string(),
+  /** Param d'URL qui y ouvre le détail — doit valoir le `list.previewParam` de
+   *  cette page. Défaut : "preview". */
+  previewParam: z.string().optional(),
+});
+export type EntitySheetLink = z.infer<typeof EntitySheetLinkSchema>;
+
+/** Param d'URL par défaut d'ouverture d'une fiche (cf. `list.previewParam`). */
+export const DEFAULT_PREVIEW_PARAM = "preview";
+
+/**
  * Réservations récurrentes d'une ressource : answers d'un formulaire CoForm
  * reliées à l'entité affichée par un champ finder. Tout l'ancrage (form, étape,
  * suffixes de champs) vient de la CONFIG du site — le code ne connaît que des
@@ -308,6 +331,15 @@ export const ReservationsConfSchema = z.object({
   }),
   /** Plafond d'answers chargées (garde de pagination). Défaut : 200. */
   maxAnswers: z.number().int().positive().optional(),
+  /**
+   * Bouton « fiche » de l'ORGANISATION usagère, sur sa rangée dans la section
+   * réservations (OPT-IN). Il n'apparaît que sur les réservations rattachées par
+   * IDENTIFIANT (finder `userOrga`) : le texte historique ne désigne aucune
+   * fiche — deux clubs peuvent porter le même nom, et un nom saisi à la main ne
+   * correspond pas toujours à une organisation existante. Pas d'identifiant,
+   * pas de bouton : jamais de lien mort.
+   */
+  orgaLink: EntitySheetLinkSchema.optional(),
   /**
    * Prise de réservation depuis la fiche (OPT-IN). Absent = comportement
    * historique : grille hebdo en blocs empilés, lecture seule. Présent = grille
@@ -383,6 +415,24 @@ export type InstallationDashboardConf = z.infer<typeof InstallationDashboardConf
 /** Param d'URL par défaut de la fiche installation (cf. `installationDashboard.param`). */
 export const DEFAULT_INSTALLATION_PARAM = "installation";
 
+/**
+ * Section « équipements réservés » du preview `structure` : les réservations de
+ * l'ORGANISATION affichée, lues dans le même formulaire que la fiche
+ * équipement. Le sens inverse de `reservations.orgaLink`.
+ *
+ * Requiert, dans le MÊME bloc preview, un `reservations` (l'ancrage
+ * form/étape/champs) dont les `fields.userOrga` sont renseignés : c'est ce
+ * finder qui relie une réservation à un club.
+ */
+export const BookedResourcesConfSchema = z.object({
+  /** Lien « fiche » de l'équipement (ex. `{ path: "/equipements-sportifs" }`).
+   *  Absent = les équipements sont listés sans bouton. */
+  link: EntitySheetLinkSchema.optional(),
+  /** Titre de la section. Défaut : libellé i18n du module search. */
+  label: LocalizedString.optional(),
+});
+export type BookedResourcesConf = z.infer<typeof BookedResourcesConfSchema>;
+
 export const PreviewConfSchema = z.object({
   type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource", "resource-directory", "structure"]).default("default"),
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
@@ -404,6 +454,9 @@ export const PreviewConfSchema = z.object({
   reservations: ReservationsConfSchema.optional(),
   /** Modal tableau de bord installation (requiert `reservations`). */
   installationDashboard: InstallationDashboardConfSchema.optional(),
+  /** Section « équipements réservés » du preview `structure` (requiert
+   *  `reservations` + `reservations.fields.userOrga`). Absente = masquée. */
+  bookedResources: BookedResourcesConfSchema.optional(),
   /**
    * Affiche le lien « Voir en page » (permalien vers le détail/profil) dans l'en-tête de la
    * modal de détail. Défaut : affiché (mettre `false` pour le masquer). Lu par `PreviewNews`.
@@ -654,6 +707,17 @@ export const CardConfSchema = z.object({
     /** Rend l'installation de la carte (`poi-amenities`) cliquable → filtre le
      *  listing. Absent = valeur affichée en texte simple. */
     installationFilter: InstallationFilterConfSchema.optional(),
+    /** Carte DENSE : mêmes informations, moins de place (vignette et interlignes
+     *  réduits, puces d'équipement resserrées). Pour une colonne étroite — liste
+     *  latérale d'un split, grille à 4 colonnes. Honoré aujourd'hui par
+     *  `poi-amenities` ; les autres variantes l'ignorent. */
+    compact: z.boolean().optional(),
+    /** Carte PLIABLE, repliée par défaut : une ligne titre + sous-titre, dépliée
+     *  par un chevron. Une colonne latérale devient ainsi parcourable d'un coup
+     *  d'œil — même lecture que la liste de la section `data-observatory` — sans
+     *  renoncer au détail. Le clic sur la ligne ouvre la fiche comme d'habitude ;
+     *  seul le chevron déplie. Honoré aujourd'hui par `poi-amenities`. */
+    collapsible: z.boolean().optional(),
     // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
     // axe séparé (`preview.type`/`detailsMode`).
     type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer", "news", "testimonial", "resource", "resource-directory"]).default("default"),
@@ -761,6 +825,17 @@ export const ListConfSchema = z.object({
    * Utile pour plusieurs sections sur une même page (ex. "preview-equipements").
    */
   previewParam: z.string().optional(),
+  /**
+   * Charge l'item visé par `previewParam` PAR IDENTIFIANT quand il n'est pas
+   * dans la page de résultats déjà chargée (10 items par défaut) — la valeur dit
+   * QUELLE collection interroger. Absent = comportement historique : le param
+   * n'ouvre que ce que la liste porte déjà.
+   *
+   * Indispensable à tout lien venu d'une AUTRE page (fiche équipement → fiche du
+   * club usager, et retour), et accessoirement aux liens « Partager » d'une
+   * fiche profonde dans la pagination.
+   */
+  previewFetch: z.enum(["poi", "organizations", "projects", "events", "citoyens"]).optional(),
   /**
    * Règles de rendu PAR ITEM (cf. {@link ListItemRuleSchema}) — pour les listes hétérogènes.
    * ABSENT = comportement mono-carte historique (`card`/`preview` valent pour toute la liste).
@@ -872,10 +947,11 @@ export const MapConfSchema = z.object({
   /** Disposition de la vue carte (SearchProStatic) : "full" (défaut, plein
    *  écran) ou "split" (liste + carte côte à côte, sélection synchronisée). */
   layout: z.enum(["full", "split"]).optional(),
-  /** En mode split, répartition de largeur liste/carte : "40-60" (défaut —
-   *  liste étroite 1 colonne + carte large, aligné sur l'agenda), "50-50" ou
-   *  "60-40" (liste plus large, 2 colonnes). Pilote aussi les colonnes de la liste. */
-  splitRatio: z.enum(["40-60", "50-50", "60-40"]).optional(),
+  /** En mode split, répartition de largeur liste/carte : "30-70" (liste
+   *  resserrée), "40-60" (défaut — liste étroite 1 colonne + carte large,
+   *  aligné sur l'agenda), "50-50" ou "60-40" (liste plus large, 2 colonnes).
+   *  Pilote aussi les colonnes de la liste. */
+  splitRatio: z.enum(["30-70", "40-60", "50-50", "60-40"]).optional(),
   popup: z.object({
     type: z.enum(["default"]).default("default"),
   }).partial().optional(),
@@ -1214,6 +1290,19 @@ export const SearchProStaticSectionSchema = z.object({
 
     list: ListConfSchema.optional(),
     map:  MapConfSchema.optional(),
+    /**
+     * Tableau de bord (KPI + graphes) affiché DANS la section, en troisième vue
+     * à côté de la liste et de la carte — sa présence suffit à faire
+     * apparaître le bouton de bascule.
+     *
+     * Il n'a pas de périmètre à lui : il lit les résultats déjà chargés par la
+     * section, donc les mêmes que la carte, et suit la recherche et les filtres
+     * courants. Les champs consommés par ses dimensions doivent donc figurer
+     * dans `baseParams.defaultFields` — un champ non projeté ne se compte pas.
+     * Pour une page dont le tableau de bord EST le sujet (filtres propres,
+     * table, export), c'est la section `data-observatory` qu'il faut.
+     */
+    observatory: ObservatoryPanelConfSchema.optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   }),
 });
@@ -1597,6 +1686,12 @@ export interface SearchListViewProps<T extends SearchListEntity = SearchEntity> 
   focusedItemId?: string | null;
   /** Synchro split : clic sur une carte de liste → focus carte (au lieu d'ouvrir le détail). */
   onFocusItem?: (id: string) => void;
+  /** Tableau de bord embarqué : clic sur une carte → SÉLECTION (au lieu d'ouvrir le
+   *  détail), et la carte reçoit alors un bouton « Fiche » qui, lui, ouvre le détail.
+   *  Ne vaut QUE pour la vue grille et les variants qui rendent ce bouton
+   *  (`cardHasSheetButton`, aujourd'hui `poi-amenities`) : ailleurs le clic ouvre la
+   *  fiche, pour qu'elle reste accessible. Sans cette prop, rien ne change. */
+  onSelectItem?: (item: SearchEntity) => void;
   /**
    * Nom du paramètre URL utilisé pour synchroniser l'item affiché en preview.
    * Défaut : "preview". Permet d'avoir plusieurs sections sur une même page
@@ -1635,6 +1730,11 @@ export interface DetailsModeProps<T extends SearchListEntity = SearchEntity> {
 export interface SearchCardProps<T extends SearchListEntity = SearchEntity> {
   item: T;
   onClick?: () => void;
+  /** Ouverture EXPLICITE de la fiche, quand le clic sur la carte fait autre chose
+   *  (sélection du tableau de bord embarqué). Fourni par `SearchListView` avec
+   *  `onSelectItem`, jamais autrement : sans lui la carte n'affiche pas le bouton
+   *  et son clic ouvre la fiche, comme partout ailleurs. */
+  onOpenSheet?: () => void;
   card?: ListConf["card"];
   /** Config `list` complète — le CardX typé y lit SA tranche (`list.testimonial`, `list.resource`, …). */
   list?: ListConf;

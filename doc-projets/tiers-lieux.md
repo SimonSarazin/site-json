@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-09-29** (alerte « tiers-lieu déjà existant » à la création — bloc `duplicateCheck` + slot générique `slot:entityDuplicates`, cf. §9 29/09).
+Dernière mise à jour : **2026-09-30** (`/observatoire` en **split view** : liste des lieux à gauche, graphes à droite, KPI en bandeau, table conservée sous le split — cf. §9 30/09 ; rendu navigateur à valider. Précédent : **29/09**, alerte « tiers-lieu déjà existant » à la création (bloc `duplicateCheck` + slot `slot:entityDuplicates`), cf. §9).
 
 ---
 
@@ -53,6 +53,7 @@ lieux**, pas un plan de rattrapage.
 | 10/08bis | Schumann + Claude | Bug de données du détail d'un outil : sélection sur le seul `criteriaId` → 61 % des lieux listés attribuaient un outil qu'ils n'avaient jamais saisi. Fix backend + front `normalizedName`, libellés de satisfaction alignés sur l'input `commonTable`. Cf. §9 10/08bis |
 | 11/08 | Thomas + Claude | Demande SDK **livrée** : `normalizedName` sur `COSTUM_TOOL_USERS` (lib `d93c7c3`, npm `1.0.184`) + endpoints d'invitation (lib `ca7d65e`, même version). Réinstallation propre (`npm ci`), contenu du tarball vérifié, gates verts. Bump commité `c12f2e43` ; §11/§11.1 mises à jour |
 | 29/09 | Peterson + Claude | Alerte non bloquante « tiers-lieu déjà existant » dans le wizard de création, confirmation à la soumission si nom et code postal coïncident — slot générique config-driven, aucun endpoint nouveau (cf. §9) |
+| 28/09 → 30/09 | Peterson + Claude | `/observatoire` en **split view**, sur le patron des équipements sportifs, tout le contenu conservé : table gardée SOUS le split (retouche moteur d'une ligne), graphes typologie/portage en pleine largeur. Branche `observatoire-split-view` (`d81b8880`). Cf. §9 30/09 |
 
 ---
 
@@ -99,7 +100,7 @@ de hero sur une page à panneau, cela produit deux champs de recherche.
 |---|---|---|
 | `/` | 11 | `hero-search` + résultats + **teaser agenda** + 5 blocs éditoriaux |
 | `/lieux` | 1 | `gridLayout` — panneau de filtres (5 groupes) + `searchProStatic` |
-| `/observatoire` | 1 | `data-observatory` — cf. §4.3 |
+| `/observatoire` | 1 | `data-observatory` en **split view** (30/09) — cf. §4.3 |
 | `/reseaux-regionaux` · `/reseaux-thematiques` | 1 chacune | même périmètre, **deux angles** (cf. §4.2) |
 | `/communaute` | 1 | `searchProStatic` |
 | `/actualites` | 2 | `searchHeader` + `tabs` — onglet **Actus** (`articleFeed`) / onglet **Événements** (`agenda`, 3 `sourceKey`). **Remplace `/evenements`** (07/09, cf. §9) |
@@ -124,11 +125,14 @@ elles diffèrent par `defaultViewMode` (`regions` vs `thematics`), `enableRegion
 | Dimensions | 10 — `name`, `commune`, `departement`, `region`, `pays`, `typologie`, `portage`, `surface`, `compagnon`, `equipements` |
 | Filtres | 7 — région, typologie, portage, surface, pays, département, compagnon |
 | KPI | 5 — `count`, 2× `distinct`, `percentTrue`, `top` |
-| Graphes | 6 — `bars` (région), `barsHorizontal` (typologie, portage, équipements), `donut` (surface, pays) |
-| Table | oui · **export CSV** oui · **drill-down** activé |
+| Graphes | 6 — `bars` (région), `barsHorizontal` (typologie, portage, équipements), `donut` (surface, pays). Ordre depuis le 30/09 : région, typologie et portage en pleine largeur, puis [surface \| pays], puis équipements |
+| Agencement | **split view** (30/09) : filtres → KPI en bandeau → [liste des lieux, seule zone défilante \| graphes déroulés en entier] → table en pleine largeur. `maxWidth: "full"`. Mobile : tout empilé (KPI, graphes, liste, table) |
+| Liste | titre `name`, sous-titre commune · région ; clic sur un nom = sélection `?selection=` (mot à mot sur `name`) qui filtre KPI, graphes, liste et table ; bouton « Fiche » → profil |
+| Table | oui, **sous** le split · **export CSV** oui · clic sur une ligne → profil (`table.rowAction`) · **drill-down** activé |
 
-Il porte sur **4 322 entités**, soit légèrement plus que les 4 303 des pages de recherche : les deux
-périmètres ne sont pas identiques.
+Il porte sur **4 322 entités** au 28/07, **4 328** au 28/09 (base locale `prod230926`, compteur
+identique sur la capture de Peterson), soit légèrement plus que les 4 303 des pages de recherche :
+les deux périmètres ne sont pas identiques.
 
 ### 4.4 Formulaire costum, bouton flottant, ampli
 
@@ -636,6 +640,56 @@ passage en défaut ; parent62 et rezo-sante-reunion vérifiés en NAVIGATEUR sur
 au-dessus du plafond sur le build du 23/09 ; dossier VIDE et non suivi `public/images/
 EcosystemeSanteReunion`).
 
+### 30/09 — `/observatoire` en split view : la liste des lieux à gauche, les graphes à droite
+
+**Config + moteur (une ligne)**, demande de Peterson du 28/09 : même agencement que l'observatoire
+des équipements sportifs (`../doc/27-module-observatoire.md` § Split view), en gardant **tout** le
+contenu et le fonctionnement du site. Branche `observatoire-split-view` (le moteur split n'est pas
+sur `main`).
+
+- **Config** — ajout de `layout: "split"`, `maxWidth: "full"` et `list` (`titleDimension: "name"`,
+  sous-titre `commune` · `region`, `selectDimensions: ["name"]`, libellé « Tiers-lieux », ratio
+  `40-60`, 50 lignes avant « Voir plus »). Graphes **réordonnés** (arbitrage Peterson) : typologie
+  et portage passent en `full`, puis [surface | pays]. En `half` dans la colonne à 60 %, l'axe Y
+  fixe de 160 px ne laissait qu'environ 140 px aux barres. Rien d'autre ne bouge : 10 dimensions,
+  7 filtres, recherche, 5 KPI, 6 graphes, drill-down, table à 7 colonnes, export.
+- **Table conservée, rendue SOUS le split** (arbitrage Peterson). Ce site n'a pas de page `/data` :
+  la table porte seule l'export CSV, le tri, la pagination et les badges. En split, le moteur la
+  rendait DANS la colonne droite, ce qui étirait la liste sur graphes + table ; désormais elle vient
+  sous les deux colonnes, en pleine largeur (`DataObservatorySection`). Aucune autre config ne
+  combine split et table : sans effet ailleurs.
+- **Clics** (décision Peterson : garder tout le fonctionnement de la table) :
+  - une ligne de la table ouvre le profil, comme avant ;
+  - un nom de la liste filtre KPI, graphes, liste et table (`?selection=`) ;
+  - le bouton « Fiche » de la liste ouvre le profil.
+
+  `rowAction` reste donc **sous `table`** : la table ne lit que `table.rowAction`, et la liste le
+  lit en repli. La doc moteur, la JSDoc, la description de propriété et la skill disaient
+  `rowAction` « partagé par la table » : corrigées pour décrire le code.
+- **Mesures du clic** (base locale `prod230926`, 4 328 lieux, le 28/09) :
+  - médiane : 1 lieu ;
+  - 690 clics (16 %) ramènent plusieurs lieux, dont 26 plus de 20 ;
+  - pires cas : « Fablab » 137, « Le Lieu » 74, « La Villa » 72 (le mot attrape aussi
+    « Village ») ;
+  - ajouter `commune` aux dimensions élargirait le résultat (737), d'où `["name"]` seul ;
+  - le lieu cliqué est toujours dans son résultat.
+- **Mobile** (arbitrage Peterson) : KPI, graphes, puis la liste (50 lignes + « Voir plus »), puis
+  la table.
+- **Gates** :
+  - `config:validate` ✅ 14 pages / 26 sections ;
+  - `audit:config` RAS (1 assumé) ;
+  - `typecheck` ✅ · `eslint` ✅ (fichiers modifiés) ;
+  - rendu SSR (`curl` sur le dev-server) ✅ : ordre filtres → KPI → [liste `w-2/5` défilante |
+    graphes `w-3/5`] → table, conteneur `max-w-none`.
+
+  Les données valaient 0 dans ce rendu : `mongo42` était arrêté (backend dev en 500), sans lien
+  avec le lot. Préflights non lancés.
+- **Non vérifié** :
+  - rendu navigateur (la liste épouse-t-elle la hauteur des graphes ?) ;
+  - mobile ;
+  - tablette 768–1023 px : le split y est actif, mais les graphes `half` ne s'appairent qu'à partir
+    de 1024 px, donc ils s'empilent tous.
+
 ### 29/09 — création d'un lieu : alerte si le tiers-lieu existe déjà
 
 **Demande** (Peterson) : « Alerte si le tiers-lieu est déjà existant à la création ». **Constat
@@ -1099,7 +1153,7 @@ d'autres projets, tous vérifiés non régressifs à son égard :
 | 1 | Slug + CSS dans `sites.json` | ✅ | `navigatorDesTierslieux` |
 | 2 | Thème | ✅ | Bloc `theme` complet + 54 variables |
 | 3 | Recherche des lieux | ✅ | `/lieux` — panneau à 5 groupes sur 4 303 entités |
-| 4 | Observatoire | ✅ | 10 dimensions, 7 filtres, 6 graphes, table, export CSV, drill-down |
+| 4 | Observatoire | 🟡 | 10 dimensions, 7 filtres, 6 graphes, table, export CSV, drill-down — **split view le 30/09** (liste \| graphes, table dessous), gates verts ; reste le **rendu navigateur** (desktop, tablette, mobile) à valider |
 | 5 | Réseaux régionaux / thématiques | ✅ | Deux angles sur 19 réseaux |
 | 6 | Agenda | ✅ | Teaser sur `/` + onglet « Événements » de `/actualites` (ex-page `/evenements`, cf. §9 07/09) — 359 événements |
 | 7 | Ajout d'un tiers-lieu | ✅ | Formulaire costum (27 champs) + bouton flottant |
@@ -1315,6 +1369,23 @@ rejette hors liste blanche : retirer `schemaCostumSlug` **ou** son `pinSchema` l
   `server/utils/sites.js` + test `server/__tests__/sites.test.ts`) → upload dans le dossier servi,
   plus de dossier fantôme. `sites.json` absent (Docker) → fallback slug, aucune régression. Cf.
   [[site-json-images-folder-vite-slug]].
+- ⚠️ **Observatoire : `rowAction` reste sous `table`.** Ne pas le hisser au niveau de la section,
+  comme sur les équipements sportifs, tant que la table existe : elle ne lit que `table.rowAction`
+  et perdrait son clic profil, sans aucun signal.
+- ⚠️ **Observatoire : pas d'`export.fields` par inadvertance.** Déclarer `fields` remplacerait le CSV à
+  7 colonnes de la table par l'export des données détail, et ferait apparaître un second bouton CSV
+  dans la liste.
+- **Observatoire : le clic sur un nom générique est large** (« Fablab » → 137 lieux) : KPI et graphes
+  décrivent alors plusieurs lieux. Mesures au §9 30/09.
+- **Observatoire : anomalies préexistantes**, constatées le 28/09 et non corrigées :
+  - le KPI « Typologie dominante » affiche le 1er tag BRUT (« TiersLieux » sur la capture) : le KPI
+    `top` ne tient pas compte des `values` d'une dimension `list` ;
+  - la valeur de portage « Collectivités (Département, Intercommunalité, Région, etc) » (247 lieux)
+    contient une virgule, qui est le séparateur multi-valeurs : filtrer dessus ou y descendre depuis
+    un graphe donne 0 ;
+  - le graphe « Équipements déclarés » est vide : défaut SDK de réhydratation SSR, cf. §13 ;
+  - 6 lieux sans slug n'ont pas de bouton « Fiche » ;
+  - « Réinitialiser » des filtres n'efface ni la sélection ni la recherche.
 
 ---
 
@@ -1339,3 +1410,7 @@ rejette hors liste blanche : retirer `schemaCostumSlug` **ou** son `pinSchema` l
 | 15 | Alerte doublons (29/09) : **recette navigateur** à faire (clair, sombre, 375 px, lecteur d'écran) ; et faut-il proposer « c'est mon lieu → le modifier » en plus de « Ouvrir la fiche » (question de droits : l'édition d'un lieu dépend de §11.2) ? | Peterson |
 | 16 | Durcir la règle serveur `organizationSameName` (ignorer casse et accents) ? Elle vit dans le socle partagé `pixelhumain` : effet sur tous les sites | Thomas |
 | 17 | Remettre le poste à niveau (`npm install` : SDK installé 1.0.189, requis ^1.0.195) — `npm run build` et `tsc` y échouent sur `aac` et `cagnotte` | Peterson |
+| 18 | Observatoire en split (30/09) : **valider le rendu navigateur** sur desktop (~1 367 px : la liste épouse-t-elle la hauteur des graphes ?), tablette (768–1023 px) et mobile | Peterson |
+| 19 | Graphe « Équipements déclarés (PoC réponses CoForm) » **vide**. Cause identifiée le 28/09 et reproduite hors navigateur : après le rendu SSR, `Organization._transformServerData` (`cocolight-api-client`, `Organization.ts:172`, idem `Project.ts:87`) ré-enveloppe une Answer déjà reconstruite, et le chemin rend `[]` au lieu de 10 valeurs. Spec à rédiger pour Aboire ? | Peterson |
+| 20 | Sélection « nom exact » en option, pour resserrer les clics larges : mesuré, 237 clics ramèneraient plusieurs lieux, 7 au plus, uniquement des homonymes. Lot moteur séparé ? | Peterson |
+| 21 | KPI « Typologie dominante » (1er tag brut) et virgule de la valeur de portage « Collectivités (…, etc) » : correctifs à planifier ? | Peterson |

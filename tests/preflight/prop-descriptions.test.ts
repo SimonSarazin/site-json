@@ -69,12 +69,12 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
     "section:agenda": 15,
     "section:cardCountCT": 4,
     "section:content": 1,
-    "section:data-observatory": 4,
+    "section:data-observatory": 13,
     "section:filters": 10,
     "section:hero-carousel": 11,
     "section:searchHeader": 10,
-    "section:searchPro": 61,
-    "section:searchProStatic": 73,
+    "section:searchPro": 66,
+    "section:searchProStatic": 85,
     "section:thematics": 2,
     theme: 11,
   };
@@ -95,13 +95,15 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
   it("aucun dump ne redevient illisible (plafond de taille)", () => {
     // Avant `reused: "ref"` + repli de l'union Section, `profiles` sortait
     // 683 Ko et `page` 509 Ko : l'outil central de la skill était inutilisable
-    // sur les blocs les plus courants. Plafond large (60 Ko ≈ 15k tokens, le
-    // maximum actuel étant ~37 Ko pour `searchPro`) : il n'attrape que la vraie
-    // régression. Les enveloppes (`page`, `tabs`, `gridLayout`) sont, elles,
-    // sous 10 Ko depuis que `collapseSectionUnions` purge les `$defs` orphelins
-    // (scripts/lib/config-blocks.test.ts) — avant, chaque contrat partagé entre
-    // sections y survivait sans lecteur et les avait poussées à 68 Ko.
-    const CEILING = 60_000;
+    // sur les blocs les plus courants. Plafond LARGE : il n'attrape que la
+    // vraie régression, celle qui rend un dump illisible — pas la croissance
+    // ordinaire du schéma.
+    //
+    // 60 000 → 70 000 le 2026-09-23 : `searchProStatic.observatory` (dimensions,
+    // KPI, graphes du tableau de bord embarqué) ajoute 6 Ko à sa section et
+    // 2 Ko au bloc `page`, qui passe de 59 à 61 Ko. Croissance assumée d'une
+    // surface de config réelle, sans commune mesure avec les 500 Ko d'origine.
+    const CEILING = 70_000;
     const selectors = [...ROOT_BLOCK_SELECTORS, ...[...sectionOptions().keys()].map((t) => `section:${t}`)];
     const oversized = selectors
       .map((s) => {

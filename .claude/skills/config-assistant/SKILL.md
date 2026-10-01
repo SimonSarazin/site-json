@@ -298,7 +298,7 @@ Dispatch : `src/modules/search/components/Preview.tsx` ; conteneur = `card.detai
 | `news` | détail actualité | `preview.showDetailLink` |
 | `testimonial` | détail témoignage (leaf `PreviewTestimonialBubble`) | bloc `list.testimonial` |
 | `resource` | détail ressource (leaf `PreviewResourceCard`) | bloc `list.resource` |
-| `structure` | fiche détail organisation (coordonnées, carte, docs, bouton Éditer) | annuaires de structures |
+| `structure` | fiche détail organisation (coordonnées, carte, docs, bouton Éditer) | annuaires de structures ; `preview.bookedResources` ajoute les équipements réservés |
 | `resource-directory` | modal ressource de tiers-lieu (gabarit du « En savoir plus » d'un profil TL) — carrousel + pastille capacité, nom, tarifs (toutes unités), surface, À propos, équipements, services, CTA « Réserver » / « Voir le tiers-lieu » | section `coform-resource-directory` uniquement ; bloc `list.resourceDirectory` |
 
 ⚠ **Une option de `card`/`preview` n'a d'effet que sur CERTAINS types** — posée
@@ -309,13 +309,29 @@ seul ; `imageFit`/`overlayStats`/`servicePricing` → `image-cover` seul ;
 `showAddress`/`showDescription` → 4 types ; les autres cartes n'ont aucune
 option propre (leur rendu ne dépend que de la donnée).
 
+**Liens croisés équipement ↔ club usager** (sites sportifs) : `preview.reservations.orgaLink`
+`{path, previewParam?}` pose un bouton « fiche » sur la rangée du club, dans la
+section réservations d'une fiche équipement ; en sens inverse,
+`preview.bookedResources` `{link, label?}` liste les équipements réservés dans la
+fiche d'une organisation (exige `preview.reservations` dans le MÊME bloc, avec son
+`fields.userOrga`). Les deux reposent sur l'IDENTIFIANT du club : une réservation
+qui ne porte que le nom saisi à la main n'a pas de bouton — jamais de rapprochement
+approximatif. ⚠ La page VISÉE doit déclarer `list.previewFetch`
+(`poi`\|`organizations`\|…), sinon `?preview=<id>` ne trouve l'item que dans la
+tranche déjà chargée (10 résultats) et le lien reste sans effet.
+
 Variantes transverses : `preview.width` (`sm`…`5xl`\|`full`, défaut code `5xl`, dialog
 seulement) ; `card.variant` surcharge `card.type` pour le dispatch (sous-ensemble
 sans `overlay`/`news`/`testimonial`/`resource`) ; `card.detailedMode`
 (`default`\|`service-pricing`) pour la vue detailed ; `defaultViewMode`
 (`list`\|`map`\|`graph`, + `regions`\|`thematics`\|`split` en static) ;
-`map.layout` (`full`\|`split`) + `map.splitRatio`. Exemples vivants :
-`config:example -- list-resource` / `list-testimonial`.
+`map.layout` (`full`\|`split`) + `map.splitRatio` (`30-70` resserre la liste ET
+passe ses cartes en mode DENSE et REPLIÉ, cf. `card.compact`/`card.collapsible`) ;
+`observatory` (KPI + graphes
+en 3ᵉ vue à côté de liste et carte — même vocabulaire que `data-observatory`,
+mais SANS périmètre propre : il lit les résultats déjà chargés par la section,
+donc tout champ lu par une dimension doit être dans `baseParams.defaultFields`).
+Exemples vivants : `config:example -- list-resource` / `list-testimonial`.
 
 ### Rendu PAR ITEM (`list.itemRules`)
 
@@ -372,7 +388,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 | `commandPalette` | palette ⌘K | `config.commandPalette`, `header.utilities.search` | — |
 | `ampli` | routes ampli | `config.ampli` | campagne ampli |
 | `interop` | pods Discourse/Mediawiki | clés interop | instances externes |
-| `observatoire` | section `data-observatory` (dashboard déclaratif : dimensions, KPI, charts, table, filtres) | `props.baseParams` (périmètre) + `dimensions`/`filters`/`kpis`/`charts`/`table` | données indexées (sourceKey + type) |
+| `observatoire` | section `data-observatory` (dashboard déclaratif : dimensions, KPI, charts, table **et/ou liste en split view**, filtres) — ou `searchProStatic.observatory`, le même tableau de bord EMBARQUÉ dans une section search | `props.baseParams` (périmètre) + `dimensions`/`filters`/`kpis`/`charts`/`table` ; `layout:"split"` + `list` pour les KPI en bandeau puis la liste à gauche et les graphes à droite (desktop ; mobile → empilé ; `table` éventuelle SOUS les deux colonnes), `rowAction` au niveau section pour la liste (repli `table.rowAction` — seul lu par la table : une page qui garde sa table l'y laisse) | données indexées (sourceKey + type) |
 | `formEngine` | modales costum **add/edit pilotées par données** (moteur de formulaire générique) | `config.costumForms.<id>` (document `CostumFormSchema`) + déclencheur `floatingActionButton.modal:"add-<id>"` / `profiles.<type>.editModal:"edit-<id>"` | entité costum porteuse (`costumSlug`) ; clés read/write/scope déjà enregistrées (sinon `fns.ts`) — cf. § Recettes avancées |
 | `admin` | page `/admin` config-driven (onglets Membres/Contenu/Import-Export/Validation) | `config.admin` (`tabs[].sections[]`, `access.min`) | endpoints admin (`getMembersAdmin`, import/export, `validategroup`…) ; accès siteAdmin/superAdmin — cf. commentaire/plan-module-admin-generique.md |
 

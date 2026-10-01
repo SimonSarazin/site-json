@@ -88,6 +88,7 @@ function FinancingMilestoneCard({
     // la table des cofinanceurs l'excluent de leurs totaux : sans marqueur, le
     // lecteur additionnait des montants absents du total annoncé juste au-dessus.
     const isClosed = item.status === "close";
+    const description = item.description?.trim();
 
     return (
         <div className={`bg-surface border rounded-lg overflow-hidden group ${isClosed ? "border-dashed border-border" : "border-border"}`}>
@@ -111,6 +112,12 @@ function FinancingMilestoneCard({
                         ) : null}
                     </div>
                     <h4 className={`font-display font-bold truncate ${isClosed ? "text-muted-foreground" : ""}`}>{item.name}</h4>
+                    {/* Tronquée à deux lignes replié, complète une fois la carte ouverte. */}
+                    {description ? (
+                        <span className={`mt-1 block text-sm text-muted-foreground whitespace-pre-line break-words ${open ? "" : "line-clamp-2"}`}>
+                            {description}
+                        </span>
+                    ) : null}
                 </div>
 
                 <div className="hidden sm:block w-64 shrink-0 ml-auto">
