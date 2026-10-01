@@ -18,8 +18,10 @@ const helperMock = {
   fromEntityJSON: fromEntityJSONMock,
 };
 
+/** L'entité hôte courante — `null` simule un hôte pas (ou plus) disponible. */
+let entiteHote: typeof entityMock | null = entityMock;
 vi.mock("@/hooks/useCocolight", () => ({
-  useCocolight: () => ({ entity: entityMock, helper: helperMock }),
+  useCocolight: () => ({ entity: entiteHote, helper: helperMock }),
 }));
 
 import { useFinderSearchResults } from "./useFinderSearchResults";
@@ -76,6 +78,7 @@ describe("useFinderSearchResults", () => {
   beforeEach(() => {
     searchCostumMock.mockReset();
     fromEntityJSONMock.mockReset();
+    entiteHote = entityMock;
   });
 
   describe("enabled / disabled", () => {
@@ -97,6 +100,142 @@ describe("useFinderSearchResults", () => {
       );
       await new Promise((r) => setTimeout(r, DEBOUNCE_DELAY_MS));
       expect(searchCostumMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("réponse conservée entre deux frappes", () => {
+    // La liste se vidait à chaque frappe (nouvelle clé de requête, données `undefined` le temps de la
+    // réponse) : la modale changeait de taille et sautait de 84 px (mesuré le 01/10).
+    it("la réponse précédente reste affichée pendant la recherche suivante", async () => {
+      searchCostumMock.mockResolvedValueOnce({ results: [makeSdkInstance("a1", "Suite126")] });
+      let repondre: (v: unknown) => void = () => {};
+      searchCostumMock.mockImplementationOnce(() => new Promise((r) => { repondre = r; }));
+
+      const { result, rerender } = renderHook(
+        ({ q }: { q: string }) => useFinderSearchResults({ query: q, config: makeConfig(), enabled: true }),
+        { wrapper: makeWrapper(), initialProps: { q: "suite" } }
+      );
+      await waitFor(() => expect(result.current.results.map((r) => r.name)).toEqual(["Suite126"]));
+      expect(result.current.isCurrentAnswer).toBe(true);
+
+      rerender({ q: "suite12" });
+      await waitFor(() => expect(searchCostumMock).toHaveBeenCalledTimes(2));
+      // Recherche en vol : l'ancienne réponse tient la place — mais ce n'est pas celle de la saisie.
+      expect(result.current.isFetching).toBe(true);
+      expect(result.current.results.map((r) => r.name)).toEqual(["Suite126"]);
+      expect(result.current.isCurrentAnswer).toBe(false);
+
+      repondre({ results: [makeSdkInstance("b2", "Suite126 bis")] });
+      await waitFor(() => expect(result.current.results.map((r) => r.name)).toEqual(["Suite126 bis"]));
+      expect(result.current.isCurrentAnswer).toBe(true);
+    });
+
+    it("pendant le debounce, la réponse affichée est celle de la frappe d'avant : elle ne conclut rien", async () => {
+      searchCostumMock.mockResolvedValue({ results: [] });
+      const { result, rerender } = renderHook(
+        ({ q }: { q: string }) => useFinderSearchResults({ query: q, config: makeConfig(), enabled: true }),
+        { wrapper: makeWrapper(), initialProps: { q: "suite" } }
+      );
+      await waitFor(() => expect(result.current.isCurrentAnswer).toBe(true));
+
+      // « Aucun résultat pour "suite12" » s'affichait avant même l'appel pour « suite12 ».
+      rerender({ q: "suite12" });
+      expect(result.current.isCurrentAnswer).toBe(false);
+      await waitFor(() => expect(result.current.isCurrentAnswer).toBe(true));
+    });
+
+    it("une réponse VIDE conservée ne conclut pas pour la saisie suivante (champ vidé puis retapé)", async () => {
+      // Mesuré à la revue : « xyz » sans résultat, champ vidé, puis « ma » — pendant la requête de « ma »,
+      // la modale affichait « Aucun résultat pour "ma" » et un « Ajouter » cliquable.
+      searchCostumMock.mockResolvedValueOnce({ results: [] });
+      let repondre: (v: unknown) => void = () => {};
+      searchCostumMock.mockImplementationOnce(() => new Promise((r) => { repondre = r; }));
+      const { result, rerender } = renderHook(
+        ({ q }: { q: string }) => useFinderSearchResults({ query: q, config: makeConfig(), enabled: true }),
+        { wrapper: makeWrapper(), initialProps: { q: "xyz" } }
+      );
+      await waitFor(() => expect(result.current.isCurrentAnswer).toBe(true));
+      expect(result.current.results).toEqual([]);
+
+      rerender({ q: "" });
+      await new Promise((r) => setTimeout(r, DEBOUNCE_DELAY_MS));
+      rerender({ q: "ma" });
+      await waitFor(() => expect(searchCostumMock).toHaveBeenCalledTimes(2));
+      expect(result.current.isFetching).toBe(true);
+      expect(result.current.results).toEqual([]);
+      expect(result.current.isCurrentAnswer).toBe(false);
+
+      repondre({ results: [makeSdkInstance("m1", "Maison")] });
+      await waitFor(() => expect(result.current.isCurrentAnswer).toBe(true));
+      expect(result.current.results.map((r) => r.name)).toEqual(["Maison"]);
+    });
+
+    it("sous le seuil, aucun résultat — pas même la réponse conservée", async () => {
+      searchCostumMock.mockResolvedValueOnce({ results: [makeSdkInstance("a1", "Suite126")] });
+      const { result, rerender } = renderHook(
+        ({ q }: { q: string }) => useFinderSearchResults({ query: q, config: makeConfig(), enabled: true }),
+        { wrapper: makeWrapper(), initialProps: { q: "suite" } }
+      );
+      await waitFor(() => expect(result.current.results).toHaveLength(1));
+
+      rerender({ q: "s" });
+      await waitFor(() => expect(result.current.results).toEqual([]));
+      expect(result.current.isCurrentAnswer).toBe(false);
+    });
+  });
+
+  describe("erreurs", () => {
+    it("une erreur de la saisie courante est exposée, et `retry` relance la recherche", async () => {
+      searchCostumMock.mockRejectedValueOnce(new Error("502 Bad Gateway"));
+      searchCostumMock.mockResolvedValueOnce({ results: [makeSdkInstance("a1", "Suite126")] });
+      const { result } = renderHook(
+        () => useFinderSearchResults({ query: "suite", config: makeConfig(), enabled: true }),
+        { wrapper: makeWrapper() }
+      );
+      await waitFor(() => expect(result.current.error?.message).toBe("502 Bad Gateway"));
+      expect(result.current.isCurrentAnswer).toBe(false);
+      expect(result.current.isFetching).toBe(false);
+
+      result.current.retry();
+      await waitFor(() => expect(result.current.isCurrentAnswer).toBe(true));
+      expect(result.current.error).toBeNull();
+      expect(result.current.results.map((r) => r.name)).toEqual(["Suite126"]);
+    });
+
+    it("l'erreur d'une saisie s'efface dès la frappe suivante, sans attendre le debounce", async () => {
+      searchCostumMock.mockRejectedValueOnce(new Error("502 Bad Gateway"));
+      searchCostumMock.mockResolvedValue({ results: [] });
+      const { result, rerender } = renderHook(
+        ({ q }: { q: string }) => useFinderSearchResults({ query: q, config: makeConfig(), enabled: true }),
+        { wrapper: makeWrapper(), initialProps: { q: "abc" } }
+      );
+      await waitFor(() => expect(result.current.error).not.toBeNull());
+
+      // L'alerte de « abc » ne doit pas rester affichée sous « abcd ».
+      rerender({ q: "abcd" });
+      expect(result.current.error).toBeNull();
+    });
+
+    it("sans entité hôte, une erreur plutôt qu'une attente sans fin — et pas de relance possible", async () => {
+      entiteHote = null;
+      const { result } = renderHook(
+        () => useFinderSearchResults({ query: "suite", config: makeConfig(), enabled: true }),
+        { wrapper: makeWrapper() }
+      );
+      await waitFor(() => expect(result.current.error).not.toBeNull());
+      expect(result.current.isCurrentAnswer).toBe(false);
+      expect(result.current.canRetry).toBe(false);
+      expect(searchCostumMock).not.toHaveBeenCalled();
+    });
+
+    it("sous le seuil, aucune erreur à dire", async () => {
+      entiteHote = null;
+      const { result } = renderHook(
+        () => useFinderSearchResults({ query: "s", config: makeConfig(), enabled: true }),
+        { wrapper: makeWrapper() }
+      );
+      await new Promise((r) => setTimeout(r, DEBOUNCE_DELAY_MS));
+      expect(result.current.error).toBeNull();
     });
   });
 

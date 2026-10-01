@@ -2420,6 +2420,17 @@ export const SiteConfig = z.object({
   // les sections `aac-directory`/`aac-highlight` et les routes `/aac` le lisent
   // depuis ici (les routes ne sont montées que si ce bloc existe). cf. modules/aac.
   aac: AacConfigSchema.optional(),
+  // Config site-level des formulaires coform. `finderAddNew` : la modale d'AJOUT qu'ouvre le bouton
+  // « Ajouter » d'un finder (réglage `addNew` du legacy). Clé = la QUESTION (`finder<étape><id>`) ou le
+  // TYPE cherché (`organizations`…) ; valeur = une modale du ModalRegistry (`add-organization`,
+  // `add-<id costum>`). Précédence : question > type > modale standard du type. cf. modules/coform.
+  coform: z.object({
+    finderAddNew: z.record(
+      z.string(),
+      // Seules les modales d'AJOUT s'ouvrent (`DynamicModal` ne résout que `add-*`).
+      z.string().regex(/^add-.+/, "attendu une modale d'ajout `add-<id>`"),
+    ).optional(),
+  }).optional(),
   commandPalette: CommandPaletteConfigSchema.optional(),
   // Config site-level du blog : défauts des variants extensibles (card/reader/feedLayout). cf. modules/blog.
   blog: BlogConfigSchema.optional(),

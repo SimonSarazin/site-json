@@ -591,6 +591,16 @@ Valeur stockée : `Record<string, Record<string, EvaluationVoteValue>>` où la c
 Recherche et sélection d'entités Cocolight (organisations, citoyens, événements, projets, etc.).
 
 - Ouvre `FinderSearchModal` qui utilise `useFinderSearchResults` (React Query + debounce 300ms) appelant `searchCostum`
+- Modale de **hauteur fixe** (la zone de résultats défile) et réponse précédente **conservée** pendant la
+  recherche suivante (`keepPreviousData`) : la zone ne se vide jamais entre deux frappes. Avant, la
+  modale (centrée) changeait de taille et le champ de saisie sautait de 84 px à chaque frappe.
+- **Seule une réponse COURANTE conclut** (`isCurrentAnswer` : debounce écoulé, pas une réponse
+  conservée) : « aucun résultat », « déjà dans la liste » et « Ajouter » n'apparaissent qu'avec la réponse
+  de la saisie en cours. Sinon « Recherche en cours… » tient la place — une réponse VIDE conservée
+  (champ vidé puis retapé) affichait « Aucun résultat » et un « Ajouter » cliquable avant la réponse.
+- **Erreur** : message et bouton « Réessayer » (`retry`) — l'état « Recherche en cours… » ne se terminait
+  jamais. **Tout déjà sélectionné** : message dédié, l'ajout reste proposé sous « pas dans la liste »,
+  jamais sous « aucun résultat » (risque de doublon).
 - Sélection simple ou multiple selon `config.multiple`
 - Affiche les éléments sélectionnés via `FinderElementCard`
 - Contrôles additionnels : `addNew`, `invite` (email), `editElement`, `linkToAnswer`
@@ -617,6 +627,37 @@ Quand un attribut porte **à la fois** inclusion et exclusion (ex. `tags`
 `$or`-objet + `tags:{$nin}` (le DSL ne combine pas `$in`+`$nin` sur une clé).
 ⚠️ Hypothèse : **une seule collision** attendue (`$or` mono-niveau → ≥2 attributs
 en collision donneraient un OR). Sans exclusion, sortie identique à l'historique.
+
+**Ajouter un élément (`addNew`).** Quand la recherche ne trouve rien — ou sous des
+résultats qui ne sont pas les bons (« Votre … n'est pas dans la liste ? ») —, le bouton
+« Ajouter » ouvre la modale de **création** du formulaire costum (`EntityFormModal`,
+cf. [28-module-formengine](28-module-formengine.md)), **imbriquée** dans la modale de
+recherche et pré-remplie avec le nom tapé. Comme le legacy (`finder.addInForm`),
+l'élément créé est **aussitôt rangé dans la question** (avec la sélection en cours ; il
+la remplace en choix unique), sans redirection vers sa fiche (`onCreated`).
+
+Le formulaire se déclare dans la **config du site** — le legacy ouvrait le dynform du
+costum pour le type cherché :
+
+```jsonc
+"coform": {
+  "finderAddNew": {
+    "finderaapStep1lurzepkc4q8n686r8h": "add-cae",   // une QUESTION (clé `finder<étape><id>`)
+    "organizations": "add-organization"              // ou tout finder d'un TYPE
+  }
+}
+```
+
+Précédence : question > type > formulaire costum que le site déclare pour ce type, s'il est
+unique (`siteCostumAddModal` — la même règle que l'« Ajouter » d'un profil et que l'admin) >
+modale standard du type ; pas de modale pour `citoyens` (l'invitation reprend sa place). ⚠️ La
+clé d'une question est celle d'un MODÈLE d'AAP : ses copies la partagent (9 formulaires en base
+pour celle-ci), et le réglage vaut pour chacune d'elles. Seules les modales `add-*` sont
+admises (schéma). Résolution :
+[`utils/finderAddNew.ts`](../src/modules/coform/utils/finderAddNew.ts). Une valeur qui
+ne désigne aucune modale est signalée par l'audit (`ref-morte`). Cas réel : la question
+« Partenaires du commun » du dépôt de la Fédération des CAE → formulaire costum `cae`,
+port du « Créer votre CAE » legacy (`typeObj.organizationsTls`).
 
 ---
 
@@ -982,9 +1023,11 @@ Wrapper sur `usePermissions(["coform"], entity, data)`. Retourne `CoFormPermissi
 
 ```ts
 const {
-  results,     // FinderSearchResult[]
-  isFetching,  // boolean
-  error,       // Error | null
+  results,         // FinderSearchResult[]
+  isFetching,      // boolean
+  isCurrentAnswer, // la réponse affichée est celle de la saisie courante (seule à pouvoir conclure)
+  error,           // Error | null — erreur de la saisie courante (ou hôte indisponible)
+  retry,           // () => void — relance la recherche de la saisie courante
 } = useFinderSearchResults({
   query: string,    // texte tapé (debounce appliqué en interne, 300ms)
   config: FinderConfig,
@@ -994,7 +1037,9 @@ const {
 
 Hook React Query pour la recherche d'entités via `entity.searchCostum`. Caractéristiques :
 - Debounce 300ms intégré
-- Activation uniquement si `query.length >= 2` et entité disponible
+- Activation uniquement si `query.length >= FINDER_MIN_CHARS` (2, **exporté** : la modale compare au même
+  seuil) et entité disponible
+- Réponse précédente conservée pendant la suivante (`keepPreviousData`), jamais `isCurrentAnswer`
 - Cache 30s
 - Transforme `SearchEntity → FinderSearchResult` via `toFinderSearchResult`
 - Le filtrage des éléments déjà sélectionnés se fait côté composant

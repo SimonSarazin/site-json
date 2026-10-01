@@ -393,7 +393,7 @@ Un **codec** est un couple de transforms read/write référencé par clé. Trois
 | Famille | Exemples | Mécanisme |
 |---|---|---|
 | **Lié au WIDGET spécialisé** | `openingHours:read/write` | fourni AUTO par `WIDGET_DEFAULTS` → le champ hérite, 0 code costum |
-| **Clé partagée NOMMÉE** | `address:read/write`, `social:read/write` | widget générique → référencée explicitement (champ ou `serializeGroup`) |
+| **Clé partagée NOMMÉE** | `address:read/write`, `social:read/write`, `dateDMY:read/write` | widget générique → référencée explicitement (champ ou `serializeGroup`). `dateDMY` : widget date (« AAAA-MM-JJ ») ↔ « JJ/MM/AAAA », le format du dynform legacy (`openingDate`) |
 | **Codec de groupe PARAMÉTRÉ** | `monthYear`, `enumOrOther`, `multiCsv` | `serializeGroups[x] = { …, params }` ; le pipeline passe `params` en 3ᵉ arg d'`applyTransform` |
 
 Les coercions de TYPE (`coerce:string/bool/number/…`) sont génériques (`engine`). Le `params` d'un codec de groupe
@@ -445,7 +445,7 @@ dispatchent vers les registres (`forms/specRegistries.ts`, peuplés par `forms/r
 observatoire est passé aux `mutation.stamps` (`append` + `$costum`, cf. § dédié) ; `buildTiersLieuxPayload`
 subsiste comme export mais n'est plus registré — il ne sert que d'ORACLE de parité aux tests.
 
-Le parc porte aujourd'hui **28 déclarations `costumForms` (26 ids uniques) réparties sur 9 `config.prod.*.json`** —
+Le parc porte aujourd'hui (01/10/2026) **34 déclarations `costumForms` (32 ids uniques) réparties sur 11 `config.prod.*.json`** —
 `tiers-lieux` et `equipements-sportifs` sont déclarés par deux sites chacun. Toutes sont compilées au boot par
 `registerCostumForms.ts` et posées à blanc par `tests/preflight/costum-forms.test.ts`, qui énumère tous les
 `config.prod*.json`.
@@ -622,7 +622,15 @@ champs hors schéma (ex. `dateSign`, jamais un input dynform → jamais dans le 
 réservé à l'entité PROPRE (une écriture d'autorité costum-admin sur entité étrangère passe par
 setsource/validategroup, cf. [30-module-admin](30-module-admin.md)) ; échec NON bloquant (warn —
 fragilité du patron legacy assumée) ; `fillIfEmpty` tranché contre le serverData retourné par le
-save (un hook serveur a posé la valeur → on s'abstient) ; `append` non supporté (v1).
+save (un hook serveur a posé la valeur → on s'abstient) ; `append` : les stamps d'un même champ
+sont REGROUPÉS en une écriture, unie à la valeur relue après le save (deux écritures successives
+s'écraseraient).
+
+**Cas d'école `append` + `pathValue`** : un costum qui PRÉ-REMPLIT un champ-liste (`presetValue.tags`,
+ex. `tags: "CAE"` de la Fédération des CAE) le fait typer **chaîne** par le SDK à la création
+(`presetProps` → `{type:"string"}`), qui refuse alors la liste — et le serveur ne garde pas une
+chaîne (`Tags::filterAndSaveNewTags` itère). Les mots-clés partent donc APRÈS le save :
+`{ "field": "tags", "value": "CAE", "op": "append", "channel": "pathValue" }` (+ `$from: manageModel`).
 
 **Cas d'école** : `dateSign` institut-bleu — site-json tourne contre le backend LEGACY, où ni le
 JS afterSave legacy (jamais chargé par site-json) ni le hook Node ne tournent → le stamp client
@@ -642,7 +650,7 @@ non-idempotence legacy (doublons).
 
 **Gardes** : préflight `tests/preflight/stamps.test.ts` — `on:edit|both` + `op:set` sur un champ
 présent dans `fields` du form = INTERDIT (`fillIfEmpty`/`append` permis), jetons `$now` inconnus
-refusés, `append`+`pathValue` refusé, grammaire stricte (zod `costumFormSchema.zod.ts`),
+refusés, grammaire stricte (zod `costumFormSchema.zod.ts`),
 sentinelle d'inventaire du parc. Projection `stamps` dans la garde d'impact
 (`tests/preflight/effective-config.test.ts`).
 
@@ -683,6 +691,20 @@ TS, désormais supprimée ; la non-régression est aujourd'hui tenue par
 ---
 
 ## Pièges / gotchas
+
+### Une modale ouverte DEPUIS un formulaire le soumettait aussi
+
+En React, un `submit` remonte l'arbre des **composants**, portails compris. La modale de création
+d'un finder coform (`EntityFormModal`, rendue sous la question) soumettait donc AUSSI le formulaire
+hôte : sa validation partait, ses erreurs s'affichaient derrière. `GenericForm` arrête la propagation
+de son `submit` (`event.stopPropagation()` avant `handleSubmit`).
+
+### Créer depuis un autre parcours : `onCreated`
+
+`EntityFormModal` (et `DynamicModal`, qui le relaie) accepte `onCreated(entity)` : la modale rend
+l'entité créée à l'appelant et ne redirige PAS vers sa fiche (`navigateOnSuccess: false` forcé) —
+sans quoi la saisie en cours serait abandonnée. Usage : le bouton « Ajouter » d'un finder coform
+([21-module-coform](21-module-coform.md), `coform.finderAddNew`).
 
 ### Scroll-lock des modales coincé sur `<body>` (scroll de page perdu)
 

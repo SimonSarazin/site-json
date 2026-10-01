@@ -1,15 +1,19 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useContext } from "react";
 import { Search } from "lucide-react";
 import type { FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { SiteContext } from "@/contexts/SiteContext";
+import { useCocolightOptional } from "@/hooks/useCocolight";
 import type { FormFieldMapping, FinderValue, FinderElement, FinderConfig } from "../types";
 import { FinderElementCard } from "./FinderElementCard";
 import { FinderSearchModal } from "./FinderSearchModal";
 import { FieldError, FieldLabel, HintText } from "./FormFields";
 import { useFinderElementImages, mergeResolvedFinderImages } from "../hooks/useFinderElementImages";
+import { resolveFinderAddNewModal } from "../utils/finderAddNew";
+import type { CostumFormRef } from "@/modules/profil/components/add/addModals";
 
 interface FinderFieldProps {
   field: FormFieldMapping;
@@ -70,6 +74,17 @@ export function FinderField({
   const config: FinderConfig = useMemo(() => {
     return { ...defaultFinderConfig, ...field.finderConfig };
   }, [field.finderConfig]);
+
+  // Formulaire de création du bouton « Ajouter » (cf. `resolveFinderAddNewModal`). Lectures
+  // FACULTATIVES : `CoFormReadOnly` se rend hors providers — et le bouton n'y existe pas.
+  const siteConfig = useContext(SiteContext)?.config;
+  const siteSlug = useCocolightOptional()?.entity?.slug ?? undefined;
+  const addNewModal = config.addNew && !readOnly
+    ? resolveFinderAddNewModal(siteConfig?.coform?.finderAddNew, field.name, config.type, {
+        costumForms: siteConfig?.costumForms as Record<string, CostumFormRef> | undefined,
+        siteSlug,
+      })
+    : null;
 
   // Éléments sélectionnés (valeur actuelle)
   const selectedElements: Record<string, FinderElement> = useMemo(() => {
@@ -220,6 +235,7 @@ export function FinderField({
           onClose={() => setIsModalOpen(false)}
           onValidate={handleAddElements}
           baseUrl={baseUrl}
+          addNewModal={addNewModal}
         />
       )}
     </div>

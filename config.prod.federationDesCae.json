@@ -1109,5 +1109,624 @@
         }
       ]
     }
+  },
+  "coform": {
+    "finderAddNew": {
+      "finderaapStep1lurzepkc4q8n686r8h": "add-cae"
+    }
+  },
+  "costumForms": {
+    "cae": {
+      "id": "cae",
+      "entityType": "organizations",
+      "collection": "organizations",
+      "costumSlug": "federationDesCae",
+      "icon": "building-2",
+      "layout": {
+        "kind": "wizard",
+        "validatePerStep": true,
+        "stepper": "tabs",
+        "progress": "bar",
+        "header": "gradient"
+      },
+      "validateFn": "validate:addressComplete",
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "fields": {
+        "name": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom de la CAE"
+          },
+          "placeholder": {
+            "fr": "Nom de votre CAE"
+          },
+          "required": true,
+          "read": "coerce:stringStrict"
+        },
+        "openingDate": {
+          "widget": "date",
+          "label": {
+            "fr": "Quelle est la date d’ouverture de votre CAE ?"
+          },
+          "required": true,
+          "read": "dateDMY:read",
+          "write": "dateDMY:write"
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Description courte"
+          },
+          "required": true,
+          "widgetProps": {
+            "rows": 2
+          },
+          "read": "coerce:stringStrict",
+          "write": "coerce:orUndef"
+        },
+        "holderOrganization": {
+          "widget": "text",
+          "label": {
+            "fr": "Si différente, nom de la structure porteuse de CAE"
+          },
+          "read": "coerce:stringStrict",
+          "write": "coerce:orUndef"
+        },
+        "manageModel": {
+          "widget": "select",
+          "label": {
+            "fr": "Mode de gestion"
+          },
+          "placeholder": {
+            "fr": "Structure juridique gérant votre CAE"
+          },
+          "required": true,
+          "enum": [
+            {
+              "value": "Association",
+              "label": {
+                "fr": "Association"
+              }
+            },
+            {
+              "value": "Collectif citoyen",
+              "label": {
+                "fr": "Collectif citoyen"
+              }
+            },
+            {
+              "value": "Universités / Écoles d’ingénieurs ou de commerce / EPST",
+              "label": {
+                "fr": "Universités / Écoles d’ingénieurs ou de commerce / EPST"
+              }
+            },
+            {
+              "value": "Établissements scolaires (Lycée, Collège, Ecole)",
+              "label": {
+                "fr": "Établissements scolaires (Lycée, Collège, Ecole)"
+              }
+            },
+            {
+              "value": "Collectivités (Département, Intercommunalité, Région, etc)",
+              "label": {
+                "fr": "Collectivités (Département, Intercommunalité, Région, etc)"
+              }
+            },
+            {
+              "value": "SARL-SA-SAS",
+              "label": {
+                "fr": "SARL-SA-SAS"
+              }
+            },
+            {
+              "value": "SCIC",
+              "label": {
+                "fr": "SCIC"
+              }
+            },
+            {
+              "value": "SCOP",
+              "label": {
+                "fr": "SCOP"
+              }
+            },
+            {
+              "value": "Autre mode de gestion",
+              "label": {
+                "fr": "Autre mode de gestion"
+              }
+            }
+          ],
+          "read": "coerce:stringStrict",
+          "write": "coerce:orUndef"
+        },
+        "extraManageModel": {
+          "widget": "text",
+          "label": {
+            "fr": "Si autre mode de gestion, précisez"
+          },
+          "visibleIf": {
+            "field": "manageModel",
+            "op": "eq",
+            "value": "Autre mode de gestion"
+          },
+          "read": "coerce:stringStrict",
+          "write": "coerce:orUndef"
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse"
+          },
+          "widgetProps": {
+            "required": true
+          }
+        },
+        "email": {
+          "widget": "text",
+          "label": {
+            "fr": "Email de contact"
+          },
+          "required": true,
+          "placeholder": {
+            "fr": "contact@exemple.org"
+          },
+          "widgetProps": {
+            "inputType": "email"
+          },
+          "rules": {
+            "regex": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+          },
+          "read": "coerce:stringStrict"
+        },
+        "telephone": {
+          "widget": "text",
+          "label": {
+            "fr": "Téléphone de contact"
+          },
+          "placeholder": {
+            "fr": "+33 ..."
+          },
+          "widgetProps": {
+            "inputType": "tel"
+          },
+          "read": "coerce:stringStrict",
+          "write": "coerce:orUndef"
+        },
+        "_logoFile": {
+          "widget": "image",
+          "label": {
+            "fr": "Logo"
+          },
+          "info": {
+            "fr": "Format carré recommandé · PNG ou JPG"
+          },
+          "widgetProps": {
+            "shape": "square",
+            "aspect": 1
+          }
+        },
+        "photos": {
+          "widget": "gallery",
+          "label": {
+            "fr": "Photo(s) de la CAE"
+          },
+          "info": {
+            "fr": "Jusqu'à 3 images."
+          },
+          "widgetProps": {
+            "contentKey": "slider",
+            "maxItems": 3
+          },
+          "renderOnly": true
+        },
+        "videoUrl": {
+          "widget": "text",
+          "label": "",
+          "placeholder": {
+            "fr": "https://youtube.com/..."
+          },
+          "read": "tl:video0",
+          "write": "tl:videoWrite",
+          "path": "video"
+        },
+        "websiteUrl": {
+          "widget": "text",
+          "label": {
+            "fr": "Site internet"
+          },
+          "placeholder": {
+            "fr": "http://www.exemple.org"
+          },
+          "read": "coerce:stringStrict",
+          "write": "coerce:orUndef",
+          "path": "url"
+        },
+        "socialLinks": {
+          "widget": "fieldArray",
+          "label": {
+            "fr": "Réseaux sociaux"
+          },
+          "read": "social:read",
+          "write": "social:write",
+          "path": "socialNetwork",
+          "clear": "",
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un réseau social"
+            },
+            "itemFields": [
+              {
+                "name": "platform",
+                "kind": "select",
+                "label": {
+                  "fr": "Plateforme"
+                },
+                "options": [
+                  {
+                    "value": "facebook",
+                    "label": "Facebook"
+                  },
+                  {
+                    "value": "twitter",
+                    "label": "Twitter / X"
+                  },
+                  {
+                    "value": "instagram",
+                    "label": "Instagram"
+                  },
+                  {
+                    "value": "linkedin",
+                    "label": "LinkedIn"
+                  },
+                  {
+                    "value": "mastodon",
+                    "label": "Mastodon"
+                  },
+                  {
+                    "value": "movilab",
+                    "label": "Movilab"
+                  }
+                ]
+              },
+              {
+                "name": "url",
+                "kind": "text",
+                "placeholder": {
+                  "fr": "https://..."
+                }
+              }
+            ]
+          }
+        },
+        "hours": {
+          "widget": "openingHours",
+          "label": {
+            "fr": "Horaires d'ouverture"
+          },
+          "widgetProps": {
+            "dayLabelPrefix": "AddTiersLieux.days"
+          },
+          "path": "openingHours"
+        },
+        "description": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Description longue"
+          },
+          "placeholder": {
+            "fr": "Décrivez votre CAE…"
+          },
+          "widgetProps": {
+            "rows": 10
+          },
+          "read": "coerce:stringStrict",
+          "write": "coerce:orUndef"
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "info",
+          "label": {
+            "fr": "Infos"
+          },
+          "icon": "building-2",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "$slot:duplicates"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "openingDate"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "shortDescription"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "holderOrganization"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "manageModel",
+                "extraManageModel"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contact",
+          "label": {
+            "fr": "Contact"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address",
+                "$slot:duplicates"
+              ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "label": {
+                "fr": "Contact"
+              },
+              "titleClassName": "text-sm font-semibold",
+              "fields": [
+                "email",
+                "telephone"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "media",
+          "label": {
+            "fr": "Médias"
+          },
+          "icon": "image",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "_logoFile"
+              ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "fields": [
+                "photos"
+              ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "label": {
+                "fr": "Lien vers vidéo de présentation"
+              },
+              "titleClassName": "text-base font-semibold",
+              "fields": [
+                "videoUrl"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "online",
+          "label": {
+            "fr": "En ligne"
+          },
+          "icon": "globe",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "websiteUrl"
+              ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "fields": [
+                "socialLinks"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "details",
+          "label": {
+            "fr": "Détails"
+          },
+          "icon": "file-text",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "hours"
+              ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "fields": [
+                "description"
+              ]
+            }
+          ]
+        }
+      ],
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Créer votre CAE"
+          },
+          "edit": {
+            "fr": "Modifier votre CAE"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer la CAE"
+          },
+          "edit": {
+            "fr": "Enregistrer les modifications"
+          }
+        },
+        "gradientHeader": true,
+        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden",
+        "validationFailedKey": {
+          "fr": "Veuillez corriger les champs en erreur (voir les onglets signalés)."
+        },
+        "navText": {
+          "next": {
+            "fr": "Suivant →"
+          },
+          "previous": {
+            "fr": "← Précédent"
+          },
+          "cancel": {
+            "fr": "Annuler"
+          },
+          "stepTemplate": {
+            "stepKey": {
+              "fr": "Étape"
+            },
+            "ofKey": {
+              "fr": "sur"
+            }
+          }
+        }
+      },
+      "image": {
+        "field": "_logoFile",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "slots": {
+        "duplicates": "slot:entityDuplicates"
+      },
+      "duplicateCheck": {
+        "nameField": "name",
+        "postalCodeField": "postalCode",
+        "minChars": 3,
+        "limit": 5,
+        "confirmOnSubmit": true,
+        "search": {
+          "types": [
+            "organizations"
+          ],
+          "sourceKey": [
+            "federationDesCae"
+          ]
+        }
+      },
+      "mutation": {
+        "entityType": "organizations",
+        "payloadEmitEmptyOnEdit": true,
+        "inject": {
+          "extraFields": {
+            "type": "Cooperative",
+            "role": "admin",
+            "preferences": {
+              "isOpenData": true,
+              "isOpenEdition": true
+            }
+          }
+        },
+        "stamps": [
+          {
+            "field": "tags",
+            "value": "CAE",
+            "op": "append",
+            "on": "both",
+            "channel": "pathValue"
+          },
+          {
+            "field": "tags",
+            "value": {
+              "$from": "manageModel"
+            },
+            "op": "append",
+            "on": "add",
+            "channel": "pathValue"
+          }
+        ],
+        "successKey": {
+          "add": "toast.add.organizationSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.organizationError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_CAE",
+          "edit": "EntityFormModal · EDIT_CAE"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "organizations",
+            "searchKeys": [
+              "entityDuplicates"
+            ]
+          }
+        }
+      }
+    }
   }
 }

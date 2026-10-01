@@ -34,7 +34,7 @@ export const cheminAnnotation = (slug: string): string => `reference.costumTypes
 
 /**
  * Les forms d'une collection, costum du site prioritaire quand plusieurs le déclarent — même règle
- * que la création `inherit` (`resolveCreateModal` côté admin, `costumCreateKey` côté profil).
+ * que la création `inherit` (`resolveCreateModal` côté admin, `costumCreateKey` côté profil, `resolveFinderAddNewModal` côté finder coform).
  */
 export function formsDeCollection(
   costumForms: CostumFormsMap,

@@ -25,7 +25,7 @@ import { costumSlugOf } from "@/lib/costumLists";
 import { useNavigate } from "react-router";
 import { buildParentReference, buildOrganizerReference, logCocolightError } from "./mutationUtils";
 import { submitEntityEdit, type EditableEntity } from "./submitEntityEdit";
-import { applyPayloadStamps, preparePathValueStamps, estVide } from "../forms/stamps";
+import { applyPayloadStamps, preparePathValueStamps, estVide, mergeAppend } from "../forms/stamps";
 import type { SpecStamp } from "../forms/entityModalSpec";
 
 export type EntityKind = "organizations" | "projects" | "events" | "poi" | "citoyens";
@@ -245,14 +245,15 @@ export async function runEntityMutation(
     const e = entity as CreatedEntity;
     for (const w of writes) {
       try {
-        if (w.fillIfEmpty) {
-          // Lecture pointée dans le serverData post-save (dateSign est racine ; chemins pointés OK).
-          const courant = w.field.split(".").reduce<unknown>(
+        // Lecture pointée dans le serverData post-save (dateSign est racine ; chemins pointés OK) :
+        // `fillIfEmpty` s'abstient si le serveur a déjà posé la valeur, `append` s'y unit.
+        const courant = w.fillIfEmpty || w.append
+          ? w.field.split(".").reduce<unknown>(
             (acc, k) => (typeof acc === "object" && acc !== null ? (acc as Data)[k] : undefined),
             e.serverData ?? undefined,
-          );
-          if (!estVide(courant)) continue;
-        }
+          )
+          : undefined;
+        if (w.fillIfEmpty && !estVide(courant)) continue;
         if (!e.updateField) {
           // Une entité SDK sans `updateField` n'existe pas (BaseEntity le porte pour toutes les
           // sous-classes) : si on arrive ici, c'est un faux SDK de test ou un contrat rompu. Le
@@ -261,7 +262,10 @@ export async function runEntityMutation(
           console.warn(`[stamps] « ${w.field} » ignoré : l'entité créée n'expose pas updateField`);
           continue;
         }
-        await e.updateField(w.field, w.value);
+        const valeur = w.append ? mergeAppend(courant, w.value) : w.value;
+        // `append` qui n'ajoute rien (une fiche éditée porte déjà les valeurs) : aucune écriture.
+        if (w.append && Array.isArray(courant) && (valeur as unknown[]).length === courant.length) continue;
+        await e.updateField(w.field, valeur);
       } catch (err) {
         console.warn(`[stamps] échec pathValue « ${w.field} » (non bloquant)`, err);
       }

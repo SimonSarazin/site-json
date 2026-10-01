@@ -42,6 +42,26 @@
       }
     }
   },
+  "stamps": {
+    "cae": [
+      {
+        "field": "tags",
+        "value": "CAE",
+        "op": "append",
+        "on": "both",
+        "channel": "pathValue"
+      },
+      {
+        "field": "tags",
+        "value": {
+          "$from": "manageModel"
+        },
+        "op": "append",
+        "on": "add",
+        "channel": "pathValue"
+      }
+    ]
+  },
   "referencement": {},
   "membership": {},
   "profileRelated": {}

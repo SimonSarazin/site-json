@@ -17,9 +17,9 @@ import {
 import type { AddConfig } from "../../schema";
 
 import { DynamicModal } from "../add/ModalRegistry";
+import { costumCreateKey, type AddEntityType, type CostumFormRef } from "../add/addModals";
 import { useVisibilityList } from "@/lib/visibility";
 
-type AddEntityType = "organization" | "project" | "event" | "poi";
 type AddOpenState = AddEntityType | { kind: "custom"; modalKey: string } | null;
 
 interface AddEntityDropdownProps {
@@ -39,38 +39,6 @@ interface AddOption {
   modalKey: string;
 }
 
-/** Type d'ajout → collection, sous laquelle `costumForms` déclare son `entityType`. */
-const COLLECTION_BY_ADD: Record<AddEntityType, string> = {
-  organization: "organizations",
-  project: "projects",
-  event: "events",
-  poi: "poi",
-};
-
-/**
- * Form COSTUM du site pour ce type d'entité, s'il y en a UN SEUL — même règle que la création
- * `inherit` de l'admin (`resolveCreateModal`, modules/admin/sections/resourceHelpers.ts) : un site qui
- * déclare un formulaire pour ses événements ne veut pas du formulaire standard, ni dans son admin ni
- * depuis un profil. Sans cette résolution, « Ajouter un événement » depuis une organisation ouvrait le
- * form générique, et l'événement naissait sans les champs du costum.
- *
- * DEUX formulaires ou plus pour le même type (institutBleu déclare `document` ET `financement` sur
- * `poi`) : on ne choisit pas à la place du site — la modale standard est conservée, et le site déclare
- * l'entrée qu'il veut via `addConfig.custom`.
- */
-export function costumCreateKey(
-  type: AddEntityType,
-  costumForms: Record<string, { id?: string; entityType?: string; costumSlug?: string } | undefined> | undefined,
-  siteSlug: string | undefined,
-): string | null {
-  const collection = COLLECTION_BY_ADD[type];
-  const docs = Object.entries(costumForms ?? {}).filter(([, d]) => d?.entityType === collection);
-  const duSite = docs.filter(([, d]) => siteSlug && d?.costumSlug === siteSlug);
-  const retenus = duSite.length > 0 ? duSite : docs;
-  if (retenus.length !== 1) return null;
-  const [cle, doc] = retenus[0];
-  return `add-${doc?.id ?? cle}`;
-}
 
 /**
  * Dropdown pour créer des entités (organization, project, event, poi).
@@ -88,7 +56,7 @@ export function AddEntityDropdown({ entity, config, label, variant = "outline", 
   const permissions = useProfilPermissions(entity);
   const t = useT("modules/profil");
   const { config: siteConfig } = useSite();
-  const costumForms = (siteConfig as { costumForms?: Record<string, { id?: string; entityType?: string; costumSlug?: string }> } | undefined)?.costumForms;
+  const costumForms = (siteConfig as { costumForms?: Record<string, CostumFormRef> } | undefined)?.costumForms;
   const siteSlug = (useCocolight().entity as { slug?: string } | null)?.slug;
 
   // État du modal ouvert

@@ -243,6 +243,8 @@ export const COFORM_QUERY_KEYS = {
    * Donnée publique → non scopée `userId`.
    *
    * Producteur : `useFinderSearchResults`.
+   * Consommateurs invalidants : `FinderSearchModal` (élément créé par « Ajouter » — `removeQueries` sur
+   * le préfixe, pas `invalidate` : une réponse vide invalidée resterait servie pendant le refetch).
    */
   FINDER_SEARCH: (
     searchType: readonly string[],

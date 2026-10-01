@@ -345,8 +345,10 @@ qui porte le patron le plus propre du parc : formulaires sans taxonomie site-sp�
   `profiles[type].editModals`, jamais `profiles.default`).
 - **Effet de bord du moteur** : déclarer un form costum fait qu'il sert AUSSI aux boutons d'ajout
   des profils, dès qu'il est l'**unique** form de sa collection (`costumCreateKey`,
-  `AddEntityDropdown.tsx` — « un site qui déclare un formulaire pour ses événements ne veut pas du
-  formulaire standard »). D'où le contraste observé : parent62 (3 forms `poi`), saint-paul (2) et
+  `profil/components/add/addModals.ts` — « un site qui déclare un formulaire pour ses événements ne
+  veut pas du formulaire standard »). Depuis le 01/10, la même règle (`siteCostumAddModal`) choisit
+  aussi le formulaire du bouton « Ajouter » d'un **finder coform** sans déclaration
+  `coform.finderAddNew` : les finders d'organisations à `addNew` de ce site ouvrent le form tiers-lieux. D'où le contraste observé : parent62 (3 forms `poi`), saint-paul (2) et
   Ekilib.re (2) gardent le form POI **générique** ; tiers-lieux n'en a qu'un, il capturait donc le
   bouton.
   - **Événements** : « Ajouter un événement » ouvre le form tiers-lieux — voulu.

@@ -277,8 +277,11 @@ for (const cf of configs) {
       // occurrences), qui dénoteraient toutes en référence morte. D'où le garde sur `type`.
       const clesModales =
         rec.type === "resource" ? ["modal", "editModal", "addModal", "create", "edit"] : ["modal", "editModal", "addModal"];
-      for (const key of clesModales) {
-        const v = rec[key];
+      // `coform.finderAddNew` (question ou type → modale d'ajout d'un finder) : des modales rangées sous
+      // des clés LIBRES, que la liste ci-dessus ne peut pas nommer.
+      const refsModales: [string, unknown][] =
+        p.join(".") === "coform.finderAddNew" ? Object.entries(rec) : clesModales.map((k) => [k, rec[k]]);
+      for (const [key, v] of refsModales) {
         if (typeof v !== "string" || !v || BUILTIN_MODALS.has(v)) continue;
         // Sentinelles de résolution, pas des clés de modale (cf. AdminFormRefSchema).
         if ((key === "create" || key === "edit") && (v === "inherit" || v === "standard")) continue;

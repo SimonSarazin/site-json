@@ -16,10 +16,10 @@
 > vit sur la branche `aac-dev` et n'a rien à voir avec le site des tiers-lieux, qui vit sur `jdev`
 > et `main` : leurs dossiers devaient être séparés. Cf. §10 31/08.
 
-Dernière mise à jour : **2026-09-29** (annuaire filtré au tag `CAE` sur tout le réseau, `sourceKey`
-remplacé par `notSourceKey`, tag `CAE` posé par défaut par le bouton d'ajout, cf. §10 28/09bis ;
-profil dédié `profiles.organizations` avec onglet « Membres », sur le modèle de tiers-lieux,
-cf. §10 28/09).
+Dernière mise à jour : **2026-10-01** (ajout d'une CAE depuis le finder « Partenaires du commun » du
+dépôt, formulaire `costumForms.cae`, et modale de recherche des finders stabilisée, cf. §10 01/10 ;
+création avec horaires refusée par le SDK, demande de correction rédigée, cf. §10 01/10bis et §11 ;
+demande d'adhésion ou de droits admin depuis « Rejoindre une autre CAE » réparée, cf. §10 30/09).
 
 ---
 
@@ -65,6 +65,8 @@ n'est donc pas ancré sur l'entité du site — ne pas déduire l'un de l'autre.
 | 14/09 | Anatole + Claude | Footer `sidebar-columns` recopié de Rézo la mer remis aux routes du site ; pages `/mentions-legales` et `/confidentialite` (cf. §10 14/09) |
 | 24/09 | Anatole + Claude | Page `/annuaire` — annuaire de la communauté et bouton « Ajouter une organisation » (cf. §10 24/09) |
 | 28/09 | Mirana + Claude | Onglet « Membres » sur le profil de l'entité Fédération (cf. §10 28/09) ; annuaire passé au tag `CAE` réseau entier, `sourceKey` retiré, tag `CAE` ajouté aux `createDefaults` du bouton d'ajout (cf. §10 28/09bis) |
+| 30/09 | Schumann + Claude | « Rejoindre une autre CAE » : la demande d'adhésion / de droits admin partait refusée à un connecté — `d99f1997` (cf. §10 30/09) |
+| 01/10 | Schumann + Claude | Ajout d'une CAE depuis le finder « Partenaires du commun » ; modale de recherche des finders stabilisée (cf. §10 01/10) — commité le 01/10 sur `jdev` |
 
 ---
 
@@ -265,6 +267,9 @@ taguées dépasse largement le périmètre costum. L'annuaire lit ce dernier ens
 | 15 | Footer et socle légal | 🟡 | 14/09 — 9 liens, tous vers une route servie par le site ; `/mentions-legales` et `/confidentialite` posées mais **à compléter par la Fédération avant publication** ; réseaux sociaux et contact retirés faute de coordonnées (cf. §10 14/09 et §14) |
 | 16 | Annuaire de la communauté `/annuaire` | 🟡 | 24/09 — rendu vérifié (SSR + navigateur, clair/sombre, mobile) ; passé au tag `CAE` réseau entier le 28/09 : 16 organisations, au-delà du périmètre costum initial (cf. §10 28/09bis). Le bouton pré-remplit `tags: ["CAE"]` (supprimable par l'utilisateur dans le formulaire). **Création d'une organisation depuis le bouton non vérifiée** de bout en bout (cf. §10 24/09 et §10 28/09bis) |
 | 17 | Profil dédié `organizations` — onglet Membres | 🟡 | 28/09 — 9 membres et rôles vérifiés côté organisation (SSR + navigateur, clair/sombre, desktop/mobile). **Gestion des membres (`showManagement`) non vérifiée** faute de compte admin de test, cf. §10 28/09 |
+| 18 | « Rejoindre une autre CAE » — demande d'adhésion / de droits admin | ✅ | 30/09 — réparée (`d99f1997`) ; vérifiée au navigateur avec un serveur **simulé** (requête et contenu exacts, rien écrit) — la vraie écriture n'a pas été jouée (cf. §10 30/09) |
+| 19 | Ajouter une CAE depuis le finder « Partenaires du commun » (dépôt) | 🟡 | 01/10 — vérifié au navigateur **avec création réelle** puis base restaurée : CAE conforme au legacy, présente dans « Mes CAEs » de son créateur. **Non commité** à cette date (cf. §10 01/10) |
+| 20 | Modale de recherche des finders sans saut pendant la frappe | 🟡 | 01/10 — mesuré : 3 sauts de 84 px avant, 0 après. **Non commité** à cette date (cf. §10 01/10) |
 
 **Gates au merge `287bb35a` (09/09)** : `typecheck` ✅ · `eslint` ✅ **0 erreur** (24 avertissements
 préexistants) · `test:unit` **4 230** ✅ dont préflight **635** ✅ · `build` ✅ · `config:validate` ✅
@@ -279,6 +284,75 @@ rouge — `public/images/federationDesCae/` vide et non déclaré. Réglé le 09
 ---
 
 ## 10. Impacts des modifications
+
+### 01/10bis — créer une CAE avec ses horaires : refusé par le SDK
+
+**Symptôme.** Saisir des horaires dans le formulaire de création d'une CAE fait échouer la création
+avant tout envoi : « ApiValidationError … The value at /openingHours must be an object but it was an
+array ». Le formulaire envoie pourtant la forme du contrat (liste de 7 jours), celle de la base.
+
+**Cause : le SDK, pas le site.** Le site est en mode costum live (`VITE_COSTUM_FORCE_LIVE`, comme 13
+autres sites) : le SDK déduit le schéma d'un champ costum de son widget legacy (`openingHours` → objet)
+et, à la création, ce schéma remplace celui du contrat. La modification fait l'inverse : le contrat
+remplace le costum. Mesuré sur les 21 costums résolus du parc : 8 champs du contrat restreints par un
+costum (horaires sur la CAE, navigatorDesTierslieux et relief ; téléphone en objet legacy ; mots-clés
+préremplis en liste), 27 élargis légitimement (les 9 types d'événement d'institutBleu, hors énumération
+native).
+
+**Réponse : une règle dans le SDK, pas de contournement côté site** (décision du 01/10). Pour un champ
+défini des deux côtés, la requête accepte le contrat OU le costum. Implémentée et vérifiée en local
+sur la 1.0.195, jamais commitée : tests du SDK, gates de site-json, création navigateur avec horaires
+stockés en liste de 7 jours (base restaurée), 29 schémas du parc compilés sans erreur. La spec part
+en **fichier indépendant**, hors dépôt, avec son patch — cf. §11.
+
+**Impact.** Aucun code de site-json ne change. Tant que le SDK corrigé n'est pas publié, la création
+avec horaires reste impossible en production sur les trois sites (cf. §13).
+
+### 01/10 — ajouter une CAE depuis le finder « Partenaires du commun »
+
+**Le besoin.** Le finder « Partenaires du commun » du formulaire de dépôt (`677e7e38…`, clé
+`finderaapStep1lurzepkc4q8n686r8h`, `addNew: true` côté legacy) doit permettre de créer une CAE avec
+ses attributs propres. Côté React, son bouton « Ajouter » n'affichait qu'un toast « à implémenter ».
+
+**Ce qui change.**
+- Le bouton « Ajouter » (sans résultat, ou sous des résultats qui ne sont pas les bons) ouvre la
+  modale de création **imbriquée**, pré-remplie du nom tapé ; la CAE créée est **aussitôt rangée**
+  dans la question, sans redirection vers sa fiche (cf. [doc/21](../doc/21-module-coform.md)).
+- Le formulaire se déclare dans `coform.finderAddNew` : ici la question → `add-cae`. Sans déclaration,
+  la règle commune `siteCostumAddModal` prend le formulaire costum UNIQUE du site pour le type — donc
+  `add-cae` aussi pour les autres finders d'organisations à `addNew` (le finder « Rechercher votre
+  organisation » de l'Observatoire).
+- Nouveau formulaire `costumForms.cae`, port du « Créer votre CAE » legacy (`typeObj.organizationsTls`) :
+  nom, date d'ouverture (codec `dateDMY`, format du parc « JJ/MM/AAAA »), description courte,
+  structure porteuse, mode de gestion (+ « autre »), adresse, contacts, logo, photos (3), vidéo,
+  site, réseaux, horaires, description ; `type: Cooperative`, `role: admin`, préférences comme les
+  CAE existantes ; mots-clés `CAE` + mode de gestion.
+- Modale de recherche des finders **stabilisée** : hauteur fixe et réponse précédente conservée entre
+  deux frappes. Mesuré : avant, 3 sauts de 84 px du champ de saisie ; après, aucun.
+
+**Vérifié (01/10).** Au navigateur, compte simple, **création réelle** puis base restaurée à
+l'identique (3 CAE d'essai retirées, comptages et compte de test comparés) : source
+`federationDesCae`, `type: Cooperative`, `tags: ["CAE","SCOP"]`, `openingDate` « 15/09/2026 »,
+adresse complète, créateur admin et lié (`memberOf`) ; la CAE apparaît dans « Mes CAEs » de son
+créateur. Gates : `typecheck` 0 · `eslint` 0 erreur · `test:unit` 5 407 · préflight 765 · audit RAS.
+
+**À revalider.** Les finders d'organisations à `addNew` des AUTRES sites ouvrent désormais leur
+formulaire costum unique (tiers-lieux et RELIEF : `add-tiers-lieux`) au lieu d'un bouton inopérant.
+
+### 30/09 — « Rejoindre une autre CAE » : la demande partait refusée à un connecté
+
+**Le constat (remonté par des utilisateurs).** `/usages` → « Répondez au questionnaire » → « Rejoindre
+une autre CAE » → « Demander les droits admin » : toast « Vous devez être connecté pour envoyer une
+demande de participation », à un utilisateur connecté. « Demander à devenir membre » échouait de même.
+
+**La cause.** La CAE choisie était chargée par `api.organization({id})`, sans contexte utilisateur :
+le SDK la croyait « pas à moi » (`isMe` faux) et refusait AVANT tout appel. Jamais fonctionné depuis
+la création de la vue (05/06). Corrigé en la chargeant par `me` (`d99f1997`) ; le toast de succès en
+double qu'elle masquait est réduit à celui de la modale.
+
+**Vérifié.** Test reproduisant le bug avant correctif ; navigateur avec serveur simulé : la requête
+part, avec le bon contenu. Quatre autres endroits du dépôt ont la même cause — aucun dans un
+formulaire, gardés au backlog pour arbitrage.
 
 ### 28/09 — profil dédié `profiles.organizations` avec l'onglet « Membres »
 
@@ -1067,6 +1141,7 @@ côtés.
 | Demande | État | Preuve / substitut |
 |---|---|---|
 | `BaseEntity.saveToolEnrichment()` — édition d'un outil (`COSTUM_SAVE_TOOL_ENRICHMENT`, bearer) | ✅ `1.0.183` — **aucune demande** | `SaveCriteriaAction.php` durcie (elle écrivait sans aucun contrôle d'accès). ⚠️ Sur `BaseEntity`, pas `Organization`. ⚠️ La méthode déballe sa clé métier `data` et perd `results` : **contourné côté site-json**, la lib n'est pas à modifier — cf. §12.1 |
+| Champs du contrat **redéclarés par un costum** (`openingHours`, `telephone`, `tags` préremplis) : à la création, le schéma du costum remplace celui du contrat ; à la modification, l'inverse | ❌ **à publier** — spec envoyée en fichier indépendant (01/10), correctif vérifié en local sur `1.0.195` | Création avec horaires refusée (« /openingHours must be an object »), téléphone en objet legacy et mots-clés en liste refusés, type d'événement costum refusé à la modification. Règle demandée : le contrat OU le costum (`anyOf`), aux deux points de fusion — cf. §10 01/10bis. En attendant : mots-clés écrits après le save (stamps `pathValue` + `append`), téléphone envoyé en chaîne ; **aucun contournement pour les horaires** |
 | Filtre de satisfaction du catalogue d'usages | ✅ **aucune demande** | Envisagé en paramètre `requireSatisfaction` sur `COSTUM_TOOLS_CATALOG` et `COSTUM_TOOL_USERS` ; abandonné au profit d'une règle backend inconditionnelle — cf. §10 31/08 |
 
 ---
@@ -1162,6 +1237,16 @@ une affirmation fausse. Aucun appelant ne lit `mutation.data` ; seul le verdict 
 - ⚠️ **L'ajout d'une organisation n'est pas modéré** : avec `requiresAdmin: false`, toute personne
   connectée crée une organisation qui entre aussitôt dans l'annuaire **et** dans le finder
   « J'utilise » des communs, les deux lisant le même périmètre.
+- ⚠️ **Créer une CAE depuis le finder n'est pas modéré**, comme l'ajout depuis `/annuaire` : toute
+  personne connectée qui dépose un commun crée une organisation `federationDesCae` qui entre aussitôt
+  dans les listes de CAE.
+- ⚠️ **Les mots-clés d'une CAE créée partent APRÈS l'enregistrement** (contournement SDK, cf. §11) :
+  si cette seconde écriture échoue, la CAE existe sans `CAE` ni mode de gestion (échec non bloquant,
+  signalé en console). Le **téléphone** est stocké en chaîne (le legacy : `{mobile|fixe: […]}`), comme
+  sur le formulaire tiers-lieux.
+- ⚠️ **Créer une CAE en saisissant des horaires est impossible en production** tant que le SDK corrigé
+  n'est pas publié (cf. §10 01/10bis, §11). Même chose sur navigatorDesTierslieux et relief. Sans
+  horaires, la création passe ; ils restent modifiables ensuite.
 - ⚠️ **`--gradient-section` est surchargé pour tout le site** (`theme.customCSS`) : toute future
   section `searchHeader` ou `cta-newsletter` prendra la bande rose, pas le turquoise de la feuille
   partagée.
@@ -1195,3 +1280,8 @@ une affirmation fausse. Aucun appelant ne lit `mutation.data` ; seul le verdict 
 | **Vérifier une création réelle depuis `/annuaire`** : `source.keys: ["federationDesCae"]` posé, type « Coopérative » présélectionné, apparition sans rechargement, présence dans « J'utilise ». Demande un compte de test (SSO `lescaecoop`) | à confirmer |
 | Ajouter à l'annuaire un onglet « Personnes » (les 9 membres de l'entité, via `links.memberOf`) ? | à arbitrer |
 | Nom `Coop&amp;Bât` stocké encodé en base — à corriger dans la fiche de l'organisation | Fédération |
+| **Commiter le lot du 01/10** (finder « Ajouter » + modale stabilisée) et pousser `d99f1997` | Schumann |
+| Le bouton « Ajouter une organisation » de `/annuaire` désigne `add-organization` (formulaire **standard**) : ouvrir plutôt `add-cae`, le formulaire CAE du 01/10 ? | à arbitrer |
+| **Publier le SDK avec la règle « le contrat OU le costum »** (spec envoyée en fichier indépendant le 01/10), puis relever la dépendance de site-json | équipe SDK |
+| Une fois le SDK publié : le téléphone des CAE repasse-t-il à la forme legacy `{mobile\|fixe: […]}` ? Le contournement des mots-clés (écriture après le save) est-il retiré ? | à arbitrer |
+| Libellé de la question « Partenaires » réglé au **pluriel** côté legacy (« Organisations ») → « Rechercher un Organisations », « Votre Organisations n'existe pas encore ? » : le passer à « organisation » dans l'écran de config du finder | Schumann |

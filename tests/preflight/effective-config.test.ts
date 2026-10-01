@@ -3,7 +3,7 @@ import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
 
-import { costumCreateKey } from "@/modules/profil/components/action-buttons/AddEntityDropdown";
+import { costumCreateKey } from "@/modules/profil/components/add/addModals";
 import { resolveEditModalName } from "@/modules/profil/components/profile-edit/EditModalRegistry";
 import { LISTES } from "@/modules/profil/components/tabs/MembershipTab";
 import { resolveCreateModal, resolveEditModal } from "@/modules/admin/sections/resourceHelpers";

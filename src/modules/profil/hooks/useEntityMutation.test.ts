@@ -436,6 +436,29 @@ describe("runEntityMutation — canal pathValue (stamps post-save)", () => {
     expect(vide.updates).toEqual([{ field: "dateSign", value: "2026-01-01" }]);
   });
 
+  it("append s'UNIT à la valeur relue après le save, en une seule écriture", async () => {
+    // Cas CAE : le costum pré-remplit `tags`, le SDK le type alors CHAÎNE et refuse la liste à la
+    // création — les mots-clés partent donc après, sans écraser ce que le serveur a posé.
+    const stamps: SpecStamp[] = [
+      { field: "tags", value: "CAE", op: "append", on: "add", channel: "pathValue" },
+      { field: "tags", value: { $from: "manageModel" }, op: "append", on: "add", channel: "pathValue" },
+    ];
+    const sdk = makeSdk({ serverData: { tags: ["existant"] } });
+    await runEntityMutation(specPoi({ stamps }), { name: "X", manageModel: "SCOP" }, { me: sdk.me });
+    expect(sdk.updates).toEqual([{ field: "tags", value: ["existant", "CAE", "SCOP"] }]);
+  });
+
+  it("append qui n'ajoute rien (la fiche porte déjà les valeurs) : aucune écriture", async () => {
+    const stamps: SpecStamp[] = [{ field: "tags", value: "CAE", op: "append", on: "both", channel: "pathValue" }];
+    const editable = makeEditable({ tags: ["CAE", "SCOP"] });
+    await runEntityMutation(
+      specPoi({ mode: "edit", target: editable as unknown as EntityTypes, stamps }),
+      { name: "X" },
+      { me: null },
+    );
+    expect(editable.updates).toEqual([]);
+  });
+
   it("un échec d'écriture ne fait PAS échouer la mutation (canal non bloquant), mais se voit", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const sdk = makeSdk();
