@@ -23,6 +23,11 @@ interface ListRow {
   /** Index dans `data` (et donc dans `entities`, aligné index à index). */
   index: number;
   key: string;
+  /** Libellé RÉEL de la dimension titre — valeur de la sélection. Vide : ligne
+   *  non sélectionnable (sélectionner `PLACEHOLDER` ne matcherait aucun item et
+   *  viderait tout le tableau de bord). */
+  label: string;
+  /** Libellé affiché : `label`, ou `PLACEHOLDER` à défaut. */
   title: string;
   subtitle: string;
 }
@@ -44,6 +49,15 @@ function readDimension(
   if (!def) return "";
   if (def.kind === "list") return dimensionList(item, def).join(", ");
   return dimensionValue(item, def, labels?.[id]) ?? "";
+}
+
+function ListRowText({ row }: { row: ListRow }) {
+  return (
+    <>
+      <p className="truncate text-sm font-medium text-foreground">{row.title}</p>
+      {row.subtitle && <p className="truncate text-xs text-muted-foreground">{row.subtitle}</p>}
+    </>
+  );
 }
 
 interface ObservatoryListProps {
@@ -119,6 +133,7 @@ export function ObservatoryList({
         // Les homonymes sont fréquents (équipements d'une même installation) :
         // la clé porte l'index, jamais le seul libellé.
         key: `${index}-${title}`,
+        label: title,
         title: title || PLACEHOLDER,
         subtitle,
       };
@@ -212,17 +227,21 @@ export function ObservatoryList({
               key={row.key}
               className="flex items-start justify-between gap-2 border-b border-border/40 px-5 py-2.5"
             >
-              <button
-                type="button"
-                onClick={() => onSelect(row.title)}
-                aria-pressed={selection === row.title}
-                className="min-w-0 flex-1 text-left"
-              >
-                <p className="truncate text-sm font-medium text-foreground">{row.title}</p>
-                {row.subtitle && (
-                  <p className="truncate text-xs text-muted-foreground">{row.subtitle}</p>
-                )}
-              </button>
+              {row.label ? (
+                <button
+                  type="button"
+                  onClick={() => onSelect(row.label)}
+                  aria-pressed={selection === row.label}
+                  className="min-w-0 flex-1 text-left"
+                >
+                  <ListRowText row={row} />
+                </button>
+              ) : (
+                // Sans libellé, rien à sélectionner : la fiche reste accessible par son bouton.
+                <div className="min-w-0 flex-1">
+                  <ListRowText row={row} />
+                </div>
+              )}
               {canOpenSheet(row) && (
                 <Button
                   type="button"
