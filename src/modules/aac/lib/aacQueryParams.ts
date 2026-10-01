@@ -173,7 +173,9 @@ export function splitAacFilters(
   // Restriction de VISIBILITÉ — pas un filtre utilisateur, une règle d'accès.
   //
   // Un visiteur non administrateur ne voit que les communs SÉLECTIONNÉS, plus
-  // les siens. C'est le filtre `applyFor: "forUser"` du bloc legacy, qui pose
+  // les siens — sur un AAC seulement : sans `choose` déclaré en config (un AAP
+  // n'a pas d'étape de sélection), aucune restriction n'est posée.
+  // C'est le filtre `applyFor: "forUser"` du bloc legacy, qui pose
   // exactement `filters[$or][answers.aapStep2.choose.<contextId>.value]=selected`
   // et `filters[$or][user]=<userId>`.
   //

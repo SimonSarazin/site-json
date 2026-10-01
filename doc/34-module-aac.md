@@ -217,7 +217,7 @@ champs (§ chaîne ci-dessous). Le bloc sert d'échappatoire déterministe.
 
 - **`answers.<étape>.<idQuestion>`** — une réponse au formulaire. L'étape fait partie du
   chemin : un form AAP en compte 4 ou 5, l'id seul n'en désigne aucune, et la seule devinette
-  disponible serait l'étape du RÔLE (`depenseStepKey`, ou `evalStepKey` pour `choose`) — juste
+  disponible serait l'étape du RÔLE (`depenseStepKey`) — juste
   dans le cas canonique, fausse dès qu'une question sort de son étape attendue, et
   indisponible quand la dérivation échoue. C'est aussi la forme de `form.mapping` en base et
   celle de la lecture réelle (`answers[étape][id]`).
@@ -248,7 +248,7 @@ Les 8 rôles, et ce que chacun pilote **au-delà de la carte** :
 | `maturity` | — | filtre « maturité » (ses OPTIONS viennent de la question) ; **aucun repli backend** : non résolu ⇒ `null` et filtre masqué |
 | `image` | visuel | **c'est lui qui pilote la vignette** — cf. l'ordre de lecture ci-dessous |
 | `depense` | jauge de financement | repli quand `funds` n'est pas pré-calculé, **avec le même filtre `include !== false`** que le backend (§13.3) |
-| `choose` | badge « en attente » | lu sur l'étape d'ÉVALUATION, pas celle de dépôt ; la clé de contexte est la **1ʳᵉ entrée de `form.parent`** (`firstParent`), pas l'entité du slug du site |
+| `choose` | badge « en attente » / « sélectionné » | **résolu par la config SEULEMENT, jamais deviné** : un AAC a une étape de sélection, un AAP non (le form OCECO d'Open Atlas n'a qu'un `decide`). Déclaré ⇒ badge, bouton « Ajouter à l'annuaire » et **annuaire public restreint aux sélectionnés** ; absent ⇒ ni statut, ni bouton, ni restriction : toute proposition titrée est publique. L'étape masquée au non-admin à l'édition suit l'étape d'**évaluation** (`choose` déclaré, sinon `roles.evalStepKey`) : un AAP garde ses votes hors de portée de l'auteur. Un chemin sans préfixe `answers.` est ignoré. La clé de contexte est la **1ʳᵉ entrée de `form.parent`** (`firstParent`), pas l'entité du slug du site |
 | `users` | nombre de membres | **le seul rôle qui ne parle pas du formulaire** — cf. ci-dessous |
 
 **`image` : la QUESTION d'abord, la vignette backend en repli.** L'ordre est
@@ -287,8 +287,10 @@ ensemble.
 ([`lib/resolveAacCardFields.ts`](../src/modules/aac/lib/resolveAacCardFields.ts)) :
 
 `config` → `form.mapping` → scan (type/libellé) → défaut canonique
-(`titre`/`description`/`tags`/`image`/`depense`/`choose` ; ni `maturity` ni `users` n'en ont
-un) → `null`.
+(`titre`/`description`/`tags`/`image`/`depense` ; ni `maturity` ni `users` n'en ont
+un) → `null`. **Sauf `choose`** : `config` → `null`, rien d'autre — le deviner fabriquait
+`aapStep2.choose` sur tout formulaire, et un AAP voyait chaque proposition « en attente » et son
+annuaire public vide. Un site AAC **doit** donc déclarer `"choose": "answers.<étape>.choose"`.
 
 Le résultat porte un champ **`source`** (`"config" | "mapping" | "scan" | "default" | "none"`)
 qui dit lequel a répondu : c'est par lui qu'on diagnostique une carte vide.
