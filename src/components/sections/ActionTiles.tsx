@@ -2,12 +2,12 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { type ActionTilesProps } from "@/types/site-schema";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link } from "react-router";
 import { buildGridColsClass } from "./responsiveGridCols";
 import { solidTileStyle, tileSizeClasses, tilesContainerWidth } from "./actionTileStyle";
-import { sectionBadgeClass } from "./sectionBadge";
-import { accentStyle } from "@/lib/accentStyle";
+import { sectionBadgeClass, sectionHeadlineStyle } from "./sectionBadge";
 
 interface ActionTilesSectionProps {
     id?: string;
@@ -98,7 +98,7 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
     const enPastille = props.headlineStyle === "badge" || props.headlineStyle === "pill";
     const classePastille = sectionBadgeClass(props.headlineStyle);
     const enLigne = props.tileLayout === "inline";
-    const tileSize = tileSizeClasses(props.size);
+    const tileSize = tileSizeClasses(props.size, props.density === "compact");
     const containerWidth = tilesContainerWidth(props.width);
 
     const tileStyle = (color?: string) => TILE_STYLES[color ?? ""] ?? TILE_STYLES.primary;
@@ -120,19 +120,73 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
         ? "bg-gradient-to-b from-card/20 to-background"
         : "bg-linear-to-b from-background/80 to-background";
 
-    const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : defaultBg;
+    const compact = props.density === "compact";
+    // Compact : la rangée vit DANS une autre bande (qui porte fond, padding et largeur) — elle n'en
+    // rajoute aucun, sinon deux paddings et deux conteneurs se cumulent.
+    const sectionBg = compact ? "" : props.bg && props.bg !== "default" ? BG_MAP[props.bg] : defaultBg;
+    const lift = props.hoverEffect === "lift"
+        ? "hover:shadow-lg focus-visible:shadow-lg motion-safe:hover:-translate-y-1 motion-safe:focus-visible:-translate-y-1 duration-200"
+        : "";
+
+    // `pillRow` : titre de section ET actions sur UNE SEULE ligne (qui passe en colonne sous `sm`),
+    // chaque action en bouton PILULE (icône en pastille, libellé, flèche) — pas de sous-titre, pas de
+    // grille de tuiles. Branche isolée : les tuiles `centered`/`inline` ci-dessous n'en sont pas
+    // affectées, et réciproquement.
+    if (props.tileLayout === "pillRow") {
+        return (
+            <section id={id} className={compact ? "" : `px-4 ${sectionBg} py-16`}>
+                <div className={compact ? "" : `container mx-auto ${containerWidth}`}>
+                    <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+                        {props.headline && (
+                            <h2>
+                                {/* Police héritée de la règle globale `h1-h4` (`--font-serif`/Patrick Hand) —
+                                    PAS la police du menu : le titre garde le même repère manuscrit que
+                                    « Territoires »/« À la une », à côté d'actions qui, elles, restent en
+                                    police du thème. */}
+                                <Badge
+                                    variant={props.accentColor ? undefined : "secondary"}
+                                    style={sectionHeadlineStyle(props.headlineStyle, props.accentColor, undefined)}
+                                    className={classePastille}
+                                >
+                                    {t(props.headline)}
+                                </Badge>
+                            </h2>
+                        )}
+                        {props.actions.map((action, index) => {
+                            const solid = solidTileStyle(action.background, action.textColor);
+                            return (
+                                <Link key={index} to={action.href}>
+                                    <Button
+                                        size="lg"
+                                        style={solid}
+                                        className={`h-auto rounded-full py-4 pl-4 pr-6 gap-3 text-lg font-bold whitespace-normal border transition-all ${lift} ${solid ? "hover:brightness-95" : getButtonClasses(action.color)}`}
+                                    >
+                                        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-current/15">
+                                            {renderIcon(action.icon, solid ? "" : getIconColorClass(action.color), "size-5")}
+                                        </span>
+                                        <span>{t(action.title)}</span>
+                                        <ArrowRight className="size-5 shrink-0" aria-hidden />
+                                    </Button>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </div>
+            </section>
+        );
+    }
 
     return (
-        <section id={id} className={`px-4 ${sectionBg} py-16 `}>
-            <div className={`container mx-auto ${containerWidth}`}>
-                <div className={`mb-10 ${enPastille ? "" : "text-center"}`}>
+        <section id={id} className={compact ? "" : `px-4 ${sectionBg} py-16 `}>
+            <div className={compact ? "" : `container mx-auto ${containerWidth}`}>
+                <div className={`${compact ? "mb-3" : "mb-10"} ${enPastille ? "" : "text-center"}`}>
                     {props.headline &&
                         (enPastille ? (
                             // Même pastille que les autres bandes de la page (cf. `sectionBadgeClass`).
-                            <h2 className="mb-4">
+                            <h2 className={compact ? "mb-1" : "mb-4"}>
                                 <Badge
                                     variant={props.accentColor ? undefined : "secondary"}
-                                    style={accentStyle(props.accentColor)}
+                                    style={sectionHeadlineStyle(props.headlineStyle, props.accentColor, undefined)}
                                     className={classePastille}
                                 >
                                     {t(props.headline)}
@@ -165,7 +219,7 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
                                     // `whitespace-normal` : la base du Button pose `whitespace-nowrap`,
                                     // qui empêche titre et sous-titre de passer à la ligne — sur mobile,
                                     // un sous-titre plus large que l'écran débordait de la tuile.
-                                    className={`h-full w-full ${tileSize.box} flex flex-col gap-3 text-foreground border transition-all whitespace-normal ${enLigne ? "items-start rounded-2xl px-6 text-left shadow-sm" : "items-center text-center"} ${solid ? "hover:brightness-95" : getButtonClasses(action.color)}`}
+                                    className={`h-full w-full ${tileSize.box} flex flex-col gap-3 text-foreground border transition-all whitespace-normal ${lift} ${enLigne ? "items-start rounded-2xl px-6 text-left shadow-sm" : "items-center text-center"} ${solid ? "hover:brightness-95" : getButtonClasses(action.color)}`}
                                 >
                                     {enLigne ? (
                                         // Icône en pastille, titre à côté : `bg-current/10` suit l'encre de la

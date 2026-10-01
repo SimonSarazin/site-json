@@ -15,7 +15,11 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-09-23** — passe de revue du lot membres (§9septvicies.7 : 9 correctifs, 5 nettoyages transverses, césure coform rétablie — plus aucun test rouge) ; coordination territoriale lue en une requête serveur (§9septvicies.6) ; bandeaux de filtres en deux lignes, filtre par ville réservé aux actualités et tiré de l'adresse (§9novotricies). Précédemment : **2026-09-22** — annuaire des partenaires et filtre « Villes » des actualités, page « La communauté » retirée (§9octotricies). Précédemment : **2026-09-17** — INFORESO et « Elles et ils ont marqué le réseau » en pages dédiées avec leurs formulaires d'admin, types d'actualité « À la une » / « Zoom sur le réseau » en choix multiple, taxonomie facultative hors réunions (§9octovicies). Précédemment : **2026-09-15** — les cinq lots du 09/09 (§9vicies à §9quatervicies, validés en §9quinvicies), puis la refonte de l'accueil, les actions admin sur les actualités, les pages du réseau reprises à la source et le Mois de la Parentalité (§9sexvicies).
+Dernière mise à jour : **2026-10-01** — refonte accueil « Vous êtes »/Territoires/À la une en un seul
+panneau : assets carte remplacés, icônes de titre, plafond de hauteur opt-in de l'illustration (sans
+recadrage ni retouche des % de bulles), 2 bugs d'espacement trouvés et corrigés (ombre rognée par le
+carrousel, centrage vertical cassé par un `mt-auto`) — détail et gates réels en §9duoquadragies. Rien
+commité sur la branche à ce stade. Précédemment : **2026-09-23** — passe de revue du lot membres (§9septvicies.7 : 9 correctifs, 5 nettoyages transverses, césure coform rétablie — plus aucun test rouge) ; coordination territoriale lue en une requête serveur (§9septvicies.6) ; bandeaux de filtres en deux lignes, filtre par ville réservé aux actualités et tiré de l'adresse (§9novotricies). Précédemment : **2026-09-22** — annuaire des partenaires et filtre « Villes » des actualités, page « La communauté » retirée (§9octotricies). Précédemment : **2026-09-17** — INFORESO et « Elles et ils ont marqué le réseau » en pages dédiées avec leurs formulaires d'admin, types d'actualité « À la une » / « Zoom sur le réseau » en choix multiple, taxonomie facultative hors réunions (§9octovicies). Précédemment : **2026-09-15** — les cinq lots du 09/09 (§9vicies à §9quatervicies, validés en §9quinvicies), puis la refonte de l'accueil, les actions admin sur les actualités, les pages du réseau reprises à la source et le Mois de la Parentalité (§9sexvicies).
 
 **(f) Passe de revue du lot membres, et le dépôt sans test rouge** — `/code-review` rejoué sur la
 branche : 9 constats, tous corrigés (`territoires` en tableau lu par la carte, `NavLink` sur le lien de
@@ -3993,6 +3997,81 @@ trace malgré une tentative antérieure abandonnée, cf. [[project-parent62-accu
 | `test:e2e` parent62 | ✅ **25/25**, dont 3 nouvelles gardes (couleurs fixes équipe, filtre Villes agenda, menu centré + absence de « Ctrl+K »), chacune **vérifiée rouge** sans sa correction. 2 échecs **étrangers au lot** sur `/territoire/arrageois` et `/equipe` : le backend local a gagné un coordonnateur pour l'Arrageois depuis l'écriture de ces tests (donnée, pas code) |
 | Écran | ✅ 1 280 px avec barre de défilement de 17px : aucun débordement (budget déjà tendu, cf. [[reference-header-stacked-budget-1280]]) ; 1 440 px : écart menu/logo 0px |
 | Contraste | ✅ noir sur `--p62-vert` 7,56:1, noir sur `--p62-caf` 13,95:1 (AAA les deux) |
+
+
+## 9duoquadragies. Accueil : « Vous êtes », Territoires et À la une en un seul panneau
+
+**Demande** : un seul bloc pour « Vous êtes », Territoires et À la une, sur fond blanc ; Territoires plus
+grand (3/4, À la une 1/4) et animé ; titre et image de l'actu cliquables ; boutons Parent/Pro assombris
+avec un effet au survol ; aucune nouvelle section ; thème et couleurs conservés ; header inchangé.
+
+**Config** (`pages[/]`) : la section `action-tiles` `home-double-entree` passe dans `gridLayout.topSection`
+(plus que 2 sections de premier niveau : `gridLayout`, `articleTeaser`). La grille garde l'aplat
+`page-accent` et porte un panneau blanc arrondi (`innerWrapperClass`) ; `leftColumns: 3`,
+`rightColumns: 1`, `gap: 4`, `from: lg`. Tuiles : `density: "compact"`, `hoverEffect: "lift"`, Parent en
+`--p62-vert-fonce` (jeton, `#0f6f5f`), Pro en `--p62-marine`, texte blanc, `headlineStyle: "text"` +
+`tileLayout: "pillRow"` pour « Vous êtes » (titre en police manuscrite `--font-serif`/Patrick Hand, sans
+pastille — un consommateur qui veut la police du menu l'ajoute lui-même, cf. `sectionBadge.ts`). Carte
+Territoires : `headlineIcon: "map-pin"`/`headlineIconColor` (turquoise), `animate`. Carrousel « à la
+une » : `linkTitleAndImage`, `badgeIcon: "megaphone"`/`badgeIconColor`, `ctaStyle: "link"` +
+`ctaPosition: "inline"` (« Lire la suite » turquoise souligné, au lieu du bouton plein historique).
+
+**Assets carte** (remplacés en cours de lot) : `carte-pdc.png` (silhouette blanche du territoire,
+996×945) et `fond-degrade-territoire.png` (dégradé déjà cuit) posées via `backgroundImage` /
+`illustrationBackgroundImage`, à la place de l'ancien webp + dégradé CSS (`carte-territoire-teal.webp`,
+désormais mort, **supprimé**). La carte, quasi carrée, devenait bien trop haute une fois élargie à toute
+la colonne — plafonnée en HAUTEUR (pas largeur) via le nouveau couple opt-in
+`illustrationMaxHeight: "80vh"` + `illustrationAspectRatio: "996/945"` (ratio exact du fichier, sans
+quoi l'image serait étirée) : la largeur suit, aucun pixel n'est rogné, les bulles (positionnées en %
+de cette boîte) restent alignées sur leur territoire.
+
+**Animation** : les bulles respirent en boucle via un nouveau `blink-scale` (scale seul) — remplace
+`pulse-glow` (scale + opacité), qui délavait leur couleur de marque à chaque cycle.
+
+**Deux bugs trouvés et corrigés pendant la vérification** (ni l'un ni l'autre demandés explicitement,
+découverts en mesurant l'espace vide sous la carte « à la une ») :
+1. L'ombre de la carte à la une (`shadow-lg`) était rognée sur 3 côtés par le viewport du carrousel
+   shadcn (`CarouselContent`, `overflow-hidden`) — corrigé par un wrapper `p-2` qui réserve la marge où
+   l'ombre se dessine.
+2. Le pied du carrousel (points + bouton) portait un `mt-auto`, qui absorbe tout l'espace libre AVANT
+   que le `justify-center` du conteneur ne puisse agir — la carte restait donc collée en haut, et tout
+   le vide s'accumulait entre elle et les points au lieu de se répartir. Remplacé par une marge fixe
+   (`mt-4`) : carte et pied forment désormais un seul bloc, centré verticalement dans la colonne.
+
+**Moteur** (options opt-in, défaut sans effet — documentées dans `doc/05-schemas-sections.md` et
+`scripts/lib/prop-descriptions.ts`) : `gridLayout.topSection`/`innerWrapperClass` (aucune boîte ajoutée
+sans eux), `action-tiles.hoverEffect`/`density`/`tileLayout: "pillRow"`, `map-bubbles.animate`/
+`headlineIcon`/`headlineIconColor`/`illustrationBackgroundImage`/`illustrationMaxHeight`/
+`illustrationAspectRatio`, `featured-carousel.linkTitleAndImage`/`badgeIcon`/`badgeIconColor`/
+`ctaStyle`/`ctaPosition`. `headlineStyle: "text"` (sans fond ni rotation) ajouté aux trois sections
+(`action-tiles`, `map-bubbles`, `featured-carousel`). Le pied du carrousel en habillage `card` passe sur
+une ligne selon la largeur du carrousel (container query) et non plus de l'écran : sans cela le bouton
+débordait de la colonne 1/4 — seul parent62 emploie cet habillage. Vérifié qu'aucun autre site du parc
+(7 configs posent `action-tiles`, aucune `map-bubbles`/`featured-carousel` hors parent62) ne déclare ces
+props : tous restent sur le rendu historique. Recette `home-a-la-une` de la skill `config-assistant`
+resynchronisée.
+
+**Limite** : le bandeau du header `stacked` restant inchangé (choix explicite), la bande (« Vous
+êtes » + Territoires/À la une) ne tient pas encore entièrement au-dessus de la ligne de flottaison une
+fois la barre repliée (sticky, 56 px) à 1 440×900 — le plafond de hauteur de la carte a réduit le
+dépassement mesuré d'environ 279 px à environ 97 px, sans l'éliminer. Aller plus loin demanderait soit
+de recadrer l'image (perte de pixels réels de la silhouette du territoire), soit de resserrer les % x/y
+des 9 bulles — ce que le code interdit explicitement en commentaire (« positions calibrées à la main,
+ne pas les retoucher pour compenser », décision déjà actée en §9quater (cf. aussi [[project-parent62-accueil-bande-unique]]).
+Ni l'un ni l'autre n'a été fait : la marge résiduelle reste en l'état.
+
+### 9duoquadragies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` | ✅ 51 pages · 182 sections |
+| `audit:config` (parent62) | ✅ RAS (0 traduction manquante, 0 lien mort, 0 clé morte) |
+| `typecheck` · `lint` | ✅ 0 erreur (warnings React Compiler préexistants, étrangers au lot) |
+| `test:unit` | ✅ **5 476/5 477** — seul échec `bundle-size` (`dist/` non reconstruit depuis la veille), étranger au lot |
+| `test:integration` (`config-driven-ssr`) | 🟡 **861/863** — 2 échecs dus à `.env` local (`VITE_SLUG=parent62` actif) : le serveur de test rend parent62 au lieu du config de démo attendu par ces 2 assertions (titre/footer) — artefact d'environnement local, étranger au lot et à `.env` lui-même (gitignoré, propriété de l'utilisateur, non modifié) |
+| `test:e2e` parent62 | ✅ **25 passés**, dont la garde « Vous êtes + Territoires/À la une forment UNE bande ». 2 échecs **étrangers au lot** (`/territoire/arrageois`, `/equipe`, données du backend local) — identiques sans les modifications |
+| Écran | ✅ 1 024 / 1 280 / 1 366 / 1 920 px, 768 px et 375 px, clair et sombre : plus de chevauchement étiquette/tuiles, lien de l'actu dans sa carte, 9 bulles de territoire visibles sans rognage |
+| Contraste | ✅ blanc sur `--p62-vert-fonce` 6,07:1 (AA), blanc sur `--p62-marine` 10,98:1 |
 
 ---
 

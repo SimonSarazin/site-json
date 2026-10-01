@@ -434,12 +434,15 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     }
   });
 
-  test("accueil : les trois bandes ont la même largeur, et les deux panneaux verts sont au même niveau", async ({ page }) => {
+  test("accueil : « Vous êtes » + Territoires/À la une forment UNE bande, de même largeur que « Zoom sur le réseau »", async ({ page }) => {
+    // Refonte accueil : « Vous êtes » (action-tiles) n'est plus une bande séparée, il est intégré en
+    // TÊTE du gridLayout (`props.topSection`) — une seule bande blanche porte « Vous êtes » PUIS la
+    // rangée Territoires (3/4) / À la une (1/4), au lieu des 3 bandes disjointes d'avant la refonte.
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForHydration(page);
-    // Le panneau de l'actu n'existe qu'une fois les actualités chargées : l'attendre avant de mesurer.
-    await page.locator('[data-section-type="featured-carousel"] div[style*="linear-gradient"]').first().waitFor();
+    // La carte de l'actu n'existe qu'une fois les actualités chargées : attendre son lien avant de mesurer.
+    await page.locator('[data-section-type="featured-carousel"] a:has-text("Lire la suite")').first().waitFor();
 
     const mesures = await page.evaluate(() => {
       const bande = (type: string) => {
@@ -449,31 +452,46 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
         const c = sec?.querySelector(".container")?.getBoundingClientRect();
         return c ? { largeur: Math.round(c.width), x: Math.round(c.x) } : null;
       };
-      const panneau = (type: string) => {
-        const p = document.querySelector(`[data-section-type="${type}"] div[style*='linear-gradient']`);
-        const r = p?.getBoundingClientRect();
+      // Carte (fond blanc, `bg:"card"`) de chaque colonne — le `<section>` rendu par le composant lui-même,
+      // PAS un wrapper de dégradé (il n'y en a plus sur l'une des deux colonnes depuis la refonte « fond
+      // blanc » : `featured-carousel` n'a plus de `backgroundOverlay`, seul `map-bubbles` garde le sien,
+      // scopé à sa SEULE illustration — mesurer la `<section>` entière compare donc la même chose des 2 côtés).
+      const carte = (type: string) => {
+        const r = document.querySelector(`[data-section-type="${type}"] section`)?.getBoundingClientRect();
         return r ? { haut: Math.round(r.top), bas: Math.round(r.bottom) } : null;
       };
-      const une = document.querySelector('[data-section-type="featured-carousel"] div[style*=\'linear-gradient\']');
-      const cta = [...(une?.querySelectorAll("a") ?? [])].find((a) => /En savoir/.test(a.textContent ?? ""));
+      const une = document.querySelector('[data-section-type="featured-carousel"]');
+      const cta = [...(une?.querySelectorAll("a") ?? [])].find((a) => /Lire la suite/.test(a.textContent ?? ""));
+
+      // « Vous êtes » (action-tiles) et Territoires (map-bubbles) doivent vivre dans LA MÊME bande
+      // blanche extérieure (gridLayout) : même parent de type `section`, pas deux bandes empilées.
+      const vousEtes = document.querySelector('[data-section-type="action-tiles"]');
+      const territoiresSection = document.querySelector('[data-section-type="map-bubbles"]');
+      const bandeExterieure = (el: Element | null) => el?.closest('[data-section-type="gridLayout"]');
+      const memeBande = !!vousEtes && !!territoiresSection
+        && bandeExterieure(vousEtes) === bandeExterieure(territoiresSection);
+
       return {
-        bandes: [bande("action-tiles"), bande("gridLayout"), bande("articleTeaser")],
-        territoires: panneau("map-bubbles"),
-        alaune: panneau("featured-carousel"),
+        bandes: [bande("gridLayout"), bande("articleTeaser")],
+        territoires: carte("map-bubbles"),
+        alaune: carte("featured-carousel"),
         ctaDansLaCarte: Boolean(cta),
+        vousEtesDansLaMemeBandeQueTerritoires: memeBande,
       };
     });
 
-    // Trois bandes de même largeur, calées au même bord : deux largeurs se lisent comme un décrochage.
+    // Les deux bandes restantes (gridLayout, articleTeaser) ont la même largeur, calées au même bord.
     const largeurs = new Set(mesures.bandes.map((b) => b?.largeur));
     const bords = new Set(mesures.bandes.map((b) => b?.x));
     expect(largeurs.size, `largeurs : ${JSON.stringify(mesures.bandes)}`).toBe(1);
     expect(bords.size, `bords : ${JSON.stringify(mesures.bandes)}`).toBe(1);
 
-    // Les deux panneaux verts (illustration et actualité) commencent et finissent à la même hauteur,
-    // et le bouton de l'actu vit DANS son panneau.
-    expect(mesures.alaune, "panneau de l'actu").toEqual(mesures.territoires);
-    expect(mesures.ctaDansLaCarte, "bouton « En savoir » dans le panneau de l'actu").toBe(true);
+    expect(mesures.vousEtesDansLaMemeBandeQueTerritoires, "« Vous êtes » et Territoires dans la même bande").toBe(true);
+
+    // Les deux cartes (Territoires, À la une) commencent et finissent à la même hauteur (`align:"stretch"`),
+    // et le lien de l'actu vit DANS sa carte.
+    expect(mesures.alaune, "carte de l'actu").toEqual(mesures.territoires);
+    expect(mesures.ctaDansLaCarte, "lien « Lire la suite » dans la carte de l'actu").toBe(true);
   });
 
   test("accueil : survoler une bulle de territoire montre ses villes", async ({ page }) => {

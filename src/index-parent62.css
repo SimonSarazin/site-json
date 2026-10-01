@@ -288,6 +288,10 @@ footer nav { font-family: var(--font-serif); }
      le plus lisible sur ce vert : 7,56:1 (AAA). Le blanc n'y tient que 2,78:1, sous AA. Fixes clair/sombre. */
   --p62-vert: #1eae98;
   --p62-vert-encre: #000000;
+  /* Version ASSOMBRIE du même vert (même teinte), pour la case « Parent » de l'accueil : texte blanc
+     à 6,07:1 (AA). Fixes clair/sombre. */
+  --p62-vert-fonce: #0f6f5f;
+  --p62-vert-fonce-encre: #ffffff;
 
   /* Plaques photo de l'équipe (`/equipe`), sans territoire donc sans couleur dérivée : deux couleurs
      de marque fixes posées en config (`card.fixedColors`) — vert pour l'animation départementale,
