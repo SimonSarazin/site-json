@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import useItem from "../../hooks/useItem";
 import { MapPopupProps } from "../../schema";
+import { collectChipValues, decorateTags } from "../../lib/colorBy";
 import { getBaseUrl } from "@/lib/constant/common";
 
 /**
@@ -13,13 +14,16 @@ import { getBaseUrl } from "@/lib/constant/common";
  * d'action appelle `onAction` (fourni par SearchMap selon `map.itemAction` :
  * détail modal ou navigation profil).
  */
-export function MapPopupDefault({ item, t, actionKind, onAction }: MapPopupProps) {
+export function MapPopupDefault({ item, t, actionKind, onAction, tagColors }: MapPopupProps) {
   const data = useItem(item);
 
   const { name, shortDescription, address, tags = [], image } = data;
 
-  const visibleTags = tags.slice(0, 4);
-  const remaining = tags.length - visibleTags.length;
+  // Même décoration que les cartes de liste (masquage des tags techniques, couleur) : la popup ne
+  // doit pas révéler un marqueur que la liste cache. Sans conf, identité.
+  const chips = decorateTags(collectChipValues(tags, item?.serverData as Record<string, unknown> | undefined, tagColors), tagColors);
+  const visibleTags = chips.slice(0, 4);
+  const remaining = chips.length - visibleTags.length;
   const imgSrc = image ? (image.startsWith("http") ? image : `${getBaseUrl()}${image}`) : "";
   // On mémorise l'URL qui a échoué (et non un booléen) : `item` change sans
   // démontage quand l'utilisateur passe d'un marqueur à l'autre, et comparer à
@@ -57,9 +61,12 @@ export function MapPopupDefault({ item, t, actionKind, onAction }: MapPopupProps
 
         {visibleTags.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {visibleTags.map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-xs">
-                #{tag}
+            {visibleTags.map(({ tag, label, cssColor }) => (
+              <Badge key={tag} variant="secondary" className="text-xs" title={tag}>
+                {cssColor && (
+                  <span aria-hidden className="mr-1 inline-block h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: cssColor }} />
+                )}
+                #{label}
               </Badge>
             ))}
             {remaining > 0 && (

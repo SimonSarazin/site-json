@@ -71,7 +71,22 @@ export function mergeMongoFilters(
       out.$or = { $and: [...baseClauses, ...extraClauses] };
       continue;
     }
+    // Même clé, deux objets d'OPÉRATEURS (`{ $nin }` en config, `{ $in }` d'une facette) : on les
+    // compose au lieu que la facette écrase l'exclusion — le serveur applique bien `$in` ET `$nin`
+    // sur une même clé (SearchNew::searchFilters, branche `$nin`). Un opérateur présent des deux
+    // côtés est celui de la facette (le plus spécifique).
+    if (isOperatorObject(value) && isOperatorObject(base[key])) {
+      out[key] = { ...base[key], ...value };
+      continue;
+    }
     out[key] = value;
   }
   return out;
+}
+
+/** `{ $in: […] }`, `{ $nin: […], $in: […] }`… — un objet dont TOUTES les clés sont des opérateurs Mongo. */
+function isOperatorObject(v: unknown): v is Record<string, unknown> {
+  if (!isPlainObject(v)) return false;
+  const keys = Object.keys(v);
+  return keys.length > 0 && keys.every((k) => k.startsWith("$"));
 }

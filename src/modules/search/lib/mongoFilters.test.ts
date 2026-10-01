@@ -72,4 +72,19 @@ describe("mergeMongoFilters", () => {
     const b = mergeMongoFilters(a, { $or: { c: 3 } });
     expect((b.$or as { $and: unknown[] }).$and).toHaveLength(3);
   });
+
+  it("même clé, deux objets d'opérateurs : la facette $in s'ajoute à l'exclusion $nin, elle ne l'écrase pas", () => {
+    // Cas réel : /annuaire de RéseauSanté exclut les lieux (`tags.$nin`) et porte une facette
+    // « Thématique » sur `tags` (`$in`). Le serveur applique les deux sur la même clé.
+    const exclusion = { tags: { $nin: ["lieux-sante"] } };
+    const facette = { tags: { $in: ["Nutrition"] } };
+    expect(mergeMongoFilters(exclusion, facette)).toEqual({ tags: { $nin: ["lieux-sante"], $in: ["Nutrition"] } });
+    // Même opérateur des deux côtés : la facette, plus spécifique, gagne.
+    expect(mergeMongoFilters({ tags: { $in: ["A"] } }, facette)).toEqual({ tags: { $in: ["Nutrition"] } });
+  });
+
+  it("même clé mais l'un des deux n'est pas un objet d'opérateurs : remplacement ordinaire", () => {
+    expect(mergeMongoFilters({ type: { $in: ["NGO"] } }, { type: "Group" })).toEqual({ type: "Group" });
+    expect(mergeMongoFilters({ address: { postalCode: "97400" } }, { address: { $exists: true } })).toEqual({ address: { $exists: true } });
+  });
 });

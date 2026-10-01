@@ -444,6 +444,8 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
                     // Libellé aligné sur l'action EFFECTIVE de cet item : « Voir le profil » pour
                     // `profil`, « En savoir plus » pour `preview` comme pour `link`.
                     actionKind={resolveAction(selected.entry).decision.kind === "profil" ? "profil" : "preview"}
+                    // La conf de carte de CET item (règles `itemRules` comprises) : ses chips suivent la liste.
+                    tagColors={resolveAction(selected.entry).itemList?.card?.tagColors}
                     onAction={() => handlePopupAction(selected.entry)}
                   />
                 </Suspense>

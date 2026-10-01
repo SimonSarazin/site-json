@@ -72,11 +72,13 @@ export function stripTagNamespace(tag: string): string {
  *    (`labels[tag]`, sinon namespace retiré + capitalisation) ;
  *  - tag commençant par un préfixe de `hidePrefixes` → MASQUÉ (les tags
  *    techniques `public:`/`age:` filtrent mais ne s'affichent pas bruts) ;
+ *  - tag ÉGAL à une entrée de `hideTags` → MASQUÉ (un marqueur d'annuaire
+ *    complet, sans emporter les tags qui commencent pareil) ;
  *  - sinon → chip standard inchangée.
  * Sans conf, retourne les tags tels quels (comportement historique).
  */
 export function decorateTags(tags: string[], conf?: TagColorsConf): DecoratedTag[] {
-  if (!conf?.mapping && !conf?.hidePrefixes) {
+  if (!conf?.mapping && !conf?.hidePrefixes && !conf?.hideTags) {
     return tags.map((tag) => ({ tag, label: tag }));
   }
   const out: DecoratedTag[] = [];
@@ -86,6 +88,7 @@ export function decorateTags(tags: string[], conf?: TagColorsConf): DecoratedTag
       out.push({ tag, label: conf.labels?.[tag] ?? stripTagNamespace(tag), cssColor });
       continue;
     }
+    if (conf.hideTags?.includes(tag)) continue;
     if (conf.hidePrefixes?.some((p) => tag.startsWith(p))) continue;
     out.push({ tag, label: tag });
   }

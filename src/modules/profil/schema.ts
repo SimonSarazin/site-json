@@ -242,6 +242,8 @@ export const ProfileTagsSectionSchema = z.object({
   maxDisplay: z.number().optional().default(20),
   linkable: z.boolean().optional().default(false),
   searchOnClick: z.boolean().optional().default(false),
+  /** Tags NON affichés (égalité stricte) : un marqueur d'annuaire (`lieux-sante`) filtre, il ne se lit pas. */
+  hideTags: z.array(z.string()).optional(),
 });
 
 /**

@@ -1310,6 +1310,21 @@ Toutes les variantes sont lazy-loadées. Une page **mono-type** ne télécharge 
 
 Voir [doc/23-module-auth.md](23-module-auth.md) pour l'API `useAuthModal`.
 
+**Chips de tags** (30/09) : `card.tagColors` est honoré — même brique `collectChipValues`/`decorateTags` que
+`CardDefault` : `hidePrefixes` masque les tags techniques par préfixe, **`hideTags`** par égalité stricte (un
+marqueur d'annuaire complet, sans emporter les tags qui commencent pareil), `mapping` colore et relibelle. Les
+tags passent d'abord par `lib/normalizeTags` (le backend renvoie parfois `tags` en objet — tableau PHP à trous
+ou dictionnaire de présence — et une chip ne s'itère pas sur un objet ; `useItem` s'en sert aussi). Tags tous
+masqués ≠ fiche sans tag : dans le premier cas la carte ne dit rien, dans le second le repli « Aucun tag »
+demeure. Sans conf, les tags s'affichent tels quels, 3 au plus puis « +N ». La popup de carte
+(`MapPopupDefault`, prop `tagColors` passée par `SearchMap` depuis la conf de carte de l'item) applique la
+même décoration : un tag masqué en liste l'est aussi sur la carte. Premier usage : `/lieux-sante` de
+RéseauSanté, annuaire filtré au tag `lieux-sante` — que ni les cartes ni les popups n'ont à répéter.
+
+**Boutons « Contacter » / « Suivre »** (01/10) : `card.showActions: false` les retire (absent = affichés,
+comme `showStats`). Pensé pour un annuaire de LIEUX : on ne « suit » pas un cabinet, et « Contacter »
+n'ouvre aujourd'hui qu'un toast « à venir ».
+
 ### Mode détails — conteneur (`detailsMode`) vs contenu (`preview.type`)
 
 Le détail d'une entité sélectionnée est **découplé en deux axes** (commit 8cd4070) :

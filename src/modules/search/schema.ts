@@ -560,7 +560,9 @@ export type ColorByConf = z.infer<typeof ColorByConfSchema>;
 /** Chips de tags des cartes : couleur par tag (`mapping`), libellé lisible
  *  (`labels`, déf. namespace retiré + capitalisation) et MASQUAGE des tags
  *  techniques (`hidePrefixes`, ex. `public:`/`age:` — filtrants mais pas
- *  affichables bruts). Consommé par `decorateTags` (lib/colorBy).
+ *  affichables bruts ; `hideTags`, égalité STRICTE, pour un marqueur complet
+ *  comme `lieux-sante` qui ne doit pas emporter `lieux-sante-mentale`).
+ *  Consommé par `decorateTags` (lib/colorBy).
  *  `paths` : dot-paths serverData dont les valeurs s'ajoutent aux chips —
  *  nécessaire quand la taxonomie vit dans des CHAMPS et non dans `tags`
  *  (parent62 : `["territoires"]`), cf. `collectChipValues`. */
@@ -568,6 +570,7 @@ export const TagColorsConfSchema = z.object({
   mapping: z.record(z.string(), z.string()),
   labels: z.record(z.string(), z.string()).optional(),
   hidePrefixes: z.array(z.string()).optional(),
+  hideTags: z.array(z.string()).optional(),
   paths: z.array(z.string()).optional(),
 });
 export type TagColorsConf = z.infer<typeof TagColorsConfSchema>;
@@ -589,6 +592,10 @@ export const CardConfSchema = z.object({
     // `false` sur un annuaire de structures qui ne portent pas de projets : le
     // compteur y afficherait « 0 » sur toutes les fiches, ce qui n'informe de rien.
     showStats:       z.boolean().optional(),
+    // Boutons « Contacter » / « Suivre » de la carte `profile`. Absent = affichés (24 usages du
+    // parc inchangés). `false` sur un annuaire de LIEUX : on ne « suit » pas un cabinet, et
+    // « Contacter » n'ouvre aujourd'hui qu'un toast « à venir ».
+    showActions:     z.boolean().optional(),
     // Affiche la barre de progression de financement (cagnotte) sur la carte +
     // déclenche la query useFundingEnvelope. Découple la feature funding du style
     // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).
@@ -1686,4 +1693,6 @@ export interface MapPopupProps<T extends SearchListEntity = SearchEntity> {
   actionKind?: "profil" | "preview";
   /** Handler du bouton d'action — fourni par SearchMap (popup react-map-gl). */
   onAction?: () => void;
+  /** Chips de tags : la MÊME conf que la carte de liste (`list.card.tagColors`) — un tag masqué en liste l'est aussi ici. */
+  tagColors?: TagColorsConf;
 }
