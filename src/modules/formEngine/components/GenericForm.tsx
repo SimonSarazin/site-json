@@ -6,7 +6,7 @@
  * RENDU + VALIDATION uniquement. Le READ (defaultValues) et le WRITE (save) sont fournis par
  * l'appelant domaine (cf. doc §6/§9) → `onSubmit(values)` rend les valeurs de form prêtes à mapper.
  */
-import { Suspense, useEffect, useMemo, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, type FormEvent, type ReactNode } from "react";
 import { useForm, type FieldValues, type Resolver, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -136,9 +136,17 @@ export function GenericForm(props: GenericFormProps) {
     descriptor, form: form as UseFormReturn<FieldValues>, t, renderField, renderSlot, submitLabel, texts, submitting, onCancel,
   };
 
+  // En React, un `submit` remonte l'arbre des COMPOSANTS, portails compris : une modale ouverte depuis
+  // un autre formulaire (la création d'un élément depuis un finder coform, rendue sous sa question)
+  // soumettait AUSSI le formulaire hôte — sa validation partait, ses erreurs s'affichaient.
+  const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.stopPropagation();
+    return form.handleSubmit(onSubmit, onInvalid)(event);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="flex flex-1 flex-col min-h-0">
+      <form onSubmit={handleFormSubmit} className="flex flex-1 flex-col min-h-0">
         <Suspense fallback={<div className="flex flex-1 items-center justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
           <Layout {...layoutProps} />
         </Suspense>
