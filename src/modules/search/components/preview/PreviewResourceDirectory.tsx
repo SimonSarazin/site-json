@@ -4,6 +4,7 @@ import { Users, MapPin, ArrowUpRight, Building2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { getBaseUrl } from "@/lib/constant/common";
 import type { PreviewProps } from "../../schema";
 import { parseResourceDirectoryItem } from "../../lib/resourceDirectory";
 import { formatCapacityRange } from "../../helpers/servicePricingAnswers";
@@ -47,6 +48,7 @@ export default function PreviewResourceDirectory({ item, list }: PreviewProps) {
             resourceTypes: conf.resourceTypes,
             finderSuffix: conf.finderSuffix,
             fieldSuffixes: { finder: conf.finderSuffix, ...conf.fieldSuffixes },
+            baseUrl: getBaseUrl(),
           })
         : null,
     [conf, serverData],

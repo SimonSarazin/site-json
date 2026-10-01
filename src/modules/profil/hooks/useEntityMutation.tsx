@@ -19,6 +19,7 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 import type { QueryKey } from "@tanstack/react-query";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { useCocolight } from "@/hooks/useCocolight";
+import { isCostumHostAdmin } from "@/lib/permissions";
 import { COSTUM_QUERY_KEYS } from "@/constants/queryKeys";
 import { costumSlugOf } from "@/lib/costumLists";
 import { useNavigate } from "react-router";
@@ -86,6 +87,9 @@ export interface EntityMutationSpec {
     dropEmptyEmail?: boolean;
     /** valeurs fixes ajoutées au payload (preset costum). */
     extraFields?: Data;
+    /** Comme `extraFields`, mais seulement pour un NON-admin du site — modération a priori (cf.
+     *  entityModalSpec : filtre d'affichage, pas barrière de sécurité). */
+    extraFieldsUnlessCostumAdmin?: Data;
   };
   /** Stamps déclaratifs ($scope DÉJÀ résolus par buildSpec) — canal payload appliqué après
    *  buildPayload (add+edit), canal pathValue après le save (entité PROPRE, échec non bloquant). */
@@ -141,7 +145,7 @@ function isGalleryFieldValue(v: unknown): v is GalleryFieldValue {
   return !!g && typeof g === "object" && Array.isArray(g.added) && Array.isArray(g.removedDocIds) && typeof g.contentKey === "string";
 }
 interface GalleryCapableEntity {
-  uploadDocument: (file: File, opts: { contentKey: string; docType?: "image" | "file" }) => Promise<{ docId: string; docPath: string }>;
+  uploadDocument: (file: File, opts: { contentKey: string; docType?: "image" | "file"; subKey?: string }) => Promise<{ docId: string; docPath: string }>;
   deleteFile: (docId: string) => Promise<void>;
   data?: Record<string, unknown>;
   save?: () => Promise<unknown>;
@@ -178,7 +182,15 @@ async function processGalleryFields(entity: unknown, values: Data): Promise<void
       }
     }
     for (const file of v.added ?? []) {
-      const res = await ent.uploadDocument!(file, { contentKey: v.contentKey, docType: v.docType });
+      // `subKey` = clé du CHAMP de formulaire (ex. "statusFile", "responsableCivilePro") : le backend
+      // écrase `contentKey` des `doctype:file` par un bucket MIME (pdf/spreadsheet/…), mais conserve
+      // `subKey` verbatim → c'est lui qui permet de rattacher un document à son champ (seed d'édition,
+      // preview). Inutile pour les images (contentKey "slider" survit).
+      const res = await ent.uploadDocument!(file, {
+        contentKey: v.contentKey,
+        docType: v.docType,
+        subKey: v.docType === "file" ? v.contentKey : undefined,
+      });
       if (v.mediaTarget?.field && res?.docPath) {
         (mediaAdds[v.mediaTarget.field] ??= []).push({ type: v.mediaTarget.type, url: res.docPath });
       }
@@ -290,6 +302,10 @@ export async function runEntityMutation(
   }
   if (spec.inject?.dropEmptyEmail && payload.email === "") delete payload.email;
   if (spec.inject?.extraFields) Object.assign(payload, spec.inject.extraFields);
+  // Modération a priori : le drapeau n'est posé que pour les NON-admins du site (cf. entityModalSpec).
+  if (spec.inject?.extraFieldsUnlessCostumAdmin && !isCostumHostAdmin(deps.contextEntity)) {
+    Object.assign(payload, spec.inject.extraFieldsUnlessCostumAdmin);
+  }
   if (imageFile) payload.profil_avatar = imageFile;
 
   const method = SDK_METHOD[spec.entityType];

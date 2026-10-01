@@ -249,7 +249,48 @@ const AdminReferenceSectionSchema = z.object({
 export type AdminReferenceSection = z.infer<typeof AdminReferenceSectionSchema>;
 const AdminModerationSectionSchema = z.object({ ...sectionAccess, type: z.literal("moderation"), title: LocalizedString.optional() });
 
-const BUILTIN_SECTION_TYPES = ["dashboard", "members", "resource", "import", "export", "reference", "moderation"] as const;
+/** Id Mongo (24 hexadécimaux) — forme des ids de form. */
+const MONGO_ID = /^[0-9a-f]{24}$/;
+
+/**
+ * Section « reprise de réponses » : liste les réponses d'un form SOURCE (déposées sur un autre
+ * site) et les copie UNE PAR UNE dans le form CIBLE du site — bouton « Copier ». L'écriture est
+ * SERVEUR (action `copy` de `survey/answer/newanswer` → `Coform::copyAnswer`) : renommage du
+ * préfixe de section, contexte/`source` du site cible, idempotence par `copiedFrom` (une copie
+ * existante est renvoyée, jamais dupliquée). Prérequis : le form cible est un DUPLICATA du
+ * source (mêmes ids d'inputs — la duplication legacy les préserve — seul le préfixe change).
+ *
+ * Trois états par ligne : « Copié » (une réponse cible porte `copiedFrom` = cette ligne),
+ * « Doublon probable » (une réponse cible SANS trace partage l'empreinte `duplicateKeys` —
+ * copie faite par un autre canal : confirmation demandée) et « À copier ».
+ */
+const AdminAnswerCopySectionSchema = z.object({
+  ...sectionAccess,
+  type: z.literal("answerCopy"),
+  title: LocalizedString.optional(),
+  /** Form SOURCE : ses réponses sont les candidates (filtre `form` posé d'office par la section). */
+  sourceForm: z.string().regex(MONGO_ID),
+  /** Form CIBLE : reçoit les copies (l'admin doit être admin de son contexte porteur — garde serveur). */
+  targetForm: z.string().regex(MONGO_ID),
+  /**
+   * Requête des candidates — MÊME forme que `resource.source` (`defaultFilters` mongo, `searchBy`,
+   * `defaultSortBy`, `indexStepList`…). `notSourceKey: true` est posé d'office : les réponses source
+   * appartiennent à un autre site, le scope costum les exclurait.
+   */
+  source: SearchBaseParamsSchema.partial().optional(),
+  /** Colonnes de DONNÉES (lignes APLATIES par le hook costum, comme `resource`) : `"path"` ou `{ path, label }`
+   *  — sans `type`/`sortable` : la table n'a ni tri ni cellule audio, une clé promise puis ignorée serait un faux
+   *  contrat. Statut de copie et Action sont fixes. */
+  columns: z.array(z.union([z.string(), z.object({ path: z.string(), label: LocalizedString.optional() })])).optional(),
+  /**
+   * Chemins (lignes aplaties) formant l'EMPREINTE d'un doublon probable — une réponse cible sans
+   * `copiedFrom` qui partage ces valeurs. Défaut : `["name", "structure.name", "address.postalCode"]`.
+   */
+  duplicateKeys: z.array(z.string().min(1)).optional(),
+}).refine((s) => s.sourceForm !== s.targetForm, { message: "sourceForm et targetForm doivent différer", path: ["targetForm"] });
+export type AdminAnswerCopySection = z.infer<typeof AdminAnswerCopySectionSchema>;
+
+const BUILTIN_SECTION_TYPES = ["dashboard", "members", "resource", "import", "export", "reference", "moderation", "answerCopy"] as const;
 
 /** Section costum : `type` libre enregistré via `registerAdminSection` (comme une section profil costum).
  *  Permissif (le composant enregistré valide ses props) — mais REFUSE les types builtin : sans ce
@@ -273,6 +314,7 @@ export const AdminSectionSchema = z.union([
     AdminExportSectionSchema,
     AdminReferenceSectionSchema,
     AdminModerationSectionSchema,
+    AdminAnswerCopySectionSchema,
   ]),
   AdminCustomSectionSchema,
 ]);

@@ -75,3 +75,50 @@ export const TroisColonnesFondMuted = () => (
     }}
   />
 );
+
+// Usage réel : « Par où commencer ? » de /parents (parent62) — grandes tuiles sur grille élargie, fond plein
+// de marque et son encre (jetons de index-parent62.css, contraste mesuré 7,56:1).
+export const GrandesTuilesFondPlein = () => (
+  <ActionTiles
+    props={{
+      headline: { fr: "Par où commencer ?" },
+      columns: { sm: 2, lg: 4 },
+      size: "lg",
+      width: "wide",
+      actions: [
+        {
+          icon: "message-circle-heart",
+          title: { fr: "Retrouvez des témoignages de parents du Pas-de-Calais" },
+          subtitle: { fr: "Des audios et des écrits pour découvrir leurs réalités." },
+          href: "/temoignages",
+          background: "var(--p62-vert)",
+          textColor: "var(--p62-vert-encre)",
+        },
+        {
+          icon: "search",
+          title: { fr: "Trouver une action près de chez moi" },
+          subtitle: { fr: "Mise en place par les partenaires du territoire" },
+          href: "/recherche",
+          background: "var(--p62-vert)",
+          textColor: "var(--p62-vert-encre)",
+        },
+        {
+          icon: "calendar",
+          title: { fr: "Voir l'agenda" },
+          subtitle: { fr: "La semaine ou le weekend, découvrez les actions proches de chez vous" },
+          href: "/agenda",
+          background: "var(--p62-vert)",
+          textColor: "var(--p62-vert-encre)",
+        },
+        {
+          icon: "folder",
+          title: { fr: "Ressources" },
+          subtitle: { fr: "Retrouvez ici des outils, des sites ressources et des contacts de partenaires" },
+          href: "/ressources",
+          background: "var(--p62-vert)",
+          textColor: "var(--p62-vert-encre)",
+        },
+      ],
+    }}
+  />
+);

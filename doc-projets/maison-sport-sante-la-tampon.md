@@ -10,13 +10,22 @@
 >
 > Voir aussi : [Module Search](../doc/07-module-search.md) · [Module CoForm](../doc/21-module-coform.md) ·
 > [Assistant Config](../doc/26-assistant-config.md) · projet frère
-> [Sport Santé Bien-être](sport-sante-bien-etre.md) (même costum, même CSS). Docs workspace :
+> [Sport Santé Bien-être](sport-sante-bien-etre.md) (mêmes composants et `styles/shared.css`, **CSS de
+> site séparé depuis le 23/09**, §9.19). Docs workspace :
 > [`FONCTIONNALITES-EKILIBRE.md`](../../FONCTIONNALITES-EKILIBRE.md) (analyse fonctionnelle + endpoints,
 > 06/07) · [`ENDPOINT.md`](../../ENDPOINT.md) (fiches d'endpoints SDK à créer). Mémoire :
 > `[[project-maison-sport-sante-la-tampon]]`.
 
-Dernière mise à jour : **2026-09-08** (§9.15 : compteurs statistiques dynamiques sur la home,
-1ᵉʳ lot — `21f0d53f`).
+Dernière mise à jour : **2026-09-29** (merge de `main` : §9.21, reprise des créneaux SSBE du Tampon
+depuis l'admin — section `answerCopy`, copie serveur idempotente ; §9.20 : corrections de la review
+de la MR `n-dev` → `main` ; §9.19, commit `beef21d9` : le site quitte le CSS partagé SSBE
+pour un **CSS propre** et passe à la **charte Ekilib.re** — bleu #1B4F72 / jaune #F0B429 / vert
+#1A7A55 — avec fermeture de l'auto-inscription des structures, cartes d'actualités en `poster`,
+adresse postale et réseaux sociaux au pied de page ; §9.18 : vivier de l'onglet admin Référencement
+réellement restreint à la provenance `sportSanteBienetre` — cause backend trouvée ; §9.17/§9.17 bis :
+formulaire `structure` aligné sur la refonte dynForm-legacy de sport-sante-bienetre-organizations —
+SSBE, 09/09 — puis recette navigateur et correctif d'un bug d'édition des pièces jointes dans
+`PreviewStructure.tsx` (partagé SSBE)).
 
 **Chiffres clés de la home passés en partie au dynamique** (§9.15, Nicolas, `21f0d53f`, 08/09) : le
 schéma `cta-card-grid.props.stats[]` accepte désormais un `source` optionnel (`searchCount` /
@@ -163,7 +172,7 @@ et restreintes aux codes postaux **97430 / 97418**.
 
 | | |
 |---|---|
-| **Site SiteForge** | slug `associationEkilibre` → [`config.prod.maison-sport-sante-la-tampon.json`](../config.prod.maison-sport-sante-la-tampon.json), CSS `index-sport-sante-bien-etre` (**partagé** avec le site SSBE, cf. [`sites.json`](../sites.json)) |
+| **Site SiteForge** | slug `associationEkilibre` → [`config.prod.maison-sport-sante-la-tampon.json`](../config.prod.maison-sport-sante-la-tampon.json), CSS **`index-maison-sport-sante-la-tampon`** (**propre au site depuis le 23/09**, §9.19 — auparavant `index-sport-sante-bien-etre` partagé avec SSBE, cf. [`sites.json`](../sites.json)) |
 | **Costum / scope de données** | **`associationEkilibre`** — auto-porteur depuis le 20/08 (§9.9). Les 6 périmètres de recherche du site déclarent `sourceKey: ["associationEkilibre"]`, que le serveur traduit en « possédée (`source.key`) **OU** référencée (`reference.costum`) ». `notSourceKey` : **0 occurrence** dans la config. Le préfixe des clés de champs answers reste celui du form dédié |
 | **CoForm « créneau »** | **`6a85af345d898a57cb49f029`** « Créneau - tampon » (dédié, §9.8) — section `associationEkilibre19082026_1327_0` ; **1 créneau = 1 answer** ; ex-form SSBE partagé `6928096adf5caf0d230e7f26` jusqu'au 19/08 |
 | **Orga porteuse** | slug `associationEkilibre`, `_id 692817af564b0621d52ebbc6`, type `organizations` (résolu au boot via `GET_ELEMENTS_KEY`) |
@@ -217,6 +226,13 @@ et restreintes aux codes postaux **97430 / 97418**.
 - **06/08 (session 3, Cael, `2bf0007d`+`a524cf33` 14:42) — back-office `/admin` + KPIs (CDC §4.2)** :
   bloc `config.admin` (dashboard/membres/modération) + extension opt-in du moteur admin
   (`AdminDashboardKpiSchema`). Détail §9.6.
+- **23/09 (Nicolas, `beef21d9`) — charte Ekilib.re & CSS propre au site** : `sites.json` bascule
+  `associationEkilibre` sur `index-maison-sport-sante-la-tampon` (nouveau fichier, 290 lignes) ; le
+  thème de la config passe du teal/corail hérité de SSBE au **bleu #1B4F72 / jaune #F0B429 / vert
+  #1A7A55** du cahier des charges, en clair comme en sombre ; fermeture de l'auto-inscription
+  (entrée de nav « Structure référentes » et bouton « Ajouter ma structure » retirés, `create: false`
+  côté admin) ; cartes d'actualités en `cardVariant: "poster"` ; adresse postale complète, réseaux
+  sociaux et copyright corrigés au pied de page ; liens `ssbe.re` en `www` + ancre. Détail §9.19.
 - **06/08 (session 3, décision Nicolas, non codée) — chantier « Actualités » requalifié en POI** :
   le CDC (« Section Actualités » de la home + CRUD back-office titre/catégorie/date/contenu/lien/
   statut/mise en avant) sera implémenté via un **costumForm POI** dédié plutôt que via le module
@@ -227,8 +243,11 @@ et restreintes aux codes postaux **97430 / 97418**.
 
 ## 2. Objectifs de la configuration
 
-1. **Un site vitrine** (nav 5 entrées : Créneaux · S'informer · Structures · Partenaires · Contact,
-   CTA « Espace Pro ») présentant la MSS, le parcours sport santé et ses partenaires.
+1. **Un site vitrine** (nav **6 entrées**, relevées le 23/09 : Trouver une activité · S'informer ·
+   Actualités · Ressources · Partenaires · Contact, CTA « Espace Pro ») présentant la MSS, le parcours
+   sport santé et ses partenaires. ⚠️ **`/structure` est sortie de la nav le 23/09** (§9.19) : la page
+   existe toujours mais n'est atteignable que par le bouton « Structure référentes » du bandeau de
+   `/creneaux`.
 2. **L'annuaire des créneaux** (`/creneaux`) : recherche texte + **6 groupes de filtres en colonne
    de gauche** (type d'activité, type de sport santé, type de public, bénéficiaires — puis **ALD** et
    **maladies chroniques**, tirés du CoForm lui-même), **vue carte**, détail en dialog — restreint
@@ -237,9 +256,12 @@ et restreintes aux codes postaux **97430 / 97418**.
 3. **La gestion des créneaux par les admins** : créer et modifier un créneau (= une answer du CoForm
    dédié `6a85af345d898a57cb49f029` depuis §9.8) **sans quitter le site** (CoFormModal) — commité le 31/07.
 4. **L'annuaire des structures référentes** (`/structure`) : organizations SSBE du territoire,
-   filtres CP + domaine d'intervention, **fiche détail dédiée** (`PreviewStructure`). **+
-   auto-inscription** : toute structure peut se référencer elle-même via un formulaire public
-   (costumForm `structure`, commité — §9.5/§9.5 bis).
+   filtres CP + domaine d'intervention, **fiche détail dédiée** (`PreviewStructure`), grille
+   **3 colonnes** et carte **50-50** depuis le 23/09. ~~**+ auto-inscription** : toute structure peut
+   se référencer elle-même via un formulaire public~~ **FERMÉE le 23/09** (§9.19) : plus de bouton
+   public ni de création côté admin — le costumForm `structure` reste en config pour l'**édition**
+   (fiche `/structure`, onglet admin Structures), l'alimentation passe désormais par le
+   **référencement** fiche par fiche (§9.10).
 5. ~~Le flux d'actualités de l'association (home, lecture seule)~~ **remplacé** : section « Actualités »
    (une actualité à la une + grille, + fiche `/espace-pro`) pilotée en CRUD complet par l'admin
    (catégorie, date de publication, contenu riche, lien, statut, mise en avant unique) — porté en
@@ -276,14 +298,17 @@ et restreintes aux codes postaux **97430 / 97418**.
    │       filterTarget:"answers" → prédicat $exists sur le chemin        │
    │     addButton.coform → CoFormModal (création)                        │
    │     card.structureAction:"preview" → fiche structure EN MODALE       │
-   │   /structure : searchHeader (2 dropdowns) + searchProStatic          │
+   │   /structure (HORS NAV depuis 23/09) : searchHeader (2 dropdowns)    │
+   │     + searchProStatic (grille 3 col. · carte 50-50)                  │
    │     sourceKey ["associationEkilibre"] + statusActor:"Validé" + CP    │
    │     defaultFields : 55 champs (projection complète, §9.13)           │
-   │     bouton "Ajouter ma structure" → costumForm structure             │
-   │   /admin : 6 onglets — dashboard · membres · actualités ·            │
-   │     structures (restrictActionsToOwned) · référencement · modération │
+   │     plus de bouton "Ajouter ma structure" (§9.19) — édition seule    │
+   │   /admin : 7 onglets — dashboard · membres · actualités ·            │
+   │     ressources · structures (create:false, restrictActionsToOwned) · │
+   │     référencement · modération                                       │
    │   / · /espace-pro · /blog : articleFeed (module blog)                │
    │     featured:"flag" (une résolue par micro-requête serveur)          │
+   │     cardVariant:"poster" sur / et /blog (affiches, §9.19)            │
    │     /blog : searchHeader + facette Catégorie · reader /blog/:slug    │
    │   /espace-pro : GARDÉE (auth.required, mode prompt) — §9.13          │
    └──────────────────────────────────────────────────────────────────────┘
@@ -392,8 +417,9 @@ site pour porter un contenu structuré sans code nouveau.
   « Validé », « Refusé »), au patron `statusField`. Il **n'est pas un champ du formulaire** (44
   champs, aucun `statusActor`) : il est écrit à la création par l'inject (`"En cours"`) puis
   uniquement par le dropdown de l'onglet admin Structures. Une structure auto-inscrite **naît donc
-  invisible** — le bouton « Ajouter ma structure » reste ouvert à tout visiteur, la modération est
-  le sas.
+  invisible** — la modération est le sas. ⚠️ **Depuis le 23/09 (§9.19) il n'y a plus de création du
+  tout** : ni bouton public, ni bouton admin (`create: false`) ; le stock se constitue par
+  **référencement** (§9.10) et `statusActor` n'est plus écrit qu'à la main depuis l'onglet admin.
 - **Actualités** = POI `type: "article"`, périmètre `associationEkilibre`, publiés par le **module
   blog** (`articleFeed`, reader `/blog/:slug`, RSS). Formulaire `actualite` à **9 champs** (name,
   image, category, publicationDate, shortDescription, description, tags, link, publicationStatus) —
@@ -414,7 +440,7 @@ site pour porter un contenu structuré sans code nouveau.
 
 | Domaine | Fichiers |
 |---|---|
-| **Config & CSS** | [`config.prod.maison-sport-sante-la-tampon.json`](../config.prod.maison-sport-sante-la-tampon.json) · `src/index-sport-sante-bien-etre.css` (partagé SSBE) · [`sites.json`](../sites.json) |
+| **Config & CSS** | [`config.prod.maison-sport-sante-la-tampon.json`](../config.prod.maison-sport-sante-la-tampon.json) · **`src/index-maison-sport-sante-la-tampon.css`** (propre au site depuis le 23/09, §9.19 ; importe `styles/shared.css`, toujours commun avec SSBE) · [`sites.json`](../sites.json) |
 | **Lot créneaux (06/07, commité le 31/07 — `2bf81496`)** | `src/modules/search/schema.ts` (`addButton.coform`, `preview.editButton`) · `SearchProStatic.tsx` (bouton + CoFormModal lazy + invalidation) · `components/preview/PreviewCoformAnswer.tsx` (bouton Modifier + re-fetch) · `components/Preview.tsx` (pass-through `preview`) · `lib/coformAnswer.ts` (`getAnswerRef`) + `lib/coformAnswer.test.ts` (nouveau) · `constants/queryKeys.ts` (préfixes partagés) · `i18n/fr.json`/`en.json` (`coformAnswer.edit`) · `modules/coform/components/CoFormModal.tsx` (export default) · `modules/coform/index.ts` (barrel `useCoFormAnswerQuery`) |
 | **Droits d'édition (31/07)** | `lib/coformAnswer.ts` (`canEditCoformAnswer`, `getAnswerStructureId`) + `lib/coformAnswer.test.ts` · réutilise `modules/admin/lib/adminEntry.ts` (`resolveAdminAccessLevel`, non modifié) |
 | **Rendu créneau (lecture)** | `components/card/CardAnswer.tsx` (intact — le remap de slug vit dans `parseCoformAnswer`) · `lib/coformAnswer.ts` (`DEFAULT_COFORM_FIELDS`, `parseCoformAnswer`) |
@@ -423,7 +449,9 @@ site pour porter un contenu structuré sans code nouveau.
 | **Back-office `/admin` + KPIs (06/08, `2bf0007d`)** | `config.prod.maison-sport-sante-la-tampon.json` (bloc `admin`) · `src/modules/admin/schema.ts` (`AdminDashboardKpiSchema`) · `src/modules/admin/sections/DashboardKpis.tsx` (nouveau) · `src/modules/admin/sections/DashboardSection.tsx` · `src/modules/admin/lib/kpiTrend.ts` + `.test.ts` (nouveaux) · `src/modules/admin/constants/queryKeys.ts` (`KPI_SEARCH_PREFIX`) · `src/modules/admin/i18n/{fr,en}.json` — détail §9.6 |
 | **Actualités (10/08, codé — §9.7)** | `config.prod.maison-sport-sante-la-tampon.json` (`costumForms["actualite"]`, onglet admin, sections home + `/espace-pro`) · `src/modules/admin/schema.ts` (`rowActions:"setFeatured"`, `exclusiveField`) · `src/modules/admin/lib/exclusiveFlag.ts` (+ `.test.ts`, nouveau) · `src/modules/admin/hooks/useSetExclusiveFlag.ts` (nouveau) · `src/modules/admin/sections/AdminResourceTable.tsx` (bouton « Mettre à la une ») · `src/modules/admin/i18n/{fr,en}.json` · `src/modules/profil/forms/actualite.configDriven.test.ts` (nouveau, 8 tests) · `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` (+1 ligne) — **2 correctifs moteur** : `src/modules/formEngine/config/schema.ts` (`WidgetKind` + `"markdown"`), `src/modules/profil/forms/costum/compileCostumSchema.ts` (`WIDGET_DEFAULTS` + `"markdown"`) — aucun nouveau composant de carte (réutilise `card.type/preview.type:"resource"`, existant) |
 | **Ressources pro (24/08, `edb20de6` — §9.14)** | `config.prod.maison-sport-sante-la-tampon.json` (`costumForms["ekilibre-ressource"]`, page `/ressources`, entrée de nav, onglet admin `ressources`, route `profiles.poi.editModals`) — **0 code front** : réutilise `formEngine` (widgets `file`/`urlList`/`select`), presenters `card.type/preview.type:"resource"`, table admin `resource` en mode `statusField` · backend : `EkilibreMigrationController::declarePoiTypes` (costum repo `7ce80d9f0`) |
+| **Reprise des créneaux SSBE — `answerCopy` (23/09, §9.21)** | `config.prod.maison-sport-sante-la-tampon.json` (onglet admin `creneaux-ssbe`) · `src/modules/admin/schema.ts` (`AdminAnswerCopySectionSchema`) · `src/modules/admin/lib/answerCopy.ts` (+ `.test.ts`) · `src/modules/admin/hooks/useCopyAnswer.ts` · `src/modules/admin/sections/AdminAnswerCopySection.tsx` (+ `.test.tsx`) · `AdminSectionRenderer.tsx`, `constants/queryKeys.ts`, `sections/resourceHelpers.ts` (`STATUS_TONE_CLASS` partagé), `i18n/{fr,en}.json` · [`doc/30-module-admin.md`](../doc/30-module-admin.md) · backend : `citizenToolKit/models/Coform.php` (`copyAnswer`, `resolveAnswerSource`), `survey/controllers/answer/NewanswerAction.php` (`action:copy`), `costum/models/AssociationEkilibre.php` (hook par suffixe), `costum/controllers/EkilibreMigrationController.php` (`copyAnswer` URL) · [`../../ENDPOINT.md`](../../ENDPOINT.md) (extension `GENERATE_ANSWER_FROM_FORM`) · `src/modules/admin/components/AdminTableShell.tsx` (nouveau, partagé avec `reference`) · `src/modules/search/hooks/{useSearchQuery,useSearchAllResults}.ts` (additif : `isFetching`, `isPending`, `cache`, `capped` exact) |
 | **Compteurs stats dynamiques (08/09, `21f0d53f` — §9.15)** | `src/types/site-schema.ts` (`StatDynamicSourceSchema`, `source` sur `CtaCardGridSchema.props.stats[]`) · `src/components/sections/useStatDynamicValue.ts` (nouveau) + `.test.ts` (nouveau, 6 tests) · `src/components/sections/CtaCardGrid.tsx` (`StatTile`) · `config.prod.maison-sport-sante-la-tampon.json` (item « Créneaux disponibles ») — moteur générique, **aucun autre site impacté** (4 autres configs `cta-card-grid` toujours valides sans `source`) |
+| **Charte Ekilib.re & CSS propre (23/09, `beef21d9` — §9.19)** | `src/index-maison-sport-sante-la-tampon.css` (nouveau, 290 lignes) · [`sites.json`](../sites.json) (`css` du slug) · `config.prod.maison-sport-sante-la-tampon.json` (`theme.colors` clair+sombre, `theme.customCSS`, nav, `/structure`, `articleFeed`, footer, liens `ssbe.re`) · `public/images/maisonSportSanteLaTampon/logo.svg` — **0 code applicatif** |
 | **Assets** | `public/images/maisonSportSanteLaTampon/` (hero, hero2/3, logo, logo-mss, pictogramme) |
 | **Docs workspace** | [`../../FONCTIONNALITES-EKILIBRE.md`](../../FONCTIONNALITES-EKILIBRE.md) · [`../../ENDPOINT.md`](../../ENDPOINT.md) |
 | **Déploiement** | `server/prod-server.js` · variables d'environnement (`.env` local, non détaillées ici) — prod à définir |
@@ -435,7 +463,9 @@ site pour porter un contenu structuré sans code nouveau.
 | Décision | Pourquoi |
 |---|---|
 | **Sous-site du costum `sportSanteBienetre`** (pas un costum dédié) | les structures existent déjà dans SSBE (vue territoriale CP 97430/97418). Évolution 19/08 (§9.8) : les **créneaux** sont sortis du form partagé → form dédié Tampon (le contexte costum reste SSBE : hooks backend communs) |
-| **CSS partagé `index-sport-sante-bien-etre`** | même identité visuelle que le site régional ; un thème dédié serait à créer si la DA diverge |
+| ~~**CSS partagé `index-sport-sante-bien-etre`**~~ **CSS propre `index-maison-sport-sante-la-tampon`** (23/09, §9.19) | la DA a divergé : la charte Ekilib.re porte un accent **jaune** (clair), là où les recettes SSBE (« Lagon & Corail ») supposent un accent **corail** portant du texte clair. Sous la nouvelle palette, la carte `.access-card-public` dégradait l'accent vers `--destructive` : **2,55:1** avec le texte foncé de l'accent (mesuré). Séparer le fichier était moins risqué que de paramétrer les recettes SSBE pour deux chartes. `styles/shared.css` et tous les composants restent communs |
+| **Accent clair ⇒ texte foncé** (23/09) | `--accent` (jaune #F0B429, L .80) ne peut pas porter `text-primary-foreground` (quasi-blanc en clair) : **1,81:1** mesuré. Deux réponses selon le composant : soit le texte passe en `--accent-foreground` (**7,34:1** sur le jaune plein), soit le jaune est **creusé** vers le noir (`color-mix … 62%/85%`) quand le composant partagé impose son texte clair (`CardAnswer`, en-têtes de carte, cartes SSsO) — et par **mode**, puisque `primary-foreground` s'inverse en sombre alors que l'accent reste clair |
+| **Tokens du thème en config, recettes en CSS** (23/09) | le fichier de site ne redéfinit aucun token shadcn : `config.theme` les injecte au runtime (`SiteTheme.tsx`). Le CSS ne garde que le `@theme inline` (mapping vars→classes), les vars bespoke réellement consommées par des composants (`--card-header-gradient`, `--btn-structure`, `--gradient-hero/-pro/-section`) et les utilities — un seul point de vérité pour les couleurs, et la variante sombre suit toute seule |
 | **1 créneau = 1 answer CoForm** (pas un POI/event) | le form créneau (SSBE puis Tampon `…2004_0`, mêmes 91 inputs) porte tous les champs métier (horaires, bénéficiaires, adresse) ; le moteur search sait lister des answers (`defaultTypes:["answers"]` + `filters.form`) |
 | **`addButton.coform` / `preview.editButton` = opt-in config** | 2 autres sites utilisent `card-answer`/`coform-answer` (SSBE) — sans ces flags, **comportement strictement inchangé** ailleurs |
 | **CoFormModal (pas la route `/coform/:formId`)** | l'admin reste sur `/creneaux`, et le save invalide la liste immédiatement (la route perdrait l'état des filtres) |
@@ -443,7 +473,8 @@ site pour porter un contenu structuré sans code nouveau.
 | **Modération par champ `state="Validé"`** (filtre figé, 20/07) | pas de gate backend `toBeValidated` sur ce flux ; le champ état du form fait office de modération — simple mais **dépend de la saisie** (§12) |
 | **Filtre CP figé dans `defaultFilters`** | périmètre territorial garanti côté requête (pas seulement à l'affichage) |
 | **Auto-inscription = costumForm `formEngine` + `buttons` génériques** (aucun composant nouveau) | le contrat `ActionButtonSchema`/`<ActionButtonGroup>`/`DynamicModalButton` (modules/profil) et le moteur `formEngine` (doc/28) existaient déjà (merge du 30/07) ; Ekilibre n'ajoute que de la **config** + 1 transform pur (`thematic`→`tags`) |
-| **`requiresAdmin: false` sur le bouton « Ajouter ma structure »** | auto-inscription ouverte à tout visiteur (non connecté → redirigé login par `DynamicModalButton`) — la structure créée reste rattachée à son auteur (`role: admin` injecté au create) |
+| ~~**`requiresAdmin: false` sur le bouton « Ajouter ma structure »**~~ **DÉCISION RENVERSÉE le 23/09** (§9.19) | le bouton public est retiré et l'admin passe en `create: false` : plus aucune création de structure depuis le site. Le stock se constitue par **référencement** de fiches existantes (§9.10), cohérent avec « la propriété porte les fonctionnalités, le référencement porte la visibilité ». Le costumForm `structure` est conservé — il sert l'**édition** (fiche `/structure` + onglet admin). **Motif métier à confirmer avec la MSS** (§13) |
+| **Cartes d'actualités en `cardVariant: "poster"`** (23/09) | les actualités de la MSS sont des **affiches/flyers** : le variant `poster` du module blog rend l'image entière (`object-contain`, cadre portrait 3/4) au lieu de la rogner. Choix par config, aucun composant nouveau — posé sur `/` et `/blog`, pas sur `/espace-pro` |
 | ~~**`source.key` élargi en `$in` plutôt que remplacé**~~ **DÉCISION RENVERSÉE le 20/08** | la coexistence avec le stock régional ne passe plus par un élargissement de provenance mais par un **périmètre unique** `sourceKey: ["associationEkilibre"]`, que le serveur traduit en « possédée **OU** référencée ». Motif : un `$in` de provenances rend le site propriétaire de fiches qu'il ne gère pas, et rend impossible tout gating par appartenance (§9.9, §9.10) |
 | **La propriété porte les fonctionnalités, le référencement ne porte que la visibilité** (20/08) | permet de montrer une fiche régionale sur `/structure` **sans** s'en attribuer l'édition. Une fiche seulement référencée est en lecture seule : `restrictActionsToOwned: true` masque Modifier / Valider / Supprimer et le dropdown de statut. Corollaires assumés : **pas** de `transfersource` du stock ssbe, **pas** de référencement automatique — une curation fiche par fiche via l'onglet admin Référencement |
 | **`filterTarget: "answers"` sur les deux facettes pathologie** (22/08) | `/creneaux` liste les **réponses** ; sans cette clé, une facette « par réponses » filtre par `_id` d'organisation et **vide la liste au clic** en s'affichant normalement. MSS est le seul site du parc à la poser. La clé doit être écrite **explicitement** : la config n'est jamais parsée par Zod à l'exécution, le défaut `linkedElements` vit en dur dans le code |
@@ -460,7 +491,7 @@ site pour porter un contenu structuré sans code nouveau.
 ## 8. Étapes de mise en place
 
 1. **Config** : `config.prod.maison-sport-sante-la-tampon.json` + entrée `sites.json`
-   (`associationEkilibre` → config + CSS SSBE). ✅
+   (`associationEkilibre` → config + CSS **`index-maison-sport-sante-la-tampon`** depuis le 23/09). ✅
 2. **Dev** : configurer les variables d'environnement locales (`.env`, non détaillées dans ce
    document), puis `nvm use` + `npm run dev` → :5173. ⚠️ Prérequis poste :
    `fs.inotify.max_user_watches=524288` (réglé le 06/07 sur le poste de Peterson).
@@ -1032,6 +1063,13 @@ Le back-office passe à **six onglets** — Tableau de bord, Membres, Actualité
   (tout sauf refus explicite). **Sans ce réglage la vue serait vide** — le garde-fou legacy par
   défaut exige `preferences.isOpenData: true`, que le stock ne porte pas.
 
+> ⚠️ **Correction du 21/09 — jusqu'au correctif backend `7b19f871`, le ciblage `source.keys:
+> sportSanteBienetre` décrit ci-dessus ne filtrait rien.** Le serveur ignorait le `$in` dès qu'un `$nin`
+> de garde figurait sur la même clé (cf. §9.18) : le vivier remontait toutes les provenances. Le
+> correctif est sur `master` de `citizenToolKit` et le ciblage `source.keys` est **conservé** (vérifié le
+> 24/09 : vivier 100 % `sportSanteBienetre` en dev et en prod). Les 14 fiches référencées le 20/08 ne
+> sont pas concernées (référencement fiche par fiche, pas par ce filtre).
+
 **14 organisations du Tampon** ont été référencées le 20/08 sur la base de **DEV**, par le canal de
 l'action admin et non par écriture Mongo directe.
 
@@ -1368,20 +1406,401 @@ validées), mais SSBE a dû poser la garde pour 32 fiches.
 
 ---
 
+### 9.17 Formulaire `structure` aligné sur la refonte dynForm-legacy de SSBE (15/09, session en cours)
+
+**Demande utilisateur** : « mettre le formulaire structure en marche comme celui du
+sportSanteBienetre (champ, formulaire ainsi que `statusActor`) ». Point de départ vérifié avant tout
+changement : `statusActor` était **déjà** fonctionnel côté Ekilib.re, à l'identique de SSBE — inject
+create-only (`mutation.inject.extraFields.statusActor: "En cours"`) et blocage `statusField` dans
+l'onglet admin Structures (mêmes 4 états/tons). Ce qui manquait réellement, c'est l'alignement du
+**schéma** du formulaire lui-même : `costumForms.structure` était resté à la version du 06/08
+(§9.5 bis, 44 champs) pendant que `sport-sante-bienetre-organizations` passait à 49 champs le 09/09
+([Sport Santé Bien-être](sport-sante-bien-etre.md), §9 lot du 09/09).
+
+**Vérification décisive avant d'implémenter** : le contrat live réel du costum `associationEkilibre`
+(`tests/preflight/__contract__/costum-types.live.json`) a été inspecté pour trancher un doute sur le
+téléphone — l'oracle de test existant défendait explicitement la forme objet `telephone:{mobile:[…]}`
+comme correspondant à la donnée majoritaire du réseau SSBE (128/138 orgs), alors que SSBE avait basculé
+sur un champ plat `mobile` le 09/09. Le contrat live tranche : `associationEkilibre` déclare **`mobile`**
+et **`link`**, jamais `telephone` ni `url` — ces deux renommages n'étaient donc pas qu'un alignement
+cosmétique sur le site frère, mais une correction d'un écart avec le contrat backend réel du costum
+d'Ekilib.re lui-même. Le contrat confirme aussi la présence de `infoGeneral`/`similarLink`/
+`formLocality`/`location`/`image`/`youtube`/`linkedin` — ce ne sont donc pas des vestiges propres au
+costum `sportSanteBienetre`, contrairement à ce qu'on aurait pu supposer en les voyant seulement dans
+la config SSBE.
+
+**Changements appliqués à `costumForms.structure`** :
+
+| Point | Avant (06/08) | Après (15/09) |
+|---|---|---|
+| Téléphone | `telephone` (widget `tel`, `group`) + `_telSlot`/`_telRest` cachés, `serializeGroups.telephone` → `{mobile:[…]}` | champ plat `mobile` (widget `tel`) |
+| Site web | `url` | renommé `link` (le contrat live n'a jamais connu `url`) |
+| `affiliate` | `select` "Oui"/"Non" | `switch` + `write:coerce:boolString` (`affiliateTo.visibleIf` passe de `eq:"Oui"` à `truthy`) |
+| Titres représentant/responsable | `select` + champ « Autre... » séparé (`otherRepresentativeTitle`/`otherPersonInChargeTitle`, codec de groupe `enumOrOther`) | un seul champ `valueSelect` mono `creatable` — même clé serveur, saisie libre directe |
+| `responsableSameAsRepresent` | `switch` sans coercion d'écriture | + `write:coerce:boolString` |
+| Domaine d'intervention (`thematic`) | `checkboxGroup` (variante cartes) | `multiselect`, identique à SSBE — même widget, mêmes options, même clé serveur |
+| Champs ajoutés | — | `description` (textarea) et 7 champs cachés non placés (`infoGeneral`, `similarLink`, `formLocality`, `location`, `image`, `youtube`, `linkedin`) pour la parité déclarative |
+
+**Deux écarts volontairement NON alignés sur SSBE**, chacun avec une raison métier ou technique propre
+à Ekilib.re, pas une simple préférence :
+
+- **`_imageFile` conservé** (pas de renommage en `profil_avatar`) : c'est un pattern déjà en usage et
+  testé ailleurs dans le parc (`equipements-sportifs`, `tiers-lieux`) ; aucun gain fonctionnel à le
+  renommer, et cela aurait cassé des assertions de test qui verrouillent ce nom depuis le 06/08.
+- **`statusCommunale` garde sa liste à 2 valeurs** (97418/97430) plutôt que les 36 communes de SSBE :
+  c'est la décision produit du 20/08 (§9.9, « territoire = Le Tampon seul »), sans rapport avec
+  l'alignement de formulaire — la reprendre aurait réintroduit tout le territoire régional dans un
+  champ de ce site.
+
+**Un « fantôme » de drift attendu, non bloquant.** Le nœud `costum.typeObj.organizations`
+d'`associationEkilibre` a été amendé le 20/08 (§9.9) avec **trois propriétés que la whitelist rabotait
+en silence** : `otherRepresentativeTitle`, `otherPersonInChargeTitle`, `statusActor` — précisément pour
+que l'ancien formulaire (split en 2 champs) ne perde pas de données au save. En retirant ces deux
+champs du formulaire, ils deviennent des clés déclarées côté backend mais plus jamais écrites — même
+catégorie que les vestiges `youtube`/`linkedin` déjà tolérés côté SSBE (§4.2 de sa doc). Non bloquant,
+mais à garder en tête si `config:costum-drift` les signale un jour côté `associationEkilibre`.
+
+**Tests** : `structure.configDriven.test.ts` (oracle dédié, chargé via `loadCostumForm("structure")`
+depuis ce même fichier de config) mis à jour en conséquence — `FILLED` et les assertions de payload
+(`mobile` plat, `affiliate` en chaîne `"true"`/`"false"`), le describe « 15. enumOrOther » remplacé par
+un describe équivalent pour le `valueSelect` mono, les cas `visibleIf` des champs « other* » disparus
+retirés.
+
+**Gates (15/09)** : `config:validate` ✅ **13 pages / 49 sections** · `audit:config` ✅ RAS (`strip:0`)
+· `structure.configDriven.test.ts` ✅ **42/42** · suite `profil`+`formEngine`+`search`+`admin` ✅
+**1118/1118** (zéro régression sur SSBE, qui partage `structure:tagsFromThematic`) · `test:unit` complet
+✅ **4252/4254** — les 2 échecs restants sont **préexistants et sans lien** (`bundle-size` > 2 Mo,
+`site-assets` dossier `associationEkilibre` non déclaré — déjà documentés au lot SSBE du 09/09 et en
+§12 de ce document) · `typecheck` ✅ 0 erreur · `lint` ✅ 0 erreur.
+
+**Reste sur ce lot** : commit — la recette navigateur a eu lieu dans la foulée (§9.17 bis) et a
+directement validé le wizard modifié (`affiliate`, titres en saisie libre, champ téléphone renommé,
+domaine d'intervention).
+
+---
+
+### 9.17 bis Recette navigateur du lot précédent — bug d'édition des pièces jointes trouvé et corrigé (15/09)
+
+**Recette réelle en navigateur** (première recette de ce formulaire depuis le 06/08, cf. checklist
+A.8) : création d'une structure réussie de bout en bout, `statusActor` posé à « En cours » comme
+attendu. Deux trouvailles en cours de route, toutes deux réglées le jour même :
+
+**1. `thematic` en `checkboxGroup` au lieu de `multiselect`.** Écart de widget par rapport à SSBE
+laissé de côté lors du lot précédent en le jugeant purement cosmétique (même sortie serveur, tableau
+`thematic`) — erreur de méthode : la demande portait explicitement sur une parité formulaire **et**
+donnée avec SSBE, pas seulement sur la donnée. Corrigé : `thematic` passe en `multiselect`, identique
+à SSBE (même widget, mêmes options, même clé). Aucun impact sur `structure:tagsFromThematic` ni sur
+les tests (la forme des données ne change pas).
+
+**2. Édition — les pièces jointes déjà uploadées ne réapparaissaient pas dans le formulaire, mais
+uniquement depuis le bouton Modifier de la fiche `/structure`** (l'édition depuis l'onglet admin
+Structures fonctionnait, elle). Testé comparativement sur SSBE (`/mss`) : le même bouton y fonctionne
+partout. Cause identifiée dans le code partagé
+[`PreviewStructure.tsx`](../src/modules/search/components/preview/PreviewStructure.tsx) : le
+composant recharge bien la fiche complète avec `about.files` via `useEntityBySlugQuery` (`fullEntity`,
+ligne ~290), mais seulement pour l'affichage de la section Documents — le bouton Modifier ouvrait
+`DynamicEditModal` avec l'`item` de recherche original (tronqué, sans `about.files`), jamais remplacé
+par `fullEntity`. Un garde-fou existant (`org.refresh()`) était censé recharger l'entité au besoin,
+mais sa condition de déclenchement (`siren`/`sigle`/`thematic` absents) ne dit rien sur la présence
+des DOCUMENTS, qu'aucune projection de recherche ne porte jamais — sur Ekilib.re, la projection
+`/structure` complète (55 champs, §9.13) contient toujours ces trois champs, donc le refresh ne
+partait jamais ; sur SSBE, ce n'était apparemment pas le cas, ce qui masquait le bug. **Correctif** :
+`DynamicEditModal` reçoit désormais `fullEntity.data ?? item` — l'entité déjà rechargée avec
+`about.files` dès qu'elle est disponible, repli sur `item` pendant le chargement. Bug préexistant dans
+un composant **partagé** (Ekilib.re + SSBE), pas introduit par ce lot ; **recette confirmée par
+l'utilisateur** après correctif, sur les deux chemins d'édition (`/structure` et l'onglet admin).
+
+**Gates** : `config:validate`/`audit:config` ✅ RAS · `config:costum-drift` (`--json`, avec
+`VITE_COSTUM_FORCE_LIVE=true` pour une résolution réellement live plutôt que l'artefact SDK bundlé) ✅
+**0 fantôme** sur `structure` · `typecheck` ✅ 0 erreur · `lint` ✅ 0 erreur · suite `search` ✅
+**462/462** (aucun test dédié à `PreviewStructure` dans le dépôt à ce jour — recette faite en
+navigateur).
+
+⚠️ **Leçon retenue pour la suite** : `config:costum-drift` doit toujours être lancé avec
+`VITE_COSTUM_FORCE_LIVE=true` explicitement exporté — sans lui, la garde compare au bundle SDK figé et
+peut signaler un faux « fantôme » (constaté sur ce lot, cause d'un aller-retour évitable).
+
+### 9.18 Onglet admin « Référencement » : le vivier n'était pas restreint à `sportSanteBienetre` (21/09)
+
+**Symptôme** (signalé par Nicolas, capture réseau à l'appui) : dans le sous-onglet « Rechercher &
+référencer », des organisations de provenance `transiter`, `cocityPrez`, `LaReunionDesTiersLieux` — et
+même **sans provenance** — remontaient, alors que la config cible `sportSanteBienetre`.
+
+**Cause** : la requête partait bien avec `filters[source.keys][$in]=sportSanteBienetre` **et**
+`filters[source.keys][$nin]=associationEkilibre` (la garde « déjà rattaché » du composant, fusionnée sur
+la même clé — [`buildOpenSearchFilters`](../src/modules/admin/sections/AdminReferenceSection.tsx)). Mais
+`SearchNew::searchFilters` (backend, `citizenToolKit/models/SearchNew.php`) est une chaîne de `else if` :
+**un seul opérateur par clé**, et `$nin` est testé avant `$in`. Le `$in` était donc jeté en silence ; la
+requête réelle se réduisait à « `source.keys` ne contient pas associationEkilibre » — ce qui accepte aussi
+les documents où le champ est absent (d'où la provenance vide). Reproduit en isolant `searchFilters`
+(script PHP + stubs Mongo) avant toute modification.
+
+**Correctifs** (trois couches, non commités) :
+
+| Couche | Changement |
+|---|---|
+| Config | `search.defaultFilters` de l'onglet Référencement : `"source.keys"` → **`"source.key"`** (provenance principale, scalaire, clé distincte de la garde). Fonctionne **avec ou sans** le correctif backend, et exclut aussi la provenance vide |
+| Backend (`citizenToolKit`, branche locale `fix/search-filters-in-nin-combined`) | branche `$nin` de `searchFilters` : combine `$in` + `$nin` sur une même clé (y compris conversion `MongoId` pour `_id`). `$nin` seul et `$in` seul inchangés. Aucun appelant existant ne combinait les deux via ce chemin |
+| site-json | commentaire de `buildOpenSearchFilters` (dépendance au correctif backend + repli `source.key`), test de non-régression sur `source.key`, [doc/30](../doc/30-module-admin.md) |
+
+**Gates** : `config:validate` ✅ (13 pages / 49 sections) · `audit:config` ✅ RAS pour ce site ·
+`typecheck` ✅ · test `buildOpenSearchFilters` ✅ 6/6 · lint : 0 erreur (1 warning préexistant,
+`react-refresh/only-export-components`) · backend : `php -l` ✅ + 5 cas isolés ✅ (dont le cas du bug,
+d'abord rouge). **Rendu navigateur non rejoué** : l'endpoint admin exige une session — à vérifier en
+rechargeant l'onglet (le payload doit porter `filters[source.key]=sportSanteBienetre`, la colonne
+Provenance ne doit contenir que cette valeur).
+
+~~⚠️ **À confirmer** : les organisations dont `source.keys` contient `sportSanteBienetre` mais dont
+`source.key` est vide ou autre seraient **exclues** du vivier par `source.key`.~~ Sans objet depuis la
+décision du 24/09 (ci-dessous) de garder `source.keys` — et mesuré : aucune fiche dans ce cas sur les
+deux codes postaux (même vivier avec les deux clés, en dev comme en prod).
+
+⚠️ **Déploiement** : le correctif backend est **indépendant** de la config (la config seule suffit ici).
+Il corrige le défaut pour tout autre appelant de `searchFilters` ; à livrer avec le prochain
+déploiement de `citizenToolKit`.
+
+**Décision du 24/09 (review de la MR `n-dev` → `main`) : on garde `source.keys`.** La couche Config du
+tableau ci-dessus n'a finalement **pas** été appliquée (`6378660c` ne porte que la doc, le commentaire
+et le test) : c'est le correctif backend, commité sur `origin/master` de `citizenToolKit` (`7b19f871`),
+qui répare le filtre. Sondage en lecture seule du vivier (mêmes filtres via `buildOpenSearchFilters`,
+recherche publique) : `source.keys` et `source.key` renvoient **le même vivier, 100 %
+`sportSanteBienetre`** — 11 candidates en dev, 14 en prod. Conséquence : ce site **dépend** du correctif
+backend ; sur un backend qui ne l'a pas, le vivier redevient non filtré (repli : `source.key`).
+
+---
+
+### 9.19 Charte Ekilib.re : CSS propre au site, thème bleu/jaune/vert et ajustements de contenu (23/09, Nicolas, `beef21d9`)
+
+**Pourquoi un CSS dédié.** Le site partageait [`index-sport-sante-bien-etre.css`](../src/index-sport-sante-bien-etre.css)
+avec son jumeau régional. Ce fichier cale ses **recettes de dégradé** sur l'identité SSBE (« Lagon &
+Corail ») : l'accent y est un corail moyen qui porte du **texte clair**. La charte Ekilib.re fait de
+l'accent un **jaune clair** (#F0B429) qui exige du **texte foncé** — même schéma que le couple
+`warning`/`warning-foreground`. Sous cette bascule, les recettes SSBE devenaient illisibles :
+`.access-card-public` dégradait l'accent vers `--destructive` (rouge), soit **2,55:1** avec le texte
+foncé de l'accent (ratios WCAG recalculés depuis les tokens oklch de la config). Paramétrer les
+recettes SSBE pour deux chartes aurait touché le site régional ; le fichier a donc été **séparé** —
+`styles/shared.css` et tous les composants restent communs aux deux sites.
+
+**Ce qui change** (config + CSS uniquement, **0 code applicatif**) :
+
+| Domaine | Changement |
+|---|---|
+| `sites.json` | `associationEkilibre.css` : `index-sport-sante-bien-etre` → **`index-maison-sport-sante-la-tampon`** |
+| Nouveau CSS (290 lignes) | `@theme inline` (mapping vars→classes Tailwind, dont les sémantiques `warning`/`success`/`info`/`error` consommées par les modules partagés), safelist `grid-cols`, vars bespoke (`--card-header-gradient`, `--card-border-left`, `--btn-activity`, `--btn-structure`, badges, `--gradient-hero/-pro/-section`), base/prose/scrollbar, `.access-card*`. **Aucun token shadcn redéfini** : ils viennent de `config.theme` via `SiteTheme.tsx` |
+| `theme.colors` (clair + sombre) | palette repassée sur la charte : **primary `oklch(0.411 0.080 242)` = #1B4F72**, **accent `oklch(0.804 0.156 82.5)` = #F0B429**, **success `oklch(0.516 0.104 162)` = #1A7A55** (conversions vérifiées), plus les dérivés (secondary, muted, border, ring, sidebar, chart1-3) réalignés sur les teintes 242 / 82.5 / 162. Le teal #21B2AA de l'ancien site ekilib.re **n'appartient pas** à cette charte |
+| `theme.customCSS` | en-tête des cartes **SSsO** : jaune **creusé** en mode clair (le titre est écrit en `text-primary-foreground`), plein en sombre via une règle `.dark` dédiée ; les règles SSpT et le liseré gauche sont inchangés |
+| Nav | entrée « Structure référentes » **retirée** → nav à 6 entrées ; `/structure` reste atteignable par le bouton du bandeau de `/creneaux` |
+| `/structure` | bouton public « Ajouter ma structure » **retiré** ; titre de section « Structures référencées » ajouté ; grille `1/1/1/1` → **`2/3/3/3`** ; carte en `splitRatio: "50-50"` |
+| `/admin` → Structures | `create: false` (plus de création côté admin non plus) |
+| Actualités | `cardVariant: "poster"` sur les `articleFeed` de `/` et `/blog` (affiches/flyers rendus entiers) — `/espace-pro` garde le variant par défaut |
+| Liens `ssbe.re` | **6** liens passés en `https://www.ssbe.re/`, dont **3** vers l'ancre **`#maisons-sport-sante`** (l'ancienne page `/maison-sport-sante-mss/` n'est plus la cible) |
+| Pied de page | adresse postale complète (**34 rue Hubert Delisle, 97430 Le Tampon**) au lieu de « Commune du Tampon » ; bloc **`socials`** ajouté (Facebook, LinkedIn, mail) ; copyright « © 2026 **Association Ekilib.re** – Maison Sport Santé du Tampon » |
+| Asset | `public/images/maisonSportSanteLaTampon/logo.svg` retravaillé (dans le même commit) |
+
+**Contrastes mesurés** (WCAG, recalculés depuis les tokens oklch — ce sont eux qui motivent chaque
+recette du fichier) :
+
+| Couple | Ratio | Conséquence |
+|---|---|---|
+| jaune plein × `primary-foreground` (quasi-blanc) | **1,81:1** | interdit — d'où le creusement du jaune partout où le composant impose son texte clair |
+| jaune plein × `accent-foreground` (foncé) | **7,34:1** | le couple natif de l'accent, utilisé tel quel (`.access-card-public` part de là) |
+| jaune creusé 85% × `accent-foreground` | **4,76:1** | bas du dégradé de `.access-card-public` : AA tenu d'un bout à l'autre |
+| jaune creusé 62% × `primary-foreground` | **5,92:1** | `--btn-structure` et les en-têtes de carte en mode clair |
+| `destructive` × `accent-foreground` | **2,55:1** | la recette SSBE sous la nouvelle palette — le déclencheur de la séparation |
+| primary × `primary-foreground` | **8,46:1** | le bleu tient les CTA sans retouche |
+| success (vert) × `primary-foreground` | **5,16:1** | carte « pro » du héros (`--gradient-pro`) |
+
+**Gates mesurés le 23/09** : `config:validate` ✅ **13 pages / 49 sections** · `audit:config` ✅ RAS
+(`theme:complet`) · `typecheck` ✅ 0 erreur · `lint` ✅ 0 erreur (25 warnings préexistants) ·
+préflight `sites-configs` + `site-assets` + `logo-assets` + `config-integrity` ✅ **251/251** ·
+`vite build` (client, `VITE_SLUG=associationEkilibre`) ✅ — le CSS du site est bien compilé dans le
+bundle (`.access-card-public` présent, avec le repli sans `color-mix`).
+
+**Reste sur ce lot** : **recette navigateur non tracée** (à confirmer par Nicolas — la palette a été
+itérée en navigateur les 22-23/09, mais aucun passage complet n'est consigné). À couvrir en priorité :
+le **mode sombre**, seul endroit où `--btn-structure` et `--card-header-gradient` basculent, et les
+en-têtes de cartes SSsO/SSpT. ⚠️ **Incohérence à trancher** : le lien social « mail » du pied de page pointe sur
+`contact@cyber-reunion.fr` alors que **tout le reste du site** (contact, mentions légales,
+confidentialité, accessibilité) affiche `contact@ekilib.re` (§13). Les **mentions légales** portent
+encore « Commune du Tampon, La Réunion (97430) », non alignées sur la nouvelle adresse postale.
+
+### 9.20 Corrections de la review de la MR `n-dev` → `main` touchant ce site (24/09)
+
+Composants et clés **partagés avec SSBE** — le détail vit dans `sport-sante-bien-etre.md` (§12, §13 q.15) :
+
+- **Fiche structure (`PreviewStructure`)** : les blocs **Informations** (identifiant, catégorie, membre
+  de, créé le) et **Documents** ne sont plus affichés qu'aux **gestionnaires** (admin de la structure
+  ou du costum, `canEditProfile`), en parité avec la fiche legacy SSBE (`$ssbeCanManage`). Validé par
+  Nicolas pour le Tampon aussi. Côté backend, `Organization::getById` ne joint plus `files` qu'à ces
+  mêmes gestionnaires (`citizenToolKit`, modifié en local, à committer et déployer).
+- **Téléphone** : le champ `mobile` du formulaire `structure` est pré-rempli par
+  `read: "structure:mobileRead"` (repli sur `telephone.mobile`/`fixe`) ; `PreviewStructure` et
+  `CardContact` lisent `mobile` plat en priorité.
+- **Site web** : le champ `link` du formulaire `structure` est pré-rempli par
+  `read: "structure:linkRead"` (repli sur `url`) ; `PreviewStructure` lit `link` puis `url` et ajoute
+  `https://` au lien affiché s'il manque. Utile surtout pour les fiches SSBE référencées, que ce site
+  affiche. Le champ garde sa règle `url` (un `link` sans `https://` doit être complété avant
+  d'enregistrer — cas de la seule fiche du périmètre en prod, COMMUNE DU TAMPON).
+- **Badge « Affiliée »** (`PreviewStructure`) : testait `affiliate === "Oui"`, alors que le formulaire
+  actuel écrit `"true"` (livré en booléen par l'API) — lu désormais par `coerceBool`. En dev, 3 des 4
+  structures affiliées du périmètre n'avaient pas leur badge. En prod, aucun changement visible
+  aujourd'hui : le périmètre ne compte qu'une fiche (COMMUNE DU TAMPON), affiliée mais sans
+  `affiliateTo`, donc sans bandeau d'affiliation. Le correctif comptera quand des fiches SSBE seront
+  référencées en prod (les 14 référencements du 20/08 sont sur le dev).
+- **Contraste des cartes d'accès rapide de l'accueil** (« Trouver un créneau » / « Professionnels de
+  santé ») : la règle de base `h1…h6, p { text-foreground }` de `index-maison-sport-sante-la-tampon.css`
+  imposait le texte foncé du site au titre et à la description, au lieu de la couleur de la carte
+  (2,14:1 sur le vert en clair, 1,53:1 sur le jaune en sombre), et l'`opacity-90` de `HeroQuickAccess`
+  faisait tomber le petit texte sous 4,5:1. Règle ajoutée HORS `@layer` (`.access-card h3, p, span {
+  color: inherit; opacity: 1 }`, vérifiée non-layered dans le CSS compilé) : 4,76 à 6,63:1, AA partout.
+  Visible : le texte de la carte jaune en clair passe du bleu nuit au brun de `accent-foreground`.
+- **Chiffre « 340+ » (section `#chiffres-ekilibre` de l'accueil)** : posé en `color: "accent"`, soit du
+  jaune de la charte en TEXTE sur fond clair → 1,83:1 (sous le seuil AA de 3:1 du grand texte ; 10,77:1
+  en sombre). Passé en `"primary"` comme les trois autres chiffres : 8,53:1 en clair, 7,21:1 en sombre.
+  Le jaune reste une couleur de SURFACE sur ce site ; `chart-2`, l'autre option du composant, est aussi
+  un jaune (2,21:1).
+- **Pièces jointes à l'édition** : un document ancien sans `subKey` reste proposé dans chaque champ
+  fichier (il disparaissait dès le premier nouvel upload).
+- **Référencement** : le vivier reste ciblé sur `source.keys` (§9.18, décision du 24/09).
+- **Création de structures fermée sur ce site** (décision du responsable MSS Tampon, rappelée par
+  Nicolas le 24/09) : les fiches de `/structure` viennent **uniquement du référencement** de fiches
+  SSBE. Vérifié : `create: false` sur les deux onglets admin structure, plus aucune référence à
+  `add-structure` dans les pages. Conséquence : ce qu'affiche le site dépend des **données SSBE**
+  (formulaire SSBE et legacy ssbe.re), pas du formulaire `structure` d'ici.
+- **Filtre « Domaine d'intervention » de `/structure` RETIRÉ** (24/09, décision de Nicolas). Il
+  filtrait `tags`, or en prod seules 25 fiches SSBE sur 148 portent des `tags` (144 portent
+  `thematic`), et les valeurs de domaine sont mélangées : 87 valeurs **courtes** historiques
+  (« Scolaire 1er degré » ×27, « Periscolaire 1er degré » ×23…) à côté des valeurs **longues** du
+  formulaire actuel, plus 18 fiches dont `thematic` est une chaîne unique à virgules. Aucune valeur
+  d'option ne pouvait tout couvrir. Seul reste le filtre code postal. Pour le remettre : cf. §13.
+
+---
+
+### 9.21 Reprise des créneaux SSBE du Tampon depuis l'admin — section `answerCopy` (23/09, Peterson)
+
+*(Section venue de `main` — numérotée 9.17 là-bas ; renumérotée 9.21 au merge du 29/09, le 9.17 de ce dossier étant déjà l'alignement du formulaire `structure`.)*
+
+**Constat de départ (23/09)** : 20 créneaux du Tampon ont été déposés sur le site régional SSBE (form
+`6928096adf5caf0d230e7f26`) les 27–28/08, APRÈS la copie par CP du 19–20/08 (§9.8) ; en prod, 18
+réponses homonymes existaient dans le form dédié (créées le 22/09) et 2 manquaient (« Gymnastique
+Tao », « Sport Santé Seniors » Plaine des Cafres). Jusqu'ici la seule reprise était l'URL super-admin
+`copyCreneaux` par CP — hors de portée de l'admin de la MSS. Demande : **une fonctionnalité d'admin**,
+liste + bouton « Copier », avec déduplication.
+
+**Ce qui est livré**
+
+- **Backend — copie SERVEUR, idempotente.** `Coform::copyAnswer` (citizenToolKit) : renommage du
+  préfixe de section (sections appariées par position, le form cible est un duplicata du source),
+  `context`/`cterSlug`/`source` du site cible, provenance conservée quand elle existe (`user`,
+  `links`, `created` — jamais inventée : 277 des 286 réponses SSBE n'ont pas de `user`), trace
+  `copiedFrom` + `copiedAt` ; une source déjà copiée renvoie la copie existante (`alreadyCopied`),
+  jamais un doublon ; un brouillon n'est pas copiable ; les inputs non déclarés dans la section cible
+  sont copiés et remontés (`unknownInputs` — mesuré en base locale : le form SSBE a **1 input de
+  plus** que le dédié, `…mtcqn5z1x1op08yg3ia`). Fichiers uploadés non dupliqués (comme la
+  migration). Le `source` suit la règle de `saveAnswer`, désormais **extraite** en
+  `Coform::resolveAnswerSource` (costum ambiant, sinon orga porteuse à costum) — une seule règle de
+  scope pour dépôt et reprise.
+- **Backend — exposition.** Pas de nouvel endpoint : l'action legacy `survey/answer/newanswer/form/<cible>`
+  gagne une branche `action: "copy"` (+ `copyFrom`, `costumSlug`) ; le contrat SDK
+  `GENERATE_ANSWER_FROM_FORM` tolère les clés supplémentaires → **utilisable avec la lib installée**.
+  Extension documentée dans [`ENDPOINT.md`](../../ENDPOINT.md) pour déclaration. **Autorisation en
+  deux temps** (revue adversariale du 23/09, 2 constats HIGH corrigés) : *qui* = super admin ou admin
+  de l'élément porteur du form cible lu dans **ses liens** (`Coform::canCopyIntoForm` — le raccourci
+  « admin du costum ambiant » d'`isInterfaceAdmin`/`isElementAdmin` était contournable par
+  n'importe quel admin d'un autre costum postant son `costumSlug`) ; *quoi* = **liste blanche des
+  forms sources** déclarée sur le form cible (`params.copySources`) — sans elle, une copie lisait et
+  dupliquait n'importe quelle réponse de la base par son id. Déclaration par URL super-admin
+  **`costum/ekilibreMigration/declareCopySources`** (dry run) · `/apply/1` — **écriture Mongo à
+  rejouer en PROD** (runbook §9.11). Vérifié anonymement en dev : `{result:false, msg:"copie
+  réservée aux administrateurs…"}`. URL de recette/dépannage super-admin :
+  `costum/ekilibreMigration/copyAnswer/id/<idSSBE>` (dry run) · `/apply/1` — même routine.
+- **Backend — hook `AssociationEkilibre::searchAnswers` généralisé** : aplatit la section **de la
+  réponse** (résolution par SUFFIXE d'input, constantes `SUFFIX_*` ; `FIELD_*` inchangées) au lieu
+  de la seule section Ekilibre → les réponses du form SSBE listées sous le costum Ekilibre ont les
+  mêmes colonnes (`name`, `structure`, adresse, statut) ; `copiedFrom`/`copiedAt` projetés (la
+  projection du hook est une **whitelist** : c'est pourquoi la prod montrait 0 `copiedFrom` sur 61
+  alors qu'ils existent). Aplatissement des forms étrangers **borné à `params.copySources`** (revue :
+  sans borne, un admin du costum lisait n'importe quel form par un filtre `form`). Garde « non-admin
+  → Validé » inchangée sur LE champ Ekilibre : une réponse SSBE ne le porte pas, **0 ligne servie au
+  public** (mesuré). Le listing public du form dédié est inchangé (mesuré, `copiedFrom` visible sur
+  « Wing Chun »).
+- **Front — section admin générique `answerCopy`** (moteur, réutilisable par tout site dont le form
+  est un duplicata d'un autre) : schéma (`sourceForm`, `targetForm` ≠, `source` = même forme que
+  `resource.source`, `columns` = `path` + `label`, `duplicateKeys`), `lib/answerCopy.ts` pur (id via
+  `getEntityId`, empreinte normalisée et séparée, index `copiedFrom` + empreintes, 3 états — 12
+  tests), `hooks/useCopyAnswer.ts` (façade `endpointApi.generateAnswerFromForm`, toasts succès /
+  déjà copié / inputs inconnus / erreur, marquage local « Copié », invalidation `admin-*` +
+  surfaces publiques), `AdminAnswerCopySection.tsx` (candidates en scroll infini `variant:"admin"` +
+  `notSourceKey` d'office ; index cible chargé EN ENTIER à chaque montage, « Copier » désactivé
+  tant qu'il charge, refetch ou erreur ; « Doublon probable » → confirmation ; lignes ordonnées
+  par état, « À copier » en tête, et **« Copié » masquées** avec leur compte — demandes du 23/09
+  après recette, `rankByCopyStatus` + sentinelle de scroll dédiée ; 12 tests de câblage).
+  Dédup : `STATUS_TONE_CLASS` et `normalizeColumns` dans `resourceHelpers` (partagés avec
+  resource/reference), `components/AdminTableShell.tsx` (partagé avec reference).
+- **Config** : onglet `creneaux-ssbe` « Créneaux SSBE » (siteAdmin, icône `copy`) — source = form SSBE
+  filtré CP 97430/97418 **dans l'adresse principale OU dans les lignes « lieu de pratique »**
+  (`$or` — revue : **7 créneaux validés du Tampon** n'ont leur CP que dans les lieux, adresse
+  principale `[]` : Multi activités, Remise en forme en salle équipée, Éveil sportif, Gym : yogging,
+  Hatha yoga, Marche et remise en forme ×2 ; périmètre mesuré : 46 → **53** ; `copyCreneaux` aligné),
+  tri `created` desc, page de 60 (le stock tient en une page → l'ordre par état est exact
+  d'emblée), recherche sur l'intitulé ; colonnes Activité / Structure / CP / Statut SSBE /
+  Déposé le. Placé avant « Modération » : copier, puis modérer. **Recette du 23/09 (Peterson)** :
+  après `declareCopySources/apply/1`, le créneau « TEST BASKET » déposé sur SSBE apparaît dans
+  l'onglet.
+- **Revue adversariale** (workflow, 4 dimensions : PHP, bonnes pratiques, fonctionnel, contrat de bout
+  en bout) → 29 constats, tous instruits : 2 HIGH (garde contournable, source non bornée — corrigés),
+  4 MEDIUM (hook non borné, 7 créneaux invisibles, index en erreur pris pour vide, « Copié » figé
+  30 min — corrigés), le reste LOW (dédup `normalizeColumns`/`AdminTableShell`/`getEntityId`,
+  séparateur d'empreinte, homonymes « probables », brouillons refusés, auteur jamais inventé, clés
+  `multiCheckboxPlus…` dans `unknownInputs`, plafond exact de `useSearchAllResults`, `isFetching`
+  exposé par `useSearchQuery`) — corrigés, sauf 2 assumés : idempotence non atomique (pas d'index
+  unique) et CP numérique (aucun en base). Les hooks partagés `useSearchQuery`/`useSearchAllResults`
+  gagnent `isFetching`, `isPending`, un `cache` optionnel et un `capped` exact (additif).
+- **Gates (après revue)** : vitest admin + search hooks **219/219** (dont 24 nouveaux) · eslint ✅ ·
+  `tsc -b` ✅ sur le lot (12 erreurs **pré-existantes** `src/modules/aac` : SDK installé 1.0.189 <
+  requis ^1.0.193, cf. §12) · `config:validate` ✅ 13 p/49 s · `audit:config` RAS · préflight
+  effective-config/i18n/strip/integrity/prop-descriptions/section-meta ✅ · `php -l` ✅ ×4.
+
+**Les 3 états, et ce qu'ils protègent** — « Copié » = trace `copiedFrom` (certain, ligne masquée) ;
+« Doublon probable » = une réponse cible partage intitulé + structure + CP (copie faite par un autre
+canal, saisie directe, ou **second dépôt homonyme côté SSBE** — ex. les deux « Pilates » de la Mairie
+→ confirmation) ; « À copier ». Conséquence pour la prod : les 44 copies du 20/08 portent
+`copiedFrom` (mesuré en dev sur leurs jumelles) → « Copié » ; les 18 du 22/09 apparaîtront « Copié »
+si elles viennent de `copyCreneaux`, sinon « Doublon probable » — l'onglet le dira, sans rien écrire.
+
+**Écarts assumés** : la copie hérite du **statut** de la source (une source « Validé » est publiée
+d'emblée sur Ekilib.re — c'est le comportement de la migration du 19/08 ; si la MSS veut re-modérer,
+poser le statut cible à « En attente » dans `copyAnswer` est un ajout de 2 lignes) ; aucune
+notification costum à la copie ; l'empreinte est heuristique (deux créneaux distincts de même nom,
+même structure, même CP seront signalés « probables » : la confirmation est là pour ça) ;
+l'idempotence est un `findOne` puis `insert` sans index unique (deux POST strictement concurrents
+pour la même source peuvent créer deux copies — le front désactive les boutons pendant l'appel).
+
+**Déploiement** : PHP (survey + citizenToolKit + costum) **avant** le front ; **une écriture Mongo**
+à rejouer en dev ET en prod : `costum/ekilibreMigration/declareCopySources/apply/1` (super admin —
+sans elle : « Copier » refusé et lignes SSBE sans colonnes). Pas de hook `class.function` à déclarer.
+Recette : onglet « Créneaux SSBE » connecté siteAdmin → ~27 lignes validées attendues en prod (20
+déposées après le 19/08 + 7 « lieux seulement »), dont 18 « Copié »/« probable » et au moins 2 « À
+copier » → copier « Gymnastique Tao » → ligne « Copié », toast, créneau visible dans Modération puis
+`/creneaux`.
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Lot A — Vitrine & annuaires (config)
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| A.1 | Site vitrine (home, s'informer, rejoindre, partenaires, espace pro, légal, blog) | ✅ | **12 pages / 47 sections** validées (mesuré 23/08) ; audit 0 constat. `/blog` est la 12ᵉ (§9.13) |
+| A.1 | Site vitrine (home, s'informer, rejoindre, partenaires, espace pro, légal, blog, ressources) | ✅ | **13 pages / 49 sections** validées (remesuré le 23/09) ; audit 0 constat. `/blog` est la 12ᵉ (§9.13), `/ressources` la 13ᵉ (§9.14). Nav à **6 entrées** depuis le 23/09, `/structure` hors nav (§9.19) |
 | A.2 | Annuaire des créneaux `/creneaux` (**6** filtres en colonne + carte + détail dialog) | ✅ config | montage `gridLayout`, périmètre `sourceKey: ["associationEkilibre"]`, form dédié + état `"Validé"` (§9.9, §9.12). Les 2 facettes pathologie sont posées mais **n'afficheront leurs options qu'une fois des créneaux saisis** ; **vue carte à recetter** |
-| A.3 | Annuaire structures `/structure` (CP + domaine d'intervention) | ✅ config | périmètre `associationEkilibre` + `statusActor:"Validé"` + CP ; projection **55 champs** (§9.13) ; **14 fiches référencées** en DEV le 20/08 (§9.10) — à rejouer en PROD |
+| A.3 | Annuaire structures `/structure` (CP + domaine d'intervention) | ✅ config | périmètre `associationEkilibre` + `statusActor:"Validé"` + CP ; projection **55 champs** (§9.13) ; **14 fiches référencées** en DEV le 20/08 (§9.10) — à rejouer en PROD. Remis en forme le 23/09 (§9.19) : titre de section, grille **3 colonnes**, carte **50-50** ; ⚠️ page **sortie de la nav**, seul point d'entrée = le bouton du bandeau `/creneaux` |
 | A.4 | Flux d'actualités (home, lecture seule) | ✅ | **remplacé** par le module blog : `articleFeed` `featured:"flag"` sur `/`, `/espace-pro` et `/blog` (§9.13) — le flux `news` n'est plus utilisé |
 | A.5 | Auth / Espace Pro | ✅ | CTA header → `/espace-pro`, **gardée** (`auth.required`). Depuis le 21/08 : plus de saut vers `/login`, la modale s'ouvre **sur place** (§9.13). ⚠️ garde de **session** : tout compte connecté entre (§12) |
 | A.6 | Chiffres clés de la home | 🟡 | **1/4 dynamique** depuis le 08/09 (§9.15) : « Créneaux disponibles » compte réellement les réponses validées du form dédié. Les 3 autres (Activités proposées, Participants actifs, Partenaires) restent codés en dur — aucune source confirmée pour eux |
 | A.7 | Formulaire de contact | 🟡 | **câblé le 23/08** sur `CONTACT_SEND` (SDK → `/co2/mailmanagement/createandsend`), clés `action`/`method` retirées (§9.13). Reste **hors `site-json`** : renseigner **`costum.contactMail`** sur le costum (`admin.email` n'est qu'un repli), sinon le legacy renvoie le message à son auteur |
-| A.8 | Auto-inscription structure (`/structure`, bouton public + wizard) | 🟡 | **commité** (`9fbe7c02` 31/07 + renommé/complété `253dec37` 06/08, Nicolas) — costumForm `structure` (§9.5/§9.5 bis) + fiche détail `PreviewStructure` ; 40 tests config-driven ✅ ; recette navigateur (upload logo, soumission réelle) à faire |
+| A.8 | ~~Auto-inscription structure (`/structure`, bouton public + wizard)~~ **Édition seule** | ⛔ **fermée le 23/09** | le bouton public et la création admin (`create: false`) sont retirés (§9.19) — plus aucune création de structure depuis le site, l'alimentation passe par le **référencement** (§9.10). Le costumForm `structure` reste en config et sert l'**édition** : aligné le 15/09 sur la refonte dynForm-legacy de SSBE (§9.17), 42 tests config-driven ✅, recette navigateur du 15/09 (§9.17 bis — création réelle réussie à l'époque, bug d'édition des pièces jointes corrigé). **Motif de la fermeture à confirmer avec la MSS** (§13) |
+| A.9 | Charte graphique Ekilib.re (CSS propre au site + thème bleu/jaune/vert) | ✅ config / 🟡 recette | §9.19 (`beef21d9`) : `index-maison-sport-sante-la-tampon.css` (290 lignes), palette #1B4F72 / #F0B429 / #1A7A55 en clair et en sombre, `customCSS` des cartes SSsO corrigé. Gates verts (build client compris) ; **recette navigateur à faire, mode sombre en priorité** |
 
 ### Lot B — Gestion des créneaux (admins)
 
@@ -1392,6 +1811,7 @@ validées), mais SSBE a dû poser la garde pour 32 fiches.
 | B.2b | Inputs CoForm `date` / `timeSlots` / `dynamicFields` | 🟡 | **portés le 31/07** (§9.2 ter) — le formulaire créneau est maintenant complet (91 inputs rendus) ; recette à faire |
 | B.3 | Suppression de fichiers à l'édition | ✅ SDK | **résolu** : le SDK **1.0.169** (installé le 31/07) expose `Answer.deleteFiles(docIds[])` — l'erreur typecheck `file.ts:167` a disparu. La fiche `DELETE_COFORM_ANSWER_FILE` ([`ENDPOINT.md`](../../ENDPOINT.md)) est **satisfaite** ; reste à recetter la suppression réelle |
 | B.4 | Suppression d'un créneau | ❌ | non câblé (SDK `Answer.delete()` existe ; hook front `useDeleteAnswer` à créer via `createCoFormMutation`) |
+| B.6 | Reprise des créneaux déposés sur SSBE (liste + « Copier », dédup) | ✅ code | §9.21 — onglet admin `creneaux-ssbe` (section moteur `answerCopy`), copie serveur idempotente ; **recette connectée siteAdmin à faire** (20 lignes attendues en prod, 2 « À copier ») |
 | B.5 | Commit + MR du lot | 🟡 | **commité le 31/07** (`20fc3529` coform · `2bf81496` search+config · `e163b6d9` doc) ; reste **push + MR** vers `main` |
 
 ### Lot D — Back-office & pilotage (CDC §4.2)
@@ -1412,7 +1832,7 @@ validées), mais SSBE a dû poser la garde pour 32 fiches.
 |---|---|---|---|
 | E.1 | Décision d'architecture (POI vs News) | ✅ | tranché le 06/08 par Nicolas : porté en **POI** (costumForm dédié) — §4, §7 |
 | E.2 | costumForm « actualité » (POI) : titre, catégorie, date de publication, contenu riche, lien, statut, mise en avant | ✅ | **codé le 10/08, opérationnel le 19/08** (§9.7/§9.7 bis/§9.7 ter) — `scope: carrier` (associationEkilibre), `type:"article"`/`category` ; création réelle confirmée en base (photo comprise) |
-| E.3 | Home — section Actualités (1 à la une + grille secondaire) | ✅ | **refondu** sur le module blog : un unique `articleFeed` avec `featured: "flag"` (§9.13). La une est résolue par une micro-requête serveur `{featured:true}` distincte — le montage à deux blocs `searchProStatic` et la réserve `featured:{"$ne":true}` sont **sans objet** |
+| E.3 | Home — section Actualités (1 à la une + grille secondaire) | ✅ | **refondu** sur le module blog : un unique `articleFeed` avec `featured: "flag"` (§9.13), en `cardVariant: "poster"` depuis le 23/09 (affiches rendues entières, §9.19). La une est résolue par une micro-requête serveur `{featured:true}` distincte — le montage à deux blocs `searchProStatic` et la réserve `featured:{"$ne":true}` sont **sans objet** |
 | E.4 | Back-office — CRUD actualités par l'admin (dont statut Publié/Brouillon/Archivé et mise en avant exclusive) | ✅ | **codé le 10/08, opérationnel le 19/08** — onglet `resource` + bouton « Mettre à la une » dédié (exclusivité gérée depuis le tableau, décision utilisateur, §9.7) ; création confirmée en base (§9.7 ter) — reste la recette du bouton « Mettre à la une » lui-même en navigateur |
 | E.5 | Éditeur de contenu riche (WYSIWYG, cf. CDC « en production ») | 🟡 | **substitué par décision utilisateur (06/08)** : widget `markdown` existant, pas de nouvelle dépendance — hors périmètre explicite, cf. §9.7/§13 |
 | E.6 | Fiche Actualités sur `/espace-pro` | ✅ config | `articleFeed` (pageSize 12, sans une épinglée) — la section `actualites-articles-list` n'existe plus sous ce nom (§9.13) |
@@ -1540,7 +1960,26 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
   des champs dans `globalautocomplete`, le dialog est incomplet. L'**édition**, elle, re-fetch (lot 06/07).
 - **Don HelloAsso** = lien externe (le endpoint serveur `/api/helloasso/checkout-intent` existe mais
   n'est pas branché pour ce site).
-- **CSS partagé avec SSBE** : un changement de thème SSBE impacte Ekilibre (et réciproquement).
+- ~~**CSS partagé avec SSBE** : un changement de thème SSBE impacte Ekilibre (et réciproquement).~~
+  **PÉRIMÉ au 23/09** (§9.19) : chaque site a son fichier. Ce qui reste **commun** : `styles/shared.css`
+  (importé par les deux) et **tous les composants** — une classe utilitaire ou une var consommée par un
+  composant partagé impacte donc toujours les deux sites. Corollaire inverse, nouveau : **un correctif de
+  charte fait sur SSBE n'arrive plus ici tout seul** ; il faut le reporter.
+- ⚠️ **L'accent Ekilib.re est CLAIR** (jaune #F0B429, L .80) : ne jamais poser
+  `text-primary-foreground` (quasi-blanc en clair) sur `bg-accent` — **1,81:1** mesuré. Soit
+  `--accent-foreground` (7,34:1), soit un jaune creusé vers le noir, **par mode** (en sombre le texte
+  clair devient foncé, donc le jaune doit rester plein). C'est la règle qui explique chaque `color-mix`
+  du fichier CSS et le bloc `.dark` du `customCSS` (§9.19) — à rejouer pour toute section ajoutée plus
+  tard sur fond accent.
+- ⚠️ **`/structure` n'a plus qu'un seul point d'entrée** depuis le 23/09 : le bouton « Structure
+  référentes » du bandeau de `/creneaux`. Ni nav, ni pied de page (le footer `contact-partners` n'a pas
+  de colonnes de liens). Si ce bouton disparaît, la page devient orpheline sans qu'aucun gate ne le
+  signale.
+- ⚠️ **Adresse e-mail incohérente au pied de page** : le lien social « mail » pointe sur
+  `contact@cyber-reunion.fr` (intégrateur) alors que le reste du site — bloc contact du footer, page
+  `/contact`, mentions légales, confidentialité, accessibilité — affiche `contact@ekilib.re`. Les
+  mentions légales portent par ailleurs encore « Commune du Tampon, La Réunion (97430) », non alignées
+  sur l'adresse postale ajoutée le 23/09 (§13).
 - **Chantier Actualités** : **codé le 10/08, opérationnel le 19/08** (§9.7/§9.7 bis/§9.7 ter) —
   création réelle confirmée en base (photo comprise). Cause racine du blocage qui a occupé la majeure
   partie de la session : l'organisation porteuse `associationEkilibre` n'avait pas de `costum.slug`
@@ -1594,6 +2033,9 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 |---|---|
 | 🔴 **Rejouer les 3 écritures Mongo sur la base de PROD avant tout déploiement** (runbook §9.11 : `copy-costum-decl` → `add-article-node` → `reference-stock`, dry-run puis `--apply`, puis purge du cache costum). **Sans elles la whitelist costum est vide et les champs métier sont rabotés au save, en silence.** | Peterson / Thomas |
 | 🔴 **Versionner les 3 scripts de bascule** — ils portent le gate de déploiement ci-dessus et ne sont dans aucun dépôt | Peterson |
+| **Confirmer la fermeture de l'auto-inscription des structures** (23/09, §9.19) : plus aucun canal de création depuis le site (ni public, ni admin). Est-ce définitif ? Si oui, par quel canal une structure du Tampon entre-t-elle désormais — référencement depuis le stock régional uniquement, ou saisie par la MSS ailleurs ? | **MSS** / Nicolas |
+| **Trancher l'adresse e-mail du lien social** du pied de page : `contact@cyber-reunion.fr` (posé le 23/09) vs `contact@ekilib.re` (partout ailleurs sur le site) — et aligner les **mentions légales** sur la nouvelle adresse postale « 34 rue Hubert Delisle, 97430 Le Tampon » | MSS / Nicolas |
+| **Recette navigateur de la charte** (§9.19) — **mode sombre en priorité** : en-têtes de cartes SSsO/SSpT, `--btn-structure` de `CardAnswer`, cartes d'accès rapide du héros, cartes d'actualités en `poster` | Nicolas / MSS |
 | **Saisir les créneaux du Tampon** : le recentrage de périmètre est juste, mais 44 des 45 réponses appartiennent au site jumeau — `/creneaux` n'en affiche plus qu'un (§9.12). Les 2 facettes pathologie resteront invisibles tant qu'aucune option ne remonte | **MSS** |
 | **Reconfirmer en recette le comptage 44/45** : il vient du message de commit `b11285e5` et n'est pas revérifiable depuis le dépôt | Peterson |
 | **Rejouer le référencement des 14 fiches en PROD** — il a été fait sur la base de **DEV** le 20/08 (§9.10) | Peterson |
@@ -1610,15 +2052,20 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 | **Versionner `.claude/agents/siteforge-config-auditor.md`** (référencé par le skill `config-assistant`, jamais commité → gate `skill-integrity` rouge sur tout clone frais) | mainteneur (aboire ?) |
 | **Recette back-office `/admin`** (compte siteAdmin réel : KPIs, membres, modération) | Peterson / MSS |
 | **Recette modération créneaux** : `updatepathvalue` sur une answer par un admin **non-auteur** — le backend l'autorise-t-il ? (sinon fiche `ENDPOINT.md` endpoint de modération dédié) | Peterson → Thomas |
-| **Recette du wizard auto-inscription** (upload logo, soumission réelle, libellés/ordre des étapes validés par la MSS) | Peterson / MSS |
+| ~~**Recette du wizard auto-inscription** (upload logo, soumission réelle, libellés/ordre des étapes)~~ **SANS OBJET en création** depuis le 23/09 (§9.19) — le wizard ne sert plus qu'à l'**édition**, recettée le 15/09 (§9.17 bis) | — |
 | ~~SDK : `Answer.deleteFiles` ?~~ **résolu** — livré (présent depuis 1.0.169, SDK installé : **1.0.173**) ; reste la recette de suppression réelle | — |
 | ~~Formulaire de contact : endpoint SDK ou route Express~~ **tranché** (endpoint SDK, §9.13). **Reste à faire** : renseigner **`costum.contactMail`** sur le costum `associationEkilibre` en base — c'est le champ lu en PREMIER ; `costum.admin.email` n'est qu'un repli. Sans ni l'un ni l'autre, le legacy renvoie le message à son auteur, en silence | MSS / Thomas |
 | **Recette création/modification d'un créneau** en admin (navigateur, backend réel) | Peterson / MSS |
 | **Volumétrie réelle** : combien de créneaux à saisir dans le form dédié Tampon (les anciens créneaux SSBE ne sont plus listés, §9.8) ? de structures ? | MSS / réseau SSBE |
 | **Qui valide les créneaux** : le process est désormais **outillé** (onglet Modération de `/admin`, §9.6 bis) — reste à désigner qui l'opère à la MSS | MSS / réseau SSBE |
+| 🔴 **Rejouer `declareCopySources/apply/1` en PROD** (form dédié : `params.copySources` = form SSBE) avant d'ouvrir l'onglet « Créneaux SSBE » — sans elle, « Copier » est refusé et les lignes SSBE n'ont pas de colonnes (§9.21) | Peterson |
+| **Copie = statut hérité de la source** (§9.21) : une source « Validé » est publiée d'emblée sur Ekilib.re. Garder, ou forcer « En attente » à la copie pour re-modérer localement ? | MSS / Peterson |
+| **Déclarer l'extension `action:"copy"` de `GENERATE_ANSWER_FROM_FORM` dans le SDK** (fiche `ENDPOINT.md`) — fonctionne déjà, mais le contrat ne la documente pas | mainteneur SDK |
+| **Les 18 réponses créées en prod le 22/09** dans le form dédié : par `copyCreneaux` (→ « Copié ») ou autrement (→ « Doublon probable ») ? L'onglet « Créneaux SSBE » le montrera sans écrire | Peterson |
 | **`useDeleteAnswer`** (suppression de créneau) — si le besoin est confirmé | Peterson |
 | **Spec e2e Ekilibre** (lecture seule, modèle parent62) | Peterson |
 | ~~**Chiffres clés dynamiques** sur la home~~ **1/4 fait le 08/09** (§9.15) : « Créneaux disponibles ». **Reste à trancher** : source (si une existe) des 3 autres — Activités proposées, Participants actifs, Partenaires | Peterson / MSS |
 | ~~Filtres pathologies : pré-appliquer un filtre depuis les cartes ?~~ **FAIT** (§9.12). **Reste à valider** : les **regroupements médicaux** composés au passage — « Problème cardiaque » = 4 ALD, « Cancer » = 4 ALD, « Stress / santé mentale » à cheval sur les deux champs. Ce sont des choix de rédaction, pas des choix cliniques | **MSS** |
 | **Backend de prod + domaine** : la cible existe (Coolify `site-json-ekilibre`, `ekilibre.00.re`, §9.13) mais le **domaine propre** et le **backend de prod** restent à trancher — `VITE_COSTUM_FORCE_LIVE` pointe aujourd'hui vers le backend par défaut du parc | MSS / Thomas |
 | Chef de projet / budget / phasage du CDC | à confirmer |
+| **Remettre le filtre « Domaine d'intervention » sur `/structure`** (retiré le 24/09, §9.20) : le filtrer sur `thematic` (pas `tags`), après avoir **harmonisé les données SSBE** — valeurs courtes historiques → libellés longs de l'`enum`, chaînes à virgules → tableaux (`thematic` et `tags`). Migration à jouer en base comme celle de `mss` ; ou, sans migration, un filtre qui interroge les deux graphies (demande un ajout au schéma du `dropdownFilter`) | Nicolas |

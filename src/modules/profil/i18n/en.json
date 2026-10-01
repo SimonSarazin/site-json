@@ -8,7 +8,9 @@
   "ImageUploadField": {
     "dropHint": "Drag & drop or click to choose",
     "remove": "Remove image",
-    "imageOnly": "Only images are accepted."
+    "imageOnly": "Only images are accepted.",
+    "crop": "Crop",
+    "preparing": "Preparing image…"
   },
   "EntityGridView": {
     "gridView": "Grid",
@@ -138,6 +140,13 @@
       "description": "Are you sure you want to stop participating in this event? You will no longer receive event updates.",
       "cancel": "Cancel",
       "confirm": "Stop participating"
+    },
+    "deleteEvent": "Delete",
+    "deleteEventDialog": {
+      "title": "Delete this event?",
+      "description": "“{{name}}” will be deleted for everyone, along with its attendees and links. This cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete permanently"
     },
     "membershipPending": "Request pending",
     "contributorPending": "Request pending",
@@ -355,7 +364,10 @@
       "description": "Reject {{name}}'s request?",
       "cancel": "Cancel",
       "confirm": "Reject"
-    }
+    },
+    "rolesLabel": "Roles in the organisation",
+    "rolesPlaceholder": "Add a role (press Enter)…",
+    "rolesHint": "Free text — e.g. “Parenting coordinator, Arrageois”."
   },
   "MemberManagementDialog": {
     "title": "Member Management",
@@ -789,6 +801,10 @@
       "poiSuccess": "Location created successfully",
       "poiError": "Failed to create location"
     },
+    "element": {
+      "deleteEventSuccess": "Event deleted",
+      "deleteEventError": "Unable to delete the event"
+    },
     "gallery": {
       "addSuccess": "Image added to gallery",
       "addError": "Failed to add image",
@@ -989,6 +1005,14 @@
         "opens": "Start",
         "closes": "End",
         "noDaysSelected": "Select days to define the schedule"
+      },
+      "periodStart": {
+        "label": "Period start",
+        "placeholder": "Select the period start"
+      },
+      "periodEnd": {
+        "label": "Period end",
+        "placeholder": "Select the period end"
       }
     }
   },
@@ -1275,6 +1299,12 @@
     "address": {
       "required": "Complete address required: city, postal code and street"
     },
+    "annee": {
+      "invalid": "Enter a 4-digit year, for example 2022"
+    },
+    "documentOuLien": {
+      "required": "Attach a document or provide a link"
+    },
     "minLength": "Too short",
     "maxLength": "Too long",
     "min": "Value too small",
@@ -1433,5 +1463,36 @@
   "AuthRequired": {
     "title": "Sign in to continue",
     "description": "A new listing is tied to your account, so you can edit and complete it later."
+  },
+  "CardTeamMember": {
+    "territoryNews": "Territory news"
+  },
+  "EntityDuplicates": {
+    "title_one": "A record with a similar name already exists",
+    "title_other": "{{count}} records with a similar name already exist",
+    "titleStrong_one": "A record with the same name already exists at this postal code",
+    "titleStrong_other": "{{count}} records with a similar name already exist, at least one of them with the same name at the same postal code",
+    "description": "Check that it is not yours before continuing. You can carry on with the creation.",
+    "error": "The search for existing records failed. You can carry on with the creation.",
+    "placeUnknown": "Municipality not provided",
+    "hint": {
+      "sameNameSamePostalCode": "Same name, same postal code",
+      "sameName": "Same name",
+      "samePostalCode": "Same postal code"
+    },
+    "preview": "Preview",
+    "open": "Open the record",
+    "newTab": "(new tab)",
+    "more_one": "and one more record with a similar name",
+    "more_other": "and {{count}} more records with a similar name",
+    "confirm": {
+      "title": "This record may already exist",
+      "description": "“{{name}}” already exists ({{place}}), with the same name and the same postal code. Create a new record anyway?",
+      "create": "Create anyway",
+      "cancel": "Back to the form"
+    },
+    "titleMany": "More than {{count}} records with a similar name already exist",
+    "titleStrongMany": "More than {{count}} records with a similar name already exist, at least one of them with the same name at the same postal code",
+    "moreMany": "and other records with a similar name, not shown"
   }
 }

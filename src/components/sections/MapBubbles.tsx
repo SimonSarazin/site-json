@@ -1,7 +1,11 @@
+import { useId } from "react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { type MapBubblesProps } from "@/types/site-schema";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router";
+import { tooltipAnchorClass } from "./mapBubbleTooltip";
+import { sectionBadgeClass } from "./sectionBadge";
+import { accentStyle } from "@/lib/accentStyle";
 
 interface MapBubblesSectionProps {
     id?: string;
@@ -17,21 +21,63 @@ const BG_MAP: Record<string, string> = {
     transparent: "bg-transparent",
 };
 
+/** Marine des pastilles de la carte — couleur FIXE, identique en clair et en sombre (cf. items). */
+const MARINE_FIXE = "oklch(0.20 0.03 265)";
+
 export function MapBubbles({ id, props }: MapBubblesSectionProps) {
     const { t } = useLocalization();
+    const idInfobulles = useId();
+    const enCarte = props.design === "card";
     const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : "";
     const overlay = props.backgroundOverlay;
+    // En habillage « carte », le dégradé (`backgroundOverlay`) habille la SEULE illustration : la carte qui
+    // porte le bloc garde son fond, et titre comme accroche s'y lisent en encre de thème.
+    const voileIllustration = enCarte && overlay
+        ? { background: `linear-gradient(${overlay.angle ?? 90}deg, ${overlay.from}, ${overlay.to})` }
+        : undefined;
 
     return (
-        <section id={id} className={`relative py-16 px-4 ${sectionBg}`}>
-            {overlay && (
+        <section id={id} className={`relative px-4 ${enCarte ? "flex h-full flex-col rounded-2xl pt-8 pb-6" : "py-16"} ${sectionBg}`}>
+            {overlay && !enCarte && (
                 <div
-                    className="absolute inset-0 z-0"
+                    // `rounded-[inherit]` : le voile suit les coins de la section, qui les porte en
+                    // habillage « carte » — sinon ses angles carrés dépassent de la carte arrondie.
+                    className="absolute inset-0 z-0 rounded-[inherit]"
                     style={{ background: `linear-gradient(${overlay.angle ?? 90}deg, ${overlay.from}, ${overlay.to})` }}
                 />
             )}
 
-            <div className="relative z-10 container mx-auto max-w-4xl">
+            <div className={`relative z-10 container mx-auto max-w-4xl ${enCarte ? "flex flex-1 flex-col" : ""}`}>
+                {/* Habillage « carte » : l'étiquette déborde du haut de la carte qui porte le bloc, et
+                    l'accroche se lit dessous — l'illustration vit alors sur son propre aplat arrondi,
+                    au lieu de servir de fond au titre. */}
+                {enCarte && (
+                    <>
+                        {/* Étiquette remontée de sorte que son bas ne morde pas sur l'accroche juste en
+                            dessous — inclinée, sa boîte est plus haute que le texte. Couleurs FIXES (config
+                            ou marine par défaut), comme les pastilles d'item : pas d'adaptatif clair/sombre. */}
+                        <h2 className="absolute -top-16 left-0 z-20">
+                            <Badge
+                                style={accentStyle(props.badgeColor ?? MARINE_FIXE, props.badgeTextColor)}
+                                className={sectionBadgeClass(props.headlineStyle)}
+                            >
+                                {t(props.headline)}
+                            </Badge>
+                        </h2>
+                        {props.subhead && (
+                            <p className="mb-3 text-sm text-muted-foreground">{t(props.subhead)}</p>
+                        )}
+                    </>
+                )}
+                {/* Habillage « carte » : le panneau (dégradé ou aplat) s'étire jusqu'au bas de la carte,
+                    et l'illustration s'y centre — les bulles, elles, restent positionnées en % de
+                    l'ILLUSTRATION, sinon elles dérivent dès que le panneau est plus haut qu'elle. */}
+                <div
+                    style={voileIllustration}
+                    // `contents` hors habillage carte : la boîte disparaît de la mise en page, le rendu
+                    // historique (illustration et bulles directement dans le conteneur) est intact.
+                    className={enCarte ? `flex flex-1 items-center rounded-2xl p-3 ${voileIllustration ? "" : "bg-[var(--page-accent-soft,transparent)]"}` : "contents"}
+                >
                 <div className="relative w-full @container/map-bubbles">
                     {props.backgroundImage ? (
                         // `dark:brightness-75` : l'illustration (carte + lavis, cuits dans
@@ -53,6 +99,7 @@ export function MapBubbles({ id, props }: MapBubblesSectionProps) {
                             <Link
                                 key={index}
                                 to={item.href}
+                                aria-describedby={item.cities ? `${idInfobulles}-${index}` : undefined}
                                 className="group absolute z-0 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center hover:z-20 focus-visible:z-20"
                                 style={{ left: `${item.x}%`, top: `${item.y}%`, width: `${item.size}%` }}
                             >
@@ -84,34 +131,65 @@ export function MapBubbles({ id, props }: MapBubblesSectionProps) {
                                 >
                                     {t(item.label)}
                                 </span>
+                                {item.cities && (
+                                    <span
+                                        id={`${idInfobulles}-${index}`}
+                                        // Villes du territoire, au survol comme au focus clavier.
+                                        // `pointer-events-none` : ne jamais intercepter le clic du lien.
+                                        // Dès `md:`, l'infobulle part du MILIEU de la bulle, où la pastille du nom
+                                        // est ancrée : sous le bas du rond, elle s'en détachait de 40 px.
+                                        className={`pointer-events-none absolute top-full z-30 mt-2 w-44 md:top-1/2 md:mt-4 rounded-lg bg-[oklch(0.20_0.03_265)] px-3 py-2 text-center text-xs leading-snug text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 ${tooltipAnchorClass(item.x)}`}
+                                    >
+                                        {t(item.cities)}
+                                    </span>
+                                )}
                             </Link>
                         ))}
                     </div>
 
-                    {/* `top`/`mb` réduits sur mobile : sur une carte étroite, le badge (à taille
-                        desktop) chevauchait les pastilles-labels des items voisins (positions en %
-                        calibrées à la main, cf. doc-projets/parent62.md §9quater — ne pas les
-                        retoucher pour compenser). Réduire le bloc titre/accroche est le seul levier
-                        sûr ici. */}
-                    <div className="absolute top-0 md:top-16 right-10 z-20 flex flex-col items-end gap-1 sm:gap-2 text-right">
-                        {/* `translate-x-2` (au lieu de `translate-x-6`) en xs seulement : rapproche le
-                            titre du bord gauche du bloc — repasse à `translate-x-6` dès `sm:`, desktop
-                            inchangé. */}
-                        <h2 className="translate-x-2 sm:translate-x-6">
+                    {/* `top`/`mb` réduits sur carte étroite : le badge à taille desktop chevauchait
+                        les pastilles-labels des items voisins (positions en % calibrées à la main,
+                        cf. doc-projets/parent62.md §9quater — ne pas les retoucher pour compenser).
+                        Réduire le bloc titre/accroche est le seul levier sûr ici.
+
+                        TOUS les paliers sont des `@`-queries sur `@container/map-bubbles`, jamais des
+                        breakpoints de viewport : ce qui compte est la largeur de LA CARTE, pas celle
+                        de l'écran. Une carte peut être étroite sur un grand écran — c'est le cas dès
+                        qu'un `gridLayout` la met en colonne (accueil parent62) : le viewport valait
+                        alors 1440px, `md:`/`lg:` s'appliquaient, et le bloc reprenait sa taille
+                        desktop par-dessus les bulles. Les paliers BAS ont suivi pour la même raison :
+                        les croire réservés au mobile supposait qu'une carte étroite implique un petit
+                        écran — faux dès qu'un zoom navigateur met une colonne de 350px sous un
+                        viewport de 960px, où `sm:` rendait le texte en taille tablette. */}
+                    {/* TITRE en haut à GAUCHE, et l'accroche seule à droite (bloc suivant) : les deux
+                        vivaient ensemble à droite, ce qui plaçait la pastille « Territoires » à l'opposé
+                        de celle du bloc voisin « À la une ». Les aligner demande de les séparer. Le coin
+                        haut-gauche de l'illustration est la mer — aucune pastille de territoire n'y est
+                        posée, le badge ne masque donc rien. */}
+                    {/* Rendu CONDITIONNEL et non `hidden` : `hidden` et `flex` sont deux utilitaires
+                        `display` de la même couche, c'est l'ordre d'émission Tailwind qui tranchait. */}
+                    {!enCarte && (
+                    <div className="z-20 flex flex-col items-start absolute top-0 left-0">
+                        <h2>
                             {/* Couleurs FIXES, même raison que les pastilles d'item ci-dessus : pas
                                 d'adaptatif clair/sombre ici. */}
-                            <Badge className="rounded-none border-none -rotate-4 bg-[oklch(0.20_0.03_265)] text-white border-transparent px-2 py-1 sm:px-4 sm:py-1.5 text-2xl sm:text-3xl md:text-3xl lg:text-5xl font-serif mb-2 sm:mb-4 md:mb-10 ">
+                            <Badge className="rounded-none border-none -rotate-4 bg-[oklch(0.20_0.03_265)] text-white border-transparent px-2 py-1 @sm/map-bubbles:px-4 @sm/map-bubbles:py-1.5 text-xl @sm/map-bubbles:text-3xl @4xl/map-bubbles:text-5xl font-serif mb-2 @sm/map-bubbles:mb-4 @3xl/map-bubbles:mb-10 ">
                                 {t(props.headline)}
                             </Badge>
                         </h2>
-                        {props.subhead && (
-                            // `translate-x-2` en xs seulement : rapproche l'accroche du bord droit,
-                            // dans l'autre sens que le titre ci-dessus (`sm:translate-x-0` = inchangé).
-                            <p className={`max-w-32 sm:max-w-50 text-[0.65rem] sm:text-lg md:max-w-60 text-left translate-x-2 sm:translate-x-0 ${overlay ? "text-white/90" : "text-muted-foreground"}`}>
+                    </div>
+                    )}
+
+                    {/* Accroche : reste à DROITE, en vis-à-vis du titre. Décalée vers le bas d'autant que
+                        le badge est haut, sinon les deux se retrouvent sur la même ligne d'yeux. */}
+                    {!enCarte && props.subhead && (
+                        <div className="z-20 flex justify-end absolute top-12 @sm/map-bubbles:top-16 @3xl/map-bubbles:top-28 right-6 @sm/map-bubbles:right-10">
+                            <p className={`max-w-32 @sm/map-bubbles:max-w-50 text-[0.65rem] @sm/map-bubbles:text-lg @3xl/map-bubbles:max-w-60 text-left ${overlay ? "text-white/90" : "text-muted-foreground"}`}>
                                 {t(props.subhead)}
                             </p>
-                        )}
-                    </div>
+                        </div>
+                    )}
+                </div>
                 </div>
             </div>
         </section>

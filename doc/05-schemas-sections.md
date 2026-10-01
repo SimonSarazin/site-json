@@ -23,6 +23,8 @@
   - [`table`](#table)
   - [`chart`](#chart)
   - [`map`](#map)
+  - [`map-shapes`](#map-shapes)
+    - [Le piège du lien qui ne filtre rien](#le-piège-du-lien-qui-ne-filtre-rien)
   - [`newsletter`](#newsletter)
   - [`comparison`](#comparison)
   - [`featureComparison`](#featurecomparison)
@@ -672,6 +674,200 @@ const MapSectionSchema = z.object({
 | `zoom`     | `number` | Niveau de zoom (defaut: `13`)              |
 | `markers`  | `array?` | Marqueurs optionnels                       |
 
+## `map-shapes`
+
+Contours géographiques RÉELS (communes, bassins de vie, zones administratives) rendus en **SVG hors
+carte** : ni fond de plan, ni marqueurs, ni résultats — donc **aucune requête de recherche**. Chaque
+contour est un **lien** vers une page de recherche dont un filtre est déjà posé. C'est un sommaire de
+territoire, pas une carte.
+
+Quatre rendus géographiques coexistent dans le schéma — `map.shapes` n'étant pas une section
+mais une prop des sections de recherche. Ne pas les confondre :
+
+| Bloc | Donnée | Rendu | Interaction |
+| ---- | ------ | ----- | ----------- |
+| [`map`](#map) | `center` / `zoom` / `markers` écrits en config | placeholder statique | aucune |
+| `map.shapes` de [`searchPro`](#searchpro) / [`searchProStatic`](#searchprostatic) / `agenda` | couches `geoShape` | contours superposés À la carte **MapLibre**, avec fond de plan, marqueurs et résultats | décor de la recherche |
+| **`map-shapes`** | **les mêmes** couches `geoShape` | `<path>` SVG seuls, hors carte | chaque contour navigue vers `target` |
+| `map-bubbles` | image d'illustration + bulles positionnées en `%` | image + pastilles cliquables | lien de chaque bulle |
+
+`map-shapes` partage le contrat de couches de `map.shapes` À L'IDENTIQUE (`GeoShapeSourceSchema`,
+[`src/types/geo-shape-schema.ts`](../src/types/geo-shape-schema.ts)) : mêmes endpoints legacy, même
+cache, même `simplify`, mêmes garde-fous volumétriques (QPV et `cities` sans parent REFUSÉS à la
+validation). Une seule différence : **`load` n'a pas de sens ici et est ignoré** — les contours SONT
+le contenu de la section, il n'y a pas de vue carte à ouvrir, ils sont toujours chargés à l'affichage.
+
+`filters.countryCode` accepte un code **ou une liste** (`["FR", "RE", "MQ", "GP", "GF", "YT"]`) :
+le legacy ne lisant qu'un scalaire, la liste devient autant d'appels fusionnés côté client. Détail et
+garde-fous dans [doc/07](07-module-search.md#usegeoshapes--usegeoshapeswarmup--contours-géographiques-mapshapes).
+
+Implémentation : `src/components/sections/MapShapes.tsx` ; projection d3-geo COMMUNE à toutes les
+couches (`geoMercator().fitWidth(1000, …)`) dans
+[`src/lib/geoShapes/projectShapes.ts`](../src/lib/geoShapes/projectShapes.ts) — une projection par
+couche décalerait le contour englobant des communes qu'il contient ; construction du lien dans
+[`src/lib/geoShapes/shapeTarget.ts`](../src/lib/geoShapes/shapeTarget.ts).
+
+```ts
+const MapShapesSchema = z.object({
+  type: z.literal("map-shapes"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString.optional(),
+    description: LocalizedString.optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    maxHeight: z.number().min(160).optional(),
+    // Contrat identique à `map.shapes` : sources "zoniris" | "zones" | "cities",
+    // + filters, simplify, style, label, showNames. `load` est ignoré ici.
+    shapes: z.array(GeoShapeSourceSchema).min(1),
+    target: z.object({
+      path: z.string().min(1),
+      filterId: z.string().min(1),
+      valueFrom: z.enum(["name", "insee", "_id", "countryCode", "level"]).optional(),
+      layers: z.array(z.string()).optional(),
+    }),
+  }),
+});
+```
+
+| Propriete | Type | Description |
+| --------- | ---- | ----------- |
+| `title` | `LocalizedString?` | Titre du bloc (rendu en SSR, donc indexable) |
+| `description` | `LocalizedString?` | Chapô sous le titre |
+| `bg` | `enum?` | Fond de section (`default` \| `card` \| `muted` \| `primary` \| `secondary` \| `accent` \| `transparent`) |
+| `maxHeight` | `number?` | Hauteur MAXIMALE en px (min 160, defaut code `520`). Le SVG garde son ratio via son `viewBox`, il est seulement borné |
+| `shapes` | `GeoShapeSource[]` | Couches de contours, **au moins une**. Cf. [`map.shapes`](07-module-search.md) (§ `useGeoShapes`) pour les trois `source`, leurs filtres et leur volumétrie |
+| `target` | `object` | **Obligatoire** — cible de navigation au clic (cf. le piège ci-dessous). La config n'étant pas revalidée au runtime, une cible absente ou sans `path`/`filterId` laisse tous les contours INERTES au lieu de faire tomber la section |
+| `target.path` | `string` | Chemin de la page de recherche (ex. `/lieux`) |
+| `target.filterId` | `string` | Nom du query param écrit = **`id` d'un groupe de `filterGroups` de la page cible** |
+| `target.valueFrom` | `enum?` | Propriété du contour utilisée comme valeur : `name` (defaut), `insee`, `_id` (ObjectId du contour), `countryCode`, `level` — les seules exposées par `toFeatureCollection` |
+| `target.layers` | `string[]?` | Restreint la cliquabilité à ces `id` de couche. Absent = toutes. Sert à garder une couche de DÉCOR inerte sous des communes cliquables |
+
+Un contour dont la propriété `valueFrom` est absente reste du **décor** (un `<path>` inerte) plutôt
+qu'un lien mort. Les couleurs de `style` sont des JETONS de thème (`primary`, `accent`, `border`,
+`none`…), jamais des hex — ici elles restent des `var(--…)` en SVG, contrairement à la carte où
+`resolveThemeColor` doit les convertir en sRGB pour le WebGL.
+
+**Exemple complet** — les 24 communes de La Réunion cliquables, posées sur le contour régional
+laissé en décor :
+
+```json
+{
+  "type": "map-shapes",
+  "id": "territoires",
+  "props": {
+    "title": { "fr": "Explorer par commune", "en": "Browse by town" },
+    "description": {
+      "fr": "Cliquez sur un territoire pour voir les structures qui s'y trouvent.",
+      "en": "Click a territory to see the venues located there."
+    },
+    "bg": "muted",
+    "maxHeight": 520,
+    "shapes": [
+      {
+        "id": "reunion",
+        "source": "zones",
+        "simplify": 20,
+        "filters": { "countryCode": "RE", "level": "4" },
+        "style": { "fill": "none", "stroke": "border", "strokeWidth": 1 }
+      },
+      {
+        "id": "communes",
+        "source": "cities",
+        "simplify": 10,
+        "showNames": true,
+        "filters": {
+          "countryCode": "RE",
+          "parentId": "58be4af494ef47df1d0ddbcc",
+          "parentLevel": "4"
+        },
+        "label": { "fr": "Communes", "en": "Towns" },
+        "style": {
+          "fill": "primary",
+          "fillOpacity": 0.12,
+          "stroke": "primary",
+          "strokeWidth": 1.5,
+          "strokeOpacity": 0.9
+        }
+      }
+    ],
+    "target": {
+      "path": "/lieux",
+      "filterId": "commune",
+      "valueFrom": "name",
+      "layers": ["communes"]
+    }
+  }
+}
+```
+
+### Le piège du lien qui ne filtre rien
+
+`map-shapes` n'écrit PAS dans l'état de filtres : il pose un query param et laisse la page cible
+l'hydrater. **La page cible doit donc porter un groupe de filtres dont l'`id` vaut `target.filterId`
+ET dont une option porte la valeur émise.** Sinon
+[`computeFiltersFromUrl`](../src/modules/search/lib/computeFiltersFromUrl.ts) **jette le paramètre
+silencieusement** : la navigation a lieu, l'URL porte bien `?commune=Saint-Paul`, et la liste reste
+non filtrée — aucune erreur, aucun warning.
+
+Résolution exacte, à vérifier dans cet ordre :
+
+1. **Écriture** — `shapeHref` produit
+   `` `${path}?${encodeURIComponent(filterId)}=${encodeURIComponent(encodeURIComponent(valeur))}` ``.
+   La VALEUR est encodée **deux fois**, volontairement : la page cible la relit en trois temps —
+   `new URLSearchParams(…)` (qui décode déjà une couche), puis `split(",")`, puis
+   `decodeURIComponent` de chaque segment. Avec un seul encodage, `"Saint-Denis, Nord"` reviendrait
+   en DEUX valeurs AVANT le découpage, dont aucune ne matcherait d'option. Un nom sans caractère
+   spécial (le cas courant) traverse les deux passes inchangé, l'URL reste donc lisible. La CLÉ,
+   elle, n'est encodée qu'une fois : elle n'est lue que par `URLSearchParams`.
+2. **Lecture** — la page cible hydrate ses filtres depuis l'URL : `FiltersSection` (section
+   [`filters`](#filters)) ou `usePageFiltersUrlSync` appellent `computeFiltersFromUrl(searchParams,
+   filterGroups, …)`.
+3. **Groupe** — le param est apparié par `filterGroups.find(g => g.id === <nom du param>)`. Pas de
+   groupe portant cet `id` → repli sur les groupes « par réponses » (`filtersByAnswers` /
+   `filtersByPath`) ; rien là non plus → **le param est ignoré**.
+4. **Option** — dans le groupe trouvé, la valeur est cherchée par
+   `(o.name || o.id) === v || o.id === v`. Aucune option ne matche → **rien n'est posé**. C'est le
+   cas le plus fréquent : la comparaison est une égalité STRICTE, sensible à la casse et aux accents.
+
+D'où `valueFrom` : on choisit la propriété du contour à confronter aux options RÉELLES du groupe
+cible. `name` (le nom du contour, `"Saint-Paul"`) va avec un groupe à `field` dont les `options[].name`
+portent la graphie EXACTE stockée en base ; `insee` va avec un groupe dont les options sont des codes
+INSEE. Les cinq valeurs autorisées sont les seules propriétés que `toFeatureCollection`
+(`src/lib/geoShapes/geoShapeQuery.ts`) expose — la donnée legacy n'en porte pas d'autres de façon
+fiable.
+
+Le groupe qui rend l'exemple ci-dessus fonctionnel, sur la page `/lieux` :
+
+```json
+{
+  "type": "filters",
+  "props": {
+    "filterGroups": [
+      {
+        "id": "commune",
+        "label": { "fr": "Commune", "en": "Town" },
+        "field": "address.addressLocality",
+        "options": [
+          { "id": "saint-paul", "label": { "fr": "Saint-Paul" }, "name": "Saint-Paul" },
+          { "id": "saint-denis", "label": { "fr": "Saint-Denis" }, "name": "Saint-Denis" },
+          { "id": "le-tampon", "label": { "fr": "Le Tampon" }, "name": "Le Tampon" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Contrat jumeau** : `regionsTarget` et `thematicsTarget` de
+[`searchProStatic`](#searchprostatic) (`src/modules/search/schema.ts`) ont la MÊME forme
+`{ path, filterId }` et le même principe — on pose un query param, la page cible hydrate. C'est ce
+qui rend le lien partageable et le bouton « précédent » cohérent, et c'est aussi le même piège.
+
+**Recette de vérification** : ouvrir le lien produit par un contour ; la valeur doit apparaître comme
+filtre ACTIF sur la page cible. Si le paramètre reste dans l'URL sans rien filtrer, c'est l'étape 3
+ou 4 qui a échoué — comparer `target.filterId` aux `filterGroups[].id` de la page cible, puis la
+valeur émise aux `options[].name`.
+
 ## `newsletter`
 
 ```ts
@@ -1090,7 +1286,12 @@ Section d'affichage des membres d'une organisation ou d'un projet.
 
 ```ts
 const MemberCardConfSchema = z.object({
-  type: z.enum(["default", "profile"]).default("default"),
+  type: z.enum(["default", "profile", "team"]).default("default"),
+  layout: z.enum(["stack", "row"]).optional(),                       // carte « équipe »
+  rattachement: z.object({                                            // OBLIGATOIRE si type "team"
+    cheminGabarit: z.string(),                                        // ex. "/territoire/{slug}"
+    prefixeCouleur: z.string(),                                       // ex. "--territoire"
+  }).optional(),
   showDescription: z.boolean().optional().default(true),
   showAddress: z.boolean().optional().default(true),
   detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
@@ -1125,7 +1326,27 @@ const MemberSectionSchema = z.object({
 | `showMap`        | `boolean` | Afficher la carte (defaut: `false`)        |
 | `enableMap`      | `boolean` | Charger la carte (defaut: `false`)         |
 | `limit`          | `number?` | Limite du nombre de membres                |
+| `roles`          | `string[]?` | Restreint aux membres portant l'un de ces rôles de lien (`links.<famille>[].roles`, texte libre) |
+| `filters` | `object?` | Filtre **serveur** complémentaire sur les documents des membres, fusionné côté SDK sous le filtre d'appartenance (ex. `{ "territoires": "Arrageois" }`). Égalité Mongo : la valeur doit être EXACTEMENT celle stockée sur les profils (SDK ≥ 1.0.194) ; un tableau contenant la valeur est apparié aussi, et la carte lit alors le premier libellé |
+| `fields` | `string[]?` | Champs AJOUTÉS à la projection par défaut de la liste — ceux que la carte « équipe » lit et que la liste ne ramène pas seule : `territoires`, `telephone`, `phone`, `mobile`, `email` (`address` y est déjà). Sans effet pour un visiteur connecté admin de l'entité : ce chemin renvoie les documents complets, le SDK y retire `fields` |
+| `hideWhenEmpty`  | `boolean?` | Efface la section entière quand la liste finit vide, au lieu d'afficher « Aucun membre ». Avec `footerText`, seule la LISTE s'efface — le pied garderait sinon un contenu invisible |
+| `footerText`     | `LocalizedString?` | Canal de contact de l'ÉQUIPE, sauts de ligne respectés. Posé sous la liste, **et seulement si aucune carte « équipe » n'est rendue** — sinon c'est `cardText` qui parle |
+| `cardText`       | `LocalizedString?` | Texte posé DANS chaque carte `card.type: "team"`, sous les contacts de la personne, et dédoublonné d'eux. La carte porte déjà le courriel et le téléphone DU MEMBRE : n'y mettre que ce que sa fiche ignore (le lieu de permanence, typiquement) |
+| `className`      | `string?` | Classes utilitaires sur l'enveloppe de la section — espacement d'une page, surtout |
+| `showTabs`       | `boolean?` | Barre d'onglets Membres/Admins (défaut: `true`) |
+| `showTitle`      | `boolean?` | Titre interne de la liste (défaut: `true`)  |
+| `showInvite`     | `boolean?` | Bouton « Inviter » (défaut: `true`)         |
 | `card`           | `object?` | Configuration de la carte membre           |
+
+`card.type` accepte une troisième valeur, `"team"` : carte VITRINE (photo entière, territoire, rôles,
+contacts, lien vers la page du territoire). `card.layout` en règle la disposition — `"stack"`
+(défaut) : portrait 4/3 pleine largeur, texte dessous ; `"row"` : vignette RONDE à gauche de
+l'identité, pour une colonne étroite où le grand portrait déséquilibrerait la rangée. `card.rattachement`
+est **obligatoire** avec `"team"` (gabarit du lien + préfixe des variables de couleur) : le module ne
+code aucune convention de repli. La carte lit tout sur la LISTE — d'où `fields`, qui projette les champs
+que la liste ne ramène pas seule ; aucune requête par carte. `roles` + `filters` + `fields` +
+`card.type: "team"` est la combinaison qui compose une page équipe ou la coordination d'un territoire,
+en une requête serveur exacte quel que soit l'effectif.
 
 ---
 
@@ -1782,13 +2003,22 @@ export const ActionTilesSchema = z.object({
     subhead: LocalizedString.optional(),
     variant: z.enum(["primary", "accent"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    columns: ResponsiveColumns.optional(),
+    size: z.enum(["md", "lg"]).optional(),
+    width: z.enum(["default", "wide"]).optional(),
     actions: z.array(
       z.object({
         icon: z.string(),
         title: LocalizedString,
         subtitle: LocalizedString.optional(),
         href: z.string(),
-        color: z.enum(["primary", "turquoise", "amber", "cyan-bright", "teal", "accent", "eco", "chart-2"]).optional(),
+        color: z.enum([
+          "primary", "accent", "destructive",
+          "chart-1", "chart-2", "chart-3", "chart-4", "chart-5",
+          "turquoise", "cyan-bright", "teal", "amber", "eco", // alias historiques
+        ]).optional(),
+        background: z.string().optional(),
+        textColor: z.string().optional(),
       })
     ),
   }),
@@ -1801,7 +2031,31 @@ export const ActionTilesSchema = z.object({
 | `subhead`  | `LocalizedString?` | Sous-titre                       |
 | `variant`  | `"primary" \| "accent"` | Tonalité des décorations       |
 | `bg`       | `enum`    | Couleur de fond                          |
-| `actions`  | `array`   | Boutons d'action (icon, title, subtitle, href, color) |
+| `columns`  | `ResponsiveColumns?` | Colonnes par breakpoint (défaut sm:2 lg:4) |
+| `size` | `"md" \| "lg"` | Taille des tuiles : `md` (défaut : titre 14 px, sous-titre 12 px, icône 16 px) ou `lg` (18 px, 16 px, icône 32 px, marges verticales élargies, contenu calé en haut pour aligner les icônes d'une rangée) |
+| `headlineStyle` | `"plain" \| "badge" \| "pill"` | Rendu du titre : `plain` (défaut, centré), `badge` (pastille inclinée d'`articleTeaser`/`map-bubbles`) ou `pill` (la même en arrondi droit). Les deux pastilles se calent à gauche, pour une page dont toutes les bandes portent le même repère |
+| `tileLayout` | `"centered" \| "inline"` | Disposition d'une tuile : `centered` (défaut, icône puis textes centrés) ou `inline` — icône en pastille, titre à côté, sous-titre dessous, aligné à gauche. `inline` se lit mieux dès que les sous-titres font une phrase |
+
+`articleTeaser`, `map-bubbles` et `featured-carousel` partagent le réglage `headlineStyle` (`badge` par
+défaut, étiquette inclinée ; `pill` en arrondi droit). `map-bubbles` et `featured-carousel` acceptent en
+plus `badgeColor`/`badgeTextColor` : la teinte de l'ÉTIQUETTE, indépendante de `accentColor` qui, elle,
+teinte les boutons. Sur `featured-carousel`, `background` impose un texte BLANC (rendu historique, pensé
+pour un fond sombre) : fournir `textColor` dès que la carte est claire. Ce même bloc accepte
+`backgroundOverlay` (même grammaire que `map-bubbles`) pour poser la diapositive sur un PANNEAU dégradé,
+avec `overlayTextColor` — l'encre du texte posé sur le panneau, qui doit suivre le DÉGRADÉ (pas l'encre
+de la carte) : si le dégradé a une variante sombre, lui donner un jeton qui change avec lui. `design`
+(`sticker` par défaut, `card`) règle à part le PLACEMENT sur `map-bubbles` et `featured-carousel` : titre
+débordant du haut du bloc, et pour le carrousel, points de position au centre et bouton compact à droite,
+en pied de carte (dans le panneau quand `backgroundOverlay` est posé). `articleTeaser` accepte
+aussi `maxWidth` (défaut `4xl`), même échelle que `gridLayout`.
+| `accentColor` | `string?` | Couleur de la pastille de titre (`headlineStyle: "badge"`). Son encre est blanche : à choisir assez foncée, contraste AA à mesurer |
+| `width` | `"default" \| "wide"` | Largeur de la grille : `default` (1024 px max) ou `wide` (1280 px max) |
+
+Les tuiles d'une même rangée ont toutes la hauteur de la plus haute.
+| `actions`  | `array`   | Boutons d'action (icon, title, subtitle, href, color, background, textColor) |
+| `actions[].color` | `enum?` | Teinte de la tuile à 20 % — jeton du thème (`primary` par défaut) |
+| `actions[].background` | `string?` | Fond PLEIN (couleur CSS, `var(--jeton)` recommandé) : remplace la teinte de `color`. Fixe en clair comme en sombre |
+| `actions[].textColor` | `string?` | Texte et icône d'une tuile à fond plein — contraste à vérifier (AA ≥ 4,5:1) |
 
 ---
 
@@ -1820,6 +2074,7 @@ export const CtaCardGridSchema = z.object({
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     image: z.string().optional(),
     imageAlt: LocalizedString.optional(),
+    columns: ResponsiveColumns.optional(),
     actions: z.array(
       z.object({
         icon: z.string(),
@@ -1827,6 +2082,7 @@ export const CtaCardGridSchema = z.object({
         description: LocalizedString,
         ctaLabel: LocalizedString,
         href: z.string(),
+        color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light", "accent", "chart-2", "chart-3"]).optional(),
       })
     ).optional(),
     stats: z
@@ -1848,6 +2104,8 @@ export const CtaCardGridSchema = z.object({
 | `subhead`  | `LocalizedString?` | Sous-titre                          |
 | `variant`  | `"primary" \| "accent"` | Tonalité des décorations          |
 | `bg`       | `enum`    | Couleur de fond                            |
+| `columns`  | `ResponsiveColumns?` | Colonnes par breakpoint (mobile = 1). Sans lui : `{md:2, lg:4}`, la grille historique — à baisser quand les descriptions sont de vrais paragraphes, illisibles sur quatre colonnes étroites |
+| `actions[].color` | `enum?` | Teinte de la PASTILLE qui porte l'icône (helper partagé `iconHaloClass`). Sans elle : `bg-primary/10`, la pastille historique. ⚠️ Sur une palette claire, teinter le GLYPHE échoue — `accent`/`chart-2`/`chart-3` tombent à 1,6–2,3 : 1 sur un fond clair ; la pastille teintée avec un glyphe resté sur `primary` garde la couleur ET le contraste |
 | `image`    | `string?` | Image de la section                        |
 | `imageAlt` | `LocalizedString?` | Alt de l'image                     |
 | `actions`  | `array?`  | Actions (icon, title, description, ctaLabel, href) |
@@ -1919,6 +2177,7 @@ export const ActionButtonSchema = z.object({
   modal: z.string().optional(),
   formConfig: JsonFormModalConfigSchema.optional(),
   requiresAdmin: z.boolean().optional(),
+  createDefaults: z.record(z.string(), z.unknown()).optional(),
 });
 
 // src/modules/search/schema.ts
@@ -1960,7 +2219,7 @@ export const SearchHeaderSectionSchema = z.object({
 | `filtersClassName` | `string?`         | Override du conteneur flex de la rangee de filtres (def. `flex flex-col lg:flex-row lg:items-center`) |
 | `types`            | `array?`          | Types de filtre (id, label)            |
 | `dropdownFilters`  | `array?`          | Filtres en menu deroulant (`id`, `label`, `field?`, `multiple?`, `allLabel?`, `options[]`, `optionsFrom?` — `{list: string \| string[], costumSlug?, withDeclared?}`, cf. `doc/07-module-search.md`) |
-| `buttons`          | `ActionButton[]?` | Boutons d'action                       |
+| `buttons`          | `ActionButton[]?` | Boutons d'action. Un bouton de modale (`action: "add-*"` ou `modal`) est réservé aux admins du site sauf `requiresAdmin: false` (un visiteur non connecté passe alors par la connexion, puis la modale s'ouvre). `createDefaults` sème des valeurs dans la modale d'ajout (ex. `{ "type": "Cooperative" }`) ; une clé que le formulaire ne déclare pas est ignorée |
 | `showSearch`       | `boolean?`        | Afficher le champ de recherche         |
 | `searchPlaceholder` | `LocalizedString?` | Placeholder de la recherche          |
 | `compact`          | `boolean?`        | Padding vertical REDUIT (`py-4` au lieu de `py-12`) — a activer quand une section `title` au-dessus tient lieu de hero. Defaut `false` |
@@ -2179,7 +2438,10 @@ const ContentSectionSchema = z.object({
     description: LocalizedString,
     tags: z.array(LocalizedString).optional(),
     image: z.string().optional(),
+    imageHref: z.string().optional(),
+    imageFit: z.enum(["cover", "contain"]).optional(),
     imagePosition: z.enum(["left", "right"]).default("right"),
+    width: z.enum(["prose", "wide"]).optional(),
     links: z.array(z.object({
       label: LocalizedString,
       href: z.string(),
@@ -2204,10 +2466,14 @@ const ContentSectionSchema = z.object({
 | --------- | ---- | ----------- |
 | `category` | `LocalizedString?` | Categorie affichee au-dessus du titre |
 | `title` | `LocalizedString` | Titre de la section |
-| `description` | `LocalizedString` | Description principale |
+| `description` | `LocalizedString` | Description principale — rendue en **markdown** (gras, tirets, retours à la ligne), sanitizé avant injection |
 | `tags` | `LocalizedString[]?` | Liste de tags |
 | `image` | `string?` | URL de l'image |
+| `imageHref` | `string?` | Rend l'image CLIQUABLE — chemin interne ou URL absolue, l'externe s'ouvrant dans un nouvel onglet (`NavLink` tranche). Ignoré sans `image` |
+| `imageFit` | `"cover" \| "contain"?` | Cadrage. `cover` (défaut) remplit la boîte quitte à rogner — bon pour une photo ; `contain` montre l'image ENTIÈRE et plafonne sa hauteur, pour une couverture de document ou un logo qu'un rognage amputerait |
 | `imagePosition` | `"left" \| "right"` | Position de l'image |
+| `width` | `"prose" \| "wide"?` | Largeur du bloc. `prose` (défaut, historique) : colonne de lecture calée à GAUCHE, la forme illustrée occupant toute la largeur. `wide` : les deux formes prennent la même largeur (celle d'un fil d'articles) et sont CENTRÉES — pour une page qui alterne blocs illustrés et blocs de texte, où deux largeurs se lisent comme un décrochage. S'applique aussi à la catégorie, rendue hors du bloc |
+| `align` | `"left" \| "center"?` | Alignement du bloc ET de son texte. `left` (défaut, historique) : colonne calée à gauche. `center` : bloc centré (`mx-auto`) et texte centré, rangées en `flex` comprises (chiffres, tags, liens, `infoText`) — sans quoi elles resteraient à gauche dans un bloc centré. Pour une section SANS visuel posée sur une page par ailleurs centrée : `ContentSection` y borne sa colonne à `max-w-3xl` **sans** `mx-auto`, elle se colle donc à gauche |
 | `links` | `array?` | Liens vers d'autres pages (label, href) |
 | `iconCard` | `object?` | Carte avec icone SVG (`{ svg }`) |
 | `infoText` | `LocalizedString?` | Ligne d'info avec icone (rendue en HTML brut) |
@@ -2309,14 +2575,21 @@ export const FiltersSectionSchema = z.object({
 
 ## `gridLayout`
 
-Layout en grille avec deux colonnes configurable.
+Layout en grille. **Deux modes**, exclusifs : le couple `leftSection`/`rightSection`, asymétrique
+(un contenu principal et un aparté, largeurs réglées en quarts) ; ou la **rangée** `sections`, N
+blocs de MÊME largeur sur une ligne. `sections` prime quand les deux sont donnés.
 
 ```ts
 const GridLayoutSectionPropsSchema = z.object({
   leftSection: z.lazy(() => SectionSchemaLazy).optional(),
   rightSection: z.lazy(() => SectionSchemaLazy).optional(),
+  sections: z.array(z.lazy(() => SectionSchemaLazy)).optional(),
+  columns: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
   leftColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
+  align: z.enum(["start", "stretch"]).optional(),
+  from: z.enum(["md", "lg"]).optional(),
+  bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   gap: z.number().optional(),
   className: z.string().optional(),
   leftWrapperClass: z.string().optional(),
@@ -2334,12 +2607,24 @@ const GridLayoutSectionSchema = z.object({
 | ------------------- | --------- | ---------------------------------------- |
 | `leftSection`       | `Section?` | Section a afficher a gauche (lazy)       |
 | `rightSection`      | `Section?` | Section a afficher a droite (lazy)       |
+| `sections`          | `Section[]?` | Mode RANGÉE : N sections de même largeur sur une ligne. Prime sur `leftSection`/`rightSection`. Sous `sm:` elles s'empilent, puis passent à 2 colonnes, puis à `columns` à partir de `from` |
+| `columns`           | `2 \| 3 \| 4?` | Colonnes du mode rangée (défaut : le nombre de `sections`, plafonné à 4) |
 | `leftColumns`       | `1-4`    | Nombre de colonnes pour la gauche        |
 | `rightColumns`      | `1-4`    | Nombre de colonnes pour la droite        |
+| `align`             | `"start" \| "stretch"?` | Alignement vertical. `start` (défaut, historique) : chaque colonne s'arrête à son contenu — la plus courte laisse du vide sous elle. `stretch` : les deux prennent la hauteur de la plus haute et leur section fille est étirée. À choisir quand la colonne courte porte un fond coloré, sinon ce vide se lit comme un trou. Le stretch ne joue qu'à partir de `lg:` (en dessous les colonnes s'empilent) |
+| `from`              | `"md" \| "lg"?` | Largeur à partir de laquelle les colonnes se placent CÔTE À CÔTE ; en dessous elles s'empilent. `lg` (défaut, historique) = 1024px, `md` = 768px — à descendre quand le bloc doit rester sur une ligne à fort zoom navigateur, qui rétrécit le viewport CSS |
 | `gap`               | `number?` | Espacement entre les colonnes            |
+| `bg`                | `enum?`   | Fond de la bande (jetons du thème + `page-accent`, l'aplat de `page.accent`). Défaut : fond hérité — une grille pose une bande colorée sans wrapper supplémentaire |
+| `maxWidth`          | `"3xl"…"7xl" \| "full"?` | Largeur max du contenu (défaut : toute celle du `container`). À aligner sur les bandes voisines — deux largeurs différentes se lisent comme un décrochage |
 | `className`         | `string?` | Classes CSS additionnelles               |
 | `leftWrapperClass`  | `string?` | Classes CSS du wrapper gauche            |
 | `rightWrapperClass` | `string?` | Classes CSS du wrapper droit             |
+
+> ⚠️ **Un container est traversé par le prefetch SSR et les gardes** via
+> `SECTION_EXTRACTORS` (`src/lib/sectionContainers.ts`, dupliqué dans
+> `src/modules/search/prefetch/prefetchFilters.ts`). Une section imbriquée dans `sections` y est
+> déjà déclarée ; tout NOUVEAU container doit l'être aussi, sans quoi ses filles sont ratées
+> silencieusement — elles ne seront ni préchargées ni vues par les préflights.
 
 ---
 

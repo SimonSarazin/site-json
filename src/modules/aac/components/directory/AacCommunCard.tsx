@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { AacHiddenTagsBadge } from "./AacHiddenTagsBadge";
+import { AacCommunDeleteButton } from "./AacCommunDeleteButton";
 import type { AacCommunCard as CommunCard } from "../../lib/parseAacAnswer";
 import {
   AAC_VISIBLE_TAGS,
@@ -11,6 +12,10 @@ import { Link } from "react-router";
 
 interface AacCommunCardProps {
   commun: CommunCard;
+  /** Demande la suppression de CE commun. Absent ⇒ aucun bouton (le cas courant). */
+  onRequestDelete?: (commun: CommunCard) => void;
+  /** Une suppression est déjà en vol dans l'annuaire. */
+  isDeleting?: boolean;
   className?: string;
 }
 
@@ -33,7 +38,7 @@ interface AacCommunCardProps {
  * costum, `accent` pour sa `color3`) : la carte suit la palette du site, elle ne
  * la redéfinit pas.
  */
-export function AacCommunCard({ commun, className }: AacCommunCardProps) {
+export function AacCommunCard({ commun, onRequestDelete, isDeleting, className }: AacCommunCardProps) {
   const t = useT("modules/aac");
 
   const hiddenTags = commun.tags.slice(AAC_VISIBLE_TAGS);
@@ -61,6 +66,19 @@ export function AacCommunCard({ commun, className }: AacCommunCardProps) {
         <span className="absolute top-0 left-0 z-10 rounded-ss-lg rounded-ee-[11px] bg-accent/80 px-1.25 py-0.5 text-[11px] font-semibold text-accent-foreground shadow-[1px_2px_7px_0_rgba(82,79,82,0.7)] backdrop-blur-[10px]">
           {String(t("directory.card.pending"))}
         </span>
+      )}
+
+      {onRequestDelete && (
+        // Coin haut DROIT : le badge « en attente » occupe déjà le coin gauche.
+        // En surimpression et non dans le flux — le rythme vertical de la carte
+        // est figé, et tout ce qui s'y insère décale les voisines.
+        <div className="absolute top-1 right-1 z-10">
+          <AacCommunDeleteButton
+            communTitle={commun.title}
+            onClick={() => onRequestDelete(commun)}
+            disabled={isDeleting}
+          />
+        </div>
       )}
 
       <div className="relative block">

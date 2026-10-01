@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { cn } from "@/lib/utils";
+import { getBaseUrl } from "@/lib/constant/common";
 import "@/modules/search/i18n";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 
@@ -250,7 +251,12 @@ function ResourceDirectoryList({
   });
 
   const parseOpts = useMemo(
-    () => ({ resourceTypes, finderSuffix, fieldSuffixes: { finder: finderSuffix, ...fieldSuffixes } }),
+    () => ({
+      resourceTypes,
+      finderSuffix,
+      fieldSuffixes: { finder: finderSuffix, ...fieldSuffixes },
+      baseUrl: getBaseUrl(),
+    }),
     [resourceTypes, finderSuffix, fieldSuffixes],
   );
 

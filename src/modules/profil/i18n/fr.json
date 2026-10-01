@@ -8,7 +8,9 @@
   "ImageUploadField": {
     "dropHint": "Glisser-déposer ou cliquer pour choisir",
     "remove": "Retirer l'image",
-    "imageOnly": "Seules les images sont acceptées."
+    "imageOnly": "Seules les images sont acceptées.",
+    "crop": "Recadrer",
+    "preparing": "Préparation de l'image…"
   },
   "EntityGridView": {
     "gridView": "Grille",
@@ -138,6 +140,13 @@
       "description": "Êtes-vous sûr de vouloir arrêter de participer à cet événement ? Vous ne recevrez plus les actualités de l'événement.",
       "cancel": "Annuler",
       "confirm": "Ne plus participer"
+    },
+    "deleteEvent": "Supprimer",
+    "deleteEventDialog": {
+      "title": "Supprimer cet événement ?",
+      "description": "« {{name}} » sera supprimé pour tout le monde, avec ses participants et ses liens. Cette action est définitive.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer définitivement"
     },
     "membershipPending": "Demande en attente",
     "contributorPending": "Demande en attente",
@@ -355,7 +364,10 @@
       "description": "Rejeter la demande de {{name}} ?",
       "cancel": "Annuler",
       "confirm": "Rejeter"
-    }
+    },
+    "rolesLabel": "Rôles dans l'organisation",
+    "rolesPlaceholder": "Ajouter un rôle (Entrée pour valider)…",
+    "rolesHint": "Texte libre — ex. « Coordonnatrice parentalité Arrageois »."
   },
   "MemberManagementDialog": {
     "title": "Gestion des membres",
@@ -789,6 +801,10 @@
       "poiSuccess": "Lieu créé avec succès",
       "poiError": "Impossible de créer le lieu"
     },
+    "element": {
+      "deleteEventSuccess": "Événement supprimé",
+      "deleteEventError": "Impossible de supprimer l'événement"
+    },
     "gallery": {
       "addSuccess": "Image ajoutée à la galerie",
       "addError": "Échec de l'ajout de l'image",
@@ -989,6 +1005,14 @@
         "opens": "Début",
         "closes": "Fin",
         "noDaysSelected": "Sélectionnez des jours pour définir les horaires"
+      },
+      "periodStart": {
+        "label": "Début de la période",
+        "placeholder": "Sélectionner le début de la période"
+      },
+      "periodEnd": {
+        "label": "Fin de la période",
+        "placeholder": "Sélectionner la fin de la période"
       }
     }
   },
@@ -1275,6 +1299,12 @@
     "address": {
       "required": "Adresse complète obligatoire : ville, code postal et rue"
     },
+    "annee": {
+      "invalid": "Saisissez une année sur 4 chiffres, par exemple 2022"
+    },
+    "documentOuLien": {
+      "required": "Joignez un document ou renseignez un lien"
+    },
     "minLength": "Valeur trop courte",
     "maxLength": "Valeur trop longue",
     "min": "Valeur trop petite",
@@ -1433,5 +1463,36 @@
   "AuthRequired": {
     "title": "Connectez-vous pour continuer",
     "description": "La création d’une fiche est rattachée à votre compte : elle vous permettra de la modifier et de la compléter plus tard."
+  },
+  "CardTeamMember": {
+    "territoryNews": "Les actualités du territoire"
+  },
+  "EntityDuplicates": {
+    "title_one": "Une fiche au nom proche existe déjà",
+    "title_other": "{{count}} fiches au nom proche existent déjà",
+    "titleStrong_one": "Une fiche du même nom existe déjà à ce code postal",
+    "titleStrong_other": "{{count}} fiches au nom proche existent déjà, dont au moins une du même nom au même code postal",
+    "description": "Vérifiez qu'il ne s'agit pas de la vôtre avant de continuer. Vous pouvez poursuivre la création.",
+    "error": "La recherche de fiches existantes a échoué. Vous pouvez poursuivre la création.",
+    "placeUnknown": "Commune non renseignée",
+    "hint": {
+      "sameNameSamePostalCode": "Même nom, même code postal",
+      "sameName": "Même nom",
+      "samePostalCode": "Même code postal"
+    },
+    "preview": "Aperçu",
+    "open": "Ouvrir la fiche",
+    "newTab": "(nouvel onglet)",
+    "more_one": "et une autre fiche au nom proche",
+    "more_other": "et {{count}} autres fiches au nom proche",
+    "confirm": {
+      "title": "Cette fiche existe peut-être déjà",
+      "description": "« {{name}} » existe déjà ({{place}}), avec le même nom et le même code postal. Créer quand même une nouvelle fiche ?",
+      "create": "Créer quand même",
+      "cancel": "Revenir au formulaire"
+    },
+    "titleMany": "Plus de {{count}} fiches au nom proche existent déjà",
+    "titleStrongMany": "Plus de {{count}} fiches au nom proche existent déjà, dont au moins une du même nom au même code postal",
+    "moreMany": "et d'autres fiches au nom proche, non affichées"
   }
 }

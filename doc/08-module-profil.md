@@ -1250,7 +1250,8 @@ interface EntityMutationConfig<TParams = void> {
   entityTypes?: EntityType[];
   action: (entity: EntityTypes, params: TParams) => Promise<void>;
   i18n: { successKey: string; errorKey: string };
-  invalidate: (entity: EntityTypes, me: User | null) => QueryKey[];
+  invalidate: (entity: EntityTypes, me: User | null) => QueryKey[]; // évaluée APRÈS l'action
+  remove?: (entity: EntityTypes) => QueryKey[]; // évaluée AVANT l'action, appliquée au succès
   getSuccessParams?: (entity, params) => Record<string, string>;
   getErrorParams?: (error, entity, params) => Record<string, string>;
 }
@@ -1262,6 +1263,10 @@ function createEntityMutation<TParams>(config) → (entity: EntityTypes | null) 
 - `useMutationWithToast` (namespace `modules/profil`)
 - Validation entity non-null + validation entityType si `config.entityTypes` défini
 - Invalidation React Query via `config.invalidate(entity, me)` au succès
+- Retrait du cache via `config.remove(entity)` : pour une entité qui n'existe plus, invalider relancerait
+  un fetch vers un 404 sur la page encore montée. ⚠️ Le SDK VIDE l'instance après `delete()` (`slug` →
+  `null`) : `invalidate`, évaluée après l'action, n'y lit plus rien — d'où `remove`, évaluée AVANT.
+  Premier usage : `useDeleteEvent` (`deletion.ts`) retire la fiche `ELEMENT_ABOUT_PREFIX(slug)`.
 
 **Factory `createUserMutation`** — similaire mais reçoit un `User` en paramètre (ex: actions admin sur un membre spécifique).
 
@@ -1396,6 +1401,9 @@ profil de l'entité (`EntityStatusButton`).
 - Réponse obligatoire : pas de croix de fermeture, Échap et clic extérieur neutralisés
   (`showCloseButton={false}` + `onEscapeKeyDown`/`onInteractOutside`) — seuls Accepter/Refuser referment
   la modale (`onSuccess` de la mutation).
+- Après la réponse (acceptée ou refusée), retour à l'accueil (`navigate("/")`), quelle que soit la page.
+  La modale s'ouvre aussi par-dessus la page du lien Accepter/Refuser du mail (`AcceptInvitationPage`),
+  dont elle masque le bouton : une fois l'invitation tranchée, cette page n'a plus d'objet.
 - `useHydrated()` : `me` est toujours `null` au SSR, donc `open` reste `false` au 1er render client pour
   rester identique au HTML serveur — sinon Radix marque `aria-hidden` sur les autres éléments de la page dès
   le montage d'un Dialog ouvert, ce qui produit un mismatch d'hydratation sur des nœuds sans rapport.

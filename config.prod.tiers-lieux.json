@@ -1852,16 +1852,7 @@
                   "fr": "Par typologie",
                   "en": "By type"
                 },
-                "layout": "half"
-              },
-              {
-                "kind": "donut",
-                "dimension": "surface",
-                "label": {
-                  "fr": "Par surface",
-                  "en": "By floor area"
-                },
-                "layout": "half"
+                "layout": "full"
               },
               {
                 "kind": "barsHorizontal",
@@ -1869,6 +1860,15 @@
                 "label": {
                   "fr": "Par portage / statut juridique",
                   "en": "By legal status"
+                },
+                "layout": "full"
+              },
+              {
+                "kind": "donut",
+                "dimension": "surface",
+                "label": {
+                  "fr": "Par surface",
+                  "en": "By floor area"
                 },
                 "layout": "half"
               },
@@ -1956,6 +1956,24 @@
               "rowAction": {
                 "kind": "profil"
               }
+            },
+            "maxWidth": "full",
+            "layout": "split",
+            "list": {
+              "titleDimension": "name",
+              "subtitleDimensions": [
+                "commune",
+                "region"
+              ],
+              "selectDimensions": [
+                "name"
+              ],
+              "label": {
+                "fr": "Tiers-lieux",
+                "en": "Third places"
+              },
+              "splitRatio": "40-60",
+              "pageSize": 50
             }
           }
         }
@@ -3486,7 +3504,8 @@
             {
               "columns": 1,
               "fields": [
-                "name"
+                "name",
+                "$slot:duplicates"
               ]
             },
             {
@@ -3545,7 +3564,8 @@
             {
               "columns": 1,
               "fields": [
-                "address"
+                "address",
+                "$slot:duplicates"
               ]
             },
             {
@@ -3700,6 +3720,25 @@
         "slugKey": "slug"
       },
       "defaultsBase": "tl:emptyDefaults",
+      "slots": {
+        "duplicates": "slot:entityDuplicates"
+      },
+      "duplicateCheck": {
+        "nameField": "name",
+        "postalCodeField": "postalCode",
+        "minChars": 3,
+        "limit": 5,
+        "confirmOnSubmit": true,
+        "search": {
+          "types": [
+            "organizations"
+          ],
+          "from": {
+            "page": "/lieux",
+            "sectionId": "section-events"
+          }
+        }
+      },
       "mutation": {
         "entityType": "organizations",
         "payloadEmitEmptyOnEdit": true,
@@ -3809,7 +3848,10 @@
         "invalidateFn": {
           "fn": "invalidate:standard",
           "params": {
-            "userList": "organizations"
+            "userList": "organizations",
+            "searchKeys": [
+              "entityDuplicates"
+            ]
           }
         }
       }

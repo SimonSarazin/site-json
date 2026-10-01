@@ -4,7 +4,7 @@
   "addMenus": {
     "citoyens": {
       "builtins": {
-        "organization": "add-organization",
+        "organization": "add-sport-sante-bienetre-organizations",
         "project": "add-sport-sante-bienetre-formation",
         "event": "add-sport-sante-bienetre-session-formation",
         "poi": "add-poi"
@@ -28,11 +28,6 @@
     "organizations": {
       "vierge": "edit-profile",
       "routes": [
-        {
-          "declare": "edit-sport-sante-bienetre-mss",
-          "native": "edit-sport-sante-bienetre-mss",
-          "horsPerimetre": "edit-profile"
-        },
         {
           "declare": "edit-sport-sante-bienetre-organizations",
           "native": "edit-sport-sante-bienetre-organizations",
@@ -94,16 +89,19 @@
         "modalName": null
       }
     },
-    "organisations/organizations#1": {
+    "maisons-sport-sante/organizations": {
       "source": {
         "defaultFilters": {
-          "type": "NGO"
+          "mss": "true"
         },
         "defaultSortBy": {
           "name": 1
         }
       },
-      "create": "add-sport-sante-bienetre-mss",
+      "create": "add-sport-sante-bienetre-organizations",
+      "createDefaults": {
+        "mss": true
+      },
       "edit": {
         "enabled": true,
         "modalName": null
@@ -267,9 +265,7 @@
             "source.keys": "sportSanteBienetre",
             "reference.costum": "sportSanteBienetre"
           },
-          "tags": [
-            "mss"
-          ],
+          "mss": "true",
           "statusActor": "Validé"
         }
       }
@@ -286,6 +282,41 @@
             "reference.costum": "sportSanteBienetre"
           },
           "statusActor": "Validé"
+        }
+      }
+    },
+    "/programmes-dispositifs/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "sportSanteBienetre"
+        ],
+        "defaultFilters": {
+          "type": "ressource",
+          "thematique": "dispositifs",
+          "status": "Visible"
+        },
+        "defaultFields": [
+          "name",
+          "thematique",
+          "description",
+          "urls",
+          "medias",
+          "status",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
         }
       }
     },

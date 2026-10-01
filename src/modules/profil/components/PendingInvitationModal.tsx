@@ -1,4 +1,5 @@
 import { Mail, Check, X } from "lucide-react";
+import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,16 +24,25 @@ export default function PendingInvitationModal() {
 
   const acceptMutation = useAcceptInvitation(entity);
   const rejectMutation = useRejectInvitation(entity);
+  const navigate = useNavigate();
 
   const name = entity?.serverData?.name ?? "";
   const isOrganization = entityType === "organization";
 
+  // Réponse donnée → retour à l'accueil, quelle que soit la page. La modale s'ouvre partout, y compris
+  // par-dessus la page du lien Accepter/Refuser du mail (AcceptInvitationPage), dont elle masque le
+  // bouton : l'invitation une fois tranchée ici, cette page n'a plus d'objet.
+  const onRepondu = () => {
+    setOpen(false);
+    navigate("/");
+  };
+
   const handleAccept = () => {
-    acceptMutation.mutate(undefined, { onSuccess: () => setOpen(false) });
+    acceptMutation.mutate(undefined, { onSuccess: onRepondu });
   };
 
   const handleDecline = () => {
-    rejectMutation.mutate(undefined, { onSuccess: () => setOpen(false) });
+    rejectMutation.mutate(undefined, { onSuccess: onRepondu });
   };
 
   return (

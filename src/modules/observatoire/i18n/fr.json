@@ -31,6 +31,12 @@
     "prev": "Précédent",
     "next": "Suivant"
   },
+  "list": {
+    "title": "Liste",
+    "sheet": "Fiche",
+    "showMore": "Voir plus ({{count}})",
+    "clearSelection": "Effacer la sélection"
+  },
   "installation": {
     "title": "Tableau de bord de l'installation",
     "subtitle_one": "{{count}} équipement",

@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-08-11** (SDK **`1.0.184`** publié et réinstallé : la demande `normalizedName` est **livrée**, cf. §11.1 — le fix du bug de données du détail d'un outil, 61 % de lieux faux, n'a plus de dépendance ouverte. Historique : review MR#33 et §9 10/08bis).
+Dernière mise à jour : **2026-09-30** (`/observatoire` en **split view** : liste des lieux à gauche, graphes à droite, KPI en bandeau, table conservée sous le split — cf. §9 30/09 ; rendu navigateur à valider. Précédent : **29/09**, alerte « tiers-lieu déjà existant » à la création (bloc `duplicateCheck` + slot `slot:entityDuplicates`), cf. §9).
 
 ---
 
@@ -52,6 +52,8 @@ lieux**, pas un plan de rattrapage.
 | 10/08 | Thomas + Claude | Review MR#33 du module `toolsCatalog` (branche `mr33-review`) : 15 constats vérifiés, tous corrigés — dont l'évolution SDK `1.0.183` (`communInfo` déplacée `Answer` → `Form`, fuite `financer[]` éliminée) et le fix `commonTable` en lecture seule (`[object Object]`). Cf. §9. Commits `36b4a7dd` · `252b50e8` · `914dcec0` |
 | 10/08bis | Schumann + Claude | Bug de données du détail d'un outil : sélection sur le seul `criteriaId` → 61 % des lieux listés attribuaient un outil qu'ils n'avaient jamais saisi. Fix backend + front `normalizedName`, libellés de satisfaction alignés sur l'input `commonTable`. Cf. §9 10/08bis |
 | 11/08 | Thomas + Claude | Demande SDK **livrée** : `normalizedName` sur `COSTUM_TOOL_USERS` (lib `d93c7c3`, npm `1.0.184`) + endpoints d'invitation (lib `ca7d65e`, même version). Réinstallation propre (`npm ci`), contenu du tarball vérifié, gates verts. Bump commité `c12f2e43` ; §11/§11.1 mises à jour |
+| 29/09 | Peterson + Claude | Alerte non bloquante « tiers-lieu déjà existant » dans le wizard de création, confirmation à la soumission si nom et code postal coïncident — slot générique config-driven, aucun endpoint nouveau (cf. §9) |
+| 28/09 → 30/09 | Peterson + Claude | `/observatoire` en **split view**, sur le patron des équipements sportifs, tout le contenu conservé : table gardée SOUS le split (retouche moteur d'une ligne), graphes typologie/portage en pleine largeur. Branche `observatoire-split-view` (`d81b8880`). Cf. §9 30/09 |
 
 ---
 
@@ -98,7 +100,7 @@ de hero sur une page à panneau, cela produit deux champs de recherche.
 |---|---|---|
 | `/` | 11 | `hero-search` + résultats + **teaser agenda** + 5 blocs éditoriaux |
 | `/lieux` | 1 | `gridLayout` — panneau de filtres (5 groupes) + `searchProStatic` |
-| `/observatoire` | 1 | `data-observatory` — cf. §4.3 |
+| `/observatoire` | 1 | `data-observatory` en **split view** (30/09) — cf. §4.3 |
 | `/reseaux-regionaux` · `/reseaux-thematiques` | 1 chacune | même périmètre, **deux angles** (cf. §4.2) |
 | `/communaute` | 1 | `searchProStatic` |
 | `/actualites` | 2 | `searchHeader` + `tabs` — onglet **Actus** (`articleFeed`) / onglet **Événements** (`agenda`, 3 `sourceKey`). **Remplace `/evenements`** (07/09, cf. §9) |
@@ -123,16 +125,20 @@ elles diffèrent par `defaultViewMode` (`regions` vs `thematics`), `enableRegion
 | Dimensions | 10 — `name`, `commune`, `departement`, `region`, `pays`, `typologie`, `portage`, `surface`, `compagnon`, `equipements` |
 | Filtres | 7 — région, typologie, portage, surface, pays, département, compagnon |
 | KPI | 5 — `count`, 2× `distinct`, `percentTrue`, `top` |
-| Graphes | 6 — `bars` (région), `barsHorizontal` (typologie, portage, équipements), `donut` (surface, pays) |
-| Table | oui · **export CSV** oui · **drill-down** activé |
+| Graphes | 6 — `bars` (région), `barsHorizontal` (typologie, portage, équipements), `donut` (surface, pays). Ordre depuis le 30/09 : région, typologie et portage en pleine largeur, puis [surface \| pays], puis équipements |
+| Agencement | **split view** (30/09) : filtres → KPI en bandeau → [liste des lieux, seule zone défilante \| graphes déroulés en entier] → table en pleine largeur. `maxWidth: "full"`. Mobile : tout empilé (KPI, graphes, liste, table) |
+| Liste | titre `name`, sous-titre commune · région ; clic sur un nom = sélection `?selection=` (mot à mot sur `name`) qui filtre KPI, graphes, liste et table ; bouton « Fiche » → profil |
+| Table | oui, **sous** le split · **export CSV** oui · clic sur une ligne → profil (`table.rowAction`) · **drill-down** activé |
 
-Il porte sur **4 322 entités**, soit légèrement plus que les 4 303 des pages de recherche : les deux
-périmètres ne sont pas identiques.
+Il porte sur **4 322 entités** au 28/07, **4 328** au 28/09 (base locale `prod230926`, compteur
+identique sur la capture de Peterson), soit légèrement plus que les 4 303 des pages de recherche :
+les deux périmètres ne sont pas identiques.
 
 ### 4.4 Formulaire costum, bouton flottant, ampli
 
 - **`costumForms["tiers-lieux"]`** — `organizations`, **27 champs déclarés dont 19 placés**,
-  5 sections. Sur les 8 non placés, une partie sont des sous-champs de widgets composites (adresse,
+  5 sections, **1 slot** (`$slot:duplicates`, posé aux étapes `info` et `contact` — détection de
+  doublons à la création, §9 29/09). Sur les 8 non placés, une partie sont des sous-champs de widgets composites (adresse,
   réseaux sociaux) ; cf. le piège du §12.
 - **Bouton flottant** « Ajouter un Tiers-Lieu » (bas-gauche, icône `square-plus`) → modale
   `add-tiers-lieux`, gardée par `condition: {auth: …}`. Depuis le 28/07, le garde d'authentification
@@ -168,6 +174,7 @@ rezo-la-mer 79.
 | Thème | [`../src/index-tiers-lieux.css`](../src/index-tiers-lieux.css) |
 | Déclaration | [`../sites.json`](../sites.json) → `navigatorDesTierslieux` |
 | Formulaire costum | [`../src/modules/profil/forms/costum/`](../src/modules/profil/forms/costum) — id `tiers-lieux` |
+| Détection de doublons à la création (29/09) | Config : `slots` + `duplicateCheck` + `$slot:duplicates` (sections `info` et `contact`) + `searchKeys` de l'invalidation · moteur générique : `src/modules/profil/forms/EntityDuplicatesSlot.tsx`, `forms/useDuplicateSubmitGuard.tsx`, `hooks/useEntityDuplicates.ts`, `lib/entityDuplicates.ts`, `lib/duplicateSearch.ts`, `src/lib/foldText.ts` · pipeline : `forms/entityModalSpec.ts`, `costum/costumFormSchema.zod.ts`, `costum/compileCostumSchema.ts`, `resolveModalSpec.ts`, `specRegistries.ts`, `costum/sharedFns.ts`, `EntityFormModal.tsx` · `formEngine/layouts/shared.tsx` (`empty:hidden`) — cf. [`../doc/28-module-formengine.md`](../doc/28-module-formengine.md) § « Détection de doublons à la création » |
 | Panneau de filtres | [`../src/modules/search/sections/FiltersSection.tsx`](../src/modules/search/sections/FiltersSection.tsx) — + flag `keepOptionOrder` |
 | Observatoire | [`../src/modules/observatoire/`](../src/modules/observatoire) |
 | Ampli | [`../src/modules/ampli/`](../src/modules/ampli) |
@@ -202,6 +209,148 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 30/09 — `/observatoire` en split view : la liste des lieux à gauche, les graphes à droite
+
+**Config + moteur (une ligne)**, demande de Peterson du 28/09 : même agencement que l'observatoire
+des équipements sportifs (`../doc/27-module-observatoire.md` § Split view), en gardant **tout** le
+contenu et le fonctionnement du site. Branche `observatoire-split-view` (le moteur split n'est pas
+sur `main`).
+
+- **Config** — ajout de `layout: "split"`, `maxWidth: "full"` et `list` (`titleDimension: "name"`,
+  sous-titre `commune` · `region`, `selectDimensions: ["name"]`, libellé « Tiers-lieux », ratio
+  `40-60`, 50 lignes avant « Voir plus »). Graphes **réordonnés** (arbitrage Peterson) : typologie
+  et portage passent en `full`, puis [surface | pays]. En `half` dans la colonne à 60 %, l'axe Y
+  fixe de 160 px ne laissait qu'environ 140 px aux barres. Rien d'autre ne bouge : 10 dimensions,
+  7 filtres, recherche, 5 KPI, 6 graphes, drill-down, table à 7 colonnes, export.
+- **Table conservée, rendue SOUS le split** (arbitrage Peterson). Ce site n'a pas de page `/data` :
+  la table porte seule l'export CSV, le tri, la pagination et les badges. En split, le moteur la
+  rendait DANS la colonne droite, ce qui étirait la liste sur graphes + table ; désormais elle vient
+  sous les deux colonnes, en pleine largeur (`DataObservatorySection`). Aucune autre config ne
+  combine split et table : sans effet ailleurs.
+- **Clics** (décision Peterson : garder tout le fonctionnement de la table) :
+  - une ligne de la table ouvre le profil, comme avant ;
+  - un nom de la liste filtre KPI, graphes, liste et table (`?selection=`) ;
+  - le bouton « Fiche » de la liste ouvre le profil.
+
+  `rowAction` reste donc **sous `table`** : la table ne lit que `table.rowAction`, et la liste le
+  lit en repli. La doc moteur, la JSDoc, la description de propriété et la skill disaient
+  `rowAction` « partagé par la table » : corrigées pour décrire le code.
+- **Mesures du clic** (base locale `prod230926`, 4 328 lieux, le 28/09) :
+  - médiane : 1 lieu ;
+  - 690 clics (16 %) ramènent plusieurs lieux, dont 26 plus de 20 ;
+  - pires cas : « Fablab » 137, « Le Lieu » 74, « La Villa » 72 (le mot attrape aussi
+    « Village ») ;
+  - ajouter `commune` aux dimensions élargirait le résultat (737), d'où `["name"]` seul ;
+  - le lieu cliqué est toujours dans son résultat.
+- **Mobile** (arbitrage Peterson) : KPI, graphes, puis la liste (50 lignes + « Voir plus »), puis
+  la table.
+- **Gates** :
+  - `config:validate` ✅ 14 pages / 26 sections ;
+  - `audit:config` RAS (1 assumé) ;
+  - `typecheck` ✅ · `eslint` ✅ (fichiers modifiés) ;
+  - rendu SSR (`curl` sur le dev-server) ✅ : ordre filtres → KPI → [liste `w-2/5` défilante |
+    graphes `w-3/5`] → table, conteneur `max-w-none`.
+
+  Les données valaient 0 dans ce rendu : `mongo42` était arrêté (backend dev en 500), sans lien
+  avec le lot. Préflights non lancés.
+- **Non vérifié** :
+  - rendu navigateur (la liste épouse-t-elle la hauteur des graphes ?) ;
+  - mobile ;
+  - tablette 768–1023 px : le split y est actif, mais les graphes `half` ne s'appairent qu'à partir
+    de 1024 px, donc ils s'empilent tous.
+
+### 29/09 — création d'un lieu : alerte si le tiers-lieu existe déjà
+
+**Demande** (Peterson) : « Alerte si le tiers-lieu est déjà existant à la création ». **Constat
+mesuré** : « La Plume à Loup » existe (Attin, 62170) ; saisir « La Plume à loup » créait un doublon
+— la seule garde était la règle serveur `organizationSameName` (nom + code postal + commune),
+comparaison EXACTE et sensible à la casse, jouée à la fin des 5 étapes. Sur la base locale, périmètre
+de l'annuaire (4 305 fiches), avec le repli que le code applique : **114 noms présents plusieurs
+fois**, dont **34 seulement** partagent aussi un code postal (« L'Archipel » existe dans sept
+villes). Le nom seul ne prouve rien : l'alerte informe, elle ne bloque pas. *(Les chiffres 67 / 5 /
+six villes d'une première mesure étaient en égalité stricte de chaînes — corrigés par la revue.)*
+
+**Ce que voit l'utilisateur.** Sous le nom (étape Infos), dès 3 caractères, puis de nouveau sous
+l'adresse (étape Contact) : jusqu'à 5 fiches au nom proche, avec code postal et commune, un bouton
+« Aperçu » et un lien « Ouvrir la fiche » (nouvel onglet — la saisie en cours n'est pas perdue).
+
+| Niveau | Règle | Effet |
+|---|---|---|
+| Fort | même nom et même code postal | alerte renforcée ; **confirmation à la création** |
+| Probable | même nom ailleurs, ou nom approchant au même code postal | alerte |
+| Possible | nom approchant seul | information |
+
+**Config** (seul ajout propre au site) :
+
+```jsonc
+"slots": { "duplicates": "slot:entityDuplicates" },
+"duplicateCheck": {
+  "nameField": "name", "postalCodeField": "postalCode", "minChars": 3, "limit": 5,
+  "confirmOnSubmit": true,
+  "search": { "types": ["organizations"], "from": { "page": "/lieux", "sectionId": "section-events" } }
+}
+// sections info et contact : "$slot:duplicates" après "name" et après "address"
+// mutation.invalidateFn.params.searchKeys : ["entityDuplicates"]
+```
+
+**Moteur** — générique et config-driven, réutilisable par tout formulaire costum ; **aucun endpoint
+nouveau**, SDK intact. Détail : `doc/28-module-formengine.md` § « Détection de doublons à la
+création ». Les choix qui comptent, tous mesurés :
+
+- **Périmètre par référence** à la section de l'annuaire (`from`) : l'alerte cherche là où `/lieux`
+  cherche, sans 4ᵉ recopie des filtres (ils sont déjà recopiés 3 fois dans cette config). Le chemin de
+  page est requis : l'id `section-events` désigne AUSSI l'agenda de l'accueil.
+- **`searchBy` forcé à `["name"]`**, sans le variant `navigator-tl` de l'annuaire (3 requêtes Mongo par
+  résultat, inutiles ici).
+- **50 résultats demandés, classés côté client, 5 affichés** : le serveur trie par date de mise à
+  jour — les homonymes exacts de « La Fabrique » arrivent aux rangs 9, 18, 29 et 30.
+- **Terme nettoyé avant envoi, espaces conservés** : « L’Archipel » tapé sur mobile (apostrophe
+  typographique) ne retrouvait rien. Et le serveur traduit chaque espace en UN séparateur optionnel :
+  replier les espaces rendait **243 fiches (5,6 %) introuvables par leur propre nom** — constat GRAVE
+  de la revue, reproduit sur « Coworking Haute-Deûle - En cours ».
+- **Le wizard démonte l'étape inactive** : le slot est posé à deux étapes, et la confirmation vit
+  dans la modale (elle refait une recherche sur les valeurs soumises).
+- **Inerte en édition** : le même document sert `add-tiers-lieux` et `edit-tiers-lieux`.
+
+**Revue adversariale** (workflow, 5 dimensions, chaque constat soumis à 2 sceptiques) —
+**29 constats, tous instruits** :
+
+| Dimension | Constats | Ce qui a été corrigé |
+|---|---|---|
+| Bonnes pratiques | 10 | `$or` en ligne qui écrasait le `$or` de périmètre (`mergeMongoFilters`) ; périmètre hérité partiel ; panneau qui disparaissait à chaque recherche ; affirmation fausse sur le coût réseau (cache porté à 5 min) ; logique pure sortie du composant ; helper dupliqué |
+| Données réelles | 3 | 🔴 repli des espaces (ci-dessus) ; la garde lit jusqu'à 3 pages ; chiffres remesurés avec le repli |
+| Fonctionnel | 6 | soumission abandonnée si la modale est fermée pendant la vérification ; résultats d'un ancien nom qui réapparaissaient ; aperçu démonté quand la liste se vide ; liens de l'aperçu qui faisaient perdre la saisie ; texte de la confirmation qui se vidait à la fermeture |
+| Accessibilité | 8 | région d'annonce montée avant le message ; lien à 3,25:1 en thème clair ; texte secondaire à 4,37:1 sur l'alerte forte ; focus rendu après annulation ; débordement à 375 px ; libellés qui comptaient faux |
+| Pipeline | 2 | cohérence du bloc vérifiée par le zod et par un préflight dédié ; ordre de déploiement documenté |
+
+Commit de suivi après le commit initial `c114a91d`. Deux écarts assumés : pas d'index unique côté
+serveur (deux créations simultanées ne se voient pas) ; tokens `warning` sombres par défaut du moteur
+non corrigés (sans effet sur ce site, dont le thème les redéfinit — documenté dans `doc/28`).
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 14 pages, 26 sections |
+| `audit:config` | ✅ RAS |
+| Préflight | ✅ 727 tests (dont le nouveau gate `duplicate-check`) |
+| Tests du lot (lib, hook, slot, garde, schéma, moteur, registres) | ✅ 530 tests sur les dossiers touchés |
+| `tsc -b`, eslint | ✅ sur le lot (erreurs pré-existantes `aac`/`cagnotte` : SDK installé 1.0.189 < requis ^1.0.195) |
+| `vite build` (client) | ✅ — slot dans son propre fichier, 6,2 ko ; règle CSS `:has(>[data-slot-quiet]:only-child)` générée |
+| `npm run build` | ⛔ non rejouable sur ce poste : son `tsc` bute sur les erreurs pré-existantes ci-dessus |
+| Snapshot `compiled.byteparity` | régénéré — diff = `slots`, `duplicateCheck`, 2 ancres `$slot:`, `searchKeys` |
+| Fixture `__effective__/tiers-lieux.json` | inchangée |
+
+**Non fait** : recette navigateur (clair, sombre, mobile, lecteur d'écran) ; durcissement de la règle
+serveur `organizationSameName` (socle partagé `pixelhumain`, hors périmètre).
+
+### 21/09 — `/annuaire-ressources` : les photos des ressources s'affichent
+
+**Code seul** (module `search`, pas de config). Les photos d'une ressource (documents de la
+réponse, ou images de la salle) sont des chemins `/upload/communecter/…` **relatifs au backend** ;
+laissés relatifs, `/img` les cherchait dans les fichiers du site → 404. `parseResourceDirectoryItem`
+les préfixe avec `getBaseUrl()` (option `baseUrl` obligatoire, `toBackendUrl`) ; carte, détail et
+section la passent. Seule la section `coform-resource-directory` est touchée (ce site seulement).
+Détail : `doc/07-module-search.md` § `coform-resource-directory`.
 
 ### 08/09ter — admin : onglet « Référencement »
 
@@ -574,7 +723,7 @@ d'autres projets, tous vérifiés non régressifs à son égard :
 | 1 | Slug + CSS dans `sites.json` | ✅ | `navigatorDesTierslieux` |
 | 2 | Thème | ✅ | Bloc `theme` complet + 54 variables |
 | 3 | Recherche des lieux | ✅ | `/lieux` — panneau à 5 groupes sur 4 303 entités |
-| 4 | Observatoire | ✅ | 10 dimensions, 7 filtres, 6 graphes, table, export CSV, drill-down |
+| 4 | Observatoire | 🟡 | 10 dimensions, 7 filtres, 6 graphes, table, export CSV, drill-down — **split view le 30/09** (liste \| graphes, table dessous), gates verts ; reste le **rendu navigateur** (desktop, tablette, mobile) à valider |
 | 5 | Réseaux régionaux / thématiques | ✅ | Deux angles sur 19 réseaux |
 | 6 | Agenda | ✅ | Teaser sur `/` + onglet « Événements » de `/actualites` (ex-page `/evenements`, cf. §9 07/09) — 359 événements |
 | 7 | Ajout d'un tiers-lieu | ✅ | Formulaire costum (27 champs) + bouton flottant |
@@ -592,6 +741,7 @@ d'autres projets, tous vérifiés non régressifs à son égard :
 | 19 | Palette : le jaune hors de `secondary` | ✅ | 07/09 — `secondary` passé en sable sourd (clair et sombre), jaune vif conservé sous `warning`. Corrige un `text-secondary-foreground` à **1,06:1** en sombre et trois pastilles `bg-yellow-400`/`text-white` à **1,53:1** sur la home. Contrastes remesurés au navigateur |
 | 20 | Annuaire des ressources (`/annuaire-ressources`) | ✅ | 08/09 — page ajoutée : section `coform-resource-directory` (module `search`, variant `navigator-tl-ressource`). Facettes type + 3 groupes prix, carte carrousel + filtre « porté par », modal « En savoir plus » (bouton « Réserver » / `mailto:`). Détail moteur : `doc/07-module-search.md`. Gates config/tsc/eslint/préflights ✅ |
 | 21 | Admin — onglet « Référencement » | ✅ | 08/09 — `admin.tabs[]` `referencement` + section `type: "reference"`, `entityTypes: ["organizations", "citoyens"]` (config seule). `setsource` add/remove collection-agnostique. Gates config/effective-config/admin ✅ |
+| 22 | Alerte « tiers-lieu déjà existant » à la création | 🟡 | 29/09 — slot générique `slot:entityDuplicates` + bloc `duplicateCheck` (config) + confirmation à la soumission. Gates verts, revue adversariale close (29 constats instruits) ; **reste** : recette navigateur |
 
 ---
 
@@ -748,6 +898,13 @@ rejette hors liste blanche : retirer `schemaCostumSlug` **ou** son `pinSchema` l
 
 ## 12. Points d'attention / limitations
 
+- **Détection de doublons (29/09) — ce qu'elle ne voit pas.** Une fiche que le backend masque (en
+  attente de validation) n'est pas signalée. Le périmètre est celui de l'annuaire `/lieux` : les 23
+  organisations taguées `TiersLieux` mais hors de ses filtres (pays, réseau) ne sont pas vues. La
+  règle serveur `organizationSameName` reste le dernier filet, exacte et sensible à la casse. Et la
+  fixture `__effective__` ne lit ni `sections` ni `slots` : une dérive du bloc `duplicateCheck` ne
+  serait vue que par le snapshot `compiled.byteparity`.
+
 - ⚠️ **Le costum vit dans la collection `projects`, pas `organizations`.** Sondé le 28/07 sur les
   12 costums du parc : seuls **`navigatorDesTierslieux` et `eXtremeDefiAdeme`** sont dans ce cas,
   les 9 autres résolus sont en `organizations`. Tout script qui suppose `organizations` en résolvant
@@ -782,6 +939,23 @@ rejette hors liste blanche : retirer `schemaCostumSlug` **ou** son `pinSchema` l
   `server/utils/sites.js` + test `server/__tests__/sites.test.ts`) → upload dans le dossier servi,
   plus de dossier fantôme. `sites.json` absent (Docker) → fallback slug, aucune régression. Cf.
   [[site-json-images-folder-vite-slug]].
+- ⚠️ **Observatoire : `rowAction` reste sous `table`.** Ne pas le hisser au niveau de la section,
+  comme sur les équipements sportifs, tant que la table existe : elle ne lit que `table.rowAction`
+  et perdrait son clic profil, sans aucun signal.
+- ⚠️ **Observatoire : pas d'`export.fields` par inadvertance.** Déclarer `fields` remplacerait le CSV à
+  7 colonnes de la table par l'export des données détail, et ferait apparaître un second bouton CSV
+  dans la liste.
+- **Observatoire : le clic sur un nom générique est large** (« Fablab » → 137 lieux) : KPI et graphes
+  décrivent alors plusieurs lieux. Mesures au §9 30/09.
+- **Observatoire : anomalies préexistantes**, constatées le 28/09 et non corrigées :
+  - le KPI « Typologie dominante » affiche le 1er tag BRUT (« TiersLieux » sur la capture) : le KPI
+    `top` ne tient pas compte des `values` d'une dimension `list` ;
+  - la valeur de portage « Collectivités (Département, Intercommunalité, Région, etc) » (247 lieux)
+    contient une virgule, qui est le séparateur multi-valeurs : filtrer dessus ou y descendre depuis
+    un graphe donne 0 ;
+  - le graphe « Équipements déclarés » est vide : défaut SDK de réhydratation SSR, cf. §13 ;
+  - 6 lieux sans slug n'ont pas de bouton « Fiche » ;
+  - « Réinitialiser » des filtres n'efface ni la sélection ni la recherche.
 
 ---
 
@@ -803,3 +977,10 @@ rejette hors liste blanche : retirer `schemaCostumSlug` **ou** son `pinSchema` l
 | 12 | Revue `e12eddf2` — **`roomPath.catering` pointe-t-il bien sur la question « restauration » ?** Son suffixe d'input (`…mieg8j24m89gm99t5mi`) est celui porté par `equipments` dans `coworkingPath` **et** `bedRoomPath`. Ces formulaires étant des copies l'un de l'autre (préfixe de step différent, suffixe conservé), le même suffixe = la même question d'origine : le détail d'une salle afficherait alors la liste d'**équipements** sous l'intitulé « Restauration ». À trancher sur le formulaire en base (`6925869ad76aaf6c5a2b2f8a`) | Thomas |
 | 13 | Revue `e12eddf2` — **code mort dans la branche `array` de l'hébergement.** `area`/`bedPrice`/`roomPrice` y sont lus par `row[section.bedRoomPath.X]`, or ces clés sont des **chemins pointés** et non des index de ligne (contrairement à `roomPath`, en index numériques) → toujours `undefined` → `0`/`""`. Sans effet aujourd'hui (`bedRoomPath.type === "answer"`, la branche n'est jamais prise) mais le jour où un config passe en `array`, le « correctif » ne corrigera rien — exactement le mode de panne silencieux visé par le commit. À supprimer ou à réécrire en `getNestedValue` | Thomas |
 | 14 | Revue `e12eddf2` — **clé de config morte laissée en place** : `coworkingPath.extra` n'est toujours lue par personne ; le lot a ajouté `equipments` **avec le même chemin** au lieu de lire `extra`. Deux clés pour une donnée, dont une inerte (cf. §12, « un mapping non lu ne produit aucune erreur ») | Thomas |
+| 15 | Alerte doublons (29/09) : **recette navigateur** à faire (clair, sombre, 375 px, lecteur d'écran) ; et faut-il proposer « c'est mon lieu → le modifier » en plus de « Ouvrir la fiche » (question de droits : l'édition d'un lieu dépend de §11.2) ? | Peterson |
+| 16 | Durcir la règle serveur `organizationSameName` (ignorer casse et accents) ? Elle vit dans le socle partagé `pixelhumain` : effet sur tous les sites | Thomas |
+| 17 | Remettre le poste à niveau (`npm install` : SDK installé 1.0.189, requis ^1.0.195) — `npm run build` et `tsc` y échouent sur `aac` et `cagnotte` | Peterson |
+| 18 | Observatoire en split (30/09) : **valider le rendu navigateur** sur desktop (~1 367 px : la liste épouse-t-elle la hauteur des graphes ?), tablette (768–1023 px) et mobile | Peterson |
+| 19 | Graphe « Équipements déclarés (PoC réponses CoForm) » **vide**. Cause identifiée le 28/09 et reproduite hors navigateur : après le rendu SSR, `Organization._transformServerData` (`cocolight-api-client`, `Organization.ts:172`, idem `Project.ts:87`) ré-enveloppe une Answer déjà reconstruite, et le chemin rend `[]` au lieu de 10 valeurs. Spec à rédiger pour Aboire ? | Peterson |
+| 20 | Sélection « nom exact » en option, pour resserrer les clics larges : mesuré, 237 clics ramèneraient plusieurs lieux, 7 au plus, uniquement des homonymes. Lot moteur séparé ? | Peterson |
+| 21 | KPI « Typologie dominante » (1er tag brut) et virgule de la valeur de portage « Collectivités (…, etc) » : correctifs à planifier ? | Peterson |

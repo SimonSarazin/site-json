@@ -9,6 +9,7 @@
  * config globale JSON — comportement runtime identique (le résolveur `resolveModalSpec` la rend). cf. plan
  * `~/.claude/plans/streamed-snuggling-glacier.md`.
  */
+import type { SearchType } from "@/modules/search/schema";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import type { JsonFormConfig, I18n } from "@/modules/formEngine";
 import type { EntityKind } from "../hooks/useEntityMutation";
@@ -28,6 +29,42 @@ export interface EntityModalCtx {
   carrier?: EntityTypes | null;
   /** contexte costum du site (`useSite().config.costum`). */
   costum?: unknown;
+}
+
+/**
+ * Détection de doublons À LA CRÉATION — bloc `duplicateCheck` d'un formulaire costum. Source UNIQUE
+ * des paramètres pour ses deux consommateurs : le slot `slot:entityDuplicates` (alerte non bloquante
+ * pendant la saisie) et la garde de soumission d'`EntityFormModal` (confirmation avant création).
+ * Inerte en édition.
+ */
+export interface DuplicateCheckSpec {
+  /** Champ du formulaire portant le NOM saisi. */
+  nameField: string;
+  /** Champ portant le code postal (champ plat écrit par le widget `location`). Sans lui, le niveau
+   *  « même nom, même code postal » n'existe pas, et la confirmation de soumission non plus. */
+  postalCodeField?: string;
+  /** Caractères UTILES (nom replié) avant de chercher. Défaut 3. */
+  minChars?: number;
+  /** Correspondances affichées. Défaut 5. */
+  limit?: number;
+  /** Correspondances demandées au serveur avant classement. Défaut 50. */
+  fetchLimit?: number;
+  /** Demander confirmation à la soumission quand nom ET code postal coïncident. Défaut false. */
+  confirmOnSubmit?: boolean;
+  /** Conteneur de l'aperçu d'une correspondance. Défaut `dialog` : la modale du formulaire est un
+   *  Dialog Radix modal, un second Dialog s'y empile proprement — un tiroir hors Radix non. */
+  detailsMode?: "dialog" | "drawer";
+  search: {
+    /** Collections cherchées (ex. `["organizations"]`). */
+    types: SearchType[];
+    /** Périmètre hérité d'une section de recherche du site (chemin de page + id de section) :
+     *  l'alerte cherche là où l'annuaire cherche, sans recopier ses filtres. */
+    from?: { page: string; sectionId: string };
+    /** Filtres Mongo en ligne — fusionnés PAR-DESSUS ceux de `from`. */
+    filters?: Record<string, unknown>;
+    notSourceKey?: boolean;
+    sourceKey?: string[];
+  };
 }
 
 /** Référence à un descripteur : enregistré par `id` (TS, via `registerDescriptor`) OU `JsonFormConfig` embarquée (JSON). */
@@ -62,6 +99,15 @@ export interface SpecInject {
   dropEmptyEmail?: boolean;
   /** valeurs fixes ajoutées au payload au CREATE (STAMP costum statique). */
   extraFields?: Record<string, unknown>;
+  /**
+   * Comme `extraFields`, mais SEULEMENT si l'utilisateur n'est pas ADMIN DU SITE (`isCostumHostAdmin`).
+   * Sert la modération a priori : `{ preferences: { toBeValidated: true } }` met la fiche en attente pour
+   * le public, et l'admin qui dépose publie directement.
+   *
+   * ⚠ Filtre d'AFFICHAGE, pas barrière de sécurité : le drapeau est posé par le client, donc une requête
+   * forgée peut s'en passer — c'était déjà le cas avant. Une vraie garantie se poserait côté backend.
+   */
+  extraFieldsUnlessCostumAdmin?: Record<string, unknown>;
   /** STAMP depuis le scope résolu : { champPayload: cléScope } → payload[champ] = ctx.scope[cléScope].
    *  Évite de dupliquer une valeur déjà dans `scope.defaults` (ex. poi : { type: "poiType" }). */
   extraFieldsFromScope?: Record<string, string>;
@@ -184,6 +230,9 @@ export interface EntityModalSpec {
 
   // ── slots (id de slot → clé registre) ──
   slots?: Record<string, string>;
+
+  // ── détection de doublons à la création (slot `slot:entityDuplicates` + garde de soumission) ──
+  duplicateCheck?: DuplicateCheckSpec;
 
   // ── validation externe (clé → `schemaRegistry`) ; sinon zod auto du descripteur ──
   schemaFn?: string;
