@@ -382,6 +382,46 @@ describe("parseCoFormFields", () => {
     expect(result[0].fields[0].componentType).toBe("finder");
   });
 
+  it("finder sans libellé ou resté aux défauts legacy : chaînes vides, que le rendu remplace par les libellés traduits", () => {
+    const formData = makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: {
+            nu: { label: "Sans libellés", type: "tpls.forms.cplx.finder" },
+            legacy: { label: "Défauts legacy", type: "tpls.forms.cplx.finder" },
+            cae: { label: "Avec libellés", type: "tpls.forms.cplx.finder" },
+          },
+        },
+      },
+      params: {
+        findernu: { type: "organizations" },
+        // Donnée exacte de la base : la modale de configuration legacy enregistre ses défauts.
+        finderlegacy: {
+          type: "organizations",
+          elementLabel: "Elément",
+          placeholderSearchField: "Saisir le nom de l'élément que vous recherchez",
+        },
+        findercae: { type: "organizations", elementLabel: " CAE", buttonLabel: "Chercher une CAE", placeholderSearchField: "Nom de la CAE" },
+      },
+    });
+
+    const champs = parseCoFormFields(formData)[0].fields;
+    const configDe = (nom: string) => champs.find((f) => f.name === nom)?.finderConfig;
+    // Un défaut français, écrit ici ou enregistré par le legacy, s'affichait tel quel en anglais
+    // (« Your Elément doesn't exist yet? »).
+    const vides = { elementLabel: "", buttonLabel: "", placeholderSearchField: "" };
+    expect(configDe("findernu")).toMatchObject(vides);
+    expect(configDe("finderlegacy")).toMatchObject(vides);
+    expect(configDe("findercae")).toMatchObject({
+      elementLabel: "CAE",
+      buttonLabel: "Chercher une CAE",
+      placeholderSearchField: "Nom de la CAE",
+    });
+  });
+
   it("parse plusieurs subForms", () => {
     const formData = makeCoFormData({
       inputs: {

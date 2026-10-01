@@ -226,6 +226,28 @@ export function isTruthyFlag(value: unknown): boolean {
 }
 
 /**
+ * Défauts que la modale de configuration du finder legacy ENREGISTRE dans `params`
+ * (`survey/…/cplx/finder.php`, `$paramsData`) : `elementLabel` en dur, placeholder traduit dans la
+ * langue de qui configure (en / fr / it). Mesuré en base de dev le 01/10 : 21 finders sur 86 portent
+ * « Elément », 32 le placeholder français.
+ */
+const LEGACY_FINDER_DEFAULTS = new Set([
+  "Elément",
+  "Enter the name of the item you are looking for",
+  "Saisir le nom de l'élément que vous recherchez",
+  "Inserisci il nome dell'articolo che stai cercando",
+]);
+
+/**
+ * Libellé d'un finder : un défaut legacy se lit comme ABSENT (chaîne vide), pour que le rendu prenne
+ * le libellé traduit (`coform.finder.*`) — sinon « Your Elément doesn't exist yet? » en anglais.
+ */
+function finderLabel(value: unknown): string {
+  const label = typeof value === "string" ? value.trim() : "";
+  return LEGACY_FINDER_DEFAULTS.has(label) ? "" : label;
+}
+
+/**
  * Génère le nom du champ avec son préfixe si nécessaire
  * @param componentType - Type du composant
  * @param originalKey - Clé originale du champ dans le formulaire
@@ -910,9 +932,11 @@ export function parseCoFormFields(
             notSourceKey: toBool(paramData.notSourceKey ?? true),
             myContacts: toBool(paramData.myContacts),
             initCurrentUser: toBool(paramData.initCurrentUser),
-            elementLabel: (paramData.elementLabel as string) || "Élément",
-            buttonLabel: (paramData.buttonLabel as string) || "Rechercher et ajouter",
-            placeholderSearchField: (paramData.placeholderSearchField as string) || "Entrez le nom de l'élément recherché",
+            // Libellé absent ou défaut legacy ⇒ chaîne vide, et le rendu prend le libellé TRADUIT : un
+            // défaut écrit ici en français s'affichait tel quel en anglais (« Your Élément… »).
+            elementLabel: finderLabel(paramData.elementLabel),
+            buttonLabel: finderLabel(paramData.buttonLabel),
+            placeholderSearchField: finderLabel(paramData.placeholderSearchField),
             field: (paramData.field as string) || "element",
             multiple: toBool(paramData.multiple ?? true),
             addNew: toBool(paramData.addNew),

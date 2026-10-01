@@ -75,3 +75,26 @@ describe("FinderField — « Ajouter »", () => {
     expect(modales[modales.length - 1]).toBe("add-cae");
   });
 });
+
+describe("FinderField — libellés non configurés", () => {
+  it("rend les libellés traduits, jamais un défaut écrit en français (« Your Élément… » en anglais)", async () => {
+    const champ = { ...CHAMP, finderConfig: { type: "organizations", addNew: true, multiple: true } } as unknown as FormFieldMapping;
+    const site = { config: { coform: { finderAddNew: { finderaapStep1partenaires: "add-cae" } } }, setConfig: () => {} };
+    render(avecRequetes(
+      <SiteContext.Provider value={site as never}>
+        <FinderField field={champ} errors={{}} value={null} onChange={() => {}} />
+      </SiteContext.Provider>
+    ));
+    expect(screen.getByText("coform.finder.fallbackButton")).toBeInTheDocument();
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /Partenaires du commun/ }));
+    expect(screen.getByRole("dialog", { name: "coform.finder.modal.title" })).toBeInTheDocument();
+    const saisie = screen.getByRole("textbox");
+    expect(saisie).toHaveAttribute("placeholder", "coform.finder.modal.searchPlaceholder");
+    await user.type(saisie, "Nouvelle CAE");
+    expect(
+      screen.getByText(`coform.finder.modal.addNewPrompt ${JSON.stringify({ label: "coform.finder.fallbackElement" })}`)
+    ).toBeInTheDocument();
+  });
+});

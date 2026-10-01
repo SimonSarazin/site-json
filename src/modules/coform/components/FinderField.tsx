@@ -38,9 +38,10 @@ const defaultFinderConfig: FinderConfig = {
   notSourceKey: true,
   myContacts: false,
   initCurrentUser: false,
-  elementLabel: "Élément",
-  buttonLabel: "Rechercher et ajouter",
-  placeholderSearchField: "Entrez le nom de l'élément recherché",
+  // Vides : le rendu prend les libellés traduits (cf. `formParser`).
+  elementLabel: "",
+  buttonLabel: "",
+  placeholderSearchField: "",
   field: "element",
   multiple: true,
   addNew: false,
@@ -191,7 +192,7 @@ export function FinderField({
           )}
         >
           <Search aria-hidden="true" className="w-5 h-5" />
-          <span>{config.buttonLabel}</span>
+          <span>{config.buttonLabel || String(t("coform.finder.fallbackButton"))}</span>
         </button>
       )}
 

@@ -148,6 +148,7 @@
     },
     "finder": {
       "fallbackElement": "element",
+      "fallbackButton": "Search and add",
       "requiredField": "This field is required",
       "elementCard": {
         "edit": "Edit",
