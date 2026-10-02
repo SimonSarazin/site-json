@@ -1,0 +1,546 @@
+/* Module comment — les seules règles que les utilitaires Tailwind ne peuvent pas porter.
+   Tout le reste (couleurs, états, espacements) vit dans les classes des composants, pilotées
+   par des attributs `data-*` : un seul point de vérité par état. */
+
+.comment-thread {
+  /* ═══════════ Le fil : un arbre, qui se mesure à SA largeur ═══════════
+     Direction B, arbitrée le 28/09 : la même STRUCTURE à toutes les largeurs — trois niveaux,
+     un trait par niveau, des avatars dégressifs — et des MESURES qui se resserrent quand le
+     fil est étroit.
+
+     Le fil est un conteneur : c'est sa largeur qui décide, pas celle de l'écran. Un téléphone,
+     la colonne étroite du panneau à 900 px d'écran, une actualité posée dans une grille tombent
+     sous la même règle — et elle est juste dès le premier octet, là où `useIsMobile` rendait la
+     version bureau à tout téléphone avant de basculer.
+
+     ⚠️ Les valeurs LARGES sont posées ici, sur le conteneur, et les valeurs ÉTROITES sur ses
+     enfants : une container query stylise les descendants du conteneur, jamais lui-même. */
+  container: fil / inline-size;
+  --comment-pad: 1rem;           /* marge latérale d'une ligne */
+  --comment-gutter: 2rem;        /* colonne d'avatar — la MÊME à tous les niveaux */
+  --comment-gap: 0.625rem;       /* entre la gouttière et le texte */
+  --comment-indent: 2.125rem;    /* retrait par niveau */
+  --comment-avatar-0: 2rem;      /* le sujet */
+  --comment-avatar-1: 1.625rem;  /* une réponse */
+  --comment-avatar-2: 1.375rem;  /* une réponse à une réponse, et au-delà */
+  --comment-line: color-mix(in oklab, var(--border) 70%, var(--muted-foreground));
+  /* De combien la marque d'état déborde à GAUCHE de la gouttière du message : 17 px séparent
+     le trait du parent de cette gouttière, on en prend 8 (voir `.comment-mark`). */
+  --comment-mark-lead: 0.5rem;
+}
+
+/* Sous 32 rem de fil : mesuré sur 358 px, 296 px de texte à la racine (280 avant, avec un seul
+   niveau) et encore 248 px au niveau 3. Garder l'arbre ne coûte presque rien. */
+@container fil (max-width: 31.999rem) {
+  .comment-thread > * {
+    --comment-pad: 0.75rem;
+    --comment-gutter: 1.75rem;
+    --comment-gap: 0.5rem;
+    --comment-indent: 1rem;
+    --comment-avatar-0: 1.75rem;
+    --comment-avatar-1: 1.375rem;
+    --comment-avatar-2: 1.25rem;
+    /* Le trait du parent passe ici à 1 px de la gouttière : aucun débord possible. */
+    --comment-mark-lead: 0rem;
+  }
+}
+
+/* La ligne. Le retrait passe par `--comment-depth`, posé en style inline : Tailwind ne génère
+   pas de classe à valeur dynamique, et une table de classes plafonnerait les niveaux au lieu de
+   les borner explicitement. */
+.comment-row {
+  --comment-row-pt: 0.125rem;
+  --comment-avatar: var(--comment-avatar-0);
+  gap: var(--comment-gap);
+  padding-block: var(--comment-row-pt) 0.125rem;
+  padding-inline: calc(var(--comment-pad) + var(--comment-depth, 0) * var(--comment-indent)) var(--comment-pad);
+  isolation: isolate;
+}
+.comment-row[data-depth="1"] { --comment-avatar: var(--comment-avatar-1); }
+.comment-row[data-depth="2"],
+.comment-row[data-depth="3"] { --comment-avatar: var(--comment-avatar-2); }
+.comment-avatar { width: var(--comment-avatar); height: var(--comment-avatar); }
+
+/* Chaque racine ouvre un SUJET : un filet et de l'air. Sauf juste après un séparateur, qui
+   sépare déjà. Une racine n'étant plus jamais fondue dans le bloc précédent (`flattenThread`),
+   « Second sujet, sans rapport » ne se colle plus sous la question d'avant. */
+.comment-row[data-real-depth="0"] {
+  --comment-row-pt: 0.625rem;
+  margin-top: 0.375rem;
+  border-top: 1px solid var(--border);
+}
+[data-comment-separator] + .comment-row[data-real-depth="0"] {
+  --comment-row-pt: 0.25rem;
+  margin-top: 0;
+  border-top: 0;
+}
+
+/* Les traits : UN PAR NIVEAU d'ascendance, au centre de la gouttière de ce niveau. Toutes les
+   gouttières ayant la même largeur, les traits s'alignent au pixel d'une ligne à l'autre,
+   quelle que soit la taille de l'avatar : une ligne de niveau 3 porte trois traits, et l'on
+   voit d'un coup d'œil à quelle branche elle appartient. Le filet unique à 60 % d'opacité
+   qu'ils remplacent ne reliait que le parent immédiat. */
+.comment-row::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(var(--comment-pad) + var(--comment-gutter) / 2 - 1px);
+  width: calc(var(--comment-depth, 0) * var(--comment-indent));
+  background: repeating-linear-gradient(to right, var(--comment-line) 0 2px, transparent 2px var(--comment-indent));
+  pointer-events: none;
+}
+/* Le parent dont les réponses sont ouvertes fait descendre son trait jusqu'à elles, depuis le
+   bas de son avatar (le `pt-1` de la gouttière, l'avatar, puis un souffle). */
+.comment-row[data-open]::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  width: 2px;
+  inset-inline-start: calc(var(--comment-pad) + var(--comment-depth, 0) * var(--comment-indent) + var(--comment-gutter) / 2 - 1px);
+  top: calc(var(--comment-row-pt) + 0.25rem + var(--comment-avatar) + 0.25rem);
+  background: var(--comment-line);
+  pointer-events: none;
+}
+.comment-row[data-open][data-grouped="true"]::after { top: 0; }
+
+/* ─── La marque : le fond d'état d'un message ───
+   Elle part de la colonne DU MESSAGE, jamais du bord du fil. Le retrait étant une marge
+   intérieure de la ligne, un fond posé sur la ligne repeignait les traits des niveaux
+   au-dessus : mesuré le 28/09, il commençait 33 px avant le trait de la racine au niveau 1,
+   101 px au niveau 3 (27 et 59 au téléphone). Désormais : 9 px APRÈS le trait au large, 1 px
+   au téléphone, où il longe le trait sans le couvrir. Pas de liseré : dans un arbre, il imitait
+   un trait de plus, et contre celui du parent il ferait une double ligne.
+   Elle se pose derrière le contenu (`z-index: -1` dans une ligne isolée) et ne capte rien. */
+.comment-mark {
+  position: absolute;
+  z-index: -1;
+  inset-block: 1px;
+  inset-inline-start: calc(var(--comment-pad) + var(--comment-depth, 0) * var(--comment-indent) - var(--comment-mark-lead));
+  inset-inline-end: 0.375rem;
+  border-radius: 0.5rem;
+  pointer-events: none;
+}
+/* Le survol, comme `hover:` de Tailwind v4 : seulement là où le survol existe. */
+@media (hover: hover) {
+  .comment-row:hover > .comment-mark { background-color: color-mix(in oklab, var(--muted) 40%, transparent); }
+}
+/* La mention qu'on n'a PAS ENCORE VUE, et elle seule. Ouvrir le fil écrit `views.<moi>` sur ses
+   messages (`POST /co2/comment/seen`) : le fond reste pendant la lecture, et à la visite
+   suivante il a disparu. La pastille du `@moi`, elle, reste — elle dit « c'est toi », pas
+   « c'est nouveau ». */
+.comment-row[data-mentioned="true"][data-unread="true"] > .comment-mark {
+  background-color: color-mix(in oklab, var(--primary) 9%, transparent);
+}
+@media (hover: hover) {
+  .comment-row[data-mentioned="true"][data-unread="true"]:hover > .comment-mark {
+    background-color: color-mix(in oklab, var(--primary) 12%, transparent);
+  }
+}
+.comment-row[data-failed="true"] > .comment-mark {
+  background-color: color-mix(in oklab, var(--destructive) 10%, transparent);
+}
+
+/* ─── « nouveau » : le non-lu se lit à l'heure, sans fond ───
+   Un point et un mot. L'en-tête est un conteneur : quand la place manque, le MOT s'efface le
+   premier (il reste lu par les lecteurs d'écran), puis le nom se tronque. Le point et l'heure
+   restent toujours. Deux seuils, parce qu'une heure qui porte son jour (« aujourd'hui à
+   14:41 ») prend quatre fois la place de « 14:41 » : on garde ainsi ~90 px au nom. */
+.comment-header { container: entete / inline-size; }
+.comment-new {
+  display: inline-flex;
+  flex: none;
+  align-self: center;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--primary);
+}
+.comment-new::before {
+  content: "";
+  flex: none;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 999px;
+  background: currentColor;
+}
+.comment-new-gutter .comment-new-label {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+@container entete (max-width: 11.999rem) {
+  .comment-new-label {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+}
+@container entete (max-width: 16.999rem) {
+  .comment-header:has(> [data-day-shift]) .comment-new-label {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+}
+/* Sur une ligne groupée, le point occupe la gouttière, à hauteur de la première ligne de
+   texte, et cède la place à l'heure quand celle-ci apparaît. */
+.comment-new-gutter {
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  translate: -50% 0;
+  transition: opacity 120ms ease-out;
+}
+.comment-row:hover .comment-new-gutter,
+.comment-row:focus-within .comment-new-gutter {
+  opacity: 0;
+}
+
+/* Le `@moi` : une pastille, teintée de la couleur du lien quel que soit le thème. */
+.comment-row a[data-mention-me] {
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 0.3125rem;
+  padding: 0.0625rem 0.25rem;
+  background: color-mix(in oklab, currentColor 15%, transparent);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* UNE ligne de service : réactions, actions (au doigt), repli. Elle passe à la ligne proprement
+   quand la place manque, au lieu d'écraser ses segments. */
+.comment-service {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.375rem;
+}
+.comment-service:has(> [data-comment-reactions], > [data-comment-collapse]) { padding-top: 0.25rem; }
+
+/* ─── Les actions : une même boîte, deux présentations selon le pointeur ───
+   À la souris : la barre flottante de Discord, en haut à droite de la ligne. Masquée par
+   l'OPACITÉ et jamais par `display:none` — elle doit rester atteignable au clavier, ce que
+   `focus-within` assure. */
+.comment-actions {
+  position: absolute;
+  top: 0;
+  inset-inline-end: 0.5rem;
+  padding: 0.125rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.06);
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+.comment-row:hover .comment-actions,
+.comment-row:focus-within .comment-actions {
+  opacity: 1;
+}
+.comment-action-label { display: none; }
+
+/* Au doigt : pas de survol, donc rien qui flotte. Les actions entrent dans la ligne de service,
+   visibles en permanence, « Répondre » en toutes lettres (arbitré le 28/09). Elles flottaient
+   là aussi — mesuré sur téléphone : 11 barres sur 11 affichées d'un coup, dont les « ⋯ »
+   recouvraient les citations. */
+@media (hover: none), (pointer: coarse) {
+  .comment-service { padding-top: 0.25rem; }
+  .comment-actions {
+    position: static;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    opacity: 1;
+    gap: 0.125rem;
+  }
+  .comment-action-label { display: inline; }
+  .comment-actions [data-action] {
+    width: auto;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.5rem;
+  }
+  .comment-actions [data-action="reply"] {
+    gap: 0.375rem;
+    padding-inline: 0.625rem;
+    font-size: 0.8125rem;
+  }
+
+  /* Des cibles à la taille du doigt. Mesuré : pastilles de 20 px et repli de 16 px de haut,
+     sous le seuil d'accessibilité de 24 px. */
+  [data-comment-reactions] > button {
+    min-height: 2rem;
+    padding-inline: 0.625rem;
+  }
+  .comment-collapse { min-height: 2.25rem; }
+}
+
+/* L'heure d'une ligne groupée occupe la gouttière et n'apparaît qu'au survol ou au focus du
+   message, comme chez Discord — la lire en permanence hacherait le bloc. Au doigt, toucher un
+   message le focalise : l'heure s'y montre aussi. */
+.comment-groupline-time {
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+.comment-row:hover .comment-groupline-time,
+.comment-row:focus-within .comment-groupline-time {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .comment-actions,
+  .comment-groupline-time,
+  .comment-new-gutter {
+    transition: none;
+  }
+}
+
+/* Le fil défile, le composer reste. Dans le panneau, un filet les sépare : les messages passent
+   dessous en défilant. */
+.comment-log { padding-block: 0.25rem 0.5rem; }
+.comment-composer-zone { padding: 0.5rem var(--comment-pad) 0; }
+.discussion-panel .comment-composer-zone {
+  padding-bottom: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Surbrillance temporaire après un saut vers un message cité. Posée par le composant puis
+   retirée : un attribut plutôt qu'une classe, pour rester sur le même point de vérité que
+   les autres états de la ligne. */
+.comment-row[data-highlighted="true"] > .comment-mark {
+  animation: comment-mark-highlight 1.6s ease-out;
+}
+/* Sans `to` : l'animation rejoint le fond que la marque a par ailleurs (rien, ou la mention). */
+@keyframes comment-mark-highlight {
+  from { background-color: color-mix(in oklab, var(--primary) 18%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .comment-row[data-highlighted="true"] > .comment-mark {
+    animation: none;
+    background-color: color-mix(in oklab, var(--primary) 12%, transparent);
+  }
+}
+
+/* Les marques de mise en forme sont ATTÉNUÉES au repos et pleines au focus du composer :
+   les masquer ferait sauter la mise en page à chaque clic dans le champ. */
+.comment-marks {
+  opacity: 0.55;
+  transition: opacity 120ms ease-out;
+}
+.comment-thread:focus-within .comment-marks {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .comment-marks { transition: none; }
+}
+
+/* Message long replié. La hauteur est BORNÉE, le texte reste entier dans le DOM — donc
+   trouvable par `Ctrl+F` et restitué par un lecteur d'écran, ce que `-webkit-line-clamp`
+   empêche. L'estompe est un MASQUE et non un dégradé de fond : elle agit sur le texte, et
+   reste donc juste quelle que soit la couleur derrière, survol de ligne compris. */
+.comment-collapsed {
+  max-height: 9rem;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 2.5rem), transparent);
+}
+
+/* ─────────── Le panneau se mesure à SON CONTENEUR, jamais au viewport ───────────
+   C'est ce qui règle d'un coup le responsive ET l'ouverture en modale : le même panneau, posé
+   dans une colonne étroite d'un grand écran, doit se comporter comme sur un petit écran.
+
+   Et c'est du CSS, pas un hook : un hook de media query vaut `false` au rendu serveur comme au
+   premier rendu client, si bien que les trois colonnes apparaissaient une fraction de seconde
+   sous 768 px avant de se replier. Les trois colonnes restent donc MONTÉES en permanence —
+   elles ne coûtent aucune requête de plus, toutes vivent dans `DiscussionPanel`. */
+
+/* Panneau étroit : une seule colonne à la fois, celle que l'URL désigne. */
+@container panneau (max-width: 47.999rem) {
+  .discussion-panel [data-panel-column] { display: none; border-inline-end: 0; }
+  .discussion-panel[data-step="carriers"] [data-panel-column="carriers"],
+  .discussion-panel[data-step="threads"] [data-panel-column="threads"],
+  .discussion-panel[data-step="thread"] [data-panel-column="thread"] { display: flex; }
+
+  /* ── Une requête active empile les DEUX premières colonnes ──
+     « Espaces » puis « Discussions correspondantes » : une recherche qui ne montrerait qu'une
+     moitié de ses résultats ne vaudrait pas la peine d'être lancée.
+
+     ⚠️ `data-step` n'est pas touché, et ne doit jamais l'être : c'est lui qui alimente l'effet
+     de focus du panneau, et le dériver de la requête volerait le focus du champ à la première
+     frappe — précisément en mode une colonne, où l'effet s'applique.
+
+     ⚠️ Ces règles doivent rester APRÈS celles ci-dessus : elles ont la même spécificité sur
+     `[data-panel-column]` seul, c'est donc l'ordre de source qui tranche. Un tri des règles
+     casserait la fonctionnalité sans casser aucune assertion. */
+  .discussion-panel[data-search="on"]:not([data-step="thread"]) [data-panel-columns] {
+    flex-direction: column;
+  }
+  .discussion-panel[data-search="on"]:not([data-step="thread"]) [data-panel-column="carriers"],
+  .discussion-panel[data-search="on"]:not([data-step="thread"]) [data-panel-column="threads"] {
+    display: flex;
+    flex: 1 1 0;
+    min-height: 0;
+    border-inline-end: 0;
+  }
+  .discussion-panel[data-search="on"]:not([data-step="thread"]) [data-panel-column="carriers"] {
+    border-block-end: 1px solid var(--border);
+  }
+  /* Deux en-têtes empilés dont l'un porterait un « retour » vers l'étape qu'on n'a pas
+     quittée : le bouton n'a plus d'objet. */
+  .discussion-panel[data-search="on"]:not([data-step="thread"]) [data-panel-column="threads"] [data-panel-back] {
+    display: none;
+  }
+  /* À l'étape « fil », la barre ne vole pas 48 px au fil de messages. */
+  .discussion-panel[data-step="thread"] [data-search-row] { display: none; }
+
+  /* Le bouton de pli est RETIRÉ, pas grisé — même raison que dans la bande 48–64 rem : replier
+     la seule colonne affichée laisserait l'écran vide à côté. Un bouton présent mais inopérant
+     est pire que pas de bouton : il annonce une issue qui n'existe pas. */
+  .discussion-panel [data-rail-toggle] { display: none; }
+}
+
+/* Au-delà, les trois coexistent. Les largeurs sont fixes, la colonne du fil prend le reste. */
+@container panneau (min-width: 48rem) {
+  /* Les boutons « retour » n'ont plus d'objet quand les colonnes sont côte à côte. */
+  .discussion-panel [data-panel-back] { display: none; }
+  .discussion-panel [data-panel-column="carriers"] { width: 14rem; flex: none; }
+  .discussion-panel [data-panel-column="threads"] { width: 18rem; flex: none; }
+}
+@container panneau (min-width: 96rem) {
+  .discussion-panel [data-panel-column="carriers"] { width: 16rem; }
+  .discussion-panel [data-panel-column="threads"] { width: 20rem; }
+}
+
+/* Bande intermédiaire : trois colonnes tiennent, mais pas trois colonnes LARGES. Le rail se
+   plie d'office, et son bouton disparaît puisqu'il serait sans effet.
+   ⚠️ Ce masquage du libellé est borné à CETTE bande : sous 48 rem le rail est seul et occupe
+   toute la largeur — y masquer les noms serait absurde.
+
+   ⚠️ Le rétrécissement ne vaut qu'AU REPOS (`[data-search="off"]`). Un rail de 3.5 rem ne peut
+   porter aucun nom lisible, et c'est précisément l'écran où l'on en a le plus besoin : pendant
+   une recherche il reprend ses 14 rem, et c'est la colonne du FIL qui cède la place — jamais
+   celle des résultats. Mesuré à 62 rem de panneau : rail 56 → 224 px, résultats 240 px
+   inchangés, fil 694 → 526 px, soit bien au-dessus du plancher de 460 px qu'on s'est fixé.
+   Une SUPERPOSITION du rail avait été essayée : à cette largeur elle recouvrait exactement la
+   colonne des résultats — on masquait la moitié de ce qu'on venait de chercher. */
+@container panneau (min-width: 48rem) and (max-width: 63.999rem) {
+  .discussion-panel [data-panel-column="threads"] { width: 15rem; }
+  .discussion-panel[data-search="off"] [data-panel-column="carriers"] { width: 3.5rem; }
+  .discussion-panel[data-search="off"] [data-rail-toggle] { display: none; }
+  .discussion-panel[data-search="off"] [data-carrier-label],
+  .discussion-panel[data-search="off"] [data-rail-title] { display: none; }
+  .discussion-panel[data-search="off"] [data-carrier-row] { justify-content: center; padding-inline: 0.5rem; }
+  .discussion-panel[data-search="off"] [data-unread-badge] { position: absolute; top: 0.25rem; inset-inline-end: 0.25rem; }
+  /* Le rail qui se rouvre glisse, pour qu'on voie d'où il vient. */
+  .discussion-panel[data-search="on"] [data-panel-column="carriers"] {
+    animation: comment-rail-reveal 160ms ease-out;
+  }
+}
+
+/* Pli à la main, au-delà de la bande où il est imposé. Même arbitrage : un pli CHOISI est une
+   préférence d'affichage, une recherche en cours est un besoin ponctuel qui prime. La
+   préférence est retrouvée intacte dès que la requête est vidée.
+
+   ⚠️ BORNÉ À 48 REM, et ce n'est pas un raffinement — c'était un piège complet. La préférence
+   vit dans `localStorage` : repliée sur un écran de bureau, elle suit l'utilisateur sur son
+   téléphone. Ces règles n'étant dans AUCUNE container query, le rail y tombait à 3.5 rem alors
+   qu'il est la SEULE colonne affichée — mesuré : 56 px de contenu sur un écran de 390 px, titre
+   de colonne masqué. Et il n'y avait pas d'issue : le bouton qui aurait déplié est rendu
+   `disabled` sous 64 rem (`useRailCollapse`, `canToggle`). Sous 48 rem, le pli n'a tout
+   simplement pas d'objet — il n'y a rien à côté à qui rendre de la place. */
+@container panneau (min-width: 48rem) {
+  .discussion-panel[data-rail="collapsed"][data-search="off"] [data-panel-column="carriers"] { width: 3.5rem; }
+  .discussion-panel[data-rail="collapsed"][data-search="off"] [data-carrier-label],
+  .discussion-panel[data-rail="collapsed"][data-search="off"] [data-rail-title] { display: none; }
+  .discussion-panel[data-rail="collapsed"][data-search="off"] [data-carrier-row] { justify-content: center; padding-inline: 0.5rem; }
+  .discussion-panel[data-rail="collapsed"][data-search="off"] [data-unread-badge] { position: absolute; top: 0.25rem; inset-inline-end: 0.25rem; }
+
+  /* Plié à la main, le bouton de pli remplace le repère d'icône : 3.5 rem ne tient pas les deux. */
+  .discussion-panel[data-rail="collapsed"][data-search="off"] [data-rail-icon] { display: none; }
+  .discussion-panel[data-rail="collapsed"][data-search="off"] [data-rail-toggle] { margin-inline: auto; }
+}
+
+/* L'ouverture du rail sous une requête. Animer une largeur n'est pas composé par le GPU —
+   acceptable ici : une seule boîte, 160 ms, une fois par recherche. Neutralisée plus bas
+   avec les autres transitions sous `prefers-reduced-motion`. */
+@keyframes comment-rail-reveal {
+  from { width: 3.5rem; }
+  to { width: 14rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .discussion-panel[data-search="on"] [data-panel-column="carriers"] { animation: none; }
+}
+
+/* ═══════════════════ Les transitions du panneau ═══════════════════
+   Toutes sont courtes (≤ 200 ms) et neutralisées sous `prefers-reduced-motion`. Elles ne
+   servent pas à décorer : elles disent d'où vient ce qui apparaît, ce qu'un changement
+   instantané laisse deviner. */
+
+/**
+ * Une section repliable, à hauteur ANIMÉE.
+ *
+ * `height: auto` n'est pas interpolable ; l'idiome robuste est une grille qui passe de `0fr`
+ * à `1fr`, ce qui anime la hauteur réelle du contenu sans jamais la coder en dur.
+ *
+ * Le contenu reste MONTÉ : c'est ce qui rend l'animation possible. Il est donc rendu inerte
+ * quand il est replié — `visibility: hidden` le sort du parcours de tabulation et des
+ * lecteurs d'écran, et sa bascule est DIFFÉRÉE à la fin de la transition d'ouverture, sinon
+ * le contenu disparaîtrait avant d'avoir fini de se refermer.
+ */
+.comment-collapsible {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows 180ms ease, visibility 0s linear 180ms;
+}
+.comment-collapsible[data-open="true"] {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows 180ms ease, visibility 0s;
+}
+/* `min-height: 0` est indispensable : sans lui, l'enfant refuse de passer sous son
+   `min-content` et la grille ne se referme jamais complètement. */
+.comment-collapsible > * {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Le pli du rail. La largeur est portée par les règles de bande ci-dessus ; on n'ajoute ici
+   que la durée, pour que le rail glisse au lieu de sauter. */
+.discussion-panel [data-panel-column="carriers"],
+.discussion-panel [data-panel-column="threads"] {
+  transition: width 180ms ease;
+}
+
+/* Changement d'étape en mode une seule colonne. `display: none` n'étant pas interpolable,
+   c'est la colonne ARRIVANTE qui s'annonce — le sens de la translation suit la profondeur :
+   on entre par la droite, comme on s'enfonce dans la navigation. */
+@container panneau (max-width: 47.999rem) {
+  .discussion-panel [data-panel-column] {
+    animation: comment-step-in 180ms ease-out;
+  }
+}
+@keyframes comment-step-in {
+  from { opacity: 0; transform: translateX(1.25rem); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Le déroulé d'un message long. La hauteur cible est MESURÉE et posée en style inline par le
+   composant : c'est la seule façon d'interpoler vers un contenu de hauteur inconnue. */
+.comment-collapsed,
+.comment-expanding {
+  transition: max-height 200ms ease, mask-position 200ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .comment-collapsible,
+  .comment-collapsible[data-open="true"],
+  .discussion-panel [data-panel-column="carriers"],
+  .discussion-panel [data-panel-column="threads"],
+  .comment-collapsed,
+  .comment-expanding {
+    transition: none;
+  }
+  @container panneau (max-width: 47.999rem) {
+    .discussion-panel [data-panel-column] { animation: none; }
+  }
+}
