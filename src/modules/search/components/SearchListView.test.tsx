@@ -110,9 +110,12 @@ beforeEach(() => {
 });
 
 describe("SearchListView (tableau de bord embarqué, onSelectItem)", () => {
+  // Seul un variant qui rend le bouton « Fiche » autorise la sélection au clic.
+  const poiCard = { type: "poi-amenities" } as const;
+
   it("clic sur une carte → onSelectItem(item), sans ouvrir le détail", () => {
     const onSelectItem = vi.fn();
-    renderInRouter(<SearchListView results={results} onSelectItem={onSelectItem} />);
+    renderInRouter(<SearchListView results={results} card={poiCard} onSelectItem={onSelectItem} />);
 
     fireEvent.click(screen.getByText("Bravo"));
     expect(onSelectItem).toHaveBeenCalledTimes(1);
@@ -121,17 +124,65 @@ describe("SearchListView (tableau de bord embarqué, onSelectItem)", () => {
   });
 
   it("chaque carte reçoit alors un bouton « Fiche », qui OUVRE le détail", () => {
-    renderInRouter(<SearchListView results={results} onSelectItem={vi.fn()} />);
+    renderInRouter(<SearchListView results={results} card={poiCard} onSelectItem={vi.fn()} />);
 
     fireEvent.click(screen.getByText("fiche:Bravo"));
     expect(screen.getByTestId("details-modal")).toHaveAttribute("data-item", "Bravo");
   });
 
   it("sans onSelectItem, aucun bouton « Fiche » et le clic ouvre le détail", () => {
-    renderInRouter(<SearchListView results={results} />);
+    renderInRouter(<SearchListView results={results} card={poiCard} />);
 
     expect(screen.queryByText("fiche:Bravo")).toBeNull();
     fireEvent.click(screen.getByText("Bravo"));
+    expect(screen.getByTestId("details-modal")).toHaveAttribute("data-item", "Bravo");
+  });
+
+  it("variant SANS bouton « Fiche » : le clic ouvre la fiche, pas de sélection", () => {
+    const onSelectItem = vi.fn();
+    renderInRouter(<SearchListView results={results} card={{ type: "default" }} onSelectItem={onSelectItem} />);
+
+    expect(screen.queryByText("fiche:Bravo")).toBeNull();
+    fireEvent.click(screen.getByText("Bravo"));
+    expect(onSelectItem).not.toHaveBeenCalled();
+    expect(screen.getByTestId("details-modal")).toHaveAttribute("data-item", "Bravo");
+  });
+
+  it("`card.variant` prime sur `card.type`, comme dans le dispatch de SearchCard", () => {
+    const onSelectItem = vi.fn();
+    renderInRouter(
+      <SearchListView results={results} card={{ type: "default", variant: "poi-amenities" }} onSelectItem={onSelectItem} />,
+    );
+
+    fireEvent.click(screen.getByText("Bravo"));
+    expect(onSelectItem).toHaveBeenCalledTimes(1);
+  });
+
+  it("vue groupée : pas de bouton « Fiche », donc le clic ouvre la fiche", () => {
+    const onSelectItem = vi.fn();
+    // Le titre de bloc traduit son libellé : fournisseur de localisation en plus du routeur.
+    renderWithProviders(
+      <MemoryRouter>
+        <SearchListView
+          results={results}
+          list={{ card: poiCard, layout: "grouped", groupBy: { field: "name" } }}
+          onSelectItem={onSelectItem}
+        />
+      </MemoryRouter>,
+    );
+
+    // Le bloc est titré « Bravo » lui aussi : on vise la carte (bouton), pas le titre.
+    fireEvent.click(screen.getByRole("button", { name: "Bravo" }));
+    expect(onSelectItem).not.toHaveBeenCalled();
+    expect(screen.getByTestId("details-modal")).toHaveAttribute("data-item", "Bravo");
+  });
+
+  it("vue détaillée : le clic ouvre la fiche", () => {
+    const onSelectItem = vi.fn();
+    renderInRouter(<SearchListView results={results} card={poiCard} isDetailedView onSelectItem={onSelectItem} />);
+
+    fireEvent.click(screen.getByText("Bravo"));
+    expect(onSelectItem).not.toHaveBeenCalled();
     expect(screen.getByTestId("details-modal")).toHaveAttribute("data-item", "Bravo");
   });
 });

@@ -843,6 +843,15 @@ export const ListConfSchema = z.object({
   itemRules: z.array(ListItemRuleSchema).optional(),
   /** Action au clic par DÉFAUT de la liste, surchargeable par règle. Absent = ouvrir le détail. */
   itemAction: ListItemActionSchema.optional(),
+  /**
+   * Libellé additionnel PAR ITEM (map id → texte), affiché en petit badge sur la carte quand
+   * présent — id = `getEntryId(item)` (id racine prioritaire, même formule que le param preview).
+   * Générique et rétrocompatible : absent partout ailleurs, donc sans effet sur les autres
+   * consommateurs de `CardDefault`/`CardEvent`. Cas d'usage : un digest multi-entités (« Mes lieux »)
+   * où chaque item vient d'un lieu membre différent — le lieu lié n'est pas un champ de l'item lui
+   * même, il se calcule côté appelant (croisement `links.*` × la liste de lieux connus).
+   */
+  linkedLabels: z.record(z.string(), z.string()).optional(),
 }).partial();
 
 export type ListConf = z.infer<typeof ListConfSchema>;
@@ -1678,8 +1687,10 @@ export interface SearchListViewProps<T extends SearchListEntity = SearchEntity> 
   /** Synchro split : clic sur une carte de liste → focus carte (au lieu d'ouvrir le détail). */
   onFocusItem?: (id: string) => void;
   /** Tableau de bord embarqué : clic sur une carte → SÉLECTION (au lieu d'ouvrir le
-   *  détail), et chaque carte reçoit alors un bouton « Fiche » qui, lui, ouvre le
-   *  détail. Sans cette prop, rien ne change : le clic ouvre la fiche. */
+   *  détail), et la carte reçoit alors un bouton « Fiche » qui, lui, ouvre le détail.
+   *  Ne vaut QUE pour la vue grille et les variants qui rendent ce bouton
+   *  (`cardHasSheetButton`, aujourd'hui `poi-amenities`) : ailleurs le clic ouvre la
+   *  fiche, pour qu'elle reste accessible. Sans cette prop, rien ne change. */
   onSelectItem?: (item: SearchEntity) => void;
   /**
    * Nom du paramètre URL utilisé pour synchroniser l'item affiché en preview.

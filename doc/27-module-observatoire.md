@@ -315,6 +315,14 @@ proposer une autre porte vers la fiche (dans le module search, le bouton
 « Fiche » que `SearchListView` ajoute avec `onSelectItem`). Re-cliquer l'item
 sélectionné annule la sélection.
 
+> **Limite :** dans `SearchListView`, la sélection au clic ne s'applique qu'en
+> **vue grille** et aux cartes qui rendent le bouton « Fiche »
+> (`src/modules/search/lib/cardSheetButton.ts`, aujourd'hui `poi-amenities`).
+> Avec un autre variant (`default`, `event`…) ou une autre vue (groupée,
+> détaillée, timeline), le clic garde l'ouverture de la fiche : sans bouton,
+> elle deviendrait inaccessible. Pour l'étendre à un variant, lui faire rendre
+> `onOpenSheet` PUIS l'ajouter à `SHEET_BUTTON_CARD_TYPES`.
+
 Le raffinement est un état LOCAL, pas un paramètre d'URL, contrairement à
 `useObservatoryFilters` : `searchProStatic` est la variante SANS synchronisation
 URL du module search — plusieurs instances coexistent sur une page et ne peuvent

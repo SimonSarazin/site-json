@@ -152,7 +152,9 @@ export const ObservatoryPanelConfSchema = z.object({
    * `list.selectDimensions` de la section. Déclaré, le clic sur une carte
    * RESTREINT le tableau de bord à sa famille (et un bouton « Fiche » prend en
    * charge l'ouverture du détail) ; absent, le clic ouvre la fiche comme
-   * partout ailleurs.
+   * partout ailleurs. Effectif seulement avec une carte qui rend ce bouton
+   * (`poi-amenities`) en vue grille : avec un autre variant, le clic garde
+   * l'ouverture de la fiche (sinon elle deviendrait inaccessible).
    */
   select: z
     .object({
