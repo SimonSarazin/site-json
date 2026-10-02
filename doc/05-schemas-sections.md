@@ -1067,6 +1067,17 @@ const HTMLSectionSchema = z.object({
 });
 ```
 
+HTML d'ADMIN, passé au profil `sanitize()` par défaut (scripts et handlers retirés, `style`/`class`/`svg`
+conservés — cf. `src/lib/sanitize.ts`).
+
+**Les liens internes naviguent en SPA**, comme ceux du menu : la section délègue le clic à
+`destinationSpa` (`components/sections/htmlSectionLinks.ts`), qui s'appuie sur le `classifyHref`
+commun au parc. Un `<a href="/lieux?services=…">` écrit dans le HTML ne recharge donc plus la page.
+Gardent leur comportement natif : les ancres `#`, `mailto:`/`tel:`/`sms:`, l'externe (`http(s)://`),
+les ancres `target`/`download`, et tout clic d'ouverture parallèle (clic milieu, Ctrl/Cmd, Maj, Alt).
+Écrire la query ENCODÉE (`?services=Salle%20de%20R%C3%A9union`) : c'est du HTML valide, et les deux
+chemins (clic SPA, URL ouverte directement) donnent le même résultat.
+
 ## `banner`
 
 ```ts
@@ -1701,6 +1712,7 @@ export const SearchProStaticSectionSchema = z.object({
 - **Fonctionnalites supplementaires** : `addButton`, `zoneSelector`, `tagSelector`, `csvButton`, `enableGraph`, `bg`
 - **Ideal pour** : integrer plusieurs recherches sur une meme page sans conflits de query params
 - **`customHeader.linkHref` + `customHeader.linkIcon`** : lien "voir sur la page complete" utilise avec `linkText` pour pointer vers la version `searchPro` complète. `showMapButton` a été supprimé.
+- **Alignement de l'en-tête** : titre et boutons sont alignés sur les bords de la grille de résultats (ni `container` ni marge latérale, `mb-3`) — pas de réglage. Avant 09/2026, l'en-tête était rentré dans un `container` avec `px-*` : il ne commençait pas au même bord que les cartes.
 - **`defaultFilters.$or`** : peut contenir un filtre `$or` sous forme d'**objet** (pas de tableau MongoDB standard) pour scoper a des costums précis :
   ```json
   "defaultFilters": {
@@ -2434,6 +2446,7 @@ const ContentSectionSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     category: LocalizedString.optional(),
+    categoryVariant: z.enum(["text", "pill"]).optional(),   // défaut "text"
     title: LocalizedString,
     description: LocalizedString,
     tags: z.array(LocalizedString).optional(),
@@ -2465,6 +2478,7 @@ const ContentSectionSchema = z.object({
 | Propriete | Type | Description |
 | --------- | ---- | ----------- |
 | `category` | `LocalizedString?` | Categorie affichee au-dessus du titre |
+| `categoryVariant` | `"text" \| "pill"`? | Rendu de `category` : `"pill"` = pastille bordée (`rounded-full border border-border`). Absent = texte simple (historique) |
 | `title` | `LocalizedString` | Titre de la section |
 | `description` | `LocalizedString` | Description principale — rendue en **markdown** (gras, tirets, retours à la ligne), sanitizé avant injection |
 | `tags` | `LocalizedString[]?` | Liste de tags |
