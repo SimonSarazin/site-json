@@ -45,6 +45,19 @@ function cibleDepense(funding: DepenseFunding): { milestoneId?: string; depenseK
   return { depenseKey: String(funding.depenseIndex) };
 }
 
+/** Montant versé pour régler une promesse : son solde, pas le montant engagé. */
+export function montantARegler(pledge: Pledge): number {
+  return pledge.remainingAmount ?? pledge.fundingAmount;
+}
+
+/** Promesses qu'un règlement peut journaliser : rattachées à une ressource, avec un solde positif. */
+export function promessesReglables(pledges: Pledge[]): Array<Pledge & { resourceId: string }> {
+  return pledges.filter(
+      (pledge): pledge is Pledge & { resourceId: string } =>
+          typeof pledge.resourceId !== "undefined" && montantARegler(pledge) > 0,
+  );
+}
+
 export const useSaveCagnotteContribution = () => {
   useLoadNamespace("modules/cagnotte");
   const t = useT("modules/cagnotte");
@@ -162,8 +175,7 @@ export const useSaveCagnotteContribution = () => {
 
           // Une seule Answer chargée par ressource, même si plusieurs promesses y pointent.
           const pledgesByResource = new Map<string, Pledge[]>();
-          for (const pledge of pledges) {
-            if (typeof pledge.resourceId === "undefined") continue;
+          for (const pledge of promessesReglables(pledges)) {
             const group = pledgesByResource.get(pledge.resourceId) ?? [];
             group.push(pledge);
             pledgesByResource.set(pledge.resourceId, group);
@@ -176,8 +188,7 @@ export const useSaveCagnotteContribution = () => {
             const answer = await api.answer({ id: resourceId });
 
             for (const pledge of resourcePledges) {
-              const montant = pledge.remainingAmount ?? pledge.fundingAmount;
-              if (!(montant > 0)) continue;
+              const montant = montantARegler(pledge);
 
               try {
                 await answer.payFinancer({

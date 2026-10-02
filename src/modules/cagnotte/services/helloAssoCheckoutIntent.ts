@@ -3,6 +3,8 @@
  * Appelle le backend pour créer une session de paiement réelle via API HelloAsso
  */
 
+import { asRecord, toString, type UnknownRecord } from "@/modules/cagnotte/utils/dataTransform";
+
 export interface CreateCheckoutIntentRequest {
   amount: number;
   projectName: string;
@@ -117,47 +119,27 @@ export const createHelloAssoCheckoutIntent = async (
   }
 };
 
-/**
- * Ouvre la popup de paiement HelloAsso avec l'URL officielle du checkout
- */
-export const openHelloAssoPaymentWithCheckout = (
-  checkoutIntentUrl: string,
-  popupConfig?: { width?: number; height?: number; left?: number; top?: number }
-): Promise<{ success: boolean; popup: Window | null }> => {
-  return new Promise((resolve) => {
-    const config = {
-      width: 680,
-      height: 760,
-      left: 120,
-      top: 60,
-      ...popupConfig,
-    };
-
-    const popupParams = [
-      `width=${config.width}`,
-      `height=${config.height}`,
-      `left=${config.left}`,
-      `top=${config.top}`,
-      "toolbar=no",
-      "menubar=no",
-      "scrollbars=yes",
-      "resizable=yes",
-      "status=no",
-    ].join(",");
-
-    const popup = window.open(checkoutIntentUrl, "helloasso-payment", popupParams);
-
-    if (!popup) {
-      console.error("Impossible d'ouvrir la popup HelloAsso");
-      resolve({ success: false, popup: null });
-      return;
-    }
-
-    resolve({ success: true, popup });
-  });
+/** Checkout renvoyé par `helloassoPay` (`content: {id, redirectUrl}`) ; `null` s'il est incomplet. */
+export const readHelloAssoCheckout = (
+  response: UnknownRecord
+): { checkoutIntentId: string; redirectUrl: string } | null => {
+  const content = asRecord(response.content);
+  const redirectUrl = toString(content.redirectUrl) || toString(response.redirectUrl);
+  const id = content.id ?? response.checkoutIntentId ?? response.id;
+  const checkoutIntentId = typeof id === "number" || typeof id === "string" ? String(id) : "";
+  return redirectUrl && checkoutIntentId ? { checkoutIntentId, redirectUrl } : null;
 };
+
+/** Ouvre une popup vide, à appeler pendant le clic (après un `await`, le navigateur la bloque). */
+export const openHelloAssoPopup = (): Window | null =>
+  window.open(
+    "",
+    "helloasso-payment",
+    "width=680,height=760,left=120,top=60,toolbar=no,menubar=no,scrollbars=yes,resizable=yes,status=no"
+  );
 
 export default {
   createHelloAssoCheckoutIntent,
-  openHelloAssoPaymentWithCheckout,
+  openHelloAssoPopup,
+  readHelloAssoCheckout,
 };

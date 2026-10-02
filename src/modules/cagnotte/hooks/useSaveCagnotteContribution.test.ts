@@ -29,7 +29,7 @@ vi.mock("@/lib/toastUtils", () => ({
   showErrorToast: toasts.error,
 }));
 
-import { useSaveCagnotteContribution } from "./useSaveCagnotteContribution";
+import { montantARegler, promessesReglables, useSaveCagnotteContribution } from "./useSaveCagnotteContribution";
 
 const FINKEY = "a-w171hEa1bvz9";
 const FINANCER = { id: "u1", name: "Alice", type: "citoyens" };
@@ -296,5 +296,21 @@ describe("payContribution — règlement des promesses", () => {
     await payContribution([pledge({ finkey: FINKEY, remainingAmount: 0 })]);
 
     expect(espions.payFinancer).not.toHaveBeenCalled();
+  });
+
+  // Règles de « Payer ma promesse » : le montant facturé est celui journalisé.
+  it("montantARegler : le solde d'une promesse entamée, sinon le montant engagé", () => {
+    expect(montantARegler(pledge({ fundingAmount: 1000, remainingAmount: 600 }))).toBe(600);
+    expect(montantARegler(pledge({ fundingAmount: 1000 }))).toBe(1000);
+  });
+
+  it("promessesReglables : écarte ce que `payContribution` ne journaliserait pas", () => {
+    const reglables = promessesReglables([
+      pledge({ id: "ok", remainingAmount: 600 }),
+      pledge({ id: "sans-ressource", resourceId: undefined, remainingAmount: 100 }),
+      pledge({ id: "soldee", remainingAmount: 0 }),
+    ]);
+
+    expect(reglables.map((p) => p.id)).toEqual(["ok"]);
   });
 });

@@ -1,9 +1,10 @@
-import { useMemo, useState, useEffect, useCallback, useRef } from "react";
+import { useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
     CreditCard,
@@ -19,17 +20,23 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { formatNumber } from "@/modules/cagnotte/utils/format";
-import { asRecord, type UnknownRecord } from "@/modules/cagnotte/utils/dataTransform";
+import type { UnknownRecord } from "@/modules/cagnotte/utils/dataTransform";
+import { availablePaymentChoices, type PaymentChoice } from "@/modules/cagnotte/utils/paymentMethods";
 import type { EntityTypes, User } from "@communecter/cocolight-api-client";
 import { isUser } from "@/lib/getTypedEntity";
 import {
     buildHelloAssoPaymentData,
     validateHelloAssoConfig,
+    type HelloAssoPaymentConfig,
 } from "@/modules/cagnotte/services/helloAssoService";
-import { openHelloAssoPaymentWithCheckout } from "@/modules/cagnotte/services/helloAssoCheckoutIntent";
-import { verifyHelloAssoCheckoutStatus } from "@/modules/cagnotte/services/helloAssoVerification";
+import { readFundingEnvelopeResponse } from "@/modules/cagnotte/services/fundingEnvelopeResponse";
 import { getStripePublicKey } from "@/modules/cagnotte/services/stripeService";
 import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope";
+import {
+    useHelloAssoCheckout,
+    type HelloAssoAction,
+    type HelloAssoPayment,
+} from "@/modules/cagnotte/hooks/useHelloAssoCheckout";
 import { useUserAdminOrganizationsQuery } from "@/modules/cagnotte/hooks/useUserAdminOrganizations";
 import { CagnotteOrganizationPicker } from "./parts/CagnotteOrganizationPicker";
 import { useSaveCagnotteContribution } from "@/modules/cagnotte/hooks/useSaveCagnotteContribution";
@@ -63,20 +70,10 @@ interface PaymentDataPayload extends Record<string, unknown> {
     transactionId?: string;
 }
 
-type PaymentMethod = "stripe" | "helloasso" | "pledge" | null;
+type PaymentMethod = PaymentChoice | null;
+/** Montant et répartition figés au lancement du paiement HelloAsso. */
+type HelloAssoSnapshot = { config: HelloAssoPaymentConfig; fundings: DepenseFunding[] };
 type ContributorType = "citoyens" | "organizations";
-
-function normalizeFundingEnvelopeResponse(value: unknown): UnknownRecord {
-    if (typeof value === "string") {
-        try {
-            const parsed = JSON.parse(value) as unknown;
-            return asRecord(parsed);
-        } catch {
-            return {};
-        }
-    }
-    return asRecord(value);
-}
 
 function normalizeFundingContextType(type: string | undefined): string {
     const lowered = (type || "").toLowerCase();
@@ -109,11 +106,7 @@ const PaymentConfigPage = ({
     const [contributorType, setContributorType] = useState<ContributorType>(cagnotteConfig.allowPersonToFinance ? "citoyens" : "organizations");
     const [contributorId, setContributorId] = useState<string>(cagnotteConfig.allowPersonToFinance ? (me?.serverData?.id || "") : "");
     const [contributorName, setContributorName] = useState<string>(me?.serverData?.name || "");
-    const [isHelloAssoProcessing, setIsHelloAssoProcessing] = useState(false);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
-    const [helloAssoPaymentId, setHelloAssoPaymentId] = useState<string | null>(null);
-    const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
-    const [isWaitingHelloAssoCallback, setIsWaitingHelloAssoCallback] = useState(false);
     const [acceptPledgeCondition, setAcceptPledgeCondition] = useState(false);
     useLoadNamespace("modules/cagnotte");
     const t = useT("modules/cagnotte");
@@ -128,9 +121,21 @@ const PaymentConfigPage = ({
 
     const acceptCondition = (e: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {setAcceptPledgeCondition(e.target.checked);};
 
-    const stripeUnavailableReason = !stripePublicKey
-        ? String(t("PaymentConfigPage.errors.stripeUnavailable"))
-        : null;
+    // Seuls les moyens configurés pour l'entité sont proposés.
+    const isLoadingPaymentMethods = fundingEnvelopeQuery.isLoading;
+    const paymentChoices = availablePaymentChoices(fundingPaymentMethods, {
+        stripePublicKey,
+        allowPledge: cagnotteConfig.allowContributionWithoutPaiement,
+    });
+
+    // Désélectionne un moyen retiré, choisit d'office un moyen unique.
+    if (!isLoadingPaymentMethods) {
+        if (paymentMethod && !paymentChoices.includes(paymentMethod)) {
+            setPaymentMethod(null);
+        } else if (!paymentMethod && paymentChoices.length === 1) {
+            setPaymentMethod(paymentChoices[0]);
+        }
+    }
 
     // Hook pour sauvegarder les contributions (dual-strategy: Answer.updateField + fallback save)
     const { saveContribution } = useSaveCagnotteContribution();
@@ -209,9 +214,9 @@ const PaymentConfigPage = ({
     }, [navigate, onClose, t]);
 
     const submitFundingEnvelopeAction = useCallback(async (
-        action: "stripePay" | "helloassoPay" | "pledge",
+        action: "stripePay" | HelloAssoAction,
         payload: Record<string, unknown>
-    ) => {
+    ): Promise<UnknownRecord> => {
         if (!entity || typeof entity.fundingEnvelope !== "function") {
             throw new Error(String(t("PaymentConfigPage.errors.fundingEnvelopeUnavailable")));
         }
@@ -230,28 +235,13 @@ const PaymentConfigPage = ({
             ...payload,
         } as Parameters<typeof entity.fundingEnvelope>[0]);
 
-        const response = normalizeFundingEnvelopeResponse(rawResponse);
-
-        if (typeof response.error === "string" && response.error) {
-            throw new Error(response.error);
-        }
-
-        if (typeof response.message === "string" && response.message.toLowerCase().includes("error")) {
-            throw new Error(response.message);
-        }
-
-        return response;
+        return readFundingEnvelopeResponse(rawResponse, String(t("PaymentConfigPage.errors.paymentRejected")));
     // `itemProjectId` est lu l.223 (repli de `effectiveContextId`) : sans lui, le
     // callback capturait une valeur périmée. Sans risque de boucle — il n'est
     // consommé que par des gestionnaires d'événements, jamais par un useEffect.
     }, [entity, contextId, contextType, itemProjectId, t]);
 
-    // Garde-fou de ré-entrance : `completePayment` enregistre le financement via
-    // `answer.updateField(..., {arrayForm:true})` qui AJOUTE une entrée financer à
-    // chaque appel. Or le poll HelloAsso (setInterval 5s + fetch awaité) peut déclencher
-    // deux ticks concurrents. Sans garde, la contribution serait enregistrée en double.
-    // "running"/"done" bloquent tout second appel ; on repasse à "idle" sur erreur pour
-    // autoriser une nouvelle tentative.
+    // Bloque un second enregistrement ; repasse à "idle" sur erreur pour permettre une relance.
     const completionStateRef = useRef<"idle" | "running" | "done">("idle");
 
     // Envelopper completePayment dans useCallback pour éviter les dépendances changeantes
@@ -326,93 +316,25 @@ const PaymentConfigPage = ({
         setContributorName(userAdminOrganizations[0].name);
     }
 
-    // Callback réel depuis /api/helloasso/callback (popup -> parent)
-    useEffect(() => {
-        const handleHelloAssoCallback = (event: MessageEvent) => {
-            const data = (event.data || {}) as Record<string, unknown>;
-            if (data.source !== "helloasso" || data.type !== "HELLOASSO_CALLBACK") return;
+    const helloAssoConfig = {
+        amount: effectiveAmount,
+        resourceName,
+        resourceId,
+        itemsIds: Array.from(activeItemsIds),
+        contributorType,
+        organizationId: contributorId || undefined,
+    };
 
-            const callbackStatus = String(data.status || "");
-            const callbackCheckoutId = String(data.checkoutIntentId || "");
+    // Enregistre la contribution avec le montant et la répartition figés au clic.
+    const handleHelloAssoPaid = ({ checkoutIntentId, orderId }: HelloAssoPayment, { config, fundings }: HelloAssoSnapshot) => {
+        void completePayment(buildHelloAssoPaymentData(config, orderId ?? checkoutIntentId), fundings);
+    };
 
-            if (helloAssoPaymentId && callbackCheckoutId && callbackCheckoutId !== helloAssoPaymentId) {
-                return;
-            }
+    const helloAsso = useHelloAssoCheckout<HelloAssoSnapshot>({ submit: submitFundingEnvelopeAction, onPaid: handleHelloAssoPaid });
 
-            setIsWaitingHelloAssoCallback(false);
-
-            if (callbackStatus === "failed" || callbackStatus === "error" || callbackStatus === "cancel") {
-                setIsHelloAssoProcessing(false);
-                showErrorToast(
-                    new Error(String(t("PaymentConfigPage.toasts.paymentInterrupted.description"))),
-                    "PaymentConfigPage.toasts.paymentInterrupted.title",
-                    t,
-                );
-                return;
-            }
-
-            // Démarre la vérification réelle côté API HelloAsso avant toute sauvegarde.
-            setIsVerifyingPayment(true);
-        };
-
-        window.addEventListener("message", handleHelloAssoCallback);
-        return () => window.removeEventListener("message", handleHelloAssoCallback);
-    }, [helloAssoPaymentId, t]);
-
-    // Vérifier le statut du paiement HelloAsso toutes les 5 secondes quand en attente
-    useEffect(() => {
-        if (!isVerifyingPayment || !helloAssoPaymentId) return;
-
-        // Empêche deux ticks de se chevaucher si une vérification dépasse 5 s
-        // (le fetch n'a pas de timeout) : sinon deux ticks pourraient tous deux
-        // voir isValid et appeler completePayment.
-        let polling = false;
-
-        const verifyInterval = setInterval(async () => {
-            if (polling) return;
-            polling = true;
-            try {
-                const verification = await verifyHelloAssoCheckoutStatus(helloAssoPaymentId);
-
-                if (verification.isValid) {
-                    clearInterval(verifyInterval);
-                    setIsVerifyingPayment(false);
-                    setIsHelloAssoProcessing(false);
-
-                    // Créer les données finales de paiement
-                    const paymentData = buildHelloAssoPaymentData(
-                        {
-                            amount: effectiveAmount,
-                            resourceName,
-                            resourceId,
-                            itemsIds: Array.from(activeItemsIds),
-                            contributorType: contributorType as "citoyens" | "organizations",
-                            organizationId: contributorId || undefined,
-                        },
-                        helloAssoPaymentId
-                    );
-                    completePayment(paymentData, depenseFunding);
-                } else if (verification.status === "failed") {
-                    console.error("Paiement HelloAsso échoué");
-                    clearInterval(verifyInterval);
-                    setIsVerifyingPayment(false);
-                    setIsHelloAssoProcessing(false);
-                    showErrorToast(
-                        new Error(verification.error || String(t("PaymentConfigPage.toasts.paymentFailed.fallbackDescription"))),
-                        "PaymentConfigPage.toasts.paymentFailed.title",
-                        t,
-                    );
-                }
-                // Si status === "pending" ou "error", continuer à vérifier
-            } finally {
-                polling = false;
-            }
-        }, 5000);
-
-        return () => clearInterval(verifyInterval);
-    }, [isVerifyingPayment, helloAssoPaymentId, effectiveAmount, resourceName, resourceId, activeItemsIds, contributorType, contributorId, t, completePayment, depenseFunding]);
-
+    // La contribution s'enregistre sur la réponse liée : sans elle, pas de paiement.
     const isFormComplete = Boolean(
+        itemAnswerId &&
         paymentMethod &&
         contributorType &&
         (contributorType === "citoyens" ||
@@ -445,6 +367,7 @@ const PaymentConfigPage = ({
                     ""
                 ),
                 amount: effectiveAmount,
+                email: me?.serverData?.email,
             });
 
             const contributionData = buildContributionData();
@@ -465,78 +388,21 @@ const PaymentConfigPage = ({
         }
     };
 
-    const handleHelloAssoPayment = async () => {
+    // Synchrone jusqu'à `start` : la popup doit s'ouvrir pendant le clic.
+    const handleHelloAssoPayment = () => {
         if (!isFormComplete) return;
 
-        setIsHelloAssoProcessing(true);
-        setIsWaitingHelloAssoCallback(false);
-        setIsVerifyingPayment(false);
-
-        try {
-            // Préparer la configuration HelloAsso
-            const helloAssoConfig = {
-                amount: effectiveAmount,
-                resourceName,
-                resourceId,
-                itemsIds: Array.from(activeItemsIds),
-                contributorType: contributorType as "citoyens" | "organizations",
-                organizationId: contributorId || undefined,
-            };
-
-            // Valider la configuration (codes d'erreur traduits côté UI)
-            const validation = validateHelloAssoConfig(helloAssoConfig);
-            if (!validation.valid) {
-                const messages = validation.errors.map((code) =>
-                    String(t(`PaymentConfigPage.helloAssoConfigErrors.${code}`))
-                );
-                throw new Error(messages.join(" | "));
-            }
-
-            const fundingEnvelopeResponse = await submitFundingEnvelopeAction("helloassoPay", {
-                amount: effectiveAmount,
-                email: me?.serverData?.email,
-            });
-
-            const redirectUrl =
-                typeof fundingEnvelopeResponse.redirectUrl === "string"
-                    ? fundingEnvelopeResponse.redirectUrl
-                    : typeof fundingEnvelopeResponse.checkoutIntentUrl === "string"
-                        ? fundingEnvelopeResponse.checkoutIntentUrl
-                        : typeof fundingEnvelopeResponse.url === "string"
-                            ? fundingEnvelopeResponse.url
-                            : undefined;
-
-            if (!redirectUrl) {
-                throw new Error(String(t("PaymentConfigPage.errors.noRedirectUrl")));
-            }
-
-            // 2. Ouvrir la popup avec l'URL officielle du checkout
-            const { success, popup } = await openHelloAssoPaymentWithCheckout(
-                redirectUrl,
-                {
-                    width: 680,
-                    height: 760,
-                    left: 120,
-                    top: 60,
-                }
+        // Valider la configuration (codes d'erreur traduits côté UI)
+        const validation = validateHelloAssoConfig(helloAssoConfig);
+        if (!validation.valid) {
+            const messages = validation.errors.map((code) =>
+                String(t(`PaymentConfigPage.helloAssoConfigErrors.${code}`))
             );
-
-            if (success && popup) {
-                const rawResponse = fundingEnvelopeResponse;
-                setHelloAssoPaymentId(
-                    String(rawResponse.checkoutIntentId || rawResponse.checkoutId || rawResponse.id || "")
-                );
-                setIsWaitingHelloAssoCallback(true);
-
-                showSuccessToast("PaymentConfigPage.toasts.paymentInProgress.title", t);
-            } else {
-                throw new Error(String(t("PaymentConfigPage.errors.popupFailed")));
-            }
-        } catch (error) {
-            console.error("Erreur HelloAsso:", error);
-            showErrorToast(error, "PaymentConfigPage.toasts.paymentError.title", t);
-            setIsHelloAssoProcessing(false);
+            showErrorToast(new Error(messages.join(" | ")), "PaymentConfigPage.toasts.paymentError.title", t);
+            return;
         }
+
+        void helloAsso.start(effectiveAmount, { config: helloAssoConfig, fundings: depenseFunding });
     };
 
     const saveContributionAsPromise = async ()  => {
@@ -564,20 +430,7 @@ const PaymentConfigPage = ({
         );
     }
 
-    if (isVerifyingPayment) {
-        return (
-            <div className="py-10 text-center space-y-4 animate-fade-in">
-                <div className="w-20 h-20 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
-                    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                </div>
-                <h3 className="text-2xl font-bold text-foreground">{t("PaymentConfigPage.verifying.title")}</h3>
-                <p className="text-muted-foreground">{t("PaymentConfigPage.verifying.subtitle")}</p>
-                <p className="text-xs text-muted-foreground">{t("PaymentConfigPage.verifying.hint")}</p>
-            </div>
-        );
-    }
-
-    if (isWaitingHelloAssoCallback) {
+    if (helloAsso.phase === "waiting") {
         return (
             <div className="py-10 text-center space-y-4 animate-fade-in">
                 <div className="w-20 h-20 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
@@ -586,6 +439,10 @@ const PaymentConfigPage = ({
                 <h3 className="text-2xl font-bold text-foreground">{t("PaymentConfigPage.waiting.title")}</h3>
                 <p className="text-muted-foreground">{t("PaymentConfigPage.waiting.subtitle")}</p>
                 <p className="text-xs text-muted-foreground">{t("PaymentConfigPage.waiting.hint")}</p>
+                {helloAsso.lastError && (
+                    <p className="text-xs text-destructive">{helloAsso.lastError}</p>
+                )}
+                <Button onClick={helloAsso.cancel} variant="outline">{t("PaymentConfigPage.waiting.cancel")}</Button>
             </div>
         );
     }
@@ -594,7 +451,7 @@ const PaymentConfigPage = ({
         <div className="space-y-6 py-4">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-foreground">{t("PaymentConfigPage.title")}</h2>
-                <Button onClick={onBack} variant="ghost" size="icon" aria-label={String(t("a11y.back"))} disabled={isHelloAssoProcessing}>
+                <Button onClick={onBack} variant="ghost" size="icon" aria-label={String(t("a11y.back"))} disabled={helloAsso.phase !== "idle"}>
                     <ArrowLeft className="w-5 h-5" />
                 </Button>
             </div>
@@ -695,114 +552,113 @@ const PaymentConfigPage = ({
 
             <div className="space-y-3">
                 <p className="text-sm font-medium text-foreground">{t("PaymentConfigPage.paymentMethodLabel")}</p>
-                <ToggleGroup
-                    type="single"
-                    value={paymentMethod ?? ""}
-                    onValueChange={(value) => {
-                        if (!value) return;
-                        if (value === "stripe") {
-                            if (!stripePromise) {
-                                showErrorToast(
-                                    new Error(stripeUnavailableReason || String(t("PaymentConfigPage.toasts.stripeMissing.fallbackDescription"))),
-                                    "PaymentConfigPage.toasts.stripeMissing.title",
-                                    t,
-                                );
-                                return;
-                            }
-                            setPaymentMethod("stripe");
-                        } else if (value === "helloasso") {
-                            setPaymentMethod("helloasso");
-                        } else if (value === "pledge") {
-                            setPaymentMethod("pledge");
-                        }
-                    }}
-                    className="grid grid-cols-1 sm:grid-cols-2 gap-3"
-                >
-                    <ToggleGroupItem
-                        value="stripe"
-                        disabled={!stripePromise}
-                        aria-label={String(t("PaymentConfigPage.stripe.title"))}
-                        className={`p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50 ${!stripePromise ? "opacity-50 cursor-not-allowed" : ""}`}
+                {isLoadingPaymentMethods ? (
+                    <div
+                        className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                        role="status"
+                        aria-label={String(t("PaymentConfigPage.paymentMethodsLoading"))}
                     >
-                        <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-info/20 flex items-center justify-center shrink-0">
-                                <CreditCard className="w-5 h-5 text-info" />
-                            </div>
-                            <div className="flex-1">
-                                <p className="font-semibold text-sm">{t("PaymentConfigPage.stripe.title")}</p>
-                                <p className="text-xs text-muted-foreground">{t("PaymentConfigPage.stripe.description")}</p>
-                                {!stripePromise && (
-                                    <p className="text-xs text-destructive mt-1">{t("PaymentConfigPage.stripe.missingConfig")}</p>
-                                )}
-                            </div>
-                        </div>
-                    </ToggleGroupItem>
-
-                    <ToggleGroupItem
-                        value="helloasso"
-                        aria-label={String(t("PaymentConfigPage.helloasso.title"))}
-                        className="p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50"
+                        <Skeleton className="h-16 rounded-lg" />
+                        <Skeleton className="h-16 rounded-lg" />
+                    </div>
+                ) : paymentChoices.length === 0 ? (
+                    <p className="text-sm text-muted-foreground p-4 bg-muted/30 rounded-lg border border-border/50">
+                        {t("PaymentConfigPage.noPaymentMethod")}
+                    </p>
+                ) : (
+                    <ToggleGroup
+                        type="single"
+                        value={paymentMethod ?? ""}
+                        onValueChange={(value) => {
+                            const choice = paymentChoices.find((c) => c === value);
+                            if (choice) setPaymentMethod(choice);
+                        }}
+                        className="grid grid-cols-1 sm:grid-cols-2 gap-3"
                     >
-                        <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center shrink-0">
-                                <ExternalLink className="w-5 h-5 text-success" />
-                            </div>
-                            <div className="flex-1">
-                                <p className="font-semibold text-sm">{t("PaymentConfigPage.helloasso.title")}</p>
-                                <p className="text-xs text-muted-foreground">{t("PaymentConfigPage.helloasso.description")}</p>
-                            </div>
-                        </div>
-                    </ToggleGroupItem>
+                        {paymentChoices.includes("stripe") && (
+                            <ToggleGroupItem
+                                value="stripe"
+                                aria-label={String(t("PaymentConfigPage.stripe.title"))}
+                                className="p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50"
+                            >
+                                <div className="flex items-start gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-info/20 flex items-center justify-center shrink-0">
+                                        <CreditCard className="w-5 h-5 text-info" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-semibold text-sm">{t("PaymentConfigPage.stripe.title")}</p>
+                                        <p className="text-xs text-muted-foreground">{t("PaymentConfigPage.stripe.description")}</p>
+                                    </div>
+                                </div>
+                            </ToggleGroupItem>
+                        )}
 
-                    {cagnotteConfig.allowContributionWithoutPaiement && (
-                        <ToggleGroupItem
-                            value="pledge"
-                            aria-label={String(t("PaymentConfigPage.pledge.title"))}
-                            className="p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50"
-                        >
-                            <div className="flex items-start gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center shrink-0">
-                                    <Clock className="w-5 h-5 text-success" />
+                        {paymentChoices.includes("helloasso") && (
+                            <ToggleGroupItem
+                                value="helloasso"
+                                aria-label={String(t("PaymentConfigPage.helloasso.title"))}
+                                className="p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50"
+                            >
+                                <div className="flex items-start gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center shrink-0">
+                                        <ExternalLink className="w-5 h-5 text-success" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-semibold text-sm">{t("PaymentConfigPage.helloasso.title")}</p>
+                                        <p className="text-xs text-muted-foreground">{t("PaymentConfigPage.helloasso.description")}</p>
+                                    </div>
                                 </div>
-                                <div className="flex-1">
-                                    <p className="font-semibold text-sm">{t("PaymentConfigPage.pledge.title")}</p>
-                                    <p className="text-xs text-muted-foreground">{t("PaymentConfigPage.pledge.description")}</p>
+                            </ToggleGroupItem>
+                        )}
+
+                        {paymentChoices.includes("pledge") && (
+                            <ToggleGroupItem
+                                value="pledge"
+                                aria-label={String(t("PaymentConfigPage.pledge.title"))}
+                                className="p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50"
+                            >
+                                <div className="flex items-start gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center shrink-0">
+                                        <Clock className="w-5 h-5 text-success" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-semibold text-sm">{t("PaymentConfigPage.pledge.title")}</p>
+                                        <p className="text-xs text-muted-foreground">{t("PaymentConfigPage.pledge.description")}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </ToggleGroupItem>
-                    )}
-                </ToggleGroup>
+                            </ToggleGroupItem>
+                        )}
+                    </ToggleGroup>
+                )}
             </div>
 
             <div className="space-y-3 pt-4 border-t border-border/50">
+                {!itemAnswerId && (
+                    <p className="text-sm text-destructive">{t("PaymentConfigPage.missingAnswer")}</p>
+                )}
+
                 {paymentMethod === "stripe" && isFormComplete && (
                     <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border/50">
                         <p className="text-sm font-medium text-foreground">{t("PaymentConfigPage.stripe.formLabel")}</p>
-                        {!stripePromise ? (
-                            <div className="text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md p-3">
-                                {stripeUnavailableReason}
-                            </div>
-                        ) : (
-                            <Elements stripe={stripePromise}>
-                                <StripePaymentForm
-                                    amount={effectiveAmount}
-                                    onSuccess={handleStripePaymentSuccess}
-                                    onError={() => undefined}
-                                />
-                            </Elements>
-                        )}
+                        <Elements stripe={stripePromise}>
+                            <StripePaymentForm
+                                amount={effectiveAmount}
+                                onSuccess={handleStripePaymentSuccess}
+                                onError={() => undefined}
+                            />
+                        </Elements>
                     </div>
                 )}
 
                 {paymentMethod === "helloasso" && (
                     <Button
                         onClick={handleHelloAssoPayment}
-                        disabled={!isFormComplete || isHelloAssoProcessing}
+                        disabled={!isFormComplete || helloAsso.phase !== "idle"}
                         size="lg"
                         className="w-full h-12 bg-success hover:bg-success/90 text-success-foreground"
                     >
                         <ExternalLink className="w-5 h-5 mr-2" />
-                        {isHelloAssoProcessing
+                        {helloAsso.phase === "opening"
                             ? t("PaymentConfigPage.helloasso.buttonLoading")
                             : t("PaymentConfigPage.helloasso.button", undefined, { amount: formatNumber(effectiveAmount) })}
                     </Button>
@@ -838,7 +694,7 @@ const PaymentConfigPage = ({
 
                 )}
 
-                {!paymentMethod && (
+                {!paymentMethod && paymentChoices.length > 0 && (
                     <Button disabled size="lg" className="w-full h-12">
                         <CreditCard className="w-5 h-5 mr-2" />
                         {t("PaymentConfigPage.selectMethodPlaceholder")}

@@ -96,7 +96,6 @@
     "stripe": {
       "title": "Stripe",
       "description": "Saisie carte directement",
-      "missingConfig": "Configuration manquante",
       "formLabel": "Informations carte bancaire (Stripe)"
     },
     "helloasso": {
@@ -109,7 +108,7 @@
         "li1": "Vous serez redirigé vers le site HelloAsso",
         "li2": "Les paiements sont sécurisés via HelloAsso",
         "li3": "Vous recevrez une confirmation par email",
-        "li4": "Fermez la popup après le paiement pour revenir",
+        "li4": "Une fois le paiement terminé, fermez la fenêtre HelloAsso : le financement est enregistré automatiquement",
         "li5": "Le financement est enregistré après confirmation réelle du paiement"
       }
     },
@@ -126,20 +125,19 @@
       "project": "projet"
     },
     "selectMethodPlaceholder": "Sélectionnez une méthode de paiement",
+    "paymentMethodsLoading": "Chargement des moyens de paiement…",
+    "noPaymentMethod": "Aucun moyen de paiement n'est configuré pour cette cagnotte.",
+    "missingAnswer": "Contribution impossible : aucune fiche de financement n'est associée à cette ressource.",
     "successScreen": {
       "title": "Paiement réussi",
       "subtitle": "Retour à la page principale...",
       "returnButton": "Retourner maintenant"
     },
-    "verifying": {
-      "title": "Vérification en cours...",
-      "subtitle": "Nous confirmons votre paiement HelloAsso",
-      "hint": "Cela peut prendre quelques secondes"
-    },
     "waiting": {
       "title": "En attente du retour HelloAsso...",
-      "subtitle": "Terminez le paiement dans la popup pour continuer.",
-      "hint": "Le financement sera enregistré seulement après callback réel."
+      "subtitle": "Terminez le paiement dans la fenêtre HelloAsso, puis revenez sur cette page. Si vous l'avez fermée sans payer, cliquez sur Annuler.",
+      "hint": "Le financement est enregistré dès que HelloAsso confirme le paiement.",
+      "cancel": "Annuler"
     },
     "toasts": {
       "thankYou": {
@@ -154,25 +152,17 @@
         "title": "Paiement interrompu",
         "description": "Le paiement HelloAsso n'a pas été confirmé."
       },
-      "paymentFailed": {
-        "title": "Paiement échoué",
-        "fallbackDescription": "Le paiement a échoué"
-      },
       "stripeError": {
         "title": "Erreur",
         "fallbackDescription": "Impossible d'enregistrer le paiement Stripe"
       },
       "paymentInProgress": {
         "title": "Paiement en cours",
-        "description": "Complétez le paiement dans la popup HelloAsso. Validation après callback réel."
+        "description": "Complétez le paiement dans la popup HelloAsso. Le financement est enregistré dès que HelloAsso le confirme."
       },
       "paymentError": {
         "title": "Erreur de paiement",
         "fallback": "Erreur HelloAsso"
-      },
-      "stripeMissing": {
-        "title": "Configuration Stripe manquante",
-        "fallbackDescription": "Clé publique Stripe invalide."
       }
     },
     "errors": {
@@ -181,7 +171,7 @@
       "saveFailed": "Impossible de sauvegarder les financements",
       "noRedirectUrl": "Aucune URL de redirection HelloAsso n'a été renvoyée par fundingEnvelope",
       "popupFailed": "La popup HelloAsso n'a pas pu être ouverte",
-      "stripeUnavailable": "Stripe indisponible : configurez VITE_STRIPE_PUBLIC_KEY"
+      "paymentRejected": "Le paiement n'a pas abouti."
     },
     "helloAssoConfigErrors": {
       "amountInvalid": "Le montant doit être supérieur à 0",

@@ -96,7 +96,6 @@
     "stripe": {
       "title": "Stripe",
       "description": "Enter card details directly",
-      "missingConfig": "Missing configuration",
       "formLabel": "Card details (Stripe)"
     },
     "helloasso": {
@@ -109,7 +108,7 @@
         "li1": "You will be redirected to the HelloAsso website",
         "li2": "Payments are secured through HelloAsso",
         "li3": "You will receive an email confirmation",
-        "li4": "Close the popup after payment to return",
+        "li4": "Once the payment is complete, close the HelloAsso window: funding is recorded automatically",
         "li5": "Funding is recorded only after actual payment confirmation"
       }
     },
@@ -126,20 +125,19 @@
       "project": "project"
     },
     "selectMethodPlaceholder": "Select a payment method",
+    "paymentMethodsLoading": "Loading payment methods…",
+    "noPaymentMethod": "No payment method is configured for this campaign.",
+    "missingAnswer": "Contribution unavailable: no funding record is linked to this resource.",
     "successScreen": {
       "title": "Payment successful",
       "subtitle": "Returning to home page...",
       "returnButton": "Return now"
     },
-    "verifying": {
-      "title": "Verifying...",
-      "subtitle": "Confirming your HelloAsso payment",
-      "hint": "This may take a few seconds"
-    },
     "waiting": {
-      "title": "Waiting for HelloAsso callback...",
-      "subtitle": "Complete the payment in the popup to continue.",
-      "hint": "Funding will be recorded only after actual callback."
+      "title": "Waiting for HelloAsso...",
+      "subtitle": "Complete the payment in the HelloAsso window, then come back to this page. If you closed it without paying, click Cancel.",
+      "hint": "Funding is recorded as soon as HelloAsso confirms the payment.",
+      "cancel": "Cancel"
     },
     "toasts": {
       "thankYou": {
@@ -154,25 +152,17 @@
         "title": "Payment interrupted",
         "description": "HelloAsso payment was not confirmed."
       },
-      "paymentFailed": {
-        "title": "Payment failed",
-        "fallbackDescription": "Payment failed"
-      },
       "stripeError": {
         "title": "Error",
         "fallbackDescription": "Unable to record Stripe payment"
       },
       "paymentInProgress": {
         "title": "Payment in progress",
-        "description": "Complete the payment in the HelloAsso popup. Validation after actual callback."
+        "description": "Complete the payment in the HelloAsso popup. Funding is recorded once HelloAsso confirms it."
       },
       "paymentError": {
         "title": "Payment error",
         "fallback": "HelloAsso error"
-      },
-      "stripeMissing": {
-        "title": "Missing Stripe configuration",
-        "fallbackDescription": "Invalid Stripe public key."
       }
     },
     "errors": {
@@ -181,7 +171,7 @@
       "saveFailed": "Unable to save funding records",
       "noRedirectUrl": "No HelloAsso redirect URL returned by fundingEnvelope",
       "popupFailed": "HelloAsso popup could not be opened",
-      "stripeUnavailable": "Stripe unavailable: configure VITE_STRIPE_PUBLIC_KEY"
+      "paymentRejected": "The payment did not go through."
     },
     "helloAssoConfigErrors": {
       "amountInvalid": "Amount must be greater than 0",
