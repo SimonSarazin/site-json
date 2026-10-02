@@ -45,9 +45,10 @@ export interface EntityMutationConfig<TParams = void> {
   };
   /**
    * Query keys à invalider. Évaluée APRÈS l'action : une suppression a déjà vidé l'instance
-   * (`slug` → `null`), d'où `remove` pour tout ce qui dépend de l'entité supprimée.
+   * (`slug` → `null`), d'où `remove` pour tout ce qui dépend de l'entité supprimée. `costumSlug` :
+   * slug du costum PORTEUR du site (scope du fil blog dans `publicSurfaceKeys`).
    */
-  invalidate: (entity: EntityTypes, me: User | null) => QueryKey[];
+  invalidate: (entity: EntityTypes, me: User | null, costumSlug?: string) => QueryKey[];
   /**
    * Query keys à RETIRER du cache une fois l'action réussie — pour une entité qui n'existe plus,
    * où invalider relancerait un fetch vers un 404. Évaluée AVANT l'action, tant que l'instance
@@ -78,7 +79,7 @@ export function createEntityMutation<TParams = void>(config: EntityMutationConfi
    */
   return function useEntityMutation(entity: EntityTypes | null, options?: { silentSuccess?: boolean }) {
     const queryClient = useQueryClient();
-    const { me } = useCocolight();
+    const { me, entity: porteur } = useCocolight();
     const entityType = entity ? getEntityType(entity) : null;
     const toastKeys = (entityType && config.i18n.byType?.[entityType]) || config.i18n;
 
@@ -121,7 +122,7 @@ export function createEntityMutation<TParams = void>(config: EntityMutationConfi
         : undefined,
       onSuccessCallback: () => {
         if (entity) {
-          const keys = config.invalidate(entity, me as User | null);
+          const keys = config.invalidate(entity, me as User | null, porteur?.slug ?? undefined);
           keys.forEach((key) => queryClient.invalidateQueries({ queryKey: key }));
           // Émission post-succès (additif) : les abonnés (ex. PreviewEvent) réagissent
           // « suivant le besoin » sans que les mutations connaissent leurs consommateurs.

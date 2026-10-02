@@ -104,7 +104,9 @@ describe("préflight mutation.stamps", () => {
       // MSS structure n'a PLUS de stamp : `statusActor` est déclaré au dynForm du costum
       // `associationEkilibre` depuis la copie du chantier A (plan mss-la-tampon) — l'inject
       // payload « En cours » passe la whitelist, le stamp pathValue de contournement a été retiré.
-      // RELIEF dérive de la config tiers-lieux, dont il reprend le form et ses 5 stamps.
+      // RELIEF dérive de la config tiers-lieux et garde les 5 stamps HISTORIQUES du form : lui n'a pas
+      // (encore) de champ `tags` saisissable, donc rien à réconcilier — la bascule vers les codecs
+      // s'est faite sur le seul site qui l'a demandée (cf. `tiers-lieux/tiers-lieux:2` plus bas).
       "relief/tiers-lieux:5",
       // EcosystemeSanteReunion n'apparaît PAS ici, et c'est un choix documenté : ses 3 forms recopient
       // aussi les thématiques dans `tags` (toute la surface de filtrage du site interroge `tags`,
@@ -129,7 +131,13 @@ describe("préflight mutation.stamps", () => {
       // pas polymorphe, contrairement à `poi` qui porte équipements ET articles) : elle est posée
       // pour l'uniformité des trois forms du site et pour éviter un backfill ultérieur.
       "saint-paul-sport/saintpaul-event:2",
-      "tiers-lieux/tiers-lieux:5",
+      // tiers-lieux n'a plus que ses 2 MARQUEURS de réseau (`$costum.mainTag`/`compagnon`, qui ne
+      // viennent d'aucun champ). La typologie, le portage et la tranche de m² sont passés aux codecs
+      // `tl:tagsRead`/`tl:tagsWrite` du champ `tags`, devenu saisissable : `op:"append"` refusionnait
+      // les tags serveur, donc changer de typologie laissait l'ancien libellé et le lieu ressortait
+      // dans deux facettes. Garde de non-retour : `costum/tiers-lieux/spec.test.ts` (« les 2 stamps
+      // restants portent une valeur littérale ») et `tags-propagation.test.ts`.
+      "tiers-lieux/tiers-lieux:2",
     ]);
   });
 });

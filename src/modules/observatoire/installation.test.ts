@@ -24,7 +24,7 @@ function slot(day: string, startMinutes: number, endMinutes: number): Reservatio
 }
 
 function reservation(partial: Partial<Reservation>): Reservation {
-  return { id: "r", resourceIds: [], user: "", slots: [], ...partial };
+  return { id: "r", resources: [], resourceIds: [], user: "", slots: [], ...partial };
 }
 
 /* ── weeklyAmplitudeMinutes ──────────────────────────────────────────────── */
