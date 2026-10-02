@@ -12,10 +12,6 @@ export { NewsSection as NewsSectionComponent } from "./sections/NewsSection";
 export { NewsImageGrid } from "./media/NewsImageGrid";
 export { NewsFileList } from "./media/NewsFileList";
 
-// Comments components
-export { NewsComments } from "./comment/NewsComments";
-export { CommentItem } from "./comment/CommentItem";
-export { CommentInput } from "./comment/CommentInput";
 
 // Interaction components
 export { NewsVoteDisplay } from "./interactions/NewsVoteDisplay";
@@ -32,7 +28,6 @@ export { FileUploadProgress } from "./forms/FileUploadProgress";
 
 // Dialog components
 export { DeleteNewsDialog } from "./DeleteNewsDialog";
-export { DeleteCommentDialog } from "./comment/DeleteCommentDialog";
 export { ShareNewsDialog } from "./ShareNewsDialog";
 export { ReportDialog } from "./ReportDialog";
 
