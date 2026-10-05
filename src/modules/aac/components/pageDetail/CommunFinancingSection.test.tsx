@@ -169,3 +169,17 @@ describe("CommunFinancingSection — rendu `list` (interface editorial)", () => 
     expect(total?.textContent).toMatch(/350/);
   });
 });
+
+describe("CommunFinancingSection — description du palier", () => {
+  it("affiche la description sous le titre, rien quand elle est vide", () => {
+    depenses = [
+      { poste: "Avec", priceInt: 100, description: "Achat du matériel" },
+      { poste: "Sans", priceInt: 200, description: "  " },
+    ];
+    renderSection();
+
+    const desc = screen.getByText("Achat du matériel");
+    expect(desc.closest("button")?.textContent).toContain("Avec");
+    expect(screen.getByText("Sans").parentElement?.querySelector("span.line-clamp-2")).toBeNull();
+  });
+});
