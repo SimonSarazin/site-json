@@ -4107,6 +4107,26 @@ pagination revient à la page 1 dès que le périmètre filtré de la page chang
 | Mobile 375 px (`/blog`, barre présente) | ✅ aucun débordement horizontal (document 367 px pour un viewport de 375 px) |
 | Autres pages `articleFeed` | non re-testées une à une (33 sections) : même composant et même hook, seule la config (`defaultPagination`, au niveau site) change |
 
+## 9quatertricies. Paroles de parents : image entière et carte par défaut ; profils en pleine largeur
+
+**Demande** : l'image d'une parole ne doit plus être rognée en bandeau ; la carte doit s'afficher à l'ouverture de `/temoignages` ; les pages profil doivent occuper toute la largeur.
+
+**Image entière (opt-in)** — `list.testimonial.imageFit` (`"cover"` défaut, `"contain"`). En `contain`, la carte et l'aperçu affichent l'image entière, centrée, sur un fond flou tiré de la même image (même idiome que les affiches du blog). En `cover`, le rendu historique (bannière 16/9 ou 21/9 rognée) est inchangé. Activé sur les deux listes de cartes de `/temoignages` (pages 12 et 45 de la config) ; la palette de commandes n'est pas concernée. Commits : `747759a0` (carte, configuration) puis `13f7d52d` (aperçu, version opt-in ; une version sans option écrite sur disque hors de nos éditions a été remplacée).
+
+**Carte par défaut** (`747759a0`) — `defaultViewMode: "map"` sur la section `paroles-list` : la vue split (liste + carte) s'ouvre sans clic ; le bouton « Voir en liste » reste disponible.
+
+**Profils en pleine largeur** — `profiles.<type>.layout: "full-width"` sur les six types (`default`, `citoyens`, `organizations`, `projects`, `events`, `poi`), au lieu de `"default"` (plafond `max-w-7xl`, soit 1280 px contre 1432 px sur le reste du site). Configuration seule, aucune ligne de code.
+
+**Vérifications (mesurées)**
+| Gate | Résultat |
+|---|---|
+| Carte témoignage (`CardTestimonialBubble.test.tsx`) | ✅ 2/2 : `cover` par défaut, `contain` sans ratio forcé |
+| Aperçu témoignage (`PreviewTestimonialBubble.test.tsx`) | ✅ 2/2 |
+| Typecheck · lint (fichiers touchés) | ✅ 0 erreur |
+| Profil : largeur du `main` | ✅ 1432 px à 1440 px de viewport (1280 px avant) ; débordement horizontal à 390 px : aucun (document 382 px) |
+| `/temoignages` : carte ouverte à l'arrivée | ✅ vérifié à la capture (viewport 1440 px) ; mobile 390 px : carte présente, aucun débordement |
+
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)

@@ -4181,6 +4181,7 @@
                   },
                   "testimonial": {
                     "design": "bubble",
+                    "imageFit": "contain",
                     "quoteField": "description",
                     "titleField": "name",
                     "dateField": "created",
@@ -18334,6 +18335,7 @@
                       },
                       "testimonial": {
                         "design": "bubble",
+                        "imageFit": "contain",
                         "quoteField": "description",
                         "titleField": "name",
                         "dateField": "created",
