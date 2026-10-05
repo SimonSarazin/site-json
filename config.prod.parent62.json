@@ -1022,6 +1022,110 @@
           }
         },
         {
+          "type": "cta-card-grid",
+          "id": "charte-valeurs",
+          "props": {
+            "headline": { "fr": "La Charte du REAAP 62", "en": "The REAAP 62 charter" },
+            "subhead": {
+              "fr": "8 valeurs au service de la « cause des parents ».",
+              "en": "8 values serving the parents' cause."
+            },
+            "variant": "accent",
+            "bg": "secondary",
+            "actions": [
+              {
+                "icon": "users",
+                "title": { "fr": "La participation", "en": "Participation" },
+                "description": {
+                  "fr": "La participation des parents aux actions qui les concernent, eux ou leurs enfants, est un objectif central. Toutes les actions collectives visent à favoriser leur implication avec les professionnels, les autres parents, les enfants eux-mêmes.",
+                  "en": "Parents' participation in the actions that concern them or their children is a central objective. Every collective action aims to encourage their involvement alongside professionals, other parents and the children themselves."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x8q4s0",
+                "color": "primary"
+              },
+              {
+                "icon": "sprout",
+                "title": { "fr": "Le soutien à l'initiative", "en": "Backing initiative" },
+                "description": {
+                  "fr": "Institutions et professionnels, élus locaux et responsables associatifs ont pour responsabilité d'aider et de soutenir les initiatives. Ils doivent les susciter, favoriser leur adaptation et leur inscription dans le temps.",
+                  "en": "Institutions and professionals, elected representatives and association leaders have a responsibility to help and support initiatives. They must prompt them, help them adapt and help them last."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x8q5dk",
+                "color": "accent"
+              },
+              {
+                "icon": "heart-handshake",
+                "title": { "fr": "La co-éducation", "en": "Co-education" },
+                "description": {
+                  "fr": "Les parents sont les premiers éducateurs de leurs enfants. À leur côté, plusieurs acteurs forment une chaîne éducative qui permet à l'enfant de devenir un adulte intégré, autonome, responsable. Les intervenants sociaux et éducatifs veilleront à coordonner leurs interventions, rendant possible une démarche de co-éducation, dans le respect des rôles et des statuts de chacun, en associant les parents et en plaçant l'intérêt de l'enfant au cœur des préoccupations. La mise en synergie de toutes les actions contribue au développement de l'enfant, dans le respect de tous ses droits.",
+                  "en": "Parents are their children's first educators. Alongside them, several actors form an educational chain that helps the child become an integrated, autonomous and responsible adult. Social and educational workers coordinate their action to make co-education possible, respecting each person's role and status, involving parents and placing the child's interest at the heart of their concerns. Bringing all actions into synergy contributes to the child's development, with respect for all their rights."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x8q5qb",
+                "color": "chart-2"
+              },
+              {
+                "icon": "users-round",
+                "title": { "fr": "La mixité sociale", "en": "Social diversity" },
+                "description": {
+                  "fr": "Les interventions des acteurs sociaux, les initiatives locales doivent veiller à être ouvertes à l'ensemble des parents, à préserver la cohésion sociale des territoires et à éviter de stigmatiser ceux qui y participent.",
+                  "en": "The action of social workers and local initiatives must be open to all parents, preserve the social cohesion of the territories and avoid stigmatising those who take part."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x9grwo",
+                "color": "chart-3"
+              },
+              {
+                "icon": "heart",
+                "title": { "fr": "La solidarité intergénérationnelle", "en": "Intergenerational solidarity" },
+                "description": {
+                  "fr": "Au sein d'une famille, la parentalité est souvent partagée avec les grands-parents, les beaux-parents, les autres membres de la fratrie etc… Toute intervention doit respecter et encourager ce partage. Le rôle des grands-parents et la dimension intergénérationnelle de la parentalité sont à promouvoir.",
+                  "en": "Within a family, parenting is often shared with grandparents, step-parents, siblings and others. Every intervention must respect and encourage that sharing. The role of grandparents and the intergenerational dimension of parenting are to be promoted."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x8q6a8",
+                "color": "primary"
+              },
+              {
+                "icon": "shapes",
+                "title": { "fr": "La diversité", "en": "Diversity" },
+                "description": {
+                  "fr": "Les différentes formes d'exercice de la fonction parentale doivent être prises en compte. La diversité et la variété des formes de la famille, la présence sur les territoires de cultures et de modes de vie différents doivent être considérées comme une richesse, dans le respect des droits de l'enfant et dans le cadre de la Loi.",
+                  "en": "The different ways of exercising the parental role must be taken into account. The diversity of family forms and the presence of different cultures and ways of life across the territories are to be seen as a strength, with respect for children's rights and within the law."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x9grw8",
+                "color": "accent"
+              },
+              {
+                "icon": "message-circle",
+                "title": { "fr": "L'échange", "en": "Exchange" },
+                "description": {
+                  "fr": "Le champ de l'aide à la parentalité est vaste, il fait intervenir une multitude d'acteurs, d'initiatives, de projets, qu'il est intéressant de soutenir et de fédérer. Le développement de centres ressources, décentralisés et facilement accessibles, est souhaitable pour favoriser une évaluation partagée, des initiatives et leur valorisation par l'échange, la formation et l'information.",
+                  "en": "Parenting support is a vast field involving a multitude of actors, initiatives and projects that are worth supporting and bringing together. Developing decentralised, easily accessible resource centres is desirable to encourage shared assessment of initiatives and to give them value through exchange, training and information."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x9grww",
+                "color": "chart-2"
+              },
+              {
+                "icon": "map-pin",
+                "title": { "fr": "La priorité du territoire", "en": "Territory first" },
+                "description": {
+                  "fr": "C'est sur les territoires de vie des personnes (commune, quartier, îlot…) que se développent les réseaux et les solidarités de voisinage susceptibles de favoriser l'exercice de responsabilité associations…",
+                  "en": "It is in people's living areas (town, neighbourhood, block…) that the networks and neighbourly solidarity likely to support the exercise of responsibility develop, associations…"
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x8q4z3",
+                "color": "chart-3"
+              }
+            ],
+            "columns": { "md": 2, "lg": 3 }
+          }
+        },
+        {
           "type": "cards",
           "id": "charte-signataires",
           "props": {
@@ -1207,110 +1311,6 @@
               "fr": "<div class=\"py-16\"><div class=\"container mx-auto px-6\"><div class=\"prose prose-theme mx-auto max-w-2xl text-center text-muted-foreground leading-relaxed\"><p>Élaborée par des acteurs locaux associatifs et institutionnels engagés dans le soutien à la parentalité, la charte du REAAP 62 a été validée et signée <strong>le 9 février 2004</strong>, par le Préfet du Pas-de-Calais, la DDASS, le Conseil Général, la Fé.Dé.Caf 62 et l’Éducation Nationale.</p><p>Réalisé par le comité local de l’Audomarois, le film <strong>« La charte départementale en images »</strong> illustre nos valeurs.</p></div></div></div>",
               "en": "<div class=\"py-16\"><div class=\"container mx-auto px-6\"><div class=\"prose prose-theme mx-auto max-w-2xl text-center text-muted-foreground leading-relaxed\"><p>Drawn up by local voluntary and institutional actors involved in parenting support, the REAAP 62 charter was approved and signed <strong>on 9 February 2004</strong> by the Prefect of Pas-de-Calais, the DDASS, the County Council, the Fé.Dé.Caf 62 and National Education.</p><p>Made by the Audomarois local committee, the film <strong>« The departmental charter in pictures »</strong> illustrates our values.</p></div></div></div>"
             }
-          }
-        },
-        {
-          "type": "cta-card-grid",
-          "id": "charte-valeurs",
-          "props": {
-            "headline": { "fr": "La Charte du REAAP 62", "en": "The REAAP 62 charter" },
-            "subhead": {
-              "fr": "8 valeurs au service de la « cause des parents ».",
-              "en": "8 values serving the parents' cause."
-            },
-            "variant": "accent",
-            "bg": "secondary",
-            "actions": [
-              {
-                "icon": "users",
-                "title": { "fr": "La participation", "en": "Participation" },
-                "description": {
-                  "fr": "La participation des parents aux actions qui les concernent, eux ou leurs enfants, est un objectif central. Toutes les actions collectives visent à favoriser leur implication avec les professionnels, les autres parents, les enfants eux-mêmes.",
-                  "en": "Parents' participation in the actions that concern them or their children is a central objective. Every collective action aims to encourage their involvement alongside professionals, other parents and the children themselves."
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x8q4s0",
-                "color": "primary"
-              },
-              {
-                "icon": "sprout",
-                "title": { "fr": "Le soutien à l'initiative", "en": "Backing initiative" },
-                "description": {
-                  "fr": "Institutions et professionnels, élus locaux et responsables associatifs ont pour responsabilité d'aider et de soutenir les initiatives. Ils doivent les susciter, favoriser leur adaptation et leur inscription dans le temps.",
-                  "en": "Institutions and professionals, elected representatives and association leaders have a responsibility to help and support initiatives. They must prompt them, help them adapt and help them last."
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x8q5dk",
-                "color": "accent"
-              },
-              {
-                "icon": "heart-handshake",
-                "title": { "fr": "La co-éducation", "en": "Co-education" },
-                "description": {
-                  "fr": "Les parents sont les premiers éducateurs de leurs enfants. À leur côté, plusieurs acteurs forment une chaîne éducative qui permet à l'enfant de devenir un adulte intégré, autonome, responsable. Les intervenants sociaux et éducatifs veilleront à coordonner leurs interventions, rendant possible une démarche de co-éducation, dans le respect des rôles et des statuts de chacun, en associant les parents et en plaçant l'intérêt de l'enfant au cœur des préoccupations. La mise en synergie de toutes les actions contribue au développement de l'enfant, dans le respect de tous ses droits.",
-                  "en": "Parents are their children's first educators. Alongside them, several actors form an educational chain that helps the child become an integrated, autonomous and responsible adult. Social and educational workers coordinate their action to make co-education possible, respecting each person's role and status, involving parents and placing the child's interest at the heart of their concerns. Bringing all actions into synergy contributes to the child's development, with respect for all their rights."
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x8q5qb",
-                "color": "chart-2"
-              },
-              {
-                "icon": "users-round",
-                "title": { "fr": "La mixité sociale", "en": "Social diversity" },
-                "description": {
-                  "fr": "Les interventions des acteurs sociaux, les initiatives locales doivent veiller à être ouvertes à l'ensemble des parents, à préserver la cohésion sociale des territoires et à éviter de stigmatiser ceux qui y participent.",
-                  "en": "The action of social workers and local initiatives must be open to all parents, preserve the social cohesion of the territories and avoid stigmatising those who take part."
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x9grwo",
-                "color": "chart-3"
-              },
-              {
-                "icon": "heart",
-                "title": { "fr": "La solidarité intergénérationnelle", "en": "Intergenerational solidarity" },
-                "description": {
-                  "fr": "Au sein d'une famille, la parentalité est souvent partagée avec les grands-parents, les beaux-parents, les autres membres de la fratrie etc… Toute intervention doit respecter et encourager ce partage. Le rôle des grands-parents et la dimension intergénérationnelle de la parentalité sont à promouvoir.",
-                  "en": "Within a family, parenting is often shared with grandparents, step-parents, siblings and others. Every intervention must respect and encourage that sharing. The role of grandparents and the intergenerational dimension of parenting are to be promoted."
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x8q6a8",
-                "color": "primary"
-              },
-              {
-                "icon": "shapes",
-                "title": { "fr": "La diversité", "en": "Diversity" },
-                "description": {
-                  "fr": "Les différentes formes d'exercice de la fonction parentale doivent être prises en compte. La diversité et la variété des formes de la famille, la présence sur les territoires de cultures et de modes de vie différents doivent être considérées comme une richesse, dans le respect des droits de l'enfant et dans le cadre de la Loi.",
-                  "en": "The different ways of exercising the parental role must be taken into account. The diversity of family forms and the presence of different cultures and ways of life across the territories are to be seen as a strength, with respect for children's rights and within the law."
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x9grw8",
-                "color": "accent"
-              },
-              {
-                "icon": "message-circle",
-                "title": { "fr": "L'échange", "en": "Exchange" },
-                "description": {
-                  "fr": "Le champ de l'aide à la parentalité est vaste, il fait intervenir une multitude d'acteurs, d'initiatives, de projets, qu'il est intéressant de soutenir et de fédérer. Le développement de centres ressources, décentralisés et facilement accessibles, est souhaitable pour favoriser une évaluation partagée, des initiatives et leur valorisation par l'échange, la formation et l'information.",
-                  "en": "Parenting support is a vast field involving a multitude of actors, initiatives and projects that are worth supporting and bringing together. Developing decentralised, easily accessible resource centres is desirable to encourage shared assessment of initiatives and to give them value through exchange, training and information."
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x9grww",
-                "color": "chart-2"
-              },
-              {
-                "icon": "map-pin",
-                "title": { "fr": "La priorité du territoire", "en": "Territory first" },
-                "description": {
-                  "fr": "C'est sur les territoires de vie des personnes (commune, quartier, îlot…) que se développent les réseaux et les solidarités de voisinage susceptibles de favoriser l'exercice de responsabilité associations…",
-                  "en": "It is in people's living areas (town, neighbourhood, block…) that the networks and neighbourly solidarity likely to support the exercise of responsibility develop, associations…"
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x8q4z3",
-                "color": "chart-3"
-              }
-            ],
-            "columns": { "md": 2, "lg": 3 }
           }
         },
         {
@@ -1571,7 +1571,8 @@
             "filters": { "slug": "lantsDesLieuxDaccueilEnfantsParentsDu25SeptembreAOlhain" },
             "pageSize": 1,
             "featured": true,
-            "density": "compact"
+            "density": "compact",
+            "pagination": "infinite"
           }
         }
       ]
@@ -1736,8 +1737,8 @@
           "props": {
             "title": { "fr": "Le Mois de la Parentalité", "en": "Parenting Month" },
             "subtitle": {
-              "fr": "Chaque automne, un mois d'actions et de rencontres pour les familles, partout dans le Pas-de-Calais.",
-              "en": "Every autumn, a month of actions and gatherings for families across Pas-de-Calais."
+              "fr": "Une mise en lumière des actions de soutien à la parentalité dans le Pas-de-Calais.",
+              "en": "A look at initiatives supporting parenting in the Pas-de-Calais department."
             },
             "align": "center",
             "size": "xl"
@@ -4101,6 +4102,7 @@
                 "useFilter": true,
                 "showMap": false,
                 "enableMap": true,
+                "defaultViewMode": "map",
                 "baseParams": {
                   "defaultTypes": [
                     "poi"
@@ -11118,8 +11120,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/drive/folders/1-xR70C3jtA6XK7bAhzVyysK-8_Gx-Hy_",
                       "target": "_blank"
@@ -11835,8 +11837,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/drive/folders/1P9CBZfe71ri7FU8Vc9H_8e_yF_v6_hye?usp=sharing",
                       "target": "_blank"
@@ -12552,8 +12554,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/drive/folders/15CKV2rLe8fGPRcAveEjSP9PtZTLKY3c5?usp=sharing",
                       "target": "_blank"
@@ -13269,8 +13271,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/open?id=1eUFrIrM-fUOJ0nWkNcm7VDidfrszZrLg",
                       "target": "_blank"
@@ -13986,8 +13988,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/open?id=1AsrYqbr9j1lQsr-8NhtEPUH4V_axjGzK",
                       "target": "_blank"
@@ -14703,8 +14705,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/drive/folders/1vDZliknVKG2QukWnVQ5-WxSvaiW2O4en?usp=sharing",
                       "target": "_blank"
@@ -15420,8 +15422,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/drive/folders/1DwrBRmRVZTrGDAmfHhgeUIPRcQIvElIl",
                       "target": "_blank"
@@ -16137,8 +16139,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/drive/u/4/folders/18FsQlISmxbXIkeduz6ZXD6yL8TI8dKU8",
                       "target": "_blank"
@@ -16850,8 +16852,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/drive/folders/1hHM5Es-SJFBBlnbPugZAuHe0dY40T88w",
                       "target": "_blank"
@@ -19474,7 +19476,8 @@
     "feedCostumSlug": "parent62",
     "readerVariant": "poster",
     "defaultCardVariant": "poster",
-    "defaultFields": ["territoires", "publics"]
+    "defaultFields": ["territoires", "publics"],
+    "defaultPagination": "pages"
   },
   "commandPalette": {
     "enabled": true,

@@ -4075,6 +4075,38 @@ Ni l'un ni l'autre n'a été fait : la marge résiduelle reste en l'état.
 
 ---
 
+## 9tresquadragies. Fils d'actualités : pagination numérotée (12/page) au lieu du scroll infini
+
+Les 33 fils `articleFeed` du site (`/blog`, thèmes, territoires, appels à projets, offres d'emploi,
+zoomcat…) affichaient un bouton « Charger plus »/scroll infini. Passage à une pagination numérotée
+classique, posée **une seule fois** au niveau site (`config.blog.defaultPagination: "pages"`), et non
+répétée sur chaque section — nouvelle option moteur `config.blog.defaultPagination` /
+`articleFeed.pagination` (`"infinite"` | `"pages"`, `ArticleFeedSectionSchema`/`BlogConfigSchema`),
+défaut ABSENT → `"infinite"` (comportement historique, opt-in, aucun autre site n'est affecté). Le
+widget mono-article `champs-laep-actu` (`pageSize:1`, aperçu d'une actu précise) garde explicitement
+`"infinite"` — paginer un item unique n'a pas de sens.
+
+Le backend ne pagine QUE par curseur (`page.next()` du SDK) : un `indexMin` manuel est ignoré (déjà
+sondé/documenté dans `buildSearchPayload`, chemin carte). `usePagedFeedNav` (`modules/blog/hooks/
+useArticleFeed.ts`) en tient compte : les pages déjà visitées sont en cache React Query (retour
+instantané), la seule page « neuve » atteignable est la suivante immédiate (un clic dessus déclenche
+exactement un `fetchNextPage()`, jamais de saut ni de chaîne de fetch). La « une » (`featured`) reste
+résolue sur la page 1 quelle que soit la page affichée, dédupliquée de chaque page par id. La
+pagination revient à la page 1 dès que le périmètre filtré de la page change (`searchHeader`/
+`heroSearch` partagé, ex. filtre Villes de `/blog`). UI : composant shadcn `Pagination`
+(`components/ui/pagination.tsx`), jusque-là jamais consommé dans le parc.
+
+### 9tresquadragies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` | ✅ 51 pages · 182 sections |
+| `typecheck` · `lint` (module blog) | ✅ 0 erreur |
+| `test:unit` (module blog) | ✅ 60/60 (10 fichiers), dont 5 tests du hook `usePagedFeedNav` |
+| `test:e2e` parent62 | ✅ 26 passés, 1 ignoré ; 2 échecs **étrangers au lot** déjà connus (`/territoire/arrageois`, `/equipe`, données du backend local) |
+| Mobile 375 px (`/blog`, barre présente) | ✅ aucun débordement horizontal (document 367 px pour un viewport de 375 px) |
+| Autres pages `articleFeed` | non re-testées une à une (33 sections) : même composant et même hook, seule la config (`defaultPagination`, au niveau site) change |
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -4096,7 +4128,7 @@ Ni l'un ni l'autre n'a été fait : la marge résiduelle reste en l'état.
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies). **09/09** : boutons **Modifier / Supprimer** sur la fiche `/blog/:slug`, gardés par `canEditProfile` (admin du costum ou auteur) et réutilisant la modale `edit-parent62-article` déjà en place — hérité par les **4 sites** déclarant une page `/blog`, à charge pour eux de router leur propre `editModals` (§9sexvicies.2). **17/09** : types **« À la une »** et **« Zoom sur le réseau »**, type en **choix multiple** ; le mot-clé suit désormais le type (codecs à la place du stamp) ; section d'accueil « Zoom sur le réseau » filtrée sur `Zoom` ; territoires/publics/thèmes facultatifs (§9octovicies.3-4). **22/09** : filtre **« Villes »** sur `/blog` (33 villes du survol des territoires, **23/09** : sur la ville de l'adresse) et champ adresse du formulaire (§9octotricies.1, §9novotricies) |
+| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies). **09/09** : boutons **Modifier / Supprimer** sur la fiche `/blog/:slug`, gardés par `canEditProfile` (admin du costum ou auteur) et réutilisant la modale `edit-parent62-article` déjà en place — hérité par les **4 sites** déclarant une page `/blog`, à charge pour eux de router leur propre `editModals` (§9sexvicies.2). **17/09** : types **« À la une »** et **« Zoom sur le réseau »**, type en **choix multiple** ; le mot-clé suit désormais le type (codecs à la place du stamp) ; section d'accueil « Zoom sur le réseau » filtrée sur `Zoom` ; territoires/publics/thèmes facultatifs (§9octovicies.3-4). **22/09** : filtre **« Villes »** sur `/blog` (33 villes du survol des territoires, **23/09** : sur la ville de l'adresse) et champ adresse du formulaire (§9octotricies.1, §9novotricies). **30/09** : les 33 fils passent en **pagination numérotée** (12/page) au lieu du scroll infini, réglée une seule fois via `config.blog.defaultPagination` (§9tresquadragies) |
 | 2.2 | Actualités filtrables dans le moteur de recherche | ✅ *(était ✅ config, 🟡 UX)* | cible `searchTargets` « Actualités » (`type:article`) dans `/recherche` + filtres territoire/public/thème/dates. **25/07 — UX unifiée** : une actualité de `/recherche` rend une carte dédiée et son clic ouvre le **reader canonique** `/blog/:slug` (repli `/blog/id/:id`), plus un drawer générique |
 | 2.3 | Module événementiel (agenda) + affichage territoire | 🟡 *(diagnostiqué le 14-19/08)* | module agenda complet (calendrier + liste, filtre territoire) ; testé avec des **événements de test locaux** (dev, pas de la production — cf. §9sexies), a révélé 3 bugs backend, **tous corrigés** (§9sexies.1) ; **0 donnée `events` en production, toujours à confirmer** ; pas de carte agenda (`enableMap:false`) |
 | 2.4 | Impression de l'agenda | ❌ | **aucun code print** (`@media print`/`window.print`) — à faire (CSS print ou export iCal/PDF) |

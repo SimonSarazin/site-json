@@ -20,6 +20,13 @@ export const BlogConfigSchema = z.object({
    * lus par `ArticleCard`/`ArticleCardPoster` via `cardTaxonomyBadges`).
    */
   defaultFields: z.array(z.string()).optional(),
+  /**
+   * Mode de navigation par défaut des fils `articleFeed` du site si une section ne le précise pas
+   * (`props.pagination` reste prioritaire). Défaut ABSENT → `"infinite"` (scroll + « charger plus »,
+   * comportement historique) ; `"pages"` bascule tout le site en pagination numérotée sans le répéter
+   * sur chaque section.
+   */
+  defaultPagination: z.enum(["infinite", "pages"]).optional(),
   /** Costum du flux RSS `/blog/feed.xml` (scope `source.key`). Sans lui, le flux répond 400 (sauf `?costum=`). */
   feedCostumSlug: z.string().optional(),
   /**

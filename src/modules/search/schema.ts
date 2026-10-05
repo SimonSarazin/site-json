@@ -511,6 +511,10 @@ export const TestimonialConfSchema = z.object({
   /** Champ de l'illustration (bannière de la carte et de la preview). Repli code : "profilMediumImageUrl",
    *  puis "profilImageUrl", puis la 1re image de `medias` — un témoignage sans image reste rendu tel quel. */
   imageField: z.string().optional(),
+  /** Cadrage de l'illustration : `cover` (défaut, rognée sur un ratio 16/9) ou `contain` (image ENTIÈRE,
+   *  centrée, sur un fond flou tiré de la même image — pour une affiche ou un visuel dont le ratio n'est
+   *  pas 16/9). Opt-in : sans lui, le rendu historique est inchangé. */
+  imageFit: z.enum(["cover", "contain"]).optional(),
   /** Catégorie : pilote la teinte de la bulle + la pastille. `colors` = map valeur→couleur (`var()` ou hex). */
   badge: z.object({ field: z.string(), colors: z.record(z.string(), z.string()).optional() }).optional(),
   /** Accent (ex. territoire) : pilote le point coloré. `colors` = map valeur→couleur (`var()` ou hex). */

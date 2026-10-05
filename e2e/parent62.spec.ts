@@ -175,6 +175,10 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     const panneau = page.locator("aside").first();
     await expect(panneau.getByRole("heading", { name: "Filtres" })).toBeVisible();
     await expect(panneau.getByPlaceholder(/Rechercher par nom/i)).toBeVisible();
+
+    // `defaultViewMode: "map"` : la carte s'affiche dès l'ouverture, sans clic sur le bouton
+    // bascule — demande explicite, la liste seule était le rendu historique.
+    await expect(page.locator(".maplibregl-map, .mapboxgl-map").first()).toBeVisible({ timeout: 15_000 });
   });
 
   // ── Coordination territoriale : filtre serveur + projection (SDK ≥ 1.0.194) ──────────────
@@ -292,6 +296,35 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     await page.waitForTimeout(200);
     const mobileCols = await grid.evaluate((g) => getComputedStyle(g).gridTemplateColumns.split(" ").length);
     expect(mobileCols, "2 colonnes dès le mobile (pas 1, comme le reste du parc)").toBe(2);
+  });
+
+  test("/blog : pagination numérotée (12 par page) au lieu du scroll infini", async ({ page }) => {
+    // `articleFeed.pagination: "pages"` (posé sur tous les fils d'articles du site sauf le widget
+    // mono-article `champs-laep-actu`) : plus de bouton « Charger plus »/scroll infini, une barre de
+    // pagination numérotée à la place.
+    await page.goto("/blog", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+    if (!backendUp) test.skip(true, "fil d'actualités indisponible sans backend");
+
+    const grid = page.locator("#blog-feed .grid").first();
+    await grid.locator(":scope > *").first().waitFor();
+
+    // Le bouton historique de scroll infini a disparu.
+    await expect(page.locator("#blog-feed").getByRole("button", { name: /charger plus/i })).toHaveCount(0);
+
+    const pagination = page.locator("#blog-feed nav[aria-label='pagination']");
+    await expect(pagination).toBeVisible();
+    await expect(pagination.getByRole("link", { name: "Page 1" })).toHaveAttribute("aria-current", "page");
+
+    const nextLink = pagination.getByRole("link", { name: /suivant/i });
+    if (await nextLink.getAttribute("aria-disabled") !== "true") {
+      const firstPageFirstTitle = await grid.locator("h3").first().textContent();
+      await nextLink.click();
+      await page.waitForTimeout(300);
+      await expect(pagination.getByRole("link", { name: "Page 2" })).toHaveAttribute("aria-current", "page");
+      const secondPageFirstTitle = await grid.locator("h3").first().textContent();
+      expect(secondPageFirstTitle, "la page 2 montre des articles différents de la page 1").not.toBe(firstPageFirstTitle);
+    }
   });
 
   test("/zoomcat : liste des actualités « Zoom sur le réseau », sans filtre, atteinte depuis l'accueil", async ({ page }) => {

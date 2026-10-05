@@ -182,7 +182,8 @@ bespoke. Quatre hooks :
   "cardVariant": "compact",            // registre CARD_VARIANTS ; défaut config.blog.defaultCardVariant sinon "default"
   "feedLayout": "list",                // "grid" (défaut) | "list"
   "fullWidth": true,                   // élargit le fil : max-w-[1536px] + 4ᵉ colonne xl (xl:grid-cols-4) ; défaut false → max-w-6xl
-  "density": "compact"                 // resserre la grille ET le gabarit des cartes default/poster ; défaut absent → gabarit historique
+  "density": "compact",                // resserre la grille ET le gabarit des cartes default/poster ; défaut absent → gabarit historique
+  "pagination": "pages"                // "infinite" (défaut, scroll + « charger plus ») | "pages" (pagination numérotée)
 } }
 ```
 `fullWidth` (`z.boolean().optional()` sur `ArticleFeedSectionSchema.props`) élargit le conteneur externe de
@@ -212,6 +213,26 @@ Opt-in (`z.enum(["compact"]).optional()`), sans effet par défaut. En `feedLayou
   gabarit plein.
 - Sans effet sur `cardVariant: "compact"` (`ArticleCardCompact`, la ligne horizontale) : déjà dense par
   construction, elle ignore la prop sans erreur.
+
+#### `pagination: "pages"` — pagination numérotée au lieu du scroll infini
+
+Opt-in (`z.enum(["infinite", "pages"]).optional()`), défaut absent → comportement historique (`"infinite"` :
+scroll + bouton « Charger plus »/`IntersectionObserver`).
+
+Le backend ne pagine **que** par curseur (`page.next()` du SDK) : un `indexMin` manuel est ignoré
+(cf. `buildSearchPayload`, sondé sur le chemin carte) — il est donc impossible de sauter directement à une
+page jamais chargée. `pagination: "pages"` (implémenté par `usePagedFeedNav`, `hooks/useArticleFeed.ts`)
+en tient compte :
+- les pages déjà visitées sont en cache React Query → retour **instantané** ;
+- la seule page « neuve » atteignable est **la suivante immédiate** (`fetchedPages`) — un clic dessus
+  déclenche exactement un `fetchNextPage()` puis l'affiche ; aucun saut plus loin n'est proposé ;
+- la une (`featured: true`/`"flag"`) est résolue sur la **page 0** uniquement (jamais recalculée par page
+  affichée) et dédupliquée de la grille de chaque page par id — une épinglée ancienne qui vit naturellement
+  sur une page ultérieure n'y est jamais dupliquée ;
+- la pagination revient à la page 1 dès que le périmètre filtré change (`searchHeader`/`heroSearch` partagé
+  de la page, cf. en-tête d'`useArticleFeed`) ;
+- UI : composant `Pagination` (`components/ui/pagination.tsx`), jusqu'ici jamais consommé ailleurs dans le
+  parc — `articleFeed` en est le premier utilisateur.
 
 Usage réel : les 33 sections `articleFeed` de parent62 (toutes les pages à fil d'actus) — la carte y est
 `poster` (`config.blog.defaultCardVariant`), donc c'est `ArticleCardPoster` qui applique le resserrement.

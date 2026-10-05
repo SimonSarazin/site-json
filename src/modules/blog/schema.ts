@@ -73,6 +73,16 @@ export const ArticleFeedSectionSchema = z.object({
      * construction).
      */
     density: z.enum(["compact"]).optional(),
+    /**
+     * Mode de navigation du fil : `"infinite"` (défaut historique, scroll infini + bouton
+     * « charger plus ») ou `"pages"` (pagination numérotée classique, `pageSize` par page).
+     * Le backend ne pagine QUE par curseur (`page.next()` — un `indexMin` manuel est ignoré,
+     * cf. `buildSearchPayload`) : la page N+1 doit donc toujours être atteinte en enchaînant
+     * `next()` depuis la dernière page connue. En mode `"pages"`, les pages déjà parcourues
+     * restent en cache (retour instantané) et un saut direct à une page non encore visitée
+     * avance séquentiellement jusqu'à elle plutôt que d'interroger un décalage arbitraire.
+     */
+    pagination: z.enum(["infinite", "pages"]).optional(),
   }),
 });
 export type ArticleFeedSectionProps = z.infer<typeof ArticleFeedSectionSchema>["props"];

@@ -5,7 +5,11 @@
     "loading": "Loading articles…",
     "readMore": "Read article",
     "error": "Unable to load articles.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {{n}}",
+    "pageOf": "Page {{current}} of {{total}}"
   },
   "article": {
     "backToList": "Back to articles",

@@ -17,6 +17,7 @@
       "useFilter": true,
       "showMap": false,
       "enableMap": true,
+      "defaultViewMode": "map",
       "baseParams": {
         "defaultTypes": [
           "poi"
