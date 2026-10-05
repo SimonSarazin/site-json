@@ -2,12 +2,12 @@
   "version": "1.0.0",
   "meta": {
     "title": {
-      "fr": "Open Atlas — des outils libres pour les territoires",
-      "en": "Open Atlas — free tools for territories"
+      "fr": "Open Atlas — Le réseau qui appartient à ceux qui le font vivre",
+      "en": "Open Atlas — The network that belongs to those who bring it to life"
     },
     "description": {
-      "fr": "Open Atlas développe des outils sociaux et territoriaux, mutualisés grâce à l'open source et aux logiciels libres. Découvrez la communauté qui les fait vivre.",
-      "en": "Open Atlas develops social and territorial tools, shared through open source and free software. Meet the community that brings them to life."
+      "fr": "Open Atlas développe Communecter, logiciel libre de réseaux sociaux personnalisés, et maintient son instance centrale Communecter.org, le réseau social des communs.",
+      "en": "Open Atlas develops Communecter, free software for personalised social networks, and maintains its central instance Communecter.org, the social network of the commons."
     },
     "defaultLang": "fr",
     "languages": [
@@ -19,11 +19,13 @@
     "themeColor": "#e2334e",
     "keywords": [
       "Open Atlas",
-      "logiciels libres",
-      "open source",
-      "communs",
-      "outils territoriaux",
       "Communecter",
+      "Communecter.org",
+      "logiciel libre",
+      "communs numériques",
+      "réseau social",
+      "tiers-lieux",
+      "accompagnement",
       "La Réunion"
     ],
     "author": {
@@ -48,13 +50,6 @@
     "nav": [
       {
         "label": {
-          "fr": "Accueil",
-          "en": "Home"
-        },
-        "path": "/"
-      },
-      {
-        "label": {
           "fr": "Projets",
           "en": "Projects"
         },
@@ -69,10 +64,17 @@
       },
       {
         "label": {
-          "fr": "À propos",
-          "en": "About"
+          "fr": "Accompagnement",
+          "en": "Support"
         },
-        "path": "/profil/openAtlas"
+        "path": "/accompagnement"
+      },
+      {
+        "label": {
+          "fr": "Communecter.org",
+          "en": "Communecter.org"
+        },
+        "href": "https://www.communecter.org"
       }
     ],
     "sticky": true,
@@ -87,14 +89,21 @@
       "auth": true,
       "cart": false,
       "notifications": true
+    },
+    "ctaButton": {
+      "label": {
+        "fr": "Nous écrire",
+        "en": "Write to us"
+      },
+      "path": "/contact"
     }
   },
   "pages": [
     {
       "path": "/",
       "title": {
-        "fr": "Open Atlas",
-        "en": "Open Atlas"
+        "fr": "Open Atlas — Le réseau qui appartient à ceux qui le font vivre",
+        "en": "Open Atlas — The network that belongs to those who bring it to life"
       },
       "layout": "fullwidth",
       "sections": [
@@ -103,51 +112,51 @@
           "id": "accueil",
           "props": {
             "headline": {
-              "fr": "Open Atlas",
-              "en": "Open Atlas"
+              "fr": "Le réseau qui appartient à ceux qui le font vivre.",
+              "en": "The network that belongs to those who bring it to life."
             },
             "subhead": {
-              "fr": "Développement de territoire et d'outils sociaux et territoriaux, mutualisés grâce à l'open source et aux logiciels libres.",
-              "en": "Territorial development and social and territorial tools, shared through open source and free software."
+              "fr": "Open Atlas permet à des collectifs, organisations ou citoyens de se créer des espaces de coopération ou réseaux sociaux personnalisés.",
+              "en": "Open Atlas enables collectives, organisations and citizens to create their own spaces for cooperation and personalised social networks."
             },
             "badges": [
               {
                 "label": {
-                  "fr": "Logiciels libres",
+                  "fr": "Association loi 1901",
+                  "en": "Non-profit association"
+                },
+                "icon": "landmark"
+              },
+              {
+                "label": {
+                  "fr": "Communs numériques",
+                  "en": "Digital commons"
+                },
+                "icon": "share-2"
+              },
+              {
+                "label": {
+                  "fr": "Logiciel libre",
                   "en": "Free software"
                 },
                 "icon": "code-xml"
-              },
-              {
-                "label": {
-                  "fr": "Outils territoriaux",
-                  "en": "Territorial tools"
-                },
-                "icon": "map"
-              },
-              {
-                "label": {
-                  "fr": "Communs",
-                  "en": "Commons"
-                },
-                "icon": "share-2"
               }
             ],
             "ctaButtons": [
               {
                 "label": {
-                  "fr": "Découvrir la communauté",
-                  "en": "Meet the community"
+                  "fr": "Découvrir Communecter",
+                  "en": "Discover Communecter"
                 },
-                "path": "/communaute",
+                "path": "https://www.communecter.org",
                 "variant": "default"
               },
               {
                 "label": {
-                  "fr": "Qui sommes-nous ?",
-                  "en": "Who are we?"
+                  "fr": "Nous écrire",
+                  "en": "Write to us"
                 },
-                "path": "/profil/openAtlas",
+                "path": "/contact",
                 "variant": "outline"
               }
             ],
@@ -155,54 +164,162 @@
           }
         },
         {
-          "type": "features-glass",
-          "id": "mission",
+          "type": "cta-card-grid",
+          "id": "outils",
           "props": {
             "headline": {
-              "fr": "Ce qui nous anime",
-              "en": "What drives us"
+              "fr": "Un logiciel, une instance centrale",
+              "en": "One software, one central instance"
             },
             "subhead": {
-              "fr": "Des outils pensés pour les territoires, construits en logiciels libres et partagés entre tous ceux qui les utilisent.",
-              "en": "Tools designed for territories, built as free software and shared among everyone who uses them."
+              "fr": "Open Atlas développe Communecter, un logiciel libre, interopérable et facilement adaptable pour créer des plateformes personnalisées au niveau fonctionnel et dans le design. Open Atlas maintient Communecter.org, son instance centrale qui relie tous les projets en open data pour proposer un réseau social dédié aux communs, alimenté par les territoires et les plateformes personnalisées depuis maintenant 14 ans.",
+              "en": "Open Atlas develops Communecter, free, interoperable and easily adaptable software for building platforms personalised in both features and design. Open Atlas maintains Communecter.org, its central instance, which connects every project through open data to offer a social network dedicated to the commons, fed by territories and personalised platforms for 14 years now."
             },
-            "bg": "muted",
-            "features": [
+            "bg": "default",
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 2,
+              "xl": 2
+            },
+            "actions": [
               {
                 "icon": "code-xml",
                 "title": {
-                  "fr": "Des logiciels libres",
-                  "en": "Free software"
+                  "fr": "Communecter",
+                  "en": "Communecter"
                 },
                 "description": {
-                  "fr": "Nos outils sont open source : chacun peut les utiliser, les étudier, les adapter et les améliorer.",
-                  "en": "Our tools are open source: anyone can use, study, adapt and improve them."
+                  "fr": "Le logiciel libre développé et protégé par Open Atlas. C'est le moteur qui permet de créer des réseaux sociaux personnalisés, d'interroger les données d'un territoire de très nombreuses manières, et de les relier entre elles.",
+                  "en": "The free software developed and protected by Open Atlas. It is the engine for creating personalised social networks, querying a territory's data in many different ways, and connecting it all together."
                 },
+                "ctaLabel": {
+                  "fr": "Voir le code source",
+                  "en": "View the source code"
+                },
+                "href": "https://gitlab.adullact.net/pixelhumain/",
                 "color": "primary"
               },
               {
                 "icon": "map",
                 "title": {
-                  "fr": "Au service des territoires",
-                  "en": "Serving territories"
+                  "fr": "Communecter.org",
+                  "en": "Communecter.org"
                 },
                 "description": {
-                  "fr": "Des outils sociaux et territoriaux pour que les acteurs d'un territoire se connaissent, coopèrent et agissent ensemble.",
-                  "en": "Social and territorial tools that help the people and organisations of a territory know each other, cooperate and act together."
+                  "fr": "L'instance centrale du logiciel Communecter, maintenue et protégée par Open Atlas. Elle relie tous les projets qui l'utilisent et donne accès à un réseau social dédié aux communs. Elle est aujourd'hui en pleine refonte pour une nouvelle version.",
+                  "en": "The central instance of the Communecter software, maintained and protected by Open Atlas. It connects every project that uses it and gives access to a social network dedicated to the commons. It is currently being rebuilt for a new version."
                 },
+                "ctaLabel": {
+                  "fr": "Visiter communecter.org",
+                  "en": "Visit communecter.org"
+                },
+                "href": "https://www.communecter.org",
                 "color": "chart-2"
+              }
+            ]
+          }
+        },
+        {
+          "type": "content",
+          "id": "fonctionnalites",
+          "props": {
+            "category": {
+              "fr": "Fonctionnalités",
+              "en": "Features"
+            },
+            "title": {
+              "fr": "Ce que permet Communecter",
+              "en": "What Communecter does"
+            },
+            "description": {
+              "fr": "Annuaire territorial, cartographie interactive, formulaires, réseau social, agenda, projets, observatoire, droits & rôles, API…",
+              "en": "Territorial directory, interactive mapping, forms, social network, calendar, projects, observatory, rights & roles, API…"
+            },
+            "tags": [
+              {
+                "fr": "Annuaire",
+                "en": "Directory"
               },
               {
-                "icon": "share-2",
+                "fr": "Cartographie",
+                "en": "Mapping"
+              },
+              {
+                "fr": "Formulaires",
+                "en": "Forms"
+              },
+              {
+                "fr": "Réseau social",
+                "en": "Social network"
+              },
+              {
+                "fr": "Observatoire",
+                "en": "Observatory"
+              },
+              {
+                "fr": "API",
+                "en": "API"
+              }
+            ],
+            "width": "wide",
+            "align": "left"
+          }
+        },
+        {
+          "type": "categories-grid",
+          "id": "principes",
+          "props": {
+            "headline": {
+              "fr": "Ce qui guide notre travail",
+              "en": "What guides our work"
+            },
+            "variant": "primary",
+            "columns": 4,
+            "cards": [
+              {
+                "icon": "git-fork",
                 "title": {
-                  "fr": "Mutualisés",
-                  "en": "Shared"
+                  "fr": "Communs numériques",
+                  "en": "Digital commons"
                 },
-                "description": {
-                  "fr": "Ce qui est développé pour un projet profite aux autres : les outils sont mis en commun plutôt que refaits.",
-                  "en": "What is built for one project benefits the others: tools are pooled rather than rebuilt."
+                "subtitle": {
+                  "fr": "Nos outils sont publiés en logiciel libre : le code s'étudie, se copie, s'améliore, il n'appartient à personne en particulier.",
+                  "en": "Our tools are published as free software: the code can be studied, copied and improved, and belongs to no one in particular."
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Réseau social vivant",
+                  "en": "A living social network"
                 },
-                "color": "primary"
+                "subtitle": {
+                  "fr": "Plutôt qu'un annuaire ou un site figé, toute notre expérience est dédiée à créer des interactions : faciliter une mutualisation via la plateforme, ajouter des membres à son réseau, créer et modifier sa fiche de présentation, ajouter des ressources, prendre des décisions ensemble.",
+                  "en": "Rather than a static directory or website, all our experience is devoted to creating interactions: pooling through the platform, adding members to your network, creating and editing your profile, adding resources, making decisions together."
+                }
+              },
+              {
+                "icon": "brain",
+                "title": {
+                  "fr": "Intelligence collective",
+                  "en": "Collective intelligence"
+                },
+                "subtitle": {
+                  "fr": "Des outils pensés pour que les réseaux créés construisent de l'intelligence collective et révèlent ce qui se crée au plus près du terrain, dans vos collectifs ou organisations.",
+                  "en": "Tools designed so that the networks they create build collective intelligence and reveal what is happening closest to the ground, in your collectives or organisations."
+                }
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Un numérique qui relie au réel",
+                  "en": "Digital that connects to the real world"
+                },
+                "subtitle": {
+                  "fr": "Nos outils sont pensés pour limiter toute dépendance et n'utiliser le numérique que pour l'essentiel. Depuis 10 ans autour des tiers-lieux, notre travail vise à ce que les acteurs du réseau se retrouvent dans ces lieux physiques qui font réseau social.",
+                  "en": "Our tools are designed to limit dependency and use digital only for what matters. For 10 years around third places, our work has aimed to bring network members together in the physical places that make a social network."
+                }
               }
             ]
           }
@@ -271,36 +388,153 @@
           }
         },
         {
+          "type": "content",
+          "id": "accompagnement",
+          "props": {
+            "category": {
+              "fr": "Au-delà du logiciel",
+              "en": "Beyond the software"
+            },
+            "title": {
+              "fr": "Un accompagnement sur mesure",
+              "en": "Tailored support"
+            },
+            "description": {
+              "fr": "Open Atlas accompagne les collectivités, organisations et collectifs qui veulent déployer leur propre réseau ou plateforme personnalisée basée sur ce réseau social des communs qu'est Communecter.org.",
+              "en": "Open Atlas supports local authorities, organisations and collectives that want to deploy their own network or personalised platform built on Communecter.org, the social network of the commons."
+            },
+            "links": [
+              {
+                "label": {
+                  "fr": "Découvrir l'accompagnement",
+                  "en": "Discover our support"
+                },
+                "href": "/accompagnement"
+              },
+              {
+                "label": {
+                  "fr": "Nous écrire",
+                  "en": "Write to us"
+                },
+                "href": "/contact"
+              }
+            ],
+            "width": "wide",
+            "align": "left"
+          }
+        },
+        {
+          "type": "action-tiles",
+          "id": "references",
+          "props": {
+            "headline": {
+              "fr": "Communecter.org au cœur, des réseaux tout autour",
+              "en": "Communecter.org at the core, networks all around"
+            },
+            "subhead": {
+              "fr": "Communecter.org est l'instance centrale du logiciel Communecter : elle centralise et protège la donnée des communs. Autour d'elle, des réseaux sociaux personnalisés — basés sur le logiciel libre Communecter — offrent chacun une porte d'entrée différente sur ce même réseau, adaptée à un territoire ou une thématique.",
+              "en": "Communecter.org is the central instance of the Communecter software: it centralises and protects the data of the commons. Around it, personalised social networks — built on the free software Communecter — each offer a different way into the same network, adapted to a territory or a theme."
+            },
+            "bg": "muted",
+            "columns": {
+              "sm": 2,
+              "lg": 4
+            },
+            "actions": [
+              {
+                "icon": "building-2",
+                "title": {
+                  "fr": "tiers-lieux.org",
+                  "en": "tiers-lieux.org"
+                },
+                "subtitle": {
+                  "fr": "Le réseau national des tiers-lieux",
+                  "en": "The national network of third places"
+                },
+                "href": "https://tiers-lieux.org",
+                "color": "primary"
+              },
+              {
+                "icon": "handshake",
+                "title": {
+                  "fr": "Appel à communs des tiers-lieux",
+                  "en": "Third places' call for commons"
+                },
+                "subtitle": {
+                  "fr": "lescommuns.tiers-lieux.org",
+                  "en": "lescommuns.tiers-lieux.org"
+                },
+                "href": "https://lescommuns.tiers-lieux.org",
+                "color": "chart-2"
+              },
+              {
+                "icon": "baby",
+                "title": {
+                  "fr": "Réseau parentalité 62",
+                  "en": "Parenting network 62"
+                },
+                "subtitle": {
+                  "fr": "parent62.00.re",
+                  "en": "parent62.00.re"
+                },
+                "href": "https://parent62.00.re/",
+                "color": "primary"
+              },
+              {
+                "icon": "dumbbell",
+                "title": {
+                  "fr": "Équipements sportifs 974",
+                  "en": "Sports facilities 974"
+                },
+                "subtitle": {
+                  "fr": "equipements-sportifs-974.00.re",
+                  "en": "equipements-sportifs-974.00.re"
+                },
+                "href": "https://equipements-sportifs-974.00.re/",
+                "color": "chart-2"
+              }
+            ]
+          }
+        },
+        {
           "type": "cta",
           "id": "rejoindre",
           "props": {
             "headline": {
-              "fr": "Rejoignez la communauté",
-              "en": "Join the community"
+              "fr": "Envie de contribuer, d'adhérer ou de discuter d'un projet ?",
+              "en": "Want to contribute, join or discuss a project?"
             },
             "subhead": {
-              "fr": "Personnes et organisations construisent Open Atlas ensemble. Découvrez qui en fait partie.",
-              "en": "People and organisations build Open Atlas together. See who is part of it."
+              "fr": "Que vous portiez un tiers-lieu, une collectivité, ou simplement l'envie de mettre la main dans le code, il y a une place pour vous dans le mouvement Open Atlas.",
+              "en": "Whether you run a third place, a local authority, or simply want to get your hands into the code, there is a place for you in the Open Atlas movement."
             },
             "buttons": [
               {
                 "label": {
-                  "fr": "Voir la communauté",
-                  "en": "See the community"
+                  "fr": "Adhérer à l'association",
+                  "en": "Join the association"
                 },
-                "href": "/communaute",
+                "href": "/contact",
                 "variant": "default"
               },
               {
                 "label": {
-                  "fr": "Créer un compte",
-                  "en": "Create an account"
+                  "fr": "Discuter d'un projet",
+                  "en": "Discuss a project"
                 },
-                "href": "/register",
+                "href": "/contact",
+                "variant": "outline"
+              },
+              {
+                "label": {
+                  "fr": "Rejoindre la communauté",
+                  "en": "Join the community"
+                },
+                "href": "/communaute",
                 "variant": "outline"
               }
             ],
-            "align": "center"
+            "align": "left"
           }
         }
       ]
@@ -578,6 +812,316 @@
       ]
     },
     {
+      "path": "/accompagnement",
+      "title": {
+        "fr": "Accompagnement — Open Atlas",
+        "en": "Support — Open Atlas"
+      },
+      "seo": {
+        "title": {
+          "fr": "Un accompagnement sur mesure — Open Atlas",
+          "en": "Tailored support — Open Atlas"
+        },
+        "description": {
+          "fr": "Open Atlas accompagne les collectivités, organisations et collectifs qui veulent déployer leur propre réseau ou plateforme personnalisée basée sur ce réseau social des communs qu'est Communecter.org.",
+          "en": "Open Atlas supports local authorities, organisations and collectives that want to deploy their own network or personalised platform built on Communecter.org, the social network of the commons."
+        }
+      },
+      "sections": [
+        {
+          "type": "content",
+          "id": "accompagnement-intro",
+          "props": {
+            "category": {
+              "fr": "Au-delà du logiciel",
+              "en": "Beyond the software"
+            },
+            "title": {
+              "fr": "Un accompagnement sur mesure",
+              "en": "Tailored support"
+            },
+            "description": {
+              "fr": "Open Atlas accompagne les collectivités, organisations et collectifs qui veulent déployer leur propre réseau ou plateforme personnalisée basée sur ce réseau social des communs qu'est Communecter.org.",
+              "en": "Open Atlas supports local authorities, organisations and collectives that want to deploy their own network or personalised platform built on Communecter.org, the social network of the commons."
+            },
+            "width": "wide",
+            "align": "left"
+          }
+        },
+        {
+          "type": "features-glass",
+          "id": "services",
+          "props": {
+            "headline": {
+              "fr": "Ce que nous proposons",
+              "en": "What we offer"
+            },
+            "bg": "muted",
+            "features": [
+              {
+                "icon": "search",
+                "title": {
+                  "fr": "Diagnostic",
+                  "en": "Assessment"
+                },
+                "color": "primary",
+                "description": {
+                  "fr": "Diagnostic des enjeux (ateliers en intelligence collective) et définition des besoins qui y répondent.",
+                  "en": "Assessment of the issues (collective intelligence workshops) and definition of the needs that address them."
+                }
+              },
+              {
+                "icon": "layout-template",
+                "title": {
+                  "fr": "Plateforme sur mesure",
+                  "en": "Tailored platform"
+                },
+                "color": "chart-2",
+                "description": {
+                  "fr": "Création d'une plateforme spécifique qui y répond à partir des modules déjà existants.",
+                  "en": "Creation of a specific platform that meets them, built from existing modules."
+                }
+              },
+              {
+                "icon": "graduation-cap",
+                "title": {
+                  "fr": "Formation",
+                  "en": "Training"
+                },
+                "color": "primary",
+                "description": {
+                  "fr": "Formation des équipes à la plateforme ainsi qu'à contribuer au logiciel.",
+                  "en": "Training teams to use the platform and to contribute to the software."
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Animation",
+                  "en": "Community building"
+                },
+                "color": "chart-2",
+                "description": {
+                  "fr": "Animation de communauté et accompagnement à l'adoption.",
+                  "en": "Community building and support for adoption."
+                }
+              },
+              {
+                "icon": "code",
+                "title": {
+                  "fr": "Développements",
+                  "en": "Development"
+                },
+                "color": "primary",
+                "description": {
+                  "fr": "Développements spécifiques et intégrations sur mesure.",
+                  "en": "Specific developments and tailored integrations."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "content",
+          "id": "reseau-prestataires",
+          "props": {
+            "category": {
+              "fr": "Prestataires",
+              "en": "Service providers"
+            },
+            "title": {
+              "fr": "Un réseau, pas un guichet",
+              "en": "A network, not a service desk"
+            },
+            "description": {
+              "fr": "Selon la taille et la nature du projet, Open Atlas peut mobiliser la communauté des prestataires qui gravitent autour de Communecter pour compléter son accompagnement.",
+              "en": "Depending on the size and nature of the project, Open Atlas can call on the community of service providers around Communecter to complement its support."
+            },
+            "tags": [
+              {
+                "fr": "OPTEOS",
+                "en": "OPTEOS"
+              },
+              {
+                "fr": "CoRD",
+                "en": "CoRD"
+              },
+              {
+                "fr": "+ d'autres prestataires selon le projet",
+                "en": "+ other providers depending on the project"
+              }
+            ],
+            "width": "wide",
+            "align": "left"
+          }
+        },
+        {
+          "type": "cta",
+          "id": "accompagnement-cta",
+          "props": {
+            "headline": {
+              "fr": "Parlons de votre projet",
+              "en": "Let's talk about your project"
+            },
+            "subhead": {
+              "fr": "Décrivez-nous votre besoin : nous revenons vers vous pour en discuter.",
+              "en": "Tell us what you need: we will get back to you to discuss it."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Nous écrire",
+                  "en": "Write to us"
+                },
+                "href": "/contact",
+                "variant": "default"
+              }
+            ],
+            "align": "center"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/contact",
+      "title": {
+        "fr": "Contact — Open Atlas",
+        "en": "Contact — Open Atlas"
+      },
+      "seo": {
+        "title": {
+          "fr": "Nous écrire — Open Atlas",
+          "en": "Write to us — Open Atlas"
+        },
+        "description": {
+          "fr": "Une question, une envie d'adhérer, un projet à discuter : écrivez à Open Atlas.",
+          "en": "A question, a wish to join, a project to discuss: write to Open Atlas."
+        }
+      },
+      "sections": [
+        {
+          "type": "content",
+          "id": "contact-intro",
+          "props": {
+            "category": {
+              "fr": "Contact",
+              "en": "Contact"
+            },
+            "title": {
+              "fr": "Nous écrire",
+              "en": "Write to us"
+            },
+            "description": {
+              "fr": "Une question, l'envie d'adhérer à l'association, un projet à discuter ou une contribution au logiciel ? Écrivez-nous.",
+              "en": "A question, a wish to join the association, a project to discuss or a contribution to the software? Write to us."
+            },
+            "width": "prose",
+            "align": "left"
+          }
+        },
+        {
+          "type": "contactForm",
+          "id": "contact-form",
+          "props": {
+            "submitLabel": {
+              "fr": "Envoyer le message",
+              "en": "Send the message"
+            },
+            "successMessage": {
+              "fr": "Votre message a bien été envoyé.",
+              "en": "Your message has been sent."
+            },
+            "errorMessage": {
+              "fr": "Le message n'a pas pu être envoyé. Réessayez plus tard.",
+              "en": "The message could not be sent. Please try again later."
+            },
+            "fields": [
+              {
+                "name": "name",
+                "role": "senderName",
+                "label": {
+                  "fr": "Nom complet",
+                  "en": "Full name"
+                },
+                "type": "text",
+                "required": true,
+                "placeholder": {
+                  "fr": "Votre nom",
+                  "en": "Your name"
+                }
+              },
+              {
+                "name": "email",
+                "role": "senderEmail",
+                "label": {
+                  "fr": "Adresse e-mail",
+                  "en": "Email address"
+                },
+                "type": "email",
+                "required": true,
+                "placeholder": {
+                  "fr": "votre@email.fr",
+                  "en": "you@example.com"
+                },
+                "validation": "email"
+              },
+              {
+                "name": "subject",
+                "role": "subject",
+                "label": {
+                  "fr": "Sujet",
+                  "en": "Subject"
+                },
+                "type": "select",
+                "required": true,
+                "options": [
+                  {
+                    "fr": "Adhérer à l'association",
+                    "en": "Join the association"
+                  },
+                  {
+                    "fr": "Discuter d'un projet",
+                    "en": "Discuss a project"
+                  },
+                  {
+                    "fr": "Contribuer au logiciel",
+                    "en": "Contribute to the software"
+                  },
+                  {
+                    "fr": "Autre demande",
+                    "en": "Other request"
+                  }
+                ]
+              },
+              {
+                "name": "message",
+                "role": "message",
+                "label": {
+                  "fr": "Message",
+                  "en": "Message"
+                },
+                "type": "textarea",
+                "required": true,
+                "placeholder": {
+                  "fr": "Votre message…",
+                  "en": "Your message…"
+                }
+              },
+              {
+                "name": "rgpd",
+                "label": {
+                  "fr": "J'accepte que les informations saisies soient utilisées pour traiter ma demande (voir la politique de confidentialité).",
+                  "en": "I agree that the information entered may be used to handle my request (see the privacy policy)."
+                },
+                "type": "checkbox",
+                "required": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
       "path": "/mentions-legales",
       "title": {
         "fr": "Mentions légales — Open Atlas",
@@ -608,8 +1152,8 @@
           "id": "confidentialite",
           "props": {
             "html": {
-              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Politique de confidentialité</h1>\n<p class=\"text-muted-foreground mb-8\">Cette politique décrit les traitements de données personnelles réalisés dans le cadre du site d'Open Atlas, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés. Elle complète les <a href=\"/mentions-legales\" class=\"text-primary hover:underline\">mentions légales</a>. Les éléments qui restent à établir sont signalés par la mention « [à compléter] » : ils seront renseignés dans une prochaine version de ce document.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Responsable du traitement</h2>\n<p class=\"text-muted-foreground mb-2\">Le responsable des traitements décrits ci-dessous est Open Atlas.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Forme juridique et numéro d'immatriculation (SIREN ou RNA) : [à compléter]</li>\n<li>Adresse du siège : [à compléter]</li>\n<li>Courriel : [à compléter]</li>\n<li>Délégué à la protection des données, ou personne chargée des questions relatives aux données personnelles : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Données traitées</h2>\n<p class=\"text-muted-foreground mb-4\">Le site permet la création d'un compte utilisateur et la connexion, ainsi que la consultation de l'annuaire de la <a href=\"/communaute\" class=\"text-primary hover:underline\">communauté</a> : les fiches des personnes et des organisations membres d'Open Atlas, ainsi que la consultation des <a href=\"/projets\" class=\"text-primary hover:underline\">projets</a> et de leurs fiches. Des données personnelles sont donc traitées à ces occasions ; leur détail reste à établir.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Données collectées lors de la création d'un compte, de la connexion et de la récupération d'un mot de passe : [à compléter]</li>\n<li>Données publiées dans l'annuaire de la communauté et sur les fiches des membres : [à compléter]</li>\n<li>Données éventuellement collectées automatiquement lors de la consultation du site, notamment par les journaux de connexion : [à compléter]</li>\n<li>Données éventuellement transmises à des services tiers intégrés au site : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Finalités et bases légales</h2>\n<p class=\"text-muted-foreground mb-4\">Les finalités qui ressortent des fonctionnalités actuellement mises en ligne sont les suivantes :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>permettre la création, la gestion et la récupération d'un compte utilisateur ;</li>\n<li>présenter les personnes et les organisations membres de la communauté Open Atlas.</li></ul>\n<p class=\"text-muted-foreground mb-6\">La base légale retenue pour chacune de ces finalités — exécution du contrat, consentement, intérêt légitime ou obligation légale — ainsi que les éventuelles autres finalités poursuivies et les destinataires des données : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\" id=\"cookies\">4. Cookies et stockage local</h2>\n<p class=\"text-muted-foreground mb-4\">Aucun bandeau de recueil du consentement aux cookies n'est affiché sur les pages du site. Cette absence ne permet pas de conclure qu'aucun traceur n'est déposé : l'inventaire des cookies et des informations enregistrées dans votre navigateur reste à réaliser.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Cookies et traceurs éventuellement déposés, avec pour chacun l'émetteur, la finalité et la durée de vie : [à compléter]</li>\n<li>Informations éventuellement enregistrées dans le stockage local ou le stockage de session du navigateur : [à compléter]</li>\n<li>Outils de mesure d'audience et services tiers éventuellement utilisés : [à compléter]</li></ul>\n<p class=\"text-muted-foreground mb-6\">Si cet inventaire fait apparaître des traceurs soumis à consentement, un dispositif permettant de recueillir et de retirer ce consentement devra être mis en place avant leur dépôt. Les modalités de paramétrage de vos préférences seront alors décrites ici : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Durées de conservation</h2>\n<p class=\"text-muted-foreground mb-6\">Les durées de conservation applicables à chaque catégorie de données, ainsi que les critères permettant de les déterminer, restent à établir : [à compléter]. Le sort réservé aux données et aux contenus publiés à la suppression d'un compte : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Vos droits</h2>\n<p class=\"text-muted-foreground mb-4\">Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation du traitement, d'opposition et de portabilité sur les données qui vous concernent, ainsi que du droit de définir des directives relatives à leur sort après votre décès. Lorsqu'un traitement repose sur votre consentement, vous pouvez le retirer à tout moment.</p>\n<p class=\"text-muted-foreground mb-6\">Adresse à laquelle exercer ces droits : [à compléter]. Vous pouvez également introduire une réclamation auprès de la Commission nationale de l'informatique et des libertés (<a href=\"https://www.cnil.fr\" class=\"text-primary hover:underline\" rel=\"noopener\" target=\"_blank\">cnil.fr</a>).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Sécurité</h2>\n<p class=\"text-muted-foreground mb-6\">L'article 32 du RGPD impose au responsable du traitement de mettre en œuvre les mesures techniques et organisationnelles appropriées pour assurer la sécurité des données. La description des mesures effectivement en place sur ce site — hébergement, protection des échanges, gestion des accès et des habilitations, sauvegardes, conduite à tenir en cas de violation de données — reste à fournir : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">8. Transferts hors Union européenne</h2>\n<p class=\"text-muted-foreground mb-6\">L'existence de transferts de données en dehors de l'Union européenne dépend du lieu d'hébergement du site et des services tiers éventuellement utilisés, qui ne sont pas documentés à ce stade. Le cas échéant, les destinataires concernés, les pays de destination et les garanties encadrant ces transferts (décision d'adéquation, clauses contractuelles types ou autre garantie appropriée) sont les suivants : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">9. Modification de la politique</h2>\n<p class=\"text-muted-foreground mb-6\">La présente politique peut être modifiée, notamment pour tenir compte des évolutions du site, des traitements mis en œuvre ou de la réglementation applicable. La version qui vous est opposable est celle publiée sur cette page au moment de votre consultation.</p>\n<p class=\"text-muted-foreground mb-6\">Dernière mise à jour : [à compléter]</p>\n</div>",
-              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Privacy policy</h1>\n<p class=\"text-muted-foreground mb-8\">This policy describes the processing of personal data carried out on the Open Atlas website, in accordance with the General Data Protection Regulation (GDPR) and the French Data Protection Act. It supplements the <a href=\"/mentions-legales\" class=\"text-primary hover:underline\">legal notice</a>. Items still to be established are marked “[to be completed]”: they will be filled in in a future version of this document.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Data controller</h2>\n<p class=\"text-muted-foreground mb-2\">The controller of the processing described below is Open Atlas.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Legal form and registration number (SIREN or RNA): [to be completed]</li>\n<li>Registered office address: [to be completed]</li>\n<li>Email: [to be completed]</li>\n<li>Data protection officer, or person in charge of personal data matters: [to be completed]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Data processed</h2>\n<p class=\"text-muted-foreground mb-4\">The website allows users to create an account and log in, and to browse the directory of the <a href=\"/communaute\" class=\"text-primary hover:underline\">community</a>: the profiles of the people and organisations who are members of Open Atlas, as well as browsing the <a href=\"/projets\" class=\"text-primary hover:underline\">projects</a> and their pages. Personal data is therefore processed on these occasions; the details remain to be established.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Data collected when creating an account, logging in and recovering a password: [to be completed]</li>\n<li>Data published in the community directory and on member profiles: [to be completed]</li>\n<li>Data that may be collected automatically when browsing the website, in particular through connection logs: [to be completed]</li>\n<li>Data that may be transmitted to third-party services integrated into the website: [to be completed]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Purposes and legal bases</h2>\n<p class=\"text-muted-foreground mb-4\">The purposes arising from the features currently online are the following:</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>enabling the creation, management and recovery of a user account;</li>\n<li>presenting the people and organisations who are members of the Open Atlas community.</li></ul>\n<p class=\"text-muted-foreground mb-6\">The legal basis for each of these purposes — performance of a contract, consent, legitimate interest or legal obligation — as well as any other purposes pursued and the recipients of the data: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\" id=\"cookies\">4. Cookies and local storage</h2>\n<p class=\"text-muted-foreground mb-4\">No cookie consent banner is displayed on the website. This does not mean that no tracker is placed: the inventory of cookies and of the information stored in your browser remains to be carried out.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Cookies and trackers that may be placed, with for each the issuer, purpose and lifetime: [to be completed]</li>\n<li>Information that may be stored in the browser's local storage or session storage: [to be completed]</li>\n<li>Audience measurement tools and third-party services that may be used: [to be completed]</li></ul>\n<p class=\"text-muted-foreground mb-6\">If this inventory reveals trackers that require consent, a mechanism for giving and withdrawing consent will have to be put in place before they are placed. How to set your preferences will then be described here: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Retention periods</h2>\n<p class=\"text-muted-foreground mb-6\">The retention periods applying to each category of data, and the criteria used to determine them, remain to be established: [to be completed]. What happens to data and published content when an account is deleted: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Your rights</h2>\n<p class=\"text-muted-foreground mb-4\">Under the GDPR, you have the right to access, rectify and erase your data, to restrict or object to its processing and to data portability, as well as the right to set guidelines for what happens to your data after your death. Where processing is based on your consent, you may withdraw it at any time.</p>\n<p class=\"text-muted-foreground mb-6\">Address for exercising these rights: [to be completed]. You may also lodge a complaint with the French data protection authority, the CNIL (<a href=\"https://www.cnil.fr\" class=\"text-primary hover:underline\" rel=\"noopener\" target=\"_blank\">cnil.fr</a>).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Security</h2>\n<p class=\"text-muted-foreground mb-6\">Article 32 of the GDPR requires the controller to implement appropriate technical and organisational measures to ensure the security of the data. A description of the measures actually in place on this website — hosting, protection of exchanges, access and authorisation management, backups, procedure in the event of a data breach — remains to be provided: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">8. Transfers outside the European Union</h2>\n<p class=\"text-muted-foreground mb-6\">Whether data is transferred outside the European Union depends on where the website is hosted and on any third-party services used, which are not documented at this stage. Where applicable, the recipients concerned, the destination countries and the safeguards governing these transfers (adequacy decision, standard contractual clauses or other appropriate safeguard) are as follows: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">9. Changes to this policy</h2>\n<p class=\"text-muted-foreground mb-6\">This policy may be amended, in particular to reflect changes to the website, to the processing carried out or to the applicable regulations. The version that applies to you is the one published on this page at the time you consult it.</p>\n<p class=\"text-muted-foreground mb-6\">Last updated: [to be completed]</p>\n</div>"
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Politique de confidentialité</h1>\n<p class=\"text-muted-foreground mb-8\">Cette politique décrit les traitements de données personnelles réalisés dans le cadre du site d'Open Atlas, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés. Elle complète les <a href=\"/mentions-legales\" class=\"text-primary hover:underline\">mentions légales</a>. Les éléments qui restent à établir sont signalés par la mention « [à compléter] » : ils seront renseignés dans une prochaine version de ce document.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Responsable du traitement</h2>\n<p class=\"text-muted-foreground mb-2\">Le responsable des traitements décrits ci-dessous est Open Atlas.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Forme juridique et numéro d'immatriculation (SIREN ou RNA) : [à compléter]</li>\n<li>Adresse du siège : [à compléter]</li>\n<li>Courriel : [à compléter]</li>\n<li>Délégué à la protection des données, ou personne chargée des questions relatives aux données personnelles : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Données traitées</h2>\n<p class=\"text-muted-foreground mb-4\">Le site permet la création d'un compte utilisateur et la connexion, ainsi que la consultation de l'annuaire de la <a href=\"/communaute\" class=\"text-primary hover:underline\">communauté</a> : les fiches des personnes et des organisations membres d'Open Atlas, ainsi que la consultation des <a href=\"/projets\" class=\"text-primary hover:underline\">projets</a> et de leurs fiches. Des données personnelles sont donc traitées à ces occasions ; leur détail reste à établir.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Données collectées lors de la création d'un compte, de la connexion et de la récupération d'un mot de passe : [à compléter]</li>\n<li>Données publiées dans l'annuaire de la communauté et sur les fiches des membres : [à compléter]</li>\n<li>Données saisies dans le <a href=\"/contact\" class=\"text-primary hover:underline\">formulaire de contact</a> (nom, adresse e-mail, sujet, message) et destinataires de ces messages : [à compléter]</li>\n<li>Données éventuellement collectées automatiquement lors de la consultation du site, notamment par les journaux de connexion : [à compléter]</li>\n<li>Données éventuellement transmises à des services tiers intégrés au site : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Finalités et bases légales</h2>\n<p class=\"text-muted-foreground mb-4\">Les finalités qui ressortent des fonctionnalités actuellement mises en ligne sont les suivantes :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>permettre la création, la gestion et la récupération d'un compte utilisateur ;</li>\n<li>présenter les personnes et les organisations membres de la communauté Open Atlas ;</li>\n<li>répondre aux messages envoyés par le formulaire de contact.</li></ul>\n<p class=\"text-muted-foreground mb-6\">La base légale retenue pour chacune de ces finalités — exécution du contrat, consentement, intérêt légitime ou obligation légale — ainsi que les éventuelles autres finalités poursuivies et les destinataires des données : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\" id=\"cookies\">4. Cookies et stockage local</h2>\n<p class=\"text-muted-foreground mb-4\">Aucun bandeau de recueil du consentement aux cookies n'est affiché sur les pages du site. Cette absence ne permet pas de conclure qu'aucun traceur n'est déposé : l'inventaire des cookies et des informations enregistrées dans votre navigateur reste à réaliser.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Cookies et traceurs éventuellement déposés, avec pour chacun l'émetteur, la finalité et la durée de vie : [à compléter]</li>\n<li>Informations éventuellement enregistrées dans le stockage local ou le stockage de session du navigateur : [à compléter]</li>\n<li>Outils de mesure d'audience et services tiers éventuellement utilisés : [à compléter]</li></ul>\n<p class=\"text-muted-foreground mb-6\">Si cet inventaire fait apparaître des traceurs soumis à consentement, un dispositif permettant de recueillir et de retirer ce consentement devra être mis en place avant leur dépôt. Les modalités de paramétrage de vos préférences seront alors décrites ici : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Durées de conservation</h2>\n<p class=\"text-muted-foreground mb-6\">Les durées de conservation applicables à chaque catégorie de données, ainsi que les critères permettant de les déterminer, restent à établir : [à compléter]. Le sort réservé aux données et aux contenus publiés à la suppression d'un compte : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Vos droits</h2>\n<p class=\"text-muted-foreground mb-4\">Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation du traitement, d'opposition et de portabilité sur les données qui vous concernent, ainsi que du droit de définir des directives relatives à leur sort après votre décès. Lorsqu'un traitement repose sur votre consentement, vous pouvez le retirer à tout moment.</p>\n<p class=\"text-muted-foreground mb-6\">Adresse à laquelle exercer ces droits : [à compléter]. Vous pouvez également introduire une réclamation auprès de la Commission nationale de l'informatique et des libertés (<a href=\"https://www.cnil.fr\" class=\"text-primary hover:underline\" rel=\"noopener\" target=\"_blank\">cnil.fr</a>).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Sécurité</h2>\n<p class=\"text-muted-foreground mb-6\">L'article 32 du RGPD impose au responsable du traitement de mettre en œuvre les mesures techniques et organisationnelles appropriées pour assurer la sécurité des données. La description des mesures effectivement en place sur ce site — hébergement, protection des échanges, gestion des accès et des habilitations, sauvegardes, conduite à tenir en cas de violation de données — reste à fournir : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">8. Transferts hors Union européenne</h2>\n<p class=\"text-muted-foreground mb-6\">L'existence de transferts de données en dehors de l'Union européenne dépend du lieu d'hébergement du site et des services tiers éventuellement utilisés, qui ne sont pas documentés à ce stade. Le cas échéant, les destinataires concernés, les pays de destination et les garanties encadrant ces transferts (décision d'adéquation, clauses contractuelles types ou autre garantie appropriée) sont les suivants : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">9. Modification de la politique</h2>\n<p class=\"text-muted-foreground mb-6\">La présente politique peut être modifiée, notamment pour tenir compte des évolutions du site, des traitements mis en œuvre ou de la réglementation applicable. La version qui vous est opposable est celle publiée sur cette page au moment de votre consultation.</p>\n<p class=\"text-muted-foreground mb-6\">Dernière mise à jour : [à compléter]</p>\n</div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Privacy policy</h1>\n<p class=\"text-muted-foreground mb-8\">This policy describes the processing of personal data carried out on the Open Atlas website, in accordance with the General Data Protection Regulation (GDPR) and the French Data Protection Act. It supplements the <a href=\"/mentions-legales\" class=\"text-primary hover:underline\">legal notice</a>. Items still to be established are marked “[to be completed]”: they will be filled in in a future version of this document.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Data controller</h2>\n<p class=\"text-muted-foreground mb-2\">The controller of the processing described below is Open Atlas.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Legal form and registration number (SIREN or RNA): [to be completed]</li>\n<li>Registered office address: [to be completed]</li>\n<li>Email: [to be completed]</li>\n<li>Data protection officer, or person in charge of personal data matters: [to be completed]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Data processed</h2>\n<p class=\"text-muted-foreground mb-4\">The website allows users to create an account and log in, and to browse the directory of the <a href=\"/communaute\" class=\"text-primary hover:underline\">community</a>: the profiles of the people and organisations who are members of Open Atlas, as well as browsing the <a href=\"/projets\" class=\"text-primary hover:underline\">projects</a> and their pages. Personal data is therefore processed on these occasions; the details remain to be established.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Data collected when creating an account, logging in and recovering a password: [to be completed]</li>\n<li>Data published in the community directory and on member profiles: [to be completed]</li>\n<li>Data entered in the <a href=\"/contact\" class=\"text-primary hover:underline\">contact form</a> (name, email address, subject, message) and recipients of these messages: [to be completed]</li>\n<li>Data that may be collected automatically when browsing the website, in particular through connection logs: [to be completed]</li>\n<li>Data that may be transmitted to third-party services integrated into the website: [to be completed]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Purposes and legal bases</h2>\n<p class=\"text-muted-foreground mb-4\">The purposes arising from the features currently online are the following:</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>enabling the creation, management and recovery of a user account;</li>\n<li>presenting the people and organisations who are members of the Open Atlas community;</li>\n<li>answering messages sent through the contact form.</li></ul>\n<p class=\"text-muted-foreground mb-6\">The legal basis for each of these purposes — performance of a contract, consent, legitimate interest or legal obligation — as well as any other purposes pursued and the recipients of the data: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\" id=\"cookies\">4. Cookies and local storage</h2>\n<p class=\"text-muted-foreground mb-4\">No cookie consent banner is displayed on the website. This does not mean that no tracker is placed: the inventory of cookies and of the information stored in your browser remains to be carried out.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Cookies and trackers that may be placed, with for each the issuer, purpose and lifetime: [to be completed]</li>\n<li>Information that may be stored in the browser's local storage or session storage: [to be completed]</li>\n<li>Audience measurement tools and third-party services that may be used: [to be completed]</li></ul>\n<p class=\"text-muted-foreground mb-6\">If this inventory reveals trackers that require consent, a mechanism for giving and withdrawing consent will have to be put in place before they are placed. How to set your preferences will then be described here: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Retention periods</h2>\n<p class=\"text-muted-foreground mb-6\">The retention periods applying to each category of data, and the criteria used to determine them, remain to be established: [to be completed]. What happens to data and published content when an account is deleted: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Your rights</h2>\n<p class=\"text-muted-foreground mb-4\">Under the GDPR, you have the right to access, rectify and erase your data, to restrict or object to its processing and to data portability, as well as the right to set guidelines for what happens to your data after your death. Where processing is based on your consent, you may withdraw it at any time.</p>\n<p class=\"text-muted-foreground mb-6\">Address for exercising these rights: [to be completed]. You may also lodge a complaint with the French data protection authority, the CNIL (<a href=\"https://www.cnil.fr\" class=\"text-primary hover:underline\" rel=\"noopener\" target=\"_blank\">cnil.fr</a>).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Security</h2>\n<p class=\"text-muted-foreground mb-6\">Article 32 of the GDPR requires the controller to implement appropriate technical and organisational measures to ensure the security of the data. A description of the measures actually in place on this website — hosting, protection of exchanges, access and authorisation management, backups, procedure in the event of a data breach — remains to be provided: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">8. Transfers outside the European Union</h2>\n<p class=\"text-muted-foreground mb-6\">Whether data is transferred outside the European Union depends on where the website is hosted and on any third-party services used, which are not documented at this stage. Where applicable, the recipients concerned, the destination countries and the safeguards governing these transfers (adequacy decision, standard contractual clauses or other appropriate safeguard) are as follows: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">9. Changes to this policy</h2>\n<p class=\"text-muted-foreground mb-6\">This policy may be amended, in particular to reflect changes to the website, to the processing carried out or to the applicable regulations. The version that applies to you is the one published on this page at the time you consult it.</p>\n<p class=\"text-muted-foreground mb-6\">Last updated: [to be completed]</p>\n</div>"
             }
           }
         }
@@ -629,8 +1173,8 @@
       "en": "Open Atlas"
     },
     "description": {
-      "fr": "Développement de territoire et d'outils sociaux et territoriaux, mutualisés grâce à l'open source et aux logiciels libres.",
-      "en": "Territorial development and social and territorial tools, shared through open source and free software."
+      "fr": "Open Atlas — association loi 1901, à l'origine du logiciel libre Communecter et de son instance centrale, Communecter.org. Développement soutenu par NLnet.",
+      "en": "Open Atlas — a French non-profit association behind the free software Communecter and its central instance, Communecter.org. Development supported by NLnet."
     },
     "copyright": {
       "fr": "© Open Atlas",
@@ -643,13 +1187,6 @@
           "en": "The site"
         },
         "links": [
-          {
-            "href": "/",
-            "label": {
-              "fr": "Accueil",
-              "en": "Home"
-            }
-          },
           {
             "href": "/projets",
             "label": {
@@ -665,6 +1202,20 @@
             }
           },
           {
+            "href": "/accompagnement",
+            "label": {
+              "fr": "Accompagnement",
+              "en": "Support"
+            }
+          },
+          {
+            "href": "/contact",
+            "label": {
+              "fr": "Nous contacter",
+              "en": "Contact us"
+            }
+          },
+          {
             "href": "/profil/openAtlas",
             "label": {
               "fr": "À propos d'Open Atlas",
@@ -675,63 +1226,152 @@
       },
       {
         "title": {
-          "fr": "Participer",
-          "en": "Get involved"
+          "fr": "Outils",
+          "en": "Tools"
         },
         "links": [
           {
-            "href": "/register",
+            "href": "https://gitlab.adullact.net/pixelhumain/",
             "label": {
-              "fr": "Créer un compte",
-              "en": "Create an account"
-            },
-            "visibility": {
-              "auth": "anonymous"
+              "fr": "Communecter (logiciel)",
+              "en": "Communecter (software)"
             }
           },
           {
-            "href": "/login",
+            "href": "https://www.communecter.org",
             "label": {
-              "fr": "Se connecter",
-              "en": "Log in"
-            },
-            "visibility": {
-              "auth": "anonymous"
-            }
-          },
-          {
-            "href": "@profile",
-            "label": {
-              "fr": "Mon profil",
-              "en": "My profile"
-            },
-            "visibility": {
-              "auth": "required"
+              "fr": "Communecter.org (instance)",
+              "en": "Communecter.org (instance)"
             }
           }
         ]
       },
       {
         "title": {
-          "fr": "Informations",
-          "en": "Information"
+          "fr": "Références",
+          "en": "References"
         },
         "links": [
           {
-            "href": "/mentions-legales",
+            "href": "https://tiers-lieux.org",
             "label": {
-              "fr": "Mentions légales",
-              "en": "Legal notice"
+              "fr": "tiers-lieux.org",
+              "en": "tiers-lieux.org"
             }
           },
           {
-            "href": "/confidentialite",
+            "href": "https://lescommuns.tiers-lieux.org",
             "label": {
-              "fr": "Confidentialité",
-              "en": "Privacy policy"
+              "fr": "lescommuns.tiers-lieux.org",
+              "en": "lescommuns.tiers-lieux.org"
+            }
+          },
+          {
+            "href": "https://parent62.00.re/",
+            "label": {
+              "fr": "parent62.00.re",
+              "en": "parent62.00.re"
+            }
+          },
+          {
+            "href": "https://equipements-sportifs-974.00.re/",
+            "label": {
+              "fr": "equipements-sportifs-974.00.re",
+              "en": "equipements-sportifs-974.00.re"
             }
           }
         ]
+      },
+      {
+        "title": {
+          "fr": "Développeurs",
+          "en": "Developers"
+        },
+        "links": [
+          {
+            "href": "https://gitlab.adullact.net/pixelhumain/",
+            "label": {
+              "fr": "Dépôt Git",
+              "en": "Git repository"
+            }
+          },
+          {
+            "href": "https://gitlab.adullact.net/pixelhumain/oceco/-/blob/master/private/doc/rest-oceco.md?ref_type=heads",
+            "label": {
+              "fr": "Documentation API",
+              "en": "API documentation"
+            }
+          },
+          {
+            "href": "https://gitlab.adullact.net/pixelhumain/site-json",
+            "label": {
+              "fr": "Code du client",
+              "en": "Client code"
+            }
+          },
+          {
+            "href": "https://gitlab.adullact.net/pixelhumain/docker",
+            "label": {
+              "fr": "Docker du serveur",
+              "en": "Server Docker"
+            }
+          },
+          {
+            "href": "https://nlnet.nl/project/Communecter/",
+            "label": {
+              "fr": "Soutien NLnet",
+              "en": "NLnet support"
+            }
+          }
+        ]
+      }
+    ],
+    "legalLinks": [
+      {
+        "href": "/mentions-legales",
+        "label": {
+          "fr": "Mentions légales",
+          "en": "Legal notice"
+        }
+      },
+      {
+        "href": "/confidentialite",
+        "label": {
+          "fr": "Confidentialité",
+          "en": "Privacy policy"
+        }
+      }
+    ],
+    "bottomLinks": [
+      {
+        "href": "/login",
+        "label": {
+          "fr": "Se connecter",
+          "en": "Log in"
+        },
+        "visibility": {
+          "auth": "anonymous"
+        }
+      },
+      {
+        "href": "/register",
+        "label": {
+          "fr": "Créer un compte",
+          "en": "Create an account"
+        },
+        "visibility": {
+          "auth": "anonymous"
+        }
+      },
+      {
+        "href": "@profile",
+        "label": {
+          "fr": "Mon profil",
+          "en": "My profile"
+        },
+        "visibility": {
+          "auth": "required"
+        }
       }
     ]
   },
@@ -810,7 +1450,7 @@
     "typography": {
       "fontFamily": {
         "sans": [
-          "Urbanist",
+          "Sora",
           "sans-serif"
         ],
         "serif": [
@@ -852,7 +1492,7 @@
         "shadow2xl": "0px 1px 3px 0px oklch(0 0 0 / 0.60)"
       }
     },
-    "customCSS": "/* index-rezo-la-mer.css est PARTAGÉ : ses teintes océan (halo, bandeaux des searchHeader, dégradés) sont recolorées ici aux couleurs d'Open Atlas — rouge du logo sur l'encre bleu nuit. `:root:root` bat le `:root` de la feuille, `:root:root.dark` son `.dark`. */\n:root:root {\n  --ocean-deep: oklch(0.22 0.017 264);\n  --ocean-mid: oklch(0.32 0.030 264);\n  --ocean-light: oklch(0.45 0.120 18);\n  --ocean-surface: oklch(0.60 0.209 18);\n  --ocean-foam: oklch(0.93 0.035 18);\n  --turquoise: var(--primary);\n  --turquoise-light: color-mix(in oklab, var(--primary) 70%, white);\n  --cyan-bright: var(--primary);\n  --shadow-ocean: 0 10px 40px -10px oklch(0.22 0.017 264 / 0.45);\n  --shadow-glow: 0 0 30px color-mix(in oklab, var(--primary) 35%, transparent);\n  --text-shadow-glow: none; /* en clair, le halo rose floute le titre sombre */\n  --gradient-section: linear-gradient(135deg, color-mix(in oklab, var(--primary) 8%, var(--background)), color-mix(in oklab, var(--accent) 70%, var(--background)));\n}\n:root:root.dark {\n  --ocean-deep: oklch(0.16 0.015 264);\n  --ocean-mid: oklch(0.24 0.025 264);\n  --ocean-light: oklch(0.36 0.090 18);\n  --shadow-ocean: 0 10px 40px -10px oklch(0 0 0 / 0.7);\n  --shadow-glow: 0 0 40px color-mix(in oklab, var(--primary) 40%, transparent);\n  --text-shadow-glow: 0 0 24px color-mix(in oklab, var(--primary) 35%, transparent);\n  --gradient-section: linear-gradient(135deg, var(--ocean-deep), color-mix(in oklab, var(--primary) 16%, var(--ocean-mid)));\n}\n/* Héro d'accueil sans photo : halo rouge et bleu nuit, en écho au réseau de nœuds du logo. */\n#accueil {\n  background:\n    radial-gradient(ellipse 60% 50% at 15% 20%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 70%),\n    radial-gradient(ellipse 55% 45% at 85% 85%, color-mix(in oklab, var(--ocean-mid) 12%, transparent), transparent 70%),\n    var(--background);\n}\n"
+    "customCSS": "/* index-rezo-la-mer.css est PARTAGÉ : ses teintes océan (halo, bandeaux des searchHeader, dégradés) sont recolorées ici aux couleurs d'Open Atlas — rouge du logo sur l'encre bleu nuit. `:root:root` bat le `:root` de la feuille, `:root:root.dark` son `.dark`. */\n:root:root {\n  --ocean-deep: oklch(0.22 0.017 264);\n  --ocean-mid: oklch(0.32 0.030 264);\n  --ocean-light: oklch(0.45 0.120 18);\n  --ocean-surface: oklch(0.60 0.209 18);\n  --ocean-foam: oklch(0.93 0.035 18);\n  --turquoise: var(--primary);\n  --turquoise-light: color-mix(in oklab, var(--primary) 70%, white);\n  --cyan-bright: var(--primary);\n  --shadow-ocean: 0 10px 40px -10px oklch(0.22 0.017 264 / 0.45);\n  --shadow-glow: 0 0 30px color-mix(in oklab, var(--primary) 35%, transparent);\n  --gradient-section: linear-gradient(135deg, color-mix(in oklab, var(--primary) 8%, var(--background)), color-mix(in oklab, var(--accent) 70%, var(--background)));\n}\n:root:root.dark {\n  --ocean-deep: oklch(0.16 0.015 264);\n  --ocean-mid: oklch(0.24 0.025 264);\n  --ocean-light: oklch(0.36 0.090 18);\n  --shadow-ocean: 0 10px 40px -10px oklch(0 0 0 / 0.7);\n  --shadow-glow: 0 0 40px color-mix(in oklab, var(--primary) 40%, transparent);\n  --gradient-section: linear-gradient(135deg, var(--ocean-deep), color-mix(in oklab, var(--primary) 16%, var(--ocean-mid)));\n}\n/* Héro d'accueil sans photo : halo rouge et bleu nuit, en écho au réseau de nœuds du logo. */\n#accueil {\n  background:\n    radial-gradient(ellipse 60% 50% at 15% 20%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 70%),\n    radial-gradient(ellipse 55% 45% at 85% 85%, color-mix(in oklab, var(--ocean-mid) 12%, transparent), transparent 70%),\n    var(--background);\n}\n/* Halo des titres de héro : `--text-shadow-glow` est déclaré en `@theme`, Tailwind FIGE sa valeur dans\n   `.text-shadow-glow` au build — surcharger la variable n'a aucun effet (mesuré : variable à `none`,\n   halo toujours rendu). En clair, ce halo rose floute le titre sombre : on le coupe sur la classe. */\n:root:not(.dark) .text-shadow-glow { text-shadow: none; }\n"
   },
   "profiles": {
     "default": {
