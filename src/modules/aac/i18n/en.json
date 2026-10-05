@@ -102,6 +102,24 @@
       "title": "Edit this commun",
       "successToast": "Your changes have been saved."
     },
+    "editors": {
+      "cta": "Edit contributors",
+      "title": "Edit contributors",
+      "description": "These people can edit this commun, but not delete it.",
+      "questionNote": "This list is also the answer to the “{{label}}” question of the form: by editing the commun, these people can therefore change it too.",
+      "empty": "No edit contributors yet.",
+      "addCta": "Add people",
+      "finderTitle": "Add edit contributors",
+      "finderLabel": "Person",
+      "finderPlaceholder": "Enter the name of the person to add",
+      "cancel": "Cancel",
+      "save": "Save",
+      "toasts": {
+        "saveSuccess": "Edit contributors saved.",
+        "saveError": "Could not save the edit contributors.",
+        "incompleteContext": "Incomplete context: session or commun not found."
+      }
+    },
     "financing": {
       "title": "Community funding",
       "outOf": "of {{amount}}",

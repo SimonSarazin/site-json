@@ -45,6 +45,10 @@ vi.mock("./useAacFundingResource", () => ({
   useAacFundingResource: () => ({ targetResource: null, projectSlug: null, isLoading: false }),
 }));
 vi.mock("./useCommunObjectivesController", () => ({ useCommunObjectivesController: () => ({}) }));
+vi.mock("./useAacFormMeta", () => ({
+  useAacFormMeta: () => ({ meta: null, isLoading: false, error: null }),
+  useAacFormParams: () => undefined,
+}));
 vi.mock("./useAacDetailSections", () => ({
   useAacDetailSections: () => ({ sections: [], isLoading: false }),
   useAacGallerySubKey: () => null,

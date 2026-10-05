@@ -22,6 +22,8 @@ import { useAacFundingResource } from "./useAacFundingResource";
 import { useCommunFundingHost } from "./useCommunFundingHost";
 import { useCommunFundingContext } from "./useCommunFundingContext";
 import { useAacDetailSections, useAacGallerySubKey } from "./useAacDetailSections";
+import { useAacFormMeta, useAacFormParams } from "./useAacFormMeta";
+import { editorIdsOf, resolveEditorsQuestion } from "../lib/communEditors";
 import { resolveCommunSeo } from "../lib/communSeo";
 import { extractGalleryImages, proseOf } from "../lib/communDetailContent";
 import { communPath } from "../lib/communPath";
@@ -37,6 +39,7 @@ import type { CommunHero } from "../components/pageDetail/CommunHero.tsx";
 import type { CommunSelectionControl } from "../components/pageDetail/CommunSelectionControl.tsx";
 import type { CommunProjectControl } from "../components/pageDetail/CommunProjectControl.tsx";
 import type { CommunDeleteControl } from "../components/pageDetail/CommunDeleteControl";
+import type { CommunEditorsControl } from "../components/pageDetail/CommunEditorsControl.tsx";
 import type { CommunFinancingSection } from "../components/pageDetail/CommunFinancingSection.tsx";
 import type { CommunActionsSection } from "../components/pageDetail/CommunActionsSection.tsx";
 import type { CommunContributorsSection } from "../components/pageDetail/CommunContributorsSection.tsx";
@@ -120,6 +123,8 @@ export interface CommunDetailReadyVM extends CommunDetailBaseVM {
         selection: ComponentProps<typeof CommunSelectionControl>;
         project: ComponentProps<typeof CommunProjectControl>;
         delete: ComponentProps<typeof CommunDeleteControl>;
+        /** Contributeurs à l'édition (`links.canEdit`) ; le contrôle se masque sans `canManage`. */
+        editors: ComponentProps<typeof CommunEditorsControl>;
     };
     /** Overlays sans position, rendus par la coquille de la page hors de toute interface. */
     overlays: {
@@ -222,6 +227,15 @@ export function useCommunDetailController(): CommunDetailVM {
         useAacDetailSections(formId ?? null);
     const gallerySubKey = useAacGallerySubKey();
 
+    // Question qui alimente `links.canEdit` (`addToLinks`), si le formulaire en déclare une.
+    // Même entrée de cache que `useAacConfig`.
+    const { meta: formMeta } = useAacFormMeta(formId ?? null);
+    const formParams = useAacFormParams(formId ?? null);
+    const editorsQuestion = useMemo(
+        () => resolveEditorsQuestion(formMeta, formParams),
+        [formMeta, formParams]
+    );
+
     // Mémoïsé : le sommaire en dérive ses ancres observées.
     const prose = useMemo<CommunProseBlock[]>(
         () =>
@@ -279,9 +293,11 @@ export function useCommunDetailController(): CommunDetailVM {
     const answer = answerQuery.data;
     const formData = formQuery.data;
 
-    // Auteur ou admin peut modifier ; l'auteur vient de `resolveAnswerAuthorId`, pas de `answer.user`.
+    // Auteur, contributeur à l'édition (`links.canEdit`) ou admin peut modifier ;
+    // l'auteur vient de `resolveAnswerAuthorId`, pas de `answer.user`.
     const authorId = resolveAnswerAuthorId(answer);
-    const canEditThisCommun = perms.canEditCommun({ authorId });
+    const editorIds = editorIdsOf(answer);
+    const canEditThisCommun = perms.canEditCommun({ authorId, editorIds });
 
     const isCommunAuthor = !!authorId && authorId === perms.currentUserId;
 
@@ -446,6 +462,15 @@ export function useCommunDetailController(): CommunDetailVM {
                 isResourceLoading: isFundingLoading,
                 // Retour à l'annuaire ; le document est déjà retiré du cache.
                 onDeleted: () => void navigate("/aac"),
+            },
+            // Gestion de la liste : auteur et admins seulement (parité legacy, doc/34 §3.4).
+            editors: {
+                api,
+                canManage: perms.canManageEditors({ authorId }),
+                answerId: answerId ?? null,
+                answer,
+                question: editorsQuestion,
+                formId: formId ?? null,
             },
         },
         overlays: {

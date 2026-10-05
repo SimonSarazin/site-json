@@ -8,7 +8,7 @@ import type { CommunDetailReadyVM } from "../../../hooks/useCommunDetailControll
 /**
  * Conformité des interfaces de la fiche, paramétrée sur `AAC_DETAIL_VARIANTS.keys()`.
  * Pour chaque interface, avec un view-model complet :
- *  - les quatre commandes reçoivent les props du contrôleur ;
+ *  - les commandes reçoivent les props du contrôleur ;
  *  - financement (carte, besoins, cofinanceurs, réactions) ssi `funding !== null` ;
  *  - paliers, contributeurs, actualités et agenda ssi phase `project` ;
  *  - chaque bloc de prose et la galerie sont atteignables (ancre ou onglet) ;
@@ -32,6 +32,7 @@ const probe = (name: string) => (props: Record<string, unknown>) => {
 vi.mock("../CommunSelectionControl.tsx", () => ({ CommunSelectionControl: probe("selection") }));
 vi.mock("../CommunProjectControl.tsx", () => ({ CommunProjectControl: probe("project") }));
 vi.mock("../CommunDeleteControl", () => ({ CommunDeleteControl: probe("delete") }));
+vi.mock("../CommunEditorsControl.tsx", () => ({ CommunEditorsControl: probe("editors") }));
 vi.mock("../CommunHero.tsx", () => ({ CommunHero: probe("hero") }));
 /** Les sections vers lesquelles la VRAIE carte de financement a des liens. */
 const CARD_LINKS = ["besoins-financiers", "cofinanceurs", "objectifs"] as const;
@@ -132,6 +133,7 @@ function makeVM(overrides: Partial<CommunDetailReadyVM> = {}): CommunDetailReady
       selection: pack("selection"),
       project: pack("project"),
       delete: pack("delete"),
+      editors: pack("editors"),
     },
     overlays: { edit: null, milestones: {} },
     ...overrides,
@@ -191,7 +193,7 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe.each(AAC_DETAIL_VARIANTS.keys())("interface de fiche « %s »", (key) => {
-  it("les quatre commandes ont un point d'entrée, avec les props du contrôleur", async () => {
+  it("les commandes ont un point d'entrée, avec les props du contrôleur", async () => {
     const vm = makeVM();
     await renderVariant(key, vm);
 
@@ -199,7 +201,7 @@ describe.each(AAC_DETAIL_VARIANTS.keys())("interface de fiche « %s »", (key) =
     fireEvent.click(edit);
     expect(vm.actions.edit?.onOpen).toHaveBeenCalled();
 
-    for (const name of ["selection", "project", "delete"] as const) {
+    for (const name of ["selection", "project", "delete", "editors"] as const) {
       expect(screen.getByTestId(`probe-${name}`)).toBeTruthy();
       expect(received[name]).toEqual(vm.actions[name]);
     }

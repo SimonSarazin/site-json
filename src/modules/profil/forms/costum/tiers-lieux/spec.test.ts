@@ -59,14 +59,16 @@ describe("résolveur — spec tiers-lieu (parité avec l'ex-config)", () => {
     expect(mut.inject?.extraFields).toEqual({ type: "NGO", preferences: { isOpenData: true, isOpenEdition: true } });
     // Stamps résolus EAGER : mainTag (add+edit), compagnon (add seul — parité tl:payload edit) ;
     // le fixture costum n'a pas de compagnon → valeur undefined, stamp inerte à l'application.
-    // + 3 stamps de propagation tags (patron search) : typologie/portage via $mapLabels, m² via $bucket.
     expect(mut.stamps?.slice(0, 2)).toEqual([
       { field: "tags", value: "TiersLieux", op: "append", on: "both" },
       { field: "tags", value: undefined, op: "append" },
     ]);
+    // GARDE DE NON-RETOUR : la propagation typologie/portage/m² n'est plus une estampille. Un
+    // `append` refusionne les tags SERVEUR, donc le libellé d'une ancienne typologie revenait à
+    // chaque enregistrement ; elle vit désormais dans les codecs `tl:tagsRead`/`tl:tagsWrite` du
+    // champ `tags` (cf. fns.ts). Les 2 marqueurs costum restants portent une valeur LITTÉRALE.
     const src = (s: { value: unknown }) => (s.value && typeof s.value === "object" ? Object.keys(s.value as object)[0] : typeof s.value);
-    expect(mut.stamps?.slice(2).map(src)).toEqual(["$mapLabels", "$mapLabels", "$bucket"]);
-    expect(mut.stamps?.slice(2).every((s) => s.field === "tags" && s.op === "append" && s.on === "both")).toBe(true);
+    expect(mut.stamps?.map(src)).toEqual(["string", "undefined"]);
     // payload = PIPELINE seul (sans tags) ; pipeline + stamps ≡ l'ancien tl:payload (l'oracle).
     const form = { ...getDefaultTiersLieuxValues(), name: "Mon TL", shortDescription: "desc", managementType: "public", email: "a@b.fr" } as Record<string, unknown>;
     expect(mut.buildPayload(form)).toEqual(buildTiersLieuxPayload(form as never));

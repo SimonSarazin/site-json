@@ -16,7 +16,10 @@
     "css": "index-cyber-reunion",
     "images": "cyberReunion",
     "coolifyApp": "site-json-cyber-reunion",
-    "domain": "cyber-reunion.00.re"
+    "domain": "cyber-reunion.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "rezoLaMer",
@@ -24,7 +27,10 @@
     "css": "index-rezo-la-mer",
     "images": "rezoLaMer",
     "coolifyApp": "site-json-rezo-la-mer",
-    "domain": "rezo-la-mer.00.re"
+    "domain": "rezo-la-mer.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "eXtremeDefiAdeme",
@@ -32,7 +38,10 @@
     "css": "index-extreme-defi",
     "images": "eXtremeDefiAdeme",
     "coolifyApp": "site-json-extremedefi",
-    "domain": "extremedefi.00.re"
+    "domain": "extremedefi.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "sportSanteBienetre",
@@ -48,7 +57,7 @@
   {
     "slug": "associationEkilibre",
     "config": "config.prod.maison-sport-sante-la-tampon.json",
-    "css": "index-sport-sante-bien-etre",
+    "css": "index-maison-sport-sante-la-tampon",
     "images": "maisonSportSanteLaTampon",
     "coolifyApp": "site-json-ekilibre",
     "domain": "ekilibre.00.re",
@@ -76,7 +85,10 @@
     "domain": "tierslieux.00.re",
     "aliases": [
       "www.tiers-lieux.org"
-    ]
+    ],
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "relief",
@@ -143,7 +155,10 @@
     "css": "index-equipements-sportifs",
     "images": "equipementsSportifs974",
     "coolifyApp": "site-json-equipements-sportifs-974",
-    "domain": "equipements-sportifs-974.00.re"
+    "domain": "equipements-sportifs-974.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "saintpaulSport1",
@@ -162,7 +177,10 @@
     "css": "index-rezo-sante-reunion",
     "images": "rezoSanteReunion",
     "coolifyApp": "site-json-rezo-sante-reunion",
-    "domain": "rezo-sante-reunion.00.re"
+    "domain": "rezo-sante-reunion.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "ESS974",
@@ -181,7 +199,13 @@
     "css": "index-rezo-la-mer",
     "images": "federationDesCae",
     "coolifyApp": "site-json-federation-des-cae",
-    "domain": "federation-des-cae.00.re"
+    "domain": "federation-des-cae.00.re",
+    "aliases": [
+      "communs.les-cae.coop"
+    ],
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "projetsre1",

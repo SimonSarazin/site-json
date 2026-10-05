@@ -20,6 +20,15 @@ const renderInRouter = (ui: ReactElement) => render(<MemoryRouter>{ui}</MemoryRo
 // `useNavigate` est espionné (action `itemAction.kind: "link"`) ; le reste de react-router — dont
 // `useSearchParams`, indispensable au wrapper — reste RÉEL sous le MemoryRouter.
 const navigateMock = vi.fn();
+// Typé EXPLICITEMENT : sans signature, TS infère `() => { data: null }` —
+// zéro paramètre et `data` littéralement `null`, ce qui rejette aussi bien
+// l'appel à deux arguments que `mockReturnValue({ data: <entité> })`.
+const entityByIdMock = vi.fn(
+  (_kind?: string, _id?: string): { data: SearchEntity | null } => ({ data: null }),
+);
+vi.mock("../hooks/useEntityByIdQuery", () => ({
+  useEntityByIdQuery: (kind?: string, id?: string) => entityByIdMock(kind, id),
+}));
 vi.mock("react-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("react-router")>()),
   useNavigate: () => navigateMock,
@@ -28,10 +37,28 @@ vi.mock("react-router", async (importOriginal) => ({
 // Stubs : on isole la logique du wrapper (les variants réels sont lazy + lourds). Ils exposent la
 // conf REÇUE (card.type / preview.type) pour vérifier la résolution par item.
 vi.mock("./SearchCard", () => ({
-  default: ({ item, onClick, card }: { item: SearchEntity; onClick?: () => void; card?: { type?: string } }) => (
-    <button onClick={onClick} data-card-type={card?.type}>
-      {String((item.serverData as { name?: string }).name)}
-    </button>
+  default: ({
+    item,
+    onClick,
+    onOpenSheet,
+    card,
+  }: {
+    item: SearchEntity;
+    onClick?: () => void;
+    onOpenSheet?: () => void;
+    card?: { type?: string };
+  }) => (
+    <div>
+      <button onClick={onClick} data-card-type={card?.type}>
+        {String((item.serverData as { name?: string }).name)}
+      </button>
+      {/* La vraie carte ne rend ce bouton que si la prop lui parvient. */}
+      {onOpenSheet && (
+        <button onClick={onOpenSheet}>
+          fiche:{String((item.serverData as { name?: string }).name)}
+        </button>
+      )}
+    </div>
   ),
 }));
 vi.mock("./SearchCardDetailed", () => ({
@@ -80,6 +107,84 @@ const results = [item("1", "Alpha"), item("2", "Bravo")];
 beforeEach(() => {
   // jsdom n'implémente pas scrollIntoView → on l'espionne.
   Element.prototype.scrollIntoView = vi.fn();
+});
+
+describe("SearchListView (tableau de bord embarqué, onSelectItem)", () => {
+  // Seul un variant qui rend le bouton « Fiche » autorise la sélection au clic.
+  const poiCard = { type: "poi-amenities" } as const;
+
+  it("clic sur une carte → onSelectItem(item), sans ouvrir le détail", () => {
+    const onSelectItem = vi.fn();
+    renderInRouter(<SearchListView results={results} card={poiCard} onSelectItem={onSelectItem} />);
+
+    fireEvent.click(screen.getByText("Bravo"));
+    expect(onSelectItem).toHaveBeenCalledTimes(1);
+    expect(onSelectItem.mock.calls[0][0]).toBe(results[1]);
+    expect(screen.queryByTestId("details-modal")).toBeNull();
+  });
+
+  it("chaque carte reçoit alors un bouton « Fiche », qui OUVRE le détail", () => {
+    renderInRouter(<SearchListView results={results} card={poiCard} onSelectItem={vi.fn()} />);
+
+    fireEvent.click(screen.getByText("fiche:Bravo"));
+    expect(screen.getByTestId("details-modal")).toHaveAttribute("data-item", "Bravo");
+  });
+
+  it("sans onSelectItem, aucun bouton « Fiche » et le clic ouvre le détail", () => {
+    renderInRouter(<SearchListView results={results} card={poiCard} />);
+
+    expect(screen.queryByText("fiche:Bravo")).toBeNull();
+    fireEvent.click(screen.getByText("Bravo"));
+    expect(screen.getByTestId("details-modal")).toHaveAttribute("data-item", "Bravo");
+  });
+
+  it("variant SANS bouton « Fiche » : le clic ouvre la fiche, pas de sélection", () => {
+    const onSelectItem = vi.fn();
+    renderInRouter(<SearchListView results={results} card={{ type: "default" }} onSelectItem={onSelectItem} />);
+
+    expect(screen.queryByText("fiche:Bravo")).toBeNull();
+    fireEvent.click(screen.getByText("Bravo"));
+    expect(onSelectItem).not.toHaveBeenCalled();
+    expect(screen.getByTestId("details-modal")).toHaveAttribute("data-item", "Bravo");
+  });
+
+  it("`card.variant` prime sur `card.type`, comme dans le dispatch de SearchCard", () => {
+    const onSelectItem = vi.fn();
+    renderInRouter(
+      <SearchListView results={results} card={{ type: "default", variant: "poi-amenities" }} onSelectItem={onSelectItem} />,
+    );
+
+    fireEvent.click(screen.getByText("Bravo"));
+    expect(onSelectItem).toHaveBeenCalledTimes(1);
+  });
+
+  it("vue groupée : pas de bouton « Fiche », donc le clic ouvre la fiche", () => {
+    const onSelectItem = vi.fn();
+    // Le titre de bloc traduit son libellé : fournisseur de localisation en plus du routeur.
+    renderWithProviders(
+      <MemoryRouter>
+        <SearchListView
+          results={results}
+          list={{ card: poiCard, layout: "grouped", groupBy: { field: "name" } }}
+          onSelectItem={onSelectItem}
+        />
+      </MemoryRouter>,
+    );
+
+    // Le bloc est titré « Bravo » lui aussi : on vise la carte (bouton), pas le titre.
+    fireEvent.click(screen.getByRole("button", { name: "Bravo" }));
+    expect(onSelectItem).not.toHaveBeenCalled();
+    expect(screen.getByTestId("details-modal")).toHaveAttribute("data-item", "Bravo");
+  });
+
+  it("vue détaillée : le clic ouvre la fiche", () => {
+    const onSelectItem = vi.fn();
+    renderInRouter(<SearchListView results={results} card={poiCard} isDetailedView onSelectItem={onSelectItem} />);
+
+    fireEvent.click(screen.getByText("Bravo"));
+    expect(onSelectItem).not.toHaveBeenCalled();
+    expect(screen.getByTestId("details-modal")).toHaveAttribute("data-item", "Bravo");
+  });
 });
 
 describe("SearchListView (mode split / focus)", () => {
@@ -320,5 +425,46 @@ describe("SearchListView (list.layout: grouped)", () => {
   it("mode split (`onFocusItem`) : la grille garde la priorité", () => {
     renderGrouped(<SearchListView results={numeros} list={grouped} onFocusItem={vi.fn()} />);
     expect(screen.queryAllByRole("heading", { level: 3 })).toHaveLength(0);
+  });
+});
+
+/**
+ * Ouverture d'une fiche par IDENTIFIANT (`list.previewFetch`) : `?preview=<id>`
+ * vise un item ABSENT de la tranche chargée — le cas de tout lien venu d'une
+ * autre page (fiche équipement ↔ fiche du club usager).
+ */
+describe("SearchListView (ouverture par identifiant, list.previewFetch)", () => {
+  const renderAt = (ui: ReactElement, url: string) =>
+    render(<MemoryRouter initialEntries={[url]}>{ui}</MemoryRouter>);
+
+  beforeEach(() => {
+    entityByIdMock.mockReset();
+    entityByIdMock.mockReturnValue({ data: null });
+  });
+
+  it("charge par id et ouvre la fiche quand l'item n'est pas dans les résultats", () => {
+    const absent = item("42", "Club absent de la page");
+    entityByIdMock.mockReturnValue({ data: absent });
+    renderAt(
+      <SearchListView results={results} list={{ previewFetch: "organizations" }} />,
+      "/?preview=42",
+    );
+    expect(entityByIdMock).toHaveBeenCalledWith("organizations", "42");
+    expect(screen.getByTestId("details-modal")).toHaveAttribute(
+      "data-item",
+      "Club absent de la page",
+    );
+  });
+
+  it("n'interroge PAS quand l'item est déjà dans les résultats", () => {
+    renderAt(<SearchListView results={results} list={{ previewFetch: "poi" }} />, "/?preview=2");
+    expect(entityByIdMock).toHaveBeenCalledWith("poi", undefined);
+    expect(screen.getByTestId("details-modal")).toHaveAttribute("data-item", "Bravo");
+  });
+
+  it("sans previewFetch, un id inconnu n'ouvre rien (comportement historique)", () => {
+    renderAt(<SearchListView results={results} />, "/?preview=42");
+    expect(entityByIdMock).toHaveBeenCalledWith(undefined, "42");
+    expect(screen.queryByTestId("details-modal")).toBeNull();
   });
 });

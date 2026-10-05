@@ -10,6 +10,7 @@ import { usageLabelFromId } from "../../lib/aacUsage";
 import { CommunSelectionControl } from "../../components/pageDetail/CommunSelectionControl.tsx";
 import { CommunProjectControl } from "../../components/pageDetail/CommunProjectControl.tsx";
 import { CommunDeleteControl } from "../../components/pageDetail/CommunDeleteControl";
+import { CommunEditorsControl } from "../../components/pageDetail/CommunEditorsControl.tsx";
 import { CommunFinancingCard } from "../../components/pageDetail/CommunFinancingCard.tsx";
 import { CommunReactionStats } from "../../components/pageDetail/CommunReactionStats.tsx";
 import { CommunFinancingSection } from "../../components/pageDetail/CommunFinancingSection.tsx";
@@ -79,7 +80,7 @@ export default function CommunDetailEditorial({ vm }: CommunDetailViewProps) {
       <div className="pb-16">
         <header className="rounded-2xl border border-border bg-accent/30">
           <div className="mx-auto max-w-7xl px-4 py-10 sm:px-8">
-            {/* Les quatre commandes, chacune gardée par son droit (résolu par le contrôleur). */}
+            {/* Les commandes, chacune gardée par son droit (résolu par le contrôleur). */}
             <div className="mt-4 flex flex-wrap items-center gap-2" role="group" aria-label={String(t("editorial.detail.commands"))}>
               {vm.actions.edit && (
                 <Button variant="outline" size="sm" className="gap-2" onClick={vm.actions.edit.onOpen}>
@@ -87,6 +88,7 @@ export default function CommunDetailEditorial({ vm }: CommunDetailViewProps) {
                   {String(t("detail.edit.cta"))}
                 </Button>
               )}
+              <CommunEditorsControl {...vm.actions.editors} />
               <CommunSelectionControl {...vm.actions.selection} />
               <CommunProjectControl {...vm.actions.project} />
               <CommunDeleteControl {...vm.actions.delete} />

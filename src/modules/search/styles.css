@@ -44,6 +44,25 @@
   background: var(--background);
 }
 
+/* Repli du marqueur-vignette quand l'URL d'avatar est morte (cf.
+   `MapMarkerAvatar`). DOIT vivre ici et non en utilitaires Tailwind : cette
+   feuille n'est pas layerisée alors que Tailwind v4 émet tout dans
+   `@layer utilities`, et le non-layerisé l'emporte quel que soit l'ordre —
+   `flex`/`bg-muted` posés sur l'élément seraient des classes MORTES, écrasées
+   par le `display:block` et le `background` de `.search-map-avatar`. */
+.search-map-avatar.is-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Couleurs de MARQUE, pas `--muted` : en thème sombre une pastille muted est
+     quasi noire sur un fond de carte sombre — le marqueur se lisait comme une
+     tache. Le couple primary/primary-foreground garde le même contraste en
+     clair comme en sombre, et range le repli dans le même langage visuel que
+     la goutte par défaut. */
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
 /* Pin SVG thème (map.marker.style: "pin" ou défaut) */
 .search-map-pin {
   display: block;
@@ -66,6 +85,28 @@
   border-radius: 9999px;
   border: 3px solid var(--background);
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.4);
+}
+
+/* Goutte + pictogramme lucide (map.marker.icon) — le glyphe est centré sur le
+   disque du pin : cx=12, cy=9 dans le viewBox 24 → 50 % / 37,5 % du gabarit. */
+.search-map-pin-icon {
+  position: relative;
+  display: block;
+}
+.search-map-pin-icon .search-map-glyph {
+  position: absolute;
+  left: 50%;
+  top: 37.5%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Pastille + pictogramme lucide (map.marker.icon avec style: "circle") — même
+   gabarit que `.search-map-circle`, le glyphe est simplement centré dedans. */
+.search-map-circle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Bulle de cluster (supercluster) — couleurs de thème, suit light/dark. */

@@ -22,6 +22,11 @@ export function getEntityType(entity: EntityTypes): EntityType | null {
   return null;
 }
 
+interface ToastKeys {
+  successKey: string;
+  errorKey: string;
+}
+
 /**
  * Configuration pour créer une mutation d'entité
  */
@@ -30,13 +35,26 @@ export interface EntityMutationConfig<TParams = void> {
   entityTypes?: EntityType[];
   /** Action à exécuter */
   action: (entity: EntityTypes, params: TParams) => Promise<void>;
-  /** Clés i18n pour les toasts */
-  i18n: {
-    successKey: string;
-    errorKey: string;
+  /**
+   * Clés i18n pour les toasts. `byType` surcharge par type d'entité : une même action
+   * (`requestToJoin`, `leave`) n'a pas le même sens sur une organisation (membre), un projet
+   * (contributeur) ou un événement (participation).
+   */
+  i18n: ToastKeys & {
+    byType?: Partial<Record<EntityType, ToastKeys>>;
   };
-  /** Fonction pour calculer les query keys à invalider */
-  invalidate: (entity: EntityTypes, me: User | null) => QueryKey[];
+  /**
+   * Query keys à invalider. Évaluée APRÈS l'action : une suppression a déjà vidé l'instance
+   * (`slug` → `null`), d'où `remove` pour tout ce qui dépend de l'entité supprimée. `costumSlug` :
+   * slug du costum PORTEUR du site (scope du fil blog dans `publicSurfaceKeys`).
+   */
+  invalidate: (entity: EntityTypes, me: User | null, costumSlug?: string) => QueryKey[];
+  /**
+   * Query keys à RETIRER du cache une fois l'action réussie — pour une entité qui n'existe plus,
+   * où invalider relancerait un fetch vers un 404. Évaluée AVANT l'action, tant que l'instance
+   * porte encore ses identifiants.
+   */
+  remove?: (entity: EntityTypes) => QueryKey[];
   /** Type d'action émis sur le bus post-succès (entityActionBus) — opt-in, additif */
   actionType?: EntityActionType;
   /** Paramètres dynamiques pour les messages (optionnel) */
@@ -57,7 +75,9 @@ export interface EntityMutationConfig<TParams = void> {
 export function createEntityMutation<TParams = void>(config: EntityMutationConfig<TParams>) {
   return function useEntityMutation(entity: EntityTypes | null) {
     const queryClient = useQueryClient();
-    const { me } = useCocolight();
+    const { me, entity: porteur } = useCocolight();
+    const entityType = entity ? getEntityType(entity) : null;
+    const toastKeys = (entityType && config.i18n.byType?.[entityType]) || config.i18n;
 
     return useMutationWithToast<void, TParams>({
       mutationFn: async (params) => {
@@ -82,11 +102,13 @@ export function createEntityMutation<TParams = void>(config: EntityMutationConfi
         // v1.0.192, le contexte de requête d'une entité ne lit plus que `_adminScope` (le scope POSÉ
         // explicitement), jamais `_costumCtx` (sa provenance) — une entité non scopée ne propose donc
         // plus rien et laisse s'appliquer le costum DU SITE, qui est la bonne réponse.
+        const goneKeys = config.remove?.(entity) ?? [];
         await config.action(entity, params);
+        goneKeys.forEach((queryKey) => queryClient.removeQueries({ queryKey }));
       },
       namespace: "modules/profil",
-      successKey: config.i18n.successKey,
-      errorKey: config.i18n.errorKey,
+      successKey: toastKeys.successKey,
+      errorKey: toastKeys.errorKey,
       getSuccessParams: config.getSuccessParams
         ? (_, params) => config.getSuccessParams!(entity!, params)
         : undefined,
@@ -95,7 +117,7 @@ export function createEntityMutation<TParams = void>(config: EntityMutationConfi
         : undefined,
       onSuccessCallback: () => {
         if (entity) {
-          const keys = config.invalidate(entity, me as User | null);
+          const keys = config.invalidate(entity, me as User | null, porteur?.slug ?? undefined);
           keys.forEach((key) => queryClient.invalidateQueries({ queryKey: key }));
           // Émission post-succès (additif) : les abonnés (ex. PreviewEvent) réagissent
           // « suivant le besoin » sans que les mutations connaissent leurs consommateurs.

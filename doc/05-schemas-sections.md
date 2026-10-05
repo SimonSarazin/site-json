@@ -23,6 +23,8 @@
   - [`table`](#table)
   - [`chart`](#chart)
   - [`map`](#map)
+  - [`map-shapes`](#map-shapes)
+    - [Le piège du lien qui ne filtre rien](#le-piège-du-lien-qui-ne-filtre-rien)
   - [`newsletter`](#newsletter)
   - [`comparison`](#comparison)
   - [`featureComparison`](#featurecomparison)
@@ -672,6 +674,200 @@ const MapSectionSchema = z.object({
 | `zoom`     | `number` | Niveau de zoom (defaut: `13`)              |
 | `markers`  | `array?` | Marqueurs optionnels                       |
 
+## `map-shapes`
+
+Contours géographiques RÉELS (communes, bassins de vie, zones administratives) rendus en **SVG hors
+carte** : ni fond de plan, ni marqueurs, ni résultats — donc **aucune requête de recherche**. Chaque
+contour est un **lien** vers une page de recherche dont un filtre est déjà posé. C'est un sommaire de
+territoire, pas une carte.
+
+Quatre rendus géographiques coexistent dans le schéma — `map.shapes` n'étant pas une section
+mais une prop des sections de recherche. Ne pas les confondre :
+
+| Bloc | Donnée | Rendu | Interaction |
+| ---- | ------ | ----- | ----------- |
+| [`map`](#map) | `center` / `zoom` / `markers` écrits en config | placeholder statique | aucune |
+| `map.shapes` de [`searchPro`](#searchpro) / [`searchProStatic`](#searchprostatic) / `agenda` | couches `geoShape` | contours superposés À la carte **MapLibre**, avec fond de plan, marqueurs et résultats | décor de la recherche |
+| **`map-shapes`** | **les mêmes** couches `geoShape` | `<path>` SVG seuls, hors carte | chaque contour navigue vers `target` |
+| `map-bubbles` | image d'illustration + bulles positionnées en `%` | image + pastilles cliquables | lien de chaque bulle |
+
+`map-shapes` partage le contrat de couches de `map.shapes` À L'IDENTIQUE (`GeoShapeSourceSchema`,
+[`src/types/geo-shape-schema.ts`](../src/types/geo-shape-schema.ts)) : mêmes endpoints legacy, même
+cache, même `simplify`, mêmes garde-fous volumétriques (QPV et `cities` sans parent REFUSÉS à la
+validation). Une seule différence : **`load` n'a pas de sens ici et est ignoré** — les contours SONT
+le contenu de la section, il n'y a pas de vue carte à ouvrir, ils sont toujours chargés à l'affichage.
+
+`filters.countryCode` accepte un code **ou une liste** (`["FR", "RE", "MQ", "GP", "GF", "YT"]`) :
+le legacy ne lisant qu'un scalaire, la liste devient autant d'appels fusionnés côté client. Détail et
+garde-fous dans [doc/07](07-module-search.md#usegeoshapes--usegeoshapeswarmup--contours-géographiques-mapshapes).
+
+Implémentation : `src/components/sections/MapShapes.tsx` ; projection d3-geo COMMUNE à toutes les
+couches (`geoMercator().fitWidth(1000, …)`) dans
+[`src/lib/geoShapes/projectShapes.ts`](../src/lib/geoShapes/projectShapes.ts) — une projection par
+couche décalerait le contour englobant des communes qu'il contient ; construction du lien dans
+[`src/lib/geoShapes/shapeTarget.ts`](../src/lib/geoShapes/shapeTarget.ts).
+
+```ts
+const MapShapesSchema = z.object({
+  type: z.literal("map-shapes"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString.optional(),
+    description: LocalizedString.optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    maxHeight: z.number().min(160).optional(),
+    // Contrat identique à `map.shapes` : sources "zoniris" | "zones" | "cities",
+    // + filters, simplify, style, label, showNames. `load` est ignoré ici.
+    shapes: z.array(GeoShapeSourceSchema).min(1),
+    target: z.object({
+      path: z.string().min(1),
+      filterId: z.string().min(1),
+      valueFrom: z.enum(["name", "insee", "_id", "countryCode", "level"]).optional(),
+      layers: z.array(z.string()).optional(),
+    }),
+  }),
+});
+```
+
+| Propriete | Type | Description |
+| --------- | ---- | ----------- |
+| `title` | `LocalizedString?` | Titre du bloc (rendu en SSR, donc indexable) |
+| `description` | `LocalizedString?` | Chapô sous le titre |
+| `bg` | `enum?` | Fond de section (`default` \| `card` \| `muted` \| `primary` \| `secondary` \| `accent` \| `transparent`) |
+| `maxHeight` | `number?` | Hauteur MAXIMALE en px (min 160, defaut code `520`). Le SVG garde son ratio via son `viewBox`, il est seulement borné |
+| `shapes` | `GeoShapeSource[]` | Couches de contours, **au moins une**. Cf. [`map.shapes`](07-module-search.md) (§ `useGeoShapes`) pour les trois `source`, leurs filtres et leur volumétrie |
+| `target` | `object` | **Obligatoire** — cible de navigation au clic (cf. le piège ci-dessous). La config n'étant pas revalidée au runtime, une cible absente ou sans `path`/`filterId` laisse tous les contours INERTES au lieu de faire tomber la section |
+| `target.path` | `string` | Chemin de la page de recherche (ex. `/lieux`) |
+| `target.filterId` | `string` | Nom du query param écrit = **`id` d'un groupe de `filterGroups` de la page cible** |
+| `target.valueFrom` | `enum?` | Propriété du contour utilisée comme valeur : `name` (defaut), `insee`, `_id` (ObjectId du contour), `countryCode`, `level` — les seules exposées par `toFeatureCollection` |
+| `target.layers` | `string[]?` | Restreint la cliquabilité à ces `id` de couche. Absent = toutes. Sert à garder une couche de DÉCOR inerte sous des communes cliquables |
+
+Un contour dont la propriété `valueFrom` est absente reste du **décor** (un `<path>` inerte) plutôt
+qu'un lien mort. Les couleurs de `style` sont des JETONS de thème (`primary`, `accent`, `border`,
+`none`…), jamais des hex — ici elles restent des `var(--…)` en SVG, contrairement à la carte où
+`resolveThemeColor` doit les convertir en sRGB pour le WebGL.
+
+**Exemple complet** — les 24 communes de La Réunion cliquables, posées sur le contour régional
+laissé en décor :
+
+```json
+{
+  "type": "map-shapes",
+  "id": "territoires",
+  "props": {
+    "title": { "fr": "Explorer par commune", "en": "Browse by town" },
+    "description": {
+      "fr": "Cliquez sur un territoire pour voir les structures qui s'y trouvent.",
+      "en": "Click a territory to see the venues located there."
+    },
+    "bg": "muted",
+    "maxHeight": 520,
+    "shapes": [
+      {
+        "id": "reunion",
+        "source": "zones",
+        "simplify": 20,
+        "filters": { "countryCode": "RE", "level": "4" },
+        "style": { "fill": "none", "stroke": "border", "strokeWidth": 1 }
+      },
+      {
+        "id": "communes",
+        "source": "cities",
+        "simplify": 10,
+        "showNames": true,
+        "filters": {
+          "countryCode": "RE",
+          "parentId": "58be4af494ef47df1d0ddbcc",
+          "parentLevel": "4"
+        },
+        "label": { "fr": "Communes", "en": "Towns" },
+        "style": {
+          "fill": "primary",
+          "fillOpacity": 0.12,
+          "stroke": "primary",
+          "strokeWidth": 1.5,
+          "strokeOpacity": 0.9
+        }
+      }
+    ],
+    "target": {
+      "path": "/lieux",
+      "filterId": "commune",
+      "valueFrom": "name",
+      "layers": ["communes"]
+    }
+  }
+}
+```
+
+### Le piège du lien qui ne filtre rien
+
+`map-shapes` n'écrit PAS dans l'état de filtres : il pose un query param et laisse la page cible
+l'hydrater. **La page cible doit donc porter un groupe de filtres dont l'`id` vaut `target.filterId`
+ET dont une option porte la valeur émise.** Sinon
+[`computeFiltersFromUrl`](../src/modules/search/lib/computeFiltersFromUrl.ts) **jette le paramètre
+silencieusement** : la navigation a lieu, l'URL porte bien `?commune=Saint-Paul`, et la liste reste
+non filtrée — aucune erreur, aucun warning.
+
+Résolution exacte, à vérifier dans cet ordre :
+
+1. **Écriture** — `shapeHref` produit
+   `` `${path}?${encodeURIComponent(filterId)}=${encodeURIComponent(encodeURIComponent(valeur))}` ``.
+   La VALEUR est encodée **deux fois**, volontairement : la page cible la relit en trois temps —
+   `new URLSearchParams(…)` (qui décode déjà une couche), puis `split(",")`, puis
+   `decodeURIComponent` de chaque segment. Avec un seul encodage, `"Saint-Denis, Nord"` reviendrait
+   en DEUX valeurs AVANT le découpage, dont aucune ne matcherait d'option. Un nom sans caractère
+   spécial (le cas courant) traverse les deux passes inchangé, l'URL reste donc lisible. La CLÉ,
+   elle, n'est encodée qu'une fois : elle n'est lue que par `URLSearchParams`.
+2. **Lecture** — la page cible hydrate ses filtres depuis l'URL : `FiltersSection` (section
+   [`filters`](#filters)) ou `usePageFiltersUrlSync` appellent `computeFiltersFromUrl(searchParams,
+   filterGroups, …)`.
+3. **Groupe** — le param est apparié par `filterGroups.find(g => g.id === <nom du param>)`. Pas de
+   groupe portant cet `id` → repli sur les groupes « par réponses » (`filtersByAnswers` /
+   `filtersByPath`) ; rien là non plus → **le param est ignoré**.
+4. **Option** — dans le groupe trouvé, la valeur est cherchée par
+   `(o.name || o.id) === v || o.id === v`. Aucune option ne matche → **rien n'est posé**. C'est le
+   cas le plus fréquent : la comparaison est une égalité STRICTE, sensible à la casse et aux accents.
+
+D'où `valueFrom` : on choisit la propriété du contour à confronter aux options RÉELLES du groupe
+cible. `name` (le nom du contour, `"Saint-Paul"`) va avec un groupe à `field` dont les `options[].name`
+portent la graphie EXACTE stockée en base ; `insee` va avec un groupe dont les options sont des codes
+INSEE. Les cinq valeurs autorisées sont les seules propriétés que `toFeatureCollection`
+(`src/lib/geoShapes/geoShapeQuery.ts`) expose — la donnée legacy n'en porte pas d'autres de façon
+fiable.
+
+Le groupe qui rend l'exemple ci-dessus fonctionnel, sur la page `/lieux` :
+
+```json
+{
+  "type": "filters",
+  "props": {
+    "filterGroups": [
+      {
+        "id": "commune",
+        "label": { "fr": "Commune", "en": "Town" },
+        "field": "address.addressLocality",
+        "options": [
+          { "id": "saint-paul", "label": { "fr": "Saint-Paul" }, "name": "Saint-Paul" },
+          { "id": "saint-denis", "label": { "fr": "Saint-Denis" }, "name": "Saint-Denis" },
+          { "id": "le-tampon", "label": { "fr": "Le Tampon" }, "name": "Le Tampon" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Contrat jumeau** : `regionsTarget` et `thematicsTarget` de
+[`searchProStatic`](#searchprostatic) (`src/modules/search/schema.ts`) ont la MÊME forme
+`{ path, filterId }` et le même principe — on pose un query param, la page cible hydrate. C'est ce
+qui rend le lien partageable et le bouton « précédent » cohérent, et c'est aussi le même piège.
+
+**Recette de vérification** : ouvrir le lien produit par un contour ; la valeur doit apparaître comme
+filtre ACTIF sur la page cible. Si le paramètre reste dans l'URL sans rien filtrer, c'est l'étape 3
+ou 4 qui a échoué — comparer `target.filterId` aux `filterGroups[].id` de la page cible, puis la
+valeur émise aux `options[].name`.
+
 ## `newsletter`
 
 ```ts
@@ -870,6 +1066,17 @@ const HTMLSectionSchema = z.object({
   props: z.object({ html: z.string() }),
 });
 ```
+
+HTML d'ADMIN, passé au profil `sanitize()` par défaut (scripts et handlers retirés, `style`/`class`/`svg`
+conservés — cf. `src/lib/sanitize.ts`).
+
+**Les liens internes naviguent en SPA**, comme ceux du menu : la section délègue le clic à
+`destinationSpa` (`components/sections/htmlSectionLinks.ts`), qui s'appuie sur le `classifyHref`
+commun au parc. Un `<a href="/lieux?services=…">` écrit dans le HTML ne recharge donc plus la page.
+Gardent leur comportement natif : les ancres `#`, `mailto:`/`tel:`/`sms:`, l'externe (`http(s)://`),
+les ancres `target`/`download`, et tout clic d'ouverture parallèle (clic milieu, Ctrl/Cmd, Maj, Alt).
+Écrire la query ENCODÉE (`?services=Salle%20de%20R%C3%A9union`) : c'est du HTML valide, et les deux
+chemins (clic SPA, URL ouverte directement) donnent le même résultat.
 
 ## `banner`
 
@@ -1505,6 +1712,7 @@ export const SearchProStaticSectionSchema = z.object({
 - **Fonctionnalites supplementaires** : `addButton`, `zoneSelector`, `tagSelector`, `csvButton`, `enableGraph`, `bg`
 - **Ideal pour** : integrer plusieurs recherches sur une meme page sans conflits de query params
 - **`customHeader.linkHref` + `customHeader.linkIcon`** : lien "voir sur la page complete" utilise avec `linkText` pour pointer vers la version `searchPro` complète. `showMapButton` a été supprimé.
+- **Alignement de l'en-tête** : titre et boutons sont alignés sur les bords de la grille de résultats (ni `container` ni marge latérale, `mb-3`) — pas de réglage. Avant 09/2026, l'en-tête était rentré dans un `container` avec `px-*` : il ne commençait pas au même bord que les cartes.
 - **`defaultFilters.$or`** : peut contenir un filtre `$or` sous forme d'**objet** (pas de tableau MongoDB standard) pour scoper a des costums précis :
   ```json
   "defaultFilters": {
@@ -2238,6 +2446,7 @@ const ContentSectionSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     category: LocalizedString.optional(),
+    categoryVariant: z.enum(["text", "pill"]).optional(),   // défaut "text"
     title: LocalizedString,
     description: LocalizedString,
     tags: z.array(LocalizedString).optional(),
@@ -2269,6 +2478,7 @@ const ContentSectionSchema = z.object({
 | Propriete | Type | Description |
 | --------- | ---- | ----------- |
 | `category` | `LocalizedString?` | Categorie affichee au-dessus du titre |
+| `categoryVariant` | `"text" \| "pill"`? | Rendu de `category` : `"pill"` = pastille bordée (`rounded-full border border-border`). Absent = texte simple (historique) |
 | `title` | `LocalizedString` | Titre de la section |
 | `description` | `LocalizedString` | Description principale — rendue en **markdown** (gras, tirets, retours à la ligne), sanitizé avant injection |
 | `tags` | `LocalizedString[]?` | Liste de tags |

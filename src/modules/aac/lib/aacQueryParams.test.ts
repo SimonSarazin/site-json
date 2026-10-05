@@ -201,8 +201,9 @@ describe("serverSortBy", () => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Restriction de VISIBILITÉ : un visiteur non administrateur ne voit que les
-// communs sélectionnés, plus les siens. Ce n'est pas un filtre utilisateur mais
-// une règle d'accès — elle ne doit jamais dépendre de l'état des facettes.
+// communs sélectionnés, plus les siens, plus ceux dont il est contributeur à
+// l'édition. Ce n'est pas un filtre utilisateur mais une règle d'accès — elle ne
+// doit jamais dépendre de l'état des facettes.
 // ─────────────────────────────────────────────────────────────────────────────
 describe("splitAacFilters — visibilité", () => {
   const WITH_CHOOSE: AacCardFields = { ...FIELDS, choose: ref("etapeB", "choose") };
@@ -223,6 +224,28 @@ describe("splitAacFilters — visibilité", () => {
   it("connecté non-admin : sélectionnés OU SES communs", () => {
     const { server } = splitAacFilters(f(), WITH_CHOOSE, member);
     expect((server.filters?.$or as Record<string, unknown>).user).toBe("55f0");
+  });
+
+  /**
+   * Décision du 30/09 : un commun pas encore sélectionné est celui qu'on demande à ses
+   * contributeurs à l'édition de reprendre — ils doivent le trouver dans l'annuaire.
+   */
+  it("connecté non-admin : OU ceux dont il est contributeur à l'édition", () => {
+    const ID = "63771a2a2129551c8f4fd9c3";
+    const { server } = splitAacFilters(f(), WITH_CHOOSE, { ...member, currentUserId: ID });
+    expect(server.filters?.$or).toEqual({
+      [`answers.etapeB.choose.${CTX}.value`]: "selected",
+      user: ID,
+      [`links.canEdit.${ID}`]: { $exists: true },
+    });
+  });
+
+  it("un identifiant qui n'est pas un id Mongo n'ouvre aucun chemin", () => {
+    for (const currentUserId of ["", "55f0", "x.y", "$where", "63771a2a2129551c8f4fd9c3.a"]) {
+      const { server } = splitAacFilters(f(), WITH_CHOOSE, { ...member, currentUserId });
+      const branches = Object.keys(server.filters?.$or as Record<string, unknown>);
+      expect(branches.some((k) => k.startsWith("links."))).toBe(false);
+    }
   });
 
   it("admin : AUCUNE restriction", () => {

@@ -34,16 +34,17 @@
   },
   {
    "id": "home-cartographie",
-   "titre": "Home de cartographie (3 sections)",
+   "titre": "Home de cartographie (4 sections)",
    "quand": "Le contenu du site EST la carte ou l'annuaire : la home n'est qu'un sas.",
    "source": "config.prod.saint-paul-sport.json",
    "path": "/",
    "sequence": [
-    "hero-parallax",
-    "categories-grid",
-    "hero-quick-access"
+     "hero-parallax",
+     "map-shapes",
+     "categories-grid",
+     "hero-quick-access"
    ],
-   "rythme": "Trois sections, pas plus. Le hero pose l'identité, la grille de catégories est la vraie navigation, les accès rapides ramassent le reste. Tout le contenu vit dans les pages de recherche."
+   "rythme": "Quatre sections, pas plus. Le hero pose l'identité ; les contours cliquables (`map-shapes`) donnent l'entrée GÉOGRAPHIQUE dans la recherche, là où la grille de catégories donne l'entrée THÉMATIQUE ; les accès rapides ramassent le reste. Tout le contenu vit dans les pages de recherche."
   },
   {
    "id": "home-recherche",

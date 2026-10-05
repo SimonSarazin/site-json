@@ -25,6 +25,7 @@ export function ContentSection({
   const { t } = useLocalization();
   const {
     category,
+    categoryVariant,
     title,
     description,
     tags,
@@ -55,12 +56,21 @@ export function ContentSection({
   // droite reste vide. Défaut `left` = comportement historique, aucun site existant ne bouge.
   const estCentre = align === "center";
   const centreCls = estCentre ? "mx-auto text-center" : "";
+  // Le libellé est porté par un <span> INTERNE : en pastille, la bordure doit se réduire au texte
+  // (un <p> bordé barrerait toute la largeur) sans perdre la largeur ni l'alignement du bloc, que
+  // le <p> continue de porter (`largeurCls`/`centreCls`). Défaut : texte simple, aucun site ne bouge.
+  // Pas `sectionBadgeClass` : cette pastille-là est un repère de TITRE (inclinée, serif, ombrée,
+  // SANS bordure) ; ici c'est un surtitre discret qui n'existe que par sa bordure — non fusionné.
+  const pastilleCls =
+    categoryVariant === "pill" ? "inline-block rounded-full border border-border px-3 py-1" : undefined;
 
   return (
     <section id={id} className={cn("py-16", className)}>
       <div className="container mx-auto px-6">
         {category && !isImageLeft && (
-          <T k={category} as="p" className={cn("text-muted-foreground text-sm font-medium mb-2", largeurCls, centreCls)} />
+          <p className={cn("text-muted-foreground text-sm font-medium mb-2", largeurCls, centreCls)}>
+            <T k={category} className={pastilleCls} />
+          </p>
         )}
         
         <div className={cn(
@@ -72,7 +82,9 @@ export function ContentSection({
           {/* Content Column */}
           <div className={cn(hasVisual && isImageLeft && "lg:order-2")}>
             {category && isImageLeft && (
-              <T k={category} as="p" className="text-muted-foreground text-sm font-medium mb-4" />
+              <p className="text-muted-foreground text-sm font-medium mb-4">
+                <T k={category} className={pastilleCls} />
+              </p>
             )}
             
             <T k={title} as="h2" className="text-4xl font-bold text-primary mb-6 leading-tight" />

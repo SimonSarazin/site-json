@@ -84,6 +84,7 @@
     "member": "Membre",
     "admin": "Administrateur",
     "leaveOrganization": "Quitter l'organisation",
+    "deleteOrganization": "Supprimer cette fiche",
     "unfollowDialog": {
       "title": "Ne plus suivre cette organisation",
       "description": "Êtes-vous sûr de vouloir ne plus suivre cette organisation ? Vous ne recevrez plus ses actualités.",
@@ -140,6 +141,13 @@
       "description": "Êtes-vous sûr de vouloir arrêter de participer à cet événement ? Vous ne recevrez plus les actualités de l'événement.",
       "cancel": "Annuler",
       "confirm": "Ne plus participer"
+    },
+    "deleteEvent": "Supprimer",
+    "deleteEventDialog": {
+      "title": "Supprimer cet événement ?",
+      "description": "« {{name}} » sera supprimé pour tout le monde, avec ses participants et ses liens. Cette action est définitive.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer définitivement"
     },
     "membershipPending": "Demande en attente",
     "contributorPending": "Demande en attente",
@@ -214,7 +222,13 @@
     "openSince": "Ouvert depuis",
     "register": "Inscription",
     "comingSoon": "En construction",
-    "sectionLabel": "Section {{name}}"
+    "sectionLabel": "Section {{name}}",
+    "deleteDialog": {
+      "title": "Supprimer définitivement cette fiche ?",
+      "description": "La fiche sera supprimée de Communecter, et pas seulement de ce site : elle disparaîtra pour tout le monde, avec ses informations. Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer définitivement"
+    }
   },
   "ProfileMembers": {
     "title": "Membres",
@@ -794,6 +808,10 @@
       "poiSuccess": "Lieu créé avec succès",
       "poiError": "Impossible de créer le lieu"
     },
+    "element": {
+      "deleteEventSuccess": "Événement supprimé",
+      "deleteEventError": "Impossible de supprimer l'événement"
+    },
     "gallery": {
       "addSuccess": "Image ajoutée à la galerie",
       "addError": "Échec de l'ajout de l'image",
@@ -1343,8 +1361,8 @@
     "meetingRoomsPlural": "salles de réunion",
     "workstations": "poste de travail",
     "workstationsPlural": "postes de travail",
-    "accommodation": "chambre",
-    "accommodationPlural": "chambres",
+    "accommodation": "place d'hébergement",
+    "accommodationPlural": "places d'hébergement",
     "reservationSpace": "Espace réservation",
     "reservationNote": "Réserver votre espace directement en ligne",
     "contact": "Contact",
@@ -1455,5 +1473,51 @@
   },
   "CardTeamMember": {
     "territoryNews": "Les actualités du territoire"
+  },
+  "MyPlacesSection": {
+    "title": "Mes lieux",
+    "loginRequired": "Connectez-vous pour voir vos tiers-lieux.",
+    "empty": "Vous n'êtes membre d'aucun tiers-lieu pour l'instant.",
+    "emptyHint": "Rejoignez un tiers-lieu depuis sa fiche pour le retrouver ici.",
+    "needPlaceFirst": "Rejoignez d'abord un tiers-lieu pour voir son contenu ici.",
+    "emptyNews": "Aucune actualité de vos tiers-lieux pour l'instant.",
+    "emptyAgenda": "Aucun événement à venir lié à vos tiers-lieux pour l'instant.",
+    "emptyAgendaOngoing": "Aucun événement en cours lié à vos tiers-lieux.",
+    "emptyAgendaPast": "Aucun événement passé lié à vos tiers-lieux.",
+    "emptyProjects": "Aucun projet lié à vos tiers-lieux pour l'instant.",
+    "tabs": {
+      "places": "Mes tiers-lieux",
+      "news": "Actus",
+      "agenda": "Agenda",
+      "projects": "Projets"
+    }
+  },
+  "EntityDuplicates": {
+    "title_one": "Une fiche au nom proche existe déjà",
+    "title_other": "{{count}} fiches au nom proche existent déjà",
+    "titleStrong_one": "Une fiche du même nom existe déjà à ce code postal",
+    "titleStrong_other": "{{count}} fiches au nom proche existent déjà, dont au moins une du même nom au même code postal",
+    "description": "Vérifiez qu'il ne s'agit pas de la vôtre avant de continuer. Vous pouvez poursuivre la création.",
+    "error": "La recherche de fiches existantes a échoué. Vous pouvez poursuivre la création.",
+    "placeUnknown": "Commune non renseignée",
+    "hint": {
+      "sameNameSamePostalCode": "Même nom, même code postal",
+      "sameName": "Même nom",
+      "samePostalCode": "Même code postal"
+    },
+    "preview": "Aperçu",
+    "open": "Ouvrir la fiche",
+    "newTab": "(nouvel onglet)",
+    "more_one": "et une autre fiche au nom proche",
+    "more_other": "et {{count}} autres fiches au nom proche",
+    "confirm": {
+      "title": "Cette fiche existe peut-être déjà",
+      "description": "« {{name}} » existe déjà ({{place}}), avec le même nom et le même code postal. Créer quand même une nouvelle fiche ?",
+      "create": "Créer quand même",
+      "cancel": "Revenir au formulaire"
+    },
+    "titleMany": "Plus de {{count}} fiches au nom proche existent déjà",
+    "titleStrongMany": "Plus de {{count}} fiches au nom proche existent déjà, dont au moins une du même nom au même code postal",
+    "moreMany": "et d'autres fiches au nom proche, non affichées"
   }
 }

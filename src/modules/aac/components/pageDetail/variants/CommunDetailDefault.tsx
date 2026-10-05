@@ -6,6 +6,7 @@ import { CommunSelectionControl } from "../CommunSelectionControl.tsx";
 import { CommunProjectControl } from "../CommunProjectControl.tsx";
 import { CommunHero } from "../CommunHero.tsx";
 import { CommunDeleteControl } from "../CommunDeleteControl";
+import { CommunEditorsControl } from "../CommunEditorsControl.tsx";
 import { CommunFinancingCard } from "../CommunFinancingCard.tsx";
 import { CommunTocNav } from "../CommunTocNav.tsx";
 import { CommunFinancingSection } from "../CommunFinancingSection.tsx";
@@ -40,6 +41,8 @@ export default function CommunDetailDefault({ vm }: { vm: CommunDetailReadyVM })
                             {String(t("detail.edit.cta"))}
                         </Button>
                     )}
+
+                    <CommunEditorsControl {...vm.actions.editors} />
 
                     <CommunSelectionControl {...vm.actions.selection} />
 

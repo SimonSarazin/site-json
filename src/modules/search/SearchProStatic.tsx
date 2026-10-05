@@ -1,4 +1,4 @@
-import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch, ArrowRight } from "lucide-react";
+import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch, ArrowRight, ChartPie } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import React, { Suspense, useState, useMemo, useCallback } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router";
@@ -27,8 +27,15 @@ const CoFormModal = lazy(() => import("@/modules/coform/components/CoFormModal")
 const InstallationUrlModal = lazy(
   () => import("@/modules/observatoire/components/installation/InstallationUrlModal"),
 );
+// Tableau de bord embarqué (`props.observatory`) : même import DYNAMIQUE que
+// ci-dessus — recharts ne doit peser que sur les sections qui l'affichent, et
+// seulement une fois la vue demandée.
+const ObservatoryPanel = lazy(
+  () => import("@/modules/observatoire/components/ObservatoryPanel"),
+);
 import { SwitchDetailsMode } from "./components/SwitchDetailsMode";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { getEntryCoords } from "./lib/searchMapSelection";
 
@@ -42,6 +49,7 @@ import { useSearchQuery } from "./hooks/useSearchQuery";
 import { useSearchAllResults } from "./hooks/useSearchAllResults";
 import MapProgress from "./components/MapProgress";
 import MapSkeleton from "./components/MapSkeleton";
+import { useGeoShapesWarmup } from "@/lib/geoShapes";
 import { useCsvExport } from "./hooks/useCsvExport";
 import { canonicalSearchProStaticBaseParams } from "./lib/canonicalBaseParams";
 import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
@@ -62,16 +70,25 @@ import {
 } from "./constants/queryKeys";
 
 /**
- * Répartition {largeur liste, largeur carte, colonnes de la liste} du mode split,
- * selon `map.splitRatio`. Classes Tailwind écrites EN TOUTES LETTRES (le JIT ne
- * génère pas de classe construite dynamiquement). Défaut "40-60" : parité avec le
- * split de l'agenda (liste étroite 1 colonne, carte large). Les ratios plus larges
- * passent la liste à 2 colonnes (largeur suffisante).
+ * Répartition {largeur liste, largeur carte, colonnes de la liste, densité des
+ * cartes} du mode split, selon `map.splitRatio`. Classes Tailwind écrites EN
+ * TOUTES LETTRES (le JIT ne génère pas de classe construite dynamiquement).
+ * Défaut "40-60" : parité avec le split de l'agenda (liste étroite 1 colonne,
+ * carte large). Les ratios plus larges passent la liste à 2 colonnes (largeur
+ * suffisante).
+ *
+ * `compact` et `collapsible` suivent mécaniquement la largeur : à 30 %, la
+ * colonne est trop étroite pour une carte pleine. Les cartes y sont DENSES
+ * (mêmes informations, moins de hauteur) et REPLIÉES par défaut — la colonne se
+ * parcourt alors comme la liste de la section `data-observatory`, une ligne par
+ * item, et chaque carte se déplie d'un chevron. Les ratios historiques gardent
+ * la carte pleine, dépliée : leur rendu ne bouge pas.
  */
 const SPLIT_LAYOUTS = {
-  "40-60": { list: "w-2/5", map: "w-3/5", columns: { sm: 1, md: 1, lg: 1, xl: 1 } },
-  "50-50": { list: "w-1/2", map: "w-1/2", columns: { sm: 1, md: 2, lg: 2, xl: 2 } },
-  "60-40": { list: "w-3/5", map: "w-2/5", columns: { sm: 1, md: 2, lg: 2, xl: 2 } },
+  "30-70": { list: "w-[30%]", map: "w-[70%]", columns: { sm: 1, md: 1, lg: 1, xl: 1 }, compact: true, collapsible: true },
+  "40-60": { list: "w-2/5", map: "w-3/5", columns: { sm: 1, md: 1, lg: 1, xl: 1 }, compact: false, collapsible: false },
+  "50-50": { list: "w-1/2", map: "w-1/2", columns: { sm: 1, md: 2, lg: 2, xl: 2 }, compact: false, collapsible: false },
+  "60-40": { list: "w-3/5", map: "w-2/5", columns: { sm: 1, md: 2, lg: 2, xl: 2 }, compact: false, collapsible: false },
 } as const;
 
 /**
@@ -132,9 +149,14 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       searchParams.get(installationConf.param ?? DEFAULT_INSTALLATION_PARAM),
   );
 
+  // Contours géographiques : préchauffage des couches déclarées `load: "page"`/`"idle"`. La CARTE
+  // n'est montée qu'en vue carte (lazy + client-only) ; la section, elle, est toujours là — c'est
+  // donc ici que « à l'entrée de la page » peut se jouer. `load: "map"` (défaut) : no-op.
+  useGeoShapesWarmup(props.map?.shapes);
+
   // État local (pas de sync URL)
   const defaultViewMode = props.defaultViewMode || (showMap ? "map" : "list");
-  const [viewMode, setViewMode] = useState<"list" | "map" | "graph" | "regions" | "thematics" | "split">(defaultViewMode);
+  const [viewMode, setViewMode] = useState<"list" | "map" | "graph" | "regions" | "thematics" | "split" | "observatory">(defaultViewMode);
   const isMobile = useIsMobile();
   // La vue carte peut être SPLIT (liste + carte synchronisées) via DEUX
   // déclencheurs : `defaultViewMode: "split"` (la vue carte canonique de la
@@ -148,6 +170,10 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   // Cible « carte » du bouton de bascule : "split" si la section démarre en
   // split (desktop), sinon "map" (le déclencheur `map.layout` reste sur "map").
   const mapView: "split" | "map" = props.defaultViewMode === "split" && !isMobile ? "split" : "map";
+  // Tableau de bord embarqué : déclaré (`props.observatory`) = 3ᵉ vue proposée,
+  // à côté de la liste et de la carte. Il n'a pas de données propres — il lit
+  // celles de la section (cf. `needsAllResults`).
+  const observatory = props.observatory;
   const [isDetailedView, setIsDetailedView] = useState(defaultDetailedView);
   const [localSearchInput, setLocalSearchInput] = useState("");
   const debouncedLocalSearch = useDebounce(localSearchInput, 500);
@@ -293,6 +319,67 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     </Button>
   ) : null;
 
+  // Bouton « Observatoire » — troisième bascule, à côté de Liste et Carte.
+  // Factorisé pour la MÊME raison que `addButtonElement` : les deux en-têtes
+  // (standard et `customHeader`) sont exclusifs, et deux JSX divergeraient.
+  const observatoryLabel = observatory?.label ? t(observatory.label) : t("Observatoire");
+  const observatoryButtonElement = observatory ? (
+    <Button
+      variant={viewMode === "observatory" ? "default" : "outline"}
+      size="sm"
+      aria-label={observatoryLabel}
+      onClick={() => setViewMode(viewMode === "observatory" ? "list" : "observatory")}
+    >
+      <ChartPie className="h-4 w-4 sm:mr-1" />
+      <span className="hidden sm:inline">{observatoryLabel}</span>
+    </Button>
+  ) : null;
+
+  // Bascules disponibles depuis une vue PLEIN PANNEAU (carte, observatoire).
+  // INDISPENSABLE : avec un `customHeader`, l'en-tête de la section — et donc
+  // les boutons de vue — n'est rendu QUE dans la vue liste. Chaque vue plein
+  // panneau porte donc ses propres sorties : vers l'autre vue plein panneau, et
+  // vers la liste. Exception `split` CANONIQUE (`defaultViewMode: "split"`) :
+  // pas de sortie liste, il n'y a pas de « retour » à proposer.
+  const mapViewLabel = mapView === "split" ? t("Liste + carte") : t("Carte");
+  const panelViewSwitch = (current: "map" | "split" | "observatory") => (
+    <div className="flex items-center gap-2">
+      {observatory && current !== "observatory" && (
+        <Button
+          variant="secondary"
+          size="sm"
+          aria-label={observatoryLabel}
+          onClick={() => setViewMode("observatory")}
+        >
+          <ChartPie className="h-4 w-4 sm:mr-1" />
+          <span className="hidden sm:inline">{observatoryLabel}</span>
+        </Button>
+      )}
+      {enableMap && current === "observatory" && (
+        <Button
+          variant="secondary"
+          size="sm"
+          aria-label={mapViewLabel}
+          onClick={() => setViewMode(mapView)}
+        >
+          <Map className="h-4 w-4 sm:mr-1" />
+          <span className="hidden sm:inline">{mapViewLabel}</span>
+        </Button>
+      )}
+      {current !== "split" && (
+        <Button
+          variant="secondary"
+          size="sm"
+          aria-label={t("Voir en liste")}
+          onClick={() => setViewMode("list")}
+        >
+          <List className="h-4 w-4 sm:mr-1" />
+          <span className="hidden sm:inline">{t("Voir en liste")}</span>
+        </Button>
+      )}
+    </div>
+  );
+
   const filterNames = contextFilters?.filterNames;
   const searchQuery = contextFilters?.searchQuery;
 
@@ -402,19 +489,46 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     variant: searchVariant,
   });
 
-  // Vue carte : périmètre COMPLET chargé PROGRESSIVEMENT — pages de 500
-  // enchaînées par le paginator SDK (indexMin manuel ignoré par le backend),
-  // plafond 5000, cache 30 min (re-toggle liste↔carte instantané). Désactivée
-  // (searchType: null → aucun appel) hors vue carte.
+  // Vues qui ont besoin du périmètre COMPLET, et pas de la seule page courante :
+  // la CARTE (tous les marqueurs) et le TABLEAU DE BORD (des chiffres calculés
+  // sur 10 équipements ne veulent rien dire). Elles partagent le même
+  // chargement et le même cache : la bascule de l'une à l'autre est instantanée
+  // et les deux montrent exactement le même jeu de résultats.
+  const needsAllResults =
+    ((viewMode === "map" || (viewMode === "split" && !isMobile)) && enableMap) ||
+    (viewMode === "observatory" && !!observatory);
+
+  // Périmètre COMPLET chargé PROGRESSIVEMENT — pages de 500 enchaînées par le
+  // paginator SDK (indexMin manuel ignoré par le backend), plafond 5000, cache
+  // 30 min. Désactivé (searchType: null → aucun appel) dans les autres vues.
   const mapAll = useSearchAllResults({
     queryKeyPrefix: SEARCH_STATIC_MAP_PREFIX,
-    searchType: (viewMode === "map" || (viewMode === "split" && !isMobile)) && enableMap ? searchType : null,
+    searchType: needsAllResults ? searchType : null,
     searchText,
     searchTags,
     mapUsed: true,
     baseParams: mergedBaseParams,
     variant: searchVariant,
   });
+
+  // Conf de liste de la COLONNE LATÉRALE. Densité et pliage doivent passer par
+  // `list` et non par la prop `card` : `SearchListView` résout la carte par item
+  // (`itemLists[i]?.card ?? card`) et, sans `itemRules`, chaque entrée vaut
+  // `list` — une prop `card` y serait systématiquement écrasée.
+  const splitList = useMemo(
+    () =>
+      (splitLayout.compact || splitLayout.collapsible) && list
+        ? {
+            ...list,
+            card: {
+              ...list.card,
+              ...(splitLayout.compact ? { compact: true } : {}),
+              ...(splitLayout.collapsible ? { collapsible: true } : {}),
+            },
+          }
+        : list,
+    [splitLayout.compact, splitLayout.collapsible, list],
+  );
 
   // Split : la liste ne montre que les résultats GÉOLOCALISÉS (= ceux qui ont un
   // marqueur sur la carte) → liste et carte correspondent, pas d'item sans point.
@@ -481,6 +595,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     <span className="hidden sm:inline">{mapView === "split" ? t("Liste + carte") : t("Carte")}</span>
                   </Button>
                 )}
+                {observatoryButtonElement}
                 {addButtonElement}
                 {enableRegions && !customHeader && (
                   <Button
@@ -597,7 +712,87 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           </div>
         )}
 
-        {((viewMode === "split") || (viewMode === "map" && isSplit)) && enableMap && !isMobile ? (
+        {viewMode === "observatory" && observatory ? (
+          /* Vue OBSERVATOIRE : les graphes prennent la place de la carte, la
+             liste des équipements reste à gauche. Le jeu de résultats est CELUI
+             de la carte (`mapAll`) — mêmes filtres, même recherche, même cache :
+             les chiffres décrivent toujours ce que la liste montre, et la
+             bascule carte ↔ observatoire ne recharge rien.
+
+             L'agencement (KPI en bandeau, deux colonnes, hauteur commandée par
+             les graphes) vit dans `ObservatoryPanel` : c'est lui qui porte le
+             raffinement, il doit donc pouvoir filtrer la liste comme les
+             graphes. Ici ne restent que la barre de bascule, la progression du
+             chargement et la liste elle-même. Sur mobile, pas de colonne
+             latérale (comme le split carte) : le tableau de bord prend toute la
+             largeur. */
+          <div className="w-full space-y-6 overflow-y-auto p-4">
+            <div className="flex justify-end">{panelViewSwitch("observatory")}</div>
+
+            {/* Progression : le total est connu dès la 1ʳᵉ page. Même forme que
+                la page observatoire — pas `MapProgress`, qui est une surcouche
+                positionnée SUR une carte et parle de « points ». */}
+            {!mapAll.isComplete && mapAll.total !== null && mapAll.loaded > 0 && (
+              <div className="space-y-1">
+                <Progress
+                  value={Math.round((mapAll.loaded / Math.max(mapAll.total, 1)) * 100)}
+                  className="h-1.5"
+                />
+                <p className="text-right text-xs text-muted-foreground tabular-nums">
+                  {t("Chargement des données… {{loaded}} / {{total}}", undefined, {
+                    loaded: mapAll.loaded,
+                    total: mapAll.total,
+                  })}
+                </p>
+              </div>
+            )}
+
+            {mapAll.results.length === 0 ? (
+              mapAll.isComplete ? (
+                <div className="py-12 text-center text-sm text-muted-foreground">
+                  {t("Aucun résultat")}
+                </div>
+              ) : (
+                <Skeleton className="h-[420px] w-full rounded-2xl" />
+              )
+            ) : (
+              /* Suspense local : le chunk du tableau de bord (recharts) ne doit
+                 pas faire disparaître la barre de bascule le temps de son
+                 téléchargement.
+
+                 Le panneau POSSÈDE le raffinement (sélection d'un équipement,
+                 drill-down sur un graphe) : il doit donc commander l'agencement
+                 ET la liste — une sélection qui ne toucherait que les graphes,
+                 en laissant la liste intacte, n'aurait aucun sens. D'où
+                 `renderList` : la section fournit SA liste, le panneau lui
+                 passe les entités survivantes. */
+              <Suspense fallback={<Skeleton className="h-[420px] w-full rounded-2xl" />}>
+                <ObservatoryPanel
+                  results={mapAll.results}
+                  conf={observatory}
+                  animate={mapAll.isComplete}
+                  listClass={splitLayout.list}
+                  panelClass={splitLayout.map}
+                  renderList={
+                    isMobile
+                      ? undefined
+                      : ({ entities, select }) => (
+                          <SearchListView
+                            results={entities as SearchEntity[]}
+                            columns={splitLayout.columns}
+                            list={splitList}
+                            // `select` fourni (config `observatory.select`) : le clic
+                            // sélectionne et la carte gagne son bouton « Fiche ».
+                            // Absent : clic = ouverture de la fiche, comme ailleurs.
+                            onSelectItem={select ?? undefined}
+                          />
+                        )
+                  }
+                />
+              </Suspense>
+            )}
+          </div>
+        ) : ((viewMode === "split") || (viewMode === "map" && isSplit)) && enableMap && !isMobile ? (
           /* Mode SPLIT (desktop) : liste (gauche) + carte (droite) SYNCHRONISÉES,
              alimentées par mapAll.results (source UNIQUE → ids alignés). Clic
              carte-liste → flyTo+popup ; clic marqueur → highlight liste. Rendu
@@ -605,10 +800,14 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
              `h-[78vh]` sur les deux colonnes : indispensable pour que la carte
              (`height:100%`) ait une référence et que son canvas = la zone visible
              (sinon fitBounds cadre sur une mauvaise taille). */
-          <div className="flex w-full gap-4 overflow-hidden">
+          /* `px-4 py-4` : sans elle, les deux colonnes collaient au bord haut et
+             bas de la fenêtre. La hauteur des colonnes retranche exactement cette
+             marge (`calc(78vh - 2rem)`) — la section est en `overflow-hidden`, un
+             padding ajouté sans compensation ferait rogner le bas de la carte. */
+          <div className="flex w-full gap-4 overflow-hidden px-4 py-4">
             {/* Liste (gauche) — défile dans sa hauteur ; 2 colonnes max (panneau
                 étroit), pas les colonnes pleines de la vue liste. */}
-            <div className={`h-[78vh] ${splitLayout.list} overflow-y-auto p-4`}>
+            <div className={`h-[calc(78vh-2rem)] ${splitLayout.list} overflow-y-auto pr-2`}>
               {!isPending && mapAll.isComplete && splitGeoResults.length === 0 && (
                 <div className="py-8 text-center text-secondary-foreground">
                   {t("Aucun résultat trouvé.")}
@@ -617,30 +816,21 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               <SearchListView
                 results={splitGeoResults}
                 columns={splitLayout.columns}
-                list={list}
+                list={splitList}
                 focusedItemId={focusedItemId}
                 onFocusItem={setFocusedItemId}
               />
             </div>
             {/* Carte (droite) : `h-[78vh]` borne la hauteur → la carte embarquée
                 (height:100% via containerClass) la remplit exactement (cf. SearchMap). */}
-            <div className={`relative h-[78vh] ${splitLayout.map} overflow-hidden rounded shadow`}>
-              {/* Sortie du split → vue liste (détail), UNIQUEMENT quand le split
-                  vient de `map.layout` (viewMode "map" + isSplit) : on est arrivé
-                  depuis la liste, il faut pouvoir y retourner. Quand le split EST
-                  la vue canonique (`defaultViewMode: "split"`), pas de bouton —
-                  il n'y a pas de « retour liste » à proposer. */}
-              {viewMode === "map" && (
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="absolute top-2 right-2 z-50"
-                  onClick={() => setViewMode("list")}
-                  aria-label={t("Voir en liste")}
-                >
-                  <List className="h-5 w-5 text-primary" />
-                </Button>
-              )}
+            <div className={`relative h-[calc(78vh-2rem)] ${splitLayout.map} overflow-hidden rounded shadow`}>
+              {/* Bascules de vue (cf. `panelViewSwitch`) : vers l'observatoire
+                  s'il est déclaré, et vers la liste — sauf quand le split EST la
+                  vue canonique (`defaultViewMode: "split"`), où il n'y a pas de
+                  « retour liste » à proposer. */}
+              <div className="absolute top-2 right-2 z-50">
+                {panelViewSwitch(viewMode === "split" ? "split" : "map")}
+              </div>
               <MapProgress
                 loaded={mapAll.loaded}
                 total={mapAll.total}
@@ -673,15 +863,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           </div>
         ) : viewMode === "map" && enableMap ? (
           <div className="relative flex-1 h-full w-full overflow-hidden">
-            <Button
-              variant="secondary"
-              size="icon"
-              className="absolute top-2 right-2 z-50"
-              onClick={() => setViewMode("list")}
-              aria-label={t("Voir en liste")}
-            >
-              <Map className="h-5 w-5 text-primary" />
-            </Button>
+            <div className="absolute top-2 right-2 z-50">{panelViewSwitch("map")}</div>
 
             {/* Progression du chargement par pages + alerte plafond. */}
             <MapProgress
@@ -770,7 +952,10 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
         ) : (
           <div className="p-4 overflow-y-auto mx-auto w-full max-w-[1536px]">
             {customHeader && (
-              <div className="container flex justify-between items-center mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+              // Ni `container` ni marge latérale : l'en-tête s'aligne sur les bords de la grille
+              // de résultats, qui remplit ce même bloc. Un `container` (max 1280) l'aurait rentré
+              // de 64 px à 1440 — titre et cartes ne commençaient pas au même bord.
+              <div className="flex justify-between items-center mb-3">
                 <div>
                   {customHeader.title && (
                     <h2 className="text-2xl font-extrabold text-foreground">
@@ -802,6 +987,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                       <span className="hidden sm:inline">{mapView === "split" ? t("Liste + carte") : t("Carte")}</span>
                     </Button>
                   )}
+                  {observatoryButtonElement}
                   {addButtonElement}
                   {customHeader.linkText && viewAllHref && (
                     // `text-foreground` : le lien est un <a> (asChild) → sinon il hérite

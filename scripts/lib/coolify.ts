@@ -258,6 +258,7 @@ export interface CoolifyEnv {
   value: string;
   is_buildtime: boolean;
   is_runtime: boolean;
+  is_preview?: boolean;
 }
 
 export interface CoolifyDeployment {
@@ -428,8 +429,13 @@ export async function githubAppParNom(
 export const getApplication = (ctx: CoolifyContext, uuid: string): Promise<CoolifyApp> =>
   api<CoolifyApp>(ctx, "GET", `/applications/${uuid}`);
 
-export const listEnvs = (ctx: CoolifyContext, uuid: string): Promise<CoolifyEnv[]> =>
-  api<CoolifyEnv[]>(ctx, "GET", `/applications/${uuid}/envs`);
+/**
+ * Variables de PRODUCTION seulement. `GET /envs` renvoie chaque clé deux fois — la copie
+ * `is_preview: true` (déploiements de preview) en plus — et le PATCH n'écrit que la
+ * production : garder la copie preview faisait voir un écart que l'écriture ne refermait jamais.
+ */
+export const listEnvs = async (ctx: CoolifyContext, uuid: string): Promise<CoolifyEnv[]> =>
+  (await api<CoolifyEnv[]>(ctx, "GET", `/applications/${uuid}/envs`)).filter((e) => !e.is_preview);
 
 /** Déploiements en file ou en cours, toutes applications confondues. */
 export const runningDeployments = (ctx: CoolifyContext): Promise<CoolifyDeployment[]> =>
