@@ -19714,7 +19714,7 @@
   },
   "profiles": {
     "default": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [
@@ -19831,7 +19831,7 @@
       ]
     },
     "citoyens": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [
@@ -19954,7 +19954,7 @@
       ]
     },
     "organizations": {
-      "layout": "default",
+       "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [
@@ -20185,7 +20185,7 @@
       ]
     },
     "projects": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [
@@ -20368,7 +20368,7 @@
       ]
     },
     "events": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [
@@ -20558,7 +20558,7 @@
       ]
     },
     "poi": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [
