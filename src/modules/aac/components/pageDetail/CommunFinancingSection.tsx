@@ -112,11 +112,13 @@ function FinancingMilestoneCard({
                         ) : null}
                     </div>
                     <h4 className={`font-display font-bold truncate ${isClosed ? "text-muted-foreground" : ""}`}>{item.name}</h4>
-                    {/* Tronquée à deux lignes replié, complète une fois la carte ouverte. */}
-                    {description ? (
-                        <span className={`mt-1 block text-sm text-muted-foreground whitespace-pre-line break-words ${open ? "" : "line-clamp-2"}`}>
+                    {/* Aperçu replié, deux lignes : purement visuel (`aria-hidden`), sinon le
+                        texte entier devenait le nom accessible du bouton. Le texte complet
+                        vit dans le panneau, où il est lu et sélectionnable. */}
+                    {description && !open ? (
+                        <p aria-hidden="true" className="mt-1 text-sm text-muted-foreground whitespace-pre-line break-words line-clamp-2">
                             {description}
-                        </span>
+                        </p>
                     ) : null}
                 </div>
 
@@ -148,6 +150,12 @@ function FinancingMilestoneCard({
 
             {open && (
                 <div id={panelId} className="p-5 sm:p-6 pt-4 bg-background/30 border-t border-border">
+                    {description ? (
+                        <p className="mb-4 text-sm text-muted-foreground whitespace-pre-line break-words">
+                            {description}
+                        </p>
+                    ) : null}
+
                     <div className="sm:hidden space-y-2 mb-4">
                         <div className="flex justify-between text-xs tabular-nums">
                             <span className={done ? "text-success font-bold" : "text-foreground font-bold"}>
@@ -262,7 +270,9 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl }: CommunFinan
             {isLoading ? <MilestoneCardsSkeleton /> : null}
             {items.map((o: CagnotteFundableItem, i: number) => (
                 <FinancingMilestoneCard
-                    key={i}
+                    // Clé sur l'identité du palier : sur l'index, l'état déplié d'une
+                    // carte passait à sa voisine après une suppression.
+                    key={o.itemId}
                     index={i}
                     item={o}
                     openEditMilestoneModal={ctrl.openEditMilestoneModal}
