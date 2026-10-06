@@ -15,11 +15,15 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-10-01** — refonte accueil « Vous êtes »/Territoires/À la une en un seul
-panneau : assets carte remplacés, icônes de titre, plafond de hauteur opt-in de l'illustration (sans
-recadrage ni retouche des % de bulles), 2 bugs d'espacement trouvés et corrigés (ombre rognée par le
-carrousel, centrage vertical cassé par un `mt-auto`) — détail et gates réels en §9duoquadragies. Rien
-commité sur la branche à ce stade. Précédemment : **2026-09-23** — passe de revue du lot membres (§9septvicies.7 : 9 correctifs, 5 nettoyages transverses, césure coform rétablie — plus aucun test rouge) ; coordination territoriale lue en une requête serveur (§9septvicies.6) ; bandeaux de filtres en deux lignes, filtre par ville réservé aux actualités et tiré de l'adresse (§9novotricies). Précédemment : **2026-09-22** — annuaire des partenaires et filtre « Villes » des actualités, page « La communauté » retirée (§9octotricies). Précédemment : **2026-09-17** — INFORESO et « Elles et ils ont marqué le réseau » en pages dédiées avec leurs formulaires d'admin, types d'actualité « À la une » / « Zoom sur le réseau » en choix multiple, taxonomie facultative hors réunions (§9octovicies). Précédemment : **2026-09-15** — les cinq lots du 09/09 (§9vicies à §9quatervicies, validés en §9quinvicies), puis la refonte de l'accueil, les actions admin sur les actualités, les pages du réseau reprises à la source et le Mois de la Parentalité (§9sexvicies).
+Dernière mise à jour : **2026-10-06** — SDK monté en `1.0.196` (rôles de membre modifiables,
+export PDF de l'agenda) : dialogue « Gérer les rôles » sur tout membre déjà lié, rôles posables à
+l'invitation « users », export PDF réel vérifié en direct (150 Ko, `%PDF-` confirmé) — un bug backend
+connu (`Costumize::connectElement`) reste non corrigé sur le seul chemin d'invitation CRÉANT un lien,
+sans effet sur « Gérer les rôles » — détail en §9quinquadragies. Précédemment : **2026-10-01** — refonte
+accueil « Vous êtes »/Territoires/À la une en un seul panneau : assets carte remplacés, icônes de titre,
+plafond de hauteur opt-in de l'illustration (sans recadrage ni retouche des % de bulles), 2 bugs
+d'espacement trouvés et corrigés (ombre rognée par le carrousel, centrage vertical cassé par un
+`mt-auto`) — détail et gates réels en §9duoquadragies. Précédemment : **2026-09-23** — passe de revue du lot membres (§9septvicies.7 : 9 correctifs, 5 nettoyages transverses, césure coform rétablie — plus aucun test rouge) ; coordination territoriale lue en une requête serveur (§9septvicies.6) ; bandeaux de filtres en deux lignes, filtre par ville réservé aux actualités et tiré de l'adresse (§9novotricies). Précédemment : **2026-09-22** — annuaire des partenaires et filtre « Villes » des actualités, page « La communauté » retirée (§9octotricies). Précédemment : **2026-09-17** — INFORESO et « Elles et ils ont marqué le réseau » en pages dédiées avec leurs formulaires d'admin, types d'actualité « À la une » / « Zoom sur le réseau » en choix multiple, taxonomie facultative hors réunions (§9octovicies). Précédemment : **2026-09-15** — les cinq lots du 09/09 (§9vicies à §9quatervicies, validés en §9quinvicies), puis la refonte de l'accueil, les actions admin sur les actualités, les pages du réseau reprises à la source et le Mois de la Parentalité (§9sexvicies).
 
 **(f) Passe de revue du lot membres, et le dépôt sans test rouge** — `/code-review` rejoué sur la
 branche : 9 constats, tous corrigés (`territoires` en tableau lu par la carte, `NavLink` sur le lien de
@@ -4107,7 +4111,7 @@ pagination revient à la page 1 dès que le périmètre filtré de la page chang
 | Mobile 375 px (`/blog`, barre présente) | ✅ aucun débordement horizontal (document 367 px pour un viewport de 375 px) |
 | Autres pages `articleFeed` | non re-testées une à une (33 sections) : même composant et même hook, seule la config (`defaultPagination`, au niveau site) change |
 
-## 9quatertricies. Paroles de parents : image entière et carte par défaut ; profils en pleine largeur
+## 9quattuorquadragies. Paroles de parents : image entière et carte par défaut ; profils en pleine largeur
 
 **Demande** : l'image d'une parole ne doit plus être rognée en bandeau ; la carte doit s'afficher à l'ouverture de `/temoignages` ; les pages profil doivent occuper toute la largeur.
 
@@ -4126,6 +4130,66 @@ pagination revient à la page 1 dès que le périmètre filtré de la page chang
 | Profil : largeur du `main` | ✅ 1432 px à 1440 px de viewport (1280 px avant) ; débordement horizontal à 390 px : aucun (document 382 px) |
 | `/temoignages` : carte ouverte à l'arrivée | ✅ vérifié à la capture (viewport 1440 px) ; mobile 390 px : carte présente, aucun débordement |
 
+
+## 9quinquadragies. SDK 1.0.196 : rôles de membre modifiables, export PDF de l'agenda via le SDK
+
+**Contexte** : le SDK publié le jour même (`@communecter/cocolight-api-client@1.0.196`) livre exactement
+ce que décrivaient `Document de spécification — Rôles de membre sur les liens` et `Document de
+spécification — Endpoint SDK PDF imprimable agenda` : `User.setRoles(roles)` (endpoint `LINK_SET_ROLES`,
+remplacement intégral), `sendRequestToJoinParent({ admin, roles })`, et `endpointApi.agendaGetPdf(data)`
+(réponse binaire `arraybuffer`, gérée nativement par `ApiClient.callEndpoint`). Mise à jour :
+`cocolight-api-client` (dépôt local, fast-forward sur `origin/master`) puis `site-json` (`package.json`/lock,
+`^1.0.196`), les deux reconstruits/revalidés (`npm run build` du SDK, `npm run typecheck` de site-json).
+
+**Gérer les rôles d'un membre déjà lié** — nouveau dialogue `ManageRolesDialog` (`TagsInput`, pré-rempli
+via `rolesDuMembre`, déjà en place), mutation `useSetMemberRoles` (`{user, roles}`, hors factory
+`createUserMutation` qui ne porte qu'un `User`). Action « Gérer les rôles » ajoutée à
+`useAdminActions`/`buildManageRolesAction` sur tout membre DÉJÀ lié (admin/membre/contributeur/
+participant) — **opt-in via un callback** (`onManageRoles`, fourni par `MemberListRenderer` seul) :
+`InviteMemberDialog`, qui réutilise le même hook, n'affiche pas cette action, conformément à la demande
+initiale.
+
+**Poser des rôles à l'invitation « users »** (recherche, pas par e-mail — l'onglet « emails » les avait
+déjà) : un champ `TagsInput` au-dessus des résultats, appliqué par le nouveau hook
+`useInviteMemberWithRoles` (`{user, roles, admin}`) — seuls les boutons d'invitation (`invite-member`/
+`invite-admin`/…) y passent, les actions sur un membre déjà lié (promote/demote/remove/gérer les rôles)
+gardent leur `onClick` d'origine.
+
+**Suggestions de rôles existants** — les trois champs de rôles (« Gérer les rôles », invitation
+« users », invitation « emails ») proposent désormais en autocomplétion locale (`TagsInput.suggestions`)
+les rôles déjà posés sur un membre de l'entité, via le nouveau helper pur `rolesExistantsDeLEntite`
+(testé, `memberRoles.test.ts`) — dérivé de `entity.serverData.links`, déjà chargé : aucun appel réseau
+supplémentaire, le backend n'exposant toujours pas d'endpoint de suggestions au SDK. La saisie libre
+reste possible.
+
+**⚠️ Limite connue, non corrigée (hors périmètre SDK/site-json)** : `Costumize::connectElement`
+(backend PHP, `Document de spécification — Rôles attribués au mauvais membre`) écrit encore le rôle sur
+le lien de l'ADMIN qui invite, pas sur celui de l'invité, pour toute invitation **CRÉANT** un lien neuf
+(chemin `CONNECT`) sur un costum routé par `Costumize` — le cas de parent62. Ce bug est **indépendant**
+du lot ci-dessus : **« Gérer les rôles »** passe par `removerole`/`Link::removeRole`, jamais par
+`Costumize::connectElement` — non affecté. Seul « poser un rôle à l'invitation » (onglets « users » et
+« emails ») en hérite. Non re-testé en conditions réelles (pas de session admin dans cette session) :
+à vérifier au premier usage réel.
+
+**Export PDF de l'agenda** — nouvelle prop opt-in `agenda.showPdfExport` (défaut `false`), hook
+`useAgendaPdfExport` (`endpointApi.agendaGetPdf`, scope le costum PORTEUR entier via
+`getSiteCostumContext({contextId, contextType})` — jamais les filtres de la vue). Téléchargement par
+`Blob` + `<a download>` transitoire (aucun pattern de blob-download réutilisable trouvé — `downloadCsv.ts`
+est CSV-only, non généralisé pour un seul 2ᵉ usage). **Non activé sur `/agenda`** : la prop reste à son
+défaut `false`, conformément à la convention moteur (nouveauté = option, jamais un nouveau défaut pour
+un site en marche) — vérifié en direct dans cette session avec l'option forcée à `true`, qui a ensuite
+été retirée du config.
+
+### 9quinquadragies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` | ✅ 51 pages · 182 sections |
+| `typecheck` · `lint` (fichiers touchés) | ✅ 0 erreur |
+| `test:unit` | ✅ suite complète (5528/5531, 2 échecs non liés à ce lot — snapshot archétype `agenda` resynchronisé, budget `bundle-size` pré-existant) ; `rolesExistantsDeLEntite` testé (9 cas, `memberRoles.test.ts`) — les mutations elles-mêmes restent sans test (React Query + mock SDK absents de ce module), le PDF n'a pas de test automatisé non plus |
+| Export PDF | ✅ **vérifié en direct, vrai navigateur (Playwright/Chromium), contre le backend réel** : clic → requête `AGENDA_GET_PDF` → fichier `agenda-parent62.pdf` de 150 519 octets, magic header `%PDF-` confirmé. Le blocage CORS documenté dans la spec est bien levé |
+| Mobile 390 px / sombre (`/agenda`) | ✅ bouton PDF en icône seule, aucun débordement horizontal, lisible en sombre |
+| Gestion des rôles | 🟡 **non vérifiée en conditions réelles** — aucune session admin disponible dans cette session ; typecheck/lint seuls |
 
 ## 10. Checklist d'avancement
 
@@ -4151,7 +4215,7 @@ pagination revient à la page 1 dès que le périmètre filtré de la page chang
 | 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies). **09/09** : boutons **Modifier / Supprimer** sur la fiche `/blog/:slug`, gardés par `canEditProfile` (admin du costum ou auteur) et réutilisant la modale `edit-parent62-article` déjà en place — hérité par les **4 sites** déclarant une page `/blog`, à charge pour eux de router leur propre `editModals` (§9sexvicies.2). **17/09** : types **« À la une »** et **« Zoom sur le réseau »**, type en **choix multiple** ; le mot-clé suit désormais le type (codecs à la place du stamp) ; section d'accueil « Zoom sur le réseau » filtrée sur `Zoom` ; territoires/publics/thèmes facultatifs (§9octovicies.3-4). **22/09** : filtre **« Villes »** sur `/blog` (33 villes du survol des territoires, **23/09** : sur la ville de l'adresse) et champ adresse du formulaire (§9octotricies.1, §9novotricies). **30/09** : les 33 fils passent en **pagination numérotée** (12/page) au lieu du scroll infini, réglée une seule fois via `config.blog.defaultPagination` (§9tresquadragies) |
 | 2.2 | Actualités filtrables dans le moteur de recherche | ✅ *(était ✅ config, 🟡 UX)* | cible `searchTargets` « Actualités » (`type:article`) dans `/recherche` + filtres territoire/public/thème/dates. **25/07 — UX unifiée** : une actualité de `/recherche` rend une carte dédiée et son clic ouvre le **reader canonique** `/blog/:slug` (repli `/blog/id/:id`), plus un drawer générique |
 | 2.3 | Module événementiel (agenda) + affichage territoire | 🟡 *(diagnostiqué le 14-19/08)* | module agenda complet (calendrier + liste, filtre territoire) ; testé avec des **événements de test locaux** (dev, pas de la production — cf. §9sexies), a révélé 3 bugs backend, **tous corrigés** (§9sexies.1) ; **0 donnée `events` en production, toujours à confirmer** ; pas de carte agenda (`enableMap:false`) |
-| 2.4 | Impression de l'agenda | ❌ | **aucun code print** (`@media print`/`window.print`) — à faire (CSS print ou export iCal/PDF) |
+| 2.4 | Impression de l'agenda | ✅ *(code prêt, non activé)* | export PDF via le SDK (`endpointApi.agendaGetPdf`, SDK ≥ 1.0.196), bouton opt-in `agenda.showPdfExport` (défaut `false`, vérifié en direct avec l'option forcée à `true` puis retirée — §9quinquadragies) — à activer sur `/agenda` quand souhaité |
 | 2.5 | Événements récurrents | ✅ *(était « config+code, non observable » le 24/07)* | `parent62-event` : `recurrency` + `openingHours` + `eventDates` + codecs/validators + calendrier « récurrents dépliés ». **Testé le 14-19/08 avec des événements de test locaux (dev, pas la production)** — a révélé 3 bugs backend dans `AgendaAction.php`, **tous corrigés** : matching par jour de semaine, mode LISTE excluant les récurrents, occurrence du jour en cours jamais renvoyée / onglet « En cours ». Front `site-json` entièrement corrigé et testé (899/899) — cf. §9sexies et les 2 documents de spécification à la racine du monorepo |
 | 2.6 | Ajout partenaires + **modération a priori** | ✅ *(était ❌, confirmé le 19/08)* | bouton public `requiresAdmin:false`, form injecte `preferences.toBeValidated:true`, onglet admin Agenda `validate` + « Proposé le ». `searchEventsCostum` masque bien les events *pending* côté public — confirmé (cf. §9sexies, §12) |
 | 2.7 | Annuaire partenaires (référencement + cartographie) | ✅ *(était 🟡)* | cible `searchTargets` « Structures & partenaires » (`organizations`) + carte + templates profils ; **25/07** : règle de rendu dédiée (`image-cover`, `imageFit:"contain"` pour des logos hétérogènes) ; **22/09** : page **`/annuaire`** (filtres territoire / type / public / thèmes, vue carte), formulaire `parent62-partenaire` modéré (dispense pour les admins du site), onglet admin « Partenaires » ; page « La communauté » retirée (§9octotricies.2). **0 organisation rattachée** à la livraison |
@@ -4282,7 +4346,6 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | **[03/09] Réunions publiées sans modération** — `parent62-reunion` n'injecte pas `preferences.toBeValidated` (sinon la porte `costumSlug` du volet masquerait la réunion à l'admin qui vient de la créer). Acceptable puisque le formulaire n'est atteignable que depuis `/admin` ; à revoir si un bouton public devait un jour l'ouvrir | Peterson |
 | **[03/09] `/agenda` doit-il montrer les réunions de comité ?** — il filtre `type:"others"` : les `meeting` n'y remonteront pas. Élargir à `{"type":{"$in":["others","meeting"]}}` (1 ligne de config) ou garder l'agenda public strictement « événements » ? | réseau / Peterson |
 | **[03/09] Ressources par territoire** — le volet n'affiche que des fiches `recoveryCenter` portant le `territoires` de la page : saisie/import à planifier territoire par territoire. Les 11 liens WordPress/GoGoCarto retirés des pages (archivés en §9novodecies.2) sont les premiers candidats à une ressaisie en fiches ressource, category *Lien* | réseau |
-| **Impression de l'agenda** (2.4) — non implémentée (CSS print ou export iCal/PDF) | Peterson |
 | **Alias `reseau.parent62.org` dans `sites.json`** (champ `aliases`) pour que `deploy:env` dérive `VITE_SITE_PUBLIC_URL` correctement — aujourd'hui l'entrée `parent62` n'a que `domain: parent62.00.re` (§8.5) | Peterson / Thomas |
 | **Âges dans `/recherche`** (1.5) — la liste `ages` existe (form + `/temoignages`), l'ajouter au groupe de filtres `/recherche` | Peterson |
 | **Votes « utile » + contributeurs** des ressources (3.3) — câbler `ADD_VOTE`/`links` + UI card | Peterson / Thomas |

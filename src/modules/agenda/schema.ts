@@ -47,6 +47,10 @@ export const AgendaSectionSchema = z.object({
     limit: z.number().int().positive().optional(),
     /** Afficher le toggle Liste/Calendrier (false = teaser : vue figée à `defaultMode`). */
     showViewToggle: z.boolean().default(true),
+    /** Bouton « Export PDF » (édition imprimable de l'agenda, `AGENDA_GET_PDF`, SDK ≥ 1.0.196) —
+     *  scope le costum PORTEUR entier, pas les filtres affichés à l'écran. Opt-in : défaut `false`,
+     *  masqué si le costum porteur ne s'est pas encore résolu (teaser avant hydratation). */
+    showPdfExport: z.boolean().default(false),
     /** Afficher les onglets temporels (false = teaser : un seul bucket = `defaultTab`, sans onglets). */
     showTabs: z.boolean().default(true),
     /** Vue par défaut : liste à onglets temporels ou grille calendrier. */
