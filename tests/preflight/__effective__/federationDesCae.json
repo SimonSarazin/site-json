@@ -1,8 +1,31 @@
 {
   "site": "federationDesCae",
   "slug": "federationDesCae",
-  "addMenus": {},
-  "editModals": {},
+  "addMenus": {
+    "default": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      },
+      "customs": [
+        "add-organization",
+        "add-cae"
+      ]
+    }
+  },
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-cae",
+          "native": "edit-cae",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
   "adminResources": {},
   "pages": {
     "/annuaire/searchProStatic": {
@@ -48,17 +71,17 @@
         "field": "tags",
         "value": "CAE",
         "op": "append",
-        "on": "both",
-        "channel": "pathValue"
+        "on": "add",
+        "channel": "payload"
       },
       {
         "field": "tags",
         "value": {
-          "$from": "manageModel"
+          "$from": "tags"
         },
         "op": "append",
-        "on": "add",
-        "channel": "pathValue"
+        "on": "edit",
+        "channel": "payload"
       }
     ]
   },

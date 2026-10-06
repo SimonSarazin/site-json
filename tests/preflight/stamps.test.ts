@@ -91,9 +91,9 @@ describe("préflight mutation.stamps", () => {
   it("les stamps du parc sont bien là où on les attend (sentinelle d'inventaire)", () => {
     const parc = SITES.flatMap(({ site, cfg }) => stampsDe(cfg).map(({ formId, stamps }) => `${site.replace("config.prod.", "").replace(".json", "")}/${formId}:${stamps.length}`));
     expect(parc).toEqual([
-      // Fédération des CAE : le formulaire « Créer votre CAE » (création depuis le finder « Partenaires »)
-      // pose le mot-clé « CAE » et celui du mode de gestion — ce dernier à la CRÉATION seulement, `append`
-      // refusionnant les tags serveur en édition (un mode changé laisserait l'ancien, cf. plus bas).
+      // CAE : le form « Créer votre CAE » pose le marqueur `CAE` dans `tags` (append, on:add) et
+      // refusionne à l'édition la saisie du mode de gestion (append $from tags, on:edit) — c'est le
+      // discriminant `identity {tags:"CAE"}` du sous-type `organizationsTls`.
       "federationDesCae/cae:2",
       "institut-bleu/institut-bleu-acteur:2",
       // parent62 n'a PLUS de stamp : le mot-clé dérivé du type d'actualité (`category` → Appels à
