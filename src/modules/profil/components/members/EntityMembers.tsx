@@ -42,6 +42,8 @@ export interface MemberCardConfig {
   rattachement?: ConventionRattachement;
   /** Couleur fixe de la carte « équipe », prime sur `rattachement` — cf. `MemberCardConfSchema.fixedColors`. */
   fixedColors?: { fond: string; encre: string; bordure?: string };
+  /** Plafond de colonnes de la grille « équipe » — cf. `MemberCardConfSchema.maxColumns`. */
+  maxColumns?: 2 | 3 | 4;
   showDescription?: boolean;
   showAddress?: boolean;
   /** Bloc de compteurs de `CardProfile`. Absent = affiché — cf. `MemberCardConfSchema.showStats`. */
@@ -104,7 +106,7 @@ type MemberItem = User | Organization;
 const GRILLE_CARTES: Record<number, string> = {
   1: "max-w-sm grid-cols-1",
   2: "max-w-2xl grid-cols-1 sm:grid-cols-2",
-  3: "max-w-4xl grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+  3: "max-w-5xl grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
   4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
 };
 
@@ -165,9 +167,11 @@ function ProfileCardList({
     <div className="space-y-4">
       {/* En « équipe », le nombre de colonnes est PLAFONNÉ par le nombre de cartes : avec une seule
           fiche (le contact CAF) ou deux (l'animation départementale), une grille à 4 colonnes les
-          tasse à gauche et laisse les trois quarts vides. `mx-auto` recentre alors le bloc. Classes
-          littérales — le JIT ne génère pas de classe construite. */}
-      <div className={cn("mx-auto grid w-full gap-4", enEquipe ? GRILLE_CARTES[Math.min(members.length, 4)] : GRILLE_CARTES[4])}>
+          tasse à gauche et laisse les trois quarts vides. `mx-auto` recentre alors le bloc. `maxColumns`
+          (opt-in, cf. schéma) abaisse encore ce plafond pour un effectif nombreux voulu plus resserré
+          (ex. 9 coordonnateurs en 3×3 plutôt qu'en 4 colonnes). Classes littérales — le JIT ne génère
+          pas de classe construite. */}
+      <div className={cn("mx-auto grid w-full gap-4", enEquipe ? GRILLE_CARTES[Math.min(members.length, card?.maxColumns ?? 4)] : GRILLE_CARTES[4])}>
         {members.map((member, index) => {
           const isLastItem = index === members.length - 1;
           // Variante « équipe » : carte vitrine, lue sur la liste projetée (`fields`).

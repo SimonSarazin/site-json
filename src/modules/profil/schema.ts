@@ -596,6 +596,12 @@ const MemberCardConfSchema = z.object({
   // rendue ici, elle doit donc se piloter pareil depuis les deux sections.
   showStats: z.boolean().optional(),
   detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
+  /** Plafond de colonnes de la grille « équipe » (`type: "team"` uniquement) — au-delà de 4 cartes,
+   *  le nombre de colonnes réelles est normalement plafonné à 4 (`GRILLE_CARTES`, `EntityMembers.tsx`).
+   *  Un effectif nombreux mais voulu plus resserré (ex. 9 coordonnateurs en 3×3) le réduit ici plutôt
+   *  que de changer le défaut partagé. Sans effet sous ce nombre de cartes (le plafond ne fait
+   *  jamais remonter le nombre de colonnes, seulement le réduire). Défaut code : 4 (historique).*/
+  maxColumns: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
 }).partial();
 
 export type MemberCardConf = z.infer<typeof MemberCardConfSchema>;

@@ -1671,7 +1671,7 @@
             "showTitle": false,
             "showInvite": false,
             "fields": ["territoires", "telephone", "phone", "mobile", "email"],
-            "card": { "type": "team", "detailsMode": "link", "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" } }
+            "card": { "type": "team", "detailsMode": "link", "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" }, "maxColumns": 3 }
           }
         },
         {
