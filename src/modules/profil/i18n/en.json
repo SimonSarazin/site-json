@@ -374,7 +374,14 @@
     },
     "rolesLabel": "Roles in the organisation",
     "rolesPlaceholder": "Add a role (press Enter)…",
-    "rolesHint": "Free text — e.g. “Parenting coordinator, Arrageois”."
+    "rolesHint": "Free text — e.g. “Parenting coordinator, Arrageois”.",
+    "manageRoles": "Manage roles"
+  },
+  "ManageRolesDialog": {
+    "title": "Manage roles",
+    "description": "{{name}}'s roles — the full list replaces the current roles.",
+    "save": "Save",
+    "saving": "Saving…"
   },
   "MemberManagementDialog": {
     "title": "Member Management",
@@ -729,7 +736,9 @@
       "inviteAdminSuccess": "Admin invitation sent to {{name}}",
       "inviteAdminError": "Unable to send admin invitation to {{name}}",
       "emailInviteSuccess": "{{count}} email invitation(s) sent",
-      "emailInviteError": "Unable to send email invitations"
+      "emailInviteError": "Unable to send email invitations",
+      "setRolesSuccess": "{{name}}'s roles updated",
+      "setRolesError": "Unable to update {{name}}'s roles"
     },
     "comment": {
       "addSuccess": "Comment added successfully",

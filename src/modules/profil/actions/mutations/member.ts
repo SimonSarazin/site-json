@@ -8,7 +8,10 @@
  * injecté par la lib sur les endpoints marqués — RIEN à faire ici ni dans `createUserMutation`
  * (core.ts explique pourquoi on n'y pose PAS de `setCostumScope`).
  */
-import { createUserMutation } from "./core";
+import { useQueryClient } from "@tanstack/react-query";
+import type { EntityTypes, User } from "@communecter/cocolight-api-client";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { createUserMutation, invalidateMemberQueries } from "./core";
 
 // =====================================================
 // ADMIN MANAGEMENT
@@ -58,6 +61,35 @@ export const useRemoveMember = createUserMutation({
     errorKey: "toast.members.removeError",
   },
 });
+
+/**
+ * Hook pour définir les rôles d'un membre déjà lié (`User.setRoles`, remplacement intégral —
+ * cf. le JSDoc de la méthode SDK). Variables `{ user, roles }` : `createUserMutation` ne porte que
+ * `User`, insuffisant ici — mutation écrite directement sur `useMutationWithToast`, même structure
+ * (invalidation des queries membres, toast paramétré par le nom).
+ */
+export function useSetMemberRoles(parentEntity: EntityTypes | null) {
+  const queryClient = useQueryClient();
+
+  return useMutationWithToast<void, { user: User; roles: string[] }>({
+    mutationFn: async ({ user, roles }) => {
+      if (user.setRoles) {
+        await user.setRoles(roles);
+      }
+    },
+    namespace: "modules/profil",
+    successKey: "toast.members.setRolesSuccess",
+    errorKey: "toast.members.setRolesError",
+    getSuccessParams: (_, { user }) => ({ name: user.serverData?.name || "" }),
+    getErrorParams: (_, { user }) => ({ name: user.serverData?.name || "" }),
+    onSuccessCallback: () => {
+      if (parentEntity) {
+        invalidateMemberQueries(queryClient, parentEntity);
+      }
+    },
+    invalidateQueries: [],
+  });
+}
 
 // =====================================================
 // VALIDATION
@@ -111,6 +143,38 @@ export const useRejectMember = createUserMutation({
 // =====================================================
 // INVITATIONS
 // =====================================================
+
+/**
+ * Hook pour inviter un utilisateur (recherché, pas par e-mail) AVEC des rôles — onglet « users »
+ * d'`InviteMemberDialog`. Variables `{ user, roles, admin }`, pas juste `User` : `useInviteMember`/
+ * `useInviteAdmin` ci-dessous (sans rôles) restent utilisés ailleurs (ex. `MemberListRenderer`, qui
+ * n'a pas de saisie de rôles), donc conservés tels quels plutôt que remplacés.
+ */
+export function useInviteMemberWithRoles(parentEntity: EntityTypes | null) {
+  const queryClient = useQueryClient();
+
+  return useMutationWithToast<void, { user: User; roles: string[]; admin?: boolean }>({
+    mutationFn: async ({ user, roles, admin }) => {
+      if (user.sendRequestToJoinParent) {
+        await user.sendRequestToJoinParent({ admin, ...(roles.length > 0 ? { roles } : {}) });
+      }
+    },
+    namespace: "modules/profil",
+    // Même message quel que soit `admin` : `successKey` est une clé STATIQUE (pas une fonction,
+    // contrairement à `getSuccessParams`) — `useInviteMember`/`useInviteAdmin` ci-dessous restent les
+    // deux hooks séparés quand la distinction du message importe (pas de saisie de rôles).
+    successKey: "toast.members.inviteSuccess",
+    errorKey: "toast.members.inviteError",
+    getSuccessParams: (_, { user }) => ({ name: user.serverData?.name || "" }),
+    getErrorParams: (_, { user }) => ({ name: user.serverData?.name || "" }),
+    onSuccessCallback: () => {
+      if (parentEntity) {
+        invalidateMemberQueries(queryClient, parentEntity);
+      }
+    },
+    invalidateQueries: [],
+  });
+}
 
 /**
  * Hook pour inviter un utilisateur comme membre
