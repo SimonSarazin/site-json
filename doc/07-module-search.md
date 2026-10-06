@@ -295,7 +295,7 @@ Même structure que `searchPro` mais avec état local. Plusieurs instances peuve
 | `zoneSelector` | `ZoneSelectorConfig` | — | Sélecteur de zones géographiques |
 | `tagSelector` | `TagSelectorConfig` | — | Sélecteur de tags prédéfinis |
 | `csvButton` | `CsvButtonConfig` | — | Export CSV (colonnes configurables) |
-| `customHeader` | objet | — | En-tête (titre + lien + icône). Affiche aussi un lien « voir sur la page complète » qui reporte les filtres courants et la recherche texte (`?search=`) via `linkText`/`linkHref`/`linkIcon` |
+| `customHeader` | objet | — | En-tête (titre + lien + icône). Affiche aussi un lien « voir sur la page complète » qui reporte les filtres courants et la recherche texte (`?search=`) via `linkText`/`linkHref`/`linkIcon`. Titre et boutons sont alignés sur les bords de la grille de résultats (sans `container` ni marge latérale, `mb-3`) |
 | `bg` | string | — | Fond de section |
 | `width` | `"container"` | — | Contrainte de largeur |
 | `observatory` | `ObservatoryPanelConf` | — | Tableau de bord (KPI + graphes) en 3ᵉ vue, à côté de liste et carte — cf. [§Vue observatoire](#vue-observatoire--le-tableau-de-bord-dans-la-section) |

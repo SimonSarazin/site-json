@@ -952,7 +952,10 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
         ) : (
           <div className="p-4 overflow-y-auto mx-auto w-full max-w-[1536px]">
             {customHeader && (
-              <div className="container flex justify-between items-center mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+              // Ni `container` ni marge latérale : l'en-tête s'aligne sur les bords de la grille
+              // de résultats, qui remplit ce même bloc. Un `container` (max 1280) l'aurait rentré
+              // de 64 px à 1440 — titre et cartes ne commençaient pas au même bord.
+              <div className="flex justify-between items-center mb-3">
                 <div>
                   {customHeader.title && (
                     <h2 className="text-2xl font-extrabold text-foreground">

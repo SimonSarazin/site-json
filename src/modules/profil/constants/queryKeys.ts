@@ -171,6 +171,21 @@ export const PROFIL_QUERY_KEYS = {
    */
   COMMENT_VOTES: (commentId: string | null) => ["comment-votes", commentId] as const,
   COMMENT_VOTES_PREFIX: (commentId: string | null) => ["comment-votes", commentId] as const,
+
+  /**
+   * Entités RATTACHÉES à un ensemble d'organisations par un lien (`links.<champ>.<orgId>`) — « Mes
+   * lieux » (onglets Agenda/Projets), scopé aux orgIds pour ne pas partager le cache entre listes.
+   * Producteur : `useLinkedEntitiesQuery`
+   */
+  LINKED_ENTITIES: (searchType: string, orgIds: readonly string[], userContextId: string | null = null) =>
+    ["linked-entities", searchType, [...orgIds].sort(), userContextId] as const,
+
+  /**
+   * Actus fusionnées d'un ensemble d'organisations (`org.getNews()` par lieu) — « Mes lieux »,
+   * onglet News. Producteur : `useMemberNewsQuery`
+   */
+  MEMBER_NEWS: (orgIds: readonly string[]) => ["member-news", [...orgIds].sort()] as const,
+
 } as const;
 
 export type ProfilQueryKeyType = ReturnType<
