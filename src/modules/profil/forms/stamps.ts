@@ -150,29 +150,18 @@ export function applyPayloadStamps(
   return out;
 }
 
-/** Un stamp `pathValue` prêt à écrire : chemin + valeur évaluée + fillIfEmpty / append restant à
- *  trancher contre l'entité (sa donnée locale n'est connue qu'après le save). */
+/** Un stamp `pathValue` prêt à écrire : chemin + valeur évaluée + fillIfEmpty restant à trancher
+ *  contre l'entité (sa donnée locale n'est connue qu'après le save). */
 export interface PathValueWrite {
   field: string;
   value: unknown;
   fillIfEmpty: boolean;
-  /** `op: "append"` : la valeur s'UNIT à celle relue après le save (cf. `mergeAppend`). */
-  append?: boolean;
-}
-
-/** Union dédupliquée d'une valeur serveur et d'une valeur d'`append` (ordre préservé). */
-export function mergeAppend(courant: unknown, valeur: unknown): unknown[] {
-  return unionDedup(courant, valeur);
 }
 
 /**
  * Prépare les écritures canal `pathValue` pour ce mode : valeurs évaluées CONTRE LE PAYLOAD (un
- * `$from` lit le payload envoyé), `$now` à la soumission.
- *
- * `op: "append"` : les stamps d'un même champ sont REGROUPÉS en une seule écriture — deux écritures
- * successives s'écraseraient, la seconde ne voyant pas la première —, que l'exécuteur unit à la valeur
- * relue après le save. C'est la voie d'un champ que le contrat de création refuse : un costum qui
- * pré-remplit `tags` (`presetValue`) le fait typer CHAÎNE par le SDK, qui rejette alors la liste.
+ * `$from` lit le payload envoyé), `$now` à la soumission. `op: "append"` n'est PAS supporté sur ce
+ * canal en v1 (il faudrait relire la valeur serveur — utiliser le canal payload) : ignoré + warn.
  */
 export function preparePathValueStamps(
   payload: Record<string, unknown>,
@@ -184,14 +173,12 @@ export function preparePathValueStamps(
   const maintenant = ctx.now ?? new Date();
   const out: PathValueWrite[] = [];
   for (const s of actifs) {
-    const valeur = evaluer(s.value, payload, maintenant);
-    if (valeur === undefined) continue;
     if (s.op === "append") {
-      const deja = out.find((w) => w.append && w.field === s.field);
-      if (deja) deja.value = unionDedup(deja.value, valeur);
-      else out.push({ field: s.field, value: unionDedup(valeur), fillIfEmpty: false, append: true });
+      console.warn(`[stamps] ${s.field} : op "append" non supporté sur le canal pathValue — ignoré`);
       continue;
     }
+    const valeur = evaluer(s.value, payload, maintenant);
+    if (valeur === undefined) continue;
     out.push({ field: s.field, value: valeur, fillIfEmpty: s.op === "fillIfEmpty" });
   }
   return out;

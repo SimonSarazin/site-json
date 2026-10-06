@@ -393,7 +393,7 @@ Un **codec** est un couple de transforms read/write référencé par clé. Trois
 | Famille | Exemples | Mécanisme |
 |---|---|---|
 | **Lié au WIDGET spécialisé** | `openingHours:read/write` | fourni AUTO par `WIDGET_DEFAULTS` → le champ hérite, 0 code costum |
-| **Clé partagée NOMMÉE** | `address:read/write`, `social:read/write`, `dateDMY:read/write` | widget générique → référencée explicitement (champ ou `serializeGroup`). `dateDMY` : widget date (« AAAA-MM-JJ ») ↔ « JJ/MM/AAAA », le format du dynform legacy (`openingDate`) |
+| **Clé partagée NOMMÉE** | `address:read/write`, `social:read/write` | widget générique → référencée explicitement (champ ou `serializeGroup`) |
 | **Codec de groupe PARAMÉTRÉ** | `monthYear`, `enumOrOther`, `multiCsv` | `serializeGroups[x] = { …, params }` ; le pipeline passe `params` en 3ᵉ arg d'`applyTransform` |
 
 Les coercions de TYPE (`coerce:string/bool/number/…`) sont génériques (`engine`). Le `params` d'un codec de groupe
@@ -632,15 +632,7 @@ champs hors schéma (ex. `dateSign`, jamais un input dynform → jamais dans le 
 réservé à l'entité PROPRE (une écriture d'autorité costum-admin sur entité étrangère passe par
 setsource/validategroup, cf. [30-module-admin](30-module-admin.md)) ; échec NON bloquant (warn —
 fragilité du patron legacy assumée) ; `fillIfEmpty` tranché contre le serverData retourné par le
-save (un hook serveur a posé la valeur → on s'abstient) ; `append` : les stamps d'un même champ
-sont REGROUPÉS en une écriture, unie à la valeur relue après le save (deux écritures successives
-s'écraseraient).
-
-**Cas d'école `append` + `pathValue`** : un costum qui PRÉ-REMPLIT un champ-liste (`presetValue.tags`,
-ex. `tags: "CAE"` de la Fédération des CAE) le fait typer **chaîne** par le SDK à la création
-(`presetProps` → `{type:"string"}`), qui refuse alors la liste — et le serveur ne garde pas une
-chaîne (`Tags::filterAndSaveNewTags` itère). Les mots-clés partent donc APRÈS le save :
-`{ "field": "tags", "value": "CAE", "op": "append", "channel": "pathValue" }` (+ `$from: manageModel`).
+save (un hook serveur a posé la valeur → on s'abstient) ; `append` non supporté (v1).
 
 **Cas d'école** : `dateSign` institut-bleu — site-json tourne contre le backend LEGACY, où ni le
 JS afterSave legacy (jamais chargé par site-json) ni le hook Node ne tournent → le stamp client
@@ -660,7 +652,7 @@ non-idempotence legacy (doublons).
 
 **Gardes** : préflight `tests/preflight/stamps.test.ts` — `on:edit|both` + `op:set` sur un champ
 présent dans `fields` du form = INTERDIT (`fillIfEmpty`/`append` permis), jetons `$now` inconnus
-refusés, grammaire stricte (zod `costumFormSchema.zod.ts`),
+refusés, `append`+`pathValue` refusé, grammaire stricte (zod `costumFormSchema.zod.ts`),
 sentinelle d'inventaire du parc. Projection `stamps` dans la garde d'impact
 (`tests/preflight/effective-config.test.ts`).
 

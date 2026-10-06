@@ -179,27 +179,18 @@ describe("preparePathValueStamps", () => {
     expect(writes).toEqual([{ field: "dateSign", value: "6/8/2026", fillIfEmpty: true }]);
   });
 
-  it("ne retient que le canal pathValue du mode", () => {
+  it("ne retient que le canal pathValue du mode ; append refusé avec warn", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const writes = preparePathValueStamps(
       {},
       [
         { field: "payloadOnly", value: "x" },
         { field: "editOnly", value: "y", channel: "pathValue", on: "edit" },
+        { field: "tags", value: "z", channel: "pathValue", op: "append" },
       ],
       { mode: "add", now },
     );
     expect(writes).toEqual([]);
-  });
-
-  it("append : les stamps d'un même champ sont REGROUPÉS en une écriture (deux se seraient écrasées)", () => {
-    const writes = preparePathValueStamps(
-      { manageModel: "SCOP" },
-      [
-        { field: "tags", value: "CAE", channel: "pathValue", op: "append" },
-        { field: "tags", value: { $from: "manageModel" }, channel: "pathValue", op: "append" },
-      ],
-      { mode: "add", now },
-    );
-    expect(writes).toEqual([{ field: "tags", value: ["CAE", "SCOP"], fillIfEmpty: false, append: true }]);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("append"));
   });
 });

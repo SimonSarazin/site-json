@@ -278,23 +278,6 @@ registerTransform("monthYear:write", (_v, all, p) => {
   return month || year;
 });
 
-// dateDMY : widget date (« AAAA-MM-JJ ») ↔ date serveur « JJ/MM/AAAA », le format que saisissait le dynform
-// legacy (ex. `openingDate` d'une organisation). Sans lui, le widget lit « 18/06/2019 » comme un mois 18
-// (champ vide à l'édition) et écrit « 2019-06-18 ». La lecture tolère une date déjà ISO. Pendant jour
-// complet de `monthYear`.
-registerTransform("dateDMY:read", (v) => {
-  const s = pickStr(v).trim();
-  const dmy = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);
-  if (dmy) return `${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`;
-  const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
-  return iso ? `${iso[1]}-${iso[2]}-${iso[3]}` : "";
-});
-// Vide → "" (et non omis) : c'est ainsi que le serveur efface une date (cf. `WIDGET_DEFAULTS.date`).
-registerTransform("dateDMY:write", (v) => {
-  const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(pickStr(v).trim());
-  return ymd ? `${ymd[3]}/${ymd[2]}/${ymd[1]}` : "";
-});
-
 // enumOrOther : select « valeur connue OU 'autre' + texte libre » ↔ valeur serveur. params {valueField, otherField, known[], other}. (Ex-tl:manageModel*.)
 registerTransform("enumOrOther:read", (v, _all, p) => {
   const vf = String(p?.valueField ?? "value"), of = String(p?.otherField ?? "valueOther");

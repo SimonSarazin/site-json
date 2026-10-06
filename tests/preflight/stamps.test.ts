@@ -13,8 +13,8 @@ import { formatNow } from "@/modules/profil/forms/stamps";
  *     restent permis (ils composent avec la saisie).
  *  2. Format `$now` : après consommation des jetons (`jj j MM M aaaa`), il ne doit rester AUCUNE
  *     lettre — un jeton inconnu (`yyyy`, `dd`…) partirait tel quel dans la valeur écrite.
- *  3. (levée) `op: append` + canal `pathValue` : désormais pris en charge — le moteur regroupe les
- *     `append` d'un même champ et les unit à la valeur relue après le save (cf. `preparePathValueStamps`).
+ *  3. `op: append` + canal `pathValue` = non supporté (v1) — le moteur l'ignore avec un warn ;
+ *     autant échouer dès le préflight.
  *  4. Grammaire : clés inconnues / enums invalides (le zod du registre ne valide que les forms
  *     effectivement enregistrés au runtime).
  */
@@ -79,6 +79,10 @@ describe("préflight mutation.stamps", () => {
           if (/[A-Za-z]/.test(reste)) problemes.push(`${ou} : format $now « ${format} » porte des jetons inconnus (« ${reste} »)`);
           // le format doit produire quelque chose de plausible (fume-test déterministe)
           expect(formatNow(format, new Date(2026, 0, 5)).length).toBeGreaterThan(0);
+        }
+        // 3. append sur pathValue
+        if (s.op === "append" && s.channel === "pathValue") {
+          problemes.push(`${ou} : op "append" non supporté sur le canal pathValue (v1) — utiliser le canal payload`);
         }
       });
     }
