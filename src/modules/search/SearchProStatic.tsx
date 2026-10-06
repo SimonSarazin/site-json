@@ -1,6 +1,6 @@
 import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch, ArrowRight, ChartPie } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import React, { Suspense, useState, useMemo, useCallback } from "react";
+import React, { Suspense, useState, useMemo, useCallback, useContext, useEffect, useRef } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router";
 
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,9 @@ import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { getEntryCoords } from "./lib/searchMapSelection";
 
 import { ClientOnly } from "@/components/layout/ClientOnly";
+import { headerStickyOffsetPx } from "@/components/layout/header/headerOffset";
+import { PageContext } from "@/contexts/PageContext";
+import { useSite } from "@/hooks/useSite";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/modules/search/i18n"; // Required: registers i18n resources
@@ -90,6 +93,21 @@ const SPLIT_LAYOUTS = {
   "50-50": { list: "w-1/2", map: "w-1/2", columns: { sm: 1, md: 2, lg: 2, xl: 2 }, compact: false, collapsible: false },
   "60-40": { list: "w-3/5", map: "w-2/5", columns: { sm: 1, md: 2, lg: 2, xl: 2 }, compact: false, collapsible: false },
 } as const;
+
+/**
+ * Hauteur des vues carte (carte seule, colonnes du split) = écran VISIBLE sous
+ * la barre de navigation, dont la hauteur est posée en `--map-top` sur la
+ * racine de la section. Calée sous la barre au clic (cf. `openMapView`), la vue
+ * occupe alors tout l'écran sans être coupée en bas. `dvh` suit la barre
+ * d'adresse mobile ; `vh` en repli : sans hauteur, la carte (en absolu)
+ * s'effondrerait. Le split retranche son `py-4` (2rem). Classes littérales (JIT).
+ */
+const MAP_VIEW_HEIGHT =
+  "h-[calc(100vh-var(--map-top))] supports-[height:100dvh]:h-[calc(100dvh-var(--map-top))]";
+const SPLIT_COLUMN_HEIGHT =
+  "h-[calc(100vh-var(--map-top)-2rem)] supports-[height:100dvh]:h-[calc(100dvh-var(--map-top)-2rem)]";
+/** Carte (et son squelette) dans une vue carte : remplit la boîte ci-dessus. */
+const MAP_FILL = "absolute inset-0 z-10 rounded shadow overflow-hidden";
 
 /**
  * SearchProStatic: Version statique sans synchronisation URL
@@ -170,6 +188,32 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   // Cible « carte » du bouton de bascule : "split" si la section démarre en
   // split (desktop), sinon "map" (le déclencheur `map.layout` reste sur "map").
   const mapView: "split" | "map" = props.defaultViewMode === "split" && !isMobile ? "split" : "map";
+  // Hauteur occupée en haut de l'écran par la barre de navigation (0 si elle
+  // défile avec la page, ou si la page la masque) : les vues carte se calent
+  // dessous et en déduisent leur hauteur (`--map-top`, cf. MAP_VIEW_HEIGHT).
+  const { config } = useSite();
+  const page = useContext(PageContext)?.page;
+  const headerOffsetPx = page?.hideHeader ? 0 : headerStickyOffsetPx(config.header);
+  // Ouverture de la carte PAR UN CLIC : la page défile pour caler la vue carte
+  // (ou le split) sous la barre, où elle occupe tout l'écran. Jamais au
+  // chargement — une page qui démarre sur la carte garde son en-tête visible.
+  // Le défilement attend le rendu de la vue (effet ci-dessous) : avant, la
+  // boîte à viser n'existe pas.
+  const mapViewRef = useRef<HTMLDivElement>(null);
+  const scrollToMapPending = useRef(false);
+  const openMapView = () => {
+    scrollToMapPending.current = true;
+    setViewMode(mapView);
+  };
+  useEffect(() => {
+    if (!scrollToMapPending.current) return;
+    scrollToMapPending.current = false;
+    const el = mapViewRef.current;
+    if (!el) return;
+    // `window.scrollTo` et non `scrollIntoView` : celui-ci fait aussi défiler
+    // les ancêtres `overflow-hidden` de la section s'ils débordent.
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - headerOffsetPx, behavior: "smooth" });
+  }, [viewMode, headerOffsetPx]);
   // Tableau de bord embarqué : déclaré (`props.observatory`) = 3ᵉ vue proposée,
   // à côté de la liste et de la carte. Il n'a pas de données propres — il lit
   // celles de la section (cf. `needsAllResults`).
@@ -360,7 +404,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           variant="secondary"
           size="sm"
           aria-label={mapViewLabel}
-          onClick={() => setViewMode(mapView)}
+          onClick={openMapView}
         >
           <Map className="h-4 w-4 sm:mr-1" />
           <span className="hidden sm:inline">{mapViewLabel}</span>
@@ -551,6 +595,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     <div
       className="pageContent flex-1 w-full h-full overflow-hidden"
       data-co="page-search-static"
+      style={{ "--map-top": `${headerOffsetPx}px` } as React.CSSProperties}
     >
       {error ? (
         <div className="p-4 bg-destructive/10 text-destructive border border-destructive/30 rounded mb-4">
@@ -589,7 +634,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     variant={viewMode === mapView ? "default" : "outline"}
                     size="sm"
                     aria-label={mapView === "split" ? t("Liste + carte") : t("Carte")}
-                    onClick={() => setViewMode(viewMode === mapView ? "list" : mapView)}
+                    onClick={() => (viewMode === mapView ? setViewMode("list") : openMapView())}
                   >
                     <Map className="h-4 w-4 sm:mr-1" />
                     <span className="hidden sm:inline">{mapView === "split" ? t("Liste + carte") : t("Carte")}</span>
@@ -797,17 +842,18 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
              alimentées par mapAll.results (source UNIQUE → ids alignés). Clic
              carte-liste → flyTo+popup ; clic marqueur → highlight liste. Rendu
              uniquement hors mobile (cf. !isMobile) → côte-à-côte. Hauteur EXPLICITE
-             `h-[78vh]` sur les deux colonnes : indispensable pour que la carte
-             (`height:100%`) ait une référence et que son canvas = la zone visible
-             (sinon fitBounds cadre sur une mauvaise taille). */
+             (SPLIT_COLUMN_HEIGHT, l'écran visible sous la barre de navigation) sur
+             les deux colonnes : indispensable pour que la carte (`height:100%`) ait
+             une référence et que son canvas = la zone visible (sinon fitBounds
+             cadre sur une mauvaise taille). */
           /* `px-4 py-4` : sans elle, les deux colonnes collaient au bord haut et
              bas de la fenêtre. La hauteur des colonnes retranche exactement cette
-             marge (`calc(78vh - 2rem)`) — la section est en `overflow-hidden`, un
-             padding ajouté sans compensation ferait rogner le bas de la carte. */
-          <div className="flex w-full gap-4 overflow-hidden px-4 py-4">
+             marge (`- 2rem`) — la section est en `overflow-hidden`, un padding
+             ajouté sans compensation ferait rogner le bas de la carte. */
+          <div ref={mapViewRef} className="flex w-full gap-4 overflow-hidden px-4 py-4">
             {/* Liste (gauche) — défile dans sa hauteur ; 2 colonnes max (panneau
                 étroit), pas les colonnes pleines de la vue liste. */}
-            <div className={`h-[calc(78vh-2rem)] ${splitLayout.list} overflow-y-auto pr-2`}>
+            <div className={`${SPLIT_COLUMN_HEIGHT} ${splitLayout.list} overflow-y-auto pr-2`}>
               {!isPending && mapAll.isComplete && splitGeoResults.length === 0 && (
                 <div className="py-8 text-center text-secondary-foreground">
                   {t("Aucun résultat trouvé.")}
@@ -821,9 +867,9 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 onFocusItem={setFocusedItemId}
               />
             </div>
-            {/* Carte (droite) : `h-[78vh]` borne la hauteur → la carte embarquée
-                (height:100% via containerClass) la remplit exactement (cf. SearchMap). */}
-            <div className={`relative h-[calc(78vh-2rem)] ${splitLayout.map} overflow-hidden rounded shadow`}>
+            {/* Carte (droite) : SPLIT_COLUMN_HEIGHT borne la hauteur → la carte
+                embarquée (height:100% via containerClass) la remplit exactement (cf. SearchMap). */}
+            <div className={`relative ${SPLIT_COLUMN_HEIGHT} ${splitLayout.map} overflow-hidden rounded shadow`}>
               {/* Bascules de vue (cf. `panelViewSwitch`) : vers l'observatoire
                   s'il est déclaré, et vers la liste — sauf quand le split EST la
                   vue canonique (`defaultViewMode: "split"`), où il n'y a pas de
@@ -837,19 +883,22 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 isComplete={mapAll.isComplete}
                 capped={mapAll.capped}
               />
+              {/* Suspense LOCAL : même raison que dans la vue carte ci-dessous. */}
               {splitGeoResults.length > 0 ? (
-                <ClientOnly fallback={<MapSkeleton label={t("Chargement de la carte…")} />}>
+                <ClientOnly fallback={<MapSkeleton label={t("Chargement de la carte…")} containerClass={MAP_FILL} />}>
                   {() => (
-                    <SearchMapWrapper
-                      results={splitGeoResults}
-                      card={list?.card}
-                      preview={list?.preview}
-                      list={list}
-                      map={props.map}
-                      focusedItemId={focusedItemId}
-                      onMarkerFocus={setFocusedItemId}
-                      containerClass="absolute inset-0 z-10 rounded shadow overflow-hidden"
-                    />
+                    <Suspense fallback={<MapSkeleton label={t("Chargement de la carte…")} containerClass={MAP_FILL} />}>
+                      <SearchMapWrapper
+                        results={splitGeoResults}
+                        card={list?.card}
+                        preview={list?.preview}
+                        list={list}
+                        map={props.map}
+                        focusedItemId={focusedItemId}
+                        onMarkerFocus={setFocusedItemId}
+                        containerClass={MAP_FILL}
+                      />
+                    </Suspense>
                   )}
                 </ClientOnly>
               ) : mapAll.isComplete ? (
@@ -857,12 +906,16 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                   {t("Aucun résultat")}
                 </div>
               ) : (
-                <MapSkeleton label={t("Chargement de la carte…")} />
+                <MapSkeleton label={t("Chargement de la carte…")} containerClass={MAP_FILL} />
               )}
             </div>
           </div>
         ) : viewMode === "map" && enableMap ? (
-          <div className="relative flex-1 h-full w-full overflow-hidden">
+          /* Hauteur EXPLICITE (MAP_VIEW_HEIGHT) : l'écran visible sous la barre
+             de navigation. Pas de `flex-1` : dans cette colonne flex sans hauteur
+             définie, sa base de 0 % ferait ignorer la hauteur, et la boîte — dont
+             la carte est en absolu — s'effondrerait. */
+          <div ref={mapViewRef} className={`relative w-full overflow-hidden ${MAP_VIEW_HEIGHT}`}>
             <div className="absolute top-2 right-2 z-50">{panelViewSwitch("map")}</div>
 
             {/* Progression du chargement par pages + alerte plafond. */}
@@ -873,28 +926,35 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               capped={mapAll.capped}
             />
 
-            {/* MapSkeleton AVANT la 1ʳᵉ page et pendant le chunk Leaflet :
-                le conteneur n'a aucune hauteur tant que SearchMap n'est pas
-                monté — sans squelette dimensionné, le clic « Carte » donne un
-                blanc total jusqu'à la 1ʳᵉ page. */}
+            {/* MapSkeleton AVANT la 1ʳᵉ page et pendant le chunk Leaflet, dans la
+                MÊME boîte que la carte (MAP_FILL) — sans lui, le clic « Carte »
+                donne un cadre vide jusqu'à la 1ʳᵉ page.
+                Suspense LOCAL : `SearchMapWrapper` est lazy ; sans lui, c'est la
+                frontière de la SECTION (SectionRenderer) qui prend le relais au
+                1er affichage — section entière remplacée par un squelette
+                d'~100 px, page raccourcie, et le défilement vers la carte
+                (`openMapView`) perd sa cible. */}
             {mapAll.results.length > 0 ? (
-              <ClientOnly fallback={<MapSkeleton label={t("Chargement de la carte…")} />}>
+              <ClientOnly fallback={<MapSkeleton label={t("Chargement de la carte…")} containerClass={MAP_FILL} />}>
                 {() => (
-                  <SearchMapWrapper
-                    results={mapAll.results}
-                    card={list?.card}
-                    preview={list?.preview}
-                    list={list}
-                    map={props.map}
-                  />
+                  <Suspense fallback={<MapSkeleton label={t("Chargement de la carte…")} containerClass={MAP_FILL} />}>
+                    <SearchMapWrapper
+                      results={mapAll.results}
+                      card={list?.card}
+                      preview={list?.preview}
+                      list={list}
+                      map={props.map}
+                      containerClass={MAP_FILL}
+                    />
+                  </Suspense>
                 )}
               </ClientOnly>
             ) : mapAll.isComplete ? (
-              <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
+              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                 {t("Aucun résultat")}
               </div>
             ) : (
-              <MapSkeleton label={t("Chargement de la carte…")} />
+              <MapSkeleton label={t("Chargement de la carte…")} containerClass={MAP_FILL} />
             )}
           </div>
         ) : viewMode === "graph" && enableGraph ? (
@@ -981,7 +1041,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                       variant={viewMode === mapView ? "default" : "outline"}
                       size="sm"
                       aria-label={mapView === "split" ? t("Liste + carte") : t("Carte")}
-                      onClick={() => setViewMode(viewMode === mapView ? "list" : mapView)}
+                      onClick={() => (viewMode === mapView ? setViewMode("list") : openMapView())}
                     >
                       <Map className="h-4 w-4 sm:mr-1" />
                       <span className="hidden sm:inline">{mapView === "split" ? t("Liste + carte") : t("Carte")}</span>
