@@ -1111,6 +1111,26 @@ cours », « Validé », « Refusé »). Le multi-états a été conservé **vol
 >
 > Ces scripts **ne sont pas versionnés** (§13).
 
+> ⚠️ **Quatrième écriture, ajoutée le 24/08 (§9.14) et JAMAIS jouée en PROD : la déclaration
+> `costum.typeObj.recoveryCenter`.** Constat du 03/10 sur le dump de PROD du 30/09 (restauré sur la
+> base partagée : dernières orgas créées le 30/09 à 16:27) : l'orga `associationEkilibre` porte
+> `costum.typeObj = {organizations, article}` — **pas de `recoveryCenter`**, et 0 POI
+> `type:"recoveryCenter"` scopé `associationEkilibre`. Les étapes 1 et 2 ont donc été jouées, pas
+> `declarePoiTypes`.
+>
+> **La relance doit poser `recoveryCenter` SEUL.** L'action `costum/ekilibreMigration/declarePoiTypes`
+> (`EkilibreMigrationController::actionDeclarePoiTypes`) fait un `$set` de **`costum.typeObj.article`
+> ET `costum.typeObj.recoveryCenter`** : la rejouer telle quelle **remplacerait** le nœud `article`
+> déjà en PROD (posé par `add-article-node.mjs`, qui n'est pas le même nœud — icône, libellés et
+> propriétés diffèrent). Écrire donc uniquement `costum.typeObj.recoveryCenter` (le nœud de l'action,
+> champs `category` + `status`), dry-run d'abord, puis purger le cache costum.
+>
+> **Tant que ce n'est pas fait, le formulaire « Ressources pro » d'ekilibre.00.re est cassé**, le site
+> étant en `VITE_COSTUM_FORCE_LIVE` (costum résolu en live, pas depuis l'artefact) : sans le nœud, le
+> SDK n'ouvre pas les champs costum du POI `recoveryCenter` — création amputée de `category`/`status`
+> en silence, édition rejetée (`[DraftProxy] Le champ "status" n'est pas autorisé`, e2e live du 02/10
+> sur `ekilibre-ressource` ; le mode bundle passe, l'artefact embarqué déclarant le type).
+
 ---
 
 ### 9.12 `/creneaux` : montage `gridLayout`, facettes CoForm et cartes pathologie (22/08)
@@ -1302,6 +1322,14 @@ passage une panne **latente** des actualités (champs `category`/`publicationDat
 `publicationStatus`/`featured` jamais déclarés ; 0 article créé, le flux n'avait jamais été exercé).
 Volontairement **sans enums en base** : le form du site reste seul juge des valeurs. **À rejouer en
 PROD** — l'action rejoint le runbook §9.11.
+
+> **Mise à jour du 03/10 — pas jouée en PROD.** Le dump de PROD du 30/09 montre
+> `costum.typeObj = {organizations, article}` sur `associationEkilibre` : le nœud `article` y est (posé
+> par `add-article-node.mjs`, étape 2 du runbook), `recoveryCenter` **non**. La relance doit poser
+> **`recoveryCenter` SEUL** — l'action réécrit aussi `article` (`$set` des deux nœuds) et écraserait le
+> nœud de PROD. D'ici là, le formulaire « Ressources pro » d'**ekilibre.00.re** (site en
+> `VITE_COSTUM_FORCE_LIVE`) est **cassé** : création sans `category`/`status`, édition rejetée par le
+> DraftProxy (e2e live du 02/10, `ekilibre-ressource`). Détail et procédure : runbook §9.11.
 
 **Recette réelle du 24/08 (navigateur, base vérifiée)** : déclaration appliquée → « test doc » créé,
 statut basculé Visible depuis la table admin, `category:"Bonnes pratiques"` posée à l'édition —
@@ -1844,7 +1872,7 @@ copier » → copier « Gymnastique Tao » → ligne « Copié », toast, créne
 | F.1 | Formulaire de dépôt (nom*, catégorie*, PDF ou lien, description, statut) | ✅ | `costumForms["ekilibre-ressource"]` (§9.14) — recette réelle le 24/08 (création + édition en base) |
 | F.2 | Annuaire public `/ressources` (publiés seulement, recherche + filtre catégorie) | ✅ config | `config:render` vert ; audience publique **provisoire** — décision utilisateur du 24/08 (« on verra après »), restriction pros possible plus tard (`auth.required` / `visibleIf`) |
 | F.3 | Back-office — CRUD + statut Visible/Brouillon | ✅ | onglet admin `resource` en mode `statusField` (§9.14) — statut basculé en réel le 24/08 |
-| F.4 | Déclaration `costum.typeObj` en base (`declarePoiTypes`) | ✅ dev | appliquée le 24/08 ; **à rejouer en PROD** (runbook §9.11) |
+| F.4 | Déclaration `costum.typeObj` en base (`declarePoiTypes`) | ❌ PROD | appliquée en dev le 24/08, **jamais jouée en PROD** : le dump du 30/09 porte `typeObj = {organizations, article}`, sans `recoveryCenter`. Relance = poser **`recoveryCenter` SEUL** (l'action réécrirait aussi `article`). Tant que ce n'est pas fait, le formulaire ressources d'ekilibre.00.re (`VITE_COSTUM_FORCE_LIVE`) est **cassé** — runbook §9.11 |
 | F.5 | Limite 10 Mo + HTTPS stricts côté front | ❌ | informatifs seulement (écart assumé §9.14) — évolution du widget `file` si exigée |
 
 ### Lot C — Industrialisation & mise en ligne
