@@ -62,7 +62,7 @@
               "fr": "Trouver la salle de réunion pour vous accueillir.",
               "en": "Find the meeting room to host you."
             },
-            "path": "/lieux?services=Salle de Réunion"
+            "path": "/annuaire-ressources?resourceType=meeting-room"
           },
           {
             "label": {
@@ -84,7 +84,7 @@
               "fr": "Les bureaux partagés et espaces de Coworking.",
               "en": "Shared offices and coworking spaces."
             },
-            "path": "/lieux?services=Coworking"
+            "path": "/annuaire-ressources?resourceType=coworking"
           },
           {
             "label": {
@@ -117,7 +117,7 @@
               "fr": "Les lieux pouvant vous accueillir pour plusieurs jours.",
               "en": "Places that can host you for several days."
             },
-            "path": "/lieux?services=Hébérgement"
+            "path": "/annuaire-ressources?resourceType=accommodation"
           },
           {
             "label": {
@@ -125,6 +125,21 @@
               "en": "Coworking, rooms & stays"
             },
             "path": "/annuaire-ressources"
+          },
+          {
+            "label": {
+              "fr": "Mes lieux",
+              "en": "My places"
+            },
+            "description": {
+              "fr": "Les tiers-lieux dont vous êtes membre",
+              "en": "The third places you're a member of"
+            },
+            "icon": "heart",
+            "path": "/mes-lieux",
+            "visibility": {
+              "auth": "required"
+            }
           }
         ]
       },
@@ -800,7 +815,7 @@
                   "fr": "Trouver une salle de réunion",
                   "en": "Find a meeting room"
                 },
-                "href": "/lieux?services=Salle de Réunion"
+                "href": "/annuaire-ressources?resourceType=meeting-room"
               },
               {
                 "iconSvg": "<svg width=\"80\" height=\"66\" viewBox=\"0 0 80 66\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M51.9856 22.8031L55.7558 0.376221H11.5726C8.66415 0.376221 6.18658 2.48211 5.70184 5.34397L0.603088 35.6544H11.3572L10.1184 43.088L22.4882 35.6544H28.4847L24.7683 57.9913H52.0933L63.2424 65.4249L64.4991 57.9913H68.9695C71.8779 57.9913 74.3555 55.8854 74.8402 53.0235L79.8851 22.8031H51.9856Z\" fill=\"#FFD836\"></path></svg>",
@@ -904,6 +919,7 @@
               "fr": "Les lieux",
               "en": "The places"
             },
+            "categoryVariant": "pill",
             "title": {
               "fr": "Découvrez les tiers-lieux, explorez leurs spécificités et contribuez à la vie d'un lieu.",
               "en": "Discover third places, explore their specificities and contribute to the life of a place."
@@ -954,7 +970,7 @@
           "type": "html",
           "id": "tiers-lieux-actions",
           "props": {
-            "html": "<div class=\"container mx-auto px-6\"><div class=\"grid md:grid-cols-3 gap-8\">\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-warning rounded-full flex items-center justify-center flex-shrink-0 shadow-md transform rotate-y-180\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Découvrir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Explorez la carte des lieux et découvrez leur diversité.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </div>\n\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-warning flex items-center justify-center flex-shrink-0 shadow-md\" style=\"clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se réunir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Trouvez la salle de réunion idéale pour organiser votre rencontre.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </div>\n\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-warning rounded-full flex items-center justify-center flex-shrink-0 shadow-md\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se reconnaître</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Via les marques collectives, identifiez les lieux qui vous inspirent.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </div>\n</div></div>"
+            "html": "<div class=\"container mx-auto px-6\"><div class=\"grid md:grid-cols-3 gap-8\">\n  <a href=\"/lieux\" class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary\">\n    <div class=\"w-14 h-14 bg-warning rounded-full flex items-center justify-center flex-shrink-0 shadow-md transform rotate-y-180\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Découvrir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Explorez la carte des lieux et découvrez leur diversité.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </a>\n\n  <a href=\"/annuaire-ressources?resourceType=meeting-room\" class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary\">\n    <div class=\"w-14 h-14 bg-warning flex items-center justify-center flex-shrink-0 shadow-md\" style=\"clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se réunir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Trouvez la salle de réunion idéale pour organiser votre rencontre.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </a>\n\n  <a href=\"/lieux?licoop=Oui\" class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary\">\n    <div class=\"w-14 h-14 bg-warning rounded-full flex items-center justify-center flex-shrink-0 shadow-md\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se reconnaître</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Via les marques collectives, identifiez les lieux qui vous inspirent.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </a>\n</div></div>"
           }
         },
         {
@@ -965,6 +981,7 @@
               "fr": "Outils et ressources",
               "en": "Tools and resources"
             },
+            "categoryVariant": "pill",
             "title": {
               "fr": "Se mettre en lien, discuter, proposer et diffuser des informations sur les tiers-lieux.",
               "en": "Connect, discuss, propose and disseminate information about third places."
@@ -1046,6 +1063,7 @@
               "fr": "S'entraider",
               "en": "Help each other"
             },
+            "categoryVariant": "pill",
             "title": {
               "fr": "Cofinancer nos infrastructures communes et accompagner les nouveaux projets.",
               "en": "Co-finance our common infrastructures and support new projects."
@@ -1088,6 +1106,7 @@
               "fr": "Observatoire",
               "en": "Observatory"
             },
+            "categoryVariant": "pill",
             "title": {
               "fr": "Observer les données",
               "en": "Observe the data"
@@ -1852,16 +1871,7 @@
                   "fr": "Par typologie",
                   "en": "By type"
                 },
-                "layout": "half"
-              },
-              {
-                "kind": "donut",
-                "dimension": "surface",
-                "label": {
-                  "fr": "Par surface",
-                  "en": "By floor area"
-                },
-                "layout": "half"
+                "layout": "full"
               },
               {
                 "kind": "barsHorizontal",
@@ -1869,6 +1879,15 @@
                 "label": {
                   "fr": "Par portage / statut juridique",
                   "en": "By legal status"
+                },
+                "layout": "full"
+              },
+              {
+                "kind": "donut",
+                "dimension": "surface",
+                "label": {
+                  "fr": "Par surface",
+                  "en": "By floor area"
                 },
                 "layout": "half"
               },
@@ -1956,6 +1975,24 @@
               "rowAction": {
                 "kind": "profil"
               }
+            },
+            "maxWidth": "full",
+            "layout": "split",
+            "list": {
+              "titleDimension": "name",
+              "subtitleDimensions": [
+                "commune",
+                "region"
+              ],
+              "selectDimensions": [
+                "name"
+              ],
+              "label": {
+                "fr": "Tiers-lieux",
+                "en": "Third places"
+              },
+              "splitRatio": "40-60",
+              "pageSize": 50
             }
           }
         }
@@ -2452,6 +2489,30 @@
                 "descriptionSuffix": "miq88plgleoln5tmc7b",
                 "servicesSuffix": "miq86g5vaw1kavrapkb"
               }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/mes-lieux",
+      "title": {
+        "fr": "Mes lieux",
+        "en": "My places"
+      },
+      "layout": "default",
+      "auth": {
+        "required": true
+      },
+      "sections": [
+        {
+          "type": "my-places",
+          "id": "mes-lieux-section",
+          "props": {
+            "sourceKey": [
+              "franceTierslieux",
+              "tierslieuxbelgique",
+              "navigatorDesTierslieux"
             ]
           }
         }
@@ -3410,6 +3471,15 @@
             ]
           }
         },
+        "tags": {
+          "widget": "tags",
+          "read": "tl:tagsRead",
+          "write": "tl:tagsWrite",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          }
+        },
         "hours": {
           "widget": "openingHours",
           "label": {
@@ -3486,7 +3556,8 @@
             {
               "columns": 1,
               "fields": [
-                "name"
+                "name",
+                "$slot:duplicates"
               ]
             },
             {
@@ -3545,7 +3616,8 @@
             {
               "columns": 1,
               "fields": [
-                "address"
+                "address",
+                "$slot:duplicates"
               ]
             },
             {
@@ -3634,6 +3706,13 @@
               "fields": [
                 "description"
               ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "fields": [
+                "tags"
+              ]
             }
           ]
         }
@@ -3700,6 +3779,25 @@
         "slugKey": "slug"
       },
       "defaultsBase": "tl:emptyDefaults",
+      "slots": {
+        "duplicates": "slot:entityDuplicates"
+      },
+      "duplicateCheck": {
+        "nameField": "name",
+        "postalCodeField": "postalCode",
+        "minChars": 3,
+        "limit": 5,
+        "confirmOnSubmit": true,
+        "search": {
+          "types": [
+            "organizations"
+          ],
+          "from": {
+            "page": "/lieux",
+            "sectionId": "section-events"
+          }
+        }
+      },
       "mutation": {
         "entityType": "organizations",
         "payloadEmitEmptyOnEdit": true,
@@ -3727,71 +3825,6 @@
               "$costum": "compagnon"
             },
             "op": "append"
-          },
-          {
-            "field": "tags",
-            "op": "append",
-            "on": "both",
-            "value": {
-              "$mapLabels": {
-                "from": "typePlace",
-                "sep": ",",
-                "map": {
-                  "ateliers-artisanaux": "Ateliers artisanaux partagés",
-                  "coworking": "Bureaux partagés / Coworking",
-                  "foodlab": "Cuisine partagée / Foodlab",
-                  "fablab": "Fablab / Makerspace / Hackerspace (Espaces du Faire)",
-                  "livinglab": "LivingLab / Laboratoire d'innovation sociale",
-                  "nourricier": "Tiers-lieu nourricier",
-                  "culturel": "Tiers-lieu culturel / Lieux intermédiaires et indépendants",
-                  "autre": "Autre famille de tiers-lieux"
-                }
-              }
-            }
-          },
-          {
-            "field": "tags",
-            "op": "append",
-            "on": "both",
-            "value": {
-              "$mapLabels": {
-                "from": "manageModel",
-                "map": {
-                  "association": "Association",
-                  "collectif-citoyen": "Collectif citoyen",
-                  "universites": "Universités / Écoles d'ingénieurs ou de commerce / EPST",
-                  "etablissements-scolaires": "Établissements scolaires (Lycée, Collège, Ecole)",
-                  "collectivites": "Collectivités (Département, Intercommunalité, Région, etc)",
-                  "sarl-sa-sas": "SARL-SA-SAS",
-                  "scic": "SCIC",
-                  "scop": "SCOP",
-                  "autre-gestion": "Autre mode de gestion"
-                }
-              }
-            }
-          },
-          {
-            "field": "tags",
-            "op": "append",
-            "on": "both",
-            "value": {
-              "$bucket": {
-                "from": "buildingSurfaceArea",
-                "buckets": [
-                  {
-                    "lt": 60,
-                    "label": "Moins de 60m²"
-                  },
-                  {
-                    "lt": 201,
-                    "label": "Entre 60 et 200m²"
-                  },
-                  {
-                    "label": "Plus de 200m²"
-                  }
-                ]
-              }
-            }
           }
         ],
         "successKey": {
@@ -3809,7 +3842,10 @@
         "invalidateFn": {
           "fn": "invalidate:standard",
           "params": {
-            "userList": "organizations"
+            "userList": "organizations",
+            "searchKeys": [
+              "entityDuplicates"
+            ]
           }
         }
       }
@@ -4717,7 +4753,9 @@
             "project": true,
             "event": true,
             "poi": false
-          }
+          },
+          "showDeleteButton": true,
+          "deleteRedirectPath": "/lieux"
         },
         {
           "type": "profile-template-dynamic"
@@ -4872,7 +4910,7 @@
                   "bedRoomPath": {
                     "id": "6925ee8ac537f8056114aec7",
                     "place": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mieg4k7z9gv729cs53",
-                    "type": "answer"
+                    "type": "single"
                   },
                   "coworkingPath": {
                     "id": "6925e2b05dd63b02ca70d6d9",

@@ -32,7 +32,14 @@ export type LegacyHashTarget =
    * (`themes/CO2/views/layouts/mail/footer.php:87`, « pour ne plus recevoir ces e-mails, cliquez ici »),
    * qui ouvre les réglages du compte CONNECTÉ. Aucun id : la cible est « moi ».
    */
-  | { kind: 'settings' };
+  | { kind: 'settings' }
+  /**
+   * `#detail-un-commun.communId.<id>` — fiche d'un commun de l'AAC legacy. Ces liens ont aussi été
+   * IMPRIMÉS (400 documents de la Fédération des CAE pointent vers `communs.les-cae.coop/#detail-…`) :
+   * aucune chance de les corriger à la source. L'id est celui de la route `/aac/commun/:answerId`,
+   * aucune résolution n'est nécessaire.
+   */
+  | { kind: 'aacCommun'; id: string };
 
 /**
  * Analyse un fragment d'URL legacy.
@@ -56,6 +63,10 @@ export function parseLegacyHash(hash: string | null | undefined): LegacyHashTarg
 
   // `#settings.redirect` — réglages du compte connecté (pied de page de chaque e-mail legacy).
   if (/^settings\.redirect(?:[./?#].*)?$/.test(raw)) return { kind: 'settings' };
+
+  // `#detail-un-commun.communId.<id>` — fiche d'un commun de l'AAC legacy (liens imprimés).
+  const commun = /^detail-un-commun\.communId\.([a-f0-9]{24})$/.exec(raw);
+  if (commun) return { kind: 'aacCommun', id: commun[1] };
 
   // `#@slug` — profil par slug (le legacy l'émet dans quelques templates ; site-json n'a pas de
   // route `/@slug`, mais `/profil/:slug` fait le même travail).

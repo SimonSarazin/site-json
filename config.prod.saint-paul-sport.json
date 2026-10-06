@@ -1888,6 +1888,9 @@
                     "endHour": 22,
                     "slotMinutes": 60,
                     "adminOnly": true
+                  },
+                  "orgaLink": {
+                    "path": "/annuaire"
                   }
                 },
                 "installationDashboard": {
@@ -1906,9 +1909,12 @@
                   },
                   "activityMetric": "hours"
                 }
-              }
+              },
+              "previewFetch": "poi"
             },
             "map": {
+              "layout": "split",
+              "splitRatio": "30-70",
               "marker": {
                 "style": "pin",
                 "color": "primary",
@@ -2382,6 +2388,260 @@
                   }
                 }
               ]
+            },
+            "observatory": {
+              "dimensions": {
+                "commune": {
+                  "paths": [
+                    "address.addressLocality"
+                  ],
+                  "label": {
+                    "fr": "Commune",
+                    "en": "Municipality"
+                  }
+                },
+                "type": {
+                  "paths": [
+                    "equip_type_name",
+                    "equip_type_famille",
+                    "type",
+                    "categorie"
+                  ],
+                  "label": {
+                    "fr": "Type",
+                    "en": "Type"
+                  }
+                },
+                "nature": {
+                  "paths": [
+                    "equip_nature",
+                    "nature"
+                  ],
+                  "label": {
+                    "fr": "Nature",
+                    "en": "Nature"
+                  }
+                },
+                "aps": {
+                  "paths": [
+                    "aps_name"
+                  ],
+                  "kind": "list",
+                  "label": {
+                    "fr": "Sport pratiqué",
+                    "en": "Sport activity"
+                  }
+                },
+                "surface": {
+                  "paths": [
+                    "equip_surf"
+                  ],
+                  "kind": "number",
+                  "label": {
+                    "fr": "Surface",
+                    "en": "Area"
+                  }
+                },
+                "pmr": {
+                  "paths": [
+                    "equip_pmr_acc",
+                    "equip_pmr_chem",
+                    "equip_pmr_douche",
+                    "equip_pmr_sanit",
+                    "equip_pmr_vest",
+                    "equip_pmr_trib"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PMR",
+                    "en": "Reduced mobility"
+                  }
+                },
+                "pshs": {
+                  "paths": [
+                    "equip_pshs_aire",
+                    "equip_pshs_chem",
+                    "equip_pshs_sanit",
+                    "equip_pshs_vest",
+                    "equip_pshs_trib",
+                    "equip_pshs_sign"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PSHS",
+                    "en": "Sensory disability"
+                  }
+                },
+                "handi": {
+                  "paths": [
+                    "inst_acc_handi_bool"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "Handi.",
+                    "en": "Disability"
+                  }
+                },
+                "equipName": {
+                  "paths": [
+                    "name"
+                  ],
+                  "label": {
+                    "fr": "Nom de l'équipement",
+                    "en": "Equipment name"
+                  }
+                },
+                "name": {
+                  "paths": [
+                    "inst_nom",
+                    "equip_nom"
+                  ],
+                  "label": {
+                    "fr": "Installation",
+                    "en": "Facility"
+                  }
+                }
+              },
+              "select": {
+                "titleDimension": "equipName",
+                "dimensions": [
+                  "equipName",
+                  "name"
+                ]
+              },
+              "drilldown": true,
+              "kpis": [
+                {
+                  "kind": "count",
+                  "label": {
+                    "fr": "Équipements",
+                    "en": "Equipment"
+                  },
+                  "icon": "activity",
+                  "accent": "primary"
+                },
+                {
+                  "kind": "distinct",
+                  "dimension": "commune",
+                  "label": {
+                    "fr": "Communes",
+                    "en": "Municipalities"
+                  },
+                  "icon": "map-pin",
+                  "accent": "accent"
+                },
+                {
+                  "kind": "percentTrue",
+                  "dimension": "pmr",
+                  "label": {
+                    "fr": "Accessible PMR",
+                    "en": "PMR Accessible"
+                  },
+                  "icon": "accessibility",
+                  "accent": "chart-2"
+                },
+                {
+                  "kind": "percentTrue",
+                  "dimension": "pshs",
+                  "label": {
+                    "fr": "Accessible PSHS",
+                    "en": "PSHS Accessible"
+                  },
+                  "icon": "eye",
+                  "accent": "chart-4"
+                },
+                {
+                  "kind": "valueSplit",
+                  "dimension": "nature",
+                  "value": "Intérieur",
+                  "label": {
+                    "fr": "Intérieur",
+                    "en": "Indoor"
+                  },
+                  "icon": "home",
+                  "accent": "chart-3"
+                },
+                {
+                  "kind": "top",
+                  "dimension": "type",
+                  "label": {
+                    "fr": "Type principal",
+                    "en": "Top type"
+                  },
+                  "icon": "trophy",
+                  "accent": "chart-5"
+                },
+                {
+                  "kind": "sum",
+                  "dimension": "surface",
+                  "unit": "m²",
+                  "label": {
+                    "fr": "Surface totale",
+                    "en": "Total surface"
+                  },
+                  "icon": "ruler",
+                  "accent": "chart-1"
+                }
+              ],
+              "charts": [
+                {
+                  "kind": "donut",
+                  "dimension": "type",
+                  "label": {
+                    "fr": "Répartition par type d'équipement",
+                    "en": "Distribution by equipment type"
+                  },
+                  "layout": "full"
+                },
+                {
+                  "kind": "pie",
+                  "dimension": "nature",
+                  "label": {
+                    "fr": "Intérieur / Extérieur",
+                    "en": "Indoor / Outdoor"
+                  },
+                  "layout": "half",
+                  "colors": {
+                    "Intérieur": "chart-1",
+                    "Découvert": "chart-2",
+                    "Site naturel": "chart-3",
+                    "Site naturel aménagé": "chart-4",
+                    "Donnée non renseignée": "muted"
+                  }
+                },
+                {
+                  "kind": "booleanGroups",
+                  "dimensions": [
+                    "pmr",
+                    "pshs",
+                    "handi"
+                  ],
+                  "label": {
+                    "fr": "Accessibilité (oui / non)",
+                    "en": "Accessibility (yes / no)"
+                  },
+                  "layout": "half"
+                },
+                {
+                  "kind": "barsHorizontal",
+                  "dimension": "aps",
+                  "top": 10,
+                  "label": {
+                    "fr": "Top 10 activités sportives (APS)",
+                    "en": "Top 10 sport activities (APS)"
+                  },
+                  "layout": "full"
+                },
+                {
+                  "kind": "bars",
+                  "dimension": "commune",
+                  "label": {
+                    "fr": "Équipements par commune",
+                    "en": "Equipment by commune"
+                  },
+                  "layout": "full"
+                }
+              ]
             }
           }
         }
@@ -2406,7 +2666,7 @@
           "id": "annuaire-header",
           "props": {
             "headline": {
-              "fr": "Les associations utilisatrices",
+              "fr": "Les associations sportifs de Saint-Paul",
               "en": "User associations"
             },
             "subhead": {
@@ -2498,14 +2758,35 @@
                 "showDescription": true,
                 "showAddress": true,
                 "showStats": false,
-                "detailsMode": "drawer"
+                "detailsMode": "dialog"
               },
               "preview": {
-                "type": "structure"
+                "type": "structure",
+                "reservations": {
+                  "form": "6a4e4e4105e5972f7b4b1823",
+                  "step": "equipementsSportifs974872026_1619_0",
+                  "fields": {
+                    "finder": "mrc3ungb2a9vu945ik8",
+                    "user": "mrc3w4o7rguvxc2vkyq",
+                    "userOrga": "n0a7usagerorga1k9z",
+                    "activity": "mrc3xumnggn5f530i9",
+                    "slots": "mrc40jaxu06fjaa6ngn",
+                    "periodStart": "mrc41scujf3aq9ppw1l",
+                    "periodEnd": "mrc4259ir2xnu4vp2fq",
+                    "bookingType": "mrc3zgl902y2fpfcby3y"
+                  },
+                  "maxAnswers": 500
+                },
+                "bookedResources": {
+                  "link": {
+                    "path": "/equipements-sportifs"
+                  }
+                }
               },
               "itemAction": {
                 "kind": "preview"
-              }
+              },
+              "previewFetch": "organizations"
             },
             "map": {
               "marker": {
@@ -3384,102 +3665,70 @@
                 "layout": "full"
               }
             ],
-            "table": {
-              "columns": [
-                {
-                  "dimension": "name",
-                  "kind": "title",
-                  "subtitleDimension": "numero",
-                  "label": {
-                    "fr": "Installation",
-                    "en": "Facility"
-                  }
-                },
-                {
-                  "dimension": "equipName",
-                  "kind": "title",
-                  "label": {
-                    "fr": "Nom de l'équipement",
-                    "en": "Equipment name"
-                  }
-                },
-                {
-                  "dimension": "type"
-                },
-                {
-                  "dimension": "commune"
-                },
-                {
-                  "dimension": "epci"
-                },
-                {
-                  "dimension": "nature",
-                  "kind": "badge",
-                  "colors": {
-                    "Intérieur": "chart-1",
-                    "Découvert": "chart-2",
-                    "Site naturel": "chart-3",
-                    "Site naturel aménagé": "chart-4",
-                    "Donnée non renseignée": "muted"
-                  }
-                },
-                {
-                  "dimension": "surface",
-                  "kind": "number",
-                  "unit": "m²"
-                },
-                {
-                  "dimension": "pmr",
-                  "kind": "boolBadge"
-                },
-                {
-                  "dimension": "prop"
-                }
-              ],
-              "defaultSort": "commune",
-              "rowAction": {
-                "kind": "preview",
-                "detailsMode": "dialog",
-                "preview": {
-                  "type": "poi-amenities",
-                  "reservations": {
-                    "form": "6a4e4e4105e5972f7b4b1823",
-                    "step": "equipementsSportifs974872026_1619_0",
-                    "fields": {
-                      "finder": "mrc3ungb2a9vu945ik8",
-                      "user": "mrc3w4o7rguvxc2vkyq",
-                      "userOrga": "n0a7usagerorga1k9z",
-                      "activity": "mrc3xumnggn5f530i9",
-                      "slots": "mrc40jaxu06fjaa6ngn",
-                      "periodStart": "mrc41scujf3aq9ppw1l",
-                      "periodEnd": "mrc4259ir2xnu4vp2fq",
-                      "bookingType": "mrc3zgl902y2fpfcby3y"
-                    },
-                    "booking": {
-                      "startHour": 8,
-                      "endHour": 22,
-                      "slotMinutes": 60,
-                      "adminOnly": true
-                    }
+            "rowAction": {
+              "kind": "preview",
+              "detailsMode": "dialog",
+              "preview": {
+                "type": "poi-amenities",
+                "reservations": {
+                  "form": "6a4e4e4105e5972f7b4b1823",
+                  "step": "equipementsSportifs974872026_1619_0",
+                  "fields": {
+                    "finder": "mrc3ungb2a9vu945ik8",
+                    "user": "mrc3w4o7rguvxc2vkyq",
+                    "userOrga": "n0a7usagerorga1k9z",
+                    "activity": "mrc3xumnggn5f530i9",
+                    "slots": "mrc40jaxu06fjaa6ngn",
+                    "periodStart": "mrc41scujf3aq9ppw1l",
+                    "periodEnd": "mrc4259ir2xnu4vp2fq",
+                    "bookingType": "mrc3zgl902y2fpfcby3y"
                   },
-                  "installationDashboard": {
-                    "groupKey": "inst_numero",
-                    "labelKey": "inst_nom",
-                    "referenceAmplitude": {
-                      "startHour": 8,
-                      "endHour": 22,
-                      "days": 7
-                    },
-                    "sourceKey": [
-                      "saintpaulSport1"
-                    ],
-                    "poiFilters": {
-                      "type": "recoveryCenter"
-                    },
-                    "activityMetric": "hours"
+                  "booking": {
+                    "startHour": 8,
+                    "endHour": 22,
+                    "slotMinutes": 60,
+                    "adminOnly": true
+                  },
+                  "orgaLink": {
+                    "path": "/annuaire"
                   }
+                },
+                "installationDashboard": {
+                  "groupKey": "inst_numero",
+                  "labelKey": "inst_nom",
+                  "referenceAmplitude": {
+                    "startHour": 8,
+                    "endHour": 22,
+                    "days": 7
+                  },
+                  "sourceKey": [
+                    "saintpaulSport1"
+                  ],
+                  "poiFilters": {
+                    "type": "recoveryCenter"
+                  },
+                  "activityMetric": "hours"
                 }
               }
+            },
+            "maxWidth": "full",
+            "layout": "split",
+            "list": {
+              "titleDimension": "equipName",
+              "subtitleDimensions": [
+                "name",
+                "commune"
+              ],
+              "selectDimensions": [
+                "equipName",
+                "name"
+              ],
+              "label": {
+                "fr": "Équipements",
+                "en": "Facilities"
+              },
+              "splitRatio": "40-60",
+              "pageSize": 50
             }
           }
         }
@@ -3863,6 +4112,9 @@
                       "endHour": 22,
                       "slotMinutes": 60,
                       "adminOnly": true
+                    },
+                    "orgaLink": {
+                      "path": "/annuaire"
                     }
                   },
                   "installationDashboard": {
@@ -7150,6 +7402,8 @@
         "organizer": {
           "widget": "finder",
           "type": "object",
+          "read": "entityRef:read",
+          "write": "entityRef:write",
           "required": true,
           "label": {
             "fr": "Organisateur",

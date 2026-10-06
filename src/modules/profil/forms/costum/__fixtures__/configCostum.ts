@@ -23,6 +23,7 @@ const CONFIG_FILE: Record<string, string> = {
   "tiers-lieux": "config.prod.tiers-lieux.json",
   "institut-bleu-acteur": "config.prod.institut-bleu.json",
   "structure": "config.prod.maison-sport-sante-la-tampon.json",
+  "sport-sante-bienetre-organizations": "config.prod.sport-sante-bien-etre.json",
   "actualite": "config.prod.maison-sport-sante-la-tampon.json",
   "rezo-sante-acteur": "config.prod.rezo-sante-reunion.json",
   "rezo-sante-projet": "config.prod.rezo-sante-reunion.json",
@@ -34,6 +35,9 @@ const CONFIG_FILE: Record<string, string> = {
   "parent62-event": "config.prod.parent62.json",
   "parent62-reunion": "config.prod.parent62.json",
   "parent62-affiche": "config.prod.parent62.json",
+  "saintpaul-event": "config.prod.saint-paul-sport.json",
+  "sport-sante-bienetre-recovery-center": "config.prod.sport-sante-bien-etre.json",
+  "sport-sante-bienetre-session-formation": "config.prod.sport-sante-bien-etre.json",
 };
 
 /** Document costum BRUT (JSON config), tel que servi au runtime via `window.__CONFIG__.costumForms`. */

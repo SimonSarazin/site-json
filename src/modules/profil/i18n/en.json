@@ -84,6 +84,7 @@
     "member": "Member",
     "admin": "Administrator",
     "leaveOrganization": "Leave organization",
+    "deleteOrganization": "Delete this page",
     "unfollowDialog": {
       "title": "Unfollow this organization",
       "description": "Are you sure you want to unfollow this organization? You will no longer receive its updates.",
@@ -221,7 +222,13 @@
     "openSince": "Open since",
     "register": "Register",
     "comingSoon": "Coming soon",
-    "sectionLabel": "{{name}} Section"
+    "sectionLabel": "{{name}} Section",
+    "deleteDialog": {
+      "title": "Permanently delete this page?",
+      "description": "The page will be deleted from Communecter, not just from this site: it will disappear for everyone, along with its information. This cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete permanently"
+    }
   },
   "ProfileMembers": {
     "title": "Members",
@@ -1354,8 +1361,8 @@
     "meetingRoomsPlural": "meeting rooms",
     "workstations": "workstation",
     "workstationsPlural": "workstations",
-    "accommodation": "room",
-    "accommodationPlural": "rooms",
+    "accommodation": "accommodation space",
+    "accommodationPlural": "accommodation spaces",
     "reservationSpace": "Book a space",
     "reservationNote": "Book your space directly online",
     "contact": "Contact",
@@ -1466,5 +1473,51 @@
   },
   "CardTeamMember": {
     "territoryNews": "Territory news"
+  },
+  "MyPlacesSection": {
+    "title": "My places",
+    "loginRequired": "Log in to see your third places.",
+    "empty": "You aren't a member of any third place yet.",
+    "emptyHint": "Join a third place from its page to find it here.",
+    "needPlaceFirst": "Join a third place first to see its content here.",
+    "emptyNews": "No news from your third places yet.",
+    "emptyAgenda": "No upcoming event linked to your third places yet.",
+    "emptyAgendaOngoing": "No ongoing event linked to your third places.",
+    "emptyAgendaPast": "No past event linked to your third places.",
+    "emptyProjects": "No project linked to your third places yet.",
+    "tabs": {
+      "places": "My third places",
+      "news": "News",
+      "agenda": "Agenda",
+      "projects": "Projects"
+    }
+  },
+  "EntityDuplicates": {
+    "title_one": "A record with a similar name already exists",
+    "title_other": "{{count}} records with a similar name already exist",
+    "titleStrong_one": "A record with the same name already exists at this postal code",
+    "titleStrong_other": "{{count}} records with a similar name already exist, at least one of them with the same name at the same postal code",
+    "description": "Check that it is not yours before continuing. You can carry on with the creation.",
+    "error": "The search for existing records failed. You can carry on with the creation.",
+    "placeUnknown": "Municipality not provided",
+    "hint": {
+      "sameNameSamePostalCode": "Same name, same postal code",
+      "sameName": "Same name",
+      "samePostalCode": "Same postal code"
+    },
+    "preview": "Preview",
+    "open": "Open the record",
+    "newTab": "(new tab)",
+    "more_one": "and one more record with a similar name",
+    "more_other": "and {{count}} more records with a similar name",
+    "confirm": {
+      "title": "This record may already exist",
+      "description": "“{{name}}” already exists ({{place}}), with the same name and the same postal code. Create a new record anyway?",
+      "create": "Create anyway",
+      "cancel": "Back to the form"
+    },
+    "titleMany": "More than {{count}} records with a similar name already exist",
+    "titleStrongMany": "More than {{count}} records with a similar name already exist, at least one of them with the same name at the same postal code",
+    "moreMany": "and other records with a similar name, not shown"
   }
 }
