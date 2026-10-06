@@ -49,6 +49,32 @@ describe("eventDatePeriod:write (la date borne la période d'une récurrence)", 
   });
 });
 
+describe("entrée `Date` (seed d'édition : le SDK relit startDate/endDate en Date)", () => {
+  // Le seed d'un champ `hidden` sans `read` est la valeur du SDK telle quelle — une `Date`
+  // (`ApiClient._normalizeDate`). Le codec ne prenait que des chaînes : la date intacte devenait
+  // `undefined`, puis le clear `""` de `payloadEmitEmptyOnEdit` l'effaçait (session-formation SSBE).
+  const instant = new Date("2026-07-25T07:20:05Z");
+
+  it("ponctuel + Date → ISO offset local, sans millisecondes, au MÊME instant", () => {
+    const out = w("eventDate:write", instant, { recurrency: false }) as string;
+    expect(out).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
+    expect(out).not.toContain(".000");
+    expect(new Date(out).getTime()).toBe(instant.getTime());
+  });
+  it("récurrent + Date → omise (la garde de récurrence vaut pour toute entrée)", () => {
+    expect(w("eventDate:write", instant, { recurrency: true })).toBeUndefined();
+  });
+  it("eventDatePeriod:write + Date → ISO même en récurrent", () => {
+    const out = w("eventDatePeriod:write", instant, { recurrency: true }) as string;
+    expect(out).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
+    expect(new Date(out).getTime()).toBe(instant.getTime());
+  });
+  it("Date invalide → undefined (omis)", () => {
+    expect(w("eventDate:write", new Date("x"), { recurrency: false })).toBeUndefined();
+    expect(w("eventDatePeriod:write", new Date("x"), { recurrency: true })).toBeUndefined();
+  });
+});
+
 describe("eventOpeningHours:write (recurrency-aware, pad à 7)", () => {
   it("PONCTUEL → omet openingHours (undefined), même array rémanent de 2 jours", () => {
     const stale = [{ dayOfWeek: "Mo", hours: [] }, { dayOfWeek: "Tu", hours: [] }];
