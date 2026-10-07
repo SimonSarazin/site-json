@@ -9,7 +9,8 @@
  */
 import { formatISO } from "date-fns";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
-import { coerceString, coerceStringArray } from "@/modules/formEngine/engine/coercions";
+import { coerceString } from "@/modules/formEngine/engine/coercions";
+import { toStringArray } from "@/helpers/toStringArray";
 import { unionDedup } from "../stamps";
 import { buildAddressFromForm } from "../../hooks/mutationUtils";
 import { DAYS } from "@/constants/DAYS";
@@ -294,17 +295,18 @@ registerTransform("multiCsv:write", (_v, all, p) => {
 // en config (un codec de champ l'aurait figée en code, un fichier par site — cf. `rezo-sante/fns.ts`).
 // Pas une estampille `append` non plus : en édition elle refusionne les tags serveur, et un mot-clé libre
 // retiré par l'utilisateur reviendrait à chaque enregistrement.
-// Coercion = `coerceStringArray`, le `read` par défaut du widget `tags` (une chaîne CSV legacy est
-// découpée, comme partout ailleurs) ; union = `unionDedup`, celle des estampilles.
-const fixesDe = (p?: Record<string, unknown>): string[] => coerceStringArray(p?.fixed);
+// Coercion = `toStringArray` (helper source unique) : un `tags` serveur peut être un objet PHP à trous,
+// qu'un `coerceStringArray` rendait vide — le formulaire aurait alors écrasé les mots-clés existants ;
+// union = `unionDedup`, celle des estampilles.
+const fixesDe = (p?: Record<string, unknown>): string[] => toStringArray(p?.fixed);
 
 /** LECTURE — les mots-clés libres : ceux de la fiche moins les imposés. Pure, testée. */
 export function tagsLibres(tags: unknown, fixes: readonly string[]): string[] {
-  return coerceStringArray(tags).filter((t) => !fixes.includes(t));
+  return toStringArray(tags).filter((t) => !fixes.includes(t));
 }
 /** ÉCRITURE — les imposés d'abord, puis les libres ; dédupliqué, ordre préservé. Pure, testée. */
 export function tagsAvecFixes(tags: unknown, fixes: readonly string[]): string[] {
-  return unionDedup(fixes, coerceStringArray(tags)).filter((t): t is string => typeof t === "string");
+  return unionDedup(fixes, toStringArray(tags)).filter((t): t is string => typeof t === "string");
 }
 registerTransform("fixedTags:read", (v, _all, p) => ({ [String(p?.field ?? "tags")]: tagsLibres(v, fixesDe(p)) }));
 registerTransform("fixedTags:write", (_v, all, p) => {

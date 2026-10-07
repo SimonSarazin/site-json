@@ -1312,9 +1312,11 @@ Voir [doc/23-module-auth.md](23-module-auth.md) pour l'API `useAuthModal`.
 
 **Chips de tags** (30/09) : `card.tagColors` est honoré — même brique `collectChipValues`/`decorateTags` que
 `CardDefault` : `hidePrefixes` masque les tags techniques par préfixe, **`hideTags`** par égalité stricte (un
-marqueur d'annuaire complet, sans emporter les tags qui commencent pareil), `mapping` colore et relibelle. Les
-tags passent d'abord par `lib/normalizeTags` (le backend renvoie parfois `tags` en objet — tableau PHP à trous
-ou dictionnaire de présence — et une chip ne s'itère pas sur un objet ; `useItem` s'en sert aussi). Tags tous
+marqueur d'annuaire complet, sans emporter les tags qui commencent pareil), `mapping` colore et relibelle. Le
+pipeline complet est **`decorateItemTags`** (lib/colorBy), partagé par CardDefault, CardEventTimeline,
+CardProfile et MapPopupDefault : les tags passent d'abord par `helpers/toStringArray` (le backend renvoie
+parfois `tags` en objet — tableau PHP à trous ou dictionnaire de présence — et une chip ne s'itère pas sur un
+objet ; `useItem` et `entityMatchData` s'en servent aussi). Tags tous
 masqués ≠ fiche sans tag : dans le premier cas la carte ne dit rien, dans le second le repli « Aucun tag »
 demeure. Sans conf, les tags s'affichent tels quels, 3 au plus puis « +N ». La popup de carte
 (`MapPopupDefault`, prop `tagColors` passée par `SearchMap` depuis la conf de carte de l'item) applique la

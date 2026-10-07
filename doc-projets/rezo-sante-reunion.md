@@ -12,7 +12,7 @@
 > [Module Admin](../doc/30-module-admin.md) · [Module formEngine](../doc/28-module-formengine.md).
 > Mémoire : `[[project-rezo-sante-reunion]]`.
 
-Dernière mise à jour : **2026-10-01** (lot 7 §9 — **annuaire des lieux de santé** : page `/lieux-sante`, formulaire `rezo-sante-lieu`, codec générique `fixedTags`, lieux exclus de l'annuaire des acteurs, onglet admin dédié ; cahier des charges PSR reçu, §4.4 ; lot 5 §9 — création de fiches : 3 formulaires costum avec les champs **Thématiques** et **Bénéficiaires**, `typeObj` posé en base §6bis.1 ; lot 6 §9 — **changement de slug du costum en production**, `rezoSanteReunion` → `EcosystemeSanteReunion`).
+Dernière mise à jour : **2026-10-07** (lot 7 §9, revue MR 76 instruite — **annuaire des lieux de santé** : page `/lieux-sante`, formulaire `rezo-sante-lieu`, codec générique `fixedTags`, lieux exclus de l'annuaire des acteurs, onglet admin dédié ; cahier des charges PSR reçu, §4.4 ; lot 5 §9 — création de fiches : 3 formulaires costum avec les champs **Thématiques** et **Bénéficiaires**, `typeObj` posé en base §6bis.1 ; lot 6 §9 — **changement de slug du costum en production**, `rezoSanteReunion` → `EcosystemeSanteReunion`).
 
 ---
 
@@ -933,6 +933,22 @@ fiche créée par le formulaire porte sa `source` grâce au `scope` — rien à 
 affichés, aucun des 24 annuaires du parc ne change), posée à `false` sur `/lieux-sante`. Les cartes de
 `/annuaire` les gardent — le CDC s'interroge sur « Contacter > ça fait quoi ? » : même clé si PSR tranche.
 
+**07/10 — revue de la MR 76 (aboire, relue avec Claude Code) : 3 points bloquants, 6 à discuter,
+4 de nettoyage — tous instruits.**
+
+| Constat | Sort |
+|---|---|
+| **Projets et ressources créés sans organisation parente** : avec un `scope`, la création passe par `me.costum(slug)` et le parent n'est plus auto-injecté depuis `spec.target` | ✅ `inject.parent: true` sur `rezo-sante-projet` et `rezo-sante-ressource` — parent = l'organisation de la fiche d'origine, ou la porteuse (le tableau admin la transmet en `parent`). Garde dans le test config-driven |
+| **`mergeMongoFilters` fusionnait trop large** : le serveur n'applique qu'une famille d'opérateurs par champ ; `{$exists}` + `{$in}` aurait fait ignorer la facette en silence | ✅ composition limitée à la paire `$in`/`$nin` (seule que la branche `$nin` traite ensemble) ; les autres familles gardent le remplacement historique — tests |
+| **`tags` en objet PHP à trous non géré** par `fixedTags`, `editModalMatch` et le `enTableau` de l'acteur (« [object Object] », écrasement des mots-clés au save) | ✅ **helper source unique `helpers/toStringArray`** étendu aux objets (clés toutes entières → valeurs ; sinon clés), `lib/normalizeTags` supprimé ; repris par `useItem`, les cartes, la popup, le codec `fixedTags`, `rezo-sante/fns.ts` et `entityMatchData` (`tags` normalisé comme `source.keys`) |
+| `$in` + `$nin` sur `tags` (pages `/theme/*`, facette de `/annuaire`) : dépend du correctif citizenToolKit `7b19f871` — déployé en prod ? | ✅ **mesuré en production le 07/10** (lecture anonyme, organisations `franceTierslieux`) : `$in [Coworking]` 1 468, `$nin [TiersLieux]` 70, les deux sur la même clé **20** → le correctif est en prod. Un `$and` brut, lui, fait 500 |
+| Marqueur comparé de deux façons (inclusion par regex insensible à la casse, exclusions exactes) | ✅ inclusion passée en `defaultFilters.tags.$in` (branche `$in`, égalité exacte) sur `/lieux-sante` et l'onglet admin, à la place de `defaultTags` : toutes les comparaisons sont strictes, une graphie voisine n'est un lieu nulle part |
+| Marqueur acceptable comme mot-clé libre dans les 3 formulaires acteur/projet/ressource (l'autocomplétion le proposera) | ✅ `rezoSante:tagsAvecThematiques` le retire à l'écriture (`MARQUEUR_LIEU`, test) : un acteur ne devient pas un lieu par un mot-clé |
+| Heuristique clés/valeurs de `normalizeTags` fragile (`{"a": "true"}` → `["true"]`) | ✅ règle « clés toutes entières → valeurs, sinon clés », testée sur les deux formes |
+| doc/28 parlait de `hidePrefixes` | ✅ corrigé (`hideTags`, `$in` exact) |
+| Onglets admin Annuaire / Lieux : le filtre « en attente » (`$or`) écrasait le `$or` du périmètre — bug préexistant que le nouvel onglet reproduisait | ✅ `mergeMongoFilters` à la place d'`Object.assign` dans `AdminResourceTable` (ET des deux `$or`) ; commentaire de `validationFilter.ts` mis à jour, test de composition |
+| Nettoyage : double `resolveAction` dans SearchMap ; pipeline des puces copié dans un 4ᵉ composant et `tagLimit` ignoré par `CardProfile` ; marqueur recopié ~14 fois en config | ✅ `selectedAction` résolu une fois ; `decorateItemTags` (colorBy) partagé par CardDefault, CardEventTimeline, CardProfile et MapPopupDefault, `card.tagLimit` honoré (défaut 3) ; **garde config-driven** : toute liste d'organisations de la config (pages et admin) doit cibler ou exclure le marqueur |
+
 Gates rejoués le 30/09 :
 
 | Gate | Résultat |
@@ -966,7 +982,7 @@ Gates rejoués le 30/09 :
 | 12 | Création de fiches | 🟡 | **3 `costumForms` livrés le 08/09** (`rezo-sante-acteur` / `-projet` / `-ressource`) : les onglets admin Annuaire, Projets et Ressources ouvrent le formulaire costum au lieu de la modale générique (`create: "inherit"` les résout seul). Champs **Thématiques** (6, synchronisées avec `tags`) et **Bénéficiaires** (10, projets). Reste : appliquer le `typeObj` au backend de DÉPLOIEMENT (§6bis.1), et la création publique (`floatingActionButton`), non demandée à ce stade |
 | 13 | Actions d'engagement | ❌ | **hors config** — chiffrage §4.3 |
 | 14 | Partenariat inter-orga | ❌ | **hors config** — chiffrage §4.3 |
-| 15 | Annuaire des lieux de santé `/lieux-sante` | 🟡 | 30/09 — livré (menu, page, formulaire, fiche, carte), gates verts (§9 lot 7) ; **recette navigateur non faite**, création de bout en bout non vérifiée (périmètre vide, backend local sur l'ancien slug) ; `type: LocalBusiness` confirmé ; lieux exclus de `/annuaire` et de l'admin Annuaire, onglet admin « Lieux de santé » ; CDC PSR reçu et rapproché (§4.4 : Antennes et Agenda des lieux hors config) |
+| 15 | Annuaire des lieux de santé `/lieux-sante` | 🟡 | 30/09 — livré (menu, page, formulaire, fiche, carte), gates verts (§9 lot 7) ; création locale d'un lieu vérifiée par Judi le 30/09 ; **MR 76 en revue**, constats du 07/10 instruits (§9) ; `type: LocalBusiness` confirmé ; lieux exclus de `/annuaire` et de l'admin Annuaire, onglet admin « Lieux de santé » ; CDC PSR reçu et rapproché (§4.4 : Antennes et Agenda des lieux hors config) |
 
 ---
 

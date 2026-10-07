@@ -218,9 +218,11 @@ describe("costum EcosystemeSanteReunion — lieu de santé", () => {
     const params = (costumDoc(LIEU).serializeGroups as Record<string, { params?: { fixed?: string[] } }>).tags.params;
     expect(params?.fixed).toEqual([TAG]);
     const liste = lieuxSante?.sections.find((s) => s.type === "searchProStatic")?.props as
-      | { baseParams: { defaultTags?: string[] }; list: { card: { tagColors?: { hideTags?: string[] } } } }
+      | { baseParams: { defaultFilters?: { tags?: { $in?: string[] } } }; list: { card: { tagColors?: { hideTags?: string[] } } } }
       | undefined;
-    expect(liste?.baseParams.defaultTags, "la liste filtre sur le tag").toEqual([TAG]);
+    // `$in` EXACT (branche `$in` de searchFilters), pas `defaultTags` (→ searchTags, regex insensible à la
+    // casse) : toutes les comparaisons du marqueur sont strictes, une graphie voisine n'est un lieu nulle part.
+    expect(liste?.baseParams.defaultFilters?.tags?.$in, "la liste filtre sur le tag").toEqual([TAG]);
     // `hideTags` (égalité stricte), pas `hidePrefixes` : « lieux-sante-mentale » resterait visible.
     expect(liste?.list.card.tagColors?.hideTags, "la carte ne le répète pas").toEqual([TAG]);
   });
@@ -268,13 +270,42 @@ describe("costum EcosystemeSanteReunion — lieu de santé", () => {
       | undefined;
     expect(acteurs?.baseParams.defaultFilters?.tags?.$nin).toEqual(fixe);
 
-    type Onglet = { id: string; sections: Array<{ entityType?: string; source?: { defaultTags?: string[]; defaultFilters?: { tags?: { $nin?: string[] } } }; create?: string }> };
+    type Onglet = { id: string; sections: Array<{ entityType?: string; source?: { defaultFilters?: { tags?: { $nin?: string[]; $in?: string[] } } }; create?: string }> };
     const onglets = cfg.admin.tabs as Onglet[];
     const admAnnuaire = onglets.find((t) => t.id === "annuaire")?.sections[0];
     const admLieux = onglets.find((t) => t.id === "lieux-sante")?.sections[0];
     expect(admAnnuaire?.source?.defaultFilters?.tags?.$nin).toEqual(fixe);
-    expect(admLieux?.source?.defaultTags).toEqual(fixe);
+    expect(admLieux?.source?.defaultFilters?.tags?.$in).toEqual(fixe);
     expect(admLieux?.create).toBe(`add-${LIEU}`);
+  });
+
+  it("garde : TOUTE liste d'organisations de la config cible ou exclut le marqueur — aucune ne mélange lieux et acteurs", () => {
+    // Le marqueur est recopié à la main dans chaque liste (une config ne sait pas référencer une
+    // constante) : cette garde est ce qui empêche une nouvelle liste de l'oublier.
+    const portent = (f: { tags?: { $in?: string[]; $nin?: string[] } } | undefined) =>
+      f?.tags?.$in?.includes(TAG) || f?.tags?.$nin?.includes(TAG);
+    const oubliees: string[] = [];
+    for (const pg of cfg.pages as Array<{ path: string; sections: Array<{ id: string; props?: Record<string, unknown> }> }>) {
+      for (const s of pg.sections) {
+        const bp = s.props?.baseParams as { defaultTypes?: string[]; defaultFilters?: { tags?: { $in?: string[]; $nin?: string[] } } } | undefined;
+        if (bp?.defaultTypes?.includes("organizations") && !portent(bp.defaultFilters)) oubliees.push(`${pg.path} › ${s.id}`);
+      }
+    }
+    for (const t of cfg.admin.tabs as Array<{ id: string; sections: Array<{ type: string; entityType?: string; source?: { defaultFilters?: { tags?: { $in?: string[]; $nin?: string[] } } } }> }>) {
+      for (const s of t.sections) {
+        if (s.type === "resource" && s.entityType === "organizations" && !portent(s.source?.defaultFilters)) oubliees.push(`admin › ${t.id}`);
+      }
+    }
+    expect(oubliees, "listes d'organisations sans $in/$nin du marqueur").toEqual([]);
+  });
+
+  it("MR 76 : projet et ressource sont créés SOUS une organisation (fiche d'origine ou porteuse en admin)", () => {
+    // Avec un `scope`, la création passe par `me.costum(slug)` et le parent n'est plus auto-injecté :
+    // `inject.parent` le recopie depuis le contexte (ctx.parent = organisation de la fiche, ou carrier
+    // transmis par le tableau admin).
+    for (const id of ["rezo-sante-projet", "rezo-sante-ressource"]) {
+      expect(costumDoc(id).mutation.inject?.parent, id).toBe(true);
+    }
   });
 
   it("email et téléphone : l'email vide est omis à la création, le téléphone passe par son groupe", () => {

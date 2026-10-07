@@ -13,8 +13,8 @@ import { toast } from "sonner";
 import { useFollowEntity, useUnfollowEntity } from "@/modules/profil/actions/mutations/relationship";
 import { useT } from "@/hooks/useT";
 import type { SearchCardProps, TagColorsConf } from "../../schema";
-import { collectChipValues, decorateTags } from "../../lib/colorBy";
-import { normalizeTags } from "@/lib/normalizeTags";
+import { decorateItemTags } from "../../lib/colorBy";
+import { toStringArray } from "@/helpers/toStringArray";
 
 export interface CardProfileCardConfig {
   showDescription?: boolean;
@@ -23,6 +23,8 @@ export interface CardProfileCardConfig {
   showStats?: boolean;
   /** Boutons « Contacter » / « Suivre ». Absent = affichés — cf. `CardConfSchema.showActions`. */
   showActions?: boolean;
+  /** Chips affichées avant « +N » — défaut 3 (carte compacte), cf. `CardConfSchema.tagLimit`. */
+  tagLimit?: number;
   detailsMode?: "drawer" | "dialog" | "link";
   /** Chips de tags : masquage des tags techniques, couleurs — cf. `TagColorsConfSchema`. */
   tagColors?: TagColorsConf;
@@ -76,14 +78,15 @@ export default function CardProfile({
   const description = typeof rawDescription === "string" ? rawDescription : null;
   const address = serverData?.address;
   // Chips de tags : `card.tagColors` masque les tags techniques (`hideTags`/`hidePrefixes`) et colore
-  // les tags mappés — la même brique que `CardDefault`. Un annuaire filtré sur un tag n'a pas à le
-  // répéter sur chaque carte. Sans conf, les tags passent tels quels. `normalizeTags` d'abord : le
-  // backend renvoie parfois `tags` en objet, et une chip ne s'itère pas sur un objet.
+  // les tags mappés — le pipeline partagé de toutes les cartes (`decorateItemTags`). Un annuaire filtré
+  // sur un tag n'a pas à le répéter sur chaque carte. Sans conf, les tags passent tels quels.
   const tagColors = card?.tagColors;
-  const { tags, displayTags } = useMemo(() => {
-    const normalized = normalizeTags(serverData?.tags);
-    return { tags: normalized, displayTags: decorateTags(collectChipValues(normalized, serverData, tagColors), tagColors) };
-  }, [serverData, tagColors]);
+  const { tags, displayTags } = useMemo(
+    () => ({ tags: toStringArray(serverData?.tags), displayTags: decorateItemTags(serverData?.tags, serverData, tagColors) }),
+    [serverData, tagColors],
+  );
+  // 3 chips : le défaut historique de cette carte (compacte), `card.tagLimit` pour en montrer plus.
+  const tagLimit = card?.tagLimit ?? 3;
 
   let isAdmin = false;
   let isContributor = false;
@@ -222,7 +225,7 @@ export default function CardProfile({
           <div className="flex flex-wrap gap-1 justify-center">
             {displayTags.length > 0 ? (
               <>
-                {displayTags.slice(0, 3).map(({ tag, label, cssColor }, i) => (
+                {displayTags.slice(0, tagLimit).map(({ tag, label, cssColor }, i) => (
                   <Badge
                     key={i}
                     variant="outline"
@@ -239,9 +242,9 @@ export default function CardProfile({
                     {label}
                   </Badge>
                 ))}
-                {displayTags.length > 3 && (
+                {displayTags.length > tagLimit && (
                   <Badge variant="outline" className="text-[10px] sm:text-xs">
-                    +{displayTags.length - 3}
+                    +{displayTags.length - tagLimit}
                   </Badge>
                 )}
               </>

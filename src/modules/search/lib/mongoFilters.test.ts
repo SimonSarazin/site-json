@@ -83,8 +83,16 @@ describe("mergeMongoFilters", () => {
     expect(mergeMongoFilters({ tags: { $in: ["A"] } }, facette)).toEqual({ tags: { $in: ["Nutrition"] } });
   });
 
-  it("même clé mais l'un des deux n'est pas un objet d'opérateurs : remplacement ordinaire", () => {
+  it("même clé mais l'un des deux n'est pas un objet $in/$nin : remplacement ordinaire", () => {
     expect(mergeMongoFilters({ type: { $in: ["NGO"] } }, { type: "Group" })).toEqual({ type: "Group" });
     expect(mergeMongoFilters({ address: { postalCode: "97400" } }, { address: { $exists: true } })).toEqual({ address: { $exists: true } });
+  });
+
+  it("autre famille d'opérateurs ($exists, $ne, $not…) : PAS de composition — le serveur n'en applique qu'une par champ", () => {
+    // Composer `{ $exists }` + `{ $in }` enverrait un objet dont seul `$exists` serait lu : la facette
+    // disparaîtrait en silence. On garde le comportement historique : la facette remplace le défaut.
+    expect(mergeMongoFilters({ "preferences.x": { $exists: true } }, { "preferences.x": { $in: ["a"] } })).toEqual({ "preferences.x": { $in: ["a"] } });
+    expect(mergeMongoFilters({ tags: { $ne: "x" } }, { tags: { $in: ["a"] } })).toEqual({ tags: { $in: ["a"] } });
+    expect(mergeMongoFilters({ tags: { $nin: ["x"] } }, { tags: { $in: ["a"], $exists: true } })).toEqual({ tags: { $in: ["a"], $exists: true } });
   });
 });

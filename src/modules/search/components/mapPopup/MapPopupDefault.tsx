@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import useItem from "../../hooks/useItem";
 import { MapPopupProps } from "../../schema";
-import { collectChipValues, decorateTags } from "../../lib/colorBy";
+import { decorateItemTags } from "../../lib/colorBy";
 import { getBaseUrl } from "@/lib/constant/common";
 
 /**
@@ -21,7 +21,7 @@ export function MapPopupDefault({ item, t, actionKind, onAction, tagColors }: Ma
 
   // Même décoration que les cartes de liste (masquage des tags techniques, couleur) : la popup ne
   // doit pas révéler un marqueur que la liste cache. Sans conf, identité.
-  const chips = decorateTags(collectChipValues(tags, item?.serverData as Record<string, unknown> | undefined, tagColors), tagColors);
+  const chips = decorateItemTags(tags, item?.serverData as Record<string, unknown> | undefined, tagColors);
   const visibleTags = chips.slice(0, 4);
   const remaining = chips.length - visibleTags.length;
   const imgSrc = image ? (image.startsWith("http") ? image : `${getBaseUrl()}${image}`) : "";

@@ -9,8 +9,8 @@ const tagsOf = (tags: unknown) =>
 
 /** `tags` arrive du backend sous trois formes ; toutes les cartes lisent un tableau de chaînes. */
 describe("useItem — normalisation des tags", () => {
-  it("tableau : chaînes seules, dédoublonnées", () => {
-    expect(tagsOf(["a", 1, "a", ""])).toEqual(["a"]);
+  it("tableau : chaînes non vides seules, ordre préservé (le dédoublonnage appartient au lecteur)", () => {
+    expect(tagsOf(["a", 1, "b", ""])).toEqual(["a", "b"]);
   });
 
   it("tableau PHP à trous ({\"1\": …}) : les valeurs — et non les index — sont les tags", () => {

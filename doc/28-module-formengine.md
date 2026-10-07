@@ -406,7 +406,8 @@ dédupliqués, l'ordre des libres préservé — la fiche ne sort donc jamais de
 GROUPE pour que la liste des tags vive en config (un codec de champ ne reçoit pas de `params`) ; pas une estampille
 `append`, qui en édition refusionne les tags serveur et rend tout mot-clé libre indélébile. Premier usage :
 `rezo-sante-lieu` (`config.prod.rezo-sante-reunion.json`), dont le tag `lieux-sante` est aussi le `defaultTags` de
-la page `/lieux-sante` et le `hidePrefixes` de sa carte — un seul contrat, gardé par `rezo-sante.configDriven.test.ts`.
+la page `/lieux-sante` (`defaultFilters.tags.$in`, égalité exacte comme le codec) et le `hideTags` de sa carte —
+un seul contrat, gardé par `rezo-sante.configDriven.test.ts`.
 
 ### `enumFrom` — options dynamiques par clé
 

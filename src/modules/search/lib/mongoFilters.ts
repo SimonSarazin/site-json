@@ -71,11 +71,14 @@ export function mergeMongoFilters(
       out.$or = { $and: [...baseClauses, ...extraClauses] };
       continue;
     }
-    // Même clé, deux objets d'OPÉRATEURS (`{ $nin }` en config, `{ $in }` d'une facette) : on les
-    // compose au lieu que la facette écrase l'exclusion — le serveur applique bien `$in` ET `$nin`
-    // sur une même clé (SearchNew::searchFilters, branche `$nin`). Un opérateur présent des deux
-    // côtés est celui de la facette (le plus spécifique).
-    if (isOperatorObject(value) && isOperatorObject(base[key])) {
+    // Même clé, `{ $nin }` en config et `{ $in }` d'une facette (ou l'inverse) : on les compose au
+    // lieu que la facette écrase l'exclusion. SEULE paire composable : le serveur n'applique qu'une
+    // famille d'opérateurs par champ (`SearchNew::searchFilters`, chaîne de `else if` : `$exists` >
+    // `$not` > `$ne` > `$nin`(+`$in`) > `$in` > `$gt`…) — composer `{ $exists }` avec `{ $in }` ferait
+    // ignorer la facette en silence. `$in` + `$nin` est le seul couple que la branche `$nin` traite
+    // ensemble ; mesuré en production le 07/10 (1 468 ∩ 70 → 20). Un opérateur présent des deux côtés
+    // est celui de la facette (le plus spécifique).
+    if (isInNinObject(value) && isInNinObject(base[key])) {
       out[key] = { ...base[key], ...value };
       continue;
     }
@@ -84,9 +87,9 @@ export function mergeMongoFilters(
   return out;
 }
 
-/** `{ $in: […] }`, `{ $nin: […], $in: […] }`… — un objet dont TOUTES les clés sont des opérateurs Mongo. */
-function isOperatorObject(v: unknown): v is Record<string, unknown> {
+/** `{ $in: […] }`, `{ $nin: […] }` ou les deux — rien d'autre. */
+function isInNinObject(v: unknown): v is Record<string, unknown> {
   if (!isPlainObject(v)) return false;
   const keys = Object.keys(v);
-  return keys.length > 0 && keys.every((k) => k.startsWith("$"));
+  return keys.length > 0 && keys.every((k) => k === "$in" || k === "$nin");
 }

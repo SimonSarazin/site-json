@@ -3159,9 +3159,13 @@
               "defaultTypes": [
                 "organizations"
               ],
-              "defaultTags": [
-                "lieux-sante"
-              ],
+              "defaultFilters": {
+                "tags": {
+                  "$in": [
+                    "lieux-sante"
+                  ]
+                }
+              },
               "defaultFields": [
                 "name",
                 "slug",
@@ -5759,6 +5763,9 @@
       "mutation": {
         "entityType": "projects",
         "navigateOnSuccess": false,
+        "inject": {
+          "parent": true
+        },
         "successKey": {
           "add": "toast.add.projectSuccess",
           "edit": "toast.profile.updateSuccess"
@@ -6111,6 +6118,9 @@
       "mutation": {
         "entityType": "poi",
         "navigateOnSuccess": false,
+        "inject": {
+          "parent": true
+        },
         "successKey": {
           "add": "toast.add.poiSuccess",
           "edit": "toast.profile.updateSuccess"
@@ -7819,14 +7829,16 @@
             },
             "source": {
               "notSourceKey": true,
-              "defaultTags": [
-                "lieux-sante"
-              ],
               "defaultFilters": {
                 "$or": {
                   "source.key": "EcosystemeSanteReunion",
                   "source.keys": "EcosystemeSanteReunion",
                   "reference.costum": "EcosystemeSanteReunion"
+                },
+                "tags": {
+                  "$in": [
+                    "lieux-sante"
+                  ]
                 }
               },
               "defaultSortBy": {

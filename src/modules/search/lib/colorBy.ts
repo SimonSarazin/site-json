@@ -9,6 +9,7 @@
 // Fonctions PURES (testées sans rendu).
 
 import getValueByPath from "@/helpers/getValueByPath";
+import { toStringArray } from "@/helpers/toStringArray";
 
 import type { ColorByConf, TagColorsConf } from "../schema";
 
@@ -35,6 +36,20 @@ export function resolveColorBy(
 }
 
 export type DecoratedTag = { tag: string; label: string; cssColor?: string };
+
+/**
+ * Le pipeline COMPLET des chips d'un item, partagé par toutes les cartes et la popup de carte :
+ * `tags` bruts (tableau, objet PHP à trous, dictionnaire — cf. `toStringArray`) → valeurs des
+ * `tagColors.paths` ajoutées → décoration (couleur, libellé, masquage). Une seule définition : un
+ * presenter qui réimplémentait la chaîne oubliait tantôt la normalisation, tantôt le masquage.
+ */
+export function decorateItemTags(
+  rawTags: unknown,
+  serverData: Record<string, unknown> | undefined,
+  conf: TagColorsConf | undefined,
+): DecoratedTag[] {
+  return decorateTags(collectChipValues(toStringArray(rawTags), serverData, conf), conf);
+}
 
 /**
  * Valeurs à afficher en chips : les `tags` de l'item PUIS les valeurs lues aux

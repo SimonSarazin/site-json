@@ -93,14 +93,16 @@
     "lieux-sante/organizations": {
       "source": {
         "notSourceKey": true,
-        "defaultTags": [
-          "lieux-sante"
-        ],
         "defaultFilters": {
           "$or": {
             "source.key": "EcosystemeSanteReunion",
             "source.keys": "EcosystemeSanteReunion",
             "reference.costum": "EcosystemeSanteReunion"
+          },
+          "tags": {
+            "$in": [
+              "lieux-sante"
+            ]
           }
         },
         "defaultSortBy": {
@@ -544,9 +546,13 @@
         "defaultTypes": [
           "organizations"
         ],
-        "defaultTags": [
-          "lieux-sante"
-        ],
+        "defaultFilters": {
+          "tags": {
+            "$in": [
+              "lieux-sante"
+            ]
+          }
+        },
         "defaultFields": [
           "name",
           "slug",

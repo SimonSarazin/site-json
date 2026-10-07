@@ -22,6 +22,11 @@ describe("fixedTags — lecture (ce que le widget affiche)", () => {
     expect(lit(["pharmacie", 3, null, ""])).toEqual({ tags: ["pharmacie"] });
   });
 
+  it("tags en objet PHP à trous (forme réelle en base) : lus comme un tableau — pas d'écrasement au save", () => {
+    expect(lit({ "0": "lieux-sante", "2": "pharmacie" })).toEqual({ tags: ["pharmacie"] });
+    expect(ecrit({ "0": "garde" })).toEqual(["lieux-sante", "garde"]);
+  });
+
   it("le nom du champ suit params.field", () => {
     expect(lit(["a"], { field: "motsCles", fixed: [] })).toEqual({ motsCles: ["a"] });
   });
