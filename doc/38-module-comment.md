@@ -42,8 +42,8 @@ réponses arrivent imbriquées).
 
 > **Le SDK n'est jamais commité.** Cette section est le livrable : elle décrit les modifications à
 > reproduire dans `@communecter/cocolight-api-client`, telles qu'elles ont été implémentées et
-> vérifiées en local (version de base **1.0.194** ; l'arbre de travail local repose depuis sur
-> **1.0.195**). Les modifications venues ensuite sont spécifiées plus loin : l'endpoint
+> vérifiées en local (version de base **1.0.194** ; l'arbre de travail local repose depuis le 07/10
+> sur la **1.0.196**). Les modifications venues ensuite sont spécifiées plus loin : l'endpoint
 > `discussions` au §9, le marquage en lecture (`MARK_COMMENTS_SEEN`) au §11.6, les images
 > (`mediaImg`, `uploadDocument`) au §13. La compatibilité avec `main` est établie au §2.5.
 > **La liste complète des demandes à l'équipe SDK, à transmettre telle quelle, est au §14.**
@@ -97,7 +97,7 @@ api.poi({ id }).comment({ … })   → ne lève plus de TypeError
 
 | # | Limite | Preuve | Conséquence |
 |---|---|---|---|
-| ~~Images~~ | ~~`uploadDocument` interdit explicitement `comments`~~ — **levé le 24/09** : le verrou était entièrement côté client | §13.2 à §13.4 | les images sont livrées (bouton, collage, glisser-déposer) |
+| ~~Images~~ | ~~`uploadDocument` interdit explicitement `comments`~~ — **levé le 24/09** : le verrou était entièrement côté client | §13.2 à §13.5 | les images sont livrées (bouton, collage, glisser-déposer), vérifiées au navigateur le 07/10 |
 | `markdownActive` | `ADD_COMMENTS` est `additionalProperties: false` et ne l'expose pas | schéma de l'endpoint | le champ existe en base mais n'est pas postable → rendu markdown restreint, inconditionnel |
 | ~~`path` en lecture~~ | ~~`GET_COMMENTS` ne filtre pas sur le `path`~~ — **levé le 02/10** : nouvel endpoint `GET_COMMENTS_BY_PATH` et `getComments({path})` | §14.2 | le fil d'une question ne montre plus les messages de toutes les questions du formulaire |
 | `mentions` | six champs **tous requis** : `id, name, slug, type, value, count` | schéma de l'endpoint | un `{ id, name }` est refusé ; le legacy stocke `count` en **chaîne** et ajoute `avatar` — à l'ÉDITION, le SDK ramène désormais chaque mention aux six champs (§14.4) |
@@ -123,13 +123,14 @@ chantier ne modifie pas.
 avec la commande du dépôt (`tsc -b --noEmit`) → **0 erreur**. Contre-épreuve : un appel à une
 méthode inexistante sur `News` y est bien refusé (`TS2551`). Le backend du chantier est additif
 lui aussi : deux routes (`discussions`, `seen`) et des entrées de notification pour les types qui
-en manquaient (§3) — `news` n'en faisait pas partie. Enfin, `main` reste sur la **1.0.195**, figée par
-`package-lock.json`, tant que personne ne relève la version.
+en manquaient (§3) — `news` n'en faisait pas partie. `main` est passé depuis à la **1.0.196**
+(`029def5b`) : ses trois apports — `LINK_SET_ROLES`, `AGENDA_GET_PDF`, `CONNECT` — ne touchent aucun
+endpoint du commentaire, et les modifications de ce chantier s'y reposent sans conflit (07/10).
 
 **C'est l'ordre inverse qui casse** : ce module a besoin de ces modifications (endpoints
 `discussions` et `seen`, `createFromCollection`, `getComments()` sur les autres types,
 `mediaImg`). Le SDK doit donc être publié **avant** la fusion, et la MR doit relever la dépendance
-à la version publiée. `comment-dev`, recalée sur `main` le 02/10, épingle `^1.0.195` comme lui.
+à la version publiée. `comment-dev`, à jour de `main` depuis le 07/10, épingle `^1.0.196` comme lui.
 
 ## 3. Dépendance backend — notifications
 
@@ -345,7 +346,7 @@ l'édition, et son compteur suit **l'affichage** plutôt que le nombre de docume
 
 | # | Limite | Origine | Ce qu'on fait |
 |---|---|---|---|
-| B1 | ~~Pas d'image dans un message~~ | **Levé — livré le 24/09** (§13.2 à §13.4) : bouton, collage, glisser-déposer, rendu et visionneuse | — |
+| B1 | ~~Pas d'image dans un message~~ | **Levé — livré le 24/09** (§13.2 à §13.4), vérifié au navigateur le 07/10 (§13.5) : bouton, collage, glisser-déposer, rendu et visionneuse | — |
 | B2 | `markdownActive` non postable | `ADD_COMMENTS` en `additionalProperties: false` | Rendu markdown restreint, inconditionnel |
 | B3 | Mentions limitées aux citoyens | `searchMembers` en `personOnly` | Citoyens seuls |
 | B6 | Pas de filtre `path` **en lecture** | `GET_COMMENTS` n'a pas de bloc `request` | Filtrage côté client ; l'endpoint générique portera le filtre serveur |
@@ -890,6 +891,13 @@ imbriquées.
 La croix par défaut est en `absolute top-4 right-4`, pile sur l'en-tête de la colonne du fil :
 elle est désactivée, et la nôtre passe par une nouvelle prop `headerEnd`, qui la pose **dans**
 la barre de titre, comme chez Discord.
+
+**Sa largeur maximale vit en `md:`, pas sans variante** (corrigé le 07/10). Il faut un
+`sm:max-w-none` pour retirer le `sm:max-w-lg` du dialogue de base ; or il l'emportait aussi sur
+le plafond `max-w-[min(84rem,calc(100vw-4rem))]`, posé sans variante — une règle `sm:` passe
+après. La modale occupait donc toute la largeur de l'écran dès 640 px. Mesuré sur le CSS de
+l'application, la modale n'ayant pas de point d'entrée : 1 440 px sur 1 440 avant, 1 344 après ;
+704 px à 768 ; plein écran sous 768, comme voulu.
 
 ⚠️ **Le panneau n'appelle plus jamais `close()`.** Il était câblé aux boutons « retour » ; si la
 visibilité de la modale en dérivait, « retour aux espaces » la fermerait. Les retours passent
@@ -1711,21 +1719,116 @@ La contre-épreuve est écrite : le test d'anti-régression rougit quand on reti
 sur ses quatre formes d'entrée réelles (documents hydratés, identifiants bruts, entrée
 inexploitable, champ absent).
 
-⚠️ **Reste à vérifier au navigateur** — l'upload ne s'exerce pas en Node (voir §13.2) : coller
-une capture, l'envoyer, rouvrir le fil, puis **modifier le texte du message et vérifier que les
-images sont toujours là**. C'est le chemin que le point 3 protège.
-
 **Hors lot, assumé** : retirer une image d'un message DÉJÀ publié. Le geste n'existe pas dans
 l'interface ; le contrat, lui, le permettrait (envoyer un `mediaImg` amputé).
+
+### 13.5 Vérification au navigateur (07/10)
+
+L'upload ne s'exerce pas en Node (§13.2) : le chemin des images n'avait jamais tourné ailleurs
+que dans les tests. Il a été rejoué dans Chrome, sur un fil d'organisation, avec un compte sans
+privilège.
+
+**Prérequis d'installation, et le seul défaut du chemin nominal.** Le premier essai a rendu une
+erreur : `upload-save` répondait **500**, une page HTML titrée `League\Flysystem\Exception`. Le
+journal du backend donne la cause — `Impossible to create the root directory
+"upload/communecter/comments/<idUtilisateur>/album". mkdir(): Permission denied`. Le dossier
+`upload/communecter/comments` doit être **inscriptible par l'utilisateur du serveur web**, comme
+ses voisins (`news`, `organizations`…) : c'est lui qui y crée un sous-dossier par auteur, puis
+par message. Sur le poste de test il ne l'était pas ; rien à corriger dans le code.
+
+**Chemin nominal, vérifié de bout en bout** :
+
+| Geste | Constat |
+|---|---|
+| Joindre par le bouton (PNG, JPEG) | `upload-save` en 200, aperçu sans erreur |
+| Coller une image dans le champ | même téléversement — collage SIMULÉ : un événement `paste` portant un vrai fichier, sans passer par le presse-papiers du système |
+| Envoyer | `comment/save` reçoit `mediaImg[countImages]` et `mediaImg[images][]` ; le backend range les fichiers sous `comments/<idMessage>/album` |
+| Rouvrir le fil | les images viennent du backend (plus aucune URL `blob:`) et se chargent |
+| Modifier le TEXTE | `comment/update` reçoit `params[mediaImg]` : **les images survivent** — le piège du §13.4 est tenu |
+| Agrandir, parcourir, fermer | visionneuse, flèches à l'écran et au clavier, Échap, croix |
+| Supprimer le message | il disparaît du fil |
+
+**Trois défauts autour d'une image qui ne part pas, corrigés.** Quand le téléversement
+échouait, l'aperçu passait au rouge sans un mot ; et qu'il ait échoué ou qu'il soit encore en
+route, rien ne retenait vraiment l'envoi :
+
+1. **le message partait quand même, sans son image** — l'aperçu en échec était effacé par
+   l'envoi, rien ne disait que l'image n'avait jamais été jointe ;
+2. **Entrée envoyait pendant le téléversement** : seul le bouton était retenu par `imagesBusy`,
+   pas `submit()`, que la touche appelle aussi — le message partait avant son image ;
+3. une image en échec étant comptée comme un contenu, elle autorisait l'envoi d'un **message vide**.
+
+L'envoi est désormais **retenu dans `submit()`** tant qu'une image jointe ne partirait pas — en
+route ou en échec —, au bouton comme à Entrée, et le texte reste dans le champ. La retenue se
+lit dans le **statut des images**, pas dans le seul `imagesBusy` : elle ne dépend pas de la
+cohérence de l'hôte. Deux phrases l'accompagnent, pour que le bouton grisé et la touche muette
+aient une raison :
+
+| Situation | Ce que le composer dit |
+|---|---|
+| Image en échec | `role="alert"`, aussitôt : « *photo.jpg n'a pas pu être jointe. Retirez-la pour envoyer le message.* » — le nombre d'images au pluriel |
+| Tentative d'envoi pendant un téléversement | `role="status"`, après la tentative seulement : « *L'image est encore en cours d'envoi. Le message pourra partir dès qu'elle sera jointe.* » — elle tombe d'elle-même quand l'image arrive |
+
+Retirer l'image en échec suffit à rendre l'envoi. L'échec est annoncé **une fois** : l'aperçu
+en échec portait son propre `role="status"`, retiré. Et la retenue sur un échec ne joue que si
+l'hôte offre le retrait (`onRemoveImage`) — sans lui les aperçus ne sont pas montrés, et la
+phrase demanderait un geste impossible. Le chemin se rejoue au navigateur **sans rien écrire** :
+la requête de téléversement est interceptée et refusée par la sonde.
+
+**Vignettes : l'image d'origine, pas la miniature du backend.** À plusieurs images, le fil
+servait `imageThumbPath`. Or cette miniature est un carré de 200 px où une image en paysage
+arrive **déformée et flanquée d'une bande noire**. Le fil sert désormais `imagePath` dans tous
+les cas — l'ordre que suit déjà `NewsImageGrid`. Le poids n'en souffre pas : `OptimizedImage`
+demande l'image à la largeur utile (192 px en vignette, 480 px seule), et c'est le serveur du
+site qui la réduit.
+
+La miniature reste le **repli**, image par image, dans deux cas : l'original manque, ou il ne se
+charge pas (`onError` — l'optimiseur répond 502 quand l'amont échoue ou met plus de dix
+secondes). Rejoué au navigateur en coupant les originaux : les vignettes et la visionneuse
+passent à la miniature. Limite connue : l'optimiseur réduit en LARGEUR, sans recadrer ; un
+panoramique plus large que 2:1 arrive donc avec moins de 96 px de haut, et sa vignette est
+agrandie.
+
+**Visionneuse : deux plafonds hérités du dialogue de base**, mesurés sur une image de 1 200 px
+dans une fenêtre de 1 440 px :
+
+| Cause | Largeur rendue |
+|---|---|
+| `sm:max-w-lg` du `DialogContent` de base — une largeur maximale SANS variante `sm:` ne l'écrase pas, tailwind-merge ne fusionnant que des classes de même variante | 512 px |
+| `left-[50%]` : une boîte `w-fit` posée à mi-écran ne dispose que de la moitié de la fenêtre, et la flèche « suivante » était poussée hors du cadre | 720 px |
+| centrage par les marges (`left-0 right-0 mx-auto`), largeur maximale répétée en `sm:`, image rétrécissable (`min-w-0`) | **1 064 px**, flèches dans le cadre |
+
+La croix du dialogue de base, sombre sur le voile sombre et nommée « Close », est remplacée par
+celle de la visionneuse, sur le même fond que les flèches (`images.close`). Elle tient le coin
+du cadre, les flèches son milieu : une **hauteur minimale** (`min-h-36`) les sépare quand la
+rangée est basse — panoramique sur téléphone, image pas encore arrivée —, sans quoi toucher
+« suivante » fermait la visionneuse. Vérifié en ne servant plus aucune image : cadre de 144 px
+de haut, et c'est bien la flèche qu'on touche en son centre.
+
+jsdom ne mesure rien de tout cela. Les tests tiennent donc les **classes**, dans les deux sens :
+celles du dialogue de base ne figurent plus dans la fusion, et chacune de celles qui les
+remplacent y figure — une relecture a montré qu'en retirer une seule (`mx-auto`, `right-0`,
+`min-w-0`) défaisait la mise en page sans qu'aucun test ne tombe.
+
+**Ce qui reste hors de cette vérification** : le glisser-déposer (même rappel que le collage,
+tenu par les tests) ; un collage depuis le presse-papiers réel ; les deux phrases du composer,
+jamais écoutées avec un lecteur d'écran ; un appareil tactile réel ; un vrai panoramique dans la
+visionneuse.
+
+Et une mesure sans cause établie : sur le poste de test, `comment/save` a répondu en moins de
+4 s avec une image et en **12 s environ avec deux** — le message reste « en cours d'envoi »
+pendant ce temps. L'insertion et le rangement des fichiers ont lieu dans la première seconde ;
+ce qui suit côté backend reste à mesurer.
 
 ## 14. Demande à l'équipe SDK — la liste complète (02/10)
 
 > **Le SDK n'est jamais commité** : cette section est la demande à transmettre à l'équipe SDK. Elle
 > réunit **tout** ce que le module attend de `@communecter/cocolight-api-client`, implémenté et
-> vérifié en local sur la base **1.0.195**. Le détail de chaque point vit dans la section citée ;
-> les trois points ajoutés le 02/10 sont spécifiés ici (§14.2 à §14.4). Tant que le SDK n'est pas
-> publié, `site-json` ne compile que par le lien local : un `npm install` propre casse le
-> `typecheck` du module. Ordre de livraison : le SDK d'abord, la MR du module ensuite (§2.5).
+> vérifié en local — sur la base **1.0.195**, puis reposé le 07/10 sur la **1.0.196**. Le détail de
+> chaque point vit dans la section citée ; les trois points ajoutés le 02/10 sont spécifiés ici
+> (§14.2 à §14.4). Tant que le SDK n'est pas publié, `site-json` ne compile que par le lien
+> local : un `npm install` propre casse le `typecheck` du module. Ordre de livraison : le SDK
+> d'abord, la MR du module ensuite (§2.5).
 
 ### 14.1 Récapitulatif
 

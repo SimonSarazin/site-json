@@ -63,7 +63,9 @@ export function ComposerImages({ items, onRemove, disabled = false, className }:
           ) : null}
 
           {item.status === "error" ? (
-            <span className="absolute inset-0 flex items-center justify-center" role="status">
+            // Pas de `role="status"` ici : l'échec est annoncé une fois, par la phrase d'alerte du
+            // composer. Ce texte-ci reste pour qui parcourt les aperçus.
+            <span className="absolute inset-0 flex items-center justify-center">
               <AlertCircle className="size-5 text-destructive" aria-hidden />
               <span className="sr-only">{t("images.uploadFailed", undefined, { name: item.name })}</span>
             </span>

@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { lazy } from "vite-preload";
 import { Bold, Code, ImagePlus, Italic, Link2, List, Quote, Send, SmilePlus, X } from "lucide-react";
 import type { EntityTypes, User } from "@communecter/cocolight-api-client";
@@ -57,13 +57,20 @@ export interface CommentComposerProps {
    *
    * Le composer ne téléverse rien : il reçoit des aperçus et deux rappels. C'est ce qui permet
    * de remplacer cette zone de saisie par un vrai éditeur (B11) sans toucher au téléversement.
+   *
+   * C'est leur STATUT qui retient l'envoi : tant qu'une image est en route (`uploading`) ou en
+   * échec (`error`), le message ne part pas — il partirait sans elle. `images` et
+   * `onRemoveImage` vont ensemble : sans le second, les aperçus ne sont pas montrés.
    */
   readonly images?: readonly PendingImage[];
   readonly onAddImages?: (files: readonly File[]) => void;
   readonly onRemoveImage?: (localId: string) => void;
   /** Le plafond de cinq images est atteint. */
   readonly imagesFull?: boolean;
-  /** Un téléversement est en cours : l'envoi attend, sinon l'image serait perdue. */
+  /**
+   * Un téléversement est en cours : l'envoi attend, sinon l'image serait perdue. Le composer le
+   * lit aussi dans le statut des `images` — la retenue ne dépend pas de la cohérence de l'hôte.
+   */
   readonly imagesBusy?: boolean;
   /** Motifs du dernier refus, à annoncer sous le champ. */
   readonly imageRejections?: readonly ImageRejection[];
@@ -198,19 +205,41 @@ export function CommentComposer({
   }, [applyState, fieldState, mentionQuery]);
 
   const joint = (images?.length ?? 0) > 0;
+  const idsEnRoute = useMemo(
+    () => (images ?? []).filter(image => image.status === "uploading").map(image => image.localId),
+    [images],
+  );
+  // Sans rappel de retrait, les aperçus ne sont pas montrés : retenir l'envoi sur un échec
+  // enfermerait l'auteur, la phrase lui demandant un geste qu'il ne peut pas faire.
+  const enEchec = onRemoveImage ? images?.filter(image => image.status === "error") ?? [] : [];
+  // L'envoi attend tant qu'une image jointe ne partirait pas — en route, ou en échec. La garde
+  // vit dans `submit`, pas seulement sur le bouton : Entrée y mène aussi, et le message partait
+  // sans son image (voire vide, quand l'image en échec était son seul contenu).
+  const retenu = imagesBusy || idsEnRoute.length > 0 || enEchec.length > 0;
+
+  // Une tentative d'envoi retenue par un téléversement : sans un mot, Entrée paraîtrait morte.
+  // On retient QUELLES images étaient en route, pas un drapeau : la phrase tombe d'elle-même
+  // quand elles ont fini, et ne revient pas au téléversement suivant sans nouvelle tentative.
+  const [tentative, setTentative] = useState<readonly string[]>([]);
+  const attendues = idsEnRoute.filter(id => tentative.includes(id)).length;
 
   const submit = useCallback(() => {
     const trimmed = text.trim();
     // Un message peut n'être QUE des images : `Comment::insert` l'accepte explicitement
     // (la garde backend porte sur « ni texte ni média », pas sur le texte seul).
     if ((!trimmed && !joint) || disabled || submitting) return;
+    if (retenu) {
+      // Un échec a déjà sa phrase, affichée sans attendre la tentative.
+      if (idsEnRoute.length > 0) setTentative(idsEnRoute);
+      return;
+    }
     // Seules les mentions encore présentes dans le texte partent au serveur : en retirer une
     // en éditant la phrase ne doit pas notifier quelqu'un qui n'est plus cité.
     onSubmit(trimmed, mentions.filter(m => trimmed.includes(`@${m.slug}`)));
     setText("");
     setMentions([]);
     setMentionQuery(null);
-  }, [text, joint, disabled, submitting, onSubmit, mentions]);
+  }, [text, joint, disabled, submitting, retenu, idsEnRoute, onSubmit, mentions]);
 
   const onKeyDown = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // La liste de mentions capte les flèches et Entrée tant qu'elle est ouverte.
@@ -345,6 +374,20 @@ export function CommentComposer({
 
       {images && onRemoveImage ? (
         <ComposerImages items={images} onRemove={onRemoveImage} disabled={disabled} />
+      ) : null}
+
+      {/* L'aperçu cerclé de rouge ne dit ni quoi ni que faire, et l'envoi est retenu : sans
+          cette phrase, le bouton resterait grisé sans raison apparente. */}
+      {enEchec.length > 0 ? (
+        // `break-words` : le composer est un conteneur `inline-size`, un nom de fichier long et
+        // sans point de coupure ne l'élargit pas, il en sortait.
+        <p role="alert" className="px-3 pb-1 text-xs break-words text-destructive">
+          {t("images.failedHint", undefined, { count: enEchec.length, name: enEchec[0].name })}
+        </p>
+      ) : attendues > 0 ? (
+        <p role="status" className="px-3 pb-1 text-xs text-muted-foreground">
+          {t("images.waitingHint", undefined, { count: attendues })}
+        </p>
       ) : null}
 
       {imageRejections && imageRejections.length > 0 ? (
@@ -493,7 +536,7 @@ export function CommentComposer({
           <Button
             type="button"
             size="sm"
-            disabled={disabled || submitting || imagesBusy || (text.trim().length === 0 && !joint)}
+            disabled={disabled || submitting || retenu || (text.trim().length === 0 && !joint)}
             onClick={submit}
           >
             <Send className="size-3.5" />

@@ -49,6 +49,20 @@ describe("DiscussionModal", () => {
       .toBe("Vos espaces, leurs fils de discussion et les messages du fil choisi.");
   });
 
+  // Le plafond de largeur doit vivre dans une variante qui passe APRÈS `sm:` : posé sans
+  // variante, il était écrasé par le `sm:max-w-none` qui retire le `sm:max-w-lg` de la base, et
+  // la modale occupait toute la largeur dès 640 px (relevé par une relecture le 07/10, mesuré
+  // ensuite sur le CSS de l'application : 1 440 px sur 1 440 au lieu de 1 344).
+  it("borne sa largeur à partir de `md`, pas sans variante", () => {
+    monter();
+    const classes = screen.getByRole("dialog").className.split(/\s+/);
+    expect(classes).toContain("md:max-w-[min(84rem,calc(100vw-4rem))]");
+    expect(classes).toContain("sm:max-w-none");
+    expect(classes).not.toContain("sm:max-w-lg");
+    // Aucun plafond sans variante ne doit revenir : il serait mort dès 640 px.
+    expect(classes.filter(c => c.startsWith("max-w-[min("))).toEqual([]);
+  });
+
   it("pose sa croix DANS la barre de titre, pas par-dessus l'en-tête du fil", () => {
     monter();
     // Le dialogue est PORTALISÉ : il vit dans `document.body`, jamais dans le conteneur rendu.

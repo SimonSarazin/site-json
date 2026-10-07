@@ -60,7 +60,10 @@ export function DiscussionModal({ open, onOpenChange, param, className }: Discus
           // `DialogContent` est un `grid gap-4 p-6 sm:max-w-lg` : tout est à écraser, le
           // panneau gère lui-même sa mise en page et ses bordures.
           "flex max-h-none w-full gap-0 overflow-hidden p-0 sm:max-w-none",
-          "h-[min(46rem,calc(100dvh-3rem))] max-w-[min(84rem,calc(100vw-4rem))]",
+          // La largeur maximale est posée en `md:`, pas sans variante : `sm:max-w-none` — qu'il
+          // faut pour retirer le `sm:max-w-lg` de la base — l'emportait sur elle dès 640 px, et
+          // la modale prenait toute la largeur de l'écran, sans marge.
+          "h-[min(46rem,calc(100dvh-3rem))] md:max-w-[min(84rem,calc(100vw-4rem))]",
           // Sous 48 rem, la modale prend l'écran : une marge de 16 px autour d'un panneau qui
           // n'affiche qu'une colonne ne sert à rien, et coûte la largeur du fil.
           "max-md:h-dvh max-md:max-w-none max-md:rounded-none max-md:border-0",

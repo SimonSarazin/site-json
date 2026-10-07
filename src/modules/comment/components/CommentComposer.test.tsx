@@ -33,12 +33,15 @@ function mount(props: Partial<Parameters<typeof CommentComposer>[0]> = {}) {
     );
 
   const onSubmit = vi.fn();
-  render(createElement(CommentComposer, { onSubmit, ...props }), { wrapper });
+  const view = render(createElement(CommentComposer, { onSubmit, ...props }), { wrapper });
   // `textbox`, le rôle IMPLICITE du textarea : « ARIA in HTML » n'autorise aucun rôle de
   // remplacement sur `<textarea>`, un `role="combobox"` y serait hors spécification et le champ
   // cesserait d'être annoncé comme zone multiligne.
   const field = screen.getByRole("textbox") as HTMLTextAreaElement;
-  return { onSubmit, field };
+  /** Nouvelles props sur le MÊME composer : ce que fait l'hôte quand la liste d'images change. */
+  const update = (next: Partial<Parameters<typeof CommentComposer>[0]>) =>
+    view.rerender(createElement(CommentComposer, { onSubmit, ...next }));
+  return { onSubmit, field, update };
 }
 
 function type(field: HTMLTextAreaElement, value: string) {
@@ -249,5 +252,159 @@ describe("CommentComposer — images (B1 levé)", () => {
   it("explique un refus plutôt que d'ignorer le fichier", () => {
     mount({ onAddImages: vi.fn(), imageRejections: ["type"] });
     expect(screen.getByText(/JPEG et PNG/i)).toBeTruthy();
+  });
+});
+
+/**
+ * Ce que le composer fait d'une image qui ne partira pas.
+ *
+ * Vu au navigateur le 07/10 : le backend refusait le téléversement (500), l'aperçu passait au
+ * rouge sans un mot, et le message partait quand même — sans son image, l'aperçu en échec
+ * effacé par l'envoi. Rien ne disait à l'auteur que son image n'avait jamais été jointe.
+ */
+describe("CommentComposer — image qui ne partira pas", () => {
+  const image = (status: "uploading" | "ready" | "error", n = 1) => ({
+    localId: `img-${status}-${n}`, name: `photo-${n}.png`, previewUrl: null,
+    status, docId: status === "ready" ? String(n).repeat(24) : null,
+  });
+  const hote = { onAddImages: vi.fn(), onRemoveImage: vi.fn() };
+  const envoyer = () => screen.getByRole("button", { name: /envoyer/i }) as HTMLButtonElement;
+  const annonces = (role: "alert" | "status") =>
+    screen.queryAllByRole(role).map(e => e.textContent ?? "").filter(texte => texte.trim() !== "");
+
+  // Le bouton n'était pas la seule voie : Entrée appelait l'envoi sans regarder le téléversement.
+  it("Entrée n'envoie pas tant qu'une image téléverse, et le texte reste dans le champ", () => {
+    const { onSubmit, field } = mount({ ...hote, images: [image("uploading")], imagesBusy: true });
+    type(field, "avec ma photo");
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(field.value).toBe("avec ma photo");
+  });
+
+  // La retenue se lit dans le STATUT des images : un hôte qui oublierait `imagesBusy` laissait
+  // encore Entrée envoyer sans l'image.
+  it("retient l'envoi sur le seul statut « en route », sans `imagesBusy`", () => {
+    const { onSubmit, field } = mount({ ...hote, images: [image("uploading")] });
+    type(field, "avec ma photo");
+    expect(envoyer().disabled).toBe(true);
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  // Entrée retenue sans un mot paraîtrait morte — une image lourde sur une liaison lente, ce sont
+  // de longues secondes. La phrase ne vient qu'APRÈS une tentative, et s'en va avec le téléversement.
+  it("dit pourquoi rien ne part quand on tente d'envoyer pendant un téléversement", () => {
+    const { field, update } = mount({ ...hote, images: [image("uploading")], imagesBusy: true });
+    type(field, "avec ma photo");
+    expect(annonces("status").some(texte => /encore en cours d'envoi/.test(texte))).toBe(false);
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(annonces("status").some(texte => /^L'image est encore en cours d'envoi/.test(texte))).toBe(true);
+
+    // L'image arrive : la phrase tombe d'elle-même.
+    update({ ...hote, images: [{ ...image("uploading"), status: "ready" as const, docId: "a".repeat(24) }] });
+    expect(annonces("status").some(texte => /encore en cours d'envoi/.test(texte))).toBe(false);
+    // … et un NOUVEAU téléversement ne la ramène pas tant qu'on n'a pas retenté.
+    update({ ...hote, images: [image("uploading", 2)], imagesBusy: true });
+    expect(annonces("status").some(texte => /encore en cours d'envoi/.test(texte))).toBe(false);
+  });
+
+  it("compte les images attendues quand elles sont plusieurs", () => {
+    const { field } = mount({ ...hote, images: [image("uploading", 1), image("uploading", 2)], imagesBusy: true });
+    type(field, "avec mes photos");
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(annonces("status").some(texte => /^2 images sont encore en cours d'envoi/.test(texte))).toBe(true);
+  });
+
+  it("retient l'envoi tant qu'une image a échoué, au bouton comme à Entrée", () => {
+    const { onSubmit, field } = mount({ ...hote, images: [image("error")] });
+    type(field, "avec ma photo");
+    expect(envoyer().disabled).toBe(true);
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(field.value).toBe("avec ma photo");
+  });
+
+  // Une image prête ne rachète pas celle qui a échoué : l'auteur en a joint deux.
+  it("retient l'envoi même si une autre image, elle, est prête", () => {
+    const { onSubmit, field } = mount({ ...hote, images: [image("ready", 1), image("error", 2)] });
+    expect(envoyer().disabled).toBe(true);
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("dit quelle image n'a pas pu être jointe, et quoi faire", () => {
+    mount({ ...hote, images: [image("ready", 1), image("error", 2)] });
+    const alerte = screen.getByRole("alert");
+    expect(alerte.textContent).toContain("photo-2.png");
+    expect(alerte.textContent).not.toContain("photo-1.png");
+    expect(alerte.textContent).toMatch(/retirez-la/i);
+  });
+
+  it("les compte quand elles sont plusieurs", () => {
+    mount({ ...hote, images: [image("error", 1), image("error", 2)] });
+    expect(screen.getByRole("alert").textContent).toMatch(/2 images/);
+  });
+
+  // L'aperçu en échec portait déjà son propre `role="status"` : deux régions vivantes disaient le
+  // même échec au même rendu, avec deux verbes. Une seule annonce, celle de l'alerte.
+  it("annonce l'échec une seule fois", () => {
+    mount({ ...hote, images: [image("error")] });
+    expect(annonces("alert")).toHaveLength(1);
+    expect(annonces("status").filter(texte => /n'a pas pu/.test(texte))).toEqual([]);
+  });
+
+  // Le composer est un conteneur `inline-size` : un nom de fichier long et sans point de coupure
+  // ne l'élargit pas, il en sortait (mesuré par une relecture : 25 px au-delà du bord pour 52
+  // caractères). jsdom ne mesure rien — on tient la règle de césure.
+  it("laisse la phrase se couper sur un nom de fichier long", () => {
+    mount({ ...hote, images: [image("error")] });
+    expect(screen.getByRole("alert").className.split(/\s+/)).toContain("break-words");
+  });
+
+  it("ne dit rien tant qu'aucune image n'a échoué", () => {
+    mount({ ...hote, images: [image("ready", 1), image("uploading", 2)], imagesBusy: true });
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  // La phrase demande de « retirer » l'image : le bouton doit exister et joindre l'hôte. Sans ce
+  // câblage, l'image en échec ne partirait jamais et l'envoi resterait retenu pour de bon.
+  it("offre le bouton de retrait que la phrase désigne, relié à l'hôte", () => {
+    const onRemoveImage = vi.fn();
+    mount({ onAddImages: vi.fn(), onRemoveImage, images: [image("ready", 1), image("error", 2)] });
+    fireEvent.click(screen.getByRole("button", { name: "Retirer photo-2.png" }));
+    expect(onRemoveImage).toHaveBeenCalledExactlyOnceWith("img-error-2");
+  });
+
+  // Les deux rappels vont ensemble. Si l'hôte n'offre pas le retrait, les aperçus ne sont pas
+  // montrés : retenir l'envoi enfermerait l'auteur derrière une phrase qu'il ne peut pas suivre.
+  it("ne retient pas l'envoi sur un échec que personne ne peut retirer", () => {
+    const { onSubmit, field } = mount({ onAddImages: vi.fn(), images: [image("error")] });
+    expect(screen.queryByRole("alert")).toBeNull();
+    type(field, "tant pis pour la photo");
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("tant pis pour la photo", []);
+  });
+
+  // Retirer l'image en échec est le geste demandé : il doit suffire, sans rien retaper.
+  it("l'image en échec retirée, le message part avec son texte", () => {
+    const { onSubmit, field, update } = mount({ ...hote, images: [image("error")] });
+    type(field, "tant pis pour la photo");
+    update({ ...hote, images: [] });
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(envoyer().disabled).toBe(false);
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("tant pis pour la photo", []);
+  });
+
+  // « Sans texte mais avec image » ne vaut que pour une image qui PART : une image en échec ou
+  // encore en route n'est pas un contenu, et l'envoi produirait un message vide.
+  it("une image retirée de la course n'autorise pas un message sans texte", () => {
+    const { onSubmit, field, update } = mount({ ...hote, images: [image("error")] });
+    expect(envoyer().disabled).toBe(true);
+    fireEvent.keyDown(field, { key: "Enter" });
+    update({ ...hote, images: [image("uploading")], imagesBusy: true });
+    expect(envoyer().disabled).toBe(true);
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 });
