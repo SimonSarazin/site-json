@@ -3124,7 +3124,7 @@
               "fr": "Structures du site",
               "en": "Site structures"
             },
-            "create": false,
+            "create": "add-structure",
             "restrictActionsToOwned": true,
             "rowActions": [
               "edit",
