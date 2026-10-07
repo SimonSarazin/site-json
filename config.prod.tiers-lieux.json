@@ -1138,6 +1138,406 @@
       ]
     },
     {
+      "path": "/reservation",
+      "title": {
+        "fr": "Des espaces engagés, atypiques, foisonnant pour une expérience écologique, sociale, culturelle ou inclusive",
+        "en": "Committed, unconventional and vibrant spaces for an ecological, social, cultural or inclusive experience"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-search",
+          "id": "hero-complet",
+          "props": {
+            "headline": {
+              "fr": "Des espaces engagés, atypiques, foisonnant, pour une expérience écologique, sociale, culturelle ou inclusive ",
+              "en": "The third places social network"
+            },
+            "subhead": {
+              "fr": "Trouvez le service pour ...",
+              "en": "Find the place for ..."
+            },
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "Se réunir",
+                  "en": "Meet"
+                },
+                "filters": [
+                  {
+                    "param": "services",
+                    "values": [
+                      "meeting-room"
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": {
+                  "fr": "Coworker",
+                  "en": "Cowork"
+                },
+                "filters": [
+                  {
+                    "param": "typologies",
+                    "values": [
+                      "coworking"
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": {
+                  "fr": "Séjourner",
+                  "en": "Stay"
+                },
+                "filters": [
+                  {
+                    "param": "services",
+                    "values": [
+                      "accomodation"
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": {
+                  "fr": "+",
+                  "en": "+"
+                },
+                "href": "/lieux"
+              }
+            ],
+            "scrollTarget": "section-lieux",
+            "placeholder": {
+              "fr": "Ville, département, code postal ...",
+              "en": "City, ZIP code ..."
+            },
+            "searchButtonText": {
+              "fr": "Rechercher",
+              "en": "Search"
+            },
+            "backgroundImage": "images/tiersLieux/BG_Illus.png",
+            "searchVariant": "navigator-tl",
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "indexStepList": 5,
+              "defaultFilters": {
+                "$or": {
+                  "tags": {
+                    "$in": [
+                      "TiersLieux"
+                    ]
+                  }
+                },
+                "tags": {
+                  "$nin": [
+                    "RéseauTiersLieux"
+                  ]
+                },
+                "address.addressCountry": {
+                  "$in": [
+                    "BE",
+                    "FR",
+                    "GP",
+                    "GF",
+                    "IT",
+                    "RE",
+                    "MQ",
+                    "YT",
+                    "NC",
+                    "CH"
+                  ]
+                }
+              },
+              "defaultSortBy": {
+                "updated": -1
+              },
+              "searchBy": [
+                "name",
+                "address.addressLocality",
+                "address.level4Name",
+                "address.level3Name",
+                "address.level2Name",
+                "address.level1Name",
+                "address.postalCode"
+              ],
+              "notSourceKey": true
+            },
+            "filterGroups": [
+              {
+                "id": "typologies",
+                "label": {
+                  "fr": "Typologies",
+                  "en": "Types"
+                },
+                "options": [
+                  {
+                    "id": "ateliers-artisanaux",
+                    "label": {
+                      "fr": "Ateliers artisanaux partagés",
+                      "en": "Shared craft workshops"
+                    },
+                    "name": "Ateliers artisanaux partagés"
+                  },
+                  {
+                    "id": "coworking",
+                    "label": {
+                      "fr": "Bureaux partagés / Coworking",
+                      "en": "Shared offices / Coworking"
+                    },
+                    "name": "Bureaux partagés / Coworking"
+                  },
+                  {
+                    "id": "foodlab",
+                    "label": {
+                      "fr": "Cuisine partagée / Foodlab",
+                      "en": "Shared kitchen / Foodlab"
+                    },
+                    "name": "Cuisine partagée / Foodlab"
+                  },
+                  {
+                    "id": "fablab",
+                    "label": {
+                      "fr": "Fablab / Makerspace / Hackerspace",
+                      "en": "Fablab / Makerspace / Hackerspace"
+                    },
+                    "name": "Fablab / Makerspace / Hackerspace (Espaces du Faire)"
+                  },
+                  {
+                    "id": "livinglab",
+                    "label": {
+                      "fr": "LivingLab / Innovation sociale",
+                      "en": "LivingLab / Social innovation"
+                    },
+                    "name": "LivingLab / Laboratoire d'innovation sociale"
+                  },
+                  {
+                    "id": "nourricier",
+                    "label": {
+                      "fr": "Tiers-lieu nourricier",
+                      "en": "Food-producing third place"
+                    },
+                    "name": "Tiers-lieu nourricier"
+                  },
+                  {
+                    "id": "culturel",
+                    "label": {
+                      "fr": "Tiers-lieu culturel",
+                      "en": "Cultural third place"
+                    },
+                    "name": "Tiers-lieu culturel / Lieux intermédiaires et indépendants"
+                  },
+                  {
+                    "id": "autre",
+                    "label": {
+                      "fr": "Autre famille de tiers-lieux",
+                      "en": "Other third place types"
+                    },
+                    "name": "Autre famille de tiers-lieux"
+                  }
+                ]
+              }
+            ],
+            "filtersByAnswers": {
+              "services": {
+                "label": {
+                  "fr": "Service",
+                  "en": "Service"
+                },
+                "type": "form",
+                "value": {
+                  "Coworking": {
+                    "id": "6925e2b05dd63b02ca70d6d9",
+                    "finder": "answers.navigatorDesTierslieux25112025_209_0.findernavigatorDesTierslieux25112025_209_0miem3epsztzcm9dgim"
+                  },
+                  "Salle de Réunion": {
+                    "id": "6925869ad76aaf6c5a2b2f8a",
+                    "finder": "answers.navigatorDesTierslieux25112025_1436_0.findernavigatorDesTierslieux25112025_1436_0miem3epsztzcm9dgim"
+                  },
+                  "Hébérgement": {
+                    "id": "6925ee8ac537f8056114aec7",
+                    "finder": "answers.navigatorDesTierslieux25112025_2059_0.findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "coform-resource-directory",
+          "id": "reservation-annuaire-ressources-tl",
+          "props": {
+            "costumSlug": "navigatorDesTierslieux",
+            "contextId": "649ed498f93ee7202e6c8b12",
+            "contextType": "projects",
+            "limit": 5,
+            "showFilters": false,
+            "customHeader": {
+              "title": {
+                "fr": "Découvrir les services",
+                "en": "Discover services"
+              },
+              "linkText": {
+                "fr": "Voir tous les résultats",
+                "en": "View all results"
+              },
+              "linkHref": "/annuaire-ressources"
+            },
+            "finderSuffix": "miem3epsztzcm9dgim",
+            "fieldSuffixes": {
+              "equipments": "mieg8j24m89gm99t5mi",
+              "name": "mieg4k7yxrito5j9e6",
+              "area": "mieg4k7zslc8awrql2"
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 5,
+              "xl": 5
+            },
+            "resourceTypes": [
+              {
+                "id": "coworking",
+                "kind": "coworking",
+                "formId": "6925e2b05dd63b02ca70d6d9",
+                "stepPrefix": "navigatorDesTierslieux25112025_209_0",
+                "label": {
+                  "fr": "Coworking",
+                  "en": "Coworking"
+                },
+                "linkSuffix": "miq8118cmkh16zjwmt"
+              },
+              {
+                "id": "meeting-room",
+                "kind": "meeting",
+                "formId": "6925869ad76aaf6c5a2b2f8a",
+                "stepPrefix": "navigatorDesTierslieux25112025_1436_0",
+                "label": {
+                  "fr": "Salle de réunion",
+                  "en": "Meeting room"
+                },
+                "linkSuffix": "miq81uh4gat3vgbtgkj",
+                "descriptionSuffix": "miolbscdcrucb5a8uuq"
+              },
+              {
+                "id": "accommodation",
+                "kind": "accommodation",
+                "formId": "6925ee8ac537f8056114aec7",
+                "stepPrefix": "navigatorDesTierslieux25112025_2059_0",
+                "label": {
+                  "fr": "Hébergement",
+                  "en": "Accommodation"
+                },
+                "linkSuffix": "miq83c8getjt3lcz64f",
+                "descriptionSuffix": "miq88plgleoln5tmc7b",
+                "servicesSuffix": "miq86g5vaw1kavrapkb"
+              }
+            ]
+          }
+        },
+        {
+          "type": "content",
+          "id": "les-lieux",
+          "props": {
+            "category": {
+              "fr": "Les lieux",
+              "en": "The places"
+            },
+            "categoryVariant": "pill",
+            "title": {
+              "fr": "Pour vos réunions, séminaires, formations, faites le choix d’un lieu engagé, atypique, foisonnant et vivez une expérience écologique, sociale, culturelle ou inclusive ",
+              "en": "Discover third places, explore their specificities and contribute to the life of a place."
+            },
+            "description": {
+              "fr": "Les tiers-lieux sont des espaces hybrides de rencontre et de partage. Ils favorisent la coopération, l'innovation sociale et le développement local. Découvrez la diversité de ces lieux qui réinventent notre façon de travailler, d'apprendre et de vivre ensemble.",
+              "en": "Third places are hybrid spaces for meeting and sharing. They promote cooperation, social innovation and local development. Discover the diversity of these places that reinvent the way we work, learn and live together."
+            },
+            "tags": [
+              {
+                "fr": "Atelier artisanaux partagés",
+                "en": "Shared craft workshops"
+              },
+              {
+                "fr": "Bureaux partagés / Coworking",
+                "en": "Shared offices / Coworking"
+              },
+              {
+                "fr": "Cuisine partagée / Foodlab",
+                "en": "Shared kitchen / Foodlab"
+              },
+              {
+                "fr": "Fablab / Makerspace / Hackerspace",
+                "en": "Fablab / Makerspace / Hackerspace"
+              },
+              {
+                "fr": "Livinglab / Laboratoire d'innovation sociale",
+                "en": "Livinglab / Social innovation lab"
+              },
+              {
+                "fr": "Tiers-lieu nourricier",
+                "en": "Nurturing third place"
+              },
+              {
+                "fr": "Tiers-lieu culturel / Indépendants",
+                "en": "Cultural third place / Independents"
+              },
+              {
+                "fr": "Autres",
+                "en": "Others"
+              }
+            ],
+            "image": "images/tiersLieux/image1.png",
+            "imagePosition": "right"
+          }
+        },
+        {
+          "type": "content",
+          "id": "documentation",
+          "props": {
+            "title": {
+              "fr": "Pourquoi choisir un tiers-lieu"
+            },
+            "description": {
+              "fr": "Un cadre vivant et convivial pour travailler autrement, loin des salles de réunion standardisées. Des espaces, équipements et services mutualisés, adaptés aux réunions, séminaires, formations ou résidences. Un lieu qui favorise les rencontres, les échanges et les coopérations avec un territoire et ses acteurs."
+            },
+            "image": "images/tiersLieux/docs.png",
+            "imagePosition": "left",
+            "links": []
+          }
+        },
+        {
+          "type": "content",
+          "id": "sentraider",
+          "props": {
+            "category": {
+              "fr": "Experiences",
+              "en": "Help each other"
+            },
+            "categoryVariant": "pill",
+            "title": {
+              "fr": "Ils sont venus chez nous"
+            },
+            "description": {
+              "en": "Participate in the solidarity economy of third places by contributing to the financing of shared infrastructures. Support new projects and benefit from community support to develop yours.",
+              "fr": "Bientôt, des retours d'expériences.."
+            },
+            "image": "images/tiersLieux/sentraider.png",
+            "imagePosition": "right",
+            "iconCard": {
+              "svg": "<svg width=\"52\" height=\"42\" viewBox=\"0 0 52 42\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M19.4258 35.7421L51.6576 35.7035L42.7555 0.484863L1.74944 22.7695C0.764583 23.3089 0.252966 24.4521 0.534355 25.5438L2.64477 33.8925C2.92616 34.9843 3.91102 35.7549 5.03658 35.7549H11.0353L10.1144 41.4577L19.4258 35.7421Z\" fill=\"#FFD836\"></path></svg>"
+            },
+            "links": [],
+            "decorativeElements": {
+              "type": "colored-squares"
+            }
+          }
+        }
+      ]
+    },
+    {
       "path": "/lieux",
       "title": {
         "fr": "Les tiers-lieux - Le réseau social des tiers-lieux",
