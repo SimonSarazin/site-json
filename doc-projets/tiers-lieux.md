@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-09-30** (`/observatoire` en **split view** : liste des lieux à gauche, graphes à droite, KPI en bandeau, table conservée sous le split — cf. §9 30/09 ; rendu navigateur à valider. Précédent : **29/09**, alerte « tiers-lieu déjà existant » à la création (bloc `duplicateCheck` + slot `slot:entityDuplicates`), cf. §9).
+Dernière mise à jour : **2026-10-07** (`/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page, cf. §9). Précédent : **2026-09-30**, `/observatoire` en **split view** : liste des lieux à gauche, graphes à droite, KPI en bandeau, table conservée sous le split — rendu navigateur à valider.
 
 ---
 
@@ -72,7 +72,7 @@ lieux**, pas un plan de rattrapage.
 ```
                  ┌──────────────────────────────────────────────┐
    Visiteur ───► │  SiteForge (site-json)                       │
-                 │   12 pages · 22 sections                     │
+                 │   18 pages · 42 sections                     │
                  │   header MEGA-MENU (4 groupes à enfants)     │
                  │   /lieux : panneau de filtres + résultats    │
                  │   /observatoire : 10 dimensions              │
@@ -94,18 +94,22 @@ de hero sur une page à panneau, cela produit deux champs de recherche.
 
 ## 4. Ce que la config met en œuvre
 
-### 4.1 Les 14 pages
+### 4.1 Les 18 pages
 
 | Page | Sections | Rôle |
 |---|---|---|
 | `/` | 11 | `hero-search` + résultats + **teaser agenda** + 5 blocs éditoriaux |
+| `/reservation` | 5 | hero, annuaire des ressources (5 cartes + lien complet), puis 3 blocs éditoriaux ; sans `section-lieux` |
 | `/lieux` | 1 | `gridLayout` — panneau de filtres (5 groupes) + `searchProStatic` |
 | `/observatoire` | 1 | `data-observatory` en **split view** (30/09) — cf. §4.3 |
 | `/reseaux-regionaux` · `/reseaux-thematiques` | 1 chacune | même périmètre, **deux angles** (cf. §4.2) |
 | `/communaute` | 1 | `searchProStatic` |
 | `/actualites` | 2 | `searchHeader` + `tabs` — onglet **Actus** (`articleFeed`) / onglet **Événements** (`agenda`, 3 `sourceKey`). **Remplace `/evenements`** (07/09, cf. §9) |
 | `/blog` | 1 | `articleFeed` — liste canonique du module blog : cible du repli du lecteur `/blog/:slug` et du `<link>` de canal du flux RSS |
+| `/a-propos` | 9 | présentation du réseau et contacts |
 | `/annuaire-ressources` | 2 | `title` + `coform-resource-directory` |
+| `/mes-lieux` | 1 | lieux dont le compte connecté est membre |
+| `/outils-ressources` | 1 | page des outils et ressources du réseau |
 | `/usages` | 1 | `toolsCatalog` — catalogue d'outils d'usage (livré 06/08, review 10/08 — cf. §9) |
 | `/api-donnees` | 1 | `html` — API et données ouvertes |
 | `/mentions-legales` · `/confidentialite` · `/cgu` | 1 chacune | socle légal **présent et fourni** (≈ 3,5 k · 11 k · 12 k caractères) |
@@ -209,6 +213,19 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 07/10 — `/reservation` : aperçu de ressources
+
+`/reservation` place `coform-resource-directory` après le hero. La section reprend les mêmes types
+de ressources et les mêmes cartes interactives que `/annuaire-ressources` ; un clic ouvre le détail
+en popup. Elle affiche au maximum 5 cartes, en 5 colonnes desktop, sans facettes ni filtre par lieu
+porteur. Son en-tête présente « Découvrir les services » à gauche et « Voir tous les résultats » à
+droite, vers `/annuaire-ressources`. `section-lieux` a été retirée de `/reservation` à la demande ;
+elle reste sur l’accueil, qui n’affiche pas cet annuaire.
+
+Le titre de page est « Des espaces engagés, atypiques, foisonnant pour une expérience écologique,
+sociale, culturelle ou inclusive ». **Validation** : `config:validate` ✅ — 18 pages, 42 sections.
+Le rendu navigateur n’a pas été vérifié dans cette reprise.
 
 ### 24/09quater — encart d'une fiche : le nombre de PLACES d'hébergement, pas le nombre d'offres
 
