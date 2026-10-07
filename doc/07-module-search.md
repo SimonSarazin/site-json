@@ -578,6 +578,9 @@ jointure sur le lieu porteur + garde région + éclatement, pour quoi
 | `scope.addressLevel1` | string | Garde géo : ne garde que les ressources dont le **lieu porteur** est dans cette zone (`address.level1`). Passé dans `defaultFilters["address.level1"]` → l'endpoint `getsressourcetl` **filtre côté serveur** (il retire la clé du payload puis post-filtre sur le lieu porteur). Scroll infini natif conservé |
 | `costumSlug` / `contextId` / `contextType` | string | Périmètre costum (comme le payload legacy) |
 | `columns` | `{ sm?, md?, lg?, xl? }` | Grille de résultats (déf. `1/2/3`) |
+| `customHeader` | `{ title?, linkText?, linkHref? }` | En-tête : titre à gauche et bouton de lien vers la page complète à droite |
+| `limit` | entier ≥ 1 | Nombre maximal de cartes affichées ; borne aussi la requête initiale et désactive le scroll infini. La limite s'applique après l'éclatement des salles |
+| `showFilters` | boolean (défaut `true`) | `false` masque les facettes type/prix et désactive le filtre par lieu porteur piloté depuis les cartes |
 
 Le filtre Mongo FIXE (`buildResourceDirectoryFilters`) émet `form.$in` + un `$or`
 en **forme MAP** (`{ "answers.<step>.finder…": { "$exists": true }, … }`) — **pas
