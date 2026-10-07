@@ -725,7 +725,7 @@ erreur, le catch-all sert la **page d'accueil en 200** (vérifié sur `/projets`
 ### 09/09 — le profil d'un projet n'avait aucune interface
 
 **Le constat.** `/profil/<slug>` — l'adresse qu'ouvre le bouton « Ouvrir le projet » de la fiche d'un
-commun (`CommunProjectControl`) — servait une page nue : un bandeau, une description, un porteur, et
+commun (`CommunProjectStatus`) — servait une page nue : un bandeau, une description, un porteur, et
 **rien d'autre**. Aucun onglet, là où le même type d'entité sur rezolamer en affiche sept. Aucune
 erreur, aucun avertissement : la page rendait exactement ce qu'on lui avait demandé, c'est-à-dire
 rien.
@@ -893,7 +893,7 @@ l'**org du site**, donc seul un admin CAE gérait paliers et actions — jamais 
 | La synchro d'un palier accepte les documents bruts en repli | `resolveMilestoneSyncContextFromDocs`, `MilestoneMutationContext.docs` |
 | **Une ressource forcée introuvable ne retombe plus sur une autre** : message explicite, contribution impossible | `CagnotteDialog` |
 | Droits = entité du **projet lié** + `ownerIds` (le déposant seul — l'admin de l'appel n'y est pas, cf. doc/34 §6) | `useCommunObjectivesController`, `resolveCommunOwnerIds`, `CagnottePermissionData.ownerIds` |
-| « Générer / Associer un projet » ouvert au déposant | `CommunProjectControl.canManageProject` |
+| « Générer / Associer un projet » ouvert au déposant | `project.canManage` de `CommunActionBar` (entrées de « ⋯ ») |
 
 **Arbitrage produit** : le déposant gère les paliers, les actions **et** le rattachement du projet
 de son commun. L'admin de l'appel peut générer / associer le projet, mais n'écrit dans les paliers et
