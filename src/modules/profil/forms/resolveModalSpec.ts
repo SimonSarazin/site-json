@@ -161,6 +161,9 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
       target: isEdit ? (ctx.entity ?? null) : (ctx.parent ?? null),
       buildPayload,
       costumSlug: isEdit ? undefined : resolveCostumSlug(spec.scope, ctx),
+      // Sous-type costum CIBLÉ à la création (variante + presets de CE sous-type côté SDK). Jamais en
+      // édition : le revive choisit sa variante par `type` et la whitelist reste l'union.
+      subType: isEdit ? undefined : spec.subType,
       // Édition : le costum qui DÉFINIT ce formulaire, épinglé sur l'entité pour ouvrir ses champs
       // à l'écriture. Pris sur le DESCRIPTEUR (et non sur `spec.scope`, qui décrit la cible de
       // CRÉATION) : c'est le formulaire rendu qui dit de quels champs costum on parle.

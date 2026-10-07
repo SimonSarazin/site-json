@@ -7402,6 +7402,8 @@
         "organizer": {
           "widget": "finder",
           "type": "object",
+          "read": "entityRef:read",
+          "write": "entityRef:write",
           "required": true,
           "label": {
             "fr": "Organisateur",

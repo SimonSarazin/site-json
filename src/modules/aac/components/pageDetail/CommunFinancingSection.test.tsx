@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
 import type { AacResolvedConfig } from "../../types";
 import type { CommunObjectivesController } from "./CommunMilestoneDialogs";
@@ -120,5 +120,50 @@ describe("CommunFinancingSection — un palier clos est marqué comme tel (M17)"
     // Le badge est dans la carte du palier CLOS, pas dans celle du palier ouvert.
     expect(badges[0].closest("button")?.textContent).toContain("Clos");
     expect(badges[0].closest("button")?.textContent).not.toContain("Ouvert");
+  });
+});
+
+describe("CommunFinancingSection — description du palier", () => {
+  const toggleOf = (title: string) => screen.getByText(title).closest("button") as HTMLButtonElement;
+  const panelOf = (title: string) =>
+    document.getElementById(toggleOf(title).getAttribute("aria-controls") ?? "") as HTMLElement;
+
+  beforeEach(() => {
+    depenses = [
+      { poste: "Avec", priceInt: 100, description: "Achat du matériel" },
+      { poste: "Sans", priceInt: 200, description: "  " },
+    ];
+  });
+
+  it("replié : aperçu sous le titre, tronqué et hors du nom accessible du bouton", () => {
+    renderSection();
+
+    const preview = screen.getByText("Achat du matériel");
+    expect(toggleOf("Avec").contains(preview)).toBe(true);
+    expect(preview.getAttribute("aria-hidden")).toBe("true");
+    expect(preview.className).toContain("line-clamp-2");
+    // `display: block` annulerait le `-webkit-box` dont dépend la troncature.
+    expect(preview.className).not.toMatch(/\bblock\b/);
+  });
+
+  it("déplié : texte complet dans le panneau que contrôle le bouton, plus dans le bouton", () => {
+    renderSection();
+    fireEvent.click(toggleOf("Avec"));
+
+    const full = screen.getByText("Achat du matériel");
+    expect(toggleOf("Avec").contains(full)).toBe(false);
+    expect(panelOf("Avec").contains(full)).toBe(true);
+    expect(full.getAttribute("aria-hidden")).toBeNull();
+  });
+
+  it("description vide : ni aperçu ni paragraphe dans le panneau", () => {
+    renderSection();
+
+    // Libellé du palier + titre, rien d'autre.
+    expect(screen.getByText("Sans").parentElement?.children).toHaveLength(2);
+    expect(screen.getByText("Avec").parentElement?.children).toHaveLength(3);
+
+    fireEvent.click(toggleOf("Sans"));
+    expect(panelOf("Sans").querySelector("p")).toBeNull();
   });
 });
