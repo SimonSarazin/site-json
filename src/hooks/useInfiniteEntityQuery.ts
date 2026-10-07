@@ -63,7 +63,10 @@ export interface InfiniteEntityQueryConfig<TEntity, TResult> {
 
 export interface InfiniteEntityQueryResult<TResult> {
   items: TResult[];
+  /** 0 tant que la 1ʳᵉ page n'a pas apporté son `count` — ne le lire qu'avec `hasCount`. */
   totalCount: number;
+  /** La 1ʳᵉ page a apporté son `count` : `totalCount` est un vrai total, pas le 0 d'attente. */
+  hasCount: boolean;
   isLoading: boolean;
   isFetchingNextPage: boolean;
   hasNextPage: boolean | undefined;
@@ -112,6 +115,7 @@ export function useInfiniteEntityQuery<TEntity, TResult>({
   const {
     data,
     totalCount,
+    hasCount,
     isLoading,
     isFetchingNextPage,
     hasNextPage,
@@ -151,6 +155,7 @@ export function useInfiniteEntityQuery<TEntity, TResult>({
   return {
     items,
     totalCount,
+    hasCount,
     isLoading,
     isFetchingNextPage,
     hasNextPage,

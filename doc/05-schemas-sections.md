@@ -247,12 +247,16 @@ const StatsSectionSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     items: z.array(z.object({
-      value: z.string(),
+      value: z.string().optional(),
       label: LocalizedString,
       description: LocalizedString.optional(),
       icon: z.string().optional(),
-    })),
+      source: StatDynamicSourceSchema.optional(),
+      highlight: z.boolean().optional(),
+    }).refine((item) => item.value !== undefined || item.source !== undefined)),
+    design: z.enum(["default", "tiles"]).optional(),
     layout: z.enum(["horizontal", "vertical"]).default("horizontal"),
+    columns: ResponsiveColumns.optional(),
     animated: z.boolean().default(true),
   }),
 });
@@ -261,10 +265,21 @@ const StatsSectionSchema = z.object({
 | Propriete     | Type     | Description                             |
 | ------------- | -------- | --------------------------------------- |
 | `items`       | `array`  | Liste des statistiques                  |
+| `items[].value` | `string?` | Chiffre écrit ; avec `source`, repli affiché tant que le compte n'est pas revenu. `value` ou `source` obligatoire |
+| `items[].source` | `StatDynamicSource?` | Chiffre **compté** côté client : `searchCount` (`entityType` + `baseParams`), `membersCount` (`toBeValidated`), `aacCommuns` (communs de `config.aac`). Même contrat que `cta-card-grid.props.stats[].source` |
+| `items[].highlight` | `boolean?` | Design `tiles` : tuile sur l'aplat `primary` |
 | `description` | `LocalizedString?` | Description (optionnel)        |
-| `icon`        | `string?` | Icone (optionnel)                      |
-| `layout`      | `enum`   | Disposition (defaut: `"horizontal"`)    |
-| `animated`    | `boolean` | Animation (defaut: `true`)             |
+| `icon`        | `string?` | Icone (optionnel ; ignorée en `tiles`) |
+| `design`      | `enum?`  | `default` (chiffres centrés, aplat léger) ou `tiles` (tuiles arrondies sans fond de section, sous un en-tête de bande) |
+| `layout`      | `enum`   | Disposition (defaut: `"horizontal"` ; ignorée en `tiles`) |
+| `columns`     | `object?` | Colonnes par breakpoint (`tiles` sans lui : `sm:3`) |
+| `animated`    | `boolean` | Animation (defaut: `true` ; jamais en `tiles`) |
+
+Chiffre compté (`StatValue`, partagé avec `cta-card-grid`) : le compte dès qu'il est connu ; sinon
+`value` ; sinon un **squelette** pendant l'attente (et toujours en SSR — aucun compte n'est
+préchargé) et un **tiret** nommé « Chiffre non disponible » quand le compte ne viendra pas (échec,
+AAC absent ou irrésoluble) — tranché seulement **après hydratation**, sans quoi un serveur qui n'a pas
+résolu l'entité désaccorderait le rendu client. Un `0` n'est affiché que s'il a été compté.
 
 ## `logoCloud`
 
@@ -2088,15 +2103,20 @@ export const CtaCardGridSchema = z.object({
     stats: z
       .array(
         z.object({
-          value: z.string(),
+          value: z.string().optional(),
           label: LocalizedString,
           color: z.enum(["primary", "turquoise", "cyan-bright", "accent", "teal"]).optional(),
-        })
+          source: StatDynamicSourceSchema.optional(), // searchCount | membersCount | aacCommuns
+        }).refine((stat) => stat.value !== undefined || stat.source !== undefined)
       )
       .optional(),
   }),
 });
 ```
+
+Le chiffre d'une tuile `stats[]` passe par le même composant que `stats.props.items[]`
+(`StatValue`) : compté si `source`, repli `value`, squelette en attente (et en SSR), tiret nommé
+quand le compte ne viendra pas — cf. § `stats`.
 
 | Propriete  | Type      | Description                                |
 | ---------- | --------- | ------------------------------------------ |

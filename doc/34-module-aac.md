@@ -168,6 +168,11 @@ avec `AacCommunList` : review MR 53, M25/H11/H13.)
   l'hydratation. Il ne disparaît que sur **échec réel** du décompte, et n'est pas rendu du tout si
   `config.aac.formId` est absent (le nombre ne sera jamais connu : mieux vaut pas de médaillon
   qu'un médaillon vide).
+- **le même chiffre en tuile** : `stats.props.items[].source` ou `cta-card-grid.props.stats[].source`
+  = `{"type": "aacCommuns"}` — même décompte et même garde de joignabilité
+  (`useAacCommunsCountState`, partagé avec le médaillon). Compté côté client : squelette en SSR ;
+  AAC absent ou irrésoluble ⇒ tiret, tranché après hydratation — jamais un squelette perpétuel.
+  Usage réel : accueil d'Open Atlas (`stats` en `design: "tiles"`).
 
 ⚠️ Les `.default()` Zod de ces props sont **documentaires** : la config n'est pas parsée par Zod à
 l'exécution, chaque composant applique ses propres défauts.

@@ -332,6 +332,13 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.accentColor": "Couleur de la pastille de titre (headlineStyle: badge) ; son encre est blanche, donc teinte foncée et contraste AA à mesurer.",
   },
 
+  "section:stats": {
+    "props.design": "Rendu : default (chiffres centrés sur aplat léger, icône au-dessus) ou tiles (tuiles arrondies, chiffre puis légende à gauche, sans fond de section) — tiles ignore icon, layout et animated.",
+    "props.items[].value": "Chiffre écrit. Avec source, simple repli affiché tant que le compte n'est pas revenu ; sans source, obligatoire.",
+    "props.items[].source": "Chiffre COMPTÉ côté client : searchCount (périmètre de recherche), membersCount (membres de l'entité) ou aacCommuns (communs de config.aac). Squelette en SSR ; tiret, après hydratation, si le compte échoue.",
+    "props.items[].highlight": "Design tiles : tuile sur l'aplat primary (texte primaryForeground) — une seule par rangée, pour le chiffre phare.",
+  },
+
   "section:thematics": {
     "props.title": "Titre de la grille des filières (lues depuis serverData.filiere de l'entité costum — aucune requête).",
     "props.emptyMessage": "Message affiché quand l'entité n'a pas de filières.",
