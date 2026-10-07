@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Search, Plus, Mail, UserPlus } from "lucide-react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
@@ -22,6 +22,14 @@ import { toRelativeImageUrl } from "../utils";
 import { createdToFinderElement } from "../utils/finderAddNew";
 import { FINDER_MIN_CHARS, useFinderSearchResults } from "../hooks/useFinderSearchResults";
 import { COFORM_QUERY_KEYS } from "../constants/queryKeys";
+
+/** Délai de l'annonce d'une bascule : elle doit suivre le déplacement du focus, pas le précéder. */
+const ANNONCE_DELAI_MS = 150;
+
+/** Les cartes de la modale dans l'ordre d'affichage : « Sélectionnés », puis les résultats. */
+function cartesDe(zone: HTMLElement | null): HTMLElement[] {
+  return Array.from(zone?.querySelectorAll<HTMLElement>("[data-finder-element]") ?? []);
+}
 
 interface FinderSearchModalProps {
   /** Configuration du finder */
@@ -65,6 +73,7 @@ export function FinderSearchModal({
   const [isCreating, setIsCreating] = useState(false);
   const queryClient = useQueryClient();
   const champRef = useRef<HTMLInputElement>(null);
+  const contenuRef = useRef<HTMLDivElement>(null);
 
   // Hook React Query — encapsule debounce + searchCostum + transformation.
   const {
@@ -76,15 +85,17 @@ export function FinderSearchModal({
     canRetry,
   } = useFinderSearchResults({ query: searchQuery, config });
 
-  // Filtrage local des éléments déjà sélectionnés + fallback name.
+  // Filtrage local des éléments déjà sélectionnés + fallback name. Sortent des résultats ce qui est
+  // déjà dans la question ET ce qu'on vient de sélectionner ici : un élément choisi ne s'affiche que
+  // dans la zone « Sélectionnés », jamais en double.
   // Volontairement local au composant (hors hook) pour que le cache RQ reste
   // stable même quand l'utilisateur sélectionne/désélectionne.
   const searchResults = useMemo(() => {
     const fallbackName = String(t("coform.finder.fallbackElement"));
     return rawSearchResults
-      .filter((r) => !selectedElements[r.id])
+      .filter((r) => !selectedElements[r.id] && !selectedInModal[r.id])
       .map((r) => (r.name ? r : { ...r, name: fallbackName }));
-  }, [rawSearchResults, selectedElements, t]);
+  }, [rawSearchResults, selectedElements, selectedInModal, t]);
 
   // États d'affichage. Seule une réponse COURANTE — debounce écoulé, pas une liste conservée — conclut :
   // « aucun résultat », « déjà dans la liste », « Ajouter ». D'ici là, une liste précédente reste
@@ -95,15 +106,19 @@ export function FinderSearchModal({
   const showResults = hasMinChars && searchResults.length > 0;
   const conclusion = hasMinChars && isCurrentAnswer && searchResults.length === 0;
   const noResults = conclusion && rawSearchResults.length === 0;
-  // Tout ce qui répond est déjà dans la question : « aucun résultat » serait faux — il invitait à
-  // créer un doublon de ce qui y est déjà.
+  // Tout ce qui répond est déjà dans la question, ou vient d'être sélectionné : « aucun résultat »
+  // serait faux — il invitait à créer un doublon de ce qui y est déjà.
   const allAlreadySelected = conclusion && rawSearchResults.length > 0;
+  // … dont un au moins sélectionné ICI : la liste était affichée l'instant d'avant. Sélectionner ne
+  // change pas l'offre d'ajout — elle garde sa forme discrète, au lieu de devenir « n'existe pas
+  // encore ? » à bouton plein sous l'élément qu'on vient justement de trouver.
+  const selectedHere = allAlreadySelected && rawSearchResults.some((r) => !selectedElements[r.id]);
   const awaitingAnswer = hasMinChars && !showError && searchResults.length === 0 && !isCurrentAnswer;
   const canAddNew = config.addNew && !!addNewModal;
-  const showAddNew = (noResults || allAlreadySelected) && canAddNew;
+  const showAddNew = (noResults || (allAlreadySelected && !selectedHere)) && canAddNew;
   // Des résultats, mais pas le bon : le legacy proposait aussi l'ajout sous la liste. Jamais avant la
   // réponse de la saisie courante.
-  const showAddNewBelow = showResults && isCurrentAnswer && canAddNew;
+  const showAddNewBelow = (showResults || selectedHere) && isCurrentAnswer && canAddNew;
   const showInviteForm = noResults && !canAddNew && config.invite;
   const addNewLabel = config.elementLabel || String(t("coform.finder.fallbackElement"));
 
@@ -114,6 +129,29 @@ export function FinderSearchModal({
     setSearchQuery(e.target.value);
   };
 
+  // Un élément basculé CHANGE DE ZONE : la case qui portait le focus disparaît avec sa carte. Au
+  // clavier, le focus passe à la carte qui prend sa place DANS LA MÊME ZONE — la suivante, sinon la
+  // précédente —, sinon au champ : on garde sa place dans la liste, et le focus ne tombe pas dans le
+  // vide. Jamais dans l'autre zone : l'Espace suivant y ferait l'inverse, sur un autre élément. À la
+  // souris, rien : focaliser ferait défiler la liste.
+  const basculeAuClavier = useRef(false);
+  const focusARendre = useRef<string[] | null>(null);
+  useEffect(() => {
+    const voisines = focusARendre.current;
+    if (voisines === null) return;
+    focusARendre.current = null;
+    const cartes = cartesDe(contenuRef.current);
+    const carte = voisines.map((id) => cartes.find((c) => c.dataset.finderElement === id)).find(Boolean);
+    (carte?.querySelector<HTMLElement>('[role="checkbox"]') ?? champRef.current)?.focus();
+  }, [selectedInModal]);
+
+  // La bascule se DIT, la case cochée n'étant plus sous le focus pour la confirmer. Après un délai : un
+  // lecteur d'écran coupe ce qu'il disait quand le focus change. `n` remonte le texte à chaque bascule —
+  // deux homonymes sélectionnés à la suite laisseraient la région inchangée, donc muette.
+  const [annonce, setAnnonce] = useState({ n: 0, texte: "" });
+  const annonceDifferee = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(annonceDifferee.current), []);
+
   /**
    * Sélectionner/désélectionner un élément.
    *
@@ -123,6 +161,26 @@ export function FinderSearchModal({
    * persistance (cf. `commitSelection`).
    */
   const toggleSelection = (result: FinderSearchResult) => {
+    // Le focus n'est rendu que si la case basculée le portait, activée au clavier.
+    const carte = cartesDe(contenuRef.current).find((c) => c.dataset.finderElement === result.id);
+    if (basculeAuClavier.current && carte?.contains(document.activeElement)) {
+      // En choix unique, aucune voisine : un second Espace y remplacerait le choix par mégarde.
+      const voisines = config.multiple ? [carte.nextElementSibling, carte.previousElementSibling] : [];
+      focusARendre.current = voisines.flatMap((v) => (v instanceof HTMLElement ? v.dataset.finderElement ?? [] : []));
+    }
+    const texte = String(
+      t(
+        selectedInModal[result.id]
+          ? "coform.finder.modal.deselectedAnnouncement"
+          : config.multiple
+            ? "coform.finder.modal.selectedAnnouncement"
+            : "coform.finder.modal.selectedSingleAnnouncement",
+        undefined,
+        { name: result.name }
+      )
+    );
+    clearTimeout(annonceDifferee.current);
+    annonceDifferee.current = setTimeout(() => setAnnonce((a) => ({ n: a.n + 1, texte })), ANNONCE_DELAI_MS);
     setSelectedInModal((prev) => {
       const newSelection = { ...prev };
       if (newSelection[result.id]) {
@@ -227,7 +285,21 @@ export function FinderSearchModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4">
+        <div
+          ref={contenuRef}
+          onClickCapture={(e) => {
+            // Second clic d'un double-clic : la carte cliquée vient de changer de zone, et ce qui a pris
+            // sa place sous le curseur — une carte VOISINE, ou le bouton « Ajouter » — serait activé à son
+            // tour. Un double-clic compte pour un, sur TOUT contrôle de la zone.
+            if (e.detail > 1) {
+              e.stopPropagation();
+              return;
+            }
+            // Un clic né du clavier (Espace sur une case) ne compte aucun clic de souris.
+            basculeAuClavier.current = e.detail === 0;
+          }}
+          className="flex-1 min-h-0 overflow-y-auto px-6 py-4"
+        >
           {/* Zone sélectionnés */}
           {Object.keys(selectedInModal).length > 0 && (
             <div className="mb-4">
@@ -242,14 +314,15 @@ export function FinderSearchModal({
               </div>
               <div className="space-y-2">
                 {Object.values(selectedInModal).map((element) => (
-                  <FinderElementCard
-                    key={element.id}
-                    element={element}
-                    selectionMode
-                    isSelected
-                    onSelect={() => toggleSelection({ ...element, profilThumbImageUrl: element.img })}
-                    baseUrl={baseUrl}
-                  />
+                  <div key={element.id} data-finder-element={element.id}>
+                    <FinderElementCard
+                      element={element}
+                      selectionMode
+                      isSelected
+                      onSelect={() => toggleSelection({ ...element, profilThumbImageUrl: element.img })}
+                      baseUrl={baseUrl}
+                    />
+                  </div>
                 ))}
               </div>
             </div>
@@ -263,33 +336,21 @@ export function FinderSearchModal({
               </div>
               <div className="space-y-2">
                 {searchResults.map((result) => (
-                  <FinderElementCard
-                    key={result.id}
-                    element={{
-                      id: result.id,
-                      name: result.name,
-                      type: result.type as FinderElementType,
-                      img: result.profilThumbImageUrl
-                    }}
-                    selectionMode
-                    isSelected={!!selectedInModal[result.id]}
-                    onSelect={() => toggleSelection(result)}
-                    baseUrl={baseUrl}
-                  />
+                  <div key={result.id} data-finder-element={result.id}>
+                    <FinderElementCard
+                      element={{
+                        id: result.id,
+                        name: result.name,
+                        type: result.type as FinderElementType,
+                        img: result.profilThumbImageUrl
+                      }}
+                      selectionMode
+                      onSelect={() => toggleSelection(result)}
+                      baseUrl={baseUrl}
+                    />
+                  </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {showAddNewBelow && (
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed p-3">
-              <p className="text-sm text-muted-foreground">
-                {String(t("coform.finder.modal.addNewNotListed", undefined, { label: addNewLabel }))}
-              </p>
-              <Button type="button" size="sm" variant="outline" onClick={handleAddNew} className="gap-2">
-                <Plus aria-hidden="true" className="w-4 h-4" />
-                <span>{String(t("coform.finder.modal.addNewButton"))}</span>
-              </Button>
             </div>
           )}
 
@@ -335,6 +396,19 @@ export function FinderSearchModal({
                   </Button>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Sous la liste — ou sous « déjà sélectionnés », quand on vient de la vider en sélectionnant. */}
+          {showAddNewBelow && (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed p-3">
+              <p className="text-sm text-muted-foreground">
+                {String(t("coform.finder.modal.addNewNotListed", undefined, { label: addNewLabel }))}
+              </p>
+              <Button type="button" size="sm" variant="outline" onClick={handleAddNew} className="gap-2">
+                <Plus aria-hidden="true" className="w-4 h-4" />
+                <span>{String(t("coform.finder.modal.addNewButton"))}</span>
+              </Button>
             </div>
           )}
 
@@ -384,6 +458,11 @@ export function FinderSearchModal({
             </div>
           )}
         </div>
+
+        {/* Pas de `role="status"` : celui de « Recherche en cours… » reste le seul. */}
+        <p aria-live="polite" className="sr-only">
+          <span key={annonce.n}>{annonce.texte}</span>
+        </p>
 
         <DialogFooter className="px-6 py-4 border-t">
           <Button type="button" variant="outline" onClick={onClose}>

@@ -599,8 +599,35 @@ Recherche et sélection d'entités Cocolight (organisations, citoyens, événeme
   de la saisie en cours. Sinon « Recherche en cours… » tient la place — une réponse VIDE conservée
   (champ vidé puis retapé) affichait « Aucun résultat » et un « Ajouter » cliquable avant la réponse.
 - **Erreur** : message et bouton « Réessayer » (`retry`) — l'état « Recherche en cours… » ne se terminait
-  jamais. **Tout déjà sélectionné** : message dédié, l'ajout reste proposé sous « pas dans la liste »,
-  jamais sous « aucun résultat » (risque de doublon).
+  jamais. **Tout déjà sélectionné** : message dédié (« Les résultats pour … sont déjà sélectionnés »),
+  jamais « aucun résultat » (risque de doublon). L'ajout reste proposé : « n'existe pas encore ? » quand
+  tout ce qui répond est déjà dans la QUESTION (aucune liste à l'écran) ; l'encart discret « pas dans la
+  liste ? » quand c'est la sélection en cours qui a vidé la liste — sélectionner ne change pas la forme
+  de l'offre.
+- **Un élément sélectionné quitte les résultats** : il ne s'affiche que dans la zone « Sélectionnés »
+  (il apparaissait deux fois — coché dans la liste, et au-dessus) ; désélectionné, il y reprend sa place.
+  Vaut pour tous les montages de la modale (`FinderField`, `PlacesListView`, `CommunEditorsDialog`,
+  `useCommunProjectActions`). La carte activée disparaissant de sa zone, trois conséquences sont traitées :
+  - **focus clavier** : il passe à la carte qui prend la place DANS LA MÊME ZONE — la suivante, sinon la
+    précédente —, sinon au champ de recherche : on garde sa place dans la liste (Espace, Espace
+    sélectionne deux résultats d'affilée). Jamais dans l'autre zone, où l'Espace suivant ferait l'inverse
+    sur un autre élément ; ni vers une voisine en choix unique, où il remplacerait le choix. Le focus
+    n'est rendu que si la case activée le portait, et au clavier : à la souris, focaliser une carte ferait
+    défiler la liste. Arbitrage : suivre l'élément dans l'autre zone obligeait à retraverser la liste à
+    chaque sélection ;
+  - **annonce** : la bascule se dit dans une région `aria-live="polite"` (« Ajout à la sélection : … »,
+    « Retrait de la sélection : … », « Sélection : … » en choix unique), la case cochée n'étant plus sous
+    le focus pour la confirmer. Dite 150 ms APRÈS le déplacement du focus (un lecteur d'écran coupe ce
+    qu'il disait quand le focus change), et remontée à chaque bascule (deux homonymes à la suite) ;
+  - **double-clic** : le second clic est ignoré, sur TOUT contrôle de la zone de contenu. La liste se
+    décale d'un cran, et ce qui glisse sous le curseur — une carte voisine, ou le bouton « Ajouter » —
+    était activé à son tour : mesuré au navigateur, 8 double-clics sur 15 sélectionnaient aussi la voisine
+    (elle aurait remplacé l'élément visé en choix unique), 0 sur 15 ensuite ; même résultat pour une double
+    tape sur écran tactile émulé (Chrome). La garde lit le compte de clics du navigateur (`detail`) :
+    deux clics volontaires très rapprochés au même endroit n'en font qu'un ;
+  - ⚠️ **limites connues** : liste défilée, la carte cliquée disparaît sans que la zone « Sélectionnés »,
+    restée en haut, soit visible ; l'annonce n'a pas été écoutée avec un vrai lecteur d'écran, ni la
+    double tape essayée sur un appareil réel.
 - Sélection simple ou multiple selon `config.multiple`
 - Affiche les éléments sélectionnés via `FinderElementCard`
 - Contrôles additionnels : `addNew`, `invite` (email), `editElement`, `linkToAnswer`
@@ -1042,7 +1069,7 @@ Hook React Query pour la recherche d'entités via `entity.searchCostum`. Caract�
 - Réponse précédente conservée pendant la suivante (`keepPreviousData`), jamais `isCurrentAnswer`
 - Cache 30s
 - Transforme `SearchEntity → FinderSearchResult` via `toFinderSearchResult`
-- Le filtrage des éléments déjà sélectionnés se fait côté composant
+- Le filtrage des éléments déjà sélectionnés (dans la question, ou dans la modale) se fait côté composant
 - Les `filters` envoyés sont construits par le builder partagé `buildFinderMongoFilters(config.filters, config.excludeFilters)` (DSL backend, inclusions + exclusions) — même sortie que la liste `getEligiblePlaces`
 
 ---
