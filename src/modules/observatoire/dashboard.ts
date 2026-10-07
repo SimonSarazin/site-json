@@ -116,6 +116,55 @@ export function applyTextSearch(
 }
 
 /*───────────────────────────────────────────────────────────────*/
+/* Sélection (clic sur un item de la liste)                      */
+/*───────────────────────────────────────────────────────────────*/
+
+/**
+ * Filtre de SÉLECTION : chaque MOT du libellé cliqué doit se trouver dans la
+ * réunion des dimensions désignées (ET entre les mots, OU entre les
+ * dimensions). Volontairement DISTINCT de `applyTextSearch`, qui cherche la
+ * saisie ENTIÈRE et garde son comportement : la barre de recherche et le clic
+ * cohabitent sans que l'un change l'autre.
+ *
+ * Le découpage en mots n'est pas un confort : le libellé d'un équipement et
+ * celui de son installation ne coïncident jamais mot pour mot (« Stade
+ * Municipal » vs « Stade Municipal de Saint-Paul »). Chercher la chaîne
+ * entière ne ramènerait que des correspondances exactes et raterait les
+ * équipements voisins du même lieu.
+ */
+export function applySelection(
+  data: ObservatoryItem[],
+  selection: string,
+  dims: DimensionsConfig,
+  selectionDimIds: readonly string[],
+  labels?: LabelMaps,
+): ObservatoryItem[] {
+  const words = normalizeText(selection.trim()).split(/\s+/).filter(Boolean);
+  if (words.length === 0) return data;
+  const ids = selectionDimIds.filter((id) => {
+    const kind = dims[id]?.kind;
+    return dims[id] && !isBoolKind(kind) && kind !== "number";
+  });
+  if (ids.length === 0) return data;
+  return data.filter((d) => {
+    // Réunion des dimensions en UNE chaîne : un mot ne contenant pas d'espace,
+    // il ne peut pas matcher à cheval sur deux dimensions — « présent dans la
+    // réunion » équivaut donc à « présent dans au moins une ».
+    const haystack = normalizeText(
+      ids
+        .map((id) => {
+          const def = dims[id];
+          return def.kind === "list"
+            ? dimensionList(d, def).join(" ")
+            : (dimensionValue(d, def, labels?.[id]) ?? "");
+        })
+        .join(" "),
+    );
+    return words.every((w) => haystack.includes(w));
+  });
+}
+
+/*───────────────────────────────────────────────────────────────*/
 /* KPI                                                           */
 /*───────────────────────────────────────────────────────────────*/
 

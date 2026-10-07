@@ -77,7 +77,10 @@
     "showers": "Showers",
     "freeAccess": "Free access",
     "yearsAgo": "{{count}} years ago",
-    "filterByInstallation": "Filter by facility {{name}}"
+    "filterByInstallation": "Filter by facility {{name}}",
+    "expand": "Expand card",
+    "collapse": "Collapse card",
+    "sheet": "Details"
   },
   "PreviewPoiAmenities": {
     "edit": "Edit",
@@ -210,7 +213,18 @@
     "bookAria": "Book {{day}} from {{start}} to {{end}}",
     "bookTitle": "Book a time slot",
     "conflict": "This slot is already booked by {{user}}.",
-    "referenceNotice": "Reference grid: an empty cell means no booking is on record — not that the facility is open."
+    "referenceNotice": "Reference grid: an empty cell means no booking is on record — not that the facility is open.",
+    "orgaSheet": "Profile",
+    "orgaSheetAria": "Open {{name}}'s profile in the directory"
+  },
+  "PreviewBookedResources": {
+    "title": "Booked facilities",
+    "error": "Unable to load booked facilities.",
+    "unknownResource": "Unspecified facility",
+    "slotCount_one": "{{count}} time slot",
+    "slotCount_other": "{{count}} time slots",
+    "sheet": "Details",
+    "sheetAria": "Open the {{name}} details"
   },
   "Filtres actifs :": "Active filters:",
   "À partir du": "From",
@@ -239,6 +253,8 @@
   "+{{count}} autres — précisez la recherche": "+{{count}} more — refine your search",
   "Carte": "Map",
   "Voir en liste": "See in list",
+  "Observatoire": "Observatory",
+  "Chargement des données… {{loaded}} / {{total}}": "Loading data… {{loaded}} / {{total}}",
   "type.NGO": "NGO",
   "type.LocalBusiness": "Local Business",
   "type.Group": "Group",

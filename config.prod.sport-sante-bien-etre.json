@@ -9167,11 +9167,19 @@
           }
         },
         "parent": {
-          "widget": "tags",
-          "write": "omitEmpty",
+          "widget": "finder",
+          "type": "object",
+          "read": "entityRef:read",
+          "write": "entityRef:write",
           "label": {
-            "fr": "Formation parente",
-            "en": "Parent training"
+            "fr": "Centre de formation",
+            "en": "Training centre"
+          },
+          "widgetProps": {
+            "searchTypes": [
+              "organizations"
+            ],
+            "multiple": true
           }
         },
         "module": {
@@ -9807,11 +9815,19 @@
           }
         },
         "parent": {
-          "widget": "tags",
-          "write": "omitEmpty",
+          "widget": "finder",
+          "type": "object",
+          "read": "entityRef:read",
+          "write": "entityRef:write",
           "label": {
-            "fr": "Équipement parent",
-            "en": "Parent facility"
+            "fr": "Organisme(s)",
+            "en": "Organisation(s)"
+          },
+          "widgetProps": {
+            "searchTypes": [
+              "organizations"
+            ],
+            "multiple": true
           }
         },
         "hebergement": {

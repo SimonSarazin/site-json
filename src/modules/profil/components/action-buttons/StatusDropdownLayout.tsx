@@ -52,6 +52,9 @@ export function StatusDropdownLayout({
   const membershipActions = actions.filter((a) => a.type === "join" || a.type === "leave");
   const invitationActions = actions.filter((a) => a.type === "accept" || a.type === "reject");
   const pendingActions = actions.filter((a) => a.type === "pending");
+  // Suppression de la fiche : toujours en DERNIER et derrière un séparateur, pour qu'elle ne se
+  // confonde pas avec les actions de lien (quitter, ne plus suivre) qui, elles, sont réversibles.
+  const dangerActions = actions.filter((a) => a.type === "delete");
 
   // Calcul des séparateurs nécessaires
   const hasFollow = followActions.length > 0;
@@ -120,6 +123,20 @@ export function StatusDropdownLayout({
               key={action.id}
               onClick={() => handleActionClick(action)}
               variant={action.isDestructive ? "destructive" : "default"}
+            >
+              {action.icon}
+              {action.label}
+            </DropdownMenuItem>
+          ))}
+
+          {/* Suppression définitive de la fiche (séparée du reste) */}
+          {dangerActions.filter((a) => a.show).length > 0 && <DropdownMenuSeparator />}
+          {dangerActions.filter((a) => a.show).map((action) => (
+            <DropdownMenuItem
+              key={action.id}
+              onClick={() => handleActionClick(action)}
+              variant="destructive"
+              disabled={action.isPending}
             >
               {action.icon}
               {action.label}

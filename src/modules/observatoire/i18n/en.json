@@ -31,6 +31,12 @@
     "prev": "Previous",
     "next": "Next"
   },
+  "list": {
+    "title": "List",
+    "sheet": "Details",
+    "showMore": "Show more ({{count}})",
+    "clearSelection": "Clear selection"
+  },
   "installation": {
     "title": "Facility dashboard",
     "subtitle_one": "{{count}} facility",

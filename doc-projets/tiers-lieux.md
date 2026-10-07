@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-09-29** (alerte « tiers-lieu déjà existant » à la création — bloc `duplicateCheck` + slot générique `slot:entityDuplicates`, cf. §9 29/09).
+Dernière mise à jour : **2026-10-07** (`/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page, cf. §9). Précédent : **2026-09-30**, `/observatoire` en **split view** : liste des lieux à gauche, graphes à droite, KPI en bandeau, table conservée sous le split — rendu navigateur à valider.
 
 ---
 
@@ -53,6 +53,7 @@ lieux**, pas un plan de rattrapage.
 | 10/08bis | Schumann + Claude | Bug de données du détail d'un outil : sélection sur le seul `criteriaId` → 61 % des lieux listés attribuaient un outil qu'ils n'avaient jamais saisi. Fix backend + front `normalizedName`, libellés de satisfaction alignés sur l'input `commonTable`. Cf. §9 10/08bis |
 | 11/08 | Thomas + Claude | Demande SDK **livrée** : `normalizedName` sur `COSTUM_TOOL_USERS` (lib `d93c7c3`, npm `1.0.184`) + endpoints d'invitation (lib `ca7d65e`, même version). Réinstallation propre (`npm ci`), contenu du tarball vérifié, gates verts. Bump commité `c12f2e43` ; §11/§11.1 mises à jour |
 | 29/09 | Peterson + Claude | Alerte non bloquante « tiers-lieu déjà existant » dans le wizard de création, confirmation à la soumission si nom et code postal coïncident — slot générique config-driven, aucun endpoint nouveau (cf. §9) |
+| 28/09 → 30/09 | Peterson + Claude | `/observatoire` en **split view**, sur le patron des équipements sportifs, tout le contenu conservé : table gardée SOUS le split (retouche moteur d'une ligne), graphes typologie/portage en pleine largeur. Branche `observatoire-split-view` (`d81b8880`). Cf. §9 30/09 |
 
 ---
 
@@ -71,7 +72,7 @@ lieux**, pas un plan de rattrapage.
 ```
                  ┌──────────────────────────────────────────────┐
    Visiteur ───► │  SiteForge (site-json)                       │
-                 │   12 pages · 22 sections                     │
+                 │   18 pages · 42 sections                     │
                  │   header MEGA-MENU (4 groupes à enfants)     │
                  │   /lieux : panneau de filtres + résultats    │
                  │   /observatoire : 10 dimensions              │
@@ -93,18 +94,22 @@ de hero sur une page à panneau, cela produit deux champs de recherche.
 
 ## 4. Ce que la config met en œuvre
 
-### 4.1 Les 14 pages
+### 4.1 Les 18 pages
 
 | Page | Sections | Rôle |
 |---|---|---|
 | `/` | 11 | `hero-search` + résultats + **teaser agenda** + 5 blocs éditoriaux |
+| `/reservation` | 5 | hero, annuaire des ressources (5 cartes + lien complet), puis 3 blocs éditoriaux ; sans `section-lieux` |
 | `/lieux` | 1 | `gridLayout` — panneau de filtres (5 groupes) + `searchProStatic` |
-| `/observatoire` | 1 | `data-observatory` — cf. §4.3 |
+| `/observatoire` | 1 | `data-observatory` en **split view** (30/09) — cf. §4.3 |
 | `/reseaux-regionaux` · `/reseaux-thematiques` | 1 chacune | même périmètre, **deux angles** (cf. §4.2) |
 | `/communaute` | 1 | `searchProStatic` |
 | `/actualites` | 2 | `searchHeader` + `tabs` — onglet **Actus** (`articleFeed`) / onglet **Événements** (`agenda`, 3 `sourceKey`). **Remplace `/evenements`** (07/09, cf. §9) |
 | `/blog` | 1 | `articleFeed` — liste canonique du module blog : cible du repli du lecteur `/blog/:slug` et du `<link>` de canal du flux RSS |
+| `/a-propos` | 9 | présentation du réseau et contacts |
 | `/annuaire-ressources` | 2 | `title` + `coform-resource-directory` |
+| `/mes-lieux` | 1 | lieux dont le compte connecté est membre |
+| `/outils-ressources` | 1 | page des outils et ressources du réseau |
 | `/usages` | 1 | `toolsCatalog` — catalogue d'outils d'usage (livré 06/08, review 10/08 — cf. §9) |
 | `/api-donnees` | 1 | `html` — API et données ouvertes |
 | `/mentions-legales` · `/confidentialite` · `/cgu` | 1 chacune | socle légal **présent et fourni** (≈ 3,5 k · 11 k · 12 k caractères) |
@@ -124,11 +129,14 @@ elles diffèrent par `defaultViewMode` (`regions` vs `thematics`), `enableRegion
 | Dimensions | 10 — `name`, `commune`, `departement`, `region`, `pays`, `typologie`, `portage`, `surface`, `compagnon`, `equipements` |
 | Filtres | 7 — région, typologie, portage, surface, pays, département, compagnon |
 | KPI | 5 — `count`, 2× `distinct`, `percentTrue`, `top` |
-| Graphes | 6 — `bars` (région), `barsHorizontal` (typologie, portage, équipements), `donut` (surface, pays) |
-| Table | oui · **export CSV** oui · **drill-down** activé |
+| Graphes | 6 — `bars` (région), `barsHorizontal` (typologie, portage, équipements), `donut` (surface, pays). Ordre depuis le 30/09 : région, typologie et portage en pleine largeur, puis [surface \| pays], puis équipements |
+| Agencement | **split view** (30/09) : filtres → KPI en bandeau → [liste des lieux, seule zone défilante \| graphes déroulés en entier] → table en pleine largeur. `maxWidth: "full"`. Mobile : tout empilé (KPI, graphes, liste, table) |
+| Liste | titre `name`, sous-titre commune · région ; clic sur un nom = sélection `?selection=` (mot à mot sur `name`) qui filtre KPI, graphes, liste et table ; bouton « Fiche » → profil |
+| Table | oui, **sous** le split · **export CSV** oui · clic sur une ligne → profil (`table.rowAction`) · **drill-down** activé |
 
-Il porte sur **4 322 entités**, soit légèrement plus que les 4 303 des pages de recherche : les deux
-périmètres ne sont pas identiques.
+Il porte sur **4 322 entités** au 28/07, **4 328** au 28/09 (base locale `prod230926`, compteur
+identique sur la capture de Peterson), soit légèrement plus que les 4 303 des pages de recherche :
+les deux périmètres ne sont pas identiques.
 
 ### 4.4 Formulaire costum, bouton flottant, ampli
 
@@ -205,6 +213,499 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 07/10 — `/reservation` : aperçu de ressources
+
+`/reservation` place `coform-resource-directory` après le hero. La section reprend les mêmes types
+de ressources et les mêmes cartes interactives que `/annuaire-ressources` ; un clic ouvre le détail
+en popup. Elle affiche au maximum 5 cartes, en 5 colonnes desktop, sans facettes ni filtre par lieu
+porteur. Son en-tête présente « Découvrir les services » à gauche et « Voir tous les résultats » à
+droite, vers `/annuaire-ressources`. `section-lieux` a été retirée de `/reservation` à la demande ;
+elle reste sur l’accueil, qui n’affiche pas cet annuaire.
+
+Le titre de page est « Des espaces engagés, atypiques, foisonnant pour une expérience écologique,
+sociale, culturelle ou inclusive ». **Validation** : `config:validate` ✅ — 18 pages, 42 sections.
+Le rendu navigateur n’a pas été vérifié dans cette reprise.
+
+### 24/09quater — encart d'une fiche : le nombre de PLACES d'hébergement, pas le nombre d'offres
+
+**Bug.** L'encart « Réserver en ligne » affichait « 1 chambre » sur La Plume à Loup, qui déclare
+10 places. Le compteur d'hébergement était réglé sur `bedRoomPath.type: "answer"` — « compte les
+RÉPONSES au formulaire » — et le lieu n'a déposé qu'une offre. Les deux autres lignes du même encart
+ne comptent pas ça : le coworking additionne le champ `place` (`single`), les salles comptent les
+lignes d'un tableau (`array`).
+
+**Correctif (config, une ligne)** : `profile-info-tl.bedRoomPath.type` passe à `"single"`, donc la
+somme du champ `place` — le même champ que le coworking, qui affiche déjà des « postes de travail ».
+**Libellés** alignés : « chambre / chambres » devient « place d'hébergement / places d'hébergement »
+(`room/rooms` → `accommodation space(s)`), sans quoi on afficherait « 10 chambres » pour 10 places.
+`profile-about-tl` garde `"answer"` : il LISTE les offres, et ses branches `single` et `answer` y sont
+identiques.
+
+**Racine du bug, traitée** : rien ne documentait ce que valent `single`, `array` et `answer` — le
+schéma typait ces objets en `z.record(z.string(), z.string())`. Les trois modes sont désormais
+décrits dans le schéma et dans `doc/08-module-profil.md`, et la logique, qui était **recopiée trois
+fois** dans le composant (la copie des salles ayant perdu la branche `answer` au passage), vit dans
+une fonction pure testée, `compteRessources.ts` — 7 tests dont celui du bug.
+
+**Non vérifiable en local** : ni la fiche ni le formulaire d'hébergement ne sont dans la base locale,
+le nombre affiché ne peut donc être contrôlé que sur un environnement qui porte la donnée.
+**Gates** : `typecheck` ✅ 0 erreur · `eslint` ✅ · `config:validate` ✅ (15 pages, 27 sections) ·
+`audit:config` RAS (`config.prod.tiers-lieux.json` : trad 0, liens 0, inerte 0, assets 0, strip 0,
+prereq 0) · `test:unit` 5 105/5 107 (les 2 échecs d'environnement habituels, étrangers au lot ;
++7 tests nets, `compteRessources.test.ts`).
+
+### 28/09 — « Mes lieux » : page à 4 onglets (portage du legacy `listOrga`)
+
+**Bouton demandé** : « Mes lieux », dans le sous-menu « Les lieux » du header ET le tiroir mobile
+(les deux partagent le même `header.nav` — un seul ajout de config suffit aux deux). Config :
+`header.nav[0].children` (entrée `visibility:{auth:"required"}`), nouvelle page `/mes-lieux`
+(`auth.required: true`), nouvelle section moteur `my-places`.
+
+**Correction en cours de route, importante.** La première implémentation lisait les fiches SUIVIES
+(`links.follows`, `me.getSubscriptions()`) — une hypothèse partie de l'ancre `#favoris` de l'URL
+legacy citée dans la demande. L'utilisateur a alors collé le VRAI code source de la vue legacy
+(`costum.views.custom.franceTierslieux.listOrga`), qui a tout changé : « Mes lieux » = les
+organisations dont le compte est **MEMBRE** (`links.members.<id>` existe, `isInviting` absent),
+scopées au réseau (`$or[source.keys, reference.costum]` sur `franceTierslieux`/`tierslieuxbelgique`).
+Corrigé sur `useUserOrganizations` (déjà dans le SDK, aucun ajout) + `sourceKey` de config. Le hook
+`useUserSubscriptions` écrit par erreur a été supprimé (aucun autre appelant, jamais commité).
+
+**4 onglets**, portés depuis le contrôleur PHP réel (lu en local, `~/dev/communecter-dev`, lecture
+seule) :
+
+| Onglet | Source de donnée | État |
+|---|---|---|
+| Mes tiers-lieux (défaut) | `useUserOrganizations` + `sourceKey` | ✅ livré |
+| News | `useMemberNewsQuery` — `org.getNews()` **par lieu**, fusionné/trié (PAS un filtre `source.key` sur `news` : une 2ᵉ hypothèse invalidée en lisant `GetLikedNewsAction.php`, qui boucle par organisation) | ✅ livré |
+| Agenda | `useLinkedEntitiesQuery` — `entity.searchCostum()` + filtre `$or` sur `links.attendees`/`links.organizer` des lieux membres | ✅ livré |
+| Projets | idem, filtre `links.contributors` | ✅ livré |
+
+Les onglets 2 à 4 ne se chargent qu'une fois VISITÉS (`enabled` sur l'onglet actif) — pas de rafale
+de requêtes au premier rendu. Helpers purs testés séparément : `buildLinkedEntitiesFilter` (filtre
+`$or` lien×organisation), `fusionnerEtTrierNews` (tri par date, portage de `News::sortNews`).
+
+**Correctif moteur, hors du périmètre initial mais nécessaire** : `HeaderMegaMenu` (header de
+tiers-lieux ET relief) ne consultait `item.visibility` NULLE PART — ni pour les items racine ni pour
+leurs enfants — contrairement à `HeaderStacked`/`HeaderTransparentScroll`. Une entrée
+`visibility:{auth:"required"}` se serait donc affichée à un visiteur anonyme, desktop comme mobile
+(les deux rendus partagent le même `nav`). Corrigé par `navVisibility.ts` (2 fonctions pures,
+testées : aplatir les conditions item+enfants dans l'ordre, reconstruire l'arbre filtré), branché
+dans `HeaderMegaMenu.tsx`. Impact : les 2 sites `mega-menu` du parc (tiers-lieux, relief) — relief
+n'a aujourd'hui aucune entrée `visibility`, donc rien n'y change visuellement.
+
+**Vérifié** : 15 tests unitaires (5 hors composant : filtre `$or`, fusion des news, filtrage de
+visibilité de nav ; 8 sur le composant `MyPlacesSection`, couvrant anonyme/connecté/onglets dérivés).
+**Gates** : `typecheck` ✅ 0 erreur · `eslint` ✅ 0 erreur 0 avertissement sur les fichiers du lot ·
+`config:validate` ✅ (15 pages, 27 sections) · `test:unit` 5 073/5 075 — 2 échecs d'environnement
+local, étrangers au lot.
+
+**Non vérifiable en local au moment de l'écrire** : les 4 onglets réels reposent sur
+`entity.searchCostum()`/`getNews()` contre un backend — ni la base locale ni
+`VITE_COSTUM_FORCE_LIVE` ne le permettent. Testé ensuite en réel par l'utilisateur (§ 28/09bis) : un
+bug l'a confirmé. Le filtre `vote.<criteriaId>` que porte encore la spec SDK (onglet 5) est lui-même
+un point ouvert côté legacy — cf. le document.
+
+### 28/09bis — « Mes lieux » : deux correctifs remontés d'un test réel
+
+**Agenda/Projets en 500 — `$or` en tableau, pas en objet.** `buildLinkedEntitiesFilter` envoyait un
+tableau Mongo standard (`$or: [{...}, {...}]`). Le DSL Communecter n'accepte `$or` QU'en objet — déjà
+documenté (`doc/05-schemas-sections.md` § `searchProStatic.defaultFilters.$or` : « un tableau
+provoque une erreur 500 backend »), manqué à l'écriture. Confirmé par le test réel :
+`MongoException: $or/$and/$nor entries need to be full objects`. Corrigé : le filtre construit
+maintenant `{"$or": {"<champ>.<orgId>": {$exists:true}, …}}` — chaque clé déjà unique (les orgIds
+diffèrent), donc aucune clause n'est perdue en passant de l'objet au tableau côté serveur.
+
+**News — rendu aligné sur l'onglet « Actualités » d'une fiche.** Demandé : rendre comme
+`/profil/<slug>/news`. La section réutilise désormais le VRAI `NewsItem` (module `news`), pas une
+carte générique. ⚠️ **La première version ci-dessous (résolution par `source.key`) s'est révélée
+CASSÉE en test réel — page blanche — corrigée le jour même, cf. §28/09ter.**
+
+**Vérifié à ce stade** : régression sur `buildLinkedEntitiesFilter` : un test affirme explicitement
+que le résultat n'est JAMAIS un tableau. **Gates** : `typecheck` ✅ 0 erreur · `eslint` ✅ 0 erreur
+0 avertissement · `test:unit` 5 080/5 082 — mêmes 2 échecs d'environnement, étrangers au lot.
+
+### 28/09ter — page blanche News corrigée, Agenda/Projets alignés sur le composant Agenda, SDK `answerdirectory` prototypé
+
+**News — la résolution par `source.key` (§28/09bis) ne marche JAMAIS, corrigée.** Confirmé en lisant
+`useNewsMutations.tsx` : `source.key` trace le COSTUM AMBIANT du site au moment de la création d'une
+actu, PAS son organisation propriétaire — la correspondance échouait donc systématiquement, et
+`NewsItem` rend `null` sans `currentEntity` résolue (`!formattedNews || !currentEntity`) : chaque
+item invisible, toute la liste en silence, aucune erreur. `useMemberNewsQuery` est réécrit pour
+porter l'organisation DÈS le fetch (un `getNews()` déjà PAR organisation) au lieu de la retrouver
+après coup : retourne `ActuDeLieu[]` (`{news, lieu}`), plus de reconstruction heuristique. L'ancien
+`organisationDeLActu` est supprimé (pas gardé en code mort).
+
+**Agenda/Projets — clic → panneau latéral, carte Agenda réutilisée.** La section rendait via
+`EntityCard`/tiroir générique. Remplacé par `SearchListView` (le composant de rendu du module
+`search`, celui qu'utilise déjà `Agenda.tsx` lui-même) : clic sur un item → panneau de détail à
+droite (`SwitchDetailsMode`), pas une navigation. Carte/aperçu Agenda = **exactement** la config par
+défaut de `Agenda.tsx` (`card:{type:"event",detailsMode:"drawer"}`, `preview:{type:"event"}`) ; pour
+Projets, aucun variant `"project"` n'existe dans `SearchCard`/`Preview` (vérifié en lisant leur
+dispatch) — repli légitime sur `"default"`, pas un design inventé. Limite documentée en commentaire :
+pagination non câblée pour ces deux onglets (`SearchListView` est un pur rendu, une seule page,
+`indexStep:20`).
+
+**SDK `answerdirectory` — prototypé sous l'autorisation ponctuelle du 28/09** (« fait comme expor pdf
+agenda le answerdirectory », même périmètre que l'exception export PDF agenda du 21/08 : édition
+locale de `cocolight-api-client/` autorisée, `git push`/`npm publish` toujours bloqués). Ajouté :
+endpoint `FRANCETIERSLIEUX_ANSWERDIRECTORY` (`endpoints-copie.json`, régénéré via
+`generate:module:publish`/`generate:methodeapi`) + variant SDK `franceTierslieux-answerdirectory`
+(`BaseEntity.ts`, patron identique à `navigator-tl-ressource`). `typecheck`/`lint`/tests SDK verts
+(140/140 unitaires ; les 135 échecs d'intégration sont un backend absent sur `127.0.0.1:5080`,
+étrangers au lot). Dist reconstruit LOCALEMENT (`build:browser`/`build:node`/`build:esm:rollup` —
+`site-json` pointe sur le SDK de travail via symlink, cf. [[reference_sdk_symlink_masque_version_lock]]
+en mémoire) ; rien publié.
+
+**Vérifié** : `site-json` `typecheck` ✅ · `eslint` (fichiers touchés) ✅ · `test:unit` 5 076/5 078
+(mêmes 2 échecs d'environnement, `bundle-size`/`site-assets`, étrangers au lot) ; SDK `typecheck` ✅ ·
+`lint` ✅ · `test` 140/140 (hors intégration, backend absent). Rien commité.
+
+### 28/09quater — grille Agenda/Projets à 3 colonnes
+
+**Grille Agenda/Projets corrigée.** `SearchListView` sans `columns` rend une seule colonne pleine
+largeur — beaucoup trop large pour une carte agenda/projet dans ce digest compact. Passé
+`columns:{sm:1,md:2,lg:3}` (mêmes valeurs déjà utilisées par `CoformResourceDirectorySection.tsx`,
+donc déjà scannées par Tailwind — pas de classe dynamique non générée).
+
+**Vérifié** : `site-json` `typecheck` ✅ · `eslint` (fichiers touchés) ✅ · `test:unit` 5 089/5 091
+(mêmes 2 échecs d'environnement, étrangers au lot). Rien commité.
+
+### 28/09sexies — cartes Agenda/Projets : le lieu membre lié s'affiche
+
+**Demande.** Sur la carte Projet, afficher le tiers-lieu « parent » ; sur la carte Agenda, le
+tiers-lieu organisateur — la liste de chaque onglet mélange les items de plusieurs lieux membres,
+sans repère on ne sait pas lequel a fait remonter quoi.
+
+**Investigation avant code (workflow CLAUDE.md)** : `SearchCard`/`CardDefault`/`CardEvent` (moteur
+`search`, partagé par **tout le site**) n'ont aucun point d'extension par item ; muter les instances
+`Organization`/`Event`/`Project` retournées est risqué (`serverData` est un getter réactif, une copie
+superficielle casse le clic → aperçu). Deux options présentées, la première retenue par vous : un
+prop générique `list.linkedLabels?: Record<string,string>` (map id item → libellé), rétrocompatible
+(absent partout ailleurs → aucun effet sur les autres pages consommant ces cartes). Confirmé aussi :
+« parent » = le lieu membre lié via `links.contributors` (aucun champ SDK littéral `parent` trouvé
+sur `Project`), symétrique à `links.organizer` pour l'événement.
+
+**Implémentation.** `ListConfSchema.linkedLabels` (nouveau, optionnel). `resolveLinkedLabels.ts`
+(nouveau helper pur, `src/modules/profil/lib/`) croise `item.serverData.links.<champ>` avec les ids
+des lieux membres déjà en mémoire (`mesLieux.organizations`, onglet 1 — aucun appel réseau
+supplémentaire) et résout leurs noms. Câblé dans `MyPlacesSection.tsx` : Agenda lit `organizer`
+STRICTEMENT (pas `attendees`, qui a servi à FILTRER la liste mais désigne des participants, pas un
+organisateur) ; Projets lit `contributors`. `CardDefault.tsx`/`CardEvent.tsx` affichent un petit
+badge (icône `Building2`, `text-muted-foreground` — même token que les autres lignes secondaires de
+ces cartes, aucun nouveau risque de contraste) uniquement si `list.linkedLabels[id]` existe.
+
+**Vérifié** : `typecheck` ✅ · `eslint` ✅ · +9 tests (6 sur `resolveLinkedLabels`, 3 d'intégration sur
+`MyPlacesSection` — `SearchListView` mocké, comme `NewsItem` l'est déjà dans ce fichier, pour
+verrouiller le prop transmis sans dépendre du rendu réel lazy/Suspense du moteur `search`) ·
+`test:unit` 5 098/5 100 (mêmes 2 échecs d'environnement, étrangers au lot). ⚠️ Pas de vérification
+navigateur réelle (pas d'outil de capture d'écran disponible dans cette session) — à valider
+visuellement avant de considérer le lot terminé. Rien commité.
+
+### 28/09septies — carte Projet : le badge « 0 projet » retiré, génériquement
+
+**Demande.** Sur la carte Projet, `CardDefault.tsx` affichait TOUJOURS un badge « N projets »
+(nombre de sous-projets, `links.projects`) — pertinent pour un porteur (organisation) mais absurde
+sur la carte d'un item qui EST déjà lui-même un projet (« 0 projet » systématique, `links.projects`
+n'existant pas sur un `Project`).
+
+**Corrigé génériquement** (pas un correctif « Mes lieux ») : le badge est masqué quand
+`collection === "projects"`, MÊME convention déjà utilisée par `CardOverlay.tsx` pour distinguer le
+rendu par type d'entité — repris tel quel plutôt que réinventé. `CardDefault` étant le moteur
+partagé du site, ce correctif s'applique à TOUS ses consommateurs (recherche globale, annuaires…),
+pas seulement à « Mes lieux ».
+
+**Vérifié** : `typecheck` ✅ · `eslint` ✅ · +2 tests (nouveau `CardDefault.test.tsx` — masqué pour un
+projet, inchangé pour une organisation) · `test:unit` 5 100/5 102 (mêmes 2 échecs d'environnement,
+étrangers au lot). Rien commité.
+
+### 30/09 — onglet Agenda de « Mes lieux » : sous-onglets À venir/En cours/Passés ; nav « Mes lieux » déplacée
+
+**Onglet Agenda.** Par défaut, ne montre plus que les événements À VENIR (le legacy et l'ancien
+comportement mélangeaient tout, passés compris, sans repère). Câblé en 3 sous-onglets — mêmes
+libellés et même règle de répartition que le composant Agenda du site (`partitionByTime`,
+`src/modules/agenda/lib/partitionByTime.ts`, réutilisé tel quel, aucune règle de bucketing
+réinventée) : « À venir » (défaut), « En cours », « Passés ». Bucketing CLIENT sur les items déjà
+chargés par `useLinkedEntitiesQuery` (digest personnel, volume faible) — pas un nouvel appel réseau.
+
+**Nav « Mes lieux ».** Déplacée en dernière position du sous-menu « Les lieux » (desktop et tiroir
+mobile partagent la même donnée `header.nav`), juste après « Coworking, salles & hébergements ».
+Au passage, description corrigée : « Les tiers-lieux que vous suivez » → « … dont vous êtes membre »
+(texte resté sur l'ancienne sémantique « suivi », déjà corrigée dans le code depuis le 28/09).
+
+**Vérifié** : `typecheck` ✅ · `eslint` ✅ · `config:validate` ✅ (15 pages, 27 sections) ·
+`audit:config` RAS · +4 tests (2 sur le câblage des sous-onglets Agenda, dates de mock ajoutées aux
+2 tests existants qui en manquaient) · `test:unit` 5449/5451 (mêmes 2 échecs d'environnement,
+étrangers au lot) · exemple `header-mega-menu` (assistant config) resynchronisé
+(`config:example -- header-mega-menu --write`) après déplacement de l'entrée de nav. Rien commité.
+
+### 30/09bis — liens « Se réunir »/« Coworker »/« Séjourner » : `/annuaire-ressources` filtré, pas `/lieux`
+
+**Demande.** Ces 3 entrées du menu « Les lieux » (+ la carte d'accueil « Se réunir ») pointaient vers
+`/lieux?services=…` — l'annuaire des TIERS-LIEUX filtré par service déclaré sur leur fiche. Elles
+doivent pointer vers `/annuaire-ressources` (l'annuaire des RESSOURCES réservables — coworking,
+salles, hébergement, cf. §21/09), filtré sur le bon type.
+
+**Deep-link générique ajouté**, pas un cas spécial. `CoformResourceDirectorySection.tsx`
+(`/annuaire-ressources`) avait déjà sa facette « Type de ressource » (`selectedFilters.resourceType`,
+coché à la main) mais aucune lecture d'URL. Câblé avec `usePageFiltersUrlSync` — le MÊME hook
+générique qui fait déjà fonctionner `/lieux?services=…`/`?typologies=…` (`computeFiltersFromUrl`,
+partagé avec `FiltersSection`) — sur un groupe minimal `{id: "resourceType", options: [...]}`
+dérivé des `resourceTypes` déjà configurés. `?resourceType=meeting-room|coworking|accommodation`
+pré-coche donc la facette au chargement, sans logique de lecture d'URL réinventée.
+
+Liens mis à jour : nav « Se réunir »/« Coworker »/« Séjourner » (`/annuaire-ressources?resourceType=
+meeting-room|coworking|accommodation`) et la carte d'accueil « Se réunir » (seule des 3 à avoir un
+raccourci sur la page d'accueil — pas d'équivalent Coworking/Hébergement à y corriger).
+
+**Vérifié** : `typecheck` ✅ · `eslint` ✅ · `config:validate` ✅ (15 pages, 27 sections) ·
+`test:unit` 5449/5451 (mêmes 2 échecs d'environnement, étrangers au lot) · exemple `header-mega-menu`
+resynchronisé (2e fois du jour, même cause : déplacement/édition d'entrées de `header.nav`). ⚠️ Pas
+de vérification navigateur réelle (pas d'outil de capture d'écran dans cette session) — le mécanisme
+de deep-link est réutilisé tel quel (déjà en service sur `/lieux` et la home), mais son application à
+CETTE page n'a pas été rejouée à l'œil ; à valider avant de considérer le lot terminé. Rien commité.
+
+⚠️ **Corrigé le 30/09ter** : le `usePageFiltersUrlSync` posé ci-dessus était de trop — cf. l'entrée
+suivante, il a été retiré.
+
+
+### 30/09ter — 2 correctifs `/annuaire-ressources` (recherche texte tentée puis retirée)
+
+**Retour utilisateur, 2 bugs.**
+
+1. **Boucle de filtrage infinie au clic sur un lien de menu depuis `/annuaire-ressources`.** Cause :
+   le `usePageFiltersUrlSync` posé en 30/09bis était un DEUXIÈME mécanisme de synchro URL↔filtres,
+   en plus de celui déjà intégré à `FiltersSection` (rendue en sidebar sur cette même page, avec sa
+   propre facette « Type de ressource »). `FiltersSection` a sa propre garde anti-boucle
+   (`lastSyncedSearch`/`urlHydrated`) sur le MÊME état partagé `PageFilters` — deux écrivains non
+   coordonnés sur le même contexte produisaient la boucle observée. Retiré : `FiltersSection` seule
+   suffit, `?resourceType=…` fonctionne déjà par son mécanisme existant (aucun hook à réinventer).
+2. **Croix de fermeture de l'aperçu ressource masquée derrière le badge de capacité.** Les deux sont
+   `absolute … top-3/4 right-3/4` dans le même coin ; la croix (posée par la coque `DetailsModeDialog`,
+   sans z-index explicite) passait dessous. Fix côté coque (`[&>[data-slot=dialog-close]]:z-20`),
+   pas côté preview : protège pareil toute future preview qui poserait un contenu en haut à droite.
+
+Une recherche texte libre (barre dédiée, câblée sur `useSearchQuery`'s `searchText`) avait été
+ajoutée dans ce lot puis **retirée sur demande** : `searchText` reste `""`, docstring de la section
+revenue à « Pas de recherche texte », clés i18n `resourceDirectory.searchPlaceholder`/`clearSearch`
+retirées fr/en. Aucune trace du composant `ResourceDirectorySearchBar` dans le code final.
+
+**Vérifié** : `typecheck` ✅ · `eslint` ✅ · `test:unit -- src/modules/search` 673/673 (module entier,
+après retrait).
+⚠️ Pas de vérification navigateur réelle (pas d'outil de capture d'écran dans cette session) : les 2
+correctifs sont tracés par lecture de code, pas rejoués à l'œil. Rien commité.
+
+
+### 30/09quater — 2 correctifs manqués/insuffisants du lot précédent
+
+**Retour utilisateur, la home pointait encore vers `/lieux?services=…`.** La page d'accueil a en
+réalité **deux** sections de cartes d'action sur `/` : `actions-principales` (type `cards`, corrigée
+en 30/09bis) et une **deuxième section dupliquée**, `tiers-lieux-actions` (type `html`, contenu HTML
+brut), avec sa propre carte « Se réunir » et son propre lien codé en dur — non vue en 30/09bis. Lien
+corrigé (`/annuaire-ressources?resourceType=meeting-room`). ⚠️ Les deux sections coexistent sur `/`,
+aucune masquée — doublon d'affichage apparent, non traité ici (hors périmètre du bug signalé, à
+confirmer si voulu).
+
+**Retour utilisateur, la croix et le badge de capacité se chevauchent encore.** Le `z-20` posé en
+30/09ter (coque `DetailsModeDialog`) résout l'ATTEIGNABILITÉ au clic mais pas le chevauchement
+VISUEL : les deux pastilles restent l'une sur l'autre (`top-3/4 right-3/4`, quasiment le même coin).
+Fix complémentaire côté preview : le badge de capacité de `PreviewResourceDirectory` déplacé de
+`right-3` à `left-3` (même coin que `PreviewEvent`, déjà à gauche) — les deux pastilles n'occupent
+plus le même coin, plus de chevauchement du tout (le `z-20` de la coque reste en place comme filet de
+sécurité générique pour une future preview).
+
+**Vérifié** : `typecheck` ✅ · `eslint` ✅ · `test:unit -- src/modules/search` 673/673 ·
+`config:validate` ✅ (15 pages, 27 sections).
+⚠️ Pas de vérification navigateur réelle (pas d'outil de capture d'écran dans cette session) : les 2
+correctifs sont tracés par lecture de code, pas rejoués à l'œil. Rien commité.
+
+
+
+### 01/10 — revue de `tl-dev` avant MR : réutilisation, commentaires épurés
+
+**Réutilisation** : la suppression d'une fiche (`profil/actions/mutations/deleteEntity.ts`) invalide
+désormais `publicSurfaceKeys()` — le helper partagé que l'admin utilise déjà — au lieu de 2 clés de
+recherche posées à la main ; les compteurs et la recherche du hero sont rafraîchis aussi.
+
+**Commentaires** : retrait des passages qui racontaient l'historique du lot (hypothèses écartées,
+« demandé explicitement », « avant ce correctif »…) ; seul le *pourquoi* est conservé.
+
+**Vérifié** : `typecheck` ✅ · `eslint` (fichiers du lot, sortie JSON) 0 message · `test:unit`
+5438/5439 (seul échec : `bundle-size`, lié à un `dist/` ancien) · `config:validate` ✅ (15 pages,
+27 sections) · `audit:config` RAS.
+
+### 24/09ter — un administrateur peut supprimer sa fiche
+
+**Code + config.** L'en-tête de profil propose « Supprimer cette fiche » **en dernier** dans le menu
+d'actions, derrière un séparateur, avec un dialogue de confirmation ; retour sur `/lieux` ensuite, la
+page de la fiche n'existant plus. Option opt-in `profile-header.showDeleteButton` (+
+`deleteRedirectPath`), posée sur le seul profil `organizations` de ce site.
+
+⚠️ **L'action supprime la fiche de Communecter en entier**, pas seulement de tiers-lieux.org : c'est
+`element/delete` via `Organization.delete()`, à ne pas confondre avec le « retrait » de l'onglet
+Référencement, qui détache du costum en laissant la fiche vivre.
+
+Quatre gardes superposées : option de config absente par défaut · `permissions.isAdmin` sur CETTE
+fiche côté client · `isAuthorOrAdmin` côté SDK · `canDeleteElement` côté backend. La mutation
+(`actions/mutations/lifecycle.ts`) invalide la fiche ET les listes de recherche, sinon le lieu
+supprimé resterait affiché dans l'annuaire. Libellés neutres dans le moteur (« cette fiche », pas
+« ce tiers-lieu ») : le module `profil` sert les 10 sites.
+
+**Vérifié** : 11 tests — la mutation (appel SDK avec raison, invalidations, échec clair si le SDK ne
+sait pas supprimer), l'ouverture de l'action (absente par défaut même pour un admin, absente pour un
+non-admin, présente et destructive sinon, toujours en dernier) et le GESTE (un clic ouvre la
+confirmation, rien ne part avant « Supprimer définitivement »). Page de fiche servie en SSR à un
+visiteur anonyme : aucune trace du bouton. Garde de parc `tests/preflight/profile-delete-button.test.ts`
+**vérifiée en échec** sur 3 fautes injectées (un autre site qui l'ouvre, une destination inexistante,
+un profil non-organisation), configs restaurées à l'octet près (`cmp`).
+**Gates** : `typecheck` ✅ · `eslint` ✅ · `config:validate` ✅ · `audit:config` RAS · `test:unit`
+5 051/5 053 (après merge de `main` du 24/09) — 2 échecs d'environnement local sans lien.
+
+**Rollback** : retirer `showDeleteButton` de la config suffit à faire disparaître le bouton, sans
+toucher au moteur.
+
+### 24/09bis — home : les 3 cartes d'action deviennent des liens · les mots-clés d'un lieu s'éditent
+
+**Cartes d'action (config seule).** La section `html` `tiers-lieux-actions` affichait trois cartes
+(« Découvrir », « Se réunir », « Se reconnaître ») avec `cursor-pointer` et une flèche, mais aucun
+lien. Chaque carte est maintenant un `<a>` : `/lieux`, `/lieux?services=Salle de Réunion` (le filtre
+que pose déjà le bouton du hero) et `/lieux?licoop=Oui`. Mesuré : 22 résultats pour les salles de
+réunion, 19 pour Licoop, contre 4 311 sans filtre.
+
+**Et ces liens ne rechargent plus la page** (code, moteur) : `HTMLSection` délègue le clic à
+`destinationSpa` (`components/sections/htmlSectionLinks.ts`), bâti sur le `classifyHref` déjà commun
+à `NavLink`/`CTASection`/`CardsSection` — un lien interne écrit dans une section `html` navigue donc
+comme celui du menu. Ancres `#`, `mailto:`/`tel:`, externes, `target`/`download` et clics
+d'ouverture parallèle (Ctrl/Cmd, Maj, Alt, clic milieu) gardent le comportement natif. **Toutes les
+sections `html` du parc en bénéficient** (mentions légales, CGU, pages éditoriales de 8 autres
+sites) ; aucune n'y perd, le comportement ne change que pour un `href` interne.
+
+**Mots-clés du lieu (code + config).** Le champ `tags` du formulaire `tiers-lieux` devient
+SAISISSABLE (onglet « Détails », widget `tags`, autocomplétion sur les mots-clés du réseau), et la
+dérivation passe des `mutation.stamps` aux codecs `tl:tagsRead`/`tl:tagsWrite`
+(`forms/costum/tiers-lieux/fns.ts`, helpers partagés `derivedTags.ts`) :
+
+| | |
+|---|---|
+| Lecture (édition) | tags serveur − dérivés des valeurs ENREGISTRÉES (`typePlace`, `manageModel`, `buildingSurfaceArea`) |
+| Écriture (save) | mots-clés affichés ∪ dérivés des valeurs CHOISIES (`family`, `managementType`, `surfaceBuilt`) |
+
+Motif : `op:"append"` refusionne les tags DU SERVEUR, donc changer de typologie gardait l'ancien
+libellé — le lieu ressortait dans deux facettes — et un mot-clé retiré revenait au save. Les 3
+estampilles dérivées sont retirées ; les 2 MARQUEURS de réseau (`$costum.mainTag`, `$costum.compagnon`)
+restent des estampilles et restent VISIBLES dans le champ : les masquer les supprimerait au premier
+enregistrement, l'estampille compagnon ne s'appliquant qu'à la création. Libellés inchangés (mêmes
+tables que les estampilles), donc les facettes de `/lieux` et l'observatoire continuent de filtrer.
+**`config.prod.relief.json`, qui recopie ce formulaire, garde ses 5 estampilles** — la bascule n'a eu
+lieu que sur ce site. Détail moteur : `doc/28-module-formengine.md` § mots-clés dérivés.
+
+**Vérifié** : 15 tests sur la chaîne réelle (`tags-propagation.test.ts`), dont la SUPPRESSION
+(changer de typologie retire l'ancien tag ; un mot-clé retiré ne revient pas) et l'aller-retour
+d'édition sans rien toucher, qui rend exactement les tags de la fiche — le point sensible, puisque le
+formulaire ENVOIE désormais `tags`. Gardes de non-retour : `spec.test.ts` (les 2 estampilles
+restantes portent une valeur littérale) et la sentinelle d'inventaire `tests/preflight/stamps.test.ts`
+(`tiers-lieux/tiers-lieux:2`, `relief/tiers-lieux:5`). Instantanés régénérés : descripteur + spec
+figés, `__effective__/tiers-lieux.json`.
+**Gates** : `typecheck` ✅ · `eslint` ✅ 0 erreur 0 avertissement sur les fichiers du lot ·
+`config:validate` ✅ (14 pages, 26 sections) · `audit:config` RAS (`strip: 0`) · `config:render` ✅ ·
+`test:unit` 4 788/4 790 — 2 échecs d'environnement local sans lien (bundle principal 3,24 Mo,
+dossier vide non suivi `public/images/EcosystemeSanteReunion`). Navigation vérifiée en navigateur sur
+les 3 cartes : aucun rechargement (un marqueur posé sur `window` survit au clic ET au retour
+arrière), URL et comptes attendus (4 311 / 22 / 19). `config:render` ✅ aussi sur institut-bleu, qui
+porte des sections `html` à liens internes.
+
+### 24/09 — home : en-tête « Découvrir les lieux » sous l'illustration, aligné sur les cartes · libellés en pastille
+
+**Code + config.** L'illustration du `hero-search` (style complet : `ctaButtons` + `subhead`)
+déborde de 40 px sous la section (`-bottom-10`) et recouvrait le titre et le bouton « Voir tous les
+resultats ». La section réserve désormais cette place (`mb-10` quand `backgroundImage` est posé) :
+le contenu qui suit descend de 40 px, le hero ne change pas. Nouvelle option opt-in
+**Changement de DÉFAUT** sur l'en-tête de `searchProStatic` (`customHeader`) : plus de `container`
+ni de marge latérale, et 12 px sous l'en-tête (`mb-3` au lieu de `mb-6`) — titre et boutons
+commencent au même bord que les cartes. Ce n'est pas une option : **48 sections de 10 sites** sont
+concernées (parent62 21, rezo-sante-reunion 8, tiers-lieux 5, relief 3, sport-sante-bien-etre 3,
+institut-bleu / maison-sport-sante / saint-paul-sport 2, équipements sportifs ×2 1). Retirer les
+seuls `px-*` n'aurait pas suffi : c'est le `container` (max 1280) qui rentrait le titre de 64 px à
+1440. Nouvelle option opt-in `categoryVariant: "pill"` (section `content`) : le libellé au-dessus du titre devient une pastille bordée (`rounded-full border
+border-border`) ; posée sur les 4 sections qui en ont un (Les lieux, Outils et ressources,
+S'entraider, Observatoire). Le texte passe dans un `<span>` INTERNE au `<p>` : la bordure se réduit
+au texte sans que le libellé perde la largeur ni l'alignement du bloc, que le `<p>` continue de
+porter (`width: "wide"`, `align: "center"`). Les deux props sont décrites dans le registre
+`scripts/lib/prop-descriptions.ts` (plancher `section:content` posé à 1) — donc servie par
+`config:schema` et la skill `config-assistant`.
+
+**Autres sites** : le correctif du hero touche aussi la home de **relief** (même design, même défaut
+constaté) ; aucun autre site n'utilise `hero-search`. L'alignement de l'en-tête, lui, touche les
+10 sites ci-dessus — vérifié sur parent62 (`/ressources`, `/temoignages`) et rezo-sante-reunion
+(`/theme/nutrition`, sections en `width: "container"`) : dans chaque cas le titre part du bord de SA
+grille, y compris quand un panneau de filtres la décale (432 px sur `/lieux` et `/temoignages`). Sur
+une page dont le chrome reste centré (parent62 `/ressources`), le titre est désormais au bord.
+`categoryVariant` n'est posé nulle part ailleurs : les libellés de parent62, relief
+et rezo-sante-reunion restent en texte simple. Détail moteur : `doc/07-module-search.md`
+(`customHeader`), `doc/05-schemas-sections.md` (`content`).
+
+**Vérifié** : mesures + captures à 1440 / 768 / 390 px, clair et sombre (titre à 16 px sous
+l'illustration, bords du titre et du bouton = bords de la grille, 12 px au-dessus d'elle ; 4
+pastilles bordées à 0 px du bord du paragraphe, bordure au token du thème en clair comme en
+sombre) ; relief contrôlé à 1440 / 390 px. Garde de clé strippée **vérifiée en échec** : une faute
+injectée sur `categoryVariant` sort en `cle-strippee` à l'audit.
+**Gates** : `config:validate` ✅ (14 pages, 26 sections) · `audit:config` RAS (`strip: 0` sur les
+4 configs qui consomment ces briques) · `config:render` ✅ 4/4 (tiers-lieux et relief re-joués après le
+passage en défaut ; parent62 et rezo-sante-reunion vérifiés en NAVIGATEUR sur cette version) · `typecheck` ✅ · `eslint` ✅ 0 erreur sur les fichiers du lot · `build` ✅
+23,9 s · `test:unit` 4 774/4 776 (`--maxWorkers=2`, `--max-old-space-size=4096` : 7 Go de RAM) —
+2 échecs d'environnement local sans lien avec ce lot (bundle principal 3,24 Mo > 2 Mo, déjà
+au-dessus du plafond sur le build du 23/09 ; dossier VIDE et non suivi `public/images/
+EcosystemeSanteReunion`).
+
+### 30/09 — `/observatoire` en split view : la liste des lieux à gauche, les graphes à droite
+
+**Config + moteur (une ligne)**, demande de Peterson du 28/09 : même agencement que l'observatoire
+des équipements sportifs (`../doc/27-module-observatoire.md` § Split view), en gardant **tout** le
+contenu et le fonctionnement du site. Branche `observatoire-split-view` (le moteur split n'est pas
+sur `main`).
+
+- **Config** — ajout de `layout: "split"`, `maxWidth: "full"` et `list` (`titleDimension: "name"`,
+  sous-titre `commune` · `region`, `selectDimensions: ["name"]`, libellé « Tiers-lieux », ratio
+  `40-60`, 50 lignes avant « Voir plus »). Graphes **réordonnés** (arbitrage Peterson) : typologie
+  et portage passent en `full`, puis [surface | pays]. En `half` dans la colonne à 60 %, l'axe Y
+  fixe de 160 px ne laissait qu'environ 140 px aux barres. Rien d'autre ne bouge : 10 dimensions,
+  7 filtres, recherche, 5 KPI, 6 graphes, drill-down, table à 7 colonnes, export.
+- **Table conservée, rendue SOUS le split** (arbitrage Peterson). Ce site n'a pas de page `/data` :
+  la table porte seule l'export CSV, le tri, la pagination et les badges. En split, le moteur la
+  rendait DANS la colonne droite, ce qui étirait la liste sur graphes + table ; désormais elle vient
+  sous les deux colonnes, en pleine largeur (`DataObservatorySection`). Aucune autre config ne
+  combine split et table : sans effet ailleurs.
+- **Clics** (décision Peterson : garder tout le fonctionnement de la table) :
+  - une ligne de la table ouvre le profil, comme avant ;
+  - un nom de la liste filtre KPI, graphes, liste et table (`?selection=`) ;
+  - le bouton « Fiche » de la liste ouvre le profil.
+
+  `rowAction` reste donc **sous `table`** : la table ne lit que `table.rowAction`, et la liste le
+  lit en repli. La doc moteur, la JSDoc, la description de propriété et la skill disaient
+  `rowAction` « partagé par la table » : corrigées pour décrire le code.
+- **Mesures du clic** (base locale `prod230926`, 4 328 lieux, le 28/09) :
+  - médiane : 1 lieu ;
+  - 690 clics (16 %) ramènent plusieurs lieux, dont 26 plus de 20 ;
+  - pires cas : « Fablab » 137, « Le Lieu » 74, « La Villa » 72 (le mot attrape aussi
+    « Village ») ;
+  - ajouter `commune` aux dimensions élargirait le résultat (737), d'où `["name"]` seul ;
+  - le lieu cliqué est toujours dans son résultat.
+- **Mobile** (arbitrage Peterson) : KPI, graphes, puis la liste (50 lignes + « Voir plus »), puis
+  la table.
+- **Gates** :
+  - `config:validate` ✅ 14 pages / 26 sections ;
+  - `audit:config` RAS (1 assumé) ;
+  - `typecheck` ✅ · `eslint` ✅ (fichiers modifiés) ;
+  - rendu SSR (`curl` sur le dev-server) ✅ : ordre filtres → KPI → [liste `w-2/5` défilante |
+    graphes `w-3/5`] → table, conteneur `max-w-none`.
+
+  Les données valaient 0 dans ce rendu : `mongo42` était arrêté (backend dev en 500), sans lien
+  avec le lot. Préflights non lancés.
+- **Non vérifié** :
+  - rendu navigateur (la liste épouse-t-elle la hauteur des graphes ?) ;
+  - mobile ;
+  - tablette 768–1023 px : le split y est actif, mais les graphes `half` ne s'appairent qu'à partir
+    de 1024 px, donc ils s'empilent tous.
 
 ### 29/09 — création d'un lieu : alerte si le tiers-lieu existe déjà
 
@@ -669,7 +1170,7 @@ d'autres projets, tous vérifiés non régressifs à son égard :
 | 1 | Slug + CSS dans `sites.json` | ✅ | `navigatorDesTierslieux` |
 | 2 | Thème | ✅ | Bloc `theme` complet + 54 variables |
 | 3 | Recherche des lieux | ✅ | `/lieux` — panneau à 5 groupes sur 4 303 entités |
-| 4 | Observatoire | ✅ | 10 dimensions, 7 filtres, 6 graphes, table, export CSV, drill-down |
+| 4 | Observatoire | 🟡 | 10 dimensions, 7 filtres, 6 graphes, table, export CSV, drill-down — **split view le 30/09** (liste \| graphes, table dessous), gates verts ; reste le **rendu navigateur** (desktop, tablette, mobile) à valider |
 | 5 | Réseaux régionaux / thématiques | ✅ | Deux angles sur 19 réseaux |
 | 6 | Agenda | ✅ | Teaser sur `/` + onglet « Événements » de `/actualites` (ex-page `/evenements`, cf. §9 07/09) — 359 événements |
 | 7 | Ajout d'un tiers-lieu | ✅ | Formulaire costum (27 champs) + bouton flottant |
@@ -885,6 +1386,23 @@ rejette hors liste blanche : retirer `schemaCostumSlug` **ou** son `pinSchema` l
   `server/utils/sites.js` + test `server/__tests__/sites.test.ts`) → upload dans le dossier servi,
   plus de dossier fantôme. `sites.json` absent (Docker) → fallback slug, aucune régression. Cf.
   [[site-json-images-folder-vite-slug]].
+- ⚠️ **Observatoire : `rowAction` reste sous `table`.** Ne pas le hisser au niveau de la section,
+  comme sur les équipements sportifs, tant que la table existe : elle ne lit que `table.rowAction`
+  et perdrait son clic profil, sans aucun signal.
+- ⚠️ **Observatoire : pas d'`export.fields` par inadvertance.** Déclarer `fields` remplacerait le CSV à
+  7 colonnes de la table par l'export des données détail, et ferait apparaître un second bouton CSV
+  dans la liste.
+- **Observatoire : le clic sur un nom générique est large** (« Fablab » → 137 lieux) : KPI et graphes
+  décrivent alors plusieurs lieux. Mesures au §9 30/09.
+- **Observatoire : anomalies préexistantes**, constatées le 28/09 et non corrigées :
+  - le KPI « Typologie dominante » affiche le 1er tag BRUT (« TiersLieux » sur la capture) : le KPI
+    `top` ne tient pas compte des `values` d'une dimension `list` ;
+  - la valeur de portage « Collectivités (Département, Intercommunalité, Région, etc) » (247 lieux)
+    contient une virgule, qui est le séparateur multi-valeurs : filtrer dessus ou y descendre depuis
+    un graphe donne 0 ;
+  - le graphe « Équipements déclarés » est vide : défaut SDK de réhydratation SSR, cf. §13 ;
+  - 6 lieux sans slug n'ont pas de bouton « Fiche » ;
+  - « Réinitialiser » des filtres n'efface ni la sélection ni la recherche.
 
 ---
 
@@ -909,3 +1427,7 @@ rejette hors liste blanche : retirer `schemaCostumSlug` **ou** son `pinSchema` l
 | 15 | Alerte doublons (29/09) : **recette navigateur** à faire (clair, sombre, 375 px, lecteur d'écran) ; et faut-il proposer « c'est mon lieu → le modifier » en plus de « Ouvrir la fiche » (question de droits : l'édition d'un lieu dépend de §11.2) ? | Peterson |
 | 16 | Durcir la règle serveur `organizationSameName` (ignorer casse et accents) ? Elle vit dans le socle partagé `pixelhumain` : effet sur tous les sites | Thomas |
 | 17 | Remettre le poste à niveau (`npm install` : SDK installé 1.0.189, requis ^1.0.195) — `npm run build` et `tsc` y échouent sur `aac` et `cagnotte` | Peterson |
+| 18 | Observatoire en split (30/09) : **valider le rendu navigateur** sur desktop (~1 367 px : la liste épouse-t-elle la hauteur des graphes ?), tablette (768–1023 px) et mobile | Peterson |
+| 19 | Graphe « Équipements déclarés (PoC réponses CoForm) » **vide**. Cause identifiée le 28/09 et reproduite hors navigateur : après le rendu SSR, `Organization._transformServerData` (`cocolight-api-client`, `Organization.ts:172`, idem `Project.ts:87`) ré-enveloppe une Answer déjà reconstruite, et le chemin rend `[]` au lieu de 10 valeurs. Spec à rédiger pour Aboire ? | Peterson |
+| 20 | Sélection « nom exact » en option, pour resserrer les clics larges : mesuré, 237 clics ramèneraient plusieurs lieux, 7 au plus, uniquement des homonymes. Lot moteur séparé ? | Peterson |
+| 21 | KPI « Typologie dominante » (1er tag brut) et virgule de la valeur de portage « Collectivités (…, etc) » : correctifs à planifier ? | Peterson |

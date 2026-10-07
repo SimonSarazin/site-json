@@ -194,6 +194,8 @@ export interface EntityModalSpec {
   descriptor: DescriptorRef;
   /** clé → `descriptorVariantRegistry` (event hasParent / edit-profil byType) ; sinon descripteur brut. */
   descriptorVariant?: string;
+  /** Sous-type costum ciblé à la CRÉATION (clé `typeObj`, = `CostumFormSchema.subType`) — relayé au SDK. */
+  subType?: string;
 
   // ── chrome (DONNÉES) ── libellés = clé i18n string OU LocalizedString inline {fr,en} (résolus par useT au rendu).
   title: { add: I18n; edit: I18n };
