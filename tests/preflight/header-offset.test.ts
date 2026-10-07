@@ -50,6 +50,13 @@ describe("headerStickyOffsetPx — cohérence avec le JSX des headers", () => {
     expect(src).toMatch(/lg:\s*'h-20'/);
     expect(src).toMatch(/header\.sticky && 'sticky top-0/);
   });
+
+  it("HeaderStacked colle sa seule barre de nav, toujours, en h-14", () => {
+    const src = read("HeaderStacked.tsx");
+    expect(src).toMatch(/<nav className="sticky top-0 z-50 -mt-14">/);
+    expect(src).toMatch(/items-center gap-4 h-14/);
+    expect(src, "HeaderStacked ne lit pas header.sticky").not.toMatch(/header\.sticky/);
+  });
 });
 
 describe("headerStickyOffsetPx — valeurs", () => {
@@ -68,5 +75,8 @@ describe("headerStickyOffsetPx — valeurs", () => {
     expect(headerStickyOffsetPx(h({ type: "transparent-dark" }))).toBe(80);
     expect(headerStickyOffsetPx(h({ type: "minimal", logoSize: "lg" }))).toBe(89);
     expect(headerStickyOffsetPx(h({ type: "mega-menu", sticky: true, logoSize: "lg" }))).toBe(81);
+    // Barre collée même sans `sticky`, quelle que soit la hauteur du bandeau.
+    expect(headerStickyOffsetPx(h({ type: "stacked", sticky: false, height: "sm" }))).toBe(56);
+    expect(headerStickyOffsetPx(h({ type: "stacked", sticky: true, height: "lg" }))).toBe(56);
   });
 });
