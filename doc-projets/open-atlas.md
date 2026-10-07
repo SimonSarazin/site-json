@@ -10,9 +10,9 @@
 > [Module Profil](../doc/08-module-profil.md) · dossier voisin [Fédération des CAE](federation-des-cae.md)
 > (même gabarit, AAC en service). Mémoire : `[[project-open-atlas]]`.
 
-Dernière mise à jour : **2026-10-02** (lot 4 : accueil refait d'après la maquette d'un proche d'Open
-Atlas, pages `/accompagnement` et `/contact` ; le formulaire de contact n'a **pas de destinataire** tant
-que `costum.contactMail` n'est pas renseigné, cf. §13).
+Dernière mise à jour : **2026-10-06** (lot 5 : accueil refait d'après la maquette « B — Nuit, comme
+le logo », thème **sombre par défaut**, chiffres du réseau comptés en direct ; le formulaire de contact
+n'a toujours **pas de destinataire** tant que `costum.contactMail` n'est pas renseigné, cf. §13).
 
 ---
 
@@ -33,15 +33,16 @@ communauté, les projets par AAC, et plus tard les pages d'outils.
 | Slug (`sites.json`) | `openAtlas` |
 | Config | [`../config.prod.open-atlas.json`](../config.prod.open-atlas.json) |
 | Feuille CSS | `index-rezo-la-mer` (**partagée** : couleurs dans `config.theme`, teintes océan recolorées par `customCSS`) |
-| Images | `public/images/openAtlas/` — 6 fichiers dérivés du logo fourni (§8) |
+| Images | `public/images/openAtlas/` — 8 fichiers dérivés du logo fourni (§8) |
 | Entité Cocolight | `organizations` / `555eba56c655675cdd65bf19` — « Open Atlas » (`type: LocalBusiness`), **identique en DEV et en PROD** |
 | Costum backend | embarqué sur l'entité : `costum.slug: "OpenAtlas"` (O majuscule), hôte `www.open-atlas.org`, **aucun SSO**. `COSTUM_RESOLVED("openAtlas")` → `sourceKey: ["openAtlas"]`, `typeObj` : projects, events, proposals, crowdfunding, donation, organization |
 | Formulaire des projets | `618b7b4abc572b35b4505da3` — « OCECO : GOUVERNANCE & PROJET » (`type: aap`, **sans `aapType`**), config OCECO partagé `618b7afe0ee16538e8282a21` ; fourni par Francki le 01/10 (§6) |
 | Backends | DEV `http://communecter74-dev` · PROD `https://www.communecter.org` |
 | Langues | `fr` (défaut) + `en` |
-| Header / Footer | `transparent-scroll` / `sidebar-columns` (gabarit Rézo la mer) |
+| Header / Footer | `transparent-scroll` (logo complet) / `sidebar-columns` (gabarit Rézo la mer) |
+| Mode par défaut | **sombre** depuis le lot 5 (clair au lot 1) — bascule clair/sombre conservée |
 | SDK | `@communecter/cocolight-api-client` **1.0.191** |
-| Branche | `openatlas` (créée depuis `fdev` le 01/10) — deux commits : module AAC (`choose` optionnel), puis le site |
+| Branche | `openatlas` (créée depuis `fdev` le 01/10, poussée) — `465ed7e8` module AAC (`choose` optionnel), `371cdd73` le site, `8d60acf1` lot 4 (commit de Francki), puis lot 5 en deux commits (moteur `stats`, puis accueil « Nuit ») — non poussés |
 
 ### Historique des chantiers
 
@@ -51,6 +52,9 @@ communauté, les projets par AAC, et plus tard les pages d'outils.
 | 01/10 | Francki + Claude | Lot 2 : bloc `aac` sur le formulaire OCECO, page `/projets`, bande et aperçu sur l'accueil ; sondage de la visibilité publique (§6, §13) |
 | 01/10 | Francki + Claude | Lot 3 (moteur) : `choose` n'est plus deviné par le module AAC — un AAP n'en a pas ; retiré de cette config. Revue `revue-fonctionnalite` : 1 majeur (étape d'évaluation rouverte à l'auteur) et 7 mineurs, tous corrigés (§10) |
 | 02/10 | Francki + Claude | Lot 4 : accueil recomposé d'après une maquette HTML reçue d'un ami de Francki (structure et textes repris, palette rouge du logo conservée, police Sora) ; pages `/accompagnement` et `/contact` ; nav et footer refaits (§10) |
+| 02/10 | Claude | Trois directions d'accueil proposées sur un canvas de design (A fidèle, B nuit, C éditorial) |
+| 05/10 | Francki | Commit du lot 4 (`8d60acf1`) ; direction **B — Nuit** retenue et retouchée par Simon (export HTML) |
+| 06/10 | Francki + Claude | Lot 5 : intégration de la maquette B — thème sombre par défaut, accueil en sections `html` stylées par `customCSS`, tuiles de chiffres vivantes (moteur : `stats` `design: "tiles"`, source `aacCommuns`) (§10) |
 
 ---
 
@@ -99,7 +103,7 @@ Deux chaînes de données indépendantes :
 
 | Page | Sections | Détail |
 |---|---|---|
-| `/` | 9 | `hero-parallax` « Le réseau qui appartient à ceux qui le font vivre » (3 badges, boutons vers communecter.org et `/contact`) · `cta-card-grid` « Un logiciel, une instance centrale » (Communecter → dépôt Git, Communecter.org) · `content` « Ce que permet Communecter » (6 tags) · `categories-grid` « Ce qui guide notre travail » (4 principes, 4 colonnes) · `aac-highlight` + `aac-directory` `preview` (projets) · `content` « Un accompagnement sur mesure » (→ `/accompagnement`, `/contact`) · `action-tiles` « Communecter.org au cœur, des réseaux tout autour » (4 sites de référence, externes) · `cta` « Envie de contribuer, d'adhérer… » (→ `/contact`, `/communaute`) |
+| `/` | 9 | Maquette « B — Nuit » (lot 5). `html` `#accueil` héro scindé : surtitre, titre à moitié rouge, boutons « Découvrir Communecter » (→ `#outils`) et « Nous écrire » (→ `/contact`), grand symbole du logo · `html` `#outils` « Un logiciel, une instance centrale » (2 cartes, 6 étiquettes, → dépôt Git et communecter.org) · `html` `#reseau` « Les projets et la communauté » (→ `/projets`, `/communaute`) · `stats` `#chiffres` en `design: "tiles"` : projets publiés (`aacCommuns`, tuile rouge), membres et organisations (`searchCount` sur le périmètre de la communauté) — **comptés en direct** · `aac-directory` `preview` 3 projets · `html` `#approche` 4 principes numérotés · `html` `#reseaux` schéma « Communecter.org au cœur » (SVG + 4 liens) · `html` `#accompagnement` (encart prestataires, 5 étapes) · `html` `#rejoindre` (3 boutons → `/contact`, `/communaute`) |
 | `/projets` | 1 | `aac-directory` `full` — recherche, tags, tri ; **pas** de filtres usage/maturité (champs absents du formulaire), **pas** de bouton de dépôt (formulaire fermé) |
 | `/accompagnement` | 4 | `content` (présentation) · `features-glass` « Ce que nous proposons » (5 services) · `content` « Un réseau, pas un guichet » (OPTEOS, CoRD en tags) · `cta` → `/contact` |
 | `/contact` | 2 | `content` (intro) · `contactForm` : nom, e-mail, sujet (Adhérer · Discuter d'un projet · Contribuer au logiciel · Autre), message, consentement — **envoi sans destinataire configuré**, cf. §13 |
@@ -119,7 +123,8 @@ Blocs racine : `version`, `meta`, `theme`, `header`, `footer`, `profiles` (`defa
 `aac`, `pages`. **Absents** : `auth`, `admin`, `commandPalette`, `costumForms`, `blog`,
 `cagnotteModuleConfig`.
 
-Header : nav Projets · Communauté · Accompagnement · Communecter.org (lien externe), bouton
+Header : logo complet (`logo.png` en clair, `logo-dark.png` en sombre, `logoClass` en hauteur
+seule), nav Communecter.org (lien externe) · Projets · Communauté · Accompagnement, bouton
 « Nous écrire » → `/contact` ; utilitaires `themeSwitch`, `langSwitch`, `auth`, `notifications`.
 `piggyBank`/`pledge` **coupés**.
 
@@ -127,9 +132,9 @@ Footer (`sidebar-columns`) :
 
 | Colonne | Liens |
 |---|---|
-| Le site | Projets · Communauté · Accompagnement · Nous contacter (`/contact`) · À propos d'Open Atlas (`/profil/openAtlas`) |
 | Outils | Communecter (logiciel) → dépôt Git · Communecter.org (instance) |
-| Références | tiers-lieux.org · lescommuns.tiers-lieux.org · parent62.00.re · equipements-sportifs-974.00.re |
+| Association | Accompagnement · Projets · Communauté · Nous contacter (`/contact`) |
+| Références | tiers-lieux.org · parent62.00.re · lescommuns.tiers-lieux.org · equipements-sportifs-974.00.re |
 | Développeurs | Dépôt Git · Documentation API · Code du client · Docker du serveur · Soutien NLnet |
 | *bas de page* | `legalLinks` : Mentions légales · Confidentialité — `bottomLinks` : Se connecter / Créer un compte **(anonyme)** · Mon profil **(connecté)** |
 
@@ -223,8 +228,9 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
 |---|---|
 | Config | [`../config.prod.open-atlas.json`](../config.prod.open-atlas.json) |
 | Déclaration du site | [`../sites.json`](../sites.json) — entrée `openAtlas` (sans `coolifyApp`/`domain` pour l'instant) |
-| Assets | `../public/images/openAtlas/` : `logo.png`, `logo-dark.png`, `logo-symbol.png`, `logo-symbol-dark.png`, `logo-symbol-neutral.png`, `favicon.png` |
-| CSS | [`../src/index-rezo-la-mer.css`](../src/index-rezo-la-mer.css) (partagée, **non modifiée**) |
+| Assets | `../public/images/openAtlas/` : `logo.png`, `logo-dark.png`, `logo-symbol.png`, `logo-symbol-dark.png`, `logo-symbol-neutral.png`, `favicon.png`, `logo-symbol-lg.png` + `logo-symbol-dark-lg.png` (lot 5 : symbole du héro, 380 px recadrés du logo complet à sa résolution native) |
+| CSS | [`../src/index-rezo-la-mer.css`](../src/index-rezo-la-mer.css) (partagée, **non modifiée**) ; la feuille de l'accueil vit dans `theme.customCSS` (classes `oa-*`) |
+| Code moteur (lot 5) | [`../src/components/sections/StatsSection.tsx`](../src/components/sections/StatsSection.tsx) (design `tiles`, chiffres comptés) · [`../src/components/sections/useStatDynamicValue.ts`](../src/components/sections/useStatDynamicValue.ts) (source `aacCommuns`, état `unavailable`) · `../src/types/site-schema.ts` · tests `StatsSection.test.tsx`, `useStatDynamicValue.test.ts` · registre `../scripts/lib/prop-descriptions.ts` · story `../.design-sync/previews/StatsSection.tsx` · `../doc/34-module-aac.md` |
 | Tests | `../tests/preflight/__effective__/open-atlas.json` (instantané du préflight — ne projette pas le bloc `aac`) |
 
 ---
@@ -234,22 +240,28 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
 | Choix | Pourquoi |
 |---|---|
 | Config écrite à la main, pas `config:init` | `config:init` ne part que d'un archétype du manifest ; ni Rézo la mer ni la Fédération des CAE n'en sont. Chrome repris de Rézo la mer, bouts AAC/annuaire de la Fédération |
-| Header `transparent-scroll` + footer `sidebar-columns` | Le « template rezo » demandé ; le header prend un logo-pastille carré, d'où le **symbole** + le titre texte |
+| Header `transparent-scroll` + footer `sidebar-columns` | Le « template rezo » demandé. Lot 5 : le header porte le **logo complet** (comme la maquette) via `logoClass` (hauteur seule, largeur libre) ; le footer garde le symbole + titre (son logo est un carré de 32 px) |
+| Sombre par défaut (lot 5) | La maquette retenue est la direction « Nuit » : le logo blanc et rouge est dessiné pour un fond sombre. Palette `dark` = valeurs exactes de la maquette (fond `#0F121A`, bandes `#161B24`, cartes `#1B212C`, texte `#EEF0F4` / `#A3A9B5`, boutons `#CC2443`) ; la palette claire du lot 1 reste pour la bascule |
+| `.text-primary` repeint en sombre (`customCSS`) | Le rouge des boutons `#CC2443` tient 5,4:1 sous du blanc mais seulement **3,5:1 en texte** sur la nuit. Les aplats gardent `primary` ; tout texte `text-primary` passe au rouge clair de la maquette `#F75B6B` (5,9:1) |
+| Accueil en sections `html` + `customCSS` | Aucune section du catalogue ne rend le héro scindé, les colonnes numérotées, le schéma réseau ou l'accompagnement en deux colonnes de la maquette. Le HTML ne porte que des classes `oa-*` ; la feuille n'utilise **que des tokens** (`var(--primary)`…), d'où un mode clair correct sans rien de plus. Précédent : julie-pot-vin (21 sections `html`) |
+| Chiffres en tuiles **comptés**, pas écrits (moteur) | Une rangée « Le réseau en direct » avec des nombres écrits serait fausse en quelques semaines. `stats` gagne `design: "tiles"` et `items[].source` (même contrat que `cta-card-grid`) ; nouvelle source `aacCommuns` = le décompte du médaillon d'`aac-highlight`. Squelette en SSR, tiret si le compte échoue |
+| `#outils` en lien d'ancre natif (lot 5) | Dans une section `html`, le lien est un `<a>` natif : le navigateur défile (mesuré : `#outils` arrive à 88 px du haut, `scroll-margin-top` sous le header collant). Le défaut relevé au lot 4 ne touche que les liens `<Link>` du routeur |
+| Symbole du héro recadré à 380 px | `logo-symbol-dark.png` (256 px) aurait été agrandi à 380 px ; recadré depuis `logo-dark.png` à sa résolution native |
 | 6 variantes du logo | Le logo fourni a le mot « Open Atlas » **en blanc** : invisible sur fond clair. `logo-symbol.png` (encre bleu nuit) en clair, `logo-symbol-dark.png` (blanc d'origine) via `header.logoDark`. Le footer n'a **pas** de `logoDark` : `logo-symbol-neutral.png` (encre gris-bleu) reste lisible sur les deux fonds |
 | `primary` = `oklch(0.57 0.21 18)` | Rouge du logo (`#E2334E` ≈ `oklch(0.60 0.209 18)`) assombri pour tenir **4,99:1** avec le blanc ; en sombre `oklch(0.66 0.20 18)` avec encre bleu nuit (5,66:1). Toutes les paires porteuses ≥ 4,5:1 |
 | Encre `oklch(0.22 0.017 264)` | Bleu nuit du logo, neutre froid de toute la palette |
 | Police Sora (lot 4) | Celle de la maquette d'accueil ; remplace Urbanist |
 | `customCSS` : `--ocean-*`, `--turquoise`, `--shadow-glow`, `--gradient-section` recolorés | La feuille `index-rezo-la-mer` est partagée et impose du turquoise (halo, bandeaux des `searchHeader`) ; `:root:root` / `:root:root.dark` battent ses `:root` / `.dark` |
-| Halo des titres de héro coupé en clair par `:root:not(.dark) .text-shadow-glow` (lot 4) | ⚠️ La surcharge de `--text-shadow-glow` posée au lot 1 n'a **jamais agi** : la variable est déclarée en `@theme`, Tailwind fige sa valeur dans la classe au build (mesuré le 02/10 : variable à `none`, halo toujours rendu). Seule une règle sur la classe l'éteint. Gardé en sombre |
-| Principes en `categories-grid` (4 colonnes) | `features-glass` plafonne à 3 colonnes (4 principes ⇒ 3 + 1) et `cards` coupe les textes à 2 lignes |
-| Bouton « Découvrir Communecter » → communecter.org | Un lien d'ancre (`#outils`) ne fait pas défiler la page (mesuré : l'URL passe à `/#outils`, la section reste à 980 px) |
+| Halo des titres de héro coupé en clair par `:root:not(.dark) .text-shadow-glow` (lot 4 — **retiré au lot 5**, plus de `hero-parallax`) | ⚠️ La surcharge de `--text-shadow-glow` posée au lot 1 n'a **jamais agi** : la variable est déclarée en `@theme`, Tailwind fige sa valeur dans la classe au build (mesuré le 02/10 : variable à `none`, halo toujours rendu). Seule une règle sur la classe l'éteint. Gardé en sombre |
+| ~~Principes en `categories-grid`~~ (lot 4, remplacé au lot 5) | `features-glass` plafonne à 3 colonnes et `cards` coupe les textes ; le lot 5 les rend en `html` |
+| ~~Bouton « Découvrir Communecter » → communecter.org~~ (lot 4) | Un `<Link>` vers `#outils` ne fait pas défiler la page ; au lot 5 le bouton est un `<a>` natif qui défile |
 | Liens externes en `cta-card-grid` / `action-tiles` | Ces sections passent par `<Link>` : les URL `https://` partent en navigation classique, **dans le même onglet** |
 | Communauté par `links.memberOf` + `notSourceKey` | Le périmètre `sourceKey` compte 0 organisation (§6) |
 | Deux onglets plutôt qu'une liste | Recette `page-communaute-onglets` : une carte de personne et une carte d'organisation n'ont pas le même contrat |
 | Page `/projets` plutôt que `/aac/communs` | Le vocabulaire du site est « projets » ; la route de module `/aac` reste montée |
 | `showDepositButton: false` | Le formulaire est **fermé** : le bouton s'afficherait (le module ne garde que `form.active`) et le dépôt échouerait au save |
 | Filtres `usage` et `maturity` coupés | Pas de catalogue d'usages ni de champ de maturité sur ce formulaire |
-| `aac-highlight` en ton `muted` | En ton `primary`, la feuille Rézo force `text-foreground` sur `h2`/`p` : titre et texte sombres sur le rouge, contraste insuffisant (§13) |
+| ~~`aac-highlight` en ton `muted`~~ (lot 2, retiré de l'accueil au lot 5) | En ton `primary`, la feuille Rézo force `text-foreground` sur `h2`/`p` (§13) ; le chiffre vit désormais dans la tuile `aacCommuns` |
 | `choose` réservé à la config (moteur) | Le module devinait `aapStep2.choose` sur tout formulaire : sur un AAP, chaque projet était « en attente » et l'annuaire public, restreint aux sélectionnés, sortait vide. Un AAC le déclare désormais (Fédération des CAE déjà ; `config.dev.acc.json` ajouté) |
 | `piggyBank`/`pledge` coupés, pas de `cagnotteModuleConfig` | Le financement reste visible sur la fiche d'un projet ; on n'ajoute pas d'entrée de cagnotte au header tant que la publication n'est pas décidée |
 
@@ -334,25 +346,72 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
 | `test:preflight` | 🟡 780 ✅ · 1 ❌ **antérieur** (`public/images/franckiOrga`) |
 | Rendu navigateur | ✅ clair, sombre, mobile 375 px (aucun débordement horizontal), `/accompagnement`, `/contact` ; aucune erreur console ni d'hydratation ; halo du titre `none` en clair |
 
+### 06/10 — accueil « Nuit » (lot 5, config + moteur)
+
+- **Config** : thème sombre par défaut et palette `dark` de la maquette ; header au logo complet, nav
+  réordonnée ; footer à 4 colonnes de la maquette (Outils, Association, Références, Développeurs) ;
+  accueil réécrit (7 sections `html`, 1 `stats`, 1 `aac-directory` à 3 projets sans titre ni lien
+  « voir tout » — les boutons de l'en-tête de bande y mènent) ; `customCSS` : feuille `oa-*`, encre
+  `text-primary` en sombre, teintes océan sombres alignées sur la palette ; règles du héro du lot 4
+  retirées. Deux images ajoutées (symbole 380 px).
+- **Moteur** : section `stats` — `design: "tiles"`, `items[].source` (compte vivant), `items[].highlight`,
+  `value` devenu optionnel (refine `value` ou `source`) ; `StatDynamicSource` + `aacCommuns`. Le
+  chiffre passe par un composant partagé `StatValue` (`stats` **et** `cta-card-grid`), aiguillé par
+  type de source : compte → chiffre écrit → squelette (attente, et toujours en SSR) / tiret (absence,
+  tranchée **après hydratation**). Garde AAC partagée avec le médaillon (`useAacCommunsCountState`).
+- **Correctifs issus de la revue** (06/10 — 4 majeurs, 6 mineurs, tous traités) :
+  1. tuiles de recherche à « 0 » en SSR et pour toujours après un échec — `useSearchAllResults.total`
+     valait le 0 d'attente de `totalCount` : il vaut désormais `null` tant que le `count` n'est pas
+     arrivé (corrige aussi `cta-card-grid` de SSBE et maison-sport-santé, préexistant) ;
+  2. erreur d'hydratation quand le serveur n'a pas résolu l'entité (tiret côté serveur, squelette
+     côté client) — le tiret attend l'hydratation ;
+  3. `aacCommuns` en `cta-card-grid` : squelette perpétuel — même `StatValue` partout ;
+  4. `membersCount` : « 0 » inventé sur échec — `hasCount` exposé par `useInfiniteEntityQuery` ;
+  5-10. garde AAC dédoublonnée, hooks montés par source seulement, tiret/squelette nommés pour les
+     lecteurs d'écran (clés fr/en), HTML valide, tests une couche plus bas (SSR compris), docs
+     (`doc/05`, `doc/34`, registre), diff parasite retiré.
+- **Contre-revue** (06/10 — 0 majeur, 4 mineurs) : entité nulle ⇒ tiret (le client résout la sienne
+  avant son 1er rendu), un refetch en échec ne masque plus un nombre de membres connu, tuile AAC en
+  chunk `lazy` (build prod : 0 chunk AAC préchargé sur SSBE, contre 3), doc `cta-card-grid` alignée.
+  Reste : le fichier `useStatDynamicValue.ts` ne contient plus de `useStatDynamicValue` (renommage
+  `git mv` à décider) ; `aac-highlight` tranche encore son médaillon dès le SSR sur un serveur sans
+  entité (préexistant, hors périmètre).
+- **Gates** (06/10, backend PROD) :
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 7 pages, 20 sections |
+| `audit:config` | ✅ RAS |
+| `config:render` | ✅ 7/7 pages, 19/20 sections avec contenu SSR — `aac-directory` de l'accueil rendu côté client (comme au lot 4) |
+| `config:probe` | ✅ 4/4 périmètres — tuiles membres 91 · organisations 18 (= onglets de `/communaute`) |
+| `vitest` unitaires | ✅ 5232 (nouveaux : `StatValue.test.tsx`, `useAacCommunsCountState.test.ts`, `useStatDynamicValue.test.ts` réécrit, `StatsSection.test.tsx`) · 1 ❌ **antérieur** (`franckiOrga`) |
+| `typecheck` | 🟡 3 erreurs **antérieures** (`cagnotte/hooks/useSaveCagnotteContribution.ts`) |
+| `eslint` (fichiers touchés) | ✅ |
+| `test:preflight` | 🟡 780 ✅ · 1 ❌ **antérieur** (`public/images/franckiOrga`) |
+| Rendu navigateur | ✅ sombre et clair 1440 px, mobile 375 px sans débordement ; tuiles 144 · 91 · 18 ; aucune erreur console ; `#outils` défile |
+| SSR des tuiles | ✅ 3 squelettes, aucun « 0 » ni tiret — y compris serveur à backend injoignable (navigateur sain : 144 · 91 · 18, aucune erreur d'hydratation) |
+| Build prod (copie temporaire, sans `tsc` bloqué par les 3 erreurs antérieures) | ✅ Open Atlas `144 · 91 · 18`, 0 erreur ; SSBE : 4 squelettes en SSR (au lieu de 4 × « 0 »), 0 chunk AAC préchargé |
+| Revue `revue-fonctionnalite` (partie moteur) | 4 majeurs + 6 mineurs → corrigés ; contre-revue 0 majeur, 4 mineurs → 3 corrigés, 1 en attente de décision (nommage) |
+
 ---
 
 ## 11. Checklist d'avancement
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 1 | Accueil | ✅ | 9 sections d'après la maquette ; « Ils nous font confiance » en attente de logos |
+| 1 | Accueil | ✅ | maquette « B — Nuit » (lot 5), chiffres vivants ; « Ils nous font confiance » en attente de logos |
 | 1b | Accompagnement | ✅ | page dédiée |
 | 1c | Contact | 🟡 | formulaire posé ; **aucun destinataire** tant que `costum.contactMail` est vide (§13) |
 | 2 | Communauté — membres | ✅ | 92 (DEV) / 91 (PROD) |
 | 3 | Communauté — organisations | ✅ | 18 |
 | 4 | Pages légales | 🟡 | structure posée, mentions `[à compléter]` |
-| 5 | Thème clair/sombre + logo | ✅ | |
+| 5 | Thème clair/sombre + logo | ✅ | sombre par défaut depuis le lot 5 |
 | 6 | Projets — branchement | ✅ | formulaire OCECO, annuaire, fiche |
 | 7 | Projets — publication | ✅ | 144 projets titrés publics (pas de sélection sur un AAP) |
 | 8 | Projets — dépôt | ❌ | formulaire fermé |
 | 9 | Pages d'outils | ❌ | lot ultérieur, contenu à produire |
 | 10 | Déploiement | ❌ | entrée Coolify et domaine à décider |
-| 11 | Commit | ✅ | branche `openatlas` — merge et déploiement à faire |
+| 11 | Commit | 🟡 | lots 1-5 commités sur `openatlas` (lot 5 le 07/10, **non poussé**) ; merge et déploiement à faire |
 
 ---
 
@@ -388,6 +447,13 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
   Problème **moteur/SDK**, pas de config.
 - `costum.slug` vaut `"OpenAtlas"` alors que la clé de source est `"openAtlas"` : ne jamais écrire
   `sourceKey: ["OpenAtlas"]` (0 résultat).
+- **Vitrine des projets de l'accueil** (lot 5) : l'aperçu montre les 3 premiers projets du
+  formulaire tels quels — au 06/10 « MSS Tampon » (deux fois) et « SPORTS PEI », sans description ni
+  image. C'est la donnée, pas le rendu : à nettoyer côté réponses, ou à trier autrement.
+- **Liens internes des sections `html`** (`/projets`, `/contact`…) : `<a>` natifs, donc rechargement
+  complet de la page (SSR) au lieu d'une navigation SPA. Fonctionnel, plus lent.
+- **Tuiles comptées côté client** : le HTML serveur porte un squelette à leur place (pas de
+  préchargement SSR des comptes).
 
 ---
 
@@ -402,7 +468,6 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
 | **Renseigner `costum.contactMail`** du costum `openAtlas` en base (sondé le 02/10 en PROD : ni `contactMail` ni `admin.email`) — sans lui, le formulaire `/contact` n'atteint personne | admin Open Atlas |
 | Confirmer les affirmations de la maquette : « Association loi 1901 » (badge du héro, footer) alors que la base porte « Constitution du capital social de la SCIC Open Atlas » et `scicOpenAtlas` ; « 14 ans », « 10 ans autour des tiers-lieux » ; OPTEOS et CoRD comme prestataires | Francki |
 | Logos (et accord) des structures « Ils nous font confiance » : ANCT, France Tiers-Lieux, Réseau Français des FabLabs, CEDTM, Ville de Saint-Denis, CRESS Réunion, Technopole de la Réunion, ministère de la Transition écologique | Francki |
-| Page outil « Communecter » (la maquette pointe vers `communecter-fonctionnalites.html`) : les tags « Ce que permet Communecter » et la carte Communecter y mèneront | Francki |
-| Anneaux jaunes sous la dernière carte des principes, vus dans Chromium headless : ils viennent du blob décoratif flouté de `categories-grid` (masqué ⇒ 0 pixel jaune) ; le jaune n'est pas dans la palette — artefact probable du rendu logiciel, **à confirmer dans un vrai navigateur** | Francki |
+| Page outil « Communecter » : la maquette B a un lien « Voir le détail des fonctionnalités → » sans cible ; il pointe aujourd'hui vers le **dépôt Git** (« Voir le code source ↗ ») en attendant la page | Francki |
 | Domaine et entrée Coolify | Francki |
 | Liens d'ancre de page (`#id`) qui ne font pas défiler ; tokens `@theme` de `shared.css` (`--text-shadow-glow`, sans doute `--shadow-glow`) figés au build, donc non surchargeables par thème ; bug `aac-highlight` ton `primary` sur feuille Rézo ; `onlymemberaccess` lu à la racine ; poids SSR des listes ; `<title>` SSR d'une fiche = nom du FORMULAIRE (corrigé à l'hydratation) ; compteur « 0 RÉSULTAT » pendant le chargement de l'annuaire (relevés par la revue du 01/10, antérieurs) | moteur |

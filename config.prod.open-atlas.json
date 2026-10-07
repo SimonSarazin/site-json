@@ -36,18 +36,21 @@
   "header": {
     "type": "transparent-scroll",
     "path": "/",
-    "logo": "/images/openAtlas/logo-symbol.png",
-    "logoDark": "/images/openAtlas/logo-symbol-dark.png",
+    "logo": "/images/openAtlas/logo.png",
+    "logoDark": "/images/openAtlas/logo-dark.png",
     "logoAlt": {
-      "fr": "Open Atlas",
-      "en": "Open Atlas"
-    },
-    "logoTitle": {
       "fr": "Open Atlas",
       "en": "Open Atlas"
     },
     "logoSize": "md",
     "nav": [
+      {
+        "label": {
+          "fr": "Communecter.org",
+          "en": "Communecter.org"
+        },
+        "href": "https://www.communecter.org"
+      },
       {
         "label": {
           "fr": "Projets",
@@ -68,13 +71,6 @@
           "en": "Support"
         },
         "path": "/accompagnement"
-      },
-      {
-        "label": {
-          "fr": "Communecter.org",
-          "en": "Communecter.org"
-        },
-        "href": "https://www.communecter.org"
       }
     ],
     "sticky": true,
@@ -96,7 +92,8 @@
         "en": "Write to us"
       },
       "path": "/contact"
-    }
+    },
+    "logoClass": "h-9 sm:h-10 w-auto shrink-0 object-contain"
   },
   "pages": [
     {
@@ -108,263 +105,125 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-parallax",
+          "type": "html",
           "id": "accueil",
           "props": {
-            "headline": {
-              "fr": "Le réseau qui appartient à ceux qui le font vivre.",
-              "en": "The network that belongs to those who bring it to life."
-            },
-            "subhead": {
-              "fr": "Open Atlas permet à des collectifs, organisations ou citoyens de se créer des espaces de coopération ou réseaux sociaux personnalisés.",
-              "en": "Open Atlas enables collectives, organisations and citizens to create their own spaces for cooperation and personalised social networks."
-            },
-            "badges": [
-              {
-                "label": {
-                  "fr": "Association loi 1901",
-                  "en": "Non-profit association"
-                },
-                "icon": "landmark"
-              },
-              {
-                "label": {
-                  "fr": "Communs numériques",
-                  "en": "Digital commons"
-                },
-                "icon": "share-2"
-              },
-              {
-                "label": {
-                  "fr": "Logiciel libre",
-                  "en": "Free software"
-                },
-                "icon": "code-xml"
-              }
-            ],
-            "ctaButtons": [
-              {
-                "label": {
-                  "fr": "Découvrir Communecter",
-                  "en": "Discover Communecter"
-                },
-                "path": "https://www.communecter.org",
-                "variant": "default"
-              },
-              {
-                "label": {
-                  "fr": "Nous écrire",
-                  "en": "Write to us"
-                },
-                "path": "/contact",
-                "variant": "outline"
-              }
-            ],
-            "showScrollIndicator": true
+            "html": {
+              "fr": "<div class=\"oa-band oa-hero\"><div class=\"oa-wrap oa-hero__grid\"> <div class=\"oa-hero__text\"> <span class=\"oa-eyebrow\">Association loi 1901 · communs numériques</span> <h1 class=\"oa-h1\">Le réseau qui appartient <span class=\"oa-ink\">à ceux qui le font vivre.</span></h1> <p class=\"oa-lead\">Open Atlas permet à des collectifs, organisations ou citoyens de se créer des espaces de coopération ou réseaux sociaux personnalisés.</p> <div class=\"oa-actions\"> <a class=\"oa-btn oa-btn--primary\" href=\"#outils\">Découvrir Communecter</a> <a class=\"oa-btn oa-btn--ghost\" href=\"/contact\">Nous écrire</a> </div> </div> <div class=\"oa-hero__art\"> <img class=\"oa-only-dark\" src=\"/images/openAtlas/logo-symbol-dark-lg.png\" alt=\"\" width=\"380\" height=\"380\"> <img class=\"oa-only-light\" src=\"/images/openAtlas/logo-symbol-lg.png\" alt=\"\" width=\"380\" height=\"380\"> </div> </div></div>",
+              "en": "<div class=\"oa-band oa-hero\"><div class=\"oa-wrap oa-hero__grid\"> <div class=\"oa-hero__text\"> <span class=\"oa-eyebrow\">Non-profit association · digital commons</span> <h1 class=\"oa-h1\">The network that belongs <span class=\"oa-ink\">to those who bring it to life.</span></h1> <p class=\"oa-lead\">Open Atlas enables collectives, organisations and citizens to create their own spaces for cooperation and personalised social networks.</p> <div class=\"oa-actions\"> <a class=\"oa-btn oa-btn--primary\" href=\"#outils\">Discover Communecter</a> <a class=\"oa-btn oa-btn--ghost\" href=\"/contact\">Write to us</a> </div> </div> <div class=\"oa-hero__art\"> <img class=\"oa-only-dark\" src=\"/images/openAtlas/logo-symbol-dark-lg.png\" alt=\"\" width=\"380\" height=\"380\"> <img class=\"oa-only-light\" src=\"/images/openAtlas/logo-symbol-lg.png\" alt=\"\" width=\"380\" height=\"380\"> </div> </div></div>"
+            }
           }
         },
         {
-          "type": "cta-card-grid",
+          "type": "html",
           "id": "outils",
           "props": {
-            "headline": {
-              "fr": "Un logiciel, une instance centrale",
-              "en": "One software, one central instance"
-            },
-            "subhead": {
-              "fr": "Open Atlas développe Communecter, un logiciel libre, interopérable et facilement adaptable pour créer des plateformes personnalisées au niveau fonctionnel et dans le design. Open Atlas maintient Communecter.org, son instance centrale qui relie tous les projets en open data pour proposer un réseau social dédié aux communs, alimenté par les territoires et les plateformes personnalisées depuis maintenant 14 ans.",
-              "en": "Open Atlas develops Communecter, free, interoperable and easily adaptable software for building platforms personalised in both features and design. Open Atlas maintains Communecter.org, its central instance, which connects every project through open data to offer a social network dedicated to the commons, fed by territories and personalised platforms for 14 years now."
-            },
-            "bg": "default",
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 2,
-              "xl": 2
-            },
-            "actions": [
-              {
-                "icon": "code-xml",
-                "title": {
-                  "fr": "Communecter",
-                  "en": "Communecter"
-                },
-                "description": {
-                  "fr": "Le logiciel libre développé et protégé par Open Atlas. C'est le moteur qui permet de créer des réseaux sociaux personnalisés, d'interroger les données d'un territoire de très nombreuses manières, et de les relier entre elles.",
-                  "en": "The free software developed and protected by Open Atlas. It is the engine for creating personalised social networks, querying a territory's data in many different ways, and connecting it all together."
-                },
-                "ctaLabel": {
-                  "fr": "Voir le code source",
-                  "en": "View the source code"
-                },
-                "href": "https://gitlab.adullact.net/pixelhumain/",
-                "color": "primary"
-              },
-              {
-                "icon": "map",
-                "title": {
-                  "fr": "Communecter.org",
-                  "en": "Communecter.org"
-                },
-                "description": {
-                  "fr": "L'instance centrale du logiciel Communecter, maintenue et protégée par Open Atlas. Elle relie tous les projets qui l'utilisent et donne accès à un réseau social dédié aux communs. Elle est aujourd'hui en pleine refonte pour une nouvelle version.",
-                  "en": "The central instance of the Communecter software, maintained and protected by Open Atlas. It connects every project that uses it and gives access to a social network dedicated to the commons. It is currently being rebuilt for a new version."
-                },
-                "ctaLabel": {
-                  "fr": "Visiter communecter.org",
-                  "en": "Visit communecter.org"
-                },
-                "href": "https://www.communecter.org",
-                "color": "chart-2"
-              }
-            ]
-          }
-        },
-        {
-          "type": "content",
-          "id": "fonctionnalites",
-          "props": {
-            "category": {
-              "fr": "Fonctionnalités",
-              "en": "Features"
-            },
-            "title": {
-              "fr": "Ce que permet Communecter",
-              "en": "What Communecter does"
-            },
-            "description": {
-              "fr": "Annuaire territorial, cartographie interactive, formulaires, réseau social, agenda, projets, observatoire, droits & rôles, API…",
-              "en": "Territorial directory, interactive mapping, forms, social network, calendar, projects, observatory, rights & roles, API…"
-            },
-            "tags": [
-              {
-                "fr": "Annuaire",
-                "en": "Directory"
-              },
-              {
-                "fr": "Cartographie",
-                "en": "Mapping"
-              },
-              {
-                "fr": "Formulaires",
-                "en": "Forms"
-              },
-              {
-                "fr": "Réseau social",
-                "en": "Social network"
-              },
-              {
-                "fr": "Observatoire",
-                "en": "Observatory"
-              },
-              {
-                "fr": "API",
-                "en": "API"
-              }
-            ],
-            "width": "wide",
-            "align": "left"
-          }
-        },
-        {
-          "type": "categories-grid",
-          "id": "principes",
-          "props": {
-            "headline": {
-              "fr": "Ce qui guide notre travail",
-              "en": "What guides our work"
-            },
-            "variant": "primary",
-            "columns": 4,
-            "cards": [
-              {
-                "icon": "git-fork",
-                "title": {
-                  "fr": "Communs numériques",
-                  "en": "Digital commons"
-                },
-                "subtitle": {
-                  "fr": "Nos outils sont publiés en logiciel libre : le code s'étudie, se copie, s'améliore, il n'appartient à personne en particulier.",
-                  "en": "Our tools are published as free software: the code can be studied, copied and improved, and belongs to no one in particular."
-                }
-              },
-              {
-                "icon": "users",
-                "title": {
-                  "fr": "Réseau social vivant",
-                  "en": "A living social network"
-                },
-                "subtitle": {
-                  "fr": "Plutôt qu'un annuaire ou un site figé, toute notre expérience est dédiée à créer des interactions : faciliter une mutualisation via la plateforme, ajouter des membres à son réseau, créer et modifier sa fiche de présentation, ajouter des ressources, prendre des décisions ensemble.",
-                  "en": "Rather than a static directory or website, all our experience is devoted to creating interactions: pooling through the platform, adding members to your network, creating and editing your profile, adding resources, making decisions together."
-                }
-              },
-              {
-                "icon": "brain",
-                "title": {
-                  "fr": "Intelligence collective",
-                  "en": "Collective intelligence"
-                },
-                "subtitle": {
-                  "fr": "Des outils pensés pour que les réseaux créés construisent de l'intelligence collective et révèlent ce qui se crée au plus près du terrain, dans vos collectifs ou organisations.",
-                  "en": "Tools designed so that the networks they create build collective intelligence and reveal what is happening closest to the ground, in your collectives or organisations."
-                }
-              },
-              {
-                "icon": "map-pin",
-                "title": {
-                  "fr": "Un numérique qui relie au réel",
-                  "en": "Digital that connects to the real world"
-                },
-                "subtitle": {
-                  "fr": "Nos outils sont pensés pour limiter toute dépendance et n'utiliser le numérique que pour l'essentiel. Depuis 10 ans autour des tiers-lieux, notre travail vise à ce que les acteurs du réseau se retrouvent dans ces lieux physiques qui font réseau social.",
-                  "en": "Our tools are designed to limit dependency and use digital only for what matters. For 10 years around third places, our work has aimed to bring network members together in the physical places that make a social network."
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "aac-highlight",
-          "id": "projets-bande",
-          "props": {
-            "title": {
-              "fr": "Les projets d'Open Atlas",
-              "en": "Open Atlas projects"
-            },
-            "description": {
-              "fr": "Les projets portés et suivis par Open Atlas : leurs objectifs, leur budget et leur avancement.",
-              "en": "The projects led and followed by Open Atlas: their goals, budget and progress."
-            },
-            "tone": "muted",
-            "cta": {
-              "label": {
-                "fr": "Voir les projets",
-                "en": "See the projects"
-              },
-              "href": "/projets"
-            },
-            "count": {
-              "source": "communs",
-              "label": {
-                "fr": "Projets publiés",
-                "en": "Published projects"
-              }
+            "html": {
+              "fr": "<div class=\"oa-band oa-band--alt\"><div class=\"oa-wrap oa-stack\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">Ce que nous construisons</span><h2 class=\"oa-h2\">Un logiciel, une instance centrale</h2><p class=\"oa-text\">Open Atlas développe Communecter, un logiciel libre, interopérable et facilement adaptable pour créer des plateformes personnalisées au niveau fonctionnel et dans le design. Open Atlas maintient Communecter.org, son instance centrale qui relie tous les projets en open data pour proposer un réseau social dédié aux communs, alimenté par les territoires et les plateformes personnalisées depuis maintenant 14 ans.</p></header> <div class=\"oa-grid oa-grid--2\"> <article class=\"oa-card\"> <span class=\"oa-kicker\">Logiciel libre · le moteur</span><h3 class=\"oa-h3\">Communecter</h3><p class=\"oa-text-sm\">Le logiciel libre développé et protégé par Open Atlas. C'est le moteur qui permet de créer des réseaux sociaux personnalisés, d'interroger les données d'un territoire de très nombreuses manières, et de les relier entre elles.</p> <ul class=\"oa-chips\"><li>Annuaire</li><li>Cartographie</li><li>Formulaires</li><li>Réseau social</li><li>Observatoire</li><li>API</li></ul> <a class=\"oa-more\" href=\"https://gitlab.adullact.net/pixelhumain/\">Voir le code source ↗</a> </article> <article class=\"oa-card\"> <span class=\"oa-kicker\">communecter.org · instance centrale</span><h3 class=\"oa-h3\">Communecter.org</h3><p class=\"oa-text-sm\">L'instance centrale du logiciel Communecter, maintenue et protégée par Open Atlas. Elle relie tous les projets qui l'utilisent et donne accès à un réseau social dédié aux communs. Elle est aujourd'hui en pleine refonte pour une nouvelle version.</p> <a class=\"oa-more\" href=\"https://www.communecter.org\">Visiter communecter.org ↗</a> </article> </div> </div></div>",
+              "en": "<div class=\"oa-band oa-band--alt\"><div class=\"oa-wrap oa-stack\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">What we build</span><h2 class=\"oa-h2\">One software, one central instance</h2><p class=\"oa-text\">Open Atlas develops Communecter, free, interoperable and easily adaptable software for building platforms personalised in both features and design. Open Atlas maintains Communecter.org, its central instance, which connects every project through open data to offer a social network dedicated to the commons, fed by territories and personalised platforms for 14 years now.</p></header> <div class=\"oa-grid oa-grid--2\"> <article class=\"oa-card\"> <span class=\"oa-kicker\">Free software · the engine</span><h3 class=\"oa-h3\">Communecter</h3><p class=\"oa-text-sm\">The free software developed and protected by Open Atlas. It is the engine for creating personalised social networks, querying a territory's data in many different ways, and connecting it all together.</p> <ul class=\"oa-chips\"><li>Directory</li><li>Mapping</li><li>Forms</li><li>Social network</li><li>Observatory</li><li>API</li></ul> <a class=\"oa-more\" href=\"https://gitlab.adullact.net/pixelhumain/\">View the source code ↗</a> </article> <article class=\"oa-card\"> <span class=\"oa-kicker\">communecter.org · central instance</span><h3 class=\"oa-h3\">Communecter.org</h3><p class=\"oa-text-sm\">The central instance of the Communecter software, maintained and protected by Open Atlas. It connects every project that uses it and gives access to a social network dedicated to the commons. It is currently being rebuilt for a new version.</p> <a class=\"oa-more\" href=\"https://www.communecter.org\">Visit communecter.org ↗</a> </article> </div> </div></div>"
             }
+          }
+        },
+        {
+          "type": "html",
+          "id": "reseau",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-band--head\"><div class=\"oa-wrap oa-head-row\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">Le réseau en direct</span><h2 class=\"oa-h2\">Les projets et la communauté d'Open Atlas</h2></header> <div class=\"oa-actions\"> <a class=\"oa-btn oa-btn--ghost oa-btn--sm\" href=\"/projets\">Tous les projets</a> <a class=\"oa-btn oa-btn--ghost oa-btn--sm\" href=\"/communaute\">La communauté</a> </div> </div></div>",
+              "en": "<div class=\"oa-band oa-band--head\"><div class=\"oa-wrap oa-head-row\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">The network, live</span><h2 class=\"oa-h2\">Open Atlas projects and community</h2></header> <div class=\"oa-actions\"> <a class=\"oa-btn oa-btn--ghost oa-btn--sm\" href=\"/projets\">All projects</a> <a class=\"oa-btn oa-btn--ghost oa-btn--sm\" href=\"/communaute\">The community</a> </div> </div></div>"
+            }
+          }
+        },
+        {
+          "type": "stats",
+          "id": "chiffres",
+          "props": {
+            "design": "tiles",
+            "layout": "horizontal",
+            "animated": false,
+            "columns": {
+              "sm": 3
+            },
+            "items": [
+              {
+                "label": {
+                  "fr": "projets publiés",
+                  "en": "published projects"
+                },
+                "source": {
+                  "type": "aacCommuns"
+                },
+                "highlight": true
+              },
+              {
+                "label": {
+                  "fr": "membres",
+                  "en": "members"
+                },
+                "source": {
+                  "type": "searchCount",
+                  "entityType": "citoyens",
+                  "baseParams": {
+                    "notSourceKey": true,
+                    "defaultTypes": [
+                      "citoyens"
+                    ],
+                    "defaultFilters": {
+                      "links.memberOf.555eba56c655675cdd65bf19": {
+                        "$exists": true
+                      },
+                      "links.memberOf.555eba56c655675cdd65bf19.toBeValidated": {
+                        "$exists": false
+                      },
+                      "links.memberOf.555eba56c655675cdd65bf19.isInviting": {
+                        "$exists": false
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "label": {
+                  "fr": "organisations",
+                  "en": "organisations"
+                },
+                "source": {
+                  "type": "searchCount",
+                  "entityType": "organizations",
+                  "baseParams": {
+                    "notSourceKey": true,
+                    "defaultTypes": [
+                      "NGO",
+                      "LocalBusiness",
+                      "Group",
+                      "GovernmentOrganization",
+                      "Cooperative"
+                    ],
+                    "defaultFilters": {
+                      "links.memberOf.555eba56c655675cdd65bf19": {
+                        "$exists": true
+                      },
+                      "links.memberOf.555eba56c655675cdd65bf19.toBeValidated": {
+                        "$exists": false
+                      },
+                      "links.memberOf.555eba56c655675cdd65bf19.isInviting": {
+                        "$exists": false
+                      }
+                    }
+                  }
+                }
+              }
+            ]
           }
         },
         {
           "type": "aac-directory",
           "id": "projets-apercu",
           "props": {
-            "title": {
-              "fr": "Projets récents",
-              "en": "Recent projects"
-            },
             "variant": "preview",
             "display": "grid",
             "columns": 3,
-            "pageSize": 6,
+            "pageSize": 3,
             "filters": {
               "search": false,
               "usage": false,
@@ -377,164 +236,47 @@
               "fr": "Aucun projet publié pour le moment.",
               "en": "No published project yet."
             },
-            "moreLink": {
-              "href": "/projets",
-              "label": {
-                "fr": "Voir tous les projets",
-                "en": "See all projects"
-              }
-            },
-            "className": "max-w-7xl mx-auto px-6"
+            "className": "mx-auto"
           }
         },
         {
-          "type": "content",
+          "type": "html",
+          "id": "approche",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-band--alt\"><div class=\"oa-wrap oa-stack\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">Notre approche</span><h2 class=\"oa-h2\">Ce qui guide notre travail</h2></header> <ol class=\"oa-grid oa-grid--4 oa-principles\"><li><span class=\"oa-num\">01</span><h3 class=\"oa-h4\">Communs numériques</h3><p>Nos outils sont publiés en logiciel libre : le code s'étudie, se copie, s'améliore, il n'appartient à personne en particulier.</p></li><li><span class=\"oa-num\">02</span><h3 class=\"oa-h4\">Réseau social vivant</h3><p>Plutôt qu'un annuaire ou un site figé, toute notre expérience est dédiée à créer des interactions : faciliter une mutualisation via la plateforme, ajouter des membres à son réseau, créer et modifier sa fiche de présentation, ajouter des ressources, prendre des décisions ensemble.</p></li><li><span class=\"oa-num\">03</span><h3 class=\"oa-h4\">Intelligence collective</h3><p>Des outils pensés pour que les réseaux créés construisent de l'intelligence collective et révèlent ce qui se crée au plus près du terrain, dans vos collectifs ou organisations.</p></li><li><span class=\"oa-num\">04</span><h3 class=\"oa-h4\">Un numérique qui relie au réel</h3><p>Nos outils sont pensés pour limiter toute dépendance et n'utiliser le numérique que pour l'essentiel. Depuis 10 ans autour des tiers-lieux, notre travail vise à ce que les acteurs du réseau se retrouvent dans ces lieux physiques qui font réseau social.</p></li></ol></div></div>",
+              "en": "<div class=\"oa-band oa-band--alt\"><div class=\"oa-wrap oa-stack\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">Our approach</span><h2 class=\"oa-h2\">What guides our work</h2></header> <ol class=\"oa-grid oa-grid--4 oa-principles\"><li><span class=\"oa-num\">01</span><h3 class=\"oa-h4\">Digital commons</h3><p>Our tools are published as free software: the code can be studied, copied and improved, and belongs to no one in particular.</p></li><li><span class=\"oa-num\">02</span><h3 class=\"oa-h4\">A living social network</h3><p>Rather than a static directory or website, all our experience is devoted to creating interactions: pooling through the platform, adding members to your network, creating and editing your profile, adding resources, making decisions together.</p></li><li><span class=\"oa-num\">03</span><h3 class=\"oa-h4\">Collective intelligence</h3><p>Tools designed so that the networks they create build collective intelligence and reveal what is happening closest to the ground, in your collectives or organisations.</p></li><li><span class=\"oa-num\">04</span><h3 class=\"oa-h4\">Digital that connects to the real world</h3><p>Our tools are designed to limit dependency and use digital only for what matters. For 10 years around third places, our work has aimed to bring network members together in the physical places that make a social network.</p></li></ol></div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "reseaux",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band\"><div class=\"oa-wrap oa-split\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">Comment ça s'articule</span><h2 class=\"oa-h2\">Communecter.org au cœur, des réseaux tout autour</h2><p class=\"oa-text\">Communecter.org est l'instance centrale du logiciel Communecter : elle centralise et protège la donnée des communs. Autour d'elle, des réseaux sociaux personnalisés — basés sur le logiciel libre Communecter — offrent chacun une porte d'entrée différente sur ce même réseau, adaptée à un territoire ou une thématique.</p></header> <div class=\"oa-net\"> <svg viewBox=\"0 0 520 420\" fill=\"none\" aria-hidden=\"true\"> <line class=\"is-cold\" x1=\"260\" y1=\"210\" x2=\"110\" y2=\"70\"></line> <line class=\"is-hot\" x1=\"260\" y1=\"210\" x2=\"420\" y2=\"80\"></line> <line class=\"is-hot\" x1=\"260\" y1=\"210\" x2=\"100\" y2=\"350\"></line> <line class=\"is-cold\" x1=\"260\" y1=\"210\" x2=\"430\" y2=\"345\"></line> <circle class=\"is-cold\" cx=\"110\" cy=\"70\" r=\"7\"></circle> <circle class=\"is-hot\" cx=\"420\" cy=\"80\" r=\"7\"></circle> <circle class=\"is-hot\" cx=\"100\" cy=\"350\" r=\"7\"></circle> <circle class=\"is-cold\" cx=\"430\" cy=\"345\" r=\"7\"></circle> </svg> <div class=\"oa-net__hub\"> <img class=\"oa-only-dark\" src=\"/images/openAtlas/logo-symbol-dark.png\" alt=\"\" width=\"84\" height=\"84\"> <img class=\"oa-only-light\" src=\"/images/openAtlas/logo-symbol.png\" alt=\"\" width=\"84\" height=\"84\"> </div> <span class=\"oa-net__label\">Communecter.org</span> <a class=\"oa-net__p1\" href=\"https://tiers-lieux.org\">tiers-lieux.org</a> <a class=\"oa-net__p2\" href=\"https://lescommuns.tiers-lieux.org\">Appel à communs</a> <a class=\"oa-net__p3\" href=\"https://parent62.00.re/\">Parentalité 62</a> <a class=\"oa-net__p4\" href=\"https://equipements-sportifs-974.00.re/\">Sport 974</a> </div> </div></div>",
+              "en": "<div class=\"oa-band\"><div class=\"oa-wrap oa-split\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">How it fits together</span><h2 class=\"oa-h2\">Communecter.org at the core, networks all around</h2><p class=\"oa-text\">Communecter.org is the central instance of the Communecter software: it centralises and protects the data of the commons. Around it, personalised social networks — built on the free software Communecter — each offer a different way into the same network, adapted to a territory or a theme.</p></header> <div class=\"oa-net\"> <svg viewBox=\"0 0 520 420\" fill=\"none\" aria-hidden=\"true\"> <line class=\"is-cold\" x1=\"260\" y1=\"210\" x2=\"110\" y2=\"70\"></line> <line class=\"is-hot\" x1=\"260\" y1=\"210\" x2=\"420\" y2=\"80\"></line> <line class=\"is-hot\" x1=\"260\" y1=\"210\" x2=\"100\" y2=\"350\"></line> <line class=\"is-cold\" x1=\"260\" y1=\"210\" x2=\"430\" y2=\"345\"></line> <circle class=\"is-cold\" cx=\"110\" cy=\"70\" r=\"7\"></circle> <circle class=\"is-hot\" cx=\"420\" cy=\"80\" r=\"7\"></circle> <circle class=\"is-hot\" cx=\"100\" cy=\"350\" r=\"7\"></circle> <circle class=\"is-cold\" cx=\"430\" cy=\"345\" r=\"7\"></circle> </svg> <div class=\"oa-net__hub\"> <img class=\"oa-only-dark\" src=\"/images/openAtlas/logo-symbol-dark.png\" alt=\"\" width=\"84\" height=\"84\"> <img class=\"oa-only-light\" src=\"/images/openAtlas/logo-symbol.png\" alt=\"\" width=\"84\" height=\"84\"> </div> <span class=\"oa-net__label\">Communecter.org</span> <a class=\"oa-net__p1\" href=\"https://tiers-lieux.org\">tiers-lieux.org</a> <a class=\"oa-net__p2\" href=\"https://lescommuns.tiers-lieux.org\">Call for commons</a> <a class=\"oa-net__p3\" href=\"https://parent62.00.re/\">Parenting 62</a> <a class=\"oa-net__p4\" href=\"https://equipements-sportifs-974.00.re/\">Sport 974</a> </div> </div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
           "id": "accompagnement",
           "props": {
-            "category": {
-              "fr": "Au-delà du logiciel",
-              "en": "Beyond the software"
-            },
-            "title": {
-              "fr": "Un accompagnement sur mesure",
-              "en": "Tailored support"
-            },
-            "description": {
-              "fr": "Open Atlas accompagne les collectivités, organisations et collectifs qui veulent déployer leur propre réseau ou plateforme personnalisée basée sur ce réseau social des communs qu'est Communecter.org.",
-              "en": "Open Atlas supports local authorities, organisations and collectives that want to deploy their own network or personalised platform built on Communecter.org, the social network of the commons."
-            },
-            "links": [
-              {
-                "label": {
-                  "fr": "Découvrir l'accompagnement",
-                  "en": "Discover our support"
-                },
-                "href": "/accompagnement"
-              },
-              {
-                "label": {
-                  "fr": "Nous écrire",
-                  "en": "Write to us"
-                },
-                "href": "/contact"
-              }
-            ],
-            "width": "wide",
-            "align": "left"
+            "html": {
+              "fr": "<div class=\"oa-band oa-band--alt\"><div class=\"oa-wrap oa-split oa-split--top\"> <div class=\"oa-head\"> <span class=\"oa-eyebrow\">Au-delà du logiciel</span><h2 class=\"oa-h2\">Un accompagnement sur mesure</h2><p class=\"oa-text\">Open Atlas accompagne les collectivités, organisations et collectifs qui veulent déployer leur propre réseau ou plateforme personnalisée basée sur ce réseau social des communs qu'est Communecter.org.</p> <div class=\"oa-box\"><span class=\"oa-kicker\">Un réseau, pas un guichet</span><p>Selon la taille et la nature du projet, Open Atlas peut mobiliser la communauté des prestataires qui gravitent autour de Communecter pour compléter son accompagnement.</p><ul class=\"oa-chips\"><li>OPTEOS</li><li>CoRD</li><li class=\"is-more\">+ d'autres prestataires selon le projet</li></ul></div> </div> <ol class=\"oa-steps\"><li><span class=\"oa-num\">01</span><span>Diagnostic des enjeux (ateliers en intelligence collective) et définition des besoins qui y répondent</span></li><li><span class=\"oa-num\">02</span><span>Création d'une plateforme spécifique qui y répond à partir des modules déjà existants</span></li><li><span class=\"oa-num\">03</span><span>Formation des équipes à la plateforme ainsi qu'à contribuer au logiciel</span></li><li><span class=\"oa-num\">04</span><span>Animation de communauté et accompagnement à l'adoption</span></li><li><span class=\"oa-num\">05</span><span>Développements spécifiques et intégrations sur mesure</span></li></ol></div></div>",
+              "en": "<div class=\"oa-band oa-band--alt\"><div class=\"oa-wrap oa-split oa-split--top\"> <div class=\"oa-head\"> <span class=\"oa-eyebrow\">Beyond the software</span><h2 class=\"oa-h2\">Tailored support</h2><p class=\"oa-text\">Open Atlas supports local authorities, organisations and collectives that want to deploy their own network or personalised platform built on Communecter.org, the social network of the commons.</p> <div class=\"oa-box\"><span class=\"oa-kicker\">A network, not a help desk</span><p>Depending on the size and nature of the project, Open Atlas can bring in the community of service providers around Communecter to complement its support.</p><ul class=\"oa-chips\"><li>OPTEOS</li><li>CoRD</li><li class=\"is-more\">+ other providers depending on the project</li></ul></div> </div> <ol class=\"oa-steps\"><li><span class=\"oa-num\">01</span><span>Assessment of the challenges (collective intelligence workshops) and definition of the needs that address them</span></li><li><span class=\"oa-num\">02</span><span>Building a dedicated platform that meets them from existing modules</span></li><li><span class=\"oa-num\">03</span><span>Training teams on the platform and on contributing to the software</span></li><li><span class=\"oa-num\">04</span><span>Community facilitation and adoption support</span></li><li><span class=\"oa-num\">05</span><span>Custom development and integrations</span></li></ol></div></div>"
+            }
           }
         },
         {
-          "type": "action-tiles",
-          "id": "references",
-          "props": {
-            "headline": {
-              "fr": "Communecter.org au cœur, des réseaux tout autour",
-              "en": "Communecter.org at the core, networks all around"
-            },
-            "subhead": {
-              "fr": "Communecter.org est l'instance centrale du logiciel Communecter : elle centralise et protège la donnée des communs. Autour d'elle, des réseaux sociaux personnalisés — basés sur le logiciel libre Communecter — offrent chacun une porte d'entrée différente sur ce même réseau, adaptée à un territoire ou une thématique.",
-              "en": "Communecter.org is the central instance of the Communecter software: it centralises and protects the data of the commons. Around it, personalised social networks — built on the free software Communecter — each offer a different way into the same network, adapted to a territory or a theme."
-            },
-            "bg": "muted",
-            "columns": {
-              "sm": 2,
-              "lg": 4
-            },
-            "actions": [
-              {
-                "icon": "building-2",
-                "title": {
-                  "fr": "tiers-lieux.org",
-                  "en": "tiers-lieux.org"
-                },
-                "subtitle": {
-                  "fr": "Le réseau national des tiers-lieux",
-                  "en": "The national network of third places"
-                },
-                "href": "https://tiers-lieux.org",
-                "color": "primary"
-              },
-              {
-                "icon": "handshake",
-                "title": {
-                  "fr": "Appel à communs des tiers-lieux",
-                  "en": "Third places' call for commons"
-                },
-                "subtitle": {
-                  "fr": "lescommuns.tiers-lieux.org",
-                  "en": "lescommuns.tiers-lieux.org"
-                },
-                "href": "https://lescommuns.tiers-lieux.org",
-                "color": "chart-2"
-              },
-              {
-                "icon": "baby",
-                "title": {
-                  "fr": "Réseau parentalité 62",
-                  "en": "Parenting network 62"
-                },
-                "subtitle": {
-                  "fr": "parent62.00.re",
-                  "en": "parent62.00.re"
-                },
-                "href": "https://parent62.00.re/",
-                "color": "primary"
-              },
-              {
-                "icon": "dumbbell",
-                "title": {
-                  "fr": "Équipements sportifs 974",
-                  "en": "Sports facilities 974"
-                },
-                "subtitle": {
-                  "fr": "equipements-sportifs-974.00.re",
-                  "en": "equipements-sportifs-974.00.re"
-                },
-                "href": "https://equipements-sportifs-974.00.re/",
-                "color": "chart-2"
-              }
-            ]
-          }
-        },
-        {
-          "type": "cta",
+          "type": "html",
           "id": "rejoindre",
           "props": {
-            "headline": {
-              "fr": "Envie de contribuer, d'adhérer ou de discuter d'un projet ?",
-              "en": "Want to contribute, join or discuss a project?"
-            },
-            "subhead": {
-              "fr": "Que vous portiez un tiers-lieu, une collectivité, ou simplement l'envie de mettre la main dans le code, il y a une place pour vous dans le mouvement Open Atlas.",
-              "en": "Whether you run a third place, a local authority, or simply want to get your hands into the code, there is a place for you in the Open Atlas movement."
-            },
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Adhérer à l'association",
-                  "en": "Join the association"
-                },
-                "href": "/contact",
-                "variant": "default"
-              },
-              {
-                "label": {
-                  "fr": "Discuter d'un projet",
-                  "en": "Discuss a project"
-                },
-                "href": "/contact",
-                "variant": "outline"
-              },
-              {
-                "label": {
-                  "fr": "Rejoindre la communauté",
-                  "en": "Join the community"
-                },
-                "href": "/communaute",
-                "variant": "outline"
-              }
-            ],
-            "align": "left"
+            "html": {
+              "fr": "<div class=\"oa-band oa-join\"><div class=\"oa-wrap\"> <h2 class=\"oa-h2\">Envie de contribuer, d'adhérer ou de discuter d'un projet ?</h2><p class=\"oa-text\">Que vous portiez un tiers-lieu, une collectivité, ou simplement l'envie de mettre la main dans le code, il y a une place pour vous dans le mouvement Open Atlas.</p> <div class=\"oa-actions\"> <a class=\"oa-btn oa-btn--primary\" href=\"/contact\">Adhérer à l'association</a> <a class=\"oa-btn oa-btn--ghost\" href=\"/contact\">Discuter d'un projet</a> <a class=\"oa-btn oa-btn--ghost\" href=\"/communaute\">Rejoindre la communauté</a> </div> </div></div>",
+              "en": "<div class=\"oa-band oa-join\"><div class=\"oa-wrap\"> <h2 class=\"oa-h2\">Want to contribute, join or discuss a project?</h2><p class=\"oa-text\">Whether you run a third place, a local authority, or simply want to get your hands into the code, there is a place for you in the Open Atlas movement.</p> <div class=\"oa-actions\"> <a class=\"oa-btn oa-btn--primary\" href=\"/contact\">Join the association</a> <a class=\"oa-btn oa-btn--ghost\" href=\"/contact\">Discuss a project</a> <a class=\"oa-btn oa-btn--ghost\" href=\"/communaute\">Join the community</a> </div> </div></div>"
+            }
           }
         }
       ]
@@ -1183,49 +925,6 @@
     "columns": [
       {
         "title": {
-          "fr": "Le site",
-          "en": "The site"
-        },
-        "links": [
-          {
-            "href": "/projets",
-            "label": {
-              "fr": "Projets",
-              "en": "Projects"
-            }
-          },
-          {
-            "href": "/communaute",
-            "label": {
-              "fr": "Communauté",
-              "en": "Community"
-            }
-          },
-          {
-            "href": "/accompagnement",
-            "label": {
-              "fr": "Accompagnement",
-              "en": "Support"
-            }
-          },
-          {
-            "href": "/contact",
-            "label": {
-              "fr": "Nous contacter",
-              "en": "Contact us"
-            }
-          },
-          {
-            "href": "/profil/openAtlas",
-            "label": {
-              "fr": "À propos d'Open Atlas",
-              "en": "About Open Atlas"
-            }
-          }
-        ]
-      },
-      {
-        "title": {
           "fr": "Outils",
           "en": "Tools"
         },
@@ -1248,6 +947,42 @@
       },
       {
         "title": {
+          "fr": "Association",
+          "en": "Association"
+        },
+        "links": [
+          {
+            "href": "/accompagnement",
+            "label": {
+              "fr": "Accompagnement",
+              "en": "Support"
+            }
+          },
+          {
+            "href": "/projets",
+            "label": {
+              "fr": "Projets",
+              "en": "Projects"
+            }
+          },
+          {
+            "href": "/communaute",
+            "label": {
+              "fr": "Communauté",
+              "en": "Community"
+            }
+          },
+          {
+            "href": "/contact",
+            "label": {
+              "fr": "Nous contacter",
+              "en": "Contact us"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
           "fr": "Références",
           "en": "References"
         },
@@ -1260,17 +995,17 @@
             }
           },
           {
-            "href": "https://lescommuns.tiers-lieux.org",
-            "label": {
-              "fr": "lescommuns.tiers-lieux.org",
-              "en": "lescommuns.tiers-lieux.org"
-            }
-          },
-          {
             "href": "https://parent62.00.re/",
             "label": {
               "fr": "parent62.00.re",
               "en": "parent62.00.re"
+            }
+          },
+          {
+            "href": "https://lescommuns.tiers-lieux.org",
+            "label": {
+              "fr": "lescommuns.tiers-lieux.org",
+              "en": "lescommuns.tiers-lieux.org"
             }
           },
           {
@@ -1376,7 +1111,7 @@
     ]
   },
   "theme": {
-    "defaultMode": "light",
+    "defaultMode": "dark",
     "colors": {
       "light": {
         "background": "oklch(0.9950 0.0020 264)",
@@ -1413,38 +1148,38 @@
         "sidebarRing": "oklch(0.5700 0.2100 18)"
       },
       "dark": {
-        "background": "oklch(0.1900 0.0170 264)",
-        "foreground": "oklch(0.9600 0.0050 264)",
-        "card": "oklch(0.2300 0.0180 264)",
-        "cardForeground": "oklch(0.9600 0.0050 264)",
-        "popover": "oklch(0.2200 0.0180 264)",
-        "popoverForeground": "oklch(0.9600 0.0050 264)",
-        "primary": "oklch(0.6600 0.2000 18)",
-        "primaryForeground": "oklch(0.1600 0.0150 264)",
-        "secondary": "oklch(0.3000 0.0250 264)",
-        "secondaryForeground": "oklch(0.9600 0.0050 264)",
-        "muted": "oklch(0.2700 0.0200 264)",
-        "mutedForeground": "oklch(0.7200 0.0200 264)",
-        "accent": "oklch(0.3600 0.0900 18)",
-        "accentForeground": "oklch(0.9600 0.0050 264)",
+        "background": "oklch(0.1830 0.0172 268.7)",
+        "foreground": "oklch(0.9548 0.0058 264.5)",
+        "card": "oklch(0.2469 0.0228 262.4)",
+        "cardForeground": "oklch(0.9548 0.0058 264.5)",
+        "popover": "oklch(0.2469 0.0228 262.4)",
+        "popoverForeground": "oklch(0.9548 0.0058 264.5)",
+        "primary": "oklch(0.5506 0.2000 17.9)",
+        "primaryForeground": "oklch(1.0000 0 0)",
+        "secondary": "oklch(0.2836 0.0243 261.1)",
+        "secondaryForeground": "oklch(0.9548 0.0058 264.5)",
+        "muted": "oklch(0.2213 0.0192 262.1)",
+        "mutedForeground": "oklch(0.7338 0.0186 264.5)",
+        "accent": "oklch(0.3200 0.0900 18)",
+        "accentForeground": "oklch(0.9548 0.0058 264.5)",
         "destructive": "oklch(0.6300 0.2000 30)",
         "destructiveForeground": "oklch(1.0000 0 0)",
-        "border": "oklch(0.3300 0.0200 264)",
-        "input": "oklch(0.3000 0.0200 264)",
-        "ring": "oklch(0.6600 0.2000 18)",
-        "chart1": "oklch(0.6600 0.2000 18)",
+        "border": "oklch(0.9548 0.0058 264.5 / 0.1)",
+        "input": "oklch(0.9548 0.0058 264.5 / 0.18)",
+        "ring": "oklch(0.6802 0.1904 17.8)",
+        "chart1": "oklch(0.6802 0.1904 17.8)",
         "chart2": "oklch(0.6800 0.1000 264)",
         "chart3": "oklch(0.7200 0.1200 200)",
         "chart4": "oklch(0.8000 0.1400 75)",
         "chart5": "oklch(0.6800 0.1400 300)",
-        "sidebar": "oklch(0.2100 0.0180 264)",
-        "sidebarForeground": "oklch(0.9600 0.0050 264)",
-        "sidebarPrimary": "oklch(0.6600 0.2000 18)",
-        "sidebarPrimaryForeground": "oklch(0.1600 0.0150 264)",
-        "sidebarAccent": "oklch(0.3600 0.0900 18)",
-        "sidebarAccentForeground": "oklch(0.9600 0.0050 264)",
-        "sidebarBorder": "oklch(0.3300 0.0200 264)",
-        "sidebarRing": "oklch(0.6600 0.2000 18)"
+        "sidebar": "oklch(0.2213 0.0192 262.1)",
+        "sidebarForeground": "oklch(0.9548 0.0058 264.5)",
+        "sidebarPrimary": "oklch(0.5506 0.2000 17.9)",
+        "sidebarPrimaryForeground": "oklch(1.0000 0 0)",
+        "sidebarAccent": "oklch(0.3200 0.0900 18)",
+        "sidebarAccentForeground": "oklch(0.9548 0.0058 264.5)",
+        "sidebarBorder": "oklch(0.9548 0.0058 264.5 / 0.1)",
+        "sidebarRing": "oklch(0.6802 0.1904 17.8)"
       }
     },
     "typography": {
@@ -1492,7 +1227,7 @@
         "shadow2xl": "0px 1px 3px 0px oklch(0 0 0 / 0.60)"
       }
     },
-    "customCSS": "/* index-rezo-la-mer.css est PARTAGÉ : ses teintes océan (halo, bandeaux des searchHeader, dégradés) sont recolorées ici aux couleurs d'Open Atlas — rouge du logo sur l'encre bleu nuit. `:root:root` bat le `:root` de la feuille, `:root:root.dark` son `.dark`. */\n:root:root {\n  --ocean-deep: oklch(0.22 0.017 264);\n  --ocean-mid: oklch(0.32 0.030 264);\n  --ocean-light: oklch(0.45 0.120 18);\n  --ocean-surface: oklch(0.60 0.209 18);\n  --ocean-foam: oklch(0.93 0.035 18);\n  --turquoise: var(--primary);\n  --turquoise-light: color-mix(in oklab, var(--primary) 70%, white);\n  --cyan-bright: var(--primary);\n  --shadow-ocean: 0 10px 40px -10px oklch(0.22 0.017 264 / 0.45);\n  --shadow-glow: 0 0 30px color-mix(in oklab, var(--primary) 35%, transparent);\n  --gradient-section: linear-gradient(135deg, color-mix(in oklab, var(--primary) 8%, var(--background)), color-mix(in oklab, var(--accent) 70%, var(--background)));\n}\n:root:root.dark {\n  --ocean-deep: oklch(0.16 0.015 264);\n  --ocean-mid: oklch(0.24 0.025 264);\n  --ocean-light: oklch(0.36 0.090 18);\n  --shadow-ocean: 0 10px 40px -10px oklch(0 0 0 / 0.7);\n  --shadow-glow: 0 0 40px color-mix(in oklab, var(--primary) 40%, transparent);\n  --gradient-section: linear-gradient(135deg, var(--ocean-deep), color-mix(in oklab, var(--primary) 16%, var(--ocean-mid)));\n}\n/* Héro d'accueil sans photo : halo rouge et bleu nuit, en écho au réseau de nœuds du logo. */\n#accueil {\n  background:\n    radial-gradient(ellipse 60% 50% at 15% 20%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 70%),\n    radial-gradient(ellipse 55% 45% at 85% 85%, color-mix(in oklab, var(--ocean-mid) 12%, transparent), transparent 70%),\n    var(--background);\n}\n/* Halo des titres de héro : `--text-shadow-glow` est déclaré en `@theme`, Tailwind FIGE sa valeur dans\n   `.text-shadow-glow` au build — surcharger la variable n'a aucun effet (mesuré : variable à `none`,\n   halo toujours rendu). En clair, ce halo rose floute le titre sombre : on le coupe sur la classe. */\n:root:not(.dark) .text-shadow-glow { text-shadow: none; }\n"
+    "customCSS": "/* index-rezo-la-mer.css est PARTAGÉ : ses teintes océan (bandeaux des searchHeader, dégradés) sont recolorées ici aux couleurs d'Open Atlas — rouge du logo sur l'encre bleu nuit. `:root:root` bat le `:root` de la feuille, `:root:root.dark` son `.dark`. */\n:root:root {\n  --ocean-deep: oklch(0.22 0.017 264);\n  --ocean-mid: oklch(0.32 0.030 264);\n  --ocean-light: oklch(0.45 0.120 18);\n  --ocean-surface: oklch(0.60 0.209 18);\n  --ocean-foam: oklch(0.93 0.035 18);\n  --turquoise: var(--primary);\n  --turquoise-light: color-mix(in oklab, var(--primary) 70%, white);\n  --cyan-bright: var(--primary);\n  --shadow-ocean: 0 10px 40px -10px oklch(0.22 0.017 264 / 0.45);\n  --shadow-glow: 0 0 30px color-mix(in oklab, var(--primary) 35%, transparent);\n  --gradient-section: linear-gradient(135deg, color-mix(in oklab, var(--primary) 8%, var(--background)), color-mix(in oklab, var(--accent) 70%, var(--background)));\n  /* Encre rouge des textes, et rouge du logo pour les traits (filet des surtitres, liens du schéma). */\n  --oa-ink: var(--primary);\n  --oa-ink-hover: color-mix(in oklab, var(--primary) 78%, black);\n  --oa-line: oklch(0.5994 0.2087 18.1);\n}\n:root:root.dark {\n  --ocean-deep: oklch(0.1830 0.0172 268.7);\n  --ocean-mid: oklch(0.2469 0.0228 262.4);\n  --ocean-light: oklch(0.36 0.090 18);\n  --shadow-ocean: 0 10px 40px -10px oklch(0 0 0 / 0.7);\n  --shadow-glow: 0 0 40px color-mix(in oklab, var(--primary) 40%, transparent);\n  --gradient-section: linear-gradient(135deg, var(--ocean-deep), color-mix(in oklab, var(--primary) 16%, var(--ocean-mid)));\n  --oa-ink: oklch(0.6802 0.1904 17.8);\n  --oa-ink-hover: oklch(0.7640 0.1418 15.1);\n}\n/* En sombre, le rouge des boutons (#CC2443 : blanc dessus à 5,4:1) ne tient que 3,5:1 en TEXTE sur la nuit.\n   Les aplats gardent `primary`, l'encre texte passe au rouge clair de la maquette (#F75B6B, 5,9:1). */\n:root.dark .text-primary, :root.dark .hover\\:text-primary:hover { color: var(--oa-ink); }\n\n/* ── Accueil « Nuit » (maquette de Simon, oct. 2026) ─────────────────────────────────────────\n   Blocs `html` de l'accueil : classes oa-*, tokens du thème uniquement — le mode clair suit seul.\n   Largeur utile 72rem, marges latérales calées sur les sections de code (px-4 / sm:px-6 / lg:px-8). */\n.oa-band { padding: 6rem 1rem; background: var(--background); color: var(--foreground); }\n.oa-band--alt { background: var(--muted); }\n.oa-band--head { padding-bottom: 1.75rem; }\n@media (min-width: 640px) { .oa-band { padding-inline: 1.5rem; } }\n@media (min-width: 1024px) { .oa-band { padding-inline: 2rem; } }\n.oa-wrap { max-width: 72rem; margin-inline: auto; }\n.oa-stack { display: flex; flex-direction: column; gap: 2.5rem; }\n.oa-head { display: flex; flex-direction: column; gap: 0.875rem; max-width: 44rem; }\n.oa-eyebrow { display: inline-flex; align-items: center; gap: 0.625rem; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-foreground); }\n.oa-eyebrow::before { content: \"\"; flex: none; width: 1.5rem; height: 2px; background: var(--oa-line); }\n.oa-h1 { margin: 0; font-size: clamp(2.5rem, 5.2vw, 4rem); line-height: 1.04; font-weight: 700; letter-spacing: -0.025em; }\n.oa-h2 { margin: 0; font-size: clamp(1.875rem, 3.4vw, 2.5rem); line-height: 1.1; font-weight: 700; }\n.oa-h3 { margin: 0; font-size: 1.75rem; font-weight: 700; }\n.oa-h4 { margin: 0; font-size: 1.1875rem; font-weight: 700; }\n.oa-ink { color: var(--oa-ink); }\n.oa-lead { margin: 0; max-width: 44ch; font-size: 1.1875rem; line-height: 1.6; color: var(--muted-foreground); }\n.oa-text { margin: 0; font-size: 1.0625rem; line-height: 1.65; color: var(--muted-foreground); }\n.oa-text-sm { margin: 0; font-size: 1rem; line-height: 1.6; color: var(--muted-foreground); }\n.oa-actions { display: flex; flex-wrap: wrap; gap: 0.875rem; }\n.oa-btn { display: inline-flex; align-items: center; min-height: 3.125rem; padding: 0 1.625rem; border-radius: 999px; font-size: 0.9375rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s, border-color 0.15s; }\n.oa-btn--sm { min-height: 2.75rem; padding: 0 1.25rem; font-size: 0.875rem; }\n.oa-btn--primary { background: var(--primary); color: var(--primary-foreground); }\n.oa-btn--primary:hover { background: color-mix(in oklab, var(--primary) 86%, white); }\n.oa-btn--ghost { border: 1px solid color-mix(in oklab, var(--foreground) 30%, transparent); color: var(--foreground); }\n.oa-btn--ghost:hover { border-color: var(--foreground); }\n.oa-btn:focus-visible, .oa-more:focus-visible, .oa-net a:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }\n#outils, #reseau, #accompagnement, #rejoindre { scroll-margin-top: 5.5rem; }\n\n.oa-hero { padding-block: 6.5rem 6rem; }\n.oa-hero__grid { display: grid; gap: 3rem; align-items: center; }\n.oa-hero__text { display: flex; flex-direction: column; gap: 1.5rem; }\n.oa-hero__text .oa-actions { margin-top: 0.375rem; }\n.oa-hero__art { display: flex; justify-content: center; }\n.oa-hero__art img { width: min(380px, 64vw); height: auto; }\n.oa-only-dark { display: none; }\n:root.dark .oa-only-dark { display: block; }\n:root.dark .oa-only-light { display: none; }\n\n.oa-grid { display: grid; gap: 1.375rem; margin: 0; padding: 0; list-style: none; }\n.oa-card { display: flex; flex-direction: column; gap: 1rem; padding: 2.25rem; border-radius: 1.25rem; background: var(--card); color: var(--card-foreground); border: 1px solid var(--border); }\n.oa-kicker { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--oa-ink); }\n.oa-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.25rem 0 0; padding: 0; list-style: none; }\n.oa-chips li { padding: 0.4375rem 0.75rem; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--foreground) 18%, transparent); font-size: 0.8125rem; color: color-mix(in oklab, var(--foreground) 55%, var(--muted-foreground)); }\n.oa-chips li.is-more { border-style: dashed; color: var(--muted-foreground); }\n.oa-more { margin-top: auto; padding-top: 0.5rem; font-size: 0.9375rem; font-weight: 600; color: var(--oa-ink); text-decoration: none; }\n.oa-more:hover, .oa-net a:hover { color: var(--oa-ink-hover); }\n\n.oa-head-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1.5rem; }\n#projets-apercu { box-sizing: content-box; max-width: 72rem; padding: 1.75rem 1rem 6rem; }\n@media (min-width: 640px) { #projets-apercu { padding-inline: 1.5rem; } }\n@media (min-width: 1024px) { #projets-apercu { padding-inline: 2rem; } }\n\n.oa-principles li { display: flex; flex-direction: column; gap: 0.75rem; }\n.oa-principles p { margin: 0; font-size: 0.9375rem; line-height: 1.6; color: var(--muted-foreground); }\n.oa-num { font-size: 0.875rem; font-weight: 700; color: var(--oa-ink); }\n\n.oa-split { display: grid; gap: 3rem; align-items: center; }\n.oa-split--top { align-items: start; }\n\n/* Schéma « au cœur » : boîte au ratio de la maquette (520×420), tout positionné en % pour suivre l'écran. */\n.oa-net { position: relative; width: 100%; max-width: 520px; aspect-ratio: 520 / 420; margin-inline: auto; }\n.oa-net svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }\n.oa-net .is-hot { stroke: var(--oa-line); stroke-width: 2.5; }\n.oa-net .is-cold { stroke: color-mix(in oklab, var(--foreground) 28%, transparent); stroke-width: 1.5; stroke-dasharray: 5 6; }\n.oa-net circle.is-hot { stroke-width: 3; }\n.oa-net circle.is-cold { stroke: var(--foreground); stroke-width: 2; stroke-dasharray: none; }\n.oa-net__hub { position: absolute; left: 38.46%; top: 35.71%; width: 23.08%; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: var(--card); border: 1px solid color-mix(in oklab, var(--foreground) 15%, transparent); }\n.oa-net__hub img { width: 70%; height: auto; }\n.oa-net__label { position: absolute; left: 50%; top: 67.14%; transform: translateX(-50%); font-size: 0.8125rem; font-weight: 600; white-space: nowrap; }\n.oa-net a { position: absolute; padding: 0.4375rem 0.75rem; border-radius: 999px; background: var(--card); border: 1px solid color-mix(in oklab, var(--foreground) 15%, transparent); font-size: 0.8125rem; color: var(--foreground); text-decoration: none; white-space: nowrap; }\n.oa-net .oa-net__p1 { left: 3.85%; top: 4.76%; }\n.oa-net .oa-net__p2 { right: 0; top: 7.14%; }\n.oa-net .oa-net__p3 { left: 0; bottom: 4.76%; }\n.oa-net .oa-net__p4 { right: 0; bottom: 6.19%; }\n@media (max-width: 480px) { .oa-net a, .oa-net__label { padding: 0.3125rem 0.625rem; font-size: 0.75rem; } }\n\n.oa-box { margin-top: 0.875rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; border-radius: 1rem; background: var(--card); border: 1px solid var(--border); }\n.oa-box p { margin: 0; font-size: 0.9375rem; line-height: 1.6; color: var(--muted-foreground); }\n.oa-steps { margin: 0; padding: 0; list-style: none; }\n.oa-steps li { display: flex; gap: 1.125rem; padding: 1.25rem 0; border-bottom: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent); font-size: 1rem; line-height: 1.5; }\n.oa-steps li:last-child { border-bottom: 0; }\n.oa-steps .oa-num { flex: none; font-size: 1rem; }\n\n.oa-join { padding-block: 6.5rem; }\n.oa-join .oa-wrap { max-width: 53.75rem; display: flex; flex-direction: column; align-items: center; gap: 1.125rem; text-align: center; }\n.oa-join .oa-h2 { font-size: clamp(2rem, 3.8vw, 2.75rem); }\n.oa-join .oa-text { max-width: 56ch; }\n.oa-join .oa-actions { justify-content: center; margin-top: 0.5rem; }\n\n@media (min-width: 560px) { .oa-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }\n@media (min-width: 960px) {\n  .oa-hero__grid, .oa-grid--2, .oa-split { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n  .oa-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }\n}\n"
   },
   "profiles": {
     "default": {
