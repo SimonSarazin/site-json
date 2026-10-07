@@ -24,11 +24,22 @@ export interface ReservationSlot {
   endMinutes: number;
 }
 
+/** Ressource pointée par le finder d'une réservation. */
+export interface ReservationResource {
+  id: string;
+  /** Nom PORTÉ PAR LA RÉPONSE, donc figé au moment de la réservation. Suffit à
+   *  lister les équipements d'un club sans aller relire chaque POI ; absent sur
+   *  une réponse dont le finder n'a enregistré que l'id. */
+  name?: string;
+}
+
 export interface Reservation {
   /** Id de l'answer (clé React stable). */
   id: string;
-  /** Ids des ressources pointées par le finder (souvent 1 — sert au
-   *  regroupement par équipement du dashboard installation). */
+  /** Ressources pointées par le finder (souvent 1), id ET nom. */
+  resources: ReservationResource[];
+  /** Ids seuls — vue dérivée de `resources`, conservée pour le regroupement par
+   *  équipement du dashboard installation. */
   resourceIds: string[];
   /** "" si non renseigné (libellé de repli côté UI/i18n). */
   user: string;
@@ -155,11 +166,15 @@ export function parseReservationAnswer(
     ? slotsRaw.map(parseSlot).filter((s): s is ReservationSlot => s !== null)
     : [];
 
-  // Finder : `{<id>: {id, name, type}}` — on ne garde que les ids.
+  // Finder : `{<id>: {id, name, type}}` — id ET nom. Le nom est ce qui permet à
+  // la fiche d'une organisation de nommer les équipements qu'elle réserve sans
+  // une requête POI par ligne.
   const finderRaw = step[`finder${conf.step}${conf.fields.finder}`];
-  const resourceIds =
+  const resources: ReservationResource[] =
     finderRaw && typeof finderRaw === "object" && !Array.isArray(finderRaw)
-      ? Object.keys(finderRaw as Record<string, unknown>)
+      ? Object.entries(finderRaw as Record<string, { name?: unknown }>).map(
+          ([id, value]) => ({ id, name: str(value?.name) }),
+        )
       : [];
 
   // Organisation usagère : le finder porte l'IDENTIFIANT en plus du nom, là où le champ
@@ -179,7 +194,8 @@ export function parseReservationAnswer(
       str(serverData.id)
       ?? str((serverData._id as { $id?: string } | undefined)?.$id)
       ?? "",
-    resourceIds,
+    resources,
+    resourceIds: resources.map((r) => r.id),
     // Le nom du finder prime, le texte historique sert de repli : pendant la reprise,
     // les deux formes cohabitent dans la même grille.
     user: (orgaEntry ? str(orgaEntry[1]?.name) : undefined) ?? str(get(conf.fields.user)) ?? "",
@@ -253,6 +269,47 @@ export function groupReservationsByUser(list: Reservation[]): UserReservations[]
       ],
       slotCount: reservations.reduce((n, r) => n + r.slots.length, 0),
     }));
+}
+
+/** Réservations d'UNE ressource, pour la fiche d'une organisation. */
+export interface ResourceReservations {
+  resourceId: string;
+  /** Libellé du finder ; "" quand aucune réponse du groupe n'en portait. */
+  resourceName: string;
+  reservations: Reservation[];
+  slotCount: number;
+}
+
+/**
+ * Groupe par RESSOURCE — le pendant de `groupReservationsByUser` pour la fiche
+ * d'une organisation : une ligne par équipement réservé, tri alphabétique.
+ *
+ * Une réservation qui pointe PLUSIEURS ressources (finder multiple) compte dans
+ * chacune : c'est le même créneau, il occupe bien les deux équipements.
+ */
+export function groupReservationsByResource(list: Reservation[]): ResourceReservations[] {
+  const byResource = new Map<string, { name: string; reservations: Reservation[] }>();
+  for (const r of list) {
+    for (const res of r.resources) {
+      const group = byResource.get(res.id);
+      if (!group) {
+        byResource.set(res.id, { name: res.name ?? "", reservations: [r] });
+        continue;
+      }
+      group.reservations.push(r);
+      // Le nom peut manquer sur une réponse et pas sur une autre : on retient
+      // le premier connu plutôt que de laisser la ligne sans libellé.
+      if (!group.name && res.name) group.name = res.name;
+    }
+  }
+  return [...byResource.entries()]
+    .map(([resourceId, group]) => ({
+      resourceId,
+      resourceName: group.name,
+      reservations: group.reservations,
+      slotCount: group.reservations.reduce((n, r) => n + r.slots.length, 0),
+    }))
+    .sort((a, b) => a.resourceName.localeCompare(b.resourceName, "fr", { sensitivity: "base" }));
 }
 
 /**

@@ -63,6 +63,15 @@ export const ProfileHeaderSectionSchema = z.object({
   addConfig: AddConfigSchema,
   addDropdownLabel: LocalizedString.optional(),
   showEmailButton: z.boolean().optional().default(true),
+  /**
+   * Propose « Supprimer » dans le menu d'actions, aux ADMINISTRATEURS de la fiche seulement.
+   * Défaut `false` : la suppression est DÉFINITIVE et sort l'élément de tout Communecter (ce n'est
+   * pas le « retrait » du référencement, qui se contente de le détacher du costum). Le SDK
+   * (`isAuthorOrAdmin`) puis le backend (`canDeleteElement`) restent juges en dernier ressort.
+   */
+  showDeleteButton: z.boolean().optional().default(false),
+  /** Destination après suppression — la page de la fiche n'existe plus. Défaut `/`. */
+  deleteRedirectPath: z.string().optional().default("/"),
   showReservationButton: z.boolean().optional().default(false),
   // Le bouton « Voir toutes les photos » s'affiche automatiquement quand le type de
   // profil a un onglet `gallery` (cf. ProfileHeaderComplete → lien vers cet onglet).
@@ -100,6 +109,13 @@ export const ProfileTiersLieuxInfoSectionSchema = z.object({
   showEmail: z.boolean().optional().default(true),
   showPhone: z.boolean().optional().default(true),
   showWebsite: z.boolean().optional().default(true),
+  /**
+   * Ressources réservables comptées dans l'encart (`compteRessources`) : `{ id, place, type, … }`.
+   * `id` = formulaire CoForm lu, `place` = chemin du champ, et `type` décide de CE QU'ON COMPTE :
+   * `single` (défaut) additionne la CAPACITÉ saisie (places, postes), `array` compte les lignes d'un
+   * tableau (moins son en-tête), `answer` compte les OFFRES déposées. Se tromper de mode affiche un
+   * chiffre plausible et faux — « 1 » pour un lieu qui déclare 10 places dans une seule offre.
+   */
   bedRoomPath: z.record(z.string(), z.string()).optional(),
   coworkingPath: z.record(z.string(), z.string()).optional(),
   roomPath: z.record(z.string(), z.string()).optional(),
@@ -130,6 +146,13 @@ export const ProfileTiersLieuxAboutSectionSchema = z.object({
   showAccommodation: z.boolean().optional().default(true),
   activity: z.record(z.string(), z.string()).optional(),
   equipement: z.record(z.string(), z.string()).optional(),
+  /**
+   * Ressources réservables comptées dans l'encart (`compteRessources`) : `{ id, place, type, … }`.
+   * `id` = formulaire CoForm lu, `place` = chemin du champ, et `type` décide de CE QU'ON COMPTE :
+   * `single` (défaut) additionne la CAPACITÉ saisie (places, postes), `array` compte les lignes d'un
+   * tableau (moins son en-tête), `answer` compte les OFFRES déposées. Se tromper de mode affiche un
+   * chiffre plausible et faux — « 1 » pour un lieu qui déclare 10 places dans une seule offre.
+   */
   bedRoomPath: z.record(z.string(), z.string()).optional(),
   coworkingPath: z.record(z.string(), z.string()).optional(),
   roomPath: z.record(z.string(), z.string()).optional(),
@@ -305,6 +328,36 @@ export const ProfileToolsSectionSchema = z.object({
   title: LocalizedString.optional(),
   sticky: z.boolean().optional(),
 });
+
+/**
+ * « Mes lieux » — portage de `costum.views.custom.franceTierslieux.listOrga` (legacy) : les
+ * organisations dont le compte connecté est MEMBRE (`links.members.<id>` existe, `isInviting`
+ * absent — exactement le filtre par défaut de `getOrganizations()`, cf. `useUserOrganizations`),
+ * PAS les fiches suivies (`links.follows`/`getSubscriptions`). Onglets secondaires (actus, agenda,
+ * projets liés à ces lieux) : cf. `MyPlacesSection.tsx`.
+ *
+ * Section GÉNÉRIQUE (pas un `Profile*Section` : elle ne lit pas `useProfileEntity()`, mais `me`
+ * directement) — page dédiée, pas un onglet de profil, pour rester adressable (`/mes-lieux`) sans
+ * dépendre du slug — inconnu en config — du compte connecté. Enregistrée dans le `SectionRenderer`
+ * générique, PAS dans `ProfileSectionRenderer`.
+ */
+export const MyPlacesSectionSchema = z.object({
+  type: z.literal("my-places"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString.optional(),
+    emptyStateText: LocalizedString.optional(),
+    /**
+     * PÉRIMÈTRE costum du réseau tiers-lieux — même convention que `MembershipQueryParams.sourceKey`
+     * (`$or[source.keys ∈, reference.costum ∈]`). Sur tiers-lieux.org : `["franceTierslieux",
+     * "tierslieuxbelgique", "navigatorDesTierslieux"]` (déjà utilisé ailleurs dans cette config,
+     * ex. `hero-search`). Absent = réseau Communecter entier.
+     */
+    sourceKey: z.array(z.string()).optional(),
+  }),
+});
+export type MyPlacesSection = z.infer<typeof MyPlacesSectionSchema>;
+export type MyPlacesSectionProps = MyPlacesSection["props"];
 
 // Profile-specific sections union
 export const ProfileOnlySectionSchema = z.discriminatedUnion("type", [

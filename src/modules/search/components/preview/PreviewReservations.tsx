@@ -1,8 +1,8 @@
 import { Suspense, lazy, useCallback, useMemo, useState } from "react";
-import { format, parseISO } from "date-fns";
+import { Link } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, Plus } from "lucide-react";
-import getDateFnsLocale from "@/dateFns";
+import { Building2, CalendarClock, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionContent,
@@ -32,33 +32,14 @@ import {
   type WeeklySlotBlock,
 } from "../../lib/reservations";
 import { buildReservationPrefill } from "../../lib/reservationPrefill";
-import type { ReservationsConf } from "../../schema";
+import { formatReservationPeriod } from "../../lib/reservationPeriod";
+import { DEFAULT_PREVIEW_PARAM, type ReservationsConf } from "../../schema";
 
 // Modale CoForm en lazy : le chunk coform ne doit être tiré qu'à la première
 // demande de réservation, jamais à l'affichage de la fiche.
 const CoFormModal = lazy(() => import("@/modules/coform/components/CoFormModal"));
 
 type Translate = ReturnType<typeof useT>;
-
-/** "2026-01-01" → "1 janv. 2026" (locale) ; repli sur l'ISO brut si invalide. */
-function formatIsoDate(iso: string): string {
-  // `parseISO` traite une date-only ("2026-01-01") comme minuit LOCAL, alors que
-  // `new Date(iso)` la parse en UTC → recul d'un jour aux offsets UTC négatifs.
-  const date = parseISO(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-  return format(date, "d MMM yyyy", { locale: getDateFnsLocale() });
-}
-
-function formatPeriod(
-  { periodStart, periodEnd }: { periodStart?: string; periodEnd?: string },
-  t: Translate,
-): string {
-  const start = periodStart ? formatIsoDate(periodStart) : undefined;
-  const end = periodEnd ? formatIsoDate(periodEnd) : undefined;
-  if (start && end) return t("PreviewReservations.period", undefined, { start, end });
-  if (start) return t("PreviewReservations.periodFrom", undefined, { start });
-  return t("PreviewReservations.periodUntil", undefined, { end });
-}
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
@@ -99,7 +80,7 @@ function SlotBlock({ block, t }: { block: WeeklySlotBlock; t: Translate }) {
           <DetailRow label={t("PreviewReservations.bookingTypeLabel")} value={block.bookingType} />
         )}
         {(block.periodStart || block.periodEnd) && (
-          <DetailRow label={t("PreviewReservations.periodLabel")} value={formatPeriod(block, t)} />
+          <DetailRow label={t("PreviewReservations.periodLabel")} value={formatReservationPeriod(block, t)} />
         )}
         <DetailRow label={t(`days.${block.dayKey}`)} value={`${block.start} – ${block.end}`} />
       </PopoverContent>
@@ -157,6 +138,10 @@ export default function PreviewReservations({
   const groups = useMemo(() => groupReservationsByUser(data ?? []), [data]);
   const grid = useMemo(() => buildWeeklyGrid(groups), [groups]);
   const hasSlots = grid.some((day) => day.blocks.length > 0);
+
+  // Lien « fiche » du club usager (opt-in `conf.orgaLink`) — cf. le rendu de la
+  // rangée usager plus bas : n'apparaît que sur un groupe porteur d'identifiant.
+  const orgaLink = conf.orgaLink;
 
   /* ── Prise de réservation (opt-in `conf.booking`) ───────────────────────── */
   const booking = conf.booking;
@@ -333,26 +318,52 @@ export default function PreviewReservations({
                 key={g.userId || g.user || "__unknown"}
                 value={g.userId || g.user || "__unknown"}
               >
-                <AccordionTrigger className="gap-3 hover:no-underline">
-                  <span className="flex min-w-0 flex-1 items-center gap-2 text-left">
-                    <span
-                      aria-hidden
-                      className="h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: reservationColor(g.colorIndex) }}
-                    />
-                    <span className="truncate font-medium text-foreground">
-                      {g.user || t("PreviewReservations.unknownUser")}
+                {/* Le lien vers la fiche du club ne peut pas vivre DANS le déclencheur
+                    (un bouton dans un bouton est du HTML invalide, et le clic replierait
+                    l'accordéon) : grille à deux colonnes — déclencheur, puis lien. */}
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                  <AccordionTrigger className="gap-3 hover:no-underline">
+                    <span className="flex min-w-0 flex-1 items-center gap-2 text-left">
+                      <span
+                        aria-hidden
+                        className="h-2.5 w-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: reservationColor(g.colorIndex) }}
+                      />
+                      <span className="truncate font-medium text-foreground">
+                        {g.user || t("PreviewReservations.unknownUser")}
+                      </span>
+                      {g.activities.slice(0, 2).map((activity) => (
+                        <Badge key={activity} variant="outline" className="hidden sm:inline-flex">
+                          {activity}
+                        </Badge>
+                      ))}
                     </span>
-                    {g.activities.slice(0, 2).map((activity) => (
-                      <Badge key={activity} variant="outline" className="hidden sm:inline-flex">
-                        {activity}
-                      </Badge>
-                    ))}
-                  </span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {t("PreviewReservations.slotCount", undefined, { count: g.slotCount })}
-                  </span>
-                </AccordionTrigger>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {t("PreviewReservations.slotCount", undefined, { count: g.slotCount })}
+                    </span>
+                  </AccordionTrigger>
+                  {/* Réservé aux groupes rattachés PAR IDENTIFIANT : un nom saisi à la
+                      main ne désigne aucune fiche de façon sûre (homonymes, clubs absents
+                      de l'annuaire) — sans identifiant, pas de bouton. */}
+                  {orgaLink && g.userId && (
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="h-7 shrink-0 gap-1.5 px-2 text-xs"
+                    >
+                      <Link
+                        to={`${orgaLink.path}?${orgaLink.previewParam ?? DEFAULT_PREVIEW_PARAM}=${encodeURIComponent(g.userId)}`}
+                        aria-label={t("PreviewReservations.orgaSheetAria", undefined, {
+                          name: g.user || t("PreviewReservations.unknownUser"),
+                        })}
+                      >
+                        <Building2 className="h-3 w-3" aria-hidden />
+                        {t("PreviewReservations.orgaSheet")}
+                      </Link>
+                    </Button>
+                  )}
+                </div>
                 <AccordionContent>
                   <div className="space-y-3 pl-5">
                     {g.reservations.map((r, ri) => (
@@ -366,7 +377,7 @@ export default function PreviewReservations({
                         </div>
                         {(r.periodStart || r.periodEnd) && (
                           <p className="mt-1 text-xs text-muted-foreground">
-                            {formatPeriod(r, t)}
+                            {formatReservationPeriod(r, t)}
                           </p>
                         )}
                         <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">

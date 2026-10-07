@@ -6,6 +6,7 @@ import {
   formatSlotTime,
   parseReservationAnswer,
   groupReservationsByUser,
+  groupReservationsByResource,
   buildWeeklyGrid,
   reservationConflicts,
   slotsOverlap,
@@ -57,6 +58,7 @@ function slot(day: string, sh: string, sm: string, eh: string, em: string) {
 function reservation(partial: Partial<Reservation>): Reservation {
   return {
     id: "r",
+    resources: [],
     resourceIds: [],
     user: "",
     slots: [],
@@ -219,6 +221,74 @@ describe("parseReservationAnswer", () => {
     });
     expect(parseReservationAnswer(sd, CONF)!.resourceIds).toEqual(["poi1", "poi2"]);
   });
+
+  it("conserve le NOM porté par le finder de la ressource", () => {
+    // C'est ce nom qui permet à la fiche d'une organisation de lister ses
+    // équipements sans relire un POI par ligne. Un finder sans nom (réponse
+    // ancienne) laisse l'entrée sans libellé, jamais d'id inventé.
+    const sd = answerData({
+      [FIELDS.finder]: {
+        poi1: { id: "poi1", name: "Dojo", type: "poi" },
+        poi2: { id: "poi2" },
+      },
+    });
+    expect(parseReservationAnswer(sd, CONF)!.resources).toEqual([
+      { id: "poi1", name: "Dojo" },
+      { id: "poi2", name: undefined },
+    ]);
+  });
+});
+
+/* ── groupReservationsByResource ─────────────────────────────────────────── */
+
+describe("groupReservationsByResource", () => {
+  const avec = (id: string, ressources: Array<{ id: string; name?: string }>, jours = 1) =>
+    reservation({
+      id,
+      resources: ressources,
+      resourceIds: ressources.map((r) => r.id),
+      slots: Array.from({ length: jours }, () => ({
+        day: "monday" as const,
+        start: "17:00",
+        end: "19:00",
+        startMinutes: 1020,
+        endMinutes: 1140,
+      })),
+    });
+
+  it("groupe par équipement, compte les créneaux et trie par nom", () => {
+    const groupes = groupReservationsByResource([
+      avec("r1", [{ id: "poi2", name: "Salle de danse" }]),
+      avec("r2", [{ id: "poi1", name: "Dojo" }], 2),
+      avec("r3", [{ id: "poi1", name: "Dojo" }]),
+    ]);
+    expect(groupes.map((g) => g.resourceId)).toEqual(["poi1", "poi2"]);
+    expect(groupes[0].reservations.map((r) => r.id)).toEqual(["r2", "r3"]);
+    expect(groupes[0].slotCount).toBe(3);
+    expect(groupes[1].slotCount).toBe(1);
+  });
+
+  it("compte une réservation multi-ressources dans CHAQUE équipement", () => {
+    // Le même créneau occupe bien les deux équipements : l'omettre d'un des
+    // deux ferait disparaître une occupation réelle de la fiche du club.
+    const groupes = groupReservationsByResource([
+      avec("r1", [
+        { id: "poi1", name: "Dojo" },
+        { id: "poi2", name: "Salle de danse" },
+      ]),
+    ]);
+    expect(groupes).toHaveLength(2);
+    expect(groupes.every((g) => g.slotCount === 1)).toBe(true);
+  });
+
+  it("retient le premier nom connu quand une réponse n'en porte pas", () => {
+    const groupes = groupReservationsByResource([
+      avec("r1", [{ id: "poi1" }]),
+      avec("r2", [{ id: "poi1", name: "Dojo" }]),
+    ]);
+    expect(groupes).toHaveLength(1);
+    expect(groupes[0].resourceName).toBe("Dojo");
+  });
 });
 
 /* ── groupReservationsByUser ─────────────────────────────────────────────── */
@@ -363,6 +433,7 @@ function existing(
   const { day = "monday", start = 1020, end = 1140, ...rest } = overrides;
   return {
     id: "r1",
+    resources: [{ id: "poi1" }],
     resourceIds: ["poi1"],
     user: "CLUB A",
     slots: [

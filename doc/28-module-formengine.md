@@ -447,7 +447,7 @@ dispatchent vers les registres (`forms/specRegistries.ts`, peuplés par `forms/r
 | `fns.ts` | Clés registrées |
 |---|---|
 | `equipements-sportifs` | `poi:scope`, `poi:emptyDefaults`, slots React `slot:parentInfo` / `slot:poiDoublons` |
-| `tiers-lieux` | transforms `tl:video0` / `tl:videoWrite`, options dynamiques `tl:years`, defaults `tl:emptyDefaults`, scope `tl:scope` |
+| `tiers-lieux` | transforms `tl:video0` / `tl:videoWrite` et `tl:tagsRead` / `tl:tagsWrite` (mots-clés dérivés, cf. plus bas), options dynamiques `tl:years`, defaults `tl:emptyDefaults`, scope `tl:scope` |
 | `structure` | transform `structure:tagsFromThematic` (table slug→libellé : un transform de CHAMP ne reçoit pas de `params` — seuls les `serializeGroups` en ont — donc la table ne peut pas vivre dans le JSON) |
 
 `tl:payload` **n'existe plus** : aucun `registerPayloadFn(...)` n'est appelé dans le dépôt. Le merge des tags
@@ -463,13 +463,23 @@ Le parc porte aujourd'hui **28 déclarations `costumForms` (26 ids uniques) rép
 `equipements-sportifs`, `tiers-lieux`, `structure`, `parent62-article` — tous importés par
 `forms/registerSpecFns.ts`. Les 22 autres sont **0 code**.
 
-**Mots-clés dérivés d'un type (`parent62-article`)** — un type d'actualité (choix multiple `category`) pose un
+**Mots-clés dérivés d'un type (`parent62-article`, `tiers-lieux`)** — un type d'actualité (choix multiple `category`) pose un
 tag public lu par les pages. Ce n'est PAS un `mutation.stamps` `op:"append"` : il refusionne les tags serveur à
 chaque save, donc le tag d'un type retiré revenait. Ce sont les codecs du CHAMP `tags`
 (`p62article:tagsRead`/`tagsWrite`) sur les helpers purs génériques `forms/costum/derivedTags.ts` :
 lecture = tags serveur − tags des types ENREGISTRÉS, écriture = tags saisis ∪ tags des types CHOISIS. La table
 type → tag vit dans le `fns.ts` : un codec de champ ne reçoit pas de `params`, et un `serializeGroups` (qui en
 reçoit) vidé en édition s'émet `""` — une chaîne là où `tags` attend un tableau.
+
+**Même patron sur `tiers-lieux`**, à trois sources au lieu d'une (`tl:tagsRead`/`tl:tagsWrite`) : la typologie
+(`family` → `typePlace`, CSV), le portage (`managementType` → `manageModel`) et la tranche de m² (`surfaceBuilt`
+→ `buildingSurfaceArea`, seuils 60/201 — la table valeur → tag du helper ne couvre pas un intervalle, d'où la
+fonction locale `tagTrancheSurface`). Le champ `tags` y est devenu SAISISSABLE : les mots-clés libres
+cohabitent avec les dérivés, et un lieu qui change de typologie perd l'ancien libellé au lieu de ressortir dans
+deux facettes. Restent en estampille les deux MARQUEURS de réseau (`$costum.mainTag`, `$costum.compagnon`), qui
+ne viennent d'aucun champ : ils restent donc VISIBLES dans le champ, sans quoi l'aller-retour les supprimerait
+(l'estampille compagnon ne joue qu'à la création). `config.prod.relief.json`, qui recopie ce formulaire, garde
+les 5 estampilles historiques — la bascule n'a eu lieu que sur le site qui l'a demandée.
 
 > ⚠️ Ne pas confondre avec la table `CONFIG_FILE` de `forms/costum/__fixtures__/configCostum.ts`, qui ne résout
 > que 12 ids (`equipements-sportifs`, `tiers-lieux`, `institut-bleu-acteur`, `structure`, `actualite` et 7 formulaires

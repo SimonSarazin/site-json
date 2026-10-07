@@ -155,6 +155,28 @@ registerTransform("omitEmpty", (v) =>
     : v,
 );
 
+// ── Codec RÉFÉRENCE D'ENTITÉ (clés `entityRef:read`/`entityRef:write`) — parent/organizer d'un `finder` ──────
+// La forme LUE est ENRICHIE : l'`about` (legacy comme Node) ajoute `_id`/`slug`/`profilThumbImageUrl` à
+// chaque entrée, le SDK y ajoute `id`. La forme ÉCRITE/STOCKÉE est `{<id>: {type, name}}`, et le contrat
+// d'envoi (ADD_EVENT/ADD_POI…) la verrouille par `additionalProperties:false`. Sans ce codec, un champ
+// `finder` costum relisait l'objet enrichi tel quel et le renvoyait au save : 400 AJV « unexpected
+// property _id/slug/id » sur saintpaul-event (e2e 02/10). Même chose, en pire, pour un `parent` déclaré
+// `tags` : relu en `[]` puis émis vide à l'édition, il EFFAÇAIT le parent (recovery-center SSBE).
+// ORDRE `type` → `name` IMPÉRATIF : c'est celui de `transformEntityRefs` (SDK `src/types/transforms.ts`
+// l.97-112), qui construit la base du diff du draft, et celui du widget (`SelectParent.tsx` l.229-236).
+// Le diff du SDK compare en `JSON.stringify` : à ordre égal, une référence non touchée n'est PAS renvoyée.
+// (D'où ce codec plutôt que `pf:entityRef`, qui produit `{name, type}` : même contenu, mais un diff
+// « modifié » à chaque save.) Vide / tableau / non-objet → `undefined` (clé omise ; en édition le
+// pipeline émet alors le clear typé).
+function entityRef(v: unknown): Record<string, { type: string; name?: string }> | undefined {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return undefined;
+  const e = Object.entries(v as Record<string, { type?: unknown; name?: unknown } | null>);
+  if (!e.length) return undefined;
+  return Object.fromEntries(e.map(([id, r]) => [id, { type: typeof r?.type === "string" ? r.type : "", name: r?.name as string | undefined }]));
+}
+registerTransform("entityRef:read", entityRef);
+registerTransform("entityRef:write", entityRef);
+
 // ── Codecs WRITE date d'EVENT (pendants costum de `pf:isoDate`/`pf:timeZone` de editProfilePayload, qui
 // ne sont PAS importés par les forms costum) ──────────────────────────────────────────────────────────
 // `eventDate:write` : le composite `eventDates` (EditEventDatesTab) stocke une STRING `toISOString()`
@@ -168,10 +190,14 @@ registerTransform("omitEmpty", (v) =>
 // Normalisation ISO partagée par les deux codecs de date : offset LOCAL, sans millis — le legacy
 // rejette `…:05.000Z` (« The start date is not well formated »). Une seule copie : un correctif ici
 // vaut pour `eventDate:write` ET `eventDatePeriod:write`, qui ne diffèrent que par leur garde.
+// Entrée `Date` ACCEPTÉE, pas seulement la chaîne : le SDK normalise `startDate`/`endDate` des réponses
+// serveur en `Date` (`ApiClient._normalizeDate`, SDK `src/ApiClient.ts` l.1867-1880 → valeur EJSON
+// relue en `Date`), et un champ `hidden` SANS `read` seede donc une `Date` à l'édition. Le codec la
+// rejetait (chaîne seulement) → `undefined` → clear `""` en `payloadEmitEmptyOnEdit` : une édition qui
+// ne touchait PAS aux dates les EFFAÇAIT (session-formation SSBE, e2e 02/10). Une `Date` invalide → omis.
 function normaliseDateIso(v: unknown): string | undefined {
-  if (typeof v !== "string" || v.trim() === "") return undefined;
-  const d = new Date(v);
-  return isNaN(d.getTime()) ? undefined : formatISO(d);
+  const d = v instanceof Date ? v : (typeof v === "string" && v.trim() !== "" ? new Date(v) : null);
+  return d && !isNaN(d.getTime()) ? formatISO(d) : undefined;
 }
 registerTransform("eventDate:write", (v, all) => {
   if ((all as Record<string, unknown> | undefined)?.recurrency) return undefined; // récurrent → date omise
