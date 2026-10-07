@@ -1498,10 +1498,12 @@
           "id": "documentation",
           "props": {
             "title": {
-              "fr": "Pourquoi choisir un tiers-lieu"
+              "en": "Why choose a third place",
+"fr": "Pourquoi choisir un tiers-lieu"
             },
             "description": {
-              "fr": "Un cadre vivant et convivial pour travailler autrement, loin des salles de réunion standardisées. Des espaces, équipements et services mutualisés, adaptés aux réunions, séminaires, formations ou résidences. Un lieu qui favorise les rencontres, les échanges et les coopérations avec un territoire et ses acteurs."
+              "en": "A lively, friendly setting for working differently, far from standardised meeting rooms. Shared spaces, equipment and services suited to meetings, seminars, training courses or residencies. A place that fosters encounters, exchanges and cooperation with a territory and its actors.",
+"fr": "Un cadre vivant et convivial pour travailler autrement, loin des salles de réunion standardisées. Des espaces, équipements et services mutualisés, adaptés aux réunions, séminaires, formations ou résidences. Un lieu qui favorise les rencontres, les échanges et les coopérations avec un territoire et ses acteurs."
             },
             "image": "images/tiersLieux/docs.png",
             "imagePosition": "left",
@@ -1518,10 +1520,11 @@
             },
             "categoryVariant": "pill",
             "title": {
-              "fr": "Ils sont venus chez nous"
+              "en": "They came to us",
+"fr": "Ils sont venus chez nous"
             },
             "description": {
-              "en": "Participate in the solidarity economy of third places by contributing to the financing of shared infrastructures. Support new projects and benefit from community support to develop yours.",
+              "en": "Coming soon: feedback from past guests.",
               "fr": "Bientôt, des retours d'expériences.."
             },
             "image": "images/tiersLieux/sentraider.png",

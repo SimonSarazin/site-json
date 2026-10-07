@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { ArrowRight, X } from "lucide-react";
-import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
+import NavLink from "@/components/layout/NavLink";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { cn } from "@/lib/utils";
@@ -174,10 +174,12 @@ export default function CoformResourceDirectorySection({
             </div>
             {customHeader?.linkText && customHeader.linkHref && (
               <Button asChild variant="outline" size="sm" className="shrink-0 text-foreground">
-                <Link to={customHeader.linkHref}>
+                {/* Lien venu de la config : NavLink classe l'href (interne, mailto:, externe) —
+                    un <Link> brut enverrait un `mailto:` dans le routeur (CLAUDE.md, liens de config). */}
+                <NavLink to={customHeader.linkHref}>
                   <ArrowRight className="mr-1 h-4 w-4" />
                   <span>{t(customHeader.linkText)}</span>
-                </Link>
+                </NavLink>
               </Button>
             )}
           </header>
