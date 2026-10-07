@@ -46,6 +46,7 @@
     "deploy:dns": "tsx scripts/deploy.ts dns",
     "deploy:alias": "tsx scripts/deploy.ts alias",
     "deploy:create": "tsx scripts/deploy.ts create",
+    "mr:review": "tsx scripts/mr-review.ts",
     "config:costum-drift": "tsx scripts/costum-form-drift.ts",
     "contract:snapshot": "node scripts/contract-snapshot.mjs",
     "contract:snapshot:live": "node scripts/contract-snapshot-live.mjs",
