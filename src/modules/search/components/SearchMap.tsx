@@ -358,8 +358,9 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
 
   // Dimensions du conteneur — logique PARTAGÉE avec MapSkeleton
   // (cf. useMapContainerClass : plein écran sans footer vs min-h-screen).
-  // En mode split, le parent fournit `containerClass` (ex. "absolute inset-0")
-  // pour que la carte remplisse sa colonne au lieu de `min-h-screen`.
+  // Embarquée (vues carte et split de `searchProStatic`, agenda…), le parent
+  // fournit `containerClass` (ex. "absolute inset-0") pour que la carte
+  // remplisse la boîte qu'il dimensionne au lieu de `min-h-screen`.
   const defaultContainerClass = useMapContainerClass("z-10 rounded shadow overflow-hidden");
   const mapContainerClass = containerClass ?? defaultContainerClass;
 
@@ -379,11 +380,10 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
             onIdle={handleMapReady}
             onMoveEnd={syncViewport}
             onClick={() => setSelected(null)}
-            // Embarqué (split, `containerClass` fourni) → la carte remplit sa
-            // colonne (100% de la colonne `h-[78vh]` → le canvas MapLibre = la
-            // zone VISIBLE, donc fitBounds cadre juste). Sinon plein écran (100vh)
-            // comme la vue carte seule. Mettre 100vh en embarqué casserait le fit :
-            // le canvas serait plus grand que la colonne visible.
+            // Embarqué (`containerClass` fourni) → la carte remplit la boîte du
+            // parent (100% → le canvas MapLibre = la zone VISIBLE, donc fitBounds
+            // cadre juste). Sinon plein écran (100vh). Mettre 100vh en embarqué
+            // casserait le fit : le canvas serait plus grand que la boîte visible.
             style={{ width: "100%", height: containerClass ? "100%" : "100vh" }}
           >
             <NavigationControl position="top-left" />

@@ -61,6 +61,17 @@ describe("deploy-cli : analyserArgv", () => {
     expect(cmd.malformees).toEqual([]);
   });
 
+  test("un autre outil passe ses propres jeux d'options (mr-review), les défauts restent ceux de deploy", () => {
+    const jeux = { aValeur: new Set(["--only"]), booleennes: new Set(["--dry-run"]) };
+    const cmd = analyserArgv(["gates", "76", "--only", "lint,typecheck", "--dry-run", "--yes"], jeux);
+    expect(cmd.positionnels).toEqual(["76"]);
+    expect(cmd.valeur("--only")).toBe("lint,typecheck");
+    expect(cmd.bool("--dry-run")).toBe(true);
+    // `--yes` est une option de deploy, pas de cet outil : inconnue ici.
+    expect(cmd.inconnues).toEqual(["--yes"]);
+    expect(analyserArgv(["push", "--yes"]).bool("--yes")).toBe(true);
+  });
+
   test("les deux jeux d'options sont disjoints", () => {
     for (const o of OPTIONS_A_VALEUR) expect(OPTIONS_BOOLEENNES.has(o)).toBe(false);
   });

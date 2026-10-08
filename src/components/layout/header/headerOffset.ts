@@ -13,9 +13,10 @@ import { LOGO_SIZE_PX } from "./logoSize";
  *
  * Deux pièges vérifiés dans le code des headers :
  * 1. `header.sticky` n'est lu QUE par `standard`/`default` (HeaderStandard.tsx:193)
- *    et `mega-menu` (HeaderMegaMenu.tsx:38). Les quatre autres sont
+ *    et `mega-menu` (HeaderMegaMenu.tsx:38). Quatre autres sont
  *    `fixed top-0` INCONDITIONNELS : ils occupent le viewport même avec
- *    `sticky: false`.
+ *    `sticky: false`. `stacked` colle sa barre de nav (`sticky top-0`,
+ *    HeaderStacked.tsx:210) sans lire `sticky` non plus.
  * 2. `header.height` n'est lu comme hauteur de BARRE que par HeaderStandard
  *    (HeaderStandard.tsx:186-190) ; ailleurs c'est une taille de logo
  *    (HeaderMegaMenu.tsx:27-31) ou rien du tout.
@@ -63,6 +64,10 @@ export function headerStickyOffsetPx(header: Header | undefined): number {
     // `sticky` honoré ; hauteur = `sm:py-4` (32) + contenu + `border-b` (1).
     case "mega-menu": // HeaderMegaMenu.tsx:38 + :39
       return header.sticky ? 32 + contentPx + 1 : 0;
+    // Seule la barre de nav colle, toujours, en `h-14` ; le bandeau au-dessus
+    // défile avec la page (`header.height` ne règle que lui).
+    case "stacked": // HeaderStacked.tsx:210 + :227
+      return 56;
     // `standard` + `default` (DefaultHeader délègue à HeaderStandard,
     // DefaultHeader.tsx:16-18) : `sticky` honoré, hauteur pilotée par `height`.
     default: // HeaderStandard.tsx:186-195

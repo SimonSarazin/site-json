@@ -62,12 +62,21 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
 
                             return (
                                 <div key={idx} className="relative group">
-                                    <button type="button" className="hover:text-primary text-foreground transition flex items-center gap-1.5 truncate w-auto cursor-pointer">
-                                        <NavIcon icon={item.icon} />
-                                        {t(item.label)}
-                                        {item.badge && <Badge className="text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
-                                        {hasChildren && <ChevronDown className="w-3 h-3" />}
-                                    </button>
+                                    {item.path ? (
+                                        <NavLink to={item.path} className="hover:text-primary text-foreground transition flex items-center gap-1.5 truncate w-auto cursor-pointer">
+                                            <NavIcon icon={item.icon} />
+                                            {t(item.label)}
+                                            {item.badge && <Badge className="text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
+                                            {hasChildren && <ChevronDown className="w-3 h-3" />}
+                                        </NavLink>
+                                    ) : (
+                                        <button type="button" className="hover:text-primary text-foreground transition flex items-center gap-1.5 truncate w-auto cursor-pointer">
+                                            <NavIcon icon={item.icon} />
+                                            {t(item.label)}
+                                            {item.badge && <Badge className="text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
+                                            {hasChildren && <ChevronDown className="w-3 h-3" />}
+                                        </button>
+                                    )}
 
 
                                     {hasChildren && item.children && (
@@ -167,11 +176,19 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                                 <>
                                     {nav.map((item, idx) => (
                                         <div key={idx} className="space-y-2">
-                                            <div className="flex items-center gap-2 font-semibold text-foreground">
-                                                <NavIcon icon={item.icon} />
-                                                {t(item.label)}
-                                                {item.badge && <Badge className="ml-auto text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
-                                            </div>
+                                            {item.path ? (
+                                                <NavLink to={item.path} onClick={close} className="flex items-center gap-2 font-semibold text-foreground hover:text-primary transition">
+                                                    <NavIcon icon={item.icon} />
+                                                    {t(item.label)}
+                                                    {item.badge && <Badge className="ml-auto text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
+                                                </NavLink>
+                                            ) : (
+                                                <div className="flex items-center gap-2 font-semibold text-foreground">
+                                                    <NavIcon icon={item.icon} />
+                                                    {t(item.label)}
+                                                    {item.badge && <Badge className="ml-auto text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
+                                                </div>
+                                            )}
                                             {item.children && (
                                                 <div className="pl-4 space-y-2">
                                                     {item.children.map((sub, i) => (
