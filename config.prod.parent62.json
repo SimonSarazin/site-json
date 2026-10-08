@@ -19244,27 +19244,6 @@
         },
         "links": [
           {
-            "href": "/appels-a-projets",
-            "label": {
-              "fr": "Appels à projets",
-              "en": "Calls for projects"
-            }
-          },
-          {
-            "href": "/offres-emploi",
-            "label": {
-              "fr": "Offres d'emploi",
-              "en": "Job offers"
-            }
-          },
-          {
-            "href": "/archives",
-            "label": {
-              "fr": "Archives",
-              "en": "Archives"
-            }
-          },
-          {
             "href": "/equipe",
             "label": {
               "fr": "Contact",
