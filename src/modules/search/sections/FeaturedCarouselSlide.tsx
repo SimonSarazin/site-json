@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router";
+import NavLink from "@/components/layout/NavLink";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useResourceData } from "../hooks/useResourceData";
 import { resolveItemClick } from "../lib/itemAction";
@@ -26,13 +26,13 @@ interface FeaturedCarouselSlideProps {
 }
 
 /** Lien vers la cible de l'entrée ; `decorative` : doublon du lien du titre, retiré du clavier et des
- *  lecteurs d'écran pour ne pas annoncer deux fois la même destination. */
+ *  lecteurs d'écran pour ne pas annoncer deux fois la même destination. `href` vient de la config
+ *  (`itemAction.to`/`toById`) — passe par `NavLink`/`classifyHref`, pas un `<Link>` nu, sinon un
+ *  `mailto:`/une URL absolue posée sans `newTab:true` finirait sur la page catch-all en 200. */
 function SlideLink({ href, newTab, decorative, className, children }: { href: string; newTab: boolean; decorative?: boolean; className?: string; children: ReactNode }) {
   const a11y = decorative ? { tabIndex: -1, "aria-hidden": true } : {};
-  return newTab ? (
-    <a href={href} target="_blank" rel="noopener noreferrer" className={className} {...a11y}>{children}</a>
-  ) : (
-    <Link to={href} className={className} {...a11y}>{children}</Link>
+  return (
+    <NavLink to={href} external={newTab} className={className} {...a11y}>{children}</NavLink>
   );
 }
 
@@ -109,7 +109,7 @@ export default function FeaturedCarouselSlide({ item, ctaLabel, resource, itemAc
         <OptimizedImage
           src={data.image}
           alt={data.title}
-          width={900}
+          width={640}
           priority={priority}
           className={`mx-auto aspect-[16/10] ${imageHeightClass} w-full max-w-sm rounded-[0px_40px_0_40px] object-contain`}
         />

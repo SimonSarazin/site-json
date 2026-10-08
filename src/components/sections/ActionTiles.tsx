@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import { Link } from "react-router";
+import NavLink from "@/components/layout/NavLink";
 import { buildGridColsClass } from "./responsiveGridCols";
 import { solidTileStyle, tileSizeClasses, tilesContainerWidth } from "./actionTileStyle";
 import { sectionBadgeClass, sectionHeadlineStyle } from "./sectionBadge";
@@ -167,7 +167,9 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
                         {props.actions.map((action, index) => {
                             const solid = solidTileStyle(action.background, action.textColor);
                             return (
-                                <Link key={index} to={action.href}>
+                                // `action.href` vient de la config — `NavLink`/`classifyHref`, pas un `<Link>`
+                                // nu, sinon un `mailto:`/une URL absolue finirait sur la page catch-all en 200.
+                                <NavLink key={index} to={action.href}>
                                     <Button
                                         size="lg"
                                         style={solid}
@@ -179,7 +181,7 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
                                         <span>{t(action.title)}</span>
                                         <ArrowRight className="size-5 shrink-0" aria-hidden />
                                     </Button>
-                                </Link>
+                                </NavLink>
                             );
                         })}
                     </div>
@@ -224,7 +226,9 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
                         return (
                             // `h-full` sur le lien et la tuile : toutes les tuiles d'une rangée prennent la
                             // hauteur de la plus haute, quelle que soit la longueur de leurs textes.
-                            <Link key={index} to={action.href} className="h-full">
+                            // `action.href` vient de la config — `NavLink`/`classifyHref`, pas un `<Link>`
+                            // nu, sinon un `mailto:`/une URL absolue finirait sur la page catch-all en 200.
+                            <NavLink key={index} to={action.href} className="h-full">
                                 <Button
                                     size="lg"
                                     style={solid}
@@ -254,7 +258,7 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
                                         </span>
                                     )}
                                 </Button>
-                            </Link>
+                            </NavLink>
                         );
                     })}
                 </div>

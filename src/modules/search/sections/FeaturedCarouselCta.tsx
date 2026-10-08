@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import { Link } from "react-router";
+import NavLink from "@/components/layout/NavLink";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
 import { resolveItemClick } from "../lib/itemAction";
@@ -33,17 +33,16 @@ export default function FeaturedCarouselCta({ item, ctaLabel, itemAction, accent
   const newTab = click.kind === "link" && click.newTab;
   const texte = t(ctaLabel ?? "En savoir plus");
 
+  // `click.href` vient de la config (`itemAction.to`/`toById`) — passe par `NavLink`/`classifyHref`,
+  // pas un `<Link>` nu, sinon un `mailto:`/une URL absolue posée sans `newTab:true` finirait sur la
+  // page catch-all en 200.
   if (style === "link") {
     const classeLien = "inline-flex items-center gap-1.5 font-bold underline underline-offset-4";
     const styleCouleur = { color: accentColor ?? undefined };
-    return newTab ? (
-      <a href={click.href} target="_blank" rel="noopener noreferrer" className={classeLien} style={styleCouleur}>
+    return (
+      <NavLink to={click.href} external={newTab} className={classeLien} style={styleCouleur}>
         {texte}<ArrowRight className="size-4 shrink-0" aria-hidden />
-      </a>
-    ) : (
-      <Link to={click.href} className={classeLien} style={styleCouleur}>
-        {texte}<ArrowRight className="size-4 shrink-0" aria-hidden />
-      </Link>
+      </NavLink>
     );
   }
 
@@ -54,13 +53,7 @@ export default function FeaturedCarouselCta({ item, ctaLabel, itemAction, accent
       style={accentStyle(accentColor, accentTextColor)}
       className={`rounded-full px-5 py-2 sm:px-6 font-bold ${compact ? "w-auto text-sm sm:text-base" : "w-full text-base sm:text-lg"}`}
     >
-      {newTab ? (
-        <a href={click.href} target="_blank" rel="noopener noreferrer">
-          {texte}
-        </a>
-      ) : (
-        <Link to={click.href}>{texte}</Link>
-      )}
+      <NavLink to={click.href} external={newTab}>{texte}</NavLink>
     </Button>
   );
 }
