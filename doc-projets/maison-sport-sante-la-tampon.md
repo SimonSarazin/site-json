@@ -1919,6 +1919,7 @@ changement pour les tables existantes :
 | Tests | `resourceHelpers.test.ts`, `schema.test.ts` | `create:{coform}` → `createCoformId` / `resolveCreateModal` null ; schéma : ObjectId exigé, `preview` conservé, formes historiques intactes |
 | Config | onglet Modération | `create: {coform: "6a85af345d898a57cb49f029"}`, `preview: {type: "coform-answer", editButton: true}` (`edit: false` inchangé : la correction passe par le bouton « Modifier » du détail) |
 | Docs | `doc/30-module-admin.md`, skill `config-assistant/references/admin.md` | les deux options documentées |
+| Onglet « Créneaux SSBE » (complément, même jour) | [`AdminAnswerCopySection.tsx`](../src/modules/admin/sections/AdminAnswerCopySection.tsx), schéma `answerCopy.preview` | même détail au clic sur une ligne + bouton « Aperçu » par ligne ; **lecture seule** (la réponse appartient au site régional — pas d'`editButton`, « Copier » n'ouvre pas le détail) ; config `preview: {type: "coform-answer"}` ; 4 tests de rendu (clic ligne, Copier inerte, bouton, sans config) |
 
 **Pourquoi ça fonctionne sur les lignes de la modération.** En mode `statusField` la table interroge
 la route publique avec une projection explicite dont la racine `answers` fait partie (champ d'état) ;
@@ -1959,7 +1960,7 @@ faire** (compte siteAdmin) : créer un créneau depuis l'onglet, l'ouvrir au cli
 | B.2b | Inputs CoForm `date` / `timeSlots` / `dynamicFields` | 🟡 | **portés le 31/07** (§9.2 ter) — le formulaire créneau est maintenant complet (91 inputs rendus) ; recette à faire |
 | B.3 | Suppression de fichiers à l'édition | ✅ SDK | **résolu** : le SDK **1.0.169** (installé le 31/07) expose `Answer.deleteFiles(docIds[])` — l'erreur typecheck `file.ts:167` a disparu. La fiche `DELETE_COFORM_ANSWER_FILE` ([`ENDPOINT.md`](../../ENDPOINT.md)) est **satisfaite** ; reste à recetter la suppression réelle |
 | B.4 | Suppression d'un créneau | ❌ | non câblé (SDK `Answer.delete()` existe ; hook front `useDeleteAnswer` à créer via `createCoFormMutation`) |
-| B.6 | Reprise des créneaux déposés sur SSBE (liste + « Copier », dédup) | ✅ code | §9.21 — onglet admin `creneaux-ssbe` (section moteur `answerCopy`), copie serveur idempotente ; **recette connectée siteAdmin à faire** (20 lignes attendues en prod, 2 « À copier ») |
+| B.6 | Reprise des créneaux déposés sur SSBE (liste + « Copier », dédup) | ✅ code | §9.21 — onglet admin `creneaux-ssbe` (section moteur `answerCopy`), copie serveur idempotente ; **détail au clic** depuis le 08/10 (§9.23, lecture seule) ; **recette connectée siteAdmin à faire** (20 lignes attendues en prod, 2 « À copier ») |
 | B.7 | Modération : créer un créneau depuis l'admin + détail d'une ligne au clic (fiche de l'annuaire, bouton « Modifier ») | ✅ code | §9.23 — options moteur `create:{coform}` et `preview` de la section `resource` ; **recette siteAdmin à faire** |
 | B.5 | Commit + MR du lot | 🟡 | **commité le 31/07** (`20fc3529` coform · `2bf81496` search+config · `e163b6d9` doc) ; reste **push + MR** vers `main` |
 
@@ -2187,7 +2188,7 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 | **Recette navigateur de la charte** (§9.19) — **mode sombre en priorité** : en-têtes de cartes SSsO/SSpT, `--btn-structure` de `CardAnswer`, cartes d'accès rapide du héros, cartes d'actualités en `poster` | Nicolas / MSS |
 | **Règle d'affichage « Si oui avec qui » pour SSsL** (§9.22) : la règle `hide` du form ne vise que SSpT → le champ reste visible pour un créneau sans label. À régler dans l'éditeur de formulaire si « sans label » doit se comporter comme SSpT | MSS / Peterson |
 | **Recette navigateur des cartes SSsL** (clair + sombre, badge « Validé » inversé, filtre à 3 options) ; compléter la FAQ si le « sans label » doit être expliqué aux usagers ; distinguer ou non les pins de la carte par type (`colorBy`) | Nicolas / MSS |
-| **Recette de la modération enrichie** (§9.23, compte siteAdmin) : création d'un créneau depuis l'onglet, détail au clic et via « Aperçu », modification depuis le détail, rafraîchissement table + `/creneaux` ; vérifier que le créneau créé est **en tête** de `/creneaux` (§9.24) | Peterson / MSS |
+| **Recette de la modération enrichie** (§9.23, compte siteAdmin) : création d'un créneau depuis l'onglet, détail au clic et via « Aperçu », modification depuis le détail, rafraîchissement table + `/creneaux` ; vérifier que le créneau créé est **en tête** de `/creneaux` (§9.24) ; détail au clic sur l'onglet « Créneaux SSBE » (lignes aplaties par le hook, même fiche) | Peterson / MSS |
 | **Saisir les créneaux du Tampon** : le recentrage de périmètre est juste, mais 44 des 45 réponses appartiennent au site jumeau — `/creneaux` n'en affiche plus qu'un (§9.12). Les 2 facettes pathologie resteront invisibles tant qu'aucune option ne remonte | **MSS** |
 | **Reconfirmer en recette le comptage 44/45** : il vient du message de commit `b11285e5` et n'est pas revérifiable depuis le dépôt | Peterson |
 | **Rejouer le référencement des 14 fiches en PROD** — il a été fait sur la base de **DEV** le 20/08 (§9.10) | Peterson |

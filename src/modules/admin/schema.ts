@@ -309,6 +309,14 @@ const AdminAnswerCopySectionSchema = z.object({
    * `copiedFrom` qui partage ces valeurs. Défaut : `["name", "structure.name", "address.postalCode"]`.
    */
   duplicateKeys: z.array(z.string().min(1)).optional(),
+  /**
+   * Détail d'une candidate au CLIC sur sa ligne (+ bouton « Aperçu » par ligne, accessible au
+   * clavier) — même coque `dialog` et même contenu que `resource.preview` et les listes publiques
+   * (`coform-answer`…). Un admin VÉRIFIE la réponse avant de la copier : les colonnes n'en montrent
+   * qu'une tranche. Lecture attendue : la réponse appartient à un AUTRE site — un `editButton` y
+   * modifierait la réponse SOURCE, et la liste ne se recharge pas à la fermeture. Opt-in.
+   */
+  preview: PreviewConfSchema.optional(),
 }).refine((s) => s.sourceForm !== s.targetForm, { message: "sourceForm et targetForm doivent différer", path: ["targetForm"] });
 export type AdminAnswerCopySection = z.infer<typeof AdminAnswerCopySectionSchema>;
 

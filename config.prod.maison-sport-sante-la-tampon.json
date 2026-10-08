@@ -3333,7 +3333,10 @@
                   "en": "Submitted on"
                 }
               }
-            ]
+            ],
+            "preview": {
+              "type": "coform-answer"
+            }
           }
         ]
       },

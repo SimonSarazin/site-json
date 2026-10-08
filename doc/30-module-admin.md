@@ -441,7 +441,8 @@ legacy 3 votes majoritaires), modale de détail des signalements.
     "defaultSortBy": { "created": -1 }, "indexStepList": 30,
     "searchBy": ["answers.<section>.<sectionIntitulé>"] },
   "columns": ["name", "structure.name", "address.postalCode", "created"],   // lignes APLATIES (hook costum)
-  "duplicateKeys": ["name", "structure.name", "address.postalCode"] }      // empreinte d'un « doublon probable » (défaut)
+  "duplicateKeys": ["name", "structure.name", "address.postalCode"],       // empreinte d'un « doublon probable » (défaut)
+  "preview": { "type": "coform-answer" } }                                 // détail au clic sur une ligne (opt-in, lecture)
 ```
 
 Un tableau des réponses du form **source**, un bouton **« Copier »** par ligne : la copie est faite
@@ -486,6 +487,13 @@ de toutes les tables `admin-*` (l'index compris) et des surfaces publiques (`pub
 la copie hérite du statut de la source et peut être « Validé » d'emblée. Limite connue : deux POST
 strictement concurrents pour la même source (double clic au-delà du `isPending`, retry réseau)
 peuvent créer deux copies — l'idempotence est un `findOne` puis `insert`, sans index unique.
+
+**`preview`** (opt-in, 08/10) : **détail d'une candidate au clic** sur sa ligne, plus un bouton
+« Aperçu » (icône, libellé accessible) par ligne pour le clavier — même coque `dialog` et même contenu
+que `resource.preview` et les listes publiques (`SwitchDetailsMode` → `Preview`, ex. `coform-answer`).
+L'admin **vérifie** la réponse avant de la copier. Lecture attendue : la réponse appartient à un
+**autre site** — un `editButton` y modifierait la réponse **source**, et la liste ne se recharge pas à
+la fermeture. « Copier » ne déclenche pas le détail (propagation coupée sur la cellule d'action).
 
 Prérequis backend, côté costum du site cible : le hook `searchAnswers` doit **aplatir la section de la
 réponse** (résolution par suffixe d'input, **bornée aux forms de `params.copySources`** — sans borne un

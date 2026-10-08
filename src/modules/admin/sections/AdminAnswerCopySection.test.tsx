@@ -62,16 +62,25 @@ vi.mock("../hooks/useCopyAnswer", () => ({
 vi.mock("@/hooks/useT", () => ({ useT: () => (key: unknown) => (typeof key === "string" ? key : JSON.stringify(key)) }));
 vi.mock("@/hooks/useDebounce", () => ({ useDebounce: <T,>(v: T) => v }));
 vi.mock("@/modules/admin/i18n", () => ({}));
+// Coque de détail remplacée par un témoin : on teste QUI s'ouvre et QUAND, pas le rendu du détail
+// (couvert par le module search).
+vi.mock("@/modules/search/components/SwitchDetailsMode", () => ({
+  SwitchDetailsMode: ({ openDetails, item, preview }: { openDetails: boolean; item: { id: string }; preview?: { type?: string } }) =>
+    openDetails ? <div data-testid="answer-preview">{`${item.id}:${preview?.type}`}</div> : null,
+}));
 
 import AdminAnswerCopySection from "./AdminAnswerCopySection";
 
 const row = (id: string, data: Record<string, unknown>) => ({ id, serverData: data });
-const SECTION = {
+const BASE_SECTION = {
   type: "answerCopy",
   sourceForm: "6928096adf5caf0d230e7f26",
   targetForm: "6a85af345d898a57cb49f029",
   columns: ["name"],
-} as never;
+};
+const SECTION = BASE_SECTION as never;
+const SECTION_PREVIEW = { ...BASE_SECTION, preview: { type: "coform-answer" } } as never;
+const PREVIEW_LABEL = "AdminAnswerCopySection.preview";
 
 const COPY = "AdminAnswerCopySection.copy";
 
@@ -187,5 +196,35 @@ describe("AdminAnswerCopySection — états et actions", () => {
     ctx.candidates = [row("s1", { name: "Pilates" })];
     const { getByText } = render(<AdminAnswerCopySection section={SECTION} />);
     expect(getByText("AdminAnswerCopySection.empty")).toBeTruthy();
+  });
+});
+
+describe("AdminAnswerCopySection — détail d'une candidate (`preview`)", () => {
+  it("avec `preview` : le clic sur une ligne ouvre le détail de CETTE réponse", () => {
+    const { getByText, getByTestId } = render(<AdminAnswerCopySection section={SECTION_PREVIEW} />);
+    fireEvent.click(getByText("Marche")); // s3, première ligne affichée
+    expect(getByTestId("answer-preview").textContent).toBe("s3:coform-answer");
+  });
+
+  it("« Copier » n'ouvre PAS le détail (propagation coupée sur la cellule d'action)", () => {
+    const { getAllByText, queryByTestId } = render(<AdminAnswerCopySection section={SECTION_PREVIEW} />);
+    fireEvent.click(getAllByText(COPY)[0]);
+    expect(ctx.mutate).toHaveBeenCalledWith({ answerId: "s3", name: "Marche" });
+    expect(queryByTestId("answer-preview")).toBeNull();
+  });
+
+  it("le bouton « Aperçu » ouvre le même détail (accès clavier) et la fermeture le retire", () => {
+    const { getAllByLabelText, getByTestId, queryByTestId } = render(<AdminAnswerCopySection section={SECTION_PREVIEW} />);
+    fireEvent.click(getAllByLabelText(PREVIEW_LABEL)[1]); // s2 (« Doublon probable »), 2ᵉ ligne
+    expect(getByTestId("answer-preview").textContent).toBe("s2:coform-answer");
+    // le témoin ne sait pas se fermer lui-même : on vérifie seulement qu'il n'y en a qu'un à la fois
+    expect(queryByTestId("answer-preview")).toBe(getByTestId("answer-preview"));
+  });
+
+  it("sans `preview` : aucune réaction au clic sur une ligne, aucun bouton « Aperçu »", () => {
+    const { getByText, queryByTestId, queryByLabelText } = render(<AdminAnswerCopySection section={SECTION} />);
+    fireEvent.click(getByText("Marche"));
+    expect(queryByTestId("answer-preview")).toBeNull();
+    expect(queryByLabelText(PREVIEW_LABEL)).toBeNull();
   });
 });

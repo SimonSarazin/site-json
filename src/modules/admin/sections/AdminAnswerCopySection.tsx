@@ -1,5 +1,6 @@
-import { Copy, Loader2, TriangleAlert } from "lucide-react";
+import { Copy, Eye, Loader2, TriangleAlert } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/hooks/useT";
 import "@/modules/admin/i18n";
 import SearchTextInput from "@/modules/search/components/SearchTextInput";
+import { SwitchDetailsMode } from "@/modules/search/components/SwitchDetailsMode";
 import { useSearchAllResults } from "@/modules/search/hooks/useSearchAllResults";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import type { SearchType } from "@/modules/search/schema";
@@ -72,6 +74,8 @@ export default function AdminAnswerCopySection({ section }: { section: AdminSect
 
   const [q, setQ] = useState("");
   const searchText = useDebounce(q, 300);
+  // Candidate ouverte en détail (`preview`) — même conteneur et même contenu que les listes publiques.
+  const [previewItem, setPreviewItem] = useState<SearchEntity | null>(null);
 
   // ── Index du form cible (complet) ──────────────────────────────────────────────────────────
   const targetParams = useMemo(
@@ -184,8 +188,12 @@ export default function AdminAnswerCopySection({ section }: { section: AdminSect
         const id = rowId(item);
         const name = (typeof data.name === "string" && data.name) || id;
         const status = verdict.status as Exclude<CopyStatus, "copied">; // les « Copié » sont filtrés plus haut
+        // Détail au clic (`preview`) : la ligne ENTIÈRE est la cible, comme sur la table `resource`.
+        // La cellule d'action coupe la propagation (« Copier » n'ouvre pas le détail) et porte un
+        // bouton « Aperçu » : le même détail AU CLAVIER, une ligne cliquable n'étant pas focusable.
+        const openPreview = cfg.preview ? () => setPreviewItem(item) : undefined;
         return (
-          <TableRow key={id || i}>
+          <TableRow key={id || i} className={openPreview ? "cursor-pointer" : undefined} onClick={openPreview}>
             {columns.map((col) => (
               <TableCell key={col.path} className="max-w-[14rem] truncate">
                 {formatColumnCell(data, col.path, tSearch)}
@@ -196,11 +204,25 @@ export default function AdminAnswerCopySection({ section }: { section: AdminSect
                 {tAdmin(`AdminAnswerCopySection.status.${status}`)}
               </Badge>
             </TableCell>
-            <TableCell className="text-right">
-              <Button size="sm" variant="outline" disabled={!canCopy || !id} onClick={() => requestCopy({ answerId: id, name }, status)}>
-                <Copy className="mr-1.5 h-3.5 w-3.5" />
-                {tAdmin("AdminAnswerCopySection.copy")}
-              </Button>
+            <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-end gap-1">
+                {openPreview && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8"
+                    aria-label={tAdmin("AdminAnswerCopySection.preview")}
+                    title={tAdmin("AdminAnswerCopySection.preview")}
+                    onClick={openPreview}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                )}
+                <Button size="sm" variant="outline" disabled={!canCopy || !id} onClick={() => requestCopy({ answerId: id, name }, status)}>
+                  <Copy className="mr-1.5 h-3.5 w-3.5" />
+                  {tAdmin("AdminAnswerCopySection.copy")}
+                </Button>
+              </div>
             </TableCell>
           </TableRow>
         );
@@ -244,6 +266,20 @@ export default function AdminAnswerCopySection({ section }: { section: AdminSect
           maxHeightClass="max-h-[60vh]"
         />
       </CardContent>
+
+      {/* Détail d'une candidate (`preview`) : même coque `dialog` et même contenu que l'onglet
+          Modération et les listes publiques (`SwitchDetailsMode` → `Preview`). Lecture : la réponse
+          appartient à un AUTRE site — on la vérifie avant de la copier, on ne la corrige pas ici
+          (pas d'`editButton` attendu, donc pas de refetch à la fermeture). */}
+      {cfg.preview && previewItem && (
+        <SwitchDetailsMode
+          openDetails
+          setOpenDetails={(o) => { if (!o) setPreviewItem(null); }}
+          item={previewItem}
+          card={{ detailsMode: "dialog" }}
+          preview={cfg.preview}
+        />
+      )}
 
       <ConfirmDialog
         open={pendingConfirm !== null}

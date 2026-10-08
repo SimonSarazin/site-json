@@ -82,6 +82,12 @@ describe("AdminSectionSchema — answerCopy", () => {
     expect((r.data as { source?: { indexStepList?: number } }).source?.indexStepList).toBe(30);
   });
 
+  it("conserve le bloc preview (détail d'une candidate au clic)", () => {
+    const r = AdminSectionSchema.safeParse({ type: "answerCopy", sourceForm: SRC, targetForm: DST, preview: { type: "coform-answer" } });
+    expect(r.success).toBe(true);
+    expect(r.data).toMatchObject({ preview: { type: "coform-answer" } });
+  });
+
   it("refuse source === cible", () => {
     expect(AdminSectionSchema.safeParse({ type: "answerCopy", sourceForm: SRC, targetForm: SRC }).success).toBe(false);
   });
