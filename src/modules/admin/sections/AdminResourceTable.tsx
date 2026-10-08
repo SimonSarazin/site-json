@@ -20,6 +20,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useCocolight } from "@/hooks/useCocolight";
 import { buildSearchPayload } from "@/modules/search/lib/buildSearchPayload";
 import { expandCostumSubType } from "@/modules/search/lib/costumSubType";
+import { mergeMongoFilters } from "@/modules/search/lib/mongoFilters";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { publicSurfaceKeys } from "@/lib/queryKeys";
@@ -177,10 +178,13 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
 
   const src = (resource.source ?? {}) as { defaultFields?: string[]; defaultFilters?: Record<string, unknown> } & Record<string, unknown>;
   const baseParams = useMemo(() => {
-    const filters: Record<string, unknown> = { ...(src.defaultFilters ?? {}) };
+    let filters: Record<string, unknown> = { ...(src.defaultFilters ?? {}) };
     if (adminMode && statusFilter !== "all" && costumSlug) {
       // Double flag (preferences + source), cf. validationStatusFilter / SearchNew::getQueries:783-818.
-      Object.assign(filters, validationStatusFilter(costumSlug, statusFilter));
+      // Fusion et non `Object.assign` : le mode « en attente » est un `$or`, et une resource dont le
+      // PÉRIMÈTRE est déjà un `$or` (provenance source.key/keys/reference.costum, cf. rezo-sante) le
+      // perdait — le filtre de statut listait alors les éléments en attente de TOUT le réseau.
+      filters = mergeMongoFilters(filters, validationStatusFilter(costumSlug, statusFilter));
     }
     if (fieldStatus && fieldFilter !== "all") {
       // Match EXACT de la valeur brute (les rows sans le champ ne sortent que sur « Tous »).
