@@ -23,6 +23,7 @@ export default function CardTestimonialBubble({ item, onClick, list }: SearchCar
   const badgeColor = data.badge?.color ?? "var(--primary)";
   const tint = bubbleTint(badgeColor);
   const excerpt = newsExcerpt(data.quote, 260);
+  const contain = testimonial?.imageFit === "contain";
 
   // `p-0` est OBLIGATOIRE depuis que le retrait intérieur est passé sur le wrapper `p-5` : `cn` est
   // `twMerge`, donc c'était le `p-5` porté ici qui ÉLIMINAIT le `py-6` de la classe de base de `<Card>`.
@@ -36,7 +37,19 @@ export default function CardTestimonialBubble({ item, onClick, list }: SearchCar
     >
       {/* Illustration — absente sur la majorité des paroles (audio/écrit seuls) : la carte garde alors sa
           composition d'origine, sans réserve d'espace vide. */}
-      {data.image && (
+      {data.image && (contain ? (
+        <div className="relative flex w-full shrink-0 items-center justify-center overflow-hidden bg-muted">
+          {/* Fond flou : même URL que l'image nette → un seul téléchargement (cache). */}
+          <OptimizedImage aria-hidden src={data.image} alt="" width={480}
+            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-lg" />
+          <OptimizedImage
+            src={data.image}
+            alt={data.title}
+            width={480}
+            className="relative h-auto max-h-64 w-auto max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
+      ) : (
         <div className="relative aspect-[16/9] w-full shrink-0 overflow-hidden bg-muted">
           <OptimizedImage
             src={data.image}
@@ -45,7 +58,7 @@ export default function CardTestimonialBubble({ item, onClick, list }: SearchCar
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </div>
-      )}
+      ))}
 
       <div className="flex min-h-0 flex-1 flex-col p-5">
         {/* Repères du haut : catégorie (pastille-bulle) + présence d'une voix */}

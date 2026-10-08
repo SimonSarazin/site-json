@@ -580,6 +580,17 @@ const MemberCardConfSchema = z.object({
     /** Préfixe des variables CSS : `<prefixe>-<slug>-carte` et `<prefixe>-<slug>-encre`. */
     prefixeCouleur: z.string(),
   }).optional(),
+  /** Couleur FIXE de la carte « équipe », pour une section sans territoire (ex. l'animation
+   *  départementale, un contact unique) où `couleursTerritoire` retomberait sur le neutre du
+   *  thème faute de valeur à résoudre. Prime sur `rattachement` : posée, elle s'applique à TOUTES
+   *  les cartes de la section, quel que soit le territoire porté par chaque membre. `bordure`
+   *  reprend `fond` si absente (même convention que `couleursTerritoire`). Couleurs CSS libres
+   *  (`var(--jeton)` recommandé) — contraste AA à vérifier entre `fond` et `encre`. */
+  fixedColors: z.object({
+    fond: z.string(),
+    encre: z.string(),
+    bordure: z.string().optional(),
+  }).optional(),
   showDescription: z.boolean().optional().default(true),
   showAddress: z.boolean().optional().default(true),
   // Bloc de compteurs de `CardProfile` (projets liés). Absent = affiché.
@@ -587,6 +598,12 @@ const MemberCardConfSchema = z.object({
   // rendue ici, elle doit donc se piloter pareil depuis les deux sections.
   showStats: z.boolean().optional(),
   detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
+  /** Plafond de colonnes de la grille « équipe » (`type: "team"` uniquement) — au-delà de 4 cartes,
+   *  le nombre de colonnes réelles est normalement plafonné à 4 (`GRILLE_CARTES`, `EntityMembers.tsx`).
+   *  Un effectif nombreux mais voulu plus resserré (ex. 9 coordonnateurs en 3×3) le réduit ici plutôt
+   *  que de changer le défaut partagé. Sans effet sous ce nombre de cartes (le plafond ne fait
+   *  jamais remonter le nombre de colonnes, seulement le réduire). Défaut code : 4 (historique).*/
+  maxColumns: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
 }).partial();
 
 export type MemberCardConf = z.infer<typeof MemberCardConfSchema>;

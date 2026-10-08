@@ -181,7 +181,9 @@ bespoke. Quatre hooks :
   "featured": "flag",                  // false/absent | true (le plus récent) | "flag" (l'épinglée en base)
   "cardVariant": "compact",            // registre CARD_VARIANTS ; défaut config.blog.defaultCardVariant sinon "default"
   "feedLayout": "list",                // "grid" (défaut) | "list"
-  "fullWidth": true                    // élargit le fil : max-w-[1536px] + 4ᵉ colonne xl (xl:grid-cols-4) ; défaut false → max-w-6xl
+  "fullWidth": true,                   // élargit le fil : max-w-[1536px] + 4ᵉ colonne xl (xl:grid-cols-4) ; défaut false → max-w-6xl
+  "density": "compact",                // resserre la grille ET le gabarit des cartes default/poster ; défaut absent → gabarit historique
+  "pagination": "pages"                // "infinite" (défaut, scroll + « charger plus ») | "pages" (pagination numérotée)
 } }
 ```
 `fullWidth` (`z.boolean().optional()` sur `ArticleFeedSectionSchema.props`) élargit le conteneur externe de
@@ -191,6 +193,49 @@ But : aligner une page blog avec les pages `layout:"fullwidth"` de searchProStat
 `.optional()` n'a **pas** de défaut runtime (config jamais parsée par Zod) → il faut écrire explicitement `"fullWidth": true`.
 
 `detailBasePath` est **déprécié** (le reader est canonique `/blog/:slug` ; toute autre valeur est ignorée, warning dev).
+
+#### `density: "compact"` — resserrer une grille sans perdre d'information
+
+Opt-in (`z.enum(["compact"]).optional()`), sans effet par défaut. En `feedLayout:"grid"` uniquement :
+
+- **Grille** : `grid-cols-2` DÈS le mobile (pas 1, comme le reste du parc) et `lg:grid-cols-4` (plafond du
+  parc, quel que soit `fullWidth`) ; `gap-3` au lieu de `gap-6`.
+- **Carte `default`** (`ArticleCard`) et **carte `poster`** (`ArticleCardPoster`) — les seules à le lire :
+  - image ramenée de son ratio historique (16/9, 3/4) à un ratio très court (`5/2`, `3/2`) : c'est elle qui
+    pèse le plus sur la hauteur, donc sur le nombre de rangées visibles sans défiler ;
+  - `py-6`/`gap-6` du `Card` de base **retirés** (`gap-0 py-0`) — c'est du vide autour du SEUL enfant de la
+    carte (`Link`), pas un espacement entre plusieurs blocs, donc 48px perdus pour rien sur une carte déjà
+    resserrée ; l'image vient toucher les coins arrondis directement (`overflow-hidden` déjà sur `Card`) ;
+  - titre, date, temps de lecture, extrait et tags restent **tous affichés** — seulement ramenés à une ligne
+    chacun (`line-clamp-1`), padding interne réduit. C'est la hauteur de l'image et le vide du `Card` qui
+    portent le resserrement, jamais la disparition d'une information.
+- **Carte `featured`** (la une du fil) : **jamais affectée**, quel que soit `density` — elle garde son
+  gabarit plein.
+- Sans effet sur `cardVariant: "compact"` (`ArticleCardCompact`, la ligne horizontale) : déjà dense par
+  construction, elle ignore la prop sans erreur.
+
+#### `pagination: "pages"` — pagination numérotée au lieu du scroll infini
+
+Opt-in (`z.enum(["infinite", "pages"]).optional()`), défaut absent → comportement historique (`"infinite"` :
+scroll + bouton « Charger plus »/`IntersectionObserver`).
+
+Le backend ne pagine **que** par curseur (`page.next()` du SDK) : un `indexMin` manuel est ignoré
+(cf. `buildSearchPayload`, sondé sur le chemin carte) — il est donc impossible de sauter directement à une
+page jamais chargée. `pagination: "pages"` (implémenté par `usePagedFeedNav`, `hooks/useArticleFeed.ts`)
+en tient compte :
+- les pages déjà visitées sont en cache React Query → retour **instantané** ;
+- la seule page « neuve » atteignable est **la suivante immédiate** (`fetchedPages`) — un clic dessus
+  déclenche exactement un `fetchNextPage()` puis l'affiche ; aucun saut plus loin n'est proposé ;
+- la une (`featured: true`/`"flag"`) est résolue sur la **page 0** uniquement (jamais recalculée par page
+  affichée) et dédupliquée de la grille de chaque page par id — une épinglée ancienne qui vit naturellement
+  sur une page ultérieure n'y est jamais dupliquée ;
+- la pagination revient à la page 1 dès que le périmètre filtré change (`searchHeader`/`heroSearch` partagé
+  de la page, cf. en-tête d'`useArticleFeed`) ;
+- UI : composant `Pagination` (`components/ui/pagination.tsx`), jusqu'ici jamais consommé ailleurs dans le
+  parc — `articleFeed` en est le premier utilisateur.
+
+Usage réel : les 33 sections `articleFeed` de parent62 (toutes les pages à fil d'actus) — la carte y est
+`poster` (`config.blog.defaultCardVariant`), donc c'est `ArticleCardPoster` qui applique le resserrement.
 
 #### `featured` : trois valeurs, pas un booléen
 

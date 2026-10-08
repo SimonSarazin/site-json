@@ -57,7 +57,6 @@
     "utilities": {
       "themeSwitch": true,
       "langSwitch": true,
-      "search": true,
       "auth": true,
       "cart": false,
       "notifications": false
@@ -424,7 +423,8 @@
         },
         "path": "/recherche",
         "icon": "search",
-        "iconOnly": true
+        "iconOnly": true,
+        "placement": "actions"
       }
     ],
     
@@ -461,72 +461,73 @@
       },
       "sections": [
         {
-          "type": "action-tiles",
-          "id": "home-double-entree",
-          "props": {
-            "headline": {
-              "fr": "Vous êtes…",
-              "en": "You are…"
-            },
-            "columns": {
-              "lg": 2
-            },
-            "headlineStyle": "badge",
-            "accentColor": "var(--p62-marine)",
-            "width": "wide",
-            "tileLayout": "inline",
-            "size": "lg",
-            "actions": [
-              {
-                "icon": "heart-handshake",
-                "title": {
-                  "fr": "Parent",
-                  "en": "A parent"
-                },
-                "subtitle": {
-                  "fr": "Trouvez du soutien, des activités et des témoignages de parents.",
-                  "en": "Find support, activities and testimonies from parents."
-                },
-                "href": "/parents",
-                "background": "var(--p62-vert)",
-                "textColor": "var(--p62-vert-encre)"
-              },
-              {
-                "icon": "briefcase",
-                "title": {
-                  "fr": "Professionnel·le ou bénévole",
-                  "en": "A professional or volunteer"
-                },
-                "subtitle": {
-                  "fr": "Référencez vos actions, rejoignez le réseau et suivez l'agenda de votre territoire",
-                  "en": "List your activities, join the network and follow your territory's agenda"
-                },
-                "href": "/pro",
-                "color": "accent"
-              }
-            ]
-          }
-        },
-        {
           "type": "gridLayout",
           "id": "home-une-territoires",
           "props": {
-            "leftColumns": 2,
-            "rightColumns": 2,
-            "gap": 6,
+            "topSection": {
+              "type": "action-tiles",
+              "id": "home-double-entree",
+              "props": {
+                "headline": {
+                  "fr": "Vous êtes…",
+                  "en": "You are…"
+                },
+                "columns": {
+                  "lg": 2
+                },
+                "headlineStyle": "text",
+                "accentColor": "var(--p62-marine)",
+                "width": "wide",
+                "tileLayout": "pillRow",
+                "size": "lg",
+                "density": "compact",
+                "hoverEffect": "lift",
+                "actions": [
+                  {
+                    "icon": "heart-handshake",
+                    "title": {
+                      "fr": "Parent",
+                      "en": "A parent"
+                    },
+                    "href": "/parents",
+                    "background": "var(--p62-vert-fonce)",
+                    "textColor": "var(--p62-vert-fonce-encre)"
+                  },
+                  {
+                    "icon": "briefcase",
+                    "title": {
+                      "fr": "Professionnel·le ou bénévole",
+                      "en": "A professional or volunteer"
+                    },
+                    "href": "/pro",
+                    "background": "var(--p62-marine)",
+                    "textColor": "#ffffff"
+                  }
+                ]
+              }
+            },
+            "leftColumns": 3,
+            "rightColumns": 1,
+            "gap": 4,
             "leftSection": {
               "type": "map-bubbles",
               "id": "carte-territoires",
               "props": {
                 "headline": { "fr": "Territoires", "en": "Territories" },
+                "headlineIcon": "map-pin",
+                "headlineIconColor": "var(--p62-turquoise)",
+                "headlineStyle": "text",
+                "bg": "card",
                 "subhead": {
                   "fr": "Cliquez sur votre territoire pour en découvrir les actus !",
                   "en": "Click your territory to discover its news!"
                 },
-                "backgroundImage": "/images/parent62/carte-territoire-teal.webp",
-                "backgroundOverlay": { "from": "var(--p62-map-bg-from)", "to": "var(--p62-map-bg-to)" },
-                "badgeColor": "var(--p62-turquoise)",
-                "badgeTextColor": "var(--p62-marine)",
+                "backgroundImage": "/images/parent62/carte-pdc.png",
+                "illustrationBackgroundImage": "/images/parent62/fond-degrade-territoire.png",
+                "illustrationMaxHeight": "80vh",
+                "illustrationAspectRatio": "996/945",
+                "badgeColor": "var(--p62-marine)",
+                "animate": true,
                 "backgroundImageAlt": {
                   "fr": "Carte du Pas-de-Calais et ses territoires",
                   "en": "Map of Pas-de-Calais and its territories"
@@ -536,22 +537,22 @@
                   {
                     "label": { "fr": "Calaisis", "en": "Calaisis" },
                     "href": "/territoire/calaisis",
-              "cities": {
-                "fr": "Calais – Audruicq – Guînes",
-                "en": "Calais – Audruicq – Guînes"
-              },
+                    "cities": {
+                      "fr": "Calais – Audruicq – Guînes",
+                      "en": "Calais – Audruicq – Guînes"
+                    },
                     "image": "/images/parent62/territoires/rond-orange.webp",
-                    "x": 33,
-                    "y": 15,
-                    "size": 15
+                    "x": 28,
+                    "y": 8,
+                    "size": 17
                   },
                   {
                     "label": { "fr": "Boulonnais", "en": "Boulonnais" },
                     "href": "/territoire/boulonnais",
-              "cities": {
-                "fr": "Boulogne-sur-Mer – Marquise – Desvres",
-                "en": "Boulogne-sur-Mer – Marquise – Desvres"
-              },
+                    "cities": {
+                      "fr": "Boulogne-sur-Mer – Marquise – Desvres",
+                      "en": "Boulogne-sur-Mer – Marquise – Desvres"
+                    },
                     "image": "/images/parent62/territoires/rond-rouge.webp",
                     "x": 11,
                     "y": 32,
@@ -560,14 +561,14 @@
                   {
                     "label": { "fr": "Audomarois", "en": "Audomarois" },
                     "href": "/territoire/audomarois",
-              "cities": {
-                "fr": "Saint-Omer – Aire-sur-la-Lys – Lumbres – Thérouanne – Fauquembergues",
-                "en": "Saint-Omer – Aire-sur-la-Lys – Lumbres – Thérouanne – Fauquembergues"
-              },
+                    "cities": {
+                      "fr": "Saint-Omer – Aire-sur-la-Lys – Lumbres – Thérouanne – Fauquembergues",
+                      "en": "Saint-Omer – Aire-sur-la-Lys – Lumbres – Thérouanne – Fauquembergues"
+                    },
                     "image": "/images/parent62/territoires/rond-jaune.webp",
-                    "x": 44,
-                    "y": 41,
-                    "size": 13.5
+                    "x": 40,
+                    "y": 32,
+                    "size": 17
                   },
                   {
                     "label": { "fr": "Entre Mer et Terres", "en": "Entre Mer et Terres" },
@@ -578,68 +579,68 @@
                     },
                     "image": "/images/parent62/territoires/rond-bleu.webp",
                     "x": 18,
-                    "y": 61,
-                    "size": 13
+                    "y": 55,
+                    "size": 22
                   },
                   {
                     "label": { "fr": "Ternois Bruaysis", "en": "Ternois Bruaysis" },
                     "href": "/territoire/ternois-bruaysis",
-              "cities": {
-                "fr": "Bruay-la-Buissière – Saint-Pol-sur-Ternoise – Frévent – Auchel – Avesnes-le-Comte",
-                "en": "Bruay-la-Buissière – Saint-Pol-sur-Ternoise – Frévent – Auchel – Avesnes-le-Comte"
-              },
+                    "cities": {
+                      "fr": "Bruay-la-Buissière – Saint-Pol-sur-Ternoise – Frévent – Auchel – Avesnes-le-Comte",
+                      "en": "Bruay-la-Buissière – Saint-Pol-sur-Ternoise – Frévent – Auchel – Avesnes-le-Comte"
+                    },
                     "image": "/images/parent62/territoires/rond-rose.webp",
-                    "x": 41,
-                    "y": 67,
-                    "size": 14.5
+                    "x": 50,
+                    "y": 60,
+                    "size": 19
                   },
                   {
                     "label": { "fr": "Artois", "en": "Artois" },
                     "href": "/territoire/artois",
-              "cities": {
-                "fr": "Béthune – Sailly-sur-la-Lys",
-                "en": "Béthune – Sailly-sur-la-Lys"
-              },
+                    "cities": {
+                      "fr": "Béthune – Sailly-sur-la-Lys",
+                      "en": "Béthune – Sailly-sur-la-Lys"
+                    },
                     "image": "/images/parent62/territoires/rond-vert-jaune.webp",
-                    "x": 63,
-                    "y": 43,
+                    "x": 66,
+                    "y": 45,
                     "size": 15.5
                   },
                   {
                     "label": { "fr": "FSM Lens-Liévin", "en": "FSM Lens-Liévin" },
                     "href": "/territoire/familles-en-sol-mineur-lens-lievin",
-              "cities": {
-                "fr": "Lens – Liévin",
-                "en": "Lens – Liévin"
-              },
+                    "cities": {
+                      "fr": "Lens – Liévin",
+                      "en": "Lens – Liévin"
+                    },
                     "image": "/images/parent62/territoires/rond-marron.webp",
-                    "x": 67,
-                    "y": 63,
-                    "size": 13
+                    "x": 74,
+                    "y": 60,
+                    "size": 10
                   },
                   {
                     "label": { "fr": "FSM Hénin-Carvin", "en": "FSM Hénin-Carvin" },
                     "href": "/territoire/familles-en-sol-mineur-henin-carvin",
-              "cities": {
-                "fr": "Hénin-Beaumont – Carvin",
-                "en": "Hénin-Beaumont – Carvin"
-              },
+                    "cities": {
+                      "fr": "Hénin-Beaumont – Carvin",
+                      "en": "Hénin-Beaumont – Carvin"
+                    },
                     "image": "/images/parent62/territoires/rond-rose-vif.webp",
-                    "x": 85,
-                    "y": 68,
+                    "x": 90,
+                    "y": 54,
                     "size": 13
                   },
                   {
                     "label": { "fr": "Arrageois", "en": "Arrageois" },
                     "href": "/territoire/arrageois",
-              "cities": {
-                "fr": "Arras – Achicourt – Saint-Laurent-Blangy – Dainville – Beaurains",
-                "en": "Arras – Achicourt – Saint-Laurent-Blangy – Dainville – Beaurains"
-              },
+                    "cities": {
+                      "fr": "Arras – Achicourt – Saint-Laurent-Blangy – Dainville – Beaurains",
+                      "en": "Arras – Achicourt – Saint-Laurent-Blangy – Dainville – Beaurains"
+                    },
                     "image": "/images/parent62/territoires/rond-violet.webp",
                     "x": 80,
-                    "y": 82,
-                    "size": 13
+                    "y": 80,
+                    "size": 22
                   }
                 ]
               }
@@ -649,7 +650,12 @@
               "id": "home-featured-poi",
               "props": {
                 "badgeLabel": { "fr": "À la une :", "en": "Featured:" },
-                "ctaLabel": { "fr": "En savoir +", "en": "Learn more" },
+                "badgeIcon": "megaphone",
+                "badgeIconColor": "var(--p62-turquoise)",
+                "headlineStyle": "text",
+                "ctaLabel": { "fr": "Lire la suite", "en": "Read more" },
+                "ctaStyle": "link",
+                "ctaPosition": "inline",
                 "baseParams": {
                   "defaultTypes": ["poi"],
                   "defaultTags": ["A la une"],
@@ -670,24 +676,21 @@
                 "itemAction": { "kind": "link", "to": "/blog/:slug", "toById": "/blog/id/:id" },
                 "background": "var(--card)",
                 "textColor": "var(--card-foreground)",
-                "backgroundOverlay": { "from": "var(--p62-map-bg-from)", "to": "var(--p62-map-bg-to)" },
-                "overlayTextColor": "var(--p62-map-bg-encre)",
-                "accentColor": "var(--p62-marine)",
-                "accentTextColor": "#ffffff",
+                "accentColor": "var(--p62-turquoise)",
                 "autoplay": true,
                 "autoplayIntervalMs": 6000,
                 "design": "card",
                 "showControls": true,
-                "badgeColor": "var(--p62-marine)",
-                "badgeTextColor": "#ffffff"
+                "linkTitleAndImage": true,
+                "badgeColor": "var(--p62-marine)"
               }
             },
             "align": "stretch",
-            "rightWrapperClass": "rounded-2xl shadow-lg bg-card [&>*>section]:flex [&>*>section]:flex-col",
+            "rightWrapperClass": "[&>*>section]:flex [&>*>section]:flex-col [&>*>section]:rounded-2xl [&>*>section]:shadow-md",
             "bg": "page-accent",
-            "className": "py-16",
-            "leftWrapperClass": "rounded-2xl shadow-lg bg-card [&>*>section]:rounded-2xl",
-            "from": "md"
+            "className": "py-6 md:py-8",
+            "leftWrapperClass": "[&>*>section]:rounded-2xl [&>*>section]:shadow-md",
+            "from": "lg"
           }
         },
         {
@@ -812,7 +815,6 @@
             "cards": [
               {
                 "icon": "users",
-                "title": { "fr": "Parents et groupes de parents", "en": "Parents and parent groups" },
                 "subtitle": {
                   "fr": "Des associations et groupes de parents acteurs (cafés des parents, groupes de pairs, des associations de parents, parents d'élèves…)",
                   "en": "Parent associations and active parent groups (parent cafés, peer groups, parent associations, school parent bodies…)"
@@ -820,7 +822,6 @@
               },
               {
                 "icon": "home",
-                "title": { "fr": "Centres Sociaux et EVS", "en": "Social centres and EVS" },
                 "subtitle": {
                   "fr": "Des Centres Sociaux et des Espaces de Vie Sociale, associations et/ou établissements spécialisés (accompagnement social, petite enfance, enfance, familles, éducation, adolescence, handicap, situations familiales spécifiques, santé)",
                   "en": "Social Centres and Social Life Spaces, associations and/or specialised establishments (social support, early years, childhood, families, education, adolescence, disability, specific family situations, health)"
@@ -828,7 +829,6 @@
               },
               {
                 "icon": "landmark",
-                "title": { "fr": "Institutions et collectivités", "en": "Institutions and authorities" },
                 "subtitle": {
                   "fr": "La CAF, l'Éducation Nationale, le Conseil Départemental, l'UDAF, l'EPDEF, les services des collectivités locales (Relais petite enfance, jeunesse, culture, famille, CCAS, PRE)…",
                   "en": "The CAF, National Education, the County Council, UDAF, EPDEF, local authority services (early-years hubs, youth, culture, family, CCAS, PRE)…"
@@ -1021,6 +1021,110 @@
           }
         },
         {
+          "type": "cta-card-grid",
+          "id": "charte-valeurs",
+          "props": {
+            "headline": { "fr": "La Charte du REAAP 62", "en": "The REAAP 62 charter" },
+            "subhead": {
+              "fr": "8 valeurs au service de la « cause des parents ».",
+              "en": "8 values serving the parents' cause."
+            },
+            "variant": "accent",
+            "bg": "secondary",
+            "actions": [
+              {
+                "icon": "users",
+                "title": { "fr": "La participation", "en": "Participation" },
+                "description": {
+                  "fr": "La participation des parents aux actions qui les concernent, eux ou leurs enfants, est un objectif central. Toutes les actions collectives visent à favoriser leur implication avec les professionnels, les autres parents, les enfants eux-mêmes.",
+                  "en": "Parents' participation in the actions that concern them or their children is a central objective. Every collective action aims to encourage their involvement alongside professionals, other parents and the children themselves."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x8q4s0",
+                "color": "primary"
+              },
+              {
+                "icon": "sprout",
+                "title": { "fr": "Le soutien à l'initiative", "en": "Backing initiative" },
+                "description": {
+                  "fr": "Institutions et professionnels, élus locaux et responsables associatifs ont pour responsabilité d'aider et de soutenir les initiatives. Ils doivent les susciter, favoriser leur adaptation et leur inscription dans le temps.",
+                  "en": "Institutions and professionals, elected representatives and association leaders have a responsibility to help and support initiatives. They must prompt them, help them adapt and help them last."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x8q5dk",
+                "color": "accent"
+              },
+              {
+                "icon": "heart-handshake",
+                "title": { "fr": "La co-éducation", "en": "Co-education" },
+                "description": {
+                  "fr": "Les parents sont les premiers éducateurs de leurs enfants. À leur côté, plusieurs acteurs forment une chaîne éducative qui permet à l'enfant de devenir un adulte intégré, autonome, responsable. Les intervenants sociaux et éducatifs veilleront à coordonner leurs interventions, rendant possible une démarche de co-éducation, dans le respect des rôles et des statuts de chacun, en associant les parents et en plaçant l'intérêt de l'enfant au cœur des préoccupations. La mise en synergie de toutes les actions contribue au développement de l'enfant, dans le respect de tous ses droits.",
+                  "en": "Parents are their children's first educators. Alongside them, several actors form an educational chain that helps the child become an integrated, autonomous and responsible adult. Social and educational workers coordinate their action to make co-education possible, respecting each person's role and status, involving parents and placing the child's interest at the heart of their concerns. Bringing all actions into synergy contributes to the child's development, with respect for all their rights."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x8q5qb",
+                "color": "chart-2"
+              },
+              {
+                "icon": "users-round",
+                "title": { "fr": "La mixité sociale", "en": "Social diversity" },
+                "description": {
+                  "fr": "Les interventions des acteurs sociaux, les initiatives locales doivent veiller à être ouvertes à l'ensemble des parents, à préserver la cohésion sociale des territoires et à éviter de stigmatiser ceux qui y participent.",
+                  "en": "The action of social workers and local initiatives must be open to all parents, preserve the social cohesion of the territories and avoid stigmatising those who take part."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x9grwo",
+                "color": "chart-3"
+              },
+              {
+                "icon": "heart",
+                "title": { "fr": "La solidarité intergénérationnelle", "en": "Intergenerational solidarity" },
+                "description": {
+                  "fr": "Au sein d'une famille, la parentalité est souvent partagée avec les grands-parents, les beaux-parents, les autres membres de la fratrie etc… Toute intervention doit respecter et encourager ce partage. Le rôle des grands-parents et la dimension intergénérationnelle de la parentalité sont à promouvoir.",
+                  "en": "Within a family, parenting is often shared with grandparents, step-parents, siblings and others. Every intervention must respect and encourage that sharing. The role of grandparents and the intergenerational dimension of parenting are to be promoted."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x8q6a8",
+                "color": "primary"
+              },
+              {
+                "icon": "shapes",
+                "title": { "fr": "La diversité", "en": "Diversity" },
+                "description": {
+                  "fr": "Les différentes formes d'exercice de la fonction parentale doivent être prises en compte. La diversité et la variété des formes de la famille, la présence sur les territoires de cultures et de modes de vie différents doivent être considérées comme une richesse, dans le respect des droits de l'enfant et dans le cadre de la Loi.",
+                  "en": "The different ways of exercising the parental role must be taken into account. The diversity of family forms and the presence of different cultures and ways of life across the territories are to be seen as a strength, with respect for children's rights and within the law."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x9grw8",
+                "color": "accent"
+              },
+              {
+                "icon": "message-circle",
+                "title": { "fr": "L'échange", "en": "Exchange" },
+                "description": {
+                  "fr": "Le champ de l'aide à la parentalité est vaste, il fait intervenir une multitude d'acteurs, d'initiatives, de projets, qu'il est intéressant de soutenir et de fédérer. Le développement de centres ressources, décentralisés et facilement accessibles, est souhaitable pour favoriser une évaluation partagée, des initiatives et leur valorisation par l'échange, la formation et l'information.",
+                  "en": "Parenting support is a vast field involving a multitude of actors, initiatives and projects that are worth supporting and bringing together. Developing decentralised, easily accessible resource centres is desirable to encourage shared assessment of initiatives and to give them value through exchange, training and information."
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x9grww",
+                "color": "chart-2"
+              },
+              {
+                "icon": "map-pin",
+                "title": { "fr": "La priorité du territoire", "en": "Territory first" },
+                "description": {
+                  "fr": "C'est sur les territoires de vie des personnes (commune, quartier, îlot…) que se développent les réseaux et les solidarités de voisinage susceptibles de favoriser l'exercice de responsabilité associations…",
+                  "en": "It is in people's living areas (town, neighbourhood, block…) that the networks and neighbourly solidarity likely to support the exercise of responsibility develop, associations…"
+                },
+                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
+                "href": "https://www.dailymotion.com/video/x8q4z3",
+                "color": "chart-3"
+              }
+            ],
+            "columns": { "md": 2, "lg": 3 }
+          }
+        },
+        {
           "type": "cards",
           "id": "charte-signataires",
           "props": {
@@ -1209,110 +1313,6 @@
           }
         },
         {
-          "type": "cta-card-grid",
-          "id": "charte-valeurs",
-          "props": {
-            "headline": { "fr": "La Charte du REAAP 62", "en": "The REAAP 62 charter" },
-            "subhead": {
-              "fr": "8 valeurs au service de la « cause des parents ».",
-              "en": "8 values serving the parents' cause."
-            },
-            "variant": "accent",
-            "bg": "secondary",
-            "actions": [
-              {
-                "icon": "users",
-                "title": { "fr": "La participation", "en": "Participation" },
-                "description": {
-                  "fr": "La participation des parents aux actions qui les concernent, eux ou leurs enfants, est un objectif central. Toutes les actions collectives visent à favoriser leur implication avec les professionnels, les autres parents, les enfants eux-mêmes.",
-                  "en": "Parents' participation in the actions that concern them or their children is a central objective. Every collective action aims to encourage their involvement alongside professionals, other parents and the children themselves."
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x8q4s0",
-                "color": "primary"
-              },
-              {
-                "icon": "sprout",
-                "title": { "fr": "Le soutien à l'initiative", "en": "Backing initiative" },
-                "description": {
-                  "fr": "Institutions et professionnels, élus locaux et responsables associatifs ont pour responsabilité d'aider et de soutenir les initiatives. Ils doivent les susciter, favoriser leur adaptation et leur inscription dans le temps.",
-                  "en": "Institutions and professionals, elected representatives and association leaders have a responsibility to help and support initiatives. They must prompt them, help them adapt and help them last."
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x8q5dk",
-                "color": "accent"
-              },
-              {
-                "icon": "heart-handshake",
-                "title": { "fr": "La co-éducation", "en": "Co-education" },
-                "description": {
-                  "fr": "Les parents sont les premiers éducateurs de leurs enfants. À leur côté, plusieurs acteurs forment une chaîne éducative qui permet à l'enfant de devenir un adulte intégré, autonome, responsable. Les intervenants sociaux et éducatifs veilleront à coordonner leurs interventions, rendant possible une démarche de co-éducation, dans le respect des rôles et des statuts de chacun, en associant les parents et en plaçant l'intérêt de l'enfant au cœur des préoccupations. La mise en synergie de toutes les actions contribue au développement de l'enfant, dans le respect de tous ses droits.",
-                  "en": "Parents are their children's first educators. Alongside them, several actors form an educational chain that helps the child become an integrated, autonomous and responsible adult. Social and educational workers coordinate their action to make co-education possible, respecting each person's role and status, involving parents and placing the child's interest at the heart of their concerns. Bringing all actions into synergy contributes to the child's development, with respect for all their rights."
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x8q5qb",
-                "color": "chart-2"
-              },
-              {
-                "icon": "users-round",
-                "title": { "fr": "La mixité sociale", "en": "Social diversity" },
-                "description": {
-                  "fr": "Les interventions des acteurs sociaux, les initiatives locales doivent veiller à être ouvertes à l'ensemble des parents, à préserver la cohésion sociale des territoires et à éviter de stigmatiser ceux qui y participent.",
-                  "en": "The action of social workers and local initiatives must be open to all parents, preserve the social cohesion of the territories and avoid stigmatising those who take part."
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x9grwo",
-                "color": "chart-3"
-              },
-              {
-                "icon": "heart",
-                "title": { "fr": "La solidarité intergénérationnelle", "en": "Intergenerational solidarity" },
-                "description": {
-                  "fr": "Au sein d'une famille, la parentalité est souvent partagée avec les grands-parents, les beaux-parents, les autres membres de la fratrie etc… Toute intervention doit respecter et encourager ce partage. Le rôle des grands-parents et la dimension intergénérationnelle de la parentalité sont à promouvoir.",
-                  "en": "Within a family, parenting is often shared with grandparents, step-parents, siblings and others. Every intervention must respect and encourage that sharing. The role of grandparents and the intergenerational dimension of parenting are to be promoted."
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x8q6a8",
-                "color": "primary"
-              },
-              {
-                "icon": "shapes",
-                "title": { "fr": "La diversité", "en": "Diversity" },
-                "description": {
-                  "fr": "Les différentes formes d'exercice de la fonction parentale doivent être prises en compte. La diversité et la variété des formes de la famille, la présence sur les territoires de cultures et de modes de vie différents doivent être considérées comme une richesse, dans le respect des droits de l'enfant et dans le cadre de la Loi.",
-                  "en": "The different ways of exercising the parental role must be taken into account. The diversity of family forms and the presence of different cultures and ways of life across the territories are to be seen as a strength, with respect for children's rights and within the law."
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x9grw8",
-                "color": "accent"
-              },
-              {
-                "icon": "message-circle",
-                "title": { "fr": "L'échange", "en": "Exchange" },
-                "description": {
-                  "fr": "Le champ de l'aide à la parentalité est vaste, il fait intervenir une multitude d'acteurs, d'initiatives, de projets, qu'il est intéressant de soutenir et de fédérer. Le développement de centres ressources, décentralisés et facilement accessibles, est souhaitable pour favoriser une évaluation partagée, des initiatives et leur valorisation par l'échange, la formation et l'information.",
-                  "en": "Parenting support is a vast field involving a multitude of actors, initiatives and projects that are worth supporting and bringing together. Developing decentralised, easily accessible resource centres is desirable to encourage shared assessment of initiatives and to give them value through exchange, training and information."
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x9grww",
-                "color": "chart-2"
-              },
-              {
-                "icon": "map-pin",
-                "title": { "fr": "La priorité du territoire", "en": "Territory first" },
-                "description": {
-                  "fr": "C'est sur les territoires de vie des personnes (commune, quartier, îlot…) que se développent les réseaux et les solidarités de voisinage susceptibles de favoriser l'exercice de responsabilité associations…",
-                  "en": "It is in people's living areas (town, neighbourhood, block…) that the networks and neighbourly solidarity likely to support the exercise of responsibility develop, associations…"
-                },
-                "ctaLabel": { "fr": "Voir la vidéo", "en": "Watch the video" },
-                "href": "https://www.dailymotion.com/video/x8q4z3",
-                "color": "chart-3"
-              }
-            ],
-            "columns": { "md": 2, "lg": 3 }
-          }
-        },
-        {
           "type": "title",
           "id": "charte-adherer-titre",
           "props": {
@@ -1457,6 +1457,10 @@
               { "fr": "Le respect de la différence", "en": "Respect for difference" },
               { "fr": "L'ouverture à tous", "en": "Openness to all" }
             ],
+            "infoText": {
+              "fr": "À partir du 1ᵉʳ janvier 2025, le REAAP devient l'axe 1 du Fonds National Parentalité (FNP) — « Implication et participation des parents à travers des modalités d'interventions collectives » — et se décline en deux volets :<br/>— Volet 1 : actions collectives d'échanges et d'entraide entre parents<br/>— Volet 2 : activités et ateliers partagés « Parents-Enfants »",
+              "en": "As of 1 January 2025, the REAAP becomes strand 1 of the National Parenting Fund (Fonds National Parentalité, FNP) — “Involving and engaging parents through collective forms of intervention” — with two strands:<br/>— Strand 1: collective activities for exchange and mutual support between parents<br/>— Strand 2: shared “Parent-Child” activities and workshops"
+            },
             "width": "wide"
           }
         },
@@ -1565,7 +1569,9 @@
             "costumSlug": "parent62",
             "filters": { "slug": "lantsDesLieuxDaccueilEnfantsParentsDu25SeptembreAOlhain" },
             "pageSize": 1,
-            "featured": true
+            "featured": true,
+            "density": "compact",
+            "pagination": "infinite"
           }
         }
       ]
@@ -1634,7 +1640,12 @@
             "showTitle": false,
             "showInvite": false,
             "fields": ["territoires", "telephone", "phone", "mobile", "email"],
-            "card": { "type": "team", "detailsMode": "link", "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" } }
+            "card": {
+              "type": "team",
+              "detailsMode": "link",
+              "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" },
+              "fixedColors": { "fond": "var(--p62-vert)", "encre": "var(--p62-vert-encre)" }
+            }
           }
         },
         {
@@ -1659,7 +1670,7 @@
             "showTitle": false,
             "showInvite": false,
             "fields": ["territoires", "telephone", "phone", "mobile", "email"],
-            "card": { "type": "team", "detailsMode": "link", "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" } }
+            "card": { "type": "team", "detailsMode": "link", "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" }, "maxColumns": 3 }
           }
         },
         {
@@ -1688,7 +1699,12 @@
             "showTitle": false,
             "showInvite": false,
             "fields": ["territoires", "telephone", "phone", "mobile", "email"],
-            "card": { "type": "team", "detailsMode": "link", "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" } }
+            "card": {
+              "type": "team",
+              "detailsMode": "link",
+              "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" },
+              "fixedColors": { "fond": "var(--p62-caf)", "encre": "var(--p62-caf-encre)" }
+            }
           }
         }
       ]
@@ -1720,8 +1736,8 @@
           "props": {
             "title": { "fr": "Le Mois de la Parentalité", "en": "Parenting Month" },
             "subtitle": {
-              "fr": "Chaque automne, un mois d'actions et de rencontres pour les familles, partout dans le Pas-de-Calais.",
-              "en": "Every autumn, a month of actions and gatherings for families across Pas-de-Calais."
+              "fr": "Une mise en lumière des actions de soutien à la parentalité dans le Pas-de-Calais.",
+              "en": "A look at initiatives supporting parenting in the Pas-de-Calais department."
             },
             "align": "center",
             "size": "xl"
@@ -1950,7 +1966,9 @@
         {
           "type": "articleFeed",
           "id": "filter-mois-feed",
-          "props": { "costumSlug": "parent62", "pageSize": 12, "featured": true, "fullWidth": true }
+          "props": { "costumSlug": "parent62", "pageSize": 12, "featured": true, "fullWidth": true,
+            "density": "compact"
+          }
         }
       ]
     },
@@ -2343,7 +2361,8 @@
             "costumSlug": "parent62",
             "pageSize": 12,
             "featured": false,
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -2778,7 +2797,8 @@
             "costumSlug": "parent62",
             "pageSize": 12,
             "featured": true,
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -3174,7 +3194,8 @@
             "fullWidth": true,
             "filters": {
               "tags": "Appels à projets"
-            }
+            },
+            "density": "compact"
           }
         }
       ]
@@ -3570,7 +3591,8 @@
             "fullWidth": true,
             "filters": {
               "tags": "Offres d'emploi"
-            }
+            },
+            "density": "compact"
           }
         }
       ]
@@ -3618,7 +3640,8 @@
             "fullWidth": true,
             "filters": {
               "tags": "Zoom"
-            }
+            },
+            "density": "compact"
           }
         }
       ]
@@ -4078,6 +4101,7 @@
                 "useFilter": true,
                 "showMap": false,
                 "enableMap": true,
+                "defaultViewMode": "map",
                 "baseParams": {
                   "defaultTypes": [
                     "poi"
@@ -4156,6 +4180,7 @@
                   },
                   "testimonial": {
                     "design": "bubble",
+                    "imageFit": "contain",
                     "quoteField": "description",
                     "titleField": "name",
                     "dateField": "created",
@@ -5304,6 +5329,48 @@
                     }
                   }
                 ]
+              },
+              {
+                "id": "ville",
+                "label": { "fr": "Villes", "en": "Cities" },
+                "field": "address.addressLocality",
+                "multiple": true,
+                "allLabel": { "fr": "Toutes les villes", "en": "All cities" },
+                "options": [
+                  { "id": "achicourt", "value": "Achicourt", "label": { "fr": "Achicourt", "en": "Achicourt" } },
+                  { "id": "aire-sur-la-lys", "value": "Aire-sur-la-Lys", "label": { "fr": "Aire-sur-la-Lys", "en": "Aire-sur-la-Lys" } },
+                  { "id": "arras", "value": "Arras", "label": { "fr": "Arras", "en": "Arras" } },
+                  { "id": "auchel", "value": "Auchel", "label": { "fr": "Auchel", "en": "Auchel" } },
+                  { "id": "audruicq", "value": "Audruicq", "label": { "fr": "Audruicq", "en": "Audruicq" } },
+                  { "id": "avesnes-le-comte", "value": "Avesnes-le-Comte", "label": { "fr": "Avesnes-le-Comte", "en": "Avesnes-le-Comte" } },
+                  { "id": "beaurains", "value": "Beaurains", "label": { "fr": "Beaurains", "en": "Beaurains" } },
+                  { "id": "berck", "value": "Berck", "label": { "fr": "Berck", "en": "Berck" } },
+                  { "id": "bethune", "value": "Béthune", "label": { "fr": "Béthune", "en": "Béthune" } },
+                  { "id": "boulogne-sur-mer", "value": "Boulogne-sur-Mer", "label": { "fr": "Boulogne-sur-Mer", "en": "Boulogne-sur-Mer" } },
+                  { "id": "bruay-la-buissiere", "value": "Bruay-la-Buissière", "label": { "fr": "Bruay-la-Buissière", "en": "Bruay-la-Buissière" } },
+                  { "id": "calais", "value": "Calais", "label": { "fr": "Calais", "en": "Calais" } },
+                  { "id": "carvin", "value": "Carvin", "label": { "fr": "Carvin", "en": "Carvin" } },
+                  { "id": "dainville", "value": "Dainville", "label": { "fr": "Dainville", "en": "Dainville" } },
+                  { "id": "desvres", "value": "Desvres", "label": { "fr": "Desvres", "en": "Desvres" } },
+                  { "id": "etaples", "value": "Étaples", "label": { "fr": "Étaples", "en": "Étaples" } },
+                  { "id": "fauquembergues", "value": "Fauquembergues", "label": { "fr": "Fauquembergues", "en": "Fauquembergues" } },
+                  { "id": "frevent", "value": "Frévent", "label": { "fr": "Frévent", "en": "Frévent" } },
+                  { "id": "fruges", "value": "Fruges", "label": { "fr": "Fruges", "en": "Fruges" } },
+                  { "id": "guines", "value": "Guînes", "label": { "fr": "Guînes", "en": "Guînes" } },
+                  { "id": "henin-beaumont", "value": "Hénin-Beaumont", "label": { "fr": "Hénin-Beaumont", "en": "Hénin-Beaumont" } },
+                  { "id": "hesdin", "value": "Hesdin", "label": { "fr": "Hesdin", "en": "Hesdin" } },
+                  { "id": "hucqueliers", "value": "Hucqueliers", "label": { "fr": "Hucqueliers", "en": "Hucqueliers" } },
+                  { "id": "lens", "value": "Lens", "label": { "fr": "Lens", "en": "Lens" } },
+                  { "id": "lievin", "value": "Liévin", "label": { "fr": "Liévin", "en": "Liévin" } },
+                  { "id": "lumbres", "value": "Lumbres", "label": { "fr": "Lumbres", "en": "Lumbres" } },
+                  { "id": "marquise", "value": "Marquise", "label": { "fr": "Marquise", "en": "Marquise" } },
+                  { "id": "montreuil", "value": "Montreuil", "label": { "fr": "Montreuil", "en": "Montreuil" } },
+                  { "id": "sailly-sur-la-lys", "value": "Sailly-sur-la-Lys", "label": { "fr": "Sailly-sur-la-Lys", "en": "Sailly-sur-la-Lys" } },
+                  { "id": "saint-laurent-blangy", "value": "Saint-Laurent-Blangy", "label": { "fr": "Saint-Laurent-Blangy", "en": "Saint-Laurent-Blangy" } },
+                  { "id": "saint-omer", "value": "Saint-Omer", "label": { "fr": "Saint-Omer", "en": "Saint-Omer" } },
+                  { "id": "saint-pol-sur-ternoise", "value": "Saint-Pol-sur-Ternoise", "label": { "fr": "Saint-Pol-sur-Ternoise", "en": "Saint-Pol-sur-Ternoise" } },
+                  { "id": "therouanne", "value": "Thérouanne", "label": { "fr": "Thérouanne", "en": "Thérouanne" } }
+                ]
               }
             ],
             "buttons": [
@@ -5595,7 +5662,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -5832,7 +5900,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -6069,7 +6138,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -6306,7 +6376,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -6543,7 +6614,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -6780,7 +6852,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -7017,7 +7090,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -7254,7 +7328,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -7659,7 +7734,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -8064,7 +8140,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -8469,7 +8546,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -8874,7 +8952,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -9279,7 +9358,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -9684,7 +9764,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -10089,7 +10170,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -10494,7 +10576,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -10899,7 +10982,8 @@
                 ]
               }
             },
-            "fullWidth": true
+            "fullWidth": true,
+            "density": "compact"
           }
         }
       ]
@@ -11036,8 +11120,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/drive/folders/1-xR70C3jtA6XK7bAhzVyysK-8_Gx-Hy_",
                       "target": "_blank"
@@ -11502,7 +11586,8 @@
                   "Arrageois"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -11752,8 +11837,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/drive/folders/1P9CBZfe71ri7FU8Vc9H_8e_yF_v6_hye?usp=sharing",
                       "target": "_blank"
@@ -12218,7 +12303,8 @@
                   "Artois"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -12468,8 +12554,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/drive/folders/15CKV2rLe8fGPRcAveEjSP9PtZTLKY3c5?usp=sharing",
                       "target": "_blank"
@@ -12934,7 +13020,8 @@
                   "Audomarois"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -13184,8 +13271,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/open?id=1eUFrIrM-fUOJ0nWkNcm7VDidfrszZrLg",
                       "target": "_blank"
@@ -13650,7 +13737,8 @@
                   "Boulonnais"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -13900,8 +13988,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/open?id=1AsrYqbr9j1lQsr-8NhtEPUH4V_axjGzK",
                       "target": "_blank"
@@ -14366,7 +14454,8 @@
                   "Calaisis"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -14616,8 +14705,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/drive/folders/1vDZliknVKG2QukWnVQ5-WxSvaiW2O4en?usp=sharing",
                       "target": "_blank"
@@ -15082,7 +15171,8 @@
                   "Entre Mer et Terres"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -15332,8 +15422,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/drive/folders/1DwrBRmRVZTrGDAmfHhgeUIPRcQIvElIl",
                       "target": "_blank"
@@ -15798,7 +15888,8 @@
                   "Familles en sol mineur Hénin Carvin"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -16048,8 +16139,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/drive/u/4/folders/18FsQlISmxbXIkeduz6ZXD6yL8TI8dKU8",
                       "target": "_blank"
@@ -16514,7 +16605,8 @@
                   "Familles en sol mineur Lens Liévin"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -16760,8 +16852,8 @@
                         "en": "Minutes of the meetings"
                       },
                       "text": {
-                        "fr": "Les comptes rendus des réunions du comité local sont réunis dans le dossier partagé du territoire.\nCliquer sur cette carte ouvre le dossier Google Drive dans un nouvel onglet.",
-                        "en": "The minutes of the local committee meetings are gathered in the territory's shared folder.\nClicking this card opens the Google Drive folder in a new tab."
+                        "fr": "Cliquez ici pour accéder aux comptes rendus.",
+                        "en": "Click here to view the reports.."
                       },
                       "href": "https://drive.google.com/drive/folders/1hHM5Es-SJFBBlnbPugZAuHe0dY40T88w",
                       "target": "_blank"
@@ -17226,7 +17318,8 @@
                   "Ternois Bruaysis"
                 ]
               }
-            }
+            },
+            "density": "compact"
           }
         },
         {
@@ -18241,6 +18334,7 @@
                       },
                       "testimonial": {
                         "design": "bubble",
+                        "imageFit": "contain",
                         "quoteField": "description",
                         "titleField": "name",
                         "dateField": "created",
@@ -19150,27 +19244,6 @@
         },
         "links": [
           {
-            "href": "/appels-a-projets",
-            "label": {
-              "fr": "Appels à projets",
-              "en": "Calls for projects"
-            }
-          },
-          {
-            "href": "/offres-emploi",
-            "label": {
-              "fr": "Offres d'emploi",
-              "en": "Job offers"
-            }
-          },
-          {
-            "href": "/archives",
-            "label": {
-              "fr": "Archives",
-              "en": "Archives"
-            }
-          },
-          {
             "href": "/equipe",
             "label": {
               "fr": "Contact",
@@ -19382,7 +19455,9 @@
   "blog": {
     "feedCostumSlug": "parent62",
     "readerVariant": "poster",
-    "defaultCardVariant": "poster"
+    "defaultCardVariant": "poster",
+    "defaultFields": ["territoires", "publics"],
+    "defaultPagination": "pages"
   },
   "commandPalette": {
     "enabled": true,
@@ -19617,7 +19692,7 @@
   },
   "profiles": {
     "default": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [
@@ -19734,7 +19809,7 @@
       ]
     },
     "citoyens": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [
@@ -19857,7 +19932,7 @@
       ]
     },
     "organizations": {
-      "layout": "default",
+       "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [
@@ -20088,7 +20163,7 @@
       ]
     },
     "projects": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [
@@ -20271,7 +20346,7 @@
       ]
     },
     "events": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [
@@ -20461,7 +20536,7 @@
       ]
     },
     "poi": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [

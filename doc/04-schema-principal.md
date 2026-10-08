@@ -234,6 +234,7 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
     description: LocalizedString.optional(),
     featured: z.boolean().optional(),
     iconOnly: z.boolean().optional(),
+    placement: z.literal("actions").optional(),
   }).refine(d => d.path || d.href || d.children || d.megaMenu, {
     message: "NavItem : path, href, children ou megaMenu obligatoire"
   })
@@ -253,6 +254,7 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
 | `description` | `LocalizedString`     | Non      | Description de l'element de navigation                                   |
 | `featured`    | `boolean`             | Non      | Affiche le sous-menu en mise en avant (colonne "lien principal" + grille)|
 | `iconOnly`    | `boolean`             | Non      | Barre desktop du header `stacked` : icône seule, le libellé devenant le nom accessible (`aria-label`) et l'infobulle. Ignoré sans `icon` ; le menu mobile et les autres variantes affichent le libellé |
+| `placement`   | `"actions"`           | Non      | Barre desktop du header `stacked` : sort l'entrée du menu centré pour la poser dans le groupe d'actions de droite (thème, langue, connexion…) — typiquement une loupe icône seule vers une page de recherche, à la place d'un déclencheur de header. Ignoré par les autres variantes ; le menu mobile garde la liste complète |
 
 #### Accent de page (`page.accent`)
 

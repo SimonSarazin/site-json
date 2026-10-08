@@ -511,6 +511,10 @@ export const TestimonialConfSchema = z.object({
   /** Champ de l'illustration (bannière de la carte et de la preview). Repli code : "profilMediumImageUrl",
    *  puis "profilImageUrl", puis la 1re image de `medias` — un témoignage sans image reste rendu tel quel. */
   imageField: z.string().optional(),
+  /** Cadrage de l'illustration : `cover` (défaut, rognée sur un ratio 16/9) ou `contain` (image ENTIÈRE,
+   *  centrée, sur un fond flou tiré de la même image — pour une affiche ou un visuel dont le ratio n'est
+   *  pas 16/9). Opt-in : sans lui, le rendu historique est inchangé. */
+  imageFit: z.enum(["cover", "contain"]).optional(),
   /** Catégorie : pilote la teinte de la bulle + la pastille. `colors` = map valeur→couleur (`var()` ou hex). */
   badge: z.object({ field: z.string(), colors: z.record(z.string(), z.string()).optional() }).optional(),
   /** Accent (ex. territoire) : pilote le point coloré. `colors` = map valeur→couleur (`var()` ou hex). */
@@ -1632,6 +1636,12 @@ export const FeaturedCarouselSectionSchema = z.object({
   props: z.object({
     /** Badge affiché au-dessus du titre de chaque diapositive, ex. "À la une :". */
     badgeLabel: LocalizedString.optional(),
+    /** Icône (registre lucide, kebab-case) posée avant le texte du badge — ex. "megaphone". Absente,
+     *  le badge reste texte seul (comportement historique). */
+    badgeIcon: z.string().optional(),
+    /** Couleur de l'icône du badge (CSS) — INDÉPENDANTE de la couleur du texte (ex. icône turquoise,
+     *  titre marine en `headlineStyle:"text"`). Défaut : hérite de la couleur du texte (`currentColor`). */
+    badgeIconColor: z.string().optional(),
     /** Libellé du bouton CTA. Repli : traduction "En savoir plus". */
     ctaLabel: LocalizedString.optional(),
     /** Fetch/filtre — `defaultTypes`/`defaultTags`/`sourceKey`/`defaultFields` etc. */
@@ -1659,8 +1669,9 @@ export const FeaturedCarouselSectionSchema = z.object({
      * conteneur ne rogne pas (`overflow` visible), sinon la pilule est coupée.
      */
     design: z.enum(["sticker", "card"]).optional(),
-    /** Forme du badge : `badge` (défaut, étiquette inclinée) ou `pill` (arrondi droit). */
-    headlineStyle: z.enum(["badge", "pill"]).optional(),
+    /** Forme du badge : `badge` (défaut, étiquette inclinée), `pill` (arrondi droit) ou `text` — texte
+     *  seul, sans fond ni rotation, police `--font-sans` (celle du menu), plus grand. */
+    headlineStyle: z.enum(["badge", "pill", "text"]).optional(),
     /** Encre de la section, posée avec `background`. Sans elle, un fond fourni impose le texte BLANC
      *  (rendu historique, pensé pour un fond sombre) — à fournir dès que le fond est clair. */
     textColor: z.string().optional(),
@@ -1682,6 +1693,17 @@ export const FeaturedCarouselSectionSchema = z.object({
     /** Puces de pagination sous le carrousel, entre les flèches précédent/suivant (celles-ci
      *  restent toujours affichées). Défaut masquées — à activer explicitement si besoin. */
     showControls: z.boolean().default(false),
+    /** Titre ET image de la diapositive deviennent des liens vers la même cible que le bouton.
+     *  Défaut `false` : seul le bouton est cliquable (comportement historique). */
+    linkTitleAndImage: z.boolean().optional(),
+    /** Apparence du CTA : `button` (défaut, pilule pleine) ou `link` — texte + flèche, sans fond,
+     *  dans `accentColor`. */
+    ctaStyle: z.enum(["button", "link"]).optional(),
+    /** Emplacement du CTA en habillage `card` UNIQUEMENT (`design:"card"`, sans effet en `sticker`,
+     *  déjà posé dans le flux de la diapositive) : `footer` (défaut, historique) — partage la ligne des
+     *  points de position, en pied de carte — ou `inline` — sous le texte de CHAQUE diapositive, comme
+     *  en habillage `sticker`. Les points restent alors seuls au pied, centrés. */
+    ctaPosition: z.enum(["footer", "inline"]).optional(),
   }),
 });
 export type FeaturedCarouselSection = z.infer<typeof FeaturedCarouselSectionSchema>;
