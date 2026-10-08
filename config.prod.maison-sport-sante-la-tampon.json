@@ -625,6 +625,14 @@
                           "en": "Sport health for all"
                         },
                         "name": "Sport santé pour tous - SSpT"
+                      },
+                      {
+                        "id": "sssl",
+                        "label": {
+                          "fr": "Sport santé sans label",
+                          "en": "Sport health without label"
+                        },
+                        "name": "Sport santé sans label - SSsL"
                       }
                     ]
                   },
@@ -2845,7 +2853,7 @@
         "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
       }
     },
-    "customCSS": "/* En-tete des cartes SSsO : jaune de la charte, CREUSE en mode clair — le titre\n   est ecrit en text-primary-foreground (quasi-blanc en clair), le jaune plein n'y\n   ferait que 1,9:1. En sombre ce texte devient fonce, donc le jaune reste plein. */\n.ssso-card .header-gradient {\n  background: linear-gradient(135deg, color-mix(in oklch, var(--accent) 65%, black), color-mix(in oklch, var(--accent) 55%, black))!important;\n}\n\n.dark .ssso-card .header-gradient {\n  background: linear-gradient(135deg, var(--accent), color-mix(in oklch, var(--accent) 80%, black))!important;\n}\n\n .sspt-card .header-gradient {\n background: linear-gradient(135deg, var(--primary), var(--muted-foreground))!important;\n} \n\n .ssso-card .border-card-border-left {\n border-color: var(--accent)!important;}"
+    "customCSS": "/* En-tete des cartes SSsO : jaune de la charte, CREUSE en mode clair — le titre\n   est ecrit en text-primary-foreground (quasi-blanc en clair), le jaune plein n'y\n   ferait que 1,9:1. En sombre ce texte devient fonce, donc le jaune reste plein. */\n.ssso-card .header-gradient {\n  background: linear-gradient(135deg, color-mix(in oklch, var(--accent) 65%, black), color-mix(in oklch, var(--accent) 55%, black))!important;\n}\n\n.dark .ssso-card .header-gradient {\n  background: linear-gradient(135deg, var(--accent), color-mix(in oklch, var(--accent) 80%, black))!important;\n}\n\n .sspt-card .header-gradient {\n background: linear-gradient(135deg, var(--primary), var(--muted-foreground))!important;\n} \n\n .ssso-card .border-card-border-left {\n border-color: var(--accent)!important;}\n\n/* Cartes SSsL (sans label) : 3e couleur de la charte, le vert (--success, deja\n   porte par --gradient-pro). Titre en text-primary-foreground : 5,16:1 sur le\n   vert plein en clair, 7,55:1 en sombre ; le creusement 85% tient 4,98:1 en sombre,\n   donc une seule recette pour les deux modes. */\n.sssl-card .header-gradient {\n  background: linear-gradient(135deg, var(--success), color-mix(in oklch, var(--success) 85%, black))!important;\n}\n\n.sssl-card .border-card-border-left {\n  border-color: var(--success)!important;\n}\n\n/* Le badge « Valide » est du meme vert (--badge-valid = --success) : sur cet\n   en-tete il disparaitrait. Pastille inversee, fond carte + texte vert (5,31:1\n   en clair, 7,14:1 en sombre). */\n.sssl-card .header-gradient .bg-badge-valid {\n  background: var(--card);\n  color: var(--success);\n}"
   },
   "auth": {
     "login": {

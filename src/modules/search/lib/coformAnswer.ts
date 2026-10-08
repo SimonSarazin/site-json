@@ -33,13 +33,22 @@ export function getStatusStyle(status: ActivityStatus): string {
   }
 }
 
-/** Abrège les libellés de type d'activité (sinon renvoie la valeur brute). */
+/**
+ * Abrège les libellés de type d'activité (sinon renvoie la valeur brute).
+ *
+ * L'abréviation sert aussi de CLASSE CSS de la carte (`CardAnswer` : `${typeLabel.toLowerCase()}-card`,
+ * ciblée par le `customCSS` des sites : `.ssso-card`, `.sspt-card`, `.sssl-card`). Un type non
+ * listé ici garde son libellé long dans le badge ET ne produit aucune classe exploitable — ajouter
+ * un type au formulaire CoForm, c'est l'ajouter ici.
+ */
 export function normalizeTypeLabel(rawType: string): string {
   switch (rawType) {
     case "Sport santé sur ordonnance - SSsO":
       return "SSsO";
     case "Sport santé pour tous - SSpT":
       return "SSpT";
+    case "Sport santé sans label - SSsL":
+      return "SSsL";
     default:
       return rawType;
   }
@@ -86,7 +95,7 @@ export interface CoformAnswer {
   title?: string;
   description?: string;
   typeRaw: string;
-  /** Type abrégé (SSsO/SSpT…) pour la carte. */
+  /** Type abrégé (SSsO/SSpT/SSsL…) pour la carte. */
   typeLabel: string;
   typeActivity?: string;
   typeGender: string;

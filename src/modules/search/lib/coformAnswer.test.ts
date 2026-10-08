@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 import { describe, it, expect } from "vitest";
 import {
   isCoformAnswerManager,
@@ -7,6 +10,8 @@ import {
   normalizeTypeLabel,
   parseCoformAnswer,
 } from "./coformAnswer";
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
 describe("getAnswerRef", () => {
   const FORM_ID = "6928096adf5caf0d230e7f26";
@@ -129,7 +134,28 @@ describe("normalizeTypeLabel", () => {
   it("abrège les types connus, renvoie la valeur brute sinon", () => {
     expect(normalizeTypeLabel("Sport santé sur ordonnance - SSsO")).toBe("SSsO");
     expect(normalizeTypeLabel("Sport santé pour tous - SSpT")).toBe("SSpT");
+    expect(normalizeTypeLabel("Sport santé sans label - SSsL")).toBe("SSsL");
     expect(normalizeTypeLabel("Autre")).toBe("Autre");
+  });
+
+  it("chaque type proposé par le filtre « Type de Sport Santé » d'Ekilib.re est abrégé", () => {
+    // L'abréviation devient la classe CSS de la carte (`.ssso-card`…) que le `customCSS` du site
+    // colore : un type ajouté au formulaire CoForm ET au filtre sans être connu ici garderait son
+    // libellé long dans le badge et une classe inexploitable. Le filtre de la config fait foi.
+    const cfg = JSON.parse(readFileSync(resolve(ROOT, "config.prod.maison-sport-sante-la-tampon.json"), "utf8"));
+    const names: string[] = [];
+    const visit = (node: unknown): void => {
+      if (Array.isArray(node)) return node.forEach(visit);
+      if (!node || typeof node !== "object") return;
+      const rec = node as { id?: unknown; options?: { name: string }[] };
+      if (rec.id === "sportHealthType" && Array.isArray(rec.options)) names.push(...rec.options.map((o) => o.name));
+      Object.values(rec).forEach(visit);
+    };
+    visit(cfg.pages);
+    expect(names.length).toBeGreaterThanOrEqual(3); // la sonde lit bien le filtre
+    for (const name of names) {
+      expect(normalizeTypeLabel(name), name).toMatch(/^SS[a-z][A-Z]$/);
+    }
   });
 });
 
