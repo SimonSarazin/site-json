@@ -121,7 +121,17 @@ export function usePagedFeedNav({ fetchedPages, hasNextPage, isFetchingNextPage,
     // `index === fetchedPages` uniquement : la seule page jamais chargée atteignable en un fetch.
     if (index === fetchedPages && hasNextPage) {
       setIsNavigating(true);
-      fetchNextPage().then(() => setPageIndex(index)).finally(() => setIsNavigating(false));
+      // React Query RÉSOUT (ne rejette pas) un `fetchNextPage` en échec — `.then()` s'exécute donc
+      // aussi côté erreur. Sans la vérification `pages.length > index`, `pageIndex` avancerait sur
+      // une page jamais chargée : `safeIndex` la clampe (rien de visible), mais `goToPage(index)`
+      // sort ensuite immédiatement sur `index === pageIndex` — « Suivant » resterait figé jusqu'au
+      // prochain changement de filtre, sans toast (`error && !items.length` reste faux).
+      fetchNextPage()
+        .then((result) => {
+          const pages = (result as { data?: { pages?: unknown[] } } | undefined)?.data?.pages;
+          if ((pages?.length ?? 0) > index) setPageIndex(index);
+        })
+        .finally(() => setIsNavigating(false));
     }
   }, [pageIndex, fetchedPages, hasNextPage, fetchNextPage]);
 

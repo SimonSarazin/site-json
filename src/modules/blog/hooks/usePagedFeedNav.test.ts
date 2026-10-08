@@ -25,9 +25,14 @@ describe("usePagedFeedNav", () => {
   it("goToPage sur la page suivante jamais chargée : UN SEUL fetchNextPage, page affichée une fois chargée", async () => {
     // `fetchedPages` grandit APRÈS résolution du fetch (comme `data.pages.length` en vrai, une fois
     // React Query re-rendu) : sans ce rerender, le clamp de sûreté ramènerait `pageIndex` en arrière —
-    // ce test échoue si on le retire (vérifié en échec avant ce correctif de test).
+    // ce test échoue si on le retire (vérifié en échec avant ce correctif de test). Le mock résout
+    // `{ data: { pages } }`, la forme réelle d'un `InfiniteQueryObserverResult` — c'est ce que
+    // `goToPage` inspecte désormais pour savoir si la page a VRAIMENT été chargée (cf. test suivant).
     let fetchedPages = 2;
-    const fetchNextPage = vi.fn().mockImplementation(async () => { fetchedPages = 3; });
+    const fetchNextPage = vi.fn().mockImplementation(async () => {
+      fetchedPages = 3;
+      return { data: { pages: Array(fetchedPages) } };
+    });
     const { result, rerender } = renderHook(
       (props: { fetchedPages: number }) =>
         usePagedFeedNav({ ...props, hasNextPage: true, isFetchingNextPage: false, fetchNextPage, resetSignal: "a" }),
@@ -40,6 +45,32 @@ describe("usePagedFeedNav", () => {
     rerender({ fetchedPages });
     expect(fetchNextPage).toHaveBeenCalledTimes(1);
     expect(result.current.pageIndex).toBe(2);
+  });
+
+  it("goToPage sur la page suivante : fetchNextPage en échec (réseau) ne fige pas la navigation", async () => {
+    // React Query RÉSOUT (ne rejette pas) un fetchNextPage en échec — `data.pages` ne grandit pas.
+    // Sans la vérification `pages.length > index`, `pageIndex` avancerait quand même sur une page
+    // jamais chargée : le clamp de sûreté masquerait l'anomalie (page affichée inchangée), mais
+    // `goToPage` sortirait ensuite immédiatement sur `index === pageIndex` — « Suivant » resterait
+    // figé pour toujours, sans le moindre toast. Vérifié en échec avant ce correctif (pageIndex
+    // valait 2 après l'échec, un 2ᵉ `goToPage(2)` ne redéclenchait plus aucun fetch).
+    const fetchedPages = 2;
+    const fetchNextPage = vi.fn().mockResolvedValue({ data: { pages: Array(fetchedPages) } });
+    const { result } = renderHook(() =>
+      usePagedFeedNav({ fetchedPages, hasNextPage: true, isFetchingNextPage: false, fetchNextPage, resetSignal: "a" }),
+    );
+    await act(async () => {
+      result.current.goToPage(2);
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(result.current.pageIndex).toBe(0);
+
+    // La navigation n'est pas figée : un second essai retente bien un fetch.
+    await act(async () => {
+      result.current.goToPage(2);
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(fetchNextPage).toHaveBeenCalledTimes(2);
   });
 
   it("goToPage au-delà de la page suivante immédiate : aucun fetch, aucun changement (jamais de saut)", () => {
