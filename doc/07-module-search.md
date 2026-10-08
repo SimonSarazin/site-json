@@ -334,7 +334,7 @@ Le rendu vit dans `observatoire/components/ObservatoryPanel.tsx`, monté en `laz
 
 **Sélection et drill-down** — `observatory.select` (`titleDimension` + `dimensions`, mêmes règles que `list.selectDimensions` de la section `data-observatory`) : le clic sur une carte RESTREINT le tableau de bord à sa famille, et `SearchListView` ajoute alors sur chaque carte un bouton « Fiche » qui, lui, ouvre le détail — sans quoi la fiche deviendrait inaccessible. `observatory.drilldown` fait de même depuis une part ou une barre de graphe. Chaque raffinement actif est rappelé par une puce retirable au-dessus des deux colonnes : sans elle, un filtre posé d'un clic serait invisible. Sans `select`, rien ne change — le clic ouvre la fiche, et pas de bouton. **Limite :** la sélection au clic ne vaut qu'en vue grille et pour les cartes qui rendent ce bouton (`lib/cardSheetButton.ts`, aujourd'hui `poi-amenities`) ; avec un autre variant ou une vue groupée/détaillée/timeline, le clic garde l'ouverture de la fiche.
 
-**Qui commande la hauteur** : les GRAPHES. Ils se déroulent entièrement, sans scroll propre — on doit pouvoir tous les lire d'une traite. C'est la LISTE qui s'adapte : colonne `relative` + contenu en `absolute inset-0 overflow-y-auto`. Mécanique non devinable mais nécessaire : un enfant flex simplement étiré grandit avec son contenu et `overflow-y` n'y fait rien ; l'absolu lui donne une hauteur DÉFINIE, celle de sa colonne. Même mécanique que le split de la page observatoire. Le split CARTE, lui, garde `h-[78vh]` sur ses deux colonnes : la carte Leaflet a besoin d'une hauteur définie pour cadrer son `fitBounds`.
+**Qui commande la hauteur** : les GRAPHES. Ils se déroulent entièrement, sans scroll propre — on doit pouvoir tous les lire d'une traite. C'est la LISTE qui s'adapte : colonne `relative` + contenu en `absolute inset-0 overflow-y-auto`. Mécanique non devinable mais nécessaire : un enfant flex simplement étiré grandit avec son contenu et `overflow-y` n'y fait rien ; l'absolu lui donne une hauteur DÉFINIE, celle de sa colonne. Même mécanique que le split de la page observatoire. Le split CARTE, lui, garde une hauteur EXPLICITE sur ses deux colonnes — l'écran visible sous la barre de navigation (cf. [§SearchMap et vue carte](#searchmap-et-vue-carte)) : la carte a besoin d'une hauteur définie pour cadrer son `fitBounds`.
 
 **Bascules depuis une vue plein panneau** (`panelViewSwitch`) : avec un `customHeader`, l'en-tête de la section — et donc les boutons de vue — n'est rendu QUE dans la vue liste. Carte et observatoire portent donc leurs propres sorties : vers l'autre vue plein panneau, et vers la liste. Seule exception, le split CANONIQUE (`defaultViewMode: "split"`) n'offre pas de sortie liste — il n'y a pas de « retour » à proposer.
 
@@ -578,6 +578,9 @@ jointure sur le lieu porteur + garde région + éclatement, pour quoi
 | `scope.addressLevel1` | string | Garde géo : ne garde que les ressources dont le **lieu porteur** est dans cette zone (`address.level1`). Passé dans `defaultFilters["address.level1"]` → l'endpoint `getsressourcetl` **filtre côté serveur** (il retire la clé du payload puis post-filtre sur le lieu porteur). Scroll infini natif conservé |
 | `costumSlug` / `contextId` / `contextType` | string | Périmètre costum (comme le payload legacy) |
 | `columns` | `{ sm?, md?, lg?, xl? }` | Grille de résultats (déf. `1/2/3`) |
+| `customHeader` | `{ title?, linkText?, linkHref? }` | En-tête : titre à gauche et bouton de lien vers la page complète à droite |
+| `limit` | entier ≥ 1 | Nombre maximal de cartes affichées ; borne aussi la requête initiale et désactive le scroll infini. La limite s'applique après l'éclatement des salles |
+| `showFilters` | boolean (défaut `true`) | `false` masque les facettes type/prix et désactive le filtre par lieu porteur piloté depuis les cartes |
 
 Le filtre Mongo FIXE (`buildResourceDirectoryFilters`) émet `form.$in` + un `$or`
 en **forme MAP** (`{ "answers.<step>.finder…": { "$exists": true }, … }`) — **pas
@@ -1805,6 +1808,26 @@ posés en DOM ; `fitBounds` ne joue qu'à la 1ʳᵉ page d'un périmètre (carte
 contrôlée : `initialViewState` + ref) — le viewport de l'utilisateur est
 préservé pendant le chargement. `MapProgress` affiche la progression « X / Y »
 et l'alerte de plafond.
+
+**Ouverture de la vue carte dans `searchProStatic`** (carte seule ET split) :
+tout CLIC qui ouvre la carte — « Carte » / « Liste + carte » des deux en-têtes,
+bascule depuis l'observatoire — passe par `openMapView`, qui fait défiler la
+page (`window.scrollTo`, smooth) pour caler le haut de la vue sous la barre de
+navigation. Jamais au chargement : une page qui démarre sur la carte garde son
+en-tête visible. La vue mesure l'écran VISIBLE sous la barre —
+`calc(100dvh - var(--map-top))`, repli `vh` (`MAP_VIEW_HEIGHT` ;
+`SPLIT_COLUMN_HEIGHT` retranche en plus le `py-4` du split) — donc, une fois
+calée, elle occupe tout l'écran sans être coupée en bas. `--map-top` (posé sur
+la racine de la section) = `headerStickyOffsetPx(config.header)`
+(`components/layout/header/headerOffset.ts`, tenu en phase avec le JSX des
+headers par `tests/preflight/header-offset.test.ts`), 0 si la barre défile
+avec la page ou si la page a `hideHeader`. Deux contraintes non devinables :
+la boîte n'est PAS `flex-1` (dans la colonne flex sans hauteur de la section,
+une base de 0 % ferait ignorer sa hauteur et la carte, en absolu, s'effondrerait) ;
+et `SearchMapWrapper` (lazy) est entouré d'un `Suspense` LOCAL dont le squelette
+occupe la même boîte — sans lui, la frontière de la SECTION prend le relais au
+1er affichage, la page raccourcit et le défilement perd sa cible. Hors de
+`searchProStatic` (agenda, ampli, `searchPro`), rien ne change.
 
 **Options `map` de la section** (`MapConfSchema`) :
 `map.itemAction: {kind: "profil"|"preview"}` — action du bouton de la popup
