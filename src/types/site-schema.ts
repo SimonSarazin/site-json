@@ -534,10 +534,11 @@ export const ActionTilesSchema = z.object({
     /** Largeur de la grille : `default` (1024 px max) ou `wide` (1280 px max), pour 4 tuiles et plus en `lg`. */
     width: z.enum(["default", "wide"]).optional(),
     /**
-     * Rendu du titre : `plain` (défaut, titre centré), `badge` — la pastille inclinée d'`articleTeaser`
-     * et de `map-bubbles` — ou `pill`, la même en arrondi droit. Les deux se calent à gauche, pour une
-     * page dont toutes les bandes portent le même repère. `accentColor` (couleur CSS) les teinte ; sans
-     * elle, la pastille prend le ton `secondary`.
+     * Rendu du titre : `plain` (défaut, titre nu, centré) ; `badge` — la pastille inclinée
+     * d'`articleTeaser` et de `map-bubbles` — `pill`, la même en arrondi droit, ou `text` — sans fond ni
+     * rotation, juste le texte, plus grand (`accentColor` en devient la couleur du texte au lieu de
+     * teinter un fond). `badge`/`pill`/`text` partagent le MÊME repère que les autres bandes de la page
+     * (`sectionBadgeClass`) ; sans `accentColor`, `badge`/`pill` prennent le ton `secondary`.
      */
     headlineStyle: z.enum(["plain", "badge", "pill", "text"]).optional(),
     /**

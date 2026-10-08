@@ -95,7 +95,11 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
         eco: { button: "bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/30 hover:border-emerald-500/50", icon: "text-emerald-500" },
     };
 
-    const enPastille = props.headlineStyle === "badge" || props.headlineStyle === "pill";
+    // `undefined`/`"plain"` → titre nu (JSDoc du schéma) ; `"badge"`/`"pill"`/`"text"` → pastille
+    // (`sectionBadgeClass`/`sectionHeadlineStyle` savent déjà rendre les 3, cf. map-bubbles et
+    // featured-carousel qui ne font PAS cette distinction) — gouverne aussi `pillRow` ci-dessous,
+    // pour que son défaut (sans `headlineStyle`) soit vraiment nu, pas une pastille inclinée.
+    const enPastille = props.headlineStyle === "badge" || props.headlineStyle === "pill" || props.headlineStyle === "text";
     const classePastille = sectionBadgeClass(props.headlineStyle);
     const enLigne = props.tileLayout === "inline";
     const tileSize = tileSizeClasses(props.size, props.density === "compact");
@@ -143,13 +147,21 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
                                     PAS la police du menu : le titre garde le même repère manuscrit que
                                     « Territoires »/« À la une », à côté d'actions qui, elles, restent en
                                     police du thème. */}
-                                <Badge
-                                    variant={props.accentColor ? undefined : "secondary"}
-                                    style={sectionHeadlineStyle(props.headlineStyle, props.accentColor, undefined)}
-                                    className={classePastille}
-                                >
-                                    {t(props.headline)}
-                                </Badge>
+                                {enPastille ? (
+                                    <Badge
+                                        variant={props.accentColor ? undefined : "secondary"}
+                                        style={sectionHeadlineStyle(props.headlineStyle, props.accentColor, undefined)}
+                                        className={classePastille}
+                                    >
+                                        {t(props.headline)}
+                                    </Badge>
+                                ) : (
+                                    // Même rendu « nu » que centered/inline sans headlineStyle — pas de
+                                    // pastille par défaut (cf. JSDoc du schéma, `plain` = titre nu).
+                                    <span className="text-3xl md:text-4xl font-bold text-foreground">
+                                        {t(props.headline)}
+                                    </span>
+                                )}
                             </h2>
                         )}
                         {props.actions.map((action, index) => {
