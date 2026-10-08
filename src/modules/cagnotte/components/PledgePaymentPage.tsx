@@ -4,13 +4,10 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
     CreditCard,
     ArrowLeft,
     ExternalLink,
-    Info,
     ChevronDown,
 } from "lucide-react";
 import { showErrorToast, showSuccessToast } from "@/lib/toastUtils";
@@ -18,25 +15,26 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { formatNumber } from "@/modules/cagnotte/utils/format";
-import type { UnknownRecord } from "@/modules/cagnotte/utils/dataTransform";
-import { availablePaymentChoices, type PaymentChoice } from "@/modules/cagnotte/utils/paymentMethods";
-import { readFundingEnvelopeResponse } from "@/modules/cagnotte/services/fundingEnvelopeResponse";
-import { getStripePublicKey } from "@/modules/cagnotte/services/stripeService";
+import { availablePaymentChoices } from "@/modules/cagnotte/utils/paymentMethods";
 import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope";
+import { useFundingEnvelopeAction } from "@/modules/cagnotte/hooks/useFundingEnvelopeAction";
+import { useHelloAssoCheckout } from "@/modules/cagnotte/hooks/useHelloAssoCheckout";
+import { usePaymentChoice } from "@/modules/cagnotte/hooks/usePaymentChoice";
+import { readSettlement, usePaymentSettlement } from "@/modules/cagnotte/hooks/usePaymentSettlement";
 import {
-    useHelloAssoCheckout,
-    type HelloAssoAction,
-    type HelloAssoPayment,
-} from "@/modules/cagnotte/hooks/useHelloAssoCheckout";
-import {
+    ligneReglement,
     montantARegler,
     promessesReglables,
-    useSaveCagnotteContribution,
+    totalARegler,
 } from "@/modules/cagnotte/hooks/useSaveCagnotteContribution";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { useQueryClient } from "@tanstack/react-query";
 import { launchConfettiBurst } from "@/lib/confetti";
 import StripePaymentForm from "./StripePaymentForm";
+import { PaymentMethodPicker } from "./parts/PaymentMethodPicker";
+import { HelloAssoWaitingScreen } from "./parts/HelloAssoWaitingScreen";
+import { PaymentRecordingScreen } from "./parts/PaymentRecordingScreen";
+import { HelloAssoInfo } from "./parts/HelloAssoInfo";
 import { Pledge } from "@/modules/cagnotte/types";
 import PaymentReceivedScreen from "@/modules/cagnotte/components/PaymentReceivedScreen.tsx";
 
@@ -48,35 +46,25 @@ interface PledgePaymentPageProps {
     onPaymentSuccess?: (paymentData: Record<string, unknown>) => void;
 }
 
-interface PaymentDataPayload extends Record<string, unknown> {
-    method?: string;
-    transactionId?: string;
-}
-
-type PaymentMethod = PaymentChoice | null;
-
-function normalizeFundingContextType(type: string | undefined): string {
-    const lowered = (type || "").toLowerCase();
-    if (lowered.includes("organization")) return "organizations";
-    if (lowered.includes("project")) return "projects";
-    if (lowered.includes("citoyen") || lowered.includes("user")) return "citoyens";
-    return lowered;
-}
+/** Règlement figé au lancement du paiement, affiché une fois enregistré. */
+type PaidSummary = { amount: number; count: number; method: "stripe" | "helloasso" };
 
 export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSaved, onPaymentSuccess }: PledgePaymentPageProps) {
     const navigate = useNavigate();
-    const { entity, me, api, contextId, contextType } = useCocolight();
+    const { me } = useCocolight();
     const queryClient = useQueryClient();
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
     /** Montant et nombre de promesses réglés, affichés une fois le paiement enregistré. */
-    const [paidSummary, setPaidSummary] = useState<{ amount: number; count: number } | null>(null);
+    const [paidSummary, setPaidSummary] = useState<PaidSummary | null>(null);
     const [isPledgesExpanded, setIsPledgesExpanded] = useState(false);
+    const [isChargingStripe, setIsChargingStripe] = useState(false);
     useLoadNamespace("modules/cagnotte");
     const t = useT("modules/cagnotte");
     const fundingEnvelopeQuery = useFundingEnvelope();
     const fundingPaymentMethods = fundingEnvelopeQuery.data?.paymentMethods ?? fundingEnvelopeQuery.data?.selectedProject?.paymentMethods ?? null;
+    const submit = useFundingEnvelopeAction();
 
-    const stripePublicKey = fundingPaymentMethods?.stripePublicKey || getStripePublicKey();
+    // Clé publique de l'entité : même compte Stripe que le débit serveur.
+    const stripePublicKey = fundingPaymentMethods?.stripePublicKey || "";
     const stripePromise = useMemo(
         () => (stripePublicKey ? loadStripe(stripePublicKey) : null),
         [stripePublicKey]
@@ -84,22 +72,11 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
 
     // Seuls les moyens configurés pour l'entité sont proposés.
     const isLoadingPaymentMethods = fundingEnvelopeQuery.isLoading;
-    const paymentChoices = availablePaymentChoices(fundingPaymentMethods, { stripePublicKey });
+    const paymentChoices = isLoadingPaymentMethods ? [] : availablePaymentChoices(fundingPaymentMethods, { stripePublicKey });
+    const [paymentMethod, setPaymentMethod] = usePaymentChoice(paymentChoices);
 
-    // Désélectionne un moyen retiré, choisit d'office un moyen unique.
-    if (!isLoadingPaymentMethods) {
-        if (paymentMethod && !paymentChoices.includes(paymentMethod)) {
-            setPaymentMethod(null);
-        } else if (!paymentMethod && paymentChoices.length === 1) {
-            setPaymentMethod(paymentChoices[0]);
-        }
-    }
-
-    // Montant facturé : solde des promesses réglables, comme dans `payContribution`.
     const payablePledges = useMemo(() => promessesReglables(pledges), [pledges]);
-    const amount = payablePledges.reduce((sum, p) => sum + montantARegler(p), 0);
-
-    const { payContribution } = useSaveCagnotteContribution();
+    const amount = totalARegler(payablePledges);
 
     const refreshAfterContributionSave = useCallback(async () => {
         await Promise.allSettled([
@@ -130,68 +107,33 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
         }
     }, [navigate, onClose, t]);
 
-    const submitFundingEnvelopeAction = useCallback(async (
-        action: "stripePay" | HelloAssoAction,
-        payload: Record<string, unknown>
-    ): Promise<UnknownRecord> => {
-        if (!entity || typeof entity.fundingEnvelope !== "function") {
-            throw new Error(String(t("PaymentConfigPage.errors.fundingEnvelopeUnavailable")));
-        }
-
-        const effectiveContextId = contextId || entity.id;
-        const effectiveContextType = normalizeFundingContextType(contextType || entity.getEntityType?.()) || "projects" ;
-
-        if (!effectiveContextId) {
-            throw new Error(String(t("PaymentConfigPage.errors.noContextId")));
-        }
-
-        const rawResponse = await entity.fundingEnvelope({
-            contextId: effectiveContextId,
-            contextType: effectiveContextType,
-            action,
-            ...payload,
-        } as Parameters<typeof entity.fundingEnvelope>[0]);
-
-        return readFundingEnvelopeResponse(rawResponse, String(t("PaymentConfigPage.errors.paymentRejected")));
-    }, [entity, contextId, contextType, t]);
-
-    const completePayment = useCallback(async (
-        paymentData: PaymentDataPayload,
-        paidPledges: Pledge[],
-    ) => {
-        try {
-            if (!api) throw new Error(String(t("PaymentConfigPage.errors.noApiClient")));
-            const { method, transactionId } = paymentData;
-            const saved = await payContribution(paidPledges, method, transactionId);
-            if (!saved) throw new Error(String(t("PaymentConfigPage.errors.saveFailed")));
-            setPaidSummary({
-                amount: paidPledges.reduce((sum, p) => sum + montantARegler(p), 0),
-                count: paidPledges.length,
-            });
-            if(onPaymentSuccess) {
-                onPaymentSuccess(paymentData);
-            }
+    // Issue de l'enregistrement serveur d'un paiement encaissé.
+    const settlement = usePaymentSettlement<PaidSummary>({
+        submit,
+        onRecorded: (summary, { reference }) => {
+            setPaidSummary(summary);
+            onPaymentSuccess?.({ method: summary.method, amount: summary.amount, transactionId: reference ?? undefined });
             launchConfettiBurst({ originY: 0.34, spread: 84, count: 40 });
-        } catch (error) {
-            console.error('Erreur completePayment:', error);
-            showErrorToast(error, "PaymentConfigPage.toasts.paymentAcceptedIncomplete.title", t);
-        } finally {
-            await refreshAfterContributionSave();
-        }
-    }, [api, onPaymentSuccess, payContribution, t, refreshAfterContributionSave]);
+            void refreshAfterContributionSave();
+        },
+    });
 
-    // Règle les promesses figées au clic, une fois le paiement HelloAsso confirmé.
-    const handleHelloAssoPaid = ({ checkoutIntentId, orderId }: HelloAssoPayment, paidPledges: Pledge[]) => {
-        void completePayment({ method: "helloasso", transactionId: orderId ?? checkoutIntentId }, paidPledges);
-    };
-
-    const helloAsso = useHelloAssoCheckout<Pledge[]>({ submit: submitFundingEnvelopeAction, onPaid: handleHelloAssoPaid });
+    const helloAsso = useHelloAssoCheckout<PaidSummary>({ submit, onSettled: settlement.settled });
+    const busy = helloAsso.phase !== "idle" || isChargingStripe;
 
     const isFormComplete = Boolean(paymentMethod) && amount > 0;
 
+    /** Commande envoyée au serveur : une ligne par promesse réglée. */
+    const buildOrder = () => ({ pledges: payablePledges.map(ligneReglement) });
+    const summaryOf = (method: PaidSummary["method"]): PaidSummary => ({ amount, count: payablePledges.length, method });
+
+    // Le serveur débite puis enregistre la commande dans la même requête.
     const handleStripePaymentSuccess = async (stripeData: Record<string, unknown>) => {
+        const order = buildOrder();
+        const summary = summaryOf("stripe");
+        setIsChargingStripe(true);
         try {
-            await submitFundingEnvelopeAction("stripePay", {
+            const response = await submit("stripePay", {
                 amount,
                 payment_method_id: String(
                     stripeData.stripePaymentMethodId ||
@@ -200,23 +142,21 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
                     ""
                 ),
                 email: me?.serverData?.email,
+                order,
             });
-
-            const finalPayload = {
-                method: "stripe",
-                transactionId: String(stripeData.transactionId || `stripe_${Date.now()}`)
-            };
-            completePayment(finalPayload, payablePledges);
+            settlement.settled(readSettlement(response), summary);
         } catch (error) {
             console.error("Erreur financement Stripe via fundingEnvelope:", error);
             showErrorToast(error, "PaymentConfigPage.toasts.stripeError.title", t);
+        } finally {
+            setIsChargingStripe(false);
         }
     };
 
     // Synchrone jusqu'à `start` : la popup doit s'ouvrir pendant le clic.
     const handleHelloAssoPayment = () => {
-        if (!isFormComplete) return;
-        void helloAsso.start(amount, payablePledges);
+        if (!isFormComplete || busy) return;
+        void helloAsso.start(amount, buildOrder(), summaryOf("helloasso"));
     };
 
     if (paidSummary) {
@@ -230,20 +170,28 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
         );
     }
 
-    if (helloAsso.phase === "waiting") {
+    if (settlement.status === "failed" && settlement.settlement) {
         return (
-            <div className="py-10 text-center space-y-4 animate-fade-in flex-1 overflow-y-auto">
-                <div className="w-20 h-20 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
-                    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                </div>
-                <h3 className="text-2xl font-bold text-foreground">{t("PaymentConfigPage.waiting.title")}</h3>
-                <p className="text-muted-foreground">{t("PaymentConfigPage.waiting.subtitle")}</p>
-                <p className="text-xs text-muted-foreground">{t("PaymentConfigPage.waiting.hint")}</p>
-                {helloAsso.lastError && (
-                    <p className="text-xs text-destructive">{helloAsso.lastError}</p>
-                )}
-                <Button onClick={helloAsso.cancel} variant="outline">{t("PaymentConfigPage.waiting.cancel")}</Button>
-            </div>
+            <PaymentRecordingScreen
+                className="flex-1 overflow-y-auto"
+                reference={settlement.settlement.reference}
+                error={settlement.settlement.error}
+                inProgress={settlement.settlement.inProgress}
+                retrying={settlement.retrying}
+                onRetry={() => void settlement.retry()}
+                onClose={onClose}
+            />
+        );
+    }
+
+    if (helloAsso.phase === "waiting" || helloAsso.phase === "checking") {
+        return (
+            <HelloAssoWaitingScreen
+                className="flex-1 overflow-y-auto"
+                checking={helloAsso.phase === "checking"}
+                lastError={helloAsso.lastError}
+                onCancel={helloAsso.cancel}
+            />
         );
     }
 
@@ -251,7 +199,7 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
         <div className="space-y-6 p-6 flex-1 overflow-y-auto h-full w-full">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-foreground">{t("PaymentConfigPage.title")}</h2>
-                <Button onClick={onBack} variant="ghost" size="icon" aria-label={String(t("a11y.back"))} disabled={helloAsso.phase !== "idle"}>
+                <Button onClick={onBack} variant="ghost" size="icon" aria-label={String(t("a11y.back"))} disabled={busy}>
                     <ArrowLeft className="w-5 h-5" />
                 </Button>
             </div>
@@ -275,13 +223,13 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
                             <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
                                 {payablePledges.length} {String(t("Pledges.payform.selectedPledge", undefined, { count: payablePledges.length }))}
                             </span>
-                            <ChevronDown 
+                            <ChevronDown
                                 className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${
                                     isPledgesExpanded ? "rotate-180" : ""
-                                }`} 
+                                }`}
                             />
                         </button>
-                        
+
                         <div
                             className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
                                 isPledgesExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
@@ -308,70 +256,13 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
                 )}
             </div>
 
-            <div className="space-y-3">
-                <p className="text-sm font-medium text-foreground">{t("PaymentConfigPage.paymentMethodLabel")}</p>
-
-                {isLoadingPaymentMethods ? (
-                    <div
-                        className="grid grid-cols-1 sm:grid-cols-2 gap-3"
-                        role="status"
-                        aria-label={String(t("PaymentConfigPage.paymentMethodsLoading"))}
-                    >
-                        <Skeleton className="h-16 rounded-lg" />
-                        <Skeleton className="h-16 rounded-lg" />
-                    </div>
-                ) : paymentChoices.length === 0 ? (
-                    <p className="text-sm text-muted-foreground p-4 bg-muted/30 rounded-lg border border-border/50">
-                        {t("PaymentConfigPage.noPaymentMethod")}
-                    </p>
-                ) : (
-                    <ToggleGroup
-                        type="single"
-                        value={paymentMethod ?? ""}
-                        onValueChange={(value) => {
-                            const choice = paymentChoices.find((c) => c === value);
-                            if (choice) setPaymentMethod(choice);
-                        }}
-                        className="grid grid-cols-1 sm:grid-cols-2 gap-3"
-                    >
-                        {paymentChoices.includes("stripe") && (
-                            <ToggleGroupItem
-                                value="stripe"
-                                aria-label={String(t("PaymentConfigPage.stripe.title"))}
-                                className="p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50"
-                            >
-                                <div className="flex items-start gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-info/20 flex items-center justify-center shrink-0">
-                                        <CreditCard className="w-5 h-5 text-info" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-semibold text-sm">{t("PaymentConfigPage.stripe.title")}</p>
-                                        <p className="text-xs text-muted-foreground">{t("PaymentConfigPage.stripe.description")}</p>
-                                    </div>
-                                </div>
-                            </ToggleGroupItem>
-                        )}
-
-                        {paymentChoices.includes("helloasso") && (
-                            <ToggleGroupItem
-                                value="helloasso"
-                                aria-label={String(t("PaymentConfigPage.helloasso.title"))}
-                                className="p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50"
-                            >
-                                <div className="flex items-start gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center shrink-0">
-                                        <ExternalLink className="w-5 h-5 text-success" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-semibold text-sm">{t("PaymentConfigPage.helloasso.title")}</p>
-                                        <p className="text-xs text-muted-foreground">{t("PaymentConfigPage.helloasso.description")}</p>
-                                    </div>
-                                </div>
-                            </ToggleGroupItem>
-                        )}
-                    </ToggleGroup>
-                )}
-            </div>
+            <PaymentMethodPicker
+                choices={paymentChoices}
+                value={paymentMethod}
+                onChange={setPaymentMethod}
+                isLoading={isLoadingPaymentMethods}
+                disabled={busy}
+            />
 
             <div className="space-y-3 pt-4 border-t border-border/50 pb-8">
                 {paymentMethod === "stripe" && isFormComplete && (
@@ -390,7 +281,7 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
                 {paymentMethod === "helloasso" && (
                     <Button
                         onClick={handleHelloAssoPayment}
-                        disabled={!isFormComplete || helloAsso.phase !== "idle"}
+                        disabled={!isFormComplete || busy}
                         size="lg"
                         className="w-full h-12 bg-success hover:bg-success/90 text-success-foreground"
                     >
@@ -409,18 +300,7 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
                 )}
             </div>
 
-            {paymentMethod === "helloasso" && (
-                <div className="text-xs text-muted-foreground space-y-2 p-3 bg-muted/30 rounded-md border border-border/50 mb-8">
-                    <p className="font-semibold flex items-center gap-2"><Info className="w-3.5 h-3.5" />{t("PaymentConfigPage.helloasso.info.title")}</p>
-                    <ul className="space-y-1 ml-3 list-disc">
-                        <li>{t("PaymentConfigPage.helloasso.info.li1")}</li>
-                        <li>{t("PaymentConfigPage.helloasso.info.li2")}</li>
-                        <li>{t("PaymentConfigPage.helloasso.info.li3")}</li>
-                        <li>{t("PaymentConfigPage.helloasso.info.li4")}</li>
-                        <li>{t("PaymentConfigPage.helloasso.info.li5")}</li>
-                    </ul>
-                </div>
-            )}
+            {paymentMethod === "helloasso" && <HelloAssoInfo className="mb-8" />}
         </div>
     );
 };

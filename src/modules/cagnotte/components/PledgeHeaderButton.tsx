@@ -9,7 +9,7 @@ import { useUserAdminOrganizations } from "@/modules/cagnotte/hooks/useUserAdmin
 import { useSite } from "@/hooks/useSite";
 import { Pledge } from "@/modules/cagnotte/types";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
-import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
+import { totalARegler } from "@/modules/cagnotte/hooks/useSaveCagnotteContribution";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -50,10 +50,8 @@ export function PledgeHeaderButton() {
     // calcule du tableau complet des promesses (pour la modale)
     const computedPledges = useMemo<Pledge[]>(() => computePledgesFromResources(resources, me?.serverData?.id, orgsIds) , [resources, me?.serverData?.id, orgsIds]);
 
-    // calcule la somme totale des promesses pour le bouton
-    const totalPledgesAmount = useMemo<number>(() => {
-        return computedPledges.reduce((sum, pledge) => sum + toSafeInt(pledge.fundingAmount), 0);
-    }, [computedPledges]);
+    // Total à régler, affiché sur le bouton.
+    const totalPledgesAmount = useMemo(() => totalARegler(computedPledges), [computedPledges]);
 
     if (!me?.id || totalPledgesAmount === 0) return null;
     

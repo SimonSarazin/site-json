@@ -79,7 +79,9 @@ versement, jamais par la position dans `financer[]`, qu'une insertion concurrent
 
 **Ne jamais écrire ce bloc côté client** : `finkey`, `invoiceId` et les agrégats sont générés
 par `Aap::addFinancerEngagement` / `payFinancerEngagement` / `recomputeFinancerPayment`. Le
-front passe par `/co2/aap/coremuoperation/`. **En lecture**, tout passe par
+front passe par `/co2/aap/coremuoperation/` ; les versements Stripe et HelloAsso, eux, sont écrits
+par le serveur après vérification du paiement (`fundingEnvelope`, cf.
+[Module Cagnotte](18-module-cagnotte.md#services-de-paiement)). **En lecture**, tout passe par
 [`readFinancerPaymentState`](../src/modules/cagnotte/utils/financerPayment.ts) — une seule
 fonction, qui gère les trois formes en base (canonique, engagement neuf `{logs:[]}`, et legacy
 sans `payment`) et traduit `payed` → `paid` pour l'affichage. Aucune migration n'étant prévue,

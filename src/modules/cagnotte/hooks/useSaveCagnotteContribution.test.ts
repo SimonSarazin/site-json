@@ -5,8 +5,7 @@ import { renderHook } from "@testing-library/react";
 /**
  * Ce qui est verrouillé ici :
  *  - une promesse s'arrête à `addFinancer` — pas de versement fantôme ;
- *  - un paiement encaissé chaîne `addFinancer` puis `payFinancer`, ciblé par la `finkey`
- *    rendue par le serveur, jamais par une position ;
+ *  - un règlement de promesse vise la ligne par sa `finkey`, la position n'étant qu'un repli ;
  *  - un échec ne rapporte jamais un succès ;
  *  - `saveCoformAnswer` n'est jamais appelé : ce chemin réécrit `answers` en entier.
  */
@@ -29,7 +28,13 @@ vi.mock("@/lib/toastUtils", () => ({
   showErrorToast: toasts.error,
 }));
 
-import { montantARegler, promessesReglables, useSaveCagnotteContribution } from "./useSaveCagnotteContribution";
+import {
+  ligneReglement,
+  montantARegler,
+  promessesReglables,
+  totalARegler,
+  useSaveCagnotteContribution,
+} from "./useSaveCagnotteContribution";
 
 const FINKEY = "a-w171hEa1bvz9";
 const FINANCER = { id: "u1", name: "Alice", type: "citoyens" };
@@ -116,59 +121,6 @@ describe("saveContribution — promesse (sans moyen de paiement)", () => {
   });
 });
 
-describe("saveContribution — paiement encaissé", () => {
-  it("chaîne `addFinancer` puis `payFinancer`, ciblé par la finkey retournée", async () => {
-    const { saveContribution, espions } = monter();
-
-    await saveContribution(
-      "ans1",
-      [{ depenseIndex: 0, amount: 500, milestoneId: "m1" }],
-      FINANCER,
-      "stripe",
-      "pi_3Qx",
-    );
-
-    expect(espions.payFinancer).toHaveBeenCalledWith({
-      depenseKey: "0",
-      financerId: "u1",
-      // La finkey vient du serveur : c'est le seul ciblage stable.
-      finkey: FINKEY,
-      amount: 500,
-      paymentType: "stripe",
-      transactionId: "pi_3Qx",
-    });
-  });
-
-  it("traite HelloAsso comme Stripe", async () => {
-    const { saveContribution, espions } = monter();
-
-    await saveContribution("ans1", [{ depenseIndex: 0, amount: 100, milestoneId: "m1" }], FINANCER, "helloasso");
-
-    expect(espions.payFinancer).toHaveBeenCalledTimes(1);
-    expect(espions.payFinancer.mock.calls[0][0]).toMatchObject({ paymentType: "helloasso" });
-  });
-
-  it("ne rapporte PAS un succès quand le versement échoue après l'engagement", async () => {
-    // Le cas dangereux : carte débitée, promesse posée, versement non journalisé.
-    // Annoncer « enregistré » ici ferait disparaître l'anomalie.
-    const { saveContribution, espions } = monter({
-      payFinancer: vi.fn(async () => { throw new Error("réseau"); }),
-    });
-
-    const ok = await saveContribution(
-      "ans1",
-      [{ depenseIndex: 0, amount: 500, milestoneId: "m1" }],
-      FINANCER,
-      "stripe",
-    );
-
-    expect(ok).toBe(false);
-    expect(espions.addFinancer).toHaveBeenCalledTimes(1);
-    expect(toasts.error).toHaveBeenCalled();
-    expect(toasts.success).not.toHaveBeenCalled();
-  });
-});
-
 describe("saveContribution — échecs", () => {
   it("rend `false` quand toutes les dépenses échouent", async () => {
     const { saveContribution } = monter({
@@ -223,7 +175,7 @@ describe("saveContribution — échecs", () => {
   });
 });
 
-describe("payContribution — règlement des promesses", () => {
+describe("règlement des promesses — lignes de commande", () => {
   const pledge = (over: Record<string, unknown> = {}) => ({
     id: "p1",
     financerId: "u1",
@@ -237,65 +189,24 @@ describe("payContribution — règlement des promesses", () => {
     ...over,
   }) as never;
 
-  it("verse le reste RÉELLEMENT dû, pas le montant engagé", async () => {
+  it("règle le reste RÉELLEMENT dû, sur la ligne visée par sa finkey", () => {
     // Une promesse de 1000 dont 400 sont déjà validés ne doit être réglée que de 600.
-    const { payContribution, espions } = monter();
-
-    await payContribution([pledge({ finkey: FINKEY, depenseKey: "0", remainingAmount: 600 })], "stripe", "pi_1");
-
-    expect(espions.payFinancer).toHaveBeenCalledWith({
+    expect(ligneReglement(pledge({ finkey: FINKEY, depenseKey: "0", remainingAmount: 600 }))).toEqual({
+      answerId: "ans1",
       depenseKey: "0",
       financerId: "u1",
       finkey: FINKEY,
       finIndex: undefined,
       amount: 600,
-      paymentType: "stripe",
-      transactionId: "pi_1",
     });
   });
 
-  it("retombe sur le montant engagé quand le solde n'est pas connu", async () => {
-    const { payContribution, espions } = monter();
-
-    await payContribution([pledge({ finkey: FINKEY, depenseKey: "0" })]);
-
-    expect(espions.payFinancer.mock.calls[0][0]).toMatchObject({ amount: 1000, paymentType: "manual" });
-  });
-
-  it("n'utilise la position qu'à défaut de finkey (promesses antérieures)", async () => {
-    const { payContribution, espions } = monter();
-
-    await payContribution([pledge({ fundingIndex: 2, remainingAmount: 100 })]);
-
-    expect(espions.payFinancer.mock.calls[0][0]).toMatchObject({ finkey: undefined, finIndex: 2 });
-  });
-
-  it("ne charge qu'une seule Answer par ressource", async () => {
-    const { payContribution } = monter();
-
-    await payContribution([
-      pledge({ id: "p1", finkey: "a-1", depenseKey: "0", remainingAmount: 10 }),
-      pledge({ id: "p2", finkey: "a-2", depenseKey: "1", remainingAmount: 20 }),
-    ]);
-
-    expect((mocks.api as { answer: ReturnType<typeof vi.fn> }).answer).toHaveBeenCalledTimes(1);
-  });
-
-  it("rend `false` si aucun versement ne passe", async () => {
-    const { payContribution } = monter({
-      payFinancer: vi.fn(async () => { throw new Error("not allowed"); }),
+  it("n'utilise la position qu'à défaut de finkey (promesses antérieures)", () => {
+    expect(ligneReglement(pledge({ fundingIndex: 2, depenseIndex: 3, remainingAmount: 100 }))).toMatchObject({
+      depenseKey: "3",
+      finkey: undefined,
+      finIndex: 2,
     });
-
-    await expect(payContribution([pledge({ finkey: FINKEY, remainingAmount: 100 })])).resolves.toBe(false);
-    expect(toasts.success).not.toHaveBeenCalled();
-  });
-
-  it("ignore une promesse dont le solde est nul", async () => {
-    const { payContribution, espions } = monter();
-
-    await payContribution([pledge({ finkey: FINKEY, remainingAmount: 0 })]);
-
-    expect(espions.payFinancer).not.toHaveBeenCalled();
   });
 
   // Règles de « Payer ma promesse » : le montant facturé est celui journalisé.
@@ -304,13 +215,27 @@ describe("payContribution — règlement des promesses", () => {
     expect(montantARegler(pledge({ fundingAmount: 1000 }))).toBe(1000);
   });
 
-  it("promessesReglables : écarte ce que `payContribution` ne journaliserait pas", () => {
+  it("montantARegler : au centime, comme la ligne que le serveur facture", () => {
+    expect(montantARegler(pledge({ remainingAmount: 0.1 + 0.2 }))).toBe(0.3);
+    expect(ligneReglement(pledge({ remainingAmount: 16.666 }))).toMatchObject({ amount: 16.67 });
+  });
+
+  it("promessesReglables : écarte ce qu'un règlement ne journaliserait pas", () => {
     const reglables = promessesReglables([
       pledge({ id: "ok", remainingAmount: 600 }),
       pledge({ id: "sans-ressource", resourceId: undefined, remainingAmount: 100 }),
       pledge({ id: "soldee", remainingAmount: 0 }),
+      pledge({ id: "sous-le-centime", remainingAmount: 0.004 }),
     ]);
 
     expect(reglables.map((p) => p.id)).toEqual(["ok"]);
+  });
+
+  it("totalARegler : somme des soldes réglables, au centime", () => {
+    expect(totalARegler([
+      pledge({ id: "entamee", fundingAmount: 1000, remainingAmount: 600 }),
+      pledge({ id: "bruit", fundingAmount: 20, remainingAmount: 0.1 + 0.2 }),
+      pledge({ id: "sans-ressource", resourceId: undefined, remainingAmount: 50 }),
+    ])).toBe(600.3);
   });
 });

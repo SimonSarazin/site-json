@@ -3,7 +3,8 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace.tsx";
 import { AlertCircle, ArrowRight } from "lucide-react";
 import { CagnotteTypeConfig } from "../../types";
 import { useT } from "@/hooks/useT";
-import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
+import { formatNumber } from "@/modules/cagnotte/utils/format";
+import { promessesReglables, totalARegler } from "@/modules/cagnotte/hooks/useSaveCagnotteContribution";
 
 export interface UnpaidFundingToastProps {
     pending: Pledge[]
@@ -21,11 +22,12 @@ export function PledgeFundingToast({
     useLoadNamespace("modules/cagnotte");
     const t = useT("modules/cagnotte");
 
-    // Si plus de promesses, le toast disparaît automatiquement
-    if (pending.length === 0) return null;
+    const payable = promessesReglables(pending);
+    // Si plus de promesse à régler, le toast disparaît automatiquement
+    if (payable.length === 0) return null;
 
-    const count = pending.length;
-    const totalAmount = pending.reduce((sum, p) => sum + toSafeInt(p.fundingAmount), 0);
+    const count = payable.length;
+    const totalAmount = formatNumber(totalARegler(payable));
 
     return (
         <button

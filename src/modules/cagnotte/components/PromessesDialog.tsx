@@ -6,7 +6,7 @@ import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Pledge} from "@/modules/cagnotte/types";
 import {useT} from "@/hooks/useT";
 import {useLoadNamespace} from "@/hooks/useLoadNamespace";
-import {toNumber} from "@/modules/cagnotte/utils/dataTransform.ts";
+import {montantARegler, totalARegler} from "@/modules/cagnotte/hooks/useSaveCagnotteContribution";
 
 // Lazy-load : PledgePaymentPage tire @stripe/stripe-js + @stripe/react-stripe-js
 // par import statique. En lazy, Stripe n'est téléchargé qu'au passage réel
@@ -59,9 +59,7 @@ export function PromessesDialog({
         return pledges.filter((p) => localSelectedIds.has(p.id));
     }, [pledges, localSelectedIds]);
 
-    const totalSelectedAmount = useMemo(() => {
-        return selectedPledgesList.reduce((sum, p) => sum + toNumber(p.fundingAmount), 0);
-    }, [selectedPledgesList]);
+    const totalSelectedAmount = useMemo(() => totalARegler(selectedPledgesList), [selectedPledgesList]);
 
     const handleToggleItem = (id: string) => {
         setLocalSelectedIds((prev) => {
@@ -224,7 +222,7 @@ export function PromessesDialog({
                                                                 </div>
                                                             </label>
                                                             <span className="font-mono text-sm font-semibold pr-2">
-                                                                {pledge.fundingAmount.toLocaleString("fr-FR")} €
+                                                                {montantARegler(pledge).toLocaleString("fr-FR")} €
                                                             </span>
                                                         </div>
                                                     ))}

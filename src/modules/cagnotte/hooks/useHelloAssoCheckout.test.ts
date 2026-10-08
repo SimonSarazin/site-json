@@ -5,9 +5,11 @@ import { act, renderHook } from "@testing-library/react";
 /**
  * Ce qui est verrouillé ici :
  *  - la popup s'ouvre avant tout `await`, sinon le navigateur la bloque ;
- *  - un paiement confirmé n'appelle `onPaid` qu'une fois, avec les données figées au lancement ;
- *  - le suivi ne dépend pas du message de la popup, que HelloAsso empêche (Cross-Origin-Opener-Policy) ;
- *  - une erreur de vérification ne coupe pas le suivi d'un paiement peut-être déjà fait.
+ *  - la commande part avec le checkout ;
+ *  - `onSettled` n'est appelé qu'une fois, avec la facture et les données du clic ;
+ *  - tout arrêt (annulation, échec signalé, délai) attend une vérification lancée après la demande ;
+ *  - seuls les messages de la popup ouverte comptent, et ils ne décident rien seuls ;
+ *  - une vérification sans réponse ne bloque pas les suivantes.
  */
 
 vi.mock("@/hooks/useLoadNamespace", () => ({ useLoadNamespace: () => undefined }));
@@ -22,17 +24,23 @@ vi.mock("@/lib/toastUtils", () => ({
 import {
   HELLOASSO_MAX_WAIT_MS,
   HELLOASSO_POLL_INTERVAL_MS,
+  HELLOASSO_STATUS_TIMEOUT_MS,
   useHelloAssoCheckout,
 } from "./useHelloAssoCheckout";
 
 const REDIRECT_URL = "https://www.helloasso-sandbox.com/checkout/4242";
-const CHECKOUT = { success: 1, content: { id: 4242, redirectUrl: REDIRECT_URL } };
-const EN_ATTENTE = { success: 1, paid: false, orderId: null };
-/** Données figées au clic, rendues telles quelles à `onPaid`. */
-const SNAPSHOT = { montant: 25, repartition: [{ depenseIndex: 0, amount: 25 }] };
+const CHECKOUT = { success: 1, content: { id: 4242, redirectUrl: REDIRECT_URL }, bill: "b1" };
+const EN_ATTENTE = { success: 1, paid: false, recorded: false, inProgress: false };
+const enregistre = (orderId: number) => ({ success: 1, paid: true, recorded: true, inProgress: false, orderId });
+/** Commande transmise au serveur avec le checkout. */
+const ORDER = { answerId: "ans1", financerId: "u1", fundings: [{ milestoneId: "m1", amount: 25 }] };
+/** Données figées au clic, rendues telles quelles à `onSettled`. */
+const SNAPSHOT = { montant: 25 };
+
+type Statut = Record<string, unknown> | Error | Promise<Record<string, unknown>>;
 
 /** Monte le hook ; `statuts` est la suite des réponses de `helloassoStatus` (une Error = échec). */
-function monter(statuts: Array<Record<string, unknown> | Error> = []) {
+function monter(statuts: Statut[] = []) {
   const popup = { closed: false, close: vi.fn(), location: { href: "" } };
   const open = vi.spyOn(window, "open").mockReturnValue(popup as unknown as Window);
   const submit = vi.fn(async (action: string) => {
@@ -41,14 +49,14 @@ function monter(statuts: Array<Record<string, unknown> | Error> = []) {
     if (suivant instanceof Error) throw suivant;
     return suivant;
   });
-  const onPaid = vi.fn();
-  const { result } = renderHook(() => useHelloAssoCheckout({ submit, onPaid }));
-  return { result, submit, onPaid, popup, open };
+  const onSettled = vi.fn();
+  const rendu = renderHook(() => useHelloAssoCheckout({ submit, onSettled }));
+  return { result: rendu.result, unmount: rendu.unmount, submit, onSettled, popup, open };
 }
 
-async function demarrer(start: (amount: number, snapshot: typeof SNAPSHOT) => Promise<void>) {
+async function demarrer(start: (amount: number, order: Record<string, unknown>, snapshot: typeof SNAPSHOT) => Promise<void>) {
   await act(async () => {
-    await start(25, SNAPSHOT);
+    await start(25, ORDER, SNAPSHOT);
   });
 }
 
@@ -58,12 +66,25 @@ async function avancer(ms: number) {
   });
 }
 
-async function retourPopup(data: Record<string, unknown>) {
+async function annuler(cancel: () => void) {
   await act(async () => {
-    window.dispatchEvent(new MessageEvent("message", { data: { source: "helloasso", type: "HELLOASSO_CALLBACK", ...data } }));
+    cancel();
     await vi.advanceTimersByTimeAsync(1);
   });
 }
+
+/** Message de la page de retour HelloAsso, émis par `source`. */
+async function retourPopup(source: unknown, data: Record<string, unknown>) {
+  await act(async () => {
+    const event = new MessageEvent("message", { data: { source: "helloasso", type: "HELLOASSO_CALLBACK", ...data } });
+    Object.defineProperty(event, "source", { value: source });
+    window.dispatchEvent(event);
+    await vi.advanceTimersByTimeAsync(1);
+  });
+}
+
+const verifications = (submit: ReturnType<typeof vi.fn>) =>
+  submit.mock.calls.filter(([action]) => action === "helloassoStatus").length;
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -76,13 +97,13 @@ afterEach(() => {
 });
 
 describe("useHelloAssoCheckout — ouverture", () => {
-  it("ouvre la popup avant d'appeler le serveur, puis l'envoie sur le checkout", async () => {
+  it("ouvre la popup avant d'appeler le serveur, puis l'envoie sur le checkout créé avec la commande", async () => {
     const { result, submit, popup, open } = monter();
 
     await demarrer(result.current.start);
 
     expect(open.mock.invocationCallOrder[0]).toBeLessThan(submit.mock.invocationCallOrder[0]);
-    expect(submit).toHaveBeenCalledWith("helloassoPay", { amount: 25 });
+    expect(submit).toHaveBeenCalledWith("helloassoPay", { amount: 25, order: ORDER });
     expect(popup.location.href).toBe(REDIRECT_URL);
     expect(result.current.phase).toBe("waiting");
   });
@@ -90,7 +111,7 @@ describe("useHelloAssoCheckout — ouverture", () => {
   it("n'appelle pas le serveur quand la popup est bloquée", async () => {
     vi.spyOn(window, "open").mockReturnValue(null);
     const submit = vi.fn();
-    const { result } = renderHook(() => useHelloAssoCheckout({ submit, onPaid: vi.fn() }));
+    const { result } = renderHook(() => useHelloAssoCheckout({ submit, onSettled: vi.fn() }));
 
     await demarrer(result.current.start);
 
@@ -104,7 +125,7 @@ describe("useHelloAssoCheckout — ouverture", () => {
     vi.spyOn(window, "open").mockReturnValue(popup as unknown as Window);
     const refus = new Error("Cette organisation n'a pas encore de clé API helloasso");
     const submit = vi.fn(async () => { throw refus; });
-    const { result } = renderHook(() => useHelloAssoCheckout({ submit, onPaid: vi.fn() }));
+    const { result } = renderHook(() => useHelloAssoCheckout({ submit, onSettled: vi.fn() }));
 
     await demarrer(result.current.start);
 
@@ -115,35 +136,76 @@ describe("useHelloAssoCheckout — ouverture", () => {
 });
 
 describe("useHelloAssoCheckout — suivi du paiement", () => {
-  it("confirme une seule fois, dès que HelloAsso a joint la commande", async () => {
-    const { result, onPaid, popup } = monter([EN_ATTENTE, { success: 1, paid: true, orderId: 777 }]);
+  it("rend l'enregistrement une seule fois, avec la facture et les données du clic", async () => {
+    const { result, onSettled, popup } = monter([EN_ATTENTE, enregistre(777)]);
     await demarrer(result.current.start);
 
     await avancer(HELLOASSO_POLL_INTERVAL_MS);
-    expect(onPaid).not.toHaveBeenCalled();
+    expect(onSettled).not.toHaveBeenCalled();
 
     await avancer(HELLOASSO_POLL_INTERVAL_MS);
-    expect(onPaid).toHaveBeenCalledTimes(1);
-    expect(onPaid).toHaveBeenCalledWith({ checkoutIntentId: "4242", orderId: "777" }, SNAPSHOT);
+    expect(onSettled).toHaveBeenCalledTimes(1);
+    expect(onSettled).toHaveBeenCalledWith({ bill: "b1", recorded: true, reference: "777", error: null }, SNAPSHOT);
     expect(popup.close).toHaveBeenCalled();
     expect(result.current.phase).toBe("idle");
 
     await avancer(HELLOASSO_POLL_INTERVAL_MS * 3);
-    expect(onPaid).toHaveBeenCalledTimes(1);
+    expect(onSettled).toHaveBeenCalledTimes(1);
+  });
+
+  it("payé mais pas enregistré : rendu en échec, avec la facture à rejouer", async () => {
+    const { result, onSettled } = monter([{ success: 1, paid: true, recorded: false, orderId: 5, recordError: "depense not found" }]);
+    await demarrer(result.current.start);
+
+    await avancer(HELLOASSO_POLL_INTERVAL_MS);
+
+    expect(onSettled).toHaveBeenCalledWith({ bill: "b1", recorded: false, reference: "5", error: "depense not found" }, SNAPSHOT);
+  });
+
+  it("règlement en cours ailleurs (page de retour) : on réinterroge sans conclure", async () => {
+    const { result, onSettled } = monter([{ success: 1, paid: false, recorded: false, inProgress: true }, enregistre(1)]);
+    await demarrer(result.current.start);
+
+    await avancer(HELLOASSO_POLL_INTERVAL_MS);
+    expect(onSettled).not.toHaveBeenCalled();
+    expect(result.current.phase).toBe("waiting");
+
+    await avancer(HELLOASSO_POLL_INTERVAL_MS);
+    expect(onSettled).toHaveBeenCalledTimes(1);
   });
 
   it("le retour de la popup déclenche une vérification immédiate", async () => {
-    const { result, submit, onPaid } = monter([{ success: 1, paid: true, orderId: 1 }]);
+    const { result, submit, onSettled, popup } = monter([enregistre(1)]);
     await demarrer(result.current.start);
 
-    await retourPopup({ status: "return", checkoutIntentId: "4242" });
+    await retourPopup(popup, { status: "return", checkoutIntentId: "4242" });
 
     expect(submit).toHaveBeenCalledWith("helloassoStatus", { checkoutIntentId: "4242" });
-    expect(onPaid).toHaveBeenCalledTimes(1);
+    expect(onSettled).toHaveBeenCalledTimes(1);
+  });
+
+  it("ignore un message qui ne vient pas de la popup", async () => {
+    const { result, submit } = monter();
+    await demarrer(result.current.start);
+
+    await retourPopup(null, { status: "cancel", checkoutIntentId: "4242" });
+    await retourPopup({}, { status: "cancel", checkoutIntentId: "" });
+
+    expect(result.current.phase).toBe("waiting");
+    expect(verifications(submit)).toBe(0);
+  });
+
+  it("ignore le retour d'un autre checkout", async () => {
+    const { result, popup } = monter();
+    await demarrer(result.current.start);
+
+    await retourPopup(popup, { status: "cancel", checkoutIntentId: "9999" });
+
+    expect(result.current.phase).toBe("waiting");
   });
 
   it("le retour sur la page vérifie sans attendre : HelloAsso coupe le lien avec la popup", async () => {
-    const { result, submit, onPaid } = monter([{ success: 1, paid: true, orderId: 3 }]);
+    const { result, submit, onSettled } = monter([enregistre(3)]);
     await demarrer(result.current.start);
 
     await act(async () => {
@@ -152,32 +214,11 @@ describe("useHelloAssoCheckout — suivi du paiement", () => {
     });
 
     expect(submit).toHaveBeenCalledWith("helloassoStatus", { checkoutIntentId: "4242" });
-    expect(onPaid).toHaveBeenCalledWith({ checkoutIntentId: "4242", orderId: "3" }, SNAPSHOT);
-  });
-
-  it("une annulation dans HelloAsso arrête le suivi", async () => {
-    const { result, submit } = monter();
-    await demarrer(result.current.start);
-
-    await retourPopup({ status: "cancel", checkoutIntentId: "" });
-
-    expect(result.current.phase).toBe("idle");
-    expect(toasts.error).toHaveBeenCalledWith(expect.any(Error), "PaymentConfigPage.toasts.paymentInterrupted.title", expect.any(Function));
-    await avancer(HELLOASSO_POLL_INTERVAL_MS * 2);
-    expect(submit).not.toHaveBeenCalledWith("helloassoStatus", expect.anything());
-  });
-
-  it("ignore le retour d'un autre checkout", async () => {
-    const { result } = monter();
-    await demarrer(result.current.start);
-
-    await retourPopup({ status: "cancel", checkoutIntentId: "9999" });
-
-    expect(result.current.phase).toBe("waiting");
+    expect(onSettled).toHaveBeenCalledWith({ bill: "b1", recorded: true, reference: "3", error: null }, SNAPSHOT);
   });
 
   it("une erreur de vérification ne coupe pas le suivi", async () => {
-    const { result, onPaid } = monter([new Error("HelloAsso indisponible"), { success: 1, paid: true, orderId: 5 }]);
+    const { result, onSettled } = monter([new Error("HelloAsso indisponible"), enregistre(5)]);
     await demarrer(result.current.start);
 
     await avancer(HELLOASSO_POLL_INTERVAL_MS);
@@ -185,29 +226,127 @@ describe("useHelloAssoCheckout — suivi du paiement", () => {
     expect(result.current.lastError).toBe("HelloAsso indisponible");
 
     await avancer(HELLOASSO_POLL_INTERVAL_MS);
-    expect(onPaid).toHaveBeenCalledTimes(1);
+    expect(onSettled).toHaveBeenCalledTimes(1);
   });
 
-  it("abandonne passé le délai d'attente", async () => {
-    const { result, onPaid } = monter();
+  it("une réponse incomplète est une erreur, pas une attente", async () => {
+    // Backend sans `helloassoStatus` : l'action inconnue renvoie `[]`.
+    const { result } = monter([{}]);
+    await demarrer(result.current.start);
+
+    await avancer(HELLOASSO_POLL_INTERVAL_MS);
+
+    expect(result.current.lastError).toBe("PaymentConfigPage.errors.statusInvalid");
+    expect(result.current.phase).toBe("waiting");
+  });
+
+  it("une vérification sans réponse ne bloque pas les suivantes", async () => {
+    const { result, onSettled } = monter([new Promise(() => undefined), enregistre(8)]);
+    await demarrer(result.current.start);
+
+    await avancer(HELLOASSO_POLL_INTERVAL_MS + HELLOASSO_STATUS_TIMEOUT_MS);
+    expect(result.current.lastError).toBe("PaymentConfigPage.errors.statusTimeout");
+
+    await avancer(HELLOASSO_POLL_INTERVAL_MS);
+    expect(onSettled).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("useHelloAssoCheckout — arrêt du suivi", () => {
+  it("« Annuler » ferme la popup, vérifie une dernière fois, puis s'arrête sans toast d'erreur", async () => {
+    const { result, popup, submit, onSettled } = monter();
+    await demarrer(result.current.start);
+
+    await annuler(result.current.cancel);
+
+    expect(popup.close).toHaveBeenCalled();
+    expect(verifications(submit)).toBe(1);
+    expect(result.current.phase).toBe("idle");
+    expect(onSettled).not.toHaveBeenCalled();
+    expect(toasts.error).not.toHaveBeenCalled();
+
+    await avancer(HELLOASSO_POLL_INTERVAL_MS * 2);
+    expect(verifications(submit)).toBe(1);
+  });
+
+  it("« Annuler » juste après le paiement : il est enregistré, pas lâché", async () => {
+    const { result, onSettled } = monter([enregistre(42)]);
+    await demarrer(result.current.start);
+
+    await annuler(result.current.cancel);
+
+    expect(onSettled).toHaveBeenCalledWith({ bill: "b1", recorded: true, reference: "42", error: null }, SNAPSHOT);
+  });
+
+  it("une annulation signalée par la popup vérifie avant d'arrêter", async () => {
+    const { result, popup, submit } = monter();
+    await demarrer(result.current.start);
+
+    await retourPopup(popup, { status: "cancel", checkoutIntentId: "" });
+
+    expect(verifications(submit)).toBe(1);
+    expect(result.current.phase).toBe("idle");
+    expect(toasts.error).toHaveBeenCalledWith(expect.any(Error), "PaymentConfigPage.toasts.paymentInterrupted.title", expect.any(Function));
+  });
+
+  it("un arrêt demandé pendant une vérification attend une réponse obtenue depuis", async () => {
+    let repondre: (statut: Record<string, unknown>) => void = () => undefined;
+    const enVol = new Promise<Record<string, unknown>>((resolve) => { repondre = resolve; });
+    const { result, submit, onSettled } = monter([enVol, enregistre(9)]);
+    await demarrer(result.current.start);
+    await avancer(HELLOASSO_POLL_INTERVAL_MS);
+
+    await annuler(result.current.cancel);
+    expect(result.current.phase).toBe("checking");
+
+    // La réponse « en attente » date d'avant l'annulation : elle ne décide pas.
+    await act(async () => {
+      repondre(EN_ATTENTE);
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    expect(verifications(submit)).toBe(2);
+    expect(onSettled).toHaveBeenCalledWith({ bill: "b1", recorded: true, reference: "9", error: null }, SNAPSHOT);
+  });
+
+  it("abandonne passé le délai d'attente, après une dernière vérification", async () => {
+    const { result, onSettled } = monter();
     await demarrer(result.current.start);
 
     await avancer(HELLOASSO_MAX_WAIT_MS + HELLOASSO_POLL_INTERVAL_MS);
 
     expect(result.current.phase).toBe("idle");
-    expect(onPaid).not.toHaveBeenCalled();
+    expect(onSettled).not.toHaveBeenCalled();
     expect(toasts.error).toHaveBeenCalledWith(expect.any(Error), "PaymentConfigPage.toasts.paymentInterrupted.title", expect.any(Function));
   });
 
-  it("« Annuler » ferme la popup et arrête le suivi", async () => {
-    const { result, popup, submit } = monter();
+  it("dernière vérification impossible : arrêt, avec la référence du checkout", async () => {
+    const { result } = monter([new Error("réseau")]);
     await demarrer(result.current.start);
 
-    act(() => result.current.cancel());
+    await annuler(result.current.cancel);
 
-    expect(popup.close).toHaveBeenCalled();
     expect(result.current.phase).toBe("idle");
-    await avancer(HELLOASSO_POLL_INTERVAL_MS * 2);
-    expect(submit).not.toHaveBeenCalledWith("helloassoStatus", expect.anything());
+    expect(toasts.error).toHaveBeenCalledWith(expect.any(Error), "PaymentConfigPage.toasts.paymentUnverified.title", expect.any(Function));
+  });
+
+  it("annuler puis relancer : le nouveau checkout est suivi", async () => {
+    const { result, onSettled } = monter([EN_ATTENTE, enregistre(11)]);
+    await demarrer(result.current.start);
+    await annuler(result.current.cancel);
+
+    await demarrer(result.current.start);
+    await avancer(HELLOASSO_POLL_INTERVAL_MS);
+
+    expect(onSettled).toHaveBeenCalledTimes(1);
+  });
+
+  it("démontée, la page laisse la popup ouverte : le serveur enregistrera sans elle", async () => {
+    const { result, popup, unmount } = monter();
+    await demarrer(result.current.start);
+
+    unmount();
+
+    expect(popup.close).not.toHaveBeenCalled();
   });
 });

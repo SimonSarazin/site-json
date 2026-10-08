@@ -54,6 +54,15 @@ export function toArray<T>(value: unknown): T[] {
   return [value as T];
 }
 
+/** Type d'entité au format des collections backend (`organizations`, `projects`, `citoyens`). */
+export function normalizeEntityType(type: string | undefined | null): string {
+  const lowered = (type || "").toLowerCase();
+  if (lowered.includes("organization")) return "organizations";
+  if (lowered.includes("project")) return "projects";
+  if (lowered.includes("citoyen") || lowered.includes("user")) return "citoyens";
+  return lowered;
+}
+
 export function normalizeTags(value: unknown): string[] {
   const tags = toArray<unknown>(value).filter(
     (tag): tag is string => typeof tag === "string" && tag.length > 0,

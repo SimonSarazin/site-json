@@ -8,7 +8,6 @@ import { createImageOptimizer } from "./middleware/imageOptimizer.js";
 import { normalizeSiteConfig } from "./utils/normalizeSiteConfig.js";
 import { findSiteBySlug, knownSlugs } from "./utils/sites.js";
 import { registerSeoRoutes } from "./lib/sitemap.js";
-import { helloassoCheckoutIntentHandler, helloassoTokenHandler, helloassoCallbackHandler, helloassoCheckoutStatusHandler } from "./api/helloasso-checkout.js";
 import { realtimeFluxHandler, realtimePushHandler } from "./api/realtime.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -143,13 +142,6 @@ app.use(express.json());
 // JSON, contrairement au flux. Montees avant, `req.body` serait vide et un abonnement
 // parfaitement valide repartirait en 400.
 app.all("/api/realtime/push/*splat", realtimePushHandler);
-
-// Routes API HelloAsso
-console.log("🔧 Enregistrement des routes API HelloAsso...");
-app.get("/api/helloasso/token", helloassoTokenHandler);
-app.post("/api/helloasso/checkout-intent", helloassoCheckoutIntentHandler);
-app.get("/api/helloasso/callback", helloassoCallbackHandler);
-app.get("/api/helloasso/checkout-status/:checkoutIntentId", helloassoCheckoutStatusHandler);
 
 // Flux RSS des articles blog (SEO/distribution). costumSlug : ?costum= > config.blog.feedCostumSlug > env.
 app.get("/blog/feed.xml", async (req, res) => {

@@ -19,7 +19,7 @@
     - [Compression](#compression)
     - [Politique de cache HTTP](#politique-de-cache-http)
     - [Gestion des 404 statiques](#gestion-des-404-statiques)
-    - [Routes API HelloAsso](#routes-api-helloasso)
+    - [Routes API](#routes-api)
   - [Recapitulatif du flux build / runtime](#recapitulatif-du-flux-build--runtime)
   - [Voir aussi](#voir-aussi)
 
@@ -220,7 +220,7 @@ Le log de demarrage nomme l'origine retenue :
 Config chargée depuis dist/site-config.json : Institut Bleu — l'économie bleue à La Réunion
 ```
 
-> **Note dotenv** : `prod-server.js` n'importe pas `dotenv` directement, mais `server/api/helloasso-checkout.js` fait `import "dotenv/config"`. Un fichier `.env` present dans le repertoire de travail est donc lu en production. Sans effet dans l'image Docker (l'etape runner ne copie ni `.env` ni le depot), mais a connaitre pour un `npm start` local : un `SITE_CONFIG_PATH` dans `.env` gagnera sur la config figee.
+> **Note dotenv** : `prod-server.js` ne charge pas `dotenv` : un `npm start` local ne lit pas `.env`, les variables doivent etre exportees dans le shell (comme le fait `npm run preview` pour `SITE_CONFIG_PATH`). Seul `dev-server.js` lit `.env`.
 
 > **Note `window.__ENV__`** : le bloc `window.__ENV__` n'est injecte dans le HTML que si au moins une des trois variables (`VITE_BASE_URL_BACKEND`, `VITE_SERVER_URL`, `VITE_SLUG`) est definie. Si aucune n'est renseignee, aucun script `__ENV__` n'est emis.
 
@@ -343,18 +343,16 @@ Un ETag fort (`app.set('etag', 'strong')`) est active globalement pour permettre
 
 Les requetes vers des extensions de fichiers statiques inexistants (`.png`, `.jpg`, `.css`, `.js`, `.json`, `.ico`, `.webp`, `.mp4`, `.woff2`, `.woff`, etc.) retournent un 404 immediat sans passer par le rendu SSR. Les routes `/api/*` sont exemptees de cette verification.
 
-### Routes API HelloAsso
+### Routes API
 
-`prod-server.js` enregistre quatre routes pour l'integration HelloAsso (paiement) :
+`prod-server.js` ne sert que le relais temps reel (`server/api/realtime.js`), avant le rendu SSR :
 
 | Methode | Route | Description |
 |---------|-------|-------------|
-| `GET` | `/api/helloasso/token` | Obtention du token OAuth HelloAsso |
-| `POST` | `/api/helloasso/checkout-intent` | Creation d'une intention de paiement |
-| `GET` | `/api/helloasso/callback` | Callback apres paiement |
-| `GET` | `/api/helloasso/checkout-status/:checkoutIntentId` | Statut d'un paiement |
+| `GET` | `/api/realtime/flux` | Flux SSE relaye depuis le hub (monte avant `compression()`) |
+| toutes | `/api/realtime/push/*splat` | Relais JSON des routes d'abonnement push du hub |
 
-Ces routes sont servies directement par Express avant le rendu SSR. Elles requierent que les variables d'environnement HelloAsso soient configurees dans le conteneur (voir la documentation du module `cagnotte`).
+Les paiements de la cagnotte (Stripe, HelloAsso) ne passent pas par ce serveur : le navigateur appelle l'action `fundingEnvelope` du backend Communecter, qui cree, verifie et enregistre les paiements. Aucune variable de paiement n'est a poser dans le conteneur (voir le [module Cagnotte](18-module-cagnotte.md#services-de-paiement)).
 
 ## Recapitulatif du flux build / runtime
 
@@ -383,7 +381,7 @@ npm run build =
         (copyPublicDir: !isSsrBuild)          Volume config.json ──→ inutile si SITE_EMBED
                                               Volume images/ ──→ express.static
 stats.html à la racine du dépôt,
-hors dist/ (donc hors de l'image)             Routes API : /api/helloasso/*
+hors dist/ (donc hors de l'image)             Routes API : /api/realtime/*
                                               Cache : /assets/* immutable 1 an
 COPY dans le runner : dist/ + server/                 /images/* 1 jour + SWR 7 jours
 (ni sites.json ni config.prod.*.json)         Compression gzip : level 6, seuil 1 Ko

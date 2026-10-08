@@ -10,6 +10,7 @@ import {
   getNonEmptyRecord,
   getServerData,
   normalizeActionStatus,
+  normalizeEntityType,
   normalizeTags,
   resolveActionAuthorId,
   toArray,
@@ -61,14 +62,6 @@ const EMPTY_RESULT: FundingEnvelopeNormalizedData = {
   rawEnvelope: null,
   paymentMethods: null,
 };
-
-function normalizeEntityType(type: string | undefined): string {
-  const lowered = (type || '').toLowerCase();
-  if (lowered.includes('organization')) return 'organizations';
-  if (lowered.includes('project')) return 'projects';
-  if (lowered.includes('citoyen') || lowered.includes('user')) return 'citoyens';
-  return lowered;
-}
 
 function extractPaymentMethods(...sources: unknown[]): FundingPaymentMethods | null {
   const merged: Record<string, string | boolean> = {};

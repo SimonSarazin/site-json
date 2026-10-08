@@ -3,8 +3,9 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 
 /**
- * Ce qui est verrouillé ici : le tooltip du bouton « promesses », et le fait que le clic ouvre
- * toujours la modale de paiement. Les hooks data sont mockés à leur frontière.
+ * Ce qui est verrouillé ici : le tooltip du bouton « promesses », le montant affiché (le solde à
+ * régler) et le fait que le clic ouvre toujours la modale de paiement. Les hooks data sont mockés
+ * à leur frontière.
  */
 
 // jsdom ne fournit pas ResizeObserver, dont le Popper de `TooltipContent` a besoin.
@@ -40,8 +41,8 @@ vi.mock("@/modules/cagnotte/hooks/useUserAdminOrganizations", () => ({
 }));
 vi.mock("@/modules/cagnotte/hooks/useCagnotteAdapter", () => ({
   useCagnotteAdapter: () => ({ resources: [] }),
-  // Une seule promesse non nulle : le bouton n'est rendu que si le total > 0.
-  computePledgesFromResources: () => [{ fundingAmount: 120 }],
+  // Une promesse entamée : 1 000 € engagés, 600 € à régler.
+  computePledgesFromResources: () => [{ id: "p1", resourceId: "ans1", fundingAmount: 1000, remainingAmount: 600 }],
 }));
 vi.mock("./PromessesDialog", () => ({
   default: ({ open }: { open: boolean }) => (open ? <div data-testid="promesses-open" /> : null),
@@ -67,5 +68,13 @@ describe("PledgeHeaderButton — tooltip", () => {
     fireEvent.click(screen.getByRole("button", { name: "Voir les promesses" }));
 
     expect(await screen.findByTestId("promesses-open")).toBeInTheDocument();
+  });
+});
+
+describe("PledgeHeaderButton — montant", () => {
+  it("affiche le solde à régler, pas le montant engagé", () => {
+    render(<PledgeHeaderButton />);
+
+    expect(screen.getByRole("button", { name: "Voir les promesses" })).toHaveTextContent("600 €");
   });
 });

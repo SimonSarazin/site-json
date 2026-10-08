@@ -137,20 +137,28 @@
       "title": "En attente du retour HelloAsso...",
       "subtitle": "Terminez le paiement dans la fenêtre HelloAsso, puis revenez sur cette page. Si vous l'avez fermée sans payer, cliquez sur Annuler.",
       "hint": "Le financement est enregistré dès que HelloAsso confirme le paiement.",
-      "cancel": "Annuler"
+      "cancel": "Annuler",
+      "checking": "Vérification du paiement..."
+    },
+    "recordingFailed": {
+      "title": "Paiement reçu, contribution non enregistrée",
+      "description": "Votre paiement (réf. {{reference}}) est bien encaissé, mais son enregistrement a échoué. Réessayez ; s'il échoue encore, transmettez cette référence au porteur de la cagnotte.",
+      "inProgress": "Un enregistrement de ce paiement est déjà en cours. Réessayez dans un instant.",
+      "retry": "Réessayer l'enregistrement",
+      "close": "Fermer"
     },
     "toasts": {
       "thankYou": {
         "title": "Merci pour votre contribution !",
         "description": "Retour à la page d'accueil..."
       },
-      "paymentAcceptedIncomplete": {
-        "title": "Paiement accepté mais enregistrement incomplet",
-        "fallbackDescription": "Erreur d'enregistrement des financements"
-      },
       "paymentInterrupted": {
         "title": "Paiement interrompu",
         "description": "Le paiement HelloAsso n'a pas été confirmé."
+      },
+      "paymentUnverified": {
+        "title": "Paiement non vérifié",
+        "description": "Impossible de confirmer le paiement HelloAsso (réf. {{reference}}). S'il a été fait, il sera enregistré automatiquement ; sinon, transmettez cette référence au porteur de la cagnotte."
       },
       "stripeError": {
         "title": "Erreur",
@@ -168,10 +176,11 @@
     "errors": {
       "fundingEnvelopeUnavailable": "entity.fundingEnvelope est indisponible",
       "noContextId": "contextId introuvable pour fundingEnvelope",
-      "saveFailed": "Impossible de sauvegarder les financements",
       "noRedirectUrl": "Aucune URL de redirection HelloAsso n'a été renvoyée par fundingEnvelope",
       "popupFailed": "La popup HelloAsso n'a pas pu être ouverte",
-      "paymentRejected": "Le paiement n'a pas abouti."
+      "paymentRejected": "Le paiement n'a pas abouti.",
+      "statusInvalid": "Réponse de vérification HelloAsso incomplète : le serveur n'est peut-être pas à jour.",
+      "statusTimeout": "La vérification du paiement ne répond pas."
     },
     "helloAssoConfigErrors": {
       "amountInvalid": "Le montant doit être supérieur à 0",
@@ -732,9 +741,7 @@
       "cardElementMissing": "Formulaire carte indisponible",
       "cardValidationFailed": "Erreur de validation de la carte",
       "paymentMethodFailed": "Impossible de créer la méthode de paiement",
-      "paymentFallback": "Erreur lors du paiement",
-      "stripeNotInitialized": "Stripe n'est pas initialisé",
-      "amountMustBePositive": "Le montant doit être supérieur à 0"
+      "paymentFallback": "Erreur lors du paiement"
     },
     "stripeErrors": {
       "card_declined": "Votre carte a été refusée. Veuillez vérifier vos informations.",
@@ -747,14 +754,6 @@
       "invalid_expiry_year": "L'année d'expiration est invalide.",
       "invalid_number": "Le numéro de carte est invalide.",
       "default": "Une erreur est survenue lors du paiement. Veuillez réessayer."
-    },
-    "configErrors": {
-      "amountInvalid": "Le montant doit être supérieur à 0",
-      "amountTooHigh": "Le montant ne peut pas dépasser 99 999€",
-      "projectNameRequired": "Le nom du projet est requis",
-      "projectIdRequired": "L'ID du projet est requis",
-      "milestoneRequired": "Au moins un milestone doit être sélectionné",
-      "contributorTypeRequired": "Le type de contributeur doit être spécifié"
     },
     "cardValid": "Carte valide, prête à être payée",
     "actions": {
