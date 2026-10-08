@@ -374,7 +374,14 @@
     },
     "rolesLabel": "Rôles dans l'organisation",
     "rolesPlaceholder": "Ajouter un rôle (Entrée pour valider)…",
-    "rolesHint": "Texte libre — ex. « Coordonnatrice parentalité Arrageois »."
+    "rolesHint": "Texte libre — ex. « Coordonnatrice parentalité Arrageois ».",
+    "manageRoles": "Gérer les rôles"
+  },
+  "ManageRolesDialog": {
+    "title": "Gérer les rôles",
+    "description": "Rôles de {{name}} — la liste complète remplace les rôles actuels.",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…"
   },
   "MemberManagementDialog": {
     "title": "Gestion des membres",
@@ -729,7 +736,9 @@
       "inviteAdminSuccess": "Invitation d'administrateur envoyée à {{name}}",
       "inviteAdminError": "Impossible d'envoyer l'invitation d'administrateur à {{name}}",
       "emailInviteSuccess": "{{count}} invitation(s) envoyée(s) par email",
-      "emailInviteError": "Impossible d'envoyer les invitations par email"
+      "emailInviteError": "Impossible d'envoyer les invitations par email",
+      "setRolesSuccess": "Rôles de {{name}} mis à jour",
+      "setRolesError": "Impossible de mettre à jour les rôles de {{name}}"
     },
     "comment": {
       "addSuccess": "Commentaire ajouté avec succès",

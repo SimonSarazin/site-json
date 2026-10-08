@@ -604,7 +604,7 @@ Le module profil propose **21 types de sections** configurables:
 | `profile-actions`          | ProfileActionsSectionSchema  | showEditButton, showAddDropdown, layout        | Boutons d'action (éditer, ajouter, email) |
 | `profile-event-dates`      | ProfileEventDatesSectionSchema | showType, dateFormat                         | Dates d'événement (start/end)             |
 | `profile-badges`           | ProfileBadgesSectionSchema   | layout (grid, flex, list), maxDisplay          | Badges et certifications                  |
-| `profile-tags`             | ProfileTagsSectionSchema     | maxDisplay, linkable, searchOnClick            | Tags et mots-clés                         |
+| `profile-tags`             | ProfileTagsSectionSchema     | maxDisplay, linkable, searchOnClick, hideTags (tags non affichés, égalité stricte — un marqueur d'annuaire classe la fiche sans se lire) | Tags et mots-clés                         |
 | `profile-fields`           | ProfileFieldsSectionSchema   | variant (card, plain), columns (1, 2), fields[] | **Champs d'entité déclarés en config** — dont les champs costum, sans code par site |
 | `profile-opening-hours`    | ProfileOpeningHoursSectionSchema | format (table, list, compact), showCurrentStatus | Horaires d'ouverture          |
 | `profile-tab-layout`       | ProfileTabLayoutSectionSchema | leftSections, rightSections                   | Layout deux colonnes pour tabs            |

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { rolesDuMembre } from "./memberRoles";
+import { rolesDuMembre, rolesExistantsDeLEntite } from "./memberRoles";
 
 const ROLE = "Coordonnateur(trice) départemental du réseau à la Fédération des Centres Sociaux Nord Pas-de-Calais";
 
@@ -34,5 +34,26 @@ describe("rolesDuMembre", () => {
     const liensMembre = { members: { org1: { roles: ["À jour"] } } };
     const liensEntite = { members: { m1: { roles: ["Périmé"] } } };
     expect(rolesDuMembre(liensMembre, "org1", liensEntite, "m1")).toEqual(["À jour"]);
+  });
+});
+
+describe("rolesExistantsDeLEntite", () => {
+  it("rassemble les rôles distincts de toutes les familles, triés", () => {
+    const liens = {
+      members: { m1: { roles: ["Trésorier"] }, m2: { roles: ["Président"] } },
+      contributors: { c1: { roles: ["Dev"] } },
+    };
+    expect(rolesExistantsDeLEntite(liens)).toEqual(["Dev", "Président", "Trésorier"]);
+  });
+
+  it("déduplique un rôle répété sur plusieurs membres", () => {
+    const liens = { members: { m1: { roles: ["Bénévole"] }, m2: { roles: ["Bénévole"] } } };
+    expect(rolesExistantsDeLEntite(liens)).toEqual(["Bénévole"]);
+  });
+
+  it("aucun lien ou aucun rôle renseigné : tableau vide", () => {
+    expect(rolesExistantsDeLEntite(null)).toEqual([]);
+    expect(rolesExistantsDeLEntite({ members: { m1: { type: "citoyens" } } })).toEqual([]);
+    expect(rolesExistantsDeLEntite({})).toEqual([]);
   });
 });

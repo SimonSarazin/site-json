@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import type { Organization, Poi, Project, User, Event as EventType} from "@communecter/cocolight-api-client";
 import getDateFnsLocale from "@/dateFns";
 import { resolveEventStartDate, toValidDate } from "@/helpers/formatDate";
+import { toStringArray } from "@/helpers/toStringArray";
 import { countActiveLinks } from "../lib/countActiveLinks";
 
 const useItem = (item: User | Organization | Project | Poi | EventType) => {
@@ -57,13 +58,9 @@ const useItem = (item: User | Organization | Project | Poi | EventType) => {
     merged.created = toValidDate(raw.created);
     merged.updated = toValidDate(raw.updated);
 
-    // Normalisation tags : le backend peut renvoyer un objet ({tag: true})
-    // ou autre chose qu'un array de strings → on garde uniquement les strings.
-    merged.tags = Array.isArray(raw.tags)
-      ? raw.tags.filter((t): t is string => typeof t === "string")
-      : raw.tags && typeof raw.tags === "object"
-        ? Object.keys(raw.tags)
-        : [];
+    // Normalisation tags : le backend peut renvoyer un objet (dictionnaire `{tag: true}` ou tableau
+    // PHP à trous `{"1": "tag"}`) — helper source unique, partagé avec les cartes hors de ce hook.
+    merged.tags = toStringArray(raw.tags);
 
     // Composition de l'adresse sous forme de chaîne unique
     const { streetAddress = "", postalCode = "", addressLocality = "" } =
