@@ -16,7 +16,10 @@
 > 06/07) · [`ENDPOINT.md`](../../ENDPOINT.md) (fiches d'endpoints SDK à créer). Mémoire :
 > `[[project-maison-sport-sante-la-tampon]]`.
 
-Dernière mise à jour : **2026-10-08** (§9.24 : `/creneaux` trié **plus récent en premier** — `defaultSortBy: {created: -1}`,
+Dernière mise à jour : **2026-10-08** (§9.25 : corrections de la **review de la MR 84** — `answerCopy.preview`
+en lecture seule forcée, lecteur audio et sélection de texte n'ouvrent plus le détail, plus de requête
+en double ni de refetch aveugle, `createDefaults` refusé avec `create.coform`, abréviation du type lue
+dans le suffixe du libellé ; §9.24 : `/creneaux` trié **plus récent en premier** — `defaultSortBy: {created: -1}`,
 le tri `updated` imposé par le backend reléguait une réponse neuve en dernier ; §9.23 : modération des créneaux — bouton « Créer » (CoForm) et
 détail au clic sur une ligne, deux options moteur `create:{coform}` / `preview` ; §9.22 : 3ᵉ type de créneau
 « Sport santé sans label - SSsL » — abréviation, filtre et cartes en **vert** ; 29/09 : merge de `main` : §9.21, reprise des créneaux SSBE du Tampon
@@ -1831,8 +1834,8 @@ CSS inexploitable (`sport santé sans label - sssl-card` — l'abréviation SERT
 
 | Domaine | Changement |
 |---|---|
-| [`coformAnswer.ts`](../src/modules/search/lib/coformAnswer.ts) | `normalizeTypeLabel` : `"Sport santé sans label - SSsL"` → `SSsL` (+ commentaire : l'abréviation est la classe CSS de la carte — tout type ajouté au form se déclare ici) |
-| `coformAnswer.test.ts` | cas SSsL + **garde config ↔ code** : chaque option `name` du filtre `sportHealthType` de la config doit être abrégée (`/^SS[a-z][A-Z]$/`) |
+| [`coformAnswer.ts`](../src/modules/search/lib/coformAnswer.ts) | `normalizeTypeLabel` : `"Sport santé sans label - SSsL"` → `SSsL` (+ commentaire : l'abréviation est la classe CSS de la carte — tout type ajouté au form se déclare ici). **Remplacé le jour même (§9.25)** : l'abréviation est lue dans le suffixe du libellé, plus aucune liste à tenir |
+| `coformAnswer.test.ts` | cas SSsL + **garde config ↔ code** : chaque option `name` du filtre `sportHealthType` de la config doit être abrégée (`/^SS[a-z][A-Z]$/`). **Retirée en §9.25** (un test du module search générique ne lit pas la config d'un site), devenue inutile avec la lecture du suffixe |
 | Config — filtre `sportHealthType` | 3ᵉ option `sssl` (fr « Sport santé sans label » / en « Sport health without label »), `name` = valeur exacte du form |
 | Config — `theme.customCSS` | `.sssl-card` : en-tête **vert** `--success` → `color-mix(--success 85%, black)` (même recette que `--gradient-pro`), liseré gauche `--success`, badge « Validé » **inversé** (fond `--card`, texte `--success`) |
 
@@ -1905,8 +1908,8 @@ changement pour les tables existantes :
 
 | Option (`admin.tabs[].sections[]` de type `resource`) | Effet |
 |---|---|
-| `create: { "coform": "<formId>" }` | le bouton « Créer » ouvre le **`CoFormModal`** du form — la même modale que le bouton public « Ajouter un créneau » (`addButton.coform`), chunk coform chargé au premier clic. Après soumission : invalidation des tables/tuiles admin **et** des surfaces publiques (`/creneaux`, compteur de la home) ; refetch à la fermeture |
-| `preview: { "type": "coform-answer", "editButton": true }` | **détail au clic sur la ligne** (curseur main) + action « Aperçu » dans le menu de ligne (accès **clavier**) : même coque `dialog` et même contenu que `/creneaux` (`SwitchDetailsMode` → `PreviewCoformAnswer`), **bouton « Modifier »** inclus (re-fetch frais puis CoFormModal, droit = super-admin / admin du costum / admin de la structure). Refetch de la table à la fermeture |
+| `create: { "coform": "<formId>" }` | le bouton « Créer » ouvre le **`CoFormModal`** du form — la même modale que le bouton public « Ajouter un créneau » (`addButton.coform`), chunk coform chargé au premier clic. Après soumission : invalidation des tables/tuiles admin **et** des surfaces publiques (`/creneaux`, compteur de la home) ; rien à la fermeture (le refetch initial doublait la requête — §9.25) |
+| `preview: { "type": "coform-answer", "editButton": true }` | **détail au clic sur la ligne** (curseur main) + action « Aperçu » dans le menu de ligne (accès **clavier**) : même coque `dialog` et même contenu que `/creneaux` (`SwitchDetailsMode` → `PreviewCoformAnswer`), **bouton « Modifier »** inclus (re-fetch frais puis CoFormModal, droit = super-admin / admin du costum / admin de la structure). Fermer sans éditer ne recharge rien ; une correction invalide tables admin et surfaces publiques (`onEdited`, §9.25) |
 
 **Ce qui change** :
 
@@ -1919,7 +1922,7 @@ changement pour les tables existantes :
 | Tests | `resourceHelpers.test.ts`, `schema.test.ts` | `create:{coform}` → `createCoformId` / `resolveCreateModal` null ; schéma : ObjectId exigé, `preview` conservé, formes historiques intactes |
 | Config | onglet Modération | `create: {coform: "6a85af345d898a57cb49f029"}`, `preview: {type: "coform-answer", editButton: true}` (`edit: false` inchangé : la correction passe par le bouton « Modifier » du détail) |
 | Docs | `doc/30-module-admin.md`, skill `config-assistant/references/admin.md` | les deux options documentées |
-| Onglet « Créneaux SSBE » (complément, même jour) | [`AdminAnswerCopySection.tsx`](../src/modules/admin/sections/AdminAnswerCopySection.tsx), schéma `answerCopy.preview` | même détail au clic sur une ligne + bouton « Aperçu » par ligne ; **lecture seule** (la réponse appartient au site régional — pas d'`editButton`, « Copier » n'ouvre pas le détail) ; config `preview: {type: "coform-answer"}` ; 4 tests de rendu (clic ligne, Copier inerte, bouton, sans config) |
+| Onglet « Créneaux SSBE » (complément, même jour) | [`AdminAnswerCopySection.tsx`](../src/modules/admin/sections/AdminAnswerCopySection.tsx), schéma `answerCopy.preview` | même détail au clic sur une ligne + bouton « Aperçu » par ligne ; **lecture seule** (la réponse appartient au site régional — pas d'`editButton`, « Copier » n'ouvre pas le détail ; depuis §9.25 `editButton` est refusé par le schéma ET neutralisé au rendu) ; config `preview: {type: "coform-answer"}` ; 4 tests de rendu (clic ligne, Copier inerte, bouton, sans config) |
 
 **Pourquoi ça fonctionne sur les lignes de la modération.** En mode `statusField` la table interroge
 la route publique avec une projection explicite dont la racine `answers` fait partie (champ d'état) ;
@@ -1932,6 +1935,61 @@ après) · `config:validate` ✅ 13 pages / 49 sections · `audit:config` ✅ RA
 faire** (compte siteAdmin) : créer un créneau depuis l'onglet, l'ouvrir au clic et au clavier
 (menu → Aperçu), le modifier depuis le détail, vérifier le rafraîchissement de la table et de
 `/creneaux`.
+
+### 9.25 Corrections de la review de la MR 84 (`judi-ekilibre` → `main`, 08/10)
+
+**Verdict de la review** : bloquant sur un point, quatre « à vérifier », quatre nettoyages — les
+gates (lint, typecheck, preflight 795/795, 98 tests) étaient vertes sur l'arbre de la MR comme sur
+l'arbre mergé avec `main`. Tous les points sont traités dans le code, sauf le titre de la MR (GitLab).
+
+| # | Constat de la review | Correctif |
+|---|---|---|
+| 1 (bloquant) | `answerCopy.preview` acceptait `editButton: true` : recopier le bloc `preview` de l'onglet Modération (même forme) faisait apparaître « Modifier » sur une candidate, et l'enregistrement écrivait dans la réponse **du costum voisin** | schéma : `editButton` refusé (refine, `config:validate` échoue) ; rendu : la section passe `editButton: false` — la config n'est jamais parsée par Zod au runtime, le schéma seul ne protège pas |
+| 2 | colonne audio + `preview` : lecture ou avance (lecteur compact) ouvraient aussi le détail, l'audio continuant dessous | la cellule audio garde ses clics (`stopRowClick`) quand elle porte un lecteur — vide (« — »), elle redevient une cellule ordinaire —, comme sélection et actions ; contrat commun aux deux tables dans [`sections/rowPreview.ts`](../src/modules/admin/sections/rowPreview.ts) |
+| 3 | deux requêtes identiques après une création par CoForm : l'invalidation, puis `refetch()` à la fermeture | plus de `refetch()` à la fermeture : CoForm n'écrit **rien** avant la soumission finale (brouillon local, fichiers envoyés au submit), l'invalidation couvre la soumission |
+| 4 | `refetch()` aveugle à la fermeture de l'aperçu (vérifier 20 fiches = 20 `searchCostum`), et une vraie édition laissait les tuiles admin périmées | prop optionnelle `onEdited`, de `PreviewCoformAnswer.handleEdited` jusqu'à `SwitchDetailsMode` (module search, relayée par les deux conteneurs et `Preview`) ; la table y invalide `admin-*` + surfaces publiques ; fermer = 0 requête |
+| 5 | `createDefaults` ignoré en silence avec `create: {coform}` (le schéma acceptait les deux, la doc promettait le semis) | combinaison refusée par le schéma : les clés de `createDefaults` sont des champs de modale d'entité, rien ne les traduit en réponse rangée par étape |
+| 6 | 3ᵉ `case` en dur pour un libellé d'un seul site, et test du module search générique lisant `config.prod.maison-sport-sante-la-tampon.json` sur disque | `normalizeTypeLabel` lit le **suffixe** du libellé (`/^SS[a-z][A-Z]$/`) : un type futur n'exige plus de code — restent, côté site, sa règle CSS et l'option du filtre `sportHealthType` ; test de config remplacé par des cas génériques |
+| 7 | toute la ligne cliquable : glisser pour copier un e-mail ouvrait le détail et perdait la sélection | `rowPreviewProps` ignore le clic qui termine une sélection (`getSelection()`), sur les deux tables. Limite assumée : un double-clic ouvre le détail dès son premier clic (l'attendre retarderait chaque ouverture) — on copie au glisser |
+| 8 | `config:schema admin` ignorait `create.coform` et `preview` | descriptions `create`, `createDefaults`, `preview` ; « 8 builtin » (answerCopy manquait) ; note des refinements ; plancher de couverture admin 25 → 27 |
+| 9 | titre de la MR : annonce le type SSBE alors que 3 commits sur 5 livrent des fonctionnalités admin partagées | à renommer sur GitLab |
+
+**Relecture des correctifs** (4 relecteurs indépendants — bonnes pratiques, justesse, docs, tests —,
+chaque constat soumis à un sceptique : 23 sur 24 confirmés, aucun bloquant). Ce qu'elle a fait changer :
+
+| Constat | Correctif |
+|---|---|
+| Retirer le refetch à la fermeture ôtait le filet des AUTRES détails qui écrivent sans signaler `onEdited` (`facets`, `structure`, `poi-amenities` : édition, suppression ; `news` ; `event` : participation) — latent (seul Ekilib.re pose `preview`, en `coform-answer`), mais réel | `resource.preview` et `answerCopy.preview` n'admettent que les détails qui n'écrivent rien ou qui le signalent (`ADMIN_PREVIEW_TYPES` : `default`, `resource`, `resource-directory`, `testimonial`, `coform-answer`) — même parti que pour `createDefaults` : refuser plutôt que laisser une table périmée ; commentaires « seul variant qui édite » corrigés |
+| Les messages des nouveaux refines n'apparaissaient jamais dans `config:validate` (« Invalid input [invalid_union] ») | le refus du repli « section costum » devient **bloquant** (`abort`) : l'échec d'un refine builtin remonte tel quel ; `config:validate` **déplie** les unions restées opaques ([`scripts/lib/zod-issues.ts`](../scripts/lib/zod-issues.ts), la branche allée le plus loin) — vérifié sur une copie cassée de la config |
+| `normalizeTypeLabel` découpe désormais le type : une valeur non-chaîne faisait planter le détail | `str()` au lieu du cast pour `type` et `state` |
+| Exemption `coform-answer` périmée dans le preflight `presenter-options` (elle éteignait la garde de la transmission de `preview`) | exemption retirée + garde inverse (une exemption doit désigner une option encore morte) |
+| La JSDoc de `resolveCreateModal` détachée de sa fonction par l'insertion de `createCoformId` (MR) ; « 7 builtin » restants ; commentaire du lecteur (« vitesse » absente du lecteur compact) ; liste des consommateurs de `CoFormModal` | recollée / corrigés |
+
+**Tests** : `AdminResourceTable.test.tsx` **nouveau** (11 — la table n'en avait aucun : lecteur audio,
+case et menu d'actions, « Aperçu » au clavier, « Supprimer » sans détail par-dessus, sans `preview`,
+`editButton` transmis, sélection de texte, consultation sans requête, correction → invalidations,
+création = une invalidation, fermeture sans soumettre), `SwitchDetailsMode.test.tsx` **nouveau** (3 —
+la VRAIE chaîne `onEdited`, dialog et tiroir), `rowPreview.test.ts` (4), `zod-issues.test.ts` (4),
+`AdminAnswerCopySection.test.tsx` (+2 ; « la fermeture le retire » vérifie désormais la fermeture,
+qu'il annonçait sans la tester), `schema.test.ts` (+6), `resourceHelpers.test.ts` (+2, `audioSrc`),
+`coformAnswer.test.ts` (test de config → cas génériques + non-chaîne), helpers de sélection partagés
+(`tests/test-utils-ui.tsx`). Preuve qu'ils mordent : les 10 tests de rendu de la première passe
+échouent contre le code de la MR, et 9 mutations des correctifs (relais `onEdited` ×3, `abort`,
+coupures des cellules ×2, exemption, cast, ancres de la regex) font toutes échouer leur test.
+
+**Docs** : [07-module-search](../doc/07-module-search.md) (`onEdited` et les contenus qui ne le relaient
+pas, règle du suffixe), [30-module-admin](../doc/30-module-admin.md) (fermeture, création, types de
+détail admis, lecture seule `answerCopy`, `createDefaults`, validation lisible), skill
+`config-assistant/references/admin.md`, `config:schema admin` (descriptions + notes).
+
+**Gates (08/10, arbre de la branche)** : typecheck ✅ · lint ✅ 0 erreur / 24 avertissements (inchangé
+vs la MR) · test:unit ✅ 5 574 (460 fichiers) · preflight ✅ 794 · `config:validate` ✅ 13 pages /
+49 sections · `audit:config` ✅ RAS. **Arbre fusionné avec `main`** (39 commits de retard) : fusion
+sans conflit, test:unit ✅ 5 660, preflight ✅ 796 ; typecheck : 3 erreurs, toutes dans du code de
+`main` qui exige le SDK ≥ 1.0.196 (`setRoles`, `agendaGetPdf`) alors que le `node_modules` local est
+resté en 1.0.195 (`package.json` exige déjà `^1.0.196`) — un `npm install` les lève, sans rapport
+avec ce lot. État à l'écriture : **commité** sur `judi-ekilibre`, pas encore poussé ; titre de la MR
+à renommer ; recette navigateur (compte siteAdmin) toujours à faire.
 
 ---
 
