@@ -72,10 +72,11 @@ export function useSetMemberRoles(parentEntity: EntityTypes | null) {
   const queryClient = useQueryClient();
 
   return useMutationWithToast<void, { user: User; roles: string[] }>({
+    // Sans garde : le SDK est épinglé `^1.0.196` (`package.json`), qui expose `setRoles` — une
+    // garde `if (user.setRoles)` aurait fait réussir la mutation EN SILENCE sur un SDK antérieur
+    // (toast « rôles mis à jour » sans rien avoir écrit), au lieu de laisser l'erreur remonter.
     mutationFn: async ({ user, roles }) => {
-      if (user.setRoles) {
-        await user.setRoles(roles);
-      }
+      await user.setRoles(roles);
     },
     namespace: "modules/profil",
     successKey: "toast.members.setRolesSuccess",
@@ -154,10 +155,10 @@ function inviteWithRolesConfig(
   keys: { successKey: string; errorKey: string },
 ) {
   return {
+    // Sans garde, même raison que `useSetMemberRoles` : le SDK épinglé `^1.0.196` expose déjà
+    // `sendRequestToJoinParent`.
     mutationFn: async ({ user, roles, admin }: InviteWithRolesVariables) => {
-      if (user.sendRequestToJoinParent) {
-        await user.sendRequestToJoinParent({ admin, ...(roles.length > 0 ? { roles } : {}) });
-      }
+      await user.sendRequestToJoinParent({ admin, ...(roles.length > 0 ? { roles } : {}) });
     },
     namespace: "modules/profil",
     ...keys,
