@@ -8,10 +8,12 @@
 // ------------------------------------------------------------
 import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema, MarkerConfSchema, FeaturedCarouselSectionSchema, CoformResourceDirectorySectionSchema } from "@/modules/search/schema";
 import { DataObservatorySectionSchema } from "@/modules/observatoire/schema";
+import { MyPlacesSectionSchema } from "@/modules/profil/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { NotificationsSectionSchema } from "@/modules/notification/schema";
 import { JsonFormModalConfigSchema } from "./form-modal-schema";
 import { ActionButtonSchema } from "./action-button-schema";
+import { GeoShapeSourceSchema } from "./geo-shape-schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 import { AgendaSectionSchema } from "@/modules/agenda/schema";
@@ -526,6 +528,25 @@ export const ActionTilesSchema = z.object({
     // Colonnes par breakpoint (mobile = 1). Sans lui : défaut sm:2 lg:4 (idéal
     // pour 4/8 tuiles). À régler quand le compte ne tombe pas sur 4 (ex. 3 → lg:3).
     columns: ResponsiveColumns.optional(),
+    /** Taille des tuiles : `md` (défaut : titre 14 px, sous-titre 12 px, icône 16 px) ou `lg` (18 px, 16 px,
+     *  icône 32 px, marges verticales élargies, contenu calé en haut pour aligner les icônes d'une rangée). */
+    size: z.enum(["md", "lg"]).optional(),
+    /** Largeur de la grille : `default` (1024 px max) ou `wide` (1280 px max), pour 4 tuiles et plus en `lg`. */
+    width: z.enum(["default", "wide"]).optional(),
+    /**
+     * Rendu du titre : `plain` (défaut, titre centré), `badge` — la pastille inclinée d'`articleTeaser`
+     * et de `map-bubbles` — ou `pill`, la même en arrondi droit. Les deux se calent à gauche, pour une
+     * page dont toutes les bandes portent le même repère. `accentColor` (couleur CSS) les teinte ; sans
+     * elle, la pastille prend le ton `secondary`.
+     */
+    headlineStyle: z.enum(["plain", "badge", "pill"]).optional(),
+    /**
+     * Disposition d'une tuile : `centered` (défaut, icône puis textes centrés) ou `inline` — icône dans
+     * une pastille, titre à côté d'elle, sous-titre dessous, le tout aligné à gauche. `inline` se lit
+     * mieux dès que les sous-titres font une phrase entière.
+     */
+    tileLayout: z.enum(["centered", "inline"]).optional(),
+    accentColor: z.string().optional(),
     actions: z.array(
       z.object({
         icon: z.string(),
@@ -546,6 +567,13 @@ export const ActionTilesSchema = z.object({
           // alias historiques
           "turquoise", "cyan-bright", "teal", "amber", "eco",
         ]).optional(),
+        /**
+         * Fond PLEIN de la tuile — couleur CSS, `var(--jeton)` recommandé. Remplace la teinte à 20 % de
+         * `color`. Fixe en clair comme en sombre : fournir `textColor`, dont le contraste est à vérifier.
+         */
+        background: z.string().optional(),
+        /** Couleur du texte et de l'icône d'une tuile à fond plein (`background`). */
+        textColor: z.string().optional(),
       })
     ),
   }),
@@ -584,6 +612,10 @@ export const CtaCardGridSchema = z.object({
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     image: z.string().optional(),
     imageAlt: LocalizedString.optional(),
+    /** Colonnes par breakpoint (mobile = 1). Sans lui : `{md:2, lg:4}`, la grille
+     *  historique — à baisser quand les descriptions sont de vrais paragraphes,
+     *  illisibles sur quatre colonnes étroites. */
+    columns: ResponsiveColumns.optional(),
     actions: z.array(
       z.object({
         icon: z.string(),
@@ -591,6 +623,9 @@ export const CtaCardGridSchema = z.object({
         description: LocalizedString,
         ctaLabel: LocalizedString,
         href: z.string(),
+        /** Teinte de l'icône. Mêmes valeurs que `features-glass` (helper partagé
+         *  `iconColorClass`) ; sans elle, `primary` — la teinte historique. */
+        color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light", "accent", "chart-2", "chart-3"]).optional(),
       })
     ).optional(),
     stats: z
@@ -1057,6 +1092,8 @@ const AccordionSectionSchema = z.object({
       defaultOpen: z.boolean().default(false),
     })),
     allowMultiple: z.boolean().default(false),
+    /** Fond de la section (jetons du thème + `page-accent`, l'aplat de `page.accent`). */
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   }),
 });
 
@@ -1335,6 +1372,19 @@ export const MapBubblesSchema = z.object({
     backgroundImage: z.string().optional(),
     backgroundImageAlt: LocalizedString.optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    /**
+     * Habillage : `sticker` (défaut, historique) — titre posé SUR l'illustration, accroche en vis-à-vis à
+     * droite — ou `card` : titre débordant du haut du bloc, accroche dessous, illustration sur son propre
+     * aplat (le dégradé de `backgroundOverlay` s'il est fourni, sinon celui de `page.accent`). `card`
+     * suppose que le bloc est DANS une carte (colonne de `gridLayout`), sinon le titre flotte dans le vide.
+     */
+    design: z.enum(["sticker", "card"]).optional(),
+    /** Forme du titre : `badge` (défaut, étiquette inclinée) ou `pill` (arrondi droit). */
+    headlineStyle: z.enum(["badge", "pill"]).optional(),
+    /** Fond de l'étiquette de titre (couleur CSS). Défaut : le marine fixe de la carte. */
+    badgeColor: z.string().optional(),
+    /** Encre de l'étiquette de titre. Défaut blanc — contraste AA à mesurer sur `badgeColor`. */
+    badgeTextColor: z.string().optional(),
     // Dégradé décoratif optionnel derrière l'illustration. Couleurs CSS arbitraires
     // (typiquement des var() de thème du site) : le composant ne code aucune couleur en dur.
     backgroundOverlay: z
@@ -1352,6 +1402,12 @@ export const MapBubblesSchema = z.object({
         size: z.number().min(0).max(100), // % de la largeur du conteneur
         x: z.number().min(0).max(100),
         y: z.number().min(0).max(100),
+        /**
+         * Villes principales du territoire, affichées en INFOBULLE au survol et au focus clavier de la
+         * bulle (jamais au toucher : un appui suit le lien). Le texte est aussi la description accessible
+         * du lien. Absent = pas d'infobulle.
+         */
+        cities: LocalizedString.optional(),
       })
     ),
   }),
@@ -1360,6 +1416,60 @@ export const MapBubblesSchema = z.object({
 export type MapBubbles = z.infer<typeof MapBubblesSchema>;
 
 export type MapBubblesProps = z.infer<typeof MapBubblesSchema>["props"];
+
+//──────────────── Contours géographiques cliquables, en SVG (hors carte)
+/**
+ * Les MÊMES couches de contours que `map.shapes` (searchPro / agenda), mais rendues comme un bloc
+ * de NAVIGATION plutôt que comme un décor de carte : un `<path>` SVG par contour, cliquable, qui
+ * mène à une page de recherche avec un filtre pré-appliqué.
+ *
+ * À ne pas confondre avec `map.shapes`, qui superpose les mêmes contours À la carte MapLibre : ici
+ * il n'y a ni fond de plan, ni marqueurs, ni résultats — donc aucune requête de recherche.
+ */
+const MapShapesSchema = z.object({
+  type: z.literal("map-shapes"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString.optional(),
+    description: LocalizedString.optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    /** Hauteur MAXIMALE du bloc, en px. Le SVG garde son ratio (`viewBox`), il est juste borné. */
+    maxHeight: z.number().min(160).optional(),
+    /**
+     * Couches de contours — contrat identique à `map.shapes`, cf. `GeoShapeSourceSchema` (sources
+     * `zones` / `cities` / `zoniris`, `filters`, `simplify`, `style`, `label`, `showNames`).
+     *
+     * ⚠️ `load` n'a PAS de sens ici et est ignoré : les contours SONT le contenu de la section, il
+     * n'y a pas de vue carte à ouvrir — ils sont toujours chargés à l'affichage.
+     */
+    shapes: z.array(GeoShapeSourceSchema).min(1),
+    /**
+     * Clic sur un contour → `path?filterId=<valeur>`, exactement comme `regionsTarget` /
+     * `thematicsTarget` de `searchProStatic`.
+     *
+     * ⚠️ PIÈGE : la page cible doit porter un groupe de filtres dont l'`id` vaut `filterId` et dont
+     * une option porte la valeur émise. `computeFiltersFromUrl` résout par
+     * `(o.name || o.id) === v || o.id === v` et **jette silencieusement** ce qui ne matche pas — le
+     * lien « marche » mais ne filtre rien. Choisir `valueFrom` en regardant les options RÉELLES du
+     * groupe cible.
+     */
+    target: z.object({
+      path: z.string().min(1),
+      filterId: z.string().min(1),
+      /** Propriété du contour utilisée comme valeur de filtre. Défaut `name`. */
+      valueFrom: z.enum(["name", "insee", "_id", "countryCode", "level"]).optional(),
+      /**
+       * Restreint la cliquabilité à ces `id` de couche. Absent = toutes. Sert à garder une couche
+       * de DÉCOR (contour régional englobant) inerte sous des communes cliquables.
+       */
+      layers: z.array(z.string()).optional(),
+    }),
+  }),
+});
+
+export type MapShapes = z.infer<typeof MapShapesSchema>;
+
+export type MapShapesProps = z.infer<typeof MapShapesSchema>["props"];
 
 //──────────────── Alert / Banner
 const BannerSectionSchema = z.object({
@@ -1427,10 +1537,30 @@ export type TitleSection = z.infer<typeof TitleSectionSchema>;
 export type TitleSectionProps = z.infer<typeof TitleSectionSchema>["props"];
 
 const GridLayoutSectionPropsSchema = z.object({
+  /** Fond de la bande (jetons du thème + `page-accent`, l'aplat de `page.accent`). Défaut : fond hérité. */
+  bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
+  /** Largeur max du contenu. Défaut : toute la largeur du `container`. À aligner sur les bandes voisines. */
+  maxWidth: z.enum(["3xl", "4xl", "5xl", "6xl", "7xl", "full"]).optional(),
   leftSection: z.lazy(() => SectionSchemaLazy).optional(),
   rightSection: z.lazy(() => SectionSchemaLazy).optional(),
+  /** Mode « rangée » : N sections de MÊME largeur sur une ligne, au lieu du couple
+   *  gauche/droite. Présent, il prime sur `leftSection`/`rightSection` — c'est ce qu'il faut
+   *  quand trois blocs de même rang (un agenda, une équipe, un lien) doivent se lire comme une
+   *  seule bande, là où le couple asymétrique impose un contenu principal et un aparté. */
+  sections: z.array(z.lazy(() => SectionSchemaLazy)).optional(),
+  /** Nombre de colonnes du mode « rangée » (défaut : autant que de `sections`, plafonné à 4). */
+  columns: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
   leftColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
+  /** Alignement vertical des deux colonnes. `start` (défaut, comportement historique) : chacune
+   *  s'arrête à son contenu — une colonne plus courte laisse du vide sous elle. `stretch` : les deux
+   *  prennent la hauteur de la plus haute, et leur section fille est étirée (`h-full`) — à choisir
+   *  quand la colonne courte porte un fond coloré, sinon ce vide se lit comme un trou dans la page. */
+  align: z.enum(["start", "stretch"]).optional(),
+  /** Largeur à partir de laquelle les deux colonnes se placent CÔTE À CÔTE ; en dessous elles
+   *  s'empilent. `lg` (défaut, comportement historique) = 1024px, `md` = 768px — à descendre quand le
+   *  bloc doit rester sur une ligne à fort zoom navigateur, qui rétrécit le viewport CSS. */
+  from: z.enum(["md", "lg"]).optional(),
   gap: z.number().optional(),
   className: z.string().optional(),
   leftWrapperClass: z.string().optional(),
@@ -1451,10 +1581,29 @@ const ContentSectionSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     category: LocalizedString.optional(),
+    /** Rendu de `category` : `"pill"` = pastille bordée. Défaut `"text"` (texte simple, historique). */
+    categoryVariant: z.enum(["text", "pill"]).optional(),
     title: LocalizedString,
     description: LocalizedString,
     tags: z.array(LocalizedString).optional(),
     image: z.string().optional(),
+    /** Rend l'image CLIQUABLE. Chemin interne (`/blog/x`) ou URL absolue — une URL externe s'ouvre
+     *  dans un nouvel onglet, avec `rel="noopener noreferrer"`. Sans image, la prop est ignorée. */
+    imageHref: z.string().optional(),
+    /** Cadrage de l'image. `cover` (défaut) remplit la boîte quitte à rogner — le bon choix pour une
+     *  photo ; `contain` la montre ENTIÈRE, pour une couverture de document ou un logo, qu'un
+     *  rognage amputerait. */
+    imageFit: z.enum(["cover", "contain"]).optional(),
+    /** Largeur du bloc. `prose` (défaut, comportement historique) : colonne de lecture calée à
+     *  GAUCHE du conteneur, la forme illustrée occupant elle toute la largeur. `wide` : les deux
+     *  formes prennent la même largeur, celle d'un fil d'articles, et sont CENTRÉES — à choisir pour
+     *  une page qui alterne blocs illustrés et blocs de texte, où deux largeurs différentes se
+     *  lisent comme un décrochage. */
+    width: z.enum(["prose", "wide"]).optional(),
+    /** Alignement du bloc et de son texte. `left` (défaut, comportement historique) :
+     *  colonne calée à gauche. `center` : bloc centré (`mx-auto`) et texte centré — pour une
+     *  section sans visuel posée sur une page par ailleurs centrée. */
+    align: z.enum(["left", "center"]).optional(),
     imagePosition: z.enum(["left", "right"]).default("right"),
     links: z.array(z.object({
       label: LocalizedString,
@@ -1578,6 +1727,7 @@ export const Section = z.discriminatedUnion("type", [
   TimelineSectionSchema,
   MapSectionSchema,
   MapBubblesSchema,
+  MapShapesSchema,
   BannerSectionSchema,
   NewsletterSectionSchema,
   LoginFormSectionSchema,
@@ -1628,6 +1778,7 @@ export const Section = z.discriminatedUnion("type", [
   ArticleFeedSectionSchema,
   ArticleReaderSectionSchema,
   ArticleTeaserSectionSchema,
+  MyPlacesSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 
@@ -1698,6 +1849,13 @@ export const Page = z.object({
   hideFooter: z.boolean().optional(),
   customCSS: z.string().optional(),
   customJS: z.string().optional(),
+  /**
+   * Couleur d'ACCENT de la page (couleur CSS, `var(--jeton)` recommandé) : posée sur son `<main>` en
+   * `--page-accent`, avec son aplat léger `--page-accent-soft` (12 % sur le fond du thème). Les sections
+   * qui acceptent `bg: "page-accent"` s'en servent pour alterner les fonds — ex. les 9 pages de territoire
+   * de parent62, chacune à la couleur de son territoire. Sans accent, `bg: "page-accent"` reste transparent.
+   */
+  accent: z.string().optional(),
 });
 export type Page = z.infer<typeof Page>;
 
@@ -1758,6 +1916,11 @@ export interface EnhancedNavItemType {
   /** Affiche le sous-menu en mise en avant (colonne "lien principal" via `path` + grille). */
   featured?: boolean;
   dynamicList?: z.infer<typeof DynamicNavList>;
+  /**
+   * Barre desktop du header `stacked` : icône SEULE, le libellé devenant le nom accessible (`aria-label`) et
+   * l'infobulle. Ignoré sans `icon`. Le menu mobile et les autres variantes de header affichent le libellé.
+   */
+  iconOnly?: boolean;
 }
 
 const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
@@ -1774,6 +1937,7 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
     description: LocalizedString.optional(),
     featured: z.boolean().optional(),
     dynamicList: DynamicNavList.optional(),
+    iconOnly: z.boolean().optional(),
   }).refine(d => d.path || d.href || d.children || d.megaMenu || d.dynamicList, {
     message: "NavItem : path, href, children, megaMenu ou dynamicList obligatoire"
   })
@@ -1885,14 +2049,23 @@ export const Header = z.object({
 });
 export type Header = z.infer<typeof Header>;
 
+/** Lien de pied de page — commun aux colonnes, aux `legalLinks` et aux `bottomLinks`. */
+const FooterLink = z.object({
+  href: z.string(),
+  label: LocalizedString,
+  external: z.boolean().optional(),
+  icon: z.string().optional(),
+  /**
+   * Condition d'affichage, même grammaire que les entrées de nav (cf. `@/lib/visibility`).
+   * Ce qui dépend de l'auth est masqué au rendu serveur et apparaît à l'hydratation.
+   */
+  visibility: VisibilityConditionSchema,
+});
+export type FooterLink = z.infer<typeof FooterLink>;
+
 const FooterColumn = z.object({
   title: LocalizedString,
-  links: z.array(z.object({
-    href: z.string(),
-    label: LocalizedString,
-    external: z.boolean().optional(),
-    icon: z.string().optional(),
-  })),
+  links: z.array(FooterLink),
 });
 
 const FooterContactItem = z.object({
@@ -1947,14 +2120,8 @@ export const Footer = z.object({
   // Purement décorative (CSS background) : pas d'alternative textuelle — un
   // `aria-label` sur le <footer> renommerait le landmark contentinfo.
   backgroundImage: z.string().optional(),
-  legalLinks: z.array(z.object({
-    href: z.string(),
-    label: LocalizedString,
-  })).optional(),
-  bottomLinks: z.array(z.object({
-    href: z.string(),
-    label: LocalizedString,
-  })).optional(),
+  legalLinks: z.array(FooterLink).optional(),
+  bottomLinks: z.array(FooterLink).optional(),
   paymentMethods: z.array(z.string()).optional(), // Array of payment method icons
   website: z.string().optional(),
   contactSection: FooterContactSection.optional(),

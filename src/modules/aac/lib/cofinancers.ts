@@ -15,6 +15,7 @@
  * la longueur de ce résultat — les deux chiffres coïncident par construction.
  */
 import type { CagnotteFundableItem } from "@/modules/cagnotte/types";
+import { readFinancerPaymentState } from "@/modules/cagnotte/utils/financerPayment";
 
 /**
  * Une ligne de `allFunding`. Le repli `name`/`type` sur `financerName`/
@@ -35,7 +36,12 @@ export interface CofinancerAggregate {
   name: string;
   /** `""` si aucune ligne ne porte de type — l'UI met son libellé. */
   type: string;
+  /** Montant ENGAGÉ, tous statuts confondus — `paidAmount + pledgedAmount`. */
   totalAmount: number;
+  /** Part réellement encaissée et validée par le porteur. */
+  paidAmount: number;
+  /** Part encore due : promesse non versée, ou versement en attente de validation. */
+  pledgedAmount: number;
 }
 
 const texte = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
@@ -56,17 +62,23 @@ export function aggregateCofinancers(items: CagnotteFundableItem[]): CofinancerA
     const name = texte(ligne?.financerName) || texte(ligne?.name);
     const type = texte(ligne?.financerType) || texte(ligne?.type);
     const amount = Number(ligne?.amount || 0);
+    // Le DÉCOMPTE de cofinanceurs ne change pas — on agrège toujours tout engagement,
+    // quel que soit son statut. Seul le DÉTAIL se scinde en acquis / encore dû.
+    const { paidAmount } = readFinancerPaymentState(ligne);
+    const pledgedAmount = Math.max(amount - paidAmount, 0);
     // Préfixes distincts : un id et un nom ne peuvent pas se télescoper.
     const key = financerId ? `id:${financerId}` : name ? `name:${name}` : `anonyme:${index}`;
 
     const existant = parCle.get(key);
     if (existant) {
       existant.totalAmount += amount;
+      existant.paidAmount += paidAmount;
+      existant.pledgedAmount += pledgedAmount;
       if (!existant.name && name) existant.name = name;
       if (!existant.type && type) existant.type = type;
       return;
     }
-    parCle.set(key, { key, financerId, name, type, totalAmount: amount });
+    parCle.set(key, { key, financerId, name, type, totalAmount: amount, paidAmount, pledgedAmount });
   });
 
   return Array.from(parCle.values());

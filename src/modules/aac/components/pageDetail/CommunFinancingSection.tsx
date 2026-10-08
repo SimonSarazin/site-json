@@ -18,6 +18,8 @@ import { toSafeInt, buildItemsFromRawDepenses } from "@/modules/cagnotte/utils/d
 import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
 import type { CagnottePermissions } from "@/modules/cagnotte/permissions/types";
 import type { CommunObjectivesController } from "./CommunMilestoneDialogs";
+import { MilestoneCardsSkeleton } from "./CommunSkeletons";
+import { readFinancerPaymentState } from "@/modules/cagnotte/utils/financerPayment";
 import {
   toMilestoneStatus,
   fundableItemToMilestone,
@@ -86,6 +88,7 @@ function FinancingMilestoneCard({
     // la table des cofinanceurs l'excluent de leurs totaux : sans marqueur, le
     // lecteur additionnait des montants absents du total annoncé juste au-dessus.
     const isClosed = item.status === "close";
+    const description = item.description?.trim();
 
     return (
         <div className={`bg-surface border rounded-lg overflow-hidden group ${isClosed ? "border-dashed border-border" : "border-border"}`}>
@@ -109,6 +112,14 @@ function FinancingMilestoneCard({
                         ) : null}
                     </div>
                     <h4 className={`font-display font-bold truncate ${isClosed ? "text-muted-foreground" : ""}`}>{item.name}</h4>
+                    {/* Aperçu replié, deux lignes : purement visuel (`aria-hidden`), sinon le
+                        texte entier devenait le nom accessible du bouton. Le texte complet
+                        vit dans le panneau, où il est lu et sélectionnable. */}
+                    {description && !open ? (
+                        <p aria-hidden="true" className="mt-1 text-sm text-muted-foreground whitespace-pre-line break-words line-clamp-2">
+                            {description}
+                        </p>
+                    ) : null}
                 </div>
 
                 <div className="hidden sm:block w-64 shrink-0 ml-auto">
@@ -123,7 +134,7 @@ function FinancingMilestoneCard({
                     <Progress
                         value={pct}
                         className="h-1.5 bg-background border border-border"
-                        indicatorClassName={done ? "bg-success" : "bg-primary"}
+                        indicatorClassName="bg-primary"
                     />
                     <div className="mt-1 text-right text-[10px] uppercase tracking-widest text-muted-foreground tabular-nums">
                         {String(c("detail.objectives.collectedPercent", undefined, { percent: pct }))}
@@ -139,6 +150,12 @@ function FinancingMilestoneCard({
 
             {open && (
                 <div id={panelId} className="p-5 sm:p-6 pt-4 bg-background/30 border-t border-border">
+                    {description ? (
+                        <p className="mb-4 text-sm text-muted-foreground whitespace-pre-line break-words">
+                            {description}
+                        </p>
+                    ) : null}
+
                     <div className="sm:hidden space-y-2 mb-4">
                         <div className="flex justify-between text-xs tabular-nums">
                             <span className={done ? "text-success font-bold" : "text-foreground font-bold"}>
@@ -161,16 +178,30 @@ function FinancingMilestoneCard({
                                 {String(c("detail.objectives.noFundingYet"))}
                             </li>
                         )}
-                        {(item?.allFunding || []).map((fund: CagnotteFundableItem["allFunding"][number], i: number) => (
-                            <li key={i} className="flex p-3 rounded-md border text-sm">
-                                <span className="w-[35%]">{fund.financerName}</span>
-                                <span className="w-[25%]">{formatCurrency(toSafeInt(fund.amount))}</span>
-                                <span className="w-[25%]">{fund?.date ? new Date(fund.date).toLocaleDateString("fr-FR") : ""}</span>
-                                <span className={fund.fundingType === "prepaid" ? "w-[15%] text-success" : "w-[15%]"}>
-                                    {fund.fundingType === "prepaid" ? String(c("detail.objectives.paid")) : String(c("detail.objectives.pledged"))}
-                                </span>
-                            </li>
-                        ))}
+                        {(item?.allFunding || []).map((fund: CagnotteFundableItem["allFunding"][number], i: number) => {
+                            // Trois états : un versement partiel validé n'est ni « payé »
+                            // ni une simple promesse.
+                            const { status } = readFinancerPaymentState(fund);
+                            const label =
+                                status === "payed" ? c("detail.objectives.paid")
+                                : status === "partial" ? c("detail.objectives.partiallyPaid")
+                                : c("detail.objectives.pledged");
+
+                            return (
+                                <li key={i} className="flex p-3 rounded-md border text-sm">
+                                    <span className="w-[35%]">{fund.financerName}</span>
+                                    <span className="w-[25%]">{formatCurrency(toSafeInt(fund.amount))}</span>
+                                    <span className="w-[25%]">{fund?.date ? new Date(fund.date).toLocaleDateString("fr-FR") : ""}</span>
+                                    <span className={
+                                        status === "payed" ? "w-[15%] text-success"
+                                        : status === "partial" ? "w-[15%] text-primary"
+                                        : "w-[15%]"
+                                    }>
+                                        {String(label)}
+                                    </span>
+                                </li>
+                            );
+                        })}
                     </ul>
                 </div>
             )}
@@ -216,12 +247,16 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl }: CommunFinan
     //
     // L'étape est celle que la page a RÉSOLUE (`config.roles.depenseStepKey`) :
     // `aapStep1` en dur vidait la liste sur tout appel dont `depense` vit ailleurs.
-    const { data: depenses } = useCommunRawDepenses(
+    const { data: depenses, isLoading: isDepensesLoading } = useCommunRawDepenses(
         ctrl.resolvedAnswerId,
         aacConfig?.roles?.depenseStepKey ?? undefined,
     );
 
     const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
+
+    // Les paliers viennent des dépenses OU de l'enveloppe : tant que l'une des deux est en
+    // vol et qu'aucun palier n'est là, une grille vide se lirait « aucun besoin financier ».
+    const isLoading = (isDepensesLoading || ctrl.isLoadingData) && items.length === 0;
 
     return (
         <div className="grid gap-4">
@@ -232,9 +267,12 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl }: CommunFinan
                     </Button>
                 </div>
             ) : null}
+            {isLoading ? <MilestoneCardsSkeleton /> : null}
             {items.map((o: CagnotteFundableItem, i: number) => (
                 <FinancingMilestoneCard
-                    key={i}
+                    // Clé sur l'identité du palier : sur l'index, l'état déplié d'une
+                    // carte passait à sa voisine après une suppression.
+                    key={o.itemId}
                     index={i}
                     item={o}
                     openEditMilestoneModal={ctrl.openEditMilestoneModal}

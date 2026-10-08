@@ -81,10 +81,8 @@ export function useCommunObjectivesController({
   const { context: fundingContext } = useCommunFundingContext(answerQuery);
   const { hostEntity: fundingHost, isLoading: isFundingHostLoading } =
     useCommunFundingHost(fundingContext);
-  const { data: fundingEnvelopeData, refetch: refetchFundingEnvelope } = useFundingEnvelope(
-    answerEntityId,
-    { hostEntity: fundingHost, enabled: !isFundingHostLoading },
-  );
+  const { data: fundingEnvelopeData, refetch: refetchFundingEnvelope, isLoading: isEnvelopeLoading } =
+    useFundingEnvelope(answerEntityId, { hostEntity: fundingHost, enabled: !isFundingHostLoading });
 
   const resolvedProjectId = funding?.projectId || "";
   const resolvedAnswerId = funding?.answerId || answerEntityId || "";
@@ -120,7 +118,18 @@ export function useCommunObjectivesController({
     project: projectEntity,
   });
 
-  const { data: rawDepensesDocument } = useCommunRawDepensesDocument(resolvedAnswerId, depenseStepKey ?? undefined);
+  const { data: rawDepensesDocument, isLoading: isDepensesLoading } =
+    useCommunRawDepensesDocument(resolvedAnswerId, depenseStepKey ?? undefined);
+
+  /**
+   * Les LECTURES du contrôleur, distinctes de `loadingIds` qui suit les mutations.
+   * Vrai tant que l'hôte, l'enveloppe ou le document de dépenses sont en vol : les
+   * blocs qui en dépendent rendent alors un squelette plutôt qu'une liste vide.
+   *
+   * `isLoading` et non `isPending` : ces requêtes sont désactivées au SSR et pour un
+   * visiteur anonyme, où `isPending` resterait vrai indéfiniment.
+   */
+  const isLoadingData = isFundingHostLoading || isEnvelopeLoading || isDepensesLoading;
   const milestoneDocs = useMemo<MilestoneSyncDocs>(
     () => ({
       projectMilestones: asRecord(asRecord(projectEntity?.serverData).oceco).milestones,
@@ -373,6 +382,8 @@ export function useCommunObjectivesController({
 
     // Etats de chargement (spinners par id)
     loadingIds,
+    // Etat de chargement des LECTURES (squelettes de bloc)
+    isLoadingData,
 
     // Dialogs : etat d'ouverture
     isCreateActionOpen,

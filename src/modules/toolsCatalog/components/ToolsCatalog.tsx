@@ -343,6 +343,7 @@ export function ToolsCatalog({ props }: { props: ToolsCatalogSectionProps }) {
           communFormId={props.communFormId}
           enableEnrichmentEditing={props.enableEnrichmentEditing}
           communUrlTemplate={props.communUrlTemplate}
+          placeKind={props.placeKind}
           onClose={() => setSelectedTool(null)}
         />
       )}
@@ -351,7 +352,13 @@ export function ToolsCatalog({ props }: { props: ToolsCatalogSectionProps }) {
           sont chargés que si l'utilisateur clique. */}
       {answering && (
         <Suspense fallback={null}>
-          <ToolsAnswerDialog formId={props.formId} open onOpenChange={setAnswering} />
+          <ToolsAnswerDialog
+            formId={props.formId}
+            open
+            onOpenChange={setAnswering}
+            placeKind={props.placeKind}
+            placeSourceKeys={props.placeSourceKeys}
+          />
         </Suspense>
       )}
     </div>

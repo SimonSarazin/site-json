@@ -37,14 +37,17 @@ const buildAddPoiPayload = (d: Data) => buildPayload({ descriptor: addPoiDescrip
  * retournée par le save.
  */
 function makeSdk(opts: { sansUpdateField?: boolean; serverData?: Data } = {}) {
-  const calls: Array<{ scope: string; method: string; payload: Data }> = [];
+  // `argc`/`opts` : le 2e argument (options de création d'un scope costum, ex. `{ subType }`) et le
+  // NOMBRE d'arguments reçus — « sans sous-type, l'appel est inchangé » se vérifie sur argc === 1.
+  const calls: Array<{ scope: string; method: string; payload: Data; argc: number; opts?: unknown }> = [];
   const updates: Array<{ field: string; value: unknown }> = [];
   let saves = 0;
   const target = (scope: string) => {
     const t: Record<string, unknown> = {};
     for (const m of ["organization", "project", "event", "poi"]) {
-      t[m] = async (payload: Data) => {
-        calls.push({ scope, method: m, payload });
+      t[m] = async (...args: unknown[]) => {
+        const [payload, createOpts] = args as [Data, unknown];
+        calls.push({ scope, method: m, payload, argc: args.length, ...(args.length > 1 ? { opts: createOpts } : {}) });
         return {
           save: async () => { saves += 1; },
           slug: "new-slug",
@@ -125,6 +128,36 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
     expect(sdk.calls[0].payload).toEqual(expected);
     expect(sdk.getSaves()).toBe(1);
     expect((entity as { slug?: string }).slug).toBe("new-slug");
+  });
+
+  it("CREATE : la modération a priori ne vise QUE les non-admins du site", async () => {
+    const values = { name: "Event", url: "", tags: [], shortDescription: "" };
+    const spec: EntityMutationSpec = {
+      ...base, mode: "add", entityType: "organizations",
+      buildPayload: (d) => buildProfileUpdateData("organizations", d),
+      inject: { extraFieldsUnlessCostumAdmin: { preferences: { toBeValidated: true } } },
+    };
+
+    // Visiteur ou membre simple : la fiche part en attente de validation.
+    const visiteur = makeSdk();
+    await runEntityMutation(spec, values, {
+      me: visiteur.me,
+      contextEntity: { isAdmin: () => false } as unknown as EntityTypes,
+    });
+    expect(visiteur.calls[0].payload).toMatchObject({ preferences: { toBeValidated: true } });
+
+    // Admin du site : publication directe.
+    const admin = makeSdk();
+    await runEntityMutation(spec, values, {
+      me: admin.me,
+      contextEntity: { isAdmin: () => true } as unknown as EntityTypes,
+    });
+    expect(admin.calls[0].payload).not.toHaveProperty("preferences");
+
+    // Porteur pas encore chargé : on ne dispense jamais par défaut.
+    const sansPorteur = makeSdk();
+    await runEntityMutation(spec, values, { me: sansPorteur.me });
+    expect(sansPorteur.calls[0].payload).toMatchObject({ preferences: { toBeValidated: true } });
   });
 
   it("CREATE projet : parent injecté (buildParentReference)", async () => {
@@ -335,6 +368,65 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
     await runEntityMutation(spec, { name: "X", _imageDeleted: true }, { me: null });
     expect(editable.saves).toBe(1);
     expect(editable.removes).toBe(1);
+  });
+});
+
+/**
+ * Sous-type costum CIBLÉ à la création (`spec.subType` → 2e argument du SDK).
+ *
+ * Le SDK choisit la variante costum (schéma + presets) d'une création : sans ciblage, celle de la clé
+ * de BASE de la collection (CAE : `organizations`, vide) ; avec `{ subType }`, celle du sous-type
+ * (CAE : `organizationsTls`, presets `tags:"CAE"`/`role:"admin"`). Le relais n'a de sens que sur un
+ * SCOPE COSTUM : `me`/un parent (BaseEntity) ne connaissent pas ce 2e argument.
+ */
+describe("runEntityMutation — sous-type costum ciblé (subType)", () => {
+  const caePorteur = { id: "ctx", getEntityType: () => "organizations", serverData: { slug: "federationDesCae" } } as unknown as EntityTypes;
+  const specOrga = (over: Partial<EntityMutationSpec> = {}): EntityMutationSpec => ({
+    ...base, mode: "add", entityType: "organizations", buildPayload: (d) => d, ...over,
+  });
+
+  it("costum AMBIANT + subType : `{ subType }` part en 2e argument, payload intact", async () => {
+    const sdk = makeSdk();
+    await runEntityMutation(specOrga({ subType: "organizationsTls" }), { name: "Ma CAE" }, { me: sdk.me, contextEntity: caePorteur });
+    expect(sdk.calls).toHaveLength(1);
+    expect(sdk.calls[0]).toMatchObject({ scope: "costum:federationDesCae", method: "organization", argc: 2, opts: { subType: "organizationsTls" } });
+    expect(sdk.calls[0].payload).toEqual({ name: "Ma CAE" }); // jamais dans le payload (rien n'est envoyé au serveur)
+  });
+
+  it("costumSlug EXPLICITE + subType : relayé aussi", async () => {
+    const sdk = makeSdk();
+    await runEntityMutation(specOrga({ entityType: "poi", costumSlug: "institutBleu", subType: "financement" }), { name: "F" }, { me: sdk.me });
+    expect(sdk.calls[0]).toMatchObject({ scope: "costum:institutBleu", method: "poi", argc: 2, opts: { subType: "financement" } });
+  });
+
+  it("SANS subType : appel STRICTEMENT inchangé (un seul argument), ambiant comme explicite", async () => {
+    const ambiant = makeSdk();
+    await runEntityMutation(specOrga(), { name: "Org" }, { me: ambiant.me, contextEntity: caePorteur });
+    expect(ambiant.calls[0]).toMatchObject({ scope: "costum:federationDesCae", argc: 1 });
+    expect(ambiant.calls[0]).not.toHaveProperty("opts");
+
+    const explicite = makeSdk();
+    await runEntityMutation(specOrga({ costumSlug: "federationDesCae" }), { name: "Org" }, { me: explicite.me });
+    expect(explicite.calls[0]).toMatchObject({ scope: "costum:federationDesCae", argc: 1 });
+  });
+
+  it("cible DIRECTE (aucun costum) : subType JAMAIS relayé à `me`/au parent", async () => {
+    const sdk = makeSdk();
+    await runEntityMutation(specOrga({ subType: "organizationsTls" }), { name: "Org" }, { me: sdk.me });
+    expect(sdk.calls[0]).toMatchObject({ scope: "me", method: "organization", argc: 1 });
+  });
+
+  it("ÉDITION : subType inerte (aucune création SDK, save du draft seul)", async () => {
+    const sdk = makeSdk();
+    const editable = makeEditable();
+    await runEntityMutation(
+      specOrga({ mode: "edit", target: editable as unknown as EntityTypes, subType: "organizationsTls" }),
+      { name: "Ma CAE" },
+      { me: sdk.me, contextEntity: caePorteur },
+    );
+    expect(sdk.calls).toEqual([]);
+    expect(editable.saves).toBe(1);
+    expect(editable.data).toEqual({ name: "Ma CAE" });
   });
 });
 

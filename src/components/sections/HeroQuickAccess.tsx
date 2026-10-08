@@ -3,6 +3,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { LocalizedString } from "@/types/site-schema";
 import { ArrowRight } from "lucide-react";
 import { HeroBackgroundImage } from "./HeroBackgroundImage";
+import { classifyHref } from "@/lib/linkKind";
 
 type HeroButtonVariant = "default" | "secondary" | "accent" | "primary" | "outline";
 
@@ -123,15 +124,33 @@ export function HeroQuickAccess({ id, props }: HeroQuickAccessProps) {
 
             {props.ctaButtons && props.ctaButtons.length > 0 && (
                 <div className="flex flex-wrap gap-4">
-                    {props.ctaButtons.map((btn, idx) => (
-                        <Link
-                            key={idx}
-                            to={btn.path || "#"}
-                            className={getButtonClasses(btn.variant)}
-                        >
-                            {t(btn.label)}
-                        </Link>
-                    ))}
+                    {props.ctaButtons.map((btn, idx) =>
+                        // Ancre : un <Link> React Router met à jour l'URL mais ne fait jamais défiler
+                        // (bouton « Déposer une demande » de /habilitation-mss, SSBE). Même traitement que
+                        // CTASection (contrat `classifyHref`). Les autres voies (externe, tel:/mailto:)
+                        // restent sur <Link> : alignement complet = lot dédié, testé sur tout le parc.
+                        classifyHref(btn.path) === "anchor" ? (
+                            <a
+                                key={idx}
+                                href={btn.path}
+                                className={getButtonClasses(btn.variant)}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    document.querySelector(btn.path!)?.scrollIntoView({ behavior: "smooth" });
+                                }}
+                            >
+                                {t(btn.label)}
+                            </a>
+                        ) : (
+                            <Link
+                                key={idx}
+                                to={btn.path || "#"}
+                                className={getButtonClasses(btn.variant)}
+                            >
+                                {t(btn.label)}
+                            </Link>
+                        ),
+                    )}
                 </div>
             )}
           </div>

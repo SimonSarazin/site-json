@@ -1,8 +1,11 @@
 import { useMemo, useState } from "react";
-import { X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import NavLink from "@/components/layout/NavLink";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { cn } from "@/lib/utils";
+import { getBaseUrl } from "@/lib/constant/common";
 import "@/modules/search/i18n";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 
@@ -59,6 +62,7 @@ export default function CoformResourceDirectorySection({
   const {
     title,
     description,
+    customHeader,
     resourceTypes,
     finderSuffix,
     fieldSuffixes,
@@ -69,6 +73,8 @@ export default function CoformResourceDirectorySection({
     columns,
     filtersTitle,
     bg,
+    limit,
+    showFilters = true,
   } = props;
 
   const addressLevel1 = scope?.addressLevel1;
@@ -87,13 +93,13 @@ export default function CoformResourceDirectorySection({
       // `form` : indispensable à l'éclatement serveur des salles et au filtre
       // prix par formulaire (`Navigator::getRessourceTL`).
       defaultFields: ["name", "description", "answers", "collection", "form"],
-      indexStepList: RD_PAGE_SIZE,
+      indexStepList: Math.min(limit ?? RD_PAGE_SIZE, RD_PAGE_SIZE),
       notSourceKey: true,
       ...(costumSlug ? { costumSlug } : {}),
       ...(contextId ? { contextId } : {}),
       ...(contextType ? { contextType } : {}),
     }),
-    [fixedFilters, costumSlug, contextId, contextType],
+    [fixedFilters, costumSlug, contextId, contextType, limit],
   );
 
   const filtersProps = useMemo<FiltersSectionProps>(
@@ -156,19 +162,33 @@ export default function CoformResourceDirectorySection({
       data-co="coform-resource-directory"
     >
       <div className="container mx-auto px-6">
-        {(title || description) && (
-          <header className="mb-6 space-y-1">
-            {title && <h2 className="text-2xl font-bold text-foreground">{t(title)}</h2>}
-            {description && <p className="text-sm text-muted-foreground">{t(description)}</p>}
+        {(title || description || customHeader?.title || customHeader?.linkText) && (
+          <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0 space-y-1">
+              {(title || customHeader?.title) && (
+                <h2 className="text-2xl font-extrabold text-foreground">
+                  {t(title ?? customHeader!.title!)}
+                </h2>
+              )}
+              {description && <p className="text-sm text-muted-foreground">{t(description)}</p>}
+            </div>
+            {customHeader?.linkText && customHeader.linkHref && (
+              <Button asChild variant="outline" size="sm" className="shrink-0 text-foreground">
+                {/* Lien venu de la config : NavLink classe l'href (interne, mailto:, externe) —
+                    un <Link> brut enverrait un `mailto:` dans le routeur (CLAUDE.md, liens de config). */}
+                <NavLink to={customHeader.linkHref}>
+                  <ArrowRight className="mr-1 h-4 w-4" />
+                  <span>{t(customHeader.linkText)}</span>
+                </NavLink>
+              </Button>
+            )}
           </header>
         )}
 
         <PageFiltersProvider>
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-4 lg:items-start">
-            <aside className="lg:col-span-1">
-              <FiltersSection props={filtersProps} />
-            </aside>
-            <div className="lg:col-span-3">
+          <div className={cn("grid grid-cols-1 gap-6", showFilters && "lg:grid-cols-4 lg:items-start")}>
+            {showFilters && <aside className="lg:col-span-1"><FiltersSection props={filtersProps} /></aside>}
+            <div className={showFilters ? "lg:col-span-3" : undefined}>
               <ResourceDirectoryList
                 baseParams={baseParams}
                 listConf={listConf}
@@ -178,6 +198,8 @@ export default function CoformResourceDirectorySection({
                 costumSlug={costumSlug}
                 contextId={contextId}
                 contextType={contextType}
+                limit={limit}
+                showFilters={showFilters}
               />
             </div>
           </div>
@@ -196,6 +218,8 @@ interface ResourceDirectoryListProps {
   costumSlug?: string;
   contextId?: string;
   contextType?: string;
+  limit?: number;
+  showFilters?: boolean;
 }
 
 function ResourceDirectoryList({
@@ -207,6 +231,8 @@ function ResourceDirectoryList({
   costumSlug,
   contextId,
   contextType,
+  limit,
+  showFilters,
 }: ResourceDirectoryListProps) {
   const t = useT("modules/search");
   const pf = usePageFilters();
@@ -224,9 +250,9 @@ function ResourceDirectoryList({
   const serverFilters = useMemo(
     () => ({
       ...filters,
-      ...(activeParent ? { parentId: { $in: [activeParent.id] } } : {}),
+      ...(showFilters && activeParent ? { parentId: { $in: [activeParent.id] } } : {}),
     }),
-    [filters, activeParent],
+    [filters, activeParent, showFilters],
   );
   const mergedBaseParams = useMemo(
     () => canonicalSearchProStaticBaseParams(baseParams, serverFilters, {}),
@@ -250,7 +276,12 @@ function ResourceDirectoryList({
   });
 
   const parseOpts = useMemo(
-    () => ({ resourceTypes, finderSuffix, fieldSuffixes: { finder: finderSuffix, ...fieldSuffixes } }),
+    () => ({
+      resourceTypes,
+      finderSuffix,
+      fieldSuffixes: { finder: finderSuffix, ...fieldSuffixes },
+      baseUrl: getBaseUrl(),
+    }),
     [resourceTypes, finderSuffix, fieldSuffixes],
   );
 
@@ -279,10 +310,11 @@ function ResourceDirectoryList({
   const selectedFilters = pf.selectedFilters;
   const visible = useMemo(() => {
     const typeSel = selectedFilters?.resourceType ?? [];
-    return typeSel.length === 0
+    const filtered = typeSel.length === 0
       ? items
       : items.filter((it) => it.model.type && typeSel.includes(it.model.type.id));
-  }, [items, selectedFilters]);
+    return limit === undefined ? filtered : filtered.slice(0, limit);
+  }, [items, selectedFilters, limit]);
 
   const parentIds = useMemo(
     () =>
@@ -294,10 +326,10 @@ function ResourceDirectoryList({
   const { parents } = useResourceParentsQuery(parentIds, { costumSlug, contextId, contextType });
 
   return (
-    <ResourceDirectoryActionsProvider value={{ activeParent, setActiveParent }}>
+    <ResourceDirectoryActionsProvider value={showFilters ? { activeParent, setActiveParent } : null}>
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        {activeParent && (
+        {showFilters && activeParent && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
             {t("resourceDirectory.activeParentFilter", undefined, { name: activeParent.name ?? "" })}
             <button
@@ -331,11 +363,15 @@ function ResourceDirectoryList({
         </ResourceParentsProvider>
       )}
 
-      <div ref={lastItemRef} className="h-12" />
-      {isFetchingNextPage && (
-        <p className="py-4 text-center text-sm text-muted-foreground">
-          {t("Chargement plus de résultats…")}
-        </p>
+      {limit === undefined && (
+        <>
+          <div ref={lastItemRef} className="h-12" />
+          {isFetchingNextPage && (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              {t("Chargement plus de résultats…")}
+            </p>
+          )}
+        </>
       )}
     </div>
     </ResourceDirectoryActionsProvider>

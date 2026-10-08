@@ -20,7 +20,21 @@
         "documents": "Documents",
         "audio": "Audio",
         "video": "Vidéo",
-        "links": "Liens"
+        "links": "Liens",
+        "ungrouped": "Non classé",
+        "document": "Document",
+        "externalLink": "Lien externe",
+        "newTab": "s'ouvre dans un nouvel onglet"
+    },
+    "CardDefault": {
+        "projectCount_one": "{{count}} projet",
+        "projectCount_other": "{{count}} projets",
+        "contributorCount_one": "{{count}} contributeur",
+        "contributorCount_other": "{{count}} contributeurs"
+    },
+    "PreviewEvent": {
+        "attendeeCount_one": "{{count}} participant·e",
+        "attendeeCount_other": "{{count}} participant·es"
     },
     "CardResourceBooking": {
         "price": "Prix d'usage:",
@@ -63,7 +77,10 @@
         "showers": "Douches",
         "freeAccess": "Libre accès",
         "yearsAgo": "Il y a {{count}} ans",
-        "filterByInstallation": "Filtrer par l'installation {{name}}"
+        "filterByInstallation": "Filtrer par l'installation {{name}}",
+        "expand": "Déplier la fiche",
+        "collapse": "Replier la fiche",
+        "sheet": "Fiche"
     },
     "PreviewPoiAmenities": {
         "edit": "Éditer",
@@ -172,7 +189,10 @@
         "memberOfCount_one": "{{count}} organisation",
         "memberOfCount_other": "{{count}} organisations",
         "createdOn": "Créé le",
-        "documents": "Documents"
+        "documents": "Documents",
+        "docRecepisse": "Récépissé de déclaration",
+        "docResponsableCivilePro": "Responsabilité civile professionnelle",
+        "notProvided": "Non renseigné"
     },
     "PreviewReservations": {
         "title": "Réservations",
@@ -193,7 +213,18 @@
         "bookAria": "Réserver le {{day}} de {{start}} à {{end}}",
         "bookTitle": "Réserver un créneau",
         "conflict": "Ce créneau est déjà réservé par {{user}}.",
-        "referenceNotice": "Grille de référence : une case libre signifie qu'aucune réservation n'est enregistrée — pas que l'équipement est ouvert."
+        "referenceNotice": "Grille de référence : une case libre signifie qu'aucune réservation n'est enregistrée — pas que l'équipement est ouvert.",
+        "orgaSheet": "Fiche",
+        "orgaSheetAria": "Ouvrir la fiche de {{name}} dans l'annuaire"
+    },
+    "PreviewBookedResources": {
+        "title": "Équipements réservés",
+        "error": "Impossible de charger les équipements réservés.",
+        "unknownResource": "Équipement non renseigné",
+        "slotCount_one": "{{count}} créneau",
+        "slotCount_other": "{{count}} créneaux",
+        "sheet": "Fiche",
+        "sheetAria": "Ouvrir la fiche de {{name}}"
     },
     "Filtres actifs :": "Filtres actifs :",
     "À partir du": "À partir du",
@@ -222,6 +253,8 @@
     "+{{count}} autres — précisez la recherche": "+{{count}} autres — précisez la recherche",
     "Carte": "Carte",
     "Voir en liste": "Voir en liste",
+    "Observatoire": "Observatoire",
+    "Chargement des données… {{loaded}} / {{total}}": "Chargement des données… {{loaded}} / {{total}}",
     "type.NGO": "ONG",
     "type.LocalBusiness": "Entreprise locale",
     "type.Group": "Groupe",

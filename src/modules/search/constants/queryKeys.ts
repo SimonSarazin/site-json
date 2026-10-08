@@ -30,6 +30,14 @@
 export const SEARCH_STATIC_LIST_PREFIX = "searchCostumStatic";
 export const SEARCH_STATIC_MAP_PREFIX = "searchCostumStaticMapAll";
 
+/**
+ * Préfixe de la recherche de DOUBLONS à la création d'une entité (slot `slot:entityDuplicates`
+ * des formulaires costum). Producteur : `useEntityDuplicates` (module profil). Invalidation :
+ * `invalidate:standard` via `mutation.invalidateFn.params.searchKeys` du formulaire — une entité
+ * tout juste créée doit apparaître à la saisie suivante du même nom.
+ */
+export const SEARCH_DUPLICATES_PREFIX = "entityDuplicates";
+
 export interface SearchQueryKeyParams {
   queryKeyPrefix: string;
   searchText: string;
@@ -82,12 +90,24 @@ export const SEARCH_QUERY_KEYS = {
   RESERVATIONS: (formId: string, resourceId: string) =>
     ["search-reservations", formId, resourceId] as const,
   /**
-   * Documents (fichiers non-image) d'une structure, pour le preview `structure`.
+   * Réservations d'une ORGANISATION : answers dont le finder `userOrga` pointe
+   * ce club (section « équipements réservés » du preview `structure`).
    *
-   * Producteur : `PreviewStructure` (via `item.getGalleryFiles()`). Données
-   * PUBLIQUES au même titre que la fiche — pas d'invalidation, staleTime suffit.
+   * Producteur : `useOrgaReservationsQuery`. Clé distincte de `RESERVATIONS`
+   * (qui part d'une RESSOURCE) : les deux interrogent le même formulaire par
+   * des chemins de finder différents, leurs caches ne doivent pas se croiser.
    */
-  DOCUMENTS: (id: string | null) => ["search-structure-documents", id] as const,
+  ORGA_RESERVATIONS: (formId: string, orgaId: string) =>
+    ["search-orga-reservations", formId, orgaId] as const,
+  /**
+   * Entité chargée par IDENTIFIANT pour ouvrir sa fiche depuis l'URL
+   * (`list.previewFetch`), quand la liste affichée ne la porte pas.
+   *
+   * Producteur : `useEntityByIdQuery`. Données publiques (mêmes fiches que la
+   * recherche) — pas d'invalidation, staleTime suffit.
+   */
+  ENTITY_BY_ID: (kind: string, id: string) =>
+    ["search-entity-by-id", kind, id] as const,
 } as const;
 
 export type SearchQueryKeyType = ReturnType<

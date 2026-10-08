@@ -95,17 +95,22 @@ describe("préflight mutation.stamps", () => {
   it("les stamps du parc sont bien là où on les attend (sentinelle d'inventaire)", () => {
     const parc = SITES.flatMap(({ site, cfg }) => stampsDe(cfg).map(({ formId, stamps }) => `${site.replace("config.prod.", "").replace(".json", "")}/${formId}:${stamps.length}`));
     expect(parc).toEqual([
+      // CAE : le form « Créer votre CAE » pose le marqueur `CAE` dans `tags` (append, on:add) et
+      // refusionne à l'édition la saisie du mode de gestion (append $from tags, on:edit) — c'est le
+      // discriminant `identity {tags:"CAE"}` du sous-type `organizationsTls`.
+      "federationDesCae/cae:2",
       "institut-bleu/institut-bleu-acteur:2",
-      // parent62 : le champ `category` du form d'article (Appel à projets / Offre d'emploi) dérive
-      // le mot-clé public via 1 stamp `tags` `append` `on:"both"` + `$mapLabels`. `category` est un
-      // vrai champ du schéma d'écriture POI (déjà écrit par `parent62-affiche` et
-      // `parent62-recovery-center`) : il persiste et revient à l'édition, donc le stamp repose le
-      // tag aux deux temps. Les pages /appels-a-projets et /offres-emploi filtrent ce tag.
-      "parent62/parent62-article:1",
+      // parent62 n'a PLUS de stamp : le mot-clé dérivé du type d'actualité (`category` → Appels à
+      // projets / Offres d'emploi / A la une / Zoom) est porté par les codecs `p62article:tagsRead`/
+      // `tagsWrite` du champ `tags`. Le stamp `append` refusionnait les tags serveur, donc l'ancien tag
+      // revenait quand on changeait de type (impossible de sortir une actu du bandeau « à la une »).
+      // Garde de non-retour : `src/modules/profil/forms/article.configDriven.test.ts`.
       // MSS structure n'a PLUS de stamp : `statusActor` est déclaré au dynForm du costum
       // `associationEkilibre` depuis la copie du chantier A (plan mss-la-tampon) — l'inject
       // payload « En cours » passe la whitelist, le stamp pathValue de contournement a été retiré.
-      // RELIEF dérive de la config tiers-lieux, dont il reprend le form et ses 5 stamps.
+      // RELIEF dérive de la config tiers-lieux et garde les 5 stamps HISTORIQUES du form : lui n'a pas
+      // (encore) de champ `tags` saisissable, donc rien à réconcilier — la bascule vers les codecs
+      // s'est faite sur le seul site qui l'a demandée (cf. `tiers-lieux/tiers-lieux:2` plus bas).
       "relief/tiers-lieux:5",
       // EcosystemeSanteReunion n'apparaît PAS ici, et c'est un choix documenté : ses 3 forms recopient
       // aussi les thématiques dans `tags` (toute la surface de filtrage du site interroge `tags`,
@@ -130,7 +135,13 @@ describe("préflight mutation.stamps", () => {
       // pas polymorphe, contrairement à `poi` qui porte équipements ET articles) : elle est posée
       // pour l'uniformité des trois forms du site et pour éviter un backfill ultérieur.
       "saint-paul-sport/saintpaul-event:2",
-      "tiers-lieux/tiers-lieux:5",
+      // tiers-lieux n'a plus que ses 2 MARQUEURS de réseau (`$costum.mainTag`/`compagnon`, qui ne
+      // viennent d'aucun champ). La typologie, le portage et la tranche de m² sont passés aux codecs
+      // `tl:tagsRead`/`tl:tagsWrite` du champ `tags`, devenu saisissable : `op:"append"` refusionnait
+      // les tags serveur, donc changer de typologie laissait l'ancien libellé et le lieu ressortait
+      // dans deux facettes. Garde de non-retour : `costum/tiers-lieux/spec.test.ts` (« les 2 stamps
+      // restants portent une valeur littérale ») et `tags-propagation.test.ts`.
+      "tiers-lieux/tiers-lieux:2",
     ]);
   });
 });

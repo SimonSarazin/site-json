@@ -56,6 +56,7 @@ const LazySections: {
   banner: lazy(() => import("./BannerSection")),
   map: lazy(() => import("./MapSection")),
   "map-bubbles": lazy(() => import("./MapBubbles")),
+  "map-shapes": lazy(() => import("./MapShapes")),
   newsletter: lazy(() => import("./NewsletterSection")),
   contactForm: lazy(() => import("./ContactFormSection")),
   comparison: lazy(() => import("./ComparisonSection")),
@@ -99,6 +100,7 @@ const LazySections: {
   articleFeed: lazy(() => import("@/modules/blog/sections/ArticleFeed")),
   articleReader: lazy(() => import("@/modules/blog/sections/ArticleReaderSection")),
   articleTeaser: lazy(() => import("@/modules/blog/sections/ArticleTeaser")),
+  "my-places": lazy(() => import("@/modules/profil/sections/MyPlacesSection")),
 };
 
 // Fallback skeleton pour les sections en cours de chargement

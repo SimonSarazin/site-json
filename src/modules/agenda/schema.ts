@@ -132,7 +132,8 @@ export const AgendaSectionSchema = z.object({
      * Mêmes valeurs que `data-observatory.maxWidth`.
      */
     maxWidth: z.enum(["4xl", "5xl", "6xl", "7xl", "8xl", "full"]).optional(),
-    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    /** Fond de la section (jetons du thème + `page-accent`, l'aplat de `page.accent`). */
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   }),
 });
 

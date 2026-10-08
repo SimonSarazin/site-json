@@ -55,6 +55,29 @@ export const ENTITY_ACTION_CONFIG = {
     },
   },
 
+  // ============ SUPPRESSION DE LA FICHE ============
+  /**
+   * Suppression DÉFINITIVE de l'entité (`element/delete`) : la fiche quitte Communecter, pas
+   * seulement le site qui l'affiche — à ne pas confondre avec le « retrait » du référencement, qui
+   * détache la fiche d'un costum en la laissant vivre. D'où la confirmation, obligatoire, et le seul
+   * appelant autorisé : l'ADMIN de la fiche (garde doublée par le SDK puis le backend).
+   */
+  deleteEntity: {
+    id: "delete",
+    type: "delete",
+    icon: "trash",
+    variant: "destructive",
+    requiresConfirmation: true,
+    isDestructive: true,
+    i18nKey: "ProfileTemplateDefault.deleteOrganization",
+    confirmation: {
+      titleKey: "ProfileTemplateDefault.deleteDialog.title",
+      descriptionKey: "ProfileTemplateDefault.deleteDialog.description",
+      confirmKey: "ProfileTemplateDefault.deleteDialog.confirm",
+      cancelKey: "ProfileTemplateDefault.deleteDialog.cancel",
+    },
+  },
+
   // ============ FRIEND ACTIONS (Users only) ============
   sendFriendRequest: {
     id: "friend",

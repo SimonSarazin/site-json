@@ -13,6 +13,8 @@ import { useSite } from "@/hooks/useSite";
 import { getBaseUrl, getMaptilerApiKey } from "@/lib/constant/common";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 
+import { useGeoShapes } from "@/lib/geoShapes";
+
 import { SearchMapProps, type ListConf } from "../schema";
 import { resolveMapStyles } from "../lib/mapStyles";
 import { resolveListItemConf } from "../lib/resolveListItemConf";
@@ -21,6 +23,9 @@ import { useMapContainerClass } from "../hooks/useMapContainerClass";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
 import SearchMapPopup from "./SearchMapPopup";
 import { ClusterMarker, PointMarker } from "./SearchMapMarkers";
+import MapShapeLayers from "./MapShapeLayers";
+import MapShapeNames from "./MapShapeNames";
+import MapShapeLegend from "./MapShapeLegend";
 import {
   findEntryById,
   getEntryCoords,
@@ -68,7 +73,7 @@ type PointProps = { entry: SearchEntity };
  * ouvre la popup de l'item ; `onMarkerFocus` (carte→liste) remonte l'id au clic
  * d'un marqueur ; `containerClass` laisse le parent dimensionner la colonne.
  */
-export default function SearchMap({ results, card, preview, list, map: mapConf, focusedItemId, onMarkerFocus, containerClass }: SearchMapProps) {
+export default function SearchMap({ results, card, preview, list, map: mapConf, focusedItemId, onMarkerFocus, onItemAction, containerClass }: SearchMapProps) {
   const mapRef = useRef<MapRef | null>(null);
   /** Init carte jouée une seule fois (load OU idle, le 1ᵉʳ qui arrive). */
   const readyRef = useRef(false);
@@ -83,6 +88,12 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
   useEffect(() => {
     onMarkerFocusRef.current = onMarkerFocus;
   }, [onMarkerFocus]);
+  /** Idem pour l'action de popup surchargée : gardée en ref pour qu'un appelant
+   *  qui recrée son handler à chaque rendu ne réinstancie pas handlePopupAction. */
+  const onItemActionRef = useRef(onItemAction);
+  useEffect(() => {
+    onItemActionRef.current = onItemAction;
+  }, [onItemAction]);
   const [mapLoaded, setMapLoaded] = useState(false);
   // bbox + zoom courants → entrées du clustering. Recalculés au load et au moveEnd.
   const [viewport, setViewport] = useState<{ zoom: number; bbox: [number, number, number, number] } | null>(null);
@@ -101,6 +112,11 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
   // Action au clic du bouton de popup — déclarée en config (map.itemAction) :
   // détail modal du module search (défaut) ou navigation /profil/:slug.
   const actionKind = mapConf?.itemAction?.kind ?? "preview";
+
+  // Contours géographiques déclarés en config (`map.shapes`). Le hook lit le cache partagé avec
+  // `useGeoShapesWarmup` (appelé par la section) : selon la politique `load` de chaque couche, la
+  // donnée est déjà là au montage de la carte, ou se charge maintenant.
+  const shapeLayers = useGeoShapes(mapConf?.shapes);
 
   // Fond de carte : style.json vectoriel MapTiler (clé env, via @maptiler/sdk)
   // avec styles par site (`integrations.map`), sinon repli raster — cf. lib/mapStyles.ts.
@@ -197,6 +213,12 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
   // Action du bouton de la popup (handler React direct — plus de DOM event).
   const handlePopupAction = useCallback(
     (entry: SearchEntity) => {
+      // Point d'extension pour un appelant EXTERNE (Meeteem/ampli monte cette
+      // carte sur ses propres entités et ouvre sa propre modale) : renvoyer
+      // `true` consomme le clic. Sans handler, la cascade déclarative
+      // link/profil/détail ci-dessous est inchangée.
+      if (onItemActionRef.current?.(entry)) return;
+
       const { itemList, decision } = resolveAction(entry);
       if (decision.kind === "link") {
         if (decision.newTab) window.open(decision.href, "_blank", "noopener");
@@ -336,8 +358,9 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
 
   // Dimensions du conteneur — logique PARTAGÉE avec MapSkeleton
   // (cf. useMapContainerClass : plein écran sans footer vs min-h-screen).
-  // En mode split, le parent fournit `containerClass` (ex. "absolute inset-0")
-  // pour que la carte remplisse sa colonne au lieu de `min-h-screen`.
+  // Embarquée (vues carte et split de `searchProStatic`, agenda…), le parent
+  // fournit `containerClass` (ex. "absolute inset-0") pour que la carte
+  // remplisse la boîte qu'il dimensionne au lieu de `min-h-screen`.
   const defaultContainerClass = useMapContainerClass("z-10 rounded shadow overflow-hidden");
   const mapContainerClass = containerClass ?? defaultContainerClass;
 
@@ -357,14 +380,16 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
             onIdle={handleMapReady}
             onMoveEnd={syncViewport}
             onClick={() => setSelected(null)}
-            // Embarqué (split, `containerClass` fourni) → la carte remplit sa
-            // colonne (100% de la colonne `h-[78vh]` → le canvas MapLibre = la
-            // zone VISIBLE, donc fitBounds cadre juste). Sinon plein écran (100vh)
-            // comme la vue carte seule. Mettre 100vh en embarqué casserait le fit :
-            // le canvas serait plus grand que la colonne visible.
+            // Embarqué (`containerClass` fourni) → la carte remplit la boîte du
+            // parent (100% → le canvas MapLibre = la zone VISIBLE, donc fitBounds
+            // cadre juste). Sinon plein écran (100vh). Mettre 100vh en embarqué
+            // casserait le fit : le canvas serait plus grand que la boîte visible.
             style={{ width: "100%", height: containerClass ? "100%" : "100vh" }}
           >
             <NavigationControl position="top-left" />
+
+            <MapShapeLayers layers={shapeLayers} />
+            <MapShapeNames layers={shapeLayers} />
 
             {clusters.map((feature) => {
               const [lng, lat] = feature.geometry.coordinates;
@@ -425,6 +450,8 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
               </Popup>
             )}
           </Map>
+
+          <MapShapeLegend layers={shapeLayers} />
         </div>
       </div>
 

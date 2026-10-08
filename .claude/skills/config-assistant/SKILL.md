@@ -23,7 +23,7 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | **Choix en cours dans une config** (listes figées, chaîne de rattachement…) — pose la question, ne juge pas | `npm run config:besoins -- <config>` · `-- --diff` en revue |
 | **Depuis quand une clé existe, et qui l'a adoptée** | `npm run config:changelog key <nom>` · `since <config>` pour ce qui a bougé depuis |
 | **Ce qui est possible et peu connu** (mécanismes jamais exercés, ou par un seul site — avec son nom) | `npm run config:changelog candidates` |
-| **Composition de props réelle** d'une section / d'un header / d'un footer | `.design-sync/previews/<Composant>.tsx` (154 stories versionnées) — chemin exact imprimé en tête de `config:schema section:<type>`, et `◆` dans le catalogue `sections` |
+| **Composition de props réelle** d'une section / d'un header / d'un footer | `.design-sync/previews/<Composant>.tsx` (155 stories versionnées) — chemin exact imprimé en tête de `config:schema section:<type>`, et `◆` dans le catalogue `sections` |
 | **Recette de composition de PAGE** (gabarit = une page réelle d'archétype) | `npm run config:example -- --recipe <id>` — imprime la page complète, prête à adapter |
 | Forme exacte d'une section | `npm run config:schema section:<type>` (ex. `section:pricing`) |
 | Forme de `header`/`footer`/`theme`/`meta`/`auth`/`page`/`profiles`/`integrations`/`commandPalette` | `npm run config:schema <bloc>` |
@@ -152,7 +152,12 @@ site à confirmer avec l'utilisateur — ne PAS l'imposer à une petite vitrine 
    + `baseParams.defaultFields` couvrant tous les champs testés par les `when`.
    Disposition : `list.layout: "timeline"` (frise verticale à bulles-dates, carte
    dédiée événement) remplace la grille — à coupler à `defaultSortBy {"startDate": -1}` ;
-   défaut CÔTÉ CODE = grille.
+   `list.layout: "grouped"` + `list.groupBy` découpe la grille en blocs titrés (archive
+   par année…) — le backend ne triant que sur la 1re clé de `defaultSortBy`, un ordre
+   dans les blocs passe par `groupBy.itemsSortBy` ; défaut CÔTÉ CODE = grille.
+   Designs `list.resource.design` : `card` (défaut), `document` (archive de fichiers en
+   lignes), `portrait` (annuaire de personnes, `subtitleField`). Tout champ nommé par
+   `groupBy`/`resource` doit figurer dans `baseParams.defaultFields`.
 5. **Sections raisonnées** : 8-18 types dont des « premium » (`data-observatory`,
    `agenda`, `hero-*`, `features-glass`) — pas 5 sections génériques.
 6. **Visibilité conditionnelle** (`condition`/`visibleIf`/`role`) là où le
@@ -243,7 +248,7 @@ Pour corriger/améliorer un config existant :
 | `minimal` | barre compacte, typo uppercase espacée | petite vitrine épurée — ex. julie-pot-vin | `logoTitle`, `logoIcon` |
 | `underline-nav` | nav soulignée animée, fond marqué | identité marquée, communes/collectivités — ex. nos-commune | `piggyBank`, `urgenceButton`, `ctaButton` |
 | `transparent-dark` | barre sombre fixe (teinte : token `--header-bar`) | site à dominante sombre — ex. commune-transparente | `logoTitle`, `entityLogoOverride` |
-| `stacked` | 2 bandeaux sur image de fond : wordmark plein écran (~50vh) puis nav, collapse en barre compacte au scroll | identité "marque-territoire" forte, home sans section hero (le header EST le hero) — ex. parent62 | `backgroundImage`, `textColor`, `logoTitleAccent`, `logoSubtitle` |
+| `stacked` | 2 bandeaux sur image de fond : wordmark plein écran (~50vh) puis nav, collapse en barre compacte au scroll | identité "marque-territoire" forte, home sans section hero (le header EST le hero) — ex. parent62 | `backgroundImage`, `textColor`, `logoTitleAccent`, `logoSubtitle`, `nav[].iconOnly` (icône seule dans la barre, ex. une loupe vers `/recherche`) |
 | `default` | **alias, pas un design** : rend `HeaderStandard` | héritage — n'en produis JAMAIS pour un site neuf, écris `standard` | ceux de `standard` |
 
 ### Footers (`footer.type`)
@@ -293,7 +298,7 @@ Dispatch : `src/modules/search/components/Preview.tsx` ; conteneur = `card.detai
 | `news` | détail actualité | `preview.showDetailLink` |
 | `testimonial` | détail témoignage (leaf `PreviewTestimonialBubble`) | bloc `list.testimonial` |
 | `resource` | détail ressource (leaf `PreviewResourceCard`) | bloc `list.resource` |
-| `structure` | fiche détail organisation (coordonnées, carte, docs, bouton Éditer) | annuaires de structures |
+| `structure` | fiche détail organisation (coordonnées, carte, docs, bouton Éditer) | annuaires de structures ; `preview.bookedResources` ajoute les équipements réservés |
 | `resource-directory` | modal ressource de tiers-lieu (gabarit du « En savoir plus » d'un profil TL) — carrousel + pastille capacité, nom, tarifs (toutes unités), surface, À propos, équipements, services, CTA « Réserver » / « Voir le tiers-lieu » | section `coform-resource-directory` uniquement ; bloc `list.resourceDirectory` |
 
 ⚠ **Une option de `card`/`preview` n'a d'effet que sur CERTAINS types** — posée
@@ -304,13 +309,29 @@ seul ; `imageFit`/`overlayStats`/`servicePricing` → `image-cover` seul ;
 `showAddress`/`showDescription` → 4 types ; les autres cartes n'ont aucune
 option propre (leur rendu ne dépend que de la donnée).
 
+**Liens croisés équipement ↔ club usager** (sites sportifs) : `preview.reservations.orgaLink`
+`{path, previewParam?}` pose un bouton « fiche » sur la rangée du club, dans la
+section réservations d'une fiche équipement ; en sens inverse,
+`preview.bookedResources` `{link, label?}` liste les équipements réservés dans la
+fiche d'une organisation (exige `preview.reservations` dans le MÊME bloc, avec son
+`fields.userOrga`). Les deux reposent sur l'IDENTIFIANT du club : une réservation
+qui ne porte que le nom saisi à la main n'a pas de bouton — jamais de rapprochement
+approximatif. ⚠ La page VISÉE doit déclarer `list.previewFetch`
+(`poi`\|`organizations`\|…), sinon `?preview=<id>` ne trouve l'item que dans la
+tranche déjà chargée (10 résultats) et le lien reste sans effet.
+
 Variantes transverses : `preview.width` (`sm`…`5xl`\|`full`, défaut code `5xl`, dialog
 seulement) ; `card.variant` surcharge `card.type` pour le dispatch (sous-ensemble
 sans `overlay`/`news`/`testimonial`/`resource`) ; `card.detailedMode`
 (`default`\|`service-pricing`) pour la vue detailed ; `defaultViewMode`
 (`list`\|`map`\|`graph`, + `regions`\|`thematics`\|`split` en static) ;
-`map.layout` (`full`\|`split`) + `map.splitRatio`. Exemples vivants :
-`config:example -- list-resource` / `list-testimonial`.
+`map.layout` (`full`\|`split`) + `map.splitRatio` (`30-70` resserre la liste ET
+passe ses cartes en mode DENSE et REPLIÉ, cf. `card.compact`/`card.collapsible`) ;
+`observatory` (KPI + graphes
+en 3ᵉ vue à côté de liste et carte — même vocabulaire que `data-observatory`,
+mais SANS périmètre propre : il lit les résultats déjà chargés par la section,
+donc tout champ lu par une dimension doit être dans `baseParams.defaultFields`).
+Exemples vivants : `config:example -- list-resource` / `list-testimonial`.
 
 ### Rendu PAR ITEM (`list.itemRules`)
 
@@ -353,7 +374,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 
 | module | surface | clés JSON | prérequis backend |
 |---|---|---|---|
-| `search` | sections `searchPro`/`searchProStatic`/`filters`/`searchHeader`/`cardCountCT`/`thematics` | `baseParams` (`sourceKey`, `defaultFields`…), `list` (card/detailsMode/preview, `itemRules`/`itemAction` si liste hétérogène), `map` (`itemAction`/`marker`), `filters[].select`/`optionStyle`/`order`/`keepOptionOrder` (widgets & ordre par groupe) | données indexées (sourceKey) ; carte : fond MapTiler via env `VITE_MAPTILER_API_KEY` (sinon repli OSM/Carto) + `integrations.map.styleLight/Dark` |
+| `search` | sections `searchPro`/`searchProStatic`/`filters`/`searchHeader`/`cardCountCT`/`thematics` | `baseParams` (`sourceKey`, `defaultFields`…), `list` (card/detailsMode/preview, `itemRules`/`itemAction` si liste hétérogène), `map` (`itemAction`/`marker` — dont `marker.by` : un marqueur par VALEUR d'un attribut de la donnée, avec `default` pour les valeurs non listées — `shapes` : contours géographiques zones/cities/zoniris, cf. doc/07), `filters[].select`/`optionStyle`/`order`/`keepOptionOrder` (widgets & ordre par groupe) | données indexées (sourceKey) ; carte : fond MapTiler via env `VITE_MAPTILER_API_KEY` (sinon repli OSM/Carto) + `integrations.map.styleLight/Dark` |
 | `agenda` | section `agenda` (vues liste/calendrier/carte/split) | `baseParams`, `filters` (text/type/tags), `defaultMode`/`tabs`/`detailsMode`, `enableMap`/`map` | événements indexés (`searchEventsCostum`) |
 | `news` | section `news` | `props.entitySlug`, `maxItems` | fil d'actus de l'entité |
 | `blog` | routes `/blog/:slug` (+ `/blog/id/:id`) + sections `articleFeed`/`articleReader` | `config.blog` (`feedCostumSlug`, variants card/reader), `costumForms.<article>`, `commandPalette.articleSearch` | POI `type:"article"` scopés costum (`source.key`) |
@@ -367,7 +388,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 | `commandPalette` | palette ⌘K | `config.commandPalette`, `header.utilities.search` | — |
 | `ampli` | routes ampli | `config.ampli` | campagne ampli |
 | `interop` | pods Discourse/Mediawiki | clés interop | instances externes |
-| `observatoire` | section `data-observatory` (dashboard déclaratif : dimensions, KPI, charts, table, filtres) | `props.baseParams` (périmètre) + `dimensions`/`filters`/`kpis`/`charts`/`table` | données indexées (sourceKey + type) |
+| `observatoire` | section `data-observatory` (dashboard déclaratif : dimensions, KPI, charts, table **et/ou liste en split view**, filtres) — ou `searchProStatic.observatory`, le même tableau de bord EMBARQUÉ dans une section search | `props.baseParams` (périmètre) + `dimensions`/`filters`/`kpis`/`charts`/`table` ; `layout:"split"` + `list` pour les KPI en bandeau puis la liste à gauche et les graphes à droite (desktop ; mobile → empilé ; `table` éventuelle SOUS les deux colonnes), `rowAction` au niveau section pour la liste (repli `table.rowAction` — seul lu par la table : une page qui garde sa table l'y laisse) | données indexées (sourceKey + type) |
 | `formEngine` | modales costum **add/edit pilotées par données** (moteur de formulaire générique) | `config.costumForms.<id>` (document `CostumFormSchema`) + déclencheur `floatingActionButton.modal:"add-<id>"` / `profiles.<type>.editModal:"edit-<id>"` | entité costum porteuse (`costumSlug`) ; clés read/write/scope déjà enregistrées (sinon `fns.ts`) — cf. § Recettes avancées |
 | `admin` | page `/admin` config-driven (onglets Membres/Contenu/Import-Export/Validation) | `config.admin` (`tabs[].sections[]`, `access.min`) | endpoints admin (`getMembersAdmin`, import/export, `validategroup`…) ; accès siteAdmin/superAdmin — cf. commentaire/plan-module-admin-generique.md |
 
@@ -377,14 +398,14 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 ## Design system (voir le rendu réel avant de choisir)
 
 - **`.design-sync/previews/` — la ressource la plus utile, et elle est dans git** :
-  154 stories portant des compositions de props RÉELLES (valeurs plausibles,
+  155 stories portant des compositions de props RÉELLES (valeurs plausibles,
   commentaire d'usage : « Usage réel : home de Rézo la mer »). Le JSON Schema
-  donne la FORME, la story donne la COMPOSITION — **43 des 78 sections** en ont
-  une (les 35 sans sont surtout data-driven : search\*, agenda, cagnotte, blog,
+  donne la FORME, la story donne la COMPOSITION — **44 des 80 sections** en ont
+  une (les 36 sans sont surtout data-driven : search\*, agenda, cagnotte, blog,
   aac, coform — une composition statique n'y montrerait rien), ainsi que **les 7
   headers et les 4 footers**. Copie la story, ne réinvente pas le remplissage.
 - **Vérité versionnée : `.design-sync/`** — `config.json` (`componentSrcMap` :
-  ~155 composants exportés → chemin source dans `src/`), `conventions.md`
+  ~156 composants exportés → chemin source dans `src/`), `conventions.md`
   (règles : enveloppe `DsProvider`, **tokens CSS d'abord — jamais de couleur en
   dur**, composants de modules props-driven qui ne fetchent rien),
   `NOTES.md` (pièges connus, exclusions volontaires).
@@ -429,6 +450,14 @@ Ne lis ces fichiers QUE quand la tâche les concerne :
   ne sont PAS navigables nus (`/profil` seul est un 404) ; nues et valides :
   `/login`, `/register`, `/recover-password`, `/admin`. L'audit dérive ces
   préfixes de `src/modules/*/routes.tsx` (`scripts/lib/module-routes.ts`).
+- **Affichage conditionnel** : `visibility` (`auth` / `routes` / `excludeRoutes` /
+  `permissions`, cf. doc/19) se pose sur une entrée de nav **et** sur un lien de
+  footer — les 3 listes (`columns[].links`, `legalLinks`, `bottomLinks`) partagent
+  le même objet `FooterLink`. Un « Se connecter » / « Créer un compte » de footer
+  prend `{ "auth": "anonymous" }`. Seul jeton d'adresse admis dans un `href` de
+  footer : `@profile` → la fiche de l'utilisateur connecté, à coupler avec
+  `{ "auth": "required" }` (ce n'est pas un chemin : ne pas le déclarer en page).
+  ⚠ Ces liens sont masqués au rendu SERVEUR et apparaissent à l'hydratation.
 - **Aucune URL d'image inventée** : asset fourni (copié dans
   `public/images/<slug>/`, référencé en absolu `/images/<slug>/…`), asset
   existant, ou rien. Sans logo : `logoIcon` (nom Lucide ou SVG inline).
@@ -454,6 +483,13 @@ modifie une palette. L'essentiel :
   `--hero-tint`, `--gradient-section`) viennent de `src/styles/shared.css`
   (tokens par défaut) — un thème les surcharge en `:root`/`.dark`, on ne
   recopie JAMAIS de classe.
+- **Une PAGE peut porter sa propre couleur** : `page.accent` (couleur CSS,
+  `var(--jeton)` recommandé) pose `--page-accent` et son aplat léger
+  `--page-accent-soft` sur le `<main>`. Les sections qui acceptent
+  `bg: "page-accent"` (`agenda`, `searchProStatic`, `accordion`, `searchHeader`,
+  `gridLayout`) s'en servent pour alterner les bandes — ex. les 9 pages de
+  territoire de parent62, chacune à sa couleur. Sans `accent`, la valeur reste
+  transparente.
 
 ## Maintenance (anti-dérive)
 
