@@ -13,7 +13,19 @@
 > [Module Articles/Blog](../doc/32-module-articles-blog.md) ·
 > [Module Profil](../doc/08-module-profil.md). Mémoire : `[[project-sport-sante-bien-etre]]`.
 
-Dernière mise à jour : **2026-09-17**. Lot du 16-17/09 (branche `n-dev` : `16922f73` →
+Dernière mise à jour : **2026-10-08**. Lot du 07/10 (branche `n-dev` : `fef9268d`, Nicolas) :
+**Actualités & événements** — l'accueil remplace la grille « Des activités labellisées » (et ses deux
+boutons morts vers `/`) par un bandeau « Bougez avec nous ! » + un fil d'actualités (`articleFeed`
+en `poster`, 4 articles) ; `/blog` devient « Actus & événements » en deux onglets (fil d'articles ·
+agenda des événements du costum, sessions de formation exclues) ; entrée « Actualités » ajoutée au
+menu Grand Public. Puis merge de `main` (`b5286b57`), qui embarque SDK **1.0.196** et le correctif
+`4bb7c800` (aboire) : les formulaires `recovery-center` et `session-formation` n'effacent plus le
+`parent` ni les dates à l'édition. Lot du 30/09 (`05cf4d6b`, Nicolas) : **galerie de 5 photos** sur
+`/mss`, cartes de `/structure` en grille 2/3/3/3 et carte 50-50. ⚠ Le snapshot préflight
+`__effective__/sport-sante-bien-etre.json` n'a pas été régénéré après le lot du 07/10 (§9, gates du
+08/10). Les corrections de la review de la MR (24-28/09, `63250158`) sont reportées aux §10, §12,
+§13 depuis le 28/09 (`467ffe02`) — cf. §9.
+Lot du 16-17/09 (branche `n-dev` : `16922f73` →
 `ae133e6a` → merge de `main` `c3f347aa`) : Nicolas restreint l'accès de 8 pages
 (`auth.required: true`) et élague 4 entrées de nav devenues secondaires (`/equipements-sportifs`,
 `/mapping`, `/listing-formations`, le dropdown « Communauté ») ; Claude enrichit le formulaire
@@ -48,8 +60,8 @@ Plateforme régionale de promotion du sport-santé à La Réunion : elle met en 
 public** (trouver un créneau, une structure, un équipement), les **professionnels** (labellisation,
 formation, prescription) et la **communauté** des acteurs du réseau.
 
-C'est, par le volume, la **deuxième config du parc** après parent62 : 25 pages, 86 sections,
-6 formulaires costum, un back-office à 10 onglets.
+C'est, par le volume, la **deuxième config du parc** après parent62 : 25 pages, 89 sections
+(`config:validate`, 08/10), 6 formulaires costum, un back-office à 10 onglets.
 
 ### Identité
 
@@ -60,8 +72,8 @@ C'est, par le volume, la **deuxième config du parc** après parent62 : 25 pages
 | Config | [`../config.prod.sport-sante-bien-etre.json`](../config.prod.sport-sante-bien-etre.json) |
 | CSS | [`../src/index-sport-sante-bien-etre.css`](../src/index-sport-sante-bien-etre.css) — 75 variables, bloc `theme` **complet** en config |
 | Langues | `fr` (défaut) + `en` |
-| SDK | `@communecter/cocolight-api-client` **1.0.192** (`package.json` `^1.0.192`, mesurée le 17/09 — montée arrivée via le merge de `main`, sans rapport avec SSBE ; expose `setSiteCostum`/`hasCostumContext`, cf. commit `ac05a227`) |
-| Branche courante | `n-dev` — `070a3267` (lot structure) → `8bbe35a2` (merge de `main`) → `518b40e8` (lot pièces justificatives, 10/09) → `9deff38a` (lot 4 pages pro/public, 15/09) → `16922f73` (restriction d'accès + clean nav, 16/09) → `ae133e6a` (ressource enrichie + page `/programmes-dispositifs`, 16/09) → `c3f347aa` (merge de `main`, 17/09). Prérequis backend : `Organization::getById` porté sur `master` de `citizenToolKit` |
+| SDK | `@communecter/cocolight-api-client` **1.0.196** (`package.json` `^1.0.196`, installée 1.0.196, mesurée le 08/10 — montées 1.0.192 → 1.0.195 au merge de `main` du 29/09, → 1.0.196 au merge du 07/10, sans action spécifique SSBE) |
+| Branche courante | `n-dev` — `070a3267` (lot structure) → `8bbe35a2` (merge de `main`) → `518b40e8` (lot pièces justificatives, 10/09) → `9deff38a` (lot 4 pages pro/public, 15/09) → `16922f73` (restriction d'accès + clean nav, 16/09) → `ae133e6a` (ressource enrichie + page `/programmes-dispositifs`, 16/09) → `c3f347aa` (merge de `main`, 17/09) → `63250158` (corrections de la review de la MR, 28/09) → `9ed869ba` (merge de `main`, 29/09) → `05cf4d6b` (galerie MSS, 30/09) → `fef9268d` (actus & événements, 07/10) → `b5286b57` (merge de `main`, 07/10). Prérequis backend : `Organization::getById` porté sur `master` de `citizenToolKit` |
 | Historique | **76 commits** touchant la config (`git log --follow`, 03/08) ; `070a3267` réécrit ~2 200 lignes du fichier, le merge de `main` ~1 100 de plus |
 
 ### Historique des chantiers
@@ -80,6 +92,11 @@ C'est, par le volume, la **deuxième config du parc** après parent62 : 25 pages
 | 16/09 | Nicolas | `16922f73` « Restriction d'accès des pages et clean dans le menu » : `auth.required: true` posé sur 8 pages (`/espace-professionnels`, `/faq-pro`, `/prescription`, `/labellisation`, `/habilitation-mss`, `/formation`, `/listing-formations`, `/ressources`) ; 4 entrées de nav retirées (`/equipements-sportifs`, `/mapping`, `/listing-formations`, tout le dropdown « Communauté » — `/projets`/`/structure`/`/communaute`) et un CTA mort vers `/equipements-sportifs`. Les pages elles-mêmes restent déclarées (atteignables par URL directe), seule la nav et l'auth changent — cf. §9 |
 | 16/09 | Claude | `ae133e6a` **feat(ssbe)** : formulaire `sport-sante-bienetre-ressource` — 2 nouvelles thématiques (`dispositifs`, `prescription`, posées par Nicolas juste avant la session), upload `documents` porté à 2 fichiers PDF, champ `profil_avatar` (widget `image`) affiché seulement pour « Dispositifs » via `visibleIf`. Nouvelle page `/programmes-dispositifs` (réservée aux connectés) : hero + recherche libre + cartes `resource` filtrées `thematique: dispositifs`, alimentées par `profil_avatar`. Entrée de nav sous Professionnels — cf. §9 |
 | 17/09 | Parc | Merge de `main` dans `n-dev` (`c3f347aa`) — apporte notamment `chore(deps)` SDK **1.0.192** (`ac05a227`, `setSiteCostum`/`hasCostumContext`) et une grosse refonte de `parent62`. Rien de spécifique SSBE ; gates re-passés verts (cf. §9) |
+| 24 → 28/09 | Nicolas | `63250158` **fix(ssbe, associationEkilibre)** : corrections de la review de la MR `n-dev` → `main` (téléphone et site web lus sur les deux formes, Informations/Documents de `PreviewStructure` réservés aux gestionnaires, `createDefaults` MSS en booléen, doublon `geo` retiré, `/prescription` en `hero-quick-access`, html de `/habilitation-mss` en fr/en) ; doc à jour dans `467ffe02` — détail aux §10, §12, §13 |
+| 29/09 | Parc | Merge de `main` dans `n-dev` (`9ed869ba`) — SDK **1.0.195** ; côté SSBE rien d'autre que la montée SDK |
+| 30/09 | Nicolas | `05cf4d6b` « gallery Maison sport santé » : galerie de 5 photos en fin de `/mss` (section `gallery`, lightbox) ; `/structure` passe ses cartes de 1 colonne à 2/3/3/3 et sa carte en `splitRatio: "50-50"` — cf. §9 |
+| 06/10 | aboire (via `main`) | `4bb7c800` **fix(forms)** : `parent` de `recovery-center` et de `session-formation` passé en finder d'organisations multiples (`entityRef:read`/`entityRef:write`) — il était **effacé** à chaque édition ; dates de `session-formation` qui ne sont plus effacées à l'édition (le codec accepte une `Date`). Arrivé dans `n-dev` par le merge du 07/10 — cf. §9 |
+| 07/10 | Nicolas | `fef9268d` « Actualité et événements » : fil d'actualités sur l'accueil, `/blog` en onglets Actus / Événements (agenda), entrée de nav « Actualités » ; puis merge de `main` (`b5286b57`, SDK **1.0.196**) — cf. §9 |
 
 ---
 
@@ -126,9 +143,9 @@ Aucun CDC formel n'a été versé au dépôt. Le périmètre se lit dans la conf
 
 | Page | Rôle | Sections |
 |---|---|---|
-| `/` | Accueil | 5 |
+| `/` | Accueil — fil d'actualités « Bougez avec nous ! » depuis le 07/10 | 6 |
 | `/public` | Entrée grand public | 6 |
-| `/espace-professionnels` | Entrée professionnels | 7 |
+| `/espace-professionnels` | Entrée professionnels | 8 |
 | `/communaute` | Membres + organisations (onglets) | 2 |
 | `/presentation` | Le dispositif | 7 |
 | `/labellisation` | Faire labelliser une activité (timeline) | 7 |
@@ -136,11 +153,11 @@ Aucun CDC formel n'a été versé au dépôt. Le périmètre se lit dans la conf
 | `/faq` · `/faq-pro` | FAQ grand public · FAQ professionnels (15/09) | 2 · 2 |
 | `/prescription` | Aide à la prescription médicale (15/09) | 5 |
 | `/programmes-dispositifs` | Cartes des dispositifs « Sport sur ordonnance » (16/09, réservée aux connectés) | 3 |
-| `/structure` · `/mss` | Structures · Maisons Sport-Santé | 2 · 4 |
+| `/structure` · `/mss` | Structures · Maisons Sport-Santé (+ galerie photo, 30/09) | 2 · 6 |
 | `/creneaux` · `/equipements-sportifs` · `/mapping` | Jeux de données du territoire | 2 chacune |
 | `/formation` · `/listing-formations` · `/projets` | Formation et projets | 3 · 2 · 2 |
 | `/ressources` | Bibliothèque de documents pro (filtre thématique latéral) | 2 |
-| `/blog` | Actualités (`articleFeed`) | 2 |
+| `/blog` | « Actus & événements » (07/10) — onglets Actus (`articleFeed`) / Événements (`agenda`) | 2 |
 | `/contact` | Formulaire de contact | 3 |
 | `/mentions-legales` · `/confidentialite` · `/accessibilite` | Socle légal | 1 chacune |
 
@@ -910,6 +927,94 @@ nombre total de tests monte avec le merge, sans lien avec SSBE).
 
 ---
 
+### Lot du 24 → 28/09 — corrections de la review de la MR `n-dev` → `main`
+
+> Commit `63250158` (code + config, SSBE et Ekilib.re), doc `467ffe02`. Pas de section dédiée ici :
+> chaque correction a été reportée à l'endroit qu'elle modifie — §4.3 (`createDefaults` MSS), §10
+> (lignes 26, 31, 35), §12 (téléphone, site web, `affiliate`, `geo` en `writeOnly`, html fr/en, image
+> des héros, contraste des cartes d'accueil **non corrigé**), §13 (questions 13 et 15 tranchées, 18
+> faite en partie). Côté Tampon : §9.20 de [sa doc](maison-sport-sante-la-tampon.md).
+
+---
+
+### Lot du 30/09 — galerie des Maisons Sport Santé et mise en forme de `/structure` (Nicolas)
+
+> Commit `05cf4d6b` « gallery Maison sport santé ». Config + 5 images, aucun code.
+
+| Page | Changement |
+|---|---|
+| `/mss` | 2 sections ajoutées en fin de page : titre `searchHeader` `#mss-galerie-header` (« Les Maisons Sport Santé en images », fr/en) + `gallery` `#mss-galerie` — 5 colonnes, lightbox, 5 photos `public/images/sportSanteBienetre/mss/MaisonSportSante1…5.png` → **6 sections** au lieu de 4 |
+| `/structure` | `searchProStatic` `#section-structure-cards` : cartes `contact-card` passées de **1 colonne** à **2/3/3/3** (sm/md/lg/xl), carte en **`splitRatio: "50-50"`** — le montage adopté par le site du Tampon le 23/09. Le reste du diff est de la réindentation de `defaultFilters` |
+
+**Poids des images.** Les 5 PNG font **3,5 Mo chacun** (1244×700, RGBA), soit ~17 Mo versés au
+dépôt. Ce n'est pas ce que télécharge le visiteur : `GallerySection` passe par `OptimizedImage`,
+donc par `/img` (redimensionnement + AVIF/WebP). Le poids reste dans le dépôt et dans l'image Docker.
+
+**Textes alternatifs génériques** (« Maison Sport Santé – photo 1 » … « photo 5 ») : acceptables
+pour une galerie d'ambiance, mais ils ne décrivent pas ce que montre chaque photo — cf. §13.
+
+---
+
+### Lot du 06/10 (arrivé par le merge du 07/10) — `parent` et dates préservés à l'édition (aboire)
+
+> Commit `4bb7c800` **fix(forms)** sur `main`, entré dans `n-dev` par `b5286b57`. Il corrige trois
+> formulaires du parc, dont **deux de SSBE**, qui perdaient des données à l'édition (constaté par l'e2e
+> `costum-forms`).
+
+| Formulaire | Avant | Après |
+|---|---|---|
+| `sport-sante-bienetre-recovery-center` | `parent` en widget `tags` (relu `[]`, renvoyé vide) → **le parent était effacé** à chaque édition | `parent` en **finder d'organisations multiples** (`read: "entityRef:read"`, `write: "entityRef:write"`), libellé « Organisme(s) » (ex « Équipement parent ») — comme le dynForm legacy |
+| `sport-sante-bienetre-session-formation` | même problème sur `parent` ; et le codec de dates n'acceptait qu'une chaîne alors que le SDK normalise `startDate`/`endDate` en `Date` → **dates effacées** à l'édition sans modification | `parent` en finder multiple, libellé « Centre de formation » (ex « Formation parente ») ; `normaliseDateIso` accepte une `Date` |
+
+Codec partagé `entityRef:read`/`entityRef:write` (`sharedCodecs.ts`) : il projette la référence sur
+`{<id>: {type, name}}` dans l'ordre du SDK, pour que le diff ne renvoie pas une référence que
+l'utilisateur n'a pas touchée. Nouvelle garde préflight : tout champ `finder` émis déclare
+`write: "entityRef:write"`. Tests : `sharedCodecs.entityRef.test.ts`,
+`sharedCodecs.eventDates.test.ts`, `entityRefs-eventDates.configDriven.test.ts`.
+
+**À savoir** : les fiches éditées **avant** ce correctif ont pu perdre leur `parent` ou leurs dates —
+pas de sondage fait dans ce dossier pour le mesurer.
+
+---
+
+### Lot du 07/10 — Actualités & événements (Nicolas)
+
+> Commit `fef9268d` « Actualité et événements » (config seule), puis merge de `main` `b5286b57`.
+
+| Endroit | Changement |
+|---|---|
+| Nav | entrée **« Actualités »** → `/blog` (icône `newspaper`) ajoutée au dropdown **Grand Public**, entre Créneaux et FAQ |
+| `/` | la `gridLayout` `#section-activity-grid` (« Des activités labellisées, un gage de qualité et de sécurité » + **deux boutons « Ajouter une activité » / « Ajouter une structure » qui pointaient sur `/`**) est **retirée**. À sa place : bandeau `searchHeader` `#title-header-actu` (« Bougez avec nous ! ») + `articleFeed` `#home-article-feed` (`featured: true`, `cardVariant: "poster"`, `pageSize: 4`). L'accueil passe de 5 à **6 sections** |
+| `/blog` | titre de page « Actualités » → **« Actus & événements »**, `layout: "fullwidth"` ; le `searchHeader` gagne titre + sous-titre, placeholder « Rechercher une actu ou un événement… » ; l'`articleFeed` est remplacé par une section **`tabs`** `#ssb-blog-tabs` à deux onglets |
+| `/blog` → onglet **Actus** | `articleFeed` `#ssb-article-feed` : grille, `pageSize: 12`, `fullWidth`, variant par défaut. `featured` et `detailBasePath` retirés (`detailBasePath` est de toute façon déprécié : le lecteur est toujours `/blog`) |
+| `/blog` → onglet **Événements** | **`agenda`** `#ssb-blog-agenda` : événements `sourceKey: ["sportSanteBienetre"]`, `fediverse: false`, **`category: {$ne: "sessionFormation"}`** (les sessions de formation restent sur `/formation`) ; filtres type + tags, détail en tiroir, sans carte, grille 1/2/3/4 colonnes |
+
+**Ce qui fonctionne sans code** : la recherche du `searchHeader` de `/blog` alimente **les deux
+onglets** — `articleFeed` lit `pageFilters.searchQuery`, et `agenda` aussi parce que
+`filters.text: false` lui fait reprendre la recherche du `searchHeader` voisin. Le prefetch SSR et
+les gardes voient bien les sections dans les onglets (`SECTION_EXTRACTORS.tabs`).
+
+**Effet de bord positif** : les deux boutons morts de l'accueil (`href: "/"`) disparaissent avec la
+grille.
+
+**Non mesuré** : le nombre d'articles et d'événements du costum (pas de sondage en base dans ce lot).
+Si le costum n'a pas d'article, l'accueil affiche un fil vide sous « Bougez avec nous ! ».
+
+**Gates (08/10, sur `n-dev` = `8cc2a9ef`, mesurés pour la mise à jour de ce dossier)** :
+`config:validate` ✅ **25 pages / 89 sections** · `audit:config` 🟡 **2 constats préexistants
+inchangés** (`/strategie`, `/rejoindre`, §13) · `typecheck` ✅ · préflight (`tests/preflight` +
+`src/components/layout/footer`) **801/803** — 2 échecs :
+- ❌ **`effective-config` › `sport-sante-bien-etre`** — **causé par ce lot** : la projection gagne la
+  route `/blog/agenda` (les `baseParams` de l'agenda) et le snapshot
+  `tests/preflight/__effective__/sport-sante-bien-etre.json` n'a pas été régénéré. Le diff est limité
+  à cette route ; à régénérer (`npx vitest run -c vitest.config.unit.ts
+  tests/preflight/effective-config.test.ts -u`) puis committer avec le lot. **Non fait à ce jour.**
+- ⚪ `bundle-size` — hors périmètre : mesure un `dist/client` local du 28/09 (3,24 Mo).
+
+**Recette navigateur non faite.**
+
+---
+
 ## 10. Checklist d'avancement
 
 | # | Fonctionnalité | État | Détail |
@@ -923,7 +1028,7 @@ nombre total de tests monte avec le merge, sans lien avec SSBE).
 | 7 | Inscription d'une structure | ✅ | Modale branchée sur `/communaute`, gardée par l'authentification |
 | 8 | Connexion | ✅ | Widget `utilities.auth` ; le CTA cassé du header est retiré |
 | 9 | Back-office | ✅ | **10 onglets** (« Ressources » + « Modération » le 02/09 ; « Maisons Sport Santé » le 09/09) — **essai UI connecté à faire** |
-| 10 | Blog | ✅ | `articleFeed` + RSS + SEO + palette (travaux du 25/07) |
+| 10 | Blog | ✅ | `articleFeed` + RSS + SEO + palette (travaux du 25/07). Depuis le 07/10, `/blog` = « Actus & événements » en 2 onglets (ligne 41) |
 | 11 | Palette ⌘K | ✅ | `entitySearch` + `articleSearch` |
 | 12 | Grille « professionnels » | ❌ | 3 tuiles sur 6 mènent à des pages inexistantes (§13) |
 | 13 | Hero `/public` | ❌ | 1 CTA mort, 1 CTA qui renvoie à l'accueil depuis une sous-page (§13) |
@@ -953,6 +1058,9 @@ nombre total de tests monte avec le merge, sans lien avec SSBE).
 | 37 | Restriction d'accès + clean nav | ✅ config (`16922f73`, 16/09, Nicolas) | `auth.required: true` sur 8 pages, 4 entrées de nav retirées (§9) — **recette navigateur à faire** (vérifier qu'un visiteur non connecté est bien redirigé/invité à se connecter sur les 8 pages) |
 | 38 | Formulaire ressource — upload 2 fichiers + photo conditionnelle | ✅ config (`ae133e6a`, 16/09) | `documents.maxItems` 1→2 ; `profil_avatar` affiché seulement si `thematique: "dispositifs"` (§9) — **recette navigateur à faire** : créer/éditer une ressource « Dispositifs », vérifier que la photo est bien envoyée et relue en édition |
 | 39 | Page `/programmes-dispositifs` | ✅ config (`ae133e6a`, 16/09) | Hero + recherche libre + cartes `resource` filtrées `thematique: dispositifs`, entrée de nav Professionnels (§9). Répond partiellement à la question 17 (§13) — **recette navigateur à faire**, et aucune ressource « Dispositifs » saisie à ce jour donc page vide en pratique |
+| 40 | Galerie photo `/mss` + `/structure` en grille 3 colonnes | ✅ config (`05cf4d6b`, 30/09) | 5 photos en lightbox, servies via `/img` ; `/structure` en 2/3/3/3 + carte 50-50 (§9). Alt génériques (§13) — **recette navigateur à faire** |
+| 41 | Actus & événements (accueil + `/blog`) | ✅ config (`fef9268d`, 07/10) | Fil d'actualités sur l'accueil (4 articles, `poster`) ; `/blog` en onglets Actus / Événements (agenda du costum, sessions de formation exclues) ; nav Grand Public → « Actualités » (§9). ⚠ **Snapshot préflight à régénérer** — **recette navigateur à faire** (fil et agenda non vides, recherche partagée par les deux onglets, tiroir de détail d'un événement) |
+| 42 | Édition `recovery-center` / `session-formation` sans perte de données | ✅ code (`4bb7c800`, aboire, 06/10) | `parent` en finder `entityRef`, dates acceptées en `Date` — arrivé par le merge de `main` du 07/10 (§9). Fiches éditées avant : perte éventuelle non mesurée |
 
 ---
 
@@ -961,9 +1069,10 @@ nombre total de tests monte avec le merge, sans lien avec SSBE).
 Aucune demande en cours. La config n'emploie que des méthodes publiques déjà disponibles
 (`searchCostum`, `coformAnswersSearch`).
 
-Version installée : **1.0.192** (`package.json` `^1.0.192`, mesurée le 17/09 — montée arrivée par le
-merge de `main` du 17/09, `ac05a227`, sans action ni impact spécifique SSBE ; expose
-`setSiteCostum`/`hasCostumContext` pour le branding costum des e-mails). Le poste sensible
+Version installée : **1.0.196** (`package.json` `^1.0.196`, mesurée le 08/10 — montées arrivées par
+les merges de `main` : 1.0.192 le 17/09 (`ac05a227`, `setSiteCostum`/`hasCostumContext` pour le
+branding costum des e-mails), 1.0.195 le 29/09, 1.0.196 le 07/10 ; aucune action ni impact
+spécifique SSBE). Le poste sensible
 reste la pose du scope costum côté admin (`setCostumScope`, cf.
 [`../src/modules/admin/lib/ensureCostumScope.ts`](../src/modules/admin/lib/ensureCostumScope.ts)) —
 pertinent ici : SSBE a un back-office `/admin` à 9 onglets (§4.3).
@@ -1095,6 +1204,14 @@ organisations → la modale d'édition et la fiche `PreviewStructure` ne montren
   (`payload.profil_avatar`). Un autre nom (ex. `_imageFile`, employé côté Ekilib.re) fonctionne aussi
   tant que les deux occurrences concordent — mais **cette config-ci** utilise `profil_avatar` partout
   (5 formulaires avant le lot du 16/09, 6 depuis) : y rester pour la cohérence interne du fichier.
+- **Ajouter une section qui porte des `baseParams` change la projection `effective`** (07/10) : un
+  `agenda`, un `searchProStatic`… même imbriqué dans un `tabs`, apparaît dans
+  `tests/preflight/__effective__/sport-sante-bien-etre.json`. Le préflight échoue tant que le snapshot
+  n'est pas régénéré (`-u`) — c'est la garde d'impact inter-configs, pas une régression. Vérifier que
+  le diff du snapshot se limite à la section ajoutée avant de l'accepter.
+- **`/blog` mélange articles et événements dans une même recherche** (07/10) : le `searchHeader`
+  alimente les deux onglets. L'agenda exclut `category: "sessionFormation"` — une session de
+  formation n'apparaît donc pas sous « Événements », seulement sur `/formation`.
 
 ---
 
@@ -1122,3 +1239,5 @@ organisations → la modale d'édition et la fiche `PreviewStructure` ne montren
 | 18 | **`<Link>` sans `classifyHref`** sur `HeroQuickAccess.tsx` et `CtaCardGrid.tsx` (§9, §12) — les aligner sur `CardsSection`/`NavLink`/`CTASection` casserait potentiellement des CTA qui comptent aujourd'hui, par accident, sur l'ancien comportement. À planifier comme un lot dédié, testé sur tout le parc (parent62 pour `cta-card-grid`), pas en aparté d'un lot de contenu. **Fait partiellement le 25/09** (review de la MR) : les **boutons-ancres** (`#id`) de `HeroQuickAccess` font désormais défiler vers la section (comme `CTASection`) — le bouton « Déposer une demande » de `/habilitation-mss` ne bougeait pas ; seul bouton-ancre de `hero-quick-access` du parc, donc sans risque (`HeroQuickAccess.test.tsx`). **Reste** : voies externe / `tel:` / `mailto:` des boutons et des cartes de `HeroQuickAccess`, et tout `CtaCardGrid` | Thomas |
 | 19 | **`/ressources` pas à jour des 2 nouvelles thématiques** (16/09, §9, §12) : `dispositifs`/`prescription` absentes du filtre latéral et du `resource.badge` de la page. Faut-il les y ajouter (une ressource « Dispositifs » resterait alors visible aux deux endroits, `/ressources` **et** `/programmes-dispositifs`), ou `/ressources` doit-elle au contraire **exclure** ces 2 thématiques puisqu'elles ont désormais leur page dédiée ? | Thomas |
 | 20 | **Photo `profil_avatar` sur une ressource « Dispositifs »** — jamais vérifié en navigateur (§9) : l'upload est-il bien accepté par le costum backend (champ cœur POI, a priori non soumis au filtre `typeObj.ressource`, mais non confirmé empiriquement), et l'image survit-elle bien au cycle création → édition ? | Thomas / dev SSBE |
+| 21 | **Galerie de `/mss`** (30/09, §9) — les 5 photos sont-elles définitives et autorisées à la diffusion ? Leurs textes alternatifs (« photo 1 » … « photo 5 ») sont à remplacer par une description de chaque photo (quelle MSS, quelle activité) | Nicolas / porteur |
+| 22 | **Snapshot préflight `effective` de SSBE** (07/10, §9) — à régénérer et committer avec le lot « Actus & événements » avant la prochaine MR, sinon `test:unit` reste rouge pour tout le monde | Nicolas |

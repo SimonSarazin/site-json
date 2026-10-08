@@ -510,8 +510,7 @@
                   "en": "Refine your search"
                 },
                 "defaultOpenGroups": [
-                  "activityType",
-                  "beneficiaries"
+                  "sportHealthType"
                 ],
                 "filterGroups": [
                   {
@@ -1062,8 +1061,8 @@
         {
           "type": "steps",
           "id": "inscription-steps",
-          "orientation": "vertical",
           "props": {
+            "orientation": "vertical",
             "showProgress": false,
             "steps": [
               {

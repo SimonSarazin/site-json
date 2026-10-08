@@ -16,8 +16,14 @@
 > 06/07) · [`ENDPOINT.md`](../../ENDPOINT.md) (fiches d'endpoints SDK à créer). Mémoire :
 > `[[project-maison-sport-sante-la-tampon]]`.
 
-Dernière mise à jour : **2026-10-07** (§9.22 : bouton « Ajouter une structure » **rétabli dans
-l'onglet admin Structures** — `create: "add-structure"` ; le bouton public reste retiré ; merge de
+Dernière mise à jour : **2026-10-08** (§9.23, commit `8cc2a9ef` : le parcours « Prescrire un
+créneau » de `/espace-pro` passe en **timeline** ; les étapes d'inscription de `/s-informer` en
+vertical, sans barre de progression — l'orientation, posée hors de `props` dans le commit, est
+corrigée dans l'arbre de travail ; filtre « Type de Sport Santé » en tête de
+`/creneaux` ; **cloche de notifications** activée ; Facebook et LinkedIn passent de la rangée
+d'icônes du pied de page aux lignes de contact. §9.22 : bouton « Ajouter une structure » **rétabli
+dans l'onglet admin Structures** — `create: "add-structure"`, commité `678527cf` ; le bouton public
+reste retiré ; merge de
 `main` : §9.21, reprise des créneaux SSBE du Tampon
 depuis l'admin — section `answerCopy`, copie serveur idempotente ; §9.20 : corrections de la review
 de la MR `n-dev` → `main` ; §9.19, commit `beef21d9` : le site quitte le CSS partagé SSBE
@@ -179,8 +185,8 @@ et restreintes aux codes postaux **97430 / 97418**.
 | **CoForm « créneau »** | **`6a85af345d898a57cb49f029`** « Créneau - tampon » (dédié, §9.8) — section `associationEkilibre19082026_1327_0` ; **1 créneau = 1 answer** ; ex-form SSBE partagé `6928096adf5caf0d230e7f26` jusqu'au 19/08 |
 | **Orga porteuse** | slug `associationEkilibre`, `_id 692817af564b0621d52ebbc6`, type `organizations` (résolu au boot via `GET_ELEMENTS_KEY`) |
 | **Backend (dev)** | environnement de dev local (configuration hors de ce document) ; backend de prod **à définir** |
-| **SDK** | `@communecter/cocolight-api-client` — lecture seule. Requis **`^1.0.191`**, **installé 1.0.191** (mesuré le 08/09) : requis et installé coïncident, la désynchronisation récurrente de ce poste (§12) n'est plus d'actualité |
-| **Branche site-json** | **`main`** (suit `origin`, GitLab Adullact). Les lots `ekilibre` ont été mergés ; le travail des 20-23/08 est commité directement sur `main` (dernier : `c378525b`, 23/08) |
+| **SDK** | `@communecter/cocolight-api-client` — lecture seule. Requis **`^1.0.196`**, **installé 1.0.196** (mesuré le 08/10) : requis et installé coïncident, la désynchronisation récurrente de ce poste (§12) n'est plus d'actualité |
+| **Branche site-json** | **`n-dev`** depuis la mi-septembre (lots §9.17 → §9.23, merges réguliers de `main` — derniers le 29/09 `9ed869ba` et le 07/10 `b5286b57`) ; dernier commit du site : `8cc2a9ef` (08/10). Avant : les lots `ekilibre` ont été mergés et le travail des 20-23/08 commité directement sur `main` (`c378525b`, 23/08) |
 | **Intervenants (git)** | Francki (init 02/07) · Nicolas (config 20/07, 28/07 ; lot structure 31/07 + 06/08) · Peterson (lot créneaux 06/07) · Cael (merge + doc 06/08, back-office/KPIs 06/08) ; chef de projet **à confirmer** |
 
 ### Historique des chantiers
@@ -235,9 +241,14 @@ et restreintes aux codes postaux **97430 / 97418**.
   (entrée de nav « Structure référentes » et bouton « Ajouter ma structure » retirés, `create: false`
   côté admin) ; cartes d'actualités en `cardVariant: "poster"` ; adresse postale complète, réseaux
   sociaux et copyright corrigés au pied de page ; liens `ssbe.re` en `www` + ancre. Détail §9.19.
-- **07/10 (Nicolas, non commité) — création de structure rouverte côté admin** : onglet admin
+- **07/10 (Nicolas, `678527cf`) — création de structure rouverte côté admin** : onglet admin
   Structures `create: false` → `create: "add-structure"` (costumForm `structure`). Le bouton public
   et l'entrée de nav restent retirés. Détail §9.22.
+- **08/10 (Nicolas, `8cc2a9ef`) — timeline, notifications et réseaux sociaux** : parcours de
+  prescription de `/espace-pro` en `timeline`, étapes d'inscription de `/s-informer` sans barre de
+  progression, filtre « Type de Sport Santé » en tête de `/creneaux`, cloche de notifications,
+  Facebook/LinkedIn dans les lignes de contact du pied de page (+ 2 icônes dans
+  `FooterContactPartners.tsx`). Détail §9.23.
 - **06/08 (session 3, décision Nicolas, non codée) — chantier « Actualités » requalifié en POI** :
   le CDC (« Section Actualités » de la home + CRUD back-office titre/catégorie/date/contenu/lien/
   statut/mise en avant) sera implémenté via un **costumForm POI** dédié plutôt que via le module
@@ -254,7 +265,8 @@ et restreintes aux codes postaux **97430 / 97418**.
    existe toujours mais n'est atteignable que par le bouton « Structure référentes » du bandeau de
    `/creneaux`.
 2. **L'annuaire des créneaux** (`/creneaux`) : recherche texte + **6 groupes de filtres en colonne
-   de gauche** (type d'activité, type de sport santé, type de public, bénéficiaires — puis **ALD** et
+   de gauche** (type de sport santé — en tête depuis le 08/10, §9.23 —, type d'activité, type de
+   public, bénéficiaires — puis **ALD** et
    **maladies chroniques**, tirés du CoForm lui-même), **vue carte**, détail en dialog — restreint
    aux créneaux **validés** du form dédié Tampon, périmètre `sourceKey: ["associationEkilibre"]`
    (§9.9, §9.12).
@@ -1628,7 +1640,7 @@ recettes SSBE pour deux chartes aurait touché le site régional ; le fichier a 
 | `/admin` → Structures | `create: false` (plus de création côté admin non plus) — **rouvert le 07/10**, §9.22 |
 | Actualités | `cardVariant: "poster"` sur les `articleFeed` de `/` et `/blog` (affiches/flyers rendus entiers) — `/espace-pro` garde le variant par défaut |
 | Liens `ssbe.re` | **6** liens passés en `https://www.ssbe.re/`, dont **3** vers l'ancre **`#maisons-sport-sante`** (l'ancienne page `/maison-sport-sante-mss/` n'est plus la cible) |
-| Pied de page | adresse postale complète (**34 rue Hubert Delisle, 97430 Le Tampon**) au lieu de « Commune du Tampon » ; bloc **`socials`** ajouté (Facebook, LinkedIn, mail) ; copyright « © 2026 **Association Ekilib.re** – Maison Sport Santé du Tampon » |
+| Pied de page | adresse postale complète (**34 rue Hubert Delisle, 97430 Le Tampon**) au lieu de « Commune du Tampon » ; bloc **`socials`** ajouté (Facebook, LinkedIn, mail) — **retiré le 08/10**, ces liens passent dans les lignes de contact (§9.23) ; copyright « © 2026 **Association Ekilib.re** – Maison Sport Santé du Tampon » |
 | Asset | `public/images/maisonSportSanteLaTampon/logo.svg` retravaillé (dans le même commit) |
 
 **Contrastes mesurés** (WCAG, recalculés depuis les tokens oklch — ce sont eux qui motivent chaque
@@ -1653,10 +1665,13 @@ bundle (`.access-card-public` présent, avec le repli sans `color-mix`).
 **Reste sur ce lot** : **recette navigateur non tracée** (à confirmer par Nicolas — la palette a été
 itérée en navigateur les 22-23/09, mais aucun passage complet n'est consigné). À couvrir en priorité :
 le **mode sombre**, seul endroit où `--btn-structure` et `--card-header-gradient` basculent, et les
-en-têtes de cartes SSsO/SSpT. ⚠️ **Incohérence à trancher** : le lien social « mail » du pied de page pointe sur
+en-têtes de cartes SSsO/SSpT. ~~⚠️ **Incohérence à trancher** : le lien social « mail » du pied de page pointe sur
 `contact@cyber-reunion.fr` alors que **tout le reste du site** (contact, mentions légales,
-confidentialité, accessibilité) affiche `contact@ekilib.re` (§13). Les **mentions légales** portent
-encore « Commune du Tampon, La Réunion (97430) », non alignées sur la nouvelle adresse postale.
+confidentialité, accessibilité) affiche `contact@ekilib.re` (§13).~~ **Réglé** : le lien est passé à
+`contact@ekilib.re` le 24/09 (`7cdc0fa8`), puis la rangée `socials` a été retirée le 08/10 (§9.23).
+Les **mentions légales** portent encore « Commune du Tampon, La Réunion (97430) » et la page
+**confidentialité** « Siège social : Commune du Tampon, La Réunion (974) », non alignées sur la
+nouvelle adresse postale (vérifié le 08/10).
 
 ### 9.20 Corrections de la review de la MR `n-dev` → `main` touchant ce site (24/09)
 
@@ -1819,7 +1834,7 @@ déposées après le 19/08 + 7 « lieux seulement »), dont 18 « Copié »/« p
 copier » → copier « Gymnastique Tao » → ligne « Copié », toast, créneau visible dans Modération puis
 `/creneaux`.
 
-### 9.22 Bouton « Ajouter une structure » rétabli dans l'admin (07/10, Nicolas — non commité)
+### 9.22 Bouton « Ajouter une structure » rétabli dans l'admin (07/10, Nicolas — `678527cf`)
 
 **Demande** : remettre le bouton d'ajout dans l'onglet admin **Structures**, retiré le 23/09 (§9.19).
 Périmètre limité à l'admin : le bouton public de `/structure` et l'entrée de nav **restent retirés**.
@@ -1848,6 +1863,38 @@ effective-config **SSBE** (page `/blog/agenda` absente du snapshot, préexistant
 **À confirmer** : la fermeture du 23/09 était une décision du responsable MSS Tampon (§9.20) — la
 réouverture côté admin est à valider avec la MSS (§13).
 
+### 9.23 Timeline sur l'espace pro, notifications et réseaux sociaux au pied de page (08/10, Nicolas — `8cc2a9ef`)
+
+> Config + 2 lignes de code partagé (`FooterContactPartners.tsx`). Un correctif de suivi
+> (orientation des étapes) est dans l'arbre de travail, **non commité** au 08/10.
+
+| Endroit | Changement |
+|---|---|
+| `/espace-pro` | la section `steps` `#prescription-steps` (« Prescrire un créneau à un patient », 4 étapes) devient une **`timeline`** `#prescription-timeline` : `steps[]` → `events[]`, `description` → `text`. Les **icônes** des étapes sont **abandonnées** (`TimelineSection` n'en affiche pas) ; sur écran large les cartes alternent gauche/droite (`alternating`, défaut `true`). Aucune référence à l'ancien `id` dans la config ni dans le CSS du site |
+| `/s-informer` | `steps` `#inscription-steps` : **`showProgress: false`** (la barre « 0/4 étapes » n'a pas de sens pour expliquer une démarche) et **`orientation: "vertical"`** — voir l'encadré ci-dessous |
+| `/creneaux` | le groupe de filtres **« Type de Sport Santé »** (SSsO / SSpT) passe en **tête** (`order: 1`), devant le type d'activité (`order: 2`). Ordre actuel : type de sport santé · type d'activité · type de public · bénéficiaires |
+| En-tête | `utilities.notifications: true` → **cloche de notifications**. `NotificationBell` ne s'affiche qu'après hydratation et pour un compte **connecté** : un visiteur anonyme ne voit rien |
+| Pied de page | la rangée `socials` (icônes seules : Facebook, LinkedIn, mail) est **supprimée**. Facebook et LinkedIn deviennent des **lignes de contact avec libellé** ; l'e-mail `contact@ekilib.re` remonte **en tête** du bloc contact (avant téléphone, adresse, horaires). Les liens externes s'ouvrent dans un nouvel onglet (`NavLink` → `target="_blank" rel="noopener noreferrer"`) |
+| `FooterContactPartners.tsx` (partagé) | icônes `facebook` et `linkedin` (lucide) ajoutées à `iconMap`. Avant, une icône inconnue retombait sur l'épingle `MapPin`. Ajout pur : aucun autre site en `contact-partners` n'utilisait ces deux clés |
+
+> ⚠️ **`orientation` posée hors de `props` dans le commit.** `8cc2a9ef` écrit `"orientation":
+> "vertical"` au niveau de la **section**, à côté de `props`. `StepsSection` ne lit que
+> `props.orientation` : la clé était ignorée et les étapes restaient **horizontales**. Corrigé par
+> Nicolas le 08/10 (clé déplacée dans `props`), **dans l'arbre de travail, pas encore commité**.
+> **`config:validate` ne détecte pas ce cas** : il a validé la config avec la clé mal placée comme
+> sans elle (13 pages / 49 sections dans les deux cas).
+
+**Gates (08/10, arbre de travail avec le correctif d'orientation)** : `config:validate` ✅ **13
+pages / 49 sections** · `audit:config` ✅ RAS · `typecheck` ✅ · `eslint` sur
+`FooterContactPartners.tsx` ✅ · préflight (`tests/preflight` + `src/components/layout/footer`)
+**801/803** — les 2 échecs sont **hors lot** : snapshot `effective` de **SSBE** (lot SSBE du 07/10,
+cf. [sa doc](sport-sante-bien-etre.md) §9) et `bundle-size` (`dist/` local du 28/09). Le snapshot
+`effective` du Tampon passe sans changement.
+
+**Recette navigateur à faire** : timeline de `/espace-pro` en clair et en sombre (fond
+`bg-background` imposé par le composant), étapes verticales de `/s-informer`, cloche une fois
+connecté, icônes Facebook/LinkedIn du pied de page.
+
 ---
 
 ## 10. Checklist d'avancement
@@ -1856,7 +1903,7 @@ réouverture côté admin est à valider avec la MSS (§13).
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| A.1 | Site vitrine (home, s'informer, rejoindre, partenaires, espace pro, légal, blog, ressources) | ✅ | **13 pages / 49 sections** validées (remesuré le 23/09) ; audit 0 constat. `/blog` est la 12ᵉ (§9.13), `/ressources` la 13ᵉ (§9.14). Nav à **6 entrées** depuis le 23/09, `/structure` hors nav (§9.19) |
+| A.1 | Site vitrine (home, s'informer, rejoindre, partenaires, espace pro, légal, blog, ressources) | ✅ | **13 pages / 49 sections** validées (remesuré le 08/10) ; audit 0 constat. `/blog` est la 12ᵉ (§9.13), `/ressources` la 13ᵉ (§9.14). Nav à **6 entrées** depuis le 23/09, `/structure` hors nav (§9.19) |
 | A.2 | Annuaire des créneaux `/creneaux` (**6** filtres en colonne + carte + détail dialog) | ✅ config | montage `gridLayout`, périmètre `sourceKey: ["associationEkilibre"]`, form dédié + état `"Validé"` (§9.9, §9.12). Les 2 facettes pathologie sont posées mais **n'afficheront leurs options qu'une fois des créneaux saisis** ; **vue carte à recetter** |
 | A.3 | Annuaire structures `/structure` (CP + domaine d'intervention) | ✅ config | périmètre `associationEkilibre` + `statusActor:"Validé"` + CP ; projection **55 champs** (§9.13) ; **14 fiches référencées** en DEV le 20/08 (§9.10) — à rejouer en PROD. Remis en forme le 23/09 (§9.19) : titre de section, grille **3 colonnes**, carte **50-50** ; ⚠️ page **sortie de la nav**, seul point d'entrée = le bouton du bandeau `/creneaux` |
 | A.4 | Flux d'actualités (home, lecture seule) | ✅ | **remplacé** par le module blog : `articleFeed` `featured:"flag"` sur `/`, `/espace-pro` et `/blog` (§9.13) — le flux `news` n'est plus utilisé |
@@ -1865,6 +1912,7 @@ réouverture côté admin est à valider avec la MSS (§13).
 | A.7 | Formulaire de contact | 🟡 | **câblé le 23/08** sur `CONTACT_SEND` (SDK → `/co2/mailmanagement/createandsend`), clés `action`/`method` retirées (§9.13). Reste **hors `site-json`** : renseigner **`costum.contactMail`** sur le costum (`admin.email` n'est qu'un repli), sinon le legacy renvoie le message à son auteur |
 | A.8 | ~~Auto-inscription structure (`/structure`, bouton public + wizard)~~ **Édition + création admin** | ⛔ **public fermé le 23/09** · ✅ admin rouvert le 07/10 | le bouton public et la création admin (`create: false`) sont retirés (§9.19) ; **la création admin est rétablie le 07/10** (`create: "add-structure"`, §9.22) — plus aucune création de structure depuis le site, l'alimentation passe par le **référencement** (§9.10). Le costumForm `structure` reste en config et sert l'**édition** : aligné le 15/09 sur la refonte dynForm-legacy de SSBE (§9.17), 42 tests config-driven ✅, recette navigateur du 15/09 (§9.17 bis — création réelle réussie à l'époque, bug d'édition des pièces jointes corrigé). **Motif de la fermeture à confirmer avec la MSS** (§13) |
 | A.9 | Charte graphique Ekilib.re (CSS propre au site + thème bleu/jaune/vert) | ✅ config / 🟡 recette | §9.19 (`beef21d9`) : `index-maison-sport-sante-la-tampon.css` (290 lignes), palette #1B4F72 / #F0B429 / #1A7A55 en clair et en sombre, `customCSS` des cartes SSsO corrigé. Gates verts (build client compris) ; **recette navigateur à faire, mode sombre en priorité** |
+| A.10 | Ajustements du 08/10 : timeline de prescription, étapes verticales, ordre des filtres, cloche de notifications, réseaux sociaux en lignes de contact | ✅ config (`8cc2a9ef`) / 🟡 | §9.23. **Correctif d'orientation de `#inscription-steps` à committer** (clé déplacée dans `props`, arbre de travail) ; **recette navigateur à faire** |
 
 ### Lot B — Gestion des créneaux (admins)
 
@@ -2039,11 +2087,23 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
   référentes » du bandeau de `/creneaux`. Ni nav, ni pied de page (le footer `contact-partners` n'a pas
   de colonnes de liens). Si ce bouton disparaît, la page devient orpheline sans qu'aucun gate ne le
   signale.
-- ⚠️ **Adresse e-mail incohérente au pied de page** : le lien social « mail » pointe sur
-  `contact@cyber-reunion.fr` (intégrateur) alors que le reste du site — bloc contact du footer, page
-  `/contact`, mentions légales, confidentialité, accessibilité — affiche `contact@ekilib.re`. Les
-  mentions légales portent par ailleurs encore « Commune du Tampon, La Réunion (97430) », non alignées
-  sur l'adresse postale ajoutée le 23/09 (§13).
+- ~~⚠️ **Adresse e-mail incohérente au pied de page**~~ **réglé** : le lien social « mail » est passé
+  de `contact@cyber-reunion.fr` à `contact@ekilib.re` le 24/09 (`7cdc0fa8`), et la rangée `socials` a
+  disparu le 08/10 (§9.23) — l'e-mail est désormais la première ligne du bloc contact. **Reste** : les
+  mentions légales (« Commune du Tampon, La Réunion (97430) ») et la page confidentialité (« Siège
+  social : Commune du Tampon, La Réunion (974) ») ne sont pas alignées sur l'adresse postale ajoutée
+  le 23/09 (§13).
+- ⚠️ **Une clé de section mal placée passe tous les gates** (08/10, §9.23) : `"orientation"` écrite à
+  côté de `props` au lieu de dedans est acceptée par `config:validate` et par `audit:config`, et le
+  composant l'ignore sans avertissement. Seule la lecture du composant (`StepsSection` lit
+  `props.orientation`) ou le rendu le montre. Réflexe : toute option de rendu d'une section va
+  **dans** `props`.
+- **Icônes du bloc contact (`footer.contact.items[].icon`)** : `FooterContactPartners` ne connaît
+  qu'une liste fermée (`address`, `phone`/`tel`, `mail`/`email`/`contact`, `globe`/`website`,
+  `building`, `clock`, `facebook`, `linkedin`). Une clé inconnue affiche **l'épingle `MapPin`**, sans
+  erreur — c'est ce qui a imposé
+  l'ajout de `facebook`/`linkedin` le 08/10. Pour un autre réseau (Instagram, YouTube…), ajouter
+  l'icône à `iconMap` avant de l'utiliser en config.
 - **Chantier Actualités** : **codé le 10/08, opérationnel le 19/08** (§9.7/§9.7 bis/§9.7 ter) —
   création réelle confirmée en base (photo comprise). Cause racine du blocage qui a occupé la majeure
   partie de la session : l'organisation porteuse `associationEkilibre` n'avait pas de `costum.slug`
@@ -2098,7 +2158,8 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 | 🔴 **Rejouer les 3 écritures Mongo sur la base de PROD avant tout déploiement** (runbook §9.11 : `copy-costum-decl` → `add-article-node` → `reference-stock`, dry-run puis `--apply`, puis purge du cache costum). **Sans elles la whitelist costum est vide et les champs métier sont rabotés au save, en silence.** | Peterson / Thomas |
 | 🔴 **Versionner les 3 scripts de bascule** — ils portent le gate de déploiement ci-dessus et ne sont dans aucun dépôt | Peterson |
 | **Confirmer la fermeture de l'auto-inscription des structures** (23/09, §9.19) : le bouton public reste fermé ; **la création par un admin du site est rouverte le 07/10** (§9.22) — à valider avec la MSS, qui avait demandé la fermeture (§9.20). | **MSS** / Nicolas |
-| **Trancher l'adresse e-mail du lien social** du pied de page : `contact@cyber-reunion.fr` (posé le 23/09) vs `contact@ekilib.re` (partout ailleurs sur le site) — et aligner les **mentions légales** sur la nouvelle adresse postale « 34 rue Hubert Delisle, 97430 Le Tampon » | MSS / Nicolas |
+| ~~Trancher l'adresse e-mail du lien social~~ **réglé** (`contact@ekilib.re` le 24/09, rangée `socials` retirée le 08/10, §9.23). **Reste** : aligner les **mentions légales** et la page **confidentialité** sur l'adresse postale « 34 rue Hubert Delisle, 97430 Le Tampon » | MSS / Nicolas |
+| **Committer le correctif d'orientation** de `#inscription-steps` (`/s-informer`, clé déplacée dans `props` le 08/10, §9.23) | Nicolas |
 | **Recette navigateur de la charte** (§9.19) — **mode sombre en priorité** : en-têtes de cartes SSsO/SSpT, `--btn-structure` de `CardAnswer`, cartes d'accès rapide du héros, cartes d'actualités en `poster` | Nicolas / MSS |
 | **Saisir les créneaux du Tampon** : le recentrage de périmètre est juste, mais 44 des 45 réponses appartiennent au site jumeau — `/creneaux` n'en affiche plus qu'un (§9.12). Les 2 facettes pathologie resteront invisibles tant qu'aucune option ne remonte | **MSS** |
 | **Reconfirmer en recette le comptage 44/45** : il vient du message de commit `b11285e5` et n'est pas revérifiable depuis le dépôt | Peterson |
