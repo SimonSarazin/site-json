@@ -4159,6 +4159,7 @@ seule source de vérité pour les boutons et leurs bornes (`goToPage`). Vérifi�
 | Mobile 390 px | 🟡 léger retour à la ligne du bouton « Suivant » seul au-delà d'une vingtaine de pages — net progrès, non retouché davantage |
 | Sombre | ✅ vérifié, contrastes corrects |
 | Annonce `role="status"` | ✅ vérifiée en direct sur `/blog` (6 434 articles) : « Page 1 sur 537 » (total réel), plus « Page 1 sur 2 » (pages navigables) |
+| Dernière page dans la troncature | ✅ vérifiée en direct sur `/appels-a-projets` (8 pages) : absente tant que non atteinte, puis `1 2 3 4 5 … 8 Suivant` une fois chargée (même en revenant sur la page 1) — propriété émergente de `nav.pageCount`, testée (`paginationRange.test.ts`) |
 
 ## 9quattuorquadragies. Paroles de parents : image entière et carte par défaut ; profils en pleine largeur
 
@@ -4239,6 +4240,17 @@ un site en marche) — vérifié en direct dans cette session avec l'option forc
 | Export PDF | ✅ **vérifié en direct, vrai navigateur (Playwright/Chromium), contre le backend réel** : clic → requête `AGENDA_GET_PDF` → fichier `agenda-parent62.pdf` de 150 519 octets, magic header `%PDF-` confirmé. Le blocage CORS documenté dans la spec est bien levé |
 | Mobile 390 px / sombre (`/agenda`) | ✅ bouton PDF en icône seule, aucun débordement horizontal, lisible en sombre |
 | Gestion des rôles | 🟡 **non vérifiée en conditions réelles** — aucune session admin disponible dans cette session ; typecheck/lint seuls |
+
+## 9sexquadragies. Footer : « Appels à projets »/« Offres d'emploi » retirés
+
+Sur demande, les deux liens retirés de `footer.columns[0].links` (`config.prod.parent62.json`). Le
+lien « Archives » a disparu de la même colonne pendant ce lot (édition concurrente côté config, hors
+de ce que ce lot a produit) — confirmé volontaire, laissé tel quel. La page `/archives` elle-même
+n'est pas supprimée, seulement son lien de footer.
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` | ✅ 51 pages · 182 sections |
 
 ## 10. Checklist d'avancement
 
