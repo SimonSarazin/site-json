@@ -23,6 +23,7 @@
     "noCarrier": "Aucune entité porteuse (carrier) : la gestion des membres nécessite un costum porteur."
   },
   "AdminResourceTable": {
+    "preview": "Aperçu",
     "create": "Créer",
     "searchPlaceholder": "Rechercher…",
     "statusAll": "Tous les statuts",

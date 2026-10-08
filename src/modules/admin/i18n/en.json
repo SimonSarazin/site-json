@@ -23,6 +23,7 @@
     "noCarrier": "No carrier entity: member management requires a carrier costum."
   },
   "AdminResourceTable": {
+    "preview": "Preview",
     "create": "Create",
     "searchPlaceholder": "Search…",
     "statusAll": "All statuses",

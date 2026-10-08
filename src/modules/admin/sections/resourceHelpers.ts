@@ -70,6 +70,16 @@ function identiteCompatible(identity: Record<string, unknown> | undefined, filte
  * son jumeau public `costumCreateKey` (AddEntityDropdown), qui rendait déjà `null` sur ambiguïté :
  * la MÊME décision était prise différemment des deux côtés pour une même config.
  */
+/**
+ * Id du form CoForm dont le bouton « Créer » de la resource ouvre la saisie d'une RÉPONSE
+ * (`create: { "coform": "<formId>" }`, resources `answers`) — `null` pour toute autre forme de
+ * `create`. Exclusif avec `resolveCreateModal` : l'un ou l'autre porte le bouton, jamais les deux.
+ */
+export function createCoformId(section: AdminResourceSection): string | null {
+  const create = section.create;
+  return create && typeof create === "object" ? create.coform : null;
+}
+
 export function resolveCreateModal(
   section: AdminResourceSection,
   costumForms?: Record<string, CostumFormDocLike> | null,
@@ -77,6 +87,8 @@ export function resolveCreateModal(
 ): string | null {
   const create = section.create ?? "inherit";
   if (create === false) return null;
+  // Création par CoFormModal (`{coform}`) : pas une modale d'entité — cf. `createCoformId`.
+  if (typeof create === "object") return null;
   const standard = ADD_MODAL_BY_TYPE[section.entityType] ?? null;
   if (create === "standard") return standard;
   if (typeof create === "string" && create !== "inherit") return create;

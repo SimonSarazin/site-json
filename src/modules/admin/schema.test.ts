@@ -36,6 +36,34 @@ describe("AdminColumnsSchema — sortable", () => {
  * chaque clic. Le test verrouille aussi le rejet par le schéma builtin (pas de repli silencieux
  * vers la section costum permissive).
  */
+describe("AdminSectionSchema — resource : create.coform et preview", () => {
+  const FORM = "6a85af345d898a57cb49f029";
+  const base = { type: "resource", entityType: "answers", source: { defaultFilters: { form: FORM } } };
+
+  it("accepte create:{coform} (ObjectId) et conserve le bloc preview", () => {
+    // Deux opt-in de la modération des réponses CoForm : sans eux, aucune création (les answers
+    // n'ont pas de modale d'entité) et aucune réaction au clic sur une ligne. Zod strippant les
+    // clés inconnues, leur disparition du schéma serait silencieuse — d'où ce contrat.
+    const r = AdminSectionSchema.safeParse({
+      ...base,
+      create: { coform: FORM },
+      preview: { type: "coform-answer", editButton: true },
+    });
+    expect(r.success).toBe(true);
+    expect(r.data).toMatchObject({ create: { coform: FORM }, preview: { type: "coform-answer", editButton: true } });
+  });
+
+  it("refuse un coform qui n'est pas un ObjectId (24 hex)", () => {
+    expect(AdminSectionSchema.safeParse({ ...base, create: { coform: "add-creneau" } }).success).toBe(false);
+  });
+
+  it("les formes historiques de create restent acceptées (false / inherit / add-<key>)", () => {
+    for (const create of [false, "inherit", "add-structure"]) {
+      expect(AdminSectionSchema.safeParse({ ...base, create }).success, String(create)).toBe(true);
+    }
+  });
+});
+
 describe("AdminSectionSchema — answerCopy", () => {
   const SRC = "6928096adf5caf0d230e7f26";
   const DST = "6a85af345d898a57cb49f029";

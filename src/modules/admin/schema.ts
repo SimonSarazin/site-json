@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { SearchBaseParamsSchema } from "@/modules/search/schema";
+import { PreviewConfSchema, SearchBaseParamsSchema } from "@/modules/search/schema";
 import { VisibilityConditionSchema } from "@/lib/visibility/schema";
 
 import { LocalizedString } from "../../types/locale-schema";
@@ -23,6 +23,19 @@ export type AdminAccessLevel = z.infer<typeof AdminAccessLevelSchema>;
 /** Résolution du form add/edit d'une resource : `false` (désactivé) · `"inherit"` (hérite de
  *  addConfig / profiles.<type>.editModal) · `"add-<key>"`/`"edit-<key>"` (clé forcée, standard ou costum). */
 export const AdminFormRefSchema = z.union([z.literal(false), z.literal("inherit"), z.string()]);
+
+/**
+ * `create` d'une resource `answers` : les réponses CoForm n'ont AUCUNE modale d'entité (ni
+ * standard, ni costumForm — `resolveCreateModal` rend `null` pour ce type). La création passe par
+ * le `CoFormModal` du form, comme le bouton public `addButton.coform` de `searchProStatic` :
+ * `{ "coform": "<formId>" }` (ObjectId 24 hex, même contrat que `answerCopy.targetForm`). Forme
+ * objet plutôt qu'une chaîne devinée au format : un id de form n'est pas une clé de modale, et
+ * `audit:config` vérifie les clés `add-<id>` contre le registre.
+ */
+export const AdminCreateRefSchema = z.union([
+  AdminFormRefSchema,
+  z.object({ coform: z.string().regex(/^[0-9a-f]{24}$/, "id de form CoForm attendu (ObjectId 24 hex)") }),
+]);
 
 /** Un état métier du mode `statusField` : `value` = valeur brute écrite/lue en base (VERBATIM,
  *  orthographes legacy comprises — ex. « Réfusé » du CoForm SSBE) ; `label` = affichage (permet de
@@ -145,7 +158,16 @@ const AdminResourceSectionSchema = z.object({
    */
   source: SearchBaseParamsSchema.partial().optional(),
   columns: AdminColumnsSchema.optional(),
-  create: AdminFormRefSchema.default("inherit"),
+  create: AdminCreateRefSchema.default("inherit"),
+  /**
+   * Détail d'une ligne au CLIC (et par l'action « Aperçu » du menu de ligne, accessible au
+   * clavier) : MÊME contenu que le détail des listes publiques (`Preview.tsx`, dispatch sur
+   * `preview.type` — ex. `coform-answer` avec `editButton` pour corriger une réponse depuis la
+   * modération), dans le conteneur `dialog`. Opt-in : sans ce bloc, les lignes ne réagissent pas
+   * au clic (zéro changement pour les tables existantes). Un modérateur vérifie une fiche AVANT de
+   * la marquer « Validé » : les colonnes de la table n'en montrent qu'une tranche.
+   */
+  preview: PreviewConfSchema.optional(),
   /**
    * Valeurs SEMÉES dans la modale de CRÉATION ouverte depuis cette section (jamais en édition —
    * l'entité fait alors foi). Fusionnées PAR-DESSUS les défauts dérivés du formulaire

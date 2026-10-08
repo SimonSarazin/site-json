@@ -149,8 +149,9 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
   "columns": ["name", { "path": "address.addressLocality", "label": { "fr": "Commune" } },
               { "path": "medias", "label": { "fr": "Audio" }, "type": "audio" },
               { "path": "structure.name", "sortable": false }],  // sortable:false = colonne non triable (cf. answers)
-  "create": "inherit", "edit": "inherit",       // false | "inherit" | "add-<key>"/"edit-<key>"
+  "create": "inherit", "edit": "inherit",       // false | "inherit" | "add-<key>"/"edit-<key>" | create: {"coform": "<formId>"}
   "createDefaults": { "category": "appel-projet" },  // valeurs semées dans la modale d'AJOUT
+  "preview": { "type": "coform-answer", "editButton": true },  // détail au clic sur une ligne (opt-in)
   "rowActions": ["edit", "delete", "validate", "reference", "setFeatured"],
   "exclusiveField": "featured",                 // EXIGÉ par `setFeatured` (sans lui : action absente)
   "restrictActionsToOwned": false,              // true = fiche non possédée → lecture + `reference` seuls
@@ -176,6 +177,27 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
 - `create`/`edit: "inherit"` : la création prend le form **costum** du site s'il en existe un pour
   ce type (`config.costumForms`), l'édition suit la résolution publique (`editModalMatch`,
   par-ligne). Clé forcée `add-<key>`/`edit-<key>` possible ; `false` = lecture seule.
+- **`create: { "coform": "<formId>" }`** (resources `answers`, 08/10) : les réponses CoForm n'ont
+  **aucune modale d'entité** (ni standard, ni costumForm — `resolveCreateModal` rend `null`, donc
+  pas de bouton). Cette forme fait ouvrir au bouton « Créer » le **`CoFormModal`** du form — la même
+  modale que le bouton public `addButton.coform` de `searchProStatic` — monté au premier clic
+  (chunk coform à la demande). Après soumission : invalidation des tables/tuiles admin **et** des
+  surfaces publiques (`publicSurfaceKeys` — la réponse créée est une ligne de plus sur la liste
+  publique, que `useCoFormFinalMutation` n'invalide pas) ; refetch à la fermeture. L'id est validé
+  ObjectId 24 hex (même contrat qu'`answerCopy.targetForm`) ; forme objet, et non une chaîne au
+  format deviné, parce qu'un id de form **n'est pas** une clé de modale (`audit:config` vérifie les
+  `add-<id>` contre le registre). `createCoformId` / `resolveCreateModal` sont **exclusifs** : un
+  seul des deux porte le bouton. Consommateur : Ekilib.re, onglet Modération des créneaux.
+- **`preview`** (opt-in, 08/10) : **détail d'une ligne au clic** — la ligne entière est la cible
+  (`cursor-pointer`), plus une action « Aperçu » dans le menu de ligne pour le **clavier** (une ligne
+  cliquable n'est pas focusable). Même coque (`dialog`) et même contenu que les listes publiques
+  (`SwitchDetailsMode` → `Preview.tsx`, dispatch sur `preview.type` : `coform-answer`, `structure`,
+  `facets`…) ; avec `coform-answer` + `editButton: true`, le modérateur **corrige la réponse depuis
+  la modération** (re-fetch frais puis `CoFormModal`, cf. [07-module-search](07-module-search.md)).
+  Les cellules « sélection » et « actions » coupent la propagation du clic (React fait remonter
+  jusqu'à la ligne les clics du menu, pourtant portalé). À la fermeture du détail : **refetch** de la
+  table — une édition passée par le détail n'invalide que les caches search/coform, jamais les clés
+  `admin-*`. Sans ce bloc, zéro changement : les lignes ne réagissent pas au clic.
 - **`createDefaults`** (opt-in) : valeurs **semées dans la modale d'AJOUT** ouverte depuis cette
   section, fusionnées **par-dessus** les défauts dérivés du form (`fields.<nom>.default`) — donc une
   clé absente garde son défaut normal. Ce sont des valeurs de **FORMULAIRE**, injectées sans passer

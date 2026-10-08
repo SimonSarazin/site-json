@@ -1,11 +1,29 @@
 import { describe, it, expect, vi } from "vitest";
 import type { AdminResourceSection } from "../schema";
-import { resolveCreateModal, resolveEditModal, getPath, getColumnValue, formatCell, formatColumnCell, readStatusValue } from "./resourceHelpers";
+import { createCoformId, resolveCreateModal, resolveEditModal, getPath, getColumnValue, formatCell, formatColumnCell, readStatusValue } from "./resourceHelpers";
 
 /** Section resource minimale — cast : create/edit sont posés par les défauts zod à la validation. */
 function section(over: Record<string, unknown> = {}): AdminResourceSection {
   return { type: "resource", entityType: "organizations", ...over } as AdminResourceSection;
 }
+
+describe("createCoformId / create:{coform} — création d'une RÉPONSE CoForm, pas d'une entité", () => {
+  const FORM = "6a85af345d898a57cb49f029";
+
+  it("create:{coform} → resolveCreateModal rend null (aucune modale d'entité) et createCoformId l'id", () => {
+    // Les deux sont exclusifs : un seul des deux porte le bouton « Créer » de la table.
+    const sec = section({ entityType: "answers", create: { coform: FORM } });
+    expect(resolveCreateModal(sec)).toBeNull();
+    expect(createCoformId(sec)).toBe(FORM);
+  });
+
+  it("toute autre forme de create → createCoformId null", () => {
+    expect(createCoformId(section({ create: false }))).toBeNull();
+    expect(createCoformId(section({ create: "inherit" }))).toBeNull();
+    expect(createCoformId(section({ create: "add-mon-form" }))).toBeNull();
+    expect(createCoformId(section())).toBeNull();
+  });
+});
 
 describe("resolveCreateModal — choix costum/standard piloté par la config", () => {
   it("create:false → null (pas de création)", () => {
