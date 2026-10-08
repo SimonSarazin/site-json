@@ -1356,6 +1356,11 @@ export const CoformResourceDirectorySectionSchema = z.object({
   props: z.object({
     title: LocalizedString.optional(),
     description: LocalizedString.optional(),
+    customHeader: z.object({
+      title: LocalizedString.optional(),
+      linkText: LocalizedString.optional(),
+      linkHref: z.string().optional(),
+    }).optional(),
     /** Slug du costum porteur (périmètre de recherche). */
     costumSlug: z.string().optional(),
     /** Entité contexte (hôte du costum) — `contextId`/`contextType` du payload legacy. */
@@ -1390,6 +1395,10 @@ export const CoformResourceDirectorySectionSchema = z.object({
       lg: z.number().int().min(1).max(6).optional(),
       xl: z.number().int().min(1).max(6).optional(),
     }).optional(),
+    /** Nombre maximal de cartes affichées. */
+    limit: z.number().int().min(1).optional(),
+    /** Masque les facettes et désactive le filtre par lieu porteur. Défaut : true. */
+    showFilters: z.boolean().optional(),
     /** Titre de la colonne de filtres (défaut i18n « Filtres »). */
     filtersTitle: LocalizedString.optional(),
     /* Les facettes prix sont figées (3 groupes heure / demi-journée / journée,
