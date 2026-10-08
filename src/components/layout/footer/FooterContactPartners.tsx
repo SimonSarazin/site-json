@@ -2,7 +2,7 @@ import NavLink from "../NavLink";
 import SocialLinks from "./SocialLinks";
 import { FooterLinkColumn } from "./FooterLinkColumn";
 import { useFooterColumns, useFooterLinks } from "./useFooterLinks";
-import { MapPin, Phone, Mail, Globe, Building2, Clock } from "lucide-react";
+import { MapPin, Phone, Mail, Globe, Building2, Clock, Facebook, Linkedin } from "lucide-react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
@@ -29,6 +29,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   website: Globe,
   building: Building2,
   clock: Clock,
+  facebook: Facebook,
+  linkedin: Linkedin,
 };
 
 function getIconComponent(icon?: string) {
