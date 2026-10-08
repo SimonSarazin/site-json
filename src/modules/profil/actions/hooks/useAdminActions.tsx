@@ -19,6 +19,7 @@ import {
   buildUserAction,
   buildDisabledUserAction,
   buildInviteAction,
+  buildManageRolesAction,
 } from "../builders/buildUserAction";
 import type { UserAction } from "../../types";
 
@@ -34,10 +35,14 @@ type ShowConfirmationFn = (config: {
  *
  * @param entity - L'entité parente (organisation/projet/événement)
  * @param showConfirmation - Fonction pour afficher les dialogues de confirmation
+ * @param onManageRoles - Ouvre `ManageRolesDialog` sur un membre. Optionnel : sans lui, l'action
+ *   « Gérer les rôles » n'apparaît pas — `InviteMemberDialog` (pas de dialogue de rôles à ouvrir) en
+ *   reste donc inchangé, seul `MemberListRenderer` la fournit.
  */
 export function useAdminActions(
   entity: EntityTypes | null,
-  showConfirmation: ShowConfirmationFn
+  showConfirmation: ShowConfirmationFn,
+  onManageRoles?: (user: User) => void,
 ) {
   const t = useT("modules/profil");
 
@@ -59,13 +64,22 @@ export function useAdminActions(
 
     if (!entity || !isUser(user)) return actions;
 
+    // Proposée sur tout membre DÉJÀ LIÉ (admin/membre/contributeur/participant) — jamais sur un état
+    // d'invitation/validation en attente (il n'y a pas encore de lien à éditer) ni sur un utilisateur
+    // non lié (actions d'invitation, tout en bas). `onManageRoles` absent (`InviteMemberDialog`,
+    // pas de dialogue de rôles à ouvrir) → tableau vide, rien n'apparaît.
+    const manageRolesActions = onManageRoles
+      ? [buildManageRolesAction({ configKey: "manageRoles", t, user, onManageRoles })]
+      : [];
+
     // === ORGANISATION ===
     if (isOrganization(entity)) {
       // Admin d'organisation
       if (user.isAdmin?.()) {
         actions.push(
           buildUserAction({ configKey: "demote", t, mutation: demoteMutation, user, showConfirmation }),
-          buildUserAction({ configKey: "remove", t, mutation: removeMutation, user, showConfirmation })
+          buildUserAction({ configKey: "remove", t, mutation: removeMutation, user, showConfirmation }),
+          ...manageRolesActions
         );
         return actions;
       }
@@ -74,7 +88,8 @@ export function useAdminActions(
       if (user.isMember?.()) {
         actions.push(
           buildUserAction({ configKey: "promote", t, mutation: promoteMutation, user, showConfirmation }),
-          buildUserAction({ configKey: "remove", t, mutation: removeMutation, user, showConfirmation })
+          buildUserAction({ configKey: "remove", t, mutation: removeMutation, user, showConfirmation }),
+          ...manageRolesActions
         );
         return actions;
       }
@@ -111,7 +126,8 @@ export function useAdminActions(
       if (user.isAdmin?.()) {
         actions.push(
           buildUserAction({ configKey: "demote", t, mutation: demoteMutation, user, showConfirmation }),
-          buildUserAction({ configKey: "remove", t, mutation: removeMutation, user, showConfirmation })
+          buildUserAction({ configKey: "remove", t, mutation: removeMutation, user, showConfirmation }),
+          ...manageRolesActions
         );
         return actions;
       }
@@ -120,7 +136,8 @@ export function useAdminActions(
       if (user.isContributor?.()) {
         actions.push(
           buildUserAction({ configKey: "promote", t, mutation: promoteMutation, user, showConfirmation }),
-          buildUserAction({ configKey: "remove", t, mutation: removeMutation, user, showConfirmation })
+          buildUserAction({ configKey: "remove", t, mutation: removeMutation, user, showConfirmation }),
+          ...manageRolesActions
         );
         return actions;
       }
@@ -156,7 +173,8 @@ export function useAdminActions(
       // Participant d'événement
       if (user.isAttendee?.()) {
         actions.push(
-          buildUserAction({ configKey: "remove", t, mutation: removeMutation, user, showConfirmation })
+          buildUserAction({ configKey: "remove", t, mutation: removeMutation, user, showConfirmation }),
+          ...manageRolesActions
         );
         return actions;
       }

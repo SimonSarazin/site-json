@@ -17,6 +17,7 @@
       "useFilter": true,
       "showMap": false,
       "enableMap": true,
+      "defaultViewMode": "map",
       "baseParams": {
         "defaultTypes": [
           "poi"
@@ -95,6 +96,7 @@
         },
         "testimonial": {
           "design": "bubble",
+          "imageFit": "contain",
           "quoteField": "description",
           "titleField": "name",
           "dateField": "created",

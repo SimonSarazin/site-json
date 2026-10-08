@@ -112,6 +112,40 @@ export function buildDisabledUserAction({
   };
 }
 
+interface BuildManageRolesActionOptions {
+  /** Clé de la configuration d'action */
+  configKey: MemberActionConfigKey;
+  /** Fonction de traduction i18n */
+  t: TFunction;
+  /** Utilisateur dont on va éditer les rôles */
+  user: User;
+  /** Ouvre `ManageRolesDialog` sur `user` — pas de mutation ici, l'enregistrement se fait dans le
+   *  dialogue (`useSetMemberRoles`). */
+  onManageRoles: (user: User) => void;
+}
+
+/**
+ * Construit un objet UserAction qui OUVRE un dialogue au lieu de muter directement — seule action du
+ * registre dans ce cas (`setRoles` demande une saisie, contrairement à promote/demote/remove).
+ */
+export function buildManageRolesAction({
+  configKey,
+  t,
+  user,
+  onManageRoles,
+}: BuildManageRolesActionOptions): UserAction {
+  const config = MEMBER_ACTION_CONFIG[configKey] as MemberActionConfig;
+  const Icon = getActionIcon(config.icon);
+
+  return {
+    id: config.id,
+    label: t(config.i18nKey),
+    icon: <Icon className="w-3 h-3" />,
+    variant: config.variant,
+    onClick: () => onManageRoles(user),
+  };
+}
+
 interface BuildInviteActionOptions {
   /** Clé de la configuration d'action */
   configKey: MemberActionConfigKey;

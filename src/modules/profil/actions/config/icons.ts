@@ -16,6 +16,7 @@ import {
   ShieldOff,
   Trash2,
   Mail,
+  Tag,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -33,6 +34,7 @@ export const ACTION_ICONS = {
   shieldOff: ShieldOff,
   trash: Trash2,
   mail: Mail,
+  tag: Tag,
 } as const;
 
 export type ActionIconKey = keyof typeof ACTION_ICONS;

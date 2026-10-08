@@ -1,11 +1,11 @@
-import { useId } from "react";
+import { useId, type ReactNode } from "react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { type MapBubblesProps } from "@/types/site-schema";
 import { Badge } from "@/components/ui/badge";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link } from "react-router";
 import { tooltipAnchorClass } from "./mapBubbleTooltip";
-import { sectionBadgeClass } from "./sectionBadge";
-import { accentStyle } from "@/lib/accentStyle";
+import { sectionBadgeClass, sectionHeadlineStyle } from "./sectionBadge";
 
 interface MapBubblesSectionProps {
     id?: string;
@@ -24,20 +24,50 @@ const BG_MAP: Record<string, string> = {
 /** Marine des pastilles de la carte — couleur FIXE, identique en clair et en sombre (cf. items). */
 const MARINE_FIXE = "oklch(0.20 0.03 265)";
 
+/** Entrée des bulles (`animate`) : apparition zoomée en cascade — `tw-animate-css`, uniquement si
+ *  l'utilisateur accepte le mouvement. `fill-mode-backwards` : invisible pendant son délai. */
+const ENTREE = "motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-50 motion-safe:duration-700 motion-safe:fill-mode-backwards";
+
+/**
+ * Respiration en boucle (`animate`) : rond ET étiquette clignotent ensemble — DEPUIS LEUR CENTRE,
+ * en `scale` SEUL (`blink-scale`) — PAS `pulse-glow` (qui fait aussi varier l'opacité 0.5→0.8) :
+ * ça délavait la couleur de marque des pastilles, qui doit rester pleine en permanence. PAS
+ * `animate-float` (translation verticale) non plus : sur une bulle proche d'un bord de la carte
+ * (ex. en haut à droite), la translation la faisait déraper hors de sa position d'ancrage au lieu
+ * de respirer sur place. Déphasée par bulle pour ne pas battre à l'unisson. Hors `animate`, aucune
+ * boîte n'est ajoutée : le rendu historique est intact.
+ */
+function Flottant({ actif, index, children }: { actif?: boolean; index: number; children: ReactNode }) {
+    if (!actif) return <>{children}</>;
+    return (
+        <span
+            className="relative flex w-full flex-col items-center motion-safe:animate-blink-scale"
+            style={{ animationDelay: `${(index % 4) * 0.7}s` }}
+        >
+            {children}
+        </span>
+    );
+}
+
 export function MapBubbles({ id, props }: MapBubblesSectionProps) {
     const { t } = useLocalization();
+    const anime = props.animate === true;
     const idInfobulles = useId();
     const enCarte = props.design === "card";
     const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : "";
     const overlay = props.backgroundOverlay;
-    // En habillage « carte », le dégradé (`backgroundOverlay`) habille la SEULE illustration : la carte qui
-    // porte le bloc garde son fond, et titre comme accroche s'y lisent en encre de thème.
-    const voileIllustration = enCarte && overlay
+    // En habillage « carte », le fond (image ou dégradé CSS) habille la SEULE illustration : la carte
+    // qui porte le bloc garde son fond, et titre comme accroche s'y lisent en encre de thème.
+    // `illustrationBackgroundImage` prime (ex. un dégradé déjà cuit en PNG, plus fidèle qu'un
+    // `linear-gradient` CSS reconstruit à la main) ; sinon repli sur `backgroundOverlay`.
+    const voileIllustration = enCarte && props.illustrationBackgroundImage
+        ? { backgroundImage: `url(${props.illustrationBackgroundImage})`, backgroundSize: "cover", backgroundPosition: "center" }
+        : enCarte && overlay
         ? { background: `linear-gradient(${overlay.angle ?? 90}deg, ${overlay.from}, ${overlay.to})` }
         : undefined;
 
     return (
-        <section id={id} className={`relative px-4 ${enCarte ? "flex h-full flex-col rounded-2xl pt-8 pb-6" : "py-16"} ${sectionBg}`}>
+        <section id={id} className={`relative px-4 ${enCarte ? "flex h-full flex-col rounded-2xl pt-4 pb-4" : "py-16"} ${sectionBg}`}>
             {overlay && !enCarte && (
                 <div
                     // `rounded-[inherit]` : le voile suit les coins de la section, qui les porte en
@@ -47,20 +77,30 @@ export function MapBubbles({ id, props }: MapBubblesSectionProps) {
                 />
             )}
 
-            <div className={`relative z-10 container mx-auto max-w-4xl ${enCarte ? "flex flex-1 flex-col" : ""}`}>
+            <div className={`relative z-10 container mx-auto max-w-6xl ${enCarte ? "flex flex-1 flex-col" : ""}`}>
                 {/* Habillage « carte » : l'étiquette déborde du haut de la carte qui porte le bloc, et
                     l'accroche se lit dessous — l'illustration vit alors sur son propre aplat arrondi,
                     au lieu de servir de fond au titre. */}
                 {enCarte && (
                     <>
-                        {/* Étiquette remontée de sorte que son bas ne morde pas sur l'accroche juste en
-                            dessous — inclinée, sa boîte est plus haute que le texte. Couleurs FIXES (config
-                            ou marine par défaut), comme les pastilles d'item : pas d'adaptatif clair/sombre. */}
-                        <h2 className="absolute -top-16 left-0 z-20">
+                        {/* DANS la carte (flux normal), pas flottante au-dessus de son bord — couleurs FIXES
+                            (config ou marine par défaut), comme les pastilles d'item : pas d'adaptatif
+                            clair/sombre. */}
+                        <h2 className="mb-2">
                             <Badge
-                                style={accentStyle(props.badgeColor ?? MARINE_FIXE, props.badgeTextColor)}
-                                className={sectionBadgeClass(props.headlineStyle)}
+                                style={sectionHeadlineStyle(props.headlineStyle, props.badgeColor ?? MARINE_FIXE, props.badgeTextColor)}
+                                className={`${sectionBadgeClass(props.headlineStyle)} gap-2`}
                             >
+                                {props.headlineIcon && (
+                                    <DynamicIcon
+                                        name={props.headlineIcon as IconName}
+                                        className="shrink-0"
+                                        // `1em` : aussi grand que le TEXTE du titre (sa taille de police), pas une
+                                        // taille fixe qui dériverait du texte au prochain changement de palier.
+                                        style={{ width: "1em", height: "1em", ...(props.headlineIconColor ? { color: props.headlineIconColor } : {}) }}
+                                        aria-hidden
+                                    />
+                                )}
                                 {t(props.headline)}
                             </Badge>
                         </h2>
@@ -76,33 +116,35 @@ export function MapBubbles({ id, props }: MapBubblesSectionProps) {
                     style={voileIllustration}
                     // `contents` hors habillage carte : la boîte disparaît de la mise en page, le rendu
                     // historique (illustration et bulles directement dans le conteneur) est intact.
-                    className={enCarte ? `flex flex-1 items-center rounded-2xl p-3 ${voileIllustration ? "" : "bg-[var(--page-accent-soft,transparent)]"}` : "contents"}
+                    className={enCarte ? `flex flex-1 items-center rounded-2xl p-1.5 ${voileIllustration ? "" : "bg-[var(--page-accent-soft,transparent)]"}` : "contents"}
                 >
-                <div className="relative w-full @container/map-bubbles">
-                    {props.backgroundImage ? (
-                        // `dark:brightness-75` : l'illustration (carte + lavis, cuits dans
-                        // l'image) garde sa pleine luminosité de jour ; en sombre elle est
-                        // tamisée — sans ça, la section reste le bloc le plus lumineux d'une
-                        // page de nuit (assombrir le dégradé DERRIÈRE ne suffit pas, l'image
-                        // le recouvre presque entièrement).
-                        <img
-                            src={props.backgroundImage}
-                            alt={props.backgroundImageAlt ? t(props.backgroundImageAlt) : ""}
-                            className="block w-full h-auto select-none dark:brightness-75"
-                        />
-                    ) : (
-                        <div className="aspect-4/3" />
-                    )}
-
-                    <div className="absolute inset-0">
-                        {props.items.map((item, index) => (
+                <div
+                    className={`relative w-full @container/map-bubbles ${props.illustrationMaxWidth ? "mx-auto" : ""}`}
+                    style={props.illustrationMaxWidth ? { maxWidth: props.illustrationMaxWidth } : undefined}
+                >
+                    {(() => {
+                        // OPT-IN (`illustrationMaxHeight`) : jamais automatique, pour ne pas changer le rendu
+                        // d'un site qui n'a rien demandé (cf. principe moteur — une nouveauté reste un choix
+                        // explicite par site). Un plafond de HAUTEUR (`max-h` + `aspect-[…]`, PAS
+                        // `object-cover`) fait tenir l'illustration dans la colonne SANS rogner un seul pixel —
+                        // la largeur SUIT la hauteur plafonnée au lieu de forcer la hauteur à suivre la largeur
+                        // de la colonne. Boîte interne dédiée (`mx-auto`, ratio EXPLICITE via
+                        // `illustrationAspectRatio` — jamais deviné : un fichier qui n'est pas au format par
+                        // défaut serait étiré) : les bulles restent en % de CETTE boîte — pas du conteneur
+                        // `w-full` qui la déborde une fois rétrécie — donc toujours alignées sur leur
+                        // territoire.
+                        const plafonner = enCarte && !!props.backgroundImage && !!props.illustrationMaxHeight;
+                        const bulles = (
+                            <div className="absolute inset-0">
+                                {props.items.map((item, index) => (
                             <Link
                                 key={index}
                                 to={item.href}
                                 aria-describedby={item.cities ? `${idInfobulles}-${index}` : undefined}
-                                className="group absolute z-0 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center hover:z-20 focus-visible:z-20"
-                                style={{ left: `${item.x}%`, top: `${item.y}%`, width: `${item.size}%` }}
+                                className={`group absolute z-0 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center hover:z-20 focus-visible:z-20 ${anime ? ENTREE : ""}`}
+                                style={{ left: `${item.x}%`, top: `${item.y}%`, width: `${item.size}%`, ...(anime ? { animationDelay: `${index * 120}ms` } : {}) }}
                             >
+                                <Flottant actif={anime} index={index}>
                                 <img
                                     src={item.image}
                                     alt=""
@@ -131,6 +173,7 @@ export function MapBubbles({ id, props }: MapBubblesSectionProps) {
                                 >
                                     {t(item.label)}
                                 </span>
+                                </Flottant>
                                 {item.cities && (
                                     <span
                                         id={`${idInfobulles}-${index}`}
@@ -144,8 +187,40 @@ export function MapBubbles({ id, props }: MapBubblesSectionProps) {
                                     </span>
                                 )}
                             </Link>
-                        ))}
-                    </div>
+                                ))}
+                            </div>
+                        );
+                        const illustration = props.backgroundImage ? (
+                            // `dark:brightness-75` : l'illustration (carte + lavis, cuits dans l'image)
+                            // garde sa pleine luminosité de jour ; en sombre elle est tamisée — sans ça, la
+                            // section reste le bloc le plus lumineux d'une page de nuit (assombrir le
+                            // dégradé DERRIÈRE ne suffit pas, l'image le recouvre presque entièrement).
+                            <img
+                                src={props.backgroundImage}
+                                alt={props.backgroundImageAlt ? t(props.backgroundImageAlt) : ""}
+                                className={plafonner ? "block h-full w-full select-none object-contain dark:brightness-75" : "block w-full h-auto select-none dark:brightness-75"}
+                            />
+                        ) : (
+                            <div className="aspect-4/3" />
+                        );
+                        if (plafonner) {
+                            return (
+                                <div
+                                    className="relative mx-auto w-auto"
+                                    style={{ aspectRatio: props.illustrationAspectRatio || "4/3", maxHeight: props.illustrationMaxHeight }}
+                                >
+                                    {illustration}
+                                    {bulles}
+                                </div>
+                            );
+                        }
+                        return (
+                            <>
+                                {illustration}
+                                {bulles}
+                            </>
+                        );
+                    })()}
 
                     {/* `top`/`mb` réduits sur carte étroite : le badge à taille desktop chevauchait
                         les pastilles-labels des items voisins (positions en % calibrées à la main,

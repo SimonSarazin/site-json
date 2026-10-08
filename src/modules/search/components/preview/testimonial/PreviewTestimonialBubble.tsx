@@ -24,6 +24,7 @@ export default function PreviewTestimonialBubble({ item, list, onClose }: Previe
   const tint = bubbleTint(badgeColor);
   const accentField = testimonial?.accent?.field;
   const accentColors = testimonial?.accent?.colors;
+  const contain = testimonial?.imageFit === "contain";
 
   return (
     /* `min-w-0` : même raison que sur `PreviewResourceCard` (voir son commentaire de racine) — sans lui,
@@ -35,11 +36,19 @@ export default function PreviewTestimonialBubble({ item, list, onClose }: Previe
           dialogue et `shrink-0` l'empêche de céder, ce qui écraserait la zone de contenu sur un grand
           écran (même plafond que la preview « resource »). Le conteneur pose la croix de fermeture
           par-dessus : c'est `DetailsModeDialog` qui lui donne sa pastille de contraste. */}
-      {data.image && (
+      {data.image && (contain ? (
+        <div className="relative flex max-h-[30vh] w-full shrink-0 items-center justify-center overflow-hidden bg-muted">
+          {/* Fond flou : même URL que l'image nette → un seul téléchargement (cache). */}
+          <OptimizedImage src={data.image} alt="" width={840}
+            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-lg" />
+          <OptimizedImage src={data.image} alt={data.title} width={840}
+            className="relative h-auto max-h-[30vh] w-auto max-w-full object-contain" />
+        </div>
+      ) : (
         <div className="relative aspect-[21/9] max-h-[30vh] w-full shrink-0 overflow-hidden bg-muted">
           <OptimizedImage src={data.image} alt={data.title} width={840} className="h-full w-full object-cover" />
         </div>
-      )}
+      ))}
 
       {/* En-tête : catégorie + titre + attribution (accent · date) */}
       <div className="shrink-0 space-y-3 border-b border-border py-4 pl-5 pr-12">
