@@ -572,7 +572,7 @@ jointure sur le lieu porteur + garde région + éclatement, pour quoi
 
 | Prop | Type | Rôle |
 |------|------|------|
-| `resourceTypes` | `Array<{ id, kind, formId, stepPrefix, label, linkSuffix?, descriptionSuffix?, servicesSuffix? }>` (≥ 1) | Un type = une option de facette **et** un formulaire. `kind` ∈ `coworking\|meeting\|accommodation` → pilote la capacité/tarif (cf. `helpers/servicePricingAnswers`). Suffixes PROPRES au formulaire : `linkSuffix` = URL de réservation (`linkPath`), `descriptionSuffix` = « À propos » (meeting `miolbscdcrucb5a8uuq`, hébergement `miq88plgleoln5tmc7b`), `servicesSuffix` = « Services proposés » `string[]` (hébergement `miq86g5vaw1kavrapkb`) |
+| `resourceTypes` | `Array<{ id, kind, formId, stepPrefix, label, linkSuffix?, descriptionSuffix?, servicesSuffix?, detailSuffixes? }>` (≥ 1) | Un type = une option de facette **et** un formulaire. `kind` ∈ `coworking\|meeting\|accommodation` → pilote la capacité/tarif (cf. `helpers/servicePricingAnswers`). Suffixes PROPRES au formulaire : `linkSuffix` = URL de réservation (`linkPath`), `descriptionSuffix` = « À propos » (meeting `miolbscdcrucb5a8uuq`, hébergement `miq88plgleoln5tmc7b`), `servicesSuffix` = « Services proposés » `string[]` (hébergement `miq86g5vaw1kavrapkb`) |
 | `finderSuffix` | string | Suffixe de l'input « finder » (tiers-lieu porteur), **commun** aux formulaires copie. Ex. `miem3epsztzcm9dgim` |
 | `fieldSuffixes` | `{ name?, equipments?, area?, bookingUrl? }` | Suffixes d'inputs COMMUNS. `name` (`mieg4k7yxrito5j9e6`) = titre coworking/hébergement (repli → « Espace de coworking » / « Hébergement »). Pour une salle éclatée, le titre = `serverData.roomName` (colonne 0 du tableau des salles) — repli « Salle de réunion ». `area` (`mieg4k7zslc8awrql2`) = surface (détail) |
 | `scope.addressLevel1` | string | Garde géo : ne garde que les ressources dont le **lieu porteur** est dans cette zone (`address.level1`). Passé dans `defaultFilters["address.level1"]` → l'endpoint `getsressourcetl` **filtre côté serveur** (il retire la clé du payload puis post-filtre sur le lieu porteur). Scroll infini natif conservé |
@@ -661,15 +661,24 @@ section (`stopPropagation` — n'ouvre pas le détail), à côté du lien « Voi
 tiers-lieu » (profil). Hors section (pas de `ResourceDirectoryActionsProvider`), le
 nom retombe en texte simple.
 
-**Le détail** (`PreviewResourceDirectory`) reprend **le même gabarit que le modal
-« En savoir plus » d'un tiers-lieu** (`ProfilTiersLieuxAbout`), `preview.width:
-"2xl"`, adapté aux jetons de thème clair/sombre : carrousel `h-56` + **pastille de
-capacité** en coin → nom (`h3`, **pas d'étiquette de type**) + « Porté par
-{tiers-lieu} » + localité → **Tarifs** en pastilles (`{prix}€` + suffixe
-`resourceDirectory.priceSuffix.*` — TOUS les tarifs non nuls) + pastille « Tarif
-solidaire » → **Surface** (`area` commun, repli sur la colonne 1 de la salle) →
-**À propos** (`descriptionSuffix`) → **Équipements** (pastilles) → **Services
-proposés** (`servicesSuffix`, hébergement) → boutons.
+**Le détail** (`PreviewResourceDirectory`) rend le **même composant que le modal
+« En savoir plus » d'un tiers-lieu** (`ProfilTiersLieuxAbout`) : `ResourceDetail`
+(`components/preview/resource/`), `preview.width: "2xl"`. Carrousel `h-56` + **pastille de
+capacité** en haut à droite → nom (`h3`, **pas d'étiquette de type**) + « Porté par
+{tiers-lieu} » + localité (propres à l'annuaire) → **Tarifs** en pastilles (`{prix}€` +
+suffixe `resourceDirectory.priceSuffix.*` — TOUS les tarifs non nuls) + pastille « Tarif
+solidaire possible » → **Surface** (`area` commun, repli sur la colonne 1 de la salle) →
+listes et textes du détail → boutons.
+
+**Listes et textes du détail** — avec `resourceTypes[].detailSuffixes`, les MÊMES champs que
+la fiche du lieu (`roomPath`/`coworkingPath`/`bedRoomPath` de `profile-about-tl`), dans le
+même ordre et sous les mêmes libellés (`lib/resourceDetails.ts`, partagé avec la fiche) :
+listes `equipments`, `catering` (Restauration), `services`, `roomType` ; textes `moreInfo`
+(Bon à savoir), `about` (À propos du lieu), `tip` (Le petit truc en plus), rendus en
+markdown/HTML sanitisé. Sans `detailSuffixes` (rendu historique) : **À propos**
+(`descriptionSuffix`) → **Équipements** (`fieldSuffixes.equipments`) → **Services
+proposés** (`servicesSuffix`). ⚠️ `fieldSuffixes.equipments` est COMMUN aux 3 formulaires :
+pour les salles de réunion il désigne en réalité la Restauration — d'où `detailSuffixes`.
 
 **Bouton d'action** — trois cas : (a) `bookingUrl` présent → **« Réserver »**
 (`https://` préfixé, `window.open`) ; (b) pas de `bookingUrl` mais un e-mail de

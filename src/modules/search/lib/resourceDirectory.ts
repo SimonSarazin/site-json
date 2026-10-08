@@ -1,4 +1,5 @@
 import getValueByPath from "@/helpers/getValueByPath";
+import { buildResourceDetails, type ResourceDetailBlocks, type ResourceDetailKey } from "./resourceDetails";
 import type { Answer, FormId } from "@communecter/cocolight-api-client";
 import {
   buildServicePricingServices,
@@ -55,6 +56,8 @@ export interface ResourceTypeConf {
   descriptionSuffix?: string;
   /** Suffixe de l'input « Services proposés » (`string[]`, PROPRE au formulaire — hébergement `miq86g5vaw1kavrapkb`). */
   servicesSuffix?: string;
+  /** Champs du détail, mêmes clés que la fiche du lieu (cf. `ResourceTypeConfSchema.detailSuffixes`). */
+  detailSuffixes?: Partial<Record<ResourceDetailKey, string>>;
 }
 
 /** Suffixes d'input PARTAGÉS par les formulaires copie. */
@@ -297,6 +300,24 @@ export function resolveAnswerServices(
   if (Array.isArray(raw)) return raw.filter((v): v is string => typeof v === "string" && v.trim().length > 0);
   const single = str(raw);
   return single ? [single] : [];
+}
+
+/**
+ * Blocs du détail d'une ressource lus via `detailSuffixes` — mêmes champs et libellés que la fiche du
+ * lieu (`buildResourceDetails`). `null` si le type n'en déclare pas : l'appelant garde alors son rendu
+ * historique.
+ */
+export function resolveAnswerDetails(
+  serverData: Record<string, unknown> | undefined,
+  rt: ResourceTypeConf | undefined,
+  label: (key: ResourceDetailKey) => string,
+): ResourceDetailBlocks | null {
+  const suffixes = rt?.detailSuffixes;
+  if (!serverData || !rt || !suffixes) return null;
+  return buildResourceDetails((key) => {
+    const suffix = suffixes[key];
+    return suffix ? getValueByPath(serverData, inputPath(rt, suffix)) : undefined;
+  }, label);
 }
 
 /** TOUS les tarifs non nuls d'une catégorie (pas seulement le premier). */

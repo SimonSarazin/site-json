@@ -534,6 +534,37 @@ recherche posées à la main ; les compteurs et la recherche du hero sont rafra�
 5438/5439 (seul échec : `bundle-size`, lié à un `dist/` ancien) · `config:validate` ✅ (15 pages,
 27 sections) · `audit:config` RAS.
 
+
+### 08/10 — détail d'une ressource : l'annuaire montre les mêmes blocs que la fiche du lieu
+
+**Demande** : l'aperçu d'une ressource de `/annuaire-ressources` (et `/reservation`) doit reprendre
+celui de la fiche du lieu. **Constat** : deux rendus distincts, et l'annuaire lisait d'autres champs —
+un suffixe « équipements » commun aux 3 formulaires qui, pour une salle de réunion, désigne la
+Restauration (les équipements y sont `miok91fh1gta2sneeu5`) ; ni « Bon à savoir », ni « À propos du
+lieu », ni « Le petit truc en plus ».
+
+**Fait** :
+- un seul composant de rendu, `ResourceDetail` (`search/components/preview/resource/`), pour la fiche
+  (`ProfilTiersLieuxAbout`) et l'annuaire (`PreviewResourceDirectory`) ; rendu de la fiche inchangé ;
+- une seule lecture des blocs, `lib/resourceDetails.ts` (`buildResourceDetails`) : listes
+  Équipements / Restauration / Services proposés / Type de chambre, puis textes Bon à savoir / À propos
+  du lieu / Le petit truc en plus — même ordre, mêmes libellés des deux côtés ;
+- option `resourceTypes[].detailSuffixes` (opt-in) sur les deux sections annuaire de la config, mêmes
+  champs que `roomPath`/`coworkingPath`/`bedRoomPath` de la fiche ;
+- l'annuaire garde en plus « Porté par », l'adresse et ses boutons (Réserver ou Contacter, Voir le
+  tiers-lieu).
+
+Exemples vérifiés au navigateur (annuaire et fiche) : Houblon (Coopérative Baraka) — tarifs, surface,
+Équipements, Restauration, À propos du lieu, Le petit truc en plus ; coworking de La Coroutine — tarifs,
+surface, Équipements, Bon à savoir. Les doublons visibles dans les listes de Houblon viennent des
+données saisies (identiques sur la fiche).
+
+**Vérifié** : `typecheck` ✅ · `eslint` (fichiers du lot) 0 message · `test:unit` 5641/5642 (seul
+échec : `bundle-size`, lié à un `dist/` ancien) · garde préflight `resource-detail-suffixes`
+(annuaire = fiche, section par section) **vérifiée en échec** sur un suffixe faussé de `/reservation`
+puis config restaurée (`cmp`) · `config:validate` ✅ sur les 19 sites · `audit:config` RAS (185 constats
+au total, inchangé) · intégration SSR tiers-lieux 48/49 (l'échec du `<title>` existe aussi sur `main`).
+
 ### 24/09ter — un administrateur peut supprimer sa fiche
 
 **Code + config.** L'en-tête de profil propose « Supprimer cette fiche » **en dernier** dans le menu
