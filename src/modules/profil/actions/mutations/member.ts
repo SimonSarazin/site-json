@@ -144,36 +144,64 @@ export const useRejectMember = createUserMutation({
 // INVITATIONS
 // =====================================================
 
-/**
- * Hook pour inviter un utilisateur (recherché, pas par e-mail) AVEC des rôles — onglet « users »
- * d'`InviteMemberDialog`. Variables `{ user, roles, admin }`, pas juste `User` : `useInviteMember`/
- * `useInviteAdmin` ci-dessous (sans rôles) restent utilisés ailleurs (ex. `MemberListRenderer`, qui
- * n'a pas de saisie de rôles), donc conservés tels quels plutôt que remplacés.
- */
-export function useInviteMemberWithRoles(parentEntity: EntityTypes | null) {
-  const queryClient = useQueryClient();
+type InviteWithRolesVariables = { user: User; roles: string[]; admin?: boolean };
 
-  return useMutationWithToast<void, { user: User; roles: string[]; admin?: boolean }>({
-    mutationFn: async ({ user, roles, admin }) => {
+/** Mutation partagée par `useInviteMemberWithRoles`/`useInviteAdminWithRoles` — seul le message de
+ *  toast (`successKey`/`errorKey`, cf. ces deux hooks) distingue les deux. */
+function inviteWithRolesConfig(
+  parentEntity: EntityTypes | null,
+  queryClient: ReturnType<typeof useQueryClient>,
+  keys: { successKey: string; errorKey: string },
+) {
+  return {
+    mutationFn: async ({ user, roles, admin }: InviteWithRolesVariables) => {
       if (user.sendRequestToJoinParent) {
         await user.sendRequestToJoinParent({ admin, ...(roles.length > 0 ? { roles } : {}) });
       }
     },
     namespace: "modules/profil",
-    // Même message quel que soit `admin` : `successKey` est une clé STATIQUE (pas une fonction,
-    // contrairement à `getSuccessParams`) — `useInviteMember`/`useInviteAdmin` ci-dessous restent les
-    // deux hooks séparés quand la distinction du message importe (pas de saisie de rôles).
-    successKey: "toast.members.inviteSuccess",
-    errorKey: "toast.members.inviteError",
-    getSuccessParams: (_, { user }) => ({ name: user.serverData?.name || "" }),
-    getErrorParams: (_, { user }) => ({ name: user.serverData?.name || "" }),
+    ...keys,
+    getSuccessParams: (_: void, { user }: InviteWithRolesVariables) => ({ name: user.serverData?.name || "" }),
+    getErrorParams: (_: Error, { user }: InviteWithRolesVariables) => ({ name: user.serverData?.name || "" }),
     onSuccessCallback: () => {
       if (parentEntity) {
         invalidateMemberQueries(queryClient, parentEntity);
       }
     },
     invalidateQueries: [],
-  });
+  };
+}
+
+/**
+ * Hook pour inviter un utilisateur (recherché, pas par e-mail) AVEC des rôles, comme MEMBRE —
+ * onglet « users » d'`InviteMemberDialog`. Variables `{ user, roles, admin }`, pas juste `User` :
+ * `useInviteMember`/`useInviteAdmin` ci-dessous (sans rôles) restent utilisés ailleurs (ex.
+ * `MemberListRenderer`, qui n'a pas de saisie de rôles), donc conservés tels quels plutôt que
+ * remplacés. `successKey` reste STATIQUE (pas une fonction, cf. `useMutationWithToast`) — scindé en
+ * deux hooks avec `useInviteAdminWithRoles` plutôt qu'un message unique, pour ne pas régresser le
+ * toast « invitation d'administrateur » (constat de revue : un seul hook au message figé sur
+ * « invitation envoyée » perdait la distinction admin/membre).
+ */
+export function useInviteMemberWithRoles(parentEntity: EntityTypes | null) {
+  const queryClient = useQueryClient();
+  return useMutationWithToast<void, InviteWithRolesVariables>(
+    inviteWithRolesConfig(parentEntity, queryClient, {
+      successKey: "toast.members.inviteSuccess",
+      errorKey: "toast.members.inviteError",
+    }),
+  );
+}
+
+/** Même mutation que `useInviteMemberWithRoles`, message « invitation d'administrateur » — à
+ *  appeler quand `admin` vaut `true` (cf. `InviteMemberDialog`, `runAction`). */
+export function useInviteAdminWithRoles(parentEntity: EntityTypes | null) {
+  const queryClient = useQueryClient();
+  return useMutationWithToast<void, InviteWithRolesVariables>(
+    inviteWithRolesConfig(parentEntity, queryClient, {
+      successKey: "toast.members.inviteAdminSuccess",
+      errorKey: "toast.members.inviteAdminError",
+    }),
+  );
 }
 
 /**

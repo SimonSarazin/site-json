@@ -6,7 +6,7 @@ import type { EntityTypes, User } from "@communecter/cocolight-api-client";
 import { useEntityLabels } from "../../hooks/useEntityLabels";
 import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 import { useAdminActions, useInviteByEmail, canInviteByEmail } from "../../actions";
-import { useInviteMemberWithRoles } from "../../actions/mutations/member";
+import { useInviteMemberWithRoles, useInviteAdminWithRoles } from "../../actions/mutations/member";
 import { rolesExistantsDeLEntite } from "../../lib/memberRoles";
 import { useUserStatusBadge } from "../../hooks/useUserStatusBadge";
 import { ConfirmationDialog } from "./ConfirmationDialog";
@@ -64,6 +64,9 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
   // session de recherche, pas une ligne par résultat : on invite un utilisateur à la fois ici.
   const [searchRoles, setSearchRoles] = useState<string[]>([]);
   const inviteWithRoles = useInviteMemberWithRoles(entity);
+  // Même mutation, toast « invitation d'administrateur » — cf. `runAction` (constat de revue : un
+  // seul hook au message figé sur « invitation envoyée » faisait disparaître la distinction admin).
+  const inviteAdminWithRoles = useInviteAdminWithRoles(entity);
   // Une ligne par invité : email + nom + message + admin (réglables indépendamment).
   const [invites, setInvites] = useState<InviteRow[]>([{ ...EMPTY_INVITE }]);
   const debouncedSearch = useDebounce(searchTerm, 300);
@@ -134,8 +137,9 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
 
     const runAction = (action: (typeof actions)[number]) => {
       if (INVITE_ACTION_IDS.has(action.id)) {
-        inviteWithRoles.mutate(
-          { user, roles: searchRoles, admin: action.id === "invite-admin" },
+        const isAdmin = action.id === "invite-admin";
+        (isAdmin ? inviteAdminWithRoles : inviteWithRoles).mutate(
+          { user, roles: searchRoles, admin: isAdmin },
           { onSuccess: () => setSearchRoles([]) },
         );
         return;
