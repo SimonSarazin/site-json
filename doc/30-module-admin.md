@@ -150,7 +150,7 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
               { "path": "medias", "label": { "fr": "Audio" }, "type": "audio" },
               { "path": "structure.name", "sortable": false }],  // sortable:false = colonne non triable (cf. answers)
   "create": "inherit", "edit": "inherit",       // false | "inherit" | "add-<key>"/"edit-<key>" | create: {"coform": "<formId>"}
-  "createDefaults": { "category": "appel-projet" },  // valeurs semées dans la modale d'AJOUT
+  "createDefaults": { "category": "appel-projet" },  // valeurs semées dans la modale d'AJOUT (modales d'entité seulement)
   "preview": { "type": "coform-answer", "editButton": true },  // détail au clic sur une ligne (opt-in)
   "rowActions": ["edit", "delete", "validate", "reference", "setFeatured"],
   "exclusiveField": "featured",                 // EXIGÉ par `setFeatured` (sans lui : action absente)
@@ -183,22 +183,37 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
   modale que le bouton public `addButton.coform` de `searchProStatic` — monté au premier clic
   (chunk coform à la demande). Après soumission : invalidation des tables/tuiles admin **et** des
   surfaces publiques (`publicSurfaceKeys` — la réponse créée est une ligne de plus sur la liste
-  publique, que `useCoFormFinalMutation` n'invalide pas) ; refetch à la fermeture. L'id est validé
+  publique, que `useCoFormFinalMutation` n'invalide pas). **Rien à la fermeture** : CoForm n'écrit
+  rien avant la soumission finale (brouillon local, fichiers envoyés au submit), et un `refetch()`
+  doublait la requête déjà relancée par l'invalidation (review MR 84). L'id est validé
   ObjectId 24 hex (même contrat qu'`answerCopy.targetForm`) ; forme objet, et non une chaîne au
   format deviné, parce qu'un id de form **n'est pas** une clé de modale (`audit:config` vérifie les
   `add-<id>` contre le registre). `createCoformId` / `resolveCreateModal` sont **exclusifs** : un
-  seul des deux porte le bouton. Consommateur : Ekilib.re, onglet Modération des créneaux.
+  seul des deux porte le bouton. **`createDefaults` est refusé** avec cette forme (refine du
+  schéma) : ses clés sont des champs de modale d'entité, le `CoFormModal` s'ouvrirait vide sans le
+  dire. Consommateur : Ekilib.re, onglet Modération des créneaux.
 - **`preview`** (opt-in, 08/10) : **détail d'une ligne au clic** — la ligne entière est la cible
   (`cursor-pointer`), plus une action « Aperçu » dans le menu de ligne pour le **clavier** (une ligne
   cliquable n'est pas focusable). Même coque (`dialog`) et même contenu que les listes publiques
-  (`SwitchDetailsMode` → `Preview.tsx`, dispatch sur `preview.type` : `coform-answer`, `structure`,
-  `facets`…) ; avec `coform-answer` + `editButton: true`, le modérateur **corrige la réponse depuis
-  la modération** (re-fetch frais puis `CoFormModal`, cf. [07-module-search](07-module-search.md)).
-  Les cellules « sélection » et « actions » coupent la propagation du clic (React fait remonter
-  jusqu'à la ligne les clics du menu, pourtant portalé). À la fermeture du détail : **refetch** de la
-  table — une édition passée par le détail n'invalide que les caches search/coform, jamais les clés
-  `admin-*`. Sans ce bloc, zéro changement : les lignes ne réagissent pas au clic.
-- **`createDefaults`** (opt-in) : valeurs **semées dans la modale d'AJOUT** ouverte depuis cette
+  (`SwitchDetailsMode` → `Preview.tsx`, dispatch sur `preview.type`) ; avec `coform-answer` +
+  `editButton: true`, le modérateur **corrige la réponse depuis la modération** (re-fetch frais puis
+  `CoFormModal`, cf. [07-module-search](07-module-search.md)). **Types admis** (refine du schéma,
+  `ADMIN_PREVIEW_TYPES`) : ceux qui n'écrivent rien — `default`, `resource`, `resource-directory`,
+  `testimonial` — et `coform-answer`, qui signale ses éditions. `facets`, `structure`,
+  `poi-amenities`, `news` et `event` écrivent depuis le détail **sans prévenir la table** (édition,
+  suppression, participation) : elle resterait périmée, ils sont refusés tant qu'ils ne relaient pas
+  `onEdited`.
+  Les cellules qui portent un **contrôle** — sélection, lecteur `audio`, actions — gardent leurs
+  clics (`stopRowClick`, cf. `sections/rowPreview.ts` ; React fait remonter jusqu'à la ligne les
+  clics du menu, pourtant portalé), et le clic qui **termine une sélection de texte** n'ouvre rien
+  (copier un e-mail ou un code postal **au glisser** reste possible ; un double-clic, lui, ouvre le
+  détail dès son premier clic — limite assumée) — contrat partagé avec `answerCopy`.
+  **Consulter ne coûte aucune requête** : fermer le détail ne recharge rien. Une **correction** faite
+  depuis le détail (`editButton`) remonte par `onEdited` ([07-module-search](07-module-search.md)) :
+  la table invalide alors ses clés `admin-*` (tables + tuiles) **et** les surfaces publiques, comme
+  pour un changement de statut. Sans ce bloc, zéro changement : les lignes ne réagissent pas au clic.
+- **`createDefaults`** (opt-in, **modales d'entité seulement** — refusé avec `create.coform`) :
+  valeurs **semées dans la modale d'AJOUT** ouverte depuis cette
   section, fusionnées **par-dessus** les défauts dérivés du form (`fields.<nom>.default`) — donc une
   clé absente garde son défaut normal. Ce sont des valeurs de **FORMULAIRE**, injectées sans passer
   par le `read` du champ : un `switch` attend `true`, pas la valeur serveur `"true"` que son `write`
@@ -442,7 +457,7 @@ legacy 3 votes majoritaires), modale de détail des signalements.
     "searchBy": ["answers.<section>.<sectionIntitulé>"] },
   "columns": ["name", "structure.name", "address.postalCode", "created"],   // lignes APLATIES (hook costum)
   "duplicateKeys": ["name", "structure.name", "address.postalCode"],       // empreinte d'un « doublon probable » (défaut)
-  "preview": { "type": "coform-answer" } }                                 // détail au clic sur une ligne (opt-in, lecture)
+  "preview": { "type": "coform-answer" } }                                 // détail au clic (opt-in, LECTURE SEULE : editButton refusé)
 ```
 
 Un tableau des réponses du form **source**, un bouton **« Copier »** par ligne : la copie est faite
@@ -491,9 +506,13 @@ peuvent créer deux copies — l'idempotence est un `findOne` puis `insert`, san
 **`preview`** (opt-in, 08/10) : **détail d'une candidate au clic** sur sa ligne, plus un bouton
 « Aperçu » (icône, libellé accessible) par ligne pour le clavier — même coque `dialog` et même contenu
 que `resource.preview` et les listes publiques (`SwitchDetailsMode` → `Preview`, ex. `coform-answer`).
-L'admin **vérifie** la réponse avant de la copier. Lecture attendue : la réponse appartient à un
-**autre site** — un `editButton` y modifierait la réponse **source**, et la liste ne se recharge pas à
-la fermeture. « Copier » ne déclenche pas le détail (propagation coupée sur la cellule d'action).
+L'admin **vérifie** la réponse avant de la copier. **Lecture seule** : la réponse appartient au form
+source d'un **autre site** — « Modifier » écrirait dans **sa** réponse. `editButton: true` est donc
+**refusé par le schéma** (`config:validate`) **et neutralisé au rendu** (la section passe
+`editButton: false` : la config n'est jamais parsée par Zod au runtime, et le bloc `preview` de
+l'onglet Modération a exactement la même forme — un copier-coller suffirait). « Copier » ne
+déclenche pas le détail (cellule d'action, `stopRowClick`), pas plus que la fin d'une sélection de
+texte ; fermer le détail ne recharge rien.
 
 Prérequis backend, côté costum du site cible : le hook `searchAnswers` doit **aplatir la section de la
 réponse** (résolution par suffixe d'input, **bornée aux forms de `params.copySources`** — sans borne un
@@ -551,10 +570,14 @@ même mécanique que les sections profil costum. Un `type` builtin ne peut PAS �
 
 ## Validation de la config
 
-`AdminSectionSchema` = `z.discriminatedUnion` sur les 7 types builtin + fallback custom qui
+`AdminSectionSchema` = `z.discriminatedUnion` sur les 8 types builtin + fallback custom qui
 **refuse** les types builtin : une section builtin fautive (`"rowActions": ["edite"]`) échoue à
 `npm run config:validate` avec l'erreur précise du bon schéma — elle ne retombe plus
-silencieusement dans la section custom. Champs stricts notables : `import.entityTypes` (enum),
+silencieusement dans la section custom. Deux mécanismes la rendent lisible : le refus du fallback
+est **bloquant** (`abort`), donc l'échec d'un simple refine builtin (`editButton` d'`answerCopy`,
+`createDefaults` + `create.coform`, `sourceForm` = `targetForm`) remonte tel quel ; et
+`config:validate` **déplie** les unions restées opaques (`scripts/lib/zod-issues.ts` : la branche
+allée le plus loin), au lieu d'un simple « Invalid input ». Champs stricts notables : `import.entityTypes` (enum),
 `members.actions` (enum), `rowActions`/`bulkActions` (enums).
 
 ## i18n, mobile, dark mode

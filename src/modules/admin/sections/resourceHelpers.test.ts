@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import type { AdminResourceSection } from "../schema";
-import { createCoformId, resolveCreateModal, resolveEditModal, getPath, getColumnValue, formatCell, formatColumnCell, readStatusValue } from "./resourceHelpers";
+import { audioSrc, createCoformId, resolveCreateModal, resolveEditModal, getPath, getColumnValue, formatCell, formatColumnCell, readStatusValue } from "./resourceHelpers";
 
 /** Section resource minimale — cast : create/edit sont posés par les défauts zod à la validation. */
 function section(over: Record<string, unknown> = {}): AdminResourceSection {
@@ -313,5 +313,18 @@ describe("readStatusValue — chemin Mongo imbriqué, repli clé feuille à plat
   it("champ absent des deux shapes → undefined (badge « Non renseigné »)", () => {
     expect(readStatusValue({ name: "x" }, FIELD)).toBeUndefined();
     expect(readStatusValue(undefined, FIELD)).toBeUndefined();
+  });
+});
+
+describe("audioSrc — source du lecteur d'une cellule `audio`", () => {
+  it("URL directe, ou 1er média de type audio de la ligne", () => {
+    expect(audioSrc("https://exemple.re/a.mp3")).toBe("https://exemple.re/a.mp3");
+    expect(audioSrc([{ type: "image", url: "i.jpg" }, { type: "audio", url: "a.mp3" }, { type: "audio", url: "b.mp3" }])).toBe("a.mp3");
+  });
+
+  it("rien de lisible → undefined : la cellule affiche « — » et ne retient pas le clic de la ligne", () => {
+    for (const value of [undefined, null, "", [], [{ type: "image", url: "i.jpg" }], [{ type: "audio" }], [{ type: "audio", url: 3 }], { url: "a.mp3" }]) {
+      expect(audioSrc(value), JSON.stringify(value)).toBeUndefined();
+    }
   });
 });

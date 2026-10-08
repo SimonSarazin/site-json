@@ -51,20 +51,18 @@ import type { AdminResourceSection, AdminSection } from "../schema";
 import { downloadCsv } from "../lib/downloadCsv";
 import { ensureCostumScope } from "@/lib/ensureCostumScope";
 import { AudioPlayer } from "@/components/media/AudioPlayer";
-import { STATUS_TONE_CLASS, createCoformId, formatColumnCell, getColumnValue, getPath, normalizeColumns, readStatusValue, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
+import { STATUS_TONE_CLASS, audioSrc, createCoformId, formatColumnCell, getColumnValue, getPath, normalizeColumns, readStatusValue, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
+import { rowPreviewProps, stopRowClick } from "./rowPreview";
 
 // Création d'une RÉPONSE CoForm (`create: {coform}`, resources `answers`) : même patron que le
 // bouton public `addButton.coform` de SearchProStatic — monté au premier clic seulement, le chunk
 // coform n'est jamais tiré par les tables qui ne le configurent pas.
 const CoFormModal = lazy(() => import("@/modules/coform/components/CoFormModal"));
 
-/** Cellule audio : lecteur du 1er `medias[].url` de type audio de la ligne (ou d'une URL directe). */
-function AudioCell({ value }: { value: unknown }) {
-  const url = Array.isArray(value)
-    ? (value.find((m): m is { type?: string; url?: string } => !!m && typeof m === "object" && (m as { type?: string }).type === "audio")?.url)
-    : (typeof value === "string" ? value : undefined);
-  if (!url) return <span className="text-muted-foreground">—</span>;
-  return <AudioPlayer compact src={url} />;
+/** Cellule audio : lecteur compact (lecture, avance) de la source résolue par `audioSrc`. */
+function AudioCell({ src }: { src: string | undefined }) {
+  if (!src) return <span className="text-muted-foreground">—</span>;
+  return <AudioPlayer compact src={src} />;
 }
 
 import { toCsv } from "@communecter/cocolight-api-client";
@@ -623,20 +621,15 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
               // durci sur une entité étrangère.
               const actionnable = !resource.restrictActionsToOwned || isAttached;
               // Détail au clic (`resource.preview`) : la ligne ENTIÈRE est la cible — un modérateur
-              // n'a pas à viser un lien dans une cellule tronquée. Les cellules « sélection » et
-              // « actions » coupent la propagation (React fait remonter jusqu'à la ligne les clics du
-              // menu, pourtant PORTALÉ) ; le menu porte aussi « Aperçu » : le même détail AU CLAVIER,
-              // une ligne cliquable n'étant pas focusable.
+              // n'a pas à viser un lien dans une cellule tronquée. Les cellules qui portent un
+              // CONTRÔLE gardent leurs clics (`stopRowClick`) : sélection, lecteur audio, actions ;
+              // finir une sélection de texte n'ouvre rien non plus (cf. `rowPreview`). Le menu porte
+              // aussi « Aperçu » : le même détail AU CLAVIER, une ligne cliquable n'étant pas focusable.
               const openPreview = resource.preview ? () => setPreviewItem(item) : undefined;
               return (
-                <TableRow
-                  key={id}
-                  ref={isLast ? lastItemRef : undefined}
-                  className={openPreview ? "cursor-pointer" : undefined}
-                  onClick={openPreview}
-                >
+                <TableRow key={id} ref={isLast ? lastItemRef : undefined} {...rowPreviewProps(openPreview)}>
                   {bulkActions.length > 0 && (
-                    <TableCell className="w-10" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="w-10" onClick={stopRowClick}>
                       <Checkbox
                         aria-label={tAdmin("AdminResourceTable.selectRow", undefined, { label })}
                         disabled={!hasRealId}
@@ -645,17 +638,22 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                       />
                     </TableCell>
                   )}
-                  {columns.map((col) => (
-                    <TableCell
-                      key={col.path}
-                      className={col.type === "audio" ? "min-w-[13rem]" : "max-w-[14rem] truncate"}
-                      title={col.type === "audio" ? undefined : formatColumnCell(data, col.path, tSearch)}
-                    >
-                      {col.type === "audio"
-                        ? <AudioCell value={getPath(data, col.path)} />
-                        : formatColumnCell(data, col.path, tSearch)}
-                    </TableCell>
-                  ))}
+                  {columns.map((col) => {
+                    // Le lecteur garde ses clics (lecture, avance) : sans ça, chaque geste ouvrait aussi
+                    // le détail par-dessus, l'audio continuant dessous. Sans fichier (« — »), la cellule
+                    // redevient une partie ordinaire de la ligne cliquable.
+                    const audio = col.type === "audio" ? audioSrc(getPath(data, col.path)) : undefined;
+                    return (
+                      <TableCell
+                        key={col.path}
+                        className={col.type === "audio" ? "min-w-[13rem]" : "max-w-[14rem] truncate"}
+                        title={col.type === "audio" ? undefined : formatColumnCell(data, col.path, tSearch)}
+                        onClick={audio ? stopRowClick : undefined}
+                      >
+                        {col.type === "audio" ? <AudioCell src={audio} /> : formatColumnCell(data, col.path, tSearch)}
+                      </TableCell>
+                    );
+                  })}
                   {fieldStatus && (
                     <TableCell>
                       {(() => {
@@ -683,7 +681,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                       )}
                     </TableCell>
                   )}
-                  <TableCell className="sticky right-0 bg-background" onClick={(e) => e.stopPropagation()}>
+                  <TableCell className="sticky right-0 bg-background" onClick={stopRowClick}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" aria-label={tAdmin("AdminResourceTable.rowActions", undefined, { label })}>
@@ -849,19 +847,18 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
       )}
 
       {/* Création d'une réponse CoForm (`create: {coform}`). Monté au 1er clic seulement (chunk
-          coform à la demande), Suspense LOCAL pour ne pas faire flasher la table. À la fermeture :
-          refetch (une réponse vient peut-être d'être créée) ; après soumission : tables admin ET
-          surfaces publiques — la réponse créée est une ligne de plus sur la liste publique, dont
-          `useCoFormFinalMutation` n'invalide pas le cache (il ne connaît que les clés coform). */}
+          coform à la demande), Suspense LOCAL pour ne pas faire flasher la table. Après soumission :
+          tables admin (celle-ci comprise) ET surfaces publiques — la réponse créée est une ligne de
+          plus sur la liste publique, dont `useCoFormFinalMutation` n'invalide pas le cache (il ne
+          connaît que les clés coform). Rien à la fermeture : CoForm n'écrit RIEN avant la soumission
+          finale (brouillon local, fichiers envoyés au submit), et un `refetch()` ici doublait la
+          requête déjà relancée par l'invalidation (review MR 84). */}
       {createCoform && coformOpen && (
         <Suspense fallback={null}>
           <CoFormModal
             formId={createCoform}
             open={coformOpen}
-            onOpenChange={(o) => {
-              setCoformOpen(o);
-              if (!o) void refetch();
-            }}
+            onOpenChange={setCoformOpen}
             onAfterSubmit={invalidateAdminAndPublic}
           />
         </Suspense>
@@ -869,14 +866,16 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
 
       {/* Détail d'une ligne (`resource.preview`) : MÊME coque (`dialog`) et MÊME contenu que les
           listes publiques — `preview.type: "coform-answer"` + `editButton` corrige la réponse depuis
-          la modération. À la fermeture : refetch, car une édition passée par le détail n'invalide que
-          les caches search/coform, jamais les clés `admin-*` de cette table. */}
+          la modération. Fermer sans éditer ne recharge rien : vérifier vingt fiches = zéro requête.
+          Une édition remonte par `onEdited` — le détail n'invalide que les caches search/coform,
+          jamais les clés `admin-*` : on invalide ici tables et tuiles admin ET surfaces publiques,
+          comme pour un changement de statut. Ce pari tient parce que le schéma n'admet que des
+          détails qui n'écrivent rien ou qui signalent leurs éditions (`ADMIN_PREVIEW_TYPES`). */}
       {resource.preview && previewItem && (
         <SwitchDetailsMode
           openDetails
-          setOpenDetails={(o) => {
-            if (!o) { setPreviewItem(null); void refetch(); }
-          }}
+          setOpenDetails={(o) => { if (!o) setPreviewItem(null); }}
+          onEdited={invalidateAdminAndPublic}
           item={previewItem}
           card={{ detailsMode: "dialog" }}
           preview={resource.preview}

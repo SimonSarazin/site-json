@@ -1,6 +1,3 @@
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
 import { describe, it, expect } from "vitest";
 import {
   isCoformAnswerManager,
@@ -10,8 +7,6 @@ import {
   normalizeTypeLabel,
   parseCoformAnswer,
 } from "./coformAnswer";
-
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
 describe("getAnswerRef", () => {
   const FORM_ID = "6928096adf5caf0d230e7f26";
@@ -138,24 +133,20 @@ describe("normalizeTypeLabel", () => {
     expect(normalizeTypeLabel("Autre")).toBe("Autre");
   });
 
-  it("chaque type proposé par le filtre « Type de Sport Santé » d'Ekilib.re est abrégé", () => {
-    // L'abréviation devient la classe CSS de la carte (`.ssso-card`…) que le `customCSS` du site
-    // colore : un type ajouté au formulaire CoForm ET au filtre sans être connu ici garderait son
-    // libellé long dans le badge et une classe inexploitable. Le filtre de la config fait foi.
-    const cfg = JSON.parse(readFileSync(resolve(ROOT, "config.prod.maison-sport-sante-la-tampon.json"), "utf8"));
-    const names: string[] = [];
-    const visit = (node: unknown): void => {
-      if (Array.isArray(node)) return node.forEach(visit);
-      if (!node || typeof node !== "object") return;
-      const rec = node as { id?: unknown; options?: { name: string }[] };
-      if (rec.id === "sportHealthType" && Array.isArray(rec.options)) names.push(...rec.options.map((o) => o.name));
-      Object.values(rec).forEach(visit);
-    };
-    visit(cfg.pages);
-    expect(names.length).toBeGreaterThanOrEqual(3); // la sonde lit bien le filtre
-    for (const name of names) {
-      expect(normalizeTypeLabel(name), name).toMatch(/^SS[a-z][A-Z]$/);
-    }
+  it("abrège un type FUTUR sans toucher au code : l'abréviation est le suffixe du libellé", () => {
+    // Elle devient la classe CSS de la carte (`.ssaa-card`) : un type ajouté au formulaire n'a
+    // besoin que de sa règle CSS, plus d'une ligne ici.
+    expect(normalizeTypeLabel("Sport santé adapté - SSaA")).toBe("SSaA");
+  });
+
+  it("garde le libellé quand le suffixe n'a pas la forme d'une abréviation", () => {
+    expect(normalizeTypeLabel("Activité - Natation")).toBe("Activité - Natation");
+    expect(normalizeTypeLabel("Sport santé - SSO")).toBe("Sport santé - SSO");
+    expect(normalizeTypeLabel("Sport santé - ssso")).toBe("Sport santé - ssso");
+    // Ancres de la forme : ni plus long, ni préfixé.
+    expect(normalizeTypeLabel("Sport santé - SSsOx")).toBe("Sport santé - SSsOx");
+    expect(normalizeTypeLabel("Sport santé - xSSsO")).toBe("Sport santé - xSSsO");
+    expect(normalizeTypeLabel("")).toBe("");
   });
 });
 
@@ -196,6 +187,18 @@ describe("parseCoformAnswer — résolution des clés par SUFFIXE stable (inter-
       fields: { title: `${SSBE}mdegc9sgox76p87n27` },
     });
     expect(a.title).toBe("Basket");
+  });
+
+  it("type ou statut qui n'est pas une chaîne → replis vides, sans crash (le libellé est découpé)", () => {
+    const row = flatRow(EKILIBRE);
+    const a = parseCoformAnswer({
+      ...row,
+      [`${EKILIBRE}mdn1cs8on3yru1p80lq`]: ["Sport santé pour tous - SSpT"],
+      [`${EKILIBRE}mdn1jcq445i0mb9bap7`]: 1,
+    });
+    expect(a.typeRaw).toBe("");
+    expect(a.typeLabel).toBe("");
+    expect(a.status).toBe("Valide");
   });
 
   it("champ absent des données → replis habituels (pas de crash)", () => {

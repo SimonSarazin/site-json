@@ -22,6 +22,7 @@ import { useCopyAnswer, type CopyAnswerVariables } from "../hooks/useCopyAnswer"
 import { buildCopyIndex, DEFAULT_DUPLICATE_KEYS, rankByCopyStatus, rowData, rowId, type CopyStatus } from "../lib/answerCopy";
 import type { AdminAnswerCopySection as AdminAnswerCopySectionConfig, AdminSection } from "../schema";
 import { formatColumnCell, normalizeColumns, STATUS_TONE_CLASS } from "./resourceHelpers";
+import { rowPreviewProps, stopRowClick } from "./rowPreview";
 
 const DEFAULT_COLUMNS = [
   { path: "name", label: { fr: "Intitulé", en: "Title" } },
@@ -188,12 +189,13 @@ export default function AdminAnswerCopySection({ section }: { section: AdminSect
         const id = rowId(item);
         const name = (typeof data.name === "string" && data.name) || id;
         const status = verdict.status as Exclude<CopyStatus, "copied">; // les « Copié » sont filtrés plus haut
-        // Détail au clic (`preview`) : la ligne ENTIÈRE est la cible, comme sur la table `resource`.
-        // La cellule d'action coupe la propagation (« Copier » n'ouvre pas le détail) et porte un
-        // bouton « Aperçu » : le même détail AU CLAVIER, une ligne cliquable n'étant pas focusable.
+        // Détail au clic (`preview`) : la ligne ENTIÈRE est la cible, comme sur la table `resource`
+        // (même contrat, cf. `rowPreview`). La cellule d'action garde ses clics (« Copier » n'ouvre
+        // pas le détail) et porte un bouton « Aperçu » : le même détail AU CLAVIER, une ligne
+        // cliquable n'étant pas focusable.
         const openPreview = cfg.preview ? () => setPreviewItem(item) : undefined;
         return (
-          <TableRow key={id || i} className={openPreview ? "cursor-pointer" : undefined} onClick={openPreview}>
+          <TableRow key={id || i} {...rowPreviewProps(openPreview)}>
             {columns.map((col) => (
               <TableCell key={col.path} className="max-w-[14rem] truncate">
                 {formatColumnCell(data, col.path, tSearch)}
@@ -204,7 +206,7 @@ export default function AdminAnswerCopySection({ section }: { section: AdminSect
                 {tAdmin(`AdminAnswerCopySection.status.${status}`)}
               </Badge>
             </TableCell>
-            <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+            <TableCell className="text-right" onClick={stopRowClick}>
               <div className="flex items-center justify-end gap-1">
                 {openPreview && (
                   <Button
@@ -268,16 +270,19 @@ export default function AdminAnswerCopySection({ section }: { section: AdminSect
       </CardContent>
 
       {/* Détail d'une candidate (`preview`) : même coque `dialog` et même contenu que l'onglet
-          Modération et les listes publiques (`SwitchDetailsMode` → `Preview`). Lecture : la réponse
-          appartient à un AUTRE site — on la vérifie avant de la copier, on ne la corrige pas ici
-          (pas d'`editButton` attendu, donc pas de refetch à la fermeture). */}
+          Modération et les listes publiques (`SwitchDetailsMode` → `Preview`). LECTURE SEULE : la
+          réponse appartient au form source d'un AUTRE site — on la vérifie avant de la copier, on ne
+          la corrige pas ici. `editButton` est forcé à `false` : le schéma le refuse aussi, mais la
+          config n'est jamais parsée par Zod au runtime, et le bloc `preview` de l'onglet Modération
+          (`editButton: true`) a exactement la même forme — un copier-coller suffirait à écrire dans
+          la réponse du site voisin. Rien à recharger à la fermeture : consulter ne change rien. */}
       {cfg.preview && previewItem && (
         <SwitchDetailsMode
           openDetails
           setOpenDetails={(o) => { if (!o) setPreviewItem(null); }}
           item={previewItem}
           card={{ detailsMode: "dialog" }}
-          preview={cfg.preview}
+          preview={{ ...cfg.preview, editButton: false }}
         />
       )}
 

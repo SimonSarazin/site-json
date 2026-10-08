@@ -33,25 +33,23 @@ export function getStatusStyle(status: ActivityStatus): string {
   }
 }
 
+/** Abréviation d'un type Sport Santé : `SS` + une minuscule + une majuscule (SSsO, SSpT, SSsL…). */
+const TYPE_ABBREVIATION = /^SS[a-z][A-Z]$/;
+
 /**
- * Abrège les libellés de type d'activité (sinon renvoie la valeur brute).
+ * Abrège un libellé de type d'activité (sinon renvoie la valeur brute).
  *
- * L'abréviation sert aussi de CLASSE CSS de la carte (`CardAnswer` : `${typeLabel.toLowerCase()}-card`,
- * ciblée par le `customCSS` des sites : `.ssso-card`, `.sspt-card`, `.sssl-card`). Un type non
- * listé ici garde son libellé long dans le badge ET ne produit aucune classe exploitable — ajouter
- * un type au formulaire CoForm, c'est l'ajouter ici.
+ * L'abréviation est le SUFFIXE du libellé, déjà porté par le formulaire (« Sport santé sans label -
+ * SSsL » → `SSsL`) : tout type présent ou futur est abrégé sans liste à tenir ici. Elle sert aussi de
+ * CLASSE CSS de la carte (`CardAnswer` : `${typeLabel.toLowerCase()}-card`, ciblée par le `customCSS`
+ * des sites : `.ssso-card`, `.sspt-card`, `.sssl-card`) — côté code, un nouveau type n'exige plus
+ * rien ; côté site restent sa règle CSS et, s'il en a un, l'option de son filtre par type. Un suffixe
+ * qui n'a pas la forme d'une abréviation (« Activité - Natation ») laisse le libellé intact : couper
+ * ailleurs que sur une abréviation tronquerait un libellé ordinaire.
  */
 export function normalizeTypeLabel(rawType: string): string {
-  switch (rawType) {
-    case "Sport santé sur ordonnance - SSsO":
-      return "SSsO";
-    case "Sport santé pour tous - SSpT":
-      return "SSpT";
-    case "Sport santé sans label - SSsL":
-      return "SSsL";
-    default:
-      return rawType;
-  }
+  const suffix = rawType.split(" - ").pop() ?? "";
+  return TYPE_ABBREVIATION.test(suffix) ? suffix : rawType;
 }
 
 /**
@@ -259,8 +257,10 @@ export function parseCoformAnswer(
     return key ? serverData[key] : undefined;
   };
 
-  const typeRaw = (get("type") as string | undefined) ?? "";
-  const stateRaw = (get("state") as string | undefined) ?? "";
+  // str() et non un cast : `normalizeTypeLabel` découpe le type (`split`), un tableau ou un nombre
+  // venu du backend ferait planter la carte ET le détail (même raison que les champs d'adresse).
+  const typeRaw = str(get("type")) ?? "";
+  const stateRaw = str(get("state")) ?? "";
 
   // Adresse depuis le formulaire (landmark + premier lieu).
   // str() garantit une string (sinon undefined) : le backend peut renvoyer un

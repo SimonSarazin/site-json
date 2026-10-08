@@ -2,6 +2,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { act, fireEvent, render } from "@testing-library/react";
 
+import { selectText } from "../../../../tests/test-utils-ui";
+
 /**
  * Câblage de la section : chaque état de `copyStatusOf` doit se traduire par ce que l'admin PEUT
  * faire (copier / confirmer d'abord / rien), et « Copier » doit rester inerte tant que l'index
@@ -62,11 +64,22 @@ vi.mock("../hooks/useCopyAnswer", () => ({
 vi.mock("@/hooks/useT", () => ({ useT: () => (key: unknown) => (typeof key === "string" ? key : JSON.stringify(key)) }));
 vi.mock("@/hooks/useDebounce", () => ({ useDebounce: <T,>(v: T) => v }));
 vi.mock("@/modules/admin/i18n", () => ({}));
-// Coque de détail remplacée par un témoin : on teste QUI s'ouvre et QUAND, pas le rendu du détail
-// (couvert par le module search).
+// Coque de détail remplacée par un témoin : on teste QUI s'ouvre, QUAND, avec QUELLE conf, et sa
+// fermeture — pas le rendu du détail (couvert par le module search).
 vi.mock("@/modules/search/components/SwitchDetailsMode", () => ({
-  SwitchDetailsMode: ({ openDetails, item, preview }: { openDetails: boolean; item: { id: string }; preview?: { type?: string } }) =>
-    openDetails ? <div data-testid="answer-preview">{`${item.id}:${preview?.type}`}</div> : null,
+  SwitchDetailsMode: ({ openDetails, setOpenDetails, item, preview }: {
+    openDetails: boolean;
+    setOpenDetails: (open: boolean) => void;
+    item: { id: string };
+    preview?: { type?: string; editButton?: boolean };
+  }) =>
+    openDetails ? (
+      <div data-testid="answer-preview">
+        <span data-testid="answer-preview-item">{item.id}</span>
+        <span data-testid="answer-preview-conf">{JSON.stringify(preview)}</span>
+        <button type="button" onClick={() => setOpenDetails(false)}>fermer le détail</button>
+      </div>
+    ) : null,
 }));
 
 import AdminAnswerCopySection from "./AdminAnswerCopySection";
@@ -80,6 +93,10 @@ const BASE_SECTION = {
 };
 const SECTION = BASE_SECTION as never;
 const SECTION_PREVIEW = { ...BASE_SECTION, preview: { type: "coform-answer" } } as never;
+/** Le bloc preview de l'onglet Modération, recopié tel quel (même forme, même type), plus une largeur. */
+const SECTION_PREVIEW_EDIT = { ...BASE_SECTION, preview: { type: "coform-answer", editButton: true, width: "3xl" } } as never;
+/** Conf reçue par la coque de détail, telle que la section la transmet. */
+const previewConf = (getByTestId: (id: string) => HTMLElement) => JSON.parse(getByTestId("answer-preview-conf").textContent ?? "null");
 const PREVIEW_LABEL = "AdminAnswerCopySection.preview";
 
 const COPY = "AdminAnswerCopySection.copy";
@@ -200,10 +217,31 @@ describe("AdminAnswerCopySection — états et actions", () => {
 });
 
 describe("AdminAnswerCopySection — détail d'une candidate (`preview`)", () => {
-  it("avec `preview` : le clic sur une ligne ouvre le détail de CETTE réponse", () => {
+  it("avec `preview` : le clic sur une ligne ouvre le détail de CETTE réponse, en lecture seule", () => {
     const { getByText, getByTestId } = render(<AdminAnswerCopySection section={SECTION_PREVIEW} />);
     fireEvent.click(getByText("Marche")); // s3, première ligne affichée
-    expect(getByTestId("answer-preview").textContent).toBe("s3:coform-answer");
+    expect(getByTestId("answer-preview-item").textContent).toBe("s3");
+    expect(previewConf(getByTestId)).toEqual({ type: "coform-answer", editButton: false });
+  });
+
+  it("un `editButton: true` recopié depuis la Modération est neutralisé — jamais « Modifier » sur la réponse d'un autre site", () => {
+    // Le schéma refuse cette config, mais elle n'est pas parsée au runtime : la section doit tenir
+    // seule. Le reste du bloc passe intact (une liste blanche casserait le détail en silence).
+    const { getByText, getByTestId } = render(<AdminAnswerCopySection section={SECTION_PREVIEW_EDIT} />);
+    fireEvent.click(getByText("Marche"));
+    expect(previewConf(getByTestId)).toEqual({ type: "coform-answer", editButton: false, width: "3xl" });
+  });
+
+  it("terminer une sélection de texte sur une ligne n'ouvre pas le détail (copier un nom reste possible)", () => {
+    const { getByText, queryByTestId } = render(<AdminAnswerCopySection section={SECTION_PREVIEW} />);
+    const cell = getByText("Marche");
+    selectText(cell);
+    try {
+      fireEvent.click(cell); // le `click` qui termine le glisser
+      expect(queryByTestId("answer-preview")).toBeNull();
+    } finally {
+      window.getSelection()?.removeAllRanges();
+    }
   });
 
   it("« Copier » n'ouvre PAS le détail (propagation coupée sur la cellule d'action)", () => {
@@ -214,11 +252,11 @@ describe("AdminAnswerCopySection — détail d'une candidate (`preview`)", () =>
   });
 
   it("le bouton « Aperçu » ouvre le même détail (accès clavier) et la fermeture le retire", () => {
-    const { getAllByLabelText, getByTestId, queryByTestId } = render(<AdminAnswerCopySection section={SECTION_PREVIEW} />);
+    const { getAllByLabelText, getByTestId, getByText, queryByTestId } = render(<AdminAnswerCopySection section={SECTION_PREVIEW} />);
     fireEvent.click(getAllByLabelText(PREVIEW_LABEL)[1]); // s2 (« Doublon probable »), 2ᵉ ligne
-    expect(getByTestId("answer-preview").textContent).toBe("s2:coform-answer");
-    // le témoin ne sait pas se fermer lui-même : on vérifie seulement qu'il n'y en a qu'un à la fois
-    expect(queryByTestId("answer-preview")).toBe(getByTestId("answer-preview"));
+    expect(getByTestId("answer-preview-item").textContent).toBe("s2");
+    fireEvent.click(getByText("fermer le détail"));
+    expect(queryByTestId("answer-preview")).toBeNull();
   });
 
   it("sans `preview` : aucune réaction au clic sur une ligne, aucun bouton « Aperçu »", () => {

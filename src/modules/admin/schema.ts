@@ -37,6 +37,23 @@ export const AdminCreateRefSchema = z.union([
   z.object({ coform: z.string().regex(/^[0-9a-f]{24}$/, "id de form CoForm attendu (ObjectId 24 hex)") }),
 ]);
 
+/**
+ * Types de détail qu'une table admin peut ouvrir au clic SANS se périmer : ceux qui n'écrivent rien,
+ * et `coform-answer`, qui signale chaque édition par `onEdited` (la table invalide alors ses clés
+ * `admin-*`). Les autres écrivent depuis le détail SANS prévenir l'hôte — `facets`, `structure`,
+ * `poi-amenities` (édition `DynamicEditModal`, suppression), `news` (édition, suppression), `event`
+ * (participation) — et la ligne resterait périmée jusqu'au rechargement. Brancher `onEdited` dans
+ * l'un d'eux (cf. `Preview.tsx`), c'est l'ajouter ici.
+ */
+const ADMIN_PREVIEW_TYPES = ["default", "coform-answer", "resource", "resource-directory", "testimonial"] as const;
+const AdminPreviewSchema = PreviewConfSchema.refine(
+  (p) => p.type === undefined || (ADMIN_PREVIEW_TYPES as readonly string[]).includes(p.type),
+  {
+    message: `type de détail non admis dans une table admin (admis : ${ADMIN_PREVIEW_TYPES.join(", ")}) — les autres écrivent sans prévenir la table, qui resterait périmée`,
+    path: ["type"],
+  },
+);
+
 /** Un état métier du mode `statusField` : `value` = valeur brute écrite/lue en base (VERBATIM,
  *  orthographes legacy comprises — ex. « Réfusé » du CoForm SSBE) ; `label` = affichage (permet de
  *  corriger l'orthographe sans toucher la donnée) ; `tone` = ton visuel du badge (mêmes tokens
@@ -165,9 +182,11 @@ const AdminResourceSectionSchema = z.object({
    * `preview.type` — ex. `coform-answer` avec `editButton` pour corriger une réponse depuis la
    * modération), dans le conteneur `dialog`. Opt-in : sans ce bloc, les lignes ne réagissent pas
    * au clic (zéro changement pour les tables existantes). Un modérateur vérifie une fiche AVANT de
-   * la marquer « Validé » : les colonnes de la table n'en montrent qu'une tranche.
+   * la marquer « Validé » : les colonnes de la table n'en montrent qu'une tranche. Consulter ne
+   * recharge rien ; une correction par `editButton` invalide tables admin ET listes publiques. Seuls
+   * les détails qui n'écrivent rien ou qui signalent leurs éditions sont admis (`ADMIN_PREVIEW_TYPES`).
    */
-  preview: PreviewConfSchema.optional(),
+  preview: AdminPreviewSchema.optional(),
   /**
    * Valeurs SEMÉES dans la modale de CRÉATION ouverte depuis cette section (jamais en édition —
    * l'entité fait alors foi). Fusionnées PAR-DESSUS les défauts dérivés du formulaire
@@ -179,7 +198,8 @@ const AdminResourceSectionSchema = z.object({
    * faudrait un formulaire costum cloné par sous-type pour ne varier qu'un défaut.
    *
    * Les clés sont des noms de champs du formulaire résolu par `create` ; une clé qu'il ne déclare
-   * pas est écartée par `applyCreateDefaults` (semis inerte, jamais de valeur fantôme).
+   * pas est écartée par `applyCreateDefaults` (semis inerte, jamais de valeur fantôme). Modales
+   * d'ENTITÉ seulement : refusé avec `create: {coform}` (cf. le refine en fin de schéma).
    */
   createDefaults: z.record(z.string(), z.unknown()).optional(),
   edit: AdminFormRefSchema.default("inherit"),
@@ -210,6 +230,12 @@ const AdminResourceSectionSchema = z.object({
    * chargées de l'infinite scroll, jamais les filtres UI transitoires), cf. `runExclusiveFlag`.
    */
   exclusiveField: z.string().optional(),
+}).refine((s) => !(typeof s.create === "object" && s.createDefaults), {
+  // Le CoFormModal s'ouvrirait VIDE sans le dire : `createDefaults` porte des noms de champs de
+  // modale d'entité, pas des réponses rangées par étape — rien ne les traduit. Refuser plutôt que
+  // promettre un semis qui n'aura pas lieu.
+  message: "createDefaults ne sème que les modales d'entité : la création par CoForm (create.coform) l'ignorerait",
+  path: ["createDefaults"],
 });
 export type AdminResourceSection = z.infer<typeof AdminResourceSectionSchema>;
 
@@ -313,10 +339,14 @@ const AdminAnswerCopySectionSchema = z.object({
    * Détail d'une candidate au CLIC sur sa ligne (+ bouton « Aperçu » par ligne, accessible au
    * clavier) — même coque `dialog` et même contenu que `resource.preview` et les listes publiques
    * (`coform-answer`…). Un admin VÉRIFIE la réponse avant de la copier : les colonnes n'en montrent
-   * qu'une tranche. Lecture attendue : la réponse appartient à un AUTRE site — un `editButton` y
-   * modifierait la réponse SOURCE, et la liste ne se recharge pas à la fermeture. Opt-in.
+   * qu'une tranche. Opt-in, LECTURE SEULE : la candidate appartient au form SOURCE, celui d'un autre
+   * site — « Modifier » écrirait dans SA réponse. `editButton: true` est donc refusé ici, et la
+   * section le neutralise aussi au rendu (la config n'est jamais parsée par Zod au runtime).
    */
-  preview: PreviewConfSchema.optional(),
+  preview: AdminPreviewSchema.refine((p) => !p.editButton, {
+    message: "editButton interdit : la candidate appartient au form source d'un autre site, « Modifier » écrirait dans sa réponse",
+    path: ["editButton"],
+  }).optional(),
 }).refine((s) => s.sourceForm !== s.targetForm, { message: "sourceForm et targetForm doivent différer", path: ["targetForm"] });
 export type AdminAnswerCopySection = z.infer<typeof AdminAnswerCopySectionSchema>;
 
@@ -330,6 +360,11 @@ const AdminCustomSectionSchema = z.object({
   ...sectionAccess,
   type: z.string().refine((t) => !(BUILTIN_SECTION_TYPES as readonly string[]).includes(t), {
     message: "type de section builtin invalide (voir les erreurs du schéma builtin correspondant)",
+    // `abort` : l'échec de cette branche devient BLOQUANT. Sinon, une section builtin qui n'échoue
+    // que sur un refine (non bloquant : editButton d'answerCopy, createDefaults + create.coform,
+    // sourceForm = targetForm) laissait DEUX branches « non avortées », et l'union ne rendait qu'un
+    // « Invalid input » qui avalait le message précis. Avec lui, Zod rend tel quel celui du builtin.
+    abort: true,
   }),
   props: z.record(z.string(), z.unknown()).optional(),
 });
