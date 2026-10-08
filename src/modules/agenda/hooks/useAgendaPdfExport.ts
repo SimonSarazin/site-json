@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 import { getSiteCostumContext } from "@/lib/siteCostum";
+import { downloadBlob } from "@/lib/downloadBlob";
 
 const COSTUM_TYPES = new Set(["organizations", "projects", "events", "citoyens"]);
 type CostumType = "organizations" | "projects" | "events" | "citoyens";
@@ -10,9 +11,8 @@ type CostumType = "organizations" | "projects" | "events" | "citoyens";
 /**
  * Édition PDF imprimable de l'agenda (`AGENDA_GET_PDF`, SDK ≥ 1.0.196) : scope le costum PORTEUR
  * entier (son id/type, pas un événement) — jamais la liste filtrée affichée à l'écran. Réponse
- * binaire (`ArrayBuffer`, cf. JSDoc de la méthode) : empaquetée en `Blob` et téléchargée via un
- * `<a download>` transitoire, aucun pattern de téléchargement de blob n'existant encore pour un
- * usage hors CSV (`downloadCsv.ts`, non réutilisable — MIME et source différents).
+ * binaire (`ArrayBuffer`, cf. JSDoc de la méthode) : empaquetée en `Blob` et téléchargée via
+ * `downloadBlob` (mécanique partagée avec `downloadCsv.ts` — seul le `Blob` construit en amont diffère).
  */
 export function useAgendaPdfExport() {
   const { api, contextId, contextType } = useCocolight();
@@ -34,13 +34,7 @@ export function useAgendaPdfExport() {
         type: type as CostumType,
         costum_slug: costum.costumSlug,
       });
-      const blob = new Blob([data as ArrayBuffer], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `agenda-${costum.costumSlug}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
+      downloadBlob(new Blob([data as ArrayBuffer], { type: "application/pdf" }), `agenda-${costum.costumSlug}.pdf`);
     } catch {
       toast.error(t("pdfExport.error"));
     } finally {
