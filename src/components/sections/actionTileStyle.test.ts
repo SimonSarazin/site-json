@@ -33,6 +33,11 @@ describe("tileSizeClasses", () => {
     expect(lg.icon).toBe("size-8");
     expect(lg.box.split(" ")).toContain("justify-start");
   });
+
+  it("compact : seules les marges verticales changent, le reste de la taille est conservé", () => {
+    expect(tileSizeClasses("lg", true)).toEqual({ ...tileSizeClasses("lg"), box: "py-4 justify-start" });
+    expect(tileSizeClasses("md", true)).toEqual({ ...tileSizeClasses("md"), box: "py-4" });
+  });
 });
 
 describe("tilesContainerWidth", () => {

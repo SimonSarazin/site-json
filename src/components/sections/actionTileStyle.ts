@@ -41,8 +41,10 @@ const TILE_SIZES: Record<NonNullable<ActionTilesProps["size"]>, TileSizeClasses>
   lg: { title: "text-lg font-semibold", subtitle: "text-base", icon: "size-8", box: "py-8 justify-start" },
 };
 
-export function tileSizeClasses(size?: ActionTilesProps["size"]): TileSizeClasses {
-  return TILE_SIZES[size ?? "md"];
+/** `compact` : marges verticales resserrées (`py-4`), pour une rangée posée dans une autre bande. */
+export function tileSizeClasses(size?: ActionTilesProps["size"], compact = false): TileSizeClasses {
+  const base = TILE_SIZES[size ?? "md"];
+  return compact ? { ...base, box: size === "lg" ? "py-4 justify-start" : "py-4" } : base;
 }
 
 /** Largeur max de la grille : `wide` pour 4 tuiles et plus en taille `lg`, sinon la largeur historique. */

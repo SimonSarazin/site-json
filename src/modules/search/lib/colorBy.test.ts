@@ -61,6 +61,16 @@ describe("decorateTags (chips des cartes)", () => {
     ]);
   });
 
+  it("hideTags : égalité STRICTE — le marqueur d'annuaire disparaît, pas les tags qui commencent pareil", () => {
+    const marqueur = { mapping: {}, hideTags: ["lieux-sante"] };
+    expect(decorateTags(["lieux-sante", "lieux-sante-mentale", "pharmacie"], marqueur)).toEqual([
+      { tag: "lieux-sante-mentale", label: "lieux-sante-mentale" },
+      { tag: "pharmacie", label: "pharmacie" },
+    ]);
+    // Contre-épreuve : hidePrefixes aurait emporté les deux.
+    expect(decorateTags(["lieux-sante", "lieux-sante-mentale"], { mapping: {}, hidePrefixes: ["lieux-sante"] })).toEqual([]);
+  });
+
   it("sans conf → identité (comportement historique des cartes)", () => {
     expect(decorateTags(["a", "public:parents"], undefined)).toEqual([
       { tag: "a", label: "a" },

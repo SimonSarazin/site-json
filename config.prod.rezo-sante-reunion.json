@@ -302,6 +302,18 @@
           },
           {
             "label": {
+              "fr": "Annuaire des lieux de santé",
+              "en": "Health facilities directory"
+            },
+            "path": "/lieux-sante",
+            "icon": "hospital",
+            "description": {
+              "fr": "Cabinets, centres et maisons de santé : les lieux où l'on vous accueille.",
+              "en": "Practices, health centres and clinics: the places that welcome you."
+            }
+          },
+          {
+            "label": {
               "fr": "Projets & actions",
               "en": "Projects & actions"
             },
@@ -483,6 +495,13 @@
             "label": {
               "fr": "Annuaire des acteurs",
               "en": "Directory"
+            }
+          },
+          {
+            "href": "/lieux-sante",
+            "label": {
+              "fr": "Annuaire des lieux de santé",
+              "en": "Health facilities"
             }
           },
           {
@@ -1441,6 +1460,9 @@
                     "Nutrition",
                     "alimentation",
                     "nutrition"
+                  ],
+                  "$nin": [
+                    "lieux-sante"
                   ]
                 }
               },
@@ -1631,6 +1653,9 @@
                     "sédentarité",
                     "activite-physique",
                     "Activite physique"
+                  ],
+                  "$nin": [
+                    "lieux-sante"
                   ]
                 }
               },
@@ -1819,6 +1844,9 @@
                   "$in": [
                     "Sommeil",
                     "sommeil"
+                  ],
+                  "$nin": [
+                    "lieux-sante"
                   ]
                 }
               },
@@ -2009,6 +2037,9 @@
                     "Addictions",
                     "addiction",
                     "addictions"
+                  ],
+                  "$nin": [
+                    "lieux-sante"
                   ]
                 }
               },
@@ -2199,6 +2230,9 @@
                     "Santé mentale",
                     "Bien-être mental",
                     "bien-etre-mental"
+                  ],
+                  "$nin": [
+                    "lieux-sante"
                   ]
                 }
               },
@@ -2391,6 +2425,9 @@
                     "culture",
                     "Santé",
                     "santé"
+                  ],
+                  "$nin": [
+                    "lieux-sante"
                   ]
                 }
               },
@@ -2888,6 +2925,13 @@
               "defaultTypes": [
                 "organizations"
               ],
+              "defaultFilters": {
+                "tags": {
+                  "$nin": [
+                    "lieux-sante"
+                  ]
+                }
+              },
               "defaultFields": [
                 "name",
                 "slug",
@@ -3031,6 +3075,169 @@
                     "Bien-être mental": "var(--chart-5)"
                   }
                 }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/lieux-sante",
+      "title": {
+        "fr": "Annuaire des lieux de santé — RéseauSanté",
+        "en": "Health facilities directory — RéseauSanté"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "description": {
+          "fr": "Les lieux de santé de La Réunion référencés par le réseau : cabinets, centres et maisons de santé, avec leur adresse, en liste ou sur la carte.",
+          "en": "Health facilities in Réunion listed by the network: practices, health centres and clinics, with their address, as a list or on the map."
+        }
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "lieux-sante-header",
+          "props": {
+            "headline": {
+              "fr": "L'annuaire des lieux de santé",
+              "en": "The health facilities directory"
+            },
+            "subhead": {
+              "fr": "Cabinets, centres et maisons de santé de La Réunion : trouvez un lieu près de chez vous, en liste ou sur la carte.",
+              "en": "Practices, health centres and clinics in Réunion: find a place near you, as a list or on the map."
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un lieu, une commune, un mot-clé…",
+              "en": "Search a facility, a town, a keyword…"
+            },
+            "compact": false,
+            "showActiveFiltersTags": true,
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Référencer un lieu de santé",
+                  "en": "List a health facility"
+                },
+                "icon": "plus",
+                "modal": "add-rezo-sante-lieu",
+                "variant": "primary",
+                "requiresAdmin": false
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "lieux-sante-list",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Les lieux référencés",
+                "en": "Listed facilities"
+              }
+            },
+            "showSearch": false,
+            "showMap": false,
+            "enableMap": true,
+            "defaultViewMode": "list",
+            "enableRegions": false,
+            "enableGraph": false,
+            "graphDetailsMode": "drawer",
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "showDetailedViewToggle": false,
+            "defaultDetailedView": false,
+            "bg": "default",
+            "baseParams": {
+              "sourceKey": [
+                "EcosystemeSanteReunion"
+              ],
+              "costumSlug": "EcosystemeSanteReunion",
+              "defaultTypes": [
+                "organizations"
+              ],
+              "defaultFilters": {
+                "tags": {
+                  "$in": [
+                    "lieux-sante"
+                  ]
+                }
+              },
+              "defaultFields": [
+                "name",
+                "slug",
+                "collection",
+                "type",
+                "source",
+                "category",
+                "description",
+                "shortDescription",
+                "profilImageUrl",
+                "profilMediumImageUrl",
+                "medias",
+                "urls",
+                "address",
+                "tags",
+                "links",
+                "geo",
+                "geoPosition"
+              ],
+              "defaultSortBy": {
+                "name": 1
+              },
+              "searchBy": [
+                "name",
+                "shortDescription",
+                "description",
+                "tags",
+                "address.addressLocality"
+              ],
+              "indexStepList": 24,
+              "indexStepMap": 500
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 3
+              },
+              "card": {
+                "type": "profile",
+                "variant": "profile",
+                "showDescription": true,
+                "showAddress": true,
+                "showStats": false,
+                "showActions": false,
+                "tagColors": {
+                  "mapping": {},
+                  "hideTags": [
+                    "lieux-sante"
+                  ]
+                }
+              },
+              "itemAction": {
+                "kind": "profil"
+              }
+            },
+            "map": {
+              "layout": "full",
+              "initialZoom": 11,
+              "cluster": true,
+              "popup": {
+                "type": "default"
+              },
+              "itemAction": {
+                "kind": "profil"
+              },
+              "marker": {
+                "useItemImage": true,
+                "style": "pin",
+                "color": "primary",
+                "borderColor": "background"
               }
             }
           }
@@ -4825,7 +5032,8 @@
         },
         "addressCountry": {
           "widget": "hidden",
-          "group": "address"
+          "group": "address",
+          "default": "RE"
         },
         "addressLocality": {
           "widget": "hidden",
@@ -4882,6 +5090,10 @@
         "field": "profil_avatar",
         "existingUrlFrom": "image:profilUrl"
       },
+      "scope": {
+        "slugFrom": "constant",
+        "constant": "EcosystemeSanteReunion"
+      },
       "mutation": {
         "entityType": "organizations",
         "payloadEmitEmptyOnEdit": true,
@@ -4904,7 +5116,285 @@
             "userList": "organizations",
             "searchKeys": [
               "admin-organizations",
-              "searchCostumStatic"
+              "searchCostumStatic",
+              "searchCostumStaticMapAll"
+            ]
+          }
+        }
+      }
+    },
+    "rezo-sante-lieu": {
+      "id": "rezo-sante-lieu",
+      "entityType": "organizations",
+      "collection": "organizations",
+      "costumSlug": "EcosystemeSanteReunion",
+      "icon": "hospital",
+      "layout": {
+        "kind": "flat"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        },
+        "telephone": {
+          "serverKey": "telephone",
+          "read": "telephone:read",
+          "write": "telephone:write"
+        },
+        "tags": {
+          "serverKey": "tags",
+          "read": "fixedTags:read",
+          "write": "fixedTags:write",
+          "params": {
+            "field": "tags",
+            "fixed": [
+              "lieux-sante"
+            ]
+          }
+        }
+      },
+      "sections": [
+        {
+          "id": "lieu",
+          "label": {
+            "fr": "Le lieu",
+            "en": "The facility"
+          },
+          "icon": "hospital",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "profil_avatar",
+                "name",
+                "description"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contact",
+          "label": {
+            "fr": "Contact",
+            "en": "Contact"
+          },
+          "icon": "mail",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "email",
+                "telephone"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "localisation",
+          "label": {
+            "fr": "Où le trouver",
+            "en": "Where to find it"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "qualification",
+          "label": {
+            "fr": "Pour le retrouver",
+            "en": "Help people find it"
+          },
+          "icon": "tags",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "tags"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Photo du lieu",
+            "en": "Facility photo"
+          }
+        },
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom",
+            "en": "Name"
+          },
+          "placeholder": {
+            "fr": "Nom du lieu de santé",
+            "en": "Health facility name"
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          },
+          "widgetProps": {
+            "height": 280,
+            "preview": "edit"
+          }
+        },
+        "email": {
+          "widget": "email",
+          "write": "omitEmpty",
+          "label": {
+            "fr": "Email",
+            "en": "Email"
+          }
+        },
+        "telephone": {
+          "widget": "tel",
+          "group": "telephone",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          }
+        },
+        "_telSlot": {
+          "widget": "hidden",
+          "group": "telephone"
+        },
+        "_telRest": {
+          "widget": "hidden",
+          "group": "telephone"
+        },
+        "tags": {
+          "widget": "tags",
+          "group": "tags",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          },
+          "info": {
+            "fr": "Mots-clés libres (spécialité, service, public…). La fiche est automatiquement référencée dans l'annuaire des lieux de santé.",
+            "en": "Free keywords (speciality, service, audience…). The entry is automatically listed in the health facilities directory."
+          },
+          "widgetProps": {
+            "searchable": true
+          }
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address",
+          "default": "RE"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Référencer un lieu de santé",
+            "en": "List a health facility"
+          },
+          "edit": {
+            "fr": "Modifier le lieu de santé",
+            "en": "Edit health facility"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer la fiche",
+            "en": "Create entry"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "scope": {
+        "slugFrom": "constant",
+        "constant": "EcosystemeSanteReunion"
+      },
+      "mutation": {
+        "entityType": "organizations",
+        "payloadEmitEmptyOnEdit": true,
+        "navigateOnSuccess": false,
+        "inject": {
+          "extraFields": {
+            "type": "LocalBusiness",
+            "role": "admin"
+          }
+        },
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_ORGANIZATION",
+          "edit": "EntityFormModal · UPDATE_ORGANIZATION"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "organizations",
+            "searchKeys": [
+              "admin-organizations",
+              "searchCostumStatic",
+              "searchCostumStaticMapAll"
             ]
           }
         }
@@ -5208,7 +5698,8 @@
         },
         "addressCountry": {
           "widget": "hidden",
-          "group": "address"
+          "group": "address",
+          "default": "RE"
         },
         "addressLocality": {
           "widget": "hidden",
@@ -5265,9 +5756,16 @@
         "field": "profil_avatar",
         "existingUrlFrom": "image:profilUrl"
       },
+      "scope": {
+        "slugFrom": "constant",
+        "constant": "EcosystemeSanteReunion"
+      },
       "mutation": {
         "entityType": "projects",
         "navigateOnSuccess": false,
+        "inject": {
+          "parent": true
+        },
         "successKey": {
           "add": "toast.add.projectSuccess",
           "edit": "toast.profile.updateSuccess"
@@ -5286,7 +5784,8 @@
             "userList": "projects",
             "searchKeys": [
               "admin-projects",
-              "searchCostumStatic"
+              "searchCostumStatic",
+              "searchCostumStaticMapAll"
             ]
           }
         }
@@ -5554,7 +6053,8 @@
         },
         "addressCountry": {
           "widget": "hidden",
-          "group": "address"
+          "group": "address",
+          "default": "RE"
         },
         "addressLocality": {
           "widget": "hidden",
@@ -5611,9 +6111,16 @@
         "field": "profil_avatar",
         "existingUrlFrom": "image:profilUrl"
       },
+      "scope": {
+        "slugFrom": "constant",
+        "constant": "EcosystemeSanteReunion"
+      },
       "mutation": {
         "entityType": "poi",
         "navigateOnSuccess": false,
+        "inject": {
+          "parent": true
+        },
         "successKey": {
           "add": "toast.add.poiSuccess",
           "edit": "toast.profile.updateSuccess"
@@ -5632,7 +6139,8 @@
             "userList": "pois",
             "searchKeys": [
               "admin-poi",
-              "searchCostumStatic"
+              "searchCostumStatic",
+              "searchCostumStaticMapAll"
             ]
           }
         }
@@ -5832,6 +6340,26 @@
       "hideFooter": false,
       "editModals": [
         {
+          "editModal": "edit-rezo-sante-lieu",
+          "editModalMatch": {
+            "tags": "lieux-sante"
+          },
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "EcosystemeSanteReunion"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "EcosystemeSanteReunion"
+              }
+            ]
+          }
+        },
+        {
           "editModal": "edit-rezo-sante-acteur",
           "when": {
             "or": [
@@ -5915,12 +6443,15 @@
                 {
                   "type": "profile-tags",
                   "title": {
-                    "fr": "Thématiques de santé",
-                    "en": "Health themes"
+                    "fr": "Thématiques et mots-clés",
+                    "en": "Themes and keywords"
                   },
                   "maxDisplay": 20,
                   "linkable": false,
-                  "searchOnClick": false
+                  "searchOnClick": false,
+                  "hideTags": [
+                    "lieux-sante"
+                  ]
                 },
                 {
                   "type": "profile-opening-hours",
@@ -6887,10 +7418,36 @@
           "showActions": true,
           "showAddDropdown": true,
           "addConfig": {
-            "organization": true,
+            "organization": false,
             "project": true,
             "event": true,
-            "poi": true
+            "poi": true,
+            "custom": [
+              {
+                "modalKey": "add-rezo-sante-acteur",
+                "label": {
+                  "fr": "Référencer un acteur",
+                  "en": "List an organisation"
+                },
+                "icon": "building-2",
+                "condition": {
+                  "auth": "required",
+                  "userContext": "own"
+                }
+              },
+              {
+                "modalKey": "add-rezo-sante-lieu",
+                "label": {
+                  "fr": "Référencer un lieu de santé",
+                  "en": "List a health facility"
+                },
+                "icon": "hospital",
+                "condition": {
+                  "auth": "required",
+                  "userContext": "own"
+                }
+              }
+            ]
           },
           "addDropdownLabel": {
             "fr": "Ajouter au réseau",
@@ -7190,6 +7747,11 @@
                   "source.key": "EcosystemeSanteReunion",
                   "source.keys": "EcosystemeSanteReunion",
                   "reference.costum": "EcosystemeSanteReunion"
+                },
+                "tags": {
+                  "$nin": [
+                    "lieux-sante"
+                  ]
                 }
               },
               "defaultSortBy": {
@@ -7233,7 +7795,87 @@
                 }
               }
             ],
-            "create": "inherit",
+            "create": "add-rezo-sante-acteur",
+            "edit": "inherit",
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate",
+              "reference"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "lieux-sante",
+        "label": {
+          "fr": "Lieux de santé",
+          "en": "Health facilities"
+        },
+        "icon": "hospital",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "organizations",
+            "label": {
+              "fr": "Lieux de santé",
+              "en": "Health facilities"
+            },
+            "source": {
+              "notSourceKey": true,
+              "defaultFilters": {
+                "$or": {
+                  "source.key": "EcosystemeSanteReunion",
+                  "source.keys": "EcosystemeSanteReunion",
+                  "reference.costum": "EcosystemeSanteReunion"
+                },
+                "tags": {
+                  "$in": [
+                    "lieux-sante"
+                  ]
+                }
+              },
+              "defaultSortBy": {
+                "updated": -1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune",
+                  "en": "Town"
+                }
+              },
+              {
+                "path": "email",
+                "label": {
+                  "fr": "Contact",
+                  "en": "Contact"
+                }
+              },
+              {
+                "path": "updated",
+                "label": {
+                  "fr": "Mise à jour",
+                  "en": "Updated"
+                }
+              }
+            ],
+            "create": "add-rezo-sante-lieu",
             "edit": "inherit",
             "rowActions": [
               "edit",

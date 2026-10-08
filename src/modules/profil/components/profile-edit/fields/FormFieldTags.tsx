@@ -4,6 +4,7 @@ import {
   FormItem,
   FormLabel,
   FormControl,
+  FormDescription,
 } from "@/components/ui/form";
 import { TagsInput } from "@/components/form/TagsInput";
 import { useT } from "@/hooks/useT";
@@ -31,6 +32,11 @@ interface FormFieldTagsProps<T extends FieldValues> {
    */
   placeholder?: string;
   /**
+   * Texte d'aide sous le champ (le `info` du descripteur) — rendu par `FormDescription`, donc relié
+   * au champ par `aria-describedby`.
+   */
+  hint?: string;
+  /**
    * Autocomplétion sur les tags existants. `false` → saisie libre (valeurs hors tags).
    */
   searchable?: boolean;
@@ -51,6 +57,7 @@ export function FormFieldTags<T extends FieldValues>({
   maxTags = 10,
   label,
   placeholder,
+  hint,
   searchable = true,
   suggestions,
 }: FormFieldTagsProps<T>) {
@@ -85,6 +92,7 @@ export function FormFieldTags<T extends FieldValues>({
               texts={texts}
             />
           </FormControl>
+          {hint && <FormDescription>{hint}</FormDescription>}
           <TranslatedFormMessage />
         </FormItem>
       )}
