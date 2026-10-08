@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useT } from "@/hooks/useT";
 import { SearchCardProps } from "../../schema";
 import useItem from "../../hooks/useItem";
-import { collectChipValues, decorateTags } from "../../lib/colorBy";
+import { decorateItemTags } from "../../lib/colorBy";
 import { getEntryId } from "../../lib/searchMapSelection";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMemo } from "react";
