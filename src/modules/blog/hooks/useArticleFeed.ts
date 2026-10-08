@@ -81,7 +81,9 @@ export function useArticleFeed({ costumSlug, pageSize = 12, filters, sortBy, def
     [searchText, searchTags, fieldFilters],
   );
 
-  return { ...feed, filterSignature };
+  // `pageSize` RÉSOLU (défaut inclus) — renvoyé pour que l'appelant n'ait pas à dupliquer ce défaut
+  // ailleurs (ex. convertir `totalCount` en nombre de pages pour l'annonce d'accessibilité).
+  return { ...feed, filterSignature, pageSize };
 }
 
 /**

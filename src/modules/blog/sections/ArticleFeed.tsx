@@ -13,12 +13,14 @@ import {
   PaginationLink,
   PaginationPrevious,
   PaginationNext,
+  PaginationEllipsis,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
 import { useArticleFeed, usePagedFeedNav, usePinnedArticle } from "../hooks/useArticleFeed";
 import { CARD_VARIANTS } from "../variants/cards";
 import { normalizeArticleResult, articleHref } from "../lib/articleLink";
 import { pickFeatured } from "../lib/pickFeatured";
+import { buildPageRange } from "../lib/paginationRange";
 import type { ArticleFeedSectionProps } from "../schema";
 
 /** `compact` : squelette plus court et à 2 colonnes DÈS le mobile, à la hauteur de la carte resserrée
@@ -44,7 +46,7 @@ function Feed({ props, base, cardVariant, feedLayout, defaultFields, pagination 
 }) {
   const t = useT("modules/blog");
   const pagedMode = pagination === "pages";
-  const { data, transformedResults, lastItemRef, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error, refetch, filterSignature } = useArticleFeed({
+  const { data, transformedResults, lastItemRef, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error, refetch, filterSignature, totalCount, hasCount, pageSize } = useArticleFeed({
     costumSlug: props.costumSlug, pageSize: props.pageSize, filters: props.filters, sortBy: props.sortBy,
     defaultFields,
   });
@@ -55,6 +57,13 @@ function Feed({ props, base, cardVariant, feedLayout, defaultFields, pagination 
     fetchNextPage,
     resetSignal: filterSignature,
   });
+  // `nav.pageCount` n'est QUE le nombre de pages navigables maintenant (visitées + la suivante
+  // immédiate, cf. `usePagedFeedNav`) — pas le nombre réel de pages du fil, qui continue de grandir
+  // à mesure qu'on avance. L'annoncer tel quel à un lecteur d'écran (« Page 3 sur 5 ») laisserait
+  // croire qu'il n'y a que 5 pages. Le backend renvoie un total RÉEL (`totalCount`/`hasCount`,
+  // `count.total` de la recherche) quand il est disponible — on s'en sert pour l'annonce, sans
+  // toucher `nav.pageCount` qui reste la source de vérité pour les boutons et leurs bornes.
+  const totalPages = hasCount ? Math.max(1, Math.ceil(totalCount / pageSize)) : nav.pageCount;
   const items = ((transformedResults as unknown[]) ?? []).map(normalizeArticleResult);
   // Mode `featured:"flag"` : l'épinglée est cherchée par une MICRO-REQUÊTE serveur dédiée
   // (`{featured:true}`, 1 résultat) — jamais dans la fenêtre chargée (leçon review MR 44).
@@ -131,10 +140,11 @@ function Feed({ props, base, cardVariant, feedLayout, defaultFields, pagination 
       {pagedMode ? (
         nav.pageCount > 1 && (
           <div className="flex flex-col items-center gap-2 py-6">
-            <span className="sr-only" role="status">{t("feed.pageOf", undefined, { current: nav.pageIndex + 1, total: nav.pageCount })}</span>
-            {/* `flex-wrap` : le nombre de boutons de page grandit avec la navigation (le curseur backend
-                interdit tout saut, cf. `usePagedFeedNav`) — sans lui, un fil avec beaucoup de pages
-                déborderait horizontalement sur mobile au lieu de passer à la ligne. */}
+            <span className="sr-only" role="status">{t("feed.pageOf", undefined, { current: nav.pageIndex + 1, total: totalPages })}</span>
+            {/* Un fil navigué page après page accumule des pages déjà chargées sans plafond (le
+                curseur backend interdit tout saut, cf. `usePagedFeedNav`) — `buildPageRange` tronque
+                en « 1 … 8 9 10 … 32 » dès que ça déborderait, au lieu de rendre un bouton par page
+                (passait à la ligne dès ~30). */}
             <Pagination>
               <PaginationContent className="flex-wrap justify-center">
                 <PaginationItem>
@@ -148,18 +158,24 @@ function Feed({ props, base, cardVariant, feedLayout, defaultFields, pagination 
                     {t("feed.previous")}
                   </PaginationPrevious>
                 </PaginationItem>
-                {Array.from({ length: nav.pageCount }).map((_, i) => (
-                  <PaginationItem key={i}>
-                    <PaginationLink
-                      href="#"
-                      isActive={i === nav.pageIndex}
-                      aria-label={t("feed.page", undefined, { n: i + 1 })}
-                      onClick={(e) => { e.preventDefault(); nav.goToPage(i); }}
-                    >
-                      {i + 1}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
+                {buildPageRange(nav.pageCount, nav.pageIndex).map((item, idx) =>
+                  item === "ellipsis" ? (
+                    <PaginationItem key={`ellipsis-${idx}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={item}>
+                      <PaginationLink
+                        href="#"
+                        isActive={item === nav.pageIndex}
+                        aria-label={t("feed.page", undefined, { n: item + 1 })}
+                        onClick={(e) => { e.preventDefault(); nav.goToPage(item); }}
+                      >
+                        {item + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ),
+                )}
                 <PaginationItem>
                   <PaginationNext
                     href="#"

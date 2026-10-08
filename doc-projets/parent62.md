@@ -15,7 +15,12 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-10-06** — SDK monté en `1.0.196` (rôles de membre modifiables,
+Dernière mise à jour : **2026-10-08** — relecture de la MR `parents62` : 12 constats corrigés (régressions,
+dette pré-existante étendue, bonnes pratiques) sur la gestion des rôles, l'export PDF, la grille équipe,
+la pagination numérotée (troncature `1 … 30 31 32 33 34`, bug « Previous »/« Next » resté en anglais, et
+l'annonce d'accessibilité qui disait « sur 2 » au lieu du total réel « sur 537 » — les trois trouvés en
+relisant mes propres vérifications), les liens `NavLink`/`classifyHref`, le téléchargement de Blob
+factorisé — détail en §9tresquadragies.2. Précédemment : **2026-10-06** — SDK monté en `1.0.196` (rôles de membre modifiables,
 export PDF de l'agenda) : dialogue « Gérer les rôles » sur tout membre déjà lié, rôles posables à
 l'invitation « users », export PDF réel vérifié en direct (150 Ko, `%PDF-` confirmé) — un bug backend
 connu (`Costumize::connectElement`) reste non corrigé sur le seul chemin d'invitation CRÉANT un lien,
@@ -4110,6 +4115,50 @@ pagination revient à la page 1 dès que le périmètre filtré de la page chang
 | `test:e2e` parent62 | ✅ 26 passés, 1 ignoré ; 2 échecs **étrangers au lot** déjà connus (`/territoire/arrageois`, `/equipe`, données du backend local) |
 | Mobile 375 px (`/blog`, barre présente) | ✅ aucun débordement horizontal (document 367 px pour un viewport de 375 px) |
 | Autres pages `articleFeed` | non re-testées une à une (33 sections) : même composant et même hook, seule la config (`defaultPagination`, au niveau site) change |
+
+### 9tresquadragies.2 Troncature des boutons de page (06/10) et bug « Previous »/« Next » anglais trouvé en relisant
+
+Au-delà d'une trentaine de pages visitées (navigation séquentielle page après page — le curseur
+backend interdit tout saut, cf. ci-dessus), la rangée de boutons `1 2 3 … N` passait à la ligne.
+Nouveau helper pur testé `buildPageRange` (`modules/blog/lib/paginationRange.ts`) qui tronque en
+`1 … 30 31 32 33 34` dès que l'affichage complet déborderait (seuil : 7 boutons visibles, au-delà
+duquel masquer 1 seule page par une ellipse ne ferait pas gagner de place). Branché dans
+`ArticleFeed.tsx` via `PaginationEllipsis`, déjà présent dans `components/ui/pagination.tsx` mais
+jamais consommé. Vérifié en direct (Playwright, 34 pages atteintes) : une seule ligne en desktop ;
+sur mobile 390 px, léger retour à la ligne du seul bouton « Suivant » au-delà d'une vingtaine de
+pages — net progrès par rapport à l'avant (plusieurs lignes de boutons).
+
+**Bug trouvé en relisant les captures de cette vérification** : les boutons affichaient « Previous »/
+« Next » en ANGLAIS malgré les `t("feed.previous")`/`t("feed.next")` posés dans `ArticleFeed.tsx`.
+Cause : `PaginationPrevious`/`PaginationNext` (`components/ui/pagination.tsx`) spreadaient
+`{...props}` (qui contient `children`) PUIS redéfinissaient leurs propres enfants JSX
+(`<ChevronLeftIcon /><span>Previous</span>`) — en JSX, les enfants explicites entre les balises
+gagnent TOUJOURS sur un `children` venu d'un spread, quel que soit l'ordre des attributs. Le texte
+traduit était donc silencieusement écrasé par le texte anglais câblé en dur. Corrigé en
+destructurant `children` à part et en l'utilisant en repli (`children ?? "Previous"`) — comportement
+inchangé pour tout appelant qui n'en passe pas. `PaginationEllipsis` porte le même texte anglais
+câblé en dur (« More pages », `sr-only`) mais son conteneur est `aria-hidden` : inatteignable par un
+lecteur d'écran, donc pas un bug vivant, non touché.
+
+**2ᵉ bug trouvé en relisant, cette fois sur l'annonce d'accessibilité elle-même** (08/10) : le statut
+`role="status"` posé à côté de la pagination disait « Page X sur `nav.pageCount` », qui n'est QUE le
+nombre de pages navigables MAINTENANT (visitées + la suivante immédiate) — pas le nombre réel de
+pages du fil, qui continue de grandir à chaque clic sur « Suivant ». Un lecteur d'écran aurait donc
+entendu « Page 1 sur 2 » sur un fil de 6 434 articles (537 pages réelles). `useArticleFeed` expose
+déjà `totalCount`/`hasCount` (compte RÉEL renvoyé par le backend, `count.total`, pas toujours présent
+selon la recherche) — désormais utilisé pour l'annonce (`Math.ceil(totalCount / pageSize)`) quand
+disponible, repli sur `nav.pageCount` sinon. `nav.pageCount` lui-même n'est PAS touché : il reste la
+seule source de vérité pour les boutons et leurs bornes (`goToPage`). Vérifié en direct sur `/blog` :
+« Page 1 sur 537 ».
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` · `lint` | ✅ 0 erreur |
+| `test:unit` (`paginationRange.test.ts`) | ✅ 6/6, nouveau helper pur testé |
+| Vérifié en direct (34 pages) | ✅ `Previous 1 … 30 31 32 33 34 Next` → `Précédent 1 … 30 31 32 33 34 Suivant`, une ligne en desktop |
+| Mobile 390 px | 🟡 léger retour à la ligne du bouton « Suivant » seul au-delà d'une vingtaine de pages — net progrès, non retouché davantage |
+| Sombre | ✅ vérifié, contrastes corrects |
+| Annonce `role="status"` | ✅ vérifiée en direct sur `/blog` (6 434 articles) : « Page 1 sur 537 » (total réel), plus « Page 1 sur 2 » (pages navigables) |
 
 ## 9quattuorquadragies. Paroles de parents : image entière et carte par défaut ; profils en pleine largeur
 
