@@ -69,7 +69,7 @@ const ROOT_BLOCKS: Record<string, { schema: () => z.ZodType; note?: string }> = 
   },
   admin: {
     schema: () => AdminConfigSchema,
-    note: "// config.admin = back-office /admin config-driven (7 sections builtin, discriminatedUnion strict) — référence : doc/30-module-admin.md",
+    note: "// config.admin = back-office /admin config-driven (sections builtin en discriminatedUnion strict + sections costum) — référence : doc/30-module-admin.md",
   },
 };
 

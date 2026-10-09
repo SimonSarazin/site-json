@@ -129,7 +129,24 @@ describe("normalizeTypeLabel", () => {
   it("abrège les types connus, renvoie la valeur brute sinon", () => {
     expect(normalizeTypeLabel("Sport santé sur ordonnance - SSsO")).toBe("SSsO");
     expect(normalizeTypeLabel("Sport santé pour tous - SSpT")).toBe("SSpT");
+    expect(normalizeTypeLabel("Sport santé sans label - SSsL")).toBe("SSsL");
     expect(normalizeTypeLabel("Autre")).toBe("Autre");
+  });
+
+  it("abrège un type FUTUR sans toucher au code : l'abréviation est le suffixe du libellé", () => {
+    // Elle devient la classe CSS de la carte (`.ssaa-card`) : un type ajouté au formulaire n'a
+    // besoin que de sa règle CSS, plus d'une ligne ici.
+    expect(normalizeTypeLabel("Sport santé adapté - SSaA")).toBe("SSaA");
+  });
+
+  it("garde le libellé quand le suffixe n'a pas la forme d'une abréviation", () => {
+    expect(normalizeTypeLabel("Activité - Natation")).toBe("Activité - Natation");
+    expect(normalizeTypeLabel("Sport santé - SSO")).toBe("Sport santé - SSO");
+    expect(normalizeTypeLabel("Sport santé - ssso")).toBe("Sport santé - ssso");
+    // Ancres de la forme : ni plus long, ni préfixé.
+    expect(normalizeTypeLabel("Sport santé - SSsOx")).toBe("Sport santé - SSsOx");
+    expect(normalizeTypeLabel("Sport santé - xSSsO")).toBe("Sport santé - xSSsO");
+    expect(normalizeTypeLabel("")).toBe("");
   });
 });
 
@@ -170,6 +187,18 @@ describe("parseCoformAnswer — résolution des clés par SUFFIXE stable (inter-
       fields: { title: `${SSBE}mdegc9sgox76p87n27` },
     });
     expect(a.title).toBe("Basket");
+  });
+
+  it("type ou statut qui n'est pas une chaîne → replis vides, sans crash (le libellé est découpé)", () => {
+    const row = flatRow(EKILIBRE);
+    const a = parseCoformAnswer({
+      ...row,
+      [`${EKILIBRE}mdn1cs8on3yru1p80lq`]: ["Sport santé pour tous - SSpT"],
+      [`${EKILIBRE}mdn1jcq445i0mb9bap7`]: 1,
+    });
+    expect(a.typeRaw).toBe("");
+    expect(a.typeLabel).toBe("");
+    expect(a.status).toBe("Valide");
   });
 
   it("champ absent des données → replis habituels (pas de crash)", () => {

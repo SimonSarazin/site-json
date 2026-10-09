@@ -55,7 +55,7 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
    * écrite dans le message de commit.
    */
   const MIN_COVERAGE: Record<string, number> = {
-    admin: 25,
+    admin: 27,
     auth: 17,
     commandPalette: 16,
     costumForm: 26,

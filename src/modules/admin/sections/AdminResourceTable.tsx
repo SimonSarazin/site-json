@@ -1,6 +1,7 @@
-import { ArrowLeftRight, BadgeCheck, BadgeX, ChevronDown, ChevronUp, CircleCheck, CircleDashed, CircleDot, CirclePlay, CircleX, Link2, MoreHorizontal, Pencil, Plus, Trash2, Star } from "lucide-react";
+import { ArrowLeftRight, BadgeCheck, BadgeX, ChevronDown, ChevronUp, CircleCheck, CircleDashed, CircleDot, CirclePlay, CircleX, Eye, Link2, MoreHorizontal, Pencil, Plus, Trash2, Star } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { lazy } from "vite-preload";
 
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -38,6 +39,7 @@ import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import { validationStatusFilter } from "@/modules/admin/lib/validationFilter";
 
 import type { SearchType } from "@/modules/search/schema";
+import { SwitchDetailsMode } from "@/modules/search/components/SwitchDetailsMode";
 
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
 import { OwnershipMigrationDialog } from "../components/OwnershipMigrationDialog";
@@ -50,21 +52,24 @@ import type { AdminResourceSection, AdminSection } from "../schema";
 import { downloadCsv } from "../lib/downloadCsv";
 import { ensureCostumScope } from "@/lib/ensureCostumScope";
 import { AudioPlayer } from "@/components/media/AudioPlayer";
-import { STATUS_TONE_CLASS, formatColumnCell, getColumnValue, getPath, normalizeColumns, readStatusValue, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
+import { STATUS_TONE_CLASS, audioSrc, createCoformId, formatColumnCell, getColumnValue, getPath, normalizeColumns, readStatusValue, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
+import { rowPreviewProps, stopRowClick } from "./rowPreview";
 
-/** Cellule audio : lecteur du 1er `medias[].url` de type audio de la ligne (ou d'une URL directe). */
-function AudioCell({ value }: { value: unknown }) {
-  const url = Array.isArray(value)
-    ? (value.find((m): m is { type?: string; url?: string } => !!m && typeof m === "object" && (m as { type?: string }).type === "audio")?.url)
-    : (typeof value === "string" ? value : undefined);
-  if (!url) return <span className="text-muted-foreground">—</span>;
-  return <AudioPlayer compact src={url} />;
+// Création d'une RÉPONSE CoForm (`create: {coform}`, resources `answers`) : même patron que le
+// bouton public `addButton.coform` de SearchProStatic — monté au premier clic seulement, le chunk
+// coform n'est jamais tiré par les tables qui ne le configurent pas.
+const CoFormModal = lazy(() => import("@/modules/coform/components/CoFormModal"));
+
+/** Cellule audio : lecteur compact (lecture, avance) de la source résolue par `audioSrc`. */
+function AudioCell({ src }: { src: string | undefined }) {
+  if (!src) return <span className="text-muted-foreground">—</span>;
+  return <AudioPlayer compact src={src} />;
 }
 
 import { toCsv } from "@communecter/cocolight-api-client";
 import { toast } from "sonner";
 
-import type { EntityTypes } from "@communecter/cocolight-api-client";
+import type { EntityTypes, SearchEntity } from "@communecter/cocolight-api-client";
 
 /**
  * Section `resource` (P2) — tableau CRUD générique. Liste via `useSearchQuery` (searchCostum, scopée au
@@ -349,6 +354,10 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     downloadCsv(csv, `selection-${resource.entityType}.csv`);
   };
   const [createOpen, setCreateOpen] = useState(false);
+  // Création par CoFormModal (`create: {coform}`) — exclusif avec `createOpen` (DynamicModal).
+  const [coformOpen, setCoformOpen] = useState(false);
+  // Ligne ouverte en détail (`resource.preview`) — même conteneur et même contenu que les listes publiques.
+  const [previewItem, setPreviewItem] = useState<SearchEntity | null>(null);
   // Pas de refetch() dans les callbacks : les hooks invalident déjà par prédicat admin-* (queryKeys),
   // ce qui couvre cette table ET les tuiles dashboard (le refetch doublait la requête — audit réseau).
   const del = useDeleteEntity(() => {
@@ -364,6 +373,10 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
    *  métier gouverne une VISIBILITÉ (ex. `status: Visible` sur /ressources, `publicationStatus` sur
    *  un fil d'actualités) : n'invalider que les listes statiques laissait le fil blog, l'agenda et
    *  les compteurs sur leur cache jusqu'au rechargement. */
+  const invalidateAdminAndPublic = () => {
+    void invalidateAdmin();
+    for (const key of publicSurfaceKeys(costumSlug || undefined)) void queryClient.invalidateQueries({ queryKey: key });
+  };
   const setStatus = useMutationWithToast<void, { item: unknown; value: string; display: string }>({
     mutationFn: async ({ item, value }) => {
       if (!fieldStatus) return;
@@ -375,10 +388,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     errorKey: "AdminResourceTable.statusError",
     getSuccessParams: (_, v) => ({ state: v.display }),
     namespace: "modules/admin",
-    onSuccessCallback: () => {
-      void invalidateAdmin();
-      for (const key of publicSurfaceKeys(costumSlug || undefined)) void queryClient.invalidateQueries({ queryKey: key });
-    },
+    onSuccessCallback: invalidateAdminAndPublic,
   });
   const setExclusiveFlag = useSetExclusiveFlag(() => {});
   // Périmètre SERVEUR de l'exclusivité (review MR 44, resserré par la review finale) : les fiches
@@ -433,6 +443,9 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     costumSlug,
   );
   const editModal = resolveEditModal(resource);
+  // Création d'une RÉPONSE CoForm (resources `answers`) — `null` dès que `create` désigne une modale
+  // d'entité ; les deux ne portent jamais le bouton ensemble (cf. resourceHelpers).
+  const createCoform = createCoformId(resource);
 
   return (
     <Card>
@@ -441,8 +454,8 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
           {resource.label ? t(resource.label) : <span className="capitalize">{resource.entityType}</span>}
           {totalCount != null ? ` (${totalCount})` : ""}
         </CardTitle>
-        {createModal && (
-          <Button size="sm" onClick={() => setCreateOpen(true)}>
+        {(createModal || createCoform) && (
+          <Button size="sm" onClick={() => (createCoform ? setCoformOpen(true) : setCreateOpen(true))}>
             <Plus className="mr-2 h-4 w-4" /> {tAdmin("AdminResourceTable.create")}
           </Button>
         )}
@@ -611,10 +624,16 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
               // (edit/delete/validate/statusField) seraient de toute façon refusées par le Node
               // durci sur une entité étrangère.
               const actionnable = !resource.restrictActionsToOwned || isAttached;
+              // Détail au clic (`resource.preview`) : la ligne ENTIÈRE est la cible — un modérateur
+              // n'a pas à viser un lien dans une cellule tronquée. Les cellules qui portent un
+              // CONTRÔLE gardent leurs clics (`stopRowClick`) : sélection, lecteur audio, actions ;
+              // finir une sélection de texte n'ouvre rien non plus (cf. `rowPreview`). Le menu porte
+              // aussi « Aperçu » : le même détail AU CLAVIER, une ligne cliquable n'étant pas focusable.
+              const openPreview = resource.preview ? () => setPreviewItem(item) : undefined;
               return (
-                <TableRow key={id} ref={isLast ? lastItemRef : undefined}>
+                <TableRow key={id} ref={isLast ? lastItemRef : undefined} {...rowPreviewProps(openPreview)}>
                   {bulkActions.length > 0 && (
-                    <TableCell className="w-10">
+                    <TableCell className="w-10" onClick={stopRowClick}>
                       <Checkbox
                         aria-label={tAdmin("AdminResourceTable.selectRow", undefined, { label })}
                         disabled={!hasRealId}
@@ -623,17 +642,22 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                       />
                     </TableCell>
                   )}
-                  {columns.map((col) => (
-                    <TableCell
-                      key={col.path}
-                      className={col.type === "audio" ? "min-w-[13rem]" : "max-w-[14rem] truncate"}
-                      title={col.type === "audio" ? undefined : formatColumnCell(data, col.path, tSearch)}
-                    >
-                      {col.type === "audio"
-                        ? <AudioCell value={getPath(data, col.path)} />
-                        : formatColumnCell(data, col.path, tSearch)}
-                    </TableCell>
-                  ))}
+                  {columns.map((col) => {
+                    // Le lecteur garde ses clics (lecture, avance) : sans ça, chaque geste ouvrait aussi
+                    // le détail par-dessus, l'audio continuant dessous. Sans fichier (« — »), la cellule
+                    // redevient une partie ordinaire de la ligne cliquable.
+                    const audio = col.type === "audio" ? audioSrc(getPath(data, col.path)) : undefined;
+                    return (
+                      <TableCell
+                        key={col.path}
+                        className={col.type === "audio" ? "min-w-[13rem]" : "max-w-[14rem] truncate"}
+                        title={col.type === "audio" ? undefined : formatColumnCell(data, col.path, tSearch)}
+                        onClick={audio ? stopRowClick : undefined}
+                      >
+                        {col.type === "audio" ? <AudioCell src={audio} /> : formatColumnCell(data, col.path, tSearch)}
+                      </TableCell>
+                    );
+                  })}
                   {fieldStatus && (
                     <TableCell>
                       {(() => {
@@ -661,7 +685,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                       )}
                     </TableCell>
                   )}
-                  <TableCell className="sticky right-0 bg-background">
+                  <TableCell className="sticky right-0 bg-background" onClick={stopRowClick}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" aria-label={tAdmin("AdminResourceTable.rowActions", undefined, { label })}>
@@ -669,6 +693,11 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        {openPreview && (
+                          <DropdownMenuItem onClick={openPreview}>
+                            <Eye className="mr-2 h-4 w-4" /> {tAdmin("AdminResourceTable.preview")}
+                          </DropdownMenuItem>
+                        )}
                         {actionnable && rowActions.includes("edit") && editModal.enabled && (
                           <DropdownMenuItem onClick={() => void openEditEntity(item, hasRealId ? id : undefined)}>
                             <Pencil className="mr-2 h-4 w-4" /> {tAdmin("AdminResourceTable.edit")}
@@ -818,6 +847,42 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
             if (!o) void refetch();
           }}
           parent={carrier}
+        />
+      )}
+
+      {/* Création d'une réponse CoForm (`create: {coform}`). Monté au 1er clic seulement (chunk
+          coform à la demande), Suspense LOCAL pour ne pas faire flasher la table. Après soumission :
+          tables admin (celle-ci comprise) ET surfaces publiques — la réponse créée est une ligne de
+          plus sur la liste publique, dont `useCoFormFinalMutation` n'invalide pas le cache (il ne
+          connaît que les clés coform). Rien à la fermeture : CoForm n'écrit RIEN avant la soumission
+          finale (brouillon local, fichiers envoyés au submit), et un `refetch()` ici doublait la
+          requête déjà relancée par l'invalidation (review MR 84). */}
+      {createCoform && coformOpen && (
+        <Suspense fallback={null}>
+          <CoFormModal
+            formId={createCoform}
+            open={coformOpen}
+            onOpenChange={setCoformOpen}
+            onAfterSubmit={invalidateAdminAndPublic}
+          />
+        </Suspense>
+      )}
+
+      {/* Détail d'une ligne (`resource.preview`) : MÊME coque (`dialog`) et MÊME contenu que les
+          listes publiques — `preview.type: "coform-answer"` + `editButton` corrige la réponse depuis
+          la modération. Fermer sans éditer ne recharge rien : vérifier vingt fiches = zéro requête.
+          Une édition remonte par `onEdited` — le détail n'invalide que les caches search/coform,
+          jamais les clés `admin-*` : on invalide ici tables et tuiles admin ET surfaces publiques,
+          comme pour un changement de statut. Ce pari tient parce que le schéma n'admet que des
+          détails qui n'écrivent rien ou qui signalent leurs éditions (`ADMIN_PREVIEW_TYPES`). */}
+      {resource.preview && previewItem && (
+        <SwitchDetailsMode
+          openDetails
+          setOpenDetails={(o) => { if (!o) setPreviewItem(null); }}
+          onEdited={invalidateAdminAndPublic}
+          item={previewItem}
+          card={{ detailsMode: "dialog" }}
+          preview={resource.preview}
         />
       )}
 

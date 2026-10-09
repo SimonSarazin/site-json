@@ -16,13 +16,21 @@
 > 06/07) · [`ENDPOINT.md`](../../ENDPOINT.md) (fiches d'endpoints SDK à créer). Mémoire :
 > `[[project-maison-sport-sante-la-tampon]]`.
 
-Dernière mise à jour : **2026-10-08** (§9.23, commit `8cc2a9ef` : le parcours « Prescrire un
+Dernière mise à jour : **2026-10-08** (§9.25 : corrections de la **review de la MR 84** — `answerCopy.preview`
+en lecture seule forcée, lecteur audio et sélection de texte n'ouvrent plus le détail, plus de requête
+en double ni de refetch aveugle, `createDefaults` refusé avec `create.coform`, abréviation du type lue
+dans le suffixe du libellé ; §9.24 : `/creneaux` trié **plus récent en premier** — `defaultSortBy: {created: -1}`,
+le tri `updated` imposé par le backend reléguait une réponse neuve en dernier ; §9.23 : modération des créneaux — bouton « Créer » (CoForm) et
+détail au clic sur une ligne, deux options moteur `create:{coform}` / `preview` ; §9.22 : 3ᵉ type de créneau
+« Sport santé sans label - SSsL » — abréviation, filtre et cartes en **vert** ; 29/09 : merge de `main` : §9.21, reprise des créneaux SSBE du Tampon
+
+Même jour, lot Nicolas (`8cc2a9ef`, `678527cf`, `6bbf3f8e`) — §9.27, commit `8cc2a9ef` : le parcours « Prescrire un
 créneau » de `/espace-pro` passe en **timeline** ; les étapes d'inscription de `/s-informer` en
 vertical, sans barre de progression — l'orientation, posée hors de `props` dans le commit, est
 corrigée par `11377a04` ; filtre « Type de Sport Santé » en tête de
 `/creneaux` ; **cloche de notifications** activée ; Facebook et LinkedIn passent de la rangée
 d'icônes du pied de page aux lignes de contact — table d'icônes partagée avec `SocialLinks` depuis
-la review de la MR 86 (§9.23). §9.22 : bouton « Ajouter une structure » **rétabli
+la review de la MR 86 (§9.27). §9.26 : bouton « Ajouter une structure » **rétabli
 dans l'onglet admin Structures** — `create: "add-structure"`, commité `678527cf` ; le bouton public
 reste retiré ; merge de
 `main` : §9.21, reprise des créneaux SSBE du Tampon
@@ -1174,7 +1182,7 @@ de la colonne, avec débounce à 400 ms et paramètre `?search=`. **`/structure`
 (décision : seulement `/creneaux`).
 
 **Six groupes de filtres** : 4 `filterGroups` statiques — Type d'activité (9 options), Type de Sport
-Santé (2), Type de public (2), Bénéficiaires (7) — et 2 `filtersByAnswers` : **ALD** et **Maladie
+Santé (**3** depuis le 08/10, §9.22), Type de public (2), Bénéficiaires (7) — et 2 `filtersByAnswers` : **ALD** et **Maladie
 chronique**.
 
 Les options de « Bénéficiaires » ont été **alignées sur le formulaire** : l'ancienne liste de 6 en
@@ -1836,7 +1844,180 @@ déposées après le 19/08 + 7 « lieux seulement »), dont 18 « Copié »/« p
 copier » → copier « Gymnastique Tao » → ligne « Copié », toast, créneau visible dans Modération puis
 `/creneaux`.
 
-### 9.22 Bouton « Ajouter une structure » rétabli dans l'admin (07/10, Nicolas — `678527cf`)
+### 9.22 Troisième type de créneau « Sport santé sans label - SSsL » (08/10, Peterson)
+
+**Constat.** Le form dédié (`6a85af345d898a57cb49f029`, `updated` = 07/10) propose désormais une
+3ᵉ option au champ « Type de demandes » (`…mdn1cs8on3yru1p80lq`) : `"Sport santé sans label - SSsL"`,
+à côté de SSsO et SSpT. Aucune réponse ne la porte encore en base locale (14 SSsO / 36 SSpT sur 50).
+Côté front, le select CoForm lit ses options dans `params[input].options` → la 3ᵉ option **s'affiche
+sans rien faire**, et l'affichage conditionnel (`useConditionalFields`) masque bien les 4 champs
+« liaison médecin » réservés au SSsO (règles `show` sur SSsO seulement). Mais `normalizeTypeLabel` ne
+connaissait que SSsO/SSpT : la carte aurait affiché le libellé long dans son badge et porté une classe
+CSS inexploitable (`sport santé sans label - sssl-card` — l'abréviation SERT de classe), et le filtre
+« Type de Sport Santé » ne proposait pas l'option.
+
+**Ce qui change** :
+
+| Domaine | Changement |
+|---|---|
+| [`coformAnswer.ts`](../src/modules/search/lib/coformAnswer.ts) | `normalizeTypeLabel` : `"Sport santé sans label - SSsL"` → `SSsL` (+ commentaire : l'abréviation est la classe CSS de la carte — tout type ajouté au form se déclare ici). **Remplacé le jour même (§9.25)** : l'abréviation est lue dans le suffixe du libellé, plus aucune liste à tenir |
+| `coformAnswer.test.ts` | cas SSsL + **garde config ↔ code** : chaque option `name` du filtre `sportHealthType` de la config doit être abrégée (`/^SS[a-z][A-Z]$/`). **Retirée en §9.25** (un test du module search générique ne lit pas la config d'un site), devenue inutile avec la lecture du suffixe |
+| Config — filtre `sportHealthType` | 3ᵉ option `sssl` (fr « Sport santé sans label » / en « Sport health without label »), `name` = valeur exacte du form |
+| Config — `theme.customCSS` | `.sssl-card` : en-tête **vert** `--success` → `color-mix(--success 85%, black)` (même recette que `--gradient-pro`), liseré gauche `--success`, badge « Validé » **inversé** (fond `--card`, texte `--success`) |
+
+**Pourquoi le vert.** La charte a trois couleurs (§9.19) : le jaune porte déjà SSsO, le bleu SSpT ;
+le vert (`--success` = #1A7A55) est la seule couleur de charte restante, déjà celle de la carte
+« Professionnels de santé » du héros. Contrastes recalculés depuis les tokens oklch de la config
+(titre en `text-primary-foreground`) :
+
+| Couple | Clair | Sombre |
+|---|---|---|
+| vert plein × titre | **5,16:1** | **7,55:1** |
+| vert creusé 85 % × titre (fin de dégradé) | 7,25:1 | 4,98:1 |
+| badge « Validé » (`--badge-valid` = `--success`) × en-tête vert | 1,00:1 → invisible | 1,00:1 |
+| badge inversé : texte `--success` sur `--card` | 5,31:1 | 7,14:1 |
+
+Une seule recette pour les deux modes (pas de règle `.dark`, contrairement au jaune) : le vert
+sombre est plus clair (L .70) et le titre y devient foncé — AA tenu aux deux bouts du dégradé. Le badge
+« Validé » étant du même vert que l'en-tête, il passe en pastille inversée dans `.sssl-card` seulement
+(règle non layerée du `customCSS`, elle l'emporte sur l'utilitaire Tailwind sans `!important` ; le
+`!important` ne reste nécessaire que contre le `style` inline de l'en-tête). Le badge de type
+(`--badge-type` = `--muted-foreground`) est laissé tel quel : son texte blanc tient 5,8:1, et sa
+pastille se fond déjà dans la fin de dégradé des cartes SSpT — même tolérance.
+
+**À vérifier dans le form (backend, pas de code front)** : la règle `hide` sur « Si oui avec qui »
+(`…mpy4pj6xuivg0k5asas`, position 19) ne vise que SSpT → pour un créneau SSsL ce champ reste visible,
+comme pour SSsO. Si « sans label » doit se comporter comme SSpT, ajouter une règle `hide` pour
+`"Sport santé sans label - SSsL"` (ou la remplacer par une règle `show` sur SSsO, comme les 4 autres
+champs médecin) — dans l'éditeur de formulaire, sans écriture Mongo manuelle. Les textes FAQ /
+« S'informer » ne décrivent que les deux labels : à compléter si la MSS veut expliquer le « sans label ».
+Le backend (`AssociationEkilibre::FIELD_TYPE`) ne branche pas sur la valeur : rien à y faire.
+
+**Gates (08/10)** : typecheck ✅ 0 erreur · lint ✅ (2 fichiers) · `coformAnswer.test.ts` ✅ 22 ·
+preflight ✅ **793** (fixture `__effective__` inchangée) · `config:validate` ✅ 13 pages / 49 sections ·
+`audit:config` ✅ RAS. **Recette navigateur à faire** : créer un créneau SSsL, vérifier la carte (clair +
+sombre), le filtre, et la vue carte — ses pins restent `primary` pour les 3 types (option
+`map.marker.colorBy` disponible si on veut les distinguer aussi).
+
+### 9.24 `/creneaux` : le créneau ajouté s'affiche en premier (08/10, Peterson)
+
+**Symptôme (recette du 08/10)** : un créneau SSsL créé depuis la modération apparaissait **en
+dernier** sur l'annuaire. **Cause** : la liste publique n'envoyait aucun `sortBy` ; dans ce cas
+`SearchNew::globalAutocomplete` (`citizenToolKit/models/SearchNew.php:123`) impose
+**`{updated: -1}`** et le transmet au hook `AssociationEkilibre::searchAnswers`, dont le repli
+`created: -1` ne joue donc jamais. Or une réponse **neuve n'a pas de champ `updated`** (seulement
+`created` — vérifié en base locale : 51 réponses avec `created`, 48 avec `updated`) : Mongo classe
+l'absent comme `null`, c'est-à-dire **dernier** en tri décroissant. Une réponse remontait en tête
+seulement après sa première modification.
+
+**Correctif (config seule)** : `baseParams.defaultSortBy: {"created": -1}` sur la section
+`creneaux-list` de `/creneaux` — le front envoie alors `sortBy`, que `SearchNew` honore tel quel
+(même mécanique que le tri de la table de modération, qui le posait déjà). Toutes les réponses du
+form portent `created` (les copies SSBE comprises). Une **modification** ne fait pas remonter une
+fiche : seul l'ordre de **création** compte, ce qui est le besoin exprimé. Sans effet sur la vue
+carte (`searchCostumStaticMapAll`, ordre indifférent) ni sur le compteur de la home.
+
+---
+
+### 9.23 Modération des créneaux : créer depuis l'admin et vérifier une fiche au clic (08/10, Peterson)
+
+**Besoin.** Depuis l'onglet « Créneaux — modération » de `/admin` : (1) **ajouter un créneau** sans
+passer par `/creneaux` ; (2) **cliquer une ligne** pour ouvrir la même fiche que dans l'annuaire et
+vérifier les informations avant de la marquer « Validé » — les colonnes de la table (activité,
+structure, type, CP, date) n'en montrent qu'une tranche.
+
+**Pourquoi deux options MOTEUR et pas une rustine Ekilib.re.** La section `resource` n'avait aucun
+des deux leviers : `create` ne sait résoudre que des **modales d'entité** (standard ou costumForm),
+or les réponses CoForm n'en ont pas (`resolveCreateModal` → `null`, donc pas de bouton) ; et une
+ligne ne réagissait pas au clic. Les deux leviers sont posés dans le schéma admin, **opt-in**, zéro
+changement pour les tables existantes :
+
+| Option (`admin.tabs[].sections[]` de type `resource`) | Effet |
+|---|---|
+| `create: { "coform": "<formId>" }` | le bouton « Créer » ouvre le **`CoFormModal`** du form — la même modale que le bouton public « Ajouter un créneau » (`addButton.coform`), chunk coform chargé au premier clic. Après soumission : invalidation des tables/tuiles admin **et** des surfaces publiques (`/creneaux`, compteur de la home) ; rien à la fermeture (le refetch initial doublait la requête — §9.25) |
+| `preview: { "type": "coform-answer", "editButton": true }` | **détail au clic sur la ligne** (curseur main) + action « Aperçu » dans le menu de ligne (accès **clavier**) : même coque `dialog` et même contenu que `/creneaux` (`SwitchDetailsMode` → `PreviewCoformAnswer`), **bouton « Modifier »** inclus (re-fetch frais puis CoFormModal, droit = super-admin / admin du costum / admin de la structure). Fermer sans éditer ne recharge rien ; une correction invalide tables admin et surfaces publiques (`onEdited`, §9.25) |
+
+**Ce qui change** :
+
+| Domaine | Fichier | Changement |
+|---|---|---|
+| Schéma admin | [`admin/schema.ts`](../src/modules/admin/schema.ts) | `AdminCreateRefSchema` (= `AdminFormRefSchema` ∪ `{coform: ObjectId}`) pour `create` ; `preview: PreviewConfSchema` (le bloc des listes publiques) |
+| Helpers | [`resourceHelpers.ts`](../src/modules/admin/sections/resourceHelpers.ts) | `createCoformId(section)` ; `resolveCreateModal` rend `null` sur la forme objet — les deux sont exclusifs |
+| Table | [`AdminResourceTable.tsx`](../src/modules/admin/sections/AdminResourceTable.tsx) | bouton « Créer » → `CoFormModal` lazy (`vite-preload`, Suspense local) ; ligne cliquable + « Aperçu » (icône `Eye`) ; `SwitchDetailsMode` en `dialog` ; cellules sélection/actions coupent la propagation (le menu portalé remonte jusqu'à la ligne) ; `invalidateAdminAndPublic` factorisé (statut métier + création) |
+| i18n admin | `fr.json` / `en.json` | `AdminResourceTable.preview` = « Aperçu » / « Preview » |
+| Tests | `resourceHelpers.test.ts`, `schema.test.ts` | `create:{coform}` → `createCoformId` / `resolveCreateModal` null ; schéma : ObjectId exigé, `preview` conservé, formes historiques intactes |
+| Config | onglet Modération | `create: {coform: "6a85af345d898a57cb49f029"}`, `preview: {type: "coform-answer", editButton: true}` (`edit: false` inchangé : la correction passe par le bouton « Modifier » du détail) |
+| Docs | `doc/30-module-admin.md`, skill `config-assistant/references/admin.md` | les deux options documentées |
+| Onglet « Créneaux SSBE » (complément, même jour) | [`AdminAnswerCopySection.tsx`](../src/modules/admin/sections/AdminAnswerCopySection.tsx), schéma `answerCopy.preview` | même détail au clic sur une ligne + bouton « Aperçu » par ligne ; **lecture seule** (la réponse appartient au site régional — pas d'`editButton`, « Copier » n'ouvre pas le détail ; depuis §9.25 `editButton` est refusé par le schéma ET neutralisé au rendu) ; config `preview: {type: "coform-answer"}` ; 4 tests de rendu (clic ligne, Copier inerte, bouton, sans config) |
+
+**Pourquoi ça fonctionne sur les lignes de la modération.** En mode `statusField` la table interroge
+la route publique avec une projection explicite dont la racine `answers` fait partie (champ d'état) ;
+le hook `AssociationEkilibre::searchAnswers` aplatit ensuite la section à la racine et joint
+`structure` — ce sont exactement les lignes que `parseCoformAnswer` lit sur `/creneaux`.
+
+**Gates (08/10)** : typecheck ✅ 0 erreur · lint ✅ (5 fichiers) · unit admin ✅ 166 · preflight ✅
+(fixture `__effective__` inchangée : `create` y est résolu en modale d'entité, `null` avant comme
+après) · `config:validate` ✅ 13 pages / 49 sections · `audit:config` ✅ RAS. **Recette navigateur à
+faire** (compte siteAdmin) : créer un créneau depuis l'onglet, l'ouvrir au clic et au clavier
+(menu → Aperçu), le modifier depuis le détail, vérifier le rafraîchissement de la table et de
+`/creneaux`.
+
+### 9.25 Corrections de la review de la MR 84 (`judi-ekilibre` → `main`, 08/10)
+
+**Verdict de la review** : bloquant sur un point, quatre « à vérifier », quatre nettoyages — les
+gates (lint, typecheck, preflight 795/795, 98 tests) étaient vertes sur l'arbre de la MR comme sur
+l'arbre mergé avec `main`. Tous les points sont traités dans le code, sauf le titre de la MR (GitLab).
+
+| # | Constat de la review | Correctif |
+|---|---|---|
+| 1 (bloquant) | `answerCopy.preview` acceptait `editButton: true` : recopier le bloc `preview` de l'onglet Modération (même forme) faisait apparaître « Modifier » sur une candidate, et l'enregistrement écrivait dans la réponse **du costum voisin** | schéma : `editButton` refusé (refine, `config:validate` échoue) ; rendu : la section passe `editButton: false` — la config n'est jamais parsée par Zod au runtime, le schéma seul ne protège pas |
+| 2 | colonne audio + `preview` : lecture ou avance (lecteur compact) ouvraient aussi le détail, l'audio continuant dessous | la cellule audio garde ses clics (`stopRowClick`) quand elle porte un lecteur — vide (« — »), elle redevient une cellule ordinaire —, comme sélection et actions ; contrat commun aux deux tables dans [`sections/rowPreview.ts`](../src/modules/admin/sections/rowPreview.ts) |
+| 3 | deux requêtes identiques après une création par CoForm : l'invalidation, puis `refetch()` à la fermeture | plus de `refetch()` à la fermeture : CoForm n'écrit **rien** avant la soumission finale (brouillon local, fichiers envoyés au submit), l'invalidation couvre la soumission |
+| 4 | `refetch()` aveugle à la fermeture de l'aperçu (vérifier 20 fiches = 20 `searchCostum`), et une vraie édition laissait les tuiles admin périmées | prop optionnelle `onEdited`, de `PreviewCoformAnswer.handleEdited` jusqu'à `SwitchDetailsMode` (module search, relayée par les deux conteneurs et `Preview`) ; la table y invalide `admin-*` + surfaces publiques ; fermer = 0 requête |
+| 5 | `createDefaults` ignoré en silence avec `create: {coform}` (le schéma acceptait les deux, la doc promettait le semis) | combinaison refusée par le schéma : les clés de `createDefaults` sont des champs de modale d'entité, rien ne les traduit en réponse rangée par étape |
+| 6 | 3ᵉ `case` en dur pour un libellé d'un seul site, et test du module search générique lisant `config.prod.maison-sport-sante-la-tampon.json` sur disque | `normalizeTypeLabel` lit le **suffixe** du libellé (`/^SS[a-z][A-Z]$/`) : un type futur n'exige plus de code — restent, côté site, sa règle CSS et l'option du filtre `sportHealthType` ; test de config remplacé par des cas génériques |
+| 7 | toute la ligne cliquable : glisser pour copier un e-mail ouvrait le détail et perdait la sélection | `rowPreviewProps` ignore le clic qui termine une sélection (`getSelection()`), sur les deux tables. Limite assumée : un double-clic ouvre le détail dès son premier clic (l'attendre retarderait chaque ouverture) — on copie au glisser |
+| 8 | `config:schema admin` ignorait `create.coform` et `preview` | descriptions `create`, `createDefaults`, `preview` ; « 8 builtin » (answerCopy manquait) ; note des refinements ; plancher de couverture admin 25 → 27 |
+| 9 | titre de la MR : annonce le type SSBE alors que 3 commits sur 5 livrent des fonctionnalités admin partagées | à renommer sur GitLab |
+
+**Relecture des correctifs** (4 relecteurs indépendants — bonnes pratiques, justesse, docs, tests —,
+chaque constat soumis à un sceptique : 23 sur 24 confirmés, aucun bloquant). Ce qu'elle a fait changer :
+
+| Constat | Correctif |
+|---|---|
+| Retirer le refetch à la fermeture ôtait le filet des AUTRES détails qui écrivent sans signaler `onEdited` (`facets`, `structure`, `poi-amenities` : édition, suppression ; `news` ; `event` : participation) — latent (seul Ekilib.re pose `preview`, en `coform-answer`), mais réel | `resource.preview` et `answerCopy.preview` n'admettent que les détails qui n'écrivent rien ou qui le signalent (`ADMIN_PREVIEW_TYPES` : `default`, `resource`, `resource-directory`, `testimonial`, `coform-answer`) — même parti que pour `createDefaults` : refuser plutôt que laisser une table périmée ; commentaires « seul variant qui édite » corrigés |
+| Les messages des nouveaux refines n'apparaissaient jamais dans `config:validate` (« Invalid input [invalid_union] ») | le refus du repli « section costum » devient **bloquant** (`abort`) : l'échec d'un refine builtin remonte tel quel ; `config:validate` **déplie** les unions restées opaques ([`scripts/lib/zod-issues.ts`](../scripts/lib/zod-issues.ts), la branche allée le plus loin) — vérifié sur une copie cassée de la config |
+| `normalizeTypeLabel` découpe désormais le type : une valeur non-chaîne faisait planter le détail | `str()` au lieu du cast pour `type` et `state` |
+| Exemption `coform-answer` périmée dans le preflight `presenter-options` (elle éteignait la garde de la transmission de `preview`) | exemption retirée + garde inverse (une exemption doit désigner une option encore morte) |
+| La JSDoc de `resolveCreateModal` détachée de sa fonction par l'insertion de `createCoformId` (MR) ; « 7 builtin » restants ; commentaire du lecteur (« vitesse » absente du lecteur compact) ; liste des consommateurs de `CoFormModal` | recollée / corrigés |
+
+**Tests** : `AdminResourceTable.test.tsx` **nouveau** (11 — la table n'en avait aucun : lecteur audio,
+case et menu d'actions, « Aperçu » au clavier, « Supprimer » sans détail par-dessus, sans `preview`,
+`editButton` transmis, sélection de texte, consultation sans requête, correction → invalidations,
+création = une invalidation, fermeture sans soumettre), `SwitchDetailsMode.test.tsx` **nouveau** (3 —
+la VRAIE chaîne `onEdited`, dialog et tiroir), `rowPreview.test.ts` (4), `zod-issues.test.ts` (4),
+`AdminAnswerCopySection.test.tsx` (+2 ; « la fermeture le retire » vérifie désormais la fermeture,
+qu'il annonçait sans la tester), `schema.test.ts` (+6), `resourceHelpers.test.ts` (+2, `audioSrc`),
+`coformAnswer.test.ts` (test de config → cas génériques + non-chaîne), helpers de sélection partagés
+(`tests/test-utils-ui.tsx`). Preuve qu'ils mordent : les 10 tests de rendu de la première passe
+échouent contre le code de la MR, et 9 mutations des correctifs (relais `onEdited` ×3, `abort`,
+coupures des cellules ×2, exemption, cast, ancres de la regex) font toutes échouer leur test.
+
+**Docs** : [07-module-search](../doc/07-module-search.md) (`onEdited` et les contenus qui ne le relaient
+pas, règle du suffixe), [30-module-admin](../doc/30-module-admin.md) (fermeture, création, types de
+détail admis, lecture seule `answerCopy`, `createDefaults`, validation lisible), skill
+`config-assistant/references/admin.md`, `config:schema admin` (descriptions + notes).
+
+**Gates (08/10, arbre de la branche)** : typecheck ✅ · lint ✅ 0 erreur / 24 avertissements (inchangé
+vs la MR) · test:unit ✅ 5 574 (460 fichiers) · preflight ✅ 794 · `config:validate` ✅ 13 pages /
+49 sections · `audit:config` ✅ RAS. **Arbre fusionné avec `main`** (39 commits de retard) : fusion
+sans conflit, test:unit ✅ 5 660, preflight ✅ 796 ; typecheck : 3 erreurs, toutes dans du code de
+`main` qui exige le SDK ≥ 1.0.196 (`setRoles`, `agendaGetPdf`) alors que le `node_modules` local est
+resté en 1.0.195 (`package.json` exige déjà `^1.0.196`) — un `npm install` les lève, sans rapport
+avec ce lot. État à l'écriture : **commité** sur `judi-ekilibre`, pas encore poussé ; titre de la MR
+à renommer ; recette navigateur (compte siteAdmin) toujours à faire.
+
+### 9.26 Bouton « Ajouter une structure » rétabli dans l'admin (07/10, Nicolas — `678527cf`)
 
 **Demande** : remettre le bouton d'ajout dans l'onglet admin **Structures**, retiré le 23/09 (§9.19).
 Périmètre limité à l'admin : le bouton public de `/structure` et l'entrée de nav **restent retirés**.
@@ -1865,7 +2046,7 @@ effective-config **SSBE** (page `/blog/agenda` absente du snapshot, préexistant
 **À confirmer** : la fermeture du 23/09 était une décision du responsable MSS Tampon (§9.20) — la
 réouverture côté admin est à valider avec la MSS (§13).
 
-### 9.23 Timeline sur l'espace pro, notifications et réseaux sociaux au pied de page (08/10, Nicolas — `8cc2a9ef`)
+### 9.27 Timeline sur l'espace pro, notifications et réseaux sociaux au pied de page (08/10, Nicolas — `8cc2a9ef`)
 
 > Config + 2 lignes de code partagé (`FooterContactPartners.tsx`). Correctif de suivi de
 > l'orientation des étapes : `11377a04`. Nettoyage de la table d'icônes après la review de la MR 86
@@ -1924,9 +2105,9 @@ aux deux rendus. Gates : `eslint src/components/layout/footer/` ✅ · `typechec
 | A.5 | Auth / Espace Pro | ✅ | CTA header → `/espace-pro`, **gardée** (`auth.required`). Depuis le 21/08 : plus de saut vers `/login`, la modale s'ouvre **sur place** (§9.13). ⚠️ garde de **session** : tout compte connecté entre (§12) |
 | A.6 | Chiffres clés de la home | 🟡 | **1/4 dynamique** depuis le 08/09 (§9.15) : « Créneaux disponibles » compte réellement les réponses validées du form dédié. Les 3 autres (Activités proposées, Participants actifs, Partenaires) restent codés en dur — aucune source confirmée pour eux |
 | A.7 | Formulaire de contact | 🟡 | **câblé le 23/08** sur `CONTACT_SEND` (SDK → `/co2/mailmanagement/createandsend`), clés `action`/`method` retirées (§9.13). Reste **hors `site-json`** : renseigner **`costum.contactMail`** sur le costum (`admin.email` n'est qu'un repli), sinon le legacy renvoie le message à son auteur |
-| A.8 | ~~Auto-inscription structure (`/structure`, bouton public + wizard)~~ **Édition + création admin** | ⛔ **public fermé le 23/09** · ✅ admin rouvert le 07/10 | le bouton public et la création admin (`create: false`) sont retirés (§9.19) ; **la création admin est rétablie le 07/10** (`create: "add-structure"`, §9.22) — plus aucune création de structure depuis le site, l'alimentation passe par le **référencement** (§9.10). Le costumForm `structure` reste en config et sert l'**édition** : aligné le 15/09 sur la refonte dynForm-legacy de SSBE (§9.17), 42 tests config-driven ✅, recette navigateur du 15/09 (§9.17 bis — création réelle réussie à l'époque, bug d'édition des pièces jointes corrigé). **Motif de la fermeture à confirmer avec la MSS** (§13) |
+| A.8 | ~~Auto-inscription structure (`/structure`, bouton public + wizard)~~ **Édition + création admin** | ⛔ **public fermé le 23/09** · ✅ admin rouvert le 07/10 | le bouton public et la création admin (`create: false`) sont retirés (§9.19) ; **la création admin est rétablie le 07/10** (`create: "add-structure"`, §9.26) — plus aucune création de structure depuis le site, l'alimentation passe par le **référencement** (§9.10). Le costumForm `structure` reste en config et sert l'**édition** : aligné le 15/09 sur la refonte dynForm-legacy de SSBE (§9.17), 42 tests config-driven ✅, recette navigateur du 15/09 (§9.17 bis — création réelle réussie à l'époque, bug d'édition des pièces jointes corrigé). **Motif de la fermeture à confirmer avec la MSS** (§13) |
 | A.9 | Charte graphique Ekilib.re (CSS propre au site + thème bleu/jaune/vert) | ✅ config / 🟡 recette | §9.19 (`beef21d9`) : `index-maison-sport-sante-la-tampon.css` (290 lignes), palette #1B4F72 / #F0B429 / #1A7A55 en clair et en sombre, `customCSS` des cartes SSsO corrigé. Gates verts (build client compris) ; **recette navigateur à faire, mode sombre en priorité** |
-| A.10 | Ajustements du 08/10 : timeline de prescription, étapes verticales, ordre des filtres, cloche de notifications, réseaux sociaux en lignes de contact | ✅ config (`8cc2a9ef`) / 🟡 | §9.23. Correctif d'orientation de `#inscription-steps` commité (`11377a04`, clé déplacée dans `props`) ; table d'icônes partagée après la review de la MR 86 ; **recette navigateur à faire** |
+| A.10 | Ajustements du 08/10 : timeline de prescription, étapes verticales, ordre des filtres, cloche de notifications, réseaux sociaux en lignes de contact | ✅ config (`8cc2a9ef`) / 🟡 | §9.27. Correctif d'orientation de `#inscription-steps` commité (`11377a04`, clé déplacée dans `props`) ; table d'icônes partagée après la review de la MR 86 ; **recette navigateur à faire** |
 
 ### Lot B — Gestion des créneaux (admins)
 
@@ -1937,7 +2118,8 @@ aux deux rendus. Gates : `eslint src/components/layout/footer/` ✅ · `typechec
 | B.2b | Inputs CoForm `date` / `timeSlots` / `dynamicFields` | 🟡 | **portés le 31/07** (§9.2 ter) — le formulaire créneau est maintenant complet (91 inputs rendus) ; recette à faire |
 | B.3 | Suppression de fichiers à l'édition | ✅ SDK | **résolu** : le SDK **1.0.169** (installé le 31/07) expose `Answer.deleteFiles(docIds[])` — l'erreur typecheck `file.ts:167` a disparu. La fiche `DELETE_COFORM_ANSWER_FILE` ([`ENDPOINT.md`](../../ENDPOINT.md)) est **satisfaite** ; reste à recetter la suppression réelle |
 | B.4 | Suppression d'un créneau | ❌ | non câblé (SDK `Answer.delete()` existe ; hook front `useDeleteAnswer` à créer via `createCoFormMutation`) |
-| B.6 | Reprise des créneaux déposés sur SSBE (liste + « Copier », dédup) | ✅ code | §9.21 — onglet admin `creneaux-ssbe` (section moteur `answerCopy`), copie serveur idempotente ; **recette connectée siteAdmin à faire** (20 lignes attendues en prod, 2 « À copier ») |
+| B.6 | Reprise des créneaux déposés sur SSBE (liste + « Copier », dédup) | ✅ code | §9.21 — onglet admin `creneaux-ssbe` (section moteur `answerCopy`), copie serveur idempotente ; **détail au clic** depuis le 08/10 (§9.23, lecture seule) ; **recette connectée siteAdmin à faire** (20 lignes attendues en prod, 2 « À copier ») |
+| B.7 | Modération : créer un créneau depuis l'admin + détail d'une ligne au clic (fiche de l'annuaire, bouton « Modifier ») | ✅ code | §9.23 — options moteur `create:{coform}` et `preview` de la section `resource` ; **recette siteAdmin à faire** |
 | B.5 | Commit + MR du lot | 🟡 | **commité le 31/07** (`20fc3529` coform · `2bf81496` search+config · `e163b6d9` doc) ; reste **push + MR** vers `main` |
 
 ### Lot D — Back-office & pilotage (CDC §4.2)
@@ -2175,6 +2357,9 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 | ~~Trancher l'adresse e-mail du lien social~~ **réglé** (`contact@ekilib.re` le 24/09, rangée `socials` retirée le 08/10, §9.23). **Reste** : aligner les **mentions légales** et la page **confidentialité** sur l'adresse postale « 34 rue Hubert Delisle, 97430 Le Tampon » | MSS / Nicolas |
 | **Committer le correctif d'orientation** de `#inscription-steps` (`/s-informer`, clé déplacée dans `props` le 08/10, §9.23) | Nicolas |
 | **Recette navigateur de la charte** (§9.19) — **mode sombre en priorité** : en-têtes de cartes SSsO/SSpT, `--btn-structure` de `CardAnswer`, cartes d'accès rapide du héros, cartes d'actualités en `poster` | Nicolas / MSS |
+| **Règle d'affichage « Si oui avec qui » pour SSsL** (§9.22) : la règle `hide` du form ne vise que SSpT → le champ reste visible pour un créneau sans label. À régler dans l'éditeur de formulaire si « sans label » doit se comporter comme SSpT | MSS / Peterson |
+| **Recette navigateur des cartes SSsL** (clair + sombre, badge « Validé » inversé, filtre à 3 options) ; compléter la FAQ si le « sans label » doit être expliqué aux usagers ; distinguer ou non les pins de la carte par type (`colorBy`) | Nicolas / MSS |
+| **Recette de la modération enrichie** (§9.23, compte siteAdmin) : création d'un créneau depuis l'onglet, détail au clic et via « Aperçu », modification depuis le détail, rafraîchissement table + `/creneaux` ; vérifier que le créneau créé est **en tête** de `/creneaux` (§9.24) ; détail au clic sur l'onglet « Créneaux SSBE » (lignes aplaties par le hook, même fiche) | Peterson / MSS |
 | **Saisir les créneaux du Tampon** : le recentrage de périmètre est juste, mais 44 des 45 réponses appartiennent au site jumeau — `/creneaux` n'en affiche plus qu'un (§9.12). Les 2 facettes pathologie resteront invisibles tant qu'aucune option ne remonte | **MSS** |
 | **Reconfirmer en recette le comptage 44/45** : il vient du message de commit `b11285e5` et n'est pas revérifiable depuis le dépôt | Peterson |
 | **Rejouer le référencement des 14 fiches en PROD** — il a été fait sur la base de **DEV** le 20/08 (§9.10) | Peterson |

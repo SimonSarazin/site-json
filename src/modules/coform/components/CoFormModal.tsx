@@ -228,8 +228,7 @@ export function CoFormModal({
   );
 }
 
-// Export default requis pour lazy(() => import(...)) — consommateurs lazy :
-// SearchProStatic (bouton « Ajouter » coform) et PreviewCoformAnswer (bouton
-// « Modifier »), qui ne doivent pas tirer le chunk coform tant que la modale
-// n'est pas demandée.
+// Export default requis pour lazy(() => import(...)) : ses consommateurs (bouton
+// « Ajouter » de SearchProStatic, « Modifier » d'un détail, « Créer » d'une table
+// admin…) ne tirent le chunk coform qu'à l'ouverture de la modale.
 export default CoFormModal;
