@@ -423,13 +423,20 @@
    Une SUPERPOSITION du rail avait été essayée : à cette largeur elle recouvrait exactement la
    colonne des résultats — on masquait la moitié de ce qu'on venait de chercher. */
 @container panneau (min-width: 48rem) and (max-width: 63.999rem) {
-  .discussion-panel [data-panel-column="threads"] { width: 15rem; }
+  /* ⚠️ Seulement DERRIÈRE un rail (`~`) : c'est lui qui prend la place. L'espace d'un commun n'en
+     a pas — ses deux colonnes tiennent à l'aise, et à 15 rem ses étiquettes (« Publique »,
+     « Question »…) passeraient sous le seuil où la colonne des fils masque leur libellé. Sa
+     modale plafonne à 64 rem : elle ne sortait JAMAIS de cette bande. */
+  .discussion-panel [data-panel-column="carriers"] ~ [data-panel-column="threads"] { width: 15rem; }
   .discussion-panel[data-search="off"] [data-panel-column="carriers"] { width: 3.5rem; }
   .discussion-panel[data-search="off"] [data-rail-toggle] { display: none; }
   .discussion-panel[data-search="off"] [data-carrier-label],
   .discussion-panel[data-search="off"] [data-rail-title] { display: none; }
   .discussion-panel[data-search="off"] [data-carrier-row] { justify-content: center; padding-inline: 0.5rem; }
-  .discussion-panel[data-search="off"] [data-unread-badge] { position: absolute; top: 0.25rem; inset-inline-end: 0.25rem; }
+  /* ⚠️ La pastille du RAIL, et elle seule : une rangée de fil pose le même attribut, et sa
+     pastille sortait du flux elle aussi (mesuré au navigateur le 09/10) — posée en coin de
+     rangée, là où finit un titre qui court jusqu'au bord. */
+  .discussion-panel[data-search="off"] [data-panel-column="carriers"] [data-unread-badge] { position: absolute; top: 0.25rem; inset-inline-end: 0.25rem; }
   /* Le rail qui se rouvre glisse, pour qu'on voie d'où il vient. */
   .discussion-panel[data-search="on"] [data-panel-column="carriers"] {
     animation: comment-rail-reveal 160ms ease-out;
@@ -452,7 +459,7 @@
   .discussion-panel[data-rail="collapsed"][data-search="off"] [data-carrier-label],
   .discussion-panel[data-rail="collapsed"][data-search="off"] [data-rail-title] { display: none; }
   .discussion-panel[data-rail="collapsed"][data-search="off"] [data-carrier-row] { justify-content: center; padding-inline: 0.5rem; }
-  .discussion-panel[data-rail="collapsed"][data-search="off"] [data-unread-badge] { position: absolute; top: 0.25rem; inset-inline-end: 0.25rem; }
+  .discussion-panel[data-rail="collapsed"][data-search="off"] [data-panel-column="carriers"] [data-unread-badge] { position: absolute; top: 0.25rem; inset-inline-end: 0.25rem; }
 
   /* Plié à la main, le bouton de pli remplace le repère d'icône : 3.5 rem ne tient pas les deux. */
   .discussion-panel[data-rail="collapsed"][data-search="off"] [data-rail-icon] { display: none; }

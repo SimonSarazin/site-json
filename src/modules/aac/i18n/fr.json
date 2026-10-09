@@ -100,6 +100,13 @@
       "title": "Modifier ce commun",
       "successToast": "Les modifications ont été enregistrées."
     },
+    "discussion": {
+      "cta": "Discussion",
+      "messages_one": "{{count}} message",
+      "messages_other": "{{count}} messages",
+      "unread_one": "{{count}} non lu",
+      "unread_other": "{{count}} non lus"
+    },
     "editors": {
       "cta": "Contributeurs à l'édition",
       "title": "Contributeurs à l'édition",

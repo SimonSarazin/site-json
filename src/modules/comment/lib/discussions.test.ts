@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
+import cocolightApiClient from "@communecter/cocolight-api-client";
 import {
   CARRIER_NONE,
   carrierKey,
   parseDiscussions,
   errorCodeOf,
+  errorLabelKey,
+  rawOrRefusal,
   refusalOf,
   sortThreads,
   threadsOfCarrier,
@@ -61,6 +64,55 @@ describe("refusalOf", () => {
     "traite %p comme illisible plutôt que d'exploser", value => {
       expect(refusalOf(value)).toBe("unreadable");
     });
+});
+
+/**
+ * Les erreurs sont celles du SDK, construites par SES classes : c'est leur forme réelle que
+ * `rawOrRefusal` doit reconnaître, pas celle d'une doublure écrite pour lui plaire.
+ */
+describe("rawOrRefusal", () => {
+  const { ApiAuthenticationError, ApiResponseError, ApiValidationError } = cocolightApiClient.error;
+
+  it("rend la réponse telle quelle quand l'appel aboutit", async () => {
+    await expect(rawOrRefusal(async () => railReponse)).resolves.toBe(railReponse);
+  });
+
+  it("rend le CORPS du refus que le SDK lève — il ne le rend jamais en valeur de retour", async () => {
+    const corps = { result: false, code: "hidden", msg: "Discussion introuvable…" };
+    const raw = await rawOrRefusal(async () => { throw new ApiResponseError(corps.msg, 200, corps); });
+    expect(raw).toBe(corps);
+    expect(refusalOf(raw)).toBe("hidden");
+  });
+
+  it("sans session, le SDK refuse lui-même : c'est un refus `login`, pas une panne", async () => {
+    const raw = await rawOrRefusal(async () => {
+      throw new ApiAuthenticationError("Vous devez être connecté pour effectuer cette action.", 401);
+    });
+    expect(refusalOf(raw)).toBe("login");
+  });
+
+  it.each([
+    ["une panne de réseau", new Error("Network Error")],
+    ["une requête que le schéma refuse", new ApiValidationError("Request validation failed.", 400, ["contextType"])],
+    // Le SDK lève aussi sur `resultErrors.result === false` : ce corps-là n'est pas un refus de l'endpoint.
+    ["une erreur métier dont le corps n'est pas un refus", new ApiResponseError("Erreur inconnue", 200, { result: true, resultErrors: { result: false } })],
+    ["une erreur sans corps", new ApiResponseError("Erreur inconnue", 200, null as unknown as object)],
+  ])("laisse %s en exception — la MÊME, pas une copie", async (_cas, erreur) => {
+    await expect(rawOrRefusal(async () => { throw erreur; })).rejects.toBe(erreur);
+    expect(errorCodeOf(erreur)).toBe("failed");
+  });
+
+  it("ne lève pas sur ce qui n'est pas une erreur", async () => {
+    await expect(rawOrRefusal(async () => { throw null; })).rejects.toBeNull();
+  });
+});
+
+describe("errorLabelKey", () => {
+  it("donne à chaque code sa clé de libellé — et à `login` une invitation, pas un constat d'échec", () => {
+    expect(errorLabelKey("login")).toBe("panel.loginRequired");
+    expect((["hidden", "refused", "unreadable", "failed"] as const).map(errorLabelKey))
+      .toEqual(["panel.error.hidden", "panel.error.refused", "panel.error.unreadable", "panel.error.failed"]);
+  });
 });
 
 describe("errorCodeOf", () => {

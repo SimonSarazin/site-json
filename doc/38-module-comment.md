@@ -457,8 +457,9 @@ En mode `fil` : `thread`, `carrier` et `canComment` remplacent les deux listes.
 `key` est la clé qui transite dans l'URL du panneau : `type:id`, ou `type:id:path`.
 `last` est en **secondes**, la base mêlant `MongoDate` et entiers.
 
-Refus en **HTTP 200** avec `{result:false, msg}`, comme les actions voisines — jamais un code
-d'erreur HTTP.
+Refus en **HTTP 200** avec `{result:false, code, msg}`, comme les actions voisines — jamais un code
+d'erreur HTTP. Côté client, ce corps n'arrive pas en valeur de retour : la façade du SDK le rend en
+**exception** (§14.7).
 
 ### 9.5 Le registre d'adaptateurs
 
@@ -526,9 +527,12 @@ La contre-épreuve justifie la forme du `$match` : `ctx_created` étant
   seule. Une lecture par type d'espace. La règle vaut aussi en mode `fils`, qui ne cadre pas le
   porteur demandé, et en mode `all`, dont le cadrage passe par `follows` ;
 - **discussions réservées d'un appel à projets** (`path` d'un fil de formulaire contenant
-  `.discu_`, hors `.commentPublic`) : retirées de toutes les listes et refusées en mode `fil`, pour
-  tous, en attendant le lot qui portera l'espace de discussion d'un commun avec ses propres règles
-  d'accès — on refuse plus, jamais moins ;
+  `.discu_`, hors `.commentPublic`) : retirées de toutes les **listes** du panneau (rail, `fils`,
+  `all`), pour tous — le panneau ne connaît pas le commun, et juger chaque ligne coûterait une
+  lecture par fil : on refuse plus, jamais moins. Pour un fil **désigné** (mode `fil`, `seen`),
+  elles se jugent depuis le 07/10 sur l'audience de la discussion (§15.4) : ouvertes à ceux
+  qu'elle admet, refusées (`hidden`) aux autres. Quand plus rien ne permet d'en juger — commun
+  supprimé, discussion qui n'y est plus déclarée —, la forme du chemin décide de nouveau ;
 - en mode `fil`, un refus est **neutre** (`hidden`) : une actualité introuvable est refusée comme
   une actualité réservée, si bien que la réponse ne dit pas si l'identifiant existe. `seen` suit la
   même règle et rend `marked: 0` sur un fil refusé ;
@@ -1205,6 +1209,20 @@ qu'elle les affiche : vérifier sur un fil que personne n'a ouvert.
 | Une édition retypait en citoyen la mention d'une organisation, et ignorait les mentions stockées en objet | type stocké conservé ; mentions lues aussi depuis un objet (liste PHP à trous) | `commentTree.test.ts`, `useCommentMutations.test.tsx` |
 | Un anonyme lisait deux fois l'invitation sur un fil vide ; un fil fermé l'invitait quand même | une seule invitation, sous le fil, et seulement si le fil est ouvert | `CommentThread.test.tsx` |
 
+### 10.14 Trois corrections du panneau général (09/10, relecture de l'espace d'un commun)
+
+La relecture de l'espace d'un commun (§15) a montré trois défauts qui touchaient aussi le panneau
+général, déjà commité :
+
+| Défaut | Correction | Preuve |
+|---|---|---|
+| **Un refus n'était jamais lu comme tel.** La façade du SDK ne rend pas le corps `{result:false}`, elle lève (§14.7) ; et sans session elle refuse avant tout appel — le code `login` du serveur n'arrivait donc jamais. À un visiteur, le panneau disait « n'ont pas pu être chargées » au lieu de l'inviter à se connecter, après deux nouvelles tentatives, puis recommençait toutes les 30 s | `rawOrRefusal` (`lib/discussions.ts`) reprend le corps du refus dans l'exception et le rend à `parseDiscussions` ; l'absence de session devient un refus `login`. Une panne reste une panne | `discussions.test.ts`, `useDiscussionsQuery.test.ts` (doublures qui **lèvent** les classes d'erreur du SDK), appel réel au SDK, navigateur (§15.6) |
+| **Deux requêtes par montage pour un connecté.** `useHydratedUserContextId` rend `null` au premier rendu de chaque montage : la requête partait sous une clé sans utilisateur, puis sous la bonne | la requête attend le rendu où l'on sait qui lit (`useHydrated`) ; ce rendu d'attente compte comme un chargement | `useDiscussionsQuery.test.ts` |
+| **Bande 48–64 rem, et rail plié à la main** : la règle qui pose en coin la pastille de non-lus du rail plié atteignait aussi celle des rangées de la colonne des fils : sortie du flux, elle se posait en coin de rangée, sur la fin d'un titre qui court jusqu'au bord | la règle est bornée à la colonne des porteurs (`[data-panel-column="carriers"]`) | mesure au navigateur, avec contre-épreuve (§15.6) |
+
+La clé d'un fil (`type:id`, plus `:path`) n'a plus qu'une écriture, `threadValue` (`lib/filKey.ts`) :
+celle de l'adresse, du cache et du repli de `readThread`.
+
 ## 11. Non-lus et temps réel
 
 Le panneau compte les non-lus depuis le J9 : l'agrégation rend `unread` par fil et par porteur,
@@ -1826,7 +1844,8 @@ ce qui suit côté backend reste à mesurer.
 > réunit **tout** ce que le module attend de `@communecter/cocolight-api-client`, implémenté et
 > vérifié en local — sur la base **1.0.195**, puis reposé le 07/10 sur la **1.0.196**. Le détail de
 > chaque point vit dans la section citée ; les trois points ajoutés le 02/10 sont spécifiés ici
-> (§14.2 à §14.4). Tant que le SDK n'est pas publié, `site-json` ne compile que par le lien
+> (§14.2 à §14.4) ; l'espace d'un commun, ajouté le 07/10, l'est au §14.6 ; le §14.7 dit comment un
+> refus arrive à l'appelant. Tant que le SDK n'est pas publié, `site-json` ne compile que par le lien
 > local : un `npm install` propre casse le `typecheck` du module. Ordre de livraison : le SDK
 > d'abord, la MR du module ensuite (§2.5).
 
@@ -1843,6 +1862,7 @@ ce qui suit côté backend reste à mesurer.
 | 7 | Export `helper.createFromCollection` | export | §2 | lien profond vers une actualité ou une action : troisième colonne vide |
 | 8 | `mediaImg` sur `ADD_COMMENTS` et `UPDATE_COMMENTS.params`, `uploadDocument` permis sur `comments` | schéma + méthode | §13.2 à §13.4 | pas d'images, et une édition efface les images d'un message |
 | 9 | **`Comment._update` en liste blanche**, mentions normalisées | méthode | §14.4 | éditer un message à mention ou à `path` échoue, et le serveur efface ses mentions |
+| 10 | **`GET_DISCUSSION_SPACE`** — nouveau, `auth: "none"` — et sa façade `Api.getDiscussionSpace()` | endpoint + façade | §15, §14.6 | pas d'espace de discussion sur la fiche d'un commun |
 
 Régénération, dans cet ordre : `generate:module:publish` → `generate:methodeapi` → `typecheck` →
 `lint` → `build:esm:rollup` → `build:node` → `build:browser` → `build:types`. Les pièges qui
@@ -1959,6 +1979,333 @@ l'écriture retraite l'aperçu côté serveur — c'est à l'équipe backend de 
 | `entity.uploadDocument(…)` | `hooks/useCommentImages.ts` |
 | `api.getDiscussions(payload)` | `hooks/useDiscussionsQuery.ts` |
 | `api.markCommentsSeen(…)` | `hooks/useMarkThreadSeen.ts` |
+| `api.getDiscussionSpace({ contextType, contextId })` | `hooks/useDiscussionSpaceQuery.ts` |
+
+### 14.6 `GET_DISCUSSION_SPACE` — l'espace de discussion d'un commun (07/10)
+
+`POST /co2/comment/space`, corps `application/x-www-form-urlencoded`, schéma de requête **fermé** :
+
+```json
+{
+  "contextType":  { "type": "string", "enum": ["answers"] },
+  "contextId":    { "type": "string", "pattern": "^[a-f0-9]{24}$" },
+  "includeEmpty": { "type": "string", "enum": ["0", "1"] }
+}
+```
+
+`contextType` et `contextId` requis ; **aucun `default`** (AJV l'injecterait, §2.2).
+
+**`auth: "none"`, et c'est voulu.** Dans le client, `bearer` lève avant tout appel quand il n'y a
+pas de jeton ; `none` **joint le jeton quand il existe** et ne l'exige pas. C'est le mode « session
+facultative » : l'espace se lit sans être connecté (§15.2), et ses compteurs comme ses audiences se
+calculent pour la session quand il y en a une.
+
+Façade écrite à la main, à côté de `getDiscussions` et `markCommentsSeen` et pour la même raison —
+l'appelant ne tient qu'un couple (type, id) :
+
+```ts
+async getDiscussionSpace(options: GetDiscussionSpaceData): Promise<unknown> {
+  return this.endpointApi.getDiscussionSpace(options);
+}
+```
+
+La réponse est décrite au §15.3. Un refus quitte le serveur en **HTTP 200** avec
+`{ result: false, code, msg }`, et la façade le rend en **exception** (§14.7).
+
+### 14.7 Un refus arrive en exception (mesuré le 09/10)
+
+Rien à demander ici : un fait du client, commun aux trois façades de ce module (`getDiscussions`,
+`markCommentsSeen`, `getDiscussionSpace`), que leur JSDoc doit dire (`@throws`) et non « tester
+`result` » :
+
+- le serveur refuse en HTTP 200 avec `{ result: false, code, msg }` ; la façade ne **rend pas** ce
+  corps : `EndpointApi.call()` lève `ApiResponseError` (statut 200), le corps rangé dans
+  `error.responseData` ;
+- sur un endpoint `auth: "bearer"`, sans jeton, elle lève `ApiAuthenticationError` **avant tout
+  appel** : le refus `login` du serveur n'est jamais reçu ;
+- une requête que le schéma refuse lève `ApiValidationError`, avant tout appel aussi.
+
+Le module reprend donc le refus dans l'exception : `rawOrRefusal` (`lib/discussions.ts`) rend
+`responseData` quand c'est un refus, `{ result: false, code: "login" }` pour l'absence de session,
+et relance tout le reste ; la suite le lit comme une réponse (`refusalOf`). Par la **forme** de
+l'erreur (`responseData`, `name`) et non par sa classe : ce fichier se lit et se teste sans charger
+le SDK.
+
+Conséquence pour les tests : une doublure qui **résout** `{ result: false }` valide un contrat que
+le client ne tient pas. Celles du module lèvent les classes d'erreur que le SDK exporte
+(`cocolightApiClient.error.*`).
+
+## 15. Espace de discussion d'un commun (07/10, repris le 09/10)
+
+> **État au 09/10** : backend, SDK local et écran sont écrits, testés, et vérifiés par les preuves
+> du §15.6 ; ce qui ne l'est pas est dit au §15.7. Une relecture indépendante, puis trois arbitrages
+> (§15.2), ont resserré le lot le 09/10 : ce chapitre décrit l'état qui en résulte.
+
+Sur la fiche d'un commun, le legacy ouvre par son bouton « Commentaires » non pas un fil mais un
+**espace** : tous les fils de ce commun. Le module ne savait ouvrir qu'un fil, ou le panneau de
+tout un utilisateur ; la fiche React d'un commun n'en proposait aucun.
+
+### 15.1 Ce qu'est un espace
+
+Un commun est une **réponse** à un appel. Ses fils tiennent en deux contextes :
+
+| Fil | Contexte | `path` |
+|---|---|---|
+| général | `answers:<commun>` | aucun |
+| question | `forms:<appel>` | `<appel>.<étape>.<commun>.<question>.question_<question>.comment` |
+| ligne de dépense | `forms:<appel>` | le chemin de la question qui la porte, suivi de `.financement.depensekey.<étape>-<champ>.depenseindex.<rang>` |
+| discussion supplémentaire | `forms:<appel>` | `<appel>.moreDiscussions_<x>.<commun>.discu_<n>.<suffixe>` |
+
+`<appel>` est le formulaire où la réponse a été **déposée** (`answer.form`) — la fiche legacy ouvre
+l'espace sans en préciser d'autre. `<étape>` est l'`_id` du document `inputs` de l'étape pour un
+formulaire `aap`. **Le troisième segment est toujours l'identifiant du commun** : c'est lui, et lui
+seul, qui range un fil de formulaire dans un espace.
+
+L'**ordre des étapes** d'un appel `aap` est celui des clés de sa configuration (`subForms` du
+formulaire de configuration), comme dans le legacy : la liste `subForms` de l'appel lui-même manque
+sur 71 des 197 appels `aap` de la base de développement (mesuré le 09/10) — elle ne sert que de
+repli.
+
+Une discussion supplémentaire est déclarée sur la réponse (`moreDiscussions.<discu>` :
+`name`, `privilege`, `path`, `stepId`). Son deuxième segment n'est pas une étape de l'appel mais
+son propre `stepId` (`moreDiscussions_<x>`), et son suffixe suit son audience : `commentPublic`,
+`comment`, `privateComment`.
+
+### 15.2 Sept arbitrages (07/10 et 09/10)
+
+| Question | Décision |
+|---|---|
+| Le déposant voit-il les fils de l'étape d'évaluation ? | **Oui**, et il y répond — comme le legacy, qui ne filtre aucune étape |
+| Lecture sans être connecté ? | **Oui**, comme le legacy ; écrire exige une session |
+| Discussions supplémentaires | **Lire et écrire dans celles qui existent**, chacune réservée à son audience ; en créer est un lot à part |
+| Notifications | **Celles du legacy**, inchangées : elles s'appliquent déjà à un message posté d'ici (§3) |
+| Qui est « admin » d'un commun ? (09/10) | L'admin de l'**appel**, par son lien direct avec l'élément qui le porte (§15.4) |
+| Quels fils de question sont listés ? (09/10) | **Comme le legacy** : ceux des questions que l'appel connaît (§15.3) |
+| Que fait « retour » après une fermeture ? (09/10) | **Fermer défait l'ouverture** : « retour » ramène à la page d'avant la fiche (§15.5) |
+
+### 15.3 L'endpoint `space`
+
+`POST /co2/comment/space` — `DiscussionSpaceAction`, dans `citizenToolKit/controllers/comment/`,
+route `space` de `CommentController` (co2). Le modèle est `Discussion::spaceOf()`.
+
+**Un endpoint à part de `discussions`, pour une raison de garde** : le panneau général exige une
+session et la garde ; cet espace-ci se lit sans. Deux gardes distinctes valent mieux qu'une
+exception dans la première.
+
+```json
+{
+  "result": true,
+  "space": { "type": "answers", "id": "…", "title": "…", "formId": "…" },
+  "canComment": false,
+  "truncated": false,
+  "threads": [
+    { "key": "answers:…", "contextType": "answers", "contextId": "…", "path": null,
+      "total": 2, "unread": 0, "last": 1790000000, "mine": false,
+      "title": null, "carrier": null, "virtual": false,
+      "kind": "general", "group": null, "audience": null }
+  ]
+}
+```
+
+- `kind` : `general`, `discussion`, `question`, `expense`. `group` : le nom de l'étape, pour une
+  question ou une ligne de dépense. `audience` : `authorAll`, `authorAdmin` ou `private`, pour une
+  discussion. L'écran garde une étiquette de repli pour une nature qu'il ne connaîtrait pas — celle
+  d'un serveur plus récent que lui.
+- **L'appel fait foi.** Un chemin ne suffit pas à faire un fil : un fil de question ou de ligne de
+  dépense n'entre dans la liste que si l'appel **connaît** cette question, à cette étape — la règle
+  du legacy (`Form::getCommentedQuestionParams`). Un chemin posé sur la réponse elle-même, ou sur
+  une question retirée de l'appel, n'est donc pas listé ; ses messages restent en base.
+- `title` : le libellé de la question, le poste de la ligne de dépense, le nom de la discussion.
+  `null` pour le fil général, et pour une question sans libellé, une ligne sans poste ou une
+  discussion sans nom : **c'est l'écran qui nomme alors, dans sa langue**. Le poste d'une ligne ne
+  se lit que dans un champ que l'appel déclare (`answers.<étape>.<question>`).
+- L'ordre est celui du serveur, et il ne dépend pas de l'activité : général, discussions (par
+  titre), questions dans **l'ordre de l'appel** (étape, puis `positions.<appel>`), lignes de
+  dépense (par poste) ; à égalité, le chemin départage.
+- `canComment` dit seulement s'il y a une session, et l'écran ne promet pas plus.
+- Fils **fabriqués** (`virtual`, sauf `includeEmpty=0`) : le fil général, les discussions déclarées
+  encore vides et, pour un appel `aap`, les questions qu'il ouvre aux commentaires
+  (`activeComments`). Pour un formulaire qui n'est pas `aap`, aucune **question** n'est fabriquée :
+  le segment d'étape y prend deux formes, et écrire sous la mauvaise ouvrirait un fil que le legacy
+  ne verrait pas.
+- Refus, en HTTP 200 : `bad-request` (type hors liste blanche, identifiant mal formé) ; `hidden`
+  (commun ou appel introuvable). Le serveur accepte l'identifiant en majuscules et le ramène en
+  minuscules ; le schéma du SDK, lui, n'admet que des minuscules.
+- Comme `discussions`, **aucun texte de message** : le fil se lit par `getComments({ path })`.
+
+**Plan de requête.** On part de la réponse, jamais du parc : un `$or` à deux branches, chacune avec
+son `contextType`, donc servies par l'index `ctx_created` (§9.6). Le motif du `path` est **ancré** et
+ne porte que deux identifiants déjà validés. Mesuré sur un espace de 6 fils : aucun balayage de
+collection, 13 documents examinés ; 15 à 21 ms par appel, HTTP compris.
+
+⚠️ **Ce coût suit l'appel, pas le commun.** L'index mène aux messages de l'**appel** ; le motif du
+chemin, lui, ne trie qu'après lecture. Sur un appel dont des centaines de communs sont commentés,
+chaque ouverture d'espace relit donc tous leurs messages pour n'en garder qu'une poignée. Invisible
+en développement (une trentaine de messages en tout) ; la sortie est la même qu'au §9.8 — écrire
+le commun sur le message à l'insertion —, et elle touche le chemin d'écriture.
+
+### 15.4 Ce que la liste rend, et à qui
+
+Trois rôles : **admin** de l'appel, **déposant** de la réponse, **référent** nommé dans la réponse.
+
+« Admin » se lit sur le **lien direct** du lecteur avec l'élément qui porte l'appel (`form.parent`) :
+son lien d'appartenance y porte `isAdmin`, sans rien en attente — `links.members` pour une
+organisation, `links.contributors` pour un projet, `links.attendees` pour un événement
+(`Discussion::isDirectAdmin`, une lecture par `_id`). La règle ne dépend que du commun et de son
+appel (arbitré le 09/10) ; elle est plus étroite que celle du legacy (`Authorisation::isElementAdmin`).
+
+| Fil | Listé pour |
+|---|---|
+| général, question, ligne de dépense | tous, sans session aussi |
+| discussion `authorAll` | tous |
+| discussion `authorAdmin` | admin, déposant, référent |
+| discussion `private` | admin |
+| audience inconnue, discussion absente de la réponse, `path` différent de celui déclaré | personne |
+| tout chemin marqué `.privateComment` | admin, quoi que dise l'audience |
+
+**La liste fait autorité pour l'écran** : il ne monte un fil que si `space` le lui a rendu. Une
+adresse qui en désigne un autre — discussion réservée, fil disparu — n'affiche rien de son contenu :
+« introuvable, ou dont l'accès est réservé », avec, sans session, l'invitation à se connecter.
+
+La règle est une fonction pure, `Discussion::isSpaceThreadReadable`, que la liste et le fil désigné
+partagent. Elle revient ainsi dans `isThreadHiddenFrom` (§9.7) : une discussion réservée était
+refusée à **tous** par la seule forme de son chemin, admins compris, qui ne pouvaient ni l'ouvrir
+(`fil`) ni la marquer lue (`seen`). Quand plus rien ne permet de juger — commun supprimé,
+discussion qui n'y est plus déclarée —, la forme du chemin reprend la main : une discussion
+publique reste ouverte, une marque `.privateComment` reste fermée. Le **rail** général, lui, reste
+fermé à tous pour ces fils : il ne connaît pas le commun, et juger chaque ligne y coûterait une
+lecture par fil.
+
+### 15.5 L'écran
+
+- **`SpacePanel`** — deux colonnes, les fils puis le fil choisi : c'est le panneau cadré sur un
+  élément, donc sans rail. Il réemploie `ThreadColumn`, `CommentThread` et la grammaire de colonnes
+  de `styles.css` (mêmes `data-panel-column` et `data-step`) : sous 48 rem de panneau il se replie
+  en une colonne. La croix de fermeture est posée dans l'en-tête des deux colonnes ; celle de la
+  liste ne se montre qu'en mode une colonne.
+- **La bande 48–64 rem lui est permanente** : sa modale plafonne à 64 rem, elle n'en sort jamais
+  dès que deux colonnes s'affichent. Cette bande a été écrite pour trois colonnes, rail plié ; deux
+  de ses règles ont dû être bornées au rail (§10.14) — la colonne des fils n'y tombe à 15 rem que
+  derrière un rail, sans quoi le libellé de ses étiquettes (« Question », « Publique »…) passait
+  sous le seuil où il s'efface. Le panneau ne se déclare pas « sans recherche » (`data-search`) :
+  il n'a ni recherche ni rail.
+- **Il est contrôlé** (`target`, `onSelect`) : l'adresse appartient à l'hôte. `useSpaceLauncher`
+  lit `?discussion=…` et ne retient que les fils **de cet espace** — le paramètre appartient à tout
+  le site, le fil d'un autre commun ne doit pas ouvrir cette fiche.
+- **`ThreadColumn`** gagne cinq propriétés facultatives, sans effet sur le panneau général :
+  `chip` (l'étiquette d'une rangée, quand le type du contexte ne dit pas ce qu'est le fil),
+  `titleFallback`, `groupLabel` (un intertitre à chaque changement, la liste gardant l'ordre reçu),
+  `pinned` (le fil général, même vide, ne rejoint pas « Sans discussion ») et `startLabel`. Un
+  groupe se reconnaît à son premier fil, pas à son rang : quand un groupe apparaît au-dessus, les
+  suivants ne sont pas remontés, et la rangée qu'on tenait garde le focus.
+- **L'historique** : ouvrir **empile** une entrée, changer de fil la **remplace**, et **fermer
+  défait l'ouverture** — la croix et Échap font « retour » (arbitré le 09/10). « Retour » ferme
+  donc la modale sans quitter la fiche ; et après une fermeture, il ramène à la page d'avant la
+  fiche, comme si l'on n'avait rien ouvert. Arrivé par un lien, il n'y a rien à défaire : l'adresse
+  est **remplacée**. C'est un écart voulu à la règle du panneau général (§10.1), où fermer empile :
+  celui-ci n'a pas de point d'entrée dans une page. Trois précisions, payées au navigateur puis à
+  la relecture :
+  - **aucun état React.** Ce que l'adresse ne dit pas — la modale ouverte sur la *liste* des fils,
+    l'entrée empilée par l'ouverture — vit dans l'entrée d'historique elle-même (`location.state`,
+    sous une clé propre au lanceur, bornée à l'espace) et arrive donc **au même rendu** que
+    l'adresse. Tenu dans un état local, il arrivait avant elle, l'adresse atteignant React dans une
+    transition : la modale s'ouvrait sans son fil, se rouvrait seule si on la fermait dans
+    l'intervalle, et « retour » ne la fermait pas. « Suivant » rouvre ainsi la modale là où on
+    l'avait laissée, liste comprise ;
+  - **un ordre par entrée.** Tant que l'adresse n'est pas arrivée, un second toucher sur le bouton
+    empilerait une entrée jumelle, et un second Échap ferait un second « retour » — qui quitte la
+    fiche. Le lanceur n'écoute qu'une ouverture ou une fermeture par entrée d'historique ;
+  - un fil ne s'écrit dans l'adresse que si elle **saura le relire**, à l'identique, et s'il est de
+    cet espace : sinon le paramètre ne désignerait plus rien, et la modale se fermerait dessus.
+- **La requête attend de savoir qui lit** : l'identité du lecteur n'est connue qu'au second rendu
+  de chaque montage. Lancée avant, la requête partait deux fois pour un connecté, la première sous
+  une clé qui n'était pas la sienne. Ce rendu d'attente compte comme un chargement : l'écran ne dit
+  ni « aucun fil » ni « introuvable » entre-temps.
+- **Un refus n'est pas une panne.** Refusé (`hidden`), l'espace vide l'écran, même si une liste
+  avait déjà été servie — le serveur a répondu, et il ne le montre plus. Une panne de relecture,
+  elle, laisse la liste, le fil ouvert et le brouillon en cours.
+- **Le focus revient au bouton** à la fermeture (croix, Échap, « retour ») : la modale n'a pas de
+  `DialogTrigger` — elle s'ouvre aussi par une adresse — et Radix laissait le focus sur `<body>`
+  (§12.5).
+- **Sans session** : les emplacements vides ne sont pas proposés — sauf le fil général —, et le fil
+  invite à se connecter à la place du composer. Un visiteur arrivé par un lien sur un emplacement
+  vide le lit quand même : ce qu'on **propose** est de l'affichage, ce qu'on **monte** suit la
+  liste du serveur. Devant un fil qu'elle ne lui rend pas, l'écran ajoute qu'il peut se connecter
+  pour le lire — le lien d'une discussion réservée, transmis à son déposant, s'arrêtait sinon sur
+  un constat sans suite.
+- **`SpaceModal`** partage la coquille de `DiscussionModal` (`DiscussionModalShell` : cadre, croix,
+  arbitrage d'Échap), en moins large : `md:max-w-[min(64rem,…)]`, en `md:` pour la raison du §10.7.
+- **Le point d'entrée** : `CommunDiscussionControl`, sur la fiche d'un commun (`modules/aac`) — un
+  bouton « Discussion » avec le nombre de messages et de non-lus, visible de tous, qui s'annonce
+  comme ouvrant un dialogue (`aria-haspopup`). Il importe
+  `@/modules/comment/launch`, **entrée légère** (compteur et lanceur), et charge la modale en
+  différé par le `lazy` de `vite-preload`, préchauffée dès que le bouton est survolé ou atteint au
+  clavier. Arrivant sans l'entrée du module, la modale enregistre elle-même ses libellés. Le
+  compteur ne sonde pas (`live: false`) : relire toutes les trente secondes un espace que personne
+  ne regarde serait une requête par fiche ouverte. La fiche le monte avec une `key` par commun :
+  la même route sert deux communs, et sans elle le bouton gardait de la fiche d'avant le focus à
+  rendre après une modale. Ces deux soins — le focus rendu, la `key` — sont à la charge de
+  l'**hôte** : un second point d'entrée devra les reprendre.
+- La clé de cache vit sous le préfixe du panneau (`comment-discussions`) : poster un message ou
+  marquer un fil lu rafraîchit déjà les compteurs de l'espace.
+
+### 15.6 Preuves
+
+Rejouées le 09/10, sur le code décrit ici.
+
+| Quoi | Résultat |
+|---|---|
+| Règles, hors base — doublures de `PHDB`, qui lèvent comme le pilote sur un identifiant invalide ou une projection en collision | 90 vérifications : lecture d'un chemin, rôles par lien direct, audiences, espace entier, fil désigné, entrées hostiles |
+| Contre-épreuve par mutation de `Discussion.php`, sur une copie | 76 mutations tuées sur 76 |
+| Sonde contre le vrai backend, trois identités (visiteur, compte non membre, admin de l'appel) | 64 vérifications ; refus, espace vierge et semé, audiences `private` et `authorAdmin`, questions que l'appel ne connaît pas, modes `fil` et `seen`, plan de requête |
+| Sondes des lots précédents (panneau, éléments vierges, lot R) | rejouées, vertes : 21, 17 et 25 vérifications |
+| Appel réel au SDK, avec et sans session | un refus arrive en `ApiResponseError` (statut 200, corps dans `responseData`) ; sans session, `ApiAuthenticationError` avant tout appel (§14.7) |
+| Tests unitaires de l'écran | 333 tests dans onze fichiers, dont 205 dans les sept fichiers nouveaux : lecture de la réponse, refus repris de l'exception, lanceur et historique, requêtes, colonne des fils, panneau, modale, bouton, composition de la fiche |
+| … dont un **parcours** assemblé | 17 tests : le bouton, la modale chargée en différé, le panneau, la colonne, le lanceur, l'adresse et l'historique sont les vrais — seuls le serveur, le temps réel et le fil de messages sont remplacés |
+| Contre-épreuve par mutation de l'écran, sur des copies | 271 mutations tuées sur 271, onze fichiers — dont 32 défauts de la chaîne passés contre le seul test de parcours |
+| Navigateur, visiteur — 1440 et 375 px | 22 et 26 vérifications : liste, intertitres, fil, invitation à se connecter, liens profonds |
+| Navigateur, compte connecté non membre | 21 vérifications : discussions à lancer repliées, composer présent |
+| Navigateur, déposant qui écrit sur son commun | 27 vérifications : message rangé sur l'appel au chemin du legacy, puis supprimé ; aucun document créé dans une autre collection |
+| Navigateur, historique et clavier — 1440 et 375 px | 21 et 27 vérifications : « retour », « suivant », croix et Échap qui défont l'ouverture, double clic, double Échap, focus rendu au bouton, « suivant » qui rouvre sur la liste, lien d'un visiteur vers un emplacement vide |
+| Navigateur, processeur ralenti vingt fois — 375 et 1440 px | 9 vérifications chacune : deux Entrée puis deux Échap, double clic sur le bouton puis sur la croix — une seule entrée empilée, un seul « retour » |
+| Navigateur, mesure de la bande 48–64 rem, compte connecté | 27 vérifications : pastille de non-lus d'un fil dans le flux et libellé d'étiquette visible, dans l'espace (panneau de 63,9 rem, colonne des fils de 18 rem) comme dans le panneau général, rail plié d'office puis à la main — **avec contre-épreuve**, l'ancienne règle réinjectée dans la page ; une seule requête `space` par fiche pour un connecté ; connexion depuis la modale ; `/discussions` sans session |
+
+### 15.7 Limites
+
+- **Non vérifié de bout en bout** : une discussion `authorAll`, et le déposant ou le référent qui
+  n'est pas admin — la base de développement n'en offre pas le cas ; ils sont jugés par la règle
+  (§15.6, première ligne). La notification d'un tiers relève du backend existant, que ce lot ne
+  touche pas, et n'a pas été rejouée.
+- **Créer** une discussion supplémentaire n'est pas porté : lot à part, par une action dédiée.
+- Les **référents** se lisent au chemin que le legacy emploie pour sa décision
+  (`answers.aapStep1.finderaapStep1m0w402djpsq3i44017`), et le **titre** du commun à
+  `answers.aapStep1.titre`. La fiche, elle, passe à la modale le titre qu'elle a résolu.
+- Le commun **n'entre pas dans le rail** du panneau général — le legacy ne l'y met pas non plus.
+- Un commun **partagé entre deux appels** n'a qu'un espace, celui de l'appel où il a été déposé
+  (§15.1), d'où qu'on ouvre sa fiche — comme dans le legacy.
+- **Rien de versionné ne couvre les règles du backend** : `citizenToolKit` n'a pas d'outillage de
+  test. Le banc de règles et ses mutations (§15.6) vivent hors dépôt, et se rejouent à la main.
+- Formulaires qui ne sont pas `aap` : le fil général et les discussions déclarées sont proposés,
+  les fils de question déjà commentés sont listés, mais aucune question vierge n'est proposée
+  (§15.3).
+- Le fil d'une question **retirée de l'appel** n'est plus listé (§15.3) : ses messages restent en
+  base, mais l'espace ne les propose plus.
+- Un chemin de plus de 256 caractères ne se relit ni par l'adresse (§5.3) ni par le SDK (§14.2) :
+  le lanceur ne l'écrit pas, et un clic sur un tel fil ne fait rien. Le plus long chemin mesuré en
+  base de développement en fait 191 ; le plus long que ses 197 appels `aap` puissent produire —
+  une ligne de dépense — en fait 245 (calculé le 09/10 sur leurs clés d'étape et de question).
+- **Le coût d'un espace suit l'appel**, pas le commun (§15.3) : à mesurer sur des données réelles
+  avant une mise en production sur un appel très commenté.
+- **Se connecter depuis la modale la referme un instant** : la connexion change les clés de la
+  fiche, qui repasse par son écran de chargement et remonte le bouton. L'adresse rouvre la modale
+  sur le même fil ; le pli « Sans discussion » et la position de lecture ne sont pas gardés.
+- **Le chargement différé de la modale ne sort pas encore le fil du démarrage.** Le bouton ne tire
+  ni le fil ni le composer ; mais l'entrée complète du module est déjà dans le graphe de démarrage
+  de toute page, par une chaîne d'imports antérieure à ce lot (`profil/routes` →
+  `@/modules/news` → `NewsItem` → `@/modules/comment`). Lu sur le serveur de développement, pas sur
+  un build de production.
+- **Non vérifié** : un lecteur d'écran réel, un appareil tactile réel, le temps réel (pas de hub en
+  développement).
 
 ## Voir aussi
 

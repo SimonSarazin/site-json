@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, act, cleanup } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { AacResolvedConfig } from "../types";
 import type { AacDetailSection } from "../lib/resolveAacDetailSections";
 
@@ -33,8 +33,10 @@ vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 // La suppression d'un commun fait QUITTER la fiche : la navigation est capturée
 // pour pouvoir vérifier où elle mène, sans embarquer un routeur.
 const navigate = vi.fn();
+// Le commun de la route : fixe, sauf pour le test qui passe d'une fiche à une autre.
+let routeAnswerId = "a1";
 vi.mock("react-router", () => ({
-  useParams: () => ({ answerId: "a1" }),
+  useParams: () => ({ answerId: routeAnswerId }),
   useNavigate: () => navigate,
   Link: ({ children }: { children: ReactNode }) => <a>{children}</a>,
 }));
@@ -200,6 +202,28 @@ vi.mock("../components/pageDetail/CommunEditorsControl.tsx", () => ({
     <div data-testid="editors-control" data-can-manage={String(props.canManage)} />
   ),
 }));
+// L'espace de discussion a ses propres tests (bouton, compteurs, modale différée) : il lit
+// l'adresse et le serveur, hors périmètre ici. La page n'est observée que sur ce qu'elle lui PASSE.
+let discussionControlMounts = 0;
+vi.mock("../components/pageDetail/CommunDiscussionControl", () => ({
+  CommunDiscussionControl: (props: {
+    answerId: string;
+    communTitle?: string | null;
+    scopeEntity?: { id?: string } | null;
+  }) => {
+    // Un numéro par MONTAGE : ce qui distingue un bouton remonté d'un bouton réemployé.
+    const [mount] = useState(() => ++discussionControlMounts);
+    return (
+      <div
+        data-testid="discussion-control"
+        data-mount={mount}
+        data-answer-id={props.answerId}
+        data-title={props.communTitle ?? "null"}
+        data-scope={props.scopeEntity?.id ?? ""}
+      />
+    );
+  },
+}));
 vi.mock("../components/pageDetail/CommunHero.tsx", () => ({ CommunHero: () => <div data-testid="hero" /> }));
 // La carte expose son crochet `onFunded` — ce que `CagnotteDialog` joue après
 // une contribution enregistrée (`onRefresh`) — et l'intention post-connexion,
@@ -283,6 +307,7 @@ const FUNDING_TOC = ["toc-besoins-financiers", "toc-cofinanceurs"] as const;
 
 beforeEach(() => {
   me = CONNECTED;
+  routeAnswerId = "a1";
   // `ANSWER` est un objet PARTAGÉ par les douze tests du fichier : la remise à
   // zéro appartient au `beforeEach`, pas au corps du test qui l'a rempli. Écrite
   // là-bas, elle ne s'exécutait pas si l'assertion précédente échouait — et la
@@ -624,5 +649,59 @@ describe("AacCommunDetailPage — contributeurs à l'édition", () => {
     me = { id: TIERS, isConnected: true };
     render(<AacCommunDetailPage />);
     expect(screen.queryByTestId("edit-modal")).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * L'espace de discussion du commun — parité du bouton « Commentaires » de `campDetail.php`.
+ *
+ * Le legacy l'ouvre sans contrôle de session : la fiche le pose donc pour TOUT LE MONDE, là où
+ * les boutons voisins (« Modifier », contributeurs, sélection) se gardent chacun par un droit.
+ */
+describe("AacCommunDetailPage — l'espace de discussion du commun", () => {
+  const TIERS = "65d4000000000000000000d9";
+
+  it("le bouton reçoit CE commun, son titre et l'organisation de l'appel", () => {
+    ANSWER.answers = { aapStep1: { titre: "Une instance peertube" } };
+    render(<AacCommunDetailPage />);
+
+    const control = screen.getByTestId("discussion-control");
+    expect(control).toHaveAttribute("data-answer-id", "a1");
+    expect(control).toHaveAttribute("data-title", "Une instance peertube");
+    // L'entité du site : c'est chez elle qu'on cherche d'abord les personnes à mentionner.
+    expect(control).toHaveAttribute("data-scope", "host");
+  });
+
+  it("un visiteur non connecté l'a aussi — l'espace se lit sans session", () => {
+    me = ANONYMOUS;
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("discussion-control")).toBeInTheDocument();
+  });
+
+  it("un tiers connecté sans aucun droit sur le commun l'a aussi, sans « Modifier »", () => {
+    me = { id: TIERS, isConnected: true };
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("discussion-control")).toBeInTheDocument();
+    expect(screen.queryByTestId("edit-modal")).not.toBeInTheDocument();
+  });
+
+  it("sans titre de commun, il ne reçoit PAS le nom de l'appel à la place : la modale nommerait l'appel", () => {
+    render(<AacCommunDetailPage />);
+    // Le SEO, lui, retombe sur le nom de l'appel ; l'espace est celui d'un commun, pas d'un appel.
+    expect(screen.getByTestId("seo").getAttribute("data-title")).toBe("Appel test");
+    expect(screen.getByTestId("discussion-control")).toHaveAttribute("data-title", "null");
+  });
+
+  it("d'un commun à l'autre, le bouton est REMONTÉ, pas réemployé", () => {
+    // La même route sert deux communs : React garderait le bouton tel quel, avec ce qu'il
+    // retenait de la fiche d'avant — le focus à rendre après une modale, par exemple.
+    const { rerender } = render(<AacCommunDetailPage />);
+    const before = screen.getByTestId("discussion-control").getAttribute("data-mount");
+
+    routeAnswerId = "a2";
+    rerender(<AacCommunDetailPage />);
+    const control = screen.getByTestId("discussion-control");
+    expect(control).toHaveAttribute("data-answer-id", "a2");
+    expect(control.getAttribute("data-mount")).not.toBe(before);
   });
 });

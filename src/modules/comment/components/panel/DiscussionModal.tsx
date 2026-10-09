@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { X } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,40 @@ export interface DiscussionModalProps {
  * requêtes, temps réel, composer, surfaces Radix imbriquées.
  */
 export function DiscussionModal({ open, onOpenChange, param, className }: DiscussionModalProps) {
+  const t = useT("modules/comment");
+
+  return (
+    <DiscussionModalShell
+      open={open}
+      onOpenChange={onOpenChange}
+      title={String(t("panel.title"))}
+      description={String(t("panel.description"))}
+      className={className}
+    >
+      {headerEnd => <DiscussionPanel param={param} className="rounded-none border-0" headerEnd={headerEnd} />}
+    </DiscussionModalShell>
+  );
+}
+
+export interface DiscussionModalShellProps {
+  readonly open: boolean;
+  readonly onOpenChange: (open: boolean) => void;
+  /** Le nom accessible de la modale, et ce qu'elle contient — lus, jamais affichés. */
+  readonly title: string;
+  readonly description: string;
+  readonly className?: string;
+  /** Le panneau à emballer. Il reçoit la croix de fermeture, à poser dans SA barre de titre. */
+  readonly children: (headerEnd: ReactNode) => ReactNode;
+}
+
+/**
+ * La coquille commune aux modales du module : le panneau général et l'espace d'un commun
+ * (`SpaceModal`) n'ont pas le même contenu, mais le même cadre, la même croix et le même
+ * arbitrage d'Échap — écrits une fois.
+ */
+export function DiscussionModalShell({
+  open, onOpenChange, title, description, className, children,
+}: DiscussionModalShellProps) {
   const t = useT("modules/comment");
 
   return (
@@ -74,25 +109,21 @@ export function DiscussionModal({ open, onOpenChange, param, className }: Discus
             porte déjà ses propres titres de colonnes. Sa DESCRIPTION dit ce qu'elle contient au
             lecteur d'écran — elle était escamotée par `aria-describedby={undefined}` (revue du
             29/09). */}
-        <DialogTitle className="sr-only">{String(t("panel.title"))}</DialogTitle>
-        <DialogDescription className="sr-only">{String(t("panel.description"))}</DialogDescription>
-        <DiscussionPanel
-          param={param}
-          className="rounded-none border-0"
-          headerEnd={(
-            <button
-              type="button"
-              onClick={() => onOpenChange(false)}
-              aria-label={String(t("panel.close"))}
-              title={String(t("panel.close"))}
-              className="text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring
-                         grid size-7 place-items-center rounded-md transition-colors
-                         focus-visible:ring-2 focus-visible:outline-none"
-            >
-              <X className="size-4" aria-hidden />
-            </button>
-          )}
-        />
+        <DialogTitle className="sr-only">{title}</DialogTitle>
+        <DialogDescription className="sr-only">{description}</DialogDescription>
+        {children(
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            aria-label={String(t("panel.close"))}
+            title={String(t("panel.close"))}
+            className="text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring
+                       grid size-7 place-items-center rounded-md transition-colors
+                       focus-visible:ring-2 focus-visible:outline-none"
+          >
+            <X className="size-4" aria-hidden />
+          </button>,
+        )}
       </DialogContent>
     </Dialog>
   );

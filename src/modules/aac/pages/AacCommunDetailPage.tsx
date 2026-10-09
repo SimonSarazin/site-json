@@ -29,6 +29,7 @@ import { editorIdsOf, resolveEditorsQuestion } from "../lib/communEditors";
 
 import { CommunHero } from "../components/pageDetail/CommunHero.tsx";
 import { CommunDeleteControl } from "../components/pageDetail/CommunDeleteControl";
+import { CommunDiscussionControl } from "../components/pageDetail/CommunDiscussionControl";
 import { CommunFinancingCard, type PostLoginIntent } from "../components/pageDetail/CommunFinancingCard.tsx";
 import { CommunTocNav, type TocSection } from "../components/pageDetail/CommunTocNav.tsx";
 import { CommunFinancingSection } from "../components/pageDetail/CommunFinancingSection.tsx";
@@ -514,6 +515,18 @@ export default function AacCommunDetailPage() {
                     la sélection au seul admin de l'appel. Une garde commune
                     priverait l'auteur non-admin de son bouton d'édition. */}
                 <div className="mb-4 flex flex-wrap items-center gap-2">
+                    {/* L'espace de discussion du commun — pour tout le monde, visiteur compris : il se
+                        lit sans session. `key` : d'un commun à l'autre, le bouton et sa modale
+                        repartent de zéro. Sans elle, quitter par « retour » la modale d'un commun
+                        pour la fiche d'un autre y faisait sauter le focus sur son bouton — il se
+                        croyait refermé. */}
+                    <CommunDiscussionControl
+                        key={answerId}
+                        answerId={answerId}
+                        communTitle={communSeo.title || null}
+                        scopeEntity={entity}
+                    />
+
                     {canEditThisCommun && formId && (
                         <Button
                             variant="outline"

@@ -57,10 +57,14 @@ export const COMMENT_QUERY_KEYS = {
   VOTERS_PREFIX: (commentId: string) => ["comment-voters", commentId] as const,
 
   /**
-   * Panneau « Discussions » : rail de porteurs, fils d'un porteur, ou tout le parc.
+   * Panneau « Discussions » : rail de porteurs, fils d'un porteur, ou tout le parc — et, sous la
+   * profondeur `space`, l'espace de discussion d'un élément (ses fils, titrés et comptés).
    *
-   * Producteur : `useDiscussionsQuery`
-   * Consommateurs invalidants : le temps réel, via `DISCUSSIONS_PREFIX`
+   * Producteurs : `useDiscussionsQuery` (`rail`, `carrier`, `thread`, `all`) et
+   * `useDiscussionSpaceQuery` (`space`)
+   * Consommateurs invalidants, tous via `DISCUSSIONS_PREFIX` : le temps réel
+   * (`useDiscussionsRealtime`), `useCommentMutations` (un message posté ou supprimé change les
+   * compteurs) et `useMarkThreadSeen` (un fil lu change les non-lus)
    */
   DISCUSSIONS: (depth: string, holder: string | null, userContextId: string | null = null) =>
     ["comment-discussions", depth, holder, userContextId] as const,

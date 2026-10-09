@@ -8,13 +8,14 @@ import {
   type DiscussionThread,
   type DiscussionsResult,
 } from "../types";
+import { threadValue } from "./filKey";
 
 /**
  * Lecture de la réponse de l'endpoint `discussions`.
  *
  * Tout passe par ici, et rien d'autre ne touche à la forme brute du backend. Trois raisons :
- *   1. le refus arrive en **HTTP 200** avec `{result:false, msg}` — tester le code HTTP ne
- *      dit rien, il faut lire `result` ;
+ *   1. le refus arrive en **HTTP 200** avec `{result:false, code}` — tester le code HTTP ne
+ *      dit rien, il faut lire `result` (et le SDK le rend en exception : cf. `rawOrRefusal`) ;
  *   2. la réponse a **trois formes** selon le mode (`rail` n'a pas de `threads`, `fil` rend
  *      un `thread` au singulier) ;
  *   3. le porteur peut être **nul** pour de bon : 52 % des formulaires et 22 % des actualités
@@ -50,12 +51,48 @@ export function refusalOf(raw: unknown): RefusalCode | null {
   return null;
 }
 
+/**
+ * La réponse brute d'un appel — **refus compris**.
+ *
+ * Le serveur refuse en HTTP 200 avec `{result:false, code}`, mais la façade du SDK ne REND jamais
+ * ce corps : elle lève une exception qui le porte dans `responseData`. Et pour un appel qui exige
+ * une session, elle lève avant même d'interroger le serveur. Laissées telles quelles, ces
+ * exceptions passaient pour des pannes — le texte d'un échec à la place de celui du refus, deux
+ * tentatives de plus, la relecture périodique maintenue (mesuré contre le SDK réel le 09/10).
+ *
+ * On rend donc ici le corps du refus, pour qu'il suive le chemin de toute réponse : `refusalOf`
+ * le lit, `refusalError` le marque. Le reste — réseau, 500, requête que le schéma refuse — reste
+ * une exception, donc un échec.
+ *
+ * Par la FORME de l'erreur (`responseData`, `name`), pas par sa classe : ce fichier se lit et se
+ * teste sans charger le SDK.
+ */
+export async function rawOrRefusal(call: () => Promise<unknown>): Promise<unknown> {
+  try {
+    return await call();
+  } catch (error) {
+    const raised = error as { name?: unknown; responseData?: unknown } | null | undefined;
+    const body = raised?.responseData as { result?: unknown } | null | undefined;
+    if (body && typeof body === "object" && body.result === false) return body;
+    if (raised?.name === "ApiAuthenticationError") return { result: false, code: "login" };
+    throw error;
+  }
+}
+
 /** Ce qu'une requête du panneau a rendu comme erreur : un refus codé, ou un échec (réseau, 500…). */
 export type DiscussionErrorCode = RefusalCode | "failed";
 
 export function errorCodeOf(error: unknown): DiscussionErrorCode {
   const e = error as { refus?: unknown; code?: unknown } | null | undefined;
   return e?.refus === true && typeof e.code === "string" ? (e.code as RefusalCode) : "failed";
+}
+
+/**
+ * La clé du libellé d'une erreur — un CODE traduit par l'écran, jamais le texte du serveur.
+ * `login` a sa phrase à part : c'est une invitation, pas un constat d'échec.
+ */
+export function errorLabelKey(code: DiscussionErrorCode): string {
+  return code === "login" ? "panel.loginRequired" : `panel.error.${code}`;
 }
 
 function toInt(value: unknown): number {
@@ -66,7 +103,7 @@ function toEpoch(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? Math.trunc(value) : null;
 }
 
-function toText(value: unknown): string | null {
+export function toText(value: unknown): string | null {
   return typeof value === "string" && value.trim() !== "" ? value : null;
 }
 
@@ -104,7 +141,8 @@ function readMembership(value: unknown): DiscussionCarrier["membership"] {
   return value === "self" || value === "admin" || value === "member" ? value : null;
 }
 
-function readThread(value: unknown): DiscussionThread | null {
+/** Un fil tel que le serveur le rend, normalisé — ou `null` si la ligne est inexploitable. */
+export function readThread(value: unknown): DiscussionThread | null {
   const row = value as Record<string, unknown> | null | undefined;
   if (!row || typeof row !== "object") return null;
   if (!isCommentableType(row.contextType)) return null;
@@ -113,7 +151,8 @@ function readThread(value: unknown): DiscussionThread | null {
   const path = typeof row.path === "string" && row.path !== "" ? row.path : null;
   const target: CommentTarget = { type: row.contextType, id: row.contextId, path };
   return {
-    key: toText(row.key) ?? `${target.type}:${target.id}${path ? `:${path}` : ""}`,
+    // Sans clé du serveur, la même formule que lui — celle qui écrit le fil dans l'adresse.
+    key: toText(row.key) ?? threadValue(target),
     target,
     title: toText(row.title),
     carrier: readCarrierRef(row.carrier),
@@ -128,24 +167,26 @@ function readThread(value: unknown): DiscussionThread | null {
 const DEPTHS: readonly DiscussionDepth[] = ["rail", "fils", "fil", "all"];
 
 /**
+ * Le refus est MARQUÉ, et ce n'est pas décoratif : c'est ce qui permet à l'appelant de ne pas le
+ * réessayer. Le serveur a répondu, et il a dit non — une session expirée ou un droit manquant ne
+ * deviendra pas vrai à la troisième tentative. Sans cette marque, React Query retente trois fois
+ * avec un délai croissant : mesuré au navigateur, douze secondes de squelettes avant que l'écran
+ * ne dise enfin pourquoi il est vide.
+ */
+export function refusalError(code: RefusalCode): Error & { refus: true; code: RefusalCode } {
+  const erreur = new Error(code) as Error & { refus: true; code: RefusalCode };
+  erreur.refus = true;
+  erreur.code = code;
+  return erreur;
+}
+
+/**
  * Normalise une réponse du backend. Lève si elle est refusée ou illisible — l'appelant
  * (React Query) transforme ça en état d'erreur, ce qui vaut mieux qu'un panneau vide et muet.
  */
 export function parseDiscussions(raw: unknown): DiscussionsResult {
   const refusal = refusalOf(raw);
-  if (refusal !== null) {
-    /**
-     * Le refus est MARQUÉ, et ce n'est pas décoratif : c'est ce qui permet à l'appelant de ne
-     * pas le réessayer. Le serveur a répondu, et il a dit non — une session expirée ou un droit
-     * manquant ne deviendra pas vrai à la troisième tentative. Sans cette marque, React Query
-     * retente trois fois avec un délai croissant : mesuré au navigateur, douze secondes de
-     * squelettes avant que l'écran ne dise enfin pourquoi il est vide.
-     */
-    const erreur = new Error(refusal) as Error & { refus?: true; code?: RefusalCode };
-    erreur.refus = true;
-    erreur.code = refusal;
-    throw erreur;
-  }
+  if (refusal !== null) throw refusalError(refusal);
 
   const body = raw as Record<string, unknown>;
   const depth = DEPTHS.includes(body.depth as DiscussionDepth) ? (body.depth as DiscussionDepth) : "rail";

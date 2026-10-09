@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useHydrated } from "@/hooks/useHydrated";
 import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
 import { COMMENT_QUERY_KEYS } from "../constants/queryKeys";
-import { carrierKey, parseDiscussions } from "../lib/discussions";
+import { carrierKey, parseDiscussions, rawOrRefusal } from "../lib/discussions";
+import { threadValue } from "../lib/filKey";
 import { useDiscussionsRealtime } from "./useDiscussionsRealtime";
 import type { CarrierRef, CommentTarget, DiscussionsResult } from "../types";
 
@@ -48,10 +50,7 @@ function scopeSegment(scope: DiscussionScope): string | null {
     case "rail": return null;
     case "all": return "all";
     case "carrier": return carrierKey(scope.carrier);
-    case "thread": {
-      const { type, id, path } = scope.target;
-      return `${type}:${id}${path ? `:${path}` : ""}`;
-    }
+    case "thread": return threadValue(scope.target);
   }
 }
 
@@ -87,8 +86,9 @@ export interface UseDiscussionsQueryOptions {
  * Le fil lui-même reste chargé par `useCommentsQuery`, qui a déjà son cache à deux vues et
  * ses mutations — les deux ne se marchent pas dessus.
  *
- * Un refus arrive en **HTTP 200** avec `{result:false}` : `parseDiscussions` le transforme en
- * exception, que React Query présente comme une erreur. Un panneau vide et muet serait pire.
+ * Un refus arrive en **HTTP 200** avec `{result:false}` — que le SDK rend en exception, et faute
+ * de session il refuse lui-même : `rawOrRefusal` en retrouve le corps, `parseDiscussions` en fait
+ * un refus MARQUÉ, que React Query présente comme une erreur. Un panneau vide et muet serait pire.
  */
 export function useDiscussionsQuery(
   scope: DiscussionScope,
@@ -98,6 +98,10 @@ export function useDiscussionsQuery(
   // `null` au premier rendu, puis la vraie valeur : toute invalidation passe donc par
   // `DISCUSSIONS_PREFIX`, jamais par la clé complète.
   const userContextId = useHydratedUserContextId();
+  // Et la requête attend ce second rendu : partie dès le premier, elle était écrite sous la clé
+  // « sans session » puis rejouée sous la bonne — deux requêtes par montage (cf.
+  // `useDiscussionSpaceQuery`).
+  const hydrate = useHydrated();
 
   const payload = useMemo(() => payloadOf(scope), [scope]);
   const segment = scopeSegment(scope);
@@ -107,7 +111,7 @@ export function useDiscussionsQuery(
 
   const query = useQuery({
     queryKey: COMMENT_QUERY_KEYS.DISCUSSIONS(scope.kind, segment, userContextId),
-    enabled,
+    enabled: enabled && hydrate,
     staleTime: 30_000,
     // `connecte` SEULEMENT. Sur `degrade` le flux est ouvert mais le bus ne porte plus rien :
     // garder l'intervalle long rendrait le panneau MOINS réactif qu'avant le temps réel.
@@ -124,9 +128,9 @@ export function useDiscussionsQuery(
     retry: (tentatives, erreur) =>
       (erreur as { refus?: boolean } | null)?.refus ? false : tentatives < 2,
     queryFn: async (): Promise<DiscussionsResult> => {
-      const raw = await (api as unknown as {
+      const raw = await rawOrRefusal(() => (api as unknown as {
         getDiscussions: (o: Record<string, unknown>) => Promise<unknown>;
-      }).getDiscussions(payload);
+      }).getDiscussions(payload));
       return parseDiscussions(raw);
     },
   });
@@ -134,6 +138,8 @@ export function useDiscussionsQuery(
   const data = query.data ?? VIDE;
   return {
     ...query,
+    // Le rendu d'attente compte comme un chargement : l'écran n'a pas à dire « vide » entre-temps.
+    isLoading: query.isLoading || (enabled && !hydrate),
     tempsReel,
     carriers: data.carriers,
     threads: data.threads,

@@ -22,8 +22,10 @@ export { VotersDialog } from "./components/VotersDialog";
 export { DateSeparator, UnreadSeparator } from "./components/ThreadSeparators";
 export { DiscussionPanel, type DiscussionPanelProps } from "./components/panel/DiscussionPanel";
 export { DiscussionModal, type DiscussionModalProps } from "./components/panel/DiscussionModal";
+export { SpacePanel, type SpacePanelProps } from "./components/panel/SpacePanel";
+export { SpaceModal, type SpaceModalProps } from "./components/panel/SpaceModal";
 export { CarrierRail, type CarrierRailProps } from "./components/panel/CarrierRail";
-export { ThreadColumn, type ThreadColumnProps } from "./components/panel/ThreadColumn";
+export { ThreadColumn, type ThreadChip, type ThreadColumnProps } from "./components/panel/ThreadColumn";
 
 export { useCommentsQuery, type CommentThreadData } from "./hooks/useCommentsQuery";
 export { useCommentMutations, type CommentMutations } from "./hooks/useCommentMutations";
@@ -35,6 +37,8 @@ export { useCarrierEntity } from "./hooks/useCarrierEntity";
 export { useDiscussionUrlState, type DiscussionUrlState } from "./hooks/useDiscussionUrlState";
 export { useDiscussionLauncher, type DiscussionLauncher } from "./hooks/useDiscussionLauncher";
 export { useDiscussionUnread } from "./hooks/useDiscussionUnread";
+export { useDiscussionSpaceQuery } from "./hooks/useDiscussionSpaceQuery";
+export { useSpaceLauncher, type SpaceLauncher } from "./hooks/useSpaceLauncher";
 
 export { voteTypes, voteTypeMap, type VoteType } from "./constants/voteTypes";
 export { COMMENT_QUERY_KEYS } from "./constants/queryKeys";
@@ -73,6 +77,15 @@ export {
   totalUnread,
 } from "./lib/discussions";
 export type { DiscussionErrorCode, RefusalCode } from "./lib/discussions";
+export {
+  belongsToSpace,
+  generalTarget,
+  isSpaceType,
+  parseSpace,
+  spaceKey,
+  spaceTotals,
+  visibleSpaceThreads,
+} from "./lib/space";
 export type { DiscussionSelection } from "./lib/filKey";
 export {
   DEFAULT_DISCUSSION_PARAM,
@@ -83,9 +96,12 @@ export {
   threadValue,
 } from "./lib/filKey";
 
-export { CARRIER_TYPES, COMMENTABLE_TYPES, isCarrierType, isCommentableType } from "./types";
+export {
+  CARRIER_TYPES, COMMENTABLE_TYPES, SPACE_AUDIENCES, SPACE_THREAD_KINDS, SPACE_TYPES, isCarrierType, isCommentableType,
+} from "./types";
 export type {
   CarrierRef, CarrierType, CommentableType, CommentAuthor, CommentImage, CommentMention, CommentNode,
-  CommentTarget, DiscussionCarrier, DiscussionDepth, DiscussionThread, DiscussionsResult,
+  CommentTarget, DiscussionCarrier, DiscussionDepth, DiscussionSpace, DiscussionThread, DiscussionsResult,
+  SpaceAudience, SpaceRef, SpaceThreadKind, SpaceType,
 } from "./types";
 export type { CommentPermissions } from "./permissions";

@@ -7,21 +7,20 @@ import { Button } from "@/components/ui/button";
 import { CarrierRail } from "./CarrierRail";
 import { ThreadColumn } from "./ThreadColumn";
 import { DiscussionSearch } from "./DiscussionSearch";
+import { PANEL_HEADING, PANEL_ONE_COLUMN_REM } from "./rowStyles";
 import { CommentThread } from "../CommentThread";
 import { LoginToParticipate } from "../LoginToParticipate";
 import { useDiscussionsQuery } from "../../hooks/useDiscussionsQuery";
 import { useDiscussionUrlState } from "../../hooks/useDiscussionUrlState";
 import { useCarrierEntity } from "../../hooks/useCarrierEntity";
 import { useRailCollapse } from "../../hooks/useRailCollapse";
-import { CARRIER_NONE, carrierKey, errorCodeOf, sortThreads, threadsOfCarrier, type DiscussionErrorCode } from "../../lib/discussions";
+import { CARRIER_NONE, carrierKey, errorCodeOf, errorLabelKey, sortThreads, threadsOfCarrier, type DiscussionErrorCode } from "../../lib/discussions";
+import { threadValue } from "../../lib/filKey";
 import { filtrerFils, filtrerPorteurs, motsDeRequete } from "../../lib/searchDiscussions";
 import type {
   CarrierRef, CommentableType, CommentTarget, DiscussionCarrier, DiscussionThread,
 } from "../../types";
 import "../../styles.css";
-
-/** Largeur de PANNEAU en dessous de laquelle une seule colonne est visible. Suit `styles.css`. */
-const SEUIL_UNE_COLONNE_REM = 48;
 
 export interface DiscussionPanelProps {
   /** Nom du paramètre d'URL. `discussion` par défaut. */
@@ -288,12 +287,11 @@ export function DiscussionPanel({ param, headerEnd, className }: DiscussionPanel
     // query qui vaudrait `false` au premier rendu.
     const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
     const largeur = rootRef.current?.offsetWidth ?? 0;
-    if (largeur > 0 && largeur < SEUIL_UNE_COLONNE_REM * rem) headingRef.current?.focus();
+    if (largeur > 0 && largeur < PANEL_ONE_COLUMN_REM * rem) headingRef.current?.focus();
   }, [step]);
 
   /** Une erreur du panneau, traduite d'après son code — jamais le texte brut du serveur. */
-  const messageDErreur = (code: DiscussionErrorCode) =>
-    String(t(code === "login" ? "panel.loginRequired" : `panel.error.${code}`));
+  const messageDErreur = (code: DiscussionErrorCode) => String(t(errorLabelKey(code)));
   const railError = rail.isError ? messageDErreur(errorCodeOf(rail.error)) : null;
 
   /**
@@ -326,7 +324,7 @@ export function DiscussionPanel({ param, headerEnd, className }: DiscussionPanel
    * temps. Connecté seulement, et sur une liste à jour : une liste en erreur garde les données de
    * sa dernière réussite, peut-être celles d'une autre session.
    */
-  const cleOuverte = openTarget ? threadKeyOf(openTarget) : null;
+  const cleOuverte = openTarget ? threadValue(openTarget) : null;
   const dejaListe = cleOuverte !== null && !!me?.isConnected && (
     (carrierQuery.isSuccess && carrierQuery.threads.some(th => th.key === cleOuverte))
     || (tousLesFils.isSuccess && tousLesFils.threads.some(th => th.key === cleOuverte))
@@ -370,7 +368,7 @@ export function DiscussionPanel({ param, headerEnd, className }: DiscussionPanel
       <div data-panel-column="carriers" className="flex min-h-0 w-full flex-col border-e">
         <header className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
           <Users data-rail-icon className="text-muted-foreground size-4 shrink-0" aria-hidden />
-          <h2 data-rail-title ref={refDuTitre("carriers")} tabIndex={-1} className={HEADING}>
+          <h2 data-rail-title ref={refDuTitre("carriers")} tabIndex={-1} className={PANEL_HEADING}>
             {String(t("panel.holders"))}
           </h2>
           {/* Masqué par le CSS là où la largeur impose déjà le pli : un bouton sans effet. */}
@@ -422,7 +420,7 @@ export function DiscussionPanel({ param, headerEnd, className }: DiscussionPanel
           >
             <ArrowLeft className="size-4" aria-hidden />
           </Button>
-          <h3 ref={refDuTitre("threads")} tabIndex={-1} className={cn("px-1", HEADING)}>
+          <h3 ref={refDuTitre("threads")} tabIndex={-1} className={cn("px-1", PANEL_HEADING)}>
             {String(t(rechercheActive ? "panel.searchThreads" : "panel.threads"))}
           </h3>
         </header>
@@ -435,7 +433,7 @@ export function DiscussionPanel({ param, headerEnd, className }: DiscussionPanel
             : (
               <ThreadColumn
                 threads={filsAffiches}
-                selected={openTarget ? threadKeyOf(openTarget) : null}
+                selected={openTarget ? threadValue(openTarget) : null}
                 onSelect={onSelectThread}
                 isLoading={filsQuery.isLoading}
                 /* Sous recherche, `scanTruncated` compte autant que `truncated` : le balayage
@@ -466,7 +464,7 @@ export function DiscussionPanel({ param, headerEnd, className }: DiscussionPanel
               <ArrowLeft className="size-4" aria-hidden />
             </Button>
           )}
-          <h3 ref={refDuTitre("thread")} tabIndex={-1} className={cn("px-1", HEADING)}>
+          <h3 ref={refDuTitre("thread")} tabIndex={-1} className={cn("px-1", PANEL_HEADING)}>
             {/* `filsDuPorteur` : la liste AFFICHÉE peut être filtrée, et le titre du fil ouvert
                 retomberait alors sur « Messages » alors qu'il est là, sous les yeux. */}
             {currentTitle(filsDuPorteur, openTarget) ?? String(t("panel.messages"))}
@@ -506,7 +504,7 @@ export function DiscussionPanel({ param, headerEnd, className }: DiscussionPanel
                * du fil A sur la cible du fil B. Le repli et l'édition en cours se
                * réinitialisent du même coup, ce qui est le comportement attendu.
                */
-              key={threadKeyOf(openTarget)}
+              key={threadValue(openTarget)}
               target={openTarget}
               scopeEntity={carrierEntity.entity}
               // Le fil gère lui-même son défilement : c'est la liste qui défile, le composer
@@ -543,23 +541,8 @@ function vueDuFil(
   return code !== null ? "echec" : "attente";
 }
 
-/**
- * Le titre d'une colonne. Il reçoit le focus quand l'étape change en mode une seule colonne,
- * d'où l'anneau : un point d'arrivée invisible laisserait l'utilisateur sans repère.
- *
- * `truncate` sans `min-w-0` ne tronque pas : dans un conteneur flex, l'élément refuse de
- * passer sous son `min-content` et déborde au lieu de couper.
- */
-const HEADING = "min-w-0 flex-1 truncate rounded-sm text-sm font-semibold focus-visible:ring-ring "
-  + "focus-visible:ring-2 focus-visible:outline-none";
-
-/** Même formule que côté serveur : `type:id`, plus le `path` s'il y en a un. */
-function threadKeyOf(target: CommentTarget): string {
-  return `${target.type}:${target.id}${target.path ? `:${target.path}` : ""}`;
-}
-
 function currentTitle(threads: readonly DiscussionThread[], target: CommentTarget | null): string | null {
   if (!target) return null;
-  const key = threadKeyOf(target);
+  const key = threadValue(target);
   return threads.find(th => th.key === key)?.title ?? null;
 }

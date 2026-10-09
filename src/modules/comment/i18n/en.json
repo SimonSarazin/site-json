@@ -172,6 +172,32 @@
     },
     "loginToRead": "Sign in to read this discussion."
   },
+  "space": {
+    "title": "Commun discussions",
+    "titleOf": "Discussions — {{name}}",
+    "description": "The discussion threads of this commun and the messages of the selected thread.",
+    "general": "General discussion",
+    "questionUntitled": "Untitled question",
+    "expenseUntitled": "Expense line",
+    "notFound": "This discussion space could not be found.",
+    "loginIfReserved": "If it is restricted to you, log in to read it.",
+    "kinds": {
+      "general": "General",
+      "question": "Question",
+      "expense": "Expense",
+      "other": "Discussion"
+    },
+    "audiences": {
+      "authorAll": "Public",
+      "authorAdmin": "Private",
+      "private": "Admins"
+    },
+    "groups": {
+      "questions": "Questions",
+      "expenses": "Expenses",
+      "other": "Other"
+    }
+  },
   "reportDialog": {
     "title": "Report this message",
     "description": "Help us keep the community respectful by reporting inappropriate content.",

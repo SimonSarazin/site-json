@@ -31,11 +31,19 @@ export interface DiscussionUrlState {
   /** Le panneau est-il ouvert ? (une sélection, quelle qu'elle soit) */
   readonly isOpen: boolean;
   /** Ouvre le panneau — empile une entrée d'historique. */
-  readonly open: (selection: DiscussionSelection) => void;
+  readonly open: (selection: DiscussionSelection, options?: UrlWriteOptions) => void;
   /** Change la sélection à l'intérieur du panneau — remplace l'entrée courante. */
-  readonly select: (selection: DiscussionSelection) => void;
+  readonly select: (selection: DiscussionSelection, options?: UrlWriteOptions) => void;
   /** Ferme le panneau — empile une entrée, pour que « retour » rouvre. */
   readonly close: () => void;
+}
+
+export interface UrlWriteOptions {
+  /**
+   * Ce que l'ENTRÉE d'historique écrite doit retenir (`location.state`) — pour ce qu'une adresse
+   * ne dit pas mais qui doit suivre « retour » et « suivant ». Absent : l'entrée ne retient rien.
+   */
+  readonly state?: unknown;
 }
 
 export interface UseDiscussionUrlStateOptions {
@@ -60,14 +68,14 @@ export function useDiscussionUrlState(
    * sinon du même instantané, et la seconde effacerait la première.
    */
   const write = useCallback(
-    (next: DiscussionSelection, replace: boolean) => {
+    (next: DiscussionSelection, replace: boolean, state?: unknown) => {
       setSearchParams(previous => {
         const params = new URLSearchParams(previous);
         const value = formatDiscussionValue(next);
         if (value === null) params.delete(param);
         else params.set(param, value);
         return params;
-      }, { replace });
+      }, { replace, state });
     },
     [param, setSearchParams],
   );
@@ -76,8 +84,8 @@ export function useDiscussionUrlState(
     selection,
     messageId,
     isOpen: selection.kind !== "none",
-    open: useCallback((s: DiscussionSelection) => write(s, false), [write]),
-    select: useCallback((s: DiscussionSelection) => write(s, true), [write]),
+    open: useCallback((s: DiscussionSelection, options?: UrlWriteOptions) => write(s, false, options?.state), [write]),
+    select: useCallback((s: DiscussionSelection, options?: UrlWriteOptions) => write(s, true, options?.state), [write]),
     close: useCallback(() => write({ kind: "none" }, false), [write]),
   };
 }

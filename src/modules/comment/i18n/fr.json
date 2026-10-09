@@ -172,6 +172,32 @@
     },
     "loginToRead": "Connectez-vous pour lire cette discussion."
   },
+  "space": {
+    "title": "Discussions du commun",
+    "titleOf": "Discussions — {{name}}",
+    "description": "Les fils de discussion de ce commun et les messages du fil choisi.",
+    "general": "Discussion générale",
+    "questionUntitled": "Question sans intitulé",
+    "expenseUntitled": "Ligne de dépense",
+    "notFound": "Cet espace de discussion est introuvable.",
+    "loginIfReserved": "Si elle vous est réservée, connectez-vous pour la lire.",
+    "kinds": {
+      "general": "Général",
+      "question": "Question",
+      "expense": "Dépense",
+      "other": "Discussion"
+    },
+    "audiences": {
+      "authorAll": "Publique",
+      "authorAdmin": "Privée",
+      "private": "Admins"
+    },
+    "groups": {
+      "questions": "Questions",
+      "expenses": "Dépenses",
+      "other": "Autres"
+    }
+  },
   "reportDialog": {
     "title": "Signaler ce message",
     "description": "Merci de nous aider à maintenir une communauté respectueuse en signalant les contenus inappropriés.",

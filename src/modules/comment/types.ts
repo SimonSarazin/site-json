@@ -176,6 +176,56 @@ export interface DiscussionThread {
    * distinguer d'un fil réel dont tous les messages auraient été supprimés.
    */
   readonly virtual: boolean;
+  /** Dans l'ESPACE d'un commun seulement : la nature du fil. Absent d'un fil du panneau général. */
+  readonly kind?: SpaceThreadKind;
+  /** Le nom de l'étape de l'appel, pour une question ou une ligne de dépense. */
+  readonly group?: string | null;
+  /** Qui lit une discussion supplémentaire. `null` pour tout autre fil. */
+  readonly audience?: SpaceAudience | null;
+}
+
+/**
+ * Les éléments qui portent un ESPACE de discussion — aujourd'hui le commun, une réponse à un appel.
+ *
+ * Un espace n'est pas un porteur du rail : c'est l'ensemble des fils d'UN élément, posés sur lui
+ * (son fil général) et sur l'appel où il a été déposé (ses questions, ses lignes de dépense, ses
+ * discussions supplémentaires). Il s'ouvre depuis la fiche de l'élément, comme dans le legacy.
+ */
+export const SPACE_TYPES = ["answers"] as const;
+
+export type SpaceType = (typeof SPACE_TYPES)[number];
+
+export interface SpaceRef {
+  readonly type: SpaceType;
+  readonly id: string;
+}
+
+/** La nature d'un fil d'espace, telle que le serveur la nomme. */
+export const SPACE_THREAD_KINDS = ["general", "discussion", "question", "expense", "other"] as const;
+
+export type SpaceThreadKind = (typeof SPACE_THREAD_KINDS)[number];
+
+/**
+ * L'audience d'une discussion supplémentaire : tous · les admins de l'appel, le déposant et les
+ * référents du commun · les admins de l'appel seuls. Le serveur n'en rend une que pour qui la lit.
+ */
+export const SPACE_AUDIENCES = ["authorAll", "authorAdmin", "private"] as const;
+
+export type SpaceAudience = (typeof SPACE_AUDIENCES)[number];
+
+/** L'espace d'un commun, normalisé. */
+export interface DiscussionSpace {
+  readonly space: SpaceRef & {
+    /** Le titre du commun, quand la réponse en porte un au chemin du legacy. */
+    readonly title: string | null;
+    /** L'appel où le commun a été déposé : ses fils de question sont posés sur lui. */
+    readonly formId: string | null;
+  };
+  /** Dans l'ordre du serveur : fil général, discussions, questions (ordre de l'appel), dépenses. */
+  readonly threads: readonly DiscussionThread[];
+  /** Y a-t-il une session ? Sans elle, l'espace se lit sans qu'on puisse y écrire. */
+  readonly canComment: boolean;
+  readonly truncated: boolean;
 }
 
 export type DiscussionDepth = "rail" | "fils" | "fil" | "all";

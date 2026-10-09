@@ -1,10 +1,23 @@
 /**
- * La grammaire commune aux deux premières colonnes du panneau.
+ * La grammaire commune aux deux premières colonnes du panneau, et aux panneaux qui les assemblent.
  *
  * Elle est ici, et pas recopiée dans chaque colonne, parce que le grief d'ergonomie du 24/09
  * venait précisément de là : les colonnes 1 et 2 avaient été écrites comme deux listes
  * Tailwind génériques, sans grammaire partagée, alors que le fil en avait une complète.
  */
+
+/** Largeur de PANNEAU en dessous de laquelle une seule colonne est visible. Suit `styles.css`. */
+export const PANEL_ONE_COLUMN_REM = 48;
+
+/**
+ * Le titre d'une colonne. Il reçoit le focus quand l'étape change en mode une seule colonne,
+ * d'où l'anneau : un point d'arrivée invisible laisserait l'utilisateur sans repère.
+ *
+ * `truncate` sans `min-w-0` ne tronque pas : dans un conteneur flex, l'élément refuse de
+ * passer sous son `min-content` et déborde au lieu de couper.
+ */
+export const PANEL_HEADING = "min-w-0 flex-1 truncate rounded-sm text-sm font-semibold focus-visible:ring-ring "
+  + "focus-visible:ring-2 focus-visible:outline-none";
 
 /** Une liste dense : des rangées pleine largeur séparées d'un filet, pas des pastilles. */
 export const PANEL_LIST = "divide-border/60 flex flex-col divide-y";
@@ -53,4 +66,13 @@ export const PANEL_GROUP_LABEL = [
   "text-muted-foreground hover:text-foreground focus-visible:ring-ring flex w-full items-center",
   "gap-1.5 px-3 py-2 text-start text-[0.6875rem] font-semibold tracking-[0.06em] uppercase",
   "transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:outline-none",
+].join(" ");
+
+/**
+ * L'intertitre d'un groupe de fils — « Proposition », « Dépenses ». Même registre que l'en-tête
+ * repliable ci-dessus, sans son survol ni son anneau : il ne se clique pas.
+ */
+export const PANEL_SECTION_LABEL = [
+  "text-muted-foreground flex w-full items-center px-3 pt-3 pb-1",
+  "text-[0.6875rem] font-semibold tracking-[0.06em] uppercase",
 ].join(" ");

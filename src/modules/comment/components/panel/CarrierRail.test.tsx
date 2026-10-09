@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { Globe } from "lucide-react";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
 import { CarrierRail } from "./CarrierRail";
 import { ThreadColumn } from "./ThreadColumn";
@@ -469,5 +470,150 @@ describe("ThreadColumn", () => {
       <ThreadColumn threads={[]} selected={null} onSelect={() => {}} />);
     expect(sans.querySelector("[data-search-hint]")).toBeNull();
     expect(sans.textContent).toContain("Aucun fil dans cet espace");
+  });
+});
+
+/**
+ * Ce que l'ESPACE d'un commun demande à la colonne : cinq props facultatives. Sans elles la
+ * colonne rend le panneau général à l'identique — c'est ce que garantit la suite ci-dessus, où
+ * aucune n'est passée.
+ */
+describe("ThreadColumn — rangée par l'espace d'un commun", () => {
+  /** Un fil de l'appel : le TYPE du contexte dit « Formulaire », quelle que soit sa nature. */
+  const fil = (cle: string, over: Partial<DiscussionThread> = {}) =>
+    thread({ key: cle, target: { type: "forms", id: ORG, path: cle }, title: `Fil ${cle}`, ...over });
+  const cles = (racine: ParentNode) =>
+    [...racine.querySelectorAll("[data-thread-row]")].map(l => l.getAttribute("data-thread-key"));
+
+  it("remplace l'étiquette de type par celle qu'on lui donne, icône comprise", () => {
+    // « Formulaire » ne distinguerait pas une question d'une discussion réservée.
+    const { container } = wrap(<ThreadColumn threads={[fil("a")]} selected={null} onSelect={() => {}}
+      chip={() => ({ icon: Globe, label: "Publique" })} />);
+    const meta = container.querySelector("[data-thread-meta]")!;
+    expect(meta.querySelector('[title="Publique"]')!.textContent).toBe("Publique");
+    expect(meta.querySelector("svg")!.getAttribute("class")).toContain("lucide-globe");
+    expect(meta.textContent).not.toContain("Formulaire");
+  });
+
+  it("garde l'étiquette de type quand on ne lui en donne pas pour ce fil", () => {
+    const { container } = wrap(<ThreadColumn threads={[fil("a"), fil("b")]} selected={null} onSelect={() => {}}
+      chip={th => (th.key === "a" ? { icon: Globe, label: "Publique" } : null)} />);
+    const metas = [...container.querySelectorAll("[data-thread-meta]")];
+    expect(metas[0].textContent).toContain("Publique");
+    expect(metas[1].textContent).toContain("Formulaire");
+  });
+
+  it("nomme un fil que le serveur ne titre pas, sans jamais remplacer un vrai titre", () => {
+    wrap(<ThreadColumn
+      threads={[fil("a", { title: null }), fil("b", { title: "Budget prévisionnel" }), fil("c", { title: null })]}
+      selected={null} onSelect={() => {}}
+      titleFallback={th => (th.key === "c" ? null : "Discussion générale")} />);
+    // Proposé pour « a » comme pour « b » : seul le fil sans titre le prend.
+    expect(screen.getAllByText("Discussion générale")).toHaveLength(1);
+    expect(screen.getByText("Budget prévisionnel")).toBeTruthy();
+    // Sans nom proposé pour ce fil-là, la colonne garde son repli : jamais un vide cliquable.
+    expect(screen.getByText("Sans titre")).toBeTruthy();
+  });
+
+  /**
+   * Les questions d'un appel se lisent étape par étape, dans l'ordre de l'appel. La colonne ne
+   * retrie donc RIEN : elle pose un intertitre à chaque changement, ce qui laisse deux groupes
+   * du même nom si le serveur y revient — fusionner déplacerait un fil.
+   */
+  it("range les fils sous leurs intertitres, dans l'ordre reçu, sans fusionner ni retrier", () => {
+    const etapes: Record<string, string | null> = { a: null, b: "Proposition", c: "Proposition", d: "Bilan", e: "Proposition" };
+    const { container } = wrap(<ThreadColumn
+      threads={["a", "b", "c", "d", "e"].map(cle => fil(cle))}
+      selected={null} onSelect={() => {}} groupLabel={th => etapes[th.key]} />);
+
+    const groupes = [...container.querySelectorAll("[data-thread-group]")];
+    expect(groupes.map(g => g.getAttribute("data-thread-group"))).toEqual(["", "Proposition", "Bilan", "Proposition"]);
+    expect(groupes.map(g => cles(g))).toEqual([["a"], ["b", "c"], ["d"], ["e"]]);
+    expect(cles(container)).toEqual(["a", "b", "c", "d", "e"]);
+  });
+
+  it("fait de chaque groupe une liste nommée par son intertitre — annoncée comme telle", () => {
+    const { container } = wrap(<ThreadColumn threads={[fil("a"), fil("b")]} selected={null} onSelect={() => {}}
+      groupLabel={th => (th.key === "a" ? null : "Proposition")} />);
+    const listes = [...container.querySelectorAll("[data-thread-group] > ul")];
+    // Le groupe sans intertitre garde le nom de la liste du panneau général.
+    expect(listes.map(l => l.getAttribute("aria-label"))).toEqual(["Fils", "Proposition"]);
+    // L'intertitre visible est décoratif : le nom de la liste le dit déjà, il ne se lit pas deux fois.
+    const intertitres = [...container.querySelectorAll("[data-thread-group] > p")];
+    expect(intertitres.map(i => i.textContent)).toEqual(["Proposition"]);
+    expect(intertitres[0].getAttribute("aria-hidden")).toBe("true");
+    // Deux groupes, deux listes : aucune liste « à plat » — celle du panneau général — en plus.
+    expect(container.querySelectorAll("ul")).toHaveLength(2);
+  });
+
+  it("garde les rangées d'un groupe quand un autre apparaît au-dessus — le focus n'est pas perdu", () => {
+    // Une discussion qu'on vous ouvre, une étape qui reçoit son premier message : un groupe de plus
+    // en tête de liste. Les groupes suivants ne doivent pas être remontés pour autant.
+    const etapes: Record<string, string | null> = { nouveau: "Proposition", b: "Bilan", c: "Bilan" };
+    const colonne = (cles: string[]) => (
+      <ThreadColumn threads={cles.map(cle => fil(cle))} selected={null} onSelect={() => {}} groupLabel={th => etapes[th.key]} />
+    );
+    const { container, rerender } = wrap(colonne(["b", "c"]));
+    const rangee = () => container.querySelector<HTMLElement>('[data-thread-key="c"]')!;
+    const avant = rangee();
+    avant.focus();
+    expect(document.activeElement).toBe(avant);
+
+    rerender(<LocalizationProvider>{colonne(["nouveau", "b", "c"])}</LocalizationProvider>);
+    expect(cles(container)).toEqual(["nouveau", "b", "c"]);
+    // Le même nœud, pas un remplaçant : c'est ce qui garde le focus où il était.
+    expect(rangee()).toBe(avant);
+    expect(document.activeElement).toBe(avant);
+  });
+
+  it("sépare les groupes d'un filet, sauf le premier", () => {
+    const { container } = wrap(<ThreadColumn threads={[fil("a"), fil("b")]} selected={null} onSelect={() => {}}
+      groupLabel={th => (th.key === "a" ? null : "Proposition")} />);
+    const [premier, second] = [...container.querySelectorAll("[data-thread-group]")];
+    expect(premier.className).not.toContain("border-t");
+    expect(second.className).toContain("border-t");
+  });
+
+  it("garde dans la liste un fil vierge ÉPINGLÉ, et replie les autres", () => {
+    // Le fil général d'un commun : vierge ou non, c'est là qu'on arrive.
+    const { container } = wrap(<ThreadColumn
+      threads={[fil("general", { virtual: true, total: 0, last: null }), fil("question", { virtual: true, total: 0, last: null })]}
+      selected={null} onSelect={() => {}} pinned={th => th.key === "general"} />);
+    const pli = container.querySelector(".comment-collapsible")!;
+    expect(cles(pli)).toEqual(["question"]);
+    expect(cles(container.querySelector('ul[aria-label="Fils"]')!)).toEqual(["general"]);
+    // Le pli ne compte que ce qu'il contient.
+    expect(screen.getByRole("button", { name: "Sans discussion (1)" })).toBeTruthy();
+  });
+
+  it("épingle aussi sous intertitres : le fil vierge épinglé reste dans son groupe", () => {
+    const { container } = wrap(<ThreadColumn
+      threads={[fil("general", { virtual: true, total: 0, last: null }), fil("question", { virtual: true, total: 0, last: null })]}
+      selected={null} onSelect={() => {}} pinned={th => th.key === "general"} groupLabel={() => null} />);
+    expect(cles(container.querySelector("[data-thread-group]")!)).toEqual(["general"]);
+    expect(cles(container.querySelector(".comment-collapsible")!)).toEqual(["question"]);
+  });
+
+  it("invite à démarrer un fil vierge par défaut, avec les mots qu'on lui donne sinon", () => {
+    const vierge = fil("a", { virtual: true, total: 0, last: null });
+    const { container: defaut } = wrap(
+      <ThreadColumn threads={[vierge]} selected={null} onSelect={() => {}} pinned={() => true} />);
+    expect(defaut.querySelector("[data-thread-meta]")!.textContent).toContain("Démarrer la discussion");
+
+    const { container: autre } = wrap(
+      <ThreadColumn threads={[vierge]} selected={null} onSelect={() => {}} pinned={() => true} startLabel="Écrire le premier message" />);
+    expect(autre.querySelector("[data-thread-meta]")!.textContent).toContain("Écrire le premier message");
+    expect(autre.querySelector("[data-thread-meta]")!.textContent).not.toContain("Démarrer la discussion");
+  });
+
+  it("se tait sur un fil vierge quand le lecteur ne peut pas écrire (`startLabel` nul)", () => {
+    // Un visiteur n'a rien à démarrer : ni invitation, ni « 0 message » qui ferait croire à un fil vidé.
+    const { container } = wrap(<ThreadColumn
+      threads={[fil("a", { virtual: true, total: 0, last: null })]}
+      selected={null} onSelect={() => {}} pinned={() => true} startLabel={null} />);
+    const meta = container.querySelector("[data-thread-meta]")!;
+    expect(meta.textContent).toBe("Formulaire");
+    expect(meta.textContent).not.toContain("Démarrer");
+    expect(meta.textContent).not.toContain("0");
   });
 });

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ChevronRight, MessageSquare, PenLine, Users } from "lucide-react";
+import { ChevronRight, MessageSquare, PenLine, Users, type LucideIcon } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from "@/lib/utils";
@@ -9,7 +9,7 @@ import { contextIcon } from "../../constants/contextIcons";
 import { compactWhen } from "../../lib/formatWhen";
 import { motsDeRequete } from "../../lib/searchDiscussions";
 import { Surligne } from "./Surligne";
-import { PANEL_GROUP_LABEL, PANEL_LIST, PANEL_NAME, PANEL_ROW, PANEL_ROW_BAR } from "./rowStyles";
+import { PANEL_GROUP_LABEL, PANEL_LIST, PANEL_NAME, PANEL_ROW, PANEL_ROW_BAR, PANEL_SECTION_LABEL } from "./rowStyles";
 import type { CarrierRef, DiscussionThread } from "../../types";
 
 export interface ThreadColumnProps {
@@ -33,7 +33,48 @@ export interface ThreadColumnProps {
    * nommé dans l'en-tête — le répéter à chaque ligne serait du bruit.
    */
   readonly carrierName?: (carrier: CarrierRef | null) => string | null;
+  /**
+   * L'étiquette d'une rangée, quand le TYPE du contexte ne dit pas ce qu'est le fil : dans l'espace
+   * d'un commun, « Formulaire » ne distinguerait pas une question d'une discussion réservée.
+   * `null` rend l'étiquette de type habituelle.
+   */
+  readonly chip?: (thread: DiscussionThread) => ThreadChip | null;
+  /** Le titre d'un fil que le serveur ne titre pas — le fil général d'un espace, que l'écran nomme. */
+  readonly titleFallback?: (thread: DiscussionThread) => string | null;
+  /**
+   * L'intertitre sous lequel ranger un fil. Fourni, la liste garde l'ORDRE REÇU et en pose un à
+   * chaque changement : les questions d'un appel se lisent étape par étape.
+   */
+  readonly groupLabel?: (thread: DiscussionThread) => string | null;
+  /** Un fil vierge qui reste dans la liste, au lieu de rejoindre « Sans discussion ». */
+  readonly pinned?: (thread: DiscussionThread) => boolean;
+  /**
+   * Ce que dit un fil vierge à la place de son compteur. Par défaut l'invitation à le démarrer ;
+   * `null` pour ne rien dire — le lecteur qui ne peut pas écrire n'a rien à démarrer.
+   */
+  readonly startLabel?: string | null;
   readonly className?: string;
+}
+
+/** L'étiquette d'une rangée : une icône, et le libellé qu'elle remplace sur une colonne étroite. */
+export interface ThreadChip {
+  readonly icon: LucideIcon;
+  readonly label: string;
+}
+
+/** Les fils, regroupés par intertitre, dans l'ordre reçu — un groupe par suite d'intertitres égaux. */
+function sectionsOf(
+  threads: readonly DiscussionThread[],
+  labelOf: (thread: DiscussionThread) => string | null,
+): readonly { readonly label: string | null; readonly threads: readonly DiscussionThread[] }[] {
+  const sections: { label: string | null; threads: DiscussionThread[] }[] = [];
+  for (const thread of threads) {
+    const label = labelOf(thread);
+    const derniere = sections[sections.length - 1];
+    if (derniere && derniere.label === label) derniere.threads.push(thread);
+    else sections.push({ label, threads: [thread] });
+  }
+  return sections;
 }
 
 /**
@@ -50,7 +91,8 @@ export interface ThreadColumnProps {
  * même échelle typographique. C'est cette grammaire commune qui manquait au premier rendu.
  */
 export function ThreadColumn({
-  threads, selected, onSelect, isLoading, truncated, query, carrierName, className,
+  threads, selected, onSelect, isLoading, truncated, query, carrierName,
+  chip, titleFallback, groupLabel, pinned, startLabel, className,
 }: ThreadColumnProps) {
   const t = useT("modules/comment");
   // Les dates suivent la langue de l'interface — elles sortaient toujours en français.
@@ -104,11 +146,13 @@ export function ThreadColumn({
     const isSelected = thread.key === selected;
     const when = thread.last === null ? null : compactWhen(thread.last, { locale: currentLocale });
     const whenLabel = when === null ? null : when.key === null ? when.text : String(t(`dates.${when.key}`));
-    const title = thread.title ?? String(t("panel.untitled"));
-    const typeLabel = String(t(`contextTypes.${thread.target.type}`));
+    const title = thread.title ?? titleFallback?.(thread) ?? String(t("panel.untitled"));
+    const etiquette = chip?.(thread) ?? null;
+    const typeLabel = etiquette?.label ?? String(t(`contextTypes.${thread.target.type}`));
     const countLabel = String(t("panel.messageCount", undefined, { count: thread.total }));
     const mineLabel = String(t("panel.mine"));
-    const TypeIcon = contextIcon(thread.target.type);
+    const TypeIcon = etiquette?.icon ?? contextIcon(thread.target.type);
+    const demarrer = startLabel === undefined ? String(t("panel.startThread")) : startLabel;
     const espace = carrierName ? carrierName(thread.carrier) : null;
 
     return (
@@ -194,7 +238,7 @@ export function ThreadColumn({
                 Afficher « 0 message » et une date vide laisserait croire à un fil dont on
                 aurait tout effacé. */}
             {thread.virtual
-              ? <span className="text-primary/80">{String(t("panel.startThread"))}</span>
+              ? demarrer !== null && <span className="text-primary/80">{demarrer}</span>
               : (
                 <>
                   <span className="flex items-center gap-1 tabular-nums" title={countLabel}>
@@ -217,16 +261,32 @@ export function ThreadColumn({
     );
   };
 
-  const actifs = threads.filter(th => !th.virtual);
-  const vierges = threads.filter(th => th.virtual);
+  const epingle = (thread: DiscussionThread) => pinned?.(thread) === true;
+  const actifs = threads.filter(th => !th.virtual || epingle(th));
+  const vierges = threads.filter(th => th.virtual && !epingle(th));
 
   return (
     <ScrollArea className={className}>
-      {actifs.length > 0 && (
+      {actifs.length > 0 && !groupLabel && (
         <ul className={PANEL_LIST} aria-label={String(t("panel.threads"))}>
           {actifs.map(rangee)}
         </ul>
       )}
+      {/* Rangés par intertitre : chaque groupe est une liste à part, nommée par le sien, pour que
+          le lecteur d'écran annonce « Proposition, liste de 3 éléments » et non une seule liste
+          entrecoupée de titres qui n'en sont pas. */}
+      {/* La clé d'un groupe est celle de son premier fil, pas son rang : un groupe qui apparaît
+          au-dessus (une discussion qu'on vous ouvre, une étape qui reçoit son premier message)
+          décalerait tous les rangs, remonterait les groupes suivants et ferait perdre le focus
+          de la rangée qu'on tenait. Un intertitre ne suffirait pas, il peut revenir deux fois. */}
+      {actifs.length > 0 && groupLabel && sectionsOf(actifs, groupLabel).map((section, index) => (
+        <div key={section.threads[0].key} data-thread-group={section.label ?? ""} className={cn(index > 0 && "border-t")}>
+          {section.label && <p className={PANEL_SECTION_LABEL} aria-hidden>{section.label}</p>}
+          <ul className={PANEL_LIST} aria-label={section.label ?? String(t("panel.threads"))}>
+            {section.threads.map(rangee)}
+          </ul>
+        </div>
+      ))}
 
       {vierges.length > 0 && (
         <div data-empty-group data-open={ouvert} className={cn(actifs.length > 0 && "border-t")}>
