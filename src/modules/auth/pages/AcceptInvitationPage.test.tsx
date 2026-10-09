@@ -91,6 +91,15 @@ describe("AcceptInvitationPage — charge utile envoyée au clic", () => {
     expect(screen.getByText("fiche du lieu")).toBeInTheDocument();
   });
 
+  it("demande d'adhésion acceptée par un admin : « Continuer » mène aussi à la fiche", async () => {
+    rendre(`${BASE}/linkOption/toBeValidated/key/sig123/costumSlug/s/answer/true`);
+    fireEvent.click(screen.getByText("Accepter la demande"));
+    await waitFor(() => expect(screen.getByText("Votre réponse a été enregistrée.")).toBeInTheDocument());
+    expect(state.organization).toHaveBeenCalledWith({ id: "o1" });
+    fireEvent.click(screen.getByText("JoinByLink.continue"));
+    expect(screen.getByText("fiche du lieu")).toBeInTheDocument();
+  });
+
   it("un échec du rafraîchissement de `me` n'affiche pas la réponse comme ratée", async () => {
     state.refresh.mockRejectedValue(new Error("réseau"));
     rendre(`${BASE}/costum/true/answer/true`);
