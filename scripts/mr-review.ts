@@ -437,9 +437,12 @@ async function gates(): Promise<number> {
   if (configs.length === 0) {
     executer("config", "true", [], "aucune config.prod*.json modifiée");
   } else {
-    for (const c of configs) executer("config", "npx", ["tsx", "scripts/validate-config.ts", c]);
-    // Un seul libellé lisible : `config` × N fichiers.
-    for (const r of resultats) if (r.nom === "config" && r.code !== null) r.nom = `config:validate ${configs.length > 1 ? `(${configs.length} fichiers)` : configs[0]}`;
+    // Une ligne par fichier validé : le nom de la gate porte le fichier.
+    for (const c of configs) {
+      executer("config", "npx", ["tsx", "scripts/validate-config.ts", c]);
+      const r = resultats[resultats.length - 1];
+      if (r.nom === "config") r.nom = `config:validate ${c}`;
+    }
   }
 
   const contexteTxt = `testé sur ${sha7(meta.headSha)}${meta.mergedMain ? ` + origin/main ${sha7(meta.mainSha)}` : ""}${meta.nodeModules.includes("divergent") ? " — ⚠ node_modules de main, lockfile divergent" : ""}`;

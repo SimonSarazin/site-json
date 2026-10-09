@@ -42,6 +42,75 @@
           "en": "Agenda"
         },
         "path": "/agenda"
+      },
+      {
+        "label": {
+          "fr": "Outils et ressources",
+          "en": "Tools & Resources"
+        },
+        "icon": "wrench",
+        "children": [
+          {
+            "label": {
+              "fr": "Forum",
+              "en": "Forum"
+            },
+            "description": {
+              "fr": "Les échanges de la communauté Fabrique des Mobilités sur les transformations de la mobilité",
+              "en": "Fabrique des Mobilités community discussions on the transformations of mobility"
+            },
+            "icon": "messages-square",
+            "href": "https://forum.fabmob.io/"
+          },
+          {
+            "label": {
+              "fr": "Chat",
+              "en": "Chat"
+            },
+            "description": {
+              "fr": "Les canaux de discussion instantanée de la communauté, sur Element",
+              "en": "The community's instant-messaging channels, on Element"
+            },
+            "icon": "message-circle",
+            "href": "https://chat.fabmob.io/"
+          },
+          {
+            "label": {
+              "fr": "Wiki XD",
+              "en": "XD wiki"
+            },
+            "description": {
+              "fr": "La documentation collaborative de l'eXtrême Défi, sur le wiki de la Fabrique des Mobilités",
+              "en": "Collaborative documentation of the eXtreme Challenge, on the Fabrique des Mobilités wiki"
+            },
+            "icon": "book-open",
+            "href": "https://wikixd.fabmob.io/"
+          },
+          {
+            "label": {
+              "fr": "Les véhicules XD",
+              "en": "XD vehicles"
+            },
+            "description": {
+              "fr": "Le catalogue des véhicules intermédiaires conçus dans le cadre du Défi",
+              "en": "The catalogue of intermediate vehicles designed through the Challenge"
+            },
+            "icon": "bike",
+            "href": "https://wikixd.fabmob.io/wiki/Vehicules"
+          },
+          {
+            "label": {
+              "fr": "Site institutionnel",
+              "en": "Institutional website"
+            },
+            "description": {
+              "fr": "Le programme eXtrême Défi présenté par l'ADEME, sur xd.ademe.fr",
+              "en": "The eXtreme Challenge programme presented by ADEME, on xd.ademe.fr"
+            },
+            "icon": "globe",
+            "href": "https://xd.ademe.fr/"
+          }
+        ]
       }
     ],
     "sticky": true,

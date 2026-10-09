@@ -54,7 +54,7 @@ function InfoCard({
  * Lecture déléguée à `parseCoformAnswer` (partagé avec `CardAnswer`) ;
  * libellés via i18n (`coformAnswer.*` / `days.*`).
  */
-export default function PreviewCoformAnswer({ item, preview, onClose }: PreviewProps) {
+export default function PreviewCoformAnswer({ item, preview, onClose, onEdited }: PreviewProps) {
   useLoadNamespace("modules/search");
   const t = useT("modules/search");
   const { entity, me } = useCocolight();
@@ -91,8 +91,9 @@ export default function PreviewCoformAnswer({ item, preview, onClose }: PreviewP
 
   // Le contenu du dialog vient du cache search (jamais re-fetché) : après un
   // save, on invalide les listes (liste ET carte — cache 30 min de
-  // `useSearchAllResults`) + le détail coform, puis on FERME le détail pour ne
-  // pas laisser l'ancien état affiché.
+  // `useSearchAllResults`) + le détail coform, on prévient l'hôte (`onEdited` :
+  // ses propres caches, ex. la table admin qui a ouvert ce détail), puis on
+  // FERME le détail pour ne pas laisser l'ancien état affiché.
   const handleEdited = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_LIST_PREFIX) });
     queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_MAP_PREFIX) });
@@ -102,8 +103,9 @@ export default function PreviewCoformAnswer({ item, preview, onClose }: PreviewP
       });
     }
     setEditRequested(false);
+    onEdited?.();
     onClose?.();
-  }, [queryClient, answerRef, me?.id, onClose]);
+  }, [queryClient, answerRef, me?.id, onEdited, onClose]);
 
   if (!serverData) {
     return null;
