@@ -105,7 +105,7 @@
       "search": true,
       "auth": true,
       "cart": false,
-      "notifications": false
+      "notifications": true
     }
   },
   "pages": [
@@ -510,10 +510,46 @@
                   "en": "Refine your search"
                 },
                 "defaultOpenGroups": [
-                  "activityType",
-                  "beneficiaries"
+                  "sportHealthType"
                 ],
                 "filterGroups": [
+                  {
+                    "id": "sportHealthType",
+                    "label": {
+                      "fr": "Type de Sport Santé",
+                      "en": "Sport-health type"
+                    },
+                    "type": "filters",
+                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1cs8on3yru1p80lq",
+                    "optionStyle": "check",
+                    "order": 1,
+                    "options": [
+                      {
+                        "id": "ssso",
+                        "label": {
+                          "fr": "Sport santé sur ordonnance",
+                          "en": "Sport health on prescription"
+                        },
+                        "name": "Sport santé sur ordonnance - SSsO"
+                      },
+                      {
+                        "id": "sspt",
+                        "label": {
+                          "fr": "Sport santé pour tous",
+                          "en": "Sport health for all"
+                        },
+                        "name": "Sport santé pour tous - SSpT"
+                      },
+                      {
+                        "id": "sssl",
+                        "label": {
+                          "fr": "Sport santé sans label",
+                          "en": "Sport health without label"
+                        },
+                        "name": "Sport santé sans label - SSsL"
+                      }
+                    ]
+                  },
                   {
                     "id": "activityType",
                     "label": {
@@ -523,7 +559,7 @@
                     "type": "filters",
                     "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegdo93f77wi3y186s",
                     "optionStyle": "check",
-                    "order": 1,
+                    "order": 2,
                     "options": [
                       {
                         "id": "sports-collectif",
@@ -596,43 +632,6 @@
                           "en": "Other sports"
                         },
                         "name": "Autres sports"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "sportHealthType",
-                    "label": {
-                      "fr": "Type de Sport Santé",
-                      "en": "Sport-health type"
-                    },
-                    "type": "filters",
-                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1cs8on3yru1p80lq",
-                    "optionStyle": "check",
-                    "order": 2,
-                    "options": [
-                      {
-                        "id": "ssso",
-                        "label": {
-                          "fr": "Sport santé sur ordonnance",
-                          "en": "Sport health on prescription"
-                        },
-                        "name": "Sport santé sur ordonnance - SSsO"
-                      },
-                      {
-                        "id": "sspt",
-                        "label": {
-                          "fr": "Sport santé pour tous",
-                          "en": "Sport health for all"
-                        },
-                        "name": "Sport santé pour tous - SSpT"
-                      },
-                      {
-                        "id": "sssl",
-                        "label": {
-                          "fr": "Sport santé sans label",
-                          "en": "Sport health without label"
-                        },
-                        "name": "Sport santé sans label - SSsL"
                       }
                     ]
                   },
@@ -1074,6 +1073,8 @@
           "type": "steps",
           "id": "inscription-steps",
           "props": {
+            "orientation": "vertical",
+            "showProgress": false,
             "steps": [
               {
                 "icon": "stethoscope",
@@ -1768,50 +1769,46 @@
           }
         },
         {
-          "type": "steps",
-          "id": "prescription-steps",
+          "type": "timeline",
+          "id": "prescription-timeline",
           "props": {
-            "steps": [
+            "events": [
               {
-                "icon": "list-checks",
                 "title": {
                   "fr": "Vérifiez la compatibilité",
                   "en": "Check compatibility"
                 },
-                "description": {
+                "text": {
                   "fr": "Consultez les pathologies compatibles et les contre-indications indiquées sur la fiche du créneau avant de prescrire.",
                   "en": "Review the compatible conditions and contraindications listed on the slot page before prescribing."
                 }
               },
               {
-                "icon": "file-text",
                 "title": {
                   "fr": "Remplissez le formulaire APA",
                   "en": "Fill in the APA form"
                 },
-                "description": {
+                "text": {
                   "fr": "Téléchargez et complétez le formulaire de prescription d'Activité Physique Adaptée propre au créneau.",
                   "en": "Download and complete the Adapted Physical Activity prescription form specific to the slot."
                 }
               },
               {
-                "icon": "handshake",
                 "title": {
                   "fr": "Remettez la prescription au patient",
                   "en": "Give the prescription to the patient"
                 },
-                "description": {
+                "text": {
                   "fr": "Votre patient se présente au créneau avec ce document ; l'éducateur APA adapte la séance aux informations transmises.",
                   "en": "Your patient attends the slot with this document; the APA educator adapts the session to the information provided."
                 }
               },
               {
-                "icon": "message-square",
                 "title": {
                   "fr": "Assurez le suivi via PandaLab Pro",
                   "en": "Follow up via PandaLab Pro"
                 },
-                "description": {
+                "text": {
                   "fr": "Échangez directement avec l'éducateur APA référent via le groupe Ekilib.re sur PandaLab Pro, messagerie sécurisée HDS.",
                   "en": "Communicate directly with the referring APA educator via the Ekilib.re group on PandaLab Pro, HDS-certified secure messaging."
                 }
@@ -2604,6 +2601,30 @@
       },
       "items": [
         {
+          "icon": "mail",
+          "value": {
+            "fr": "contact@ekilib.re",
+            "en": "contact@ekilib.re"
+          },
+          "href": "mailto:contact@ekilib.re"
+        },
+        {
+          "icon": "facebook",
+          "value": {
+            "fr": "Facebook",
+            "en": "Facebook"
+          },
+          "href": "https://www.facebook.com/101136301493344"
+        },
+        {
+          "icon": "linkedin",
+          "value": {
+            "fr": "LinkedIn",
+            "en": "LinkedIn"
+          },
+          "href": "https://www.linkedin.com/company/association-ekilib-re/"
+        },
+        {
           "icon": "phone",
           "value": {
             "fr": "06 93 51 42 24",
@@ -2640,15 +2661,8 @@
               "en": "Saturday: 8:30am – 12:00pm"
             }
           ]
-        },
-        {
-          "icon": "mail",
-          "value": {
-            "fr": "contact@ekilib.re",
-            "en": "contact@ekilib.re"
-          },
-          "href": "mailto:contact@ekilib.re"
         }
+        
       ]
     },
     "partners": {
@@ -2663,21 +2677,6 @@
         }
       ]
     },
-
-    "socials": [
-      {
-        "platform": "facebook",
-        "url": "https://www.facebook.com/101136301493344"
-      },
-      {
-        "platform": "linkedin",
-        "url": "https://www.linkedin.com/company/association-ekilib-re/"
-      },
-      {
-        "platform": "mail",
-        "url": "mailto:contact@ekilib.re"
-      }
-    ],
     "legalLinks": [
       {
         "href": "/mentions-legales",
@@ -3135,7 +3134,7 @@
               "fr": "Structures du site",
               "en": "Site structures"
             },
-            "create": false,
+            "create": "add-structure",
             "restrictActionsToOwned": true,
             "rowActions": [
               "edit",
