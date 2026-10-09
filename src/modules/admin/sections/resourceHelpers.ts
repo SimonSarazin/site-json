@@ -39,6 +39,16 @@ function identiteCompatible(identity: Record<string, unknown> | undefined, filte
 }
 
 /**
+ * Id du form CoForm dont le bouton « Créer » de la resource ouvre la saisie d'une RÉPONSE
+ * (`create: { "coform": "<formId>" }`, resources `answers`) — `null` pour toute autre forme de
+ * `create`. Exclusif avec `resolveCreateModal` : l'un ou l'autre porte le bouton, jamais les deux.
+ */
+export function createCoformId(section: AdminResourceSection): string | null {
+  const create = section.create;
+  return create && typeof create === "object" ? create.coform : null;
+}
+
+/**
  * Résout la clé de modale de CRÉATION d'une resource — le CHOIX costum/standard appartient à la
  * config (`create`) :
  *  - `false` → pas de création ;
@@ -70,6 +80,8 @@ export function resolveCreateModal(
 ): string | null {
   const create = section.create ?? "inherit";
   if (create === false) return null;
+  // Création par CoFormModal (`{coform}`) : pas une modale d'entité — cf. `createCoformId`.
+  if (typeof create === "object") return null;
   const standard = STANDARD_ADD_MODAL_BY_TYPE[section.entityType] ?? null;
   if (create === "standard") return standard;
   if (typeof create === "string" && create !== "inherit") return create;
@@ -167,6 +179,20 @@ export function getColumnValue(obj: unknown, path: string): unknown {
     return resolveEventStartDate(obj as Record<string, unknown>);
   }
   return getPath(obj, path);
+}
+
+/** Média audio d'une ligne (`medias[]` : `{ type: "audio", url }`). */
+function isAudioMedia(media: unknown): media is { type: "audio"; url?: unknown } {
+  return !!media && typeof media === "object" && (media as { type?: unknown }).type === "audio";
+}
+
+/**
+ * Source du lecteur d'une cellule `audio` : URL directe, ou 1er `medias[]` de type audio de la
+ * ligne — `undefined` sans fichier lisible (la cellule affiche alors « — » et ne retient aucun clic).
+ */
+export function audioSrc(value: unknown): string | undefined {
+  const url = Array.isArray(value) ? value.find(isAudioMedia)?.url : value;
+  return typeof url === "string" && url !== "" ? url : undefined;
 }
 
 /** Lit un champ de statut (mode `statusField`) : chemin complet d'abord, puis la clé FEUILLE à plat.

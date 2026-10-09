@@ -394,11 +394,20 @@ Un **codec** est un couple de transforms read/write référencé par clé. Trois
 |---|---|---|
 | **Lié au WIDGET spécialisé** | `openingHours:read/write` | fourni AUTO par `WIDGET_DEFAULTS` → le champ hérite, 0 code costum |
 | **Clé partagée NOMMÉE** | `address:read/write`, `social:read/write` | widget générique → référencée explicitement (champ ou `serializeGroup`) |
-| **Codec de groupe PARAMÉTRÉ** | `monthYear`, `enumOrOther`, `multiCsv` | `serializeGroups[x] = { …, params }` ; le pipeline passe `params` en 3ᵉ arg d'`applyTransform` |
+| **Codec de groupe PARAMÉTRÉ** | `monthYear`, `enumOrOther`, `multiCsv`, `fixedTags` | `serializeGroups[x] = { …, params }` ; le pipeline passe `params` en 3ᵉ arg d'`applyTransform` |
 
 Les coercions de TYPE (`coerce:string/bool/number/…`) sont génériques (`engine`). Le `params` d'un codec de groupe
 est **donné** dans le schéma → un codec réutilisable (ex. `monthYear` = 2 selects mois+année ↔ `DD/MM/YYYY`,
 params `{monthField, yearField, day}`).
+
+`fixedTags` (params `{field, fixed[]}`) : mots-clés **imposés** par le formulaire. À la lecture, le widget ne
+montre que les mots-clés libres (les imposés en sont retirés) ; à l'écriture, les imposés reviennent en tête,
+dédupliqués, l'ordre des libres préservé — la fiche ne sort donc jamais de l'annuaire filtré sur ce tag. Codec de
+GROUPE pour que la liste des tags vive en config (un codec de champ ne reçoit pas de `params`) ; pas une estampille
+`append`, qui en édition refusionne les tags serveur et rend tout mot-clé libre indélébile. Premier usage :
+`rezo-sante-lieu` (`config.prod.rezo-sante-reunion.json`), dont le tag `lieux-sante` est aussi le `defaultTags` de
+la page `/lieux-sante` (`defaultFilters.tags.$in`, égalité exacte comme le codec) et le `hideTags` de sa carte —
+un seul contrat, gardé par `rezo-sante.configDriven.test.ts`.
 
 ### `enumFrom` — options dynamiques par clé
 

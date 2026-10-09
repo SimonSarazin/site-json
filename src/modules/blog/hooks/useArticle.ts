@@ -15,6 +15,11 @@ export interface ArticleData {
   created?: number;
   updated?: number;
   tags?: string[];
+  /** Territoires couverts (ex. parent62 : `costumForms.parent62-article`) — absent sur un site qui ne
+   *  déclare pas ce champ, cf. `ArticleTaxonomy`. */
+  territoires?: string[];
+  /** Publics visés (même origine que `territoires`). */
+  publics?: string[];
   slug?: string;
   type?: string;
   parent?: Record<string, { type?: string; name?: string }>;

@@ -13,6 +13,7 @@
  */
 import fs from "node:fs";
 import { SiteConfig } from "../src/types/site-schema";
+import { flattenIssues } from "./lib/zod-issues";
 
 const file = process.argv[2];
 if (!file) {
@@ -50,11 +51,13 @@ function valueAt(obj: unknown, path: PropertyKey[]): unknown {
   return cur;
 }
 
-console.error(`✗ ${file} : ${result.error.issues.length} erreur(s)\n`);
-for (const issue of result.error.issues) {
+// Unions DÉPLIÉES : sans ça, une section builtin fautive ne disait que « Invalid input ».
+const issues = flattenIssues(result.error.issues);
+console.error(`✗ ${file} : ${issues.length} erreur(s)\n`);
+for (const issue of issues) {
   const path = issue.path.length ? issue.path.join(".") : "(racine)";
   let detail = `${issue.message} [${issue.code}]`;
-  // Les erreurs d'union (ex. type de section inconnu) ne disent pas la valeur
+  // Une union restée opaque (ex. type de section inconnu) ne dit pas la valeur
   // fautive — on l'ajoute (et le `type` du parent si c'est une section).
   if (issue.code === "invalid_union") {
     const received = valueAt(raw, issue.path);

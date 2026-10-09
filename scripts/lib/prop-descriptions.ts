@@ -335,7 +335,14 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.design": "Habillage : sticker (défaut, titre incliné sur l'illustration) ou card (titre débordant du haut, accroche dessous, illustration sur son propre aplat) — card suppose un bloc posé DANS une carte.",
     "props.badgeColor": "Fond de l'étiquette de titre (couleur CSS). Défaut : le marine fixe de la carte. Indépendant du fond du bloc.",
     "props.badgeTextColor": "Encre de l'étiquette de titre. Défaut blanc : contraste AA à mesurer sur badgeColor.",
-    "props.headlineStyle": "Forme du titre : badge (défaut, étiquette inclinée) ou pill (arrondi droit) — à aligner sur les autres bandes de la page.",
+    "props.headlineStyle": "Forme du titre : badge (défaut, étiquette inclinée), pill (arrondi droit) ou text (texte seul, sans fond ni rotation, plus grand) — à aligner sur les autres bandes de la page.",
+    "props.headlineIcon": "Icône lucide (kebab-case) posée avant le texte du titre, ex. map-pin. Absente : titre texte seul (historique).",
+    "props.headlineIconColor": "Couleur de l'icône du titre — indépendante de la couleur du texte. Défaut : hérite de la couleur du texte (currentColor).",
+    "props.animate": "Bulles qui apparaissent en cascade puis respirent en boucle, en scale seul (jamais d'opacité, qui délaverait leur couleur de marque). Rien sous prefers-reduced-motion. Défaut false.",
+    "props.illustrationMaxWidth": "Largeur max de l'illustration (longueur CSS, calc()/min() acceptés), centrée dans son panneau ; les bulles, en % de l'illustration, suivent. Absent : toute la largeur.",
+    "props.illustrationMaxHeight": "Plafond de HAUTEUR de l'illustration (longueur CSS, ex. 80vh), centrée — opt-in. Requiert illustrationAspectRatio. Pour une illustration haute étirée par une colonne voisine (align:stretch).",
+    "props.illustrationAspectRatio": "Ratio largeur/hauteur CSS exact du fichier (ex. 996/945), requis avec illustrationMaxHeight — sans lui, un fichier hors du format 4:3 par défaut serait étiré.",
+    "props.illustrationBackgroundImage": "Image de fond de l'illustration (ex. un dégradé déjà cuit en PNG) — prime sur backgroundOverlay (CSS) si les deux sont fournis. Couvre tout le panneau, centrée.",
   },
 
   "section:action-tiles": {
@@ -344,9 +351,19 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.width": "Largeur de la grille : default (1024 px max) ou wide (1280 px max) — pour 4 tuiles et plus en size lg, sinon les titres passent sur 3 lignes.",
     "props.actions[].background": "Fond PLEIN de la tuile (couleur CSS, var(--jeton) recommandé) : remplace la teinte à 20 % de color, fixe en clair comme en sombre.",
     "props.actions[].textColor": "Texte et icône d'une tuile à fond plein — obligatoire en pratique avec background, contraste AA (4,5:1) à mesurer.",
-    "props.headlineStyle": "Rendu du titre : plain (défaut, centré), badge (pastille inclinée d'articleTeaser/map-bubbles) ou pill (la même en arrondi droit), calées à gauche — pour une page dont toutes les bandes portent le même repère.",
-    "props.tileLayout": "Disposition d'une tuile : centered (défaut, icône puis textes centrés) ou inline (icône en pastille, titre à côté, sous-titre dessous, aligné à gauche) — inline se lit mieux quand les sous-titres font une phrase.",
+    "props.headlineStyle": "Rendu du titre : plain (défaut, centré), badge (pastille inclinée d'articleTeaser/map-bubbles), pill (arrondi droit) ou text (texte seul, sans fond ni rotation) — même repère sur toutes les bandes de la page.",
+    "props.tileLayout": "Disposition : centered (défaut, icône puis textes centrés), inline (icône en pastille, titre à côté, sous-titre dessous) ou pillRow (titre et actions sur une ligne, boutons pilule, sans sous-titre — bande compacte).",
     "props.accentColor": "Couleur de la pastille de titre (headlineStyle: badge) ; son encre est blanche, donc teinte foncée et contraste AA à mesurer.",
+    "props.hoverEffect": "Effet au survol/focus d'une tuile : none (défaut) ou lift (la tuile monte et gagne une ombre ; aucun mouvement sous prefers-reduced-motion).",
+    "props.density": "compact : ni fond, ni padding, ni conteneur propres, marges resserrées — pour une rangée posée dans une autre bande (gridLayout.topSection). Défaut : rendu historique.",
+  },
+
+  "section:featured-carousel": {
+    "props.badgeIcon": "Icône lucide (kebab-case) posée avant le texte du badge, ex. megaphone. Absente : badge texte seul (historique).",
+    "props.badgeIconColor": "Couleur de l'icône du badge — indépendante de la couleur du texte. Défaut : hérite de la couleur du texte (currentColor).",
+    "props.headlineStyle": "Forme du badge : badge (défaut, étiquette inclinée), pill (arrondi droit) ou text (texte seul, sans fond ni rotation, plus grand).",
+    "props.ctaStyle": "Apparence du CTA : button (défaut, pilule pleine) ou link (texte + flèche, sans fond, dans accentColor).",
+    "props.ctaPosition": "Emplacement du CTA en habillage card uniquement : footer (défaut, partage la ligne des points de position) ou inline (sous le texte de chaque diapositive, comme en sticker).",
   },
 
   "section:thematics": {
@@ -390,6 +407,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.customHeader": "En-tête teaser avec lien « voir tous » — même convention que searchProStatic.customHeader (home → /evenements).",
     "props.limit": "Plafond d'AFFICHAGE par bucket (teaser) ; absent = tous + « charger plus ». ⚠ PAS la taille du fetch : appliqué APRÈS le partitionnement d'un flux DESC — garder `baseParams.indexStepList` bien au-dessus.",
     "props.showViewToggle": "Toggle Liste/Calendrier (false = teaser figé sur defaultMode). Défaut code : true.",
+    "props.showPdfExport": "Bouton Export PDF (AGENDA_GET_PDF, SDK ≥ 1.0.196) — scope le costum PORTEUR entier, pas les filtres affichés. Masqué tant que le costum n'est pas résolu. Défaut code : false.",
     "props.showTabs": "Onglets temporels (false = teaser : un seul bucket = defaultTab). Défaut code : true.",
     "props.defaultMode": "Vue par défaut : list (onglets temporels) ou calendar (grille mois maison).",
     "props.enableMap": "Active la vue Carte (réutilise SearchMap du module search).",
@@ -441,7 +459,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
 
   admin: {
     tabs: "Onglets de l'admin ; ABSENT → dashboard seul, AUCUNE dérivation automatique — générer le squelette par npm run admin:scaffold puis personnaliser.",
-    "tabs[].sections[].type": "Discriminant de la section : 7 builtin (dashboard, members, resource, import, export, reference, moderation) ou type costum enregistré via registerAdminSection — un builtin ne peut pas être redéclaré.",
+    "tabs[].sections[].type": "Discriminant de la section : 8 builtin (dashboard, members, resource, import, export, reference, moderation, answerCopy) ou type costum enregistré via registerAdminSection — un builtin ne peut pas être redéclaré.",
     "tabs[].sections[].entityType": "Collection gérée par la table resource (organizations, projects, poi, events, citoyens, answers…) — pilote la requête, les forms add/edit et les invalidations.",
     "tabs[].sections[].source": "Périmètre de requête — même forme que les baseParams de searchProStatic ; defaultSortBy = tri initial (surchargé par le tri colonne) ; defaultFields IGNORÉ en mode admin (documents complets).",
     "tabs[].sections[].source.defaultFilters": "Filtres Mongo pass-through restreignant la table (ex. {\"type\":\"recoveryCenter\"} pour un sous-type de POI).",
@@ -450,8 +468,9 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "tabs[].sections[].columns[].type": "Rendu de la cellule : audio = lecteur AudioPlayer depuis medias[].url ou une URL (paroles/témoignages) ; défaut code text.",
     "tabs[].sections[].rowActions": "Actions par ligne ; défaut code [\"edit\",\"delete\"] ; validate bascule la table en MODE ADMIN (endpoint admin, documents complets, badge + filtre En attente/Validé).",
     "tabs[].sections[].bulkActions": "Actions groupées sur la sélection (lignes chargées seulement) ; défaut code : aucune ; export = CSV côté client des lignes sélectionnées (pas le plancher super-admin de la section export).",
-    "tabs[].sections[].create": "Form d'ajout : false (pas de création), \"inherit\" (défaut code : form costum du site pour ce type, sinon standard), \"standard\" forcé, ou clé add-<key> explicite.",
-    "tabs[].sections[].createDefaults": "Valeurs semées dans la modale d'AJOUT de cette section (jamais en édition), par-dessus les défauts du form : ouvre le form sur le sous-type que l'onglet impose déjà, sans cloner un form par sous-type.",
+    "tabs[].sections[].create": "Form d'ajout : false, \"inherit\" (défaut code : form costum du site, sinon standard), \"standard\", clé add-<key>, ou {coform: \"<formId>\"} pour une resource answers (CoFormModal : une réponse n'a pas de modale d'entité).",
+    "tabs[].sections[].createDefaults": "Valeurs semées dans la modale d'AJOUT (jamais en édition), par-dessus les défauts du form : ouvre le form sur le sous-type de l'onglet. Modales d'entité seulement — refusé avec create.coform.",
+    "tabs[].sections[].preview": "Détail d'une ligne au clic (+ « Aperçu » clavier), bloc list.preview en dialog ; opt-in. Types admis : default, resource, resource-directory, testimonial, coform-answer. editButton refusé sur answerCopy.",
     "tabs[].sections[].edit": "Form d'édition : \"inherit\" (défaut code : résolution publique editModalMatch par-ligne), \"standard\", clé edit-<key> forcée ou false (lecture seule) ; l'entité est rechargée complète avant le form.",
     "tabs[].sections[].status": "⚠ CONTRAT FUTUR : seule sa PRÉSENCE (lue en booléen) active le mode admin — sous-champs non câblés, cascade/notifyEmail seront retirés ; ne rien configurer d'ici l'implémentation (SSBE).",
     "tabs[].sections[].filters": "members : onglets/outils rendus (les requêtes des onglets non listés ne partent pas) ; défaut code : à-valider + admins + recherche — l'onglet « tous » est toujours présent.",
@@ -538,7 +557,8 @@ export const BLOCK_NOTES: Record<string, string[]> = {
     "status.* = contrat futur : aujourd'hui seule la présence du bloc active le mode admin ; mode/field/states seront câblés avec SSBE, cascade/notifyEmail RETIRÉS — ne pas écrire de valeur non-défaut.",
     "Seule la SECTION export (exportElements) a un plancher BACKEND superAdmin non contournable par config ; la bulkAction export est un CSV client des lignes sélectionnées, sans ce plancher.",
     "Accès en cascade : page (access.min) → onglet (tabs[].access) → section (sections[].access) — chaque niveau est un gate, le plus restrictif gagne ; entityAdmin n'est pas encore résolu par-ligne.",
-    "Refinement non exportable : le fallback de section costum REFUSE les 7 types builtin — une section builtin fautive échoue à config:validate avec l'erreur précise du bon schéma (pas de repli silencieux).",
+    "Refinement non exportable : le fallback de section costum REFUSE les 8 types builtin — une section builtin fautive échoue à config:validate avec l'erreur précise du bon schéma (pas de repli silencieux).",
+    "Refinements non exportables (sections) : answerCopy exige sourceForm ≠ targetForm et refuse preview.editButton (la candidate appartient au site source) ; resource refuse createDefaults avec create.coform (semis ignoré par le CoFormModal) ; preview.type n'admet que les détails qui n'écrivent rien ou signalent leurs éditions (sinon table périmée).",
     "La config n'est jamais parsée par Zod au runtime : les .default() du schéma (enabled, access.min, create/edit \"inherit\", status.*) ne s'appliquent pas — les replis vivent dans le code des composants.",
   ],
   auth: [

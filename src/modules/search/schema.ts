@@ -511,6 +511,10 @@ export const TestimonialConfSchema = z.object({
   /** Champ de l'illustration (bannière de la carte et de la preview). Repli code : "profilMediumImageUrl",
    *  puis "profilImageUrl", puis la 1re image de `medias` — un témoignage sans image reste rendu tel quel. */
   imageField: z.string().optional(),
+  /** Cadrage de l'illustration : `cover` (défaut, rognée sur un ratio 16/9) ou `contain` (image ENTIÈRE,
+   *  centrée, sur un fond flou tiré de la même image — pour une affiche ou un visuel dont le ratio n'est
+   *  pas 16/9). Opt-in : sans lui, le rendu historique est inchangé. */
+  imageFit: z.enum(["cover", "contain"]).optional(),
   /** Catégorie : pilote la teinte de la bulle + la pastille. `colors` = map valeur→couleur (`var()` ou hex). */
   badge: z.object({ field: z.string(), colors: z.record(z.string(), z.string()).optional() }).optional(),
   /** Accent (ex. territoire) : pilote le point coloré. `colors` = map valeur→couleur (`var()` ou hex). */
@@ -613,7 +617,9 @@ export type ColorByConf = z.infer<typeof ColorByConfSchema>;
 /** Chips de tags des cartes : couleur par tag (`mapping`), libellé lisible
  *  (`labels`, déf. namespace retiré + capitalisation) et MASQUAGE des tags
  *  techniques (`hidePrefixes`, ex. `public:`/`age:` — filtrants mais pas
- *  affichables bruts). Consommé par `decorateTags` (lib/colorBy).
+ *  affichables bruts ; `hideTags`, égalité STRICTE, pour un marqueur complet
+ *  comme `lieux-sante` qui ne doit pas emporter `lieux-sante-mentale`).
+ *  Consommé par `decorateTags` (lib/colorBy).
  *  `paths` : dot-paths serverData dont les valeurs s'ajoutent aux chips —
  *  nécessaire quand la taxonomie vit dans des CHAMPS et non dans `tags`
  *  (parent62 : `["territoires"]`), cf. `collectChipValues`. */
@@ -621,6 +627,7 @@ export const TagColorsConfSchema = z.object({
   mapping: z.record(z.string(), z.string()),
   labels: z.record(z.string(), z.string()).optional(),
   hidePrefixes: z.array(z.string()).optional(),
+  hideTags: z.array(z.string()).optional(),
   paths: z.array(z.string()).optional(),
 });
 export type TagColorsConf = z.infer<typeof TagColorsConfSchema>;
@@ -642,6 +649,10 @@ export const CardConfSchema = z.object({
     // `false` sur un annuaire de structures qui ne portent pas de projets : le
     // compteur y afficherait « 0 » sur toutes les fiches, ce qui n'informe de rien.
     showStats:       z.boolean().optional(),
+    // Boutons « Contacter » / « Suivre » de la carte `profile`. Absent = affichés (24 usages du
+    // parc inchangés). `false` sur un annuaire de LIEUX : on ne « suit » pas un cabinet, et
+    // « Contacter » n'ouvre aujourd'hui qu'un toast « à venir ».
+    showActions:     z.boolean().optional(),
     // Affiche la barre de progression de financement (cagnotte) sur la carte +
     // déclenche la query useFundingEnvelope. Découple la feature funding du style
     // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).
@@ -1625,6 +1636,12 @@ export const FeaturedCarouselSectionSchema = z.object({
   props: z.object({
     /** Badge affiché au-dessus du titre de chaque diapositive, ex. "À la une :". */
     badgeLabel: LocalizedString.optional(),
+    /** Icône (registre lucide, kebab-case) posée avant le texte du badge — ex. "megaphone". Absente,
+     *  le badge reste texte seul (comportement historique). */
+    badgeIcon: z.string().optional(),
+    /** Couleur de l'icône du badge (CSS) — INDÉPENDANTE de la couleur du texte (ex. icône turquoise,
+     *  titre marine en `headlineStyle:"text"`). Défaut : hérite de la couleur du texte (`currentColor`). */
+    badgeIconColor: z.string().optional(),
     /** Libellé du bouton CTA. Repli : traduction "En savoir plus". */
     ctaLabel: LocalizedString.optional(),
     /** Fetch/filtre — `defaultTypes`/`defaultTags`/`sourceKey`/`defaultFields` etc. */
@@ -1652,8 +1669,9 @@ export const FeaturedCarouselSectionSchema = z.object({
      * conteneur ne rogne pas (`overflow` visible), sinon la pilule est coupée.
      */
     design: z.enum(["sticker", "card"]).optional(),
-    /** Forme du badge : `badge` (défaut, étiquette inclinée) ou `pill` (arrondi droit). */
-    headlineStyle: z.enum(["badge", "pill"]).optional(),
+    /** Forme du badge : `badge` (défaut, étiquette inclinée), `pill` (arrondi droit) ou `text` — texte
+     *  seul, sans fond ni rotation, police `--font-sans` (celle du menu), plus grand. */
+    headlineStyle: z.enum(["badge", "pill", "text"]).optional(),
     /** Encre de la section, posée avec `background`. Sans elle, un fond fourni impose le texte BLANC
      *  (rendu historique, pensé pour un fond sombre) — à fournir dès que le fond est clair. */
     textColor: z.string().optional(),
@@ -1675,6 +1693,17 @@ export const FeaturedCarouselSectionSchema = z.object({
     /** Puces de pagination sous le carrousel, entre les flèches précédent/suivant (celles-ci
      *  restent toujours affichées). Défaut masquées — à activer explicitement si besoin. */
     showControls: z.boolean().default(false),
+    /** Titre ET image de la diapositive deviennent des liens vers la même cible que le bouton.
+     *  Défaut `false` : seul le bouton est cliquable (comportement historique). */
+    linkTitleAndImage: z.boolean().optional(),
+    /** Apparence du CTA : `button` (défaut, pilule pleine) ou `link` — texte + flèche, sans fond,
+     *  dans `accentColor`. */
+    ctaStyle: z.enum(["button", "link"]).optional(),
+    /** Emplacement du CTA en habillage `card` UNIQUEMENT (`design:"card"`, sans effet en `sticker`,
+     *  déjà posé dans le flux de la diapositive) : `footer` (défaut, historique) — partage la ligne des
+     *  points de position, en pied de carte — ou `inline` — sous le texte de CHAQUE diapositive, comme
+     *  en habillage `sticker`. Les points restent alors seuls au pied, centrés. */
+    ctaPosition: z.enum(["footer", "inline"]).optional(),
   }),
 });
 export type FeaturedCarouselSection = z.infer<typeof FeaturedCarouselSectionSchema>;
@@ -1725,6 +1754,14 @@ export interface SwitchDetailsModeProps<T extends SearchListEntity = SearchEntit
   preview?: ListConf["preview"];
   /** Config `list` complète — thread une fois pour les configs par-type (cf. SearchListViewProps.list). */
   list?: ListConf;
+  /**
+   * Fin d'une ÉDITION faite depuis le détail. Le détail n'invalide que les caches qu'il connaît
+   * (listes search, réponse coform) : l'hôte qui montre la fiche AILLEURS — une table admin et ses
+   * tuiles — y invalide les siens. Seul `coform-answer` (+ `editButton`) le signale aujourd'hui ;
+   * les autres contenus qui écrivent ne le relaient pas, un hôte qui en dépend doit les refuser
+   * (cf. `ADMIN_PREVIEW_TYPES`, admin/schema.ts). Absent : rien de plus.
+   */
+  onEdited?: () => void;
 }
 
 export interface DetailsModeProps<T extends SearchListEntity = SearchEntity> {
@@ -1734,6 +1771,8 @@ export interface DetailsModeProps<T extends SearchListEntity = SearchEntity> {
   /** Config `list` complète — thread une fois pour les configs par-type (cf. SearchListViewProps.list). */
   list?: ListConf;
   item: T;
+  /** Transmis tel quel au contenu — cf. `SwitchDetailsModeProps.onEdited`. */
+  onEdited?: () => void;
 }
 
 export interface SearchCardProps<T extends SearchListEntity = SearchEntity> {
@@ -1756,6 +1795,8 @@ export interface PreviewProps<T extends SearchListEntity = SearchEntity> {
   list?: ListConf;
   /** Ferme le conteneur de détail (drawer/dialog) — fourni par le conteneur. */
   onClose?: () => void;
+  /** Fin d'une édition faite depuis ce contenu — cf. `SwitchDetailsModeProps.onEdited`. */
+  onEdited?: () => void;
 }
 
 export interface SearchMapWrapperProps<T extends SearchListEntity = SearchEntity> {
@@ -1804,4 +1845,6 @@ export interface MapPopupProps<T extends SearchListEntity = SearchEntity> {
   actionKind?: "profil" | "preview";
   /** Handler du bouton d'action — fourni par SearchMap (popup react-map-gl). */
   onAction?: () => void;
+  /** Chips de tags : la MÊME conf que la carte de liste (`list.card.tagColors`) — un tag masqué en liste l'est aussi ici. */
+  tagColors?: TagColorsConf;
 }

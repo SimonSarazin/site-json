@@ -986,6 +986,8 @@ export function groupSchedules(scheduleRaw: unknown): DaySchedule[]
 
 `getStatusStyle(status)` retourne les classes du badge de statut (tokens custom `bg-badge-valid`/`bg-badge-waiting`/`bg-badge-in-progress`/`bg-badge-refused`).
 
+`normalizeTypeLabel(rawType)` abrège le type d'activité en lisant le **suffixe** du libellé, déjà porté par le formulaire (« Sport santé sans label - SSsL » → `SSsL`), reconnu par sa forme `SS` + minuscule + majuscule — tout type présent ou futur est abrégé sans liste à tenir dans le code. L'abréviation sert aussi de **classe CSS** de la carte (`CardAnswer` : `ssso-card`, `sspt-card`, `sssl-card`, ciblées par le `customCSS` du site) : un nouveau type n'a besoin que de sa règle CSS. Un suffixe d'une autre forme (« Activité - Natation ») laisse le libellé intact.
+
 ```ts
 export type ActivityStatus = "Valide" | "En attente" | "En cours" | "Refuse";
 export const DEFAULT_COFORM_FIELDS: Record<string, string>; // surchargeable via list.preview.fields
@@ -1349,6 +1351,23 @@ Toutes les variantes sont lazy-loadées. Une page **mono-type** ne télécharge 
 
 Voir [doc/23-module-auth.md](23-module-auth.md) pour l'API `useAuthModal`.
 
+**Chips de tags** (30/09) : `card.tagColors` est honoré — même brique `collectChipValues`/`decorateTags` que
+`CardDefault` : `hidePrefixes` masque les tags techniques par préfixe, **`hideTags`** par égalité stricte (un
+marqueur d'annuaire complet, sans emporter les tags qui commencent pareil), `mapping` colore et relibelle. Le
+pipeline complet est **`decorateItemTags`** (lib/colorBy), partagé par CardDefault, CardEventTimeline,
+CardProfile et MapPopupDefault : les tags passent d'abord par `helpers/toStringArray` (le backend renvoie
+parfois `tags` en objet — tableau PHP à trous ou dictionnaire de présence — et une chip ne s'itère pas sur un
+objet ; `useItem` et `entityMatchData` s'en servent aussi). Tags tous
+masqués ≠ fiche sans tag : dans le premier cas la carte ne dit rien, dans le second le repli « Aucun tag »
+demeure. Sans conf, les tags s'affichent tels quels, 3 au plus puis « +N ». La popup de carte
+(`MapPopupDefault`, prop `tagColors` passée par `SearchMap` depuis la conf de carte de l'item) applique la
+même décoration : un tag masqué en liste l'est aussi sur la carte. Premier usage : `/lieux-sante` de
+RéseauSanté, annuaire filtré au tag `lieux-sante` — que ni les cartes ni les popups n'ont à répéter.
+
+**Boutons « Contacter » / « Suivre »** (01/10) : `card.showActions: false` les retire (absent = affichés,
+comme `showStats`). Pensé pour un annuaire de LIEUX : on ne « suit » pas un cabinet, et « Contacter »
+n'ouvre aujourd'hui qu'un toast « à venir ».
+
 ### Mode détails — conteneur (`detailsMode`) vs contenu (`preview.type`)
 
 Le détail d'une entité sélectionnée est **découplé en deux axes** (commit 8cd4070) :
@@ -1375,6 +1394,8 @@ Le détail d'une entité sélectionnée est **découplé en deux axes** (commit 
 | `structure` | `PreviewStructure` | Fiche détail d'une **organisation** : hero (statut / type / logo), affiliation, adresse + carte, représentant légal, infos, documents — champs custom du costum lus via l'index signature de `serverData`. Utilisée par `/structure` (`config.prod.maison-sport-sante-la-tampon.json:2125`) **et** par le bouton « Fiche structure » de `CardAnswer` (cf. `card.structureAction`) |
 
 Chaque contenu de `Preview` borne lui-même sa hauteur/scroll (indépendant du conteneur). `list.preview.fields` surcharge le mappage des IDs de champ CoForm (voir « parser CoForm » ci-dessous).
+
+**`onEdited`** (prop optionnelle de `SwitchDetailsMode`, relayée par les deux conteneurs puis par `Preview` au seul contenu qui la signale aujourd'hui, `PreviewCoformAnswer`) : appelée à la fin d'une édition faite **depuis le détail** (`preview.editButton`), avant la fermeture. D'autres contenus écrivent sans la relayer (`facets`, `structure`, `poi-amenities` : édition `DynamicEditModal`, suppression ; `news` ; `event` : participation) — un hôte qui dépend d'`onEdited` doit donc les refuser, ce que fait l'admin (`ADMIN_PREVIEW_TYPES`). Le détail n'invalide que les caches qu'il connaît (listes search statiques + carte, réponse coform) ; l'hôte qui montre la fiche **ailleurs** y invalide les siens — la table admin `resource` invalide ainsi ses clés `admin-*` et les surfaces publiques ([30-module-admin](30-module-admin.md)). Consulter puis fermer ne déclenche rien.
 
 **`list.preview.width`** (enum `sm|md|lg|xl|2xl|3xl|4xl|5xl|full`) pilote la largeur MAX du conteneur en mode **`dialog`** : `DetailsModeDialog` mappe la valeur sur une classe `sm:max-w-*` (`full` → `sm:max-w-[95vw]`) ; défaut **code** `5xl` (comportement historique). Sans effet en mode `drawer`. **`list.preview.showDetailLink`** (boolean) affiche le lien « Voir en page » dans l'en-tête de la modale de détail (lu par `PreviewNews`, testé `!== false`) ; défaut = affiché, mettre `false` pour le masquer. Comme toute clé de config, ces champs ne sont **jamais** parsés par Zod au runtime (les `.default()` n'agissent pas) → à poser explicitement dans le JSON.
 

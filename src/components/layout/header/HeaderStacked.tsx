@@ -12,10 +12,10 @@ import MobileMenuBrand from "./MobileMenuBrand";
 import MobileNavItems from "./MobileNavItems";
 import NavIcon from "./NavIcon";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
-import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 import { useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
 import { useVisibilityList } from "@/lib/visibility/useVisibility";
 import { cn } from "@/lib/utils";
@@ -31,9 +31,6 @@ interface HeaderStackedProps {
 // les rendait invisibles en mode CLAIR sur le fond sombre.
 // Thème : icône seule → blanc fixe dans les deux modes (même teinte que LangSwitch).
 const THEME_BTN = "text-white/90 hover:text-white hover:bg-white/10 dark:hover:bg-white/10";
-// Recherche : seul l'état icône seule (<md) est concerné — au-delà, le champ
-// « Ctrl+K » garde son propre fond clair et reste lisible tel quel.
-const SEARCH_BTN = "max-md:text-white/90 max-md:hover:text-white";
 
 /**
  * Header 2 étages sur fond image : un bandeau wordmark (logo + titre/sous-titre)
@@ -115,7 +112,12 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
   const marque = MARQUE_BANDEAU[header.height ?? "md"];
 
   const navVisibility = useVisibilityList(header.nav.map((item) => item.visibility));
-  const navItemsToDisplay = header.nav.filter((_, idx) => navVisibility[idx]);
+  const visibleNavItems = header.nav.filter((_, idx) => navVisibility[idx]);
+  // `placement: "actions"` sort l'entrée du menu centré (barre desktop du header `stacked` UNIQUEMENT,
+  // le menu mobile garde la liste complète — cf. `EnhancedNavItemType.placement`) pour la poser dans le
+  // groupe d'actions de droite, à la place d'un bouton de header (la loupe qui remplace « Ctrl+K »).
+  const navItemsToDisplay = visibleNavItems.filter((item) => item.placement !== "actions");
+  const actionNavItems = visibleNavItems.filter((item) => item.placement === "actions");
 
   // Fond partagé bandeau/barre. `bg-neutral-800` SOUS l'image : l'image peut avoir
   // un canal alpha partiellement transparent (cf. bug du texte fantôme) — les
@@ -224,7 +226,13 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
         </div>
 
         <div className="relative mx-auto max-w-[100rem] px-4">
-          <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4 h-14">
+          {/* `1fr_auto_1fr` (et non `auto_1fr_auto`) : les deux colonnes de FLANC sont de MÊME largeur,
+              quel que soit le contenu qu'elles portent (logo à gauche, groupe d'actions à droite —
+              jamais la même largeur). Le menu (colonne du milieu, `auto`) se centre alors sur la BARRE
+              ENTIÈRE, comme le logo/titre du bandeau au-dessus (centré sur la page) — avec l'ancien
+              `auto_1fr_auto`, le menu ne se centrait que dans l'espace RESTANT après le logo, décalé
+              vers la gauche dès que le groupe d'actions était plus large que le logo (systématique). */}
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 h-14">
             {/* Colonne logo : toujours montée, sa largeur transitionne 0 → taille
                 réelle quand la barre se colle (un montage/démontage conditionnel
                 ferait sauter le nombre de colonnes de la grille, non animable). */}
@@ -302,7 +310,15 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
             <div className="flex items-center justify-end gap-2 justify-self-end">
             <div className="hidden xl:flex items-center gap-2">
               {header.utilities?.notifications && <NotificationBell />}
-              {header.utilities?.search && <CommandTriggerButton className={SEARCH_BTN} />}
+              {/* Entrées `placement: "actions"` (la loupe, à la place de l'ancien bouton « Ctrl+K ») :
+                  icône seule, blanc fixe comme le reste du groupe. */}
+              {actionNavItems.map((item, idx) => (
+                <Button key={idx} asChild variant="ghost" size="icon" className={THEME_BTN} title={t(item.label)}>
+                  <NavLink to={item.path ?? item.href} aria-label={t(item.label)}>
+                    <NavIcon icon={item.icon} className="size-5 shrink-0" />
+                  </NavLink>
+                </Button>
+              ))}
               {header.utilities?.themeSwitch !== false && (
                 <ClientOnly fallback={<div className="w-10 h-10" />}>
                   {() => <ToggleButtonTheme className={THEME_BTN} />}
@@ -326,13 +342,19 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
 
             <div className="xl:hidden flex items-center gap-2">
               {header.utilities?.notifications && <NotificationBell />}
-              {header.utilities?.search && <CommandTriggerButton className={SEARCH_BTN} />}
+              {actionNavItems.map((item, idx) => (
+                <Button key={idx} asChild variant="ghost" size="icon" className={THEME_BTN} title={t(item.label)}>
+                  <NavLink to={item.path ?? item.href} aria-label={t(item.label)}>
+                    <NavIcon icon={item.icon} className="size-5 shrink-0" />
+                  </NavLink>
+                </Button>
+              ))}
               {header.utilities?.themeSwitch !== false && (
                 <ClientOnly fallback={<div className="w-8 h-8" />}>
                   {() => <ToggleButtonTheme className={THEME_BTN} />}
                 </ClientOnly>
               )}
-              {navItemsToDisplay.length > 0 && (
+              {visibleNavItems.length > 0 && (
                 <MobileMenuSheet
                   breakpoint="xl"
                   triggerClassName="text-white/90 hover:text-white"
@@ -340,8 +362,10 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
                 >
                   {(close) => (
                     <>
+                      {/* Mobile : liste complète, `placement: "actions"` n'existe que pour la barre
+                          desktop — pas de groupe d'actions séparé dans le menu déroulant. */}
                       <MobileNavItems
-                        items={navItemsToDisplay}
+                        items={visibleNavItems}
                         display={header.mobileNavDisplay}
                         onNavigate={close}
                         isActive={isNavItemActive}
