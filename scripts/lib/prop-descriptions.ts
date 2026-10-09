@@ -461,7 +461,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
 
   admin: {
     tabs: "Onglets de l'admin ; ABSENT → dashboard seul, AUCUNE dérivation automatique — générer le squelette par npm run admin:scaffold puis personnaliser.",
-    "tabs[].sections[].type": "Discriminant de la section : 7 builtin (dashboard, members, resource, import, export, reference, moderation) ou type costum enregistré via registerAdminSection — un builtin ne peut pas être redéclaré.",
+    "tabs[].sections[].type": "Discriminant de la section : 8 builtin (dashboard, members, resource, import, export, reference, moderation, answerCopy) ou type costum enregistré via registerAdminSection — un builtin ne peut pas être redéclaré.",
     "tabs[].sections[].entityType": "Collection gérée par la table resource (organizations, projects, poi, events, citoyens, answers…) — pilote la requête, les forms add/edit et les invalidations.",
     "tabs[].sections[].source": "Périmètre de requête — même forme que les baseParams de searchProStatic ; defaultSortBy = tri initial (surchargé par le tri colonne) ; defaultFields IGNORÉ en mode admin (documents complets).",
     "tabs[].sections[].source.defaultFilters": "Filtres Mongo pass-through restreignant la table (ex. {\"type\":\"recoveryCenter\"} pour un sous-type de POI).",
@@ -470,8 +470,9 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "tabs[].sections[].columns[].type": "Rendu de la cellule : audio = lecteur AudioPlayer depuis medias[].url ou une URL (paroles/témoignages) ; défaut code text.",
     "tabs[].sections[].rowActions": "Actions par ligne ; défaut code [\"edit\",\"delete\"] ; validate bascule la table en MODE ADMIN (endpoint admin, documents complets, badge + filtre En attente/Validé).",
     "tabs[].sections[].bulkActions": "Actions groupées sur la sélection (lignes chargées seulement) ; défaut code : aucune ; export = CSV côté client des lignes sélectionnées (pas le plancher super-admin de la section export).",
-    "tabs[].sections[].create": "Form d'ajout : false (pas de création), \"inherit\" (défaut code : form costum du site pour ce type, sinon standard), \"standard\" forcé, ou clé add-<key> explicite.",
-    "tabs[].sections[].createDefaults": "Valeurs semées dans la modale d'AJOUT de cette section (jamais en édition), par-dessus les défauts du form : ouvre le form sur le sous-type que l'onglet impose déjà, sans cloner un form par sous-type.",
+    "tabs[].sections[].create": "Form d'ajout : false, \"inherit\" (défaut code : form costum du site, sinon standard), \"standard\", clé add-<key>, ou {coform: \"<formId>\"} pour une resource answers (CoFormModal : une réponse n'a pas de modale d'entité).",
+    "tabs[].sections[].createDefaults": "Valeurs semées dans la modale d'AJOUT (jamais en édition), par-dessus les défauts du form : ouvre le form sur le sous-type de l'onglet. Modales d'entité seulement — refusé avec create.coform.",
+    "tabs[].sections[].preview": "Détail d'une ligne au clic (+ « Aperçu » clavier), bloc list.preview en dialog ; opt-in. Types admis : default, resource, resource-directory, testimonial, coform-answer. editButton refusé sur answerCopy.",
     "tabs[].sections[].edit": "Form d'édition : \"inherit\" (défaut code : résolution publique editModalMatch par-ligne), \"standard\", clé edit-<key> forcée ou false (lecture seule) ; l'entité est rechargée complète avant le form.",
     "tabs[].sections[].status": "⚠ CONTRAT FUTUR : seule sa PRÉSENCE (lue en booléen) active le mode admin — sous-champs non câblés, cascade/notifyEmail seront retirés ; ne rien configurer d'ici l'implémentation (SSBE).",
     "tabs[].sections[].filters": "members : onglets/outils rendus (les requêtes des onglets non listés ne partent pas) ; défaut code : à-valider + admins + recherche — l'onglet « tous » est toujours présent.",
@@ -558,7 +559,8 @@ export const BLOCK_NOTES: Record<string, string[]> = {
     "status.* = contrat futur : aujourd'hui seule la présence du bloc active le mode admin ; mode/field/states seront câblés avec SSBE, cascade/notifyEmail RETIRÉS — ne pas écrire de valeur non-défaut.",
     "Seule la SECTION export (exportElements) a un plancher BACKEND superAdmin non contournable par config ; la bulkAction export est un CSV client des lignes sélectionnées, sans ce plancher.",
     "Accès en cascade : page (access.min) → onglet (tabs[].access) → section (sections[].access) — chaque niveau est un gate, le plus restrictif gagne ; entityAdmin n'est pas encore résolu par-ligne.",
-    "Refinement non exportable : le fallback de section costum REFUSE les 7 types builtin — une section builtin fautive échoue à config:validate avec l'erreur précise du bon schéma (pas de repli silencieux).",
+    "Refinement non exportable : le fallback de section costum REFUSE les 8 types builtin — une section builtin fautive échoue à config:validate avec l'erreur précise du bon schéma (pas de repli silencieux).",
+    "Refinements non exportables (sections) : answerCopy exige sourceForm ≠ targetForm et refuse preview.editButton (la candidate appartient au site source) ; resource refuse createDefaults avec create.coform (semis ignoré par le CoFormModal) ; preview.type n'admet que les détails qui n'écrivent rien ou signalent leurs éditions (sinon table périmée).",
     "La config n'est jamais parsée par Zod au runtime : les .default() du schéma (enabled, access.min, create/edit \"inherit\", status.*) ne s'appliquent pas — les replis vivent dans le code des composants.",
   ],
   auth: [

@@ -94,7 +94,7 @@
           "name": 1
         }
       },
-      "create": null,
+      "create": "add-structure",
       "edit": {
         "enabled": true,
         "modalName": null
@@ -136,6 +136,9 @@
         "defaultFilters": {
           "form": "6a85af345d898a57cb49f029",
           "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7": "Validé"
+        },
+        "defaultSortBy": {
+          "created": -1
         },
         "searchBy": [
           "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegc9sgox76p87n27",

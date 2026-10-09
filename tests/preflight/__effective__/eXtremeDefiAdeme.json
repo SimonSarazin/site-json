@@ -49,21 +49,15 @@
     "/communaute/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
-          "citoyens"
-        ],
-        "sourceKey": [
-          "eXtremeDefiAdeme"
-        ]
-      }
-    },
-    "/communaute/searchProStatic#1": {
-      "baseParams": {
-        "defaultTypes": [
           "organizations"
         ],
-        "sourceKey": [
-          "eXtremeDefiAdeme"
-        ]
+        "notSourceKey": true,
+        "defaultFilters": {
+          "links.projects.63f7163932026e45283d7222": {
+            "$exists": true
+          }
+        },
+        "indexStepList": 12
       }
     }
   },

@@ -56,7 +56,7 @@ function InfoCard({
  * Lecture déléguée à `parseCoformAnswer` (partagé avec `CardAnswer`) ;
  * libellés via i18n (`coformAnswer.*` / `days.*`).
  */
-export default function PreviewCoformAnswer({ item, preview, onClose }: PreviewProps) {
+export default function PreviewCoformAnswer({ item, preview, onClose, onEdited }: PreviewProps) {
   useLoadNamespace("modules/search");
   const t = useT("modules/search");
   const { entity, me } = useCocolight();
@@ -99,8 +99,10 @@ export default function PreviewCoformAnswer({ item, preview, onClose }: PreviewP
 
   // Le contenu du dialog vient du cache search (jamais re-fetché) : après un
   // save, on invalide les listes (liste ET carte — cache 30 min de
-  // `useSearchAllResults`) + le détail coform, puis on FERME le détail pour ne
-  // pas laisser l'ancien état affiché — le message dit que c'est enregistré.
+  // `useSearchAllResults`) + les listes gérées du compte + le détail coform, on
+  // prévient l'hôte (`onEdited` : ses propres caches, ex. la table admin qui a
+  // ouvert ce détail), puis on FERME le détail pour ne pas laisser l'ancien état
+  // affiché — le message dit que c'est enregistré.
   const meId = me?.id ?? null;
   // Chaîne comparée par valeur : `useT` rend une nouvelle fonction à chaque rendu, qui en dépendance
   // rendrait `handleEdited` (et le mémo d'`answerRef`) inopérants.
@@ -122,8 +124,9 @@ export default function PreviewCoformAnswer({ item, preview, onClose }: PreviewP
     }
     toast.success(editedMessage);
     setEditRequested(false);
+    onEdited?.();
     onClose?.();
-  }, [queryClient, answerRef, meId, onClose, editedMessage]);
+  }, [queryClient, answerRef, meId, onEdited, onClose, editedMessage]);
 
   if (!serverData) {
     return null;

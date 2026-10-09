@@ -90,6 +90,18 @@
           },
           {
             "label": {
+              "fr": "Actualités",
+              "en": "News"
+            },
+            "path": "/blog",
+            "icon": "newspaper",
+            "description": {
+              "fr": "Les dernières actualités du réseau Sport Santé.",
+              "en": "The latest news from the Sport Health network."
+            }
+          },
+          {
+            "label": {
               "fr": "FAQ",
               "en": "FAQ"
             },
@@ -304,50 +316,27 @@
           }
         },
         {
-          "type": "gridLayout",
-          "id": "section-activity-grid",
+          "type": "searchHeader",
+          "id": "title-header-actu",
           "props": {
-            "leftColumns": 2,
-            "rightColumns": 2,
-            "gap": 4,
-            "leftSection": {
-              "type": "searchHeader",
-              "id": "left-showcase-header",
-              "props": {
-                "headline": {
-                  "fr": "Des activités labellisées, un gage de qualité et de sécurité",
-                  "en": "Labeled activities, a guarantee of quality and safety"
-                }
-              }
+            "headline": {
+              "fr": "Bougez avec nous !",
+              "en": "Move with us!"
             },
-            "rightSection": {
-              "type": "searchHeader",
-              "id": "right-showcase-header",
-              "props": {
-                "subhead": {
-                  "fr": "Les créneaux labellisés sport santé pour tous et sport santé sur ordonnance répondent aux exigences régionales selon des critères de sécurités et des critères de qualités. Les professionnels sont formés et vous proposent des activités adaptées à vos besoins, à vos objectifs. Vous serez encadré et accompagné tout au long de votre pratique. Alon bougé sora valab !",
-                  "en": "The sport health for all and sport health on prescription labeled slots meet regional requirements according to safety and quality criteria. Professionals are trained and offer you activities adapted to your needs, your goals. You will be supervised and supported throughout your practice. Alon bougé sora valab !"
-                },
-                "buttons": [
-                  {
-                    "label": {
-                      "fr": "Ajouter une activité",
-                      "en": "Add an activity"
-                    },
-                    "href": "/",
-                    "variant": "primary"
-                  },
-                  {
-                    "label": {
-                      "fr": "Ajouter une structure",
-                      "en": "Add a structure"
-                    },
-                    "href": "/",
-                    "variant": "outline"
-                  }
-                ]
-              }
+            "subhead": {
+              "fr": "Retrouvez nos dernières actualités et les rendez-vous sport-santé près de chez vous.",
+              "en": "Find the latest news and events near you."
             }
+          }
+        },
+        {
+          "type": "articleFeed",
+          "id": "home-article-feed",
+          "props": {
+            "costumSlug": "sportSanteBienetre",
+            "featured": true,
+            "cardVariant": "poster",
+            "pageSize": 4
           }
         },
         {
@@ -1244,20 +1233,20 @@
                 "organizations"
               ],
               "defaultFilters": {
-                                  "$or": {
-                                    "source.key": "sportSanteBienetre",
-                                    "source.keys": "sportSanteBienetre",
-                                    "reference.costum": "sportSanteBienetre"
-                                  },
-                                  "statusActor": "Validé"
-                                }
+                  "$or": {
+                    "source.key": "sportSanteBienetre",
+                    "source.keys": "sportSanteBienetre",
+                    "reference.costum": "sportSanteBienetre"
+                  },
+                  "statusActor": "Validé"
+                }
             },
             "list": {
               "columns": {
-                "sm": 1,
-                "md": 1,
-                "lg": 1,
-                "xl": 1
+                "sm": 2,
+                "md": 3,
+                "lg": 3,
+                "xl": 3
               },
               "card": {
                 "type": "contact-card",
@@ -1265,6 +1254,7 @@
               }
             },
             "map": {
+              "splitRatio": "50-50",
               "marker": {
                 "useItemImage": true,
                 "style": "pin",
@@ -1459,6 +1449,50 @@
                 "kind": "preview"
               }
             }
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "mss-galerie-header",
+          "props": {
+            "headline": {
+              "fr": "Les Maisons Sport Santé en images",
+              "en": "The Sport Health Houses in pictures"
+            },
+            "subhead": {
+              "fr": "Découvrez l'ambiance des Maisons Sport Santé de La Réunion : des lieux d'accueil chaleureux où chacun peut reprendre une activité physique adaptée, accompagné par des professionnels.",
+              "en": "Discover the atmosphere of the Sport Health Houses in Réunion: welcoming places where everyone can take up adapted physical activity again, supported by professionals."
+            }
+          }
+        },
+        {
+          "type": "gallery",
+          "id": "mss-galerie",
+          "props": {
+            "columns": 5,
+            "lightbox": true,
+            "images": [
+              {
+                "src": "images/sportSanteBienetre/mss/MaisonSportSante1.webp",
+                "alt": { "fr": "Maison Sport Santé – photo 1", "en": "Sport Health House – photo 1" }
+              },
+              {
+                "src": "images/sportSanteBienetre/mss/MaisonSportSante2.webp",
+                "alt": { "fr": "Maison Sport Santé – photo 2", "en": "Sport Health House – photo 2" }
+              },
+              {
+                "src": "images/sportSanteBienetre/mss/MaisonSportSante3.webp",
+                "alt": { "fr": "Maison Sport Santé – photo 3", "en": "Sport Health House – photo 3" }
+              },
+              {
+                "src": "images/sportSanteBienetre/mss/MaisonSportSante4.webp",
+                "alt": { "fr": "Maison Sport Santé – photo 4", "en": "Sport Health House – photo 4" }
+              },
+              {
+                "src": "images/sportSanteBienetre/mss/MaisonSportSante5.webp",
+                "alt": { "fr": "Maison Sport Santé – photo 5", "en": "Sport Health House – photo 5" }
+              }
+            ]
           }
         }
       ]
@@ -5303,39 +5337,133 @@
     {
       "path": "/blog",
       "title": {
-        "fr": "Actualités",
-        "en": "News"
+        "fr": "Actus & événements",
+        "en": "News & events"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "sections": [
         {
           "type": "searchHeader",
           "id": "ssb-blog-search",
           "props": {
+            "headline": {
+              "fr": "Actus & événements",
+              "en": "News & events"
+            },
+            "subhead": {
+              "fr": "Les dernières actualités et les rendez-vous Sport Santé Bien-être à La Réunion.",
+              "en": "Latest Sport-Health news and events in Réunion."
+            },
             "showSearch": true,
             "searchPlaceholder": {
-              "fr": "Rechercher un article…",
-              "en": "Search an article…"
+              "fr": "Rechercher une actu ou un événement…",
+              "en": "Search for news or an event…"
             },
             "showActiveFiltersTags": true
           }
         },
         {
-          "type": "articleFeed",
-          "id": "ssb-article-feed",
+          "type": "tabs",
+          "id": "ssb-blog-tabs",
           "props": {
-            "title": {
-              "fr": "Actualités",
-              "en": "News"
-            },
-            "description": {
-              "fr": "Les dernières actualités Sport Santé Bien-être à La Réunion.",
-              "en": "Latest Sport-Health news in Réunion."
-            },
-            "costumSlug": "sportSanteBienetre",
-            "pageSize": 12,
-            "featured": true,
-            "detailBasePath": "/blog"
+            "defaultTab": "actus",
+            "orientation": "horizontal",
+            "tabs": [
+              {
+                "id": "actus",
+                "label": {
+                  "fr": "Actus",
+                  "en": "News"
+                },
+                "icon": "newspaper",
+                "content": [
+                  {
+                    "type": "articleFeed",
+                    "id": "ssb-article-feed",
+                    "props": {
+                      "costumSlug": "sportSanteBienetre",
+                      "pageSize": 12,
+                      "cardVariant": "default",
+                      "feedLayout": "grid",
+                      "fullWidth": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "evenements",
+                "label": {
+                  "fr": "Événements",
+                  "en": "Events"
+                },
+                "icon": "calendar",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "ssb-blog-events-list",
+                    "props": {
+                      "useFilter": true,
+                      "showMap": false,
+                      "enableMap": false,
+                      "showActiveFiltersTypes": true,
+                      "showActiveFiltersTags": true,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "defaultTypes": [
+                          "events"
+                        ],
+                        "sourceKey": [
+                          "sportSanteBienetre"
+                        ],
+                        "costumSlug": "sportSanteBienetre",
+                        "fediverse": false,
+                        "defaultFilters": {
+                          "category": {
+                            "$ne": "sessionFormation"
+                          }
+                        },
+                        "defaultSortBy": {
+                          "startDate": -1
+                        },
+                        "defaultFields": [
+                          "name",
+                          "slug",
+                          "collection",
+                          "type",
+                          "source",
+                          "shortDescription",
+                          "description",
+                          "profilImageUrl",
+                          "profilMediumImageUrl",
+                          "profilThumbImageUrl",
+                          "medias",
+                          "urls",
+                          "address",
+                          "tags",
+                          "created",
+                          "startDate",
+                          "endDate",
+                          "organizer",
+                          "reference"
+                        ]
+                      },
+                      "list": {
+                        "layout": "timeline",
+                        "previewParam": "preview-events",
+                        "card": {
+                          "type": "event",
+                          "detailsMode": "drawer",
+                          "tagLimit": 1
+                        },
+                        "preview": {
+                          "type": "event"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
           }
         }
       ]

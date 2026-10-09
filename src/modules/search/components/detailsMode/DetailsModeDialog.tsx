@@ -26,7 +26,7 @@ const DIALOG_MAX_WIDTH: Record<string, string> = {
  * `preview.type` (cf. `Preview.tsx`), indépendamment de la carte. `p-0` :
  * chaque `Preview*` borne sa propre hauteur/scroll (en-tête figé + corps).
  */
-export default function DetailsModeDialog({ openDetails, setOpenDetails, item, preview, list }: DetailsModeProps) {
+export default function DetailsModeDialog({ openDetails, setOpenDetails, item, preview, list, onEdited }: DetailsModeProps) {
     const t = useT("modules/search");
     const maxWidth = DIALOG_MAX_WIDTH[preview?.width ?? "5xl"] ?? "sm:max-w-5xl";
 
@@ -53,7 +53,7 @@ export default function DetailsModeDialog({ openDetails, setOpenDetails, item, p
           >
             <DialogTitle className="sr-only">{t("Aperçu")}</DialogTitle>
             {item && (
-              <Preview item={item} preview={preview} list={list} onClose={() => setOpenDetails(false)} />
+              <Preview item={item} preview={preview} list={list} onClose={() => setOpenDetails(false)} onEdited={onEdited} />
             )}
           </DialogContent>
         </Dialog>
