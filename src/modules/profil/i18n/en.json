@@ -838,6 +838,13 @@
     "title": "Edit profile",
     "profileImage": "Profile picture",
     "bannerImage": "Banner",
+    "imageFormat": {
+      "original": "Original",
+      "wide": "16:9",
+      "panorama": "3:1",
+      "classic": "4:3",
+      "square": "Square"
+    },
     "changeImage": "Change",
     "changeBanner": "Change banner",
     "changeAvatar": "Change avatar",

@@ -697,6 +697,11 @@ export const ProfileHeaderSectionSchema = z.object({
 });
 ```
 
+**Bannière et photo de profil — envoi** (`ProfileImageUpload`) : le recadrage propose un format — « Original » (ratio de la
+photo, sélectionné par défaut), 16:9, 3:1, 4:3, carré — ou « Utiliser l'image entière », qui envoie le
+fichier d'origine sans le retoucher. L'affichage, lui, ne change pas (cadre fixe en `object-cover`).
+⚠️ `bannerHeight` n'est lu par aucun composant.
+
 ### Supprimer une fiche depuis son profil
 
 `showDeleteButton: true` ajoute « Supprimer cette fiche » **en dernier** dans le menu d'actions de

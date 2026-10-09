@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useT } from "@/hooks/useT";
 
 interface ImageCropDialogProps {
@@ -24,6 +25,17 @@ interface ImageCropDialogProps {
    * cadrage est imposé (avatar rond, bannières).
    */
   onUseOriginal?: () => void;
+  /**
+   * Fourni, un sélecteur de format s'affiche au-dessus du cadre : chaque option impose son ratio,
+   * `"original"` celui de la photo elle-même. La première option est sélectionnée à l'ouverture et
+   * remplace `aspect`. Absent (défaut) : ratio fixe `aspect`, sans sélecteur.
+   */
+  aspectOptions?: ReadonlyArray<AspectOption>;
+}
+
+export interface AspectOption {
+  label: string;
+  value: number | "original";
 }
 
 interface CropArea {
@@ -40,12 +52,17 @@ export function ImageCropDialog({
   onCrop,
   aspect = 16 / 9,
   onUseOriginal,
+  aspectOptions,
 }: ImageCropDialogProps) {
   const t = useT("modules/news");
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
+  const [formatIndex, setFormatIndex] = useState(0);
+  const [ratioPhoto, setRatioPhoto] = useState<number | null>(null);
+  const format = aspectOptions?.[formatIndex];
+  const ratio = format ? (format.value === "original" ? (ratioPhoto ?? aspect) : format.value) : aspect;
 
   const onCropChange = (location: { x: number; y: number }) => {
     setCrop(location);
@@ -85,6 +102,24 @@ export function ImageCropDialog({
         </DialogHeader>
 
         <div className="space-y-4">
+          {aspectOptions && aspectOptions.length > 1 && (
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              size="sm"
+              value={String(formatIndex)}
+              onValueChange={(v) => v && setFormatIndex(Number(v))}
+              aria-label={t("forms.imageCrop.format")}
+              className="flex-wrap"
+            >
+              {aspectOptions.map((option, index) => (
+                <ToggleGroupItem key={option.label} value={String(index)}>
+                  {option.label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          )}
+
           {/* Zone de crop */}
           <div className="relative w-full h-[400px] bg-black rounded-lg overflow-hidden">
             <Cropper
@@ -92,7 +127,8 @@ export function ImageCropDialog({
               crop={crop}
               zoom={zoom}
               rotation={rotation}
-              aspect={aspect}
+              aspect={ratio}
+              onMediaLoaded={(media) => setRatioPhoto(media.naturalWidth / media.naturalHeight)}
               onCropChange={onCropChange}
               onZoomChange={onZoomChange}
               onCropComplete={onCropCompleteCallback}

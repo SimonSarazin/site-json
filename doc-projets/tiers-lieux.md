@@ -583,6 +583,24 @@ de l'e-mail ramenait à l'accueil.
 redirection, refresh non bloquant) · intégration SSR parent62 98/98, tiers-lieux 48/49 (`<title>`,
 aussi sur `main`). Parcours réel (compte invité qui accepte) non rejoué en local.
 
+
+### 09/10bis — bannière et photo de profil : envoyées à leur taille ; photo de profil entière
+
+**Fait (moteur, tous les sites)** :
+- envoi (`ProfileImageUpload`, bannière ET photo de profil) : le recadrage propose un format —
+  « Original » (ratio de la photo, par défaut), 16:9, 3:1, 4:3, carré — ou « Utiliser l'image
+  entière », qui envoie le fichier d'origine (bannière : zone de recadrage = toute la photo, la copie
+  `profilBannerUrl` garde donc la même taille). Option `aspectOptions` d'`ImageCropDialog` (absente =
+  rendu inchangé, ex. actus) ;
+- affichage : bannière inchangée (`object-cover`) ; photo de profil de l'en-tête `complete` en
+  `object-contain` — un logo large n'est plus rogné (une photo carrée reste coupée aux coins du rond).
+
+**Vérifié** : `typecheck` ✅ · `eslint` (fichiers du lot) 0 message · `test:unit` 5656/5657 (seul
+échec : `bundle-size`) · tests d'envoi ajoutés (`ProfileImageUpload.test.tsx`, `ImageCropDialog.test.tsx`)
+vérifiés **en échec** sans le correctif · intégration SSR parent62 98/98, tiers-lieux 48/49 (`<title>`,
+aussi sur `main`) · rendu de la photo de profil vu au navigateur (La Plume à Loup). Envoi réel non
+rejoué en local (connexion admin requise, backend local sans fichiers envoyés).
+
 ### 24/09ter — un administrateur peut supprimer sa fiche
 
 **Code + config.** L'en-tête de profil propose « Supprimer cette fiche » **en dernier** dans le menu
