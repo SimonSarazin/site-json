@@ -35,7 +35,7 @@
     "nav": [
       {
         "label": {
-                            "fr": "Les services",
+          "fr": "Les services",
           "en": "Services"
         },
         "icon": "building-2",
@@ -173,6 +173,17 @@
               "en": "Explore the thematic networks observatory"
             },
             "path": "/reseaux-thematiques"
+          },
+          {
+            "label": {
+              "fr": "Les Licoop",
+              "en": "Licoop places"
+            },
+            "description": {
+              "fr": "Lieux comme communs de proximité",
+              "en": "Places as local commons"
+            },
+            "path": "/lieux?licoop=Oui"
           }
         ]
       },
@@ -338,12 +349,12 @@
           },
           {
             "label": {
-              "fr": "Auto-diagnostic collectif du lieu",
-              "en": "Collective self-diagnosis of the place"
+              "fr": "Auto-diagnostic du lieu comme Licoop",
+              "en": "Place self-diagnosis as Licoop"
             },
             "description": {
-              "fr": "Un diagnostic dédié aux lieux comme communs de proximité",
-              "en": "A diagnostic dedicated to places as local commons"
+              "fr": "Un diagnostic dédié aux lieux comme communs de proximité (Licoop)",
+              "en": "A diagnosis dedicated to places as local commons (Licoop)"
             },
             "path": "/coform/6876c3e58fa8df3c7f024253/place"
           },
@@ -1521,7 +1532,7 @@
             "categoryVariant": "pill",
             "title": {
               "en": "They came to us",
-"fr": "Ils sont venus chez nous"
+              "fr": "Ils sont venus chez nous"
             },
             "description": {
               "en": "Coming soon: feedback from past guests.",
@@ -3075,12 +3086,12 @@
           "id": "annuaire-ressources-title",
           "props": {
             "title": {
-              "fr": "Coworking, salles de réunion et hébergements",
-              "en": "Coworking, meeting rooms and accommodation"
+              "fr": "Des services dans des lieux engagés, atypiques et foisonnants",
+              "en": "Services in committed, unusual and thriving places"
             },
             "subtitle": {
-              "fr": "Les ressources partagées des tiers-lieux du réseau.",
-              "en": "Shared resources of the network's third places."
+              "fr": "Pour des expériences écologiques, inclusives, sociales, culturelles…",
+              "en": "For ecological, inclusive, social and cultural experiences…"
             }
           }
         },
