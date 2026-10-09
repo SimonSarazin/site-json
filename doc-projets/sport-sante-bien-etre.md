@@ -21,9 +21,11 @@ agenda des événements du costum, sessions de formation exclues) ; entrée « A
 menu Grand Public. Puis merge de `main` (`b5286b57`), qui embarque SDK **1.0.196** et le correctif
 `4bb7c800` (aboire) : les formulaires `recovery-center` et `session-formation` n'effacent plus le
 `parent` ni les dates à l'édition. Lot du 30/09 (`05cf4d6b`, Nicolas) : **galerie de 5 photos** sur
-`/mss`, cartes de `/structure` en grille 2/3/3/3 et carte 50-50. ⚠ Le snapshot préflight
-`__effective__/sport-sante-bien-etre.json` n'a pas été régénéré après le lot du 07/10 (§9, gates du
-08/10). Les corrections de la review de la MR (24-28/09, `63250158`) sont reportées aux §10, §12,
+`/mss`, cartes de `/structure` en grille 2/3/3/3 et carte 50-50. **Réponse à la review de la MR 86
+(08/10, §9)** : l'onglet Événements de `/blog` passe de l'`agenda` à une **`searchProStatic` en
+timeline** (modèle Saint-Paul Sport), les 5 photos de la galerie `/mss` sont **réencodées en WebP**
+(17 Mo → 384 Ko) et le snapshot préflight `__effective__/sport-sante-bien-etre.json` est
+**régénéré**. Les corrections de la review de la MR (24-28/09, `63250158`) sont reportées aux §10, §12,
 §13 depuis le 28/09 (`467ffe02`) — cf. §9.
 Lot du 16-17/09 (branche `n-dev` : `16922f73` →
 `ae133e6a` → merge de `main` `c3f347aa`) : Nicolas restreint l'accès de 8 pages
@@ -157,7 +159,7 @@ Aucun CDC formel n'a été versé au dépôt. Le périmètre se lit dans la conf
 | `/creneaux` · `/equipements-sportifs` · `/mapping` | Jeux de données du territoire | 2 chacune |
 | `/formation` · `/listing-formations` · `/projets` | Formation et projets | 3 · 2 · 2 |
 | `/ressources` | Bibliothèque de documents pro (filtre thématique latéral) | 2 |
-| `/blog` | « Actus & événements » (07/10) — onglets Actus (`articleFeed`) / Événements (`agenda`) | 2 |
+| `/blog` | « Actus & événements » (07/10) — onglets Actus (`articleFeed`) / Événements (`searchProStatic` en timeline depuis le 08/10 ; `agenda` avant) | 2 |
 | `/contact` | Formulaire de contact | 3 |
 | `/mentions-legales` · `/confidentialite` · `/accessibilite` | Socle légal | 1 chacune |
 
@@ -943,7 +945,7 @@ nombre total de tests monte avec le merge, sans lien avec SSBE).
 
 | Page | Changement |
 |---|---|
-| `/mss` | 2 sections ajoutées en fin de page : titre `searchHeader` `#mss-galerie-header` (« Les Maisons Sport Santé en images », fr/en) + `gallery` `#mss-galerie` — 5 colonnes, lightbox, 5 photos `public/images/sportSanteBienetre/mss/MaisonSportSante1…5.png` → **6 sections** au lieu de 4 |
+| `/mss` | 2 sections ajoutées en fin de page : titre `searchHeader` `#mss-galerie-header` (« Les Maisons Sport Santé en images », fr/en) + `gallery` `#mss-galerie` — 5 colonnes, lightbox, 5 photos `public/images/sportSanteBienetre/mss/MaisonSportSante1…5.png` → **6 sections** au lieu de 4. **Réencodées en `.webp` le 08/10** (review MR 86 : PNG RGBA non compressés, 3,49 Mo chacun → 59-100 Ko en WebP q80, aucune transparence perdue — images opaques) |
 | `/structure` | `searchProStatic` `#section-structure-cards` : cartes `contact-card` passées de **1 colonne** à **2/3/3/3** (sm/md/lg/xl), carte en **`splitRatio: "50-50"`** — le montage adopté par le site du Tampon le 23/09. Le reste du diff est de la réindentation de `defaultFilters` |
 
 **Poids des images.** Les 5 PNG font **3,5 Mo chacun** (1244×700, RGBA), soit ~17 Mo versés au
@@ -987,11 +989,12 @@ pas de sondage fait dans ce dossier pour le mesurer.
 | `/` | la `gridLayout` `#section-activity-grid` (« Des activités labellisées, un gage de qualité et de sécurité » + **deux boutons « Ajouter une activité » / « Ajouter une structure » qui pointaient sur `/`**) est **retirée**. À sa place : bandeau `searchHeader` `#title-header-actu` (« Bougez avec nous ! ») + `articleFeed` `#home-article-feed` (`featured: true`, `cardVariant: "poster"`, `pageSize: 4`). L'accueil passe de 5 à **6 sections** |
 | `/blog` | titre de page « Actualités » → **« Actus & événements »**, `layout: "fullwidth"` ; le `searchHeader` gagne titre + sous-titre, placeholder « Rechercher une actu ou un événement… » ; l'`articleFeed` est remplacé par une section **`tabs`** `#ssb-blog-tabs` à deux onglets |
 | `/blog` → onglet **Actus** | `articleFeed` `#ssb-article-feed` : grille, `pageSize: 12`, `fullWidth`, variant par défaut. `featured` et `detailBasePath` retirés (`detailBasePath` est de toute façon déprécié : le lecteur est toujours `/blog`) |
-| `/blog` → onglet **Événements** | **`agenda`** `#ssb-blog-agenda` : événements `sourceKey: ["sportSanteBienetre"]`, `fediverse: false`, **`category: {$ne: "sessionFormation"}`** (les sessions de formation restent sur `/formation`) ; filtres type + tags, détail en tiroir, sans carte, grille 1/2/3/4 colonnes |
+| `/blog` → onglet **Événements** | ~~**`agenda`** `#ssb-blog-agenda`~~ **remplacé le 08/10** (review MR 86, voir plus bas) : événements `sourceKey: ["sportSanteBienetre"]`, `fediverse: false`, **`category: {$ne: "sessionFormation"}`** (les sessions de formation restent sur `/formation`) ; filtres type + tags, détail en tiroir, sans carte, grille 1/2/3/4 colonnes |
 
 **Ce qui fonctionne sans code** : la recherche du `searchHeader` de `/blog` alimente **les deux
 onglets** — `articleFeed` lit `pageFilters.searchQuery`, et `agenda` aussi parce que
-`filters.text: false` lui fait reprendre la recherche du `searchHeader` voisin. Le prefetch SSR et
+`filters.text: false` lui fait reprendre la recherche du `searchHeader` voisin (depuis le 08/10,
+c'est une `searchProStatic` qui la reprend, cf. « Review de la MR 86 »). Le prefetch SSR et
 les gardes voient bien les sections dans les onglets (`SECTION_EXTRACTORS.tabs`).
 
 **Effet de bord positif** : les deux boutons morts de l'accueil (`href: "/"`) disparaissent avec la
@@ -1008,10 +1011,36 @@ inchangés** (`/strategie`, `/rejoindre`, §13) · `typecheck` ✅ · préflight
   route `/blog/agenda` (les `baseParams` de l'agenda) et le snapshot
   `tests/preflight/__effective__/sport-sante-bien-etre.json` n'a pas été régénéré. Le diff est limité
   à cette route ; à régénérer (`npx vitest run -c vitest.config.unit.ts
-  tests/preflight/effective-config.test.ts -u`) puis committer avec le lot. **Non fait à ce jour.**
+  tests/preflight/effective-config.test.ts -u`) puis committer avec le lot. **Régénéré le 08/10**
+  (voir ci-dessous).
 - ⚪ `bundle-size` — hors périmètre : mesure un `dist/client` local du 28/09 (3,24 Mo).
 
 **Recette navigateur non faite.**
+
+### Review de la MR 86 (`n-dev` → `main`) — corrections du 08/10 (Nicolas)
+
+> Verdict de la review : bloquant (snapshot SSBE non régénéré, 17 Mo de PNG). Les quatre points
+> touchant SSBE sont corrigés ci-dessous ; les nettoyages 5 et 6 relèvent d'Ekilib.re (cf. sa doc).
+
+| Point de la review | Correction |
+|---|---|
+| 1 · Snapshot `effective` SSBE non régénéré | régénéré **pour SSBE seul** (`-u -t sport-sante-bien-etre`) **après** le point 3 ; diff limité à la nouvelle entrée `/blog/searchProStatic` (l'entrée `/blog/agenda` n'avait jamais été committée) |
+| 2 · 17 Mo de PNG pour 5 photos | réencodage **WebP q80** via `sharp` (images opaques, `removeAlpha`) : 100 / 73 / 65 / 59 / 69 Ko, 1244×700 conservé ; les 5 `.png` supprimés, `src` de `#mss-galerie` en `.webp`. ⚠ Les PNG restent dans l'historique de `n-dev` (`05cf4d6b`) : **cocher « Squash commits » au merge** pour que `main` ne les contienne jamais |
+| 3 · L'agenda écrit `tab`/`vue`/`tags` dans l'URL alors que `TabsSection` ne lit pas l'URL | **modèle Saint-Paul Sport** (`/actualites`, onglet Événements) : l'`agenda` `#ssb-blog-agenda` devient une **`searchProStatic`** `#ssb-blog-events-list`, `list.layout: "timeline"`, cartes `event` en tiroir (`tagLimit: 1`), `preview.type: "event"`, `previewParam: "preview-events"`. `baseParams` transposés : `sourceKey`, `costumSlug`, `fediverse: false` à l'identique ; `filters` de l'agenda → **`defaultFilters`** (`category $ne sessionFormation`) ; `defaultTypes: ["events"]`, tri **`startDate` décroissant**, `defaultFields` repris de Saint-Paul |
+| 4 · `fullWidth` / `columns.xl: 4` annulés par le conteneur des onglets | `columns` **non repris** : la disposition `timeline` ne le lit pas (`TimelineListView`). `fullWidth` de l'`articleFeed` **conservé**, comme sur Saint-Paul et Tiers-Lieux : à la lecture du code il garde un effet dans l'onglet (`xl:grid-cols-4` se règle sur la largeur d'écran, `max-w-[1536px]` contre `max-w-6xl` au-delà de 1536 px) — **à confirmer en navigateur** |
+
+**Ce que la timeline change pour le visiteur** : plus de sous-onglets « En cours / À venir /
+Passés » ni de vue calendrier ; une seule liste, du plus lointain au plus ancien, chaque événement
+sur une bulle-date. La recherche du `searchHeader` alimente toujours les deux onglets
+(`SearchProStatic` reprend `pageFilters.searchQuery` faute de champ propre). **Limite résiduelle** :
+ouvrir un événement écrit `?preview-events=<id>` ; un tel lien partagé rouvre `/blog` sur l'onglet
+Actus, sans le tiroir — l'onglet reste non piloté par l'URL (même limite que Saint-Paul et
+Tiers-Lieux, à traiter dans `TabsSection` si besoin).
+
+**Gates (08/10)** : `config:validate` ✅ 25 pages / 89 sections · `typecheck` ✅ ·
+`eslint src/components/layout/footer/` ✅ · préflight : seul échec restant `bundle-size` (`dist/`
+local, hors périmètre). **Recette navigateur à faire** : onglet Événements (liste non vide, tiroir,
+recherche partagée), galerie `/mss` en WebP.
 
 ---
 
@@ -1059,7 +1088,7 @@ inchangés** (`/strategie`, `/rejoindre`, §13) · `typecheck` ✅ · préflight
 | 38 | Formulaire ressource — upload 2 fichiers + photo conditionnelle | ✅ config (`ae133e6a`, 16/09) | `documents.maxItems` 1→2 ; `profil_avatar` affiché seulement si `thematique: "dispositifs"` (§9) — **recette navigateur à faire** : créer/éditer une ressource « Dispositifs », vérifier que la photo est bien envoyée et relue en édition |
 | 39 | Page `/programmes-dispositifs` | ✅ config (`ae133e6a`, 16/09) | Hero + recherche libre + cartes `resource` filtrées `thematique: dispositifs`, entrée de nav Professionnels (§9). Répond partiellement à la question 17 (§13) — **recette navigateur à faire**, et aucune ressource « Dispositifs » saisie à ce jour donc page vide en pratique |
 | 40 | Galerie photo `/mss` + `/structure` en grille 3 colonnes | ✅ config (`05cf4d6b`, 30/09) | 5 photos en lightbox, servies via `/img` ; `/structure` en 2/3/3/3 + carte 50-50 (§9). Alt génériques (§13) — **recette navigateur à faire** |
-| 41 | Actus & événements (accueil + `/blog`) | ✅ config (`fef9268d`, 07/10) | Fil d'actualités sur l'accueil (4 articles, `poster`) ; `/blog` en onglets Actus / Événements (agenda du costum, sessions de formation exclues) ; nav Grand Public → « Actualités » (§9). ⚠ **Snapshot préflight à régénérer** — **recette navigateur à faire** (fil et agenda non vides, recherche partagée par les deux onglets, tiroir de détail d'un événement) |
+| 41 | Actus & événements (accueil + `/blog`) | ✅ config (`fef9268d`, 07/10) | Fil d'actualités sur l'accueil (4 articles, `poster`) ; `/blog` en onglets Actus / Événements (événements du costum en **timeline** `searchProStatic` depuis le 08/10, sessions de formation exclues) ; nav Grand Public → « Actualités » (§9). Snapshot préflight **régénéré le 08/10** (review MR 86) — **recette navigateur à faire** (fil et liste d'événements non vides, recherche partagée par les deux onglets, tiroir de détail d'un événement) |
 | 42 | Édition `recovery-center` / `session-formation` sans perte de données | ✅ code (`4bb7c800`, aboire, 06/10) | `parent` en finder `entityRef`, dates acceptées en `Date` — arrivé par le merge de `main` du 07/10 (§9). Fiches éditées avant : perte éventuelle non mesurée |
 
 ---
@@ -1210,7 +1239,8 @@ organisations → la modale d'édition et la fiche `PreviewStructure` ne montren
   n'est pas régénéré (`-u`) — c'est la garde d'impact inter-configs, pas une régression. Vérifier que
   le diff du snapshot se limite à la section ajoutée avant de l'accepter.
 - **`/blog` mélange articles et événements dans une même recherche** (07/10) : le `searchHeader`
-  alimente les deux onglets. L'agenda exclut `category: "sessionFormation"` — une session de
+  alimente les deux onglets. La liste d'événements (agenda jusqu'au 07/10, `searchProStatic` depuis
+  le 08/10) exclut `category: "sessionFormation"` — une session de
   formation n'apparaît donc pas sous « Événements », seulement sur `/formation`.
 
 ---
@@ -1240,4 +1270,4 @@ organisations → la modale d'édition et la fiche `PreviewStructure` ne montren
 | 19 | **`/ressources` pas à jour des 2 nouvelles thématiques** (16/09, §9, §12) : `dispositifs`/`prescription` absentes du filtre latéral et du `resource.badge` de la page. Faut-il les y ajouter (une ressource « Dispositifs » resterait alors visible aux deux endroits, `/ressources` **et** `/programmes-dispositifs`), ou `/ressources` doit-elle au contraire **exclure** ces 2 thématiques puisqu'elles ont désormais leur page dédiée ? | Thomas |
 | 20 | **Photo `profil_avatar` sur une ressource « Dispositifs »** — jamais vérifié en navigateur (§9) : l'upload est-il bien accepté par le costum backend (champ cœur POI, a priori non soumis au filtre `typeObj.ressource`, mais non confirmé empiriquement), et l'image survit-elle bien au cycle création → édition ? | Thomas / dev SSBE |
 | 21 | **Galerie de `/mss`** (30/09, §9) — les 5 photos sont-elles définitives et autorisées à la diffusion ? Leurs textes alternatifs (« photo 1 » … « photo 5 ») sont à remplacer par une description de chaque photo (quelle MSS, quelle activité) | Nicolas / porteur |
-| 22 | **Snapshot préflight `effective` de SSBE** (07/10, §9) — à régénérer et committer avec le lot « Actus & événements » avant la prochaine MR, sinon `test:unit` reste rouge pour tout le monde | Nicolas |
+| 22 | ~~**Snapshot préflight `effective` de SSBE** (07/10, §9) — à régénérer et committer avec le lot « Actus & événements » avant la prochaine MR~~ **résolu le 08/10** : régénéré avec la réponse à la review de la MR 86 (§9) | Nicolas |

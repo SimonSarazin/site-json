@@ -19,9 +19,10 @@
 Dernière mise à jour : **2026-10-08** (§9.23, commit `8cc2a9ef` : le parcours « Prescrire un
 créneau » de `/espace-pro` passe en **timeline** ; les étapes d'inscription de `/s-informer` en
 vertical, sans barre de progression — l'orientation, posée hors de `props` dans le commit, est
-corrigée dans l'arbre de travail ; filtre « Type de Sport Santé » en tête de
+corrigée par `11377a04` ; filtre « Type de Sport Santé » en tête de
 `/creneaux` ; **cloche de notifications** activée ; Facebook et LinkedIn passent de la rangée
-d'icônes du pied de page aux lignes de contact. §9.22 : bouton « Ajouter une structure » **rétabli
+d'icônes du pied de page aux lignes de contact — table d'icônes partagée avec `SocialLinks` depuis
+la review de la MR 86 (§9.23). §9.22 : bouton « Ajouter une structure » **rétabli
 dans l'onglet admin Structures** — `create: "add-structure"`, commité `678527cf` ; le bouton public
 reste retiré ; merge de
 `main` : §9.21, reprise des créneaux SSBE du Tampon
@@ -248,7 +249,8 @@ et restreintes aux codes postaux **97430 / 97418**.
   prescription de `/espace-pro` en `timeline`, étapes d'inscription de `/s-informer` sans barre de
   progression, filtre « Type de Sport Santé » en tête de `/creneaux`, cloche de notifications,
   Facebook/LinkedIn dans les lignes de contact du pied de page (+ 2 icônes dans
-  `FooterContactPartners.tsx`). Détail §9.23.
+  `FooterContactPartners.tsx`, puis table partagée `footer/socialIcons.ts` après la review de la
+  MR 86). Orientation des étapes corrigée par `11377a04`. Détail §9.23.
 - **06/08 (session 3, décision Nicolas, non codée) — chantier « Actualités » requalifié en POI** :
   le CDC (« Section Actualités » de la home + CRUD back-office titre/catégorie/date/contenu/lien/
   statut/mise en avant) sera implémenté via un **costumForm POI** dédié plutôt que via le module
@@ -1865,8 +1867,9 @@ réouverture côté admin est à valider avec la MSS (§13).
 
 ### 9.23 Timeline sur l'espace pro, notifications et réseaux sociaux au pied de page (08/10, Nicolas — `8cc2a9ef`)
 
-> Config + 2 lignes de code partagé (`FooterContactPartners.tsx`). Un correctif de suivi
-> (orientation des étapes) est dans l'arbre de travail, **non commité** au 08/10.
+> Config + 2 lignes de code partagé (`FooterContactPartners.tsx`). Correctif de suivi de
+> l'orientation des étapes : `11377a04`. Nettoyage de la table d'icônes après la review de la MR 86
+> (fin de section).
 
 | Endroit | Changement |
 |---|---|
@@ -1880,11 +1883,11 @@ réouverture côté admin est à valider avec la MSS (§13).
 > ⚠️ **`orientation` posée hors de `props` dans le commit.** `8cc2a9ef` écrit `"orientation":
 > "vertical"` au niveau de la **section**, à côté de `props`. `StepsSection` ne lit que
 > `props.orientation` : la clé était ignorée et les étapes restaient **horizontales**. Corrigé par
-> Nicolas le 08/10 (clé déplacée dans `props`), **dans l'arbre de travail, pas encore commité**.
+> Nicolas le 08/10 (clé déplacée dans `props`, commit `11377a04`).
 > **`config:validate` ne détecte pas ce cas** : il a validé la config avec la clé mal placée comme
 > sans elle (13 pages / 49 sections dans les deux cas).
 
-**Gates (08/10, arbre de travail avec le correctif d'orientation)** : `config:validate` ✅ **13
+**Gates (08/10, avec le correctif d'orientation)** : `config:validate` ✅ **13
 pages / 49 sections** · `audit:config` ✅ RAS · `typecheck` ✅ · `eslint` sur
 `FooterContactPartners.tsx` ✅ · préflight (`tests/preflight` + `src/components/layout/footer`)
 **801/803** — les 2 échecs sont **hors lot** : snapshot `effective` de **SSBE** (lot SSBE du 07/10,
@@ -1894,6 +1897,17 @@ cf. [sa doc](sport-sante-bien-etre.md) §9) et `bundle-size` (`dist/` local du 2
 **Recette navigateur à faire** : timeline de `/espace-pro` en clair et en sombre (fond
 `bg-background` imposé par le composant), étapes verticales de `/s-informer`, cloche une fois
 connecté, icônes Facebook/LinkedIn du pied de page.
+
+**Review de la MR 86 (08/10) — nettoyage de la table d'icônes.** La review relevait deux cartes
+plateforme→icône dans `footer/` : l'`iconMap` des lignes de contact (où `facebook`/`linkedin`
+venaient d'être ajoutés) et `SOCIAL_ICONS` de `SocialLinks`. La table vit désormais dans
+**`src/components/layout/footer/socialIcons.ts`** (fichier `.ts` séparé : exporter un objet depuis
+`SocialLinks.tsx` déclencherait `react-refresh/only-export-components`) ; `SocialLinks` l'importe, et
+`FooterContactPartners` cherche `SOCIAL_ICONS[clé] ?? iconMap[clé] ?? MapPin`. `facebook`/`linkedin`
+sortent de l'`iconMap`. **Aucun changement de rendu** : la seule clé commune aux deux tables est
+`mail` (→ `Mail` des deux côtés), et aucun autre site en `contact-partners` n'emploie de clé de
+réseau dans ses lignes de contact. Un réseau ajouté à `SOCIAL_ICONS` (ex. Instagram) sert désormais
+aux deux rendus. Gates : `eslint src/components/layout/footer/` ✅ · `typecheck` ✅.
 
 ---
 
@@ -1912,7 +1926,7 @@ connecté, icônes Facebook/LinkedIn du pied de page.
 | A.7 | Formulaire de contact | 🟡 | **câblé le 23/08** sur `CONTACT_SEND` (SDK → `/co2/mailmanagement/createandsend`), clés `action`/`method` retirées (§9.13). Reste **hors `site-json`** : renseigner **`costum.contactMail`** sur le costum (`admin.email` n'est qu'un repli), sinon le legacy renvoie le message à son auteur |
 | A.8 | ~~Auto-inscription structure (`/structure`, bouton public + wizard)~~ **Édition + création admin** | ⛔ **public fermé le 23/09** · ✅ admin rouvert le 07/10 | le bouton public et la création admin (`create: false`) sont retirés (§9.19) ; **la création admin est rétablie le 07/10** (`create: "add-structure"`, §9.22) — plus aucune création de structure depuis le site, l'alimentation passe par le **référencement** (§9.10). Le costumForm `structure` reste en config et sert l'**édition** : aligné le 15/09 sur la refonte dynForm-legacy de SSBE (§9.17), 42 tests config-driven ✅, recette navigateur du 15/09 (§9.17 bis — création réelle réussie à l'époque, bug d'édition des pièces jointes corrigé). **Motif de la fermeture à confirmer avec la MSS** (§13) |
 | A.9 | Charte graphique Ekilib.re (CSS propre au site + thème bleu/jaune/vert) | ✅ config / 🟡 recette | §9.19 (`beef21d9`) : `index-maison-sport-sante-la-tampon.css` (290 lignes), palette #1B4F72 / #F0B429 / #1A7A55 en clair et en sombre, `customCSS` des cartes SSsO corrigé. Gates verts (build client compris) ; **recette navigateur à faire, mode sombre en priorité** |
-| A.10 | Ajustements du 08/10 : timeline de prescription, étapes verticales, ordre des filtres, cloche de notifications, réseaux sociaux en lignes de contact | ✅ config (`8cc2a9ef`) / 🟡 | §9.23. **Correctif d'orientation de `#inscription-steps` à committer** (clé déplacée dans `props`, arbre de travail) ; **recette navigateur à faire** |
+| A.10 | Ajustements du 08/10 : timeline de prescription, étapes verticales, ordre des filtres, cloche de notifications, réseaux sociaux en lignes de contact | ✅ config (`8cc2a9ef`) / 🟡 | §9.23. Correctif d'orientation de `#inscription-steps` commité (`11377a04`, clé déplacée dans `props`) ; table d'icônes partagée après la review de la MR 86 ; **recette navigateur à faire** |
 
 ### Lot B — Gestion des créneaux (admins)
 

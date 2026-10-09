@@ -1473,23 +1473,23 @@
             "lightbox": true,
             "images": [
               {
-                "src": "images/sportSanteBienetre/mss/MaisonSportSante1.png",
+                "src": "images/sportSanteBienetre/mss/MaisonSportSante1.webp",
                 "alt": { "fr": "Maison Sport Santé – photo 1", "en": "Sport Health House – photo 1" }
               },
               {
-                "src": "images/sportSanteBienetre/mss/MaisonSportSante2.png",
+                "src": "images/sportSanteBienetre/mss/MaisonSportSante2.webp",
                 "alt": { "fr": "Maison Sport Santé – photo 2", "en": "Sport Health House – photo 2" }
               },
               {
-                "src": "images/sportSanteBienetre/mss/MaisonSportSante3.png",
+                "src": "images/sportSanteBienetre/mss/MaisonSportSante3.webp",
                 "alt": { "fr": "Maison Sport Santé – photo 3", "en": "Sport Health House – photo 3" }
               },
               {
-                "src": "images/sportSanteBienetre/mss/MaisonSportSante4.png",
+                "src": "images/sportSanteBienetre/mss/MaisonSportSante4.webp",
                 "alt": { "fr": "Maison Sport Santé – photo 4", "en": "Sport Health House – photo 4" }
               },
               {
-                "src": "images/sportSanteBienetre/mss/MaisonSportSante5.png",
+                "src": "images/sportSanteBienetre/mss/MaisonSportSante5.webp",
                 "alt": { "fr": "Maison Sport Santé – photo 5", "en": "Sport Health House – photo 5" }
               }
             ]
@@ -5394,32 +5394,64 @@
                 "icon": "calendar",
                 "content": [
                   {
-                    "type": "agenda",
-                    "id": "ssb-blog-agenda",
+                    "type": "searchProStatic",
+                    "id": "ssb-blog-events-list",
                     "props": {
-                      "filters": {
-                        "type": true,
-                        "text": false,
-                        "tags": true
-                      },
-                      "detailsMode": "drawer",
+                      "useFilter": true,
+                      "showMap": false,
                       "enableMap": false,
-                      "columns": {
-                        "sm": 1,
-                        "md": 2,
-                        "lg": 3,
-                        "xl": 4
-                      },
+                      "showActiveFiltersTypes": true,
+                      "showActiveFiltersTags": true,
+                      "disableInfiniteScroll": false,
                       "baseParams": {
+                        "defaultTypes": [
+                          "events"
+                        ],
                         "sourceKey": [
                           "sportSanteBienetre"
                         ],
                         "costumSlug": "sportSanteBienetre",
                         "fediverse": false,
-                        "filters": {
+                        "defaultFilters": {
                           "category": {
                             "$ne": "sessionFormation"
                           }
+                        },
+                        "defaultSortBy": {
+                          "startDate": -1
+                        },
+                        "defaultFields": [
+                          "name",
+                          "slug",
+                          "collection",
+                          "type",
+                          "source",
+                          "shortDescription",
+                          "description",
+                          "profilImageUrl",
+                          "profilMediumImageUrl",
+                          "profilThumbImageUrl",
+                          "medias",
+                          "urls",
+                          "address",
+                          "tags",
+                          "created",
+                          "startDate",
+                          "endDate",
+                          "organizer",
+                          "reference"
+                        ]
+                      },
+                      "list": {
+                        "layout": "timeline",
+                        "previewParam": "preview-events",
+                        "card": {
+                          "type": "event",
+                          "detailsMode": "drawer",
+                          "tagLimit": 1
+                        },
+                        "preview": {
+                          "type": "event"
                         }
                       }
                     }
