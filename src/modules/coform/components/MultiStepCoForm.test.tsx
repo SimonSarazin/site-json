@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, waitFor } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import type { CoFormData } from "../types";
 
 /**
@@ -177,5 +177,59 @@ describe("MultiStepCoForm — contexte de `chooseProposal`", () => {
         answerId: "answer-1",
       }),
     );
+  });
+});
+
+/** `hiddenFields` sur le chemin wizard : même garde que le formulaire simple (cf. DynamicCoForm.test). */
+describe("MultiStepCoForm — champs masqués par l'appelant (`hiddenFields`)", () => {
+  /** Étape 1 à deux champs (dont un requis, masqué) : on voit ce qui reste et ce qui revient. */
+  const FORM_MASQUE = {
+    ...FORM_DATA,
+    inputs: {
+      s1: {
+        step: 1,
+        name: "Salle",
+        inputs: {
+          nom: { type: "text", label: "Nom", isRequired: true },
+          capacite: { type: "text", label: "Capacité" },
+        },
+      },
+      s2: { step: 2, name: "Équipements", inputs: { description: { type: "text", label: "Description" } } },
+    },
+  } as unknown as CoFormData;
+
+  beforeEach(() => {
+    mockUseCoFormDraft.mockReset();
+    mockUseCoFormDraft.mockReturnValue(draftInerte());
+    // Propre à ce bloc : jsdom n'implémente pas `scrollIntoView`, que le wizard appelle au montage.
+    Element.prototype.scrollIntoView = vi.fn();
+  });
+
+  it("le champ masqué n'est pas rendu, les autres si", async () => {
+    const { container } = render(
+      <MultiStepCoForm
+        formData={FORM_MASQUE}
+        onFinalSubmit={vi.fn()}
+        formId="form-1"
+        userId="user-1"
+        defaultValues={{ s1: { nom: "Salle A" } }}
+        hiddenFields={["nom"]}
+      />,
+    );
+    await waitFor(() => expect(container.querySelector("#capacite")).not.toBeNull());
+    expect(container.querySelector("#nom")).toBeNull();
+  });
+
+  it("requis et vide : « Suivant » échoue, le champ revient et RESTE pendant la saisie", async () => {
+    const { container, getByText } = render(
+      <MultiStepCoForm formData={FORM_MASQUE} onFinalSubmit={vi.fn()} formId="form-1" userId="user-1" hiddenFields={["nom"]} />,
+    );
+    await waitFor(() => expect(container.querySelector("#capacite")).not.toBeNull());
+    expect(container.querySelector("#nom")).toBeNull();
+    fireEvent.click(getByText("coform.navigation.next"));
+    await waitFor(() => expect(container.querySelector("#nom")).not.toBeNull());
+    // Une saisie valide lève l'erreur : le champ ne doit pas disparaître sous les doigts.
+    fireEvent.change(container.querySelector("#nom")!, { target: { value: "Salle B" } });
+    await waitFor(() => expect((container.querySelector("#nom") as HTMLInputElement | null)?.value).toBe("Salle B"));
   });
 });

@@ -1,4 +1,4 @@
-import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch, ArrowRight, ChartPie } from "lucide-react";
+import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, GitBranch, ArrowRight, ChartPie } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import React, { Suspense, useState, useMemo, useCallback, useContext, useEffect, useRef } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router";
@@ -34,6 +34,8 @@ const ObservatoryPanel = lazy(
   () => import("@/modules/observatoire/components/ObservatoryPanel"),
 );
 import { SwitchDetailsMode } from "./components/SwitchDetailsMode";
+import { SectionAddButton } from "./components/SectionAddButton";
+import { useAnswerCreated } from "./hooks/useAnswerCreated";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
@@ -65,12 +67,7 @@ import { useAuthModal } from "@/modules/auth";
 import { useLocalization } from "@/hooks/useLocalization";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  SEARCH_QUERY_KEYS,
-  SEARCH_STATIC_LIST_PREFIX,
-  SEARCH_STATIC_MAP_PREFIX,
-} from "./constants/queryKeys";
+import { SEARCH_STATIC_LIST_PREFIX, SEARCH_STATIC_MAP_PREFIX } from "./constants/queryKeys";
 
 /**
  * Répartition {largeur liste, largeur carte, colonnes de la liste, densité des
@@ -339,14 +336,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     }
   };
 
-  const queryClient = useQueryClient();
-  // Après création d'une answer (ex. créneau) : re-fetch des listes de la
-  // section — useCoFormFinalMutation n'invalide que les caches coform
-  // (FORM/FORM_ANSWERS), jamais ceux du module search.
-  const handleCoformSaved = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_LIST_PREFIX) });
-    queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_MAP_PREFIX) });
-  }, [queryClient]);
+  // Après création d'une answer (ex. créneau) : listes rafraîchies et message configuré.
+  const handleCoformSaved = useAnswerCreated(addButton?.successMessage);
 
   // Bouton « Ajouter » (modale d'entité ou création d'answer CoForm) —
   // activation par CONFIG (`show`), gate admin débrayable (`adminOnly: false`,
@@ -354,13 +345,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   // à côté du bouton Carte dans le header STANDARD **et** dans le header
   // custom (`customHeader`), qui sont exclusifs — deux JSX divergeraient.
   const showAddButton = Boolean(addButton?.show && (addButton.adminOnly === false || permissions.isAdmin));
-  const addButtonElement = showAddButton && addButton ? (
-    <Button variant="outline" size="sm" onClick={handleAddClick}>
-      <Plus className="h-4 w-4 sm:mr-1" />
-      <span className="hidden sm:inline">
-        {addButton.label ? t(addButton.label) : t("Ajouter")}
-      </span>
-    </Button>
+  const addButtonElement = showAddButton ? (
+    <SectionAddButton label={addButton?.label ? t(addButton.label) : t("Ajouter")} onClick={handleAddClick} />
   ) : null;
 
   // Bouton « Observatoire » — troisième bascule, à côté de Liste et Carte.

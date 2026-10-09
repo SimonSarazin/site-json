@@ -2788,17 +2788,7 @@
             "subhead": {
               "fr": "Explorez les activités sport santé labellisées à La Réunion et trouvez celle qui vous convient !",
               "en": "Explore the labeled sport health activities in Réunion and find the one that suits you!"
-            },
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Ajouter un créneau",
-                  "en": "Add a slot"
-                },
-                "href": "/",
-                "variant": "primary"
-              }
-            ]
+            }
           }
         },
         {
@@ -3322,6 +3312,19 @@
                   }
                 },
                 "defaultViewMode": "list",
+                "addButton": {
+                  "show": true,
+                  "adminOnly": false,
+                  "coform": "6928096adf5caf0d230e7f26",
+                  "label": {
+                    "fr": "Ajouter un créneau",
+                    "en": "Add a slot"
+                  },
+                  "successMessage": {
+                    "fr": "Créneau ajouté. Il sera publié après validation.",
+                    "en": "Slot added. It will be published once validated."
+                  }
+                },
                 "baseParams": {
                   "defaultTypes": [
                     "answers"
@@ -3348,11 +3351,13 @@
                     "type": "card-answer",
                     "detailsMode": "dialog",
                     "structureAction": {
-                      "kind": "preview"
+                      "kind": "preview",
+                      "audience": "managers"
                     }
                   },
                   "preview": {
-                    "type": "coform-answer"
+                    "type": "coform-answer",
+                    "editButton": true
                   }
                 },
                 "map": {
@@ -5878,6 +5883,38 @@
             "userContext": "own"
           },
           "component": "MembershipTab"
+        },
+        {
+          "id": "structures",
+          "label": {
+            "fr": "Structures",
+            "en": "Organizations"
+          },
+          "condition": {
+            "entityTypes": [
+              "citoyens"
+            ],
+            "userContext": "own",
+            "auth": "required"
+          },
+          "component": "StructuresTab",
+          "props": {
+            "answers": {
+              "formId": "6928096adf5caf0d230e7f26",
+              "structureFinderPath": "answers.sportSanteBienetre2172025_854_0.findersportSanteBienetre2172025_854_0mdn1fzoewyjg66n85p",
+              "editButton": true,
+              "submittedSlots": true
+            },
+            "scope": "costum",
+            "structureStatusField": "statusActor",
+            "emptyAction": {
+              "label": {
+                "fr": "Référencer ma structure",
+                "en": "Register my organization"
+              },
+              "href": "/structure"
+            }
+          }
         }
       ]
     },

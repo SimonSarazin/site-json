@@ -219,3 +219,73 @@ describe("DynamicCoForm — contexte de `chooseProposal`", () => {
     expect(chooseProposalSpy).toHaveBeenCalledWith(expect.objectContaining({ context: null }));
   });
 });
+
+/**
+ * `hiddenFields` : masquage décidé par l'APPELANT — ex. la structure d'un créneau déposé depuis sa
+ * fiche. Le champ n'est pas rendu, mais sa valeur préremplie part au submit (là où
+ * `access.restrictedFields`, retiré du parse, la perdrait). En erreur, il revient pour être corrigé.
+ */
+describe("DynamicCoForm — champs masqués par l'appelant (`hiddenFields`)", () => {
+  const FORM_CRENEAU = {
+    ...FORM_DATA,
+    inputs: {
+      s1: {
+        step: 1,
+        name: "Créneau",
+        inputs: {
+          nom: { type: "text", label: "Nom" },
+          structure: { type: "text", label: "Structure", isRequired: true },
+        },
+      },
+    },
+  } as unknown as CoFormData;
+
+  beforeEach(() => {
+    mockUseCoFormDraft.mockReset();
+    mockUseCoFormDraft.mockReturnValue(draftInerte());
+  });
+
+  it("n'est pas rendu, et sa valeur préremplie part au submit", async () => {
+    const onSubmit = vi.fn().mockResolvedValue(true);
+    const { container } = render(
+      <DynamicCoForm
+        formData={FORM_CRENEAU}
+        onSubmit={onSubmit}
+        formId="form-1"
+        userId="user-1"
+        defaultValues={{ structure: "Club Rando Santé" }}
+        hiddenFields={["structure"]}
+      />,
+    );
+    expect(container.querySelector("#nom")).not.toBeNull();
+    expect(container.querySelector("#structure")).toBeNull();
+    fireEvent.submit(container.querySelector("form")!);
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ structure: "Club Rando Santé" });
+  });
+
+  it("requis mais vide : la soumission échoue et le champ revient pour être corrigé", async () => {
+    const onSubmit = vi.fn();
+    const { container } = render(
+      <DynamicCoForm formData={FORM_CRENEAU} onSubmit={onSubmit} formId="form-1" userId="user-1" hiddenFields={["structure"]} />,
+    );
+    expect(container.querySelector("#structure")).toBeNull();
+    fireEvent.submit(container.querySelector("form")!);
+    await waitFor(() => expect(container.querySelector("#structure")).not.toBeNull());
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("une fois révélé, le champ RESTE quand l'erreur se lève (pas de démontage pendant la saisie)", async () => {
+    const onSubmit = vi.fn().mockResolvedValue(true);
+    const { container } = render(
+      <DynamicCoForm formData={FORM_CRENEAU} onSubmit={onSubmit} formId="form-1" userId="user-1" hiddenFields={["structure"]} />,
+    );
+    fireEvent.submit(container.querySelector("form")!);
+    await waitFor(() => expect(container.querySelector("#structure")).not.toBeNull());
+    fireEvent.change(container.querySelector("#structure")!, { target: { value: "Club Rando Santé" } });
+    fireEvent.submit(container.querySelector("form")!);
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(container.querySelector("#structure")).not.toBeNull();
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ structure: "Club Rando Santé" });
+  });
+});

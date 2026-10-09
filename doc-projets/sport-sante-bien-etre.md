@@ -13,7 +13,15 @@
 > [Module Articles/Blog](../doc/32-module-articles-blog.md) ·
 > [Module Profil](../doc/08-module-profil.md). Mémoire : `[[project-sport-sante-bien-etre]]`.
 
-Dernière mise à jour : **2026-09-17**. Lot du 16-17/09 (branche `n-dev` : `16922f73` →
+Dernière mise à jour : **2026-10-09** (branche `judi-ssbe`, merge de `main` `9fd670bf` puis lot non
+commité) : **onglet profil « Structures »** — un admin de structure y voit ses structures et leurs
+créneaux (en attente et refusés compris, grâce au hook PHP `searchAnswers`) et en ajoute depuis une
+structure, champ structure prérempli et masqué (nouvelle prop CoForm `hiddenFields`) ; et
+**`/creneaux` retrouve « Ajouter un créneau » et « Modifier »**, perdus à la fusion MR 51 + 52 —
+désormais épinglés par la garde d'impact inter-configs —, « Fiche structure » y redevient réservée
+aux gestionnaires ; l'onglet gagne « Modifier », les créneaux déposés hors de ses structures et le
+statut des structures non validées (§9, §10 #16-17, #40).
+Mise à jour précédente : **2026-09-17**. Lot du 16-17/09 (branche `n-dev` : `16922f73` →
 `ae133e6a` → merge de `main` `c3f347aa`) : Nicolas restreint l'accès de 8 pages
 (`auth.required: true`) et élague 4 entrées de nav devenues secondaires (`/equipements-sportifs`,
 `/mapping`, `/listing-formations`, le dropdown « Communauté ») ; Claude enrichit le formulaire
@@ -1036,6 +1044,152 @@ lui-même **non touché** par le merge (aucun conflit).
 `typecheck` ✅ · `test:preflight` ✅ **636/638** (2 mêmes échecs préexistants hors périmètre — le
 nombre total de tests monte avec le merge, sans lien avec SSBE).
 
+### Lot du 09/10 — onglet profil « Structures » : ses structures, leurs créneaux, ajout depuis la structure
+
+> Branche `judi-ssbe` : merge de `main` (`9fd670bf`, 263 commits dont 7 sur cette config, sans
+> conflit ; SDK aligné sur la 1.0.196 du lock) puis lot **non commité**. Backend : `modules/costum`
+> (`SportSanteBienetre.php`) **modifié en local, non commité, à déployer**.
+
+**Besoin** (porteur) : depuis le menu de l'avatar → « Profil », un onglet « Structures » listant les
+structures dont on est admin, leurs créneaux, et un ajout de créneau directement depuis une structure
+— le champ structure du formulaire masqué dans ce cas. Arbitrages rendus : affichage en accordéon ;
+créneaux en attente et refusés visibles (hook PHP adapté) ; structures du périmètre SSBE seulement.
+
+**Ce que faisait l'existant.** Le legacy a exactement cette fonction (`/costum/ssbe/dashboard` : un
+onglet par structure, « Ajouter un créneau » qui préremplit le finder puis le masque) ; SiteForge
+n'avait rien : aucun onglet, et `/creneaux` a perdu son ajout et sa modification (voir plus bas).
+
+| Domaine | Changement |
+|---|---|
+| Config | `profiles.citoyens.tabs` : onglet `structures` (`component: "StructuresTab"`, `userContext: own` + `auth: required`), props `answers {formId, structureFinderPath}`, `scope: costum`, `emptyAction` → `/structure` |
+| Onglet | `StructuresTab` (accordéon : jusqu'à 3 structures tout déplié, sinon la première) → `ManagedStructureItem` (logo, nom, commune, compteurs par statut, « Voir la fiche », « Ajouter un créneau ») → `CreneauRow` (titre, type, statut icône + libellé — un statut absent se lit « En attente » —, **bande de la semaine** L→D doublée d'un texte, horaire) ; clic → détail `coform-answer` en lecture |
+| Données | structures : `useUserOrganizations` + `validatedAdminLinkFilters` (admin validé, filtre désormais partagé avec la cagnotte) + `sourceKey: [sportSanteBienetre]` ; créneaux : `useSearchQuery` sur `{form, "<finder>.<orgId>": {$exists: true}}`, clé de cache par utilisateur ET par structure |
+| CoForm | prop `hiddenFields` (CoFormModal → SmartCoForm → DynamicCoForm/MultiStepCoForm) : champ non rendu, valeur conservée et envoyée, réaffiché s'il est en erreur ; `utils/finderPrefill.ts` remplace 2 copies identiques des profils tiers-lieux |
+| Profil | la condition `userContext` attend l'hydratation (`lib/tabVisibility.ts`) : fin de l'écart SSR/client d'« Amis » et « Communautés », le nouvel onglet n'en hérite pas |
+| Backend | `SportSanteBienetre::searchAnswers` ne force plus « Validé » quand le `$and` de la recherche borne les résultats à une structure dont l'utilisateur est admin validé (`isElementAdmin`, la règle de `canEditAnswer`) ; les `$or` (recherche texte par nom de structure) ne comptent pas |
+
+**Faits mesurés en base dev** (form `6928096adf5caf0d230e7f26`) : une seule étape ;
+`oneAnswerPerPers: false` ; finder structure non requis, `multiple: true`, filtre `source.key =
+sportSanteBienetre` ; statut « Administration » `isAdminOnly` — le serveur le retire pour un
+déposant, qui ne peut donc pas se valider lui-même, et un créneau déposé n'a **aucun statut** (lu
+« En attente ») ; `sharedQuestionPath` pointe le finder structure : le mode « par élément »
+(`elementId`) est neutre ici (`computeRestrictedFields` → `[]` sans `placeAdminOnlyFields`) et sert
+à ranger le brouillon par structure.
+
+**Ce que l'onglet ne faisait pas (V1, levé plus bas : `answers.editButton`)** : modifier un créneau. `sharedQuestionPath` autorise l'admin de
+structure côté serveur, et le statut ne craint rien : vérifié le 09/10, `SaveAnswerAction` retire les
+champs `isAdminOnly` du payload d'un non-admin (l. 126-155) puis fusionne champ par champ
+(l. 205-244) — la valeur en base reste. Ouvrir l'édition ici est donc un choix d'interface, plus un
+risque de donnée.
+
+**Relecture du lot** (4 relecteurs — bonnes pratiques, justesse et sécurité, interface et
+accessibilité, docs et tests —, chaque constat soumis à un sceptique : 53 sur 54 confirmés ou
+partiels, aucun bloquant). Ce qu'elle a fait changer :
+
+| Constat | Correctif |
+|---|---|
+| Le détail ouvert depuis l'onglet affichait **« Validé »** pour un créneau sans statut (le repli de `normalizeStatus`), la ligne « En attente » — or c'est le cas de TOUT créneau déposé depuis l'onglet | `normalizeStatus` : absent ou inconnu = « En attente », la règle serveur ; carte et détail affichent le libellé du statut normalisé (`coformAnswer.status.*`, fini aussi la faute « Réfusé »). Sans effet sur les listes publiques, filtrées « Validé » côté serveur |
+| Badge « En attente » à 1,85:1 en thème clair (`text-primary-foreground` sur tous les fonds) | `getStatusStyle` : chaque fond avec son encre (≥ 4,5:1 mesuré dans les deux thèmes, SSBE et Ekilib.re ont les jetons) ; pastilles de l'onglet sur le même principe |
+| Premier clic sur un créneau, ou lien direct vers l'onglet : tout le profil disparaissait derrière un spinner (chunks `lazy` sans Suspense local) | Suspense locaux (détail, formulaire, onglets en mode `component`) |
+| Un champ masqué réaffiché pour erreur redisparaissait à la première frappe valide | `useHiddenFields` : révélé une fois, il reste |
+| Focus perdu sur `body` quand le bouton qui ouvrait le formulaire disparaît (état vide remplacé par la liste) | focus rendu à l'élément ouvreur, ou au bouton « Ajouter » de l'en-tête |
+| Compteurs d'en-tête calculés sur la seule première page, lus comme des totaux | « 50+ créneaux » tant que la liste est incomplète |
+| Dépliage par défaut recalculé à chaque page (une 4ᵉ structure repliait les autres) | figé à l'arrivée de la première page |
+| Props de l'onglet castées sans contrôle à l'exécution | revalidées par `StructuresTabPropsSchema` dans `ProfileTemplateDynamic` |
+| PHP : regex d'id qui tolérait un `\n` final ; aucune borne au nombre de vérifications | `\z` ; la PREMIÈRE condition stricte décide ; contrat versionné (`tests/SportSanteBienetreBoundSearchTest.php`, 14 cas) |
+| États erreur / vide / chargement, compteurs partiels, dépliage après ajout, câblage du template : non testés | `StructuresTab.test.tsx` (16), `ProfileTemplateDynamic.test.tsx` (4), CoForm (`hiddenFields` : modale, wizard, persistance), `CardAnswer` (libellé de statut) |
+
+Écarts assumés : la table de tons de statut de l'admin (`STATUS_TONE_CLASS`, même faible contraste) n'est
+pas touchée ici — elle est aussi modifiée par la MR Ekilib.re en cours ; à traiter dans un lot dédié.
+
+**Rétablissement de `/creneaux` (même lot)** — `addButton.coform`, `preview.editButton` et
+`card.structureAction.audience: "managers"` (lot du 02/09) avaient disparu au merge MR 51 + 52
+(`3ad39655`), la résolution du conflit ayant gardé le montage `gridLayout` de `n-dev` sans y reverser
+ces clés. Rétablis : **« Ajouter un créneau »** dans l'en-tête de la liste (création en modale,
+ouverte à tous, login si non connecté — à l'identique d'Ekilib.re) et **« Modifier »** dans le
+détail, pour les gestionnaires du créneau. Chaîne serveur vérifiée pour un admin de structure :
+`findanswered` sert la réponse, `Coform::canAdminAnswer` l'autorise par le finder
+(`sharedQuestionPath`), le statut reste intact (cf. ci-dessus) ; le form accepte plusieurs réponses
+par personne (`oneAnswerPerPers: false`).
+
+- Le bouton « Ajouter un créneau » du `searchHeader` est **retiré** : un emplacement réservé
+  (`href: "/"`) présent depuis la toute première config, jamais branché — il menait à l'accueil et
+  doublait le vrai bouton. Un bouton `searchHeader` ne peut pas ouvrir de `CoFormModal` ; s'il en
+  faut un dans le bandeau, ce sera une navigation vers `/coform/6928096adf5caf0d230e7f26`, comme
+  sur l'espace pro.
+- **Garde** : la projection `contributions` de `tests/preflight/effective-config.test.ts` porte
+  désormais ces clés (cible et gate de l'ajout, « Modifier », audience de « Fiche structure ») ; les
+  retirer de la config fait échouer le préflight (mutations vérifiées sur `addButton` et
+  `editButton`).
+- **Accessibilité** : sous `sm`, le bouton d'ajout n'était qu'une icône sans nom accessible —
+  `aria-label` ajouté (`SearchProStatic`, profite aussi à Ekilib.re).
+- **« Fiche structure » réservée aux gestionnaires** (#17) : `audience: "managers"` remis à la
+  demande du porteur du lot — le gate (`isCoformAnswerManager` sous `useHydrated`, 12 tests, 13 avec la
+  régression « l'auteur d'un créneau ne voit pas la fiche ») était
+  resté en place, seule la clé manquait. Fixture de la garde acceptée (`ficheStructure.audience`).
+- **Message après l'ajout** (levé à la relecture qui suit) : le créneau, en attente, n'apparaît pas
+  dans la liste publique, et le contributeur croyait à un échec — `addButton.successMessage` (nouvelle
+  clé, opt-in) dit « Créneau ajouté. Il sera publié après validation. », comme l'onglet « Structures »,
+  et l'ajout rafraîchit aussi les listes de l'onglet (`useAnswerCreated`).
+
+**Onglet « Structures » — modifier, tous ses créneaux, statut des structures (même lot)**. Demande :
+« Modifier » dans le détail d'un créneau ouvert depuis l'onglet, et « tous les structures et
+créneaux dont je suis admin, pas seulement les validés ». Constat mesuré en base dev avant d'agir
+(compte `judi`, super-admin) : l'onglet ne filtrait AUCUN statut — « Judi structure » (`statusActor`
+« En cours ») y était, mais rien ne le disait ; les créneaux manquants étaient ceux que le compte a
+DÉPOSÉS hors de ses structures (« TEST BASKET », en cours, sans structure ; « Badming town », sous
+MAIRIE DU TAMPON dont il n'est pas admin). Les structures restent celles de SSBE : le finder du
+formulaire n'accepte que `source.key: sportSanteBienetre`.
+
+- **« Modifier » dans le détail** (`answers.editButton`) : gestionnaire, admin de N'IMPORTE QUELLE
+  structure citée (le finder est `multiple`, la jointure n'en garde qu'une), ou **auteur**
+  (`canEditCoformAnswer`, la règle de `SaveAnswerAction`) — l'auteur, reconnu par `user` projeté dans
+  toutes les listes de l'onglet, ne devient pas gestionnaire : la « Fiche structure » reste réservée
+  (`isCoformAnswerManager`).
+  Après l'enregistrement, toutes les listes de l'onglet se rafraîchissent : un seul préfixe de cache
+  par compte (`SEARCH_QUERY_KEYS.MANAGED_ANSWERS_PREFIX`), invalidé par le détail.
+- **Créneaux déposés ailleurs** (`answers.submittedSlots`) : groupe « Mes autres créneaux » sous les
+  structures (« Mes créneaux » sans structure), tous statuts, chaque ligne avec sa structure, « Sans
+  structure » ou « Structure sans nom » ; un créneau d'une
+  structure listée n'y figure pas (exclusion par TOUTES les structures du finder, `multiple`).
+- **Statut des structures** (`structureStatusField: "statusActor"`) : pastille « En attente de
+  validation » / « Validation refusée » dans l'en-tête et explication au dépliage, pour les seules
+  structures non validées.
+- **Hook PHP** (`modules/costum`, à déployer avec le reste) : `seesAllStatuses` = admin du costum OU
+  recherche bornée à ses propres créneaux (`isBoundToOwnAnswers` — `filters[user]=<id>` arrive en
+  `$or` de deux branches identiques, toutes doivent valoir l'utilisateur, comparaison stricte) OU à
+  une structure administrée. Aplatissement durci : créneau sans structure ou sans section, adresse
+  vide, entrée de finder abîmée (valeur non tableau, clé qui n'est pas un id, type absent). Contrat :
+  56 cas (`tests/SportSanteBienetreBoundSearchTest.php`), dont l'exécution de `searchAnswers` sur des
+  doublures — filtre « Validé » ajouté ou non, créneaux incomplets sans avertissement.
+- **Bouton « Modifier » du détail, partagé avec `/creneaux` et Ekilib.re** : fond plein (le blanc
+  translucide passait sous 4,5:1 en clair), 44 px au tactile, contour de focus décollé, visible sur le
+  dégradé, `aria-disabled` atténué pendant le chargement, réessai réel après un échec, message
+  « Modifications enregistrées », formulaire titré « Modifier — <titre> ».
+- **Questions produit ouvertes** : un créneau validé modifié par sa structure reste publié sans
+  relecture, un refusé corrigé reste refusé (le serveur garde le statut) ; le finder structure reste
+  modifiable à l'édition (un créneau déplacé change de groupe). La recette exige un compte NON
+  super-admin, admin d'une seule structure et auteur d'un créneau sans structure.
+
+**Relecture de la suite du lot** (4 relecteurs, un sceptique par axe : 38 constats, 0 réfuté, aucun
+bloquant ; 22 confirmés, 16 partiels). Ce qu'elle a fait changer :
+
+| Constat | Correctif |
+|---|---|
+| Un rafraîchissement de fond en échec démontait le formulaire de modification ouvert (saisie perdue) | garde sur l'ABSENCE de fiche, plus sur l'erreur |
+| « Modifier » absent pour l'admin d'une co-structure, et pour l'auteur sous une structure | gate sur toutes les structures citées (`getAnswerCitedStructures`, lib search) ; `user` projeté partout |
+| Ajout depuis `/creneaux` : aucun message, listes de l'onglet non rafraîchies | `addButton.successMessage` + `useAnswerCreated` |
+| Focus perdu quand une ligne quitte sa liste au rechargement qui suit une modification | `useReturnFocus` revérifie à l'arrivée des données ; repli sur le titre de l'onglet |
+| Aplatissement PHP : adresse vide, finder abîmé → avertissements, exception Mongo | gardes `is_array` / id / type ; `searchAnswers` exécuté par le script |
+| Texte « pas visible sur le site » faux (la page de profil reste publique) ; titres à la 2ᵉ personne | « n'apparaît pas dans les listes du site » ; « Mes autres créneaux » ; pluriel, « Structure sans nom » |
+| Anneau de focus confondu avec le fond du bouton ; `aria-disabled` sans rendu | contour décollé ; rendu atténué, curseur d'attente |
+| Options de l'onglet et retrait silencieux par le schéma non gardés | projection `structuresTabs` de la garde ; test « props intactes » |
+| Utilitaires réécrits, logique pure dans les composants, alerte « Réessayer » en 3 copies | `isPlainObj`, `getValueByPath`, `submittedSlotStructures` (testé), `RetryAlert`, `useManagedAnswers` |
+
+Écarts assumés : la barre de la liste de `/creneaux` garde ses boutons de 32 px (convention de toute
+la barre, Ekilib.re compris) ; `structureStatusField` n'a pas de seconde garde dans le composant — le
+schéma, refine compris, est revalidé à l'exécution par `ProfileTemplateDynamic`.
+
 ---
 
 ## 10. Checklist d'avancement
@@ -1057,8 +1211,8 @@ nombre total de tests monte avec le merge, sans lien avec SSBE).
 | 13 | Hero `/public` | ❌ | 1 CTA mort, 1 CTA qui renvoie à l'accueil depuis une sous-page (§13) |
 | 14 | Rendu navigateur | ❌ | **Jamais vérifié** — aucune capture de ce site à ce jour |
 | 15 | Mode sombre | ❌ | Jamais vérifié |
-| 16 | Créneaux — ajouter / modifier depuis `/creneaux` | ✅ config | `addButton` (`adminOnly: false`) + `preview.editButton` (02/09, §9) — **recette navigateur à faire** (backend indisponible en fin de session) |
-| 17 | Créneaux — « Fiche structure » réservée aux gestionnaires | ✅ | `card.structureAction.audience: "managers"` + gate `isCoformAnswerManager` sous `useHydrated` (02/09, §9) ; 12 tests dont 2 de parité SSR |
+| 16 | Créneaux — ajouter / modifier depuis `/creneaux` | ✅ config | Livré le 02/09 (`addButton` + `preview.editButton`), perdu au merge MR 51 + 52 (`3ad39655`), **rétabli le 09/10** et épinglé par la garde `effective-config` ; bouton mort du `searchHeader` retiré (§9). **Recette navigateur à faire** (ajout en visiteur puis connecté, « Modifier » en admin de structure). Message après l'ajout : `addButton.successMessage` (§9) |
+| 17 | Créneaux — « Fiche structure » réservée aux gestionnaires | ✅ config | Code en place depuis le 02/09 (gate `isCoformAnswerManager` sous `useHydrated`, 13 tests) ; `card.structureAction.audience: "managers"`, perdu au merge MR 51 + 52, **remis le 09/10** et épinglé par la garde `effective-config` (`ficheStructure.audience: "managers"`). **Recette navigateur à faire** (visiteur : pas de bouton ; admin de la structure : bouton) |
 | 18 | Créneaux — modération dans le back-office | ✅ config | Onglet `moderation` en mode `statusField`, 57 en attente à traiter (02/09, §9) — **recette à faire** : passer un « En attente » à « Validé » et vérifier qu'il apparaît sur `/creneaux` |
 | 19 | Ressources — listing et ajout côté admin | ✅ config | Onglet « Ressources » + `costumForms` dédié (02/09, §9) — **bloqué tant que `declareRessourceType` n'est pas joué en base** |
 | 20 | Créneaux — mail aux admins du costum au dépôt / à la modification | 🟡 | Hook + impl. livrés et déclarés en dev (16/09, §9) ; **aucun envoi réel vérifiable depuis le dev** (pas de cron) — recette en prod via `previewAnswerNotification` puis `db.cron` ; `addContactMail` (Vincent) à jouer |
@@ -1083,6 +1237,7 @@ nombre total de tests monte avec le merge, sans lien avec SSBE).
 | 37 | Restriction d'accès + clean nav | ✅ config (`16922f73`, 16/09, Nicolas) | `auth.required: true` sur 8 pages, 4 entrées de nav retirées (§9) — **recette navigateur à faire** (vérifier qu'un visiteur non connecté est bien redirigé/invité à se connecter sur les 8 pages) |
 | 38 | Formulaire ressource — upload 2 fichiers + photo conditionnelle | ✅ config (`ae133e6a`, 16/09) | `documents.maxItems` 1→2 ; `profil_avatar` affiché seulement si `thematique: "dispositifs"` (§9) — **recette navigateur à faire** : créer/éditer une ressource « Dispositifs », vérifier que la photo est bien envoyée et relue en édition |
 | 39 | Page `/programmes-dispositifs` | ✅ config (`ae133e6a`, 16/09) | Hero + recherche libre + cartes `resource` filtrées `thematique: dispositifs`, entrée de nav Professionnels (§9). Répond partiellement à la question 17 (§13) — **recette navigateur à faire**, et aucune ressource « Dispositifs » saisie à ce jour donc page vide en pratique |
+| 40 | Onglet profil « Structures » (admin de structure : ses structures, leurs créneaux, ajout depuis la structure ; « Modifier » ; créneaux déposés ailleurs ; statut des structures) | ✅ code | 09/10, §9 — **hook PHP à déployer** (avec `modules/costum/tests/SportSanteBienetreBoundSearchTest.php`, 56 cas), recette navigateur à faire avec un compte NON super-admin (admin d'une structure, auteur d'un créneau sans structure) |
 
 ---
 
@@ -1254,3 +1409,4 @@ organisations → la modale d'édition et la fiche `PreviewStructure` ne montren
 | 18 | **`<Link>` sans `classifyHref`** sur `HeroQuickAccess.tsx` et `CtaCardGrid.tsx` (§9, §12) — les aligner sur `CardsSection`/`NavLink`/`CTASection` casserait potentiellement des CTA qui comptent aujourd'hui, par accident, sur l'ancien comportement. À planifier comme un lot dédié, testé sur tout le parc (parent62 pour `cta-card-grid`), pas en aparté d'un lot de contenu. **Fait partiellement le 25/09** (review de la MR) : les **boutons-ancres** (`#id`) de `HeroQuickAccess` font désormais défiler vers la section (comme `CTASection`) — le bouton « Déposer une demande » de `/habilitation-mss` ne bougeait pas ; seul bouton-ancre de `hero-quick-access` du parc, donc sans risque (`HeroQuickAccess.test.tsx`). **Reste** : voies externe / `tel:` / `mailto:` des boutons et des cartes de `HeroQuickAccess`, et tout `CtaCardGrid` | Thomas |
 | 19 | **`/ressources` pas à jour des 2 nouvelles thématiques** (16/09, §9, §12) : `dispositifs`/`prescription` absentes du filtre latéral et du `resource.badge` de la page. Faut-il les y ajouter (une ressource « Dispositifs » resterait alors visible aux deux endroits, `/ressources` **et** `/programmes-dispositifs`), ou `/ressources` doit-elle au contraire **exclure** ces 2 thématiques puisqu'elles ont désormais leur page dédiée ? | Thomas |
 | 20 | **Photo `profil_avatar` sur une ressource « Dispositifs »** — jamais vérifié en navigateur (§9) : l'upload est-il bien accepté par le costum backend (champ cœur POI, a priori non soumis au filtre `typeObj.ressource`, mais non confirmé empiriquement), et l'image survit-elle bien au cycle création → édition ? | Thomas / dev SSBE |
+| 21 | **Visibilité des créneaux non validés, hors du hook** (relevé par la relecture du 09/10, préexistant) : le filtre « Validé » ne vit que dans le hook costum `SportSanteBienetre::searchAnswers`, appelé seulement quand la recherche porte le contexte costum (`Costum::isSameFunction`, cache). Sans ce contexte, `SearchNew::searchInAnswers` fait un `find` brut sans filtre de statut ; `countResults` ignore aussi le hook ; et les champs projetés exposent des données sensibles du dépôt. À porter au mainteneur `citizenToolKit` : appliquer la règle de visibilité des réponses dans `SearchNew` (recherche ET comptage), restreindre les champs projetés à une liste blanche publique, ne renvoyer `existingAnswer` que si `canAnswer` | Thomas / mainteneur citizenToolKit |

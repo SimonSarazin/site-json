@@ -50,9 +50,11 @@ vi.mock("./DynamicCoForm", () => ({
     defaultValues?: Record<string, unknown>;
     onSubmit: (data: Record<string, unknown>) => unknown;
     discardDraftRef?: unknown;
+    hiddenFields?: readonly string[];
   }) => (
     <div
       data-testid="dynamic-coform"
+      data-hidden-fields={(props.hiddenFields ?? []).join(",")}
       data-has-discard-ref={String(!!props.discardDraftRef)}
       data-draft-scope={props.draftScope ?? ""}
       data-element-id={props.elementId ?? ""}
@@ -82,9 +84,10 @@ vi.mock("./DynamicCoForm", () => ({
 }));
 
 vi.mock("./MultiStepCoForm", () => ({
-  MultiStepCoForm: (props: { formData: CoFormData; submitMode?: string; initialStepKey?: string; elementId?: string | null; elementType?: string | null; unknownFieldVariant?: string; enableDraft?: boolean; discardDraftRef?: unknown }) => (
+  MultiStepCoForm: (props: { formData: CoFormData; submitMode?: string; initialStepKey?: string; elementId?: string | null; elementType?: string | null; unknownFieldVariant?: string; enableDraft?: boolean; discardDraftRef?: unknown; hiddenFields?: readonly string[] }) => (
     <div
       data-testid="multistep-coform"
+      data-hidden-fields={(props.hiddenFields ?? []).join(",")}
       data-enable-draft={String(!!props.enableDraft)}
       data-has-discard-ref={String(!!props.discardDraftRef)}
       data-step-count={Object.keys(props.formData.inputs ?? {}).length}
@@ -489,6 +492,24 @@ describe("SmartCoForm", () => {
         wrapper: makeWrapper(),
       });
       expect(screen.getByTestId("multistep-coform").dataset.unknownFieldVariant).toBe("placeholder");
+    });
+  });
+
+  /** Le masquage décidé par l'appelant doit atteindre les deux chemins de rendu, pas le seul simple. */
+  describe("hiddenFields propagé aux deux chemins de rendu", () => {
+    beforeEach(() => {
+      mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
+      mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+    });
+
+    it("transmis au formulaire simple et au wizard", () => {
+      const simple = render(<SmartCoForm formData={makeFormData(["s1"])} hiddenFields={["findercle"]} />, {
+        wrapper: makeWrapper(),
+      });
+      expect(screen.getByTestId("dynamic-coform").dataset.hiddenFields).toBe("findercle");
+      simple.unmount();
+      render(<SmartCoForm formData={makeFormData(["s1", "s2"])} hiddenFields={["findercle"]} />, { wrapper: makeWrapper() });
+      expect(screen.getByTestId("multistep-coform").dataset.hiddenFields).toBe("findercle");
     });
   });
 

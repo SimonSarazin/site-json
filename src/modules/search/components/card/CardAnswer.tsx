@@ -6,7 +6,7 @@ import { Building2, Calendar, ChevronDown, ChevronUp, FileText, Mail, MapPin, Us
 import { SearchCardProps } from "../../schema";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { parseCoformAnswer, getStatusStyle, isCoformAnswerManager } from "../../lib/coformAnswer";
+import { parseCoformAnswer, getStatusStyle, isCoformAnswerManager, statusKey } from "../../lib/coformAnswer";
 import { useNavigate } from "react-router";
 import { useEntityBySlugQuery } from "@/hooks/useEntityBySlugQuery";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -120,7 +120,9 @@ export default function CardAnswer({ item, onClick, card }: SearchCardProps) {
 						</Badge>
 					)}
 					<Badge className={`rounded-full border-0 ${getStatusStyle(a.status)}`}>
-						{a.stateRaw || t("coformAnswer.validated")}
+						{/* Libellé du statut NORMALISÉ, pas la valeur brute : corrige « Réfusé » (verbatim en base) et
+						    dit « En attente » pour une réponse sans statut, comme le serveur. */}
+						{t(`coformAnswer.status.${statusKey(a.status)}`)}
 					</Badge>
 				</div>
 			</div>
