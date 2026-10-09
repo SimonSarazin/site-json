@@ -263,6 +263,10 @@ export async function render(
 
     res.once('close', () => {
       clearTimeout(timer);
+      // Libère le cache de la requête : une query avec un `gcTime` explicite (ex. 1 h pour
+      // `useSearchAllResults`) arme un setTimeout côté serveur qui retiendrait sinon tout le
+      // QueryClient (données, ApiClient, worker pino du SDK) jusqu'à son expiration.
+      queryClient.clear();
       if (!streamFinished) {
         // Seulement abort si le stream n'est pas terminé normalement
         abort();

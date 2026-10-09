@@ -97,8 +97,9 @@ function evaluer(value: unknown, payload: Record<string, unknown>, maintenant: D
   return value;
 }
 
-/** Union dédupliquée en préservant l'ordre d'insertion (sémantique du merge tags tiers-lieux). */
-function unionDedup(...listes: unknown[]): unknown[] {
+/** Union dédupliquée en préservant l'ordre d'insertion (sémantique du merge tags tiers-lieux).
+ *  Partagée avec le codec `fixedTags` (sharedCodecs.ts) — une seule définition de « union de tags ». */
+export function unionDedup(...listes: unknown[]): unknown[] {
   const out: unknown[] = [];
   const vus = new Set<unknown>();
   for (const l of listes) {

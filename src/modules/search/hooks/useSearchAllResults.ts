@@ -25,6 +25,12 @@ export interface UseSearchAllResultsParams {
   mapUsed?: boolean;
   /** Variant SDK (parité avec la liste). */
   variant?: UseSearchQueryParams["variant"];
+  /**
+   * Cache React Query. Défaut : LONG (30 min / 60 min) — voir le commentaire de l'appel. À
+   * raccourcir quand le périmètre chargé sert de VÉRITÉ à une décision (ex. index des copies
+   * d'`answerCopy` : une ligne supprimée par un autre canal doit cesser de compter au remontage).
+   */
+  cache?: UseSearchQueryParams["cache"];
 }
 
 /**
@@ -52,11 +58,14 @@ export function useSearchAllResults({
   searchTags = {},
   mapUsed = false,
   variant,
+  cache,
 }: UseSearchAllResultsParams) {
   const {
     transformedResults,
     totalCount,
     isLoading,
+    isPending,
+    isFetching,
     error,
     fetchNextPage,
     hasNextPage,
@@ -72,12 +81,14 @@ export function useSearchAllResults({
     // Cache LONG : recharger ce dashboard = re-chaîner TOUTES les pages
     // (séquentiel) — un retour sur la page dans la demi-heure doit être
     // instantané (pages en cache), pas une re-cascade réseau.
-    cache: { staleTime: 30 * 60 * 1000, gcTime: 60 * 60 * 1000 },
+    cache: cache ?? { staleTime: 30 * 60 * 1000, gcTime: 60 * 60 * 1000 },
   });
 
   const results = transformedResults ?? [];
   const loaded = results.length;
-  const capped = loaded >= maxResults;
+  // Plafonné = on a ATTEINT le plafond ET il reste des pages : un périmètre qui compte exactement
+  // `maxResults` lignes est complet, pas tronqué.
+  const capped = loaded >= maxResults && !!hasNextPage;
 
   // Chargement total : tant qu'il reste une page (et sous le plafond), on
   // enchaîne. Une page à la fois — voir le commentaire de tête.
@@ -106,6 +117,11 @@ export function useSearchAllResults({
 
   return {
     results,
+    /** Vrai tant qu'AUCUNE donnée n'est arrivée (1ʳᵉ page en vol, ou query désactivée — ex. API non
+     *  initialisée) : ne pas confondre avec un périmètre complet et vide. */
+    isPending,
+    /** Vrai pendant tout fetch, refetch après invalidation compris (les données restent servies). */
+    isFetching,
     /** Nombre d'items chargés jusqu'ici (progressif). */
     loaded,
     /** Total annoncé par le backend (connu dès la 1ʳᵉ page), sinon null. */

@@ -1,46 +1,115 @@
 {
   "site": "rezo-sante-reunion",
-  "slug": "rezoSanteReunion",
+  "slug": "EcosystemeSanteReunion",
   "addMenus": {
     "organizations": {
       "builtins": {
-        "project": "add-project",
+        "project": "add-rezo-sante-projet",
         "event": "add-event",
-        "poi": "add-poi"
+        "poi": "add-rezo-sante-ressource"
       }
     },
     "projects": {
       "builtins": {
         "event": "add-event",
-        "poi": "add-poi"
+        "poi": "add-rezo-sante-ressource"
       }
     },
     "citoyens": {
       "builtins": {
-        "organization": "add-organization",
-        "project": "add-project",
+        "project": "add-rezo-sante-projet",
         "event": "add-event",
-        "poi": "add-poi"
-      }
+        "poi": "add-rezo-sante-ressource"
+      },
+      "customs": [
+        "add-rezo-sante-acteur",
+        "add-rezo-sante-lieu"
+      ]
     }
   },
-  "editModals": {},
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-rezo-sante-lieu",
+          "native": "edit-rezo-sante-lieu",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-rezo-sante-acteur",
+          "native": "edit-rezo-sante-acteur",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "projects": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-rezo-sante-projet",
+          "native": "edit-rezo-sante-projet",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "poi": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-rezo-sante-ressource",
+          "native": "edit-rezo-sante-ressource",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
   "adminResources": {
     "annuaire/organizations": {
       "source": {
         "notSourceKey": true,
         "defaultFilters": {
           "$or": {
-            "source.key": "rezoSanteReunion",
-            "source.keys": "rezoSanteReunion",
-            "reference.costum": "rezoSanteReunion"
+            "source.key": "EcosystemeSanteReunion",
+            "source.keys": "EcosystemeSanteReunion",
+            "reference.costum": "EcosystemeSanteReunion"
+          },
+          "tags": {
+            "$nin": [
+              "lieux-sante"
+            ]
           }
         },
         "defaultSortBy": {
           "updated": -1
         }
       },
-      "create": "add-organization",
+      "create": "add-rezo-sante-acteur",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "lieux-sante/organizations": {
+      "source": {
+        "notSourceKey": true,
+        "defaultFilters": {
+          "$or": {
+            "source.key": "EcosystemeSanteReunion",
+            "source.keys": "EcosystemeSanteReunion",
+            "reference.costum": "EcosystemeSanteReunion"
+          },
+          "tags": {
+            "$in": [
+              "lieux-sante"
+            ]
+          }
+        },
+        "defaultSortBy": {
+          "updated": -1
+        }
+      },
+      "create": "add-rezo-sante-lieu",
       "edit": {
         "enabled": true,
         "modalName": null
@@ -51,16 +120,16 @@
         "notSourceKey": true,
         "defaultFilters": {
           "$or": {
-            "source.key": "rezoSanteReunion",
-            "source.keys": "rezoSanteReunion",
-            "reference.costum": "rezoSanteReunion"
+            "source.key": "EcosystemeSanteReunion",
+            "source.keys": "EcosystemeSanteReunion",
+            "reference.costum": "EcosystemeSanteReunion"
           }
         },
         "defaultSortBy": {
           "updated": -1
         }
       },
-      "create": "add-project",
+      "create": "add-rezo-sante-projet",
       "edit": {
         "enabled": true,
         "modalName": null
@@ -71,9 +140,9 @@
         "notSourceKey": true,
         "defaultFilters": {
           "$or": {
-            "source.key": "rezoSanteReunion",
-            "source.keys": "rezoSanteReunion",
-            "reference.costum": "rezoSanteReunion"
+            "source.key": "EcosystemeSanteReunion",
+            "source.keys": "EcosystemeSanteReunion",
+            "reference.costum": "EcosystemeSanteReunion"
           }
         },
         "defaultSortBy": {
@@ -91,16 +160,16 @@
         "notSourceKey": true,
         "defaultFilters": {
           "$or": {
-            "source.key": "rezoSanteReunion",
-            "source.keys": "rezoSanteReunion",
-            "reference.costum": "rezoSanteReunion"
+            "source.key": "EcosystemeSanteReunion",
+            "source.keys": "EcosystemeSanteReunion",
+            "reference.costum": "EcosystemeSanteReunion"
           }
         },
         "defaultSortBy": {
           "created": -1
         }
       },
-      "create": "add-poi",
+      "create": "add-rezo-sante-ressource",
       "edit": {
         "enabled": true,
         "modalName": null
@@ -111,9 +180,9 @@
     "/theme/nutrition/searchProStatic": {
       "baseParams": {
         "sourceKey": [
-          "rezoSanteReunion"
+          "EcosystemeSanteReunion"
         ],
-        "costumSlug": "rezoSanteReunion",
+        "costumSlug": "EcosystemeSanteReunion",
         "defaultTypes": [
           "organizations",
           "projects"
@@ -125,6 +194,9 @@
               "Nutrition",
               "alimentation",
               "nutrition"
+            ],
+            "$nin": [
+              "lieux-sante"
             ]
           }
         },
@@ -160,9 +232,9 @@
     "/theme/activite-physique/searchProStatic": {
       "baseParams": {
         "sourceKey": [
-          "rezoSanteReunion"
+          "EcosystemeSanteReunion"
         ],
-        "costumSlug": "rezoSanteReunion",
+        "costumSlug": "EcosystemeSanteReunion",
         "defaultTypes": [
           "organizations",
           "projects"
@@ -174,6 +246,9 @@
               "sédentarité",
               "activite-physique",
               "Activite physique"
+            ],
+            "$nin": [
+              "lieux-sante"
             ]
           }
         },
@@ -209,9 +284,9 @@
     "/theme/sommeil/searchProStatic": {
       "baseParams": {
         "sourceKey": [
-          "rezoSanteReunion"
+          "EcosystemeSanteReunion"
         ],
-        "costumSlug": "rezoSanteReunion",
+        "costumSlug": "EcosystemeSanteReunion",
         "defaultTypes": [
           "organizations",
           "projects"
@@ -221,6 +296,9 @@
             "$in": [
               "Sommeil",
               "sommeil"
+            ],
+            "$nin": [
+              "lieux-sante"
             ]
           }
         },
@@ -256,9 +334,9 @@
     "/theme/addictions/searchProStatic": {
       "baseParams": {
         "sourceKey": [
-          "rezoSanteReunion"
+          "EcosystemeSanteReunion"
         ],
-        "costumSlug": "rezoSanteReunion",
+        "costumSlug": "EcosystemeSanteReunion",
         "defaultTypes": [
           "organizations",
           "projects"
@@ -270,6 +348,9 @@
               "Addictions",
               "addiction",
               "addictions"
+            ],
+            "$nin": [
+              "lieux-sante"
             ]
           }
         },
@@ -305,9 +386,9 @@
     "/theme/bien-etre-mental/searchProStatic": {
       "baseParams": {
         "sourceKey": [
-          "rezoSanteReunion"
+          "EcosystemeSanteReunion"
         ],
-        "costumSlug": "rezoSanteReunion",
+        "costumSlug": "EcosystemeSanteReunion",
         "defaultTypes": [
           "organizations",
           "projects"
@@ -319,6 +400,63 @@
               "Santé mentale",
               "Bien-être mental",
               "bien-etre-mental"
+            ],
+            "$nin": [
+              "lieux-sante"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "shortDescription",
+          "description",
+          "tags",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl",
+          "links",
+          "created"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description",
+          "tags"
+        ],
+        "indexStepList": 24
+      }
+    },
+    "/theme/culture-sante/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "EcosystemeSanteReunion"
+        ],
+        "costumSlug": "EcosystemeSanteReunion",
+        "defaultTypes": [
+          "organizations",
+          "projects"
+        ],
+        "defaultFilters": {
+          "tags": {
+            "$in": [
+              "Culture & Santé",
+              "Culture et Santé",
+              "Culture",
+              "culture",
+              "Santé",
+              "santé"
+            ],
+            "$nin": [
+              "lieux-sante"
             ]
           }
         },
@@ -354,12 +492,19 @@
     "/annuaire/searchProStatic": {
       "baseParams": {
         "sourceKey": [
-          "rezoSanteReunion"
+          "EcosystemeSanteReunion"
         ],
-        "costumSlug": "rezoSanteReunion",
+        "costumSlug": "EcosystemeSanteReunion",
         "defaultTypes": [
           "organizations"
         ],
+        "defaultFilters": {
+          "tags": {
+            "$nin": [
+              "lieux-sante"
+            ]
+          }
+        },
         "defaultFields": [
           "name",
           "slug",
@@ -392,12 +537,61 @@
         "indexStepMap": 500
       }
     },
+    "/lieux-sante/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "EcosystemeSanteReunion"
+        ],
+        "costumSlug": "EcosystemeSanteReunion",
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFilters": {
+          "tags": {
+            "$in": [
+              "lieux-sante"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "category",
+          "description",
+          "shortDescription",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "medias",
+          "urls",
+          "address",
+          "tags",
+          "links",
+          "geo",
+          "geoPosition"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description",
+          "tags",
+          "address.addressLocality"
+        ],
+        "indexStepList": 24,
+        "indexStepMap": 500
+      }
+    },
     "/projets/searchProStatic": {
       "baseParams": {
         "sourceKey": [
-          "rezoSanteReunion"
+          "EcosystemeSanteReunion"
         ],
-        "costumSlug": "rezoSanteReunion",
+        "costumSlug": "EcosystemeSanteReunion",
         "defaultTypes": [
           "projects"
         ],
@@ -433,9 +627,9 @@
     "/ressources/searchProStatic": {
       "baseParams": {
         "sourceKey": [
-          "rezoSanteReunion"
+          "EcosystemeSanteReunion"
         ],
-        "costumSlug": "rezoSanteReunion",
+        "costumSlug": "EcosystemeSanteReunion",
         "defaultTypes": [
           "poi",
           "projects"
@@ -471,16 +665,16 @@
     "/agenda/agenda": {
       "baseParams": {
         "sourceKey": [
-          "rezoSanteReunion"
+          "EcosystemeSanteReunion"
         ],
-        "costumSlug": "rezoSanteReunion",
+        "costumSlug": "EcosystemeSanteReunion",
         "indexStepList": 12,
         "fediverse": false,
         "filters": {
-          "preferences.toBeValidated.rezoSanteReunion": {
+          "preferences.toBeValidated.EcosystemeSanteReunion": {
             "$exists": false
           },
-          "source.toBeValidated.rezoSanteReunion": {
+          "source.toBeValidated.EcosystemeSanteReunion": {
             "$exists": false
           }
         }

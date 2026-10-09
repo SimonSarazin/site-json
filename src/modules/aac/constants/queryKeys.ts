@@ -112,6 +112,12 @@ export const AAC_QUERY_KEYS = {
     ["aac-funding-host", contextType, contextId] as const,
   FUNDING_HOST_PREFIX: () => ["aac-funding-host"] as const,
 
+  // Organisations proposées par « J'utilise », pour une recherche donnée.
+  // Producteur : CommunFinancingCard
+  // Consommateurs invalidants : aucun — relue à chaque ouverture de la modale (`staleTime` 0).
+  COFINANCER_ORGS: (entityId: string | null, searchParams: unknown) =>
+    ["aac-cofinancer-orgs", entityId, searchParams] as const,
+
   // Entité `Project` liée à un commun — celle dont `isAdmin()` décide de la gestion
   // des paliers, et dont `oceco.milestones[]` sert de repli de synchronisation.
   //

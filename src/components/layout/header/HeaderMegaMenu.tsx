@@ -17,6 +17,8 @@ import type { LogoSize } from "./logoSize";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
+import { useVisibilityList } from "@/lib/visibility";
+import { conditionsDeVisibiliteNav, filtrerNavParVisibilite } from "./navVisibility";
 
 interface HeaderMegaMenuProps {
     header: Header;
@@ -32,7 +34,10 @@ const MEGA_LOGO_CLASS: Record<LogoSize, string> = {
 export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
-    const nav = header.nav;
+    // Filtré par `visibility` (item ET enfants) — desktop et burger partagent ce même `nav`, donc
+    // une entrée réservée aux connectés (« Mes lieux ») disparaît des deux à la fois.
+    const navVisibility = useVisibilityList(conditionsDeVisibiliteNav(header.nav));
+    const nav = filtrerNavParVisibilite(header.nav, navVisibility);
 
     return (
         <header className={`${header.transparent ? "bg-transparent" : "bg-background"} rounded-b-2xl border-b border-border ${header.sticky ? "sticky top-0 z-50" : ""}`}>
@@ -57,12 +62,21 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
 
                             return (
                                 <div key={idx} className="relative group">
-                                    <button type="button" className="hover:text-primary text-foreground transition flex items-center gap-1.5 truncate w-auto cursor-pointer">
-                                        <NavIcon icon={item.icon} />
-                                        {t(item.label)}
-                                        {item.badge && <Badge className="text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
-                                        {hasChildren && <ChevronDown className="w-3 h-3" />}
-                                    </button>
+                                    {item.path ? (
+                                        <NavLink to={item.path} className="hover:text-primary text-foreground transition flex items-center gap-1.5 truncate w-auto cursor-pointer">
+                                            <NavIcon icon={item.icon} />
+                                            {t(item.label)}
+                                            {item.badge && <Badge className="text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
+                                            {hasChildren && <ChevronDown className="w-3 h-3" />}
+                                        </NavLink>
+                                    ) : (
+                                        <button type="button" className="hover:text-primary text-foreground transition flex items-center gap-1.5 truncate w-auto cursor-pointer">
+                                            <NavIcon icon={item.icon} />
+                                            {t(item.label)}
+                                            {item.badge && <Badge className="text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
+                                            {hasChildren && <ChevronDown className="w-3 h-3" />}
+                                        </button>
+                                    )}
 
 
                                     {hasChildren && item.children && (
@@ -162,11 +176,19 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                                 <>
                                     {nav.map((item, idx) => (
                                         <div key={idx} className="space-y-2">
-                                            <div className="flex items-center gap-2 font-semibold text-foreground">
-                                                <NavIcon icon={item.icon} />
-                                                {t(item.label)}
-                                                {item.badge && <Badge className="ml-auto text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
-                                            </div>
+                                            {item.path ? (
+                                                <NavLink to={item.path} onClick={close} className="flex items-center gap-2 font-semibold text-foreground hover:text-primary transition">
+                                                    <NavIcon icon={item.icon} />
+                                                    {t(item.label)}
+                                                    {item.badge && <Badge className="ml-auto text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
+                                                </NavLink>
+                                            ) : (
+                                                <div className="flex items-center gap-2 font-semibold text-foreground">
+                                                    <NavIcon icon={item.icon} />
+                                                    {t(item.label)}
+                                                    {item.badge && <Badge className="ml-auto text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
+                                                </div>
+                                            )}
                                             {item.children && (
                                                 <div className="pl-4 space-y-2">
                                                     {item.children.map((sub, i) => (

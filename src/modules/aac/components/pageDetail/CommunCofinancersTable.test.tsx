@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MemoryRouter } from "react-router";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
 import type { AacResolvedConfig } from "../../types";
 import type { CoFormAnswer } from "@/modules/coform/types";
@@ -11,8 +13,15 @@ import type { CoFormAnswer } from "@/modules/coform/types";
 
 vi.mock("@/hooks/useT", () => ({ useT: () => (key: string) => key }));
 vi.mock("@/hooks/useLoadNamespace", () => ({ useLoadNamespace: () => {} }));
+
+/** Fiches renvoyées par le SDK, par id — vide par défaut (pas de photo, pas de slug). */
+let fiches: Record<string, Record<string, unknown>> = {};
+const api = {
+  organization: vi.fn(async ({ id }: { id: string }) => ({ serverData: fiches[id] ?? {} })),
+  user: vi.fn(async ({ id }: { id: string }) => ({ serverData: fiches[id] ?? {} })),
+};
 vi.mock("@/hooks/useCocolight", () => ({
-  useCocolight: () => ({ entity: { id: "host" } }),
+  useCocolight: () => ({ entity: { id: "host" }, api }),
 }));
 
 let depenses: Array<Record<string, unknown>> = [];
@@ -49,22 +58,30 @@ function makeConfig(depenseStepKey: string | null): AacResolvedConfig {
 const ANSWER = { _id: { $id: "a1" }, answers: {} } as unknown as CoFormAnswer;
 
 function renderTable(over: Partial<Parameters<typeof CommunCofinancersTable>[0]> = {}) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
-    <LocalizationProvider>
-      <CommunCofinancersTable
-        formData={{ id: "f1", name: "Appel", inputs: {} } as never}
-        answerQuery={ANSWER}
-        aacConfig={makeConfig("etapeA")}
-        funding={null}
-        {...over}
-      />
-    </LocalizationProvider>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <LocalizationProvider>
+          <CommunCofinancersTable
+            formData={{ id: "f1", name: "Appel", inputs: {} } as never}
+            answerQuery={ANSWER}
+            aacConfig={makeConfig("etapeA")}
+            funding={null}
+            {...over}
+          />
+        </LocalizationProvider>
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 
 beforeEach(() => {
   depenses = [];
+  fiches = {};
   useCommunRawDepenses.mockClear();
+  api.organization.mockClear();
+  api.user.mockClear();
 });
 
 describe("CommunCofinancersTable — l'étape des dépenses est celle que la page a résolue (M13)", () => {
@@ -76,9 +93,8 @@ describe("CommunCofinancersTable — l'étape des dépenses est celle que la pag
 
 describe("CommunCofinancersTable — un financeur sans `financerId` reste listé (M16)", () => {
   /**
-   * Le doublonnage porteur (doc/34 §2) arrive sans `id`. Avant : la ligne était
-   * écartée en silence — son montant n'apparaissait nulle part, alors que la
-   * carte, juste au-dessus, la comptait.
+   * Le doublonnage porteur (doc/34 §2) arrive sans `id` : l'écarter le ferait disparaître de
+   * la table, alors que la carte juste au-dessus le compte.
    */
   it("une ligne par financeur, id ou pas, avec son montant", () => {
     depenses = [
@@ -105,5 +121,55 @@ describe("CommunCofinancersTable — un financeur sans `financerId` reste listé
 
     expect(screen.queryByText("detail.cofinancers.empty")).toBeNull();
     expect(screen.getByText("Anonyme")).toBeTruthy();
+  });
+});
+
+describe("CommunCofinancersTable — photo et lien du cofinanceur, lus sur sa fiche", () => {
+  it("le nom mène au profil `/profil/<slug>` du cofinanceur", async () => {
+    fiches = { org1: { name: "CAE Sud", slug: "cae-sud", profilImageUrl: "/cae.jpg" } };
+    depenses = [{ poste: "Serveur", priceInt: 1000, financer: [{ id: "org1", name: "CAE Sud", amount: 500 }] }];
+    renderTable();
+
+    const lien = await screen.findByRole("link", { name: "CAE Sud" });
+    expect(lien.getAttribute("href")).toBe("/profil/cae-sud");
+  });
+
+  it("sans slug sur la fiche, le nom reste du texte simple", async () => {
+    fiches = { org1: { name: "CAE Sud" } };
+    depenses = [{ poste: "Serveur", priceInt: 1000, financer: [{ id: "org1", name: "CAE Sud", amount: 500 }] }];
+    renderTable();
+
+    await vi.waitFor(() => expect(api.organization).toHaveBeenCalled());
+    expect(screen.getByText("CAE Sud")).toBeTruthy();
+    expect(screen.queryByRole("link")).toBeNull();
+  });
+
+  it("un citoyen se lit par `api.user`, un tiers-lieu (`tl`) comme une organisation", async () => {
+    depenses = [
+      {
+        poste: "Serveur",
+        priceInt: 1000,
+        financer: [
+          { id: "u1", name: "Alice", type: "citoyens", amount: 50 },
+          { id: "tl1", name: "Tiers-lieu", type: "tl", amount: 300 },
+        ],
+      },
+    ];
+    renderTable();
+
+    await vi.waitFor(() => {
+      expect(api.user).toHaveBeenCalledWith({ id: "u1" });
+      expect(api.organization).toHaveBeenCalledWith({ id: "tl1" });
+    });
+    expect(api.user).not.toHaveBeenCalledWith({ id: "tl1" });
+  });
+
+  it("une ligne sans id (doublonnage) ne déclenche aucune lecture de fiche", async () => {
+    depenses = [{ poste: "Serveur", priceInt: 1000, financer: [{ name: "Anonyme", amount: 40 }] }];
+    renderTable();
+
+    expect(screen.getByText("Anonyme")).toBeTruthy();
+    expect(api.organization).not.toHaveBeenCalled();
+    expect(api.user).not.toHaveBeenCalled();
   });
 });

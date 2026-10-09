@@ -1,0 +1,300 @@
+// @vitest-environment jsdom
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { renderHook } from "@testing-library/react";
+
+/**
+ * Ce qui est verrouillé ici :
+ *  - une promesse s'arrête à `addFinancer` — pas de versement fantôme ;
+ *  - un paiement encaissé chaîne `addFinancer` puis `payFinancer`, ciblé par la `finkey`
+ *    rendue par le serveur, jamais par une position ;
+ *  - un échec ne rapporte jamais un succès ;
+ *  - `saveCoformAnswer` n'est jamais appelé : ce chemin réécrit `answers` en entier.
+ */
+
+const mocks = vi.hoisted(() => ({
+  api: null as unknown,
+  me: { serverData: { id: "u1" } } as unknown,
+}));
+
+vi.mock("@/hooks/useCocolight", () => ({
+  useCocolight: () => ({ api: mocks.api, me: mocks.me }),
+}));
+vi.mock("@/hooks/useLoadNamespace", () => ({ useLoadNamespace: () => undefined }));
+vi.mock("@/hooks/useT", () => ({ useT: () => (cle: string) => cle }));
+vi.mock("@/lib/confetti", () => ({ launchConfettiBurst: vi.fn() }));
+
+const toasts = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
+vi.mock("@/lib/toastUtils", () => ({
+  showSuccessToast: toasts.success,
+  showErrorToast: toasts.error,
+}));
+
+import { useSaveCagnotteContribution } from "./useSaveCagnotteContribution";
+
+const FINKEY = "a-w171hEa1bvz9";
+const FINANCER = { id: "u1", name: "Alice", type: "citoyens" };
+
+type Espions = {
+  addFinancer: ReturnType<typeof vi.fn>;
+  payFinancer: ReturnType<typeof vi.fn>;
+  saveCoformAnswer: ReturnType<typeof vi.fn>;
+};
+
+/** Monte le hook avec une Answer espionnée ; `over` permet de simuler un échec. */
+function monter(over: Partial<Espions> = {}) {
+  const espions: Espions = {
+    addFinancer: vi.fn(async () => ({ depenseKey: "0", finkey: FINKEY, finIndex: 0 })),
+    payFinancer: vi.fn(async () => ({ invoiceId: "FIN-1", confirmation: "pending" as const })),
+    saveCoformAnswer: vi.fn(),
+    ...over,
+  };
+
+  const answer = { id: "ans1", addFinancer: espions.addFinancer, payFinancer: espions.payFinancer };
+  mocks.api = {
+    answer: vi.fn(async () => answer),
+    endpointApi: { saveCoformAnswer: espions.saveCoformAnswer },
+  };
+
+  const { result } = renderHook(() => useSaveCagnotteContribution());
+  return { ...result.current, espions };
+}
+
+afterEach(() => {
+  mocks.api = null;
+  mocks.me = { serverData: { id: "u1" } };
+  vi.clearAllMocks();
+});
+
+describe("saveContribution — promesse (sans moyen de paiement)", () => {
+  it("crée l'engagement et n'enregistre AUCUN versement", async () => {
+    const { saveContribution, espions } = monter();
+
+    const ok = await saveContribution("ans1", [{ depenseIndex: 0, amount: 1000, milestoneId: "m1" }], FINANCER);
+
+    expect(ok).toBe(true);
+    expect(espions.addFinancer).toHaveBeenCalledWith({ milestoneId: "m1", financerId: "u1", amount: 1000 });
+    // Une promesse laisse `payment.logs` vide côté serveur : c'est le canonique.
+    expect(espions.payFinancer).not.toHaveBeenCalled();
+  });
+
+  it("vise la dépense par `milestoneId` quand il existe, sinon par clé", async () => {
+    const { saveContribution, espions } = monter();
+
+    await saveContribution("ans1", [
+      { depenseIndex: 0, amount: 10, milestoneId: "m1" },
+      { depenseIndex: 3, amount: 20 },
+      { depenseIndex: 9, amount: 30, depenseKey: "7" },
+    ], FINANCER);
+
+    expect(espions.addFinancer.mock.calls[0][0]).toMatchObject({ milestoneId: "m1" });
+    // Sans jalon ni clé explicite, repli sur la position — exact tant que
+    // `depense` est un vrai tableau.
+    expect(espions.addFinancer.mock.calls[1][0]).toMatchObject({ depenseKey: "3" });
+    // Une clé explicite prime toujours sur la position.
+    expect(espions.addFinancer.mock.calls[2][0]).toMatchObject({ depenseKey: "7" });
+  });
+
+  it("n'envoie ni nom ni type du financeur : le serveur les résout", async () => {
+    const { saveContribution, espions } = monter();
+
+    await saveContribution("ans1", [{ depenseIndex: 0, amount: 10, milestoneId: "m1" }], FINANCER);
+
+    const payload = espions.addFinancer.mock.calls[0][0] as Record<string, unknown>;
+    expect(payload).not.toHaveProperty("name");
+    expect(payload).not.toHaveProperty("type");
+  });
+
+  it("ignore les allocations à zéro", async () => {
+    const { saveContribution, espions } = monter();
+
+    await saveContribution("ans1", [
+      { depenseIndex: 0, amount: 0, milestoneId: "m1" },
+      { depenseIndex: 1, amount: 50, milestoneId: "m2" },
+    ], FINANCER);
+
+    expect(espions.addFinancer).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("saveContribution — paiement encaissé", () => {
+  it("chaîne `addFinancer` puis `payFinancer`, ciblé par la finkey retournée", async () => {
+    const { saveContribution, espions } = monter();
+
+    await saveContribution(
+      "ans1",
+      [{ depenseIndex: 0, amount: 500, milestoneId: "m1" }],
+      FINANCER,
+      "stripe",
+      "pi_3Qx",
+    );
+
+    expect(espions.payFinancer).toHaveBeenCalledWith({
+      depenseKey: "0",
+      financerId: "u1",
+      // La finkey vient du serveur : c'est le seul ciblage stable.
+      finkey: FINKEY,
+      amount: 500,
+      paymentType: "stripe",
+      transactionId: "pi_3Qx",
+    });
+  });
+
+  it("traite HelloAsso comme Stripe", async () => {
+    const { saveContribution, espions } = monter();
+
+    await saveContribution("ans1", [{ depenseIndex: 0, amount: 100, milestoneId: "m1" }], FINANCER, "helloasso");
+
+    expect(espions.payFinancer).toHaveBeenCalledTimes(1);
+    expect(espions.payFinancer.mock.calls[0][0]).toMatchObject({ paymentType: "helloasso" });
+  });
+
+  it("ne rapporte PAS un succès quand le versement échoue après l'engagement", async () => {
+    // Le cas dangereux : carte débitée, promesse posée, versement non journalisé.
+    // Annoncer « enregistré » ici ferait disparaître l'anomalie.
+    const { saveContribution, espions } = monter({
+      payFinancer: vi.fn(async () => { throw new Error("réseau"); }),
+    });
+
+    const ok = await saveContribution(
+      "ans1",
+      [{ depenseIndex: 0, amount: 500, milestoneId: "m1" }],
+      FINANCER,
+      "stripe",
+    );
+
+    expect(ok).toBe(false);
+    expect(espions.addFinancer).toHaveBeenCalledTimes(1);
+    expect(toasts.error).toHaveBeenCalled();
+    expect(toasts.success).not.toHaveBeenCalled();
+  });
+});
+
+describe("saveContribution — échecs", () => {
+  it("rend `false` quand toutes les dépenses échouent", async () => {
+    const { saveContribution } = monter({
+      addFinancer: vi.fn(async () => { throw new Error("not allowed"); }),
+    });
+
+    const ok = await saveContribution("ans1", [{ depenseIndex: 0, amount: 10, milestoneId: "m1" }], FINANCER);
+
+    expect(ok).toBe(false);
+    expect(toasts.success).not.toHaveBeenCalled();
+  });
+
+  it("rend `true` en succès partiel, mais signale l'échec", async () => {
+    const addFinancer = vi.fn()
+      .mockResolvedValueOnce({ depenseKey: "0", finkey: FINKEY })
+      .mockRejectedValueOnce(new Error("depense not found"));
+    const { saveContribution } = monter({ addFinancer });
+
+    const ok = await saveContribution("ans1", [
+      { depenseIndex: 0, amount: 10, milestoneId: "m1" },
+      { depenseIndex: 1, amount: 20, milestoneId: "m2" },
+    ], FINANCER);
+
+    expect(ok).toBe(true);
+    expect(toasts.error).toHaveBeenCalled();
+  });
+
+  it("refuse sans allocation, sans financeur, ou hors session", async () => {
+    const { saveContribution, espions } = monter();
+    await expect(saveContribution("ans1", [], FINANCER)).resolves.toBe(false);
+    await expect(
+      saveContribution("ans1", [{ depenseIndex: 0, amount: 10 }], { id: "", name: "", type: "" }),
+    ).resolves.toBe(false);
+    expect(espions.addFinancer).not.toHaveBeenCalled();
+
+    mocks.me = { serverData: {} };
+    const horsSession = monter();
+    await expect(
+      horsSession.saveContribution("ans1", [{ depenseIndex: 0, amount: 10 }], FINANCER),
+    ).resolves.toBe(false);
+    expect(horsSession.espions.addFinancer).not.toHaveBeenCalled();
+  });
+
+  it("n'appelle JAMAIS `saveCoformAnswer` — ce fallback écrivait hors format", async () => {
+    const { saveContribution, espions } = monter({
+      addFinancer: vi.fn(async () => { throw new Error("échec"); }),
+    });
+
+    await saveContribution("ans1", [{ depenseIndex: 0, amount: 10, milestoneId: "m1" }], FINANCER);
+
+    expect(espions.saveCoformAnswer).not.toHaveBeenCalled();
+  });
+});
+
+describe("payContribution — règlement des promesses", () => {
+  const pledge = (over: Record<string, unknown> = {}) => ({
+    id: "p1",
+    financerId: "u1",
+    resourceId: "ans1",
+    resourceName: "Commun",
+    depenseIndex: 0,
+    depenseName: "Palier",
+    fundingAmount: 1000,
+    userPledge: 0,
+    userfundingPledge: [],
+    ...over,
+  }) as never;
+
+  it("verse le reste RÉELLEMENT dû, pas le montant engagé", async () => {
+    // Une promesse de 1000 dont 400 sont déjà validés ne doit être réglée que de 600.
+    const { payContribution, espions } = monter();
+
+    await payContribution([pledge({ finkey: FINKEY, depenseKey: "0", remainingAmount: 600 })], "stripe", "pi_1");
+
+    expect(espions.payFinancer).toHaveBeenCalledWith({
+      depenseKey: "0",
+      financerId: "u1",
+      finkey: FINKEY,
+      finIndex: undefined,
+      amount: 600,
+      paymentType: "stripe",
+      transactionId: "pi_1",
+    });
+  });
+
+  it("retombe sur le montant engagé quand le solde n'est pas connu", async () => {
+    const { payContribution, espions } = monter();
+
+    await payContribution([pledge({ finkey: FINKEY, depenseKey: "0" })]);
+
+    expect(espions.payFinancer.mock.calls[0][0]).toMatchObject({ amount: 1000, paymentType: "manual" });
+  });
+
+  it("n'utilise la position qu'à défaut de finkey (promesses antérieures)", async () => {
+    const { payContribution, espions } = monter();
+
+    await payContribution([pledge({ fundingIndex: 2, remainingAmount: 100 })]);
+
+    expect(espions.payFinancer.mock.calls[0][0]).toMatchObject({ finkey: undefined, finIndex: 2 });
+  });
+
+  it("ne charge qu'une seule Answer par ressource", async () => {
+    const { payContribution } = monter();
+
+    await payContribution([
+      pledge({ id: "p1", finkey: "a-1", depenseKey: "0", remainingAmount: 10 }),
+      pledge({ id: "p2", finkey: "a-2", depenseKey: "1", remainingAmount: 20 }),
+    ]);
+
+    expect((mocks.api as { answer: ReturnType<typeof vi.fn> }).answer).toHaveBeenCalledTimes(1);
+  });
+
+  it("rend `false` si aucun versement ne passe", async () => {
+    const { payContribution } = monter({
+      payFinancer: vi.fn(async () => { throw new Error("not allowed"); }),
+    });
+
+    await expect(payContribution([pledge({ finkey: FINKEY, remainingAmount: 100 })])).resolves.toBe(false);
+    expect(toasts.success).not.toHaveBeenCalled();
+  });
+
+  it("ignore une promesse dont le solde est nul", async () => {
+    const { payContribution, espions } = monter();
+
+    await payContribution([pledge({ finkey: FINKEY, remainingAmount: 0 })]);
+
+    expect(espions.payFinancer).not.toHaveBeenCalled();
+  });
+});

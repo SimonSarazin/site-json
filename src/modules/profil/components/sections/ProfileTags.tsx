@@ -21,10 +21,11 @@ export default function ProfileTags({ section }: ProfileTagsProps) {
     maxDisplay = 20,
     linkable = false,
     searchOnClick = false,
+    hideTags,
   } = section;
 
-  // Dédoublonner les tags
-  const uniqueTags = [...new Set(tags)];
+  // Dédoublonner les tags ; un marqueur technique (`hideTags`) classe la fiche mais ne se lit pas.
+  const uniqueTags = [...new Set(tags)].filter((tag) => !hideTags?.includes(tag));
 
   // Si pas de tags, ne rien afficher
   if (!uniqueTags || uniqueTags.length === 0) {

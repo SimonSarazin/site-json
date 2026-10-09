@@ -54,18 +54,6 @@
         "children": [
           {
             "label": {
-              "fr": "Espace Public",
-              "en": "Public Space"
-            },
-            "path": "/public",
-            "icon": "users",
-            "description": {
-              "fr": "Le sport santé pour tous les Réunionnais.",
-              "en": "Sport health for everyone in Réunion."
-            }
-          },
-          {
-            "label": {
               "fr": "Qu'est-ce que le Sport Santé",
               "en": "What is Sport Health"
             },
@@ -90,18 +78,6 @@
           },
           {
             "label": {
-              "fr": "Équipements sportifs",
-              "en": "Sports Facilities"
-            },
-            "path": "/equipements-sportifs",
-            "icon": "dumbbell",
-            "description": {
-              "fr": "Tous les équipements de l'île, géolocalisés.",
-              "en": "All the island's facilities, geolocated."
-            }
-          },
-          {
-            "label": {
               "fr": "Créneaux",
               "en": "Activity Slots"
             },
@@ -114,14 +90,14 @@
           },
           {
             "label": {
-              "fr": "Cartographie",
-              "en": "Map"
+              "fr": "FAQ",
+              "en": "FAQ"
             },
-            "path": "/mapping",
-            "icon": "map",
+            "path": "/faq",
+            "icon": "help-circle",
             "description": {
-              "fr": "Explorer l'offre sport santé sur la carte.",
-              "en": "Explore the sport-health offer on the map."
+              "fr": "Les réponses aux questions les plus fréquentes.",
+              "en": "Answers to the most frequently asked questions."
             }
           }
         ]
@@ -134,18 +110,6 @@
         "path": "/espace-professionnels",
         "icon": "network",
         "children": [
-          {
-            "label": {
-              "fr": "Espace professionnels",
-              "en": "Professionals"
-            },
-            "path": "/espace-professionnels",
-            "icon": "briefcase",
-            "description": {
-              "fr": "Ressources et outils pour les pros.",
-              "en": "Resources and tools for professionals."
-            }
-          },
           {
             "label": {
               "fr": "Ressources",
@@ -172,6 +136,18 @@
           },
           {
             "label": {
+              "fr": "Habilitation MSS",
+              "en": "MSS Accreditation"
+            },
+            "path": "/habilitation-mss",
+            "icon": "shield-check",
+            "description": {
+              "fr": "La procédure d'habilitation officielle des Maisons Sport-Santé.",
+              "en": "The official accreditation procedure for Sport-Health Houses."
+            }
+          },
+          {
+            "label": {
               "fr": "Formation",
               "en": "Training"
             },
@@ -184,60 +160,38 @@
           },
           {
             "label": {
-              "fr": "Organismes de formation",
-              "en": "Training Organizations"
+              "fr": "FAQ Pro",
+              "en": "Pro FAQ"
             },
-            "path": "/listing-formations",
-            "icon": "school",
+            "path": "/faq-pro",
+            "icon": "help-circle",
             "description": {
-              "fr": "Les organismes de formation labellisés.",
-              "en": "The labeled training organizations."
-            }
-          }
-        ]
-      },
-      {
-        "label": {
-          "fr": "Communauté",
-          "en": "Community"
-        },
-        "path": "/communaute",
-        "icon": "users",
-        "children": [
-          {
-            "label": {
-              "fr": "Projets",
-              "en": "Projects"
-            },
-            "path": "/projets",
-            "icon": "rocket",
-            "description": {
-              "fr": "Les projets sport santé du territoire.",
-              "en": "Sport-health projects across the territory."
+              "fr": "Les réponses aux questions fréquentes pour les professionnels.",
+              "en": "Answers to frequently asked questions for professionals."
             }
           },
           {
             "label": {
-              "fr": "Structures",
-              "en": "Structures"
+              "fr": "Prescrire & Orienter",
+              "en": "Prescribe & Guide"
             },
-            "path": "/structure",
-            "icon": "building",
+            "path": "/prescription",
+            "icon": "clipboard-list",
             "description": {
-              "fr": "Les acteurs et structures du réseau.",
-              "en": "The network's actors and facilities."
+              "fr": "Guide et outils pour prescrire et orienter vers le sport santé.",
+              "en": "Guide and tools for prescribing and guiding towards sport health."
             }
           },
           {
             "label": {
-              "fr": "Communauté",
-              "en": "Community"
+              "fr": "Programmes et dispositifs",
+              "en": "Programs and devices"
             },
-            "path": "/communaute",
-            "icon": "users",
+            "path": "/programmes-dispositifs",
+            "icon": "stethoscope",
             "description": {
-              "fr": "Rejoindre et échanger avec le réseau.",
-              "en": "Join and connect with the network."
+              "fr": "Les dispositifs Sport sur ordonnance accessibles à La Réunion.",
+              "en": "Sport-on-prescription devices available in Réunion."
             }
           }
         ]
@@ -541,6 +495,9 @@
         "en": "The Sport Health Network"
       },
       "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
       "sections": [
         {
           "type": "hero-quick-access",
@@ -566,6 +523,44 @@
                   "en": "Professionals Space"
                 },
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\"/><path d=\"M20 3v4M22 5h-4M4 17v2M5 18H3\"/></svg>"
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "espace-pro-actions-rapides",
+          "props": {
+            "headline": {
+              "fr": "⚡ Actions rapides",
+              "en": "⚡ Quick actions"
+            },
+            "subhead": {
+              "fr": "Renseignez d'abord votre structure puis votre créneau",
+              "en": "First register your structure, then your slot"
+            },
+            "subheadClassName": "text-destructive italic",
+            "compact": true,
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Étape 1 — Ajouter sa structure",
+                  "en": "Step 1 — Add your structure"
+                },
+                "icon": "building-2",
+                "modal": "add-sport-sante-bienetre-organizations",
+                "requiresAdmin": false,
+                "variant": "primary"
+              },
+              {
+                "label": {
+                  "fr": "Étape 2 — Ajouter son créneau",
+                  "en": "Step 2 — Add your slot"
+                },
+                "icon": "calendar-plus",
+                "href": "/coform/6928096adf5caf0d230e7f26",
+                "requiresAdmin": false,
+                "variant": "outline"
               }
             ]
           }
@@ -1414,6 +1409,10 @@
           "type": "searchProStatic",
           "id": "section-structure-cards",
           "props": {
+            "title": {
+              "fr": "Maisons Sport Santé",
+              "en": "Sport Health Houses"
+            },
             "useFilter": true,
             "showMap": true,
             "enableMap": true,
@@ -1425,16 +1424,14 @@
                 "organizations"
               ],
               "defaultFilters": {
-                                  "$or": {
-                                    "source.key": "sportSanteBienetre",
-                                    "source.keys": "sportSanteBienetre",
-                                    "reference.costum": "sportSanteBienetre"
-                                  },
-                                  "tags": [
-                                    "mss"
-                                  ],
-                                  "statusActor": "Validé"
-                                }
+                "$or": {
+                  "source.key": "sportSanteBienetre",
+                  "source.keys": "sportSanteBienetre",
+                  "reference.costum": "sportSanteBienetre"
+                },
+                "mss": "true",
+                "statusActor" : "Validé"
+              }
             },
             "list": {
               "columns": {
@@ -1444,11 +1441,15 @@
                 "xl": 1
               },
               "card": {
-                "type": "contact-card",
-                "detailsMode": "drawer"
+                "type": "image-cover",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "structure"
               }
             },
             "map": {
+              "layout": "split",
               "marker": {
                 "useItemImage": true,
                 "style": "pin",
@@ -1535,6 +1536,352 @@
                 "showAddress": true,
                 "detailsMode": "drawer"
               }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/faq",
+      "title": {
+        "fr": "Foire aux questions",
+        "en": "FAQ"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "faq-header",
+          "props": {
+            "headline": {
+              "fr": "Foire aux questions",
+              "en": "FAQ"
+            },
+            "subhead": {
+              "fr": "Retrouvez ici les réponses aux questions fréquentes sur les activités et dispositifs Sport Santé Bien-être. Cette FAQ vous aide à comprendre l’accès aux installations, les pratiques proposées et les démarches pour en bénéficier.",
+              "en": "Find here the answers to frequently asked questions about Sport Health Wellness activities and schemes. This FAQ helps you understand access to facilities, the activities on offer and the steps to benefit from them."
+            }
+          }
+        },
+        {
+          "type": "accordion",
+          "id": "faq-accordion",
+          "props": {
+            "allowMultiple": true,
+            "items": [
+              {
+                "title": {
+                  "fr": "Qu’est-ce que le sport santé bien-être ?",
+                  "en": "What is sport-health wellness?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Le sport santé bien-être correspond à une pratique physique régulière qui vise à améliorer la santé globale, en favorisant le bien-être physique, mental et social.</p>",
+                  "en": "<p>Sport-health wellness refers to regular physical activity aimed at improving overall health by promoting physical, mental and social well-being.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Je souffre d’hypertension et d’arthrose. Puis-je pratiquer une activité physique adaptée dans le cadre du sport santé ?",
+                  "en": "I have high blood pressure and arthrosis. Can I practise adapted physical activity as part of sport-health?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Oui. Le sport santé peut être bénéfique pour les personnes souffrant de problèmes articulaires ou d’hypertension.</p><p>Nous vous conseillons de demander l’avis de votre médecin afin qu’il vous prescrive une activité adaptée à votre état de santé, puis de vous rapprocher d’une Maison Sport Santé pour être accompagné.</p><p><a href=\"/mss\" class=\"text-primary font-semibold hover:underline\">👉 Trouvez une Maison Sport Santé près de chez vous</a></p><p class=\"text-error font-medium\">⚠️ Attention : la prescription médicale ne donne pas droit au remboursement de l’activité physique.</p>",
+                  "en": "<p>Yes. Sport-health can be beneficial for people with joint problems or high blood pressure.</p><p>We recommend asking your doctor to prescribe an activity suited to your health, then getting in touch with a Maison Sport Santé for support.</p><p><a href=\"/mss\" class=\"text-primary font-semibold hover:underline\">👉 Find a Maison Sport Santé near you</a></p><p class=\"text-error font-medium\">⚠️ Warning: a medical prescription does not entitle you to reimbursement of the physical activity.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Où trouver un lieu qui fait une activité physique sur St Leu pour le cancer du sein – mastectomie ?",
+                  "en": "Where can I find a place offering physical activity in St Leu for breast cancer – mastectomy?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>ODYSSEA RÉUNION pourra vous aiguiller sur votre secteur en termes d’offre de pratique adaptée à votre situation. Leur adresse mail : <a href=\"mailto:contact@run-odyssea.org\" class=\"text-primary hover:underline\">contact@run-odyssea.org</a></p><p>N’hésitez pas à consulter la <a href=\"/mapping\" class=\"text-primary font-semibold hover:underline\">cartographie</a> sur laquelle vous trouverez tous les <strong>créneaux labellisés</strong>.</p>",
+                  "en": "<p>ODYSSEA RÉUNION can guide you on your area in terms of adapted practice offers. Their email address: <a href=\"mailto:contact@run-odyssea.org\" class=\"text-primary hover:underline\">contact@run-odyssea.org</a></p><p>Feel free to check the <a href=\"/mapping\" class=\"text-primary font-semibold hover:underline\">map</a>, where you will find all the labeled slots.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Où trouver un lieu qui fait de la balnéothérapie sur ordonnance ?",
+                  "en": "Where can I find a place offering prescribed balneotherapy?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Se rapprocher des représentants des Masseurs Kinésithérapeutes de la Réunion qui sont aptes à répondre aux besoins, consultez le site urmkoi.fr</p>",
+                  "en": "<p>Get in touch with the representatives of the Masseurs Kinésithérapeutes de la Réunion, who are able to help — visit urmkoi.fr</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Je souhaite pratiquer une activité physique. Vers qui puis-je me tourner afin de trouver des créneaux labellisés « sport santé bien-être » sur le territoire ?",
+                  "en": "I want to practise a physical activity. Who can I contact to find labeled “sport-health wellness” slots across the territory?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Que vous souhaitiez pratiquer une activité pour le plaisir, la convivialité ou pour améliorer et renforcer votre santé, des structures proposent des créneaux sur toute l’île.</p><p>Ces créneaux labellisés « sport santé bien-être » (sport santé pour tous et sport santé sur ordonnance) sont consultables en ligne <a href=\"/creneaux\" class=\"text-primary font-semibold hover:underline\">ici</a>. Pour accéder à ces informations, il convient de cliquer sur la rubrique « <strong>Trouver une activité</strong> », puis d’utiliser les filtres proposés afin d’identifier les activités correspondant à vos besoins et à votre situation.</p>",
+                  "en": "<p>Whether you want to practise an activity for fun, for social connection or to improve and strengthen your health, structures offer slots across the whole island.</p><p>These labeled “sport-health wellness” slots (sport-health for all and sport-health on prescription) can be browsed online <a href=\"/creneaux\" class=\"text-primary font-semibold hover:underline\">here</a>. To access this information, click on the “<strong>Find an activity</strong>” section, then use the filters to identify the activities matching your needs and situation.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Quelle est la différence entre sport santé pour tous (SSpT) et sport santé sur ordonnance (SSsO) ?",
+                  "en": "What is the difference between sport-health for all (SSpT) and sport-health on prescription (SSsO)?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p><strong>Sport Santé pour Tous :</strong> pour tout public disposant d’un certificat d’absence de contre-indication à la pratique d’activités physiques et sportives (APS).</p><p><strong>Sport Santé sur Ordonnance :</strong> pour les personnes atteintes d’une affection de longue durée ou d’une maladie chronique ou présentant des facteurs de risques et des personnes en perte d’autonomie.</p><p>L’activité physique adaptée (APA) peut être prescrite par le médecin intervenant dans la prise en charge.</p>",
+                  "en": "<p><strong>Sport-Health for All:</strong> for anyone holding a certificate confirming no contraindication to physical and sporting activity (APS).</p><p><strong>Sport-Health on Prescription:</strong> for people with a long-term condition, a chronic illness, risk factors, or a loss of autonomy.</p><p>Adapted physical activity (APA) can be prescribed by the doctor involved in the care pathway.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Sur quels domaines peuvent porter les activités proposées ?",
+                  "en": "What areas can the activities offered cover?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Les activités proposées peuvent relever de divers domaines, tels que les activités de pleine nature, les activités aquatiques, les sports collectifs, les activités gymniques ou encore les arts martiaux.</p>",
+                  "en": "<p>The activities offered can cover various areas, such as outdoor activities, water-based activities, team sports, gymnastic activities or martial arts.</p>"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/faq-pro",
+      "title": {
+        "fr": "Foire aux questions professionnel",
+        "en": "Professional FAQ"
+      },
+      "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "faq-pro-header",
+          "props": {
+            "headline": {
+              "fr": "Foire aux questions professionnel",
+              "en": "Professional FAQ"
+            },
+            "subhead": {
+              "fr": "Retrouvez ici les réponses aux questions fréquentes sur les activités et dispositifs Sport Santé Bien-être. Cette FAQ vous aide à comprendre l’accès aux installations, les pratiques proposées et les démarches pour en bénéficier.",
+              "en": "Find here the answers to frequently asked questions about Sport Health Wellness activities and schemes. This FAQ helps you understand access to facilities, the activities on offer and the steps to benefit from them."
+            }
+          }
+        },
+        {
+          "type": "accordion",
+          "id": "faq-pro-accordion",
+          "props": {
+            "allowMultiple": true,
+            "items": [
+              {
+                "title": {
+                  "fr": "J’aimerais m’inscrire à une formation sport santé bien-être. Merci de me faire savoir vers quel organisme de formation me tourner ?",
+                  "en": "I would like to enrol in a sport-health wellness training course. Which training organization should I contact?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Nous vous remercions de cliquer <a href=\"/listing-formations\" class=\"text-primary font-semibold hover:underline\">ici</a> afin d’accéder à la liste des organismes habilités pour dispenser la formation (SSpT- SSsO) dans le respect du cahier des charges régional et national.</p><p>Ils vous proposeront un devis précis et adapté à votre demande.</p>",
+                  "en": "<p>Please click <a href=\"/listing-formations\" class=\"text-primary font-semibold hover:underline\">here</a> to access the list of organizations authorized to provide the training (SSpT- SSsO) in line with the regional and national specifications.</p><p>They will offer you a precise quote tailored to your request.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Je suis médecin généraliste, pourriez-vous m’orienter dans ma recherche pour une patiente qui souhaite faire de l’activité physique pour la santé éventuellement avec une ordonnance et une ALD afin d’améliorer la santé physique et aussi la santé morale par le biais d’activité de sport et de loisirs.",
+                  "en": "I am a general practitioner. Could you help me find a solution for a patient who wants to do physical activity for health reasons, possibly with a prescription and a long-term condition (ALD), to improve both her physical and mental health through sport and leisure activities?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Dans le cadre légal actuel, les patients en Affection Longue Durée (ALD) peuvent bénéficier du dispositif Sport Santé sur Ordonnance (SSsO), sur prescription médicale, cette prescription permet d’orienter la patiente vers des activités sécurisées et adaptées, encadrées par des enseignants en APA ou des éducateurs sportifs spécialisés.</p><p>À La Réunion, plusieurs dispositifs existent :</p><ul class=\"list-disc pl-5 space-y-1\"><li>La plateforme <strong>www.ssbe.re</strong> qui permet de consulter les créneaux labellisés Sport Santé Bien-Être (SSBE) disponibles sur le territoire, classés en deux niveaux :<ul class=\"list-disc pl-5 space-y-1 mt-1\"><li>SSpT (Sport Santé pour Tous) : pour une reprise en douceur et sécurisée ;</li><li>SSsO (Sport Santé sur Ordonnance) : public personnes atteintes d’une affection de longue durée ou d’une maladie chronique ou présentant des facteurs de risques et des personnes en perte d’autonomie, sur orientation médicale.</li></ul></li><li>Les Maisons Sport Santé (MSS), au nombre de 13 dans le département, qui assurent l’accueil, l’orientation et le suivi personnalisé des patients, en articulation avec les prescripteurs.</li></ul><p><strong>Démarche conseillée :</strong></p><ol class=\"list-decimal pl-5 space-y-1\"><li>Rédiger une ordonnance d’APA pour votre patiente (modèle disponible sur HAS – prescription APA).</li><li>Orienter la patiente vers la <a href=\"/mss\" class=\"text-primary font-semibold hover:underline\">Maison Sport Santé</a> la plus proche de son domicile ou vers un <a href=\"/creneaux\" class=\"text-primary font-semibold hover:underline\">créneau labellisé</a>.</li><li>L’équipe encadrante assurera le bilan initial, le suivi des séances et la transmission des informations utiles au médecin prescripteur.</li></ol><p>Ces structures proposent non seulement un travail sur la santé physique, mais également une amélioration du bien-être psychologique et social par l’activité physique régulière.</p>",
+                  "en": "<p>Under the current legal framework, patients with a long-term condition (ALD) can benefit from the Sport-Health on Prescription scheme (SSsO); with a medical prescription, the patient can be directed towards safe, adapted activities supervised by APA instructors or specialized sports educators.</p><p>In Réunion, several schemes exist:</p><ul class=\"list-disc pl-5 space-y-1\"><li>The <strong>www.ssbe.re</strong> platform, which lists the labeled Sport-Health Wellness (SSBE) slots available across the territory, in two levels:<ul class=\"list-disc pl-5 space-y-1 mt-1\"><li>SSpT (Sport-Health for All): for a gentle, safe return to activity;</li><li>SSsO (Sport-Health on Prescription): for people with a long-term condition, a chronic illness, risk factors, or a loss of autonomy, on medical referral.</li></ul></li><li>The Maisons Sport Santé (MSS) — 13 in the department — which handle patient reception, referral and personalized follow-up, in coordination with prescribers.</li></ul><p><strong>Recommended approach:</strong></p><ol class=\"list-decimal pl-5 space-y-1\"><li>Write an APA prescription for your patient (template available on the HAS website – APA prescription).</li><li>Refer the patient to the nearest <a href=\"/mss\" class=\"text-primary font-semibold hover:underline\">Maison Sport Santé</a> or to a <a href=\"/creneaux\" class=\"text-primary font-semibold hover:underline\">labeled slot</a>.</li><li>The supervising team will carry out the initial assessment, follow the sessions and share the relevant information with the prescribing doctor.</li></ol><p>These structures work not only on physical health but also improve psychological and social well-being through regular physical activity.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Combien de seniors un éducateur peut-il encadrer lors d’une séance de sports santé bien-être ?",
+                  "en": "How many seniors can one instructor supervise during a sport-health wellness session?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>La sécurisation d’une séance Sport Santé auprès du public senior dépend de plusieurs éléments : le niveau d’autonomie des participants, la nature de l’activité proposée, le lieu de pratique, et surtout la qualification de l’encadrant.</p><p>Selon le cahier des charges du label SSBE, il est recommandé pour <strong>un groupe de 8 à 12 seniors</strong> :</p><ul class=\"list-disc pl-5 space-y-1\"><li>qu’une séance destinée à un public senior ou fragile (personnes âgées, à risque de chute etc.) soit encadrée par un professionnel spécifiquement formé à l’Activité Physique Adaptée (APA) ou disposant de compétences Sport Santé pour Tous ou Sport Santé sur Ordonnance reconnues ;</li><li>qu’il sache gérer les adaptations individuelles, repérer les signes de fragilité et gérer les situations à risque.</li></ul><p>Si le groupe est plus important, ou si les bénéficiaires présentent des <strong>fragilités accrues</strong> (troubles de l’équilibre, maladies chroniques avancées...), <strong>la présence d’un binôme encadrant ou d’un accompagnant formé</strong> peut être nécessaire pour assurer la sécurité et la qualité de la séance.</p>",
+                  "en": "<p>Ensuring the safety of a Sport-Health session for seniors depends on several factors: participants’ level of autonomy, the nature of the activity, the venue, and above all the instructor’s qualification.</p><p>According to the SSBE label specifications, it is recommended for <strong>a group of 8 to 12 seniors</strong>:</p><ul class=\"list-disc pl-5 space-y-1\"><li>that a session aimed at a senior or frail public (elderly people, fall risk, etc.) be supervised by a professional specifically trained in Adapted Physical Activity (APA) or holding recognized Sport-Health for All or Sport-Health on Prescription skills;</li><li>that they be able to manage individual adaptations, spot signs of frailty and handle at-risk situations.</li></ul><p>If the group is larger, or if participants show <strong>increased frailty</strong> (balance disorders, advanced chronic illnesses...), <strong>a second supervisor or a trained assistant</strong> may be needed to ensure the safety and quality of the session.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Je suis médecin en EHPAD. Pourriez-vous me faire savoir si les résidents peuvent bénéficier d’activité physique adaptée ?",
+                  "en": "I am a doctor in a nursing home (EHPAD). Can residents benefit from adapted physical activity?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Certains résidents d’EHPAD peuvent bénéficier du Sport Santé sur Ordonnance (SSsO), à condition qu’ils présentent une Affection de Longue Durée (ALD), une pathologie chronique ou des facteurs de risque (sédentarité, risque de chute, etc.). Ces critères sont fréquemment rencontrés en EHPAD.</p><p>Le SSsO, c’est de l’Activité Physique Adaptée (APA), encadrée par des professionnels qualifiés (enseignants APA ou éducateurs sportifs formés en sport santé).</p><p>En tant que médecin, vous pouvez tout à fait prescrire une activité physique adaptée, dans le cadre légal du décret de 2016. À La Réunion, les structures labellisées SSBE (Sport Santé Bien-Être) assurent ce type de prise en charge, en toute sécurité, via la plateforme <strong>www.ssbe.re</strong></p><p>et vous pouvez vous appuyer sur les programmes APA en ESMS de nos Maisons Sport Santé. Retrouvez toutes les coordonnées des maisons sport santé <a href=\"/mss\" class=\"text-primary font-semibold hover:underline\">ici</a>.</p>",
+                  "en": "<p>Some nursing home residents can benefit from Sport-Health on Prescription (SSsO), provided they have a long-term condition (ALD), a chronic illness or risk factors (sedentary lifestyle, fall risk, etc.). These criteria are frequently found in nursing homes.</p><p>SSsO means Adapted Physical Activity (APA), supervised by qualified professionals (APA instructors or sports educators trained in sport-health).</p><p>As a doctor, you can fully prescribe adapted physical activity, under the legal framework of the 2016 decree. In Réunion, SSBE-labeled structures provide this type of care safely, via the <strong>www.ssbe.re</strong> platform,</p><p>and you can rely on the APA programs in medico-social facilities run by our Maisons Sport Santé. Find all the Maisons Sport Santé contact details <a href=\"/mss\" class=\"text-primary font-semibold hover:underline\">here</a>.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Le SSBE peut-il fournir une activité physique à une personne diabétique de type 2 ?",
+                  "en": "Can SSBE provide a physical activity for a person with type 2 diabetes?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>La dynamique portée par les institutions devrait permettre de couvrir à terme tout le territoire de la Réunion pour répondre à cet enjeu majeur de santé publique.</p><p>Une personne diabétique de type 2 peut bien entendu prétendre à ces activités à condition que l’offre d’activité physique puisse :</p><ul class=\"list-disc pl-5 space-y-1\"><li>être disponible ;</li><li>être à proximité du lieu de résidence ;</li><li>être adaptée à la pathologie de la personne ;</li><li>lui convenir.</li></ul>",
+                  "en": "<p>The dynamic driven by the institutions should eventually cover the whole of Réunion to address this major public health issue.</p><p>A person with type 2 diabetes can of course take part in these activities, provided the physical activity offer:</p><ul class=\"list-disc pl-5 space-y-1\"><li>is available;</li><li>is close to their place of residence;</li><li>is suited to their condition;</li><li>suits them.</li></ul>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Une labellisation de créneaux peut-elle être suspendue ?",
+                  "en": "Can a slot’s labeling be suspended?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>En cas de non-respect par la structure titulaire du label des obligations résultant du cahier des charges, le label sera suspendu sans délai par la DRAJES et l’ARS La Réunion et retiré de la cartographie du site ssbe.re.</p>",
+                  "en": "<p>If the structure holding the label fails to meet the obligations set out in the specifications, the label will be suspended without delay by the DRAJES and the ARS La Réunion, and removed from the ssbe.re site map.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Quelle est la durée de validité d’une labellisation de créneaux ?",
+                  "en": "How long is a slot labeling valid for?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<ul class=\"list-disc pl-5 space-y-1\"><li><strong>3 ans</strong> pour le label SSBE « Sport Santé pour Tous – SSpT »</li><li><strong>2 ans</strong> pour le label SSBE « Sport Santé sur Ordonnance – SSsO »</li></ul>",
+                  "en": "<ul class=\"list-disc pl-5 space-y-1\"><li><strong>3 years</strong> for the SSBE “Sport-Health for All – SSpT” label</li><li><strong>2 years</strong> for the SSBE “Sport-Health on Prescription – SSsO” label</li></ul>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Quelle est la période de l’année durant laquelle il est possible de répondre à l’appel à candidatures pour le label sport santé bien-être ?",
+                  "en": "What time of year can applications be submitted for the sport-health wellness label call for applications?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>L’appel à candidatures pour le label sport santé bien-être est permanent. Les demandes de labellisation des créneaux peuvent être effectuées tout au long de l’année par voie dématérialisée <a href=\"/labellisation\" class=\"text-primary font-semibold hover:underline\">ici</a>.</p>",
+                  "en": "<p>The call for applications for the sport-health wellness label is ongoing. Slot labeling requests can be submitted online at any time of year <a href=\"/labellisation\" class=\"text-primary font-semibold hover:underline\">here</a>.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Comment solliciter la labellisation des créneaux SSBE ?",
+                  "en": "How can I request SSBE slot labeling?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Pour soumettre une demande de labellisation des créneaux SSBE, il convient de renseigner votre demande sur la plateforme dédiée à cet effet, accessible <a href=\"/espace-professionnels\" class=\"text-primary font-semibold hover:underline\">ici</a> : <strong>Espace professionnels</strong> en cliquant sur le bouton « Étape 1 : Ajouter sa structure ».</p><p>Par ailleurs, des informations complémentaires peuvent être consultées en téléchargeant le cahier des charges afférent au label dans la partie « <a href=\"/ressources\" class=\"text-primary font-semibold hover:underline\">Ressources</a> » du site.</p>",
+                  "en": "<p>To submit an SSBE slot labeling request, fill in your request on the dedicated platform, accessible <a href=\"/espace-professionnels\" class=\"text-primary font-semibold hover:underline\">here</a>: <strong>Espace professionnels</strong>, by clicking the “Step 1: Add your structure” button.</p><p>Additional information can also be found by downloading the label’s specifications in the “<a href=\"/ressources\" class=\"text-primary font-semibold hover:underline\">Resources</a>” section of the site.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Quel est l’intérêt du label Sport Santé Bien Être ?",
+                  "en": "What is the benefit of the Sport-Health Wellness label?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<ul class=\"list-disc pl-5 space-y-1\"><li><strong>Pour les pratiquants</strong> : identifier facilement une structure « sport santé bien-être » de qualité, de proximité et répondant aux besoins ;</li><li><strong>Pour les professionnels de santé</strong> : assurer une meilleure visibilité et lisibilité de l’offre « sport santé bien-être » ;</li><li><strong>Pour les acteurs du sport</strong> : valoriser les structures dispensant des activités « sport santé bien-être » à travers le réseau SSBE la Réunion ;</li><li><strong>Pour les financeurs potentiels</strong> : identifier les structures s’investissant dans la mise en place d’activités « sport santé pour tous » et/ou « sport santé sur ordonnance » dans le cadre d’une démarche de qualité.</li></ul>",
+                  "en": "<ul class=\"list-disc pl-5 space-y-1\"><li><strong>For participants</strong>: easily identify a quality, nearby “sport-health wellness” structure that meets their needs;</li><li><strong>For health professionals</strong>: ensure better visibility and clarity of the “sport-health wellness” offer;</li><li><strong>For sport stakeholders</strong>: promote structures providing “sport-health wellness” activities through the SSBE Réunion network;</li><li><strong>For potential funders</strong>: identify structures investing in “sport-health for all” and/or “sport-health on prescription” activities as part of a quality approach.</li></ul>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Quel est l’intérêt pour une structure de demander la labellisation de créneaux Sport Santé ?",
+                  "en": "What is the benefit for a structure of requesting Sport-Health slot labeling?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Avoir des créneaux labellisés permet d’améliorer sa visibilité sur le territoire réunionnais par le référencement sur le site ssbe.re. Cela permet à la structure :</p><ul class=\"list-disc pl-5 space-y-1\"><li>de faire valoir la qualité de son offre, de son encadrement et la sécurité du pratiquant ;</li><li>de participer à l’amélioration de la qualité de vie des réunionnais par la mise en mouvement ;</li><li>de promouvoir son activité auprès du grand public mais aussi des professionnels de santé.</li></ul>",
+                  "en": "<p>Having labeled slots improves visibility across Réunion through listing on the ssbe.re site. This allows the structure to:</p><ul class=\"list-disc pl-5 space-y-1\"><li>highlight the quality of its offer, its supervision and participant safety;</li><li>contribute to improving Réunion residents’ quality of life by getting them moving;</li><li>promote its activity to the general public as well as to health professionals.</li></ul>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "À quoi sert le label sport santé bien-être ?",
+                  "en": "What is the sport-health wellness label for?"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>Le label permet d’attester de la qualité de l’offre proposée et justifie d’un encadrement professionnel et sécuritaire par :</p><ul class=\"list-disc pl-5 space-y-1\"><li><strong>Les critères de qualité</strong> : partenariat et proximité, accessibilité géographique et financière, démarche d’éducation pour la santé, évaluation régulière, communication et visibilité.</li><li><strong>Les critères de sécurité</strong> : encadrants qualifiés et formés, groupes restreints, lieux et matériel adaptés, accueil et suivi individuel, liaisons régulières avec le médecin prescripteur.</li></ul>",
+                  "en": "<p>The label certifies the quality of the offer and demonstrates professional, secure supervision through:</p><ul class=\"list-disc pl-5 space-y-1\"><li><strong>Quality criteria</strong>: partnership and proximity, geographic and financial accessibility, health education approach, regular evaluation, communication and visibility.</li><li><strong>Safety criteria</strong>: qualified, trained supervisors, small groups, suitable venues and equipment, individual reception and follow-up, regular liaison with the prescribing doctor.</li></ul>"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/prescription",
+      "title": {
+        "fr": "Aide à la prescription médicale",
+        "en": "Medical prescription assistance"
+      },
+      "auth": {
+        "required": true
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-quick-access",
+          "id": "prescription-hero",
+          "props": {
+            "headline": {
+              "fr": "Aide à la prescription médicale",
+              "en": "Medical prescription assistance"
+            },
+            "subhead": {
+              "fr": "Ressources et outils pour accompagner les professionnels de santé dans la prescription d’activité physique adaptée",
+              "en": "Resources and tools to support health professionals in prescribing adapted physical activity"
+            },
+            "backgroundImage": "images/sportSanteBienetre/prescription.png"
+          }
+        },
+        {
+          "type": "html",
+          "id": "prescription-qui-pour-qui-par-qui",
+          "props": {
+            "html": {
+              "fr": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-6xl\"><div class=\"grid gap-6 md:grid-cols-3 items-stretch\"><div class=\"rounded-2xl border border-primary/30 bg-card p-6 flex flex-col\"><div class=\"flex items-center gap-3 mb-4\"><div class=\"w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0\">1</div><h3 class=\"font-display text-lg font-bold text-foreground\">Qui peut prescrire ?</h3></div><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Depuis 2016, les médecins peuvent prescrire une activité physique adaptée (APA) aux personnes atteintes d’une affection de longue durée (ALD), afin de répondre à leurs besoins de santé spécifiques. Depuis 2022, cette possibilité a été étendue à tous les médecins impliqués dans le suivi du patient, et les masseurs-kinésithérapeutes peuvent également renouveler ou adapter cette prescription, sauf opposition du médecin.</span></li></ul></div><div class=\"rounded-2xl border border-accent/30 bg-card p-6 flex flex-col\"><div class=\"flex items-center gap-3 mb-4\"><div class=\"w-9 h-9 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold shrink-0\">2</div><h3 class=\"font-display text-lg font-bold text-foreground\">Pour qui ?</h3></div><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Personnes atteintes d’une affection de longue durée (ALD)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Personnes atteintes d’une maladie chronique</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Personnes présentant des facteurs de risque</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Personnes en perte d’autonomie</span></li></ul></div><div class=\"rounded-2xl border border-primary/30 bg-card p-6 flex flex-col\"><div class=\"flex items-center gap-3 mb-4\"><div class=\"w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0\">3</div><h3 class=\"font-display text-lg font-bold text-foreground\">Par qui ?</h3></div><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Médecins généralistes</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Médecins spécialistes</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Infirmier(ère)s en pratique avancée</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>…</span></li></ul></div></div></div></section>",
+              "en": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-6xl\"><div class=\"grid gap-6 md:grid-cols-3 items-stretch\"><div class=\"rounded-2xl border border-primary/30 bg-card p-6 flex flex-col\"><div class=\"flex items-center gap-3 mb-4\"><div class=\"w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0\">1</div><h3 class=\"font-display text-lg font-bold text-foreground\">Who can prescribe?</h3></div><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Since 2016, doctors have been able to prescribe adapted physical activity (APA) to people with a long-term condition (ALD), to meet their specific health needs. Since 2022, this has been extended to all doctors involved in the patient’s care, and physiotherapists can also renew or adjust this prescription, unless the doctor objects.</span></li></ul></div><div class=\"rounded-2xl border border-accent/30 bg-card p-6 flex flex-col\"><div class=\"flex items-center gap-3 mb-4\"><div class=\"w-9 h-9 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold shrink-0\">2</div><h3 class=\"font-display text-lg font-bold text-foreground\">For whom?</h3></div><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>People with a long-term condition (ALD)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>People with a chronic illness</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>People with risk factors</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>People with a loss of autonomy</span></li></ul></div><div class=\"rounded-2xl border border-primary/30 bg-card p-6 flex flex-col\"><div class=\"flex items-center gap-3 mb-4\"><div class=\"w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0\">3</div><h3 class=\"font-display text-lg font-bold text-foreground\">By whom?</h3></div><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>General practitioners</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Specialist doctors</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Advanced practice nurses</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>…</span></li></ul></div></div></div></section>"
+            }
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "prescription-comment-header",
+          "props": {
+            "headline": {
+              "fr": "Comment ? Bonnes pratiques de prescription",
+              "en": "How? Prescription best practices"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "prescription-comment-cards",
+          "props": {
+            "html": {
+              "fr": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-6xl\"><div class=\"grid gap-6 md:grid-cols-3\"><div class=\"rounded-2xl bg-primary/10 p-6\"><div class=\"w-11 h-11 rounded-full bg-primary flex items-center justify-center mb-4\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" class=\"w-5 h-5\"><path d=\"M18 20a6 6 0 0 0-12 0\"/><circle cx=\"12\" cy=\"10\" r=\"4\"/><circle cx=\"12\" cy=\"12\" r=\"10\"/></svg></div><h3 class=\"font-display text-lg font-bold text-foreground mb-3\">Consultation Médicale</h3><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Réaliser un examen clinique complet</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Identifier les contre-indications absolues et relatives</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Évaluer la condition physique de base</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Prendre en compte les préférences du patient</span></li></ul></div><div class=\"rounded-2xl bg-accent/10 p-6\"><div class=\"w-11 h-11 rounded-full bg-accent flex items-center justify-center mb-4\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" class=\"w-5 h-5\"><path d=\"M11 2v2\"/><path d=\"M5 2v2\"/><path d=\"M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1\"/><path d=\"M8 15a6 6 0 0 0 12 0v-3\"/><circle cx=\"20\" cy=\"10\" r=\"2\"/></svg></div><h3 class=\"font-display text-lg font-bold text-foreground mb-3\">Prescription d’activité physique</h3><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Préciser le type d’activité recommandé</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Indiquer l’intensité et la fréquence souhaitées</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Mentionner les précautions particulières</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Définir la durée du programme</span></li></ul></div><div class=\"rounded-2xl bg-chart-3/15 p-6\"><div class=\"w-11 h-11 rounded-full bg-chart-3 flex items-center justify-center mb-4\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" class=\"w-5 h-5\"><path d=\"M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4-6 1.87 0 2.36 1.5 3.5 1.5C11.5 3.5 12 2 12 2s.5 1.5 1.5 1.5c1.14 0 1.63-1.5 3.5-1.5 2.51 0 3.97 3.28 4 6 .03 2.5-1 3.5-1 5.62V16\"/><path d=\"M4 20a2 2 0 0 1 4 0\"/><path d=\"M12 20a2 2 0 0 1 4 0\"/></svg></div><h3 class=\"font-display text-lg font-bold text-foreground mb-3\">Dispensation d’activité physique</h3><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Prévoir des consultations de suivi régulières</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Orienter vers le professionnel de l’APA</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Adapter la prescription selon l’évolution</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Évaluer les bénéfices et ajuster si nécessaire</span></li></ul></div></div></div></section>",
+              "en": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-6xl\"><div class=\"grid gap-6 md:grid-cols-3\"><div class=\"rounded-2xl bg-primary/10 p-6\"><div class=\"w-11 h-11 rounded-full bg-primary flex items-center justify-center mb-4\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" class=\"w-5 h-5\"><path d=\"M18 20a6 6 0 0 0-12 0\"/><circle cx=\"12\" cy=\"10\" r=\"4\"/><circle cx=\"12\" cy=\"12\" r=\"10\"/></svg></div><h3 class=\"font-display text-lg font-bold text-foreground mb-3\">Medical consultation</h3><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Carry out a full clinical examination</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Identify absolute and relative contraindications</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Assess baseline physical condition</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Take the patient’s preferences into account</span></li></ul></div><div class=\"rounded-2xl bg-accent/10 p-6\"><div class=\"w-11 h-11 rounded-full bg-accent flex items-center justify-center mb-4\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" class=\"w-5 h-5\"><path d=\"M11 2v2\"/><path d=\"M5 2v2\"/><path d=\"M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1\"/><path d=\"M8 15a6 6 0 0 0 12 0v-3\"/><circle cx=\"20\" cy=\"10\" r=\"2\"/></svg></div><h3 class=\"font-display text-lg font-bold text-foreground mb-3\">Physical activity prescription</h3><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Specify the recommended type of activity</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Indicate the desired intensity and frequency</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Mention any specific precautions</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Define the length of the program</span></li></ul></div><div class=\"rounded-2xl bg-chart-3/15 p-6\"><div class=\"w-11 h-11 rounded-full bg-chart-3 flex items-center justify-center mb-4\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" class=\"w-5 h-5\"><path d=\"M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4-6 1.87 0 2.36 1.5 3.5 1.5C11.5 3.5 12 2 12 2s.5 1.5 1.5 1.5c1.14 0 1.63-1.5 3.5-1.5 2.51 0 3.97 3.28 4 6 .03 2.5-1 3.5-1 5.62V16\"/><path d=\"M4 20a2 2 0 0 1 4 0\"/><path d=\"M12 20a2 2 0 0 1 4 0\"/></svg></div><h3 class=\"font-display text-lg font-bold text-foreground mb-3\">Delivering the physical activity</h3><ul class=\"space-y-2 text-sm text-muted-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Plan regular follow-up consultations</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Refer to an APA professional</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Adjust the prescription as needed</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Assess benefits and adapt if necessary</span></li></ul></div></div></div></section>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "prescription-cta",
+          "props": {
+            "html": {
+              "fr": "<section class=\"relative py-16 px-4 text-center bg-gradient-hero text-primary-foreground\"><div class=\"container mx-auto max-w-2xl\"><h2 class=\"font-display text-3xl font-bold mb-4\">Besoin d’accompagnement ?</h2><p class=\"opacity-90 leading-relaxed mb-8\">Notre équipe est disponible pour vous aider dans vos démarches de prescription et vous mettre en relation avec les structures adaptées.</p><a href=\"/contact\" class=\"inline-flex items-center justify-center bg-background text-foreground font-semibold rounded-full shadow-lg hover:scale-105 transition-all px-6 py-3\">Contacter l’équipe SSBE</a></div></section>",
+              "en": "<section class=\"relative py-16 px-4 text-center bg-gradient-hero text-primary-foreground\"><div class=\"container mx-auto max-w-2xl\"><h2 class=\"font-display text-3xl font-bold mb-4\">Need support?</h2><p class=\"opacity-90 leading-relaxed mb-8\">Our team is available to help you with your prescription process and put you in touch with the right structures.</p><a href=\"/contact\" class=\"inline-flex items-center justify-center bg-background text-foreground font-semibold rounded-full shadow-lg hover:scale-105 transition-all px-6 py-3\">Contact the SSBE team</a></div></section>"
             }
           }
         }
@@ -1780,6 +2127,9 @@
         "en": "Label your activity"
       },
       "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
       "sections": [
         {
           "type": "hero-quick-access",
@@ -2045,6 +2395,381 @@
       ]
     },
     {
+      "path": "/programmes-dispositifs",
+      "title": {
+        "fr": "Programmes et dispositifs - Sport Santé Bien-être",
+        "en": "Programs and devices - Sport Health Wellness"
+      },
+      "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
+      "seo": {
+        "title": {
+          "fr": "Programmes et dispositifs — Sport Santé Bien-être La Réunion",
+          "en": "Programs and devices — Sport Health Wellness Réunion"
+        },
+        "description": {
+          "fr": "Les dispositifs Sport sur ordonnance à La Réunion : Maisons Sport-Santé et programmes qui accompagnent les patients vers l'activité physique adaptée.",
+          "en": "Sport-on-prescription devices in Réunion: Sport-Health Houses and programs guiding patients towards adapted physical activity."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image"
+      },
+      "sections": [
+        {
+          "type": "hero",
+          "id": "programmes-dispositifs-hero",
+          "props": {
+            "headline": {
+              "fr": "Les programmes qui font bouger La Réunion",
+              "en": "The programs that get Réunion moving"
+            },
+            "subhead": {
+              "fr": "Découvrez les projets structurants portés par le réseau Sport-Santé Bien-Être pour transformer le quotidien des Réunionnais 🌟",
+              "en": "Discover the structuring projects led by the Sport-Health Wellness network to transform the daily lives of Réunion residents 🌟"
+            },
+            "backgroundImage": "/images/sportSanteBienetre/dispositif.png",
+            "align": "left",
+            "overlay": true
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "programmes-dispositifs-search",
+          "props": {
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un dispositif ou un programme…",
+              "en": "Search a device or program…"
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "programmes-dispositifs-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "disableInfiniteScroll": false,
+            "defaultViewMode": "list",
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "sourceKey": [
+                "sportSanteBienetre"
+              ],
+              "defaultFilters": {
+                "type": "ressource",
+                "thematique": "dispositifs",
+                "status": "Visible"
+              },
+              "defaultFields": [
+                "name",
+                "thematique",
+                "description",
+                "urls",
+                "medias",
+                "status",
+                "created",
+                "type",
+                "source",
+                "profilMediumImageUrl",
+                "profilImageUrl"
+              ],
+              "searchBy": [
+                "name",
+                "description"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              }
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 2
+              },
+              "card": {
+                "type": "resource",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "resource",
+                "width": "2xl"
+              },
+              "resource": {
+                "design": "card",
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "created",
+                "imageField": "profilMediumImageUrl",
+                "urlsField": "urls"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/habilitation-mss",
+      "title": {
+        "fr": "Habilitation Maisons Sport-Santé",
+        "en": "Sport-Health Houses Accreditation"
+      },
+      "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
+      "sections": [
+        {
+          "type": "hero-quick-access",
+          "id": "habilitation-hero",
+          "props": {
+            "headline": {
+              "fr": "Habilitation Maisons Sport-Santé",
+              "en": "Sport-Health Houses Accreditation"
+            },
+            "subhead": {
+              "fr": "Pour se prévaloir du titre « Maison Sport-Santé », les structures doivent obtenir une habilitation administrative délivrée par l’ARS et la DRAJES, selon la procédure fixée par le décret 2023-170 du 8 mars 2023 et sur la base des critères du cahier des charges du 25 avril 2023.",
+              "en": "To use the title “Maison Sport-Santé”, structures must obtain an administrative accreditation issued by the ARS and DRAJES, under the procedure set by decree 2023-170 of 8 March 2023 and the specifications of 25 April 2023."
+            },
+            "backgroundImage": "images/sportSanteBienetre/hero2.jpg",
+            "badges": [
+              {
+                "label": {
+                  "fr": "Dispositif national officiel",
+                  "en": "Official national scheme"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z\"/><path d=\"M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2\"/><path d=\"M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2\"/><path d=\"M10 6h4\"/><path d=\"M10 10h4\"/><path d=\"M10 14h4\"/><path d=\"M10 18h4\"/></svg>"
+              }
+            ],
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "Déposer une demande",
+                  "en": "Submit an application"
+                },
+                "path": "#habilitation-procedure-steps",
+                "variant": "accent"
+              }
+            ]
+          }
+        },
+        {
+          "type": "html",
+          "id": "habilitation-banner-avant-depot",
+          "props": {
+            "html": {
+              "fr": "<section class=\"relative py-12 px-4\"><div class=\"container mx-auto max-w-4xl\"><div class=\"relative overflow-hidden bg-gradient-hero text-primary-foreground rounded-3xl shadow-2xl p-8 md:p-10 text-center\"><div class=\"absolute top-0 right-0 w-32 h-32 bg-primary-foreground/5 rounded-full -translate-y-1/2 translate-x-1/2\"></div><div class=\"absolute bottom-10 left-5 w-20 h-20 bg-primary-foreground/5 rounded-full\"></div><div class=\"relative\"><span class=\"text-5xl mb-4 block\">💡</span><h2 class=\"font-display text-2xl md:text-3xl font-bold mb-4\">Avant de déposer votre dossier</h2><p class=\"max-w-2xl mx-auto opacity-90 leading-relaxed mb-8\">En dehors de la période d’appel à habilitation, il est recommandé de vous rapprocher des services de l’ARS et de la DRAJES. Ils peuvent vous accompagner dans l’élaboration de votre projet préalablement au dépôt de la demande, afin de vous assurer du respect du cahier des charges.</p><a href=\"mailto:drajes.sport-sante@ac-reunion.fr\" class=\"inline-flex items-center gap-2 bg-background text-foreground font-medium rounded-full shadow-lg hover:scale-105 transition-all px-6 py-3\">✉️ drajes.sport-sante@ac-reunion.fr</a></div></div></div></section>",
+              "en": "<section class=\"relative py-12 px-4\"><div class=\"container mx-auto max-w-4xl\"><div class=\"relative overflow-hidden bg-gradient-hero text-primary-foreground rounded-3xl shadow-2xl p-8 md:p-10 text-center\"><div class=\"absolute top-0 right-0 w-32 h-32 bg-primary-foreground/5 rounded-full -translate-y-1/2 translate-x-1/2\"></div><div class=\"absolute bottom-10 left-5 w-20 h-20 bg-primary-foreground/5 rounded-full\"></div><div class=\"relative\"><span class=\"text-5xl mb-4 block\">💡</span><h2 class=\"font-display text-2xl md:text-3xl font-bold mb-4\">Before submitting your application</h2><p class=\"max-w-2xl mx-auto opacity-90 leading-relaxed mb-8\">Outside the accreditation call period, we recommend that you contact the ARS and DRAJES services. They can support you in developing your project before you submit your application, to make sure it meets the specifications.</p><a href=\"mailto:drajes.sport-sante@ac-reunion.fr\" class=\"inline-flex items-center gap-2 bg-background text-foreground font-medium rounded-full shadow-lg hover:scale-105 transition-all px-6 py-3\">✉️ drajes.sport-sante@ac-reunion.fr</a></div></div></div></section>"
+            }
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "habilitation-procedure-header",
+          "props": {
+            "headline": {
+              "fr": "La procédure d’habilitation d’une MSS",
+              "en": "The MSS accreditation procedure"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "habilitation-procedure-steps",
+          "props": {
+            "html": {
+              "fr": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-6xl\"><div class=\"grid gap-6 md:grid-cols-3 items-stretch\"><div class=\"rounded-2xl border border-border bg-card p-6 flex flex-col\"><div class=\"w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4\">1</div><h3 class=\"font-display text-lg font-bold mb-3 text-foreground\">Dépôt des demandes</h3><p class=\"text-sm font-semibold text-foreground mb-1\">Du 1er mars au 31 mai</p><p class=\"text-sm text-muted-foreground mb-6 flex-1\">La demande d’habilitation se dépose sur la plateforme démarches-simplifiées.fr durant la fenêtre annuelle.</p><a href=\"https://www.demarches-simplifiees.fr/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"inline-flex items-center justify-center w-full border border-border rounded-full px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors\">Accéder à la plateforme</a></div><div class=\"rounded-2xl border border-primary/30 bg-primary/5 p-6 flex flex-col\"><div class=\"w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold mb-4\">2</div><h3 class=\"font-display text-lg font-bold mb-3 text-foreground\">Réponse au cahier des charges</h3><p class=\"text-sm font-semibold text-foreground mb-1\">Arrêté du 25 avril 2023</p><p class=\"text-sm text-muted-foreground mb-6 flex-1\">Le projet doit répondre aux critères définis par le cahier des charges fixé par arrêté ministériel.</p><a href=\"https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000047558874\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"inline-flex items-center justify-center w-full border border-primary/40 text-primary rounded-full px-4 py-2 text-sm font-medium hover:bg-primary/10 transition-colors\">Consulter l’arrêté</a></div><div class=\"rounded-2xl border border-accent/30 bg-accent/5 p-6 flex flex-col\"><div class=\"w-10 h-10 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold mb-4\">3</div><h3 class=\"font-display text-lg font-bold mb-3 text-foreground\">Traitement et réponse</h3><p class=\"text-sm font-semibold text-foreground mb-1\">Délai : 2 mois</p><p class=\"text-sm text-muted-foreground flex-1\">Les réponses seront apportées dans un délai de 2 mois à compter du 31 mai par les services ARS et DRAJES.</p></div></div></div></section>",
+              "en": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-6xl\"><div class=\"grid gap-6 md:grid-cols-3 items-stretch\"><div class=\"rounded-2xl border border-border bg-card p-6 flex flex-col\"><div class=\"w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4\">1</div><h3 class=\"font-display text-lg font-bold mb-3 text-foreground\">Submitting applications</h3><p class=\"text-sm font-semibold text-foreground mb-1\">From 1 March to 31 May</p><p class=\"text-sm text-muted-foreground mb-6 flex-1\">Accreditation applications are submitted on the démarches-simplifiées.fr platform during the annual window.</p><a href=\"https://www.demarches-simplifiees.fr/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"inline-flex items-center justify-center w-full border border-border rounded-full px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors\">Go to the platform</a></div><div class=\"rounded-2xl border border-primary/30 bg-primary/5 p-6 flex flex-col\"><div class=\"w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold mb-4\">2</div><h3 class=\"font-display text-lg font-bold mb-3 text-foreground\">Meeting the specifications</h3><p class=\"text-sm font-semibold text-foreground mb-1\">Order of 25 April 2023</p><p class=\"text-sm text-muted-foreground mb-6 flex-1\">The project must meet the criteria set out in the specifications laid down by ministerial order.</p><a href=\"https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000047558874\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"inline-flex items-center justify-center w-full border border-primary/40 text-primary rounded-full px-4 py-2 text-sm font-medium hover:bg-primary/10 transition-colors\">Read the order</a></div><div class=\"rounded-2xl border border-accent/30 bg-accent/5 p-6 flex flex-col\"><div class=\"w-10 h-10 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold mb-4\">3</div><h3 class=\"font-display text-lg font-bold mb-3 text-foreground\">Review and response</h3><p class=\"text-sm font-semibold text-foreground mb-1\">Timeframe: 2 months</p><p class=\"text-sm text-muted-foreground flex-1\">The ARS and DRAJES services will respond within 2 months of 31 May.</p></div></div></div></section>"
+            }
+          }
+        },
+        {
+          "type": "categories-grid",
+          "id": "habilitation-engagements",
+          "props": {
+            "headline": {
+              "fr": "Les engagements d’une MSS habilitée",
+              "en": "Commitments of an accredited MSS"
+            },
+            "subhead": {
+              "fr": "Devenir Maison Sport-Santé, c’est s’engager durablement dans une démarche de qualité et de coopération territoriale.",
+              "en": "Becoming a Maison Sport-Santé means a lasting commitment to quality and territorial cooperation."
+            },
+            "variant": "primary",
+            "columns": 3,
+            "cards": [
+              {
+                "icon": "file-text",
+                "title": {
+                  "fr": "Respecter le cahier des charges",
+                  "en": "Comply with the specifications"
+                },
+                "subtitle": {
+                  "fr": "Cadre d’intervention, modalités de fonctionnement, rapports et bilans à transmettre, tels que précisés dans l’arrêté du 25 avril 2023.",
+                  "en": "Scope of action, operating procedures, reports and assessments to submit, as set out in the 25 April 2023 order."
+                }
+              },
+              {
+                "icon": "network",
+                "title": {
+                  "fr": "Intégrer le réseau SSBE La Réunion",
+                  "en": "Join the SSBE Réunion network"
+                },
+                "subtitle": {
+                  "fr": "Participer aux comités techniques des MSS La Réunion et contribuer à la dynamique régionale du Sport-Santé.",
+                  "en": "Take part in the Réunion MSS technical committees and contribute to the regional Sport-Health dynamic."
+                }
+              },
+              {
+                "icon": "bell",
+                "title": {
+                  "fr": "Déclarer toute modification",
+                  "en": "Report any change"
+                },
+                "subtitle": {
+                  "fr": "Signaler tout changement en lien avec l’habilitation aux services ARS et DRAJES par email.",
+                  "en": "Report any change related to the accreditation to the ARS and DRAJES services by email."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "gridLayout",
+          "id": "habilitation-rapport-annuel",
+          "props": {
+            "leftColumns": 2,
+            "rightColumns": 2,
+            "gap": 4,
+            "leftSection": {
+              "type": "html",
+              "id": "habilitation-rapport-annuel-left",
+              "props": {
+                "html": {
+                  "fr": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-xl\"><h2 class=\"font-display text-3xl font-bold mb-6 text-foreground\">Le rapport <span class=\"text-primary\">annuel</span> d’activité</h2><p class=\"text-muted-foreground leading-relaxed mb-4\">Chaque année, <strong class=\"text-foreground\">au plus tard le 30 juin</strong>, la MSS adresse à l’ARS et à la DRAJES un rapport annuel d’activité N-1 et de financement N-1.</p><p class=\"text-muted-foreground leading-relaxed mb-8\">La MSS participe également à l’évaluation du dispositif selon les protocoles mis en place par les ministères, notamment dans le cadre d’enquêtes périodiques menées par le <strong class=\"text-foreground\">Pôle Ressources National Sport Santé Bien-Être</strong>.</p><a href=\"https://pole-sante.creps-vichy.sports.gouv.fr/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"inline-flex items-center justify-center border border-border rounded-full px-6 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors\">Pôle Ressources National</a></div></section>",
+                  "en": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-xl\"><h2 class=\"font-display text-3xl font-bold mb-6 text-foreground\">The <span class=\"text-primary\">annual</span> activity report</h2><p class=\"text-muted-foreground leading-relaxed mb-4\">Every year, <strong class=\"text-foreground\">no later than 30 June</strong>, the MSS sends the ARS and DRAJES an annual report on its activity and funding for the previous year.</p><p class=\"text-muted-foreground leading-relaxed mb-8\">The MSS also takes part in evaluating the scheme according to the protocols set up by the ministries, in particular through periodic surveys carried out by the <strong class=\"text-foreground\">Pôle Ressources National Sport Santé Bien-Être</strong> (national Sport, Health and Well-being resource centre).</p><a href=\"https://pole-sante.creps-vichy.sports.gouv.fr/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"inline-flex items-center justify-center border border-border rounded-full px-6 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors\">National Resource Centre</a></div></section>"
+                }
+              }
+            },
+            "rightSection": {
+              "type": "html",
+              "id": "habilitation-rapport-annuel-right",
+              "props": {
+                "html": {
+                  "fr": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-xl\"><div class=\"rounded-2xl border border-primary/30 bg-primary/5 p-6 md:p-8\"><div class=\"flex items-center gap-2 mb-1\"><span class=\"text-xl\">📊</span><h3 class=\"font-display text-lg font-bold text-foreground\">Éléments à transmettre</h3></div><p class=\"text-sm text-muted-foreground mb-4\">Contenu du rapport annuel</p><ul class=\"space-y-2 text-sm text-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Données administratives et structure juridique</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Responsable et personne référente de la MSS</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Ressources humaines (professionnels et bénévoles, ETP, qualifications)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Territoire(s) d'intervention (périmètre, antennes, équipes mobiles)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Interventions hors les murs (lieux, nombre de bénéficiaires)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Nombre et profil des personnes accueillies (âge, sexe, publics spécifiques)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Services proposés et nombre de bénéficiaires (bilans, entretiens, séances APS/APA)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Parcours sport-santé de proximité et orientations</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Partenaires de la MSS</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Bilan financier</span></li></ul></div></div></section>",
+                  "en": "<section class=\"relative py-16 px-4\"><div class=\"container mx-auto max-w-xl\"><div class=\"rounded-2xl border border-primary/30 bg-primary/5 p-6 md:p-8\"><div class=\"flex items-center gap-2 mb-1\"><span class=\"text-xl\">📊</span><h3 class=\"font-display text-lg font-bold text-foreground\">Information to provide</h3></div><p class=\"text-sm text-muted-foreground mb-4\">Contents of the annual report</p><ul class=\"space-y-2 text-sm text-foreground\"><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Administrative data and legal structure</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>MSS manager and contact person</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Human resources (professionals and volunteers, FTEs, qualifications)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Area(s) covered (scope, branches, mobile teams)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Outreach activities (locations, number of beneficiaries)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Number and profile of people welcomed (age, sex, specific groups)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Services offered and number of beneficiaries (assessments, interviews, physical activity / adapted physical activity sessions)</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Local sport-health pathways and referrals</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>MSS partners</span></li><li class=\"flex items-start gap-2\"><span class=\"text-primary\">✅</span><span>Financial report</span></li></ul></div></div></section>"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "habilitation-termes-header",
+          "props": {
+            "headline": {
+              "fr": "Aux termes de l’habilitation",
+              "en": "At the end of the accreditation"
+            }
+          }
+        },
+        {
+          "type": "accordion",
+          "id": "habilitation-termes-accordion",
+          "props": {
+            "allowMultiple": true,
+            "items": [
+              {
+                "title": {
+                  "fr": "📊 Bilan global d’activité",
+                  "en": "📊 Overall activity report"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>La MSS adresse à l’ARS et à la DRAJES un bilan global de son activité et de son financement durant son habilitation, au plus tard 8 mois avant la date d’expiration de l’habilitation.</p>",
+                  "en": "<p>The MSS sends the ARS and DRAJES an overall report of its activity and funding during its accreditation, no later than 8 months before the accreditation expires.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "📝 Demande de renouvellement",
+                  "en": "📝 Renewal application"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>La MSS adresse à l’ARS et à la DRAJES un bilan global de son activité et de son financement durant son habilitation, au plus tard 8 mois avant la date d’expiration de l’habilitation.</p><div class=\"mt-4 pt-4 border-t border-border flex items-start gap-2 text-sm\"><span>⚠️</span><span>Attention : à défaut du respect de ces délais, une nouvelle demande d’habilitation (au lieu d’un renouvellement) devra être déposée, et vous ne pourrez plus vous prévaloir de votre habilitation « Maison Sport-Santé » jusqu’à obtention de la nouvelle habilitation.</span></div>",
+                  "en": "<p>The MSS sends the ARS and DRAJES an overall report of its activity and funding during its accreditation, no later than 8 months before the accreditation expires.</p><div class=\"mt-4 pt-4 border-t border-border flex items-start gap-2 text-sm\"><span>⚠️</span><span>Warning: failure to meet these deadlines will require a new accreditation application (instead of a renewal), and you will no longer be able to use the “Maison Sport-Santé” accreditation until the new one is obtained.</span></div>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "⏳ En cas de manquement au cahier des charges",
+                  "en": "⏳ In case of non-compliance with the specifications"
+                },
+                "defaultOpen": false,
+                "content": {
+                  "fr": "<p>En cas de manquement au cahier des charges ou aux autres dispositions législatives et réglementaires applicables aux Maisons Sport-Santé, la MSS devra présenter des observations écrites dans un délai d’un mois à réception de la demande de l’ARS et de la DRAJES de La Réunion.</p>",
+                  "en": "<p>In case of non-compliance with the specifications or other legislative and regulatory provisions applicable to Maisons Sport-Santé, the MSS must submit written observations within one month of receiving the request from the ARS and DRAJES of Réunion.</p>"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "habilitation-textes-header",
+          "props": {
+            "headline": {
+              "fr": "Textes de référence",
+              "en": "Reference texts"
+            }
+          }
+        },
+        {
+          "type": "cards",
+          "id": "habilitation-textes-cards",
+          "props": {
+            "columns": 2,
+            "layout": "grid",
+            "items": [
+              {
+                "icon": "file-text",
+                "title": {
+                  "fr": "Décret 2023-170",
+                  "en": "Decree 2023-170"
+                },
+                "text": {
+                  "fr": "Décret du 8 mars 2023 fixant la procédure d’habilitation des Maisons Sport-Santé.",
+                  "en": "Decree of 8 March 2023 setting the accreditation procedure for Sport-Health Houses."
+                },
+                "href": "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000047278435",
+                "target": "_blank"
+              },
+              {
+                "icon": "clipboard-check",
+                "title": {
+                  "fr": "Cahier des charges",
+                  "en": "Specifications"
+                },
+                "text": {
+                  "fr": "Arrêté ministériel du 25 avril 2023 fixant les critères d’habilitation des MSS.",
+                  "en": "Ministerial order of 25 April 2023 setting the MSS accreditation criteria."
+                },
+                "href": "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000047558874",
+                "target": "_blank"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
       "path": "/creneaux",
       "title": {
         "fr": "Trouvez un créneau - Sport Santé Bien-être",
@@ -2072,14 +2797,6 @@
                 },
                 "href": "/",
                 "variant": "primary"
-              },
-              {
-                "label": {
-                  "fr": "Voir les équipements sportifs",
-                  "en": "View sports facilities"
-                },
-                "href": "/equipements-sportifs",
-                "variant": "outline"
               }
             ]
           }
@@ -2657,6 +3374,9 @@
         "en": "Training"
       },
       "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
       "sections": [
         {
           "type": "hero-quick-access",
@@ -2741,6 +3461,9 @@
         "en": "Training offers - Sport Health Wellness"
       },
       "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
       "sections": [
         {
           "type": "searchHeader",
@@ -4262,6 +4985,9 @@
         "en": "Resources"
       },
       "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
       "seo": {
         "title": {
           "fr": "Ressources — Sport Santé Bien-être La Réunion",
@@ -5339,18 +6065,6 @@
       ],
       "editModals": [
         {
-          "editModal": "edit-sport-sante-bienetre-mss",
-          "editModalMatch": {
-            "type": "NGO"
-          },
-          "when": {
-            "or": [
-              { "field": "sourceKeys", "op": "contains", "value": "sportSanteBienetre" },
-              { "field": "reference.costum", "op": "contains", "value": "sportSanteBienetre" }
-            ]
-          }
-        },
-        {
           "editModal": "edit-sport-sante-bienetre-organizations",
           "when": {
             "or": [
@@ -5960,6 +6674,7 @@
               "fields": [
                 "name",
                 "thematique",
+                "profil_avatar",
                 "description",
                 "documents",
                 "urls",
@@ -6000,8 +6715,30 @@
             { "value": "guides", "label": { "fr": "Guides & référentiels", "en": "Guides & frameworks" } },
             { "value": "outils", "label": { "fr": "Outils pratiques", "en": "Practical tools" } },
             { "value": "communication", "label": { "fr": "Communication", "en": "Communication" } },
-            { "value": "financements", "label": { "fr": "Financements & aides", "en": "Funding & support" } }
+            { "value": "financements", "label": { "fr": "Financements & aides", "en": "Funding & support" } },
+            { "value": "dispositifs", "label": { "fr": "Dispositifs", "en": "Devices" } },
+            { "value": "prescription", "label": { "fr": "Prescription", "en": "Prescription" } }
           ]
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Photo de profil",
+            "en": "Profile picture"
+          },
+          "info": {
+            "fr": "Visible uniquement pour la thématique « Dispositifs ».",
+            "en": "Shown only for the \"Devices\" topic."
+          },
+          "widgetProps": {
+            "shape": "square",
+            "aspect": 1
+          },
+          "visibleIf": {
+            "field": "thematique",
+            "op": "eq",
+            "value": "dispositifs"
+          }
         },
         "description": {
           "widget": "markdown",
@@ -6017,16 +6754,16 @@
         "documents": {
           "widget": "file",
           "label": {
-            "fr": "Fichier PDF",
-            "en": "PDF file"
+            "fr": "Fichiers PDF",
+            "en": "PDF files"
           },
           "info": {
-            "fr": "PDF uploadé (10 Mo max) — ou renseigner un lien web ci-dessous.",
-            "en": "Uploaded PDF (10 MB max) — or provide a web link below."
+            "fr": "PDF uploadés (10 Mo max chacun, jusqu'à 2) — ou renseigner un lien web ci-dessous.",
+            "en": "Uploaded PDFs (10 MB max each, up to 2) — or provide a web link below."
           },
           "widgetProps": {
             "contentKey": "file",
-            "maxItems": 1,
+            "maxItems": 2,
             "accept": "application/pdf"
           },
           "renderOnly": true
@@ -6091,6 +6828,10 @@
       "scope": {
         "slugFrom": "carrier"
       },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
       "mutation": {
         "entityType": "poi",
         "inject": {
@@ -6133,6 +6874,15 @@
       "entityType": "organizations",
       "collection": "organizations",
       "costumSlug": "sportSanteBienetre",
+      "icon": "building-2",
+      "identity": {
+        "type": "Cooperative"
+      },
+      "scope": {
+        "slugFrom": "constant",
+        "constant": "sportSanteBienetre"
+      },
+      "validateFn": "validate:addressComplete",
       "layout": {
         "kind": "wizard",
         "validatePerStep": true,
@@ -6141,11 +6891,6 @@
         "header": "gradient"
       },
       "serializeGroups": {
-        "telephone": {
-          "serverKey": "telephone",
-          "read": "telephone:read",
-          "write": "telephone:write"
-        },
         "address": {
           "serverKey": "address",
           "read": "address:read",
@@ -6154,23 +6899,37 @@
       },
       "sections": [
         {
-          "id": "identite",
+          "id": "structure",
           "label": {
-            "fr": "Identité",
-            "en": "Identity"
+            "fr": "Votre structure",
+            "en": "Your structure"
           },
           "icon": "building-2",
           "groups": [
             {
               "columns": 1,
               "fields": [
-                "name"
+                "siren",
+                "name",
+                "sigle"
               ]
             },
             {
-              "columns": 2,
+              "columns": 1,
               "fields": [
-                "sigle",
+                "affiliate",
+                "affiliateTo"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "mss"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
                 "thematic"
               ]
             },
@@ -6189,23 +6948,27 @@
           ]
         },
         {
-          "id": "coordonnees",
+          "id": "contact",
           "label": {
             "fr": "Coordonnées",
-            "en": "Contact"
+            "en": "Contact details"
           },
           "icon": "map-pin",
           "groups": [
             {
               "columns": 1,
               "fields": [
-                "address"
+                "address",
+                "addressCountry",
+                "addressLocality",
+                "postalCode",
+                "streetAddress"
               ]
             },
             {
               "columns": 2,
               "fields": [
-                "telephone",
+                "mobile",
                 "email"
               ]
             },
@@ -6220,28 +6983,46 @@
               "fields": [
                 "socialLinks"
               ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "openingHours"
-              ]
             }
           ]
         },
         {
-          "id": "juridique",
+          "id": "legal",
           "label": {
-            "fr": "Juridique",
-            "en": "Legal"
+            "fr": "Forme juridique",
+            "en": "Legal form"
           },
           "icon": "scale",
           "groups": [
             {
-              "columns": 2,
+              "columns": 1,
               "fields": [
-                "legalStatus",
-                "siren"
+                "legalStatus"
+              ]
+            },
+            {
+              "columns": 1,
+              "label": {
+                "fr": "Pièces justificatives",
+                "en": "Supporting documents"
+              },
+              "fields": [
+                "statusFile",
+                "responsableCivilePro"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "statusPrimaire",
+                "statusSecondaire",
+                "statusCommunale"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "autreDescription"
               ]
             }
           ]
@@ -6249,23 +7030,23 @@
         {
           "id": "representant",
           "label": {
-            "fr": "Représentant",
-            "en": "Representative"
+            "fr": "Votre représentant",
+            "en": "Your representative"
           },
           "icon": "user",
           "groups": [
             {
-              "columns": 2,
+              "columns": 1,
               "fields": [
-                "representativeCivility",
                 "representativeTitle"
               ]
             },
             {
               "columns": 2,
               "fields": [
-                "representativeFirstName",
-                "representativeName"
+                "representativeCivility",
+                "representativeName",
+                "representativeFirstName"
               ]
             },
             {
@@ -6280,8 +7061,8 @@
         {
           "id": "responsable",
           "label": {
-            "fr": "Responsable",
-            "en": "Manager"
+            "fr": "Personne chargée du dossier SSBE",
+            "en": "Person in charge of the SSBE file"
           },
           "icon": "user-check",
           "groups": [
@@ -6292,17 +7073,17 @@
               ]
             },
             {
-              "columns": 2,
+              "columns": 1,
               "fields": [
-                "personInChargeCivility",
                 "personInChargeTitle"
               ]
             },
             {
               "columns": 2,
               "fields": [
-                "personInChargeFirstName",
-                "personInChargeName"
+                "personInChargeCivility",
+                "personInChargeName",
+                "personInChargeFirstName"
               ]
             },
             {
@@ -6316,21 +7097,181 @@
         }
       ],
       "fields": {
-        "telephone": {
-          "widget": "tel",
-          "group": "telephone",
-                              "label": {
-            "fr": "Téléphone",
-            "en": "Phone"
+        "siren": {
+          "widget": "text",
+          "write": "coerce:orUndef",
+          "label": {
+            "fr": "Siren / Siret",
+            "en": "Siren / Siret"
+          },
+          "placeholder": {
+            "fr": "123 456 789 00012",
+            "en": "123 456 789 00012"
           }
         },
-        "_telSlot": {
-          "widget": "hidden",
-          "group": "telephone"
+        "name": {
+          "widget": "text",
+          "required": true,
+          "rules": {
+            "minLength": 3
+          },
+          "label": {
+            "fr": "Nom",
+            "en": "Name"
+          },
+          "placeholder": {
+            "fr": "Nom de la structure",
+            "en": "Structure name"
+          },
+          "info": {
+            "fr": "Le nom qui sera affiché publiquement",
+            "en": "The name that will be publicly displayed"
+          }
         },
-        "_telRest": {
+        "sigle": {
+          "widget": "text",
+          "label": {
+            "fr": "Sigle de l'association",
+            "en": "Association acronym"
+          }
+        },
+        "affiliate": {
+          "widget": "switch",
+          "write": "coerce:boolString",
+          "label": {
+            "fr": "Structure affiliée à une union, à une fédération ou à un réseau",
+            "en": "Structure affiliated with a union, federation or network"
+          }
+        },
+        "affiliateTo": {
+          "widget": "text",
+          "label": {
+            "fr": "Affiliation",
+            "en": "Affiliation"
+          },
+          "placeholder": {
+            "fr": "Nom de l'union, fédération ou réseau",
+            "en": "Name of the union, federation or network"
+          },
+          "visibleIf": {
+            "field": "affiliate",
+            "op": "truthy"
+          }
+        },
+        "mss": {
+          "widget": "switch",
+          "write": "coerce:boolString",
+          "label": {
+            "fr": "La structure est une maison sport santé (MSS)",
+            "en": "The structure is also a Sport-Health House (MSS)"
+          }
+        },
+        "thematic": {
+          "widget": "multiselect",
+          "type": "array",
+          "label": {
+            "fr": "Domaine d'intervention (plusieurs choix possibles)",
+            "en": "Field of action (multiple choices possible)"
+          },
+          "enum": [
+            {
+              "value": "Sport",
+              "label": {
+                "fr": "Sport",
+                "en": "Sport"
+              }
+            },
+            {
+              "value": "Santé/prévention",
+              "label": {
+                "fr": "Santé/prévention",
+                "en": "Health / Prevention"
+              }
+            },
+            {
+              "value": "Social",
+              "label": {
+                "fr": "Social",
+                "en": "Social"
+              }
+            },
+            {
+              "value": "Insertion",
+              "label": {
+                "fr": "Insertion",
+                "en": "Integration"
+              }
+            },
+            {
+              "value": "Culture",
+              "label": {
+                "fr": "Culture",
+                "en": "Culture"
+              }
+            },
+            {
+              "value": "Tourisme",
+              "label": {
+                "fr": "Tourisme",
+                "en": "Tourism"
+              }
+            },
+            {
+              "value": "Handicap",
+              "label": {
+                "fr": "Handicap",
+                "en": "Disability"
+              }
+            },
+            {
+              "value": "Scolaire 1er degré - Maternelle et primaire",
+              "label": {
+                "fr": "Scolaire 1er degré - Maternelle et primaire",
+                "en": "Primary school - Nursery and primary"
+              }
+            },
+            {
+              "value": "Scolaire 2nd degré - Collège et Lycée",
+              "label": {
+                "fr": "Scolaire 2nd degré - Collège et Lycée",
+                "en": "Secondary school - Middle and high school"
+              }
+            },
+            {
+              "value": "Périscolaire 1er degré - Maternelle et primaire",
+              "label": {
+                "fr": "Périscolaire 1er degré - Maternelle et primaire",
+                "en": "After-school - Nursery and primary"
+              }
+            },
+            {
+              "value": "Périscolaire 2nd degré - Collège et Lycée",
+              "label": {
+                "fr": "Périscolaire 2nd degré - Collège et Lycée",
+                "en": "After-school - Middle and high school"
+              }
+            }
+          ]
+        },
+        "tags": {
           "widget": "hidden",
-          "group": "telephone"
+          "type": "array",
+          "write": "structure:tagsFromThematic"
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Votre logo",
+            "en": "Your logo"
+          },
+          "info": {
+            "fr": "Format carré recommandé · PNG ou JPG",
+            "en": "Square format recommended · PNG or JPG"
+          },
+          "widgetProps": {
+            "shape": "square",
+            "aspect": 1
+          }
         },
         "description": {
           "widget": "textarea",
@@ -6342,8 +7283,11 @@
         "address": {
           "widget": "location",
           "label": {
-            "fr": "Adresse",
-            "en": "Address"
+            "fr": "Adresse du siège",
+            "en": "Registered office address"
+          },
+          "widgetProps": {
+            "required": true
           }
         },
         "geo": {
@@ -6360,23 +7304,68 @@
         },
         "addressCountry": {
           "widget": "hidden",
-          "group": "address"
+          "group": "address",
+          "required": true,
+          "default": "RE"
         },
         "addressLocality": {
           "widget": "hidden",
-          "group": "address"
+          "group": "address",
+          "required": true
         },
         "postalCode": {
           "widget": "hidden",
-          "group": "address"
+          "group": "address",
+          "required": true
         },
         "streetAddress": {
           "widget": "hidden",
-          "group": "address"
+          "group": "address",
+          "required": true
         },
         "localityId": {
           "widget": "hidden",
           "group": "address"
+        },
+        "mobile": {
+          "widget": "tel",
+          "read": "structure:mobileRead",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          },
+          "placeholder": {
+            "fr": "0692 22 90 80",
+            "en": "0692 22 90 80"
+          }
+        },
+        "email": {
+          "widget": "text",
+          "write": "coerce:orUndef",
+          "label": {
+            "fr": "Adresse e-mail de contact",
+            "en": "Contact email"
+          },
+          "placeholder": {
+            "fr": "@email.com",
+            "en": "@email.com"
+          },
+          "widgetProps": {
+            "inputType": "email"
+          }
+        },
+        "link": {
+          "widget": "text",
+          "read": "structure:linkRead",
+          "write": "coerce:orUndef",
+          "label": {
+            "fr": "Site web",
+            "en": "Website"
+          },
+          "placeholder": {
+            "fr": "https://monsite.re",
+            "en": "https://mysite.re"
+          }
         },
         "socialLinks": {
           "widget": "fieldArray",
@@ -6407,32 +7396,16 @@
                     "label": "Facebook"
                   },
                   {
-                    "value": "twitter",
-                    "label": "Twitter / X"
-                  },
-                  {
                     "value": "instagram",
                     "label": "Instagram"
-                  },
-                  {
-                    "value": "linkedin",
-                    "label": "LinkedIn"
                   },
                   {
                     "value": "youtube",
                     "label": "YouTube"
                   },
                   {
-                    "value": "mastodon",
-                    "label": "Mastodon"
-                  },
-                  {
-                    "value": "telegram",
-                    "label": "Telegram"
-                  },
-                  {
-                    "value": "discord",
-                    "label": "Discord"
+                    "value": "linkedin",
+                    "label": "LinkedIn"
                   }
                 ]
               },
@@ -6447,25 +7420,672 @@
             ]
           }
         },
-        "openingHours": {
-          "widget": "openingHours",
+        "legalStatus": {
+          "widget": "select",
+          "required": true,
           "label": {
-            "fr": "Horaires d’ouverture",
-            "en": "Opening hours"
+            "fr": "Forme juridique",
+            "en": "Legal form"
+          },
+          "info": {
+            "fr": "Choisir la forme juridique",
+            "en": "Choose the legal form"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "enum": [
+            {
+              "value": "Association loi 1901",
+              "label": {
+                "fr": "Association loi 1901",
+                "en": "Association (1901 law)"
+              }
+            },
+            {
+              "value": "Collectivité",
+              "label": {
+                "fr": "Collectivité",
+                "en": "Local authority"
+              }
+            },
+            {
+              "value": "Groupement d'Intérêt Publique",
+              "label": {
+                "fr": "Groupement d'Intérêt Publique",
+                "en": "Public interest group"
+              }
+            },
+            {
+              "value": "Entreprise, Auto-entrepreneur, Sisa",
+              "label": {
+                "fr": "Entreprise, Auto-entrepreneur, Sisa",
+                "en": "Company, Self-employed, Sisa"
+              }
+            },
+            {
+              "value": "Établissement public",
+              "label": {
+                "fr": "Établissement public",
+                "en": "Public establishment"
+              }
+            },
+            {
+              "value": "Autre",
+              "label": {
+                "fr": "Autre",
+                "en": "Other"
+              }
+            }
+          ]
+        },
+        "statusFile": {
+          "widget": "file",
+          "label": {
+            "fr": "Statuts",
+            "en": "Bylaws"
+          },
+          "visibleIf": {
+            "field": "legalStatus",
+            "op": "eq",
+            "value": "Entreprise, Auto-entrepreneur, Sisa"
+          },
+          "widgetProps": {
+            "contentKey": "statusFile",
+            "docType": "file",
+            "maxItems": 1,
+            "accept": ".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx,.odt,.ods,.odp,.csv"
           }
         },
-        "profil_avatar": {
-          "widget": "image",
+        "responsableCivilePro": {
+          "widget": "file",
           "label": {
-            "fr": "Logo",
-            "en": "Logo"
+            "fr": "Responsabilité civile pro (année en cours) ou attestation d'assurance",
+            "en": "Professional liability (current year) or insurance certificate"
+          },
+          "visibleIf": {
+            "field": "legalStatus",
+            "op": "in",
+            "value": [
+              "Association loi 1901",
+              "Groupement d'Intérêt Publique",
+              "Entreprise, Auto-entrepreneur, Sisa"
+            ]
+          },
+          "widgetProps": {
+            "contentKey": "responsableCivilePro",
+            "docType": "file",
+            "maxItems": 1,
+            "accept": ".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx,.odt,.ods,.odp,.csv"
           }
         },
-        "siren": {
+        "statusPrimaire": {
+          "widget": "select",
+          "label": {
+            "fr": "Vous êtes ?",
+            "en": "You are?"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "visibleIf": {
+            "field": "legalStatus",
+            "op": "eq",
+            "value": "Collectivité"
+          },
+          "enum": [
+            {
+              "value": "Région",
+              "label": {
+                "fr": "Région",
+                "en": "Region"
+              }
+            },
+            {
+              "value": "Département",
+              "label": {
+                "fr": "Département",
+                "en": "Department"
+              }
+            },
+            {
+              "value": "Intercommunalité",
+              "label": {
+                "fr": "Intercommunalité",
+                "en": "Inter-municipality"
+              }
+            },
+            {
+              "value": "Commune",
+              "label": {
+                "fr": "Commune",
+                "en": "Municipality"
+              }
+            }
+          ]
+        },
+        "statusSecondaire": {
+          "widget": "select",
+          "label": {
+            "fr": "Vous êtes ?",
+            "en": "You are?"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "visibleIf": {
+            "and": [
+              {
+                "field": "legalStatus",
+                "op": "eq",
+                "value": "Collectivité"
+              },
+              {
+                "field": "statusPrimaire",
+                "op": "eq",
+                "value": "Intercommunalité"
+              }
+            ]
+          },
+          "enum": [
+            {
+              "value": "TCO",
+              "label": "TCO"
+            },
+            {
+              "value": "CIREST",
+              "label": "CIREST"
+            },
+            {
+              "value": "CINOR",
+              "label": "CINOR"
+            },
+            {
+              "value": "CIVIS",
+              "label": "CIVIS"
+            },
+            {
+              "value": "CASUD",
+              "label": "CASUD"
+            }
+          ]
+        },
+        "statusCommunale": {
+          "widget": "select",
+          "label": {
+            "fr": "Vous êtes ?",
+            "en": "You are?"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "visibleIf": {
+            "and": [
+              {
+                "field": "legalStatus",
+                "op": "eq",
+                "value": "Collectivité"
+              },
+              {
+                "field": "statusPrimaire",
+                "op": "eq",
+                "value": "Commune"
+              }
+            ]
+          },
+          "enum": [
+            {
+              "value": "97400 - ST DENIS",
+              "label": "97400 - ST DENIS"
+            },
+            {
+              "value": "97410 - ST PIERRE",
+              "label": "97410 - ST PIERRE"
+            },
+            {
+              "value": "97411 - ST PAUL",
+              "label": "97411 - ST PAUL"
+            },
+            {
+              "value": "97412 - BRAS PANON",
+              "label": "97412 - BRAS PANON"
+            },
+            {
+              "value": "97413 - CILAOS",
+              "label": "97413 - CILAOS"
+            },
+            {
+              "value": "97414 - ENTRE DEUX",
+              "label": "97414 - ENTRE DEUX"
+            },
+            {
+              "value": "97416 - ST LEU",
+              "label": "97416 - ST LEU"
+            },
+            {
+              "value": "97417 - ST DENIS",
+              "label": "97417 - ST DENIS"
+            },
+            {
+              "value": "97418 - LE TAMPON",
+              "label": "97418 - LE TAMPON"
+            },
+            {
+              "value": "97419 - LA POSSESSION",
+              "label": "97419 - LA POSSESSION"
+            },
+            {
+              "value": "97420 - LE PORT",
+              "label": "97420 - LE PORT"
+            },
+            {
+              "value": "97421 - ST LOUIS",
+              "label": "97421 - ST LOUIS"
+            },
+            {
+              "value": "97422 - ST PAUL",
+              "label": "97422 - ST PAUL"
+            },
+            {
+              "value": "97423 - ST PAUL",
+              "label": "97423 - ST PAUL"
+            },
+            {
+              "value": "97424 - ST LEU",
+              "label": "97424 - ST LEU"
+            },
+            {
+              "value": "97425 - LES AVIRONS",
+              "label": "97425 - LES AVIRONS"
+            },
+            {
+              "value": "97426 - LES TROIS BASSINS",
+              "label": "97426 - LES TROIS BASSINS"
+            },
+            {
+              "value": "97427 - L ETANG SALE",
+              "label": "97427 - L ETANG SALE"
+            },
+            {
+              "value": "97429 - PETITE ILE",
+              "label": "97429 - PETITE ILE"
+            },
+            {
+              "value": "97430 - LE TAMPON",
+              "label": "97430 - LE TAMPON"
+            },
+            {
+              "value": "97431 - LA PLAINE DES PALMISTES",
+              "label": "97431 - LA PLAINE DES PALMISTES"
+            },
+            {
+              "value": "97432 - ST PIERRE",
+              "label": "97432 - ST PIERRE"
+            },
+            {
+              "value": "97433 - SALAZIE",
+              "label": "97433 - SALAZIE"
+            },
+            {
+              "value": "97434 - ST PAUL",
+              "label": "97434 - ST PAUL"
+            },
+            {
+              "value": "97435 - ST PAUL",
+              "label": "97435 - ST PAUL"
+            },
+            {
+              "value": "97436 - ST LEU",
+              "label": "97436 - ST LEU"
+            },
+            {
+              "value": "97437 - ST BENOIT",
+              "label": "97437 - ST BENOIT"
+            },
+            {
+              "value": "97438 - STE MARIE",
+              "label": "97438 - STE MARIE"
+            },
+            {
+              "value": "97439 - STE ROSE",
+              "label": "97439 - STE ROSE"
+            },
+            {
+              "value": "97440 - ST ANDRE",
+              "label": "97440 - ST ANDRE"
+            },
+            {
+              "value": "97441 - STE SUZANNE",
+              "label": "97441 - STE SUZANNE"
+            },
+            {
+              "value": "97450 - ST LOUIS",
+              "label": "97450 - ST LOUIS"
+            },
+            {
+              "value": "97460 - ST PAUL",
+              "label": "97460 - ST PAUL"
+            },
+            {
+              "value": "97470 - ST BENOIT",
+              "label": "97470 - ST BENOIT"
+            },
+            {
+              "value": "97480 - ST JOSEPH",
+              "label": "97480 - ST JOSEPH"
+            },
+            {
+              "value": "97490 - ST DENIS",
+              "label": "97490 - ST DENIS"
+            }
+          ]
+        },
+        "autreDescription": {
           "widget": "text",
           "label": {
-            "fr": "N° SIREN",
-            "en": "SIREN number"
+            "fr": "À préciser",
+            "en": "Please specify"
+          },
+          "visibleIf": {
+            "field": "legalStatus",
+            "op": "eq",
+            "value": "Autre"
+          }
+        },
+        "representativeTitle": {
+          "widget": "valueSelect",
+          "type": "string",
+          "default": "",
+          "read": "coerce:string",
+          "widgetProps": {
+            "multiple": false,
+            "creatable": true
+          },
+          "enum": [
+            {
+              "value": "Président",
+              "label": {
+                "fr": "Président",
+                "en": "President"
+              }
+            },
+            {
+              "value": "Maire.sse",
+              "label": {
+                "fr": "Maire.sse",
+                "en": "Mayor"
+              }
+            },
+            {
+              "value": "Chef.fe d'entreprise",
+              "label": {
+                "fr": "Chef.fe d'entreprise",
+                "en": "Company director"
+              }
+            },
+            {
+              "value": "Chef.fe d'établissement",
+              "label": {
+                "fr": "Chef.fe d'établissement",
+                "en": "Head of establishment"
+              }
+            },
+            {
+              "value": "Autre...",
+              "label": {
+                "fr": "Autre...",
+                "en": "Other..."
+              }
+            }
+          ],
+          "label": {
+            "fr": "Titre (fonction, statut...)",
+            "en": "Title (role, status...)"
+          },
+          "info": {
+            "fr": "Choisissez dans la liste ou saisissez directement",
+            "en": "Pick from the list or type it directly"
+          }
+        },
+        "representativeCivility": {
+          "widget": "select",
+          "label": {
+            "fr": "Civilité",
+            "en": "Title"
+          },
+          "enum": [
+            {
+              "value": "M.",
+              "label": {
+                "fr": "M.",
+                "en": "Mr."
+              }
+            },
+            {
+              "value": "Mme",
+              "label": {
+                "fr": "Mme",
+                "en": "Mrs."
+              }
+            }
+          ]
+        },
+        "representativeName": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Last name"
+          },
+          "placeholder": {
+            "fr": "Nom",
+            "en": "Last name"
+          }
+        },
+        "representativeFirstName": {
+          "widget": "text",
+          "label": {
+            "fr": "Prénom",
+            "en": "First name"
+          },
+          "placeholder": {
+            "fr": "Prénom",
+            "en": "First name"
+          }
+        },
+        "representativeEmail": {
+          "widget": "text",
+          "write": "coerce:orUndef",
+          "label": {
+            "fr": "E-mail",
+            "en": "Email"
+          },
+          "placeholder": {
+            "fr": "mail@exemple.com",
+            "en": "mail@example.com"
+          },
+          "widgetProps": {
+            "inputType": "email"
+          }
+        },
+        "representativeTelephone": {
+          "widget": "text",
+          "write": "coerce:orUndef",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          },
+          "placeholder": {
+            "fr": "0692001122",
+            "en": "0692001122"
+          },
+          "widgetProps": {
+            "inputType": "tel"
+          }
+        },
+        "responsableSameAsRepresent": {
+          "widget": "switch",
+          "write": "coerce:boolString",
+          "label": {
+            "fr": "Le représentant est aussi la personne en charge du dossier SSBE",
+            "en": "The representative is also the person in charge of the SSBE file"
+          }
+        },
+        "personInChargeTitle": {
+          "widget": "valueSelect",
+          "type": "string",
+          "default": "",
+          "read": "coerce:string",
+          "widgetProps": {
+            "multiple": false,
+            "creatable": true
+          },
+          "enum": [
+            {
+              "value": "Président",
+              "label": {
+                "fr": "Président",
+                "en": "President"
+              }
+            },
+            {
+              "value": "Maire.sse",
+              "label": {
+                "fr": "Maire.sse",
+                "en": "Mayor"
+              }
+            },
+            {
+              "value": "Chef.fe d'entreprise",
+              "label": {
+                "fr": "Chef.fe d'entreprise",
+                "en": "Company director"
+              }
+            },
+            {
+              "value": "Chef.fe d'établissement",
+              "label": {
+                "fr": "Chef.fe d'établissement",
+                "en": "Head of establishment"
+              }
+            },
+            {
+              "value": "Autre...",
+              "label": {
+                "fr": "Autre...",
+                "en": "Other..."
+              }
+            }
+          ],
+          "label": {
+            "fr": "Titre (fonction, statut...)",
+            "en": "Title (role, status...)"
+          },
+          "info": {
+            "fr": "Choisissez dans la liste ou saisissez directement",
+            "en": "Pick from the list or type it directly"
+          },
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
+        },
+        "personInChargeCivility": {
+          "widget": "select",
+          "label": {
+            "fr": "Civilité",
+            "en": "Title"
+          },
+          "enum": [
+            {
+              "value": "M.",
+              "label": {
+                "fr": "M.",
+                "en": "Mr."
+              }
+            },
+            {
+              "value": "Mme",
+              "label": {
+                "fr": "Mme",
+                "en": "Mrs."
+              }
+            }
+          ],
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
+        },
+        "personInChargeName": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Last name"
+          },
+          "placeholder": {
+            "fr": "Nom",
+            "en": "Last name"
+          },
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
+        },
+        "personInChargeFirstName": {
+          "widget": "text",
+          "label": {
+            "fr": "Prénom",
+            "en": "First name"
+          },
+          "placeholder": {
+            "fr": "Prénom",
+            "en": "First name"
+          },
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
+        },
+        "personInChargeEmail": {
+          "widget": "text",
+          "write": "coerce:orUndef",
+          "label": {
+            "fr": "E-mail",
+            "en": "Email"
+          },
+          "placeholder": {
+            "fr": "mail@exemple.com",
+            "en": "mail@example.com"
+          },
+          "widgetProps": {
+            "inputType": "email"
+          },
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
+        },
+        "personInChargeTelephone": {
+          "widget": "text",
+          "write": "coerce:orUndef",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          },
+          "placeholder": {
+            "fr": "0692001122",
+            "en": "0692001122"
+          },
+          "widgetProps": {
+            "inputType": "tel"
+          },
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
           }
         },
         "infoGeneral": {
@@ -6476,13 +8096,6 @@
             "en": "General information"
           }
         },
-        "name": {
-          "widget": "text",
-          "label": {
-            "fr": "Nom de la structure",
-            "en": "Structure name"
-          }
-        },
         "similarLink": {
           "widget": "hidden",
           "type": "object",
@@ -6491,285 +8104,40 @@
             "en": "Similar link"
           }
         },
-        "sigle": {
-          "widget": "text",
-          "label": {
-            "fr": "Sigle",
-            "en": "Acronym"
-          }
-        },
-        "affiliate": {
-          "widget": "switch",
-          "write": "coerce:boolOuiNon",
-          "label": {
-            "fr": "Affiliate",
-            "en": "Affiliate"
-          }
-        },
-        "affiliateTo": {
-          "widget": "text",
-          "label": {
-            "fr": "Affiliate to",
-            "en": "Affiliated to"
-          }
-        },
-        "thematic": {
-          "widget": "multiselect",
-          "label": {
-            "fr": "Thématiques",
-            "en": "Topics"
-          },
-          "enum": [
-            {
-              "value": "Sport",
-              "label": "Sport"
-            },
-            {
-              "value": "Santé/prévention",
-              "label": "Santé/prévention"
-            },
-            {
-              "value": "Social",
-              "label": "Social"
-            },
-            {
-              "value": "Insertion",
-              "label": "Insertion"
-            },
-            {
-              "value": "Culture",
-              "label": "Culture"
-            },
-            {
-              "value": "Tourisme",
-              "label": "Tourisme"
-            },
-            {
-              "value": "Handicap",
-              "label": "Handicap"
-            },
-            {
-              "value": "Scolaire 1er degré - Maternelle et primaire",
-              "label": "Scolaire 1er degré - Maternelle et primaire"
-            },
-            {
-              "value": "Scolaire 2nd degré - Collège et Lycée",
-              "label": "Scolaire 2nd degré - Collège et Lycée"
-            },
-            {
-              "value": "Périscolaire 1er degré - Maternelle et primaire",
-              "label": "Périscolaire 1er degré - Maternelle et primaire"
-            },
-            {
-              "value": "Périscolaire 2nd degré - Collège et Lycée",
-              "label": "Périscolaire 2nd degré - Collège et Lycée"
-            }
-          ]
-        },
-        "image": {
-          "widget": "text",
-          "label": {
-            "fr": "Image",
-            "en": "Image"
-          }
-        },
-        "mobile": {
-          "widget": "text",
-          "label": {
-            "fr": "Mobile",
-            "en": "Mobile"
-          }
-        },
         "formLocality": {
-          "widget": "text",
+          "widget": "hidden",
           "label": {
             "fr": "Localité",
             "en": "Locality"
           }
         },
         "location": {
-          "widget": "text",
+          "widget": "hidden",
+          "type": "object",
           "label": {
             "fr": "Localisation",
             "en": "Location"
           }
         },
-        "email": {
-          "widget": "text",
+        "image": {
+          "widget": "hidden",
           "label": {
-            "fr": "E-mail",
-            "en": "Email"
-          }
-        },
-        "link": {
-          "widget": "text",
-          "label": {
-            "fr": "Site web",
-            "en": "Website"
+            "fr": "Image",
+            "en": "Image"
           }
         },
         "youtube": {
-          "widget": "text",
+          "widget": "hidden",
           "label": {
             "fr": "Youtube",
             "en": "YouTube"
           }
         },
         "linkedin": {
-          "widget": "text",
+          "widget": "hidden",
           "label": {
             "fr": "Linkedin",
             "en": "LinkedIn"
-          }
-        },
-        "legalStatus": {
-          "widget": "text",
-          "label": {
-            "fr": "Statut juridique",
-            "en": "Legal status"
-          }
-        },
-        "autreDescription": {
-          "widget": "text",
-          "label": {
-            "fr": "Autre description",
-            "en": "Other description"
-          }
-        },
-        "representativeTitle": {
-          "widget": "select",
-          "label": {
-            "fr": "Fonction",
-            "en": "Role"
-          },
-          "enum": [
-            {
-              "value": "Président",
-              "label": "Président"
-            },
-            {
-              "value": "Maire.sse",
-              "label": "Maire.sse"
-            },
-            {
-              "value": "Chef.fe d'entreprise",
-              "label": "Chef.fe d'entreprise"
-            },
-            {
-              "value": "Chef.fe d'établissement",
-              "label": "Chef.fe d'établissement"
-            },
-            {
-              "value": "Autre...",
-              "label": "Autre..."
-            }
-          ]
-        },
-        "representativeCivility": {
-          "widget": "text",
-          "label": {
-            "fr": "Civilité",
-            "en": "Title"
-          }
-        },
-        "representativeName": {
-          "widget": "text",
-          "label": {
-            "fr": "Nom",
-            "en": "Last name"
-          }
-        },
-        "representativeFirstName": {
-          "widget": "text",
-          "label": {
-            "fr": "Prénom",
-            "en": "First name"
-          }
-        },
-        "representativeEmail": {
-          "widget": "text",
-          "label": {
-            "fr": "E-mail",
-            "en": "Email"
-          }
-        },
-        "representativeTelephone": {
-          "widget": "text",
-          "label": {
-            "fr": "Téléphone",
-            "en": "Phone"
-          }
-        },
-        "responsableSameAsRepresent": {
-          "widget": "switch",
-          "write": "coerce:boolString",
-          "label": {
-            "fr": "Le responsable est le représentant légal",
-            "en": "Person in charge is the legal representative"
-          }
-        },
-        "personInChargeTitle": {
-          "widget": "select",
-          "label": {
-            "fr": "Fonction",
-            "en": "Role"
-          },
-          "enum": [
-            {
-              "value": "Président",
-              "label": "Président"
-            },
-            {
-              "value": "Maire.sse",
-              "label": "Maire.sse"
-            },
-            {
-              "value": "Chef.fe d'entreprise",
-              "label": "Chef.fe d'entreprise"
-            },
-            {
-              "value": "Chef.fe d'établissement",
-              "label": "Chef.fe d'établissement"
-            },
-            {
-              "value": "Autre...",
-              "label": "Autre..."
-            }
-          ]
-        },
-        "personInChargeCivility": {
-          "widget": "text",
-          "label": {
-            "fr": "Civilité",
-            "en": "Title"
-          }
-        },
-        "personInChargeName": {
-          "widget": "text",
-          "label": {
-            "fr": "Nom",
-            "en": "Last name"
-          }
-        },
-        "personInChargeFirstName": {
-          "widget": "text",
-          "label": {
-            "fr": "Prénom",
-            "en": "First name"
-          }
-        },
-        "personInChargeEmail": {
-          "widget": "text",
-          "label": {
-            "fr": "E-mail",
-            "en": "Email"
-          }
-        },
-        "personInChargeTelephone": {
-          "widget": "text",
-          "label": {
-            "fr": "Téléphone",
-            "en": "Phone"
           }
         }
       },
@@ -6781,34 +8149,75 @@
           },
           "edit": {
             "fr": "Modifier la structure",
-            "en": "Edit structure"
+            "en": "Edit the structure"
+          }
+        },
+        "description": {
+          "add": {
+            "fr": "Référencez votre structure et la personne qui porte le projet.",
+            "en": "Register your structure and the person leading the project."
+          },
+          "edit": {
+            "fr": "Mettre à jour les informations de la structure.",
+            "en": "Update the structure information."
           }
         },
         "submitLabel": {
           "add": {
             "fr": "Créer la structure",
-            "en": "Create structure"
+            "en": "Create the structure"
           },
           "edit": {
-            "fr": "Enregistrer",
-            "en": "Save"
+            "fr": "Enregistrer les modifications",
+            "en": "Save changes"
           }
         },
-        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden"
+        "gradientHeader": true,
+        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden",
+        "validationFailedKey": {
+          "fr": "Veuillez corriger les champs en erreur (voir les onglets signalés).",
+          "en": "Please fix the highlighted fields (see the flagged tabs)."
+        },
+        "navText": {
+          "next": {
+            "fr": "Suivant →",
+            "en": "Next →"
+          },
+          "previous": {
+            "fr": "← Précédent",
+            "en": "← Previous"
+          },
+          "cancel": {
+            "fr": "Annuler",
+            "en": "Cancel"
+          },
+          "stepTemplate": {
+            "stepKey": {
+              "fr": "Étape",
+              "en": "Step"
+            },
+            "ofKey": {
+              "fr": "sur",
+              "en": "of"
+            }
+          }
+        }
       },
       "image": {
         "field": "profil_avatar",
         "existingUrlFrom": "image:profilUrl"
       },
       "mutation": {
+        "entityType": "organizations",
         "payloadEmitEmptyOnEdit": true,
         "inject": {
+          "dropEmptyEmail": true,
           "extraFields": {
-                           "type": "NGO",
-                           "statusActor": "En cours"
-                         }
+            "type": "Cooperative",
+            "role": "admin",
+            "statusActor": "En cours"
+          }
         },
-        "entityType": "organizations",
         "successKey": {
           "add": "toast.add.organizationSuccess",
           "edit": "toast.profile.updateSuccess"
@@ -6818,13 +8227,18 @@
           "edit": "toast.profile.updateError"
         },
         "errorContext": {
-          "add": "EntityFormModal · ADD_ORGANIZATION",
-          "edit": "EntityFormModal · UPDATE_ORGANIZATION"
+          "add": "EntityFormModal · ADD_STRUCTURE",
+          "edit": "EntityFormModal · EDIT_STRUCTURE"
         },
         "invalidateFn": {
           "fn": "invalidate:standard",
           "params": {
-            "userList": "organizations"
+            "userList": "organizations",
+            "searchKeys": [
+              "searchCostumStatic",
+              "searchCostumStaticMapAll",
+              "admin-organizations"
+            ]
           }
         }
       }
@@ -7023,601 +8437,6 @@
             "searchKeys": [
               "blog:sportSanteBienetre"
             ]
-          }
-        }
-      }
-    },
-    "sport-sante-bienetre-mss": {
-      "id": "sport-sante-bienetre-mss",
-      "entityType": "organizations",
-      "collection": "organizations",
-      "costumSlug": "sportSanteBienetre",
-      "layout": {
-        "kind": "wizard",
-        "validatePerStep": true,
-        "stepper": "tabs",
-        "progress": "bar",
-        "header": "gradient"
-      },
-      "serializeGroups": {
-        "telephone": {
-          "serverKey": "telephone",
-          "read": "telephone:read",
-          "write": "telephone:write"
-        },
-        "address": {
-          "serverKey": "address",
-          "read": "address:read",
-          "write": "address:write"
-        }
-      },
-      "sections": [
-        {
-          "id": "presentation",
-          "label": {
-            "fr": "Présentation",
-            "en": "About"
-          },
-          "icon": "building-2",
-          "groups": [
-            {
-              "columns": 2,
-              "fields": [
-                "name",
-                "sigle"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "profil_avatar"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "shortDescription"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "description"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "tags"
-              ]
-            }
-          ]
-        },
-        {
-          "id": "contact",
-          "label": {
-            "fr": "Contact",
-            "en": "Contact"
-          },
-          "icon": "map-pin",
-          "groups": [
-            {
-              "columns": 2,
-              "fields": [
-                "telephone",
-                "email"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "link"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "address"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "openingHours"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "socialLinks"
-              ]
-            }
-          ]
-        },
-        {
-          "id": "representative",
-          "label": {
-            "fr": "Représentant",
-            "en": "Representative"
-          },
-          "icon": "user",
-          "groups": [
-            {
-              "columns": 2,
-              "fields": [
-                "representativeCivility",
-                "representativeTitle"
-              ]
-            },
-            {
-              "columns": 2,
-              "fields": [
-                "representativeFirstName",
-                "representativeName"
-              ]
-            },
-            {
-              "columns": 2,
-              "fields": [
-                "representativeEmail",
-                "representativeTelephone"
-              ]
-            }
-          ]
-        },
-        {
-          "id": "manager",
-          "label": {
-            "fr": "Responsable",
-            "en": "Manager"
-          },
-          "icon": "user-check",
-          "groups": [
-            {
-              "columns": 1,
-              "fields": [
-                "responsableSameAsRepresent"
-              ]
-            },
-            {
-              "columns": 2,
-              "fields": [
-                "personInChargeCivility",
-                "personInChargeTitle"
-              ]
-            },
-            {
-              "columns": 2,
-              "fields": [
-                "personInChargeFirstName",
-                "personInChargeName"
-              ]
-            },
-            {
-              "columns": 2,
-              "fields": [
-                "personInChargeEmail",
-                "personInChargeTelephone"
-              ]
-            }
-          ]
-        }
-      ],
-      "fields": {
-        "telephone": {
-          "widget": "tel",
-          "group": "telephone",
-                              "label": {
-            "fr": "Téléphone",
-            "en": "Phone"
-          }
-        },
-        "_telSlot": {
-          "widget": "hidden",
-          "group": "telephone"
-        },
-        "_telRest": {
-          "widget": "hidden",
-          "group": "telephone"
-        },
-        "description": {
-          "widget": "textarea",
-          "label": {
-            "fr": "Description",
-            "en": "Description"
-          }
-        },
-        "tags": {
-          "widget": "tags",
-          "label": {
-            "fr": "Mots-clés",
-            "en": "Tags"
-          }
-        },
-        "address": {
-          "widget": "location",
-          "label": {
-            "fr": "Adresse",
-            "en": "Address"
-          }
-        },
-        "geo": {
-          "widget": "hidden",
-          "type": "object",
-          "writeOnly": true,
-          "write": "geo:write"
-        },
-        "geoPosition": {
-          "widget": "hidden",
-          "type": "object",
-          "writeOnly": true,
-          "write": "geoPosition:write"
-        },
-        "addressCountry": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "addressLocality": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "postalCode": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "streetAddress": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "localityId": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "socialLinks": {
-          "widget": "fieldArray",
-          "label": {
-            "fr": "Réseaux sociaux",
-            "en": "Social networks"
-          },
-          "read": "social:read",
-          "write": "social:write",
-          "path": "socialNetwork",
-          "clear": "",
-          "widgetProps": {
-            "addLabel": {
-              "fr": "Ajouter un réseau social",
-              "en": "Add a social network"
-            },
-            "itemFields": [
-              {
-                "name": "platform",
-                "kind": "select",
-                "label": {
-                  "fr": "Plateforme",
-                  "en": "Platform"
-                },
-                "options": [
-                  {
-                    "value": "facebook",
-                    "label": "Facebook"
-                  },
-                  {
-                    "value": "twitter",
-                    "label": "Twitter / X"
-                  },
-                  {
-                    "value": "instagram",
-                    "label": "Instagram"
-                  },
-                  {
-                    "value": "linkedin",
-                    "label": "LinkedIn"
-                  },
-                  {
-                    "value": "youtube",
-                    "label": "YouTube"
-                  },
-                  {
-                    "value": "mastodon",
-                    "label": "Mastodon"
-                  },
-                  {
-                    "value": "telegram",
-                    "label": "Telegram"
-                  },
-                  {
-                    "value": "discord",
-                    "label": "Discord"
-                  }
-                ]
-              },
-              {
-                "name": "url",
-                "kind": "text",
-                "placeholder": {
-                  "fr": "https://...",
-                  "en": "https://..."
-                }
-              }
-            ]
-          }
-        },
-        "openingHours": {
-          "widget": "openingHours",
-          "label": {
-            "fr": "Horaires d'ouverture",
-            "en": "Opening hours"
-          }
-        },
-        "profil_avatar": {
-          "widget": "image",
-          "label": {
-            "fr": "Logo",
-            "en": "Logo"
-          }
-        },
-        "name": {
-          "widget": "text",
-          "label": {
-            "fr": "Nom de la structure",
-            "en": "Organization name"
-          }
-        },
-        "similarLink": {
-          "widget": "hidden",
-          "type": "object",
-          "label": {
-            "fr": "Lien similaire",
-            "en": "Similar link"
-          }
-        },
-        "sigle": {
-          "widget": "text",
-          "label": {
-            "fr": "Sigle",
-            "en": "Acronym"
-          }
-        },
-        "image": {
-          "widget": "text",
-          "label": {
-            "fr": "Image",
-            "en": "Image"
-          }
-        },
-        "mobile": {
-          "widget": "text",
-          "label": {
-            "fr": "Mobile",
-            "en": "Mobile"
-          }
-        },
-        "email": {
-          "widget": "text",
-          "label": {
-            "fr": "Email",
-            "en": "Email"
-          }
-        },
-        "formLocality": {
-          "widget": "text",
-          "label": {
-            "fr": "Localité",
-            "en": "Locality"
-          }
-        },
-        "location": {
-          "widget": "text",
-          "label": {
-            "fr": "Localisation",
-            "en": "Location"
-          }
-        },
-        "link": {
-          "widget": "text",
-          "label": {
-            "fr": "Site web",
-            "en": "Website"
-          }
-        },
-        "shortDescription": {
-          "widget": "text",
-          "label": {
-            "fr": "Description courte",
-            "en": "Short description"
-          }
-        },
-        "representativeTitle": {
-          "widget": "select",
-          "label": {
-            "fr": "Titre / fonction",
-            "en": "Title / role"
-          },
-          "enum": [
-            {
-              "value": "Président",
-              "label": "Président"
-            },
-            {
-              "value": "Maire.sse",
-              "label": "Maire.sse"
-            },
-            {
-              "value": "Chef.fe d'entreprise",
-              "label": "Chef.fe d'entreprise"
-            },
-            {
-              "value": "Chef.fe d'établissement",
-              "label": "Chef.fe d'établissement"
-            },
-            {
-              "value": "Autre...",
-              "label": "Autre..."
-            }
-          ]
-        },
-        "representativeCivility": {
-          "widget": "text",
-          "label": {
-            "fr": "Civilité",
-            "en": "Civility"
-          }
-        },
-        "representativeName": {
-          "widget": "text",
-          "label": {
-            "fr": "Nom",
-            "en": "Last name"
-          }
-        },
-        "representativeFirstName": {
-          "widget": "text",
-          "label": {
-            "fr": "Prénom",
-            "en": "First name"
-          }
-        },
-        "representativeEmail": {
-          "widget": "text",
-          "label": {
-            "fr": "Email",
-            "en": "Email"
-          }
-        },
-        "representativeTelephone": {
-          "widget": "text",
-          "label": {
-            "fr": "Téléphone",
-            "en": "Phone"
-          }
-        },
-        "responsableSameAsRepresent": {
-          "widget": "switch",
-          "write": "coerce:boolString",
-          "label": {
-            "fr": "Identique au représentant légal",
-            "en": "Same as legal representative"
-          }
-        },
-        "personInChargeTitle": {
-          "widget": "select",
-          "label": {
-            "fr": "Titre / fonction",
-            "en": "Title / role"
-          },
-          "enum": [
-            {
-              "value": "Président",
-              "label": "Président"
-            },
-            {
-              "value": "Maire.sse",
-              "label": "Maire.sse"
-            },
-            {
-              "value": "Chef.fe d'entreprise",
-              "label": "Chef.fe d'entreprise"
-            },
-            {
-              "value": "Chef.fe d'établissement",
-              "label": "Chef.fe d'établissement"
-            },
-            {
-              "value": "Autre...",
-              "label": "Autre..."
-            }
-          ]
-        },
-        "personInChargeCivility": {
-          "widget": "text",
-          "label": {
-            "fr": "Civilité",
-            "en": "Civility"
-          }
-        },
-        "personInChargeName": {
-          "widget": "text",
-          "label": {
-            "fr": "Nom",
-            "en": "Last name"
-          }
-        },
-        "personInChargeFirstName": {
-          "widget": "text",
-          "label": {
-            "fr": "Prénom",
-            "en": "First name"
-          }
-        },
-        "personInChargeEmail": {
-          "widget": "text",
-          "label": {
-            "fr": "Email",
-            "en": "Email"
-          }
-        },
-        "personInChargeTelephone": {
-          "widget": "text",
-          "label": {
-            "fr": "Téléphone",
-            "en": "Phone"
-          }
-        }
-      },
-      "chrome": {
-        "title": {
-          "add": {
-            "fr": "Créer une Maison Sport-Santé",
-            "en": "Create a Sport & Health House"
-          },
-          "edit": {
-            "fr": "Modifier la Maison Sport-Santé",
-            "en": "Edit the Sport & Health House"
-          }
-        },
-        "submitLabel": {
-          "add": {
-            "fr": "Créer",
-            "en": "Create"
-          },
-          "edit": {
-            "fr": "Enregistrer",
-            "en": "Save"
-          }
-        },
-        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden"
-      },
-      "image": {
-        "field": "profil_avatar",
-        "existingUrlFrom": "image:profilUrl"
-      },
-      "mutation": {
-        "payloadEmitEmptyOnEdit": true,
-        "navigateOnSuccess": false,
-        "entityType": "organizations",
-        "inject": {
-          "extraFields": {
-                           "type": "NGO",
-                           "role": "admin",
-                           "statusActor": "Validé"
-                         }
-        },
-        "successKey": {
-          "add": "toast.add.organizationSuccess",
-          "edit": "toast.profile.updateSuccess"
-        },
-        "errorKey": {
-          "add": "toast.add.organizationError",
-          "edit": "toast.profile.updateError"
-        },
-        "errorContext": {
-          "add": "EntityFormModal · ADD_ORGANIZATION",
-          "edit": "EntityFormModal · UPDATE_ORGANIZATION"
-        },
-        "invalidateFn": {
-          "fn": "invalidate:standard",
-          "params": {
-            "userList": "organizations"
           }
         }
       }
@@ -8252,11 +9071,19 @@
           }
         },
         "parent": {
-          "widget": "tags",
-          "write": "omitEmpty",
+          "widget": "finder",
+          "type": "object",
+          "read": "entityRef:read",
+          "write": "entityRef:write",
           "label": {
-            "fr": "Formation parente",
-            "en": "Parent training"
+            "fr": "Centre de formation",
+            "en": "Training centre"
+          },
+          "widgetProps": {
+            "searchTypes": [
+              "organizations"
+            ],
+            "multiple": true
           }
         },
         "module": {
@@ -8892,11 +9719,19 @@
           }
         },
         "parent": {
-          "widget": "tags",
-          "write": "omitEmpty",
+          "widget": "finder",
+          "type": "object",
+          "read": "entityRef:read",
+          "write": "entityRef:write",
           "label": {
-            "fr": "Équipement parent",
-            "en": "Parent facility"
+            "fr": "Organisme(s)",
+            "en": "Organisation(s)"
+          },
+          "widgetProps": {
+            "searchTypes": [
+              "organizations"
+            ],
+            "multiple": true
           }
         },
         "hebergement": {
@@ -9151,25 +9986,23 @@
               "mode": "statusField",
               "field": "statusActor",
               "states": [
-                {
-                  "value": "En attente",
-                  "tone": "pending"
-                },
-                {
-                  "value": "En cours",
-                  "tone": "progress"
-                },
-                {
-                  "value": "Validé",
-                  "tone": "positive"
-                },
-                {
-                  "value": "Refusé",
-                  "tone": "negative"
-                }
+                { "value": "En attente", "tone": "pending" },
+                { "value": "En cours", "tone": "progress" },
+                { "value": "Validé", "tone": "positive" },
+                { "value": "Refusé", "tone": "negative" }
               ]
             }
-          },
+          }
+        ]
+      },
+      {
+        "id": "maisons-sport-sante",
+        "label": {
+          "fr": "Maisons Sport Santé",
+          "en": "Sport-Health Houses"
+        },
+        "access": "siteAdmin",
+        "sections": [
           {
             "type": "resource",
             "entityType": "organizations",
@@ -9179,7 +10012,7 @@
             },
             "source": {
               "defaultFilters": {
-                "type": "NGO"
+                "mss": "true"
               },
               "defaultSortBy": {
                 "name": 1
@@ -9218,28 +10051,19 @@
               "export",
               "delete"
             ],
-            "create": "add-sport-sante-bienetre-mss",
+            "create": "add-sport-sante-bienetre-organizations",
+            "createDefaults": {
+              "mss": true
+            },
             "edit": "inherit",
             "status": {
               "mode": "statusField",
               "field": "statusActor",
               "states": [
-                {
-                  "value": "En attente",
-                  "tone": "pending"
-                },
-                {
-                  "value": "En cours",
-                  "tone": "progress"
-                },
-                {
-                  "value": "Validé",
-                  "tone": "positive"
-                },
-                {
-                  "value": "Refusé",
-                  "tone": "negative"
-                }
+                { "value": "En attente", "tone": "pending" },
+                { "value": "En cours", "tone": "progress" },
+                { "value": "Validé", "tone": "positive" },
+                { "value": "Refusé", "tone": "negative" }
               ]
             }
           }

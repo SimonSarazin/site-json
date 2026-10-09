@@ -2,7 +2,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { lazy } from "vite-preload";
 import { Link, useSearchParams } from "react-router";
 import { endOfMonth, startOfMonth } from "date-fns";
-import { ArrowRight, CalendarDays, ChevronDown, List, Loader2, MapPin, RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronDown, FileDown, List, Loader2, MapPin, RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { EVENT_TYPES, type SearchEntity } from "@communecter/cocolight-api-client";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,8 @@ import { partitionByTime } from "./lib/partitionByTime";
 import { distinctTags, filterByTags } from "./lib/eventTags";
 import { readAgendaUrl, writeAgendaUrl, type AgendaFilterDefaults, type AgendaMode } from "./lib/agendaUrlParams";
 import type { AgendaSectionProps, AgendaTab } from "./schema";
+import { useGeoShapesWarmup } from "@/lib/geoShapes";
+import { useAgendaPdfExport } from "./hooks/useAgendaPdfExport";
 
 // Défaut STABLE (référence constante) : un `tabs = [...]` en défaut de destructuration crée un
 // NOUVEAU tableau à chaque render → `urlDefaults` instable → effet de sync URL en boucle (re-render
@@ -74,7 +76,15 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     mapView = "map",
     map: mapConf,
     maxWidth,
+    showPdfExport = false,
   } = props;
+
+  // Contours géographiques : préchauffage des couches `load: "page"`/`"idle"` (no-op sinon) — la
+  // vue carte de l'agenda réutilise SearchMapWrapper, donc les couches y sont peintes pareil.
+  useGeoShapesWarmup(mapConf?.shapes);
+
+  const { exportPdf, isExporting, canExport } = useAgendaPdfExport();
+
   // `maxWidth` absent → `container` historique (page agenda dédiée). Présent →
   // échelon explicite, pour qu'un teaser s'aligne sur les sections voisines.
   const containerClass = maxWidth
@@ -354,6 +364,19 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
                 </Button>
               )}
             </div>
+          )}
+          {/* Scope le costum PORTEUR entier (cf. `useAgendaPdfExport`), jamais les filtres de CETTE
+              vue — masqué tant que le costum n'est pas résolu (`canExport`), plutôt que désactivé :
+              un bouton qui ne marchera jamais avant l'hydratation serait trompeur. */}
+          {showPdfExport && canExport && (
+            <Button variant="outline" size="sm" onClick={exportPdf} disabled={isExporting}>
+              {isExporting ? (
+                <Loader2 className="h-4 w-4 animate-spin sm:mr-1" />
+              ) : (
+                <FileDown className="h-4 w-4 sm:mr-1" />
+              )}
+              <span className="hidden sm:inline">{t("pdfExport.button")}</span>
+            </Button>
           )}
         </div>
       </div>

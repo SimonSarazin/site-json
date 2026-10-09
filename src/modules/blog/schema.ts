@@ -62,6 +62,29 @@ export const ArticleFeedSectionSchema = z.object({
      * « magazine », comportement historique partagé par tous les costums).
      */
     fullWidth: z.boolean().optional(),
+    /**
+     * Densité de la carte : `"compact"` réduit son gabarit — image très courte (4/1 en `default`, 16/9
+     * en `poster`, contre 16/9 et 3/4 par défaut) — et resserre la grille à DEUX colonnes dès le mobile
+     * (quatre à partir de `lg:`, plafond du parc), pour que plusieurs rangées tiennent à l'écran sans
+     * défiler. Titre, extrait et tags restent tous affichés, ramenés à une seule ligne chacun : c'est la
+     * hauteur de l'image qui porte le resserrement, pas la disparition de l'information. Défaut : le
+     * gabarit éditorial historique (une colonne sur mobile, image pleine hauteur). Lu par les cartes
+     * `default` et `poster` ; sans effet sur `cardVariant: "compact"` (déjà une ligne dense par
+     * construction).
+     */
+    density: z.enum(["compact"]).optional(),
+    /**
+     * Mode de navigation du fil : `"infinite"` (défaut historique, scroll infini + bouton
+     * « charger plus ») ou `"pages"` (pagination numérotée classique, `pageSize` par page).
+     * Le backend ne pagine QUE par curseur (`page.next()` — un `indexMin` manuel est ignoré,
+     * cf. `buildSearchPayload`) : il est donc impossible de sauter directement à une page N
+     * jamais chargée, il faut avoir chargé N-1 avant elle. En mode `"pages"`, les pages déjà
+     * parcourues restent en cache (retour instantané) ; la SEULE page jamais visitée atteignable
+     * est la suivante immédiate, qui déclenche exactement UN `next()` — jamais de chaîne de
+     * fetch ni de saut plus loin, l'UI ne propose d'ailleurs jamais plus de boutons que les pages
+     * déjà chargées + une.
+     */
+    pagination: z.enum(["infinite", "pages"]).optional(),
   }),
 });
 export type ArticleFeedSectionProps = z.infer<typeof ArticleFeedSectionSchema>["props"];
@@ -123,6 +146,14 @@ export const ArticleTeaserSectionSchema = z.object({
     background: z.string().optional(),
     /** Couleur d'accent FIXE (hex) du badge/boutons, ex. `#4ecdc4` — sans valeur, repli sur `primary` (thème). */
     accentColor: z.string().optional(),
+    /** Encre posée SUR `accentColor` (pastille de titre, boutons). Défaut blanc — à fournir dès que l'accent
+     *  est clair : blanc sur la turquoise de parent62 ne tient que 1,93:1, contre 5,68:1 pour son marine. */
+    accentTextColor: z.string().optional(),
+    /** Pastille de titre : `badge` (défaut, étiquette inclinée) ou `pill` — la même en arrondi droit, pour
+     *  une page dont toutes les bandes portent le même repère. */
+    headlineStyle: z.enum(["badge", "pill"]).optional(),
+    /** Largeur max du contenu (défaut `4xl`). À aligner sur les bandes voisines. */
+    maxWidth: z.enum(["3xl", "4xl", "5xl", "6xl", "7xl", "full"]).optional(),
   }),
 });
 export type ArticleTeaserSectionProps = z.infer<typeof ArticleTeaserSectionSchema>["props"];

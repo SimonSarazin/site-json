@@ -208,6 +208,14 @@ export interface CoFormInputField {
    */
   isAdminOnly?: boolean | string;
   conditionalDisplay?: ConditionalDisplay;
+  /**
+   * Champ masqué depuis le back-office CoForm. Le rendu legacy pose la classe CSS `hide` sur le
+   * conteneur de l'input (`step_v2.php:256`) ; côté site le champ est simplement écarté du
+   * formulaire. Sert à retirer un champ de la saisie SANS toucher aux réponses déjà enregistrées
+   * sous sa clé — c'est la voie de sortie d'un champ remplacé par un autre.
+   * Stocké tantôt en booléen, tantôt en chaîne "true" selon l'ancienneté de la saisie.
+   */
+  hide?: boolean | string;
   [key: string]: unknown;
 }
 
@@ -1133,12 +1141,20 @@ export interface FinderConfig {
   excludeFilters?: FinderFilter[];
   /** Recherche globale (true) ou sourcée (false) */
   notSourceKey: boolean;
+  /**
+   * Périmètre EXPLICITE (clés de costum) — prioritaire sur `notSourceKey` quand
+   * il est non vide. Posé par l'appelant (ex. `PlacesListView` via `placeKind`),
+   * jamais lu depuis le form.
+   */
+  sourceKey?: string[];
   /** Chercher parmi mes contacts */
   myContacts: boolean;
   /** Initialiser avec l'utilisateur connecté */
   initCurrentUser: boolean;
   /** Label de l'élément recherché (ex: "Organisation", "Tiers-lieu") */
   elementLabel: string;
+  /** Titre de la modale, déjà traduit — prioritaire sur « Rechercher un {{label}} ». */
+  title?: string;
   /** Texte du bouton de recherche */
   buttonLabel: string;
   /** Placeholder du champ de recherche */

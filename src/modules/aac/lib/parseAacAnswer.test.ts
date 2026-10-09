@@ -151,6 +151,27 @@ describe("parseAacAnswer — formes du listing", () => {
     }
   });
 
+  /**
+   * Le listing porte `user` en ID BRUT (chaîne), là où la fiche détail reçoit ce
+   * champ REMANIÉ en entité d'affichage par `FindAnsweredByIdAction` (une
+   * organisation sur un commun porté par une orga). `resolveAnswerAuthorId`
+   * couvre les deux formes ; sans `authorId`, l'annuaire ne pourrait pas
+   * distinguer le commun de son auteur et seul un admin y supprimerait quoi que
+   * ce soit.
+   */
+  it("l'auteur est résolu depuis le listing — c'est lui qui ouvre la suppression", () => {
+    const [id, row] = Object.entries(capture.results)[0];
+    const commun = parseAacAnswer(row, { fields: FIELDS });
+    expect(commun.id).toBe(id);
+    expect(commun.authorId).toBe(row.user);
+    expect(typeof commun.authorId).toBe("string");
+  });
+
+  it("un commun sans déposant connu n'attribue d'auteur à personne", () => {
+    const commun = parseAacAnswer({ _id: { $id: "x" }, answers: {} }, { fields: FIELDS });
+    expect(commun.authorId).toBeUndefined();
+  });
+
   it("`user_count` ne dit PAS les membres d'une plateforme — d'où `fields.users`", () => {
     // Le motif qui justifie le rôle : `user_count` recopie la
     // taille de `links.contributors`, tandis que l'appartenance plateforme vit

@@ -12,14 +12,22 @@ import { useAuthModal } from "@/modules/auth";
 import { toast } from "sonner";
 import { useFollowEntity, useUnfollowEntity } from "@/modules/profil/actions/mutations/relationship";
 import { useT } from "@/hooks/useT";
-import type { SearchCardProps } from "../../schema";
+import type { SearchCardProps, TagColorsConf } from "../../schema";
+import { decorateItemTags } from "../../lib/colorBy";
+import { toStringArray } from "@/helpers/toStringArray";
 
 export interface CardProfileCardConfig {
   showDescription?: boolean;
   showAddress?: boolean;
   /** Bloc de compteurs (projets liés). Absent = affiché — cf. `CardConfSchema.showStats`. */
   showStats?: boolean;
+  /** Boutons « Contacter » / « Suivre ». Absent = affichés — cf. `CardConfSchema.showActions`. */
+  showActions?: boolean;
+  /** Chips affichées avant « +N » — défaut 3 (carte compacte), cf. `CardConfSchema.tagLimit`. */
+  tagLimit?: number;
   detailsMode?: "drawer" | "dialog" | "link";
+  /** Chips de tags : masquage des tags techniques, couleurs — cf. `TagColorsConfSchema`. */
+  tagColors?: TagColorsConf;
 }
 
 export interface CardProfileProps {
@@ -69,7 +77,16 @@ export default function CardProfile({
   const rawDescription = serverData?.shortDescription || serverData?.description;
   const description = typeof rawDescription === "string" ? rawDescription : null;
   const address = serverData?.address;
-  const tags = serverData?.tags || [];
+  // Chips de tags : `card.tagColors` masque les tags techniques (`hideTags`/`hidePrefixes`) et colore
+  // les tags mappés — le pipeline partagé de toutes les cartes (`decorateItemTags`). Un annuaire filtré
+  // sur un tag n'a pas à le répéter sur chaque carte. Sans conf, les tags passent tels quels.
+  const tagColors = card?.tagColors;
+  const { tags, displayTags } = useMemo(
+    () => ({ tags: toStringArray(serverData?.tags), displayTags: decorateItemTags(serverData?.tags, serverData, tagColors) }),
+    [serverData, tagColors],
+  );
+  // 3 chips : le défaut historique de cette carte (compacte), `card.tagLimit` pour en montrer plus.
+  const tagLimit = card?.tagLimit ?? 3;
 
   let isAdmin = false;
   let isContributor = false;
@@ -100,6 +117,7 @@ export default function CardProfile({
   const showDescription = card?.showDescription !== false;
   const showAddress = card?.showAddress !== false;
   const showStats = card?.showStats !== false;
+  const showActions = card?.showActions !== false;
   const detailsMode = card?.detailsMode || "drawer";
 
   const [isFollowingState, setIsFollowingState] = useState(isFollowing);
@@ -202,21 +220,31 @@ export default function CardProfile({
             </div>
           )}
 
+          {/* Tags tous MASQUÉS par la conf ≠ fiche sans tag : dans le premier cas on ne dit rien. */}
+          {(displayTags.length > 0 || tags.length === 0) && (
           <div className="flex flex-wrap gap-1 justify-center">
-            {tags.length > 0 ? (
+            {displayTags.length > 0 ? (
               <>
-                {tags.slice(0, 3).map((tag: string, i: number) => (
+                {displayTags.slice(0, tagLimit).map(({ tag, label, cssColor }, i) => (
                   <Badge
                     key={i}
                     variant="outline"
                     className="text-[10px] sm:text-xs bg-primary/10 text-primary border-primary/20"
+                    title={tag}
                   >
-                    {tag}
+                    {cssColor && (
+                      <span
+                        aria-hidden
+                        className="mr-1 inline-block h-2 w-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: cssColor }}
+                      />
+                    )}
+                    {label}
                   </Badge>
                 ))}
-                {tags.length > 3 && (
+                {displayTags.length > tagLimit && (
                   <Badge variant="outline" className="text-[10px] sm:text-xs">
-                    +{tags.length - 3}
+                    +{displayTags.length - tagLimit}
                   </Badge>
                 )}
               </>
@@ -224,6 +252,7 @@ export default function CardProfile({
               <span className="text-[10px] sm:text-xs text-muted-foreground">{t("Aucun tag")}</span>
             )}
           </div>
+          )}
 
           {showStats && (
             <div className="flex gap-4 text-center">
@@ -234,7 +263,7 @@ export default function CardProfile({
             </div>
           )}
 
-          {!isMe && (
+          {showActions && !isMe && (
             <div className="flex gap-2 w-full">
               <Button
                 variant="outline"

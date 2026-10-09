@@ -63,6 +63,15 @@ export const ProfileHeaderSectionSchema = z.object({
   addConfig: AddConfigSchema,
   addDropdownLabel: LocalizedString.optional(),
   showEmailButton: z.boolean().optional().default(true),
+  /**
+   * Propose « Supprimer » dans le menu d'actions, aux ADMINISTRATEURS de la fiche seulement.
+   * Défaut `false` : la suppression est DÉFINITIVE et sort l'élément de tout Communecter (ce n'est
+   * pas le « retrait » du référencement, qui se contente de le détacher du costum). Le SDK
+   * (`isAuthorOrAdmin`) puis le backend (`canDeleteElement`) restent juges en dernier ressort.
+   */
+  showDeleteButton: z.boolean().optional().default(false),
+  /** Destination après suppression — la page de la fiche n'existe plus. Défaut `/`. */
+  deleteRedirectPath: z.string().optional().default("/"),
   showReservationButton: z.boolean().optional().default(false),
   // Le bouton « Voir toutes les photos » s'affiche automatiquement quand le type de
   // profil a un onglet `gallery` (cf. ProfileHeaderComplete → lien vers cet onglet).
@@ -100,6 +109,13 @@ export const ProfileTiersLieuxInfoSectionSchema = z.object({
   showEmail: z.boolean().optional().default(true),
   showPhone: z.boolean().optional().default(true),
   showWebsite: z.boolean().optional().default(true),
+  /**
+   * Ressources réservables comptées dans l'encart (`compteRessources`) : `{ id, place, type, … }`.
+   * `id` = formulaire CoForm lu, `place` = chemin du champ, et `type` décide de CE QU'ON COMPTE :
+   * `single` (défaut) additionne la CAPACITÉ saisie (places, postes), `array` compte les lignes d'un
+   * tableau (moins son en-tête), `answer` compte les OFFRES déposées. Se tromper de mode affiche un
+   * chiffre plausible et faux — « 1 » pour un lieu qui déclare 10 places dans une seule offre.
+   */
   bedRoomPath: z.record(z.string(), z.string()).optional(),
   coworkingPath: z.record(z.string(), z.string()).optional(),
   roomPath: z.record(z.string(), z.string()).optional(),
@@ -130,6 +146,13 @@ export const ProfileTiersLieuxAboutSectionSchema = z.object({
   showAccommodation: z.boolean().optional().default(true),
   activity: z.record(z.string(), z.string()).optional(),
   equipement: z.record(z.string(), z.string()).optional(),
+  /**
+   * Ressources réservables comptées dans l'encart (`compteRessources`) : `{ id, place, type, … }`.
+   * `id` = formulaire CoForm lu, `place` = chemin du champ, et `type` décide de CE QU'ON COMPTE :
+   * `single` (défaut) additionne la CAPACITÉ saisie (places, postes), `array` compte les lignes d'un
+   * tableau (moins son en-tête), `answer` compte les OFFRES déposées. Se tromper de mode affiche un
+   * chiffre plausible et faux — « 1 » pour un lieu qui déclare 10 places dans une seule offre.
+   */
   bedRoomPath: z.record(z.string(), z.string()).optional(),
   coworkingPath: z.record(z.string(), z.string()).optional(),
   roomPath: z.record(z.string(), z.string()).optional(),
@@ -242,6 +265,8 @@ export const ProfileTagsSectionSchema = z.object({
   maxDisplay: z.number().optional().default(20),
   linkable: z.boolean().optional().default(false),
   searchOnClick: z.boolean().optional().default(false),
+  /** Tags NON affichés (égalité stricte) : un marqueur d'annuaire (`lieux-sante`) filtre, il ne se lit pas. */
+  hideTags: z.array(z.string()).optional(),
 });
 
 /**
@@ -303,6 +328,36 @@ export const ProfileToolsSectionSchema = z.object({
   title: LocalizedString.optional(),
   sticky: z.boolean().optional(),
 });
+
+/**
+ * « Mes lieux » — portage de `costum.views.custom.franceTierslieux.listOrga` (legacy) : les
+ * organisations dont le compte connecté est MEMBRE (`links.members.<id>` existe, `isInviting`
+ * absent — exactement le filtre par défaut de `getOrganizations()`, cf. `useUserOrganizations`),
+ * PAS les fiches suivies (`links.follows`/`getSubscriptions`). Onglets secondaires (actus, agenda,
+ * projets liés à ces lieux) : cf. `MyPlacesSection.tsx`.
+ *
+ * Section GÉNÉRIQUE (pas un `Profile*Section` : elle ne lit pas `useProfileEntity()`, mais `me`
+ * directement) — page dédiée, pas un onglet de profil, pour rester adressable (`/mes-lieux`) sans
+ * dépendre du slug — inconnu en config — du compte connecté. Enregistrée dans le `SectionRenderer`
+ * générique, PAS dans `ProfileSectionRenderer`.
+ */
+export const MyPlacesSectionSchema = z.object({
+  type: z.literal("my-places"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString.optional(),
+    emptyStateText: LocalizedString.optional(),
+    /**
+     * PÉRIMÈTRE costum du réseau tiers-lieux — même convention que `MembershipQueryParams.sourceKey`
+     * (`$or[source.keys ∈, reference.costum ∈]`). Sur tiers-lieux.org : `["franceTierslieux",
+     * "tierslieuxbelgique", "navigatorDesTierslieux"]` (déjà utilisé ailleurs dans cette config,
+     * ex. `hero-search`). Absent = réseau Communecter entier.
+     */
+    sourceKey: z.array(z.string()).optional(),
+  }),
+});
+export type MyPlacesSection = z.infer<typeof MyPlacesSectionSchema>;
+export type MyPlacesSectionProps = MyPlacesSection["props"];
 
 // Profile-specific sections union
 export const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
@@ -508,7 +563,34 @@ export type ProfileToolsSection = z.infer<typeof ProfileToolsSectionSchema>;
 // participants d'une entité. L'entité est résolue par `useSectionEntity`
 // (slug → fetch, sinon contexte). Rendu par le cœur générique `<EntityMembers>`.
 const MemberCardConfSchema = z.object({
-  type: z.enum(["default", "profile"]).default("default"),
+  type: z.enum(["default", "profile", "team"]).default("default"),
+  /** Disposition de la carte « équipe ». `stack` (défaut) : grand portrait 4/3 au-dessus du texte.
+   *  `row` : vignette RONDE à gauche de l'identité — pour une carte posée dans une colonne étroite
+   *  à côté d'autres blocs, où le grand portrait ferait une colonne bien plus haute que ses
+   *  voisines. Sans effet sur les autres types de carte. */
+  layout: z.enum(["stack", "row"]).optional(),
+  /** Convention de rattachement de la carte « équipe » : où pointe le bouton, et d'où viennent
+   *  ses couleurs. OBLIGATOIRE dès que `type: "team"` (gate préflight `member-team-card` ; à
+   *  l'exécution, la section échoue tôt plutôt que de rendre une carte sans lien ni couleur) —
+   *  aucun gabarit n'est codé en repli dans le module, qui reste générique : un site regroupe ses
+   *  membres par territoire, région, filière ou antenne en le déclarant ici. */
+  rattachement: z.object({
+    /** Gabarit du chemin de la page de regroupement ; `{slug}` est remplacé. */
+    cheminGabarit: z.string(),
+    /** Préfixe des variables CSS : `<prefixe>-<slug>-carte` et `<prefixe>-<slug>-encre`. */
+    prefixeCouleur: z.string(),
+  }).optional(),
+  /** Couleur FIXE de la carte « équipe », pour une section sans territoire (ex. l'animation
+   *  départementale, un contact unique) où `couleursTerritoire` retomberait sur le neutre du
+   *  thème faute de valeur à résoudre. Prime sur `rattachement` : posée, elle s'applique à TOUTES
+   *  les cartes de la section, quel que soit le territoire porté par chaque membre. `bordure`
+   *  reprend `fond` si absente (même convention que `couleursTerritoire`). Couleurs CSS libres
+   *  (`var(--jeton)` recommandé) — contraste AA à vérifier entre `fond` et `encre`. */
+  fixedColors: z.object({
+    fond: z.string(),
+    encre: z.string(),
+    bordure: z.string().optional(),
+  }).optional(),
   showDescription: z.boolean().optional().default(true),
   showAddress: z.boolean().optional().default(true),
   // Bloc de compteurs de `CardProfile` (projets liés). Absent = affiché.
@@ -516,6 +598,12 @@ const MemberCardConfSchema = z.object({
   // rendue ici, elle doit donc se piloter pareil depuis les deux sections.
   showStats: z.boolean().optional(),
   detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
+  /** Plafond de colonnes de la grille « équipe » (`type: "team"` uniquement) — au-delà de 4 cartes,
+   *  le nombre de colonnes réelles est normalement plafonné à 4 (`GRILLE_CARTES`, `EntityMembers.tsx`).
+   *  Un effectif nombreux mais voulu plus resserré (ex. 9 coordonnateurs en 3×3) le réduit ici plutôt
+   *  que de changer le défaut partagé. Sans effet sous ce nombre de cartes (le plafond ne fait
+   *  jamais remonter le nombre de colonnes, seulement le réduire). Défaut code : 4 (historique).*/
+  maxColumns: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
 }).partial();
 
 export type MemberCardConf = z.infer<typeof MemberCardConfSchema>;
@@ -532,6 +620,41 @@ export const MemberSectionSchema = z.object({
     showCard: z.boolean().optional().default(true),
     // Recherche affichée par défaut (l'ancienne section l'affichait toujours).
     search: z.boolean().optional().default(true),
+    /** Restreint la liste aux membres portant l'un de ces rôles (`links.<famille>[].roles`,
+     *  texte libre). Absent → tous les membres. Permet de composer une page équipe par
+     *  fonction : une section par rôle. */
+    roles: z.array(z.string()).optional(),
+    /** Filtre SERVEUR complémentaire sur les documents des membres, fusionné côté SDK sous le
+     *  filtre d'appartenance (ex. `{ "territoires": "Arrageois" }`). Égalité Mongo : la valeur
+     *  doit être EXACTEMENT celle stockée sur les profils. Combiné à `roles`, donne « le
+     *  coordonnateur DE ce territoire » sur les pages `/territoire/*` (SDK ≥ 1.0.194). */
+    filters: z.record(z.string(), z.unknown()).optional(),
+    /** Champs AJOUTÉS à la projection par défaut de la liste — ceux que la carte « équipe » lit
+     *  et que la liste ne ramène pas seule : `territoires`, `telephone`, `phone`, `mobile`,
+     *  `email` (`address` y est déjà). */
+    fields: z.array(z.string()).optional(),
+    /** Efface la section quand la liste finit vide, au lieu d'afficher « Aucun membre ». */
+    hideWhenEmpty: z.boolean().optional(),
+    /** Texte libre posé SOUS la liste, sauts de ligne respectés. Sert à garder, dans le même
+     *  bloc, le canal de contact d'une équipe (adresse, courriel, téléphones) que les fiches
+     *  des membres ne portent pas — et qui doit rester visible même sans membre rattaché. */
+    footerText: LocalizedString.optional(),
+    /** Texte libre posé DANS chaque carte « équipe », sous les contacts de la personne. Distinct
+     *  de `footerText` parce qu'il ne dit pas la même chose : la carte porte déjà le courriel et le
+     *  téléphone DE LA PERSONNE, lus sur sa fiche — il n'y reste à donner que ce que la fiche
+     *  ignore, typiquement le lieu de permanence de l'équipe. */
+    cardText: LocalizedString.optional(),
+    /** Classes utilitaires sur l'enveloppe de la section — espacement d'une page, surtout. */
+    className: z.string().optional(),
+    /** Barre d'onglets Membres/Admins. Défaut `true` (historique) ; `false` sur une page qui
+     *  n'expose qu'une liste filtrée. */
+    showTabs: z.boolean().optional(),
+    /** Titre interne de la liste. Défaut `true` (historique) ; `false` quand la page porte
+     *  déjà son propre titre de section. */
+    showTitle: z.boolean().optional(),
+    /** Bouton « Inviter ». Défaut `true` (historique) ; `false` sur une page vitrine. */
+    showInvite: z.boolean().optional(),
+
     card: MemberCardConfSchema.optional(),
   }),
 });

@@ -4,6 +4,7 @@
  */
 import { useMemo } from "react";
 import type { Organization } from "@communecter/cocolight-api-client";
+import { useNavigate } from "react-router";
 import { useT } from "@/hooks/useT";
 import { useProfilPermissions } from "../../hooks/useProfilPermissions";
 import { UserPlus, UserCheck } from "lucide-react";
@@ -17,18 +18,26 @@ import {
   useRejectInvitation,
   useRequestPromoteToAdmin,
 } from "../mutations/relationship";
+import { useDeleteEntity } from "../mutations/deleteEntity";
 import { buildEntityAction, buildPendingAction } from "../builders/buildEntityAction";
-import type { EntityAction, EntityActionsResult } from "../../types";
+import type { EntityAction, EntityActionsResult, EntityActionsOptions } from "../../types";
 
 /**
  * Hook pour les actions disponibles sur un profil d'organisation
  *
  * @param entity - L'organisation (ou null si pas une Organization)
+ * @param options - Actions que la SECTION autorise en plus (suppression de la fiche) — jamais un
+ *   défaut du moteur : une suppression définitive ne s'offre que là où un site l'a demandée.
  * @returns Actions et layout pour le profil organization
  */
-export function useOrgEntityActions(entity: Organization | null): EntityActionsResult | null {
+export function useOrgEntityActions(
+  entity: Organization | null,
+  options: EntityActionsOptions = {},
+): EntityActionsResult | null {
   const t = useT("modules/profil");
+  const navigate = useNavigate();
   const permissions = useProfilPermissions(entity);
+  const { allowDelete = false, deleteRedirectPath = "/" } = options;
 
   // Mutations
   const followMutation = useFollowEntity(entity);
@@ -39,6 +48,7 @@ export function useOrgEntityActions(entity: Organization | null): EntityActionsR
   const acceptInvitationMutation = useAcceptInvitation(entity);
   const rejectInvitationMutation = useRejectInvitation(entity);
   const requestPromotionMutation = useRequestPromoteToAdmin(entity);
+  const deleteMutation = useDeleteEntity(entity);
 
   return useMemo(() => {
     if (!entity) return null;
@@ -112,6 +122,24 @@ export function useOrgEntityActions(entity: Organization | null): EntityActionsR
       actions.push(buildEntityAction({ configKey: "leaveOrganization", t, mutation: leaveMutation }));
     }
 
+    // ============ SUPPRESSION DÉFINITIVE ============
+    // Deux conditions, jamais une seule : le site l'a ouverte (`allowDelete`) ET le compte est
+    // ADMIN de cette fiche. La redirection se fait en `onSuccess` du mutate — la page de la fiche
+    // n'existe plus une fois la suppression passée.
+    if (allowDelete && permissions.isAdmin) {
+      actions.push(
+        buildEntityAction({
+          configKey: "deleteEntity",
+          t,
+          mutation: deleteMutation,
+          overrides: {
+            onClick: () =>
+              deleteMutation.mutate(undefined, { onSuccess: () => navigate(deleteRedirectPath) }),
+          },
+        }),
+      );
+    }
+
     if (actions.length === 0 && !permissions.canFollow && !permissions.canRequestMembership && !permissions.isMember) {
       return null;
     }
@@ -135,5 +163,9 @@ export function useOrgEntityActions(entity: Organization | null): EntityActionsR
     acceptInvitationMutation,
     rejectInvitationMutation,
     requestPromotionMutation,
+    deleteMutation,
+    allowDelete,
+    deleteRedirectPath,
+    navigate,
   ]);
 }

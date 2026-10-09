@@ -5,7 +5,11 @@
     "loading": "Loading articles…",
     "readMore": "Read article",
     "error": "Unable to load articles.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {{n}}",
+    "pageOf": "Page {{current}} of {{total}}"
   },
   "article": {
     "backToList": "Back to articles",
@@ -13,7 +17,13 @@
     "by": "by",
     "readingTime": "{{count}} min read",
     "notFound": "Article not found",
-    "related": "Related articles"
+    "related": "Related articles",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteTitle": "Delete this article?",
+    "deleteDescription": "“{{title}}” will be permanently deleted. This action cannot be undone.",
+    "territories": "Territories",
+    "audiences": "Audiences"
   },
   "teaser": {
     "cta": "Learn more",

@@ -233,6 +233,8 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
     megaMenu: MegaMenu.optional(),
     description: LocalizedString.optional(),
     featured: z.boolean().optional(),
+    iconOnly: z.boolean().optional(),
+    placement: z.literal("actions").optional(),
   }).refine(d => d.path || d.href || d.children || d.megaMenu, {
     message: "NavItem : path, href, children ou megaMenu obligatoire"
   })
@@ -251,6 +253,17 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
 | `megaMenu`    | `MegaMenu`            | Non      | Mega menu a colonnes                                                     |
 | `description` | `LocalizedString`     | Non      | Description de l'element de navigation                                   |
 | `featured`    | `boolean`             | Non      | Affiche le sous-menu en mise en avant (colonne "lien principal" + grille)|
+| `iconOnly`    | `boolean`             | Non      | Barre desktop du header `stacked` : icône seule, le libellé devenant le nom accessible (`aria-label`) et l'infobulle. Ignoré sans `icon` ; le menu mobile et les autres variantes affichent le libellé |
+| `placement`   | `"actions"`           | Non      | Barre desktop du header `stacked` : sort l'entrée du menu centré pour la poser dans le groupe d'actions de droite (thème, langue, connexion…) — typiquement une loupe icône seule vers une page de recherche, à la place d'un déclencheur de header. Ignoré par les autres variantes ; le menu mobile garde la liste complète |
+
+#### Accent de page (`page.accent`)
+
+`accent` (couleur CSS, `var(--jeton)` recommandé) est posé sur le `<main>` de la page en `--page-accent`,
+avec son aplat léger `--page-accent-soft` (16 % sur le fond du thème). Les sections qui acceptent
+`bg: "page-accent"` — `agenda`, `searchProStatic`, `accordion`, `searchHeader` — s'en servent pour alterner les fonds :
+elles prennent l'aplat et un filet supérieur à la couleur pleine. Sans `accent`, `bg: "page-accent"` reste
+transparent : une page ne prend jamais une couleur au hasard. Header et pied de page ne sont pas touchés.
+Exemple : les 9 pages de territoire de parent62, chacune à la couleur de son territoire.
 
 ### `NavBadge`
 
@@ -446,26 +459,43 @@ Les valeurs de `type` sont des **noms de design** (pas des noms de sites) :
 | `logoTitle`        | `LocalizedString`             | Non      | Titre affiché à côté du logo                                         |
 | `logoAlt`          | `LocalizedString`             | Non      | Texte alternatif du logo                                             |
 | `description`      | `LocalizedString`             | Non      | Texte descriptif du footer                                           |
-| `legalLinks`       | `{ href, label }[]`           | Non      | Liens légaux (CGU, politique de confidentialité, etc.)               |
-| `bottomLinks`      | `{ href, label }[]`           | Non      | Liens en bas du footer                                               |
+| `legalLinks`       | `FooterLink[]`                | Non      | Liens légaux (CGU, politique de confidentialité, etc.)               |
+| `bottomLinks`      | `FooterLink[]`                | Non      | Liens en bas du footer                                               |
 | `paymentMethods`   | `string[]`                    | Non      | Icônes de moyens de paiement                                         |
 | `website`          | `string`                      | Non      | URL du site web                                                      |
 | `contactSection`   | `FooterContactSection`        | Non      | Bloc contacts (utilisé par `contact-partners`)                       |
 | `partners`         | `FooterPartnersSection`       | Non      | Bloc logos partenaires (utilisé par `contact-partners`)              |
 
-`FooterColumn` :
+`FooterLink` — le même objet pour les **trois** listes de liens (`columns[].links`, `legalLinks`,
+`bottomLinks`) :
 
 ```ts
+const FooterLink = z.object({
+  href: z.string(),
+  label: LocalizedString,
+  external: z.boolean().optional(),
+  icon: z.string().optional(),
+  visibility: VisibilityConditionSchema,   // cf. doc/19
+});
+
 const FooterColumn = z.object({
   title: LocalizedString,
-  links: z.array(z.object({
-    href: z.string(),
-    label: LocalizedString,
-    external: z.boolean().optional(),
-    icon: z.string().optional(),
-  })),
+  links: z.array(FooterLink),
 });
 ```
+
+`visibility` suit la **même grammaire** que les entrées de nav des headers (`auth`, `routes`,
+`excludeRoutes`, `permissions` — cf. [Visibility System](19-visibility-system.md)) : typiquement
+`{ "auth": "anonymous" }` sur « Se connecter », `{ "auth": "required" }` sur « Mon profil ». Une
+colonne dont **tous** les liens sont masqués n'est pas rendue, plutôt qu'un titre sans liens.
+
+Le `href` accepte un **jeton d'adresse** : `@profile` est remplacé par la fiche de l'utilisateur
+connecté (`/profil/<slug>`), un lien de config étant sinon une chaîne fixe. Le lien disparaît tant
+que le slug est inconnu — à coupler avec `visibility: { "auth": "required" }`.
+
+⚠️ **Rendu serveur** : toute condition dépendant de l'authentification est masquée jusqu'à
+l'hydratation, pour ne jamais laisser filtrer un état privé. Ces liens apparaissent donc juste après
+l'affichage de la page.
 
 `FooterContactSection` (utilisée par `contact-partners`) :
 

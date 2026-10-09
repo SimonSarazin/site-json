@@ -2,12 +2,12 @@ import { useNavigate, useLocation } from "react-router";
 import { ArrowLeft, Calendar, Clock, User } from "lucide-react";
 import "../i18n";
 import { useT } from "@/hooks/useT";
-import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { renderMarkdown } from "@/helpers/renderMarkdown";
+import { ArticleBody } from "./ArticleBody";
 import { ArticleGallery } from "./ArticleGallery";
 import { ArticleDocuments } from "./ArticleDocuments";
+import { ArticleTaxonomy } from "./ArticleTaxonomy";
 import { estimateReadingTime } from "../lib/readingTime";
 import type { ArticleData } from "../hooks/useArticle";
 import type { ArticleReaderProps } from "../variants/readers";
@@ -19,7 +19,8 @@ function authorName(article: ArticleData): string | null {
 }
 
 /**
- * Lecteur d'article : hero + titre + méta (date, auteur) + corps markdown sanitizé (prose) + tags.
+ * Lecteur d'article : hero + titre + méta (date, auteur) + corps markdown sanitizé (prose) + pied
+ * taxonomie (territoires, publics, mots-clés — cf. `ArticleTaxonomy`).
  * Retour DYNAMIQUE : `navigate(-1)` si on vient d'une page de l'app (retour là d'où on vient — le fil peut
  * donc être à N endroits), sinon (deep-link / pas d'historique) repli sur `backTo` (défaut `/blog`).
  */
@@ -34,8 +35,6 @@ export function ArticleReader({ article, backTo = "/blog", hideBack = false, tit
   const author = authorName(article);
   const minutes = estimateReadingTime(article.description);
   const chapo = typeof article.shortDescription === "string" ? article.shortDescription.trim() : "";
-  const tags = Array.isArray(article.tags) ? article.tags : [];
-  const bodyHtml = typeof article.description === "string" ? renderMarkdown(article.description, { markdownEnabled: true }) : "";
 
   return (
     <article className="mx-auto w-full max-w-3xl px-4 py-8">
@@ -57,20 +56,10 @@ export function ArticleReader({ article, backTo = "/blog", hideBack = false, tit
           <OptimizedImage src={image} alt={article.name || ""} width={900} priority className="h-full w-full object-cover" />
         </AspectRatio>
       )}
-      {bodyHtml && (
-        <div
-          className="prose prose-lg max-w-none dark:prose-invert prose-img:rounded-lg prose-a:text-primary"
-          // renderMarkdown sanitize déjà (DOMPurify) → sûr
-          dangerouslySetInnerHTML={{ __html: bodyHtml }}
-        />
-      )}
+      <ArticleBody text={article.description} />
       <ArticleGallery images={(article as { images?: unknown }).images} className="mt-10" />
       <ArticleDocuments files={(article as { files?: unknown }).files} className="mt-10" />
-      {tags.length > 0 && (
-        <div className="mt-8 flex flex-wrap gap-2 border-t pt-6">
-          {tags.map((tag) => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-        </div>
-      )}
+      <ArticleTaxonomy article={article} />
     </article>
   );
 }

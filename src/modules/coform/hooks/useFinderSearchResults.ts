@@ -9,7 +9,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { COFORM_QUERY_KEYS } from "../constants/queryKeys";
 import type { FinderConfig, FinderSearchResult, FinderElementType } from "../types";
 import { toFinderSearchResult } from "../utils";
-import { buildFinderMongoFilters } from "../utils/finderFilters";
+import { buildFinderSearchParams } from "../utils/finderFilters";
 
 /**
  * Constantes UX du finder — alignées sur le comportement historique du modal.
@@ -69,22 +69,22 @@ export function useFinderSearchResults({
   const { entity, helper } = useCocolight();
   const debouncedQuery = useDebounce(query, FINDER_DEBOUNCE_MS);
 
-  // Construit le payload de filtres backend (DSL `SearchNew::searchFilters`)
-  // depuis les inclusions + exclusions du finder, via le builder PARTAGÉ (même
-  // sortie que la liste collaborative `getEligiblePlaces`). `undefined` si aucun
-  // filtre, pour ne pas envoyer un `filters: {}` inutile.
-  const filtersPayload = useMemo<Record<string, unknown> | undefined>(() => {
-    const built = buildFinderMongoFilters(config.filters ?? [], config.excludeFilters ?? []);
-    return Object.keys(built).length > 0 ? built : undefined;
-  }, [config.filters, config.excludeFilters]);
-
-  const searchTypeArray = useMemo<GlobalAutocompleteCostumData["searchType"]>(
+  // Type(s), filtres DSL (inclusions + exclusions, même sortie que la liste
+  // collaborative `getEligiblePlaces`) et périmètre, via le builder PARTAGÉ —
+  // aussi utilisé par la liste « J'utilise » de la fiche commun.
+  const searchParams = useMemo(
     () =>
-      (Array.isArray(config.type)
-        ? config.type
-        : [config.type]) as GlobalAutocompleteCostumData["searchType"],
-    [config.type],
+      buildFinderSearchParams({
+        type: config.type,
+        filters: config.filters,
+        excludeFilters: config.excludeFilters,
+        notSourceKey: config.notSourceKey,
+        sourceKey: config.sourceKey,
+      }),
+    [config.type, config.filters, config.excludeFilters, config.notSourceKey, config.sourceKey],
   );
+  const filtersPayload = searchParams.filters;
+  const searchTypeArray = searchParams.searchType as GlobalAutocompleteCostumData["searchType"];
 
   const fallbackType: FinderElementType = Array.isArray(config.type)
     ? config.type[0]
@@ -97,6 +97,7 @@ export function useFinderSearchResults({
       debouncedQuery,
       filtersPayload,
       config.notSourceKey,
+      searchParams.sourceKey,
     ),
     enabled:
       enabled && !!entity && debouncedQuery.length >= FINDER_MIN_CHARS,
@@ -106,11 +107,10 @@ export function useFinderSearchResults({
 
       const param: Partial<GlobalAutocompleteCostumData> = {
         name: debouncedQuery,
-        searchType: searchTypeArray,
         indexMin: 0,
         indexStep: FINDER_INDEX_STEP,
-        ...(filtersPayload ? { filters: filtersPayload } : {}),
-        ...(config.notSourceKey ? { notSourceKey: true } : {}),
+        ...searchParams,
+        searchType: searchTypeArray,
       };
 
       const page = await entity.searchCostum(param);

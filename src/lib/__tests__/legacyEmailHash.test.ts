@@ -115,3 +115,17 @@ describe("parseLegacyHash — suffixes legacy sur #@slug", () => {
       .toEqual({ kind: "slug", slug: "LaReunionDesTiersLieux" });
   });
 });
+
+describe("parseLegacyHash — fiche d'un commun de l'AAC legacy", () => {
+  it("#detail-un-commun.communId.<id> → aacCommun (lien imprimé de la Fédération des CAE)", () => {
+    expect(parseLegacyHash("#detail-un-commun.communId.6a3e8d99d571dc339040e6bf"))
+      .toEqual({ kind: "aacCommun", id: "6a3e8d99d571dc339040e6bf" });
+  });
+
+  it("id absent, malformé ou suffixe inconnu → ignoré", () => {
+    for (const h of ["#detail-un-commun", "#detail-un-commun.communId.", "#detail-un-commun.communId.xyz",
+      `#detail-un-commun.communId.${ID}.autre`, `#detail-un-commun.id.${ID}`]) {
+      expect(parseLegacyHash(h)).toBeNull();
+    }
+  });
+});

@@ -10,6 +10,7 @@
     - [Deploiement avec Coolify](#deploiement-avec-coolify)
   - [Verifier un build : `npm run verify:build`](#verifier-un-build--npm-run-verifybuild)
   - [Piloter les deploiements depuis le depot](#piloter-les-deploiements-depuis-le-depot)
+    - [D'ou Coolify clone : le miroir GitHub](#dou-coolify-clone--le-miroir-github)
   - [Variables d'environnement runtime](#variables-denvironnement-runtime)
   - [Volumes](#volumes)
   - [Ajouter des images de contenu en production](#ajouter-des-images-de-contenu-en-production)
@@ -404,7 +405,32 @@ Ce que pese `dist/` selon les arguments, mesure sur `institutBleu` :
 
 ### Pourquoi ce parti pris
 
-Coolify ne filtre les webhooks git que sur le couple **(depot, branche)**. Les N applications du parc partagent les deux : un seul push les mettrait **toutes** en file. Et `is_auto_deploy_enabled` vaut `true` par defaut a la creation. Aucun webhook n'existe cote GitLab aujourd'hui, mais `npm run deploy:lock -- --yes` fait qu'ajouter un webhook un jour ne declenchera rien tout seul.
+Coolify ne filtre les webhooks git que sur le couple **(depot, branche)**. Les N applications du parc partagent les deux : un seul push les mettrait **toutes** en file. Et `is_auto_deploy_enabled` vaut `true` par defaut a la creation.
+
+Ce n'etait qu'hypothetique tant que le parc clonait GitLab, ou aucun webhook n'est declare. Depuis la bascule sur l'App GitHub (voir ci-dessous), **le webhook vient avec la source** : un push sur le miroir suffirait. `npm run deploy:lock -- --yes` coupe le reglage sur tout le parc, et **verifie** par relecture — `GET /applications/{uuid}` renvoie `settings.is_auto_deploy_enabled` depuis la 4.3.x.
+
+> Jusqu'au 2026-09-16 cette commande etait **inversee** (`const cible = !unlock`) : elle *activait* l'auto-deploiement en annoncant le couper, et `--unlock` faisait l'inverse. Personne ne pouvait le voir, le code ayant renonce a relire le reglage sur la foi de l'API 4.1.1. C'est ce qu'a change l'ajout de la relecture : un PATCH accepte mais sans effet est desormais un echec, pas un `✓`.
+
+### D'ou Coolify clone : le miroir GitHub
+
+**Le parc ne clone plus GitLab.** Depuis le 2026-09-16, `gitlab.adullact.net` limite les clones : `HTTP 429` sur `git ls-remote` **et** sur `git clone`, **quelle que soit l'authentification** — anonyme, deploy token et token oauth2 ont ete mesures en echec le meme jour. La limite porte sur l'IP, pas sur les droits ; elle frappe aussi l'API GitLab depuis un poste de dev. Notre modele y est expose par construction : un deploiement = un clone (~52 Mo), `force` est en dur, donc un rollout du parc = N clones a la file.
+
+Coolify bâtit donc le **miroir GitHub prive `aboire/site-json`**, via une source « GitHub App ».
+
+| | |
+|---|---|
+| Source de verite | **GitLab** — c'est la qu'on pousse, et `reference()` vise toujours `origin/main` |
+| Ce que Coolify clone | le miroir GitHub, relais de build uniquement |
+| Synchronisation | **push mirror sortant depuis GitLab** (un pull consommerait le quota justement epuise) |
+
+Deux controles tiennent l'ecart, parce que c'est le seul mode de panne que cette architecture ajoute — Coolify publierait un vieux commit sans que rien ne le dise :
+
+- `deploy:status` affiche l'etat du miroir et **sort en 1** s'il est en retard ;
+- `deploy` (push) **refuse de partir** sur un miroir en retard.
+
+Un etat **non verifiable** (miroir prive sans credentials, reseau coupe, remote local absent) n'arrete rien : il est annonce, et la commande continue. L'outil tente `git ls-remote` nu, puis le helper de `gh` s'il est installe — sans jamais ecrire dans la config git de la machine.
+
+> **Changer la source d'une application existante n'est PAS scriptable.** `PATCH /applications/{uuid}` refuse `github_app_uuid`, `source_id`, `source_type` et `source_uuid` en **422 « This field is not allowed »** (mesure sur 4.3.21 ; la doc publique de Coolify decrit une version plus recente). Seul `git_repository` est modifiable — et le poser seul casse l'application, en laissant un `owner/repo` sur une source publique. La bascule se fait **dans l'UI**, ou a la creation via la route `POST /applications/private-github-app`, qui est celle qu'emploie `deploy:create`.
 
 ### La source de verite
 
@@ -417,7 +443,7 @@ Coolify ne filtre les webhooks git que sur le couple **(depot, branche)**. Les N
 | `aliases` | domaines **propres** du site. Leur DNS vit ailleurs et se pointe **a la main** en CNAME vers le sous-domaine d'amorce. L'outil ne les cree jamais — il verifie qu'ils resolvent deja avant de les declarer. |
 | `coolifyServer` | nom du serveur ou poser le site, quand le parc n'est pas homogene. Absent, il est deduit — voir ci-dessous. |
 | `coolifyProject` | idem pour le projet. |
-| `build` | surcharge du depot, de la branche, du moteur ou du port pour ce site. Sert au site de recette sur une autre branche, ou repris d'un autre depot. |
+| `build` | surcharge du depot, de la branche, du moteur, du port ou de l'**App GitHub** pour ce site. Sert au site de recette sur une autre branche, ou repris d'un autre depot. `githubApp` y est un **nom**, jamais un uuid (meme raison que `coolifyApp`) ; `""` cree le site en source publique, `depot` devant alors etre une URL complete. |
 | `env` | surcharge, pour ce site, d'une variable deployee — uniquement les cles de `CONSTANTES`/`SECRETES` (`deploy-config.ts`), les autres sont ignorees en silence. Ex. `"env": { "VITE_COSTUM_FORCE_LIVE": "true" }`. |
 
 Les 6 variables derivees (`VITE_SLUG`, `SITE_CONFIG_PATH`, `SITE_CSS_PATH`, `SITE_IMAGES`, `SITE_EMBED`, `VITE_SITE_PUBLIC_URL`) ne sont stockees nulle part : elles sont **derivees** de la ligne. Les 3 constantes (`VITE_BASE_URL_BACKEND`, `VITE_SERVER_URL`, `VITE_COSTUM_FORCE_LIVE`) vivent dans `scripts/lib/deploy-config.ts`, surchargeables par entree (champ `env`). La cle MapTiler vient de `.env`. Soit **10 variables** par application. Le token Coolify reste dans `~/.config/coolify/config.json`, celui du CLI.
@@ -517,6 +543,8 @@ npm run deploy        -- monSlug --yes       # premier deploiement
 ```
 
 `create` ne passe jamais `instant_deploy` : deployer avant d'avoir pose les variables produirait le theme par defaut et une config non figee. L'ordre DNS → application → variables → deploiement n'est pas negociable.
+
+L'application est creee via `POST /applications/private-github-app`, avec l'App nommee par `BUILD_DEFAUT.githubApp` (resolue nom → uuid a chaud). **C'est le seul moment ou la source se choisit** : elle n'est pas modifiable ensuite par l'API. `create` relit donc l'application apres creation et **echoue** si le depot ou la source ne sont pas ceux demandes, en renvoyant vers l'UI — la version precedente tentait au contraire de corriger le depot par un PATCH, contournement ecrit pour la troncature des URLs GitLab et devenu nuisible avec un depot en `owner/repo`.
 
 ## Voir aussi
 

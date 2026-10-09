@@ -5,8 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TableCell, TableHead, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -17,6 +16,7 @@ import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import { formsDeCollection, cheminAnnotation, type CostumFormSubTypeLike } from "@/modules/search/lib/costumSubType";
 import { useSite } from "@/hooks/useSite";
 
+import { AdminTableShell } from "../components/AdminTableShell";
 import { ScrollableTabsList } from "../components/ScrollableTabsList";
 
 import type { SearchType } from "@/modules/search/schema";
@@ -25,7 +25,7 @@ import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
 import { useReferenceElement, type AnnotableEntity, type ReferencingCarrier } from "../hooks/useReferenceElement";
 import { ensureCostumScope } from "@/lib/ensureCostumScope";
 import type { AdminReferenceSection as AdminReferenceSectionConfig, AdminSection } from "../schema";
-import { formatCell, getPath } from "./resourceHelpers";
+import { formatCell, getPath, normalizeColumns } from "./resourceHelpers";
 
 const DEFAULT_TYPES = ["organizations", "projects", "events", "poi"];
 
@@ -36,6 +36,12 @@ const DEFAULT_TYPES = ["organizations", "projects", "events", "poi"];
  * un scalaire/tableau config devient `$in`, les objets d'opérateurs sont fusionnés, le `$nin`
  * de garde s'unionne à un éventuel `$nin` config. Les DEUX moteurs (L searchNew / B buildQuery)
  * passent les objets d'opérateurs tels quels (le referenceTable legacy envoie déjà des `$nin`).
+ *
+ * ⚠ `{ $in, $nin }` sur UNE clé n'est honoré que par un backend dont `SearchNew::searchFilters`
+ * combine les deux opérateurs (correctif `7b19f871` de citizenToolKit) : avant lui, le `$nin`
+ * gagnait et le ciblage `$in` était ignoré EN SILENCE (tout le vivier remontait). Ekilib.re cible
+ * `source.keys` et compte donc sur ce correctif ; sur un backend qui ne l'a pas, cibler la source
+ * PRINCIPALE `source.key` (scalaire, clé distincte de la garde `source.keys`).
  */
 export function buildOpenSearchFilters(
   search: { openData?: "optIn" | "optOut" | "off"; defaultFilters?: Record<string, unknown>; defaultFiltersByType?: Record<string, Record<string, unknown>> } | undefined,
@@ -90,9 +96,7 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
   const types = cfg.entityTypes ?? DEFAULT_TYPES;
   // Colonnes de DONNÉES configurables (`columns`, même forme que resource — audit config) ;
   // Type (badge collection) et Action restent structurelles.
-  const columns = (cfg.columns ?? DEFAULT_COLUMNS).map((c) =>
-    typeof c === "string" ? { path: c, label: undefined } : c,
-  );
+  const columns = normalizeColumns(cfg.columns, DEFAULT_COLUMNS);
 
   const [tab, setTab] = useState<"search" | "referenced">("search");
   const [type, setType] = useState(types[0] ?? "poi");
@@ -239,30 +243,24 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
     emptyMsg: string,
     avecSousType = false,
   ) => (
-    <div className="max-h-[55vh] overflow-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {columns.map((col) => (
-              <TableHead key={col.path} className={col.label ? undefined : "capitalize"}>
-                {col.label ? t(col.label) : col.path}
-              </TableHead>
-            ))}
-            <TableHead>{tAdmin("AdminReferenceSection.colType")}</TableHead>
-            {avecSousType && <TableHead>{tAdmin("AdminReferenceSection.colSubType")}</TableHead>}
-            <TableHead className="w-44 text-right">{tAdmin("AdminReferenceSection.colAction")}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>{body}</TableBody>
-      </Table>
-      {loading && (
-        <div className="space-y-2 py-2">
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
-        </div>
-      )}
-      {!loading && empty && <p className="py-8 text-center text-sm text-muted-foreground">{emptyMsg}</p>}
-    </div>
+    <AdminTableShell
+      head={
+        <TableRow>
+          {columns.map((col) => (
+            <TableHead key={col.path} className={col.label ? undefined : "capitalize"}>
+              {col.label ? t(col.label) : col.path}
+            </TableHead>
+          ))}
+          <TableHead>{tAdmin("AdminReferenceSection.colType")}</TableHead>
+          {avecSousType && <TableHead>{tAdmin("AdminReferenceSection.colSubType")}</TableHead>}
+          <TableHead className="w-44 text-right">{tAdmin("AdminReferenceSection.colAction")}</TableHead>
+        </TableRow>
+      }
+      body={body}
+      loading={loading}
+      empty={empty}
+      emptyMessage={emptyMsg}
+    />
   );
 
   return (

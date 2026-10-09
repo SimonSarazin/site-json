@@ -9,10 +9,12 @@
 - [Sections JSON exposées](#sections-json-exposées)
   - [`searchPro` — avec synchronisation URL](#searchpro--avec-synchronisation-url)
   - [`searchProStatic` — sans synchronisation URL](#searchprostatic--sans-synchronisation-url)
+    - [Vue observatoire — le tableau de bord dans la section](#vue-observatoire--le-tableau-de-bord-dans-la-section)
   - [`cardCountCT` — compteurs par type](#cardcountct--compteurs-par-type)
   - [`thematics` — filières dynamiques](#thematics--filières-dynamiques)
   - [`filters` — sidebar de filtres partagée](#filters--sidebar-de-filtres-partagée)
   - [`searchHeader` — header de filtres horizontal](#searchheader--header-de-filtres-horizontal)
+  - [`coform-resource-directory` — annuaire à plat de ressources CoForm](#coform-resource-directory--annuaire-à-plat-de-ressources-coform)
 - [Context et filtres page-scoped (`pageFilters.ts`)](#context-et-filtres-page-scoped-pagefiltersts)
 - [Helpers purs partagés (`lib/`)](#helpers-purs-partagés-lib)
   - [buildSearchPayload](#buildsearchpayload)
@@ -45,6 +47,7 @@
     - [CardProfile — authentification requise](#cardprofile--authentification-requise)
   - [Mode détails — conteneur (`detailsMode`) vs contenu (`preview.type`)](#mode-détails--conteneur-detailsmode-vs-contenu-previewtype)
     - [PreviewPoiAmenities — fiche détail POI (`preview.type: "poi-amenities"`)](#previewpoiamenities--fiche-détail-poi-previewtype-poi-amenities)
+    - [Liens croisés équipement ↔ organisation usagère](#liens-croisés-équipement--organisation-usagère)
   - [Facettes cliquables & navigation par filtre (`dropdownFilters`)](#facettes-cliquables--navigation-par-filtre-dropdownfilters)
   - [Cartes news dans la recherche (CardNews et PreviewNews)](#cartes-news-dans-la-recherche-cardnews-et-previewnews)
   - [Cartes et previews génériques config-driven (testimonial, resource)](#cartes-et-previews-génériques-config-driven-testimonial-resource)
@@ -285,24 +288,57 @@ Même structure que `searchPro` mais avec état local. Plusieurs instances peuve
 | `graphDetailsMode` | `"drawer"\|"dialog"\|"link"` | `"drawer"` | Mode ouverture depuis graphique |
 | `enableRegions` | boolean | `false` | Activer la carte des régions France |
 | `regionsTarget` | `{ path, filterId }` | — | Cible de navigation au clic sur une région |
-| `defaultViewMode` | `"list"\|"map"\|"graph"\|"regions"\|"thematics"` | — | Vue par défaut |
+| `defaultViewMode` | `"list"\|"map"\|"graph"\|"regions"\|"thematics"\|"split"` | — | Vue par défaut |
 | `thematicSource` | `{ thematicPath, finderPath?, notSourceKey? }` | — | Source pour la vue thematics (coformFilterByPath) |
 | `thematicsTarget` | `{ path, filterId }` | — | Cible de navigation au clic sur une card thématique |
 | `addButton` | `AddButtonConfig` | — | Bouton ajout entité (show, label, types) |
 | `zoneSelector` | `ZoneSelectorConfig` | — | Sélecteur de zones géographiques |
 | `tagSelector` | `TagSelectorConfig` | — | Sélecteur de tags prédéfinis |
 | `csvButton` | `CsvButtonConfig` | — | Export CSV (colonnes configurables) |
-| `customHeader` | objet | — | En-tête (titre + lien + icône). Affiche aussi un lien « voir sur la page complète » qui reporte les filtres courants et la recherche texte (`?search=`) via `linkText`/`linkHref`/`linkIcon` |
+| `customHeader` | objet | — | En-tête (titre + lien + icône). Affiche aussi un lien « voir sur la page complète » qui reporte les filtres courants et la recherche texte (`?search=`) via `linkText`/`linkHref`/`linkIcon`. Titre et boutons sont alignés sur les bords de la grille de résultats (sans `container` ni marge latérale, `mb-3`) |
 | `bg` | string | — | Fond de section |
 | `width` | `"container"` | — | Contrainte de largeur |
+| `observatory` | `ObservatoryPanelConf` | — | Tableau de bord (KPI + graphes) en 3ᵉ vue, à côté de liste et carte — cf. [§Vue observatoire](#vue-observatoire--le-tableau-de-bord-dans-la-section) |
 | `baseParams.contextId` + `contextType` | string | — | Scope de recherche à une entité |
 | `baseParams.costumSlug` + `costumEditMode` | string | — | Config multi-costum |
 | `baseParams.sourceKey` | string[] | — | Filtrer par sourceKey |
-| `list.layout` | `"grid"\|"timeline"` | `"grid"` (code) | Disposition des résultats : `timeline` = frise verticale (bulle-date, cartes alternées) — cf. [§SearchListView](#searchlistview) |
+| `list.layout` | `"grid"\|"timeline"\|"grouped"` | `"grid"` (code) | Disposition des résultats : `timeline` = frise verticale (bulle-date, cartes alternées) ; `grouped` = grille découpée en blocs titrés — cf. [§SearchListView](#searchlistview) |
+| `list.groupBy` | `{ field, order?, itemsSortBy?, emptyLabel? }` | — | Blocs de `layout: "grouped"` : `field` = chemin `serverData` du regroupement, `order` = ordre des blocs, `itemsSortBy` = tri client des fiches dans chaque bloc |
 
 **Lien « voir sur la page complète »** : si `customHeader.linkText` est renseigné, un bouton `<Link>` est rendu dans le cluster du `customHeader`. La href est construite depuis `customHeader.linkHref` (défaut `/lieux`) en recopiant les query params courants (`useSearchParams`) PLUS `?search=` si une recherche texte est active — de sorte que les filtres posés par le hero (typologies, services) et le texte saisi soient tous transportés vers la page de liste.
 
 **Lecture de `?search=`** : c'est `FiltersSection` (ligne ~190) qui lit `searchParams.get("search")` pour reporter la recherche texte dans son champ local quand on arrive depuis un lien — voir [§`filters` — sidebar de filtres partagée](#filters--sidebar-de-filtres-partagée).
+
+#### Vue observatoire — le tableau de bord dans la section
+
+`props.observatory` ajoute une **troisième vue** au couple liste / carte : les graphes prennent la place de la carte, la liste des résultats reste à gauche. Sa seule présence affiche le bouton de bascule (icône camembert) dans l'en-tête, standard comme `customHeader`.
+
+```jsonc
+"map": { "layout": "split", "marker": { "style": "pin", "color": "primary" } },
+"observatory": {
+  "dimensions": { "type": { "paths": ["equip_type_name"], "label": { "fr": "Type" } } },
+  "kpis":   [{ "kind": "count", "label": { "fr": "Équipements" }, "icon": "activity" }],
+  "charts": [{ "kind": "donut", "dimension": "type", "layout": "full" }]
+}
+```
+
+Le vocabulaire (`dimensions`, `kpis`, `charts`) est EXACTEMENT celui de la section `data-observatory` — cf. [doc/27](./27-module-observatoire.md). Ce qui change est la provenance des données :
+
+- **le panneau n'a pas de périmètre à lui.** Il lit les résultats que la section a déjà chargés — les mêmes que la carte (`useSearchAllResults`, périmètre complet, même cache). Bascule carte ↔ observatoire instantanée, et surtout : les chiffres suivent la recherche et les filtres courants. Deux requêtes donneraient deux totaux sur le même écran ;
+- **tout champ lu par une dimension doit être dans `baseParams.defaultFields`.** Un champ non projeté n'est pas dans le document : la dimension le lira vide, sans le moindre signal ;
+- **ni filtres, ni table, ni export** : ce sont ceux de la section hôte. Pour une page dont le tableau de bord EST le sujet, c'est la section `data-observatory` qu'il faut.
+
+Le rendu vit dans `observatoire/components/ObservatoryPanel.tsx`, monté en `lazy()` : le chunk recharts n'est téléchargé qu'au premier clic sur le bouton. Sur mobile, la colonne latérale disparaît (comme pour le split carte) et le tableau de bord prend toute la largeur.
+
+**Agencement** — calqué sur la page observatoire : les KPI en BANDEAU pleine largeur (une colonne étroite les tasse sur plusieurs lignes), puis liste à gauche et graphes à droite. C'est `ObservatoryPanel` qui le rend, la section lui passant SA liste par `renderList` — il porte le raffinement, il doit donc pouvoir filtrer la liste comme les graphes (cf. [doc/27](./27-module-observatoire.md#panneau-réutilisable--lobservatoire-dans-une-autre-section)).
+
+**Sélection et drill-down** — `observatory.select` (`titleDimension` + `dimensions`, mêmes règles que `list.selectDimensions` de la section `data-observatory`) : le clic sur une carte RESTREINT le tableau de bord à sa famille, et `SearchListView` ajoute alors sur chaque carte un bouton « Fiche » qui, lui, ouvre le détail — sans quoi la fiche deviendrait inaccessible. `observatory.drilldown` fait de même depuis une part ou une barre de graphe. Chaque raffinement actif est rappelé par une puce retirable au-dessus des deux colonnes : sans elle, un filtre posé d'un clic serait invisible. Sans `select`, rien ne change — le clic ouvre la fiche, et pas de bouton. **Limite :** la sélection au clic ne vaut qu'en vue grille et pour les cartes qui rendent ce bouton (`lib/cardSheetButton.ts`, aujourd'hui `poi-amenities`) ; avec un autre variant ou une vue groupée/détaillée/timeline, le clic garde l'ouverture de la fiche.
+
+**Qui commande la hauteur** : les GRAPHES. Ils se déroulent entièrement, sans scroll propre — on doit pouvoir tous les lire d'une traite. C'est la LISTE qui s'adapte : colonne `relative` + contenu en `absolute inset-0 overflow-y-auto`. Mécanique non devinable mais nécessaire : un enfant flex simplement étiré grandit avec son contenu et `overflow-y` n'y fait rien ; l'absolu lui donne une hauteur DÉFINIE, celle de sa colonne. Même mécanique que le split de la page observatoire. Le split CARTE, lui, garde une hauteur EXPLICITE sur ses deux colonnes — l'écran visible sous la barre de navigation (cf. [§SearchMap et vue carte](#searchmap-et-vue-carte)) : la carte a besoin d'une hauteur définie pour cadrer son `fitBounds`.
+
+**Bascules depuis une vue plein panneau** (`panelViewSwitch`) : avec un `customHeader`, l'en-tête de la section — et donc les boutons de vue — n'est rendu QUE dans la vue liste. Carte et observatoire portent donc leurs propres sorties : vers l'autre vue plein panneau, et vers la liste. Seule exception, le split CANONIQUE (`defaultViewMode: "split"`) n'offre pas de sortie liste — il n'y a pas de « retour » à proposer.
+
+**Liste à gauche de la carte** : `map.layout: "split"` (+ `map.splitRatio`) existait déjà — la vue « Carte » devient liste + carte synchronisées (clic carte → `flyTo`, clic marqueur → highlight). Les deux vues partagent la même colonne de gauche et le même jeu de résultats. `splitRatio` accepte désormais `"30-70"` (liste resserrée) : à cette largeur, la colonne est trop étroite pour une carte pleine. Ses cartes y passent automatiquement en mode DENSE (`card.compact` — mêmes informations, vignette et interlignes réduits) **et PLIABLE, repliée par défaut** (`card.collapsible`) : une ligne titre + sous-titre, la lecture de la liste de `data-observatory`, qu'un chevron déplie en carte complète. Le clic sur la ligne ouvre la fiche comme ailleurs ; seul le chevron plie (`stopPropagation`). Les ratios historiques gardent la carte pleine et dépliée, leur rendu ne bouge pas.
 
 ### `cardCountCT` — compteurs par type
 
@@ -356,6 +392,11 @@ ne joue qu'en mode accordéon (`filterGroups[]`) :
 | `"select": {"multiple": true}` | combobox multi coche-à-droite (`ui/multi-combobox`) |
 | `"select": {"searchable": true}` | recherche + sélection unique (MultipleSelector, remplace) |
 | `"select": {"multiple": true, "searchable": true}` | recherche + badges multi (MultipleSelector) |
+
+**Ordre des options** : par défaut TOUTES les options d'un groupe sont triées
+par libellé localisé (`localeCompare`). `"keepOptionOrder": true` sur le groupe
+conserve l'**ordre déclaré** — indispensable quand l'ordre porte du sens
+(tranches de prix croissantes de `coform-resource-directory`, étapes, etc.).
 
 Mobile (< `lg`, le breakpoint d'empilement du gridLayout) : champ de
 recherche AU-DESSUS d'un bouton « Filtres » + compteur ouvrant un Sheet bas —
@@ -502,6 +543,169 @@ Section bandeau de filtres **horizontal** (variante de `FiltersSection` présent
           { "id": "terrain-football", "label": { "fr": "Terrain de football" } }
         ]
       }
+    ]
+  }
+}
+```
+
+### `coform-resource-directory` — annuaire à plat de ressources CoForm
+
+Section **autonome** (elle monte son propre `PageFiltersProvider`, ne se pose
+pas dans un `gridLayout`) : un annuaire des **ressources d'un tiers-lieu**
+— coworking / salle de réunion / hébergement — avec une facette « type » et une
+facette « prix » à gauche, la grille de résultats à droite. **Une carte par
+réponse CoForm**, SAUF pour les salles de réunion où l'endpoint **éclate** chaque
+réponse en **une carte par salle** (cf. plus bas).
+
+Portage config-agnostique de `Navigator::getRessourceTL` (costum
+`franceTierslieux`), consommé via le **variant SDK dédié `navigator-tl-ressource`**
+(`/costum/navigator/getsressourcetl`) : un `SearchNew::globalAutoComplete` suivi
+d'un post-traitement **serveur** — résolution du tiers-lieu **porteur** depuis
+l'input « finder » de la réponse, remontée de son adresse/image/géo/email, garde
+région, filtre prix, filtre « porté par », éclatement des salles, `documents`
+attachés. La section ne refait côté client qu'un appel groupé
+(`useResourceParentsQuery`) pour le **`slug`** du lieu (non remonté par l'endpoint,
+nécessaire au lien « Voir le tiers-lieu »). Divergence assumée avec
+`searchProStatic` (règle 9 des bonnes pratiques) : liste d'`answers` +
+jointure sur le lieu porteur + garde région + éclatement, pour quoi
+`searchProStatic` n'offre aucun point d'accroche.
+
+| Prop | Type | Rôle |
+|------|------|------|
+| `resourceTypes` | `Array<{ id, kind, formId, stepPrefix, label, linkSuffix?, descriptionSuffix?, servicesSuffix? }>` (≥ 1) | Un type = une option de facette **et** un formulaire. `kind` ∈ `coworking\|meeting\|accommodation` → pilote la capacité/tarif (cf. `helpers/servicePricingAnswers`). Suffixes PROPRES au formulaire : `linkSuffix` = URL de réservation (`linkPath`), `descriptionSuffix` = « À propos » (meeting `miolbscdcrucb5a8uuq`, hébergement `miq88plgleoln5tmc7b`), `servicesSuffix` = « Services proposés » `string[]` (hébergement `miq86g5vaw1kavrapkb`) |
+| `finderSuffix` | string | Suffixe de l'input « finder » (tiers-lieu porteur), **commun** aux formulaires copie. Ex. `miem3epsztzcm9dgim` |
+| `fieldSuffixes` | `{ name?, equipments?, area?, bookingUrl? }` | Suffixes d'inputs COMMUNS. `name` (`mieg4k7yxrito5j9e6`) = titre coworking/hébergement (repli → « Espace de coworking » / « Hébergement »). Pour une salle éclatée, le titre = `serverData.roomName` (colonne 0 du tableau des salles) — repli « Salle de réunion ». `area` (`mieg4k7zslc8awrql2`) = surface (détail) |
+| `scope.addressLevel1` | string | Garde géo : ne garde que les ressources dont le **lieu porteur** est dans cette zone (`address.level1`). Passé dans `defaultFilters["address.level1"]` → l'endpoint `getsressourcetl` **filtre côté serveur** (il retire la clé du payload puis post-filtre sur le lieu porteur). Scroll infini natif conservé |
+| `costumSlug` / `contextId` / `contextType` | string | Périmètre costum (comme le payload legacy) |
+| `columns` | `{ sm?, md?, lg?, xl? }` | Grille de résultats (déf. `1/2/3`) |
+| `customHeader` | `{ title?, linkText?, linkHref? }` | En-tête : titre à gauche et bouton de lien vers la page complète à droite |
+| `limit` | entier ≥ 1 | Nombre maximal de cartes affichées ; borne aussi la requête initiale et désactive le scroll infini. La limite s'applique après l'éclatement des salles |
+| `showFilters` | boolean (défaut `true`) | `false` masque les facettes type/prix et désactive le filtre par lieu porteur piloté depuis les cartes |
+
+Le filtre Mongo FIXE (`buildResourceDirectoryFilters`) émet `form.$in` + un `$or`
+en **forme MAP** (`{ "answers.<step>.finder…": { "$exists": true }, … }`) — **pas
+un tableau** : `SearchNew::searchFilters` lit `$or` comme une map `champ→op`, et
+la forme tableau Mongo standard fait un **HTTP 500** sur le backend legacy
+(cf. [§mongoFilters](#mongofilters--fusion-des-filtres-or)).
+
+**Filtre « porté par » (serveur, piloté depuis les cartes)** : le clic sur
+« Porté par {tiers-lieu} » d'une carte pose `filters.parentId` (`{ $in: [id] }`,
+post-filtré par `Navigator::getRessourceTL` sur les parents résolus), il n'ouvre
+PAS le détail. Ce n'est pas une facette configurée : `CoformResourceDirectorySection`
+tient l'état `activeParent` et le distribue aux cartes via
+`ResourceDirectoryActionsProvider` ; une puce « Ressources portées par {nom} ✕ »
+au-dessus de la grille le retire. La facette « type » (client) s'applique par-dessus.
+
+**Quatre facettes** (`hideSearch: true` — pas de recherche texte). Un annuaire de
+ressources est BORNÉ : la section charge l'ensemble (`indexStepList: 500`,
+`defaultFields` inclut **`"form"`** — indispensable à l'éclatement serveur et au
+routage du filtre prix), parse chaque résultat (`parseResourceDirectoryItem`),
+puis :
+- **`resourceType`** — groupe `filters` SANS `field` : options = les
+  `resourceTypes` (`name` = `id`) → filtre **CÔTÉ CLIENT** sur `model.type.id`
+  (`pageFilters.selectedFilters`). Le compteur reflète le nombre filtré ;
+- **3 groupes prix** — **calqués sur Communecter** (`PRICE_FILTER_GROUPS` dans
+  `lib/resourceDirectory.ts`), un par unité de tarif, chacun avec SES tranches :
+  - `priceHourly` « Tarif à l'heure » : `0-20` / `20-50` / `50-100` / `100-`
+  - `priceHalfDay` « Tarif à la demi-journée » : `0-50` / `50-100` / `100-200` / `200-`
+  - `priceFullDay` « Tarif à la journée » : `0-100` / `100-200` / `200-400` / `400-`
+
+  Groupes `filters` AVEC `field` (= le nom du champ backend). `searchByFields` est
+  keyé par `option.name` : comme les tranches `50-100` / `100-200` reviennent
+  entre groupes, `name` est **préfixé du field** (`"priceHourly:50-100"`) et
+  `variants: ["50-100"]` porte la vraie valeur envoyée. `keepOptionOrder: true`
+  (tranches croissantes). → `searchByFields` → `{ priceHourly: { $in: [...] }, … }`
+  → filtre **CÔTÉ SERVEUR**. Le backend interprète chaque tranche `"min-max"`
+  (côté vide = borne absente) en intervalle semi-ouvert `[min, max[`, applique le
+  filtre par salle pour les salles de réunion, sur le chemin de prix du formulaire
+  sinon. Deux unités cochées se combinent en **ET** (le backend teste chaque
+  champ). Une réponse sans tarif dans une unité cochée sort → tout filtre prix
+  horaire/journée écarte les hébergements (tarifiés à la nuitée).
+
+**Éclatement « 1 salle = 1 réponse »** (serveur, formulaire salle de réunion
+uniquement) : chaque ligne du tableau des salles (`roomPath`, ligne 0 = libellés)
+devient une réponse `<answerId>.room<N>` portant `roomIndex` (1-based), `roomName`
+(colonne 0), `parentAnswerId`, et le tableau réduit à `[libellés, laSalle]`. Comme
+plusieurs cartes partagent alors le `_id` de l'answer source, la section **re-clé**
+ses items en `<_id>-room<N>` (clés React + deep-link `?resource=` uniques) ; carte
+et détail ne lisent que `serverData`. Une answer salle sans tableau n'est pas
+éclatée (repli titre « Salle de réunion »).
+
+**Variant SDK `navigator-tl-ressource`** → endpoint dédié
+`/costum/navigator/getsressourcetl` (`Navigator::getRessourceTL`) : `globalautocomplete`
++ post-traitement serveur (tiers-lieu porteur résolu, adresse/geo/image/email
+remontés, garde `address.level1`, filtres `parentId` / `price{Hourly,HalfDay,FullDay}`,
+éclatement des salles, `documents` attachés). `answers` reste un **blob brut** keyé
+par étape — surtout PAS `navigator-tl` (qui re-clé `answers` par les 3 form ids).
+`fields` doit inclure `"form"` (routage éclatement + filtre prix côté serveur).
+
+Cartes/détail : `card.type` / `preview.type` **`resource-directory`** (remplis
+par la section, non destinés à être écrits à la main), qui lisent leur tranche
+`list.resourceDirectory` et le contexte `ResourceParentsProvider`. La logique
+pure est dans `lib/resourceDirectory.ts` (`parseResourceDirectoryItem`), testée
+(`resourceDirectory.test.ts`).
+
+**Photos** : documents de la réponse (`/upload/communecter/<folder>/<name>`) ou
+images de la salle (colonne 8) sont des chemins **relatifs au backend**, que le SDK
+ne rend pas absolus (ils ne passent par aucun champ image nommé, comme `docPath`).
+`parseResourceDirectoryItem` les préfixe donc avec l'option **obligatoire**
+`baseUrl` (`getBaseUrl()`, via `toBackendUrl`). Laissés relatifs, `/img` les
+chercherait parmi les fichiers statiques du site → 404.
+
+**La carte** (`CardResourceDirectory`) : image en **carrousel** partagé
+(`ResourcePhotoCarousel`) — sur la carte il **défile seul** (4 s, pause au survol)
+et **sans flèches** (`autoPlay controls="none"`), compteur conservé ; badge type en
+overlay, nom, localité, ligne capacité + tarif « à partir de », pied « Porté par
+{tiers-lieu} » : le NOM est un bouton qui pose le **filtre « porté par »** de la
+section (`stopPropagation` — n'ouvre pas le détail), à côté du lien « Voir le
+tiers-lieu » (profil). Hors section (pas de `ResourceDirectoryActionsProvider`), le
+nom retombe en texte simple.
+
+**Le détail** (`PreviewResourceDirectory`) reprend **le même gabarit que le modal
+« En savoir plus » d'un tiers-lieu** (`ProfilTiersLieuxAbout`), `preview.width:
+"2xl"`, adapté aux jetons de thème clair/sombre : carrousel `h-56` + **pastille de
+capacité** en coin → nom (`h3`, **pas d'étiquette de type**) + « Porté par
+{tiers-lieu} » + localité → **Tarifs** en pastilles (`{prix}€` + suffixe
+`resourceDirectory.priceSuffix.*` — TOUS les tarifs non nuls) + pastille « Tarif
+solidaire » → **Surface** (`area` commun, repli sur la colonne 1 de la salle) →
+**À propos** (`descriptionSuffix`) → **Équipements** (pastilles) → **Services
+proposés** (`servicesSuffix`, hébergement) → boutons.
+
+**Bouton d'action** — trois cas : (a) `bookingUrl` présent → **« Réserver »**
+(`https://` préfixé, `window.open`) ; (b) pas de `bookingUrl` mais un e-mail de
+tiers-lieu connu (`model.parentEmail` = `serverData.email` remonté par le backend,
+repli `parentEmails`) → **« Contacter par e-mail »** = un simple `<a href="mailto:…">`
+vers l'adresse du tiers-lieu (objet pré-rempli `resourceDirectory.mailtoSubject`,
+corps laissé au visiteur — **aucun formulaire, aucun envoi côté site**) ; (c) ni
+l'un ni l'autre → pas de bouton d'action. Toujours **« Voir le tiers-lieu »** si
+`slug`. Pas de section « Les salles » : l'éclatement serveur fait qu'un modal =
+une salle, ses champs (capacité / surface / tarifs / solidaire) sont posés
+directement dans le corps.
+
+```json
+{
+  "type": "coform-resource-directory",
+  "props": {
+    "title": { "fr": "Annuaire des ressources tiers-lieux" },
+    "costumSlug": "transiter",
+    "contextId": "65df30c185682029fd7e42bf",
+    "contextType": "organizations",
+    "finderSuffix": "miem3epsztzcm9dgim",
+    "fieldSuffixes": {
+      "name": "mieg4k7yxrito5j9e6", "equipments": "mieg8j24m89gm99t5mi", "area": "mieg4k7zslc8awrql2"
+    },
+    "scope": { "addressLevel1": "58be4af494ef47df1d0ddbcc" },
+    "resourceTypes": [
+      { "id": "coworking", "kind": "coworking", "formId": "6925e2b05dd63b02ca70d6d9",
+        "stepPrefix": "navigatorDesTierslieux25112025_209_0", "linkSuffix": "miq8118cmkh16zjwmt",
+        "label": { "fr": "Coworking" } },
+      { "id": "meeting-room", "kind": "meeting", "formId": "6925869ad76aaf6c5a2b2f8a",
+        "stepPrefix": "navigatorDesTierslieux25112025_1436_0", "linkSuffix": "miq81uh4gat3vgbtgkj",
+        "descriptionSuffix": "miolbscdcrucb5a8uuq", "label": { "fr": "Salle de réunion" } },
+      { "id": "accommodation", "kind": "accommodation", "formId": "6925ee8ac537f8056114aec7",
+        "stepPrefix": "navigatorDesTierslieux25112025_2059_0", "linkSuffix": "miq83c8getjt3lcz64f",
+        "descriptionSuffix": "miq88plgleoln5tmc7b", "servicesSuffix": "miq86g5vaw1kavrapkb",
+        "label": { "fr": "Hébergement" } }
     ]
   }
 }
@@ -919,6 +1123,85 @@ const { data, isLoading, error } = useSearchZoneQuery(
 
 `staleTime: 30 minutes` (données rarement modifiées). **SSR-ready** via `searchZoneQueryKey()` + `fetchSearchZones()`.
 
+### useGeoShapes / useGeoShapesWarmup — contours géographiques (`map.shapes`)
+
+Superpose des CONTOURS (`geoShape`) à la carte : bassins de vie, communes, quartiers. Déclaratif,
+dans le `map` de la section (`searchPro`, `searchProStatic`, `agenda`) :
+
+```json
+"map": {
+  "shapes": [
+    { "id": "bassins-vie", "source": "zoniris", "load": "idle", "simplify": 10,
+      "filters": { "spec": "bassins_vie_saintpaul" },
+      "label": { "fr": "Bassins de vie" },
+      "style": { "fill": "primary", "fillOpacity": 0.12, "stroke": "primary" } }
+  ]
+}
+```
+
+Trois `source` pour deux endpoints legacy PUBLICS, les seuls à renvoyer `geoShape` (`co2/search/getzone`
+le projette dehors) : `zones` et `cities` → `getZoneShape` (`co2/zone/getshape` ; `level: "cities"` est
+posé par le résolveur), `zoniris` → `getZoniris` (`co2/zone/getzoniris`). Schéma partagé et commenté :
+[`src/types/geo-shape-schema.ts`](../src/types/geo-shape-schema.ts) ; implémentation : [`src/lib/geoShapes/`](../src/lib/geoShapes/).
+
+**`countryCode` accepte une LISTE** (`zones` et `zoniris`). Le legacy, lui, ne lit qu'un scalaire :
+`countryCode: "FR,RE"` lui renvoie 0 document (mesuré le 2026-08-28). Une liste est donc résolue
+côté client en autant d'appels, mis en parallèle puis fusionnés et dédoublonnés par `_id` — le même
+mécanisme que deux couches partageant un `id`, sans dupliquer toute la déclaration. Un code SEUL,
+même écrit en liste, part en scalaire (`getZoniris` refuse un tableau). La clé de cache
+normalise et TRIE les codes : `"FR"`, `["FR"]` et `["RE","FR"]` vs `["FR","RE"]` ne créent pas
+quatre entrées pour la même donnée.
+
+Le cas qui l'impose : `level: "3"` + `FR` ne rend que les **13 régions métropolitaines** ; l'outre-mer
+vit sous son propre code pays (`RE`, `MQ`, `GP`, `GF`, `YT` — un document chacun ; `PM`, `NC`, `PF`,
+`WF`, `BL`, `MF` n'ont aucun contour). Sans liste, une carte « France entière » oublie l'outre-mer.
+⚠️ `countryCode` multiple et `parentId` sont incompatibles (refus à la validation) : un parent
+n'appartient qu'à un seul pays. `cities` reste scalaire — son `parentId` est obligatoire.
+⚠️ Le CADRAGE reste unique : France + outre-mer dans une seule projection Mercator donne une
+métropole minuscule et des DOM perdus au large. Des cartouches par territoire (comme
+`FranceRegionsMap`) restent à faire.
+
+**Volumétrie — c'est ce qui pilote tout le reste** (mesures live, 2026-08) : 24 communes de La Réunion
+= 57 Ko, mais les 7 bassins de vie de Saint-Paul = 395 Ko (98 % de géométrie, 10 779 points à 13
+décimales), et `level: "QPV"` sans parent = 9,4 Mo (dump national, `countryCode` étant ignoré par le
+serveur sur cette branche). D'où :
+
+- **`load`** décide QUAND : `map` (défaut, à l'ouverture de la vue carte — même politique que
+  `useSearchAllResults`), `idle` (à l'entrée de page mais après le premier paint), `page`
+  (immédiatement, à réserver aux couches légères). **Jamais de SSR** : `getzoniris` est un POST
+  (aucun cache HTTP) et déshydrater des polygones coûterait plus que la page.
+- **`simplify`** (tolérance en mètres, Douglas-Peucker) allège le RENDU, pas le téléchargement :
+  389 Ko / 10 779 points → 37 Ko / 1 757 points à 10 m, sans différence visible à l'échelle communale.
+- Les garde-fous volumétriques sont dans le schéma Zod (QPV et `cities` sans parent sont REFUSÉS à la
+  validation), donc `config:validate` et le préflight les attrapent avant la mise en ligne.
+
+Deux hooks, un seul cache : `useGeoShapes(sources)` est appelé par `SearchMap` (montée seulement en vue
+carte, ce qui réalise `load: "map"` à lui seul) ; `useGeoShapesWarmup(sources)` est appelé par la
+SECTION, toujours montée, et préremplit les mêmes clés pour `page`/`idle`. Plusieurs entrées portant le
+même `id` sont fusionnées et dédoublonnées par `_id` : c'est ainsi qu'on exprime un OU, que le legacy
+n'a pas (ses filtres sont ANDés).
+
+Rendu : `MapShapeLayers` (un `<Source>` GeoJSON + fill + line par couche), `MapShapeLegend` (affichée
+seulement pour les couches qui portent un `label` ; filtre et pastille partagés avec la section
+`map-shapes` via `components/shared/ShapeLegend`) et `MapShapeNames` (`showNames: true` → le nom de
+chaque contour posé dessus). Les couleurs sont des JETONS de thème, convertis en sRGB par
+`resolveThemeColor` — MapLibre peint en WebGL et refuse l'`oklch` de `config.theme.colors`.
+
+Les noms sont des overlays HTML et non un calque `symbol` : sans clé MapTiler, le style de repli
+n'embarque aucun glyphe, un calque de texte y serait muet. Chaque nom est posé au point INTÉRIEUR le
+plus éloigné du bord (`polygonLabelPoint`, recherche par grille) et non au centroïde, qui sort de la
+forme sur un cirque ou une commune en croissant. Au-delà de 60 contours, seuls les plus vastes sont
+nommés.
+
+**Les mêmes couches, un autre rendu** : la section de page
+[`map-shapes`](05-schemas-sections.md#map-shapes) consomme `useGeoShapes` avec le MÊME
+`GeoShapeSourceSchema`, mais les peint en `<path>` SVG **hors carte** — ni fond de plan, ni
+marqueurs, ni requête de recherche — chaque contour étant un lien vers une page de recherche filtrée
+(contrat `regionsTarget`). Composant : `src/components/sections/MapShapes.tsx` ; projection d3-geo
+commune à toutes les couches : `src/lib/geoShapes/projectShapes.ts` (délibérément absent du barrel
+`lib/geoShapes/index.ts`, pour que `d3-geo` n'entre pas dans le chunk maplibre). `load` y est ignoré :
+les contours sont le contenu, il n'y a pas de vue carte à ouvrir.
+
 ### useCsvExport
 
 Export CSV des résultats courants via [PapaParse](https://www.papaparse.com/).
@@ -970,6 +1253,10 @@ Grille responsive des résultats. Propriétés CSS grid pilotées par `list.colu
 
 **Config `list` tuyautée d'un bout à l'autre** : depuis l'introduction des cartes typées (`testimonial` / `resource`), la config `list` COMPLÈTE (`list?: ListConf`, `ListConfSchema` désormais **exporté**) descend tout le pipeline — `SearchListView` → `SearchCard` et `SearchListView` → `SwitchDetailsMode` → `DetailsModeDialog` / `DetailsModeDrawer` → `Preview`. `list` est transmis à **TOUS** les variants de `SearchCard` et de `Preview` (et non aux seuls presenters typés) ; chacun y lit **sa** tranche (`list.testimonial`, `list.resource`), les autres l'ignorent. `SearchMapWrapper` / `SearchMap` le reçoivent aussi désormais — sans quoi un détail ouvert depuis la carte géographique retombait sur les presenters génériques. `SearchListView` / `SwitchDetailsMode` gardent des props `columns` / `card` / `preview` / `previewParam` optionnelles (agenda, observatoire, profil… qui appellent sans objet `list`) et dérivent chaque valeur via `prop ?? list?.x` ; les call-sites search ne passent plus que `list={list}`. Conséquence : **`SearchPro` honore désormais `list.previewParam`** (auparavant ignoré — il ne transmettait pas ce champ à `SearchListView`).
 
+**Layout grouped** (`list.layout: "grouped"` + `list.groupBy`) : la grille habituelle (même carte, même `wrap`, même détail) découpée en blocs titrés par la valeur de `groupBy.field` — une archive qui se parcourt par année ou par territoire. Logique pure dans `lib/groupResults.ts` (`grouperParChamp`, `comparerValeurs`) : une valeur numérique se compare en NOMBRE (« 9 » avant « 10 »), une `Date` par son instant, un texte à la française ; un tableau range la fiche sous sa PREMIÈRE valeur (jamais en double) ; les fiches sans valeur forment un DERNIER bloc, libellé `emptyLabel` (repli i18n `resource.ungrouped`), jamais écartées. `groupBy.itemsSortBy` trie les fiches de chaque bloc CÔTÉ CLIENT, tri stable, valeurs absentes en dernier : il existe parce que le backend ne lit que la **première clé** de `sortBy` (`SearchNew.php`) — `defaultSortBy: {annee:-1, created:-1}` y vaut `{annee:-1}` — et que le paramètre `sort` multi-clés est refusé par la validation du SDK. Il ne trie donc que les résultats CHARGÉS. Titres de bloc : `GroupHeading` (`h3`), ids tirés de `useId` (une valeur avec espaces casserait `aria-labelledby`). Même priorité que la timeline : vue détaillée et mode split gardent leur rendu. Les champs `groupBy.field` et `itemsSortBy.field` doivent être projetés (`tests/preflight/list-projected-fields.test.ts`).
+
+**Ouverture par IDENTIFIANT** (`list.previewFetch`, opt-in) : l'effet ci-dessus ne résout `?<previewParam>=<id>` que **dans `results`**, c'est-à-dire dans la tranche chargée — 10 items par défaut (`indexStepList`). Un lien venu d'une **autre page** vise donc presque toujours en dehors, et n'ouvrait alors rien, en silence. Avec `previewFetch` (`"poi" | "organizations" | "projects" | "events" | "citoyens"`), `useEntityByIdQuery` charge la fiche **complète** par son id (`api.poi` / `api.organization` / …) et l'ouvre — la liste derrière reste ce qu'elle est. Garde-fous : requête paresseuse (rien ne part tant qu'aucun id manquant n'est demandé), `retry: false` (un id périmé est un cas normal d'un lien partagé), `useCocolightOptional` (hors provider — agenda, observatoire, tests — la feature se dégrade au lieu de jeter). Sans la clé, comportement historique strictement inchangé.
+
 **Layout timeline** (`list.layout: "timeline"`) : `SearchListView` dispatche vers `TimelineListView` (chunk `lazy()`, même convention que les variants de carte) — frise verticale avec ligne pointillée (à gauche en mobile, centrée dès `md`), **bulle-date** (jour/mois abrégé/année, repli icône calendrier + `bg-muted` sans `startDate`) posée sur la ligne, cartes **alternées gauche/droite par index** (pur : stable en scroll infini et identique SSR/client), rendues par `CardEventTimeline` (titre, heure `HH:mm`, chip catégorie — `card.tagLimit` défaut 1, `card.tagColors` honoré —, extrait 3 lignes, visuel à droite, bouton « En savoir plus »). Pensé pour des événements triés `defaultSortBy: {"startDate": -1}`. La **vue détaillée** (`isDetailedView`) et le **mode split** (`onFocusItem`) gardent la priorité (la timeline n'y a pas de sens) ; le détail, le deep-link `?<previewParam>=` et les `itemRules` passent par le MÊME flux que la grille. Défaut **côté code** = grille : la clé absente ou inconnue rend la grille historique (la config n'est jamais parsée par Zod au runtime).
 
 ### Cartes (card variants)
@@ -988,7 +1275,7 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 | `overlay` | `CardOverlay` | Image en fond + overlay gradient |
 | `image-cover` | `CardImageCover` | Image de couverture en haut |
 | `image-panel` | `CardImagePanel` | Image en panneau latéral |
-| `event` | `CardEvent` | Événement (dates, lieu, organisateur) |
+| `event` | `CardEvent` | Événement (dates, lieu, organisateur) — un événement de plusieurs jours affiche ses deux bornes (« 1 – 31 oct. 2026 », `lib/eventDateSpan.ts`) ; un créneau de nuit de moins de 24 h reste un seul jour |
 | `event-featured` | `CardEventFeatured` | Événement mis en avant |
 | `funding` | `CardFunding` | Financement / cagnotte |
 | `resource-booking` | `CardResourceBooking` | Ressource réservable |
@@ -998,9 +1285,13 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 | `card-answer` | `CardAnswer` | Réponse CoForm (activité avec horaires) |
 | `news` | `CardNews` | Carte éditoriale **text-first** (l'item est une `News`, cast au point de dispatch) — cf. [§Cartes news](#cartes-news-dans-la-recherche-cardnews-et-previewnews) |
 | `testimonial` | `CardTestimonial` | Coque (`export default`) → dispatch sur `list.testimonial.design` (repli `bubble`) → `CardTestimonialBubble` — cf. [§génériques config-driven](#cartes-et-previews-génériques-config-driven-testimonial-resource) |
-| `resource` | `CardResource` | Coque → dispatch sur `list.resource.design` (repli `card`) → `CardResourceCard` (média-library, **distinct** de `resource-booking`/`CardResourceBooking`) |
+| `resource` | `CardResource` | Coque → dispatch sur `list.resource.design` (repli `card`) → `CardResourceCard` (média-library, **distinct** de `resource-booking`/`CardResourceBooking`), `CardResourceDocument` (`document`) ou `CardResourcePortrait` (`portrait`) |
 
 > `news`, `testimonial` et `resource` ne sont acceptées **que** par `card.type` : l'enum `card.variant` (schema.ts) ne les inclut pas (comme `overlay`).
+
+**Designs `resource` hors `card`** :
+- **`document`** — une LIGNE compacte (icône, titre, format) qui ouvre directement le fichier, sinon le lien, dans un nouvel onglet annoncé aux lecteurs d'écran. Pour une archive de publications où chaque entrée n'est qu'un titre et un fichier : `card` y mettrait une grande couverture identique par entrée. Le document hébergé (`medias`) passe avant le lien externe (`urls`) — il survit à la disparition du site d'origine (`lib/resourceLink.ts`, `lienPrincipal`) ; le format affiché est l'extension réelle (`formatDocument`), repli `resource.document`. Sans fichier ni lien, la ligne est un bouton qui ouvre le détail.
+- **`portrait`** — une PERSONNE présentée en entier, en ligne d'annuaire séparée par un filet : photo ronde (initiales à défaut, `alt` vide car le nom est écrit à côté), nom, `resource.subtitleField` (ex. fonction, couleur `secondary-foreground`) puis la présentation markdown (`descriptionField`, rendue par `ProseContent` en markdown forcé — HTML brut accepté puis assaini par le profil strict, comme le corps d'article et l'aperçu de l'éditeur —, `prose-theme` pour que le gras reste lisible en sombre). **Non cliquable** : aucune preview, les seuls éléments interactifs sont les liens du texte. Largeur de lecture portée par le design (entrée `max-w-5xl` centrée).
 
 **`card.structureAction`** (carte `card-answer` uniquement, `schema.ts:476`) — le bouton « Fiche structure », **deux axes orthogonaux**, tous deux optionnels : un site peut ne régler que la visibilité sans toucher à l'action.
 
@@ -1058,6 +1349,23 @@ Toutes les variantes sont lazy-loadées. Une page **mono-type** ne télécharge 
 
 Voir [doc/23-module-auth.md](23-module-auth.md) pour l'API `useAuthModal`.
 
+**Chips de tags** (30/09) : `card.tagColors` est honoré — même brique `collectChipValues`/`decorateTags` que
+`CardDefault` : `hidePrefixes` masque les tags techniques par préfixe, **`hideTags`** par égalité stricte (un
+marqueur d'annuaire complet, sans emporter les tags qui commencent pareil), `mapping` colore et relibelle. Le
+pipeline complet est **`decorateItemTags`** (lib/colorBy), partagé par CardDefault, CardEventTimeline,
+CardProfile et MapPopupDefault : les tags passent d'abord par `helpers/toStringArray` (le backend renvoie
+parfois `tags` en objet — tableau PHP à trous ou dictionnaire de présence — et une chip ne s'itère pas sur un
+objet ; `useItem` et `entityMatchData` s'en servent aussi). Tags tous
+masqués ≠ fiche sans tag : dans le premier cas la carte ne dit rien, dans le second le repli « Aucun tag »
+demeure. Sans conf, les tags s'affichent tels quels, 3 au plus puis « +N ». La popup de carte
+(`MapPopupDefault`, prop `tagColors` passée par `SearchMap` depuis la conf de carte de l'item) applique la
+même décoration : un tag masqué en liste l'est aussi sur la carte. Premier usage : `/lieux-sante` de
+RéseauSanté, annuaire filtré au tag `lieux-sante` — que ni les cartes ni les popups n'ont à répéter.
+
+**Boutons « Contacter » / « Suivre »** (01/10) : `card.showActions: false` les retire (absent = affichés,
+comme `showStats`). Pensé pour un annuaire de LIEUX : on ne « suit » pas un cabinet, et « Contacter »
+n'ouvre aujourd'hui qu'un toast « à venir ».
+
 ### Mode détails — conteneur (`detailsMode`) vs contenu (`preview.type`)
 
 Le détail d'une entité sélectionnée est **découplé en deux axes** (commit 8cd4070) :
@@ -1080,7 +1388,7 @@ Le détail d'une entité sélectionnée est **découplé en deux axes** (commit 
 | `facets` | `PreviewFacets` | **Preview générique data-driven** : rend `preview.facets` (champs `serverData` cliquables) — voir [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters) |
 | `news` | `PreviewNews` | Détail actualité — embarque `NewsDetailPage` (mode `embedded`) + permalien « Voir en page » (cf. `preview.showDetailLink`) |
 | `testimonial` | `PreviewTestimonial` | Coque → `PreviewTestimonialBubble` (dispatch `list.testimonial.design`) |
-| `resource` | `PreviewResource` | Coque → `PreviewResourceCard` (dispatch `list.resource.design`) |
+| `resource` | `PreviewResource` | Coque → `PreviewResourceCard` (dispatch `list.resource.design`) ; `document` y retombe (détail d'une ligne sans fichier ni lien), `portrait` n'ouvre jamais de preview |
 | `structure` | `PreviewStructure` | Fiche détail d'une **organisation** : hero (statut / type / logo), affiliation, adresse + carte, représentant légal, infos, documents — champs custom du costum lus via l'index signature de `serverData`. Utilisée par `/structure` (`config.prod.maison-sport-sante-la-tampon.json:2125`) **et** par le bouton « Fiche structure » de `CardAnswer` (cf. `card.structureAction`) |
 
 Chaque contenu de `Preview` borne lui-même sa hauteur/scroll (indépendant du conteneur). `list.preview.fields` surcharge le mappage des IDs de champ CoForm (voir « parser CoForm » ci-dessous).
@@ -1153,6 +1461,23 @@ Colonne latérale :
 **Labels traduits** : tous les libellés passent par `t("PreviewPoiAmenities.*")` (namespace `modules/search`). La fonction helper `yesNo(value?)` retourne `t("PreviewPoiAmenities.yes")` / `t("PreviewPoiAmenities.no")` / `"—"` pour les champs booléens des tableaux PMR/PSHS.
 
 **Valeurs cliquables** : catégorie, type de propriété, locaux, utilisateurs et code postal sont rendus via `<ClickableFacet>` (cf. section suivante) — un clic applique le filtre correspondant sur le listing. `PreviewPoiAmenities` n'embarque **plus** de logique de navigation : plus de `getSiteDropdownFilters`/`findFilterOption`/`handleFilterNavigation`/`setTimeout`/path en dur — tout passe par le mécanisme générique ci-dessous.
+
+#### Liens croisés équipement ↔ organisation usagère
+
+Deux sections se répondent d'un bout à l'autre du **même** formulaire de créneaux : la fiche d'un **équipement** liste les clubs qui le réservent, la fiche d'une **organisation** liste les équipements qu'elle réserve. Chacune porte un bouton vers l'autre.
+
+| Sens | Config | Composant | Requête |
+|---|---|---|---|
+| équipement → club | `preview.reservations.orgaLink` | `PreviewReservations` (bouton sur la rangée usager) | aucune (l'id est déjà dans la réponse) |
+| club → équipements | `preview.bookedResources` (+ `preview.reservations`) | `PreviewBookedResources` (lazy, monté par `PreviewStructure`) | `useOrgaReservationsQuery` |
+
+**Tout repose sur l'IDENTIFIANT, jamais sur le nom.** Le champ texte historique (« Usager ») ne désigne aucune fiche : deux clubs peuvent porter le même nom, et un nom saisi à la main diverge de celui de l'annuaire (« BASKET CLUB  SAINT-PAULOIS » contre « BASKET CLUB SAINT PAULOIS » — double espace, trait d'union). Sondé sur les données Saint-Paul : 7 noms sur 48 correspondaient exactement, et la recherche texte du backend ne rattrape pas l'écart (0 résultat sur la forme saisie). Le rattachement vient donc du finder `reservations.fields.userOrga`, rempli par la migration backend `CreneauxLienOrgaAction` — **pas d'identifiant, pas de bouton**, jamais de rapprochement approximatif.
+
+**Côté équipement** : le bouton vit à côté du déclencheur d'accordéon, dans une grille à deux colonnes — un lien DANS le déclencheur serait un bouton dans un bouton (HTML invalide) et replierait la rangée au clic.
+
+**Côté organisation** : `useOrgaReservationsQuery` filtre côté serveur sur `answers.<step>.finder<step><userOrga>.<orgaId>` (idiome `$exists`, même famille que `useReservationsQuery` qui part, lui, d'une ressource ; clés de cache distinctes). Le **nom de chaque équipement** vient du finder de la réponse elle-même (`Reservation.resources`, id + libellé) : aucune requête POI par ligne. `groupReservationsByResource` (pur, testé) fait le regroupement ; une réservation multi-ressources compte dans **chaque** équipement. Sans réservation, la section ne s'affiche pas du tout — la plupart des fiches de l'annuaire n'en ont aucune.
+
+**Les deux boutons exigent `list.previewFetch` sur la page VISÉE** (cf. [§SearchListView](#searchlistview)) : sans lui, `?preview=<id>` ne trouverait l'item que dans la tranche déjà chargée, et le lien resterait sans effet.
 
 ### Facettes cliquables & navigation par filtre (`dropdownFilters`)
 
@@ -1457,7 +1782,8 @@ qui joue le rôle de filet.
 **Vues customisables (pattern dispatcher, comme `SearchCard`)** : le **marqueur**
 et la **popup** suivent le modèle dispatcher + composants-variants. Le marqueur :
 `SearchMapMarkers` dispatche sur le `kind` résolu (cf. `markerVisual.ts` ← config
-`map.marker`) vers `mapMarker/MapMarker<X>.tsx` (Pin / Circle / Icon / Avatar) —
+`map.marker`) vers `mapMarker/MapMarker<X>.tsx` (Pin / PinIcon / Circle / CircleIcon /
+Icon / Avatar) —
 **non-lazy** (rendu par point ; un Suspense par marqueur serait coûteux). La
 popup : `SearchMapPopup` dispatche sur `map.popup.type` vers
 `mapPopup/MapPopup<X>.tsx` en **`lazy()`** (un chunk par page, comme
@@ -1500,6 +1826,26 @@ contrôlée : `initialViewState` + ref) — le viewport de l'utilisateur est
 préservé pendant le chargement. `MapProgress` affiche la progression « X / Y »
 et l'alerte de plafond.
 
+**Ouverture de la vue carte dans `searchProStatic`** (carte seule ET split) :
+tout CLIC qui ouvre la carte — « Carte » / « Liste + carte » des deux en-têtes,
+bascule depuis l'observatoire — passe par `openMapView`, qui fait défiler la
+page (`window.scrollTo`, smooth) pour caler le haut de la vue sous la barre de
+navigation. Jamais au chargement : une page qui démarre sur la carte garde son
+en-tête visible. La vue mesure l'écran VISIBLE sous la barre —
+`calc(100dvh - var(--map-top))`, repli `vh` (`MAP_VIEW_HEIGHT` ;
+`SPLIT_COLUMN_HEIGHT` retranche en plus le `py-4` du split) — donc, une fois
+calée, elle occupe tout l'écran sans être coupée en bas. `--map-top` (posé sur
+la racine de la section) = `headerStickyOffsetPx(config.header)`
+(`components/layout/header/headerOffset.ts`, tenu en phase avec le JSX des
+headers par `tests/preflight/header-offset.test.ts`), 0 si la barre défile
+avec la page ou si la page a `hideHeader`. Deux contraintes non devinables :
+la boîte n'est PAS `flex-1` (dans la colonne flex sans hauteur de la section,
+une base de 0 % ferait ignorer sa hauteur et la carte, en absolu, s'effondrerait) ;
+et `SearchMapWrapper` (lazy) est entouré d'un `Suspense` LOCAL dont le squelette
+occupe la même boîte — sans lui, la frontière de la SECTION prend le relais au
+1er affichage, la page raccourcit et le défilement perd sa cible. Hors de
+`searchProStatic` (agenda, ampli, `searchPro`), rien ne change.
+
 **Options `map` de la section** (`MapConfSchema`) :
 `map.itemAction: {kind: "profil"|"preview"}` — action du bouton de la popup
 (défaut `preview` : détail `SwitchDetailsMode` avec `list.card`/`list.preview` ;
@@ -1516,14 +1862,101 @@ carte depuis la console/les tests navigateur.
 
 **Marqueurs (`MarkerConfSchema`)** — configurables **par site** via
 `integrations.map.marker` (défaut du site) ET **par section** via `map.marker`
-(surcharge champ par champ ; sinon repli sur le défaut intégré). Chaîne de repli
-par **priorité** (cf. `lib/markerVisual.ts`) :
+(surcharge champ par champ ; sinon repli sur le défaut intégré). **Deux étages**
+(cf. `lib/markerVisual.ts`) : `by` **choisit** le marqueur d'après la donnée, la
+chaîne de repli le **rend**.
+
+**Étage A — `by` : un marqueur PAR VALEUR d'attribut.** `path` est un dot-path
+`serverData` (valeur string/nombre/booléen, ou **tableau** → la première valeur
+de l'item présente dans `mapping` gagne, l'ordre de l'item faisant foi) ; chaque
+cas de `mapping` est un marqueur **partiel fusionné** sur le marqueur de base ;
+`default` couvre les valeurs **non listées** (sans lui, le marqueur de base sert
+de défaut).
+
+```jsonc
+"map": {
+  "marker": {
+    "style": "pin", "color": "primary",          // marqueur de BASE (hérité par les cas)
+    "by": {
+      "path": "equip_type_famille",              // ⚠ à projeter dans baseParams.defaultFields
+      "mapping": {
+        "Bassin":                  { "color": "chart-1" },                  // hérite style: pin
+        "Terrain de grands jeux":  { "style": "circle", "color": "chart-2" },
+        "Salle multisports":       { "iconUrl": "/images/x/salle.svg", "iconSize": 28 }
+      },
+      "default": { "color": "chart-5" }          // valeurs non listées
+    }
+  }
+}
+```
+
+Deux pièges, tous deux **silencieux** :
+- `path` **absent de `baseParams.defaultFields`** vaut `undefined` → aucun cas ne
+  matche, tous les marqueurs tombent sur le défaut (même piège que `list.itemRules`) ;
+- un cas qui déclare un **sélecteur de rendu** (`useItemImage`, `colorBy`,
+  `iconUrl`, `style`) remplace **tous** ceux du marqueur de base — sans cette
+  règle, un `iconUrl` de base masquerait le `style: "pin"` d'un cas (l'icône
+  gagne plus haut dans la chaîne). Le cas n'hérite alors que de
+  `color`/`borderColor`/`iconSize`/`iconAnchor`.
+
+**Étage B — chaîne de repli** du marqueur choisi, par **priorité** :
 1. `useItemImage: true` ET l'item a une image → **vignette RONDE** de l'item ;
-2. `iconUrl` → **icône custom** (image/SVG brandée — URL relative préfixée par
-   `baseUrl`, ou absolue ; `iconSize` px déf. 34, `iconAnchor` `"bottom"`/`"center"`) ;
-3. `style: "pin"` / `style: "circle"` (+ `color` en **jeton de thème** :
-   `primary`/`secondary`/`accent`/`chart-1..5`) → goutte SVG ou pastille ronde ;
-4. sinon → pin par défaut (primary).
+2. `colorBy` ET une valeur de l'item mappée → pin (ou pastille si
+   `style: "circle"`) **coloré par valeur** (code couleur par territoire) —
+   prioritaire sur le jeton `color`, seul le remplissage vient du mapping ;
+3. `iconUrl` → **icône custom** (image/SVG brandée — URL relative préfixée par
+   `baseUrl`, ou absolue ; `iconAnchor` `"bottom"`/`"center"`) ;
+4. `style: "pin"` / `style: "circle"` / `icon` (+ `color` en **jeton de thème** :
+   `primary`/`secondary`/`accent`/`chart-1..5` ; `borderColor` déf. `background`)
+   → goutte SVG ou pastille ronde, portant le **pictogramme lucide** d'`icon`
+   en son centre quand il est déclaré (`icon` seul implique la goutte) ;
+5. sinon → pin par défaut (primary).
+
+**`iconSize` — taille de TOUTES les formes.** Le champ ne concerne pas que
+`iconUrl` : il dimensionne la forme retenue par la chaîne ci-dessus, quelle
+qu'elle soit, et met le pictogramme lucide à l'échelle avec elle. Sans lui,
+chaque forme garde sa taille historique :
+
+| Forme | Déclencheur | Défaut |
+| --- | --- | --- |
+| vignette de l'item | `useItemImage` | 36 px |
+| pastille ronde | `style: "circle"` | 30 px |
+| goutte | `style: "pin"`, `icon`, ou aucun | 34 px |
+| icône custom | `iconUrl` | 34 px |
+
+Bornes : 8–128 px. Déclaré dans `integrations.map.marker`, il s'applique donc à
+toutes les sections du site — y compris aux vignettes et aux pastilles, pas
+seulement aux icônes custom. Comme tout champ de `MarkerVisualConf`, un cas de
+`by` peut le surcharger au cas par cas (ce n'est pas un sélecteur de rendu : il
+se fusionne sur le marqueur de base au lieu de le remplacer).
+
+**`icon` vs `iconUrl`** — les deux mettent un pictogramme sur la carte, mais
+`icon` est un nom **lucide** (kebab-case, catalogue de 1901 noms validé par
+l'audit `icone-inconnue`) rendu par `DynamicIcon` DANS la goutte ou la pastille :
+aucun asset à fournir, le marqueur reste aux **jetons de thème** et suit
+light/dark. `iconUrl` est une **image** servie par le backend, qui remplace la
+forme entière et ignore le thème — et dont le chemin relatif est préfixé par
+`getBaseUrl()` (backend), pas par le site : un `/images/<slug>/x.svg` ne
+résoudra pas. `iconUrl` gagne sur `icon` s'ils sont déclarés ensemble.
+
+```jsonc
+"marker": {
+  "style": "pin", "color": "primary",
+  "by": {
+    "path": "equip_type_name",
+    "mapping": {
+      "Bassin sportif de natation": { "color": "chart-1", "icon": "waves" },
+      "Terrain de football":        { "color": "chart-2", "icon": "goal" },
+      "Boucle de randonnée":        { "style": "circle", "color": "chart-4", "icon": "footprints" }
+    },
+    "default": { "color": "secondary", "icon": "circle-dashed" }
+  }
+}
+```
+
+`colorBy` ne change que la COULEUR d'un même marqueur ; `by` change le marqueur
+ENTIER (forme, icône, vignette) — les deux se combinent (un cas de `by` peut
+porter son propre `colorBy`).
 
 ```jsonc
 // par site (config racine) :
@@ -1641,9 +2074,10 @@ La carte de liste est pilotée par `list.card.variant` (sinon `list.card.type` �
 
 ## Variante SDK `searchVariant`
 
-`searchVariant: "navigator-tl"` change l'endpoint backend utilisé :
+`searchVariant` change l'endpoint backend utilisé :
 - `default` (absent) : `/co2/search/globalautocomplete`
 - `navigator-tl` : `/costum/navigator/gettl` — enrichit chaque résultat avec `serverData.answers` (réponses CoForm auto-linkées)
+- `navigator-tl-ressource` : `/costum/navigator/getsressourcetl` — annuaire À PLAT des ressources d'un tiers-lieu (`searchType: ["answers"]`, `fields` DOIT inclure `"form"`) : `globalautocomplete` + post-traitement serveur — résolution du tiers-lieu porteur (adresse/geo/image/email remontées), garde `address.level1`, filtres `parentId` et `price{Hourly,HalfDay,FullDay}` (tranches `"min-max"`), **éclatement 1 salle = 1 réponse** (`<answerId>.room<N>` + `roomIndex`/`roomName`/`parentAnswerId`), `documents` attachés, `indexStep` par défaut `"all"`. Consommé UNIQUEMENT par la section `coform-resource-directory` (variant posé par la section, pas par la config).
 
 Utilisé pour les sites tiers-lieux qui enrichissent les fiches avec des données CoForm sans étape de lookup supplémentaire.
 
@@ -1718,7 +2152,7 @@ PreviewPoiAmenities.tracking.created / .lastSurvey / .lastUpdate
 
 **Bloc `testimonial`** (Card/PreviewTestimonial) — clés : `listen` (`"Écouter"` / `"Listen"`), `listenTitle` (`"Écouter le témoignage"` / `"Listen to the testimony"`).
 
-**Bloc `resource`** (Card/PreviewResource) — clés : `open`, `watch`, `download`, `gallery`, `documents`, `audio`, `video`, `links`.
+**Bloc `resource`** (Card/PreviewResource) — clés : `open`, `watch`, `download`, `gallery`, `documents`, `audio`, `video`, `links`, `ungrouped` (bloc sans valeur de `layout: "grouped"`), `document`, `externalLink`, `newTab` (design `document`).
 
 **Clés plates news** (`CardNews` / `PreviewNews`) : `Actualité`, `Voir en page`, `Lire`, `Aperçu détaillé indisponible pour cette actualité.`, les verbes activity-stream (`a créé`, `a partagé`, `a modifié`, `a publié`, `sur`, `Quelqu'un`) et les libellés de portée (`Privé`, `Réservé aux membres`).
 
