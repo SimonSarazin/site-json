@@ -565,6 +565,24 @@ données saisies (identiques sur la fiche).
 puis config restaurée (`cmp`) · `config:validate` ✅ sur les 19 sites · `audit:config` RAS (185 constats
 au total, inchangé) · intégration SSR tiers-lieux 48/49 (l'échec du `<title>` existe aussi sur `main`).
 
+
+### 09/10 — invitation acceptée : le menu de la fiche suit, « Continuer » mène à la fiche
+
+**Constat** : après avoir accepté une invitation à devenir membre d'un tiers-lieu, le menu « Suivre »
+de la fiche proposait encore « Accepter / Refuser » tant qu'on ne rechargeait pas la page ; et le lien
+de l'e-mail ramenait à l'accueil.
+
+**Fait (moteur, tous les sites)** :
+- `usePermissions` se recalcule quand les liens du compte ou de la fiche changent EN PLACE (le SDK
+  rafraîchit `me` sans en changer la référence) — vaut aussi pour refuser, rejoindre, quitter ;
+- page du lien de l'e-mail (`AcceptInvitationPage`) : après acceptation, compte rafraîchi (non
+  bloquant) et « Continuer » vers `/profil/<slug>` de la cible ; refus → accueil comme avant.
+
+**Vérifié** : `typecheck` ✅ · `eslint` (fichiers du lot) 0 message · `test:unit` 5647/5648 (seul
+échec : `bundle-size`) · tests ajoutés vérifiés **en échec** sans le correctif (permissions,
+redirection, refresh non bloquant) · intégration SSR parent62 98/98, tiers-lieux 48/49 (`<title>`,
+aussi sur `main`). Parcours réel (compte invité qui accepte) non rejoué en local.
+
 ### 24/09ter — un administrateur peut supprimer sa fiche
 
 **Code + config.** L'en-tête de profil propose « Supprimer cette fiche » **en dernier** dans le menu

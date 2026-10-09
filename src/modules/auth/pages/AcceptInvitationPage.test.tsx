@@ -10,10 +10,14 @@ import { MemoryRouter, Route, Routes } from "react-router";
  * « déjà répondu » — la demande reste en attente sans que rien ne le signale.
  */
 
-const state = vi.hoisted(() => ({ callEndpoint: vi.fn() }));
+const state = vi.hoisted(() => ({ callEndpoint: vi.fn(), organization: vi.fn(), refresh: vi.fn() }));
 
 vi.mock("@/hooks/useCocolight", () => ({
-  useCocolight: () => ({ apiClient: { callEndpoint: state.callEndpoint } }),
+  useCocolight: () => ({
+    apiClient: { callEndpoint: state.callEndpoint },
+    api: { organization: state.organization },
+    me: { refresh: state.refresh },
+  }),
 }));
 vi.mock("@/hooks/useLoadNamespace", () => ({ useLoadNamespace: () => ({ loaded: true }) }));
 vi.mock("@/hooks/useT", () => ({ useT: () => (key: string) => key }));
@@ -34,6 +38,8 @@ function rendre(lien: string) {
           path="co2/link/validateinvitationbymail/userId/:userId/targetType/:targetType/targetId/:targetId/*"
           element={<AcceptInvitationPage />}
         />
+        <Route path="profil/:slug" element={<p>fiche du lieu</p>} />
+        <Route path="/" element={<p>accueil</p>} />
       </Routes>
     </MemoryRouter>,
   );
@@ -43,6 +49,9 @@ describe("AcceptInvitationPage — charge utile envoyée au clic", () => {
   beforeEach(() => {
     state.callEndpoint.mockReset();
     state.callEndpoint.mockResolvedValue({ data: { result: true, msg: "ok" } });
+    state.organization.mockReset();
+    state.organization.mockResolvedValue({ slug: "laPlumeALoup" });
+    state.refresh.mockReset();
   });
 
   it("demande (askToBecome) : relaie linkOption et key, avec les libellés de demande", async () => {
@@ -70,6 +79,32 @@ describe("AcceptInvitationPage — charge utile envoyée au clic", () => {
       targetId: "o1",
       answer: "false",
     });
+  });
+
+  it("invitation acceptée : `me` rafraîchi, « Continuer » mène à la fiche rejointe", async () => {
+    rendre(`${BASE}/costum/true/answer/true`);
+    fireEvent.click(screen.getByText("Accepter l'invitation"));
+    await waitFor(() => expect(screen.getByText("Votre réponse a été enregistrée.")).toBeInTheDocument());
+    expect(state.refresh).toHaveBeenCalled();
+    expect(state.organization).toHaveBeenCalledWith({ id: "o1" });
+    fireEvent.click(screen.getByText("JoinByLink.continue"));
+    expect(screen.getByText("fiche du lieu")).toBeInTheDocument();
+  });
+
+  it("un échec du rafraîchissement de `me` n'affiche pas la réponse comme ratée", async () => {
+    state.refresh.mockRejectedValue(new Error("réseau"));
+    rendre(`${BASE}/costum/true/answer/true`);
+    fireEvent.click(screen.getByText("Accepter l'invitation"));
+    await waitFor(() => expect(screen.getByText("Votre réponse a été enregistrée.")).toBeInTheDocument());
+  });
+
+  it("invitation déclinée : « Continuer » ramène à l'accueil", async () => {
+    rendre(`${BASE}/costum/true/answer/false`);
+    fireEvent.click(screen.getByText("Décliner l'invitation"));
+    await waitFor(() => expect(screen.getByText("Votre réponse a été enregistrée.")).toBeInTheDocument());
+    expect(state.organization).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText("JoinByLink.continue"));
+    expect(screen.getByText("accueil")).toBeInTheDocument();
   });
 
   it("rien n'est envoyé au montage : seul le clic déclenche l'action (scanner anti-spam)", () => {
