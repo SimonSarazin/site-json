@@ -3571,6 +3571,12 @@
           "serverKey": "address",
           "read": "address:read",
           "write": "address:write"
+        },
+        "social": {
+          "serverKey": "socialNetwork",
+          "read": "social:readFlat",
+          "write": "coerce:orEmpty",
+          "groupReadOnly": true
         }
       },
       "chrome": {
@@ -3659,6 +3665,31 @@
                 "addressLocality",
                 "postalCode",
                 "streetAddress"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "social",
+          "label": {
+            "fr": "Réseaux sociaux",
+            "en": "Social networks"
+          },
+          "icon": "share-2",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "_social",
+                "github",
+                "gitlab",
+                "facebook",
+                "twitter",
+                "instagram",
+                "diaspora",
+                "mastodon",
+                "telegram",
+                "signal"
               ]
             }
           ]
@@ -3861,6 +3892,75 @@
         "localityId": {
           "widget": "hidden",
           "group": "address"
+        },
+        "_social": {
+          "type": "object",
+          "widget": "editSocial",
+          "label": "",
+          "renderOnly": true
+        },
+        "github": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "github",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "gitlab": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "gitlab",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "facebook": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "facebook",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "twitter": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "twitter",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "instagram": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "instagram",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "diaspora": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "diaspora",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "mastodon": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "mastodon",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "telegram": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "telegram",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "signal": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "signal",
+          "write": "coerce:orEmpty",
+          "group": "social"
         }
       },
       "afterSubmit": "afterSubmit:reloadOnSlugChange",

@@ -8,7 +8,11 @@
  *     composites jamais émises, et `typepro`/`othersTypepro` à la racine (c'est là que le legacy les lit) ;
  *  4. la spec de mutation épingle le costum du formulaire (`schemaCostumSlug`) en édition et refuse la
  *     création (un citoyen naît par l'inscription) ;
- *  5. `othersTypepro` n'est visible/exigé que si `typepro === "autres"`.
+ *  5. `othersTypepro` n'est visible/exigé que si `typepro === "autres"` ;
+ *  6. réseaux sociaux : même codec que le profil générique (objet serveur `socialNetwork` lu à plat, 9 clés
+ *     émises À PLAT — c'est la forme du bloc UPDATE_BLOCK_SOCIAL que `User.save()` envoie) ; le widget
+ *     `_social` n'est jamais émis. Sans cet onglet, le formulaire costum (qui REMPLACE le générique pour le
+ *     propriétaire sur ces deux sites) aurait retiré l'édition des réseaux sociaux.
  */
 import { describe, it, expect } from "vitest";
 import type { EntityTypes, User } from "@communecter/cocolight-api-client";
@@ -87,8 +91,9 @@ describe.each([
     expect(payload.description).toBe("");
     expect(payload.tags).toEqual([]);
     expect(Object.keys(payload).sort()).toEqual([
-      "address", "birthDate", "description", "email", "fixe", "mobile", "name", "othersTypepro",
-      "shortDescription", "slug", "tags", "typepro", "url",
+      "address", "birthDate", "description", "diaspora", "email", "facebook", "fixe", "github", "gitlab",
+      "instagram", "mastodon", "mobile", "name", "othersTypepro", "shortDescription", "signal", "slug", "tags",
+      "telegram", "twitter", "typepro", "url",
     ]);
   });
 
@@ -112,5 +117,16 @@ describe.each([
     expect(check(f.visibleIf, { typepro: "Médecins" })).toBe(false);
     expect(check(f.requiredIf, { typepro: "autres" })).toBe(true);
     expect(check(f.requiredIf, { typepro: "" })).toBe(false);
+  });
+
+  it("6. réseaux sociaux : socialNetwork lu à plat, clés émises à plat, widget _social jamais émis", () => {
+    const fiche = { ...CITOYEN, socialNetwork: { facebook: "https://facebook.com/jean", mastodon: "https://mastodon.social/@jean" } };
+    const values = seedEntity(formSpec, userLike(fiche)) as Record<string, unknown>;
+    expect(values).toMatchObject({ facebook: "https://facebook.com/jean", mastodon: "https://mastodon.social/@jean", twitter: "" });
+    const payload = buildEditPayload(formSpec, { ...values, facebook: "https://facebook.com/jean.test", mastodon: "" }) as Record<string, unknown>;
+    expect(payload).toMatchObject({ facebook: "https://facebook.com/jean.test", mastodon: "" });
+    expect(payload).not.toHaveProperty("socialNetwork");
+    expect(payload).not.toHaveProperty("_social");
+    expect(descriptor.fields._social).toMatchObject({ widget: "editSocial", renderOnly: true });
   });
 });

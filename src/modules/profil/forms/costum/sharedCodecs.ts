@@ -254,6 +254,19 @@ function buildSocialNetwork(links?: Array<{ platform: string; url: string }>): R
 registerTransform("social:read", (v) => parseSocialLinks(v));
 registerTransform("social:write", (links) => buildSocialNetwork(links as Array<{ platform: string; url: string }>));
 
+// ── Codec SOCIAL « À PLAT » (clé `social:readFlat`) ────────────────────────────────────────────────────────
+// Pendant CONFIG du `pf:socialRead` du profil générique (editProfilePayload, non chargé par le chemin costum) :
+// objet serveur `socialNetwork` → les 9 champs plats du bloc UPDATE_BLOCK_SOCIAL. Sert le formulaire costum
+// d'un CITOYEN, dont la lib écrit les réseaux par ce bloc (`User.save()` → updateblock social, clés à plat) —
+// le codec `social:read/write` (liste ↔ objet `socialNetwork`) ne convient qu'aux entités sauvées par
+// element/save. Usage : groupe `{serverKey:"socialNetwork", read:"social:readFlat", write:"coerce:orEmpty",
+// groupReadOnly:true}` + 9 membres `coerce:orEmpty`. Parité avec `pf:socialRead` : sharedCodecs.socialFlat.test.ts.
+export const SOCIAL_FLAT_KEYS = ["github", "gitlab", "facebook", "twitter", "instagram", "diaspora", "mastodon", "telegram", "signal"] as const;
+registerTransform("social:readFlat", (v) => {
+  const sn = (v && typeof v === "object" && !Array.isArray(v) ? v : {}) as Record<string, unknown>;
+  return Object.fromEntries(SOCIAL_FLAT_KEYS.map((k) => [k, typeof sn[k] === "string" ? sn[k] : ""]));
+});
+
 // ── Codecs de GROUPE PARAMÉTRÉS ───────────────────────────────────────────────────────────────────────────
 // Codec générique + `params` en DONNÉES (serializeGroups[x].params, reçus en 3e arg). Réutilisables par toute
 // entité : la spécificité (noms de champs, valeurs connues, format) vit dans le schéma, pas dans du code costum.
