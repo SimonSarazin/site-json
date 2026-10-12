@@ -207,7 +207,7 @@
   {
     "slug": "openAtlas",
     "config": "config.prod.open-atlas.json",
-    "css": "index-rezo-la-mer",
+    "css": "index-open-atlas",
     "images": "openAtlas",
     "env": {
       "VITE_COSTUM_FORCE_LIVE": "true"
