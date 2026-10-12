@@ -4,7 +4,7 @@
  * `../../rezo-sante.configDriven.test.ts`).
  */
 import { describe, it, expect } from "vitest";
-import { tagsHorsThematiques, tagsAvecThematiques } from "./fns";
+import { MARQUEUR_LIEU, tagsHorsThematiques, tagsAvecThematiques } from "./fns";
 
 describe("tagsHorsThematiques (lecture)", () => {
   it("retire des tags les thématiques de la fiche, garde les mots-clés libres et leur ordre", () => {
@@ -26,7 +26,9 @@ describe("tagsHorsThematiques (lecture)", () => {
   it("normalise les formes scalaires que le serveur peut renvoyer", () => {
     expect(tagsHorsThematiques("littoral", "Nutrition")).toEqual(["littoral"]);
     expect(tagsHorsThematiques("Nutrition", "Nutrition")).toEqual([]);
-    expect(tagsHorsThematiques([1, 2], [2])).toEqual(["1"]);
+    // Un tag n'est qu'un TEXTE : les valeurs non textuelles sont écartées, jamais converties
+    // (`toStringArray`, même règle que le `read` par défaut du widget tags) — avant la MR 76, `String(1)`.
+    expect(tagsHorsThematiques([1, 2, "trois"], [2])).toEqual(["trois"]);
   });
 });
 
@@ -55,5 +57,17 @@ describe("tagsAvecThematiques (écriture)", () => {
     const thematic = ["Nutrition"];
     expect([...tagsAvecThematiques(tagsHorsThematiques(enBase, thematic), thematic)].sort())
       .toEqual([...enBase].sort());
+  });
+
+  it("le marqueur des lieux n'est jamais un mot-clé libre d'un acteur : retiré à l'écriture", () => {
+    // L'autocomplétion réseau du widget le propose dès qu'un lieu existe ; un acteur qui le garderait
+    // sortirait de /annuaire et s'éditerait avec le formulaire lieu.
+    expect(tagsAvecThematiques(["pharmacie", MARQUEUR_LIEU, "garde"], ["Nutrition"])).toEqual(["pharmacie", "garde", "Nutrition"]);
+    expect(tagsAvecThematiques([MARQUEUR_LIEU], [])).toEqual([]);
+  });
+
+  it("tags en objet PHP à trous (forme réelle en base) : lus comme un tableau, jamais « [object Object] »", () => {
+    expect(tagsHorsThematiques({ "0": "Nutrition", "2": "littoral" }, ["Nutrition"])).toEqual(["littoral"]);
+    expect(tagsAvecThematiques({ "0": "littoral" }, ["Sommeil"])).toEqual(["littoral", "Sommeil"]);
   });
 });

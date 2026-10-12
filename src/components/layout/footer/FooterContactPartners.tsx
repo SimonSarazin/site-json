@@ -2,6 +2,7 @@ import NavLink from "../NavLink";
 import SocialLinks from "./SocialLinks";
 import { FooterLinkColumn } from "./FooterLinkColumn";
 import { useFooterColumns, useFooterLinks } from "./useFooterLinks";
+import { SOCIAL_ICONS } from "./socialIcons";
 import { MapPin, Phone, Mail, Globe, Building2, Clock } from "lucide-react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -36,7 +37,9 @@ function getIconComponent(icon?: string) {
     return MapPin;
   }
   const key = icon.toLowerCase();
-  return iconMap[key] ?? MapPin;
+  // Réseaux (`facebook`, `linkedin`…) : même table que la rangée `socials`, pour qu'un
+  // réseau ajouté une fois serve aussi aux lignes de contact avec libellé.
+  return SOCIAL_ICONS[key] ?? iconMap[key] ?? MapPin;
 }
 
 export default function FooterContactPartners({ footer }: FooterContactPartnersProps) {

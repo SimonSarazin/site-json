@@ -5,6 +5,7 @@
 import { useMemo } from "react";
 import type { User, Organization } from "@communecter/cocolight-api-client";
 import { useUserOrganizations } from "@/modules/profil/hooks/useMembershipQuery";
+import { validatedAdminLinkFilters } from "@/modules/profil/lib/adminLinks";
 
 export interface AdminOrganization {
   id: string;
@@ -31,19 +32,8 @@ export function useUserAdminOrganizationsQuery(
 ): UseUserAdminOrganizationsResult {
   const userId = currentUser?.id ?? "";
 
-  const filters = useMemo(
-    () =>
-      userId
-        ? {
-            [`links.members.${userId}`]: { $exists: true },
-            [`links.members.${userId}.isAdmin`]: true,
-            [`links.members.${userId}.isAdminPending`]: { $exists: false },
-            [`links.members.${userId}.toBeValidated`]: { $exists: false },
-            [`links.members.${userId}.isInviting`]: { $exists: false },
-          }
-        : undefined,
-    [userId]
-  );
+  // Pas de mémo : la clé de requête est comparée par VALEUR, un nouvel objet de filtres ne la change pas.
+  const filters = userId ? validatedAdminLinkFilters(userId) : undefined;
 
   const { organizations, isLoading } = useUserOrganizations(currentUser, {
     indexStep: 100,

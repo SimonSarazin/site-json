@@ -12,8 +12,10 @@
  *   par `SearchNew::searchFilters:549` — `foreach($value as $k=>$v)` — ET par le backend Node
  *   `buildFilters` qui accepte objet|tableau). Ne PAS passer un tableau (legacy le mangerait mal).
  *
- * ⚠ Le mode `pending` occupe la clé `$or` du filtre : ne pas combiner avec un `defaultFilters` qui
- * poserait aussi un `$or` (aucune resource admin ne le fait aujourd'hui).
+ * Le mode `pending` occupe la clé `$or` du filtre : une resource dont le PÉRIMÈTRE est aussi un `$or`
+ * (provenance `source.key`/`source.keys`/`reference.costum` — rezo-sante, onglets Annuaire et Lieux de
+ * santé) doit le COMPOSER par `mergeMongoFilters` (ET des deux `$or`), jamais l'écraser par
+ * `Object.assign` — cf. AdminResourceTable et le test de ce fichier.
  */
 export function validationStatusFilter(
   costumSlug: string,

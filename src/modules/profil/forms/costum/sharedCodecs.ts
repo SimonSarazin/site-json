@@ -10,6 +10,8 @@
 import { formatISO } from "date-fns";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import { coerceString } from "@/modules/formEngine/engine/coercions";
+import { toStringArray } from "@/helpers/toStringArray";
+import { unionDedup } from "../stamps";
 import { buildAddressFromForm } from "../../hooks/mutationUtils";
 import { DAYS } from "@/constants/DAYS";
 
@@ -310,5 +312,31 @@ registerTransform("multiCsv:write", (_v, all, p) => {
   const arr = (a[af] as string[] | undefined) ?? [], otherText = pickStr(a[of]).trim();
   const parts = arr.map((f) => (f === other ? otherText : f)).filter(Boolean);
   return parts.length > 0 ? parts.join(sep) : undefined;
+});
+
+// fixedTags : champ `tags` dont certains mots-clés sont IMPOSÉS par le formulaire (le marqueur d'annuaire
+// « lieux-sante » de RéseauSanté). Lecture : le widget ne montre que les mots-clés LIBRES ; écriture : les
+// imposés reviennent toujours, en tête, sans doublon. params {field, fixed[]}.
+// Codec de GROUPE, pas de champ : seul un groupe reçoit des `params`, la liste des tags imposés reste donc
+// en config (un codec de champ l'aurait figée en code, un fichier par site — cf. `rezo-sante/fns.ts`).
+// Pas une estampille `append` non plus : en édition elle refusionne les tags serveur, et un mot-clé libre
+// retiré par l'utilisateur reviendrait à chaque enregistrement.
+// Coercion = `toStringArray` (helper source unique) : un `tags` serveur peut être un objet PHP à trous,
+// qu'un `coerceStringArray` rendait vide — le formulaire aurait alors écrasé les mots-clés existants ;
+// union = `unionDedup`, celle des estampilles.
+const fixesDe = (p?: Record<string, unknown>): string[] => toStringArray(p?.fixed);
+
+/** LECTURE — les mots-clés libres : ceux de la fiche moins les imposés. Pure, testée. */
+export function tagsLibres(tags: unknown, fixes: readonly string[]): string[] {
+  return toStringArray(tags).filter((t) => !fixes.includes(t));
+}
+/** ÉCRITURE — les imposés d'abord, puis les libres ; dédupliqué, ordre préservé. Pure, testée. */
+export function tagsAvecFixes(tags: unknown, fixes: readonly string[]): string[] {
+  return unionDedup(fixes, toStringArray(tags)).filter((t): t is string => typeof t === "string");
+}
+registerTransform("fixedTags:read", (v, _all, p) => ({ [String(p?.field ?? "tags")]: tagsLibres(v, fixesDe(p)) }));
+registerTransform("fixedTags:write", (_v, all, p) => {
+  const field = String(p?.field ?? "tags");
+  return tagsAvecFixes((all as Record<string, unknown>)[field], fixesDe(p));
 });
 

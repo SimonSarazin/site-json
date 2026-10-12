@@ -29,20 +29,22 @@ export default function PendingInvitationModal() {
   const name = entity?.serverData?.name ?? "";
   const isOrganization = entityType === "organization";
 
-  // Réponse donnée → retour à l'accueil, quelle que soit la page. La modale s'ouvre partout, y compris
+  // Réponse donnée → on quitte la page courante, quelle qu'elle soit. La modale s'ouvre partout, y compris
   // par-dessus la page du lien Accepter/Refuser du mail (AcceptInvitationPage), dont elle masque le
-  // bouton : l'invitation une fois tranchée ici, cette page n'a plus d'objet.
-  const onRepondu = () => {
+  // bouton : l'invitation une fois tranchée ici, cette page n'a plus d'objet. Acceptée → la fiche
+  // rejointe (comme « Continuer » sur AcceptInvitationPage) ; refusée, ou fiche sans slug → l'accueil.
+  const slug = entity?.slug;
+  const onRepondu = (destination: string) => () => {
     setOpen(false);
-    navigate("/");
+    navigate(destination);
   };
 
   const handleAccept = () => {
-    acceptMutation.mutate(undefined, { onSuccess: onRepondu });
+    acceptMutation.mutate(undefined, { onSuccess: onRepondu(slug ? `/profil/${encodeURIComponent(slug)}` : "/") });
   };
 
   const handleDecline = () => {
-    rejectMutation.mutate(undefined, { onSuccess: onRepondu });
+    rejectMutation.mutate(undefined, { onSuccess: onRepondu("/") });
   };
 
   return (

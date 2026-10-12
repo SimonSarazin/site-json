@@ -293,7 +293,7 @@ interface SmartCoFormProps {
   className?: string;
   showProgress?: boolean;
   showStepNumbers?: boolean;
-  defaultValues?: AllStepsData; // Pré-remplissage (mode édition)
+  defaultValues?: AllStepsData; // Réponse éditée, ou préremplissage d'une création
   answerId?: string;            // ID réponse en cours d'édition
   stepKey?: string;             // Afficher une seule étape (mode standalone)
   inputKey?: string;            // Afficher un seul champ (auto-résout stepKey)
@@ -305,6 +305,7 @@ interface SmartCoFormProps {
   discardDraftRef?: React.RefObject<(() => void) | null>; // rejet explicite du brouillon
   baseUpdatedAt?: number | null;// `answer.updated` — OBLIGATOIRE dès qu'on passe `answerId`
   lockedFields?: string[];      // Champs en lecture seule (pointer-events-none)
+  hiddenFields?: readonly string[]; // Champs MASQUÉS par l'appelant, valeur conservée (cf. DynamicCoForm)
 }
 ```
 
@@ -337,6 +338,14 @@ Formulaire mono-étape basé sur react-hook-form + zodResolver. Gère :
 - Rendu de tous les types de champs via switch sur `field.componentType`
 - Logique conditionnelle via `useConditionalFields`
 - Champs verrouillés (`lockedFields`) : wrapper `pointer-events-none opacity-60`
+- Champs masqués par l'appelant (`hiddenFields`, même espace de clés que `lockedFields` : `field.name`,
+  préfixe de type compris) : non rendus, mais **toujours dans le schéma** — leur valeur (souvent
+  préremplie par `defaultValues`) part au submit. C'est la différence avec `access.restrictedFields`
+  et `hideInForm`, retirés au parse : en mono-étape `z.object` en strippe la valeur, qui serait
+  perdue. Un champ masqué **en erreur** est réaffiché pour être corrigé (sinon l'erreur listée
+  resterait inatteignable), et **reste** affiché ensuite — le remasquer à la première frappe valide
+  le démonterait pendant la saisie (`hooks/useHiddenFields.ts`, partagé avec `MultiStepCoForm`). Premier consommateur : l'onglet
+  profil « Structures » (structure d'un créneau). Préremplir un finder : `utils/finderPrefill.ts`.
 - Auto-submit sur blur via `useWatch` + debounce
 - Propagation de `isDirty` via `onDirtyChange`
 - Soumission programmatique via `submitRef`, rejet du brouillon via `discardDraftRef`
@@ -406,6 +415,7 @@ export interface CoFormModalProps {
   closeOnSubmit?: boolean;    // défaut: true si inputKey absent, false si inputKey fourni
   className?: string;
   lockedFields?: string[];
+  hiddenFields?: readonly string[]; // transmis à SmartCoForm (cf. plus haut)
 }
 ```
 

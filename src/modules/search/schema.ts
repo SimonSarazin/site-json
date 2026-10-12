@@ -438,9 +438,11 @@ export const PreviewConfSchema = z.object({
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
   // table par défaut du composant — découple les IDs de champs du code.
   fields: z.record(z.string(), z.string()).optional(),
-  // Bouton « Modifier » sur le détail `coform-answer` (admins de l'entité du
-  // site) : ouvre l'édition de l'answer en CoFormModal. Opt-in — sans ce flag,
-  // le preview reste strictement lecture seule (aucun changement des sites existants).
+  // Bouton « Modifier » sur le détail `coform-answer`, réservé aux gestionnaires de
+  // la réponse (super-admin, admin du costum, admin validé de la structure citée) et à
+  // son AUTEUR quand la recherche projette `user` (`canEditCoformAnswer`) : ouvre
+  // l'édition de l'answer en CoFormModal. Opt-in — sans ce flag, le preview reste
+  // strictement lecture seule (aucun changement des sites existants).
   editButton: z.boolean().optional(),
   /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
   facets: z.array(PreviewFacetSchema).optional(),
@@ -592,6 +594,10 @@ export const ResourceDirectoryConfSchema = z.object({
     linkSuffix: z.string().optional(),
     descriptionSuffix: z.string().optional(),
     servicesSuffix: z.string().optional(),
+    detailSuffixes: z.object({
+      equipments: z.string(), catering: z.string(), services: z.string(), roomType: z.string(),
+      moreInfo: z.string(), about: z.string(), tip: z.string(),
+    }).partial().optional(),
   })),
   finderSuffix: z.string(),
   fieldSuffixes: z.object({
@@ -617,7 +623,9 @@ export type ColorByConf = z.infer<typeof ColorByConfSchema>;
 /** Chips de tags des cartes : couleur par tag (`mapping`), libellé lisible
  *  (`labels`, déf. namespace retiré + capitalisation) et MASQUAGE des tags
  *  techniques (`hidePrefixes`, ex. `public:`/`age:` — filtrants mais pas
- *  affichables bruts). Consommé par `decorateTags` (lib/colorBy).
+ *  affichables bruts ; `hideTags`, égalité STRICTE, pour un marqueur complet
+ *  comme `lieux-sante` qui ne doit pas emporter `lieux-sante-mentale`).
+ *  Consommé par `decorateTags` (lib/colorBy).
  *  `paths` : dot-paths serverData dont les valeurs s'ajoutent aux chips —
  *  nécessaire quand la taxonomie vit dans des CHAMPS et non dans `tags`
  *  (parent62 : `["territoires"]`), cf. `collectChipValues`. */
@@ -625,6 +633,7 @@ export const TagColorsConfSchema = z.object({
   mapping: z.record(z.string(), z.string()),
   labels: z.record(z.string(), z.string()).optional(),
   hidePrefixes: z.array(z.string()).optional(),
+  hideTags: z.array(z.string()).optional(),
   paths: z.array(z.string()).optional(),
 });
 export type TagColorsConf = z.infer<typeof TagColorsConfSchema>;
@@ -646,6 +655,10 @@ export const CardConfSchema = z.object({
     // `false` sur un annuaire de structures qui ne portent pas de projets : le
     // compteur y afficherait « 0 » sur toutes les fiches, ce qui n'informe de rien.
     showStats:       z.boolean().optional(),
+    // Boutons « Contacter » / « Suivre » de la carte `profile`. Absent = affichés (24 usages du
+    // parc inchangés). `false` sur un annuaire de LIEUX : on ne « suit » pas un cabinet, et
+    // « Contacter » n'ouvre aujourd'hui qu'un toast « à venir ».
+    showActions:     z.boolean().optional(),
     // Affiche la barre de progression de financement (cagnotte) sur la carte +
     // déclenche la query useFundingEnvelope. Découple la feature funding du style
     // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).
@@ -1166,6 +1179,10 @@ const AddButtonConfigSchema = z.object({
   // (CoFormModal) au lieu d'une modale d'entité — ex. « Ajouter un créneau »
   // (1 créneau = 1 answer). Prioritaire sur modal/organization/project/poi.
   coform: z.string().optional(),
+  // Message affiché après la création d'une answer (`coform`). À poser sur un formulaire
+  // MODÉRÉ : la réponse déposée n'apparaît pas dans la liste publique, et sans message le
+  // déposant croirait à un échec. Absent = aucun message (comportement historique).
+  successMessage: LocalizedString.optional(),
   // `false` → le bouton s'affiche dès que `show: true`, sans exiger le rôle
   // admin du site (un non-connecté qui clique passe par le login). Cas d'usage :
   // déclaration publique d'answer CoForm modérée en aval (filtre `state`).
@@ -1337,6 +1354,17 @@ const ResourceTypeConfSchema = z.object({
   descriptionSuffix: z.string().optional(),
   /** Suffixe de l'input « Services proposés » (`string[]`), PROPRE au formulaire (hébergement `miq86g5vaw1kavrapkb`). */
   servicesSuffix: z.string().optional(),
+  /**
+   * Champs du DÉTAIL de la ressource, par suffixe d'input — les mêmes que la fiche du lieu
+   * (`profile-about-tl`, `roomPath`/`coworkingPath`/`bedRoomPath`) : listes `equipments`, `catering`,
+   * `services`, `roomType` ; textes `moreInfo` (« Bon à savoir »), `about` (« À propos du lieu »),
+   * `tip` (« Le petit truc en plus »). Fourni, l'aperçu montre CES blocs, sous les libellés de la fiche,
+   * à la place de `fieldSuffixes.equipments`/`descriptionSuffix`/`servicesSuffix`. Absent : rendu historique.
+   */
+  detailSuffixes: z.object({
+    equipments: z.string(), catering: z.string(), services: z.string(), roomType: z.string(),
+    moreInfo: z.string(), about: z.string(), tip: z.string(),
+  }).partial().optional(),
 });
 
 /**
@@ -1747,6 +1775,14 @@ export interface SwitchDetailsModeProps<T extends SearchListEntity = SearchEntit
   preview?: ListConf["preview"];
   /** Config `list` complète — thread une fois pour les configs par-type (cf. SearchListViewProps.list). */
   list?: ListConf;
+  /**
+   * Fin d'une ÉDITION faite depuis le détail. Le détail n'invalide que les caches qu'il connaît
+   * (listes search, réponse coform) : l'hôte qui montre la fiche AILLEURS — une table admin et ses
+   * tuiles — y invalide les siens. Seul `coform-answer` (+ `editButton`) le signale aujourd'hui ;
+   * les autres contenus qui écrivent ne le relaient pas, un hôte qui en dépend doit les refuser
+   * (cf. `ADMIN_PREVIEW_TYPES`, admin/schema.ts). Absent : rien de plus.
+   */
+  onEdited?: () => void;
 }
 
 export interface DetailsModeProps<T extends SearchListEntity = SearchEntity> {
@@ -1756,6 +1792,8 @@ export interface DetailsModeProps<T extends SearchListEntity = SearchEntity> {
   /** Config `list` complète — thread une fois pour les configs par-type (cf. SearchListViewProps.list). */
   list?: ListConf;
   item: T;
+  /** Transmis tel quel au contenu — cf. `SwitchDetailsModeProps.onEdited`. */
+  onEdited?: () => void;
 }
 
 export interface SearchCardProps<T extends SearchListEntity = SearchEntity> {
@@ -1778,6 +1816,8 @@ export interface PreviewProps<T extends SearchListEntity = SearchEntity> {
   list?: ListConf;
   /** Ferme le conteneur de détail (drawer/dialog) — fourni par le conteneur. */
   onClose?: () => void;
+  /** Fin d'une édition faite depuis ce contenu — cf. `SwitchDetailsModeProps.onEdited`. */
+  onEdited?: () => void;
 }
 
 export interface SearchMapWrapperProps<T extends SearchListEntity = SearchEntity> {
@@ -1826,4 +1866,6 @@ export interface MapPopupProps<T extends SearchListEntity = SearchEntity> {
   actionKind?: "profil" | "preview";
   /** Handler du bouton d'action — fourni par SearchMap (popup react-map-gl). */
   onAction?: () => void;
+  /** Chips de tags : la MÊME conf que la carte de liste (`list.card.tagColors`) — un tag masqué en liste l'est aussi ici. */
+  tagColors?: TagColorsConf;
 }

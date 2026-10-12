@@ -363,6 +363,8 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
   // remplisse la boîte qu'il dimensionne au lieu de `min-h-screen`.
   const defaultContainerClass = useMapContainerClass("z-10 rounded shadow overflow-hidden");
   const mapContainerClass = containerClass ?? defaultContainerClass;
+  // Résolue UNE fois par rendu : `resolveAction` évalue les `itemRules`, la popup en lit deux champs.
+  const selectedAction = selected ? resolveAction(selected.entry) : null;
 
   return (
     <>
@@ -443,7 +445,9 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
                     t={t}
                     // Libellé aligné sur l'action EFFECTIVE de cet item : « Voir le profil » pour
                     // `profil`, « En savoir plus » pour `preview` comme pour `link`.
-                    actionKind={resolveAction(selected.entry).decision.kind === "profil" ? "profil" : "preview"}
+                    actionKind={selectedAction?.decision.kind === "profil" ? "profil" : "preview"}
+                    // La conf de carte de CET item (règles `itemRules` comprises) : ses chips suivent la liste.
+                    tagColors={selectedAction?.itemList?.card?.tagColors}
                     onAction={() => handlePopupAction(selected.entry)}
                   />
                 </Suspense>
