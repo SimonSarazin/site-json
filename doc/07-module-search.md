@@ -683,7 +683,7 @@ pour les salles de réunion il désigne en réalité la Restauration — d'où `
 **Bouton d'action** — trois cas : (a) `bookingUrl` présent → **« Réserver »**
 (`https://` préfixé, `window.open`) ; (b) pas de `bookingUrl` mais un e-mail de
 tiers-lieu connu (`model.parentEmail` = `serverData.email` remonté par le backend,
-repli `parentEmails`) → **« Contacter par e-mail »** = un simple `<a href="mailto:…">`
+repli `parentEmails`) → **« Réserver par e-mail »** = un simple `<a href="mailto:…">`
 vers l'adresse du tiers-lieu (objet pré-rempli `resourceDirectory.mailtoSubject`,
 corps laissé au visiteur — **aucun formulaire, aucun envoi côté site**) ; (c) ni
 l'un ni l'autre → pas de bouton d'action. Toujours **« Voir le tiers-lieu »** si

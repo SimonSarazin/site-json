@@ -892,7 +892,7 @@ moteur config-agnostique **`coform-resource-directory`** (module `search`), vari
 Contenu : facettes « type » + 3 groupes prix (heure / demi-journée / journée, calqués Communecter) ;
 carte à carrousel automatique, clic sur le tiers-lieu porteur = filtre « porté par » ; modal « En
 savoir plus » (gabarit `ProfilTiersLieuxAbout`) avec bouton **« Réserver »** (lien de résa) ou
-**« Contacter par e-mail »** (`mailto:` de l'e-mail du tiers-lieu) sinon.
+**« Réserver par e-mail »** (`mailto:` de l'e-mail du tiers-lieu) sinon.
 
 **Gates** : `config:validate` ✅ (14 pages, 26 sections) · `audit:config` RAS · `config:render`
 14/14 · `tsc -b` / `eslint` / préflights `search` ✅.

@@ -29,7 +29,7 @@ function isYes(v: string | undefined): boolean {
  * Détail d'une ressource de tiers-lieu (`preview.type: "resource-directory"`).
  * Même composant que le détail d'une ressource sur la fiche du lieu (`ResourceDetail`,
  * partagé avec `ProfilTiersLieuxAbout`), avec en plus le porteur et son adresse. Bouton d'action :
- * « Réserver » (lien de résa en ligne) OU « Contacter par e-mail » (`mailto:` de
+ * « Réserver » (lien de résa en ligne) OU « Réserver par e-mail » (`mailto:` de
  * l'e-mail du tiers-lieu) si pas de lien ; toujours « Voir le tiers-lieu ». Pas
  * d'étiquette de type. Adapté aux jetons de thème (clair + sombre).
  */

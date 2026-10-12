@@ -328,7 +328,7 @@
     "resourceDirectory.filterByParent": "Voir les ressources de {{name}}",
     "resourceDirectory.activeParentFilter": "Ressources portées par {{name}}",
     "resourceDirectory.clearParentFilter": "Retirer le filtre",
-    "resourceDirectory.contactByEmail": "Contacter par e-mail",
+    "resourceDirectory.contactByEmail": "Réserver par e-mail",
     "resourceDirectory.mailtoSubject": "Demande de réservation — {{name}}",
     "resourceDirectory.detail.equipments": "Équipements",
     "resourceDirectory.detail.catering": "Restauration",
