@@ -93,8 +93,11 @@ export default function AcceptInvitationPage() {
           // `me` porte les liens lus par le menu d'actions de la fiche : sans ce rafraîchissement, il y
           // proposerait encore « Accepter / Refuser » l'invitation qu'on vient de valider.
           // Non bloquant : la réponse est déjà enregistrée, un échec ici ne doit pas l'afficher comme ratée.
-          await Promise.resolve(me?.refresh?.()).catch(() => undefined);
-          const chemin = api ? await cheminFicheCible(api, targetType!, targetId!).catch(() => null) : null;
+          // Indépendants : lancés ensemble, un seul aller-retour avant la confirmation.
+          const [, chemin] = await Promise.all([
+            Promise.resolve(me?.refresh?.()).catch(() => undefined),
+            api ? cheminFicheCible(api, targetType!, targetId!).catch(() => null) : null,
+          ]);
           if (chemin) setDestination(chemin);
         }
         // `next` sans `result` : idempotence, déjà répondu (user/target existent, flag retiré).

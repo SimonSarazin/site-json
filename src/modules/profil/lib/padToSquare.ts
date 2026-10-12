@@ -1,5 +1,3 @@
-import { imageNaturalSize } from "./imageNaturalSize";
-
 /** Côté du carré et position de l'image `width × height` centrée dedans, sans la réduire. */
 export function squarePlacement(width: number, height: number): { size: number; x: number; y: number } {
   const size = Math.max(width, height);
@@ -16,12 +14,13 @@ export function squarePlacement(width: number, height: number): { size: number; 
 export async function padFileToSquare(file: File): Promise<File> {
   const url = URL.createObjectURL(file);
   try {
-    const { width, height } = await imageNaturalSize(url);
-    if (width === height) return file;
-    const { size, x, y } = squarePlacement(width, height);
+    // Un seul décodage : l'image sert à la fois à lire ses dimensions et à dessiner le carré.
     const image = new Image();
     image.src = url;
     await image.decode();
+    const { naturalWidth: width, naturalHeight: height } = image;
+    if (width === height) return file;
+    const { size, x, y } = squarePlacement(width, height);
     const canvas = document.createElement("canvas");
     canvas.width = size;
     canvas.height = size;

@@ -676,7 +676,7 @@ même ordre et sous les mêmes libellés (`lib/resourceDetails.ts`, partagé ave
 listes `equipments`, `catering` (Restauration), `services`, `roomType` ; textes `moreInfo`
 (Bon à savoir), `about` (À propos du lieu), `tip` (Le petit truc en plus), rendus en
 markdown/HTML sanitisé. Sans `detailSuffixes` (rendu historique) : **À propos**
-(`descriptionSuffix`) → **Équipements** (`fieldSuffixes.equipments`) → **Services
+(`descriptionSuffix`, texte brut, sauts de ligne gardés) → **Équipements** (`fieldSuffixes.equipments`) → **Services
 proposés** (`servicesSuffix`). ⚠️ `fieldSuffixes.equipments` est COMMUN aux 3 formulaires :
 pour les salles de réunion il désigne en réalité la Restauration — d'où `detailSuffixes`.
 

@@ -21,9 +21,6 @@ vi.mock("../../hooks/useProfileMutations", () => ({
   useUploadProfileImage: () => ({ mutateAsync: state.uploadImage, isPending: false }),
   useUploadProfileBanner: () => ({ mutateAsync: state.uploadBanner, isPending: false }),
 }));
-vi.mock("../../lib/imageNaturalSize", () => ({
-  imageNaturalSize: vi.fn().mockResolvedValue({ width: 1200, height: 400 }),
-}));
 // Le vrai dialogue monte un recadreur canvas : on n'en garde que ses commandes et les formats reçus.
 const carre = new File(["carre"], "photo.png", { type: "image/png" });
 const padFileToSquare = vi.fn(async (_file: File) => carre);
@@ -37,7 +34,7 @@ vi.mock("@/modules/news", () => ({
   }: {
     open: boolean;
     onCrop: (blob: Blob, area: { x: number; y: number; width: number; height: number }) => void;
-    onUseOriginal?: () => void;
+    onUseOriginal?: (taille: { width: number; height: number }) => void;
     aspectOptions?: { label: string }[];
   }) => {
     state.formats = (aspectOptions ?? []).map((o) => o.label);
@@ -47,7 +44,7 @@ vi.mock("@/modules/news", () => ({
           appliquer
         </button>
         {onUseOriginal && (
-          <button type="button" onClick={onUseOriginal}>
+          <button type="button" onClick={() => onUseOriginal({ width: 1200, height: 400 })}>
             image entière
           </button>
         )}

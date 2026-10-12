@@ -65,8 +65,12 @@ describe("ImageCropDialog — sélecteur de format", () => {
     const onUseOriginal = vi.fn();
     const onOpenChange = vi.fn();
     render(<ImageCropDialog {...base} onOpenChange={onOpenChange} onUseOriginal={onUseOriginal} />);
-    await userEvent.click(screen.getByRole("button", { name: "forms.imageCrop.useOriginal" }));
-    expect(onUseOriginal).toHaveBeenCalledTimes(1);
+    const bouton = screen.getByRole("button", { name: "forms.imageCrop.useOriginal" });
+    // Inactif tant que le recadreur n'a pas lu les dimensions de la photo.
+    expect((bouton as HTMLButtonElement).disabled).toBe(true);
+    await userEvent.click(screen.getByText("photo portrait chargée"));
+    await userEvent.click(bouton);
+    expect(onUseOriginal).toHaveBeenCalledWith({ width: 400, height: 800 });
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 

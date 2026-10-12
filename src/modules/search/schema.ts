@@ -8,6 +8,7 @@ import { IconName } from "lucide-react/dynamic";
 // search — `observatoire/schema.ts`, lui, importe celui-ci (cf. son en-tête).
 import { ObservatoryPanelConfSchema } from "@/modules/observatoire/dashboardSchema";
 import { z } from "zod";
+import { RESOURCE_NOTE_KEYS, RESOURCE_TAG_KEYS, type ResourceDetailKey } from "./lib/resourceDetails";
 
 /**
  * Nom d'icône lucide. Typé `IconName` (au lieu de `z.string()`) sans énumérer les
@@ -580,6 +581,20 @@ export const ResourceConfSchema = z.object({
 export type ResourceConf = z.infer<typeof ResourceConfSchema>;
 
 /**
+ * Suffixes d'input du détail d'une ressource (`resourceTypes[].detailSuffixes`), tous optionnels. Clés
+ * tirées de `RESOURCE_TAG_KEYS`/`RESOURCE_NOTE_KEYS` : la liste des blocs n'est écrite qu'une fois.
+ */
+const DetailSuffixesSchema = z
+  .object(
+    Object.fromEntries([...RESOURCE_TAG_KEYS, ...RESOURCE_NOTE_KEYS].map((cle) => [cle, z.string()])) as Record<
+      ResourceDetailKey,
+      z.ZodString
+    >,
+  )
+  .partial()
+  .optional();
+
+/**
  * Contrat « resource-directory » (cf. section `coform-resource-directory`) — lu
  * par Card/PreviewResourceDirectory dans `list.resourceDirectory`. La section le
  * remplit depuis ses propres props ; il n'est pas destiné à être écrit à la main.
@@ -594,10 +609,7 @@ export const ResourceDirectoryConfSchema = z.object({
     linkSuffix: z.string().optional(),
     descriptionSuffix: z.string().optional(),
     servicesSuffix: z.string().optional(),
-    detailSuffixes: z.object({
-      equipments: z.string(), catering: z.string(), services: z.string(), roomType: z.string(),
-      moreInfo: z.string(), about: z.string(), tip: z.string(),
-    }).partial().optional(),
+    detailSuffixes: DetailSuffixesSchema,
   })),
   finderSuffix: z.string(),
   fieldSuffixes: z.object({
@@ -1361,10 +1373,7 @@ const ResourceTypeConfSchema = z.object({
    * `tip` (« Le petit truc en plus »). Fourni, l'aperçu montre CES blocs, sous les libellés de la fiche,
    * à la place de `fieldSuffixes.equipments`/`descriptionSuffix`/`servicesSuffix`. Absent : rendu historique.
    */
-  detailSuffixes: z.object({
-    equipments: z.string(), catering: z.string(), services: z.string(), roomType: z.string(),
-    moreInfo: z.string(), about: z.string(), tip: z.string(),
-  }).partial().optional(),
+  detailSuffixes: DetailSuffixesSchema,
 });
 
 /**
