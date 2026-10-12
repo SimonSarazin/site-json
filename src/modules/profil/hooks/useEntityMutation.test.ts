@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, vi } from "vitest";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import { runEntityMutation, type EntityMutationSpec } from "./useEntityMutation";
+import { runEntityMutation, CITOYEN_CREATE_UNSUPPORTED, type EntityMutationSpec } from "./useEntityMutation";
 import type { SpecStamp } from "../forms/entityModalSpec";
 import { buildParentReference, buildOrganizerReference } from "./mutationUtils";
 // side-effect : enregistre pf:* / poi:* / tl:* + fournit les builders de référence.
@@ -379,6 +379,42 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
  * (CAE : `organizationsTls`, presets `tags:"CAE"`/`role:"admin"`). Le relais n'a de sens que sur un
  * SCOPE COSTUM : `me`/un parent (BaseEntity) ne connaissent pas ce 2e argument.
  */
+/**
+ * Un citoyen ne se CRÉE pas par cette voie (docs/33 §2 : il naît par l'inscription ; `element/save`
+ * citoyens est une mise à jour seule). L'ancien mapping `SDK_METHOD.citoyens = "organization"` aurait
+ * fait naître une ORGANISATION d'un formulaire citoyen ouvert en mode ajout — en silence.
+ */
+describe("runEntityMutation — création de citoyen refusée AVANT tout appel SDK", () => {
+  const specAdd = (): EntityMutationSpec => ({ ...base, mode: "add", entityType: "citoyens", buildPayload: (d) => d });
+
+  it("cible directe (me) : erreur explicite, aucune méthode SDK appelée, aucun save", async () => {
+    const sdk = makeSdk();
+    await expect(runEntityMutation(specAdd(), { name: "Jean" }, { me: sdk.me })).rejects.toThrow(CITOYEN_CREATE_UNSUPPORTED);
+    expect(sdk.calls).toEqual([]);
+    expect(sdk.getSaves()).toBe(0);
+  });
+
+  it("scope costum AMBIANT ou EXPLICITE : refusé de la même façon (jamais `me.costum(slug).organization`)", async () => {
+    const sdk = makeSdk();
+    await expect(runEntityMutation({ ...specAdd(), costumSlug: "sportSanteBienetre" }, { name: "Jean" }, { me: sdk.me }))
+      .rejects.toThrow(/création de citoyen non supportée/);
+    await expect(runEntityMutation(specAdd(), { name: "Jean" }, { me: sdk.me, contextEntity: fakeRef }))
+      .rejects.toThrow(/création de citoyen non supportée/);
+    expect(sdk.calls).toEqual([]);
+  });
+
+  it("l'ÉDITION d'un citoyen reste possible (chemin submitEntityEdit inchangé)", async () => {
+    const editable = makeEditable();
+    await runEntityMutation(
+      { ...base, mode: "edit", entityType: "citoyens", target: editable as unknown as EntityTypes, buildPayload: (d) => d },
+      { name: "Jean", typepro: "Médecins" },
+      { me: null },
+    );
+    expect(editable.saves).toBe(1);
+    expect(editable.data).toEqual({ name: "Jean", typepro: "Médecins" });
+  });
+});
+
 describe("runEntityMutation — sous-type costum ciblé (subType)", () => {
   const caePorteur = { id: "ctx", getEntityType: () => "organizations", serverData: { slug: "federationDesCae" } } as unknown as EntityTypes;
   const specOrga = (over: Partial<EntityMutationSpec> = {}): EntityMutationSpec => ({

@@ -31,10 +31,24 @@ import type { SpecStamp } from "../forms/entityModalSpec";
 export type EntityKind = "organizations" | "projects" | "events" | "poi" | "citoyens";
 type SdkMethod = "organization" | "project" | "event" | "poi";
 
-/** entityType → méthode de création du SDK. (citoyens : pas de create par cette voie.) */
-const SDK_METHOD: Record<EntityKind, SdkMethod> = {
-  organizations: "organization", projects: "project", events: "event", poi: "poi", citoyens: "organization",
+/**
+ * entityType → méthode de création du SDK. `citoyens` n'y figure PAS, et c'est structurel : un
+ * citoyen ne se crée que par l'inscription (`person/register`) ; `element/save` collection=citoyens
+ * est une mise à jour seule (contrat `SAVE_CITOYEN`), et la lib n'a aucun créateur de personne
+ * (cocolight-backend/docs/33 §2). L'ancien mapping `citoyens: "organization"` aurait fait créer une
+ * ORGANISATION par un formulaire citoyen ouvert en mode ajout — cf. `assertCreatable`.
+ */
+const SDK_METHOD: Record<Exclude<EntityKind, "citoyens">, SdkMethod> = {
+  organizations: "organization", projects: "project", events: "event", poi: "poi",
 };
+
+/** Message levé par une CRÉATION de citoyen — AVANT tout appel SDK. Exporté pour les tests. */
+export const CITOYEN_CREATE_UNSUPPORTED =
+  "création de citoyen non supportée par cette voie (un citoyen naît par l'inscription ; element/save citoyens est une mise à jour seule)";
+
+function assertCreatable(kind: EntityKind): asserts kind is Exclude<EntityKind, "citoyens"> {
+  if (kind === "citoyens") throw new Error(CITOYEN_CREATE_UNSUPPORTED);
+}
 
 type Data = Record<string, unknown>;
 /** Instance créée par le SDK : sauvegardable + slug pour la navigation + `updateField` (canal
@@ -293,6 +307,8 @@ export async function runEntityMutation(
   }
 
   // ── CRÉATION ──────────────────────────────────────────────────────────────────
+  // Garde AVANT tout appel SDK : un form citoyen en mode ajout n'a aucune cible de création.
+  assertCreatable(spec.entityType);
   const target = (spec.target ?? me) as EntityTypes | null;
   if (!target) throw new Error("No entity provided");
 
