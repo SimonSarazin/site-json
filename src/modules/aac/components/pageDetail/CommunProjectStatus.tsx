@@ -7,6 +7,7 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { cn } from "@/lib/utils";
 import { showErrorToast } from "@/lib/toastUtils";
+import { StatusPill } from "../StatusPill";
 
 /**
  * Le projet d'un commun AAC, côté lecture : « Ouvrir le projet », visible de TOUS, et la pastille
@@ -89,14 +90,8 @@ export function CommunProjectBadge({ className }: { className?: string }) {
   const t = useT("modules/aac");
 
   return (
-    <span
-      className={cn(
-        "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap",
-        "bg-accent/80 text-accent-foreground",
-        className
-      )}
-    >
+    <StatusPill tone="accent" className={className}>
       {String(t("detail.project.proposalPhaseBadge"))}
-    </span>
+    </StatusPill>
   );
 }
