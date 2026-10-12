@@ -7,6 +7,7 @@ import { useUploadProfileImage, useUploadProfileBanner } from "../../hooks/usePr
 import { ImageCropDialog } from "@/modules/news";
 import type { AspectOption } from "@/modules/news/components/forms/ImageCropDialog";
 import { imageNaturalSize } from "../../lib/imageNaturalSize";
+import { padFileToSquare } from "../../lib/padToSquare";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 
 interface ProfileImageUploadProps {
@@ -24,7 +25,8 @@ interface ProfileImageUploadProps {
  * - Preview de l'image actuelle
  * - Upload immédiat au choix du fichier
  * - Crop avec ImageCropDialog — avatar comme bannière : au format choisi (photo d'origine par
- *   défaut) ou envoyée entière, pour garder la taille de la photo
+ *   défaut) ou envoyée entière, pour garder la taille de la photo ; la photo de profil est
+ *   complétée en carré transparent si besoin (entière partout, cf. `padFileToSquare`)
  * - Loading state pendant l'upload
  *
  * @param entity - L'entité dont on modifie l'image
@@ -107,7 +109,8 @@ export function ProfileImageUpload({
           cropH: cropArea.height,
         });
       } else {
-        await uploadImageMutation.mutateAsync(croppedFile);
+        // Toujours carrée à l'envoi, même au format « Original » : cf. `padFileToSquare`.
+        await uploadImageMutation.mutateAsync(await padFileToSquare(croppedFile));
       }
 
       // Nettoyer

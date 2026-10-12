@@ -25,6 +25,9 @@ vi.mock("../../lib/imageNaturalSize", () => ({
   imageNaturalSize: vi.fn().mockResolvedValue({ width: 1200, height: 400 }),
 }));
 // Le vrai dialogue monte un recadreur canvas : on n'en garde que ses commandes et les formats reçus.
+const carre = new File(["carre"], "photo.png", { type: "image/png" });
+const padFileToSquare = vi.fn(async (_file: File) => carre);
+vi.mock("../../lib/padToSquare", () => ({ padFileToSquare: (f: File) => padFileToSquare(f) }));
 vi.mock("@/modules/news", () => ({
   ImageCropDialog: ({
     open,
@@ -83,10 +86,19 @@ describe("ProfileImageUpload — envoi de la bannière et de la photo de profil"
     expect(state.uploadBanner).toHaveBeenCalledWith({ file: photo, cropX: 0, cropY: 0, cropW: 1200, cropH: 400 });
   });
 
-  it("photo de profil, image entière : le fichier d'origine part tel quel", async () => {
+  it("photo de profil, image entière : le fichier d'origine, complété en carré, est envoyé", async () => {
     await choisirPhoto("profile");
     fireEvent.click(screen.getByText("image entière"));
-    await waitFor(() => expect(state.uploadImage).toHaveBeenCalledWith(photo));
+    await waitFor(() => expect(state.uploadImage).toHaveBeenCalledWith(carre));
+    expect(padFileToSquare).toHaveBeenCalledWith(photo);
+  });
+
+  it("bannière : jamais complétée en carré", async () => {
+    padFileToSquare.mockClear();
+    await choisirPhoto("banner");
+    fireEvent.click(screen.getByText("image entière"));
+    await waitFor(() => expect(state.uploadBanner).toHaveBeenCalled());
+    expect(padFileToSquare).not.toHaveBeenCalled();
   });
 
   it("bannière recadrée : l'image recadrée et ses dimensions, sans décalage", async () => {

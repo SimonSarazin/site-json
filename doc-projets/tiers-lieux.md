@@ -591,7 +591,9 @@ aussi sur `main`). Parcours réel (compte invité qui accepte) non rejoué en lo
   « Original » (ratio de la photo, par défaut), 16:9, 3:1, 4:3, carré — ou « Utiliser l'image
   entière », qui envoie le fichier d'origine (bannière : zone de recadrage = toute la photo, la copie
   `profilBannerUrl` garde donc la même taille). Option `aspectOptions` d'`ImageCropDialog` (absente =
-  rendu inchangé, ex. actus) ;
+  rendu inchangé, ex. actus) ; « Utiliser l'image entière » ferme le dialogue dès le clic (pas de
+  double envoi) ; une photo de profil non carrée part complétée en carré transparent (image entière
+  centrée) : entière aussi dans le menu compte, les cartes, les commentaires et la miniature backend ;
 - affichage : bannière inchangée (`object-cover`) ; photo de profil de l'en-tête `complete` en
   `object-contain` — un logo large n'est plus rogné (une photo carrée reste coupée aux coins du rond).
 

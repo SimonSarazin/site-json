@@ -789,7 +789,9 @@ export const ProfileHeaderSectionSchema = z.object({
 
 **Bannière et photo de profil — envoi** (`ProfileImageUpload`) : le recadrage propose un format — « Original » (ratio de la
 photo, sélectionné par défaut), 16:9, 3:1, 4:3, carré — ou « Utiliser l'image entière », qui envoie le
-fichier d'origine sans le retoucher. L'affichage, lui, ne change pas (cadre fixe en `object-cover`).
+fichier d'origine sans le retoucher. Une photo de profil non carrée est complétée, avant l'envoi, en
+carré transparent (PNG, image entière centrée — `padFileToSquare`) : elle s'affiche en rond
+`object-cover` hors de l'en-tête et le backend en tire une miniature 50×50 recadrée au centre. L'affichage, lui, ne change pas (cadre fixe en `object-cover`).
 ⚠️ `bannerHeight` n'est lu par aucun composant.
 
 ### Supprimer une fiche depuis son profil
