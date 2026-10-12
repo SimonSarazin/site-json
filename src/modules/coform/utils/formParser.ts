@@ -230,6 +230,9 @@ export function isTruthyFlag(value: unknown): boolean {
  * (`survey/…/cplx/finder.php`, `$paramsData`) : `elementLabel` en dur, placeholder traduit dans la
  * langue de qui configure (en / fr / it). Mesuré en base de dev le 01/10 : 21 finders sur 86 portent
  * « Elément », 32 le placeholder français.
+ *
+ * Le libellé du BOUTON n'y figure pas : cette modale n'a pas de champ `buttonLabel`, le legacy calcule
+ * son défaut à l'affichage sans jamais l'enregistrer (0 finder sur 89, mesuré le 12/10).
  */
 const LEGACY_FINDER_DEFAULTS = new Set([
   "Elément",

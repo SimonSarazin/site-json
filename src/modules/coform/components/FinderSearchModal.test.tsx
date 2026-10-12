@@ -186,6 +186,8 @@ describe("FinderSearchModal — « Ajouter »", () => {
 
     expect(screen.getByRole("status")).toHaveTextContent("coform.finder.modal.searching");
     expect(screen.getAllByText("coform.finder.modal.searching")).toHaveLength(1);
+    // … et ce texte est AFFICHÉ : il tient la place dans la zone de résultats, pas seulement pour un lecteur d'écran.
+    expect(screen.getByText("coform.finder.modal.searching")).not.toHaveClass("sr-only");
     expect(screen.queryByText(/coform\.finder\.modal\.noResults/)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "coform.finder.modal.addNewButton" })).not.toBeInTheDocument();
   });
@@ -215,6 +217,18 @@ describe("FinderSearchModal — « Ajouter »", () => {
     expect(screen.getByRole("textbox")).toHaveFocus();
   });
 
+  it("une alerte ne coiffe jamais une liste : celle d'une saisie précédente ne répond pas à la saisie en échec", async () => {
+    etat.resultats = [EXISTANTE];
+    etat.courante = false;
+    etat.erreur = new Error("500");
+    const { user } = monter(finder());
+    await user.type(screen.getByRole("textbox"), "Suite127");
+
+    expect(screen.getByRole("alert")).toHaveTextContent("coform.finder.modal.searchError");
+    expect(screen.queryByRole("checkbox", { name: /Suite126/ })).not.toBeInTheDocument();
+    expect(screen.queryByText(/coform\.finder\.modal\.resultsHeading/)).not.toBeInTheDocument();
+  });
+
   it("sans entité hôte, pas de « Réessayer » : la relance ne pourrait rien changer", async () => {
     etat.courante = false;
     etat.erreur = new Error("hôte");
@@ -233,9 +247,18 @@ describe("FinderSearchModal — « Ajouter »", () => {
     queryClient.setQueryData(COFORM_QUERY_KEYS.FINDER_SEARCH(["organizations"], "Nouvelle CAE", undefined, true), []);
     await user.type(screen.getByRole("textbox"), "Nouvelle CAE");
 
+    // … comme une AUTRE saisie, une autre question du même type, ou un finder qui cherche aussi ce type.
+    queryClient.setQueryData(COFORM_QUERY_KEYS.FINDER_SEARCH(["organizations"], "Nouv", undefined, true), []);
+    queryClient.setQueryData(COFORM_QUERY_KEYS.FINDER_SEARCH(["organizations"], "Nouvelle", { tags: "CAE" }, false, ["federationDesCae"]), []);
+    queryClient.setQueryData(COFORM_QUERY_KEYS.FINDER_SEARCH(["projects", "organizations"], "Nouvelle", undefined, true), []);
+    // Une organisation créée ne répond à aucune recherche de personnes : ce cache-là reste.
+    const personnes = COFORM_QUERY_KEYS.FINDER_SEARCH(["citoyens"], "Nouvelle", undefined, true);
+    queryClient.setQueryData(personnes, []);
+
     await user.click(screen.getByRole("button", { name: "coform.finder.modal.addNewButton" }));
     await user.click(screen.getByRole("button", { name: "enregistrer la création" }));
-    expect(queryClient.getQueryCache().findAll({ queryKey: COFORM_QUERY_KEYS.FINDER_SEARCH_PREFIX() })).toHaveLength(0);
+    const restantes = queryClient.getQueryCache().findAll({ queryKey: COFORM_QUERY_KEYS.FINDER_SEARCH_PREFIX() });
+    expect(restantes.map((q) => q.queryKey)).toEqual([personnes]);
   });
 
   it("tout ce qui répond est déjà dans la question : « déjà sélectionnés », jamais « aucun résultat »", async () => {

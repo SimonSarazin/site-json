@@ -5,6 +5,7 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +22,7 @@ import { FinderElementCard } from "./FinderElementCard";
 import { toRelativeImageUrl } from "../utils";
 import { createdToFinderElement } from "../utils/finderAddNew";
 import { FINDER_MIN_CHARS, useFinderSearchResults } from "../hooks/useFinderSearchResults";
-import { COFORM_QUERY_KEYS } from "../constants/queryKeys";
+import { COFORM_QUERY_KEYS, finderSearchCovers } from "../constants/queryKeys";
 
 /** Délai de l'annonce d'une bascule : elle doit suivre le déplacement du focus, pas le précéder. */
 const ANNONCE_DELAI_MS = 150;
@@ -103,7 +104,9 @@ export function FinderSearchModal({
   // hauteur fixe, ne saute pas. Une erreur se dit, avec de quoi relancer.
   const hasMinChars = searchQuery.length >= FINDER_MIN_CHARS;
   const showError = hasMinChars && !!searchError && !isCurrentAnswer;
-  const showResults = hasMinChars && searchResults.length > 0;
+  // Jamais sous l'alerte. Le hook ne rend pas de liste avec une erreur (la réponse précédente ne tient
+  // la place que pendant une recherche) : ce garde évite seulement d'en dépendre ici.
+  const showResults = hasMinChars && searchResults.length > 0 && !showError;
   const conclusion = hasMinChars && isCurrentAnswer && searchResults.length === 0;
   const noResults = conclusion && rawSearchResults.length === 0;
   // Tout ce qui répond est déjà dans la question, ou vient d'être sélectionné : « aucun résultat »
@@ -229,11 +232,18 @@ export function FinderSearchModal({
    */
   const handleAddNew = () => setIsCreating(true);
   const handleCreated = (entity: EntityTypes) => {
+    const created = createdToFinderElement(entity);
     // L'élément créé doit répondre à la prochaine recherche : la réponse VIDE gardée en cache se
     // donnerait pour courante, dirait « aucun résultat » et reproposerait « Ajouter » — un doublon.
-    // `remove` et non `invalidate` : une donnée invalidée reste servie le temps du refetch.
-    queryClient.removeQueries({ queryKey: COFORM_QUERY_KEYS.FINDER_SEARCH_PREFIX() });
-    commitSelection(createdToFinderElement(entity));
+    // Toutes les recherches de SON type, pas seulement la saisie en cours : « nouv » gardée vide
+    // referait le même doublon, dans ce finder ou dans celui d'une autre question. Celles des autres
+    // types gardent leur cache. `remove` et non `invalidate` : une donnée invalidée reste servie le
+    // temps du refetch.
+    queryClient.removeQueries({
+      queryKey: COFORM_QUERY_KEYS.FINDER_SEARCH_PREFIX(),
+      predicate: (query) => finderSearchCovers(query.queryKey, created.type),
+    });
+    commitSelection(created);
   };
 
   // La relance retire l'alerte qui porte le bouton : le focus repart au champ, pas dans le vide.
@@ -274,7 +284,8 @@ export function FinderSearchModal({
               aria-label={String(t("coform.finder.modal.searchPlaceholder"))}
               className="pl-10"
             />
-            {/* Visuel seulement : l'état se dit une fois, dans la zone de résultats. */}
+            {/* Visuel seulement — pas le `Spinner` partagé, qui annonce : l'état se dit une fois, dans la
+                zone de résultats. */}
             {isSearching && (
               <Loader2
                 aria-hidden="true"
@@ -355,11 +366,10 @@ export function FinderSearchModal({
           )}
 
           {/* Réponse pas encore là pour CETTE saisie : la place est tenue, sans rien conclure. Un seul
-              `role="status"`, pour une seule annonce. */}
+              `role="status"` (celui du `Spinner`), pour une seule annonce. */}
           {awaitingAnswer && (
-            <div role="status" className="flex items-center justify-center gap-2 py-8 text-muted-foreground">
-              <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
-              <span>{String(t("coform.finder.modal.searching"))}</span>
+            <div className="flex justify-center py-8 text-muted-foreground">
+              <Spinner showLabel label={String(t("coform.finder.modal.searching"))} />
             </div>
           )}
 

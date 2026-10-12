@@ -202,6 +202,22 @@ describe("useFinderSearchResults", () => {
       expect(result.current.results.map((r) => r.name)).toEqual(["Suite126"]);
     });
 
+    it("une saisie en échec ne garde pas la liste de la saisie d'avant : rien ne s'affiche sous l'alerte", async () => {
+      // La réponse précédente ne tient la place que PENDANT une recherche — pas après son échec.
+      searchCostumMock.mockResolvedValueOnce({ results: [makeSdkInstance("a1", "Suite126")] });
+      searchCostumMock.mockRejectedValueOnce(new Error("502 Bad Gateway"));
+      const { result, rerender } = renderHook(
+        ({ q }: { q: string }) => useFinderSearchResults({ query: q, config: makeConfig(), enabled: true }),
+        { wrapper: makeWrapper(), initialProps: { q: "ab" } }
+      );
+      await waitFor(() => expect(result.current.results.map((r) => r.name)).toEqual(["Suite126"]));
+
+      rerender({ q: "abc" });
+      await waitFor(() => expect(result.current.error?.message).toBe("502 Bad Gateway"));
+      expect(result.current.results).toEqual([]);
+      expect(result.current.isCurrentAnswer).toBe(false);
+    });
+
     it("l'erreur d'une saisie s'efface dès la frappe suivante, sans attendre le debounce", async () => {
       searchCostumMock.mockRejectedValueOnce(new Error("502 Bad Gateway"));
       searchCostumMock.mockResolvedValue({ results: [] });
