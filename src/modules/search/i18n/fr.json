@@ -59,7 +59,12 @@
         "notProvided": "Non renseigné",
         "installation": "Installation",
         "installationEmpty": "Aucune installation renseignée",
-        "validated": "Validé",
+        "status": {
+            "validated": "Validé",
+            "pending": "En attente",
+            "inProgress": "En cours",
+            "refused": "Refusé"
+        },
         "noName": "(Pas de nom)",
         "by": "Par :",
         "showLess": "Voir moins",
@@ -67,7 +72,10 @@
         "activitySheet": "Fiche d'activité",
         "structureSheet": "Fiche structure",
         "edit": "Modifier",
-        "editError": "Impossible de charger cette fiche pour la modifier."
+        "editTitle": "Modifier — {{title}}",
+        "editLoading": "Chargement de la fiche…",
+        "edited": "Modifications enregistrées.",
+        "editError": "Impossible de charger cette fiche. Cliquez de nouveau sur « Modifier » pour réessayer."
     },
     "CardPoiAmenities": {
         "amenities": "Aménagement",

@@ -81,6 +81,8 @@ export const PROFIL_QUERY_KEYS = {
   USER_ORGANIZATIONS: (slug: string | null, userContextId: string | null = null) =>
     ["user-organizations", slug, userContextId] as const,
   USER_ORGANIZATIONS_PREFIX: (slug: string | null) => ["user-organizations", slug] as const,
+  // Créneaux de l'onglet « Structures » : `SEARCH_QUERY_KEYS.MANAGED_ANSWERS_PREFIX` (module search,
+  // pour que le détail d'un créneau les rafraîchisse après une modification sans importer profil).
   USER_PROJECTS: (slug: string | null, userContextId: string | null = null) =>
     ["user-projects", slug, userContextId] as const,
   USER_PROJECTS_PREFIX: (slug: string | null) => ["user-projects", slug] as const,

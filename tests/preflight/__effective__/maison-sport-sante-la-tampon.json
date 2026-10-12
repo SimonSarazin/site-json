@@ -264,6 +264,18 @@
       }
     }
   },
+  "contributions": {
+    "/creneaux/searchProStatic": {
+      "ajout": {
+        "coform": "6a85af345d898a57cb49f029",
+        "adminOnly": false
+      },
+      "modifier": true,
+      "ficheStructure": {
+        "audience": "all"
+      }
+    }
+  },
   "answerFacets": {
     "/creneaux/ald": {
       "target": "answers",
