@@ -45,6 +45,46 @@ const AuthRecoverConfigSchema = AuthPageTextSchema.extend({
 });
 export type AuthRecoverConfig = z.infer<typeof AuthRecoverConfigSchema>;
 
+/**
+ * Champ SUPPLÉMENTAIRE du formulaire d'inscription (cocolight-backend/docs/33, étape 5).
+ *
+ * Le `name` est la CLÉ écrite à la racine du citoyen, posée À PLAT dans le POST `person/register`
+ * (lib `register({ fields })`) et VALIDÉE côté serveur par la règle costum des citoyens
+ * (`DataValidator::validate` legacy / `validateElement` Node, typeObj `person`/`persons`/`citoyens`) :
+ * une clé hors règle est refusée (`Contenu Invalide <clé> : Person`). site-json ne porte donc QUE la
+ * présentation — libellés, liste des valeurs, obligation, affichage conditionnel — jamais le droit
+ * d'écrire. Les VALEURS d'un `select` sont stockées telles quelles : pour un champ qui existe déjà en
+ * base (ex. `typepro` SSBE), reprendre les libellés historiques comme valeurs, sinon les fiches
+ * existantes et les nouvelles ne se facettent plus ensemble.
+ *
+ * `showIf` : visible (et donc exigible) seulement si le champ `field` vaut `equals` — un champ caché
+ * n'est ni validé ni envoyé (ex. `othersTypepro` visible si `typepro === "autres"`).
+ */
+export const RegisterFieldSchema = z.object({
+  name: z.string().min(1),
+  label: LocalizedString,
+  widget: z.enum(["text", "textarea", "select"]),
+  required: z.boolean().optional(),
+  placeholder: LocalizedString.optional(),
+  options: z.array(z.object({ value: z.string(), label: LocalizedString })).optional(),
+  showIf: z.object({ field: z.string().min(1), equals: z.string() }).optional(),
+});
+export type RegisterFieldConfig = z.infer<typeof RegisterFieldSchema>;
+
+/**
+ * Bloc « inscription » : textes + MODE d'activation + champs supplémentaires.
+ *
+ * `mode` (défaut `normal`) : le compte reste `tobeactivated` tant que l'e-mail n'est pas validé — la
+ * connexion est REFUSÉE avant (le toast dit donc « après validation »). `single_step_register` :
+ * port du mode legacy du même nom (`Person::insert` retire `roles.tobeactivated` ; le mail part
+ * quand même, en variante « compte déjà actif ») — la connexion est possible immédiatement.
+ */
+const AuthRegisterConfigSchema = AuthPageTextSchema.extend({
+  mode: z.enum(["normal", "single_step_register"]).optional(),
+  fields: z.array(RegisterFieldSchema).optional(),
+});
+export type AuthRegisterConfig = z.infer<typeof AuthRegisterConfigSchema>;
+
 // Présentation du widget de compte dans les headers (`AuthMenu`). Pilote la
 // densité « selon les besoins » côté config ; le `tone`/variant restent couplés
 // au design du header (props), pas ici.
@@ -72,7 +112,8 @@ export const AuthConfigSchema = z.object({
   // Textes (titre / sous-titre) par page auth ; le sous-titre sert aussi de
   // description SEO (cf. AuthSeo).
   login: AuthPageTextSchema.optional(),
-  register: AuthPageTextSchema.optional(),
+  // textes + `mode` d'activation + `fields` supplémentaires (cf. AuthRegisterConfigSchema).
+  register: AuthRegisterConfigSchema.optional(),
   // textes + `mode` du flux « mot de passe oublié » (défaut legacy, cf. AuthRecoverConfigSchema).
   recover: AuthRecoverConfigSchema.optional(),
 });

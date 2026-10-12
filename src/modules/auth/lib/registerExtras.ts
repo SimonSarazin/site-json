@@ -1,0 +1,92 @@
+/**
+ * Inscription avec CHAMPS SUPPLÉMENTAIRES et MODE d'activation (cocolight-backend/docs/33, étape 5).
+ *
+ * Deux fonctions pures, testées sans React :
+ *  - `visibleRegisterFields` : les champs de `auth.register.fields` à rendre/valider dans l'état courant
+ *    (`showIf` tranché contre les valeurs saisies) ;
+ *  - `collectRegisterFields` : les valeurs NON VIDES des champs VISIBLES — ce qui part au serveur. Un
+ *    champ masqué par `showIf` n'est jamais envoyé, même s'il a été rempli avant d'être masqué (ex.
+ *    `othersTypepro` saisi puis `typepro` changé) : sinon le citoyen porterait une précision orpheline.
+ *
+ * Et l'appel `registerWithExtras`, qui pose `mode` et `fields` sur `userApi.register`. La lib INSTALLÉE
+ * (1.0.197) ne connaît pas encore ces deux paramètres : son `register` fige `properties:{}` et ses types
+ * ne les acceptent pas. Le type étendu est déclaré ICI, avec un seul cast commenté, pour que le reste
+ * du module reste typé. À retirer quand la lib ≥ 1.0.198 (étape 4 de docs/33) sera installée — le
+ * cast devient alors inutile, la signature est la même.
+ */
+import type { UserApi } from "@communecter/cocolight-api-client";
+import type { RegisterFieldConfig } from "../schema";
+
+export type RegisterMode = "normal" | "single_step_register";
+
+/** Paramètres de `register` tels que la lib ≥ 1.0.198 les expose (`fields` posés À PLAT dans le POST). */
+export interface RegisterParamsWithExtras {
+  name: string;
+  username: string;
+  email: string;
+  pwd: string;
+  costumSlug?: string;
+  costumId?: string;
+  costumType?: string;
+  fields?: Record<string, unknown>;
+  mode?: RegisterMode;
+}
+
+/** Réponse brute de `person/register` (le legacy fait foi : `result` + `msg`). */
+export interface RegisterResponse {
+  result: boolean;
+  msg?: string;
+  [k: string]: unknown;
+}
+
+/** Un champ est visible si sans `showIf`, ou si le champ désigné porte exactement la valeur attendue. */
+export function isRegisterFieldVisible(field: RegisterFieldConfig, values: Record<string, string>): boolean {
+  if (!field.showIf) return true;
+  return (values[field.showIf.field] ?? "") === field.showIf.equals;
+}
+
+export function visibleRegisterFields(
+  fields: readonly RegisterFieldConfig[] | undefined,
+  values: Record<string, string>,
+): RegisterFieldConfig[] {
+  return (fields ?? []).filter((f) => isRegisterFieldVisible(f, values));
+}
+
+/** Premier champ VISIBLE et `required` laissé vide (espaces exclus), ou `undefined` si tout est rempli. */
+export function firstMissingRequiredField(
+  fields: readonly RegisterFieldConfig[] | undefined,
+  values: Record<string, string>,
+): RegisterFieldConfig | undefined {
+  return visibleRegisterFields(fields, values).find((f) => f.required && !(values[f.name] ?? "").trim());
+}
+
+/** Valeurs non vides des champs visibles, dans l'ordre de la config. `{}` si rien à envoyer. */
+export function collectRegisterFields(
+  fields: readonly RegisterFieldConfig[] | undefined,
+  values: Record<string, string>,
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const f of visibleRegisterFields(fields, values)) {
+    const v = (values[f.name] ?? "").trim();
+    if (v) out[f.name] = v;
+  }
+  return out;
+}
+
+type RegisterWithExtras = (params: RegisterParamsWithExtras) => Promise<RegisterResponse>;
+
+/**
+ * `userApi.register` avec `mode`/`fields`. `mode` absent et `fields` vide ne sont PAS posés : l'appel
+ * reste alors byte-identique à l'inscription d'avant (le backend applique son défaut `normal`).
+ */
+export function registerWithExtras(userApi: UserApi, params: RegisterParamsWithExtras): Promise<RegisterResponse> {
+  const { fields, mode, ...rest } = params;
+  const payload: RegisterParamsWithExtras = {
+    ...rest,
+    ...(mode ? { mode } : {}),
+    ...(fields && Object.keys(fields).length > 0 ? { fields } : {}),
+  };
+  // lib ≥ 1.0.198 : `register` accepte `fields`/`mode` (docs/33 étape 4) — la 1.0.197 installée ne les type pas.
+  const register = userApi.register.bind(userApi) as unknown as RegisterWithExtras;
+  return register(payload);
+}
