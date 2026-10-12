@@ -646,6 +646,27 @@ Valeur stockée : `Record<string, FinderElement> | null` (clé = `element.id`).
 
 Types d'éléments recherchables (`FinderElementType`) : `organizations`, `citoyens`, `events`, `projects`, `news`, `cities`, `things`, `poi`, `classified`, `products`, `services`, `surveys`, `bookmarks`, `proposals`, `rooms`, `actions`, `networks`, `urls`, `circuits`, `risks`, `badges`.
 
+**Libellés (`elementLabel`, `buttonLabel`, `placeholderSearchField`).** Lus dans
+`params.finder<clé>` par `parseCoFormFields`. Absent, ou resté au **défaut du legacy**, un libellé
+se lit comme non configuré et le rendu prend le libellé traduit (`coform.finder.*`) : un défaut
+enregistré en français s'affichait tel quel en anglais (« Your Elément doesn't exist yet? »). Un
+défaut n'est un défaut que dans SON champ.
+
+- `elementLabel` et le placeholder : la modale de configuration legacy **enregistre** leurs défauts
+  (« Elément », placeholder traduit dans la langue de qui configure).
+- `buttonLabel` : **aucune modale legacy ne l'écrit**, mais `cplx/finder.php` le lit dans `params`.
+  Posé en base à la main, il s'affiche sur le bouton, comme dans `cplx/finder.php` ; égal au défaut
+  du legacy (`Search and add` et ses traductions fr / it), il est traduit comme les autres. Les
+  variantes costum du legacy, elles, l'ignorent (`rfflabs` : libellé en dur) ou n'ont pas de bouton
+  (recherche en ligne des variantes tiers-lieux) : React, qui les rend toutes par `FinderField`,
+  l'affiche pour toutes. Deux limites : il est rendu comme du **texte** (le legacy l'insère en
+  HTML) ; et ré-enregistrer la config du finder dans la modale legacy l'**efface** — le bloc
+  `params.finder<clé>` y est réécrit depuis les seuls champs de la modale (`finder.php`, `save` →
+  `Element::updatePathValue`, un `$set` du bloc ; lu dans le code, non rejoué).
+- La vue « par lieu » (`PlacesListView`) a ses propres libellés, accordés à la nature du lieu : le
+  `buttonLabel` du finder partagé n'y est pas repris.
+- Non repris : `elementGender` (genre du libellé, pour l'article « un / une » du legacy).
+
 **Filtres d'inclusion + exclusion.** La config finder legacy porte deux listes
 `{attributeName, valueName}` : `filter` (inclusions, « Filtres appliqués ») et
 `filterExclude` (exclusions, « Filtres d'exclusion »), toutes deux réglées dans
