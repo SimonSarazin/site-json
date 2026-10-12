@@ -594,6 +594,10 @@ export const ResourceDirectoryConfSchema = z.object({
     linkSuffix: z.string().optional(),
     descriptionSuffix: z.string().optional(),
     servicesSuffix: z.string().optional(),
+    detailSuffixes: z.object({
+      equipments: z.string(), catering: z.string(), services: z.string(), roomType: z.string(),
+      moreInfo: z.string(), about: z.string(), tip: z.string(),
+    }).partial().optional(),
   })),
   finderSuffix: z.string(),
   fieldSuffixes: z.object({
@@ -1350,6 +1354,17 @@ const ResourceTypeConfSchema = z.object({
   descriptionSuffix: z.string().optional(),
   /** Suffixe de l'input « Services proposés » (`string[]`), PROPRE au formulaire (hébergement `miq86g5vaw1kavrapkb`). */
   servicesSuffix: z.string().optional(),
+  /**
+   * Champs du DÉTAIL de la ressource, par suffixe d'input — les mêmes que la fiche du lieu
+   * (`profile-about-tl`, `roomPath`/`coworkingPath`/`bedRoomPath`) : listes `equipments`, `catering`,
+   * `services`, `roomType` ; textes `moreInfo` (« Bon à savoir »), `about` (« À propos du lieu »),
+   * `tip` (« Le petit truc en plus »). Fourni, l'aperçu montre CES blocs, sous les libellés de la fiche,
+   * à la place de `fieldSuffixes.equipments`/`descriptionSuffix`/`servicesSuffix`. Absent : rendu historique.
+   */
+  detailSuffixes: z.object({
+    equipments: z.string(), catering: z.string(), services: z.string(), roomType: z.string(),
+    moreInfo: z.string(), about: z.string(), tip: z.string(),
+  }).partial().optional(),
 });
 
 /**

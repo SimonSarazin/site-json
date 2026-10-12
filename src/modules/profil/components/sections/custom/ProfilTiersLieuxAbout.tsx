@@ -34,8 +34,9 @@ import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermission
 import { type Answer } from "@communecter/cocolight-api-client";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
 import { buildFinderDefaultValues, finderFieldName } from "@/modules/coform/utils/finderPrefill";
-import { ProseContent } from "@/modules/coform/components/FormFields";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { ResourceDetail } from "@/modules/search/components/preview/resource/ResourceDetail";
+import { buildResourceDetails, readText } from "@/modules/search/lib/resourceDetails";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import type { AllStepsData } from "@/modules/coform/types";
 import { PROFIL_QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
@@ -114,21 +115,6 @@ interface ModalItem {
 }
 
 /**
- * Lit une valeur `checkboxNew` : le formulaire stocke un tableau de libellés, mais une
- * saisie ancienne peut avoir laissé une chaîne unique.
- */
-function readTagList(value: unknown): string[] {
-  if (Array.isArray(value)) return value.map(String).map((s) => s.trim()).filter(Boolean);
-  if (typeof value === "string" && value.trim()) return [value.trim()];
-  return [];
-}
-
-/** Lit un champ texte/textarea en écartant les valeurs vides ou blanches. */
-function readText(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-/**
  * Case à cocher d'un tableau : le moteur coform y écrit un marqueur libre — les données
  * en base portent `"x"` pour coché et `""` sinon. On accepte donc toute valeur non vide,
  * sauf les négations explicites qu'un autre formulaire pourrait produire.
@@ -156,23 +142,10 @@ function buildSharedDetails(
   label: (key: string) => string,
 ): Pick<ModalItem, "tags" | "notes"> {
   if (!paths) return {};
-  const pick = (key: string): unknown => {
+  return buildResourceDetails((key) => {
     const p = paths[key];
     return typeof p === "string" && p ? read(answers, p) : undefined;
-  };
-
-  const tags = (["equipments", "catering", "services", "roomType"] as const)
-    .map((key) => ({ label: label(key), values: readTagList(pick(key)) }))
-    .filter((entry) => entry.values.length > 0);
-
-  const notes = (["moreInfo", "about", "tip"] as const)
-    .map((key) => ({ label: label(key), value: readText(pick(key)) }))
-    .filter((entry) => entry.value !== "");
-
-  return {
-    ...(tags.length ? { tags } : {}),
-    ...(notes.length ? { notes } : {}),
-  };
+  }, label);
 }
 
 
@@ -1460,133 +1433,46 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
       )}
       {/* ── Modal détail ─────────────────────────────────────── */}
       <Dialog open={!!modalItem} onOpenChange={(open) => !open && setModalItem(null)}>
-        {/* `max-h`+`overflow-y-auto` sur le corps : le détail porte désormais des textes
-            libres de longueur quelconque, que le `overflow-hidden` du conteneur couperait.
-            L'image reste fixe en tête, seul le contenu défile. */}
-        <DialogContent className="sm:max-w-2xl p-0 overflow-hidden max-h-[90vh] grid-rows-[auto_auto_minmax(0,1fr)]">
+        {/* Même détail que l'annuaire des ressources (`ResourceDetail`). */}
+        <DialogContent className="sm:max-w-2xl p-0 gap-0 overflow-hidden max-h-[90vh]">
           <DialogHeader className="sr-only">
             <DialogTitle>{modalItem?.name ?? ""}</DialogTitle>
           </DialogHeader>
-          {/* Carousel d'images */}
-          <div className="relative h-56 bg-muted overflow-hidden">
-            {modalItem?.images && modalItem.images.length > 0 ? (
-              <Carousel opts={{ align: "start", loop: modalItem.images.length > 1 }} className="w-full h-full">
-                <CarouselContent className="h-56 ml-0">
-                  {modalItem.images?.map((src, idx) => (
-                    <CarouselItem key={idx} className="pl-0 h-56">
-                      <img src={src} alt={`${modalItem.name} – ${idx + 1}`} className="w-full h-full object-cover" />
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                {modalItem.images.length > 1 && (
-                  <>
-                    <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8" />
-                    <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8" />
-                  </>
-                )}
-              </Carousel>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Users className="w-14 h-14 text-muted-foreground/30" />
-              </div>
-            )}
-            {((modalItem?.minPers ?? 0) > 0 || (modalItem?.maxPers ?? 0) > 0 || (modalItem?.capacity ?? 0) > 0) && (
-              <span className="absolute top-3 right-3 bg-background/90 text-foreground text-xs px-2 py-1 rounded shadow z-10">
-                {modalItem?.capacity
-                  ? modalItem.capacity
-                  : modalItem?.minPers && modalItem?.maxPers
-                    ? `${modalItem.minPers} – ${modalItem.maxPers}`
-                    : ((modalItem?.minPers || 0) > 0 ? modalItem?.minPers : modalItem?.maxPers ?? 0)
-                }{" "}{t("ProfilTiersLieuxAbout.capacity")}
-              </span>
-            )}
-          </div>
-          {/* Contenu */}
-          <div className="p-5 space-y-4 overflow-y-auto scrollbar-thin">
-            <h3 className="text-lg font-semibold text-foreground">{modalItem?.name}</h3>
-            {/* Prix */}
-            {((modalItem?.hourly ?? 0) > 0 || (modalItem?.halfday ?? 0) > 0 || (modalItem?.fullday ?? 0) > 0 ||
-              (modalItem?.bed ?? 0) > 0 || (modalItem?.room ?? 0) > 0) && (
-                <div className="flex flex-wrap gap-2">
-                  {(modalItem?.hourly ?? 0) > 0 && (
-                    <span className="inline-flex items-center gap-1 text-sm bg-primary/10 text-primary rounded-md px-3 py-1 font-medium">
-                      {modalItem!.hourly}€ <span className="font-normal text-muted-foreground">/h</span>
-                    </span>
-                  )}
-                  {(modalItem?.halfday ?? 0) > 0 && (
-                    <span className="inline-flex items-center gap-1 text-sm bg-primary/10 text-primary rounded-md px-3 py-1 font-medium">
-                      {modalItem!.halfday}€ <span className="font-normal text-muted-foreground">{t("ProfilTiersLieuxAbout.halfDay")}</span>
-                    </span>
-                  )}
-                  {(modalItem?.fullday ?? 0) > 0 && (
-                    <span className="inline-flex items-center gap-1 text-sm bg-primary/10 text-primary rounded-md px-3 py-1 font-medium">
-                      {modalItem!.fullday}€ <span className="font-normal text-muted-foreground">{t("ProfilTiersLieuxAbout.fullDay")}</span>
-                    </span>
-                  )}
-                  {(modalItem?.bed ?? 0) > 0 && (
-                    <span className="inline-flex items-center gap-1 text-sm bg-primary/10 text-primary rounded-md px-3 py-1 font-medium">
-                      {modalItem!.bed}€ <span className="font-normal text-muted-foreground">/{t("ProfilTiersLieuxAbout.bed")}</span>
-                    </span>
-                  )}
-                  {(modalItem?.room ?? 0) > 0 && (
-                    <span className="inline-flex items-center gap-1 text-sm bg-primary/10 text-primary rounded-md px-3 py-1 font-medium">
-                      {modalItem!.room}€ <span className="font-normal text-muted-foreground">{t("ProfilTiersLieuxAbout.nightly")}</span>
-                    </span>
-                  )}
-                  {modalItem?.solidarity && (
-                    <span className="inline-flex items-center gap-1 text-sm bg-secondary/15 text-foreground rounded-md px-3 py-1 font-medium">
-                      {t("ProfilTiersLieuxAbout.detail.solidarity")}
-                    </span>
-                  )}
-                </div>
-              )}
-
-            {/* Surface */}
-            {modalItem?.area && (
-              <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">{t("ProfilTiersLieuxAbout.detail.area")}</span>{" "}
-                {modalItem.area} m²
-              </p>
-            )}
-
-            {/* Équipements, restauration, services — listes du formulaire */}
-            {modalItem?.tags?.map((group) => (
-              <div key={group.label} className="space-y-1.5">
-                <p className="text-sm font-medium text-foreground">{group.label}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {group.values.map((v) => (
-                    <span key={v} className="text-xs bg-muted text-muted-foreground rounded-md px-2 py-1">
-                      {v}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            {/* Textes libres SAISIS par le gestionnaire du lieu — rendus via
-                `ProseContent` : markdown ou HTML auto-détecté, puis sanitisé.
-                Ce sont des réponses, pas de la définition de formulaire : on
-                laisse le `source` par défaut, donc le profil restreint. */}
-            {modalItem?.notes?.map((note) => (
-              <div key={note.label} className="space-y-1">
-                <p className="text-sm font-medium text-foreground">{note.label}</p>
-                <ProseContent
-                  text={note.value}
-                  className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none"
-                />
-              </div>
-            ))}
-            {/* Bouton réserver */}
-            {modalItem?.reserveUrl && (
-              <Button
-                className="w-full btn-primary"
-                onClick={() => window.open(modalItem!.reserveUrl!, "_blank")}
-              >
-                {t("ProfilTiersLieuxAbout.reserve")}
-                <ArrowUpRight className="w-4 h-4 ml-1.5" />
-              </Button>
-            )}
-          </div>
+          {modalItem && (
+            <ResourceDetail
+              name={modalItem.name}
+              images={modalItem.images ?? []}
+              capacityLabel={
+                (modalItem.minPers ?? 0) > 0 || (modalItem.maxPers ?? 0) > 0 || (modalItem.capacity ?? 0) > 0
+                  ? `${modalItem.capacity
+                      ? modalItem.capacity
+                      : modalItem.minPers && modalItem.maxPers
+                        ? `${modalItem.minPers} – ${modalItem.maxPers}`
+                        : ((modalItem.minPers || 0) > 0 ? modalItem.minPers : modalItem.maxPers ?? 0)
+                    } ${t("ProfilTiersLieuxAbout.capacity")}`
+                  : null
+              }
+              prices={[
+                { amount: modalItem.hourly ?? 0, suffix: "/h" },
+                { amount: modalItem.halfday ?? 0, suffix: t("ProfilTiersLieuxAbout.halfDay") },
+                { amount: modalItem.fullday ?? 0, suffix: t("ProfilTiersLieuxAbout.fullDay") },
+                { amount: modalItem.bed ?? 0, suffix: `/${t("ProfilTiersLieuxAbout.bed")}` },
+                { amount: modalItem.room ?? 0, suffix: t("ProfilTiersLieuxAbout.nightly") },
+              ].filter((p) => p.amount > 0)}
+              solidarityLabel={modalItem.solidarity ? t("ProfilTiersLieuxAbout.detail.solidarity") : null}
+              area={modalItem.area ? { label: t("ProfilTiersLieuxAbout.detail.area"), value: `${modalItem.area} m²` } : null}
+              tags={modalItem.tags}
+              notes={modalItem.notes}
+              actions={
+                modalItem.reserveUrl ? (
+                  <Button className="w-full btn-primary" onClick={() => window.open(modalItem.reserveUrl!, "_blank")}>
+                    {t("ProfilTiersLieuxAbout.reserve")}
+                    <ArrowUpRight className="w-4 h-4 ml-1.5" />
+                  </Button>
+                ) : null
+              }
+            />
+          )}
         </DialogContent>
       </Dialog>
 

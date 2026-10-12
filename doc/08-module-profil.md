@@ -787,6 +787,11 @@ export const ProfileHeaderSectionSchema = z.object({
 });
 ```
 
+**Bannière et photo de profil — envoi** (`ProfileImageUpload`) : le recadrage propose un format — « Original » (ratio de la
+photo, sélectionné par défaut), 16:9, 3:1, 4:3, carré — ou « Utiliser l'image entière », qui envoie le
+fichier d'origine sans le retoucher. L'affichage, lui, ne change pas (cadre fixe en `object-cover`).
+⚠️ `bannerHeight` n'est lu par aucun composant.
+
 ### Supprimer une fiche depuis son profil
 
 `showDeleteButton: true` ajoute « Supprimer cette fiche » **en dernier** dans le menu d'actions de
@@ -1534,7 +1539,9 @@ profil de l'entité (`EntityStatusButton`).
 - Réponse obligatoire : pas de croix de fermeture, Échap et clic extérieur neutralisés
   (`showCloseButton={false}` + `onEscapeKeyDown`/`onInteractOutside`) — seuls Accepter/Refuser referment
   la modale (`onSuccess` de la mutation).
-- Après la réponse (acceptée ou refusée), retour à l'accueil (`navigate("/")`), quelle que soit la page.
+- Après la réponse, on quitte la page courante, quelle qu'elle soit : **acceptée → fiche rejointe**
+  (`/profil/<slug>`, comme « Continuer » sur `AcceptInvitationPage`), **refusée → accueil** (`/`, aussi
+  en repli si l'entité n'a pas de slug).
   La modale s'ouvre aussi par-dessus la page du lien Accepter/Refuser du mail (`AcceptInvitationPage`),
   dont elle masque le bouton : une fois l'invitation tranchée, cette page n'a plus d'objet.
 - `useHydrated()` : `me` est toujours `null` au SSR, donc `open` reste `false` au 1er render client pour

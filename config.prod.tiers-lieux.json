@@ -1419,7 +1419,11 @@
                   "fr": "Coworking",
                   "en": "Coworking"
                 },
-                "linkSuffix": "miq8118cmkh16zjwmt"
+                "linkSuffix": "miq8118cmkh16zjwmt",
+                "detailSuffixes": {
+                  "equipments": "mieg8j24m89gm99t5mi",
+                  "moreInfo": "miq8auz2wess00qdkpe"
+                }
               },
               {
                 "id": "meeting-room",
@@ -1431,6 +1435,13 @@
                   "en": "Meeting room"
                 },
                 "linkSuffix": "miq81uh4gat3vgbtgkj",
+                "detailSuffixes": {
+                  "equipments": "miok91fh1gta2sneeu5",
+                  "catering": "mieg8j24m89gm99t5mi",
+                  "moreInfo": "miq8a6oceswkv6i75jp",
+                  "about": "miolbscdcrucb5a8uuq",
+                  "tip": "miol2ccdl9a86x4f3yc"
+                },
                 "descriptionSuffix": "miolbscdcrucb5a8uuq"
               },
               {
@@ -1443,6 +1454,12 @@
                   "en": "Accommodation"
                 },
                 "linkSuffix": "miq83c8getjt3lcz64f",
+                "detailSuffixes": {
+                  "equipments": "mieg8j24m89gm99t5mi",
+                  "services": "miq86g5vaw1kavrapkb",
+                  "roomType": "mix3hskq78wglr6m61x",
+                  "moreInfo": "miq88plgleoln5tmc7b"
+                },
                 "descriptionSuffix": "miq88plgleoln5tmc7b",
                 "servicesSuffix": "miq86g5vaw1kavrapkb"
               }
@@ -3123,7 +3140,11 @@
                   "fr": "Coworking",
                   "en": "Coworking"
                 },
-                "linkSuffix": "miq8118cmkh16zjwmt"
+                "linkSuffix": "miq8118cmkh16zjwmt",
+                "detailSuffixes": {
+                  "equipments": "mieg8j24m89gm99t5mi",
+                  "moreInfo": "miq8auz2wess00qdkpe"
+                }
               },
               {
                 "id": "meeting-room",
@@ -3135,6 +3156,13 @@
                   "en": "Meeting room"
                 },
                 "linkSuffix": "miq81uh4gat3vgbtgkj",
+                "detailSuffixes": {
+                  "equipments": "miok91fh1gta2sneeu5",
+                  "catering": "mieg8j24m89gm99t5mi",
+                  "moreInfo": "miq8a6oceswkv6i75jp",
+                  "about": "miolbscdcrucb5a8uuq",
+                  "tip": "miol2ccdl9a86x4f3yc"
+                },
                 "descriptionSuffix": "miolbscdcrucb5a8uuq"
               },
               {
@@ -3147,6 +3175,12 @@
                   "en": "Accommodation"
                 },
                 "linkSuffix": "miq83c8getjt3lcz64f",
+                "detailSuffixes": {
+                  "equipments": "mieg8j24m89gm99t5mi",
+                  "services": "miq86g5vaw1kavrapkb",
+                  "roomType": "mix3hskq78wglr6m61x",
+                  "moreInfo": "miq88plgleoln5tmc7b"
+                },
                 "descriptionSuffix": "miq88plgleoln5tmc7b",
                 "servicesSuffix": "miq86g5vaw1kavrapkb"
               }
