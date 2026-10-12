@@ -23,6 +23,7 @@
     "noCarrier": "No carrier entity: member management requires a carrier costum."
   },
   "AdminResourceTable": {
+    "preview": "Preview",
     "create": "Create",
     "searchPlaceholder": "Search…",
     "statusAll": "All statuses",
@@ -277,6 +278,7 @@
     "subTypeSuggestions": "Types found in the selection:"
   },
   "AdminAnswerCopySection": {
+    "preview": "Preview",
     "title": "Answer copy",
     "hint": "Answers submitted on another site (source form). “Copy” takes an answer over into this site's form, under its identity. Answers already taken over are hidden; a “Probable duplicate” shares title, organization and postal code with an answer of this site.",
     "searchPlaceholder": "Search…",

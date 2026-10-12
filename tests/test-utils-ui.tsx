@@ -51,6 +51,31 @@ export function renderWithProviders(ui: React.ReactElement, options: RenderUIOpt
   return render(ui, { wrapper: Wrapper, ...rest });
 }
 
+/**
+ * Sélectionne tout le texte d'un nœud, comme le ferait un glisser de souris. `removeAllRanges`
+ * d'abord : `addRange` ne fait RIEN tant qu'une plage existe déjà (spec Selection, suivie par jsdom).
+ */
+export function selectText(node: Node): void {
+  const range = document.createRange();
+  range.selectNodeContents(node);
+  const selection = window.getSelection();
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+}
+
+/**
+ * Pose un curseur REPLIÉ au début d'un nœud : ce que laisse le `mousedown` d'un clic simple dans
+ * un navigateur (une plage existe, mais son texte est vide).
+ */
+export function placeCaret(node: Node): void {
+  const range = document.createRange();
+  range.setStart(node, 0);
+  range.collapse(true);
+  const selection = window.getSelection();
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+}
+
 // Re-export pour limiter les imports dispersés.
 export * from "@testing-library/react";
 export { default as userEvent } from "@testing-library/user-event";

@@ -1769,6 +1769,14 @@ export interface SwitchDetailsModeProps<T extends SearchListEntity = SearchEntit
   preview?: ListConf["preview"];
   /** Config `list` complète — thread une fois pour les configs par-type (cf. SearchListViewProps.list). */
   list?: ListConf;
+  /**
+   * Fin d'une ÉDITION faite depuis le détail. Le détail n'invalide que les caches qu'il connaît
+   * (listes search, réponse coform) : l'hôte qui montre la fiche AILLEURS — une table admin et ses
+   * tuiles — y invalide les siens. Seul `coform-answer` (+ `editButton`) le signale aujourd'hui ;
+   * les autres contenus qui écrivent ne le relaient pas, un hôte qui en dépend doit les refuser
+   * (cf. `ADMIN_PREVIEW_TYPES`, admin/schema.ts). Absent : rien de plus.
+   */
+  onEdited?: () => void;
 }
 
 export interface DetailsModeProps<T extends SearchListEntity = SearchEntity> {
@@ -1778,6 +1786,8 @@ export interface DetailsModeProps<T extends SearchListEntity = SearchEntity> {
   /** Config `list` complète — thread une fois pour les configs par-type (cf. SearchListViewProps.list). */
   list?: ListConf;
   item: T;
+  /** Transmis tel quel au contenu — cf. `SwitchDetailsModeProps.onEdited`. */
+  onEdited?: () => void;
 }
 
 export interface SearchCardProps<T extends SearchListEntity = SearchEntity> {
@@ -1800,6 +1810,8 @@ export interface PreviewProps<T extends SearchListEntity = SearchEntity> {
   list?: ListConf;
   /** Ferme le conteneur de détail (drawer/dialog) — fourni par le conteneur. */
   onClose?: () => void;
+  /** Fin d'une édition faite depuis ce contenu — cf. `SwitchDetailsModeProps.onEdited`. */
+  onEdited?: () => void;
 }
 
 export interface SearchMapWrapperProps<T extends SearchListEntity = SearchEntity> {
