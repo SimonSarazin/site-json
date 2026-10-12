@@ -33,6 +33,7 @@ import { getServerUrl } from "@/lib/constant/common";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { type Answer } from "@communecter/cocolight-api-client";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
+import { buildFinderDefaultValues, finderFieldName } from "@/modules/coform/utils/finderPrefill";
 import { ProseContent } from "@/modules/coform/components/FormFields";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
@@ -282,24 +283,14 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     lockedFields?: string[];
   }) => {
     const finderPath = finder ?? section.forms?.[formId]?.finder;
-    // Build defaultValues from finderPath so the finder field is pre-populated in the modal.
-    let defaultValues: AllStepsData | undefined;
-    if (finderPath) {
-      const entityId = entity.id as string;
-      const entityValue: Record<string, unknown> = {
-        [entityId]: {
-          id: entityId,
+    // Le finder est prérempli avec le lieu du profil (et verrouillé plus bas) : la réponse lui est rattachée.
+    const defaultValues = finderPath
+      ? buildFinderDefaultValues(finderPath, {
+          id: entity.id as string,
           type: entity.serverData.collection,
           name: entity.serverData.name,
-        },
-      };
-      const pathWithoutPrefix = finderPath.startsWith("answers.")
-        ? finderPath.slice("answers.".length)
-        : finderPath;
-      defaultValues = pathWithoutPrefix
-        .split(".")
-        .reduceRight<Record<string, unknown>>((acc, part) => ({ [part]: acc }), entityValue) as AllStepsData;
-    }
+        })
+      : undefined;
     setFormModal({
       formId,
       answerId: undefined,
@@ -307,9 +298,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
       title,
       stepKey,
       inputKey,
-      lockedFields: finderPath
-        ? [...(lockedFields ?? []), finderPath.split(".").pop()!]
-        : lockedFields,
+      lockedFields: finderPath ? [...(lockedFields ?? []), finderFieldName(finderPath)] : lockedFields,
       ...placeContext,
     });
   };
@@ -318,7 +307,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
   const getFinderLockedField = (formId: string): string[] | undefined => {
     const finderPath = section.forms?.[formId]?.finder;
     if (!finderPath) return undefined;
-    const fieldName = finderPath.split('.').pop();
+    const fieldName = finderFieldName(finderPath);
     return fieldName ? [fieldName] : undefined;
   };
 

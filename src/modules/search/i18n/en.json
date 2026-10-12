@@ -59,7 +59,6 @@
     "notProvided": "Not provided",
     "installation": "Facility",
     "installationEmpty": "No facility provided",
-    "validated": "Validated",
     "noName": "(No name)",
     "by": "By:",
     "showLess": "See less",
@@ -67,7 +66,16 @@
     "activitySheet": "Activity sheet",
     "structureSheet": "Organization sheet",
     "edit": "Edit",
-    "editError": "Unable to load this entry for editing."
+    "editTitle": "Edit — {{title}}",
+    "editLoading": "Loading the entry…",
+    "edited": "Changes saved.",
+    "editError": "Couldn't load this entry. Select Edit again to retry.",
+    "status": {
+      "validated": "Validated",
+      "pending": "Pending",
+      "inProgress": "In progress",
+      "refused": "Refused"
+    }
   },
   "CardPoiAmenities": {
     "amenities": "Amenities",

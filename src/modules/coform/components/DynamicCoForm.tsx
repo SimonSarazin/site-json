@@ -41,6 +41,7 @@ import { parseCoFormFields, generateZodSchema, generateDefaultValues, getStepHas
 import { scrollToFieldByName } from "../utils/helpers";
 import { cn } from "@/lib/utils";
 import { useConditionalFields } from "../hooks/useConditionalFields";
+import { useHiddenFields } from "../hooks/useHiddenFields";
 import { ConditionalField } from "./ConditionalField";
 import { useCoFormDraft } from "../hooks/useCoFormDraft";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
@@ -60,7 +61,7 @@ interface DynamicCoFormProps {
   onSubmit: (data: SubFormData, addedOptions?: AddedOptionsMap) => void | boolean | Promise<void | boolean>;
   submitButtonText?: string;
   isLoading?: boolean;
-  /** Valeurs par défaut pour pré-remplir le formulaire (mode édition) */
+  /** Valeurs par défaut : réponse éditée, ou préremplissage d'une création (cf. `hiddenFields`). */
   defaultValues?: SubFormData;
   /** ID de la réponse en cours d'édition (pour le chargement des fichiers legacy) */
   answerId?: string;
@@ -84,6 +85,8 @@ interface DynamicCoFormProps {
   discardDraftRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
+  /** Champs masqués par l'appelant, valeur conservée — cf. `CoFormModalProps.hiddenFields`. */
+  hiddenFields?: readonly string[];
   /**
    * Liste de clés d'inputs **complètement masqués** (skip total du rendu).
    * Calculée serveur-side dans `access.restrictedFields` à partir de
@@ -145,6 +148,7 @@ export function DynamicCoForm({
   submitRef,
   discardDraftRef,
   lockedFields,
+  hiddenFields,
   restrictedFields,
   formId,
   userId,
@@ -252,6 +256,7 @@ export function DynamicCoForm({
   }, [formData.inputs]);
 
   const lockedSet = useMemo(() => new Set(lockedFields), [lockedFields]);
+  const estMasque = useHiddenFields(hiddenFields, errors);
   const restrictedSet = useMemo(() => new Set(restrictedFields ?? []), [restrictedFields]);
 
   // Logique conditionnelle : collecter tous les champs et évaluer la visibilité
@@ -478,6 +483,9 @@ export function DynamicCoForm({
                 // `ConditionalField` puisse animer sa sortie. Elle est traitée
                 // juste en dessous, par `!estConditionnel && !visible`.
                 if (restrictedSet.has(getOriginalFieldKey(field))) return null;
+                // Masqué par l'APPELANT (`hiddenFields`) : rien n'est rendu, la valeur reste dans RHF et
+                // part au submit — sauf un champ passé en erreur, réaffiché pour de bon (`useHiddenFields`).
+                if (estMasque(field.name)) return null;
                 // Un champ PILOTÉ par une règle conditionnelle passe par
                 // `ConditionalField`, qui anime sa venue et son départ ; les
                 // autres gardent strictement le rendu d'origine.
