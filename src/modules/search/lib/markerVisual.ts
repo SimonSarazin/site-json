@@ -116,14 +116,16 @@ function resolveMarkerBy(
   conf: MarkerConf,
   by: MarkerByConf,
 ): MarkerVisualConf {
+  // `by` a fini son travail ici : la conf résolue ne le porte plus.
+  const { by: _consumed, ...base } = conf;
   const raw = serverData ? getValueByPath(serverData, by.path) : undefined;
   const values = Array.isArray(raw) ? raw : [raw];
   for (const v of values) {
     if (typeof v !== "string" && typeof v !== "number" && typeof v !== "boolean") continue;
     const hit = by.mapping[String(v)];
-    if (hit) return mergeMarkerConf(conf, hit);
+    if (hit) return mergeMarkerConf(base, hit);
   }
-  return by.default ? mergeMarkerConf(conf, by.default) : conf;
+  return by.default ? mergeMarkerConf(base, by.default) : base;
 }
 
 /** Forme de thème (goutte par défaut, pastille si `style: "circle"`), avec le

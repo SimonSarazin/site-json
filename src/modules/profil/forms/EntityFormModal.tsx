@@ -24,10 +24,11 @@ import { GenericForm, configToDescriptor, formDescriptorToConfig, type FormDescr
 import "./registerWidgets"; // side-effect : enregistre les widgets DOMAINE (location/finder/tags/image/…) AVANT le 1er rendu
 import "./registerSpecFns"; // side-effect : enregistre descripteurs + fns costum (par clé) AVANT le 1er rendu d'une spec
 import { useUnsavedGuard } from "./useUnsavedGuard";
+import { useDuplicateSubmitGuard } from "./useDuplicateSubmitGuard";
 import { useEntityMutation, type EntityMutationSpec } from "../hooks/useEntityMutation";
 import { specToConfig } from "./resolveModalSpec";
 import { applyCreateDefaults } from "./createDefaults";
-import type { EntityModalCtx, EntityModalSpec } from "./entityModalSpec";
+import type { DuplicateCheckSpec, EntityModalCtx, EntityModalSpec } from "./entityModalSpec";
 
 export type { EntityModalCtx };
 
@@ -68,6 +69,8 @@ export interface EntityModalConfig {
   resolveScope?: (carrier: EntityTypes | null | undefined) => unknown;
   // ── slots (UI custom : doublons/parentInfo) ──
   slots?: (ctx: EntityModalCtx) => Record<string, ReactNode>;
+  // ── détection de doublons à la création : paramètres de la garde de soumission (et du slot générique) ──
+  duplicateCheck?: DuplicateCheckSpec;
   // ── nettoyage des valeurs avant submit (ex. URLs vides) ──
   cleanValues?: (values: FieldValues) => FieldValues;
   // ── WRITE : construit le spec useEntityMutation (mode-aware, runtime). ──
@@ -145,12 +148,20 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
 
   const mutation = useEntityMutation(config.buildSpec(ctx));
   const guard = useUnsavedGuard(onOpenChange);
+  // Création seulement : en édition l'entité existe, il n'y a rien à confirmer.
+  const duplicateGuard = useDuplicateSubmitGuard(effMode === "add" ? config.duplicateCheck : undefined, open);
 
-  const onSubmit = async (values: FieldValues) => {
-    const cleaned = config.cleanValues ? config.cleanValues(values) : values;
+  const commit = async (cleaned: FieldValues) => {
     await mutation.mutateAsync(cleaned as Record<string, unknown>);
     config.afterSubmit?.(ctx, cleaned);
     onOpenChange(false);
+  };
+  const onSubmit = async (values: FieldValues) => {
+    const cleaned = config.cleanValues ? config.cleanValues(values) : values;
+    // Doublon quasi certain → la garde ouvre sa confirmation et relancera `commit` elle-même.
+    // Un `return` simple, jamais une exception : le formulaire la re-propagerait en rejet non géré.
+    if (await duplicateGuard.intercept(cleaned, () => commit(cleaned))) return;
+    await commit(cleaned);
   };
 
   const titleKey = isEdit ? config.title.edit : config.title.add;
@@ -189,7 +200,7 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
             t={tr}
             submitLabel={tr(submitLabel)}
             texts={texts}
-            submitting={mutation.isPending}
+            submitting={mutation.isPending || duplicateGuard.checking}
             onDirtyChange={guard.setDirty}
             onCancel={() => guard.guardedOpenChange(false)}
             listsOptions={listsOptions}
@@ -199,6 +210,7 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
         </DialogContent>
       </Dialog>
       {guard.confirmDialog}
+      {duplicateGuard.confirmDialog}
     </>
   );
 }

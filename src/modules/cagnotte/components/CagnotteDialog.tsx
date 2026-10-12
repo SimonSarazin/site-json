@@ -8,6 +8,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import {Skeleton} from "@/components/ui/skeleton";
 import {PiggyBank, Heart, Anchor} from "lucide-react";
 import {showErrorToast, showSuccessToast} from "@/lib/toastUtils";
 import {useT} from "@/hooks/useT";
@@ -315,6 +316,13 @@ const CagnotteDialogContent = ({
 
     const forcedResourceMissing =
         !!forcedResourceId && !isEnvelopeLoading && !allProjectsLoading && !isValidResourceId(forcedResourceId);
+
+    /**
+     * Le corps du dialogue dérive ENTIÈREMENT de ces deux requêtes : montants, paliers,
+     * droit de contribuer. Un seul drapeau pour tout ce qui doit attendre — `isLoading`
+     * et non `isPending`, les deux requêtes étant désactivées hors client connecté.
+     */
+    const isCagnotteDataLoading = isEnvelopeLoading || allProjectsLoading;
 
     const selectedResource: CagnotteResource | undefined = useMemo(() => {
         const cleanedSelected = getEntityId(selectedResourceId);
@@ -716,12 +724,24 @@ const CagnotteDialogContent = ({
                         context={context}
                     />
 
+                    {/* Tout ce qui dérive de l'enveloppe doit attendre sa réponse, sinon le
+                        dialogue s'ouvre inerte — montants grisés, paliers vides — avant de
+                        s'animer d'un coup. */}
                     {selectedResource ? (
                         <CagnotteResourceProgressCard
                             totalAmount={resourceCagnotteTotalAmount}
                             targetAmount={resourceCagnotteTargetAmount}
                             cagnotteConfig={cagnotteConfig}
                             context={context}
+                            isLoading={isEnvelopeLoading}
+                        />
+                    ) : isCagnotteDataLoading ? (
+                        <CagnotteResourceProgressCard
+                            totalAmount={0}
+                            targetAmount={0}
+                            cagnotteConfig={cagnotteConfig}
+                            context={context}
+                            isLoading
                         />
                     ) : null}
 
@@ -732,6 +752,7 @@ const CagnotteDialogContent = ({
                         onItemClick={handleItemClick}
                         cagnotteConfig={cagnotteConfig}
                         context={context}
+                        isLoading={isCagnotteDataLoading}
                     />
 
                     {cagnotteConfig.showInfoText && (
@@ -748,6 +769,7 @@ const CagnotteDialogContent = ({
                     )}
 
                     <CagnotteAmountPicker
+                        isLoading={isCagnotteDataLoading}
                         predefinedAmounts={predefinedAmounts}
                         selectedAmountType={selectedAmountType}
                         selectedPredefinedAmount={selectedPredefinedAmount}
@@ -759,8 +781,11 @@ const CagnotteDialogContent = ({
                         onCustomAmountChange={handleCustomAmountChange}
                     />
 
-                    {/* `canContribute` = connecté + projet + au moins un milestone actif. */}
-                    {cagnottePerms.canContribute ? (
+                    {/* `canContribute` exige un milestone actif, donc l'enveloppe : testé seul,
+                        il masque le bouton pendant le vol avant de le faire apparaître. */}
+                    {isCagnotteDataLoading ? (
+                        <Skeleton className="h-11 w-full rounded-md" aria-busy="true" />
+                    ) : cagnottePerms.canContribute ? (
                         <CagnotteContributeButton
                             selectedAmountType={selectedAmountType}
                             selectedPredefinedAmount={selectedPredefinedAmount}

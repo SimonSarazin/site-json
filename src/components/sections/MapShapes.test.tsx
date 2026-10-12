@@ -236,6 +236,28 @@ describe("MapShapes — états sans contour", () => {
   });
 });
 
+describe("MapShapes — config amputée (jamais revalidée au runtime)", () => {
+  // La config arrive par `JSON.parse` : le `required` du schéma ne protège de rien en production.
+
+  it("sans `target`, tous les contours restent du décor au lieu de faire tomber la section", () => {
+    etat.couches = [couche("communes", [contour({ name: "Saint-Paul" }), contour({ name: "Saint-Denis" })])];
+    const { container } = rendre({ target: undefined });
+
+    expect(liens(container)).toHaveLength(0);
+    const inertes = container.querySelectorAll("svg > path");
+    expect(inertes).toHaveLength(2);
+    for (const path of inertes) expect(path.getAttribute("class")).toContain("pointer-events-none");
+  });
+
+  it("un `target` sans `path` ne produit jamais de lien vers `undefined?…`", () => {
+    etat.couches = [couche("communes", [contour({ name: "Saint-Paul" })])];
+    const { container } = rendre({ target: { filterId: "monFiltre" } as MapShapesProps["target"] });
+
+    expect(liens(container)).toHaveLength(0);
+    expect(container.querySelectorAll("svg > path")).toHaveLength(1);
+  });
+});
+
 describe("MapShapes — légende et repère SVG", () => {
   it("seules les couches portant un `label` entrent en légende", () => {
     etat.couches = [

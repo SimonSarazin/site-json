@@ -53,8 +53,9 @@ import {useOptionalProfileEntity} from '@/modules/profil/hooks/useProfileEntity'
 import {useSite} from "@/hooks/useSite.tsx";
 import {useCagnotteType} from "@/modules/cagnotte/hooks/useCagnotteType.ts";
 import {useOrganizationProjectsWithAnswers} from "@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers.ts";
+import {readFinancerPaymentState, toDisplayPaymentStatus} from "@/modules/cagnotte/utils/financerPayment";
 
-type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+type PaymentStatus = 'pending' | 'paid' | 'partial' | 'failed' | 'refunded';
 type TransactionHistoryItem = {
     id: string;
     financerName: string;
@@ -93,6 +94,11 @@ function PaymentStatusBadge({status}: { status: PaymentStatus }) {
     const config: Record<PaymentStatus, { icon: ReactNode; label: string; className: string }> = {
         pending: {icon: <Clock className="h-3 w-3"/>, label: 'En attente', className: 'bg-warning/20 text-warning'},
         paid: {icon: <CheckCircle2 className="h-3 w-3"/>, label: 'Payé', className: 'bg-success/20 text-success'},
+        partial: {
+            icon: <CircleDot className="h-3 w-3"/>,
+            label: 'Partiel',
+            className: 'bg-primary/15 text-primary'
+        },
         failed: {
             icon: <CircleDot className="h-3 w-3"/>,
             label: 'Échoué',
@@ -197,9 +203,9 @@ export default function FinanceSection({id, props}: { id?: string; props: Financ
 
         const mappedMilestones: Milestone[] = items.map((item, index) => {
             const transactions: TransactionHistoryItem[] = (item.funding || []).map((fund, fundIdx) => {
-                const pStatus: PaymentStatus =
-                    (fund.paymentStatus as PaymentStatus) ||
-                    (fund.fundingType === 'prepaid' ? 'paid' : 'pending');
+                // Statut lu sur le bloc `payment` de la ligne, seul à savoir dire
+                // « partiellement versé » (repli legacy sur `fundingType`).
+                const pStatus: PaymentStatus = toDisplayPaymentStatus(readFinancerPaymentState(fund).status);
 
                 return {
                     id: String(fund.id || fund.transactionId || `${item.itemId}-${fundIdx}`),

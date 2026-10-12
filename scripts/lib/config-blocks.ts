@@ -69,7 +69,7 @@ const ROOT_BLOCKS: Record<string, { schema: () => z.ZodType; note?: string }> = 
   },
   admin: {
     schema: () => AdminConfigSchema,
-    note: "// config.admin = back-office /admin config-driven (7 sections builtin, discriminatedUnion strict) — référence : doc/30-module-admin.md",
+    note: "// config.admin = back-office /admin config-driven (sections builtin en discriminatedUnion strict + sections costum) — référence : doc/30-module-admin.md",
   },
 };
 
@@ -166,6 +166,48 @@ export function collapseSectionUnions(root: JsonSchemaNode): JsonSchemaNode {
     for (const b of [...(node.anyOf ?? []), ...(node.oneOf ?? []), ...(node.allOf ?? [])]) walk(b);
   };
   walk(root);
+  pruneUnreachableDefs(root);
+  return root;
+}
+
+/**
+ * Purge les `$defs` que plus aucun `$ref` n'atteint. `reused: "ref"` factorise
+ * tout sous-schéma partagé par ≥ 2 points d'usage ; quand ces points d'usage
+ * sont les branches d'une union `Section` que `collapseSectionUnions` vient de
+ * remplacer par un résumé, la définition n'a plus de lecteur mais reste dans le
+ * dictionnaire — et chaque contrat partagé entre sections (contours géo,
+ * marqueurs…) gonfle `page`/`tabs`/`gridLayout` sans que rien de lisible n'y
+ * soit ajouté (mesuré : 52 Ko d'orphelins sur 68 Ko).
+ *
+ * Fermeture transitive depuis la racine : une définition atteinte est parcourue
+ * à son tour (elle peut en référencer d'autres). `$ref: "#"` désigne la racine
+ * déjà visitée, il ne marque rien.
+ */
+export function pruneUnreachableDefs(root: JsonSchemaNode): JsonSchemaNode {
+  const defs = root.$defs;
+  if (!defs) return root;
+  const reachable = new Set<string>();
+  const seen = new Set<JsonSchemaNode>();
+  const visit = (node: JsonSchemaNode | boolean | undefined) => {
+    if (!node || typeof node !== "object" || seen.has(node)) return;
+    seen.add(node);
+    const m = node.$ref && /^#\/\$defs\/(.+)$/.exec(node.$ref);
+    if (m) {
+      const name = decodeURIComponent(m[1]);
+      reachable.add(name);
+      visit(defs[name]);
+    }
+    for (const child of Object.values(node.properties ?? {})) visit(child);
+    visit(node.items);
+    visit(node.additionalProperties);
+    for (const b of [...(node.anyOf ?? []), ...(node.oneOf ?? []), ...(node.allOf ?? [])]) visit(b);
+  };
+  // Les définitions ne sont parcourues QUE depuis un `$ref` : on visite la
+  // racine sans son dictionnaire, sinon tout serait atteignable par construction.
+  const { $defs: _defs, ...rootSansDefs } = root;
+  visit(rootSansDefs);
+  for (const name of Object.keys(defs)) if (!reachable.has(name)) delete defs[name];
+  if (Object.keys(defs).length === 0) delete root.$defs;
   return root;
 }
 

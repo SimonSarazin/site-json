@@ -494,6 +494,16 @@ export interface ParseCoFormFieldsOptions {
    * du fait qu'un admin ait coché « cacher l'étape ».
    */
   includeHiddenSteps?: boolean;
+  /**
+   * Conserver les CHAMPS marqués `hide`. Même raison d'être que
+   * `includeHiddenSteps`, un cran plus bas : un champ retiré de la SAISIE reste
+   * un champ du formulaire pour qui cherche où se trouve une valeur
+   * (`getSharedFinderInfo`) ou qui affiche une réponse déjà enregistrée
+   * (`CoFormReadOnly`). Sans cette porte, masquer un champ le faisait aussi
+   * disparaître de la relecture — alors que `hide` existe précisément pour
+   * sortir un champ du formulaire SANS toucher aux réponses.
+   */
+  includeHiddenFields?: boolean;
 }
 
 /**
@@ -545,6 +555,9 @@ export function parseCoFormFields(
   // un champ restreint ET requis rendrait le formulaire insoumettable, sans
   // que l'utilisateur voie jamais le champ fautif.
   const restricted = new Set(formData.access?.restrictedFields ?? []);
+  // Capturé ICI : dans la boucle par champ, `options` désigne la liste de valeurs d'un
+  // radio/checkbox (`let options: string[]`), qui masque le paramètre du même nom.
+  const inclureChampsMasques = options.includeHiddenFields === true;
 
   Object.entries(formData.inputs).forEach(([subFormId, subFormData]) => {
     // Étape masquée (« Cacher etape » du wizard de config AAP) : on la retire
@@ -587,6 +600,22 @@ export function parseCoFormFields(
       if (!resolved) return;
       const fieldKey = resolved.key;
       const fieldData = resolved.field;
+
+      // `hide: true` = champ retiré de la saisie depuis le back-office. Le legacy le masque
+      // (`step_v2.php:256`) ; sans ce garde-fou le site l'affichait quand même, et un champ
+      // délibérément sorti du formulaire — parce que remplacé — restait proposé à l'utilisateur.
+      //
+      // `isTruthyFlag` et non `=== true || === "true"` : c'est la convention du fichier pour TOUS
+      // les drapeaux venus du back-office (`hideStep`, `hideInForm` trois lignes plus haut,
+      // `enableSelect2`), et elle couvre les formes que le legacy écrit réellement — `1`, `"1"`,
+      // `"on"`, `"yes"`, la casse et les espaces — tout en refusant `"false"`.
+      //
+      // `includeHiddenFields` : les lectures STRUCTURELLES et la RELECTURE d'une réponse doivent
+      // continuer de voir le champ (cf. l'option). Sans cette porte, `getSharedFinderInfo` ne
+      // trouvait plus un finder partagé masqué — le mode « par lieu » se dégradait en silence,
+      // exactement la panne que `includeHiddenSteps` avait été écrite pour empêcher — et
+      // `CoFormReadOnly` cessait d'afficher les valeurs déjà enregistrées sous cette clé.
+      if (!inclureChampsMasques && isTruthyFlag(fieldData.hide)) return;
 
       const componentType = mapCoFormTypeToComponentType(fieldData.type);
       
@@ -1671,7 +1700,11 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
         // « Invalid input: expected object, received string » s'affichait sous le
         // champ dès l'ouverture d'un formulaire vierge. Le `.optional()` du
         // schéma ne rattrape rien, car `""` n'est pas `undefined` ; et pour un
-        // champ requis (le cas courant) il n'y a même pas d'`optional`.
+        // champ requis (le cas courant) il n'y a même pas d'`optional`. Le composant
+        // ne sème rien au montage (à dessein : il ne doit pas salir le formulaire),
+        // donc la valeur vide se construit ICI — et ici seulement : une seconde
+        // clause identique, héritée d'une fusion, était du code mort (esbuild :
+        // « This case clause will never be evaluated »).
         case "categorizedCheckbox":
           defaultValues[field.name] = { list: [], sublist: {} } satisfies CategorizedCheckboxValue;
           break;
@@ -1724,16 +1757,6 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
         case "pourContre":
         case "aapEvaluation":
         case "chooseProposal":
-          break;
-
-        case "categorizedCheckbox":
-          // Le schéma attend `{ list, sublist }`. Le défaut générique `""` le fait
-          // échouer même quand le champ n'est PAS requis (`z.object(...).optional()`
-          // accepte `undefined`, pas une chaîne) : une étape qui contient ce champ
-          // serait jugée invalide à jamais, et la garde de soumission finale en
-          // ferait un mur. Le composant ne sème rien au montage (à dessein : il ne
-          // doit pas salir le formulaire), donc la valeur vide se construit ICI.
-          defaultValues[field.name] = { list: [], sublist: {} };
           break;
 
         default:
@@ -2514,7 +2537,10 @@ export function getSharedFinderInfo(formData: CoFormData): SharedFinderInfo | nu
   // pré-remplissage, le verrouillage et les filtres du mode collaboratif. Si
   // l'étape qui le porte est marquée `hideStep`, on doit quand même le trouver,
   // sans quoi le mode par lieu se dégraderait en silence.
-  const subFormsFields = parseCoFormFields(formData, { includeHiddenSteps: true });
+  const subFormsFields = parseCoFormFields(formData, {
+    includeHiddenSteps: true,
+    includeHiddenFields: true,
+  });
   const subForm = subFormsFields.find((sf) => sf.subFormId === subFormId);
   if (!subForm) return null;
   const field = subForm.fields.find((f) => f.name === fieldName);

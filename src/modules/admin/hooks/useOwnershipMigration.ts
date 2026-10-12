@@ -6,7 +6,7 @@ import { useT } from "@/hooks/useT";
 import { publicSurfaceKeys } from "@/lib/queryKeys";
 import "@/modules/admin/i18n";
 
-import { ensureCostumScope } from "../lib/ensureCostumScope";
+import { ensureCostumScope } from "@/lib/ensureCostumScope";
 
 /**
  * Migration d'APPROPRIATION (endpoints TRANSFER_SOURCE_*, nés en miroir legacy/Node) : la propriété

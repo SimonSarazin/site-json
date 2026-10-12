@@ -28,10 +28,12 @@ const CardAnswer = lazy(() => import("./card/CardAnswer"));
 const CardNews = lazy(() => import("./card/CardNews"));
 const CardTestimonial = lazy(() => import("./card/CardTestimonial"));
 const CardResource = lazy(() => import("./card/CardResource"));
+const CardResourceDirectory = lazy(() => import("./card/CardResourceDirectory"));
 
 export default function SearchCard({
   item,
   onClick,
+  onOpenSheet,
   card = {
     tagLimit: 5,
     showDescription: false,
@@ -62,7 +64,7 @@ export default function SearchCard({
     case "resource-booking":
       return <CardResourceBooking item={item} onClick={onClick} card={card} list={list} />;
     case "poi-amenities":
-      return <CardPoiAmenities item={item} onClick={onClick} card={card} list={list} />;
+      return <CardPoiAmenities item={item} onClick={onClick} onOpenSheet={onOpenSheet} card={card} list={list} />;
     case "contact-card":
       return <CardContact item={item} onClick={onClick} card={card} list={list} />;
     case "image-panel":
@@ -77,6 +79,8 @@ export default function SearchCard({
       return <CardTestimonial item={item} onClick={onClick} card={card} list={list} />;
     case "resource":
       return <CardResource item={item} onClick={onClick} card={card} list={list} />;
+    case "resource-directory":
+      return <CardResourceDirectory item={item} onClick={onClick} card={card} list={list} />;
     case "default":
     default:
       return <CardDefault item={item} onClick={onClick} card={card} list={list} />;

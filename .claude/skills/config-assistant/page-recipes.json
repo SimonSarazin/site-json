@@ -8,12 +8,10 @@
    "source": "config.prod.parent62.json",
    "path": "/",
    "sequence": [
-    "featured-carousel",
-    "action-tiles",
-    "map-bubbles",
+    "gridLayout",
     "articleTeaser"
    ],
-   "rythme": "Quatre blocs, un seul statique : le carrousel plein écran met en avant les POI tagués « A la une » (le contenu choisit la vitrine), puis DEUX tuiles « Vous êtes… » aiguillent parent / professionnel vers leur page d'entrée — seul texte rédigé de la page, et la garantie que ces pages ne dépendent pas de la seule nav. La carte à bulles donne ensuite l'entrée géographique vers les pages territoire, et l'aperçu d'articles ferme la page en preuve de vie avec son CTA « voir tout » vers /blog. L'identité est portée par le header stacked (wordmark plein écran) : la home n'a pas besoin de hero."
+   "rythme": "Deux blocs de premier niveau. La page OUVRE sur un `gridLayout` qui réunit dans UN SEUL panneau blanc (`innerWrapperClass`, posé sur l'aplat `page-accent`) les trois entrées : en tête (`topSection`), les DEUX tuiles « Vous êtes… » qui aiguillent parent / professionnel vers leur page d'entrée — seul texte rédigé de la page, en aplats foncés de la couleur de marque (`background`/`textColor`), resserrées (`density: \"compact\"`) et animées au survol (`hoverEffect: \"lift\"`) ; dessous, côte à côte, la carte à bulles des territoires en 3/4 (bulles animées, `animate`) et le carrousel « à la une » en 1/4 (POI tagués, titre et image cliquables). Orientation, entrée géographique et entrée éditoriale se lisent comme une seule bande. L'aperçu d'articles « Zoom sur le réseau », filtré sur un mot-clé, ferme en preuve de vie avec son CTA vers la liste complète. L'identité est portée par le header stacked : la home n'a pas besoin de hero."
   },
   {
    "id": "home-vitrine-dense",
@@ -100,8 +98,8 @@
    "path": "/territoire/familles-en-sol-mineur-henin-carvin",
    "sequence": [
     "html",
+    "gridLayout",
     "agenda",
-    "cards",
     "searchProStatic",
     "searchHeader",
     "articleFeed",
@@ -109,7 +107,7 @@
     "searchProStatic",
     "cta"
    ],
-   "rythme": "`html` porte le bandeau hero (couleur propre au territoire) ; `agenda` enchaîne aussitôt sur les dates du comité local (teaser `baseParams.filters` `type:meeting` + `territoires`, sans onglets ni toggle) ; `cards` (2 colonnes) porte le·la coordonnateur·rice et la carte cliquable « Comptes rendus des réunions » qui ouvre le dossier Drive du territoire (`href` + `target:_blank`) ; `searchProStatic` liste les RESSOURCES du territoire (POI `recoveryCenter` filtrés `territoires`, presenter `resource`) ; `searchHeader` (recherche active, filtres thèmes/publics) et `articleFeed` (filtré sur ce territoire) portent l'actualité ; `accordion` liste les communes ; un second `searchProStatic` met en avant « les actions sur le territoire » ; `cta` referme sur `/recherche`. parent62 décline ce motif sur ses 9 territoires — c'est un gabarit, pas une page unique. Les 9 déclinaisons partagent désormais EXACTEMENT ces 9 sections (les blocs `html` de liens externes propres à 5 territoires ont été retirés le 03/09) : le gabarit est stable d'une page à l'autre."
+   "rythme": "`html` porte le bandeau hero (couleur propre au territoire) ; `agenda` enchaîne aussitôt sur les dates du comité local (teaser `baseParams.filters` `type:meeting` + `territoires`, sans onglets ni toggle) ; ces trois blocs tiennent dans UNE section `gridLayout` en mode rangée (`sections` + `columns: 3`, `align: stretch`) : l'agenda du comité, la coordination et les comptes rendus se lisent comme une seule bande. Le bloc `member` du milieu affiche le·la coordonnateur·rice EN VRAI — membres de l'entité portant le rôle `Coordonnateur(trice)` (`roles`) ET rattachés au territoire de la page par un filtre SERVEUR (`filters: { territoires: <label EXACT de territoires62.ts> }`, égalité Mongo), avec `fields: [territoires, telephone, phone, mobile, email]` pour que la liste ramène ce que la carte lit ; carte `team` aux couleurs du territoire, `card.rattachement` OBLIGATOIRE (`{ cheminGabarit: \"/territoire/{slug}\", prefixeCouleur: \"--territoire\" }`) — et porte en `footerText` le canal de contact du comité — c'est ce qui le fait survivre à `hideWhenEmpty` quand aucun membre n'est rattaché. La troisième colonne est un `cards` à un seul item, la carte cliquable « Comptes rendus des réunions » qui ouvre le dossier Drive du territoire (`href` + `target:_blank`) ; une section `agenda` de premier niveau suit la rangée : l'agenda du territoire (tous les événements `type:others` filtrés `territoires`, onglets À venir / Passés, lien « Voir tout l'agenda » vers `/agenda?territoire=<id d'option>`) ; `searchProStatic` liste les RESSOURCES du territoire (POI `recoveryCenter` filtrés `territoires`, presenter `resource`) ; `searchHeader` (recherche active, filtres thèmes/publics) et `articleFeed` (filtré sur ce territoire) portent l'actualité ; `accordion` liste les communes ; un second `searchProStatic` met en avant « les actions sur le territoire » ; `cta` referme sur `/recherche`. parent62 décline ce motif sur ses 9 territoires — c'est un gabarit, pas une page unique. Les 9 déclinaisons partagent désormais EXACTEMENT ces 9 sections de premier niveau (les blocs `html` de liens externes propres à 5 territoires ont été retirés le 03/09) : le gabarit est stable d'une page à l'autre."
   },
   {
    "id": "page-agenda",
@@ -143,13 +141,15 @@
    "path": "/reseau",
    "sequence": [
     "title",
-    "timeline",
     "content",
+    "content",
+    "title",
+    "categories-grid",
     "features-glass",
-    "faq",
-    "cta"
+    "title",
+    "content"
    ],
-   "rythme": "`title` ouvre, puis on ALTERNE les registres : frise (temps) → texte (fond) → cartes-icônes (synthèse) → FAQ (objections) → CTA. Trois `content` d'affilée fatiguent ; c'est l'alternation qui tient la page."
+   "rythme": "`title` ouvre, puis on ALTERNE les registres : texte fondateur (`content`, avec le lien vers le document d'origine) → l'équipe en texte + visuel cliquable (`content`) → les familles d'acteurs en cartes (`categories-grid`) → les valeurs en cartes-icônes (`features-glass`, libellés courts qui renvoient à la page portant le texte intégral) → la lettre d'information, visuel à gauche (`content`). Les deux ÉNONCÉS de la page — l'objectif du réseau, la définition de la parentalité — partagent le même moule : un `title` centré, titre + paragraphe unique. Une phrase seule porte mieux en énoncé qu'en corps de page, et deux énoncés traités pareil se répondent. Trois `content` d'affilée fatiguent ; DEUX à la suite passent. Pas de `cta` ici : la page se termine sur un bloc qui porte déjà son propre lien — un appel à l'action de plus ferait doublon."
   },
   {
    "id": "page-observatoire",
@@ -194,8 +194,8 @@
    "path": "/territoire/artois",
    "sequence": [
     "html",
+    "gridLayout",
     "agenda",
-    "cards",
     "searchProStatic",
     "searchHeader",
     "articleFeed",
@@ -203,7 +203,7 @@
     "searchProStatic",
     "cta"
    ],
-   "rythme": "Neuf sections, répétées à l'identique sur 9 territoires — c'est le gabarit le plus dupliqué du parc. L'alternance est délibérée : le bandeau annonce le territoire, l'agenda du comité local vient AUSSITÔT après (l'information la plus périssable en premier), puis les cartes de contact (coordonnateur·rice, « Comptes rendus des réunions » vers le Drive) et les ressources du territoire précèdent le couple `searchHeader` + `articleFeed` de l'actualité ; l'accordéon des communes et la sélection d'acteurs ferment le corps, le CTA la page. ⚠ `searchHeader` alimente le `PageFilters` de la PAGE ENTIÈRE : les deux blocs placés AVANT lui reçoivent eux aussi ses facettes (thèmes/publics) — cf. Agenda.tsx (effectiveBaseParams) et SearchProStatic.tsx (searchByFieldsToQuery)."
+   "rythme": "Neuf sections de premier niveau, répétées à l'identique sur 9 territoires — c'est le gabarit le plus dupliqué du parc. L'alternance est délibérée : le bandeau annonce le territoire, l'agenda du comité local vient AUSSITÔT après (l'information la plus périssable en premier), le tout dans une même rangée `gridLayout` à 3 colonnes : agenda du comité, coordination (section `member` lue sur les membres de l'entité, filtrée par rôle ET par territoire, contact du comité en `footerText`) et « Comptes rendus des réunions » vers le Drive et puis l'agenda du territoire (tous ses événements, en section de premier niveau) et les ressources du territoire précèdent le couple `searchHeader` + `articleFeed` de l'actualité ; l'accordéon des communes et la sélection d'acteurs ferment le corps, le CTA la page. ⚠ `searchHeader` alimente le `PageFilters` de la PAGE ENTIÈRE : les deux blocs placés AVANT lui reçoivent eux aussi ses facettes (thèmes/publics) — cf. Agenda.tsx (effectiveBaseParams) et SearchProStatic.tsx (searchByFieldsToQuery)."
   },
   {
    "id": "page-liste-nue",
@@ -231,7 +231,7 @@
    "id": "page-communaute-onglets",
    "titre": "Communauté répartie en onglets",
    "quand": "Présenter des populations de nature différente — personnes et structures — sans les mélanger dans une même liste.",
-   "source": "config.prod.parent62.json",
+   "source": "config.prod.eXtremeDefiAdeme.json",
    "path": "/communaute",
    "sequence": [
     "searchHeader",

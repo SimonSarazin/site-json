@@ -185,6 +185,69 @@ describe("calculateAacPermissions — lecture, édition, financement", () => {
     expect(calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: {} }).canSelectCommun).toBe(false);
   });
 
+  it("supprimer un commun : son auteur et l'admin, personne d'autre", () => {
+    const admin = calculateAacPermissions(makeEntity(true), makeMe("a"), { gates: {} });
+    // L'admin n'a pas besoin de connaître le commun visé.
+    expect(admin.canDeleteCommun()).toBe(true);
+    expect(admin.canDeleteCommun({ authorId: "u" })).toBe(true);
+
+    const auteur = calculateAacPermissions(NON_ADMIN(), makeMe("u"), { gates: {} });
+    expect(auteur.canDeleteCommun({ authorId: "u" })).toBe(true);
+    expect(auteur.canDeleteCommun({ authorId: "autre" })).toBe(false);
+    // Sans auteur connu (compte temporaire), un non-admin ne passe pas.
+    expect(auteur.canDeleteCommun({})).toBe(false);
+    expect(auteur.canDeleteCommun(null)).toBe(false);
+
+    const anonyme = calculateAacPermissions(NON_ADMIN(), ANON, { gates: {} });
+    expect(anonyme.canDeleteCommun({ authorId: "u" })).toBe(false);
+  });
+
+  /**
+   * Le garde qui sépare la suppression de l'édition : brancher la suppression sur
+   * `anyOnewithLinkCanAnswer` donnerait à tout connecté un bouton irréversible sur le commun
+   * d'autrui, droit qu'aucune branche d'`Answer::canEdit` n'accorde.
+   */
+  it("`anyOnewithLinkCanAnswer` ouvre l'édition à tout connecté, JAMAIS la suppression", () => {
+    const perms = calculateAacPermissions(NON_ADMIN(), makeMe("tiers"), {
+      gates: { anyOnewithLinkCanAnswer: true },
+    });
+    expect(perms.canEditCommun({ authorId: "auteur" })).toBe(true);
+    expect(perms.canDeleteCommun({ authorId: "auteur" })).toBe(false);
+  });
+
+  /**
+   * Contributeurs à l'édition (`links.canEdit`) : parité de ce que `Coform::canAdminAnswer`
+   * accepte à l'enregistrement — modifier (arbitrage du 29/09). Le bouton de gestion de la liste
+   * leur reste fermé ; la question « Référent » la leur ouvre (parité legacy, 30/09).
+   */
+  it("un contributeur à l'édition modifie le commun — connecté seulement", () => {
+    const commun = { authorId: "auteur", editorIds: ["contrib"] };
+    expect(calculateAacPermissions(NON_ADMIN(), makeMe("contrib"), { gates: {} }).canEditCommun(commun)).toBe(true);
+    expect(calculateAacPermissions(NON_ADMIN(), makeMe("tiers"), { gates: {} }).canEditCommun(commun)).toBe(false);
+    // Session tombée : l'identité seule n'ouvre rien.
+    expect(calculateAacPermissions(NON_ADMIN(), makeMe("contrib", false), { gates: {} }).canEditCommun(commun)).toBe(false);
+  });
+
+  it("un contributeur à l'édition n'a ni le bouton de gestion de la liste, ni la suppression", () => {
+    const commun = { authorId: "auteur", editorIds: ["contrib"] };
+    const contrib = calculateAacPermissions(NON_ADMIN(), makeMe("contrib"), { gates: {} });
+    expect(contrib.canManageEditors(commun)).toBe(false);
+    expect(contrib.canDeleteCommun(commun)).toBe(false);
+  });
+
+  it("gérer les contributeurs à l'édition : l'auteur et l'admin, jamais `anyOnewithLinkCanAnswer`", () => {
+    const commun = { authorId: "auteur" };
+    expect(calculateAacPermissions(NON_ADMIN(), makeMe("auteur"), { gates: {} }).canManageEditors(commun)).toBe(true);
+    expect(calculateAacPermissions(makeEntity(true), makeMe("a"), { gates: {} }).canManageEditors(commun)).toBe(true);
+
+    const parLien = calculateAacPermissions(NON_ADMIN(), makeMe("tiers"), { gates: { anyOnewithLinkCanAnswer: true } });
+    expect(parLien.canEditCommun(commun)).toBe(true);
+    expect(parLien.canManageEditors(commun)).toBe(false);
+
+    expect(calculateAacPermissions(NON_ADMIN(), ANON, { gates: {} }).canManageEditors(commun)).toBe(false);
+    expect(calculateAacPermissions(NON_ADMIN(), makeMe("auteur"), { gates: {} }).canManageEditors(null)).toBe(false);
+  });
+
   it("l'admin costum passe par le drapeau parapluie, sans rôle sur l'entité", () => {
     const perms = calculateAacPermissions(NON_ADMIN(), makeMe("a"), { gates: { active: true } }, true);
     expect(perms.isAdmin).toBe(true);

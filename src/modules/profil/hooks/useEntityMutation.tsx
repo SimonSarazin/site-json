@@ -19,6 +19,7 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 import type { QueryKey } from "@tanstack/react-query";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { useCocolight } from "@/hooks/useCocolight";
+import { isCostumHostAdmin } from "@/lib/permissions";
 import { COSTUM_QUERY_KEYS } from "@/constants/queryKeys";
 import { costumSlugOf } from "@/lib/costumLists";
 import { useNavigate } from "react-router";
@@ -44,8 +45,11 @@ type CreatedEntity = {
   updateField?: (path: string, value: unknown) => Promise<unknown>;
   serverData?: Data | null;
 };
-/** Cible SDK de création : `me`, parent, ou scope costum (`me.costum(slug)`). */
-type SdkTarget = Record<SdkMethod, (payload: Data) => Promise<CreatedEntity>>;
+/** Options de création d'un scope costum (`CostumScope.organization(data, opts)`…) — jamais envoyées au serveur. */
+type CostumCreateOpts = { subType?: string };
+/** Cible SDK de création : `me`, parent, ou scope costum (`me.costum(slug)`). Le 2e argument n'est
+ *  passé QU'À un scope costum : sur `me`/parent (BaseEntity), il n'a pas ce sens. */
+type SdkTarget = Record<SdkMethod, (payload: Data, opts?: CostumCreateOpts) => Promise<CreatedEntity>>;
 /** `me` (utilisateur connecté). Le slug costum réel est typé `KnownCostumSlug` côté lib → cast au call. */
 type MeLike = EntityTypes | null;
 
@@ -59,6 +63,12 @@ export interface EntityMutationSpec {
   buildPayload: (formData: Data) => Data;
   /** create costum : `me.costum(slug).X()` au lieu de `(target??me).X()`. */
   costumSlug?: string;
+  /**
+   * CRÉATION costum : sous-type ciblé (clé `typeObj`, ex. `organizationsTls`) — relayé au SDK en 2e
+   * argument (`scope.X(payload, { subType })`) pour appliquer la variante (presets) de CE sous-type au
+   * lieu du défaut de la collection. Ignoré hors scope costum et en édition.
+   */
+  subType?: string;
   /**
    * ÉDITION costum : slug du costum qui DÉFINIT le formulaire (`FormDescriptor.costumSlug`) — épinglé
    * sur l'entité avant l'écriture du draft, pour que ses champs costum soient écrivables.
@@ -86,6 +96,9 @@ export interface EntityMutationSpec {
     dropEmptyEmail?: boolean;
     /** valeurs fixes ajoutées au payload (preset costum). */
     extraFields?: Data;
+    /** Comme `extraFields`, mais seulement pour un NON-admin du site — modération a priori (cf.
+     *  entityModalSpec : filtre d'affichage, pas barrière de sécurité). */
+    extraFieldsUnlessCostumAdmin?: Data;
   };
   /** Stamps déclaratifs ($scope DÉJÀ résolus par buildSpec) — canal payload appliqué après
    *  buildPayload (add+edit), canal pathValue après le save (entité PROPRE, échec non bloquant). */
@@ -141,7 +154,7 @@ function isGalleryFieldValue(v: unknown): v is GalleryFieldValue {
   return !!g && typeof g === "object" && Array.isArray(g.added) && Array.isArray(g.removedDocIds) && typeof g.contentKey === "string";
 }
 interface GalleryCapableEntity {
-  uploadDocument: (file: File, opts: { contentKey: string; docType?: "image" | "file" }) => Promise<{ docId: string; docPath: string }>;
+  uploadDocument: (file: File, opts: { contentKey: string; docType?: "image" | "file"; subKey?: string }) => Promise<{ docId: string; docPath: string }>;
   deleteFile: (docId: string) => Promise<void>;
   data?: Record<string, unknown>;
   save?: () => Promise<unknown>;
@@ -178,7 +191,15 @@ async function processGalleryFields(entity: unknown, values: Data): Promise<void
       }
     }
     for (const file of v.added ?? []) {
-      const res = await ent.uploadDocument!(file, { contentKey: v.contentKey, docType: v.docType });
+      // `subKey` = clé du CHAMP de formulaire (ex. "statusFile", "responsableCivilePro") : le backend
+      // écrase `contentKey` des `doctype:file` par un bucket MIME (pdf/spreadsheet/…), mais conserve
+      // `subKey` verbatim → c'est lui qui permet de rattacher un document à son champ (seed d'édition,
+      // preview). Inutile pour les images (contentKey "slider" survit).
+      const res = await ent.uploadDocument!(file, {
+        contentKey: v.contentKey,
+        docType: v.docType,
+        subKey: v.docType === "file" ? v.contentKey : undefined,
+      });
       if (v.mediaTarget?.field && res?.docPath) {
         (mediaAdds[v.mediaTarget.field] ??= []).push({ type: v.mediaTarget.type, url: res.docPath });
       }
@@ -290,6 +311,10 @@ export async function runEntityMutation(
   }
   if (spec.inject?.dropEmptyEmail && payload.email === "") delete payload.email;
   if (spec.inject?.extraFields) Object.assign(payload, spec.inject.extraFields);
+  // Modération a priori : le drapeau n'est posé que pour les NON-admins du site (cf. entityModalSpec).
+  if (spec.inject?.extraFieldsUnlessCostumAdmin && !isCostumHostAdmin(deps.contextEntity)) {
+    Object.assign(payload, spec.inject.extraFieldsUnlessCostumAdmin);
+  }
   if (imageFile) payload.profil_avatar = imageFile;
 
   const method = SDK_METHOD[spec.entityType];
@@ -305,10 +330,14 @@ export async function runEntityMutation(
   //  (3) sinon cible directe (parent explicite, ou `me`).
   const costumOf = me as unknown as { costum?: (arg: unknown) => Promise<SdkTarget> } | null;
   let scope: SdkTarget;
+  // Sous-type ciblé : relayé au SEUL scope costum (branches 1 et 2), jamais à la cible directe (3).
+  let costumOpts: CostumCreateOpts | undefined;
   if (spec.costumSlug && costumOf?.costum) {
     scope = await costumOf.costum(spec.costumSlug);
+    if (spec.subType) costumOpts = { subType: spec.subType };
   } else if (deps.contextEntity && costumOf?.costum) {
     scope = await costumOf.costum(deps.contextEntity);
+    if (spec.subType) costumOpts = { subType: spec.subType };
     if (spec.target) { // réplique l'auto-injection parent/organizer perdue (this.parent = me)
       if (spec.entityType === "events") {
         if (!payload.organizer) {
@@ -325,7 +354,8 @@ export async function runEntityMutation(
   } else {
     scope = target as unknown as SdkTarget;
   }
-  const entity = await scope[method](payload);
+  // Sans sous-type : appel STRICTEMENT inchangé (un seul argument).
+  const entity = await (costumOpts ? scope[method](payload, costumOpts) : scope[method](payload));
   try {
     await entity.save();
   } catch (err) {

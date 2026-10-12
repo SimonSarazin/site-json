@@ -138,7 +138,13 @@ footer nav { font-family: var(--font-serif); }
 .prose p, .prose li { line-height: 1.7; margin: 0.5em 0; }
 .prose ul { list-style: disc; padding-left: 1.4rem; }
 .prose ol { list-style: decimal; padding-left: 1.4rem; }
-.prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+/* Liens de contenu rédigé. --primary est un marine désaturé (oklch .35 .04 250), trop proche du
+   texte courant : souligné, il se lisait comme du gras plutôt que comme un lien. --secondary-foreground
+   (le teal de la charte) tranche par la TEINTE et tient WCAG AA en corps de texte — 8,1:1 sur le fond
+   clair, 12,3:1 en sombre ; --chart-1 et --info échouent tous deux à ~3,4:1, donc exclus. Le
+   soulignement est épaissi pour ne pas faire reposer l'information sur la seule couleur (WCAG 1.4.1). */
+.prose a { color: var(--secondary-foreground); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.prose a:hover { color: var(--primary); }
 .prose strong { font-weight: 600; }
 
 /* Custom scrollbar (même bloc que les autres thèmes — pistes/pouces aux tokens,
@@ -228,19 +234,71 @@ footer nav { font-family: var(--font-serif); }
   --territoire-fsm-lens-lievin: #97776b;
   --territoire-ternois-bruaysis: #d492a9;
 
-  /* Dégradé de fond de la section « Carte à bulles » (accueil), échantillonné
-     sur la maquette source (HP Maquette v4). Couleur de MARQUE, ne suit pas le thème. */
+  /* ---- Fond et encre des CARTES de personne, par territoire ---------------
+     Les teintes ci-dessus sont des couleurs de MARQUE, pensées pour des
+     pastilles et des bandeaux — pas pour porter du texte. Cinq d'entre elles
+     échouent au contraste AA quelle que soit l'encre choisie (mesuré : blanc
+     sur Boulonnais 4,80, sur FSM Lens-Liévin 4,06 ; marine sur Calaisis 4,36,
+     sur Entre Mer et Terres 4,44, sur Ternois-Bruaysis 4,44 — le seuil est
+     4,5). `*-carte` est donc la même teinte RAMENÉE au contraste : assombrie
+     vers le noir ou éclaircie vers le blanc, jamais décalée en teinte, et
+     `*-encre` est l'encre qui va avec. Chaque couple tient ≥ 6,1:1, ce qui
+     laisse un texte secondaire à 85 % d'opacité au-dessus de 4,6:1.
+     Les libellés sont les SLUGS DE PAGE (`/territoire/<slug>`) : c'est ce que
+     `CardTeamMember` sait dériver du champ `territoires` d'un profil. Les deux
+     « Familles en sol mineur » ont donc ici leur nom long, là où les variables
+     de marque ci-dessus utilisent l'abrégé `fsm-`. */
+  --territoire-arrageois-carte: #66579e;              /* blanc  6,14:1 */
+  --territoire-arrageois-encre: #ffffff;
+  --territoire-artois-carte: #b7cb6b;                 /* marine 7,87:1 — inchangé */
+  --territoire-artois-encre: #1f2d3a;
+  --territoire-audomarois-carte: #e5af32;             /* marine 7,03:1 — inchangé */
+  --territoire-audomarois-encre: #1f2d3a;
+  --territoire-boulonnais-carte: #a63f38;             /* blanc  6,20:1 */
+  --territoire-boulonnais-encre: #ffffff;
+  --territoire-calaisis-carte: #ef955c;               /* marine 6,10:1 */
+  --territoire-calaisis-encre: #1f2d3a;
+  --territoire-entre-mer-et-terres-carte: #4ebac3;    /* marine 6,11:1 */
+  --territoire-entre-mer-et-terres-encre: #1f2d3a;
+  --territoire-familles-en-sol-mineur-henin-carvin-carte: #904a70;  /* blanc 6,18:1 */
+  --territoire-familles-en-sol-mineur-henin-carvin-encre: #ffffff;
+  --territoire-familles-en-sol-mineur-lens-lievin-carte: #745c52;   /* blanc 6,19:1 */
+  --territoire-familles-en-sol-mineur-lens-lievin-encre: #ffffff;
+  --territoire-ternois-bruaysis-carte: #d79aaf;       /* marine 6,11:1 */
+  --territoire-ternois-bruaysis-encre: #1f2d3a;
+
+  /* Dégradé des panneaux de l'accueil (carte des territoires, actu « À la une »), échantillonné sur la
+     maquette source (HP Maquette v4). Couleur de MARQUE, qui s'assombrit en mode sombre (bloc `.dark` plus
+     bas) — d'où `--p62-map-bg-encre`, l'encre du texte posé dessus, qui change AVEC lui : noir sur le
+     dégradé clair (7,57 à 9,95:1), blanc sur le sombre (4,82 à 6,12:1). Le noir n'y tenait que 3,43:1. */
   --p62-map-bg-from: #1fae98;
   --p62-map-bg-to: #87bf9a;
+  --p62-map-bg-encre: #000000;
 
-  /* Couleurs de MARQUE de la home refaite (maquette v4) : bandeaux marine
-     (featured-carousel, articleTeaser, wordmark du header) et accent turquoise
-     des CTA/badges. Consommées par la config (`background`/`accentColor`/
+  /* Couleurs de MARQUE de la home refaite (maquette v4) : marine des étiquettes et
+     du bouton de « À la une », de l'articleTeaser et du wordmark du header, accent
+     turquoise des CTA/badges. Consommées par la config (`background`/`accentColor`/
      `header.textColor` en var()) ET reprises par le THÈME (config.theme :
      primary clair ≈ marine, accent ≈ turquoise) — cf.
      commentaire/parent62-unite-couleurs-home.md. Fixes clair/sombre. */
   --p62-marine: #2c3e50;
   --p62-turquoise: #4ecdc4;
+
+  /* Case « Parent » du bloc « Vous êtes… » (accueil) : fond plein vert de marque et son texte noir,
+     le plus lisible sur ce vert : 7,56:1 (AAA). Le blanc n'y tient que 2,78:1, sous AA. Fixes clair/sombre. */
+  --p62-vert: #1eae98;
+  --p62-vert-encre: #000000;
+  /* Version ASSOMBRIE du même vert (même teinte), pour la case « Parent » de l'accueil : texte blanc
+     à 6,07:1 (AA). Fixes clair/sombre. */
+  --p62-vert-fonce: #0f6f5f;
+  --p62-vert-fonce-encre: #ffffff;
+
+  /* Plaques photo de l'équipe (`/equipe`), sans territoire donc sans couleur dérivée : deux couleurs
+     de marque fixes posées en config (`card.fixedColors`) — vert pour l'animation départementale,
+     jaune-vert pour le contact CAF. Texte noir dans les deux cas : 7,56:1 et 13,95:1 (AAA). Fixes
+     clair/sombre, comme les autres couples de marque de cette page. */
+  --p62-caf: #d7d872;
+  --p62-caf-encre: #000000;
 }
 
 /* Mode sombre : le halo de la carte à bulles passe en « lueur douce » — les
@@ -251,6 +309,7 @@ footer nav { font-family: var(--font-serif); }
 .dark {
   --p62-map-bg-from: #146e60;
   --p62-map-bg-to: #567a62;
+  --p62-map-bg-encre: #ffffff;
 }
 
 /* Panneau sombre de la bande « Votre territoire » (charte parent62.org). */

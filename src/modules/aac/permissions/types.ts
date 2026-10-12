@@ -62,6 +62,11 @@ export interface AacPermissionData {
 export interface AacCommunLike {
   /** Id de l'auteur (peut être absent en standalone : compte temporaire email). */
   authorId?: string;
+  /**
+   * Contributeurs à l'édition : les clés de `links.canEdit` de la réponse. Ils peuvent MODIFIER
+   * le commun — et seulement le modifier (`Coform::canAdminAnswer`, backend).
+   */
+  editorIds?: readonly string[];
 }
 
 export interface AacPermissions {
@@ -70,8 +75,19 @@ export interface AacPermissions {
   canCreateCommunReason?: string;
   /** 2. Lire les communs (public, sauf `onlyMemberAccess` : membres et admins). */
   canReadCommuns: boolean;
-  /** 3. Modifier un commun (auteur OU admin, OU tout connecté si `anyOnewithLinkCanAnswer`). */
+  /**
+   * 3. Modifier un commun (auteur OU admin OU contributeur à l'édition, OU tout connecté si
+   * `anyOnewithLinkCanAnswer`).
+   */
   canEditCommun: (commun?: AacCommunLike | null) => boolean;
+  /**
+   * 3 bis. Le bouton « Contributeurs à l'édition » (`links.canEdit`) : auteur OU admin —
+   * décision du 29/09, alors que le bouton legacy suivait `Authorisation::canEdit`, qui y
+   * admettait les contributeurs. Ce n'est PAS une frontière de droit : quand une question finder
+   * alimente la liste (`addToLinks`), quiconque modifie le commun la change par cette question
+   * (parité legacy, assumée le 30/09 ; le backend remplace tout lien reçu d'un éditeur).
+   */
+  canManageEditors: (commun?: AacCommunLike | null) => boolean;
   /** 4. Participer aux actions (connecté ; détail par action ailleurs). */
   canParticipateActions: boolean;
   /**
@@ -95,6 +111,17 @@ export interface AacPermissions {
    * sécurité. Durcissement au BACKLOG.
    */
   canSelectCommun: boolean;
+  /**
+   * 7. Supprimer DÉFINITIVEMENT un commun (auteur OU admin). Fonction et non booléen : le droit
+   * dépend du commun visé, puisqu'il s'ouvre à son auteur.
+   *
+   * Distinct de `canEditCommun`, qui porte `anyOnewithLinkCanAnswer` et ouvre l'édition à tout
+   * connecté : un geste irréversible n'hérite pas d'un gate pensé pour la saisie, et aucune
+   * branche d'`Answer::canEdit` (`survey/models/Answer.php:143`) ne l'accorde.
+   *
+   * Gate d'AFFICHAGE : le backend reste la source de vérité (`Authorisation::canDeleteElement`).
+   */
+  canDeleteCommun: (commun?: AacCommunLike | null) => boolean;
 
   isConnected: boolean;
   isAdmin: boolean;

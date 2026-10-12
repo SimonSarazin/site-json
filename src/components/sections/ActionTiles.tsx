@@ -1,9 +1,13 @@
 import { useLocalization } from "@/hooks/useLocalization";
 import { type ActionTilesProps } from "@/types/site-schema";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import { Link } from "react-router";
+import NavLink from "@/components/layout/NavLink";
 import { buildGridColsClass } from "./responsiveGridCols";
+import { solidTileStyle, tileSizeClasses, tilesContainerWidth } from "./actionTileStyle";
+import { sectionBadgeClass, sectionHeadlineStyle } from "./sectionBadge";
 
 interface ActionTilesSectionProps {
     id?: string;
@@ -20,25 +24,8 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
         ? buildGridColsClass(props.columns)
         : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4";
 
-    const DEFAULT_ICON_SIZE = 32;
 
     const isSvgIcon = (icon: string) => icon.trim().startsWith("<svg");
-
-    const getSvgSize = (svg: string) => {
-        const widthMatch = svg.match(/width=["'](\d+(?:\.\d+)?)["']/i);
-        return widthMatch ? Number(widthMatch[1]) : DEFAULT_ICON_SIZE;
-    };
-
-    const getSizeClass = (size: number) => {
-        if (size <= 20) return "size-5";
-        if (size <= 24) return "size-6";
-        if (size <= 28) return "size-7";
-        if (size <= 32) return "size-8";
-        if (size <= 40) return "size-10";
-        if (size <= 48) return "size-12";
-        if (size <= 56) return "size-14";
-        return "size-16";
-    };
 
     const ensureSvgHasClass = (svg: string, className: string) => {
         if (/class=["'][^"']*["']/i.test(svg)) {
@@ -47,16 +34,15 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
         return svg.replace("<svg", `<svg class="${className}"`);
     };
 
-    const renderIcon = (icon: string, colorClass: string) => {
+    // `sizeClass` est le SEUL contrat de taille, SVG inline compris : la taille intrinsèque du SVG
+    // (`width="48"`) ne compte pas, sinon `size: "lg"` et la pastille `inline` (`size-10`, qui attend
+    // un `size-5`) n'auraient d'effet que sur les icônes lucide — grille désalignée, SVG qui déborde.
+    const renderIcon = (icon: string, colorClass: string, sizeClass: string) => {
         if (isSvgIcon(icon)) {
-            const sizeInPixels = getSvgSize(icon);
-            const svgWithSizeClass = ensureSvgHasClass(icon, getSizeClass(sizeInPixels));
-
             return (
                 <div
-                    className={`inline-flex items-center justify-center ${colorClass}`}
-                    style={{ width: sizeInPixels, height: sizeInPixels }}
-                    dangerouslySetInnerHTML={{ __html: svgWithSizeClass }}
+                    className={`inline-flex shrink-0 items-center justify-center ${sizeClass} ${colorClass}`}
+                    dangerouslySetInnerHTML={{ __html: ensureSvgHasClass(icon, "h-full w-full") }}
                 />
             );
         }
@@ -64,7 +50,7 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
         return (
             <DynamicIcon
                 name={icon as IconName}
-                className={`w-8 h-8 ${colorClass}`}
+                className={`${sizeClass} ${colorClass}`}
             />
         );
     };
@@ -109,6 +95,16 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
         eco: { button: "bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/30 hover:border-emerald-500/50", icon: "text-emerald-500" },
     };
 
+    // `undefined`/`"plain"` → titre nu (JSDoc du schéma) ; `"badge"`/`"pill"`/`"text"` → pastille
+    // (`sectionBadgeClass`/`sectionHeadlineStyle` savent déjà rendre les 3, cf. map-bubbles et
+    // featured-carousel qui ne font PAS cette distinction) — gouverne aussi `pillRow` ci-dessous,
+    // pour que son défaut (sans `headlineStyle`) soit vraiment nu, pas une pastille inclinée.
+    const enPastille = props.headlineStyle === "badge" || props.headlineStyle === "pill" || props.headlineStyle === "text";
+    const classePastille = sectionBadgeClass(props.headlineStyle);
+    const enLigne = props.tileLayout === "inline";
+    const tileSize = tileSizeClasses(props.size, props.density === "compact");
+    const containerWidth = tilesContainerWidth(props.width);
+
     const tileStyle = (color?: string) => TILE_STYLES[color ?? ""] ?? TILE_STYLES.primary;
 
     const getButtonClasses = (color?: string) => tileStyle(color).button;
@@ -128,17 +124,93 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
         ? "bg-gradient-to-b from-card/20 to-background"
         : "bg-linear-to-b from-background/80 to-background";
 
-    const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : defaultBg;
+    const compact = props.density === "compact";
+    // Compact : la rangée vit DANS une autre bande (qui porte fond, padding et largeur) — elle n'en
+    // rajoute aucun, sinon deux paddings et deux conteneurs se cumulent.
+    const sectionBg = compact ? "" : props.bg && props.bg !== "default" ? BG_MAP[props.bg] : defaultBg;
+    const lift = props.hoverEffect === "lift"
+        ? "hover:shadow-lg focus-visible:shadow-lg motion-safe:hover:-translate-y-1 motion-safe:focus-visible:-translate-y-1 duration-200"
+        : "";
+
+    // `pillRow` : titre de section ET actions sur UNE SEULE ligne (qui passe en colonne sous `sm`),
+    // chaque action en bouton PILULE (icône en pastille, libellé, flèche) — pas de sous-titre, pas de
+    // grille de tuiles. Branche isolée : les tuiles `centered`/`inline` ci-dessous n'en sont pas
+    // affectées, et réciproquement.
+    if (props.tileLayout === "pillRow") {
+        return (
+            <section id={id} className={compact ? "" : `px-4 ${sectionBg} py-16`}>
+                <div className={compact ? "" : `container mx-auto ${containerWidth}`}>
+                    <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+                        {props.headline && (
+                            <h2>
+                                {/* Police héritée de la règle globale `h1-h4` (`--font-serif`/Patrick Hand) —
+                                    PAS la police du menu : le titre garde le même repère manuscrit que
+                                    « Territoires »/« À la une », à côté d'actions qui, elles, restent en
+                                    police du thème. */}
+                                {enPastille ? (
+                                    <Badge
+                                        variant={props.accentColor ? undefined : "secondary"}
+                                        style={sectionHeadlineStyle(props.headlineStyle, props.accentColor, undefined)}
+                                        className={classePastille}
+                                    >
+                                        {t(props.headline)}
+                                    </Badge>
+                                ) : (
+                                    // Même rendu « nu » que centered/inline sans headlineStyle — pas de
+                                    // pastille par défaut (cf. JSDoc du schéma, `plain` = titre nu).
+                                    <span className="text-3xl md:text-4xl font-bold text-foreground">
+                                        {t(props.headline)}
+                                    </span>
+                                )}
+                            </h2>
+                        )}
+                        {props.actions.map((action, index) => {
+                            const solid = solidTileStyle(action.background, action.textColor);
+                            return (
+                                // `action.href` vient de la config — `NavLink`/`classifyHref`, pas un `<Link>`
+                                // nu, sinon un `mailto:`/une URL absolue finirait sur la page catch-all en 200.
+                                <NavLink key={index} to={action.href}>
+                                    <Button
+                                        size="lg"
+                                        style={solid}
+                                        className={`h-auto rounded-full py-4 pl-4 pr-6 gap-3 text-lg font-bold whitespace-normal border transition-all ${lift} ${solid ? "hover:brightness-95" : getButtonClasses(action.color)}`}
+                                    >
+                                        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-current/15">
+                                            {renderIcon(action.icon, solid ? "" : getIconColorClass(action.color), "size-5")}
+                                        </span>
+                                        <span>{t(action.title)}</span>
+                                        <ArrowRight className="size-5 shrink-0" aria-hidden />
+                                    </Button>
+                                </NavLink>
+                            );
+                        })}
+                    </div>
+                </div>
+            </section>
+        );
+    }
 
     return (
-        <section id={id} className={`px-4 ${sectionBg} py-16 `}>
-            <div className="container mx-auto max-w-5xl">
-                <div className="text-center mb-10">
-                    {props.headline && (
-                        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-                            {t(props.headline)}
-                        </h2>
-                    )}
+        <section id={id} className={compact ? "" : `px-4 ${sectionBg} py-16 `}>
+            <div className={compact ? "" : `container mx-auto ${containerWidth}`}>
+                <div className={`${compact ? "mb-3" : "mb-10"} ${enPastille ? "" : "text-center"}`}>
+                    {props.headline &&
+                        (enPastille ? (
+                            // Même pastille que les autres bandes de la page (cf. `sectionBadgeClass`).
+                            <h2 className={compact ? "mb-1" : "mb-4"}>
+                                <Badge
+                                    variant={props.accentColor ? undefined : "secondary"}
+                                    style={sectionHeadlineStyle(props.headlineStyle, props.accentColor, undefined)}
+                                    className={classePastille}
+                                >
+                                    {t(props.headline)}
+                                </Badge>
+                            </h2>
+                        ) : (
+                            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+                                {t(props.headline)}
+                            </h2>
+                        ))}
                     {props.subhead && (
                         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                             {t(props.subhead)}
@@ -147,25 +219,48 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
                 </div>
 
                 <div className={`grid ${gridColsClass} gap-4`}>
-                    {props.actions.map((action, index) => (
-                        <Link key={index} to={action.href}>
-                            <Button
-                                size="lg"
-                                // `whitespace-normal` : la base du Button pose `whitespace-nowrap`,
-                                // qui empêche titre et sous-titre de passer à la ligne — sur mobile,
-                                // un sous-titre plus large que l'écran débordait de la tuile.
-                                className={`h-auto w-full py-6 flex flex-col items-center gap-3 text-foreground border transition-all whitespace-normal text-center ${getButtonClasses(action.color)}`}
-                            >
-                                {renderIcon(action.icon, getIconColorClass(action.color))}
-                                <span className="font-semibold">{t(action.title)}</span>
-                                {action.subtitle && (
-                                    <span className="text-xs text-muted-foreground">
-                                        {t(action.subtitle)}
-                                    </span>
-                                )}
-                            </Button>
-                        </Link>
-                    ))}
+                    {props.actions.map((action, index) => {
+                        // Fond plein (`background`) : le style en ligne remplace la teinte de thème, et
+                        // icône comme sous-titre héritent de `textColor` au lieu des couleurs du thème.
+                        const solid = solidTileStyle(action.background, action.textColor);
+                        return (
+                            // `h-full` sur le lien et la tuile : toutes les tuiles d'une rangée prennent la
+                            // hauteur de la plus haute, quelle que soit la longueur de leurs textes.
+                            // `action.href` vient de la config — `NavLink`/`classifyHref`, pas un `<Link>`
+                            // nu, sinon un `mailto:`/une URL absolue finirait sur la page catch-all en 200.
+                            <NavLink key={index} to={action.href} className="h-full">
+                                <Button
+                                    size="lg"
+                                    style={solid}
+                                    // `whitespace-normal` : la base du Button pose `whitespace-nowrap`,
+                                    // qui empêche titre et sous-titre de passer à la ligne — sur mobile,
+                                    // un sous-titre plus large que l'écran débordait de la tuile.
+                                    className={`h-full w-full ${tileSize.box} flex flex-col gap-3 text-foreground border transition-all whitespace-normal ${lift} ${enLigne ? "items-start rounded-2xl px-6 text-left shadow-sm" : "items-center text-center"} ${solid ? "hover:brightness-95" : getButtonClasses(action.color)}`}
+                                >
+                                    {enLigne ? (
+                                        // Icône en pastille, titre à côté : `bg-current/10` suit l'encre de la
+                                        // tuile, donc tient aussi bien sur un aplat que sur une teinte claire.
+                                        <span className="flex items-center gap-3">
+                                            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-current/10">
+                                                {renderIcon(action.icon, solid ? "" : getIconColorClass(action.color), "size-5")}
+                                            </span>
+                                            <span className={tileSize.title}>{t(action.title)}</span>
+                                        </span>
+                                    ) : (
+                                        <>
+                                            {renderIcon(action.icon, solid ? "" : getIconColorClass(action.color), tileSize.icon)}
+                                            <span className={tileSize.title}>{t(action.title)}</span>
+                                        </>
+                                    )}
+                                    {action.subtitle && (
+                                        <span className={solid ? tileSize.subtitle : `${tileSize.subtitle} text-muted-foreground`}>
+                                            {t(action.subtitle)}
+                                        </span>
+                                    )}
+                                </Button>
+                            </NavLink>
+                        );
+                    })}
                 </div>
             </div>
         </section>

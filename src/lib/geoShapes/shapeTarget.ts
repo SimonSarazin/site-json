@@ -75,6 +75,17 @@ export function shapeHref(properties: GeoJsonProperties, target: ShapeTarget): s
   return `${target.path}?${encodeURIComponent(target.filterId)}=${encoded}`;
 }
 
+/**
+ * Cible exploitable ? La config arrive par `JSON.parse` sans repasser par le schéma : malgré son
+ * `required`, `target` peut manquer, ou perdre `path`/`filterId` — le lien partirait alors vers
+ * `undefined?…`. Sans cible exploitable, les contours restent du décor.
+ */
+export function isShapeTarget(value: unknown): value is ShapeTarget {
+  if (!value || typeof value !== "object") return false;
+  const { path, filterId } = value as Partial<ShapeTarget>;
+  return typeof path === "string" && path !== "" && typeof filterId === "string" && filterId !== "";
+}
+
 /** Une couche est-elle cliquable ? `target.layers` absent = toutes le sont. */
 export function isLayerInteractive(layerId: string, target: ShapeTarget): boolean {
   return !target.layers?.length || target.layers.includes(layerId);

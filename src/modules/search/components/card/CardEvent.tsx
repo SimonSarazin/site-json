@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { format } from "date-fns";
+import { Building2 } from "lucide-react";
 import { SearchCardProps } from "../../schema";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -10,6 +10,8 @@ import { useT } from "@/hooks/useT";
 import { getEntityColorClasses, getEntityIconName } from "@/lib/entityIcons";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { formatRecurrenceLabel } from "../../lib/openingHoursDays";
+import { libellesDate } from "../../lib/eventDateSpan";
+import { getEntryId } from "../../lib/searchMapSelection";
 
 // Map des tags vers des icônes spécifiques aux événements
 const TAG_ICON_MAP: Record<string, string> = {
@@ -33,7 +35,15 @@ function getEventAvatarIcon(tags: string[]): string {
  * de récurrence à la place s'il y en a un) : source unique pour les deux
  * variantes de la carte, pas de pastille/icône séparée pour l'une des deux.
  */
-function EventDateBlock({ recurrenceLabel, startDate }: { recurrenceLabel: string | null; startDate: Date | null }) {
+function EventDateBlock({
+  recurrenceLabel,
+  startDate,
+  endDate,
+}: {
+  recurrenceLabel: string | null;
+  startDate: Date | null;
+  endDate: Date | null;
+}) {
   const locale = getDateFnsLocale();
   if (recurrenceLabel) {
     // Texte variable (« Chaque lundi, mardi… et dimanche » peut aller jusqu'à 7 jours) : taille
@@ -42,14 +52,14 @@ function EventDateBlock({ recurrenceLabel, startDate }: { recurrenceLabel: strin
     return <div className="text-base sm:text-lg font-bold leading-snug text-primary">{recurrenceLabel}</div>;
   }
   if (!startDate) return null;
+
+  // Un événement qui court sur plusieurs JOURS porte ses deux bornes : « Mois de la parentalité »
+  // (1 → 31 octobre) s'affichait « 1 oct. 2026 », soit sa seule date de début (cf. `libellesDate`).
+  const { grand, petit } = libellesDate(startDate, endDate, locale);
   return (
-    <div className="flex items-baseline gap-2 text-primary">
-      <span className="text-4xl font-bold leading-none tabular-nums">
-        {format(startDate, "d", { locale })}
-      </span>
-      <span className="text-sm font-semibold uppercase tracking-wide">
-        {format(startDate, "LLL yyyy", { locale })}
-      </span>
+    <div className="flex flex-wrap items-baseline gap-x-2 text-primary">
+      <span className="text-4xl font-bold leading-none tabular-nums">{grand}</span>
+      <span className="text-sm font-semibold uppercase tracking-wide">{petit}</span>
     </div>
   );
 }
@@ -58,9 +68,12 @@ interface EventCardPlainProps {
   onClick?: () => void;
   name: string | null;
   startDate: Date | null;
+  endDate: Date | null;
   /** « Chaque vendredi » — événement récurrent : préféré à la date d'occurrence, qui change chaque semaine. */
   recurrenceLabel: string | null;
   organizerName: string | null;
+  /** `list.linkedLabels` résolu pour cet item — cf. le commentaire du schéma (`ListConfSchema`). */
+  linkedLabel: string | null;
   location: string | null;
   avatarIcon: string;
   avatarColorClasses: string;
@@ -83,8 +96,10 @@ function EventCardPlain({
   onClick,
   name,
   startDate,
+  endDate,
   recurrenceLabel,
   organizerName,
+  linkedLabel,
   location,
   avatarIcon,
   avatarColorClasses,
@@ -95,7 +110,7 @@ function EventCardPlain({
       className="h-full w-full cursor-pointer gap-4 py-5 shadow-lg transition-shadow hover:shadow-xl"
     >
       <CardContent className="px-5">
-        <EventDateBlock recurrenceLabel={recurrenceLabel} startDate={startDate} />
+        <EventDateBlock recurrenceLabel={recurrenceLabel} startDate={startDate} endDate={endDate} />
 
         {name && <h3 className="mt-3 line-clamp-3 text-base font-semibold">{name}</h3>}
       </CardContent>
@@ -113,6 +128,12 @@ function EventCardPlain({
         </div>
         <div className="min-w-0 flex-1">
           {organizerName && <p className="truncate text-sm font-bold">{organizerName}</p>}
+          {linkedLabel && (
+            <p className="flex items-center truncate text-xs text-muted-foreground">
+              <Building2 className="h-3 w-3 mr-1 flex-shrink-0" aria-hidden="true" />
+              {linkedLabel}
+            </p>
+          )}
           {location && <p className="truncate text-xs text-muted-foreground">{location}</p>}
         </div>
       </CardFooter>
@@ -123,6 +144,7 @@ function EventCardPlain({
 export default function CardEvent({
   item,
   onClick,
+  list,
 }: SearchCardProps) {
   const data = useItem(item);
   const t = useT("modules/search");
@@ -132,11 +154,13 @@ export default function CardEvent({
     name,
     image,
     startDate,
+    endDate,
     organizerName,
     address,
     tags = [],
   } = data;
 
+  const linkedLabel = list?.linkedLabels?.[getEntryId(item) ?? ""] ?? null;
   const location = address?.addressLocality || null;
   const avatarIcon = getEventAvatarIcon(tags);
   const avatarColorClasses = getEntityColorClasses("events");
@@ -165,8 +189,10 @@ export default function CardEvent({
         onClick={onClick}
         name={name}
         startDate={startDate}
+        endDate={endDate}
         recurrenceLabel={recurrenceLabel}
         organizerName={organizerName}
+        linkedLabel={linkedLabel}
         location={location}
         avatarIcon={avatarIcon}
         avatarColorClasses={avatarColorClasses}
@@ -202,7 +228,7 @@ export default function CardEvent({
         border-b border-border/40
         flex flex-col items-center gap-2
       ">
-        <EventDateBlock recurrenceLabel={recurrenceLabel} startDate={startDate} />
+        <EventDateBlock recurrenceLabel={recurrenceLabel} startDate={startDate} endDate={endDate} />
         {name && (
           <div className="text-foreground font-semibold text-sm drop-shadow-lg">
             {name}
@@ -235,6 +261,12 @@ export default function CardEvent({
           <h3 className="font-bold text-foreground text-sm mb-1 truncate">
             {organizerName || name}
           </h3>
+          {linkedLabel && (
+            <p className="flex items-center text-muted-foreground text-xs truncate">
+              <Building2 className="h-3 w-3 mr-1 flex-shrink-0" aria-hidden="true" />
+              {linkedLabel}
+            </p>
+          )}
           {location && (
             <p className="text-muted-foreground text-xs truncate">
               {location}

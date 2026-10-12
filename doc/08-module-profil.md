@@ -604,12 +604,32 @@ Le module profil propose **21 types de sections** configurables:
 | `profile-actions`          | ProfileActionsSectionSchema  | showEditButton, showAddDropdown, layout        | Boutons d'action (éditer, ajouter, email) |
 | `profile-event-dates`      | ProfileEventDatesSectionSchema | showType, dateFormat                         | Dates d'événement (start/end)             |
 | `profile-badges`           | ProfileBadgesSectionSchema   | layout (grid, flex, list), maxDisplay          | Badges et certifications                  |
-| `profile-tags`             | ProfileTagsSectionSchema     | maxDisplay, linkable, searchOnClick            | Tags et mots-clés                         |
+| `profile-tags`             | ProfileTagsSectionSchema     | maxDisplay, linkable, searchOnClick, hideTags (tags non affichés, égalité stricte — un marqueur d'annuaire classe la fiche sans se lire) | Tags et mots-clés                         |
 | `profile-fields`           | ProfileFieldsSectionSchema   | variant (card, plain), columns (1, 2), fields[] | **Champs d'entité déclarés en config** — dont les champs costum, sans code par site |
 | `profile-opening-hours`    | ProfileOpeningHoursSectionSchema | format (table, list, compact), showCurrentStatus | Horaires d'ouverture          |
 | `profile-tab-layout`       | ProfileTabLayoutSectionSchema | leftSections, rightSections                   | Layout deux colonnes pour tabs            |
 | `profile-template-dynamic` | ProfileTemplateDynamicSchema | —                                              | Template dynamique basé sur config        |
 | `profile-tools`            | ProfileToolsSectionSchema    | title, sticky                                  | « Nos outils » générique (`ourTools`), éditable par les admins — équivalent sans vocabulaire tiers-lieux du bloc de `profile-info-tl` |
+
+### Compteurs de l'encart « Réserver en ligne » (`profile-info-tl`)
+
+`roomPath`, `coworkingPath` et `bedRoomPath` décrivent chacun une ressource réservable :
+`{ id, place, type, … }` — `id` est le formulaire CoForm dont on lit les réponses, `place` le chemin
+du champ. **`type` décide de ce qu'on compte**, et c'est le piège :
+
+| `type` | Compte | À utiliser pour |
+|---|---|---|
+| `single` (défaut) | la SOMME du champ numérique sur toutes les réponses | une capacité saisie : places d'hébergement, postes de travail |
+| `array` | la somme des longueurs du tableau, moins son en-tête | une liste de lignes : salles de réunion |
+| `answer` | le NOMBRE DE RÉPONSES | des offres, quand aucune capacité n'est saisie |
+
+Se tromper de mode donne un chiffre **plausible et faux** : `answer` sur l'hébergement affichait « 1 »
+sur un lieu déclarant 10 places dans son unique offre (24/09). Les trois modes vivent dans une seule
+fonction pure, `components/sections/custom/compteRessources.ts`, testée — le corps était auparavant
+recopié trois fois dans le composant, et celui des salles avait perdu la branche `answer`.
+
+⚠️ Le libellé affiché doit suivre le mode : compter des places et écrire « chambres » est un second
+bug. Les clés sont `ProfileTiersLieuxInfo.accommodation`/`accommodationPlural`.
 
 ### `profile-fields` — champs d'entité config-driven
 
@@ -666,6 +686,8 @@ export const ProfileHeaderSectionSchema = z.object({
   addConfig: AddConfigSchema,
   addDropdownLabel: LocalizedString.optional(),
   showEmailButton: z.boolean().optional().default(true),
+  showDeleteButton: z.boolean().optional().default(false),   // cf. encart « Supprimer une fiche »
+  deleteRedirectPath: z.string().optional().default("/"),
   showReservationButton: z.boolean().optional().default(false),
   // Opt-in : le bouton « Voir toutes les photos » ne s'affiche QUE si le type de
   // profil courant possède un onglet `gallery` dans sa config (`profiles[type].tabs`).
@@ -674,6 +696,27 @@ export const ProfileHeaderSectionSchema = z.object({
   showAllPhotosButton: z.boolean().optional().default(true),
 });
 ```
+
+### Supprimer une fiche depuis son profil
+
+`showDeleteButton: true` ajoute « Supprimer cette fiche » **en dernier** dans le menu d'actions de
+l'en-tête, derrière un séparateur, avec un dialogue de confirmation. Deux conditions, jamais une
+seule : l'option posée par le site ET `permissions.isAdmin` sur CETTE fiche. `deleteRedirectPath`
+(défaut `/`) dit où atterrir, la page de la fiche n'existant plus après coup.
+
+⚠️ **Ce n'est pas le « retrait » du référencement.** L'action appelle `element/delete` via
+`Organization.delete()` : la fiche quitte Communecter en entier, pour tous les sites, pas seulement
+celui qui l'affichait. Pour détacher une fiche d'un costum en la laissant vivre, c'est l'onglet
+« Référencement » de l'admin qu'il faut (`reference.costum`).
+
+Trois gardes se superposent et aucune ne remplace les autres : l'option + `isAdmin` côté client, la
+garde SDK `isAuthorOrAdmin` (auteur ou administrateur, hiérarchie comprise), puis `canDeleteElement`
+côté backend. La mutation (`actions/mutations/lifecycle.ts`) invalide la fiche ET les listes de
+recherche — sans quoi le lieu supprimé resterait affiché dans l'annuaire.
+
+Sentinelle de parc : `tests/preflight/profile-delete-button.test.ts` liste les sites qui l'ouvrent,
+vérifie que la destination est une page réelle et que l'option ne vit que sur un profil
+d'organisation (les autres types n'ont pas d'« admin de la fiche »).
 
 ## ProfileRenderer
 
@@ -1250,7 +1293,8 @@ interface EntityMutationConfig<TParams = void> {
   entityTypes?: EntityType[];
   action: (entity: EntityTypes, params: TParams) => Promise<void>;
   i18n: { successKey: string; errorKey: string };
-  invalidate: (entity: EntityTypes, me: User | null) => QueryKey[];
+  invalidate: (entity: EntityTypes, me: User | null) => QueryKey[]; // évaluée APRÈS l'action
+  remove?: (entity: EntityTypes) => QueryKey[]; // évaluée AVANT l'action, appliquée au succès
   getSuccessParams?: (entity, params) => Record<string, string>;
   getErrorParams?: (error, entity, params) => Record<string, string>;
 }
@@ -1262,6 +1306,10 @@ function createEntityMutation<TParams>(config) → (entity: EntityTypes | null) 
 - `useMutationWithToast` (namespace `modules/profil`)
 - Validation entity non-null + validation entityType si `config.entityTypes` défini
 - Invalidation React Query via `config.invalidate(entity, me)` au succès
+- Retrait du cache via `config.remove(entity)` : pour une entité qui n'existe plus, invalider relancerait
+  un fetch vers un 404 sur la page encore montée. ⚠️ Le SDK VIDE l'instance après `delete()` (`slug` →
+  `null`) : `invalidate`, évaluée après l'action, n'y lit plus rien — d'où `remove`, évaluée AVANT.
+  Premier usage : `useDeleteEvent` (`deletion.ts`) retire la fiche `ELEMENT_ABOUT_PREFIX(slug)`.
 
 **Factory `createUserMutation`** — similaire mais reçoit un `User` en paramètre (ex: actions admin sur un membre spécifique).
 
@@ -1379,6 +1427,33 @@ Modale de gestion d'un membre spécifique. Actions disponibles selon permissions
 ### `MemberListRenderer`
 
 Liste les membres avec `UserListItem`. Supporte pagination et rôles.
+
+### `PendingInvitationModal` — invitation en attente (popup globale)
+
+Complète `InviteMemberDialog` côté invité : modale globale montée une fois dans `RootLayout.tsx`
+(`SiteShell`), à côté de `DiscourseGlobalModal` (même principe, cf. [Module interop](20-module-interop.md)).
+Si l'utilisateur connecté est invité à rejoindre — ou administrer — l'entité du site courant (organisation
+ou projet costum), elle le lui propose sans qu'il ait à aller chercher le bouton de statut sur la page
+profil de l'entité (`EntityStatusButton`).
+
+- `usePendingSiteInvitation()` (`hooks/`) : dérive `isInviting`/`isInvitingAdmin` via `useProfilPermissions`
+  sur l'entité `useCocolight().entity` (le « carrier » du site) — aucun appel réseau, les flags sont déjà
+  dans `me.serverData.links` une fois `me`/`entity` chargés.
+- Réutilise les mutations existantes `useAcceptInvitation`/`useRejectInvitation`
+  (`actions/mutations/relationship.ts`) — aucune nouvelle mutation créée.
+- Réponse obligatoire : pas de croix de fermeture, Échap et clic extérieur neutralisés
+  (`showCloseButton={false}` + `onEscapeKeyDown`/`onInteractOutside`) — seuls Accepter/Refuser referment
+  la modale (`onSuccess` de la mutation).
+- Après la réponse (acceptée ou refusée), retour à l'accueil (`navigate("/")`), quelle que soit la page.
+  La modale s'ouvre aussi par-dessus la page du lien Accepter/Refuser du mail (`AcceptInvitationPage`),
+  dont elle masque le bouton : une fois l'invitation tranchée, cette page n'a plus d'objet.
+- `useHydrated()` : `me` est toujours `null` au SSR, donc `open` reste `false` au 1er render client pour
+  rester identique au HTML serveur — sinon Radix marque `aria-hidden` sur les autres éléments de la page dès
+  le montage d'un Dialog ouvert, ce qui produit un mismatch d'hydratation sur des nœuds sans rapport.
+- La mémoire de fermeture (`dismissedEntityId`) se réinitialise à chaque connexion : `me` change de
+  **référence** à chaque `userLoggedIn`/`sessionReset` dans `CocolightProvider`, même pour le même compte,
+  donc une invitation fermée lors d'une session précédente dans le même onglet ne reste pas bloquée après
+  une reconnexion sans reload.
 
 ---
 
@@ -1574,3 +1649,4 @@ L'utilisateur voit ainsi le formulaire de connexion au lieu d'un simple toast d'
 - [Module News](09-module-news.md)
 - [Permissions](10-permissions.md)
 - [Backend & SSR](14-backend-ssr.md)
+- [Module interop](20-module-interop.md) — pattern de modale globale repris par `PendingInvitationModal`

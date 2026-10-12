@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { LocalizedString } from "@/types/locale-schema";
+import { PLACE_KINDS } from "@/modules/coform/utils/finderFilters";
 
 /**
  * Bloc de config AAC AU NIVEAU DU SITE (`config.aac`) — **SINGULIER : un seul
@@ -92,6 +93,30 @@ export const AacDetailSchema = z.object({
   gallery: z.string().optional(),
   /** Les blocs de prose, DANS L'ORDRE d'affichage. */
   sections: z.array(AacDetailSectionSchema).optional(),
+  /**
+   * Form d'USAGE (réponse partagée par lieu) — le même que `toolsCatalog.props.formId`
+   * et `/coform/:formId/place`. Les filtres de son finder partagé (tags,
+   * exclusions) s'appliquent aux organisations que « J'utilise » propose, comme
+   * à la recherche « rejoindre un lieu » de `PlacesListView`.
+   *
+   * Omis ⇒ aucun filtre de finder : seul le périmètre `placeKind` s'applique.
+   */
+  usageFormId: z.string().optional(),
+  /**
+   * Nature des lieux proposés par « J'utilise » — même valeur que
+   * `toolsCatalog.props.placeKind`. Fixe le PÉRIMÈTRE par défaut : `cae` ⇒
+   * organisations de source `federationDesCae`, `tiersLieu` ⇒ source
+   * `franceTierslieux` (cf. `PLACE_KIND_SOURCE_KEYS`). Omis ⇒ le `typeCoFinancer`
+   * du form décide, puis tiers-lieux.
+   */
+  placeKind: z.enum(PLACE_KINDS).optional(),
+  /**
+   * Surcharge du périmètre : les costums (slugs de `source.keys` /
+   * `reference.costum`) dont relèvent les lieux proposés. Prioritaire sur le
+   * préréglage de `placeKind`, qui garde les libellés.
+   * Ex. `["franceTierslieux", "tierslieuxbelgique"]`.
+   */
+  placeSourceKeys: z.array(z.string().min(1)).min(1).optional(),
 });
 
 export const AacConfigSchema = z.object({

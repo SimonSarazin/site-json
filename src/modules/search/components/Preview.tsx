@@ -21,9 +21,10 @@ const PreviewFacets = lazy(() => import("./preview/PreviewFacets"));
 const PreviewNews = lazy(() => import("./preview/PreviewNews"));
 const PreviewTestimonial = lazy(() => import("./preview/PreviewTestimonial"));
 const PreviewResource = lazy(() => import("./preview/PreviewResource"));
+const PreviewResourceDirectory = lazy(() => import("./preview/PreviewResourceDirectory"));
 const PreviewStructure = lazy(() => import("./preview/PreviewStructure"));
 
-const Preview: React.FC<PreviewProps> = ({ item, preview = { type: "default" }, list, onClose }) => {
+const Preview: React.FC<PreviewProps> = ({ item, preview = { type: "default" }, list, onClose, onEdited }) => {
   switch (preview?.type) {
     case "poi-amenities":
       // `preview` transporte les blocs config `reservations` /
@@ -32,7 +33,10 @@ const Preview: React.FC<PreviewProps> = ({ item, preview = { type: "default" }, 
     case "coform-answer":
       // `preview` transporte le mapping `fields` (surcharge des IDs de champs
       // CoForm) et le flag `editButton` — sans lui, les deux sont morts.
-      return <PreviewCoformAnswer item={item} preview={preview} list={list} onClose={onClose} />;
+      // `onEdited` : seul variant qui le SIGNALE aujourd'hui. D'autres écrivent depuis le détail sans
+      // le relayer (facets, structure, poi-amenities, news, event) — d'où leur refus dans les
+      // tables admin (`ADMIN_PREVIEW_TYPES`, admin/schema.ts) : le brancher ici, c'est les y admettre.
+      return <PreviewCoformAnswer item={item} preview={preview} list={list} onClose={onClose} onEdited={onEdited} />;
     case "event":
       return <PreviewEvent item={item} list={list} onClose={onClose} />;
     case "facets":
@@ -43,6 +47,8 @@ const Preview: React.FC<PreviewProps> = ({ item, preview = { type: "default" }, 
       return <PreviewTestimonial item={item} preview={preview} list={list} onClose={onClose} />;
     case "resource":
       return <PreviewResource item={item} preview={preview} list={list} onClose={onClose} />;
+    case "resource-directory":
+      return <PreviewResourceDirectory item={item} preview={preview} list={list} onClose={onClose} />;
     case "structure":
       return <PreviewStructure item={item} preview={preview} list={list} onClose={onClose} />;
     case "default":

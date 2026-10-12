@@ -23,6 +23,7 @@
     "noCarrier": "Aucune entité porteuse (carrier) : la gestion des membres nécessite un costum porteur."
   },
   "AdminResourceTable": {
+    "preview": "Aperçu",
     "create": "Créer",
     "searchPlaceholder": "Rechercher…",
     "statusAll": "Tous les statuts",
@@ -275,5 +276,37 @@
     "optionsChanged": "Options modifiées : relancez l'analyse pour pouvoir appliquer.",
     "selectionIds": "{{count}} fiche(s) cochée(s)",
     "subTypeSuggestions": "Types constatés dans la sélection :"
+  },
+  "AdminAnswerCopySection": {
+    "preview": "Aperçu",
+    "title": "Reprise de réponses",
+    "hint": "Réponses déposées sur un autre site (formulaire source). « Copier » reprend une réponse dans le formulaire de ce site, sous son identité. Les réponses déjà reprises sont masquées ; un « Doublon probable » partage intitulé, structure et code postal avec une réponse du site.",
+    "searchPlaceholder": "Rechercher…",
+    "candidates": "{{count}} réponse(s) source",
+    "indexing": "Lecture des réponses déjà présentes…",
+    "indexCapped": "Trop de réponses dans le formulaire cible : copie désactivée",
+    "indexed": "{{count}} réponse(s) dans le formulaire cible",
+    "colStatus": "Copie",
+    "colAction": "Action",
+    "copy": "Copier",
+    "status": {
+      "probable": "Doublon probable",
+      "new": "À copier"
+    },
+    "empty": "Aucune réponse à reprendre : tout est déjà copié.",
+    "confirmTitle": "Copier « {{name}} » malgré un doublon probable ?",
+    "confirmDescription": "Une réponse au même intitulé, même structure et même code postal existe déjà dans le formulaire cible, sans trace de copie (saisie directe ou reprise par un autre canal). Copier créera une seconde fiche.",
+    "confirmAction": "Copier quand même",
+    "cancel": "Annuler",
+    "indexError": "Lecture des réponses du formulaire cible en échec : copie désactivée",
+    "hiddenCopied": "{{count}} déjà copié(s), masqué(s)"
+  },
+  "useCopyAnswer": {
+    "success": "« {{name}} » copié dans le formulaire du site.",
+    "alreadyCopied": "« {{name}} » était déjà copié : rien n'a été dupliqué.",
+    "unknownInputs": "« {{name}} » : {{count}} champ(s) non déclaré(s) dans le formulaire cible (valeurs conservées).",
+    "error": "Échec de la copie de « {{name}} »",
+    "noApi": "API non initialisée",
+    "badResponse": "Réponse inattendue du serveur"
   }
 }

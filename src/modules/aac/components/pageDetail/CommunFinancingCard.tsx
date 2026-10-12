@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { Heart, ArrowRight, Check, X, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import type { CoFormData, CoFormAnswer } from "@/modules/coform/types";
 import type { AacResolvedConfig } from "../../types";
 import { useT } from "@/hooks/useT";
@@ -33,8 +34,22 @@ import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
 import { useCommunFundingContext } from "@/modules/aac/hooks/useCommunFundingContext";
 import { useCommunFundingHost } from "@/modules/aac/hooks/useCommunFundingHost";
 import { useReactorNames } from "@/modules/aac/hooks/useReactorNames";
+import { useAacPlaceSourceKeys, useAacUsageFormId } from "@/modules/aac/hooks/useAacDetailSections";
 import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
 import { aggregateCofinancers } from "@/modules/aac/lib/cofinancers";
+import { AAC_QUERY_KEYS } from "@/modules/aac/constants/queryKeys";
+import { useCoFormQuery } from "@/modules/coform/hooks/useCoFormQuery";
+import { getSharedFinderInfo } from "@/modules/coform/utils/formParser";
+import { buildFinderSearchParams } from "@/modules/coform/utils/finderFilters";
+
+/**
+ * Sans form d'usage exploitable : des organisations, sans autre filtre que le
+ * périmètre des lieux. Le `notSourceKey` n'a pas d'effet ici, le `sourceKey`
+ * l'emporte toujours.
+ */
+const SANS_FINDER = { type: "organizations" as const, filters: [], excludeFilters: [], notSourceKey: false };
+
+const AUCUNE_ORGANISATION: OrganisationCofinanceuse[] = [];
 
 /**
  * Ce qu'un visiteur NON connecté a demandé, et qu'on rejoue quand sa session
@@ -186,8 +201,14 @@ export function CommunFinancingCard({
     });
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [orgs, setOrgs] = useState<OrganisationCofinanceuse[]>([]);
-    const [isLoadingOrgs, setIsLoadingOrgs] = useState(false);
+    const usageFormId = useAacUsageFormId();
+    const placeSourceKeys = useAacPlaceSourceKeys(aacConfig?.typeCoFinancer);
+    const { formData: usageForm, error: usageFormError } = useCoFormQuery({
+        formId: usageFormId ?? "",
+        enabled: !!usageFormId && isModalOpen,
+    });
+    const usageFinder = useMemo(() => (usageForm ? getSharedFinderInfo(usageForm) : null), [usageForm]);
+    const usageFormPending = !!usageFormId && !usageForm && !usageFormError;
     // Ids des organisations marquées "intéressées" (links.tls) — affiché dans la
     // liste du modal. State (et non simple useMemo) pour pouvoir être mis à jour
     // localement juste après chaque réaction, sans attendre un refetch de answerQuery.
@@ -205,58 +226,32 @@ export function CommunFinancingCard({
         setInterestedOrgIds(new Set(Object.keys(answerQuery?.links?.tls || {})));
     }, [answerId, answerQuery, me?.serverData?.id]);
 
-    const loadOrganizations = async () => {
-        if (!entity) {
-            console.error(String(t("toasts.errors.noApiClient")));
-            return;
-        }
-        setIsLoadingOrgs(true);
-        try {
-            /**
-             * `typeCoFinancer` est une valeur LIBRE du form parent
-             * (`financer.php:835` lit `parentForm.typeCoFinancer`) : la casse
-             * n'y est pas garantie, et un appel peut en déclarer une que cette
-             * carte ne connaît pas. Depuis que le résolveur rend la valeur
-             * réelle plutôt que `null`, ces deux cas atteignaient un `if/else if`
-             * SANS `else` : `orgParam` restait `{}`, `searchCostum({})` levait
-             * (le SDK exige `searchType`), l'erreur était avalée plus bas et la
-             * modale annonçait « aucune organisation » là où elle listait les
-             * tiers-lieux. D'où la comparaison insensible à la casse et le repli
-             * EXPLICITE sur les tiers-lieux, défaut legacy du dispositif.
-             */
-            const typeCoFinancer = (aacConfig?.typeCoFinancer ?? "").trim().toLowerCase();
-            let orgParam: Partial<GlobalAutocompleteCostumData>;
+    const orgSearchParams = useMemo<Partial<GlobalAutocompleteCostumData>>(() => {
+        const params = buildFinderSearchParams({
+            ...(usageFinder ?? SANS_FINDER),
+            sourceKey: placeSourceKeys,
+        });
+        return { ...params, searchType: params.searchType as GlobalAutocompleteCostumData["searchType"] };
+    }, [usageFinder, placeSourceKeys]);
 
-            if (typeCoFinancer === "cae") {
-                orgParam = {
-                    searchType: ["organizations"],
-                    filters: {
-                        "tags": { "$in": ["CAE", "cae", "Cae"] }
-                    },
-                    notSourceKey: true
-                };
-            } else {
-                orgParam = {
-                    searchType: ["organizations"],
-                    filters: {
-                        "$or": {
-                            'source.keys': 'franceTierslieux',
-                            'reference.costum': 'franceTierslieux',
-                            'mainTag': 'TiersLieux'
-                        }
-                    },
-                    notSourceKey: true
-                };
+    // Liste relue à chaque ouverture, une fois le form d'usage résolu.
+    const orgsQuery = useQuery({
+        queryKey: AAC_QUERY_KEYS.COFINANCER_ORGS(entity?.id ?? null, orgSearchParams),
+        enabled: isModalOpen && !!entity && !usageFormPending,
+        staleTime: 0,
+        queryFn: async (): Promise<OrganisationCofinanceuse[]> => {
+            if (!entity) return [];
+            if (usageFormId && !usageFinder) {
+                console.warn(
+                    `[CommunFinancingCard] form d'usage ${usageFormId} illisible ou sans finder partagé — périmètre ${placeSourceKeys.join(", ")} seul.`,
+                );
             }
-
-            const result = await entity.searchCostum(orgParam);
-            setOrgs(result && result?.results ? Object.values(result?.results).map(res => res?.serverData || {}) : []);
-        } catch (error) {
-            console.error("Erreur lors du chargement des organisations:", error);
-        } finally {
-            setIsLoadingOrgs(false);
-        }
-    };
+            const result = await entity.searchCostum(orgSearchParams);
+            return result?.results ? Object.values(result.results).map((res) => res?.serverData || {}) : [];
+        },
+    });
+    const orgs = orgsQuery.data ?? AUCUNE_ORGANISATION;
+    const isLoadingOrgs = usageFormPending || (!!entity && orgsQuery.isPending);
 
     const executeToggle = async (
         type: CommunReactionType,
@@ -343,7 +338,6 @@ export function CommunFinancingCard({
             // Le bouton se contente d'ouvrir le modal — la sélection/désélection se
             // fait organisation par organisation dans la liste (cf. handleOrgClick).
             setIsModalOpen(true);
-            loadOrganizations();
             return;
         }
         executeToggle(type);

@@ -3,6 +3,7 @@ import { useEffect, useState, ReactNode, useMemo, useCallback } from "react";
 
 import { InitApiOptions } from "../lib/apiClient";
 import { getSlug } from "../lib/constant/common";
+import { applySiteCostum } from "../lib/siteCostum";
 import { CocolightContext } from "./CocolightContext";
 import { useCocolightInit } from "@/hooks/useCocolightInit";
 
@@ -110,6 +111,18 @@ export function CocolightProvider({
       eventfulClient.off("sessionReset", handleSessionReset);
     };
   }, [userApiInstance]);
+
+  // ------------- identité costum du site portée par le client -------------
+  // Le client la reçoit déjà à sa construction (apiClient.ts), mais `contextId`/`contextType`
+  // viennent d'une résolution RÉSEAU : ils arrivent après, et sont RE-résolus à chaque login /
+  // reset de session (handlers ci-dessus). On repose donc le trio à chaque changement — appel
+  // idempotent, synchrone, sans réseau. Dans un effet et pas au rendu : muter le client est un
+  // effet de bord, que react-compiler interdit pendant le rendu.
+  // `getSlug()` (VITE_SLUG) est une valeur de PROCESSUS — 1 processus = 1 site — donc le singleton
+  // de client de `apiClient.ts` ne peut pas mélanger deux identités costum.
+  useEffect(() => {
+    applySiteCostum(client, { contextId, contextType });
+  }, [client, contextId, contextType]);
 
   // ------------------- refresh me ----------------------------------------
   const refreshMe = useCallback(async () => {

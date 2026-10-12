@@ -18,6 +18,7 @@ export {
   shapeHref,
   shapeValue,
   isLayerInteractive,
+  isShapeTarget,
   type ShapeTarget,
   type ShapeValueFrom,
 } from "./shapeTarget";

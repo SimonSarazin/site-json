@@ -16,6 +16,13 @@ import { OpeningHoursPicker } from "@/components/form/OpeningHoursPicker";
 
 interface EditEventDatesTabProps {
   form: UseFormReturn<FieldValues>;
+  /**
+   * Montre AUSSI les dates quand l'événement est récurrent : elles bornent alors la PÉRIODE sur laquelle
+   * la récurrence se déroule (le backend déroule les occurrences dans `[startDate, endDate]`). Opt-in par
+   * formulaire (`widgetProps.datesWhenRecurrent`) : sans lui, le rendu historique — récurrent = horaires
+   * seuls — que gardent les autres costums.
+   */
+  datesWhenRecurrent?: boolean;
 }
 
 /**
@@ -23,9 +30,10 @@ interface EditEventDatesTabProps {
  *
  * Logique conditionnelle basée sur recurrency:
  * - recurrency = false → afficher startDate et endDate (DateTimePicker)
- * - recurrency = true → afficher openingHours (OpeningHoursPicker)
+ * - recurrency = true → afficher openingHours (OpeningHoursPicker), et les dates AUSSI sous
+ *   `datesWhenRecurrent` : elles bornent la période de la récurrence (« du … au … »).
  */
-export function EditEventDatesTab({ form }: EditEventDatesTabProps) {
+export function EditEventDatesTab({ form, datesWhenRecurrent = false }: EditEventDatesTabProps) {
   const t = useT("modules/profil");
   const recurrency = form.watch("recurrency");
   const startDateValue = form.watch("startDate");
@@ -69,8 +77,9 @@ export function EditEventDatesTab({ form }: EditEventDatesTabProps) {
         )}
       />
 
-      {/* Si pas récurrent: startDate + endDate avec DateTimePicker */}
-      {!recurrency && (
+      {/* startDate + endDate : toujours en ponctuel ; en récurrent seulement sous `datesWhenRecurrent`,
+          où elles bornent la période de la récurrence. */}
+      {(!recurrency || datesWhenRecurrent) && (
         <>
           <FormField
             control={form.control}
@@ -79,7 +88,7 @@ export function EditEventDatesTab({ form }: EditEventDatesTabProps) {
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  {t("ProfileEdit.fields.startDate.label")}
+                  {recurrency ? t("ProfileEdit.eventDates.periodStart.label") : t("ProfileEdit.fields.startDate.label")}
                 </FormLabel>
                 <FormControl>
                   <DateTimePicker
@@ -87,7 +96,7 @@ export function EditEventDatesTab({ form }: EditEventDatesTabProps) {
                     onChange={(date) => field.onChange(date?.toISOString() || "")}
                     min={minDate}
                     granularity="minute"
-                    placeholder={t("ProfileEdit.fields.startDate.placeholder")}
+                    placeholder={recurrency ? t("ProfileEdit.eventDates.periodStart.placeholder") : t("ProfileEdit.fields.startDate.placeholder")}
                     clearable
                   />
                 </FormControl>
@@ -103,7 +112,7 @@ export function EditEventDatesTab({ form }: EditEventDatesTabProps) {
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  {t("ProfileEdit.fields.endDate.label")}
+                  {recurrency ? t("ProfileEdit.eventDates.periodEnd.label") : t("ProfileEdit.fields.endDate.label")}
                 </FormLabel>
                 <FormControl>
                   <DateTimePicker
@@ -111,7 +120,7 @@ export function EditEventDatesTab({ form }: EditEventDatesTabProps) {
                     onChange={(date) => field.onChange(date?.toISOString() || "")}
                     min={startDateValue ? new Date(startDateValue) : minDate}
                     granularity="minute"
-                    placeholder={t("ProfileEdit.fields.endDate.placeholder")}
+                    placeholder={recurrency ? t("ProfileEdit.eventDates.periodEnd.placeholder") : t("ProfileEdit.fields.endDate.placeholder")}
                     clearable
                   />
                 </FormControl>

@@ -2,11 +2,13 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router";
 
 import SectionEmptyState from "@/components/sections/SectionEmptyState";
+import { ShapeLegend } from "@/components/shared/ShapeLegend";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLocalization } from "@/hooks/useLocalization";
 import {
   cssColorToken,
   isLayerInteractive,
+  isShapeTarget,
   shapeHref,
   shapeValue,
   useGeoShapes,
@@ -84,7 +86,8 @@ const LABEL_STYLE: React.CSSProperties = {
 export default function MapShapes({ id, props }: { id?: string; props: MapShapesProps }) {
   const { t } = useLocalization();
   const navigate = useNavigate();
-  const { title, description, bg, maxHeight = DEFAULT_MAX_HEIGHT, shapes: sources, target } = props;
+  const { title, description, bg, maxHeight = DEFAULT_MAX_HEIGHT, shapes: sources } = props;
+  const target = isShapeTarget(props.target) ? props.target : null;
 
   const layers = useGeoShapes(sources);
   const { shapes, labels, height } = useMemo(() => projectShapes(layers), [layers]);
@@ -92,7 +95,6 @@ export default function MapShapes({ id, props }: { id?: string; props: MapShapes
 
   const isLoading = layers.some((layer) => layer.isLoading);
   const isError = layers.some((layer) => layer.isError);
-  const legend = layers.filter((layer) => layer.label && layer.data.features.length > 0);
   const sectionBg = bg && bg !== "default" ? BG_MAP[bg] : "";
 
   return (
@@ -137,19 +139,16 @@ export default function MapShapes({ id, props }: { id?: string; props: MapShapes
             >
               {shapes.map((shape) => {
                 const layer = layerById.get(shape.layerId);
-                const href = isLayerInteractive(shape.layerId, target)
-                  ? shapeHref(shape.properties, target)
-                  : null;
-                // Beaucoup de documents legacy n'ont pas de `name` (`toFeatureCollection` pose
-                // alors `null`). Sans repli, le lien serait focusable au clavier SANS AUCUN nom
-                // accessible ; la valeur de filtre — celle-là même qui part dans l'URL — est le
-                // seul libellé fidèle qui reste.
-                const label = shape.name ?? shapeValue(shape.properties, target.valueFrom);
+                const href =
+                  target && isLayerInteractive(shape.layerId, target)
+                    ? shapeHref(shape.properties, target)
+                    : null;
 
-                // Un contour sans valeur de filtre reste du DÉCOR : un `<path>` inerte plutôt qu'un
-                // lien mort. `<a>` dans un SVG rend un vrai SVGAElement — focusable au clavier et
-                // ouvrable dans un nouvel onglet ; le handler ne fait que garder la nav SPA.
-                if (!href) {
+                // Un contour sans cible exploitable ou sans valeur de filtre reste du DÉCOR : un
+                // `<path>` inerte plutôt qu'un lien mort. `<a>` dans un SVG rend un vrai
+                // SVGAElement — focusable au clavier et ouvrable dans un nouvel onglet ; le handler
+                // ne fait que garder la nav SPA.
+                if (!target || !href) {
                   return (
                     <path
                       key={shape.key}
@@ -159,6 +158,12 @@ export default function MapShapes({ id, props }: { id?: string; props: MapShapes
                     />
                   );
                 }
+
+                // Beaucoup de documents legacy n'ont pas de `name` (`toFeatureCollection` pose
+                // alors `null`). Sans repli, le lien serait focusable au clavier SANS AUCUN nom
+                // accessible ; la valeur de filtre — celle-là même qui part dans l'URL — est le
+                // seul libellé fidèle qui reste.
+                const label = shape.name ?? shapeValue(shape.properties, target.valueFrom);
 
                 return (
                   <a
@@ -208,24 +213,11 @@ export default function MapShapes({ id, props }: { id?: string; props: MapShapes
           )}
         </div>
 
-        {legend.length > 0 && (
-          <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-            {legend.map((layer) => (
-              <li key={layer.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span
-                  aria-hidden
-                  className="h-3 w-3 shrink-0 rounded-[3px] border"
-                  style={{
-                    backgroundColor: cssColorToken(layer.style?.fill, "transparent"),
-                    opacity: layer.style?.fill === "none" ? 1 : (layer.style?.fillOpacity ?? 0.12) + 0.35,
-                    borderColor: cssColorToken(layer.style?.stroke ?? layer.style?.fill, "var(--border)"),
-                  }}
-                />
-                {t(layer.label!)}
-              </li>
-            ))}
-          </ul>
-        )}
+        <ShapeLegend
+          layers={layers}
+          className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2"
+          itemClassName="text-muted-foreground"
+        />
       </div>
     </section>
   );

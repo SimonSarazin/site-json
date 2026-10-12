@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { LocalizedString } from "@/types/locale-schema";
+import { PLACE_KINDS } from "@/modules/coform/utils/finderFilters";
 import { templateYieldsCommunId } from "./utils/communLink";
 
 /**
@@ -29,6 +30,19 @@ export const ToolsCatalogSectionSchema = z.object({
     showCategoryFilter: z.boolean().default(true),
     showUsageFilter: z.boolean().default(false),
     defaultView: z.enum(["grid", "list"]).default("grid"),
+    /**
+     * Nature des lieux (libellés + périmètre par défaut des lieux proposés par
+     * « Répondez au questionnaire ») : `cae` ⇒ source `federationDesCae`,
+     * `tiersLieu` (défaut) ⇒ source `franceTierslieux` (cf. `PLACE_KIND_SOURCE_KEYS`).
+     */
+    placeKind: z.enum(PLACE_KINDS).optional(),
+    /**
+     * Surcharge du périmètre : les costums (slugs de `source.keys` /
+     * `reference.costum`) dont relèvent les lieux. Prioritaire sur le préréglage
+     * de `placeKind`, qui garde les libellés.
+     * Ex. `["franceTierslieux", "tierslieuxbelgique"]`.
+     */
+    placeSourceKeys: z.array(z.string().min(1)).min(1).optional(),
     /** Densité de la grille (défaut sm:2 lg:3 xl:3, md non défini). */
     columns: z.object({ sm: z.number(), md: z.number(), lg: z.number(), xl: z.number() }).partial().optional(),
     /** Taille de page serveur (défaut 24). */

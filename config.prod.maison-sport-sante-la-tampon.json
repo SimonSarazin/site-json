@@ -67,7 +67,8 @@
           "fr": "Actualités",
           "en": "News"
         },
-        "path": "/blog"
+        "path": "/blog",
+        "icon": "newspaper"
       },
       {
         "label": {
@@ -76,14 +77,6 @@
         },
         "path": "/ressources",
         "icon": "book-open"
-      },
-      {
-        "label": {
-          "fr": "Structure référentes",
-          "en": "Reference structures"
-        },
-        "path": "/structure",
-        "icon": "building-2"
       },
       {
         "label": {
@@ -112,7 +105,7 @@
       "search": true,
       "auth": true,
       "cart": false,
-      "notifications": false
+      "notifications": true
     }
   },
   "pages": [
@@ -369,7 +362,7 @@
                   "fr": "Participants actifs",
                   "en": "Active participants"
                 },
-                "color": "accent"
+                "color": "primary"
               },
               {
                 "value": "12",
@@ -397,6 +390,7 @@
               "en": "News"
             },
             "featured": "flag",
+            "cardVariant": "poster",
             "pageSize": 7
           }
         },
@@ -418,7 +412,7 @@
                   "fr": "En savoir plus sur les MSS",
                   "en": "Learn more about MSS"
                 },
-                "href": "https://ssbe.re/maison-sport-sante-mss/",
+                "href": "https://www.ssbe.re/#maisons-sport-sante",
                 "variant": "default"
               }
             ],
@@ -516,10 +510,46 @@
                   "en": "Refine your search"
                 },
                 "defaultOpenGroups": [
-                  "activityType",
-                  "beneficiaries"
+                  "sportHealthType"
                 ],
                 "filterGroups": [
+                  {
+                    "id": "sportHealthType",
+                    "label": {
+                      "fr": "Type de Sport Santé",
+                      "en": "Sport-health type"
+                    },
+                    "type": "filters",
+                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1cs8on3yru1p80lq",
+                    "optionStyle": "check",
+                    "order": 1,
+                    "options": [
+                      {
+                        "id": "ssso",
+                        "label": {
+                          "fr": "Sport santé sur ordonnance",
+                          "en": "Sport health on prescription"
+                        },
+                        "name": "Sport santé sur ordonnance - SSsO"
+                      },
+                      {
+                        "id": "sspt",
+                        "label": {
+                          "fr": "Sport santé pour tous",
+                          "en": "Sport health for all"
+                        },
+                        "name": "Sport santé pour tous - SSpT"
+                      },
+                      {
+                        "id": "sssl",
+                        "label": {
+                          "fr": "Sport santé sans label",
+                          "en": "Sport health without label"
+                        },
+                        "name": "Sport santé sans label - SSsL"
+                      }
+                    ]
+                  },
                   {
                     "id": "activityType",
                     "label": {
@@ -529,7 +559,7 @@
                     "type": "filters",
                     "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegdo93f77wi3y186s",
                     "optionStyle": "check",
-                    "order": 1,
+                    "order": 2,
                     "options": [
                       {
                         "id": "sports-collectif",
@@ -602,35 +632,6 @@
                           "en": "Other sports"
                         },
                         "name": "Autres sports"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "sportHealthType",
-                    "label": {
-                      "fr": "Type de Sport Santé",
-                      "en": "Sport-health type"
-                    },
-                    "type": "filters",
-                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1cs8on3yru1p80lq",
-                    "optionStyle": "check",
-                    "order": 2,
-                    "options": [
-                      {
-                        "id": "ssso",
-                        "label": {
-                          "fr": "Sport santé sur ordonnance",
-                          "en": "Sport health on prescription"
-                        },
-                        "name": "Sport santé sur ordonnance - SSsO"
-                      },
-                      {
-                        "id": "sspt",
-                        "label": {
-                          "fr": "Sport santé pour tous",
-                          "en": "Sport health for all"
-                        },
-                        "name": "Sport santé pour tous - SSpT"
                       }
                     ]
                   },
@@ -794,6 +795,9 @@
                   "defaultFilters": {
                     "form": "6a85af345d898a57cb49f029",
                     "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7": "Validé"
+                  },
+                  "defaultSortBy": {
+                    "created": -1
                   },
                   "searchBy": [
                     "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegc9sgox76p87n27",
@@ -1069,6 +1073,8 @@
           "type": "steps",
           "id": "inscription-steps",
           "props": {
+            "orientation": "vertical",
+            "showProgress": false,
             "steps": [
               {
                 "icon": "stethoscope",
@@ -1403,7 +1409,7 @@
                   "fr": "Sport Santé Bien-Être à La Réunion : labels SSpT et SSsO, annuaire des créneaux sport santé de l'île.",
                   "en": "Sport Health Well-Being in Réunion: SSpT and SSsO labels, directory of the island's sport health slots."
                 },
-                "href": "https://ssbe.re/",
+                "href": "https://www.ssbe.re/",
                 "target": "_blank"
               },
               {
@@ -1581,7 +1587,7 @@
                   "fr": "En savoir plus sur ssbe.re",
                   "en": "Learn more on ssbe.re"
                 },
-                "href": "https://ssbe.re/",
+                "href": "https://www.ssbe.re/",
                 "variant": "default"
               }
             ],
@@ -1625,16 +1631,6 @@
                   "en": "Professionals only"
                 },
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M11 2v2\"/><path d=\"M5 2v2\"/><path d=\"M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1\"/><path d=\"M8 15a6 6 0 0 0 12 0v-3\"/><circle cx=\"20\" cy=\"10\" r=\"2\"/></svg>"
-              }
-            ],
-            "ctaButtons": [
-              {
-                "label": {
-                  "fr": "Se connecter",
-                  "en": "Sign in"
-                },
-                "path": "/login",
-                "variant": "default"
               }
             ]
           }
@@ -1708,7 +1704,7 @@
                   "en": "Role and missions of MSS, reference document from the French Ministry of Sports."
                 },
                 "color": "primary",
-                "link": "https://ssbe.re/maison-sport-sante-mss/"
+                "link": "https://www.ssbe.re/#maisons-sport-sante"
               },
               {
                 "icon": "stethoscope",
@@ -1734,7 +1730,7 @@
                   "en": "The regional Sport Health Well-Being labeling process for operators."
                 },
                 "color": "accent",
-                "link": "https://ssbe.re/"
+                "link": "https://www.ssbe.re/"
               }
             ]
           }
@@ -1773,50 +1769,46 @@
           }
         },
         {
-          "type": "steps",
-          "id": "prescription-steps",
+          "type": "timeline",
+          "id": "prescription-timeline",
           "props": {
-            "steps": [
+            "events": [
               {
-                "icon": "list-checks",
                 "title": {
                   "fr": "Vérifiez la compatibilité",
                   "en": "Check compatibility"
                 },
-                "description": {
+                "text": {
                   "fr": "Consultez les pathologies compatibles et les contre-indications indiquées sur la fiche du créneau avant de prescrire.",
                   "en": "Review the compatible conditions and contraindications listed on the slot page before prescribing."
                 }
               },
               {
-                "icon": "file-text",
                 "title": {
                   "fr": "Remplissez le formulaire APA",
                   "en": "Fill in the APA form"
                 },
-                "description": {
+                "text": {
                   "fr": "Téléchargez et complétez le formulaire de prescription d'Activité Physique Adaptée propre au créneau.",
                   "en": "Download and complete the Adapted Physical Activity prescription form specific to the slot."
                 }
               },
               {
-                "icon": "handshake",
                 "title": {
                   "fr": "Remettez la prescription au patient",
                   "en": "Give the prescription to the patient"
                 },
-                "description": {
+                "text": {
                   "fr": "Votre patient se présente au créneau avec ce document ; l'éducateur APA adapte la séance aux informations transmises.",
                   "en": "Your patient attends the slot with this document; the APA educator adapts the session to the information provided."
                 }
               },
               {
-                "icon": "message-square",
                 "title": {
                   "fr": "Assurez le suivi via PandaLab Pro",
                   "en": "Follow up via PandaLab Pro"
                 },
-                "description": {
+                "text": {
                   "fr": "Échangez directement avec l'éducateur APA référent via le groupe Ekilib.re sur PandaLab Pro, messagerie sécurisée HDS.",
                   "en": "Communicate directly with the referring APA educator via the Ekilib.re group on PandaLab Pro, HDS-certified secure messaging."
                 }
@@ -1897,18 +1889,6 @@
               "fr": "Rechercher une structure...",
               "en": "Search for a structure..."
             },
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Ajouter ma structure",
-                  "en": "Add my structure"
-                },
-                "icon": "plus",
-                "modal": "add-structure",
-                "requiresAdmin": false,
-                "variant": "outline"
-              }
-            ],
             "dropdownFilters": [
               {
                 "id": "structure-postalCode",
@@ -1936,105 +1916,6 @@
                     "value": "97418"
                   }
                 ]
-              },
-              {
-                "id": "domaine-structure",
-                "label": {
-                  "fr": "Domaine d'intervention",
-                  "en": "Intervention domain"
-                },
-                "field": "tags",
-                "multiple": true,
-                "options": [
-                  {
-                    "id": "sport",
-                    "label": {
-                      "fr": "Sport",
-                      "en": "Sport"
-                    },
-                    "value": "Sport"
-                  },
-                  {
-                    "id": "sante-prevention",
-                    "label": {
-                      "fr": "Santé/prévention",
-                      "en": "Health/Prevention"
-                    },
-                    "value": "Santé/prévention"
-                  },
-                  {
-                    "id": "social",
-                    "label": {
-                      "fr": "Social",
-                      "en": "Social"
-                    },
-                    "value": "Social"
-                  },
-                  {
-                    "id": "insertion",
-                    "label": {
-                      "fr": "Insertion",
-                      "en": "Insertion"
-                    },
-                    "value": "Insertion"
-                  },
-                  {
-                    "id": "scolaire-1er-degre",
-                    "label": {
-                      "fr": "Scolaire 1er degré",
-                      "en": "Primary school"
-                    },
-                    "value": "Scolaire 1er degré"
-                  },
-                  {
-                    "id": "scolaire-2nd-degre",
-                    "label": {
-                      "fr": "Scolaire 2nd degré",
-                      "en": "Secondary school"
-                    },
-                    "value": "Scolaire 2nd degré"
-                  },
-                  {
-                    "id": "periscolaire-1er-degre",
-                    "label": {
-                      "fr": "Periscolaire 1er degré",
-                      "en": "After-school (primary)"
-                    },
-                    "value": "Periscolaire 1er degré"
-                  },
-                  {
-                    "id": "periscolaire-2eme-degre",
-                    "label": {
-                      "fr": "Periscolaire 2eme degré",
-                      "en": "After-school (secondary)"
-                    },
-                    "value": "Periscolaire 2eme degré"
-                  },
-                  {
-                    "id": "culture",
-                    "label": {
-                      "fr": "Culture",
-                      "en": "Culture"
-                    },
-                    "value": "Culture"
-                  },
-                  {
-                    "id": "handicap",
-                    "label": {
-                      "fr": "Handicap",
-                      "en": "Disability"
-                    },
-                    "value": "Handicap"
-                  },
-                  {
-                    "id": "tourisme",
-                    "label": {
-                      "fr": "Tourisme",
-                      "en": "Tourism"
-                    },
-                    "value": "Tourisme"
-                  }
-                ]
               }
             ]
           }
@@ -2043,6 +1924,10 @@
           "type": "searchProStatic",
           "id": "section-structure-cards",
           "props": {
+            "title": {
+              "fr": "Structures référencées",
+              "en": "Referenced structures"
+            },
             "useFilter": true,
             "showMap": true,
             "enableMap": true,
@@ -2131,10 +2016,10 @@
             },
             "list": {
               "columns": {
-                "sm": 1,
-                "md": 1,
-                "lg": 1,
-                "xl": 1
+                "sm": 2,
+                "md": 3,
+                "lg": 3,
+                "xl": 3
               },
               "card": {
                 "type": "contact-card",
@@ -2145,6 +2030,7 @@
               }
             },
             "map": {
+              "splitRatio": "50-50",
               "marker": {
                 "useItemImage": true,
                 "style": "pin",
@@ -2354,8 +2240,8 @@
                   "en": "Address"
                 },
                 "text": {
-                  "fr": "Maison Sport Santé Ekilib.re\nCommune du Tampon, La Réunion 97430",
-                  "en": "Ekilib.re Sport Health House\nLe Tampon, Réunion Island 97430"
+                  "fr": "Maison Sport Santé Ekilib.re\n34 rue Hubert Delisle\n97430 Le Tampon",
+                  "en": "Ekilib.re Sport Health House\n34 rue Hubert Delisle\n97430 Le Tampon – Réunion Island"
                 }
               }
             ]
@@ -2523,6 +2409,7 @@
               "publicationDate": -1
             },
             "featured": "flag",
+            "cardVariant": "poster",
             "pageSize": 12,
             "fullWidth": true
           }
@@ -2714,6 +2601,30 @@
       },
       "items": [
         {
+          "icon": "mail",
+          "value": {
+            "fr": "contact@ekilib.re",
+            "en": "contact@ekilib.re"
+          },
+          "href": "mailto:contact@ekilib.re"
+        },
+        {
+          "icon": "facebook",
+          "value": {
+            "fr": "Facebook",
+            "en": "Facebook"
+          },
+          "href": "https://www.facebook.com/101136301493344"
+        },
+        {
+          "icon": "linkedin",
+          "value": {
+            "fr": "LinkedIn",
+            "en": "LinkedIn"
+          },
+          "href": "https://www.linkedin.com/company/association-ekilib-re/"
+        },
+        {
           "icon": "phone",
           "value": {
             "fr": "06 93 51 42 24",
@@ -2729,8 +2640,12 @@
               "en": "Ekilib.re Sport Health House"
             },
             {
-              "fr": "Commune du Tampon – La Réunion, 97430",
-              "en": "Le Tampon – Réunion Island, 97430"
+              "fr": "34 rue Hubert Delisle",
+              "en": "34 rue Hubert Delisle"
+            },
+            {
+              "fr": "97430 Le Tampon",
+              "en": "97430 Le Tampon – Réunion Island"
             }
           ]
         },
@@ -2746,15 +2661,8 @@
               "en": "Saturday: 8:30am – 12:00pm"
             }
           ]
-        },
-        {
-          "icon": "mail",
-          "value": {
-            "fr": "contact@ekilib.re",
-            "en": "contact@ekilib.re"
-          },
-          "href": "mailto:contact@ekilib.re"
         }
+        
       ]
     },
     "partners": {
@@ -2765,7 +2673,7 @@
             "fr": "Maison Sport Santé du Tampon",
             "en": "Sport Health House of Le Tampon"
           },
-          "href": "https://ssbe.re/maison-sport-sante-mss/"
+          "href": "https://www.ssbe.re/#maisons-sport-sante"
         }
       ]
     },
@@ -2793,8 +2701,8 @@
       }
     ],
     "copyright": {
-      "fr": "© 2026 Ekilib.re – Association Maison Sport Santé du Tampon. Tous droits réservés.",
-      "en": "© 2026 Ekilib.re – Sport Health House of Le Tampon. All rights reserved."
+      "fr": "© 2026 Association Ekilib.re – Maison Sport Santé du Tampon. Tous droits réservés.",
+      "en": "© 2026 Association Ekilib.re – Sport Health House of Le Tampon. All rights reserved."
     }
   },
   "features": [
@@ -2835,88 +2743,88 @@
     },
     "colors": {
       "light": {
-        "background": "oklch(0.99 0.008 180)",
-        "foreground": "oklch(0.25 0.03 210)",
+        "background": "oklch(0.99 0.008 242)",
+        "foreground": "oklch(0.25 0.03 242)",
         "card": "oklch(1 0 0)",
-        "cardForeground": "oklch(0.25 0.03 210)",
+        "cardForeground": "oklch(0.25 0.03 242)",
         "popover": "oklch(1 0 0)",
-        "popoverForeground": "oklch(0.25 0.03 210)",
-        "primary": "oklch(0.56 0.105 185)",
-        "primaryForeground": "oklch(0.99 0.01 185)",
-        "secondary": "oklch(0.95 0.03 184)",
-        "secondaryForeground": "oklch(0.38 0.07 186)",
-        "muted": "oklch(0.965 0.01 182)",
-        "mutedForeground": "oklch(0.50 0.025 200)",
-        "accent": "oklch(0.62 0.145 55)",
-        "accentForeground": "oklch(0.99 0.012 55)",
+        "popoverForeground": "oklch(0.25 0.03 242)",
+        "primary": "oklch(0.411 0.080 242)",
+        "primaryForeground": "oklch(0.99 0.01 242)",
+        "secondary": "oklch(0.95 0.03 242)",
+        "secondaryForeground": "oklch(0.38 0.07 242)",
+        "muted": "oklch(0.965 0.01 242)",
+        "mutedForeground": "oklch(0.50 0.025 242)",
+        "accent": "oklch(0.804 0.156 82.5)",
+        "accentForeground": "oklch(0.30 0.06 84)",
         "destructive": "oklch(0.55 0.20 27)",
         "destructiveForeground": "oklch(0.99 0.02 27)",
-        "border": "oklch(0.905 0.015 184)",
-        "input": "oklch(0.905 0.015 184)",
-        "ring": "oklch(0.56 0.105 185)",
+        "border": "oklch(0.905 0.015 242)",
+        "input": "oklch(0.905 0.015 242)",
+        "ring": "oklch(0.411 0.080 242)",
         "warning": "oklch(0.80 0.145 79)",
         "warningForeground": "oklch(0.30 0.06 70)",
-        "success": "oklch(0.545 0.12 160)",
-        "successForeground": "oklch(0.99 0.012 160)",
+        "success": "oklch(0.516 0.104 162)",
+        "successForeground": "oklch(0.99 0.012 162)",
         "info": "oklch(0.55 0.12 235)",
         "infoForeground": "oklch(0.99 0.012 235)",
         "error": "oklch(0.55 0.20 27)",
         "errorForeground": "oklch(0.99 0.02 27)",
-        "chart1": "oklch(0.58 0.11 185)",
-        "chart2": "oklch(0.68 0.145 55)",
-        "chart3": "oklch(0.80 0.145 79)",
+        "chart1": "oklch(0.45 0.085 242)",
+        "chart2": "oklch(0.75 0.150 82.5)",
+        "chart3": "oklch(0.55 0.105 162)",
         "chart4": "oklch(0.45 0.08 220)",
         "chart5": "oklch(0.58 0.12 160)",
-        "sidebar": "oklch(0.975 0.012 182)",
-        "sidebarForeground": "oklch(0.29 0.03 205)",
-        "sidebarPrimary": "oklch(0.56 0.105 185)",
-        "sidebarPrimaryForeground": "oklch(0.99 0.01 185)",
-        "sidebarAccent": "oklch(0.95 0.03 184)",
-        "sidebarAccentForeground": "oklch(0.38 0.07 186)",
-        "sidebarBorder": "oklch(0.905 0.015 184)",
-        "sidebarRing": "oklch(0.56 0.105 185)"
+        "sidebar": "oklch(0.975 0.012 242)",
+        "sidebarForeground": "oklch(0.29 0.03 242)",
+        "sidebarPrimary": "oklch(0.411 0.080 242)",
+        "sidebarPrimaryForeground": "oklch(0.99 0.01 242)",
+        "sidebarAccent": "oklch(0.95 0.03 242)",
+        "sidebarAccentForeground": "oklch(0.38 0.07 242)",
+        "sidebarBorder": "oklch(0.905 0.015 242)",
+        "sidebarRing": "oklch(0.411 0.080 242)"
       },
       "dark": {
-        "background": "oklch(0.16 0.02 210)",
-        "foreground": "oklch(0.95 0.008 180)",
-        "card": "oklch(0.20 0.022 210)",
-        "cardForeground": "oklch(0.95 0.008 180)",
-        "popover": "oklch(0.20 0.022 210)",
-        "popoverForeground": "oklch(0.95 0.008 180)",
-        "primary": "oklch(0.72 0.10 185)",
-        "primaryForeground": "oklch(0.17 0.03 205)",
-        "secondary": "oklch(0.27 0.03 200)",
-        "secondaryForeground": "oklch(0.86 0.05 184)",
-        "muted": "oklch(0.26 0.02 205)",
-        "mutedForeground": "oklch(0.72 0.02 190)",
-        "accent": "oklch(0.72 0.14 58)",
-        "accentForeground": "oklch(0.20 0.05 55)",
+        "background": "oklch(0.16 0.02 242)",
+        "foreground": "oklch(0.95 0.008 242)",
+        "card": "oklch(0.20 0.022 242)",
+        "cardForeground": "oklch(0.95 0.008 242)",
+        "popover": "oklch(0.20 0.022 242)",
+        "popoverForeground": "oklch(0.95 0.008 242)",
+        "primary": "oklch(0.70 0.095 242)",
+        "primaryForeground": "oklch(0.17 0.03 242)",
+        "secondary": "oklch(0.27 0.03 242)",
+        "secondaryForeground": "oklch(0.86 0.05 242)",
+        "muted": "oklch(0.26 0.02 242)",
+        "mutedForeground": "oklch(0.72 0.02 242)",
+        "accent": "oklch(0.82 0.150 82.5)",
+        "accentForeground": "oklch(0.20 0.05 84)",
         "destructive": "oklch(0.575 0.19 28)",
         "destructiveForeground": "oklch(0.99 0.012 28)",
-        "border": "oklch(0.29 0.022 205)",
-        "input": "oklch(0.29 0.022 205)",
-        "ring": "oklch(0.72 0.10 185)",
+        "border": "oklch(0.29 0.022 242)",
+        "input": "oklch(0.29 0.022 242)",
+        "ring": "oklch(0.70 0.095 242)",
         "warning": "oklch(0.82 0.14 80)",
         "warningForeground": "oklch(0.28 0.06 70)",
-        "success": "oklch(0.68 0.13 160)",
-        "successForeground": "oklch(0.17 0.03 160)",
+        "success": "oklch(0.70 0.120 162)",
+        "successForeground": "oklch(0.17 0.03 162)",
         "info": "oklch(0.68 0.11 235)",
         "infoForeground": "oklch(0.17 0.03 235)",
         "error": "oklch(0.575 0.19 28)",
         "errorForeground": "oklch(0.99 0.012 28)",
-        "chart1": "oklch(0.72 0.10 185)",
-        "chart2": "oklch(0.74 0.14 58)",
-        "chart3": "oklch(0.82 0.14 80)",
+        "chart1": "oklch(0.70 0.095 242)",
+        "chart2": "oklch(0.78 0.150 82.5)",
+        "chart3": "oklch(0.70 0.120 162)",
         "chart4": "oklch(0.60 0.09 220)",
         "chart5": "oklch(0.68 0.13 160)",
-        "sidebar": "oklch(0.19 0.022 208)",
-        "sidebarForeground": "oklch(0.92 0.01 185)",
-        "sidebarPrimary": "oklch(0.72 0.10 185)",
-        "sidebarPrimaryForeground": "oklch(0.17 0.03 205)",
-        "sidebarAccent": "oklch(0.27 0.03 200)",
-        "sidebarAccentForeground": "oklch(0.86 0.05 184)",
-        "sidebarBorder": "oklch(0.29 0.022 205)",
-        "sidebarRing": "oklch(0.72 0.10 185)"
+        "sidebar": "oklch(0.19 0.022 242)",
+        "sidebarForeground": "oklch(0.92 0.01 242)",
+        "sidebarPrimary": "oklch(0.70 0.095 242)",
+        "sidebarPrimaryForeground": "oklch(0.17 0.03 242)",
+        "sidebarAccent": "oklch(0.27 0.03 242)",
+        "sidebarAccentForeground": "oklch(0.86 0.05 242)",
+        "sidebarBorder": "oklch(0.29 0.022 242)",
+        "sidebarRing": "oklch(0.70 0.095 242)"
       }
     },
     "spacing": {
@@ -2947,7 +2855,7 @@
         "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
       }
     },
-    "customCSS": ".ssso-card .header-gradient {\n  background: linear-gradient(135deg, var(--accent), var(--warning))!important;\n}\n\n .sspt-card .header-gradient {\n background: linear-gradient(135deg, var(--primary), var(--muted-foreground))!important;\n} \n\n .ssso-card .border-card-border-left {\n border-color: var(--accent)!important;}"
+    "customCSS": "/* En-tete des cartes SSsO : jaune de la charte, CREUSE en mode clair — le titre\n   est ecrit en text-primary-foreground (quasi-blanc en clair), le jaune plein n'y\n   ferait que 1,9:1. En sombre ce texte devient fonce, donc le jaune reste plein. */\n.ssso-card .header-gradient {\n  background: linear-gradient(135deg, color-mix(in oklch, var(--accent) 65%, black), color-mix(in oklch, var(--accent) 55%, black))!important;\n}\n\n.dark .ssso-card .header-gradient {\n  background: linear-gradient(135deg, var(--accent), color-mix(in oklch, var(--accent) 80%, black))!important;\n}\n\n .sspt-card .header-gradient {\n background: linear-gradient(135deg, var(--primary), var(--muted-foreground))!important;\n} \n\n .ssso-card .border-card-border-left {\n border-color: var(--accent)!important;}\n\n/* Cartes SSsL (sans label) : 3e couleur de la charte, le vert (--success, deja\n   porte par --gradient-pro). Titre en text-primary-foreground : 5,16:1 sur le\n   vert plein en clair, 7,55:1 en sombre ; le creusement 85% tient 4,98:1 en sombre,\n   donc une seule recette pour les deux modes. */\n.sssl-card .header-gradient {\n  background: linear-gradient(135deg, var(--success), color-mix(in oklch, var(--success) 85%, black))!important;\n}\n\n.sssl-card .border-card-border-left {\n  border-color: var(--success)!important;\n}\n\n/* Le badge « Valide » est du meme vert (--badge-valid = --success) : sur cet\n   en-tete il disparaitrait. Pastille inversee, fond carte + texte vert (5,31:1\n   en clair, 7,14:1 en sombre). */\n.sssl-card .header-gradient .bg-badge-valid {\n  background: var(--card);\n  color: var(--success);\n}"
   },
   "auth": {
     "login": {
@@ -3226,6 +3134,7 @@
               "fr": "Structures du site",
               "en": "Site structures"
             },
+            "create": "add-structure",
             "restrictActionsToOwned": true,
             "rowActions": [
               "edit",
@@ -3346,6 +3255,91 @@
         ]
       },
       {
+        "id": "creneaux-ssbe",
+        "label": {
+          "fr": "Créneaux SSBE",
+          "en": "SSBE slots"
+        },
+        "icon": "copy",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "answerCopy",
+            "title": {
+              "fr": "Créneaux du Tampon déposés sur Sport Santé Bien-être",
+              "en": "Le Tampon slots submitted on Sport Santé Bien-être"
+            },
+            "sourceForm": "6928096adf5caf0d230e7f26",
+            "targetForm": "6a85af345d898a57cb49f029",
+            "source": {
+              "defaultFilters": {
+                "$or": {
+                  "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdr0xcsmmpnr6ez17q.address.postalCode": {
+                    "$in": [
+                      "97430",
+                      "97418"
+                    ]
+                  },
+                  "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdmxe3qhkjb9qu74wli.postalCode": {
+                    "$in": [
+                      "97430",
+                      "97418"
+                    ]
+                  }
+                }
+              },
+              "defaultSortBy": {
+                "created": -1
+              },
+              "indexStepList": 60,
+              "searchBy": [
+                "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdegc9sgox76p87n27"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Activité",
+                  "en": "Activity"
+                }
+              },
+              {
+                "path": "structure.name",
+                "label": {
+                  "fr": "Structure",
+                  "en": "Organization"
+                }
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                }
+              },
+              {
+                "path": "sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7",
+                "label": {
+                  "fr": "Statut SSBE",
+                  "en": "SSBE status"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Déposé le",
+                  "en": "Submitted on"
+                }
+              }
+            ],
+            "preview": {
+              "type": "coform-answer"
+            }
+          }
+        ]
+      },
+      {
         "id": "moderation",
         "label": {
           "fr": "Modération",
@@ -3417,8 +3411,14 @@
             "rowActions": [
               "validate"
             ],
-            "create": false,
+            "create": {
+              "coform": "6a85af345d898a57cb49f029"
+            },
             "edit": false,
+            "preview": {
+              "type": "coform-answer",
+              "editButton": true
+            },
             "status": {
               "mode": "statusField",
               "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7",
@@ -3497,45 +3497,6 @@
           "serverKey": "address",
           "read": "address:read",
           "write": "address:write"
-        },
-        "telephone": {
-          "serverKey": "telephone",
-          "read": "telephone:read",
-          "write": "telephone:write"
-        },
-        "representativeTitle": {
-          "serverKey": "representativeTitle",
-          "read": "enumOrOther:read",
-          "write": "enumOrOther:write",
-          "params": {
-            "valueField": "representativeTitle",
-            "otherField": "otherRepresentativeTitle",
-            "known": [
-              "Président",
-              "Maire.sse",
-              "Chef.fe d'entreprise",
-              "Chef.fe d'établissement",
-              "Autre..."
-            ],
-            "other": "Autre..."
-          }
-        },
-        "personInChargeTitle": {
-          "serverKey": "personInChargeTitle",
-          "read": "enumOrOther:read",
-          "write": "enumOrOther:write",
-          "params": {
-            "valueField": "personInChargeTitle",
-            "otherField": "otherPersonInChargeTitle",
-            "known": [
-              "Président",
-              "Maire.sse",
-              "Chef.fe d'entreprise",
-              "Chef.fe d'établissement",
-              "Autre..."
-            ],
-            "other": "Autre..."
-          }
         }
       },
       "fields": {
@@ -3578,31 +3539,12 @@
           }
         },
         "affiliate": {
-          "widget": "select",
+          "widget": "switch",
+          "write": "coerce:boolString",
           "label": {
             "fr": "Structure affiliée à une union, à une fédération ou à un réseau",
             "en": "Structure affiliated with a union, federation or network"
-          },
-          "placeholder": {
-            "fr": "Faites votre choix",
-            "en": "Make your choice"
-          },
-          "enum": [
-            {
-              "value": "Oui",
-              "label": {
-                "fr": "Oui",
-                "en": "Yes"
-              }
-            },
-            {
-              "value": "Non",
-              "label": {
-                "fr": "Non",
-                "en": "No"
-              }
-            }
-          ]
+          }
         },
         "affiliateTo": {
           "widget": "text",
@@ -3616,19 +3558,35 @@
           },
           "visibleIf": {
             "field": "affiliate",
-            "op": "eq",
-            "value": "Oui"
+            "op": "truthy"
           }
         },
+        "_imageFile": {
+          "widget": "image",
+          "label": {
+            "fr": "Votre logo",
+            "en": "Your logo"
+          },
+          "info": {
+            "fr": "Format carré recommandé · PNG ou JPG",
+            "en": "Square format recommended · PNG or JPG"
+          },
+          "widgetProps": {
+            "shape": "square",
+            "aspect": 1
+          }
+        },
+        "tags": {
+          "widget": "hidden",
+          "type": "array",
+          "write": "structure:tagsFromThematic"
+        },
         "thematic": {
-          "widget": "checkboxGroup",
+          "widget": "multiselect",
           "type": "array",
           "label": {
             "fr": "Domaine d'intervention (plusieurs choix possibles)",
             "en": "Field of action (multiple choices possible)"
-          },
-          "widgetProps": {
-            "variant": "card"
           },
           "enum": [
             {
@@ -3710,45 +3668,24 @@
             }
           ]
         },
-        "_imageFile": {
-          "widget": "image",
+        "description": {
+          "widget": "textarea",
           "label": {
-            "fr": "Votre logo",
-            "en": "Your logo"
-          },
-          "info": {
-            "fr": "Format carré recommandé · PNG ou JPG",
-            "en": "Square format recommended · PNG or JPG"
-          },
-          "widgetProps": {
-            "shape": "square",
-            "aspect": 1
+            "fr": "Description",
+            "en": "Description"
           }
         },
-        "tags": {
-          "widget": "hidden",
-          "type": "array",
-          "write": "structure:tagsFromThematic"
-        },
-        "telephone": {
+        "mobile": {
           "widget": "tel",
-          "group": "telephone",
+          "read": "structure:mobileRead",
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
           },
           "placeholder": {
-            "fr": "0692001122",
-            "en": "0692001122"
+            "fr": "0692 22 90 80",
+            "en": "0692 22 90 80"
           }
-        },
-        "_telSlot": {
-          "widget": "hidden",
-          "group": "telephone"
-        },
-        "_telRest": {
-          "widget": "hidden",
-          "group": "telephone"
         },
         "address": {
           "widget": "location",
@@ -3815,8 +3752,9 @@
           },
           "write": "coerce:orUndef"
         },
-        "url": {
+        "link": {
           "widget": "text",
+          "read": "structure:linkRead",
           "label": {
             "fr": "Site web",
             "en": "Website"
@@ -4133,18 +4071,13 @@
           }
         },
         "representativeTitle": {
-          "widget": "select",
-          "label": {
-            "fr": "Titre (fonction, statut...)",
-            "en": "Title (role, status...)"
-          },
-          "info": {
-            "fr": "Si autre, vous pourrez le préciser juste en dessous",
-            "en": "If other, you can specify it just below"
-          },
-          "placeholder": {
-            "fr": "Faites votre choix",
-            "en": "Make your choice"
+          "widget": "valueSelect",
+          "type": "string",
+          "default": "",
+          "read": "coerce:string",
+          "widgetProps": {
+            "multiple": false,
+            "creatable": true
           },
           "enum": [
             {
@@ -4183,20 +4116,14 @@
               }
             }
           ],
-          "group": "representativeTitle"
-        },
-        "otherRepresentativeTitle": {
-          "widget": "text",
           "label": {
-            "fr": "Précisez le titre",
-            "en": "Specify the title"
+            "fr": "Titre (fonction, statut...)",
+            "en": "Title (role, status...)"
           },
-          "visibleIf": {
-            "field": "representativeTitle",
-            "op": "eq",
-            "value": "Autre..."
-          },
-          "group": "representativeTitle"
+          "info": {
+            "fr": "Choisissez dans la liste ou saisissez directement",
+            "en": "Pick from the list or type it directly"
+          }
         },
         "representativeCivility": {
           "widget": "select",
@@ -4281,28 +4208,20 @@
         },
         "responsableSameAsRepresent": {
           "widget": "switch",
+          "write": "coerce:boolString",
           "label": {
             "fr": "Le représentant est aussi la personne en charge du dossier",
             "en": "The representative is also the person in charge of the file"
           }
         },
         "personInChargeTitle": {
-          "widget": "select",
-          "label": {
-            "fr": "Titre (fonction, statut...)",
-            "en": "Title (role, status...)"
-          },
-          "info": {
-            "fr": "Si autre, vous pourrez le préciser juste en dessous",
-            "en": "If other, you can specify it just below"
-          },
-          "placeholder": {
-            "fr": "Faites votre choix",
-            "en": "Make your choice"
-          },
-          "visibleIf": {
-            "field": "responsableSameAsRepresent",
-            "op": "falsy"
+          "widget": "valueSelect",
+          "type": "string",
+          "default": "",
+          "read": "coerce:string",
+          "widgetProps": {
+            "multiple": false,
+            "creatable": true
           },
           "enum": [
             {
@@ -4341,28 +4260,18 @@
               }
             }
           ],
-          "group": "personInChargeTitle"
-        },
-        "otherPersonInChargeTitle": {
-          "widget": "text",
           "label": {
-            "fr": "Précisez le titre",
-            "en": "Specify the title"
+            "fr": "Titre (fonction, statut...)",
+            "en": "Title (role, status...)"
+          },
+          "info": {
+            "fr": "Choisissez dans la liste ou saisissez directement",
+            "en": "Pick from the list or type it directly"
           },
           "visibleIf": {
-            "and": [
-              {
-                "field": "responsableSameAsRepresent",
-                "op": "falsy"
-              },
-              {
-                "field": "personInChargeTitle",
-                "op": "eq",
-                "value": "Autre..."
-              }
-            ]
-          },
-          "group": "personInChargeTitle"
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
         },
         "personInChargeCivility": {
           "widget": "select",
@@ -4464,6 +4373,58 @@
             "field": "responsableSameAsRepresent",
             "op": "falsy"
           }
+        },
+        "infoGeneral": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Info general",
+            "en": "General information"
+          }
+        },
+        "similarLink": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Lien similaire",
+            "en": "Similar link"
+          }
+        },
+        "formLocality": {
+          "widget": "hidden",
+          "label": {
+            "fr": "Localité",
+            "en": "Locality"
+          }
+        },
+        "location": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          }
+        },
+        "image": {
+          "widget": "hidden",
+          "label": {
+            "fr": "Image",
+            "en": "Image"
+          }
+        },
+        "youtube": {
+          "widget": "hidden",
+          "label": {
+            "fr": "Youtube",
+            "en": "YouTube"
+          }
+        },
+        "linkedin": {
+          "widget": "hidden",
+          "label": {
+            "fr": "Linkedin",
+            "en": "LinkedIn"
+          }
         }
       },
       "sections": [
@@ -4498,6 +4459,12 @@
             {
               "columns": 1,
               "fields": [
+                "description"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
                 "_imageFile"
               ]
             }
@@ -4523,14 +4490,14 @@
             {
               "columns": 2,
               "fields": [
-                "telephone",
+                "mobile",
                 "email"
               ]
             },
             {
               "columns": 1,
               "fields": [
-                "url"
+                "link"
               ]
             },
             {
@@ -4591,8 +4558,7 @@
             {
               "columns": 1,
               "fields": [
-                "representativeTitle",
-                "otherRepresentativeTitle"
+                "representativeTitle"
               ]
             },
             {
@@ -4628,8 +4594,7 @@
             {
               "columns": 1,
               "fields": [
-                "personInChargeTitle",
-                "otherPersonInChargeTitle"
+                "personInChargeTitle"
               ]
             },
             {

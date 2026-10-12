@@ -358,10 +358,13 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
 
   // Dimensions du conteneur — logique PARTAGÉE avec MapSkeleton
   // (cf. useMapContainerClass : plein écran sans footer vs min-h-screen).
-  // En mode split, le parent fournit `containerClass` (ex. "absolute inset-0")
-  // pour que la carte remplisse sa colonne au lieu de `min-h-screen`.
+  // Embarquée (vues carte et split de `searchProStatic`, agenda…), le parent
+  // fournit `containerClass` (ex. "absolute inset-0") pour que la carte
+  // remplisse la boîte qu'il dimensionne au lieu de `min-h-screen`.
   const defaultContainerClass = useMapContainerClass("z-10 rounded shadow overflow-hidden");
   const mapContainerClass = containerClass ?? defaultContainerClass;
+  // Résolue UNE fois par rendu : `resolveAction` évalue les `itemRules`, la popup en lit deux champs.
+  const selectedAction = selected ? resolveAction(selected.entry) : null;
 
   return (
     <>
@@ -379,11 +382,10 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
             onIdle={handleMapReady}
             onMoveEnd={syncViewport}
             onClick={() => setSelected(null)}
-            // Embarqué (split, `containerClass` fourni) → la carte remplit sa
-            // colonne (100% de la colonne `h-[78vh]` → le canvas MapLibre = la
-            // zone VISIBLE, donc fitBounds cadre juste). Sinon plein écran (100vh)
-            // comme la vue carte seule. Mettre 100vh en embarqué casserait le fit :
-            // le canvas serait plus grand que la colonne visible.
+            // Embarqué (`containerClass` fourni) → la carte remplit la boîte du
+            // parent (100% → le canvas MapLibre = la zone VISIBLE, donc fitBounds
+            // cadre juste). Sinon plein écran (100vh). Mettre 100vh en embarqué
+            // casserait le fit : le canvas serait plus grand que la boîte visible.
             style={{ width: "100%", height: containerClass ? "100%" : "100vh" }}
           >
             <NavigationControl position="top-left" />
@@ -443,7 +445,9 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
                     t={t}
                     // Libellé aligné sur l'action EFFECTIVE de cet item : « Voir le profil » pour
                     // `profil`, « En savoir plus » pour `preview` comme pour `link`.
-                    actionKind={resolveAction(selected.entry).decision.kind === "profil" ? "profil" : "preview"}
+                    actionKind={selectedAction?.decision.kind === "profil" ? "profil" : "preview"}
+                    // La conf de carte de CET item (règles `itemRules` comprises) : ses chips suivent la liste.
+                    tagColors={selectedAction?.itemList?.card?.tagColors}
                     onAction={() => handlePopupAction(selected.entry)}
                   />
                 </Suspense>

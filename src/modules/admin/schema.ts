@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { SearchBaseParamsSchema } from "@/modules/search/schema";
+import { PreviewConfSchema, SearchBaseParamsSchema } from "@/modules/search/schema";
 import { VisibilityConditionSchema } from "@/lib/visibility/schema";
 
 import { LocalizedString } from "../../types/locale-schema";
@@ -23,6 +23,36 @@ export type AdminAccessLevel = z.infer<typeof AdminAccessLevelSchema>;
 /** Résolution du form add/edit d'une resource : `false` (désactivé) · `"inherit"` (hérite de
  *  addConfig / profiles.<type>.editModal) · `"add-<key>"`/`"edit-<key>"` (clé forcée, standard ou costum). */
 export const AdminFormRefSchema = z.union([z.literal(false), z.literal("inherit"), z.string()]);
+
+/**
+ * `create` d'une resource `answers` : les réponses CoForm n'ont AUCUNE modale d'entité (ni
+ * standard, ni costumForm — `resolveCreateModal` rend `null` pour ce type). La création passe par
+ * le `CoFormModal` du form, comme le bouton public `addButton.coform` de `searchProStatic` :
+ * `{ "coform": "<formId>" }` (ObjectId 24 hex, même contrat que `answerCopy.targetForm`). Forme
+ * objet plutôt qu'une chaîne devinée au format : un id de form n'est pas une clé de modale, et
+ * `audit:config` vérifie les clés `add-<id>` contre le registre.
+ */
+export const AdminCreateRefSchema = z.union([
+  AdminFormRefSchema,
+  z.object({ coform: z.string().regex(/^[0-9a-f]{24}$/, "id de form CoForm attendu (ObjectId 24 hex)") }),
+]);
+
+/**
+ * Types de détail qu'une table admin peut ouvrir au clic SANS se périmer : ceux qui n'écrivent rien,
+ * et `coform-answer`, qui signale chaque édition par `onEdited` (la table invalide alors ses clés
+ * `admin-*`). Les autres écrivent depuis le détail SANS prévenir l'hôte — `facets`, `structure`,
+ * `poi-amenities` (édition `DynamicEditModal`, suppression), `news` (édition, suppression), `event`
+ * (participation) — et la ligne resterait périmée jusqu'au rechargement. Brancher `onEdited` dans
+ * l'un d'eux (cf. `Preview.tsx`), c'est l'ajouter ici.
+ */
+const ADMIN_PREVIEW_TYPES = ["default", "coform-answer", "resource", "resource-directory", "testimonial"] as const;
+const AdminPreviewSchema = PreviewConfSchema.refine(
+  (p) => p.type === undefined || (ADMIN_PREVIEW_TYPES as readonly string[]).includes(p.type),
+  {
+    message: `type de détail non admis dans une table admin (admis : ${ADMIN_PREVIEW_TYPES.join(", ")}) — les autres écrivent sans prévenir la table, qui resterait périmée`,
+    path: ["type"],
+  },
+);
 
 /** Un état métier du mode `statusField` : `value` = valeur brute écrite/lue en base (VERBATIM,
  *  orthographes legacy comprises — ex. « Réfusé » du CoForm SSBE) ; `label` = affichage (permet de
@@ -145,7 +175,18 @@ const AdminResourceSectionSchema = z.object({
    */
   source: SearchBaseParamsSchema.partial().optional(),
   columns: AdminColumnsSchema.optional(),
-  create: AdminFormRefSchema.default("inherit"),
+  create: AdminCreateRefSchema.default("inherit"),
+  /**
+   * Détail d'une ligne au CLIC (et par l'action « Aperçu » du menu de ligne, accessible au
+   * clavier) : MÊME contenu que le détail des listes publiques (`Preview.tsx`, dispatch sur
+   * `preview.type` — ex. `coform-answer` avec `editButton` pour corriger une réponse depuis la
+   * modération), dans le conteneur `dialog`. Opt-in : sans ce bloc, les lignes ne réagissent pas
+   * au clic (zéro changement pour les tables existantes). Un modérateur vérifie une fiche AVANT de
+   * la marquer « Validé » : les colonnes de la table n'en montrent qu'une tranche. Consulter ne
+   * recharge rien ; une correction par `editButton` invalide tables admin ET listes publiques. Seuls
+   * les détails qui n'écrivent rien ou qui signalent leurs éditions sont admis (`ADMIN_PREVIEW_TYPES`).
+   */
+  preview: AdminPreviewSchema.optional(),
   /**
    * Valeurs SEMÉES dans la modale de CRÉATION ouverte depuis cette section (jamais en édition —
    * l'entité fait alors foi). Fusionnées PAR-DESSUS les défauts dérivés du formulaire
@@ -157,7 +198,8 @@ const AdminResourceSectionSchema = z.object({
    * faudrait un formulaire costum cloné par sous-type pour ne varier qu'un défaut.
    *
    * Les clés sont des noms de champs du formulaire résolu par `create` ; une clé qu'il ne déclare
-   * pas est écartée par `applyCreateDefaults` (semis inerte, jamais de valeur fantôme).
+   * pas est écartée par `applyCreateDefaults` (semis inerte, jamais de valeur fantôme). Modales
+   * d'ENTITÉ seulement : refusé avec `create: {coform}` (cf. le refine en fin de schéma).
    */
   createDefaults: z.record(z.string(), z.unknown()).optional(),
   edit: AdminFormRefSchema.default("inherit"),
@@ -188,6 +230,12 @@ const AdminResourceSectionSchema = z.object({
    * chargées de l'infinite scroll, jamais les filtres UI transitoires), cf. `runExclusiveFlag`.
    */
   exclusiveField: z.string().optional(),
+}).refine((s) => !(typeof s.create === "object" && s.createDefaults), {
+  // Le CoFormModal s'ouvrirait VIDE sans le dire : `createDefaults` porte des noms de champs de
+  // modale d'entité, pas des réponses rangées par étape — rien ne les traduit. Refuser plutôt que
+  // promettre un semis qui n'aura pas lieu.
+  message: "createDefaults ne sème que les modales d'entité : la création par CoForm (create.coform) l'ignorerait",
+  path: ["createDefaults"],
 });
 export type AdminResourceSection = z.infer<typeof AdminResourceSectionSchema>;
 
@@ -249,7 +297,60 @@ const AdminReferenceSectionSchema = z.object({
 export type AdminReferenceSection = z.infer<typeof AdminReferenceSectionSchema>;
 const AdminModerationSectionSchema = z.object({ ...sectionAccess, type: z.literal("moderation"), title: LocalizedString.optional() });
 
-const BUILTIN_SECTION_TYPES = ["dashboard", "members", "resource", "import", "export", "reference", "moderation"] as const;
+/** Id Mongo (24 hexadécimaux) — forme des ids de form. */
+const MONGO_ID = /^[0-9a-f]{24}$/;
+
+/**
+ * Section « reprise de réponses » : liste les réponses d'un form SOURCE (déposées sur un autre
+ * site) et les copie UNE PAR UNE dans le form CIBLE du site — bouton « Copier ». L'écriture est
+ * SERVEUR (action `copy` de `survey/answer/newanswer` → `Coform::copyAnswer`) : renommage du
+ * préfixe de section, contexte/`source` du site cible, idempotence par `copiedFrom` (une copie
+ * existante est renvoyée, jamais dupliquée). Prérequis : le form cible est un DUPLICATA du
+ * source (mêmes ids d'inputs — la duplication legacy les préserve — seul le préfixe change).
+ *
+ * Trois états par ligne : « Copié » (une réponse cible porte `copiedFrom` = cette ligne),
+ * « Doublon probable » (une réponse cible SANS trace partage l'empreinte `duplicateKeys` —
+ * copie faite par un autre canal : confirmation demandée) et « À copier ».
+ */
+const AdminAnswerCopySectionSchema = z.object({
+  ...sectionAccess,
+  type: z.literal("answerCopy"),
+  title: LocalizedString.optional(),
+  /** Form SOURCE : ses réponses sont les candidates (filtre `form` posé d'office par la section). */
+  sourceForm: z.string().regex(MONGO_ID),
+  /** Form CIBLE : reçoit les copies (l'admin doit être admin de son contexte porteur — garde serveur). */
+  targetForm: z.string().regex(MONGO_ID),
+  /**
+   * Requête des candidates — MÊME forme que `resource.source` (`defaultFilters` mongo, `searchBy`,
+   * `defaultSortBy`, `indexStepList`…). `notSourceKey: true` est posé d'office : les réponses source
+   * appartiennent à un autre site, le scope costum les exclurait.
+   */
+  source: SearchBaseParamsSchema.partial().optional(),
+  /** Colonnes de DONNÉES (lignes APLATIES par le hook costum, comme `resource`) : `"path"` ou `{ path, label }`
+   *  — sans `type`/`sortable` : la table n'a ni tri ni cellule audio, une clé promise puis ignorée serait un faux
+   *  contrat. Statut de copie et Action sont fixes. */
+  columns: z.array(z.union([z.string(), z.object({ path: z.string(), label: LocalizedString.optional() })])).optional(),
+  /**
+   * Chemins (lignes aplaties) formant l'EMPREINTE d'un doublon probable — une réponse cible sans
+   * `copiedFrom` qui partage ces valeurs. Défaut : `["name", "structure.name", "address.postalCode"]`.
+   */
+  duplicateKeys: z.array(z.string().min(1)).optional(),
+  /**
+   * Détail d'une candidate au CLIC sur sa ligne (+ bouton « Aperçu » par ligne, accessible au
+   * clavier) — même coque `dialog` et même contenu que `resource.preview` et les listes publiques
+   * (`coform-answer`…). Un admin VÉRIFIE la réponse avant de la copier : les colonnes n'en montrent
+   * qu'une tranche. Opt-in, LECTURE SEULE : la candidate appartient au form SOURCE, celui d'un autre
+   * site — « Modifier » écrirait dans SA réponse. `editButton: true` est donc refusé ici, et la
+   * section le neutralise aussi au rendu (la config n'est jamais parsée par Zod au runtime).
+   */
+  preview: AdminPreviewSchema.refine((p) => !p.editButton, {
+    message: "editButton interdit : la candidate appartient au form source d'un autre site, « Modifier » écrirait dans sa réponse",
+    path: ["editButton"],
+  }).optional(),
+}).refine((s) => s.sourceForm !== s.targetForm, { message: "sourceForm et targetForm doivent différer", path: ["targetForm"] });
+export type AdminAnswerCopySection = z.infer<typeof AdminAnswerCopySectionSchema>;
+
+const BUILTIN_SECTION_TYPES = ["dashboard", "members", "resource", "import", "export", "reference", "moderation", "answerCopy"] as const;
 
 /** Section costum : `type` libre enregistré via `registerAdminSection` (comme une section profil costum).
  *  Permissif (le composant enregistré valide ses props) — mais REFUSE les types builtin : sans ce
@@ -259,6 +360,11 @@ const AdminCustomSectionSchema = z.object({
   ...sectionAccess,
   type: z.string().refine((t) => !(BUILTIN_SECTION_TYPES as readonly string[]).includes(t), {
     message: "type de section builtin invalide (voir les erreurs du schéma builtin correspondant)",
+    // `abort` : l'échec de cette branche devient BLOQUANT. Sinon, une section builtin qui n'échoue
+    // que sur un refine (non bloquant : editButton d'answerCopy, createDefaults + create.coform,
+    // sourceForm = targetForm) laissait DEUX branches « non avortées », et l'union ne rendait qu'un
+    // « Invalid input » qui avalait le message précis. Avec lui, Zod rend tel quel celui du builtin.
+    abort: true,
   }),
   props: z.record(z.string(), z.unknown()).optional(),
 });
@@ -273,6 +379,7 @@ export const AdminSectionSchema = z.union([
     AdminExportSectionSchema,
     AdminReferenceSectionSchema,
     AdminModerationSectionSchema,
+    AdminAnswerCopySectionSchema,
   ]),
   AdminCustomSectionSchema,
 ]);

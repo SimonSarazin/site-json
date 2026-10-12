@@ -216,6 +216,15 @@ describe("fetchGeoShapes", () => {
     expect(entity.getZoneShape).toHaveBeenCalledWith({ countryCode: "RE", level: "4" });
   });
 
+  it("zoniris : un pays SEUL en liste part en scalaire — le SDK refuse un tableau", async () => {
+    // `getZoniris` n'admet comme filtre identifiant qu'une chaîne non vide : seul, `["RE"]` lève
+    // une ApiError 400 avant tout appel réseau.
+    const entity = fakeEntity();
+    await fetchGeoShapes(entity, { id: "iris", source: "zoniris", filters: { countryCode: ["RE"], level: "8" } });
+    expect(entity.getZoniris).toHaveBeenCalledTimes(1);
+    expect(entity.getZoniris).toHaveBeenCalledWith({ countryCode: "RE", level: "8" });
+  });
+
   it("le multi-pays vaut aussi pour zoniris (countryCode y est un filtre identifiant)", async () => {
     const entity = fakeEntity();
     await fetchGeoShapes(entity, {

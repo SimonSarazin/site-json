@@ -229,3 +229,87 @@ registerScopeFn("tl:scope", (carrier) => ({ slug: carrierSlug(carrier) || getSlu
 // compare pipeline+stamps à l'ancien assemblage).
 // tl:invalidate SUPPRIMÉ → clé générique `invalidate:standard` (sharedFns) + params {userList:"organizations"} dans le schéma.
 // image:profilUrl : clé COMMUNE enregistrée dans ../sharedFns (importé en side-effect en tête de fichier).
+
+// ── Mots-clés du lieu : saisie libre + dérivés qui SUIVENT la fiche ───────────────────────────────
+/**
+ * Le champ `tags` est à la fois SAISI (mots-clés libres) et DÉRIVÉ (typologie, portage, tranche de
+ * surface — ce sont les `tags` qu'interrogent les facettes de `/lieux` et l'observatoire).
+ *
+ * Pourquoi des codecs de champ et plus un `mutation.stamps` `op:"append"` : l'estampille refusionne
+ * les tags DU SERVEUR à chaque enregistrement, donc le tag d'une ancienne typologie revenait dès
+ * qu'on en choisissait une autre — un lieu passé de « Coworking » à « Fablab » ressortait dans les
+ * deux facettes, et un mot-clé retiré à la main réapparaissait (cf. `../derivedTags`).
+ *
+ *   read  (édition)  mots-clés affichés = tags serveur − dérivés des valeurs ENREGISTRÉES
+ *   write (save)     mots-clés envoyés  = mots-clés affichés ∪ dérivés des valeurs CHOISIES
+ *
+ * Restent en estampille les deux marqueurs de réseau (`$costum.mainTag`, `$costum.compagnon`) : ils
+ * ne viennent pas d'un champ du formulaire mais du costum porteur. Ils restent donc VISIBLES dans le
+ * champ, ce qui les fait aller-retour intacts — les masquer les supprimerait au premier
+ * enregistrement, l'estampille compagnon ne s'appliquant qu'à la création.
+ *
+ * Les libellés sont ceux des facettes : `tags-propagation.test.ts` vérifie que chacun est une option
+ * réelle de `filterGroups` (typologies/portage) ou de la dimension surface de l'observatoire.
+ */
+import { tagsAvecDerive, tagsSansDerive } from "../derivedTags";
+
+/** Famille de tiers-lieu (champ `family`, stocké en CSV dans `typePlace`) → libellé de la facette « Typologies ». */
+export const TAG_PAR_FAMILLE: Readonly<Record<string, string>> = {
+  "ateliers-artisanaux": "Ateliers artisanaux partagés",
+  coworking: "Bureaux partagés / Coworking",
+  foodlab: "Cuisine partagée / Foodlab",
+  fablab: "Fablab / Makerspace / Hackerspace (Espaces du Faire)",
+  livinglab: "LivingLab / Laboratoire d'innovation sociale",
+  nourricier: "Tiers-lieu nourricier",
+  culturel: "Tiers-lieu culturel / Lieux intermédiaires et indépendants",
+  autre: "Autre famille de tiers-lieux",
+};
+
+/** Mode de gestion (champ `managementType`, stocké dans `manageModel`) → libellé de la facette « Portage ».
+ *  `sarl-sa-sas-esus` et `autre` n'y figurent PAS : ils ne posaient déjà aucun tag (map d'estampille inchangée). */
+export const TAG_PAR_PORTAGE: Readonly<Record<string, string>> = {
+  association: "Association",
+  "collectif-citoyen": "Collectif citoyen",
+  universites: "Universités / Écoles d'ingénieurs ou de commerce / EPST",
+  "etablissements-scolaires": "Établissements scolaires (Lycée, Collège, Ecole)",
+  collectivites: "Collectivités (Département, Intercommunalité, Région, etc)",
+  "sarl-sa-sas": "SARL-SA-SAS",
+  scic: "SCIC",
+  scop: "SCOP",
+  "autre-gestion": "Autre mode de gestion",
+};
+
+/** Tranches de surface bâtie, dans l'ordre : 1ʳᵉ dont le plafond n'est pas atteint (seuils du legacy). */
+const TRANCHES_SURFACE: ReadonlyArray<{ lt?: number; label: string }> = [
+  { lt: 60, label: "Moins de 60m²" },
+  { lt: 201, label: "Entre 60 et 200m²" },
+  { label: "Plus de 200m²" },
+];
+
+/** Libellé de tranche d'une surface bâtie — `undefined` si elle n'est pas renseignée (pas de tag). */
+export function tagTrancheSurface(surface: unknown): string | undefined {
+  const n = typeof surface === "number" ? surface : typeof surface === "string" && surface.trim() !== "" ? Number(surface) : NaN;
+  if (!Number.isFinite(n)) return undefined;
+  return TRANCHES_SURFACE.find((t) => t.lt === undefined || n < t.lt)?.label;
+}
+
+/** Retire un libellé de tranche de la liste (aucun effet s'il n'y est pas). */
+const sansTranche = (tags: string[], tranche: string | undefined): string[] =>
+  tranche ? tags.filter((t) => t !== tranche) : tags;
+
+// read : (tags serveur, serverData) — `seedFromEntity` passe l'entité en 2ᵉ argument (valeurs ENREGISTRÉES).
+registerTransform("tl:tagsRead", (tags, serveur) => {
+  const s = (serveur ?? {}) as Record<string, unknown>;
+  const sansFamille = tagsSansDerive(tags, s.typePlace, TAG_PAR_FAMILLE);
+  const sansPortage = tagsSansDerive(sansFamille, s.manageModel, TAG_PAR_PORTAGE);
+  return sansTranche(sansPortage, tagTrancheSurface(s.buildingSurfaceArea));
+});
+
+// write : (mots-clés saisis, valeurs du formulaire) — `valuesToPayload` passe toutes les valeurs CHOISIES.
+registerTransform("tl:tagsWrite", (tags, valeurs) => {
+  const v = (valeurs ?? {}) as Record<string, unknown>;
+  const avecFamille = tagsAvecDerive(tags, v.family, TAG_PAR_FAMILLE);
+  const avecPortage = tagsAvecDerive(avecFamille, v.managementType, TAG_PAR_PORTAGE);
+  const tranche = tagTrancheSurface(v.surfaceBuilt);
+  return tranche && !avecPortage.includes(tranche) ? [...avecPortage, tranche] : avecPortage;
+});

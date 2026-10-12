@@ -91,7 +91,7 @@ NB : l'export a un plancher **backend** `superAdmin` non contournable par config
 
 ## Les sections
 
-7 types builtin (résolus par le `switch` d'`AdminSectionRenderer`) + **2 sections génériques
+8 types builtin (résolus par le `switch` d'`AdminSectionRenderer`) + **2 sections génériques
 pré-enregistrées par le module lui-même** — `invitation` et `ownershipMigration` : elles
 s'activent par simple JSON, **sans une ligne de code costum** (`registerAdminSection` appelé en
 side-effect au chargement du module, core/eager) —
@@ -149,8 +149,9 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
   "columns": ["name", { "path": "address.addressLocality", "label": { "fr": "Commune" } },
               { "path": "medias", "label": { "fr": "Audio" }, "type": "audio" },
               { "path": "structure.name", "sortable": false }],  // sortable:false = colonne non triable (cf. answers)
-  "create": "inherit", "edit": "inherit",       // false | "inherit" | "add-<key>"/"edit-<key>"
-  "createDefaults": { "category": "appel-projet" },  // valeurs semées dans la modale d'AJOUT
+  "create": "inherit", "edit": "inherit",       // false | "inherit" | "add-<key>"/"edit-<key>" | create: {"coform": "<formId>"}
+  "createDefaults": { "category": "appel-projet" },  // valeurs semées dans la modale d'AJOUT (modales d'entité seulement)
+  "preview": { "type": "coform-answer", "editButton": true },  // détail au clic sur une ligne (opt-in)
   "rowActions": ["edit", "delete", "validate", "reference", "setFeatured"],
   "exclusiveField": "featured",                 // EXIGÉ par `setFeatured` (sans lui : action absente)
   "restrictActionsToOwned": false,              // true = fiche non possédée → lecture + `reference` seuls
@@ -176,9 +177,48 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
 - `create`/`edit: "inherit"` : la création prend le form **costum** du site s'il en existe un pour
   ce type (`config.costumForms`), l'édition suit la résolution publique (`editModalMatch`,
   par-ligne). Clé forcée `add-<key>`/`edit-<key>` possible ; `false` = lecture seule.
-- **`createDefaults`** (opt-in) : valeurs **semées dans la modale d'AJOUT** ouverte depuis cette
+- **`create: { "coform": "<formId>" }`** (resources `answers`, 08/10) : les réponses CoForm n'ont
+  **aucune modale d'entité** (ni standard, ni costumForm — `resolveCreateModal` rend `null`, donc
+  pas de bouton). Cette forme fait ouvrir au bouton « Créer » le **`CoFormModal`** du form — la même
+  modale que le bouton public `addButton.coform` de `searchProStatic` — monté au premier clic
+  (chunk coform à la demande). Après soumission : invalidation des tables/tuiles admin **et** des
+  surfaces publiques (`publicSurfaceKeys` — la réponse créée est une ligne de plus sur la liste
+  publique, que `useCoFormFinalMutation` n'invalide pas). **Rien à la fermeture** : CoForm n'écrit
+  rien avant la soumission finale (brouillon local, fichiers envoyés au submit), et un `refetch()`
+  doublait la requête déjà relancée par l'invalidation (review MR 84). L'id est validé
+  ObjectId 24 hex (même contrat qu'`answerCopy.targetForm`) ; forme objet, et non une chaîne au
+  format deviné, parce qu'un id de form **n'est pas** une clé de modale (`audit:config` vérifie les
+  `add-<id>` contre le registre). `createCoformId` / `resolveCreateModal` sont **exclusifs** : un
+  seul des deux porte le bouton. **`createDefaults` est refusé** avec cette forme (refine du
+  schéma) : ses clés sont des champs de modale d'entité, le `CoFormModal` s'ouvrirait vide sans le
+  dire. Consommateur : Ekilib.re, onglet Modération des créneaux.
+- **`preview`** (opt-in, 08/10) : **détail d'une ligne au clic** — la ligne entière est la cible
+  (`cursor-pointer`), plus une action « Aperçu » dans le menu de ligne pour le **clavier** (une ligne
+  cliquable n'est pas focusable). Même coque (`dialog`) et même contenu que les listes publiques
+  (`SwitchDetailsMode` → `Preview.tsx`, dispatch sur `preview.type`) ; avec `coform-answer` +
+  `editButton: true`, le modérateur **corrige la réponse depuis la modération** (re-fetch frais puis
+  `CoFormModal`, cf. [07-module-search](07-module-search.md)). **Types admis** (refine du schéma,
+  `ADMIN_PREVIEW_TYPES`) : ceux qui n'écrivent rien — `default`, `resource`, `resource-directory`,
+  `testimonial` — et `coform-answer`, qui signale ses éditions. `facets`, `structure`,
+  `poi-amenities`, `news` et `event` écrivent depuis le détail **sans prévenir la table** (édition,
+  suppression, participation) : elle resterait périmée, ils sont refusés tant qu'ils ne relaient pas
+  `onEdited`.
+  Les cellules qui portent un **contrôle** — sélection, lecteur `audio`, actions — gardent leurs
+  clics (`stopRowClick`, cf. `sections/rowPreview.ts` ; React fait remonter jusqu'à la ligne les
+  clics du menu, pourtant portalé), et le clic qui **termine une sélection de texte** n'ouvre rien
+  (copier un e-mail ou un code postal **au glisser** reste possible ; un double-clic, lui, ouvre le
+  détail dès son premier clic — limite assumée) — contrat partagé avec `answerCopy`.
+  **Consulter ne coûte aucune requête** : fermer le détail ne recharge rien. Une **correction** faite
+  depuis le détail (`editButton`) remonte par `onEdited` ([07-module-search](07-module-search.md)) :
+  la table invalide alors ses clés `admin-*` (tables + tuiles) **et** les surfaces publiques, comme
+  pour un changement de statut. Sans ce bloc, zéro changement : les lignes ne réagissent pas au clic.
+- **`createDefaults`** (opt-in, **modales d'entité seulement** — refusé avec `create.coform`) :
+  valeurs **semées dans la modale d'AJOUT** ouverte depuis cette
   section, fusionnées **par-dessus** les défauts dérivés du form (`fields.<nom>.default`) — donc une
-  clé absente garde son défaut normal. **Jamais en édition** (l'entité fait foi : écraser son seed
+  clé absente garde son défaut normal. Ce sont des valeurs de **FORMULAIRE**, injectées sans passer
+  par le `read` du champ : un `switch` attend `true`, pas la valeur serveur `"true"` que son `write`
+  (`coerce:boolString`) produira. Une chaîne y fait échouer la validation Zod du champ et bloque
+  « Suivant » (vécu sur l'onglet MSS de SSBE, 24/09 — test `ssbeOrganizations.createDefaults.test.ts`). **Jamais en édition** (l'entité fait foi : écraser son seed
   par une valeur d'onglet réécrirait une fiche à l'insu de l'admin).
   C'est la réponse au patron « un onglet = un sous-ensemble » : une table filtrée par son `source`
   (ex. `defaultTags: ["Appels à projets"]`) ouvre le form **déjà positionné** sur le sous-type que
@@ -343,7 +383,7 @@ Export CSV du costum (`exportElements` + `toCsv`), filtre par statut de validati
   "search": {                                    // ciblage des CANDIDATES (optionnel)
     "openData": "optOut",                        // "optIn" (défaut code) | "optOut" | "off"
     "defaultFilters": {                          // vivier commun à toutes les collections
-      "source.keys": "sportSanteBienetre",
+      "source.keys": "sportSanteBienetre",      // rattaché à ce costum (voir ⚠ ci-dessous)
       "address.postalCode": { "$in": ["97430", "97418"] } },
     "defaultFiltersByType": { "events": { "…": "…" } } },   // ciblage PAR collection
   "moderateReferenced": false }   // opt-in : les référencés arrivent "à modérer"
@@ -361,6 +401,17 @@ trois couches, dont deux seulement sont configurables :
 | Politique **open-data** (`search.openData`) | oui, au niveau section | `optIn` = fidèle legacy (`preferences.isOpenData: true`) · `optOut` = tout sauf refus EXPLICITE (`{ $nin: [false, "false"] }`) · `off` = aucun filtre open-data |
 | Ciblage du vivier | oui | `search.defaultFilters` (commun à toutes les collections) ⊕ `search.defaultFiltersByType.<collection>` fusionné **par-dessus** le commun |
 | Garde-fous du déjà rattaché/référencé | **non** | `$nin` sur `reference.costum` et `source.keys` (le costum courant), fusionnés **même-clé** par-dessus la config : un ciblage `source.keys` devient `$in` et s'unionne au `$nin` de garde |
+
+⚠ **Cibler la provenance : `source.keys` exige un backend récent.** `source.keys` est le tableau de
+TOUS les costums auxquels l'élément est rattaché ; `source.key` est sa source principale (colonne
+« Provenance »). Un ciblage `source.keys` est fusionné avec la garde `$nin` sur la même clé →
+`{ $in, $nin }`. Avant le correctif `7b19f871` de `citizenToolKit` (sur `master`), `SearchNew::searchFilters`
+n'appliquait **qu'un opérateur par clé** : `$nin` gagnait, le `$in` était perdu **en silence** et tout
+le vivier remontait (autres provenances, provenance vide — constaté sur Ekilib.re le 21/09/2026 :
+transiter / cocityPrez / LaReunionDesTiersLieux dans le vivier `sportSanteBienetre`). Depuis ce
+correctif (sondé actif en dev et en prod le 24/09), `source.keys` filtre correctement — c'est le
+ciblage retenu par Ekilib.re. Sur un backend **sans** ce correctif, cibler `source.key` (scalaire, clé
+distincte de la garde) : il marche partout, mais ne retient que la provenance **principale**.
 
 ⚠ Le `.default("optIn")` du schéma **ne tourne jamais** (la config n'est pas parsée par Zod au
 runtime) : sans clé `openData` écrite explicitement, c'est le repli **code** `search?.openData ?? "optIn"`
@@ -392,6 +443,86 @@ d'élément : le Node durci refuserait). Échec visible (toast `referencedUnmode
 `{ "type": "moderation" }` — file des news + commentaires signalés (`getModerationQueue`),
 votes « Laisser publié / C'est un abus » (consolidate + saveModerate byte-compatibles, seuil
 legacy 3 votes majoritaires), modale de détail des signalements.
+
+### `answerCopy` — reprise de réponses d'un autre form
+
+```jsonc
+{ "type": "answerCopy",
+  "title": { "fr": "Créneaux du Tampon déposés sur Sport Santé Bien-être" },
+  "sourceForm": "6928096adf5caf0d230e7f26",        // form SOURCE (autre site) — ses réponses sont les candidates
+  "targetForm": "6a85af345d898a57cb49f029",        // form CIBLE (ce site) — DUPLICATA du source
+  "source": {                                       // requête des candidates, même forme que resource.source
+    "defaultFilters": { "answers.<section>.<sectionAdresse>.address.postalCode": { "$in": ["97430", "97418"] } },
+    "defaultSortBy": { "created": -1 }, "indexStepList": 30,
+    "searchBy": ["answers.<section>.<sectionIntitulé>"] },
+  "columns": ["name", "structure.name", "address.postalCode", "created"],   // lignes APLATIES (hook costum)
+  "duplicateKeys": ["name", "structure.name", "address.postalCode"],       // empreinte d'un « doublon probable » (défaut)
+  "preview": { "type": "coform-answer" } }                                 // détail au clic (opt-in, LECTURE SEULE : editButton refusé)
+```
+
+Un tableau des réponses du form **source**, un bouton **« Copier »** par ligne : la copie est faite
+**côté serveur** par l'action `copy` de `survey/answer/newanswer/form/<cible>` (`Coform::copyAnswer`,
+legacy) — renommage du préfixe de section (le form cible est un duplicata : **mêmes ids d'inputs**),
+`context`/`cterSlug`/`source` du site cible, provenance conservée (`user`, `links`, `created`),
+trace **`copiedFrom`** + `copiedAt`. Idempotente : une source déjà copiée renvoie la copie existante
+(`alreadyCopied`), jamais un doublon. Les inputs que le form cible ne déclare pas sont copiés quand
+même et remontés (`unknownInputs` → toast d'avertissement). Les fichiers uploadés ne sont **pas**
+dupliqués ; un brouillon source n'est pas copiable. **Autorisation en deux temps** (serveur) :
+*qui* — super admin ou admin de l'élément porteur du form cible, lu dans **ses liens**
+(`Coform::canCopyIntoForm` ; jamais le raccourci « admin du costum ambiant », qu'un admin d'un
+autre costum obtiendrait en postant son `costumSlug`) ; *quoi* — le form cible **déclare ses
+sources admises** dans `params.copySources` (ids de forms ; liste vide = aucune copie). Sans cette
+liste blanche, une copie lirait et dupliquerait n'importe quelle réponse de la base par son id.
+
+Le front ne passe par **aucun nouvel endpoint** : `api.endpointApi.generateAnswerFromForm({ action: "copy",
+copyFrom, costumSlug })` — le contrat `GENERATE_ANSWER_FROM_FORM` tolère les clés supplémentaires
+(fiche d'extension dans [`ENDPOINT.md`](../../ENDPOINT.md)). `hooks/useCopyAnswer.ts`.
+
+**Trois états par ligne** (`lib/answerCopy.ts`, pur, testé) — calculés à partir de l'index du form
+cible chargé **en entier** (`useSearchAllResults`, plafond 2 000 ; « Copier » reste désactivé tant
+qu'il n'est pas complet, sinon une copie faite passerait pour « À copier ») :
+
+| État | Règle | Action |
+|---|---|---|
+| **Copié** | une réponse cible porte `copiedFrom` = id de la ligne | ligne **masquée** (le nombre de masquées est affiché) |
+| **Doublon probable** | une réponse cible (tracée ou non) partage l'empreinte `duplicateKeys` (valeurs trimées, casse et espaces repliés) — copie faite par un autre canal, saisie directe, ou **second dépôt homonyme** côté source | « Copier » → confirmation |
+| **À copier** | ni l'un ni l'autre | « Copier » |
+
+Les lignes chargées sont **ordonnées par état** (« À copier » avant « Doublon probable » —
+`rankByCopyStatus`, tri stable : l'ordre serveur reste celui de chaque groupe) et les « Copié »
+sont **masquées côté client** (la trace vit sur le form cible, le serveur ne peut pas les exclure) :
+la sentinelle du scroll infini est une ligne dédiée, rendue dès qu'une page suit — une page
+entièrement copiée ne bloque pas le chargement de la suivante. Les candidates ne sont pas
+chargées tant que l'index cible n'est pas prêt (sans lui, on ne sait pas quoi masquer). La trace
+est testée AVANT l'empreinte : la propre source d'une copie reste « Copié ». L'index est
+relu à chaque montage de l'onglet (`cache: { staleTime: 0 }`) — une copie supprimée par un autre
+canal cesse de compter — et « Copier » reste désactivé pendant tout fetch (première page, refetch
+après une copie) ou en erreur. Après copie : la ligne passe « Copié » localement, puis invalidation
+de toutes les tables `admin-*` (l'index compris) et des surfaces publiques (`publicSurfaceKeys`) —
+la copie hérite du statut de la source et peut être « Validé » d'emblée. Limite connue : deux POST
+strictement concurrents pour la même source (double clic au-delà du `isPending`, retry réseau)
+peuvent créer deux copies — l'idempotence est un `findOne` puis `insert`, sans index unique.
+
+**`preview`** (opt-in, 08/10) : **détail d'une candidate au clic** sur sa ligne, plus un bouton
+« Aperçu » (icône, libellé accessible) par ligne pour le clavier — même coque `dialog` et même contenu
+que `resource.preview` et les listes publiques (`SwitchDetailsMode` → `Preview`, ex. `coform-answer`).
+L'admin **vérifie** la réponse avant de la copier. **Lecture seule** : la réponse appartient au form
+source d'un **autre site** — « Modifier » écrirait dans **sa** réponse. `editButton: true` est donc
+**refusé par le schéma** (`config:validate`) **et neutralisé au rendu** (la section passe
+`editButton: false` : la config n'est jamais parsée par Zod au runtime, et le bloc `preview` de
+l'onglet Modération a exactement la même forme — un copier-coller suffirait). « Copier » ne
+déclenche pas le détail (cellule d'action, `stopRowClick`), pas plus que la fin d'une sélection de
+texte ; fermer le détail ne recharge rien.
+
+Prérequis backend, côté costum du site cible : le hook `searchAnswers` doit **aplatir la section de la
+réponse** (résolution par suffixe d'input, **bornée aux forms de `params.copySources`** — sans borne un
+admin lirait n'importe quel form de la base) et projeter `copiedFrom` — sinon les lignes du form source
+n'ont ni colonnes ni état (`AssociationEkilibre::searchAnswers` le fait ; `SportSanteBienetre` non).
+Un filtre `defaultFilters` peut être un `$or` (map chemin → opérateur, cf. `SearchNew::searchFilters`) :
+Ekilib.re l'utilise pour attraper le CP dans l'adresse principale **ou** dans les lignes « lieu de pratique ».
+`notSourceKey: true` est posé d'office sur la requête des candidates (elles appartiennent à un autre
+site) ; la garde « non-admin → Validé » du hook exclut les réponses étrangères du public.
+(`src/modules/admin/sections/AdminAnswerCopySection.tsx`, `lib/answerCopy.ts`, `hooks/useCopyAnswer.ts`)
 
 ### `invitation` (générique, pré-enregistrée par le module)
 
@@ -439,10 +570,14 @@ même mécanique que les sections profil costum. Un `type` builtin ne peut PAS �
 
 ## Validation de la config
 
-`AdminSectionSchema` = `z.discriminatedUnion` sur les 7 types builtin + fallback custom qui
+`AdminSectionSchema` = `z.discriminatedUnion` sur les 8 types builtin + fallback custom qui
 **refuse** les types builtin : une section builtin fautive (`"rowActions": ["edite"]`) échoue à
 `npm run config:validate` avec l'erreur précise du bon schéma — elle ne retombe plus
-silencieusement dans la section custom. Champs stricts notables : `import.entityTypes` (enum),
+silencieusement dans la section custom. Deux mécanismes la rendent lisible : le refus du fallback
+est **bloquant** (`abort`), donc l'échec d'un simple refine builtin (`editButton` d'`answerCopy`,
+`createDefaults` + `create.coform`, `sourceForm` = `targetForm`) remonte tel quel ; et
+`config:validate` **déplie** les unions restées opaques (`scripts/lib/zod-issues.ts` : la branche
+allée le plus loin), au lieu d'un simple « Invalid input ». Champs stricts notables : `import.entityTypes` (enum),
 `members.actions` (enum), `rowActions`/`bulkActions` (enums).
 
 ## i18n, mobile, dark mode

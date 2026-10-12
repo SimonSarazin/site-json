@@ -2,11 +2,11 @@ import { useNavigate, useLocation } from "react-router";
 import { ArrowLeft, Calendar, Clock, User } from "lucide-react";
 import "../i18n";
 import { useT } from "@/hooks/useT";
-import { Badge } from "@/components/ui/badge";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { renderMarkdown } from "@/helpers/renderMarkdown";
+import { ArticleBody } from "./ArticleBody";
 import { ArticleGallery } from "./ArticleGallery";
 import { ArticleDocuments } from "./ArticleDocuments";
+import { ArticleTaxonomy } from "./ArticleTaxonomy";
 import { estimateReadingTime } from "../lib/readingTime";
 import type { ArticleData } from "../hooks/useArticle";
 import type { ArticleReaderProps } from "../variants/readers";
@@ -32,8 +32,6 @@ export function ArticleReaderPoster({ article, backTo = "/blog", hideBack = fals
   const author = authorName(article);
   const minutes = estimateReadingTime(article.description);
   const chapo = typeof article.shortDescription === "string" ? article.shortDescription.trim() : "";
-  const tags = Array.isArray(article.tags) ? article.tags : [];
-  const bodyHtml = typeof article.description === "string" ? renderMarkdown(article.description, { markdownEnabled: true }) : "";
 
   return (
     <article className="mx-auto w-full max-w-3xl px-4 py-8">
@@ -59,20 +57,10 @@ export function ArticleReaderPoster({ article, backTo = "/blog", hideBack = fals
             className="relative h-auto max-h-[85vh] w-auto max-w-full object-contain" />
         </figure>
       )}
-      {bodyHtml && (
-        <div
-          className="prose prose-lg max-w-none dark:prose-invert prose-img:rounded-lg prose-a:text-primary"
-          // renderMarkdown sanitize déjà (DOMPurify) → sûr
-          dangerouslySetInnerHTML={{ __html: bodyHtml }}
-        />
-      )}
+      <ArticleBody text={article.description} />
       <ArticleGallery images={(article as { images?: unknown }).images} className="mt-10" />
       <ArticleDocuments files={(article as { files?: unknown }).files} className="mt-10" />
-      {tags.length > 0 && (
-        <div className="mt-8 flex flex-wrap gap-2 border-t pt-6">
-          {tags.map((tag) => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-        </div>
-      )}
+      <ArticleTaxonomy article={article} />
     </article>
   );
 }
