@@ -3119,6 +3119,35 @@
             "costumSlug": "navigatorDesTierslieux",
             "contextId": "649ed498f93ee7202e6c8b12",
             "contextType": "projects",
+            "priceFilters": false,
+            "thematicFilter": {
+              "label": {
+                "fr": "Thématique du lieu",
+                "en": "Place theme"
+              },
+              "thematicPath": "lesCommunsDesTierslieux17102023_108_0.multiCheckboxPluslesCommunsDesTierslieux17102023_108_0lntzgckrxocls9xuwxo",
+              "finderPath": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl"
+            },
+            "capacityFilter": true,
+            "regionFilter": {
+              "label": {
+                "fr": "Géographique",
+                "en": "Location"
+              },
+              "countryCode": [
+                "FR",
+                "BE",
+                "CH",
+                "GP",
+                "GF",
+                "MQ",
+                "YT",
+                "RE"
+              ],
+              "level": [
+                "3"
+              ]
+            },
             "finderSuffix": "miem3epsztzcm9dgim",
             "fieldSuffixes": {
               "equipments": "mieg8j24m89gm99t5mi",

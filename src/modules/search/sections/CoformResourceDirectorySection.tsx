@@ -34,6 +34,14 @@ import {
   parseResourceDirectoryItem,
   resolveAnswerParent,
 } from "../lib/resourceDirectory";
+import {
+  CAPACITY_FILTER_RANGES,
+  matchesCapacity,
+  matchesZones,
+  parentIdsFilter,
+  resourceCapacity,
+  selectedZones,
+} from "../lib/resourceDirectoryFilters";
 
 const RD_LIST_PREFIX = "resource-directory-list";
 // L'éclatement « 1 salle = 1 réponse » de `getRessourceTL` fait qu'une page de N
@@ -47,7 +55,10 @@ const RD_PAGE_SIZE = 500;
  * porteur résolu + adresse/geo/image + garde région + `documents` + **éclatement
  * 1 salle = 1 réponse**, CÔTÉ SERVEUR. Facette **« type »** CÔTÉ CLIENT ;
  * **3 facettes prix** CÔTÉ SERVEUR (heure / demi-journée / journée, calquées sur
- * Communecter). Pas de recherche texte.
+ * Communecter — `priceFilters`, défaut true). En option : **réseaux thématiques**
+ * du lieu porteur (`thematicFilter`, CÔTÉ SERVEUR via `parentId`), **capacité**
+ * (`capacityFilter`) et **zone** du lieu porteur (`regionFilter`), CÔTÉ CLIENT.
+ * Pas de recherche texte.
  */
 export default function CoformResourceDirectorySection({
   id,
@@ -75,6 +86,10 @@ export default function CoformResourceDirectorySection({
     bg,
     limit,
     showFilters = true,
+    priceFilters = true,
+    capacityFilter = false,
+    regionFilter,
+    thematicFilter,
   } = props;
 
   const addressLevel1 = scope?.addressLevel1;
@@ -102,11 +117,13 @@ export default function CoformResourceDirectorySection({
     [fixedFilters, costumSlug, contextId, contextType, limit],
   );
 
+  // `order` : Type, Thématique, Capacité, Zone, puis les prix — les groupes « par réponses »
+  // (`filtersByPath`) se rangent avec les autres sur cette même clé.
   const filtersProps = useMemo<FiltersSectionProps>(
     () => ({
       title: filtersTitle,
       hideSearch: true,
-      defaultOpenGroups: ["resourceType", "priceHourly"],
+      defaultOpenGroups: ["resourceType", priceFilters ? "priceHourly" : "capacity"],
       filterGroups: [
         {
           // Groupe SANS `field` : sélection dans `selectedFilters.resourceType`
@@ -116,31 +133,79 @@ export default function CoformResourceDirectorySection({
           type: "filters",
           optionStyle: "check",
           keepOptionOrder: true,
+          order: 0,
           options: resourceTypes.map((rt) => ({ id: rt.id, label: rt.label, name: rt.id })),
         },
+        ...(capacityFilter
+          ? [
+              {
+                // Sans `field` : `selectedFilters.capacity` = ids de tranche → filtre CÔTÉ CLIENT.
+                id: "capacity",
+                label: { fr: "Capacité d'accueil", en: "Capacity" },
+                type: "filters" as const,
+                optionStyle: "check" as const,
+                keepOptionOrder: true,
+                order: 2,
+                options: CAPACITY_FILTER_RANGES.map((r) => ({ id: r.id, name: r.id, label: r.label })),
+              },
+            ]
+          : []),
+        ...(regionFilter
+          ? [
+              {
+                // Zones chargées par `FiltersSection` ; la sélection (`searchByFields`, type `scopeList`)
+                // n'est PAS envoyée au backend (la réponse n'a pas d'adresse) : filtre CÔTÉ CLIENT.
+                id: "region",
+                label: regionFilter.label,
+                type: "scopeList" as const,
+                config: { countryCode: regionFilter.countryCode, level: regionFilter.level, sortBy: "name" },
+                optionStyle: "check" as const,
+                order: 3,
+              },
+            ]
+          : []),
         // 3 groupes prix (heure / demi-journée / journée), calqués sur Communecter.
         // Groupe AVEC `field` : sélection → `searchByFields` → `{ <field>: { $in: [tranches] } }`
         // → filtre CÔTÉ SERVEUR (le backend teste chaque champ indépendamment → ET).
         // `searchByFields` est keyé par `option.name` : il DOIT être unique entre les
         // 3 groupes (les tranches `50-100` / `100-200` reviennent) → `name` préfixé du
         // `field`, `variants` porte la vraie valeur `"min-max"` envoyée au backend.
-        ...PRICE_FILTER_GROUPS.map((g) => ({
-          id: g.field,
-          label: g.label,
-          type: "filters" as const,
-          field: g.field,
-          optionStyle: "check" as const,
-          keepOptionOrder: true, // tranches croissantes, pas de tri par libellé
-          options: g.ranges.map((r) => ({
-            id: `${g.field}:${r.id}`,
-            name: `${g.field}:${r.id}`,
-            variants: [r.id],
-            label: r.label,
-          })),
-        })),
+        ...(priceFilters
+          ? PRICE_FILTER_GROUPS.map((g, i) => ({
+              id: g.field,
+              label: g.label,
+              type: "filters" as const,
+              field: g.field,
+              optionStyle: "check" as const,
+              keepOptionOrder: true, // tranches croissantes, pas de tri par libellé
+              order: 4 + i,
+              options: g.ranges.map((r) => ({
+                id: `${g.field}:${r.id}`,
+                name: `${g.field}:${r.id}`,
+                variants: [r.id],
+                label: r.label,
+              })),
+            }))
+          : []),
       ],
+      // Réseaux thématiques : la sélection donne `filters._id.$in` = lieux membres, renvoyé au
+      // backend en `parentId` par la liste (cf. `parentIdsFilter`).
+      ...(thematicFilter
+        ? {
+            filtersByPath: {
+              thematic: {
+                label: thematicFilter.label,
+                thematicPath: thematicFilter.thematicPath,
+                finderPath: thematicFilter.finderPath,
+                notSourceKey: true,
+                optionStyle: "check" as const,
+                order: 1,
+              },
+            },
+          }
+        : {}),
     }),
-    [resourceTypes, filtersTitle],
+    [resourceTypes, filtersTitle, priceFilters, capacityFilter, regionFilter, thematicFilter],
   );
 
   const listConf = useMemo<ListConf>(
@@ -187,7 +252,7 @@ export default function CoformResourceDirectorySection({
 
         <PageFiltersProvider>
           <div className={cn("grid grid-cols-1 gap-6", showFilters && "lg:grid-cols-4 lg:items-start")}>
-            {showFilters && <aside className="lg:col-span-1"><FiltersSection props={filtersProps} /></aside>}
+            {showFilters && <aside className="lg:col-span-1"><FiltersSection id={id ? `${id}-filters` : undefined} props={filtersProps} /></aside>}
             <div className={showFilters ? "lg:col-span-3" : undefined}>
               <ResourceDirectoryList
                 baseParams={baseParams}
@@ -242,18 +307,18 @@ function ResourceDirectoryList({
   // depuis les cartes via `ResourceDirectoryActionsProvider`.
   const [activeParent, setActiveParent] = useState<ActiveResourceParent | null>(null);
 
-  // Facette « prix » (`field`) → `searchByFields` → filtres SERVEUR.
+  // Facettes prix (`field`) → `searchByFields` → filtres SERVEUR. Réseaux thématiques : `_id` (lieux
+  // membres) n'existe pas sur une réponse → renvoyé en `parentId`, croisé avec le lieu cliqué.
   const { filters } = useMemo(
     () => searchByFieldsToQuery(pf.searchByFields ?? {}),
     [pf.searchByFields],
   );
-  const serverFilters = useMemo(
-    () => ({
-      ...filters,
-      ...(showFilters && activeParent ? { parentId: { $in: [activeParent.id] } } : {}),
-    }),
-    [filters, activeParent, showFilters],
-  );
+  const serverFilters = useMemo(() => {
+    const { _id: thematic, ...rest } = filters;
+    const thematicIds = Array.isArray(thematic?.$in) ? (thematic.$in as string[]) : null;
+    const parentIds = parentIdsFilter(thematicIds, showFilters && activeParent ? activeParent.id : null);
+    return { ...rest, ...(parentIds ? { parentId: { $in: parentIds } } : {}) };
+  }, [filters, activeParent, showFilters]);
   const mergedBaseParams = useMemo(
     () => canonicalSearchProStaticBaseParams(baseParams, serverFilters, {}),
     [baseParams, serverFilters],
@@ -306,24 +371,33 @@ function ResourceDirectoryList({
     [transformedResults, parseOpts],
   );
 
-  // Facette « type » (client) : `selectedFilters.resourceType` = ids de type.
+  // Lieux porteurs de TOUTES les ressources chargées (et pas des seules affichées) : le filtre de zone
+  // en a besoin pour décider de ce qui s'affiche.
+  const parentIdOf = useMemo(
+    () => new Map(items.map((it) => [it.id, resolveAnswerParent(it.serverData, resourceTypes, finderSuffix)?.id])),
+    [items, resourceTypes, finderSuffix],
+  );
+  const parentIds = useMemo(
+    () => [...parentIdOf.values()].filter((v): v is string => !!v),
+    [parentIdOf],
+  );
+  const { parents, isLoading: parentsLoading } = useResourceParentsQuery(parentIds, { costumSlug, contextId, contextType });
+
+  // Facettes CLIENT : type (`selectedFilters.resourceType`), capacité (`selectedFilters.capacity`),
+  // zone du lieu porteur (`searchByFields`, type `scopeList`).
   const selectedFilters = pf.selectedFilters;
+  const zones = useMemo(() => selectedZones(pf.searchByFields), [pf.searchByFields]);
   const visible = useMemo(() => {
     const typeSel = selectedFilters?.resourceType ?? [];
-    const filtered = typeSel.length === 0
-      ? items
-      : items.filter((it) => it.model.type && typeSel.includes(it.model.type.id));
+    const capacitySel = selectedFilters?.capacity ?? [];
+    const filtered = items.filter((it) => {
+      if (typeSel.length > 0 && !(it.model.type && typeSel.includes(it.model.type.id))) return false;
+      if (!matchesCapacity(resourceCapacity(it.model.stats[0]), capacitySel)) return false;
+      const parentId = parentIdOf.get(it.id);
+      return matchesZones(parentId ? parents.get(parentId)?.zones : undefined, zones);
+    });
     return limit === undefined ? filtered : filtered.slice(0, limit);
-  }, [items, selectedFilters, limit]);
-
-  const parentIds = useMemo(
-    () =>
-      visible
-        .map((it) => resolveAnswerParent(it.serverData, resourceTypes, finderSuffix)?.id)
-        .filter((v): v is string => !!v),
-    [visible, resourceTypes, finderSuffix],
-  );
-  const { parents } = useResourceParentsQuery(parentIds, { costumSlug, contextId, contextType });
+  }, [items, selectedFilters, zones, parentIdOf, parents, limit]);
 
   return (
     <ResourceDirectoryActionsProvider value={showFilters ? { activeParent, setActiveParent } : null}>
@@ -351,7 +425,9 @@ function ResourceDirectoryList({
         <div className="rounded border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
           {t("Aucun résultat trouvé.")}
         </div>
-      ) : isPending ? (
+      ) : isPending || (zones.length > 0 && parentsLoading) ? (
+        // Zone cochée : tant que les lieux porteurs ne sont pas lus, aucune ressource ne passe le filtre —
+        // squelette plutôt qu'un « Aucun résultat » faux.
         <SearchListSkeleton />
       ) : visible.length === 0 ? (
         <div className="py-8 text-center text-sm text-muted-foreground">

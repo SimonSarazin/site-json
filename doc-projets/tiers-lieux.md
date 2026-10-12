@@ -584,6 +584,19 @@ redirection, refresh non bloquant) · intégration SSR parent62 98/98, tiers-lie
 aussi sur `main`). Parcours réel (compte invité qui accepte) non rejoué en local.
 
 
+### 12/10 — annuaire des ressources : filtres Thématique, Capacité, Géographique
+
+**Fait** (`/annuaire-ressources`) : plus de filtre Tarif ; filtres, dans l'ordre : Type de ressource,
+**Thématique du lieu** (réseaux thématiques du lieu porteur, mêmes réponses que le filtre de `/lieux`),
+**Capacité d'accueil** (1 à 10, 10 à 30, 30 à 50, plus de 50), **Géographique** (régions, mêmes zones
+que `/lieux`). Moteur : options `priceFilters` (défaut true), `thematicFilter`, `capacityFilter`
+(défaut false), `regionFilter` de `coform-resource-directory` — autres sites inchangés. Capacité :
+personnes pour une salle, postes pour le coworking, chambres pour l'hébergement.
+
+**Vérifié** au navigateur (backend local) : 25 ressources ; « 10 à 30 » → 17, « plus de 50 » → 3,
+« Cafés cantines solidaires » → 3, « Hauts-de-France » → 18 ; décocher rend les 25. Rendu clair,
+sombre, mobile. Tests de `lib/resourceDirectoryFilters.ts`.
+
 ### 09/10bis — bannière et photo de profil : envoyées à leur taille ; photo de profil entière
 
 **Fait (moteur, tous les sites)** :

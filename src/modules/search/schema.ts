@@ -1438,8 +1438,36 @@ export const CoformResourceDirectorySectionSchema = z.object({
     showFilters: z.boolean().optional(),
     /** Titre de la colonne de filtres (défaut i18n « Filtres »). */
     filtersTitle: LocalizedString.optional(),
-    /* Les facettes prix sont figées (3 groupes heure / demi-journée / journée,
-       calqués sur Communecter — cf. `PRICE_FILTER_GROUPS`), pas de prop. */
+    /**
+     * Facettes prix (3 groupes heure / demi-journée / journée, calqués sur Communecter — cf.
+     * `PRICE_FILTER_GROUPS`), filtrées par le backend. Défaut : true.
+     */
+    priceFilters: z.boolean().optional(),
+    /**
+     * Facette « Capacité d'accueil » (tranches 1-10 / 10-30 / 30-50 / 50+, cf. `CAPACITY_FILTER_RANGES`),
+     * sur la capacité de la pastille : personnes (salle), postes (coworking), chambres (hébergement).
+     * Filtre CÔTÉ NAVIGATEUR. Défaut : false.
+     */
+    capacityFilter: z.boolean().optional(),
+    /**
+     * Facette géographique : zones d'un niveau (`scopeList`, ex. `level: ["3"]` = régions), comparées à
+     * l'adresse du LIEU PORTEUR (la réponse n'en a pas). Filtre CÔTÉ NAVIGATEUR. Absente : pas de facette.
+     */
+    regionFilter: z.object({
+      label: LocalizedString,
+      countryCode: z.array(z.string()),
+      level: z.array(z.string()),
+    }).optional(),
+    /**
+     * Facette « réseaux thématiques » du lieu porteur — même réglage que `filtersByPath` de la section
+     * `filters` (réponses CoForm qui rattachent un lieu à des thématiques). Les lieux membres des réseaux
+     * cochés partent au backend en `filters.parentId`. Absente : pas de facette.
+     */
+    thematicFilter: z.object({
+      label: LocalizedString,
+      thematicPath: z.string(),
+      finderPath: z.string(),
+    }).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
   }),
 });

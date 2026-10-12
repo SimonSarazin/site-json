@@ -90,6 +90,12 @@ export function useResourceParentsQuery(ids: string[], opts: UseResourceParentsO
           postalCode: str(addr?.postalCode),
           addressLocality: str(addr?.addressLocality),
           level1: str(addr?.level1),
+          zones: Object.fromEntries(
+            ["level1", "level2", "level3", "level4"].flatMap((lvl) => {
+              const zone = str(addr?.[lvl]);
+              return zone ? [[lvl, zone]] : [];
+            }),
+          ),
           coords: coordsOf(sd),
         });
       }

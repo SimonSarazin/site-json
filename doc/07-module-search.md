@@ -581,6 +581,10 @@ jointure sur le lieu porteur + garde région + éclatement, pour quoi
 | `customHeader` | `{ title?, linkText?, linkHref? }` | En-tête : titre à gauche et bouton de lien vers la page complète à droite |
 | `limit` | entier ≥ 1 | Nombre maximal de cartes affichées ; borne aussi la requête initiale et désactive le scroll infini. La limite s'applique après l'éclatement des salles |
 | `showFilters` | boolean (défaut `true`) | `false` masque les facettes type/prix et désactive le filtre par lieu porteur piloté depuis les cartes |
+| `priceFilters` | boolean (défaut `true`) | `false` retire les 3 groupes prix |
+| `thematicFilter` | `{ label, thematicPath, finderPath }` | Facette « réseaux thématiques » du lieu porteur (même réglage que `filtersByPath` de la section `filters`). Absente : pas de facette |
+| `capacityFilter` | boolean (défaut `false`) | Facette « Capacité d'accueil » (`1-10` / `10-30` / `30-50` / `50-`) |
+| `regionFilter` | `{ label, countryCode, level }` | Facette de zone (`scopeList`, ex. `level: ["3"]` = régions) sur l'adresse du lieu porteur. Absente : pas de facette |
 
 Le filtre Mongo FIXE (`buildResourceDirectoryFilters`) émet `form.$in` + un `$or`
 en **forme MAP** (`{ "answers.<step>.finder…": { "$exists": true }, … }`) — **pas
@@ -596,7 +600,23 @@ tient l'état `activeParent` et le distribue aux cartes via
 `ResourceDirectoryActionsProvider` ; une puce « Ressources portées par {nom} ✕ »
 au-dessus de la grille le retire. La facette « type » (client) s'applique par-dessus.
 
-**Quatre facettes** (`hideSearch: true` — pas de recherche texte). Un annuaire de
+**Facettes optionnelles** (ordre d'affichage : type, thématique, capacité, zone, prix) :
+- **`thematicFilter`** — `filtersByPath` du panneau : chaque réseau thématique porte la liste de ses
+  lieux membres ; la sélection (`filters._id.$in`) n'a pas de sens sur une réponse, la section la
+  renvoie en **`filters.parentId`** → filtre **CÔTÉ SERVEUR** ; croisée avec le lieu cliqué sur une
+  carte (`parentIdsFilter` : un lieu hors des réseaux cochés → aucun résultat) ;
+- **`capacityFilter`** — **CÔTÉ CLIENT**, sur la statistique de la pastille (`model.stats[0]`) :
+  fourchette de personnes (salle), postes (coworking), chambres (hébergement, pas de nombre de
+  personnes saisi) ; gardée si elle recoupe une tranche cochée, bornes incluses ; capacité inconnue
+  exclue dès qu'une tranche est cochée ;
+- **`regionFilter`** — groupe `scopeList` (zones chargées par `FiltersSection`) ; la sélection
+  (`locality`) n'est PAS envoyée (une réponse n'a pas d'adresse) : filtre **CÔTÉ CLIENT** sur
+  `address.level*` du lieu porteur. Les lieux porteurs sont donc lus pour TOUTES les ressources
+  chargées, pas seulement celles affichées.
+
+Logique pure dans `lib/resourceDirectoryFilters.ts`.
+
+**Quatre facettes par défaut** (`hideSearch: true` — pas de recherche texte). Un annuaire de
 ressources est BORNÉ : la section charge l'ensemble (`indexStepList: 500`,
 `defaultFields` inclut **`"form"`** — indispensable à l'éclatement serveur et au
 routage du filtre prix), parse chaque résultat (`parseResourceDirectoryItem`),
