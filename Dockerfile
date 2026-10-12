@@ -94,8 +94,7 @@ RUN echo '{"type":"module"}' > package.json && \
 # dépendances.
 ENV NODE_ENV=production
 
-# Volume pour le cache d'images optimisées (persiste entre les redémarrages)
-VOLUME /app/.cache/images
+# Cache d'images optimisées : /app/.cache/images (sur Railway, monter un volume Railway à ce chemin)
 
 EXPOSE 80
 CMD ["node", "server/prod-server.js"]
