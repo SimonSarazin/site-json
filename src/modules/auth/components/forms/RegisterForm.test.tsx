@@ -129,7 +129,12 @@ describe("RegisterForm — champs supplémentaires de la config", () => {
 
   it("un refus serveur (champ hors règle costum) est affiché tel quel", async () => {
     registerConfig = { fields: FIELDS };
-    register.mockResolvedValue({ result: false, msg: "Contenu Invalide typepro : Person" });
+    // Contrat RÉEL de la lib : UserApi.register LÈVE ApiResponseError(msg) dès que result===false — elle ne
+    // renvoie jamais {result:false}. On reproduit cette forme (la classe n'est pas exportée à la racine).
+    const refus = Object.assign(new Error("Contenu Invalide typepro : Person"), {
+      name: "ApiResponseError", status: 200, data: { result: false, msg: "Contenu Invalide typepro : Person" },
+    });
+    register.mockRejectedValue(refus);
     const user = userEvent.setup();
     monter();
     await remplirStandard(user);

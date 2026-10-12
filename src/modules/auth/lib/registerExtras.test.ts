@@ -70,9 +70,9 @@ describe("registerWithExtras", () => {
     expect(register).toHaveBeenCalledWith({ ...base, mode: "single_step_register", fields: { typepro: "Médecins" } });
   });
 
-  it("relaie la réponse brute (result/msg) du serveur", async () => {
-    const register = vi.fn(async () => ({ result: false, msg: "Contenu Invalide foo : Person" }));
-    const res = await registerWithExtras({ register } as unknown as UserApi, { ...base, fields: { foo: "bar" } });
-    expect(res).toEqual({ result: false, msg: "Contenu Invalide foo : Person" });
+  it("propage le refus serveur tel que la lib le lève (ApiResponseError, jamais un {result:false} renvoyé)", async () => {
+    const refus = Object.assign(new Error("Contenu Invalide foo : Person"), { name: "ApiResponseError", status: 200 });
+    const register = vi.fn(async () => { throw refus; });
+    await expect(registerWithExtras({ register } as unknown as UserApi, { ...base, fields: { foo: "bar" } })).rejects.toBe(refus);
   });
 });
