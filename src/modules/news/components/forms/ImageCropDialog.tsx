@@ -61,6 +61,22 @@ export function ImageCropDialog({
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
   const [formatIndex, setFormatIndex] = useState(0);
   const [ratioPhoto, setRatioPhoto] = useState<number | null>(null);
+  // Nouvelle photo ou réouverture : l'appelant peut garder le dialogue monté entre deux photos (après
+  // « Annuler »). Sans remise à zéro, « Original » garderait le ratio de la photo PRÉCÉDENTE jusqu'à
+  // `onMediaLoaded`, et un « Appliquer » précoce découperait sa zone, hors de la nouvelle image.
+  // Remis pendant le rendu (et non dans un effet) : aucun rendu intermédiaire avec l'ancien état.
+  const [photoCourante, setPhotoCourante] = useState({ imageUrl, open });
+  if (photoCourante.imageUrl !== imageUrl || (open && !photoCourante.open)) {
+    setPhotoCourante({ imageUrl, open });
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setRotation(0);
+    setCroppedAreaPixels(null);
+    setFormatIndex(0);
+    setRatioPhoto(null);
+  } else if (photoCourante.open !== open) {
+    setPhotoCourante({ imageUrl, open });
+  }
   const format = aspectOptions?.[formatIndex];
   const ratio = format ? (format.value === "original" ? (ratioPhoto ?? aspect) : format.value) : aspect;
 
@@ -182,7 +198,15 @@ export function ImageCropDialog({
             {t("forms.imageCrop.cancel")}
           </Button>
           {onUseOriginal && (
-            <Button variant="secondary" onClick={onUseOriginal}>
+            // Fermé dès le clic, comme `createCroppedImage` : l'envoi (asynchrone chez l'appelant) ne doit pas
+            // laisser le bouton cliquable une seconde fois.
+            <Button
+              variant="secondary"
+              onClick={() => {
+                onUseOriginal();
+                onOpenChange(false);
+              }}
+            >
               {t("forms.imageCrop.useOriginal")}
             </Button>
           )}
