@@ -438,9 +438,11 @@ export const PreviewConfSchema = z.object({
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
   // table par défaut du composant — découple les IDs de champs du code.
   fields: z.record(z.string(), z.string()).optional(),
-  // Bouton « Modifier » sur le détail `coform-answer` (admins de l'entité du
-  // site) : ouvre l'édition de l'answer en CoFormModal. Opt-in — sans ce flag,
-  // le preview reste strictement lecture seule (aucun changement des sites existants).
+  // Bouton « Modifier » sur le détail `coform-answer`, réservé aux gestionnaires de
+  // la réponse (super-admin, admin du costum, admin validé de la structure citée) et à
+  // son AUTEUR quand la recherche projette `user` (`canEditCoformAnswer`) : ouvre
+  // l'édition de l'answer en CoFormModal. Opt-in — sans ce flag, le preview reste
+  // strictement lecture seule (aucun changement des sites existants).
   editButton: z.boolean().optional(),
   /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
   facets: z.array(PreviewFacetSchema).optional(),
@@ -592,6 +594,10 @@ export const ResourceDirectoryConfSchema = z.object({
     linkSuffix: z.string().optional(),
     descriptionSuffix: z.string().optional(),
     servicesSuffix: z.string().optional(),
+    detailSuffixes: z.object({
+      equipments: z.string(), catering: z.string(), services: z.string(), roomType: z.string(),
+      moreInfo: z.string(), about: z.string(), tip: z.string(),
+    }).partial().optional(),
   })),
   finderSuffix: z.string(),
   fieldSuffixes: z.object({
@@ -1173,6 +1179,10 @@ const AddButtonConfigSchema = z.object({
   // (CoFormModal) au lieu d'une modale d'entité — ex. « Ajouter un créneau »
   // (1 créneau = 1 answer). Prioritaire sur modal/organization/project/poi.
   coform: z.string().optional(),
+  // Message affiché après la création d'une answer (`coform`). À poser sur un formulaire
+  // MODÉRÉ : la réponse déposée n'apparaît pas dans la liste publique, et sans message le
+  // déposant croirait à un échec. Absent = aucun message (comportement historique).
+  successMessage: LocalizedString.optional(),
   // `false` → le bouton s'affiche dès que `show: true`, sans exiger le rôle
   // admin du site (un non-connecté qui clique passe par le login). Cas d'usage :
   // déclaration publique d'answer CoForm modérée en aval (filtre `state`).
@@ -1344,6 +1354,17 @@ const ResourceTypeConfSchema = z.object({
   descriptionSuffix: z.string().optional(),
   /** Suffixe de l'input « Services proposés » (`string[]`), PROPRE au formulaire (hébergement `miq86g5vaw1kavrapkb`). */
   servicesSuffix: z.string().optional(),
+  /**
+   * Champs du DÉTAIL de la ressource, par suffixe d'input — les mêmes que la fiche du lieu
+   * (`profile-about-tl`, `roomPath`/`coworkingPath`/`bedRoomPath`) : listes `equipments`, `catering`,
+   * `services`, `roomType` ; textes `moreInfo` (« Bon à savoir »), `about` (« À propos du lieu »),
+   * `tip` (« Le petit truc en plus »). Fourni, l'aperçu montre CES blocs, sous les libellés de la fiche,
+   * à la place de `fieldSuffixes.equipments`/`descriptionSuffix`/`servicesSuffix`. Absent : rendu historique.
+   */
+  detailSuffixes: z.object({
+    equipments: z.string(), catering: z.string(), services: z.string(), roomType: z.string(),
+    moreInfo: z.string(), about: z.string(), tip: z.string(),
+  }).partial().optional(),
 });
 
 /**

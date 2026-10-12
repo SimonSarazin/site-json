@@ -1,4 +1,5 @@
 import { groupSchedules, type DaySchedule } from "./schedules";
+import { isPlainObj } from "@/lib/costumLists";
 import { resolveAdminAccessLevel } from "@/modules/admin/lib/adminEntry";
 
 /**
@@ -12,24 +13,58 @@ import { resolveAdminAccessLevel } from "@/modules/admin/lib/adminEntry";
 
 export type ActivityStatus = "Valide" | "En attente" | "En cours" | "Refuse";
 
+/**
+ * Statut de modération d'une réponse. Un statut ABSENT (ou inconnu) est « En attente » — la règle du
+ * serveur (`STATUS_DEFAULT`) : une réponse tout juste déposée n'en a pas encore, et elle n'est pas
+ * publiée. Les listes publiques filtrent « Validé » côté serveur, elles ne voient donc jamais ce
+ * repli ; les vues de gestion (onglet profil « Structures », modération) le montrent, et doivent dire
+ * « En attente », pas « Validé ». Les orthographes legacy (« Réfusé », verbatim en base) sont reconnues.
+ */
 export function normalizeStatus(rawStatus: string): ActivityStatus {
-  if (rawStatus === "En attente" || rawStatus === "En cours") return rawStatus;
-  if (rawStatus === "Refuse" || rawStatus === "Réfusé") return "Refuse";
-  return "Valide";
+  switch (rawStatus.trim()) {
+    case "Validé":
+    case "Valide":
+      return "Valide";
+    case "En cours":
+      return "En cours";
+    case "Réfusé":
+    case "Refusé":
+    case "Refuse":
+      return "Refuse";
+    default:
+      return "En attente";
+  }
+}
+
+/** Clé stable d'un statut — suffixe des libellés i18n (`coformAnswer.status.<clé>`) et des compteurs. */
+export type ActivityStatusKey = "validated" | "pending" | "inProgress" | "refused";
+
+const STATUS_KEY: Record<ActivityStatus, ActivityStatusKey> = {
+  Valide: "validated",
+  "En attente": "pending",
+  "En cours": "inProgress",
+  Refuse: "refused",
+};
+
+export function statusKey(status: ActivityStatus): ActivityStatusKey {
+  return STATUS_KEY[status];
 }
 
 /** Classes du badge de statut (tokens custom `bg-badge-*`). */
 export function getStatusStyle(status: ActivityStatus): string {
+  // Chaque fond avec SON encre (`badge-*` = warning/primary/destructive/success, cf. CSS des sites) :
+  // `text-primary-foreground` partout donnait 1,85:1 à « En attente » en thème clair (SSBE). Les
+  // couples ci-dessous tiennent ≥ 4,5:1 dans les deux thèmes, mesurés sur les jetons SSBE.
   switch (status) {
     case "En attente":
-      return "bg-badge-waiting text-primary-foreground";
+      return "bg-badge-waiting text-warning-foreground";
     case "En cours":
       return "bg-badge-in-progress text-primary-foreground";
     case "Refuse":
-      return "bg-badge-refused text-primary-foreground";
+      return "bg-badge-refused text-destructive-foreground";
     case "Valide":
     default:
-      return "bg-badge-valid text-primary-foreground";
+      return "bg-badge-valid text-success-foreground";
   }
 }
 
@@ -79,6 +114,8 @@ export const DEFAULT_COFORM_FIELDS: Record<string, string> = {
   places: "mdmxe3qhkjb9qu74wli",
   schedule: "mdefmehl5baa207uud6",
   installationFinder: "mocno9muqzznoo0gyx",
+  /** Finder « structure » (`multiple`) : cf. `getAnswerCitedStructures`. */
+  structureFinder: "mdn1fzoewyjg66n85p",
 };
 
 export interface CoformStructure {
@@ -182,9 +219,9 @@ export interface AnswerManagerMe {
  *
  * ⚠️ UNE seule structure : le hook costum backend écrase `structure` à chaque tour
  * de sa boucle de jointure (`AssociationEkilibre`/`SportSanteBienetre::searchAnswers`),
- * donc un créneau co-porté n'expose que la DERNIÈRE. Un admin d'une co-structure
- * non retenue n'est pas reconnu — élargir demanderait que le backend renvoie la
- * liste (fiche `ENDPOINT.md`), pas un contournement côté front.
+ * donc un créneau co-porté n'expose ici que la DERNIÈRE. La liste complète est
+ * pourtant renvoyée — le hook aplatit la clé du finder à la racine — : la lire avec
+ * `getAnswerCitedStructures`, comme le fait le droit d'édition (`canEditCoformAnswer`).
  */
 export function getAnswerStructureId(serverData: Record<string, unknown> | undefined): string | null {
   const structure = serverData?.structure as Record<string, unknown> | undefined;
@@ -208,15 +245,14 @@ function isValidatedAdminOf(me: AnswerManagerMe | null | undefined, organization
  * Qui **a la charge** d'une answer (= un créneau) : **super-admin plateforme**,
  * **admin du costum** porteur du site, ou **admin validé de la structure organisatrice**.
  *
- * UN seul prédicat pour DEUX points d'appel, à dessein :
- *  - le bouton « Modifier » du détail (`PreviewCoformAnswer`) — droit d'écriture ;
+ * Il répond à « cette personne gère-t-elle ce créneau ? », et gouverne à ce titre :
  *  - le bouton « Fiche structure » de la carte (`CardAnswer`, opt-in
  *    `card.structureAction.audience`) — la fiche est un outil de GESTION
  *    (affiliation, représentant légal, documents), pas une information utile à qui
- *    compare des créneaux.
- * Les deux répondent à la même question — « cette personne gère-t-elle ce créneau ? ».
- * D'où le nom : `canEdit…` aurait laissé croire qu'il ne gouverne qu'une écriture, et
- * un futur resserrement du droit d'édition aurait resserré l'affichage en silence.
+ *    compare des créneaux ;
+ *  - le bouton « Modifier » du détail, au travers de `canEditCoformAnswer`, qui y
+ *    ajoute l'AUTEUR — avoir déposé un créneau ouvre son édition, pas la fiche de la
+ *    structure. D'où deux prédicats : élargir celui-ci aurait élargi la fiche en silence.
  *
  * ⚠️ Volontairement plus large que le `canEdit` renvoyé par le backend, calculé
  * sur la seule PROPRIÉTÉ de la réponse (`editDeniedReason: "not_owner"`) : un
@@ -238,6 +274,72 @@ export function isCoformAnswerManager(
   if (resolveAdminAccessLevel(actor.me, actor.entity)) return true;
   const structureId = getAnswerStructureId(serverData);
   return structureId ? isValidatedAdminOf(actor.me, structureId) : false;
+}
+
+/** `me` vu par la règle de PROPRIÉTÉ — structurel : le `User` du SDK (`id: string | null`) y est assignable. */
+export interface AnswerOwnerMe {
+  id?: string | null;
+}
+
+/**
+ * Le compte connecté a-t-il DÉPOSÉ cette answer ? `user` est le champ que juge le serveur
+ * (`SaveAnswerAction` : propriétaire OU `Coform::canAdminAnswer`).
+ *
+ * ⚠️ `user` n'est dans `serverData` que si la recherche le PROJETTE (`baseParams.defaultFields:
+ * ["user"]`) : le hook costum `searchAnswers` ne renvoie que answers/created/source/form et les
+ * champs demandés. Non projeté → false : jamais d'édition ouverte à l'aveugle.
+ * ⚠️ PAS `links.answered`, pourtant projeté : sur une réponse partagée il liste plusieurs
+ * contributeurs, que le serveur refuserait à l'enregistrement.
+ */
+export function isCoformAnswerOwner(serverData: Record<string, unknown> | undefined, me: AnswerOwnerMe | null | undefined): boolean {
+  const owner = serverData?.user;
+  return typeof owner === "string" && owner !== "" && owner === me?.id;
+}
+
+/** Une structure citée par le finder « structure » d'une answer. */
+export interface CitedStructure {
+  id: string;
+  name: string;
+}
+
+const OBJECT_ID = /^[0-9a-f]{24}$/;
+
+/**
+ * Structures citées par le finder « structure » d'une answer APLATIE par le hook costum — TOUTES :
+ * le finder est `multiple`, alors que la jointure `structure` ne garde que la dernière. Clé du finder :
+ * `finderKey` si l'appelant la connaît (config), sinon résolue par SUFFIXE (rôle `structureFinder`,
+ * surchargeable par `fields`) comme dans `parseCoformAnswer`. Les clés qui ne sont pas des ids sont
+ * ignorées ; un nom absent vaut "".
+ */
+export function getAnswerCitedStructures(
+  serverData: Record<string, unknown> | undefined,
+  { finderKey, fields: override }: { finderKey?: string } & ParseCoformOptions = {},
+): CitedStructure[] {
+  if (!serverData) return [];
+  const suffix = { ...DEFAULT_COFORM_FIELDS, ...(override ?? {}) }.structureFinder;
+  const key =
+    finderKey ?? (suffix ? Object.keys(serverData).find((k) => k.endsWith(suffix) && isPlainObj(serverData[k])) : undefined);
+  const finder = key ? serverData[key] : undefined;
+  if (!isPlainObj(finder)) return [];
+  return Object.entries(finder)
+    .filter(([id]) => OBJECT_ID.test(id))
+    .map(([id, valeur]) => ({ id, name: isPlainObj(valeur) && typeof valeur.name === "string" ? valeur.name : "" }));
+}
+
+/**
+ * Droit d'ÉCRITURE côté interface (bouton « Modifier » du détail) : gestionnaire, admin validé de
+ * N'IMPORTE QUELLE structure citée, ou auteur — l'union qu'accepte `SaveAnswerAction`
+ * (`Coform::canAdminAnswer` parcourt le finder partagé). Un non-admin du costum n'envoie ni ne voit
+ * les champs `isAdminOnly` (le statut) : le serveur les retire et garde la valeur en base.
+ */
+export function canEditCoformAnswer(
+  serverData: Record<string, unknown> | undefined,
+  actor: { me?: (AnswerManagerMe & AnswerOwnerMe) | null; entity?: { isAdmin?: () => boolean } | null },
+  options: ParseCoformOptions = {},
+): boolean {
+  if (isCoformAnswerManager(serverData, actor)) return true;
+  if (getAnswerCitedStructures(serverData, options).some(({ id }) => isValidatedAdminOf(actor.me, id))) return true;
+  return isCoformAnswerOwner(serverData, actor.me);
 }
 
 /** Parse une réponse CoForm `serverData` en objet typé, consommé par la carte ET le détail. */

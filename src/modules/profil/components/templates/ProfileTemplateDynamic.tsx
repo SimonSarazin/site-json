@@ -14,8 +14,10 @@ const SocialTab = lazy(() => import("../tabs/SocialTab"));
 const MembershipTab = lazy(() => import("../tabs/MembershipTab"));
 import type { MembershipTabProps } from "../tabs/MembershipTab";
 const NewsTab = lazy(() => import("../tabs/NewsTab"));
+const StructuresTab = lazy(() => import("../tabs/StructuresTab"));
 import { useLocalization } from "@/hooks/useLocalization";
-import type { ProfileType } from "../../schema";
+import { StructuresTabPropsSchema } from "../../schema";
+import { isTabVisible } from "../../lib/tabVisibility";
 
 /**
  * Template dynamique de profil avec tabs configurables
@@ -23,10 +25,10 @@ import type { ProfileType } from "../../schema";
  * Ce template remplace ProfileTemplateDefault et utilise la configuration
  * des tabs définie dans le schema JSON au lieu de tabs hardcodés.
  *
- * Les tabs sont filtrés selon:
- * - Le type d'entité (citoyens, organizations, projects, events, poi)
- * - Les permissions de l'utilisateur
- * - Le contexte (own profile vs other profile)
+ * Les tabs sont filtrés selon leur `condition` (cf. `isTabVisible`) :
+ * - le type d'entité (citoyens, organizations, projects, events, poi) ;
+ * - le contexte (son propre profil ou celui d'un autre) et l'authentification, tranchés après
+ *   l'hydratation. `permissions` est déclaré au schéma mais pas encore implémenté.
  */
 export default function ProfileTemplateDynamic() {
   const { entity, config } = useProfileEntity();
@@ -41,49 +43,17 @@ export default function ProfileTemplateDynamic() {
   const currentTab = pathSegments.length > 2 ? pathSegments[2] : (config.tabs?.[0]?.id || 'about');
   const isSubRoute = pathSegments.length > 3; // /profil/:slug/:tab/:subRoute...
 
-  // `hydrated` reste à `false` pendant le SSR et le 1er render client → on rend
-  // alors la liste complète des tabs (identique HTML SSR/client → pas de mismatch).
-  // Une fois l'effet exécuté (post-hydration), `me` est résolu et on peut filtrer
-  // les tabs dépendantes de l'auth.
+  // `hydrated` reste à `false` pendant le SSR et le 1er render client : les conditions qui dépendent
+  // de `me` n'y sont pas tranchées (identique HTML SSR/client → pas de mismatch), cf. `isTabVisible`.
   const hydrated = useHydrated();
 
-  // Filtrer les tabs selon les conditions
+  // Filtrer les tabs selon les conditions (`permissions` : déclaré au schéma, pas encore implémenté).
   const availableTabs = useMemo(() => {
     if (!config.tabs || config.tabs.length === 0) {
       return [];
     }
-
-    return config.tabs.filter(tab => {
-      if (!tab.condition) return true;
-
-      // Vérifier le type d'entité
-      if (tab.condition.entityTypes) {
-        const entityType = entity?.getEntityType?.();
-        if (entityType && !tab.condition.entityTypes.includes(entityType as ProfileType)) {
-          return false;
-        }
-      }
-
-      // Vérifier le contexte utilisateur (own/other)
-      if (tab.condition.userContext) {
-        const isOwnProfile = me?.slug === entity?.slug;
-        if (tab.condition.userContext === "own" && !isOwnProfile) return false;
-        if (tab.condition.userContext === "other" && isOwnProfile) return false;
-      }
-
-      // Vérifier l'authentification (uniquement après hydration côté client pour
-      // éviter le mismatch SSR — `me` est toujours `null` côté serveur).
-      if (tab.condition.auth && hydrated) {
-        const isAuth = !!me?.id;
-        if (tab.condition.auth === "required" && !isAuth) return false;
-        if (tab.condition.auth === "anonymous" && isAuth) return false;
-      }
-
-      // TODO: Implémenter la vérification des permissions
-      // if (tab.condition.permissions) { ... }
-
-      return true;
-    });
+    const contexte = { entityType: entity?.getEntityType?.(), hydrated, me, entitySlug: entity?.slug };
+    return config.tabs.filter((tab) => isTabVisible(tab.condition, contexte));
   }, [config.tabs, entity, me, hydrated]);
 
   // Garde-fou URL directe : si on arrive sur `/profil/x/finance` en anonyme alors
@@ -121,6 +91,16 @@ export default function ProfileTemplateDynamic() {
         return <MembershipTab {...(props as MembershipTabProps | undefined)} />;
       case "NewsTab":
         return <NewsTab />;
+      case "StructuresTab": {
+        // La config n'est jamais parsée par Zod au runtime : on revalide ici (coût nul) plutôt que de
+        // caster — un formulaire mal déclaré ne rend rien au lieu d'interroger le serveur à vide.
+        const parsed = StructuresTabPropsSchema.safeParse(props);
+        if (!parsed.success) {
+          console.warn("StructuresTab : props invalides", parsed.error.issues);
+          return null;
+        }
+        return <StructuresTab {...parsed.data} />;
+      }
       default:
         console.warn(`Unknown tab component: ${componentName}`);
         return null;
@@ -177,8 +157,15 @@ export default function ProfileTemplateDynamic() {
                   </Suspense>
                 ) : (
                   <>
-                    {/* Mode component : rendu direct du composant */}
-                    {tab.component && renderTabComponent(tab.component, tab.props)}
+                    {/* Mode component : rendu direct du composant. Suspense LOCAL : l'onglet est un
+                        chunk `lazy()` — sans lui, son chargement suspendait jusqu'à la frontière du
+                        profil, qui disparaissait derrière un spinner (cas d'un lien direct vers un
+                        onglet réservé au propriétaire, qui n'apparaît qu'après l'hydratation). */}
+                    {tab.component && (
+                      <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" />}>
+                        {renderTabComponent(tab.component, tab.props)}
+                      </Suspense>
+                    )}
 
                     {/* Mode sections : rendu via ProfileSectionRenderer */}
                     {tab.sections && tab.sections.map((section, index) => (

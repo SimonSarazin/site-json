@@ -291,7 +291,7 @@ Même structure que `searchPro` mais avec état local. Plusieurs instances peuve
 | `defaultViewMode` | `"list"\|"map"\|"graph"\|"regions"\|"thematics"\|"split"` | — | Vue par défaut |
 | `thematicSource` | `{ thematicPath, finderPath?, notSourceKey? }` | — | Source pour la vue thematics (coformFilterByPath) |
 | `thematicsTarget` | `{ path, filterId }` | — | Cible de navigation au clic sur une card thématique |
-| `addButton` | `AddButtonConfig` | — | Bouton ajout entité (show, label, types) |
+| `addButton` | `AddButtonConfig` | — | Bouton « Ajouter » (show, label, types) ; `coform` (id de form, prioritaire) crée une réponse CoForm, `adminOnly: false` l'ouvre à tous, `successMessage` dit la suite après l'ajout (cf. [AddEntityModal](#addentitymodal)) |
 | `zoneSelector` | `ZoneSelectorConfig` | — | Sélecteur de zones géographiques |
 | `tagSelector` | `TagSelectorConfig` | — | Sélecteur de tags prédéfinis |
 | `csvButton` | `CsvButtonConfig` | — | Export CSV (colonnes configurables) |
@@ -572,7 +572,7 @@ jointure sur le lieu porteur + garde région + éclatement, pour quoi
 
 | Prop | Type | Rôle |
 |------|------|------|
-| `resourceTypes` | `Array<{ id, kind, formId, stepPrefix, label, linkSuffix?, descriptionSuffix?, servicesSuffix? }>` (≥ 1) | Un type = une option de facette **et** un formulaire. `kind` ∈ `coworking\|meeting\|accommodation` → pilote la capacité/tarif (cf. `helpers/servicePricingAnswers`). Suffixes PROPRES au formulaire : `linkSuffix` = URL de réservation (`linkPath`), `descriptionSuffix` = « À propos » (meeting `miolbscdcrucb5a8uuq`, hébergement `miq88plgleoln5tmc7b`), `servicesSuffix` = « Services proposés » `string[]` (hébergement `miq86g5vaw1kavrapkb`) |
+| `resourceTypes` | `Array<{ id, kind, formId, stepPrefix, label, linkSuffix?, descriptionSuffix?, servicesSuffix?, detailSuffixes? }>` (≥ 1) | Un type = une option de facette **et** un formulaire. `kind` ∈ `coworking\|meeting\|accommodation` → pilote la capacité/tarif (cf. `helpers/servicePricingAnswers`). Suffixes PROPRES au formulaire : `linkSuffix` = URL de réservation (`linkPath`), `descriptionSuffix` = « À propos » (meeting `miolbscdcrucb5a8uuq`, hébergement `miq88plgleoln5tmc7b`), `servicesSuffix` = « Services proposés » `string[]` (hébergement `miq86g5vaw1kavrapkb`) |
 | `finderSuffix` | string | Suffixe de l'input « finder » (tiers-lieu porteur), **commun** aux formulaires copie. Ex. `miem3epsztzcm9dgim` |
 | `fieldSuffixes` | `{ name?, equipments?, area?, bookingUrl? }` | Suffixes d'inputs COMMUNS. `name` (`mieg4k7yxrito5j9e6`) = titre coworking/hébergement (repli → « Espace de coworking » / « Hébergement »). Pour une salle éclatée, le titre = `serverData.roomName` (colonne 0 du tableau des salles) — repli « Salle de réunion ». `area` (`mieg4k7zslc8awrql2`) = surface (détail) |
 | `scope.addressLevel1` | string | Garde géo : ne garde que les ressources dont le **lieu porteur** est dans cette zone (`address.level1`). Passé dans `defaultFilters["address.level1"]` → l'endpoint `getsressourcetl` **filtre côté serveur** (il retire la clé du payload puis post-filtre sur le lieu porteur). Scroll infini natif conservé |
@@ -661,20 +661,29 @@ section (`stopPropagation` — n'ouvre pas le détail), à côté du lien « Voi
 tiers-lieu » (profil). Hors section (pas de `ResourceDirectoryActionsProvider`), le
 nom retombe en texte simple.
 
-**Le détail** (`PreviewResourceDirectory`) reprend **le même gabarit que le modal
-« En savoir plus » d'un tiers-lieu** (`ProfilTiersLieuxAbout`), `preview.width:
-"2xl"`, adapté aux jetons de thème clair/sombre : carrousel `h-56` + **pastille de
-capacité** en coin → nom (`h3`, **pas d'étiquette de type**) + « Porté par
-{tiers-lieu} » + localité → **Tarifs** en pastilles (`{prix}€` + suffixe
-`resourceDirectory.priceSuffix.*` — TOUS les tarifs non nuls) + pastille « Tarif
-solidaire » → **Surface** (`area` commun, repli sur la colonne 1 de la salle) →
-**À propos** (`descriptionSuffix`) → **Équipements** (pastilles) → **Services
-proposés** (`servicesSuffix`, hébergement) → boutons.
+**Le détail** (`PreviewResourceDirectory`) rend le **même composant que le modal
+« En savoir plus » d'un tiers-lieu** (`ProfilTiersLieuxAbout`) : `ResourceDetail`
+(`components/preview/resource/`), `preview.width: "2xl"`. Carrousel `h-56` + **pastille de
+capacité** en haut à droite → nom (`h3`, **pas d'étiquette de type**) + « Porté par
+{tiers-lieu} » + localité (propres à l'annuaire) → **Tarifs** en pastilles (`{prix}€` +
+suffixe `resourceDirectory.priceSuffix.*` — TOUS les tarifs non nuls) + pastille « Tarif
+solidaire possible » → **Surface** (`area` commun, repli sur la colonne 1 de la salle) →
+listes et textes du détail → boutons.
+
+**Listes et textes du détail** — avec `resourceTypes[].detailSuffixes`, les MÊMES champs que
+la fiche du lieu (`roomPath`/`coworkingPath`/`bedRoomPath` de `profile-about-tl`), dans le
+même ordre et sous les mêmes libellés (`lib/resourceDetails.ts`, partagé avec la fiche) :
+listes `equipments`, `catering` (Restauration), `services`, `roomType` ; textes `moreInfo`
+(Bon à savoir), `about` (À propos du lieu), `tip` (Le petit truc en plus), rendus en
+markdown/HTML sanitisé. Sans `detailSuffixes` (rendu historique) : **À propos**
+(`descriptionSuffix`) → **Équipements** (`fieldSuffixes.equipments`) → **Services
+proposés** (`servicesSuffix`). ⚠️ `fieldSuffixes.equipments` est COMMUN aux 3 formulaires :
+pour les salles de réunion il désigne en réalité la Restauration — d'où `detailSuffixes`.
 
 **Bouton d'action** — trois cas : (a) `bookingUrl` présent → **« Réserver »**
 (`https://` préfixé, `window.open`) ; (b) pas de `bookingUrl` mais un e-mail de
 tiers-lieu connu (`model.parentEmail` = `serverData.email` remonté par le backend,
-repli `parentEmails`) → **« Contacter par e-mail »** = un simple `<a href="mailto:…">`
+repli `parentEmails`) → **« Réserver par e-mail »** = un simple `<a href="mailto:…">`
 vers l'adresse du tiers-lieu (objet pré-rempli `resourceDirectory.mailtoSubject`,
 corps laissé au visiteur — **aucun formulaire, aucun envoi côté site**) ; (c) ni
 l'un ni l'autre → pas de bouton d'action. Toujours **« Voir le tiers-lieu »** si
@@ -984,7 +993,9 @@ export function groupSchedules(scheduleRaw: unknown): DaySchedule[]
 
 `parseCoformAnswer(serverData, { slug?, fields? })` normalise une réponse CoForm `serverData` en objet typé `CoformAnswer` (titre, description, type, statut, structure, adresse, horaires via `groupSchedules`, bénéficiaires, installation…). Le mapping rôle → suffixe de champ CoForm est `DEFAULT_COFORM_FIELDS`, **surchargeable** par appelant via l'option `fields` (ex. `list.preview.fields`). Le repli de slug est centralisé (`slug ?? "sportSanteBienetre"`).
 
-`getStatusStyle(status)` retourne les classes du badge de statut (tokens custom `bg-badge-valid`/`bg-badge-waiting`/`bg-badge-in-progress`/`bg-badge-refused`).
+`normalizeStatus(raw)` ramène le statut brut à `Valide` / `En attente` / `En cours` / `Refuse` (orthographes legacy comprises, ex. « Réfusé ») ; un statut **absent ou inconnu** vaut **« En attente »** — la règle serveur (`STATUS_DEFAULT`) : une réponse tout juste déposée n'en a pas, elle n'est pas publiée. Les listes publiques filtrent « Validé » côté serveur et ne voient jamais ce repli ; les vues de gestion (onglet profil « Structures », modération) doivent dire « En attente », pas « Validé » (c'était le repli d'avant). `statusKey(status)` donne la clé stable (`validated`/`pending`/`inProgress`/`refused`) des libellés `coformAnswer.status.*` — la carte et le détail affichent ce libellé normalisé, jamais la valeur brute.
+
+`getStatusStyle(status)` retourne les classes du badge de statut : chaque fond (`bg-badge-valid`/`-waiting`/`-in-progress`/`-refused`) avec **son** encre (`text-success-foreground`, `text-warning-foreground`, `text-primary-foreground`, `text-destructive-foreground`) — `text-primary-foreground` partout donnait 1,85:1 à « En attente » en thème clair sur SSBE.
 
 `normalizeTypeLabel(rawType)` abrège le type d'activité en lisant le **suffixe** du libellé, déjà porté par le formulaire (« Sport santé sans label - SSsL » → `SSsL`), reconnu par sa forme `SS` + minuscule + majuscule — tout type présent ou futur est abrégé sans liste à tenir dans le code. L'abréviation sert aussi de **classe CSS** de la carte (`CardAnswer` : `ssso-card`, `sspt-card`, `sssl-card`, ciblées par le `customCSS` du site) : un nouveau type n'a besoin que de sa règle CSS. Un suffixe d'une autre forme (« Activité - Natation ») laisse le libellé intact.
 
@@ -1299,9 +1310,9 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 
 **`kind`** = ce que **fait** le bouton : `"profil"` / absent → navigue vers `/profil/:slug` (comportement historique) ; `"preview"` → ouvre la fiche **en modale** — `SwitchDetailsMode` monté en `dialog` avec `preview: {type: "structure"}` — sans quitter la liste ni perdre filtres et position de défilement. Défaut **côté code** `profil` : `CardAnswer.tsx:40` teste `=== "preview"`, donc clé absente = navigation. L'entité complète (la carte ne porte qu'un sous-document de la structure) n'est chargée **qu'au clic** — `useEntityBySlugQuery` conditionné à l'ouverture — et le bouton reste `disabled` pendant ce chargement.
 
-**`audience`** = **qui le voit** : `"all"` / absent → tout le monde (historique) ; `"managers"` → super-admin plateforme, admin du costum porteur, ou admin **validé** de la structure organisatrice de la carte, via `isCoformAnswerManager` (`lib/coformAnswer.ts`) — le **même** prédicat que le bouton « Modifier » du détail, parce que la fiche structure est un outil de gestion (affiliation, représentant légal, documents) et non une information utile à qui compare des créneaux. Le bouton est **masqué**, jamais `disabled` : un bouton grisé inviterait à demander un droit. Le gate est conditionné par `useHydrated` (`CardAnswer.tsx:70-73`) — `/creneaux` est prérendue en SSR où `me` vaut toujours `null` : le bouton est donc absent du HTML serveur **et** du 1er render client, puis apparaît après hydratation chez les seuls ayants droit (aucun mismatch ; épinglé par `CardAnswer.ssr.test.tsx`, qui rend avec le vrai hook). Le gate est posé **avant** le branchement `kind`, donc il couvre les deux trajectoires (modale et navigation). ⚠️ Règle de **pertinence d'affichage**, **pas** une frontière de sécurité : `/profil/:slug` et `/structure` restent des routes publiques et le slug de la structure part déjà dans le HTML servi à tout visiteur.
+**`audience`** = **qui le voit** : `"all"` / absent → tout le monde (historique) ; `"managers"` → super-admin plateforme, admin du costum porteur, ou admin **validé** de la structure organisatrice de la carte, via `isCoformAnswerManager` (`lib/coformAnswer.ts`) — le prédicat de **gestion**, que le bouton « Modifier » du détail étend à l'auteur du créneau (`canEditCoformAnswer`) : avoir déposé un créneau ouvre son édition, pas la fiche de la structure, qui est un outil de gestion (affiliation, représentant légal, documents) et non une information utile à qui compare des créneaux. Le bouton est **masqué**, jamais `disabled` : un bouton grisé inviterait à demander un droit. Le gate est conditionné par `useHydrated` (`CardAnswer.tsx:70-73`) — `/creneaux` est prérendue en SSR où `me` vaut toujours `null` : le bouton est donc absent du HTML serveur **et** du 1er render client, puis apparaît après hydratation chez les seuls ayants droit (aucun mismatch ; épinglé par `CardAnswer.ssr.test.tsx`, qui rend avec le vrai hook). Le gate est posé **avant** le branchement `kind`, donc il couvre les deux trajectoires (modale et navigation). ⚠️ Règle de **pertinence d'affichage**, **pas** une frontière de sécurité : `/profil/:slug` et `/structure` restent des routes publiques et le slug de la structure part déjà dans le HTML servi à tout visiteur.
 
-La config n'étant jamais parsée par Zod au runtime, poser les clés **explicitement** est le seul moyen de les activer. Même forme que `map.itemAction`, à dessein : un seul vocabulaire d'action dans le module. Posé en config réelle : `config.prod.sport-sante-bien-etre.json` (`audience` seul → les gestionnaires gardent la navigation historique) ; `config.prod.maison-sport-sante-la-tampon.json` (`kind: "preview"`).
+La config n'étant jamais parsée par Zod au runtime, poser les clés **explicitement** est le seul moyen de les activer. Même forme que `map.itemAction`, à dessein : un seul vocabulaire d'action dans le module. Posé en config réelle : `config.prod.sport-sante-bien-etre.json` (`kind: "preview"` + `audience: "managers"` → fiche en modale, gestionnaires seuls) ; `config.prod.maison-sport-sante-la-tampon.json` (`kind: "preview"` → modale pour tous).
 
 Toutes les variantes sont lazy-loadées. Une page **mono-type** ne télécharge que le chunk configuré ; une liste **hétérogène** (`list.itemRules`, cf. [§Rendu PAR ITEM](#rendu-par-item-des-listes-hétérogènes-listitemrules)) en charge un par famille présente — c'est pourquoi `SearchListView` enveloppe chaque carte dans son **propre `<Suspense>`**. Les **couleurs en dur** des cartes ont été remplacées par des **tokens de thème** (commits 4936978 / ad11831 / 06baffb) → chaque carte s'adapte au thème du site et au mode clair/sombre.
 
@@ -1385,7 +1396,7 @@ Le détail d'une entité sélectionnée est **découplé en deux axes** (commit 
 |----------|-----------|-------------|
 | `default` (défaut) | `PreviewDefault` | Aperçu générique (caractéristiques = filtres tags/type via `props.filters`) |
 | `poi-amenities` | `PreviewPoiAmenities` | Fiche détail POI avec aménagements (ex-`PoiDetailSSBE`, voir ci-dessous) |
-| `coform-answer` | `PreviewCoformAnswer` | Fiche détail réponse CoForm (activité + horaires, ex-`AnswerDetailModeDialog`) |
+| `coform-answer` | `PreviewCoformAnswer` | Fiche détail réponse CoForm (activité + horaires, ex-`AnswerDetailModeDialog`). Bouton « Modifier » opt-in (`preview.editButton`) pour les gestionnaires, l'admin validé de N'IMPORTE QUELLE structure citée par le finder (`getAnswerCitedStructures` — la jointure `structure` n'en garde qu'une) ou l'auteur (`canEditCoformAnswer`, l'union qu'accepte `SaveAnswerAction` ; l'auteur n'est reconnu que si la recherche projette `user`, comme l'onglet profil « Structures ») : re-fetch frais de la réponse, édition en `CoFormModal` titrée « Modifier — <titre> ». Bouton à fond plein, contour de focus décollé (visible sur le dégradé), 44 px au tactile ; pendant le chargement, `aria-disabled` (pas `disabled`, qui ferait perdre le focus), rendu atténué et annonce ; après un échec, le message dit de recliquer, ce qui relance ; un rafraîchissement de fond qui échoue ne démonte pas un formulaire ouvert. Après l'enregistrement : listes statiques, listes gérées du compte (`MANAGED_ANSWERS_PREFIX`) et fiche invalidées, message « Modifications enregistrées », détail fermé. Un non-admin du costum ne voit ni n'envoie les champs `isAdminOnly` (le statut) : `SaveAnswerAction` les retire et fusionne champ par champ, la valeur en base reste |
 | `event` | `PreviewEvent` | Fiche détail événement (actions Participer/Suivre/Éditer) |
 | `facets` | `PreviewFacets` | **Preview générique data-driven** : rend `preview.facets` (champs `serverData` cliquables) — voir [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters) |
 | `news` | `PreviewNews` | Détail actualité — embarque `NewsDetailPage` (mode `embedded`) + permalien « Voir en page » (cf. `preview.showDetailLink`) |
@@ -1991,6 +2002,8 @@ Carte choroplèthe des régions françaises. Activée via `enableRegions: true` 
 
 Modal de création d'une nouvelle entité directement depuis la recherche. Activé via `addButton.show: true`. Délègue à `ModalRegistry` du module profil.
 
+Avec `addButton.coform` (id de form, prioritaire sur `modal` et les types d'entité), le bouton crée une **réponse CoForm** — ex. « Ajouter un créneau » de `/creneaux` (SSBE, Ekilib.re) : `CoFormModal`, dont le chunk n'est chargé qu'au 1er clic, puis `useAnswerCreated` : invalidation des listes ET des cartes `searchProStatic` (préfixes partagés `SEARCH_STATIC_LIST_PREFIX` / `SEARCH_STATIC_MAP_PREFIX`) et des listes gérées du compte (onglet profil « Structures »), et message `addButton.successMessage` s'il est posé — à poser sur un formulaire modéré, dont la réponse n'apparaît pas dans la liste publique (SSBE : « Créneau ajouté. Il sera publié après validation. »). Réservé aux admins du site par défaut ; `adminOnly: false` l'ouvre à tous, et un non-connecté qui clique passe par le login. Sous `sm` le libellé est masqué et le bouton n'est qu'une icône : son nom accessible passe par `aria-label` (`SectionAddButton`), comme le bouton Carte.
+
 ### SwitchDetailsMode
 
 Composant qui gère l'ouverture du détail (drawer ou dialog) selon `list.card.detailsMode`, et rend le composant de détail correspondant. Il est monté **hors de la boucle de résultats** : c'est l'appelant (`SearchListView`, `SearchMap`) qui garde en state la paire `{ item, list }` — la conf RÉSOLUE de l'item ouvert — et la lui passe. `detailsMode` et `preview.type` peuvent donc varier d'un item à l'autre au sein d'une même liste.
@@ -2316,7 +2329,7 @@ La zone de résultats de `SearchProStatic` (mode liste en sidebar désactivée) 
 
 ### 12. `baseParams.defaultFilters` — DSL backend des filtres (⚠️ pas du Mongo standard)
 
-`defaultFilters` est envoyé **verbatim** au backend (`buildSearchPayload` → `searchCostum`/`globalautocomplete` → `SearchNew::searchFilters`, `modules/citizenToolKit/models/SearchNew.php`). Ce n'est **pas** du Mongo standard : le backend a sa propre traduction, avec quatre pièges à connaître avant d'écrire un filtre.
+`defaultFilters` est envoyé **verbatim** au backend (`buildSearchPayload` → `searchCostum`/`globalautocomplete` → `SearchNew::searchFilters`, `modules/citizenToolKit/models/SearchNew.php`). Ce n'est **pas** du Mongo standard : le backend a sa propre traduction, avec les pièges ci-dessous à connaître avant d'écrire un filtre.
 
 **a. `tags: ["X"]` (tableau) = match SOUS-CHAÎNE non ancré.** Traduit en `tags: {$in: [/.*X.*/i]}` (regex non ancrée, casse-insensible). Donc `"tags": ["TiersLieux"]` matche aussi **`RéseauTiersLieux`** (qui *contient* « TiersLieux ») → les réseaux fuient dans les listes de lieux. À l'inverse, `tags: {"$in": ["X"]}` en **forme objet** fait un match **exact**.
 
@@ -2327,6 +2340,8 @@ La zone de résultats de `SearchProStatic` (mode liste en sidebar désactivée) 
 **d. Tout est empilé en `$and`.** `addQuery` (~l.7) pousse chaque clé de `defaultFilters` dans un `$and` top-level → deux clés distinctes = deux conditions ET.
 
 **e. `status: "validated"` ne matche RIEN.** `status` ne porte que le cycle de vie du document (`uncomplete` / `deleted` / `deletePending`) et ne prend jamais la valeur `validated` — cf. [doc/19](19-visibility-system.md). Un `"defaultFilters": {"status": "validated"}` renvoie donc **0 résultat, sans la moindre erreur** (le cas s'est produit en prod sur la cible « paroles » de parent62). La validation costum se pilote par `preferences.toBeValidated.<slug>` / `source.toBeValidated.<slug>`, posés AUTOMATIQUEMENT par `applyValidationGate` dès qu'un `costumSlug` est présent (opt-out `showUnvalidated`).
+
+**f. Une valeur scalaire devient un `$or` à DEUX branches.** `"user": "<id>"` arrive en `{$or: [{user: "<id>"}, {user: "<id>"}]}` : la valeur, puis sa conversion booléenne, identique hors `"true"`/`"false"` (`searchFilters`, SearchNew.php:656-664). Le transport est `x-www-form-urlencoded` : tout part en chaîne ; `$exists` est reconverti en booléen, et `"true"`/`"false"` reçoivent une branche booléenne (scalaires et tableaux). Ça compte pour un hook serveur qui lit le `$and` : celui de SSBE reconnaît exactement cette forme pour montrer à l'auteur ses créneaux non validés (`isBoundToOwnAnswers`).
 
 **Idiome : exiger un tag ET en exclure un autre.** Impossible sur une seule clé `tags` (cf. b) → on utilise deux clés : un `$or` **objet** mono-clause pour le positif + `tags: {$nin: [...]}` pour l'exclusion. Exemple réel (config `tiers-lieux`, les listes de lieux ne doivent pas montrer les réseaux `RéseauTiersLieux`) :
 

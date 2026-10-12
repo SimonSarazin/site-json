@@ -4,6 +4,7 @@
 import { useMemo } from "react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import type { PermissionContext } from "./types";
 import { getCalculator } from "./registry";
 import { isCostumHostAdmin } from "./isCostumHostAdmin";
@@ -53,6 +54,13 @@ export function usePermissions<T extends Record<string, unknown>>(
     if (inCostum) (entity as { setCostumAdminAuthorized?: (v?: boolean) => void }).setCostumAdminAuthorized?.();
   }
 
+  // Les calculateurs lisent les LIENS (`me.links` pour membre/invité/admin, ceux de l'entité pour la
+  // hiérarchie). Après accepter/refuser une invitation, rejoindre ou quitter, le SDK rafraîchit ces
+  // objets EN PLACE (`userContext.refresh()`) : `me` et `entity` gardent la même référence, et sans
+  // ces dépendances le menu d'actions resterait sur l'ancien état jusqu'au rechargement de la page.
+  const meLinks = useReactiveProperty((me as { serverData?: Record<string, unknown> } | null)?.serverData, "links");
+  const entityLinks = useReactiveProperty((entity as { serverData?: Record<string, unknown> } | null)?.serverData, "links");
+
   return useMemo(() => {
     const context: PermissionContext = { entity, me, isCostumAdmin, costumSlug, data };
     const result: Record<string, unknown> = {};
@@ -68,5 +76,7 @@ export function usePermissions<T extends Record<string, unknown>>(
     }
 
     return result as T;
-  }, [entity, me, isCostumAdmin, costumSlug, data, namespaces]);
+    // `meLinks`/`entityLinks` ne sont pas lus ici : ils signalent un changement EN PLACE de `me`/`entity`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- dépendances de signal volontaires
+  }, [entity, me, meLinks, entityLinks, isCostumAdmin, costumSlug, data, namespaces]);
 }

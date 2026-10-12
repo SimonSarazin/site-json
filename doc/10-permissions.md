@@ -128,6 +128,14 @@ export function usePermissions<T extends Record<string, unknown>>(
 }
 ```
 
+**Liens mis à jour en place.** Les calculateurs lisent les liens (`me.serverData.links` pour
+membre / invité / admin, ceux de l'entité pour la hiérarchie). Après accepter ou refuser une
+invitation, rejoindre ou quitter, le SDK rafraîchit ces objets **en place**
+(`userContext.refresh()`) : `me` et `entity` gardent la même référence. Le hook s'abonne donc aussi
+à `serverData.links` des deux (`useReactiveProperty`) et les ajoute aux dépendances du `useMemo` —
+sans cela, le menu d'actions d'une fiche resterait sur l'ancien état jusqu'au rechargement
+(test : `usePermissions.test.tsx`).
+
 **Usage** :
 
 ```ts

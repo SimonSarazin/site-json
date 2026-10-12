@@ -36,7 +36,7 @@ export interface CoFormModalProps {
   inputKey?: string;
   /** ID de la réponse existante à éditer */
   answerId?: string;
-  /** Valeurs par défaut pour pré-remplir (mode édition) */
+  /** Valeurs par défaut : réponse éditée, ou préremplissage d'une création (cf. `hiddenFields`). */
   defaultValues?: AllStepsData;
   /**
    * `updated` de la réponse éditée. À TRANSMETTRE dès qu'on passe `answerId` :
@@ -56,6 +56,14 @@ export interface CoFormModalProps {
   className?: string;
   /** Liste de clés d'inputs verrouillés (non modifiables dans le modal) */
   lockedFields?: string[];
+  /**
+   * Champs MASQUÉS à l'affichage pour cet appel (clés `field.name`, préfixe de type compris, comme
+   * `lockedFields` — ex. `finder<kunik>`). Le champ reste dans le schéma et sa valeur (souvent
+   * préremplie par `defaultValues`) part au submit : c'est ce qui le distingue de
+   * `access.restrictedFields`, que le parse retire et dont la valeur serait perdue. Un champ masqué
+   * en ERREUR de validation est réaffiché, sans quoi l'erreur listée resterait inatteignable.
+   */
+  hiddenFields?: readonly string[];
   /**
    * Étapes à retirer du parcours pour cet appel (cf. `SmartCoForm`). La règle
    * vient de l'appelant, pas du formulaire — typiquement « l'étape d'évaluation
@@ -100,6 +108,7 @@ export function CoFormModal({
   closeOnSubmit = !inputKey,
   className,
   lockedFields,
+  hiddenFields,
   hiddenStepKeys,
   elementId,
   elementType,
@@ -216,6 +225,7 @@ export function CoFormModal({
               submitRef={submitRef}
               discardDraftRef={discardDraftRef}
               lockedFields={lockedFields}
+              hiddenFields={hiddenFields}
               hiddenStepKeys={hiddenStepKeys}
               elementId={elementId}
               elementType={elementType}
