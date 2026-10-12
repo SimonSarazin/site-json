@@ -707,8 +707,15 @@ TS, désormais supprimée ; la non-régression est aujourd'hui tenue par
 
 En React, un `submit` remonte l'arbre des **composants**, portails compris. La modale de création
 d'un finder coform (`EntityFormModal`, rendue sous la question) soumettait donc AUSSI le formulaire
-hôte : sa validation partait, ses erreurs s'affichaient derrière. `GenericForm` arrête la propagation
-de son `submit` (`event.stopPropagation()` avant `handleSubmit`).
+hôte : sa validation partait, ses erreurs s'affichaient derrière. Le `submit` est arrêté **à la
+frontière du dialogue** — `DialogContent`, `SheetContent` et `ModalContent`, les trois contenus bâtis
+sur le dialogue Radix (`stopSubmitAtPortal`, [`src/lib/portalSubmit.ts`](../src/lib/portalSubmit.ts))
+— et non dans `GenericForm` : la règle vaut pour tout formulaire rendu dans un dialogue ou un panneau
+latéral (une étape coform, un formulaire de module), pas pour le seul formulaire du moteur. Il ne
+remonte plus à un formulaire placé au-dessus dans l'arbre React ; un bouton `form="<id>"` posé dans
+un dialogue soumet toujours le formulaire qu'il désigne (l'évènement naît sur ce formulaire, hors du
+dialogue). ⚠️ Les autres portails (`AlertDialogContent`, `DrawerContent`, `PopoverContent`) n'ont pas
+ce garde : un formulaire qu'on y monterait sous un autre formulaire demande de l'y poser.
 
 ### Créer depuis un autre parcours : `onCreated`
 
