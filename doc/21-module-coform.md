@@ -663,28 +663,50 @@ recherche et pré-remplie avec le nom tapé. Comme le legacy (`finder.addInForm`
 l'élément créé est **aussitôt rangé dans la question** (avec la sélection en cours ; il
 la remplace en choix unique), sans redirection vers sa fiche (`onCreated`).
 
-Le formulaire se déclare dans la **config du site** — le legacy ouvrait le dynform du
-costum pour le type cherché :
+Le formulaire **costum** se déclare dans la **config du site**. Sans déclaration, le bouton
+ouvre la modale **standard** du type :
 
 ```jsonc
 "coform": {
   "finderAddNew": {
     "finderaapStep1lurzepkc4q8n686r8h": "add-cae",   // une QUESTION (clé `finder<étape><id>`)
-    "organizations": "add-organization"              // ou tout finder d'un TYPE
+    "organizations": "add-cae"                       // ou TOUT finder d'un type
   }
 }
 ```
 
-Précédence : question > type > formulaire costum que le site déclare pour ce type, s'il est
-unique (`siteCostumAddModal` — la même règle que l'« Ajouter » d'un profil et que l'admin) >
-modale standard du type ; pas de modale pour `citoyens` (l'invitation reprend sa place). ⚠️ La
-clé d'une question est celle d'un MODÈLE d'AAP : ses copies la partagent (9 formulaires en base
-pour celle-ci), et le réglage vaut pour chacune d'elles. Seules les modales `add-*` sont
-admises (schéma). Résolution :
-[`utils/finderAddNew.ts`](../src/modules/coform/utils/finderAddNew.ts). Une valeur qui
-ne désigne aucune modale est signalée par l'audit (`ref-morte`). Cas réel : la question
-« Partenaires du commun » du dépôt de la Fédération des CAE → formulaire costum `cae`,
-port du « Créer votre CAE » legacy (`typeObj.organizationsTls`).
+Précédence : **question > type > modale standard du type** ; pas de modale pour `citoyens`
+(l'invitation reprend sa place). Résolution :
+[`utils/finderAddNew.ts`](../src/modules/coform/utils/finderAddNew.ts).
+
+- **Un formulaire costum ne s'ouvre que déclaré.** Le legacy prenait d'office celui du costum
+  pour le type cherché (`typeObj[type].dynFormCostum`) ; ici c'est au site de le demander, parce
+  qu'un formulaire costum **estampille** ce qu'il crée (sous-type, mots-clés, rattachement au
+  costum) : une organisation créée depuis un finder « partenaire » naîtrait du type du site, et
+  entrerait dans son annuaire. Un site qui veut le comportement du legacy déclare le type
+  (`"organizations": "add-<son formulaire>"`). L'« Ajouter » d'un profil et la création
+  `inherit` de l'admin, eux, gardent leur règle propre (`siteCostumAddModal`, cf.
+  [08-module-profil](08-module-profil.md)).
+- **Une déclaration qui ne désigne aucune modale ouvrable** — faute de frappe (`add-ca`), modale
+  d'édition (`edit-cae`), formulaire retiré de `costumForms`, valeur mal formée — **retire le
+  bouton** « Ajouter » ; `FinderField` le dit dans la console, en développement. Elle ne retombe ni
+  sur le type ni sur le standard : le site a demandé un formulaire précis, en ouvrir un autre
+  créerait des éléments sans son estampille. Le schéma n'admet que `add-*`, mais il ne tourne pas
+  sur la config au runtime : c'est le resolveur qui contrôle (`isOpenableAddModal` — une modale
+  standard, ou `add-<id>` d'un `costumForms` du site, reconnu à son `id`). Le **préflight** échoue
+  sur une telle déclaration (`tests/preflight/edit-modal-scope.test.ts`, volet finder) et
+  `audit:config` la signale (`ref-morte`), avec ce même contrôle.
+- **Ce qu'« Ajouter » ouvre, site par site**, est figé par la garde d'impact
+  (`tests/preflight/__effective__/<site>.json`, clé `finderAddNew`) : une règle du moteur qui
+  changerait de formulaire sur un site apparaît comme un diff de SA fixture.
+- **Finder à plusieurs types** (`params.type` en liste — aucun en base de dev au 12/10, mais rien
+  n'y contraint la donnée) : le formulaire est celui du **premier** type. Convention d'ici :
+  l'écran de config du legacy n'enregistre qu'un type.
+- ⚠️ La clé d'une question est celle d'un MODÈLE d'AAP : ses copies la partagent (9 formulaires
+  en base pour celle-ci), et le réglage vaut pour chacune d'elles.
+
+Cas réel : la question « Partenaires du commun » du dépôt de la Fédération des CAE → formulaire
+costum `cae`, port du « Créer votre CAE » legacy (`typeObj.organizationsTls`).
 
 ---
 

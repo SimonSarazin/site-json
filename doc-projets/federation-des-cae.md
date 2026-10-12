@@ -16,7 +16,9 @@
 > vit sur la branche `aac-dev` et n'a rien à voir avec le site des tiers-lieux, qui vit sur `jdev`
 > et `main` : leurs dossiers devaient être séparés. Cf. §10 31/08.
 
-Dernière mise à jour : **2026-10-06** (SDK 1.0.196 : la règle « le contrat OU le costum » est publiée,
+Dernière mise à jour : **2026-10-12** (revue de la MR !83 : depuis un finder, « Créer votre CAE » ne
+s'ouvre plus que pour la question qui le déclare — cf. §10 12/10). Précédent : **2026-10-06** (SDK
+1.0.196 : la règle « le contrat OU le costum » est publiée,
 la création d'une CAE avec horaires passe ; `main` fusionné dans `jdev`, formulaire « Créer votre CAE »
 de `main` retenu pour le finder « Partenaires du commun », contournements retirés — cf. §10 06/10 et
 §11 ; ajout depuis le finder et modale de recherche stabilisée, cf. §10 01/10).
@@ -68,6 +70,7 @@ n'est donc pas ancré sur l'entité du site — ne pas déduire l'un de l'autre.
 | 30/09 | Schumann + Claude | « Rejoindre une autre CAE » : la demande d'adhésion / de droits admin partait refusée à un connecté — `d99f1997` (cf. §10 30/09) |
 | 01/10 | Schumann + Claude | Ajout d'une CAE depuis le finder « Partenaires du commun » ; modale de recherche des finders stabilisée (cf. §10 01/10) — commité le 01/10 sur `jdev` |
 | 06/10 | Aboire (SDK 1.0.196, formulaire CAE sur `main`) · Schumann + Claude (`jdev`) | `main` fusionné dans `jdev` : le formulaire « Créer votre CAE » de `main` remplace celui du 01/10, le finder y reste branché ; contournements retirés (cf. §10 06/10) |
+| 12/10 | Schumann + Claude, sur la revue de la MR !83 | Depuis un finder, un formulaire costum ne s'ouvre plus que déclaré ; déclaration erronée = pas de bouton ; pastille de statut commune à l'annuaire et à la fiche (cf. §10 12/10) |
 
 ---
 
@@ -286,6 +289,50 @@ rouge — `public/images/federationDesCae/` vide et non déclaré. Réglé le 09
 
 ## 10. Impacts des modifications
 
+### 12/10 — revue de la MR !83 : depuis un finder, un formulaire costum ne s'ouvre que déclaré
+
+**Ce qui a bloqué.** Depuis le 01/10, un finder à `addNew` sans déclaration ouvrait le formulaire
+costum unique du site pour le type cherché (parité avec le `dynFormCostum` du legacy). La règle
+valait pour TOUS les sites du moteur, pas pour celui-ci seul — 59 finders d'organisations portent
+`addNew` en base de dev (mesuré le 12/10) — alors qu'un formulaire costum **estampille** ce qu'il
+crée : sous-type, mots-clés, rattachement au costum. La relecture a demandé que ce choix revienne à
+chaque site. Détail moteur : [doc/21](../doc/21-module-coform.md), « Ajouter un élément ».
+
+**Ce qui change sur ce site.**
+- **« Partenaires du commun » (dépôt) : rien.** La question est déclarée
+  (`coform.finderAddNew` → `add-cae`) : elle ouvre toujours « Créer votre CAE ».
+- **Les autres finders d'organisations à `addNew`** — celui de l'Observatoire, « Rechercher votre
+  organisation » — rouvrent le formulaire d'organisation **standard** : l'organisation créée n'est
+  plus une CAE d'office. Pour qu'ils ouvrent « Créer votre CAE », une ligne de config suffit
+  (`"organizations": "add-cae"` pour tous les finders d'organisations, ou la clé de la question).
+  À arbitrer, cf. §14.
+- **Une déclaration erronée** (faute de frappe, formulaire retiré de `costumForms`) ne donne plus un
+  bouton « Ajouter » sans effet : le bouton n'est pas proposé, la console le dit en développement,
+  et le préflight échoue (`edit-modal-scope`, volet finder).
+- **Ce qu'« Ajouter » ouvre sur ce site est figé** dans `tests/preflight/__effective__/federationDesCae.json`
+  (clé `finderAddNew`) : `organizations` → `add-organization`, la question « Partenaires du commun »
+  → `add-cae`. Onze sites du parc ont reçu cette projection ; aucune n'y était, ce qui avait laissé
+  passer la règle du 01/10 sans un seul diff de fixture.
+- **Pastille de statut** (« En attente », « Sélectionné », « Phase proposition ») : un seul composant
+  pour l'annuaire en liste et la fiche d'un commun (`StatusPill`) — même rendu qu'avant.
+
+**Sans effet propre au site** (moteur) : finder à plusieurs types (« Ajouter » restait masqué, sans
+trace) ; cache de recherche retiré par type à la création ; le `submit` d'un formulaire en dialogue
+arrêté à la frontière du dialogue, pour tout formulaire ([doc/28](../doc/28-module-formengine.md)).
+
+**Vérifié (12/10).** Au navigateur, compte simple, **sans aucune écriture** (requêtes d'écriture
+coupées avant le réseau — aucune n'a été tentée) : « Partenaires du commun » → aucun résultat →
+« Ajouter » → « Créer votre CAE », nom pré-rempli ; le `submit` du formulaire de création affiche ses
+erreurs sans faire valider le dépôt (0 champ en erreur avant, 0 après ; témoin : le même `submit`
+émis sur le dépôt en affiche 2) ; pastille « Sélectionné » de la fiche rendue aux dimensions
+attendues. **Non vérifié au navigateur** : le finder de l'Observatoire (formulaire standard) et la
+pastille « En attente » de l'annuaire en liste (aucune trouvée à l'écran) — couverts par les tests
+seuls.
+Gates sur l'arbre corrigé (`jdev` `d24716ee` + corrections) : `typecheck` 0 · `eslint` 0 sur les
+35 fichiers TypeScript touchés · `test:unit` 5 780 passés (7 ignorés) · préflight 798 passés (6 ignorés) ·
+`config:validate` valide (6 pages, 10 sections) · `audit:config` RAS. Contre-épreuve par mutation des
+nouvelles règles : 55 mutations, 55 tuées.
+
 ### 06/10 — SDK 1.0.196 : le formulaire « Créer votre CAE » de `main`, branché sur le finder
 
 **Ce qui est arrivé en même temps.** La lib **1.0.196** publie la règle demandée le 01/10 (un champ
@@ -373,7 +420,8 @@ ses attributs propres. Côté React, son bouton « Ajouter » n'affichait qu'un 
 - Le formulaire se déclare dans `coform.finderAddNew` : ici la question → `add-cae`. Sans déclaration,
   la règle commune `siteCostumAddModal` prend le formulaire costum UNIQUE du site pour le type — donc
   `add-cae` aussi pour les autres finders d'organisations à `addNew` (le finder « Rechercher votre
-  organisation » de l'Observatoire).
+  organisation » de l'Observatoire). **Retiré le 12/10** : sans déclaration, la modale standard
+  (cf. §10 12/10).
 - Nouveau formulaire `costumForms.cae` (**remplacé le 06/10 par celui de `main`**, cf. §10 06/10),
   port du « Créer votre CAE » legacy (`typeObj.organizationsTls`) :
   nom, date d'ouverture (codec `dateDMY`, format du parc « JJ/MM/AAAA »), description courte,
@@ -391,6 +439,7 @@ créateur. Gates : `typecheck` 0 · `eslint` 0 erreur · `test:unit` 5 407 · pr
 
 **À revalider.** Les finders d'organisations à `addNew` des AUTRES sites ouvrent désormais leur
 formulaire costum unique (tiers-lieux et RELIEF : `add-tiers-lieux`) au lieu d'un bouton inopérant.
+**Caduc depuis le 12/10** : ils ouvrent la modale standard de leur type (cf. §10 12/10).
 
 ### 30/09 — « Rejoindre une autre CAE » : la demande partait refusée à un connecté
 
@@ -1296,11 +1345,12 @@ une affirmation fausse. Aucun appelant ne lit `mutation.data` ; seul le verdict 
   dans les listes de CAE.
 - ⚠️ **La création avec horaires exige la lib 1.0.196 en production** (cf. §10 06/10, §11) : tant que
   le site déployé embarque une version antérieure, saisir des horaires fait échouer la création.
-- ⚠️ **Sur ce site, tout finder d'organisations à `addNew` ouvre « Créer votre CAE »** quand il n'a pas
-  de déclaration propre : la règle commune prend le formulaire costum UNIQUE du site pour le type
-  (`siteCostumAddModal`). Le menu d'ajout du profil, lui, sépare désormais « Ajouter une organisation »
-  (standard) et « Créer votre CAE ». Pour qu'un finder ouvre le formulaire standard, le déclarer dans
-  `coform.finderAddNew` (`"<question>": "add-organization"`).
+- ⚠️ **Depuis un finder, « Créer votre CAE » ne s'ouvre que pour la question qui le déclare**
+  (`coform.finderAddNew` — aujourd'hui « Partenaires du commun » seule). Tout autre finder
+  d'organisations à `addNew` ouvre le formulaire d'organisation standard : ce qu'il crée n'est pas une
+  CAE (cf. §10 12/10). Pour l'étendre : `"organizations": "add-cae"`, ou la clé de la question. Une
+  valeur qui ne désigne aucun formulaire retire le bouton « Ajouter » de ce finder. Le menu d'ajout du
+  profil, lui, sépare « Ajouter une organisation » (standard) et « Créer votre CAE ».
 - ⚠️ **`--gradient-section` est surchargé pour tout le site** (`theme.customCSS`) : toute future
   section `searchHeader` ou `cta-newsletter` prendra la bande rose, pas le turquoise de la feuille
   partagée.
@@ -1334,5 +1384,5 @@ une affirmation fausse. Aucun appelant ne lit `mutation.data` ; seul le verdict 
 | **Vérifier une création réelle depuis `/annuaire`** : `source.keys: ["federationDesCae"]` posé, type « Coopérative » présélectionné, apparition sans rechargement, présence dans « J'utilise ». Demande un compte de test (SSO `lescaecoop`) | à confirmer |
 | Ajouter à l'annuaire un onglet « Personnes » (les 9 membres de l'entité, via `links.memberOf`) ? | à arbitrer |
 | Nom `Coop&amp;Bât` stocké encodé en base — à corriger dans la fiche de l'organisation | Fédération |
-| Le finder « Rechercher votre organisation » de l'Observatoire ouvre « Créer votre CAE » (formulaire costum unique du site) : est-ce voulu, ou doit-il ouvrir le formulaire standard ? (cf. §13) | à arbitrer |
+| Le finder « Rechercher votre organisation » de l'Observatoire ouvre depuis le 12/10 le formulaire d'organisation **standard** (plus de formulaire costum sans déclaration, cf. §10 12/10) : doit-il ouvrir « Créer votre CAE » ? Si oui, une ligne dans `coform.finderAddNew` | à arbitrer |
 | Libellé de la question « Partenaires » réglé au **pluriel** côté legacy (« Organisations ») → « Rechercher un Organisations », « Votre Organisations n'existe pas encore ? » : le passer à « organisation » dans l'écran de config du finder | Schumann |

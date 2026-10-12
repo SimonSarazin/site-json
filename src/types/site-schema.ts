@@ -2479,12 +2479,13 @@ export const SiteConfig = z.object({
   // Config site-level des formulaires coform. `finderAddNew` : la modale d'AJOUT qu'ouvre le bouton
   // « Ajouter » d'un finder (réglage `addNew` du legacy). Clé = la QUESTION (`finder<étape><id>`) ou le
   // TYPE cherché (`organizations`…) ; valeur = une modale du ModalRegistry (`add-organization`,
-  // `add-<id costum>`). Précédence : question > type > formulaire costum UNIQUE du site pour ce type
-  // (`siteCostumAddModal`) > modale standard du type. cf. modules/coform.
+  // `add-<id costum>`). Précédence : question > type > modale standard du type. Un formulaire costum
+  // ne s'ouvre QUE déclaré ici, jamais d'office. cf. modules/coform (`resolveFinderAddNewModal`).
   coform: z.object({
     finderAddNew: z.record(
       z.string(),
-      // Seules les modales d'AJOUT s'ouvrent (`DynamicModal` ne résout que `add-*`).
+      // Seules les modales d'AJOUT s'ouvrent (`DynamicModal` ne résout que `add-*`). Ce schéma ne
+      // tourne pas sur la config au runtime : le resolveur refait le contrôle, existence comprise.
       z.string().regex(/^add-.+/, "attendu une modale d'ajout `add-<id>`"),
     ).optional(),
   }).optional(),

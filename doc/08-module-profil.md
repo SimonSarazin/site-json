@@ -569,9 +569,10 @@ sous-types) — premier match gagne, repli `edit-profile` :
 Sur la section `profile-header` : `addConfig` gouverne le menu « Créer ». Un builtin
 (`organization|project|event|poi`) non désactivé ouvre le **form costum du site** quand il en
 existe exactement UN pour ce type (`costumCreateKey`, `components/add/addModals.ts` — même règle
-que `create: "inherit"` de l'admin et que le bouton « Ajouter » d'un finder coform : la règle
-commune `siteCostumAddModal`) ; ≥ 2 forms → modale standard conservée, le site déclare l'entrée
-voulue via `addConfig.custom` :
+que `create: "inherit"` de l'admin : la règle commune `siteCostumAddModal`) ; ≥ 2 forms → modale
+standard conservée, le site déclare l'entrée voulue via `addConfig.custom`. Le bouton « Ajouter »
+d'un finder coform ne suit PAS cette règle : un formulaire costum n'y sert que déclaré
+(`coform.finderAddNew`, cf. [21-module-coform](21-module-coform.md)) :
 
 ```jsonc
 "addConfig": { "organization": false, "project": false, "event": false, "poi": false,

@@ -9,7 +9,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { COFORM_QUERY_KEYS } from "../constants/queryKeys";
 import type { FinderConfig, FinderSearchResult, FinderElementType } from "../types";
 import { toFinderSearchResult } from "../utils";
-import { buildFinderSearchParams } from "../utils/finderFilters";
+import { buildFinderSearchParams, primaryFinderType } from "../utils/finderFilters";
 
 /**
  * Constantes UX du finder — alignées sur le comportement historique du modal.
@@ -103,9 +103,7 @@ export function useFinderSearchResults({
   const filtersPayload = searchParams.filters;
   const searchTypeArray = searchParams.searchType as GlobalAutocompleteCostumData["searchType"];
 
-  const fallbackType: FinderElementType = Array.isArray(config.type)
-    ? config.type[0]
-    : config.type;
+  const fallbackType: FinderElementType = primaryFinderType(config.type);
 
   const seuilAtteint = debouncedQuery.length >= FINDER_MIN_CHARS;
   const actif = enabled && !!entity && seuilAtteint;

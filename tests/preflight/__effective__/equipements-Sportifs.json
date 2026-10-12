@@ -24,6 +24,9 @@
       }
     }
   },
+  "finderAddNew": {
+    "poi": "add-poi"
+  },
   "editModals": {
     "poi": {
       "vierge": "edit-profile",

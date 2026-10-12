@@ -1,4 +1,4 @@
-import { useState, useMemo, useContext } from "react";
+import { useState, useMemo, useContext, useEffect } from "react";
 import { Search } from "lucide-react";
 import type { FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
@@ -6,13 +6,13 @@ import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { SiteContext } from "@/contexts/SiteContext";
-import { useCocolightOptional } from "@/hooks/useCocolight";
 import type { FormFieldMapping, FinderValue, FinderElement, FinderConfig } from "../types";
 import { FinderElementCard } from "./FinderElementCard";
 import { FinderSearchModal } from "./FinderSearchModal";
 import { FieldError, FieldLabel, HintText } from "./FormFields";
 import { useFinderElementImages, mergeResolvedFinderImages } from "../hooks/useFinderElementImages";
-import { resolveFinderAddNewModal } from "../utils/finderAddNew";
+import { finderAddNewDeclaration, resolveFinderAddNewModal } from "../utils/finderAddNew";
+import { primaryFinderType } from "../utils/finderFilters";
 import type { CostumFormRef } from "@/modules/profil/components/add/addModals";
 
 interface FinderFieldProps {
@@ -76,16 +76,33 @@ export function FinderField({
     return { ...defaultFinderConfig, ...field.finderConfig };
   }, [field.finderConfig]);
 
-  // Formulaire de création du bouton « Ajouter » (cf. `resolveFinderAddNewModal`). Lectures
-  // FACULTATIVES : `CoFormReadOnly` se rend hors providers — et le bouton n'y existe pas.
+  // Formulaire de création du bouton « Ajouter » (cf. `resolveFinderAddNewModal`). Lecture
+  // FACULTATIVE : `CoFormReadOnly` se rend hors providers — et le bouton n'y existe pas.
   const siteConfig = useContext(SiteContext)?.config;
-  const siteSlug = useCocolightOptional()?.entity?.slug ?? undefined;
-  const addNewModal = config.addNew && !readOnly
-    ? resolveFinderAddNewModal(siteConfig?.coform?.finderAddNew, field.name, config.type, {
-        costumForms: siteConfig?.costumForms as Record<string, CostumFormRef> | undefined,
-        siteSlug,
-      })
+  const canCreate = config.addNew && !readOnly;
+  const addNewType = primaryFinderType(config.type);
+  const addNewModal = canCreate
+    ? resolveFinderAddNewModal(
+        siteConfig?.coform?.finderAddNew,
+        field.name,
+        addNewType,
+        siteConfig?.costumForms as Record<string, CostumFormRef> | undefined,
+      )
     : null;
+
+  // Une déclaration que le resolveur refuse retire le bouton sans rien montrer à l'écran : on le dit,
+  // en développement, à qui configure le site.
+  const declaration = canCreate && !addNewModal
+    ? finderAddNewDeclaration(siteConfig?.coform?.finderAddNew, field.name, addNewType)
+    : null;
+  const deadDeclaration = declaration ? `${declaration.key} = « ${String(declaration.value)} »` : null;
+  useEffect(() => {
+    if (!import.meta.env.DEV || !deadDeclaration) return;
+    console.warn(
+      `[coform] coform.finderAddNew.${deadDeclaration} ne désigne aucune modale d'ajout (ni modale ` +
+        "standard, ni `add-<id>` d'un `costumForms` du site) : le bouton « Ajouter » de ce finder est masqué.",
+    );
+  }, [deadDeclaration]);
 
   // Éléments sélectionnés (valeur actuelle)
   const selectedElements: Record<string, FinderElement> = useMemo(() => {

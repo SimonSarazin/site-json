@@ -65,7 +65,13 @@ describe("FinderField — en anglais, un finder aux libellés legacy par défaut
 
   it("bouton, titre, placeholder et invite « Ajouter » sont en anglais", async () => {
     const champ = parseCoFormFields(FORMULAIRE)[0].fields[0];
-    const site = { config: { coform: { finderAddNew: { [champ.name]: "add-cae" } } }, setConfig: () => {} };
+    const site = {
+      config: {
+        coform: { finderAddNew: { [champ.name]: "add-cae" } },
+        costumForms: { cae: { id: "cae", entityType: "organizations" } },
+      },
+      setConfig: () => {},
+    };
     render(
       <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
         <LocalizationProvider>
