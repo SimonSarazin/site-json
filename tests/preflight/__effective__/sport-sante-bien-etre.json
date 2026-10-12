@@ -25,6 +25,17 @@
     }
   },
   "editModals": {
+    "citoyens": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-sport-sante-bienetre-citoyen",
+          "native": "edit-sport-sante-bienetre-citoyen",
+          "horsPerimetre": "edit-profile",
+          "nativeVuParUnTiers": "edit-profile"
+        }
+      ]
+    },
     "organizations": {
       "vierge": "edit-profile",
       "routes": [

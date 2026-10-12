@@ -22,6 +22,17 @@
     }
   },
   "editModals": {
+    "citoyens": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-ekilibre-citoyen",
+          "native": "edit-ekilibre-citoyen",
+          "horsPerimetre": "edit-profile",
+          "nativeVuParUnTiers": "edit-profile"
+        }
+      ]
+    },
     "organizations": {
       "vierge": "edit-profile",
       "routes": [
