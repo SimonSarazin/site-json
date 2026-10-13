@@ -82,8 +82,30 @@ const STRUCTURELLES = new Set(["address", "addressCountry", "addressLocality", "
   "localityId", "codeInsee", "geo", "geoPosition", "startDate", "endDate", "recurrency", "openingHours",
   "timeZone", "eventDates", "parent", "organizer"]);
 
-/** Valeur plausible pour un widget — l'`enum` déclaré prime, sinon on écrirait hors liste. */
+/**
+ * Valeurs candidates pour un champ texte qui porte `rules.regex` — essayées dans l'ordre, la première qui
+ * passe la regex gagne. `01/03/2003` couvre le motif jj/mm/aaaa : c'est la forme que le legacy STOCKE
+ * (`openingDate` du parc, mesuré 500/500 en jj/mm/aaaa) et la seule date — avec l'ISO et "" — que le
+ * digest live accepte (lib `liveDigest.ts`, type `date`). L'ISO suit pour un éventuel motif aaaa-mm-jj.
+ */
+const CANDIDATS_REGEX = ["01/03/2003", "2026-01-15", "zz-e2e@example.org", "https://example.org/zz"];
+
+/**
+ * Valeur plausible pour un widget — l'`enum` déclaré prime, sinon on écrirait hors liste ; une
+ * `rules.regex` déclarée est respectée, sinon on posterait ce que la modale refuse à la saisie
+ * (constat 2026-10-02 : `ZZ openingDate` → 400 AJV sur federationDesCae/cae, en bundle comme en live).
+ */
 function valeurPour(champ: string, def: Doc, nom: string): unknown {
+  const v = valeurBrute(champ, def, nom);
+  const regex = (def.rules as Doc | undefined)?.regex;
+  if (typeof regex !== "string" || typeof v !== "string" || champ === "name") return v;
+  const re = new RegExp(regex);
+  if (re.test(v)) return v;
+  // Repli sur `ZZ ${champ}` si aucun candidat ne passe : l'échec AJV qui suivra NOMME le champ.
+  return CANDIDATS_REGEX.find((c) => re.test(c)) ?? v;
+}
+
+function valeurBrute(champ: string, def: Doc, nom: string): unknown {
   if (STRUCTURELLES.has(champ) || def.group) return undefined;
   const e = def.enum as unknown[] | undefined;
   const premiere = Array.isArray(e) && e.length ? ((e[0] as Doc)?.value ?? e[0]) : null;
@@ -168,13 +190,24 @@ runner(`forms costum — add + edit e2e (mode ${MODE})`, () => {
     }
     // 2. Satellites de CHAQUE save (mesuré : le save émet news + activityStream + activityStreamReference,
     //    et pose des LIENS BIDIRECTIONNELS sur le parent/organizer — l'org PORTEUSE, une entité de PROD).
+    //    UNE requête `$in` par collection, jamais une par _id : `activityStreamReference` (7,6 M docs) et
+    //    `activityStream` n'ont AUCUN index sur `object.id` — mesuré 2026-10-02 : 5,6 s de parcours complet
+    //    par requête, soit ~190 s pour 34 entités. La boucle par _id dépassait le délai du hook (120 s) :
+    //    le hook était tué en plein nettoyage, les liens n'étaient jamais retirés, les assertions de
+    //    résidu jamais exécutées — et chaque passage laissait slugs, news, activityStream et liens sur
+    //    les porteuses de prod (passages du 2026-10-02 : 84 slugs, 219 news, 150 activityStream, 7 fiches liées).
     const lienKeys: Record<string, number> = {};
-    for (const id of ids) {
-      await base.collection("slugs").deleteMany({ id });
-      await base.collection("news").deleteMany({ $or: [{ "object.id": id }, { "target.id": id }] });
-      await base.collection("activityStream").deleteMany({ $or: [{ "object.id": id }, { "target.id": id }] });
-      await base.collection("activityStreamReference").deleteMany({ $or: [{ "object.id": id }, { "target.id": id }] });
-      for (const t of ["poi", "projects", "events", "organizations", "memberOf"]) lienKeys[`links.${t}.${id}`] = 1;
+    const idsListe = [...ids];
+    const satellites = { $or: [{ "object.id": { $in: idsListe } }, { "target.id": { $in: idsListe } }] };
+    if (idsListe.length) {
+      await base.collection("slugs").deleteMany({ id: { $in: idsListe } });
+      for (const c of ["news", "activityStream", "activityStreamReference"]) await base.collection(c).deleteMany(satellites);
+    }
+    // `members` : une ORGANISATION créée avec la porteuse pour parent pose `links.members.<id>` sur la
+    // porteuse (mesuré 2026-10-02 sur Institut Bleu, institut-bleu-acteur) — clé absente de la liste
+    // jusque-là, donc laissée à chaque passage même quand le hook allait au bout.
+    for (const id of idsListe) {
+      for (const t of ["poi", "projects", "events", "organizations", "memberOf", "members"]) lienKeys[`links.${t}.${id}`] = 1;
     }
     if (Object.keys(lienKeys).length) {
       // $unset des liens fantômes partout où ils ont pu être posés (porteuse, utilisateur de test…)
@@ -190,14 +223,19 @@ runner(`forms costum — add + edit e2e (mode ${MODE})`, () => {
       reste += await base.collection(c).countDocuments({ name: { $regex: `ZZ E2E .*${TAG}` } });
     }
     let liensRestants = 0;
+    let satellitesRestants = 0;
     if (ids.size) {
-      for (const c of ["organizations", "citoyens"]) {
-        liensRestants += await base.collection(c).countDocuments({ $or: [...ids].map((id) => ({ [`links.poi.${id}`]: { $exists: true } })) });
-      }
+      // TOUTES les clés de lien retirées plus haut, pas seulement `links.poi` : un lien `organizations`
+      // ou `memberOf` resté sur une porteuse ou sur l'utilisateur de test est le même résidu.
+      const qLiens = { $or: Object.keys(lienKeys).map((k) => ({ [k]: { $exists: true } })) };
+      for (const c of ["organizations", "citoyens", "projects", "events"]) liensRestants += await base.collection(c).countDocuments(qLiens);
+      satellitesRestants += await base.collection("slugs").countDocuments({ id: { $in: idsListe } });
+      for (const c of ["news", "activityStream", "activityStreamReference"]) satellitesRestants += await base.collection(c).countDocuments(satellites);
     }
     await mc.close();
     expect(reste, "la base doit rester à 0 résidu").toBe(0);
     expect(liensRestants, "aucun lien fantôme ne doit rester sur les entités de prod").toBe(0);
+    expect(satellitesRestants, "aucun satellite (slug, news, activityStream…) ne doit survivre aux entités de test").toBe(0);
     // 3. PLANCHER de preuve : l'assertion de forme saute les colonnes < 5 fiches — sur une base
     //    inadaptée elle dégénérerait en 0 comparaison sans bruit. On exige un minimum global.
     expect(comparaisons, `l'assertion de forme n'a comparé que ${comparaisons} champ(s) — base de référence inadaptée ?`).toBeGreaterThanOrEqual(Number(process.env.E2E_MIN_COMPARAISONS ?? 30));
@@ -341,6 +379,10 @@ runner(`forms costum — add + edit e2e (mode ${MODE})`, () => {
       // champs cibles d'un stamp `append` : le form les ACCUMULE à chaque save (fusion voulue, parité
       // legacy — ex. les tags d'institut-bleu-acteur reçoivent categoryThematic) → ni « modifiables »
       // ni « vidables » au sens de ce test.
+      // Un `write` de CHAMP peut, lui aussi, DÉRIVER la valeur d'autres champs : `rezoSante:tagsAvecThematiques`
+      // (tags envoyés = saisis ∪ thématiques cochées) ou `p62article:tagsWrite` (tag dérivé de la catégorie).
+      // Ces champs restent modifiables, mais leur attendu n'est pas la SAISIE : c'est ce que le formulaire
+      // ENVOIE (`buildPayload`), et la saisie doit y être incluse — sinon le write l'a perdue (cf. passe 1).
       const stampes = new Set(((doc.mutation as Doc | undefined)?.stamps as Doc[] | undefined ?? [])
         .filter((st) => st.op === "append").map((st) => String(st.field)));
       const exclus = (k: string, d2: Doc) => d2.required || d2.renderOnly || (d2 as { readOnly?: boolean }).readOnly || d2.group
@@ -359,11 +401,14 @@ runner(`forms costum — add + edit e2e (mode ${MODE})`, () => {
         else if (w === "number") { v1[k] = 77; modifies.push([k, 77]); }
       }
       v1.name = nom;
+      const envoye = (specEdit as unknown as { buildPayload: (v: Doc) => Doc }).buildPayload({ ...v1 });
       modificationsTestees += modifies.length;
       await runEntityMutation(specEdit as never, v1, { me: me as never, contextEntity: carrier as never });
       const apres1 = await base.collection(coll).findOne({ _id: cree!._id });
       for (const [k] of modifies) {
-        const attendu = v1[k]; const obtenu = apres1?.[k];
+        const saisi = v1[k]; const attendu = Array.isArray(saisi) && Array.isArray(envoye[k]) ? envoye[k] : saisi;
+        if (Array.isArray(saisi) && Array.isArray(attendu) && !saisi.every((x) => (attendu as unknown[]).includes(x))) ecarts.push(`ÉDITION(mod) ${k} : le write a PERDU la saisie ${JSON.stringify(saisi)} → ${JSON.stringify(attendu)}`);
+        const obtenu = apres1?.[k];
         // la forme STOCKÉE prime : un booléen modifié ressort dans la forme de la colonne (write),
         // un tableau en CSV… on compare par équivalence de lecture, pas par identité brute.
         const lireBool = (x: unknown) => x === true || (typeof x === "string" && ["true", "1", "oui", "yes"].includes(x.trim().toLowerCase()));

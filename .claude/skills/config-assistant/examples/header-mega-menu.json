@@ -15,23 +15,23 @@
     "nav": [
       {
         "label": {
-          "fr": "Les lieux",
-          "en": "Places"
+          "fr": "Les services",
+          "en": "Services"
         },
-        "icon": "map",
-        "path": "/lieux",
+        "icon": "building-2",
+        "path": "/annuaire-ressources",
         "featured": true,
         "children": [
           {
             "label": {
-              "fr": "Afficher tous les tiers-lieux",
-              "en": "Show all third places"
+              "fr": "Afficher tous les services",
+              "en": "Show all services"
             },
             "description": {
-              "fr": "Découvrez tous les lieux disponibles",
-              "en": "Discover all available places"
+              "fr": "Découvrez tous les services disponibles dans les tiers-lieux",
+              "en": "Discover all services available at third places"
             },
-            "path": "/lieux"
+            "path": "/annuaire-ressources"
           },
           {
             "label": {
@@ -46,17 +46,6 @@
           },
           {
             "label": {
-              "fr": "Manger",
-              "en": "Eat"
-            },
-            "description": {
-              "fr": "Cuisines partagées, bar participatifs, tiers-lieux nourriciers.",
-              "en": "Shared kitchens, participatory bars, food-oriented third places."
-            },
-            "path": "/lieux?typologies=Cuisine partagée / Foodlab"
-          },
-          {
-            "label": {
               "fr": "Coworker",
               "en": "Cowork"
             },
@@ -65,28 +54,6 @@
               "en": "Shared offices and coworking spaces."
             },
             "path": "/annuaire-ressources?resourceType=coworking"
-          },
-          {
-            "label": {
-              "fr": "S'instruire",
-              "en": "Learn"
-            },
-            "description": {
-              "fr": "Espaces culturels et livinglabs.",
-              "en": "Cultural spaces and living labs."
-            },
-            "path": "/lieux?typologies=LivingLab / Laboratoire d'innovation sociale"
-          },
-          {
-            "label": {
-              "fr": "Fabriquer",
-              "en": "Make"
-            },
-            "description": {
-              "fr": "Les Fablabs, Makerspace et Hackerspace.",
-              "en": "Fab labs, makerspaces and hackerspaces."
-            },
-            "path": "/lieux?typologies=Fablab / Makerspace / Hackerspace (Espaces du Faire)"
           },
           {
             "label": {
@@ -108,6 +75,39 @@
           },
           {
             "label": {
+              "fr": "Contactez-nous pour ajouter un service",
+              "en": "Contact us to add a service"
+            },
+            "description": {
+              "fr": "Proposez un service à référencer sur la plateforme",
+              "en": "Suggest a service to be listed on the platform"
+            },
+            "path": "mailto:contact@tiers-lieux.org"
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Les lieux",
+          "en": "Places"
+        },
+        "icon": "map",
+        "path": "/lieux",
+        "featured": true,
+        "children": [
+          {
+            "label": {
+              "fr": "Afficher tous les tiers-lieux",
+              "en": "Show all third places"
+            },
+            "description": {
+              "fr": "Découvrez tous les lieux disponibles",
+              "en": "Discover all available places"
+            },
+            "path": "/lieux"
+          },
+          {
+            "label": {
               "fr": "Mes lieux",
               "en": "My places"
             },
@@ -120,15 +120,60 @@
             "visibility": {
               "auth": "required"
             }
+          },
+          {
+            "label": {
+              "fr": "Observatoire des données",
+              "en": "Data observatory"
+            },
+            "description": {
+              "fr": "Explorez les données des tiers-lieux",
+              "en": "Explore third-place data"
+            },
+            "path": "/observatoire"
+          },
+          {
+            "label": {
+              "fr": "Réseaux régionaux",
+              "en": "Regional networks"
+            },
+            "description": {
+              "fr": "Découvrez les lieux filtrés par réseaux régionaux",
+              "en": "Explore the regional networks observatory"
+            },
+            "path": "/reseaux-regionaux"
+          },
+          {
+            "label": {
+              "fr": "Réseaux thématiques",
+              "en": "Thematic networks"
+            },
+            "description": {
+              "fr": "Découvrez les lieux filtrés par réseaux thématiques",
+              "en": "Explore the thematic networks observatory"
+            },
+            "path": "/reseaux-thematiques"
+          },
+          {
+            "label": {
+              "fr": "Les Licoop",
+              "en": "Licoop places"
+            },
+            "description": {
+              "fr": "Lieux comme communs de proximité",
+              "en": "Places as local commons"
+            },
+            "path": "/lieux?licoop=Oui"
           }
         ]
       },
       {
         "label": {
-          "fr": "Outils et ressources",
+          "fr": "Outils",
           "en": "Tools & Resources"
         },
         "icon": "wrench",
+        "path": "/outils-ressources",
         "children": [
           {
             "label": {
@@ -217,13 +262,24 @@
               "en": "Open data on third places. API, CSV..."
             },
             "path": "/api-donnees"
+          },
+          {
+            "label": {
+              "fr": "Tous les outils et ressources",
+              "en": "All tools and resources"
+            },
+            "description": {
+              "fr": "Retrouvez tous les outils proposés sur une seule page",
+              "en": "Find all the proposed tools on one page"
+            },
+            "path": "/outils-ressources"
           }
         ]
       },
       {
         "label": {
-          "fr": "S'entraider",
-          "en": "Help Each Other"
+          "fr": "Coopérer",
+          "en": "Cooperate"
         },
         "icon": "handshake",
         "children": [
@@ -270,67 +326,15 @@
               "en": "A platform that streamlines support requests and responses through a network of stakeholders"
             },
             "path": "https://aiguillage.tiers-lieux.org/"
-          }
-        ]
-      },
-      {
-        "label": {
-          "fr": "Observatoire",
-          "en": "Observatory"
-        },
-        "icon": "eye",
-        "children": [
-          {
-            "label": {
-              "fr": "Observatoire des données",
-              "en": "Data dashboard"
-            },
-            "path": "/observatoire",
-            "icon": "chart-column",
-            "description": {
-              "fr": "Les données des lieux avec de nombreux filtres",
-              "en": "Third-place data with extensive filtering"
-            }
           },
           {
             "label": {
-              "fr": "Réseaux régionaux",
-              "en": "Regional networks"
+              "fr": "Auto-diagnostic du lieu comme Licoop",
+              "en": "Place self-diagnosis as Licoop"
             },
             "description": {
-              "fr": "Découvrez les lieux filtrés par réseaux régionaux",
-              "en": "Explore the regional networks observatory"
-            },
-            "path": "/reseaux-regionaux"
-          },
-          {
-            "label": {
-              "fr": "Réseaux thématiques",
-              "en": "Thematic networks"
-            },
-            "description": {
-              "fr": "Découvrez les lieux filtrés par réseaux thématiques",
-              "en": "Explore the thematic networks observatory"
-            },
-            "path": "/reseaux-thematiques"
-          }
-        ]
-      },
-      {
-        "label": {
-          "fr": "Se gouverner",
-          "en": "Govern"
-        },
-        "path": "#",
-        "children": [
-          {
-            "label": {
-              "fr": "Auto-diagnostic collectif du lieu",
-              "en": "Collective self-diagnosis of the place"
-            },
-            "description": {
-              "fr": "Un diagnostic dédié aux lieux comme communs de proximité",
-              "en": "A diagnostic dedicated to places as local commons"
+              "fr": "Un diagnostic dédié aux lieux comme communs de proximité (Licoop)",
+              "en": "A diagnosis dedicated to places as local commons (Licoop)"
             },
             "path": "/coform/6876c3e58fa8df3c7f024253/place"
           },
@@ -367,8 +371,15 @@
             },
             "path": "/communaute"
           }
-        ],
-        "icon": "scale"
+        ]
+      },
+      {
+        "label": {
+          "fr": "À propos",
+          "en": "About"
+        },
+        "icon": "info",
+        "path": "/a-propos"
       }
     ],
     "sticky": true,

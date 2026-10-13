@@ -37,6 +37,10 @@
   --animate-float: float 3s ease-in-out infinite;
   --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
   --animate-marquee: marquee 25s linear infinite;
+  /* Respiration SANS ternissement : `pulse-glow` fait aussi varier l'opacité (0.5→0.8), ce qui
+     délave la couleur des pastilles de territoire — ici, seule la taille varie, couleur et
+     opacité restent pleines (cf. MapBubbles, `Flottant`). */
+  --animate-blink-scale: blink-scale 1.4s ease-in-out infinite;
   /* Animations d'entrée historiques (préférer tw-animate-css pour le neuf). */
   --animate-fade-in: fade-in 0.8s ease-out forwards;
   --animate-fade-in-up: fade-in-up 0.8s ease-out forwards;
@@ -56,6 +60,10 @@
   @keyframes pulse-glow {
     0%, 100% { opacity: 0.5; transform: scale(1); }
     50% { opacity: 0.8; transform: scale(1.05); }
+  }
+  @keyframes blink-scale {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.12); }
   }
   @keyframes marquee {
     0% { transform: translateX(0%); }
@@ -200,6 +208,7 @@
      `motion-safe:`. */
   .animate-float,
   .animate-pulse-glow,
+  .animate-blink-scale,
   .animate-marquee,
   .animate-bounce {
     animation: none;

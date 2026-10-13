@@ -102,7 +102,8 @@
       "title": "Recadrer l'image",
       "cancel": "Annuler",
       "apply": "Appliquer",
-      "useOriginal": "Utiliser l'image entière"
+      "useOriginal": "Utiliser l'image entière",
+      "format": "Format du recadrage"
     }
   },
   "reportDialog": {

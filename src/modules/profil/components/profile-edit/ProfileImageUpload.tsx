@@ -1,10 +1,12 @@
-import { useState, useRef } from "react";
+import { useMemo, useState, useRef } from "react";
 import { Camera, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useT } from "@/hooks/useT";
 import { useUploadProfileImage, useUploadProfileBanner } from "../../hooks/useProfileMutations";
 import { ImageCropDialog } from "@/modules/news";
+import type { AspectOption } from "@/modules/news/components/forms/ImageCropDialog";
+import { imageNaturalSize } from "../../lib/imageNaturalSize";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 
 interface ProfileImageUploadProps {
@@ -21,8 +23,8 @@ interface ProfileImageUploadProps {
  * Features:
  * - Preview de l'image actuelle
  * - Upload immédiat au choix du fichier
- * - Crop avec ImageCropDialog
- * - Compression automatique
+ * - Crop avec ImageCropDialog — avatar comme bannière : au format choisi (photo d'origine par
+ *   défaut) ou envoyée entière, pour garder la taille de la photo
  * - Loading state pendant l'upload
  *
  * @param entity - L'entité dont on modifie l'image
@@ -66,6 +68,31 @@ export function ProfileImageUpload({
       setCropDialogOpen(true);
     };
     reader.readAsDataURL(file);
+  };
+
+  // Format libre parmi des ratios usuels, la photo d'origine en premier (sélection par défaut).
+  const formatsImage = useMemo<AspectOption[]>(
+    () => [
+      { label: t("ProfileEdit.imageFormat.original"), value: "original" },
+      { label: t("ProfileEdit.imageFormat.wide"), value: 16 / 9 },
+      { label: t("ProfileEdit.imageFormat.panorama"), value: 3 },
+      { label: t("ProfileEdit.imageFormat.classic"), value: 4 / 3 },
+      { label: t("ProfileEdit.imageFormat.square"), value: 1 },
+    ],
+    [t],
+  );
+
+  // Photo envoyée telle quelle : le fichier d'origine — pour la bannière, avec une zone de recadrage qui
+  // couvre toute la photo, la copie que le backend en tire (`profilBannerUrl`) garde donc la même taille.
+  const handleUseOriginal = async () => {
+    if (!selectedFile || !previewUrl) return;
+    try {
+      const { width, height } = await imageNaturalSize(previewUrl);
+      await handleCropComplete(selectedFile, { x: 0, y: 0, width, height });
+    } catch (error) {
+      // Image illisible : même traitement que l'échec d'envoi (`handleCropComplete`).
+      console.error("Error reading image size:", error);
+    }
   };
 
   const handleCropComplete = async (croppedFile: File, cropArea?: { x: number; y: number; width: number; height: number }) => {
@@ -167,6 +194,8 @@ export function ProfileImageUpload({
           onOpenChange={setCropDialogOpen}
           imageUrl={previewUrl}
           aspect={type === "profile" ? 1 : 16 / 9}
+          aspectOptions={formatsImage}
+          onUseOriginal={handleUseOriginal}
           onCrop={(croppedBlob, cropArea) => {
             // Convert blob to file for handleCropComplete
             const file = new File([croppedBlob], selectedFile.name, { type: croppedBlob.type });

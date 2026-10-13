@@ -35,23 +35,23 @@
     "nav": [
       {
         "label": {
-          "fr": "Les lieux",
-          "en": "Places"
+          "fr": "Les services",
+          "en": "Services"
         },
-        "icon": "map",
-        "path": "/lieux",
+        "icon": "building-2",
+        "path": "/annuaire-ressources",
         "featured": true,
         "children": [
           {
             "label": {
-              "fr": "Afficher tous les tiers-lieux",
-              "en": "Show all third places"
+              "fr": "Afficher tous les services",
+              "en": "Show all services"
             },
             "description": {
-              "fr": "Découvrez tous les lieux disponibles",
-              "en": "Discover all available places"
+              "fr": "Découvrez tous les services disponibles dans les tiers-lieux",
+              "en": "Discover all services available at third places"
             },
-            "path": "/lieux"
+            "path": "/annuaire-ressources"
           },
           {
             "label": {
@@ -66,17 +66,6 @@
           },
           {
             "label": {
-              "fr": "Manger",
-              "en": "Eat"
-            },
-            "description": {
-              "fr": "Cuisines partagées, bar participatifs, tiers-lieux nourriciers.",
-              "en": "Shared kitchens, participatory bars, food-oriented third places."
-            },
-            "path": "/lieux?typologies=Cuisine partagée / Foodlab"
-          },
-          {
-            "label": {
               "fr": "Coworker",
               "en": "Cowork"
             },
@@ -85,28 +74,6 @@
               "en": "Shared offices and coworking spaces."
             },
             "path": "/annuaire-ressources?resourceType=coworking"
-          },
-          {
-            "label": {
-              "fr": "S'instruire",
-              "en": "Learn"
-            },
-            "description": {
-              "fr": "Espaces culturels et livinglabs.",
-              "en": "Cultural spaces and living labs."
-            },
-            "path": "/lieux?typologies=LivingLab / Laboratoire d'innovation sociale"
-          },
-          {
-            "label": {
-              "fr": "Fabriquer",
-              "en": "Make"
-            },
-            "description": {
-              "fr": "Les Fablabs, Makerspace et Hackerspace.",
-              "en": "Fab labs, makerspaces and hackerspaces."
-            },
-            "path": "/lieux?typologies=Fablab / Makerspace / Hackerspace (Espaces du Faire)"
           },
           {
             "label": {
@@ -128,6 +95,39 @@
           },
           {
             "label": {
+              "fr": "Contactez-nous pour ajouter un service",
+              "en": "Contact us to add a service"
+            },
+            "description": {
+              "fr": "Proposez un service à référencer sur la plateforme",
+              "en": "Suggest a service to be listed on the platform"
+            },
+            "path": "mailto:contact@tiers-lieux.org"
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Les lieux",
+          "en": "Places"
+        },
+        "icon": "map",
+        "path": "/lieux",
+        "featured": true,
+        "children": [
+          {
+            "label": {
+              "fr": "Afficher tous les tiers-lieux",
+              "en": "Show all third places"
+            },
+            "description": {
+              "fr": "Découvrez tous les lieux disponibles",
+              "en": "Discover all available places"
+            },
+            "path": "/lieux"
+          },
+          {
+            "label": {
               "fr": "Mes lieux",
               "en": "My places"
             },
@@ -140,15 +140,60 @@
             "visibility": {
               "auth": "required"
             }
+          },
+          {
+            "label": {
+              "fr": "Observatoire des données",
+              "en": "Data observatory"
+            },
+            "description": {
+              "fr": "Explorez les données des tiers-lieux",
+              "en": "Explore third-place data"
+            },
+            "path": "/observatoire"
+          },
+          {
+            "label": {
+              "fr": "Réseaux régionaux",
+              "en": "Regional networks"
+            },
+            "description": {
+              "fr": "Découvrez les lieux filtrés par réseaux régionaux",
+              "en": "Explore the regional networks observatory"
+            },
+            "path": "/reseaux-regionaux"
+          },
+          {
+            "label": {
+              "fr": "Réseaux thématiques",
+              "en": "Thematic networks"
+            },
+            "description": {
+              "fr": "Découvrez les lieux filtrés par réseaux thématiques",
+              "en": "Explore the thematic networks observatory"
+            },
+            "path": "/reseaux-thematiques"
+          },
+          {
+            "label": {
+              "fr": "Les Licoop",
+              "en": "Licoop places"
+            },
+            "description": {
+              "fr": "Lieux comme communs de proximité",
+              "en": "Places as local commons"
+            },
+            "path": "/lieux?licoop=Oui"
           }
         ]
       },
       {
         "label": {
-          "fr": "Outils et ressources",
+          "fr": "Outils",
           "en": "Tools & Resources"
         },
         "icon": "wrench",
+        "path": "/outils-ressources",
         "children": [
           {
             "label": {
@@ -237,13 +282,24 @@
               "en": "Open data on third places. API, CSV..."
             },
             "path": "/api-donnees"
+          },
+          {
+            "label": {
+              "fr": "Tous les outils et ressources",
+              "en": "All tools and resources"
+            },
+            "description": {
+              "fr": "Retrouvez tous les outils proposés sur une seule page",
+              "en": "Find all the proposed tools on one page"
+            },
+            "path": "/outils-ressources"
           }
         ]
       },
       {
         "label": {
-          "fr": "S'entraider",
-          "en": "Help Each Other"
+          "fr": "Coopérer",
+          "en": "Cooperate"
         },
         "icon": "handshake",
         "children": [
@@ -290,67 +346,15 @@
               "en": "A platform that streamlines support requests and responses through a network of stakeholders"
             },
             "path": "https://aiguillage.tiers-lieux.org/"
-          }
-        ]
-      },
-      {
-        "label": {
-          "fr": "Observatoire",
-          "en": "Observatory"
-        },
-        "icon": "eye",
-        "children": [
-          {
-            "label": {
-              "fr": "Observatoire des données",
-              "en": "Data dashboard"
-            },
-            "path": "/observatoire",
-            "icon": "chart-column",
-            "description": {
-              "fr": "Les données des lieux avec de nombreux filtres",
-              "en": "Third-place data with extensive filtering"
-            }
           },
           {
             "label": {
-              "fr": "Réseaux régionaux",
-              "en": "Regional networks"
+              "fr": "Auto-diagnostic du lieu comme Licoop",
+              "en": "Place self-diagnosis as Licoop"
             },
             "description": {
-              "fr": "Découvrez les lieux filtrés par réseaux régionaux",
-              "en": "Explore the regional networks observatory"
-            },
-            "path": "/reseaux-regionaux"
-          },
-          {
-            "label": {
-              "fr": "Réseaux thématiques",
-              "en": "Thematic networks"
-            },
-            "description": {
-              "fr": "Découvrez les lieux filtrés par réseaux thématiques",
-              "en": "Explore the thematic networks observatory"
-            },
-            "path": "/reseaux-thematiques"
-          }
-        ]
-      },
-      {
-        "label": {
-          "fr": "Se gouverner",
-          "en": "Govern"
-        },
-        "path": "#",
-        "children": [
-          {
-            "label": {
-              "fr": "Auto-diagnostic collectif du lieu",
-              "en": "Collective self-diagnosis of the place"
-            },
-            "description": {
-              "fr": "Un diagnostic dédié aux lieux comme communs de proximité",
-              "en": "A diagnostic dedicated to places as local commons"
+              "fr": "Un diagnostic dédié aux lieux comme communs de proximité (Licoop)",
+              "en": "A diagnosis dedicated to places as local commons (Licoop)"
             },
             "path": "/coform/6876c3e58fa8df3c7f024253/place"
           },
@@ -387,8 +391,15 @@
             },
             "path": "/communaute"
           }
-        ],
-        "icon": "scale"
+        ]
+      },
+      {
+        "label": {
+          "fr": "À propos",
+          "en": "About"
+        },
+        "icon": "info",
+        "path": "/a-propos"
       }
     ],
     "sticky": true,
@@ -1132,6 +1143,426 @@
             "className": "",
             "decorativeElements": {
               "type": "none"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/reservation",
+      "title": {
+        "fr": "Des espaces engagés, atypiques, foisonnant pour une expérience écologique, sociale, culturelle ou inclusive",
+        "en": "Committed, unconventional and vibrant spaces for an ecological, social, cultural or inclusive experience"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-search",
+          "id": "hero-complet",
+          "props": {
+            "headline": {
+              "fr": "Des espaces engagés, atypiques, foisonnant, pour une expérience écologique, sociale, culturelle ou inclusive ",
+              "en": "The third places social network"
+            },
+            "subhead": {
+              "fr": "Trouvez le service pour ...",
+              "en": "Find the place for ..."
+            },
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "Se réunir",
+                  "en": "Meet"
+                },
+                "filters": [
+                  {
+                    "param": "services",
+                    "values": [
+                      "meeting-room"
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": {
+                  "fr": "Coworker",
+                  "en": "Cowork"
+                },
+                "filters": [
+                  {
+                    "param": "typologies",
+                    "values": [
+                      "coworking"
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": {
+                  "fr": "Séjourner",
+                  "en": "Stay"
+                },
+                "filters": [
+                  {
+                    "param": "services",
+                    "values": [
+                      "accomodation"
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": {
+                  "fr": "+",
+                  "en": "+"
+                },
+                "href": "/lieux"
+              }
+            ],
+            "scrollTarget": "section-lieux",
+            "placeholder": {
+              "fr": "Ville, département, code postal ...",
+              "en": "City, ZIP code ..."
+            },
+            "searchButtonText": {
+              "fr": "Rechercher",
+              "en": "Search"
+            },
+            "backgroundImage": "images/tiersLieux/BG_Illus.png",
+            "searchVariant": "navigator-tl",
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "indexStepList": 5,
+              "defaultFilters": {
+                "$or": {
+                  "tags": {
+                    "$in": [
+                      "TiersLieux"
+                    ]
+                  }
+                },
+                "tags": {
+                  "$nin": [
+                    "RéseauTiersLieux"
+                  ]
+                },
+                "address.addressCountry": {
+                  "$in": [
+                    "BE",
+                    "FR",
+                    "GP",
+                    "GF",
+                    "IT",
+                    "RE",
+                    "MQ",
+                    "YT",
+                    "NC",
+                    "CH"
+                  ]
+                }
+              },
+              "defaultSortBy": {
+                "updated": -1
+              },
+              "searchBy": [
+                "name",
+                "address.addressLocality",
+                "address.level4Name",
+                "address.level3Name",
+                "address.level2Name",
+                "address.level1Name",
+                "address.postalCode"
+              ],
+              "notSourceKey": true
+            },
+            "filterGroups": [
+              {
+                "id": "typologies",
+                "label": {
+                  "fr": "Typologies",
+                  "en": "Types"
+                },
+                "options": [
+                  {
+                    "id": "ateliers-artisanaux",
+                    "label": {
+                      "fr": "Ateliers artisanaux partagés",
+                      "en": "Shared craft workshops"
+                    },
+                    "name": "Ateliers artisanaux partagés"
+                  },
+                  {
+                    "id": "coworking",
+                    "label": {
+                      "fr": "Bureaux partagés / Coworking",
+                      "en": "Shared offices / Coworking"
+                    },
+                    "name": "Bureaux partagés / Coworking"
+                  },
+                  {
+                    "id": "foodlab",
+                    "label": {
+                      "fr": "Cuisine partagée / Foodlab",
+                      "en": "Shared kitchen / Foodlab"
+                    },
+                    "name": "Cuisine partagée / Foodlab"
+                  },
+                  {
+                    "id": "fablab",
+                    "label": {
+                      "fr": "Fablab / Makerspace / Hackerspace",
+                      "en": "Fablab / Makerspace / Hackerspace"
+                    },
+                    "name": "Fablab / Makerspace / Hackerspace (Espaces du Faire)"
+                  },
+                  {
+                    "id": "livinglab",
+                    "label": {
+                      "fr": "LivingLab / Innovation sociale",
+                      "en": "LivingLab / Social innovation"
+                    },
+                    "name": "LivingLab / Laboratoire d'innovation sociale"
+                  },
+                  {
+                    "id": "nourricier",
+                    "label": {
+                      "fr": "Tiers-lieu nourricier",
+                      "en": "Food-producing third place"
+                    },
+                    "name": "Tiers-lieu nourricier"
+                  },
+                  {
+                    "id": "culturel",
+                    "label": {
+                      "fr": "Tiers-lieu culturel",
+                      "en": "Cultural third place"
+                    },
+                    "name": "Tiers-lieu culturel / Lieux intermédiaires et indépendants"
+                  },
+                  {
+                    "id": "autre",
+                    "label": {
+                      "fr": "Autre famille de tiers-lieux",
+                      "en": "Other third place types"
+                    },
+                    "name": "Autre famille de tiers-lieux"
+                  }
+                ]
+              }
+            ],
+            "filtersByAnswers": {
+              "services": {
+                "label": {
+                  "fr": "Service",
+                  "en": "Service"
+                },
+                "type": "form",
+                "value": {
+                  "Coworking": {
+                    "id": "6925e2b05dd63b02ca70d6d9",
+                    "finder": "answers.navigatorDesTierslieux25112025_209_0.findernavigatorDesTierslieux25112025_209_0miem3epsztzcm9dgim"
+                  },
+                  "Salle de Réunion": {
+                    "id": "6925869ad76aaf6c5a2b2f8a",
+                    "finder": "answers.navigatorDesTierslieux25112025_1436_0.findernavigatorDesTierslieux25112025_1436_0miem3epsztzcm9dgim"
+                  },
+                  "Hébérgement": {
+                    "id": "6925ee8ac537f8056114aec7",
+                    "finder": "answers.navigatorDesTierslieux25112025_2059_0.findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "coform-resource-directory",
+          "id": "reservation-annuaire-ressources-tl",
+          "props": {
+            "costumSlug": "navigatorDesTierslieux",
+            "contextId": "649ed498f93ee7202e6c8b12",
+            "contextType": "projects",
+            "limit": 5,
+            "showFilters": false,
+            "customHeader": {
+              "title": {
+                "fr": "Découvrir les services",
+                "en": "Discover services"
+              },
+              "linkText": {
+                "fr": "Voir tous les résultats",
+                "en": "View all results"
+              },
+              "linkHref": "/annuaire-ressources"
+            },
+            "finderSuffix": "miem3epsztzcm9dgim",
+            "fieldSuffixes": {
+              "equipments": "mieg8j24m89gm99t5mi",
+              "name": "mieg4k7yxrito5j9e6",
+              "area": "mieg4k7zslc8awrql2"
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 5,
+              "xl": 5
+            },
+            "resourceTypes": [
+              {
+                "id": "coworking",
+                "kind": "coworking",
+                "formId": "6925e2b05dd63b02ca70d6d9",
+                "stepPrefix": "navigatorDesTierslieux25112025_209_0",
+                "label": {
+                  "fr": "Coworking",
+                  "en": "Coworking"
+                },
+                "linkSuffix": "miq8118cmkh16zjwmt",
+                "detailSuffixes": {
+                  "equipments": "mieg8j24m89gm99t5mi",
+                  "moreInfo": "miq8auz2wess00qdkpe"
+                }
+              },
+              {
+                "id": "meeting-room",
+                "kind": "meeting",
+                "formId": "6925869ad76aaf6c5a2b2f8a",
+                "stepPrefix": "navigatorDesTierslieux25112025_1436_0",
+                "label": {
+                  "fr": "Salle de réunion",
+                  "en": "Meeting room"
+                },
+                "linkSuffix": "miq81uh4gat3vgbtgkj",
+                "detailSuffixes": {
+                  "equipments": "miok91fh1gta2sneeu5",
+                  "catering": "mieg8j24m89gm99t5mi",
+                  "moreInfo": "miq8a6oceswkv6i75jp",
+                  "about": "miolbscdcrucb5a8uuq",
+                  "tip": "miol2ccdl9a86x4f3yc"
+                },
+                "descriptionSuffix": "miolbscdcrucb5a8uuq"
+              },
+              {
+                "id": "accommodation",
+                "kind": "accommodation",
+                "formId": "6925ee8ac537f8056114aec7",
+                "stepPrefix": "navigatorDesTierslieux25112025_2059_0",
+                "label": {
+                  "fr": "Hébergement",
+                  "en": "Accommodation"
+                },
+                "linkSuffix": "miq83c8getjt3lcz64f",
+                "detailSuffixes": {
+                  "equipments": "mieg8j24m89gm99t5mi",
+                  "services": "miq86g5vaw1kavrapkb",
+                  "roomType": "mix3hskq78wglr6m61x",
+                  "moreInfo": "miq88plgleoln5tmc7b"
+                },
+                "descriptionSuffix": "miq88plgleoln5tmc7b",
+                "servicesSuffix": "miq86g5vaw1kavrapkb"
+              }
+            ]
+          }
+        },
+        {
+          "type": "content",
+          "id": "les-lieux",
+          "props": {
+            "category": {
+              "fr": "Les lieux",
+              "en": "The places"
+            },
+            "categoryVariant": "pill",
+            "title": {
+              "fr": "Pour vos réunions, séminaires, formations, faites le choix d’un lieu engagé, atypique, foisonnant et vivez une expérience écologique, sociale, culturelle ou inclusive ",
+              "en": "Discover third places, explore their specificities and contribute to the life of a place."
+            },
+            "description": {
+              "fr": "Les tiers-lieux sont des espaces hybrides de rencontre et de partage. Ils favorisent la coopération, l'innovation sociale et le développement local. Découvrez la diversité de ces lieux qui réinventent notre façon de travailler, d'apprendre et de vivre ensemble.",
+              "en": "Third places are hybrid spaces for meeting and sharing. They promote cooperation, social innovation and local development. Discover the diversity of these places that reinvent the way we work, learn and live together."
+            },
+            "tags": [
+              {
+                "fr": "Atelier artisanaux partagés",
+                "en": "Shared craft workshops"
+              },
+              {
+                "fr": "Bureaux partagés / Coworking",
+                "en": "Shared offices / Coworking"
+              },
+              {
+                "fr": "Cuisine partagée / Foodlab",
+                "en": "Shared kitchen / Foodlab"
+              },
+              {
+                "fr": "Fablab / Makerspace / Hackerspace",
+                "en": "Fablab / Makerspace / Hackerspace"
+              },
+              {
+                "fr": "Livinglab / Laboratoire d'innovation sociale",
+                "en": "Livinglab / Social innovation lab"
+              },
+              {
+                "fr": "Tiers-lieu nourricier",
+                "en": "Nurturing third place"
+              },
+              {
+                "fr": "Tiers-lieu culturel / Indépendants",
+                "en": "Cultural third place / Independents"
+              },
+              {
+                "fr": "Autres",
+                "en": "Others"
+              }
+            ],
+            "image": "images/tiersLieux/image1.png",
+            "imagePosition": "right"
+          }
+        },
+        {
+          "type": "content",
+          "id": "documentation",
+          "props": {
+            "title": {
+              "en": "Why choose a third place",
+"fr": "Pourquoi choisir un tiers-lieu"
+            },
+            "description": {
+              "en": "A lively, friendly setting for working differently, far from standardised meeting rooms. Shared spaces, equipment and services suited to meetings, seminars, training courses or residencies. A place that fosters encounters, exchanges and cooperation with a territory and its actors.",
+"fr": "Un cadre vivant et convivial pour travailler autrement, loin des salles de réunion standardisées. Des espaces, équipements et services mutualisés, adaptés aux réunions, séminaires, formations ou résidences. Un lieu qui favorise les rencontres, les échanges et les coopérations avec un territoire et ses acteurs."
+            },
+            "image": "images/tiersLieux/docs.png",
+            "imagePosition": "left",
+            "links": []
+          }
+        },
+        {
+          "type": "content",
+          "id": "sentraider",
+          "props": {
+            "category": {
+              "fr": "Experiences",
+              "en": "Help each other"
+            },
+            "categoryVariant": "pill",
+            "title": {
+              "en": "They came to us",
+              "fr": "Ils sont venus chez nous"
+            },
+            "description": {
+              "en": "Coming soon: feedback from past guests.",
+              "fr": "Bientôt, des retours d'expériences.."
+            },
+            "image": "images/tiersLieux/sentraider.png",
+            "imagePosition": "right",
+            "iconCard": {
+              "svg": "<svg width=\"52\" height=\"42\" viewBox=\"0 0 52 42\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M19.4258 35.7421L51.6576 35.7035L42.7555 0.484863L1.74944 22.7695C0.764583 23.3089 0.252966 24.4521 0.534355 25.5438L2.64477 33.8925C2.92616 34.9843 3.91102 35.7549 5.03658 35.7549H11.0353L10.1144 41.4577L19.4258 35.7421Z\" fill=\"#FFD836\"></path></svg>"
+            },
+            "links": [],
+            "decorativeElements": {
+              "type": "colored-squares"
             }
           }
         }
@@ -2394,6 +2825,227 @@
       }
     },
     {
+      "path": "/a-propos",
+      "title": {
+        "fr": "À propos de Tiers-Lieux.org",
+        "en": "About Tiers-Lieux.org"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "description": {
+          "fr": "Découvrez l'histoire, les missions et la gouvernance du réseau social par et pour les tiers-lieux.",
+          "en": "Discover the history, mission and governance of the social network by and for third places."
+        }
+      },
+      "sections": [
+        {
+          "type": "title",
+          "id": "a-propos-hero",
+          "props": {
+            "title": {
+              "fr": "À propos de Tiers-Lieux.org",
+              "en": "About Tiers-Lieux.org"
+            },
+            "subtitle": {
+              "fr": "Le réseau social par et pour les tiers-lieux",
+              "en": "The social network by and for third places"
+            },
+            "align": "center",
+            "size": "xl"
+          }
+        },
+        {
+          "type": "content",
+          "id": "a-propos-introduction",
+          "props": {
+            "title": {
+              "fr": "Bienvenue sur cette plateforme dédiée à la coopération entre lieux",
+              "en": "Welcome to this platform dedicated to cooperation between places"
+            },
+            "description": {
+              "fr": "Ici, vous pouvez communiquer entre tiers-lieux, utiliser de super outils libres pour vous faciliter la vie et profiter de nombreux services proposés par les tiers-lieux eux-mêmes. Mais qu'est-ce qui fait l'originalité de Tiers-Lieux.org ? On vous dit tout ci-dessous !",
+              "en": "Here, you can connect with other third places, use great free tools to make everyday life easier, and benefit from services offered by third places themselves. So what makes Tiers-Lieux.org unique? Read on to find out."
+            },
+            "imagePosition": "right",
+            "width": "wide"
+          }
+        },
+        {
+          "type": "content",
+          "id": "a-propos-histoire",
+          "props": {
+            "category": {
+              "fr": "Depuis 2010",
+              "en": "Since 2010"
+            },
+            "title": {
+              "fr": "Une histoire de communs et de liens",
+              "en": "A story of commons and connection"
+            },
+            "description": {
+              "fr": "À l'origine de Tiers-Lieux.org, nous sommes un groupe d'acteurs des tiers-lieux et des communs, attaché à l'idée de mettre les tiers-lieux en lien et d'organiser ce réseau de la façon la plus démocratique possible.\n\nDepuis 2010, nous produisons des communs, des outils, des travaux et des recherches pour permettre le développement de tiers-lieux ouverts, libres, conviviaux et partagés, pensés et pratiqués comme des communs physiques et sociaux de proximité.\n\nAvec peu de financements publics, notamment sur la question des communs, nous sommes convaincus que des pratiques démocratiques fortes et la mutualisation entre nos lieux nous permettront de dépasser les obstacles.",
+              "en": "Tiers-Lieux.org was started by a group of people involved in third places and the commons, committed to connecting third places and organising this network as democratically as possible.\n\nSince 2010, we have been creating commons, tools, projects and research to support the development of open, free, welcoming and shared third places, conceived and practised as local physical and social commons.\n\nWith limited public funding, especially for the commons, we believe that strong democratic practices and mutual support between our places can help us overcome these challenges."
+            },
+            "imagePosition": "right",
+            "width": "wide"
+          }
+        },
+        {
+          "type": "content",
+          "id": "a-propos-naissance",
+          "props": {
+            "title": {
+              "fr": "Remettre les tiers-lieux aux commandes",
+              "en": "Putting third places in the driving seat"
+            },
+            "description": {
+              "fr": "Nous avons plus que jamais besoin d'un réseau fort de lieux libres, ouverts et partagés, qui s'organisent, se coalisent et se mobilisent face aux enjeux climatiques, numériques, physiques et sociaux. Nous avons donc voulu remettre les tiers-lieux au centre et aux commandes de leur propre écosystème.\n\nEn 2025, l'idée d'une plateforme qui valorise les tiers-lieux et leurs services, gérée par les lieux eux-mêmes, a commencé à prendre forme. En 2026, Tiers-Lieux.org est né dans sa nouvelle version !",
+              "en": "We need a strong network of free, open and shared places more than ever: places that organise, build alliances and mobilise around climate, digital, physical and social challenges. We wanted to put third places back at the heart of, and in charge of, their own ecosystem.\n\nIn 2025, the idea of a platform showcasing third places and their services, managed by the places themselves, began to take shape. In 2026, the new version of Tiers-Lieux.org was born!"
+            },
+            "imagePosition": "left",
+            "width": "wide"
+          }
+        },
+        {
+          "type": "content",
+          "id": "a-propos-missions",
+          "props": {
+            "category": {
+              "fr": "Nos missions",
+              "en": "Our mission"
+            },
+            "title": {
+              "fr": "Faire réseau, soutenir et coopérer",
+              "en": "Connecting, supporting and cooperating"
+            },
+            "description": {
+              "fr": "- **Créer du lien** entre les tiers-lieux.\n- **Valoriser et soutenir les lieux** en donnant de la visibilité à leurs services : coworking, restauration, location de salles, hébergement et bien d'autres.\n- **Faciliter le quotidien et la coopération** grâce à une suite d'outils variés, performants et libres.\n- **Favoriser l'entraide** en proposant des outils, des moments et des lieux pour se retrouver, échanger et se soutenir.\n- **Construire une gouvernance démocratique et participative** où les lieux sont au cœur des décisions.",
+              "en": "- **Build connections** between third places.\n- **Showcase and support places** by making their services visible: coworking, food, room hire, accommodation and more.\n- **Make everyday work and cooperation easier** with a diverse suite of effective free tools.\n- **Encourage mutual support** with tools, gatherings and spaces to meet, exchange and help one another.\n- **Develop democratic, participatory governance** with places at the heart of decision-making."
+            },
+            "imagePosition": "right",
+            "width": "wide"
+          }
+        },
+        {
+          "type": "title",
+          "id": "a-propos-licoop-intro",
+          "props": {
+            "title": {
+              "fr": "Ce qui rend Tiers-Lieux.org différent",
+              "en": "What makes Tiers-Lieux.org different"
+            },
+            "subtitle": {
+              "fr": "Un réseau démocratique et une infrastructure numérique construite avec les lieux.",
+              "en": "A democratic network and digital infrastructure built with the places themselves."
+            },
+            "align": "center",
+            "size": "lg"
+          }
+        },
+        {
+          "type": "content",
+          "id": "a-propos-licoop",
+          "props": {
+            "category": {
+              "fr": "La mention Licoop",
+              "en": "The Licoop designation"
+            },
+            "title": {
+              "fr": "Soutenir les lieux engagés dans les communs",
+              "en": "Supporting places committed to the commons"
+            },
+            "description": {
+              "fr": "Pour défendre l'idée des tiers-lieux et éviter son dévoiement marchand ou institutionnel, nous proposons la mention « Licoop ». Les Licoop sont des tiers-lieux engagés dans les communs, la gouvernance partagée et l'Économie sociale et solidaire. Par leurs pratiques, ils défendent l'idée même de tiers-lieu (au sens d'Oldenburg et Burret) et contribuent à rendre ces lieux accessibles à toutes et tous.\n\nLa qualification s'inspire du [système participatif de garantie (SPG)](https://fr.wikipedia.org/wiki/Syst%C3%A8me_participatif_de_garantie), utilisé notamment par Nature & Progrès.\n\n**Première étape : l'auto-diagnostic.** Les membres du tiers-lieu répondent à un questionnaire qui permet d'évaluer les pratiques collectives autour de trois thèmes : le lieu pensé comme un commun, le lieu de sociabilité et le respect du manifeste convivialiste. C'est aussi un outil pour prendre du recul, se poser les bonnes questions et progresser ensemble. L'auto-diagnostic situe le lieu sur l'échelle Licoop.\n\n**Prochaine étape : la validation par les pairs.** L'auto-diagnostic sera étudié par deux lieux déjà Licoop qui connaissent le lieu candidat. La validation du niveau Licoop lui donnera des droits de participation aux décisions de Tiers-Lieux.org. Un lieu est certifié Licoop à partir du niveau 2 et vise le niveau 3 sur la plupart des questions.",
+              "en": "To defend the idea of third places and prevent it from being diverted for commercial or institutional purposes, we propose the “Licoop” designation. Licoop places are committed to the commons, shared governance and the social and solidarity economy. Through their practices, they uphold the very idea of a third place (as described by Oldenburg and Burret) and help make these places accessible to everyone.\n\nThe designation is inspired by the [Participatory Guarantee System (PGS)](https://en.wikipedia.org/wiki/Participatory_guarantee_system), used for example by Nature & Progrès.\n\n**First step: self-assessment.** Members of a third place answer a questionnaire about collective practices across three themes: the place as a commons, the place as a space for social connection, and respect for the convivialist manifesto. It is also a chance to reflect, ask the right questions and improve together. The self-assessment positions the place on the Licoop scale.\n\n**Next step: peer review.** The self-assessment will be reviewed by two Licoop places that know the applicant. Validation of the Licoop level will grant the place rights to participate in Tiers-Lieux.org decisions. A place is certified Licoop from level 2 and aims for level 3 on most questions."
+            },
+            "links": [
+              {
+                "label": {
+                  "fr": "Découvrir le système participatif de garantie",
+                  "en": "Learn about Participatory Guarantee Systems"
+                },
+                "href": "https://fr.wikipedia.org/wiki/Syst%C3%A8me_participatif_de_garantie"
+              }
+            ],
+            "imagePosition": "right",
+            "width": "wide"
+          }
+        },
+        {
+          "type": "content",
+          "id": "a-propos-gouvernance",
+          "props": {
+            "category": {
+              "fr": "Gouvernance partagée",
+              "en": "Shared governance"
+            },
+            "title": {
+              "fr": "Les lieux Licoop au cœur des décisions",
+              "en": "Licoop places at the heart of decision-making"
+            },
+            "description": {
+              "fr": "Pour que la plateforme évolue réellement avec les lieux, nous proposons un modèle de gouvernance reposant sur les lieux Licoop et le principe « un lieu, une voix ».\n\nLes lieux Licoop expérimentent un cadre de décision qui mobilise plus largement la communauté et facilite la prise de décision, avec trois modalités de vote :\n\n- Un vote en démocratie directe.\n- Un vote que l'on peut déléguer au réseau de son choix, qui peut représenter les lieux Licoop dans la gouvernance.\n- Un vote que l'on peut déléguer aux contributeurs de son choix.\n\nCe cadre pourra évoluer, dans le respect du principe « un lieu, une voix ». Un outillage est en cours de déploiement, inspiré de [premières pratiques de vote dans l'écosystème des tiers-lieux](https://forum.tiers-lieux.org/t/mettre-sous-licence-libre-les-contenus-de-formation-quand-ils-sont-finances-par-largent-public/3129?u=simonsarazin).",
+              "en": "For the platform to evolve with the places themselves, we propose a governance model centred on Licoop places and the principle “one place, one vote”.\n\nLicoop places are experimenting with a decision-making framework that involves the wider community and makes decisions easier, through three voting options:\n\n- A direct-democracy vote.\n- A vote that can be delegated to a network of one's choice, which can represent Licoop places in the governance process.\n- A vote that can be delegated to contributors of one's choice.\n\nThis framework may evolve while respecting the principle “one place, one vote”. Tools are being developed, inspired by [early voting practices in the third-place ecosystem](https://forum.tiers-lieux.org/t/mettre-sous-licence-libre-les-contenus-de-formation-quand-ils-sont-finances-par-largent-public/3129?u=simonsarazin)."
+            },
+            "links": [
+              {
+                "label": {
+                  "fr": "Lire les premières pratiques de vote",
+                  "en": "Read about early voting practices"
+                },
+                "href": "https://forum.tiers-lieux.org/t/mettre-sous-licence-libre-les-contenus-de-formation-quand-ils-sont-finances-par-largent-public/3129?u=simonsarazin"
+              }
+            ],
+            "imagePosition": "left",
+            "width": "wide"
+          }
+        },
+        {
+          "type": "content",
+          "id": "a-propos-contact",
+          "props": {
+            "category": {
+              "fr": "Contact",
+              "en": "Contact"
+            },
+            "title": {
+              "fr": "Restons en lien",
+              "en": "Let's stay in touch"
+            },
+            "description": {
+              "fr": "Une question, une proposition ou envie d'échanger avec le réseau ? Écrivez-nous ou rejoignez la discussion sur le forum.",
+              "en": "Have a question, a suggestion, or want to connect with the network? Email us or join the discussion on the forum."
+            },
+            "links": [
+              {
+                "label": {
+                  "fr": "Écrire à contact@tiers-lieux.org",
+                  "en": "Email contact@tiers-lieux.org"
+                },
+                "href": "mailto:contact@tiers-lieux.org"
+              },
+              {
+                "label": {
+                  "fr": "Nous contacter sur le forum",
+                  "en": "Contact us on the forum"
+                },
+                "href": "https://forum.tiers-lieux.org/g/Tiers-lieux.org"
+              },
+              {
+                "label": {
+                  "fr": "Nous contacter sur le chat Tiers-lieux.org",
+                  "en": "Contact us on the Tiers-lieux.org chat"
+                },
+                "href": "https://chat.tiers-lieux.org/#/room/!bmKeDvkHQzfhlRHpUc:tiers-lieux.org?via=tiers-lieux.org&via=matrix.org&via=lamyne.org"
+              }
+            ],
+            "imagePosition": "right",
+            "width": "wide"
+          }
+        }
+      ]
+    },
+    {
       "path": "/api-donnees",
       "title": {
         "fr": "API et données ouvertes - Le réseau social des tiers-lieux",
@@ -2405,8 +3057,34 @@
           "id": "api-donnees",
           "props": {
             "html": {
-              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\"><h1 class=\"text-3xl font-bold mb-6\">API et données ouvertes</h1><p class=\"text-lg text-muted-foreground mb-8\">Toutes les datas des Tiers Lieux et des réseaux.<br/>Récupérez, Naviguez, Retravaillez la data des Tiers Lieux à votre guise. Créer plus de collaboration, de valeurs ajoutées, communiquez.</p><h2 class=\"text-xl font-bold mb-4\">Tiers-lieux :</h2><div class=\"flex gap-3 mb-8\"><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">API</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">JSON</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">CSV</span></div><h2 class=\"text-xl font-bold mb-4\">Réseaux :</h2><div class=\"grid grid-cols-2 md:grid-cols-3 gap-2 mb-8 text-sm text-muted-foreground\"><span>Auvergne-Rhône-Alpes</span><span>Bourgogne-Franche-Comté</span><span>Bretagne</span><span>Centre-Val de Loire</span><span>Corse</span><span>Grand Est</span><span>Guadeloupe</span><span>Hauts-de-France</span><span>Normandie</span><span>Nouvelle-Aquitaine</span><span>Occitanie</span><span>Pays de la Loire</span><span>Provence-Alpes-Côte d'Azur</span><span>Île-de-France</span><span>Guyane</span><span>Martinique</span><span>Réunion</span><span>Mayotte</span></div><hr class=\"my-6\"/><p class=\"text-sm text-muted-foreground\">Les données sont sous licence <strong>ODBL</strong>.</p><p class=\"text-sm text-muted-foreground\">La plateforme est basée sur le logiciel libre <strong>Communecter</strong>, qui est sous licence <strong>GPL</strong>.</p></div>",
-              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\"><h1 class=\"text-3xl font-bold mb-6\">API and open data</h1><p class=\"text-lg text-muted-foreground mb-8\">All the data of third places and networks.<br/>Retrieve, browse and rework third-place data as you wish. Create more collaboration, more added value, communicate.</p><h2 class=\"text-xl font-bold mb-4\">Third places:</h2><div class=\"flex gap-3 mb-8\"><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">API</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">JSON</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">CSV</span></div><h2 class=\"text-xl font-bold mb-4\">Networks:</h2><div class=\"grid grid-cols-2 md:grid-cols-3 gap-2 mb-8 text-sm text-muted-foreground\"><span>Auvergne-Rhône-Alpes</span><span>Bourgogne-Franche-Comté</span><span>Bretagne</span><span>Centre-Val de Loire</span><span>Corse</span><span>Grand Est</span><span>Guadeloupe</span><span>Hauts-de-France</span><span>Normandie</span><span>Nouvelle-Aquitaine</span><span>Occitanie</span><span>Pays de la Loire</span><span>Provence-Alpes-Côte d'Azur</span><span>Île-de-France</span><span>Guyane</span><span>Martinique</span><span>Réunion</span><span>Mayotte</span></div><hr class=\"my-6\"/><p class=\"text-sm text-muted-foreground\">The data is licensed under <strong>ODBL</strong>.</p><p class=\"text-sm text-muted-foreground\">The platform is built on the open-source software <strong>Communecter</strong>, licensed under <strong>GPL</strong>.</p></div>"
+              "fr": "<main class=\"container mx-auto max-w-5xl px-4 py-12\"><header class=\"mb-10 max-w-3xl\"><h1 class=\"mb-4 text-3xl font-bold\">API et données ouvertes</h1><p class=\"text-lg leading-relaxed text-muted-foreground\"><strong>Toutes les datas des Tiers Lieux et des réseaux.</strong><br/>Récupérez, naviguez et retravaillez la data des Tiers Lieux à votre guise.</p></header><section class=\"mb-10\"><h2 class=\"mb-4 text-xl font-semibold\">Tiers-lieux</h2><p class=\"mb-4 text-sm text-muted-foreground\">Téléchargez les données nationales au format de votre choix.</p><div class=\"flex flex-wrap gap-3\"><a class=\"rounded border border-border px-4 py-2 font-medium text-primary hover:bg-primary/10\" href=\"https://www.communecter.org/api/organization/get/key/franceTierslieux/format/ftl/limit/4000\" target=\"_blank\" rel=\"noopener noreferrer\">API / JSON ↗</a><a class=\"rounded border border-border px-4 py-2 font-medium text-primary hover:bg-primary/10\" href=\"https://www.communecter.org/api/organization/get/key/franceTierslieux/format/ftl/limit/4000/extraFormat/csv\" target=\"_blank\" rel=\"noopener noreferrer\">CSV ↗</a></div></section><section class=\"mb-10\"><h2 class=\"mb-2 text-xl font-semibold\">Réseaux</h2><p class=\"mb-4 text-sm text-muted-foreground\">Téléchargez les données des tiers-lieux réseau par réseau au format CSV.</p><ul class=\"grid gap-2 sm:grid-cols-2 lg:grid-cols-3\"><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1fc6ff9925a108b4579/extraFormat/csv\">Auvergne-Rhône-Alpes — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1f26ff9925a108b4577/extraFormat/csv\">Bourgogne-Franche-Comté — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1c36ff9925a108b4570/extraFormat/csv\">Bretagne — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1cd6ff9925a108b4572/extraFormat/csv\">Centre-Val de Loire — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1a16ff9925a108b456e/extraFormat/csv\">Corse — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1d46ff9925a108b4573/extraFormat/csv\">Grand Est — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/650c9eceb8d63f268667a6e1/extraFormat/csv\">Guadeloupe — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1ed6ff9925a108b4576/extraFormat/csv\">Hauts-de-France — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1c96ff9925a108b4571/extraFormat/csv\">Normandie — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1ac6ff9925a108b456f/extraFormat/csv\">Nouvelle-Aquitaine — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/598412b76ff9920d048b4569/extraFormat/csv\">Occitanie — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1986ff9925a108b456d/extraFormat/csv\">Pays de la Loire — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1e26ff9925a108b4574/extraFormat/csv\">Provence-Alpes-Côte d'Azur — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d18f6ff9925a108b456c/extraFormat/csv\">Île-de-France — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/58be53b694ef47df1d0ddbcd/extraFormat/csv\">Guyane — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/58be480a94ef47d1250ddbcd/extraFormat/csv\">Martinique — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/58be4af494ef47df1d0ddbcc/extraFormat/csv\">Réunion — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/58be480c94ef47d1250ddbce/extraFormat/csv\">Mayotte — CSV ↗</a></li></ul></section><hr class=\"my-6\"/><p class=\"text-sm text-muted-foreground\">Les données sont sous licence <strong>ODbL</strong>.</p><p class=\"mt-2 text-sm text-muted-foreground\">La plateforme est basée sur le logiciel libre <strong>Communecter</strong>, sous licence <strong>MIT</strong>.</p></main>",
+              "en": "<main class=\"container mx-auto max-w-5xl px-4 py-12\"><header class=\"mb-10 max-w-3xl\"><h1 class=\"mb-4 text-3xl font-bold\">API and open data</h1><p class=\"text-lg leading-relaxed text-muted-foreground\"><strong>All data on third places and networks.</strong><br/>Retrieve, browse and rework third-place data as you wish. Create more collaboration and added value, and communicate.</p></header><section class=\"mb-10\"><h2 class=\"mb-4 text-xl font-semibold\">Third places</h2><p class=\"mb-4 text-sm text-muted-foreground\">Download national data in the format you need.</p><div class=\"flex flex-wrap gap-3\"><a class=\"rounded border border-border px-4 py-2 font-medium text-primary hover:bg-primary/10\" href=\"https://www.communecter.org/api/organization/get/key/franceTierslieux/format/ftl/limit/4000\" target=\"_blank\" rel=\"noopener noreferrer\">API / JSON ↗</a><a class=\"rounded border border-border px-4 py-2 font-medium text-primary hover:bg-primary/10\" href=\"https://www.communecter.org/api/organization/get/key/franceTierslieux/format/ftl/limit/4000/extraFormat/csv\" target=\"_blank\" rel=\"noopener noreferrer\">CSV ↗</a></div></section><section class=\"mb-10\"><h2 class=\"mb-2 text-xl font-semibold\">Networks</h2><p class=\"mb-4 text-sm text-muted-foreground\">Download third-place data for each network in CSV format.</p><ul class=\"grid gap-2 sm:grid-cols-2 lg:grid-cols-3\"><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1fc6ff9925a108b4579/extraFormat/csv\">Auvergne-Rhône-Alpes — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1f26ff9925a108b4577/extraFormat/csv\">Bourgogne-Franche-Comté — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1c36ff9925a108b4570/extraFormat/csv\">Bretagne — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1cd6ff9925a108b4572/extraFormat/csv\">Centre-Val de Loire — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1a16ff9925a108b456e/extraFormat/csv\">Corse — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1d46ff9925a108b4573/extraFormat/csv\">Grand Est — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/650c9eceb8d63f268667a6e1/extraFormat/csv\">Guadeloupe — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1ed6ff9925a108b4576/extraFormat/csv\">Hauts-de-France — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1c96ff9925a108b4571/extraFormat/csv\">Normandie — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1ac6ff9925a108b456f/extraFormat/csv\">Nouvelle-Aquitaine — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/598412b76ff9920d048b4569/extraFormat/csv\">Occitanie — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1986ff9925a108b456d/extraFormat/csv\">Pays de la Loire — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d1e26ff9925a108b4574/extraFormat/csv\">Provence-Alpes-Côte d'Azur — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/5979d18f6ff9925a108b456c/extraFormat/csv\">Île-de-France — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/58be53b694ef47df1d0ddbcd/extraFormat/csv\">Guyane — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/58be480a94ef47d1250ddbcd/extraFormat/csv\">Martinique — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/58be4af494ef47df1d0ddbcc/extraFormat/csv\">Réunion — CSV ↗</a></li><li><a href=\"https://cartographie.francetierslieux.fr/api/organization/get/key/franceTierslieux/format/ftl/limit/1000/level3/58be480c94ef47d1250ddbce/extraFormat/csv\">Mayotte — CSV ↗</a></li></ul></section><hr class=\"my-6\"/><p class=\"text-sm text-muted-foreground\">The data is licensed under <strong>ODbL</strong>.</p><p class=\"mt-2 text-sm text-muted-foreground\">The platform is built on the open-source software <strong>Communecter</strong>, licensed under <strong>MIT</strong>.</p></main>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/outils-ressources",
+      "title": {
+        "fr": "Outils et ressources - Le réseau social des tiers-lieux",
+        "en": "Tools and resources - The third places social network"
+      },
+      "seo": {
+        "description": {
+          "fr": "Retrouvez les outils collaboratifs mis à disposition des lieux et basés sur lasuite.coop",
+          "en": "Access the collaborative tools made available to the venues, based on lasuite.coop."
+        }
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "html",
+          "id": "outils-ressources",
+          "props": {
+            "html": {
+              "fr": "<main class=\"container mx-auto max-w-6xl px-4 py-12\"><header class=\"mb-10 max-w-3xl\"><p class=\"mb-3 text-sm font-semibold uppercase tracking-wide text-primary\">Réseau des tiers-lieux</p><h1 class=\"mb-4 text-3xl font-bold text-foreground\">Outils et ressources</h1><p class=\"text-lg leading-relaxed text-muted-foreground\">Des espaces pour échanger, apprendre, collaborer et partager les données utiles aux tiers-lieux.</p></header><div class=\"grid gap-4 sm:grid-cols-2 lg:grid-cols-3\"><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">Forum</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">Échangez et explorez les fils de discussion autour des tiers-lieux.</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"https://forum.tiers-lieux.org/\" target=\"_blank\" rel=\"noopener noreferrer\">Accéder au Forum <span aria-hidden=\"true\">↗</span></a></article><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">Chat</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">Discutez dans les différents canaux de chat consacrés à de nombreux thèmes.</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"https://chat.tiers-lieux.org/\" target=\"_blank\" rel=\"noopener noreferrer\">Accéder au Chat <span aria-hidden=\"true\">↗</span></a></article><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">Wiki Movilab</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">Plus de 10 000 pages de documentation sur les tiers-lieux.</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"https://movilab.org/\" target=\"_blank\" rel=\"noopener noreferrer\">Consulter Movilab <span aria-hidden=\"true\">↗</span></a></article><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">Notes</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">Un outil de prise de notes collaborative multi-pages, alternative à Docs.</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"https://notes.tiers-lieux.org/\" target=\"_blank\" rel=\"noopener noreferrer\">Ouvrir Notes <span aria-hidden=\"true\">↗</span></a></article><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">Visio</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">L'outil de visioconférence au service des tiers-lieux, basé sur Meet.</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"https://visio.tiers-lieux.org/\" target=\"_blank\" rel=\"noopener noreferrer\">Lancer une visio <span aria-hidden=\"true\">↗</span></a></article><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">Fichier</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">Un espace de stockage en ligne avec des outils collaboratifs (traitement de texte, tableur, présentation…).</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"https://fichier.tiers-lieux.org/\" target=\"_blank\" rel=\"noopener noreferrer\">Accéder à Fichier <span aria-hidden=\"true\">↗</span></a></article><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">Grist - tableur collaboratif</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">Accédez à Grist pour collaborer sur des tableaux partagés.</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"https://grist.tiers-lieux.org/\" target=\"_blank\" rel=\"noopener noreferrer\">Ouvrir Grist <span aria-hidden=\"true\">↗</span></a></article><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">API et données ouvertes</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">Explorez les données ouvertes des tiers-lieux et des réseaux, disponibles via API et en formats CSV.</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"/api-donnees\">Découvrir les données ouvertes <span aria-hidden=\"true\">→</span></a></article></div></main>",
+              "en": "<main class=\"container mx-auto max-w-6xl px-4 py-12\"><header class=\"mb-10 max-w-3xl\"><p class=\"mb-3 text-sm font-semibold uppercase tracking-wide text-primary\">Third places network</p><h1 class=\"mb-4 text-3xl font-bold text-foreground\">Tools and resources</h1><p class=\"text-lg leading-relaxed text-muted-foreground\">Spaces to connect, learn, collaborate and share data useful to third places.</p></header><div class=\"grid gap-4 sm:grid-cols-2 lg:grid-cols-3\"><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">Forum</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">Exchange ideas and explore discussion threads about third places.</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"https://forum.tiers-lieux.org/\" target=\"_blank\" rel=\"noopener noreferrer\">Visit the Forum <span aria-hidden=\"true\">↗</span></a></article><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">Chat</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">Chat across channels dedicated to a wide range of topics.</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"https://chat.tiers-lieux.org/\" target=\"_blank\" rel=\"noopener noreferrer\">Open the Chat <span aria-hidden=\"true\">↗</span></a></article><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">Wiki Movilab</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">Explore more than 10,000 documentation pages about third places.</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"https://movilab.org/\" target=\"_blank\" rel=\"noopener noreferrer\">Browse Movilab <span aria-hidden=\"true\">↗</span></a></article><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">Notes</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">A collaborative multi-page note-taking tool and an alternative to Docs.</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"https://notes.tiers-lieux.org/\" target=\"_blank\" rel=\"noopener noreferrer\">Open Notes <span aria-hidden=\"true\">↗</span></a></article><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">Video calls</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">Video conferencing for third places, powered by Meet.</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"https://visio.tiers-lieux.org/\" target=\"_blank\" rel=\"noopener noreferrer\">Start a video call <span aria-hidden=\"true\">↗</span></a></article><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">File</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">Cloud storage with collaborative online tools for documents, spreadsheets and presentations.</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"https://fichier.tiers-lieux.org/\" target=\"_blank\" rel=\"noopener noreferrer\">Open File <span aria-hidden=\"true\">↗</span></a></article><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">Grist - collaborative spreadsheet</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">Use Grist to collaborate on shared spreadsheets.</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"https://grist.tiers-lieux.org/\" target=\"_blank\" rel=\"noopener noreferrer\">Open Grist <span aria-hidden=\"true\">↗</span></a></article><article class=\"flex flex-col rounded-lg border border-border bg-card p-5\"><h2 class=\"mb-2 text-lg font-semibold\">API and open data</h2><p class=\"mb-5 flex-1 text-sm leading-relaxed text-muted-foreground\">Explore open data on third places and networks, available through APIs and as CSV files.</p><a class=\"font-medium text-primary underline-offset-4 hover:underline\" href=\"/api-donnees\">Explore open data <span aria-hidden=\"true\">→</span></a></article></div></main>"
             }
           }
         }
@@ -2425,12 +3103,12 @@
           "id": "annuaire-ressources-title",
           "props": {
             "title": {
-              "fr": "Coworking, salles de réunion et hébergements",
-              "en": "Coworking, meeting rooms and accommodation"
+              "fr": "Des services dans des lieux engagés, atypiques et foisonnants",
+              "en": "Services in committed, unusual and thriving places"
             },
             "subtitle": {
-              "fr": "Les ressources partagées des tiers-lieux du réseau.",
-              "en": "Shared resources of the network's third places."
+              "fr": "Pour des expériences écologiques, inclusives, sociales, culturelles…",
+              "en": "For ecological, inclusive, social and cultural experiences…"
             }
           }
         },
@@ -2462,7 +3140,11 @@
                   "fr": "Coworking",
                   "en": "Coworking"
                 },
-                "linkSuffix": "miq8118cmkh16zjwmt"
+                "linkSuffix": "miq8118cmkh16zjwmt",
+                "detailSuffixes": {
+                  "equipments": "mieg8j24m89gm99t5mi",
+                  "moreInfo": "miq8auz2wess00qdkpe"
+                }
               },
               {
                 "id": "meeting-room",
@@ -2474,6 +3156,13 @@
                   "en": "Meeting room"
                 },
                 "linkSuffix": "miq81uh4gat3vgbtgkj",
+                "detailSuffixes": {
+                  "equipments": "miok91fh1gta2sneeu5",
+                  "catering": "mieg8j24m89gm99t5mi",
+                  "moreInfo": "miq8a6oceswkv6i75jp",
+                  "about": "miolbscdcrucb5a8uuq",
+                  "tip": "miol2ccdl9a86x4f3yc"
+                },
                 "descriptionSuffix": "miolbscdcrucb5a8uuq"
               },
               {
@@ -2486,6 +3175,12 @@
                   "en": "Accommodation"
                 },
                 "linkSuffix": "miq83c8getjt3lcz64f",
+                "detailSuffixes": {
+                  "equipments": "mieg8j24m89gm99t5mi",
+                  "services": "miq86g5vaw1kavrapkb",
+                  "roomType": "mix3hskq78wglr6m61x",
+                  "moreInfo": "miq88plgleoln5tmc7b"
+                },
                 "descriptionSuffix": "miq88plgleoln5tmc7b",
                 "servicesSuffix": "miq86g5vaw1kavrapkb"
               }
@@ -2637,17 +3332,10 @@
         },
         "links": [
           {
-            "href": "/lieux",
+            "href": "/mes-lieux",
             "label": {
-              "fr": "Les lieux",
-              "en": "Places"
-            }
-          },
-          {
-            "href": "/usages",
-            "label": {
-              "fr": "Outils et ressources",
-              "en": "Tools & resources"
+              "fr": "Mes lieux",
+              "en": "My places"
             }
           },
           {
@@ -2655,13 +3343,6 @@
             "label": {
               "fr": "L'appel à communs",
               "en": "Call for commons"
-            }
-          },
-          {
-            "href": "/reseaux-regionaux",
-            "label": {
-              "fr": "Observatoire",
-              "en": "Observatory"
             }
           },
           {
@@ -2676,6 +3357,20 @@
             "label": {
               "fr": "Diagnostic Licoop",
               "en": "Diagnostic Licoop"
+            }
+          },
+          {
+            "href": "/a-propos",
+            "label": {
+              "fr": "À propos",
+              "en": "About"
+            }
+          },
+          {
+            "href": "/mentions-legales",
+            "label": {
+              "fr": "Mentions légales",
+              "en": "Legal notice"
             }
           }
         ]
@@ -2712,15 +3407,22 @@
       }
     ],
     "copyright": {
-      "fr": "Logiciel libre Communecter sous licence MIT - Contenu sous Creative Commons CC BY-SA 4.0",
-      "en": "Communecter free software under MIT licence - Content under Creative Commons CC BY-SA 4.0"
+      "fr": "Creative Commons CC BY-SA 4.0",
+      "en": "Creative Commons CC BY-SA 4.0"
     },
     "legalLinks": [
       {
         "href": "https://gitlab.adullact.net/pixelhumain/site-json/-/tree/main",
         "label": {
-          "fr": "Code source du site",
-          "en": "Site source code"
+          "fr": "Logiciel libre",
+          "en": "Free software"
+        }
+      },
+      {
+        "href": "https://gitlab.adullact.net/pixelhumain/site-json/-/tree/main/doc?ref_type=heads",
+        "label": {
+          "fr": "Doc",
+          "en": "Docs"
         }
       }
     ]

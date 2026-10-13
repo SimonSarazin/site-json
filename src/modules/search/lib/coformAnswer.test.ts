@@ -1,11 +1,16 @@
 import { describe, it, expect } from "vitest";
 import {
+  canEditCoformAnswer,
+  getAnswerCitedStructures,
   isCoformAnswerManager,
+  isCoformAnswerOwner,
   getAnswerRef,
   getAnswerStructureId,
   normalizeStatus,
   normalizeTypeLabel,
   parseCoformAnswer,
+  statusKey,
+  getStatusStyle,
 } from "./coformAnswer";
 
 describe("getAnswerRef", () => {
@@ -114,14 +119,115 @@ describe("isCoformAnswerManager", () => {
   });
 });
 
+describe("isCoformAnswerOwner — l'auteur, tel que le juge le serveur (`answer.user`)", () => {
+  const ME = "6448f244ecf6e50e4b539677";
+
+  it("reconnaît l'auteur quand la recherche PROJETTE `user`", () => {
+    expect(isCoformAnswerOwner({ user: ME }, { id: ME })).toBe(true);
+  });
+
+  it("refuse un autre compte, un visiteur, et un `user` non projeté ou vide", () => {
+    expect(isCoformAnswerOwner({ user: ME }, { id: "5f0f0f0f0f0f0f0f0f0f0f0a" })).toBe(false);
+    expect(isCoformAnswerOwner({ user: ME }, null)).toBe(false);
+    expect(isCoformAnswerOwner({}, { id: ME })).toBe(false);
+    // Créneaux importés : `user` absent ou null — un `me` sans id ne doit pas « matcher » le vide.
+    expect(isCoformAnswerOwner({ user: null }, { id: null })).toBe(false);
+    expect(isCoformAnswerOwner({ user: "" }, { id: "" })).toBe(false);
+  });
+
+  it("ignore `links.answered` (contributeurs d'une réponse partagée, que le serveur refuserait)", () => {
+    expect(isCoformAnswerOwner({ links: { answered: [ME] } }, { id: ME })).toBe(false);
+  });
+});
+
+describe("getAnswerCitedStructures — toutes les structures du finder aplati", () => {
+  const CLE = "findersportSanteBienetre2172025_854_0mdn1fzoewyjg66n85p";
+  const A = "5f0f0f0f0f0f0f0f0f0f0f0a";
+  const B = "5f0f0f0f0f0f0f0f0f0f0f0b";
+
+  it("TOUTES, quand la jointure `structure` ne garde que la dernière ; clé résolue par suffixe", () => {
+    const data = {
+      [CLE]: { [A]: { id: A, name: "Club A", type: "organizations" }, [B]: { id: B, name: "Club B" } },
+      structure: { _id: B, name: "Club B" },
+    };
+    expect(getAnswerCitedStructures(data)).toEqual([
+      { id: A, name: "Club A" },
+      { id: B, name: "Club B" },
+    ]);
+  });
+
+  it("clé fournie par l'appelant (config) ; autre formulaire = autre préfixe, même suffixe", () => {
+    const autre = "finderassociationEkilibre19082026_1327_0mdn1fzoewyjg66n85p";
+    expect(getAnswerCitedStructures({ [autre]: { [A]: { name: "Club A" } } }, { finderKey: autre })).toEqual([{ id: A, name: "Club A" }]);
+    expect(getAnswerCitedStructures({ [autre]: { [A]: { name: "Club A" } } })).toEqual([{ id: A, name: "Club A" }]);
+  });
+
+  it("ignore les clés qui ne sont pas des ids ; nom absent = \"\" ; rien sans finder", () => {
+    expect(getAnswerCitedStructures({ [CLE]: { [A]: {}, nope: { name: "x" } } })).toEqual([{ id: A, name: "" }]);
+    expect(getAnswerCitedStructures({})).toEqual([]);
+    expect(getAnswerCitedStructures({ [CLE]: "cassé" })).toEqual([]);
+    expect(getAnswerCitedStructures(undefined)).toEqual([]);
+  });
+});
+
+describe("canEditCoformAnswer — « Modifier » : gestionnaire OU auteur", () => {
+  it("l'admin d'une co-structure NON jointe peut modifier (comme le serveur), sans gérer la fiche jointe", () => {
+    const CO = "5f0f0f0f0f0f0f0f0f0f0f0a";
+    const JOINTE = "5f0f0f0f0f0f0f0f0f0f0f0b";
+    const answer = {
+      findersportSanteBienetre2172025_854_0mdn1fzoewyjg66n85p: { [CO]: { name: "Co" }, [JOINTE]: { name: "Jointe" } },
+      structure: { _id: JOINTE },
+    };
+    const adminCo = { isSuperAdmin: () => false, isAdminPlatform: () => false, serverData: { links: { memberOf: { [CO]: { isAdmin: true } } } } };
+    expect(canEditCoformAnswer(answer, { me: adminCo, entity: { isAdmin: () => false } })).toBe(true);
+    expect(isCoformAnswerManager(answer, { me: adminCo, entity: { isAdmin: () => false } })).toBe(false);
+  });
+
+  const ME = "6448f244ecf6e50e4b539677";
+  const lambda = { id: ME, isSuperAdmin: () => false, isAdminPlatform: () => false };
+  const notCostumAdmin = { isAdmin: () => false };
+
+  it("l'auteur sans droit de gestion peut modifier — sans devenir gestionnaire (la « Fiche structure » reste fermée)", () => {
+    const answer = { user: ME, structure: { _id: "69281757564b0621d52ebb67" } };
+    expect(canEditCoformAnswer(answer, { me: lambda, entity: notCostumAdmin })).toBe(true);
+    expect(isCoformAnswerManager(answer, { me: lambda, entity: notCostumAdmin })).toBe(false);
+  });
+
+  it("le gestionnaire peut modifier sans être l'auteur", () => {
+    expect(canEditCoformAnswer({ user: "autre" }, { me: lambda, entity: { isAdmin: () => true } })).toBe(true);
+  });
+
+  it("ni gestionnaire ni auteur : refusé", () => {
+    expect(canEditCoformAnswer({ user: "autre" }, { me: lambda, entity: notCostumAdmin })).toBe(false);
+    expect(canEditCoformAnswer({}, { me: null, entity: notCostumAdmin })).toBe(false);
+  });
+});
+
 describe("normalizeStatus", () => {
-  it("préserve les statuts intermédiaires et normalise le reste", () => {
+  it("reconnaît les statuts réels, orthographe legacy « Réfusé » comprise", () => {
+    expect(normalizeStatus("Validé")).toBe("Valide");
     expect(normalizeStatus("En attente")).toBe("En attente");
     expect(normalizeStatus("En cours")).toBe("En cours");
     expect(normalizeStatus("Réfusé")).toBe("Refuse");
-    expect(normalizeStatus("Refuse")).toBe("Refuse");
-    expect(normalizeStatus("")).toBe("Valide");
-    expect(normalizeStatus("n'importe quoi")).toBe("Valide");
+    expect(normalizeStatus(" Refusé ")).toBe("Refuse");
+  });
+
+  it("absent ou inconnu = en attente (règle serveur) — jamais « Validé » par défaut", () => {
+    // Une réponse tout juste déposée n'a pas de statut : la montrer « Validé » dans une vue de
+    // gestion ferait croire qu'elle est publiée.
+    expect(normalizeStatus("")).toBe("En attente");
+    expect(normalizeStatus("n'importe quoi")).toBe("En attente");
+  });
+});
+
+describe("statusKey — clé stable d'un statut (libellés, compteurs)", () => {
+  it("une clé par statut", () => {
+    expect(["Valide", "En attente", "En cours", "Refuse"].map((s) => statusKey(s as never))).toEqual([
+      "validated",
+      "pending",
+      "inProgress",
+      "refused",
+    ]);
   });
 });
 
@@ -129,7 +235,24 @@ describe("normalizeTypeLabel", () => {
   it("abrège les types connus, renvoie la valeur brute sinon", () => {
     expect(normalizeTypeLabel("Sport santé sur ordonnance - SSsO")).toBe("SSsO");
     expect(normalizeTypeLabel("Sport santé pour tous - SSpT")).toBe("SSpT");
+    expect(normalizeTypeLabel("Sport santé sans label - SSsL")).toBe("SSsL");
     expect(normalizeTypeLabel("Autre")).toBe("Autre");
+  });
+
+  it("abrège un type FUTUR sans toucher au code : l'abréviation est le suffixe du libellé", () => {
+    // Elle devient la classe CSS de la carte (`.ssaa-card`) : un type ajouté au formulaire n'a
+    // besoin que de sa règle CSS, plus d'une ligne ici.
+    expect(normalizeTypeLabel("Sport santé adapté - SSaA")).toBe("SSaA");
+  });
+
+  it("garde le libellé quand le suffixe n'a pas la forme d'une abréviation", () => {
+    expect(normalizeTypeLabel("Activité - Natation")).toBe("Activité - Natation");
+    expect(normalizeTypeLabel("Sport santé - SSO")).toBe("Sport santé - SSO");
+    expect(normalizeTypeLabel("Sport santé - ssso")).toBe("Sport santé - ssso");
+    // Ancres de la forme : ni plus long, ni préfixé.
+    expect(normalizeTypeLabel("Sport santé - SSsOx")).toBe("Sport santé - SSsOx");
+    expect(normalizeTypeLabel("Sport santé - xSSsO")).toBe("Sport santé - xSSsO");
+    expect(normalizeTypeLabel("")).toBe("");
   });
 });
 
@@ -172,11 +295,34 @@ describe("parseCoformAnswer — résolution des clés par SUFFIXE stable (inter-
     expect(a.title).toBe("Basket");
   });
 
+  it("type ou statut qui n'est pas une chaîne → replis vides, sans crash (le libellé est découpé)", () => {
+    const row = flatRow(EKILIBRE);
+    const a = parseCoformAnswer({
+      ...row,
+      [`${EKILIBRE}mdn1cs8on3yru1p80lq`]: ["Sport santé pour tous - SSpT"],
+      [`${EKILIBRE}mdn1jcq445i0mb9bap7`]: 1,
+    });
+    expect(a.typeRaw).toBe("");
+    expect(a.typeLabel).toBe("");
+    // Statut illisible = inconnu = pas encore publié : « En attente », comme un statut absent
+    // (cf. normalizeStatus) — jamais « Validé » par défaut.
+    expect(a.status).toBe("En attente");
+  });
+
   it("champ absent des données → replis habituels (pas de crash)", () => {
     const a = parseCoformAnswer({ name: "Sans champs coform" });
     expect(a.title).toBe("Sans champs coform");
-    expect(a.status).toBe("Valide");
+    expect(a.status).toBe("En attente"); // pas de statut = pas encore publiée (cf. normalizeStatus)
     expect(a.installations).toEqual([]);
     expect(a.schedules).toEqual([]);
+  });
+});
+
+describe("getStatusStyle — chaque fond avec SON encre", () => {
+  it("« En attente » n'est plus écrit en encre primaire sur le jaune (1,85:1 en clair)", () => {
+    expect(getStatusStyle("En attente")).toBe("bg-badge-waiting text-warning-foreground");
+    expect(getStatusStyle("Valide")).toBe("bg-badge-valid text-success-foreground");
+    expect(getStatusStyle("Refuse")).toBe("bg-badge-refused text-destructive-foreground");
+    expect(getStatusStyle("En cours")).toBe("bg-badge-in-progress text-primary-foreground");
   });
 });

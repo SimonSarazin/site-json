@@ -374,7 +374,14 @@
     },
     "rolesLabel": "Roles in the organisation",
     "rolesPlaceholder": "Add a role (press Enter)…",
-    "rolesHint": "Free text — e.g. “Parenting coordinator, Arrageois”."
+    "rolesHint": "Free text — e.g. “Parenting coordinator, Arrageois”.",
+    "manageRoles": "Manage roles"
+  },
+  "ManageRolesDialog": {
+    "title": "Manage roles",
+    "description": "{{name}}'s roles — the full list replaces the current roles.",
+    "save": "Save",
+    "saving": "Saving…"
   },
   "MemberManagementDialog": {
     "title": "Member Management",
@@ -729,7 +736,9 @@
       "inviteAdminSuccess": "Admin invitation sent to {{name}}",
       "inviteAdminError": "Unable to send admin invitation to {{name}}",
       "emailInviteSuccess": "{{count}} email invitation(s) sent",
-      "emailInviteError": "Unable to send email invitations"
+      "emailInviteError": "Unable to send email invitations",
+      "setRolesSuccess": "{{name}}'s roles updated",
+      "setRolesError": "Unable to update {{name}}'s roles"
     },
     "comment": {
       "addSuccess": "Comment added successfully",
@@ -829,6 +838,13 @@
     "title": "Edit profile",
     "profileImage": "Profile picture",
     "bannerImage": "Banner",
+    "imageFormat": {
+      "original": "Original",
+      "wide": "16:9",
+      "panorama": "3:1",
+      "classic": "4:3",
+      "square": "Square"
+    },
     "changeImage": "Change",
     "changeBanner": "Change banner",
     "changeAvatar": "Change avatar",
@@ -1519,5 +1535,69 @@
     "titleMany": "More than {{count}} records with a similar name already exist",
     "titleStrongMany": "More than {{count}} records with a similar name already exist, at least one of them with the same name at the same postal code",
     "moreMany": "and other records with a similar name, not shown"
+  },
+  "StructuresTab": {
+    "title": "My organizations",
+    "intro": "The organizations you manage and their activity slots, published or not. A new slot is published once the site team has validated it.",
+    "loadError": "Your organizations could not be loaded.",
+    "retry": "Try again",
+    "emptyTitle": "You don't manage any organization",
+    "emptyDescription": "To manage all of an organization's slots, you need to be one of its administrators. Register your organization, or ask one of its administrators to add you.",
+    "add": "Add a slot",
+    "addFor": "Add a slot to {{structure}}",
+    "addTitle": "Add a slot — {{structure}}",
+    "added": "Slot added. It will be published once validated.",
+    "viewProfile": "View profile",
+    "viewProfileFor": "View profile: {{structure}}",
+    "slotsError": "The slots of {{structure}} could not be loaded.",
+    "noSlots": "No slot for this organization yet.",
+    "slotsLabel": "Slots of {{structure}}",
+    "openSlot": "View the details of slot {{title}}",
+    "untitled": "Untitled slot",
+    "noSchedule": "No schedule given",
+    "moreSchedules": "+{{count}}",
+    "weekDays": "Days: {{days}}",
+    "noDays": "No days given",
+    "counts": {
+      "pending_one": "{{count}} pending",
+      "pending_other": "{{count}} pending",
+      "inProgress_one": "{{count}} in progress",
+      "inProgress_other": "{{count}} in progress",
+      "validated_one": "{{count}} validated",
+      "validated_other": "{{count}} validated",
+      "refused_one": "{{count}} refused",
+      "refused_other": "{{count}} refused"
+    },
+    "loading": "Loading your organizations…",
+    "retryFor": "Try again: slots of {{structure}}",
+    "addLoading": "Opening the form…",
+    "moreSchedulesSr_one": "and {{count}} more time",
+    "moreSchedulesSr_other": "and {{count}} more times",
+    "summary": {
+      "none": "No slot",
+      "partial_one": "{{count}}+ slot",
+      "partial_other": "{{count}}+ slots"
+    },
+    "structureStatus": {
+      "pending": "Awaiting approval",
+      "refused": "Not approved"
+    },
+    "structureStatusHelp": {
+      "pending": "This organization doesn't appear in the site's listings yet. It will once the site team has approved it.",
+      "refused": "The site team didn't approve this organization, so it doesn't appear in the site's listings. Contact the site team to find out why."
+    },
+    "submitted": {
+      "title": "My other slots",
+      "titleAlone": "My slots",
+      "help": "Slots you submitted for an organization you don't manage, or with no organization, whatever their status.",
+      "label": "Slots submitted outside your organizations",
+      "labelAlone": "Slots you submitted",
+      "structureSr_one": "Organization: {{structures}}",
+      "structureSr_other": "Organizations: {{structures}}",
+      "noStructure": "No organization",
+      "unnamedStructure": "Unnamed organization",
+      "loadError": "The slots you submitted could not be loaded.",
+      "retryFor": "Try again to load the slots you submitted"
+    }
   }
 }

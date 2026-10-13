@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { SectionRenderer } from "./SectionRenderer";
 import type { Section, GridLayoutSectionProps } from "@/types/site";
 import { cn } from "@/lib/utils";
@@ -12,7 +13,7 @@ export function GridLayoutSection({
   id?: string;
   props: GridLayoutSectionProps;
 }) {
-  const { leftColumns = 1, rightColumns = 3, gap = 8, align = "start", from = "lg", className, leftWrapperClass, rightWrapperClass, bg, maxWidth } = props;
+  const { leftColumns = 1, rightColumns = 3, gap = 8, align = "start", from = "lg", className, leftWrapperClass, rightWrapperClass, innerWrapperClass, bg, maxWidth } = props;
   // Fond de bande : sans `bg`, `py-4` et le fond hérité — le rendu historique de toutes les grilles du parc.
   const bandeau = cn(sectionBgClass(bg), "py-4");
   // Largeur du contenu : toute celle du `container` par défaut (rendu historique).
@@ -28,6 +29,17 @@ export function GridLayoutSection({
   const leftSection = props.leftSection as Section | undefined;
   const rightSection = props.rightSection as Section | undefined;
   const sections = props.sections as Section[] | undefined;
+  const topSection = props.topSection as Section | undefined;
+  // En tête de bande, pleine largeur, séparée de la grille par le même écart que ses colonnes.
+  const top = topSection ? (
+    <div style={{ marginBottom: `${gap * 0.25}rem` }}>
+      <SectionRenderer section={topSection} />
+    </div>
+  ) : null;
+  // Panneau optionnel autour de l'en-tête et de la grille. Absent : AUCUNE boîte — le DOM des grilles
+  // existantes reste identique (leurs sélecteurs `[&>…]` en dépendent).
+  const panneau = (contenu: ReactNode) =>
+    innerWrapperClass ? <div className={innerWrapperClass}>{contenu}</div> : contenu;
 
   // Classes LITTÉRALES par palier : le JIT Tailwind ne génère pas une classe construite dynamiquement.
   const COL_SPAN = {
@@ -46,6 +58,8 @@ export function GridLayoutSection({
     return (
       <section id={id} className={cn(bandeau, className)}>
         <div className={largeur}>
+          {panneau(<>
+          {top}
           <div
             className={cn(
               "grid",
@@ -60,6 +74,7 @@ export function GridLayoutSection({
               </div>
             ))}
           </div>
+          </>)}
         </div>
       </section>
     );
@@ -68,6 +83,8 @@ export function GridLayoutSection({
   return (
     <section id={id} className={cn(bandeau, className)}>
       <div className={largeur}>
+        {panneau(<>
+        {top}
         <div
           className={cn(
             "grid grid-cols-1",
@@ -87,6 +104,7 @@ export function GridLayoutSection({
             </div>
           )}
         </div>
+        </>)}
       </div>
     </section>
   );

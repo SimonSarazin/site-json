@@ -374,7 +374,14 @@
     },
     "rolesLabel": "Rôles dans l'organisation",
     "rolesPlaceholder": "Ajouter un rôle (Entrée pour valider)…",
-    "rolesHint": "Texte libre — ex. « Coordonnatrice parentalité Arrageois »."
+    "rolesHint": "Texte libre — ex. « Coordonnatrice parentalité Arrageois ».",
+    "manageRoles": "Gérer les rôles"
+  },
+  "ManageRolesDialog": {
+    "title": "Gérer les rôles",
+    "description": "Rôles de {{name}} — la liste complète remplace les rôles actuels.",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…"
   },
   "MemberManagementDialog": {
     "title": "Gestion des membres",
@@ -729,7 +736,9 @@
       "inviteAdminSuccess": "Invitation d'administrateur envoyée à {{name}}",
       "inviteAdminError": "Impossible d'envoyer l'invitation d'administrateur à {{name}}",
       "emailInviteSuccess": "{{count}} invitation(s) envoyée(s) par email",
-      "emailInviteError": "Impossible d'envoyer les invitations par email"
+      "emailInviteError": "Impossible d'envoyer les invitations par email",
+      "setRolesSuccess": "Rôles de {{name}} mis à jour",
+      "setRolesError": "Impossible de mettre à jour les rôles de {{name}}"
     },
     "comment": {
       "addSuccess": "Commentaire ajouté avec succès",
@@ -829,6 +838,13 @@
     "title": "Éditer le profil",
     "profileImage": "Photo de profil",
     "bannerImage": "Bannière",
+    "imageFormat": {
+      "original": "Original",
+      "wide": "16:9",
+      "panorama": "3:1",
+      "classic": "4:3",
+      "square": "Carré"
+    },
     "changeImage": "Changer",
     "changeBanner": "Changer la bannière",
     "changeAvatar": "Changer l'avatar",
@@ -1519,5 +1535,69 @@
     "titleMany": "Plus de {{count}} fiches au nom proche existent déjà",
     "titleStrongMany": "Plus de {{count}} fiches au nom proche existent déjà, dont au moins une du même nom au même code postal",
     "moreMany": "et d'autres fiches au nom proche, non affichées"
+  },
+  "StructuresTab": {
+    "title": "Mes structures",
+    "intro": "Les structures que vous administrez et leurs créneaux, publiés ou non. Un créneau ajouté est publié après validation par l'équipe du site.",
+    "loadError": "Impossible de charger vos structures.",
+    "retry": "Réessayer",
+    "emptyTitle": "Vous n'administrez aucune structure",
+    "emptyDescription": "Pour gérer tous les créneaux d'une structure, il faut en être administrateur. Référencez votre structure, ou demandez à l'un de ses administrateurs de vous ajouter.",
+    "add": "Ajouter un créneau",
+    "addFor": "Ajouter un créneau à {{structure}}",
+    "addTitle": "Ajouter un créneau — {{structure}}",
+    "added": "Créneau ajouté. Il sera publié après validation.",
+    "viewProfile": "Voir la fiche",
+    "viewProfileFor": "Voir la fiche de {{structure}}",
+    "slotsError": "Impossible de charger les créneaux de {{structure}}.",
+    "noSlots": "Aucun créneau pour cette structure.",
+    "slotsLabel": "Créneaux de {{structure}}",
+    "openSlot": "Voir le détail du créneau {{title}}",
+    "untitled": "Créneau sans titre",
+    "noSchedule": "Horaires non renseignés",
+    "moreSchedules": "+{{count}}",
+    "weekDays": "Jours : {{days}}",
+    "noDays": "Jours non renseignés",
+    "counts": {
+      "pending_one": "{{count}} en attente",
+      "pending_other": "{{count}} en attente",
+      "inProgress_one": "{{count}} en cours",
+      "inProgress_other": "{{count}} en cours",
+      "validated_one": "{{count}} validé",
+      "validated_other": "{{count}} validés",
+      "refused_one": "{{count}} refusé",
+      "refused_other": "{{count}} refusés"
+    },
+    "loading": "Chargement de vos structures…",
+    "retryFor": "Réessayer de charger les créneaux de {{structure}}",
+    "addLoading": "Ouverture du formulaire…",
+    "moreSchedulesSr_one": "et {{count}} autre horaire",
+    "moreSchedulesSr_other": "et {{count}} autres horaires",
+    "summary": {
+      "none": "Aucun créneau",
+      "partial_one": "{{count}}+ créneau",
+      "partial_other": "{{count}}+ créneaux"
+    },
+    "structureStatus": {
+      "pending": "En attente de validation",
+      "refused": "Validation refusée"
+    },
+    "structureStatusHelp": {
+      "pending": "Cette structure n'apparaît pas encore dans les listes du site : elle y figurera dès que l'équipe du site l'aura validée.",
+      "refused": "L'équipe du site n'a pas validé cette structure : elle n'apparaît pas dans les listes du site. Contactez l'équipe du site pour en connaître la raison."
+    },
+    "submitted": {
+      "title": "Mes autres créneaux",
+      "titleAlone": "Mes créneaux",
+      "help": "Les créneaux que vous avez déposés pour une structure que vous n'administrez pas, ou sans structure, quel que soit leur statut.",
+      "label": "Créneaux déposés hors de vos structures",
+      "labelAlone": "Créneaux que vous avez déposés",
+      "structureSr_one": "Structure : {{structures}}",
+      "structureSr_other": "Structures : {{structures}}",
+      "noStructure": "Sans structure",
+      "unnamedStructure": "Structure sans nom",
+      "loadError": "Impossible de charger les créneaux que vous avez déposés.",
+      "retryFor": "Réessayer de charger les créneaux que vous avez déposés"
+    }
   }
 }

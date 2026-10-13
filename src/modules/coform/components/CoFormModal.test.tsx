@@ -20,6 +20,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 const capte = vi.hoisted(() => ({
   onDirtyChange: null as ((dirty: boolean) => void) | null,
   rejeterBrouillon: vi.fn(),
+  hiddenFields: undefined as readonly string[] | undefined,
 }));
 
 vi.mock("./SmartCoForm", async () => {
@@ -28,8 +29,10 @@ vi.mock("./SmartCoForm", async () => {
     SmartCoForm: (props: {
       onDirtyChange?: (dirty: boolean) => void;
       discardDraftRef?: { current: (() => void) | null };
+      hiddenFields?: readonly string[];
     }) => {
       capte.onDirtyChange = props.onDirtyChange ?? null;
+      capte.hiddenFields = props.hiddenFields;
       const ref = props.discardDraftRef;
       useEffect(() => {
         if (!ref) return;
@@ -104,5 +107,13 @@ describe("CoFormModal — « Abandonner les modifications »", () => {
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(capte.rejeterBrouillon).not.toHaveBeenCalled();
+  });
+});
+
+/** Maillon CoFormModal → SmartCoForm de `hiddenFields` : celui dont dépend l'onglet profil « Structures ». */
+describe("CoFormModal — champs masqués", () => {
+  it("transmet `hiddenFields` au formulaire", () => {
+    render(<CoFormModal formId="f1" open onOpenChange={vi.fn()} hiddenFields={["findercle"]} />);
+    expect(capte.hiddenFields).toEqual(["findercle"]);
   });
 });

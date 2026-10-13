@@ -355,24 +355,19 @@ export const ProfileTabConditionSchema = z.object({
 | `auth` | Même sémantique que dans `VisibilityCondition` (`"required"` / `"anonymous"` / `"any"`) |
 | `permissions` | ⚠️ **NON IMPLÉMENTÉ** — voir note ci-dessous |
 | `entityTypes` | L'onglet n'apparaît que pour certains types d'entité (`"organizations"`, `"projects"`, `"events"`, `"citoyens"`, `"poi"`) |
-| `userContext` | `"own"` = uniquement sur son propre profil, `"other"` = sur le profil d'autrui, `"any"` = toujours |
+| `userContext` | `"own"` = uniquement sur son propre profil, `"other"` = sur le profil d'autrui, `"any"` = toujours. Avant hydratation, le profil n'est jamais « le sien » : `own` masqué, `other` affiché (ce que rend le SSR) |
 
-Le filtre s'applique côté client après hydration de `me` pour éviter les mismatches SSR (cf. `ProfileTemplateDynamic`).
+Les conditions qui dépendent de `me` (`userContext`, `auth`) ne sont tranchées qu'après hydratation, pour éviter les mismatches SSR — cf. `isTabVisible` (`src/modules/profil/lib/tabVisibility.ts`), appelé par `ProfileTemplateDynamic`.
 
 > ⚠️ **`ProfileTabCondition.permissions` est déclaré dans le schéma Zod mais N'EST PAS évalué au runtime.**
 >
-> Dans `ProfileTemplateDynamic.tsx`, la vérification des permissions est commentée en attente d'implémentation :
->
-> ```ts
-> // TODO: Implémenter la vérification des permissions
-> // if (tab.condition.permissions) { ... }
-> ```
+> `isTabVisible` (`src/modules/profil/lib/tabVisibility.ts`) n'évalue pas `permissions`.
 >
 > **Conséquence concrète** : un tab dont la `condition` ne contient que `permissions` restera **toujours visible**, quelle que soit la permission réelle de l'utilisateur. Seuls `auth`, `entityTypes` et `userContext` sont effectivement pris en compte.
 >
-> **Contraste avec `VisibilityCondition.permissions`** : dans le système global (sections, boutons, dropdown "Ajouter"), le champ `permissions` de `VisibilityConditionSchema` est, lui, **réellement évalué** par `useVisibility.ts` / `evaluateCondition` via le registre de permissions. Ce n'est donc pas une limitation du système de visibilité en général, mais uniquement du filtre de tabs de profil (`ProfileTemplateDynamic`).
+> **Contraste avec `VisibilityCondition.permissions`** : dans le système global (sections, boutons, dropdown "Ajouter"), le champ `permissions` de `VisibilityConditionSchema` est, lui, **réellement évalué** par `useVisibility.ts` / `evaluateCondition` via le registre de permissions. Ce n'est donc pas une limitation du système de visibilité en général, mais uniquement du filtre de tabs de profil (`isTabVisible`).
 >
-> Ne pas s'appuyer sur `ProfileTabCondition.permissions` pour contrôler l'accès aux onglets tant que le TODO n'est pas levé.
+> Ne pas s'appuyer sur `ProfileTabCondition.permissions` pour contrôler l'accès aux onglets tant que ce n'est pas implémenté.
 
 Exemple JSON :
 

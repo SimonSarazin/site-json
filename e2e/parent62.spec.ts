@@ -175,6 +175,10 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     const panneau = page.locator("aside").first();
     await expect(panneau.getByRole("heading", { name: "Filtres" })).toBeVisible();
     await expect(panneau.getByPlaceholder(/Rechercher par nom/i)).toBeVisible();
+
+    // `defaultViewMode: "map"` : la carte s'affiche dès l'ouverture, sans clic sur le bouton
+    // bascule — demande explicite, la liste seule était le rendu historique.
+    await expect(page.locator(".maplibregl-map, .mapboxgl-map").first()).toBeVisible({ timeout: 15_000 });
   });
 
   // ── Coordination territoriale : filtre serveur + projection (SDK ≥ 1.0.194) ──────────────
@@ -224,6 +228,22 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     await expect(section.locator('a[href="/territoire/familles-en-sol-mineur-henin-carvin"]')).toHaveCount(1);
   });
 
+  test("/equipe : couleurs fixes des cartes « animation départementale » et « contact CAF »", async ({ page }) => {
+    // Ces deux sections n'ont pas de territoire à résoudre (`card.fixedColors` prime alors sur
+    // `couleursTerritoire`, qui serait retombée sur le neutre du thème) — cf. `CardTeamMember`.
+    await page.goto("/equipe", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    const fond = (sel: string) => page.locator(sel).first().evaluate((el) => getComputedStyle(el).backgroundColor);
+    await expect(page.locator("#equipe-dep")).toBeVisible({ timeout: 45_000 });
+    const [dep, caf] = await Promise.all([
+      fond('#equipe-dep [data-slot="card"]'),
+      fond('#equipe-caf [data-slot="card"]'),
+    ]);
+    expect(dep, "vert de marque (--p62-vert)").toBe("rgb(30, 174, 152)");
+    expect(caf, "jaune-vert de marque (--p62-caf)").toBe("rgb(215, 216, 114)");
+  });
+
   test("/territoire/arrageois : bandeau et liste des communes", async ({ page }) => {
     await page.goto("/territoire/arrageois", { waitUntil: "domcontentloaded" });
     await waitForHydration(page);
@@ -245,6 +265,65 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     await expect(page.getByRole("heading", { name: "Les actualités du réseau" })).toBeVisible();
     if (backendUp) {
       await expect(page.locator("main h3").first()).toBeVisible();
+    }
+  });
+
+  test("/blog : le fil en densité compacte tient sur 2 colonnes mobile, 4 en grand écran, sans info perdue", async ({ page }) => {
+    // `articleFeed.density: "compact"` (posé sur les 33 fils d'actus du site) : grille resserrée,
+    // mais date/titre/extrait/tags restent tous affichés — c'est la hauteur de l'image qui se
+    // resserre, pas le contenu. Assertion sur les DEUX viewports : la densité change de colonnes à
+    // `lg:`, un test à une seule taille ne verrait qu'une moitié du contrat.
+    await page.goto("/blog", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+    if (!backendUp) test.skip(true, "fil d'actualités indisponible sans backend");
+
+    const grid = page.locator("#blog-feed .grid").first();
+    await grid.locator(":scope > *").first().waitFor();
+
+    const desktopCols = await grid.evaluate((g) => getComputedStyle(g).gridTemplateColumns.split(" ").length);
+    expect(desktopCols, "4 colonnes à partir de lg: (1440px, viewport par défaut)").toBe(4);
+
+    const premiere = grid.locator(":scope > *").first();
+    // Titre, extrait ET tags coexistent (aucun n'est sacrifié pour la densité) — un `h3` retrouvable,
+    // une pastille de tag, et une carte SANS le padding `py-6` de base (retiré en compact : cf.
+    // `ArticleCard`/`ArticleCardPoster`, sinon 48px de vide pour rien sur une carte déjà resserrée).
+    await expect(premiere.locator("h3")).toBeVisible();
+    await expect(premiere.locator('[data-slot="badge"]').first()).toBeVisible();
+    const paddingTop = await premiere.evaluate((c) => getComputedStyle(c).paddingTop);
+    expect(paddingTop, "py-6 retiré en compact").toBe("0px");
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(200);
+    const mobileCols = await grid.evaluate((g) => getComputedStyle(g).gridTemplateColumns.split(" ").length);
+    expect(mobileCols, "2 colonnes dès le mobile (pas 1, comme le reste du parc)").toBe(2);
+  });
+
+  test("/blog : pagination numérotée (12 par page) au lieu du scroll infini", async ({ page }) => {
+    // `articleFeed.pagination: "pages"` (posé sur tous les fils d'articles du site sauf le widget
+    // mono-article `champs-laep-actu`) : plus de bouton « Charger plus »/scroll infini, une barre de
+    // pagination numérotée à la place.
+    await page.goto("/blog", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+    if (!backendUp) test.skip(true, "fil d'actualités indisponible sans backend");
+
+    const grid = page.locator("#blog-feed .grid").first();
+    await grid.locator(":scope > *").first().waitFor();
+
+    // Le bouton historique de scroll infini a disparu.
+    await expect(page.locator("#blog-feed").getByRole("button", { name: /charger plus/i })).toHaveCount(0);
+
+    const pagination = page.locator("#blog-feed nav[aria-label='pagination']");
+    await expect(pagination).toBeVisible();
+    await expect(pagination.getByRole("link", { name: "Page 1" })).toHaveAttribute("aria-current", "page");
+
+    const nextLink = pagination.getByRole("link", { name: /suivant/i });
+    if (await nextLink.getAttribute("aria-disabled") !== "true") {
+      const firstPageFirstTitle = await grid.locator("h3").first().textContent();
+      await nextLink.click();
+      await page.waitForTimeout(300);
+      await expect(pagination.getByRole("link", { name: "Page 2" })).toHaveAttribute("aria-current", "page");
+      const secondPageFirstTitle = await grid.locator("h3").first().textContent();
+      expect(secondPageFirstTitle, "la page 2 montre des articles différents de la page 1").not.toBe(firstPageFirstTitle);
     }
   });
 
@@ -388,12 +467,15 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     }
   });
 
-  test("accueil : les trois bandes ont la même largeur, et les deux panneaux verts sont au même niveau", async ({ page }) => {
+  test("accueil : « Vous êtes » + Territoires/À la une forment UNE bande, de même largeur que « Zoom sur le réseau »", async ({ page }) => {
+    // Refonte accueil : « Vous êtes » (action-tiles) n'est plus une bande séparée, il est intégré en
+    // TÊTE du gridLayout (`props.topSection`) — une seule bande blanche porte « Vous êtes » PUIS la
+    // rangée Territoires (3/4) / À la une (1/4), au lieu des 3 bandes disjointes d'avant la refonte.
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForHydration(page);
-    // Le panneau de l'actu n'existe qu'une fois les actualités chargées : l'attendre avant de mesurer.
-    await page.locator('[data-section-type="featured-carousel"] div[style*="linear-gradient"]').first().waitFor();
+    // La carte de l'actu n'existe qu'une fois les actualités chargées : attendre son lien avant de mesurer.
+    await page.locator('[data-section-type="featured-carousel"] a:has-text("Lire la suite")').first().waitFor();
 
     const mesures = await page.evaluate(() => {
       const bande = (type: string) => {
@@ -403,31 +485,46 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
         const c = sec?.querySelector(".container")?.getBoundingClientRect();
         return c ? { largeur: Math.round(c.width), x: Math.round(c.x) } : null;
       };
-      const panneau = (type: string) => {
-        const p = document.querySelector(`[data-section-type="${type}"] div[style*='linear-gradient']`);
-        const r = p?.getBoundingClientRect();
+      // Carte (fond blanc, `bg:"card"`) de chaque colonne — le `<section>` rendu par le composant lui-même,
+      // PAS un wrapper de dégradé (il n'y en a plus sur l'une des deux colonnes depuis la refonte « fond
+      // blanc » : `featured-carousel` n'a plus de `backgroundOverlay`, seul `map-bubbles` garde le sien,
+      // scopé à sa SEULE illustration — mesurer la `<section>` entière compare donc la même chose des 2 côtés).
+      const carte = (type: string) => {
+        const r = document.querySelector(`[data-section-type="${type}"] section`)?.getBoundingClientRect();
         return r ? { haut: Math.round(r.top), bas: Math.round(r.bottom) } : null;
       };
-      const une = document.querySelector('[data-section-type="featured-carousel"] div[style*=\'linear-gradient\']');
-      const cta = [...(une?.querySelectorAll("a") ?? [])].find((a) => /En savoir/.test(a.textContent ?? ""));
+      const une = document.querySelector('[data-section-type="featured-carousel"]');
+      const cta = [...(une?.querySelectorAll("a") ?? [])].find((a) => /Lire la suite/.test(a.textContent ?? ""));
+
+      // « Vous êtes » (action-tiles) et Territoires (map-bubbles) doivent vivre dans LA MÊME bande
+      // blanche extérieure (gridLayout) : même parent de type `section`, pas deux bandes empilées.
+      const vousEtes = document.querySelector('[data-section-type="action-tiles"]');
+      const territoiresSection = document.querySelector('[data-section-type="map-bubbles"]');
+      const bandeExterieure = (el: Element | null) => el?.closest('[data-section-type="gridLayout"]');
+      const memeBande = !!vousEtes && !!territoiresSection
+        && bandeExterieure(vousEtes) === bandeExterieure(territoiresSection);
+
       return {
-        bandes: [bande("action-tiles"), bande("gridLayout"), bande("articleTeaser")],
-        territoires: panneau("map-bubbles"),
-        alaune: panneau("featured-carousel"),
+        bandes: [bande("gridLayout"), bande("articleTeaser")],
+        territoires: carte("map-bubbles"),
+        alaune: carte("featured-carousel"),
         ctaDansLaCarte: Boolean(cta),
+        vousEtesDansLaMemeBandeQueTerritoires: memeBande,
       };
     });
 
-    // Trois bandes de même largeur, calées au même bord : deux largeurs se lisent comme un décrochage.
+    // Les deux bandes restantes (gridLayout, articleTeaser) ont la même largeur, calées au même bord.
     const largeurs = new Set(mesures.bandes.map((b) => b?.largeur));
     const bords = new Set(mesures.bandes.map((b) => b?.x));
     expect(largeurs.size, `largeurs : ${JSON.stringify(mesures.bandes)}`).toBe(1);
     expect(bords.size, `bords : ${JSON.stringify(mesures.bandes)}`).toBe(1);
 
-    // Les deux panneaux verts (illustration et actualité) commencent et finissent à la même hauteur,
-    // et le bouton de l'actu vit DANS son panneau.
-    expect(mesures.alaune, "panneau de l'actu").toEqual(mesures.territoires);
-    expect(mesures.ctaDansLaCarte, "bouton « En savoir » dans le panneau de l'actu").toBe(true);
+    expect(mesures.vousEtesDansLaMemeBandeQueTerritoires, "« Vous êtes » et Territoires dans la même bande").toBe(true);
+
+    // Les deux cartes (Territoires, À la une) commencent et finissent à la même hauteur (`align:"stretch"`),
+    // et le lien de l'actu vit DANS sa carte.
+    expect(mesures.alaune, "carte de l'actu").toEqual(mesures.territoires);
+    expect(mesures.ctaDansLaCarte, "lien « Lire la suite » dans la carte de l'actu").toBe(true);
   });
 
   test("accueil : survoler une bulle de territoire montre ses villes", async ({ page }) => {
@@ -511,6 +608,44 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     // Le fil reste borné aux actualités : un filtre de page ne peut pas écraser `type`.
     expect(corps).toContain("filters[type]=article");
     await expect(page).toHaveURL(/ville=arras/);
+  });
+
+  test("/agenda : le filtre « Villes » (même liste que /blog) applique le paramètre d'URL", async ({ page }) => {
+    await page.goto("/agenda", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    await page.getByRole("button", { name: /^Villes/ }).first().click();
+    await page.getByPlaceholder("Rechercher…").last().fill("Arras");
+    const arras = page.getByRole("option", { name: "Arras", exact: true });
+    await expect(arras).toBeVisible();
+    await arras.click();
+    await expect(page).toHaveURL(/ville=arras/);
+  });
+
+  test("accueil : le menu se centre sous le logo et le titre du bandeau, sans « Ctrl+K »", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    // Aucun déclencheur de palette de commandes dans la barre : la loupe (nav « Recherche »,
+    // `placement: "actions"`) le remplace — cf. `HeaderStacked`.
+    await expect(page.locator("nav.sticky kbd", { hasText: /Ctrl|⌘/ })).toHaveCount(0);
+    const loupe = page.locator('nav.sticky a[aria-label="Recherche"]').first();
+    await expect(loupe).toHaveAttribute("href", "/recherche");
+
+    // Le menu centré (colonnes de flanc `1fr` égales) tombe exactement sous le centre du bandeau
+    // wordmark au-dessus — décalé dès que les deux colonnes de flanc n'ont pas la même largeur
+    // (l'ancien `auto_1fr_auto`, qui centrait dans l'espace RESTANT après le logo).
+    const ecart = await page.evaluate(() => {
+      const wordmark = document.querySelector("header .relative.flex.flex-col.items-center")!;
+      const menu = [...document.querySelectorAll("nav.sticky .grid > div")].find(
+        (d) => d.className.includes("xl:flex") && d.className.includes("justify-center"),
+      )!;
+      const w = wordmark.getBoundingClientRect();
+      const m = menu.getBoundingClientRect();
+      return Math.round(w.left + w.width / 2 - (m.left + m.width / 2));
+    });
+    expect(Math.abs(ecart), "menu centré sous le logo/titre à 1440px").toBeLessThanOrEqual(2);
   });
 
   for (const url of ["/parents", "/pro"]) {

@@ -438,9 +438,11 @@ export const PreviewConfSchema = z.object({
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
   // table par défaut du composant — découple les IDs de champs du code.
   fields: z.record(z.string(), z.string()).optional(),
-  // Bouton « Modifier » sur le détail `coform-answer` (admins de l'entité du
-  // site) : ouvre l'édition de l'answer en CoFormModal. Opt-in — sans ce flag,
-  // le preview reste strictement lecture seule (aucun changement des sites existants).
+  // Bouton « Modifier » sur le détail `coform-answer`, réservé aux gestionnaires de
+  // la réponse (super-admin, admin du costum, admin validé de la structure citée) et à
+  // son AUTEUR quand la recherche projette `user` (`canEditCoformAnswer`) : ouvre
+  // l'édition de l'answer en CoFormModal. Opt-in — sans ce flag, le preview reste
+  // strictement lecture seule (aucun changement des sites existants).
   editButton: z.boolean().optional(),
   /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
   facets: z.array(PreviewFacetSchema).optional(),
@@ -511,6 +513,10 @@ export const TestimonialConfSchema = z.object({
   /** Champ de l'illustration (bannière de la carte et de la preview). Repli code : "profilMediumImageUrl",
    *  puis "profilImageUrl", puis la 1re image de `medias` — un témoignage sans image reste rendu tel quel. */
   imageField: z.string().optional(),
+  /** Cadrage de l'illustration : `cover` (défaut, rognée sur un ratio 16/9) ou `contain` (image ENTIÈRE,
+   *  centrée, sur un fond flou tiré de la même image — pour une affiche ou un visuel dont le ratio n'est
+   *  pas 16/9). Opt-in : sans lui, le rendu historique est inchangé. */
+  imageFit: z.enum(["cover", "contain"]).optional(),
   /** Catégorie : pilote la teinte de la bulle + la pastille. `colors` = map valeur→couleur (`var()` ou hex). */
   badge: z.object({ field: z.string(), colors: z.record(z.string(), z.string()).optional() }).optional(),
   /** Accent (ex. territoire) : pilote le point coloré. `colors` = map valeur→couleur (`var()` ou hex). */
@@ -588,6 +594,10 @@ export const ResourceDirectoryConfSchema = z.object({
     linkSuffix: z.string().optional(),
     descriptionSuffix: z.string().optional(),
     servicesSuffix: z.string().optional(),
+    detailSuffixes: z.object({
+      equipments: z.string(), catering: z.string(), services: z.string(), roomType: z.string(),
+      moreInfo: z.string(), about: z.string(), tip: z.string(),
+    }).partial().optional(),
   })),
   finderSuffix: z.string(),
   fieldSuffixes: z.object({
@@ -613,7 +623,9 @@ export type ColorByConf = z.infer<typeof ColorByConfSchema>;
 /** Chips de tags des cartes : couleur par tag (`mapping`), libellé lisible
  *  (`labels`, déf. namespace retiré + capitalisation) et MASQUAGE des tags
  *  techniques (`hidePrefixes`, ex. `public:`/`age:` — filtrants mais pas
- *  affichables bruts). Consommé par `decorateTags` (lib/colorBy).
+ *  affichables bruts ; `hideTags`, égalité STRICTE, pour un marqueur complet
+ *  comme `lieux-sante` qui ne doit pas emporter `lieux-sante-mentale`).
+ *  Consommé par `decorateTags` (lib/colorBy).
  *  `paths` : dot-paths serverData dont les valeurs s'ajoutent aux chips —
  *  nécessaire quand la taxonomie vit dans des CHAMPS et non dans `tags`
  *  (parent62 : `["territoires"]`), cf. `collectChipValues`. */
@@ -621,6 +633,7 @@ export const TagColorsConfSchema = z.object({
   mapping: z.record(z.string(), z.string()),
   labels: z.record(z.string(), z.string()).optional(),
   hidePrefixes: z.array(z.string()).optional(),
+  hideTags: z.array(z.string()).optional(),
   paths: z.array(z.string()).optional(),
 });
 export type TagColorsConf = z.infer<typeof TagColorsConfSchema>;
@@ -642,6 +655,10 @@ export const CardConfSchema = z.object({
     // `false` sur un annuaire de structures qui ne portent pas de projets : le
     // compteur y afficherait « 0 » sur toutes les fiches, ce qui n'informe de rien.
     showStats:       z.boolean().optional(),
+    // Boutons « Contacter » / « Suivre » de la carte `profile`. Absent = affichés (24 usages du
+    // parc inchangés). `false` sur un annuaire de LIEUX : on ne « suit » pas un cabinet, et
+    // « Contacter » n'ouvre aujourd'hui qu'un toast « à venir ».
+    showActions:     z.boolean().optional(),
     // Affiche la barre de progression de financement (cagnotte) sur la carte +
     // déclenche la query useFundingEnvelope. Découple la feature funding du style
     // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).
@@ -1162,6 +1179,10 @@ const AddButtonConfigSchema = z.object({
   // (CoFormModal) au lieu d'une modale d'entité — ex. « Ajouter un créneau »
   // (1 créneau = 1 answer). Prioritaire sur modal/organization/project/poi.
   coform: z.string().optional(),
+  // Message affiché après la création d'une answer (`coform`). À poser sur un formulaire
+  // MODÉRÉ : la réponse déposée n'apparaît pas dans la liste publique, et sans message le
+  // déposant croirait à un échec. Absent = aucun message (comportement historique).
+  successMessage: LocalizedString.optional(),
   // `false` → le bouton s'affiche dès que `show: true`, sans exiger le rôle
   // admin du site (un non-connecté qui clique passe par le login). Cas d'usage :
   // déclaration publique d'answer CoForm modérée en aval (filtre `state`).
@@ -1333,6 +1354,17 @@ const ResourceTypeConfSchema = z.object({
   descriptionSuffix: z.string().optional(),
   /** Suffixe de l'input « Services proposés » (`string[]`), PROPRE au formulaire (hébergement `miq86g5vaw1kavrapkb`). */
   servicesSuffix: z.string().optional(),
+  /**
+   * Champs du DÉTAIL de la ressource, par suffixe d'input — les mêmes que la fiche du lieu
+   * (`profile-about-tl`, `roomPath`/`coworkingPath`/`bedRoomPath`) : listes `equipments`, `catering`,
+   * `services`, `roomType` ; textes `moreInfo` (« Bon à savoir »), `about` (« À propos du lieu »),
+   * `tip` (« Le petit truc en plus »). Fourni, l'aperçu montre CES blocs, sous les libellés de la fiche,
+   * à la place de `fieldSuffixes.equipments`/`descriptionSuffix`/`servicesSuffix`. Absent : rendu historique.
+   */
+  detailSuffixes: z.object({
+    equipments: z.string(), catering: z.string(), services: z.string(), roomType: z.string(),
+    moreInfo: z.string(), about: z.string(), tip: z.string(),
+  }).partial().optional(),
 });
 
 /**
@@ -1352,6 +1384,11 @@ export const CoformResourceDirectorySectionSchema = z.object({
   props: z.object({
     title: LocalizedString.optional(),
     description: LocalizedString.optional(),
+    customHeader: z.object({
+      title: LocalizedString.optional(),
+      linkText: LocalizedString.optional(),
+      linkHref: z.string().optional(),
+    }).optional(),
     /** Slug du costum porteur (périmètre de recherche). */
     costumSlug: z.string().optional(),
     /** Entité contexte (hôte du costum) — `contextId`/`contextType` du payload legacy. */
@@ -1386,6 +1423,10 @@ export const CoformResourceDirectorySectionSchema = z.object({
       lg: z.number().int().min(1).max(6).optional(),
       xl: z.number().int().min(1).max(6).optional(),
     }).optional(),
+    /** Nombre maximal de cartes affichées. */
+    limit: z.number().int().min(1).optional(),
+    /** Masque les facettes et désactive le filtre par lieu porteur. Défaut : true. */
+    showFilters: z.boolean().optional(),
     /** Titre de la colonne de filtres (défaut i18n « Filtres »). */
     filtersTitle: LocalizedString.optional(),
     /* Les facettes prix sont figées (3 groupes heure / demi-journée / journée,
@@ -1616,6 +1657,12 @@ export const FeaturedCarouselSectionSchema = z.object({
   props: z.object({
     /** Badge affiché au-dessus du titre de chaque diapositive, ex. "À la une :". */
     badgeLabel: LocalizedString.optional(),
+    /** Icône (registre lucide, kebab-case) posée avant le texte du badge — ex. "megaphone". Absente,
+     *  le badge reste texte seul (comportement historique). */
+    badgeIcon: z.string().optional(),
+    /** Couleur de l'icône du badge (CSS) — INDÉPENDANTE de la couleur du texte (ex. icône turquoise,
+     *  titre marine en `headlineStyle:"text"`). Défaut : hérite de la couleur du texte (`currentColor`). */
+    badgeIconColor: z.string().optional(),
     /** Libellé du bouton CTA. Repli : traduction "En savoir plus". */
     ctaLabel: LocalizedString.optional(),
     /** Fetch/filtre — `defaultTypes`/`defaultTags`/`sourceKey`/`defaultFields` etc. */
@@ -1643,8 +1690,9 @@ export const FeaturedCarouselSectionSchema = z.object({
      * conteneur ne rogne pas (`overflow` visible), sinon la pilule est coupée.
      */
     design: z.enum(["sticker", "card"]).optional(),
-    /** Forme du badge : `badge` (défaut, étiquette inclinée) ou `pill` (arrondi droit). */
-    headlineStyle: z.enum(["badge", "pill"]).optional(),
+    /** Forme du badge : `badge` (défaut, étiquette inclinée), `pill` (arrondi droit) ou `text` — texte
+     *  seul, sans fond ni rotation, police `--font-sans` (celle du menu), plus grand. */
+    headlineStyle: z.enum(["badge", "pill", "text"]).optional(),
     /** Encre de la section, posée avec `background`. Sans elle, un fond fourni impose le texte BLANC
      *  (rendu historique, pensé pour un fond sombre) — à fournir dès que le fond est clair. */
     textColor: z.string().optional(),
@@ -1666,6 +1714,17 @@ export const FeaturedCarouselSectionSchema = z.object({
     /** Puces de pagination sous le carrousel, entre les flèches précédent/suivant (celles-ci
      *  restent toujours affichées). Défaut masquées — à activer explicitement si besoin. */
     showControls: z.boolean().default(false),
+    /** Titre ET image de la diapositive deviennent des liens vers la même cible que le bouton.
+     *  Défaut `false` : seul le bouton est cliquable (comportement historique). */
+    linkTitleAndImage: z.boolean().optional(),
+    /** Apparence du CTA : `button` (défaut, pilule pleine) ou `link` — texte + flèche, sans fond,
+     *  dans `accentColor`. */
+    ctaStyle: z.enum(["button", "link"]).optional(),
+    /** Emplacement du CTA en habillage `card` UNIQUEMENT (`design:"card"`, sans effet en `sticker`,
+     *  déjà posé dans le flux de la diapositive) : `footer` (défaut, historique) — partage la ligne des
+     *  points de position, en pied de carte — ou `inline` — sous le texte de CHAQUE diapositive, comme
+     *  en habillage `sticker`. Les points restent alors seuls au pied, centrés. */
+    ctaPosition: z.enum(["footer", "inline"]).optional(),
   }),
 });
 export type FeaturedCarouselSection = z.infer<typeof FeaturedCarouselSectionSchema>;
@@ -1716,6 +1775,14 @@ export interface SwitchDetailsModeProps<T extends SearchListEntity = SearchEntit
   preview?: ListConf["preview"];
   /** Config `list` complète — thread une fois pour les configs par-type (cf. SearchListViewProps.list). */
   list?: ListConf;
+  /**
+   * Fin d'une ÉDITION faite depuis le détail. Le détail n'invalide que les caches qu'il connaît
+   * (listes search, réponse coform) : l'hôte qui montre la fiche AILLEURS — une table admin et ses
+   * tuiles — y invalide les siens. Seul `coform-answer` (+ `editButton`) le signale aujourd'hui ;
+   * les autres contenus qui écrivent ne le relaient pas, un hôte qui en dépend doit les refuser
+   * (cf. `ADMIN_PREVIEW_TYPES`, admin/schema.ts). Absent : rien de plus.
+   */
+  onEdited?: () => void;
 }
 
 export interface DetailsModeProps<T extends SearchListEntity = SearchEntity> {
@@ -1725,6 +1792,8 @@ export interface DetailsModeProps<T extends SearchListEntity = SearchEntity> {
   /** Config `list` complète — thread une fois pour les configs par-type (cf. SearchListViewProps.list). */
   list?: ListConf;
   item: T;
+  /** Transmis tel quel au contenu — cf. `SwitchDetailsModeProps.onEdited`. */
+  onEdited?: () => void;
 }
 
 export interface SearchCardProps<T extends SearchListEntity = SearchEntity> {
@@ -1747,6 +1816,8 @@ export interface PreviewProps<T extends SearchListEntity = SearchEntity> {
   list?: ListConf;
   /** Ferme le conteneur de détail (drawer/dialog) — fourni par le conteneur. */
   onClose?: () => void;
+  /** Fin d'une édition faite depuis ce contenu — cf. `SwitchDetailsModeProps.onEdited`. */
+  onEdited?: () => void;
 }
 
 export interface SearchMapWrapperProps<T extends SearchListEntity = SearchEntity> {
@@ -1795,4 +1866,6 @@ export interface MapPopupProps<T extends SearchListEntity = SearchEntity> {
   actionKind?: "profil" | "preview";
   /** Handler du bouton d'action — fourni par SearchMap (popup react-map-gl). */
   onAction?: () => void;
+  /** Chips de tags : la MÊME conf que la carte de liste (`list.card.tagColors`) — un tag masqué en liste l'est aussi ici. */
+  tagColors?: TagColorsConf;
 }

@@ -464,6 +464,59 @@
           "created": -1
         }
       }
+    },
+    "/blog/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "events"
+        ],
+        "sourceKey": [
+          "sportSanteBienetre"
+        ],
+        "costumSlug": "sportSanteBienetre",
+        "fediverse": false,
+        "defaultFilters": {
+          "category": {
+            "$ne": "sessionFormation"
+          }
+        },
+        "defaultSortBy": {
+          "startDate": -1
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "shortDescription",
+          "description",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "medias",
+          "urls",
+          "address",
+          "tags",
+          "created",
+          "startDate",
+          "endDate",
+          "organizer",
+          "reference"
+        ]
+      }
+    }
+  },
+  "contributions": {
+    "/creneaux/searchProStatic": {
+      "ajout": {
+        "coform": "6928096adf5caf0d230e7f26",
+        "adminOnly": false
+      },
+      "modifier": true,
+      "ficheStructure": {
+        "audience": "managers"
+      }
     }
   },
   "referencement": {
@@ -481,6 +534,16 @@
         "events"
       ],
       "scope": "network"
+    }
+  },
+  "structuresTabs": {
+    "citoyens/structures": {
+      "formId": "6928096adf5caf0d230e7f26",
+      "structureFinderPath": "answers.sportSanteBienetre2172025_854_0.findersportSanteBienetre2172025_854_0mdn1fzoewyjg66n85p",
+      "editButton": true,
+      "submittedSlots": true,
+      "scope": "costum",
+      "structureStatusField": "statusActor"
     }
   },
   "profileRelated": {}
