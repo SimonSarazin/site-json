@@ -128,6 +128,7 @@
     "paymentMethodsLoading": "Loading payment methods…",
     "noPaymentMethod": "No payment method is configured for this campaign.",
     "missingAnswer": "Contribution unavailable: no funding record is linked to this resource.",
+    "nothingToPay": "Nothing to pay: the amount is zero.",
     "successScreen": {
       "title": "Payment successful",
       "subtitle": "Returning to home page...",
@@ -138,13 +139,21 @@
       "subtitle": "Complete the payment in the HelloAsso window, then come back to this page. If you closed it without paying, click Cancel.",
       "hint": "Funding is recorded as soon as HelloAsso confirms the payment.",
       "cancel": "Cancel",
-      "checking": "Checking the payment..."
+      "checking": "Checking the payment...",
+      "stopWaiting": "Stop waiting"
     },
     "recordingFailed": {
       "title": "Payment received, contribution not recorded",
       "description": "Your payment (ref. {{reference}}) went through, but recording it failed. Try again; if it still fails, send this reference to the fundraiser's organizer.",
       "inProgress": "This payment is already being recorded. Try again in a moment.",
       "retry": "Retry recording",
+      "close": "Close"
+    },
+    "paymentUnconfirmed": {
+      "title": "Payment not confirmed",
+      "description": "We did not receive the payment response: your card may have been charged. Do not pay again. “Check payment” resumes this same payment without ever charging twice; if it went through, it will be recorded, even if you close this window.",
+      "inProgress": "The payment is being processed. Check again in a moment.",
+      "retry": "Check payment",
       "close": "Close"
     },
     "toasts": {
@@ -175,7 +184,6 @@
     },
     "errors": {
       "fundingEnvelopeUnavailable": "entity.fundingEnvelope is unavailable",
-      "noContextId": "contextId not found for fundingEnvelope",
       "noRedirectUrl": "No HelloAsso redirect URL returned by fundingEnvelope",
       "popupFailed": "HelloAsso popup could not be opened",
       "paymentRejected": "The payment did not go through.",

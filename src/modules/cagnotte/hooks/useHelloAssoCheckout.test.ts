@@ -7,7 +7,8 @@ import { act, renderHook } from "@testing-library/react";
  *  - la popup s'ouvre avant tout `await`, sinon le navigateur la bloque ;
  *  - la commande part avec le checkout ;
  *  - `onSettled` n'est appelé qu'une fois, avec la facture et les données du clic ;
- *  - tout arrêt (annulation, échec signalé, délai) attend une vérification lancée après la demande ;
+ *  - tout arrêt (annulation, échec signalé, délai) attend une vérification lancée après la demande,
+ *    elle-même bornée, et qu'on peut cesser d'attendre ;
  *  - seuls les messages de la popup ouverte comptent, et ils ne décident rien seuls ;
  *  - une vérification sans réponse ne bloque pas les suivantes.
  */
@@ -22,6 +23,7 @@ vi.mock("@/lib/toastUtils", () => ({
 }));
 
 import {
+  HELLOASSO_CHECK_MAX_MS,
   HELLOASSO_MAX_WAIT_MS,
   HELLOASSO_POLL_INTERVAL_MS,
   HELLOASSO_STATUS_TIMEOUT_MS,
@@ -40,11 +42,11 @@ const SNAPSHOT = { montant: 25 };
 type Statut = Record<string, unknown> | Error | Promise<Record<string, unknown>>;
 
 /** Monte le hook ; `statuts` est la suite des réponses de `helloassoStatus` (une Error = échec). */
-function monter(statuts: Statut[] = []) {
+function monter(statuts: Statut[] = [], checkout: Record<string, unknown> = CHECKOUT) {
   const popup = { closed: false, close: vi.fn(), location: { href: "" } };
   const open = vi.spyOn(window, "open").mockReturnValue(popup as unknown as Window);
   const submit = vi.fn(async (action: string) => {
-    if (action === "helloassoPay") return CHECKOUT;
+    if (action === "helloassoPay") return checkout;
     const suivant = statuts.shift() ?? EN_ATTENTE;
     if (suivant instanceof Error) throw suivant;
     return suivant;
@@ -120,6 +122,16 @@ describe("useHelloAssoCheckout — ouverture", () => {
     expect(result.current.phase).toBe("idle");
   });
 
+  it("un second lancement pendant le suivi est ignoré", async () => {
+    const { result, submit } = monter();
+    await demarrer(result.current.start);
+
+    await demarrer(result.current.start);
+
+    expect(submit.mock.calls.filter(([action]) => action === "helloassoPay")).toHaveLength(1);
+    expect(result.current.phase).toBe("waiting");
+  });
+
   it("referme la popup et affiche le message serveur quand le checkout échoue", async () => {
     const popup = { closed: false, close: vi.fn(), location: { href: "" } };
     vi.spyOn(window, "open").mockReturnValue(popup as unknown as Window);
@@ -160,6 +172,15 @@ describe("useHelloAssoCheckout — suivi du paiement", () => {
     await avancer(HELLOASSO_POLL_INTERVAL_MS);
 
     expect(onSettled).toHaveBeenCalledWith({ bill: "b1", recorded: false, reference: "5", error: "depense not found" }, SNAPSHOT);
+  });
+
+  it("facture numérique : suivie sous forme de chaîne, la reprise reste possible", async () => {
+    const { result, onSettled } = monter([enregistre(1)], { ...CHECKOUT, bill: 12345 });
+    await demarrer(result.current.start);
+
+    await avancer(HELLOASSO_POLL_INTERVAL_MS);
+
+    expect(onSettled).toHaveBeenCalledWith(expect.objectContaining({ bill: "12345" }), SNAPSHOT);
   });
 
   it("règlement en cours ailleurs (page de retour) : on réinterroge sans conclure", async () => {
@@ -289,6 +310,17 @@ describe("useHelloAssoCheckout — arrêt du suivi", () => {
     expect(toasts.error).toHaveBeenCalledWith(expect.any(Error), "PaymentConfigPage.toasts.paymentInterrupted.title", expect.any(Function));
   });
 
+  it("un paiement refusé signalé par la popup vérifie avant d'arrêter", async () => {
+    const { result, popup, submit } = monter();
+    await demarrer(result.current.start);
+
+    await retourPopup(popup, { status: "refused", code: "refused", checkoutIntentId: "4242" });
+
+    expect(verifications(submit)).toBe(1);
+    expect(result.current.phase).toBe("idle");
+    expect(toasts.error).toHaveBeenCalledWith(expect.any(Error), "PaymentConfigPage.toasts.paymentInterrupted.title", expect.any(Function));
+  });
+
   it("un arrêt demandé pendant une vérification attend une réponse obtenue depuis", async () => {
     let repondre: (statut: Record<string, unknown>) => void = () => undefined;
     const enVol = new Promise<Record<string, unknown>>((resolve) => { repondre = resolve; });
@@ -328,6 +360,36 @@ describe("useHelloAssoCheckout — arrêt du suivi", () => {
 
     expect(result.current.phase).toBe("idle");
     expect(toasts.error).toHaveBeenCalledWith(expect.any(Error), "PaymentConfigPage.toasts.paymentUnverified.title", expect.any(Function));
+  });
+
+  it("dernière vérification qui ne conclut pas (enregistrement « en cours » sans fin) : arrêt borné, avec la référence", async () => {
+    const enCours = { success: 1, paid: false, recorded: false, inProgress: true };
+    const { result, onSettled } = monter(Array.from({ length: 100 }, () => enCours));
+    await demarrer(result.current.start);
+    await annuler(result.current.cancel);
+    expect(result.current.phase).toBe("checking");
+
+    await avancer(HELLOASSO_CHECK_MAX_MS + HELLOASSO_POLL_INTERVAL_MS);
+
+    expect(result.current.phase).toBe("idle");
+    expect(onSettled).not.toHaveBeenCalled();
+    expect(toasts.error).toHaveBeenCalledWith(expect.any(Error), "PaymentConfigPage.toasts.paymentUnverified.title", expect.any(Function));
+  });
+
+  it("pendant la dernière vérification, le bouton arrête l'attente tout de suite, avec la référence", async () => {
+    const enCours = { success: 1, paid: false, recorded: false, inProgress: true };
+    const { result, submit } = monter(Array.from({ length: 10 }, () => enCours));
+    await demarrer(result.current.start);
+    await annuler(result.current.cancel);
+    expect(result.current.phase).toBe("checking");
+    const avant = verifications(submit);
+
+    await annuler(result.current.cancel);
+
+    expect(result.current.phase).toBe("idle");
+    expect(toasts.error).toHaveBeenCalledWith(expect.any(Error), "PaymentConfigPage.toasts.paymentUnverified.title", expect.any(Function));
+    await avancer(HELLOASSO_POLL_INTERVAL_MS * 2);
+    expect(verifications(submit)).toBe(avant);
   });
 
   it("annuler puis relancer : le nouveau checkout est suivi", async () => {

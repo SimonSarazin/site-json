@@ -2,7 +2,7 @@ import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react"
 import { showErrorToast, showSuccessToast } from "@/lib/toastUtils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { asRecord, toString } from "@/modules/cagnotte/utils/dataTransform";
+import { asRecord, toId, toString } from "@/modules/cagnotte/utils/dataTransform";
 import { openHelloAssoPopup, readHelloAssoCheckout } from "@/modules/cagnotte/services/helloAssoCheckoutIntent";
 import { readHelloAssoStatus, type HelloAssoStatus } from "@/modules/cagnotte/services/helloAssoVerification";
 import type { SubmitFundingEnvelopeAction } from "@/modules/cagnotte/hooks/useFundingEnvelopeAction";
@@ -14,13 +14,15 @@ export const HELLOASSO_POLL_INTERVAL_MS = 5_000;
 export const HELLOASSO_MAX_WAIT_MS = 20 * 60_000;
 /** Délai max d'une vérification ; au-delà, elle échoue et la suivante peut partir. */
 export const HELLOASSO_STATUS_TIMEOUT_MS = 15_000;
+/** Durée max de la dernière vérification, au-delà du verrou serveur (120 s). */
+export const HELLOASSO_CHECK_MAX_MS = 150_000;
 
 /** `checking` : arrêt demandé, une dernière vérification décide. */
 export type HelloAssoCheckoutPhase = "idle" | "opening" | "waiting" | "checking";
 type StopReason = "cancel" | "failed" | "timeout";
 
 /** Statuts de la page de retour (`co2/views/pay/callback.php`) qui demandent l'arrêt du suivi. */
-const STOP_STATUSES = new Set(["cancel", "error", "failed"]);
+const STOP_STATUSES = new Set(["cancel", "error", "failed", "refused"]);
 
 interface UseHelloAssoCheckoutOptions<T> {
   submit: SubmitFundingEnvelopeAction;
@@ -53,6 +55,7 @@ export function useHelloAssoCheckout<T>({ submit, onSettled }: UseHelloAssoCheck
   /** Facture et données du checkout suivi, figées au lancement. */
   const trackedRef = useRef<{ bill: string; snapshot: T } | null>(null);
   const deadlineRef = useRef(0);
+  const checkDeadlineRef = useRef(0);
   /** Checkout dont une vérification est en vol. */
   const inFlightRef = useRef<string | null>(null);
   const stopReasonRef = useRef<StopReason | null>(null);
@@ -75,14 +78,32 @@ export function useHelloAssoCheckout<T>({ submit, onSettled }: UseHelloAssoCheck
   const requestStop = useCallback((reason: StopReason) => {
     if (!trackedIdRef.current || stopReasonRef.current) return;
     stopReasonRef.current = reason;
+    checkDeadlineRef.current = Date.now() + HELLOASSO_CHECK_MAX_MS;
     closePopup();
     setPhase("checking");
   }, [closePopup]);
 
-  const cancel = useCallback(() => requestStop("cancel"), [requestStop]);
+  /** Arrêt sans issue connue ; le serveur enregistrera le paiement s'il a eu lieu. */
+  const abandon = useCallback(() => {
+    const id = trackedIdRef.current;
+    if (!id) return;
+    stop();
+    showErrorToast(
+      new Error(String(t("PaymentConfigPage.toasts.paymentUnverified.description", undefined, { reference: id }))),
+      "PaymentConfigPage.toasts.paymentUnverified.title",
+      t,
+    );
+  }, [stop, t]);
+
+  /** En attente : arrêt après une dernière vérification ; pendant celle-ci : arrêt immédiat. */
+  const cancel = useCallback(() => {
+    if (stopReasonRef.current) abandon();
+    else requestStop("cancel");
+  }, [abandon, requestStop]);
 
   /** À appeler dans le gestionnaire de clic (sinon la popup est bloquée) ; `snapshot` est rendu à `onSettled`. */
   const start = useCallback(async (amount: number, order: Record<string, unknown>, snapshot: T) => {
+    if (trackedIdRef.current || popupRef.current) return;
     const popup = openHelloAssoPopup();
     if (!popup) {
       showErrorToast(new Error(String(t("PaymentConfigPage.errors.popupFailed"))), "PaymentConfigPage.toasts.paymentError.title", t);
@@ -98,7 +119,7 @@ export function useHelloAssoCheckout<T>({ submit, onSettled }: UseHelloAssoCheck
       if (popup.closed) throw new Error(String(t("PaymentConfigPage.toasts.paymentInterrupted.description")));
       popup.location.href = checkout.redirectUrl;
       trackedIdRef.current = checkout.checkoutIntentId;
-      trackedRef.current = { bill: toString(response.bill), snapshot };
+      trackedRef.current = { bill: toId(response.bill), snapshot };
       deadlineRef.current = Date.now() + HELLOASSO_MAX_WAIT_MS;
       setCheckoutIntentId(checkout.checkoutIntentId);
       setPhase("waiting");
@@ -156,14 +177,12 @@ export function useHelloAssoCheckout<T>({ submit, onSettled }: UseHelloAssoCheck
       void verify(id);
       return;
     }
-    stop();
     if (failure) {
-      showErrorToast(
-        new Error(String(t("PaymentConfigPage.toasts.paymentUnverified.description", undefined, { reference: id }))),
-        "PaymentConfigPage.toasts.paymentUnverified.title",
-        t,
-      );
-    } else if (reason !== "cancel") {
+      abandon();
+      return;
+    }
+    stop();
+    if (reason !== "cancel") {
       showErrorToast(
         new Error(String(t("PaymentConfigPage.toasts.paymentInterrupted.description"))),
         "PaymentConfigPage.toasts.paymentInterrupted.title",
@@ -191,6 +210,7 @@ export function useHelloAssoCheckout<T>({ submit, onSettled }: UseHelloAssoCheck
     if (!waiting) void verify(id);
     const interval = window.setInterval(() => {
       if (waiting && Date.now() > deadlineRef.current) requestStop("timeout");
+      else if (!waiting && Date.now() > checkDeadlineRef.current) abandon();
       else void verify(id);
     }, HELLOASSO_POLL_INTERVAL_MS);
     if (!waiting) return () => window.clearInterval(interval);
@@ -209,7 +229,7 @@ export function useHelloAssoCheckout<T>({ submit, onSettled }: UseHelloAssoCheck
       window.removeEventListener("focus", handleReturn);
       document.removeEventListener("visibilitychange", handleReturn);
     };
-  }, [phase, checkoutIntentId, requestStop]);
+  }, [phase, checkoutIntentId, requestStop, abandon]);
 
   // Démontage : réponses tardives ignorées, popup laissée ouverte.
   useEffect(() => () => {

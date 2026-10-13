@@ -25,14 +25,16 @@ import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope"
 import { useFundingEnvelopeAction } from "@/modules/cagnotte/hooks/useFundingEnvelopeAction";
 import { useHelloAssoCheckout } from "@/modules/cagnotte/hooks/useHelloAssoCheckout";
 import { usePaymentChoice } from "@/modules/cagnotte/hooks/usePaymentChoice";
-import { readSettlement, usePaymentSettlement } from "@/modules/cagnotte/hooks/usePaymentSettlement";
+import { usePaymentSettlement } from "@/modules/cagnotte/hooks/usePaymentSettlement";
+import { useStripeCharge } from "@/modules/cagnotte/hooks/useStripeCharge";
 import { useUserAdminOrganizationsQuery } from "@/modules/cagnotte/hooks/useUserAdminOrganizations";
 import { CagnotteOrganizationPicker } from "./parts/CagnotteOrganizationPicker";
 import { PaymentMethodPicker } from "./parts/PaymentMethodPicker";
 import { HelloAssoWaitingScreen } from "./parts/HelloAssoWaitingScreen";
 import { PaymentRecordingScreen } from "./parts/PaymentRecordingScreen";
 import { HelloAssoInfo } from "./parts/HelloAssoInfo";
-import { cibleDepense, useSaveCagnotteContribution } from "@/modules/cagnotte/hooks/useSaveCagnotteContribution";
+import { useSaveCagnotteContribution } from "@/modules/cagnotte/hooks/useSaveCagnotteContribution";
+import { cibleDepense } from "@/modules/cagnotte/utils/commande";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { useQueryClient } from "@tanstack/react-query";
 import { launchConfettiBurst } from "@/lib/confetti";
@@ -48,7 +50,6 @@ interface PaymentConfigPageProps {
     items: CagnotteFundableItem[] | undefined;
     activeItemsIds: Set<string>;
     itemAnswerId?: string; //  ID de l'Answer associée
-    itemProjectId?: string; //  ID de du Projet associée
     onBack: () => void;
     onPaymentSuccess: (paymentData: Record<string, unknown>) => void;
     onContributionSaved?: () => void | Promise<void>;
@@ -74,7 +75,6 @@ const PaymentConfigPage = ({
                                items,
                                activeItemsIds,
                                itemAnswerId,
-                               itemProjectId,
                                onBack,
                                onPaymentSuccess,
                                onContributionSaved,
@@ -90,14 +90,13 @@ const PaymentConfigPage = ({
     const [contributorName, setContributorName] = useState<string>(me?.serverData?.name || "");
     const [paymentSuccess, setPaymentSuccess] = useState(false);
     const [acceptPledgeCondition, setAcceptPledgeCondition] = useState(false);
-    const [isChargingStripe, setIsChargingStripe] = useState(false);
     const [isSavingPromise, setIsSavingPromise] = useState(false);
     const promiseSavingRef = useRef(false);
     useLoadNamespace("modules/cagnotte");
     const t = useT("modules/cagnotte");
     const fundingEnvelopeQuery = useFundingEnvelope(resourceId);
     const fundingPaymentMethods = fundingEnvelopeQuery.data?.paymentMethods ?? fundingEnvelopeQuery.data?.selectedProject?.paymentMethods ?? null;
-    const submit = useFundingEnvelopeAction(itemProjectId);
+    const submit = useFundingEnvelopeAction();
 
     // Clé publique de l'entité : même compte Stripe que le débit serveur.
     const stripePublicKey = fundingPaymentMethods?.stripePublicKey || "";
@@ -219,11 +218,20 @@ const PaymentConfigPage = ({
     });
 
     const helloAsso = useHelloAssoCheckout<PaidContribution>({ submit, onSettled: settlement.settled });
-    const busy = helloAsso.phase !== "idle" || isChargingStripe || isSavingPromise;
+    // Tentative Stripe non confirmée, gardée par utilisateur et par ressource.
+    const userId = me?.serverData?.id;
+    const stripeCharge = useStripeCharge<PaidContribution>({
+        submit,
+        stripe: stripePromise,
+        storageKey: userId ? `cagnotte.stripe.${userId}.${resourceId}` : undefined,
+        onSettled: settlement.settled,
+    });
+    const busy = helloAsso.phase !== "idle" || stripeCharge.phase !== "idle" || isSavingPromise;
 
-    // La contribution s'enregistre sur la réponse liée : sans elle, pas de paiement.
+    // Il faut la réponse liée (où s'enregistre la contribution) et un montant positif.
     const isFormComplete = Boolean(
         itemAnswerId &&
+        effectiveAmount > 0 &&
         paymentMethod &&
         contributorType &&
         (contributorType === "citoyens" ||
@@ -256,12 +264,9 @@ const PaymentConfigPage = ({
     });
 
     // Le serveur débite puis enregistre la commande dans la même requête.
-    const handleStripePaymentSuccess = async (stripeData: Record<string, unknown>) => {
-        const order = buildOrder();
-        const contribution: PaidContribution = { ...buildContributionData(), method: "stripe" };
-        setIsChargingStripe(true);
-        try {
-            const response = await submit("stripePay", {
+    const handleStripePaymentSuccess = (stripeData: Record<string, unknown>) =>
+        stripeCharge.charge(
+            {
                 payment_method_id: String(
                     stripeData.stripePaymentMethodId ||
                     stripeData.paymentMethodId ||
@@ -270,16 +275,10 @@ const PaymentConfigPage = ({
                 ),
                 amount: effectiveAmount,
                 email: me?.serverData?.email,
-                order,
-            });
-            settlement.settled(readSettlement(response), contribution);
-        } catch (error) {
-            console.error("Erreur financement Stripe via fundingEnvelope:", error);
-            showErrorToast(error, "PaymentConfigPage.toasts.stripeError.title", t);
-        } finally {
-            setIsChargingStripe(false);
-        }
-    };
+                order: buildOrder(),
+            },
+            { ...buildContributionData(), method: "stripe" },
+        );
 
     // Synchrone jusqu'à `start` : la popup doit s'ouvrir pendant le clic.
     const handleHelloAssoPayment = () => {
@@ -349,6 +348,19 @@ const PaymentConfigPage = ({
                 inProgress={settlement.settlement.inProgress}
                 retrying={settlement.retrying}
                 onRetry={() => void settlement.retry()}
+                onClose={onClose}
+            />
+        );
+    }
+
+    if (stripeCharge.phase === "unconfirmed") {
+        return (
+            <PaymentRecordingScreen
+                variant="unconfirmed"
+                error={stripeCharge.lastError}
+                inProgress={stripeCharge.inProgress}
+                retrying={stripeCharge.retrying}
+                onRetry={() => void stripeCharge.verify()}
                 onClose={onClose}
             />
         );
@@ -480,6 +492,9 @@ const PaymentConfigPage = ({
             <div className="space-y-3 pt-4 border-t border-border/50">
                 {!itemAnswerId && (
                     <p className="text-sm text-destructive">{t("PaymentConfigPage.missingAnswer")}</p>
+                )}
+                {effectiveAmount <= 0 && (
+                    <p className="text-sm text-destructive">{t("PaymentConfigPage.nothingToPay")}</p>
                 )}
 
                 {paymentMethod === "stripe" && isFormComplete && (

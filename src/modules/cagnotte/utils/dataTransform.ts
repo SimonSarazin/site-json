@@ -9,7 +9,7 @@
  * Toutes les fonctions sont pures (aucun side-effect) — adaptées à `utils/` plutôt qu'à `lib/`.
  */
 import type { CagnotteFundableItem, CagnotteResource, FundingActionStatus } from "../types";
-import { asRecord, toArrayOrValues, toNumber, toString, type UnknownRecord } from "./coerce";
+import { asRecord, toArrayOrValues, toId, toNumber, toString, type UnknownRecord } from "./coerce";
 import { listDepenseKeys } from "./depenseKey";
 import { readFinancerPaymentState, toDisplayPaymentStatus } from "./financerPayment";
 
@@ -17,7 +17,7 @@ import { readFinancerPaymentState, toDisplayPaymentStatus } from "./financerPaym
  * Les coercions de base vivent dans `coerce.ts` (socle sans dépendance) et sont ré-exportées
  * ici : elles font partie de la surface publique de ce module.
  */
-export { asRecord, toArrayOrValues, toNumber, toString };
+export { asRecord, toArrayOrValues, toId, toNumber, toString };
 export type { UnknownRecord };
 
 /**

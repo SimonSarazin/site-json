@@ -4,7 +4,7 @@ import { AlertCircle, ArrowRight } from "lucide-react";
 import { CagnotteTypeConfig } from "../../types";
 import { useT } from "@/hooks/useT";
 import { formatNumber } from "@/modules/cagnotte/utils/format";
-import { promessesReglables, totalARegler } from "@/modules/cagnotte/hooks/useSaveCagnotteContribution";
+import { promessesReglables, totalARegler } from "@/modules/cagnotte/utils/commande";
 
 export interface UnpaidFundingToastProps {
     pending: Pledge[]

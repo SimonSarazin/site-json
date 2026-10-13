@@ -356,10 +356,6 @@ const CagnotteDialogContent = ({
         savedSelectedResource?.answerId
         || selectedResource?.answerId;
 
-    const selectedResourceProjectId =
-        savedSelectedResource?.projectId
-        || selectedResource?.projectId;
-
     // Note (refactor lazy-mount) : on ne refetch plus à l'ouverture.
     // Le composant n'est monté QUE si `open === true`, donc les hooks démarrent
     // leur fetch à neuf à chaque ouverture (cache hit si staleTime valide).
@@ -664,7 +660,6 @@ const CagnotteDialogContent = ({
                         items={activeResourceItems}
                         activeItemsIds={activeItems}
                         itemAnswerId={selectedResourceAnswerId} //  Passer l'answerId pour enregistrer les financements
-                        itemProjectId={selectedResourceProjectId} //  Passer le projectId
                         onBack={() => setShowPaymentConfig(false)}
                         onPaymentSuccess={(payload) => {
                             setShowPaymentConfig(false);

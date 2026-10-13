@@ -5,12 +5,14 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 /**
  * Ce qui est verrouillé ici :
  *  - la commande règle le solde de chaque promesse, ciblée par sa `finkey` ;
- *  - le succès n'est annoncé qu'une fois, après l'enregistrement serveur.
+ *  - le succès n'est annoncé qu'une fois, après l'enregistrement serveur ;
+ *  - un débit Stripe sans réponse ne propose que le rejeu de la même requête.
  * Les hooks data sont mockés à leur frontière.
  */
 
 const mocks = vi.hoisted(() => ({
   fundingEnvelope: null as unknown,
+  paymentMethods: { helloasso: true } as Record<string, unknown>,
 }));
 
 vi.mock("@/hooks/useT", () => ({ useT: () => (key: string) => key }));
@@ -24,13 +26,21 @@ vi.mock("@/hooks/useCocolight", () => ({
   }),
 }));
 vi.mock("@/modules/cagnotte/hooks/useFundingEnvelope", () => ({
-  useFundingEnvelope: () => ({ data: { paymentMethods: { helloasso: true }, selectedProject: null }, isLoading: false }),
+  // `serverSettlement` : paiement en ligne proposé.
+  useFundingEnvelope: () => ({
+    data: { paymentMethods: mocks.paymentMethods && { serverSettlement: true, ...mocks.paymentMethods }, selectedProject: null },
+    isLoading: false,
+  }),
 }));
 vi.mock("@tanstack/react-query", () => ({ useQueryClient: () => ({ invalidateQueries: vi.fn(async () => undefined) }) }));
 vi.mock("react-router", () => ({ useNavigate: () => vi.fn() }));
 vi.mock("@stripe/stripe-js", () => ({ loadStripe: vi.fn(async () => null) }));
 vi.mock("@stripe/react-stripe-js", () => ({ Elements: ({ children }: { children: unknown }) => children }));
-vi.mock("./StripePaymentForm", () => ({ default: () => <div data-testid="stripe-form" /> }));
+vi.mock("./StripePaymentForm", () => ({
+  default: ({ onSuccess }: { onSuccess: (data: Record<string, unknown>) => Promise<void> }) => (
+    <button type="button" onClick={() => void onSuccess({ stripePaymentMethodId: "pm_1" })}>stripe-pay</button>
+  ),
+}));
 vi.mock("@/lib/confetti", () => ({ launchConfettiBurst: vi.fn() }));
 vi.mock("@/lib/toastUtils", () => ({ showErrorToast: vi.fn(), showSuccessToast: vi.fn() }));
 
@@ -52,6 +62,9 @@ const promesse = (over: Record<string, unknown>) => ({
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
+  // Une tentative Stripe non confirmée est gardée d'un test à l'autre sinon.
+  window.localStorage.clear();
+  mocks.paymentMethods = { helloasso: true };
 });
 
 describe("PledgePaymentPage — règlement HelloAsso", () => {
@@ -99,5 +112,43 @@ describe("PledgePaymentPage — règlement HelloAsso", () => {
 
     expect(onPaymentSuccess).toHaveBeenCalledTimes(1);
     expect(onPaymentSuccess).toHaveBeenCalledWith(expect.objectContaining({ method: "helloasso", amount: 53.5, transactionId: "99" }));
+  });
+});
+
+describe("PledgePaymentPage — règlement Stripe", () => {
+  it("coupure réseau après le clic : paiement non confirmé, plus de formulaire ; « Vérifier » rejoue la même requête", async () => {
+    mocks.paymentMethods = { stripe: true, stripePublicKey: "pk_test_x" };
+    const coupure = Object.assign(new Error("Network Error"), { status: 500, details: null });
+    let appel = 0;
+    mocks.fundingEnvelope = vi.fn(async () => {
+      appel += 1;
+      if (appel === 1) throw coupure;
+      return { success: 1, intent_id: "pi_1", bill: "b9", recorded: true };
+    });
+    const onPaymentSuccess = vi.fn();
+    render(
+      <PledgePaymentPage
+        pledges={[promesse({ id: "p1", finkey: "a-1", depenseKey: "0", remainingAmount: 40 })] as never[]}
+        onBack={vi.fn()}
+        onClose={vi.fn()}
+        onPaymentSuccess={onPaymentSuccess}
+      />,
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "stripe-pay" }));
+    });
+
+    expect(screen.getByText("PaymentConfigPage.paymentUnconfirmed.title")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "stripe-pay" })).not.toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "PaymentConfigPage.paymentUnconfirmed.retry" }));
+    });
+
+    const [premier, rejeu] = (mocks.fundingEnvelope as ReturnType<typeof vi.fn>).mock.calls.map(([payload]) => payload);
+    expect(premier).toMatchObject({ action: "stripePay", amount: 40, key: expect.stringMatching(/^[a-f0-9]{32}$/) });
+    expect(rejeu).toEqual(premier);
+    expect(onPaymentSuccess).toHaveBeenCalledWith(expect.objectContaining({ method: "stripe", amount: 40, transactionId: "pi_1" }));
   });
 });

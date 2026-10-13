@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
 
 interface HelloAssoWaitingScreenProps {
-  /** Dernière vérification avant l'arrêt : annulation désactivée. */
+  /** Dernière vérification avant l'arrêt : le bouton arrête l'attente sans conclure. */
   checking: boolean;
   lastError: string | null;
   onCancel: () => void;
@@ -28,8 +28,8 @@ export function HelloAssoWaitingScreen({ checking, lastError, onCancel, classNam
         </>
       )}
       {lastError && <p className="text-xs text-destructive">{lastError}</p>}
-      <Button onClick={onCancel} variant="outline" disabled={checking}>
-        {t("PaymentConfigPage.waiting.cancel")}
+      <Button onClick={onCancel} variant="outline">
+        {checking ? t("PaymentConfigPage.waiting.stopWaiting") : t("PaymentConfigPage.waiting.cancel")}
       </Button>
     </div>
   );

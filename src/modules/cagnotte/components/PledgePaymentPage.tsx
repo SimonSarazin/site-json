@@ -10,7 +10,7 @@ import {
     ExternalLink,
     ChevronDown,
 } from "lucide-react";
-import { showErrorToast, showSuccessToast } from "@/lib/toastUtils";
+import { showSuccessToast } from "@/lib/toastUtils";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -20,13 +20,14 @@ import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope"
 import { useFundingEnvelopeAction } from "@/modules/cagnotte/hooks/useFundingEnvelopeAction";
 import { useHelloAssoCheckout } from "@/modules/cagnotte/hooks/useHelloAssoCheckout";
 import { usePaymentChoice } from "@/modules/cagnotte/hooks/usePaymentChoice";
-import { readSettlement, usePaymentSettlement } from "@/modules/cagnotte/hooks/usePaymentSettlement";
+import { usePaymentSettlement } from "@/modules/cagnotte/hooks/usePaymentSettlement";
+import { useStripeCharge } from "@/modules/cagnotte/hooks/useStripeCharge";
 import {
     ligneReglement,
     montantARegler,
     promessesReglables,
     totalARegler,
-} from "@/modules/cagnotte/hooks/useSaveCagnotteContribution";
+} from "@/modules/cagnotte/utils/commande";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { useQueryClient } from "@tanstack/react-query";
 import { launchConfettiBurst } from "@/lib/confetti";
@@ -56,7 +57,6 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
     /** Montant et nombre de promesses réglés, affichés une fois le paiement enregistré. */
     const [paidSummary, setPaidSummary] = useState<PaidSummary | null>(null);
     const [isPledgesExpanded, setIsPledgesExpanded] = useState(false);
-    const [isChargingStripe, setIsChargingStripe] = useState(false);
     useLoadNamespace("modules/cagnotte");
     const t = useT("modules/cagnotte");
     const fundingEnvelopeQuery = useFundingEnvelope();
@@ -119,7 +119,15 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
     });
 
     const helloAsso = useHelloAssoCheckout<PaidSummary>({ submit, onSettled: settlement.settled });
-    const busy = helloAsso.phase !== "idle" || isChargingStripe;
+    // Tentative Stripe non confirmée, gardée par utilisateur.
+    const userId = me?.serverData?.id;
+    const stripeCharge = useStripeCharge<PaidSummary>({
+        submit,
+        stripe: stripePromise,
+        storageKey: userId ? `cagnotte.stripe.${userId}.pledges` : undefined,
+        onSettled: settlement.settled,
+    });
+    const busy = helloAsso.phase !== "idle" || stripeCharge.phase !== "idle";
 
     const isFormComplete = Boolean(paymentMethod) && amount > 0;
 
@@ -128,12 +136,9 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
     const summaryOf = (method: PaidSummary["method"]): PaidSummary => ({ amount, count: payablePledges.length, method });
 
     // Le serveur débite puis enregistre la commande dans la même requête.
-    const handleStripePaymentSuccess = async (stripeData: Record<string, unknown>) => {
-        const order = buildOrder();
-        const summary = summaryOf("stripe");
-        setIsChargingStripe(true);
-        try {
-            const response = await submit("stripePay", {
+    const handleStripePaymentSuccess = (stripeData: Record<string, unknown>) =>
+        stripeCharge.charge(
+            {
                 amount,
                 payment_method_id: String(
                     stripeData.stripePaymentMethodId ||
@@ -142,16 +147,10 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
                     ""
                 ),
                 email: me?.serverData?.email,
-                order,
-            });
-            settlement.settled(readSettlement(response), summary);
-        } catch (error) {
-            console.error("Erreur financement Stripe via fundingEnvelope:", error);
-            showErrorToast(error, "PaymentConfigPage.toasts.stripeError.title", t);
-        } finally {
-            setIsChargingStripe(false);
-        }
-    };
+                order: buildOrder(),
+            },
+            summaryOf("stripe"),
+        );
 
     // Synchrone jusqu'à `start` : la popup doit s'ouvrir pendant le clic.
     const handleHelloAssoPayment = () => {
@@ -179,6 +178,20 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
                 inProgress={settlement.settlement.inProgress}
                 retrying={settlement.retrying}
                 onRetry={() => void settlement.retry()}
+                onClose={onClose}
+            />
+        );
+    }
+
+    if (stripeCharge.phase === "unconfirmed") {
+        return (
+            <PaymentRecordingScreen
+                className="flex-1 overflow-y-auto"
+                variant="unconfirmed"
+                error={stripeCharge.lastError}
+                inProgress={stripeCharge.inProgress}
+                retrying={stripeCharge.retrying}
+                onRetry={() => void stripeCharge.verify()}
                 onClose={onClose}
             />
         );

@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { toString, type UnknownRecord } from "@/modules/cagnotte/utils/dataTransform";
+import { toId, toString, type UnknownRecord } from "@/modules/cagnotte/utils/dataTransform";
 import type { SubmitFundingEnvelopeAction } from "@/modules/cagnotte/hooks/useFundingEnvelopeAction";
 
 /** Résultat de l'enregistrement serveur d'un paiement encaissé. */
@@ -16,14 +16,12 @@ export interface PaymentSettlement {
 
 export type SettlementStatus = "idle" | "failed" | "done";
 
-const asId = (value: unknown) => (typeof value === "number" ? String(value) : toString(value));
-
 /** Règlement lu dans la réponse de `stripePay` ou `cagnotteSettle`. */
 export function readSettlement(response: UnknownRecord, bill = ""): PaymentSettlement {
   return {
-    bill: asId(response.bill) || bill,
+    bill: toId(response.bill) || bill,
     recorded: response.recorded === true,
-    reference: asId(response.orderId) || asId(response.intent_id) || null,
+    reference: toId(response.orderId) || toId(response.intent_id) || null,
     error: toString(response.recordError) || null,
     ...(response.inProgress === true ? { inProgress: true } : {}),
   };

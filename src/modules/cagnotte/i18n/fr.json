@@ -128,6 +128,7 @@
     "paymentMethodsLoading": "Chargement des moyens de paiement…",
     "noPaymentMethod": "Aucun moyen de paiement n'est configuré pour cette cagnotte.",
     "missingAnswer": "Contribution impossible : aucune fiche de financement n'est associée à cette ressource.",
+    "nothingToPay": "Rien à régler : le montant est nul.",
     "successScreen": {
       "title": "Paiement réussi",
       "subtitle": "Retour à la page principale...",
@@ -138,13 +139,21 @@
       "subtitle": "Terminez le paiement dans la fenêtre HelloAsso, puis revenez sur cette page. Si vous l'avez fermée sans payer, cliquez sur Annuler.",
       "hint": "Le financement est enregistré dès que HelloAsso confirme le paiement.",
       "cancel": "Annuler",
-      "checking": "Vérification du paiement..."
+      "checking": "Vérification du paiement...",
+      "stopWaiting": "Ne plus attendre"
     },
     "recordingFailed": {
       "title": "Paiement reçu, contribution non enregistrée",
       "description": "Votre paiement (réf. {{reference}}) est bien encaissé, mais son enregistrement a échoué. Réessayez ; s'il échoue encore, transmettez cette référence au porteur de la cagnotte.",
       "inProgress": "Un enregistrement de ce paiement est déjà en cours. Réessayez dans un instant.",
       "retry": "Réessayer l'enregistrement",
+      "close": "Fermer"
+    },
+    "paymentUnconfirmed": {
+      "title": "Paiement non confirmé",
+      "description": "La réponse du paiement ne nous est pas parvenue : votre carte a peut-être été débitée. Ne payez pas à nouveau. « Vérifier le paiement » reprend ce même paiement sans jamais débiter deux fois ; s'il a abouti, il sera enregistré, même si vous fermez cette fenêtre.",
+      "inProgress": "Le paiement est en cours de traitement. Vérifiez à nouveau dans un instant.",
+      "retry": "Vérifier le paiement",
       "close": "Fermer"
     },
     "toasts": {
@@ -175,7 +184,6 @@
     },
     "errors": {
       "fundingEnvelopeUnavailable": "entity.fundingEnvelope est indisponible",
-      "noContextId": "contextId introuvable pour fundingEnvelope",
       "noRedirectUrl": "Aucune URL de redirection HelloAsso n'a été renvoyée par fundingEnvelope",
       "popupFailed": "La popup HelloAsso n'a pas pu être ouverte",
       "paymentRejected": "Le paiement n'a pas abouti.",

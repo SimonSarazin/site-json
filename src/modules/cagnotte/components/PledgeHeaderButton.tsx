@@ -9,7 +9,7 @@ import { useUserAdminOrganizations } from "@/modules/cagnotte/hooks/useUserAdmin
 import { useSite } from "@/hooks/useSite";
 import { Pledge } from "@/modules/cagnotte/types";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
-import { totalARegler } from "@/modules/cagnotte/hooks/useSaveCagnotteContribution";
+import { totalARegler } from "@/modules/cagnotte/utils/commande";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";

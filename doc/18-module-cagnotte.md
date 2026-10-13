@@ -80,7 +80,7 @@ src/modules/cagnotte/
 │   │   ├── PaymentMethodPicker.tsx     # Choix du moyen parmi ceux de l'entité
 │   │   ├── HelloAssoWaitingScreen.tsx  # Attente du checkout HelloAsso
 │   │   ├── HelloAssoInfo.tsx           # Rappel du déroulé HelloAsso
-│   │   └── PaymentRecordingScreen.tsx  # Paiement encaissé non enregistré : reprise
+│   │   └── PaymentRecordingScreen.tsx  # Paiement sans issue confirmée : reprise de l'enregistrement ou rejeu du débit
 │   └── sections/
 │       ├── ActionsSection.tsx          # Section JSON `actions` (orchestrateur)
 │       ├── FinanceSection.tsx          # Section JSON `finance`
@@ -119,8 +119,9 @@ src/modules/cagnotte/
 │   ├── useFundingEnvelopeAction.ts     # Envoi d'une action de paiement `fundingEnvelope`
 │   ├── useHelloAssoCheckout.ts         # Checkout HelloAsso : popup + suivi jusqu'à l'enregistrement serveur
 │   ├── usePaymentSettlement.ts         # Issue de l'enregistrement serveur + reprise (`cagnotteSettle`)
+│   ├── useStripeCharge.ts              # Débit Stripe (`stripePay`) avec clé de tentative, rejeu sans double débit
 │   ├── usePaymentChoice.ts             # Moyen de paiement retenu (choix ou moyen unique)
-│   ├── useSaveCagnotteContribution.ts  # Promesse (`answer.addFinancer`) + helpers de commande
+│   ├── useSaveCagnotteContribution.ts  # Promesse (`answer.addFinancer`)
 │   └── useUserAdminOrganizations.ts    # Query : orgs admin du user (filtre MongoDB)
 │
 ├── lib/
@@ -147,17 +148,19 @@ src/modules/cagnotte/
 │   └── index.ts                        # prefetchFundingEnvelope + hasCagnotteSection + CAGNOTTE_SECTION_TYPES
 │
 ├── services/
-│   ├── fundingEnvelopeResponse.ts      # Réponse d'une action de paiement, ou erreur serveur levée
+│   ├── fundingEnvelopeResponse.ts      # Réponse d'une action de paiement, erreur serveur levée, issue inconnue
 │   ├── helloAssoCheckoutIntent.ts      # Lecture du checkout (`helloassoPay`) + ouverture de la popup
 │   ├── helloAssoVerification.ts        # Lecture du statut (`helloassoStatus`)
 │   ├── helloAssoService.ts             # validateHelloAssoConfig
 │   └── stripeService.ts                # Clés i18n des erreurs de carte Stripe
 │
 └── utils/
-    ├── coerce.ts                       # SOCLE sans dépendance : asRecord, toNumber, toString, toArrayOrValues (ré-exportés par dataTransform)
+    ├── coerce.ts                       # SOCLE sans dépendance : asRecord, toNumber, toString, toId, toArrayOrValues (ré-exportés par dataTransform)
+    ├── commande.ts                     # Lignes de commande : cibleDepense, montantARegler, promessesReglables, totalARegler, ligneReglement
+    ├── commande.test.ts                # Tests unitaires commande
     ├── dataTransform.ts                # getServerData, getEntityId, toArray, toSafeInt, normalizeIdOrNull, getNonEmptyRecord, readEntityPreferences, normalizeEntityType (+ ré-exports de coerce)
     ├── dataTransform.test.ts           # Tests unitaires de tous les helpers dataTransform
-    ├── financerPayment.ts              # readFinancerPaymentState, unpaidAmountOf, toDisplayPaymentStatus — LA lecture du bloc `payment`
+    ├── financerPayment.ts              # readFinancerPaymentState, unpaidAmountOf, dueAmountOf, toDisplayPaymentStatus — LA lecture du bloc `payment`
     ├── financerPayment.test.ts         # Tests unitaires financerPayment
     ├── depenseKey.ts                   # resolveDepenseKey — la CLÉ d'une dépense, ≠ sa position
     ├── depenseKey.test.ts              # Tests unitaires depenseKey
@@ -390,16 +393,17 @@ Les **sections JSON** (`ActionsSection`, `FinanceSection`, etc.) ne sont **pas**
 
 | Hook | Rôle |
 |---|---|
-| `useSaveCagnotteContribution()` | Enregistre une **promesse** : un `answer.addFinancer` par dépense allouée (`/co2/aap/coremuoperation/`, `finkey` générée par le serveur), sans versement. Les versements payés ne passent jamais par ce hook (cf. [Services de paiement](#services-de-paiement)). Le fichier exporte aussi les helpers purs de commande : `cibleDepense`, `montantARegler` (solde au centime), `promessesReglables`, `totalARegler` (total à régler, affiché par le bouton d'en-tête, le toast et la liste des promesses comme par la page de règlement), `ligneReglement` |
+| `useSaveCagnotteContribution()` | Enregistre une **promesse** : un `answer.addFinancer` par dépense allouée (`/co2/aap/coremuoperation/`, `finkey` générée par le serveur), sans versement. Les versements payés ne passent jamais par ce hook (cf. [Services de paiement](#services-de-paiement)). Les helpers purs de commande vivent dans `utils/commande.ts` : `cibleDepense`, `montantARegler` (solde au centime : `computePledgesFromResources` le calcule avec `dueAmountOf`, hors versements en attente de validation, déjà faits), `promessesReglables`, `totalARegler` (total à régler, affiché par le bouton d'en-tête, le toast et la liste des promesses comme par la page de règlement), `ligneReglement` |
 | `useResourceModalPreference(entity)` | Persiste le `projectModalId` côté DB via `entity.updateField("preferences", merged)` + appel non-bloquant `entity.get()` pour resynchroniser. Retourne `{ save(projectId): Promise<boolean>, isSaving }` |
 
 ### Paiement
 
 | Hook | Rôle |
 |---|---|
-| `useFundingEnvelopeAction(fallbackContextId?)` | Rend `submit(action, payload)` : envoie une action de paiement `fundingEnvelope` (`stripePay`, `helloassoPay`, `helloassoStatus`, `cagnotteSettle`) depuis l'entité du site et rend la réponse, ou lève l'erreur serveur (`readFundingEnvelopeResponse`). Le SDK impose le contexte de cette entité (cf. [Piège 2bis](#2bis-lenveloppe-est-scopée-à-lentité-appelante--pas-au-corps-de-la-requête)) : c'est son compte qui encaisse, et le contexte calculé dans le payload (`fallbackContextId` compris) est ignoré |
-| `useHelloAssoCheckout({ submit, onSettled })` | `start(amount, order, snapshot)` ouvre la popup pendant le clic, crée le checkout avec la commande, puis interroge `helloassoStatus` (toutes les 5 s, au retour sur la page et au message de la popup) jusqu'à l'enregistrement serveur. Phases `idle → opening → waiting → checking` ; tout arrêt (« Annuler », échec signalé par la popup, attente max 20 min) passe par une dernière vérification (`checking`). Une vérification sans réponse en 15 s compte comme une erreur sans bloquer les suivantes |
+| `useFundingEnvelopeAction()` | Rend `submit(action, payload)` : envoie une action de paiement `fundingEnvelope` (`stripePay`, `helloassoPay`, `helloassoStatus`, `cagnotteSettle`) depuis l'entité du site et rend la réponse, ou lève l'erreur serveur avec son statut HTTP (`readFundingEnvelopeResponse`, `readFundingEnvelopeError`). Le SDK impose le contexte de cette entité (cf. [Piège 2bis](#2bis-lenveloppe-est-scopée-à-lentité-appelante--pas-au-corps-de-la-requête)) : c'est son compte qui encaisse ; le payload n'en porte aucun |
+| `useHelloAssoCheckout({ submit, onSettled })` | `start(amount, order, snapshot)` ouvre la popup pendant le clic, crée le checkout avec la commande, puis interroge `helloassoStatus` (toutes les 5 s, au retour sur la page et au message de la popup) jusqu'à l'enregistrement serveur. Phases `idle → opening → waiting → checking` ; tout arrêt (« Annuler », échec signalé par la popup, attente max 20 min) passe par une dernière vérification (`checking`), bornée à 150 s et qu'on peut cesser d'attendre (« Ne plus attendre ») : l'arrêt affiche alors la référence du checkout, le serveur enregistrera le paiement s'il a eu lieu. Une vérification sans réponse en 15 s compte comme une erreur sans bloquer les suivantes. Un `start` pendant un suivi est ignoré |
 | `usePaymentSettlement({ submit, onRecorded })` | `settled(résultat, snapshot)` : succès (`onRecorded`) si le serveur a enregistré, échec sinon ; `retry()` rejoue `cagnotteSettle` sur la même facture, jamais un nouveau paiement ; un enregistrement déjà en cours est signalé (`inProgress`), la référence du paiement conservée |
+| `useStripeCharge({ submit, stripe, storageKey, onSettled })` | `charge(payload, snapshot)` envoie `stripePay` avec une clé de tentative (`key`, 32 caractères hexadécimaux) ; sans réponse ou sur un 5xx, phase `unconfirmed` : plus de formulaire, `verify()` rejoue la même requête à l'identique et le serveur ne débite pas deux fois sous la même clé. Une authentification forte (`requires_action`) est menée par `stripe.handleNextAction` (`stripe` = le Stripe.js de l'entité), puis la même requête règle le paiement ; un refus d'authentification est un refus, une erreur de Stripe.js une issue inconnue. Un refus (4xx, ou erreur rendue par le serveur) rend la main ; la tentative suivante a une nouvelle clé. Débit confirmé : `onSettled(résultat, snapshot)`. Avec `storageKey` (par utilisateur et par ressource), une tentative sans issue connue est gardée dans `localStorage` 24 h (fenêtre d'idempotence Stripe) et revient en « non confirmé » à la réouverture |
 | `usePaymentChoice(choices)` | Moyen retenu : le choix de l'utilisateur s'il est encore proposé, sinon le moyen unique (état dérivé, sans effet) |
 
 ### Context/Permissions/Guards
@@ -577,8 +581,8 @@ Parts des pages de paiement (`components/parts/`), partagés par `PaymentConfigP
 | Composant | Rôle |
 |---|---|
 | `PaymentMethodPicker.tsx` | Choix du moyen parmi `availablePaymentChoices` ; squelette au chargement, message si l'entité n'en a configuré aucun |
-| `HelloAssoWaitingScreen.tsx` | Attente du checkout HelloAsso ; « Annuler » désactivé pendant la dernière vérification (`checking`) |
-| `PaymentRecordingScreen.tsx` | Paiement encaissé mais non enregistré : référence prestataire, erreur serveur ou enregistrement déjà en cours, et « Réessayer » (`cagnotteSettle`) |
+| `HelloAssoWaitingScreen.tsx` | Attente du checkout HelloAsso ; pendant la dernière vérification (`checking`), « Ne plus attendre » arrête le suivi sans conclure |
+| `PaymentRecordingScreen.tsx` | Paiement sans issue confirmée, sans formulaire de paiement. `variant="unrecorded"` (défaut) : encaissé mais non enregistré — référence prestataire, erreur serveur ou enregistrement déjà en cours, et « Réessayer » (`cagnotteSettle`). `variant="unconfirmed"` : débit Stripe sans réponse — « Vérifier le paiement » rejoue la même requête (`useStripeCharge.verify`) |
 | `HelloAssoInfo.tsx` | Rappel du déroulé d'un paiement HelloAsso |
 
 ### `PiggyBankHeaderButton`
@@ -679,16 +683,25 @@ Le navigateur n'écrit **aucun versement**. Il envoie une **commande** avec l'ac
 cibles et des droits, débite ou crée le checkout, puis **enregistre lui-même** engagement
 (`Aap::addFinancerEngagement`) et versement (`Aap::payFinancerEngagement`) au nom du payeur, une fois
 le paiement vérifié chez le prestataire (`citizenToolKit/models/CagnottePayment.php`). L'avancement
-est gardé ligne à ligne sur la facture : l'enregistrement se rejoue sans doublon.
+est gardé ligne à ligne sur la facture : l'enregistrement se rejoue sans doublon. Chaque ligne a son
+propre engagement (référence `<facture>:<ligne>`). Le versement, vérifié chez le prestataire, naît
+**validé** (`validatedBy` = `stripe` ou `helloasso`) : il n'attend pas la validation du porteur. La
+référence du paiement est gardée sur la facture dès sa vérification : une reprise n'interroge plus
+le prestataire.
+
+Payer exige d'être connecté et une commande (`stripePay`, `helloassoPay`) : refus « Connectez-vous
+pour payer » ou « Commande manquante ». Une promesse déjà réglée, ou un montant supérieur à son reste
+(versements validés et en attente déduits), est refusé à la facturation, avant tout débit.
 
 Moyens proposés : ceux que l'entité a configurés (`getEnvelopeData.paymentMethods`, clés dans la
 collection `paymentMethods` de Communecter), plus la promesse si le type de cagnotte l'autorise
-(`availablePaymentChoices`). Stripe exige en plus la clé publique de l'entité. Aucune variable
-d'environnement côté site-json.
+(`availablePaymentChoices`). Stripe exige en plus la clé publique de l'entité. Le paiement en ligne
+exige `paymentMethods.serverSettlement` (backend qui facture et enregistre lui-même) : face à un
+backend plus ancien, seule la promesse reste proposée. Aucune variable d'environnement côté site-json.
 
 | Fichier | Rôle |
 |---|---|
-| `services/fundingEnvelopeResponse.ts` | `readFundingEnvelopeResponse` : réponse d'une action de paiement, ou erreur serveur levée |
+| `services/fundingEnvelopeResponse.ts` | `readFundingEnvelopeResponse` : réponse d'une action de paiement, ou erreur serveur levée (`success` 0/false, `error`) ; `readFundingEnvelopeError` : erreur HTTP du SDK avec le message du corps et son statut ; `isUnknownOutcome` : 5xx ou pas de réponse, le paiement a pu passer |
 | `services/helloAssoCheckoutIntent.ts` | `readHelloAssoCheckout` (réponse de `helloassoPay`), `openHelloAssoPopup` (popup ouverte pendant le clic) |
 | `services/helloAssoVerification.ts` | `readHelloAssoStatus` : `{ paid, recorded, inProgress, orderId?, recordError? }`, `null` si la réponse est incomplète |
 | `services/helloAssoService.ts` | `validateHelloAssoConfig` : contrôle avant l'ouverture du checkout |
@@ -703,19 +716,24 @@ d'environnement côté site-json.
 | Règlement de promesses (`PledgePaymentPage`) | `{ pledges: [{ answerId, depenseKey, financerId, finkey \| finIndex, amount }] }` |
 
 Montants **au centime** : le serveur arrondit chaque ligne et débite le total de la facture, qui doit
-donc être le montant affiché (`roundToCents`, `montantARegler`).
+donc être le montant affiché (`roundToCents`, `montantARegler`). Un montant nul n'est jamais envoyé :
+`PaymentConfigPage` désactive alors paiement et promesse (`nothingToPay`).
 
 ### Actions `fundingEnvelope`
 
 | Action | Payload | Réponse |
 |---|---|---|
-| `stripePay` | `payment_method_id`, `amount`, `email`, `order` | `intent_id`, `bill`, `recorded`, `recordError` : débit puis enregistrement dans la même requête |
+| `stripePay` | `payment_method_id`, `amount`, `email`, `order`, `key` | `intent_id`, `bill`, `recorded`, `recordError` : débit puis enregistrement dans la même requête. Authentification forte demandée : `requires_action`, `client_secret`, `bill` (le front la mène avec Stripe.js puis rejoue). Rejouée avec la même `key` : même facture, même clé d'idempotence Stripe — refus rendu tel quel (400), débit déjà fait réglé sans nouveau débit (réponse de `cagnotteSettle` + `bill`) |
 | `helloassoPay` | `amount`, `order` | `content: { id, redirectUrl }`, `bill` |
-| `helloassoStatus` | `checkoutIntentId` | `paid`, `recorded`, `inProgress`, `orderId`, `recordError` : règle la facture dès que HelloAsso a joint une commande au checkout |
+| `helloassoStatus` | `checkoutIntentId` | `paid`, `recorded`, `inProgress`, `orderId`, `recordError` : règle la facture dès que HelloAsso a joint une commande au checkout ; checkout sans facture → « Paiement introuvable » |
 | `cagnotteSettle` | `bill` | comme `helloassoStatus` ; reprise après un enregistrement en échec (« Réessayer ») |
 
 `inProgress` : un autre appel règle la facture (verrou abandonné au bout de 120 s). Un prestataire
 injoignable rend `success: 0`.
+
+`stripePay` distingue deux sortes d'échec : un refus (réponse d'erreur ou 4xx — carte refusée, requête
+invalide, commande refusée) garantit qu'aucun débit n'a eu lieu ; un 5xx ou une réponse perdue laisse
+l'issue inconnue, et seul le rejeu de la même requête est alors proposé.
 
 ### Flux paiement complet
 
@@ -726,8 +744,12 @@ PaymentConfigPage (contributeur + moyen)       PledgePaymentPage (moyen)
   ↓                                              ↓
   ├─ Promesse (PaymentConfigPage seulement) → saveContribution() → answer.addFinancer, sans versement
   │
-  ├─ Stripe → StripePaymentForm (PaymentMethod) → stripePay { order }
-  │            └─ le serveur débite puis enregistre → usePaymentSettlement.settled()
+  ├─ Stripe → StripePaymentForm (PaymentMethod) → useStripeCharge.charge() : stripePay { order, key }
+  │            ├─ le serveur débite puis enregistre → usePaymentSettlement.settled()
+  │            ├─ requires_action → stripe.handleNextAction (3-D Secure) → même requête, réglée sans
+  │            │  nouveau débit
+  │            └─ pas de réponse / 5xx → PaymentRecordingScreen (unconfirmed) : « Vérifier le paiement »
+  │               rejoue la même requête, sans double débit
   │
   └─ HelloAsso → useHelloAssoCheckout.start() : popup + helloassoPay { order }
                └─ helloassoStatus toutes les 5 s, au retour sur la page, au message de la popup
@@ -739,19 +761,41 @@ Non enregistré → PaymentRecordingScreen : « Réessayer » = cagnotteSettle s
 
 **Filets côté serveur, sans cron** : la page de retour HelloAsso (`CallbackAction`) règle la facture,
 et `getEnvelopeData` règle au passage les factures en attente du contexte (`settleDue` : 2 par appel,
-de moins de 24 h, revérifiées au plus toutes les 2 min, jusqu'à 5 échecs d'enregistrement). Un
-paiement fait popup fermée ou page quittée finit donc enregistré. Une facture vérifiée impayée plus
-d'une heure après sa création passe `expired`.
+de moins de 24 h, revérifiées au plus toutes les 2 min, jusqu'à 5 échecs d'enregistrement ; une
+facture restée `settling` plus de 120 s est reprise). Un
+paiement fait popup fermée ou page quittée finit donc enregistré. Une facture vérifiée impayée passe
+`expired` 30 min après sa création pour HelloAsso (lien valable 15 min), 1 h pour Stripe ; un
+checkout HelloAsso introuvable (404) compte comme impayé. Un prestataire injoignable suspend
+`settleDue` 5 min pour le contexte, pour ne pas ralentir chaque chargement de cagnotte.
+
+La page de retour HelloAsso poste `status` = code HelloAsso au retour (`succeeded`, `refused`), sinon
+`return`, `cancel` ou `error` : l'enveloppe legacy (module survey) attend `succeeded`.
 
 **Prérequis** : citizenToolKit avec `CagnottePayment` et les actions `helloassoStatus` /
 `cagnotteSettle`. Face à un backend plus ancien, le suivi HelloAsso échoue (`errors.statusInvalid`)
 et un paiement Stripe s'affiche comme non enregistré.
 
+**Prérequis du rejeu Stripe** : citizenToolKit avec la clé de tentative (`key`) de `stripePay`. Un
+backend qui l'ignore crée une facture par requête : le front doit être déployé après lui. Le garde-fou
+`serverSettlement` masque le paiement en ligne tant que ce backend n'est pas en place.
+
+**Cagnotte legacy (module survey)** : `fundingEnvelope.js` (crédit d'enveloppe) et
+`menuFinanceModal.js` (contribution directpay) envoient eux aussi une commande — `{financerId,
+envelope: {formId, amount}}`, ou `fundings` + `envelope: {formId}` — avec clé de tentative,
+3-D Secure et suivi `helloassoStatus`. Le serveur inscrit le crédit dans `forms.envelope.<financeur>`
+(une fois par référence de paiement) et, en directpay, les engagements et versements ; le navigateur
+n'écrit plus rien.
+
 **Limites connues** :
-- **3-D Secure** : `requires_action` n'est pas géré ; le serveur annule la facture et le front
-  affiche « Le paiement n'a pas abouti ».
-- **Coupure réseau après un débit Stripe** : le formulaire se réactive ; un nouveau clic crée une
-  nouvelle facture, donc un second débit (le premier reste enregistré via `settleDue`).
+- **Remboursements et contestations** : non gérés dans l'AAC. Ils se font chez le prestataire ; la
+  cagnotte continue d'afficher le versement (montants surestimés, à corriger hors outil).
+- **Factures bloquées** : après 5 échecs d'enregistrement ou 24 h, `settleDue` ne les reprend plus ;
+  elles restent en échec, avec leur erreur.
+- **Écritures concurrentes** : les écritures de `depense.<k>.financer` passent par une révision
+  (`financerRev`) dans `Aap` ; les écritures faites ailleurs (éditeur de formulaire, actions de
+  validation dédiées) ne la portent pas.
+- **Paiement non confirmé puis navigateur changé** : la tentative est gardée dans le `localStorage`
+  du navigateur ; depuis un autre navigateur, un nouveau paiement repart avec une nouvelle clé.
 
 ---
 
@@ -972,13 +1016,14 @@ Le module suppose que le CoForm cible contient `answers.aapStep1.depense[]`. Pou
 6. **Tests** : les helpers purs disposent déjà de tests unitaires (Vitest) :
    - `utils/dataTransform.test.ts` — 9 fonctions testées
    - `utils/format.test.ts`
+   - `utils/commande.test.ts`
    - `utils/actionDateHelpers.test.ts`
    - `utils/idGeneration.test.ts`
    - `lib/actionDiffCalculator.test.ts`
    - `lib/actionIdResolvers.test.ts`
 
    Le paiement est couvert par des tests de hooks et de composants (`hooks/useHelloAssoCheckout.test.ts`,
-   `hooks/usePaymentSettlement.test.ts`, `components/PaymentConfigPage.test.tsx`,
+   `hooks/usePaymentSettlement.test.ts`, `hooks/useStripeCharge.test.ts`, `components/PaymentConfigPage.test.tsx`,
    `components/PledgePaymentPage.test.tsx`, `components/PromessesDialog.test.tsx`,
    `components/parts/PledgeFundingToast.test.tsx`), backend mocké à la frontière `fundingEnvelope`.
 

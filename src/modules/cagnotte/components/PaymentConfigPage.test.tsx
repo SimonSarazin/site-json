@@ -8,7 +8,9 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
  *  - sans réponse liée, rien ne peut être encaissé ;
  *  - un paiement part avec sa commande, figée au clic et au centime ;
  *  - contributeur et moyen sont figés pendant un paiement ou l'enregistrement d'une promesse ;
- *  - un paiement encaissé mais non enregistré ne propose que la reprise.
+ *  - un paiement encaissé mais non enregistré ne propose que la reprise ;
+ *  - un débit Stripe sans réponse ne propose que le rejeu de la même requête, jamais un nouveau paiement ;
+ *  - rien à régler, rien à payer.
  * Les hooks data sont mockés à leur frontière.
  */
 
@@ -16,7 +18,7 @@ const mocks = vi.hoisted(() => ({
   paymentMethods: null as Record<string, unknown> | null,
   fundingEnvelope: null as unknown,
   saveContribution: null as unknown,
-  reponses: {} as Record<string, Array<Record<string, unknown> | Promise<never>>>,
+  reponses: {} as Record<string, Reponse[]>,
 }));
 
 vi.mock("@/hooks/useT", () => ({ useT: () => (key: string) => key }));
@@ -31,13 +33,16 @@ vi.mock("@/hooks/useCocolight", () => ({
   }),
 }));
 vi.mock("@/modules/cagnotte/hooks/useFundingEnvelope", () => ({
-  useFundingEnvelope: () => ({ data: { paymentMethods: mocks.paymentMethods, selectedProject: null }, isLoading: false }),
+  // `serverSettlement` : paiement en ligne proposé.
+  useFundingEnvelope: () => ({
+    data: { paymentMethods: mocks.paymentMethods && { serverSettlement: true, ...mocks.paymentMethods }, selectedProject: null },
+    isLoading: false,
+  }),
 }));
 vi.mock("@/modules/cagnotte/hooks/useUserAdminOrganizations", () => ({
   useUserAdminOrganizationsQuery: () => ({ organizations: [], isLoading: false }),
 }));
-vi.mock("@/modules/cagnotte/hooks/useSaveCagnotteContribution", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/modules/cagnotte/hooks/useSaveCagnotteContribution")>()),
+vi.mock("@/modules/cagnotte/hooks/useSaveCagnotteContribution", () => ({
   useSaveCagnotteContribution: () => ({ saveContribution: mocks.saveContribution }),
 }));
 vi.mock("@tanstack/react-query", () => ({ useQueryClient: () => ({ invalidateQueries: vi.fn(async () => undefined) }) }));
@@ -71,6 +76,9 @@ const ITEM = {
   allFunding: [],
 };
 
+/** Réponse du serveur ; une `Error` est levée, comme le SDK le fait sur une erreur HTTP ou réseau. */
+type Reponse = Record<string, unknown> | Promise<never> | Error;
+
 const ENREGISTRE = { success: 1, paid: true, recorded: true, orderId: 99 };
 const NON_ENREGISTRE = { success: 1, paid: true, recorded: false, orderId: 99, recordError: "depense not found" };
 const EN_COURS = { success: 1, paid: false, recorded: false, inProgress: true, orderId: null, recordError: null };
@@ -86,7 +94,7 @@ function afficher({
   paymentMethods: Record<string, unknown> | null;
   allowPledge?: boolean;
   sansReponse?: boolean;
-  reponses?: Record<string, Array<Record<string, unknown> | Promise<never>>>;
+  reponses?: Record<string, Reponse[]>;
   items?: (typeof ITEM)[];
 }) {
   const callbacks = { onBack: vi.fn(), onPaymentSuccess: vi.fn(), onClose: vi.fn() };
@@ -101,7 +109,9 @@ function afficher({
   };
   mocks.fundingEnvelope = vi.fn(async (payload: { action: string }) => {
     const file = mocks.reponses[payload.action] ?? [];
-    return file.length > 1 ? file.shift() : file[0];
+    const reponse = file.length > 1 ? file.shift() : file[0];
+    if (reponse instanceof Error) throw reponse;
+    return reponse;
   });
   const activeItemsIds = new Set(items.map((item) => item.itemId));
   const cagnotteConfig = { ...CAGNOTTE_TYPE_CONFIGS.standard, allowContributionWithoutPaiement: allowPledge };
@@ -146,6 +156,8 @@ async function attendre(ms: number) {
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
+  // Une tentative Stripe non confirmée est gardée d'un test à l'autre sinon.
+  window.localStorage.clear();
 });
 
 describe("PaymentConfigPage — moyens proposés", () => {
@@ -301,6 +313,30 @@ describe("PaymentConfigPage — paiement Stripe", () => {
     expect(mocks.saveContribution).not.toHaveBeenCalled();
   });
 
+  it("coupure réseau après le clic : paiement non confirmé ; « Vérifier » rejoue la même requête, sans formulaire", async () => {
+    const coupure = Object.assign(new Error("Network Error"), { status: 500, details: null });
+    const { onPaymentSuccess } = afficher({
+      paymentMethods: { stripe: true, stripePublicKey: "pk_test_x" },
+      reponses: { stripePay: [coupure, { success: 1, intent_id: "pi_1", bill: "b8", recorded: true }] },
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "stripe-pay" }));
+    });
+
+    expect(screen.getByText("PaymentConfigPage.paymentUnconfirmed.title")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "stripe-pay" })).not.toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "PaymentConfigPage.paymentUnconfirmed.retry" }));
+    });
+
+    const [premier, rejeu] = appels("stripePay").map(([payload]) => payload);
+    expect(premier).toMatchObject({ payment_method_id: "pm_1", order: COMMANDE, key: expect.stringMatching(/^[a-f0-9]{32}$/) });
+    expect(rejeu).toEqual(premier);
+    expect(onPaymentSuccess).toHaveBeenCalledWith(expect.objectContaining({ method: "stripe", transactionId: "pi_1" }));
+  });
+
   it("débit fait mais non enregistré : écran de reprise avec la référence Stripe", async () => {
     afficher({
       paymentMethods: { stripe: true, stripePublicKey: "pk_test_x" },
@@ -313,6 +349,20 @@ describe("PaymentConfigPage — paiement Stripe", () => {
 
     expect(screen.getByText("PaymentConfigPage.recordingFailed.title")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "stripe-pay" })).not.toBeInTheDocument();
+  });
+});
+
+describe("PaymentConfigPage — rien à régler", () => {
+  it("jalons déjà financés : ni paiement ni promesse, et le montant nul est annoncé", () => {
+    afficher({ paymentMethods: { helloasso: true }, allowPledge: true, items: [{ ...ITEM, currentFunding: 100 }] });
+
+    expect(screen.getByText("PaymentConfigPage.nothingToPay")).toBeInTheDocument();
+    fireEvent.click(moyen("helloasso")!);
+    expect(boutonHelloAsso()).toBeDisabled();
+
+    fireEvent.click(moyen("pledge")!);
+    fireEvent.click(screen.getByRole("checkbox", { name: "PaymentConfigPage.pledge.checkbox" }));
+    expect(screen.getByRole("button", { name: "PaymentConfigPage.pledge.button" })).toBeDisabled();
   });
 });
 
