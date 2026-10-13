@@ -9,6 +9,7 @@ import { normalizeSiteConfig } from "./utils/normalizeSiteConfig.js";
 import { findSiteBySlug, knownSlugs } from "./utils/sites.js";
 import { registerSeoRoutes } from "./lib/sitemap.js";
 import { realtimeFluxHandler, realtimePushHandler } from "./api/realtime.js";
+import { helloassoCallbackRedirect } from "./api/helloasso-callback.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -142,6 +143,8 @@ app.use(express.json());
 // JSON, contrairement au flux. Montees avant, `req.body` serait vide et un abonnement
 // parfaitement valide repartirait en 400.
 app.all("/api/realtime/push/*splat", realtimePushHandler);
+// Retour HelloAsso de l'ancienne route : redirigé vers le backend (temporaire).
+app.get("/api/helloasso/callback", helloassoCallbackRedirect);
 
 // Flux RSS des articles blog (SEO/distribution). costumSlug : ?costum= > config.blog.feedCostumSlug > env.
 app.get("/blog/feed.xml", async (req, res) => {

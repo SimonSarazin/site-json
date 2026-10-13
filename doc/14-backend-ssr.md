@@ -107,6 +107,7 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
    app.use(express.json());
    app.all("/api/realtime/push/*splat", realtimePushHandler);
    app.get("/api/realtime/flux", realtimeFluxHandler);
+   app.get("/api/helloasso/callback", helloassoCallbackRedirect); // temporaire : retour HelloAsso → backend
    app.use("/api", (_req, res) => res.status(404).json({ error: "Unknown API route" }));
 
    app.use(vite.middlewares); // ⚠ Vite DOIT être après les routes API
@@ -295,12 +296,16 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
    app.get("/api/realtime/flux", realtimeFluxHandler); // avant compression() : flux SSE
    app.use(express.json());
    app.all("/api/realtime/push/*splat", realtimePushHandler);
+   app.get("/api/helloasso/callback", helloassoCallbackRedirect); // temporaire : retour HelloAsso → backend
    app.get("/blog/feed.xml", …);
    registerSeoRoutes(app, () => cachedConfig); // robots.txt + sitemap.xml
    ```
 
    Les paiements de la cagnotte ne passent pas par ce serveur : le navigateur appelle l'action
    `fundingEnvelope` du backend Communecter (cf. [Module Cagnotte](18-module-cagnotte.md#services-de-paiement)).
+   Seule subsiste, temporairement, la redirection de l'ancienne route de retour HelloAsso
+   (`server/api/helloasso-callback.js`) vers `${VITE_BASE_URL_BACKEND}/co2/helloAsso/callback`, query
+   conservée.
 
 5. **Route SSR universelle**
 

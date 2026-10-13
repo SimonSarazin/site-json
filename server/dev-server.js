@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
 import dotenv from "dotenv";
 import { realtimeFluxHandler, realtimePushHandler } from "./api/realtime.js";
+import { helloassoCallbackRedirect } from "./api/helloasso-callback.js";
 import { createImageOptimizer } from "./middleware/imageOptimizer.js";
 import { createImageUpload } from "./middleware/imageUpload.js";
 import { normalizeSiteConfig } from "./utils/normalizeSiteConfig.js";
@@ -84,6 +85,8 @@ async function createServer() {
   // TEMPS REEL — avant le 404 /api. Pas de `compression` en dev, mais l'ordre reste le meme
   // qu'en prod pour que les deux serveurs se comportent pareil.
   app.get("/api/realtime/flux", realtimeFluxHandler);
+  // Retour HelloAsso de l'ancienne route : redirigé vers le backend (temporaire).
+  app.get("/api/helloasso/callback", helloassoCallbackRedirect);
 
   // Route /api/* INCONNUE : 404 franc (même garde que prod-server) — sinon le catch-all SSR
   // répond 200 avec la page HTML et un client testant `response.ok` croit à un succès.

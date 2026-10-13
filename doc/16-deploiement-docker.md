@@ -345,12 +345,13 @@ Les requetes vers des extensions de fichiers statiques inexistants (`.png`, `.jp
 
 ### Routes API
 
-`prod-server.js` ne sert que le relais temps reel (`server/api/realtime.js`), avant le rendu SSR :
+`prod-server.js` ne sert que le relais temps reel (`server/api/realtime.js`) et une redirection temporaire, avant le rendu SSR :
 
 | Methode | Route | Description |
 |---------|-------|-------------|
 | `GET` | `/api/realtime/flux` | Flux SSE relaye depuis le hub (monte avant `compression()`) |
 | toutes | `/api/realtime/push/*splat` | Relais JSON des routes d'abonnement push du hub |
+| `GET` | `/api/helloasso/callback` | Temporaire : redirige l'ancien retour HelloAsso vers `${VITE_BASE_URL_BACKEND}/co2/helloAsso/callback` (query conservee ; 404 sans `VITE_BASE_URL_BACKEND`) |
 
 Les paiements de la cagnotte (Stripe, HelloAsso) ne passent pas par ce serveur : le navigateur appelle l'action `fundingEnvelope` du backend Communecter, qui cree, verifie et enregistre les paiements. Aucune variable de paiement n'est a poser dans le conteneur (voir le [module Cagnotte](18-module-cagnotte.md#services-de-paiement)).
 
