@@ -2027,6 +2027,12 @@ async getDiscussionSpace(options: GetDiscussionSpaceData): Promise<unknown> {
 La réponse est décrite au §15.3. Un refus quitte le serveur en **HTTP 200** avec
 `{ result: false, code, msg }`, et la façade le rend en **exception** (§14.7).
 
+**Ajout du 12/10 (§17)** — chaque fil porte un quinzième champ, `line` (`string | null`) : pour
+une ligne de dépense, la clé de la ligne dans la liste des dépenses du commun ; `null` ailleurs. Et
+`includeEmpty` fabrique aussi un fil par ligne de dépense qui n'en a aucun. Le schéma de réponse
+n'étant pas fermé, un client plus ancien n'en est pas gêné ; le fil rendu par `CREATE_DISCUSSION`
+(§14.8) a la même forme, `line: null`.
+
 ### 14.7 Un refus arrive en exception (mesuré le 09/10)
 
 Rien à demander ici : un fait du client, commun aux trois façades de ce module (`getDiscussions`,
@@ -2120,7 +2126,7 @@ Un commun est une **réponse** à un appel. Ses fils tiennent en deux contextes 
 |---|---|---|
 | général | `answers:<commun>` | aucun |
 | question | `forms:<appel>` | `<appel>.<étape>.<commun>.<question>.question_<question>.comment` |
-| ligne de dépense | `forms:<appel>` | le chemin de la question qui la porte, suivi de `.financement.depensekey.<étape>-<champ>.depenseindex.<rang>` |
+| ligne de dépense | `forms:<appel>` | le chemin de la question qui la porte, suivi de `.financement.depensekey.<étape>-<champ>.depenseindex.<clé de la ligne>` (§17) |
 | discussion supplémentaire | `forms:<appel>` | `<appel>.moreDiscussions_<x>.<commun>.discu_<n>.<suffixe>` |
 
 `<appel>` est le formulaire où la réponse a été **déposée** (`answer.form`) — la fiche legacy ouvre
@@ -2170,15 +2176,16 @@ exception dans la première.
     { "key": "answers:…", "contextType": "answers", "contextId": "…", "path": null,
       "total": 2, "unread": 0, "last": 1790000000, "mine": false,
       "title": null, "carrier": null, "virtual": false,
-      "kind": "general", "group": null, "audience": null }
+      "kind": "general", "group": null, "audience": null, "line": null }
   ]
 }
 ```
 
 - `kind` : `general`, `discussion`, `question`, `expense`. `group` : le nom de l'étape, pour une
   question ou une ligne de dépense. `audience` : `authorAll`, `authorAdmin` ou `private`, pour une
-  discussion. L'écran garde une étiquette de repli pour une nature qu'il ne connaîtrait pas — celle
-  d'un serveur plus récent que lui.
+  discussion. `line` : la clé de la ligne, pour une ligne de dépense (§17.2). L'écran garde une
+  étiquette de repli pour une nature qu'il ne connaîtrait pas — celle d'un serveur plus récent que
+  lui.
 - **L'appel fait foi.** Un chemin ne suffit pas à faire un fil : un fil de question ou de ligne de
   dépense n'entre dans la liste que si l'appel **connaît** cette question, à cette étape — la règle
   du legacy (`Form::getCommentedQuestionParams`). Un chemin posé sur la réponse elle-même, ou sur
@@ -2206,9 +2213,9 @@ exception dans la première.
   (§16) ; vide, il n'en crée pas — sans session, toujours.
 - Fils **fabriqués** (`virtual`, sauf `includeEmpty=0`) : le fil général, les discussions déclarées
   encore vides et, pour un appel `aap`, les questions qu'il ouvre aux commentaires
-  (`activeComments`). Pour un formulaire qui n'est pas `aap`, aucune **question** n'est fabriquée :
-  le segment d'étape y prend deux formes, et écrire sous la mauvaise ouvrirait un fil que le legacy
-  ne verrait pas.
+  (`activeComments`) et un fil par ligne de dépense qui n'en a aucun (§17.2). Pour un formulaire
+  qui n'est pas `aap`, ni **question** ni **ligne** n'est fabriquée : le segment d'étape y prend
+  deux formes, et écrire sous la mauvaise ouvrirait un fil que le legacy ne verrait pas.
 - Refus, en HTTP 200 : `bad-request` (type hors liste blanche, identifiant mal formé) ; `hidden`
   (commun ou appel introuvable). Le serveur accepte l'identifiant en majuscules et le ramène en
   minuscules ; le schéma du SDK, lui, n'admet que des minuscules.
@@ -2290,6 +2297,13 @@ lecture par fil.
   tête du sien (la première question d'une étape reçoit son premier message), les rangées voisines
   ne sont pas remontées, et celle qu'on tenait garde le focus. Le pli « Sans discussion » suit les
   mêmes intertitres : les questions vierges s'y rangent sous leur étape, chaque liste nommée.
+- **Le fil ouvert ne disparaît pas dans le pli** (arbitré le 12/10, vaut aussi pour le panneau
+  général). On arrive sur un fil où personne n'a écrit par un lien, par le bouton d'un palier
+  (§17), ou en venant de le créer (§16) : le pli est replié, et sa rangée y serait cachée. Elle
+  reste donc **sous l'en-tête du pli**, surlignée, dans une liste à elle (« Fil ouvert ») — comme
+  le salon actif d'une catégorie repliée. Sous l'en-tête et non parmi les fils écrits : quand on
+  la quitte, aucune rangée ne remonte sous le pointeur. Et jamais deux fois : repliée, elle sort
+  de la liste du pli, qui garde son compte ; dépliée, elle y reprend sa place.
 - **L'historique** : ouvrir **empile** une entrée, changer de fil la **remplace**, et **fermer
   défait l'ouverture** — la croix et Échap font « retour » (arbitré le 09/10). « Retour » ferme
   donc la modale sans quitter la fiche ; et après une fermeture, il ramène à la page d'avant la
@@ -2324,7 +2338,9 @@ lecture par fil.
   un échec, ou une réponse **illisible** (une page d'erreur servie en HTTP 200, un avertissement
   écrit devant le JSON) : personne n'a dit non — est réessayée deux fois, relue à intervalle, et
   laisse à l'écran la liste, le fil ouvert et le brouillon en cours. Sans rien à montrer, elle
-  s'affiche avec un bouton « Réessayer ». Le panneau général suit la même règle pour le fil ouvert.
+  s'affiche avec un bouton « Réessayer » — dans la colonne des fils, et dans celle du fil quand
+  elle est seule à l'écran (sous 48 rem, un fil ouvert) : le bouton resté dans la liste, la panne
+  s'y lisait sans issue. Le panneau général suit la même règle pour le fil ouvert.
 - **Une première lecture mise en pause** (réseau perdu) reste un chargement : tant que rien n'a été
   rendu, l'écran ne dit ni « aucun fil » ni « introuvable ».
 - **Ce qui arrive à l'espace se dit aussi à qui ne le voit pas** : une région `role="status"`,
@@ -2373,7 +2389,8 @@ lecture par fil.
 ### 15.6 Preuves
 
 Rejouées le 12/10, sur le code décrit ici — sauf les lignes « Navigateur », mesurées le 09/10,
-avant les corrections de la seconde relecture (§15.5).
+avant les corrections de la seconde relecture (§15.5) ; la dernière, elle, porte sur ces
+corrections et date de la nuit du 12 au 13/10.
 
 | Quoi | Résultat |
 |---|---|
@@ -2394,6 +2411,7 @@ avant les corrections de la seconde relecture (§15.5).
 | Navigateur, historique et clavier — 1440 et 375 px | 21 et 27 vérifications : « retour », « suivant », croix et Échap qui défont l'ouverture, double clic, double Échap, focus rendu au bouton, « suivant » qui rouvre sur la liste, lien d'un visiteur vers un emplacement vide |
 | Navigateur, processeur ralenti vingt fois — 375 et 1440 px | 9 vérifications chacune : deux Entrée puis deux Échap, double clic sur le bouton puis sur la croix — une seule entrée empilée, un seul « retour » |
 | Navigateur, mesure de la bande 48–64 rem, compte connecté | 27 vérifications : pastille de non-lus d'un fil dans le flux et libellé d'étiquette visible, dans l'espace (panneau de 63,9 rem, colonne des fils de 18 rem) comme dans le panneau général, rail plié d'office puis à la main — **avec contre-épreuve**, l'ancienne règle réinjectée dans la page ; une seule requête `space` par fiche pour un connecté ; connexion depuis la modale ; `/discussions` sans session |
+| Navigateur, corrections de la seconde relecture, sans session — 1440 et 375 px | 35 vérifications à chaque largeur : le bouton de la fiche se dit occupé (`aria-busy`, curseur d'attente) tant que le code de la modale n'est pas arrivé ; le focus d'ouverture est sur le dialogue lui-même ; une panne de l'espace se lit avec **un** bouton « Réessayer » à l'écran, quelle que soit la largeur, et l'appel repart au clic. C'est ce passage qui a montré le bouton hors écran à 375 px ; corrigé, puis tenu par 3 tests et 6 mutations de plus (les huit lots du panneau rejoués : 115 tuées sur 115) |
 
 ### 15.7 Limites
 
@@ -2428,6 +2446,18 @@ avant les corrections de la seconde relecture (§15.5).
   (lettres sans accent, chiffres, `_`, `-`) : le serveur le liste s'il porte des messages, l'écran
   ne sait pas l'ouvrir. Aucune des 4 379 clés de question de la base de développement n'en sort
   (mesuré le 12/10).
+- **Écrire sur un fil d'appel écrit aussi ailleurs** — c'est le backend existant, que ces lots ne
+  touchent pas. Le message posté ajoute une entrée et un compteur sur le document de l'appel (sous
+  `comment.<chemin>`), date ce document, et fait recalculer les points du compte qui écrit ;
+  supprimer le message ne défait rien, et décrémente le compteur racine de l'appel au lieu de
+  celui du fil. Mesuré le 12/10 : un essai d'écriture se relève donc par le **contenu** des
+  documents, pas par leur nombre (§17.5).
+- **« Réessayer » ne peut rien pendant la minute où le SDK a coupé les appels.** Son client porte
+  un disjoncteur : cinq échecs de suite — réseau, ou réponse 5xx — et il refuse tout appel du site
+  pendant une minute, sans rien envoyer. Les nouvelles tentatives d'une lecture en panne (trois en
+  tout) y mènent vite ; le bouton relance alors une demande que le SDK refuse aussitôt, et l'écran
+  redit la panne. Antérieur à ces lots, et vrai de tout appel du site. Lu au navigateur le 12/10 :
+  `space` coupé au réseau, cinq échecs, puis plus aucune requête jusqu'à la minute écoulée.
 - **Le coût d'un espace suit l'appel**, pas le commun (§15.3) : à mesurer sur des données réelles
   avant une mise en production sur un appel très commenté.
 - **Se connecter depuis la modale la referme un instant** : la connexion change les clés de la
@@ -2542,7 +2572,7 @@ premier message (§3).
 
 ### 16.4 Preuves
 
-Du 12/10, sur le code décrit ici.
+Du 12/10, sur le code décrit ici ; les lignes « Navigateur », de la nuit du 12 au 13/10.
 
 | Quoi | Résultat |
 |---|---|
@@ -2552,11 +2582,11 @@ Du 12/10, sur le code décrit ici.
 | Appel réel au SDK | refus du schéma et refus du serveur, sans rien créer (§14.8) |
 | Tests unitaires de l'écran | 90 tests de plus dans six fichiers, dont deux nouveaux : lecture de la réponse, insertion dans la liste, mutation, formulaire, panneau — et le **parcours** assemblé, du « + » à la discussion ouverte |
 | Contre-épreuve par mutation de l'écran | 95 mutations tuées sur 95 |
+| Navigateur, déposant connecté, 1 440 puis 375 px, sans écriture | 44 et 46 vérifications : le pli « Sans discussion » rangé sous les étapes de l'appel ; le « + » ; le formulaire en tête de la colonne, sans débordement (287 px dans une colonne de 288, 375 dans 375), focus sur le nom ; « Privée » choisie d'office ; Échap et « Annuler » referment le formulaire — pas la modale — et rendent le focus au « + » ; une création qui échoue se dit dans le formulaire, qui garde le nom tapé |
+| Navigateur, création réelle par le déposant, 1 440 puis 375 px | 56 vérifications à chaque largeur : la discussion s'ouvre aussitôt, son titre reçoit le focus, sa rangée se lit sous l'en-tête du pli replié ; elle est rangée sur le commun sous son nom et son audience ; aucun message, aucun courriel ; rechargée par son lien, elle s'ouvre pour son auteur — et pas pour un visiteur, à qui rien de son nom n'est servi. Le commun d'essai, relevé par son contenu (§15.7), est remis à son état d'avant après chaque essai |
 
 ### 16.5 Limites
 
-- **Non vérifié au navigateur** à la date de cette section : le formulaire, son rendu aux largeurs
-  de la modale, le focus.
 - **Renommer** et **supprimer** restent au legacy. Une discussion renommée ou supprimée là-bas
   l'est ici à la relecture suivante.
 - Le plafond de 50 discussions se juge sur la réponse lue avant l'écriture : deux créations
@@ -2565,6 +2595,139 @@ Du 12/10, sur le code décrit ici.
   aux autres lecteurs à leur relecture suivante (§11.4).
 - Un nom dont l'écriture en HTML dépasse 120 caractères reste accepté s'il en compte 120 au plus en
   texte : c'est le texte qui est borné.
+
+## 17. Un fil par ligne de dépense — les paliers de la fiche (12/10)
+
+Dans le legacy, chaque carte de la liste des dépenses porte « Commenter » : **un fil par ligne**.
+L'espace d'un commun listait déjà ces fils quand ils avaient des messages (§15.3) ; rien, côté
+React, ne permettait d'en lancer un, ni d'y entrer depuis le palier qu'il concerne. Demandé le
+12/10.
+
+### 17.1 Ce que fait le legacy
+
+La liste des dépenses est une question de type `…newDepenseList`. Un appel la porte **deux fois**
+— mesuré en base de développement le 12/10, sur les 21 appels qui l'utilisent, tous bâtis ainsi :
+
+| Étape | Question | `subType` | Sur l'appel de test |
+|---|---|---|---|
+| dépôt (`aapStep1`) | `depense` | `depense` | « Les étapes du projet et leur besoin financier » |
+| financement (`aapStep3`) | `financer` | `finance` | « Financement » |
+
+Les deux affichent les mêmes lignes — `answers.aapStep1.depense`, une constante de son gabarit — et
+chaque carte y porte « Commenter », sans condition de rôle. Le fil qu'elle ouvre est posé sur
+l'appel, comme un fil de question :
+
+```
+<appel>.<étape>.<commun>.<question>.question_<question>.comment
+       .financement.depensekey.aapStep1-depense.depenseindex.<clé de la ligne>
+```
+
+`<étape>` et `<question>` sont ceux de la liste **d'où l'on clique** : une même ligne peut donc
+avoir **deux fils**, un par liste. L'espace (« Commentaires ») montre une ligne dès qu'elle a un
+message, titrée par son poste ; il ne propose pas celles où personne n'a écrit — on y vient par la
+carte.
+
+Aucun message de ce genre n'existe en base de développement (mesuré le 12/10) : la règle se lit
+dans le code du legacy, et se prouve sur des données fabriquées (§17.5).
+
+### 17.2 Ce que rend `space`
+
+- **`line`** — sur un fil `expense`, la clé de sa ligne dans `answers.aapStep1.depense` (le rang
+  d'un tableau, la clé d'un objet). `null` sur tout autre fil, et sur une ligne d'une autre liste.
+  C'est ce qui permet à la fiche de retrouver le fil d'un palier qu'elle affiche.
+- **Un fil à lancer par ligne.** Avec `includeEmpty`, chaque ligne du commun qui n'a **aucun** fil
+  en reçoit un, `virtual`, titré par son poste — à défaut, par le libellé de la liste — et rangé
+  sous l'étape de cette liste. Une ligne retirée (un trou dans la liste) ou vide n'en reçoit pas.
+- **Sur quelle liste il se pose** — `Discussion::expenseHome` : la liste de financement de l'appel
+  (`subType: finance`) s'il en a une ; sinon sa première liste de dépenses, dans l'ordre de l'appel
+  (étape, puis position de la question ; l'identifiant de l'étape départage). Une seule question,
+  fixe, pour qu'une conversation ne se scinde pas selon l'écran d'où l'on vient.
+- **Une ligne déjà commentée garde son fil**, quelle que soit la liste où il a été posé : elle n'en
+  reçoit pas un second. C'est dans celui-là qu'on entre.
+- **Conditions** : un appel `aap` (§15.3), qui **déclare** la liste des dépenses (`depense` à
+  l'étape `aapStep1`) et porte au moins une question `…newDepenseList` ; au plus 200 lignes.
+  Ailleurs, rien n'est fabriqué, et `line` reste nul.
+- **Coût** : la lecture de la réponse qui titrait déjà les lignes commentées — une, par `_id`, sur
+  le champ des dépenses. Elle a lieu désormais à chaque appel pour un commun dont l'appel porte une
+  liste de dépenses, commentée ou non.
+
+Ces fils sont rendus à tous, comme les autres fils à lancer : ce que l'écran en **propose** est une
+autre question (§17.3).
+
+### 17.3 L'écran
+
+- **`CommunMilestoneDiscussionButton`** — « Discuter », sur chaque palier de « Besoins financiers »
+  (`CommunFinancingSection`) : dans l'en-tête de la carte, **à côté** du bouton qui la déplie,
+  jamais dedans. Son compteur additionne les fils de la ligne ; une pastille dit les non-lus.
+- **Quand il s'affiche** : l'espace propose un fil pour la ligne, et il y a de quoi lire ou écrire.
+  Connecté, sur chaque palier ; sans session, seulement là où quelqu'un a écrit.
+- **Où il entre** — `lineDiscussion` : dans le fil écrit le plus récemment ; faute de message, dans
+  celui que le serveur propose de lancer. La liste de l'espace fait autorité, ici comme ailleurs.
+- **La clé de la ligne se lit dans le document** (`resolveDepenseKey`), pas à la position du palier
+  à l'écran : les deux ne coïncident que si les dépenses sont un vrai tableau.
+- **Une modale, une requête.** Le bouton ne monte rien : il ouvre par l'adresse la modale que
+  monte le bouton de la fiche (§15.5), sur le fil de sa ligne. Tous lisent la même entrée de cache
+  — un bouton par palier ne coûte aucune requête, et aucun ne sonde.
+- **Dans la colonne des fils**, une ligne où personne n'a écrit se propose à qui peut écrire, comme
+  une question ouverte aux commentaires : dans le pli « Sans discussion », sous l'intertitre des
+  dépenses. On y vient donc par le palier **ou** par la colonne. Sans session, pas de rangée — il
+  n'y aurait rien à y lire. Le legacy, lui, ne liste que les lignes commentées (§17.4).
+- **Ouverte depuis son palier**, la ligne vide se lit dans la colonne sous l'en-tête du pli
+  replié, surlignée (§15.5) : on voit où l'on est sans rien déplier.
+- **Le focus revient au palier.** La modale n'a pas de déclencheur (§15.5) : le bouton d'où l'on
+  ouvre se **nomme**, le lanceur range ce nom dans l'entrée d'historique avec le reste
+  (`useSpaceLauncher`, `opener`), et la fiche le retrouve à la fermeture — rechargement compris. Si
+  le palier a disparu entre-temps, le focus revient au bouton de la fiche.
+- **Son nom accessible commence par ce qu'on lit** : « Discuter du palier « … », 2 messages,
+  1 non lu ».
+- **Les jauges restent alignées.** Un palier sans bouton efface son emplacement ; dès qu'un autre
+  palier de la liste en montre un, tous gardent la même largeur d'emplacement.
+- L'import différé de la modale est partagé par les boutons de la fiche (`communDiscussion.ts`), et
+  préchauffé au survol comme au focus.
+
+### 17.4 Arbitrages
+
+Tranchés le 12/10. Tous restent réversibles : aucun ne change un fil déjà écrit.
+
+| Sujet | Arbitrage | L'autre lecture |
+|---|---|---|
+| Sur quelle liste se lance le fil d'une ligne | la liste de **financement** — le bloc « Besoins financiers » de la fiche est le pendant de cette étape, et le legacy titre ces fils « (Financement) » | la liste du dépôt ; c'est une règle du serveur (`expenseHome`) |
+| Une ligne sans message dans la colonne des fils | **proposée à qui peut écrire**, dans le pli « Sans discussion » — c'est la règle de tout fil à lancer (`visibleSpaceThreads`) | la taire, comme le legacy : on n'y viendrait que par le palier |
+| Retirer un palier fait glisser les fils des suivants (§17.6) | **laissé tel quel** : les chemins restent ceux du legacy | prévenir à la suppression ; ou rattacher le fil à un identifiant propre au palier, au prix de la lecture croisée avec le legacy |
+| Un fil à lancer, ouvert alors que le pli est replié | **montré sous l'en-tête du pli**, surligné (§15.5) | le laisser replié avec les autres : seul le titre du fil disait où l'on est |
+
+### 17.5 Preuves
+
+Du 12/10, sur le code décrit ici ; les lignes « Navigateur » ont été rejouées sur l'état final,
+dans la nuit du 12 au 13/10.
+
+| Quoi | Résultat |
+|---|---|
+| Règles, hors base (§15.6), section « un fil par ligne de dépense » | 31 vérifications de plus, 161 en tout : la liste où le fil se lance, les lignes qui en reçoivent un, la clé rendue, la forme de la liste dans la réponse, le plafond, l'appel qui ne déclare pas la liste, le formulaire qui n'est pas `aap`. Une notice ou un avertissement PHP y compte désormais pour un échec |
+| Contre-épreuve par mutation de `Discussion.php` | 61 mutations du lot tuées sur 61 ; les 143 d'avant, rejouées, tuées sur 143 |
+| Appel au vrai backend, sans session, trois communs de l'appel de test | deux et cinq fils à lancer pour deux et cinq lignes, aucun pour un commun sans ligne ; quinze champs par fil ; le chemin est celui du legacy, à la lettre |
+| Tests unitaires de l'écran | 95 tests de plus qu'avant ce lot (6 626 en tout, avec les trois de la correction du §15.6) : lecture de la ligne, règle d'affichage, discussion d'un palier, nom du bouton retenu par le lanceur, bouton, carte, fiche, fil ouvert sous le pli replié — et un **parcours** assemblé, du palier au fil ouvert puis au focus rendu |
+| Contre-épreuve par mutation de l'écran | Le banc complet de l'écran, sur l'état final du lot : 559 mutations tuées sur 559, en 43 lots — dont, pour les deux arbitrages de la colonne, 68 (ligne vide proposée) et 49 (fil ouvert sous le pli) |
+| Navigateur, sans session, 1 440 puis 375 px | 40 vérifications à chaque largeur : bouton sur le seul palier commenté, compteur des deux fils d'une ligne, modale ouverte sur le plus récent, focus rendu au palier, lien vers le fil d'une ligne vide, jauges alignées d'un palier à l'autre (à 1 440 px), aucune écriture. Et la **lecture croisée** : l'écran « Commentaires » du legacy, lu sans session, liste les mêmes fils aux mêmes chemins, titrés « … (Financement) » |
+| Navigateur, compte de test connecté (ni membre ni déposant), 1 440 puis 375 px | 54 et 43 vérifications : un bouton sur chaque palier ; la ligne vide proposée dans le pli « Sans discussion », lisible une fois déplié, ouvrable de là ; ouverte depuis son palier, sa rangée reste à l'écran sous l'en-tête du pli replié, surlignée, rendue une seule fois ; Échap rend le focus au palier |
+| Navigateur, écriture réelle par le déposant sur son commun, 1 440 px | 56 vérifications : le premier message posté depuis un palier vide est rangé sur l'appel, au chemin de la ligne sur la liste de financement ; le legacy le liste « … (Financement) » ; aucun courriel mis en file ; refermée, le palier compte son message. Le document de l'appel, **relevé par son contenu** avant et après (§15.7), est remis à son état d'avant |
+| Écran étroit | La fiche ne défile plus horizontalement (mesuré : 128 px de trop à 375 px, 0 après) — un défaut antérieur à ce lot, corrigé à part : une adresse web insécable dans un texte élargissait toute la colonne, paliers compris |
+
+### 17.6 Limites
+
+- **Le fil suit la clé de la ligne, pas la ligne.** Retirer une dépense resserre la liste — dans
+  le legacy comme ici (`pull`) : les fils des lignes qui la suivaient désignent alors la ligne
+  d'après, et celui de la dernière ne désigne plus rien (il reste listé, titré par sa question).
+  C'est le comportement du legacy, repris tel quel pour que les deux écrans lisent les mêmes fils.
+- **Les deux fils d'une même ligne** (un par liste, écrits depuis le legacy) restent deux fils :
+  la colonne les liste l'un et l'autre, sous le même titre ; le palier additionne leurs compteurs
+  et ouvre le plus récent.
+- **Un appel sans `…newDepenseList`** — les autres gabarits de budget du legacy — n'a pas de fil
+  à lancer : leurs cartes désignent la dépense autrement dans le chemin, et ce cas n'a pas été
+  étudié ici. Un fil déjà écrit sur une de leurs lignes reste listé (§15.3).
+- **Le formulaire de dépôt** (la liste des paliers en saisie) ne porte pas le bouton : la
+  discussion s'ouvre depuis la fiche.
+- Le bloc « Suivi des actions » liste les mêmes paliers sans le bouton : une entrée par palier.
 
 ## Voir aussi
 

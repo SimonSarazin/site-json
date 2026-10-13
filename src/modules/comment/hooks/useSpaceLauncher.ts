@@ -11,10 +11,17 @@ export interface SpaceLauncher {
   /** Le fil de cet espace que l'adresse désigne, s'il y en a un. */
   readonly target: CommentTarget | null;
   /**
-   * Ouvre l'espace — sur son fil général, ou sur le fil donné. Empile une entrée d'historique.
-   * Déjà ouvert, il ne fait que changer de fil, et seulement si l'on en nomme un.
+   * Le nom que s'est donné le bouton qui a ouvert l'espace, tant qu'il est ouvert — `null` s'il n'en
+   * a pas donné, ou si l'on est arrivé par un lien. Une fiche a plusieurs boutons vers le même
+   * espace (le sien, celui de chaque palier) : c'est ce qui lui dit où rendre le focus à la fermeture.
    */
-  readonly openAt: (target?: CommentTarget) => void;
+  readonly opener: string | null;
+  /**
+   * Ouvre l'espace — sur son fil général, ou sur le fil donné. Empile une entrée d'historique.
+   * Déjà ouvert, il ne fait que changer de fil, et seulement si l'on en nomme un. `opener` nomme
+   * le bouton d'où l'on ouvre.
+   */
+  readonly openAt: (target?: CommentTarget, opener?: string) => void;
   /**
    * Change de fil, ou revient à la liste (`null`), sans fermer. Remplace l'entrée courante.
    * Sans effet tant que l'espace n'est pas ouvert : ouvrir, c'est `openAt`.
@@ -27,20 +34,30 @@ export interface SpaceLauncher {
 /**
  * Ce que le lanceur range dans l'ENTRÉE d'historique (`location.state`), sous une clé à lui :
  *   - `pushed` — cette entrée a été empilée par `openAt` : la fermer, c'est y renoncer ;
- *   - `list`   — la modale y est ouverte sur la LISTE des fils, ce qu'une adresse ne sait pas dire.
+ *   - `list`   — la modale y est ouverte sur la LISTE des fils, ce qu'une adresse ne sait pas dire ;
+ *   - `opener` — le nom du bouton d'où l'on a ouvert, pour lui rendre le focus.
  * `space` borne la marque à un espace : celle d'un autre commun ne vaut rien ici.
  */
 interface EntryMark {
   readonly space: string;
   readonly pushed?: true;
   readonly list?: true;
+  readonly opener?: string;
 }
 const MARK_KEY = "commentSpace";
+/** Un nom de bouton est court : au-delà, ce qu'on relit de l'historique n'en est pas un. */
+const OPENER_MAX = 80;
 
 function readMark(state: unknown, space: string): EntryMark | null {
   const mark = (state as Record<string, unknown> | null | undefined)?.[MARK_KEY] as Partial<EntryMark> | null | undefined;
   if (!mark || typeof mark !== "object" || mark.space !== space) return null;
-  return { space, ...(mark.pushed === true ? { pushed: true } : {}), ...(mark.list === true ? { list: true } : {}) };
+  const opener = typeof mark.opener === "string" && mark.opener !== "" && mark.opener.length <= OPENER_MAX ? mark.opener : null;
+  return {
+    space,
+    ...(mark.pushed === true ? { pushed: true } : {}),
+    ...(mark.list === true ? { list: true } : {}),
+    ...(opener !== null ? { opener } : {}),
+  };
 }
 
 /** L'état d'une entrée avec notre marque posée, ou retirée — le reste appartient à d'autres. */
@@ -111,14 +128,20 @@ export function useSpaceLauncher(space: SpaceRef, options?: { readonly param?: s
     // sans rien empiler — « fermer » n'aurait alors plus d'ouverture à défaire.
     if (!open) return;
     if (cible !== null && !ouvrable(cible)) return;
-    // La marque suit l'entrée qu'on remplace : empilée d'ici ou non, sur la liste ou non.
+    // La marque suit l'entrée qu'on remplace : empilée d'ici ou non, sur la liste ou non — et le
+    // bouton d'où l'on a ouvert reste le même tant qu'on ne fait que changer de fil.
     const gardee: EntryMark | null = marque?.pushed || cible === null
-      ? { space: cle, ...(marque?.pushed ? { pushed: true } : {}), ...(cible === null ? { list: true } : {}) }
+      ? {
+        space: cle,
+        ...(marque?.pushed ? { pushed: true } : {}),
+        ...(cible === null ? { list: true } : {}),
+        ...(marque?.opener ? { opener: marque.opener } : {}),
+      }
       : null;
     remplacer(cible ? { kind: "thread", target: cible } : { kind: "none" }, { state: withMark(state, gardee) });
   }, [cle, marque, open, ouvrable, remplacer, state]);
 
-  const openAt = useCallback((voulue?: CommentTarget) => {
+  const openAt = useCallback((voulue?: CommentTarget, ouvreur?: string) => {
     // Déjà ouverte, ce n'est plus une ouverture : empiler romprait « fermer défait l'ouverture ».
     // Et sans fil nommé il n'y a rien à faire — l'espace est ouvert LÀ OÙ L'ADRESSE LE DIT. Le
     // bouton d'une fiche reste cliquable le temps que le code de la modale arrive : y répondre par
@@ -130,7 +153,8 @@ export function useSpaceLauncher(space: SpaceRef, options?: { readonly param?: s
     const cible = voulue ?? generalTarget(space);
     if (!ouvrable(cible) || enVol.current) return;
     enVol.current = true;
-    empiler({ kind: "thread", target: cible }, { state: withMark(state, { space: cle, pushed: true }) });
+    const nomme = typeof ouvreur === "string" && ouvreur !== "" && ouvreur.length <= OPENER_MAX ? { opener: ouvreur } : {};
+    empiler({ kind: "thread", target: cible }, { state: withMark(state, { space: cle, pushed: true, ...nomme }) });
   }, [cle, empiler, open, ouvrable, select, space, state]);
 
   const close = useCallback(() => {
@@ -145,5 +169,9 @@ export function useSpaceLauncher(space: SpaceRef, options?: { readonly param?: s
     remplacer(target ? { kind: "none" } : selection, { state: withMark(state, null) });
   }, [marque, navigate, open, remplacer, selection, state, target]);
 
-  return { open, target, openAt, select, close };
+  // Fermée, il n'y a plus de bouton à qui rendre quoi que ce soit : la marque d'une entrée qui
+  // n'ouvre rien ne compte pas.
+  const opener = open ? marque?.opener ?? null : null;
+
+  return { open, target, opener, openAt, select, close };
 }

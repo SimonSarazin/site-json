@@ -280,8 +280,19 @@ vi.mock("../components/pageDetail/CommunTocNav.tsx", () => ({
     </nav>
   ),
 }));
+// La section demande à la page le bouton de discussion de chaque palier : la doublure le demande
+// pour UN palier, ce qui suffit à voir ce que la page lui rend.
 vi.mock("../components/pageDetail/CommunFinancingSection.tsx", () => ({
-  CommunFinancingSection: () => <div data-testid="financing-section" />,
+  CommunFinancingSection: (props: { renderMilestoneDiscussion?: (palier: { lineKey: string; name: string }) => unknown }) => (
+    <div data-testid="financing-section">
+      {props.renderMilestoneDiscussion?.({ lineKey: "3", name: "Matériel" }) as never}
+    </div>
+  ),
+}));
+vi.mock("../components/pageDetail/CommunMilestoneDiscussionButton", () => ({
+  CommunMilestoneDiscussionButton: (props: { answerId: string; lineKey: string; name?: string | null }) => (
+    <div data-testid="milestone-discussion" data-answer-id={props.answerId} data-line={props.lineKey} data-name={props.name ?? "null"} />
+  ),
 }));
 vi.mock("../components/pageDetail/CommunActionsSection.tsx", () => ({ CommunActionsSection: () => null }));
 vi.mock("../components/pageDetail/CommunMilestoneDialogs.tsx", () => ({ CommunMilestoneDialogs: () => null }));
@@ -690,6 +701,18 @@ describe("AacCommunDetailPage — l'espace de discussion du commun", () => {
     // Le SEO, lui, retombe sur le nom de l'appel ; l'espace est celui d'un commun, pas d'un appel.
     expect(screen.getByTestId("seo").getAttribute("data-title")).toBe("Appel test");
     expect(screen.getByTestId("discussion-control")).toHaveAttribute("data-title", "null");
+  });
+
+  it("chaque palier a son bouton de discussion : CE commun, et la ligne que la section désigne", () => {
+    // Parité de « Commenter » sur chaque carte de la liste des dépenses du legacy.
+    config = makeConfig(true);
+    render(<AacCommunDetailPage />);
+
+    const palier = screen.getByTestId("milestone-discussion");
+    expect(screen.getByTestId("financing-section").contains(palier)).toBe(true);
+    expect(palier).toHaveAttribute("data-answer-id", "a1");
+    expect(palier).toHaveAttribute("data-line", "3");
+    expect(palier).toHaveAttribute("data-name", "Matériel");
   });
 
   it("d'un commun à l'autre, le bouton est REMONTÉ, pas réemployé", () => {

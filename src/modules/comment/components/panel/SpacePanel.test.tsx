@@ -587,6 +587,46 @@ describe("SpacePanel", () => {
       expect(container.querySelector("[data-space-error] button")).toBeNull();
     });
 
+    /**
+     * Sous 48 rem une seule colonne est à l'écran, et un fil ouvert montre la SIENNE : la panne s'y
+     * lisait sans issue, le bouton étant resté dans la liste (vu au navigateur à 375 px, le 12/10).
+     */
+    const reessayerDuFil = (container: HTMLElement) =>
+      Array.from(colonneFil(container).querySelectorAll("button")).find(bouton => bouton.textContent === "Réessayer") ?? null;
+
+    it("fil ouvert, la colonne du FIL offre aussi « Réessayer » : en une colonne, la liste n'est pas à l'écran", async () => {
+      const { container, getDiscussionSpace } = monter({ sert: async () => { throw new Error("Network Error"); }, target: GENERAL });
+      await servir();
+      await servir(10_000);
+      expect(colonneFil(container).textContent).toContain("Les discussions n'ont pas pu être chargées.");
+      const bouton = reessayerDuFil(container);
+      expect(bouton).toBeTruthy();
+      const avant = getDiscussionSpace.mock.calls.length;
+      getDiscussionSpace.mockResolvedValue(CONNECTE);
+      await act(async () => {
+        fireEvent.click(bouton!);
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      expect(getDiscussionSpace.mock.calls.length).toBe(avant + 1);
+      expect(reessayerDuFil(container)).toBeNull();
+      expect(filMonte(container)).toBeTruthy();
+    });
+
+    it("ce second bouton cède la place dès que les deux colonnes coexistent ; celui de la liste, jamais", async () => {
+      const { container } = monter({ sert: async () => { throw new Error("Network Error"); }, target: GENERAL });
+      await servir();
+      await servir(10_000);
+      expect(reessayerDuFil(container)!.className).toContain("@3xl/panneau:hidden");
+      expect(colonneFils(container).querySelector("[data-space-error] button")!.className).not.toContain("@3xl/panneau:hidden");
+    });
+
+    it("un REFUS n'en propose pas là non plus", async () => {
+      const { container } = monter({ sert: refusDuSdk("hidden"), target: GENERAL });
+      await servir();
+      expect(colonneFil(container).textContent).toContain("Cet espace de discussion est introuvable.");
+      expect(reessayerDuFil(container)).toBeNull();
+    });
+
     it("une réponse ILLISIBLE dès l'ouverture est une panne : réessayée, dite, et réessayable", async () => {
       // Une page d'erreur servie en HTTP 200 : le SDK la rend telle quelle, ce n'est pas un objet.
       const { container, getDiscussionSpace } = monter({ sert: "<html>Maintenance</html>" });
@@ -697,6 +737,65 @@ describe("SpacePanel", () => {
    * Le bouton « + » de l'espace legacy. Qui crée, et avec quelle audience, c'est le serveur qui le
    * dit (`creatableAudiences`) : l'écran n'offre rien de plus.
    */
+  /**
+   * Le fil d'une ligne de dépense que personne n'a commentée : le serveur le PROPOSE, et la
+   * colonne aussi — arbitré le 12/10 —, à qui peut écrire, comme une question ouverte aux
+   * commentaires : dans le pli « Sans discussion », sous l'intertitre des dépenses.
+   */
+  describe("une ligne de dépense où personne n'a écrit", () => {
+    const VIERGE = `${question(ETAPE_2, "financer")}.financement.depensekey.aapStep1-depense.depenseindex.2`;
+    const avecLigne = (over: Record<string, unknown> = {}) => reponse({
+      threads: [...FILS, ligne(VIERGE, { title: "Matériel", virtual: true, kind: "expense", group: "Bilan", line: "2" })],
+      ...over,
+    });
+    const clesListees = (c: HTMLElement) => rangees(colonneFils(c)).map(r => r.cle);
+    const clesDuPli = (c: HTMLElement) => groupesVierges(c).flatMap(g => g.cles);
+
+    it("est proposée à qui peut écrire, dans le pli « Sans discussion » — la ligne commentée, elle, est au-dessus", async () => {
+      const { container } = monter({ sert: avecLigne() });
+      await servir();
+      expect(clesDuPli(container)).toContain(cle(VIERGE));
+      // Sous l'intertitre des dépenses, comme les lignes commentées au-dessus du pli.
+      expect(groupesVierges(container).find(g => g.cles.includes(cle(VIERGE)))?.intertitre).toBe("Dépenses");
+      expect(groupes(container).find(g => g.cles.includes(cle(CHEMINS.depense)))?.intertitre).toBe("Dépenses");
+      expect(clesDuPli(container)).not.toContain(cle(CHEMINS.depense));
+      expect(groupes(container).flatMap(g => g.cles)).toContain(cle(CHEMINS.depense));
+    });
+
+    it("ouverte (par le palier, ou par un lien) : le fil est monté, titré, et sa rangée se LIT sous l'en-tête du pli replié, sélectionnée", async () => {
+      const { container } = monter({ sert: avecLigne(), target: cible(VIERGE) });
+      await servir();
+      expect(filMonte(container)!.getAttribute("data-target")).toBe(cle(VIERGE));
+      expect(screen.getByRole("heading", { level: 3 }).textContent).toBe("Matériel");
+      const rangee = colonneFils(container).querySelector(`[data-thread-key="${cle(VIERGE)}"]`)!;
+      expect(rangee.getAttribute("data-selected")).toBe("true");
+      // Le pli est replié, et pourtant on voit où l'on est : la rangée n'est pas dans sa partie inerte.
+      expect(container.querySelector("[data-empty-group]")!.getAttribute("data-open")).toBe("false");
+      expect(rangee.closest("[data-empty-current]")).not.toBeNull();
+      expect(rangee.closest("[inert]")).toBeNull();
+    });
+
+    it("on en sort : elle reste proposée, rentrée dans le pli, sans la sélection", async () => {
+      const { container, changer } = monter({ sert: avecLigne(), target: cible(VIERGE) });
+      await servir();
+      changer({ target: cible(CHEMINS.avis) });
+      expect(filMonte(container)!.getAttribute("data-target")).toBe(cle(CHEMINS.avis));
+      const rangee = colonneFils(container).querySelector(`[data-thread-key="${cle(VIERGE)}"]`)!;
+      expect(rangee.getAttribute("data-selected")).toBe("false");
+      expect(rangee.closest("[inert]")).not.toBeNull();
+      expect(container.querySelector("[data-empty-current]")).toBeNull();
+    });
+
+    it("pour un visiteur : pas de rangée — et par un lien, le fil est monté, il y lira l'invitation à se connecter", async () => {
+      const { container } = monter({ sert: avecLigne({ canComment: false }), target: cible(VIERGE) });
+      await servir();
+      expect(filMonte(container)!.getAttribute("data-target")).toBe(cle(VIERGE));
+      expect(clesListees(container)).not.toContain(cle(VIERGE));
+      // La ligne commentée, elle, se lit sans session.
+      expect(clesListees(container)).toContain(cle(CHEMINS.depense));
+    });
+  });
+
   describe("créer une discussion", () => {
     const plus = () => screen.queryByRole("button", { name: "Nouvelle discussion" });
     const formulaire = (c: HTMLElement) => c.querySelector("[data-new-discussion]");
@@ -788,8 +887,11 @@ describe("SpacePanel", () => {
       expect(filMonte(container)!.getAttribute("data-target")).toBe(cle(CHEMINS.creee));
       expect(container.querySelector("[data-thread-hidden]")).toBeNull();
       expect(screen.getByRole("heading", { level: 3 }).textContent).toBe("Budget 2026");
-      // Dans la colonne, elle attend son premier message avec les autres emplacements vides.
-      expect(rangees(container.querySelector(".comment-collapsible")!).map(r => r.cle)).toContain(cle(CHEMINS.creee));
+      // Dans la colonne, elle attend son premier message avec les autres emplacements vides — sous
+      // « Sans discussion » —, mais ouverte elle s'y LIT, sous l'en-tête du pli replié.
+      expect(rangees(container.querySelector("[data-empty-group]")!).map(r => r.cle)).toContain(cle(CHEMINS.creee));
+      expect(rangees(container.querySelector("[data-empty-current]")!).map(r => r.cle)).toEqual([cle(CHEMINS.creee)]);
+      expect(rangees(container.querySelector(".comment-collapsible")!).map(r => r.cle)).not.toContain(cle(CHEMINS.creee));
     });
 
     it("son titre reçoit le focus quand elle s'ouvre — le formulaire qui le tenait a disparu", async () => {

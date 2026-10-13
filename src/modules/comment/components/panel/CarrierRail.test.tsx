@@ -418,6 +418,104 @@ describe("ThreadColumn", () => {
     expect(section.getAttribute("data-open")).toBe("true");
   });
 
+  /**
+   * Arbitré le 12/10 : on arrive sur un fil vierge par un lien, ou par le bouton d'un palier. Le
+   * pli est replié — sa rangée ne doit pas y disparaître, sinon rien ne dit où l'on est.
+   */
+  describe("le fil vierge OUVERT, pli replié", () => {
+    const VIVANT = thread({ key: "a", title: "Une vraie discussion" });
+    const vierge = (cle: string, titre: string) => thread({ key: cle, virtual: true, total: 0, last: null, title: titre });
+    const FILS = [VIVANT, vierge("b", "Budget prévisionnel"), vierge("c", "Matériel"), vierge("d", "Communication")];
+    const pli = (c: HTMLElement) => c.querySelector(".comment-collapsible")!;
+    const courant = (c: HTMLElement) => c.querySelector("[data-empty-current]");
+    const clesDe = (racine: ParentNode) => [...racine.querySelectorAll("[data-thread-row]")].map(l => l.getAttribute("data-thread-key"));
+
+    it("reste visible sous l'en-tête du pli, surligné — et n'est rendu qu'UNE fois", () => {
+      const { container } = wrap(<ThreadColumn threads={FILS} selected="c" onSelect={() => {}} />);
+      expect(pli(container).getAttribute("data-open")).toBe("false");
+      expect(clesDe(courant(container)!)).toEqual(["c"]);
+      const rangee = courant(container)!.querySelector("[data-thread-row]")!;
+      expect(rangee.getAttribute("data-selected")).toBe("true");
+      expect(rangee.getAttribute("aria-current")).toBe("true");
+      // Hors de la partie inerte : il se lit, se tabule, et s'annonce.
+      expect(rangee.closest("[inert]")).toBeNull();
+      // Le reste du pli le suit sans lui : pas de doublon.
+      expect(clesDe(pli(container))).toEqual(["b", "d"]);
+      expect(container.querySelectorAll('[data-thread-key="c"]').length).toBe(1);
+    });
+
+    it("est SOUS l'en-tête du pli, pas parmi les fils écrits : le quitter ne fait remonter aucune rangée", () => {
+      const { container } = wrap(<ThreadColumn threads={FILS} selected="c" onSelect={() => {}} />);
+      expect(clesDe(container.querySelector('ul[aria-label="Fils"]')!)).toEqual(["a"]);
+      const enTete = screen.getByRole("button", { name: /sans discussion/i });
+      // L'en-tête, puis le fil ouvert, puis le reste du pli.
+      expect(enTete.nextElementSibling).toBe(courant(container));
+      expect(courant(container)!.nextElementSibling).toBe(pli(container));
+    });
+
+    it("porte un nom de liste, et le pli garde son compte : le fil ouvert en fait toujours partie", () => {
+      const { container } = wrap(<ThreadColumn threads={FILS} selected="c" onSelect={() => {}} />);
+      expect(courant(container)!.getAttribute("aria-label")).toBe("Fil ouvert");
+      expect(screen.getByRole("button", { name: "Sans discussion (3)" })).toBeTruthy();
+    });
+
+    it("pli déplié, il reprend sa place dans la liste — sélectionné, à son rang, sans copie au-dessus", () => {
+      const { container } = wrap(<ThreadColumn threads={FILS} selected="c" onSelect={() => {}} />);
+      fireEvent.click(screen.getByRole("button", { name: /sans discussion/i }));
+      expect(courant(container)).toBeNull();
+      expect(clesDe(pli(container))).toEqual(["b", "c", "d"]);
+      expect(pli(container).querySelector('[data-thread-key="c"]')!.getAttribute("data-selected")).toBe("true");
+      // On replie : il revient sous l'en-tête.
+      fireEvent.click(screen.getByRole("button", { name: /sans discussion/i }));
+      expect(clesDe(courant(container)!)).toEqual(["c"]);
+      expect(clesDe(pli(container))).toEqual(["b", "d"]);
+    });
+
+    it("rien sous l'en-tête quand le fil ouvert est un fil écrit, ou qu'aucun n'est ouvert", () => {
+      const ecrit = wrap(<ThreadColumn threads={FILS} selected="a" onSelect={() => {}} />);
+      expect(courant(ecrit.container)).toBeNull();
+      expect(clesDe(pli(ecrit.container))).toEqual(["b", "c", "d"]);
+      ecrit.unmount();
+      const aucun = wrap(<ThreadColumn threads={FILS} selected={null} onSelect={() => {}} />);
+      expect(courant(aucun.container)).toBeNull();
+      expect(clesDe(pli(aucun.container))).toEqual(["b", "c", "d"]);
+    });
+
+    it("on change de fil : il rentre dans le pli, et le suivant prend sa place sous l'en-tête", () => {
+      const arbre = (selection: string | null) => (
+        <LocalizationProvider><ThreadColumn threads={FILS} selected={selection} onSelect={() => {}} /></LocalizationProvider>
+      );
+      const { container, rerender } = render(arbre("c"));
+      rerender(arbre("d"));
+      expect(clesDe(courant(container)!)).toEqual(["d"]);
+      expect(clesDe(pli(container))).toEqual(["b", "c"]);
+      rerender(arbre("a"));
+      expect(courant(container)).toBeNull();
+      expect(clesDe(pli(container))).toEqual(["b", "c", "d"]);
+    });
+
+    it("un fil vierge ÉPINGLÉ et ouvert reste à sa place d'épinglé, pas sous le pli", () => {
+      const { container } = wrap(<ThreadColumn threads={FILS} selected="b" onSelect={() => {}} pinned={th => th.key === "b"} />);
+      expect(courant(container)).toBeNull();
+      expect(clesDe(container.querySelector('ul[aria-label="Fils"]')!)).toEqual(["a", "b"]);
+    });
+
+    it("sous intertitres aussi : le fil ouvert sort de son groupe replié, les autres y restent rangés", () => {
+      const etapes: Record<string, string | null> = { a: "Proposition", b: "Proposition", c: "Dépenses", d: "Dépenses" };
+      const { container } = wrap(<ThreadColumn threads={FILS} selected="c" onSelect={() => {}} groupLabel={th => etapes[th.key]} />);
+      expect(clesDe(courant(container)!)).toEqual(["c"]);
+      const groupes = [...pli(container).querySelectorAll("[data-thread-group]")];
+      expect(groupes.map(g => [g.getAttribute("data-thread-group"), clesDe(g)])).toEqual([["Proposition", ["b"]], ["Dépenses", ["d"]]]);
+    });
+
+    it("le clic sur le fil ouvert le remonte comme n'importe quelle rangée", () => {
+      const onSelect = vi.fn();
+      const { container } = wrap(<ThreadColumn threads={FILS} selected="c" onSelect={onSelect} />);
+      fireEvent.click(courant(container)!.querySelector("[data-thread-row]")!);
+      expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ key: "c" }));
+    });
+  });
+
   it("n'affiche ni compteur ni date sur un fil qui n'existe pas encore", () => {
     const { container } = wrap(<ThreadColumn
       threads={[thread({ virtual: true, total: 0, last: null, title: "Budget prévisionnel" })]}

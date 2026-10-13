@@ -105,7 +105,10 @@
       "messages_one": "{{count}} message",
       "messages_other": "{{count}} messages",
       "unread_one": "{{count}} non lu",
-      "unread_other": "{{count}} non lus"
+      "unread_other": "{{count}} non lus",
+      "milestoneCta": "Discuter",
+      "milestone": "Discuter de ce palier",
+      "milestoneNamed": "Discuter du palier « {{name}} »"
     },
     "editors": {
       "cta": "Contributeurs à l'édition",

@@ -1,5 +1,4 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { lazy } from "vite-preload";
 import { MessagesSquare } from "lucide-react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { Button } from "@/components/ui/button";
@@ -7,25 +6,15 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { cn } from "@/lib/utils";
 import { useDiscussionSpaceQuery, useSpaceLauncher, type SpaceRef } from "@/modules/comment/launch";
+import { SpaceModal, findOpener, prechaufferLaModale as prechauffer } from "./communDiscussion";
 
-/**
- * La modale n'arrive qu'à l'ouverture : le fil, le composer et le rendu markdown ne sont pas le
- * prix d'une fiche qu'on ne fait que lire. Le bouton, lui, ne tient qu'à l'entrée légère du module.
- *
- * `lazy` vient de `vite-preload` (pas `React.lazy`), comme partout dans le dépôt : il enregistre le
- * morceau auprès du rendu serveur, et il donne `preload()` — ce dont le bouton se sert, au survol
- * et au focus. Précédent : `AacDepositButton`.
+/*
+ * La modale n'arrive qu'à l'ouverture, par un import différé (cf. `communDiscussion`).
  *
  * La fiche, elle, n'est pas dans le HTML du serveur : il sert la carte de chargement, et le bouton
  * n'existe qu'après hydratation (mesuré le 09/10). Un lien vers un fil ouvre donc sa modale une
  * fois la fiche chargée et le code de la modale arrivé — pas dès le premier affichage.
  */
-const SpaceModal = lazy(() => import("@/modules/comment/components/panel/SpaceModal"));
-
-/** Préchauffe le code de la modale. Un échec n'est rien ici : l'import sera retenté à l'ouverture. */
-function prechauffer() {
-    void SpaceModal.preload().catch(() => undefined);
-}
 
 /**
  * Tenu à l'écran par `Suspense` tant que le code de la modale n'est pas arrivé. Il ne montre rien :
@@ -60,6 +49,9 @@ export interface CommunDiscussionControlProps {
  *
  * Une adresse `?discussion=…` qui désigne un fil de CE commun ouvre la modale dès le premier
  * rendu du bouton, sans clic — c'est le lien qu'on partage, et celui d'une notification.
+ *
+ * C'est ICI que la modale est montée, une fois pour la fiche : le bouton d'un palier
+ * (`CommunMilestoneDiscussionButton`) ouvre le même espace par l'adresse, sur le fil de sa ligne.
  */
 export function CommunDiscussionControl({ answerId, communTitle, scopeEntity }: CommunDiscussionControlProps) {
     useLoadNamespace("modules/aac");
@@ -74,7 +66,9 @@ export function CommunDiscussionControl({ answerId, communTitle, scopeEntity }: 
     const [modaleAttendue, setModaleAttendue] = useState(false);
 
     /**
-     * À la fermeture, le focus revient au bouton — par la croix, par Échap ou par « retour ».
+     * À la fermeture, le focus revient au bouton d'où l'on a ouvert — par la croix, par Échap ou par
+     * « retour » : celui d'un palier s'il s'est nommé et qu'il est encore là, sinon celui-ci (une
+     * ouverture par l'adresse n'a pas de bouton).
      *
      * Radix le rendrait à son `DialogTrigger`, et la modale n'en a pas : elle s'ouvre aussi par une
      * adresse, sans clic. Sans ceci le focus tombait sur `<body>` (mesuré au navigateur le 07/10),
@@ -82,11 +76,17 @@ export function CommunDiscussionControl({ answerId, communTitle, scopeEntity }: 
      */
     const boutonRef = useRef<HTMLButtonElement>(null);
     const etaitOuverte = useRef(false);
+    // Retenu tant que la modale est ouverte : à la fermeture, l'entrée qui le portait n'est plus là.
+    // Chaque ouverture le réécrit — par son nom, ou par `null` quand elle n'en a pas.
+    const ouvreur = useRef<string | null>(null);
     useEffect(() => {
+        if (launcher.open) ouvreur.current = launcher.opener;
         // Sans défilement : le bouton est celui qu'on vient de quitter, la page n'a pas à bouger.
-        if (etaitOuverte.current && !launcher.open) boutonRef.current?.focus({ preventScroll: true });
+        if (etaitOuverte.current && !launcher.open) {
+            (findOpener(ouvreur.current) ?? boutonRef.current)?.focus({ preventScroll: true });
+        }
         etaitOuverte.current = launcher.open;
-    }, [launcher.open]);
+    }, [launcher.open, launcher.opener]);
 
     return (
         <>

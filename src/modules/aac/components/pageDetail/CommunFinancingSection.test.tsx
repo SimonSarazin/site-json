@@ -167,3 +167,70 @@ describe("CommunFinancingSection — description du palier", () => {
     expect(panelOf("Sans").querySelector("p")).toBeNull();
   });
 });
+
+/**
+ * Un fil de discussion par palier (parité de « Commenter » sur chaque carte de la liste des
+ * dépenses du legacy). La section ne connaît pas l'espace de discussion : elle demande le bouton à
+ * la page, en lui donnant ce qui désigne le fil — la CLÉ de la ligne dans le document.
+ */
+describe("CommunFinancingSection — le bouton de discussion d'un palier", () => {
+  const bouton = vi.fn(({ lineKey, name }: { lineKey: string; name: string }) => (
+    <button type="button" data-discussion-de={lineKey}>{`discuter:${name}`}</button>
+  ));
+  const demandes = () => bouton.mock.calls.map(([palier]) => palier);
+  const bascule = (titre: string) => screen.getByText(titre).closest("button") as HTMLButtonElement;
+
+  beforeEach(() => {
+    bouton.mockClear();
+    depenses = [{ poste: "Local", priceInt: 100 }, { poste: "Matériel", priceInt: 200 }];
+  });
+
+  it("demande à la page le bouton de CHAQUE palier, par la clé de sa ligne et par son nom", () => {
+    renderSection({ renderMilestoneDiscussion: bouton });
+    expect(demandes()).toEqual([{ lineKey: "0", name: "Local" }, { lineKey: "1", name: "Matériel" }]);
+  });
+
+  it("la clé se lit dans le DOCUMENT : des dépenses en objet à clés creuses ne se numérotent pas par position", () => {
+    const ctrl = { ...makeCtrl(), depensesDocument: { "0": { poste: "Local" }, "3": { poste: "Matériel" } } } as unknown as CommunObjectivesController;
+    renderSection({ ctrl, renderMilestoneDiscussion: bouton });
+    expect(demandes()).toEqual([{ lineKey: "0", name: "Local" }, { lineKey: "3", name: "Matériel" }]);
+  });
+
+  it("un tableau à trou garde ses rangs : la ligne d'après un trou ne recule pas", () => {
+    depenses = [{ poste: "Local", priceInt: 100 }, {}, { poste: "Matériel", priceInt: 200 }];
+    const ctrl = { ...makeCtrl(), depensesDocument: [{ poste: "Local" }, null, { poste: "Matériel" }] } as unknown as CommunObjectivesController;
+    renderSection({ ctrl, renderMilestoneDiscussion: bouton });
+    expect(demandes().map(palier => palier.lineKey)).toEqual(["0", "1", "2"]);
+  });
+
+  it("le pose dans l'en-tête de la carte, HORS du bouton qui la déplie — un bouton ne s'imbrique pas dans un autre", () => {
+    renderSection({ renderMilestoneDiscussion: bouton });
+    const discuter = screen.getByText("discuter:Local");
+    expect(bascule("Local").contains(discuter)).toBe(false);
+    expect(discuter.closest("[data-milestone-discussion-slot]")).not.toBeNull();
+    // Même ligne d'en-tête : l'emplacement est le voisin immédiat du bouton qui déplie.
+    expect(discuter.closest("[data-milestone-discussion-slot]")!.previousElementSibling).toBe(bascule("Local"));
+  });
+
+  it("cliquer « discuter » ne déplie pas la carte, et la déplier ne retire pas le bouton", () => {
+    renderSection({ renderMilestoneDiscussion: bouton });
+    fireEvent.click(screen.getByText("discuter:Local"));
+    expect(bascule("Local").getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(bascule("Local"));
+    expect(bascule("Local").getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByText("discuter:Local")).toBeTruthy();
+  });
+
+  it.each([
+    ["la page n'en demande pas", undefined],
+    ["le bouton n'a rien à montrer", () => null],
+  ])("quand %s, l'emplacement reste VIDE — c'est ce qui le fait s'effacer", (_cas, rendu) => {
+    renderSection({ renderMilestoneDiscussion: rendu });
+    const emplacements = [...document.querySelectorAll("[data-milestone-discussion-slot]")];
+    expect(emplacements).toHaveLength(2);
+    for (const emplacement of emplacements) {
+      expect(emplacement.childNodes).toHaveLength(0);
+      expect(emplacement.className).toContain("empty:hidden");
+    }
+  });
+});

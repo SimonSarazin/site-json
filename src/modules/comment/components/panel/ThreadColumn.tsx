@@ -265,6 +265,17 @@ export function ThreadColumn({
   const actifs = threads.filter(th => !th.virtual || epingle(th));
   const vierges = threads.filter(th => th.virtual && !epingle(th));
   const sansDiscussion = String(t("panel.withoutThread", undefined, { count: vierges.length }));
+  /**
+   * Pli replié, le fil OUVERT ne disparaît pas avec les autres : il reste sous l'en-tête du pli,
+   * surligné — on voit où l'on est, comme le salon actif d'une catégorie repliée. C'est le cas de
+   * qui arrive par un lien, ou par le bouton d'un palier, sur un fil où personne n'a écrit.
+   *
+   * Il se rend SOUS l'en-tête, pas parmi les fils écrits : quand on le quitte, aucune rangée ne
+   * remonte sous le pointeur. Et jamais deux fois : replié, il sort de la liste du pli ; déplié,
+   * il y reprend sa place.
+   */
+  const ouvertReplie = ouvert ? null : vierges.find(th => th.key === selected) ?? null;
+  const replies = ouvertReplie ? vierges.filter(th => th !== ouvertReplie) : vierges;
 
   /**
    * Des fils rangés par intertitre : chaque groupe est une liste à part, nommée par le sien, pour
@@ -341,11 +352,16 @@ export function ThreadColumn({
           {/* Mêmes intertitres que plus haut quand il y en a : sans eux, les questions vierges de
               toutes les étapes se suivaient d'un trait, et deux questions de même libellé ne se
               distinguaient plus. */}
+          {ouvertReplie && (
+            <ul className={PANEL_LIST} aria-label={String(t("panel.openThread"))} data-empty-current>
+              {rangee(ouvertReplie)}
+            </ul>
+          )}
           <div className="comment-collapsible" data-open={ouvert} inert={!ouvert}>
             <div>
               {groupLabel
-                ? groupes(vierges, groupLabel, sansDiscussion)
-                : <ul className={PANEL_LIST} aria-label={sansDiscussion}>{vierges.map(rangee)}</ul>}
+                ? groupes(replies, groupLabel, sansDiscussion)
+                : <ul className={PANEL_LIST} aria-label={sansDiscussion}>{replies.map(rangee)}</ul>}
             </div>
           </div>
         </div>

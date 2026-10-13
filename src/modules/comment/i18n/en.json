@@ -141,6 +141,7 @@
     "backToThreads": "Back to threads",
     "backToHolders": "Back to spaces",
     "startThread": "Start the conversation",
+    "openThread": "Open thread",
     "withoutThread_one": "Without conversation ({{count}})",
     "withoutThread_other": "Without conversation ({{count}})",
     "noCarrier": "No space",

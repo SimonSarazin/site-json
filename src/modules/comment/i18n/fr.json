@@ -141,6 +141,7 @@
     "backToThreads": "Retour aux fils",
     "backToHolders": "Retour aux espaces",
     "startThread": "Démarrer la discussion",
+    "openThread": "Fil ouvert",
     "withoutThread_one": "Sans discussion ({{count}})",
     "withoutThread_other": "Sans discussion ({{count}})",
     "noCarrier": "Sans espace",

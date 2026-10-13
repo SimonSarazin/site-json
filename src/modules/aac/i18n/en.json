@@ -105,7 +105,10 @@
       "messages_one": "{{count}} message",
       "messages_other": "{{count}} messages",
       "unread_one": "{{count}} unread",
-      "unread_other": "{{count}} unread"
+      "unread_other": "{{count}} unread",
+      "milestoneCta": "Discuss",
+      "milestone": "Discuss this milestone",
+      "milestoneNamed": "Discuss the milestone “{{name}}”"
     },
     "editors": {
       "cta": "Edit contributors",

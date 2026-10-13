@@ -12,4 +12,5 @@
  */
 export { useDiscussionSpaceQuery } from "./hooks/useDiscussionSpaceQuery";
 export { useSpaceLauncher, type SpaceLauncher } from "./hooks/useSpaceLauncher";
+export { lineDiscussion, type LineDiscussion } from "./lib/space";
 export type { SpaceRef } from "./types";

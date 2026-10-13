@@ -56,6 +56,13 @@ export function belongsToSpace(target: CommentTarget | null | undefined, space: 
   return segments.length >= 5 && segments[0] === target.id && segments[2] === space.id;
 }
 
+/** La clé d'une ligne de dépense : un segment de chemin, ou rien. Un serveur plus ancien n'en envoie pas. */
+const LINE_KEY = /^[A-Za-z0-9_-]+$/;
+
+function readLine(value: unknown): string | null {
+  return typeof value === "string" && LINE_KEY.test(value) ? value : null;
+}
+
 function readSpaceThread(value: unknown): DiscussionThread | null {
   const thread = readThread(value);
   if (!thread) return null;
@@ -67,7 +74,8 @@ function readSpaceThread(value: unknown): DiscussionThread | null {
   const audience: SpaceAudience | null = (SPACE_AUDIENCES as readonly unknown[]).includes(row.audience)
     ? (row.audience as SpaceAudience)
     : null;
-  return { ...thread, kind, group: toText(row.group), audience };
+  // Seule une ligne de dépense a une ligne : sur un autre fil, le champ ne veut rien dire.
+  return { ...thread, kind, group: toText(row.group), audience, line: kind === "expense" ? readLine(row.line) : null };
 }
 
 /**
@@ -177,4 +185,32 @@ export function visibleSpaceThreads(
   canComment: boolean,
 ): readonly DiscussionThread[] {
   return canComment ? threads : threads.filter(thread => !thread.virtual || thread.kind === "general");
+}
+
+/** Ce qu'un palier dit de sa discussion : où l'on entre, et ce qu'il y a à lire. */
+export interface LineDiscussion {
+  /** Le fil où l'on entre. `null` : l'espace n'en propose aucun pour cette ligne. */
+  readonly target: CommentTarget | null;
+  readonly total: number;
+  readonly unread: number;
+}
+
+/**
+ * La discussion d'une LIGNE de dépense — un palier de la fiche.
+ *
+ * Le legacy pose le fil d'une ligne sur la liste d'où l'on a cliqué (au dépôt, ou à l'étape de
+ * financement) : une même ligne peut donc en avoir deux. Les compteurs les additionnent ; on entre
+ * dans celui où l'on a écrit en dernier, et faute de message dans celui que le serveur propose de
+ * lancer. La liste du serveur fait autorité, ici comme ailleurs : sans fil pour la ligne, `target`
+ * est nul et il n'y a rien à ouvrir.
+ */
+export function lineDiscussion(threads: readonly DiscussionThread[], line: string): LineDiscussion {
+  const fils = threads.filter(thread => thread.kind === "expense" && thread.line === line);
+  let entree: DiscussionThread | null = null;
+  for (const fil of fils) {
+    if (entree === null) entree = fil;
+    // Un fil écrit l'emporte sur un fil à lancer ; entre deux fils écrits, le plus récent.
+    else if (!fil.virtual && (entree.virtual || (fil.last ?? 0) > (entree.last ?? 0))) entree = fil;
+  }
+  return { target: entree?.target ?? null, ...spaceTotals(fils) };
 }

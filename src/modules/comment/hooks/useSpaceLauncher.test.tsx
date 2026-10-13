@@ -528,3 +528,89 @@ describe("useSpaceLauncher — l'historique du navigateur", () => {
     expect(b.lanceur().open).toBe(false);
   });
 });
+
+/**
+ * Une fiche a plusieurs boutons vers le même espace — le sien, celui de chaque palier. Celui d'où
+ * l'on ouvre se NOMME, et son nom vit dans l'entrée d'historique, comme le reste : à la fermeture,
+ * la fiche sait à qui rendre le focus, rechargement compris.
+ */
+describe("useSpaceLauncher — le bouton d'où l'on a ouvert", () => {
+  it("`openAt(cible, nom)` retient le nom tant que l'espace est ouvert, dans l'entrée empilée", () => {
+    const b = monter();
+    expect(b.lanceur().opener).toBeNull();
+    act(() => b.lanceur().openAt(QUESTION, "palier:2"));
+    expect(b.lanceur().opener).toBe("palier:2");
+    expect(b.etat()).toEqual(marque(CLE, { pushed: true, opener: "palier:2" }));
+  });
+
+  it("sans nom, il n'y en a pas — et la marque n'en porte pas", () => {
+    const b = monter();
+    act(() => b.lanceur().openAt());
+    expect(b.lanceur().opener).toBeNull();
+    expect(b.etat()).toEqual(marque(CLE, { pushed: true }));
+  });
+
+  it.each([[""], ["x".repeat(81)]])("un nom qui n'en est pas un (%p) n'est pas retenu : l'espace s'ouvre quand même", nom => {
+    const b = monter();
+    act(() => b.lanceur().openAt(QUESTION, nom));
+    expect(b.lanceur().open).toBe(true);
+    expect(b.lanceur().opener).toBeNull();
+    expect(b.etat()).toEqual(marque(CLE, { pushed: true }));
+  });
+
+  it("un nom de quatre-vingts caractères passe encore", () => {
+    const b = monter();
+    act(() => b.lanceur().openAt(QUESTION, "x".repeat(80)));
+    expect(b.lanceur().opener).toBe("x".repeat(80));
+  });
+
+  it("changer de fil, ou revenir à la liste, garde le même bouton", () => {
+    const b = monter();
+    act(() => b.lanceur().openAt(QUESTION, "palier:2"));
+    act(() => b.lanceur().select(GENERAL));
+    expect(b.lanceur().opener).toBe("palier:2");
+    act(() => b.lanceur().select(null));
+    expect(b.lanceur().opener).toBe("palier:2");
+    expect(b.etat()).toEqual(marque(CLE, { pushed: true, list: true, opener: "palier:2" }));
+    act(() => b.lanceur().select(QUESTION));
+    expect(b.lanceur().opener).toBe("palier:2");
+  });
+
+  it("refermé, il n'y a plus de bouton — et « suivant » le retrouve avec la modale", async () => {
+    const b = monter(FICHE, undefined, ["/aac"]);
+    act(() => b.lanceur().openAt(QUESTION, "palier:2"));
+    await act(async () => { b.lanceur().close(); });
+    expect(b.lanceur().open).toBe(false);
+    expect(b.lanceur().opener).toBeNull();
+    await b.avancer();
+    expect(b.lanceur().open).toBe(true);
+    expect(b.lanceur().opener).toBe("palier:2");
+  });
+
+  it("une entrée relue (rechargement) rend son bouton dès le premier rendu", () => {
+    const b = monter({ pathname: FICHE, search: `?discussion=answers:${COMMUN}`, state: marque(CLE, { pushed: true, opener: "palier:2" }) });
+    expect(b.lanceur().opener).toBe("palier:2");
+  });
+
+  it("arrivé par un lien : aucun bouton", () => {
+    expect(monter(`${FICHE}?discussion=answers:${COMMUN}`).lanceur().opener).toBeNull();
+  });
+
+  it("la marque d'un AUTRE espace ne nomme rien ici", () => {
+    const b = monter({ pathname: FICHE, search: `?discussion=answers:${COMMUN}`, state: marque(`answers:${AUTRE_COMMUN}`, { pushed: true, opener: "palier:2" }) });
+    expect(b.lanceur().opener).toBeNull();
+  });
+
+  it("une marque qui nomme un bouton sans rien ouvrir ne compte pas", () => {
+    const b = monter({ pathname: FICHE, state: marque(CLE, { opener: "palier:2" }) });
+    expect(b.lanceur().open).toBe(false);
+    expect(b.lanceur().opener).toBeNull();
+  });
+
+  it.each([[42], [""], [null], [{ nom: "palier:2" }], ["x".repeat(81)]])(
+    "un nom illisible dans l'entrée (%p) est ignoré, sans lever", opener => {
+      const b = monter({ pathname: FICHE, search: `?discussion=answers:${COMMUN}`, state: marque(CLE, { pushed: true, opener }) });
+      expect(b.lanceur().open).toBe(true);
+      expect(b.lanceur().opener).toBeNull();
+    });
+});

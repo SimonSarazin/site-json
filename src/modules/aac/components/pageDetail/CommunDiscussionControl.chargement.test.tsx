@@ -197,11 +197,20 @@ describe("le graphe de l'entrée légère", () => {
     expect(leger.length).toBeLessThanOrEqual(15);
   });
 
-  it("le bouton de la fiche ne prend du module QUE cette entrée — la modale, par un import différé", () => {
-    const boutonDeLaFiche = path.join(SRC, "modules/aac/components/pageDetail/CommunDiscussionControl.tsx");
-    expect(importsDe(boutonDeLaFiche).filter(importe => importe.startsWith("@/modules/comment")))
-      .toEqual(["@/modules/comment/launch"]);
-    expect(readFileSync(boutonDeLaFiche, "utf8"))
+  const FICHE = path.join(SRC, "modules/aac/components/pageDetail");
+  const duModule = (fichier: string) => importsDe(path.join(FICHE, fichier)).filter(importe => importe.startsWith("@/modules/comment"));
+
+  it.each(["CommunDiscussionControl.tsx", "CommunMilestoneDiscussionButton.tsx"])(
+    "%s ne prend du module QUE cette entrée", fichier => {
+      expect(duModule(fichier)).toEqual(["@/modules/comment/launch"]);
+    });
+
+  it("la modale, elle, n'arrive que par un import différé — partagé par les boutons de la fiche", () => {
+    expect(duModule("communDiscussion.ts")).toEqual([]);
+    expect(readFileSync(path.join(FICHE, "communDiscussion.ts"), "utf8"))
       .toContain('lazy(() => import("@/modules/comment/components/panel/SpaceModal"))');
+    for (const fichier of ["CommunDiscussionControl.tsx", "CommunMilestoneDiscussionButton.tsx"]) {
+      expect(importsDe(path.join(FICHE, fichier))).toContain("./communDiscussion");
+    }
   });
 });

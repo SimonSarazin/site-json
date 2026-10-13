@@ -30,6 +30,7 @@ import { editorIdsOf, resolveEditorsQuestion } from "../lib/communEditors";
 import { CommunHero } from "../components/pageDetail/CommunHero.tsx";
 import { CommunDeleteControl } from "../components/pageDetail/CommunDeleteControl";
 import { CommunDiscussionControl } from "../components/pageDetail/CommunDiscussionControl";
+import { CommunMilestoneDiscussionButton } from "../components/pageDetail/CommunMilestoneDiscussionButton";
 import { CommunFinancingCard, type PostLoginIntent } from "../components/pageDetail/CommunFinancingCard.tsx";
 import { CommunTocNav, type TocSection } from "../components/pageDetail/CommunTocNav.tsx";
 import { CommunFinancingSection } from "../components/pageDetail/CommunFinancingSection.tsx";
@@ -637,6 +638,12 @@ export default function AacCommunDetailPage() {
                                     aacConfig={config}
                                     funding={targetResource}
                                     ctrl={objectivesCtrl}
+                                    // Un fil par palier, comme « Commenter » sur chaque carte de la
+                                    // liste des dépenses du legacy : il ouvre l'espace de discussion
+                                    // du commun (monté plus haut) sur le fil de la ligne.
+                                    renderMilestoneDiscussion={({ lineKey, name }) => (
+                                        <CommunMilestoneDiscussionButton answerId={answerId} lineKey={lineKey} name={name} />
+                                    )}
                                 />
                             </Section>
                         )}

@@ -5,6 +5,7 @@ import {
   creationErrorCodeOf,
   generalTarget,
   isSpaceType,
+  lineDiscussion,
   parseCreatedDiscussion,
   parseSpace,
   spaceKey,
@@ -258,6 +259,32 @@ describe("parseSpace", () => {
   });
 });
 
+describe("parseSpace — la ligne d'un fil de dépense", () => {
+  const depense = (over: Record<string, unknown>) => ligne({
+    key: `forms:${APPEL}:${DEPENSE}`, contextType: "forms", contextId: APPEL, path: DEPENSE, kind: "expense", ...over,
+  });
+  const lignesDe = (...fils: Record<string, unknown>[]) => parseSpace({ ...REPONSE, threads: fils }).threads.map(t => t.line);
+
+  it("lit la clé de la ligne — celle que la fiche connaît à son palier", () => {
+    expect(lignesDe(depense({ line: "1" }), depense({ line: "k-9_z" }))).toEqual(["1", "k-9_z"]);
+  });
+
+  it("un serveur plus ancien n'en envoie pas : le fil reste, sans ligne", () => {
+    const { threads } = parseSpace(REPONSE);
+    expect(threads[3]).toMatchObject({ kind: "expense", title: "Hébergement", line: null });
+  });
+
+  it("seule une ligne de dépense a une ligne : ailleurs le champ est ignoré", () => {
+    expect(lignesDe(ligne({ line: "1" }), ligne({ kind: "question", line: "1" }), ligne({ kind: "discussion", line: "1" }), ligne({ kind: "sondage", line: "1" })))
+      .toEqual([null, null, null, null]);
+  });
+
+  it.each([[1], [0], [""], ["a.b"], ["a b"], ["1\n"], [null], [undefined], [{ cle: "1" }], [["1"]], [true]])(
+    "écarte %p : une clé de ligne est un segment de chemin, en chaîne", line => {
+      expect(lignesDe(depense({ line }))).toEqual([null]);
+    });
+});
+
 describe("parseSpace — les audiences qu'on peut donner à une discussion qu'on crée", () => {
   const audiences = (valeur: unknown) => parseSpace({ ...REPONSE, creatableAudiences: valeur }).creatableAudiences;
 
@@ -302,7 +329,7 @@ describe("parseCreatedDiscussion", () => {
     expect(parseCreatedDiscussion({ result: true, thread: CREEE })).toEqual({
       key: `forms:${APPEL}:${CHEMIN}`, target: { type: "forms", id: APPEL, path: CHEMIN }, title: "Budget 2026",
       carrier: null, total: 0, unread: 0, last: null, mine: false, virtual: true,
-      kind: "discussion", group: null, audience: "authorAll",
+      kind: "discussion", group: null, audience: "authorAll", line: null,
     });
   });
 
@@ -425,5 +452,75 @@ describe("visibleSpaceThreads", () => {
   it("garde l'ordre reçu", () => {
     const inverse = [QUESTION_COMMENTEE, GENERAL_VIERGE];
     expect(visibleSpaceThreads(inverse, false)).toEqual(inverse);
+  });
+
+  // Arbitré le 12/10 : une ligne de dépense où personne n'a écrit se propose comme une question
+  // ouverte aux commentaires — pas seulement depuis son palier.
+  describe("une ligne de dépense", () => {
+    const LIGNE_VIERGE = fil({ key: "l1", kind: "expense", virtual: true, line: "0" });
+    const LIGNE_COMMENTEE = fil({ key: "l3", kind: "expense", total: 1, line: "2" });
+    const AVEC_LIGNES = [...TOUS, LIGNE_VIERGE, LIGNE_COMMENTEE];
+
+    it("où personne n'a écrit, se propose à qui peut écrire, à sa place dans la liste", () => {
+      expect(visibleSpaceThreads(AVEC_LIGNES, true)).toEqual(AVEC_LIGNES);
+    });
+
+    it("où personne n'a écrit, reste hors de la liste de qui ne peut pas écrire ; commentée, elle y est", () => {
+      expect(visibleSpaceThreads(AVEC_LIGNES, false).map(t => t.key)).toEqual([GENERAL_VIERGE.key, QUESTION_COMMENTEE.key, LIGNE_COMMENTEE.key]);
+    });
+  });
+});
+
+describe("lineDiscussion", () => {
+  const cible = (suffixe: string) => ({ type: "forms" as const, id: APPEL, path: `${DEPENSE}${suffixe}` });
+  const ligneDe = (cle: string, over: Partial<DiscussionThread> = {}) =>
+    fil({ key: `l-${cle}`, kind: "expense", target: cible(cle), line: "1", ...over });
+
+  it("sans fil pour la ligne : rien à ouvrir, rien à compter", () => {
+    expect(lineDiscussion([], "1")).toEqual({ target: null, total: 0, unread: 0 });
+    expect(lineDiscussion([ligneDe("a", { line: "2", total: 4 })], "1")).toEqual({ target: null, total: 0, unread: 0 });
+  });
+
+  it("un fil que personne n'a écrit : on y entre, compteurs à zéro", () => {
+    expect(lineDiscussion([ligneDe("a", { virtual: true })], "1")).toEqual({ target: cible("a"), total: 0, unread: 0 });
+  });
+
+  it("un fil écrit l'emporte sur un fil à lancer, quel que soit leur ordre", () => {
+    const ecrit = ligneDe("ecrit", { total: 2, unread: 1, last: 10 });
+    const aLancer = ligneDe("vierge", { virtual: true });
+    expect(lineDiscussion([aLancer, ecrit], "1")).toEqual({ target: cible("ecrit"), total: 2, unread: 1 });
+    expect(lineDiscussion([ecrit, aLancer], "1").target).toEqual(cible("ecrit"));
+  });
+
+  it("… même quand la date du fil écrit n'est pas connue", () => {
+    expect(lineDiscussion([ligneDe("vierge", { virtual: true }), ligneDe("ecrit", { total: 1 })], "1").target).toEqual(cible("ecrit"));
+  });
+
+  it("deux fils à lancer : le premier dans l'ordre du serveur — un second ne le déloge pas", () => {
+    expect(lineDiscussion([ligneDe("a", { virtual: true }), ligneDe("b", { virtual: true })], "1").target).toEqual(cible("a"));
+  });
+
+  it("deux fils écrits (un par liste, comme dans le legacy) : on entre dans le plus récent, et les compteurs s'additionnent", () => {
+    const ancien = ligneDe("depot", { total: 3, unread: 0, last: 100 });
+    const recent = ligneDe("financement", { total: 2, unread: 2, last: 200 });
+    expect(lineDiscussion([ancien, recent], "1")).toEqual({ target: cible("financement"), total: 5, unread: 2 });
+    expect(lineDiscussion([recent, ancien], "1")).toEqual({ target: cible("financement"), total: 5, unread: 2 });
+  });
+
+  it("à date égale ou absente, le premier dans l'ordre du serveur", () => {
+    expect(lineDiscussion([ligneDe("a", { total: 1, last: 50 }), ligneDe("b", { total: 1, last: 50 })], "1").target).toEqual(cible("a"));
+    expect(lineDiscussion([ligneDe("a", { total: 1 }), ligneDe("b", { total: 1 })], "1").target).toEqual(cible("a"));
+  });
+
+  it("ne retient que les fils de dépense de CETTE ligne", () => {
+    const fils = [
+      ligneDe("autre-ligne", { line: "10", total: 9 }),
+      ligneDe("zero-devant", { line: "01", total: 9 }),
+      fil({ key: "q", kind: "question", total: 9, line: "1" }),
+      fil({ key: "g", total: 9 }),
+      ligneDe("sans-ligne", { line: null, total: 9 }),
+      ligneDe("la-bonne", { total: 1, unread: 1, last: 5 }),
+    ];
+    expect(lineDiscussion(fils, "1")).toEqual({ target: cible("la-bonne"), total: 1, unread: 1 });
   });
 });

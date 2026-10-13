@@ -182,6 +182,12 @@ export interface DiscussionThread {
   readonly group?: string | null;
   /** Qui lit une discussion supplémentaire. `null` pour tout autre fil. */
   readonly audience?: SpaceAudience | null;
+  /**
+   * Pour une ligne de dépense : la CLÉ de la ligne dans la liste des dépenses du commun — ce qui
+   * permet à une fiche de retrouver le fil d'un palier qu'elle affiche. `null` pour tout autre fil,
+   * et pour une ligne d'une autre liste.
+   */
+  readonly line?: string | null;
 }
 
 /**

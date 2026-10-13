@@ -151,6 +151,17 @@ export function SpacePanel({ space, title, target, onSelect, scopeEntity, header
     : String(t(erreur === "hidden" ? "space.notFound" : errorLabelKey(erreur)));
   // Seule une panne mérite qu'on réessaie : un refus ne changera pas d'avis.
   const reessayable = erreur !== null && !isRefusalCode(erreur);
+  /**
+   * « Réessayer », posé dans les DEUX colonnes : sous 48 rem une seule est à l'écran, et un fil
+   * ouvert montre la sienne — la panne s'y lisait sans issue, le bouton resté dans la liste (vu au
+   * navigateur à 375 px, le 12/10). Celui du fil cède la place dès que les colonnes coexistent,
+   * comme la croix de l'en-tête.
+   */
+  const reessayer = (className?: string) => (
+    <Button variant="outline" size="sm" className={className} onClick={() => void query.refetch()}>
+      {String(t("thread.retry"))}
+    </Button>
+  );
   // Le serveur a dit à ce lecteur ce qu'il peut créer. Refusé ou sans liste, l'espace n'annonce
   // aucune audience (`useDiscussionSpaceQuery`) : il n'y a alors rien où créer.
   const peutCreer = query.creatableAudiences.length > 0;
@@ -216,11 +227,7 @@ export function SpacePanel({ space, title, target, onSelect, scopeEntity, header
             ? (
               <div className="text-muted-foreground flex flex-col items-start gap-2 p-4 text-sm" data-space-error={erreur}>
                 <p>{messageDErreur}</p>
-                {reessayable && (
-                  <Button variant="outline" size="sm" onClick={() => void query.refetch()}>
-                    {String(t("thread.retry"))}
-                  </Button>
-                )}
+                {reessayable && reessayer()}
               </div>
             )
             : (
@@ -262,7 +269,12 @@ export function SpacePanel({ space, title, target, onSelect, scopeEntity, header
           {!target
             ? <p className="text-muted-foreground p-4 text-sm">{String(t("panel.pickThread"))}</p>
             : messageDErreur
-            ? <p className="text-muted-foreground p-4 text-sm">{messageDErreur}</p>
+            ? (
+              <div className="text-muted-foreground flex flex-col items-start gap-2 p-4 text-sm">
+                <p>{messageDErreur}</p>
+                {reessayable && reessayer("@3xl/panneau:hidden")}
+              </div>
+            )
             : query.isLoading
             ? <p className="text-muted-foreground p-4 text-sm" aria-busy="true">{String(t("thread.loading"))}</p>
             : !ouvert
