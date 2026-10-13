@@ -68,7 +68,8 @@ src/modules/cagnotte/
 │   ├── PiggyBankHeaderButton.tsx       # Bouton piggy-bank header (montant live + dialog)
 │   │                                   #   ⚠️ jamais importé directement par un header : cf. le
 │   │                                   #   wrapper lazy src/components/layout/header/CagnotteHeaderButtons.tsx
-│   ├── PledgeHeaderButton.tsx          # Bouton « promesses » header (même wrapper lazy)
+│   ├── PledgeHeaderButton.tsx          # Bouton « promesses » header (même wrapper lazy) → PromessesDialog
+│   ├── PromessesDialog.tsx             # « Mes promesses de financement » : promesses à régler, paiements
 │   ├── ProjectsFinancingDisplay.tsx    # @deprecated PLACEHOLDER vide
 │   ├── parts/                          # Sous-composants de CagnotteDialog et des pages de paiement
 │   │   ├── CagnotteAmountPicker.tsx
@@ -78,6 +79,7 @@ src/modules/cagnotte/
 │   │   ├── CagnotteResourceSelector.tsx
 │   │   ├── CagnotteSuccessScreen.tsx
 │   │   ├── PaymentMethodPicker.tsx     # Choix du moyen parmi ceux de l'entité
+│   │   ├── CagnottePaymentsPanel.tsx   # Onglet « Paiements » : à rapprocher, historique, reprise
 │   │   ├── HelloAssoWaitingScreen.tsx  # Attente du checkout HelloAsso
 │   │   ├── HelloAssoInfo.tsx           # Rappel du déroulé HelloAsso
 │   │   └── PaymentRecordingScreen.tsx  # Paiement sans issue confirmée : reprise de l'enregistrement ou rejeu du débit
@@ -120,6 +122,7 @@ src/modules/cagnotte/
 │   ├── useHelloAssoCheckout.ts         # Checkout HelloAsso : popup + suivi jusqu'à l'enregistrement serveur
 │   ├── usePaymentSettlement.ts         # Issue de l'enregistrement serveur + reprise (`cagnotteSettle`)
 │   ├── useStripeCharge.ts              # Débit Stripe (`stripePay`) avec clé de tentative, rejeu sans double débit
+│   ├── useCagnotteBills.ts             # Query : factures de la cagnotte (`cagnotteBills`), toutes ou les siennes
 │   ├── usePaymentChoice.ts             # Moyen de paiement retenu (choix ou moyen unique)
 │   ├── useSaveCagnotteContribution.ts  # Promesse (`answer.addFinancer`)
 │   └── useUserAdminOrganizations.ts    # Query : orgs admin du user (filtre MongoDB)
@@ -149,6 +152,7 @@ src/modules/cagnotte/
 │
 ├── services/
 │   ├── fundingEnvelopeResponse.ts      # Réponse d'une action de paiement, erreur serveur levée, issue inconnue
+│   ├── cagnotteBills.ts                # Lecture des factures et de leur portée (`cagnotteBills`), factures à rapprocher
 │   ├── helloAssoCheckoutIntent.ts      # Lecture du checkout (`helloassoPay`) + ouverture de la popup
 │   ├── helloAssoVerification.ts        # Lecture du statut (`helloassoStatus`)
 │   ├── helloAssoService.ts             # validateHelloAssoConfig
@@ -404,6 +408,7 @@ Les **sections JSON** (`ActionsSection`, `FinanceSection`, etc.) ne sont **pas**
 | `useHelloAssoCheckout({ submit, onSettled })` | `start(amount, order, snapshot)` ouvre la popup pendant le clic, crée le checkout avec la commande, puis interroge `helloassoStatus` (toutes les 5 s, au retour sur la page et au message de la popup) jusqu'à l'enregistrement serveur. Phases `idle → opening → waiting → checking` ; tout arrêt (« Annuler », échec signalé par la popup, attente max 20 min) passe par une dernière vérification (`checking`), bornée à 150 s et qu'on peut cesser d'attendre (« Ne plus attendre ») : l'arrêt affiche alors la référence du checkout, le serveur enregistrera le paiement s'il a eu lieu. Une vérification sans réponse en 15 s compte comme une erreur sans bloquer les suivantes. Un `start` pendant un suivi est ignoré |
 | `usePaymentSettlement({ submit, onRecorded })` | `settled(résultat, snapshot)` : succès (`onRecorded`) si le serveur a enregistré, échec sinon ; `retry()` rejoue `cagnotteSettle` sur la même facture, jamais un nouveau paiement ; un enregistrement déjà en cours est signalé (`inProgress`), la référence du paiement conservée |
 | `useStripeCharge({ submit, stripe, storageKey, onSettled })` | `charge(payload, snapshot)` envoie `stripePay` avec une clé de tentative (`key`, 32 caractères hexadécimaux) ; sans réponse ou sur un 5xx, phase `unconfirmed` : plus de formulaire, `verify()` rejoue la même requête à l'identique et le serveur ne débite pas deux fois sous la même clé. Une authentification forte (`requires_action`) est menée par `stripe.handleNextAction` (`stripe` = le Stripe.js de l'entité), puis la même requête règle le paiement ; un refus d'authentification est un refus, une erreur de Stripe.js une issue inconnue. Un refus (4xx, ou erreur rendue par le serveur) rend la main ; la tentative suivante a une nouvelle clé. Débit confirmé : `onSettled(résultat, snapshot)`. Avec `storageKey` (par utilisateur et par ressource), une tentative sans issue connue est gardée dans `localStorage` 24 h (fenêtre d'idempotence Stripe) et revient en « non confirmé » à la réouverture |
+| `useCagnotteBills(filter)` | Factures de la cagnotte de l'entité du site (`cagnotteBills`, `filter` `attention` ou `all`) et leur portée (`scope`) : toutes pour un admin de l'entité, celles de l'utilisateur sinon ; onglet « Paiements » de `PromessesDialog`. Clé par utilisateur |
 | `usePaymentChoice(choices)` | Moyen retenu : le choix de l'utilisateur s'il est encore proposé, sinon le moyen unique (état dérivé, sans effet) |
 
 ### Context/Permissions/Guards
@@ -582,6 +587,7 @@ Parts des pages de paiement (`components/parts/`), partagés par `PaymentConfigP
 |---|---|
 | `PaymentMethodPicker.tsx` | Choix du moyen parmi `availablePaymentChoices` ; squelette au chargement, message si l'entité n'en a configuré aucun |
 | `HelloAssoWaitingScreen.tsx` | Attente du checkout HelloAsso ; pendant la dernière vérification (`checking`), « Ne plus attendre » arrête le suivi sans conclure |
+| `CagnottePaymentsPanel.tsx` | Onglet « Paiements » de « Mes promesses de financement » (`PromessesDialog`) : sous-onglets « À rapprocher » (encaissés sans enregistrement abouti) et « Historique », « Réessayer l'enregistrement » (`cagnotteSettle`). Un admin de l'entité du site voit tous les paiements de la cagnotte (colonne Payeur), un contributeur les siens. Consultation et reprise seulement |
 | `PaymentRecordingScreen.tsx` | Paiement sans issue confirmée, sans formulaire de paiement. `variant="unrecorded"` (défaut) : encaissé mais non enregistré — référence prestataire, erreur serveur ou enregistrement déjà en cours, et « Réessayer » (`cagnotteSettle`). `variant="unconfirmed"` : débit Stripe sans réponse — « Vérifier le paiement » rejoue la même requête (`useStripeCharge.verify`) |
 | `HelloAssoInfo.tsx` | Rappel du déroulé d'un paiement HelloAsso |
 
@@ -607,6 +613,19 @@ Comportement du bouton lui-même :
 - Affiche le montant `targetProject.totalFinancement` en temps réel (PiggyBank icon + montant en €)
 - Masqué si `me?.id` est nul (feature member-only, évite d'afficher "0 €" pour les anonymes)
 - Ouvre `<CagnotteDialog>` au clic avec `defaultResourceId` pré-sélectionné
+
+### `PledgeHeaderButton` et « Mes promesses de financement »
+
+`PledgeHeaderButton` (même wrapper lazy) est visible pour tout utilisateur connecté ; il affiche le reste
+à régler de ses promesses (`totalARegler`) quand il y en a un. Il ouvre `PromessesDialog`, en deux onglets :
+
+- « Promesses à régler » : promesses groupées par ressource ou par financeur, « Payer ma sélection »
+  (`PledgePaymentPage`) ;
+- « Paiements » (`parts/CagnottePaymentsPanel.tsx`) : factures `cagnotteBills`, « À rapprocher » et
+  « Historique ». Un admin de l'entité du site voit tous les paiements de la cagnotte, un contributeur
+  les siens (`scope: "mine"`, sans colonne Payeur).
+
+La modale s'ouvre sur les paiements quand il n'y a rien à régler.
 
 ### `CagnotteDialog` — parts supplémentaires
 
@@ -727,6 +746,7 @@ donc être le montant affiché (`roundToCents`, `montantARegler`). Un montant nu
 | `helloassoPay` | `amount`, `order` | `content: { id, redirectUrl }`, `bill` |
 | `helloassoStatus` | `checkoutIntentId` | `paid`, `recorded`, `inProgress`, `orderId`, `recordError` : règle la facture dès que HelloAsso a joint une commande au checkout ; checkout sans facture → « Paiement introuvable » |
 | `cagnotteSettle` | `bill` | comme `helloassoStatus` ; reprise après un enregistrement en échec (« Réessayer ») |
+| `cagnotteBills` | `filter` (`attention` \| `all`) | `bills` : factures de la cagnotte, plus récentes d'abord ; `scope` : `all` (admin de l'entité, toute la cagnotte) ou `mine` (factures de l'utilisateur). Non connecté → refus |
 
 `inProgress` : un autre appel règle la facture (verrou abandonné au bout de 120 s). Un prestataire
 injoignable rend `success: 0`.
@@ -790,7 +810,7 @@ n'écrit plus rien.
 - **Remboursements et contestations** : non gérés dans l'AAC. Ils se font chez le prestataire ; la
   cagnotte continue d'afficher le versement (montants surestimés, à corriger hors outil).
 - **Factures bloquées** : après 5 échecs d'enregistrement ou 24 h, `settleDue` ne les reprend plus ;
-  elles restent en échec, avec leur erreur.
+  elles restent dans « À rapprocher » (onglet « Paiements » de « Mes promesses »), avec leur erreur.
 - **Écritures concurrentes** : les écritures de `depense.<k>.financer` passent par une révision
   (`financerRev`) dans `Aap` ; les écritures faites ailleurs (éditeur de formulaire, actions de
   validation dédiées) ne la portent pas.
@@ -801,7 +821,7 @@ n'écrit plus rien.
 
 ## React Query
 
-8 clés (dont 4 préfixes pour invalidations) dans `constants/queryKeys.ts` :
+10 clés (dont 5 préfixes pour invalidations) dans `constants/queryKeys.ts` :
 
 | Key | Forme |
 |---|---|
@@ -813,6 +833,8 @@ n'écrit plus rien.
 | `PROJECT_MODAL_CAGNOTTE_PREFIX()` | `["projectModalCagnotte"]` |
 | `COMMUN_RAW_DEPENSES(answerId, step)` | `["aac-milestone-list-depenses", answerId, step]` |
 | `COMMUN_RAW_DEPENSES_PREFIX(answerId)` | `["aac-milestone-list-depenses", answerId]` (l'étape, 3ᵉ segment, est couverte par le préfixe) |
+| `CAGNOTTE_BILLS(entityId, userId, filter)` | `["cagnotte-bills", entityId, userId, filter]` (la liste dépend de l'utilisateur) |
+| `CAGNOTTE_BILLS_PREFIX()` | `["cagnotte-bills"]` (invalidé après une reprise) |
 
 **`COMMUN_RAW_DEPENSES`** est le `answers.<step>.depense` d'une réponse **tel que le document le
 porte** — la seconde entrée de cache (staleTime 60 s) par laquelle la fiche commun et
@@ -1023,8 +1045,10 @@ Le module suppose que le CoForm cible contient `answers.aapStep1.depense[]`. Pou
    - `lib/actionIdResolvers.test.ts`
 
    Le paiement est couvert par des tests de hooks et de composants (`hooks/useHelloAssoCheckout.test.ts`,
-   `hooks/usePaymentSettlement.test.ts`, `hooks/useStripeCharge.test.ts`, `components/PaymentConfigPage.test.tsx`,
+   `hooks/usePaymentSettlement.test.ts`, `hooks/useStripeCharge.test.ts`, `services/cagnotteBills.test.ts`,
+   `components/parts/CagnottePaymentsPanel.test.tsx`, `components/PaymentConfigPage.test.tsx`,
    `components/PledgePaymentPage.test.tsx`, `components/PromessesDialog.test.tsx`,
+   `components/PledgeHeaderButton.test.tsx`,
    `components/parts/PledgeFundingToast.test.tsx`), backend mocké à la frontière `fundingEnvelope`.
 
    Manquent encore : tests d'intégration des factories de mutations, E2E du flux contribution

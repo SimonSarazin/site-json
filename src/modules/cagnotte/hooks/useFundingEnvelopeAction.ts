@@ -5,7 +5,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import type { UnknownRecord } from "@/modules/cagnotte/utils/dataTransform";
 import { readFundingEnvelopeError, readFundingEnvelopeResponse } from "@/modules/cagnotte/services/fundingEnvelopeResponse";
 
-export type FundingEnvelopeAction = "stripePay" | "helloassoPay" | "helloassoStatus" | "cagnotteSettle";
+export type FundingEnvelopeAction = "stripePay" | "helloassoPay" | "helloassoStatus" | "cagnotteSettle" | "cagnotteBills";
 
 export type SubmitFundingEnvelopeAction = (
   action: FundingEnvelopeAction,

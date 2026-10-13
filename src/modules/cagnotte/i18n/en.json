@@ -613,7 +613,11 @@
           "for": "For",
           "totalSelectedLabel": "Total selected",
           "PaySelected": "Pay my selection",
-          "return": "Return to crowdfunding"
+          "return": "Return to crowdfunding",
+          "tabs": {
+            "pledges": "Pledges to pay",
+            "payments": "Payments"
+          }
         },
         "payment": {
           "title": "Pledge payment"
@@ -806,7 +810,44 @@
     },
     "pledge": {
       "aria": "View pledges",
-      "tooltip": "View and pay my pending pledges"
+      "tooltip": "My pledges to pay and my payments"
+    }
+  },
+  "PaymentsPanel": {
+    "scope": {
+      "all": "All Stripe and HelloAsso payments received by the fundraiser.",
+      "mine": "Your Stripe and HelloAsso payments to the fundraiser."
+    },
+    "description": "“To reconcile” lists the payments collected whose recording did not complete: “Retry” records them again, without charging again.",
+    "tabs": {
+      "attention": "To reconcile",
+      "all": "History"
+    },
+    "columns": {
+      "date": "Date",
+      "payer": "Payer",
+      "amount": "Amount",
+      "provider": "Method",
+      "status": "Status",
+      "reference": "Reference"
+    },
+    "status": {
+      "settled": "Recorded",
+      "unrecorded": "Collected, not recorded",
+      "settling": "Recording in progress",
+      "pending": "Awaiting payment",
+      "expired": "Not paid",
+      "unknown": "Unknown"
+    },
+    "retry": "Retry recording",
+    "loading": "Loading payments…",
+    "emptyAttention": "No payment to reconcile.",
+    "emptyAll": "No payment yet.",
+    "inProgress": "This payment is already being recorded. Try again in a moment.",
+    "notPaid": "The provider does not confirm this payment.",
+    "toasts": {
+      "recorded": "Payment recorded",
+      "notRecorded": "Payment not recorded"
     }
   },
   "PaymentReceivedScreen": {

@@ -613,7 +613,11 @@
           "for": "Pour",
           "totalSelectedLabel": "Total sélectionné",
           "PaySelected": "Payer ma sélection",
-          "return": "Retour à la cagnotte"
+          "return": "Retour à la cagnotte",
+          "tabs": {
+            "pledges": "Promesses à régler",
+            "payments": "Paiements"
+          }
         },
         "payment": {
           "title": "Paiement des promesses"
@@ -806,7 +810,44 @@
     },
     "pledge": {
       "aria": "Voir les promesses",
-      "tooltip": "Voir et payer mes promesses en cours"
+      "tooltip": "Mes promesses à régler et mes paiements"
+    }
+  },
+  "PaymentsPanel": {
+    "scope": {
+      "all": "Tous les paiements Stripe et HelloAsso reçus par la cagnotte.",
+      "mine": "Vos paiements Stripe et HelloAsso à la cagnotte."
+    },
+    "description": "« À rapprocher » liste les paiements encaissés dont l'enregistrement n'a pas abouti : « Réessayer » relance l'enregistrement, sans nouveau débit.",
+    "tabs": {
+      "attention": "À rapprocher",
+      "all": "Historique"
+    },
+    "columns": {
+      "date": "Date",
+      "payer": "Payeur",
+      "amount": "Montant",
+      "provider": "Moyen",
+      "status": "Statut",
+      "reference": "Référence"
+    },
+    "status": {
+      "settled": "Enregistré",
+      "unrecorded": "Encaissé, non enregistré",
+      "settling": "Enregistrement en cours",
+      "pending": "En attente du paiement",
+      "expired": "Non payé",
+      "unknown": "Inconnu"
+    },
+    "retry": "Réessayer l'enregistrement",
+    "loading": "Chargement des paiements…",
+    "emptyAttention": "Aucun paiement à rapprocher.",
+    "emptyAll": "Aucun paiement pour l'instant.",
+    "inProgress": "Un enregistrement de ce paiement est déjà en cours. Réessayez dans un instant.",
+    "notPaid": "Le prestataire ne confirme pas ce paiement.",
+    "toasts": {
+      "recorded": "Paiement enregistré",
+      "notRecorded": "Paiement non enregistré"
     }
   },
   "PaymentReceivedScreen": {

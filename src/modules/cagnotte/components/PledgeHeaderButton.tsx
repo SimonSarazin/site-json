@@ -53,8 +53,9 @@ export function PledgeHeaderButton() {
     // Total à régler, affiché sur le bouton.
     const totalPledgesAmount = useMemo(() => totalARegler(computedPledges), [computedPledges]);
 
-    if (!me?.id || totalPledgesAmount === 0) return null;
-    
+    // Visible même sans reste à régler : la modale donne aussi accès aux paiements.
+    if (!me?.id) return null;
+
     return (
         <>
             <Tooltip>
@@ -65,13 +66,15 @@ export function PledgeHeaderButton() {
                         aria-label={String(t("HeaderButtons.pledge.aria", "Voir les promesses"))}
                     >
                         <CreditCard className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                        <span className="font-semibold text-sm">
-                            {totalPledgesAmount.toLocaleString("fr-FR")} €
-                        </span>
+                        {totalPledgesAmount > 0 && (
+                            <span className="font-semibold text-sm">
+                                {totalPledgesAmount.toLocaleString("fr-FR")} €
+                            </span>
+                        )}
                     </button>
                 </TooltipTrigger>
                 <TooltipContent>
-                    <p>{t("HeaderButtons.pledge.tooltip", "Voir et payer mes promesses en cours")}</p>
+                    <p>{t("HeaderButtons.pledge.tooltip", "Mes promesses à régler et mes paiements")}</p>
                 </TooltipContent>
             </Tooltip>
 
