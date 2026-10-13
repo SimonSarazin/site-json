@@ -274,27 +274,30 @@ const CagnotteDialogContent = ({
     const cagnotteCtx = useCagnotteContextSafe();
     void cagnotteCtx; // unused pour l'instant — placeholder pour usage futur
 
-    // Ids de toutes les ressources (mémoïsé — évite de re-parcourir `resources` à
-    // chaque render, cf. getEntityId dans dataTransform.ts pour les formes d'id gérées).
-    const allResourcesIds = useMemo(
-        () =>
-            resources
-                .flatMap((p) => [
-                    getEntityId(p.id),
-                    getEntityId(p.projectId),
-                    getEntityId(p.answerId),
-                    getEntityId((p as { _id?: unknown })._id)
-                ])
-                .filter(Boolean),
-        [resources]
+    // Alias (id, projectId, answerId, _id) → id canonique de la ressource. La sélection
+    // stocke toujours ce dernier : c'est la valeur des options du sélecteur et la clé
+    // de `savedSelectedResource` (sinon `canContribute` reste faux).
+    const canonicalIdByAlias = useMemo(() => {
+        const map = new Map<string, string>();
+        for (const p of resources) {
+            const canonical = getEntityId(p.id);
+            if (!canonical) continue;
+            for (const alias of [p.id, p.projectId, p.answerId, (p as { _id?: unknown })._id]) {
+                const cleaned = getEntityId(alias);
+                if (cleaned && !map.has(cleaned)) map.set(cleaned, canonical);
+            }
+        }
+        return map;
+    }, [resources]);
+
+    const resolveResourceId = useCallback(
+        (id: unknown) => canonicalIdByAlias.get(getEntityId(id)) ?? "",
+        [canonicalIdByAlias]
     );
 
     const isValidResourceId = useCallback(
-        (id: unknown) => {
-            const cleaned = getEntityId(id);
-            return !!cleaned && allResourcesIds.includes(cleaned);
-        },
-        [allResourcesIds]
+        (id: unknown) => !!resolveResourceId(id),
+        [resolveResourceId]
     );
 
     // Sélectionner le projet avec priorité au contexte d'ouverture.
@@ -302,12 +305,12 @@ const CagnotteDialogContent = ({
     // pour éviter `react-hooks/set-state-in-effect` warning.
     // Cf. https://react.dev/reference/react/useState#storing-information-from-previous-renders
     if (resources.length > 0) {
-        const targetId = isValidResourceId(forcedResourceId) ? getEntityId(forcedResourceId)
+        const targetId = isValidResourceId(forcedResourceId) ? resolveResourceId(forcedResourceId)
                        // Une ressource forcée mais absente ne retombe sur AUCUNE autre.
                        : forcedResourceId ? ""
-                       : isValidResourceId(selectedResourceId) ? getEntityId(selectedResourceId)
-                       : isValidResourceId(defaultResourceId) ? getEntityId(defaultResourceId)
-                       : (allResourcesIds[0] || "");
+                       : isValidResourceId(selectedResourceId) ? resolveResourceId(selectedResourceId)
+                       : isValidResourceId(defaultResourceId) ? resolveResourceId(defaultResourceId)
+                       : (canonicalIdByAlias.values().next().value ?? "");
 
         if (targetId !== getEntityId(selectedResourceId)) {
             setSelectedResourceId(targetId);
@@ -405,7 +408,8 @@ const CagnotteDialogContent = ({
     const currentResourceModalId = optimisticResourceModalId
         || normalizeIdOrNull(draftPreferencesData?.projectModalId)
         || normalizeIdOrNull(serverPreferencesData?.projectModalId);
-    const isCurrentResourceModalId = !!selectedResourceId && !!currentResourceModalId && selectedResourceId === currentResourceModalId;
+    const isCurrentResourceModalId = !!selectedResourceId && !!currentResourceModalId
+        && selectedResourceId === (resolveResourceId(currentResourceModalId) || currentResourceModalId);
 
     const predefinedAmounts = siteConfig?.config?.cagnotteModuleConfig?.predefinedAmounts || cagnotteConfig?.defaultPredefinedAmounts || [10, 20, 30, 50];
 
