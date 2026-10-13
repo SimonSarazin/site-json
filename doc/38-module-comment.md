@@ -203,13 +203,16 @@ src/modules/comment/
 │   ├── filKey.ts           lien profond (lecture/écriture du paramètre d'URL)
 │   ├── resolveTarget.ts    (type, id) → méthode d'`api`
 │   ├── optimistic.ts       nœud en cours d'envoi + règle « peut-être écrit »
-│   ├── composerText.ts     marques, curseur, détection du `@`, touche Entrée
+│   ├── markdownEngine.ts   LE réglage de `markdown-it`, pour le fil et pour l'éditeur (§18)
+│   ├── commentProse.ts     les classes de mise en forme d'un message, partagées de même
+│   ├── richText/           le schéma de l'éditeur, le pont éditeur ⇄ markdown, l'adresse d'un lien (§18)
 │   ├── linkifyMentions.ts  `@slug` → lien, et charge utile `mentions[]`
 │   ├── formatWhen.ts       heure, séparateur de jour, « aujourd'hui » / « hier »
 │   └── voters.ts           normalisation de `SHOW_VOTE`
 ├── hooks/           useCommentsQuery · useCommentMutations · useCommentVoters ·
 │                    useCommentPermissions
-├── components/      CommentThread · CommentRow · CommentMarkdown · CommentComposer ·
+├── components/      CommentThread · CommentRow · CommentMarkdown · CommentComposer (la coquille) ·
+│                    editor/ (l'éditeur, chargé côté client — §18) ·
 │                    ReactionPills · ReactionPicker · VotersDialog · ContextQuote ·
 │                    MessageActions · ThreadSeparators · ReportCommentDialog
 └── permissions/     namespace « comment »
@@ -351,7 +354,7 @@ l'édition, et son compteur suit **l'affichage** plutôt que le nombre de docume
 | B3 | Mentions limitées aux citoyens | `searchMembers` en `personOnly` | Citoyens seuls |
 | B6 | Pas de filtre `path` **en lecture** | `GET_COMMENTS` n'a pas de bloc `request` | Filtrage côté client ; l'endpoint générique portera le filtre serveur |
 | B10 | L'édition d'un message n'est pas tracée | Mesuré (voir §7) | Aucune marque « modifié » — mieux vaut ne rien dire qu'affirmer faux |
-| B11 | La saisie montre la syntaxe markdown, elle ne l'interprète pas | Composer maison sur `<textarea>` (§5.5) | Assumé le 24/09 : un éditeur **WYSIWYG** est un lot à part, cadré au registre — la valeur stockée reste du markdown dans les deux cas |
+| ~~B11~~ | ~~La saisie montre la syntaxe markdown, elle ne l'interprète pas~~ | Composer maison sur `<textarea>` jusqu'au 13/10 | **Levé le 13/10** : le composer écrit dans un éditeur qui montre la mise en forme (§18) — la valeur stockée reste du markdown |
 | B12 | Le panneau n'est atteignable que par `/discussions` | Aucun point d'entrée n'a été posé dans le chrome du site | Décidé le 24/09 : **pas maintenant**. L'API est prête — `DiscussionModal`, `useDiscussionLauncher` et `useDiscussionUnread` sont exportés, ce dernier sans requête supplémentaire |
 
 ## 9. Panneau « Discussions » — endpoint `discussions`
@@ -1513,6 +1516,9 @@ jusqu'au 28/09 affichée en permanence *en flottant*, une par message, par-dessu
 Taper `@` ouvrait une liste qu'un lecteur d'écran ne mentionnait jamais, et les flèches y
 déplaçaient une surbrillance annoncée nulle part.
 
+> Depuis le 13/10 le champ n'est plus un `<textarea>` mais un éditeur (§18.6) : son rôle `textbox`
+> est posé explicitement, les attributs décrits ici sont les mêmes.
+
 **Première tentative, écartée en revue** : poser `role="combobox"` sur le `<textarea>`, comme le
 fait [`coform/TagsField`](../src/modules/coform/components/TagsField.tsx). Mais là-bas c'est un
 `<input>` : *ARIA in HTML* n'autorise **aucun rôle de remplacement** sur un `<textarea>`, et le
@@ -1597,7 +1603,7 @@ voisine.
 | Quoi | Preuve |
 |---|---|
 | Règle de navigation | `CommentThread.test.tsx` — **7 tests**, dont le COMPTE d'arrêts de tabulation |
-| Câblage ARIA du champ | `CommentComposer.test.tsx` — la liste fermée ne pointe aucun `aria-activedescendant`, et le rôle de remplacement ne revient pas |
+| Câblage ARIA du champ | `CommentComposer.test.tsx` — la liste fermée ne pointe aucun `aria-activedescendant` ; depuis le 13/10 le champ est un éditeur, dont le rôle `textbox` est posé explicitement (§18.5) |
 | Comportement réel | `commentaire/module-comment/verif-j12.mjs` — **21 contrôles**, session connectée ; opacité, anneau et déplacements de focus lus dans le style **calculé** et l'`activeElement` réels |
 
 Chaque contrôle de la sonde est **positif** : il exige d'abord de trouver de quoi mesurer (un rail
@@ -1611,7 +1617,7 @@ vides avaient tout rendu vert sans rien mesurer.
 |---|---|---|
 | Une ligne de message était nommée par un `aria-label` (« Message de X, quand ») qui **remplaçait** son contenu : le lecteur d'écran ne lisait jamais le texte | `aria-labelledby` = cette phrase, invisible, **puis** le texte | `CommentRow.test.tsx` |
 | Flèches, Début, Fin posaient le focus **sans défiler** | `scrollIntoView({ block: "nearest" })` ; le saut vers un message cité le centre, animé sauf `prefers-reduced-motion` | `CommentThread.test.tsx` |
-| La barre de mise en forme n'appliquait qu'au `mouseDown` : morte au clavier, libellés anglais, exemples insérés en français | `onClick` applique (Entrée, Espace), `onMouseDown` ne fait que garder le focus ; libellés et exemples traduits (`composer.marks.*`) | `CommentComposer.test.tsx` |
+| La barre de mise en forme n'appliquait qu'au `mouseDown` : morte au clavier, libellés anglais, exemples insérés en français | `onClick` applique (Entrée, Espace), `onMouseDown` ne fait que garder le focus ; libellés traduits (`composer.marks.*`) — les exemples insérés ont disparu avec l'éditeur du 13/10, où une marque s'active sans rien insérer (§18) | `CommentComposer.test.tsx` |
 | Les non-lus du rail n'étaient pas annoncés, et « 1 non lus » | dans le nom accessible de la rangée, en phrase entière par langue (`panel.carrierUnread`) ; pluriel i18next ; pastille d'un fil lue à la voix, chiffre caché | `CarrierRail.test.tsx` |
 | La modale n'avait pas de description | `DialogDescription` invisible | `DiscussionModal.test.tsx` |
 | Un visiteur anonyme lisait le fil sans rien qui l'invite à répondre | `LoginToParticipate` à la place du composer | `CommentThread.test.tsx` |
@@ -1723,8 +1729,9 @@ images (`Comment::insert` l'accepte explicitement).
 | `components/CommentImages.tsx` | Le rendu dans le fil et la visionneuse |
 | `CommentComposer` | **Ne sait rien du téléversement** : il reçoit des aperçus et deux rappels |
 
-Ce découpage répond à une contrainte connue : **le composer sera remplacé par un vrai éditeur**
-(Tiptap ou Lexical, blocage B11). Seule la dernière ligne du tableau disparaîtra alors.
+Ce découpage répondait à une contrainte connue : le composer devait être remplacé par un vrai
+éditeur. C'est fait (§18), et seule la dernière ligne du tableau a changé : la coquille du composer
+garde les aperçus et les deux rappels, l'éditeur lui remet les images collées ou déposées.
 
 **Le client est plus étroit que le serveur, et c'est lui qui refuse.** `BaseEntity._validateImage`
 n'admet que `image/jpeg`, `image/jpg` et `image/png`, là où le backend accepte aussi gif et webp.
@@ -2728,6 +2735,156 @@ dans la nuit du 12 au 13/10.
 - **Le formulaire de dépôt** (la liste des paliers en saisie) ne porte pas le bouton : la
   discussion s'ouvre depuis la fiche.
 - Le bloc « Suivi des actions » liste les mêmes paliers sans le bouton : une entrée par palier.
+
+## 18. L'éditeur du composer (13/10)
+
+> Le blocage B11 est levé : on voit la mise en forme en l'écrivant. Ce qui s'enregistre ne change
+> pas — du markdown, le texte que le fil rend et que le legacy stocke. Les propriétés de
+> `CommentComposer` sont les mêmes : aucun hôte n'a été touché.
+
+### 18.1 Ce qui change pour qui écrit
+
+- **La mise en forme se voit.** Gras, italique, barré, code, lien, citation, liste à puces, liste
+  numérotée, bloc de code : neuf boutons, qui disent leur état (`aria-pressed`) et suivent le
+  curseur. Les raccourcis du clavier (Ctrl+B, Ctrl+I…) et ceux qu'on tape (`**gras**`,
+  `*italique*`, `~~barré~~`, `` `code` ``, `- `, `1. `, `> `, trois accents graves) marchent aussi.
+- **Entrée envoie, Maj+Entrée passe à la ligne** — comme avant. Deux exceptions : dans une liste
+  ou un bloc de code, Entrée garde son sens (l'élément suivant, la ligne suivante) ; et **sur un
+  écran tactile, Entrée passe à la ligne**, le message part par son bouton — il n'y a pas de
+  Maj+Entrée sous le pouce.
+- **Une mention est un objet du texte.** `@` et deux lettres ouvrent la liste des personnes ; la
+  mention choisie s'affiche par son NOM, comme le fil l'affichera, et se retire d'un bloc. Elle
+  part en `@slug`, avec la personne — et seulement si elle est encore dans le texte à l'envoi.
+- **Un lien se pose par une adresse.** Le bouton ouvre un champ, pas un dialogue de plus ; le
+  protocole qu'on n'écrit jamais est complété (`exemple.org` → `https://exemple.org`, un courriel
+  → `mailto:`) ; seuls `http`, `https` et `mailto` passent. Dans un lien, le champ reprend son
+  adresse et offre de le retirer. Une adresse tapée ou collée devient un lien d'elle-même.
+- **Coller du texte, c'est le relire comme le fil le lira** : une liste collée reste une liste.
+  Coller ou déposer une image en fait une pièce jointe, jamais du texte.
+- **Corriger un message** l'ouvre tel que le fil le rend, mentions comprises ; renvoyé sans y
+  toucher, il repart à la lettre.
+
+### 18.2 Les pièces
+
+| Pièce | Rôle |
+|---|---|
+| `components/CommentComposer.tsx` | La **coquille** : bandeau « réponse à », barre d'outils, images, phrases d'état, envoi. Elle n'importe rien de l'éditeur |
+| `components/editor/EditorSurface.tsx` | L'**éditeur** (Tiptap) : la zone où l'on écrit, la liste des mentions, le clavier, le collage |
+| `components/editor/editorStore.ts` | Le **chargement** de l'éditeur, une fois pour l'onglet, côté client seulement |
+| `components/editor/editorTypes.ts` | Ce que la coquille et l'éditeur se disent : la liste des mises en forme, l'état, la poignée |
+| `lib/richText/extensions.ts` | Le **schéma** d'un message : ce que le markdown du fil sait écrire, rien de plus |
+| `lib/richText/markdownBridge.ts` | Le **pont** : le texte d'un message → le document de l'éditeur, et retour |
+| `lib/richText/linkAddress.ts` | L'adresse tapée dans le champ « lien » → celle qu'on enregistre |
+| `lib/markdownEngine.ts` | **Le** réglage de `markdown-it`, pour le fil qui rend et pour l'éditeur qui relit |
+| `lib/commentProse.ts` | Les classes de mise en forme d'un message, pour le fil et pour l'éditeur |
+
+**La coquille et l'éditeur ne se parlent que par une poignée** (`EditorSurfaceHandle` : basculer
+une mise en forme, poser un lien, insérer un émoji, lire ce qui partirait, vider) et un rappel
+d'état (vide ou non, marques actives). L'envoi et ses retenues — message vide, téléversement en
+cours, image en échec — restent dans la coquille, d'où qu'il vienne : le bouton, ou Entrée.
+
+**L'éditeur n'entre ni dans le rendu serveur ni dans le démarrage d'une page.** Son code est
+demandé au montage du premier composer de l'onglet, puis gardé. Un magasin de module lu par
+`useSyncExternalStore`, plutôt qu'un chargement différé sous `Suspense` : au serveur il vaut
+toujours « pas encore là » — même balisage des deux côtés —, et tout composer monté ensuite le
+trouve tout de suite. D'ici là la coquille montre un champ inerte de même allure, barre et envoi
+fermés ; si le code n'arrive pas, elle le dit et offre de le redemander.
+
+**Dépendances ajoutées** (versions épinglées dans `package.json`) : `@tiptap/core`,
+`@tiptap/react`, `@tiptap/pm`, `@tiptap/starter-kit`, `@tiptap/extension-mention`,
+`@tiptap/extensions`, `@tiptap/suggestion` en 3.31.4, et `prosemirror-markdown` en 1.13.8. La
+feuille de style de l'éditeur n'est pas injectée dans la page : ses quelques règles vivent dans
+`styles.css`, avec le reste du module.
+
+### 18.3 Le pont markdown
+
+Sa règle, que les tests rejouent cas par cas avec le moteur du fil pour juge : **ce que rend le
+texte sorti est ce que montrait l'éditeur.**
+
+- **Relire** : `markdown-it` réglé comme le fil (`createCommentMarkdown`), plus une règle qui fait
+  un nœud de chaque `@slug` que porte le message — la même que le fil : le plus long slug d'abord,
+  ni lettre ni tiret derrière, jamais dans du code. La règle des tableaux est coupée dans
+  l'éditeur seulement : il n'a pas de nœud pour eux, leur source reste du texte.
+- **Écrire** : ce qu'on a TAPÉ ne doit pas devenir autre chose. Entrée envoyant, un message de
+  plusieurs lignes est un seul paragraphe coupé de sauts : chaque ligne est échappée comme un
+  début de ligne (tiret, `+`, chevron, croisillon, « 1. », « 1) » — seuls sur leur ligne aussi).
+  S'y ajoutent les signes qui ouvriraient une marque, les entités (`&amp;` tapé reste cinq
+  caractères), les chevrons d'un lien automatique, les espaces de tête qui feraient un bloc de
+  code. La bibliothèque de sérialisation ne suffisait pas : sa règle laissait `__init__` sortir en
+  italique, et « 1. » seul ouvrir une liste vide.
+- **Une adresse tapée sans être un lien** — Entrée envoie avant que l'éditeur l'ait liée — sort
+  telle quelle : le fil la lie en lisant la source, signe pour signe, et une barre oblique inverse
+  posée devant un `~` ou un `_` partirait dans le lien. Elle est cherchée comme le fil la cherche
+  (le protocole devant `://`, puis ce que `linkify` lit) ; suivie d'un signe échappé, elle s'écrit
+  entre chevrons, où elle s'arrête où elle doit.
+- **Un lien** s'écrit par son texte seul quand le fil le referait de lui-même (une adresse,
+  `www.…`, un courriel) et que rien ne s'y colle ; sinon entre chevrons ; sinon `[texte](adresse)`.
+  C'est le rendu du fil qui en juge, pas une règle tenue à côté.
+
+### 18.4 Le clavier, et Échap dans une modale
+
+- Le clavier de l'éditeur passe **après** la suggestion de mention — qui capte Entrée, Tab et les
+  flèches tant que sa liste est ouverte — et **avant** les raccourcis du kit, sans quoi Entrée
+  couperait le paragraphe.
+- **Échap se traite hors de l'éditeur**, en capture, sur son conteneur : refermer la liste de
+  mentions, sinon annuler l'édition, sinon rien. Dans la modale des discussions, pour ne pas se
+  fermer, la modale neutralise la touche (§10) — or l'éditeur ignore une touche déjà neutralisée :
+  ni la liste ni l'édition ne se refermaient (vu au navigateur le 13/10). Traitée, la touche ne
+  descend pas plus bas.
+- **Les marques tapées suivent le markdown du fil**, pas le kit : le texte marqué ne commence ni ne
+  finit par une espace. Le kit mettait en italique le « 3 » de « 2 * 3 * 4 ». Ses règles de
+  collage sont coupées pour la même raison : ce qu'on colle est déjà relu comme du markdown.
+
+### 18.5 Accessibilité
+
+Le champ est une zone éditable : son rôle `textbox` est posé explicitement, avec
+`aria-multiline`, un nom (ce qu'on y fait : écrire, répondre à quelqu'un, corriger), une
+description de la mise en forme et du rôle d'Entrée, et les attributs de la liste de mentions
+(§12.3) — `aria-controls` et `aria-activedescendant` seulement quand elle est ouverte. Le texte
+d'attente est une décoration, jamais du texte du message. Les boutons de la barre sont des
+bascules ; cliquer l'un d'eux ne prend pas le focus au champ. Refermé, le champ d'adresse d'un lien
+rend le focus au texte.
+
+### 18.6 Preuves
+
+Du 13/10, sur le code décrit ici.
+
+| Quoi | Résultat |
+|---|---|
+| Tests unitaires | 272 tests dans huit fichiers, dont six nouveaux ; ils en remplacent 63 (l'ancien champ et ses manipulations de texte). Le pont : 93 — allers-retours et documents « tapés », jugés par le rendu du fil ; le composer avec le vrai éditeur : 109 ; la coquille seule, l'éditeur remplacé par un témoin : 31 ; l'adresse d'un lien : 23 ; le chargement : 7 ; le graphe des imports : 5 |
+| … ce que **coûte** l'éditeur | le graphe des imports statiques de l'entrée du module, lu dans les sources : ni Tiptap ni ProseMirror, une seule porte — l'import différé du magasin ; et au rendu serveur le composer écrit son champ d'attente, rien de l'éditeur, même quand son code est déjà chargé |
+| … **Échap dans une modale** | la modale est rejouée par ce qu'elle fait à la touche : un écouteur en capture qui la neutralise. L'édition s'annule et la liste de mentions se referme quand même |
+| Le pont, essayé sur près de deux cents textes tapés | signes du markdown, marqueurs de liste, entités, adresses suivies ou entourées de signes : les écarts trouvés — souligné doublé, « 1. » seul, adresse à tilde ou à souligné — sont corrigés et devenus des tests |
+| Contre-épreuve par mutation, sur des copies | 175 mutations en onze lots, toutes tuées. Au premier passage 171 l'étaient ; les cinq survivantes ont donné trois tests de plus et retiré deux redondances du code, puis les lots touchés ont été rejoués : 114 sur 114 |
+| Navigateur, compte connecté sans rôle sur le commun, 1 440 puis 375 px, aucune écriture | 44 vérifications à chaque largeur : le champ et sa boîte, la frappe, Maj+Entrée, la barre et son état, « - » qui ouvre une liste, le champ d'adresse d'un lien, un collage relu comme du markdown, la liste des mentions sur une vraie recherche, Échap qui la referme sans fermer la modale, le markdown qui partirait (l'envoi reçoit un refus de la sonde avant le serveur) et le brouillon rendu, un message rouvert en correction puis renvoyé à la lettre, Échap qui annule l'édition. Aucune feuille de style ajoutée à la page |
+| Navigateur, écriture réelle par le déposant sur son commun, 1 440 px | 44 vérifications : un message mis en forme est posté depuis un palier — en base, c'est du markdown au chemin de la ligne ; le fil le rend comme on l'a écrit ; corrigé par l'interface, seul le mot ajouté change en base. Aucun courriel mis en file. Le document de l'appel, relevé par son contenu (§15.7), est remis à son état d'avant |
+
+### 18.7 Limites
+
+- **Un tableau tapé devient un tableau.** L'éditeur n'en a pas le nœud : la source d'un tableau y
+  reste du texte, et ressort telle quelle — le fil, lui, la rend toujours en tableau. C'est aussi
+  ce qui garde intact un message legacy qui en porte un.
+- **Une marque bordée d'une ponctuation collée à une lettre ne se relit pas** (`**gras.**suite`) :
+  c'est la règle du markdown lui-même. Avec une espace, ou la ponctuation hors de la marque, elle
+  se relit.
+- **Deux sauts de ligne de suite** deviennent un changement de paragraphe à la relecture, et les
+  espaces de tête d'une ligne ne sont pas gardées — comme avec l'ancien champ.
+- **Ni titre, ni souligné, ni image dans le texte** : le fil ne les rend pas (§5.5), l'éditeur ne
+  les propose pas.
+- **`__nom__` tapé passe en gras**, comme le markdown le lirait. Collé, ou écrit puis annulé d'un
+  Ctrl+Z, il reste du texte.
+- **Un lien sans protocole dont l'adresse porte `_x_` ou `~`** garde son texte, mais le fil n'en
+  lie que le début : il lit les marques avant de chercher les adresses.
+- **Un envoi dont l'issue est incertaine** (réseau coupé) ne rend pas le brouillon — règle
+  antérieure du fil (§10) : le serveur a peut-être écrit. Seul un refus net le rend.
+- **L'éditeur indisponible, on ne peut pas écrire** : la coquille le dit et offre de le
+  redemander, mais il n'y a pas de champ de secours.
+- **Non mesuré** : le poids du morceau de l'éditeur sur un build de production — la preuve du
+  §18.6 est son absence du graphe de démarrage, pas une taille.
+- **Non vérifié** : un lecteur d'écran réel, un appareil tactile réel (la règle d'Entrée y est
+  tenue par ses tests), la saisie par composition (accents morts, claviers asiatiques), un autre
+  navigateur que Chrome ; et une mention **envoyée** pour de vrai — elle notifierait la personne —
+  n'a été rejouée qu'en test : au navigateur, la mention est posée dans le texte, pas postée.
 
 ## Voir aussi
 

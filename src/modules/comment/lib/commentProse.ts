@@ -1,0 +1,10 @@
+/**
+ * La mise en forme d'un message — UNE liste de classes, pour le fil qui l'affiche et pour l'éditeur
+ * où on l'écrit : ce qu'on voit en tapant est ce que le fil montrera, marges et couleurs comprises.
+ */
+export const COMMENT_PROSE = [
+  "prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed text-foreground",
+  "prose-p:my-0.5 prose-ul:my-1 prose-ol:my-1 prose-blockquote:my-1",
+  "prose-a:text-primary prose-a:no-underline hover:prose-a:underline",
+  "prose-code:before:content-none prose-code:after:content-none",
+].join(" ");

@@ -6,6 +6,9 @@ import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
 import { AuthModalContext } from "@/modules/auth/context/AuthModalContext";
+import type { Editor } from "@tiptap/core";
+import { loadEditorSurface } from "./editor/editorStore";
+import { stubSelectionGeometry } from "./editor/__tests__/jsdom";
 import type { CommentNode } from "../types";
 import "../i18n";
 
@@ -87,10 +90,27 @@ function mount(props: Parameters<typeof CommentThread>[0] = {}) {
 }
 
 /** Les éléments réellement atteignables par TABULATION dans le fil. */
+/**
+ * Les arrêts de tabulation DES MESSAGES. Le champ du composer en est un à lui, hors de la liste :
+ * l'éditeur porte son `tabindex="0"` en attribut, là où un `<textarea>` l'avait de naissance.
+ */
 function tabbable(container: HTMLElement): HTMLElement[] {
   return [...container.querySelectorAll<HTMLElement>("[tabindex]")]
-    .filter(el => el.getAttribute("tabindex") === "0");
+    .filter(el => el.getAttribute("tabindex") === "0" && !el.hasAttribute("data-comment-field"));
 }
+
+// Le composer du fil écrit dans un éditeur chargé à part : une fois pour le fichier, chaque fil
+// monté ensuite le trouve tout de suite.
+beforeAll(async () => {
+  stubSelectionGeometry();
+  await loadEditorSurface();
+});
+
+/** Le champ du composer : l'élément éditable, et l'éditeur qu'il porte. */
+type Champ = HTMLElement & { editor: Editor };
+const champDe = (container: HTMLElement) => container.querySelector("[data-comment-field]") as Champ | null;
+/** L'éditeur donne le focus à l'image suivante, pas dans l'instant. */
+const image = () => act(async () => { await new Promise(resolve => requestAnimationFrame(() => resolve(null))); });
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -253,7 +273,7 @@ describe("CommentThread — repli d'office", () => {
     const { container } = mount();
     expect(container.querySelectorAll("[data-comment-row]")).toHaveLength(1);
     act(() => { mutationsRecues.options?.onSendFailed?.({ text: "ma réponse", mentions: [], parentId: "x3" }); });
-    fireEvent.keyDown(container.querySelector("textarea")!, { key: "Enter" });
+    act(() => { fireEvent.keyDown(champDe(container)!, { key: "Enter" }); });
     expect(container.querySelector('[data-comment-id="x3"]')).not.toBeNull();
   });
 });
@@ -294,20 +314,31 @@ describe("CommentThread — un fil affiché se marque lu", () => {
 });
 
 describe("CommentThread — envoi refusé (revue du 29/09)", () => {
-  it("remet le texte refusé dans le champ, curseur dedans — il était perdu", () => {
+  it("remet le texte refusé dans le champ, curseur dedans — il était perdu", async () => {
     const { container } = mount();
     act(() => { mutationsRecues.options?.onSendFailed?.({ text: "texte à renvoyer", mentions: [], parentId: null }); });
-    const champ = container.querySelector("textarea")!;
-    expect(champ.value).toBe("texte à renvoyer");
+    await image();
+    const champ = champDe(container)!;
+    expect(champ.editor.getText()).toBe("texte à renvoyer");
     expect(document.activeElement).toBe(champ);
+  });
+
+  it("le texte refusé revient tel que le fil l'aurait rendu, mentions comprises", () => {
+    const { container } = mount();
+    const camille = { id: "e".repeat(24), name: "Camille", slug: "camille" };
+    act(() => { mutationsRecues.options?.onSendFailed?.({ text: "merci **beaucoup** @camille", mentions: [camille], parentId: null }); });
+    const champ = champDe(container)!;
+    expect(champ.querySelector("strong")?.textContent).toBe("beaucoup");
+    expect(champ.querySelector("[data-type='mention']")?.getAttribute("data-slug")).toBe("camille");
   });
 
   it("rétablit le « réponse à » d'une réponse refusée", () => {
     const { container } = mount();
     act(() => { mutationsRecues.options?.onSendFailed?.({ text: "ma réponse", mentions: [], parentId: "c2" }); });
-    const champ = container.querySelector("textarea")!;
-    expect(champ.value).toBe("ma réponse");
-    expect(champ.getAttribute("placeholder")).toContain("Camille");
+    const champ = champDe(container)!;
+    expect(champ.editor.getText()).toBe("ma réponse");
+    // Le champ se nomme d'après ce qu'on y fait : on y répond de nouveau à Camille.
+    expect(champ.getAttribute("aria-label")).toContain("Camille");
   });
 });
 
@@ -363,7 +394,8 @@ describe("CommentThread — visiteur anonyme (revue du 29/09)", () => {
   it("l'invite à se connecter à la place du composer — rien ne l'invitait à répondre", () => {
     session.me = null;
     const { container } = mount();
-    expect(container.querySelector("textarea")).toBeNull();
+    expect(champDe(container)).toBeNull();
+    expect(container.querySelector("[data-comment-field-loading]")).toBeNull();
     const invitation = container.querySelector("[data-login-to-participate]");
     expect(invitation?.textContent).toContain("Connectez-vous pour participer");
   });
@@ -437,5 +469,35 @@ describe("CommentThread — signalement", () => {
 
     act(() => rappels.onSuccess());
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  /**
+   * « Modifier » ouvre le champ d'édition DANS la ligne — et le curseur doit y aller. Le focus est
+   * posé à la fermeture du menu (tant qu'il s'anime, son piège ramène à lui tout focus posé
+   * au-dehors) : c'est ce câblage-là qu'on tient, avec le vrai menu et le vrai éditeur.
+   */
+  it("« Modifier » ouvre le champ d'édition du message, relu tel que le fil le rend, curseur dedans", async () => {
+    arbre = [{ ...node("c1"), author: { id: ME, name: "Moi", slug: "moi", avatarUrl: null }, text: "du **gras** à corriger" }, node("c2")];
+    const { container } = mount();
+    const user = userEvent.setup();
+    const ligne = container.querySelector<HTMLElement>('[data-comment-id="c1"]')!;
+    await user.click(within(ligne).getByRole("button", { name: "Plus d'actions" }));
+    // L'éditeur se donne lui-même le focus à l'image suivante (`autoFocus`). On retient cette image :
+    // seul le focus posé À LA FERMETURE DU MENU peut alors l'y mettre — c'est lui qu'on juge.
+    vi.stubGlobal("requestAnimationFrame", () => 0);
+    try {
+      await user.click(await screen.findByRole("menuitem", { name: "Modifier" }));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 20)); });
+
+      const champs = container.querySelectorAll<Champ>("[data-comment-field]");
+      // Deux champs : celui de l'édition, dans la ligne, et celui du bas du fil.
+      expect(champs).toHaveLength(2);
+      const edition = ligne.querySelector<Champ>("[data-comment-field]")!;
+      expect(edition.querySelector("strong")?.textContent).toBe("gras");
+      expect(edition.getAttribute("aria-label")).toBe("Modifier le message…");
+      expect(document.activeElement).toBe(edition);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

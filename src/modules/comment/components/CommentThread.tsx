@@ -316,7 +316,7 @@ export function CommentThread({
    *
    * ⚠️ **Seulement depuis un message lui-même.** Depuis un contrôle interne — le champ
    * d'édition au premier chef — les flèches gardent leur sens propre : détourner la flèche
-   * haut dans un textarea rendrait l'édition impraticable.
+   * haut dans un champ de texte rendrait l'édition impraticable.
    */
   const onThreadKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
     const row = event.target as HTMLElement;
@@ -363,7 +363,7 @@ export function CommentThread({
    * son piège à focus ramène à lui tout focus posé au-dehors.
    */
   const focusChampEdition = useCallback((id: string) => {
-    document.getElementById(messageAnchorId(id))?.querySelector("textarea")?.focus();
+    document.getElementById(messageAnchorId(id))?.querySelector<HTMLElement>("[data-comment-field]")?.focus();
   }, []);
 
   /** Le message qui reprendra le focus quand celui-ci disparaît : son précédent, sinon son suivant. */

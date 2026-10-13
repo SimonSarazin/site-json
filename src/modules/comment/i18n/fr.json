@@ -33,34 +33,43 @@
     "stopReplying": "Ne plus répondre",
     "emoji": "Insérer un émoji",
     "mentionHint": "Tapez @ pour mentionner quelqu'un",
-    "formattingHint": "**gras** · *italique* · `code` · > citation · - liste · [lien](url)",
+    "formattingHint": "Entrée envoie le message, Maj+Entrée passe à la ligne. Mise en forme au clavier : **gras**, *italique*, ~~barré~~, `code`, > citation, - liste, 1. liste numérotée.",
+    "editorFailed": "L'éditeur n'a pas pu être chargé.",
     "mentionCount_one": "{{count}} personne proposée",
     "mentionCount_other": "{{count}} personnes proposées",
     "marks": {
       "bold": {
-        "label": "Gras",
-        "example": "gras"
+        "label": "Gras"
       },
       "italic": {
-        "label": "Italique",
-        "example": "italique"
+        "label": "Italique"
+      },
+      "strike": {
+        "label": "Barré"
       },
       "code": {
-        "label": "Code",
-        "example": "code"
+        "label": "Code"
       },
       "link": {
-        "label": "Lien",
-        "example": "texte du lien"
+        "label": "Lien"
       },
       "quote": {
-        "label": "Citation",
-        "example": "citation"
+        "label": "Citation"
       },
       "list": {
-        "label": "Liste",
-        "example": "élément"
+        "label": "Liste à puces"
+      },
+      "ordered": {
+        "label": "Liste numérotée"
+      },
+      "codeBlock": {
+        "label": "Bloc de code"
       }
+    },
+    "link": {
+      "url": "Adresse du lien",
+      "apply": "Appliquer",
+      "remove": "Retirer le lien"
     }
   },
   "images": {

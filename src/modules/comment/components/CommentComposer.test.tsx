@@ -1,24 +1,46 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { createElement, type ReactNode } from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { act, render, screen, fireEvent, within } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { Editor } from "@tiptap/core";
+import { Slice } from "@tiptap/pm/model";
+import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { CocolightContext, type CocolightContextType } from "@/contexts/CocolightContext";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
 import i18n from "@/i18n";
+import { COMMENT_PROSE } from "../lib/commentProse";
 import { CommentComposer } from "./CommentComposer";
+import { loadEditorSurface } from "./editor/editorStore";
+import { stubSelectionGeometry } from "./editor/__tests__/jsdom";
 import "../i18n";
 
 /**
- * Le composer est jugé sur son clavier.
+ * Le composer est jugé sur son clavier et sur ce qu'il ENVOIE.
  *
  * Ce qui est vérifié ici, ce sont les décisions d'ergonomie qu'un refactor casse sans bruit :
- * Entrée envoie mais pas pendant une composition d'accent, Maj+Entrée passe à la ligne, et
- * les marques de mise en forme ne volent pas le focus du champ.
+ * Entrée envoie — sauf dans une liste, un bloc de code, ou sur un écran tactile —, Maj+Entrée
+ * passe à la ligne, les marques ne volent pas le focus du champ, et ce qui part est le markdown
+ * que le fil rendra.
+ *
+ * Le champ est un éditeur (`editor/EditorSurface`) : jsdom ne sait pas taper dans un
+ * `contenteditable`, on y écrit donc par son instance — le reste (touches, collage, boutons)
+ * passe par les vrais événements.
  */
 
-function mount(props: Partial<Parameters<typeof CommentComposer>[0]> = {}) {
+// Le code de l'éditeur est chargé une fois : chaque composer monté ensuite le trouve tout de suite.
+// Son attente et son échec ont leur fichier (`CommentComposer.chargement.test.tsx`).
+beforeAll(async () => {
+  stubSelectionGeometry();
+  await loadEditorSurface();
+});
+
+type Champ = HTMLElement & { editor: Editor };
+type Props = Partial<Parameters<typeof CommentComposer>[0]>;
+
+function mount(props: Props = {}) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const cocolight = { me: null, api: null, entity: null, helper: {} } as unknown as CocolightContextType;
   const wrapper = ({ children }: { children: ReactNode }) =>
@@ -34,19 +56,64 @@ function mount(props: Partial<Parameters<typeof CommentComposer>[0]> = {}) {
 
   const onSubmit = vi.fn();
   const view = render(createElement(CommentComposer, { onSubmit, ...props }), { wrapper });
-  // `textbox`, le rôle IMPLICITE du textarea : « ARIA in HTML » n'autorise aucun rôle de
-  // remplacement sur `<textarea>`, un `role="combobox"` y serait hors spécification et le champ
-  // cesserait d'être annoncé comme zone multiligne.
-  const field = screen.getByRole("textbox") as HTMLTextAreaElement;
+  // `textbox` : un `contenteditable` n'a pas de rôle implicite, l'éditeur le pose. Cherché dans CE
+  // composer : un test peut en monter deux.
+  const field = within(view.container).getByRole("textbox") as Champ;
   /** Nouvelles props sur le MÊME composer : ce que fait l'hôte quand la liste d'images change. */
-  const update = (next: Partial<Parameters<typeof CommentComposer>[0]>) =>
-    view.rerender(createElement(CommentComposer, { onSubmit, ...next }));
-  return { onSubmit, field, update };
+  const update = (next: Props) => view.rerender(createElement(CommentComposer, { onSubmit, ...next }));
+  return { onSubmit, field, editor: field.editor, update, container: view.container };
 }
 
-function type(field: HTMLTextAreaElement, value: string) {
-  fireEvent.change(field, { target: { value } });
+/** Écrit au curseur, comme la frappe : du TEXTE, signes compris — pas du markdown relu. */
+function type(field: Champ, value: string) {
+  if (value === "") return;
+  act(() => { field.editor.commands.insertContent({ type: "text", text: value }); });
 }
+/**
+ * Tape signe après signe, par où passe la vraie frappe (`handleTextInput`) : c'est là que se
+ * déclenchent les raccourcis tapés — `- ` qui ouvre une liste, `**gras**` qui pose une marque.
+ */
+function frapper(field: Champ, texte: string) {
+  const { editor } = field;
+  for (const signe of texte) {
+    act(() => {
+      const { from, to } = editor.state.selection;
+      const inserer = () => editor.state.tr.insertText(signe, from, to);
+      const pris = editor.view.someProp("handleTextInput", gerer => gerer(editor.view, from, to, signe, inserer));
+      if (!pris) editor.view.dispatch(inserer());
+    });
+  }
+}
+/** Sélectionne `mot` dans le premier bloc du champ (les positions de l'éditeur commencent à 1). */
+function select(field: Champ, mot: string) {
+  const debut = field.editor.getText().indexOf(mot) + 1;
+  act(() => { field.editor.commands.setTextSelection({ from: debut, to: debut + mot.length }); });
+}
+const touche = (field: Champ, key: string, plus: KeyboardEventInit = {}) => act(() => { fireEvent.keyDown(field, { key, ...plus }); });
+const bouton = (name: string | RegExp) => screen.getByRole("button", { name }) as HTMLButtonElement;
+const clic = (element: HTMLElement) => act(() => { fireEvent.mouseDown(element); fireEvent.click(element); });
+/** L'éditeur donne le focus à l'image suivante, pas dans l'instant : on l'attend avant d'en juger. */
+const image = () => act(async () => { await new Promise(resolve => requestAnimationFrame(() => resolve(null))); });
+
+describe("CommentComposer — rendu serveur", () => {
+  // Le serveur et le premier rendu du client doivent écrire le MÊME balisage. Ici le code de
+  // l'éditeur est déjà chargé — comme dans un onglet où l'on a déjà écrit — et le serveur n'en
+  // rend rien quand même.
+  it("au serveur, pas d'éditeur : le champ d'attente, et rien de ProseMirror", () => {
+    const queryClient = new QueryClient();
+    const cocolight = { me: null, api: null, entity: null, helper: {} } as unknown as CocolightContextType;
+    const html = renderToString(
+      createElement(QueryClientProvider, { client: queryClient },
+        createElement(CocolightContext.Provider, { value: cocolight },
+          createElement(LocalizationProvider, null, createElement(CommentComposer, { onSubmit: vi.fn(), initialValue: "du **gras**" })))),
+    );
+    expect(html).toContain("data-comment-field-loading");
+    expect(html).not.toContain("ProseMirror");
+    expect(html).not.toContain('role="textbox"');
+    // Le texte de départ n'est pas écrit en clair à la place du champ : il attend l'éditeur.
+    expect(html).not.toContain("du **gras**");
+  });
+});
 
 describe("CommentComposer — accessibilité", () => {
   it("n'annonce aucune liste tant qu'il n'y a pas de suggestion", () => {
@@ -58,113 +125,584 @@ describe("CommentComposer — accessibilité", () => {
     expect(field.getAttribute("aria-controls")).toBeNull();
     expect(field.getAttribute("aria-autocomplete")).toBe("list");
     expect(field.getAttribute("aria-haspopup")).toBe("listbox");
-    // Le rôle de remplacement ne doit PAS revenir : c'est la régression à verrouiller.
-    expect(field.getAttribute("role")).toBeNull();
   });
 
-  it("décrit la mise en forme sans l'afficher", () => {
-    mount();
-    // La phrase est lue par un lecteur d'écran, jamais vue : les six marques sont des
-    // icônes, et leur `aria-label` seul ne dit pas qu'on peut aussi les taper.
-    // Toutes les mentions hors écran, pas la première : il y en a désormais deux, et se fier
-    // à leur ORDRE ferait d'un ajout anodin un échec de test.
-    const horsEcran = [...document.querySelectorAll(".sr-only")].map(e => e.textContent ?? "");
-    expect(horsEcran.some(texte => texte.includes("**"))).toBe(true);
+  it("est une zone de texte multiligne, atteignable au clavier, nommée d'après ce qu'on y fait", () => {
+    const { field } = mount();
+    expect(field.getAttribute("role")).toBe("textbox");
+    expect(field.getAttribute("aria-multiline")).toBe("true");
+    expect(field.getAttribute("tabindex")).toBe("0");
+    expect(field.getAttribute("contenteditable")).toBe("true");
+    expect(field.getAttribute("aria-label")).toBe("Écrire un message…");
+  });
+
+  it("se nomme autrement quand on répond, et quand on corrige", () => {
+    expect(mount({ replyingTo: { id: "x", author: "Camille" } }).field.getAttribute("aria-label")).toBe("Répondre à Camille…");
+    expect(mount({ mode: "edit" }).field.getAttribute("aria-label")).toBe("Modifier le message…");
+  });
+
+  it("décrit la mise en forme sans l'afficher, et le champ y renvoie", () => {
+    const { field } = mount();
+    // La phrase est lue par un lecteur d'écran, jamais vue : les marques sont des icônes, et leur
+    // nom seul ne dit ni qu'on peut les taper, ni ce que fait Entrée.
+    const aide = document.getElementById(field.getAttribute("aria-describedby") ?? "");
+    expect(aide?.className).toContain("sr-only");
+    expect(aide?.textContent).toContain("**");
+    expect(aide?.textContent).toContain("Maj+Entrée");
+  });
+
+  it("le texte d'attente est une décoration : il ne fait pas partie du message", () => {
+    const { field, onSubmit } = mount({ placeholder: "Votre avis…" });
+    expect(field.querySelector("[data-placeholder]")?.getAttribute("data-placeholder")).toBe("Votre avis…");
+    expect(field.editor.getText()).toBe("");
+    touche(field, "Enter");
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  // Ce qu'on voit en tapant est ce que le fil montrera : mêmes classes de mise en forme des deux côtés.
+  it("porte la mise en forme du fil", () => {
+    const { field } = mount();
+    for (const classe of COMMENT_PROSE.split(" ")) expect(field.classList.contains(classe)).toBe(true);
+    expect(field.classList.contains("comment-editor-field")).toBe(true);
+  });
+
+  it("le texte d'attente suit ses props sans recréer l'éditeur", () => {
+    const { field, update } = mount();
+    const editeur = field.editor;
+    update({ replyingTo: { id: "x", author: "Camille" } });
+    expect(field.querySelector("[data-placeholder]")?.getAttribute("data-placeholder")).toBe("Répondre à Camille…");
+    expect(field.getAttribute("aria-label")).toBe("Répondre à Camille…");
+    expect((screen.getByRole("textbox") as Champ).editor).toBe(editeur);
+  });
+
+  it("`disabled` : on n'y écrit plus, et c'est dit", () => {
+    const { field, update } = mount({ disabled: true });
+    expect(field.getAttribute("contenteditable")).toBe("false");
+    expect(field.getAttribute("aria-disabled")).toBe("true");
+    // Le texte d'attente reste : un champ fermé ET vide ne dirait plus ce qu'il est.
+    expect(field.querySelector("[data-placeholder]")).toBeTruthy();
+    expect(bouton("Gras").disabled).toBe(true);
+    update({ disabled: false });
+    expect(field.getAttribute("contenteditable")).toBe("true");
+    expect(field.getAttribute("aria-disabled")).toBeNull();
   });
 });
 
 describe("CommentComposer — envoi", () => {
+  afterEach(() => { vi.unstubAllGlobals(); });
+
   it("Entrée envoie le message", () => {
     const { onSubmit, field } = mount();
     type(field, "bonjour");
-    fireEvent.keyDown(field, { key: "Enter" });
+    touche(field, "Enter");
     expect(onSubmit).toHaveBeenCalledExactlyOnceWith("bonjour", []);
   });
 
-  it("Maj+Entrée n'envoie pas — c'est un passage à la ligne", () => {
+  it("Maj+Entrée n'envoie pas — c'est un passage à la ligne, et il part avec le message", () => {
     const { onSubmit, field } = mount();
     type(field, "bonjour");
-    fireEvent.keyDown(field, { key: "Enter", shiftKey: true });
+    touche(field, "Enter", { shiftKey: true });
     expect(onSubmit).not.toHaveBeenCalled();
+    expect(field.querySelectorAll("p")).toHaveLength(1);
+    type(field, "la suite");
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("bonjour\nla suite", []);
   });
 
-  it("n'envoie pas un message vide, ni fait que d'espaces", () => {
+  it("n'envoie pas un message vide, ni fait que d'espaces ou de sauts de ligne", () => {
     const { onSubmit, field } = mount();
+    touche(field, "Enter");
     type(field, "   ");
-    fireEvent.keyDown(field, { key: "Enter" });
+    touche(field, "Enter");
+    touche(field, "Enter", { shiftKey: true });
+    touche(field, "Enter");
     expect(onSubmit).not.toHaveBeenCalled();
+    expect(bouton(/envoyer/i).disabled).toBe(true);
   });
 
   it("coupe les espaces de bord avant d'envoyer", () => {
     const { onSubmit, field } = mount();
     type(field, "  bonjour  ");
-    fireEvent.keyDown(field, { key: "Enter" });
+    touche(field, "Enter");
     expect(onSubmit).toHaveBeenCalledExactlyOnceWith("bonjour", []);
   });
 
-  it("vide le champ après l'envoi", () => {
+  it("vide le champ après l'envoi, et le bouton se referme", () => {
     const { field } = mount();
     type(field, "bonjour");
-    fireEvent.keyDown(field, { key: "Enter" });
-    expect(field.value).toBe("");
+    touche(field, "Enter");
+    expect(field.editor.getText()).toBe("");
+    expect(bouton(/envoyer/i).disabled).toBe(true);
   });
 
-  it("le bouton d'envoi est désactivé tant que rien n'est écrit", () => {
-    const { field } = mount();
-    const send = screen.getByRole("button", { name: /envoyer/i });
+  it("le bouton d'envoi est désactivé tant que rien n'est écrit, et envoie comme Entrée", () => {
+    const { field, onSubmit } = mount();
+    const send = bouton(/envoyer/i);
     expect(send).toBeDisabled();
     type(field, "bonjour");
     expect(send).not.toBeDisabled();
+    act(() => { fireEvent.click(send); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("bonjour", []);
+  });
+
+  it("ce qu'on tape part tel qu'on l'a tapé : un signe du markdown reste un signe", () => {
+    const { onSubmit, field } = mount();
+    type(field, "2 * 3 * 4 = 24, voir nom_de_fichier");
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("2 \\* 3 \\* 4 = 24, voir nom_de_fichier", []);
+  });
+
+  it("dans une liste, Entrée ouvre l'élément suivant — elle n'envoie pas", () => {
+    const { onSubmit, field } = mount();
+    clic(bouton("Liste à puces"));
+    type(field, "un");
+    touche(field, "Enter");
+    type(field, "deux");
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect([...field.querySelectorAll("li")].map(li => li.textContent)).toEqual(["un", "deux"]);
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("- un\n- deux", []);
+  });
+
+  it("dans un bloc de code, Entrée passe à la ligne — elle n'envoie pas", () => {
+    const { onSubmit, field } = mount();
+    clic(bouton("Bloc de code"));
+    type(field, "const a = 1;");
+    touche(field, "Enter");
+    type(field, "const b = 2;");
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(field.querySelector("pre")?.textContent).toBe("const a = 1;\nconst b = 2;");
+  });
+
+  // Il n'y a pas de Maj+Entrée sous le pouce : sur un écran tactile, Entrée doit pouvoir passer à
+  // la ligne, et le message part par son bouton.
+  it("sur un écran tactile, Entrée passe à la ligne : le message part par son bouton", () => {
+    vi.stubGlobal("matchMedia", (requete: string) => ({ matches: requete === "(pointer: coarse)" }));
+    const { onSubmit, field } = mount();
+    type(field, "première ligne");
+    touche(field, "Enter");
+    type(field, "seconde");
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(field.querySelectorAll("p")).toHaveLength(2);
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("première ligne\n\nseconde", []);
+  });
+
+  it("avec une souris, la même Entrée envoie", () => {
+    vi.stubGlobal("matchMedia", () => ({ matches: false }));
+    const { onSubmit, field } = mount();
+    type(field, "bonjour");
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("bonjour", []);
+  });
+
+  it("`submitting` et `disabled` retiennent l'envoi, à Entrée comme au bouton", () => {
+    const { onSubmit, field, update } = mount({ submitting: true });
+    type(field, "bonjour");
+    expect(bouton(/envoyer/i).disabled).toBe(true);
+    touche(field, "Enter");
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(field.editor.getText()).toBe("bonjour");
+    update({ submitting: false });
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("bonjour", []);
   });
 });
 
 describe("CommentComposer — mise en forme", () => {
-  it("une marque entoure la sélection sans faire perdre le focus au champ", () => {
-    const { field } = mount();
+  it("une marque s'applique à la sélection sans faire perdre le focus au champ", async () => {
+    const { field, onSubmit } = mount();
     type(field, "dis bonjour");
-    field.setSelectionRange(4, 11);
+    select(field, "bonjour");
 
-    const bold = screen.getByRole("button", { name: "Gras" });
     // À la souris : `mouseDown` garde le focus (et la sélection) dans le champ, `click` applique.
-    fireEvent.mouseDown(bold);
-    fireEvent.click(bold);
+    clic(bouton("Gras"));
+    await image();
 
-    expect(field.value).toBe("dis **bonjour**");
+    expect(field.querySelector("strong")?.textContent).toBe("bonjour");
     expect(document.activeElement).toBe(field);
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("dis **bonjour**", []);
+  });
+
+  it("le clic sur une marque ne prend pas le focus : son `mouseDown` est neutralisé", () => {
+    mount();
+    for (const nom of ["Gras", "Italique", "Barré", "Code", "Lien", "Citation", "Liste à puces", "Liste numérotée", "Bloc de code"]) {
+      expect(fireEvent.mouseDown(bouton(nom))).toBe(false);
+    }
   });
 
   it("répond au CLAVIER — elle était morte : seul `mouseDown` appliquait (revue du 29/09)", async () => {
     const { field } = mount();
     type(field, "dis bonjour");
-    field.setSelectionRange(4, 11);
+    select(field, "bonjour");
     const user = userEvent.setup();
-    screen.getByRole("button", { name: "Gras" }).focus();
+    bouton("Gras").focus();
     await user.keyboard("{Enter}");
-    expect(field.value).toBe("dis **bonjour**");
+    await image();
+    expect(field.querySelector("strong")?.textContent).toBe("bonjour");
     expect(document.activeElement).toBe(field);
   });
 
-  it("insère un exemple sélectionné quand rien n'est choisi", () => {
-    const { field } = mount();
-    type(field, "");
-    fireEvent.click(screen.getByRole("button", { name: "Citation" }));
-    // L'exemple inséré est TRADUIT (il était écrit en dur, en français, dans la bibliothèque).
-    expect(field.value).toBe("> citation");
+  it.each([
+    ["Gras", "strong", "**mot**"],
+    ["Italique", "em", "*mot*"],
+    ["Barré", "s", "~~mot~~"],
+    ["Code", "code", "`mot`"],
+  ])("« %s » pose sa marque, et elle part en markdown", (nom, balise, attendu) => {
+    const { field, onSubmit } = mount();
+    type(field, "mot");
+    select(field, "mot");
+    clic(bouton(nom));
+    expect(field.querySelector(balise)?.textContent).toBe("mot");
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith(attendu, []);
   });
 
-  /**
-   * Le test français ne suffit pas : ses exemples sont IDENTIQUES aux anciens littéraux, si bien
-   * qu'un retour en arrière passerait inaperçu. En anglais, plus aucun mot français.
-   */
-  it("insère l'exemple de la langue courante — en anglais, plus un mot de français", async () => {
+  it.each([
+    ["Citation", "blockquote", "> mot"],
+    ["Liste à puces", "ul", "- mot"],
+    ["Liste numérotée", "ol", "1. mot"],
+    ["Bloc de code", "pre", "```\nmot\n```"],
+  ])("« %s » change le bloc, et il part en markdown", (nom, balise, attendu) => {
+    const { field, onSubmit } = mount();
+    type(field, "mot");
+    clic(bouton(nom));
+    expect(field.querySelector(balise)?.textContent).toBe("mot");
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith(attendu, []);
+  });
+
+  it("une marque se retire comme elle se pose : le bouton bascule", () => {
+    const { field } = mount();
+    type(field, "mot");
+    select(field, "mot");
+    clic(bouton("Gras"));
+    clic(bouton("Gras"));
+    expect(field.querySelector("strong")).toBeNull();
+  });
+
+  it("chaque bouton DIT son état : `aria-pressed` suit le curseur, pas le dernier clic", () => {
+    const { field } = mount();
+    type(field, "du gras puis rien");
+    select(field, "gras");
+    expect(bouton("Gras").getAttribute("aria-pressed")).toBe("false");
+    clic(bouton("Gras"));
+    expect(bouton("Gras").getAttribute("aria-pressed")).toBe("true");
+    expect(bouton("Italique").getAttribute("aria-pressed")).toBe("false");
+    // Le curseur sort du gras : le bouton se relâche sans qu'on y touche.
+    select(field, "rien");
+    expect(bouton("Gras").getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("nomme ses boutons dans la langue courante — en anglais, plus un mot de français", async () => {
     await i18n.changeLanguage("en");
     try {
-      const { field } = mount();
-      fireEvent.click(screen.getByRole("button", { name: "Quote" }));
-      expect(field.value).toBe("> quote");
+      mount();
+      for (const nom of ["Bold", "Italic", "Strikethrough", "Code", "Link", "Quote", "Bulleted list", "Numbered list", "Code block"]) {
+        expect(bouton(nom).getAttribute("title")).toBe(nom);
+      }
     } finally {
       await i18n.changeLanguage("fr");
     }
+  });
+
+  it.each([
+    ["- un", "ul li"], ["1. un", "ol li"], ["> cité", "blockquote"], ["``` ", "pre"],
+  ])("les raccourcis de bloc qu'on tape marchent encore : « %s »", (saisie, balise) => {
+    const { field } = mount();
+    frapper(field, saisie);
+    expect(field.querySelector(balise)).toBeTruthy();
+  });
+
+  it.each([
+    ["**gras** ", "strong", "gras"], ["__gras__ ", "strong", "gras"], ["*italique* ", "em", "italique"],
+    ["_italique_ ", "em", "italique"], ["~~barré~~ ", "s", "barré"], ["`code` ", "code", "code"],
+  ])("une marque tapée « à la markdown » se pose : « %s»", (saisie, balise, texte) => {
+    const { field } = mount();
+    frapper(field, saisie);
+    expect(field.querySelector(balise)?.textContent).toBe(texte);
+    expect(field.textContent).not.toMatch(/[*_~`]/);
+  });
+
+  // Le kit mettait le « 3 » en italique. Le fil, lui, n'a jamais lu « * 3 * » comme une marque : ce
+  // qu'on voit en tapant doit être ce qu'il affichera.
+  it("« 2 * 3 * 4 » tapé reste un calcul : une marque ne commence ni ne finit par une espace", () => {
+    const { field, onSubmit } = mount();
+    frapper(field, "2 * 3 * 4 et a _ b _ c et x ~~ y ~~ z");
+    expect(field.querySelector("em, strong, s")).toBeNull();
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("2 \\* 3 \\* 4 et a \\_ b \\_ c et x \\~\\~ y \\~\\~ z", []);
+  });
+
+  it("une étoile au milieu d'un mot n'ouvre rien", () => {
+    const { field } = mount();
+    frapper(field, "a*b*c ");
+    expect(field.querySelector("em")).toBeNull();
+  });
+});
+
+describe("CommentComposer — lien", () => {
+  const adresse = () => screen.getByLabelText("Adresse du lien") as HTMLInputElement;
+  const saisir = (valeur: string) => act(() => { fireEvent.change(adresse(), { target: { value: valeur } }); });
+
+  it("« Lien » ouvre un champ d'adresse ; Entrée pose le lien sur la sélection et rend le focus au texte", async () => {
+    const { field, onSubmit } = mount();
+    type(field, "voir la page");
+    select(field, "la page");
+    clic(bouton("Lien"));
+    expect(adresse().value).toBe("");
+    saisir("exemple.org/page");
+    act(() => { fireEvent.keyDown(adresse(), { key: "Enter" }); });
+    await image();
+
+    expect(screen.queryByLabelText("Adresse du lien")).toBeNull();
+    const lien = field.querySelector("a");
+    expect(lien?.textContent).toBe("la page");
+    // Le protocole qu'on n'écrit jamais est complété.
+    expect(lien?.getAttribute("href")).toBe("https://exemple.org/page");
+    expect(document.activeElement).toBe(field);
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("voir [la page](https://exemple.org/page)", []);
+  });
+
+  it("le bouton « Appliquer » fait de même", () => {
+    const { field } = mount();
+    type(field, "ici");
+    select(field, "ici");
+    clic(bouton("Lien"));
+    saisir("https://exemple.org");
+    act(() => { fireEvent.click(bouton("Appliquer")); });
+    expect(field.querySelector("a")?.getAttribute("href")).toBe("https://exemple.org");
+  });
+
+  it("sans sélection, l'adresse devient son propre texte", () => {
+    const { field, onSubmit } = mount();
+    type(field, "voir ");
+    clic(bouton("Lien"));
+    saisir("https://exemple.org/a_b");
+    act(() => { fireEvent.click(bouton("Appliquer")); });
+    expect(field.querySelector("a")?.textContent).toBe("https://exemple.org/a_b");
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("voir https://exemple.org/a_b", []);
+  });
+
+  it("une adresse qui ne mène nulle part n'est pas posée : « Appliquer » reste inactif, Entrée ne fait rien", () => {
+    const { field } = mount();
+    type(field, "ici");
+    select(field, "ici");
+    clic(bouton("Lien"));
+    for (const mauvaise of ["", "javascript:alert(1)", "deux mots"]) {
+      saisir(mauvaise);
+      expect(bouton("Appliquer").disabled).toBe(true);
+      act(() => { fireEvent.keyDown(adresse(), { key: "Enter" }); });
+      expect(field.querySelector("a")).toBeNull();
+    }
+    // Le champ est resté ouvert : on corrige, on ne recommence pas.
+    expect(adresse()).toBeTruthy();
+  });
+
+  it("dans un lien, le champ reprend son adresse et offre de le retirer", () => {
+    const { field } = mount({ initialValue: "voir [la page](https://exemple.org/page) ici" });
+    select(field, "page");
+    expect(bouton("Lien").getAttribute("aria-pressed")).toBe("true");
+    clic(bouton("Lien"));
+    expect(adresse().value).toBe("https://exemple.org/page");
+    act(() => { fireEvent.click(bouton("Retirer le lien")); });
+    expect(field.querySelector("a")).toBeNull();
+    expect(field.textContent).toBe("voir la page ici");
+  });
+
+  it("hors d'un lien, rien à retirer : le bouton n'est pas offert", () => {
+    const { field } = mount();
+    type(field, "ici");
+    select(field, "ici");
+    clic(bouton("Lien"));
+    expect(screen.queryByRole("button", { name: "Retirer le lien" })).toBeNull();
+  });
+
+  it("corriger l'adresse d'un lien le garde entier, texte compris", () => {
+    const { field } = mount({ initialValue: "[la page](https://exemple.org/page)" });
+    // Le curseur posé DANS le lien, sans rien sélectionner : c'est tout le lien qu'on corrige.
+    act(() => { field.editor.commands.setTextSelection(4); });
+    clic(bouton("Lien"));
+    saisir("https://exemple.org/autre");
+    act(() => { fireEvent.click(bouton("Appliquer")); });
+    const liens = field.querySelectorAll("a");
+    expect(liens).toHaveLength(1);
+    expect(liens[0].textContent).toBe("la page");
+    expect(liens[0].getAttribute("href")).toBe("https://exemple.org/autre");
+  });
+});
+
+describe("CommentComposer — mentions", () => {
+  const personne = (id: string, name: string, slug: string) => ({ id, serverData: { name, slug } });
+  const CAMILLE = personne("a".repeat(24), "Camille Martin", "camille-martin");
+  const CARLOS = personne("b".repeat(24), "Carlos Diaz", "carlos");
+  const SANS_SLUG = personne("c".repeat(24), "Sans Slug", "");
+
+  function avecPersonnes(personnes: readonly unknown[], props: Props = {}) {
+    const searchMembers = vi.fn().mockResolvedValue(personnes);
+    const entity = { id: "e".repeat(24), searchMembers } as unknown as EntityTypes;
+    return { ...mount({ entity, ...props }), searchMembers };
+  }
+  /** Tape `@ca` et attend la liste : la suggestion de l'éditeur et la recherche sont asynchrones. */
+  async function ouvrirLaListe(field: Champ, saisie = "@ca") {
+    type(field, saisie);
+    return screen.findByRole("listbox");
+  }
+  const options = () => screen.getAllByRole("option");
+
+  it("taper « @ » et deux lettres ouvre la liste des personnes, reliée au champ et annoncée", async () => {
+    const { field, searchMembers } = avecPersonnes([CAMILLE, CARLOS]);
+    const liste = await ouvrirLaListe(field);
+
+    expect(searchMembers).toHaveBeenCalledWith({ search: "ca", searchMode: "personOnly" });
+    expect(options().map(o => o.textContent)).toEqual(["Camille Martin@camille-martin", "Carlos Diaz@carlos"]);
+    expect(field.getAttribute("aria-controls")).toBe(liste.id);
+    expect(field.getAttribute("aria-activedescendant")).toBe(options()[0].id);
+    expect(options()[0].getAttribute("aria-selected")).toBe("true");
+    expect(screen.getAllByRole("status").some(s => s.textContent === "2 personnes proposées")).toBe(true);
+  });
+
+  it("les flèches déplacent la surbrillance, en boucle — le focus reste dans le champ", async () => {
+    const { field } = avecPersonnes([CAMILLE, CARLOS]);
+    await ouvrirLaListe(field);
+    touche(field, "ArrowDown");
+    expect(field.getAttribute("aria-activedescendant")).toBe(options()[1].id);
+    expect(options()[1].getAttribute("aria-selected")).toBe("true");
+    touche(field, "ArrowDown");
+    expect(field.getAttribute("aria-activedescendant")).toBe(options()[0].id);
+    touche(field, "ArrowUp");
+    expect(field.getAttribute("aria-activedescendant")).toBe(options()[1].id);
+  });
+
+  it.each(["Enter", "Tab"])("%s choisit la personne surlignée — et n'envoie pas", async key => {
+    const { field, onSubmit } = avecPersonnes([CAMILLE, CARLOS]);
+    await ouvrirLaListe(field);
+    touche(field, "ArrowDown");
+    touche(field, key);
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    const mention = field.querySelector("[data-type='mention']");
+    // Le champ montre le NOM, comme le fil le montrera ; le slug voyage avec le nœud.
+    expect(mention?.textContent).toBe("@Carlos Diaz");
+    expect(mention?.getAttribute("data-slug")).toBe("carlos");
+    expect(screen.queryByRole("listbox")).toBeNull();
+    expect(field.getAttribute("aria-controls")).toBeNull();
+  });
+
+  it("la mention choisie part en `@slug`, avec la personne", async () => {
+    const { field, onSubmit } = avecPersonnes([CAMILLE, CARLOS]);
+    type(field, "merci ");
+    await ouvrirLaListe(field);
+    touche(field, "Enter");
+    type(field, "pour tout");
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith(
+      "merci @camille-martin pour tout",
+      [{ id: "a".repeat(24), name: "Camille Martin", slug: "camille-martin" }],
+    );
+  });
+
+  it("se choisit aussi à la souris, sans que le champ perde le focus", async () => {
+    const { field } = avecPersonnes([CAMILLE, CARLOS]);
+    await ouvrirLaListe(field);
+    // `mouseDown` neutralisé : un clic ferait perdre le focus au champ avant que la mention ne soit posée.
+    let laisse = true;
+    act(() => { laisse = fireEvent.mouseDown(options()[1]); });
+    await image();
+    expect(laisse).toBe(false);
+    expect(field.querySelector("[data-type='mention']")?.getAttribute("data-slug")).toBe("carlos");
+    expect(document.activeElement).toBe(field);
+  });
+
+  it("le survol déplace la surbrillance", async () => {
+    const { field } = avecPersonnes([CAMILLE, CARLOS]);
+    await ouvrirLaListe(field);
+    act(() => { fireEvent.mouseEnter(options()[1]); });
+    expect(field.getAttribute("aria-activedescendant")).toBe(options()[1].id);
+  });
+
+  it("une personne sans slug n'est pas choisissable : Entrée n'est pas confisquée, le message part", async () => {
+    const { field, onSubmit } = avecPersonnes([SANS_SLUG]);
+    await ouvrirLaListe(field);
+    touche(field, "Enter");
+    expect(field.querySelector("[data-type='mention']")).toBeNull();
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("@ca", []);
+  });
+
+  it("… ni à la souris : cliquer dessus ne pose rien", async () => {
+    const { field } = avecPersonnes([SANS_SLUG]);
+    await ouvrirLaListe(field);
+    act(() => { fireEvent.mouseDown(options()[0]); });
+    expect(field.querySelector("[data-type='mention']")).toBeNull();
+    expect(field.editor.getText()).toBe("@ca");
+  });
+
+  it("la liste ouverte, le composer revendique Échap — même sans édition à annuler", async () => {
+    const { field } = avecPersonnes([CAMILLE]);
+    expect(field.closest("[data-comment-escape]")).toBeNull();
+    await ouvrirLaListe(field);
+    expect(field.closest("[data-comment-escape]")).toBeTruthy();
+  });
+
+  it("personne ne correspond : pas de liste, et Entrée envoie le texte tel quel", async () => {
+    const { field, onSubmit, searchMembers } = avecPersonnes([]);
+    type(field, "@zz");
+    await vi.waitFor(() => expect(searchMembers).toHaveBeenCalled());
+    expect(screen.queryByRole("listbox")).toBeNull();
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("@zz", []);
+  });
+
+  it("un « @ » au milieu d'un mot n'ouvre rien : une adresse de courriel n'est pas une mention", async () => {
+    const { field, searchMembers } = avecPersonnes([CAMILLE]);
+    type(field, "contact@ca");
+    await act(async () => { await Promise.resolve(); });
+    expect(searchMembers).not.toHaveBeenCalled();
+    expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
+  it("Échap referme la liste sans annuler l'édition ; la suivante l'annule", async () => {
+    const onCancel = vi.fn();
+    const { field } = avecPersonnes([CAMILLE], { mode: "edit", onCancel });
+    await ouvrirLaListe(field);
+    touche(field, "Escape");
+    await vi.waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
+    expect(onCancel).not.toHaveBeenCalled();
+    touche(field, "Escape");
+    expect(onCancel).toHaveBeenCalledOnce();
+  });
+
+  it("en mode édition, rend à l'envoi les mentions du message — elles disparaissaient à la correction", () => {
+    const camille = { id: "e".repeat(24), name: "Camille", slug: "camille" };
+    const { onSubmit, field } = mount({ mode: "edit", initialValue: "merci @camille", initialMentions: [camille] });
+    expect(field.querySelector("[data-type='mention']")?.textContent).toBe("@Camille");
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("merci @camille", [camille]);
+  });
+
+  it("garde le type d'une mention venue du legacy : une organisation ne devient pas un citoyen", () => {
+    const orga = { id: "f".repeat(24), name: "Une orga", slug: "une_orga", type: "organizations" };
+    const { onSubmit, field } = mount({ mode: "edit", initialValue: "avec @une_orga", initialMentions: [orga] });
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("avec @une_orga", [orga]);
+  });
+
+  it("une mention retirée du texte n'est plus renvoyée : on ne notifie pas qui n'est plus cité", () => {
+    const camille = { id: "e".repeat(24), name: "Camille", slug: "camille" };
+    const { onSubmit, field } = mount({ mode: "edit", initialValue: "merci @camille", initialMentions: [camille] });
+    act(() => { field.editor.commands.setContent("<p>merci à tous</p>"); });
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("merci à tous", []);
+  });
+
+  it("un `@slug` tapé à la main, sans passer par la liste, n'est pas une mention", () => {
+    const { onSubmit, field } = mount();
+    type(field, "merci @camille");
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("merci @camille", []);
   });
 });
 
@@ -173,44 +711,186 @@ describe("CommentComposer — réponse et édition", () => {
     const onStopReplying = vi.fn();
     mount({ replyingTo: { id: "x", author: "Camille" }, onStopReplying });
     expect(screen.getByText(/Réponse à Camille/i)).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: /ne plus répondre/i }));
+    fireEvent.click(bouton(/ne plus répondre/i));
     expect(onStopReplying).toHaveBeenCalled();
   });
 
-  it("en mode édition, rend à l'envoi les mentions du message — elles disparaissaient à la correction", () => {
-    const camille = { id: "e".repeat(24), name: "Camille", slug: "camille" };
-    const { onSubmit, field } = mount({ mode: "edit", initialValue: "merci @camille", initialMentions: [camille] });
-    fireEvent.keyDown(field, { key: "Enter" });
-    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("merci @camille", [camille]);
+  // Choisir « Répondre » ne déplaçait ni le focus ni la lecture d'écran : la cible du champ, tout
+  // en bas de la page, changeait en silence.
+  it("choisir « Répondre » donne le focus au champ", async () => {
+    const { field, update } = mount();
+    await image();
+    expect(document.activeElement).not.toBe(field);
+    update({ replyingTo: { id: "x", author: "Camille" } });
+    await image();
+    expect(document.activeElement).toBe(field);
   });
 
-  it("en mode édition : libellé « Enregistrer », valeur initiale, et Échap annule", () => {
+  it("`autoFocus` donne le focus au champ dès qu'il est là ; sans lui, non", async () => {
+    const sans = mount().field;
+    await image();
+    expect(document.activeElement).not.toBe(sans);
+    const { field } = mount({ autoFocus: true, initialValue: "brouillon" });
+    await image();
+    expect(document.activeElement).toBe(field);
+  });
+
+  it("en mode édition : libellé « Enregistrer », le message relu tel que le fil le rend, et Échap annule", () => {
     const onCancel = vi.fn();
-    const { field } = mount({ mode: "edit", initialValue: "texte existant", onCancel });
-    expect(field.value).toBe("texte existant");
-    expect(screen.getByRole("button", { name: /enregistrer/i })).toBeTruthy();
-    fireEvent.keyDown(field, { key: "Escape" });
-    expect(onCancel).toHaveBeenCalled();
+    const { field } = mount({ mode: "edit", initialValue: "du **gras** et\nune ligne", onCancel });
+    expect(field.querySelector("strong")?.textContent).toBe("gras");
+    expect(field.querySelector("br")).toBeTruthy();
+    expect(bouton(/enregistrer/i)).toBeTruthy();
+    touche(field, "Escape");
+    expect(onCancel).toHaveBeenCalledOnce();
+  });
+
+  it("« Annuler » n'existe qu'en édition, et rend la main à l'hôte", () => {
+    const onCancel = vi.fn();
+    mount({ mode: "edit", onCancel });
+    fireEvent.click(bouton("Annuler"));
+    expect(onCancel).toHaveBeenCalledOnce();
+    // En création, pas de bouton « Annuler » : Échap suffit, et il n'y a rien à défaire.
+    expect(within(mount({ onCancel }).container).queryByRole("button", { name: "Annuler" })).toBeNull();
+  });
+
+  it("un message relu puis renvoyé sans y toucher part tel qu'il était", () => {
+    const texte = "Bonjour **tous**,\n\n- un\n- deux\n\n> cité\n\nvoir https://exemple.org/a_b";
+    const { onSubmit } = mount({ mode: "edit", initialValue: texte });
+    act(() => { fireEvent.click(bouton(/enregistrer/i)); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith(texte, []);
+  });
+
+  /**
+   * « Échap m'appartient » — mais seulement quand il a quelque chose à faire. La modale des
+   * discussions lit cet attribut sur un ANCÊTRE de la cible pour ne pas se fermer sur la même frappe.
+   */
+  it("revendique Échap quand il y a une édition à annuler, pas autrement", () => {
+    expect(mount().field.closest("[data-comment-escape]")).toBeNull();
+    expect(mount({ mode: "edit", onCancel: vi.fn() }).field.closest("[data-comment-escape]")).toBeTruthy();
+  });
+
+  it("sans édition à annuler, Échap n'est pas confisquée : la modale qui l'entoure la reçoit", () => {
+    const { field } = mount();
+    type(field, "bonjour");
+    expect(fireEvent.keyDown(field, { key: "Escape" })).toBe(true);
+  });
+
+  it("consommée, Échap ne va pas plus loin : ce qui entoure le composer ne la revoit pas", () => {
+    const dehors = vi.fn();
+    const { field, container } = mount({ mode: "edit", onCancel: vi.fn() });
+    container.addEventListener("keydown", dehors);
+    expect(fireEvent.keyDown(field, { key: "Escape" })).toBe(false);
+    expect(dehors).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Dans la modale des discussions, Échap arrive DÉJÀ neutralisée : pour ne pas se fermer, Radix
+   * — qui écoute sur `document`, en capture — appelle `preventDefault`. Or l'éditeur ignore une
+   * touche neutralisée. Vu au navigateur le 13/10 : l'édition ne s'annulait plus, la liste de
+   * mentions ne se refermait plus. On rejoue ici la modale par ce qu'elle fait à la touche.
+   */
+  describe("dans une modale, qui neutralise la touche avant nous", () => {
+    const neutraliser = (event: KeyboardEvent) => { if (event.key === "Escape") event.preventDefault(); };
+    beforeAll(() => { document.addEventListener("keydown", neutraliser, true); });
+    afterAll(() => { document.removeEventListener("keydown", neutraliser, true); });
+
+    it("Échap annule quand même l'édition", () => {
+      const onCancel = vi.fn();
+      const { field } = mount({ mode: "edit", initialValue: "à corriger", onCancel });
+      touche(field, "Escape");
+      expect(onCancel).toHaveBeenCalledOnce();
+    });
+
+    it("Échap referme quand même la liste de mentions — sans annuler l'édition", async () => {
+      const onCancel = vi.fn();
+      const searchMembers = vi.fn().mockResolvedValue([{ id: "a".repeat(24), serverData: { name: "Camille Martin", slug: "camille-martin" } }]);
+      const entity = { id: "e".repeat(24), searchMembers } as unknown as EntityTypes;
+      const { field } = mount({ mode: "edit", onCancel, entity });
+      type(field, "@ca");
+      await screen.findByRole("listbox");
+      touche(field, "Escape");
+      await vi.waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
+      expect(onCancel).not.toHaveBeenCalled();
+      expect(field.closest("[data-comment-escape]")).toBeTruthy();
+    });
   });
 });
 
 describe("CommentComposer — images (B1 levé)", () => {
+  const presse = (donnees: { files?: File[]; texte?: string }) => ({
+    clipboardData: {
+      files: donnees.files ?? [], items: [],
+      getData: (type: string) => (type === "text/plain" ? donnees.texte ?? "" : ""),
+    },
+  });
+
   it("colle une image : elle est JOINTE, plus refusée", () => {
     const onAddImages = vi.fn();
     const { field } = mount({ onAddImages });
     const file = new File(["x"], "photo.png", { type: "image/png" });
-    fireEvent.paste(field, {
-      clipboardData: { files: [file], items: [], getData: () => "" },
-    });
+    act(() => { fireEvent.paste(field, presse({ files: [file] })); });
     expect(onAddImages).toHaveBeenCalledWith([file]);
+    expect(field.editor.getText()).toBe("");
   });
 
   // Confisquer tout collage ferait perdre son texte à qui colle un paragraphe : la garde ne
   // doit se déclencher que sur une vraie image.
-  it("ne confisque pas un collage de texte", () => {
+  it("ne confisque pas un collage de texte : il arrive dans le champ", () => {
     const onAddImages = vi.fn();
     const { field } = mount({ onAddImages });
-    fireEvent.paste(field, { clipboardData: { files: [], items: [], getData: () => "du texte" } });
+    act(() => { fireEvent.paste(field, presse({ texte: "du texte" })); });
+    expect(onAddImages).not.toHaveBeenCalled();
+    expect(field.editor.getText()).toBe("du texte");
+  });
+
+  it("sans hôte pour les recevoir, une image collée n'est pas confisquée", () => {
+    const { field } = mount();
+    const file = new File(["x"], "photo.png", { type: "image/png" });
+    expect(() => act(() => { fireEvent.paste(field, presse({ files: [file], texte: "légende" })); })).not.toThrow();
+    expect(field.editor.getText()).toBe("légende");
+  });
+
+  // Les règles de collage du kit repassaient derrière le markdown, avec leur lecture à elles.
+  it("coller « 2 * 3 * 4 » ne met rien en italique : le texte collé se lit comme le fil le lira", () => {
+    const { field, onSubmit } = mount();
+    act(() => { fireEvent.paste(field, presse({ texte: "2 * 3 * 4 = 24" })); });
+    expect(field.querySelector("em")).toBeNull();
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("2 \\* 3 \\* 4 = 24", []);
+  });
+
+  it("coller du texte, c'est le relire comme le fil le lira : une liste collée reste une liste", () => {
+    const { field, onSubmit } = mount();
+    act(() => { fireEvent.paste(field, presse({ texte: "- un\n- deux" })); });
+    expect([...field.querySelectorAll("ul li")].map(li => li.textContent)).toEqual(["un", "deux"]);
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("- un\n- deux", []);
+  });
+
+  // jsdom ne sait pas dire OÙ l'on dépose (`elementFromPoint`), et l'éditeur s'arrête avant
+  // d'appeler son gestionnaire : on l'appelle comme lui, avec le même événement.
+  const deposer = (field: Champ, fichiers: File[], deplace = false) => {
+    const event = { dataTransfer: { files: fichiers, items: [], getData: () => "" }, preventDefault: vi.fn() } as unknown as DragEvent;
+    const pris = field.editor.view.someProp("handleDrop", gerer => gerer(field.editor.view, event, Slice.empty, deplace));
+    return { pris: pris === true, event };
+  };
+
+  it("dépose une image : elle est jointe elle aussi", () => {
+    const onAddImages = vi.fn();
+    const { field } = mount({ onAddImages });
+    const file = new File(["x"], "photo.png", { type: "image/png" });
+    const { pris, event } = deposer(field, [file]);
+    expect(pris).toBe(true);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(onAddImages).toHaveBeenCalledWith([file]);
+  });
+
+  it("un dépôt qui n'apporte pas d'image, ou qui déplace du texte du champ, n'est pas confisqué", () => {
+    const onAddImages = vi.fn();
+    const { field } = mount({ onAddImages });
+    expect(deposer(field, []).pris).toBe(false);
+    expect(deposer(field, [new File(["x"], "photo.png", { type: "image/png" })], true).pris).toBe(false);
     expect(onAddImages).not.toHaveBeenCalled();
   });
 
@@ -223,7 +903,7 @@ describe("CommentComposer — images (B1 levé)", () => {
 
   it("offre le bouton d'image dès que l'hôte sait en recevoir", () => {
     mount({ onAddImages: vi.fn() });
-    expect(screen.getByRole("button", { name: /joindre une image/i })).toBeTruthy();
+    expect(bouton(/joindre une image/i)).toBeTruthy();
   });
 
   // `Comment::insert` accepte explicitement un message sans texte s'il porte des images : le
@@ -233,9 +913,10 @@ describe("CommentComposer — images (B1 levé)", () => {
       localId: "img-1", name: "photo.png", previewUrl: null,
       status: "ready" as const, docId: "a".repeat(24),
     };
-    mount({ onAddImages: vi.fn(), onRemoveImage: vi.fn(), images: [image] });
-    const envoyer = screen.getByRole("button", { name: /envoyer/i }) as HTMLButtonElement;
-    expect(envoyer.disabled).toBe(false);
+    const { onSubmit } = mount({ onAddImages: vi.fn(), onRemoveImage: vi.fn(), images: [image] });
+    expect(bouton(/envoyer/i).disabled).toBe(false);
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("", []);
   });
 
   // Envoyer pendant un téléversement perdrait l'image : son identifiant n'existe pas encore.
@@ -245,8 +926,7 @@ describe("CommentComposer — images (B1 levé)", () => {
       status: "uploading" as const, docId: null,
     };
     mount({ onAddImages: vi.fn(), onRemoveImage: vi.fn(), images: [image], imagesBusy: true });
-    const envoyer = screen.getByRole("button", { name: /envoyer/i }) as HTMLButtonElement;
-    expect(envoyer.disabled).toBe(true);
+    expect(bouton(/envoyer/i).disabled).toBe(true);
   });
 
   it("explique un refus plutôt que d'ignorer le fichier", () => {
@@ -268,7 +948,8 @@ describe("CommentComposer — image qui ne partira pas", () => {
     status, docId: status === "ready" ? String(n).repeat(24) : null,
   });
   const hote = { onAddImages: vi.fn(), onRemoveImage: vi.fn() };
-  const envoyer = () => screen.getByRole("button", { name: /envoyer/i }) as HTMLButtonElement;
+  const envoyer = () => bouton(/envoyer/i);
+  // Les régions d'état qui PARLENT : celle de la liste de mentions existe toujours, vide.
   const annonces = (role: "alert" | "status") =>
     screen.queryAllByRole(role).map(e => e.textContent ?? "").filter(texte => texte.trim() !== "");
 
@@ -276,9 +957,9 @@ describe("CommentComposer — image qui ne partira pas", () => {
   it("Entrée n'envoie pas tant qu'une image téléverse, et le texte reste dans le champ", () => {
     const { onSubmit, field } = mount({ ...hote, images: [image("uploading")], imagesBusy: true });
     type(field, "avec ma photo");
-    fireEvent.keyDown(field, { key: "Enter" });
+    touche(field, "Enter");
     expect(onSubmit).not.toHaveBeenCalled();
-    expect(field.value).toBe("avec ma photo");
+    expect(field.editor.getText()).toBe("avec ma photo");
   });
 
   // La retenue se lit dans le STATUT des images : un hôte qui oublierait `imagesBusy` laissait
@@ -287,7 +968,7 @@ describe("CommentComposer — image qui ne partira pas", () => {
     const { onSubmit, field } = mount({ ...hote, images: [image("uploading")] });
     type(field, "avec ma photo");
     expect(envoyer().disabled).toBe(true);
-    fireEvent.keyDown(field, { key: "Enter" });
+    touche(field, "Enter");
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
@@ -297,7 +978,7 @@ describe("CommentComposer — image qui ne partira pas", () => {
     const { field, update } = mount({ ...hote, images: [image("uploading")], imagesBusy: true });
     type(field, "avec ma photo");
     expect(annonces("status").some(texte => /encore en cours d'envoi/.test(texte))).toBe(false);
-    fireEvent.keyDown(field, { key: "Enter" });
+    touche(field, "Enter");
     expect(annonces("status").some(texte => /^L'image est encore en cours d'envoi/.test(texte))).toBe(true);
 
     // L'image arrive : la phrase tombe d'elle-même.
@@ -311,7 +992,7 @@ describe("CommentComposer — image qui ne partira pas", () => {
   it("compte les images attendues quand elles sont plusieurs", () => {
     const { field } = mount({ ...hote, images: [image("uploading", 1), image("uploading", 2)], imagesBusy: true });
     type(field, "avec mes photos");
-    fireEvent.keyDown(field, { key: "Enter" });
+    touche(field, "Enter");
     expect(annonces("status").some(texte => /^2 images sont encore en cours d'envoi/.test(texte))).toBe(true);
   });
 
@@ -319,16 +1000,16 @@ describe("CommentComposer — image qui ne partira pas", () => {
     const { onSubmit, field } = mount({ ...hote, images: [image("error")] });
     type(field, "avec ma photo");
     expect(envoyer().disabled).toBe(true);
-    fireEvent.keyDown(field, { key: "Enter" });
+    touche(field, "Enter");
     expect(onSubmit).not.toHaveBeenCalled();
-    expect(field.value).toBe("avec ma photo");
+    expect(field.editor.getText()).toBe("avec ma photo");
   });
 
   // Une image prête ne rachète pas celle qui a échoué : l'auteur en a joint deux.
   it("retient l'envoi même si une autre image, elle, est prête", () => {
     const { onSubmit, field } = mount({ ...hote, images: [image("ready", 1), image("error", 2)] });
     expect(envoyer().disabled).toBe(true);
-    fireEvent.keyDown(field, { key: "Enter" });
+    touche(field, "Enter");
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
@@ -371,7 +1052,7 @@ describe("CommentComposer — image qui ne partira pas", () => {
   it("offre le bouton de retrait que la phrase désigne, relié à l'hôte", () => {
     const onRemoveImage = vi.fn();
     mount({ onAddImages: vi.fn(), onRemoveImage, images: [image("ready", 1), image("error", 2)] });
-    fireEvent.click(screen.getByRole("button", { name: "Retirer photo-2.png" }));
+    fireEvent.click(bouton("Retirer photo-2.png"));
     expect(onRemoveImage).toHaveBeenCalledExactlyOnceWith("img-error-2");
   });
 
@@ -381,7 +1062,7 @@ describe("CommentComposer — image qui ne partira pas", () => {
     const { onSubmit, field } = mount({ onAddImages: vi.fn(), images: [image("error")] });
     expect(screen.queryByRole("alert")).toBeNull();
     type(field, "tant pis pour la photo");
-    fireEvent.keyDown(field, { key: "Enter" });
+    touche(field, "Enter");
     expect(onSubmit).toHaveBeenCalledExactlyOnceWith("tant pis pour la photo", []);
   });
 
@@ -392,7 +1073,7 @@ describe("CommentComposer — image qui ne partira pas", () => {
     update({ ...hote, images: [] });
     expect(screen.queryByRole("alert")).toBeNull();
     expect(envoyer().disabled).toBe(false);
-    fireEvent.keyDown(field, { key: "Enter" });
+    touche(field, "Enter");
     expect(onSubmit).toHaveBeenCalledExactlyOnceWith("tant pis pour la photo", []);
   });
 
@@ -401,10 +1082,10 @@ describe("CommentComposer — image qui ne partira pas", () => {
   it("une image retirée de la course n'autorise pas un message sans texte", () => {
     const { onSubmit, field, update } = mount({ ...hote, images: [image("error")] });
     expect(envoyer().disabled).toBe(true);
-    fireEvent.keyDown(field, { key: "Enter" });
+    touche(field, "Enter");
     update({ ...hote, images: [image("uploading")], imagesBusy: true });
     expect(envoyer().disabled).toBe(true);
-    fireEvent.keyDown(field, { key: "Enter" });
+    touche(field, "Enter");
     expect(onSubmit).not.toHaveBeenCalled();
   });
 });

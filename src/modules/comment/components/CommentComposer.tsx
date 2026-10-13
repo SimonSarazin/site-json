@@ -1,26 +1,21 @@
-import { Suspense, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { lazy } from "vite-preload";
-import { Bold, Code, ImagePlus, Italic, Link2, List, Quote, Send, SmilePlus, X } from "lucide-react";
-import type { EntityTypes, User } from "@communecter/cocolight-api-client";
+import {
+  Bold, Code, ImagePlus, Italic, Link2, Link2Off, List, ListOrdered, Quote, Send, SmilePlus, SquareCode, Strikethrough, X,
+} from "lucide-react";
+import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
-import { useSearchUsers } from "@/hooks/useSearchUsers";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  MARK_KINDS,
-  applyMark,
-  findMentionQuery,
-  insertAtCursor,
-  replaceMentionQuery,
-  shouldSubmitOnEnter,
-  type FieldState,
-  type MarkKind,
-} from "../lib/composerText";
-import { ACCEPTED_IMAGE_TYPES, imageFilesFrom, type ImageRejection } from "../lib/commentImages";
+import { ACCEPTED_IMAGE_TYPES, type ImageRejection } from "../lib/commentImages";
+import { normalizeLinkAddress } from "../lib/richText/linkAddress";
 import type { PendingImage } from "../hooks/useCommentImages";
 import { ComposerImages } from "./ComposerImages";
+import { loadEditorSurface, useEditorSurface } from "./editor/editorStore";
+import { FORMAT_KINDS, type EditorSurfaceHandle, type EditorSurfaceState, type FormatKind } from "./editor/editorTypes";
 import type { CommentMention } from "../types";
 import "../styles.css";
 
@@ -28,8 +23,9 @@ import "../styles.css";
 // Sans cela, chaque page portant un fil paierait son poids au premier rendu.
 const EmojiPicker = lazy(() => import("emoji-picker-react"));
 
-const MARK_ICONS: Record<MarkKind, typeof Bold> = {
-  bold: Bold, italic: Italic, code: Code, link: Link2, quote: Quote, list: List,
+const FORMAT_ICONS: Record<FormatKind, typeof Bold> = {
+  bold: Bold, italic: Italic, strike: Strikethrough, code: Code, link: Link2,
+  quote: Quote, list: List, ordered: ListOrdered, codeBlock: SquareCode,
 };
 
 export interface CommentComposerProps {
@@ -37,8 +33,8 @@ export interface CommentComposerProps {
   readonly onCancel?: () => void;
   readonly initialValue?: string;
   /**
-   * Les mentions du message édité. Sans elles, l'édition repartait d'une liste vide : le filtre
-   * « encore présentes dans le texte » ne gardait rien, et le serveur effaçait les mentions.
+   * Les mentions du message édité. Sans elles, l'édition repartait d'une liste vide : les `@slug`
+   * du texte restaient du texte, et le serveur effaçait les mentions.
    */
   readonly initialMentions?: readonly CommentMention[];
   readonly placeholder?: string;
@@ -55,8 +51,7 @@ export interface CommentComposerProps {
   /**
    * Les images jointes, telles que `useCommentImages` les tient.
    *
-   * Le composer ne téléverse rien : il reçoit des aperçus et deux rappels. C'est ce qui permet
-   * de remplacer cette zone de saisie par un vrai éditeur (B11) sans toucher au téléversement.
+   * Le composer ne téléverse rien : il reçoit des aperçus et deux rappels.
    *
    * C'est leur STATUT qui retient l'envoi : tant qu'une image est en route (`uploading`) ou en
    * échec (`error`), le message ne part pas — il partirait sans elle. `images` et
@@ -80,11 +75,14 @@ export interface CommentComposerProps {
 /**
  * Zone de saisie d'un message.
  *
- * Maison, sur `Textarea`, et non `@uiw/react-md-editor` : cet éditeur est client-only (un
- * squelette de chargement à chaque clic sur « Répondre »), se thème hors des jetons du site, et
- * possède son propre champ — où l'on ne peut brancher ni la détection du `@` ni le collage.
- * Ici, toute la logique de texte vit dans `lib/composerText.ts`, pure et testée ; le composant
- * ne fait que la relier au DOM et replacer le curseur.
+ * **Une coquille et un éditeur.** Ce composant est la coquille : le bandeau « réponse à », la barre
+ * d'outils, les images, les phrases d'état, l'envoi. La zone où l'on écrit est un éditeur Tiptap
+ * (`editor/EditorSurface`) chargé côté client seulement : la coquille n'en importe RIEN, elle lui
+ * parle par une poignée (`EditorSurfaceHandle`) et le trouve dans un magasin (`editorStore`).
+ * Tant que son code n'est pas arrivé, elle montre un champ inerte de même allure, et n'envoie rien.
+ *
+ * **Ce qui part est du markdown** — le texte que le fil rend et que le legacy stocke —, tiré du
+ * document de l'éditeur à l'envoi, avec les personnes qu'il mentionne.
  */
 export function CommentComposer({
   onSubmit,
@@ -108,101 +106,25 @@ export function CommentComposer({
   className,
 }: CommentComposerProps) {
   const t = useT("modules/comment");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const listboxId = useId();
-  const [text, setText] = useState(initialValue);
+  const { surface: Surface, failed: editeurEnEchec } = useEditorSurface();
+  const editeur = useRef<EditorSurfaceHandle | null>(null);
+  // Ce que l'éditeur dit de lui. `null` tant qu'il n'a rien dit : on ne sait pas encore s'il est vide.
+  const [etat, setEtat] = useState<EditorSurfaceState | null>(null);
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const [lienOuvert, setLienOuvert] = useState(false);
+  const [adresse, setAdresse] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [highlighted, setHighlighted] = useState(0);
-  // Les personnes réellement mentionnées : seules celles choisies dans la liste comptent, pas
-  // un `@quelquechose` tapé à la main qui ne correspondrait à personne.
-  const [mentions, setMentions] = useState<CommentMention[]>(() => [...(initialMentions ?? [])]);
-  // Sélection à restaurer après un rendu — les fonctions pures la calculent, le DOM l'applique.
-  const pendingSelection = useRef<{ start: number; end: number } | null>(null);
+  const aideId = useId();
+  const adresseId = useId();
 
-  const [mentionQuery, setMentionQuery] = useState<{ start: number; query: string } | null>(null);
-  const { data: candidates = [] } = useSearchUsers(mentionQuery?.query ?? "", mentionQuery !== null, entity);
-
-  /** Le slug est ce qui fait une mention ; sans lui, la personne n'est pas choisissable. */
-  const slugDe = (user: User): string => {
-    const data = (user as unknown as { serverData?: Record<string, unknown> }).serverData ?? {};
-    return typeof data.slug === "string" ? data.slug : "";
-  };
-
-  // La liste de mentions est-elle ouverte ? Une seule expression, lue par les attributs ARIA
-  // du champ ET par le rendu de la liste : les deux ne peuvent pas diverger.
-  const suggesting = mentionQuery !== null && candidates.length > 0;
-
-  /**
-   * L'indice réellement surligné, **borné au rendu**.
-   *
-   * `candidates` peut rétrécir sans qu'on ait tapé quoi que ce soit — `useSearchUsers` refait
-   * sa requête au retour sur l'onglet. Un `highlighted` resté à 5 sur une liste de 2 pointerait
-   * alors un `aria-activedescendant` inexistant, et Entrée enverrait le message avec le `@jo`
-   * brut au lieu de choisir une mention.
-   */
-  const actif = Math.min(highlighted, Math.max(candidates.length - 1, 0));
-
-  const fieldState = useCallback((): FieldState => {
-    const el = textareaRef.current;
-    return {
-      text,
-      selectionStart: el?.selectionStart ?? text.length,
-      selectionEnd: el?.selectionEnd ?? text.length,
-    };
-  }, [text]);
-
-  /** Applique un nouvel état de champ ET programme le replacement du curseur. */
-  const applyState = useCallback((next: FieldState) => {
-    setText(next.text);
-    pendingSelection.current = { start: next.selectionStart, end: next.selectionEnd };
-  }, []);
-
-  // Replacement du curseur et auto-grandissement : après le rendu, avant la peinture, pour
-  // qu'aucune frame n'affiche la mauvaise hauteur ou le curseur au mauvais endroit.
-  useLayoutEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-
-    const selection = pendingSelection.current;
-    if (selection) {
-      el.focus();
-      el.setSelectionRange(selection.start, selection.end);
-      pendingSelection.current = null;
-    }
-
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 320)}px`;
-  }, [text]);
-
-  useEffect(() => {
-    if (autoFocus) textareaRef.current?.focus();
-  }, [autoFocus]);
+  // Le code de l'éditeur est demandé au montage du premier composer de l'onglet, puis gardé.
+  useEffect(() => { void loadEditorSurface(); }, []);
 
   // Choisir « Répondre » ne déplaçait ni le focus ni la lecture d'écran : la cible du champ,
   // tout en bas de la page, changeait en silence. Le curseur y va désormais.
   useEffect(() => {
-    if (replyingTo) textareaRef.current?.focus();
+    if (replyingTo) editeur.current?.focus();
   }, [replyingTo]);
-
-  const refreshMentionQuery = useCallback((value: string, caret: number) => {
-    const found = findMentionQuery(value, caret);
-    setMentionQuery(found);
-    setHighlighted(0);
-  }, []);
-
-  const pickMention = useCallback((user: User) => {
-    const data = (user as unknown as { serverData?: Record<string, unknown> }).serverData ?? {};
-    const slug = typeof data.slug === "string" ? data.slug : "";
-    const name = typeof data.name === "string" ? data.name : slug;
-    const id = (user as unknown as { id?: string }).id ?? "";
-    if (!slug || !mentionQuery) return;
-
-    applyState(replaceMentionQuery(fieldState(), mentionQuery, slug));
-    setMentions(previous =>
-      previous.some(m => m.slug === slug) ? previous : [...previous, { id, name, slug }]);
-    setMentionQuery(null);
-  }, [applyState, fieldState, mentionQuery]);
 
   const joint = (images?.length ?? 0) > 0;
   const idsEnRoute = useMemo(
@@ -224,71 +146,42 @@ export function CommentComposer({
   const attendues = idsEnRoute.filter(id => tentative.includes(id)).length;
 
   const submit = useCallback(() => {
-    const trimmed = text.trim();
+    // Sans éditeur, rien ne part — pas même des images seules : en édition, ce serait enregistrer
+    // un message vidé de son texte.
+    const lu = editeur.current?.read() ?? null;
+    if (lu === null) return;
     // Un message peut n'être QUE des images : `Comment::insert` l'accepte explicitement
     // (la garde backend porte sur « ni texte ni média », pas sur le texte seul).
-    if ((!trimmed && !joint) || disabled || submitting) return;
+    if ((!lu.text && !joint) || disabled || submitting) return;
     if (retenu) {
       // Un échec a déjà sa phrase, affichée sans attendre la tentative.
       if (idsEnRoute.length > 0) setTentative(idsEnRoute);
       return;
     }
-    // Seules les mentions encore présentes dans le texte partent au serveur : en retirer une
-    // en éditant la phrase ne doit pas notifier quelqu'un qui n'est plus cité.
-    onSubmit(trimmed, mentions.filter(m => trimmed.includes(`@${m.slug}`)));
-    setText("");
-    setMentions([]);
-    setMentionQuery(null);
-  }, [text, joint, disabled, submitting, retenu, idsEnRoute, onSubmit, mentions]);
+    // Les mentions sont celles du DOCUMENT : en retirer une en éditant la phrase ne notifie pas
+    // quelqu'un qui n'est plus cité.
+    onSubmit(lu.text, lu.mentions);
+    editeur.current?.clear();
+  }, [joint, disabled, submitting, retenu, idsEnRoute, onSubmit]);
 
-  const onKeyDown = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // La liste de mentions capte les flèches et Entrée tant qu'elle est ouverte.
-    if (mentionQuery && candidates.length > 0) {
-      if (event.key === "ArrowDown") {
-        event.preventDefault();
-        setHighlighted((actif + 1) % candidates.length);
-        return;
-      }
-      if (event.key === "ArrowUp") {
-        event.preventDefault();
-        setHighlighted((actif - 1 + candidates.length) % candidates.length);
-        return;
-      }
-      if (event.key === "Enter" || event.key === "Tab") {
-        const chosen = candidates[actif];
-        // On ne confisque la touche que si l'on va RÉELLEMENT choisir. Sans slug, `pickMention`
-        // sort sans rien faire : confisquer ferait une Entrée morte et un Tab qui n'échappe
-        // plus au champ.
-        if (chosen && slugDe(chosen)) {
-          event.preventDefault();
-          pickMention(chosen);
-          return;
-        }
-      }
-      if (event.key === "Escape") {
-        event.preventDefault();
-        setMentionQuery(null);
-        return;
-      }
-    }
-
-    if (shouldSubmitOnEnter(event.nativeEvent as unknown as Parameters<typeof shouldSubmitOnEnter>[0])) {
-      event.preventDefault();
-      submit();
-      return;
-    }
-
-    if (event.key === "Escape" && onCancel) {
-      event.preventDefault();
-      onCancel();
-    }
-  }, [mentionQuery, candidates, actif, pickMention, submit, onCancel]);
+  const ouvrirLeLien = (ouvert: boolean) => {
+    // L'adresse du lien où se trouve le curseur, s'il y en a un : on la corrige, on ne la retape pas.
+    if (ouvert) setAdresse(editeur.current?.currentLink() ?? "");
+    setLienOuvert(ouvert);
+  };
+  const adresseRetenue = normalizeLinkAddress(adresse);
+  const poserLeLien = (href: string | null) => {
+    setLienOuvert(false);
+    editeur.current?.setLink(href);
+  };
 
   const defaultPlaceholder = mode === "edit"
     ? t("composer.editPlaceholder")
     : replyingTo
       ? t("composer.replyPlaceholder", undefined, { author: replyingTo.author })
       : t("composer.placeholder");
+  // La barre d'outils n'a rien à commander tant que l'éditeur n'est pas là.
+  const barreInerte = disabled || etat === null;
 
   return (
     <div className={cn("comment-thread relative rounded-md border border-border bg-card", className)}>
@@ -314,63 +207,36 @@ export function CommentComposer({
         </div>
       ) : null}
 
-      <Textarea
-        ref={textareaRef}
-        value={text}
-        rows={1}
-        disabled={disabled}
-        placeholder={String(placeholder ?? defaultPlaceholder)}
-        aria-label={String(defaultPlaceholder)}
-        // Sans annonce, taper « @ » ouvrait une liste qu'aucun lecteur d'écran ne mentionnait,
-        // et les flèches déplaçaient une surbrillance signalée nulle part.
-        //
-        // ⚠️ On garde le rôle IMPLICITE `textbox`. `coform/TagsField` pose `role="combobox"`,
-        // mais sur un `<input>` : « ARIA in HTML » n'autorise aucun rôle de remplacement sur un
-        // `<textarea>`, et le champ cesserait d'être annoncé comme une zone multiligne. Les
-        // attributs ci-dessous sont, eux, explicitement admis sur `textbox` — et c'est la
-        // région d'état plus bas qui dit qu'une liste s'est ouverte.
-        aria-autocomplete="list"
-        aria-haspopup="listbox"
-        aria-controls={suggesting ? listboxId : undefined}
-        aria-activedescendant={suggesting ? `${listboxId}-${actif}` : undefined}
-        /**
-         * « Échap m'appartient » — mais seulement quand il a quelque chose à faire : fermer la
-         * liste de mentions, ou annuler l'édition en cours.
-         *
-         * Sans cette déclaration, le composeur ouvert DANS la modale des discussions annulait
-         * l'édition ET fermait la modale sur la même frappe : Radix écoute la touche sur
-         * `document` en phase de capture, si bien que le `preventDefault` du gestionnaire
-         * ci-dessous — qui bulle — arrivait trop tard. `DiscussionModal` lit cet attribut sur
-         * la cible de l'événement pour laisser la main.
-         */
-        data-comment-escape={mentionQuery !== null || onCancel ? "" : undefined}
-        className="min-h-9 resize-none border-0 bg-transparent px-3 py-2 text-sm shadow-none
-                   focus-visible:ring-0 dark:bg-transparent"
-        onChange={event => {
-          setText(event.target.value);
-          refreshMentionQuery(event.target.value, event.target.selectionStart ?? 0);
-        }}
-        onKeyDown={onKeyDown}
-        onClick={event => refreshMentionQuery(text, event.currentTarget.selectionStart ?? 0)}
-        onPaste={event => {
-          // Le collage est le geste le plus courant pour joindre une capture d'écran — c'est
-          // d'ailleurs ainsi que les images de commentaire déjà en base ont été créées
-          // (`pastedimage.jpeg`). On ne confisque l'événement que s'il porte vraiment une
-          // image, sinon un collage de texte perdrait son contenu.
-          if (!onAddImages) return;
-          const fichiers = imageFilesFrom(event.clipboardData);
-          if (fichiers.length === 0) return;
-          event.preventDefault();
-          onAddImages(fichiers);
-        }}
-        onDragOver={onAddImages ? event => event.preventDefault() : undefined}
-        onDrop={onAddImages ? event => {
-          const fichiers = imageFilesFrom(event.dataTransfer);
-          if (fichiers.length === 0) return;
-          event.preventDefault();
-          onAddImages(fichiers);
-        } : undefined}
-      />
+      {Surface ? (
+        <Surface
+          initialValue={initialValue}
+          initialMentions={initialMentions ?? []}
+          placeholder={String(placeholder ?? defaultPlaceholder)}
+          label={String(defaultPlaceholder)}
+          describedBy={aideId}
+          disabled={disabled}
+          autoFocus={autoFocus}
+          entity={entity}
+          onSubmit={submit}
+          onCancel={onCancel}
+          onAddImages={onAddImages}
+          onStateChange={setEtat}
+          handleRef={editeur}
+        />
+      ) : editeurEnEchec ? (
+        // Sans l'éditeur on ne peut rien écrire : le dire, et offrir de le redemander.
+        <div role="alert" className="flex min-h-9 flex-wrap items-center gap-2 px-3 py-2 text-sm text-muted-foreground" data-comment-field-failed>
+          <span>{t("composer.editorFailed")}</span>
+          <Button type="button" variant="outline" size="sm" onClick={() => void loadEditorSurface()}>
+            {t("thread.retry")}
+          </Button>
+        </div>
+      ) : (
+        // La même allure que le champ vide, le temps que le code de l'éditeur arrive.
+        <div className="min-h-9 px-3 py-2 text-sm text-muted-foreground" aria-busy="true" data-comment-field-loading>
+          {String(placeholder ?? defaultPlaceholder)}
+        </div>
+      )}
 
       {images && onRemoveImage ? (
         <ComposerImages items={images} onRemove={onRemoveImage} disabled={disabled} />
@@ -396,69 +262,80 @@ export function CommentComposer({
         </p>
       ) : null}
 
-      {suggesting ? (
-        <ul
-          id={listboxId}
-          role="listbox"
-          aria-label={String(t("composer.mentionHint"))}
-          className="absolute bottom-full z-20 mb-1 max-h-56 w-full overflow-auto rounded-md border
-                     border-border bg-popover p-1 shadow-md"
-        >
-          {candidates.map((user, i) => {
-            const data = (user as unknown as { serverData?: Record<string, unknown> }).serverData ?? {};
-            const name = typeof data.name === "string" ? data.name : "";
-            const slug = typeof data.slug === "string" ? data.slug : "";
-            return (
-              // L'option est le `<li>` lui-même. Un `<button role="option">` à l'intérieur
-              // sortait l'option de la liste qui la possède, et surtout la mettait dans
-              // l'ordre de tabulation — une option ne se tabule pas, elle se désigne par
-              // `aria-activedescendant` pendant que le focus reste dans le champ.
-              <li
-                key={slug || String(i)}
-                id={`${listboxId}-${i}`}
-                role="option"
-                aria-selected={i === actif}
-                // `onMouseDown` et non `onClick` : le clic ferait perdre le focus au champ
-                // avant que la sélection ne soit posée, et le curseur sauterait à la fin.
-                onMouseDown={event => { event.preventDefault(); pickMention(user); }}
-                onMouseEnter={() => setHighlighted(i)}
-                className={cn(
-                  "flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm",
-                  i === actif ? "bg-accent text-accent-foreground" : "",
-                )}
-              >
-                <span className="truncate font-medium">{name}</span>
-                <span className="truncate text-xs text-muted-foreground">@{slug}</span>
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
-
       <div className="flex items-center justify-between gap-1 px-2 pb-2">
         {/* Les marques sont atténuées au repos et pleines au focus (cf. `styles.css`) : une
             barre d'outils à pleine intensité sous chaque fil est du bruit, mais la masquer
             ferait sauter la mise en page à chaque clic dans le champ. */}
-        <div className="comment-marks flex items-center gap-0.5">
-          {MARK_KINDS.map(mark => {
-            const Icon = MARK_ICONS[mark];
-            return (
+        <div className="comment-marks flex flex-wrap items-center gap-0.5">
+          {FORMAT_KINDS.map(kind => {
+            const Icon = FORMAT_ICONS[kind];
+            const actif = etat?.active[kind] ?? false;
+            const bouton = (
               <Button
-                key={mark}
+                key={kind}
                 type="button"
                 variant="ghost"
                 size="icon"
-                disabled={disabled}
-                className="size-7 rounded-full text-muted-foreground"
-                aria-label={String(t(`composer.marks.${mark}.label`))}
+                disabled={barreInerte}
+                className={cn("size-7 rounded-full text-muted-foreground", actif && "bg-accent text-accent-foreground")}
+                aria-label={String(t(`composer.marks.${kind}.label`))}
+                title={String(t(`composer.marks.${kind}.label`))}
+                // Un bouton à bascule : l'état se LIT, il ne se devine pas à la couleur.
+                aria-pressed={actif}
                 // `onMouseDown` empêche seulement le clic de voler le focus (et la sélection) au
-                // champ ; c'est `onClick` qui applique, et lui répond AUSSI à Entrée et Espace —
-                // la barre était morte au clavier (revue du 29/09).
+                // champ ; c'est `onClick` qui applique, et lui répond AUSSI à Entrée et Espace.
                 onMouseDown={event => event.preventDefault()}
-                onClick={() => applyState(applyMark(fieldState(), mark, String(t(`composer.marks.${mark}.example`))))}
+                onClick={kind === "link" ? undefined : () => editeur.current?.toggle(kind)}
               >
                 <Icon className="size-3.5" />
               </Button>
+            );
+            if (kind !== "link") return bouton;
+            return (
+              // Un lien demande une adresse : son bouton ouvre un champ, pas un dialogue de plus.
+              <Popover key={kind} open={lienOuvert} onOpenChange={ouvrirLeLien}>
+                <PopoverTrigger asChild>{bouton}</PopoverTrigger>
+                <PopoverContent
+                  className="flex w-auto items-center gap-1.5 p-2"
+                  align="start"
+                  // Refermé, le focus retourne au texte — pas au bouton : on reprend la phrase.
+                  onCloseAutoFocus={event => { event.preventDefault(); editeur.current?.focus(); }}
+                >
+                  <Label htmlFor={adresseId} className="sr-only">{t("composer.link.url")}</Label>
+                  <Input
+                    id={adresseId}
+                    type="url"
+                    inputMode="url"
+                    autoComplete="off"
+                    value={adresse}
+                    placeholder="https://"
+                    className="h-8 w-56"
+                    onChange={event => setAdresse(event.target.value)}
+                    // Entrée applique. Pas de `<form>` : son envoi remonterait à un formulaire hôte.
+                    onKeyDown={event => {
+                      if (event.key !== "Enter") return;
+                      event.preventDefault();
+                      if (adresseRetenue) poserLeLien(adresseRetenue);
+                    }}
+                  />
+                  <Button type="button" size="sm" disabled={!adresseRetenue} onClick={() => poserLeLien(adresseRetenue)}>
+                    {t("composer.link.apply")}
+                  </Button>
+                  {actif ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 shrink-0"
+                      aria-label={String(t("composer.link.remove"))}
+                      title={String(t("composer.link.remove"))}
+                      onClick={() => poserLeLien(null)}
+                    >
+                      <Link2Off className="size-3.5" />
+                    </Button>
+                  ) : null}
+                </PopoverContent>
+              </Popover>
             );
           })}
 
@@ -468,7 +345,7 @@ export function CommentComposer({
                 type="button"
                 variant="ghost"
                 size="icon"
-                disabled={disabled}
+                disabled={barreInerte}
                 className="size-7 rounded-full text-muted-foreground"
                 aria-label={String(t("composer.emoji"))}
               >
@@ -482,7 +359,7 @@ export function CommentComposer({
                 <Suspense fallback={<div className="p-4 text-xs text-muted-foreground">…</div>}>
                   <EmojiPicker
                     onEmojiClick={emoji => {
-                      applyState(insertAtCursor(fieldState(), emoji.emoji));
+                      editeur.current?.insertText(emoji.emoji);
                       setEmojiOpen(false);
                     }}
                   />
@@ -527,7 +404,7 @@ export function CommentComposer({
           ) : null}
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           {mode === "edit" && onCancel ? (
             <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
               {t("composer.cancel")}
@@ -536,7 +413,8 @@ export function CommentComposer({
           <Button
             type="button"
             size="sm"
-            disabled={disabled || submitting || retenu || (text.trim().length === 0 && !joint)}
+            // Tant que l'éditeur n'a rien dit, on ne sait pas ce qui partirait : le bouton attend.
+            disabled={disabled || submitting || retenu || etat === null || (etat.empty && !joint)}
             onClick={submit}
           >
             <Send className="size-3.5" />
@@ -545,12 +423,7 @@ export function CommentComposer({
         </div>
       </div>
 
-      {/* Ce que `aria-expanded` aurait dit si le rôle l'admettait : une région polie, lue à
-          l'ouverture de la liste puis silencieuse. */}
-      <p className="sr-only" role="status">
-        {suggesting ? String(t("composer.mentionCount", undefined, { count: candidates.length })) : ""}
-      </p>
-      <p className="sr-only">{t("composer.formattingHint")}</p>
+      <p id={aideId} className="sr-only">{t("composer.formattingHint")}</p>
     </div>
   );
 }

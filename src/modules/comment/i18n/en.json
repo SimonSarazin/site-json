@@ -33,34 +33,43 @@
     "stopReplying": "Stop replying",
     "emoji": "Insert an emoji",
     "mentionHint": "Type @ to mention someone",
-    "formattingHint": "**bold** · *italic* · `code` · > quote · - list · [link](url)",
+    "formattingHint": "Enter sends the message, Shift+Enter starts a new line. Keyboard formatting: **bold**, *italic*, ~~strikethrough~~, `code`, > quote, - list, 1. numbered list.",
+    "editorFailed": "The editor could not be loaded.",
     "mentionCount_one": "{{count}} person suggested",
     "mentionCount_other": "{{count}} people suggested",
     "marks": {
       "bold": {
-        "label": "Bold",
-        "example": "bold"
+        "label": "Bold"
       },
       "italic": {
-        "label": "Italic",
-        "example": "italic"
+        "label": "Italic"
+      },
+      "strike": {
+        "label": "Strikethrough"
       },
       "code": {
-        "label": "Code",
-        "example": "code"
+        "label": "Code"
       },
       "link": {
-        "label": "Link",
-        "example": "link text"
+        "label": "Link"
       },
       "quote": {
-        "label": "Quote",
-        "example": "quote"
+        "label": "Quote"
       },
       "list": {
-        "label": "List",
-        "example": "item"
+        "label": "Bulleted list"
+      },
+      "ordered": {
+        "label": "Numbered list"
+      },
+      "codeBlock": {
+        "label": "Code block"
       }
+    },
+    "link": {
+      "url": "Link address",
+      "apply": "Apply",
+      "remove": "Remove link"
     }
   },
   "images": {

@@ -1,8 +1,9 @@
 import { useMemo } from "react";
-import MarkdownIt from "markdown-it";
 import { sanitizeProse } from "@/lib/sanitize";
 import { cn } from "@/lib/utils";
+import { COMMENT_PROSE } from "../lib/commentProse";
 import { linkifyMentions, markSelfMentions } from "../lib/linkifyMentions";
+import { createCommentMarkdown } from "../lib/markdownEngine";
 import type { CommentMention } from "../types";
 
 /**
@@ -21,9 +22,11 @@ import type { CommentMention } from "../types";
  *
  * `breaks: true` est propre au fil : dans une discussion, un retour à la ligne simple est
  * voulu par celui qui écrit, alors qu'en markdown standard il serait ignoré.
+ *
+ * Le réglage lui-même vit dans `lib/markdownEngine` : l'éditeur du composer relit un message avec
+ * le MÊME, sans quoi ce qu'il montre pendant qu'on écrit ne serait pas ce que le fil affichera.
  */
-const parser = new MarkdownIt({ html: false, linkify: true, breaks: true })
-  .disable(["heading", "lheading", "image"]);
+const parser = createCommentMarkdown();
 
 /**
  * Tout lien SORTANT est marqué `rel="noopener noreferrer nofollow ugc"`.
@@ -76,13 +79,7 @@ export function CommentMarkdown({ text, mentions, meId = null, className }: Comm
     <div
       // Le conteneur `prose` porte toute la mise en forme : `sanitizeProse` retire `class`,
       // `style` et `id` du contenu, donc rien ne peut s'échapper de cette boîte.
-      className={cn(
-        "prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed text-foreground",
-        "prose-p:my-0.5 prose-ul:my-1 prose-ol:my-1 prose-blockquote:my-1",
-        "prose-a:text-primary prose-a:no-underline hover:prose-a:underline",
-        "prose-code:before:content-none prose-code:after:content-none",
-        className,
-      )}
+      className={cn(COMMENT_PROSE, className)}
       dangerouslySetInnerHTML={{ __html: html }}
       suppressHydrationWarning
     />

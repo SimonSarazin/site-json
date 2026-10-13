@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { createElement } from "react";
 import { render } from "@testing-library/react";
+import { COMMENT_PROSE } from "../lib/commentProse";
 import { CommentMarkdown } from "./CommentMarkdown";
 import type { CommentMention } from "../types";
 
@@ -90,6 +91,13 @@ describe("CommentMarkdown — injection", () => {
     expect(el.textContent).toContain("Titre géant");
   });
 
+  it("7 bis. un titre SOULIGNÉ non plus : la règle est coupée elle aussi", () => {
+    // « Titre » suivi d'une ligne de `=` ou de `-` est un titre en markdown, sans un seul croisillon.
+    const el = html("Titre géant\n===\n\nSous-titre\n---");
+    expect(el.querySelector("h1, h2, h3, h4, h5, h6")).toBeNull();
+    expect(el.textContent).toContain("Titre géant");
+  });
+
   it("8. une image distante n'est pas chargée", () => {
     // Une image distante fuite l'adresse IP de chaque lecteur vers un serveur tiers.
     const el = html("![pixel](https://evil.example/track.png)");
@@ -136,6 +144,14 @@ describe("CommentMarkdown — rendu", () => {
     const el = html("> citation\n\n- un\n- deux");
     expect(el.querySelector("blockquote")).toBeTruthy();
     expect(el.querySelectorAll("li")).toHaveLength(2);
+  });
+
+  // L'éditeur du composer porte les MÊMES classes : ce qu'on voit en tapant est ce qu'on lira ici.
+  it("porte la mise en forme partagée avec l'éditeur, en plus de celle qu'on lui donne", () => {
+    const { container } = render(createElement(CommentMarkdown, { text: "x", className: "à-moi" }));
+    const boite = container.firstElementChild!;
+    for (const classe of COMMENT_PROSE.split(" ")) expect(boite.classList.contains(classe)).toBe(true);
+    expect(boite.classList.contains("à-moi")).toBe(true);
   });
 });
 
