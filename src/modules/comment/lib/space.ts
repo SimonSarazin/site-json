@@ -10,7 +10,7 @@ import {
   type SpaceThreadKind,
   type SpaceType,
 } from "../types";
-import { readThread, refusalError, refusalOf, toText } from "./discussions";
+import { assertGranted, readThread, toText, unreadableError } from "./discussions";
 
 /**
  * L'ESPACE de discussion d'un commun, côté lecture.
@@ -70,15 +70,17 @@ function readSpaceThread(value: unknown): DiscussionThread | null {
   return { ...thread, kind, group: toText(row.group), audience };
 }
 
-/** Normalise la réponse de l'endpoint `space`. Lève un refus MARQUÉ, comme `parseDiscussions`. */
+/**
+ * Normalise la réponse de l'endpoint `space`. Lève, comme `parseDiscussions` : un refus MARQUÉ, ou
+ * une réponse illisible — qui n'en est pas un, et se traite en panne (`unreadableError`).
+ */
 export function parseSpace(raw: unknown): DiscussionSpace {
-  const refusal = refusalOf(raw);
-  if (refusal !== null) throw refusalError(refusal);
+  assertGranted(raw);
 
-  const body = raw as Record<string, unknown>;
+  const body = raw;
   const ref = body.space as { type?: unknown; id?: unknown; title?: unknown; formId?: unknown } | null | undefined;
   if (!ref || typeof ref !== "object" || !isSpaceType(ref.type) || typeof ref.id !== "string" || ref.id === "") {
-    throw refusalError("unreadable");
+    throw unreadableError();
   }
   return {
     space: { type: ref.type, id: ref.id, title: toText(ref.title), formId: toText(ref.formId) },

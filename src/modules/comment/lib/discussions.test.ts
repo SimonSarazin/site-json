@@ -2,15 +2,19 @@ import { describe, expect, it } from "vitest";
 import cocolightApiClient from "@communecter/cocolight-api-client";
 import {
   CARRIER_NONE,
+  assertGranted,
   carrierKey,
   parseDiscussions,
   errorCodeOf,
   errorLabelKey,
+  isRefusalCode,
   rawOrRefusal,
+  refusalError,
   refusalOf,
   sortThreads,
   threadsOfCarrier,
   totalUnread,
+  unreadableError,
 } from "./discussions";
 import type { DiscussionThread } from "../types";
 
@@ -60,10 +64,49 @@ describe("refusalOf", () => {
     expect(refusalOf(railReponse)).toBeNull();
   });
 
-  it.each([[null], [undefined], ["texte"], [{}], [{ result: "true" }]])(
-    "traite %p comme illisible plutôt que d'exploser", value => {
-      expect(refusalOf(value)).toBe("unreadable");
+  // Un refus, c'est le serveur qui a dit non. Un corps qui n'est pas celui d'une réponse n'en dit rien.
+  it.each([[null], [undefined], ["texte"], [42], [{}], [{ result: "true" }], [{ result: "false" }], [{ result: 0 }], [{ code: "hidden" }]])(
+    "ne lit pas un refus dans %p", value => {
+      expect(refusalOf(value)).toBeNull();
     });
+});
+
+describe("assertGranted", () => {
+  const leve = (raw: unknown): unknown => {
+    try { assertGranted(raw); } catch (erreur) { return erreur; }
+    return null;
+  };
+
+  it("laisse passer une réponse accordée — et elle seule", () => {
+    expect(leve(railReponse)).toBeNull();
+    expect(leve({ result: true })).toBeNull();
+  });
+
+  it("lève un refus MARQUÉ, avec son code", () => {
+    expect(leve({ result: false, code: "hidden" })).toMatchObject({ refus: true, code: "hidden" });
+    expect(leve({ result: false })).toMatchObject({ refus: true, code: "refused" });
+  });
+
+  it.each([[null], [undefined], ["<html>Maintenance</html>"], [42], [{}], [{ result: "true" }], [{ result: 1 }], [[]]])(
+    "lève une réponse ILLISIBLE sur %p — qui n'est pas un refus, et n'en porte pas la marque", value => {
+      const erreur = leve(value);
+      expect(erreur).toBeInstanceOf(Error);
+      expect(erreur).toMatchObject({ refus: false, code: "unreadable" });
+      expect(errorCodeOf(erreur)).toBe("unreadable");
+      expect(isRefusalCode(errorCodeOf(erreur))).toBe(false);
+    });
+});
+
+describe("isRefusalCode", () => {
+  it("un refus : `login`, `hidden`, `refused` — le serveur a répondu, et il a dit non", () => {
+    expect((["login", "hidden", "refused"] as const).map(isRefusalCode)).toEqual([true, true, true]);
+  });
+
+  it("une panne : réponse illisible, échec — et l'absence d'erreur n'est pas un refus", () => {
+    expect(isRefusalCode("unreadable")).toBe(false);
+    expect(isRefusalCode("failed")).toBe(false);
+    expect(isRefusalCode(null)).toBe(false);
+  });
 });
 
 /**
@@ -126,6 +169,16 @@ describe("errorCodeOf", () => {
     expect(errorCodeOf(new Error("Network Error"))).toBe("failed");
     expect(errorCodeOf(null)).toBe("failed");
   });
+
+  it("rend à chaque erreur du module son code, et à elle seule", () => {
+    expect(errorCodeOf(refusalError("login"))).toBe("login");
+    expect(errorCodeOf(unreadableError())).toBe("unreadable");
+    // Ni la marque sans le code, ni le code sans la marque : une erreur venue d'ailleurs reste un échec.
+    expect(errorCodeOf({ refus: false, code: "hidden" })).toBe("failed");
+    expect(errorCodeOf({ code: "unreadable" })).toBe("failed");
+    expect(errorCodeOf({ refus: true })).toBe("failed");
+    expect(errorCodeOf({ refus: "oui", code: "hidden" })).toBe("failed");
+  });
 });
 
 describe("parseDiscussions", () => {
@@ -135,6 +188,12 @@ describe("parseDiscussions", () => {
     expect(erreur).toBeInstanceOf(Error);
     // Marquée « refus » (React Query ne la retente pas) et porteuse d'un CODE, que l'écran traduit.
     expect(erreur).toMatchObject({ refus: true, code: "login" });
+  });
+
+  it("lève aussi sur un corps illisible — sans la marque de refus : c'est une panne, qui se réessaie", () => {
+    let erreur: unknown = null;
+    try { parseDiscussions("<html>Erreur</html>"); } catch (e) { erreur = e; }
+    expect(erreur).toMatchObject({ refus: false, code: "unreadable" });
   });
 
   it("lit le rail : les porteurs, sans fils", () => {

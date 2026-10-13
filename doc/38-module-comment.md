@@ -431,6 +431,11 @@ des dates. Le fil lui-même se lit par `GET_COMMENTS`.
 L'utilisateur **n'est jamais un paramètre** : `unread` et `mine` sont calculés pour la session
 courante.
 
+Tous ces paramètres se lisent **en chaîne**. Posté sous une autre forme (`path[]=…`), un paramètre
+est **refusé** (`bad-request`) — il n'est ni converti ni ignoré : le lire comme absent ferait
+répondre sur un autre périmètre que celui demandé, le fil racine à la place d'un fil, le rail à la
+place d'un porteur.
+
 ### 9.4 Réponse
 
 ```jsonc
@@ -458,8 +463,9 @@ En mode `fil` : `thread`, `carrier` et `canComment` remplacent les deux listes.
 `last` est en **secondes**, la base mêlant `MongoDate` et entiers.
 
 Refus en **HTTP 200** avec `{result:false, code, msg}`, comme les actions voisines — jamais un code
-d'erreur HTTP. Côté client, ce corps n'arrive pas en valeur de retour : la façade du SDK le rend en
-**exception** (§14.7).
+d'erreur HTTP. `code` est **stable** — `login`, `bad-request`, `hidden` — et c'est lui que l'écran
+lit ; `msg`, en français, ne sert qu'au diagnostic. Côté client, ce corps n'arrive pas en valeur de
+retour : la façade du SDK le rend en **exception** (§14.7).
 
 ### 9.5 Le registre d'adaptateurs
 
@@ -1307,6 +1313,13 @@ Trois propriétés à ne pas perdre en le relisant :
   C'est le groupement exact de l'agrégation qui compte les non-lus (`$ifNull` sur `path`) ; marquer
   plus large éteindrait des pastilles jamais affichées.
 
+Les refus sont ceux des actions voisines, en HTTP 200 : `{result:false, code, msg}`, `code` valant
+`login` sans session et `bad-request` pour un contexte invalide. Un `path` posté sous une autre
+forme qu'une chaîne (`path[]=…`) est un `bad-request` lui aussi : lu comme « pas de chemin », il
+ferait marquer le fil des messages sans chemin à la place du fil visé. Un fil que le lecteur ne
+peut pas lire (§9.7) n'est en revanche **pas** un refus — la réponse est celle d'un fil où il n'y a
+rien à marquer, `{result:true, marked:0}`.
+
 Côté client, `useMarkThreadSeen` n'appelle rien quand le fil ouvert n'a aucun non-lu — le cas le
 plus fréquent — et n'invalide le panneau que si le serveur dit avoir marqué quelque chose. Un fil
 déjà marqué pendant la visite ne l'est pas deux fois : sans cette retenue, le rafraîchissement qui
@@ -2020,7 +2033,10 @@ Rien à demander ici : un fait du client, commun aux trois façades de ce module
 
 - le serveur refuse en HTTP 200 avec `{ result: false, code, msg }` ; la façade ne **rend pas** ce
   corps : `EndpointApi.call()` lève `ApiResponseError` (statut 200), le corps rangé dans
-  `error.responseData` ;
+  `error.responseData`. `code` vaut `login`, `bad-request` ou `hidden` selon l'action (§9.4, §11.3,
+  §15.3) ; les schémas de réponse de `GET_DISCUSSIONS` et de `MARK_COMMENTS_SEEN` gagnent à le
+  déclarer dans leur branche de refus, comme le fait celui de `GET_DISCUSSION_SPACE` — sans
+  urgence, ces schémas n'étant pas fermés ;
 - sur un endpoint `auth: "bearer"`, sans jeton, elle lève `ApiAuthenticationError` **avant tout
   appel** : le refus `login` du serveur n'est jamais reçu ;
 - une requête que le schéma refuse lève `ApiValidationError`, avant tout appel aussi.
@@ -2080,7 +2096,7 @@ son propre `stepId` (`moreDiscussions_<x>`), et son suffixe suit son audience : 
 | Discussions supplémentaires | **Lire et écrire dans celles qui existent**, chacune réservée à son audience ; en créer est un lot à part |
 | Notifications | **Celles du legacy**, inchangées : elles s'appliquent déjà à un message posté d'ici (§3) |
 | Qui est « admin » d'un commun ? (09/10) | L'admin de l'**appel**, par son lien direct avec l'élément qui le porte (§15.4) |
-| Quels fils de question sont listés ? (09/10) | **Comme le legacy** : ceux des questions que l'appel connaît (§15.3) |
+| Quels fils de question sont listés ? (09/10) | **Comme l'écran legacy** : ceux des questions que l'appel connaît et ouvre aux commentaires ; une ligne de dépense, dès qu'il connaît sa question (§15.3) |
 | Que fait « retour » après une fermeture ? (09/10) | **Fermer défait l'ouverture** : « retour » ramène à la page d'avant la fiche (§15.5) |
 
 ### 15.3 L'endpoint `space`
@@ -2115,13 +2131,24 @@ exception dans la première.
   dépense n'entre dans la liste que si l'appel **connaît** cette question, à cette étape — la règle
   du legacy (`Form::getCommentedQuestionParams`). Un chemin posé sur la réponse elle-même, ou sur
   une question retirée de l'appel, n'est donc pas listé ; ses messages restent en base.
-- `title` : le libellé de la question, le poste de la ligne de dépense, le nom de la discussion.
-  `null` pour le fil général, et pour une question sans libellé, une ligne sans poste ou une
-  discussion sans nom : **c'est l'écran qui nomme alors, dans sa langue**. Le poste d'une ligne ne
-  se lit que dans un champ que l'appel déclare (`answers.<étape>.<question>`).
+- **Et l'appel décide de ce qu'il ouvre.** Un fil de **question** exige en plus que l'appel ouvre
+  cette question aux commentaires (`activeComments`) : c'est le tri que fait l'écran legacy
+  (`buildCommentedQuestionList`), qui ne montre plus le fil d'une question dont les commentaires
+  ont été coupés — ses messages, là aussi, restent en base. Une **ligne de dépense** se liste dès
+  que l'appel connaît sa question, ouverte aux commentaires ou non : le legacy la montre toujours.
+  La règle ne regarde pas l'étape : une question d'évaluation se liste comme une autre.
+- `title` : le libellé de la question, le poste de la ligne de dépense — à défaut de poste, le
+  libellé de sa question, comme dans le legacy —, le nom de la discussion. Toujours en **texte
+  nu**, borné à 120 caractères : balises retirées, puis entités HTML décodées (le legacy enregistre
+  `R&amp;D`, et l'écran affiche du texte, pas du HTML). `null` pour le fil général, et pour une
+  question sans libellé ou une discussion sans nom : **c'est l'écran qui nomme alors, dans sa
+  langue**. Le poste d'une ligne ne se lit que dans un champ que l'appel déclare
+  (`answers.<étape>.<question>`). Les titres de fil et les noms de porteur du panneau général (§9)
+  sont rendus en texte nu eux aussi.
 - L'ordre est celui du serveur, et il ne dépend pas de l'activité : général, discussions (par
   titre), questions dans **l'ordre de l'appel** (étape, puis `positions.<appel>`), lignes de
-  dépense (par poste) ; à égalité, le chemin départage.
+  dépense (par titre) ; à égalité, le chemin départage. Un tri par titre ignore la casse et les
+  accents : « État des lieux » se range à E, pas après « Zoo ».
 - `canComment` dit seulement s'il y a une session, et l'écran ne promet pas plus.
 - Fils **fabriqués** (`virtual`, sauf `includeEmpty=0`) : le fil général, les discussions déclarées
   encore vides et, pour un appel `aap`, les questions qu'il ouvre aux commentaires
@@ -2135,8 +2162,15 @@ exception dans la première.
 
 **Plan de requête.** On part de la réponse, jamais du parc : un `$or` à deux branches, chacune avec
 son `contextType`, donc servies par l'index `ctx_created` (§9.6). Le motif du `path` est **ancré** et
-ne porte que deux identifiants déjà validés. Mesuré sur un espace de 6 fils : aucun balayage de
-collection, 13 documents examinés ; 15 à 21 ms par appel, HTTP compris.
+ne porte que deux identifiants déjà validés. Mesuré sur un espace de 6 fils : l'agrégation des
+messages ne balaie pas la collection, 13 documents examinés ; 15 à 21 ms par appel, HTTP compris.
+
+Les **étapes** de l'appel, elles, ne se lisent pas par index : `inputs` se cherche par `formParent`,
+et la collection n'en porte aucun hors `_id_` — un balayage de ses 1 120 documents en développement
+pour en rendre 4, comme le fait le legacy à chaque ouverture (mesuré le 12/10 ; moins d'une
+milliseconde ici). Pour un formulaire qui n'est pas `aap`, c'est `forms` qui se cherche par `id`,
+sans index non plus. Le reste se lit par `_id` : la réponse, l'appel, sa configuration, l'élément
+qui le porte.
 
 ⚠️ **Ce coût suit l'appel, pas le commun.** L'index mène aux messages de l'**appel** ; le motif du
 chemin, lui, ne trie qu'après lecture. Sur un appel dont des centaines de communs sont commentés,
@@ -2185,10 +2219,11 @@ lecture par fil.
   liste ne se montre qu'en mode une colonne.
 - **La bande 48–64 rem lui est permanente** : sa modale plafonne à 64 rem, elle n'en sort jamais
   dès que deux colonnes s'affichent. Cette bande a été écrite pour trois colonnes, rail plié ; deux
-  de ses règles ont dû être bornées au rail (§10.14) — la colonne des fils n'y tombe à 15 rem que
-  derrière un rail, sans quoi le libellé de ses étiquettes (« Question », « Publique »…) passait
-  sous le seuil où il s'efface. Le panneau ne se déclare pas « sans recherche » (`data-search`) :
-  il n'a ni recherche ni rail.
+  de ses règles ont dû être bornées au rail. L'une est dite au §10.14 — la pastille de non-lus
+  posée en coin ; l'autre l'est ici : la colonne des fils n'y tombe à 15 rem que derrière un rail,
+  sans quoi le libellé de ses étiquettes (« Question », « Publique »…) passait sous le seuil où il
+  s'efface. Le panneau ne se déclare pas « sans recherche » (`data-search`) : il n'a ni recherche
+  ni rail.
 - **Il est contrôlé** (`target`, `onSelect`) : l'adresse appartient à l'hôte. `useSpaceLauncher`
   lit `?discussion=…` et ne retient que les fils **de cet espace** — le paramètre appartient à tout
   le site, le fil d'un autre commun ne doit pas ouvrir cette fiche.
@@ -2196,8 +2231,11 @@ lecture par fil.
   `chip` (l'étiquette d'une rangée, quand le type du contexte ne dit pas ce qu'est le fil),
   `titleFallback`, `groupLabel` (un intertitre à chaque changement, la liste gardant l'ordre reçu),
   `pinned` (le fil général, même vide, ne rejoint pas « Sans discussion ») et `startLabel`. Un
-  groupe se reconnaît à son premier fil, pas à son rang : quand un groupe apparaît au-dessus, les
-  suivants ne sont pas remontés, et la rangée qu'on tenait garde le focus.
+  groupe se reconnaît à son intertitre et à son rang parmi les groupes de ce nom — ni à son rang
+  dans la liste, ni à son premier fil : qu'un groupe apparaisse au-dessus, ou qu'un fil prenne la
+  tête du sien (la première question d'une étape reçoit son premier message), les rangées voisines
+  ne sont pas remontées, et celle qu'on tenait garde le focus. Le pli « Sans discussion » suit les
+  mêmes intertitres : les questions vierges s'y rangent sous leur étape, chaque liste nommée.
 - **L'historique** : ouvrir **empile** une entrée, changer de fil la **remplace**, et **fermer
   défait l'ouverture** — la croix et Échap font « retour » (arbitré le 09/10). « Retour » ferme
   donc la modale sans quitter la fiche ; et après une fermeture, il ramène à la page d'avant la
@@ -2216,14 +2254,31 @@ lecture par fil.
     empilerait une entrée jumelle, et un second Échap ferait un second « retour » — qui quitte la
     fiche. Le lanceur n'écoute qu'une ouverture ou une fermeture par entrée d'historique ;
   - un fil ne s'écrit dans l'adresse que si elle **saura le relire**, à l'identique, et s'il est de
-    cet espace : sinon le paramètre ne désignerait plus rien, et la modale se fermerait dessus.
+    cet espace : sinon le paramètre ne désignerait plus rien, et la modale se fermerait dessus ;
+  - **ouvert, l'espace reste où l'adresse le dit.** `openAt()` sans fil nommé ne fait rien sur un
+    espace déjà ouvert, et `select` ne fait rien sur un espace fermé. Le bouton d'une fiche reste
+    cliquable le temps que le code de la modale arrive : arrivé par le lien d'un fil, y cliquer
+    remplaçait ce fil par le fil général — il n'était plus nulle part, pas même dans l'historique.
 - **La requête attend de savoir qui lit** : l'identité du lecteur n'est connue qu'au second rendu
   de chaque montage. Lancée avant, la requête partait deux fois pour un connecté, la première sous
   une clé qui n'était pas la sienne. Ce rendu d'attente compte comme un chargement : l'écran ne dit
   ni « aucun fil » ni « introuvable » entre-temps.
-- **Un refus n'est pas une panne.** Refusé (`hidden`), l'espace vide l'écran, même si une liste
-  avait déjà été servie — le serveur a répondu, et il ne le montre plus. Une panne de relecture,
-  elle, laisse la liste, le fil ouvert et le brouillon en cours.
+- **Un refus n'est pas une panne**, et la règle se tient dans `useDiscussionSpaceQuery`, pour le
+  bouton comme pour le panneau. Un **refus** — le serveur a répondu `result: false` : `hidden`,
+  `bad-request`, ou un code que l'écran ne connaît pas — vide l'écran et retire les compteurs, même
+  si une liste avait déjà été servie ; il n'est ni réessayé, ni relu à intervalle. Une **panne** —
+  un échec, ou une réponse **illisible** (une page d'erreur servie en HTTP 200, un avertissement
+  écrit devant le JSON) : personne n'a dit non — est réessayée deux fois, relue à intervalle, et
+  laisse à l'écran la liste, le fil ouvert et le brouillon en cours. Sans rien à montrer, elle
+  s'affiche avec un bouton « Réessayer ». Le panneau général suit la même règle pour le fil ouvert.
+- **Une première lecture mise en pause** (réseau perdu) reste un chargement : tant que rien n'a été
+  rendu, l'écran ne dit ni « aucun fil » ni « introuvable ».
+- **Ce qui arrive à l'espace se dit aussi à qui ne le voit pas** : une région `role="status"`,
+  toujours présente, porte le refus, la panne ou le fil introuvable. Une seule, parce que les deux
+  colonnes affichent la même phrase et que l'une des deux est hors écran en mode une colonne.
+- **À l'ouverture, le focus va au dialogue lui-même** (`initialFocus="dialog"` de la coquille) : au
+  rendu d'ouverture la liste n'est pas encore là, et le premier élément atteignable serait la croix
+  — on ouvrait, au clavier, sur « Fermer ».
 - **Le focus revient au bouton** à la fermeture (croix, Échap, « retour ») : la modale n'a pas de
   `DialogTrigger` — elle s'ouvre aussi par une adresse — et Radix laissait le focus sur `<body>`
   (§12.5).
@@ -2235,6 +2290,9 @@ lecture par fil.
   un constat sans suite.
 - **`SpaceModal`** partage la coquille de `DiscussionModal` (`DiscussionModalShell` : cadre, croix,
   arbitrage d'Échap), en moins large : `md:max-w-[min(64rem,…)]`, en `md:` pour la raison du §10.7.
+  La coquille vit dans **son propre fichier** : logée à côté de `DiscussionModal`, elle faisait
+  entrer le panneau général — rail et recherche compris — dans le morceau de l'espace, qui ne le
+  rend jamais.
 - **Le point d'entrée** : `CommunDiscussionControl`, sur la fiche d'un commun (`modules/aac`) — un
   bouton « Discussion » avec le nombre de messages et de non-lus, visible de tous, qui s'annonce
   comme ouvrant un dialogue (`aria-haspopup`). Il importe
@@ -2242,27 +2300,40 @@ lecture par fil.
   différé par le `lazy` de `vite-preload`, préchauffée dès que le bouton est survolé ou atteint au
   clavier. Arrivant sans l'entrée du module, la modale enregistre elle-même ses libellés. Le
   compteur ne sonde pas (`live: false`) : relire toutes les trente secondes un espace que personne
-  ne regarde serait une requête par fiche ouverte. La fiche le monte avec une `key` par commun :
-  la même route sert deux communs, et sans elle le bouton gardait de la fiche d'avant le focus à
-  rendre après une modale. Ces deux soins — le focus rendu, la `key` — sont à la charge de
-  l'**hôte** : un second point d'entrée devra les reprendre.
+  ne regarde serait une requête par fiche ouverte. Tant que la modale est attendue — ouverte, son
+  code pas encore arrivé —, le bouton se dit occupé (`aria-busy`). La fiche le monte avec une `key`
+  par commun : la même route sert deux communs, et sans elle le bouton gardait de la fiche d'avant
+  le focus à rendre après une modale.
+- **Les devoirs de l'hôte** — un second point d'entrée devra les reprendre :
+  - rendre le focus à ce qui a ouvert, et poser une `key` par élément (ci-dessus) ;
+  - ne pas réécrire l'entrée d'historique sans recopier `location.state` : la marque du lanceur y
+    vit. Un `setSearchParams(…, { replace: true })` voisin fermerait la modale ouverte sur la
+    liste, ou ferait oublier que l'entrée a été empilée — la croix remplacerait au lieu de revenir ;
+  - ne pas rendre le lanceur côté serveur : la marque « sur la liste » n'existe que dans le
+    navigateur, la page rechargée sur la liste rendrait une modale que le serveur n'a pas rendue.
+    Sans effet aujourd'hui, la fiche n'étant pas dans le HTML du serveur ;
+  - un seul lanceur par espace et par page : deux boutons monteraient deux modales.
 - La clé de cache vit sous le préfixe du panneau (`comment-discussions`) : poster un message ou
   marquer un fil lu rafraîchit déjà les compteurs de l'espace.
 
 ### 15.6 Preuves
 
-Rejouées le 09/10, sur le code décrit ici.
+Rejouées le 12/10, sur le code décrit ici — sauf les lignes « Navigateur », mesurées le 09/10,
+avant les corrections de la seconde relecture (§15.5).
 
 | Quoi | Résultat |
 |---|---|
-| Règles, hors base — doublures de `PHDB`, qui lèvent comme le pilote sur un identifiant invalide ou une projection en collision | 90 vérifications : lecture d'un chemin, rôles par lien direct, audiences, espace entier, fil désigné, entrées hostiles |
-| Contre-épreuve par mutation de `Discussion.php`, sur une copie | 76 mutations tuées sur 76 |
-| Sonde contre le vrai backend, trois identités (visiteur, compte non membre, admin de l'appel) | 64 vérifications ; refus, espace vierge et semé, audiences `private` et `authorAdmin`, questions que l'appel ne connaît pas, modes `fil` et `seen`, plan de requête |
+| Règles, hors base — doublures de `PHDB`, qui lèvent comme le pilote sur un identifiant invalide ou une projection en collision | 100 vérifications : lecture d'un chemin, rôles par lien direct, audiences, espace entier (dont la forme exacte d'un fil : quatorze champs), texte nu et ordre des libellés, fil désigné, entrées de travers |
+| Contre-épreuve par mutation de `Discussion.php`, sur une copie | 98 mutations tuées sur 98 |
+| Sonde contre le vrai backend, trois identités (visiteur, compte non membre, admin de l'appel) | 69 vérifications ; refus, espace vierge et semé, question que l'appel n'ouvre pas aux commentaires, étape d'évaluation ouverte (sur le seul appel de la base qui en a une), audiences `private` et `authorAdmin`, questions que l'appel ne connaît pas, modes `fil` et `seen`, plan de requête |
+| Sonde des actions `discussions` et `seen`, vrai backend | 30 vérifications : chaque paramètre posté en tableau est refusé en JSON (`bad-request`), jamais converti ni lu comme absent ; refus codés de `seen` ; rien n'est marqué lu |
 | Sondes des lots précédents (panneau, éléments vierges, lot R) | rejouées, vertes : 21, 17 et 25 vérifications |
 | Appel réel au SDK, avec et sans session | un refus arrive en `ApiResponseError` (statut 200, corps dans `responseData`) ; sans session, `ApiAuthenticationError` avant tout appel (§14.7) |
-| Tests unitaires de l'écran | 333 tests dans onze fichiers, dont 205 dans les sept fichiers nouveaux : lecture de la réponse, refus repris de l'exception, lanceur et historique, requêtes, colonne des fils, panneau, modale, bouton, composition de la fiche |
+| Tests unitaires de l'écran | 399 tests dans treize fichiers, dont 243 dans les neuf fichiers nouveaux : lecture de la réponse, refus repris de l'exception, réponse illisible, lanceur et historique, requêtes, colonne des fils, panneau, modale, bouton, composition de la fiche |
 | … dont un **parcours** assemblé | 17 tests : le bouton, la modale chargée en différé, le panneau, la colonne, le lanceur, l'adresse et l'historique sont les vrais — seuls le serveur, le temps réel et le fil de messages sont remplacés |
-| Contre-épreuve par mutation de l'écran, sur des copies | 271 mutations tuées sur 271, onze fichiers — dont 32 défauts de la chaîne passés contre le seul test de parcours |
+| … le **coût** du bouton | le fichier de la modale n'est importé qu'au survol ou à l'ouverture ; et le graphe des imports statiques de l'entrée légère, lu dans les sources : onze fichiers, aucun composant, ni libellés ni styles (celui de la modale en compte cinquante-huit, sans le panneau général) |
+| … l'**attente** de la modale | son import retenu par une porte : le bouton se dit occupé, et y cliquer ne remplace pas le fil du lien |
+| Contre-épreuve par mutation de l'écran, sur des copies | 341 mutations tuées sur 341 — dont 32 défauts de la chaîne passés contre le seul test de parcours |
 | Navigateur, visiteur — 1440 et 375 px | 22 et 26 vérifications : liste, intertitres, fil, invitation à se connecter, liens profonds |
 | Navigateur, compte connecté non membre | 21 vérifications : discussions à lancer repliées, composer présent |
 | Navigateur, déposant qui écrit sur son commun | 27 vérifications : message rangé sur l'appel au chemin du legacy, puis supprimé ; aucun document créé dans une autre collection |
@@ -2282,18 +2353,26 @@ Rejouées le 09/10, sur le code décrit ici.
   `answers.aapStep1.titre`. La fiche, elle, passe à la modale le titre qu'elle a résolu.
 - Le commun **n'entre pas dans le rail** du panneau général — le legacy ne l'y met pas non plus.
 - Un commun **partagé entre deux appels** n'a qu'un espace, celui de l'appel où il a été déposé
-  (§15.1), d'où qu'on ouvre sa fiche — comme dans le legacy.
+  (§15.1), d'où qu'on ouvre sa fiche — comme la **fiche** legacy, qui ouvre l'espace sans préciser
+  d'appel. L'action legacy accepte, elle, qu'on lui en désigne un autre (`formId`), ce que font des
+  blocs CMS de costum : ce cas-là n'est pas porté.
 - **Rien de versionné ne couvre les règles du backend** : `citizenToolKit` n'a pas d'outillage de
   test. Le banc de règles et ses mutations (§15.6) vivent hors dépôt, et se rejouent à la main.
 - Formulaires qui ne sont pas `aap` : le fil général et les discussions déclarées sont proposés,
-  les fils de question déjà commentés sont listés, mais aucune question vierge n'est proposée
-  (§15.3).
-- Le fil d'une question **retirée de l'appel** n'est plus listé (§15.3) : ses messages restent en
-  base, mais l'espace ne les propose plus.
+  les fils déjà commentés des questions ouvertes aux commentaires sont listés, mais aucune question
+  vierge n'est proposée (§15.3).
+- Le fil d'une question **retirée de l'appel**, ou dont l'appel a **coupé les commentaires**, n'est
+  plus listé (§15.3) : ses messages restent en base, mais l'espace ne les propose plus. La base de
+  développement ne porte qu'une étape d'évaluation ouverte aux commentaires, sur un seul appel :
+  c'est sur lui que la lecture d'un fil d'évaluation est prouvée (§15.6).
 - Un chemin de plus de 256 caractères ne se relit ni par l'adresse (§5.3) ni par le SDK (§14.2) :
   le lanceur ne l'écrit pas, et un clic sur un tel fil ne fait rien. Le plus long chemin mesuré en
   base de développement en fait 191 ; le plus long que ses 197 appels `aap` puissent produire —
   une ligne de dépense — en fait 245 (calculé le 09/10 sur leurs clés d'étape et de question).
+  Il en va de même d'un chemin dont un segment sortirait du jeu de caractères de l'adresse
+  (lettres sans accent, chiffres, `_`, `-`) : le serveur le liste s'il porte des messages, l'écran
+  ne sait pas l'ouvrir. Aucune des 4 379 clés de question de la base de développement n'en sort
+  (mesuré le 12/10).
 - **Le coût d'un espace suit l'appel**, pas le commun (§15.3) : à mesurer sur des données réelles
   avant une mise en production sur un appel très commenté.
 - **Se connecter depuis la modale la referme un instant** : la connexion change les clés de la
@@ -2304,6 +2383,10 @@ Rejouées le 09/10, sur le code décrit ici.
   de toute page, par une chaîne d'imports antérieure à ce lot (`profil/routes` →
   `@/modules/news` → `NewsItem` → `@/modules/comment`). Lu sur le serveur de développement, pas sur
   un build de production.
+- **La compilation ne voit pas un SDK sans ces endpoints.** Les appels aux façades passent par un
+  transtypage, comme dans tout le module : installé depuis le registre sans `getDiscussionSpace`,
+  le SDK ferait échouer l'appel à l'exécution — une « panne », bouton sans compteur — sans que
+  `tsc` ni un test ne le disent. L'ordre de livraison du §2.5 (le SDK d'abord) en est le seul filet.
 - **Non vérifié** : un lecteur d'écran réel, un appareil tactile réel, le temps réel (pas de hub en
   développement).
 

@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createElement, type ReactNode } from "react";
 import { act, renderHook } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, onlineManager } from "@tanstack/react-query";
 import cocolightApiClient from "@communecter/cocolight-api-client";
 import { CocolightContext, type CocolightContextType } from "@/contexts/CocolightContext";
 import { COMMENT_QUERY_KEYS } from "../constants/queryKeys";
@@ -39,9 +39,10 @@ const REPONSE = {
   space: { type: "answers", id: COMMUN, title: "Un commun", formId: APPEL },
   canComment: true,
   truncated: false,
+  // Les quatorze champs qu'un fil porte dans la réponse du serveur.
   threads: [
-    { key: `answers:${COMMUN}`, contextType: "answers", contextId: COMMUN, path: null, title: null, total: 3, unread: 1, last: 1_758_000_000, mine: false, virtual: false, kind: "general" },
-    { key: `forms:${APPEL}:q`, contextType: "forms", contextId: APPEL, path: "q", title: "Une question", total: 2, unread: 2, last: 1_758_000_100, mine: false, virtual: false, kind: "question", group: "Proposition" },
+    { key: `answers:${COMMUN}`, contextType: "answers", contextId: COMMUN, path: null, total: 3, unread: 1, last: 1_758_000_000, mine: false, title: null, carrier: null, virtual: false, kind: "general", group: null, audience: null },
+    { key: `forms:${APPEL}:q`, contextType: "forms", contextId: APPEL, path: "q", total: 2, unread: 2, last: 1_758_000_100, mine: false, title: "Une question", carrier: null, virtual: false, kind: "question", group: "Proposition", audience: null },
   ],
 };
 
@@ -146,6 +147,75 @@ describe("useDiscussionSpaceQuery", () => {
     expect(errorCodeOf(result.current.error)).toBe("failed");
   });
 
+  /**
+   * React Query garde la dernière liste servie à travers une erreur de relecture. Ce qu'on en fait
+   * dépend de ce que l'erreur veut dire — et c'est ICI que cela se décide, pour le bouton d'une
+   * fiche comme pour le panneau.
+   */
+  describe("une relecture qui tourne mal", () => {
+    /** La première demande aboutit ; les suivantes rendent `ensuite`. */
+    const puis = (ensuite: () => Promise<unknown>) => {
+      let appels = 0;
+      return () => (appels++ === 0 ? Promise.resolve(REPONSE) : ensuite());
+    };
+
+    it("un REFUS retire ce qu'on avait : ni liste, ni fils, ni compteurs, ni droit d'écrire", async () => {
+      const { result, getDiscussionSpace } = monter({
+        reponse: puis(refusDuSdk({ code: "hidden", msg: "Espace de discussion introuvable." })),
+        options: { live: true },
+      });
+      await vi.advanceTimersByTimeAsync(0);
+      expect(result.current).toMatchObject({ total: 5, unread: 3, canComment: true });
+
+      await vi.advanceTimersByTimeAsync(31_000);
+      expect(getDiscussionSpace).toHaveBeenCalledTimes(2);
+      expect(errorCodeOf(result.current.error)).toBe("hidden");
+      expect(result.current.data).toBeUndefined();
+      expect(result.current).toMatchObject({ threads: [], title: null, canComment: false, truncated: false, total: 0, unread: 0 });
+    });
+
+    it("une PANNE la garde : la liste, ses compteurs et le droit d'écrire restent ceux de la dernière réponse", async () => {
+      const { result, getDiscussionSpace } = monter({
+        reponse: puis(async () => { throw new Error("Network Error"); }),
+        options: { live: true },
+      });
+      await vi.advanceTimersByTimeAsync(0);
+      // Une relecture, puis ses deux nouvelles tentatives (1 s, 2 s).
+      await vi.advanceTimersByTimeAsync(31_000 + 10_000);
+      expect(getDiscussionSpace.mock.calls.length).toBeGreaterThanOrEqual(4);
+      expect(errorCodeOf(result.current.error)).toBe("failed");
+      expect(result.current.data).toBeDefined();
+      expect(result.current).toMatchObject({ title: "Un commun", canComment: true, total: 5, unread: 3 });
+      expect(result.current.threads).toHaveLength(2);
+    });
+
+    it("une réponse ILLISIBLE est une panne, pas un refus : la liste reste, et la relecture CONTINUE", async () => {
+      // Une page d'erreur servie en HTTP 200 : le SDK la rend telle quelle, ce n'est pas un objet.
+      const { result, getDiscussionSpace } = monter({
+        reponse: puis(async () => "<html>Maintenance</html>"),
+        options: { live: true },
+      });
+      await vi.advanceTimersByTimeAsync(0);
+      await vi.advanceTimersByTimeAsync(31_000 + 10_000);
+      expect(errorCodeOf(result.current.error)).toBe("unreadable");
+      expect(result.current.data).toBeDefined();
+      expect(result.current).toMatchObject({ total: 5, unread: 3, canComment: true });
+      // Réessayée (deux fois), puis relue à l'intervalle suivant : un refus, lui, n'aurait plus rien demandé.
+      const apresLaPanne = getDiscussionSpace.mock.calls.length;
+      expect(apresLaPanne).toBeGreaterThanOrEqual(4);
+      await vi.advanceTimersByTimeAsync(31_000);
+      expect(getDiscussionSpace.mock.calls.length).toBeGreaterThan(apresLaPanne);
+    });
+
+    it("illisible dès la PREMIÈRE lecture : réessayée deux fois, puis dite — sans rien à montrer", async () => {
+      const { result, getDiscussionSpace } = monter({ reponse: async () => ({ result: true }) });
+      await vi.advanceTimersByTimeAsync(10_000);
+      expect(getDiscussionSpace).toHaveBeenCalledTimes(3);
+      expect(errorCodeOf(result.current.error)).toBe("unreadable");
+      expect(result.current.data).toBeUndefined();
+    });
+  });
+
   it("n'appelle rien sans espace, ni quand on le désactive", async () => {
     const sansEspace = monter({ space: null });
     const desactive = monter({ options: { enabled: false } });
@@ -235,6 +305,45 @@ describe("useDiscussionSpaceQuery", () => {
       await vi.advanceTimersByTimeAsync(0);
       expect(rendus[rendus.length - 1]).toEqual({ isLoading: true, fetchStatus: "fetching" });
       expect(getDiscussionSpace).toHaveBeenCalledTimes(1);
+    });
+
+    it("au premier rendu, CHARGE même si une liste est déjà en cache sous la clé de ce rendu-là", async () => {
+      // Un visiteur : la clé ne change pas d'un rendu à l'autre, et le bouton a déjà rempli le cache.
+      // Ce rendu d'attente ne sait pas encore QUI lit — un connecté y passerait par la clé du
+      // visiteur, et monterait le fil sur une liste qui n'est pas la sienne.
+      const { wrapper, getDiscussionSpace } = monter();
+      await vi.advanceTimersByTimeAsync(0);
+      const rendus: { isLoading: boolean; fils: number }[] = [];
+      renderHook(() => {
+        const requete = useDiscussionSpaceQuery(ESPACE);
+        rendus.push({ isLoading: requete.isLoading, fils: requete.threads.length });
+        return requete;
+      }, { wrapper });
+      expect(rendus[0].isLoading).toBe(true);
+      // Sitôt le lecteur connu, la liste en cache est là, sans nouvelle demande.
+      expect(rendus[rendus.length - 1]).toEqual({ isLoading: false, fils: 2 });
+      expect(getDiscussionSpace).toHaveBeenCalledTimes(1);
+    });
+
+    it("première lecture mise en PAUSE (réseau perdu) : toujours en attente — ni « vide », ni « introuvable »", async () => {
+      onlineManager.setOnline(false);
+      try {
+        const { rendus, getDiscussionSpace } = monter({ utilisateur: UTILISATEUR });
+        await vi.advanceTimersByTimeAsync(0);
+        expect(rendus[rendus.length - 1]).toEqual({ isLoading: true, fetchStatus: "paused" });
+        expect(getDiscussionSpace).not.toHaveBeenCalled();
+      } finally {
+        onlineManager.setOnline(true);
+      }
+    });
+
+    it("une fois la liste servie, ne se dit plus en attente — même pendant qu'elle se relit", async () => {
+      const { result, client } = monter({ utilisateur: UTILISATEUR });
+      await vi.advanceTimersByTimeAsync(0);
+      expect(result.current.isLoading).toBe(false);
+      void client.invalidateQueries({ queryKey: COMMENT_QUERY_KEYS.DISCUSSIONS_PREFIX() });
+      await vi.advanceTimersByTimeAsync(0);
+      expect(result.current.isLoading).toBe(false);
     });
 
     it("désactivé ou sans espace, n'attend rien : pas de chargement, même au premier rendu", () => {

@@ -2,13 +2,13 @@
 import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { createElement, type ReactNode } from "react";
 import { renderHook } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, onlineManager } from "@tanstack/react-query";
 import cocolightApiClient from "@communecter/cocolight-api-client";
 import { CocolightContext, type CocolightContextType } from "@/contexts/CocolightContext";
 import { COMMENT_QUERY_KEYS } from "../constants/queryKeys";
-import { errorCodeOf } from "../lib/discussions";
+import { errorCodeOf, refusalError, unreadableError } from "../lib/discussions";
 import {
-  intervalleDeSondage, useDiscussionsQuery, type DiscussionScope, type UseDiscussionsQueryOptions,
+  estUnRefus, intervalleDeSondage, reessayer, useDiscussionsQuery, type DiscussionScope, type UseDiscussionsQueryOptions,
 } from "./useDiscussionsQuery";
 
 // Le flux temps réel est une frontière : sans hub, il est « dégradé » — le cas de tout déploiement
@@ -26,6 +26,32 @@ describe("intervalleDeSondage", () => {
     expect(intervalleDeSondage(null, "degrade")).toBe(30_000);
     expect(intervalleDeSondage(null, "connecte")).toBe(300_000);
     expect(intervalleDeSondage(new Error("Network Error"), "degrade")).toBe(30_000);
+  });
+
+  it("relit aussi après une réponse ILLISIBLE : personne n'a dit non, c'est une panne", () => {
+    expect(intervalleDeSondage(unreadableError(), "degrade")).toBe(30_000);
+    expect(intervalleDeSondage(unreadableError(), "connecte")).toBe(300_000);
+  });
+});
+
+describe("estUnRefus, reessayer", () => {
+  it("un refus est définitif : aucune nouvelle tentative, dès la première", () => {
+    for (const code of ["login", "hidden", "refused"] as const) {
+      expect(estUnRefus(refusalError(code))).toBe(true);
+      expect(reessayer(0, refusalError(code))).toBe(false);
+    }
+  });
+
+  it("une panne — échec, réponse illisible — a droit à DEUX nouvelles tentatives, pas trois", () => {
+    for (const panne of [new Error("Network Error"), unreadableError()]) {
+      expect(estUnRefus(panne)).toBe(false);
+      expect([0, 1, 2, 3].map(tentatives => reessayer(tentatives, panne))).toEqual([true, true, false, false]);
+    }
+  });
+
+  it("l'absence d'erreur n'est pas un refus", () => {
+    expect(estUnRefus(null)).toBe(false);
+    expect(estUnRefus(undefined)).toBe(false);
   });
 });
 
@@ -101,6 +127,16 @@ describe("useDiscussionsQuery — le sondage, câblé", () => {
     expect(errorCodeOf(result.current.error)).toBe("failed");
   });
 
+  it("une réponse illisible est une panne : réessayée deux fois, dite « illisible », puis RELUE", async () => {
+    // Une page d'erreur servie en HTTP 200 : le SDK la rend telle quelle, ce n'est pas un objet.
+    const { getDiscussions, result } = monter(async () => "<html>Maintenance</html>");
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(getDiscussions).toHaveBeenCalledTimes(3);
+    expect(errorCodeOf(result.current.error)).toBe("unreadable");
+    await vi.advanceTimersByTimeAsync(31_000);
+    expect(getDiscussions.mock.calls.length).toBeGreaterThan(3);
+  });
+
   it("relit une réponse servie au rythme du mode dégradé", async () => {
     const { getDiscussions } = monter(async () => RAIL_SERVI);
     await vi.advanceTimersByTimeAsync(0);
@@ -128,6 +164,40 @@ describe("useDiscussionsQuery — le sondage, câblé", () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(rendus[rendus.length - 1]).toEqual({ isLoading: true, fetchStatus: "fetching" });
     expect(getDiscussions).toHaveBeenCalledTimes(1);
+  });
+
+  it("au premier rendu, CHARGE même si une réponse est déjà en cache sous la clé de ce rendu-là", async () => {
+    // Le rendu d'attente ne sait pas encore qui lit : ce que le cache porte sous sa clé n'est pas
+    // forcément à ce lecteur.
+    const { client, getDiscussions } = monter(async () => RAIL_SERVI);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(client.getQueryData(COMMENT_QUERY_KEYS.DISCUSSIONS("rail", null, null))).toBeDefined();
+
+    const cocolight = { api: { getDiscussions }, me: null, entity: null, helper: {} } as unknown as CocolightContextType;
+    const rendus: boolean[] = [];
+    renderHook(() => {
+      const requete = useDiscussionsQuery(RAIL);
+      rendus.push(requete.isLoading);
+      return requete;
+    }, {
+      wrapper: ({ children }: { children: ReactNode }) =>
+        createElement(QueryClientProvider, { client },
+          createElement(CocolightContext.Provider, { value: cocolight }, children)),
+    });
+    expect(rendus[0]).toBe(true);
+    expect(rendus[rendus.length - 1]).toBe(false);
+  });
+
+  it("première lecture mise en PAUSE (réseau perdu) : toujours en attente, pas « vide »", async () => {
+    onlineManager.setOnline(false);
+    try {
+      const { rendus, getDiscussions } = monter(async () => RAIL_SERVI, RAIL, UTILISATEUR);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(rendus[rendus.length - 1]).toEqual({ isLoading: true, fetchStatus: "paused" });
+      expect(getDiscussions).not.toHaveBeenCalled();
+    } finally {
+      onlineManager.setOnline(true);
+    }
   });
 
   it("désactivé, n'attend rien : ni chargement ni demande, même au premier rendu", async () => {

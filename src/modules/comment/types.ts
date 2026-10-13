@@ -200,7 +200,10 @@ export interface SpaceRef {
   readonly id: string;
 }
 
-/** La nature d'un fil d'espace, telle que le serveur la nomme. */
+/**
+ * La nature d'un fil d'espace. Le serveur en nomme quatre ; `other` est le repli de l'ÉCRAN pour
+ * une nature qu'il ne connaîtrait pas — celle d'un serveur plus récent que lui (`readSpaceThread`).
+ */
 export const SPACE_THREAD_KINDS = ["general", "discussion", "question", "expense", "other"] as const;
 
 export type SpaceThreadKind = (typeof SPACE_THREAD_KINDS)[number];

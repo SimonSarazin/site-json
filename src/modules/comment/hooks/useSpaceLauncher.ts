@@ -10,9 +10,15 @@ export interface SpaceLauncher {
   readonly open: boolean;
   /** Le fil de cet espace que l'adresse désigne, s'il y en a un. */
   readonly target: CommentTarget | null;
-  /** Ouvre l'espace — sur son fil général, ou sur le fil donné. Empile une entrée d'historique. */
+  /**
+   * Ouvre l'espace — sur son fil général, ou sur le fil donné. Empile une entrée d'historique.
+   * Déjà ouvert, il ne fait que changer de fil, et seulement si l'on en nomme un.
+   */
   readonly openAt: (target?: CommentTarget) => void;
-  /** Change de fil, ou revient à la liste (`null`), sans fermer. Remplace l'entrée courante. */
+  /**
+   * Change de fil, ou revient à la liste (`null`), sans fermer. Remplace l'entrée courante.
+   * Sans effet tant que l'espace n'est pas ouvert : ouvrir, c'est `openAt`.
+   */
   readonly select: (target: CommentTarget | null) => void;
   /** Ferme. Défait l'ouverture si elle vient d'ici (« retour »), sinon remplace l'adresse. */
   readonly close: () => void;
@@ -101,18 +107,27 @@ export function useSpaceLauncher(space: SpaceRef, options?: { readonly param?: s
   );
 
   const select = useCallback((cible: CommentTarget | null) => {
+    // Fermé, il n'y a ni fil à quitter ni liste où revenir : remplacer l'entrée ouvrirait la modale
+    // sans rien empiler — « fermer » n'aurait alors plus d'ouverture à défaire.
+    if (!open) return;
     if (cible !== null && !ouvrable(cible)) return;
     // La marque suit l'entrée qu'on remplace : empilée d'ici ou non, sur la liste ou non.
     const gardee: EntryMark | null = marque?.pushed || cible === null
       ? { space: cle, ...(marque?.pushed ? { pushed: true } : {}), ...(cible === null ? { list: true } : {}) }
       : null;
     remplacer(cible ? { kind: "thread", target: cible } : { kind: "none" }, { state: withMark(state, gardee) });
-  }, [cle, marque, ouvrable, remplacer, state]);
+  }, [cle, marque, open, ouvrable, remplacer, state]);
 
   const openAt = useCallback((voulue?: CommentTarget) => {
-    const cible = voulue ?? generalTarget(space);
     // Déjà ouverte, ce n'est plus une ouverture : empiler romprait « fermer défait l'ouverture ».
-    if (open) { select(cible); return; }
+    // Et sans fil nommé il n'y a rien à faire — l'espace est ouvert LÀ OÙ L'ADRESSE LE DIT. Le
+    // bouton d'une fiche reste cliquable le temps que le code de la modale arrive : y répondre par
+    // le fil général remplacerait le fil du lien par lequel on est venu.
+    if (open) {
+      if (voulue) select(voulue);
+      return;
+    }
+    const cible = voulue ?? generalTarget(space);
     if (!ouvrable(cible) || enVol.current) return;
     enVol.current = true;
     empiler({ kind: "thread", target: cible }, { state: withMark(state, { space: cle, pushed: true }) });

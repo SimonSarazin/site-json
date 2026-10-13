@@ -63,9 +63,11 @@ export function useDiscussionUrlState(
   const messageId = useMemo(() => parseMessageFragment(hash), [hash]);
 
   /**
-   * L'écriture passe par une FONCTION de mise à jour, jamais par l'objet `searchParams`
-   * capturé au rendu : deux écritures rapprochées (cliquer un porteur puis un fil) partiraient
-   * sinon du même instantané, et la seconde effacerait la première.
+   * L'écriture repart des paramètres EN PLACE, pour ne toucher qu'au sien. Ce n'est pas une file
+   * d'attente : la fonction de mise à jour de react-router reçoit l'instantané du rendu, pas le
+   * résultat de l'écriture précédente — deux écritures dans le même rendu partent du même état,
+   * et la seconde l'emporte. Qui en émet deux d'affilée s'en garde lui-même (`useSpaceLauncher`
+   * n'écoute qu'un ordre par entrée d'historique).
    */
   const write = useCallback(
     (next: DiscussionSelection, replace: boolean, state?: unknown) => {

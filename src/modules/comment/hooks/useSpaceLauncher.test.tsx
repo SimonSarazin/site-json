@@ -47,13 +47,23 @@ interface Banc {
   readonly avancer: () => Promise<void>;
   /** Une navigation qui n'est ni une ouverture ni une traversée — une ancre du sommaire, par exemple. */
   readonly aller: (vers: { readonly hash: string }) => Promise<void>;
+  /**
+   * `open` à chaque rendu, dans l'ordre. Le PREMIER est celui d'avant les effets : `lanceur()` ne
+   * le montre plus (il rend le dernier), alors que c'est lui que l'écran affiche d'abord.
+   */
+  readonly rendus: readonly boolean[];
 }
 
 type Entree = string | { readonly pathname: string; readonly search?: string; readonly state?: unknown };
 
 function monter(url: Entree = FICHE, options?: { readonly param?: string }, historique: readonly Entree[] = []): Banc {
+  const rendus: boolean[] = [];
   const { result } = renderHook(
-    () => ({ lanceur: useSpaceLauncher(ESPACE, options), naviguer: useNavigate(), location: useLocation() }),
+    () => {
+      const lanceur = useSpaceLauncher(ESPACE, options);
+      rendus.push(lanceur.open);
+      return { lanceur, naviguer: useNavigate(), location: useLocation() };
+    },
     { wrapper: ({ children }) => <MemoryRouter initialEntries={[...historique, url]}>{children}</MemoryRouter> },
   );
   const traverser = (pas: number) => async () => { await act(async () => { result.current.naviguer(pas); }); };
@@ -66,6 +76,7 @@ function monter(url: Entree = FICHE, options?: { readonly param?: string }, hist
     reculer: traverser(-1),
     avancer: traverser(1),
     aller: async vers => { await act(async () => { result.current.naviguer(vers); }); },
+    rendus,
   };
 }
 
@@ -85,8 +96,10 @@ describe("useSpaceLauncher — ce que dit l'adresse", () => {
   });
 
   it("ouvre AU PREMIER RENDU sur le fil général que l'adresse désigne", () => {
-    // `open` est dérivé au rendu : posé dans un effet, la modale clignoterait sur un lien partagé.
+    // `open` est dérivé au rendu : posé dans un effet, il n'arriverait qu'au rendu suivant — la
+    // modale clignoterait sur un lien partagé. C'est donc le premier rendu qu'on regarde, pas le dernier.
     const b = monter(`${FICHE}?discussion=answers:${COMMUN}`);
+    expect(b.rendus[0]).toBe(true);
     expect(b.lanceur().open).toBe(true);
     expect(b.lanceur().target).toEqual(GENERAL);
   });
@@ -121,8 +134,9 @@ describe("useSpaceLauncher — ce que dit l'adresse", () => {
 });
 
 describe("useSpaceLauncher — ce que dit l'entrée d'historique", () => {
-  it("rouvre sur la LISTE une entrée qui le retient — un rechargement, un « suivant »", () => {
+  it("rouvre sur la LISTE une entrée qui le retient — un rechargement, un « suivant » —, dès le premier rendu", () => {
     const b = monter({ pathname: FICHE, state: marque(CLE, { list: true }) });
+    expect(b.rendus[0]).toBe(true);
     expect(b.lanceur().open).toBe(true);
     expect(b.lanceur().target).toBeNull();
   });
@@ -229,6 +243,65 @@ describe("useSpaceLauncher — ouvrir et changer de fil", () => {
     expect(b.etat()).toEqual(marque(CLE, { pushed: true }));
   });
 
+  /**
+   * Le bouton d'une fiche reste cliquable tant que le code de la modale n'est pas arrivé : arrivé
+   * par le lien d'un fil, on clique « Discussion » parce que rien ne s'affiche encore. Répondre par
+   * le fil général REMPLAÇAIT le fil du lien — il n'était plus nulle part, pas même dans l'historique.
+   */
+  it("`openAt()` sans fil, sur un espace déjà ouvert par un lien : rien ne bouge — ni le fil, ni l'entrée", () => {
+    const b = monter(`${FICHE}?discussion=forms:${APPEL}:${CHEMIN}`, undefined, ["/aac"]);
+    const entree = b.entree();
+    act(() => b.lanceur().openAt());
+    expect(b.lanceur().target).toEqual(QUESTION);
+    expect(b.param()).toBe(`forms:${APPEL}:${CHEMIN}`);
+    expect(b.entree()).toBe(entree);
+  });
+
+  it("… et sur un espace ouvert sur sa LISTE : on reste sur la liste", () => {
+    const b = monter({ pathname: FICHE, state: marque(CLE, { list: true }) });
+    const entree = b.entree();
+    act(() => b.lanceur().openAt());
+    expect(b.lanceur().open).toBe(true);
+    expect(b.lanceur().target).toBeNull();
+    expect(b.entree()).toBe(entree);
+  });
+
+  it("fermé, `select` ne fait RIEN : ouvrir, c'est `openAt` — lui seul empile ce que « fermer » défera", () => {
+    const b = monter(FICHE, undefined, ["/aac"]);
+    const entree = b.entree();
+    // Revenir à une liste qu'on n'a pas ouverte l'ouvrirait, par un remplacement.
+    act(() => b.lanceur().select(null));
+    expect(b.lanceur().open).toBe(false);
+    expect(b.etat()).toBeNull();
+    // Choisir un fil aussi, sans rien empiler.
+    act(() => b.lanceur().select(QUESTION));
+    expect(b.lanceur().open).toBe(false);
+    expect(b.param()).toBeNull();
+    expect(b.entree()).toBe(entree);
+  });
+
+  it("fermé, `select(null)` n'efface pas non plus l'adresse d'une AUTRE discussion", () => {
+    const autre = `answers:${AUTRE_COMMUN}`;
+    const b = monter(`${FICHE}?discussion=${autre}`);
+    act(() => b.lanceur().select(null));
+    expect(b.param()).toBe(autre);
+    expect(b.lanceur().open).toBe(false);
+  });
+
+  it("ouvrir garde ce que d'AUTRES ont rangé dans l'entrée d'où l'on part", () => {
+    const b = monter({ pathname: FICHE, state: { from: "/login" } });
+    act(() => b.lanceur().openAt());
+    expect(b.etat()).toEqual({ from: "/login", ...marque(CLE, { pushed: true }) });
+  });
+
+  it("écrit sous le nom de paramètre qu'on lui donne, et sous lui seul", () => {
+    const b = monter(FICHE, { param: "fil" });
+    act(() => b.lanceur().openAt());
+    expect(b.param("fil")).toBe(`answers:${COMMUN}`);
+    expect(b.param("discussion")).toBeNull();
+    expect(b.lanceur().open).toBe(true);
+  });
+
   it("`openAt` sur une modale déjà ouverte change de fil, sans empiler", async () => {
     const b = monter(FICHE, undefined, ["/aac"]);
     act(() => b.lanceur().openAt());
@@ -323,6 +396,18 @@ describe("useSpaceLauncher — fermer", () => {
     expect(surLaListe.param()).toBe(autre);
   });
 
+  it("une marque « empilée » approchante ne vaut pas : fermer REMPLACE, il ne recule pas", async () => {
+    // Reculer sur la foi d'une marque qu'on n'a pas posée ferait quitter la fiche.
+    const b = monter(
+      { pathname: FICHE, search: `?discussion=answers:${COMMUN}`, state: marque(CLE, { pushed: "oui" }) },
+      undefined, ["/aac"],
+    );
+    await act(async () => { b.lanceur().close(); });
+    expect(b.chemin()).toBe(FICHE);
+    expect(b.param()).toBeNull();
+    expect(b.lanceur().open).toBe(false);
+  });
+
   it("fermée, `close` ne touche à rien — surtout pas à l'historique", async () => {
     const b = monter(FICHE, undefined, ["/aac"]);
     const entree = b.entree();
@@ -361,9 +446,16 @@ describe("useSpaceLauncher — un ordre répété avant que l'adresse n'arrive",
     const b = monter(FICHE, undefined, ["/aac"]);
     act(() => b.lanceur().openAt());
     await act(async () => { b.lanceur().close(); });
+    // Fermée pour de bon : un verrou resté pris aurait rendu `close` muet, et la suite passerait
+    // par « déjà ouverte » — même fil à l'arrivée, mais sans rien avoir fermé ni rouvert.
+    expect(b.lanceur().open).toBe(false);
     act(() => b.lanceur().openAt(QUESTION));
     expect(b.lanceur().open).toBe(true);
     expect(b.lanceur().target).toEqual(QUESTION);
+    // Et c'est bien une ouverture : elle a empilé son entrée, qu'un « retour » défait.
+    await b.reculer();
+    expect(b.chemin()).toBe(FICHE);
+    expect(b.lanceur().open).toBe(false);
   });
 
   it("… y compris après un « retour » du navigateur, qui ramène sur l'entrée d'où l'on avait ouvert", async () => {

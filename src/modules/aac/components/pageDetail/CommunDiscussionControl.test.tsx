@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { EntityTypes } from "@communecter/cocolight-api-client";
+import cocolightApiClient, { type EntityTypes } from "@communecter/cocolight-api-client";
 import { CocolightContext, type CocolightContextType } from "@/contexts/CocolightContext";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
 import "../../i18n";
@@ -13,15 +13,15 @@ import "../../i18n";
  * `campDetail.php`) et la modale qu'il ouvre.
  *
  * L'appel au serveur est la frontière ; le lanceur, la requête du compteur et l'adresse sont les
- * VRAIS. La modale a ses propres tests : elle est remplacée, et c'est voulu — ce remplacement est
- * aussi ce qui prouve qu'elle n'est pas CHARGÉE avec la fiche, mais quand on vise le bouton ou
- * qu'on l'ouvre (`chargements`).
+ * VRAIS. La modale a ses propres tests : elle est remplacée ici.
  *
- * Le bouton assemblé à la VRAIE modale — un fil choisi qui fait l'aller-retour par l'adresse,
- * la croix et Échap dans l'historique — est dans `CommunDiscussionControl.parcours.test.tsx`.
+ * À côté de ce fichier :
+ *   - `….chargement.test.tsx` — son code n'arrive ni avec la fiche ni avec le compteur ;
+ *   - `….attente.test.tsx` — ce que fait le bouton tant que ce code se télécharge ;
+ *   - `….parcours.test.tsx` — le bouton assemblé à la VRAIE modale, l'adresse et l'historique.
  */
 
-const modale = vi.hoisted(() => ({ chargements: 0, prechauffages: 0, recu: null as Record<string, unknown> | null }));
+const modale = vi.hoisted(() => ({ prechauffages: 0, recu: null as Record<string, unknown> | null }));
 
 // Le VRAI `lazy` de `vite-preload`, dont on compte seulement les appels à `preload()`.
 vi.mock("vite-preload", async importOriginal => {
@@ -36,23 +36,17 @@ vi.mock("vite-preload", async importOriginal => {
 });
 
 vi.mock("@/modules/comment/hooks/useDiscussionsRealtime", () => ({ useDiscussionsRealtime: () => "degrade" }));
-vi.mock("@/modules/comment/components/panel/SpaceModal", () => {
-  // La modale et tout ce qu'elle tire : le fil, le composer, le rendu markdown. La fabrique ne
-  // s'exécute qu'au premier import — un import statique dans le bouton la déclencherait dès le
-  // chargement de la fiche.
-  modale.chargements += 1;
-  return {
-    default: (props: { onOpenChange: (open: boolean) => void; onSelect: (target: unknown) => void } & Record<string, unknown>) => {
-      modale.recu = props;
-      return (
-        <div data-testid="space-modal">
-          <button type="button" onClick={() => props.onOpenChange(false)}>fermer-simulé</button>
-          <button type="button" onClick={() => props.onSelect(null)}>liste-simulée</button>
-        </div>
-      );
-    },
-  };
-});
+vi.mock("@/modules/comment/components/panel/SpaceModal", () => ({
+  default: (props: { onOpenChange: (open: boolean) => void; onSelect: (target: unknown) => void } & Record<string, unknown>) => {
+    modale.recu = props;
+    return (
+      <div data-testid="space-modal">
+        <button type="button" onClick={() => props.onOpenChange(false)}>fermer-simulé</button>
+        <button type="button" onClick={() => props.onSelect(null)}>liste-simulée</button>
+      </div>
+    );
+  },
+}));
 
 const { CommunDiscussionControl } = await import("./CommunDiscussionControl");
 
@@ -60,21 +54,33 @@ const COMMUN = "65c3000000000000000000c1";
 const AUTRE_COMMUN = "65c3000000000000000000c2";
 const APPEL = "65c3000000000000000000f1";
 const FICHE = `/aac/commun/${COMMUN}`;
+const UTILISATEUR = "65d4000000000000000000d1";
 const ORGA = { id: "orga-de-l-appel" } as unknown as EntityTypes;
 
-/** Un espace à deux fils, dont on règle les compteurs. */
-function espace(total: number, unread: number) {
+/**
+ * Un espace à deux fils, dont on règle les compteurs — dans la forme que le serveur rend : quatorze
+ * champs par fil, et « peut écrire » pour une session seulement.
+ */
+function espace(total: number, unread: number, session: boolean) {
   return {
     result: true,
     space: { type: "answers", id: COMMUN, title: "Titre du serveur", formId: APPEL },
-    canComment: false,
+    canComment: session,
     truncated: false,
     threads: [
-      { key: `answers:${COMMUN}`, contextType: "answers", contextId: COMMUN, path: null, total, unread, last: null, virtual: total === 0, kind: "general" },
-      { key: `forms:${APPEL}:q`, contextType: "forms", contextId: APPEL, path: "q", total: 0, unread: 0, last: null, virtual: true, kind: "question" },
+      { key: `answers:${COMMUN}`, contextType: "answers", contextId: COMMUN, path: null, total, unread, last: total === 0 ? null : 1_758_000_000, mine: false, title: null, carrier: null, virtual: total === 0, kind: "general", group: null, audience: null },
+      { key: `forms:${APPEL}:q`, contextType: "forms", contextId: APPEL, path: "q", total: 0, unread: 0, last: null, mine: false, title: "Une question", carrier: null, virtual: true, kind: "question", group: "Proposition", audience: null },
     ],
   };
 }
+
+/**
+ * Un refus tel que la façade du SDK le REND : une EXCEPTION, le corps du serveur rangé dans
+ * `responseData` — jamais ce corps en valeur de retour.
+ */
+const refusDuSdk = (code: string) => async (): Promise<never> => {
+  throw new cocolightApiClient.error.ApiResponseError("Texte du serveur.", 200, { result: false, code, msg: "Texte du serveur." });
+};
 
 /** L'adresse rendue dans le DOM : le seul moyen d'affirmer ce que le bouton y écrit. */
 function SondeUrl() {
@@ -86,19 +92,23 @@ interface Montage {
   readonly url?: string;
   readonly total?: number;
   readonly unread?: number;
-  /** Qui est connecté au montage. Par défaut : personne, un visiteur. */
+  /**
+   * Qui est connecté au montage. Par défaut : un visiteur — sauf si l'on demande des non-lus, que
+   * le serveur ne compte que pour une session.
+   */
   readonly utilisateur?: string | null;
   /** Ce que le serveur répond. Par défaut : l'espace, avec les compteurs demandés. */
   readonly reponse?: () => Promise<unknown>;
 }
 
-function monter({ url = FICHE, total = 0, unread = 0, utilisateur = null, reponse }: Montage = {}) {
-  const getDiscussionSpace = vi.fn(reponse ?? (async () => espace(total, unread)));
+function monter({ url = FICHE, total = 0, unread = 0, utilisateur = unread > 0 ? UTILISATEUR : null, reponse }: Montage = {}) {
+  const getDiscussionSpace = vi.fn(reponse ?? (async () => espace(total, unread, utilisateur !== null)));
   const entity = utilisateur ? { userContext: { id: utilisateur } } : null;
   const cocolight = { api: { getDiscussionSpace }, me: null, entity, helper: {} } as unknown as CocolightContextType;
+  const client = new QueryClient();
   const rendu = render(
     <MemoryRouter initialEntries={[url]}>
-      <QueryClientProvider client={new QueryClient()}>
+      <QueryClientProvider client={client}>
         <CocolightContext.Provider value={cocolight}>
           <LocalizationProvider>
             <CommunDiscussionControl answerId={COMMUN} communTitle="Une instance peertube" scopeEntity={ORGA} />
@@ -108,37 +118,30 @@ function monter({ url = FICHE, total = 0, unread = 0, utilisateur = null, repons
       </QueryClientProvider>
     </MemoryRouter>,
   );
-  return { ...rendu, getDiscussionSpace };
+  return { ...rendu, getDiscussionSpace, client };
 }
 
 const bouton = () => screen.getByRole("button", { name: /Discussion/ });
 const param = (c: HTMLElement) => new URLSearchParams(c.querySelector("[data-url]")!.textContent ?? "").get("discussion");
 /** Laisse la requête du compteur répondre. */
 const servir = () => act(async () => { await Promise.resolve(); });
+/** L'état de chaque entrée de cache — celle du lecteur, et celle, jamais demandée, du rendu d'attente. */
+const etats = (client: QueryClient) => client.getQueryCache().getAll().map(requete => requete.state.status);
+/**
+ * Attend que la fiche soit AU REPOS : sa demande partie, répondue, et tout ce qui en découle rendu
+ * — une modale chargée en différé comprise. C'est ce qui rend probante une affirmation d'ABSENCE :
+ * « demande partie » est vrai dès le montage, bien avant qu'il y ait quoi que ce soit à voir.
+ */
+async function auRepos({ getDiscussionSpace, client }: { getDiscussionSpace: ReturnType<typeof vi.fn>; client: QueryClient }) {
+  await waitFor(() => {
+    expect(getDiscussionSpace).toHaveBeenCalled();
+    expect(client.isFetching()).toBe(0);
+  });
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, 0)); });
+}
 
 describe("CommunDiscussionControl", () => {
   beforeEach(() => { modale.recu = null; modale.prechauffages = 0; });
-
-  /**
-   * ⚠️ À garder EN TÊTE du fichier. Un module ne se charge qu'une fois par fichier de test : la
-   * preuve « pas chargée avec la fiche » ne vaut qu'avant toute ouverture et tout survol. Elle
-   * tient donc en UN test, le premier — les suivants ne lisent plus `chargements`.
-   */
-  describe("le code de la modale", () => {
-    it("n'arrive ni avec la fiche ni avec le compteur : au survol du bouton, et sans la monter", async () => {
-      monter({ total: 5 });
-      await waitFor(() => expect(document.querySelector("[data-commun-discussion-total]")).toBeTruthy());
-      // La fiche est affichée, son compteur aussi : le fil n'est pas le prix d'une fiche qu'on lit.
-      expect(screen.queryByTestId("space-modal")).toBeNull();
-      expect(modale.chargements).toBe(0);
-
-      fireEvent.mouseEnter(bouton());
-      expect(modale.prechauffages).toBe(1);
-      // Viser le bouton suffit à le faire venir : au clic, la modale n'attend pas.
-      await waitFor(() => expect(modale.chargements).toBe(1));
-      expect(screen.queryByTestId("space-modal")).toBeNull();
-    });
-  });
 
   describe("le bouton", () => {
     it("est là sans session, et se nomme « Discussion »", async () => {
@@ -167,7 +170,9 @@ describe("CommunDiscussionControl", () => {
       expect(getDiscussionSpace).toHaveBeenCalledTimes(1);
     });
 
-    it("ne SONDE pas : une fiche laissée ouverte dans un onglet ne redemande rien", async () => {
+    it("ne SONDE pas : une fiche laissée ouverte dans un onglet ne redemande rien à intervalle", async () => {
+      // Le sondage seulement : revenir sur l'onglet relit, comme partout dans l'application, ce qui
+      // a plus de trente secondes.
       vi.useFakeTimers();
       try {
         const { getDiscussionSpace } = monter({ total: 5 });
@@ -197,9 +202,9 @@ describe("CommunDiscussionControl", () => {
     });
 
     it("ne montre aucun compteur tant que personne n'a écrit", async () => {
-      const { getDiscussionSpace } = monter();
-      await waitFor(() => expect(getDiscussionSpace).toHaveBeenCalled());
-      await servir();
+      const fiche = monter();
+      await auRepos(fiche);
+      expect(fiche.client.getQueriesData({})).toHaveLength(1);
       expect(document.querySelector("[data-commun-discussion-total]")).toBeNull();
       expect(document.querySelector("[data-commun-discussion-unread]")).toBeNull();
     });
@@ -223,14 +228,63 @@ describe("CommunDiscussionControl", () => {
 
     it("reste là, sans compteur, quand le serveur ne répond pas — et ouvre quand même", async () => {
       // Le compteur est un plus : son échec ne doit ni retirer le bouton, ni l'empêcher d'ouvrir.
-      const { getDiscussionSpace } = monter({ reponse: async () => { throw new Error("Network Error"); } });
-      await waitFor(() => expect(getDiscussionSpace).toHaveBeenCalled());
-      await servir();
+      // Une panne n'est dite qu'après ses nouvelles tentatives (1 s, puis 2 s) : c'est CET état
+      // qu'on attend, pas le chargement qui le précède.
+      vi.useFakeTimers();
+      let fiche: ReturnType<typeof monter>;
+      try {
+        fiche = monter({ reponse: async () => { throw new Error("Network Error"); } });
+        await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
+      } finally {
+        vi.useRealTimers();
+      }
+      expect(fiche.getDiscussionSpace).toHaveBeenCalledTimes(3);
+      expect(etats(fiche.client)).toContain("error");
       expect(bouton().textContent).toBe("Discussion");
       expect(bouton().hasAttribute("disabled")).toBe(false);
 
       fireEvent.click(bouton());
       await screen.findByTestId("space-modal");
+    });
+
+    it("reste là aussi quand le serveur REFUSE l'espace — sans compteur, et toujours cliquable", async () => {
+      // Un refus arrive aussitôt, sans nouvelle tentative : la modale dira pourquoi.
+      const fiche = monter({ reponse: refusDuSdk("hidden") });
+      await auRepos(fiche);
+      expect(fiche.getDiscussionSpace).toHaveBeenCalledTimes(1);
+      expect(etats(fiche.client)).toContain("error");
+      expect(bouton().textContent).toBe("Discussion");
+      expect(bouton().hasAttribute("disabled")).toBe(false);
+
+      fireEvent.click(bouton());
+      await screen.findByTestId("space-modal");
+    });
+
+    it("un espace que le serveur ne montre plus perd ses compteurs — une panne, elle, les lui laisse", async () => {
+      const fiche = monter({ total: 12, unread: 3 });
+      await waitFor(() => expect(document.querySelector("[data-commun-discussion-total] [aria-hidden]")!.textContent).toBe("12"));
+
+      // Une relecture en panne : le dernier compte servi reste affiché.
+      vi.useFakeTimers();
+      try {
+        fiche.getDiscussionSpace.mockRejectedValue(new Error("Network Error"));
+        await act(async () => {
+          void fiche.client.invalidateQueries();
+          await vi.advanceTimersByTimeAsync(10_000);
+        });
+      } finally {
+        vi.useRealTimers();
+      }
+      expect(etats(fiche.client)).toContain("error");
+      expect(document.querySelector("[data-commun-discussion-total] [aria-hidden]")!.textContent).toBe("12");
+      expect(document.querySelector("[data-commun-discussion-unread]")).toBeTruthy();
+
+      // Un refus : le serveur a répondu, et il ne montre plus cet espace.
+      fiche.getDiscussionSpace.mockImplementation(refusDuSdk("hidden"));
+      await act(async () => { await fiche.client.invalidateQueries(); });
+      await waitFor(() => expect(document.querySelector("[data-commun-discussion-total]")).toBeNull());
+      expect(document.querySelector("[data-commun-discussion-unread]")).toBeNull();
+      expect(bouton().textContent).toBe("Discussion");
     });
   });
 
@@ -272,10 +326,10 @@ describe("CommunDiscussionControl", () => {
     });
 
     it("l'adresse d'un autre commun ne l'ouvre pas", async () => {
-      const { getDiscussionSpace } = monter({ url: `${FICHE}?discussion=answers:${AUTRE_COMMUN}` });
-      await waitFor(() => expect(getDiscussionSpace).toHaveBeenCalled());
-      await servir();
+      const fiche = monter({ url: `${FICHE}?discussion=answers:${AUTRE_COMMUN}` });
+      await auRepos(fiche);
       expect(screen.queryByTestId("space-modal")).toBeNull();
+      expect(bouton().hasAttribute("aria-busy")).toBe(false);
     });
 
     it("revenir à la liste des fils ne la ferme pas", async () => {

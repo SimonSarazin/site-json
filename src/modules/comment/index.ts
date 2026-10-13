@@ -1,8 +1,10 @@
 /**
- * Surface publique du module comment.
+ * Surface publique du module comment — l'entrée COMPLÈTE : le fil, le composer, les panneaux.
  *
- * Tout ce qu'un autre module consomme passe par ici — c'est ce qui permettra, au
- * rebranchement de `news` (J8), de ne toucher qu'à deux points d'appel hors de ce dossier.
+ * Un autre module passe par ici, à une exception près : la fiche qui ne pose qu'un bouton
+ * « Discussion ». Elle prend de quoi compter et ouvrir dans l'entrée légère (`./launch`), et
+ * charge la modale en différé par son fichier (`components/panel/SpaceModal`) — importer cette
+ * entrée-ci lui ferait payer le fil entier à chaque affichage.
  */
 
 // L'enregistrement des ressources i18n est un effet de bord : il doit avoir lieu dès qu'on
@@ -34,7 +36,7 @@ export { useCommentImages, type PendingImage } from "./hooks/useCommentImages";
 export { useCommentVoters } from "./hooks/useCommentVoters";
 export { useDiscussionsQuery, type DiscussionScope } from "./hooks/useDiscussionsQuery";
 export { useCarrierEntity } from "./hooks/useCarrierEntity";
-export { useDiscussionUrlState, type DiscussionUrlState } from "./hooks/useDiscussionUrlState";
+export { useDiscussionUrlState, type DiscussionUrlState, type UrlWriteOptions } from "./hooks/useDiscussionUrlState";
 export { useDiscussionLauncher, type DiscussionLauncher } from "./hooks/useDiscussionLauncher";
 export { useDiscussionUnread } from "./hooks/useDiscussionUnread";
 export { useDiscussionSpaceQuery } from "./hooks/useDiscussionSpaceQuery";

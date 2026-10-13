@@ -33,22 +33,32 @@ export function carrierKey(carrier: CarrierRef | DiscussionCarrier | null): stri
 }
 
 /**
- * Les refus que l'écran sait dire. Le serveur envoie `login` et `hidden` dans `code` ; les deux
- * autres sont posés ici. Un CODE, jamais un texte : le `msg` du serveur, en français, s'affichait
- * tel quel dans toutes les langues — c'est l'écran qui traduit (`errorCodeOf`).
+ * Les REFUS que l'écran sait dire : le serveur a répondu, et il a dit non.
+ *
+ * Il envoie son motif dans `code`. `login` et `hidden` ont leur phrase ; tout autre code — son
+ * `bad-request`, ou celui d'un serveur plus récent que cet écran — se dit d'une phrase générique,
+ * `refused`. Un CODE, jamais un texte : le `msg` du serveur, en français, s'affichait tel quel dans
+ * toutes les langues — c'est l'écran qui traduit (`errorCodeOf`).
  */
-export type RefusalCode = "login" | "hidden" | "refused" | "unreadable";
-const CODES_DU_SERVEUR: readonly RefusalCode[] = ["login", "hidden"];
+export type RefusalCode = "login" | "hidden" | "refused";
+const CODES_A_PHRASE: readonly RefusalCode[] = ["login", "hidden"];
+const REFUS: readonly string[] = ["login", "hidden", "refused"];
 
-/** Le code de refus, s'il y en a un. Rend `null` quand la réponse est exploitable. */
+/** Le code de refus, s'il y en a un : le corps dit `result: false`. `null` pour tout le reste. */
 export function refusalOf(raw: unknown): RefusalCode | null {
   const body = raw as { result?: unknown; code?: unknown } | null | undefined;
-  if (!body || typeof body !== "object") return "unreadable";
-  if (body.result === false) {
-    return CODES_DU_SERVEUR.includes(body.code as RefusalCode) ? (body.code as RefusalCode) : "refused";
-  }
-  if (body.result !== true) return "unreadable";
-  return null;
+  if (!body || typeof body !== "object" || body.result !== false) return null;
+  return CODES_A_PHRASE.includes(body.code as RefusalCode) ? (body.code as RefusalCode) : "refused";
+}
+
+/**
+ * Lève si la réponse n'est pas ACCORDÉE : un refus, marqué (`refusalError`), ou un corps qui n'est
+ * pas celui d'une réponse — illisible, et qui n'est PAS un refus (`unreadableError`).
+ */
+export function assertGranted(raw: unknown): asserts raw is Record<string, unknown> {
+  const refusal = refusalOf(raw);
+  if (refusal !== null) throw refusalError(refusal);
+  if (!raw || typeof raw !== "object" || (raw as { result?: unknown }).result !== true) throw unreadableError();
 }
 
 /**
@@ -79,12 +89,25 @@ export async function rawOrRefusal(call: () => Promise<unknown>): Promise<unknow
   }
 }
 
-/** Ce qu'une requête du panneau a rendu comme erreur : un refus codé, ou un échec (réseau, 500…). */
-export type DiscussionErrorCode = RefusalCode | "failed";
+/**
+ * Ce qu'une requête du panneau a rendu comme erreur : un refus codé, ou une PANNE — une réponse
+ * illisible (`unreadable`), un échec (`failed` : réseau, 500, requête que le schéma refuse).
+ */
+export type DiscussionErrorCode = RefusalCode | "unreadable" | "failed";
 
 export function errorCodeOf(error: unknown): DiscussionErrorCode {
   const e = error as { refus?: unknown; code?: unknown } | null | undefined;
-  return e?.refus === true && typeof e.code === "string" ? (e.code as RefusalCode) : "failed";
+  if (e?.refus === true && typeof e.code === "string") return e.code as RefusalCode;
+  return e?.refus === false && e.code === "unreadable" ? "unreadable" : "failed";
+}
+
+/**
+ * Ce code est-il un REFUS ? C'est la seule question qui sépare deux conduites :
+ *   - un refus est définitif — ni réessayé, ni relu à intervalle, et il RETIRE ce qu'on montrait ;
+ *   - une panne se réessaie, se relit, et laisse à l'écran la dernière réponse servie.
+ */
+export function isRefusalCode(code: DiscussionErrorCode | null): code is RefusalCode {
+  return code !== null && REFUS.includes(code);
 }
 
 /**
@@ -181,14 +204,27 @@ export function refusalError(code: RefusalCode): Error & { refus: true; code: Re
 }
 
 /**
+ * Une réponse ILLISIBLE : le corps n'est pas celui d'une réponse — une page d'erreur servie en
+ * HTTP 200, un avertissement écrit devant le JSON, un corps tronqué. Personne n'a dit non : ce
+ * n'est pas un refus, et l'erreur n'en porte PAS la marque. Elle suit donc le sort d'une panne —
+ * réessayée, relue, et sans effet sur ce qui est déjà à l'écran. Marquée, une relecture ratée
+ * vidait l'écran, fil ouvert et brouillon compris, et coupait la relecture pour de bon.
+ */
+export function unreadableError(): Error & { refus: false; code: "unreadable" } {
+  const erreur = new Error("unreadable") as Error & { refus: false; code: "unreadable" };
+  erreur.refus = false;
+  erreur.code = "unreadable";
+  return erreur;
+}
+
+/**
  * Normalise une réponse du backend. Lève si elle est refusée ou illisible — l'appelant
  * (React Query) transforme ça en état d'erreur, ce qui vaut mieux qu'un panneau vide et muet.
  */
 export function parseDiscussions(raw: unknown): DiscussionsResult {
-  const refusal = refusalOf(raw);
-  if (refusal !== null) throw refusalError(refusal);
+  assertGranted(raw);
 
-  const body = raw as Record<string, unknown>;
+  const body = raw;
   const depth = DEPTHS.includes(body.depth as DiscussionDepth) ? (body.depth as DiscussionDepth) : "rail";
 
   // Mode `fil` : un seul fil, au singulier, et son porteur à part.

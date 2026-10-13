@@ -1,10 +1,11 @@
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { lazy } from "vite-preload";
 import { MessagesSquare } from "lucide-react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { Button } from "@/components/ui/button";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
+import { cn } from "@/lib/utils";
 import { useDiscussionSpaceQuery, useSpaceLauncher, type SpaceRef } from "@/modules/comment/launch";
 
 /**
@@ -21,12 +22,29 @@ import { useDiscussionSpaceQuery, useSpaceLauncher, type SpaceRef } from "@/modu
  */
 const SpaceModal = lazy(() => import("@/modules/comment/components/panel/SpaceModal"));
 
+/** Préchauffe le code de la modale. Un échec n'est rien ici : l'import sera retenté à l'ouverture. */
+function prechauffer() {
+    void SpaceModal.preload().catch(() => undefined);
+}
+
+/**
+ * Tenu à l'écran par `Suspense` tant que le code de la modale n'est pas arrivé. Il ne montre rien :
+ * il dit au bouton qu'on l'attend.
+ */
+function ModaleAttendue({ onChange }: { onChange: (attendue: boolean) => void }) {
+    useEffect(() => {
+        onChange(true);
+        return () => onChange(false);
+    }, [onChange]);
+    return null;
+}
+
 export interface CommunDiscussionControlProps {
     /** Le commun : c'est lui qui porte l'espace de discussion. */
     answerId: string;
     /** Son titre, tel que la fiche l'a résolu — repris en tête de la modale. */
     communTitle?: string | null;
-    /** L'organisation de l'appel : on y cherche d'abord les personnes à mentionner. */
+    /** L'entité où chercher d'abord les personnes à mentionner — la fiche passe celle du site. */
     scopeEntity?: EntityTypes | null;
 }
 
@@ -48,8 +66,12 @@ export function CommunDiscussionControl({ answerId, communTitle, scopeEntity }: 
     const t = useT("modules/aac");
     const space = useMemo<SpaceRef>(() => ({ type: "answers", id: answerId }), [answerId]);
     const launcher = useSpaceLauncher(space);
-    // Un compteur, pas une veille : relu à l'ouverture de la modale, qui partage cette entrée de cache.
+    // Un compteur, pas une veille. La modale partage cette entrée de cache : ouverte, c'est elle qui
+    // la relit — tout de suite si elle a plus de trente secondes, puis à intervalle.
     const { total, unread } = useDiscussionSpaceQuery(space);
+    // Ouverte par l'adresse ou par un clic, la modale peut se faire attendre (son code se télécharge) :
+    // le bouton le dit, plutôt que de rester muet.
+    const [modaleAttendue, setModaleAttendue] = useState(false);
 
     /**
      * À la fermeture, le focus revient au bouton — par la croix, par Échap ou par « retour ».
@@ -72,14 +94,15 @@ export function CommunDiscussionControl({ answerId, communTitle, scopeEntity }: 
                 ref={boutonRef}
                 variant="outline"
                 size="sm"
-                className="gap-2"
+                className={cn("gap-2", modaleAttendue && "cursor-progress")}
                 // Ce que le bouton ouvre est un dialogue : le lecteur d'écran l'annonce avant le clic.
                 aria-haspopup="dialog"
+                aria-busy={modaleAttendue || undefined}
                 onClick={() => launcher.openAt()}
                 // Le code de la modale est préchauffé dès qu'on vise le bouton : au clic elle
                 // s'ouvre sans attendre son téléchargement (même geste que l'agenda).
-                onMouseEnter={() => { void SpaceModal.preload(); }}
-                onFocus={() => { void SpaceModal.preload(); }}
+                onMouseEnter={prechauffer}
+                onFocus={prechauffer}
                 data-commun-discussion
             >
                 <MessagesSquare className="size-3.5" aria-hidden />
@@ -101,9 +124,10 @@ export function CommunDiscussionControl({ answerId, communTitle, scopeEntity }: 
                 )}
             </Button>
 
-            {/* Montée seulement ouverte : fermée, ni ses requêtes ni son code ne sont chargés. */}
+            {/* Montée seulement ouverte : fermée, elle ne rend rien et ne demande rien. Son code, lui,
+                arrive à la première ouverture — ou avant, préchauffé au survol et au focus. */}
             {launcher.open && (
-                <Suspense fallback={null}>
+                <Suspense fallback={<ModaleAttendue onChange={setModaleAttendue} />}>
                     <SpaceModal
                         open
                         onOpenChange={next => { if (!next) launcher.close(); }}

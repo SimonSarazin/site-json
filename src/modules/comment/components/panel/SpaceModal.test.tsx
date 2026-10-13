@@ -27,6 +27,14 @@ vi.mock("./SpacePanel", () => ({
   },
 }));
 
+// Le panneau GÉNÉRAL n'est pas rendu par cette modale. On compte seulement s'il est CHARGÉ avec
+// elle : la fabrique d'un module remplacé ne tourne qu'au premier import de ce module.
+const general = { chargements: 0 };
+vi.mock("./DiscussionPanel", () => {
+  general.chargements += 1;
+  return { DiscussionPanel: () => null };
+});
+
 const { SpaceModal, default: parDefaut } = await import("./SpaceModal");
 
 const COMMUN = "65c3000000000000000000c1";
@@ -45,6 +53,21 @@ function monter(props: Partial<Parameters<typeof SpaceModal>[0]> = {}) {
 }
 
 describe("SpaceModal", () => {
+  it("n'emporte pas le panneau général : elle se charge en différé, et ne le rend jamais", () => {
+    // Sa coquille vivait dans le fichier de la modale générale, qui importe ce panneau — le morceau
+    // de l'espace le téléchargeait donc pour rien, à chaque première ouverture.
+    expect(general.chargements).toBe(0);
+  });
+
+  it("à l'ouverture, pose le focus sur le dialogue — pas sur son premier bouton, ni sur la croix", () => {
+    // Au rendu d'ouverture la liste des fils n'est pas encore là : le premier élément atteignable
+    // serait la croix, et l'on ouvrirait, au clavier, sur « Fermer ».
+    monter();
+    const boite = screen.getByRole("dialog");
+    expect(document.activeElement).toBe(boite);
+    expect(boite.contains(document.querySelector("[data-revendique-echap]"))).toBe(true);
+  });
+
   it("se nomme d'après le commun, sans imposer ce nom à l'œil", () => {
     monter({ title: "Une instance peertube" });
     const boite = screen.getByRole("dialog");

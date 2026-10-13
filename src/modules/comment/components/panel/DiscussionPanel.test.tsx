@@ -88,10 +88,12 @@ const appels: { kind: string; enabled: boolean }[] = [];
 const etat = {
   chargementTransverse: false, rafraichi: false,
   /**
-   * Le lien profond (mode `fil`) : en cours par défaut, servi, refusé (`hidden`, `login`), en
-   * panne, ou en panne APRÈS un premier accord — React Query garde alors la dernière réponse.
+   * Le lien profond (mode `fil`) : en cours par défaut, servi, refusé (`hidden`, `login`, ou un
+   * code que l'écran ne connaît pas), en panne (échec, réponse illisible), ou en panne APRÈS un
+   * premier accord — React Query garde alors la dernière réponse.
    */
-  lienProfond: "attente" as "attente" | "servi" | "cache" | "connexion" | "echec" | "echecApresAccord",
+  lienProfond: "attente" as "attente" | "servi" | "cache" | "connexion" | "refus" | "echec" | "illisible"
+    | "echecApresAccord" | "illisibleApresAccord" | "refusApresAccord",
   /** Une erreur du rail, quand un test en veut une : refus codé ou échec réseau. */
   railErreur: null as unknown,
   /** La session : connectée par défaut. */
@@ -105,8 +107,13 @@ function erreurDuLien(): unknown {
   switch (etat.lienProfond) {
     case "cache": return Object.assign(new Error("hidden"), { refus: true, code: "hidden" });
     case "connexion": return Object.assign(new Error("login"), { refus: true, code: "login" });
+    case "refus":
+    case "refusApresAccord": return Object.assign(new Error("refused"), { refus: true, code: "refused" });
     case "echec":
     case "echecApresAccord": return new Error("Network Error");
+    // Une réponse illisible, telle que la lève la lecture de la réponse : un code, SANS la marque de refus.
+    case "illisible":
+    case "illisibleApresAccord": return Object.assign(new Error("unreadable"), { refus: false, code: "unreadable" });
     default: return null;
   }
 }
@@ -144,7 +151,7 @@ vi.mock("../../hooks/useDiscussionsQuery", () => ({
         ...vide, canComment: error === null, isLoading: false, isPending: false,
         isError: error !== null, isSuccess: error === null, error, refetch: relireLeLien,
         // Une réponse déjà servie reste dans `data` à travers une erreur de relecture.
-        data: error === null || etat.lienProfond === "echecApresAccord" ? { depth: "fil" } : undefined,
+        data: error === null || etat.lienProfond.endsWith("ApresAccord") ? { depth: "fil" } : undefined,
       };
     }
     // Une requête DÉSACTIVÉE n'a jamais d'erreur : le panneau en garde une, au repos, pour les fils.
@@ -574,6 +581,36 @@ describe("DiscussionPanel", () => {
       etat.lienProfond = "echecApresAccord";
       const { container } = monter(filDActualite);
       expect(fil(container)).not.toBeNull();
+    });
+
+    it("une réponse illisible non plus : personne n'a dit non, le fil accordé reste", () => {
+      etat.lienProfond = "illisibleApresAccord";
+      const { container } = monter(filDActualite);
+      expect(fil(container)).not.toBeNull();
+      expect(container.querySelector("[data-thread-error]")).toBeNull();
+    });
+
+    it("un REFUS, lui, démonte le fil déjà accordé — même d'un code que l'écran ne connaît pas", () => {
+      etat.lienProfond = "refusApresAccord";
+      const { container } = monter(filDActualite);
+      expect(fil(container)).toBeNull();
+      expect(container.querySelector("[data-thread-error]")?.textContent).toContain("Le serveur a refusé la demande.");
+    });
+
+    it("illisible dès l'ouverture : dit comme tel, et réessayable — c'est une panne", () => {
+      etat.lienProfond = "illisible";
+      const { container } = monter(filDActualite);
+      expect(container.querySelector("[data-thread-error]")?.textContent).toContain("Le serveur a renvoyé une réponse illisible.");
+      expect(fil(container)).toBeNull();
+      fireEvent.click(screen.getByRole("button", { name: "Réessayer" }));
+      expect(relireLeLien).toHaveBeenCalledTimes(1);
+    });
+
+    it("un refus ne propose pas de réessayer : il ne changera pas d'avis", () => {
+      etat.lienProfond = "refus";
+      const { container } = monter(filDActualite);
+      expect(container.querySelector("[data-thread-error]")?.textContent).toContain("Le serveur a refusé la demande.");
+      expect(screen.queryByRole("button", { name: "Réessayer" })).toBeNull();
     });
 
     it("une discussion de formulaire (`path`) attend elle aussi l'accord du serveur", () => {

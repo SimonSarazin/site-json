@@ -5,7 +5,7 @@ import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
 import { COMMENT_QUERY_KEYS } from "../constants/queryKeys";
 import { rawOrRefusal } from "../lib/discussions";
 import { parseSpace, spaceKey, spaceTotals } from "../lib/space";
-import { intervalleDeSondage } from "./useDiscussionsQuery";
+import { estUnRefus, intervalleDeSondage, reessayer } from "./useDiscussionsQuery";
 import { useDiscussionsRealtime } from "./useDiscussionsRealtime";
 import type { DiscussionSpace, DiscussionThread, SpaceRef } from "../types";
 
@@ -32,6 +32,11 @@ const AUCUN_FIL: readonly DiscussionThread[] = [];
  * La clé vit sous `DISCUSSIONS_PREFIX` : poster un message ou marquer un fil lu invalide déjà ce
  * préfixe, les compteurs de l'espace suivent donc sans une ligne de plus.
  *
+ * **Un refus n'est pas une panne**, et c'est ici que la règle se tient, pour tout consommateur —
+ * le bouton d'une fiche comme le panneau. React Query garde la dernière liste servie à travers une
+ * erreur de relecture : une PANNE la laisse (`data`, `threads`, compteurs), fil ouvert et brouillon
+ * compris ; un REFUS la retire — le serveur a répondu, et il ne montre plus cet espace.
+ *
  * Aucun texte de message ne transite ici ; le fil lui-même reste chargé par `useCommentsQuery`.
  */
 export function useDiscussionSpaceQuery(
@@ -56,8 +61,7 @@ export function useDiscussionSpaceQuery(
     refetchInterval: requete => (live ? intervalleDeSondage(requete.state.error, tempsReel) : false),
     refetchIntervalInBackground: false,
     // Un REFUS ne se réessaie pas : le serveur a répondu, et il a dit non (cf. `useDiscussionsQuery`).
-    retry: (tentatives, erreur) =>
-      (erreur as { refus?: boolean } | null)?.refus ? false : tentatives < 2,
+    retry: reessayer,
     queryFn: async (): Promise<DiscussionSpace> => {
       if (!space) throw new Error("Aucun espace de discussion");
       const raw = await rawOrRefusal(() => (api as unknown as {
@@ -67,17 +71,21 @@ export function useDiscussionSpaceQuery(
     },
   });
 
-  const threads = query.data?.threads ?? AUCUN_FIL;
+  const data = query.isError && estUnRefus(query.error) ? undefined : query.data;
+  const threads = data?.threads ?? AUCUN_FIL;
   return {
     ...query,
-    // Le rendu d'attente n'est pas « rien à montrer » : sans cela l'écran dirait, le temps d'un
-    // rendu, qu'il n'y a aucun fil — ou que celui de l'adresse est introuvable.
-    isLoading: query.isLoading || (actif && !hydrate),
+    data,
+    // « En attente », pas « en train de lire » : une première lecture mise en PAUSE (réseau perdu)
+    // n'est plus en vol, mais n'a toujours rien rendu — l'écran n'a pas à en conclure qu'il n'y a
+    // aucun fil, ni que celui de l'adresse est introuvable. De même le rendu d'attente du montage,
+    // même si le cache porte déjà une liste sous sa clé : on ne sait pas encore à qui elle est.
+    isLoading: actif && (!hydrate || query.isPending),
     threads,
     /** Le titre que le serveur connaît au commun — l'hôte a souvent mieux, résolu par sa fiche. */
-    title: query.data?.space.title ?? null,
-    canComment: query.data?.canComment ?? false,
-    truncated: query.data?.truncated ?? false,
+    title: data?.space.title ?? null,
+    canComment: data?.canComment ?? false,
+    truncated: data?.truncated ?? false,
     ...spaceTotals(threads),
   };
 }

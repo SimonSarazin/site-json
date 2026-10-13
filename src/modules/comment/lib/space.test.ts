@@ -242,12 +242,16 @@ describe("parseSpace", () => {
     ["avec un type qui ne porte pas d'espace", { ...REPONSE, space: { type: "forms", id: APPEL } }],
     ["sans identifiant", { ...REPONSE, space: { type: "answers", id: "" } }],
     ["avec un identifiant qui n'est pas une chaîne", { ...REPONSE, space: { type: "answers", id: 42 } }],
-  ])("tient pour illisible une réponse %s", (_cas, raw) => {
-    expect(errorCodeOf(refusDe(raw))).toBe("unreadable");
+  ])("tient pour illisible une réponse %s — une panne, sans la marque de refus", (_cas, raw) => {
+    const erreur = refusDe(raw);
+    expect(errorCodeOf(erreur)).toBe("unreadable");
+    expect(erreur).toMatchObject({ refus: false });
   });
 
-  it.each([[null], [undefined], ["texte"], [{}]])("tient %p pour illisible plutôt que d'exploser", raw => {
-    expect(errorCodeOf(refusDe(raw))).toBe("unreadable");
+  it.each([[null], [undefined], ["texte"], [{}]])("tient %p pour illisible plutôt que d'exploser — sans la marque de refus", raw => {
+    const erreur = refusDe(raw);
+    expect(errorCodeOf(erreur)).toBe("unreadable");
+    expect(erreur).toMatchObject({ refus: false });
   });
 });
 

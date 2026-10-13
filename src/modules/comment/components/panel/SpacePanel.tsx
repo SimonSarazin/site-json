@@ -12,9 +12,9 @@ import { ThreadColumn, type ThreadChip } from "./ThreadColumn";
 import { CommentThread } from "../CommentThread";
 import { LoginToParticipate } from "../LoginToParticipate";
 import { useDiscussionSpaceQuery } from "../../hooks/useDiscussionSpaceQuery";
-import { errorCodeOf, errorLabelKey } from "../../lib/discussions";
+import { errorCodeOf, errorLabelKey, isRefusalCode } from "../../lib/discussions";
 import { threadValue } from "../../lib/filKey";
-import { visibleSpaceThreads } from "../../lib/space";
+import { spaceKey, visibleSpaceThreads } from "../../lib/space";
 import type { CommentTarget, DiscussionThread, SpaceRef } from "../../types";
 import "../../styles.css";
 
@@ -27,7 +27,7 @@ export interface SpacePanelProps {
   readonly target: CommentTarget | null;
   /** Changer de fil, ou revenir à la liste (`null`). Jamais fermer : c'est le verbe de l'hôte. */
   readonly onSelect: (target: CommentTarget | null) => void;
-  /** L'entité qui cadre la recherche des personnes à mentionner — l'organisation de l'appel. */
+  /** L'entité qui cadre la recherche des personnes à mentionner — celle que l'hôte a sous la main. */
   readonly scopeEntity?: EntityTypes | null;
   /** Rendu en fin d'en-tête : la croix de la modale. */
   readonly headerEnd?: ReactNode;
@@ -121,13 +121,17 @@ export function SpacePanel({ space, title, target, onSelect, scopeEntity, header
   }, [step]);
 
   const nom = title || query.title || String(t("space.title"));
-  // React Query garde la dernière liste servie à travers une erreur de relecture. Une PANNE la
-  // laisse à l'écran, fil ouvert et brouillon compris ; un REFUS la retire — le serveur a répondu,
-  // et il ne montre plus cet espace.
+  // Une erreur ne prend l'écran que s'il n'y a plus rien à montrer. `useDiscussionSpaceQuery` tient
+  // la règle : une PANNE de relecture garde la dernière liste servie — fil ouvert et brouillon
+  // compris —, un REFUS la retire.
   const code = query.isError ? errorCodeOf(query.error) : null;
-  const erreur = code !== null && (code !== "failed" || query.data === undefined) ? code : null;
+  const erreur = code !== null && query.data === undefined ? code : null;
   const messageDErreur = erreur === null ? null
     : String(t(erreur === "hidden" ? "space.notFound" : errorLabelKey(erreur)));
+  // Seule une panne mérite qu'on réessaie : un refus ne changera pas d'avis.
+  const reessayable = erreur !== null && !isRefusalCode(erreur);
+  // L'adresse désigne un fil que la liste ne porte pas : réservé, ou disparu (cf. la colonne du fil).
+  const introuvable = target !== null && messageDErreur === null && !query.isLoading && ouvert === null;
 
   return (
     <section
@@ -138,9 +142,15 @@ export function SpacePanel({ space, title, target, onSelect, scopeEntity, header
       )}
       aria-label={nom}
       data-discussion-panel
-      data-space-panel={`${space.type}:${space.id}`}
+      data-space-panel={spaceKey(space)}
       data-step={step}
     >
+      {/* Ce qui arrive à l'espace se dit aussi à qui ne le voit pas : un refus, une panne, un fil
+          introuvable. Une seule région, toujours là — les deux colonnes affichent la même phrase,
+          et l'une des deux est hors écran en mode une colonne. */}
+      <p role="status" className="sr-only" data-space-status>
+        {messageDErreur ?? (introuvable ? String(t("panel.error.hidden")) : "")}
+      </p>
       <div data-panel-columns className="flex min-h-0 w-full flex-1">
         {/* Colonne 1 — les fils de l'espace */}
         <div data-panel-column="threads" className="@container/fils flex min-h-0 w-full flex-col border-e">
@@ -152,7 +162,16 @@ export function SpacePanel({ space, title, target, onSelect, scopeEntity, header
             {headerEnd ? <span className="ms-auto shrink-0 @3xl/panneau:hidden">{headerEnd}</span> : null}
           </header>
           {messageDErreur
-            ? <p className="text-muted-foreground p-4 text-sm" data-space-error={erreur}>{messageDErreur}</p>
+            ? (
+              <div className="text-muted-foreground flex flex-col items-start gap-2 p-4 text-sm" data-space-error={erreur}>
+                <p>{messageDErreur}</p>
+                {reessayable && (
+                  <Button variant="outline" size="sm" onClick={() => void query.refetch()}>
+                    {String(t("thread.retry"))}
+                  </Button>
+                )}
+              </div>
+            )
             : (
               <ThreadColumn
                 threads={threads}

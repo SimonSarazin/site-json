@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { useState } from "react";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useLocation, useNavigate, useParams } from "react-router";
@@ -151,6 +151,10 @@ async function attendreLaListe(cle = CLE_GENERALE) {
 }
 
 describe("l'espace de discussion d'un commun — le parcours, tous maillons assemblés", () => {
+  // La modale arrive en différé, avec tout son graphe (panneau, colonne, dialogue). Ce fichier n'a
+  // pas à prouver le différé — `CommunDiscussionControl.chargement.test.tsx` s'en charge — et n'a
+  // donc pas à le faire tenir dans la seconde d'attente du premier test qui l'ouvre.
+  beforeAll(async () => { await import("@/modules/comment/components/panel/SpaceModal"); });
   beforeEach(() => { fil.montages = 0; });
 
   describe("un fil choisi fait l'aller-retour par l'adresse", () => {
@@ -163,6 +167,8 @@ describe("l'espace de discussion d'un commun — le parcours, tous maillons asse
       expect(param()).toBe(CLE_GENERALE);
       expect(filMonte()!.getAttribute("data-target")).toBe(CLE_GENERALE);
       expect(rangee(CLE_GENERALE).getAttribute("data-selected")).toBe("true");
+      // Le focus est entré dans la modale, sur le dialogue lui-même — pas sur sa croix.
+      expect(document.activeElement).toBe(screen.getByRole("dialog"));
       // Le titre vient de la fiche, pas du serveur ; les libellés sont ceux du module, enregistrés
       // par la modale elle-même puisqu'elle arrive sans l'entrée complète.
       const boite = screen.getByRole("dialog");
@@ -238,12 +244,15 @@ describe("l'espace de discussion d'un commun — le parcours, tous maillons asse
       expect(document.querySelector("[data-ailleurs]")).toBeTruthy();
     });
 
-    it("Échap fait comme la croix", async () => {
+    it("Échap fait comme la croix — focus rendu au bouton compris", async () => {
       monter();
+      bouton().focus();
       await ouvrir();
+      expect(document.activeElement).not.toBe(bouton());
       await act(async () => { fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" }); });
       expect(panneau()).toBeNull();
       expect(adresse()).toBe(FICHE);
+      expect(document.activeElement).toBe(bouton());
       await traverser("retour");
       expect(chemin()).toBe(AVANT);
     });
@@ -309,6 +318,8 @@ describe("l'espace de discussion d'un commun — le parcours, tous maillons asse
       await traverser("retour");
       expect(adresse()).toBe(FICHE);
       expect(panneau()).toBeNull();
+      // Fermée par « retour », elle rend le focus au bouton, comme par la croix ou par Échap.
+      expect(document.activeElement).toBe(bouton());
 
       await traverser("suivant");
       await attendreLaListe(CLE_BUDGET);
@@ -346,11 +357,20 @@ describe("l'espace de discussion d'un commun — le parcours, tous maillons asse
       expect(panneau()).toBeNull();
     });
 
-    it("le lien du fil d'un AUTRE commun n'ouvre pas cette fiche, et le bouton n'y touche pas", async () => {
+    it("le lien du fil d'un AUTRE commun n'ouvre pas cette fiche — et l'ouvrir puis la fermer le laisse intact", async () => {
       const ailleurs = `answers:${AUTRE_COMMUN}`;
-      const { getDiscussionSpace } = monter([AVANT, `${FICHE}?discussion=${ailleurs}`]);
-      await waitFor(() => expect(getDiscussionSpace).toHaveBeenCalled());
+      monter([AVANT, `${FICHE}?discussion=${ailleurs}`]);
+      // La fiche a reçu son compteur : si l'adresse devait ouvrir la modale, elle le serait déjà.
+      await waitFor(() => expect(document.querySelector("[data-commun-discussion-total]")).toBeTruthy());
       expect(screen.queryByRole("dialog")).toBeNull();
+      expect(param()).toBe(ailleurs);
+
+      // Le bouton ouvre SON espace, par une entrée de plus ; la croix la défait, et l'adresse de
+      // l'autre discussion est là où on l'avait laissée.
+      await ouvrir();
+      expect(param()).toBe(CLE_GENERALE);
+      await cliquer(croix());
+      expect(panneau()).toBeNull();
       expect(param()).toBe(ailleurs);
     });
   });

@@ -14,7 +14,7 @@ import { useDiscussionsQuery } from "../../hooks/useDiscussionsQuery";
 import { useDiscussionUrlState } from "../../hooks/useDiscussionUrlState";
 import { useCarrierEntity } from "../../hooks/useCarrierEntity";
 import { useRailCollapse } from "../../hooks/useRailCollapse";
-import { CARRIER_NONE, carrierKey, errorCodeOf, errorLabelKey, sortThreads, threadsOfCarrier, type DiscussionErrorCode } from "../../lib/discussions";
+import { CARRIER_NONE, carrierKey, errorCodeOf, errorLabelKey, isRefusalCode, sortThreads, threadsOfCarrier, type DiscussionErrorCode } from "../../lib/discussions";
 import { threadValue } from "../../lib/filKey";
 import { filtrerFils, filtrerPorteurs, motsDeRequete } from "../../lib/searchDiscussions";
 import type {
@@ -486,7 +486,7 @@ export function DiscussionPanel({ param, headerEnd, className }: DiscussionPanel
             <div className="text-muted-foreground flex flex-col items-start gap-2 p-4 text-sm" data-thread-error>
               <p>{messageDErreur(codeDuLien ?? "failed")}</p>
               {/* Seule une panne mérite qu'on réessaie : un refus ne changera pas d'avis. */}
-              {codeDuLien === "failed" && (
+              {!isRefusalCode(codeDuLien) && (
                 <Button variant="outline" size="sm" onClick={() => void deepLink.refetch()}>
                   {String(t("thread.retry"))}
                 </Button>
@@ -534,9 +534,10 @@ function vueDuFil(
   // Un refus `hidden` l'emporte sur tout, liste comprise : refuser plus, jamais moins.
   if (code === "hidden") return "cache";
   if (!sensible || dejaListe) return "fil";
-  // Un accord déjà reçu tient face à une panne passagère — sans quoi une relecture périodique
-  // ratée démonterait le fil ouvert, brouillon compris. Seul un refus le retire.
-  if (accorde && (code === null || code === "failed")) return "fil";
+  // Un accord déjà reçu tient face à une panne passagère, réponse illisible comprise — sans quoi
+  // une relecture périodique ratée démonterait le fil ouvert, brouillon compris. Seul un refus le
+  // retire.
+  if (accorde && !isRefusalCode(code)) return "fil";
   if (code === "login") return "connexion";
   return code !== null ? "echec" : "attente";
 }

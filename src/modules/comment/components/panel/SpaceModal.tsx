@@ -1,6 +1,6 @@
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
-import { DiscussionModalShell } from "./DiscussionModal";
+import { DiscussionModalShell } from "./DiscussionModalShell";
 import { SpacePanel } from "./SpacePanel";
 import type { CommentTarget, SpaceRef } from "../../types";
 // La modale se charge EN DIFFÉRÉ, par son propre fichier et non par l'entrée du module : c'est
@@ -39,6 +39,9 @@ export function SpaceModal({ open, onOpenChange, space, title, target, onSelect,
       // En `md:`, comme la largeur de la coquille qu'elle remplace : sans variante, elle perdrait
       // contre son `sm:max-w-none`.
       className="md:max-w-[min(64rem,calc(100vw-4rem))]"
+      // Sur le dialogue, pas sur son premier bouton : au rendu d'ouverture la liste n'est pas encore
+      // là, et le premier bouton serait la croix — on ouvrirait, au clavier, sur « Fermer ».
+      initialFocus="dialog"
     >
       {headerEnd => (
         <SpacePanel

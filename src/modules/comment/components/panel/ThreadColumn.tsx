@@ -264,6 +264,37 @@ export function ThreadColumn({
   const epingle = (thread: DiscussionThread) => pinned?.(thread) === true;
   const actifs = threads.filter(th => !th.virtual || epingle(th));
   const vierges = threads.filter(th => th.virtual && !epingle(th));
+  const sansDiscussion = String(t("panel.withoutThread", undefined, { count: vierges.length }));
+
+  /**
+   * Des fils rangés par intertitre : chaque groupe est une liste à part, nommée par le sien, pour
+   * que le lecteur d'écran annonce « Proposition, liste de 3 éléments » et non une seule liste
+   * entrecoupée de titres qui n'en sont pas.
+   *
+   * La clé d'un groupe est son intertitre et son rang PARMI LES GROUPES DE CE NOM — ni son rang
+   * dans la liste, ni son premier fil. Par le rang, un groupe qui apparaît au-dessus (une
+   * discussion qu'on vous ouvre, une étape qui reçoit son premier message) décalait tous les
+   * autres ; par le premier fil, il suffisait qu'un fil prenne la tête de son groupe (la première
+   * question d'une étape reçoit son premier message). Dans les deux cas le groupe était remonté,
+   * et la rangée qu'on tenait perdait le focus. L'intertitre seul ne suffirait pas : il peut
+   * revenir deux fois.
+   */
+  const groupes = (liste: readonly DiscussionThread[], labelOf: (thread: DiscussionThread) => string | null, nomParDefaut: string) => {
+    const rangs = new Map<string, number>();
+    return sectionsOf(liste, labelOf).map((section, index) => {
+      const nom = section.label ?? "";
+      const rang = rangs.get(nom) ?? 0;
+      rangs.set(nom, rang + 1);
+      return (
+        <div key={`${nom}#${rang}`} data-thread-group={nom} className={cn(index > 0 && "border-t")}>
+          {section.label && <p className={PANEL_SECTION_LABEL} aria-hidden>{section.label}</p>}
+          <ul className={PANEL_LIST} aria-label={section.label ?? nomParDefaut}>
+            {section.threads.map(rangee)}
+          </ul>
+        </div>
+      );
+    });
+  };
 
   return (
     <ScrollArea className={className}>
@@ -272,21 +303,7 @@ export function ThreadColumn({
           {actifs.map(rangee)}
         </ul>
       )}
-      {/* Rangés par intertitre : chaque groupe est une liste à part, nommée par le sien, pour que
-          le lecteur d'écran annonce « Proposition, liste de 3 éléments » et non une seule liste
-          entrecoupée de titres qui n'en sont pas. */}
-      {/* La clé d'un groupe est celle de son premier fil, pas son rang : un groupe qui apparaît
-          au-dessus (une discussion qu'on vous ouvre, une étape qui reçoit son premier message)
-          décalerait tous les rangs, remonterait les groupes suivants et ferait perdre le focus
-          de la rangée qu'on tenait. Un intertitre ne suffirait pas, il peut revenir deux fois. */}
-      {actifs.length > 0 && groupLabel && sectionsOf(actifs, groupLabel).map((section, index) => (
-        <div key={section.threads[0].key} data-thread-group={section.label ?? ""} className={cn(index > 0 && "border-t")}>
-          {section.label && <p className={PANEL_SECTION_LABEL} aria-hidden>{section.label}</p>}
-          <ul className={PANEL_LIST} aria-label={section.label ?? String(t("panel.threads"))}>
-            {section.threads.map(rangee)}
-          </ul>
-        </div>
-      ))}
+      {actifs.length > 0 && groupLabel && groupes(actifs, groupLabel, String(t("panel.threads")))}
 
       {vierges.length > 0 && (
         <div data-empty-group data-open={ouvert} className={cn(actifs.length > 0 && "border-t")}>
@@ -300,9 +317,7 @@ export function ThreadColumn({
           {filtre
             ? (
               <p className={PANEL_GROUP_LABEL}>
-                <span className="truncate">
-                  {String(t("panel.withoutThread", undefined, { count: vierges.length }))}
-                </span>
+                <span className="truncate">{sansDiscussion}</span>
               </p>
             )
             : (
@@ -316,18 +331,21 @@ export function ThreadColumn({
                   className={cn("size-3 shrink-0 transition-transform", emptyOpen && "rotate-90")}
                   aria-hidden
                 />
-                <span className="truncate">
-                  {String(t("panel.withoutThread", undefined, { count: vierges.length }))}
-                </span>
+                <span className="truncate">{sansDiscussion}</span>
               </button>
             )}
           {/* Le contenu reste MONTÉ : c'est ce qui permet d'animer sa hauteur. `inert` le
               rend alors réellement inerte quand il est replié — hors tabulation et hors
               arbre d'accessibilité — là où `visibility: hidden` seul ne le garantit qu'en
               présence du CSS. */}
+          {/* Mêmes intertitres que plus haut quand il y en a : sans eux, les questions vierges de
+              toutes les étapes se suivaient d'un trait, et deux questions de même libellé ne se
+              distinguaient plus. */}
           <div className="comment-collapsible" data-open={ouvert} inert={!ouvert}>
             <div>
-              <ul className={PANEL_LIST}>{vierges.map(rangee)}</ul>
+              {groupLabel
+                ? groupes(vierges, groupLabel, sansDiscussion)
+                : <ul className={PANEL_LIST} aria-label={sansDiscussion}>{vierges.map(rangee)}</ul>}
             </div>
           </div>
         </div>

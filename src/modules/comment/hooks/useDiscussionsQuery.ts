@@ -4,7 +4,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useHydrated } from "@/hooks/useHydrated";
 import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
 import { COMMENT_QUERY_KEYS } from "../constants/queryKeys";
-import { carrierKey, parseDiscussions, rawOrRefusal } from "../lib/discussions";
+import { carrierKey, errorCodeOf, isRefusalCode, parseDiscussions, rawOrRefusal } from "../lib/discussions";
 import { threadValue } from "../lib/filKey";
 import { useDiscussionsRealtime } from "./useDiscussionsRealtime";
 import type { CarrierRef, CommentTarget, DiscussionsResult } from "../types";
@@ -63,11 +63,21 @@ const POLL_DEGRADE_MS = 1000 * 30;
  * L'intervalle de relecture du panneau. Jamais sur un REFUS : le serveur a dit non (pas connecté,
  * pas le droit), et le redemander à chaque intervalle ne changera rien — c'était une requête
  * inutile toutes les 30 s (revue du 29/09). Une connexion change la clé (`userContextId`), et
- * relance donc d'elle-même.
+ * relance donc d'elle-même. Une PANNE, elle, se relit — réponse illisible comprise.
  */
 export function intervalleDeSondage(erreur: unknown, tempsReel: string): number | false {
-  if ((erreur as { refus?: boolean } | null)?.refus) return false;
+  if (estUnRefus(erreur)) return false;
   return tempsReel === "connecte" ? POLL_TEMPS_REEL_MS : POLL_DEGRADE_MS;
+}
+
+/** L'erreur d'une requête du panneau est-elle un refus du serveur — définitif — ou une panne ? */
+export function estUnRefus(erreur: unknown): boolean {
+  return isRefusalCode(errorCodeOf(erreur));
+}
+
+/** Un REFUS ne se réessaie pas ; une panne a droit à deux nouvelles tentatives. */
+export function reessayer(tentatives: number, erreur: unknown): boolean {
+  return !estUnRefus(erreur) && tentatives < 2;
 }
 
 const VIDE: DiscussionsResult = {
@@ -125,8 +135,7 @@ export function useDiscussionsQuery(
      * (trois tentatives à délai croissant) faisait attendre douze secondes devant des
      * squelettes avant d'afficher la raison. Une panne de réseau, elle, mérite ses tentatives.
      */
-    retry: (tentatives, erreur) =>
-      (erreur as { refus?: boolean } | null)?.refus ? false : tentatives < 2,
+    retry: reessayer,
     queryFn: async (): Promise<DiscussionsResult> => {
       const raw = await rawOrRefusal(() => (api as unknown as {
         getDiscussions: (o: Record<string, unknown>) => Promise<unknown>;
@@ -138,8 +147,10 @@ export function useDiscussionsQuery(
   const data = query.data ?? VIDE;
   return {
     ...query,
-    // Le rendu d'attente compte comme un chargement : l'écran n'a pas à dire « vide » entre-temps.
-    isLoading: query.isLoading || (enabled && !hydrate),
+    // Le rendu d'attente compte comme un chargement — même si le cache porte déjà une réponse sous
+    // sa clé, on ne sait pas encore à qui elle est —, et une première lecture en PAUSE (réseau
+    // perdu) aussi : l'écran n'a pas à dire « vide » tant que rien n'a été rendu.
+    isLoading: enabled && (!hydrate || query.isPending),
     tempsReel,
     carriers: data.carriers,
     threads: data.threads,

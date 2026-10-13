@@ -48,6 +48,7 @@ const COMMUN = "65c3000000000000000000c1";
 const APPEL = "65c3000000000000000000f1";
 const ETAPE = "65c3000000000000000000e1";
 const ETAPE_2 = "65c3000000000000000000e2";
+const UTILISATEUR = "65d4000000000000000000d1";
 const ESPACE: SpaceRef = { type: "answers", id: COMMUN };
 
 const question = (etape: string, champ: string) => `${APPEL}.${etape}.${COMMUN}.${champ}.question_${champ}.comment`;
@@ -107,7 +108,16 @@ const reponse = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 const CONNECTE = reponse();
-const VISITEUR = reponse({ canComment: false });
+/**
+ * Ce qu'un VISITEUR reçoit, et pas davantage : le serveur ne lui liste aucune discussion réservée,
+ * et sans session il n'y a ni non-lu ni « à moi » à calculer. C'est le serveur qui filtre, pas l'écran.
+ */
+const VISITEUR = reponse({
+  canComment: false,
+  threads: FILS
+    .filter(fil => fil.audience !== "private" && fil.audience !== "authorAdmin")
+    .map(fil => ({ ...fil, unread: 0, mine: false })),
+});
 
 type Props = Parameters<typeof SpacePanel>[0];
 
@@ -121,16 +131,25 @@ const refusDuSdk = (code: string) => async (): Promise<never> => {
 
 interface Montage extends Partial<Props> {
   readonly sert?: unknown | (() => Promise<unknown>);
-  /** Une session est ouverte. Par défaut : un visiteur. */
+  /**
+   * Une session est ouverte. Par défaut, ce que la réponse servie suppose : le serveur ne dit
+   * « peut écrire » qu'à une session — servir l'un sans l'autre jouerait un cas qui n'existe pas.
+   */
   readonly session?: boolean;
 }
 
 /** Le panneau dans ses fournisseurs, prêt à être rendu — et le serveur qu'on lui donne. */
 function preparer(options: Montage = {}) {
-  const { sert = CONNECTE, session = false, ...props } = options;
+  const { sert = CONNECTE, ...reste } = options;
+  const sansSession = typeof sert === "object" && sert !== null && (sert as { canComment?: unknown }).canComment === false;
+  const { session = !sansSession, ...props } = reste;
   const getDiscussionSpace = vi.fn(typeof sert === "function" ? (sert as () => Promise<unknown>) : async () => sert);
   const cocolight = {
-    api: { getDiscussionSpace }, me: session ? { isConnected: true } : null, entity: null, helper: {},
+    api: { getDiscussionSpace },
+    me: session ? { isConnected: true } : null,
+    // La clé de cache porte le lecteur : une session sans lui rangerait sa liste sous celle du visiteur.
+    entity: session ? { userContext: { id: UTILISATEUR } } : null,
+    helper: {},
   } as unknown as CocolightContextType;
   const client = new QueryClient();
   const onSelect = vi.fn();
@@ -175,10 +194,17 @@ const rangees = (racine: ParentNode) => [...racine.querySelectorAll("[data-threa
   titre: r.querySelector("span.line-clamp-2")?.getAttribute("title") ?? null,
   etiquette: r.querySelector("[data-thread-meta] > span[title]")?.getAttribute("title") ?? null,
 }));
-const groupes = (c: HTMLElement) => [...c.querySelectorAll("[data-thread-group]")].map(g => ({
+const lireGroupes = (elements: readonly Element[]) => elements.map(g => ({
   intertitre: g.getAttribute("data-thread-group"),
   cles: rangees(g).map(r => r.cle),
 }));
+/** Les groupes de fils où l'on a écrit — hors du pli « Sans discussion ». */
+const groupes = (c: HTMLElement) =>
+  lireGroupes([...c.querySelectorAll("[data-thread-group]")].filter(g => !g.closest("[data-empty-group]")));
+/** Les groupes du pli « Sans discussion ». */
+const groupesVierges = (c: HTMLElement) => lireGroupes([...c.querySelectorAll("[data-empty-group] [data-thread-group]")]);
+/** La région que lit un lecteur d'écran quand l'espace change d'état. */
+const annonce = (c: HTMLElement) => c.querySelector("[data-space-status]")!;
 
 describe("SpacePanel", () => {
   beforeEach(() => { vi.useFakeTimers(); });
@@ -295,6 +321,58 @@ describe("SpacePanel", () => {
       expect(rangees(pli).map(r => r.cle)).toEqual([cle(CHEMINS.annonces), cle(CHEMINS.titre)]);
       expect(screen.getByRole("button", { name: "Sans discussion (2)" })).toBeTruthy();
       expect(pli.textContent).toContain("Démarrer la discussion");
+    });
+
+    it("dans le pli aussi, une question se range sous SON étape — deux questions de même libellé s'y distinguent", async () => {
+      const homonyme = ligne(question(ETAPE_2, "titre"), { title: "Titre du commun", virtual: true, group: "Bilan" });
+      const { container } = monter({ sert: reponse({ threads: [...FILS.slice(0, 8), homonyme, ...FILS.slice(8)] }) });
+      await servir();
+      expect(groupesVierges(container)).toEqual([
+        { intertitre: "", cles: [cle(CHEMINS.annonces)] },
+        { intertitre: "Proposition", cles: [cle(CHEMINS.titre)] },
+        { intertitre: "Bilan", cles: [cle(question(ETAPE_2, "titre"))] },
+      ]);
+      // Chaque liste du pli a un nom, comme celles du dessus : l'intertitre, ou à défaut celui du pli.
+      const noms = [...container.querySelectorAll("[data-empty-group] ul")].map(ul => ul.getAttribute("aria-label"));
+      expect(noms).toEqual(["Sans discussion (3)", "Proposition", "Bilan"]);
+    });
+
+    it("un fil qui prend la tête de son groupe ne remonte pas les rangées voisines — le focus qu'on y tenait reste", async () => {
+      // La première question d'une étape reçoit son premier message : elle quitte le pli et passe
+      // devant « Budget ». La clé du groupe suivait son premier fil : tout le groupe était remonté.
+      const { container, getDiscussionSpace, client } = monter();
+      await servir();
+      const budget = container.querySelector<HTMLElement>(`[data-thread-key="${cle(CHEMINS.budget)}"]`)!;
+      budget.focus();
+      expect(document.activeElement).toBe(budget);
+
+      const commentee = FILS.map(fil => (fil.key === cle(CHEMINS.titre) ? { ...fil, virtual: false, total: 1, last: 1_758_000_900 } : fil));
+      getDiscussionSpace.mockResolvedValue(reponse({ threads: commentee }));
+      await act(async () => {
+        void client.invalidateQueries({ queryKey: COMMENT_QUERY_KEYS.DISCUSSIONS_PREFIX() });
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      expect(groupes(container)[1]).toEqual({ intertitre: "Proposition", cles: [cle(CHEMINS.titre), cle(CHEMINS.budget)] });
+      expect(container.querySelector(`[data-thread-key="${cle(CHEMINS.budget)}"]`)).toBe(budget);
+      expect(document.activeElement).toBe(budget);
+    });
+
+    it("un groupe qui apparaît au-dessus ne remonte pas non plus les suivants", async () => {
+      const sansDiscussions = FILS.filter(fil => fil.kind !== "discussion");
+      const { container, getDiscussionSpace, client } = monter({ sert: reponse({ threads: sansDiscussions.slice(1) }) });
+      await servir();
+      const avis = container.querySelector<HTMLElement>(`[data-thread-key="${cle(CHEMINS.avis)}"]`)!;
+      avis.focus();
+
+      // Le fil général reçoit son premier message : un groupe de plus, en tête.
+      getDiscussionSpace.mockResolvedValue(reponse({ threads: sansDiscussions }));
+      await act(async () => {
+        void client.invalidateQueries({ queryKey: COMMENT_QUERY_KEYS.DISCUSSIONS_PREFIX() });
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      expect(groupes(container)[0]).toEqual({ intertitre: "", cles: [CLE_GENERALE] });
+      expect(container.querySelector(`[data-thread-key="${cle(CHEMINS.avis)}"]`)).toBe(avis);
+      expect(document.activeElement).toBe(avis);
     });
 
     it("à un visiteur, ne propose AUCUN emplacement vide — il n'a rien à y démarrer", async () => {
@@ -470,6 +548,57 @@ describe("SpacePanel", () => {
       expect(colonneFils(container).textContent).toContain("Les discussions n'ont pas pu être chargées.");
     });
 
+    it("une panne peut se RÉESSAYER : le bouton relance la demande, et la liste arrive", async () => {
+      const { container, getDiscussionSpace } = monter({ sert: async () => { throw new Error("Network Error"); } });
+      await servir();
+      await servir(10_000);
+      const avant = getDiscussionSpace.mock.calls.length;
+      getDiscussionSpace.mockResolvedValue(CONNECTE);
+      await act(async () => {
+        fireEvent.click(colonneFils(container).querySelector("[data-space-error] button")!);
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      expect(getDiscussionSpace.mock.calls.length).toBe(avant + 1);
+      expect(container.querySelector("[data-space-error]")).toBeNull();
+      expect(rangees(container).length).toBeGreaterThan(0);
+    });
+
+    it("un REFUS, lui, ne propose pas de réessayer : il ne changera pas d'avis", async () => {
+      const { container } = monter({ sert: refusDuSdk("hidden") });
+      await servir();
+      expect(container.querySelector("[data-space-error]")).toBeTruthy();
+      expect(container.querySelector("[data-space-error] button")).toBeNull();
+    });
+
+    it("une réponse ILLISIBLE dès l'ouverture est une panne : réessayée, dite, et réessayable", async () => {
+      // Une page d'erreur servie en HTTP 200 : le SDK la rend telle quelle, ce n'est pas un objet.
+      const { container, getDiscussionSpace } = monter({ sert: "<html>Maintenance</html>" });
+      await servir();
+      await servir(10_000);
+      expect(getDiscussionSpace).toHaveBeenCalledTimes(3);
+      const erreur = container.querySelector("[data-space-error]")!;
+      expect(erreur.getAttribute("data-space-error")).toBe("unreadable");
+      expect(erreur.querySelector("p")!.textContent).toBe("Le serveur a renvoyé une réponse illisible.");
+      expect(erreur.querySelector("button")!.textContent).toBe("Réessayer");
+    });
+
+    it("une réponse ILLISIBLE à la relecture ne vide pas l'écran non plus : personne n'a dit non", async () => {
+      const { container, getDiscussionSpace, client } = monter({ target: cible(CHEMINS.budget) });
+      await servir();
+      const montage = filMonte(container)!.getAttribute("data-montage");
+
+      getDiscussionSpace.mockResolvedValue("<html>Maintenance</html>");
+      await act(async () => {
+        void client.invalidateQueries({ queryKey: COMMENT_QUERY_KEYS.DISCUSSIONS_PREFIX() });
+        await vi.advanceTimersByTimeAsync(10_000);
+      });
+      expect(getDiscussionSpace.mock.calls.length).toBeGreaterThan(1);
+      expect(container.querySelector("[data-space-error]")).toBeNull();
+      expect(rangees(container).length).toBeGreaterThan(0);
+      expect(filMonte(container)!.getAttribute("data-montage")).toBe(montage);
+      expect(annonce(container).textContent).toBe("");
+    });
+
     it("une panne de RELECTURE ne vide pas l'écran : la liste déjà servie reste, le fil aussi", async () => {
       const { container, getDiscussionSpace, client } = monter({ target: cible(CHEMINS.budget) });
       await servir();
@@ -502,6 +631,48 @@ describe("SpacePanel", () => {
       expect(rangees(container)).toEqual([]);
       expect(filMonte(container)).toBeNull();
       expect(colonneFil(container).textContent).toContain("Cet espace de discussion est introuvable.");
+    });
+  });
+
+  /**
+   * Les deux colonnes affichent la même phrase, et l'une des deux est hors écran en mode une
+   * colonne : ce qui arrive à l'espace se dit donc UNE fois, dans une région à part, toujours là.
+   */
+  describe("ce qu'entend un lecteur d'écran", () => {
+    it("rien tant que tout va bien — la région existe, vide, avant d'avoir quoi que ce soit à dire", async () => {
+      const racine = premierRendu({ target: GENERAL });
+      expect(annonce(racine).getAttribute("role")).toBe("status");
+      expect(annonce(racine).textContent).toBe("");
+
+      const { container } = monter({ target: GENERAL });
+      await servir();
+      expect(annonce(container).textContent).toBe("");
+    });
+
+    it("le refus de l'espace, dans la langue de l'écran", async () => {
+      const { container } = monter({ sert: refusDuSdk("hidden"), target: GENERAL });
+      await servir();
+      expect(annonce(container).textContent).toBe("Cet espace de discussion est introuvable.");
+    });
+
+    it("la panne, quand il n'y a plus rien à montrer", async () => {
+      const { container } = monter({ sert: async () => { throw new Error("Network Error"); } });
+      await servir();
+      await servir(10_000);
+      expect(annonce(container).textContent).toBe("Les discussions n'ont pas pu être chargées.");
+    });
+
+    it("le fil de l'adresse que la liste ne porte pas — et seulement une fois la liste arrivée", async () => {
+      const { container } = monter({ target: cible(CHEMINS.reservee) });
+      expect(annonce(container).textContent).toBe("");
+      await servir();
+      expect(annonce(container).textContent).toBe("Discussion introuvable, ou dont l'accès est réservé.");
+    });
+
+    it("rien non plus sans fil choisi : il n'y a pas de fil à dire introuvable", async () => {
+      const { container } = monter();
+      await servir();
+      expect(annonce(container).textContent).toBe("");
     });
   });
 

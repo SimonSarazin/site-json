@@ -412,6 +412,8 @@ describe("ThreadColumn", () => {
     // Le fil vierge est dans la section repliée, pas dans la liste principale.
     expect(section.contains(screen.getByText("Budget prévisionnel"))).toBe(true);
     expect(container.querySelector('ul[aria-label="Fils"]')!.textContent).not.toContain("Budget prévisionnel");
+    // Et cette liste-là a un nom, elle aussi : celui du pli.
+    expect(section.querySelector("ul")!.getAttribute("aria-label")).toBe("Sans discussion (1)");
     fireEvent.click(screen.getByRole("button", { name: /sans discussion/i }));
     expect(section.getAttribute("data-open")).toBe("true");
   });
@@ -564,6 +566,60 @@ describe("ThreadColumn — rangée par l'espace d'un commun", () => {
     // Le même nœud, pas un remplaçant : c'est ce qui garde le focus où il était.
     expect(rangee()).toBe(avant);
     expect(document.activeElement).toBe(avant);
+  });
+
+  it("garde les rangées d'un groupe quand un fil y prend la TÊTE — la clé du groupe ne suit pas son premier fil", () => {
+    // La première question d'une étape reçoit son premier message et passe devant les autres.
+    const colonne = (cles: string[]) => (
+      <ThreadColumn threads={cles.map(cle => fil(cle))} selected={null} onSelect={() => {}} groupLabel={() => "Proposition"} />
+    );
+    const { container, rerender } = wrap(colonne(["b", "c"]));
+    const rangee = () => container.querySelector<HTMLElement>('[data-thread-key="c"]')!;
+    const avant = rangee();
+    avant.focus();
+
+    rerender(<LocalizationProvider>{colonne(["a", "b", "c"])}</LocalizationProvider>);
+    expect(cles(container)).toEqual(["a", "b", "c"]);
+    expect(container.querySelectorAll("[data-thread-group]")).toHaveLength(1);
+    expect(rangee()).toBe(avant);
+    expect(document.activeElement).toBe(avant);
+  });
+
+  it("deux groupes du MÊME intertitre gardent chacun leurs rangées quand le premier change de tête", () => {
+    const etapes: Record<string, string | null> = { a: "Proposition", b: "Proposition", d: "Bilan", e: "Proposition" };
+    const colonne = (cles: string[]) => (
+      <ThreadColumn threads={cles.map(cle => fil(cle))} selected={null} onSelect={() => {}} groupLabel={th => etapes[th.key]} />
+    );
+    // Deux groupes de même nom sous une même clé : React le dit sur la console, et rien d'autre ne le montre.
+    const console_ = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const { container, rerender } = wrap(colonne(["b", "d", "e"]));
+      const noeud = (cle: string) => container.querySelector<HTMLElement>(`[data-thread-key="${cle}"]`)!;
+      const [b, d, e] = [noeud("b"), noeud("d"), noeud("e")];
+
+      rerender(<LocalizationProvider>{colonne(["a", "b", "d", "e"])}</LocalizationProvider>);
+      expect([...container.querySelectorAll("[data-thread-group]")].map(g => cles(g))).toEqual([["a", "b"], ["d"], ["e"]]);
+      expect(noeud("b")).toBe(b);
+      expect(noeud("d")).toBe(d);
+      expect(noeud("e")).toBe(e);
+      expect(console_.mock.calls.filter(appel => String(appel[0]).includes("same key"))).toEqual([]);
+    } finally {
+      console_.mockRestore();
+    }
+  });
+
+  it("sous intertitres, le pli range lui aussi ses fils vierges par groupe, chacun nommé", () => {
+    const etapes: Record<string, string | null> = { reel: "Proposition", v0: null, v1: "Proposition", v2: "Bilan" };
+    const vierge = (cle: string) => fil(cle, { virtual: true, total: 0, last: null });
+    const { container } = wrap(<ThreadColumn
+      threads={[fil("reel"), vierge("v0"), vierge("v1"), vierge("v2")]}
+      selected={null} onSelect={() => {}} groupLabel={th => etapes[th.key]} />);
+    const pli = container.querySelector(".comment-collapsible")!;
+    const groupes = [...pli.querySelectorAll("[data-thread-group]")];
+    expect(groupes.map(g => [g.getAttribute("data-thread-group"), cles(g)])).toEqual([["", ["v0"]], ["Proposition", ["v1"]], ["Bilan", ["v2"]]]);
+    // Le groupe sans intertitre prend le nom du pli ; les autres, le leur.
+    expect([...pli.querySelectorAll("ul")].map(ul => ul.getAttribute("aria-label"))).toEqual(["Sans discussion (3)", "Proposition", "Bilan"]);
+    expect([...pli.querySelectorAll("[data-thread-group] > p")].map(p => p.textContent)).toEqual(["Proposition", "Bilan"]);
   });
 
   it("sépare les groupes d'un filet, sauf le premier", () => {
