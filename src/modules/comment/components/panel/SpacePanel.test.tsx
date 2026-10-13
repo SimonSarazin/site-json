@@ -26,6 +26,14 @@ import "../../i18n";
 
 vi.mock("../../hooks/useDiscussionsRealtime", () => ({ useDiscussionsRealtime: () => "degrade" }));
 
+// jsdom ne fournit pas ResizeObserver, dont le groupe de boutons radio de Radix a besoin (formulaire de création).
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+globalThis.ResizeObserver = globalThis.ResizeObserver ?? (ResizeObserverStub as unknown as typeof ResizeObserver);
+
 let montages = 0;
 vi.mock("../CommentThread", () => ({
   CommentThread: ({ target, scopeEntity }: { target?: CommentTarget | null; scopeEntity?: { id?: string } | null }) => {
@@ -66,6 +74,8 @@ const CHEMINS = {
   autre: `${APPEL}.${ETAPE}.${COMMUN}.libre.note`,
   // Une discussion réservée que le serveur ne liste PAS à ce lecteur.
   reservee: `${APPEL}.moreDiscussions_jury.${COMMUN}.discu_9.privateComment`,
+  // Celle qu'on crée d'ici : la clé et le chemin sont fabriqués par le serveur.
+  creee: `${APPEL}.moreDiscussions_93015AbCdEfGh.${COMMUN}.discu_121020269301512.comment`,
 } as const;
 
 const GENERAL: CommentTarget = { type: "answers", id: COMMUN, path: null };
@@ -108,6 +118,10 @@ const reponse = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 const CONNECTE = reponse();
+/** Un lecteur à qui le serveur annonce qu'il peut créer : le déposant du commun, par exemple. */
+const PEUT_CREER = reponse({ creatableAudiences: ["authorAll", "authorAdmin"] });
+/** La discussion créée, telle que le serveur la rend : vide, et déjà rangée sous son audience. */
+const CREEE = ligne(CHEMINS.creee, { title: "Budget 2026", virtual: true, kind: "discussion", audience: "authorAdmin" });
 /**
  * Ce qu'un VISITEUR reçoit, et pas davantage : le serveur ne lui liste aucune discussion réservée,
  * et sans session il n'y a ni non-lu ni « à moi » à calculer. C'est le serveur qui filtre, pas l'écran.
@@ -131,6 +145,8 @@ const refusDuSdk = (code: string) => async (): Promise<never> => {
 
 interface Montage extends Partial<Props> {
   readonly sert?: unknown | (() => Promise<unknown>);
+  /** Ce que répond la création d'une discussion. Par défaut : la discussion créée. */
+  readonly cree?: (corps: Record<string, unknown>) => Promise<unknown>;
   /**
    * Une session est ouverte. Par défaut, ce que la réponse servie suppose : le serveur ne dit
    * « peut écrire » qu'à une session — servir l'un sans l'autre jouerait un cas qui n'existe pas.
@@ -140,12 +156,13 @@ interface Montage extends Partial<Props> {
 
 /** Le panneau dans ses fournisseurs, prêt à être rendu — et le serveur qu'on lui donne. */
 function preparer(options: Montage = {}) {
-  const { sert = CONNECTE, ...reste } = options;
+  const { sert = CONNECTE, cree = async () => ({ result: true, thread: CREEE }), ...reste } = options;
   const sansSession = typeof sert === "object" && sert !== null && (sert as { canComment?: unknown }).canComment === false;
   const { session = !sansSession, ...props } = reste;
   const getDiscussionSpace = vi.fn(typeof sert === "function" ? (sert as () => Promise<unknown>) : async () => sert);
+  const createDiscussion = vi.fn(cree);
   const cocolight = {
-    api: { getDiscussionSpace },
+    api: { getDiscussionSpace, createDiscussion },
     me: session ? { isConnected: true } : null,
     // La clé de cache porte le lecteur : une session sans lui rangerait sa liste sous celle du visiteur.
     entity: session ? { userContext: { id: UTILISATEUR } } : null,
@@ -162,7 +179,7 @@ function preparer(options: Montage = {}) {
       </CocolightContext.Provider>
     </QueryClientProvider>
   );
-  return { arbre, getDiscussionSpace, client, onSelect };
+  return { arbre, getDiscussionSpace, createDiscussion, client, onSelect };
 }
 
 function monter(options: Montage = {}) {
@@ -673,6 +690,157 @@ describe("SpacePanel", () => {
       const { container } = monter();
       await servir();
       expect(annonce(container).textContent).toBe("");
+    });
+  });
+
+  /**
+   * Le bouton « + » de l'espace legacy. Qui crée, et avec quelle audience, c'est le serveur qui le
+   * dit (`creatableAudiences`) : l'écran n'offre rien de plus.
+   */
+  describe("créer une discussion", () => {
+    const plus = () => screen.queryByRole("button", { name: "Nouvelle discussion" });
+    const formulaire = (c: HTMLElement) => c.querySelector("[data-new-discussion]");
+    const ouvrirLeFormulaire = async (options: Montage = {}) => {
+      const rendu = monter({ sert: PEUT_CREER, ...options });
+      await servir();
+      fireEvent.click(plus()!);
+      return rendu;
+    };
+    const creer = async () => {
+      fireEvent.change(screen.getByLabelText("Nom de la discussion"), { target: { value: "Budget 2026" } });
+      await act(async () => {
+        fireEvent.submit(document.querySelector("[data-new-discussion]")!);
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    };
+
+    it("ne l'offre pas à qui le serveur n'annonce aucune audience — connecté compris", async () => {
+      const { container } = monter();
+      await servir();
+      expect(plus()).toBeNull();
+      expect(formulaire(container)).toBeNull();
+    });
+
+    it("ne l'offre pas à un visiteur", async () => {
+      monter({ sert: VISITEUR });
+      await servir();
+      expect(plus()).toBeNull();
+    });
+
+    it("l'offre à qui il en annonce, dans l'en-tête de la liste — formulaire fermé", async () => {
+      const { container } = monter({ sert: PEUT_CREER });
+      await servir();
+      expect(colonneFils(container).querySelector("header")!.contains(plus())).toBe(true);
+      // Un bouton sans texte : son nom est dit au lecteur d'écran, et montré au survol.
+      expect(plus()!.getAttribute("aria-label")).toBe("Nouvelle discussion");
+      expect(plus()!.getAttribute("title")).toBe("Nouvelle discussion");
+      expect(plus()!.getAttribute("aria-expanded")).toBe("false");
+      expect(formulaire(container)).toBeNull();
+    });
+
+    it("le « + » ouvre le formulaire en tête de la colonne, au-dessus des fils — et le referme", async () => {
+      const { container } = await ouvrirLeFormulaire();
+      const boite = formulaire(container)!;
+      expect(plus()!.getAttribute("aria-expanded")).toBe("true");
+      expect(colonneFils(container).contains(boite)).toBe(true);
+      // Avant la liste dans la colonne : on ne le cherche pas sous quarante fils.
+      const premiereRangee = container.querySelector("[data-thread-row]")!;
+      expect(boite.compareDocumentPosition(premiereRangee) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      fireEvent.click(plus()!);
+      expect(formulaire(container)).toBeNull();
+      expect(plus()!.getAttribute("aria-expanded")).toBe("false");
+    });
+
+    it("n'y offre que les audiences annoncées", async () => {
+      await ouvrirLeFormulaire();
+      expect(screen.getAllByRole("radio").map(radio => document.querySelector(`label[for="${radio.id}"]`)!.textContent)).toEqual(["Publique", "Privée"]);
+    });
+
+    it("« Annuler » referme le formulaire et rend le focus au « + »", async () => {
+      const { container } = await ouvrirLeFormulaire();
+      fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
+      expect(formulaire(container)).toBeNull();
+      expect(document.activeElement).toBe(plus());
+    });
+
+    it("demande au serveur de créer la discussion sur CET espace", async () => {
+      const { createDiscussion } = await ouvrirLeFormulaire();
+      await creer();
+      expect(createDiscussion).toHaveBeenCalledWith({ contextType: "answers", contextId: COMMUN, name: "Budget 2026", audience: "authorAdmin" });
+    });
+
+    it("créée, la discussion est OUVERTE aussitôt, et le formulaire se referme", async () => {
+      const { container, onSelect } = await ouvrirLeFormulaire();
+      await creer();
+      expect(onSelect).toHaveBeenCalledTimes(1);
+      expect(onSelect).toHaveBeenCalledWith(cible(CHEMINS.creee));
+      expect(formulaire(container)).toBeNull();
+    });
+
+    it("elle se monte SANS attendre la relecture : la liste la porte déjà — jamais « introuvable »", async () => {
+      // La relecture qui suit la création ne répond pas encore : seule la liste en cache fait foi.
+      let lectures = 0;
+      const { container, onSelect, changer } = await ouvrirLeFormulaire({
+        sert: () => (lectures++ === 0 ? Promise.resolve(PEUT_CREER) : new Promise(() => {})),
+      });
+      await creer();
+      changer({ target: onSelect.mock.calls[0][0] as CommentTarget });
+      expect(filMonte(container)!.getAttribute("data-target")).toBe(cle(CHEMINS.creee));
+      expect(container.querySelector("[data-thread-hidden]")).toBeNull();
+      expect(screen.getByRole("heading", { level: 3 }).textContent).toBe("Budget 2026");
+      // Dans la colonne, elle attend son premier message avec les autres emplacements vides.
+      expect(rangees(container.querySelector(".comment-collapsible")!).map(r => r.cle)).toContain(cle(CHEMINS.creee));
+    });
+
+    it("son titre reçoit le focus quand elle s'ouvre — le formulaire qui le tenait a disparu", async () => {
+      const { onSelect, changer } = await ouvrirLeFormulaire();
+      await creer();
+      changer({ target: onSelect.mock.calls[0][0] as CommentTarget });
+      expect(document.activeElement).toBe(screen.getByRole("heading", { level: 3 }));
+    });
+
+    it("créée mais pas ouverte par l'hôte : le fil qu'on ouvre ENSUITE ne prend pas le focus à sa place", async () => {
+      // L'hôte peut ne pas suivre (un fil que l'adresse ne saurait pas relire) : le focus promis à
+      // la discussion créée n'est pas à donner au premier fil venu.
+      const { changer } = await ouvrirLeFormulaire();
+      await creer();
+      const avant = document.activeElement;
+      changer({ target: cible(CHEMINS.budget) });
+      expect(screen.getByRole("heading", { level: 3 }).textContent).toBe("Budget");
+      expect(document.activeElement).toBe(avant);
+    });
+
+    it("changer de fil sans avoir rien créé ne déplace pas le focus", async () => {
+      const { changer } = await ouvrirLeFormulaire();
+      const champ = screen.getByLabelText("Nom de la discussion");
+      changer({ target: cible(CHEMINS.budget) });
+      expect(document.activeElement).toBe(champ);
+    });
+
+    it("refusée, elle laisse le formulaire ouvert avec sa raison — et rien n'est ouvert", async () => {
+      const { container, onSelect } = await ouvrirLeFormulaire({ cree: refusDuSdk("forbidden") });
+      await creer();
+      expect(screen.getByRole("alert").textContent).toBe("Vous ne pouvez pas créer cette discussion.");
+      expect(formulaire(container)).toBeTruthy();
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it("sous un refus de l'espace, pas de « + » : il n'y a rien où créer", async () => {
+      monter({ sert: refusDuSdk("hidden") });
+      await servir();
+      expect(plus()).toBeNull();
+    });
+
+    it("le droit de créer retiré par une relecture retire le « + » et le formulaire ouvert", async () => {
+      const { container, getDiscussionSpace, client } = await ouvrirLeFormulaire();
+      expect(formulaire(container)).toBeTruthy();
+      getDiscussionSpace.mockResolvedValue(CONNECTE);
+      await act(async () => {
+        void client.invalidateQueries({ queryKey: COMMENT_QUERY_KEYS.DISCUSSIONS_PREFIX() });
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      expect(plus()).toBeNull();
+      expect(formulaire(container)).toBeNull();
     });
   });
 

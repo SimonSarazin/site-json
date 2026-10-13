@@ -71,6 +71,15 @@ function readSpaceThread(value: unknown): DiscussionThread | null {
 }
 
 /**
+ * Les audiences qu'on peut donner à une discussion qu'on crée, dans l'ordre de l'écran. Un serveur
+ * plus ancien n'envoie pas ce champ : son absence vaut « ne crée pas ». Une audience que l'écran
+ * ne connaît pas n'est pas proposée — il ne saurait pas dire à qui elle ouvre.
+ */
+function readAudiences(value: unknown): readonly SpaceAudience[] {
+  return Array.isArray(value) ? SPACE_AUDIENCES.filter(audience => value.includes(audience)) : [];
+}
+
+/**
  * Normalise la réponse de l'endpoint `space`. Lève, comme `parseDiscussions` : un refus MARQUÉ, ou
  * une réponse illisible — qui n'en est pas un, et se traite en panne (`unreadableError`).
  */
@@ -88,8 +97,64 @@ export function parseSpace(raw: unknown): DiscussionSpace {
       ? body.threads.map(readSpaceThread).filter((t): t is DiscussionThread => t !== null)
       : [],
     canComment: body.canComment === true,
+    creatableAudiences: readAudiences(body.creatableAudiences),
     truncated: body.truncated === true,
   };
+}
+
+/**
+ * Ce qu'une création de discussion peut rendre comme erreur. Les cinq premiers sont des refus du
+ * serveur, dits chacun de sa phrase ; `unreadable` — sa réponse n'est pas celle d'une création : on
+ * ne sait pas si elle a eu lieu ; `failed` — tout le reste (réseau, échec d'écriture, code inconnu).
+ */
+export const CREATION_REFUSALS = ["login", "hidden", "forbidden", "bad-name", "too-many"] as const;
+export type CreationErrorCode = (typeof CREATION_REFUSALS)[number] | "unreadable" | "failed";
+
+function creationError(code: CreationErrorCode): Error & { creation: true; code: CreationErrorCode } {
+  const erreur = new Error(code) as Error & { creation: true; code: CreationErrorCode };
+  erreur.creation = true;
+  erreur.code = code;
+  return erreur;
+}
+
+/** Le code d'une erreur de création — `failed` pour tout ce qui ne vient pas de `parseCreatedDiscussion`. */
+export function creationErrorCodeOf(error: unknown): CreationErrorCode {
+  const e = error as { creation?: unknown; code?: unknown } | null | undefined;
+  return e?.creation === true && typeof e.code === "string" ? (e.code as CreationErrorCode) : "failed";
+}
+
+/**
+ * Lit la réponse de `creatediscussion` : le fil créé, dans la forme d'un fil de l'espace. Lève sur
+ * un refus (`{result: false, code}`, que l'appelant a repris de l'exception du SDK par
+ * `rawOrRefusal`) et sur une réponse qui n'est pas celle d'une discussion créée.
+ */
+export function parseCreatedDiscussion(raw: unknown): DiscussionThread {
+  const body = raw as { result?: unknown; code?: unknown; thread?: unknown } | null | undefined;
+  if (body && typeof body === "object" && body.result === false) {
+    const connu = (CREATION_REFUSALS as readonly unknown[]).includes(body.code);
+    throw creationError(connu ? (body.code as CreationErrorCode) : "failed");
+  }
+  const thread = body && typeof body === "object" && body.result === true ? readSpaceThread(body.thread) : null;
+  if (!thread || thread.kind !== "discussion" || thread.target.path === null) throw creationError("unreadable");
+  return thread;
+}
+
+/**
+ * L'espace, avec une discussion de plus — rangée où le serveur la rangera : parmi les discussions,
+ * par titre (sans la casse ni les accents), le chemin départageant. Une discussion déjà là est
+ * remplacée, pas doublée.
+ */
+export function withDiscussion(space: DiscussionSpace, created: DiscussionThread): DiscussionSpace {
+  const autres = space.threads.filter(thread => thread.key !== created.key);
+  const precede = (thread: DiscussionThread): boolean => {
+    if (thread.kind === "general") return true;
+    if (thread.kind !== "discussion") return false;
+    const ecart = (thread.title ?? "").localeCompare(created.title ?? "", "fr", { sensitivity: "base" });
+    return ecart !== 0 ? ecart < 0 : (thread.target.path ?? "") < (created.target.path ?? "");
+  };
+  let rang = 0;
+  while (rang < autres.length && precede(autres[rang])) rang += 1;
+  return { ...space, threads: [...autres.slice(0, rang), created, ...autres.slice(rang)] };
 }
 
 /** Ce qu'affiche le bouton d'une fiche : les messages et les non-lus de tout l'espace. */

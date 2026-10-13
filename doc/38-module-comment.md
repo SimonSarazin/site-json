@@ -1858,7 +1858,7 @@ ce qui suit côté backend reste à mesurer.
 > vérifié en local — sur la base **1.0.195**, puis reposé le 07/10 sur la **1.0.196**. Le détail de
 > chaque point vit dans la section citée ; les trois points ajoutés le 02/10 sont spécifiés ici
 > (§14.2 à §14.4) ; l'espace d'un commun, ajouté le 07/10, l'est au §14.6 ; le §14.7 dit comment un
-> refus arrive à l'appelant. Tant que le SDK n'est pas publié, `site-json` ne compile que par le lien
+> refus arrive à l'appelant ; la création d'une discussion, ajoutée le 12/10, est au §14.8. Tant que le SDK n'est pas publié, `site-json` ne compile que par le lien
 > local : un `npm install` propre casse le `typecheck` du module. Ordre de livraison : le SDK
 > d'abord, la MR du module ensuite (§2.5).
 
@@ -1876,6 +1876,7 @@ ce qui suit côté backend reste à mesurer.
 | 8 | `mediaImg` sur `ADD_COMMENTS` et `UPDATE_COMMENTS.params`, `uploadDocument` permis sur `comments` | schéma + méthode | §13.2 à §13.4 | pas d'images, et une édition efface les images d'un message |
 | 9 | **`Comment._update` en liste blanche**, mentions normalisées | méthode | §14.4 | éditer un message à mention ou à `path` échoue, et le serveur efface ses mentions |
 | 10 | **`GET_DISCUSSION_SPACE`** — nouveau, `auth: "none"` — et sa façade `Api.getDiscussionSpace()` | endpoint + façade | §15, §14.6 | pas d'espace de discussion sur la fiche d'un commun |
+| 11 | **`CREATE_DISCUSSION`** — nouveau, `auth: "bearer"` — et sa façade `Api.createDiscussion()` | endpoint + façade | §16, §14.8 | pas de bouton « + » : on ne crée de discussion supplémentaire que depuis le legacy |
 
 Régénération, dans cet ordre : `generate:module:publish` → `generate:methodeapi` → `typecheck` →
 `lint` → `build:esm:rollup` → `build:node` → `build:browser` → `build:types`. Les pièges qui
@@ -1993,6 +1994,7 @@ l'écriture retraite l'aperçu côté serveur — c'est à l'équipe backend de 
 | `api.getDiscussions(payload)` | `hooks/useDiscussionsQuery.ts` |
 | `api.markCommentsSeen(…)` | `hooks/useMarkThreadSeen.ts` |
 | `api.getDiscussionSpace({ contextType, contextId })` | `hooks/useDiscussionSpaceQuery.ts` |
+| `api.createDiscussion({ contextType, contextId, name, audience })` | `hooks/useCreateDiscussion.ts` |
 
 ### 14.6 `GET_DISCUSSION_SPACE` — l'espace de discussion d'un commun (07/10)
 
@@ -2051,6 +2053,55 @@ Conséquence pour les tests : une doublure qui **résout** `{ result: false }` v
 le client ne tient pas. Celles du module lèvent les classes d'erreur que le SDK exporte
 (`cocolightApiClient.error.*`).
 
+### 14.8 `CREATE_DISCUSSION` — créer une discussion supplémentaire (12/10)
+
+`POST /co2/comment/creatediscussion`, corps `application/x-www-form-urlencoded`, **`auth: "bearer"`**
+(sans jeton, la façade lève avant tout appel), schéma de requête **fermé** :
+
+```json
+{
+  "contextType": { "type": "string", "enum": ["answers"] },
+  "contextId":   { "type": "string", "pattern": "^[a-f0-9]{24}$" },
+  "name":        { "type": "string", "minLength": 1, "maxLength": 120 },
+  "audience":    { "type": "string", "enum": ["authorAll", "authorAdmin", "private"] }
+}
+```
+
+Les quatre sont requis ; **aucun `default`** (AJV l'injecterait, §2.2). La borne de `name` porte sur
+la saisie brute ; le serveur juge, lui, le texte une fois nettoyé (§16.2).
+
+Réponse, en HTTP 200 :
+
+```json
+{ "result": true,
+  "thread": { "key": "forms:<appel>:<chemin>", "contextType": "forms", "contextId": "<appel>",
+              "path": "<appel>.moreDiscussions_<…>.<commun>.discu_<…>.comment",
+              "total": 0, "unread": 0, "last": null, "mine": false,
+              "title": "Budget 2026", "carrier": null, "virtual": true,
+              "kind": "discussion", "group": null, "audience": "authorAdmin" } }
+```
+
+`thread` a la forme d'un fil de `GET_DISCUSSION_SPACE` (§15.3) : c'est le fil créé, vide, avec le
+`path` à passer à `getComments({ path })`. Un refus rend `{ result: false, code, msg }` — codes
+`login`, `bad-request`, `hidden`, `forbidden`, `bad-name`, `too-many`, `failed` (§16.2) — que la
+façade rend en **exception** (§14.7).
+
+`GET_DISCUSSION_SPACE` gagne un champ de réponse, **`creatableAudiences`** : la liste des audiences
+que ce lecteur peut donner à une discussion qu'il crée — `[]` quand il n'en crée pas. Additif : un
+client qui l'ignore ne change pas.
+
+Façade écrite à la main, à côté des trois autres :
+
+```ts
+async createDiscussion(options: CreateDiscussionData): Promise<unknown> {
+  return this.endpointApi.createDiscussion(options);
+}
+```
+
+Mesuré contre le SDK local (12/10) : une audience hors liste, un nom vide ou de plus de 120
+caractères, une clé de trop lèvent `ApiValidationError` avant tout appel ; `forbidden` et `bad-name`
+arrivent en `ApiResponseError` (statut 200, corps dans `responseData`).
+
 ## 15. Espace de discussion d'un commun (07/10, repris le 09/10)
 
 > **État au 09/10** : backend, SDK local et écran sont écrits, testés, et vérifiés par les preuves
@@ -2093,7 +2144,7 @@ son propre `stepId` (`moreDiscussions_<x>`), et son suffixe suit son audience : 
 |---|---|
 | Le déposant voit-il les fils de l'étape d'évaluation ? | **Oui**, et il y répond — comme le legacy, qui ne filtre aucune étape |
 | Lecture sans être connecté ? | **Oui**, comme le legacy ; écrire exige une session |
-| Discussions supplémentaires | **Lire et écrire dans celles qui existent**, chacune réservée à son audience ; en créer est un lot à part |
+| Discussions supplémentaires | **Lire et écrire dans celles qui existent**, chacune réservée à son audience ; en créer passe par une action à part, gardée (§16) |
 | Notifications | **Celles du legacy**, inchangées : elles s'appliquent déjà à un message posté d'ici (§3) |
 | Qui est « admin » d'un commun ? (09/10) | L'admin de l'**appel**, par son lien direct avec l'élément qui le porte (§15.4) |
 | Quels fils de question sont listés ? (09/10) | **Comme l'écran legacy** : ceux des questions que l'appel connaît et ouvre aux commentaires ; une ligne de dépense, dès qu'il connaît sa question (§15.3) |
@@ -2113,6 +2164,7 @@ exception dans la première.
   "result": true,
   "space": { "type": "answers", "id": "…", "title": "…", "formId": "…" },
   "canComment": false,
+  "creatableAudiences": [],
   "truncated": false,
   "threads": [
     { "key": "answers:…", "contextType": "answers", "contextId": "…", "path": null,
@@ -2150,6 +2202,8 @@ exception dans la première.
   dépense (par titre) ; à égalité, le chemin départage. Un tri par titre ignore la casse et les
   accents : « État des lieux » se range à E, pas après « Zoo ».
 - `canComment` dit seulement s'il y a une session, et l'écran ne promet pas plus.
+- `creatableAudiences` : les audiences que ce lecteur peut donner à une discussion qu'il crée
+  (§16) ; vide, il n'en crée pas — sans session, toujours.
 - Fils **fabriqués** (`virtual`, sauf `includeEmpty=0`) : le fil général, les discussions déclarées
   encore vides et, pour un appel `aap`, les questions qu'il ouvre aux commentaires
   (`activeComments`). Pour un formulaire qui n'est pas `aap`, aucune **question** n'est fabriquée :
@@ -2347,7 +2401,8 @@ avant les corrections de la seconde relecture (§15.5).
   n'est pas admin — la base de développement n'en offre pas le cas ; ils sont jugés par la règle
   (§15.6, première ligne). La notification d'un tiers relève du backend existant, que ce lot ne
   touche pas, et n'a pas été rejouée.
-- **Créer** une discussion supplémentaire n'est pas porté : lot à part, par une action dédiée.
+- **Renommer** et **supprimer** une discussion supplémentaire ne sont pas portés : ils restent au
+  legacy. La créer l'est (§16).
 - Les **référents** se lisent au chemin que le legacy emploie pour sa décision
   (`answers.aapStep1.finderaapStep1m0w402djpsq3i44017`), et le **titre** du commun à
   `answers.aapStep1.titre`. La fiche, elle, passe à la modale le titre qu'elle a résolu.
@@ -2389,6 +2444,127 @@ avant les corrections de la seconde relecture (§15.5).
   `tsc` ni un test ne le disent. L'ordre de livraison du §2.5 (le SDK d'abord) en est le seul filet.
 - **Non vérifié** : un lecteur d'écran réel, un appareil tactile réel, le temps réel (pas de hub en
   développement).
+
+## 16. Créer une discussion supplémentaire (12/10)
+
+Le bouton « + » de l'espace legacy : une discussion de plus sur un commun, nommée, et réservée à une
+audience. Demandée le 09/10, une fois l'espace livré.
+
+### 16.1 Ce que fait le legacy
+
+Son écran fabrique la clé de la discussion, son étape et son chemin, puis les confie à une action
+générique (`AapAction::createNewDiscu`). Le module passe par une action à lui (arbitré le 07/10),
+qui fabrique ces valeurs côté serveur. Ce qui est enregistré, en revanche, est repris à
+l'identique, parce que le legacy le relit :
+
+| Où | Quoi |
+|---|---|
+| `answers.<commun>.moreDiscussions.<clé>` | `name`, `privilege`, `path`, `stepId`, `created`, `updated`, `creator`, `status: "active"` |
+| `<clé>` | `discu_` suivi d'une date en chiffres |
+| `stepId` | `moreDiscussions_` suivi d'une heure et de lettres |
+| `path` | `<appel>.<stepId>.<commun>.<clé>.<suffixe>` — `commentPublic`, `comment` ou `privateComment` selon l'audience |
+| `created`, `updated` | des secondes, en **chaînes** (mesuré en base : ce sont des valeurs postées) |
+| `answers.<commun>.updated` | la réponse est datée elle aussi, d'un entier |
+
+Trois audiences, que son écran nomme « Publique » (`authorAll`), « Privée » (`authorAdmin` —
+choisie d'office) et « Admins seulement » (`private`, proposée aux admins). Le bouton s'affiche à
+qui administre l'élément porteur de l'appel, au déposant du commun et à ses référents
+(`canEditDiscussion`).
+
+### 16.2 L'action `creatediscussion`
+
+`POST /co2/comment/creatediscussion` — `DiscussionCreateAction`, à côté de `DiscussionSpaceAction` ;
+le modèle est `Discussion::createSpaceDiscussion()`. Session **exigée**.
+
+**La requête ne porte que quatre valeurs, et aucune n'est un chemin** : `contextType` (`answers`),
+`contextId`, `name`, `audience`. La clé, l'étape et le chemin sont fabriqués par le serveur, dans le
+seul jeu de caractères `[A-Za-z0-9_]` — le legacy relit un chemin segment par segment comme un
+motif. La clé et l'étape gardent l'allure de celles du legacy, suivies d'un tirage : deux créations
+dans la même seconde ne visent pas la même clé.
+
+| Qui | Ce qu'il peut créer |
+|---|---|
+| admin de l'appel — par lien direct, comme au §15.4 | les trois audiences |
+| déposant du commun, référent | `authorAll`, `authorAdmin` |
+| tout autre lecteur, et sans session | rien |
+
+C'est `Discussion::creatableAudiences`, la même fonction qui alimente le champ
+`creatableAudiences` de `space` : **l'écran ne propose que ce que l'action acceptera**.
+
+**Le nom** est ramené à du texte nu (balises retirées, entités décodées), ses espaces réduits ; vide
+ou de plus de 120 caractères, il est refusé — pas tronqué. Il s'enregistre en HTML, guillemets
+compris : c'est la convention de la base (§15.3), et le legacy pose ce nom tel quel dans sa page,
+jusque dans un attribut.
+
+**L'écriture ne remplace jamais.** Son filtre exige que la clé n'existe pas
+(`moreDiscussions.<clé>: {$exists: false}`), et le nombre de documents touchés est relu : deux
+créations simultanées donnent deux discussions, ou un échec — pas une discussion écrasée. Un commun
+porte au plus 50 discussions.
+
+| Code | Quand |
+|---|---|
+| `login` | pas de session |
+| `bad-request` | un paramètre manque, n'est pas une chaîne, ou sort de sa liste |
+| `hidden` | commun ou appel introuvable |
+| `forbidden` | pas le droit de créer, ou pas avec cette audience |
+| `bad-name` | nom vide ou trop long, une fois nettoyé |
+| `too-many` | le commun porte déjà 50 discussions |
+| `failed` | l'écriture n'a pas abouti — rien n'est créé |
+
+Aucune notification n'est émise à la création, comme dans le legacy ; elles viennent avec le
+premier message (§3).
+
+### 16.3 L'écran
+
+- **Le « + »** vit dans l'en-tête de la colonne des fils de `SpacePanel`, et n'existe que si
+  `creatableAudiences` n'est pas vide. Un visiteur, un lecteur sans rôle sur le commun ne le voient
+  pas ; un espace refusé n'en annonce aucune.
+- **`NewDiscussionForm`** s'ouvre **en ligne**, en tête de la colonne — pas un dialogue dans le
+  dialogue : un nom (120 caractères), et les audiences annoncées, chacune avec ce qu'elle veut
+  dire. « Privée » est cochée d'office quand elle est offerte, comme dans le legacy : ouvrir une
+  discussion à tous doit être un geste, pas un oubli.
+- **Créée, la discussion est ouverte aussitôt.** `useCreateDiscussion` la pose dans la liste en
+  cache **avant** de la rendre — le panneau ne monte un fil que si la liste le porte (§15.4), et
+  l'ouvrir avant la relecture aurait dit « introuvable » le temps d'un aller-retour. Elle y est
+  rangée où le serveur la rangera (`withDiscussion` : par titre, sans la casse ni les accents) ; la
+  liste est relue ensuite, dans tous les cas.
+- **Un envoi à la fois**, et la garde est synchrone : l'état « en cours » de la mutation n'arrive
+  qu'au rendu suivant, deux Entrée coup sur coup seraient parties avant lui — deux discussions du
+  même nom. La mutation n'est jamais rejouée d'elle-même.
+- **Une erreur se dit par son code**, dans la langue de l'écran. Une réponse illisible a sa phrase :
+  on ne sait pas si la discussion existe, la liste est relue, et il est dit de la vérifier avant de
+  recommencer.
+- **Le clavier** : le champ du nom a le focus à l'ouverture ; Échap referme le formulaire, pas la
+  modale (`data-comment-escape`, §10.7) ; « Annuler » rend le focus au « + » ; une fois la
+  discussion créée, c'est son titre qui le reçoit — le formulaire qui le tenait a disparu.
+- Créer, c'est **changer de fil** : l'entrée d'historique de l'ouverture est remplacée, et fermer
+  la défait toujours (§15.5).
+
+### 16.4 Preuves
+
+Du 12/10, sur le code décrit ici.
+
+| Quoi | Résultat |
+|---|---|
+| Règles, hors base (§15.6), section « créer une discussion » | 30 vérifications de plus, 130 en tout : qui crée, quelle audience, le nom, la forme écrite, le fil rendu, la clé déjà prise, l'écriture refusée par la base, le plafond |
+| Contre-épreuve par mutation de `Discussion.php` | 143 mutations tuées sur 143, dont 45 sur la création |
+| Sonde contre le vrai backend, trois identités | 51 vérifications : refus (rien n'est écrit — empreinte de la réponse relue), audiences annoncées par `space`, création par le déposant et par l'admin de l'appel, forme enregistrée, audiences tenues en liste et en fil désigné ; **la réponse d'essai revient à l'identique** une fois nettoyée |
+| Appel réel au SDK | refus du schéma et refus du serveur, sans rien créer (§14.8) |
+| Tests unitaires de l'écran | 90 tests de plus dans six fichiers, dont deux nouveaux : lecture de la réponse, insertion dans la liste, mutation, formulaire, panneau — et le **parcours** assemblé, du « + » à la discussion ouverte |
+| Contre-épreuve par mutation de l'écran | 95 mutations tuées sur 95 |
+
+### 16.5 Limites
+
+- **Non vérifié au navigateur** à la date de cette section : le formulaire, son rendu aux largeurs
+  de la modale, le focus.
+- **Renommer** et **supprimer** restent au legacy. Une discussion renommée ou supprimée là-bas
+  l'est ici à la relecture suivante.
+- Le plafond de 50 discussions se juge sur la réponse lue avant l'écriture : deux créations
+  simultanées, à la limite, peuvent le dépasser d'une.
+- Le legacy prévient les autres écrans ouverts par son canal temps réel ; ici la discussion apparaît
+  aux autres lecteurs à leur relecture suivante (§11.4).
+- Un nom dont l'écriture en HTML dépasse 120 caractères reste accepté s'il en compte 120 au plus en
+  texte : c'est le texte qui est borné.
 
 ## Voir aussi
 

@@ -23,6 +23,14 @@ import "../../i18n";
 
 const fil = vi.hoisted(() => ({ montages: 0 }));
 
+// jsdom ne fournit pas ResizeObserver, dont le groupe de boutons radio de Radix a besoin (formulaire de création).
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+globalThis.ResizeObserver = globalThis.ResizeObserver ?? (ResizeObserverStub as unknown as typeof ResizeObserver);
+
 vi.mock("@/modules/comment/hooks/useDiscussionsRealtime", () => ({ useDiscussionsRealtime: () => "degrade" }));
 vi.mock("@/modules/comment/components/CommentThread", () => ({
   CommentThread: ({ target }: { target?: { type: string; id: string; path?: string | null } | null }) => {
@@ -54,6 +62,10 @@ const cheminDe = (commun: string, champ: string) => `${APPEL}.${ETAPE}.${commun}
 const CLE_GENERALE = `answers:${COMMUN}`;
 const CLE_BUDGET = `forms:${APPEL}:${cheminDe(COMMUN, "budget")}`;
 const CLE_TITRE = `forms:${APPEL}:${cheminDe(COMMUN, "titre")}`;
+// La discussion qu'on crée d'ici : sa clé et son chemin sont fabriqués par le serveur.
+const CHEMIN_CREE = `${APPEL}.moreDiscussions_93015AbCdEfGh.${COMMUN}.discu_121020269301512.comment`;
+const CLE_CREEE = `forms:${APPEL}:${CHEMIN_CREE}`;
+const DEPOSANT = "65d4000000000000000000d1";
 // Un chemin que l'adresse écrirait, mais ne saurait pas RELIRE (plus de 256 caractères).
 const CHEMIN_TROP_LONG = `${cheminDe(COMMUN, "note")}.${"x".repeat(260)}`;
 const CLE_TROP_LONGUE = `forms:${APPEL}:${CHEMIN_TROP_LONG}`;
@@ -98,10 +110,34 @@ function Navigateur() {
   );
 }
 
-/** `historique` : les adresses visitées, dans l'ordre — on arrive sur la dernière. */
-function monter(historique: readonly string[] = [AVANT, FICHE]) {
-  const getDiscussionSpace = vi.fn(async ({ contextId }: { contextId: string }) => espaceDe(contextId));
-  const cocolight = { api: { getDiscussionSpace }, me: null, entity: null, helper: {} } as unknown as CocolightContextType;
+/**
+ * `historique` : les adresses visitées, dans l'ordre — on arrive sur la dernière.
+ * `deposant` : le lecteur est connecté, et c'est le déposant du commun — le serveur lui annonce
+ * qu'il peut créer une discussion, publique ou privée. Par défaut : un visiteur.
+ */
+function monter(historique: readonly string[] = [AVANT, FICHE], { deposant = false } = {}) {
+  // Le serveur, réduit à ce qu'il retient : les discussions créées s'ajoutent à l'espace.
+  const creees: Record<string, unknown>[] = [];
+  const getDiscussionSpace = vi.fn(async ({ contextId }: { contextId: string }) => {
+    const espace = espaceDe(contextId);
+    return deposant
+      ? { ...espace, canComment: true, creatableAudiences: ["authorAll", "authorAdmin"], threads: [espace.threads[0], ...creees, ...espace.threads.slice(1)] }
+      : espace;
+  });
+  const createDiscussion = vi.fn(async ({ name, audience }: { name: string; audience: string }) => {
+    const thread = {
+      key: CLE_CREEE, contextType: "forms", contextId: APPEL, path: CHEMIN_CREE, title: name, carrier: null,
+      total: 0, unread: 0, last: null, mine: false, virtual: true, kind: "discussion", group: null, audience,
+    };
+    creees.push(thread);
+    return { result: true, thread };
+  });
+  const cocolight = {
+    api: { getDiscussionSpace, createDiscussion },
+    me: deposant ? { isConnected: true } : null,
+    entity: deposant ? { userContext: { id: DEPOSANT } } : null,
+    helper: {},
+  } as unknown as CocolightContextType;
   const rendu = render(
     <MemoryRouter initialEntries={[...historique]}>
       <QueryClientProvider client={new QueryClient()}>
@@ -117,7 +153,7 @@ function monter(historique: readonly string[] = [AVANT, FICHE]) {
       </QueryClientProvider>
     </MemoryRouter>,
   );
-  return { ...rendu, getDiscussionSpace };
+  return { ...rendu, getDiscussionSpace, createDiscussion };
 }
 
 // Une fois la modale ouverte, Radix retire le reste de la page de l'arbre d'accessibilité : on
@@ -372,6 +408,54 @@ describe("l'espace de discussion d'un commun — le parcours, tous maillons asse
       await cliquer(croix());
       expect(panneau()).toBeNull();
       expect(param()).toBe(ailleurs);
+    });
+  });
+
+  describe("créer une discussion", () => {
+    const plus = () => document.querySelector<HTMLButtonElement>("[data-new-discussion-open]");
+
+    it("un visiteur n'a pas de « + » : le serveur ne lui annonce aucune audience", async () => {
+      monter();
+      await ouvrir();
+      expect(plus()).toBeNull();
+    });
+
+    it("le déposant en crée une : elle s'ouvre aussitôt, son adresse est écrite, et fermer défait toujours l'ouverture", async () => {
+      const { createDiscussion } = monter([AVANT, FICHE], { deposant: true });
+      await ouvrir();
+      await cliquer(plus()!);
+      fireEvent.change(screen.getByLabelText("Nom de la discussion"), { target: { value: "  Budget   2026 " } });
+      await act(async () => { fireEvent.submit(document.querySelector("[data-new-discussion]")!); });
+
+      await waitFor(() => expect(param()).toBe(CLE_CREEE));
+      expect(createDiscussion).toHaveBeenCalledTimes(1);
+      expect(createDiscussion).toHaveBeenCalledWith({ contextType: "answers", contextId: COMMUN, name: "Budget 2026", audience: "authorAdmin" });
+      // Le fil créé est monté — pas « introuvable » —, titré, et le formulaire a rendu la place.
+      expect(filMonte()!.getAttribute("data-target")).toBe(CLE_CREEE);
+      expect(document.querySelector("[data-thread-hidden]")).toBeNull();
+      expect(screen.getByRole("heading", { level: 3 }).textContent).toBe("Budget 2026");
+      expect(document.querySelector("[data-new-discussion]")).toBeNull();
+      // Relue, la liste la porte : étiquetée par son audience, prête à recevoir son premier message.
+      await waitFor(() => expect(rangee(CLE_CREEE)).toBeTruthy());
+      expect(rangee(CLE_CREEE).textContent).toContain("Privée");
+
+      // Créer, c'est changer de fil : l'entrée de l'ouverture est REMPLACÉE, et la croix la défait.
+      await cliquer(croix());
+      expect(adresse()).toBe(FICHE);
+      await traverser("retour");
+      expect(chemin()).toBe(AVANT);
+    });
+
+    it("Échap dans le formulaire le referme, sans fermer la modale", async () => {
+      monter([AVANT, FICHE], { deposant: true });
+      await ouvrir();
+      await cliquer(plus()!);
+      const champ = screen.getByLabelText("Nom de la discussion");
+      await act(async () => { fireEvent.keyDown(champ, { key: "Escape" }); });
+      expect(document.querySelector("[data-new-discussion]")).toBeNull();
+      expect(panneau()).toBeTruthy();
+      expect(param()).toBe(CLE_GENERALE);
+      expect(document.activeElement).toBe(plus());
     });
   });
 

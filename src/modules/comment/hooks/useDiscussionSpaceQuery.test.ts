@@ -102,9 +102,21 @@ describe("useDiscussionSpaceQuery", () => {
     expect(result.current).toMatchObject({ title: "Un commun", canComment: true, truncated: false, total: 5, unread: 3 });
   });
 
-  it("avant la réponse, ne prétend rien : aucun fil, aucun compteur, pas le droit d'écrire", () => {
+  it("avant la réponse, ne prétend rien : aucun fil, aucun compteur, pas le droit d'écrire ni de créer", () => {
     const { result } = monter({ reponse: () => new Promise(() => {}) });
-    expect(result.current).toMatchObject({ threads: [], title: null, canComment: false, total: 0, unread: 0 });
+    expect(result.current).toMatchObject({ threads: [], title: null, canComment: false, creatableAudiences: [], total: 0, unread: 0 });
+  });
+
+  it("rend les audiences que le serveur annonce à ce lecteur pour une discussion qu'il crée", async () => {
+    const { result } = monter({ reponse: async () => ({ ...REPONSE, creatableAudiences: ["authorAll", "authorAdmin"] }) });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(result.current.creatableAudiences).toEqual(["authorAll", "authorAdmin"]);
+  });
+
+  it("aucune quand le serveur n'en annonce pas", async () => {
+    const { result } = monter();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(result.current.creatableAudiences).toEqual([]);
   });
 
   it("ne SONDE pas par défaut — le bouton d'une fiche n'a besoin que d'un compteur", async () => {
@@ -171,7 +183,7 @@ describe("useDiscussionSpaceQuery", () => {
       expect(getDiscussionSpace).toHaveBeenCalledTimes(2);
       expect(errorCodeOf(result.current.error)).toBe("hidden");
       expect(result.current.data).toBeUndefined();
-      expect(result.current).toMatchObject({ threads: [], title: null, canComment: false, truncated: false, total: 0, unread: 0 });
+      expect(result.current).toMatchObject({ threads: [], title: null, canComment: false, creatableAudiences: [], truncated: false, total: 0, unread: 0 });
     });
 
     it("une PANNE la garde : la liste, ses compteurs et le droit d'écrire restent ceux de la dernière réponse", async () => {
@@ -205,6 +217,26 @@ describe("useDiscussionSpaceQuery", () => {
       expect(apresLaPanne).toBeGreaterThanOrEqual(4);
       await vi.advanceTimersByTimeAsync(31_000);
       expect(getDiscussionSpace.mock.calls.length).toBeGreaterThan(apresLaPanne);
+    });
+
+    it("le droit de créer suit la même règle : retiré par un refus, gardé à travers une panne", async () => {
+      const AVEC_DROIT = { ...REPONSE, creatableAudiences: ["authorAll", "authorAdmin"] };
+      let appels = 0;
+      const refuse = monter({
+        reponse: () => (appels++ === 0 ? Promise.resolve(AVEC_DROIT) : refusDuSdk({ code: "hidden" })()),
+        options: { live: true },
+      });
+      let lectures = 0;
+      const enPanne = monter({
+        reponse: () => (lectures++ === 0 ? Promise.resolve(AVEC_DROIT) : Promise.reject(new Error("Network Error"))),
+        options: { live: true },
+      });
+      await vi.advanceTimersByTimeAsync(0);
+      expect(refuse.result.current.creatableAudiences).toEqual(["authorAll", "authorAdmin"]);
+      await vi.advanceTimersByTimeAsync(31_000 + 10_000);
+      expect(refuse.result.current.creatableAudiences).toEqual([]);
+      expect(enPanne.result.current.isError).toBe(true);
+      expect(enPanne.result.current.creatableAudiences).toEqual(["authorAll", "authorAdmin"]);
     });
 
     it("illisible dès la PREMIÈRE lecture : réessayée deux fois, puis dite — sans rien à montrer", async () => {

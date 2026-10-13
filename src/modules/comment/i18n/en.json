@@ -196,6 +196,30 @@
       "questions": "Questions",
       "expenses": "Expenses",
       "other": "Other"
+    },
+    "create": {
+      "open": "New discussion",
+      "title": "New discussion",
+      "name": "Discussion name",
+      "namePlaceholder": "What would you like to talk about?",
+      "audience": "Who can read it",
+      "audienceHint": {
+        "authorAll": "Everyone, without signing in.",
+        "authorAdmin": "The commun's contributor, its referents and the administrators of the call.",
+        "private": "The administrators of the call only."
+      },
+      "submit": "Create",
+      "submitting": "Creating…",
+      "cancel": "Cancel",
+      "error": {
+        "login": "Sign in to create a discussion.",
+        "hidden": "This discussion space could not be found.",
+        "forbidden": "You cannot create this discussion.",
+        "bad-name": "Give it a name, 120 characters at most.",
+        "too-many": "This commun has reached its maximum number of discussions.",
+        "unreadable": "The server response could not be read. Check the list before trying again.",
+        "failed": "The discussion could not be created. Try again."
+      }
     }
   },
   "reportDialog": {

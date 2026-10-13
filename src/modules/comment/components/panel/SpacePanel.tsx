@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
-  ArrowLeft, CircleHelp, Globe, Lock, MessageSquare, MessagesSquare, Receipt, ShieldCheck,
+  ArrowLeft, CircleHelp, Globe, Lock, MessageSquare, MessagesSquare, Plus, Receipt, ShieldCheck,
 } from "lucide-react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { NewDiscussionForm } from "./NewDiscussionForm";
 import { PANEL_HEADING, PANEL_ONE_COLUMN_REM } from "./rowStyles";
 import { ThreadColumn, type ThreadChip } from "./ThreadColumn";
 import { CommentThread } from "../CommentThread";
@@ -52,6 +53,10 @@ export interface SpacePanelProps {
  * Les fils gardent l'ORDRE du serveur — fil général, discussions, puis les questions dans l'ordre
  * de l'appel, étape par étape. Un commun a une poignée de fils : un ordre qui ne bouge pas se lit
  * mieux qu'un tri par activité, et les non-lus se voient à leur barre.
+ *
+ * **Créer une discussion** : le « + » de l'en-tête n'existe que si le serveur annonce à ce lecteur
+ * une audience qu'il peut donner (`creatableAudiences`). Le formulaire s'ouvre en tête de la
+ * colonne, pas dans un dialogue de plus ; la discussion créée est ouverte aussitôt.
  */
 export function SpacePanel({ space, title, target, onSelect, scopeEntity, headerEnd, className }: SpacePanelProps) {
   const t = useT("modules/comment");
@@ -106,6 +111,17 @@ export function SpacePanel({ space, title, target, onSelect, scopeEntity, header
 
   const step: "threads" | "thread" = target ? "thread" : "threads";
 
+  // Créer une discussion : un état d'écran, pas d'adresse — on ne partage pas un formulaire ouvert.
+  const [creation, setCreation] = useState(false);
+  const boutonCreer = useRef<HTMLButtonElement>(null);
+  // La discussion qu'on vient de créer : son titre reçoit le focus quand elle s'ouvre. Le
+  // formulaire qui le tenait a disparu — sans cela il retombait sur `<body>`.
+  const creee = useRef<string | null>(null);
+  const fermerLaCreation = () => {
+    setCreation(false);
+    boutonCreer.current?.focus();
+  };
+
   // En mode une colonne, changer d'étape retire de l'écran celle d'où l'on vient : le focus est
   // rendu au titre de la colonne qui arrive, comme dans le panneau général.
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -119,6 +135,11 @@ export function SpacePanel({ space, title, target, onSelect, scopeEntity, header
     const largeur = rootRef.current?.offsetWidth ?? 0;
     if (largeur > 0 && largeur < PANEL_ONE_COLUMN_REM * rem) headingRef.current?.focus();
   }, [step]);
+  useEffect(() => {
+    if (creee.current === null || creee.current !== cleOuverte) return;
+    creee.current = null;
+    headingRef.current?.focus();
+  }, [cleOuverte]);
 
   const nom = title || query.title || String(t("space.title"));
   // Une erreur ne prend l'écran que s'il n'y a plus rien à montrer. `useDiscussionSpaceQuery` tient
@@ -130,6 +151,9 @@ export function SpacePanel({ space, title, target, onSelect, scopeEntity, header
     : String(t(erreur === "hidden" ? "space.notFound" : errorLabelKey(erreur)));
   // Seule une panne mérite qu'on réessaie : un refus ne changera pas d'avis.
   const reessayable = erreur !== null && !isRefusalCode(erreur);
+  // Le serveur a dit à ce lecteur ce qu'il peut créer. Refusé ou sans liste, l'espace n'annonce
+  // aucune audience (`useDiscussionSpaceQuery`) : il n'y a alors rien où créer.
+  const peutCreer = query.creatableAudiences.length > 0;
   // L'adresse désigne un fil que la liste ne porte pas : réservé, ou disparu (cf. la colonne du fil).
   const introuvable = target !== null && messageDErreur === null && !query.isLoading && ouvert === null;
 
@@ -157,10 +181,37 @@ export function SpacePanel({ space, title, target, onSelect, scopeEntity, header
           <header className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
             <MessagesSquare className="text-muted-foreground size-4 shrink-0" aria-hidden />
             <h2 ref={refDuTitre("threads")} tabIndex={-1} className={PANEL_HEADING} title={nom}>{nom}</h2>
+            {peutCreer && (
+              <Button
+                ref={boutonCreer}
+                variant="ghost"
+                size="icon"
+                className="size-7 shrink-0"
+                data-new-discussion-open
+                aria-expanded={creation}
+                aria-label={String(t("space.create.open"))}
+                title={String(t("space.create.open"))}
+                onClick={() => setCreation(ouverte => !ouverte)}
+              >
+                <Plus className="size-4" aria-hidden />
+              </Button>
+            )}
             {/* En mode une colonne, l'en-tête du fil n'est pas à l'écran : la croix se pose aussi
                 ici, et cède la place dès que les deux colonnes coexistent. */}
             {headerEnd ? <span className="ms-auto shrink-0 @3xl/panneau:hidden">{headerEnd}</span> : null}
           </header>
+          {peutCreer && creation && (
+            <NewDiscussionForm
+              space={space}
+              audiences={query.creatableAudiences}
+              onCancel={fermerLaCreation}
+              onCreated={thread => {
+                setCreation(false);
+                creee.current = thread.key;
+                onSelect(thread.target);
+              }}
+            />
+          )}
           {messageDErreur
             ? (
               <div className="text-muted-foreground flex flex-col items-start gap-2 p-4 text-sm" data-space-error={erreur}>

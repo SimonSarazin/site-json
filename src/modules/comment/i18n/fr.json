@@ -196,6 +196,30 @@
       "questions": "Questions",
       "expenses": "Dépenses",
       "other": "Autres"
+    },
+    "create": {
+      "open": "Nouvelle discussion",
+      "title": "Nouvelle discussion",
+      "name": "Nom de la discussion",
+      "namePlaceholder": "De quoi voulez-vous parler ?",
+      "audience": "Qui peut la lire",
+      "audienceHint": {
+        "authorAll": "Tout le monde, sans être connecté.",
+        "authorAdmin": "Le déposant du commun, ses référents et les administrateurs de l'appel.",
+        "private": "Les administrateurs de l'appel seulement."
+      },
+      "submit": "Créer",
+      "submitting": "Création…",
+      "cancel": "Annuler",
+      "error": {
+        "login": "Connectez-vous pour créer une discussion.",
+        "hidden": "Cet espace de discussion est introuvable.",
+        "forbidden": "Vous ne pouvez pas créer cette discussion.",
+        "bad-name": "Donnez-lui un nom, de 120 caractères au plus.",
+        "too-many": "Ce commun a atteint son nombre maximal de discussions.",
+        "unreadable": "La réponse du serveur est illisible. Vérifiez la liste avant de recommencer.",
+        "failed": "La discussion n'a pas pu être créée. Réessayez."
+      }
     }
   },
   "reportDialog": {

@@ -26,6 +26,7 @@ export { DiscussionPanel, type DiscussionPanelProps } from "./components/panel/D
 export { DiscussionModal, type DiscussionModalProps } from "./components/panel/DiscussionModal";
 export { SpacePanel, type SpacePanelProps } from "./components/panel/SpacePanel";
 export { SpaceModal, type SpaceModalProps } from "./components/panel/SpaceModal";
+export { NewDiscussionForm, type NewDiscussionFormProps } from "./components/panel/NewDiscussionForm";
 export { CarrierRail, type CarrierRailProps } from "./components/panel/CarrierRail";
 export { ThreadColumn, type ThreadChip, type ThreadColumnProps } from "./components/panel/ThreadColumn";
 
@@ -40,6 +41,7 @@ export { useDiscussionUrlState, type DiscussionUrlState, type UrlWriteOptions } 
 export { useDiscussionLauncher, type DiscussionLauncher } from "./hooks/useDiscussionLauncher";
 export { useDiscussionUnread } from "./hooks/useDiscussionUnread";
 export { useDiscussionSpaceQuery } from "./hooks/useDiscussionSpaceQuery";
+export { useCreateDiscussion, type NewDiscussion } from "./hooks/useCreateDiscussion";
 export { useSpaceLauncher, type SpaceLauncher } from "./hooks/useSpaceLauncher";
 
 export { voteTypes, voteTypeMap, type VoteType } from "./constants/voteTypes";

@@ -2,14 +2,17 @@ import { describe, expect, it } from "vitest";
 import { errorCodeOf } from "./discussions";
 import {
   belongsToSpace,
+  creationErrorCodeOf,
   generalTarget,
   isSpaceType,
+  parseCreatedDiscussion,
   parseSpace,
   spaceKey,
   spaceTotals,
   visibleSpaceThreads,
+  withDiscussion,
 } from "./space";
-import type { DiscussionThread, SpaceRef } from "../types";
+import type { DiscussionSpace, DiscussionThread, SpaceRef } from "../types";
 
 /**
  * L'espace de discussion d'un commun, côté lecture.
@@ -252,6 +255,141 @@ describe("parseSpace", () => {
     const erreur = refusDe(raw);
     expect(errorCodeOf(erreur)).toBe("unreadable");
     expect(erreur).toMatchObject({ refus: false });
+  });
+});
+
+describe("parseSpace — les audiences qu'on peut donner à une discussion qu'on crée", () => {
+  const audiences = (valeur: unknown) => parseSpace({ ...REPONSE, creatableAudiences: valeur }).creatableAudiences;
+
+  it("lit celles que le serveur annonce à CE lecteur", () => {
+    expect(audiences(["authorAll", "authorAdmin"])).toEqual(["authorAll", "authorAdmin"]);
+    expect(audiences(["authorAll", "authorAdmin", "private"])).toEqual(["authorAll", "authorAdmin", "private"]);
+  });
+
+  it("les rend dans l'ordre de l'écran, quel que soit celui du serveur", () => {
+    expect(audiences(["private", "authorAll"])).toEqual(["authorAll", "private"]);
+  });
+
+  it("aucune pour un serveur qui n'en dit rien — on ne propose pas de créer", () => {
+    expect(parseSpace(REPONSE).creatableAudiences).toEqual([]);
+    expect(audiences([])).toEqual([]);
+    expect(audiences(null)).toEqual([]);
+    expect(audiences("authorAll")).toEqual([]);
+    expect(audiences({ authorAll: true })).toEqual([]);
+  });
+
+  it("n'en propose pas une que l'écran ne connaît pas : il ne saurait pas dire à qui elle ouvre", () => {
+    expect(audiences(["juryOnly", "authorAdmin", true, null])).toEqual(["authorAdmin"]);
+  });
+});
+
+/**
+ * La réponse de `creatediscussion`. Un refus y est le CORPS que le serveur rend en HTTP 200 — que
+ * l'appelant a repris de l'exception du SDK avant d'arriver ici.
+ */
+describe("parseCreatedDiscussion", () => {
+  const CHEMIN = `${APPEL}.moreDiscussions_93015AbCdEfGh.${COMMUN}.discu_121020269301512.commentPublic`;
+  const CREEE = ligne({
+    key: `forms:${APPEL}:${CHEMIN}`, contextType: "forms", contextId: APPEL, path: CHEMIN,
+    title: "Budget 2026", kind: "discussion", audience: "authorAll",
+  });
+  const erreurDe = (raw: unknown): unknown => {
+    try { parseCreatedDiscussion(raw); } catch (erreur) { return erreur; }
+    return null;
+  };
+
+  it("lit le fil créé : une discussion vide, avec sa cible, son titre et son audience", () => {
+    expect(parseCreatedDiscussion({ result: true, thread: CREEE })).toEqual({
+      key: `forms:${APPEL}:${CHEMIN}`, target: { type: "forms", id: APPEL, path: CHEMIN }, title: "Budget 2026",
+      carrier: null, total: 0, unread: 0, last: null, mine: false, virtual: true,
+      kind: "discussion", group: null, audience: "authorAll",
+    });
+  });
+
+  it.each(["login", "hidden", "forbidden", "bad-name", "too-many"])("rend le refus `%s` par son code — jamais le texte du serveur", code => {
+    const erreur = erreurDe({ result: false, code, msg: "Texte du serveur." });
+    expect(erreur).toBeInstanceOf(Error);
+    expect(creationErrorCodeOf(erreur)).toBe(code);
+    expect((erreur as Error).message).not.toContain("Texte du serveur");
+  });
+
+  it.each([["failed"], ["bad-request"], ["un-code-de-demain"], [undefined], [42]])(
+    "un refus de code %p se dit « n'a pas pu être créée »", code => {
+      expect(creationErrorCodeOf(erreurDe({ result: false, code }))).toBe("failed");
+    });
+
+  it.each([
+    ["sans fil", { result: true }],
+    ["avec un fil qui n'en est pas un", { result: true, thread: "discu_1" }],
+    ["avec un fil d'une autre nature", { result: true, thread: { ...CREEE, kind: "question" } }],
+    ["avec un fil sans chemin", { result: true, thread: { ...CREEE, path: null } }],
+    ["qui n'est pas un objet", "<html>Maintenance</html>"],
+    ["vide", null],
+    ["sans `result`", { thread: CREEE }],
+  ])("une réponse %s est ILLISIBLE : on ne sait pas si la discussion existe", (_cas, raw) => {
+    expect(creationErrorCodeOf(erreurDe(raw))).toBe("unreadable");
+  });
+
+  it("une erreur venue d'ailleurs — réseau, schéma — se dit « n'a pas pu être créée »", () => {
+    expect(creationErrorCodeOf(new Error("Network Error"))).toBe("failed");
+    expect(creationErrorCodeOf({ code: "forbidden" })).toBe("failed");
+    expect(creationErrorCodeOf({ creation: "oui", code: "forbidden" })).toBe("failed");
+    expect(creationErrorCodeOf({ creation: true })).toBe("failed");
+    expect(creationErrorCodeOf(null)).toBe("failed");
+  });
+});
+
+describe("withDiscussion", () => {
+  const discussion = (cle: string, titre: string | null) => fil({
+    key: `forms:${APPEL}:${cle}`, target: { type: "forms", id: APPEL, path: cle }, title: titre, kind: "discussion", virtual: true,
+  });
+  const question = fil({ key: "q", target: { type: "forms", id: APPEL, path: QUESTION }, title: "Aaa", kind: "question" });
+  const general = fil();
+  const espace = (...threads: DiscussionThread[]): DiscussionSpace => ({
+    space: { type: "answers", id: COMMUN, title: null, formId: APPEL },
+    threads, canComment: true, creatableAudiences: ["authorAll", "authorAdmin"], truncated: false,
+  });
+  const cles = (e: DiscussionSpace) => e.threads.map(thread => thread.key.replace(`forms:${APPEL}:`, ""));
+
+  it("la range parmi les discussions, par titre — après le fil général, avant les questions", () => {
+    const avant = espace(general, discussion("b", "Budget"), discussion("z", "Zoo"), question);
+    expect(cles(withDiscussion(avant, discussion("n", "Nouvelle")))).toEqual([`answers:${COMMUN}`, "b", "n", "z", "q"]);
+    expect(cles(withDiscussion(avant, discussion("a", "Avis")))).toEqual([`answers:${COMMUN}`, "a", "b", "z", "q"]);
+    expect(cles(withDiscussion(avant, discussion("y", "Zut")))).toEqual([`answers:${COMMUN}`, "b", "z", "y", "q"]);
+  });
+
+  it("sans la casse ni les accents, comme le serveur : « État » se range à E", () => {
+    const avant = espace(general, discussion("b", "Budget"), discussion("z", "Zoo"), question);
+    expect(cles(withDiscussion(avant, discussion("e", "État des lieux")))).toEqual([`answers:${COMMUN}`, "b", "e", "z", "q"]);
+    expect(cles(withDiscussion(avant, discussion("m", "budget")))[2]).toBe("m");
+  });
+
+  it("à titre égal, le chemin départage", () => {
+    const avant = espace(general, discussion("b", "Budget"), discussion("d", "Budget"), question);
+    expect(cles(withDiscussion(avant, discussion("c", "Budget")))).toEqual([`answers:${COMMUN}`, "b", "c", "d", "q"]);
+  });
+
+  it("première discussion d'un commun : juste après le fil général", () => {
+    expect(cles(withDiscussion(espace(general, question), discussion("n", "Nouvelle")))).toEqual([`answers:${COMMUN}`, "n", "q"]);
+    expect(cles(withDiscussion(espace(general), discussion("n", "Nouvelle")))).toEqual([`answers:${COMMUN}`, "n"]);
+  });
+
+  it("déjà dans la liste, elle est remplacée — jamais doublée", () => {
+    const avant = espace(general, discussion("b", "Budget"), discussion("n", "Ancien titre"), question);
+    const apres = withDiscussion(avant, discussion("n", "Nouvelle"));
+    expect(cles(apres)).toEqual([`answers:${COMMUN}`, "b", "n", "q"]);
+    expect(apres.threads[2].title).toBe("Nouvelle");
+  });
+
+  it("rend un NOUVEL espace : la liste en cache n'est pas modifiée en place", () => {
+    const avant = espace(general, question);
+    const fils = avant.threads;
+    const apres = withDiscussion(avant, discussion("n", "Nouvelle"));
+    expect(apres).not.toBe(avant);
+    expect(avant.threads).toBe(fils);
+    expect(avant.threads).toHaveLength(2);
+    // Le reste de l'espace suit tel quel.
+    expect(apres).toMatchObject({ canComment: true, creatableAudiences: ["authorAll", "authorAdmin"], truncated: false });
   });
 });
 

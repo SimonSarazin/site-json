@@ -7,7 +7,7 @@ import { rawOrRefusal } from "../lib/discussions";
 import { parseSpace, spaceKey, spaceTotals } from "../lib/space";
 import { estUnRefus, intervalleDeSondage, reessayer } from "./useDiscussionsQuery";
 import { useDiscussionsRealtime } from "./useDiscussionsRealtime";
-import type { DiscussionSpace, DiscussionThread, SpaceRef } from "../types";
+import type { DiscussionSpace, DiscussionThread, SpaceAudience, SpaceRef } from "../types";
 
 export interface UseDiscussionSpaceQueryOptions {
   readonly enabled?: boolean;
@@ -21,6 +21,7 @@ export interface UseDiscussionSpaceQueryOptions {
 }
 
 const AUCUN_FIL: readonly DiscussionThread[] = [];
+const AUCUNE_AUDIENCE: readonly SpaceAudience[] = [];
 
 /**
  * Charge l'ESPACE de discussion d'un commun : ses fils, titrés et comptés.
@@ -85,6 +86,8 @@ export function useDiscussionSpaceQuery(
     /** Le titre que le serveur connaît au commun — l'hôte a souvent mieux, résolu par sa fiche. */
     title: data?.space.title ?? null,
     canComment: data?.canComment ?? false,
+    /** Les audiences que ce lecteur peut donner à une discussion qu'il crée — vide : il n'en crée pas. */
+    creatableAudiences: data?.creatableAudiences ?? AUCUNE_AUDIENCE,
     truncated: data?.truncated ?? false,
     ...spaceTotals(threads),
   };

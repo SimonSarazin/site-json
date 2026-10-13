@@ -228,6 +228,12 @@ export interface DiscussionSpace {
   readonly threads: readonly DiscussionThread[];
   /** Y a-t-il une session ? Sans elle, l'espace se lit sans qu'on puisse y écrire. */
   readonly canComment: boolean;
+  /**
+   * Les audiences que CE lecteur peut donner à une discussion qu'il crée — vide : il n'en crée pas.
+   * C'est le serveur qui en décide (admin de l'appel, déposant, référent) ; l'écran n'en propose
+   * aucune autre.
+   */
+  readonly creatableAudiences: readonly SpaceAudience[];
   readonly truncated: boolean;
 }
 
