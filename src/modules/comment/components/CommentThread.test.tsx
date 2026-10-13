@@ -273,7 +273,7 @@ describe("CommentThread — repli d'office", () => {
     const { container } = mount();
     expect(container.querySelectorAll("[data-comment-row]")).toHaveLength(1);
     act(() => { mutationsRecues.options?.onSendFailed?.({ text: "ma réponse", mentions: [], parentId: "x3" }); });
-    act(() => { fireEvent.keyDown(champDe(container)!, { key: "Enter" }); });
+    act(() => { fireEvent.keyDown(champDe(container)!, { key: "Enter", ctrlKey: true }); });
     expect(container.querySelector('[data-comment-id="x3"]')).not.toBeNull();
   });
 });

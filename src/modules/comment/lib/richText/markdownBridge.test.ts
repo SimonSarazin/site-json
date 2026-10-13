@@ -299,7 +299,7 @@ describe("après un saut de ligne, une ligne tapée comme du markdown en est", (
 });
 
 describe("une adresse tapée sans être un lien", () => {
-  // Entrée envoie avant que l'éditeur ait lié l'adresse : elle part en texte, et c'est le fil qui la lie.
+  // On envoie avant que l'éditeur ait lié l'adresse : elle part en texte, et c'est le fil qui la lie.
   it("garde ses signes : ni `~`, ni `_`, ni `*` ne reçoivent une barre oblique inverse qui partirait dans le lien", () => {
     const adresse = "https://exemple.org/~jean/_brouillon_/a*b*c?x=[1]";
     const sorti = serializeMarkdown(doc(paragraphe(`voir ${adresse} ici`)));
@@ -635,6 +635,134 @@ describe("une adresse sans protocole tapée en texte", () => {
   });
 });
 
+/**
+ * Le fil lie ces adresses APRÈS avoir lu les marques. Chacune se relit seule ; mais le souligné
+ * ouvrant de l'une et le souligné fermant d'une autre faisaient un italique de l'une à l'autre —
+ * deux liens coupés, deux soulignés perdus (vu aux tirages aléatoires du 13/10).
+ */
+describe("des adresses sans protocole dont les signes se répondent", () => {
+  const A = "www.exemple.org/_a";
+  const B = "fr.wikipedia.org/wiki/P_(h)";
+  const liee = (adresse: string) => lien(adresse, `http://${adresse}`);
+  const lienDe = (adresse: string, cible = `http://${adresse}`) => `<a href="${cible}">${adresse}</a>`;
+
+  it("liées par l'éditeur, elles s'écrivent en entier : deux liens, pas un italique", () => {
+    const sorti = serializeMarkdown(doc(paragraphe("voir ", liee(A), " et ", liee(B))));
+    expect(sorti).toBe("voir [www.exemple.org/\\_a](http://www.exemple.org/_a) et [fr.wikipedia.org/wiki/P\\_(h)](http://fr.wikipedia.org/wiki/P_\\(h\\))");
+    expect(rendu(sorti)).toBe(`<p>voir ${lienDe(A)} et ${lienDe(B)}</p>\n`);
+  });
+
+  it("… et relu puis réécrit, le message ne bouge plus", () => {
+    const sorti = serializeMarkdown(doc(paragraphe("voir ", liee(A), " et ", liee(B))));
+    expect(serializeMarkdown(parseMarkdown(schema, sorti))).toBe(sorti);
+  });
+
+  it("tapées en texte, elles gardent tous leurs signes : mieux vaut deux liens courts qu'un italique", () => {
+    const tape = `voir ${A} et ${B}`;
+    const sorti = serializeMarkdown(doc(paragraphe(tape)));
+    expect(sorti).toBe("voir www.exemple.org/\\_a et fr.wikipedia.org/wiki/P\\_(h)");
+    expect(rendu(sorti)).not.toContain("<em>");
+    expect(texteDe(rendu(sorti))).toBe(tape);
+  });
+
+  // Ce qui, à côté d'elles, sortirait tel qu'on l'a tapé ne les entraîne pas : le texte nu est jugé
+  // contre le bloc RÉÉCRIT, pas contre celui où l'italique était déjà là.
+  it("à côté d'un texte qui sortirait nu, elles sont réécrites quand même", () => {
+    const sorti = serializeMarkdown(doc(paragraphe("[urgent] ", liee(A), " et ", liee(B))));
+    expect(rendu(sorti)).toBe(`<p>[urgent] ${lienDe(A)} et ${lienDe(B)}</p>\n`);
+  });
+
+  it("une adresse à protocole du même paragraphe n'y perd rien : liée ou tapée, elle reste nue", () => {
+    const sure = "https://exemple.org/~j/_n_";
+    const liees = serializeMarkdown(doc(paragraphe(liee(A), " et ", liee(B), " ou ", lien(sure, sure))));
+    expect(liees.endsWith(` ou ${sure}`)).toBe(true);
+    expect(rendu(liees)).toBe(`<p>${lienDe(A)} et ${lienDe(B)} ou ${lienDe(sure, sure)}</p>\n`);
+    const tapees = serializeMarkdown(doc(paragraphe(`${A} et ${B} ou ${sure}`)));
+    expect(tapees.endsWith(` ou ${sure}`)).toBe(true);
+    expect(rendu(tapees)).toContain(lienDe(sure, sure));
+    expect(rendu(tapees)).not.toContain("<em>");
+  });
+
+  // Le bloc n'est réécrit que si ses adresses NUES se gênent. Une adresse qui ne se relit pas
+  // seule n'est jamais laissée nue : elle est traitée à part, et sa voisine n'y perd rien.
+  it("une adresse qui ne se relit pas seule n'entraîne pas sa voisine", () => {
+    const tapees = serializeMarkdown(doc(paragraphe("voir www.exemple.org/_a_ et www.exemple.org/~jean ici")));
+    expect(tapees).toBe("voir www.exemple.org/\\_a\\_ et www.exemple.org/~jean ici");
+    expect(rendu(tapees)).toContain(lienDe("www.exemple.org/~jean"));
+    const liees = serializeMarkdown(doc(paragraphe(liee("www.exemple.org"), "/_a_ et ", liee("www.exemple.org/~jean"), " ici")));
+    expect(liees).toBe("[www.exemple.org](http://www.exemple.org)/\\_a\\_ et www.exemple.org/~jean ici");
+    expect(rendu(liees)).toContain(lienDe("www.exemple.org/~jean"));
+  });
+
+  it("une seule de ces adresses reste nue : elle se relit entière", () => {
+    const sorti = serializeMarkdown(doc(paragraphe("voir ", liee(A), " pour la suite")));
+    expect(sorti).toBe(`voir ${A} pour la suite`);
+    expect(rendu(sorti)).toContain(lienDe(A));
+  });
+
+  it("deux adresses dont les soulignés sont pris dans un mot restent nues : rien ne s'y répond", () => {
+    const C = "www.exemple.org/mon_fichier";
+    const D = "www.exemple.org/autre_fichier";
+    const sorti = serializeMarkdown(doc(paragraphe(liee(C), " et ", liee(D))));
+    expect(sorti).toBe(`${C} et ${D}`);
+    expect(rendu(sorti)).toBe(`<p>${lienDe(C)} et ${lienDe(D)}</p>\n`);
+  });
+
+  it("avec leur protocole, le fil les lit dans la source, avant les marques : elles restent nues", () => {
+    const a = `https://${A}`;
+    const b = `https://${B}`;
+    const sorti = serializeMarkdown(doc(paragraphe("voir ", lien(a, a), " et ", lien(b, b))));
+    expect(sorti).toBe(`voir ${a} et ${b}`);
+    expect(rendu(sorti)).toBe(`<p>voir ${lienDe(a, a)} et ${lienDe(b, b)}</p>\n`);
+  });
+
+  it("seul le bloc en cause est réécrit : le paragraphe voisin garde son adresse nue", () => {
+    const sorti = serializeMarkdown(doc(paragraphe(liee(A), " et ", liee(B)), paragraphe("voir ", liee(A))));
+    expect(sorti).toBe(`[www.exemple.org/\\_a](http://www.exemple.org/_a) et [fr.wikipedia.org/wiki/P\\_(h)](http://fr.wikipedia.org/wiki/P_\\(h\\))\n\nvoir ${A}`);
+  });
+
+  it("chacune dans son élément de liste : rien ne se répond d'un élément à l'autre, elles restent nues", () => {
+    const item = (contenu: ProseNode) => schema.node("listItem", null, [paragraphe(contenu)]);
+    const sorti = serializeMarkdown(doc(schema.node("bulletList", null, [item(liee(A)), item(liee(B))])));
+    expect(sorti).toBe(`- ${A}\n- ${B}`);
+    expect(rendu(sorti)).toContain(lienDe(A));
+    expect(rendu(sorti)).toContain(lienDe(B));
+  });
+
+  // La même adresse deux fois, coupée UNE fois : sa jumelle intacte ne doit pas la faire passer.
+  it("une adresse écrite deux fois est attendue deux fois dans le rendu", () => {
+    const X = "www.exemple.org/a_";
+    const O = "www.exemple.org/_b";
+    // Dans cet ordre rien ne se répond — un souligné fermant, puis un ouvrant : elles restent nues…
+    expect(serializeMarkdown(doc(paragraphe(liee(X), " puis ", liee(O))))).toBe(`${X} puis ${O}`);
+    // … mais ici la deuxième et la troisième se répondent, la première et la quatrième non.
+    const sorti = serializeMarkdown(doc(paragraphe(liee(X), " ", liee(O), " ", liee(X), " ", liee(O))));
+    expect(rendu(sorti)).toBe(`<p>${lienDe(X)} ${lienDe(O)} ${lienDe(X)} ${lienDe(O)}</p>\n`);
+  });
+
+  it("des étoiles aussi, et des courriels", () => {
+    const etoiles = serializeMarkdown(doc(paragraphe(liee("www.exemple.org/*a"), " et ", liee("www.exemple.org/b*"))));
+    expect(rendu(etoiles)).toBe(`<p>${lienDe("www.exemple.org/*a")} et ${lienDe("www.exemple.org/b*")}</p>\n`);
+    const courriels = serializeMarkdown(doc(paragraphe(lien("_jean@exemple.org", "mailto:_jean@exemple.org"), " et ", lien("marie_@exemple.org", "mailto:marie_@exemple.org"))));
+    expect(rendu(courriels)).toBe(`<p>${lienDe("_jean@exemple.org", "mailto:_jean@exemple.org")} et ${lienDe("marie_@exemple.org", "mailto:marie_@exemple.org")}</p>\n`);
+  });
+
+  // Réécrite en entier, l'adresse s'arrête où l'éditeur a arrêté son lien : la lettre tapée contre
+  // elle reste dehors, au lieu de la prolonger comme elle le fait quand l'adresse sort nue.
+  it("une adresse prolongée par une lettre tapée contre elle n'est pas laissée nue non plus", () => {
+    const seule = serializeMarkdown(doc(paragraphe(liee("www.exemple.org/_pag"), "e et voilà")));
+    expect(seule).toBe("www.exemple.org/_page et voilà");
+    const sorti = serializeMarkdown(doc(paragraphe(liee("www.exemple.org/_pag"), "e et ", liee(B))));
+    expect(sorti).toBe("[www.exemple.org/\\_pag](http://www.exemple.org/_pag)e et [fr.wikipedia.org/wiki/P\\_(h)](http://fr.wikipedia.org/wiki/P_\\(h\\))");
+    expect(rendu(sorti)).not.toContain("<em>");
+    expect(texteDe(rendu(sorti))).toBe(`www.exemple.org/_page et ${B}`);
+    // Les DEUX prolongées : aucune ne sortirait nue sans que l'autre la coupe.
+    const deux = serializeMarkdown(doc(paragraphe(liee("www.exemple.org/_pag"), "e et ", liee("fr.wikipedia.org/wiki/P_"), "(h) fin")));
+    expect(rendu(deux)).not.toContain("<em>");
+    expect(texteDe(rendu(deux))).toBe(`www.exemple.org/_page et ${B} fin`);
+  });
+});
+
 describe("une adresse dans ou contre une marque", () => {
   it("dans le texte d'un lien écrit, une adresse est un texte comme un autre : ses soulignés n'y font pas un gras", () => {
     const adresse = "https://github.com/a/b/blob/main/__init__.py";
@@ -734,6 +862,63 @@ describe("les blocs, aux bords", () => {
     expect(sorti).toBe("```abc\nx\n```\n\naprès");
     expect(rendu(sorti)).toContain("<p>après</p>");
     expect(serializeMarkdown(doc(schema.node("codeBlock", { language: "c++" }, [schema.text("x")])))).toBe("```c++\nx\n```");
+  });
+});
+
+/**
+ * Des lignes vides ne séparent pas deux listes de même nature : le markdown n'en ferait qu'une,
+ * espacée, et la seconde liste numérotée prendrait la suite de la première. L'éditeur, lui, les
+ * laisse naître — la ligne vide supprimée entre deux listes, « 1. » tapé juste derrière une liste
+ * numérotée (vu aux tirages aléatoires du 13/10).
+ */
+describe("deux listes de même nature l'une contre l'autre", () => {
+  const item = (...contenu: ProseNode[]) => schema.node("listItem", null, contenu);
+  const puces = (...textes: string[]) => schema.node("bulletList", null, textes.map(texte => item(paragraphe(texte))));
+  const numeros = (debut: number, ...textes: string[]) => schema.node("orderedList", { start: debut }, textes.map(texte => item(paragraphe(texte))));
+
+  it("deux listes à puces restent deux listes : la seconde change de signe", () => {
+    const sorti = serializeMarkdown(doc(puces("a"), puces("b", "c")));
+    expect(sorti).toBe("- a\n\n\n+ b\n+ c");
+    expect(rendu(sorti)).toBe("<ul>\n<li>a</li>\n</ul>\n<ul>\n<li>b</li>\n<li>c</li>\n</ul>\n");
+  });
+
+  it("deux listes numérotées aussi : la seconde repart de son numéro, au lieu de prendre la suite", () => {
+    const sorti = serializeMarkdown(doc(numeros(1, "a"), numeros(1, "b", "c")));
+    expect(sorti).toBe("1. a\n\n\n1) b\n2) c");
+    expect(rendu(sorti)).toBe("<ol>\n<li>a</li>\n</ol>\n<ol>\n<li>b</li>\n<li>c</li>\n</ol>\n");
+    const troisieme = serializeMarkdown(doc(numeros(1, "a"), numeros(3, "b", "c")));
+    expect(troisieme).toBe("1. a\n\n\n3) b\n4) c");
+    expect(rendu(troisieme)).toContain('<ol start="3">');
+  });
+
+  it("trois de suite : une sur deux change de signe", () => {
+    const sorti = serializeMarkdown(doc(puces("a"), puces("b"), puces("c")));
+    expect(sorti).toBe("- a\n\n\n+ b\n\n\n- c");
+    expect(rendu(sorti).match(/<ul>/g)).toHaveLength(3);
+  });
+
+  it("relues, elles restent deux listes — et réécrites, le même texte", () => {
+    for (const texte of ["- a\n\n\n+ b\n+ c", "1. a\n\n\n1) b\n2) c", "- a\n\n\n+ b\n\n\n- c"]) {
+      const relu = parseMarkdown(schema, texte);
+      expect(relu.childCount).toBe(texte.split("\n\n\n").length);
+      expect(serializeMarkdown(relu)).toBe(texte);
+    }
+  });
+
+  it("une liste seule garde son signe — et deux listes que quelque chose sépare aussi", () => {
+    expect(serializeMarkdown(doc(puces("a"), numeros(1, "b")))).toBe("- a\n\n1. b");
+    expect(serializeMarkdown(doc(numeros(1, "a"), puces("b")))).toBe("1. a\n\n- b");
+    expect(serializeMarkdown(doc(puces("a"), paragraphe("entre deux"), puces("b")))).toBe("- a\n\nentre deux\n\n- b");
+    expect(serializeMarkdown(doc(numeros(1, "a"), puces("x"), numeros(1, "b")))).toBe("1. a\n\n- x\n\n1. b");
+  });
+
+  it("dans un élément de liste et dans une citation aussi", () => {
+    const imbriquees = serializeMarkdown(doc(schema.node("bulletList", null, [item(paragraphe("x"), puces("a"), puces("b"))])));
+    expect(imbriquees).toBe("- x\n  - a\n\n\n  + b");
+    expect(rendu(imbriquees).match(/<ul>/g)).toHaveLength(3);
+    const citees = serializeMarkdown(doc(schema.node("blockquote", null, [numeros(1, "a"), numeros(1, "b")])));
+    expect(citees).toBe("> 1. a\n>\n>\n> 1) b");
+    expect(rendu(citees).match(/<ol>/g)).toHaveLength(2);
   });
 });
 

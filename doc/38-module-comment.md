@@ -2813,11 +2813,14 @@ dans la nuit du 12 au 13/10.
   Une marque tapée prend en début de ligne — la seconde comprise —, derrière une espace, une
   apostrophe, un guillemet ou une parenthèse ; pas au milieu d'un mot, ni dans une adresse qu'on
   est en train de taper.
-- **Entrée envoie, Maj+Entrée passe à la ligne** — comme avant. Trois exceptions : dans une liste
-  ou un bloc de code, Entrée garde son sens (l'élément suivant, la ligne suivante) ; **sur un
-  écran tactile, Entrée passe à la ligne**, le message part par son bouton — il n'y a pas de
-  Maj+Entrée sous le pouce ; et tant que la liste des personnes d'une mention est en route,
-  Entrée l'attend : un message parti ne se reprend pas.
+- **Ctrl+Entrée envoie ; Entrée va à la ligne** (arbitré le 13/10 — jusque-là, Entrée envoyait).
+  Entrée garde partout son sens d'éditeur : un nouveau paragraphe, l'élément suivant d'une liste,
+  une ligne de code ; Maj+Entrée passe à la ligne sans changer de paragraphe. Ctrl+Entrée —
+  Cmd+Entrée sur un Mac — envoie d'où que ce soit, liste et bloc de code compris, et ne se sert pas
+  de la liste des personnes pour en choisir une : c'est Entrée, ou Tab, qui choisit. Tant que
+  cette liste est en route, Entrée l'attend au lieu de couper le paragraphe. Le bouton d'envoi dit
+  son raccourci en infobulle ; sur un écran tactile, où il n'existe pas, le message part par son
+  bouton.
 - **Le texte part tel qu'on l'a tapé.** `[urgent] réunion ~10h, 2 * 3 = 6` s'enregistre sans une
   barre oblique inverse : un message se lit aussi là où le markdown n'est pas rendu — l'écran
   legacy, une notification, la citation d'une réponse. Seul ce qui, relu, deviendrait autre chose
@@ -2862,7 +2865,7 @@ dans la nuit du 12 au 13/10.
 **La coquille et l'éditeur ne se parlent que par une poignée** (`EditorSurfaceHandle` : basculer
 une mise en forme, poser un lien, insérer un émoji, lire ce qui partirait, vider) et un rappel
 d'état (vide ou non, marques actives). L'envoi et ses retenues — message vide, téléversement en
-cours, image en échec — restent dans la coquille, d'où qu'il vienne : le bouton, ou Entrée.
+cours, image en échec — restent dans la coquille, d'où qu'il vienne : le bouton, ou Ctrl+Entrée.
 
 **L'éditeur n'entre ni dans le rendu serveur ni dans le démarrage d'une page.** Son code est
 demandé au montage du premier composer de l'onglet, puis gardé. Un magasin de module lu par
@@ -2903,13 +2906,21 @@ Deux règles, que les tests rejouent cas par cas avec le moteur du fil pour juge
 - **L'exception assumée** à la première règle : derrière un saut de ligne, un marqueur de bloc
   n'est pas échappé (§18.1). Une clôture de code, elle, reste neutralisée : ouverte, elle
   avalerait la suite du message.
-- **Une adresse tapée sans être un lien** — Entrée envoie avant que l'éditeur l'ait liée — sort
+- **Une adresse tapée sans être un lien** — on envoie avant que l'éditeur l'ait liée — sort
   telle quelle. À protocole (`https://…`), le fil la lit dans la source, signe pour signe : une
   barre oblique inverse posée devant un `~` ou un `_` partirait dans le lien ; suivie sans espace
   d'un signe échappé, d'un gras qui s'ouvre ou d'une mention, elle s'écrit entre chevrons, où
   elle s'arrête où elle doit. Sans protocole (`www.…`, un domaine, un courriel), le fil la lie
-  après coup : elle reste nue si, prise seule, elle se relit entière (§18.7), et sinon elle est
-  échappée comme un texte.
+  après coup : elle reste nue si, prise seule, elle se relit entière, et sinon elle est échappée
+  comme un texte.
+- **Les adresses sans protocole d'un bloc sont vérifiées ensemble.** Le fil les lie APRÈS avoir lu
+  les marques : chacune se relit seule, mais le souligné ouvrant de l'une et le souligné fermant
+  d'une autre feraient un italique de l'une à l'autre — deux liens coupés, deux signes perdus
+  (`www.exemple.org/_a` puis `fr.wikipedia.org/wiki/P_(h)`). Le bloc écrit est donc rendu, et
+  chaque adresse laissée nue doit en ressortir liée, entière, autant de fois qu'elle y est. Sinon
+  il est réécrit sans en laisser aucune nue : une adresse liée par l'éditeur prend la forme
+  `[texte](adresse)`, une adresse tapée en texte est échappée (§18.7). Avec son protocole, une
+  adresse se lit dans la source, avant les marques : elle n'est pas concernée.
   Dans le texte d'un lien écrit, une adresse est un texte comme un autre.
 - **Un lien** s'écrit par son texte seul quand le fil le referait de lui-même (une adresse,
   `www.…`, un courriel) — y compris suivi d'un point ou pris entre parenthèses, où le fil s'arrête
@@ -2924,12 +2935,18 @@ Deux règles, que les tests rejouent cas par cas avec le moteur du fil pour juge
   le 13/10). Une adresse relue entre chevrons, elle, s'arrête où son auteur l'a dit.
 - **Une mention ne tient pas dans un lien** : le fil en fait elle-même un lien, et deux liens ne
   s'emboîtent pas. Le lien s'arrête devant elle et reprend derrière.
+- **Deux listes de même nature posées l'une contre l'autre restent deux listes** : une sur deux
+  change de signe — `+` après `-`, `1)` après `1.`. Des lignes vides ne suffisent pas à les
+  séparer : le markdown n'en ferait qu'une, espacée, et la seconde liste numérotée prendrait la
+  suite de la première. L'éditeur les laisse naître — la ligne vide supprimée entre deux listes,
+  « 1. » tapé juste derrière une liste numérotée.
 
 ### 18.4 Le clavier, et Échap dans une modale
 
 - Le clavier de l'éditeur passe **après** la suggestion de mention — qui capte Entrée, Tab et les
-  flèches tant que sa liste est ouverte — et **avant** les raccourcis du kit, sans quoi Entrée
-  couperait le paragraphe.
+  flèches tant que sa liste est ouverte — et **avant** les raccourcis du kit, qui font de
+  Ctrl+Entrée un saut de ligne, ou la sortie d'un bloc de code. La liste des personnes ne retient
+  ni Ctrl+Entrée ni Cmd+Entrée : ce sont des envois, pas des choix.
 - **Échap se traite hors de l'éditeur**, en capture, sur son conteneur : renoncer à la mention en
   cours, sinon annuler l'édition, sinon rien. Dans la modale des discussions, pour ne pas se
   fermer, la modale neutralise la touche (§10) — or l'éditeur ignore une touche déjà neutralisée :
@@ -2954,30 +2971,34 @@ Deux règles, que les tests rejouent cas par cas avec le moteur du fil pour juge
 
 Le champ est une zone éditable : son rôle `textbox` est posé explicitement, avec
 `aria-multiline`, un nom (ce qu'on y fait : écrire, répondre à quelqu'un, corriger), une
-description de la mise en forme et du rôle d'Entrée — qui suit le pointeur : au doigt, elle ne
-promet pas une Entrée qui envoie —, et les attributs de la liste de mentions (§12.3) —
+description de la mise en forme et du clavier (Ctrl+Entrée envoie, Entrée ouvre un paragraphe) —
+qui suit le pointeur : au doigt, elle ne promet aucun raccourci —, et les attributs de la liste de
+mentions (§12.3) —
 `aria-controls` et `aria-activedescendant` seulement quand elle est ouverte. Le texte d'attente
 est une décoration, jamais du texte du message. La barre d'outils est un groupe nommé ; ses
 boutons sont des bascules, et cliquer l'un d'eux ne prend pas le focus au champ ; dans un bloc de
 code, où rien ne se met en forme, ceux des marques et du lien sont inertes. Refermé, le champ
-d'adresse d'un lien rend le focus au texte. Le conteneur de l'éditeur est en `aria-live="off"` :
+d'adresse d'un lien rend le focus au texte. Le bouton d'envoi porte son raccourci
+(`aria-keyshortcuts`, et une infobulle hors écran tactile). Le conteneur de l'éditeur est en
+`aria-live="off"` :
 le composer d'une édition vit dans le journal du fil, et ce qu'on y tape n'est pas une annonce.
 
 ### 18.6 Preuves
 
-Du 13/10, sur le code décrit ici — corrections de la relecture (§19) comprises.
+Du 13/10, sur le code décrit ici — corrections de la relecture (§19) et suites du même jour
+(§19.5) comprises.
 
 | Quoi | Résultat |
 |---|---|
-| Tests unitaires | 375 tests dans les six fichiers de l'éditeur, dont cinq nouveaux ; ils en remplacent 63 (l'ancien champ et ses manipulations de texte). Le pont : 152 — allers-retours et documents « tapés », jugés par le rendu du fil ; le composer avec le vrai éditeur : 155 ; la coquille seule, l'éditeur remplacé par un témoin : 31 ; l'adresse d'un lien : 23 ; le chargement : 7 ; le graphe des imports : 7 |
+| Tests unitaires | 404 tests dans les six fichiers de l'éditeur, dont cinq nouveaux ; ils en remplacent 63 (l'ancien champ et ses manipulations de texte). Le pont : 172 — allers-retours et documents « tapés », jugés par le rendu du fil ; le composer avec le vrai éditeur : 164 ; la coquille seule, l'éditeur remplacé par un témoin : 31 ; l'adresse d'un lien : 23 ; le chargement : 7 ; le graphe des imports : 7 |
 | … ce que **coûte** l'éditeur | le graphe des imports statiques de l'entrée du module, lu dans les sources : ni Tiptap ni ProseMirror, une seule porte — l'import différé du magasin ; et au rendu serveur le composer écrit son champ d'attente, rien de l'éditeur, même quand son code est déjà chargé |
 | … **Échap dans une modale** | la modale est rejouée par ce qu'elle fait à la touche : un écouteur en capture qui la neutralise. L'édition s'annule et la liste de mentions se referme quand même |
 | Le pont, essayé sur près de deux cents textes tapés | signes du markdown, marqueurs de liste, entités, adresses suivies ou entourées de signes : les écarts trouvés — souligné doublé, « 1. » seul, adresse à tilde ou à souligné — sont corrigés et devenus des tests |
-| Le pont, sur 8 000 documents tirés au hasard | aucune levée — 4 000 documents quelconques, que l'éditeur ne produit pas tous, et 4 000 « comme on en tape ». Parmi ces derniers, 66 se rendent autrement une fois relus puis réécrits, comme le fait une correction. Les causes, retirées du tirage l'une après l'autre : un « @nom » tapé en texte dans un message qui mentionne la même personne — le fil le lie, la relecture en fait une mention ; une adresse sans protocole (§18.7) ; deux listes de même nature posées l'une contre l'autre (§18.7) ; un saut de ligne en bord de paragraphe (§18.7). Il en reste un sur 4 000 : une ligne tapée « + 1. … » derrière un saut de ligne, dans un élément de liste |
-| Contre-épreuve par mutation, sur des copies | 242 mutations en treize lots, toutes tuées (175 en onze lots avant la relecture). Au premier passage sur le code relu, huit survivaient sur 246 : quatre ont fait retirer du code sans effet — et leurs mutations avec lui —, quatre ont donné des tests. Les lots touchés ont été rejoués deux fois : 181 mutations, une survivante ; puis 97, aucune |
-| Navigateur, compte connecté sans rôle sur le commun, 1 440 puis 375 px, aucune écriture | 51 vérifications à chaque largeur : le champ et sa boîte, la frappe, Maj+Entrée, la barre et son état, « - » qui ouvre une liste, le champ d'adresse d'un lien, un collage relu comme du markdown, la liste des mentions sur une vraie recherche, Échap qui la referme sans fermer la modale, le markdown qui partirait (l'envoi reçoit un refus de la sonde avant le serveur) et le brouillon rendu, un message rouvert en correction puis renvoyé à la lettre, Échap qui annule l'édition. Et sept points de la relecture : des signes qui ne font rien partent tels quels, une marque tapée prend en tête d'une seconde ligne et derrière une apostrophe, une adresse liée puis complétée mène où on la lit, une ligne à tiret derrière Maj+Entrée part telle quelle, des cellules de tableur collées gardent leurs séparations, une liste ou une citation vides ne s'envoient pas. Aucune feuille de style ajoutée à la page |
-| Navigateur, écriture réelle par le déposant sur son commun, 1 440 px | 44 vérifications : un message mis en forme est posté depuis un palier — en base, c'est du markdown au chemin de la ligne ; le fil le rend comme on l'a écrit ; corrigé par l'interface, seul le mot ajouté change en base. Aucun courriel mis en file. Le document de l'appel, relevé par son contenu (§15.7), est remis à son état d'avant |
-| Navigateur, sondes des lots précédents rejouées avec l'éditeur | mêmes comptes qu'aux §15.6, §16.4 et §17.5 pour les passages sans écriture (35 et 35 · 44 et 46 · 40 et 40 · 54 et 43), pour la création réelle d'une discussion à 1 440 px (56) et pour l'écriture depuis un palier (56) |
+| Le pont, sur 8 000 documents tirés au hasard | aucune levée — 4 000 documents quelconques, que l'éditeur ne produit pas tous, et 4 000 « comme on en tape ». Parmi ces derniers, 45 se rendent autrement une fois relus puis réécrits, comme le fait une correction (66 avant les deux corrections du §19.5). Les causes, retirées du tirage l'une après l'autre : un « @nom » tapé en texte dans un message qui mentionne la même personne — le fil le lie, la relecture en fait une mention (il en reste 14) ; un saut de ligne en bord de paragraphe, §18.7 (il en reste 4) ; une adresse sans protocole collée à une autre adresse, sans espace (il en reste un : une ligne tapée « + 1. … » derrière un saut de ligne, dans un élément de liste) |
+| Contre-épreuve par mutation, sur des copies | 266 mutations en treize lots, toutes tuées — 175 en onze lots avant la relecture, 242 après elle. Aux suites du §19.5, les sept lots touchés ont été rejoués (238 mutations) : deux survivantes sur le pont — la vérification par bloc rendait deux gardes plus fines invisibles aux tests — ont donné un test, puis le lot est repassé (98 sur 98) |
+| Navigateur, compte connecté sans rôle sur le commun, 1 440 puis 375 px, aucune écriture | 60 vérifications à chaque largeur : le champ et sa boîte, la frappe, Maj+Entrée, la barre et son état, « - » qui ouvre une liste, le champ d'adresse d'un lien, un collage relu comme du markdown, la liste des mentions sur une vraie recherche, Échap qui la referme sans fermer la modale, le markdown qui partirait (l'envoi reçoit un refus de la sonde avant le serveur) et le brouillon rendu, un message rouvert en correction puis renvoyé à la lettre, Échap qui annule l'édition. Sept points de la relecture : des signes qui ne font rien partent tels quels, une marque tapée prend en tête d'une seconde ligne et derrière une apostrophe, une adresse liée puis complétée mène où on la lit, une ligne à tiret derrière Maj+Entrée part telle quelle, des cellules de tableur collées gardent leurs séparations, une liste ou une citation vides ne s'envoient pas. Et neuf des suites : Entrée seule ouvre un paragraphe sans rien envoyer ; Ctrl+Entrée envoie — d'un paragraphe, d'une liste, d'un bloc de code ; le bouton dit son raccourci ; « 1. » tapé derrière une liste numérotée montre deux listes, qui partent comme deux ; deux adresses sans protocole tapées sont liées par l'éditeur et partent entières, sans italique. Aucune feuille de style ajoutée à la page |
+| Navigateur, écriture réelle par le déposant sur son commun, 1 440 px | 44 vérifications, rejouées avec Ctrl+Entrée : un message mis en forme est posté depuis un palier — en base, c'est du markdown au chemin de la ligne ; le fil le rend comme on l'a écrit ; corrigé par l'interface, seul le mot ajouté change en base. Aucun courriel mis en file. Le document de l'appel, relevé par son contenu (§15.7), est remis à son état d'avant |
+| Navigateur, sondes des lots précédents | passages sans écriture aux mêmes comptes qu'aux §15.6, §16.4 et §17.5 (35 et 35 · 44 et 46 · 40 et 40 · 54 et 43) et création réelle d'une discussion à 1 440 px (56) : rejoués à la relecture, avant les suites — aucun n'envoie de message. L'écriture depuis un palier (56), elle, est rejouée avec Ctrl+Entrée |
 
 ### 18.7 Limites
 
@@ -2997,38 +3018,32 @@ Du 13/10, sur le code décrit ici — corrections de la relecture (§19) compris
   de ligne posé en tête ou en fin de paragraphe ne se voit pas dans le fil ; les espaces de tête
   d'une ligne ne sont pas gardées, et plusieurs espaces de suite, visibles dans l'éditeur, n'en
   font qu'une dans le fil — comme avec l'ancien champ.
-- **Deux listes de même nature posées l'une contre l'autre n'en font qu'une dans le fil** : le
-  markdown ne sait pas les séparer. Deux listes à puces s'y lisent comme une seule, espacée ; une
-  seconde liste numérotée — tapée « 1. » juste derrière la première, ou rapprochée d'elle en
-  supprimant la ligne qui les séparait — y prend la suite de la numérotation. Avec une ligne de
-  texte entre elles, chacune reste la sienne.
+- **Là où le markdown n'est pas rendu, une liste posée contre une autre se lit sous son second
+  signe** (`+ …`, `1) …`) : c'est ce qui les garde distinctes dans le fil (§18.3).
 - **Ni titre, ni souligné, ni image dans le texte** : le fil ne les rend pas (§5.5), l'éditeur ne
   les propose pas.
 - **`__nom__` tapé ou collé passe en gras**, comme le markdown le lirait — un collage se relit
   comme du markdown. Écrit puis annulé d'un Ctrl+Z, il reste du texte.
-- **`[texte](adresse)` tapé reste du texte** : un lien nommé se pose par le bouton. Trois accents
-  graves suivis d'Entrée partent tels quels ; c'est une espace derrière eux, ou le bouton, qui
-  ouvre le bloc de code.
+- **`[texte](adresse)` tapé reste du texte** : un lien nommé se pose par le bouton.
 - **Une adresse sans protocole où une marque se lirait vraiment** (`www.exemple.org/_a_`) garde
   son texte, mais le fil n'en lie que le début : il lit les marques avant de chercher les adresses.
-  Pour la même raison, **deux** adresses sans protocole d'un même paragraphe dont les signes se
-  répondent — `www.exemple.org/_a` puis `fr.wikipedia.org/wiki/P_(h)` — sortent telles quelles, et
-  le fil lit un italique de l'une à l'autre : les deux liens sont coupés, les deux soulignés
-  perdus. Chacune, seule, se relit entière ; le pont ne les juge pas ensemble. Avec leur protocole
-  (`https://…`), ou un souligné pris dans un mot (`mon_fichier`), rien de tel.
+  Il en va de même de deux adresses sans protocole dont les signes se répondent (§18.3), quand
+  elles sont restées du texte — collées sans mise en forme, envoyées avant que l'éditeur les ait
+  liées, ou relues d'un message écrit ailleurs : leur texte est gardé, signes compris, mais le
+  fil n'en lie que le début. Liées par l'éditeur, elles sont écrites en entier.
 - **Une mention suivie, sans espace, d'une lettre ou d'un tiret** est notifiée mais non liée dans
   le fil, qui lit alors un nom plus long. Passé en bloc de code, un paragraphe garde ses mentions
   en texte : elles n'y sont plus des mentions.
 - **La barre d'outils compte jusqu'à douze arrêts de tabulation** : pas de navigation aux flèches.
-  Entrée envoie depuis le champ, Échap annule une édition — on n'a pas à la traverser.
+  Ctrl+Entrée envoie depuis le champ, Échap annule une édition — on n'a pas à la traverser.
 - **Un envoi dont l'issue est incertaine** (réseau coupé) ne rend pas le brouillon — règle
   antérieure du fil (§10) : le serveur a peut-être écrit. Seul un refus net le rend.
 - **L'éditeur indisponible, on ne peut pas écrire** : la coquille le dit, offre de le redemander
   et conseille de recharger la page, mais il n'y a pas de champ de secours.
 - **Non mesuré** : le poids du morceau de l'éditeur sur un build de production — la preuve du
   §18.6 est son absence du graphe de démarrage, pas une taille.
-- **Non vérifié** : un lecteur d'écran réel, un appareil tactile réel (la règle d'Entrée y est
-  tenue par ses tests), la saisie par composition sur un vrai clavier (accents morts, claviers
+- **Non vérifié** : un lecteur d'écran réel, un appareil tactile réel (seules l'aide du champ et
+  l'infobulle du bouton y dépendent du pointeur, et leurs tests le rejouent), la saisie par composition sur un vrai clavier (accents morts, claviers
   asiatiques), un autre navigateur que Chrome ; l'ordre d'événements qui détruit l'éditeur avant
   ses effets (§18.4) n'a pas été observé — la garde est tenue par un test qui le détruit ; et une
   mention **envoyée** pour de vrai — elle notifierait la personne — n'a été rejouée qu'en test :
@@ -3040,7 +3055,7 @@ Avant d'être proposés au commit, les lots des §15 (corrections), §16, §17 e
 d'un bloc par quatre relecteurs indépendants — backend, écran de l'espace, éditeur, tests et
 documentation. Chaque constat a été vérifié dans le code, et au navigateur quand il s'y prêtait,
 avant d'être traité. Les chapitres ci-dessus décrivent l'état qui en résulte ; celui-ci dit ce qui
-a changé, où le lire, et ce qui le prouve (§19.4).
+a changé, où le lire, ce qui le prouve (§19.4), et ce qui a suivi le même jour (§19.5).
 
 ### 19.1 Backend
 
@@ -3107,7 +3122,25 @@ leurs chiffres, datés ; celui du §18.6 et celui-ci portent sur le code tel qu'
 
 Deux écarts ont été vus après coup, en rejouant sur le code final les tirages aléatoires du pont
 (§18.6) : deux adresses sans protocole dont les signes se répondent, et deux listes de même nature
-posées l'une contre l'autre. Ils ne sont pas corrigés ; ils sont inscrits aux limites (§18.7).
+posées l'une contre l'autre. Ils sont corrigés depuis (§19.5).
+
+### 19.5 Suites, le même jour
+
+Trois changements arbitrés le 13/10, une fois la relecture commitée.
+
+| Quoi | Ce qui a changé | Où |
+|---|---|---|
+| Entrée envoyait le message | **Ctrl+Entrée envoie** (Cmd+Entrée sur un Mac), de partout — liste et bloc de code compris ; **Entrée va à la ligne** : un paragraphe, l'élément suivant d'une liste, une ligne de code. La liste des personnes ne retient pas Ctrl+Entrée, et Entrée l'attend toujours quand elle est en route. Le bouton d'envoi dit le raccourci. Trois accents graves suivis d'Entrée ouvrent désormais un bloc de code | §18.1, §18.4, §18.5 |
+| Deux adresses sans protocole dont les signes se répondent sortaient en italique, liens coupés | Les adresses nues d'un bloc sont vérifiées ensemble, dans son rendu ; le bloc est réécrit quand l'une n'en ressort pas entière | §18.3, §18.7 |
+| Deux listes de même nature posées l'une contre l'autre n'en faisaient qu'une dans le fil | Une sur deux change de signe | §18.3 |
+
+Le formulaire « nouvelle discussion » (§16.3) garde Entrée pour créer : c'est un champ d'une
+ligne, pas un message.
+
+Preuves : les lignes du §18.6, mesurées sur cet état — 404 tests de l'éditeur, 266 mutations, 60
+vérifications au navigateur à chaque largeur, deux écritures réelles (44 et 56) ; et, pour le
+dépôt entier, typage et lint sans erreur, 7 010 tests unitaires réussis dans 510 fichiers,
+797 vérifications de préflight.
 
 ## Voir aussi
 

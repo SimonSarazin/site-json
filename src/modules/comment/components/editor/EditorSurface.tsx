@@ -31,7 +31,7 @@ export interface EditorSurfaceProps {
   readonly autoFocus: boolean;
   /** Où chercher d'abord les personnes à mentionner. */
   readonly entity: EntityTypes | null;
-  /** Entrée : à la coquille de décider si le message part. */
+  /** Ctrl+Entrée (Cmd+Entrée sur Mac) : à la coquille de décider si le message part. */
   readonly onSubmit: () => void;
   /** Échap, quand aucune liste de mentions n'est ouverte. Absent : la touche n'est pas à nous. */
   readonly onCancel?: () => void;
@@ -195,14 +195,6 @@ function personne(user: User): { id: string; name: string; slug: string } {
   };
 }
 
-/**
- * Sur un écran tactile, Entrée passe à la ligne — il n'y a pas de Maj+Entrée sous le pouce — et le
- * message part par son bouton. Lu à la frappe : un appareil peut changer de pointeur principal.
- */
-function pointeurGrossier(): boolean {
-  return typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches;
-}
-
 function etatDe(editor: Editor): EditorSurfaceState {
   const active = {} as Record<FormatKind, boolean>;
   for (const kind of FORMAT_KINDS) active[kind] = editor.isActive(NOM_DANS_LE_SCHEMA[kind]);
@@ -262,26 +254,31 @@ export function EditorSurface({
 
   const [options] = useState<UseEditorOptions>(() => {
     /**
-     * Le clavier d'une messagerie : Entrée envoie, et les marques se tapent comme en markdown
-     * (`MARQUES_TAPEES`). Il passe APRÈS la suggestion de mention (priorité 101), qui capte
-     * Entrée, Tab et les flèches tant que sa liste est ouverte, et AVANT les raccourcis du kit
-     * (100) : sans cela Entrée couperait le paragraphe. Échap se traite hors de l'éditeur (plus bas).
+     * Le clavier du champ : **Ctrl+Entrée envoie** (Cmd+Entrée sur Mac), **Entrée va à la ligne** —
+     * elle reste à l'éditeur, qui ouvre un paragraphe, l'élément suivant d'une liste, une ligne de
+     * code. Les marques se tapent comme en markdown (`MARQUES_TAPEES`).
+     *
+     * Il passe APRÈS la suggestion de mention (priorité 101), qui capte Entrée, Tab et les flèches
+     * tant que sa liste est ouverte, et AVANT les raccourcis du kit (100), qui font de Ctrl+Entrée
+     * un saut de ligne — ou la sortie d'un bloc de code. Échap se traite hors de l'éditeur (plus bas).
      */
     const Clavier = Extension.create({
       name: "commentKeymap",
       priority: 100.5,
       addKeyboardShortcuts() {
+        // L'envoi est un geste EXPRÈS : il part de partout — liste et bloc de code compris —, que
+        // la liste des personnes soit ouverte ou non. C'est la coquille qui juge s'il y a quoi envoyer.
+        const envoyer = () => {
+          present.lire()?.onSubmit();
+          return true;
+        };
         return {
-          Enter: ({ editor }) => {
-            // Dans une liste, Entrée ouvre l'élément suivant ; dans un bloc de code, une ligne.
-            if (editor.isActive("listItem") || editor.isActive("codeBlock")) return false;
-            if (pointeurGrossier()) return false;
-            // La liste des personnes est en route : qui tape « @mar » puis Entrée veut la première
-            // proposée, pas envoyer « @mar ». La touche attend la liste — un envoi ne se reprend pas.
-            if (present.lire()?.cherche) return true;
-            present.lire()?.onSubmit();
-            return true;
-          },
+          // « Mod » est Cmd sur Mac et Ctrl ailleurs ; Ctrl y est dit aussi, pour qui a ses habitudes.
+          "Mod-Enter": envoyer,
+          "Ctrl-Enter": envoyer,
+          // La liste des personnes est en route : qui tape « @mar » puis Entrée veut la première
+          // proposée, pas couper son paragraphe derrière « @mar ». La touche attend la liste.
+          Enter: () => present.lire()?.cherche === true,
         };
       },
       addInputRules() {
@@ -307,7 +304,9 @@ export function EditorSurface({
             const nombre = vivant.candidates.length;
             if (event.key === "ArrowDown") { setHighlighted((vivant.actif + 1) % nombre); return true; }
             if (event.key === "ArrowUp") { setHighlighted((vivant.actif - 1 + nombre) % nombre); return true; }
-            if (event.key === "Enter" || event.key === "Tab") {
+            // Entrée choisit ; Ctrl+Entrée et Cmd+Entrée envoient (`Clavier`) — la liste ne les retient pas.
+            const choisir = event.key === "Tab" || (event.key === "Enter" && !event.ctrlKey && !event.metaKey);
+            if (choisir) {
               const choisie = vivant.candidates[vivant.actif];
               // On ne confisque la touche que si l'on va RÉELLEMENT choisir : sans slug, rien ne
               // serait inséré — Entrée paraîtrait morte, et Tab n'échapperait plus au champ.

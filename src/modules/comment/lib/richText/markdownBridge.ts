@@ -169,6 +169,17 @@ class EtatDuFil extends MarkdownSerializerState {
   colle = false;
   /** Les premiers caractères du texte suivant continuent l'adresse du lien qu'on vient d'écrire : ils sortent tels quels. */
   suite = 0;
+  /**
+   * Aucune adresse SANS protocole n'est laissée nue. `serializeMarkdown` y passe pour un bloc où,
+   * écrites telles quelles, elles ne ressortent pas toutes liées entières (`nues`).
+   */
+  prudent = false;
+  /**
+   * Les adresses sans protocole laissées nues dans ce qu'on écrit — pour chacune, le lien que le fil
+   * doit en faire. Le fil les lie APRÈS avoir lu les marques : chacune se relit seule, mais les
+   * signes de deux d'entre elles peuvent se répondre, d'une adresse à l'autre.
+   */
+  nues: string[] = [];
 
   private get interne(): EtatInterne {
     return this as unknown as EtatInterne;
@@ -182,16 +193,17 @@ class EtatDuFil extends MarkdownSerializerState {
       this.suite = 0;
       return str.slice(0, longueur) + this.esc(str.slice(longueur), false);
     }
-    // Une adresse tapée sans être un lien (Entrée envoie avant que l'éditeur l'ait liée) : le fil
-    // la lie de lui-même, et une barre oblique inverse posée devant un `~` ou un `_` la couperait.
+    // Une adresse tapée sans être un lien (on envoie avant que l'éditeur l'ait liée) : le fil la
+    // lie de lui-même, et une barre oblique inverse posée devant un `~` ou un `_` la couperait.
     // Elle sort donc telle quelle, et seul le texte qui l'entoure est échappé. Dans le texte d'un
     // lien `[…](…)`, en revanche, le fil ne refait pas de lien : une adresse y est un texte comme
     // un autre, et ses soulignés y feraient un gras.
-    const adresses = this.lien === "crochets" ? [] : adressesDe(str);
+    const adresses = this.lien === "crochets" ? [] : adressesDe(str).filter(adresse => adresse.protocole || !this.prudent);
     let sorti = "";
     let curseur = 0;
-    adresses.forEach(({ debut, fin, protocole }, rang) => {
+    adresses.forEach(({ debut, fin, protocole, lien }, rang) => {
       const adresse = str.slice(debut, fin);
+      if (!protocole) this.nues.push(lien);
       const suite = echappe(str.slice(fin, adresses[rang + 1]?.debut ?? str.length), false);
       // Un chevron tapé juste devant en ferait un lien automatique, chevrons avalés.
       sorti += echappe(str.slice(curseur, debut), startOfLine && curseur === 0).replace(/<$/, "\\<");
@@ -260,7 +272,12 @@ interface AdresseLue {
   readonly fin: number;
   /** Une adresse à protocole (`https://…`), que le fil lit dans la source ; sinon `www.…`, un domaine, un courriel. */
   readonly protocole: boolean;
+  /** Le lien que le fil en fait (`lienRendu`). */
+  readonly lien: string;
 }
+
+/** Une adresse que le fil lit dans la SOURCE, avant les marques : `protocole://…`. Les autres, il les lie après coup. */
+const A_PROTOCOLE = /^[a-z][a-z0-9+.-]*:\/\//i;
 
 /**
  * Les adresses d'un texte, cherchées COMME le fil les cherche.
@@ -282,13 +299,13 @@ function adressesDe(str: string): AdresseLue[] {
     const lue = moteur.linkify.matchAtStart(str.slice(debut));
     const adresse = lue?.url.replace(/\*+$/, "") ?? "";
     if (adresse.length <= protocole.length + 3 || !moteur.validateLink(moteur.normalizeLink(adresse))) continue;
-    adresses.push({ debut, fin: debut + adresse.length, protocole: true });
+    adresses.push({ debut, fin: debut + adresse.length, protocole: true, lien: lienRendu(adresse, adresse) });
     apres = debut + adresse.length;
   }
   for (const lue of moteur.linkify.match(str) ?? []) {
     if (adresses.some(connue => lue.index < connue.fin && lue.lastIndex > connue.debut)) continue;
     if (lue.raw.includes("://") || !seRelit(lue.raw, lue.url, lue.text)) continue;
-    adresses.push({ debut: lue.index, fin: lue.lastIndex, protocole: false });
+    adresses.push({ debut: lue.index, fin: lue.lastIndex, protocole: false, lien: lienRendu(lue.url, lue.text) });
   }
   return adresses.sort((a, b) => a.debut - b.debut);
 }
@@ -330,8 +347,23 @@ function echappe(str: string, debutDeLigne: boolean): string {
  * finale que `linkify` laisse dehors — tout ce qui la couperait se voit ici.
  */
 function seRelit(source: string, adresse: string, texte: string): boolean {
+  return moteur.renderInline(source) === lienRendu(adresse, texte);
+}
+
+/** Le lien que le fil rend pour cette adresse, sous ce texte. */
+function lienRendu(adresse: string, texte: string): string {
   const { escapeHtml } = moteur.utils;
-  return moteur.renderInline(source) === `<a href="${escapeHtml(moteur.normalizeLink(adresse))}">${escapeHtml(texte)}</a>`;
+  return `<a href="${escapeHtml(moteur.normalizeLink(adresse))}">${escapeHtml(texte)}</a>`;
+}
+
+/**
+ * Chaque adresse laissée nue ressort-elle liée, entière, de ce rendu ? Autant de fois qu'elle y a
+ * été écrite : la même adresse peut y être deux fois, et n'être coupée qu'une.
+ */
+function toutesLiees(html: string, nues: readonly string[]): boolean {
+  const attendus = new Map<string, number>();
+  for (const lien of nues) attendus.set(lien, (attendus.get(lien) ?? 0) + 1);
+  return [...attendus].every(([lien, nombre]) => html.split(lien).length - 1 >= nombre);
 }
 
 /**
@@ -367,9 +399,20 @@ export function addressOf(text: string): string | null {
  * s'arrête de lui-même où il faut (`…/page.`, `(…/page)`), et c'est son rendu qui dira si ce texte
  * peut sortir (`serializeMarkdown`).
  *
+ * En mode PRUDENT, une adresse sans protocole ne sort jamais nue : elle prend la forme complète
+ * (`serializeMarkdown` dit quand).
+ *
  * `suite` : le nombre de caractères du texte SUIVANT qui appartiennent à l'adresse.
+ * `nue` : pour une adresse sans protocole laissée nue, le lien que le fil doit en faire.
  */
-function lireLeLien(mark: Mark, parent: ProseNode, index: number, nu: boolean): { forme: FormeDeLien; cible: string; suite: number } {
+interface LienLu {
+  readonly forme: FormeDeLien;
+  readonly cible: string;
+  readonly suite: number;
+  readonly nue?: string;
+}
+
+function lireLeLien(mark: Mark, parent: ProseNode, index: number, nu: boolean, prudent: boolean): LienLu {
   // L'étendue du lien : les nœuds qui se suivent en portant CETTE marque.
   let fin = index;
   while (fin < parent.childCount && mark.isInSet(parent.child(fin).marks)) fin++;
@@ -388,13 +431,21 @@ function lireLeLien(mark: Mark, parent: ProseNode, index: number, nu: boolean): 
   const suivant = fin < parent.childCount ? parent.child(fin) : null;
   const libreDevant = !precedent || precedent.type.name === "hardBreak" || (precedent.isText && /\s$/.test(precedent.text ?? ""));
   const libreDerriere = !suivant || suivant.type.name === "hardBreak" || (suivant.isText && /^\s/.test(suivant.text ?? ""));
-  if (libreDevant && libreDerriere && seRelit(texte, cible, texte)) return { forme: "nu", cible, suite: 0 };
+  // Sans protocole, le fil la lie APRÈS avoir lu les marques : nue, elle est à la merci des signes
+  // de ses voisines. On dit donc le lien attendu — et, en mode prudent, on ne la laisse pas nue.
+  const fragile = !A_PROTOCOLE.test(texte);
+  const peutSortirNue = !(fragile && prudent);
+  if (peutSortirNue && libreDevant && libreDerriere && seRelit(texte, cible, texte)) {
+    return { forme: "nu", cible, suite: 0, ...(fragile ? { nue: lienRendu(cible, texte) } : {}) };
+  }
   if (nu && lue !== null) return { forme: "nu", cible, suite: 0 };
   // Du texte nu tout contre une adresse que l'éditeur a liée : jusqu'à la première espace, il la prolonge.
-  if (lue !== null && mark.attrs.bounded !== true && libreDevant && suivant?.isText && suivant.marks.length === 0) {
+  if (peutSortirNue && lue !== null && mark.attrs.bounded !== true && libreDevant && suivant?.isText && suivant.marks.length === 0) {
     const colle = /^\S+/.exec(suivant.text ?? "")?.[0] ?? "";
     const entiere = addressOf(texte + colle);
-    if (colle !== "" && entiere !== null && seRelit(texte + colle, entiere, texte + colle)) return { forme: "nu", cible, suite: colle.length };
+    if (colle !== "" && entiere !== null && seRelit(texte + colle, entiere, texte + colle)) {
+      return { forme: "nu", cible, suite: colle.length, ...(fragile ? { nue: lienRendu(entiere, texte + colle) } : {}) };
+    }
   }
   return { forme: texte === cible && seRelit(`<${cible}>`, cible, texte) ? "chevrons" : "crochets", cible, suite: 0 };
 }
@@ -409,6 +460,21 @@ function accentsPour(node: ProseNode, cote: -1 | 1): string {
   for (let i = 0; i < longueur; i++) resultat += "`";
   if (longueur > 0 && cote < 0) resultat += " ";
   return resultat;
+}
+
+/**
+ * Deux listes de même nature posées l'une contre l'autre : pour le markdown, des lignes vides ne
+ * les séparent pas — il n'en ferait qu'une, espacée, et la seconde liste numérotée prendrait la
+ * suite de la première. Ce qui ouvre une AUTRE liste, c'est un autre signe : « + » après « - »,
+ * « 1) » après « 1. ». Une liste sur deux en change donc, parmi celles qui se suivent sans rien
+ * entre elles. L'éditeur les laisse naître : la ligne vide supprimée entre deux listes, « 1. »
+ * tapé juste derrière une liste numérotée.
+ */
+function changeDeSigne(parent: ProseNode, index: number): boolean {
+  const nature = parent.child(index).type;
+  let rang = 0;
+  for (let i = index - 1; i >= 0 && parent.child(i).type === nature; i--) rang++;
+  return rang % 2 === 1;
 }
 
 const serialiseur = new MarkdownSerializer(
@@ -431,16 +497,18 @@ const serialiseur = new MarkdownSerializer(
       state.write("---");
       state.closeBlock(node);
     },
-    bulletList(state, node) {
-      state.renderList(node, "  ", () => "- ");
+    bulletList(state, node, parent, index) {
+      const signe = changeDeSigne(parent, index) ? "+ " : "- ";
+      state.renderList(node, "  ", () => signe);
     },
-    orderedList(state, node) {
+    orderedList(state, node, parent, index) {
       const debut = debutDeListe(node.attrs.start);
       const largeur = String(debut + node.childCount - 1).length;
       const retrait = state.repeat(" ", largeur + 2);
+      const point = changeDeSigne(parent, index) ? ")" : ".";
       state.renderList(node, retrait, i => {
         const numero = String(debut + i);
-        return `${state.repeat(" ", largeur - numero.length)}${numero}. `;
+        return `${state.repeat(" ", largeur - numero.length)}${numero}${point} `;
       });
     },
     listItem(state, node) {
@@ -487,7 +555,8 @@ const serialiseur = new MarkdownSerializer(
     link: {
       open(state, mark, parent, index) {
         const etat = etatDe(state);
-        const { forme, cible, suite } = lireLeLien(mark, parent, index, etat.nu);
+        const { forme, cible, suite, nue } = lireLeLien(mark, parent, index, etat.nu, etat.prudent);
+        if (nue !== undefined && !etat.nu) etat.nues.push(nue);
         etat.lien = forme;
         etat.cible = cible;
         etat.suite = suite;
@@ -523,14 +592,23 @@ const NouvelEtat = EtatDuFil as unknown as new (
   options: { tightLists: boolean; hardBreakNodeName: string },
 ) => EtatDuFil;
 
-function ecrire(doc: ProseNode, nus: ReadonlySet<number>, seul?: number): string {
+/** Comment écrire chaque bloc de premier niveau : nu, prudent — ou ni l'un ni l'autre. */
+interface Modes {
+  readonly nus?: ReadonlySet<number>;
+  readonly prudents?: ReadonlySet<number>;
+  /** N'écrire que ce bloc. */
+  readonly seul?: number;
+}
+
+function ecrire(doc: ProseNode, { nus = AUCUN, prudents = AUCUN, seul }: Modes): { texte: string; nues: readonly string[] } {
   const etat = new NouvelEtat(serialiseur.nodes, serialiseur.marks, { tightLists: true, hardBreakNodeName: "hardBreak" });
   doc.forEach((bloc, _position, index) => {
     if (seul !== undefined && index !== seul) return;
     etat.nu = nus.has(index);
+    etat.prudent = prudents.has(index);
     etat.render(bloc, doc, index);
   });
-  return etat.sortie;
+  return { texte: etat.sortie, nues: etat.nues };
 }
 
 const AUCUN: ReadonlySet<number> = new Set();
@@ -547,16 +625,26 @@ function rendu(texte: string, mentions: readonly CommentMention[]): string {
  * départage : s'il rend les deux à l'identique, c'est le nu qui sort. Les échappements qui restent
  * sont ceux qui changent ce qu'on lit. Par bloc, parce qu'un bloc ne déborde pas sur son voisin :
  * une ligne vide les sépare.
+ *
+ * Avant cela, le bloc échappé est lui-même vérifié : les adresses sans protocole qu'il laisse nues
+ * doivent toutes en ressortir liées, entières. Sinon — les signes de deux d'entre elles se
+ * répondent, et le fil lirait une marque de l'une à l'autre — il est réécrit PRUDENT, sans en
+ * laisser aucune nue.
  */
 export function serializeMarkdown(doc: ProseNode): string {
   const mentions = mentionsOf(doc);
   const nus = new Set<number>();
+  const prudents = new Set<number>();
   doc.forEach((_bloc, _position, index) => {
-    const complet = ecrire(doc, AUCUN, index);
-    const nu = ecrire(doc, new Set([index]), index);
-    if (nu !== complet && rendu(nu, mentions) === rendu(complet, mentions)) nus.add(index);
+    let complet = ecrire(doc, { seul: index });
+    if (complet.nues.length > 0 && !toutesLiees(rendu(complet.texte, mentions), complet.nues)) {
+      prudents.add(index);
+      complet = ecrire(doc, { seul: index, prudents });
+    }
+    const nu = ecrire(doc, { seul: index, nus: new Set([index]) }).texte;
+    if (nu !== complet.texte && rendu(nu, mentions) === rendu(complet.texte, mentions)) nus.add(index);
   });
-  return ecrire(doc, nus);
+  return ecrire(doc, { nus, prudents }).texte;
 }
 
 /**

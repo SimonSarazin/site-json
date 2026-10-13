@@ -34,9 +34,11 @@ const INLINE_FORMATS: readonly FormatKind[] = ["bold", "italic", "strike", "code
 const POINTEUR_GROSSIER = "(pointer: coarse)";
 
 /**
- * L'écran se pilote-t-il au doigt ? L'aide du champ en dépend : au doigt, Entrée passe à la ligne
- * et le message part par son bouton (`EditorSurface`). Faux au serveur et au premier rendu du
- * client — les deux écrivent le même balisage —, puis suivi : un appareil peut changer de pointeur.
+ * L'écran se pilote-t-il au doigt ? Ce qu'on DIT de l'envoi en dépend : au clavier, Ctrl+Entrée
+ * (`EditorSurface`) — annoncé par l'aide du champ et par l'infobulle du bouton ; au doigt, où il
+ * n'y a pas de Ctrl sous le pouce, le message part par son bouton, et rien ne promet un raccourci.
+ * Faux au serveur et au premier rendu du client — les deux écrivent le même balisage —, puis
+ * suivi : un appareil peut changer de pointeur.
  */
 function useCoarsePointer(): boolean {
   return useSyncExternalStore(
@@ -137,6 +139,7 @@ export function CommentComposer({
   const [adresse, setAdresse] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const tactile = useCoarsePointer();
+  const libelleEnvoi = String(t(mode === "edit" ? "composer.save" : "composer.send"));
   const aideId = useId();
   const adresseId = useId();
 
@@ -158,11 +161,11 @@ export function CommentComposer({
   // enfermerait l'auteur, la phrase lui demandant un geste qu'il ne peut pas faire.
   const enEchec = onRemoveImage ? images?.filter(image => image.status === "error") ?? [] : [];
   // L'envoi attend tant qu'une image jointe ne partirait pas — en route, ou en échec. La garde
-  // vit dans `submit`, pas seulement sur le bouton : Entrée y mène aussi, et le message partait
+  // vit dans `submit`, pas seulement sur le bouton : Ctrl+Entrée y mène aussi, et le message partait
   // sans son image (voire vide, quand l'image en échec était son seul contenu).
   const retenu = imagesBusy || idsEnRoute.length > 0 || enEchec.length > 0;
 
-  // Une tentative d'envoi retenue par un téléversement : sans un mot, Entrée paraîtrait morte.
+  // Une tentative d'envoi retenue par un téléversement : sans un mot, Ctrl+Entrée paraîtrait morte.
   // On retient QUELLES images étaient en route, pas un drapeau : la phrase tombe d'elle-même
   // quand elles ont fini, et ne revient pas au téléversement suivant sans nouvelle tentative.
   const [tentative, setTentative] = useState<readonly string[]>([]);
@@ -440,10 +443,14 @@ export function CommentComposer({
             size="sm"
             // Tant que l'éditeur n'a rien dit, on ne sait pas ce qui partirait : le bouton attend.
             disabled={disabled || submitting || retenu || etat === null || (etat.empty && !joint)}
+            // Entrée ne fait plus qu'aller à la ligne : le raccourci de l'envoi se lit ICI, sur le
+            // bouton qu'il remplace — pas au doigt, où il n'existe pas.
+            title={tactile ? undefined : `${libelleEnvoi} (${String(t("composer.sendShortcut"))})`}
+            aria-keyshortcuts="Control+Enter Meta+Enter"
             onClick={submit}
           >
             <Send className="size-3.5" />
-            {mode === "edit" ? t("composer.save") : t("composer.send")}
+            {libelleEnvoi}
           </Button>
         </div>
       </div>
