@@ -153,6 +153,17 @@
               "en": "Explore the thematic networks observatory"
             },
             "path": "/reseaux-thematiques"
+          },
+          {
+            "label": {
+              "fr": "Les Licoops",
+              "en": "Licoop places"
+            },
+            "description": {
+              "fr": "Lieux comme communs de proximité",
+              "en": "Places as local commons"
+            },
+            "path": "/lieux?licoop=Oui"
           }
         ]
       },
@@ -307,23 +318,12 @@
           },
           {
             "label": {
-              "fr": "La plateforme d'aiguillage",
-              "en": "The guidance platform"
+              "fr": "Auto-diagnostic du lieu comme Licoop",
+              "en": "Place self-diagnosis as Licoop"
             },
             "description": {
-              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs",
-              "en": "A platform that streamlines support requests and responses through a network of stakeholders"
-            },
-            "path": "https://aiguillage.tiers-lieux.org/"
-          },
-          {
-            "label": {
-              "fr": "Auto-diagnostic collectif du lieu",
-              "en": "Collective self-diagnosis of the place"
-            },
-            "description": {
-              "fr": "Un diagnostic dédié aux lieux comme communs de proximité",
-              "en": "A diagnostic dedicated to places as local commons"
+              "fr": "Un diagnostic dédié aux lieux comme communs de proximité (Licoop)",
+              "en": "A diagnosis dedicated to places as local commons (Licoop)"
             },
             "path": "/coform/6876c3e58fa8df3c7f024253/place"
           },
@@ -351,14 +351,25 @@
           },
           {
             "label": {
-              "fr": "Communauté",
-              "en": "Community"
+              "fr": "La communauté support",
+              "en": "The support community"
             },
             "description": {
-              "fr": "La communauté qui anime cette plateforme",
-              "en": "The community that drives this platform"
+              "fr": "La communauté support qui prend soin de cette ressource",
+              "en": "The support community that takes care of this resource"
             },
             "path": "/communaute"
+          },
+          {
+            "label": {
+              "fr": "La plateforme d'aiguillage",
+              "en": "The guidance platform"
+            },
+            "description": {
+              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs",
+              "en": "A platform that streamlines support requests and responses through a network of stakeholders"
+            },
+            "path": "https://aiguillage.tiers-lieux.org/"
           }
         ]
       },
