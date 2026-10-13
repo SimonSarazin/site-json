@@ -629,7 +629,10 @@ export default function AacCommunDetailPage() {
                         isLoading={isPhaseUnresolved || isDetailSectionsLoading}
                     />
 
-                    <div className="lg:col-span-9 space-y-20">
+                    {/* `min-w-0` : un item de grille ne rétrécit pas sous son contenu le plus large. Sans
+                        lui, une seule ligne insécable (une adresse web dans un texte) élargissait toute la
+                        colonne sur écran étroit — paliers compris, dont les boutons sortaient de l'écran. */}
+                    <div className="lg:col-span-9 min-w-0 space-y-20">
 
                         {showFunding && (
                             <Section id="besoins-financiers" title={String(t("detail.toc.financialNeeds"))}>
