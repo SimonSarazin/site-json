@@ -137,7 +137,8 @@ src/modules/coform/
 │   ├── CoFormProvider.tsx   # Provider : état multi-étapes, navigation, stepsDataRef, brouillon localStorage
 │   ├── CoFormProvider.test.tsx # Tests unitaires CoFormProvider
 │   ├── CommonTableCatalogsContext.ts   # Contexte des catalogues collaboratifs commonTable
-│   └── CommonTableCatalogsProvider.tsx
+│   ├── CommonTableCatalogsProvider.tsx
+│   └── MilestoneLineSlotContext.ts     # Emplacement qu'un HÔTE remplit sur chaque ligne de `MilestoneListField` (vide par défaut ; lu par `useMilestoneLineSlot`) — la fiche d'un commun y pose le bouton de discussion du palier, cf. doc/38 §17.3
 ├── hooks/
 │   ├── useCategorizedCheckboxOptions.ts # Arbre d'options (liste manuelle ∪ questions commonTable distantes)
 │   ├── useCoForm.tsx            # useCoForm() + useOptionalCoForm()
@@ -151,6 +152,7 @@ src/modules/coform/
 │   │                            #   (re-exporte useCoFormFinalMutation depuis mutations/file.ts)
 │   ├── useCoFormStep.tsx        # react-hook-form + Zod par étape
 │   ├── useCommonTableCatalog.ts # Catalogue (lecture seule) d'un input commonTable
+│   ├── useMilestoneLineSlot.ts  # Ce qu'un hôte pose sur chaque ligne de `MilestoneListField` (`null` sans hôte)
 │   ├── useCommonTableContributors.tsx # Contributions individuelles d'une ligne de commonTable
 │   ├── useConditionalFields.ts  # Visibilité conditionnelle des champs
 │   ├── useConditionalFields.test.ts

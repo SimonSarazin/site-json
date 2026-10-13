@@ -2749,6 +2749,29 @@ autre question (§17.3).
   bouton se réduit à son icône, 10 rem à partir de 80 rem de fenêtre.
 - L'import différé de la modale est partagé par les boutons de la fiche (`communDiscussion.ts`), et
   préchauffé au survol comme au focus.
+- **Dans le formulaire d'édition aussi** (13/10) — `CommunFormLineDiscussions` : chaque ligne du
+  champ « liste de dépenses » (`MilestoneListField`) porte le même bouton, réduit à son icône et à
+  son compteur, à côté du bouton qui déplie la ligne. C'est « Commenter » sur la liste des
+  dépenses du formulaire legacy. Le champ, lui, ne sait rien des discussions : il offre un
+  emplacement par ligne (`MilestoneLineSlotContext`, lu par `useMilestoneLineSlot`), que la fiche
+  remplit autour du formulaire qu'elle ouvre. Il dit à l'hôte la réponse qu'il édite, la clé de
+  son input, sa liste et la position de la ligne ; l'hôte ne répond que pour les dépenses de SON
+  commun.
+- **Seule une ligne ENREGISTRÉE y a un bouton, et c'est celui de SA clé.** Le formulaire édite sa
+  liste avant de l'enregistrer : une ligne ajoutée n'existe pas encore au document, une ligne
+  retirée décale les suivantes. `resolveSavedDepenseKey` retrouve la ligne par son identifiant de
+  palier (`milestone`), où qu'elle soit dans les deux listes ; sans identifiant, par sa position,
+  et seulement tant que la liste n'a pas changé de forme — et que le document range ses dépenses
+  dans l'ordre où le formulaire les liste. Dans le doute, pas de bouton : se tromper ouvrirait le
+  fil d'une autre dépense. Les dépenses enregistrées sont celles de la réponse que la fiche a
+  lue — c'est d'elles que le formulaire part ; cela tient tant que le formulaire n'enregistre qu'à
+  sa soumission finale, ce qu'il fait ici.
+- **La modale s'ouvre par-dessus le formulaire**, qui reste ouvert dessous, saisie comprise :
+  c'est la modale de la fiche, pas une seconde. Le bouton du formulaire se nomme autrement que le
+  palier de la fiche (`formMilestoneOpener`) — les deux sont à l'écran en même temps —, et le
+  focus revient à celui d'où l'on a ouvert. Il porte `type="button"` : dans un formulaire, un
+  bouton sans type le soumet, et celui-ci passait le formulaire à l'étape suivante en ouvrant la
+  discussion (vu le 13/10).
 
 ### 17.4 Arbitrages
 
@@ -2794,8 +2817,10 @@ dans la nuit du 12 au 13/10.
   le legacy écrit celle d'où l'on a cliqué, et d'autres gabarits de budget que `…newDepenseList`
   portent des fils légitimes. `line` se décide donc sur la forme du chemin et sur l'existence de
   la ligne, pas sur le type de la question.
-- **Le formulaire de dépôt** (la liste des paliers en saisie) ne porte pas le bouton : la
-  discussion s'ouvre depuis la fiche.
+- **Dans le formulaire, une ligne n'a son bouton qu'une fois enregistrée** (§17.3) — et une fois
+  l'espace relu : il ne propose un fil que pour une ligne qu'il a vue. Un commun qu'on dépose n'en
+  a donc aucun tant qu'il n'est pas enregistré. Le bouton n'est posé que dans le formulaire ouvert
+  depuis la fiche, qui monte la modale ; ailleurs, le champ n'affiche rien de plus.
 - Le bloc « Suivi des actions » liste les mêmes paliers sans le bouton : une entrée par palier.
 
 ## 18. L'éditeur du composer (13/10)
@@ -3126,21 +3151,32 @@ posées l'une contre l'autre. Ils sont corrigés depuis (§19.5).
 
 ### 19.5 Suites, le même jour
 
-Trois changements arbitrés le 13/10, une fois la relecture commitée.
+Quatre changements arbitrés le 13/10, une fois la relecture commitée.
 
 | Quoi | Ce qui a changé | Où |
 |---|---|---|
 | Entrée envoyait le message | **Ctrl+Entrée envoie** (Cmd+Entrée sur un Mac), de partout — liste et bloc de code compris ; **Entrée va à la ligne** : un paragraphe, l'élément suivant d'une liste, une ligne de code. La liste des personnes ne retient pas Ctrl+Entrée, et Entrée l'attend toujours quand elle est en route. Le bouton d'envoi dit le raccourci. Trois accents graves suivis d'Entrée ouvrent désormais un bloc de code | §18.1, §18.4, §18.5 |
 | Deux adresses sans protocole dont les signes se répondent sortaient en italique, liens coupés | Les adresses nues d'un bloc sont vérifiées ensemble, dans son rendu ; le bloc est réécrit quand l'une n'en ressort pas entière | §18.3, §18.7 |
 | Deux listes de même nature posées l'une contre l'autre n'en faisaient qu'une dans le fil | Une sur deux change de signe | §18.3 |
+| Le formulaire d'édition n'avait pas le bouton « Discuter » de ses lignes de dépense | Posé sur chaque ligne enregistrée, à la clé de sa ligne ; la modale de la fiche s'ouvre par-dessus le formulaire | §17.3, §17.6 |
 
 Le formulaire « nouvelle discussion » (§16.3) garde Entrée pour créer : c'est un champ d'une
 ligne, pas un message.
 
-Preuves : les lignes du §18.6, mesurées sur cet état — 404 tests de l'éditeur, 266 mutations, 60
-vérifications au navigateur à chaque largeur, deux écritures réelles (44 et 56) ; et, pour le
-dépôt entier, typage et lint sans erreur, 7 010 tests unitaires réussis dans 510 fichiers,
-797 vérifications de préflight.
+Preuves des trois premiers : les lignes du §18.6, mesurées sur cet état — 404 tests de l'éditeur,
+266 mutations, 60 vérifications au navigateur à chaque largeur, deux écritures réelles (44 et 56).
+
+Preuves du bouton du formulaire :
+
+| Quoi | Résultat |
+|---|---|
+| Tests unitaires | 125 tests dans six fichiers, dont deux nouveaux : la clé enregistrée d'une ligne du formulaire (19), le champ de dépenses et son emplacement (19), ce que la fiche donne au formulaire (37), le bouton (29), le bouton dans un formulaire témoin — vrai lanceur, vraie requête, la modale seule est remplacée (16) — et le **vrai champ dans le vrai fournisseur**, avec les gestes de l'écran : retirer une ligne, en ajouter une, déplier les archivées (5) |
+| Contre-épreuve par mutation | 55 mutations en huit lots nouveaux, toutes tuées — dont neuf passées contre le seul test du vrai champ ; et les cinq lots de la fiche et du bouton que ce code touche, rejoués (57 mutations, aucune survivante) |
+| Relecture du champ contre les normes du module `coform` | rien de bloquant ; deux points corrigés (le contexte se lit par un hook, comme les deux autres du module ; un test traverse la chaîne réelle) et les mineurs retenus : la clé de l'input sans son préfixe de type, la réponse dite à l'hôte, une garde sur l'ordre des clés du document |
+| Navigateur, déposant connecté, 1 440 puis 375 px, sans écriture | 23 vérifications à chaque largeur : un bouton sur chaque ligne affichée du formulaire, à la clé de sa ligne (la ligne clôturée, repliée, reçoit le sien une fois dépliée) ; l'espace s'ouvre par-dessus le formulaire, qui ne change pas d'étape ; on y écrit ; Échap referme l'espace seul et rend le focus au bouton de la ligne ; une ligne ajoutée n'a pas de bouton. Le formulaire n'est pas enregistré ; le commun et les collections ne bougent pas |
+
+Pour le dépôt entier, sur cet état : typage et lint sans erreur, 7 058 tests unitaires réussis
+dans 512 fichiers, 797 vérifications de préflight.
 
 ## Voir aussi
 

@@ -28,6 +28,15 @@ export function milestoneOpener(lineKey: string): string {
 }
 
 /**
+ * Le nom du bouton de discussion d'une ligne de dépense DANS LE FORMULAIRE d'édition. Distinct de
+ * celui du palier de la fiche : les deux sont à l'écran en même temps — la fiche derrière la modale
+ * du formulaire —, et le focus doit revenir à celui d'où l'on a ouvert, pas à son jumeau caché.
+ */
+export function formMilestoneOpener(lineKey: string): string {
+    return `formulaire:palier:${lineKey}`;
+}
+
+/**
  * Le bouton qui porte ce nom, s'il est encore à l'écran. Comparé en valeur, sans sélecteur : un nom
  * relu de l'historique n'a pas à être échappé pour être cherché.
  */

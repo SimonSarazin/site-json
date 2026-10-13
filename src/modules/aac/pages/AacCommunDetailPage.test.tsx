@@ -305,6 +305,20 @@ vi.mock("../components/pageDetail/CommunMilestoneDiscussionButton", () => ({
     <div data-testid="milestone-discussion" data-answer-id={props.answerId} data-line={props.lineKey} data-name={props.name ?? "null"} />
   ),
 }));
+// Ce qui pose le bouton de discussion sur les lignes de dépense du FORMULAIRE : on ne vérifie ici
+// que ce que la fiche lui donne, et qu'il enveloppe bien le formulaire d'édition.
+vi.mock("../components/pageDetail/CommunFormLineDiscussions", () => ({
+  CommunFormLineDiscussions: (props: { answerId: string; savedDepenses: unknown; enabled: boolean; children: unknown }) => (
+    <div
+      data-testid="form-line-discussions"
+      data-answer-id={props.answerId}
+      data-saved={JSON.stringify(props.savedDepenses ?? null)}
+      data-enabled={String(props.enabled)}
+    >
+      {props.children as never}
+    </div>
+  ),
+}));
 vi.mock("../components/pageDetail/CommunActionsSection.tsx", () => ({ CommunActionsSection: () => null }));
 vi.mock("../components/pageDetail/CommunMilestoneDialogs.tsx", () => ({ CommunMilestoneDialogs: () => null }));
 vi.mock("../components/pageDetail/CommunContributorsSection.tsx", () => ({ CommunContributorsSection: () => null }));
@@ -757,6 +771,44 @@ describe("AacCommunDetailPage — l'espace de discussion du commun", () => {
     expect(palier).toHaveAttribute("data-answer-id", "a1");
     expect(palier).toHaveAttribute("data-line", "3");
     expect(palier).toHaveAttribute("data-name", "Matériel");
+  });
+
+  // Parité de « Commenter » sur la liste des dépenses du FORMULAIRE legacy.
+  it("le formulaire d'édition reçoit de quoi poser le bouton sur ses lignes : CE commun, et les dépenses que la fiche a lues", () => {
+    const depense = [{ poste: "Local", milestone: "m-1" }, { poste: "Matériel", milestone: "m-2" }];
+    ANSWER.answers = { aapStep1: { depense } };
+    render(<AacCommunDetailPage />);
+
+    const lignes = screen.getByTestId("form-line-discussions");
+    expect(lignes.contains(screen.getByTestId("edit-modal"))).toBe(true);
+    expect(lignes).toHaveAttribute("data-answer-id", "a1");
+    // Celles du DOCUMENT : c'est d'elles que le formulaire part, pas d'une liste tenue à côté.
+    expect(JSON.parse(lignes.getAttribute("data-saved")!)).toEqual(depense);
+    expect(lignes).toHaveAttribute("data-enabled", "true");
+  });
+
+  it("… sans dépense au document, il le dit : rien à retrouver, donc aucun bouton", () => {
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("form-line-discussions")).toHaveAttribute("data-saved", "null");
+  });
+
+  it("… et pas sur une fiche qui lit ses dépenses à une autre étape : par la clé seule, une ligne ouvrirait le fil d'une autre", () => {
+    config = { ...makeConfig(false), roles: { ...makeConfig(false).roles, depenseStepKey: "etapeA" } };
+    ANSWER.answers = { aapStep1: { depense: [{ poste: "Local", milestone: "m-1" }] } };
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("form-line-discussions")).toHaveAttribute("data-enabled", "false");
+  });
+
+  it("… et sans étape déclarée, c'est l'étape de dépôt : les boutons sont posés", () => {
+    config = { ...makeConfig(false), roles: { ...makeConfig(false).roles, depenseStepKey: null } };
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("form-line-discussions")).toHaveAttribute("data-enabled", "true");
+  });
+
+  it("qui ne peut pas éditer le commun n'a ni formulaire, ni rien autour", () => {
+    me = { id: TIERS, isConnected: true };
+    render(<AacCommunDetailPage />);
+    expect(screen.queryByTestId("form-line-discussions")).not.toBeInTheDocument();
   });
 
   it("d'un commun à l'autre, le bouton est REMONTÉ, pas réemployé", () => {

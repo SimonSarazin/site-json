@@ -31,6 +31,8 @@ import { CommunHero } from "../components/pageDetail/CommunHero.tsx";
 import { CommunDeleteControl } from "../components/pageDetail/CommunDeleteControl";
 import { CommunDiscussionControl } from "../components/pageDetail/CommunDiscussionControl";
 import { CommunMilestoneDiscussionButton } from "../components/pageDetail/CommunMilestoneDiscussionButton";
+import { CommunFormLineDiscussions } from "../components/pageDetail/CommunFormLineDiscussions";
+import { DEFAULT_AAC_STEP } from "@/modules/cagnotte/utils/dataTransform";
 import { CommunFinancingCard, type PostLoginIntent } from "../components/pageDetail/CommunFinancingCard.tsx";
 import { CommunTocNav, type TocSection } from "../components/pageDetail/CommunTocNav.tsx";
 import { CommunFinancingSection } from "../components/pageDetail/CommunFinancingSection.tsx";
@@ -719,6 +721,15 @@ export default function AacCommunDetailPage() {
             </div>
 
             {canEditThisCommun && formId && (
+                // Le bouton « Discuter » de chaque ligne de dépense, dans le formulaire aussi — comme
+                // « Commenter » sur la liste des dépenses du formulaire legacy. Les dépenses
+                // enregistrées sont celles de la réponse que la fiche a lue : c'est d'elles que le
+                // formulaire part (`defaultValues`), et la fiche les relit après chaque enregistrement.
+                <CommunFormLineDiscussions
+                    answerId={answerId}
+                    savedDepenses={answer.answers?.[DEFAULT_AAC_STEP]?.depense}
+                    enabled={(config?.roles.depenseStepKey ?? DEFAULT_AAC_STEP) === DEFAULT_AAC_STEP}
+                >
                 <CoFormModal
                     formId={formId}
                     open={isEditOpen}
@@ -750,6 +761,7 @@ export default function AacCommunDetailPage() {
                     hiddenStepKeys={hiddenStepsForEdit}
                     onAfterSubmit={handleEditSubmit}
                 />
+                </CommunFormLineDiscussions>
             )}
         </PageShell>
     );

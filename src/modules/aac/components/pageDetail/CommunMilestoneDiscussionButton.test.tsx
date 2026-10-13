@@ -292,6 +292,40 @@ describe("CommunMilestoneDiscussionButton", () => {
     });
   });
 
+  describe("ce qu'il est", () => {
+    // Il se pose aussi DANS le formulaire d'édition : sans type, un bouton y vaut « soumettre » —
+    // il passait le formulaire à l'étape suivante en ouvrant la discussion (vu le 13/10).
+    it("un bouton, jamais un envoi de formulaire : dans un formulaire, y cliquer ne le soumet pas", async () => {
+      const soumis = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
+      const getDiscussionSpace = vi.fn(async () => espace(true));
+      const cocolight = { api: { getDiscussionSpace }, me: null, entity: { userContext: { id: UTILISATEUR } }, helper: {} } as unknown as CocolightContextType;
+      const client = new QueryClient();
+      render(
+        <MemoryRouter initialEntries={[FICHE]}>
+          <QueryClientProvider client={client}>
+            <CocolightContext.Provider value={cocolight}>
+              <LocalizationProvider>
+                <form onSubmit={soumis}>
+                  <CommunMilestoneDiscussionButton answerId={COMMUN} lineKey="0" name="Local" />
+                </form>
+              </LocalizationProvider>
+            </CocolightContext.Provider>
+          </QueryClientProvider>
+        </MemoryRouter>,
+      );
+      await servi({ getDiscussionSpace, client });
+      expect(palier("0")!.getAttribute("type")).toBe("button");
+      fireEvent.click(palier("0")!);
+      expect(soumis).not.toHaveBeenCalled();
+    });
+
+    it("par défaut il se nomme comme le palier de la fiche, et porte son mot", async () => {
+      await servi(monter());
+      expect(palier("0")!.getAttribute("data-discussion-opener")).toBe("palier:0");
+      expect(palier("0")!.textContent).toContain("Discuter");
+    });
+  });
+
   describe("ce qu'il ouvre", () => {
     it("la modale de la fiche, sur le fil de SA ligne, écrit dans l'adresse", async () => {
       const banc = monter();

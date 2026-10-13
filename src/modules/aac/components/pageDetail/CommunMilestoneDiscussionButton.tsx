@@ -14,6 +14,14 @@ export interface CommunMilestoneDiscussionButtonProps {
     lineKey: string;
     /** Le nom du palier, pour dire de quoi l'on discute. */
     name?: string | null;
+    /**
+     * Le nom par lequel le bouton se désigne, pour que le focus lui revienne à la fermeture. Par
+     * défaut celui du palier de la fiche ; le formulaire d'édition donne le sien
+     * (`formMilestoneOpener`) — les deux boutons d'une même ligne sont à l'écran ensemble.
+     */
+    opener?: string;
+    /** Icône et compteur seulement, à toutes les largeurs : la ligne d'un formulaire est étroite. */
+    compact?: boolean;
     className?: string;
 }
 
@@ -33,7 +41,7 @@ export interface CommunMilestoneDiscussionButtonProps {
  * Le compteur vient de la même entrée de cache que celui de la fiche : un bouton par palier ne
  * coûte aucune requête de plus.
  */
-export function CommunMilestoneDiscussionButton({ answerId, lineKey, name, className }: CommunMilestoneDiscussionButtonProps) {
+export function CommunMilestoneDiscussionButton({ answerId, lineKey, name, opener, compact = false, className }: CommunMilestoneDiscussionButtonProps) {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
     const space = useMemo<SpaceRef>(() => ({ type: "answers", id: answerId }), [answerId]);
@@ -50,10 +58,14 @@ export function CommunMilestoneDiscussionButton({ answerId, lineKey, name, class
         total > 0 ? String(t("detail.discussion.messages", undefined, { count: total })) : null,
         unread > 0 ? String(t("detail.discussion.unread", undefined, { count: unread })) : null,
     ].filter(Boolean).join(", ");
-    const ouvreur = milestoneOpener(lineKey);
+    const ouvreur = opener ?? milestoneOpener(lineKey);
 
     return (
         <Button
+            // `type="button"`, explicitement : ce bouton se pose aussi DANS le formulaire d'édition,
+            // où un bouton sans type vaut « soumettre » — il passait le formulaire à l'étape suivante
+            // en même temps qu'il ouvrait la discussion (vu le 13/10).
+            type="button"
             variant="ghost"
             size="sm"
             // `has-[>svg]:` : c'est sous cette variante que la taille `sm` pose sa marge quand le
@@ -74,7 +86,7 @@ export function CommunMilestoneDiscussionButton({ answerId, lineKey, name, class
             {/* Le mot n'arrive qu'à 80 rem : en deçà il prenait au NOM du palier la place qui lui
                 restait (42 px entre 640 et 767 px, mesuré le 13/10). L'icône et le compteur
                 suffisent, et le nom accessible dit le reste. */}
-            <span className="hidden xl:inline">{String(t("detail.discussion.milestoneCta"))}</span>
+            {!compact && <span className="hidden xl:inline">{String(t("detail.discussion.milestoneCta"))}</span>}
             {total > 0 && <span className="tabular-nums" data-milestone-discussion-total>{total}</span>}
             {unread > 0 && (
                 <span

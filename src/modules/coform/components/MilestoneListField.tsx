@@ -27,7 +27,7 @@
  * Volontairement HORS scope : le financement (contributions, cofinanceurs) et
  * les actions/objectifs — gérés par `CommunFinancingCard` et `CommunActionsSection`.
  */
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import type { FieldErrors } from "react-hook-form";
 import { ChevronDown, Plus, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -69,6 +69,8 @@ import {
   updateDepense,
   type DepenseEntry,
 } from "../utils/depense";
+import { useMilestoneLineSlot } from "../hooks/useMilestoneLineSlot";
+import { getOriginalFieldKey } from "../utils/formParser";
 import type { FormFieldMapping } from "../types";
 
 interface MilestoneListFieldProps {
@@ -143,6 +145,7 @@ function MilestoneRow({
   onDelete,
   permissions,
   disabled,
+  extra,
 }: {
   index: number;
   item: CagnotteFundableItem;
@@ -153,6 +156,8 @@ function MilestoneRow({
   onDelete: (item: CagnotteFundableItem) => void;
   permissions: SaisiePermissions;
   disabled: boolean;
+  /** Ce que l'hôte du formulaire pose sur la ligne (`MilestoneLineSlotContext`). */
+  extra?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const panelId = `depense-historique-${index}-panel`;
@@ -194,6 +199,8 @@ function MilestoneRow({
           </div>
           <ChevronDown className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />
         </button>
+        {/* À CÔTÉ du bouton qui déplie la ligne, jamais dedans : un bouton ne contient pas un bouton. */}
+        {extra}
       </div>
 
       {open && (
@@ -306,6 +313,14 @@ export function MilestoneListField({
 
   const disabled = Boolean(readOnly);
 
+  // Ce que l'hôte du formulaire pose sur chaque ligne — rien, le plus souvent. Il reçoit la liste
+  // LOCALE et la position de la ligne : à lui de dire si elle existe déjà au document.
+  const lineSlot = useMilestoneLineSlot();
+  const extraDe = (item: CagnotteFundableItem): ReactNode => {
+    if (!lineSlot || typeof item.depenseIndex !== "number") return null;
+    // La clé de l'input, sans son préfixe de type : c'est par elle que l'hôte reconnaît le champ.
+    return lineSlot({ answerId, fieldName: getOriginalFieldKey(field), lines: list, index: item.depenseIndex, name: item.name });
+  };
 
   /**
    * Projection best-effort d'un geste vers l'entité projet.
@@ -499,6 +514,7 @@ export function MilestoneListField({
             onDelete={setPendingDelete}
             permissions={PERMISSIONS_SAISIE}
             disabled={disabled}
+            extra={extraDe(o)}
           />
         ))}
         {closedItems.length > 0 ? (
@@ -525,6 +541,7 @@ export function MilestoneListField({
               onDelete={setPendingDelete}
               permissions={PERMISSIONS_SAISIE}
               disabled={disabled}
+              extra={extraDe(o)}
             />
           ))}
       </div>
