@@ -1516,7 +1516,7 @@ jusqu'au 28/09 affichée en permanence *en flottant*, une par message, par-dessu
 Taper `@` ouvrait une liste qu'un lecteur d'écran ne mentionnait jamais, et les flèches y
 déplaçaient une surbrillance annoncée nulle part.
 
-> Depuis le 13/10 le champ n'est plus un `<textarea>` mais un éditeur (§18.6) : son rôle `textbox`
+> Depuis le 13/10 le champ n'est plus un `<textarea>` mais un éditeur (§18.5) : son rôle `textbox`
 > est posé explicitement, les attributs décrits ici sont les mêmes.
 
 **Première tentative, écartée en revue** : poser `role="combobox"` sur le `<textarea>`, comme le
@@ -2040,11 +2040,16 @@ une ligne de dépense, la clé de la ligne dans la liste des dépenses du commun
 n'étant pas fermé, un client plus ancien n'en est pas gêné ; le fil rendu par `CREATE_DISCUSSION`
 (§14.8) a la même forme, `line: null`.
 
+**Ajout du 13/10** — rien à changer au schéma. `truncated` vaut aussi `true` quand le commun porte
+plus de 200 lignes de dépense à proposer (§17.2). Et le serveur refuse (`bad-request`) un
+`includeEmpty` posté sous une autre forme qu'une chaîne ; le schéma du client ne l'admet déjà
+qu'en `"0"` ou `"1"`.
+
 ### 14.7 Un refus arrive en exception (mesuré le 09/10)
 
-Rien à demander ici : un fait du client, commun aux trois façades de ce module (`getDiscussions`,
-`markCommentsSeen`, `getDiscussionSpace`), que leur JSDoc doit dire (`@throws`) et non « tester
-`result` » :
+Rien à demander ici : un fait du client, commun aux quatre façades de ce module (`getDiscussions`,
+`markCommentsSeen`, `getDiscussionSpace`, `createDiscussion`), que leur JSDoc doit dire (`@throws`)
+et non « tester `result` » :
 
 - le serveur refuse en HTTP 200 avec `{ result: false, code, msg }` ; la façade ne **rend pas** ce
   corps : `EndpointApi.call()` lève `ApiResponseError` (statut 200), le corps rangé dans
@@ -2091,7 +2096,7 @@ Réponse, en HTTP 200 :
               "path": "<appel>.moreDiscussions_<…>.<commun>.discu_<…>.comment",
               "total": 0, "unread": 0, "last": null, "mine": false,
               "title": "Budget 2026", "carrier": null, "virtual": true,
-              "kind": "discussion", "group": null, "audience": "authorAdmin" } }
+              "kind": "discussion", "group": null, "audience": "authorAdmin", "line": null } }
 ```
 
 `thread` a la forme d'un fil de `GET_DISCUSSION_SPACE` (§15.3) : c'est le fil créé, vide, avec le
@@ -2218,13 +2223,16 @@ exception dans la première.
 - `canComment` dit seulement s'il y a une session, et l'écran ne promet pas plus.
 - `creatableAudiences` : les audiences que ce lecteur peut donner à une discussion qu'il crée
   (§16) ; vide, il n'en crée pas — sans session, toujours.
+- `truncated` : la liste est partielle — plus de fils que le budget de lecture n'en rend, ou plus
+  de 200 lignes de dépense à proposer (§17.2). L'écran le dit d'une phrase sous la liste.
 - Fils **fabriqués** (`virtual`, sauf `includeEmpty=0`) : le fil général, les discussions déclarées
   encore vides et, pour un appel `aap`, les questions qu'il ouvre aux commentaires
   (`activeComments`) et un fil par ligne de dépense qui n'en a aucun (§17.2). Pour un formulaire
   qui n'est pas `aap`, ni **question** ni **ligne** n'est fabriquée : le segment d'étape y prend
   deux formes, et écrire sous la mauvaise ouvrirait un fil que le legacy ne verrait pas.
-- Refus, en HTTP 200 : `bad-request` (type hors liste blanche, identifiant mal formé) ; `hidden`
-  (commun ou appel introuvable). Le serveur accepte l'identifiant en majuscules et le ramène en
+- Refus, en HTTP 200 : `bad-request` (type hors liste blanche, identifiant mal formé, ou
+  `includeEmpty` posté sous une autre forme qu'une chaîne — lu comme absent, il ferait rendre les
+  fils à lancer à qui demandait de ne pas les avoir) ; `hidden` (commun ou appel introuvable). Le serveur accepte l'identifiant en majuscules et le ramène en
   minuscules ; le schéma du SDK, lui, n'admet que des minuscules.
 - Comme `discussions`, **aucun texte de message** : le fil se lit par `getComments({ path })`.
 
@@ -2389,7 +2397,25 @@ lecture par fil.
   - ne pas rendre le lanceur côté serveur : la marque « sur la liste » n'existe que dans le
     navigateur, la page rechargée sur la liste rendrait une modale que le serveur n'a pas rendue.
     Sans effet aujourd'hui, la fiche n'étant pas dans le HTML du serveur ;
-  - un seul lanceur par espace et par page : deux boutons monteraient deux modales.
+  - une seule MODALE par espace et par page — celle que monte le bouton de la fiche. D'autres
+    boutons peuvent l'ouvrir par l'adresse, chacun avec son lanceur : c'est ce que font ceux des
+    paliers (§17.3). La garde « un ordre par entrée d'historique » est tenue par CHAQUE lanceur :
+    deux boutons différents activés dans le même instant, avant que l'adresse n'arrive,
+    empileraient deux entrées — non observé, et non couvert par un test.
+- **L'écho d'un double clic** (relecture du 13/10). Un clic qui fait apparaître ou disparaître la
+  modale change ce qu'il y a sous le curseur ; qui double-clique par habitude envoyait son second
+  appui ailleurs. Mesuré au navigateur : douze doubles clics sur douze, sur « Discussion »,
+  refermaient la modale aussitôt (le second tombait sur son voile) ; sur un téléphone, celui de la
+  croix ouvrait un bouton de la page que la modale couvrait. La coquille des modales
+  (`DiscussionModalShell`) avale désormais cet écho (`lib/echoClick.ts`), 400 ms durant : à son
+  ouverture — les événements de souris que le navigateur compte comme la suite d'un clic
+  (`detail > 1`) et ceux de pointeur —, et quand un clic la ferme, à l'endroit de ce clic, à
+  12 px près. Un premier clic, ou une activation au clavier, passe toujours. Le « + » de la
+  colonne ignore de même le second clic d'un double clic.
+- **Une relecture ratée ne remplace pas la fiche.** `AacCommunDetailPage` n'affiche sa carte
+  d'erreur que s'il n'y a rien à montrer. Auparavant, une relecture de la réponse qui échouait —
+  il suffit de revenir sur l'onglet quand le réseau flanche — démontait la fiche déjà affichée, la
+  modale ouverte, et le message qu'on y écrivait.
 - La clé de cache vit sous le préfixe du panneau (`comment-discussions`) : poster un message ou
   marquer un fil lu rafraîchit déjà les compteurs de l'espace.
 
@@ -2401,15 +2427,15 @@ corrections et date de la nuit du 12 au 13/10.
 
 | Quoi | Résultat |
 |---|---|
-| Règles, hors base — doublures de `PHDB`, qui lèvent comme le pilote sur un identifiant invalide ou une projection en collision | 100 vérifications : lecture d'un chemin, rôles par lien direct, audiences, espace entier (dont la forme exacte d'un fil : quatorze champs), texte nu et ordre des libellés, fil désigné, entrées de travers |
+| Règles, hors base — doublures de `PHDB`, qui lèvent comme le pilote sur un identifiant invalide ou une projection en collision | 100 vérifications : lecture d'un chemin, rôles par lien direct, audiences, espace entier (dont la forme exacte d'un fil : quatorze champs à cette date, quinze depuis le §17), texte nu et ordre des libellés, fil désigné, entrées de travers |
 | Contre-épreuve par mutation de `Discussion.php`, sur une copie | 98 mutations tuées sur 98 |
 | Sonde contre le vrai backend, trois identités (visiteur, compte non membre, admin de l'appel) | 69 vérifications ; refus, espace vierge et semé, question que l'appel n'ouvre pas aux commentaires, étape d'évaluation ouverte (sur le seul appel de la base qui en a une), audiences `private` et `authorAdmin`, questions que l'appel ne connaît pas, modes `fil` et `seen`, plan de requête |
 | Sonde des actions `discussions` et `seen`, vrai backend | 30 vérifications : chaque paramètre posté en tableau est refusé en JSON (`bad-request`), jamais converti ni lu comme absent ; refus codés de `seen` ; rien n'est marqué lu |
 | Sondes des lots précédents (panneau, éléments vierges, lot R) | rejouées, vertes : 21, 17 et 25 vérifications |
 | Appel réel au SDK, avec et sans session | un refus arrive en `ApiResponseError` (statut 200, corps dans `responseData`) ; sans session, `ApiAuthenticationError` avant tout appel (§14.7) |
 | Tests unitaires de l'écran | 399 tests dans treize fichiers, dont 243 dans les neuf fichiers nouveaux : lecture de la réponse, refus repris de l'exception, réponse illisible, lanceur et historique, requêtes, colonne des fils, panneau, modale, bouton, composition de la fiche |
-| … dont un **parcours** assemblé | 17 tests : le bouton, la modale chargée en différé, le panneau, la colonne, le lanceur, l'adresse et l'historique sont les vrais — seuls le serveur, le temps réel et le fil de messages sont remplacés |
-| … le **coût** du bouton | le fichier de la modale n'est importé qu'au survol ou à l'ouverture ; et le graphe des imports statiques de l'entrée légère, lu dans les sources : onze fichiers, aucun composant, ni libellés ni styles (celui de la modale en compte cinquante-huit, sans le panneau général) |
+| … dont un **parcours** assemblé | 17 tests (21 au 13/10, et 7 pour celui d'un palier) : le bouton, la modale chargée en différé, le panneau, la colonne, le lanceur, l'adresse et l'historique sont les vrais — seuls le serveur, le temps réel et le fil de messages sont remplacés |
+| … le **coût** du bouton | le fichier de la modale n'est importé qu'au survol ou à l'ouverture ; et le graphe des imports statiques de l'entrée légère, lu dans les sources : onze fichiers, aucun composant, ni libellés ni styles (celui de la modale en compte cinquante-huit, sans le panneau général) — remesuré le 13/10, après les lots suivants : douze et soixante-cinq |
 | … l'**attente** de la modale | son import retenu par une porte : le bouton se dit occupé, et y cliquer ne remplace pas le fil du lien |
 | Contre-épreuve par mutation de l'écran, sur des copies | 341 mutations tuées sur 341 — dont 32 défauts de la chaîne passés contre le seul test de parcours |
 | Navigateur, visiteur — 1440 et 375 px | 22 et 26 vérifications : liste, intertitres, fil, invitation à se connecter, liens profonds |
@@ -2479,6 +2505,9 @@ corrections et date de la nuit du 12 au 13/10.
   transtypage, comme dans tout le module : installé depuis le registre sans `getDiscussionSpace`,
   le SDK ferait échouer l'appel à l'exécution — une « panne », bouton sans compteur — sans que
   `tsc` ni un test ne le disent. L'ordre de livraison du §2.5 (le SDK d'abord) en est le seul filet.
+- **Si le code de la modale ne peut pas être téléchargé** — hors ligne, ou le site remplacé par une
+  version plus récente pendant qu'on lit —, l'erreur remonte à l'écran d'erreur du site, comme pour
+  tout morceau chargé en différé : ce bouton n'a pas de repli à lui.
 - **Non vérifié** : un lecteur d'écran réel, un appareil tactile réel, le temps réel (pas de hub en
   développement).
 
@@ -2489,10 +2518,9 @@ audience. Demandée le 09/10, une fois l'espace livré.
 
 ### 16.1 Ce que fait le legacy
 
-Son écran fabrique la clé de la discussion, son étape et son chemin, puis les confie à une action
-générique (`AapAction::createNewDiscu`). Le module passe par une action à lui (arbitré le 07/10),
-qui fabrique ces valeurs côté serveur. Ce qui est enregistré, en revanche, est repris à
-l'identique, parce que le legacy le relit :
+Une discussion s'enregistre sous une clé, une étape et un chemin. Le module passe par une action
+à lui (arbitré le 07/10), où c'est le serveur qui fabrique ces trois valeurs. Ce qui est enregistré,
+en revanche, est repris à l'identique, parce que le legacy le relit :
 
 | Où | Quoi |
 |---|---|
@@ -2501,7 +2529,6 @@ l'identique, parce que le legacy le relit :
 | `stepId` | `moreDiscussions_` suivi d'une heure et de lettres |
 | `path` | `<appel>.<stepId>.<commun>.<clé>.<suffixe>` — `commentPublic`, `comment` ou `privateComment` selon l'audience |
 | `created`, `updated` | des secondes, en **chaînes** (mesuré en base : ce sont des valeurs postées) |
-| `answers.<commun>.updated` | la réponse est datée elle aussi, d'un entier |
 
 Trois audiences, que son écran nomme « Publique » (`authorAll`), « Privée » (`authorAdmin` —
 choisie d'office) et « Admins seulement » (`private`, proposée aux admins). Le bouton s'affiche à
@@ -2515,9 +2542,8 @@ le modèle est `Discussion::createSpaceDiscussion()`. Session **exigée**.
 
 **La requête ne porte que quatre valeurs, et aucune n'est un chemin** : `contextType` (`answers`),
 `contextId`, `name`, `audience`. La clé, l'étape et le chemin sont fabriqués par le serveur, dans le
-seul jeu de caractères `[A-Za-z0-9_]` — le legacy relit un chemin segment par segment comme un
-motif. La clé et l'étape gardent l'allure de celles du legacy, suivies d'un tirage : deux créations
-dans la même seconde ne visent pas la même clé.
+seul jeu de caractères `[A-Za-z0-9_]`. La clé et l'étape gardent l'allure de celles du legacy,
+suivies d'un tirage : deux créations dans la même seconde ne visent pas la même clé.
 
 | Qui | Ce qu'il peut créer |
 |---|---|
@@ -2528,15 +2554,24 @@ dans la même seconde ne visent pas la même clé.
 C'est `Discussion::creatableAudiences`, la même fonction qui alimente le champ
 `creatableAudiences` de `space` : **l'écran ne propose que ce que l'action acceptera**.
 
-**Le nom** est ramené à du texte nu (balises retirées, entités décodées), ses espaces réduits ; vide
-ou de plus de 120 caractères, il est refusé — pas tronqué. Il s'enregistre en HTML, guillemets
-compris : c'est la convention de la base (§15.3), et le legacy pose ce nom tel quel dans sa page,
-jusque dans un attribut.
+**Le nom** est ramené à du texte nu (balises retirées, entités décodées), ses espaces réduits ; vide,
+de plus de 120 caractères, ou sans aucun caractère qui se voie (des espaces sans chasse, des marques
+de formatage seules), il est refusé — pas tronqué. Il s'enregistre en HTML, guillemets compris :
+c'est la convention de la base (§15.3).
 
 **L'écriture ne remplace jamais.** Son filtre exige que la clé n'existe pas
 (`moreDiscussions.<clé>: {$exists: false}`), et le nombre de documents touchés est relu : deux
 créations simultanées donnent deux discussions, ou un échec — pas une discussion écrasée. Un commun
 porte au plus 50 discussions.
+
+**Elle ne pose que la discussion.** La réponse n'est pas redatée (`updated`) — un écart voulu au
+legacy, qui la date parce que son écriture générique date tout ce qu'elle touche. Créer une
+discussion ne change rien à ce que le commun dit : redatée, la réponse remonterait dans les listes
+triées par date, et le brouillon d'une édition en cours du commun serait tenu pour périmé — l'écran
+d'édition le juge sur cette date (relecture du 13/10).
+
+Une écriture que la base refuse laisse une trace au journal du serveur (niveau `error`, catégorie
+`comment.discussion`) : sans elle, rien ne dirait pourquoi un commun ne reçoit pas de discussion.
 
 | Code | Quand |
 |---|---|
@@ -2544,7 +2579,7 @@ porte au plus 50 discussions.
 | `bad-request` | un paramètre manque, n'est pas une chaîne, ou sort de sa liste |
 | `hidden` | commun ou appel introuvable |
 | `forbidden` | pas le droit de créer, ou pas avec cette audience |
-| `bad-name` | nom vide ou trop long, une fois nettoyé |
+| `bad-name` | nom vide, trop long, ou sans caractère visible, une fois nettoyé |
 | `too-many` | le commun porte déjà 50 discussions |
 | `failed` | l'écriture n'a pas abouti — rien n'est créé |
 
@@ -2568,9 +2603,13 @@ premier message (§3).
 - **Un envoi à la fois**, et la garde est synchrone : l'état « en cours » de la mutation n'arrive
   qu'au rendu suivant, deux Entrée coup sur coup seraient parties avant lui — deux discussions du
   même nom. La mutation n'est jamais rejouée d'elle-même.
-- **Une erreur se dit par son code**, dans la langue de l'écran. Une réponse illisible a sa phrase :
-  on ne sait pas si la discussion existe, la liste est relue, et il est dit de la vérifier avant de
-  recommencer.
+- **Une erreur se dit par son code**, dans la langue de l'écran. Deux pannes ont leur phrase, parce
+  qu'on n'y sait pas si la discussion existe : une réponse illisible (`unreadable`), et l'absence
+  de réponse — coupure du réseau, erreur du serveur à partir de 500 (`uncertain`). Dans les deux
+  cas la liste est relue, et il est dit de la vérifier avant de recommencer : « Réessayez » en
+  ferait créer une seconde, du même nom.
+- **Le formulaire se réduit et défile** dans une colonne trop basse (un téléphone à l'horizontale,
+  clavier ouvert) : ses boutons restent atteignables.
 - **Le clavier** : le champ du nom a le focus à l'ouverture ; Échap referme le formulaire, pas la
   modale (`data-comment-escape`, §10.7) ; « Annuler » rend le focus au « + » ; une fois la
   discussion créée, c'est son titre qui le reçoit — le formulaire qui le tenait a disparu.
@@ -2602,6 +2641,10 @@ Du 12/10, sur le code décrit ici ; les lignes « Navigateur », de la nuit du 1
   aux autres lecteurs à leur relecture suivante (§11.4).
 - Un nom dont l'écriture en HTML dépasse 120 caractères reste accepté s'il en compte 120 au plus en
   texte : c'est le texte qui est borné.
+- Un appel porté par une **personne** n'a pas d'admin au sens de la règle (un lien direct sur
+  l'élément porteur, §15.4) : une discussion « Admins seulement » n'y est ni créable, ni lisible.
+- La discussion créée ne redate pas le commun (§16.2) : une liste triée par date de modification
+  ne le fait pas remonter. Une discussion créée depuis le legacy, elle, le redate toujours.
 
 ## 17. Un fil par ligne de dépense — les paliers de la fiche (12/10)
 
@@ -2640,8 +2683,14 @@ dans le code du legacy, et se prouve sur des données fabriquées (§17.5).
 ### 17.2 Ce que rend `space`
 
 - **`line`** — sur un fil `expense`, la clé de sa ligne dans `answers.aapStep1.depense` (le rang
-  d'un tableau, la clé d'un objet). `null` sur tout autre fil, et sur une ligne d'une autre liste.
-  C'est ce qui permet à la fiche de retrouver le fil d'un palier qu'elle affiche.
+  d'un tableau, la clé d'un objet). `null` sur tout autre fil, sur une ligne d'une autre liste, et
+  sur une ligne que le commun n'a pas ou plus. C'est ce qui permet à la fiche de retrouver le fil
+  d'un palier qu'elle affiche.
+- **Le fil d'une ligne se reconnaît à la forme EXACTE de son chemin** — celle que le legacy écrit,
+  onze segments, chacun à sa place, rien après la clé de la ligne :
+  `<appel>.<étape>.<commun>.<question>.question_<question>.comment.financement.depensekey.<étape-champ>.depenseindex.<clé>`.
+  Un chemin plus long, ou rangé autrement, reste un fil de sa question : listé, titré par elle, il
+  ne désigne aucune ligne et n'empêche pas de lancer le fil de la ligne (relecture du 13/10).
 - **Un fil à lancer par ligne.** Avec `includeEmpty`, chaque ligne du commun qui n'a **aucun** fil
   en reçoit un, `virtual`, titré par son poste — à défaut, par le libellé de la liste — et rangé
   sous l'étape de cette liste. Une ligne retirée (un trou dans la liste) ou vide n'en reçoit pas.
@@ -2652,8 +2701,9 @@ dans le code du legacy, et se prouve sur des données fabriquées (§17.5).
 - **Une ligne déjà commentée garde son fil**, quelle que soit la liste où il a été posé : elle n'en
   reçoit pas un second. C'est dans celui-là qu'on entre.
 - **Conditions** : un appel `aap` (§15.3), qui **déclare** la liste des dépenses (`depense` à
-  l'étape `aapStep1`) et porte au moins une question `…newDepenseList` ; au plus 200 lignes.
-  Ailleurs, rien n'est fabriqué, et `line` reste nul.
+  l'étape `aapStep1`) et porte au moins une question `…newDepenseList` ; au plus 200 lignes — au-delà
+  on ne fabrique plus, et la liste se dit partielle (`truncated`). Ailleurs, rien n'est fabriqué,
+  et `line` reste nul.
 - **Coût** : la lecture de la réponse qui titrait déjà les lignes commentées — une, par `_id`, sur
   le champ des dépenses. Elle a lieu désormais à chaque appel pour un commun dont l'appel porte une
   liste de dépenses, commentée ou non.
@@ -2666,6 +2716,13 @@ autre question (§17.3).
 - **`CommunMilestoneDiscussionButton`** — « Discuter », sur chaque palier de « Besoins financiers »
   (`CommunFinancingSection`) : dans l'en-tête de la carte, **à côté** du bouton qui la déplie,
   jamais dedans. Son compteur additionne les fils de la ligne ; une pastille dit les non-lus.
+  **Sous 80 rem de fenêtre il se réduit à son icône et à son compteur** : le mot « Discuter »
+  prenait au nom du palier la place qui lui restait — 42 px entre 640 et 767 px de fenêtre, mesuré
+  le 13/10 ; 122 px depuis, et 250 au lieu de 170 de 768 à 1 279 px. Son nom accessible, lui, dit
+  tout à toutes les largeurs.
+- **Seulement si la fiche lit ses dépenses à `aapStep1`** — la liste que l'espace connaît (§17.2).
+  Une fiche réglée sur une autre étape (`roles.depenseStepKey`) n'a pas de fil à apparier : par la
+  clé seule, elle ouvrirait celui d'une autre ligne. Elle n'affiche donc aucun bouton de palier.
 - **Quand il s'affiche** : l'espace propose un fil pour la ligne, et il y a de quoi lire ou écrire.
   Connecté, sur chaque palier ; sans session, seulement là où quelqu'un a écrit.
 - **Où il entre** — `lineDiscussion` : dans le fil écrit le plus récemment ; faute de message, dans
@@ -2688,7 +2745,8 @@ autre question (§17.3).
 - **Son nom accessible commence par ce qu'on lit** : « Discuter du palier « … », 2 messages,
   1 non lu ».
 - **Les jauges restent alignées.** Un palier sans bouton efface son emplacement ; dès qu'un autre
-  palier de la liste en montre un, tous gardent la même largeur d'emplacement.
+  palier de la liste en montre un, tous gardent la même largeur d'emplacement — 5 rem tant que le
+  bouton se réduit à son icône, 10 rem à partir de 80 rem de fenêtre.
 - L'import différé de la modale est partagé par les boutons de la fiche (`communDiscussion.ts`), et
   préchauffé au survol comme au focus.
 
@@ -2732,6 +2790,10 @@ dans la nuit du 12 au 13/10.
 - **Un appel sans `…newDepenseList`** — les autres gabarits de budget du legacy — n'a pas de fil
   à lancer : leurs cartes désignent la dépense autrement dans le chemin, et ce cas n'a pas été
   étudié ici. Un fil déjà écrit sur une de leurs lignes reste listé (§15.3).
+- **La question qui héberge le fil d'une ligne peut être n'importe quelle question de l'appel** :
+  le legacy écrit celle d'où l'on a cliqué, et d'autres gabarits de budget que `…newDepenseList`
+  portent des fils légitimes. `line` se décide donc sur la forme du chemin et sur l'existence de
+  la ligne, pas sur le type de la question.
 - **Le formulaire de dépôt** (la liste des paliers en saisie) ne porte pas le bouton : la
   discussion s'ouvre depuis la fiche.
 - Le bloc « Suivi des actions » liste les mêmes paliers sans le bouton : une entrée par palier.
@@ -2748,21 +2810,40 @@ dans la nuit du 12 au 13/10.
   numérotée, bloc de code : neuf boutons, qui disent leur état (`aria-pressed`) et suivent le
   curseur. Les raccourcis du clavier (Ctrl+B, Ctrl+I…) et ceux qu'on tape (`**gras**`,
   `*italique*`, `~~barré~~`, `` `code` ``, `- `, `1. `, `> `, trois accents graves) marchent aussi.
-- **Entrée envoie, Maj+Entrée passe à la ligne** — comme avant. Deux exceptions : dans une liste
-  ou un bloc de code, Entrée garde son sens (l'élément suivant, la ligne suivante) ; et **sur un
+  Une marque tapée prend en début de ligne — la seconde comprise —, derrière une espace, une
+  apostrophe, un guillemet ou une parenthèse ; pas au milieu d'un mot, ni dans une adresse qu'on
+  est en train de taper.
+- **Entrée envoie, Maj+Entrée passe à la ligne** — comme avant. Trois exceptions : dans une liste
+  ou un bloc de code, Entrée garde son sens (l'élément suivant, la ligne suivante) ; **sur un
   écran tactile, Entrée passe à la ligne**, le message part par son bouton — il n'y a pas de
-  Maj+Entrée sous le pouce.
+  Maj+Entrée sous le pouce ; et tant que la liste des personnes d'une mention est en route,
+  Entrée l'attend : un message parti ne se reprend pas.
+- **Le texte part tel qu'on l'a tapé.** `[urgent] réunion ~10h, 2 * 3 = 6` s'enregistre sans une
+  barre oblique inverse : un message se lit aussi là où le markdown n'est pas rendu — l'écran
+  legacy, une notification, la citation d'une réponse. Seul ce qui, relu, deviendrait autre chose
+  est neutralisé (`a *x* b` tapé en toutes lettres).
+- **Après un Maj+Entrée, une ligne tapée comme une liste, une citation ou un filet en devient une**
+  dans le fil (`- pain`, `1. d'abord`, `> cité`, `---`) — ce que faisait déjà l'ancien champ. En
+  tête de paragraphe, l'éditeur fait lui-même la liste ; qui la défait garde le signe.
 - **Une mention est un objet du texte.** `@` et deux lettres ouvrent la liste des personnes ; la
   mention choisie s'affiche par son NOM, comme le fil l'affichera, et se retire d'un bloc. Elle
   part en `@slug`, avec la personne — et seulement si elle est encore dans le texte à l'envoi.
 - **Un lien se pose par une adresse.** Le bouton ouvre un champ, pas un dialogue de plus ; le
   protocole qu'on n'écrit jamais est complété (`exemple.org` → `https://exemple.org`, un courriel
   → `mailto:`) ; seuls `http`, `https` et `mailto` passent. Dans un lien, le champ reprend son
-  adresse et offre de le retirer. Une adresse tapée ou collée devient un lien d'elle-même.
+  adresse et offre de le retirer.
+- **Une adresse tapée ou collée devient un lien d'elle-même, et mène où on la LIT.** Complétée ou
+  corrigée après coup, sa cible suit son texte ; collée par-dessus une autre adresse, elle la
+  remplace. Un lien posé par le bouton, lui, garde la cible qu'on lui a donnée, quel que soit son
+  texte.
 - **Coller du texte, c'est le relire comme le fil le lira** : une liste collée reste une liste.
-  Coller ou déposer une image en fait une pièce jointe, jamais du texte.
-- **Corriger un message** l'ouvre tel que le fil le rend, mentions comprises ; renvoyé sans y
-  toucher, il repart à la lettre.
+  Des cellules de tableur se collent par leur texte, séparations gardées. Un lien collé ne garde
+  que sa cible. Coller ou déposer une image en fait une pièce jointe, jamais du texte.
+- **Un bloc vide n'est pas un message** : une liste, une citation ou un bloc de code sans rien
+  dedans ne s'envoient pas.
+- **Corriger un message** l'ouvre tel que le fil le rend, mentions comprises. Renvoyé sans y
+  toucher, il se REND pareil ; son texte, lui, est réécrit dans la forme de l'éditeur s'il n'y
+  était pas déjà (§18.7).
 
 ### 18.2 Les pièces
 
@@ -2772,7 +2853,7 @@ dans la nuit du 12 au 13/10.
 | `components/editor/EditorSurface.tsx` | L'**éditeur** (Tiptap) : la zone où l'on écrit, la liste des mentions, le clavier, le collage |
 | `components/editor/editorStore.ts` | Le **chargement** de l'éditeur, une fois pour l'onglet, côté client seulement |
 | `components/editor/editorTypes.ts` | Ce que la coquille et l'éditeur se disent : la liste des mises en forme, l'état, la poignée |
-| `lib/richText/extensions.ts` | Le **schéma** d'un message : ce que le markdown du fil sait écrire, rien de plus |
+| `lib/richText/extensions.ts` | Le **schéma** d'un message : ce que le markdown du fil sait écrire, rien de plus. Sa marque de code est la nôtre (celle du kit chasse toute autre marque : un code dans un lien ou dans un gras ne se relisait pas), et la marque de lien y porte un drapeau, `explicit`, pour un lien ÉCRIT |
 | `lib/richText/markdownBridge.ts` | Le **pont** : le texte d'un message → le document de l'éditeur, et retour |
 | `lib/richText/linkAddress.ts` | L'adresse tapée dans le champ « lien » → celle qu'on enregistre |
 | `lib/markdownEngine.ts` | **Le** réglage de `markdown-it`, pour le fil qui rend et pour l'éditeur qui relit |
@@ -2798,93 +2879,235 @@ feuille de style de l'éditeur n'est pas injectée dans la page : ses quelques r
 
 ### 18.3 Le pont markdown
 
-Sa règle, que les tests rejouent cas par cas avec le moteur du fil pour juge : **ce que rend le
-texte sorti est ce que montrait l'éditeur.**
+Deux règles, que les tests rejouent cas par cas avec le moteur du fil pour juge :
+
+1. **ce que rend le texte sorti est ce que montrait l'éditeur** ;
+2. **le texte sort tel qu'on l'a tapé chaque fois que le fil le rendrait pareil** (§18.1).
 
 - **Relire** : `markdown-it` réglé comme le fil (`createCommentMarkdown`), plus une règle qui fait
   un nœud de chaque `@slug` que porte le message — la même que le fil : le plus long slug d'abord,
   ni lettre ni tiret derrière, jamais dans du code. La règle des tableaux est coupée dans
-  l'éditeur seulement : il n'a pas de nœud pour eux, leur source reste du texte.
-- **Écrire** : ce qu'on a TAPÉ ne doit pas devenir autre chose. Entrée envoyant, un message de
-  plusieurs lignes est un seul paragraphe coupé de sauts : chaque ligne est échappée comme un
-  début de ligne (tiret, `+`, chevron, croisillon, « 1. », « 1) » — seuls sur leur ligne aussi).
-  S'y ajoutent les signes qui ouvriraient une marque, les entités (`&amp;` tapé reste cinq
-  caractères), les chevrons d'un lien automatique, les espaces de tête qui feraient un bloc de
-  code. La bibliothèque de sérialisation ne suffisait pas : sa règle laissait `__init__` sortir en
-  italique, et « 1. » seul ouvrir une liste vide.
+  l'éditeur seulement : il n'a pas de nœud pour eux, leur source reste du texte. Un lien relu
+  d'un `[texte](adresse)` est marqué *écrit* ; une adresse que le fil lie de lui-même, ou qu'on a
+  mise entre chevrons, ne l'est pas.
+- **Écrire** : chaque bloc de premier niveau est écrit deux fois — tout échappé, puis **nu**, tel
+  qu'on l'a tapé — et le fil départage : s'il rend les deux à l'identique (mentions liées
+  comprises), c'est le nu qui sort. L'échappement large couvre les signes qui ouvriraient une
+  marque, un code ou un lien, les marqueurs de bloc en tête de paragraphe (tiret, `+`, chevron,
+  croisillon, « 1. », « 1) » — seuls sur leur ligne aussi), les entités (`&amp;` tapé reste cinq
+  caractères), les chevrons d'un lien automatique, et les espaces de tête qui feraient un bloc de
+  code — en tête de bloc, et derrière une ligne vide. La bibliothèque de sérialisation n'y
+  suffisait pas : sa règle laissait `__init__` sortir en italique, et « 1. » seul ouvrir une liste
+  vide. La vérification se fait par bloc : dans une liste, un seul élément qui a besoin d'être
+  échappé fait échapper la liste entière.
+- **L'exception assumée** à la première règle : derrière un saut de ligne, un marqueur de bloc
+  n'est pas échappé (§18.1). Une clôture de code, elle, reste neutralisée : ouverte, elle
+  avalerait la suite du message.
 - **Une adresse tapée sans être un lien** — Entrée envoie avant que l'éditeur l'ait liée — sort
-  telle quelle : le fil la lie en lisant la source, signe pour signe, et une barre oblique inverse
-  posée devant un `~` ou un `_` partirait dans le lien. Elle est cherchée comme le fil la cherche
-  (le protocole devant `://`, puis ce que `linkify` lit) ; suivie d'un signe échappé, elle s'écrit
-  entre chevrons, où elle s'arrête où elle doit.
+  telle quelle. À protocole (`https://…`), le fil la lit dans la source, signe pour signe : une
+  barre oblique inverse posée devant un `~` ou un `_` partirait dans le lien ; suivie sans espace
+  d'un signe échappé, d'un gras qui s'ouvre ou d'une mention, elle s'écrit entre chevrons, où
+  elle s'arrête où elle doit. Sans protocole (`www.…`, un domaine, un courriel), le fil la lie
+  après coup : elle reste nue si, prise seule, elle se relit entière (§18.7), et sinon elle est
+  échappée comme un texte.
+  Dans le texte d'un lien écrit, une adresse est un texte comme un autre.
 - **Un lien** s'écrit par son texte seul quand le fil le referait de lui-même (une adresse,
-  `www.…`, un courriel) et que rien ne s'y colle ; sinon entre chevrons ; sinon `[texte](adresse)`.
-  C'est le rendu du fil qui en juge, pas une règle tenue à côté.
+  `www.…`, un courriel) — y compris suivi d'un point ou pris entre parenthèses, où le fil s'arrête
+  de lui-même où il faut ; entre chevrons quand, sans eux, il lirait autre chose (une lettre collée
+  devant, un gras collé derrière) ; sinon `[texte](adresse)`. C'est le rendu du fil qui en juge,
+  pas une règle tenue à côté.
+- **La cible d'un lien dont le texte est une adresse est cette adresse** — sauf lien écrit.
+  L'éditeur lie de lui-même une adresse, puis laisse corriger son texte sans toucher à sa cible :
+  on lisait une adresse, on allait à une autre. Et l'adresse est ce qu'on lit d'un trait : du
+  texte tapé tout contre elle la prolonge, tant que l'ensemble en est une — selon le navigateur,
+  une lettre tapée en fin de lien y entre ou reste dehors (sous Chrome elle reste dehors, mesuré
+  le 13/10). Une adresse relue entre chevrons, elle, s'arrête où son auteur l'a dit.
+- **Une mention ne tient pas dans un lien** : le fil en fait elle-même un lien, et deux liens ne
+  s'emboîtent pas. Le lien s'arrête devant elle et reprend derrière.
 
 ### 18.4 Le clavier, et Échap dans une modale
 
 - Le clavier de l'éditeur passe **après** la suggestion de mention — qui capte Entrée, Tab et les
   flèches tant que sa liste est ouverte — et **avant** les raccourcis du kit, sans quoi Entrée
   couperait le paragraphe.
-- **Échap se traite hors de l'éditeur**, en capture, sur son conteneur : refermer la liste de
-  mentions, sinon annuler l'édition, sinon rien. Dans la modale des discussions, pour ne pas se
+- **Échap se traite hors de l'éditeur**, en capture, sur son conteneur : renoncer à la mention en
+  cours, sinon annuler l'édition, sinon rien. Dans la modale des discussions, pour ne pas se
   fermer, la modale neutralise la touche (§10) — or l'éditeur ignore une touche déjà neutralisée :
   ni la liste ni l'édition ne se refermaient (vu au navigateur le 13/10). Traitée, la touche ne
-  descend pas plus bas.
+  descend pas plus bas. La revendication tient dès qu'une mention est en cours, liste affichée ou
+  non : entre « @mar » et l'arrivée des personnes, Échap y renonce sans rien fermer d'autre.
+  Pendant une composition (accent mort, saisie asiatique), Échap appartient à la saisie.
 - **Les marques tapées suivent le markdown du fil**, pas le kit : le texte marqué ne commence ni ne
-  finit par une espace. Le kit mettait en italique le « 3 » de « 2 * 3 * 4 ». Ses règles de
-  collage sont coupées pour la même raison : ce qu'on colle est déjà relu comme du markdown.
+  finit par une espace — le kit mettait en italique le « 3 » de « 2 * 3 * 4 ». Elles s'ouvrent
+  derrière ce qui OUVRE (une espace, une apostrophe, un guillemet, une parenthèse), pas derrière
+  toute ponctuation : derrière une barre oblique, le `_notes_` d'une adresse prenait, et l'adresse
+  partait amputée de ses soulignés (vu au navigateur le 13/10). Dans une adresse en cours de
+  frappe, rien ne prend. Les règles de collage du kit sont coupées : ce qu'on colle est déjà relu
+  comme du markdown.
+- **Jamais sur un éditeur détruit.** La bibliothèque crée l'éditeur au rendu et le défait une
+  milliseconde plus tard si le montage tarde. Demander ses commandes à un éditeur mort lève (seule
+  une chaîne de commandes y est tolérée) ; dans un effet — le focus donné au montage, ou à
+  « Répondre » —, cette levée démontait l'arbre. Les effets et la poignée s'en gardent, et le
+  composer retrouve un éditeur vivant au rendu suivant.
 
 ### 18.5 Accessibilité
 
 Le champ est une zone éditable : son rôle `textbox` est posé explicitement, avec
 `aria-multiline`, un nom (ce qu'on y fait : écrire, répondre à quelqu'un, corriger), une
-description de la mise en forme et du rôle d'Entrée, et les attributs de la liste de mentions
-(§12.3) — `aria-controls` et `aria-activedescendant` seulement quand elle est ouverte. Le texte
-d'attente est une décoration, jamais du texte du message. Les boutons de la barre sont des
-bascules ; cliquer l'un d'eux ne prend pas le focus au champ. Refermé, le champ d'adresse d'un lien
-rend le focus au texte.
+description de la mise en forme et du rôle d'Entrée — qui suit le pointeur : au doigt, elle ne
+promet pas une Entrée qui envoie —, et les attributs de la liste de mentions (§12.3) —
+`aria-controls` et `aria-activedescendant` seulement quand elle est ouverte. Le texte d'attente
+est une décoration, jamais du texte du message. La barre d'outils est un groupe nommé ; ses
+boutons sont des bascules, et cliquer l'un d'eux ne prend pas le focus au champ ; dans un bloc de
+code, où rien ne se met en forme, ceux des marques et du lien sont inertes. Refermé, le champ
+d'adresse d'un lien rend le focus au texte. Le conteneur de l'éditeur est en `aria-live="off"` :
+le composer d'une édition vit dans le journal du fil, et ce qu'on y tape n'est pas une annonce.
 
 ### 18.6 Preuves
 
-Du 13/10, sur le code décrit ici.
+Du 13/10, sur le code décrit ici — corrections de la relecture (§19) comprises.
 
 | Quoi | Résultat |
 |---|---|
-| Tests unitaires | 272 tests dans huit fichiers, dont six nouveaux ; ils en remplacent 63 (l'ancien champ et ses manipulations de texte). Le pont : 93 — allers-retours et documents « tapés », jugés par le rendu du fil ; le composer avec le vrai éditeur : 109 ; la coquille seule, l'éditeur remplacé par un témoin : 31 ; l'adresse d'un lien : 23 ; le chargement : 7 ; le graphe des imports : 5 |
+| Tests unitaires | 375 tests dans les six fichiers de l'éditeur, dont cinq nouveaux ; ils en remplacent 63 (l'ancien champ et ses manipulations de texte). Le pont : 152 — allers-retours et documents « tapés », jugés par le rendu du fil ; le composer avec le vrai éditeur : 155 ; la coquille seule, l'éditeur remplacé par un témoin : 31 ; l'adresse d'un lien : 23 ; le chargement : 7 ; le graphe des imports : 7 |
 | … ce que **coûte** l'éditeur | le graphe des imports statiques de l'entrée du module, lu dans les sources : ni Tiptap ni ProseMirror, une seule porte — l'import différé du magasin ; et au rendu serveur le composer écrit son champ d'attente, rien de l'éditeur, même quand son code est déjà chargé |
 | … **Échap dans une modale** | la modale est rejouée par ce qu'elle fait à la touche : un écouteur en capture qui la neutralise. L'édition s'annule et la liste de mentions se referme quand même |
 | Le pont, essayé sur près de deux cents textes tapés | signes du markdown, marqueurs de liste, entités, adresses suivies ou entourées de signes : les écarts trouvés — souligné doublé, « 1. » seul, adresse à tilde ou à souligné — sont corrigés et devenus des tests |
-| Contre-épreuve par mutation, sur des copies | 175 mutations en onze lots, toutes tuées. Au premier passage 171 l'étaient ; les cinq survivantes ont donné trois tests de plus et retiré deux redondances du code, puis les lots touchés ont été rejoués : 114 sur 114 |
-| Navigateur, compte connecté sans rôle sur le commun, 1 440 puis 375 px, aucune écriture | 44 vérifications à chaque largeur : le champ et sa boîte, la frappe, Maj+Entrée, la barre et son état, « - » qui ouvre une liste, le champ d'adresse d'un lien, un collage relu comme du markdown, la liste des mentions sur une vraie recherche, Échap qui la referme sans fermer la modale, le markdown qui partirait (l'envoi reçoit un refus de la sonde avant le serveur) et le brouillon rendu, un message rouvert en correction puis renvoyé à la lettre, Échap qui annule l'édition. Aucune feuille de style ajoutée à la page |
+| Le pont, sur 8 000 documents tirés au hasard | aucune levée — 4 000 documents quelconques, que l'éditeur ne produit pas tous, et 4 000 « comme on en tape ». Parmi ces derniers, 66 se rendent autrement une fois relus puis réécrits, comme le fait une correction. Les causes, retirées du tirage l'une après l'autre : un « @nom » tapé en texte dans un message qui mentionne la même personne — le fil le lie, la relecture en fait une mention ; une adresse sans protocole (§18.7) ; deux listes de même nature posées l'une contre l'autre (§18.7) ; un saut de ligne en bord de paragraphe (§18.7). Il en reste un sur 4 000 : une ligne tapée « + 1. … » derrière un saut de ligne, dans un élément de liste |
+| Contre-épreuve par mutation, sur des copies | 242 mutations en treize lots, toutes tuées (175 en onze lots avant la relecture). Au premier passage sur le code relu, huit survivaient sur 246 : quatre ont fait retirer du code sans effet — et leurs mutations avec lui —, quatre ont donné des tests. Les lots touchés ont été rejoués deux fois : 181 mutations, une survivante ; puis 97, aucune |
+| Navigateur, compte connecté sans rôle sur le commun, 1 440 puis 375 px, aucune écriture | 51 vérifications à chaque largeur : le champ et sa boîte, la frappe, Maj+Entrée, la barre et son état, « - » qui ouvre une liste, le champ d'adresse d'un lien, un collage relu comme du markdown, la liste des mentions sur une vraie recherche, Échap qui la referme sans fermer la modale, le markdown qui partirait (l'envoi reçoit un refus de la sonde avant le serveur) et le brouillon rendu, un message rouvert en correction puis renvoyé à la lettre, Échap qui annule l'édition. Et sept points de la relecture : des signes qui ne font rien partent tels quels, une marque tapée prend en tête d'une seconde ligne et derrière une apostrophe, une adresse liée puis complétée mène où on la lit, une ligne à tiret derrière Maj+Entrée part telle quelle, des cellules de tableur collées gardent leurs séparations, une liste ou une citation vides ne s'envoient pas. Aucune feuille de style ajoutée à la page |
 | Navigateur, écriture réelle par le déposant sur son commun, 1 440 px | 44 vérifications : un message mis en forme est posté depuis un palier — en base, c'est du markdown au chemin de la ligne ; le fil le rend comme on l'a écrit ; corrigé par l'interface, seul le mot ajouté change en base. Aucun courriel mis en file. Le document de l'appel, relevé par son contenu (§15.7), est remis à son état d'avant |
+| Navigateur, sondes des lots précédents rejouées avec l'éditeur | mêmes comptes qu'aux §15.6, §16.4 et §17.5 pour les passages sans écriture (35 et 35 · 44 et 46 · 40 et 40 · 54 et 43), pour la création réelle d'une discussion à 1 440 px (56) et pour l'écriture depuis un palier (56) |
 
 ### 18.7 Limites
 
-- **Un tableau tapé devient un tableau.** L'éditeur n'en a pas le nœud : la source d'un tableau y
-  reste du texte, et ressort telle quelle — le fil, lui, la rend toujours en tableau. C'est aussi
-  ce qui garde intact un message legacy qui en porte un.
-- **Une marque bordée d'une ponctuation collée à une lettre ne se relit pas** (`**gras.**suite`) :
-  c'est la règle du markdown lui-même. Avec une espace, ou la ponctuation hors de la marque, elle
-  se relit.
-- **Deux sauts de ligne de suite** deviennent un changement de paragraphe à la relecture, et les
-  espaces de tête d'une ligne ne sont pas gardées — comme avec l'ancien champ.
+- **Un message corrigé est réécrit dans la forme de l'éditeur.** Il se rend pareil, mais son texte
+  change s'il a été écrit autrement — depuis le legacy, ou à la main : `_x_` devient `*x*`,
+  `* un` devient `- un`, `1)` devient `1.`, une liste espacée est resserrée, le titre d'un lien
+  (`[texte](adresse "titre")`) est perdu, et un bloc de code ou une citation placés en tête d'un
+  élément de liste en sortent.
+- **Un tableau tapé devient un tableau.** L'éditeur n'en a pas le nœud : les lignes d'un tableau y
+  restent du texte, et le fil, lui, les rend en tableau. C'est aussi ce qui garde lisible un
+  message legacy qui en porte un — sauf si l'une de ses cellules contient une barre verticale
+  échappée (`\|`), qui ne survit pas à une correction.
+- **Une marque bordée d'une ponctuation et collée à une lettre ne se relit pas**
+  (`**gras.**suite`, un gras collé à un mot) : c'est la règle du markdown lui-même. Avec une
+  espace, ou la ponctuation hors de la marque, elle se relit.
+- **Deux sauts de ligne de suite** deviennent un changement de paragraphe à la relecture ; un saut
+  de ligne posé en tête ou en fin de paragraphe ne se voit pas dans le fil ; les espaces de tête
+  d'une ligne ne sont pas gardées, et plusieurs espaces de suite, visibles dans l'éditeur, n'en
+  font qu'une dans le fil — comme avec l'ancien champ.
+- **Deux listes de même nature posées l'une contre l'autre n'en font qu'une dans le fil** : le
+  markdown ne sait pas les séparer. Deux listes à puces s'y lisent comme une seule, espacée ; une
+  seconde liste numérotée — tapée « 1. » juste derrière la première, ou rapprochée d'elle en
+  supprimant la ligne qui les séparait — y prend la suite de la numérotation. Avec une ligne de
+  texte entre elles, chacune reste la sienne.
 - **Ni titre, ni souligné, ni image dans le texte** : le fil ne les rend pas (§5.5), l'éditeur ne
   les propose pas.
-- **`__nom__` tapé passe en gras**, comme le markdown le lirait. Collé, ou écrit puis annulé d'un
-  Ctrl+Z, il reste du texte.
-- **Un lien sans protocole dont l'adresse porte `_x_` ou `~`** garde son texte, mais le fil n'en
-  lie que le début : il lit les marques avant de chercher les adresses.
+- **`__nom__` tapé ou collé passe en gras**, comme le markdown le lirait — un collage se relit
+  comme du markdown. Écrit puis annulé d'un Ctrl+Z, il reste du texte.
+- **`[texte](adresse)` tapé reste du texte** : un lien nommé se pose par le bouton. Trois accents
+  graves suivis d'Entrée partent tels quels ; c'est une espace derrière eux, ou le bouton, qui
+  ouvre le bloc de code.
+- **Une adresse sans protocole où une marque se lirait vraiment** (`www.exemple.org/_a_`) garde
+  son texte, mais le fil n'en lie que le début : il lit les marques avant de chercher les adresses.
+  Pour la même raison, **deux** adresses sans protocole d'un même paragraphe dont les signes se
+  répondent — `www.exemple.org/_a` puis `fr.wikipedia.org/wiki/P_(h)` — sortent telles quelles, et
+  le fil lit un italique de l'une à l'autre : les deux liens sont coupés, les deux soulignés
+  perdus. Chacune, seule, se relit entière ; le pont ne les juge pas ensemble. Avec leur protocole
+  (`https://…`), ou un souligné pris dans un mot (`mon_fichier`), rien de tel.
+- **Une mention suivie, sans espace, d'une lettre ou d'un tiret** est notifiée mais non liée dans
+  le fil, qui lit alors un nom plus long. Passé en bloc de code, un paragraphe garde ses mentions
+  en texte : elles n'y sont plus des mentions.
+- **La barre d'outils compte jusqu'à douze arrêts de tabulation** : pas de navigation aux flèches.
+  Entrée envoie depuis le champ, Échap annule une édition — on n'a pas à la traverser.
 - **Un envoi dont l'issue est incertaine** (réseau coupé) ne rend pas le brouillon — règle
   antérieure du fil (§10) : le serveur a peut-être écrit. Seul un refus net le rend.
-- **L'éditeur indisponible, on ne peut pas écrire** : la coquille le dit et offre de le
-  redemander, mais il n'y a pas de champ de secours.
+- **L'éditeur indisponible, on ne peut pas écrire** : la coquille le dit, offre de le redemander
+  et conseille de recharger la page, mais il n'y a pas de champ de secours.
 - **Non mesuré** : le poids du morceau de l'éditeur sur un build de production — la preuve du
   §18.6 est son absence du graphe de démarrage, pas une taille.
 - **Non vérifié** : un lecteur d'écran réel, un appareil tactile réel (la règle d'Entrée y est
-  tenue par ses tests), la saisie par composition (accents morts, claviers asiatiques), un autre
-  navigateur que Chrome ; et une mention **envoyée** pour de vrai — elle notifierait la personne —
-  n'a été rejouée qu'en test : au navigateur, la mention est posée dans le texte, pas postée.
+  tenue par ses tests), la saisie par composition sur un vrai clavier (accents morts, claviers
+  asiatiques), un autre navigateur que Chrome ; l'ordre d'événements qui détruit l'éditeur avant
+  ses effets (§18.4) n'a pas été observé — la garde est tenue par un test qui le détruit ; et une
+  mention **envoyée** pour de vrai — elle notifierait la personne — n'a été rejouée qu'en test :
+  au navigateur, la mention est posée dans le texte, pas postée.
+
+## 19. Relecture indépendante du 13/10
+
+Avant d'être proposés au commit, les lots des §15 (corrections), §16, §17 et §18 ont été relus
+d'un bloc par quatre relecteurs indépendants — backend, écran de l'espace, éditeur, tests et
+documentation. Chaque constat a été vérifié dans le code, et au navigateur quand il s'y prêtait,
+avant d'être traité. Les chapitres ci-dessus décrivent l'état qui en résulte ; celui-ci dit ce qui
+a changé, où le lire, et ce qui le prouve (§19.4).
+
+### 19.1 Backend
+
+| Constat | Ce qui a changé | Où |
+|---|---|---|
+| Le fil d'une ligne de dépense se décidait sur des mots trouvés n'importe où dans le chemin | Forme **exacte** du chemin (onze segments) ; `line` seulement pour une ligne que le commun a | §17.2 |
+| Au-delà de 200 lignes, la liste s'arrêtait sans le dire | `truncated` | §15.3, §17.2 |
+| `includeEmpty` posté en tableau était lu comme absent | Refusé (`bad-request`), comme sur `discussions` | §15.3 |
+| Un nom de discussion fait de signes sans chasse était accepté | Refusé (`bad-name`) ; un nom qui n'est pas de l'UTF-8 aussi | §16.2 |
+| Créer une discussion redatait le commun | Elle ne pose plus que la discussion | §16.2 |
+| Une écriture refusée par la base ne laissait aucune trace | Trace au journal du serveur | §16.2 |
+
+### 19.2 L'écran de l'espace et la fiche
+
+| Constat | Ce qui a changé | Où |
+|---|---|---|
+| Un double clic sur « Discussion » ouvrait la modale et la refermait ; sur la croix, il atteignait la page | L'écho d'un double clic est avalé, à l'ouverture comme à la fermeture | §15.5 |
+| Le brouillon d'une édition du commun était tenu pour périmé après la création d'une discussion | Corrigé au backend : la réponse n'est plus redatée | §16.2 |
+| Le bouton d'un palier écrasait le nom du palier entre 640 et 1 279 px | Réduit à son icône sous 80 rem | §17.3 |
+| Une relecture ratée de la fiche démontait la modale et le message en cours | La fiche déjà affichée reste | §15.5 |
+| Une panne à la création disait « Réessayez » alors que la discussion existait peut-être | Phrase propre à ce cas | §16.3 |
+| Par la clé seule, le palier d'une fiche réglée sur une autre étape ouvrait le fil d'une autre ligne | Pas de bouton de palier hors de `aapStep1` | §17.3 |
+| Le formulaire de création sortait du cadre sur un écran bas | Il se réduit et défile | §16.3 |
+| Libellés anglais faux ou incohérents | Corrigés (`submitted`, `sign in`, `Current thread`) | — |
+
+### 19.3 L'éditeur
+
+| Constat | Ce qui a changé | Où |
+|---|---|---|
+| Le texte d'une adresse liée changeait, sa cible restait l'ancienne | Le texte fait foi, sauf lien écrit | §18.1, §18.3 |
+| Des barres obliques inverses « de précaution » se voyaient partout où le markdown n'est pas rendu | Échappements au strict nécessaire, vérifiés bloc par bloc par le rendu du fil | §18.1, §18.3 |
+| Les marques tapées ne prenaient qu'en début de message ou derrière une espace | Seconde ligne, apostrophe, guillemet, parenthèse | §18.1, §18.4 |
+| Relu, un code dans un lien ou dans un gras faisait tomber le lien ou le gras | Marque de code qui cohabite avec les autres | §18.2 |
+| Une adresse sans protocole tapée en texte sortait coupée par ses propres signes | Laissée nue quand elle se relit entière | §18.3 |
+| Un lien posé sur une sélection contenant une mention sortait illisible | Le lien s'arrête devant la mention et reprend derrière | §18.3 |
+| Des cellules de tableur collées se soudaient | Collées par leur texte | §18.1 |
+| Le focus demandé à un éditeur détruit levait, dans un effet | Gardes | §18.4 |
+| Une liste, une citation ou un bloc de code vides s'envoyaient sous la forme de leur signe | Ils ne s'envoient pas | §18.1 |
+| Entrée, pendant que la liste des personnes arrivait, envoyait « @mar » | Elle attend la liste | §18.1 |
+| Échap pendant une composition annulait l'édition | La touche reste à la saisie | §18.4 |
+| L'aide du champ promettait « Entrée envoie » au doigt ; la barre n'était pas un groupe ; ses marques restaient actives dans un bloc de code ; le champ parlait dans le journal du fil | Corrigés | §18.5 |
+
+Une régression introduite par la première de ces corrections a été vue au navigateur, et corrigée
+avant d'aller plus loin : élargie à « toute ponctuation », la règle des marques tapées mettait en
+italique le `_notes_` d'une adresse en cours de frappe (§18.4).
+
+### 19.4 Preuves, sur l'état final
+
+Du 13/10, une fois toutes les corrections posées. Les tableaux des §15.6, §16.4 et §17.5 gardent
+leurs chiffres, datés ; celui du §18.6 et celui-ci portent sur le code tel qu'il est proposé.
+
+| Quoi | Résultat |
+|---|---|
+| Règles du backend, hors base (§15.6) | 174 vérifications (161 avant la relecture), sans notice ni avertissement PHP |
+| Contre-épreuve par mutation de `Discussion.php` | 235 mutations tuées sur 235 : 74 sur les lignes de dépense, 161 sur le reste (204 avant la relecture) |
+| Sondes contre le vrai backend | 70 vérifications pour l'espace (§15.6), 30 pour les actions `discussions` et `seen`, 51 pour la création d'une discussion (§16.4) — qui vérifie désormais que le commun n'est pas redaté |
+| Tests unitaires | 6 981 réussis dans 510 fichiers, aucun échec (7 tests et 1 fichier ignorés) |
+| Contre-épreuve par mutation de l'écran | 600 mutations en 44 lots, toutes tuées (559 en 43 lots au §17.5) ; le lot de plus est celui de l'écho d'un double clic |
+| Contre-épreuve par mutation de l'éditeur | 242 mutations en treize lots, toutes tuées (§18.6) |
+| Navigateur — l'écho d'un double clic, avant et après | avant : douze doubles clics sur douze refermaient la modale à 1 440 px ; après : elle reste ouverte neuf fois sur neuf (six sur six à 375 px), le double clic sur la croix n'atteint plus la page, et celui d'un palier ouvre deux fois sur deux le fil du palier |
+| Navigateur — la place laissée au nom d'un palier | à côté du bouton, le nom gardait 42 px dans une fenêtre de 640 à 767 px : 122 px ; 170 px de 768 à 1 279 px : 250 px ; au-delà, 362 px, bouton entier |
+| Navigateur, sondes de tous les lots rejouées | sans écriture, à 1 440 puis 375 px : 35 et 35 · 44 et 46 · 40 et 40 · 54 et 43 · 51 et 51 ; écritures réelles à 1 440 px : création d'une discussion (56), message posté depuis un palier (56), message mis en forme puis corrigé (44). Après chacune, les documents porteurs sont remis à leur relevé (§15.7) ; aucun courriel mis en file, aucune notification |
+| Typage, lint, préflight | sans erreur ; 797 vérifications de préflight |
+
+Deux écarts ont été vus après coup, en rejouant sur le code final les tirages aléatoires du pont
+(§18.6) : deux adresses sans protocole dont les signes se répondent, et deux listes de même nature
+posées l'une contre l'autre. Ils ne sont pas corrigés ; ils sont inscrits aux limites (§18.7).
 
 ## Voir aussi
 

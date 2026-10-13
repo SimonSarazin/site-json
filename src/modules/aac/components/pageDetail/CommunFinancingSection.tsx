@@ -14,7 +14,7 @@ import type {
 } from "@/modules/cagnotte/types";
 import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import { MilestoneManageActions } from "@/modules/cagnotte/components/sections/MilestoneManageActions";
-import { toSafeInt, buildItemsFromRawDepenses } from "@/modules/cagnotte/utils/dataTransform";
+import { DEFAULT_AAC_STEP, toSafeInt, buildItemsFromRawDepenses } from "@/modules/cagnotte/utils/dataTransform";
 import { resolveDepenseKey } from "@/modules/cagnotte/utils/depenseKey";
 import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
 import type { CagnottePermissions } from "@/modules/cagnotte/permissions/types";
@@ -163,9 +163,11 @@ function FinancingMilestoneCard({
                     celui qui déplie. `empty:hidden` — sans bouton à montrer (rien à lire pour ce
                     lecteur), l'emplacement s'efface et l'en-tête reprend toute la largeur. Sauf si
                     un AUTRE palier de la liste en montre un : tous gardent alors la même largeur
-                    d'emplacement, pour que les jauges restent alignées d'une carte à l'autre. */}
+                    d'emplacement, pour que les jauges restent alignées d'une carte à l'autre.
+                    Cette largeur suit le bouton : étroite tant qu'il se réduit à son icône et à
+                    son compteur, large à partir de 80 rem, où il porte son libellé. */}
                 <div
-                    className="flex shrink-0 items-center justify-end pe-3 sm:pe-4 empty:hidden sm:group-has-[[data-milestone-discussion-slot]:not(:empty)]/paliers:flex! sm:group-has-[[data-milestone-discussion-slot]:not(:empty)]/paliers:min-w-40"
+                    className="flex shrink-0 items-center justify-end pe-3 sm:pe-4 empty:hidden sm:group-has-[[data-milestone-discussion-slot]:not(:empty)]/paliers:flex! sm:group-has-[[data-milestone-discussion-slot]:not(:empty)]/paliers:min-w-20 xl:group-has-[[data-milestone-discussion-slot]:not(:empty)]/paliers:min-w-40"
                     data-milestone-discussion-slot
                 >
                     {discussion}
@@ -278,6 +280,12 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl, renderMilesto
 
     const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
 
+    // Le fil d'un palier est celui d'une ligne de `answers.aapStep1.depense` : la seule liste que
+    // l'espace de discussion connaisse, celle du gabarit legacy. Une fiche qui lit ses dépenses à
+    // une autre étape n'a pas de fil à apparier — par la clé seule, elle ouvrirait celui d'une
+    // AUTRE ligne.
+    const milestoneThreads = (aacConfig?.roles?.depenseStepKey ?? DEFAULT_AAC_STEP) === DEFAULT_AAC_STEP;
+
     // Les paliers viennent des dépenses OU de l'enveloppe : tant que l'une des deux est en
     // vol et qu'aucun palier n'est là, une grille vide se lirait « aucun besoin financier ».
     const isLoading = (isDepensesLoading || ctrl.isLoadingData) && items.length === 0;
@@ -305,7 +313,7 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl, renderMilesto
                     onMilestoneDelete={ctrl.handleDeleteMilestone}
                     permissions={ctrl.cagnottePerms}
                     loadingIds={ctrl.loadingIds}
-                    discussion={renderMilestoneDiscussion?.({
+                    discussion={milestoneThreads && renderMilestoneDiscussion?.({
                         // La clé se lit dans le document : la liste affichée l'a perdue, et une
                         // position ne la vaut que si les dépenses sont un vrai tableau.
                         lineKey: resolveDepenseKey(ctrl.depensesDocument, o.depenseIndex) ?? String(o.depenseIndex),

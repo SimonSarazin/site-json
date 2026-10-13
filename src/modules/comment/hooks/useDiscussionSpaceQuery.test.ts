@@ -39,10 +39,10 @@ const REPONSE = {
   space: { type: "answers", id: COMMUN, title: "Un commun", formId: APPEL },
   canComment: true,
   truncated: false,
-  // Les quatorze champs qu'un fil porte dans la réponse du serveur.
+  // Les quinze champs qu'un fil porte dans la réponse du serveur.
   threads: [
-    { key: `answers:${COMMUN}`, contextType: "answers", contextId: COMMUN, path: null, total: 3, unread: 1, last: 1_758_000_000, mine: false, title: null, carrier: null, virtual: false, kind: "general", group: null, audience: null },
-    { key: `forms:${APPEL}:q`, contextType: "forms", contextId: APPEL, path: "q", total: 2, unread: 2, last: 1_758_000_100, mine: false, title: "Une question", carrier: null, virtual: false, kind: "question", group: "Proposition", audience: null },
+    { key: `answers:${COMMUN}`, contextType: "answers", contextId: COMMUN, path: null, total: 3, unread: 1, last: 1_758_000_000, mine: false, title: null, carrier: null, virtual: false, kind: "general", group: null, audience: null, line: null },
+    { key: `forms:${APPEL}:q`, contextType: "forms", contextId: APPEL, path: "q", total: 2, unread: 2, last: 1_758_000_100, mine: false, title: "Une question", carrier: null, virtual: false, kind: "question", group: "Proposition", audience: null, line: null },
   ],
 };
 

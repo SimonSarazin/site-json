@@ -427,7 +427,10 @@ export default function AacCommunDetailPage() {
 
     if (!answerId) return <PageShell seo={seo}><ErrorCard title={String(t("page.communDetail"))} description={String(t("page.missingAnswer"))} /></PageShell>;
     if (answerQuery.isLoading || formQuery.isLoading || isConfigLoading) return <PageShell seo={seo}><LoadingCard label={String(t("page.loading"))} /></PageShell>;
-    if (answerQuery.error || formQuery.error) return <PageShell seo={seo}><ErrorCard title={String(t("page.error"))} description={String(t("page.errorMessage"))} /></PageShell>;
+    // Seulement SANS données : une RELECTURE ratée (retour sur l'onglet, réseau qui flanche) garde
+    // la fiche déjà affichée. La remplacer par la carte d'erreur démontait tout ce qu'elle porte —
+    // l'espace de discussion ouvert, et le message qu'on y était en train d'écrire.
+    if ((answerQuery.error && !answerQuery.data) || (formQuery.error && !formQuery.data)) return <PageShell seo={seo}><ErrorCard title={String(t("page.error"))} description={String(t("page.errorMessage"))} /></PageShell>;
     // Sans la config, ni les gates ni les blocs déclarés ne se résolvent : la
     // fiche se rendrait vidée de son financement et de sa prose, sans un mot.
     // Une erreur EXPLICITE plutôt qu'un « fail closed » silencieux — même

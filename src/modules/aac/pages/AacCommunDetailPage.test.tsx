@@ -82,14 +82,25 @@ let ANSWER: TestAnswer = { ...BASE_ANSWER };
 const FORM = { id: "f1", name: "Appel test", inputs: {} };
 const refetchAnswer = vi.fn().mockResolvedValue(undefined);
 const invalidateQueries = vi.fn().mockResolvedValue(undefined);
+/**
+ * L'état des deux lectures de la fiche. Une requête en ERREUR peut encore porter des données :
+ * c'est ce que React Query rend quand une RELECTURE échoue après un premier chargement réussi.
+ */
+type Lecture = { error: Error | null; sansDonnees: boolean };
+let lectureReponse: Lecture = { error: null, sansDonnees: false };
+let lectureAppel: Lecture = { error: null, sansDonnees: false };
 vi.mock("@tanstack/react-query", () => ({
-  useQuery: ({ queryKey }: { queryKey: unknown[] }) => ({
-    data: queryKey[0] === "aac-commun-detail" ? ANSWER : FORM,
-    isLoading: false,
-    isSuccess: true,
-    error: null,
-    refetch: queryKey[0] === "aac-commun-detail" ? refetchAnswer : vi.fn(),
-  }),
+  useQuery: ({ queryKey }: { queryKey: unknown[] }) => {
+    const reponse = queryKey[0] === "aac-commun-detail";
+    const lecture = reponse ? lectureReponse : lectureAppel;
+    return {
+      data: lecture.sansDonnees ? undefined : reponse ? ANSWER : FORM,
+      isLoading: false,
+      isSuccess: lecture.error === null,
+      error: lecture.error,
+      refetch: reponse ? refetchAnswer : vi.fn(),
+    };
+  },
   useQueryClient: () => ({ invalidateQueries }),
 }));
 
@@ -331,6 +342,8 @@ beforeEach(() => {
   isFundingLoading = false;
   isDetailSectionsLoading = false;
   detailSections = [];
+  lectureReponse = { error: null, sansDonnees: false };
+  lectureAppel = { error: null, sansDonnees: false };
   refetchAnswer.mockClear();
   invalidateQueries.mockClear();
 });
@@ -439,6 +452,37 @@ describe("AacCommunDetailPage — la fiche attend la configuration de l'appel", 
     expect(screen.getByText("page.configErrorMessage")).toBeTruthy();
     expect(screen.queryByTestId("hero")).toBeNull();
     consoleError.mockRestore();
+  });
+});
+
+/**
+ * Une RELECTURE ratée ne remplace pas la fiche déjà affichée (relecture du 13/10). La carte
+ * d'erreur démontait tout ce que la fiche porte — dont l'espace de discussion ouvert, et le message
+ * qu'on y écrivait : il suffisait de revenir sur l'onglet au moment où le réseau flanchait.
+ */
+describe("AacCommunDetailPage — une lecture en erreur", () => {
+  it.each([
+    ["de la réponse", () => { lectureReponse = { error: new Error("réseau"), sansDonnees: false }; }],
+    ["de l'appel", () => { lectureAppel = { error: new Error("réseau"), sansDonnees: false }; }],
+  ])("relecture %s ratée, fiche déjà là : elle RESTE, avec son bouton de discussion — pas de carte d'erreur", (_cas, casser) => {
+    casser();
+    const avant = discussionControlMounts;
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("hero")).toBeTruthy();
+    expect(discussionControlMounts).toBeGreaterThan(avant);
+    expect(screen.queryByText("page.error")).toBeNull();
+    expect(screen.queryByText("page.errorMessage")).toBeNull();
+  });
+
+  it.each([
+    ["de la réponse", () => { lectureReponse = { error: new Error("réseau"), sansDonnees: true }; }],
+    ["de l'appel", () => { lectureAppel = { error: new Error("réseau"), sansDonnees: true }; }],
+  ])("premier chargement %s raté, rien à montrer : la carte d'erreur", (_cas, casser) => {
+    casser();
+    render(<AacCommunDetailPage />);
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("page.error");
+    expect(screen.getByText("page.errorMessage")).toBeTruthy();
+    expect(screen.queryByTestId("hero")).toBeNull();
   });
 });
 

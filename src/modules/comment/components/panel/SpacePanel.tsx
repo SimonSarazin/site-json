@@ -202,7 +202,8 @@ export function SpacePanel({ space, title, target, onSelect, scopeEntity, header
                 aria-expanded={creation}
                 aria-label={String(t("space.create.open"))}
                 title={String(t("space.create.open"))}
-                onClick={() => setCreation(ouverte => !ouverte)}
+                // Le second clic d'un double clic rouvrirait pour refermer aussitôt (ou l'inverse).
+                onClick={event => { if (event.detail <= 1) setCreation(ouverte => !ouverte); }}
               >
                 <Plus className="size-4" aria-hidden />
               </Button>

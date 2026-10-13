@@ -850,6 +850,22 @@ describe("SpacePanel", () => {
       expect(plus()!.getAttribute("aria-expanded")).toBe("false");
     });
 
+    it("un double clic sur le « + » ouvre, et ne referme pas : son second clic ne compte pas", async () => {
+      const { container } = monter({ sert: PEUT_CREER });
+      await servir();
+      fireEvent.click(plus()!, { detail: 1 });
+      fireEvent.click(plus()!, { detail: 2 });
+      expect(formulaire(container)).not.toBeNull();
+      expect(plus()!.getAttribute("aria-expanded")).toBe("true");
+      // … et dans l'autre sens : ouvert, un double clic le referme, sans le rouvrir.
+      fireEvent.click(plus()!, { detail: 1 });
+      fireEvent.click(plus()!, { detail: 2 });
+      expect(formulaire(container)).toBeNull();
+      // Au clavier (`detail` nul), chaque activation compte.
+      fireEvent.click(plus()!, { detail: 0 });
+      expect(formulaire(container)).not.toBeNull();
+    });
+
     it("n'y offre que les audiences annoncées", async () => {
       await ouvrirLeFormulaire();
       expect(screen.getAllByRole("radio").map(radio => document.querySelector(`label[for="${radio.id}"]`)!.textContent)).toEqual(["Publique", "Privée"]);

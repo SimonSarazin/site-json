@@ -33,8 +33,10 @@
     "stopReplying": "Stop replying",
     "emoji": "Insert an emoji",
     "mentionHint": "Type @ to mention someone",
-    "formattingHint": "Enter sends the message, Shift+Enter starts a new line. Keyboard formatting: **bold**, *italic*, ~~strikethrough~~, `code`, > quote, - list, 1. numbered list.",
-    "editorFailed": "The editor could not be loaded.",
+    "formattingHint": "Enter sends the message; in a list or a code block it starts a new line. Shift+Enter starts a new line. Keyboard formatting: **bold**, *italic*, ~~strikethrough~~, `code`, > quote, - list, 1. numbered list.",
+    "formattingHintTouch": "Enter starts a new line; the message is sent with its button. Keyboard formatting: **bold**, *italic*, ~~strikethrough~~, `code`, > quote, - list, 1. numbered list.",
+    "tools": "Formatting and attachments",
+    "editorFailed": "The editor could not be loaded. Try again, or reload the page.",
     "mentionCount_one": "{{count}} person suggested",
     "mentionCount_other": "{{count}} people suggested",
     "marks": {
@@ -150,7 +152,7 @@
     "backToThreads": "Back to threads",
     "backToHolders": "Back to spaces",
     "startThread": "Start the conversation",
-    "openThread": "Open thread",
+    "openThread": "Current thread",
     "withoutThread_one": "Without conversation ({{count}})",
     "withoutThread_other": "Without conversation ({{count}})",
     "noCarrier": "No space",
@@ -190,7 +192,7 @@
     "questionUntitled": "Untitled question",
     "expenseUntitled": "Expense line",
     "notFound": "This discussion space could not be found.",
-    "loginIfReserved": "If it is restricted to you, log in to read it.",
+    "loginIfReserved": "If it is restricted to you, sign in to read it.",
     "kinds": {
       "general": "General",
       "question": "Question",
@@ -215,7 +217,7 @@
       "audience": "Who can read it",
       "audienceHint": {
         "authorAll": "Everyone, without signing in.",
-        "authorAdmin": "The commun's contributor, its referents and the administrators of the call.",
+        "authorAdmin": "The person who submitted the commun, its referents and the administrators of the call.",
         "private": "The administrators of the call only."
       },
       "submit": "Create",
@@ -228,6 +230,7 @@
         "bad-name": "Give it a name, 120 characters at most.",
         "too-many": "This commun has reached its maximum number of discussions.",
         "unreadable": "The server response could not be read. Check the list before trying again.",
+        "uncertain": "The server did not answer: the discussion may have been created. Check the list before trying again.",
         "failed": "The discussion could not be created. Try again."
       }
     }

@@ -59,7 +59,9 @@ export function NewDiscussionForm({ space, audiences, onCreated, onCancel }: New
       data-new-discussion
       data-comment-escape
       aria-labelledby={`${id}-titre`}
-      className="bg-muted/40 space-y-3 border-b px-3 py-3"
+      // `min-h-0` + défilement : dans une colonne trop basse (téléphone à l'horizontale, clavier
+      // ouvert), le formulaire se réduit et défile — sans quoi ses boutons sortaient du cadre.
+      className="bg-muted/40 min-h-0 space-y-3 overflow-y-auto border-b px-3 py-3"
       onSubmit={envoyer}
       onKeyDown={event => {
         if (event.key !== "Escape") return;

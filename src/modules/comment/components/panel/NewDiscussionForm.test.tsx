@@ -31,7 +31,7 @@ const ESPACE: SpaceRef = { type: "answers", id: COMMUN };
 const CHEMIN = `${APPEL}.moreDiscussions_93015AbCdEfGh.${COMMUN}.discu_121020269301512.comment`;
 const FIL_CREE = {
   key: `forms:${APPEL}:${CHEMIN}`, contextType: "forms", contextId: APPEL, path: CHEMIN, total: 0, unread: 0, last: null, mine: false,
-  title: "Budget 2026", carrier: null, virtual: true, kind: "discussion", group: null, audience: "authorAdmin",
+  title: "Budget 2026", carrier: null, virtual: true, kind: "discussion", group: null, audience: "authorAdmin", line: null,
 };
 const TOUTES: readonly SpaceAudience[] = ["authorAll", "authorAdmin", "private"];
 
@@ -81,6 +81,13 @@ const envoyer = () => act(async () => { fireEvent.submit(document.querySelector(
 
 describe("NewDiscussionForm", () => {
   describe("ce qu'il offre", () => {
+    it("peut se réduire et défiler : dans une colonne trop basse, ses boutons restent atteignables", () => {
+      monter();
+      const classes = document.querySelector("[data-new-discussion]")!.className.split(/\s+/);
+      expect(classes).toContain("min-h-0");
+      expect(classes).toContain("overflow-y-auto");
+    });
+
     it("se présente comme un formulaire nommé, le champ du nom prêt à recevoir la saisie", () => {
       monter();
       expect(screen.getByRole("form", { name: "Nouvelle discussion" })).toBeTruthy();
@@ -211,6 +218,19 @@ describe("NewDiscussionForm", () => {
       await envoyer();
       expect((await screen.findByRole("alert")).textContent)
         .toBe("La réponse du serveur est illisible. Vérifiez la liste avant de recommencer.");
+    });
+
+    it("une panne du serveur ou du réseau ne dit PAS « réessayez » : la discussion existe peut-être, on vérifie la liste", async () => {
+      // La forme de ce que le SDK lève quand la réponse n'arrive pas : une erreur à statut 500.
+      const { onCreated } = monter({ reponse: async () => { throw new cocolightApiClient.error.ApiClientError("Erreur lors de l'appel de l'API : Network Error", 500); } });
+      saisir("Budget 2026");
+      await envoyer();
+      const alerte = await screen.findByRole("alert");
+      expect(alerte.getAttribute("data-new-discussion-error")).toBe("uncertain");
+      expect(alerte.textContent).toBe("Le serveur n'a pas répondu : la discussion a peut-être été créée. Vérifiez la liste avant de recommencer.");
+      expect(alerte.textContent).not.toContain("Réessayez");
+      expect(onCreated).not.toHaveBeenCalled();
+      expect(nom().value).toBe("Budget 2026");
     });
 
     it("un nom refusé marque le champ, et l'erreur lui est rattachée", async () => {

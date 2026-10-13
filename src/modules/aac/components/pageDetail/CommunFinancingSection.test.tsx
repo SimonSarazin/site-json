@@ -179,6 +179,14 @@ describe("CommunFinancingSection — le bouton de discussion d'un palier", () =>
   ));
   const demandes = () => bouton.mock.calls.map(([palier]) => palier);
   const bascule = (titre: string) => screen.getByText(titre).closest("button") as HTMLButtonElement;
+  // La fiche lit ici ses dépenses à `aapStep1` : la liste que l'espace de discussion connaît. Et le
+  // contrôleur porte le DOCUMENT des dépenses, comme en vrai : c'est en lui que se lit la clé.
+  const avecDocument = (document: unknown) => ({ ...makeCtrl(), depensesDocument: document }) as unknown as CommunObjectivesController;
+  const monter = (over: Partial<Parameters<typeof CommunFinancingSection>[0]> = {}) =>
+    renderSection({
+      aacConfig: makeConfig("aapStep1"), renderMilestoneDiscussion: bouton,
+      ctrl: avecDocument([{ poste: "Local" }, { poste: "Matériel" }]), ...over,
+    });
 
   beforeEach(() => {
     bouton.mockClear();
@@ -186,25 +194,30 @@ describe("CommunFinancingSection — le bouton de discussion d'un palier", () =>
   });
 
   it("demande à la page le bouton de CHAQUE palier, par la clé de sa ligne et par son nom", () => {
-    renderSection({ renderMilestoneDiscussion: bouton });
+    monter();
     expect(demandes()).toEqual([{ lineKey: "0", name: "Local" }, { lineKey: "1", name: "Matériel" }]);
+  });
+
+  it("document pas encore là : la position sert de clé, faute de mieux", () => {
+    monter({ ctrl: makeCtrl() });
+    expect(demandes().map(palier => palier.lineKey)).toEqual(["0", "1"]);
   });
 
   it("la clé se lit dans le DOCUMENT : des dépenses en objet à clés creuses ne se numérotent pas par position", () => {
     const ctrl = { ...makeCtrl(), depensesDocument: { "0": { poste: "Local" }, "3": { poste: "Matériel" } } } as unknown as CommunObjectivesController;
-    renderSection({ ctrl, renderMilestoneDiscussion: bouton });
+    monter({ ctrl });
     expect(demandes()).toEqual([{ lineKey: "0", name: "Local" }, { lineKey: "3", name: "Matériel" }]);
   });
 
   it("un tableau à trou garde ses rangs : la ligne d'après un trou ne recule pas", () => {
     depenses = [{ poste: "Local", priceInt: 100 }, {}, { poste: "Matériel", priceInt: 200 }];
     const ctrl = { ...makeCtrl(), depensesDocument: [{ poste: "Local" }, null, { poste: "Matériel" }] } as unknown as CommunObjectivesController;
-    renderSection({ ctrl, renderMilestoneDiscussion: bouton });
+    monter({ ctrl });
     expect(demandes().map(palier => palier.lineKey)).toEqual(["0", "1", "2"]);
   });
 
   it("le pose dans l'en-tête de la carte, HORS du bouton qui la déplie — un bouton ne s'imbrique pas dans un autre", () => {
-    renderSection({ renderMilestoneDiscussion: bouton });
+    monter();
     const discuter = screen.getByText("discuter:Local");
     expect(bascule("Local").contains(discuter)).toBe(false);
     expect(discuter.closest("[data-milestone-discussion-slot]")).not.toBeNull();
@@ -213,7 +226,7 @@ describe("CommunFinancingSection — le bouton de discussion d'un palier", () =>
   });
 
   it("cliquer « discuter » ne déplie pas la carte, et la déplier ne retire pas le bouton", () => {
-    renderSection({ renderMilestoneDiscussion: bouton });
+    monter();
     fireEvent.click(screen.getByText("discuter:Local"));
     expect(bascule("Local").getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(bascule("Local"));
@@ -221,11 +234,35 @@ describe("CommunFinancingSection — le bouton de discussion d'un palier", () =>
     expect(screen.getByText("discuter:Local")).toBeTruthy();
   });
 
+  it("sans étape résolue, c'est `aapStep1` : le bouton est demandé", () => {
+    monter({ aacConfig: makeConfig(null) });
+    expect(demandes().map(palier => palier.lineKey)).toEqual(["0", "1"]);
+  });
+
+  it("dépenses lues à une AUTRE étape : aucun bouton n'est demandé — par la clé seule, il ouvrirait le fil d'une autre ligne", () => {
+    monter({ aacConfig: makeConfig("etapeA") });
+    expect(bouton).not.toHaveBeenCalled();
+    for (const emplacement of document.querySelectorAll("[data-milestone-discussion-slot]")) {
+      expect(emplacement.childNodes).toHaveLength(0);
+    }
+    // … et la liste, elle, s'affiche toujours.
+    expect(screen.getByText("Local")).toBeTruthy();
+  });
+
+  it("l'emplacement réservé suit la taille du bouton : étroit sous 80 rem, large au-delà", () => {
+    monter();
+    const classes = document.querySelector("[data-milestone-discussion-slot]")!.className.split(/\s+/);
+    const reserve = "group-has-[[data-milestone-discussion-slot]:not(:empty)]/paliers:";
+    expect(classes).toContain(`sm:${reserve}min-w-20`);
+    expect(classes).toContain(`xl:${reserve}min-w-40`);
+    expect(classes).not.toContain(`sm:${reserve}min-w-40`);
+  });
+
   it.each([
     ["la page n'en demande pas", undefined],
     ["le bouton n'a rien à montrer", () => null],
   ])("quand %s, l'emplacement reste VIDE — c'est ce qui le fait s'effacer", (_cas, rendu) => {
-    renderSection({ renderMilestoneDiscussion: rendu });
+    renderSection({ aacConfig: makeConfig("aapStep1"), renderMilestoneDiscussion: rendu });
     const emplacements = [...document.querySelectorAll("[data-milestone-discussion-slot]")];
     expect(emplacements).toHaveLength(2);
     for (const emplacement of emplacements) {

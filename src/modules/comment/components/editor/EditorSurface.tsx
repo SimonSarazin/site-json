@@ -1,8 +1,9 @@
 import { useEffect, useId, useImperativeHandle, useLayoutEffect, useState, type RefObject } from "react";
-import { Extension, getSchema, markInputRule, type Editor } from "@tiptap/core";
+import { Extension, getMarkRange, getSchema, markInputRule, type Editor, type InputRuleMatch } from "@tiptap/core";
 import { Placeholder } from "@tiptap/extensions";
-import { Slice } from "@tiptap/pm/model";
-import { PluginKey } from "@tiptap/pm/state";
+import { Fragment, Slice, type Node as ProseNode } from "@tiptap/pm/model";
+import { PluginKey, type Transaction } from "@tiptap/pm/state";
+import type { EditorView } from "@tiptap/pm/view";
 import { EditorContent, useEditor, type UseEditorOptions } from "@tiptap/react";
 import { exitSuggestion } from "@tiptap/suggestion";
 import type { EntityTypes, User } from "@communecter/cocolight-api-client";
@@ -12,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { imageFilesFrom } from "../../lib/commentImages";
 import { COMMENT_PROSE } from "../../lib/commentProse";
 import { CommentMentionNode, commentExtensions } from "../../lib/richText/extensions";
-import { mentionsOf, parseMarkdown, serializeMarkdown, type MentionAttrs } from "../../lib/richText/markdownBridge";
+import { addressOf, isBlank, mentionsOf, parseMarkdown, serializeMarkdown, type MentionAttrs } from "../../lib/richText/markdownBridge";
 import { FORMAT_KINDS, type EditorSurfaceHandle, type EditorSurfaceState, type FormatKind } from "./editorTypes";
 import type { CommentMention } from "../../types";
 
@@ -56,6 +57,8 @@ interface Vivant {
   disabled: boolean;
   listboxId: string;
   suggesting: boolean;
+  /** Une recherche de personnes est en route : sa liste n'est pas encore là. */
+  cherche: boolean;
   actif: number;
   candidates: readonly User[];
   pick: (user: User) => void;
@@ -111,20 +114,75 @@ const SUGGESTION_DE_MENTION = new PluginKey("commentMention");
 const RACCOURCIS_TAPES = ["blockquote", "bulletList", "orderedList", "codeBlock", "code", "horizontalRule", "commentKeymap"];
 
 /**
- * Les marques tapées « à la markdown » : `**gras**`, `*italique*`, `~~barré~~`.
+ * Les marques tapées « à la markdown » : `**gras**`, `*italique*`, `~~barré~~` — et `__gras__`,
+ * `_italique_`. Dans cet ordre : le gras s'essaie avant l'italique.
+ */
+const MARQUES_TAPEES: ReadonlyArray<readonly [string, "bold" | "italic" | "strike"]> = [
+  ["**", "bold"], ["__", "bold"], ["*", "italic"], ["_", "italic"], ["~~", "strike"],
+];
+
+/**
+ * Ce qui reconnaît une marque tapée, à l'instant où l'on tape son dernier signe.
  *
  * Comme le markdown du fil, et pas comme le kit : le texte marqué ne commence ni ne finit par une
- * espace. Le kit, lui, mettait en italique le « 3 » de « 2 * 3 * 4 » — ce que le fil n'aurait
- * jamais fait d'un texte tapé. Écrites sans assertion arrière : un navigateur qui ne la connaît
- * pas refuserait le fichier entier.
+ * espace — le kit mettait en italique le « 3 » de « 2 * 3 * 4 ». Et la marque s'ouvre en début de
+ * ligne, derrière une espace, ou derrière ce qui OUVRE : une apostrophe, un guillemet, une
+ * parenthèse (« l'*été* », « (*x*) »). Pas derrière n'importe quelle ponctuation : une barre
+ * oblique ou un point en feraient une dans le chemin d'une adresse (`…/_notes_`, vu au navigateur
+ * le 13/10 — l'adresse partait amputée de ses soulignés). Dans une adresse en cours de frappe,
+ * d'ailleurs, rien ne prend, quel que soit le signe qui précède.
+ *
+ * Une fonction, pas un motif nu : le caractère qui précède sert à juger, mais ne fait pas partie de
+ * ce qu'on remplace. Rendu avec lui, un saut de ligne (Maj+Entrée) faisait refuser la règle par
+ * l'éditeur — rien ne prenait en tête d'une seconde ligne. Sans assertion arrière non plus : un
+ * navigateur qui ne la connaît pas refuserait le fichier entier.
  */
-const MARQUES_TAPEES: ReadonlyArray<readonly [RegExp, "bold" | "italic" | "strike"]> = [
-  [/(?:^|\s)(\*\*([^*\s](?:[^*]*[^*\s])?)\*\*)$/, "bold"],
-  [/(?:^|\s)(__([^_\s](?:[^_]*[^_\s])?)__)$/, "bold"],
-  [/(?:^|\s)(\*([^*\s](?:[^*]*[^*\s])?)\*)$/, "italic"],
-  [/(?:^|\s)(_([^_\s](?:[^_]*[^_\s])?)_)$/, "italic"],
-  [/(?:^|\s)(~~([^~\s](?:[^~]*[^~\s])?)~~)$/, "strike"],
-];
+const OUVRANTS = "\\s'’\"«“‘(\\[{";
+const ADRESSE_EN_COURS = /(?:[a-z][a-z0-9+.-]*:\/\/|www\.)\S*$/i;
+
+function marqueTapee(signe: string): (text: string) => InputRuleMatch | null {
+  const borne = signe.replace(/\*/g, "\\*");
+  const un = signe.startsWith("*") ? "\\*" : signe[0];
+  const motif = new RegExp(`(^|[${OUVRANTS}])(${borne}([^${un}\\s](?:[^${un}]*[^${un}\\s])?)${borne})$`, "u");
+  return text => {
+    const lu = motif.exec(text);
+    if (!lu) return null;
+    const debut = lu.index + lu[1].length;
+    if (ADRESSE_EN_COURS.test(text.slice(0, debut))) return null;
+    return { index: debut, text: lu[2], replaceWith: lu[3] };
+  };
+}
+
+/** Un lien collé ne garde que sa cible : ni la classe, ni le `target`, ni le `rel` du presse-papiers. */
+function liensNus(fragment: Fragment): Fragment {
+  const noeuds: ProseNode[] = [];
+  fragment.forEach(noeud => {
+    const marques = noeud.marks.map(marque => (marque.type.name === "link" ? marque.type.create({ href: marque.attrs.href }) : marque));
+    noeuds.push(noeud.isText ? noeud.mark(marques) : noeud.type.create(noeud.attrs, liensNus(noeud.content), marques));
+  });
+  return Fragment.fromArray(noeuds);
+}
+
+/** Pose une tranche à la place de la sélection, comme un collage. */
+function coller(view: EditorView, tranche: Slice): void {
+  view.dispatch(view.state.tr.replaceSelection(tranche).scrollIntoView().setMeta("paste", true).setMeta("uiEvent", "paste"));
+}
+
+/**
+ * Les mentions des paragraphes sélectionnés redeviennent ce qu'elles écrivent (`@slug`). Un bloc de
+ * code ne porte que du texte : sans cela, y passer un paragraphe en retirait les mentions sans un mot.
+ */
+function mentionsEnTexte(tr: Transaction): void {
+  const { $from, $to } = tr.selection;
+  const trouvees: Array<{ debut: number; fin: number; texte: string }> = [];
+  tr.doc.nodesBetween($from.start(), $to.end(), (noeud, position) => {
+    if (noeud.type.name !== "mention") return;
+    const nom = String(noeud.attrs.slug || noeud.attrs.label || "");
+    trouvees.push({ debut: position, fin: position + noeud.nodeSize, texte: `@${nom}` });
+  });
+  // De la fin vers le début : chaque remplacement laisse en place ce qui le précède.
+  for (const { debut, fin, texte } of trouvees.reverse()) tr.replaceWith(debut, fin, tr.doc.type.schema.text(texte));
+}
 
 /** Les champs utiles d'une personne proposée. Sans slug, elle n'est pas choisissable. */
 function personne(user: User): { id: string; name: string; slug: string } {
@@ -148,9 +206,9 @@ function pointeurGrossier(): boolean {
 function etatDe(editor: Editor): EditorSurfaceState {
   const active = {} as Record<FormatKind, boolean>;
   for (const kind of FORMAT_KINDS) active[kind] = editor.isActive(NOM_DANS_LE_SCHEMA[kind]);
-  // « Vide » se juge sur ce qui partirait, pas sur la forme du document : un paragraphe d'espaces,
-  // ou un saut de ligne seul, n'est pas un message.
-  return { empty: serializeMarkdown(editor.state.doc).trim() === "", active };
+  // « Vide » se juge sur ce qu'on LIRAIT, pas sur la forme du document : un paragraphe d'espaces,
+  // un saut de ligne seul, une liste ou une citation sans rien dedans ne sont pas un message.
+  return { empty: isBlank(editor.state.doc), active };
 }
 
 /**
@@ -174,7 +232,8 @@ export function EditorSurface({
   const listboxId = useId();
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
   const [highlighted, setHighlighted] = useState(0);
-  const { data: candidates = [] } = useSearchUsers(suggestion?.query ?? "", suggestion !== null, entity);
+  const { data: candidates = [], isFetching } = useSearchUsers(suggestion?.query ?? "", suggestion !== null, entity);
+  const cherche = suggestion !== null && isFetching;
 
   // La liste est-elle ouverte ? Une seule expression, lue par les attributs ARIA du champ ET par
   // le rendu de la liste : les deux ne peuvent pas diverger.
@@ -196,7 +255,7 @@ export function EditorSurface({
   // Avant la peinture, pas après : une touche peut suivre le rendu de près.
   useLayoutEffect(() => {
     present.suivre({
-      placeholder, label, describedBy, disabled, listboxId, suggesting, actif, candidates, pick,
+      placeholder, label, describedBy, disabled, listboxId, suggesting, cherche, actif, candidates, pick,
       onSubmit, onCancel, onAddImages, onStateChange,
     });
   });
@@ -217,6 +276,9 @@ export function EditorSurface({
             // Dans une liste, Entrée ouvre l'élément suivant ; dans un bloc de code, une ligne.
             if (editor.isActive("listItem") || editor.isActive("codeBlock")) return false;
             if (pointeurGrossier()) return false;
+            // La liste des personnes est en route : qui tape « @mar » puis Entrée veut la première
+            // proposée, pas envoyer « @mar ». La touche attend la liste — un envoi ne se reprend pas.
+            if (present.lire()?.cherche) return true;
             present.lire()?.onSubmit();
             return true;
           },
@@ -224,7 +286,7 @@ export function EditorSurface({
       },
       addInputRules() {
         const { marks } = this.editor.schema;
-        return MARQUES_TAPEES.map(([find, nom]) => markInputRule({ find, type: marks[nom] }));
+        return MARQUES_TAPEES.map(([signe, nom]) => markInputRule({ find: marqueTapee(signe), type: marks[nom] }));
       },
     });
 
@@ -298,16 +360,38 @@ export function EditorSurface({
         },
         // Coller du texte, c'est le relire comme le fil le lira : une liste collée reste une liste.
         clipboardTextParser: (text, _contexte, _brut, view) => Slice.maxOpen(parseMarkdown(view.state.schema, text).content),
-        // Le collage est le geste le plus courant pour joindre une capture d'écran. On ne confisque
-        // l'événement que s'il porte vraiment une image, sinon un collage de texte perdrait son contenu.
-        handlePaste: (_view, event) => {
+        transformPasted: tranche => new Slice(liensNus(tranche.content), tranche.openStart, tranche.openEnd),
+        handlePaste: (view, event) => {
+          const donnees = event.clipboardData;
+          // Le collage est le geste le plus courant pour joindre une capture d'écran. On ne confisque
+          // l'événement que s'il porte vraiment une image, sinon un collage de texte perdrait son contenu.
           const recevoir = present.lire()?.onAddImages;
-          if (!recevoir) return false;
-          const fichiers = imageFilesFrom(event.clipboardData);
-          if (fichiers.length === 0) return false;
-          event.preventDefault();
-          recevoir(fichiers);
-          return true;
+          const fichiers = recevoir ? imageFilesFrom(donnees) : [];
+          if (recevoir && fichiers.length > 0) {
+            event.preventDefault();
+            recevoir(fichiers);
+            return true;
+          }
+          const texte = donnees?.getData("text/plain") ?? "";
+          // Des cellules de tableur : le presse-papiers les porte en TABLEAU, que le schéma n'a pas —
+          // elles se collaient bout à bout (« PosteMontantLoyer1200 »). Son texte, lui, les sépare.
+          // Dans un bloc de code il n'y a rien à faire : ce qu'on y colle est déjà du texte brut.
+          const dansDuCode = view.state.selection.$from.parent.type.spec.code === true;
+          if (!dansDuCode && texte !== "" && /<table[\s>]/i.test(donnees?.getData("text/html") ?? "")) {
+            event.preventDefault();
+            coller(view, Slice.maxOpen(parseMarkdown(view.state.schema, texte).content));
+            return true;
+          }
+          // Une adresse collée PAR-DESSUS une adresse la remplace. Le kit, lui, garderait l'ancien
+          // texte et n'en changerait que la cible : on lirait une adresse, on irait à une autre.
+          const { selection, doc } = view.state;
+          const collee = texte.trim();
+          if (!selection.empty && addressOf(collee) !== null && addressOf(doc.textBetween(selection.from, selection.to)) !== null) {
+            event.preventDefault();
+            view.dispatch(view.state.tr.insertText(collee, selection.from, selection.to).scrollIntoView().setMeta("paste", true).setMeta("uiEvent", "paste"));
+            return true;
+          }
+          return false;
         },
         handleDrop: (_view, event, _tranche, deplace) => {
           const recevoir = present.lire()?.onAddImages;
@@ -325,14 +409,25 @@ export function EditorSurface({
 
   const editor = useEditor(options);
 
+  /*
+   * Jamais sur un éditeur DÉTRUIT. `useEditor` crée l'éditeur au rendu et le détruit une milliseconde
+   * plus tard si le composant n'est pas encore monté ; quand cette minuterie passe avant les effets,
+   * ceux-ci tiennent un éditeur mort, dont les commandes n'existent plus — une levée ici démontait
+   * tout l'arbre. Le crochet en refait un aussitôt, et les effets repassent sur le bon.
+   */
+
   // L'état de départ, dit dès le montage : l'éditeur n'annonce sa création qu'un instant plus tard,
   // et d'ici là la coquille tiendrait sa barre et son bouton pour inertes.
-  useEffect(() => { present.rapporter(editor); }, [present, editor]);
-
-  useEffect(() => { editor.setEditable(!disabled, false); }, [editor, disabled]);
+  useEffect(() => {
+    if (!editor.isDestroyed) present.rapporter(editor);
+  }, [present, editor]);
 
   useEffect(() => {
-    if (autoFocus) editor.commands.focus("end");
+    if (!editor.isDestroyed) editor.setEditable(!disabled, false);
+  }, [editor, disabled]);
+
+  useEffect(() => {
+    if (autoFocus && !editor.isDestroyed) editor.commands.focus("end");
   }, [editor, autoFocus]);
 
   // Les attributs du champ et le texte d'attente sont des fonctions du « présent » : la vue ne les
@@ -341,40 +436,63 @@ export function EditorSurface({
     if (!editor.isDestroyed) editor.view.setProps({});
   }, [editor, placeholder, label, describedBy, disabled, listboxId, suggesting, actif]);
 
-  useImperativeHandle(handleRef, () => ({
-    focus: () => { editor.commands.focus(); },
-    toggle: kind => {
-      const chaine = editor.chain().focus();
-      switch (kind) {
-        case "bold": chaine.toggleBold().run(); break;
-        case "italic": chaine.toggleItalic().run(); break;
-        case "strike": chaine.toggleStrike().run(); break;
-        case "code": chaine.toggleCode().run(); break;
-        case "quote": chaine.toggleBlockquote().run(); break;
-        case "list": chaine.toggleBulletList().run(); break;
-        case "ordered": chaine.toggleOrderedList().run(); break;
-        case "codeBlock": chaine.toggleCodeBlock().run(); break;
-        // Un lien demande une adresse : il passe par `setLink`.
-        case "link": break;
-      }
-    },
-    currentLink: () => (editor.isActive("link") ? String(editor.getAttributes("link").href ?? "") : null),
-    setLink: href => {
-      if (href === null) {
-        editor.chain().focus().extendMarkRange("link").unsetLink().run();
-        return;
-      }
-      // Rien de sélectionné, et pas dans un lien : l'adresse est son propre texte.
-      if (editor.state.selection.empty && !editor.isActive("link")) {
-        editor.chain().focus().insertContent({ type: "text", text: href, marks: [{ type: "link", attrs: { href } }] }).run();
-        return;
-      }
-      editor.chain().focus().extendMarkRange("link").setLink({ href }).run();
-    },
-    insertText: text => { editor.chain().focus().insertContent(text).run(); },
-    read: () => ({ text: serializeMarkdown(editor.state.doc).trim(), mentions: mentionsOf(editor.state.doc) }),
-    clear: () => { editor.commands.clearContent(); },
-  }), [editor]);
+  useImperativeHandle(handleRef, () => {
+    // Ce que la coquille commande ne s'adresse qu'à un éditeur vivant (cf. plus haut).
+    const vivant = <Args extends unknown[]>(geste: (...args: Args) => void) => (...args: Args) => {
+      if (!editor.isDestroyed) geste(...args);
+    };
+    return {
+      focus: vivant(() => { editor.commands.focus(); }),
+      toggle: vivant((kind: FormatKind) => {
+        const chaine = editor.chain().focus();
+        switch (kind) {
+          case "bold": chaine.toggleBold().run(); break;
+          case "italic": chaine.toggleItalic().run(); break;
+          case "strike": chaine.toggleStrike().run(); break;
+          case "code": chaine.toggleCode().run(); break;
+          case "quote": chaine.toggleBlockquote().run(); break;
+          case "list": chaine.toggleBulletList().run(); break;
+          case "ordered": chaine.toggleOrderedList().run(); break;
+          case "codeBlock":
+            if (editor.isActive("codeBlock")) chaine.toggleCodeBlock().run();
+            else chaine.command(({ tr }) => { mentionsEnTexte(tr); return true; }).toggleCodeBlock().run();
+            break;
+          // Un lien demande une adresse : il passe par `setLink`.
+          case "link": break;
+        }
+      }),
+      currentLink: () => {
+        if (editor.isDestroyed || !editor.isActive("link")) return null;
+        const { href, explicit } = editor.getAttributes("link");
+        if (explicit === true) return String(href ?? "");
+        // Un lien que l'éditeur a fait d'une adresse : c'est son TEXTE qui dit où il mène.
+        const { $from } = editor.state.selection;
+        const etendue = getMarkRange($from, editor.schema.marks.link);
+        const lue = etendue ? addressOf(editor.state.doc.textBetween(etendue.from, etendue.to)) : null;
+        return lue ?? String(href ?? "");
+      },
+      setLink: vivant((href: string | null) => {
+        if (href === null) {
+          editor.chain().focus().extendMarkRange("link").unsetLink().run();
+          return;
+        }
+        // Rien de sélectionné, et pas dans un lien : l'adresse est son propre texte.
+        if (editor.state.selection.empty && !editor.isActive("link")) {
+          editor.chain().focus().insertContent({ type: "text", text: href, marks: [{ type: "link", attrs: { href } }] }).run();
+          return;
+        }
+        // Un lien ÉCRIT : sa cible est celle qu'on vient de lui donner, quel que soit son texte.
+        editor.chain().focus().extendMarkRange("link").setLink({ href, explicit: true } as { href: string }).run();
+      }),
+      insertText: vivant((text: string) => { editor.chain().focus().insertContent(text).run(); }),
+      read: () => {
+        // Rien à lire : ni éditeur, ni contenu — un bloc vide ne s'envoie pas sous la forme de son signe.
+        if (editor.isDestroyed || isBlank(editor.state.doc)) return { text: "", mentions: [] };
+        return { text: serializeMarkdown(editor.state.doc).trim(), mentions: mentionsOf(editor.state.doc) };
+      },
+      clear: vivant(() => { editor.commands.clearContent(); }),
+    };
+  }, [editor]);
 
   return (
     /**
@@ -387,13 +505,26 @@ export function EditorSurface({
      * se fermer, la modale NEUTRALISE la touche — or l'éditeur ignore une touche déjà neutralisée
      * (vu au navigateur le 13/10 : ni la liste ni l'édition ne se refermaient dans la modale).
      * Traitée, la touche ne descend pas plus bas : l'éditeur ne la verrait qu'en double.
+     *
+     * La revendication tient dès qu'une mention est EN COURS (`suggestion`), liste affichée ou non :
+     * entre « @mar » et l'arrivée des personnes, Échap renonce à la mention — rien ne bouge à
+     * l'écran, mais la liste ne s'ouvrira pas. Ne la revendiquer qu'une fois la liste là fermerait
+     * la modale, et avec elle le message qu'on écrit, sous les doigts de qui voulait seulement ne
+     * mentionner personne.
+     *
+     * `aria-live="off"` : le composer d'une édition vit dans le journal du fil (`role="log"`), et
+     * chaque frappe y change le DOM — sans cela un lecteur d'écran pourrait relire ce qu'on tape.
      */
     <div
       data-comment-escape={suggestion !== null || onCancel ? "" : undefined}
       data-comment-editor
+      aria-live="off"
       onKeyDownCapture={event => {
         if (event.key !== "Escape") return;
-        if (suggestion !== null) exitSuggestion(editor.view, SUGGESTION_DE_MENTION);
+        // Pendant une composition (clavier à accents morts, saisie asiatique), Échap appartient à
+        // la saisie : il annule ce qu'on compose, pas l'édition du message.
+        if (event.nativeEvent.isComposing) return;
+        if (suggestion !== null && !editor.isDestroyed) exitSuggestion(editor.view, SUGGESTION_DE_MENTION);
         else if (onCancel) onCancel();
         else return;
         event.preventDefault();

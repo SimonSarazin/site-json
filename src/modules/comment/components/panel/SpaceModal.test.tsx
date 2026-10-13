@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
 import type { CommentTarget, SpaceRef } from "../../types";
+import { ECHO_WINDOW_MS } from "../../lib/echoClick";
 
 // ⚠️ PAS d'import de `../../i18n` ici, et c'est voulu : la modale se charge en différé, par son
 // propre fichier — c'est à ELLE d'enregistrer ses libellés. Les phrases attendues plus bas en sont
@@ -53,9 +54,10 @@ function monter(props: Partial<Parameters<typeof SpaceModal>[0]> = {}) {
 }
 
 describe("SpaceModal", () => {
-  it("n'emporte pas le panneau général : elle se charge en différé, et ne le rend jamais", () => {
+  it("ni elle ni sa coquille n'importent le panneau général", () => {
     // Sa coquille vivait dans le fichier de la modale générale, qui importe ce panneau — le morceau
-    // de l'espace le téléchargeait donc pour rien, à chaque première ouverture.
+    // de l'espace le téléchargeait donc pour rien, à chaque première ouverture. Le panneau de
+    // l'espace est doublé ici : son graphe à lui est suivi dans `editorGraph.test.ts`.
     expect(general.chargements).toBe(0);
   });
 
@@ -145,5 +147,111 @@ describe("SpaceModal", () => {
     monter({ open: false });
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(recu.props).toBeNull();
+  });
+});
+
+/**
+ * L'écho d'un double clic (relecture du 13/10, mesuré au navigateur : douze doubles clics sur douze
+ * refermaient la modale). La coquille l'avale aux deux moments où elle change ce qu'il y a sous le
+ * curseur : quand elle apparaît, et quand un clic la ferme. jsdom n'a pas de mise en page : on
+ * rejoue le SECOND clic là où il tomberait.
+ */
+describe("SpaceModal — l'écho d'un double clic", () => {
+  beforeEach(() => { vi.useFakeTimers(); });
+  // Les fenêtres encore ouvertes se referment AVANT de rendre les vraies horloges : abandonnée
+  // avec son minuteur, une garde resterait sur le document et avalerait les clics du test suivant.
+  afterEach(() => {
+    act(() => { vi.runOnlyPendingTimers(); });
+    vi.useRealTimers();
+  });
+
+  const voile = () => document.querySelector<HTMLElement>('[data-slot="dialog-overlay"]')!;
+  const croix = () => screen.getByRole("button", { name: /Fermer les discussions/ });
+  /** Un bouton de la page, là où la modale n'est plus. */
+  function boutonDeLaPage() {
+    const bouton = document.createElement("button");
+    document.body.append(bouton);
+    const clic = vi.fn();
+    bouton.addEventListener("click", clic);
+    return { bouton, clic };
+  }
+  const passeLaFenetre = () => act(() => { vi.advanceTimersByTime(ECHO_WINDOW_MS); });
+
+  it("à l'ouverture : le second clic n'atteint pas ce qui est venu sous le curseur ; un premier clic, si", () => {
+    monter();
+    const champ = document.querySelector<HTMLElement>("[data-revendique-echap]")!;
+    const clic = vi.fn();
+    champ.addEventListener("click", clic);
+    fireEvent.click(champ, { detail: 2 });
+    expect(clic).not.toHaveBeenCalled();
+    fireEvent.click(champ, { detail: 1 });
+    expect(clic).toHaveBeenCalledTimes(1);
+    // Passé la fenêtre, un double clic dans la modale est un double clic comme un autre.
+    passeLaFenetre();
+    fireEvent.click(champ, { detail: 2 });
+    expect(clic).toHaveBeenCalledTimes(2);
+  });
+
+  it("à l'ouverture : le second appui ne tombe pas sur le voile — la modale ne se referme pas aussitôt", () => {
+    const { onOpenChange } = monter();
+    // Radix n'écoute les appuis extérieurs qu'au tour suivant son montage.
+    act(() => { vi.advanceTimersByTime(1); });
+    fireEvent.pointerDown(voile(), { clientX: 30, clientY: 500 });
+    expect(onOpenChange).not.toHaveBeenCalled();
+    // Témoin : passé la fenêtre, le même appui ferme bien.
+    passeLaFenetre();
+    fireEvent.pointerDown(voile(), { clientX: 30, clientY: 500 });
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("fermée avant la fin de la fenêtre, elle désarme : la page retrouve ses doubles clics", () => {
+    const { unmount } = monter();
+    unmount();
+    const { bouton, clic } = boutonDeLaPage();
+    fireEvent.click(bouton, { detail: 2 });
+    expect(clic).toHaveBeenCalledTimes(1);
+    bouton.remove();
+  });
+
+  it("à la croix : le second clic, au même endroit, n'atteint pas la page que la modale couvrait", () => {
+    const { onOpenChange } = monter();
+    passeLaFenetre();
+    const { bouton, clic } = boutonDeLaPage();
+    fireEvent.click(croix(), { detail: 1, clientX: 900, clientY: 40 });
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    fireEvent.click(bouton, { detail: 2, clientX: 903, clientY: 42 });
+    expect(clic).not.toHaveBeenCalled();
+    // Ailleurs, la page répond — et au même endroit aussi, la fenêtre passée.
+    fireEvent.click(bouton, { detail: 2, clientX: 300, clientY: 300 });
+    expect(clic).toHaveBeenCalledTimes(1);
+    passeLaFenetre();
+    fireEvent.click(bouton, { detail: 2, clientX: 903, clientY: 42 });
+    expect(clic).toHaveBeenCalledTimes(2);
+    bouton.remove();
+  });
+
+  it("à la croix, au CLAVIER : rien n'est armé — il n'y a pas de second appui", () => {
+    const { onOpenChange } = monter();
+    passeLaFenetre();
+    const { bouton, clic } = boutonDeLaPage();
+    // Une activation au clavier arrive en `click` de `detail` nul, sans coordonnées.
+    fireEvent.click(croix(), { detail: 0, clientX: 0, clientY: 0 });
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    fireEvent.click(bouton, { detail: 2, clientX: 0, clientY: 0 });
+    expect(clic).toHaveBeenCalledTimes(1);
+    bouton.remove();
+  });
+
+  it("au voile : l'appui qui ferme arme la garde à CET endroit", () => {
+    const { onOpenChange } = monter();
+    passeLaFenetre();
+    const { bouton, clic } = boutonDeLaPage();
+    fireEvent.pointerDown(voile(), { clientX: 30, clientY: 500 });
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    fireEvent.click(bouton, { detail: 2, clientX: 32, clientY: 498 });
+    expect(clic).not.toHaveBeenCalled();
+    fireEvent.click(bouton, { detail: 2, clientX: 700, clientY: 100 });
+    expect(clic).toHaveBeenCalledTimes(1);
+    bouton.remove();
   });
 });

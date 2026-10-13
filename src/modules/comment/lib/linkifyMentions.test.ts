@@ -57,6 +57,22 @@ describe("linkifyMentions", () => {
     expect(out).toBe("salut [@Marie](/profil/marie), cf. `@marie`");
   });
 
+  it("un accent grave ÉCHAPPÉ est un signe, pas un code : la mention qui le suit reste liée", () => {
+    // Sans cela le premier accent s'appariait au deuxième, et « @marie » passait pour du code.
+    expect(linkifyMentions("le signe \\` puis @marie et du `code`", [m("marie", "Marie")]))
+      .toBe("le signe \\` puis [@Marie](/profil/marie) et du `code`");
+    expect(linkifyMentions("\\`@marie\\`", [m("marie", "Marie")])).toBe("\\`[@Marie](/profil/marie)\\`");
+  });
+
+  it("dans un code, une barre oblique inverse n'échappe rien : le span se ferme à son accent", () => {
+    expect(linkifyMentions("`a\\` @marie `b`", [m("marie", "Marie")])).toBe("`a\\` [@Marie](/profil/marie) `b`");
+    expect(linkifyMentions("`@marie\\` et @marie", [m("marie", "Marie")])).toBe("`@marie\\` et [@Marie](/profil/marie)");
+  });
+
+  it("une barre oblique inverse échappée, puis un vrai code : le code reste du code", () => {
+    expect(linkifyMentions("C:\\\\`@marie`", [m("marie", "Marie")])).toBe("C:\\\\`@marie`");
+  });
+
   it("échappe les crochets d'un nom, qui casseraient le lien", () => {
     expect(linkifyMentions("@x", [m("x", "Marie [test]")]))
       .toBe("[@Marie \\[test\\]](/profil/x)");

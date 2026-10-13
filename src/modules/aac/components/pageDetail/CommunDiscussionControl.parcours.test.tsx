@@ -271,6 +271,17 @@ describe("l'espace de discussion d'un commun — le parcours, tous maillons asse
       expect(document.activeElement).toBe(bouton());
     });
 
+    it("… sans faire défiler la page : le bouton est celui qu'on vient de quitter", async () => {
+      monter();
+      await ouvrir();
+      const focus = vi.spyOn(HTMLElement.prototype, "focus");
+      await cliquer(croix());
+      const rendus = focus.mock.calls.filter((_appel, rang) => focus.mock.contexts[rang] === bouton());
+      expect(rendus.length).toBeGreaterThan(0);
+      expect(rendus[rendus.length - 1]).toEqual([{ preventScroll: true }]);
+      focus.mockRestore();
+    });
+
     it("après la croix, « retour » ramène à la page d'AVANT la fiche — pas à la modale", async () => {
       monter();
       await ouvrir();

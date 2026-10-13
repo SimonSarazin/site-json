@@ -4,6 +4,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
 import type { DiscussionCarrier, DiscussionThread } from "../../types";
+import { refusalError, unreadableError } from "../../lib/discussions";
 import "../../i18n";
 
 const ORG = "65a1000000000000000000a1";
@@ -102,18 +103,21 @@ const etat = {
 /** Ce que le bouton « Réessayer » relance : la requête du lien profond. */
 const relireLeLien = vi.fn();
 
-/** L'erreur que rend le lien profond, selon l'état voulu. */
+/**
+ * L'erreur que rend le lien profond, selon l'état voulu — fabriquée par les VRAIES fabriques de la
+ * lecture des réponses, pas recopiée à la main : si leur forme change, ces tests la suivent.
+ */
 function erreurDuLien(): unknown {
   switch (etat.lienProfond) {
-    case "cache": return Object.assign(new Error("hidden"), { refus: true, code: "hidden" });
-    case "connexion": return Object.assign(new Error("login"), { refus: true, code: "login" });
+    case "cache": return refusalError("hidden");
+    case "connexion": return refusalError("login");
     case "refus":
-    case "refusApresAccord": return Object.assign(new Error("refused"), { refus: true, code: "refused" });
+    case "refusApresAccord": return refusalError("refused");
     case "echec":
     case "echecApresAccord": return new Error("Network Error");
     // Une réponse illisible, telle que la lève la lecture de la réponse : un code, SANS la marque de refus.
     case "illisible":
-    case "illisibleApresAccord": return Object.assign(new Error("unreadable"), { refus: false, code: "unreadable" });
+    case "illisibleApresAccord": return unreadableError();
     default: return null;
   }
 }
@@ -660,7 +664,7 @@ describe("DiscussionPanel", () => {
   describe("refus traduits (revue du 29/09)", () => {
 
     it("traduit un refus du rail d'après son code, sans jamais afficher le texte du serveur", () => {
-      etat.railErreur = Object.assign(new Error("login"), { refus: true, code: "login" });
+      etat.railErreur = refusalError("login");
       monter();
       expect(screen.getByText("Connectez-vous pour retrouver vos discussions.")).toBeTruthy();
       expect(screen.queryByText("login")).toBeNull();

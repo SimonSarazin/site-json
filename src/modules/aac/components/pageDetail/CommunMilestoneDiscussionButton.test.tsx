@@ -180,8 +180,13 @@ describe("CommunMilestoneDiscussionButton", () => {
     });
 
     it("reste absent quand le serveur ne sert pas l'espace — le bouton de la fiche, lui, demeure", async () => {
-      const banc = monter({ reponse: async () => { throw new Error("panne"); } });
-      await waitFor(() => expect(banc.getDiscussionSpace).toHaveBeenCalled());
+      // Un REFUS : il n'est pas retenté, la requête est en erreur dès la réponse. C'est cet état
+      // qu'on regarde — pas le chargement, où l'absence de bouton ne prouverait rien.
+      const banc = monter({ reponse: async () => ({ result: false, code: "hidden" }) });
+      await servi(banc);
+      const etats = banc.client.getQueryCache().getAll().map(requete => requete.state.status);
+      expect(etats.filter(etat => etat === "error")).toHaveLength(1);
+      expect(etats).not.toContain("success");
       expect(document.querySelectorAll("[data-milestone-discussion]")).toHaveLength(0);
       expect(boutonDeLaFiche()).not.toBeNull();
     });
@@ -259,6 +264,24 @@ describe("CommunMilestoneDiscussionButton", () => {
       expect(palier("8")!.querySelector("[data-milestone-discussion-unread]")!.textContent).toBe("99+");
       expect(palier("10")!.querySelector("[data-milestone-discussion-unread]")!.textContent).toBe("99");
       expect(palier("11")!.querySelector("[data-milestone-discussion-unread]")!.textContent).toBe("99+");
+    });
+
+    it("le mot « Discuter » ne s'affiche qu'à partir de 80 rem : en deçà, l'icône et le compteur laissent sa place au nom du palier", async () => {
+      await servi(monter());
+      const mot = [...palier("2")!.querySelectorAll("span")].find(span => span.textContent === "Discuter")!;
+      const classes = mot.className.split(/\s+/);
+      expect(classes).toContain("hidden");
+      expect(classes).toContain("xl:inline");
+      expect(classes).not.toContain("sm:inline");
+      // … et le nom accessible, lui, le dit à toutes les largeurs.
+      expect(palier("2")!.getAttribute("aria-label")).toMatch(/^Discuter du palier/);
+    });
+
+    it("sa marge est celle d'un bouton à icône, posée là où la taille `sm` la lit", async () => {
+      await servi(monter());
+      const classes = palier("2")!.className.split(/\s+/);
+      expect(classes).toContain("has-[>svg]:px-2");
+      expect(classes).not.toContain("has-[>svg]:px-2.5");
     });
 
     it("annonce qu'il ouvre un dialogue, et se nomme pour qu'on lui rende le focus", async () => {

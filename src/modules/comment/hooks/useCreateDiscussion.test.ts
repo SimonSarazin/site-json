@@ -28,10 +28,10 @@ const CLE = COMMENT_QUERY_KEYS.DISCUSSIONS("space", `answers:${COMMUN}`, UTILISA
 
 const CHEMIN = `${APPEL}.moreDiscussions_93015AbCdEfGh.${COMMUN}.discu_121020269301512.comment`;
 const CLE_DU_FIL = `forms:${APPEL}:${CHEMIN}`;
-/** Le fil créé, tel que le serveur le rend : les quatorze champs d'un fil d'espace. */
+/** Le fil créé, tel que le serveur le rend : les quinze champs d'un fil d'espace (`line` nul : ce n'est pas un palier). */
 const FIL_CREE = {
   key: CLE_DU_FIL, contextType: "forms", contextId: APPEL, path: CHEMIN, total: 0, unread: 0, last: null, mine: false,
-  title: "Budget 2026", carrier: null, virtual: true, kind: "discussion", group: null, audience: "authorAdmin",
+  title: "Budget 2026", carrier: null, virtual: true, kind: "discussion", group: null, audience: "authorAdmin", line: null,
 };
 
 /** L'espace déjà en cache : le fil général, et le droit de créer. */

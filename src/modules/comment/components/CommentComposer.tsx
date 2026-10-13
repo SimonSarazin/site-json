@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { lazy } from "vite-preload";
 import {
   Bold, Code, ImagePlus, Italic, Link2, Link2Off, List, ListOrdered, Quote, Send, SmilePlus, SquareCode, Strikethrough, X,
@@ -27,6 +27,28 @@ const FORMAT_ICONS: Record<FormatKind, typeof Bold> = {
   bold: Bold, italic: Italic, strike: Strikethrough, code: Code, link: Link2,
   quote: Quote, list: List, ordered: ListOrdered, codeBlock: SquareCode,
 };
+
+/** Les mises en forme du TEXTE : dans un bloc de code, où rien ne se met en forme, elles n'ont rien à faire. */
+const INLINE_FORMATS: readonly FormatKind[] = ["bold", "italic", "strike", "code", "link"];
+
+const POINTEUR_GROSSIER = "(pointer: coarse)";
+
+/**
+ * L'écran se pilote-t-il au doigt ? L'aide du champ en dépend : au doigt, Entrée passe à la ligne
+ * et le message part par son bouton (`EditorSurface`). Faux au serveur et au premier rendu du
+ * client — les deux écrivent le même balisage —, puis suivi : un appareil peut changer de pointeur.
+ */
+function useCoarsePointer(): boolean {
+  return useSyncExternalStore(
+    notifier => {
+      const media = typeof window.matchMedia === "function" ? window.matchMedia(POINTEUR_GROSSIER) : null;
+      media?.addEventListener?.("change", notifier);
+      return () => media?.removeEventListener?.("change", notifier);
+    },
+    () => (typeof window.matchMedia === "function" ? window.matchMedia(POINTEUR_GROSSIER).matches : false),
+    () => false,
+  );
+}
 
 export interface CommentComposerProps {
   readonly onSubmit: (text: string, mentions: readonly CommentMention[]) => void;
@@ -114,6 +136,7 @@ export function CommentComposer({
   const [lienOuvert, setLienOuvert] = useState(false);
   const [adresse, setAdresse] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const tactile = useCoarsePointer();
   const aideId = useId();
   const adresseId = useId();
 
@@ -182,6 +205,8 @@ export function CommentComposer({
       : t("composer.placeholder");
   // La barre d'outils n'a rien à commander tant que l'éditeur n'est pas là.
   const barreInerte = disabled || etat === null;
+  // Dans un bloc de code, rien ne se met en forme : ces boutons n'y feraient rien, ils le disent.
+  const dansDuCode = etat?.active.codeBlock ?? false;
 
   return (
     <div className={cn("comment-thread relative rounded-md border border-border bg-card", className)}>
@@ -266,7 +291,7 @@ export function CommentComposer({
         {/* Les marques sont atténuées au repos et pleines au focus (cf. `styles.css`) : une
             barre d'outils à pleine intensité sous chaque fil est du bruit, mais la masquer
             ferait sauter la mise en page à chaque clic dans le champ. */}
-        <div className="comment-marks flex flex-wrap items-center gap-0.5">
+        <div className="comment-marks flex flex-wrap items-center gap-0.5" role="group" aria-label={String(t("composer.tools"))}>
           {FORMAT_KINDS.map(kind => {
             const Icon = FORMAT_ICONS[kind];
             const actif = etat?.active[kind] ?? false;
@@ -276,7 +301,7 @@ export function CommentComposer({
                 type="button"
                 variant="ghost"
                 size="icon"
-                disabled={barreInerte}
+                disabled={barreInerte || (dansDuCode && INLINE_FORMATS.includes(kind))}
                 className={cn("size-7 rounded-full text-muted-foreground", actif && "bg-accent text-accent-foreground")}
                 aria-label={String(t(`composer.marks.${kind}.label`))}
                 title={String(t(`composer.marks.${kind}.label`))}
@@ -423,7 +448,7 @@ export function CommentComposer({
         </div>
       </div>
 
-      <p id={aideId} className="sr-only">{t("composer.formattingHint")}</p>
+      <p id={aideId} className="sr-only">{t(tactile ? "composer.formattingHintTouch" : "composer.formattingHint")}</p>
     </div>
   );
 }

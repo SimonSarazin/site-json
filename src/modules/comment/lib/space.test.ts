@@ -357,7 +357,25 @@ describe("parseCreatedDiscussion", () => {
     expect(creationErrorCodeOf(erreurDe(raw))).toBe("unreadable");
   });
 
-  it("une erreur venue d'ailleurs — réseau, schéma — se dit « n'a pas pu être créée »", () => {
+  it("une panne à partir de 500 — coupure du réseau comprise, que le SDK lève en 500 — est INCERTAINE : la discussion existe peut-être", () => {
+    expect(creationErrorCodeOf({ status: 500 })).toBe("uncertain");
+    expect(creationErrorCodeOf({ status: 503 })).toBe("uncertain");
+    expect(creationErrorCodeOf(Object.assign(new Error("Erreur lors de l'appel de l'API : Network Error"), { status: 500 }))).toBe("uncertain");
+  });
+
+  it("un refus franc du transport (400, 401, 404), ou un statut qui n'en est pas un : rien n'a pu s'écrire", () => {
+    expect(creationErrorCodeOf({ status: 400 })).toBe("failed");
+    expect(creationErrorCodeOf({ status: 401 })).toBe("failed");
+    expect(creationErrorCodeOf({ status: 404 })).toBe("failed");
+    expect(creationErrorCodeOf({ status: 499 })).toBe("failed");
+    expect(creationErrorCodeOf({ status: "500" })).toBe("failed");
+  });
+
+  it("un refus CODÉ garde son code, quel que soit le statut qui le porte", () => {
+    expect(creationErrorCodeOf(Object.assign(erreurDe({ result: false, code: "forbidden" }) as Error, { status: 500 }))).toBe("forbidden");
+  });
+
+  it("une erreur sans statut — levée avant le départ de la requête — se dit « n'a pas pu être créée »", () => {
     expect(creationErrorCodeOf(new Error("Network Error"))).toBe("failed");
     expect(creationErrorCodeOf({ code: "forbidden" })).toBe("failed");
     expect(creationErrorCodeOf({ creation: "oui", code: "forbidden" })).toBe("failed");

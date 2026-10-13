@@ -10,6 +10,7 @@ import {
   type SpaceThreadKind,
   type SpaceType,
 } from "../types";
+import { isMaybeWritten } from "./optimistic";
 import { assertGranted, readThread, toText, unreadableError } from "./discussions";
 
 /**
@@ -116,7 +117,7 @@ export function parseSpace(raw: unknown): DiscussionSpace {
  * ne sait pas si elle a eu lieu ; `failed` — tout le reste (réseau, échec d'écriture, code inconnu).
  */
 export const CREATION_REFUSALS = ["login", "hidden", "forbidden", "bad-name", "too-many"] as const;
-export type CreationErrorCode = (typeof CREATION_REFUSALS)[number] | "unreadable" | "failed";
+export type CreationErrorCode = (typeof CREATION_REFUSALS)[number] | "unreadable" | "uncertain" | "failed";
 
 function creationError(code: CreationErrorCode): Error & { creation: true; code: CreationErrorCode } {
   const erreur = new Error(code) as Error & { creation: true; code: CreationErrorCode };
@@ -125,10 +126,16 @@ function creationError(code: CreationErrorCode): Error & { creation: true; code:
   return erreur;
 }
 
-/** Le code d'une erreur de création — `failed` pour tout ce qui ne vient pas de `parseCreatedDiscussion`. */
+/**
+ * Le code d'une erreur de création. Ce qui ne vient pas de `parseCreatedDiscussion` est une panne,
+ * et elle n'a pas toujours le même sens : `uncertain` quand le serveur a pu créer la discussion
+ * avant de tomber (`isMaybeWritten` : à partir de 500, coupure du réseau comprise) — dire
+ * « réessayez » en ferait créer une seconde, du même nom ; `failed` quand rien n'a pu s'écrire.
+ */
 export function creationErrorCodeOf(error: unknown): CreationErrorCode {
   const e = error as { creation?: unknown; code?: unknown } | null | undefined;
-  return e?.creation === true && typeof e.code === "string" ? (e.code as CreationErrorCode) : "failed";
+  if (e?.creation === true && typeof e.code === "string") return e.code as CreationErrorCode;
+  return isMaybeWritten(error) ? "uncertain" : "failed";
 }
 
 /**

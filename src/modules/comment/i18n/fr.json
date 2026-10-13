@@ -33,8 +33,10 @@
     "stopReplying": "Ne plus répondre",
     "emoji": "Insérer un émoji",
     "mentionHint": "Tapez @ pour mentionner quelqu'un",
-    "formattingHint": "Entrée envoie le message, Maj+Entrée passe à la ligne. Mise en forme au clavier : **gras**, *italique*, ~~barré~~, `code`, > citation, - liste, 1. liste numérotée.",
-    "editorFailed": "L'éditeur n'a pas pu être chargé.",
+    "formattingHint": "Entrée envoie le message ; dans une liste ou un bloc de code, elle passe à la ligne. Maj+Entrée passe à la ligne. Mise en forme au clavier : **gras**, *italique*, ~~barré~~, `code`, > citation, - liste, 1. liste numérotée.",
+    "formattingHintTouch": "Entrée passe à la ligne ; le message part par son bouton. Mise en forme au clavier : **gras**, *italique*, ~~barré~~, `code`, > citation, - liste, 1. liste numérotée.",
+    "tools": "Mise en forme et pièces jointes",
+    "editorFailed": "L'éditeur n'a pas pu être chargé. Réessayez, ou rechargez la page.",
     "mentionCount_one": "{{count}} personne proposée",
     "mentionCount_other": "{{count}} personnes proposées",
     "marks": {
@@ -228,6 +230,7 @@
         "bad-name": "Donnez-lui un nom, de 120 caractères au plus.",
         "too-many": "Ce commun a atteint son nombre maximal de discussions.",
         "unreadable": "La réponse du serveur est illisible. Vérifiez la liste avant de recommencer.",
+        "uncertain": "Le serveur n'a pas répondu : la discussion a peut-être été créée. Vérifiez la liste avant de recommencer.",
         "failed": "La discussion n'a pas pu être créée. Réessayez."
       }
     }

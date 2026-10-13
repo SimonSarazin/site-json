@@ -56,7 +56,9 @@ export function CommunMilestoneDiscussionButton({ answerId, lineKey, name, class
         <Button
             variant="ghost"
             size="sm"
-            className={cn("text-muted-foreground hover:text-foreground h-8 gap-1.5 px-2", className)}
+            // `has-[>svg]:` : c'est sous cette variante que la taille `sm` pose sa marge quand le
+            // bouton porte une icône — un `px-2` nu perdait contre elle.
+            className={cn("text-muted-foreground hover:text-foreground h-8 gap-1.5 has-[>svg]:px-2", className)}
             // Ce que le bouton ouvre est un dialogue : le lecteur d'écran l'annonce avant le clic.
             aria-haspopup="dialog"
             aria-label={libelle}
@@ -69,7 +71,10 @@ export function CommunMilestoneDiscussionButton({ answerId, lineKey, name, class
             {...{ [OPENER_ATTRIBUTE]: ouvreur }}
         >
             <MessageSquare className="size-4" aria-hidden />
-            <span className="hidden sm:inline">{String(t("detail.discussion.milestoneCta"))}</span>
+            {/* Le mot n'arrive qu'à 80 rem : en deçà il prenait au NOM du palier la place qui lui
+                restait (42 px entre 640 et 767 px, mesuré le 13/10). L'icône et le compteur
+                suffisent, et le nom accessible dit le reste. */}
+            <span className="hidden xl:inline">{String(t("detail.discussion.milestoneCta"))}</span>
             {total > 0 && <span className="tabular-nums" data-milestone-discussion-total>{total}</span>}
             {unread > 0 && (
                 <span

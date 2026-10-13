@@ -28,10 +28,15 @@ const escapeLinkText = (value: string) => value.replace(/[[\]]/g, "\\$&");
  * Découpe le texte en segments alternés hors-code / code.
  * Les blocs clôturés (```) passent avant les spans (`) pour qu'un backtick isolé à
  * l'intérieur d'un bloc ne le coupe pas en deux.
+ *
+ * Un accent grave ÉCHAPPÉ (`` \` ``) est un signe, pas un code : sans cela « le signe \` puis
+ * @marie et du `code` » appariait le premier accent avec le deuxième, et la mention, prise pour du
+ * code, n'était pas liée. Le motif prend donc d'abord tout caractère échappé, avec sa barre : deux
+ * signes rendus tels quels, comme un code — aucune mention n'y tient.
  */
 function splitOnCode(text: string): Array<{ readonly code: boolean; readonly text: string }> {
   const segments: Array<{ code: boolean; text: string }> = [];
-  const pattern = /```[\s\S]*?```|`[^`\n]*`/g;
+  const pattern = /\\[\s\S]|```[\s\S]*?```|`[^`\n]*`/g;
   let last = 0;
   let match: RegExpExecArray | null;
 

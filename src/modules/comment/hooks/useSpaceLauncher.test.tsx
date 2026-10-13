@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { act } from "react";
-import { renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { MemoryRouter, useLocation, useNavigate } from "react-router";
 import { useSpaceLauncher, type SpaceLauncher } from "./useSpaceLauncher";
 import type { CommentTarget, SpaceRef } from "../types";

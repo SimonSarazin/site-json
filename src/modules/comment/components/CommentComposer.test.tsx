@@ -13,7 +13,8 @@ import { LocalizationProvider } from "@/contexts/LocalizationProvider";
 import i18n from "@/i18n";
 import { COMMENT_PROSE } from "../lib/commentProse";
 import { CommentComposer } from "./CommentComposer";
-import { loadEditorSurface } from "./editor/editorStore";
+import { loadEditorSurface, useEditorSurface } from "./editor/editorStore";
+import type { EditorSurfaceHandle, EditorSurfaceState } from "./editor/editorTypes";
 import { stubSelectionGeometry } from "./editor/__tests__/jsdom";
 import "../i18n";
 
@@ -36,6 +37,12 @@ beforeAll(async () => {
   stubSelectionGeometry();
   await loadEditorSurface();
 });
+
+// Le sélecteur d'émojis est un paquet lourd, chargé à l'ouverture : ici, un bouton qui en choisit un.
+vi.mock("emoji-picker-react", () => ({
+  default: ({ onEmojiClick }: { onEmojiClick: (choisi: { emoji: string }) => void }) =>
+    createElement("button", { type: "button", onClick: () => onEmojiClick({ emoji: "🎉" }) }, "choisir-un-émoji"),
+}));
 
 type Champ = HTMLElement & { editor: Editor };
 type Props = Partial<Parameters<typeof CommentComposer>[0]>;
@@ -247,9 +254,17 @@ describe("CommentComposer — envoi", () => {
 
   it("ce qu'on tape part tel qu'on l'a tapé : un signe du markdown reste un signe", () => {
     const { onSubmit, field } = mount();
-    type(field, "2 * 3 * 4 = 24, voir nom_de_fichier");
+    type(field, "[urgent] 2 * 3 * 4 = 24, ~10h, voir nom_de_fichier et C:\\dossier");
     touche(field, "Enter");
-    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("2 \\* 3 \\* 4 = 24, voir nom_de_fichier", []);
+    // Tel quel, sans une barre oblique inverse : ce texte se lit aussi là où le markdown n'est pas rendu.
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("[urgent] 2 * 3 * 4 = 24, ~10h, voir nom_de_fichier et C:\\dossier", []);
+  });
+
+  it("… sauf ce qui, relu, deviendrait autre chose : cela seul est neutralisé", () => {
+    const { onSubmit, field } = mount();
+    type(field, "a *x* b");
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("a \\*x\\* b", []);
   });
 
   it("dans une liste, Entrée ouvre l'élément suivant — elle n'envoie pas", () => {
@@ -296,7 +311,20 @@ describe("CommentComposer — envoi", () => {
     expect(onSubmit).toHaveBeenCalledExactlyOnceWith("bonjour", []);
   });
 
-  it("`submitting` et `disabled` retiennent l'envoi, à Entrée comme au bouton", () => {
+  it("`disabled` retient l'envoi de ce qui est déjà écrit, à Entrée comme au bouton — et le rend en se levant", () => {
+    const { onSubmit, field, update } = mount();
+    type(field, "bonjour");
+    update({ disabled: true });
+    expect(bouton(/envoyer/i).disabled).toBe(true);
+    touche(field, "Enter");
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(field.editor.getText()).toBe("bonjour");
+    update({ disabled: false });
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("bonjour", []);
+  });
+
+  it("`submitting` retient l'envoi, à Entrée comme au bouton", () => {
     const { onSubmit, field, update } = mount({ submitting: true });
     type(field, "bonjour");
     expect(bouton(/envoyer/i).disabled).toBe(true);
@@ -432,7 +460,7 @@ describe("CommentComposer — mise en forme", () => {
     frapper(field, "2 * 3 * 4 et a _ b _ c et x ~~ y ~~ z");
     expect(field.querySelector("em, strong, s")).toBeNull();
     touche(field, "Enter");
-    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("2 \\* 3 \\* 4 et a \\_ b \\_ c et x \\~\\~ y \\~\\~ z", []);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("2 * 3 * 4 et a _ b _ c et x ~~ y ~~ z", []);
   });
 
   it("une étoile au milieu d'un mot n'ouvre rien", () => {
@@ -647,13 +675,43 @@ describe("CommentComposer — mentions", () => {
     expect(field.closest("[data-comment-escape]")).toBeTruthy();
   });
 
-  it("personne ne correspond : pas de liste, et Entrée envoie le texte tel quel", async () => {
+  it("personne ne correspond : pas de liste, et Entrée envoie le texte tel quel — une fois la recherche revenue", async () => {
     const { field, onSubmit, searchMembers } = avecPersonnes([]);
     type(field, "@zz");
     await vi.waitFor(() => expect(searchMembers).toHaveBeenCalled());
+    await image();
     expect(screen.queryByRole("listbox")).toBeNull();
     touche(field, "Enter");
     expect(onSubmit).toHaveBeenCalledExactlyOnceWith("@zz", []);
+  });
+
+  // Qui tape « @ca » puis Entrée veut la première personne proposée, pas envoyer « @ca » : un
+  // message parti ne se reprend pas.
+  it("tant que la recherche est en route, Entrée n'envoie pas : elle attend la liste", async () => {
+    let rendre: (personnes: unknown[]) => void = () => undefined;
+    const searchMembers = vi.fn(() => new Promise<unknown[]>(resolve => { rendre = resolve; }));
+    const entity = { id: "e".repeat(24), searchMembers } as unknown as EntityTypes;
+    const { field, onSubmit } = mount({ entity });
+    type(field, "salut @ca");
+    await vi.waitFor(() => expect(searchMembers).toHaveBeenCalled());
+    touche(field, "Enter");
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(field.editor.getText()).toBe("salut @ca");
+
+    // La liste arrive : Entrée choisit la personne — elle n'envoie toujours pas.
+    await act(async () => { rendre([CAMILLE]); });
+    await screen.findByRole("listbox");
+    touche(field, "Enter");
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(field.querySelector("[data-type='mention']")?.getAttribute("data-slug")).toBe("camille-martin");
+  });
+
+  it("une mention de moins de deux lettres ne cherche rien : Entrée envoie", () => {
+    const { field, onSubmit, searchMembers } = avecPersonnes([CAMILLE]);
+    type(field, "voir @c");
+    touche(field, "Enter");
+    expect(searchMembers).not.toHaveBeenCalled();
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("voir @c", []);
   });
 
   it("un « @ » au milieu d'un mot n'ouvre rien : une adresse de courriel n'est pas une mention", async () => {
@@ -857,7 +915,7 @@ describe("CommentComposer — images (B1 levé)", () => {
     act(() => { fireEvent.paste(field, presse({ texte: "2 * 3 * 4 = 24" })); });
     expect(field.querySelector("em")).toBeNull();
     touche(field, "Enter");
-    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("2 \\* 3 \\* 4 = 24", []);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("2 * 3 * 4 = 24", []);
   });
 
   it("coller du texte, c'est le relire comme le fil le lira : une liste collée reste une liste", () => {
@@ -1089,3 +1147,464 @@ describe("CommentComposer — image qui ne partira pas", () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * Relecture du 13/10. Les marques tapées ne prenaient qu'en début de message ou derrière une
+ * espace : ni en tête d'une seconde ligne (Maj+Entrée), ni derrière une apostrophe ou une
+ * parenthèse — là où le fil, lui, les lit.
+ */
+describe("CommentComposer — marques tapées, partout où le fil les lirait", () => {
+  it("en tête d'une ligne, après Maj+Entrée", () => {
+    const { field, onSubmit } = mount();
+    frapper(field, "bonjour");
+    touche(field, "Enter", { shiftKey: true });
+    frapper(field, "**gras** et *penché* et ~~barré~~");
+    expect(field.querySelector("strong")?.textContent).toBe("gras");
+    expect(field.querySelector("em")?.textContent).toBe("penché");
+    expect(field.querySelector("s")?.textContent).toBe("barré");
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("bonjour\n**gras** et *penché* et ~~barré~~", []);
+  });
+
+  it("derrière une apostrophe, une parenthèse, un guillemet", () => {
+    const { field } = mount();
+    frapper(field, "l'*été* et (**fort**) et «__très__»");
+    expect([...field.querySelectorAll("em")].map(e => e.textContent)).toEqual(["été"]);
+    expect([...field.querySelectorAll("strong")].map(e => e.textContent)).toEqual(["fort", "très"]);
+  });
+
+  it("le soulignement fait pareil : `_penché_` et `__gras__`", () => {
+    const { field } = mount();
+    frapper(field, "_penché_ puis __gras__");
+    expect(field.querySelector("em")?.textContent).toBe("penché");
+    expect(field.querySelector("strong")?.textContent).toBe("gras");
+  });
+
+  it("un gras en cours de frappe n'est pas un italique : `**gras*` attend sa seconde étoile", () => {
+    const { field } = mount();
+    frapper(field, "**gras*");
+    expect(field.querySelector("em, strong")).toBeNull();
+    frapper(field, "*");
+    expect(field.querySelector("strong")?.textContent).toBe("gras");
+    expect(field.querySelector("em")).toBeNull();
+  });
+
+  // Vu au navigateur le 13/10 : derrière une barre oblique, « _notes_ » prenait — et l'adresse partait
+  // amputée de ses soulignés.
+  it("dans une adresse en cours de frappe, rien ne prend : ses soulignés et ses étoiles lui appartiennent", () => {
+    const { field, onSubmit } = mount();
+    frapper(field, "voir https://exemple.org/~jean/_notes_/(*x*)/__y__ et www.exemple.org/_z_ merci");
+    expect(field.querySelector("em, strong")).toBeNull();
+    // À l'écran, pas un signe ne manque.
+    expect(field.editor.getText()).toBe("voir https://exemple.org/~jean/_notes_/(*x*)/__y__ et www.exemple.org/_z_ merci");
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledOnce();
+    // L'adresse à protocole part signe pour signe.
+    expect((onSubmit.mock.calls[0] as [string, unknown])[0].startsWith("voir https://exemple.org/~jean/_notes_/(*x*)/__y__ et ")).toBe(true);
+  });
+
+  it("ni derrière une ponctuation qui n'ouvre rien : une barre oblique, un point, un tiret", () => {
+    const { field } = mount();
+    frapper(field, "a/_b_ et c._d_ et e-*f* et g:**h**");
+    expect(field.querySelector("em, strong")).toBeNull();
+  });
+
+  it("collée à une lettre, une étoile reste une étoile ; un souligné aussi", () => {
+    const { field } = mount();
+    frapper(field, "a*b*c et nom_de_variable_ et x**y**");
+    expect(field.querySelector("em, strong")).toBeNull();
+  });
+
+  it("le code tapé prend lui aussi après un saut de ligne", () => {
+    const { field } = mount();
+    frapper(field, "voici");
+    touche(field, "Enter", { shiftKey: true });
+    frapper(field, "`npm i` ");
+    expect(field.querySelector("code")?.textContent).toBe("npm i");
+  });
+});
+
+/**
+ * Relecture du 13/10. L'éditeur lie de lui-même une adresse tapée ou collée, puis laisse corriger
+ * son texte sans toucher à sa cible : le message partait avec une adresse affichée et une autre
+ * derrière. Le texte fait foi — sauf pour un lien ÉCRIT par le bouton.
+ */
+describe("CommentComposer — un lien dont le texte est une adresse", () => {
+  const adresse = () => screen.getByLabelText("Adresse du lien") as HTMLInputElement;
+  const lier = (field: Champ, texte: string, href: string) =>
+    act(() => { field.editor.commands.insertContent({ type: "text", text: texte, marks: [{ type: "link", attrs: { href } }] }); });
+
+  it("l'éditeur lie une adresse qu'on tape, dès l'espace qui la suit", () => {
+    const { field } = mount();
+    frapper(field, "voir https://exemple.org/page ");
+    expect(field.querySelector("a")?.getAttribute("href")).toBe("https://exemple.org/page");
+  });
+
+  it("complétée après coup, elle mène où on la LIT", () => {
+    const { field, onSubmit } = mount();
+    type(field, "voir ");
+    lier(field, "https://exemple.org/pag", "https://exemple.org/pag");
+    frapper(field, "e");
+    // Le lien de l'éditeur court toujours, sa cible n'a pas bougé : c'est le texte qui part.
+    expect(field.querySelector("a")?.textContent).toBe("https://exemple.org/page");
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("voir https://exemple.org/page", []);
+  });
+
+  // Ce que fait un vrai navigateur (mesuré le 13/10) : la lettre tapée en fin de lien reste DEHORS.
+  it("… même quand la lettre ajoutée est restée hors du lien de l'éditeur", () => {
+    const { field, onSubmit } = mount();
+    type(field, "voir ");
+    lier(field, "https://exemple.org/pag", "https://exemple.org/pag");
+    act(() => { field.editor.commands.insertContent({ type: "text", text: "e" }); field.editor.commands.unsetMark("link"); });
+    act(() => { field.editor.chain().setTextSelection({ from: field.editor.state.doc.content.size - 2, to: field.editor.state.doc.content.size - 1 }).unsetLink().run(); });
+    expect(field.querySelector("a")?.textContent).toBe("https://exemple.org/pag");
+    expect(field.editor.getText()).toBe("voir https://exemple.org/page");
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("voir https://exemple.org/page", []);
+  });
+
+  it("corrigée en son milieu aussi", () => {
+    const { field, onSubmit } = mount({ initialValue: "voir https://exemple.org/ancienne-page merci" });
+    select(field, "ancienne");
+    frapper(field, "nouvelle");
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("voir https://exemple.org/nouvelle-page merci", []);
+  });
+
+  it("une adresse collée par-dessus une adresse la REMPLACE — texte et cible", () => {
+    const { field, onSubmit } = mount({ initialValue: "voir https://exemple.org/ancienne merci" });
+    select(field, "https://exemple.org/ancienne");
+    act(() => { fireEvent.paste(field, presseBrute({ texte: "https://exemple.org/nouvelle" })); });
+    expect(field.editor.getText()).toBe("voir https://exemple.org/nouvelle merci");
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("voir https://exemple.org/nouvelle merci", []);
+  });
+
+  it("collée par-dessus un MOT, elle en fait un lien : le mot reste, la cible est celle qu'on colle", () => {
+    const { field, onSubmit } = mount({ initialValue: "voir ici" });
+    select(field, "ici");
+    act(() => { fireEvent.paste(field, presseBrute({ texte: "https://exemple.org/x" })); });
+    expect(field.querySelector("a")?.textContent).toBe("ici");
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("voir [ici](https://exemple.org/x)", []);
+  });
+
+  it("le champ du bouton Lien reprend l'adresse qu'on lit, pas une cible périmée", () => {
+    const { field } = mount();
+    lier(field, "https://exemple.org/pag", "https://exemple.org/pag");
+    frapper(field, "e");
+    clic(bouton("Lien"));
+    expect(adresse().value).toBe("https://exemple.org/page");
+  });
+
+  it("un lien ÉCRIT par le bouton garde sa cible, même sous un texte en forme d'adresse", () => {
+    const { field, onSubmit } = mount();
+    type(field, "exemple.org");
+    select(field, "exemple.org");
+    clic(bouton("Lien"));
+    act(() => { fireEvent.change(adresse(), { target: { value: "https://exemple.org/fr/accueil" } }); });
+    act(() => { fireEvent.click(bouton("Appliquer")); });
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("[exemple.org](https://exemple.org/fr/accueil)", []);
+  });
+
+  it("… et le champ du bouton reprend alors SA cible", () => {
+    const { field } = mount({ initialValue: "[exemple.org](https://exemple.org/fr/accueil)" });
+    act(() => { field.editor.commands.setTextSelection(3); });
+    clic(bouton("Lien"));
+    expect(adresse().value).toBe("https://exemple.org/fr/accueil");
+  });
+});
+
+/** Un presse-papiers avec son texte ET son HTML — ce que dépose un tableur, ou une page web. */
+function presseBrute(donnees: { texte?: string; html?: string }) {
+  return {
+    clipboardData: {
+      files: [], items: [],
+      getData: (type: string) => (type === "text/plain" ? donnees.texte ?? "" : type === "text/html" ? donnees.html ?? "" : ""),
+    },
+  };
+}
+
+describe("CommentComposer — collage", () => {
+  it("des cellules de tableur gardent leurs séparations : c'est le texte du presse-papiers qui est collé", () => {
+    const { field, onSubmit } = mount();
+    const html = "<table><tr><td>Poste</td><td>Montant</td></tr><tr><td>Loyer</td><td>1200</td></tr></table>";
+    act(() => { fireEvent.paste(field, presseBrute({ texte: "Poste\tMontant\nLoyer\t1200", html })); });
+    expect(field.editor.getText()).not.toBe("PosteMontantLoyer1200");
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("Poste\tMontant\nLoyer\t1200", []);
+  });
+
+  it("dans un bloc de code, un tableau collé reste du texte brut — comme tout ce qu'on y colle", () => {
+    const { field } = mount();
+    clic(bouton("Bloc de code"));
+    const html = "<table><tr><td>Poste</td><td>Montant</td></tr><tr><td>Loyer</td><td>1200</td></tr></table>";
+    act(() => { fireEvent.paste(field, presseBrute({ texte: "Poste\tMontant\nLoyer\t1200", html })); });
+    expect(field.querySelectorAll("pre")).toHaveLength(1);
+    expect(field.querySelector("pre")?.textContent).toBe("Poste\tMontant\nLoyer\t1200");
+    // Aucun paragraphe n'en est sorti : le seul qui reste est celui, vide, que l'éditeur tient après un bloc.
+    expect([...field.querySelectorAll("p")].map(paragraphe => paragraphe.textContent)).toEqual([""]);
+  });
+
+  it("sans tableau, le HTML collé reste du HTML : son gras est gardé", () => {
+    const { field } = mount();
+    act(() => { fireEvent.paste(field, presseBrute({ texte: "du gras", html: "<p>du <strong>gras</strong></p>" })); });
+    expect(field.querySelector("strong")?.textContent).toBe("gras");
+  });
+
+  it("un lien collé ne garde que sa cible : ni la classe, ni le `target`, ni le `rel` du presse-papiers", () => {
+    const { field, onSubmit } = mount();
+    const html = '<p>voir <a href="https://exemple.org/doc" class="fixed inset-0 bg-black" target="_top" rel="opener" title="x">ici</a></p>';
+    act(() => { fireEvent.paste(field, presseBrute({ texte: "voir ici", html })); });
+    const lien = field.querySelector("a")!;
+    expect(lien.getAttribute("href")).toBe("https://exemple.org/doc");
+    expect(lien.className).not.toContain("fixed");
+    expect(lien.getAttribute("target")).toBeNull();
+    expect(lien.getAttribute("rel")).toBe("noopener noreferrer nofollow ugc");
+    expect(lien.hasAttribute("title")).toBe(false);
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("voir [ici](https://exemple.org/doc)", []);
+  });
+
+  it("un lien collé dont le texte affiche une AUTRE adresse mène à celle qu'on lit", () => {
+    const { field, onSubmit } = mount();
+    act(() => { fireEvent.paste(field, presseBrute({ texte: "https://exemple.org", html: '<a href="https://tout-autre.example/piege">https://exemple.org</a>' })); });
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("https://exemple.org", []);
+  });
+
+  it("une mention copiée puis collée reste la même personne, son type compris", () => {
+    const { field, onSubmit } = mount();
+    const html = '<p>merci <span data-type="mention" data-id="65a1000000000000000000a3" data-label="Une orga" data-slug="une_orga" data-kind="organizations">@Une orga</span></p>';
+    act(() => { fireEvent.paste(field, presseBrute({ texte: "merci @Une orga", html })); });
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("merci @une_orga", [{ id: "65a1000000000000000000a3", name: "Une orga", slug: "une_orga", type: "organizations" }]);
+  });
+});
+
+describe("CommentComposer — l'aide du champ et sa barre d'outils", () => {
+  const aideDe = (field: Champ) => document.getElementById(field.getAttribute("aria-describedby") ?? "")?.textContent ?? "";
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it("à la souris : Entrée envoie — et l'aide dit où elle n'envoie pas", () => {
+    vi.stubGlobal("matchMedia", () => ({ matches: false }));
+    const aide = aideDe(mount().field);
+    expect(aide).toContain("Entrée envoie le message ; dans une liste ou un bloc de code, elle passe à la ligne.");
+    expect(aide).toContain("Maj+Entrée passe à la ligne.");
+  });
+
+  it("au doigt : l'aide ne promet pas une Entrée qui envoie — le message part par son bouton", () => {
+    vi.stubGlobal("matchMedia", (requete: string) => ({ matches: requete === "(pointer: coarse)" }));
+    const aide = aideDe(mount().field);
+    expect(aide).toContain("Entrée passe à la ligne ; le message part par son bouton.");
+    expect(aide).not.toContain("Entrée envoie");
+    // Les raccourcis de mise en forme, eux, valent partout.
+    expect(aide).toContain("**gras**");
+  });
+
+  it("la barre d'outils est un groupe nommé", () => {
+    const { container } = mount();
+    const groupe = within(container).getByRole("group", { name: "Mise en forme et pièces jointes" });
+    expect(within(groupe).getByRole("button", { name: "Gras" })).toBeTruthy();
+    expect(within(groupe).getByRole("button", { name: "Insérer un émoji" })).toBeTruthy();
+  });
+
+  it("dans un bloc de code, rien ne se met en forme : les marques et le lien sont inertes, les blocs non", () => {
+    const { field } = mount();
+    type(field, "du texte");
+    for (const nom of ["Gras", "Italique", "Barré", "Code", "Lien"]) expect(bouton(nom).disabled).toBe(false);
+    clic(bouton("Bloc de code"));
+    for (const nom of ["Gras", "Italique", "Barré", "Code", "Lien"]) expect(bouton(nom).disabled).toBe(true);
+    for (const nom of ["Citation", "Liste à puces", "Liste numérotée", "Bloc de code"]) expect(bouton(nom).disabled).toBe(false);
+    clic(bouton("Bloc de code"));
+    for (const nom of ["Gras", "Lien"]) expect(bouton(nom).disabled).toBe(false);
+  });
+});
+
+describe("CommentComposer — un bloc vide n'est pas un message", () => {
+  it.each(["Liste à puces", "Liste numérotée", "Citation", "Bloc de code"])("« %s » sans rien dedans : le bouton d'envoi reste inactif, et rien ne part", nom => {
+    const { field, onSubmit } = mount();
+    clic(bouton(nom));
+    expect(bouton(/envoyer/i).disabled).toBe(true);
+    touche(field, "Enter");
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("dès qu'on y écrit, c'en est un", () => {
+    const { field, onSubmit } = mount();
+    clic(bouton("Citation"));
+    type(field, "cité");
+    expect(bouton(/envoyer/i).disabled).toBe(false);
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("> cité", []);
+  });
+
+  it("des espaces et des sauts de ligne non plus", () => {
+    const { field, onSubmit } = mount();
+    type(field, "   ");
+    touche(field, "Enter", { shiftKey: true });
+    expect(bouton(/envoyer/i).disabled).toBe(true);
+    touche(field, "Enter");
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * Relecture du 13/10. L'éditeur peut être DÉTRUIT sous le composant : la bibliothèque le crée au
+ * rendu et le défait une milliseconde plus tard si le montage tarde. Une commande passée à un
+ * éditeur mort levait — et démontait tout l'arbre.
+ */
+describe("CommentComposer — un éditeur détruit", () => {
+  it("la barre d'outils et l'envoi ne lèvent pas sur un éditeur mort, et rien ne part", () => {
+    const { field, onSubmit } = mount({ initialValue: "un message" });
+    // Une erreur levée dans un gestionnaire d'événement ne remonte pas à qui a cliqué : React la
+    // SIGNALE à la fenêtre. C'est là qu'on l'attend.
+    const signalees: unknown[] = [];
+    const noter = (event: ErrorEvent) => { signalees.push(event.error ?? event.message); event.preventDefault(); };
+    window.addEventListener("error", noter);
+    act(() => { field.editor.destroy(); });
+    // Sans nouveau rendu : la poignée de la coquille tient encore l'éditeur détruit.
+    for (const nom of ["Gras", "Citation", "Bloc de code"]) clic(bouton(nom));
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    act(() => { fireEvent.keyDown(field, { key: "Escape" }); });
+    window.removeEventListener("error", noter);
+    expect(signalees).toEqual([]);
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("au rendu suivant, les effets passent sur l'éditeur mort sans lever — et le composer en retrouve un vivant", () => {
+    const { field, onSubmit, update, container } = mount({ initialValue: "un message" });
+    const mort = field.editor;
+    act(() => { mort.destroy(); });
+    // Ce rendu-ci tient encore l'éditeur détruit quand ses effets tournent : le focus de l'éditeur
+    // (`autoFocus`), et celui que la coquille lui demande par sa poignée (« Répondre »). Demander
+    // ses commandes à un éditeur mort lève — et une levée dans un effet démonte l'arbre.
+    expect(() => update({ initialValue: "un message", autoFocus: true, replyingTo: { id: "x", author: "Camille" } })).not.toThrow();
+    expect(() => update({ initialValue: "un message", autoFocus: true, disabled: true })).not.toThrow();
+    update({ initialValue: "un message", autoFocus: true });
+    // La bibliothèque en a refait un : on peut de nouveau écrire, et envoyer.
+    const vivant = (within(container).getByRole("textbox") as Champ).editor;
+    expect(vivant).not.toBe(mort);
+    expect(vivant.isDestroyed).toBe(false);
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("un message", []);
+  });
+});
+
+describe("CommentComposer — clavier, aux bords", () => {
+  const CAMILLE_M = { id: "a".repeat(24), serverData: { name: "Camille Martin", slug: "camille-martin" } };
+  const avecCamille = (props: Props = {}) => {
+    const searchMembers = vi.fn().mockResolvedValue([CAMILLE_M]);
+    return { ...mount({ entity: { id: "e".repeat(24), searchMembers } as unknown as EntityTypes, ...props }), searchMembers };
+  };
+
+  it("pendant une composition (accent mort, saisie asiatique), Échap appartient à la saisie : l'édition n'est pas annulée", () => {
+    const onCancel = vi.fn();
+    const { field } = mount({ mode: "edit", initialValue: "à corriger", onCancel });
+    act(() => { fireEvent.keyDown(field, { key: "Escape", isComposing: true }); });
+    expect(onCancel).not.toHaveBeenCalled();
+    touche(field, "Escape");
+    expect(onCancel).toHaveBeenCalledOnce();
+  });
+
+  // Entre « @ » et l'arrivée des personnes, aucune liste n'est à l'écran — mais une mention est en
+  // cours. Échap y renonce ; ne pas la revendiquer fermerait la modale, et le message avec elle.
+  it("« @ » seul : Échap renonce à la mention, sans rien fermer d'autre — le suivant n'est plus à nous", async () => {
+    const { field } = avecCamille();
+    type(field, "@");
+    await vi.waitFor(() => expect(field.closest("[data-comment-escape]")).toBeTruthy());
+    expect(screen.queryByRole("listbox")).toBeNull();
+    expect(fireEvent.keyDown(field, { key: "Escape" })).toBe(false);
+    await vi.waitFor(() => expect(field.closest("[data-comment-escape]")).toBeNull());
+    expect(field.editor.getText()).toBe("@");
+    expect(fireEvent.keyDown(field, { key: "Escape" })).toBe(true);
+  });
+
+  it("la surbrillance repart du haut quand la liste change", async () => {
+    const CARLOS_D = { id: "b".repeat(24), serverData: { name: "Carlos Diaz", slug: "carlos" } };
+    const searchMembers = vi.fn(async ({ search }: { search: string }) => (search === "ca" ? [CAMILLE_M, CARLOS_D] : [CARLOS_D, CAMILLE_M]));
+    const { field } = mount({ entity: { id: "e".repeat(24), searchMembers } as unknown as EntityTypes });
+    type(field, "@ca");
+    await screen.findByRole("listbox");
+    touche(field, "ArrowDown");
+    expect(screen.getAllByRole("option")[1].getAttribute("aria-selected")).toBe("true");
+    type(field, "r");
+    await vi.waitFor(() => expect(searchMembers).toHaveBeenCalledWith({ search: "car", searchMode: "personOnly" }));
+    await vi.waitFor(() => expect(screen.getAllByRole("option")[0].textContent).toContain("Carlos"));
+    expect(screen.getAllByRole("option")[0].getAttribute("aria-selected")).toBe("true");
+    expect(field.getAttribute("aria-activedescendant")).toBe(screen.getAllByRole("option")[0].id);
+  });
+
+  it("passer en bloc de code un paragraphe qui porte une mention : elle y reste, en texte — personne n'est effacé sans un mot", async () => {
+    const { field, onSubmit } = avecCamille();
+    type(field, "merci @ca");
+    await screen.findByRole("listbox");
+    touche(field, "Enter");
+    type(field, "pour tout");
+    expect(field.querySelector("[data-type='mention']")).toBeTruthy();
+    clic(bouton("Bloc de code"));
+    expect(field.querySelector("pre")?.textContent).toBe("merci @camille-martin pour tout");
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    // Dans du code, « @camille-martin » est du texte : il n'est plus renvoyé comme une mention.
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("```\nmerci @camille-martin pour tout\n```", []);
+  });
+
+  it("le champ ne fait pas parler le journal du fil : ce qu'on y tape n'est pas une annonce", () => {
+    const { field } = mount();
+    expect(field.closest("[data-comment-editor]")?.getAttribute("aria-live")).toBe("off");
+  });
+});
+
+describe("CommentComposer — émoji", () => {
+  it("l'émoji choisi s'insère au curseur, et le sélecteur se referme", async () => {
+    const { field, onSubmit } = mount();
+    type(field, "bravo  !");
+    act(() => { field.editor.commands.setTextSelection(7); });
+    act(() => { fireEvent.click(bouton("Insérer un émoji")); });
+    const choisir = await screen.findByRole("button", { name: "choisir-un-émoji" });
+    act(() => { fireEvent.click(choisir); });
+    expect(field.editor.getText()).toBe("bravo 🎉 !");
+    expect(screen.queryByRole("button", { name: "choisir-un-émoji" })).toBeNull();
+    touche(field, "Enter");
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("bravo 🎉 !", []);
+  });
+});
+
+/** La surface seule, pour compter ce qu'elle DIT à la coquille. */
+describe("EditorSurface — ce qu'elle rapporte", () => {
+  function Hote({ onStateChange }: { onStateChange: (etat: EditorSurfaceState) => void }) {
+    const { surface: Surface } = useEditorSurface();
+    const poignee = { current: null as EditorSurfaceHandle | null };
+    if (!Surface) return null;
+    return createElement(Surface, {
+      initialValue: "", initialMentions: [], placeholder: "Écrire", label: "Écrire", disabled: false, autoFocus: false,
+      entity: null, onSubmit: () => undefined, onStateChange, handleRef: poignee,
+    });
+  }
+
+  it("une fois par CHANGEMENT d'état — pas une fois par frappe", () => {
+    const onStateChange = vi.fn();
+    const queryClient = new QueryClient();
+    const cocolight = { me: null, api: null, entity: null, helper: {} } as unknown as CocolightContextType;
+    const { container } = render(
+      createElement(QueryClientProvider, { client: queryClient },
+        createElement(CocolightContext.Provider, { value: cocolight },
+          createElement(LocalizationProvider, null, createElement(Hote, { onStateChange })))),
+    );
+    const field = within(container).getByRole("textbox") as Champ;
+    const vides = () => onStateChange.mock.calls.map(([etat]) => (etat as EditorSurfaceState).empty);
+    expect(vides()).toEqual([true]);
+    type(field, "a");
+    expect(vides()).toEqual([true, false]);
+    type(field, "b");
+    type(field, "c");
+    expect(vides()).toEqual([true, false]);
+    act(() => { field.editor.commands.toggleBold(); });
+    expect(onStateChange).toHaveBeenCalledTimes(3);
+    expect((onStateChange.mock.calls[2][0] as EditorSurfaceState).active.bold).toBe(true);
+  });
+});
+

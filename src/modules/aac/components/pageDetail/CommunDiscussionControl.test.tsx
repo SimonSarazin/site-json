@@ -58,7 +58,7 @@ const UTILISATEUR = "65d4000000000000000000d1";
 const ORGA = { id: "orga-de-l-appel" } as unknown as EntityTypes;
 
 /**
- * Un espace à deux fils, dont on règle les compteurs — dans la forme que le serveur rend : quatorze
+ * Un espace à deux fils, dont on règle les compteurs — dans la forme que le serveur rend : quinze
  * champs par fil, et « peut écrire » pour une session seulement.
  */
 function espace(total: number, unread: number, session: boolean) {
@@ -68,8 +68,8 @@ function espace(total: number, unread: number, session: boolean) {
     canComment: session,
     truncated: false,
     threads: [
-      { key: `answers:${COMMUN}`, contextType: "answers", contextId: COMMUN, path: null, total, unread, last: total === 0 ? null : 1_758_000_000, mine: false, title: null, carrier: null, virtual: total === 0, kind: "general", group: null, audience: null },
-      { key: `forms:${APPEL}:q`, contextType: "forms", contextId: APPEL, path: "q", total: 0, unread: 0, last: null, mine: false, title: "Une question", carrier: null, virtual: true, kind: "question", group: "Proposition", audience: null },
+      { key: `answers:${COMMUN}`, contextType: "answers", contextId: COMMUN, path: null, total, unread, last: total === 0 ? null : 1_758_000_000, mine: false, title: null, carrier: null, virtual: total === 0, kind: "general", group: null, audience: null, line: null },
+      { key: `forms:${APPEL}:q`, contextType: "forms", contextId: APPEL, path: "q", total: 0, unread: 0, last: null, mine: false, title: "Une question", carrier: null, virtual: true, kind: "question", group: "Proposition", audience: null, line: null },
     ],
   };
 }

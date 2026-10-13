@@ -112,3 +112,25 @@ describe("le graphe de l'éditeur", () => {
     expect(leger.filter(fichier => /editor\/|richText\/|CommentComposer/.test(fichier))).toEqual([]);
   });
 });
+
+/**
+ * Même preuve, pour la modale de l'ESPACE d'un commun : elle se charge en différé depuis la fiche,
+ * et n'a pas à emporter le panneau général, qu'elle ne rend jamais. Le test de `SpaceModal` double
+ * son panneau : il ne voit donc que la modale et sa coquille. Ici c'est tout le graphe, panneau
+ * compris.
+ */
+describe("le graphe de la modale de l'espace", () => {
+  const modale = graphe(path.join(MODULE, "components/panel/SpaceModal.tsx")).map(duModule);
+
+  it("ne charge ni le panneau général, ni son rail, ni sa modale", () => {
+    for (const piece of ["components/panel/DiscussionPanel.tsx", "components/panel/CarrierRail.tsx", "components/panel/DiscussionModal.tsx"]) {
+      expect(modale).not.toContain(piece);
+    }
+  });
+
+  it("charge bien ce qu'elle rend — la preuve ne passe pas à vide", () => {
+    for (const piece of ["components/panel/DiscussionModalShell.tsx", "components/panel/SpacePanel.tsx", "components/panel/ThreadColumn.tsx", "components/CommentThread.tsx"]) {
+      expect(modale).toContain(piece);
+    }
+  });
+});

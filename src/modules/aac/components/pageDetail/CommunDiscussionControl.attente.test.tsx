@@ -15,7 +15,8 @@ import "../../i18n";
  *   - le bouton se dit occupé tant qu'on attend la modale, et cesse dès qu'elle arrive ;
  *   - cliquer « Discussion » dans l'intervalle ne remplace pas le fil du lien par lequel on est venu.
  *
- * Un fichier à part : l'import de la modale y est RETENU par une porte, qu'on n'ouvre qu'une fois.
+ * Un fichier à part : l'import de la modale y est RETENU par une porte. Chaque test l'ouvre quand
+ * il en a besoin — l'ouvrir deux fois ne fait rien de plus —, et aucun ne compte sur un autre.
  */
 
 const porte = vi.hoisted(() => {
@@ -51,8 +52,8 @@ const ESPACE = {
   canComment: false,
   truncated: false,
   threads: [
-    { key: `answers:${COMMUN}`, contextType: "answers", contextId: COMMUN, path: null, total: 3, unread: 0, last: 1_758_000_000, mine: false, title: null, carrier: null, virtual: false, kind: "general", group: null, audience: null },
-    { key: FIL_DU_LIEN, contextType: "forms", contextId: APPEL, path: CHEMIN, total: 2, unread: 0, last: 1_757_000_000, mine: false, title: "Budget", carrier: null, virtual: false, kind: "question", group: "Proposition", audience: null },
+    { key: `answers:${COMMUN}`, contextType: "answers", contextId: COMMUN, path: null, total: 3, unread: 0, last: 1_758_000_000, mine: false, title: null, carrier: null, virtual: false, kind: "general", group: null, audience: null, line: null },
+    { key: FIL_DU_LIEN, contextType: "forms", contextId: APPEL, path: CHEMIN, total: 2, unread: 0, last: 1_757_000_000, mine: false, title: "Budget", carrier: null, virtual: false, kind: "question", group: "Proposition", audience: null, line: null },
   ],
 };
 
@@ -91,6 +92,8 @@ describe("CommunDiscussionControl — tant que la modale se fait attendre", () =
     expect(screen.queryByTestId("space-modal")).toBeNull();
     await waitFor(() => expect(bouton().getAttribute("aria-busy")).toBe("true"));
     expect(bouton().hasAttribute("disabled")).toBe(false);
+    // Le curseur le dit aussi à qui regarde : on attend quelque chose.
+    expect(bouton().className.split(/\s+/)).toContain("cursor-progress");
 
     // Rien ne s'affiche encore : on clique « Discussion ». L'espace est déjà ouvert, là où
     // l'adresse le dit — répondre par le fil général effacerait le fil du lien, historique compris.
@@ -104,10 +107,13 @@ describe("CommunDiscussionControl — tant que la modale se fait attendre", () =
     await screen.findByTestId("space-modal");
     expect(porte.recu).toMatchObject({ target: { type: "forms", id: APPEL, path: CHEMIN } });
     await waitFor(() => expect(bouton().hasAttribute("aria-busy")).toBe(false));
+    expect(bouton().className.split(/\s+/)).not.toContain("cursor-progress");
     expect(param()).toBe(FIL_DU_LIEN);
   });
 
   it("une fois le code arrivé, ouvrir ne fait plus attendre : le bouton ne se dit pas occupé", async () => {
+    // Le code EST arrivé : ce test ouvre la porte lui-même, il ne compte pas sur le précédent.
+    await act(async () => { porte.ouvrir(); });
     monter(FICHE);
     await waitFor(() => expect(document.querySelector("[data-commun-discussion-total]")).toBeTruthy());
     expect(bouton().hasAttribute("aria-busy")).toBe(false);
