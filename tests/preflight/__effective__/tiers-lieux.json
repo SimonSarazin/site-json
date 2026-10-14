@@ -24,6 +24,11 @@
       }
     }
   },
+  "finderAddNew": {
+    "organizations": "add-organization",
+    "events": "add-event",
+    "poi": "add-poi"
+  },
   "editModals": {
     "organizations": {
       "vierge": "edit-profile",

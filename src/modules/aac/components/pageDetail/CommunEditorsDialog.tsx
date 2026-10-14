@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Loader2, UserPen, UserPlus } from "lucide-react";
+import { Loader2, UserPlus } from "lucide-react";
 import type { Api } from "@communecter/cocolight-api-client";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +19,6 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { cn } from "@/lib/utils";
 import { useSaveCommunEditors } from "../../hooks/useSaveCommunEditors";
 import {
-  editorIdsOf,
   editorsWrites,
   readCommunEditors,
   type CommunEditors,
@@ -28,26 +27,25 @@ import {
 
 /**
  * « Contributeurs à l'édition » de la fiche d'un commun — parité du bouton legacy
- * `.aac-tl-canEdit-form` (`campDetail.php`, `add_form_contributor`).
+ * `.aac-tl-canEdit-form` (`campDetail.php`, `add_form_contributor`). Le déclencheur, « Éditeurs »,
+ * est dans la barre de la fiche (`CommunActionBar`) ; ce fichier porte le dialogue.
  *
- * Les personnes listées peuvent MODIFIER le commun, pas le supprimer. Ce bouton est réservé à
- * l'auteur et aux admins (`canManageEditors`, arbitrage du 29/09) ; la question « Référent » que
- * le formulaire relie à la liste (`addToLinks`) reste, elle, modifiable par tout éditeur du commun,
- * et la change — parité legacy, assumée le 30/09.
+ * Les personnes listées peuvent MODIFIER le commun, pas le supprimer. La gestion de la liste est
+ * réservée à l'auteur et aux admins (`canManageEditors`, arbitrage du 29/09) ; la question
+ * « Référent » que le formulaire relie à la liste (`addToLinks`) reste, elle, modifiable par tout
+ * éditeur du commun, et la change — parité legacy, assumée le 30/09.
  * Recherche GLOBALE de citoyens, comme le finder legacy (`initType: ['citoyens']`).
  */
-export interface CommunEditorsControlProps {
+export interface CommunEditorsDialogProps {
   api: Api | null;
-  /** `perms.canManageEditors(...)` — sans ce droit, rien n'est rendu. */
-  canManage: boolean;
   answerId: string | null;
   /** La réponse affichée : on y lit `links.canEdit` et la question liée. */
   answer: unknown;
   /** La question qui alimente `links.canEdit`, si le formulaire en déclare une. */
   question: EditorsQuestion | null;
   /** Formulaire de l'appel — pour invalider aussi la réponse côté coform. */
-  formId?: string | null;
-  className?: string;
+  formId: string | null;
+  onClose: () => void;
 }
 
 const EDITORS_FINDER_BASE: Omit<FinderConfig, "elementLabel" | "buttonLabel" | "placeholderSearchField"> = {
@@ -69,70 +67,19 @@ const EDITORS_FINDER_BASE: Omit<FinderConfig, "elementLabel" | "buttonLabel" | "
   addToLinks: { value: false, links: "" },
 };
 
-export function CommunEditorsControl({
-  api,
-  canManage,
-  answerId,
-  answer,
-  question,
-  formId = null,
-  className,
-}: CommunEditorsControlProps) {
-  useLoadNamespace("modules/aac");
-  const t = useT("modules/aac");
-  const [open, setOpen] = useState(false);
-
-  if (!canManage) return null;
-
-  const count = editorIdsOf(answer).length;
-
-  return (
-    <>
-      <Button
-        variant="outline"
-        size="sm"
-        className={cn("gap-2", className)}
-        onClick={() => setOpen(true)}
-      >
-        <UserPen className="size-3.5" />
-        {String(t("detail.editors.cta"))}
-        {count > 0 && (
-          <span className="rounded-full bg-muted px-1.5 text-[11px] font-semibold tabular-nums text-muted-foreground">
-            {count}
-          </span>
-        )}
-      </Button>
-
-      {/* Monté seulement ouvert : chaque ouverture repart de la réponse affichée. */}
-      {open && (
-        <CommunEditorsDialog
-          api={api}
-          answerId={answerId}
-          answer={answer}
-          question={question}
-          formId={formId}
-          onClose={() => setOpen(false)}
-        />
-      )}
-    </>
-  );
-}
-
-function CommunEditorsDialog({
+/**
+ * À monter seulement ouvert (`{open && <CommunEditorsDialog … />}`) : chaque ouverture repart de la
+ * réponse affichée.
+ */
+export function CommunEditorsDialog({
   api,
   answerId,
   answer,
   question,
   formId,
   onClose,
-}: {
-  api: Api | null;
-  answerId: string | null;
-  answer: unknown;
-  question: EditorsQuestion | null;
-  formId: string | null;
-  onClose: () => void;
-}) {
+}: CommunEditorsDialogProps) {
+  useLoadNamespace("modules/aac");
   const t = useT("modules/aac");
   // L'UNION des deux sources : si elles divergeaient, personne ne disparaît sans qu'on le voie.
   const [editors, setEditors] = useState<CommunEditors>(() => readCommunEditors(answer, question));

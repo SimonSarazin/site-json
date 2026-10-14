@@ -1,6 +1,6 @@
 import { ReactNode, type ElementType, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { AlertCircle, Home, Sparkles, ListChecks, Handshake, FileText, HeartHandshake, Pencil, Image as ImageIcon } from "lucide-react";
+import { AlertCircle, Home, Sparkles, ListChecks, Handshake, FileText, HeartHandshake, Image as ImageIcon } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { toast } from "sonner";
@@ -21,14 +21,11 @@ import type { AacPermissionData } from "../permissions";
 import { useAacDirectoryContext } from "../hooks/useAacDirectoryContext";
 import { resolveAnswerAuthorId } from "../lib/answerAuthor";
 import { isSelectedIn, type ChooseProposalValue } from "@/modules/coform/utils/chooseProposal";
-import { CommunSelectionControl } from "../components/pageDetail/CommunSelectionControl.tsx";
-import { CommunProjectControl } from "../components/pageDetail/CommunProjectControl.tsx";
-import { CommunEditorsControl } from "../components/pageDetail/CommunEditorsControl.tsx";
+import { CommunActionBar } from "../components/pageDetail/CommunActionBar.tsx";
 import { useAacFormMeta, useAacFormParams } from "../hooks/useAacFormMeta";
 import { editorIdsOf, resolveEditorsQuestion } from "../lib/communEditors";
 
 import { CommunHero } from "../components/pageDetail/CommunHero.tsx";
-import { CommunDeleteControl } from "../components/pageDetail/CommunDeleteControl";
 import { CommunFinancingCard, type PostLoginIntent } from "../components/pageDetail/CommunFinancingCard.tsx";
 import { CommunTocNav, type TocSection } from "../components/pageDetail/CommunTocNav.tsx";
 import { CommunFinancingSection } from "../components/pageDetail/CommunFinancingSection.tsx";
@@ -510,75 +507,53 @@ export default function AacCommunDetailPage() {
     return (
         <PageShell seo={seo}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-24">
-                {/* Une condition PAR bouton : « Modifier » est ouvert à l'auteur,
-                    la sélection au seul admin de l'appel. Une garde commune
-                    priverait l'auteur non-admin de son bouton d'édition. */}
-                <div className="mb-4 flex flex-wrap items-center gap-2">
-                    {canEditThisCommun && formId && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-2"
-                            onClick={() => setIsEditOpen(true)}
-                        >
-                            <Pencil className="size-3.5" />
-                            {String(t("detail.edit.cta"))}
-                        </Button>
-                    )}
-
-                    {/* Le bouton qui gère la liste : l'auteur et les admins. La question « Référent »
-                        reliée à la liste reste modifiable par tout éditeur (parité legacy, doc/34 §3.4). */}
-                    <CommunEditorsControl
-                        api={api}
-                        canManage={perms.canManageEditors({ authorId })}
-                        answerId={answerId ?? null}
-                        answer={answer}
-                        question={editorsQuestion}
-                        formId={formId ?? null}
-                    />
-
-                    <CommunSelectionControl
-                        api={api}
-                        isAdmin={perms.canSelectCommun}
-                        isSelected={isSelected}
-                        contextId={directory.contextId}
-                        contextType={directory.context?.type ?? null}
-                        contextName={directory.context?.name ?? null}
-                        subFormId={chooseStepKey}
-                        formId={formId ?? null}
-                        answerId={answerId ?? null}
-                        onDone={handleSelectionDone}
-                    />
-
-                    <CommunProjectControl
-                        api={api}
-                        canManageProject={canManageProject}
-                        answerId={answerId ?? null}
-                        projectId={targetResource?.projectId}
-                        isLoading={isPhaseUnresolved}
-                        projectSlug={projectSlug}
-                        parentId={directory.contextId}
-                        parentType={directory.context?.type ?? null}
-                        userId={me?.id ?? null}
-                        contextEntity={entity}
-                        onGenerated={async () => {
+                {/* Un gate PAR action : « Modifier » est ouvert à l'auteur et à ses
+                    éditeurs, la sélection au seul admin de l'appel. Une garde commune
+                    priverait l'auteur non-admin de son bouton d'édition. La question
+                    « Référent » reliée aux éditeurs reste modifiable par tout éditeur
+                    (parité legacy, doc/34 §3.4). */}
+                <CommunActionBar
+                    api={api}
+                    answerId={answerId ?? null}
+                    answer={answer}
+                    formId={formId ?? null}
+                    canEdit={canEditThisCommun && Boolean(formId)}
+                    onEdit={() => setIsEditOpen(true)}
+                    canManageEditors={perms.canManageEditors({ authorId })}
+                    editorsQuestion={editorsQuestion}
+                    selection={{
+                        isAdmin: perms.canSelectCommun,
+                        isSelected,
+                        contextId: directory.contextId,
+                        contextType: directory.context?.type ?? null,
+                        contextName: directory.context?.name ?? null,
+                        subFormId: chooseStepKey,
+                        onDone: handleSelectionDone,
+                    }}
+                    project={{
+                        canManage: canManageProject,
+                        isLoading: isPhaseUnresolved,
+                        projectId: targetResource?.projectId,
+                        projectSlug,
+                        parentId: directory.contextId,
+                        parentType: directory.context?.type ?? null,
+                        userId: me?.id ?? null,
+                        contextEntity: entity,
+                        onLinked: async () => {
                             await Promise.all([answerQuery.refetch(), refreshMe()]);
-                        }}
-                    />
-
-                    <CommunDeleteControl
-                        api={api}
-                        canDelete={perms.canDeleteCommun({ authorId })}
-                        answerId={answerId ?? null}
-                        communTitle={communSeo.title}
+                        },
+                    }}
+                    deletion={{
+                        canDelete: perms.canDeleteCommun({ authorId }),
+                        communTitle: communSeo.title,
                         // L'enveloppe, déjà résolue par la fiche, dit s'il y a eu des
                         // versements et ce que la cascade emporterait.
-                        resource={targetResource}
-                        isResourceLoading={isFundingLoading}
+                        resource: targetResource,
+                        isResourceLoading: isFundingLoading,
                         // Retour à l'annuaire ; `useDeleteCommun` a déjà retiré le document du cache.
-                        onDeleted={() => void navigate("/aac")}
-                    />
-                </div>
+                        onDeleted: () => void navigate("/aac"),
+                    }}
+                />
 
                 {/* Top Banner — sans carte de financement, le héros n'a pas à
                     rester sur 7 colonnes de 12 : on retire la grille plutôt que
