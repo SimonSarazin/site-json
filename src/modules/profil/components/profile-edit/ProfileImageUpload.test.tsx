@@ -13,6 +13,8 @@ const state = vi.hoisted(() => ({
   uploadImage: vi.fn().mockResolvedValue(undefined),
   uploadBanner: vi.fn().mockResolvedValue(undefined),
   formats: [] as string[],
+  /** Dimensions de la photo choisie, transmises par « image entière ». */
+  taille: { width: 1200, height: 400 },
 }));
 
 vi.mock("@/hooks/useT", () => ({ useT: () => (k: string) => k }));
@@ -25,6 +27,13 @@ vi.mock("../../hooks/useProfileMutations", () => ({
 const carre = new File(["carre"], "photo.png", { type: "image/png" });
 const padFileToSquare = vi.fn(async (_file: File) => carre);
 vi.mock("../../lib/padToSquare", () => ({ padFileToSquare: (f: File) => padFileToSquare(f) }));
+// `lightenImage` réel par défaut (une petite photo part telle quelle) ; surchargé au cas par cas.
+const { lightenImage } = vi.hoisted(() => ({ lightenImage: vi.fn() }));
+vi.mock("@/utils/imageUtils", async (importOriginal) => {
+  const reel = await importOriginal<typeof import("@/utils/imageUtils")>();
+  lightenImage.mockImplementation(reel.lightenImage);
+  return { ...reel, lightenImage: (f: File) => lightenImage(f) };
+});
 vi.mock("@/modules/news", () => ({
   ImageCropDialog: ({
     open,
@@ -44,7 +53,7 @@ vi.mock("@/modules/news", () => ({
           appliquer
         </button>
         {onUseOriginal && (
-          <button type="button" onClick={() => onUseOriginal({ width: 1200, height: 400 })}>
+          <button type="button" onClick={() => onUseOriginal(state.taille)}>
             image entière
           </button>
         )}
@@ -68,6 +77,7 @@ describe("ProfileImageUpload — envoi de la bannière et de la photo de profil"
   beforeEach(() => {
     state.uploadImage.mockClear();
     state.uploadBanner.mockClear();
+    state.taille = { width: 1200, height: 400 };
   });
 
   it("propose les formats, la photo d'origine en premier, pour les deux types", async () => {
@@ -88,6 +98,24 @@ describe("ProfileImageUpload — envoi de la bannière et de la photo de profil"
     fireEvent.click(screen.getByText("image entière"));
     await waitFor(() => expect(state.uploadImage).toHaveBeenCalledWith(carre));
     expect(padFileToSquare).toHaveBeenCalledWith(photo);
+  });
+
+  it("photo de profil : si la mise au carré échoue, la photo part telle quelle (rien n'est perdu)", async () => {
+    padFileToSquare.mockRejectedValueOnce(new Error("canvas refusé"));
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    await choisirPhoto("profile");
+    fireEvent.click(screen.getByText("image entière"));
+    await waitFor(() => expect(state.uploadImage).toHaveBeenCalledWith(photo));
+  });
+
+  it("grande bannière : allégée avant l'envoi, zone de recadrage aux dimensions du fichier envoyé", async () => {
+    const legere = new File(["legere"], "photo.png", { type: "image/png" });
+    lightenImage.mockResolvedValueOnce(legere);
+    state.taille = { width: 6875, height: 4544 };
+    await choisirPhoto("banner");
+    fireEvent.click(screen.getByText("image entière"));
+    await waitFor(() => expect(state.uploadBanner).toHaveBeenCalled());
+    expect(state.uploadBanner).toHaveBeenCalledWith({ file: legere, cropX: 0, cropY: 0, cropW: 1920, cropH: 1269 });
   });
 
   it("bannière : jamais complétée en carré", async () => {

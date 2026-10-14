@@ -7,6 +7,7 @@ import { useUploadProfileImage, useUploadProfileBanner } from "../../hooks/usePr
 import { ImageCropDialog } from "@/modules/news";
 import type { AspectOption } from "@/modules/news/components/forms/ImageCropDialog";
 import { padFileToSquare } from "../../lib/padToSquare";
+import { fitWithin, lightenImage, UPLOAD_COMPRESSION } from "@/utils/imageUtils";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 
 interface ProfileImageUploadProps {
@@ -92,16 +93,32 @@ export function ProfileImageUpload({
     try {
       // Upload avec les bonnes données selon le type
       if (type === "banner" && cropArea) {
+        // Bannière allégée avant l'envoi (`lightenImage` : au-delà de 1 Mo, plus grand côté ramené à
+        // 1920 px) : envoyée à sa taille d'origine, une photo d'appareil (15 Mo, 6875×4544) dépasse la
+        // taille de requête de PHP et le backend ne reçoit aucun fichier. La zone de recadrage suit les
+        // dimensions du fichier ENVOYÉ ; `lightenImage` rend la photo telle quelle (même référence)
+        // quand elle est légère, quand la réduction ne gagne rien ou quand elle échoue.
+        const fichier = await lightenImage(croppedFile);
+        const taille =
+          fichier === croppedFile
+            ? cropArea
+            : fitWithin(cropArea.width, cropArea.height, UPLOAD_COMPRESSION.maxWidthOrHeight);
         await uploadBannerMutation.mutateAsync({
-          file: croppedFile,
+          file: fichier,
           cropX: 0, // Image déjà croppée localement, pas de décalage
           cropY: 0, // Image déjà croppée localement, pas de décalage
-          cropW: cropArea.width,
-          cropH: cropArea.height,
+          cropW: taille.width,
+          cropH: taille.height,
         });
       } else {
-        // Toujours carrée à l'envoi, même au format « Original » : cf. `padFileToSquare`.
-        await uploadImageMutation.mutateAsync(await padFileToSquare(croppedFile));
+        // Carrée à l'envoi, même au format « Original » : cf. `padFileToSquare`. En cas d'échec de la mise
+        // au carré (décodage, canvas refusé par le navigateur), on envoie la photo telle quelle — comme
+        // avant ce traitement — plutôt que de ne rien envoyer.
+        const fichier = await padFileToSquare(croppedFile).catch((error) => {
+          console.warn("Photo de profil non mise au carré, envoyée telle quelle :", error);
+          return croppedFile;
+        });
+        await uploadImageMutation.mutateAsync(fichier);
       }
 
       // Nettoyer

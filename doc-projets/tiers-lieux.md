@@ -619,7 +619,10 @@ sombre, mobile. Tests de `lib/resourceDirectoryFilters.ts`.
   `profilBannerUrl` garde donc la même taille). Option `aspectOptions` d'`ImageCropDialog` (absente =
   rendu inchangé, ex. actus) ; « Utiliser l'image entière » ferme le dialogue dès le clic (pas de
   double envoi) ; une photo de profil non carrée part complétée en carré transparent (image entière
-  centrée) : entière aussi dans le menu compte, les cartes, les commentaires et la miniature backend ;
+  centrée, carré plafonné à 1024 px — PNG de 0,3 à 2,7 Mo mesuré pour une photo 4000×3000) : entière
+  aussi dans le menu compte, les cartes, les commentaires et la miniature backend ; si la mise au carré
+  échoue, la photo part telle quelle ; la bannière est allégée avant l'envoi (1920 px au plus) : une
+  photo de 15,8 Mo (6875×4544) part en 0,3 à 0,4 Mo, au lieu d'être refusée par PHP ;
 - affichage : bannière inchangée (`object-cover`) ; photo de profil de l'en-tête `complete` en
   `object-contain` — un logo large n'est plus rogné (une photo carrée reste coupée aux coins du rond).
 
