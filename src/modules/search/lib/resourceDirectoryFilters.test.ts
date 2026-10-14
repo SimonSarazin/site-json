@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  defaultOpenFilterGroups,
   matchesCapacity,
   matchesZones,
   parentIdsFilter,
@@ -104,5 +105,30 @@ describe("thematicParentIds", () => {
   });
   it("réseau coché SANS lieu membre : [] (et non null — sinon tout l'annuaire s'afficherait)", () => {
     expect(thematicParentIds({ a: { field: "_id", value: [] } } as never)).toEqual([]);
+  });
+});
+
+describe("defaultOpenFilterGroups", () => {
+  const prix = ["priceHourly", "priceHalfDay", "priceFullDay"];
+  it("défaut historique : type + 1er groupe prix", () => {
+    expect(defaultOpenFilterGroups({ thematic: false, capacity: false, region: false, priceGroupIds: prix })).toEqual([
+      "resourceType",
+      "priceHourly",
+    ]);
+  });
+  it("ne nomme jamais un groupe absent ; la seule facette configurée arrive ouverte", () => {
+    expect(defaultOpenFilterGroups({ thematic: false, capacity: false, region: true, priceGroupIds: [] })).toEqual([
+      "resourceType",
+      "region",
+    ]);
+    expect(defaultOpenFilterGroups({ thematic: false, capacity: false, region: false, priceGroupIds: [] })).toEqual([
+      "resourceType",
+    ]);
+  });
+  it("tiers-lieux : type + thématique (ordre d'affichage)", () => {
+    expect(defaultOpenFilterGroups({ thematic: true, capacity: true, region: true, priceGroupIds: [] })).toEqual([
+      "resourceType",
+      "thematic",
+    ]);
   });
 });

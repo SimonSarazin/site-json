@@ -619,7 +619,8 @@ au-dessus de la grille le retire. La facette « type » (client) s'applique par-
   `address.level*` du lieu porteur. Les lieux porteurs sont donc lus pour TOUTES les ressources
   chargées, pas seulement celles affichées.
 
-Logique pure dans `lib/resourceDirectoryFilters.ts`.
+Groupes ouverts à l'arrivée : les deux premiers groupes RÉELLEMENT déclarés, dans cet ordre
+(`defaultOpenFilterGroups` — jamais un groupe absent). Logique pure dans `lib/resourceDirectoryFilters.ts`.
 
 **Quatre facettes par défaut** (`hideSearch: true` — pas de recherche texte). Un annuaire de
 ressources est BORNÉ : la section charge l'ensemble (`indexStepList: 500`,

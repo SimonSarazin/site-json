@@ -105,3 +105,21 @@ export function parentIdsFilter(thematicIds: readonly string[] | null, activePar
   if (!activeParentId) return [...thematicIds];
   return thematicIds.includes(activeParentId) ? [activeParentId] : [];
 }
+
+/**
+ * Groupes de filtres ouverts à l'arrivée : les `count` premiers groupes RÉELLEMENT déclarés, dans
+ * l'ordre d'affichage (type, thématique, capacité, zone, prix) — jamais un groupe absent, et la
+ * seule facette configurée n'arrive pas repliée.
+ */
+export function defaultOpenFilterGroups(
+  declared: { thematic: boolean; capacity: boolean; region: boolean; priceGroupIds: readonly string[] },
+  count = 2,
+): string[] {
+  return [
+    "resourceType",
+    ...(declared.thematic ? ["thematic"] : []),
+    ...(declared.capacity ? ["capacity"] : []),
+    ...(declared.region ? ["region"] : []),
+    ...declared.priceGroupIds,
+  ].slice(0, count);
+}

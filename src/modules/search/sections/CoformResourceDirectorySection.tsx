@@ -36,6 +36,7 @@ import {
 } from "../lib/resourceDirectory";
 import {
   CAPACITY_FILTER_RANGES,
+  defaultOpenFilterGroups,
   matchesCapacity,
   matchesZones,
   parentIdsFilter,
@@ -124,7 +125,12 @@ export default function CoformResourceDirectorySection({
     () => ({
       title: filtersTitle,
       hideSearch: true,
-      defaultOpenGroups: ["resourceType", priceFilters ? "priceHourly" : "capacity"],
+      defaultOpenGroups: defaultOpenFilterGroups({
+        thematic: !!thematicFilter,
+        capacity: capacityFilter,
+        region: !!regionFilter,
+        priceGroupIds: priceFilters ? PRICE_FILTER_GROUPS.map((g) => g.field) : [],
+      }),
       filterGroups: [
         {
           // Groupe SANS `field` : sélection dans `selectedFilters.resourceType`
