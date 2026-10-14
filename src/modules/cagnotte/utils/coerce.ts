@@ -45,3 +45,8 @@ export function toNumber(value: unknown): number {
 export function toString(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
+
+/** Identifiant en chaîne : chaîne telle quelle, nombre converti, sinon `''`. */
+export function toId(value: unknown): string {
+  return typeof value === "number" ? String(value) : toString(value);
+}

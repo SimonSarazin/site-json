@@ -819,7 +819,11 @@
                   "fr": "Coworking",
                   "en": "Coworking"
                 },
-                "linkSuffix": "miq8118cmkh16zjwmt"
+                "linkSuffix": "miq8118cmkh16zjwmt",
+                "detailSuffixes": {
+                  "equipments": "mieg8j24m89gm99t5mi",
+                  "moreInfo": "miq8auz2wess00qdkpe"
+                }
               },
               {
                 "id": "meeting-room",
@@ -831,7 +835,14 @@
                   "en": "Meeting room"
                 },
                 "linkSuffix": "miq81uh4gat3vgbtgkj",
-                "descriptionSuffix": "miolbscdcrucb5a8uuq"
+                "descriptionSuffix": "miolbscdcrucb5a8uuq",
+                "detailSuffixes": {
+                  "equipments": "miok91fh1gta2sneeu5",
+                  "catering": "mieg8j24m89gm99t5mi",
+                  "moreInfo": "miq8a6oceswkv6i75jp",
+                  "about": "miolbscdcrucb5a8uuq",
+                  "tip": "miol2ccdl9a86x4f3yc"
+                }
               },
               {
                 "id": "accommodation",
@@ -844,7 +855,13 @@
                 },
                 "linkSuffix": "miq83c8getjt3lcz64f",
                 "descriptionSuffix": "miq88plgleoln5tmc7b",
-                "servicesSuffix": "miq86g5vaw1kavrapkb"
+                "servicesSuffix": "miq86g5vaw1kavrapkb",
+                "detailSuffixes": {
+                  "equipments": "mieg8j24m89gm99t5mi",
+                  "services": "miq86g5vaw1kavrapkb",
+                  "roomType": "mix3hskq78wglr6m61x",
+                  "moreInfo": "miq88plgleoln5tmc7b"
+                }
               }
             ]
           }
@@ -1599,11 +1616,11 @@
           "props": {
             "title": {
               "en": "Why choose a third place",
-"fr": "Pourquoi choisir un tiers-lieu"
+              "fr": "Pourquoi choisir un tiers-lieu"
             },
             "description": {
               "en": "A lively, friendly setting for working differently, far from standardised meeting rooms. Shared spaces, equipment and services suited to meetings, seminars, training courses or residencies. A place that fosters encounters, exchanges and cooperation with a territory and its actors.",
-"fr": "Un cadre vivant et convivial pour travailler autrement, loin des salles de réunion standardisées. Des espaces, équipements et services mutualisés, adaptés aux réunions, séminaires, formations ou résidences. Un lieu qui favorise les rencontres, les échanges et les coopérations avec un territoire et ses acteurs."
+              "fr": "Un cadre vivant et convivial pour travailler autrement, loin des salles de réunion standardisées. Des espaces, équipements et services mutualisés, adaptés aux réunions, séminaires, formations ou résidences. Un lieu qui favorise les rencontres, les échanges et les coopérations avec un territoire et ses acteurs."
             },
             "image": "images/tiersLieux/docs.png",
             "imagePosition": "left",

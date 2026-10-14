@@ -5,6 +5,7 @@ import {
   readFinancerPaymentState,
   toDisplayPaymentStatus,
   unpaidAmountOf,
+  dueAmountOf,
 } from "./financerPayment";
 
 /** Un log validé, forme canonique de `Aap::payFinancerEngagement`. */
@@ -272,5 +273,21 @@ describe("readFinancerPaymentLogs", () => {
 
     expect(logs[0].type).toBe("manual");
     expect(logs[0].confirmation).toBe("pending");
+  });
+});
+
+describe("dueAmountOf", () => {
+  it("ne compte que la promesse restante : un versement en attente de validation est déjà fait", () => {
+    const fund = { amount: 1000, payment: { logs: [validatedLog(200), pendingLog(300)] } };
+
+    expect(dueAmountOf(fund)).toBe(500);
+  });
+
+  it("rend 0 quand tout est versé, même en attente de validation", () => {
+    expect(dueAmountOf({ amount: 1000, payment: { logs: [pendingLog(1000)] } })).toBe(0);
+  });
+
+  it("rend le montant entier d'une promesse legacy", () => {
+    expect(dueAmountOf({ amount: 400 })).toBe(400);
   });
 });

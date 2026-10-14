@@ -42,6 +42,13 @@ export interface MutationWithToastConfig<TData, TVariables = void> {
    * Namespace i18n (défaut: "common")
    */
   namespace?: string;
+
+  /**
+   * Tait le toast de SUCCÈS, quand l'appelant affiche le sien, plus précis — sans quoi deux toasts
+   * se suivent. Seul le toast se tait : `onSuccessCallback` et l'invalidation s'exécutent quand
+   * même, et les erreurs restent toujours signalées.
+   */
+  silentSuccess?: boolean;
 }
 
 /**
@@ -77,6 +84,7 @@ export function useMutationWithToast<TData = void, TVariables = void>({
   getSuccessParams,
   getErrorParams,
   namespace = "common",
+  silentSuccess = false,
 }: MutationWithToastConfig<TData, TVariables>) {
   const queryClient = useQueryClient();
   const t = useT(namespace);
@@ -93,9 +101,11 @@ export function useMutationWithToast<TData = void, TVariables = void>({
         queryClient.invalidateQueries({ queryKey });
       });
 
-      // Afficher le toast de succès
-      const params = getSuccessParams?.(data, variables);
-      showSuccessToast(successKey, t, params);
+      // Afficher le toast de succès — sauf si l'appelant affiche le sien
+      if (!silentSuccess) {
+        const params = getSuccessParams?.(data, variables);
+        showSuccessToast(successKey, t, params);
+      }
     },
 
     onError: (error: Error, variables) => {
