@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import {
@@ -29,6 +30,24 @@ export function StatusDropdownLayout({
   statusVariant,
 }: StatusDropdownLayoutProps) {
   const [confirmationAction, setConfirmationAction] = useState<EntityAction | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const wantsToJoin = searchParams.has("participer");
+  const joinAction = actions.find((a) => a.type === "join" && a.show);
+
+  // Lien « ?participer » (extension WordPress, partage) : ouvre directement la confirmation de
+  // participation, une seule fois. Sans action disponible (non connecté, déjà participant), rien.
+  useEffect(() => {
+    if (!wantsToJoin || !joinAction) return;
+    setConfirmationAction(joinAction);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("participer");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [wantsToJoin, joinAction, setSearchParams]);
 
   if (actions.length === 0) return null;
 
