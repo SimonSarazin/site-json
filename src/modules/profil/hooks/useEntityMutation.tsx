@@ -134,15 +134,31 @@ export interface EntityMutationSpec {
  * d'ADMINISTRATION et la provenance (`source.key`) continue de gouverner le schéma — comportement
  * voulu pour `ensureCostumScope` (import/export/validation), PAS ici.
  *
+ * `setCostumScope` est SYNCHRONE : il ne lit que le cache live de la lib (TTL 5 min) ou, hors
+ * FORCE_LIVE, le bundle. Rien ne garantit ce cache au moment d'éditer — `api.me()` ne charge pas le
+ * costum de sa provenance (contrairement à `get()`), et un profil ouvert depuis plus de 5 min l'a laissé
+ * expirer. La lib retombe alors sur un contexte NU et l'épingle FERME les champs costum (`[DraftProxy]
+ * Le champ "typepro" n'est pas autorisé.` sur le formulaire citoyen SSBE). D'où `loadCostumScope`
+ * d'abord (chargement live, dédupliqué par la lib dans le TTL), puis `setCostumScope` qui épingle depuis
+ * ce cache frais en gardant la variante du sous-type de l'entité.
+ *
  * Échec NON bloquant : un costum hors registre lève (« fournissez costumId/costumType ») ; on laisse
  * alors le save échouer avec l'erreur de champ, plus parlante qu'une erreur d'identité costum.
  */
-function pinSchemaCostumScope(target: unknown, slug: string | undefined): void {
+async function pinSchemaCostumScope(target: unknown, slug: string | undefined): Promise<void> {
   if (!slug || !target || typeof target !== "object") return;
   const holder = target as {
     setCostumScope?: (slug: string, opts?: { costumId?: string; costumType?: string; pinSchema?: boolean }) => void;
+    loadCostumScope?: (slug: string) => Promise<boolean>;
   };
   if (typeof holder.setCostumScope !== "function") return;
+  if (typeof holder.loadCostumScope === "function") {
+    try {
+      await holder.loadCostumScope(slug);
+    } catch (err) {
+      console.warn(`[costum] chargement live de « ${slug} » impossible (non bloquant)`, err);
+    }
+  }
   try {
     holder.setCostumScope(slug, { pinSchema: true });
   } catch (err) {
@@ -294,7 +310,7 @@ export async function runEntityMutation(
   // ── ÉDITION ─────────────────────────────────────────────────────────────────
   if (spec.mode === "edit") {
     if (!spec.target) throw new Error("No entity provided");
-    pinSchemaCostumScope(spec.target, spec.schemaCostumSlug);
+    await pinSchemaCostumScope(spec.target, spec.schemaCostumSlug);
     try {
       await submitEntityEdit(spec.target as unknown as EditableEntity, payload, { imageFile, imageDeleted });
     } catch (err) {
