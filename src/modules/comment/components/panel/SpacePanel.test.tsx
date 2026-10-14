@@ -837,6 +837,25 @@ describe("SpacePanel", () => {
       expect(formulaire(container)).toBeNull();
     });
 
+    /**
+     * Discret (`ghost`), le « + » ne se trouvait pas : il porte la couleur PRIMAIRE. Formulaire
+     * ouvert, il n'est plus que ce qui le referme, et s'efface devant « Créer » — une seule action
+     * primaire à l'écran.
+     */
+    it("le « + » est en couleur primaire, et la cède à « Créer » quand le formulaire est ouvert", async () => {
+      monter({ sert: PEUT_CREER });
+      await servir();
+      const classes = () => plus()!.className.split(/\s+/);
+      expect(classes()).toContain("bg-primary");
+      expect(classes()).not.toContain("bg-secondary");
+      fireEvent.click(plus()!);
+      expect(classes()).toContain("bg-secondary");
+      expect(classes()).not.toContain("bg-primary");
+      expect(screen.getByRole("button", { name: "Créer" }).className.split(/\s+/)).toContain("bg-primary");
+      fireEvent.click(plus()!);
+      expect(classes()).toContain("bg-primary");
+    });
+
     it("le « + » ouvre le formulaire en tête de la colonne, au-dessus des fils — et le referme", async () => {
       const { container } = await ouvrirLeFormulaire();
       const boite = formulaire(container)!;

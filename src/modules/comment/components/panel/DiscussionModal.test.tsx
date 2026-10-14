@@ -46,7 +46,7 @@ describe("DiscussionModal", () => {
     const id = boite.getAttribute("aria-describedby");
     expect(id).toBeTruthy();
     expect(document.getElementById(id!)?.textContent)
-      .toBe("Vos espaces, leurs fils de discussion et les messages du fil choisi.");
+      .toBe("Vos contextes, leurs fils de discussion et les messages du fil choisi.");
   });
 
   // Le plafond de largeur doit vivre dans une variante qui passe APRÈS `sm:` : posé sans

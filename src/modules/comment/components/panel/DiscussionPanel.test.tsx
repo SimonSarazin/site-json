@@ -33,7 +33,7 @@ function fil(over: Partial<DiscussionThread> = {}): DiscussionThread {
 
 /**
  * Le rail : deux espaces actifs, un espace vierge (donc derrière le pli) et le groupe
- * « sans espace ». Aucun nom ne contient « ouvrir », aucun titre de fil ne contient
+ * « sans contexte ». Aucun nom ne contient « ouvrir », aucun titre de fil ne contient
  * « solaire » : c'est ce qui permet à chaque requête de ne viser QU'UNE des deux colonnes.
  */
 const ORGA = porteur();
@@ -218,7 +218,7 @@ const modeAllDemande = () => appels.some(a => a.kind === "all" && a.enabled);
  *     supprime le clignotement à l'hydratation : un hook de media query vaut `false` au rendu
  *     serveur comme au premier rendu client, si bien que les trois colonnes apparaissaient
  *     une fraction de seconde sous 768 px. Le choix est désormais purement CSS ;
- *   - le panneau ne se ferme JAMAIS lui-même — sans quoi « retour aux espaces » fermerait la
+ *   - le panneau ne se ferme JAMAIS lui-même — sans quoi « retour aux contextes » fermerait la
  *     modale qui l'héberge.
  */
 describe("DiscussionPanel", () => {
@@ -253,9 +253,9 @@ describe("DiscussionPanel", () => {
     expect(panneau(container).getAttribute("data-step")).toBe("thread");
   });
 
-  it("intitule la première colonne « Espaces », pas « Discussions »", () => {
+  it("intitule la première colonne « Contextes », pas « Discussions »", () => {
     monter();
-    expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("Espaces");
+    expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("Contextes");
     // Un seul « Discussions » dans tout le panneau : le nom accessible de la région.
     expect(screen.queryAllByRole("heading", { name: "Discussions" })).toHaveLength(0);
   });
@@ -274,7 +274,7 @@ describe("DiscussionPanel", () => {
    * Défaut signalé à l'écran le 24/09 : cliquer un fil repliait la section « Sans discussion »,
    * « comme si le clic avait déclenché un rechargement ». Le porteur retombait à `null` le
    * temps que la requête de lien profond rattrape une information qu'on avait déjà — la
-   * colonne était alors remplacée par « Choisissez un espace », donc DÉMONTÉE, et tout son
+   * colonne était alors remplacée par « Choisissez un contexte », donc DÉMONTÉE, et tout son
    * état d'affichage perdu.
    */
   it("ne démonte pas la colonne des fils quand on clique un fil de ce porteur", () => {
@@ -283,35 +283,35 @@ describe("DiscussionPanel", () => {
     fireEvent.click(container.querySelector("[data-thread-row]")!);
     // La colonne montre toujours ses fils : ni écran d'attente, ni retour au choix d'espace.
     expect(container.querySelectorAll("[data-thread-row]").length).toBeGreaterThan(0);
-    expect(screen.queryByText("Choisissez un espace")).toBeNull();
+    expect(screen.queryByText("Choisissez un contexte")).toBeNull();
   });
 
   it("annonce l'état du rail, pour que le CSS n'ait rien à deviner", () => {
     const { container } = monter();
     expect(panneau(container).getAttribute("data-rail")).toBe("expanded");
-    fireEvent.click(screen.getByRole("button", { name: /Replier les espaces/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Replier les contextes/ }));
     expect(panneau(container).getAttribute("data-rail")).toBe("collapsed");
   });
 
   /**
-   * Le groupe « Sans espace » n'a pas d'identifiant propre : il se sélectionne en écrivant
+   * Le groupe « Sans contexte » n'a pas d'identifiant propre : il se sélectionne en écrivant
    * `?discussion=all`, qui EST son adresse.
    *
    * Cette sélection retombait dans le filet « ce n'est pas un fil » et rendait une clé nulle.
    * Trois conséquences, toutes silencieuses : la rangée cliquée n'était pas marquée, le mode
-   * `all` n'était jamais demandé, et la colonne annonçait « aucun fil dans cet espace » sur un
+   * `all` n'était jamais demandé, et la colonne annonçait « aucun fil dans ce contexte » sur un
    * périmètre qu'elle n'avait même pas chargé. Or 52 % des fils de formulaire sont orphelins.
    */
-  it("charge et marque le groupe « Sans espace » quand on le choisit dans le rail", () => {
+  it("charge et marque le groupe « Sans contexte » quand on le choisit dans le rail", () => {
     monter();
-    fireEvent.click(screen.getByRole("button", { name: "Sans espace" }));
+    fireEvent.click(screen.getByRole("button", { name: "Sans contexte" }));
 
     expect(modeAllDemande()).toBe(true);
-    expect(screen.getByRole("button", { name: "Sans espace" }))
+    expect(screen.getByRole("button", { name: "Sans contexte" }))
       .toHaveAttribute("data-selected", "true");
     // Le fil orphelin est bel et bien rendu — et non un message d'absence.
     expect(screen.getByText("Ouvrir sans rattachement")).toBeInTheDocument();
-    expect(screen.queryByText("Aucun fil dans cet espace")).toBeNull();
+    expect(screen.queryByText("Aucun fil dans ce contexte")).toBeNull();
   });
 
   /**
@@ -385,7 +385,7 @@ describe("DiscussionPanel", () => {
       const titre = () => colonneFils(container).querySelector("h3")!.textContent;
       expect(titre()).toBe("Fils");
       taper(container, "ouvrir");
-      expect(titre()).toBe("Fils correspondants — tous espaces");
+      expect(titre()).toBe("Fils correspondants — tous contextes");
     });
 
     /**
@@ -444,8 +444,8 @@ describe("DiscussionPanel", () => {
       taper(container, "ouvrir");
       fireEvent.click(container.querySelector(`[data-thread-key="forms:${FORM}"]`)!);
 
-      // Le rail bascule sur le groupe « sans espace », et quitte l'ancien porteur…
-      expect(screen.getByRole("button", { name: "Sans espace" })
+      // Le rail bascule sur le groupe « sans contexte », et quitte l'ancien porteur…
+      expect(screen.getByRole("button", { name: "Sans contexte" })
         .getAttribute("data-selected")).toBe("true");
       expect(screen.getByRole("button", { name: /^Fabrique des communs/ })
         .getAttribute("data-selected")).toBe("false");

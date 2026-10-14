@@ -195,7 +195,9 @@ export function SpacePanel({ space, title, target, onSelect, scopeEntity, header
             {peutCreer && (
               <Button
                 ref={boutonCreer}
-                variant="ghost"
+                // En couleur primaire : discret, il ne se trouvait pas. Formulaire ouvert, il n'est
+                // plus que ce qui le referme — l'action à faire est alors « Créer ».
+                variant={creation ? "secondary" : "default"}
                 size="icon"
                 className="size-7 shrink-0"
                 data-new-discussion-open

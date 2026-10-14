@@ -75,7 +75,7 @@ describe("CarrierRail", () => {
   it("nomme le groupe « sans porteur » au lieu de l'afficher vide", () => {
     // Ce groupe n'est pas marginal : 52 % des formulaires n'ont aucun lien parent en base.
     wrap(<CarrierRail carriers={[carrier({ id: null, type: null, name: null })]} selected={null} onSelect={() => {}} />);
-    expect(screen.getByText("Sans espace")).toBeTruthy();
+    expect(screen.getByText("Sans contexte")).toBeTruthy();
   });
 
   it("sélectionne le groupe orphelin par la clé `none`", () => {
@@ -93,9 +93,9 @@ describe("CarrierRail", () => {
 
   it("dit qu'il n'y a rien plutôt que de rendre une colonne muette", () => {
     wrap(<CarrierRail carriers={[]} selected={null} onSelect={() => {}} />);
-    // Phrase EXACTE, et non `/Aucun espace/` : sous filtre, la colonne dit tout autre chose
-    // (« Aucun espace ne correspond à … »), qu'une regex aussi large avaliserait ici.
-    expect(screen.getByText("Aucun espace avec des discussions")).toBeTruthy();
+    // Phrase EXACTE, et non `/Aucun contexte/` : sous filtre, la colonne dit tout autre chose
+    // (« Aucun contexte ne correspond à … »), qu'une regex aussi large avaliserait ici.
+    expect(screen.getByText("Aucun contexte avec des discussions")).toBeTruthy();
   });
 
   it("signale le chargement à l'assistance technique", () => {
@@ -192,7 +192,7 @@ describe("CarrierRail", () => {
 
   it("déplie la section « Sans discussion » d'office dès qu'une requête est passée", () => {
     // Sur un compte à 257 espaces, 253 sont derrière ce pli : un filtre qui ne le traverserait
-    // pas répondrait « aucun espace » sur exactement ce que l'utilisateur cherche.
+    // pas répondrait « aucun contexte » sur exactement ce que l'utilisateur cherche.
     const { container } = wrap(railFiltrable("jamais"));
     const section = container.querySelector(".comment-collapsible")!;
     expect(section.getAttribute("data-open")).toBe("true");
@@ -249,10 +249,10 @@ describe("CarrierRail", () => {
   it("dit ce qui ne correspond pas plutôt qu'il n'y a rien", () => {
     const { container } = wrap(
       <CarrierRail carriers={[]} selected={null} onSelect={() => {}} query="solaire" />);
-    // « Aucun espace avec des discussions » serait FAUX sous un filtre : il y en a, ils ne
+    // « Aucun contexte avec des discussions » serait FAUX sous un filtre : il y en a, ils ne
     // correspondent simplement pas.
-    expect(container.textContent).toContain("Aucun espace ne correspond à « solaire »");
-    expect(container.textContent).not.toContain("Aucun espace avec des discussions");
+    expect(container.textContent).toContain("Aucun contexte ne correspond à « solaire »");
+    expect(container.textContent).not.toContain("Aucun contexte avec des discussions");
   });
 
   it("marque dans le nom ce qui a fait retenir la rangée", () => {
@@ -569,7 +569,7 @@ describe("ThreadColumn", () => {
     const { container: sans } = wrap(
       <ThreadColumn threads={[]} selected={null} onSelect={() => {}} />);
     expect(sans.querySelector("[data-search-hint]")).toBeNull();
-    expect(sans.textContent).toContain("Aucun fil dans cet espace");
+    expect(sans.textContent).toContain("Aucun fil dans ce contexte");
   });
 });
 
