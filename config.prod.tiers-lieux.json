@@ -176,7 +176,7 @@
           },
           {
             "label": {
-              "fr": "Les Licoop",
+              "fr": "Les Licoops",
               "en": "Licoop places"
             },
             "description": {
@@ -338,17 +338,6 @@
           },
           {
             "label": {
-              "fr": "La plateforme d'aiguillage",
-              "en": "The guidance platform"
-            },
-            "description": {
-              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs",
-              "en": "A platform that streamlines support requests and responses through a network of stakeholders"
-            },
-            "path": "https://aiguillage.tiers-lieux.org/"
-          },
-          {
-            "label": {
               "fr": "Auto-diagnostic du lieu comme Licoop",
               "en": "Place self-diagnosis as Licoop"
             },
@@ -382,14 +371,25 @@
           },
           {
             "label": {
-              "fr": "Communauté",
-              "en": "Community"
+              "fr": "La communauté support",
+              "en": "The support community"
             },
             "description": {
-              "fr": "La communauté qui anime cette plateforme",
-              "en": "The community that drives this platform"
+              "fr": "La communauté support qui prend soin de cette ressource",
+              "en": "The support community that takes care of this resource"
             },
             "path": "/communaute"
+          },
+          {
+            "label": {
+              "fr": "La plateforme d'aiguillage",
+              "en": "The guidance platform"
+            },
+            "description": {
+              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs",
+              "en": "A platform that streamlines support requests and responses through a network of stakeholders"
+            },
+            "path": "https://aiguillage.tiers-lieux.org/"
           }
         ]
       },
@@ -775,6 +775,95 @@
                 "imageFit": "contain"
               }
             }
+          }
+        },
+        {
+          "type": "coform-resource-directory",
+          "id": "accueil-annuaire-ressources-tl",
+          "props": {
+            "costumSlug": "navigatorDesTierslieux",
+            "contextId": "649ed498f93ee7202e6c8b12",
+            "contextType": "projects",
+            "limit": 5,
+            "showFilters": false,
+            "customHeader": {
+              "title": {
+                "fr": "Trouver un service",
+                "en": "Find a service"
+              },
+              "linkText": {
+                "fr": "Voir tous les résultats",
+                "en": "View all results"
+              },
+              "linkHref": "/annuaire-ressources"
+            },
+            "finderSuffix": "miem3epsztzcm9dgim",
+            "fieldSuffixes": {
+              "equipments": "mieg8j24m89gm99t5mi",
+              "name": "mieg4k7yxrito5j9e6",
+              "area": "mieg4k7zslc8awrql2"
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 5,
+              "xl": 5
+            },
+            "resourceTypes": [
+              {
+                "id": "coworking",
+                "kind": "coworking",
+                "formId": "6925e2b05dd63b02ca70d6d9",
+                "stepPrefix": "navigatorDesTierslieux25112025_209_0",
+                "label": {
+                  "fr": "Coworking",
+                  "en": "Coworking"
+                },
+                "linkSuffix": "miq8118cmkh16zjwmt",
+                "detailSuffixes": {
+                  "equipments": "mieg8j24m89gm99t5mi",
+                  "moreInfo": "miq8auz2wess00qdkpe"
+                }
+              },
+              {
+                "id": "meeting-room",
+                "kind": "meeting",
+                "formId": "6925869ad76aaf6c5a2b2f8a",
+                "stepPrefix": "navigatorDesTierslieux25112025_1436_0",
+                "label": {
+                  "fr": "Salle de réunion",
+                  "en": "Meeting room"
+                },
+                "linkSuffix": "miq81uh4gat3vgbtgkj",
+                "descriptionSuffix": "miolbscdcrucb5a8uuq",
+                "detailSuffixes": {
+                  "equipments": "miok91fh1gta2sneeu5",
+                  "catering": "mieg8j24m89gm99t5mi",
+                  "moreInfo": "miq8a6oceswkv6i75jp",
+                  "about": "miolbscdcrucb5a8uuq",
+                  "tip": "miol2ccdl9a86x4f3yc"
+                }
+              },
+              {
+                "id": "accommodation",
+                "kind": "accommodation",
+                "formId": "6925ee8ac537f8056114aec7",
+                "stepPrefix": "navigatorDesTierslieux25112025_2059_0",
+                "label": {
+                  "fr": "Hébergement",
+                  "en": "Accommodation"
+                },
+                "linkSuffix": "miq83c8getjt3lcz64f",
+                "descriptionSuffix": "miq88plgleoln5tmc7b",
+                "servicesSuffix": "miq86g5vaw1kavrapkb",
+                "detailSuffixes": {
+                  "equipments": "mieg8j24m89gm99t5mi",
+                  "services": "miq86g5vaw1kavrapkb",
+                  "roomType": "mix3hskq78wglr6m61x",
+                  "moreInfo": "miq88plgleoln5tmc7b"
+                }
+              }
+            ]
           }
         },
         {
@@ -1388,8 +1477,8 @@
             "showFilters": false,
             "customHeader": {
               "title": {
-                "fr": "Découvrir les services",
-                "en": "Discover services"
+                "fr": "Trouver un service",
+                "en": "Find a service"
               },
               "linkText": {
                 "fr": "Voir tous les résultats",
@@ -1527,11 +1616,11 @@
           "props": {
             "title": {
               "en": "Why choose a third place",
-"fr": "Pourquoi choisir un tiers-lieu"
+              "fr": "Pourquoi choisir un tiers-lieu"
             },
             "description": {
               "en": "A lively, friendly setting for working differently, far from standardised meeting rooms. Shared spaces, equipment and services suited to meetings, seminars, training courses or residencies. A place that fosters encounters, exchanges and cooperation with a territory and its actors.",
-"fr": "Un cadre vivant et convivial pour travailler autrement, loin des salles de réunion standardisées. Des espaces, équipements et services mutualisés, adaptés aux réunions, séminaires, formations ou résidences. Un lieu qui favorise les rencontres, les échanges et les coopérations avec un territoire et ses acteurs."
+              "fr": "Un cadre vivant et convivial pour travailler autrement, loin des salles de réunion standardisées. Des espaces, équipements et services mutualisés, adaptés aux réunions, séminaires, formations ou résidences. Un lieu qui favorise les rencontres, les échanges et les coopérations avec un territoire et ses acteurs."
             },
             "image": "images/tiersLieux/docs.png",
             "imagePosition": "left",
@@ -2610,8 +2699,8 @@
     {
       "path": "/communaute",
       "title": {
-        "fr": "Communauté - Le réseau social des tiers-lieux",
-        "en": "Community - The third places social network"
+        "fr": "La communauté support - Le réseau social des tiers-lieux",
+        "en": "The support community - The third places social network"
       },
       "layout": "fullwidth",
       "sections": [
@@ -2621,8 +2710,8 @@
           "props": {
             "customHeader": {
               "title": {
-                "fr": "La communauté",
-                "en": "The community"
+                "fr": "La communauté support",
+                "en": "The support community"
               }
             },
             "useFilter": true,

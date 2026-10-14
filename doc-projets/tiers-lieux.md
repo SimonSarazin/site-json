@@ -98,7 +98,7 @@ de hero sur une page à panneau, cela produit deux champs de recherche.
 
 | Page | Sections | Rôle |
 |---|---|---|
-| `/` | 11 | `hero-search` + résultats + **teaser agenda** + 5 blocs éditoriaux |
+| `/` | 12 | `hero-search` + résultats + **bandeau services** (5 cartes, lien vers l'annuaire) + **teaser agenda** + 5 blocs éditoriaux |
 | `/reservation` | 5 | hero, annuaire des ressources (5 cartes + lien complet), puis 3 blocs éditoriaux ; sans `section-lieux` |
 | `/lieux` | 1 | `gridLayout` — panneau de filtres (5 groupes) + `searchProStatic` |
 | `/observatoire` | 1 | `data-observatory` en **split view** (30/09) — cf. §4.3 |
@@ -213,6 +213,19 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 14/10 — accueil : bandeau « Trouver un service », libellés de menu (MR 92, Simon)
+
+L'accueil affiche désormais, sous « Découvrir les lieux », le même bandeau `coform-resource-directory`
+que `/reservation` (5 cartes, 5 colonnes desktop, sans facettes, lien « Voir tous les résultats » vers
+`/annuaire-ressources`) — ce qui périme la phrase « l'accueil n'affiche pas cet annuaire » du 07/10.
+Les deux bandeaux ont le même en-tête, « Trouver un service » (ex-« Découvrir les services »), et les
+mêmes `detailSuffixes` (ajoutés à la copie de l'accueil à la reprise : sans eux, l'aperçu d'une
+ressource retombait sur le rendu historique). Menu : « Les Licoops » (pluriel), « La communauté
+support » (et titre de `/communaute`), la plateforme d'aiguillage passe en fin de « Coopérer ».
+Profil : le bloc outils s'intitule « Accès direct aux outils du lieu » (clé `ProfileTiersLieuxInfo.tools`,
+anglais aligné). La recette `home-recherche` de `page-recipes.json` suit la nouvelle séquence.
+**Validation** : `config:validate` ✅ — 18 pages, 43 sections ; préflight ✅. Rendu navigateur non vérifié.
 
 ### 07/10 — `/reservation` : aperçu de ressources
 
