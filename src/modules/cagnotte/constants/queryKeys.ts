@@ -57,6 +57,12 @@ export const CAGNOTTE_QUERY_KEYS = {
   // Préfixe `[clé, answerId]` : React Query invalide par préfixe, l'étape (3ᵉ segment) est couverte.
   COMMUN_RAW_DEPENSES_PREFIX: (answerId: string | null | undefined) =>
     [COMMUN_RAW_DEPENSES_QUERY_KEY, answerId] as const,
+
+  // Factures de la cagnotte (onglet « Paiements ») ; la liste dépend de l'utilisateur, d'où `userId`.
+  // Producteur : useCagnotteBills ; consommateur invalidant : CagnottePaymentsPanel (reprise).
+  CAGNOTTE_BILLS: (entityId: string | null, userId: string | null, filter: "attention" | "all") =>
+    ["cagnotte-bills", entityId, userId, filter] as const,
+  CAGNOTTE_BILLS_PREFIX: () => ["cagnotte-bills"] as const,
 } as const;
 
 export type CagnotteQueryKeyType = ReturnType<
