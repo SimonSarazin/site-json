@@ -63,8 +63,8 @@ inerte. `carrier_name`, `impact[]` : pas de v1 (`impact` passe par la démo).
 
 `useCommunDetailController` et `useAacDirectoryController` rendent un view-model : union discriminée
 sur `status` (l'ordre des gardes n'est pas réinventable), blocs `| null` (TypeScript impose la
-garde), paquets de props **prêts à épandre** (`{...vm.actions.selection}` : impossible de passer un
-autre `contextId`). Aucun `useQuery`, mutation ni `navigate` dans une vue ; les overlays sans
+garde), paquets de props **prêts à épandre** (`{...vm.actions}` pour `CommunActionBar` : impossible de
+passer un autre `contextId`). Aucun `useQuery`, mutation ni `navigate` dans une vue ; les overlays sans
 position restent dans la coquille.
 
 Les **tests de conformité**, paramétrés sur les clés des registres, tiennent la promesse « mêmes

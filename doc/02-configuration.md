@@ -7,7 +7,6 @@
 - [Configuration](#configuration)
   - [Variables d'environnement](#variables-denvironnement)
     - [Variables principales (serveurs dev et prod)](#variables-principales-serveurs-dev-et-prod)
-    - [Variables HelloAsso (module cagnotte)](#variables-helloasso-module-cagnotte)
     - [Variables injectées dans `window.__ENV__`](#variables-injectées-dans-window__env__)
   - [Résolution de configuration en 3 niveaux](#résolution-de-configuration-en-3-niveaux)
     - [En développement (`dev-server.js`)](#en-développement-dev-serverjs)
@@ -49,28 +48,11 @@ La configuration de SiteForge se fait principalement via :
 | `SITE_CSS_CONTENT` | Contenu CSS complet inline (build-time). Priorité maximale pour la résolution CSS. | — |
 | `SITE_CSS_PATH` | Chemin vers un fichier CSS personnalisé (build-time). Prioritaire sur le lookup `sites.json`. | — |
 | `IMAGE_OPTIMIZER_ALLOWED_DOMAINS` | Domaines distants autorisés pour l'optimisation d'images, séparés par des virgules. | `localhost,127.0.0.1` + hostname de `VITE_BASE_URL_BACKEND` |
+| `PUBLIC_BASE_URL` | Repli du domaine public de `robots.txt` et `sitemap.xml`, après `VITE_SITE_PUBLIC_URL` et `SITE_PUBLIC_URL`. Sans aucune des trois : l'hôte de la requête. | — |
 
 > **En production**, au moins `SITE_CONFIG_JSON` **ou** `SITE_CONFIG_PATH` doit être défini — sinon le serveur arrête le démarrage avec une erreur explicite.
 
-### Variables HelloAsso (module cagnotte)
-
-Ces variables sont utilisées par `server/api/helloasso-checkout.js` pour le module de financement collaboratif :
-
-| Variable | Description | Valeur par défaut |
-| -------- | ----------- | ----------------- |
-| `HELLOASSO_CLIENT_ID` | Client ID OAuth HelloAsso. | — |
-| `HELLOASSO_CLIENT_SECRET` | Client Secret OAuth HelloAsso. | — |
-| `HELLOASSO_ORGANIZATION_SLUG` | Slug de l'organisation HelloAsso (côté serveur). | — |
-| `HELLOASSO_ORGANIZATION_ID` | ID de l'organisation HelloAsso. | — |
-| `HELLOASSO_PUBLIC_BASE_URL` | URL publique de l'API HelloAsso. | — |
-| `HELLOASSO_OAUTH_TOKEN_URL` | URL du endpoint OAuth pour obtenir les tokens. | — |
-| `HELLOASSO_DEV_MODE` | Active le mode développement HelloAsso (sandbox). | — |
-| `VITE_HELLOASSO_ORGANIZATION_SLUG` | Slug de l'organisation HelloAsso (côté client, `import.meta.env`). | — |
-| `APP_BASE_URL` | URL de base de l'application (utilisée pour les callbacks HelloAsso). | — |
-| `PUBLIC_BASE_URL` | URL publique de base pour les redirections. | — |
-| `NGROK_URL` | URL ngrok pour les webhooks en développement local. | — |
-| `VITE_PUBLIC_BASE_URL` | URL publique exposée côté client (`import.meta.env`). | — |
-| `VITE_NGROK_URL` | URL ngrok exposée côté client (`import.meta.env`). | — |
+> **Paiements (module cagnotte)** : aucune variable côté site-json. Les clés Stripe et HelloAsso se configurent par entité dans Communecter (collection `paymentMethods`) ; le backend crée, vérifie et enregistre les paiements (cf. [Module Cagnotte](18-module-cagnotte.md#services-de-paiement)).
 
 ### Variables injectées dans `window.__ENV__`
 

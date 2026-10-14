@@ -129,13 +129,15 @@ export function isFinancerPaid(fund: FinancerPaymentInput | null | undefined): b
   return readFinancerPaymentState(fund).status === "payed";
 }
 
-/**
- * Part non acquise d'une ligne : promesse restante et versements en attente de validation —
- * ce qu'un financeur peut encore avoir à régler.
- */
+/** Part non acquise d'une ligne : promesse restante et versements en attente de validation. */
 export function unpaidAmountOf(fund: FinancerPaymentInput | null | undefined): number {
   const { pledgedAmount, pendingAmount } = readFinancerPaymentState(fund);
   return pledgedAmount + pendingAmount;
+}
+
+/** Reste à verser sur une ligne : la promesse restante (un versement en attente de validation est déjà fait). */
+export function dueAmountOf(fund: FinancerPaymentInput | null | undefined): number {
+  return readFinancerPaymentState(fund).pledgedAmount;
 }
 
 /**

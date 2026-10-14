@@ -8,11 +8,10 @@
    "source": "config.prod.parent62.json",
    "path": "/",
    "sequence": [
-    "action-tiles",
     "gridLayout",
     "articleTeaser"
    ],
-   "rythme": "Trois blocs de premier niveau, un seul statique. La page OUVRE sur les DEUX tuiles « Vous êtes… » qui aiguillent parent / professionnel vers leur page d'entrée — seul texte rédigé de la page, la case parent en aplat de la couleur de marque (`background`/`textColor`), et la garantie que ces pages ne dépendent pas de la seule nav. Vient ensuite un `gridLayout` 2/2 qui met CÔTE À CÔTE le carrousel « à la une » (les POI tagués — le contenu choisit la vitrine) et la carte à bulles des territoires : les deux entrées éditoriale et géographique tiennent sur une même rangée au lieu de s'empiler. L'aperçu d'articles « Zoom sur le réseau », filtré sur un mot-clé, ferme en preuve de vie avec son CTA vers la liste complète de ce mot-clé. L'identité est portée par le header stacked, réglé au QUART de l'écran (`header.height: \"sm\"`) pour laisser le premier écran au contenu : la home n'a pas besoin de hero."
+   "rythme": "Deux blocs de premier niveau. La page OUVRE sur un `gridLayout` qui réunit dans UN SEUL panneau blanc (`innerWrapperClass`, posé sur l'aplat `page-accent`) les trois entrées : en tête (`topSection`), les DEUX tuiles « Vous êtes… » qui aiguillent parent / professionnel vers leur page d'entrée — seul texte rédigé de la page, en aplats foncés de la couleur de marque (`background`/`textColor`), resserrées (`density: \"compact\"`) et animées au survol (`hoverEffect: \"lift\"`) ; dessous, côte à côte, la carte à bulles des territoires en 3/4 (bulles animées, `animate`) et le carrousel « à la une » en 1/4 (POI tagués, titre et image cliquables). Orientation, entrée géographique et entrée éditoriale se lisent comme une seule bande. L'aperçu d'articles « Zoom sur le réseau », filtré sur un mot-clé, ferme en preuve de vie avec son CTA vers la liste complète. L'identité est portée par le header stacked : la home n'a pas besoin de hero."
   },
   {
    "id": "home-vitrine-dense",
@@ -55,6 +54,7 @@
    "sequence": [
     "hero-search",
     "searchProStatic",
+    "coform-resource-directory",
     "title",
     "cards",
     "agenda",
@@ -65,7 +65,7 @@
     "content",
     "content"
    ],
-   "rythme": "`hero-search` PILOTE la liste qui le suit immédiatement (c'est son rôle : la barre de recherche du hero filtre le searchProStatic en dessous). Le reste de la page est de l'éditorial qui se lit en scrollant, une fois la recherche passée."
+   "rythme": "`hero-search` PILOTE la liste qui le suit immédiatement (c'est son rôle : la barre de recherche du hero filtre le searchProStatic en dessous). Le reste de la page est de l'éditorial qui se lit en scrollant, une fois la recherche passée. Le bandeau `coform-resource-directory` (5 services, lien vers l'annuaire) prolonge la recherche avant l'éditorial."
   },
   {
    "id": "page-recherche",

@@ -36,10 +36,7 @@ import type { PostLoginIntent } from "../components/pageDetail/CommunFinancingCa
 import type { CommunFinancingCard } from "../components/pageDetail/CommunFinancingCard.tsx";
 import type { CommunReactionStats } from "../components/pageDetail/CommunReactionStats.tsx";
 import type { CommunHero } from "../components/pageDetail/CommunHero.tsx";
-import type { CommunSelectionControl } from "../components/pageDetail/CommunSelectionControl.tsx";
-import type { CommunProjectControl } from "../components/pageDetail/CommunProjectControl.tsx";
-import type { CommunDeleteControl } from "../components/pageDetail/CommunDeleteControl";
-import type { CommunEditorsControl } from "../components/pageDetail/CommunEditorsControl.tsx";
+import type { CommunActionBarProps } from "../components/pageDetail/CommunActionBar.tsx";
 import type { CommunFinancingSection } from "../components/pageDetail/CommunFinancingSection.tsx";
 import type { CommunActionsSection } from "../components/pageDetail/CommunActionsSection.tsx";
 import type { CommunContributorsSection } from "../components/pageDetail/CommunContributorsSection.tsx";
@@ -56,7 +53,7 @@ import type { GalleryImage } from "../components/pageDetail/CommunContentSection
  * Forme du view-model :
  *  - union discriminée sur `status` : l'ordre des gardes est fixé ici ;
  *  - blocs `| null` : la vue doit écrire la garde ;
- *  - paquets de props prêts à épandre (`{...vm.actions.selection}`).
+ *  - paquets de props prêts à épandre (`{...vm.actions}`).
  */
 
 /** Un bloc de prose déclaré par `config.aac.detail.sections`, déjà lu dans la réponse. */
@@ -117,15 +114,8 @@ export interface CommunDetailReadyVM extends CommunDetailBaseVM {
     isProseLoading: boolean;
     /** `null` : le site ne déclare pas de galerie (`config.aac.detail.gallery`). */
     gallery: { images: GalleryImage[] } | null;
-    actions: {
-        /** `null` : ni auteur, ni admin — ou pas de formulaire à éditer. */
-        edit: { onOpen: () => void } | null;
-        selection: ComponentProps<typeof CommunSelectionControl>;
-        project: ComponentProps<typeof CommunProjectControl>;
-        delete: ComponentProps<typeof CommunDeleteControl>;
-        /** Contributeurs à l'édition (`links.canEdit`) ; le contrôle se masque sans `canManage`. */
-        editors: ComponentProps<typeof CommunEditorsControl>;
-    };
+    /** Props de la barre d'actions (`CommunActionBar`), un gate par action. */
+    actions: CommunActionBarProps;
     /** Overlays sans position, rendus par la coquille de la page hors de toute interface. */
     overlays: {
         edit: ComponentProps<typeof CoFormModal> | null;
@@ -424,53 +414,45 @@ export function useCommunDetailController(): CommunDetailVM {
         isProseLoading: isDetailSectionsLoading,
         gallery: gallerySubKey ? { images: galleryImages } : null,
         actions: {
-            edit: canOpenEdit ? { onOpen: () => setIsEditOpen(true) } : null,
+            api,
+            answerId: answerId ?? null,
+            answer,
+            formId: formId ?? null,
+            canEdit: canOpenEdit,
+            onEdit: () => setIsEditOpen(true),
+            // Gestion de la liste : auteur et admins seulement (parité legacy, doc/34 §3.4).
+            canManageEditors: perms.canManageEditors({ authorId }),
+            editorsQuestion,
             selection: {
-                api,
                 isAdmin: perms.canSelectCommun,
                 isSelected,
                 contextId: directory.contextId,
                 contextType: directory.context?.type ?? null,
                 contextName: directory.context?.name ?? null,
                 subFormId: chooseStepKey,
-                formId: formId ?? null,
-                answerId: answerId ?? null,
                 onDone: handleSelectionDone,
             },
             project: {
-                api,
-                canManageProject,
-                answerId: answerId ?? null,
-                projectId: targetResource?.projectId,
+                canManage: canManageProject,
                 isLoading: isPhaseUnresolved,
+                projectId: targetResource?.projectId,
                 projectSlug,
                 parentId: directory.contextId,
                 parentType: directory.context?.type ?? null,
                 userId: me?.id ?? null,
                 contextEntity: entity,
-                onGenerated: async () => {
+                onLinked: async () => {
                     await Promise.all([answerQuery.refetch(), refreshMe()]);
                 },
             },
-            delete: {
-                api,
+            deletion: {
                 canDelete: perms.canDeleteCommun({ authorId }),
-                answerId: answerId ?? null,
                 communTitle: communSeo.title,
                 // L'enveloppe dit s'il y a eu des versements et ce que la cascade emporterait.
                 resource: targetResource,
                 isResourceLoading: isFundingLoading,
                 // Retour à l'annuaire ; le document est déjà retiré du cache.
                 onDeleted: () => void navigate("/aac"),
-            },
-            // Gestion de la liste : auteur et admins seulement (parité legacy, doc/34 §3.4).
-            editors: {
-                api,
-                canManage: perms.canManageEditors({ authorId }),
-                answerId: answerId ?? null,
-                answer,
-                question: editorsQuestion,
-                formId: formId ?? null,
             },
         },
         overlays: {

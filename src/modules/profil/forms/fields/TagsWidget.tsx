@@ -57,6 +57,9 @@ export function TagsWidget<T extends FieldValues>({
       searchable={(wp.searchable as boolean) ?? !list}
       maxTags={wp.maxTags as number | undefined}
       placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
+      // `info` du descripteur : le seul endroit où un formulaire explique ce qu'il fait des mots-clés
+      // (tag posé automatiquement, thématiques recopiées…) — perdu jusqu'ici par ce widget seul.
+      hint={p.field.info ? p.t(p.field.info) : undefined}
       suggestions={suggestions.length > 0 ? suggestions : undefined}
     />
   );

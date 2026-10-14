@@ -5,8 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useT } from "@/hooks/useT";
+import { cn } from "@/lib/utils";
 import { estimateReadingTime } from "../lib/readingTime";
 import type { ArticleData } from "../hooks/useArticle";
+import { cardTaxonomyBadges } from "../lib/articleTaxonomy";
 
 import { stripMarkdown } from "../lib/markdown";
 import { articleDate } from "../lib/articleDate";
@@ -19,40 +21,65 @@ export interface ArticleCardProps {
   href: string;
   lastRef?: (el: HTMLElement | null) => void;
   featured?: boolean;
+  /** `articleFeed.density` : `"compact"` réduit le gabarit de la carte (lu par `ArticleCard` et
+   *  `ArticleCardPoster`). Le variant `compact` (déjà une ligne dense par construction) le reçoit
+   *  mais l'ignore sans erreur — un seul prop à lire côté `ArticleFeed`, quel que soit le variant
+   *  résolu. */
+  density?: "compact";
 }
 
-/** Carte éditoriale d'article (image 16/9, date, titre, extrait, tags). `featured` = grand format. */
-export function ArticleCard({ article, href, lastRef, featured = false }: ArticleCardProps) {
+/**
+ * Carte éditoriale d'article (image 16/9, date, titre, extrait, taxonomie). `featured` = grand format —
+ * prioritaire sur `density` : la une reste toujours au gabarit éditorial, seules les cartes du fil se
+ * resserrent.
+ */
+export function ArticleCard({ article, href, lastRef, featured = false, density }: ArticleCardProps) {
   const t = useT("modules/blog");
   const image = article.profilMediumImageUrl || article.profilImageUrl;
   const excerpt = article.shortDescription
     || (typeof article.description === "string" ? stripMarkdown(article.description).slice(0, 180) : "");
   const date = articleDate(article);
   const minutes = estimateReadingTime(article.description);
-  const tags = Array.isArray(article.tags) ? article.tags.slice(0, 3) : [];
+  // Territoires + publics (listes courtes, jamais tronquées) puis mots-clés (texte libre, plafonné) —
+  // cf. `cardTaxonomyBadges`. Rendu historique inchangé pour un site sans `territoires`/`publics`.
+  const badges = cardTaxonomyBadges(article);
+  const compact = density === "compact" && !featured;
 
   return (
-    <Card ref={lastRef as never} className="group overflow-hidden border-border/60 transition-shadow hover:shadow-md">
+    // `compact` : `py-6`/`gap-6` du `Card` de base retirés — c'est du vide autour du SEUL enfant
+    // (`Link`), pas un espacement entre plusieurs blocs ; 48px perdus en haut/bas de chaque carte pour
+    // rien. Le cadre garde ses coins arrondis (`overflow-hidden` déjà sur `Card`) : l'image vient les
+    // toucher directement, comme une carte « image plein cadre » classique.
+    <Card ref={lastRef as never} className={cn("group overflow-hidden border-border/60 transition-shadow hover:shadow-md", compact && "gap-0 py-0")}>
       <Link to={href} className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-        <AspectRatio ratio={16 / 9} className="bg-muted">
+        {/* `compact` : image courte (5/2) — un peu remontée par rapport au 4/1 initial, le retrait de
+            `py-6` ci-dessus ayant déjà libéré 48px. Sur une colonne étroite (`ArticleFeed` en met
+            jusqu'à 4), c'est elle qui pèse le plus sur la hauteur de la carte. */}
+        <AspectRatio ratio={compact ? 5 / 2 : 16 / 9} className="bg-muted">
           {image
             ? <OptimizedImage src={image} alt={article.name || ""} width={featured ? 900 : 480} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
             : <div className="flex h-full w-full items-center justify-center text-muted-foreground/70">—</div>}
         </AspectRatio>
-        <CardContent className="space-y-2 p-4">
+        <CardContent className={cn("space-y-1", compact ? "p-2.5" : "space-y-2 p-4")}>
           {(date || minutes > 0) && (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-              {date && <span className="inline-flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" aria-hidden="true" />{date}</span>}
-              {minutes > 0 && <span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" aria-hidden="true" />{t("article.readingTime", undefined, { count: minutes })}</span>}
+            <div className={cn("flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground", compact ? "text-[11px]" : "text-xs")}>
+              {date && <span className="inline-flex items-center gap-1.5"><Calendar className={compact ? "h-3 w-3" : "h-3.5 w-3.5"} aria-hidden="true" />{date}</span>}
+              {minutes > 0 && <span className="inline-flex items-center gap-1.5"><Clock className={compact ? "h-3 w-3" : "h-3.5 w-3.5"} aria-hidden="true" />{t("article.readingTime", undefined, { count: minutes })}</span>}
             </div>
           )}
-          <h3 className={`font-semibold leading-snug text-foreground line-clamp-2 ${featured ? "text-2xl" : "text-base"}`}>
+          <h3 className={cn(
+            "font-semibold leading-snug text-foreground",
+            featured ? "text-2xl line-clamp-2" : compact ? "text-sm line-clamp-1" : "text-base line-clamp-2",
+          )}>
             {article.name}
           </h3>
-          {excerpt && <p className="line-clamp-3 text-sm text-muted-foreground">{excerpt}</p>}
-          {tags.length > 0 && (
+          {/* `compact` : extrait et pastilles de taxonomie reviennent (demande explicite), ramenés à
+              UNE ligne chacun — c'est la hauteur de l'image, pas la présence de ces informations, qui
+              porte le resserrement. */}
+          {excerpt && <p className={cn("text-muted-foreground", compact ? "text-xs line-clamp-1" : "line-clamp-3 text-sm")}>{excerpt}</p>}
+          {badges.length > 0 && (
             <div className="flex flex-wrap gap-1 pt-1">
-              {tags.map((t) => <Badge key={t} variant="secondary" className="text-[11px]">{t}</Badge>)}
+              {badges.map((b) => <Badge key={b} variant="secondary" className="text-[11px]">{b}</Badge>)}
             </div>
           )}
         </CardContent>

@@ -31,7 +31,7 @@ import type { FormFieldMapping } from "../types";
  * arrive en prop, résolu par le formulaire qui rend le champ. L'entité du slug
  * du site (`cocolight.contextId`) peut en diverger : écrire sous elle
  * enregistrait sans erreur un choix que l'annuaire n'allait jamais lire —
- * « j'ai cliqué, rien ne change ». Même règle que `CommunSelectionControl`.
+ * « j'ai cliqué, rien ne change ». Même règle que `useCommunSelectionAction`.
  */
 
 export interface ChooseProposalFieldProps {

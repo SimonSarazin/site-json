@@ -10,6 +10,7 @@ import {
   getNonEmptyRecord,
   getServerData,
   normalizeActionStatus,
+  normalizeEntityType,
   normalizeTags,
   resolveActionAuthorId,
   toArray,
@@ -62,16 +63,8 @@ const EMPTY_RESULT: FundingEnvelopeNormalizedData = {
   paymentMethods: null,
 };
 
-function normalizeEntityType(type: string | undefined): string {
-  const lowered = (type || '').toLowerCase();
-  if (lowered.includes('organization')) return 'organizations';
-  if (lowered.includes('project')) return 'projects';
-  if (lowered.includes('citoyen') || lowered.includes('user')) return 'citoyens';
-  return lowered;
-}
-
 function extractPaymentMethods(...sources: unknown[]): FundingPaymentMethods | null {
-  const merged: Record<string, string> = {};
+  const merged: Record<string, string | boolean> = {};
 
   sources.forEach((source) => {
     const record = getNonEmptyRecord(source);
@@ -80,6 +73,9 @@ function extractPaymentMethods(...sources: unknown[]): FundingPaymentMethods | n
     Object.entries(record).forEach(([key, value]) => {
       if (typeof value === 'string' && value.trim()) {
         merged[key] = value.trim();
+      } else if (typeof value === 'boolean') {
+        // Indicateurs `stripe` / `helloasso` : moyen configuré pour l'entité.
+        merged[key] = value;
       }
     });
   });

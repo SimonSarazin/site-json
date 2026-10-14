@@ -165,11 +165,13 @@ function FinancingMilestoneCard(props: FinancingMilestoneProps) {
                         ) : null}
                     </div>
                     <h4 className={`font-display font-bold truncate ${isClosed ? "text-muted-foreground" : ""}`}>{item.name}</h4>
-                    {/* Tronquée à deux lignes replié, complète une fois la carte ouverte. */}
-                    {description ? (
-                        <span className={`mt-1 block text-sm text-muted-foreground whitespace-pre-line break-words ${open ? "" : "line-clamp-2"}`}>
+                    {/* Aperçu replié, deux lignes : purement visuel (`aria-hidden`), sinon le
+                        texte entier devenait le nom accessible du bouton. Le texte complet
+                        vit dans le panneau, où il est lu et sélectionnable. */}
+                    {description && !open ? (
+                        <p aria-hidden="true" className="mt-1 text-sm text-muted-foreground whitespace-pre-line break-words line-clamp-2">
                             {description}
-                        </span>
+                        </p>
                     ) : null}
                 </div>
 
@@ -201,6 +203,12 @@ function FinancingMilestoneCard(props: FinancingMilestoneProps) {
 
             {open && (
                 <div id={panelId} className="p-5 sm:p-6 pt-4 bg-background/30 border-t border-border">
+                    {description ? (
+                        <p className="mb-4 text-sm text-muted-foreground whitespace-pre-line break-words">
+                            {description}
+                        </p>
+                    ) : null}
+
                     <div className="sm:hidden space-y-2 mb-4">
                         <div className="flex justify-between text-xs tabular-nums">
                             <span className={done ? "text-success font-bold" : "text-foreground font-bold"}>
@@ -379,7 +387,7 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl, layout = "car
                     <div>
                         <ul className="divide-y divide-border">
                             {items.map((o: CagnotteFundableItem, i: number) => (
-                                <FinancingExpenseRow key={i} {...milestoneProps(o, i)} />
+                                <FinancingExpenseRow key={o.itemId} {...milestoneProps(o, i)} />
                             ))}
                         </ul>
                         <p className="mt-4 text-sm text-muted-foreground">
@@ -397,7 +405,8 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl, layout = "car
             {addMilestone}
             {isLoading ? <MilestoneCardsSkeleton /> : null}
             {items.map((o: CagnotteFundableItem, i: number) => (
-                <FinancingMilestoneCard key={i} {...milestoneProps(o, i)} />
+                // Clé sur l'identité du palier : l'état déplié suit son palier.
+                <FinancingMilestoneCard key={o.itemId} {...milestoneProps(o, i)} />
             ))}
         </div>
     );

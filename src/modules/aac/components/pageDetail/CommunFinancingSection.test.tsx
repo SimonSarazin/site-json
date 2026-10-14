@@ -171,15 +171,46 @@ describe("CommunFinancingSection — rendu `list` (interface editorial)", () => 
 });
 
 describe("CommunFinancingSection — description du palier", () => {
-  it("affiche la description sous le titre, rien quand elle est vide", () => {
+  const toggleOf = (title: string) => screen.getByText(title).closest("button") as HTMLButtonElement;
+  const panelOf = (title: string) =>
+    document.getElementById(toggleOf(title).getAttribute("aria-controls") ?? "") as HTMLElement;
+
+  beforeEach(() => {
     depenses = [
       { poste: "Avec", priceInt: 100, description: "Achat du matériel" },
       { poste: "Sans", priceInt: 200, description: "  " },
     ];
+  });
+
+  it("replié : aperçu sous le titre, tronqué et hors du nom accessible du bouton", () => {
     renderSection();
 
-    const desc = screen.getByText("Achat du matériel");
-    expect(desc.closest("button")?.textContent).toContain("Avec");
-    expect(screen.getByText("Sans").parentElement?.querySelector("span.line-clamp-2")).toBeNull();
+    const preview = screen.getByText("Achat du matériel");
+    expect(toggleOf("Avec").contains(preview)).toBe(true);
+    expect(preview.getAttribute("aria-hidden")).toBe("true");
+    expect(preview.className).toContain("line-clamp-2");
+    // `display: block` annulerait le `-webkit-box` dont dépend la troncature.
+    expect(preview.className).not.toMatch(/\bblock\b/);
+  });
+
+  it("déplié : texte complet dans le panneau que contrôle le bouton, plus dans le bouton", () => {
+    renderSection();
+    fireEvent.click(toggleOf("Avec"));
+
+    const full = screen.getByText("Achat du matériel");
+    expect(toggleOf("Avec").contains(full)).toBe(false);
+    expect(panelOf("Avec").contains(full)).toBe(true);
+    expect(full.getAttribute("aria-hidden")).toBeNull();
+  });
+
+  it("description vide : ni aperçu ni paragraphe dans le panneau", () => {
+    renderSection();
+
+    // Libellé du palier + titre, rien d'autre.
+    expect(screen.getByText("Sans").parentElement?.children).toHaveLength(2);
+    expect(screen.getByText("Avec").parentElement?.children).toHaveLength(3);
+
+    fireEvent.click(toggleOf("Sans"));
+    expect(panelOf("Sans").querySelector("p")).toBeNull();
   });
 });

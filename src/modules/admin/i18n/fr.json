@@ -23,6 +23,7 @@
     "noCarrier": "Aucune entité porteuse (carrier) : la gestion des membres nécessite un costum porteur."
   },
   "AdminResourceTable": {
+    "preview": "Aperçu",
     "create": "Créer",
     "searchPlaceholder": "Rechercher…",
     "statusAll": "Tous les statuts",
@@ -277,6 +278,7 @@
     "subTypeSuggestions": "Types constatés dans la sélection :"
   },
   "AdminAnswerCopySection": {
+    "preview": "Aperçu",
     "title": "Reprise de réponses",
     "hint": "Réponses déposées sur un autre site (formulaire source). « Copier » reprend une réponse dans le formulaire de ce site, sous son identité. Les réponses déjà reprises sont masquées ; un « Doublon probable » partage intitulé, structure et code postal avec une réponse du site.",
     "searchPlaceholder": "Rechercher…",

@@ -235,6 +235,32 @@ describe("computePledgesFromResources — le panier des promesses", () => {
     expect(pledges[0].finkey).toBe("a-w171hEa1bvz9");
   });
 
+  it("un versement en attente de validation n'est plus à régler", () => {
+    const pledges = computePledgesFromResources(
+      [
+        ressource([
+          {
+            financerId: "u1",
+            finkey: "a-paye",
+            amount: 1000,
+            payment: { logs: [{ amount: 1000, confirmation: "pending" }] },
+          },
+          {
+            financerId: "u1",
+            finkey: "a-entame",
+            amount: 1000,
+            payment: { logs: [{ amount: 400, confirmation: "pending" }] },
+          },
+        ]),
+      ],
+      "u1",
+    );
+
+    expect(pledges).toHaveLength(1);
+    expect(pledges[0].finkey).toBe("a-entame");
+    expect(pledges[0].remainingAmount).toBe(600);
+  });
+
   it("garde une promesse legacy pour son montant entier", () => {
     const pledges = computePledgesFromResources(
       [ressource([{ financerId: "u1", amount: 250 }])],

@@ -1,12 +1,6 @@
-import { Pencil } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
-import { CommunSelectionControl } from "../CommunSelectionControl.tsx";
-import { CommunProjectControl } from "../CommunProjectControl.tsx";
+import { CommunActionBar } from "../CommunActionBar.tsx";
 import { CommunHero } from "../CommunHero.tsx";
-import { CommunDeleteControl } from "../CommunDeleteControl";
-import { CommunEditorsControl } from "../CommunEditorsControl.tsx";
 import { CommunFinancingCard } from "../CommunFinancingCard.tsx";
 import { CommunTocNav } from "../CommunTocNav.tsx";
 import { CommunFinancingSection } from "../CommunFinancingSection.tsx";
@@ -28,28 +22,7 @@ export default function CommunDetailDefault({ vm }: { vm: CommunDetailReadyVM })
 
     return (
             <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-24">
-                {/* Chaque commande a sa propre garde, résolue par le contrôleur. */}
-                <div className="mb-4 flex flex-wrap items-center gap-2">
-                    {vm.actions.edit && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-2"
-                            onClick={vm.actions.edit.onOpen}
-                        >
-                            <Pencil className="size-3.5" />
-                            {String(t("detail.edit.cta"))}
-                        </Button>
-                    )}
-
-                    <CommunEditorsControl {...vm.actions.editors} />
-
-                    <CommunSelectionControl {...vm.actions.selection} />
-
-                    <CommunProjectControl {...vm.actions.project} />
-
-                    <CommunDeleteControl {...vm.actions.delete} />
-                </div>
+                <CommunActionBar {...vm.actions} />
 
                 {/* Sans carte de financement, le héros prend toute la largeur. */}
                 <div className={funding ? "grid lg:grid-cols-12 gap-8 lg:gap-12 mb-14" : "mb-14"}>

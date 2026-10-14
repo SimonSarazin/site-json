@@ -10,7 +10,8 @@ introspectable (règle d'or « dériver ») : `npm run config:schema costumForm`
 
 **Recette d'un costum « simple » (0 code)** — possible UNIQUEMENT si le formulaire ne référence que des clés
 **déjà enregistrées** (codecs/scope/validate partagés : `address:read/write`, `openingHours:read/write`,
-`social:read/write`, `geo:write`, `image:profilUrl`, `monthYear`, `validateFn:"addressComplete"`…) :
+`social:read/write`, `geo:write`, `image:profilUrl`, `monthYear`, `fixedTags` (mots-clés imposés, params
+`{field, fixed[]}`), `validateFn:"addressComplete"`…) :
 
 1. **Le document** `config.costumForms.<id>` = un `CostumFormSchema`. Obligatoire : `id` (= `<id>`), `entityType`
    (`organization|project|event|poi|citoyen`), `layout` (`{kind:"wizard"|"tabs"|"flat"}`), `sections`, `fields`

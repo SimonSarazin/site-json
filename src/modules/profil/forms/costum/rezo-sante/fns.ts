@@ -29,13 +29,20 @@
  * rendrait invisible tout en le laissant en base, et l'écriture le supprimerait à l'insu de tous.
  */
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
+import { toStringArray } from "@/helpers/toStringArray";
 import "../sharedRegistrations"; // side-effect : clés génériques (address/social/geo/coerce/invalidate…)
 
-/** Normalise une valeur en tableau de chaînes (équivalent de `coerce:stringArray`, que ces clés remplacent). */
-function enTableau(v: unknown): string[] {
-  if (Array.isArray(v)) return v.map(String);
-  return v == null || v === "" ? [] : [String(v)];
-}
+/**
+ * Le marqueur de l'annuaire des LIEUX (`costumForms.rezo-sante-lieu`, codec `fixedTags`). Il n'est pas
+ * un mot-clé libre : un acteur qui le porterait sortirait de `/annuaire`, entrerait dans `/lieux-sante`
+ * et s'éditerait avec le formulaire lieu. L'autocomplétion réseau du widget `tags` le propose pourtant
+ * dès qu'un lieu existe — ces trois formulaires le retirent donc à l'enregistrement.
+ */
+export const MARQUEUR_LIEU = "lieux-sante";
+
+// Normalisation = `toStringArray` (helper source unique) : un `tags` serveur en objet PHP à trous
+// devenait « [object Object] » et l'enregistrement écrasait tous les mots-clés.
+const enTableau = toStringArray;
 
 /** LECTURE — retire des tags les valeurs déjà portées par `thematic`. Pure, testée. */
 export function tagsHorsThematiques(tags: unknown, thematic: unknown): string[] {
@@ -43,10 +50,11 @@ export function tagsHorsThematiques(tags: unknown, thematic: unknown): string[] 
   return enTableau(tags).filter((t) => !portes.has(t));
 }
 
-/** ÉCRITURE — réunit les mots-clés saisis et les thématiques cochées, dédupliqué, ordre préservé. Pure, testée. */
+/** ÉCRITURE — réunit les mots-clés saisis et les thématiques cochées, dédupliqué, ordre préservé,
+ *  SANS le marqueur des lieux. Pure, testée. */
 export function tagsAvecThematiques(tags: unknown, thematic: unknown): string[] {
   const out: string[] = [];
-  const vus = new Set<string>();
+  const vus = new Set<string>([MARQUEUR_LIEU]);
   for (const v of [...enTableau(tags), ...enTableau(thematic)]) {
     if (!vus.has(v)) { vus.add(v); out.push(v); }
   }

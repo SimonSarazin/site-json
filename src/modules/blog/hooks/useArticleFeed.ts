@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
 import { searchByFieldsToQuery } from "@/modules/search/lib/searchByFieldsToQuery";
@@ -48,7 +48,7 @@ export function useArticleFeed({ costumSlug, pageSize = 12, filters, sortBy, def
     [searchByFields],
   );
 
-  return useSearchQuery({
+  const feed = useSearchQuery({
     queryKeyPrefix: BLOG_QUERY_KEYS.FEED_PREFIX(costumSlug),
     searchText,
     searchTags,
@@ -72,6 +72,85 @@ export function useArticleFeed({ costumSlug, pageSize = 12, filters, sortBy, def
       sourceKey: [costumSlug],
     } as never,
   });
+
+  // Signature du périmètre filtré — change dès qu'un `searchHeader`/`heroSearch` de la page modifie
+  // le fil (cf. en-tête du fichier) : sert à remettre la pagination « pages » à la page 1 plutôt que
+  // de laisser l'utilisateur sur une page qui n'a plus de sens pour le nouveau périmètre.
+  const filterSignature = useMemo(
+    () => JSON.stringify({ searchText, searchTags, fieldFilters }),
+    [searchText, searchTags, fieldFilters],
+  );
+
+  // `pageSize` RÉSOLU (défaut inclus) — renvoyé pour que l'appelant n'ait pas à dupliquer ce défaut
+  // ailleurs (ex. convertir `totalCount` en nombre de pages pour l'annonce d'accessibilité).
+  return { ...feed, filterSignature, pageSize };
+}
+
+/**
+ * Navigation « pages » (`articleFeed.pagination:"pages"`) au-dessus du curseur `next()` du backend.
+ *
+ * Le backend ne sait paginer QUE par curseur — un `indexMin` manuel est ignoré (cf.
+ * `buildSearchPayload`, sondé sur le chemin carte) — donc il est impossible de sauter directement
+ * à une page N jamais chargée : il faut avoir chargé N-1 avant elle. Ce hook ne propose donc jamais
+ * un saut au-delà de la page suivante immédiate (`fetchedPages`) : les pages déjà visitées basculent
+ * instantanément (déjà en cache React Query), et la seule page « nouvelle » atteignable déclenche
+ * exactement UN `fetchNextPage()` avant d'afficher son index — jamais de chaîne de fetch, donc pas
+ * de risque de désynchronisation entre l'état local `pageIndex` et le nombre de pages réellement
+ * chargées.
+ */
+export function usePagedFeedNav({ fetchedPages, hasNextPage, isFetchingNextPage, fetchNextPage, resetSignal }: {
+  /** Nombre de pages déjà en cache (`data.pages.length`). */
+  fetchedPages: number;
+  hasNextPage?: boolean;
+  isFetchingNextPage: boolean;
+  fetchNextPage: () => Promise<unknown>;
+  /** Remet `pageIndex` à 0 dès que cette valeur change (ex. `filterSignature`). */
+  resetSignal: unknown;
+}) {
+  const [pageIndex, setPageIndex] = useState(0);
+  const [isNavigating, setIsNavigating] = useState(false);
+  // Reset PENDANT le rendu (pas dans un effet, cf. "Adjusting state when a prop changes" — React
+  // docs) : évite un rendu intermédiaire avec l'ancienne page sur le nouveau périmètre filtré.
+  const [prevSignal, setPrevSignal] = useState(resetSignal);
+  if (resetSignal !== prevSignal) {
+    setPrevSignal(resetSignal);
+    setPageIndex(0);
+  }
+
+  const goToPage = useCallback((index: number) => {
+    if (index < 0 || index === pageIndex) return;
+    if (index < fetchedPages) { setPageIndex(index); return; }
+    // `index === fetchedPages` uniquement : la seule page jamais chargée atteignable en un fetch.
+    if (index === fetchedPages && hasNextPage) {
+      setIsNavigating(true);
+      // React Query RÉSOUT (ne rejette pas) un `fetchNextPage` en échec — `.then()` s'exécute donc
+      // aussi côté erreur. Sans la vérification `pages.length > index`, `pageIndex` avancerait sur
+      // une page jamais chargée : `safeIndex` la clampe (rien de visible), mais `goToPage(index)`
+      // sort ensuite immédiatement sur `index === pageIndex` — « Suivant » resterait figé jusqu'au
+      // prochain changement de filtre, sans toast (`error && !items.length` reste faux).
+      fetchNextPage()
+        .then((result) => {
+          const pages = (result as { data?: { pages?: unknown[] } } | undefined)?.data?.pages;
+          if ((pages?.length ?? 0) > index) setPageIndex(index);
+        })
+        .finally(() => setIsNavigating(false));
+    }
+  }, [pageIndex, fetchedPages, hasNextPage, fetchNextPage]);
+
+  // Clamp de sûreté : un reset de données (nouveau filtre) réduit `fetchedPages` à 1 avant que
+  // l'effet ci-dessus n'ait remis `pageIndex` à 0 — évite un instant de page hors bornes.
+  const safeIndex = Math.min(pageIndex, Math.max(fetchedPages - 1, 0));
+
+  return {
+    pageIndex: safeIndex,
+    pageCount: hasNextPage ? fetchedPages + 1 : fetchedPages,
+    isNavigating: isNavigating || isFetchingNextPage,
+    canGoPrev: safeIndex > 0,
+    canGoNext: safeIndex < fetchedPages - 1 || !!hasNextPage,
+    goToPage,
+    goPrev: () => goToPage(safeIndex - 1),
+    goNext: () => goToPage(safeIndex + 1),
+  };
 }
 
 /**

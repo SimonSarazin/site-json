@@ -24,6 +24,11 @@
       }
     }
   },
+  "finderAddNew": {
+    "organizations": "add-organization",
+    "events": "add-event",
+    "poi": "add-poi"
+  },
   "editModals": {
     "organizations": {
       "vierge": "edit-profile",
@@ -200,6 +205,55 @@
           "navigatorDesTierslieux"
         ],
         "indexStepList": 4
+      }
+    },
+    "/reservation/hero-search": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "indexStepList": 5,
+        "defaultFilters": {
+          "$or": {
+            "tags": {
+              "$in": [
+                "TiersLieux"
+              ]
+            }
+          },
+          "tags": {
+            "$nin": [
+              "RéseauTiersLieux"
+            ]
+          },
+          "address.addressCountry": {
+            "$in": [
+              "BE",
+              "FR",
+              "GP",
+              "GF",
+              "IT",
+              "RE",
+              "MQ",
+              "YT",
+              "NC",
+              "CH"
+            ]
+          }
+        },
+        "defaultSortBy": {
+          "updated": -1
+        },
+        "searchBy": [
+          "name",
+          "address.addressLocality",
+          "address.level4Name",
+          "address.level3Name",
+          "address.level2Name",
+          "address.level1Name",
+          "address.postalCode"
+        ],
+        "notSourceKey": true
       }
     },
     "/lieux/searchProStatic": {
@@ -419,6 +473,22 @@
   },
   "answerFacets": {
     "//services": {
+      "target": "linkedElements",
+      "searchByField": {
+        "field": "_id",
+        "value": [
+          "000000000000000000000000"
+        ]
+      },
+      "filters": {
+        "_id": {
+          "$in": [
+            "000000000000000000000000"
+          ]
+        }
+      }
+    },
+    "/reservation/services": {
       "target": "linkedElements",
       "searchByField": {
         "field": "_id",

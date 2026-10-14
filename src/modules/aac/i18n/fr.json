@@ -103,7 +103,8 @@
       "successToast": "Les modifications ont été enregistrées."
     },
     "editors": {
-      "cta": "Contributeurs à l'édition",
+      "cta": "Éditeurs",
+      "ctaHint": "Contributeurs à l'édition : les personnes qui peuvent modifier ce commun",
       "title": "Contributeurs à l'édition",
       "description": "Ces personnes peuvent modifier ce commun, mais pas le supprimer.",
       "questionNote": "Cette liste est aussi la réponse à la question « {{label}} » du formulaire : en modifiant le commun, ces personnes peuvent donc la changer elles aussi.",
@@ -254,6 +255,9 @@
       "openFullPage": "Voir la page complète",
       "generateCta": "Générer le projet",
       "associateCta": "Associer un projet existant",
+      "menuLabel": "Passer en projet",
+      "generateHint": "Crée le projet et son espace de suivi à partir de ce commun. Irréversible.",
+      "associateHint": "Rattache un projet dont vous êtes administrateur.",
       "proposalPhaseBadge": "Phase proposition",
       "confirmGenerate": {
         "title": "Générer un projet à partir de ce commun ?",
@@ -279,6 +283,9 @@
     },
     "origin": {
       "deposedOn": "Déposé sur « {{name}} »"
+    },
+    "actions": {
+      "more": "Plus d'actions"
     }
   },
   "delete": {

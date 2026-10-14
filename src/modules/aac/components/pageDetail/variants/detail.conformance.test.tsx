@@ -8,7 +8,7 @@ import type { CommunDetailReadyVM } from "../../../hooks/useCommunDetailControll
 /**
  * Conformité des interfaces de la fiche, paramétrée sur `AAC_DETAIL_VARIANTS.keys()`.
  * Pour chaque interface, avec un view-model complet :
- *  - les commandes reçoivent les props du contrôleur ;
+ *  - la barre d'actions reçoit les props du contrôleur ;
  *  - financement (carte, besoins, cofinanceurs, réactions) ssi `funding !== null` ;
  *  - paliers, contributeurs, actualités et agenda ssi phase `project` ;
  *  - chaque bloc de prose et la galerie sont atteignables (ancre ou onglet) ;
@@ -29,10 +29,7 @@ const probe = (name: string) => (props: Record<string, unknown>) => {
   return <div data-testid={`probe-${name}`} />;
 };
 
-vi.mock("../CommunSelectionControl.tsx", () => ({ CommunSelectionControl: probe("selection") }));
-vi.mock("../CommunProjectControl.tsx", () => ({ CommunProjectControl: probe("project") }));
-vi.mock("../CommunDeleteControl", () => ({ CommunDeleteControl: probe("delete") }));
-vi.mock("../CommunEditorsControl.tsx", () => ({ CommunEditorsControl: probe("editors") }));
+vi.mock("../CommunActionBar.tsx", () => ({ CommunActionBar: probe("action-bar") }));
 vi.mock("../CommunHero.tsx", () => ({ CommunHero: probe("hero") }));
 /** Les sections vers lesquelles la VRAIE carte de financement a des liens. */
 const CARD_LINKS = ["besoins-financiers", "cofinanceurs", "objectifs"] as const;
@@ -128,13 +125,7 @@ function makeVM(overrides: Partial<CommunDetailReadyVM> = {}): CommunDetailReady
     ],
     isProseLoading: false,
     gallery: { images: [{ src: "http://b/a.jpg", alt: "a.jpg" }] },
-    actions: {
-      edit: { onOpen: vi.fn() },
-      selection: pack("selection"),
-      project: pack("project"),
-      delete: pack("delete"),
-      editors: pack("editors"),
-    },
+    actions: pack("action-bar"),
     overlays: { edit: null, milestones: {} },
     ...overrides,
   } as unknown as CommunDetailReadyVM;
@@ -193,25 +184,12 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe.each(AAC_DETAIL_VARIANTS.keys())("interface de fiche « %s »", (key) => {
-  it("les commandes ont un point d'entrée, avec les props du contrôleur", async () => {
+  it("la barre d'actions reçoit les props du contrôleur", async () => {
     const vm = makeVM();
     await renderVariant(key, vm);
 
-    const edit = screen.getByRole("button", { name: /detail\.edit\.cta/ });
-    fireEvent.click(edit);
-    expect(vm.actions.edit?.onOpen).toHaveBeenCalled();
-
-    for (const name of ["selection", "project", "delete", "editors"] as const) {
-      expect(screen.getByTestId(`probe-${name}`)).toBeTruthy();
-      expect(received[name]).toEqual(vm.actions[name]);
-    }
-  });
-
-  it("sans droit d'édition, pas de bouton « Modifier »", async () => {
-    const vm = makeVM();
-    await renderVariant(key, { ...vm, actions: { ...vm.actions, edit: null } });
-
-    expect(screen.queryByRole("button", { name: /detail\.edit\.cta/ })).toBeNull();
+    expect(screen.getByTestId("probe-action-bar")).toBeTruthy();
+    expect(received["action-bar"]).toEqual(vm.actions);
   });
 
   it("financement déclaré : les trois blocs sont atteignables, avec leurs props", async () => {

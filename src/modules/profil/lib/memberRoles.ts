@@ -49,3 +49,22 @@ export function rolesDuMembre(
   if (depuisMembre.length > 0) return depuisMembre;
   return rolesDuLien(lienDans(liensDeLEntite, membreId));
 }
+
+/**
+ * Rôles DÉJÀ posés sur un membre de l'entité, toutes familles confondues — pour proposer les
+ * libellés existants en suggestion (`TagsInput.suggestions`) plutôt que de la saisie 100% libre.
+ * Purement dérivé de `entity.serverData.links`, déjà chargé : pas d'appel réseau supplémentaire,
+ * cohérent avec l'absence d'endpoint de suggestions côté backend (cf. `InviteMemberDialog`).
+ */
+export function rolesExistantsDeLEntite(liensDeLEntite: Sac): string[] {
+  if (!liensDeLEntite) return [];
+  const vus = new Set<string>();
+  for (const famille of FAMILLES) {
+    const groupe = (liensDeLEntite as Record<string, unknown>)[famille];
+    if (!groupe || typeof groupe !== "object") continue;
+    for (const lien of Object.values(groupe as Record<string, unknown>)) {
+      for (const role of rolesDuLien(lien as Sac)) vus.add(role);
+    }
+  }
+  return [...vus].sort((a, b) => a.localeCompare(b));
+}

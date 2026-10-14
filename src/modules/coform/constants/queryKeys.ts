@@ -243,6 +243,9 @@ export const COFORM_QUERY_KEYS = {
    * Donnée publique → non scopée `userId`.
    *
    * Producteur : `useFinderSearchResults`.
+   * Consommateurs invalidants : `FinderSearchModal` (élément créé par « Ajouter » — `removeQueries` sur
+   * les recherches de son type, cf. `finderSearchCovers` ; pas `invalidate` : une réponse vide
+   * invalidée resterait servie pendant le refetch).
    */
   FINDER_SEARCH: (
     searchType: readonly string[],
@@ -270,6 +273,16 @@ export const COFORM_QUERY_KEYS = {
   TAG_SEARCH: (query: string | null) => ["coform", "tagSearch", query] as const,
   TAG_SEARCH_PREFIX: () => ["coform", "tagSearch"] as const,
 } as const;
+
+/**
+ * Cette clé est-elle une recherche de finder (`FINDER_SEARCH`) qui porte sur cette collection ? Un
+ * élément créé peut répondre à TOUTE recherche de son type — autre saisie, autre question du
+ * formulaire — et à aucune recherche d'un autre type : c'est ce que sa création périme.
+ */
+export function finderSearchCovers(queryKey: readonly unknown[], collection: string): boolean {
+  const [module, kind, types] = queryKey;
+  return module === "coform" && kind === "finderSearch" && Array.isArray(types) && types.includes(collection);
+}
 
 export type CoformQueryKeyType = ReturnType<
   (typeof COFORM_QUERY_KEYS)[keyof typeof COFORM_QUERY_KEYS]

@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-09-30** (`/observatoire` en **split view** : liste des lieux à gauche, graphes à droite, KPI en bandeau, table conservée sous le split — cf. §9 30/09 ; rendu navigateur à valider. Précédent : **29/09**, alerte « tiers-lieu déjà existant » à la création (bloc `duplicateCheck` + slot `slot:entityDuplicates`), cf. §9).
+Dernière mise à jour : **2026-10-07** (`/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page, cf. §9). Précédent : **2026-09-30**, `/observatoire` en **split view** : liste des lieux à gauche, graphes à droite, KPI en bandeau, table conservée sous le split — rendu navigateur à valider.
 
 ---
 
@@ -72,7 +72,7 @@ lieux**, pas un plan de rattrapage.
 ```
                  ┌──────────────────────────────────────────────┐
    Visiteur ───► │  SiteForge (site-json)                       │
-                 │   12 pages · 22 sections                     │
+                 │   18 pages · 42 sections                     │
                  │   header MEGA-MENU (4 groupes à enfants)     │
                  │   /lieux : panneau de filtres + résultats    │
                  │   /observatoire : 10 dimensions              │
@@ -94,18 +94,22 @@ de hero sur une page à panneau, cela produit deux champs de recherche.
 
 ## 4. Ce que la config met en œuvre
 
-### 4.1 Les 14 pages
+### 4.1 Les 18 pages
 
 | Page | Sections | Rôle |
 |---|---|---|
-| `/` | 11 | `hero-search` + résultats + **teaser agenda** + 5 blocs éditoriaux |
+| `/` | 12 | `hero-search` + résultats + **bandeau services** (5 cartes, lien vers l'annuaire) + **teaser agenda** + 5 blocs éditoriaux |
+| `/reservation` | 5 | hero, annuaire des ressources (5 cartes + lien complet), puis 3 blocs éditoriaux ; sans `section-lieux` |
 | `/lieux` | 1 | `gridLayout` — panneau de filtres (5 groupes) + `searchProStatic` |
 | `/observatoire` | 1 | `data-observatory` en **split view** (30/09) — cf. §4.3 |
 | `/reseaux-regionaux` · `/reseaux-thematiques` | 1 chacune | même périmètre, **deux angles** (cf. §4.2) |
 | `/communaute` | 1 | `searchProStatic` |
 | `/actualites` | 2 | `searchHeader` + `tabs` — onglet **Actus** (`articleFeed`) / onglet **Événements** (`agenda`, 3 `sourceKey`). **Remplace `/evenements`** (07/09, cf. §9) |
 | `/blog` | 1 | `articleFeed` — liste canonique du module blog : cible du repli du lecteur `/blog/:slug` et du `<link>` de canal du flux RSS |
+| `/a-propos` | 9 | présentation du réseau et contacts |
 | `/annuaire-ressources` | 2 | `title` + `coform-resource-directory` |
+| `/mes-lieux` | 1 | lieux dont le compte connecté est membre |
+| `/outils-ressources` | 1 | page des outils et ressources du réseau |
 | `/usages` | 1 | `toolsCatalog` — catalogue d'outils d'usage (livré 06/08, review 10/08 — cf. §9) |
 | `/api-donnees` | 1 | `html` — API et données ouvertes |
 | `/mentions-legales` · `/confidentialite` · `/cgu` | 1 chacune | socle légal **présent et fourni** (≈ 3,5 k · 11 k · 12 k caractères) |
@@ -209,6 +213,32 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 14/10 — accueil : bandeau « Trouver un service », libellés de menu (MR 92, Simon)
+
+L'accueil affiche désormais, sous « Découvrir les lieux », le même bandeau `coform-resource-directory`
+que `/reservation` (5 cartes, 5 colonnes desktop, sans facettes, lien « Voir tous les résultats » vers
+`/annuaire-ressources`) — ce qui périme la phrase « l'accueil n'affiche pas cet annuaire » du 07/10.
+Les deux bandeaux ont le même en-tête, « Trouver un service » (ex-« Découvrir les services »), et les
+mêmes `detailSuffixes` (ajoutés à la copie de l'accueil à la reprise : sans eux, l'aperçu d'une
+ressource retombait sur le rendu historique). Menu : « Les Licoops » (pluriel), « La communauté
+support » (et titre de `/communaute`), la plateforme d'aiguillage passe en fin de « Coopérer ».
+Profil : le bloc outils s'intitule « Accès direct aux outils du lieu » (clé `ProfileTiersLieuxInfo.tools`,
+anglais aligné). La recette `home-recherche` de `page-recipes.json` suit la nouvelle séquence.
+**Validation** : `config:validate` ✅ — 18 pages, 43 sections ; préflight ✅. Rendu navigateur non vérifié.
+
+### 07/10 — `/reservation` : aperçu de ressources
+
+`/reservation` place `coform-resource-directory` après le hero. La section reprend les mêmes types
+de ressources et les mêmes cartes interactives que `/annuaire-ressources` ; un clic ouvre le détail
+en popup. Elle affiche au maximum 5 cartes, en 5 colonnes desktop, sans facettes ni filtre par lieu
+porteur. Son en-tête présente « Découvrir les services » à gauche et « Voir tous les résultats » à
+droite, vers `/annuaire-ressources`. `section-lieux` a été retirée de `/reservation` à la demande ;
+elle reste sur l’accueil, qui n’affiche pas cet annuaire.
+
+Le titre de page est « Des espaces engagés, atypiques, foisonnant pour une expérience écologique,
+sociale, culturelle ou inclusive ». **Validation** : `config:validate` ✅ — 18 pages, 42 sections.
+Le rendu navigateur n’a pas été vérifié dans cette reprise.
 
 ### 24/09quater — encart d'une fiche : le nombre de PLACES d'hébergement, pas le nombre d'offres
 
@@ -517,6 +547,73 @@ recherche posées à la main ; les compteurs et la recherche du hero sont rafra�
 5438/5439 (seul échec : `bundle-size`, lié à un `dist/` ancien) · `config:validate` ✅ (15 pages,
 27 sections) · `audit:config` RAS.
 
+
+### 08/10 — détail d'une ressource : l'annuaire montre les mêmes blocs que la fiche du lieu
+
+**Demande** : l'aperçu d'une ressource de `/annuaire-ressources` (et `/reservation`) doit reprendre
+celui de la fiche du lieu. **Constat** : deux rendus distincts, et l'annuaire lisait d'autres champs —
+un suffixe « équipements » commun aux 3 formulaires qui, pour une salle de réunion, désigne la
+Restauration (les équipements y sont `miok91fh1gta2sneeu5`) ; ni « Bon à savoir », ni « À propos du
+lieu », ni « Le petit truc en plus ».
+
+**Fait** :
+- un seul composant de rendu, `ResourceDetail` (`search/components/preview/resource/`), pour la fiche
+  (`ProfilTiersLieuxAbout`) et l'annuaire (`PreviewResourceDirectory`) ; rendu de la fiche inchangé ;
+- une seule lecture des blocs, `lib/resourceDetails.ts` (`buildResourceDetails`) : listes
+  Équipements / Restauration / Services proposés / Type de chambre, puis textes Bon à savoir / À propos
+  du lieu / Le petit truc en plus — même ordre, mêmes libellés des deux côtés ;
+- option `resourceTypes[].detailSuffixes` (opt-in) sur les deux sections annuaire de la config, mêmes
+  champs que `roomPath`/`coworkingPath`/`bedRoomPath` de la fiche ;
+- l'annuaire garde en plus « Porté par », l'adresse et ses boutons (Réserver ou Contacter, Voir le
+  tiers-lieu).
+
+Exemples vérifiés au navigateur (annuaire et fiche) : Houblon (Coopérative Baraka) — tarifs, surface,
+Équipements, Restauration, À propos du lieu, Le petit truc en plus ; coworking de La Coroutine — tarifs,
+surface, Équipements, Bon à savoir. Les doublons visibles dans les listes de Houblon viennent des
+données saisies (identiques sur la fiche).
+
+**Vérifié** : `typecheck` ✅ · `eslint` (fichiers du lot) 0 message · `test:unit` 5641/5642 (seul
+échec : `bundle-size`, lié à un `dist/` ancien) · garde préflight `resource-detail-suffixes`
+(annuaire = fiche, section par section) **vérifiée en échec** sur un suffixe faussé de `/reservation`
+puis config restaurée (`cmp`) · `config:validate` ✅ sur les 19 sites · `audit:config` RAS (185 constats
+au total, inchangé) · intégration SSR tiers-lieux 48/49 (l'échec du `<title>` existe aussi sur `main`).
+
+
+### 09/10 — invitation acceptée : le menu de la fiche suit, « Continuer » mène à la fiche
+
+**Constat** : après avoir accepté une invitation à devenir membre d'un tiers-lieu, le menu « Suivre »
+de la fiche proposait encore « Accepter / Refuser » tant qu'on ne rechargeait pas la page ; et le lien
+de l'e-mail ramenait à l'accueil.
+
+**Fait (moteur, tous les sites)** :
+- `usePermissions` se recalcule quand les liens du compte ou de la fiche changent EN PLACE (le SDK
+  rafraîchit `me` sans en changer la référence) — vaut aussi pour refuser, rejoindre, quitter ;
+- page du lien de l'e-mail (`AcceptInvitationPage`) : après acceptation, compte rafraîchi (non
+  bloquant) et « Continuer » vers `/profil/<slug>` de la cible ; refus → accueil comme avant.
+
+**Vérifié** : `typecheck` ✅ · `eslint` (fichiers du lot) 0 message · `test:unit` 5647/5648 (seul
+échec : `bundle-size`) · tests ajoutés vérifiés **en échec** sans le correctif (permissions,
+redirection, refresh non bloquant) · intégration SSR parent62 98/98, tiers-lieux 48/49 (`<title>`,
+aussi sur `main`). Parcours réel (compte invité qui accepte) non rejoué en local.
+
+
+### 09/10bis — bannière et photo de profil : envoyées à leur taille ; photo de profil entière
+
+**Fait (moteur, tous les sites)** :
+- envoi (`ProfileImageUpload`, bannière ET photo de profil) : le recadrage propose un format —
+  « Original » (ratio de la photo, par défaut), 16:9, 3:1, 4:3, carré — ou « Utiliser l'image
+  entière », qui envoie le fichier d'origine (bannière : zone de recadrage = toute la photo, la copie
+  `profilBannerUrl` garde donc la même taille). Option `aspectOptions` d'`ImageCropDialog` (absente =
+  rendu inchangé, ex. actus) ;
+- affichage : bannière inchangée (`object-cover`) ; photo de profil de l'en-tête `complete` en
+  `object-contain` — un logo large n'est plus rogné (une photo carrée reste coupée aux coins du rond).
+
+**Vérifié** : `typecheck` ✅ · `eslint` (fichiers du lot) 0 message · `test:unit` 5656/5657 (seul
+échec : `bundle-size`) · tests d'envoi ajoutés (`ProfileImageUpload.test.tsx`, `ImageCropDialog.test.tsx`)
+vérifiés **en échec** sans le correctif · intégration SSR parent62 98/98, tiers-lieux 48/49 (`<title>`,
+aussi sur `main`) · rendu de la photo de profil vu au navigateur (La Plume à Loup). Envoi réel non
+rejoué en local (connexion admin requise, backend local sans fichiers envoyés).
+
 ### 24/09ter — un administrateur peut supprimer sa fiche
 
 **Code + config.** L'en-tête de profil propose « Supprimer cette fiche » **en dernier** dans le menu
@@ -808,7 +905,7 @@ moteur config-agnostique **`coform-resource-directory`** (module `search`), vari
 Contenu : facettes « type » + 3 groupes prix (heure / demi-journée / journée, calqués Communecter) ;
 carte à carrousel automatique, clic sur le tiers-lieu porteur = filtre « porté par » ; modal « En
 savoir plus » (gabarit `ProfilTiersLieuxAbout`) avec bouton **« Réserver »** (lien de résa) ou
-**« Contacter par e-mail »** (`mailto:` de l'e-mail du tiers-lieu) sinon.
+**« Réserver par e-mail »** (`mailto:` de l'e-mail du tiers-lieu) sinon.
 
 **Gates** : `config:validate` ✅ (14 pages, 26 sections) · `audit:config` RAS · `config:render`
 14/14 · `tsc -b` / `eslint` / préflights `search` ✅.
@@ -829,8 +926,11 @@ qui porte le patron le plus propre du parc : formulaires sans taxonomie site-sp�
   `profiles[type].editModals`, jamais `profiles.default`).
 - **Effet de bord du moteur** : déclarer un form costum fait qu'il sert AUSSI aux boutons d'ajout
   des profils, dès qu'il est l'**unique** form de sa collection (`costumCreateKey`,
-  `AddEntityDropdown.tsx` — « un site qui déclare un formulaire pour ses événements ne veut pas du
-  formulaire standard »). D'où le contraste observé : parent62 (3 forms `poi`), saint-paul (2) et
+  `profil/components/add/addModals.ts` — « un site qui déclare un formulaire pour ses événements ne
+  veut pas du formulaire standard »). Le bouton « Ajouter » d'un **finder coform** ne suit PAS cette
+  règle : sans déclaration `coform.finderAddNew`, il ouvre la modale standard du type — pour que les
+  finders d'organisations à `addNew` de ce site créent des tiers-lieux, déclarer
+  `"organizations": "add-tiers-lieux"`. D'où le contraste observé : parent62 (3 forms `poi`), saint-paul (2) et
   Ekilib.re (2) gardent le form POI **générique** ; tiers-lieux n'en a qu'un, il capturait donc le
   bouton.
   - **Événements** : « Ajouter un événement » ouvre le form tiers-lieux — voulu.

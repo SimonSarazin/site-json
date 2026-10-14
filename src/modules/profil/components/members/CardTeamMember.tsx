@@ -36,6 +36,7 @@ export function CardTeamMember({
   contactText,
   layout = "stack",
   rattachement,
+  fixedColors,
 }: {
   member: User | Organization;
   entity: EntityTypes | null;
@@ -51,6 +52,9 @@ export function CardTeamMember({
   /** Convention de rattachement (chemin de page, préfixe des variables de couleur). OBLIGATOIRE :
    *  elle vient de la config (`card.rattachement`), jamais d'un repli codé ici. */
   rattachement: ConventionRattachement;
+  /** Couleur FIXE (`card.fixedColors`), prime sur celle du territoire — pour une section sans
+   *  territoire à résoudre (animation départementale, contact unique). */
+  fixedColors?: { fond: string; encre: string; bordure?: string };
 }) {
   const t = useT("modules/profil");
   const { pathname } = useLocation();
@@ -67,7 +71,11 @@ export function CardTeamMember({
   const { email, telephone, adresse } = contactsDuProfil(sd);
   const lignesEquipe = lignesContactEquipe(contactText, { email, telephone });
   const lienTerritoire = cheminTerritoire(territoire, rattachement);
-  const { fond, encre, bordure } = couleursTerritoire(territoire, rattachement);
+  // `fixedColors` prime : une section sans territoire (animation départementale, contact CAF)
+  // retomberait sinon sur le neutre du thème (`couleursTerritoire` sans valeur à résoudre).
+  const { fond, encre, bordure } = fixedColors
+    ? { fond: fixedColors.fond, encre: fixedColors.encre, bordure: fixedColors.bordure ?? fixedColors.fond }
+    : couleursTerritoire(territoire, rattachement);
   const enLigne = layout === "row";
 
   // Photo posée sur une PLAQUE : même fond que la carte, détachée par un filet `--border` —

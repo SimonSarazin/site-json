@@ -153,3 +153,13 @@ export function buildFinderSearchParams(
     ...scope,
   };
 }
+
+/**
+ * Le type d'un finder là où il n'en faut qu'UN : type de repli d'un résultat, formulaire du bouton
+ * « Ajouter ». Le typage de `FinderConfig.type` dit une chaîne, mais la donnée n'y est pas tenue
+ * (`params.type` est lu tel quel) : d'une LISTE, on prend le premier. Convention d'ici — l'écran de
+ * config du legacy n'enregistre qu'un type.
+ */
+export function primaryFinderType(type: FinderElementType | FinderElementType[]): FinderElementType {
+  return Array.isArray(type) ? type[0] : type;
+}
