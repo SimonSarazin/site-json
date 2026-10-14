@@ -188,6 +188,12 @@ export interface DiscussionThread {
    * et pour une ligne d'une autre liste.
    */
   readonly line?: string | null;
+  /**
+   * Pour une question : la CLÉ de son étape (`aapStep1`, l'`id` d'une étape de formulaire) — ce qui
+   * permet à un formulaire de retrouver le fil d'une question qu'il affiche, même quand deux de ses
+   * étapes ont une question de même clé. `null` pour tout autre fil, et d'un serveur plus ancien.
+   */
+  readonly step?: string | null;
 }
 
 /**
@@ -213,6 +219,12 @@ export interface SpaceRef {
 export const SPACE_THREAD_KINDS = ["general", "discussion", "question", "expense", "other"] as const;
 
 export type SpaceThreadKind = (typeof SPACE_THREAD_KINDS)[number];
+
+/**
+ * Ce dont l'espace est l'espace, pour le NOMMER : la réponse à un appel à projets est un commun ; la
+ * réponse à un formulaire général n'est qu'une réponse — son espace ne sert qu'à ses questions.
+ */
+export type SpaceSubject = "commun" | "answer";
 
 /**
  * L'audience d'une discussion supplémentaire : tous · les admins de l'appel, le déposant et les

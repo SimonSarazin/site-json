@@ -92,6 +92,22 @@ describe("SpaceModal", () => {
       .toBe("Les fils de discussion de ce commun et les messages du fil choisi.");
   });
 
+  // Ouverte depuis un formulaire général, l'espace n'est pas celui d'un commun : celui de la RÉPONSE.
+  it("l'espace d'une réponse à un formulaire général se nomme et se décrit comme tel — et le panneau le sait", () => {
+    monter({ title: null, subject: "answer" });
+    const boite = screen.getByRole("dialog");
+    expect(document.getElementById(boite.getAttribute("aria-labelledby")!)!.textContent).toBe("Discussions de la réponse");
+    expect(document.getElementById(boite.getAttribute("aria-describedby")!)!.textContent)
+      .toBe("Les fils de discussion de cette réponse et les messages du fil choisi.");
+    expect(recu.props).toMatchObject({ subject: "answer" });
+  });
+
+  it("titrée, une réponse se nomme d'après son titre, comme un commun", () => {
+    monter({ title: "Diagnostic 2026", subject: "answer" });
+    const boite = screen.getByRole("dialog");
+    expect(document.getElementById(boite.getAttribute("aria-labelledby")!)!.textContent).toBe("Discussions — Diagnostic 2026");
+  });
+
   // Deux colonnes au lieu de trois : un fil n'a rien à gagner à s'étirer sur 84 rem. Le plafond doit
   // REMPLACER celui de la coquille, et vivre comme lui dans une variante qui passe après `sm:` —
   // posé sans variante, il perdrait contre le `sm:max-w-none` qui retire le `sm:max-w-lg` de la base.

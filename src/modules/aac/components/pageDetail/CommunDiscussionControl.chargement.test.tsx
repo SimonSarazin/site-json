@@ -182,8 +182,17 @@ describe("le graphe de l'entrée légère", () => {
     expect(leger).toContain("modules/comment/lib/space.ts");
   });
 
-  it("ne tire AUCUN composant : ni le fil, ni le composer, ni les panneaux", () => {
-    expect(leger.filter(fichier => fichier.includes("/components/"))).toEqual([]);
+  // Un seul composant, l'HÔTE de la modale : il ne la monte que par un import différé (`lib/spaceModalChunk`),
+  // et ne tire lui-même aucun autre composant (vérifié ci-dessous).
+  const HOTE = "modules/comment/components/panel/SpaceModalHost.tsx";
+
+  it("ne tire AUCUN composant — ni le fil, ni le composer, ni les panneaux — hormis l'hôte de la modale", () => {
+    expect(leger.filter(fichier => fichier.includes("/components/"))).toEqual([HOTE]);
+    const tireParLHote = importsDe(path.join(SRC, HOTE))
+      .map(importe => fichierDe(path.join(SRC, HOTE), importe))
+      .filter((cible): cible is string => cible !== null)
+      .map(relatif);
+    expect(tireParLHote.filter(fichier => fichier.includes("/components/"))).toEqual([]);
   });
 
   it("ni les libellés, ni les styles, ni l'entrée complète du module", () => {
@@ -191,10 +200,12 @@ describe("le graphe de l'entrée légère", () => {
     expect(leger).not.toContain("modules/comment/index.ts");
   });
 
-  it("reste petit — une douzaine de fichiers, pas le module entier", () => {
+  it("reste petit — une quinzaine de fichiers, pas le module entier", () => {
     // Un garde-fou grossier, à relever en conscience : il dit que des pièces de plus sont entrées
-    // (onze fichiers le 12/10, quand la modale en tire cinquante-huit).
-    expect(leger.length).toBeLessThanOrEqual(15);
+    // (onze fichiers le 12/10, quand la modale en tire cinquante-huit). Seize le 14/10 : l'hôte de la
+    // modale et ses trois aides — registre des hôtes, morceau différé, nom des boutons — y sont entrés,
+    // pour que la fiche et le formulaire d'une question partagent UNE modale.
+    expect(leger.length).toBeLessThanOrEqual(16);
   });
 
   const FICHE = path.join(SRC, "modules/aac/components/pageDetail");
@@ -205,10 +216,11 @@ describe("le graphe de l'entrée légère", () => {
       expect(duModule(fichier)).toEqual(["@/modules/comment/launch"]);
     });
 
-  it("la modale, elle, n'arrive que par un import différé — partagé par les boutons de la fiche", () => {
-    expect(duModule("communDiscussion.ts")).toEqual([]);
-    expect(readFileSync(path.join(FICHE, "communDiscussion.ts"), "utf8"))
-      .toContain('lazy(() => import("@/modules/comment/components/panel/SpaceModal"))');
+  it("la modale, elle, n'arrive que par l'import différé de l'hôte — partagé par la fiche et ses boutons", () => {
+    expect(leger).not.toContain("modules/comment/components/panel/SpaceModal.tsx");
+    expect(readFileSync(path.join(SRC, "modules/comment/lib/spaceModalChunk.ts"), "utf8"))
+      .toContain('lazy(() => import("../components/panel/SpaceModal"))');
+    expect(duModule("communDiscussion.ts")).toEqual(["@/modules/comment/launch"]);
     for (const fichier of ["CommunDiscussionControl.tsx", "CommunMilestoneDiscussionButton.tsx"]) {
       expect(importsDe(path.join(FICHE, fichier))).toContain("./communDiscussion");
     }

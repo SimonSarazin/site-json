@@ -57,11 +57,14 @@ export function belongsToSpace(target: CommentTarget | null | undefined, space: 
   return segments.length >= 5 && segments[0] === target.id && segments[2] === space.id;
 }
 
-/** La clé d'une ligne de dépense : un segment de chemin, ou rien. Un serveur plus ancien n'en envoie pas. */
-const LINE_KEY = /^[A-Za-z0-9_-]+$/;
+/**
+ * La clé d'une ligne de dépense, ou de l'étape d'une question : un segment de chemin, ou rien. Un
+ * serveur plus ancien n'en envoie pas.
+ */
+const SEGMENT = /^[A-Za-z0-9_-]+$/;
 
-function readLine(value: unknown): string | null {
-  return typeof value === "string" && LINE_KEY.test(value) ? value : null;
+function readSegment(value: unknown): string | null {
+  return typeof value === "string" && SEGMENT.test(value) ? value : null;
 }
 
 function readSpaceThread(value: unknown): DiscussionThread | null {
@@ -75,8 +78,13 @@ function readSpaceThread(value: unknown): DiscussionThread | null {
   const audience: SpaceAudience | null = (SPACE_AUDIENCES as readonly unknown[]).includes(row.audience)
     ? (row.audience as SpaceAudience)
     : null;
-  // Seule une ligne de dépense a une ligne : sur un autre fil, le champ ne veut rien dire.
-  return { ...thread, kind, group: toText(row.group), audience, line: kind === "expense" ? readLine(row.line) : null };
+  // Seule une ligne de dépense a une ligne, seule une question une étape : sur un autre fil, ces champs ne
+  // veulent rien dire.
+  return {
+    ...thread, kind, group: toText(row.group), audience,
+    line: kind === "expense" ? readSegment(row.line) : null,
+    step: kind === "question" ? readSegment(row.step) : null,
+  };
 }
 
 /**
@@ -194,12 +202,28 @@ export function visibleSpaceThreads(
   return canComment ? threads : threads.filter(thread => !thread.virtual || thread.kind === "general");
 }
 
-/** Ce qu'un palier dit de sa discussion : où l'on entre, et ce qu'il y a à lire. */
-export interface LineDiscussion {
-  /** Le fil où l'on entre. `null` : l'espace n'en propose aucun pour cette ligne. */
+/**
+ * Ce qu'une entrée d'une fiche ou d'un formulaire — un palier, une question — dit de sa discussion :
+ * où l'on entre, et ce qu'il y a à lire.
+ */
+export interface EntryDiscussion {
+  /** Le fil où l'on entre. `null` : l'espace n'en propose aucun pour cette entrée. */
   readonly target: CommentTarget | null;
   readonly total: number;
   readonly unread: number;
+}
+
+/**
+ * Le fil où l'on entre, parmi ceux d'une même entrée : un fil écrit l'emporte sur un fil à lancer ;
+ * entre deux fils écrits, le plus récent.
+ */
+function entreeParmi(fils: readonly DiscussionThread[]): DiscussionThread | null {
+  let entree: DiscussionThread | null = null;
+  for (const fil of fils) {
+    if (entree === null) entree = fil;
+    else if (!fil.virtual && (entree.virtual || (fil.last ?? 0) > (entree.last ?? 0))) entree = fil;
+  }
+  return entree;
 }
 
 /**
@@ -211,13 +235,26 @@ export interface LineDiscussion {
  * lancer. La liste du serveur fait autorité, ici comme ailleurs : sans fil pour la ligne, `target`
  * est nul et il n'y a rien à ouvrir.
  */
-export function lineDiscussion(threads: readonly DiscussionThread[], line: string): LineDiscussion {
+export function lineDiscussion(threads: readonly DiscussionThread[], line: string): EntryDiscussion {
   const fils = threads.filter(thread => thread.kind === "expense" && thread.line === line);
-  let entree: DiscussionThread | null = null;
-  for (const fil of fils) {
-    if (entree === null) entree = fil;
-    // Un fil écrit l'emporte sur un fil à lancer ; entre deux fils écrits, le plus récent.
-    else if (!fil.virtual && (entree.virtual || (fil.last ?? 0) > (entree.last ?? 0))) entree = fil;
-  }
-  return { target: entree?.target ?? null, ...spaceTotals(fils) };
+  return { target: entreeParmi(fils)?.target ?? null, ...spaceTotals(fils) };
+}
+
+/**
+ * La discussion d'une QUESTION — le bouton qu'un formulaire pose à côté de son libellé.
+ *
+ * Une question se reconnaît au 4ᵉ segment du chemin de son fil (`<formulaire>.<étape>.<réponse>.
+ * <question>.…`), et son étape à la clé que le serveur range sur le fil (`step`) : deux étapes peuvent
+ * avoir une question de même clé. Faute d'étape — un formulaire qui ne sait pas la sienne, un serveur
+ * qui ne la dit pas —, on s'en tient à la clé de la question. Les compteurs additionnent ses fils (le
+ * legacy a pu en écrire un sous l'`id` de l'étape, un autre sous son `_id`) ; on entre dans le plus
+ * récent des fils écrits, sinon dans celui que le serveur propose de lancer. La liste du serveur fait
+ * autorité : une question qu'elle ne porte pas n'a rien à ouvrir.
+ */
+export function questionDiscussion(threads: readonly DiscussionThread[], step: string | null, question: string): EntryDiscussion {
+  const fils = threads.filter(thread =>
+    thread.kind === "question"
+    && thread.target.path?.split(".")[3] === question
+    && (step === null || (thread.step ?? null) === null || thread.step === step));
+  return { target: entreeParmi(fils)?.target ?? null, ...spaceTotals(fils) };
 }

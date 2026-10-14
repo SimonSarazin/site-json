@@ -16,7 +16,7 @@ import { useDiscussionSpaceQuery } from "../../hooks/useDiscussionSpaceQuery";
 import { errorCodeOf, errorLabelKey, isRefusalCode } from "../../lib/discussions";
 import { threadValue } from "../../lib/filKey";
 import { spaceKey, visibleSpaceThreads } from "../../lib/space";
-import type { CommentTarget, DiscussionThread, SpaceRef } from "../../types";
+import type { CommentTarget, DiscussionThread, SpaceRef, SpaceSubject } from "../../types";
 import "../../styles.css";
 
 export interface SpacePanelProps {
@@ -32,6 +32,8 @@ export interface SpacePanelProps {
   readonly scopeEntity?: EntityTypes | null;
   /** Rendu en fin d'en-tête : la croix de la modale. */
   readonly headerEnd?: ReactNode;
+  /** Ce dont l'espace est l'espace, pour le nommer à défaut de titre. Par défaut, un commun. */
+  readonly subject?: SpaceSubject;
   readonly className?: string;
 }
 
@@ -58,7 +60,7 @@ export interface SpacePanelProps {
  * une audience qu'il peut donner (`creatableAudiences`). Le formulaire s'ouvre en tête de la
  * colonne, pas dans un dialogue de plus ; la discussion créée est ouverte aussitôt.
  */
-export function SpacePanel({ space, title, target, onSelect, scopeEntity, headerEnd, className }: SpacePanelProps) {
+export function SpacePanel({ space, title, target, onSelect, scopeEntity, headerEnd, subject = "commun", className }: SpacePanelProps) {
   const t = useT("modules/comment");
   const { me } = useCocolight();
   const query = useDiscussionSpaceQuery(space, { live: true });
@@ -141,7 +143,7 @@ export function SpacePanel({ space, title, target, onSelect, scopeEntity, header
     headingRef.current?.focus();
   }, [cleOuverte]);
 
-  const nom = title || query.title || String(t("space.title"));
+  const nom = title || query.title || String(t(subject === "answer" ? "space.titleAnswer" : "space.title"));
   // Une erreur ne prend l'écran que s'il n'y a plus rien à montrer. `useDiscussionSpaceQuery` tient
   // la règle : une PANNE de relecture garde la dernière liste servie — fil ouvert et brouillon
   // compris —, un REFUS la retire.

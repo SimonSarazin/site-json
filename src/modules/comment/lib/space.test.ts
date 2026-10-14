@@ -8,6 +8,7 @@ import {
   lineDiscussion,
   parseCreatedDiscussion,
   parseSpace,
+  questionDiscussion,
   spaceKey,
   spaceTotals,
   visibleSpaceThreads,
@@ -285,6 +286,31 @@ describe("parseSpace — la ligne d'un fil de dépense", () => {
     });
 });
 
+describe("parseSpace — l'étape d'un fil de question", () => {
+  const question = (over: Record<string, unknown>) => ligne({
+    key: `forms:${APPEL}:${QUESTION}`, contextType: "forms", contextId: APPEL, path: QUESTION, kind: "question", ...over,
+  });
+  const etapesDe = (...fils: Record<string, unknown>[]) => parseSpace({ ...REPONSE, threads: fils }).threads.map(t => t.step);
+
+  it("lit la clé de l'étape — celle sous laquelle le formulaire range la question", () => {
+    expect(etapesDe(question({ step: "aapStep1" }), question({ step: "kpacite3122025_199_0" }))).toEqual(["aapStep1", "kpacite3122025_199_0"]);
+  });
+
+  it("un serveur plus ancien n'en envoie pas : le fil reste, sans étape", () => {
+    expect(etapesDe(question({}))).toEqual([null]);
+  });
+
+  it("seule une question a une étape : ailleurs le champ est ignoré", () => {
+    expect(etapesDe(ligne({ step: "aapStep1" }), ligne({ kind: "expense", step: "aapStep1" }), ligne({ kind: "discussion", step: "aapStep1" })))
+      .toEqual([null, null, null]);
+  });
+
+  it.each([[1], [""], ["a.b"], ["a b"], ["aapStep1\n"], [null], [{ cle: "aapStep1" }], [["aapStep1"]], [true]])(
+    "écarte %p : une clé d'étape est un segment de chemin, en chaîne", step => {
+      expect(etapesDe(question({ step }))).toEqual([null]);
+    });
+});
+
 describe("parseSpace — les audiences qu'on peut donner à une discussion qu'on crée", () => {
   const audiences = (valeur: unknown) => parseSpace({ ...REPONSE, creatableAudiences: valeur }).creatableAudiences;
 
@@ -329,7 +355,7 @@ describe("parseCreatedDiscussion", () => {
     expect(parseCreatedDiscussion({ result: true, thread: CREEE })).toEqual({
       key: `forms:${APPEL}:${CHEMIN}`, target: { type: "forms", id: APPEL, path: CHEMIN }, title: "Budget 2026",
       carrier: null, total: 0, unread: 0, last: null, mine: false, virtual: true,
-      kind: "discussion", group: null, audience: "authorAll", line: null,
+      kind: "discussion", group: null, audience: "authorAll", line: null, step: null,
     });
   });
 
@@ -486,6 +512,67 @@ describe("visibleSpaceThreads", () => {
     it("où personne n'a écrit, reste hors de la liste de qui ne peut pas écrire ; commentée, elle y est", () => {
       expect(visibleSpaceThreads(AVEC_LIGNES, false).map(t => t.key)).toEqual([GENERAL_VIERGE.key, QUESTION_COMMENTEE.key, LIGNE_COMMENTEE.key]);
     });
+  });
+});
+
+describe("questionDiscussion", () => {
+  const chemin = (etape: string, question: string) => `${APPEL}.${etape}.${COMMUN}.${question}.question_${question}.comment`;
+  const cible = (etape: string, question = "titre") => ({ type: "forms" as const, id: APPEL, path: chemin(etape, question) });
+  const questionDe = (etape: string, over: Partial<DiscussionThread> = {}, question = "titre") =>
+    fil({ key: `q-${etape}-${question}`, kind: "question", target: cible(etape, question), step: "aapStep1", ...over });
+
+  it("sans fil pour la question : rien à ouvrir, rien à compter", () => {
+    expect(questionDiscussion([], "aapStep1", "titre")).toEqual({ target: null, total: 0, unread: 0 });
+    expect(questionDiscussion([questionDe(ETAPE, { total: 4 }, "autre")], "aapStep1", "titre")).toEqual({ target: null, total: 0, unread: 0 });
+  });
+
+  it("se reconnaît au 4ᵉ segment du chemin, pas à un morceau de chemin", () => {
+    const voisines = [
+      questionDe(ETAPE, { total: 9 }, "titre2"),
+      questionDe(ETAPE, { total: 9 }, "sous_titre"),
+      fil({ key: "deplacee", kind: "question", total: 9, step: "aapStep1", target: { type: "forms", id: APPEL, path: `${APPEL}.titre.${COMMUN}.autre.question_autre.comment` } }),
+      questionDe(ETAPE, { total: 1, unread: 1 }),
+    ];
+    expect(questionDiscussion(voisines, "aapStep1", "titre")).toEqual({ target: cible(ETAPE), total: 1, unread: 1 });
+  });
+
+  it("une question à lancer : on y entre, compteurs à zéro", () => {
+    expect(questionDiscussion([questionDe(ETAPE, { virtual: true })], "aapStep1", "titre")).toEqual({ target: cible(ETAPE), total: 0, unread: 0 });
+  });
+
+  it("même clé de question dans deux étapes : chacune la sienne, par la clé de l'étape", () => {
+    const fils = [
+      questionDe("e2e2e2e2e2e2e2e2e2e2e2e2", { step: "aapStep2", total: 5, unread: 5 }),
+      questionDe(ETAPE, { total: 2, unread: 1 }),
+    ];
+    expect(questionDiscussion(fils, "aapStep1", "titre")).toEqual({ target: cible(ETAPE), total: 2, unread: 1 });
+    expect(questionDiscussion(fils, "aapStep2", "titre")).toEqual({ target: cible("e2e2e2e2e2e2e2e2e2e2e2e2"), total: 5, unread: 5 });
+  });
+
+  it("sans étape connue — du formulaire, ou du serveur —, la clé de la question suffit", () => {
+    const ecrit = questionDe(ETAPE, { total: 2, last: 10 });
+    expect(questionDiscussion([ecrit], null, "titre")).toEqual({ target: cible(ETAPE), total: 2, unread: 0 });
+    expect(questionDiscussion([questionDe(ETAPE, { step: null, total: 3 })], "aapStep1", "titre")).toEqual({ target: cible(ETAPE), total: 3, unread: 0 });
+  });
+
+  it("deux fils pour une question (le legacy en a écrit un sous chaque forme d'étape) : on entre dans le plus récent, et les compteurs s'additionnent", () => {
+    const sousLId = questionDe("etapeUn_0", { total: 3, last: 100 });
+    const sousLObjectId = questionDe(ETAPE, { total: 1, unread: 1, last: 200 });
+    expect(questionDiscussion([sousLId, sousLObjectId], "aapStep1", "titre")).toEqual({ target: cible(ETAPE), total: 4, unread: 1 });
+  });
+
+  it("un fil écrit l'emporte sur un fil à lancer", () => {
+    const fils = [questionDe("etapeUn_0", { virtual: true }), questionDe(ETAPE, { total: 1 })];
+    expect(questionDiscussion(fils, "aapStep1", "titre").target).toEqual(cible(ETAPE));
+  });
+
+  it("ne retient que des fils de QUESTION — un palier ou le fil général de même chemin n'en sont pas", () => {
+    const fils = [
+      fil({ key: "ligne", kind: "expense", total: 7, target: cible(ETAPE), line: "1" }),
+      fil({ key: "general", total: 7 }),
+      questionDe(ETAPE, { total: 1 }),
+    ];
+    expect(questionDiscussion(fils, "aapStep1", "titre")).toEqual({ target: cible(ETAPE), total: 1, unread: 0 });
   });
 });
 

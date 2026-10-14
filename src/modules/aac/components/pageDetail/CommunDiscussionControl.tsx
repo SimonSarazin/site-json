@@ -1,32 +1,20 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { MessagesSquare } from "lucide-react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { Button } from "@/components/ui/button";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { cn } from "@/lib/utils";
-import { useDiscussionSpaceQuery, useSpaceLauncher, type SpaceRef } from "@/modules/comment/launch";
-import { SpaceModal, findOpener, prechaufferLaModale as prechauffer } from "./communDiscussion";
+import { SpaceModalHost, useDiscussionSpaceQuery, useSpaceLauncher, type SpaceRef } from "@/modules/comment/launch";
+import { prechaufferLaModale as prechauffer } from "./communDiscussion";
 
 /*
- * La modale n'arrive qu'à l'ouverture, par un import différé (cf. `communDiscussion`).
+ * La modale n'arrive qu'à l'ouverture, par un import différé (`SpaceModalHost`, module comment).
  *
  * La fiche, elle, n'est pas dans le HTML du serveur : il sert la carte de chargement, et le bouton
  * n'existe qu'après hydratation (mesuré le 09/10). Un lien vers un fil ouvre donc sa modale une
  * fois la fiche chargée et le code de la modale arrivé — pas dès le premier affichage.
  */
-
-/**
- * Tenu à l'écran par `Suspense` tant que le code de la modale n'est pas arrivé. Il ne montre rien :
- * il dit au bouton qu'on l'attend.
- */
-function ModaleAttendue({ onChange }: { onChange: (attendue: boolean) => void }) {
-    useEffect(() => {
-        onChange(true);
-        return () => onChange(false);
-    }, [onChange]);
-    return null;
-}
 
 export interface CommunDiscussionControlProps {
     /** Le commun : c'est lui qui porte l'espace de discussion. */
@@ -51,7 +39,9 @@ export interface CommunDiscussionControlProps {
  * rendu du bouton, sans clic — c'est le lien qu'on partage, et celui d'une notification.
  *
  * C'est ICI que la modale est montée, une fois pour la fiche : le bouton d'un palier
- * (`CommunMilestoneDiscussionButton`) ouvre le même espace par l'adresse, sur le fil de sa ligne.
+ * (`CommunMilestoneDiscussionButton`) ouvre le même espace par l'adresse, sur le fil de sa ligne. Le
+ * formulaire d'édition, ouvert par-dessus, est hôte lui aussi — pour ses questions — mais de rang
+ * moindre : il ne monte pas de seconde modale (`SpaceModalHost`, rang « page »).
  */
 export function CommunDiscussionControl({ answerId, communTitle, scopeEntity }: CommunDiscussionControlProps) {
     useLoadNamespace("modules/aac");
@@ -66,27 +56,11 @@ export function CommunDiscussionControl({ answerId, communTitle, scopeEntity }: 
     const [modaleAttendue, setModaleAttendue] = useState(false);
 
     /**
-     * À la fermeture, le focus revient au bouton d'où l'on a ouvert — par la croix, par Échap ou par
-     * « retour » : celui d'un palier s'il s'est nommé et qu'il est encore là, sinon celui-ci (une
-     * ouverture par l'adresse n'a pas de bouton).
-     *
-     * Radix le rendrait à son `DialogTrigger`, et la modale n'en a pas : elle s'ouvre aussi par une
-     * adresse, sans clic. Sans ceci le focus tombait sur `<body>` (mesuré au navigateur le 07/10),
-     * et qui navigue au clavier reprenait la page par son début.
+     * À la fermeture, le focus revient au bouton d'où l'on a ouvert — celui d'un palier ou d'une
+     * question s'il s'est nommé et qu'il est encore là (`SpaceModalHost`), sinon celui-ci : une
+     * ouverture par l'adresse n'a pas de bouton.
      */
     const boutonRef = useRef<HTMLButtonElement>(null);
-    const etaitOuverte = useRef(false);
-    // Retenu tant que la modale est ouverte : à la fermeture, l'entrée qui le portait n'est plus là.
-    // Chaque ouverture le réécrit — par son nom, ou par `null` quand elle n'en a pas.
-    const ouvreur = useRef<string | null>(null);
-    useEffect(() => {
-        if (launcher.open) ouvreur.current = launcher.opener;
-        // Sans défilement : le bouton est celui qu'on vient de quitter, la page n'a pas à bouger.
-        if (etaitOuverte.current && !launcher.open) {
-            (findOpener(ouvreur.current) ?? boutonRef.current)?.focus({ preventScroll: true });
-        }
-        etaitOuverte.current = launcher.open;
-    }, [launcher.open, launcher.opener]);
 
     return (
         <>
@@ -126,19 +100,14 @@ export function CommunDiscussionControl({ answerId, communTitle, scopeEntity }: 
 
             {/* Montée seulement ouverte : fermée, elle ne rend rien et ne demande rien. Son code, lui,
                 arrive à la première ouverture — ou avant, préchauffé au survol et au focus. */}
-            {launcher.open && (
-                <Suspense fallback={<ModaleAttendue onChange={setModaleAttendue} />}>
-                    <SpaceModal
-                        open
-                        onOpenChange={next => { if (!next) launcher.close(); }}
-                        space={space}
-                        title={communTitle}
-                        target={launcher.target}
-                        onSelect={launcher.select}
-                        scopeEntity={scopeEntity}
-                    />
-                </Suspense>
-            )}
+            <SpaceModalHost
+                space={space}
+                title={communTitle}
+                scopeEntity={scopeEntity}
+                rank="page"
+                fallbackFocus={boutonRef}
+                onWaitingChange={setModaleAttendue}
+            />
         </>
     );
 }

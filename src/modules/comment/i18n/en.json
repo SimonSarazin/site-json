@@ -196,6 +196,8 @@
     "title": "Commun discussions",
     "titleOf": "Discussions — {{name}}",
     "description": "The discussion threads of this commun and the messages of the selected thread.",
+    "titleAnswer": "Answer discussions",
+    "descriptionAnswer": "The discussion threads of this answer and the messages of the selected thread.",
     "general": "General discussion",
     "questionUntitled": "Untitled question",
     "expenseUntitled": "Expense line",

@@ -196,6 +196,8 @@
     "title": "Discussions du commun",
     "titleOf": "Discussions — {{name}}",
     "description": "Les fils de discussion de ce commun et les messages du fil choisi.",
+    "titleAnswer": "Discussions de la réponse",
+    "descriptionAnswer": "Les fils de discussion de cette réponse et les messages du fil choisi.",
     "general": "Discussion générale",
     "questionUntitled": "Question sans intitulé",
     "expenseUntitled": "Ligne de dépense",

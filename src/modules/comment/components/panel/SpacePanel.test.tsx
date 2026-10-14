@@ -266,6 +266,12 @@ describe("SpacePanel", () => {
       expect(panneau(sansTitre.container).getAttribute("aria-label")).toBe("Discussions du commun");
     });
 
+    it("l'espace d'une réponse à un formulaire général, sans titre : nommé comme tel, pas « du commun »", async () => {
+      const { container } = monter({ subject: "answer", sert: reponse({ space: { type: "answers", id: COMMUN, title: null, formId: APPEL } }) });
+      await servir();
+      expect(panneau(container).getAttribute("aria-label")).toBe("Discussions de la réponse");
+    });
+
     it("se relit de lui-même tant qu'il est à l'écran", async () => {
       const { getDiscussionSpace } = monter();
       await servir();

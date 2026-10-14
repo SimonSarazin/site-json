@@ -2,7 +2,7 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
 import { DiscussionModalShell } from "./DiscussionModalShell";
 import { SpacePanel } from "./SpacePanel";
-import type { CommentTarget, SpaceRef } from "../../types";
+import type { CommentTarget, SpaceRef, SpaceSubject } from "../../types";
 // La modale se charge EN DIFFÉRÉ, par son propre fichier et non par l'entrée du module : c'est
 // donc à elle d'enregistrer les libellés, sans quoi ils sortiraient en clés brutes (même raison
 // que `pages/DiscussionsPage`).
@@ -20,6 +20,8 @@ export interface SpaceModalProps {
   readonly onSelect: (target: CommentTarget | null) => void;
   /** L'entité qui cadre la recherche des personnes à mentionner. */
   readonly scopeEntity?: EntityTypes | null;
+  /** Ce dont l'espace est l'espace, pour le nommer. Par défaut, un commun. */
+  readonly subject?: SpaceSubject;
 }
 
 /**
@@ -27,15 +29,15 @@ export interface SpaceModalProps {
  * « Commentaires ». Même coquille que la modale du panneau général ; deux colonnes au lieu de
  * trois, donc une largeur moindre : un fil n'a rien à gagner à s'étirer sur 84 rem.
  */
-export function SpaceModal({ open, onOpenChange, space, title, target, onSelect, scopeEntity }: SpaceModalProps) {
+export function SpaceModal({ open, onOpenChange, space, title, target, onSelect, scopeEntity, subject = "commun" }: SpaceModalProps) {
   const t = useT("modules/comment");
 
   return (
     <DiscussionModalShell
       open={open}
       onOpenChange={onOpenChange}
-      title={title ? String(t("space.titleOf", undefined, { name: title })) : String(t("space.title"))}
-      description={String(t("space.description"))}
+      title={title ? String(t("space.titleOf", undefined, { name: title })) : String(t(subject === "answer" ? "space.titleAnswer" : "space.title"))}
+      description={String(t(subject === "answer" ? "space.descriptionAnswer" : "space.description"))}
       // En `md:`, comme la largeur de la coquille qu'elle remplace : sans variante, elle perdrait
       // contre son `sm:max-w-none`.
       className="md:max-w-[min(64rem,calc(100vw-4rem))]"
@@ -51,6 +53,7 @@ export function SpaceModal({ open, onOpenChange, space, title, target, onSelect,
           onSelect={onSelect}
           scopeEntity={scopeEntity}
           headerEnd={headerEnd}
+          subject={subject}
           className="rounded-none border-0"
         />
       )}
