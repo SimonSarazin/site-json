@@ -2441,10 +2441,9 @@ exception dans la première.
 - `truncated` : la liste est partielle — plus de fils que le budget de lecture n'en rend, ou plus
   de 200 lignes de dépense à proposer (§17.2). L'écran le dit d'une phrase sous la liste.
 - Fils **fabriqués** (`virtual`, sauf `includeEmpty=0`) : le fil général, les discussions déclarées
-  encore vides et, pour un appel `aap`, les questions qu'il ouvre aux commentaires
-  (`activeComments`) et un fil par ligne de dépense qui n'en a aucun (§17.2). Pour un formulaire
-  qui n'est pas `aap`, ni **question** ni **ligne** n'est fabriquée : le segment d'étape y prend
-  deux formes, et écrire sous la mauvaise ouvrirait un fil que le legacy ne verrait pas.
+  encore vides, les questions que le formulaire ouvre aux commentaires (`activeComments`) — appel
+  ou formulaire général, sous l'`_id` de l'étape, la forme qu'écrit le legacy (§20.2) — et, pour un
+  appel `aap`, un fil par ligne de dépense qui n'en a aucun (§17.2).
 - Refus, en HTTP 200 : `bad-request` (type hors liste blanche, identifiant mal formé, ou
   `includeEmpty` posté sous une autre forme qu'une chaîne — lu comme absent, il ferait rendre les
   fils à lancer à qui demandait de ne pas les avoir) ; `hidden` (commun ou appel introuvable). Le serveur accepte l'identifiant en majuscules et le ramène en
@@ -2684,9 +2683,8 @@ corrections et date de la nuit du 12 au 13/10.
   blocs CMS de costum : ce cas-là n'est pas porté.
 - **Rien de versionné ne couvre les règles du backend** : `citizenToolKit` n'a pas d'outillage de
   test. Le banc de règles et ses mutations (§15.6) vivent hors dépôt, et se rejouent à la main.
-- Formulaires qui ne sont pas `aap` : le fil général et les discussions déclarées sont proposés,
-  les fils déjà commentés des questions ouvertes aux commentaires sont listés, mais aucune question
-  vierge n'est proposée (§15.3).
+- Formulaires qui ne sont pas `aap` : depuis le 14/10, leurs questions ouvertes aux commentaires
+  se proposent comme celles d'un appel (§20.2) ; on n'y crée pas de discussion supplémentaire.
 - Le fil d'une question **retirée de l'appel**, ou dont l'appel a **coupé les commentaires**, n'est
   plus listé (§15.3) : ses messages restent en base, mais l'espace ne les propose plus. La base de
   développement ne porte qu'une étape d'évaluation ouverte aux commentaires, sur un seul appel :
@@ -3477,6 +3475,105 @@ Preuves du bouton du formulaire :
 
 Pour le dépôt entier, sur cet état : typage et lint sans erreur, 7 058 tests unitaires réussis
 dans 512 fichiers, 797 vérifications de préflight.
+
+## 20. Le bouton de discussion des questions (14/10)
+
+Demandé à l'usage : « dans le formulaire aussi, on devrait afficher le bouton commentaire sur les
+questions qui ont activé la config » — puis : « que ce soit un formulaire de commun ou un formulaire
+général ». Le panneau de l'espace d'un commun listait déjà ces questions ; le formulaire, lui, ne
+montrait pas leur bouton.
+
+### 20.1 Ce que fait le legacy
+
+- **Le drapeau** est `activeComments`, posé sur la DÉFINITION de la question (`inputs.<clé>`) — dans
+  le document `inputs` de l'étape pour un appel à projets, dans le document `forms` de l'étape pour
+  un formulaire général —, par l'éditeur du formulaire (« Activer les commentaires »).
+- **Le bouton** — des bulles et une pastille du nombre de messages — suit le libellé de la question,
+  en écriture (`survey/views/tpls/forms/step.php`, `step_v2.php`) et aussi en lecture
+  (`Form.php`, `Formv2.php`).
+- **Le fil** : contexte `forms:<formulaire>`, chemin
+  `<formulaire>.<_id de l'étape>.<réponse>.<question>.question_<question>.comment`. Pour un
+  formulaire général, le formulaire parent est posé sur l'étape au rendu (`formParent`,
+  `Formv2.php`) : le deuxième segment est l'`_id` du document de l'étape, comme pour un appel.
+  Mesuré en base : les trois fils de question d'un formulaire général portent cet `_id`.
+
+### 20.2 Ce que rend `space`
+
+- Les fils de question à LANCER se fabriquent désormais pour tout formulaire, appel ou formulaire
+  général, sous l'`_id` de l'étape. Une étape de `forms` reste lue sous ses deux identifiants (son
+  `id` et son `_id`) : un fil écrit sous l'`id` est listé et compté, et sa question ne reçoit pas de
+  second fil à lancer. Deux étapes peuvent avoir une question de même clé : chacune a le sien.
+- Chaque fil de question porte **`step`**, la clé de son étape (`aapStep1`, l'`id` d'une étape de
+  formulaire) — c'est par elle qu'un formulaire retrouve le fil d'une question qu'il affiche. Le
+  contrat d'un fil passe de quinze à seize champs (additif : un écran plus ancien l'ignore).
+- **Les discussions supplémentaires restent une fonction de l'appel** : sur la réponse à un
+  formulaire général, `creatableAudiences` est vide, et une création demandée quand même est
+  refusée (`forbidden`, rien d'écrit). Le legacy ne les connaît que sur l'espace d'un commun ; aucune
+  réponse générale n'en porte en base.
+
+### 20.3 L'écran
+
+- **Où est le bouton.** `FieldLabel` — le libellé de toutes les questions en écriture — et
+  `ReadOnlyLabel` — en lecture — le posent À CÔTÉ du libellé, hors du `<label>` (un clic dans le
+  `<label>` donnerait le focus au champ), en `type="button"` (dans un formulaire, un bouton sans type
+  le soumet). Pour une question fermée, ou sans hôte, le libellé est rendu tel qu'avant. En lecture,
+  la liste de dépenses ne répète plus son libellé sous celui de la ligne (`hideLabel`, comme ses
+  voisines) : elle aurait porté un second bouton — et elle affichait déjà son libellé deux fois.
+- **Qui l'active.** `SmartCoForm` entoure TOUJOURS le formulaire de `FormQuestionDiscussions` — toutes
+  les surfaces qui montent un formulaire passent par lui (quatorze) —, et la page d'une réponse en
+  lecture (`CoFormAnswerPage`) pose le même hôte. C'est l'hôte qui décide, d'après la réponse, les
+  étapes parsées et le formulaire : rien sans réponse enregistrée (un dépôt neuf n'a pas de fil — le
+  legacy n'y montre pas non plus le bouton), sans question ouverte, ni hors d'un site complet
+  (`SmartCoForm` sait vivre sans session Cocolight ni routeur, le bouton non). L'arbre ne change jamais
+  de forme — le fournisseur toujours là, la modale à côté des enfants : une réponse qui reçoit son
+  identifiant pendant la saisie ne fait pas remonter le formulaire, saisie et étape comprises.
+- **Quelle discussion.** Le bouton lit la liste de l'espace de la réponse — une requête pour toutes
+  ses questions — et y cherche le fil de la sienne (`questionDiscussion`) : 4ᵉ segment du chemin,
+  et clé de l'étape (`useFormStepKey`) — posée par les rendus qui montrent plusieurs étapes à la
+  fois (`DynamicCoForm`, `CoFormReadOnly`), sinon l'étape courante du formulaire par étapes
+  (`CoFormContext`). Mesuré en base : une même
+  clé de question revient dans deux étapes sur 3 appels à projets de 214, et sur 3 formulaires
+  généraux de 316. La clé d'origine se lit sous le préfixe qu'ajoute le formulaire
+  (`multiRadio…`, `finder…`). Sans fil proposé par le serveur, pas de bouton ; pour qui ne peut pas
+  écrire, seulement s'il y a à lire.
+- **Une modale par espace et par page.** La modale de l'espace est montée par un hôte,
+  `SpaceModalHost` (entrée légère du module, code de la modale toujours différé), qui se déclare
+  dans un registre à rangs (`lib/spaceHosts`) : la page — la fiche d'un commun, rang « page » — passe
+  devant un formulaire posé sur elle (rang « formulaire »), quel que soit l'ordre de montage. Sur la
+  fiche, le formulaire d'édition ouvre donc la modale de la fiche, par-dessus lui, et la fermeture
+  rend le focus au bouton de la question. Ailleurs, le formulaire monte la sienne.
+- **Son nom.** Pour un appel, l'espace est celui d'un commun ; pour un formulaire général, celui
+  de « la réponse » (`subject`) — titre, description et nom du panneau, titrés du nom du formulaire.
+
+### 20.4 Arbitrages
+
+| Question | Décision | Écartée |
+|---|---|---|
+| Où vit le bouton | dans le module `coform`, avec ses libellés, sur l'entrée légère du module comment — à l'inverse de l'emplacement des lignes de dépense (`MilestoneLineSlotContext`), parce que la discussion d'une question appartient au formulaire lui-même | un emplacement que chaque page remplirait : quatorze surfaces montent un formulaire, une oubliée n'aurait rien |
+| Qui monte la modale | un hôte à rangs, déclaré par chaque écran qui ouvre l'espace | une modale par écran — deux modales du même espace s'ouvriraient l'une sur l'autre — ou un contexte que chaque page devrait déclarer |
+| Fils de question d'un formulaire général | sous l'`_id` de l'étape, comme l'écrit le legacy | ne rien fabriquer (l'état d'avant) : seules les questions déjà commentées auraient eu un bouton |
+| Discussions supplémentaires d'une réponse générale | refusées | les ouvrir : le legacy ne les montrerait pas |
+| Le bouton en lecture | oui, comme le legacy | l'écriture seule |
+
+### 20.5 Preuves
+
+| Quoi | Résultat |
+|---|---|
+| Règles du serveur, hors base (§15.6) | douze règles de plus : formulaire général — fabrication sous l'`_id`, jamais sous l'`id`, une fois par question ; un fil écrit sous l'`id` compte ; même clé dans deux étapes, vierge ou commentée dans l'une ; ordre du formulaire —, étape portée par chaque fil de question et par eux seuls, contrat de seize champs, création réservée aux appels. Contre le modèle d'avant, quatorze tombent. Le banc avait deux échecs à lui : sa doublure ne savait pas lister les index que le modèle lit depuis le lot P (§9.10) — comblée |
+| Contre-épreuve du serveur | 13 mutations, 13 tuées |
+| Vrai backend, lecture sans session | l'espace de deux réponses à des formulaires généraux : 33 et 10 questions à lancer, toutes sous l'`_id` de leur étape et dans l'espace de leur réponse, chacune avec la clé de son étape ; seize champs par fil ; aucune création proposée |
+| Tests unitaires | registre des hôtes (rangs, arrivée, retrait, deux racines React qui se préviennent) ; lecture de l'étape d'un fil, `questionDiscussion` ; le bouton dans de vrais libellés sous le vrai hôte — commentée, à lancer, même clé dans deux étapes, fermée, hors du `<label>`, sans soumission, focus rendu, visiteur, dépôt neuf, sans hôte, une seule requête, clé préfixée, long libellé, préchauffage, commun, lecture ; l'hôte — aucune question ouverte, hors session, hors routeur, arbre constant (le même nœud, la saisie gardée) — ; une liste de dépenses en lecture (un libellé, un bouton) ; `SmartCoForm` (arbre constant), `DynamicCoForm`, `MultiStepCoForm` (clé d'étape), parseur ; la modale et le panneau « de la réponse » ; la fiche d'un commun — une seule modale quel que soit l'ordre de montage, focus rendu au bouton de la question |
+| Contre-épreuve du front | 73 mutations sur treize fichiers, toutes tuées. Premier passage : 62 sur 66 — les quatre survivantes ont donné deux tests : la notification du registre (deux racines React, que rien ne fait rendre ensemble) et le nom du bouton d'origine (le focus du test ne quittait jamais le bouton : la doublure de la modale le prend désormais, comme le vrai dialogue). Après la relecture ci-dessous, les lots des fichiers retouchés rejoués et complétés : 37 sur 37 |
+| Relecture `module-review` (normes du module coform) | rien de bloquant ; cinq défauts corrigés avant le commit, chacun tenu par un test : le formulaire remonté quand l'arbre changeait de forme (désormais constant), un second bouton — et un second libellé — sur une liste de dépenses en lecture (`hideLabel`), l'hôte monté sans question ouverte sur la page d'une réponse, la règle « commun » écrite à deux endroits (centralisée dans l'hôte), un plantage hors session Cocolight ou hors routeur (l'hôte n'ouvre alors rien) |
+| Navigateur, aucune écriture | fiche du commun du compte simple : « Modifier », 7 boutons dans le formulaire d'édition, hors du `<label>` ; l'espace s'ouvre sur le fil de la question, dans UNE modale — celle de la fiche —, le formulaire reste ouvert dessous, Échap referme l'espace et rend le focus au bouton (9 vérifications). Réponse à un formulaire général — le compte admin de test, sur sa propre réponse —, en lecture puis en édition : 10 boutons, le fil de la question sous l'`_id` de l'étape, une modale qui ne parle pas de « commun » et ne propose pas de créer de discussion, focus rendu (21 vérifications) |
+
+### 20.6 Limites
+
+- Un dépôt n'a de bouton qu'une fois enregistré.
+- Un formulaire monté hors de `SmartCoForm` et de `CoFormAnswerPage` n'aurait pas de bouton — il
+  n'y en a aucun aujourd'hui.
+- Un fil de question écrit sous l'`id` texte de l'étape est lu et compté ; un nouveau fil se lance
+  sous l'`_id`, la forme du legacy.
 
 ## Voir aussi
 
