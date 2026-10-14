@@ -140,6 +140,18 @@
               "fr": "Les partenaires, par territoire et thème.",
               "en": "Partners, by territory and topic."
             }
+          },
+          {
+            "label": {
+              "fr": "Annuaire des acteurs du soutien à la parentalité",
+              "en": "Directory of parenting support actors"
+            },
+            "path": "/annuaire-acteurs-parentalite",
+            "icon": "map-pinned",
+            "description": {
+              "fr": "Les acteurs du soutien à la parentalité, localisés sur la carte.",
+              "en": "Parenting support actors, located on the map."
+            }
           }
         ]
       },
@@ -19104,6 +19116,206 @@
       ]
     },
     {
+      "path": "/annuaire-acteurs-parentalite",
+      "title": {
+        "fr": "Annuaire des acteurs du soutien à la parentalité — Parent62",
+        "en": "Directory of parenting support actors — Parent62"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Annuaire des acteurs du soutien à la parentalité — Parent62",
+          "en": "Directory of parenting support actors — Parent62"
+        },
+        "description": {
+          "fr": "Les associations, collectivités, établissements et entreprises qui accompagnent les familles du Pas-de-Calais, localisés sur la carte.",
+          "en": "The associations, local authorities, facilities and companies supporting families in the Pas-de-Calais, located on the map."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/parent62/hero-carte.png"
+      },
+      "sections": [
+        {
+          "type": "gridLayout",
+          "id": "annuaire-acteurs-parentalite-grid",
+          "props": {
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftSection": {
+              "type": "filters",
+              "id": "annuaire-acteurs-parentalite-filters",
+              "props": {
+                "title": {
+                  "fr": "Filtres",
+                  "en": "Filters"
+                },
+                "defaultOpenGroups": [
+                  "categoryThematic"
+                ],
+                "className": "lg:sticky lg:top-20",
+                "filterGroups": [
+                  {
+                    "id": "categoryThematic",
+                    "label": {
+                      "fr": "Catégorie thématique",
+                      "en": "Thematic category"
+                    },
+                    "field": "categoryThematic",
+                    "optionsFrom": {
+                      "list": "categoryThematic"
+                    },
+                    "optionStyle": "check",
+                    "order": 0
+                  }
+                ]
+              }
+            },
+            "rightSection": {
+              "type": "searchProStatic",
+              "id": "annuaire-acteurs-parentalite-search",
+              "props": {
+                "customHeader": {
+                  "title": {
+                    "fr": "Les acteurs du soutien à la parentalité",
+                    "en": "Parenting support actors"
+                  }
+                },
+                "useFilter": true,
+                "showMap": true,
+                "enableMap": true,
+                "defaultViewMode": "map",
+                "showActiveFiltersTypes": false,
+                "showActiveFiltersTags": true,
+                "baseParams": {
+                  "defaultTypes": [
+                    "organizations"
+                  ],
+                  "sourceKey": [
+                    "parent62"
+                  ],
+                  "costumSlug": "parent62",
+                  "defaultFields": [
+                    "name",
+                    "slug",
+                    "type",
+                    "collection",
+                    "source",
+                    "reference",
+                    "shortDescription",
+                    "description",
+                    "email",
+                    "telephone",
+                    "url",
+                    "address",
+                    "geo",
+                    "geoPosition",
+                    "categoryThematic",
+                    "typeAction",
+                    "publicCible",
+                    "profilThumbImageUrl",
+                    "profilMediumImageUrl",
+                    "profilImageUrl"
+                  ],
+                  "searchBy": [
+                    "name",
+                    "shortDescription",
+                    "description"
+                  ],
+                  "defaultSortBy": {
+                    "name": 1
+                  },
+                  "indexStepList": 200
+                },
+                "list": {
+                  "columns": {
+                    "sm": 1,
+                    "md": 2,
+                    "lg": 3
+                  },
+                  "card": {
+                    "type": "image-cover",
+                    "variant": "image-cover",
+                    "imageFit": "contain",
+                    "showDescription": true,
+                    "showAddress": true,
+                    "detailsMode": "drawer"
+                  },
+                  "previewFetch": "organizations",
+                  "preview": {
+                    "type": "facets",
+                    "width": "3xl",
+                    "facets": [
+                      {
+                        "field": "categoryThematic",
+                        "label": {
+                          "fr": "Catégorie thématique",
+                          "en": "Thematic category"
+                        },
+                        "icon": "tags"
+                      },
+                      {
+                        "field": "typeAction",
+                        "label": {
+                          "fr": "Type d'action",
+                          "en": "Type of action"
+                        },
+                        "icon": "list-checks"
+                      },
+                      {
+                        "field": "publicCible",
+                        "label": {
+                          "fr": "Public cible",
+                          "en": "Target audience"
+                        },
+                        "icon": "users"
+                      },
+                      {
+                        "field": "email",
+                        "label": {
+                          "fr": "E-mail",
+                          "en": "Email"
+                        },
+                        "icon": "at-sign"
+                      },
+                      {
+                        "field": "telephone",
+                        "label": {
+                          "fr": "Téléphone",
+                          "en": "Phone"
+                        },
+                        "icon": "phone"
+                      },
+                      {
+                        "field": "url",
+                        "label": {
+                          "fr": "Site internet",
+                          "en": "Website"
+                        },
+                        "icon": "globe"
+                      }
+                    ]
+                  }
+                },
+                "map": {
+                  "layout": "split",
+                  "marker": {
+                    "useItemImage": true,
+                    "style": "pin",
+                    "color": "primary"
+                  },
+                  "itemAction": {
+                    "kind": "preview"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "path": "/mentions-legales",
       "title": {
         "fr": "Mentions légales",
@@ -19963,7 +20175,7 @@
               "type": "profile-tab-layout",
               "leftSections": [
                 {
-                  "type": "profile-about-ssbe"
+                  "type": "profile-parent62-about"
                 },
                 {
                   "type": "profile-organizer"
@@ -19973,9 +20185,6 @@
                 },
                 {
                   "type": "profile-tags"
-                },
-                {
-                  "type": "profile-opening-hours"
                 }
               ],
               "rightSections": [
@@ -19992,6 +20201,9 @@
                   "showOpeningDate": true,
                   "showDates": true,
                   "showOrganizer": true
+                },
+                {
+                  "type": "profile-opening-hours"
                 }
               ]
             }
@@ -20143,6 +20355,14 @@
         }
       ],
       "editModals": [
+        {
+          "editModal": "edit-parent62-acteur",
+          "when": {
+            "field": "sourceKeys",
+            "op": "contains",
+            "value": "youthCare"
+          }
+        },
         {
           "editModal": "edit-parent62-partenaire",
           "when": {
@@ -23970,6 +24190,7 @@
         },
         "profil_avatar": {
           "widget": "image",
+          "widgetProps": { "allowOriginal": true },
           "label": {
             "fr": "Photo",
             "en": "Photo"
@@ -24676,6 +24897,543 @@
           }
         }
       }
+    },
+    "parent62-acteur": {
+      "id": "parent62-acteur",
+      "entityType": "organizations",
+      "collection": "organizations",
+      "costumSlug": "parent62",
+      "icon": "building-2",
+      "layout": {
+        "kind": "tabs"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        },
+        "telephone": {
+          "serverKey": "telephone",
+          "read": "telephone:read",
+          "write": "telephone:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "structure",
+          "label": {
+            "fr": "Structure",
+            "en": "Organisation"
+          },
+          "icon": "building-2",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "type",
+                "profil_avatar",
+                "shortDescription",
+                "description"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "categorisation",
+          "label": {
+            "fr": "Catégorisation",
+            "en": "Categorisation"
+          },
+          "icon": "tags",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "categoryThematic",
+                "typeAction",
+                "publicCible"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contact",
+          "label": {
+            "fr": "Contact",
+            "en": "Contact"
+          },
+          "icon": "mail",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "email",
+                "telephone",
+                "url",
+                "socialNetwork",
+                "contact"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "lieu",
+          "label": {
+            "fr": "Lieu & horaires",
+            "en": "Place & hours"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address",
+                "openingHours"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "complement",
+          "label": {
+            "fr": "Compléments",
+            "en": "Additional information"
+          },
+          "icon": "file-text",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "accessibility",
+                "provisionResources",
+                "note",
+                "documents"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom de la structure",
+            "en": "Organisation name"
+          }
+        },
+        "type": {
+          "widget": "select",
+          "label": {
+            "fr": "Type de structure",
+            "en": "Type of organisation"
+          },
+          "enum": [
+            {
+              "value": "NGO",
+              "label": {
+                "fr": "Association",
+                "en": "Association"
+              }
+            },
+            {
+              "value": "GovernmentOrganization",
+              "label": {
+                "fr": "Collectivité / service public",
+                "en": "Local authority / public service"
+              }
+            },
+            {
+              "value": "Group",
+              "label": {
+                "fr": "Établissement (crèche, école, centre social…)",
+                "en": "Facility (nursery, school, social centre…)"
+              }
+            },
+            {
+              "value": "LocalBusiness",
+              "label": {
+                "fr": "Entreprise",
+                "en": "Company"
+              }
+            }
+          ]
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "widgetProps": {
+            "allowOriginal": true
+          },
+          "label": {
+            "fr": "Logo",
+            "en": "Logo"
+          }
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Présentation courte",
+            "en": "Short presentation"
+          },
+          "info": {
+            "fr": "Une ou deux phrases, affichées sur la carte de l'annuaire.",
+            "en": "One or two sentences, shown on the directory card."
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "label": {
+            "fr": "Présentation",
+            "en": "Presentation"
+          },
+          "widgetProps": {
+            "height": 240,
+            "preview": "edit"
+          }
+        },
+        "categoryThematic": {
+          "widget": "valueSelect",
+          "widgetProps": {
+            "list": [
+              "categoryThematic"
+            ]
+          },
+          "label": {
+            "fr": "Catégorie thématique",
+            "en": "Thematic category"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          },
+          "enum": [
+            { "value": "Accueil jeunes enfants", "label": { "fr": "Accueil jeunes enfants", "en": "Accueil jeunes enfants" } },
+            { "value": "Accès/maintien des droits/ justice", "label": { "fr": "Accès/maintien des droits/ justice", "en": "Accès/maintien des droits/ justice" } },
+            { "value": "Alimentaire", "label": { "fr": "Alimentaire", "en": "Alimentaire" } },
+            { "value": "Apprentissage langue", "label": { "fr": "Apprentissage langue", "en": "Apprentissage langue" } },
+            { "value": "Ecoute", "label": { "fr": "Ecoute", "en": "Ecoute" } },
+            { "value": "Emploi", "label": { "fr": "Emploi", "en": "Emploi" } },
+            { "value": "Handicap/ inclusion", "label": { "fr": "Handicap/ inclusion", "en": "Handicap/ inclusion" } },
+            { "value": "Insertion/intégration", "label": { "fr": "Insertion/intégration", "en": "Insertion/intégration" } },
+            { "value": "Jeunes et accompagnants", "label": { "fr": "Jeunes et accompagnants", "en": "Jeunes et accompagnants" } },
+            { "value": "Logement/Hébergement", "label": { "fr": "Logement/Hébergement", "en": "Logement/Hébergement" } },
+            { "value": "Loisirs", "label": { "fr": "Loisirs", "en": "Loisirs" } },
+            { "value": "Numérique", "label": { "fr": "Numérique", "en": "Numérique" } },
+            { "value": "Parentalité", "label": { "fr": "Parentalité", "en": "Parentalité" } },
+            { "value": "Protection de l’enfance", "label": { "fr": "Protection de l’enfance", "en": "Protection de l’enfance" } },
+            { "value": "Prévention", "label": { "fr": "Prévention", "en": "Prévention" } },
+            { "value": "Santé", "label": { "fr": "Santé", "en": "Santé" } },
+            { "value": "Scolarité", "label": { "fr": "Scolarité", "en": "Scolarité" } },
+            { "value": "Temps de Sensibilisation", "label": { "fr": "Temps de Sensibilisation", "en": "Temps de Sensibilisation" } },
+            { "value": "Vacances", "label": { "fr": "Vacances", "en": "Vacances" } },
+            { "value": "Violences intrafamilliales", "label": { "fr": "Violences intrafamilliales", "en": "Violences intrafamilliales" } },
+            { "value": "culture", "label": { "fr": "Culture", "en": "Culture" } },
+            { "value": "sports", "label": { "fr": "Sports", "en": "Sports" } }
+          ]
+        },
+        "typeAction": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Type d'action",
+            "en": "Type of action"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          },
+          "enum": [
+            { "value": "Individuelle", "label": { "fr": "Individuelle", "en": "Individual" } },
+            { "value": "Collective", "label": { "fr": "Collective", "en": "Collective" } }
+          ]
+        },
+        "publicCible": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Public cible",
+            "en": "Target audience"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          },
+          "enum": [
+            { "value": "Petite enfance", "label": { "fr": "Petite enfance", "en": "Early childhood" } },
+            { "value": "Enfance", "label": { "fr": "Enfance", "en": "Childhood" } },
+            { "value": "Adolescence", "label": { "fr": "Adolescence", "en": "Adolescence" } },
+            { "value": "Parents", "label": { "fr": "Parents", "en": "Parents" } },
+            { "value": "Jeunes adultes", "label": { "fr": "Jeunes adultes", "en": "Young adults" } }
+          ]
+        },
+        "email": {
+          "widget": "email",
+          "label": {
+            "fr": "E-mail",
+            "en": "Email"
+          }
+        },
+        "telephone": {
+          "widget": "tel",
+          "group": "telephone",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          }
+        },
+        "_telSlot": {
+          "widget": "hidden",
+          "group": "telephone"
+        },
+        "_telRest": {
+          "widget": "hidden",
+          "group": "telephone"
+        },
+        "url": {
+          "widget": "text",
+          "label": {
+            "fr": "Site internet",
+            "en": "Website"
+          },
+          "placeholder": {
+            "fr": "https://…",
+            "en": "https://…"
+          },
+          "rules": {
+            "url": true
+          }
+        },
+        "socialNetwork": {
+          "widget": "fieldArray",
+          "label": {
+            "fr": "Réseaux sociaux",
+            "en": "Social networks"
+          },
+          "read": "social:read",
+          "write": "social:write",
+          "path": "socialNetwork",
+          "clear": "",
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un réseau social",
+              "en": "Add a social network"
+            },
+            "itemFields": [
+              {
+                "name": "platform",
+                "kind": "select",
+                "label": {
+                  "fr": "Plateforme",
+                  "en": "Platform"
+                },
+                "options": [
+                  { "value": "facebook", "label": "Facebook" },
+                  { "value": "instagram", "label": "Instagram" },
+                  { "value": "linkedin", "label": "LinkedIn" },
+                  { "value": "youtube", "label": "YouTube" }
+                ]
+              },
+              {
+                "name": "url",
+                "kind": "text",
+                "label": {
+                  "fr": "Lien",
+                  "en": "Link"
+                },
+                "placeholder": "https://…"
+              }
+            ]
+          }
+        },
+        "contact": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Interlocuteur privilégié",
+            "en": "Primary contact"
+          },
+          "info": {
+            "fr": "Nom, fonction et coordonnées de la personne à contacter.",
+            "en": "Name, role and contact details of the person to reach."
+          }
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          },
+          "info": {
+            "fr": "Place la structure sur la carte de l'annuaire.",
+            "en": "Places the organisation on the directory map."
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        },
+        "openingHours": {
+          "widget": "openingHours",
+          "label": {
+            "fr": "Horaires d'ouverture",
+            "en": "Opening hours"
+          },
+          "path": "openingHours"
+        },
+        "accessibility": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Accès / stationnement",
+            "en": "Access / parking"
+          },
+          "info": {
+            "fr": "Informations éventuelles sur l'accès ou les possibilités de stationnement.",
+            "en": "Information on access or parking options, if relevant."
+          }
+        },
+        "provisionResources": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Mise à disposition de ressources",
+            "en": "Resources made available"
+          },
+          "info": {
+            "fr": "Salles, expositions, outils… mis à disposition par la structure.",
+            "en": "Rooms, exhibitions, tools… made available by the organisation."
+          }
+        },
+        "note": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Remarques",
+            "en": "Remarks"
+          },
+          "info": {
+            "fr": "Par exemple une orientation particulière des publics accueillis.",
+            "en": "For example a specific focus among the audiences welcomed."
+          }
+        },
+        "documents": {
+          "widget": "file",
+          "label": {
+            "fr": "Documents",
+            "en": "Documents"
+          },
+          "info": {
+            "fr": "Plaquettes, flyers… PDF ou document bureautique.",
+            "en": "Leaflets, flyers… PDF or office document."
+          },
+          "widgetProps": {
+            "contentKey": "file",
+            "docType": "file",
+            "maxItems": 10,
+            "accept": ".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx,.odt,.ods,.odp,.csv"
+          }
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter un acteur",
+            "en": "Add an organisation"
+          },
+          "edit": {
+            "fr": "Modifier la fiche acteur",
+            "en": "Edit organisation listing"
+          }
+        },
+        "description": {
+          "add": {
+            "fr": "La fiche rejoint l'annuaire des acteurs du soutien à la parentalité.",
+            "en": "The listing joins the parenting support directory."
+          },
+          "edit": {
+            "fr": "Mettez à jour les informations publiées dans l'annuaire.",
+            "en": "Update the information published in the directory."
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Envoyer",
+            "en": "Submit"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "organizations",
+        "navigateOnSuccess": false,
+        "successKey": {
+          "add": "toast.add.organizationSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.organizationError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_PARENT62_ACTEUR",
+          "edit": "EntityFormModal · UPDATE_PARENT62_ACTEUR"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "organizations",
+            "searchKeys": [
+              "searchCostumStatic",
+              "admin-organizations"
+            ]
+          }
+        }
+      }
     }
   },
   "admin": {
@@ -24999,6 +25757,9 @@
               "costumSlug": "parent62",
               "sourceKey": [
                 "parent62"
+              ],
+              "defaultFields": [
+                "category"
               ]
             },
             "columns": [
@@ -25069,6 +25830,9 @@
               "costumSlug": "parent62",
               "sourceKey": [
                 "parent62"
+              ],
+              "defaultFields": [
+                "annee"
               ]
             },
             "columns": [

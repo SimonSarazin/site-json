@@ -182,6 +182,14 @@ export const ProfileSsbeAboutSectionSchema = z.object({
   hidden: z.boolean().optional().default(false),
 });
 
+/** Fiche « À propos » générique pour une organisation parent62 (`costumForms.parent62-partenaire`) :
+ *  type de structure, catégorie thématique (`costum.lists.categoryThematic`), thèmes, territoires,
+ *  publics — aucun de ces champs n'est couvert par `profile-info` (contact) ni `profile-tags`. */
+export const ProfileParent62AboutSectionSchema = z.object({
+  type: z.literal("profile-parent62-about"),
+  hidden: z.boolean().optional().default(false),
+});
+
 export const ProfileMapSectionSchema = z.object({
   type: z.literal("profile-map"),
   height: z.string().optional().default("400px"),
@@ -367,6 +375,7 @@ export const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileTiersLieuxAboutSectionSchema,
   ProfileAboutSectionSchema,
   ProfileSsbeAboutSectionSchema,
+  ProfileParent62AboutSectionSchema,
   ProfileMapSectionSchema,
   ProfileOrganizerSectionSchema,
   ProfileMembersSectionSchema,
@@ -595,6 +604,7 @@ export type ProfileHeaderSection = z.infer<typeof ProfileHeaderSectionSchema>;
 export type ProfileInfoSection = z.infer<typeof ProfileInfoSectionSchema>;
 export type ProfileAboutSection = z.infer<typeof ProfileAboutSectionSchema>;
 export type ProfileSsbeAboutSection = z.infer<typeof ProfileSsbeAboutSectionSchema>;
+export type ProfileParent62AboutSection = z.infer<typeof ProfileParent62AboutSectionSchema>;
 export type ProfileMapSection = z.infer<typeof ProfileMapSectionSchema>;
 export type ProfileOrganizerSection = z.infer<typeof ProfileOrganizerSectionSchema>;
 export type ProfileMembersSection = z.infer<typeof ProfileMembersSectionSchema>;
