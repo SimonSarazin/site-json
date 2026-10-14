@@ -1,5 +1,5 @@
 import { tallyVotes } from "../utils/pourContre";
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, type ReactElement } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,6 +41,15 @@ interface CoFormReadOnlyProps {
   hideStepHeaders?: boolean;
   /** Masquer les métadonnées (auteur, date) */
   hideMetadata?: boolean;
+  /**
+   * Si fourni, remplace les étapes ; le bandeau du formulaire et l'auteur restent. Le composant ne
+   * juge pas la vacuité : la page qui sait la réponse vide le fournit (`CoFormAnswerPage`), pour ne
+   * pas montrer une liste de questions toutes suivies d'un tiret.
+   *
+   * `ReactElement` et non `ReactNode` : `emptyState={vide && <Encart />}` passerait `false`, que `??`
+   * garde — et les questions d'une réponse REMPLIE disparaîtraient sans un mot.
+   */
+  emptyState?: ReactElement;
 }
 
 /**
@@ -58,6 +67,7 @@ export function CoFormReadOnly({
   hideBanner = false,
   hideStepHeaders = false,
   hideMetadata = false,
+  emptyState,
 }: CoFormReadOnlyProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -155,7 +165,7 @@ export function CoFormReadOnly({
           que les `<dt>/<dd>` rendus par ReadOnlyField soient valides et lus
           correctement par les lecteurs d'écran. */}
       {/* La clé de chaque étape, pour le bouton de discussion de ses questions (`ReadOnlyLabel`). */}
-      {subFormsFields.map((step) => (
+      {emptyState ?? subFormsFields.map((step) => (
         <FormStepKeyContext.Provider key={step.subFormId} value={step.subFormId}>
           {hideStepHeaders ? (
             <dl className="grid grid-cols-12 gap-x-6 gap-y-4">

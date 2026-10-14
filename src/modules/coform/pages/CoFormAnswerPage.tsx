@@ -1,15 +1,16 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { Link, useLoaderData, useNavigate, useParams, useSearchParams } from "react-router";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
-import { AlertCircle, Eye, Home, Info, Loader2, Lock, Pencil } from "lucide-react";
+import { AlertCircle, Eye, FileText, Home, Info, Loader2, Lock, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SmartCoForm } from "../components/SmartCoForm";
 import { CoFormReadOnly } from "../components/CoFormReadOnly";
 import { FormQuestionDiscussions } from "../components/FormQuestionDiscussions";
 import { CommonTableCatalogsLoader } from "../contexts/CommonTableCatalogsLoader";
 import { collectCommonTableInputKeys, parseCoFormFields } from "../utils/formParser";
+import { hasAnswerContent, isNotFoundError } from "../utils/helpers";
 import { CoFormThankYou } from "../components/CoFormThankYou";
 import {
   useCoFormQuery,
@@ -25,6 +26,9 @@ import "../i18n/i18n";
 /** Mode d'affichage de la page */
 type AnswerViewMode = "readonly" | "edit";
 
+/** Les données d'une réponse sans contenu — UNE référence : un objet neuf à chaque rendu défairait les mémos de la lecture seule. */
+const EMPTY_ANSWER: AllStepsData = {};
+
 /** État interne de la page */
 type AnswerPageState =
   | { view: "answer"; mode: AnswerViewMode }
@@ -37,6 +41,11 @@ type AnswerPageState =
  *
  * - mode=readonly (défaut) : affiche la réponse en lecture seule
  * - mode=edit : affiche le formulaire pré-rempli pour modification
+ *
+ * Une réponse qui EXISTE sans contenu (pas de champ `answers`, ou des étapes vides) n'est pas
+ * introuvable : en lecture, un encart le dit et propose « Remplir » à qui peut la modifier ; en
+ * édition, le formulaire s'ouvre vide. « Réponse introuvable » est réservé à la réponse ABSENTE —
+ * l'`ApiError` 404 que lève le SDK (`isNotFoundError`). Cf. `doc/21-module-coform.md`.
  */
 export default function CoFormAnswerPage() {
   const loaderData = useLoaderData() as {
@@ -67,6 +76,10 @@ export default function CoFormAnswerPage() {
   });
 
   const currentMode = pageState.view === "answer" ? pageState.mode : "readonly";
+
+  // « Remplir » démonte l'encart, et son bouton avec : le focus irait sur la page. Il passe au
+  // bandeau d'édition, qui dit où l'on est (`focusEditBanner`, plus bas).
+  const fillRequested = useRef(false);
 
   // Charger le formulaire (structure)
   const {
@@ -134,7 +147,11 @@ export default function CoFormAnswerPage() {
     );
   }
 
-  if (formError || answerError) {
+  // Une réponse ABSENTE fait lever un 404 au SDK : elle seule est « introuvable ». Une réponse
+  // sans contenu existe bel et bien — son cas vient plus bas.
+  const isMissing = isNotFoundError(answerError);
+
+  if (formError || (answerError && !isMissing)) {
     return (
       <PageShell>
         <ErrorCard
@@ -145,7 +162,7 @@ export default function CoFormAnswerPage() {
     );
   }
 
-  if (!formData || !answerData) {
+  if (!formData || !answer || isMissing) {
     return (
       <PageShell>
         <ErrorCard
@@ -172,6 +189,18 @@ export default function CoFormAnswerPage() {
 
   const handleSwitchToReadonly = () => {
     setPageState({ view: "answer", mode: "readonly" });
+  };
+
+  const handleFill = () => {
+    fillRequested.current = true;
+    handleSwitchToEdit();
+  };
+
+  // Une ref de rappel, et non un effet : elle voit le bandeau monter, et vit sous les retours anticipés.
+  const focusEditBanner = (banner: HTMLDivElement | null) => {
+    if (!banner || !fillRequested.current) return;
+    fillRequested.current = false;
+    banner.focus();
   };
 
   // ── Titre d'onglet (formData garanti non-null à partir d'ici) ──
@@ -207,6 +236,13 @@ export default function CoFormAnswerPage() {
   // Si l'utilisateur est en mode edit mais n'a pas le droit, forcer readonly
   const effectiveMode = currentMode === "edit" && !canEdit ? "readonly" : currentMode;
 
+  // ── Réponse sans contenu ───────────────────────────────────────
+  // Un dossier ouvert puis jamais rempli existe sans aucune valeur. En lecture, un encart le dit
+  // et propose de le remplir à qui en a le droit — la barre d'actions s'efface, son bouton ferait
+  // doublon ; en édition, le formulaire s'ouvre vide.
+  const isEmpty = !hasAnswerContent(answerData);
+  const showEmptyNotice = effectiveMode === "readonly" && isEmpty;
+
   // ── Résoudre le nom de l'auteur ────────────────────────────────
 
   const authorName =
@@ -231,6 +267,7 @@ export default function CoFormAnswerPage() {
       )}
 
       {/* Barre d'actions : basculer entre readonly et edit */}
+      {!showEmptyNotice && (
       <div className="flex items-center justify-between mb-6">
         <div className="text-sm text-muted-foreground">
           {effectiveMode === "readonly"
@@ -261,6 +298,7 @@ export default function CoFormAnswerPage() {
           ) : null}
         </div>
       </div>
+      )}
 
       {/* Mode lecture seule.
 
@@ -275,13 +313,15 @@ export default function CoFormAnswerPage() {
         <CommonTableCatalogsLoader formId={formId} inputKeys={commonTableInputKeys}>
           {/* Le bouton de discussion des questions ouvertes aux commentaires, comme en édition. */}
           <FormQuestionDiscussions answerId={answerId} form={formData} steps={etapes}>
+            {/* Vide, la réponse n'a jamais été soumise : pas de « Soumis le ». */}
             <CoFormReadOnly
               formData={formData}
-              answerData={answerData}
+              answerData={answerData ?? EMPTY_ANSWER}
               authorName={authorName}
-              submittedAt={answer?.created}
-              updatedAt={answer?.updated}
+              submittedAt={isEmpty ? undefined : answer?.created}
+              updatedAt={isEmpty ? undefined : answer?.updated}
               answerId={answerId}
+              emptyState={showEmptyNotice ? <EmptyAnswerNotice canFill={canEdit} onFill={handleFill} /> : undefined}
             />
           </FormQuestionDiscussions>
         </CommonTableCatalogsLoader>
@@ -291,7 +331,11 @@ export default function CoFormAnswerPage() {
       {effectiveMode === "edit" && (
         <>
           {/* Bandeau mode édition */}
-          <div className="mb-6 flex items-center gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning-foreground">
+          <div
+            ref={focusEditBanner}
+            tabIndex={-1}
+            className="mb-6 flex items-center gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning-foreground focus:outline-none"
+          >
             <Info className="w-5 h-5 shrink-0" />
             <p>{t("coform.access.editMode.description")}</p>
           </div>
@@ -323,7 +367,7 @@ export default function CoFormAnswerPage() {
             onFinalSubmit={handleFinalSubmit}
             showProgress={true}
             showStepNumbers={true}
-            defaultValues={answerData}
+            defaultValues={answerData ?? undefined}
             answerId={answerId}
           />
         </>
@@ -342,6 +386,29 @@ function PageShell({ children }: { children: React.ReactNode }) {
         <div className="container max-w-4xl mx-auto px-4">{children}</div>
       </main>
       <SiteFooter />
+    </div>
+  );
+}
+
+// ─── Encart d'une réponse sans contenu ───────────────────────────
+
+function EmptyAnswerNotice({ canFill, onFill }: { canFill: boolean; onFill: () => void }) {
+  const t = useT("modules/coform");
+  return (
+    <div data-answer-empty className="rounded-xl border border-dashed border-border px-6 py-12 text-center space-y-4">
+      <FileText className="w-10 h-10 mx-auto text-muted-foreground" aria-hidden="true" />
+      <div className="space-y-1">
+        <h2 className="text-lg font-semibold text-foreground">{t("coform.answer.empty.title")}</h2>
+        <p className="text-sm text-muted-foreground">
+          {t(canFill ? "coform.answer.empty.descriptionCanFill" : "coform.answer.empty.description")}
+        </p>
+      </div>
+      {canFill && (
+        <Button className="gap-2" onClick={onFill}>
+          <Pencil className="w-4 h-4" aria-hidden="true" />
+          {t("coform.answer.empty.fill")}
+        </Button>
+      )}
     </div>
   );
 }

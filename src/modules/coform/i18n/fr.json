@@ -84,6 +84,12 @@
       "submittedAt": "Soumis le {{date}}",
       "updatedAt": "Modifié le {{date}}",
       "author": "Auteur",
+      "empty": {
+        "title": "Cette réponse est encore vide",
+        "description": "Aucune question n'a encore reçu de réponse.",
+        "descriptionCanFill": "Aucune question n'a encore reçu de réponse. Vous pouvez la remplir dès maintenant.",
+        "fill": "Remplir"
+      },
       "editDenied": {
         "not_logged_in": "Vous devez être connecté pour modifier cette réponse.",
         "not_owner": "Vous ne pouvez modifier que vos propres réponses.",
