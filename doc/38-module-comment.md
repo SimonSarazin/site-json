@@ -310,9 +310,11 @@ déjà en place dans le dépôt (`ProseContent`) — et non `react-markdown`. Un
 markdown aurait voulu dire deux garanties de sécurité à tenir.
 
 La restriction est obtenue **à la source**, ce qu'un filtrage après coup ne donne pas :
-`html: false` échappe tout HTML écrit par l'auteur, et les règles `heading`, `lheading` et `image`
-sont désactivées — un `# titre` ou une image distante **ne peuvent pas exister** dans la sortie.
-`sanitizeProse` reste le filet. `breaks: true` est propre au fil : dans une discussion, un retour
+`html: false` échappe tout HTML écrit par l'auteur, et les règles `lheading` et `image` sont
+désactivées — une image distante, ou un titre « souligné » (une ligne suivie de `===` ou de `---`),
+**ne peuvent pas exister** dans la sortie. Les titres à croisillons, eux, sont rendus depuis le
+14/10, sur six niveaux comme les écrit l'éditeur du legacy (§18.9) ; le HTML écrit dans un titre y
+reste échappé comme ailleurs. `sanitizeProse` reste le filet. `breaks: true` est propre au fil : dans une discussion, un retour
 à la ligne simple est voulu par celui qui écrit.
 
 Deux points mesurés :
@@ -3264,8 +3266,8 @@ Du 13/10, sur le code décrit ici — corrections de la relecture (§19) et suit
   font qu'une dans le fil — comme avec l'ancien champ.
 - **Là où le markdown n'est pas rendu, une liste posée contre une autre se lit sous son second
   signe** (`+ …`, `1) …`) : c'est ce qui les garde distinctes dans le fil (§18.3).
-- **Ni titre, ni souligné, ni image dans le texte** : le fil ne les rend pas (§5.5), l'éditeur ne
-  les propose pas.
+- **Ni titre souligné, ni image dans le texte** : le fil ne les rend pas (§5.5), l'éditeur ne les
+  propose pas. Les titres à croisillons, si, depuis le 14/10 (§18.9).
 - **`__nom__` tapé ou collé passe en gras**, comme le markdown le lirait — un collage se relit
   comme du markdown. Écrit puis annulé d'un Ctrl+Z, il reste du texte.
 - **`[texte](adresse)` tapé reste du texte** : un lien nommé se pose par le bouton.
@@ -3292,6 +3294,85 @@ Du 13/10, sur le code décrit ici — corrections de la relecture (§19) et suit
   ses effets (§18.4) n'a pas été observé — la garde est tenue par un test qui le détruit ; et une
   mention **envoyée** pour de vrai — elle notifierait la personne — n'a été rejouée qu'en test :
   au navigateur, la mention est posée dans le texte, pas postée.
+
+### 18.8 L'italique se voit (14/10)
+
+Signalé à l'usage : « Italique » sur une sélection ne faisait rien. L'éditeur, lui, posait bien la
+marque (`<em>`, bouton enfoncé) ; c'est le **dessin** qui manquait. Deux causes, toutes deux hors
+du module :
+
+- le chargeur de polices du moteur ne demande à Google Fonts que des graisses droites
+  (`wght@400;500;600;700`, `GoogleFontsLoader`, `extractCriticalResources`) — aucune face italique ;
+- la plupart des feuilles de thème posent `font-synthesis: none` sur `:root` (repris du gabarit
+  Vite) : le navigateur n'a pas le droit de fabriquer l'italique qu'il n'a pas.
+
+Mesuré au navigateur : le mot marqué était dessiné **pixel pour pixel** comme le texte droit. Le
+correctif est dans la feuille du module : `.comment-thread em, .comment-thread i { font-synthesis:
+style; }` — l'italique se synthétise, dans le champ comme dans le fil ; le gras, qui a ses vraies
+graisses, n'est pas touché. Preuve : `sonde-italique.cjs` (hors dépôt), sans écriture — même
+capture avant, mot incliné après.
+
+**Hors du module, la même cause rend l'italique invisible partout** sur ces thèmes (une prose,
+un article). Deux corrections possibles, à arbitrer : permettre la synthèse de l'italique dans les
+feuilles de thème, ou demander les vraies faces italiques — en sachant que toutes les familles n'en
+ont pas (Roboto Slab), et que l'API de Google Fonts refuse alors toute la demande.
+
+### 18.9 Les titres (14/10)
+
+Demandé à l'usage : « il manque les formats de titre », avec pour modèle la barre de l'éditeur du
+legacy — gras, italique, barré, **un bouton de titre à six niveaux**, code, bloc de code, citation,
+listes, filet, lien, image, surligneur.
+
+**Dans l'éditeur.**
+
+- Un bouton « Titre », après « Barré » comme dans le legacy, ouvre un menu : « Texte normal », puis
+  « Titre 1 » à « Titre 6 ». Le niveau du bloc au curseur y est coché, et le bouton se dit actif
+  dans un titre. Refermé, le menu rend le focus au texte, pas à son bouton. Il est **non modal**
+  (`modal={false}`) : le composer vit souvent dans un dialogue, et un menu Radix modal ouvert sous
+  un dialogue monté laisse la page figée.
+- `# ` à `###### ` tapés en tête de ligne ouvrent un titre, et l'aide du champ le dit. Les
+  raccourcis de la bibliothèque, Ctrl+Alt+1 à 6, s'y ajoutent — sauf sous Windows, où elle ignore
+  Ctrl+Alt : c'est AltGr, qui tape « # » et « @ » sur un clavier AZERTY.
+- Le bouton est inerte sur la première ligne d'un élément de liste : le schéma de l'éditeur y veut
+  un paragraphe.
+- **Un titre tient sur une ligne**, parce que le markdown n'en connaît pas d'autres : `# un` puis
+  `deux` à la ligne font un titre et un paragraphe. Un saut de ligne posé dans un titre — Maj+Entrée,
+  un paragraphe de plusieurs lignes ou un bloc de code changés en titre, un collage — le coupe donc
+  à son premier saut : la suite devient **un** paragraphe, ses autres sauts compris. En tête de
+  titre, le saut ne le vide pas : la ligne vide passe au-dessus, comme avec Entrée. Ctrl+Z défait le
+  saut et la coupe d'un seul geste — sans quoi la coupe se referait aussitôt.
+
+**Ce qui part** est le markdown du legacy — `#` à `######`, une espace, le texte —, qui se relit
+dans les deux sens. Un `#` tapé comme du texte reste du texte : en tête de ligne, derrière
+Maj+Entrée ou dans une citation compris, il est échappé (`\#`) s'il ouvrirait un titre ; `#mot` et
+sept croisillons n'en ouvriraient pas et restent nus. Des croisillons en fin de titre, derrière une
+espace, seraient lus comme sa clôture : ils sont échappés (`# Langage C \#`). Le fil, lui, rend les
+titres à croisillons ; le titre souligné (`===`, `---`) reste coupé (§5.5).
+
+**Dans le fil**, un titre est à l'échelle d'un **message**, jamais d'une page : 20, 18, 16, 14, 12
+et 12 px, en demi-gras, le titre 6 atténué — l'échelle de GitHub, ramenée au texte d'un message.
+Elle vit dans `styles.css`, pas en classes Tailwind : la plupart des thèmes posent `.prose hN`
+**hors couche** — la couleur ; et sur parent62 et rezo-sante-reunion, qui ne chargent pas le plugin
+typography, la taille, la police et les marges d'un titre de page —, et une règle hors couche bat
+tout utilitaire, quelle que soit sa spécificité. `.comment-thread .prose hN` passe devant
+`.prose hN`. Le champ est sous les mêmes règles : ce qu'on y tape est ce que le fil montrera. La
+police du thème, elle, est gardée.
+
+| Quoi | Résultat |
+|---|---|
+| Tests unitaires | le rendu (six niveaux ; sept croisillons, `#mot`, le titre souligné restent du texte ; un titre n'ouvre aucune porte au HTML) ; le pont (allers-retours, relecture d'un message du legacy, marques, liens et mentions dans un titre, clôture, citation, échappement en tête de ligne — six croisillons, un seul, derrière un saut — et échappement minimal ailleurs) ; le composer avec le vrai éditeur (14 cas : frappe, Maj+Entrée au bout, au milieu, en tête et dans une citation, trois lignes changées en titre, collage, bloc de code, Ctrl+Z, menu, liste) ; la coquille (menu, ordre de la barre, bouton inerte, menu non modal, focus jamais rendu à son bouton). Les quatre fichiers : 21, 185, 178 et 37 tests |
+| Contre-épreuve par mutation, sur des copies | 35 mutations sur les cinq fichiers des titres. Premier passage : 26 tuées, 9 survivantes — six règles sans test (un titre dans une citation, le menu non modal, le focus jamais rendu à son bouton, six croisillons, un croisillon seul, l'échappement minimal d'un bloc qu'il faut échapper), un défaut redondant retiré (`?? false`, que la barre inerte couvrait déjà), et une mutation **meilleure que le code**, adoptée : la clôture d'un titre s'échappe aussi dans un bloc écrit nu, ce qui épargne les barres obliques du reste. Second passage : 34 sur 34. Chaque passage est borné en durée et en mémoire, et une copie qui lève dès son chargement prouve d'abord que le test charge bien la copie |
+| Navigateur, compte connecté sans rôle, aucune écriture | 24 vérifications : `# ` tapé, Maj+Entrée, le menu — niveaux, coche, focus rendu —, le markdown qui partirait (l'envoi reçoit un refus de la sonde avant le serveur) ; dans le fil, un message aux six titres — la réponse de lecture d'un fil est réécrite au vol, rien n'est écrit — : balises, ordre, tailles, graisse, couleur du titre 6. Contre-épreuve : les règles hors couche de parent62 injectées dans la page n'y changent rien ; la règle du module retirée de sa feuille, le titre 1 prend leur taille de page (30,4 px) |
+
+**Limites.**
+
+- Ni filet ni surligneur dans la barre, que le legacy a : le filet existe dans l'éditeur (`---`
+  tapé) sans bouton ; le surligneur — `==texte==`, que le legacy écrit — n'est lu ni par le fil ni
+  par l'éditeur.
+- Un titre en tête d'élément de liste (`- # titre`, écrit à la main ou par le legacy) se lit dans
+  le fil ; corrigé dans l'éditeur, il est réécrit sous sa puce, et le fil le sort alors de la liste.
+- Non vérifié : Ctrl+Alt+1 à 6 sur un vrai clavier, sous Windows comme ailleurs — lu dans la source
+  de la bibliothèque.
 
 ## 19. Relecture indépendante du 13/10
 
