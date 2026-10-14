@@ -165,16 +165,30 @@ relire le fil, jamais comme un échec franc.
 
 ## 4. Base de données
 
-La collection `comments` n'avait **que** l'index `_id_`. Deux index couvrent les accès du module :
+La collection `comments` n'avait **que** l'index `_id_`. Six index couvrent les accès du module
+(`Discussion::indexes()`) :
 
-| Index | Sert à |
-|---|---|
-| `{ contextType: 1, contextId: 1, created: -1 }` | tout accès à un fil part de (type, id) et trie par date |
-| `{ parentId: 1, created: 1 }` | charger les réponses d'un message précis |
+| Nom | Index | Sert à |
+|---|---|---|
+| `ctx_created` | `{ contextType: 1, contextId: 1, created: -1 }` | tout accès à un contexte part de (type, id) et trie par date |
+| `parent_created` | `{ parentId: 1, created: 1 }` | charger les réponses d'un message précis |
+| `carrier_ctx` | `{ carrierId: 1, contextType: 1, contextId: 1, created: -1 }` | porteur → contextes, sans charger un message ; et « ce qui reste à reprendre » (§9.10) |
+| `ctx_path` | `{ contextType: 1, contextId: 1, path: 1, created: -1 }` | un **fil** est (type, id, chemin) : lire les siens sans parcourir tout son contexte |
+| `author_created` | `{ author: 1, created: -1 }` | les fils où le lecteur écrit, d'après ses messages récents |
+| `space` | `{ spaceId: 1 }`, creux | commun → messages de son espace (§15.3) |
+
+⚠️ **Aucun code ne créait les deux premiers** : ils n'existaient qu'en base de développement, posés à
+la main. En production, c'est la **reprise** (§9.10) qui pose les six — une fois, par une action
+réservée au super-administrateur, jamais au détour d'une requête : `comments` est une grosse
+collection partagée. Tant qu'ils manquent, le module répond juste, par le chemin d'origine.
 
 Forme d'un document : `contextId`, `contextType`, `parentId` (**chaîne vide** à la racine, jamais
 `null`), `text`, `created` (**secondes UNIX**), `author` (identifiant), `views.<userId>.date`
-(support des non-lus), `vote.<userId>.status` + `voteCount.<statut>`, `mentions[]`, `path`.
+(support des non-lus), `vote.<userId>.status` + `voteCount.<statut>`, `mentions[]`, `path` — et,
+depuis le 13/10, le **porteur du fil** écrit sur le message : `carrierType` + `carrierId` (ou
+`carrierId: "none"` quand rien ne porte le fil), plus `spaceId` (le commun) sur un fil de l'espace
+d'un commun. Ces trois champs sont un **index**, pas une vérité (§9.10) ; un message qui ne porte
+pas `carrierId` est « à reprendre ».
 
 ⚠️ **Les formes de date divergent entre les deux bouts** : la base stocke des secondes UNIX, l'API
 rend un objet `Date`, et des documents legacy portent `{ sec, usec }`. Toute normalisation doit
@@ -388,8 +402,9 @@ Le plan initial allait du **porteur vers ses fils**. La mesure a imposé l'inver
 
 ⚠️ **Ce « 9 ms » a été mesuré avec 30 commentaires en base de dev** (relevé par la revue du 29/09).
 Le coût de ce sens suit la taille de `comments`, pas celle de `news` — c'est ce qui le rend
-préférable —, mais l'agrégation du rail groupe TOUTE la collection à chaque appel : en production,
-il reste à mesurer. La sortie prévue est la dénormalisation du porteur à l'écriture (§9.8).
+préférable —, mais l'agrégation du rail groupait TOUTE la collection à chaque appel. C'est réglé
+depuis le 13/10 : chaque message porte le porteur de son fil, et le rail ne lit plus que ce qui
+regarde son lecteur (§9.10, avec la mesure à 500 000 messages).
 
 Trois raisons rendent le premier sens intenable, et elles sont structurelles :
 
@@ -412,7 +427,7 @@ avec un porteur ses fils, avec un contexte ce seul fil.
 
 | `depth` | Déclenché | Rend | Coût |
 |---|---|---|---|
-| `rail` | défaut **sans** paramètre | porteurs et compteurs, **aucun titre de fil** | 1 agrégation + ≤ 2 lectures par `_id` |
+| `rail` | défaut **sans** paramètre | porteurs et compteurs, **aucun titre de fil** | 3 lectures d'index + 1 agrégation sur ce qui regarde le lecteur (§9.10) |
 | `fils` | défaut **avec** `carrier` | les fils d'**un** porteur, titrés | idem + résolution des contextes |
 | `fil` | `contextType` + `contextId` | un fil : compteurs, porteur, `canComment` | requête ponctuelle |
 | `all` | **jamais implicite** | porteurs **et** tous leurs fils | plafonné, `truncated` au-delà |
@@ -461,6 +476,11 @@ place d'un porteur.
 ```
 
 En mode `fil` : `thread`, `carrier` et `canComment` remplacent les deux listes.
+
+Les listes portent aussi `scanTruncated`, `carriersTruncated` (§9.9) et, depuis le 13/10,
+**`indexed`** : `true` quand la liste a été servie par l'index des porteurs, `false` quand elle l'a
+été par le balayage du parc (§9.10). C'est une **observation** — la réponse est la même dans les
+deux cas —, utile pour constater en production que la reprise a pris ; l'écran ne la lit pas.
 
 `key` est la clé qui transite dans l'URL du panneau : `type:id`, ou `type:id:path`.
 `last` est en **secondes**, la base mêlant `MongoDate` et entiers.
@@ -514,6 +534,9 @@ La contre-épreuve justifie la forme du `$match` : `ctx_created` étant
 `views.<userId>` reste un chemin dynamique, donc non indexable : le `$match` sélectif doit
 **toujours** précéder le test de non-vu, ce que fait le pipeline.
 
+Ce tableau décrit le chemin d'**origine** (le balayage), qui sert encore tant que la reprise n'a
+pas tourné. Les plans du chemin indexé sont au §9.10.
+
 ### 9.7 Gardes
 
 - connexion exigée (`Person::logguedAndValid()`), refus en 200 `result/msg` ;
@@ -561,11 +584,9 @@ une page d'erreur HTML au lieu d'un JSON. Son motif `/^[0-9a-z]{24}$/` accepte d
 lettres hors hexadécimal. Le module valide donc lui-même, sans rien construire. **Tout appelant
 qui passe une entrée utilisateur à cette fonction a le même défaut.**
 
-**Passage à l'échelle.** Le coût est proportionnel à la collection `comments`, jamais à `news`.
-L'agrégation est servie par un index, mais elle le parcourt en entier. La voie si `comments`
-devenait très volumineuse est de **dénormaliser le porteur sur le commentaire** à l'insertion
-(`carrierType`/`carrierId`, plus un index `{carrierId, created}`) : le rail deviendrait une
-requête ponctuelle. Cela touche le chemin d'écriture, et n'a donc pas été fait ici.
+**Passage à l'échelle.** Le coût était proportionnel à la collection `comments` : l'agrégation,
+servie par un index, le parcourait en entier. La voie annoncée ici — écrire le porteur sur le
+message à l'insertion — a été prise le 13/10 : §9.10.
 
 ### 9.9 Les éléments vierges, et le tri qui coupait trop tôt (24/09)
 
@@ -632,7 +653,9 @@ sur un élément de l'utilisateur, quel que soit le volume du parc.
 **directement** sur un porteur de l'utilisateur. Les fils **indirects** — sur une actualité, un
 formulaire, une réponse, une action sans contribution nominative — ne passent que par
 l'agrégation générale : au-delà de `SCAN_MAX` (5 000 fils sur la plateforme), ils sont encore
-coupés **avant** le cadrage. `scanTruncated` le dit ; la sortie est la dénormalisation du §9.8.
+coupés **avant** le cadrage. `scanTruncated` le dit. **Levée le 13/10** dès que la reprise a
+tourné (§9.10) : le rail part alors de ce qui regarde le lecteur, et le budget ne se compte plus
+sur le parc mais sur ses propres fils.
 
 ⚠️ **Chaque branche du `$or` porte son `contextType`.** Contre-épreuve rejouée le 24/09 :
 `{contextType, contextId: {$in}}` donne `SUBPLAN → FETCH → OR → IXSCAN → IXSCAN` ; le même
@@ -652,6 +675,174 @@ du SDK le 02/10 seulement : le schéma, fermé, l'aurait refusé, cf. §14). **A
 **Preuve de rétro-compatibilité, exécutable** : `{}` contre `{includeEmpty: "0"}` rend
 exactement le même ensemble de porteurs ayant des fils — écart 0 sur 4 porteurs. La sonde J9
 reste **21/21 sans modification**, et la sonde J13 couvre les six points de ce lot.
+
+### 9.10 Le rail ne lit plus que ce qui regarde son lecteur (13/10)
+
+Le défaut annoncé au §9.8, mesuré : à chaque appel, le rail **groupait toute la collection
+`comments`**, puis résolvait le porteur de jusqu'à 5 000 fils de la plateforme, pour n'en garder
+que ceux du lecteur. Sur un parc de 500 000 messages : **1,85 s et 500 000 messages lus par
+appel**. L'espace d'un commun avait le même défaut à l'échelle de son appel (§15.3), et la lecture
+d'un seul fil d'un formulaire très commenté aussi.
+
+#### Ce qu'on écrit sur le message
+
+| Champ | Vaut | Écrit quand |
+|---|---|---|
+| `carrierType`, `carrierId` | le porteur du fil, tel que le registre le résout (§9.5) | le contexte est d'un des dix types commentables |
+| `carrierId: "none"` (seul) | rien ne porte ce fil — 52 % des formulaires, 22 % des actualités | idem, sans porteur résolu |
+| `spaceId` | le commun, pour un fil de formulaire au chemin d'espace (§15.1) | en plus des précédents |
+
+Trois endroits les écrivent, avec **la même fonction** (`Discussion::carrierFieldsOf`, qui passe par
+`resolveRefs`, la source unique du porteur d'un fil) : `Comment::insert`, `Comment::insertFromWebhook`,
+et la reprise des messages existants. À l'insertion, c'est une ou deux lectures par `_id` de plus,
+et **poster n'en dépend jamais** : `carrierFields` ne lève pas ; en cas d'échec le message part
+sans ses champs et reste « à reprendre ». Un message d'un type hors liste ne reçoit rien, et aucune
+collection n'est lue pour lui — le type de contexte choisirait sinon une collection.
+
+« À reprendre » se lit à l'**absence** de `carrierId`. D'où la sentinelle `"none"` : sans elle, les
+fils que rien ne porte resteraient à reprendre pour toujours.
+
+#### Un index, jamais une vérité
+
+C'est le parti pris du lot, et ce qui le rend sûr : **le porteur écrit sur le message ne sert qu'à
+CHOISIR quoi lire.** Le porteur d'un fil reste résolu depuis son contexte, à la lecture ; le
+cadrage, les fils réservés (actualité privée, discussion d'appel), les compteurs s'appliquent
+ensuite, à l'identique, sur des fils **entiers**. Une valeur périmée ou forgée peut donc ajouter un
+candidat — aussitôt rejugé — ou en manquer un ; elle ne peut ni ouvrir un fil réservé, ni fausser
+un compteur. Aucune règle de droits n'a été touchée.
+
+#### Ce que le rail lit
+
+`Discussion::listingThreads` choisit les candidats ; `DiscussionsAction::listing` fait le reste,
+sans changement. Quatre agrégations, dans cet ordre :
+
+| # | Lecture | Index | Charge des messages ? |
+|---|---|---|---|
+| 1 | reste-t-il des messages à reprendre ? (`carrierId` absent, bornée à 501) | `carrier_ctx` | non : rien à lire une fois la reprise finie |
+| 2 | les **contextes** des porteurs du lecteur — son cadrage, `follows` compris (§9.9) | `carrier_ctx`, couvrant | non |
+| 3 | les **fils** où il écrit, d'après ses 5 000 messages les plus récents — au chemin près | `author_created` | les siens seulement |
+| 4 | l'agrégation `threads()` d'origine, restreinte à ces candidats | `ctx_created`, `ctx_path` | ceux de ces fils |
+
+Les contextes de (2) se lisent **en entier** : tous leurs fils regardent le lecteur. Les fils de
+(3) se lisent **au chemin près** : un message posté dans UNE question d'un appel ne fait pas lire
+tout l'appel (mesuré sur le parc de 500 000 : 42 168 messages lus par cette agrégation avant ce
+réglage, 2 188 après). S'y ajoutent, lus d'office :
+les contextes des messages pas encore repris, ce qui est « chez » le lecteur (ses porteurs, ses
+actions — même si le porteur écrit sur leurs messages est faux), le porteur demandé en mode `fils`,
+et les actions où l'on s'apprête à proposer « Démarrer la discussion ». Ce dernier point vient du
+banc : sans lui, un fil d'action que la sélection avait manqué reparaissait **à lancer**, par-dessus
+ses propres messages.
+
+Le mode `fils` ne lit que les contextes du porteur demandé (lectures 1, 2 et 4) ; le mode `fil` et
+`seen` n'ont pas changé.
+
+**Le `$or` est à la racine du filtre.** `threads()` recevait ses branches à côté d'autres
+conditions ; MongoDB choisit alors **un** plan d'ensemble parmi quelques combinaisons d'index, et
+la bonne n'en est pas toujours — mesuré : la branche d'un fil précis et celle d'un commun
+retombaient sur `ctx_created` et relisaient tout l'appel. Le statut descend donc dans chaque
+branche (`rootedOr`), et le `$or` devient le filtre entier : chaque branche est planifiée pour
+elle-même (étage `SUBPLAN`). La liste blanche des types, qui gardait la racine, est vérifiée sur
+chaque branche ; une branche qui ne la passe pas fait revenir au filtre d'origine.
+
+#### La bascule, sans réglage
+
+Le chemin indexé sert **si et seulement si** ses quatre index existent (`ctx_created`, `ctx_path`,
+`carrier_ctx`, `author_created` — reconnus à leur clé, quel que soit leur nom) **et** s'il reste au
+plus 500 messages à reprendre, lesquels sont alors lus comme candidats. Sinon : le balayage
+d'origine, à l'identique. Il n'y a donc ni drapeau à poser ni ordre à respecter entre le
+déploiement et la reprise : avant, pendant, après, et si elle n'est jamais lancée, **la réponse est
+la même** — seul son coût change. `indexed` (§9.4) dit quel chemin a servi.
+
+#### La reprise — ce qu'il faut faire en production
+
+`POST /co2/comment/carrierindex`, réservé au **super-administrateur** (un compte simple, un admin
+d'élément : `forbidden` ; une simple visite en GET : `bad-request`). Chaque appel pose les index
+qui manquent, puis écrit les champs sur un lot de messages (5 000 lus par défaut, `limit` jusqu'à
+50 000, vingt secondes au plus) et dit s'il en reste (`more`). Un lot se traite **par fil** : une
+écriture reprend tous les messages du fil. Rejouer n'écrase rien — seuls les messages sans
+`carrierId` sont écrits — et deux reprises simultanées ne se gênent pas.
+
+1. Déployer `citizenToolKit` et `co2`. Rien ne change encore : balayage, comme avant.
+2. Connecté en super-administrateur, depuis la console du navigateur :
+
+   ```js
+   for (;;) {
+     const r = await (await fetch("/co2/comment/carrierindex", { method: "POST" })).json();
+     console.log(r);
+     if (!r.result || !r.more) break;
+   }
+   ```
+
+3. Constater `"indexed": true` dans une réponse de `discussions`.
+
+Mesuré en développement : 705 messages (108 fils) repris en un appel de 88 ms ; six index
+construits en 6,7 s sur 500 000 messages. Sur une collection très volumineuse, les index peuvent se
+poser à la main, aux heures creuses, avant l'étape 2 (les commandes sont en tête de
+`Discussion::indexes()`). Pour revenir en arrière : retirer les trois champs
+(`$unset` de `carrierType`, `carrierId`, `spaceId`) — le balayage reprend de lui-même.
+
+#### Mesures
+
+Base **jetable** de 100 000 puis 500 000 messages au format de la vraie collection, les six index
+posés, agrégations envoyées telles que le PHP les envoie, médiane de sept passes, sur une machine
+de développement. Les données sont **synthétiques** : elles disent une forme de courbe, pas un
+temps de production.
+
+| Lecture | 100 000 messages | 500 000 messages |
+|---|---|---|
+| Rail — **avant** (balayage) | 411 ms · 100 000 lus | **1 854 ms · 500 000 lus** |
+| Rail — **après**, lecteur de 61 porteurs | 16 ms · 1 494 lus | **27 ms · 2 416 lus** |
+| Rail — après, lecteur **membre du porteur d'un appel de 40 000 messages** | 60 ms · 9 586 lus | 249 ms · 42 839 lus |
+| Lire UN fil d'un gros appel — avant / après (`ctx_path`) | 12 ms · 8 000 lus → 0 ms · 5 | 56 ms · 40 000 lus → 0 ms · 5 |
+| Espace d'un commun — avant / après (`space`) | 16 ms · 8 020 lus → 1 ms · 20 | 74 ms · 40 020 lus → 1 ms · 20 |
+
+Le balayage croît avec le parc ; le rail indexé, avec ce que le lecteur suit. Poids des index à
+500 000 messages (données : 238 Mo) : 6 à 8 Mo chacun, 0,2 Mo pour `space`.
+
+#### Limites
+
+- **Un lecteur membre du porteur d'un appel très commenté paie encore la taille de cet appel** :
+  tous ses fils le regardent, donc tous ses messages sont lus (249 ms pour 40 000). C'est la règle
+  de cadrage qui le veut, pas un oubli ; la sortie serait de ne plus compter les non-lus message
+  par message (`views.<userId>` n'est pas indexable), ce qui est un autre chantier.
+- **Un porteur qui change** (une action déplacée d'un projet à un autre) laisse des messages au
+  porteur périmé : le fil manque au rail de ses nouveaux lecteurs jusqu'au prochain message qu'on
+  y poste, qui porte le bon. Il ne manque jamais à qui l'ouvre, ni à qui y écrit, ni à qui en est
+  contributeur. Pour réparer sans attendre : retirer les champs des messages concernés, puis
+  relancer la reprise.
+- **Trois plafonds**, tous dits par `scanTruncated` : 5 000 contextes de porteurs (les plus
+  récents), les fils tirés des 5 000 derniers messages du lecteur, 5 000 fils rendus. Au-delà de
+  200 contextes où il écrit sous un chemin, les suivants se lisent en entier.
+- **Un message écrit par une autre voie** que `insert` et `insertFromWebhook` n'a pas ses champs :
+  il est lu comme « à reprendre ». Au-delà de 500, le rail repasse au balayage — relancer la
+  reprise.
+- **La taille de `comments` en production n'est pas connue d'ici**, ni ses index. À relever avant
+  la reprise : `db.comments.count()` et `db.comments.getIndexes()`.
+- L'insertion elle-même n'est tenue par aucun test versionné (le backend n'a pas d'outillage) :
+  elle a été vérifiée par deux vrais messages postés puis supprimés. `insertFromWebhook`, lui, n'a
+  **aucun appelant** dans les dépôts lus ici : sa ligne n'a pas pu être exercée de bout en bout.
+
+#### Preuves
+
+| Ce qui est prouvé | Comment |
+|---|---|
+| Le chemin indexé rend **exactement** ce que rend le balayage, à chaque étape de la reprise | banc sans base (moteur Mongo en mémoire, mondes tirés au hasard : porteurs, liens, statuts, chemins, contextes disparus) — rail, tout, fils d'un porteur, espace, pour chaque lecteur : 40 mondes en PHP 7.4 (194 289 vérifications), 30 d'une autre graine en PHP 8.2 (142 392) |
+| … et sur le **vrai** backend | 126 appels (quatre rôles : visiteur, compte simple, admin, super-admin) identiques au relevé pris avant le lot, à six états : code sans index, reprise partielle, reprise finie, index incomplets, dessin final, état livré ; puis 507 appels identiques sur 705 messages semés sur de vrais contextes (rien de repris → balayage ; repris en partie ; repris en entier), nettoyés |
+| Des champs périmés ou **forgés** ne montrent rien de plus | même banc : porteurs et communs tirés au hasard sur les messages — tout fil rendu existe à l'identique dans le balayage, aucun compteur ne le dépasse |
+| Le banc **mord** | contre-épreuve par mutation : 105 défauts introduits un à un dans le modèle, 24 dans l'action du rail — chacun fait échouer le banc, et toujours par une règle (aucun par le délai ni par le plafond de mémoire qui bornent chaque passage) |
+| Le rail indexé ne groupe jamais la collection | même banc : forme et ordre des quatre agrégations, branches du `$or`, lots de 500, plafond des 5 000 contextes vérifié à ce qu'on lit |
+| La reprise | même banc (bornée, rejouable, n'écrit que ses trois champs, ne touche ni un type hors liste ni un document sans contexte) ; vrai backend : droits d'accès, quatre index créés, 32 messages repris |
+| L'insertion écrit les champs | deux vrais messages (fil général d'un commun, fil de ligne de dépense), relus en base, supprimés ; documents porteurs restaurés |
+| Les plans de requête | `explain` sur la base de développement et sur la base de mesure |
+| L'écran lit toujours | navigateur, compte admin, sans écriture : le rail est servi par l'index, un fil s'ouvre avec ses messages — le SDK, qui valide les réponses, accepte les trois champs de plus —, l'espace d'un commun rend ses fils |
+
+Ces preuves ont trouvé trois défauts avant qu'ils n'existent ailleurs : le banc, le fil d'action
+qui reparaissait « à lancer » ; la mesure, l'appel relu en entier pour un seul message, puis le plan
+d'ensemble du `$or` — visible à 500 000 messages, invisible sur les 33 de la base de développement.
+La contre-épreuve, elle, a trouvé trois trous du banc — le fil d'un porteur vierge, proposé à son
+membre et à lui seul ; le plafond des contextes, qu'un autre plafond masquait dans la réponse ; la
+bascule, jugée dans un état où le balayage servait de toute façon — et deux lignes sans effet,
+retirées de l'action.
 
 ## 10. Le panneau « Discussions »
 
@@ -1231,6 +1422,23 @@ général, déjà commité :
 
 La clé d'un fil (`type:id`, plus `:path`) n'a plus qu'une écriture, `threadValue` (`lib/filKey.ts`) :
 celle de l'adresse, du cache et du repli de `readThread`.
+
+### 10.15 « Contextes », et un « + » qui se voit (13/10)
+
+Deux retouches demandées à l'écran, sans effet sur les données ni sur les clés :
+
+- **La première colonne du panneau général s'intitule « Contextes »** (« Contexts » en anglais), et
+  non plus « Espaces ». Tous les libellés qui nomment la même chose ont suivi — « Sans contexte »,
+  « Choisissez un contexte », « Retour aux contextes », « Rechercher un contexte ou une
+  discussion », le décompte de la recherche… — pour qu'un titre et son bouton de retour ne se
+  contredisent pas. Les **clés** n'ont pas bougé (`panel.holders`, `panel.noCarrier`…), le code dit
+  toujours `carrier` / porteur, et les sections datées plus haut citent les libellés tels qu'ils
+  étaient. « Espace de discussion » reste le nom de l'espace d'un **commun** (§15) : ce n'est pas
+  la même chose, et son message « Cet espace de discussion est introuvable. » n'a pas changé.
+- **Le « + » de l'espace d'un commun (« Nouvelle discussion ») est en couleur primaire.** Formulaire
+  ouvert, il passe en `secondary` : il n'est plus alors que ce qui referme le formulaire, et
+  l'action à faire est « Créer » — une seule action primaire à l'écran. Tenu par
+  `SpacePanel.test.tsx`.
 
 ## 11. Non-lus et temps réel
 
@@ -1889,6 +2097,11 @@ Régénération, dans cet ordre : `generate:module:publish` → `generate:method
 `lint` → `build:esm:rollup` → `build:node` → `build:browser` → `build:types`. Les pièges qui
 invalident une vérification naïve sont au §2.2 : le runtime lit le module **généré**, jamais le JSON.
 
+**Rien à demander pour le lot du 13/10 (§9.10).** `GET_DISCUSSIONS` rend un champ de plus,
+`indexed` (booléen) : le schéma de réponse est ouvert, il passe tel quel, et l'écran ne le lit pas.
+L'action `carrierindex` (la reprise) est une opération d'administration : elle ne se déclare pas au
+SDK.
+
 ### 14.2 `GET_COMMENTS_BY_PATH` — lire UN fil d'un élément
 
 Un formulaire porte **un fil par question** : c'est le `path` du message. `GET_COMMENTS` ne connaît
@@ -2248,11 +2461,16 @@ milliseconde ici). Pour un formulaire qui n'est pas `aap`, c'est `forms` qui se 
 sans index non plus. Le reste se lit par `_id` : la réponse, l'appel, sa configuration, l'élément
 qui le porte.
 
-⚠️ **Ce coût suit l'appel, pas le commun.** L'index mène aux messages de l'**appel** ; le motif du
-chemin, lui, ne trie qu'après lecture. Sur un appel dont des centaines de communs sont commentés,
-chaque ouverture d'espace relit donc tous leurs messages pour n'en garder qu'une poignée. Invisible
-en développement (une trentaine de messages en tout) ; la sortie est la même qu'au §9.8 — écrire
-le commun sur le message à l'insertion —, et elle touche le chemin d'écriture.
+**Ce coût suivait l'appel, pas le commun** : l'index menait aux messages de l'**appel**, et le motif
+du chemin ne triait qu'après lecture — sur un appel dont des centaines de communs sont commentés,
+chaque ouverture d'espace relisait tous leurs messages pour n'en garder qu'une poignée. **Réglé le
+13/10** (§9.10) : un message d'un fil d'espace porte son commun (`spaceId`, écrit à l'insertion et
+par la reprise). Dès que ses index existent, l'espace lit trois branches dans **une** agrégation :
+le fil général (`answers`, inchangé), les messages qui portent ce commun (index `space`), et les
+messages de l'appel pas encore repris, filtrés par le motif comme avant (index `carrier_ctx`, vide
+une fois la reprise finie). `spaceId` ne fait que **choisir** des messages : chaque fil rendu reste
+rejugé sur son chemin (`parseSpacePath`, audience). Mesuré sur un appel de 40 000 messages :
+**74 ms et 40 020 messages lus avant, 1 ms et 20 après**, pour les mêmes fils.
 
 ### 15.4 Ce que la liste rend, et à qui
 
@@ -2491,8 +2709,8 @@ corrections et date de la nuit du 12 au 13/10.
   tout) y mènent vite ; le bouton relance alors une demande que le SDK refuse aussitôt, et l'écran
   redit la panne. Antérieur à ces lots, et vrai de tout appel du site. Lu au navigateur le 12/10 :
   `space` coupé au réseau, cinq échecs, puis plus aucune requête jusqu'à la minute écoulée.
-- **Le coût d'un espace suit l'appel**, pas le commun (§15.3) : à mesurer sur des données réelles
-  avant une mise en production sur un appel très commenté.
+- ~~Le coût d'un espace suit l'appel, pas le commun~~ — réglé le 13/10 (§15.3, §9.10), une fois la
+  reprise lancée en production.
 - **Se connecter depuis la modale la referme un instant** : la connexion change les clés de la
   fiche, qui repasse par son écran de chargement et remonte le bouton. L'adresse rouvre la modale
   sur le même fil ; le pli « Sans discussion » et la position de lecture ne sont pas gardés.
@@ -2590,7 +2808,8 @@ premier message (§3).
 
 - **Le « + »** vit dans l'en-tête de la colonne des fils de `SpacePanel`, et n'existe que si
   `creatableAudiences` n'est pas vide. Un visiteur, un lecteur sans rôle sur le commun ne le voient
-  pas ; un espace refusé n'en annonce aucune.
+  pas ; un espace refusé n'en annonce aucune. Il porte la couleur **primaire** depuis le 13/10
+  (§10.15) : en `ghost`, il ne se trouvait pas.
 - **`NewDiscussionForm`** s'ouvre **en ligne**, en tête de la colonne — pas un dialogue dans le
   dialogue : un nom (120 caractères), et les audiences annoncées, chacune avec ce qu'elle veut
   dire. « Privée » est cochée d'office quand elle est offerte, comme dans le legacy : ouvrir une
