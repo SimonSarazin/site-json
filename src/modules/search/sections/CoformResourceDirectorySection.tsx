@@ -32,7 +32,6 @@ import {
   PRICE_FILTER_GROUPS,
   buildResourceDirectoryFilters,
   parseResourceDirectoryItem,
-  resolveAnswerParent,
 } from "../lib/resourceDirectory";
 import {
   CAPACITY_FILTER_RANGES,
@@ -386,14 +385,11 @@ function ResourceDirectoryList({
   );
 
   // Lieux porteurs de TOUTES les ressources chargées (et pas des seules affichées) : le filtre de zone
-  // en a besoin pour décider de ce qui s'affiche.
-  const parentIdOf = useMemo(
-    () => new Map(items.map((it) => [it.id, resolveAnswerParent(it.serverData, resourceTypes, finderSuffix)?.id])),
-    [items, resourceTypes, finderSuffix],
-  );
+  // en a besoin pour décider de ce qui s'affiche. `model.parent` = `resolveAnswerParent`, déjà résolu
+  // par `parseResourceDirectoryItem`.
   const parentIds = useMemo(
-    () => [...parentIdOf.values()].filter((v): v is string => !!v),
-    [parentIdOf],
+    () => items.map((it) => it.model.parent?.id).filter((v): v is string => !!v),
+    [items],
   );
   const { parents, isLoading: parentsLoading } = useResourceParentsQuery(parentIds, { costumSlug, contextId, contextType });
 
@@ -408,11 +404,11 @@ function ResourceDirectoryList({
     const filtered = items.filter((it) => {
       if (typeSel.length > 0 && !(it.model.type && typeSel.includes(it.model.type.id))) return false;
       if (!matchesCapacity(resourceCapacity(it.model.stats[0]), capacitySel)) return false;
-      const parentId = parentIdOf.get(it.id);
+      const parentId = it.model.parent?.id;
       return matchesZones(parentId ? parents.get(parentId)?.zones : undefined, zones);
     });
     return limit === undefined ? filtered : filtered.slice(0, limit);
-  }, [aucunLieu, items, selectedFilters, zones, parentIdOf, parents, limit]);
+  }, [aucunLieu, items, selectedFilters, zones, parents, limit]);
 
   return (
     <ResourceDirectoryActionsProvider value={showFilters ? { activeParent, setActiveParent } : null}>

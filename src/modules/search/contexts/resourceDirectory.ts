@@ -9,8 +9,6 @@ export interface ResourceParentInfo {
   streetAddress?: string;
   postalCode?: string;
   addressLocality?: string;
-  /** `address.level1` — sert la garde région de la section. */
-  level1?: string;
   /** Zones de l'adresse par niveau (`level1`…`level4` → id de zone) — filtre de zone de l'annuaire. */
   zones?: Partial<Record<string, string>>;
   coords?: { lat: number; lng: number } | null;

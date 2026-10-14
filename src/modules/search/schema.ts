@@ -1421,8 +1421,9 @@ export const CoformResourceDirectorySectionSchema = z.object({
     /**
      * Garde géographique : ne conserve que les ressources dont le tiers-lieu
      * porteur est dans cette zone (`address.level1`). Reproduit
-     * `filters[address.level1]` du legacy — appliqué CÔTÉ CLIENT après
-     * résolution des lieux porteurs (l'`answer` ne porte pas d'adresse fiable).
+     * `filters[address.level1]` du legacy — envoyé au backend (`defaultFilters`),
+     * qui retire la clé puis filtre sur l'adresse des lieux porteurs résolus
+     * (l'`answer` ne porte pas d'adresse fiable).
      */
     scope: z.object({ addressLevel1: z.string() }).optional(),
     /** Colonnes de la grille de résultats. */
