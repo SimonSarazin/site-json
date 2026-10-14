@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Calendar, Mic } from "lucide-react";
 import { AudioPlayer } from "@/components/media/AudioPlayer";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { ImageViewer } from "@/components/ui/image-viewer";
 import { formatDateLong } from "@/helpers/formatDate";
 import { useT } from "@/hooks/useT";
 import { ClickableFacet } from "../../ClickableFacet";
@@ -25,6 +27,9 @@ export default function PreviewTestimonialBubble({ item, list, onClose }: Previe
   const accentField = testimonial?.accent?.field;
   const accentColors = testimonial?.accent?.colors;
   const contain = testimonial?.imageFit === "contain";
+  // Lightbox plein écran au clic sur l'illustration (`ImageViewer`, déjà utilisé par les galeries) —
+  // un seul cliché ici, donc pas de navigation précédent/suivant, juste le zoom/pan.
+  const [imageOpen, setImageOpen] = useState(false);
 
   return (
     /* `min-w-0` : même raison que sur `PreviewResourceCard` (voir son commentaire de racine) — sans lui,
@@ -37,18 +42,35 @@ export default function PreviewTestimonialBubble({ item, list, onClose }: Previe
           écran (même plafond que la preview « resource »). Le conteneur pose la croix de fermeture
           par-dessus : c'est `DetailsModeDialog` qui lui donne sa pastille de contraste. */}
       {data.image && (contain ? (
-        <div className="relative flex max-h-[30vh] w-full shrink-0 items-center justify-center overflow-hidden bg-muted">
+        <button
+          type="button"
+          onClick={() => setImageOpen(true)}
+          aria-label={t("testimonial.viewImage")}
+          className="relative flex max-h-[30vh] w-full shrink-0 cursor-zoom-in items-center justify-center overflow-hidden bg-muted"
+        >
           {/* Fond flou : même URL que l'image nette → un seul téléchargement (cache). */}
           <OptimizedImage src={data.image} alt="" width={840}
             className="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-lg" />
           <OptimizedImage src={data.image} alt={data.title} width={840}
             className="relative h-auto max-h-[30vh] w-auto max-w-full object-contain" />
-        </div>
+        </button>
       ) : (
-        <div className="relative aspect-[21/9] max-h-[30vh] w-full shrink-0 overflow-hidden bg-muted">
+        <button
+          type="button"
+          onClick={() => setImageOpen(true)}
+          aria-label={t("testimonial.viewImage")}
+          className="relative aspect-[21/9] max-h-[30vh] w-full shrink-0 cursor-zoom-in overflow-hidden bg-muted"
+        >
           <OptimizedImage src={data.image} alt={data.title} width={840} className="h-full w-full object-cover" />
-        </div>
+        </button>
       ))}
+      {data.image && (
+        <ImageViewer
+          images={[{ src: data.image, name: data.title }]}
+          open={imageOpen}
+          onClose={() => setImageOpen(false)}
+        />
+      )}
 
       {/* En-tête : catégorie + titre + attribution (accent · date) */}
       <div className="shrink-0 space-y-3 border-b border-border py-4 pl-5 pr-12">
