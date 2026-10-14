@@ -30,6 +30,7 @@ import {
   normalizeFundingEnvelope,
   type FundingEnvelopeNormalizedData,
 } from "../hooks/useFundingEnvelope";
+import { normalizeEntityType } from "../utils/dataTransform";
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -46,14 +47,6 @@ export interface PrefetchFundingEnvelopeParams {
   profileSlug?: string;
   /** Utilisateur connecté (sert au `getFormData`). */
   me?: User | null;
-}
-
-function normalizeEntityType(type: string | undefined | null): string {
-  const lowered = (type || "").toLowerCase();
-  if (lowered.includes("organization")) return "organizations";
-  if (lowered.includes("project")) return "projects";
-  if (lowered.includes("citoyen") || lowered.includes("user")) return "citoyens";
-  return lowered;
 }
 
 /**

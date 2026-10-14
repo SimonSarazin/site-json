@@ -27,6 +27,11 @@
       ]
     }
   },
+  "finderAddNew": {
+    "organizations": "add-organization",
+    "projects": "add-project",
+    "poi": "add-poi"
+  },
   "editModals": {
     "organizations": {
       "vierge": "edit-profile",

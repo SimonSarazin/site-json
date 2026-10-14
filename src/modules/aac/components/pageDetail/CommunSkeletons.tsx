@@ -94,13 +94,13 @@ export function TocEntriesSkeleton({ count = 3 }: { count?: number }) {
 }
 
 /**
- * Un bouton d'action en attente, aux dimensions d'un `<Button size="sm">` (`h-8`).
+ * La phase du commun en attente, aux dimensions d'une pastille de statut.
  *
- * Sert là où l'action DÉPEND de la donnée : le contrôle de projet affichait
- * « Générer » / « Associer » — les boutons de l'état « pas de projet » — le temps que
- * l'enveloppe réponde, avant de basculer sur « Ouvrir le projet ». Proposer une action
- * fausse puis la remplacer est pire qu'attendre : l'utilisateur pouvait cliquer dessus.
+ * Tant que l'enveloppe n'a pas répondu, on ignore s'il existe un projet : ni « Phase
+ * proposition », ni « Ouvrir le projet », ni « Générer » / « Associer » dans « ⋯ ». Proposer une
+ * action fausse puis la remplacer est pire qu'attendre : l'utilisateur pouvait cliquer dessus, et
+ * générer un second projet, irréversible, sur un commun qui en a déjà un.
  */
-export function ActionButtonSkeleton({ className }: { className?: string }) {
-    return <Skeleton className={cn("h-8 w-36 rounded-md", className)} aria-busy="true" />;
+export function StatusPillSkeleton({ className }: { className?: string }) {
+    return <Skeleton className={cn("h-6 w-28 rounded-full", className)} aria-busy="true" />;
 }

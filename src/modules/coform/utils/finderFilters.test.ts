@@ -3,6 +3,7 @@ import {
   buildFinderMongoFilters,
   buildFinderSearchParams,
   placeKindSourceKeys,
+  primaryFinderType,
   PLACE_KIND_SOURCE_KEYS,
 } from "./finderFilters";
 import type { FinderFilter } from "../types";
@@ -155,6 +156,22 @@ describe("buildFinderSearchParams", () => {
     expect(
       buildFinderSearchParams({ type: "organizations", filters: [], notSourceKey: true, sourceKey: [] }),
     ).toEqual({ searchType: ["organizations"], notSourceKey: true });
+  });
+});
+
+describe("primaryFinderType", () => {
+  it("un type seul est rendu tel quel", () => {
+    expect(primaryFinderType("projects")).toBe("projects");
+  });
+
+  it("une LISTE de types → le premier", () => {
+    expect(primaryFinderType(["organizations", "projects"])).toBe("organizations");
+    expect(primaryFinderType(["projects", "organizations"])).toBe("projects");
+  });
+
+  it("une config sans type ne lève pas : `undefined`, comme avant ce helper", () => {
+    expect(primaryFinderType(undefined as never)).toBeUndefined();
+    expect(primaryFinderType([])).toBeUndefined();
   });
 });
 

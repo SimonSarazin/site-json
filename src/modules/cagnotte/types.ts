@@ -104,12 +104,17 @@ export type FundingMilestone = {
 };
 
 export type FundingPaymentMethods = {
+  /** Moyens configurés pour l'entité, tels qu'annoncés par `getEnvelopeData`. */
+  stripe?: boolean;
+  helloasso?: boolean;
+  /** Le backend facture et enregistre les paiements : requis pour le paiement en ligne. */
+  serverSettlement?: boolean;
   stripePublicKey?: string;
   helloassoPublicKey?: string;
   helloAssoPublicKey?: string;
   helloassoClientId?: string;
   helloAssoClientId?: string;
-  [key: string]: string | undefined;
+  [key: string]: string | boolean | undefined;
 };
 
 export type FundingProject = {
