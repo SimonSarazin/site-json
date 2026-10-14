@@ -1,5 +1,20 @@
 import MarkdownIt from "markdown-it";
 
+type Jeton = ReturnType<MarkdownIt["parseInline"]>[number];
+
+/**
+ * Un signe échappé DANS la description d'une image (`![a \] b](…)`) reste un jeton `text_special`,
+ * que `renderInlineAsText` — d'où sort l'attribut `alt` — ignore : la description perdait ses
+ * crochets, ses étoiles, ses barres obliques. `markdown-it` ne les rend au texte (`text_join`) que
+ * pour les jetons directs d'un bloc, jamais pour ceux d'une image. On finit son travail.
+ */
+function signesDesDescriptions(jetons: readonly Jeton[] | null): void {
+  for (const jeton of jetons ?? []) {
+    if (jeton.type === "text_special") jeton.type = "text";
+    if (jeton.type === "image") signesDesDescriptions(jeton.children);
+  }
+}
+
 /**
  * Le dialecte markdown d'un message — UN réglage, pour le fil qui rend et pour l'éditeur qui relit.
  *
@@ -10,8 +25,10 @@ import MarkdownIt from "markdown-it";
  * - `html: false` échappe tout HTML écrit par l'auteur ;
  * - `linkify: true` fait un lien d'une adresse nue ;
  * - `breaks: true` : dans une discussion, un retour à la ligne simple est voulu par qui écrit ;
- * - `image` est coupée À LA SOURCE : une image distante ne peut pas exister dans la sortie,
- *   plutôt que d'en être retirée après coup ;
+ * - `![description](adresse)` est une image DANS le texte (décision de l'user, 14/10/2026). Ce que le
+ *   fil en fait dépend de son adresse (`lib/inlineImages`) : importée sur la plateforme, elle
+ *   s'affiche ; tierce, elle attend un clic du lecteur ; `data:` ou autre, jamais. Le moteur se
+ *   contente de la lire — c'est le fil qui décide, image par image (`CommentMarkdown`) ;
  * - un titre s'écrit à croisillons, six niveaux (`# titre` … `###### titre`) — ce qu'écrit
  *   l'éditeur du legacy. Le titre SOULIGNÉ (`lheading`) reste coupé : une ligne suivie de `---`
  *   est un texte suivi d'un filet, comme le fil l'a toujours rendu, et non un titre surprise.
@@ -20,5 +37,13 @@ import MarkdownIt from "markdown-it";
  * mention, sans que l'un ne modifie l'autre.
  */
 export function createCommentMarkdown(): MarkdownIt {
-  return new MarkdownIt({ html: false, linkify: true, breaks: true }).disable(["lheading", "image"]);
+  const md = new MarkdownIt({ html: false, linkify: true, breaks: true }).disable(["lheading"]);
+  md.core.ruler.after("text_join", "comment_image_alt", state => {
+    for (const bloc of state.tokens) {
+      for (const jeton of bloc.children ?? []) {
+        if (jeton.type === "image") signesDesDescriptions(jeton.children);
+      }
+    }
+  });
+  return md;
 }

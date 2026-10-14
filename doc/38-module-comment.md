@@ -310,9 +310,11 @@ déjà en place dans le dépôt (`ProseContent`) — et non `react-markdown`. Un
 markdown aurait voulu dire deux garanties de sécurité à tenir.
 
 La restriction est obtenue **à la source**, ce qu'un filtrage après coup ne donne pas :
-`html: false` échappe tout HTML écrit par l'auteur, et les règles `lheading` et `image` sont
-désactivées — une image distante, ou un titre « souligné » (une ligne suivie de `===` ou de `---`),
-**ne peuvent pas exister** dans la sortie. Les titres à croisillons, eux, sont rendus depuis le
+`html: false` échappe tout HTML écrit par l'auteur, et la règle `lheading` est désactivée — un
+titre « souligné » (une ligne suivie de `===` ou de `---`) **ne peut pas exister** dans la sortie.
+Une image écrite dans le texte (`![description](adresse)`) existe depuis le 14/10 : le fil la rend
+selon son adresse — importée sur la plateforme, affichée ; d'un autre site, au clic du lecteur ;
+`data:` ou autre, jamais (§21). Les titres à croisillons, eux, sont rendus depuis le
 14/10, sur six niveaux comme les écrit l'éditeur du legacy (§18.9) ; le HTML écrit dans un titre y
 reste échappé comme ailleurs. `sanitizeProse` reste le filet. `breaks: true` est propre au fil : dans une discussion, un retour
 à la ligne simple est voulu par celui qui écrit.
@@ -3264,8 +3266,8 @@ Du 13/10, sur le code décrit ici — corrections de la relecture (§19) et suit
   font qu'une dans le fil — comme avec l'ancien champ.
 - **Là où le markdown n'est pas rendu, une liste posée contre une autre se lit sous son second
   signe** (`+ …`, `1) …`) : c'est ce qui les garde distinctes dans le fil (§18.3).
-- **Ni titre souligné, ni image dans le texte** : le fil ne les rend pas (§5.5), l'éditeur ne les
-  propose pas. Les titres à croisillons, si, depuis le 14/10 (§18.9).
+- **Pas de titre souligné** : le fil ne le rend pas (§5.5), l'éditeur ne le propose pas. Les titres
+  à croisillons, si, depuis le 14/10 (§18.9), comme l'image dans le texte (§21).
 - **`__nom__` tapé ou collé passe en gras**, comme le markdown le lirait — un collage se relit
   comme du markdown. Écrit puis annulé d'un Ctrl+Z, il reste du texte.
 - **`[texte](adresse)` tapé reste du texte** : un lien nommé se pose par le bouton.
@@ -3574,6 +3576,109 @@ montrait pas leur bouton.
   n'y en a aucun aujourd'hui.
 - Un fil de question écrit sous l'`id` texte de l'étape est lu et compté ; un nouveau fil se lance
   sous l'`_id`, la forme du legacy.
+
+## 21. L'image dans le texte (14/10)
+
+Demande de l'user : « un autre bouton image pour ajouter de l'image dans la syntaxe markdown, en plus
+de l'image en pièce jointe ». Le legacy le fait (`markdown-editor.js`, `wrapImage`) : une fenêtre,
+une description, et deux onglets — une adresse quelconque, ou un fichier importé.
+
+### 21.1 La décision : importée affichée, tierce au clic
+
+Arbitré par l'user le 14/10, entre quatre options (import seul ; comme le legacy ; import + adresse
+au clic ; adresse copiée sur le serveur à l'envoi) : **import + adresse au clic**.
+
+Afficher d'office une image d'un autre site, c'est faire contacter ce site par le navigateur de
+CHAQUE lecteur — adresse IP, heure, navigateur. Un visiteur choisit les sites qu'il visite ; ici,
+c'est l'auteur du message qui choisirait pour tous ses lecteurs : le principe du « pixel espion ».
+L'hébergeur peut aussi remplacer l'image après coup. Les grandes messageries ne laissent pas le
+navigateur du lecteur aller la chercher (Gmail, GitHub, Discord la font passer par leurs serveurs ;
+Discourse la copie chez lui). Au clic, c'est le lecteur qui décide, au moment où ça compte.
+
+### 21.2 Écrire
+
+- **Le bouton « Insérer une image dans le texte »** ouvre une fenêtre (`ComposerInlineImage`) :
+  « Importer » ou « Adresse », puis une **description exigée**, comme dans le legacy — un fichier
+  importé la propose d'office (son nom, sans extension). Entrée insère. L'image se pose au curseur,
+  dans la ligne : un nœud Tiptap `image`, en ligne et insécable (`lib/richText/extensions.ts`).
+  Les images JOINTES gardent leur bouton, désormais un trombone, pour qu'on ne confonde pas les deux.
+- **L'onglet « Adresse »** n'accepte qu'une adresse complète en `http(s)`, et prévient l'auteur
+  quand elle vient d'un autre site : « les lecteurs l'afficheront d'un clic ».
+- **L'import** (`useInlineImageUpload`) passe par le même `uploadDocument` du SDK que les pièces
+  jointes — dossier `comments`, sous l'auteur, avec la clé du legacy pour ces images (`mdImage`) —,
+  mais le document n'est **pas joint au message** : joint, `Comment::insert` le déplacerait dans le
+  dossier du message (`Document::moveDoc`) et l'adresse écrite dans le texte casserait. Le legacy
+  fait de même (dossier `communecter`, que le SDK refuse ; d'où `comments`).
+- **Ce qui s'écrit est le chemin relatif** (`/upload/…`), comme le legacy, servi par le serveur. Le
+  SDK rend `docPath` ABSOLU (sa normalisation de lecture) : `writtenImageAddress` lui retire
+  l'origine du serveur. Une adresse d'un autre site s'écrit entière.
+- **L'éditeur affiche l'adresse résolue contre le serveur** (servi par le site, il chercherait
+  sinon `/upload/…` chez lui) et garde l'adresse écrite dans `data-src` : ProseMirror relit le DOM
+  pendant la frappe, et relue depuis `src`, l'image serait repartie en adresse absolue.
+- **Un `<img>` collé** depuis une page entre dans le texte si son adresse est une image en ligne ;
+  `data:`, `blob:` ou fichier local, non. Une image seule est un message.
+- **Le pont markdown** lit la description comme le fil l'affiche (`renderInlineAsText`) et
+  l'écrit échappée là où, relue, elle deviendrait autre chose — nue sinon ; l'adresse s'écrit comme
+  celle d'un lien (espaces et chevrons encodés, parenthèses échappées) ; un titre, sur une ligne.
+
+### 21.3 Lire
+
+`classifyImageSource` (`lib/inlineImages.ts`) classe l'adresse par son **origine**, contre
+`VITE_BASE_URL_BACKEND` — un chemin relatif se lit contre le serveur, comme dans le legacy :
+
+| Adresse | Le fil |
+|---|---|
+| Même origine que le serveur (un fichier importé) | l'image, chargée sans attendre le défilement |
+| Autre site, en `http(s)` | un bouton « Afficher l'image de exemple.org », l'adresse entière en infobulle ; au clic, l'image, **sans `Referer`**, et le focus passe sur elle |
+| Prise dans un lien `[![…](…)](…)` | sa description, ou le nom du site — un bouton dans un lien n'est pas du HTML valide, et le clic y suit le lien |
+| `data:`, `javascript:`, vide, illisible | sa description seule, en texte |
+
+**Le bouton est posé APRÈS le nettoyage.** `sanitizeProse` retire boutons et attributs `data-*`.
+Le rendu `markdown-it` laisse donc, à la place d'une image tierce, une marque : deux caractères
+d'usage privé autour d'un **jeton tiré au hasard à chaque rendu** et d'un rang. Après
+`sanitizeProse`, `placeRemoteImages` remplace les marques de CE rendu par le bouton (ou l'image
+ouverte), en échappant tout ce qui vient du texte, puis retire les signes qui restent. Le jeton
+compte : `markdown-it` décode les entités numériques même sans HTML (`&#xE000;`), dans le texte, le
+titre d'un lien ou la description d'une image ; une marque écrite par l'auteur n'a pas le jeton du
+rendu, et ne reçoit donc rien.
+
+**La citation d'un message** (« en réponse à… ») montre la description d'une image, pas son adresse.
+
+### 21.4 Deux défauts que seul le navigateur a montrés
+
+- **L'adresse absolue** — voir §21.2 : le SDK et la relecture du DOM par ProseMirror. jsdom ne fait
+  ni l'un ni l'autre ; les tests unitaires passaient.
+- **Le premier clic perdu.** React 19 compare `dangerouslySetInnerHTML` **par identité d'objet** :
+  `{ __html }` recréé à chaque rendu réécrivait le message entier à chaque rendu. Or une ligne se
+  redessine quand on la touche (elle devient active) : le bouton pressé était remplacé entre
+  l'appui et le relâchement, et le clic n'arrivait jamais. **Le défaut était antérieur à ce lot et
+  touchait les LIENS** : mesuré au navigateur, le premier clic sur un lien d'un message était perdu
+  3 fois sur 3. L'objet est désormais mémorisé tant que le HTML ne change pas : 3 sur 3 suivis.
+
+Et un défaut de `markdown-it` : un signe échappé dans la description d'une image (`![a \] b](…)`)
+reste un jeton `text_special`, que `renderInlineAsText` ignore — la description perdait ses
+crochets, ses étoiles. Le moteur commun les rend au texte (`createCommentMarkdown`, règle
+`comment_image_alt`).
+
+### 21.5 Preuves
+
+| Quoi | Résultat |
+|---|---|
+| Tests unitaires | classement des adresses, marques et jeton, échappement, chemin écrit ; rendu (importée, tierce, ouverture, focus, deux images, autre texte, dans un lien, refusées, marques écrites en clair ou par entité, description piégée, rendu sans réécriture) ; pont (allers-retours, descriptions piégées, adresses, titre, image seule) ; fenêtre d'insertion (import, attente, refus avant envoi, refus du serveur, réponse dépassée, fermeture, adresse, adresse du serveur, refusées, sans import) ; composer réel (au curseur, importée, relue depuis le DOM, Échap, image seule, collage, correction) ; le fil branche l'import sur ses deux champs ; extrait de citation |
+| Contre-épreuve | 91 mutations sur douze fichiers, toutes tuées. Premier passage : deux survivantes — l'adresse d'une image ouverte non échappée, l'ouverture d'une seconde image qui fermait la première — devenues deux tests |
+| Relecture indépendante | une correction avant commit (le jeton du rendu, §21.3), et deux mineures (titre d'image, parenthèses d'adresse dans la citation) |
+| Navigateur, aucune écriture (24 vérifications) | compte simple : le vrai SDK émet le téléversement (intercepté — `comments`, `mdImage`, sous l'auteur), l'éditeur montre l'image lue contre le serveur, le message part avec le chemin relatif ; dans le fil, l'image importée s'affiche, l'image tierce attend : **aucune requête vers le site tiers avant le clic**, une après, sans `Referer`, focus sur l'image ; une marque écrite par entité dans un titre de lien ne reçoit rien |
+
+### 21.6 Limites
+
+- **Une image importée puis retirée avant l'envoi reste sur le serveur**, comme une pièce jointe
+  retirée. Le legacy supprimait le document dès que l'image quittait le texte — ce qui cassait
+  l'annulation (Ctrl+Z) ; une suppression à l'envoi, des documents de la saisie absents du texte,
+  reste à faire.
+- **Une image ouverte ne se referme pas** : la requête au site tiers est déjà partie.
+- **L'auteur qui corrige son message voit ses images tierces dans l'éditeur** : c'est lui qui les a
+  choisies.
+- Les notifications et courriels (serveur) montrent le markdown brut, comme avant.
 
 ## Voir aussi
 

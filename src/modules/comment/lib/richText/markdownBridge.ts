@@ -123,6 +123,17 @@ function analyseurPour(schema: Schema): MarkdownParser {
     },
     code_inline: { mark: "code", noCloseToken: true },
     mention: { node: "mention", getAttrs: jeton => ({ ...attrsDeMention(jeton.meta as CommentMention) }) },
+    // La description, lue COMME LE FIL la lit (`renderInlineAsText`) : ce que l'éditeur montre et
+    // réécrit est ce que le lecteur lira.
+    image: {
+      node: "image",
+      noCloseToken: true,
+      getAttrs: jeton => ({
+        src: jeton.attrGet("src") ?? "",
+        alt: md.renderer.renderInlineAsText(jeton.children ?? [], md.options, {}),
+        title: jeton.attrGet("title") || null,
+      }),
+    },
   });
   analyseurs.set(schema, analyseur);
   return analyseur;
@@ -240,7 +251,7 @@ class EtatDuFil extends MarkdownSerializerState {
 
   /** `](cible)` : la fin d'un lien écrit. Une espace ou un chevron couperaient l'adresse — encodés, elle reste entière. */
   private fermeture(): string {
-    return `](${this.cible.replace(/[\s<>]/g, encodeURIComponent).replace(/[()"\\]/g, "\\$&")})`;
+    return `](${cibleEcrite(this.cible)})`;
   }
 
   /**
@@ -270,6 +281,11 @@ class EtatDuFil extends MarkdownSerializerState {
 }
 
 const etatDe = (state: MarkdownSerializerState) => state as EtatDuFil;
+
+/** Une adresse entre parenthèses — d'un lien comme d'une image : une espace ou un chevron la couperaient, une parenthèse la fermerait. */
+function cibleEcrite(adresse: string): string {
+  return adresse.replace(/[\s<>]/g, encodeURIComponent).replace(/[()"\\]/g, "\\$&");
+}
 
 /** Le moteur du fil : c'est à lui qu'on demande ce qu'il ferait d'un texte. */
 const moteur = createCommentMarkdown();
@@ -559,6 +575,22 @@ const serialiseur = new MarkdownSerializer(
       state.text(node.text ?? "", !etat.dansUnLienNu);
       etat.colle = false;
     },
+    /**
+     * `![description](adresse "titre")`. La description se relit comme un texte : échappée comme lui
+     * — un crochet la fermerait, une étoile y ferait une marque que le fil effacerait —, sauf dans un
+     * bloc écrit nu (`serializeMarkdown` ne le garde que si le fil le rend pareil). Pas `state.esc` :
+     * il reprendrait la fin d'une adresse laissée par le lien d'avant (`suite`). L'adresse s'écrit
+     * comme celle d'un lien.
+     */
+    image(state, node) {
+      const alt = String(node.attrs.alt ?? "");
+      // Le titre : guillemets et barres obliques échappés, une entité tapée gardée telle quelle, et sur
+      // une ligne — un titre ne survit pas à une ligne vide.
+      const titre = typeof node.attrs.title === "string" && node.attrs.title !== ""
+        ? ` "${node.attrs.title.replace(/["\\]/g, "\\$&").replace(/&(?=#?[0-9A-Za-z]+;)/g, "\\&").replace(/\s*\n\s*/g, " ")}"`
+        : "";
+      state.write(`![${etatDe(state).nu ? alt : echappe(alt, false, false)}](${cibleEcrite(String(node.attrs.src ?? ""))}${titre})`);
+    },
     mention(state, node) {
       const etat = etatDe(state);
       const slug = typeof node.attrs.slug === "string" ? node.attrs.slug : "";
@@ -671,14 +703,17 @@ export function serializeMarkdown(doc: ProseNode): string {
   return ecrire(doc, { nus, prudents }).texte;
 }
 
+/** Ce qui fait un message sans être du texte : une personne citée, un filet, une image. */
+const PLEINS = new Set(["mention", "horizontalRule", "image"]);
+
 /**
- * Le document ne porte-t-il rien à envoyer ? Ni texte qui se lise, ni mention, ni filet : une liste,
- * une citation ou un bloc de code VIDES ne font pas un message.
+ * Le document ne porte-t-il rien à envoyer ? Ni texte qui se lise, ni mention, ni filet, ni image :
+ * une liste, une citation ou un bloc de code VIDES ne font pas un message.
  */
 export function isBlank(doc: ProseNode): boolean {
   let plein = false;
   doc.descendants(node => {
-    if (node.isText ? /\S/.test(node.text ?? "") : node.type.name === "mention" || node.type.name === "horizontalRule") plein = true;
+    if (node.isText ? /\S/.test(node.text ?? "") : PLEINS.has(node.type.name)) plein = true;
     return !plein;
   });
   return !plein;

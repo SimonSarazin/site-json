@@ -43,7 +43,7 @@ let arbre: CommentNode[] = NODES;
 const requete = { isSuccess: true, isFetching: false, isError: false, avecDonnees: true };
 
 /** La session simulée : connectée par défaut, anonyme quand un test le demande. */
-const session = vi.hoisted(() => ({ me: null as null | { id: string; isConnected: boolean } }));
+const session = vi.hoisted(() => ({ me: null as null | { id: string; isConnected: boolean; uploadDocument?: () => Promise<unknown> } }));
 vi.mock("@/hooks/useCocolight", () => ({
   useCocolight: () => ({ me: session.me, api: null, entity: null, helper: {} }),
 }));
@@ -499,5 +499,40 @@ describe("CommentThread — signalement", () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+});
+
+/**
+ * L'image DANS le texte (décision de l'user, 14/10/2026) : le fil donne l'import aux DEUX champs —
+ * le message neuf et la correction d'un message. Sans téléversement possible, seule l'adresse.
+ */
+describe("CommentThread — image dans le texte", () => {
+  const ouvrirImage = (dans: HTMLElement) =>
+    userEvent.click(within(dans).getByRole("button", { name: "Insérer une image dans le texte" }));
+
+  it("le message neuf et la correction proposent tous deux d'IMPORTER une image", async () => {
+    session.me = { id: ME, isConnected: true, uploadDocument: vi.fn(async () => ({ docId: "d".repeat(24), docPath: "/upload/a.png" })) };
+    arbre = [{ ...node("c1"), author: { id: ME, name: "Moi", slug: "moi", avatarUrl: null }, text: "à corriger" }];
+    const { container } = mount();
+    const user = userEvent.setup();
+
+    await ouvrirImage(container.querySelector<HTMLElement>(".comment-composer-zone")!);
+    expect(screen.getByRole("tab", { name: "Importer" })).toBeTruthy();
+    await user.keyboard("{Escape}");
+
+    const ligne = container.querySelector<HTMLElement>('[data-comment-id="c1"]')!;
+    await user.click(within(ligne).getByRole("button", { name: "Plus d'actions" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Modifier" }));
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 20)); });
+    await ouvrirImage(ligne);
+    expect(screen.getByRole("tab", { name: "Importer" })).toBeTruthy();
+  });
+
+  it("sans téléversement possible, l'adresse seule", async () => {
+    session.me = { id: ME, isConnected: true };
+    const { container } = mount();
+    await ouvrirImage(container.querySelector<HTMLElement>(".comment-composer-zone")!);
+    expect(screen.queryByRole("tab")).toBeNull();
+    expect(screen.getByLabelText("Adresse de l'image")).toBeTruthy();
   });
 });

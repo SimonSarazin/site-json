@@ -13,6 +13,15 @@ export type FormatKind = (typeof FORMAT_KINDS)[number];
 export const HEADING_LEVELS = [1, 2, 3, 4, 5, 6] as const;
 export type HeadingLevel = (typeof HEADING_LEVELS)[number];
 
+/**
+ * Une image à poser DANS le texte : `src` est l'adresse ÉCRITE — le chemin relatif d'un fichier
+ * importé (`/upload/…`), ou l'adresse d'un autre site. `alt` la décrit à qui ne la voit pas.
+ */
+export interface InlineImage {
+  readonly src: string;
+  readonly alt: string;
+}
+
 /** Ce que l'éditeur dit de lui à la coquille, à chaque fois que cela change. */
 export interface EditorSurfaceState {
   /** Rien ne partirait : pas de texte, ou seulement des espaces et des sauts de ligne. */
@@ -38,6 +47,8 @@ export interface EditorSurfaceHandle {
   setLink(href: string | null): void;
   /** Insère un texte au curseur — un émoji. */
   insertText(text: string): void;
+  /** Pose une image dans le texte, au curseur (`![alt](src)` à l'enregistrement). */
+  insertImage(image: InlineImage): void;
   /** Ce qui part : le markdown du message, espaces de bord coupés, et les personnes qu'il mentionne. */
   read(): { text: string; mentions: CommentMention[] };
   clear(): void;

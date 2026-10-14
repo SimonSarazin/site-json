@@ -14,7 +14,7 @@ import { imageFilesFrom } from "../../lib/commentImages";
 import { COMMENT_PROSE } from "../../lib/commentProse";
 import { CommentMentionNode, commentExtensions } from "../../lib/richText/extensions";
 import { addressOf, isBlank, mentionsOf, parseMarkdown, serializeMarkdown, type MentionAttrs } from "../../lib/richText/markdownBridge";
-import { FORMAT_KINDS, HEADING_LEVELS, type EditorSurfaceHandle, type EditorSurfaceState, type FormatKind, type HeadingLevel } from "./editorTypes";
+import { FORMAT_KINDS, HEADING_LEVELS, type EditorSurfaceHandle, type EditorSurfaceState, type FormatKind, type HeadingLevel, type InlineImage } from "./editorTypes";
 import type { CommentMention } from "../../types";
 
 export interface EditorSurfaceProps {
@@ -495,6 +495,9 @@ export function EditorSurface({
         editor.chain().focus().extendMarkRange("link").setLink({ href, explicit: true } as { href: string }).run();
       }),
       insertText: vivant((text: string) => { editor.chain().focus().insertContent(text).run(); }),
+      insertImage: vivant((image: InlineImage) => {
+        editor.chain().focus().insertContent({ type: "image", attrs: { src: image.src, alt: image.alt } }).run();
+      }),
       read: () => {
         // Rien à lire : ni éditeur, ni contenu — un bloc vide ne s'envoie pas sous la forme de son signe.
         if (editor.isDestroyed || isBlank(editor.state.doc)) return { text: "", mentions: [] };

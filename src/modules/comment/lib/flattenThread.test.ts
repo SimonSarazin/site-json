@@ -212,6 +212,15 @@ describe("retrait borné et ligne de contexte", () => {
     expect(cite?.excerpt).not.toContain("  ");
     expect(cite?.excerpt.endsWith("…")).toBe(true);
   });
+
+  it("une image du texte s'y lit par sa description, pas par son adresse", () => {
+    const texte = "Voici ![un chat](https://images.example.org/tres/long/chemin/chat(1).jpg) et ![](/upload/a.png) fin";
+    const rows = messages(flattenThread([
+      noeud("p", { replies: [noeud("e", { parentId: "p", text: texte, replies: [noeud("f", { parentId: "e" })] })] }),
+    ], { maxDepth: 1 }));
+    const cite = rows[2].kind === "message" ? rows[2].contextParent : null;
+    expect(cite?.excerpt).toBe("Voici un chat et fin");
+  });
 });
 
 describe("repli d'une branche", () => {

@@ -80,6 +80,22 @@
       "url": "Link address",
       "apply": "Apply",
       "remove": "Remove link"
+    },
+    "inlineImage": {
+      "label": "Insert an image in the text",
+      "import": "Upload",
+      "address": "Address",
+      "choose": "Choose an image…",
+      "formats": "JPEG or PNG, 8 MB at most.",
+      "uploading": "Uploading {{name}}…",
+      "ready": "{{name}} is ready to be inserted.",
+      "failed": "The image could not be uploaded. Try again.",
+      "url": "Image address",
+      "remoteHint": "It comes from another site: readers will show it with a click.",
+      "refused": "Enter the full address of an online image (https://…).",
+      "alt": "Description",
+      "altHint": "What the image shows, for those who cannot see it",
+      "insert": "Insert"
     }
   },
   "images": {
@@ -101,6 +117,9 @@
       "type": "Only JPEG and PNG files are accepted.",
       "size": "An image must not exceed 8 MB.",
       "count": "Five images at most per message."
+    },
+    "inline": {
+      "remoteShow": "Show the image from {{host}}"
     }
   },
   "actions": {

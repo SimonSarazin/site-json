@@ -48,9 +48,9 @@ describe("le sérialiseur couvre le schéma", () => {
     expect(Object.keys(schema.marks).filter(nom => !SERIALIZED_MARKS.includes(nom))).toEqual([]);
   });
 
-  it("le schéma a les titres — ni souligné ni image — et garde le filet", () => {
+  it("le schéma a les titres et l'image dans le texte — pas de souligné — et garde le filet", () => {
     expect(schema.nodes.heading).toBeDefined();
-    expect(schema.nodes.image).toBeUndefined();
+    expect(schema.nodes.image).toBeDefined();
     expect(schema.marks.underline).toBeUndefined();
     expect(schema.nodes.horizontalRule).toBeDefined();
   });
@@ -79,6 +79,13 @@ describe("aller-retour : un message relu puis réécrit se rend pareil", () => {
     "Texte avec <b>balise</b> & esperluette",
     "Une entité tapée : \\&amp; et une vraie : &amp;",
     "![image](https://x.org/a.png)",
+    "Voici ![un chat](/upload/communecter/comments/abc/chat.png) dans la phrase.",
+    "![description *étoilée* et [crochets]](https://images.example.org/x.png)",
+    "![](https://images.example.org/vide.png)",
+    "![titrée](https://x.example/a.png \"Un titre\")",
+    "[![dans un lien](https://x.example/a.png)](https://site.example)",
+    "![parenthèses](https://x.example/a(1).png)",
+    "**gras ![img](https://x.example/a.png) gras**",
     "ligne\n\n---\n\nautre",
     "du `code avec ` accent` dedans",
     "**gras *et italique* mêlés**",
@@ -1011,6 +1018,58 @@ describe("deux listes de même nature l'une contre l'autre", () => {
     const citees = serializeMarkdown(doc(schema.node("blockquote", null, [numeros(1, "a"), numeros(1, "b")])));
     expect(citees).toBe("> 1. a\n>\n>\n> 1) b");
     expect(rendu(citees).match(/<ol>/g)).toHaveLength(2);
+  });
+});
+
+describe("les images dans le texte", () => {
+  const image = (src: string, alt: string, title: string | null = null) => schema.node("image", { src, alt, title });
+  /** L'image que le fil rend du texte sorti : son adresse et sa description. */
+  const imageRendue = (document: ProseNode) => {
+    const html = rendu(serializeMarkdown(document));
+    const lue = /<img src="([^"]*)" alt="([^"]*)"/.exec(html);
+    const decode = (v: string) => v.replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+    return lue ? { src: decode(lue[1] ?? ""), alt: decode(lue[2] ?? ""), html } : null;
+  };
+
+  it("une image tapée au milieu d'une phrase en sort à sa place, avec sa description", () => {
+    const sorti = serializeMarkdown(doc(paragraphe("Voici ", image("/upload/a.png", "un chat"), " !")));
+    expect(sorti).toBe("Voici ![un chat](/upload/a.png) !");
+  });
+
+  it("une description piégée se relit telle qu'on l'a donnée — crochets, étoiles, barres obliques", () => {
+    for (const alt of ["a ] b", "2 * 3 * 4", "_souligné_", "C:\\dossier", "[lien](x)", "&amp; tapé"]) {
+      expect(imageRendue(doc(paragraphe(image("https://x.example/a.png", alt))))?.alt).toBe(alt);
+    }
+  });
+
+  it("une adresse à espace ou parenthèse reste entière — même une parenthèse seule", () => {
+    expect(imageRendue(doc(paragraphe(image("/upload/mon fichier (1).png", "x"))))?.src).toBe("/upload/mon%20fichier%20(1).png");
+    expect(imageRendue(doc(paragraphe(image("/upload/a).png", "x"))))?.src).toBe("/upload/a).png");
+  });
+
+  it("une description sans signe qui compte sort telle qu'on l'a tapée", () => {
+    expect(serializeMarkdown(doc(paragraphe(image("/upload/a.png", "2 * 3 = 6"))))).toBe("![2 * 3 = 6](/upload/a.png)");
+  });
+
+  it("le titre suit l'image, guillemets échappés, entité tapée gardée, sur une ligne", () => {
+    const sorti = serializeMarkdown(doc(paragraphe(image("https://x.example/a.png", "x", 'dit "bonjour"'))));
+    expect(rendu(sorti)).toContain('title="dit &quot;bonjour&quot;"');
+    expect(rendu(serializeMarkdown(doc(paragraphe(image("https://x.example/a.png", "x", "R&amp;D"))))))
+      .toContain('title="R&amp;amp;D"');
+    expect(rendu(serializeMarkdown(doc(paragraphe(image("https://x.example/a.png", "x", "deux\n\nlignes"))))))
+      .toContain('title="deux lignes"');
+  });
+
+  it("relue, la description est celle que le fil affiche — sans les signes de mise en forme", () => {
+    const relu = parseMarkdown(schema, "![a *b* `c` d](https://x.example/a.png)");
+    const noeud = relu.firstChild?.firstChild;
+    expect(noeud?.type.name).toBe("image");
+    // `renderInlineAsText`, comme le fil : le code en ligne n'y entre pas.
+    expect(noeud?.attrs).toMatchObject({ src: "https://x.example/a.png", alt: "a b  d" });
+  });
+
+  it("une image seule est un message", () => {
+    expect(isBlank(doc(paragraphe(image("/upload/a.png", ""))))).toBe(false);
   });
 });
 

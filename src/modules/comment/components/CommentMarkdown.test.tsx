@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import { createElement } from "react";
-import { render } from "@testing-library/react";
+import { act, fireEvent, render } from "@testing-library/react";
+import { LocalizationProvider } from "@/contexts/LocalizationProvider";
+import { getBaseUrl } from "@/lib/constant/common";
 import { COMMENT_PROSE } from "../lib/commentProse";
-import { CommentMarkdown } from "./CommentMarkdown";
+import { CommentMarkdown, type CommentMarkdownProps } from "./CommentMarkdown";
 import type { CommentMention } from "../types";
+import "../i18n";
 
 /**
  * Tests d'injection du rendu de message.
@@ -17,9 +20,13 @@ import type { CommentMention } from "../types";
  * et `sanitizeProse`. Les cas 1 à 7 éprouvent la chaîne complète.
  */
 
+/** Le libellé d'une image tierce est traduit : le composant vit sous le fournisseur de langue. */
+function rendre(props: CommentMarkdownProps) {
+  return render(createElement(LocalizationProvider, null, createElement(CommentMarkdown, props)));
+}
+
 function html(text: string, mentions?: readonly CommentMention[]): HTMLElement {
-  const { container } = render(createElement(CommentMarkdown, { text, mentions }));
-  return container;
+  return rendre({ text, mentions }).container;
 }
 
 /**
@@ -111,10 +118,12 @@ describe("CommentMarkdown — injection", () => {
     expect(el.textContent).toContain("Titre géant");
   });
 
-  it("8. une image distante n'est pas chargée", () => {
-    // Une image distante fuite l'adresse IP de chaque lecteur vers un serveur tiers.
+  it("8. une image distante n'est pas chargée : un bouton l'attend", () => {
+    // Une image distante ferait connaître l'adresse IP de chaque lecteur au serveur tiers : elle
+    // attend un clic (décision de l'user, 14/10/2026).
     const el = html("![pixel](https://evil.example/track.png)");
     expect(el.querySelector("img")).toBeNull();
+    expect(el.querySelector("button[data-remote-image]")?.textContent).toContain("evil.example");
   });
 
   it("9. un attribut `data-*` est retiré — les sélecteurs de la page les lisent", () => {
@@ -161,7 +170,7 @@ describe("CommentMarkdown — rendu", () => {
 
   // L'éditeur du composer porte les MÊMES classes : ce qu'on voit en tapant est ce qu'on lira ici.
   it("porte la mise en forme partagée avec l'éditeur, en plus de celle qu'on lui donne", () => {
-    const { container } = render(createElement(CommentMarkdown, { text: "x", className: "à-moi" }));
+    const { container } = rendre({ text: "x", className: "à-moi" });
     const boite = container.firstElementChild!;
     for (const classe of COMMENT_PROSE.split(" ")) expect(boite.classList.contains(classe)).toBe(true);
     expect(boite.classList.contains("à-moi")).toBe(true);
@@ -174,21 +183,165 @@ describe("CommentMarkdown — le @moi", () => {
     { id: ME, name: "Raya", slug: "raya" },
     { id: "b".repeat(24), name: "Simon", slug: "simon" },
   ];
-  const rendre = (text: string, meId: string | null) =>
-    render(createElement(CommentMarkdown, { text, mentions: MENTIONS, meId })).container;
+  const rendreMoi = (text: string, meId: string | null) => rendre({ text, mentions: MENTIONS, meId }).container;
 
   it("marque MA mention, pas celle d'autrui — la marque survit à l'assainissement", () => {
-    const el = rendre("@raya et @simon", ME);
+    const el = rendreMoi("@raya et @simon", ME);
     expect(el.querySelector('a[href="/profil/raya"]')?.hasAttribute("data-mention-me")).toBe(true);
     expect(el.querySelector('a[href="/profil/simon"]')?.hasAttribute("data-mention-me")).toBe(false);
   });
 
   it("ne marque rien sans utilisateur connu", () => {
-    expect(rendre("@raya", null).querySelector("[data-mention-me]")).toBeNull();
+    expect(rendreMoi("@raya", null).querySelector("[data-mention-me]")).toBeNull();
   });
 
   it("un auteur ne peut pas forger la marque : son HTML est échappé", () => {
-    const el = rendre('<a href="/profil/simon" data-mention-me>faux</a>', ME);
+    const el = rendreMoi('<a href="/profil/simon" data-mention-me>faux</a>', ME);
     expect(el.querySelector("[data-mention-me]")).toBeNull();
+  });
+});
+
+/**
+ * Les images DANS le texte (décision de l'user, 14/10/2026) : importée sur la plateforme, l'image
+ * s'affiche ; d'un autre site, elle attend un clic du lecteur — jusque-là, rien n'est demandé à ce
+ * site. Jamais d'image pour une adresse qui n'est pas une image en ligne.
+ */
+describe("CommentMarkdown — images dans le texte", () => {
+  const plateforme = (chemin: string) => new URL(chemin, getBaseUrl()).href;
+  const boutons = (el: HTMLElement) => el.querySelectorAll<HTMLButtonElement>("button[data-remote-image]");
+
+  it("un fichier importé (chemin relatif `/upload/…`) s'affiche, lu contre le serveur", () => {
+    const el = html("Voici ![un chat](/upload/communecter/comments/abc/chat.png) !");
+    const img = el.querySelector("img");
+    expect(img?.getAttribute("src")).toBe(plateforme("/upload/communecter/comments/abc/chat.png"));
+    expect(img?.getAttribute("alt")).toBe("un chat");
+    expect(img?.getAttribute("loading")).toBe("lazy");
+    expect(boutons(el)).toHaveLength(0);
+  });
+
+  it("une adresse complète du serveur aussi", () => {
+    const adresse = plateforme("/upload/x.png");
+    expect(html(`![x](${adresse})`).querySelector("img")?.getAttribute("src")).toBe(adresse);
+  });
+
+  it("une image d'un autre site : un bouton qui nomme le site, l'adresse en infobulle — et rien de chargé", () => {
+    const el = html("![un chat](https://images.example.org/chat.jpg)");
+    expect(el.querySelector("img")).toBeNull();
+    const [bouton] = boutons(el);
+    expect(bouton?.textContent).toContain("images.example.org");
+    expect(bouton?.getAttribute("title")).toBe("https://images.example.org/chat.jpg");
+    expect(bouton?.getAttribute("type")).toBe("button");
+  });
+
+  it("au clic, l'image s'affiche — sans Referer — et le focus la suit", () => {
+    const el = html("![un chat](https://images.example.org/chat.jpg)");
+    const [bouton] = boutons(el);
+    act(() => { bouton!.focus(); fireEvent.click(bouton!); });
+    const img = el.querySelector("img");
+    expect(img?.getAttribute("src")).toBe("https://images.example.org/chat.jpg");
+    expect(img?.getAttribute("alt")).toBe("un chat");
+    expect(img?.getAttribute("referrerpolicy")).toBe("no-referrer");
+    expect(boutons(el)).toHaveLength(0);
+    expect(document.activeElement).toBe(img);
+  });
+
+  it("chaque bouton n'ouvre que SON image", () => {
+    const el = html("![a](https://a.example/1.png) et ![b](https://b.example/2.png)");
+    act(() => { fireEvent.click(boutons(el)[1]!); });
+    expect(el.querySelector("img")?.getAttribute("src")).toBe("https://b.example/2.png");
+    expect(boutons(el)).toHaveLength(1);
+    expect(boutons(el)[0]?.textContent).toContain("a.example");
+  });
+
+  it("ouvrir une seconde image garde la première ouverte", () => {
+    const el = html("![a](https://a.example/1.png) et ![b](https://b.example/2.png)");
+    act(() => { fireEvent.click(boutons(el)[0]!); });
+    act(() => { fireEvent.click(boutons(el)[0]!); });
+    expect([...el.querySelectorAll("img")].map(img => img.getAttribute("src"))).toEqual(["https://a.example/1.png", "https://b.example/2.png"]);
+  });
+
+  it("un autre rendu au même texte ne réécrit PAS le message — le lien pressé reste le même élément", () => {
+    // React 19 compare `dangerouslySetInnerHTML` par identité : un objet neuf réécrivait le
+    // message, et le premier clic sur un lien ou un bouton se perdait (mesuré au navigateur).
+    const props = { text: "Voir [le lien](https://exemple.org/page) et ![a](https://a.example/1.png)" };
+    const vue = rendre({ ...props, mentions: [] });
+    const lien = vue.container.querySelector("a");
+    const bouton = vue.container.querySelector("button[data-remote-image]");
+    vue.rerender(createElement(LocalizationProvider, null, createElement(CommentMarkdown, { ...props, mentions: [] })));
+    expect(vue.container.querySelector("a")).toBe(lien);
+    expect(vue.container.querySelector("button[data-remote-image]")).toBe(bouton);
+  });
+
+  it("un autre texte — le message édité — referme les images ouvertes", () => {
+    const vue = rendre({ text: "![a](https://a.example/1.png)" });
+    act(() => { fireEvent.click(boutons(vue.container)[0]!); });
+    expect(vue.container.querySelector("img")).not.toBeNull();
+    vue.rerender(createElement(LocalizationProvider, null, createElement(CommentMarkdown, { text: "![a](https://a.example/1.png) modifié" })));
+    expect(vue.container.querySelector("img")).toBeNull();
+    expect(boutons(vue.container)).toHaveLength(1);
+  });
+
+  it("prise dans un lien : ni bouton ni image — sa description, et le lien", () => {
+    const el = html("[![le site](https://images.example.org/logo.png)](https://site.example)");
+    expect(boutons(el)).toHaveLength(0);
+    expect(el.querySelector("img")).toBeNull();
+    expect(el.querySelector('a[href="https://site.example"]')?.textContent).toBe("le site");
+  });
+
+  it("refusées : `data:` et `javascript:` ne donnent jamais d'image ni de bouton", () => {
+    const donnees = html("![pixel](data:image/png;base64,iVBORw0KGgo=)");
+    expect(donnees.querySelector("img")).toBeNull();
+    expect(boutons(donnees)).toHaveLength(0);
+    expect(donnees.textContent).toContain("pixel");
+    const script = html("![x](javascript:alert(1))");
+    expect(script.querySelector("img, button, a")).toBeNull();
+  });
+
+  it("personne ne peut forger une marque : ses signes sont retirés du texte", () => {
+    const el = html("\uE0000\uE001 puis ![a](https://a.example/1.png)");
+    expect(boutons(el)).toHaveLength(1);
+  });
+
+  /**
+   * `markdown-it` DÉCODE les entités numériques même sans HTML : `&#xE000;` devient le premier signe
+   * d'une marque — dans le texte, dans le titre d'un lien, dans la description d'une image. Une
+   * marque ainsi écrite, au milieu d'un attribut, recevrait le balisage posé APRÈS le nettoyage :
+   * le jeton du rendu la rend inopérante.
+   */
+  it.each([
+    ["le titre d'un lien", '![x](https://evil.example/a.png) [l](https://ok.example "A&#xE000;0&#xE001;B")'],
+    ["la description d'une image importée", "![x](https://evil.example/a.png) ![A&#xE000;0&#xE001;B](/upload/x.png)"],
+    ["le texte, en décimal", "![x](https://evil.example/a.png) avant &#57344;0&#57345; après"],
+  ])("une marque fabriquée par entité dans %s ne reçoit aucun balisage", (_ou, texte) => {
+    const el = html(texte);
+    expect(boutons(el)).toHaveLength(1);
+    for (const element of Array.from(el.querySelectorAll("*"))) {
+      for (const attribut of Array.from(element.attributes)) expect(attribut.value).not.toMatch(/<|data-remote-image=|\uE000|\uE001/);
+    }
+    expect(el.textContent).not.toMatch(/[\uE000\uE001]/);
+  });
+
+  it("sans image tierce, les signes d'une marque fabriquée partent aussi", () => {
+    const el = html("avant &#xE000;0&#xE001; après, et ![a](/upload/a.png)");
+    expect(el.textContent).not.toMatch(/[\uE000\uE001]/);
+    expect(el.querySelector("img")?.getAttribute("alt")).toBe("a");
+  });
+
+  it("une description piégée reste du texte, fermée comme ouverte", () => {
+    const el = html('![" onerror="alert(1)](https://x.example/a.png)');
+    expect(attributesInDom(el)).not.toContain("onerror");
+    act(() => { fireEvent.click(boutons(el)[0]!); });
+    expect(attributesInDom(el)).not.toContain("onerror");
+    expect(el.querySelector("img")?.getAttribute("alt")).toBe('" onerror="alert(1)');
+  });
+
+  it("un signe échappé reste dans la description — même d'une image glissée dans une description", () => {
+    expect(html("![a \\] b](/upload/a.png)").querySelector("img")?.getAttribute("alt")).toBe("a ] b");
+    expect(html("![a ![b \\] c](https://x.example/i.png)](/upload/o.png)").querySelector("img")?.getAttribute("alt")).toBe("a b ] c");
+  });
+
+  it("une image importée, prise dans un lien, reste une image", () => {
+    const el = html("[![logo](/upload/logo.png)](https://site.example)");
+    expect(el.querySelector('a[href="https://site.example"] img')?.getAttribute("src")).toBe(plateforme("/upload/logo.png"));
   });
 });

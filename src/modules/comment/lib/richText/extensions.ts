@@ -1,7 +1,9 @@
-import { Extension, Mark, markInputRule, type Extensions, type InputRuleMatch } from "@tiptap/core";
+import { Extension, Mark, Node, markInputRule, mergeAttributes, type Extensions, type InputRuleMatch } from "@tiptap/core";
 import Mention from "@tiptap/extension-mention";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import StarterKit from "@tiptap/starter-kit";
+import { getBaseUrl } from "@/lib/constant/common";
+import { classifyImageSource } from "../inlineImages";
 
 /**
  * Le nœud `mention`, étendu de ce qu'il faut pour renvoyer la personne au serveur.
@@ -137,12 +139,60 @@ const TitreSurUneLigne = Extension.create({
 });
 
 /**
+ * L'image écrite DANS le texte — `![description](adresse)` (décision de l'user, 14/10/2026).
+ *
+ * Un nœud EN LIGNE et insécable, comme le markdown la pose : au milieu d'une phrase s'il le faut.
+ * Ce qui s'enregistre est l'adresse ÉCRITE (`src`) : un fichier importé garde son chemin relatif
+ * (`/upload/…`), que le legacy lit comme le fil. Ce qui s'AFFICHE est l'adresse résolue contre le
+ * serveur (`classifyImageSource`) — servi par le site et non par le serveur, l'éditeur chercherait
+ * sinon `/upload/…` chez lui. L'adresse écrite voyage dans `data-src` : ProseMirror RELIT le DOM
+ * pendant la frappe (mesuré dans Chrome le 14/10), et relue depuis `src`, l'image importée serait
+ * partie en adresse absolue.
+ *
+ * Une image collée (`<img>` du presse-papiers) n'entre que si son adresse mène à une image en ligne :
+ * ni `data:`, ni `blob:`, ni fichier local — rien que le fil ne saurait montrer.
+ */
+const CommentImage = Node.create({
+  name: "image",
+  inline: true,
+  group: "inline",
+  atom: true,
+  draggable: true,
+  addAttributes() {
+    return {
+      // L'adresse ÉCRITE voyage dans `data-src` ; `src`, dans le DOM, est l'adresse résolue (`renderHTML`).
+      src: {
+        default: "",
+        parseHTML: (element: HTMLElement) => element.getAttribute("data-src") ?? element.getAttribute("src") ?? "",
+        renderHTML: (attributes: { src?: string | null }) => ({ "data-src": attributes.src ?? "" }),
+      },
+      alt: { default: "", parseHTML: (element: HTMLElement) => element.getAttribute("alt") ?? "" },
+      title: { default: null, parseHTML: (element: HTMLElement) => element.getAttribute("title") },
+    };
+  },
+  parseHTML() {
+    return [{
+      tag: "img[src]",
+      getAttrs: (element: HTMLElement) => {
+        const ecrite = element.getAttribute("data-src") ?? element.getAttribute("src") ?? "";
+        return classifyImageSource(ecrite, getBaseUrl()).kind === "refused" ? false : null;
+      },
+    }];
+  },
+  renderHTML({ node, HTMLAttributes }) {
+    const source = classifyImageSource(String(node.attrs.src ?? ""), getBaseUrl());
+    return ["img", mergeAttributes(HTMLAttributes, { src: source.kind === "refused" ? "" : source.url })];
+  },
+});
+
+/**
  * Le schéma d'un message : ce que le markdown du fil sait écrire, rien de plus.
  *
  * - les titres à croisillons, six niveaux, comme l'éditeur du legacy — et sur une ligne
  *   (`TitreSurUneLigne`) ; pas de souligné (aucun markdown pour lui) ;
  * - le filet horizontal RESTE : sans son nœud, éditer un message qui en porte le déformerait ;
- * - pas d'image dans le texte : le fil les refuse à dessein, une image est une pièce jointe ;
+ * - l'image DANS le texte (`CommentImage`) — affichée par son adresse résolue, enregistrée par son
+ *   adresse écrite ; les images JOINTES, elles, restent à côté du texte (`useCommentImages`) ;
  * - le lien ne s'ouvre pas au clic pendant qu'on écrit ;
  * - le code en ligne est le nôtre (`CommentCode`), pas celui du kit.
  *
@@ -160,6 +210,7 @@ export function commentExtensions(mention: typeof CommentMentionNode = CommentMe
     CommentCode,
     WrittenLink,
     TitreSurUneLigne,
+    CommentImage,
     mention,
   ];
 }

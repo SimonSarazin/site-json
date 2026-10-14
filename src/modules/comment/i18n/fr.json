@@ -80,6 +80,22 @@
       "url": "Adresse du lien",
       "apply": "Appliquer",
       "remove": "Retirer le lien"
+    },
+    "inlineImage": {
+      "label": "Insérer une image dans le texte",
+      "import": "Importer",
+      "address": "Adresse",
+      "choose": "Choisir une image…",
+      "formats": "JPEG ou PNG, 8 Mo au plus.",
+      "uploading": "Envoi de {{name}}…",
+      "ready": "{{name}} est prête à être insérée.",
+      "failed": "L'image n'a pas pu être envoyée. Réessayez.",
+      "url": "Adresse de l'image",
+      "remoteHint": "Elle vient d'un autre site : les lecteurs l'afficheront d'un clic.",
+      "refused": "Donnez l'adresse complète d'une image en ligne (https://…).",
+      "alt": "Description",
+      "altHint": "Ce que montre l'image, pour qui ne la voit pas",
+      "insert": "Insérer"
     }
   },
   "images": {
@@ -101,6 +117,9 @@
       "type": "Seuls les fichiers JPEG et PNG sont acceptés.",
       "size": "Une image ne doit pas dépasser 8 Mo.",
       "count": "Cinq images au maximum par message."
+    },
+    "inline": {
+      "remoteShow": "Afficher l'image de {{host}}"
     }
   },
   "actions": {

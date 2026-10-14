@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { createElement, type ReactNode } from "react";
-import { act, render, screen, fireEvent, within } from "@testing-library/react";
+import { act, render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -11,6 +11,7 @@ import { Slice, type Node as ProseNode } from "@tiptap/pm/model";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { CocolightContext, type CocolightContextType } from "@/contexts/CocolightContext";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
+import { getBaseUrl } from "@/lib/constant/common";
 import i18n from "@/i18n";
 import { COMMENT_PROSE } from "../lib/commentProse";
 import { CommentComposer } from "./CommentComposer";
@@ -1868,3 +1869,84 @@ describe("EditorSurface — ce qu'elle rapporte", () => {
   });
 });
 
+
+/**
+ * L'image DANS le texte (décision de l'user, 14/10/2026) : posée par le bouton « Image », elle part
+ * dans le markdown du message — `![description](adresse)` —, à l'endroit du curseur.
+ */
+describe("CommentComposer — image dans le texte", () => {
+  const ouvrirImage = () => userEvent.click(bouton("Insérer une image dans le texte"));
+  /** L'image posée — pas les `<img class="ProseMirror-separator">` vides que ProseMirror met autour d'un nœud en ligne. */
+  const imageDe = (field: Champ) => field.querySelector("img:not(.ProseMirror-separator)");
+  const champImage = (nom: string) => screen.getByLabelText(nom);
+
+  it("par son adresse : l'image se pose au curseur, et part en markdown", async () => {
+    const { field, onSubmit } = mount();
+    type(field, "voici  !");
+    act(() => { field.editor.commands.setTextSelection(7); });
+    await ouvrirImage();
+    await userEvent.type(champImage("Adresse de l'image"), "https://images.example.org/chat.jpg");
+    await userEvent.type(champImage("Description"), "un chat");
+    await userEvent.click(bouton("Insérer"));
+    envoie(field);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("voici ![un chat](https://images.example.org/chat.jpg) !", []);
+  });
+
+  it("importée : son chemin relatif part dans le texte — et l'éditeur la montre, lue contre le serveur", async () => {
+    const onUploadInlineImage = vi.fn(async () => "/upload/communecter/comments/a/chat.png");
+    const { field, onSubmit } = mount({ onUploadInlineImage });
+    await ouvrirImage();
+    const fichier = document.querySelector<HTMLInputElement>("[data-inline-image] input[type=file]")!;
+    await userEvent.upload(fichier, new File([new Uint8Array(4)], "chat.png", { type: "image/png" }));
+    // L'envoi rend la main avant sa réponse : « Insérer » ne s'ouvre qu'à elle.
+    await waitFor(() => expect(bouton("Insérer").disabled).toBe(false));
+    await userEvent.click(bouton("Insérer"));
+    expect(imageDe(field)?.getAttribute("src")).toBe(new URL("/upload/communecter/comments/a/chat.png", getBaseUrl()).href);
+    envoie(field);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("![chat](/upload/communecter/comments/a/chat.png)", []);
+  });
+
+  it("refermée sans rien poser, la fenêtre rend la main au texte", async () => {
+    const { field } = mount();
+    await ouvrirImage();
+    await userEvent.keyboard("{Escape}");
+    await image();
+    expect(document.activeElement).toBe(field);
+  });
+
+  it("une image seule est un message : le bouton d'envoi s'ouvre", async () => {
+    const { field } = mount();
+    await ouvrirImage();
+    await userEvent.type(champImage("Adresse de l'image"), "https://x.example/a.png");
+    await userEvent.type(champImage("Description"), "a");
+    await userEvent.click(bouton("Insérer"));
+    expect(imageDe(field)).not.toBeNull();
+    expect(bouton(/Envoyer/).disabled).toBe(false);
+  });
+
+  it("collée depuis une page, une image en ligne entre — une image `data:` non", () => {
+    const { field, onSubmit } = mount();
+    act(() => { fireEvent.paste(field, presseBrute({ texte: "", html: '<p>a <img src="https://x.example/a.png" alt="là"> b</p>' })); });
+    act(() => { fireEvent.paste(field, presseBrute({ texte: "", html: '<p><img src="data:image/png;base64,iVBORw0KGgo=" alt="pixel"></p>' })); });
+    envoie(field);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("a ![là](https://x.example/a.png) b", []);
+  });
+
+  it("relue depuis le DOM, l'image garde son adresse ÉCRITE — pas l'adresse affichée", () => {
+    // ProseMirror relit le DOM pendant la frappe (mesuré dans Chrome) : l'image y porte l'adresse
+    // résolue dans `src`, l'adresse écrite dans `data-src`.
+    const { field, onSubmit } = mount();
+    const affichee = new URL("/upload/a.png", getBaseUrl()).href;
+    act(() => { field.editor.commands.setContent(`<p>x <img src="${affichee}" data-src="/upload/a.png" alt="a"> y</p>`); });
+    expect(imageDe(field)?.getAttribute("data-src")).toBe("/upload/a.png");
+    envoie(field);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("x ![a](/upload/a.png) y", []);
+  });
+
+  it("en correction, l'image du message revient dans l'éditeur, et repart telle quelle", () => {
+    const { field, onSubmit } = mount({ mode: "edit", initialValue: "avant ![un chat](/upload/a.png) après" });
+    expect(imageDe(field)?.getAttribute("alt")).toBe("un chat");
+    envoie(field);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("avant ![un chat](/upload/a.png) après", []);
+  });
+});

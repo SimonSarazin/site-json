@@ -61,8 +61,14 @@ function dayKey(unixSeconds: number, timeZone?: string): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
 }
 
+/**
+ * `![description](adresse)` → sa description : une citation se lit, elle n'affiche pas d'adresse. Une
+ * adresse peut porter des parenthèses appariées (`…/a(1).png`) : un niveau est lu.
+ */
+const IMAGE_ECRITE = /!\[([^\]]*)\]\((?:[^()]|\([^()]*\))*\)/g;
+
 function excerpt(text: string): string {
-  const compact = text.replace(/\s+/g, " ").trim();
+  const compact = text.replace(IMAGE_ECRITE, "$1").replace(/\s+/g, " ").trim();
   return compact.length <= CONTEXT_QUOTE_LENGTH ? compact : `${compact.slice(0, CONTEXT_QUOTE_LENGTH - 1)}…`;
 }
 

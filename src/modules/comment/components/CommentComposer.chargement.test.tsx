@@ -36,7 +36,7 @@ const AUCUNE = Object.fromEntries(
 /** Ce que le témoin a reçu, et la poignée qu'il a posée. */
 const recu: { props: EditorSurfaceProps | null } = { props: null };
 const poignee = {
-  focus: vi.fn(), toggle: vi.fn(), setHeading: vi.fn(), setLink: vi.fn(), insertText: vi.fn(), clear: vi.fn(),
+  focus: vi.fn(), toggle: vi.fn(), setHeading: vi.fn(), setLink: vi.fn(), insertText: vi.fn(), insertImage: vi.fn(), clear: vi.fn(),
   currentLink: vi.fn<() => string | null>(() => null),
   read: vi.fn(() => ({ text: "lu dans l'éditeur", mentions: [{ id: "a".repeat(24), name: "Camille", slug: "camille" }] })),
 } satisfies EditorSurfaceHandle;

@@ -1,7 +1,7 @@
 import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { lazy } from "vite-preload";
 import {
-  Bold, Code, Heading, ImagePlus, Italic, Link2, Link2Off, List, ListOrdered, Quote, Send, SmilePlus, SquareCode, Strikethrough, X,
+  Bold, Code, Heading, Italic, Link2, Link2Off, List, ListOrdered, Paperclip, Quote, Send, SmilePlus, SquareCode, Strikethrough, X,
 } from "lucide-react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
@@ -15,6 +15,7 @@ import { ACCEPTED_IMAGE_TYPES, type ImageRejection } from "../lib/commentImages"
 import { normalizeLinkAddress } from "../lib/richText/linkAddress";
 import type { PendingImage } from "../hooks/useCommentImages";
 import { ComposerImages } from "./ComposerImages";
+import { ComposerInlineImage } from "./ComposerInlineImage";
 import { loadEditorSurface, useEditorSurface } from "./editor/editorStore";
 import { FORMAT_KINDS, HEADING_LEVELS, type EditorSurfaceHandle, type EditorSurfaceState, type FormatKind, type HeadingLevel } from "./editor/editorTypes";
 import type { CommentMention } from "../types";
@@ -97,6 +98,11 @@ export interface CommentComposerProps {
   readonly imagesBusy?: boolean;
   /** Motifs du dernier refus, à annoncer sous le champ. */
   readonly imageRejections?: readonly ImageRejection[];
+  /**
+   * Téléverse une image à écrire DANS le texte et rend son adresse (`useInlineImageUpload`). Absent :
+   * le bouton « Image » ne propose que l'adresse d'une image en ligne.
+   */
+  readonly onUploadInlineImage?: (file: File) => Promise<string>;
   readonly className?: string;
 }
 
@@ -131,6 +137,7 @@ export function CommentComposer({
   imagesFull = false,
   imagesBusy = false,
   imageRejections,
+  onUploadInlineImage,
   className,
 }: CommentComposerProps) {
   const t = useT("modules/comment");
@@ -441,6 +448,14 @@ export function CommentComposer({
             </PopoverContent>
           </Popover>
 
+          {/* L'image DANS le texte ; les images JOINTES ont le trombone, juste après. */}
+          <ComposerInlineImage
+            disabled={barreInerte}
+            onUpload={onUploadInlineImage}
+            onInsert={image => editeur.current?.insertImage(image)}
+            onClosed={() => editeur.current?.focus()}
+          />
+
           {onAddImages ? (
             <>
               <Button
@@ -450,9 +465,10 @@ export function CommentComposer({
                 disabled={disabled || imagesFull}
                 className="size-7 rounded-full text-muted-foreground"
                 aria-label={String(imagesFull ? t("images.full") : t("images.attach"))}
+                title={String(imagesFull ? t("images.full") : t("images.attach"))}
                 onClick={() => fileInputRef.current?.click()}
               >
-                <ImagePlus className="size-3.5" />
+                <Paperclip className="size-3.5" />
               </Button>
               {/* `sr-only` et non `hidden` : un champ masqué par `display:none` n'est pas
                   activable au clavier dans tous les navigateurs, et celui-ci reste la seule

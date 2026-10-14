@@ -10,4 +10,6 @@ export const COMMENT_PROSE = [
   "prose-p:my-0.5 prose-ul:my-1 prose-ol:my-1 prose-blockquote:my-1",
   "prose-a:text-primary prose-a:no-underline hover:prose-a:underline",
   "prose-code:before:content-none prose-code:after:content-none",
+  // L'image DANS le texte : dans la ligne, bornée — une capture d'écran ne doit pas noyer le fil.
+  "prose-img:my-1 prose-img:inline-block prose-img:max-h-80 prose-img:rounded-md prose-img:align-bottom",
 ].join(" ");

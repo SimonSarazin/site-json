@@ -18,6 +18,7 @@ import {
 import { CommentComposer } from "./CommentComposer";
 import { LoginToParticipate } from "./LoginToParticipate";
 import { useCommentImages } from "../hooks/useCommentImages";
+import { useInlineImageUpload } from "../hooks/useInlineImageUpload";
 import { CommentRow } from "./CommentRow";
 import { ReportCommentDialog } from "./ReportCommentDialog";
 import { VotersDialog } from "./VotersDialog";
@@ -145,6 +146,8 @@ export function CommentThread({
   // Les pièces jointes du message en cours d'écriture. Hors du composer à dessein : celui-ci
   // sera remplacé par un vrai éditeur (B11), pas cette mécanique-là.
   const jointes = useCommentImages();
+  // L'image DANS le texte : téléversée sans être jointe, pour garder l'adresse écrite (`useInlineImageUpload`).
+  const importerDansLeTexte = useInlineImageUpload();
 
   const [pendingDelete, setPendingDelete] = useState<CommentNode | null>(null);
   const [reporting, setReporting] = useState<CommentNode | null>(null);
@@ -519,6 +522,7 @@ export function CommentThread({
                     initialValue={row.node.text}
                     initialMentions={row.node.mentions}
                     submitting={mutations.edit.isPending}
+                    onUploadInlineImage={importerDansLeTexte}
                     onCancel={() => { setEditingId(null); rendreLeFocus(row.node.id); }}
                     onSubmit={(newText, newMentions) => {
                       mutations.edit.mutate({
@@ -560,6 +564,7 @@ export function CommentThread({
             imagesFull={jointes.full}
             imagesBusy={jointes.busy}
             imageRejections={jointes.rejected}
+            onUploadInlineImage={importerDansLeTexte}
             onSubmit={(value, mentioned) => {
               // Les identifiants sont lus AVANT d'écrire, et la liste vidée juste après : le
               // téléversement, lui, a déjà eu lieu au moment où l'image a été choisie.
