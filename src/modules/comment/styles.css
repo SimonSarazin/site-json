@@ -352,6 +352,12 @@
   overflow-wrap: anywhere;
   font-variant-ligatures: none;
 }
+/* L'italique doit SE VOIR, dans le champ comme dans le fil. La plupart des thèmes interdisent au
+   navigateur de fabriquer une face qu'il n'a pas (`font-synthesis: none` sur `:root`), et le
+   chargeur de polices ne demande aucune face italique : la marque était posée, le mot restait
+   droit, pixel pour pixel (mesuré le 14/10). Le gras, lui, a ses vraies graisses. */
+.comment-thread em,
+.comment-thread i { font-synthesis: style; }
 .comment-thread .comment-editor-field pre { white-space: pre-wrap; }
 .comment-thread .comment-editor-field [contenteditable="false"] { white-space: normal; }
 /* Le texte d'attente : une décoration du paragraphe vide, jamais du texte dans le document. */
