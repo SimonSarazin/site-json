@@ -6,7 +6,8 @@ import { renderToString } from "react-dom/server";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Editor } from "@tiptap/core";
-import { Slice } from "@tiptap/pm/model";
+import { closeHistory } from "@tiptap/pm/history";
+import { Slice, type Node as ProseNode } from "@tiptap/pm/model";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { CocolightContext, type CocolightContextType } from "@/contexts/CocolightContext";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
@@ -392,7 +393,7 @@ describe("CommentComposer — mise en forme", () => {
 
   it("le clic sur une marque ne prend pas le focus : son `mouseDown` est neutralisé", () => {
     mount();
-    for (const nom of ["Gras", "Italique", "Barré", "Code", "Lien", "Citation", "Liste à puces", "Liste numérotée", "Bloc de code"]) {
+    for (const nom of ["Gras", "Italique", "Barré", "Titre", "Code", "Lien", "Citation", "Liste à puces", "Liste numérotée", "Bloc de code"]) {
       expect(fireEvent.mouseDown(bouton(nom))).toBe(false);
     }
   });
@@ -464,7 +465,7 @@ describe("CommentComposer — mise en forme", () => {
     await i18n.changeLanguage("en");
     try {
       mount();
-      for (const nom of ["Bold", "Italic", "Strikethrough", "Code", "Link", "Quote", "Bulleted list", "Numbered list", "Code block"]) {
+      for (const nom of ["Bold", "Italic", "Strikethrough", "Heading", "Code", "Link", "Quote", "Bulleted list", "Numbered list", "Code block"]) {
         expect(bouton(nom).getAttribute("title")).toBe(nom);
       }
     } finally {
@@ -504,6 +505,164 @@ describe("CommentComposer — mise en forme", () => {
     const { field } = mount();
     frapper(field, "a*b*c ");
     expect(field.querySelector("em")).toBeNull();
+  });
+});
+
+/** Les blocs d'un nœud, un par un : leur type, leur niveau de titre, leur texte — un saut de ligne s'y lit « ⏎ ». */
+function blocsDe(parent: ProseNode): string[] {
+  const lus: string[] = [];
+  parent.forEach(bloc => {
+    let texte = "";
+    bloc.descendants(n => { texte += n.isText ? n.text : n.type.name === "hardBreak" ? "⏎" : ""; });
+    lus.push(`${bloc.type.name}${bloc.attrs.level ?? ""} ${texte}`.trimEnd());
+  });
+  return lus;
+}
+/** Le document du champ, bloc par bloc. */
+const blocs = (field: Champ) => blocsDe(field.editor.state.doc);
+
+/**
+ * Les titres : `#` à `######`, comme l'éditeur du legacy — et sur UNE ligne, comme le markdown les
+ * lit. Un saut de ligne posé dans un titre le coupe (`TitreSurUneLigne`) : ce que montre le champ est
+ * ce que le fil affichera.
+ */
+describe("CommentComposer — les titres", () => {
+  // Le menu de Radix s'appuie sur des API de pointeur que jsdom n'a pas.
+  const manquantes = ["hasPointerCapture", "releasePointerCapture", "scrollIntoView"] as const;
+  beforeAll(() => {
+    for (const nom of manquantes) (Element.prototype as unknown as Record<string, unknown>)[nom] ??= () => false;
+  });
+  afterAll(() => {
+    for (const nom of manquantes) delete (Element.prototype as unknown as Record<string, unknown>)[nom];
+  });
+
+  it.each([["# ", 1], ["### ", 3], ["###### ", 6]])("« %s» tapé en tête de ligne ouvre un titre, qui part à croisillons", (saisie, niveau) => {
+    const { field, onSubmit } = mount();
+    frapper(field, `${saisie}Le titre`);
+    expect(blocs(field)[0]).toBe(`heading${niveau} Le titre`);
+    envoie(field);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith(`${"#".repeat(niveau)} Le titre`, []);
+  });
+
+  it("sept croisillons ne font pas un titre : ils partent tels quels, et le fil n'y lira que du texte", () => {
+    const { field, onSubmit } = mount();
+    frapper(field, "####### sept");
+    expect(blocs(field)).toEqual(["paragraph ####### sept"]);
+    envoie(field);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("####### sept", []);
+  });
+
+  it("Maj+Entrée au bout d'un titre le ferme : la suite s'écrit en paragraphe", () => {
+    const { field, onSubmit } = mount();
+    frapper(field, "# Le titre");
+    touche(field, "Enter", { shiftKey: true });
+    type(field, "la suite");
+    expect(blocs(field)).toEqual(["heading1 Le titre", "paragraph la suite", "paragraph"]);
+    envoie(field);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("# Le titre\n\nla suite", []);
+  });
+
+  it("Maj+Entrée au milieu d'un titre le coupe là : ce qui suit descend en paragraphe", () => {
+    const { field } = mount();
+    frapper(field, "# Titre suite");
+    act(() => { field.editor.commands.setTextSelection(1 + "Titre ".length); });
+    touche(field, "Enter", { shiftKey: true });
+    expect(blocs(field)).toEqual(["heading1 Titre", "paragraph suite", "paragraph"]);
+  });
+
+  it("Maj+Entrée en TÊTE d'un titre ne le vide pas : la ligne vide passe au-dessus, comme avec Entrée", () => {
+    const { field, onSubmit } = mount();
+    frapper(field, "## Le titre");
+    act(() => { field.editor.commands.setTextSelection(1); });
+    touche(field, "Enter", { shiftKey: true });
+    expect(blocs(field)).toEqual(["paragraph", "heading2 Le titre", "paragraph"]);
+    // Le curseur est resté devant le titre : on écrit DANS le titre, pas sur la ligne vide.
+    type(field, "Bien ");
+    expect(blocs(field)[1]).toBe("heading2 Bien Le titre");
+    envoie(field);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("## Bien Le titre", []);
+  });
+
+  it("dans une citation aussi, Maj+Entrée coupe le titre : la règle cherche les titres où qu'ils soient", () => {
+    const { field, onSubmit } = mount();
+    frapper(field, "> ### cité");
+    touche(field, "Enter", { shiftKey: true });
+    type(field, "la suite");
+    const citation = field.editor.state.doc.firstChild!;
+    expect(citation.type.name).toBe("blockquote");
+    expect(blocsDe(citation)).toEqual(["heading3 cité", "paragraph la suite"]);
+    envoie(field);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("> ### cité\n>\n> la suite", []);
+  });
+
+  it("un paragraphe de trois lignes changé en titre : la première est le titre, les deux autres restent UN paragraphe", async () => {
+    const { field, onSubmit } = mount();
+    type(field, "première");
+    touche(field, "Enter", { shiftKey: true });
+    type(field, "deuxième");
+    touche(field, "Enter", { shiftKey: true });
+    type(field, "troisième");
+    expect(blocs(field)).toEqual(["paragraph première⏎deuxième⏎troisième"]);
+    const user = userEvent.setup();
+    await user.click(bouton("Titre"));
+    await user.click(await screen.findByRole("menuitemradio", { name: "Titre 2" }));
+    expect(blocs(field)).toEqual(["heading2 première", "paragraph deuxième⏎troisième"]);
+    // Refermé, le menu rend la main au texte.
+    await image();
+    expect(document.activeElement).toBe(field);
+    envoie(field);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("## première\n\ndeuxième\ntroisième", []);
+  });
+
+  it("un titre collé sur deux lignes arrive coupé, comme le fil le montrerait", () => {
+    const { field, onSubmit } = mount();
+    act(() => { fireEvent.paste(field, presseBrute({ texte: "Le titre\nla suite", html: "<h3>Le titre<br>la suite</h3>" })); });
+    expect(blocs(field).slice(0, 2)).toEqual(["heading3 Le titre", "paragraph la suite"]);
+    act(() => { fireEvent.click(bouton(/envoyer/i)); });
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("### Le titre\n\nla suite", []);
+  });
+
+  it("un bloc de code de deux lignes changé en titre : ses lignes ne fusionnent pas", () => {
+    const { field } = mount();
+    clic(bouton("Bloc de code"));
+    act(() => { field.editor.commands.insertContent({ type: "text", text: "ligne une\nligne deux" }); });
+    act(() => { field.editor.commands.setHeading({ level: 1 }); });
+    expect(blocs(field).slice(0, 2)).toEqual(["heading1 ligne une", "paragraph ligne deux"]);
+  });
+
+  it("Ctrl+Z défait le saut ET sa coupe d'un seul geste — sans quoi la coupe se referait aussitôt", () => {
+    const { field } = mount();
+    frapper(field, "# Le titre");
+    // Le saut ouvre son propre pas d'historique : on juge SON annulation, pas celle de la frappe.
+    act(() => { field.editor.view.dispatch(closeHistory(field.editor.state.tr)); });
+    touche(field, "Enter", { shiftKey: true });
+    expect(blocs(field)).toEqual(["heading1 Le titre", "paragraph", "paragraph"]);
+    touche(field, "z", { ctrlKey: true });
+    expect(blocs(field)).toEqual(["heading1 Le titre", "paragraph"]);
+  });
+
+  it("le menu suit le curseur : le niveau du titre est coché, et « Texte normal » le rend paragraphe", async () => {
+    const { field, onSubmit } = mount();
+    frapper(field, "### Le titre");
+    expect(bouton("Titre").className).toContain("bg-accent");
+    const user = userEvent.setup();
+    await user.click(bouton("Titre"));
+    expect((await screen.findByRole("menuitemradio", { name: "Titre 3" })).getAttribute("aria-checked")).toBe("true");
+    await user.click(screen.getByRole("menuitemradio", { name: "Texte normal" }));
+    expect(blocs(field)[0]).toBe("paragraph Le titre");
+    expect(bouton("Titre").className).not.toContain("bg-accent");
+    envoie(field);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("Le titre", []);
+  });
+
+  it("la première ligne d'une puce ne devient pas un titre : le bouton est inerte", () => {
+    const { field } = mount();
+    type(field, "un");
+    clic(bouton("Liste à puces"));
+    expect(bouton("Titre").disabled).toBe(true);
+    // Hors de la liste, il revient.
+    clic(bouton("Liste à puces"));
+    expect(bouton("Titre").disabled).toBe(false);
   });
 });
 

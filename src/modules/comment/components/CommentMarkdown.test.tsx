@@ -84,14 +84,27 @@ describe("CommentMarkdown — injection", () => {
     expect(el.querySelector("iframe")).toBeNull();
   });
 
-  it("7. un `# titre` ne produit aucun titre — la règle est désactivée à la source", () => {
-    const el = html("# Titre géant\n## Sous-titre");
-    expect(el.querySelector("h1, h2, h3, h4, h5, h6")).toBeNull();
-    // Le texte reste lisible : il n'est pas perdu, seulement dégradé.
-    expect(el.textContent).toContain("Titre géant");
+  it("7. un titre à croisillons s'affiche, sur six niveaux — ce qu'écrit l'éditeur du legacy", () => {
+    const el = html("# Un\n## Deux\n### Trois\n#### Quatre\n##### Cinq\n###### Six\nla suite");
+    expect([...el.querySelectorAll("h1, h2, h3, h4, h5, h6")].map(h => `${h.tagName} ${h.textContent}`))
+      .toEqual(["H1 Un", "H2 Deux", "H3 Trois", "H4 Quatre", "H5 Cinq", "H6 Six"]);
+    expect(el.querySelector("p")?.textContent).toBe("la suite");
   });
 
-  it("7 bis. un titre SOULIGNÉ non plus : la règle est coupée elle aussi", () => {
+  it("7 bis. sept croisillons, un croisillon collé à son mot : du texte, pas un titre", () => {
+    const el = html("####### sept\n\n#motdièse et #2");
+    expect(el.querySelector("h1, h2, h3, h4, h5, h6")).toBeNull();
+    expect(el.textContent).toContain("####### sept");
+    expect(el.textContent).toContain("#motdièse et #2");
+  });
+
+  it("7 ter. un titre n'ouvre aucune porte : le HTML écrit dedans reste du texte", () => {
+    const el = html('# <img src=x onerror="alert(1)"> titre');
+    expect(el.querySelector("h1")?.textContent).toBe('<img src=x onerror="alert(1)"> titre');
+    expect(el.querySelector("img")).toBeNull();
+  });
+
+  it("7 quater. un titre SOULIGNÉ, lui, n'existe pas : la règle reste coupée", () => {
     // « Titre » suivi d'une ligne de `=` ou de `-` est un titre en markdown, sans un seul croisillon.
     const el = html("Titre géant\n===\n\nSous-titre\n---");
     expect(el.querySelector("h1, h2, h3, h4, h5, h6")).toBeNull();

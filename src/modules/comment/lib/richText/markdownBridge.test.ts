@@ -48,8 +48,8 @@ describe("le sérialiseur couvre le schéma", () => {
     expect(Object.keys(schema.marks).filter(nom => !SERIALIZED_MARKS.includes(nom))).toEqual([]);
   });
 
-  it("le schéma n'a ni titre, ni souligné, ni image — et garde le filet", () => {
-    expect(schema.nodes.heading).toBeUndefined();
+  it("le schéma a les titres — ni souligné ni image — et garde le filet", () => {
+    expect(schema.nodes.heading).toBeDefined();
     expect(schema.nodes.image).toBeUndefined();
     expect(schema.marks.underline).toBeUndefined();
     expect(schema.nodes.horizontalRule).toBeDefined();
@@ -204,7 +204,7 @@ describe("le texte sort tel qu'on l'a tapé", () => {
     telQuel("un [crochet] seul, une * étoile seule, un ~ tilde, un ` accent, un _ souligné");
     telQuel("-5 degrés");
     telQuel("-> voilà");
-    telQuel("# pas un titre");
+    telQuel("#motdièse en tête, et ####### sept croisillons");
     telQuel("1986 fut une année. 2) non plus");
     telQuel("R&D, <3 et a < b > c");
     telQuel("prix* (*hors taxes");
@@ -218,6 +218,8 @@ describe("le texte sort tel qu'on l'a tapé", () => {
     expect(sortis("- du pain")).toBe("\\- du pain");
     expect(sortis("1. premier")).toBe("1\\. premier");
     expect(sortis("> cité")).toBe("\\> cité");
+    expect(sortis("# pas un titre")).toBe("\\# pas un titre");
+    expect(sortis("### non plus")).toBe("\\### non plus");
     expect(sortis("une entité &amp; tapée")).toBe("une entité \\&amp; tapée");
     expect(sortis("__init__")).toBe("\\_\\_init\\_\\_");
   });
@@ -278,6 +280,14 @@ describe("après un saut de ligne, une ligne tapée comme du markdown en est", (
   it("une citation, un filet", () => {
     expect(rendu(serializeMarkdown(doc(paragraphe("il a dit", null, "> ceci"))))).toBe("<p>il a dit</p>\n<blockquote>\n<p>ceci</p>\n</blockquote>\n");
     expect(rendu(serializeMarkdown(doc(paragraphe("au-dessus", null, "---", null, "en dessous"))))).toBe("<p>au-dessus</p>\n<hr>\n<p>en dessous</p>\n");
+  });
+
+  it("… mais pas un titre : le fil n'en faisait pas d'un texte tapé ainsi, et l'éditeur y montre du texte", () => {
+    const sorti = serializeMarkdown(doc(paragraphe("il a dit", null, "# ceci")));
+    expect(rendu(sorti)).toBe("<p>il a dit<br>\n# ceci</p>\n");
+    // … dans une citation aussi, où la ligne porte son chevron.
+    const cite = serializeMarkdown(doc(schema.node("blockquote", null, [paragraphe("il a dit", null, "# ceci")])));
+    expect(rendu(cite)).not.toMatch(/<h[1-6]/);
   });
 
   it("une clôture de code, elle, reste neutralisée : ouverte, elle avalerait la suite du message", () => {
@@ -347,6 +357,73 @@ describe("une adresse tapée sans être un lien", () => {
   });
 });
 
+describe("les titres", () => {
+  const titre = (niveau: number, ...morceaux: readonly (string | ProseNode)[]) =>
+    schema.node("heading", { level: niveau }, morceaux.map(m => (typeof m === "string" ? schema.text(m) : m)));
+
+  it("s'écrivent à croisillons, sur six niveaux — comme les écrit le legacy", () => {
+    const sorti = serializeMarkdown(doc(...[1, 2, 3, 4, 5, 6].map(n => titre(n, `niveau ${n}`)), paragraphe("la suite")));
+    expect(sorti).toBe("# niveau 1\n\n## niveau 2\n\n### niveau 3\n\n#### niveau 4\n\n##### niveau 5\n\n###### niveau 6\n\nla suite");
+    expect(rendu(sorti)).toBe([1, 2, 3, 4, 5, 6].map(n => `<h${n}>niveau ${n}</h${n}>\n`).join("") + "<p>la suite</p>\n");
+  });
+
+  it("se relisent en titres, au même niveau — un message écrit par le legacy s'édite tel quel", () => {
+    const relu = parseMarkdown(schema, "## Ordre du jour\n\n- un\n- deux\n\n###### petit");
+    expect(relu.child(0).type.name).toBe("heading");
+    expect(relu.child(0).attrs.level).toBe(2);
+    expect(relu.child(2).attrs.level).toBe(6);
+    expect(serializeMarkdown(relu)).toBe("## Ordre du jour\n\n- un\n- deux\n\n###### petit");
+  });
+
+  it("portent leurs marques, leurs liens et leurs mentions", () => {
+    const sorti = serializeMarkdown(doc(titre(2, marque("gras", "bold"), " et ", lienEcrit("lien", "https://exemple.org"), " pour ", mention(MARIE))));
+    const html = rendu(sorti, [MARIE]);
+    expect(html).toMatch(/^<h2><strong>gras<\/strong> et <a href="https:\/\/exemple\.org">lien<\/a> pour <a href="\/profil\/marie-dupont">@Marie Dupont<\/a><\/h2>/);
+  });
+
+  it("un titre qui commence comme une liste reste un titre, sans barre oblique inverse", () => {
+    expect(serializeMarkdown(doc(titre(1, "- pas une liste")))).toBe("# - pas une liste");
+    expect(rendu("# - pas une liste")).toBe("<h1>- pas une liste</h1>\n");
+  });
+
+  it("… même quand le titre doit être écrit échappé : derrière « # », seules ses étoiles le sont", () => {
+    // Des étoiles tapées obligent à écrire ce titre échappé — et non son tiret, qui n'ouvre rien ici.
+    const sorti = serializeMarkdown(doc(titre(1, "- liste *pas* en italique")));
+    expect(sorti).toBe("# - liste \\*pas\\* en italique");
+    expect(rendu(sorti)).toBe("<h1>- liste *pas* en italique</h1>\n");
+  });
+
+  it("des croisillons en FIN de titre seraient sa clôture : échappés, ils restent ; collés au mot, ils restent nus", () => {
+    const sorti = serializeMarkdown(doc(titre(1, "Langage C #"), titre(2, "Langage C#")));
+    expect(sorti).toBe("# Langage C \\#\n\n## Langage C#");
+    expect(rendu(sorti)).toBe("<h1>Langage C #</h1>\n<h2>Langage C#</h2>\n");
+  });
+
+  it("une clôture échappée n'oblige pas à échapper le reste : « 2 * 3 » y reste nu", () => {
+    const sorti = serializeMarkdown(doc(titre(2, "2 * 3 C #")));
+    expect(sorti).toBe("## 2 * 3 C \\#");
+    expect(rendu(sorti)).toBe("<h2>2 * 3 C #</h2>\n");
+  });
+
+  it("dans une citation, un titre garde son chevron", () => {
+    const sorti = serializeMarkdown(doc(schema.node("blockquote", null, [titre(3, "cité"), paragraphe("texte")])));
+    expect(sorti).toBe("> ### cité\n>\n> texte");
+    expect(rendu(sorti)).toBe("<blockquote>\n<h3>cité</h3>\n<p>texte</p>\n</blockquote>\n");
+  });
+
+  it("un titre vide ne fait pas un message", () => {
+    expect(isBlank(doc(titre(1)))).toBe(true);
+    expect(isBlank(doc(titre(1, "  ")))).toBe(true);
+    expect(isBlank(doc(titre(1, "x")))).toBe(false);
+  });
+
+  it("un titre en tête d'élément de liste, écrit par le legacy, se relit sans lever et garde son texte", () => {
+    const relu = parseMarkdown(schema, "- # titre dans une liste\n- second");
+    expect(relu.textContent).toContain("titre dans une liste");
+    expect(() => serializeMarkdown(relu)).not.toThrow();
+  });
+});
+
 describe("les marques et les blocs s'écrivent en markdown", () => {
   it("gras, italique, barré, code", () => {
     const sorti = serializeMarkdown(doc(paragraphe("du ", marque("gras", "bold"), ", de l'", marque("italique", "italic"), ", du ", marque("barré", "strike"), " et du ", marque("code", "code"))));
@@ -370,8 +447,23 @@ describe("les marques et les blocs s'écrivent en markdown", () => {
     expect(sorti).toBe("à\nvoir **ici**- et là, 1. non plus");
   });
 
-  it("un croisillon en tête de ligne sort tel quel : le fil n'a pas de titre, il n'y a rien à neutraliser", () => {
-    expect(serializeMarkdown(doc(paragraphe("# pas un titre", null, "## non plus")))).toBe("# pas un titre\n## non plus");
+  it("un croisillon qui ouvrirait un titre est échappé, en tête de ligne comme après un saut — `#mot`, non", () => {
+    const sorti = serializeMarkdown(doc(paragraphe("# pas un titre", null, "## non plus", null, "#motdièse")));
+    expect(sorti).toBe("\\# pas un titre\n\\## non plus\n#motdièse");
+    expect(rendu(sorti)).toBe("<p># pas un titre<br>\n## non plus<br>\n#motdièse</p>\n");
+  });
+
+  it("six croisillons, ou un seul sur sa ligne, ouvriraient encore un titre : échappés aussi", () => {
+    const sorti = serializeMarkdown(doc(paragraphe("###### six"), paragraphe("#"), paragraphe("avant", null, "##")));
+    expect(sorti).toBe("\\###### six\n\n\\#\n\navant\n\\##");
+    expect(rendu(sorti)).toBe("<p>###### six</p>\n<p>#</p>\n<p>avant<br>\n##</p>\n");
+  });
+
+  it("au milieu d'une ligne, un croisillon reste nu — derrière une marque, dans un bloc qu'il faut échapper", () => {
+    // Des étoiles tapées obligent à écrire ce paragraphe échappé : le croisillon, lui, n'y ouvre rien.
+    const sorti = serializeMarkdown(doc(paragraphe(marque("gras", "bold"), " # suite et *étoiles*")));
+    expect(sorti).toBe("**gras** # suite et \\*étoiles\\*");
+    expect(rendu(sorti)).toBe("<p><strong>gras</strong> # suite et *étoiles*</p>\n");
   });
 
   it("deux paragraphes sont séparés d'une ligne vide", () => {

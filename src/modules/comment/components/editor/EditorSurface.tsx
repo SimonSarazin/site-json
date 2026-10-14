@@ -14,7 +14,7 @@ import { imageFilesFrom } from "../../lib/commentImages";
 import { COMMENT_PROSE } from "../../lib/commentProse";
 import { CommentMentionNode, commentExtensions } from "../../lib/richText/extensions";
 import { addressOf, isBlank, mentionsOf, parseMarkdown, serializeMarkdown, type MentionAttrs } from "../../lib/richText/markdownBridge";
-import { FORMAT_KINDS, type EditorSurfaceHandle, type EditorSurfaceState, type FormatKind } from "./editorTypes";
+import { FORMAT_KINDS, HEADING_LEVELS, type EditorSurfaceHandle, type EditorSurfaceState, type FormatKind, type HeadingLevel } from "./editorTypes";
 import type { CommentMention } from "../../types";
 
 export interface EditorSurfaceProps {
@@ -107,11 +107,11 @@ interface Suggestion {
 const SUGGESTION_DE_MENTION = new PluginKey("commentMention");
 
 /**
- * Les extensions dont les raccourcis TAPÉS restent ceux du kit : les blocs (`- `, `1. `, `> `,
- * les trois accents graves, `---`) et le code en ligne. Ceux du gras, de l'italique et du barré
- * sont remplacés par les nôtres (`Clavier`), plus stricts.
+ * Les extensions dont les raccourcis TAPÉS restent ceux du kit : les blocs (`# ` à `###### `, `- `,
+ * `1. `, `> `, les trois accents graves, `---`) et le code en ligne. Ceux du gras, de l'italique et
+ * du barré sont remplacés par les nôtres (`Clavier`), plus stricts.
  */
-const RACCOURCIS_TAPES = ["blockquote", "bulletList", "orderedList", "codeBlock", "code", "horizontalRule", "commentKeymap"];
+const RACCOURCIS_TAPES = ["heading", "blockquote", "bulletList", "orderedList", "codeBlock", "code", "horizontalRule", "commentKeymap"];
 
 /**
  * Les marques tapées « à la markdown » : `**gras**`, `*italique*`, `~~barré~~` — et `__gras__`,
@@ -198,9 +198,15 @@ function personne(user: User): { id: string; name: string; slug: string } {
 function etatDe(editor: Editor): EditorSurfaceState {
   const active = {} as Record<FormatKind, boolean>;
   for (const kind of FORMAT_KINDS) active[kind] = editor.isActive(NOM_DANS_LE_SCHEMA[kind]);
+  const niveau = editor.isActive("heading") ? Number(editor.getAttributes("heading").level) : null;
   // « Vide » se juge sur ce qu'on LIRAIT, pas sur la forme du document : un paragraphe d'espaces,
   // un saut de ligne seul, une liste ou une citation sans rien dedans ne sont pas un message.
-  return { empty: isBlank(editor.state.doc), active };
+  return {
+    empty: isBlank(editor.state.doc),
+    active,
+    heading: HEADING_LEVELS.find(n => n === niveau) ?? null,
+    canHeading: editor.can().setHeading({ level: 1 }),
+  };
 }
 
 /**
@@ -459,6 +465,11 @@ export function EditorSurface({
           // Un lien demande une adresse : il passe par `setLink`.
           case "link": break;
         }
+      }),
+      setHeading: vivant((level: HeadingLevel | null) => {
+        const chaine = editor.chain().focus();
+        if (level === null) chaine.setParagraph().run();
+        else chaine.setHeading({ level }).run();
       }),
       currentLink: () => {
         if (editor.isDestroyed || !editor.isActive("link")) return null;

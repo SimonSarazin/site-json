@@ -1,12 +1,13 @@
 import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { lazy } from "vite-preload";
 import {
-  Bold, Code, ImagePlus, Italic, Link2, Link2Off, List, ListOrdered, Quote, Send, SmilePlus, SquareCode, Strikethrough, X,
+  Bold, Code, Heading, ImagePlus, Italic, Link2, Link2Off, List, ListOrdered, Quote, Send, SmilePlus, SquareCode, Strikethrough, X,
 } from "lucide-react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -15,7 +16,7 @@ import { normalizeLinkAddress } from "../lib/richText/linkAddress";
 import type { PendingImage } from "../hooks/useCommentImages";
 import { ComposerImages } from "./ComposerImages";
 import { loadEditorSurface, useEditorSurface } from "./editor/editorStore";
-import { FORMAT_KINDS, type EditorSurfaceHandle, type EditorSurfaceState, type FormatKind } from "./editor/editorTypes";
+import { FORMAT_KINDS, HEADING_LEVELS, type EditorSurfaceHandle, type EditorSurfaceState, type FormatKind, type HeadingLevel } from "./editor/editorTypes";
 import type { CommentMention } from "../types";
 import "../styles.css";
 
@@ -30,6 +31,9 @@ const FORMAT_ICONS: Record<FormatKind, typeof Bold> = {
 
 /** Les mises en forme du TEXTE : dans un bloc de code, où rien ne se met en forme, elles n'ont rien à faire. */
 const INLINE_FORMATS: readonly FormatKind[] = ["bold", "italic", "strike", "code", "link"];
+
+/** La barre, dans l'ordre : les mises en forme, et le menu des titres là où le legacy le place — après le barré. */
+const BARRE: readonly (FormatKind | "heading")[] = [...FORMAT_KINDS.slice(0, 3), "heading", ...FORMAT_KINDS.slice(3)];
 
 const POINTEUR_GROSSIER = "(pointer: coarse)";
 
@@ -295,7 +299,48 @@ export function CommentComposer({
             barre d'outils à pleine intensité sous chaque fil est du bruit, mais la masquer
             ferait sauter la mise en page à chaque clic dans le champ. */}
         <div className="comment-marks flex flex-wrap items-center gap-0.5" role="group" aria-label={String(t("composer.tools"))}>
-          {FORMAT_KINDS.map(kind => {
+          {BARRE.map(kind => {
+            if (kind === "heading") {
+              const niveau = etat?.heading ?? null;
+              return (
+                // Six niveaux, comme le legacy, et le texte normal : un bouton qui ouvre leur liste.
+                // `modal={false}` : le composer vit souvent dans un dialogue (cf. la mémoire du dépôt
+                // sur les menus Radix modaux sous un dialogue monté).
+                <DropdownMenu key={kind} modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      disabled={barreInerte || !etat?.canHeading}
+                      className={cn("size-7 rounded-full text-muted-foreground", niveau !== null && "bg-accent text-accent-foreground")}
+                      aria-label={String(t("composer.marks.heading.label"))}
+                      title={String(t("composer.marks.heading.label"))}
+                      onMouseDown={event => event.preventDefault()}
+                    >
+                      <Heading className="size-3.5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    // Refermé, le focus retourne au texte — pas au bouton : on reprend la phrase.
+                    onCloseAutoFocus={event => { event.preventDefault(); editeur.current?.focus(); }}
+                  >
+                    <DropdownMenuRadioGroup
+                      value={niveau === null ? "0" : String(niveau)}
+                      onValueChange={valeur => editeur.current?.setHeading(valeur === "0" ? null : Number(valeur) as HeadingLevel)}
+                    >
+                      <DropdownMenuRadioItem value="0">{t("composer.heading.normal")}</DropdownMenuRadioItem>
+                      {HEADING_LEVELS.map(n => (
+                        <DropdownMenuRadioItem key={n} value={String(n)}>
+                          {t("composer.heading.level", undefined, { level: n })}
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              );
+            }
             const Icon = FORMAT_ICONS[kind];
             const actif = etat?.active[kind] ?? false;
             const bouton = (

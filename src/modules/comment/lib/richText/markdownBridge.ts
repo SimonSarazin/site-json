@@ -30,6 +30,8 @@ import type { CommentMention } from "../../types";
  * une liste, une citation ou un filet (`- `, `1. `, `> `, `---`) part telle quelle. Le fil en fait
  * une liste, une citation, un filet — ce qu'il a toujours fait d'un texte tapé ainsi. En tête de
  * paragraphe, l'éditeur fait lui-même la liste : qui la défait veut le signe, et le signe est gardé.
+ * Pas un titre : le fil n'en a jamais fait d'un texte tapé ainsi, et l'éditeur y montre du texte —
+ * son croisillon est échappé, là comme en tête de paragraphe.
  *
  * Pur : ni DOM, ni éditeur monté — un schéma suffit.
  */
@@ -94,6 +96,7 @@ function analyseurPour(schema: Schema): MarkdownParser {
   md.inline.ruler.after("text", "mention", regleMention);
   const analyseur = new MarkdownParser(schema, md, {
     blockquote: { block: "blockquote" },
+    heading: { block: "heading", getAttrs: jeton => ({ level: Number(jeton.tag.slice(1)) }) },
     paragraph: { block: "paragraph" },
     list_item: { block: "listItem" },
     bullet_list: { block: "bulletList" },
@@ -154,7 +157,8 @@ const CROCHET_OUVERT = /(^|[^\\])\[$/;
  * L'état du sérialiseur, avec les échappements du dialecte du fil.
  *
  * `prosemirror-markdown` échappe pour CommonMark ; ici c'est le fil qui fait foi — ses adresses
- * liées d'office, ses titres coupés, ses sauts de ligne simples. `echappe`, plus bas, dit comment.
+ * liées d'office, ses titres à croisillons seuls, ses sauts de ligne simples. `echappe`, plus bas,
+ * dit comment.
  */
 class EtatDuFil extends MarkdownSerializerState {
   /**
@@ -186,12 +190,18 @@ class EtatDuFil extends MarkdownSerializerState {
   }
 
   override esc(str: string, startOfLine = false): string {
+    // Le début d'une LIGNE — d'un bloc, ou derrière un saut (le chevron et le retrait d'un bloc
+    // englobant déjà écrits) : un titre s'y ouvrirait, une liste n'y vaut que pour un bloc.
+    return this.echappeLigne(str, startOfLine, startOfLine || /\n[ \t>]*$/.test(this.interne.out));
+  }
+
+  private echappeLigne(str: string, startOfLine: boolean, enTeteDeLigne: boolean): string {
     if (this.nu) return str;
     if (this.suite > 0) {
       // La fin d'une adresse commencée dans le lien d'avant : pas un signe n'y est touché.
       const longueur = this.suite;
       this.suite = 0;
-      return str.slice(0, longueur) + this.esc(str.slice(longueur), false);
+      return str.slice(0, longueur) + this.echappeLigne(str.slice(longueur), false, false);
     }
     // Une adresse tapée sans être un lien (on envoie avant que l'éditeur l'ait liée) : le fil la
     // lie de lui-même, et une barre oblique inverse posée devant un `~` ou un `_` la couperait.
@@ -204,9 +214,9 @@ class EtatDuFil extends MarkdownSerializerState {
     adresses.forEach(({ debut, fin, protocole, lien }, rang) => {
       const adresse = str.slice(debut, fin);
       if (!protocole) this.nues.push(lien);
-      const suite = echappe(str.slice(fin, adresses[rang + 1]?.debut ?? str.length), false);
+      const suite = echappe(str.slice(fin, adresses[rang + 1]?.debut ?? str.length), false, false);
       // Un chevron tapé juste devant en ferait un lien automatique, chevrons avalés.
-      sorti += echappe(str.slice(curseur, debut), startOfLine && curseur === 0).replace(/<$/, "\\<");
+      sorti += echappe(str.slice(curseur, debut), startOfLine && curseur === 0, enTeteDeLigne && curseur === 0).replace(/<$/, "\\<");
       // Une adresse à protocole se lit dans la SOURCE, signe pour signe : ce qui la suit sans espace
       // — la barre oblique inverse d'un signe échappé, les étoiles d'un gras qui s'ouvre — y
       // entrerait. Entre chevrons, elle s'arrête où elle doit. Les autres adresses se lisent dans
@@ -215,7 +225,7 @@ class EtatDuFil extends MarkdownSerializerState {
       sorti += bornee && seRelit(`<${adresse}>`, adresse, adresse) ? `<${adresse}>` : adresse;
       curseur = fin;
     });
-    return sorti + echappe(str.slice(curseur), startOfLine && curseur === 0);
+    return sorti + echappe(str.slice(curseur), startOfLine && curseur === 0, enTeteDeLigne && curseur === 0);
   }
 
   override text(text: string, escape = true): void {
@@ -317,7 +327,7 @@ function adressesDe(str: string): AdresseLue[] {
  * relus, deviennent autre chose (`__init__` en italique, « 1. » ou « + » seuls en liste vide).
  * Elle échappe large — `serializeMarkdown` retire ensuite ce qui ne servait à rien.
  */
-function echappe(str: string, debutDeLigne: boolean): string {
+function echappe(str: string, debutDeLigne: boolean, enTeteDeLigne: boolean): string {
   // Les signes qui ouvrent une marque, un code ou un lien. Un souligné pris entre deux lettres
   // ou chiffres n'ouvre rien (`nom_de_variable`) — mais entre deux soulignés, si : la
   // bibliothèque comptait le souligné parmi les « lettres ».
@@ -328,12 +338,14 @@ function echappe(str: string, debutDeLigne: boolean): string {
   if (debutDeLigne) {
     sorti = sorti
       // Ce qui, en tête de bloc, ouvrirait une liste ou une citation. Un « + » ne compte que
-      // suivi d'une espace — ou SEUL sur sa ligne : un marqueur nu ouvre une liste vide. Pas le
-      // croisillon : le fil n'a pas de titre, il n'y a rien à neutraliser.
+      // suivi d'une espace — ou SEUL sur sa ligne : un marqueur nu ouvre une liste vide.
       .replace(/^(\s*)([->]|\+(?=\s|$))/, "$1\\$2")
       // « 1. » comme « 1) », suivis d'une espace ou seuls sur leur ligne.
       .replace(/^(\s*\d+)([.)])(\s|$)/, "$1\\$2$3");
   }
+  // Un à six croisillons suivis d'une espace, ou seuls : un titre, en tête de N'IMPORTE QUELLE ligne
+  // — un titre coupe un paragraphe. `#mot` et sept croisillons restent du texte, et restent nus.
+  if (enTeteDeLigne) sorti = sorti.replace(/^(\s*)(#{1,6})(?=[ \t]|$)/, "$1\\$2");
   return sorti
     // Une entité tapée (« &amp; ») serait DÉCODÉE au rendu : on a écrit cinq caractères, pas un.
     .replace(/&(?=#?[0-9A-Za-z]+;)/g, "\\&")
@@ -481,6 +493,18 @@ const serialiseur = new MarkdownSerializer(
   {
     blockquote(state, node) {
       state.wrapBlock("> ", null, node, () => state.renderContent(node));
+    },
+    heading(state, node) {
+      state.write(`${state.repeat("#", Number(node.attrs.level))} `);
+      // Derrière « # », on n'est plus en tête de ligne : un « - » ou un « 1. » n'y ouvrent rien.
+      state.renderInline(node, false);
+      // Des croisillons en FIN de titre, derrière une espace, seraient lus comme sa clôture — et
+      // tomberaient : « C # » deviendrait « C ». Échappés même dans un bloc écrit nu : ce n'est pas
+      // un signe tapé qu'on garde tel quel, c'est la clôture que le markdown y lirait — et le bloc
+      // nu peut alors rester nu, sans les barres obliques du reste (`# 2 * 3 C \#`).
+      const etat = state as unknown as EtatInterne;
+      etat.out = etat.out.replace(/([ \t])(#+)([ \t]*)$/, "$1\\$2$3");
+      state.closeBlock(node);
     },
     codeBlock(state, node) {
       // La clôture est plus longue que toute suite d'accents graves du contenu.

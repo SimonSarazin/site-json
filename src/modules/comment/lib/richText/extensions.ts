@@ -1,5 +1,6 @@
 import { Extension, Mark, markInputRule, type Extensions, type InputRuleMatch } from "@tiptap/core";
 import Mention from "@tiptap/extension-mention";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
 import StarterKit from "@tiptap/starter-kit";
 
 /**
@@ -93,9 +94,53 @@ const WrittenLink = Extension.create({
 });
 
 /**
+ * Un titre tient sur UNE ligne : le markdown n'a pas de saut de ligne dans un titre — `# un` puis
+ * `deux` à la ligne font un titre ET un paragraphe. Un saut posé dans un titre (Maj+Entrée, un
+ * paragraphe de plusieurs lignes changé en titre, un collage) le coupe donc à son PREMIER saut : la
+ * suite devient UN paragraphe, ses autres sauts compris — exactement ce que le fil en montrera.
+ *
+ * Un saut en TÊTE de titre ne le vide pas : la ligne vide passe au-dessus, en paragraphe, et le
+ * titre garde son texte — ce que fait Entrée au même endroit.
+ */
+const TitreSurUneLigne = Extension.create({
+  name: "commentHeadingLine",
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: new PluginKey("commentHeadingLine"),
+        appendTransaction: (transactions, _avant, state) => {
+          if (!transactions.some(tr => tr.docChanged)) return null;
+          const { hardBreak, paragraph } = state.schema.nodes;
+          const coupes: { titre: number; saut: number }[] = [];
+          state.doc.descendants((node, titre) => {
+            if (node.type.name !== "heading") return !node.isTextblock;
+            let saut = -1;
+            node.forEach((enfant, decalage) => {
+              if (saut < 0 && enfant.type === hardBreak) saut = titre + 1 + decalage;
+            });
+            if (saut >= 0) coupes.push({ titre, saut });
+            return false;
+          });
+          if (coupes.length === 0) return null;
+          const tr = state.tr;
+          // De la fin vers le début : chaque coupe laisse en place les positions qui la précèdent.
+          for (const { titre, saut } of coupes.reverse()) {
+            tr.delete(saut, saut + 1);
+            if (saut === titre + 1) tr.insert(titre, paragraph.create());
+            else tr.split(saut, 1, [{ type: paragraph }]);
+          }
+          return tr;
+        },
+      }),
+    ];
+  },
+});
+
+/**
  * Le schéma d'un message : ce que le markdown du fil sait écrire, rien de plus.
  *
- * - pas de titre (le fil coupe `heading` à la source) ni de souligné (aucun markdown pour lui) ;
+ * - les titres à croisillons, six niveaux, comme l'éditeur du legacy — et sur une ligne
+ *   (`TitreSurUneLigne`) ; pas de souligné (aucun markdown pour lui) ;
  * - le filet horizontal RESTE : sans son nœud, éditer un message qui en porte le déformerait ;
  * - pas d'image dans le texte : le fil les refuse à dessein, une image est une pièce jointe ;
  * - le lien ne s'ouvre pas au clic pendant qu'on écrit ;
@@ -107,13 +152,14 @@ const WrittenLink = Extension.create({
 export function commentExtensions(mention: typeof CommentMentionNode = CommentMentionNode): Extensions {
   return [
     StarterKit.configure({
-      heading: false,
+      heading: { levels: [1, 2, 3, 4, 5, 6] },
       underline: false,
       code: false,
       link: { openOnClick: false, autolink: true, linkOnPaste: true, HTMLAttributes: { rel: "noopener noreferrer nofollow ugc", target: null } },
     }),
     CommentCode,
     WrittenLink,
+    TitreSurUneLigne,
     mention,
   ];
 }

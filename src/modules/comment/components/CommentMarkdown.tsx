@@ -10,10 +10,11 @@ import type { CommentMention } from "../types";
  * Rendu du texte d'un message.
  *
  * **Deux barrières, et non une.** La première est le parseur, restreint *à la source* :
- * `html: false` échappe tout HTML écrit par l'auteur, et les règles `heading`, `lheading`,
- * `image` sont désactivées — un `# titre` ou une image distante ne peuvent donc pas exister
- * dans la sortie, plutôt que d'être retirés après coup. La seconde est `sanitizeProse`, le
- * profil DOMPurify déjà en place dans le dépôt pour la prose saisie par n'importe qui.
+ * `html: false` échappe tout HTML écrit par l'auteur, et la règle `image` est désactivée — une
+ * image distante ne peut donc pas exister dans la sortie, plutôt que d'être retirée après coup.
+ * Les titres à croisillons passent (six niveaux, comme l'éditeur du legacy), pas les titres
+ * soulignés (`lheading`). La seconde est `sanitizeProse`, le profil DOMPurify déjà en place dans
+ * le dépôt pour la prose saisie par n'importe qui.
  *
  * Ce choix conserve le moteur du dépôt (`markdown-it` + `@/lib/sanitize`, cf. `ProseContent`)
  * au lieu d'introduire un second chemin de rendu markdown : une seule implémentation, donc

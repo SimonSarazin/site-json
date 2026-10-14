@@ -33,8 +33,8 @@
     "stopReplying": "Ne plus répondre",
     "emoji": "Insérer un émoji",
     "mentionHint": "Tapez @ pour mentionner quelqu'un",
-    "formattingHint": "Ctrl+Entrée envoie le message. Entrée ouvre un paragraphe, Maj+Entrée passe à la ligne. Mise en forme au clavier : **gras**, *italique*, ~~barré~~, `code`, > citation, - liste, 1. liste numérotée.",
-    "formattingHintTouch": "Entrée passe à la ligne ; le message part par son bouton. Mise en forme au clavier : **gras**, *italique*, ~~barré~~, `code`, > citation, - liste, 1. liste numérotée.",
+    "formattingHint": "Ctrl+Entrée envoie le message. Entrée ouvre un paragraphe, Maj+Entrée passe à la ligne. Mise en forme au clavier : **gras**, *italique*, ~~barré~~, # titre, `code`, > citation, - liste, 1. liste numérotée.",
+    "formattingHintTouch": "Entrée passe à la ligne ; le message part par son bouton. Mise en forme au clavier : **gras**, *italique*, ~~barré~~, # titre, `code`, > citation, - liste, 1. liste numérotée.",
     "sendShortcut": "Ctrl+Entrée",
     "tools": "Mise en forme et pièces jointes",
     "editorFailed": "L'éditeur n'a pas pu être chargé. Réessayez, ou rechargez la page.",
@@ -49,6 +49,9 @@
       },
       "strike": {
         "label": "Barré"
+      },
+      "heading": {
+        "label": "Titre"
       },
       "code": {
         "label": "Code"
@@ -68,6 +71,10 @@
       "codeBlock": {
         "label": "Bloc de code"
       }
+    },
+    "heading": {
+      "normal": "Texte normal",
+      "level": "Titre {{level}}"
     },
     "link": {
       "url": "Adresse du lien",

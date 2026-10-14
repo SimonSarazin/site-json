@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { createElement, useEffect, useImperativeHandle } from "react";
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
 import type { EditorSurfaceProps } from "./editor/EditorSurface";
 import type { EditorSurfaceHandle, EditorSurfaceState, FormatKind } from "./editor/editorTypes";
@@ -35,7 +36,7 @@ const AUCUNE = Object.fromEntries(
 /** Ce que le témoin a reçu, et la poignée qu'il a posée. */
 const recu: { props: EditorSurfaceProps | null } = { props: null };
 const poignee = {
-  focus: vi.fn(), toggle: vi.fn(), setLink: vi.fn(), insertText: vi.fn(), clear: vi.fn(),
+  focus: vi.fn(), toggle: vi.fn(), setHeading: vi.fn(), setLink: vi.fn(), insertText: vi.fn(), clear: vi.fn(),
   currentLink: vi.fn<() => string | null>(() => null),
   read: vi.fn(() => ({ text: "lu dans l'éditeur", mentions: [{ id: "a".repeat(24), name: "Camille", slug: "camille" }] })),
 } satisfies EditorSurfaceHandle;
@@ -46,7 +47,9 @@ function Temoin(props: EditorSurfaceProps) {
   useImperativeHandle(props.handleRef, () => poignee, []);
   return createElement("div", { "data-temoin": "" });
 }
-const dire = (etat: EditorSurfaceState) => act(() => { recu.props!.onStateChange(etat); });
+/** Ce que l'éditeur dit de lui. Par défaut : pas de titre au curseur, et le bloc peut en devenir un. */
+const dire = (etat: Pick<EditorSurfaceState, "empty" | "active"> & Partial<EditorSurfaceState>) =>
+  act(() => { recu.props!.onStateChange({ heading: null, canHeading: true, ...etat }); });
 
 type Props = Partial<Parameters<typeof CommentComposer>[0]>;
 function mount(props: Props = {}) {
@@ -280,5 +283,79 @@ describe("CommentComposer — ce que la coquille fait de ce que l'éditeur lui d
     dire({ empty: false, active: AUCUNE });
     expect(bouton("Gras").disabled).toBe(true);
     expect(bouton(/envoyer/i).disabled).toBe(true);
+  });
+});
+
+/**
+ * Le menu des titres : six niveaux, comme l'éditeur du legacy, et le texte normal. Placé où le legacy
+ * le place — après le barré. La coquille ne fait que dire le niveau choisi à l'éditeur.
+ */
+describe("CommentComposer — le menu des titres", () => {
+  beforeEach(() => { magasin.courant = { surface: Temoin, failed: false }; });
+  // Le menu de Radix s'appuie sur des API de pointeur que jsdom n'a pas.
+  const manquantes = ["hasPointerCapture", "releasePointerCapture", "scrollIntoView"] as const;
+  beforeAll(() => {
+    for (const nom of manquantes) (Element.prototype as unknown as Record<string, unknown>)[nom] ??= () => false;
+  });
+  afterAll(() => {
+    for (const nom of manquantes) delete (Element.prototype as unknown as Record<string, unknown>)[nom];
+  });
+
+  it("se place après « Barré », comme dans le legacy", () => {
+    mount();
+    dire({ empty: true, active: AUCUNE });
+    const noms = screen.getAllByRole("button").map(b => b.getAttribute("aria-label")).filter(Boolean);
+    expect(noms.slice(0, 5)).toEqual(["Gras", "Italique", "Barré", "Titre", "Code"]);
+  });
+
+  it("ouvre le texte normal et six niveaux, et commande à l'éditeur celui qu'on choisit", async () => {
+    mount();
+    dire({ empty: true, active: AUCUNE });
+    const user = userEvent.setup();
+    await user.click(bouton("Titre"));
+    const niveaux = await screen.findAllByRole("menuitemradio");
+    expect(niveaux.map(n => n.textContent)).toEqual(["Texte normal", "Titre 1", "Titre 2", "Titre 3", "Titre 4", "Titre 5", "Titre 6"]);
+    expect(niveaux[0]!.getAttribute("aria-checked")).toBe("true");
+    await user.click(screen.getByRole("menuitemradio", { name: "Titre 2" }));
+    expect(poignee.setHeading).toHaveBeenCalledExactlyOnceWith(2);
+    // Refermé, le menu rend la main au texte — et pas d'abord à son bouton, qu'un lecteur d'écran annoncerait.
+    expect(screen.queryAllByRole("menuitemradio")).toHaveLength(0);
+    expect(poignee.focus).toHaveBeenCalled();
+    expect(document.activeElement).not.toBe(bouton("Titre"));
+  });
+
+  it("n'est pas modal : ouvert, il laisse la page vivante — le composer vit souvent dans un dialogue", async () => {
+    mount();
+    dire({ empty: true, active: AUCUNE });
+    const user = userEvent.setup();
+    await user.click(bouton("Titre"));
+    await screen.findAllByRole("menuitemradio");
+    // Un menu modal coupe le pointeur à tout le reste de la page — et, sous un dialogue monté, l'y laisse coupé.
+    expect(document.body.style.pointerEvents).not.toBe("none");
+    await user.keyboard("{Escape}");
+  });
+
+  it("le niveau au curseur est coché, le bouton se dit actif — et « Texte normal » rend le paragraphe", async () => {
+    mount();
+    dire({ empty: false, active: AUCUNE, heading: 3 });
+    expect(bouton("Titre").className).toContain("bg-accent");
+    const user = userEvent.setup();
+    await user.click(bouton("Titre"));
+    expect((await screen.findByRole("menuitemradio", { name: "Titre 3" })).getAttribute("aria-checked")).toBe("true");
+    await user.click(screen.getByRole("menuitemradio", { name: "Texte normal" }));
+    expect(poignee.setHeading).toHaveBeenCalledExactlyOnceWith(null);
+  });
+
+  it("là où un titre ne peut pas aller — la première ligne d'un élément de liste —, le bouton est inactif", () => {
+    mount();
+    dire({ empty: false, active: { ...AUCUNE, list: true }, canHeading: false });
+    expect(bouton("Titre").disabled).toBe(true);
+    dire({ empty: false, active: AUCUNE });
+    expect(bouton("Titre").disabled).toBe(false);
+  });
+
+  it("tant que l'éditeur n'a rien dit de lui, il est inactif comme le reste de la barre", () => {
+    mount();
+    expect(bouton("Titre").disabled).toBe(true);
   });
 });

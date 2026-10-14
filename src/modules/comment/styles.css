@@ -358,6 +358,25 @@
    droit, pixel pour pixel (mesuré le 14/10). Le gras, lui, a ses vraies graisses. */
 .comment-thread em,
 .comment-thread i { font-synthesis: style; }
+/* Les titres d'un message, dans le champ comme dans le fil : à l'échelle d'un MESSAGE, jamais d'une
+   page — le titre 1 à peine plus grand que le texte, le 4 à sa taille, les 5 et 6 en dessous et le
+   6 atténué, comme les rend GitHub. Ici et pas en classes Tailwind : des thèmes posent `.prose hN`
+   HORS couche — la couleur sur la plupart ; la taille, la police et les marges d'une page sur
+   parent62 et rezo-sante-reunion, qui ne chargent pas le plugin typography —, et une règle hors
+   couche bat tout utilitaire, quelle que soit sa spécificité (mesuré le 14/10).
+   `.comment-thread .prose hN` passe devant `.prose hN`. */
+.comment-thread .prose :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0.5rem 0 0.25rem;
+  font-weight: 600;
+  line-height: 1.375;
+}
+.comment-thread .prose > :is(h1, h2, h3, h4, h5, h6):first-child { margin-top: 0; }
+.comment-thread .prose h1 { font-size: 1.25rem; }
+.comment-thread .prose h2 { font-size: 1.125rem; }
+.comment-thread .prose h3 { font-size: 1rem; }
+.comment-thread .prose h4 { font-size: 0.875rem; }
+.comment-thread .prose :is(h5, h6) { font-size: 0.75rem; }
+.comment-thread .prose h6 { color: var(--muted-foreground); }
 .comment-thread .comment-editor-field pre { white-space: pre-wrap; }
 .comment-thread .comment-editor-field [contenteditable="false"] { white-space: normal; }
 /* Le texte d'attente : une décoration du paragraphe vide, jamais du texte dans le document. */

@@ -10,12 +10,15 @@ import MarkdownIt from "markdown-it";
  * - `html: false` échappe tout HTML écrit par l'auteur ;
  * - `linkify: true` fait un lien d'une adresse nue ;
  * - `breaks: true` : dans une discussion, un retour à la ligne simple est voulu par qui écrit ;
- * - `heading`, `lheading`, `image` sont coupées À LA SOURCE : un `# titre` ou une image distante
- *   ne peuvent pas exister dans la sortie, plutôt que d'en être retirés après coup.
+ * - `image` est coupée À LA SOURCE : une image distante ne peut pas exister dans la sortie,
+ *   plutôt que d'en être retirée après coup ;
+ * - un titre s'écrit à croisillons, six niveaux (`# titre` … `###### titre`) — ce qu'écrit
+ *   l'éditeur du legacy. Le titre SOULIGNÉ (`lheading`) reste coupé : une ligne suivie de `---`
+ *   est un texte suivi d'un filet, comme le fil l'a toujours rendu, et non un titre surprise.
  *
  * Chaque appel rend une instance neuve : le fil y pose sa règle de lien, l'éditeur sa règle de
  * mention, sans que l'un ne modifie l'autre.
  */
 export function createCommentMarkdown(): MarkdownIt {
-  return new MarkdownIt({ html: false, linkify: true, breaks: true }).disable(["heading", "lheading", "image"]);
+  return new MarkdownIt({ html: false, linkify: true, breaks: true }).disable(["lheading", "image"]);
 }

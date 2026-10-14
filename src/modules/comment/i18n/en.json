@@ -33,8 +33,8 @@
     "stopReplying": "Stop replying",
     "emoji": "Insert an emoji",
     "mentionHint": "Type @ to mention someone",
-    "formattingHint": "Ctrl+Enter sends the message. Enter starts a new paragraph, Shift+Enter a new line. Keyboard formatting: **bold**, *italic*, ~~strikethrough~~, `code`, > quote, - list, 1. numbered list.",
-    "formattingHintTouch": "Enter starts a new line; the message is sent with its button. Keyboard formatting: **bold**, *italic*, ~~strikethrough~~, `code`, > quote, - list, 1. numbered list.",
+    "formattingHint": "Ctrl+Enter sends the message. Enter starts a new paragraph, Shift+Enter a new line. Keyboard formatting: **bold**, *italic*, ~~strikethrough~~, # heading, `code`, > quote, - list, 1. numbered list.",
+    "formattingHintTouch": "Enter starts a new line; the message is sent with its button. Keyboard formatting: **bold**, *italic*, ~~strikethrough~~, # heading, `code`, > quote, - list, 1. numbered list.",
     "sendShortcut": "Ctrl+Enter",
     "tools": "Formatting and attachments",
     "editorFailed": "The editor could not be loaded. Try again, or reload the page.",
@@ -49,6 +49,9 @@
       },
       "strike": {
         "label": "Strikethrough"
+      },
+      "heading": {
+        "label": "Heading"
       },
       "code": {
         "label": "Code"
@@ -68,6 +71,10 @@
       "codeBlock": {
         "label": "Code block"
       }
+    },
+    "heading": {
+      "normal": "Normal text",
+      "level": "Heading {{level}}"
     },
     "link": {
       "url": "Link address",
