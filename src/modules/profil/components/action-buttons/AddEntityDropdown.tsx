@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useSearchParams } from "react-router";
 import { Plus, Building2, Briefcase, Calendar, MapPin } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
@@ -102,6 +103,24 @@ export function AddEntityDropdown({ entity, config, label, variant = "outline", 
 
     return options;
   }, [permissions, config, t, costumForms, siteSlug]);
+
+  // Lien « ?ajouter=event » (extension WordPress) : ouvre directement le formulaire de création
+  // d'événement, une seule fois, si l'utilisateur y a droit (sinon rien ne s'ouvre).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const wantsEvent = searchParams.get("ajouter") === "event";
+  const canOpenEvent = availableOptions.some((o) => o.type === "event");
+  useEffect(() => {
+    if (!wantsEvent || !canOpenEvent) return;
+    setOpenModal("event");
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("ajouter");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [wantsEvent, canOpenEvent, setSearchParams]);
 
   // Ne rien afficher si aucune option n'est visible (ni builtin, ni custom).
   if (availableOptions.length === 0 && visibleCustomItems.length === 0) {
