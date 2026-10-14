@@ -32,8 +32,11 @@ export function parseCapacityRange(id: string): { min: number; max: number } | n
 export function resourceCapacity(stat: ServicePricingStat | undefined): { min: number; max: number } | null {
   if (!stat) return null;
   if (stat.kind === "meeting") {
+    // Même règle que la pastille (`formatCapacityRange`) : un seul des deux bornes saisi suffit ; il
+    // sert alors des deux côtés (« 10 » affiché = capacité 10).
     const r = stat.range;
-    return r && r.max > 0 ? { min: r.min || r.max, max: r.max } : null;
+    if (!r || (r.min <= 0 && r.max <= 0)) return null;
+    return { min: r.min || r.max, max: r.max || r.min };
   }
   return stat.count > 0 ? { min: stat.count, max: stat.count } : null;
 }
@@ -76,10 +79,26 @@ export function matchesZones(
 }
 
 /**
+ * Lieux membres des réseaux thématiques cochés, lus dans `searchByFields` (entrées `_id` du groupe
+ * `filtersByPath`) — et non dans `searchByFieldsToQuery`, qui saute les tableaux vides : un réseau
+ * coché SANS lieu membre y disparaîtrait et le filtre avec. `null` = aucun réseau coché ; `[]` = des
+ * réseaux cochés, mais aucun lieu membre.
+ */
+export function thematicParentIds(searchByFields: Record<string, SearchByFieldValue> | undefined): string[] | null {
+  let ids: string[] | null = null;
+  for (const { field, type, value } of Object.values(searchByFields ?? {})) {
+    if (field !== "_id" || type || !Array.isArray(value)) continue;
+    ids = [...new Set([...(ids ?? []), ...value])];
+  }
+  return ids;
+}
+
+/**
  * Lieux porteurs à envoyer au backend (`filters.parentId.$in`) : membres des réseaux thématiques
  * cochés, croisés avec le lieu cliqué sur une carte. `null` = aucun filtre de lieu. Un tableau VIDE
- * filtre tout (le backend ne garde aucune ressource) : c'est voulu quand le lieu cliqué n'est membre
- * d'aucun réseau coché.
+ * veut dire « aucune ressource possible » (lieu cliqué hors des réseaux cochés, réseau sans membre) :
+ * l'appelant NE DOIT PAS l'envoyer — `Navigator::getRessourceTL` teste `$parentToFind != null`, et en
+ * PHP `[] != null` est faux : un `$in` vide est ignoré et tout l'annuaire revient.
  */
 export function parentIdsFilter(thematicIds: readonly string[] | null, activeParentId: string | null): string[] | null {
   if (thematicIds === null) return activeParentId ? [activeParentId] : null;

@@ -6,6 +6,7 @@ import {
   parseCapacityRange,
   resourceCapacity,
   selectedZones,
+  thematicParentIds,
 } from "./resourceDirectoryFilters";
 
 describe("parseCapacityRange", () => {
@@ -28,6 +29,12 @@ describe("resourceCapacity", () => {
     expect(resourceCapacity(undefined)).toBeNull();
     expect(resourceCapacity({ kind: "coworking", count: 0 })).toBeNull();
     expect(resourceCapacity({ kind: "meeting", count: 1, range: { min: 0, max: 0 } })).toBeNull();
+  });
+  it("salle « à partir de N » (max non saisi) : capacité N, comme la pastille — et non inconnue", () => {
+    const cap = resourceCapacity({ kind: "meeting", count: 1, range: { min: 10, max: 0 } });
+    expect(cap).toEqual({ min: 10, max: 10 });
+    expect(matchesCapacity(cap, ["10-30"])).toBe(true);
+    expect(resourceCapacity({ kind: "meeting", count: 1, range: { min: 0, max: 20 } })).toEqual({ min: 20, max: 20 });
   });
 });
 
@@ -78,5 +85,24 @@ describe("parentIdsFilter", () => {
     expect(parentIdsFilter(["p1", "p2"], null)).toEqual(["p1", "p2"]);
     expect(parentIdsFilter(["p1", "p2"], "p2")).toEqual(["p2"]);
     expect(parentIdsFilter(["p1"], "p3")).toEqual([]);
+  });
+});
+
+describe("thematicParentIds", () => {
+  it("aucun réseau coché : null", () => {
+    expect(thematicParentIds({})).toBeNull();
+    expect(thematicParentIds(undefined)).toBeNull();
+  });
+  it("réseaux cochés : union de leurs lieux membres, sans les autres filtres", () => {
+    const sbf = {
+      a: { field: "_id", value: ["p1", "p2"] },
+      b: { field: "_id", value: ["p2", "p3"] },
+      c: { field: "priceHourly", value: ["0-20"] },
+      d: { field: "Zlevel3", type: "scopeList", value: { id: "Z", type: "level3" } },
+    } as never;
+    expect(thematicParentIds(sbf)).toEqual(["p1", "p2", "p3"]);
+  });
+  it("réseau coché SANS lieu membre : [] (et non null — sinon tout l'annuaire s'afficherait)", () => {
+    expect(thematicParentIds({ a: { field: "_id", value: [] } } as never)).toEqual([]);
   });
 });

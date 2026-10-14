@@ -604,9 +604,14 @@ au-dessus de la grille le retire. La facette « type » (client) s'applique par-
 - **`thematicFilter`** — `filtersByPath` du panneau : chaque réseau thématique porte la liste de ses
   lieux membres ; la sélection (`filters._id.$in`) n'a pas de sens sur une réponse, la section la
   renvoie en **`filters.parentId`** → filtre **CÔTÉ SERVEUR** ; croisée avec le lieu cliqué sur une
-  carte (`parentIdsFilter` : un lieu hors des réseaux cochés → aucun résultat) ;
+  carte (`parentIdsFilter`). Réseaux cochés lus dans `searchByFields` (`thematicParentIds`) : un
+  réseau sans lieu membre y garde son entrée `_id: []`, que `searchByFieldsToQuery` sauterait. Lieu
+  cliqué hors des réseaux cochés, ou réseau sans membre → **aucune requête** et liste vide : un
+  `parentId.$in` vide est IGNORÉ par le backend (`$parentToFind != null`, et `[] != null` est faux
+  en PHP), qui rendrait tout l'annuaire ;
 - **`capacityFilter`** — **CÔTÉ CLIENT**, sur la statistique de la pastille (`model.stats[0]`) :
-  fourchette de personnes (salle), postes (coworking), chambres (hébergement, pas de nombre de
+  fourchette de personnes (salle — une seule borne saisie, « à partir de 10 », vaut 10, comme la
+  pastille), postes (coworking), chambres (hébergement, pas de nombre de
   personnes saisi) ; gardée si elle recoupe une tranche cochée, bornes incluses ; capacité inconnue
   exclue dès qu'une tranche est cochée ;
 - **`regionFilter`** — groupe `scopeList` (zones chargées par `FiltersSection`) ; la sélection

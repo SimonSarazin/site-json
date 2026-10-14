@@ -41,6 +41,7 @@ import {
   parentIdsFilter,
   resourceCapacity,
   selectedZones,
+  thematicParentIds,
 } from "../lib/resourceDirectoryFilters";
 
 const RD_LIST_PREFIX = "resource-directory-list";
@@ -313,12 +314,18 @@ function ResourceDirectoryList({
     () => searchByFieldsToQuery(pf.searchByFields ?? {}),
     [pf.searchByFields],
   );
+  const lieuxFiltres = useMemo(
+    () => parentIdsFilter(thematicParentIds(pf.searchByFields), showFilters && activeParent ? activeParent.id : null),
+    [pf.searchByFields, activeParent, showFilters],
+  );
+  // Aucun lieu possible (cf. `parentIdsFilter`) : pas de requête — un `$in` vide serait ignoré par le
+  // backend, qui rendrait tout l'annuaire — et liste vide.
+  const aucunLieu = lieuxFiltres !== null && lieuxFiltres.length === 0;
   const serverFilters = useMemo(() => {
-    const { _id: thematic, ...rest } = filters;
-    const thematicIds = Array.isArray(thematic?.$in) ? (thematic.$in as string[]) : null;
-    const parentIds = parentIdsFilter(thematicIds, showFilters && activeParent ? activeParent.id : null);
-    return { ...rest, ...(parentIds ? { parentId: { $in: parentIds } } : {}) };
-  }, [filters, activeParent, showFilters]);
+    const { _id: _thematic, ...rest } = filters;
+    void _thematic;
+    return { ...rest, ...(lieuxFiltres && lieuxFiltres.length > 0 ? { parentId: { $in: lieuxFiltres } } : {}) };
+  }, [filters, lieuxFiltres]);
   const mergedBaseParams = useMemo(
     () => canonicalSearchProStaticBaseParams(baseParams, serverFilters, {}),
     [baseParams, serverFilters],
@@ -338,6 +345,7 @@ function ResourceDirectoryList({
     mapUsed: false,
     baseParams: mergedBaseParams,
     variant: "navigator-tl-ressource",
+    enabled: !aucunLieu,
   });
 
   const parseOpts = useMemo(
@@ -388,6 +396,7 @@ function ResourceDirectoryList({
   const selectedFilters = pf.selectedFilters;
   const zones = useMemo(() => selectedZones(pf.searchByFields), [pf.searchByFields]);
   const visible = useMemo(() => {
+    if (aucunLieu) return [];
     const typeSel = selectedFilters?.resourceType ?? [];
     const capacitySel = selectedFilters?.capacity ?? [];
     const filtered = items.filter((it) => {
@@ -397,7 +406,7 @@ function ResourceDirectoryList({
       return matchesZones(parentId ? parents.get(parentId)?.zones : undefined, zones);
     });
     return limit === undefined ? filtered : filtered.slice(0, limit);
-  }, [items, selectedFilters, zones, parentIdOf, parents, limit]);
+  }, [aucunLieu, items, selectedFilters, zones, parentIdOf, parents, limit]);
 
   return (
     <ResourceDirectoryActionsProvider value={showFilters ? { activeParent, setActiveParent } : null}>
@@ -425,7 +434,7 @@ function ResourceDirectoryList({
         <div className="rounded border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
           {t("Aucun résultat trouvé.")}
         </div>
-      ) : isPending || (zones.length > 0 && parentsLoading) ? (
+      ) : !aucunLieu && (isPending || (zones.length > 0 && parentsLoading)) ? (
         // Zone cochée : tant que les lieux porteurs ne sont pas lus, aucune ressource ne passe le filtre —
         // squelette plutôt qu'un « Aucun résultat » faux.
         <SearchListSkeleton />
