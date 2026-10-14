@@ -46,6 +46,7 @@ import { useCoFormDraft } from "../hooks/useCoFormDraft";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { FormStepKeyContext } from "../contexts/FormStepKeyContext";
 
 import "../i18n/i18n";
 
@@ -977,8 +978,11 @@ export function DynamicCoForm({
             </div>
           );
 
+          // La clé de l'étape, pour le bouton de discussion de chaque question (`FieldLabel`).
+          const grilleDeLEtape = <FormStepKeyContext.Provider value={subForm.subFormId}>{fieldsGrid}</FormStepKeyContext.Provider>;
+
           if (hideStepHeaders) {
-            return <div key={subForm.subFormId}>{fieldsGrid}</div>;
+            return <div key={subForm.subFormId}>{grilleDeLEtape}</div>;
           }
 
           // Bouton "Voir les évaluations" — visible uniquement si la step
@@ -1024,7 +1028,7 @@ export function DynamicCoForm({
                 )}
               </CardHeader>
               <CardContent>
-                {fieldsGrid}
+                {grilleDeLEtape}
               </CardContent>
             </Card>
           );

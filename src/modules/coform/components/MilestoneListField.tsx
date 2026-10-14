@@ -81,6 +81,8 @@ interface MilestoneListFieldProps {
   /** Réponse en cours d'édition. Absente ⇒ réponse neuve : saisie locale seule. */
   answerId?: string;
   readOnly?: boolean;
+  /** La vue en lecture pose son propre libellé (`ReadOnlyLabel`) : le champ ne répète pas le sien. */
+  hideLabel?: boolean;
 }
 
 /** Repartit les paliers entre actifs et clotures, en conservant l'ordre
@@ -269,6 +271,7 @@ export function MilestoneListField({
   onChange,
   answerId,
   readOnly,
+  hideLabel,
 }: MilestoneListFieldProps) {
   useLoadNamespace("modules/aac");
   const t = useT("modules/aac");
@@ -461,7 +464,7 @@ export function MilestoneListField({
     <div className={cn("space-y-3", field.width || "col-span-12")}>
       <div className="flex items-end justify-between gap-4">
         <div>
-          <FieldLabel field={field} />
+          {!hideLabel && <FieldLabel field={field} />}
           {field.info && <HintText text={field.info} />}
         </div>
         {!disabled ? (

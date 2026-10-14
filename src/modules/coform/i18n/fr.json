@@ -583,7 +583,15 @@
       }
     },
     "field": {
-      "required": "obligatoire"
+      "required": "obligatoire",
+      "discussion": {
+        "question": "Commenter cette question",
+        "questionNamed": "Commenter la question « {{label}} »",
+        "messages_one": "{{count}} message",
+        "messages_other": "{{count}} messages",
+        "unread_one": "{{count}} non lu",
+        "unread_other": "{{count}} non lus"
+      }
     }
   }
 }

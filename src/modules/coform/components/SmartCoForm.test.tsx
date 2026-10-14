@@ -108,6 +108,26 @@ vi.mock("./CoFormReadOnly", () => ({
   ),
 }));
 
+// L'hôte des discussions de question : un témoin qui dit ce qu'il a reçu, autour de ce qu'il enveloppe.
+vi.mock("./FormQuestionDiscussions", () => ({
+  FormQuestionDiscussions: (props: {
+    answerId?: string | null;
+    form?: { name?: string; type?: string } | null;
+    steps: readonly { fields: readonly { activeComments?: boolean }[] }[];
+    children: ReactNode;
+  }) => (
+    <div
+      data-testid="hote-discussions"
+      data-answer-id={props.answerId ?? ""}
+      data-form-name={props.form?.name ?? ""}
+      data-form-type={props.form?.type ?? ""}
+      data-ouvertes={props.steps.reduce((n, etape) => n + etape.fields.filter(champ => champ.activeComments).length, 0)}
+    >
+      {props.children}
+    </div>
+  ),
+}));
+
 vi.mock("sonner", () => ({
   toast: { error: vi.fn() },
 }));
@@ -737,5 +757,49 @@ describe("SmartCoForm — le onSubmit du formulaire simple dit si le serveur a l
     fireEvent.click(screen.getByTestId("dyn-submit"));
     await waitFor(() => expect(soumission.resultat).toBe(true));
     expect(onError).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("SmartCoForm — discussions des questions ouvertes aux commentaires", () => {
+  /** Un formulaire d'une étape, dont la question est ouverte aux commentaires — ou non. */
+  const formulaire = (ouverte: boolean, type = "form") => ({
+    ...makeFormData(["s1"], { s1: { q: { type: "text", label: "Question", ...(ouverte ? { activeComments: true } : {}) } } }),
+    type,
+  }) as CoFormData;
+
+  beforeEach(() => {
+    mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
+    mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+  });
+
+  it("le formulaire est sous l'hôte, qui reçoit la réponse, le formulaire et ses étapes parsées — c'est lui qui décide", () => {
+    render(<SmartCoForm formData={formulaire(true, "aap")} answerId="answer-1" baseUpdatedAt={1} />, { wrapper: makeWrapper() });
+    const hote = screen.getByTestId("hote-discussions");
+    expect(hote.getAttribute("data-answer-id")).toBe("answer-1");
+    expect(hote.getAttribute("data-form-name")).toBe("Test Form");
+    expect(hote.getAttribute("data-form-type")).toBe("aap");
+    expect(hote.getAttribute("data-ouvertes")).toBe("1");
+    expect(hote.querySelector('[data-testid="dynamic-coform"]')).not.toBeNull();
+  });
+
+  it("en lecture aussi", () => {
+    render(<SmartCoForm formData={formulaire(true)} answerId="answer-1" readOnly />, { wrapper: makeWrapper() });
+    expect(screen.getByTestId("hote-discussions").querySelector('[data-testid="coform-readonly"]')).not.toBeNull();
+  });
+
+  it("sans question ouverte, ni réponse enregistrée : l'hôte est là quand même — l'arbre ne change pas de forme", () => {
+    render(<SmartCoForm formData={formulaire(false)} />, { wrapper: makeWrapper() });
+    const hote = screen.getByTestId("hote-discussions");
+    expect(hote.getAttribute("data-answer-id")).toBe("");
+    expect(hote.getAttribute("data-ouvertes")).toBe("0");
+  });
+
+  it("une réponse qui reçoit son identifiant pendant la saisie ne fait pas remonter le formulaire", () => {
+    const { rerender } = render(<SmartCoForm formData={formulaire(true)} />, { wrapper: makeWrapper() });
+    const avant = screen.getByTestId("dynamic-coform");
+    rerender(<SmartCoForm formData={formulaire(true)} answerId="answer-1" baseUpdatedAt={1} />);
+    expect(screen.getByTestId("hote-discussions").getAttribute("data-answer-id")).toBe("answer-1");
+    // Le MÊME nœud : un remontage en aurait fait un nouveau, saisie et étape perdues.
+    expect(screen.getByTestId("dynamic-coform")).toBe(avant);
   });
 });

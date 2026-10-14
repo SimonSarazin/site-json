@@ -583,7 +583,15 @@
       }
     },
     "field": {
-      "required": "required"
+      "required": "required",
+      "discussion": {
+        "question": "Comment on this question",
+        "questionNamed": "Comment on the question “{{label}}”",
+        "messages_one": "{{count}} message",
+        "messages_other": "{{count}} messages",
+        "unread_one": "{{count}} unread",
+        "unread_other": "{{count}} unread"
+      }
     }
   }
 }

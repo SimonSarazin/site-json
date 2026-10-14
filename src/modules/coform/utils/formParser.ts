@@ -272,7 +272,7 @@ export function resolveInputOrder(
  * @param field - Le champ avec son nom possiblement préfixé
  * @returns La clé originale utilisée dans formData.inputs
  */
-export function getOriginalFieldKey(field: FormFieldMapping): string {
+export function getOriginalFieldKey(field: Pick<FormFieldMapping, "name" | "componentType">): string {
   const prefix = FIELD_PREFIX_MAP[field.componentType];
   if (prefix && field.name.startsWith(prefix)) {
     return field.name.slice(prefix.length);
@@ -1172,6 +1172,9 @@ export function parseCoFormFields(
         conditionalDisplay,
         activeMultieval,
         evaluationKey,
+        // `isTruthyFlag`, comme le serveur qui liste les fils : un `[]` ou un `"false"` laissés par
+        // l'éditeur legacy ne l'ouvrent pas.
+        ...(isTruthyFlag(fieldData.activeComments) ? { activeComments: true } : {}),
       };
       fields.push(mapping);
       displayOrder.set(mapping, resolveInputOrder(rawFieldData, subFormData.formParent));

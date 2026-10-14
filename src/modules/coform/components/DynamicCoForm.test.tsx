@@ -40,7 +40,19 @@ vi.mock("./ChooseProposalField", () => ({
   },
 }));
 
+// Le bouton de discussion d'une question : un témoin, qui dit l'étape qu'il lit (`useFormStepKey`, comme le vrai).
+vi.mock("./QuestionDiscussionButton", async () => {
+  const { useFormStepKey } = await import("../contexts/FormStepKeyContext");
+  return {
+    QuestionDiscussionButton: ({ field }: { field: { name: string } }) => {
+      const etape = useFormStepKey();
+      return <span data-temoin-discussion={field.name} data-etape={etape ?? ""} />;
+    },
+  };
+});
+
 import { DynamicCoForm } from "./DynamicCoForm";
+import { QuestionDiscussionContext } from "../contexts/QuestionDiscussionContext";
 
 const FORM_DATA = {
   _id: { _str: "form-1" },
@@ -217,5 +229,42 @@ describe("DynamicCoForm — contexte de `chooseProposal`", () => {
     const sansParent = { ...FORM_AAP, parent: null } as unknown as CoFormData;
     render(<DynamicCoForm formData={sansParent} onSubmit={vi.fn()} formId="form-1" answerId="answer-1" />);
     expect(chooseProposalSpy).toHaveBeenCalledWith(expect.objectContaining({ context: null }));
+  });
+});
+
+/** Deux étapes, chacune une question ouverte aux commentaires — sous la MÊME clé. */
+const DEUX_ETAPES_DISCUTEES = {
+  _id: { _str: "form-1" },
+  id: "form-1",
+  name: "Appel",
+  created: 0,
+  creator: "creator1",
+  type: "form",
+  inputs: {
+    etapeUn_0: { step: 1, name: "Dépôt", inputs: { projet: { type: "text", label: "Le projet", activeComments: true } } },
+    etapeDeux_1: { step: 2, name: "Jury", inputs: { projet: { type: "text", label: "Le projet, vu du jury", activeComments: true } } },
+  },
+} as unknown as CoFormData;
+const temoins = (racine: HTMLElement) =>
+  [...racine.querySelectorAll("[data-temoin-discussion]")].map(t => `${t.getAttribute("data-temoin-discussion")}@${t.getAttribute("data-etape")}`);
+
+describe("DynamicCoForm — l'étape des questions ouvertes aux commentaires", () => {
+  beforeEach(() => {
+    mockUseCoFormDraft.mockReset();
+    mockUseCoFormDraft.mockReturnValue(draftInerte());
+  });
+
+  it("chaque étape dit SA clé au bouton de discussion de ses questions", () => {
+    const { container } = render(
+      <QuestionDiscussionContext.Provider value="answer-1">
+        <DynamicCoForm formData={DEUX_ETAPES_DISCUTEES} onSubmit={vi.fn()} formId="form-1" userId="user-1" />
+      </QuestionDiscussionContext.Provider>,
+    );
+    expect(temoins(container)).toEqual(["projet@etapeUn_0", "projet@etapeDeux_1"]);
+  });
+
+  it("sans réponse dont on discute, pas de bouton", () => {
+    const { container } = render(<DynamicCoForm formData={DEUX_ETAPES_DISCUTEES} onSubmit={vi.fn()} formId="form-1" userId="user-1" />);
+    expect(temoins(container)).toEqual([]);
   });
 });

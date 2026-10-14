@@ -7,6 +7,7 @@ import { AlertCircle, Eye, Home, Info, Loader2, Lock, Pencil } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { SmartCoForm } from "../components/SmartCoForm";
 import { CoFormReadOnly } from "../components/CoFormReadOnly";
+import { FormQuestionDiscussions } from "../components/FormQuestionDiscussions";
 import { CommonTableCatalogsLoader } from "../contexts/CommonTableCatalogsLoader";
 import { collectCommonTableInputKeys, parseCoFormFields } from "../utils/formParser";
 import { CoFormThankYou } from "../components/CoFormThankYou";
@@ -104,10 +105,8 @@ export default function CoFormAnswerPage() {
   // Inputs commonTable du formulaire, pour charger leur catalogue collaboratif.
   // AVANT les retours anticipés : c'est un hook, il ne peut pas vivre sous une
   // condition (`react-hooks/rules-of-hooks`).
-  const commonTableInputKeys = useMemo(
-    () => (formData ? collectCommonTableInputKeys(parseCoFormFields(formData)) : []),
-    [formData]
-  );
+  const etapes = useMemo(() => (formData ? parseCoFormFields(formData) : []), [formData]);
+  const commonTableInputKeys = useMemo(() => collectCommonTableInputKeys(etapes), [etapes]);
 
   // ── Cas d'erreur / chargement ──────────────────────────────────
 
@@ -274,14 +273,17 @@ export default function CoFormAnswerPage() {
           est vide : 100 % des besoins viennent des réponses. */}
       {effectiveMode === "readonly" && (
         <CommonTableCatalogsLoader formId={formId} inputKeys={commonTableInputKeys}>
-          <CoFormReadOnly
-            formData={formData}
-            answerData={answerData}
-            authorName={authorName}
-            submittedAt={answer?.created}
-            updatedAt={answer?.updated}
-            answerId={answerId}
-          />
+          {/* Le bouton de discussion des questions ouvertes aux commentaires, comme en édition. */}
+          <FormQuestionDiscussions answerId={answerId} form={formData} steps={etapes}>
+            <CoFormReadOnly
+              formData={formData}
+              answerData={answerData}
+              authorName={authorName}
+              submittedAt={answer?.created}
+              updatedAt={answer?.updated}
+              answerId={answerId}
+            />
+          </FormQuestionDiscussions>
         </CommonTableCatalogsLoader>
       )}
 
