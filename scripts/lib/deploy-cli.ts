@@ -54,7 +54,16 @@ export interface LigneDeCommande {
   valeur(nom: string): string | undefined;
 }
 
-export function analyserArgv(argv: string[]): LigneDeCommande {
+/** Les deux jeux d'options d'un outil ; par défaut ceux de `deploy.ts`. */
+export interface JeuxOptions {
+  aValeur: ReadonlySet<string>;
+  booleennes: ReadonlySet<string>;
+}
+
+export function analyserArgv(
+  argv: string[],
+  jeux: JeuxOptions = { aValeur: OPTIONS_A_VALEUR, booleennes: OPTIONS_BOOLEENNES },
+): LigneDeCommande {
   const positionnels: string[] = [];
   const inconnues: string[] = [];
   const malformees: string[] = [];
@@ -67,11 +76,11 @@ export function analyserArgv(argv: string[]): LigneDeCommande {
       positionnels.push(a);
       continue;
     }
-    if (OPTIONS_BOOLEENNES.has(a)) {
+    if (jeux.booleennes.has(a)) {
       bools.add(a);
       continue;
     }
-    if (OPTIONS_A_VALEUR.has(a)) {
+    if (jeux.aValeur.has(a)) {
       const suivant = argv[i + 1];
       if (suivant !== undefined && !suivant.startsWith("--")) {
         valeurs.set(a, suivant);

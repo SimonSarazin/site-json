@@ -62,6 +62,11 @@ export interface AacPermissionData {
 export interface AacCommunLike {
   /** Id de l'auteur (peut être absent en standalone : compte temporaire email). */
   authorId?: string;
+  /**
+   * Contributeurs à l'édition : les clés de `links.canEdit` de la réponse. Ils peuvent MODIFIER
+   * le commun — et seulement le modifier (`Coform::canAdminAnswer`, backend).
+   */
+  editorIds?: readonly string[];
 }
 
 export interface AacPermissions {
@@ -70,8 +75,19 @@ export interface AacPermissions {
   canCreateCommunReason?: string;
   /** 2. Lire les communs (public, sauf `onlyMemberAccess` : membres et admins). */
   canReadCommuns: boolean;
-  /** 3. Modifier un commun (auteur OU admin, OU tout connecté si `anyOnewithLinkCanAnswer`). */
+  /**
+   * 3. Modifier un commun (auteur OU admin OU contributeur à l'édition, OU tout connecté si
+   * `anyOnewithLinkCanAnswer`).
+   */
   canEditCommun: (commun?: AacCommunLike | null) => boolean;
+  /**
+   * 3 bis. Le bouton « Contributeurs à l'édition » (`links.canEdit`) : auteur OU admin —
+   * décision du 29/09, alors que le bouton legacy suivait `Authorisation::canEdit`, qui y
+   * admettait les contributeurs. Ce n'est PAS une frontière de droit : quand une question finder
+   * alimente la liste (`addToLinks`), quiconque modifie le commun la change par cette question
+   * (parité legacy, assumée le 30/09 ; le backend remplace tout lien reçu d'un éditeur).
+   */
+  canManageEditors: (commun?: AacCommunLike | null) => boolean;
   /** 4. Participer aux actions (connecté ; détail par action ailleurs). */
   canParticipateActions: boolean;
   /**

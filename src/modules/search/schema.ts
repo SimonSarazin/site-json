@@ -4,6 +4,9 @@ import { GeoShapeSourceSchema } from "@/types/geo-shape-schema";
 import { PredicateJson } from "@/modules/formEngine/config";
 import type { SearchEntity, News } from "@communecter/cocolight-api-client";
 import { IconName } from "lucide-react/dynamic";
+// Primitives du tableau de bord (dimensions/KPI/graphes) : fichier SANS import
+// search — `observatoire/schema.ts`, lui, importe celui-ci (cf. son en-tête).
+import { ObservatoryPanelConfSchema } from "@/modules/observatoire/dashboardSchema";
 import { z } from "zod";
 
 /**
@@ -270,6 +273,26 @@ export const PreviewFacetSchema = z.object({
 export type PreviewFacetConfig = z.infer<typeof PreviewFacetSchema>;
 
 /**
+ * Lien vers la fiche d'une entité portée par une AUTRE page du site : le chemin
+ * de la page + le param d'URL qui y ouvre le détail.
+ *
+ * ⚠️ La page visée doit savoir charger l'item PAR IDENTIFIANT
+ * (`list.previewFetch`) : sans ça, le param n'ouvre que ce que sa liste a déjà
+ * chargé (10 résultats par défaut) et le lien resterait sans effet, en silence.
+ */
+export const EntitySheetLinkSchema = z.object({
+  /** Chemin de la page qui porte la fiche (ex. `/annuaire`). */
+  path: z.string(),
+  /** Param d'URL qui y ouvre le détail — doit valoir le `list.previewParam` de
+   *  cette page. Défaut : "preview". */
+  previewParam: z.string().optional(),
+});
+export type EntitySheetLink = z.infer<typeof EntitySheetLinkSchema>;
+
+/** Param d'URL par défaut d'ouverture d'une fiche (cf. `list.previewParam`). */
+export const DEFAULT_PREVIEW_PARAM = "preview";
+
+/**
  * Réservations récurrentes d'une ressource : answers d'un formulaire CoForm
  * reliées à l'entité affichée par un champ finder. Tout l'ancrage (form, étape,
  * suffixes de champs) vient de la CONFIG du site — le code ne connaît que des
@@ -308,6 +331,15 @@ export const ReservationsConfSchema = z.object({
   }),
   /** Plafond d'answers chargées (garde de pagination). Défaut : 200. */
   maxAnswers: z.number().int().positive().optional(),
+  /**
+   * Bouton « fiche » de l'ORGANISATION usagère, sur sa rangée dans la section
+   * réservations (OPT-IN). Il n'apparaît que sur les réservations rattachées par
+   * IDENTIFIANT (finder `userOrga`) : le texte historique ne désigne aucune
+   * fiche — deux clubs peuvent porter le même nom, et un nom saisi à la main ne
+   * correspond pas toujours à une organisation existante. Pas d'identifiant,
+   * pas de bouton : jamais de lien mort.
+   */
+  orgaLink: EntitySheetLinkSchema.optional(),
   /**
    * Prise de réservation depuis la fiche (OPT-IN). Absent = comportement
    * historique : grille hebdo en blocs empilés, lecture seule. Présent = grille
@@ -383,14 +415,34 @@ export type InstallationDashboardConf = z.infer<typeof InstallationDashboardConf
 /** Param d'URL par défaut de la fiche installation (cf. `installationDashboard.param`). */
 export const DEFAULT_INSTALLATION_PARAM = "installation";
 
+/**
+ * Section « équipements réservés » du preview `structure` : les réservations de
+ * l'ORGANISATION affichée, lues dans le même formulaire que la fiche
+ * équipement. Le sens inverse de `reservations.orgaLink`.
+ *
+ * Requiert, dans le MÊME bloc preview, un `reservations` (l'ancrage
+ * form/étape/champs) dont les `fields.userOrga` sont renseignés : c'est ce
+ * finder qui relie une réservation à un club.
+ */
+export const BookedResourcesConfSchema = z.object({
+  /** Lien « fiche » de l'équipement (ex. `{ path: "/equipements-sportifs" }`).
+   *  Absent = les équipements sont listés sans bouton. */
+  link: EntitySheetLinkSchema.optional(),
+  /** Titre de la section. Défaut : libellé i18n du module search. */
+  label: LocalizedString.optional(),
+});
+export type BookedResourcesConf = z.infer<typeof BookedResourcesConfSchema>;
+
 export const PreviewConfSchema = z.object({
   type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource", "resource-directory", "structure"]).default("default"),
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
   // table par défaut du composant — découple les IDs de champs du code.
   fields: z.record(z.string(), z.string()).optional(),
-  // Bouton « Modifier » sur le détail `coform-answer` (admins de l'entité du
-  // site) : ouvre l'édition de l'answer en CoFormModal. Opt-in — sans ce flag,
-  // le preview reste strictement lecture seule (aucun changement des sites existants).
+  // Bouton « Modifier » sur le détail `coform-answer`, réservé aux gestionnaires de
+  // la réponse (super-admin, admin du costum, admin validé de la structure citée) et à
+  // son AUTEUR quand la recherche projette `user` (`canEditCoformAnswer`) : ouvre
+  // l'édition de l'answer en CoFormModal. Opt-in — sans ce flag, le preview reste
+  // strictement lecture seule (aucun changement des sites existants).
   editButton: z.boolean().optional(),
   /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
   facets: z.array(PreviewFacetSchema).optional(),
@@ -404,6 +456,9 @@ export const PreviewConfSchema = z.object({
   reservations: ReservationsConfSchema.optional(),
   /** Modal tableau de bord installation (requiert `reservations`). */
   installationDashboard: InstallationDashboardConfSchema.optional(),
+  /** Section « équipements réservés » du preview `structure` (requiert
+   *  `reservations` + `reservations.fields.userOrga`). Absente = masquée. */
+  bookedResources: BookedResourcesConfSchema.optional(),
   /**
    * Affiche le lien « Voir en page » (permalien vers le détail/profil) dans l'en-tête de la
    * modal de détail. Défaut : affiché (mettre `false` pour le masquer). Lu par `PreviewNews`.
@@ -458,6 +513,10 @@ export const TestimonialConfSchema = z.object({
   /** Champ de l'illustration (bannière de la carte et de la preview). Repli code : "profilMediumImageUrl",
    *  puis "profilImageUrl", puis la 1re image de `medias` — un témoignage sans image reste rendu tel quel. */
   imageField: z.string().optional(),
+  /** Cadrage de l'illustration : `cover` (défaut, rognée sur un ratio 16/9) ou `contain` (image ENTIÈRE,
+   *  centrée, sur un fond flou tiré de la même image — pour une affiche ou un visuel dont le ratio n'est
+   *  pas 16/9). Opt-in : sans lui, le rendu historique est inchangé. */
+  imageFit: z.enum(["cover", "contain"]).optional(),
   /** Catégorie : pilote la teinte de la bulle + la pastille. `colors` = map valeur→couleur (`var()` ou hex). */
   badge: z.object({ field: z.string(), colors: z.record(z.string(), z.string()).optional() }).optional(),
   /** Accent (ex. territoire) : pilote le point coloré. `colors` = map valeur→couleur (`var()` ou hex). */
@@ -535,6 +594,10 @@ export const ResourceDirectoryConfSchema = z.object({
     linkSuffix: z.string().optional(),
     descriptionSuffix: z.string().optional(),
     servicesSuffix: z.string().optional(),
+    detailSuffixes: z.object({
+      equipments: z.string(), catering: z.string(), services: z.string(), roomType: z.string(),
+      moreInfo: z.string(), about: z.string(), tip: z.string(),
+    }).partial().optional(),
   })),
   finderSuffix: z.string(),
   fieldSuffixes: z.object({
@@ -560,7 +623,9 @@ export type ColorByConf = z.infer<typeof ColorByConfSchema>;
 /** Chips de tags des cartes : couleur par tag (`mapping`), libellé lisible
  *  (`labels`, déf. namespace retiré + capitalisation) et MASQUAGE des tags
  *  techniques (`hidePrefixes`, ex. `public:`/`age:` — filtrants mais pas
- *  affichables bruts). Consommé par `decorateTags` (lib/colorBy).
+ *  affichables bruts ; `hideTags`, égalité STRICTE, pour un marqueur complet
+ *  comme `lieux-sante` qui ne doit pas emporter `lieux-sante-mentale`).
+ *  Consommé par `decorateTags` (lib/colorBy).
  *  `paths` : dot-paths serverData dont les valeurs s'ajoutent aux chips —
  *  nécessaire quand la taxonomie vit dans des CHAMPS et non dans `tags`
  *  (parent62 : `["territoires"]`), cf. `collectChipValues`. */
@@ -568,6 +633,7 @@ export const TagColorsConfSchema = z.object({
   mapping: z.record(z.string(), z.string()),
   labels: z.record(z.string(), z.string()).optional(),
   hidePrefixes: z.array(z.string()).optional(),
+  hideTags: z.array(z.string()).optional(),
   paths: z.array(z.string()).optional(),
 });
 export type TagColorsConf = z.infer<typeof TagColorsConfSchema>;
@@ -589,6 +655,10 @@ export const CardConfSchema = z.object({
     // `false` sur un annuaire de structures qui ne portent pas de projets : le
     // compteur y afficherait « 0 » sur toutes les fiches, ce qui n'informe de rien.
     showStats:       z.boolean().optional(),
+    // Boutons « Contacter » / « Suivre » de la carte `profile`. Absent = affichés (24 usages du
+    // parc inchangés). `false` sur un annuaire de LIEUX : on ne « suit » pas un cabinet, et
+    // « Contacter » n'ouvre aujourd'hui qu'un toast « à venir ».
+    showActions:     z.boolean().optional(),
     // Affiche la barre de progression de financement (cagnotte) sur la carte +
     // déclenche la query useFundingEnvelope. Découple la feature funding du style
     // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).
@@ -654,6 +724,17 @@ export const CardConfSchema = z.object({
     /** Rend l'installation de la carte (`poi-amenities`) cliquable → filtre le
      *  listing. Absent = valeur affichée en texte simple. */
     installationFilter: InstallationFilterConfSchema.optional(),
+    /** Carte DENSE : mêmes informations, moins de place (vignette et interlignes
+     *  réduits, puces d'équipement resserrées). Pour une colonne étroite — liste
+     *  latérale d'un split, grille à 4 colonnes. Honoré aujourd'hui par
+     *  `poi-amenities` ; les autres variantes l'ignorent. */
+    compact: z.boolean().optional(),
+    /** Carte PLIABLE, repliée par défaut : une ligne titre + sous-titre, dépliée
+     *  par un chevron. Une colonne latérale devient ainsi parcourable d'un coup
+     *  d'œil — même lecture que la liste de la section `data-observatory` — sans
+     *  renoncer au détail. Le clic sur la ligne ouvre la fiche comme d'habitude ;
+     *  seul le chevron déplie. Honoré aujourd'hui par `poi-amenities`. */
+    collapsible: z.boolean().optional(),
     // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
     // axe séparé (`preview.type`/`detailsMode`).
     type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer", "news", "testimonial", "resource", "resource-directory"]).default("default"),
@@ -762,12 +843,32 @@ export const ListConfSchema = z.object({
    */
   previewParam: z.string().optional(),
   /**
+   * Charge l'item visé par `previewParam` PAR IDENTIFIANT quand il n'est pas
+   * dans la page de résultats déjà chargée (10 items par défaut) — la valeur dit
+   * QUELLE collection interroger. Absent = comportement historique : le param
+   * n'ouvre que ce que la liste porte déjà.
+   *
+   * Indispensable à tout lien venu d'une AUTRE page (fiche équipement → fiche du
+   * club usager, et retour), et accessoirement aux liens « Partager » d'une
+   * fiche profonde dans la pagination.
+   */
+  previewFetch: z.enum(["poi", "organizations", "projects", "events", "citoyens"]).optional(),
+  /**
    * Règles de rendu PAR ITEM (cf. {@link ListItemRuleSchema}) — pour les listes hétérogènes.
    * ABSENT = comportement mono-carte historique (`card`/`preview` valent pour toute la liste).
    */
   itemRules: z.array(ListItemRuleSchema).optional(),
   /** Action au clic par DÉFAUT de la liste, surchargeable par règle. Absent = ouvrir le détail. */
   itemAction: ListItemActionSchema.optional(),
+  /**
+   * Libellé additionnel PAR ITEM (map id → texte), affiché en petit badge sur la carte quand
+   * présent — id = `getEntryId(item)` (id racine prioritaire, même formule que le param preview).
+   * Générique et rétrocompatible : absent partout ailleurs, donc sans effet sur les autres
+   * consommateurs de `CardDefault`/`CardEvent`. Cas d'usage : un digest multi-entités (« Mes lieux »)
+   * où chaque item vient d'un lieu membre différent — le lieu lié n'est pas un champ de l'item lui
+   * même, il se calcule côté appelant (croisement `links.*` × la liste de lieux connus).
+   */
+  linkedLabels: z.record(z.string(), z.string()).optional(),
 }).partial();
 
 export type ListConf = z.infer<typeof ListConfSchema>;
@@ -863,10 +964,11 @@ export const MapConfSchema = z.object({
   /** Disposition de la vue carte (SearchProStatic) : "full" (défaut, plein
    *  écran) ou "split" (liste + carte côte à côte, sélection synchronisée). */
   layout: z.enum(["full", "split"]).optional(),
-  /** En mode split, répartition de largeur liste/carte : "40-60" (défaut —
-   *  liste étroite 1 colonne + carte large, aligné sur l'agenda), "50-50" ou
-   *  "60-40" (liste plus large, 2 colonnes). Pilote aussi les colonnes de la liste. */
-  splitRatio: z.enum(["40-60", "50-50", "60-40"]).optional(),
+  /** En mode split, répartition de largeur liste/carte : "30-70" (liste
+   *  resserrée), "40-60" (défaut — liste étroite 1 colonne + carte large,
+   *  aligné sur l'agenda), "50-50" ou "60-40" (liste plus large, 2 colonnes).
+   *  Pilote aussi les colonnes de la liste. */
+  splitRatio: z.enum(["30-70", "40-60", "50-50", "60-40"]).optional(),
   popup: z.object({
     type: z.enum(["default"]).default("default"),
   }).partial().optional(),
@@ -885,7 +987,7 @@ export const MapConfSchema = z.object({
 
 export type MapConf = z.infer<typeof MapConfSchema>;
 
-const SearchTypeSchema = z.enum([
+export const SearchTypeSchema = z.enum([
   "NGO",
   "LocalBusiness",
   "Group",
@@ -1077,6 +1179,10 @@ const AddButtonConfigSchema = z.object({
   // (CoFormModal) au lieu d'une modale d'entité — ex. « Ajouter un créneau »
   // (1 créneau = 1 answer). Prioritaire sur modal/organization/project/poi.
   coform: z.string().optional(),
+  // Message affiché après la création d'une answer (`coform`). À poser sur un formulaire
+  // MODÉRÉ : la réponse déposée n'apparaît pas dans la liste publique, et sans message le
+  // déposant croirait à un échec. Absent = aucun message (comportement historique).
+  successMessage: LocalizedString.optional(),
   // `false` → le bouton s'affiche dès que `show: true`, sans exiger le rôle
   // admin du site (un non-connecté qui clique passe par le login). Cas d'usage :
   // déclaration publique d'answer CoForm modérée en aval (filtre `state`).
@@ -1205,6 +1311,19 @@ export const SearchProStaticSectionSchema = z.object({
 
     list: ListConfSchema.optional(),
     map:  MapConfSchema.optional(),
+    /**
+     * Tableau de bord (KPI + graphes) affiché DANS la section, en troisième vue
+     * à côté de la liste et de la carte — sa présence suffit à faire
+     * apparaître le bouton de bascule.
+     *
+     * Il n'a pas de périmètre à lui : il lit les résultats déjà chargés par la
+     * section, donc les mêmes que la carte, et suit la recherche et les filtres
+     * courants. Les champs consommés par ses dimensions doivent donc figurer
+     * dans `baseParams.defaultFields` — un champ non projeté ne se compte pas.
+     * Pour une page dont le tableau de bord EST le sujet (filtres propres,
+     * table, export), c'est la section `data-observatory` qu'il faut.
+     */
+    observatory: ObservatoryPanelConfSchema.optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
   }),
 });
@@ -1235,6 +1354,17 @@ const ResourceTypeConfSchema = z.object({
   descriptionSuffix: z.string().optional(),
   /** Suffixe de l'input « Services proposés » (`string[]`), PROPRE au formulaire (hébergement `miq86g5vaw1kavrapkb`). */
   servicesSuffix: z.string().optional(),
+  /**
+   * Champs du DÉTAIL de la ressource, par suffixe d'input — les mêmes que la fiche du lieu
+   * (`profile-about-tl`, `roomPath`/`coworkingPath`/`bedRoomPath`) : listes `equipments`, `catering`,
+   * `services`, `roomType` ; textes `moreInfo` (« Bon à savoir »), `about` (« À propos du lieu »),
+   * `tip` (« Le petit truc en plus »). Fourni, l'aperçu montre CES blocs, sous les libellés de la fiche,
+   * à la place de `fieldSuffixes.equipments`/`descriptionSuffix`/`servicesSuffix`. Absent : rendu historique.
+   */
+  detailSuffixes: z.object({
+    equipments: z.string(), catering: z.string(), services: z.string(), roomType: z.string(),
+    moreInfo: z.string(), about: z.string(), tip: z.string(),
+  }).partial().optional(),
 });
 
 /**
@@ -1254,6 +1384,11 @@ export const CoformResourceDirectorySectionSchema = z.object({
   props: z.object({
     title: LocalizedString.optional(),
     description: LocalizedString.optional(),
+    customHeader: z.object({
+      title: LocalizedString.optional(),
+      linkText: LocalizedString.optional(),
+      linkHref: z.string().optional(),
+    }).optional(),
     /** Slug du costum porteur (périmètre de recherche). */
     costumSlug: z.string().optional(),
     /** Entité contexte (hôte du costum) — `contextId`/`contextType` du payload legacy. */
@@ -1288,6 +1423,10 @@ export const CoformResourceDirectorySectionSchema = z.object({
       lg: z.number().int().min(1).max(6).optional(),
       xl: z.number().int().min(1).max(6).optional(),
     }).optional(),
+    /** Nombre maximal de cartes affichées. */
+    limit: z.number().int().min(1).optional(),
+    /** Masque les facettes et désactive le filtre par lieu porteur. Défaut : true. */
+    showFilters: z.boolean().optional(),
     /** Titre de la colonne de filtres (défaut i18n « Filtres »). */
     filtersTitle: LocalizedString.optional(),
     /* Les facettes prix sont figées (3 groupes heure / demi-journée / journée,
@@ -1518,6 +1657,12 @@ export const FeaturedCarouselSectionSchema = z.object({
   props: z.object({
     /** Badge affiché au-dessus du titre de chaque diapositive, ex. "À la une :". */
     badgeLabel: LocalizedString.optional(),
+    /** Icône (registre lucide, kebab-case) posée avant le texte du badge — ex. "megaphone". Absente,
+     *  le badge reste texte seul (comportement historique). */
+    badgeIcon: z.string().optional(),
+    /** Couleur de l'icône du badge (CSS) — INDÉPENDANTE de la couleur du texte (ex. icône turquoise,
+     *  titre marine en `headlineStyle:"text"`). Défaut : hérite de la couleur du texte (`currentColor`). */
+    badgeIconColor: z.string().optional(),
     /** Libellé du bouton CTA. Repli : traduction "En savoir plus". */
     ctaLabel: LocalizedString.optional(),
     /** Fetch/filtre — `defaultTypes`/`defaultTags`/`sourceKey`/`defaultFields` etc. */
@@ -1545,8 +1690,9 @@ export const FeaturedCarouselSectionSchema = z.object({
      * conteneur ne rogne pas (`overflow` visible), sinon la pilule est coupée.
      */
     design: z.enum(["sticker", "card"]).optional(),
-    /** Forme du badge : `badge` (défaut, étiquette inclinée) ou `pill` (arrondi droit). */
-    headlineStyle: z.enum(["badge", "pill"]).optional(),
+    /** Forme du badge : `badge` (défaut, étiquette inclinée), `pill` (arrondi droit) ou `text` — texte
+     *  seul, sans fond ni rotation, police `--font-sans` (celle du menu), plus grand. */
+    headlineStyle: z.enum(["badge", "pill", "text"]).optional(),
     /** Encre de la section, posée avec `background`. Sans elle, un fond fourni impose le texte BLANC
      *  (rendu historique, pensé pour un fond sombre) — à fournir dès que le fond est clair. */
     textColor: z.string().optional(),
@@ -1568,6 +1714,17 @@ export const FeaturedCarouselSectionSchema = z.object({
     /** Puces de pagination sous le carrousel, entre les flèches précédent/suivant (celles-ci
      *  restent toujours affichées). Défaut masquées — à activer explicitement si besoin. */
     showControls: z.boolean().default(false),
+    /** Titre ET image de la diapositive deviennent des liens vers la même cible que le bouton.
+     *  Défaut `false` : seul le bouton est cliquable (comportement historique). */
+    linkTitleAndImage: z.boolean().optional(),
+    /** Apparence du CTA : `button` (défaut, pilule pleine) ou `link` — texte + flèche, sans fond,
+     *  dans `accentColor`. */
+    ctaStyle: z.enum(["button", "link"]).optional(),
+    /** Emplacement du CTA en habillage `card` UNIQUEMENT (`design:"card"`, sans effet en `sticker`,
+     *  déjà posé dans le flux de la diapositive) : `footer` (défaut, historique) — partage la ligne des
+     *  points de position, en pied de carte — ou `inline` — sous le texte de CHAQUE diapositive, comme
+     *  en habillage `sticker`. Les points restent alors seuls au pied, centrés. */
+    ctaPosition: z.enum(["footer", "inline"]).optional(),
   }),
 });
 export type FeaturedCarouselSection = z.infer<typeof FeaturedCarouselSectionSchema>;
@@ -1588,6 +1745,12 @@ export interface SearchListViewProps<T extends SearchListEntity = SearchEntity> 
   focusedItemId?: string | null;
   /** Synchro split : clic sur une carte de liste → focus carte (au lieu d'ouvrir le détail). */
   onFocusItem?: (id: string) => void;
+  /** Tableau de bord embarqué : clic sur une carte → SÉLECTION (au lieu d'ouvrir le
+   *  détail), et la carte reçoit alors un bouton « Fiche » qui, lui, ouvre le détail.
+   *  Ne vaut QUE pour la vue grille et les variants qui rendent ce bouton
+   *  (`cardHasSheetButton`, aujourd'hui `poi-amenities`) : ailleurs le clic ouvre la
+   *  fiche, pour qu'elle reste accessible. Sans cette prop, rien ne change. */
+  onSelectItem?: (item: SearchEntity) => void;
   /**
    * Nom du paramètre URL utilisé pour synchroniser l'item affiché en preview.
    * Défaut : "preview". Permet d'avoir plusieurs sections sur une même page
@@ -1612,6 +1775,14 @@ export interface SwitchDetailsModeProps<T extends SearchListEntity = SearchEntit
   preview?: ListConf["preview"];
   /** Config `list` complète — thread une fois pour les configs par-type (cf. SearchListViewProps.list). */
   list?: ListConf;
+  /**
+   * Fin d'une ÉDITION faite depuis le détail. Le détail n'invalide que les caches qu'il connaît
+   * (listes search, réponse coform) : l'hôte qui montre la fiche AILLEURS — une table admin et ses
+   * tuiles — y invalide les siens. Seul `coform-answer` (+ `editButton`) le signale aujourd'hui ;
+   * les autres contenus qui écrivent ne le relaient pas, un hôte qui en dépend doit les refuser
+   * (cf. `ADMIN_PREVIEW_TYPES`, admin/schema.ts). Absent : rien de plus.
+   */
+  onEdited?: () => void;
 }
 
 export interface DetailsModeProps<T extends SearchListEntity = SearchEntity> {
@@ -1621,11 +1792,18 @@ export interface DetailsModeProps<T extends SearchListEntity = SearchEntity> {
   /** Config `list` complète — thread une fois pour les configs par-type (cf. SearchListViewProps.list). */
   list?: ListConf;
   item: T;
+  /** Transmis tel quel au contenu — cf. `SwitchDetailsModeProps.onEdited`. */
+  onEdited?: () => void;
 }
 
 export interface SearchCardProps<T extends SearchListEntity = SearchEntity> {
   item: T;
   onClick?: () => void;
+  /** Ouverture EXPLICITE de la fiche, quand le clic sur la carte fait autre chose
+   *  (sélection du tableau de bord embarqué). Fourni par `SearchListView` avec
+   *  `onSelectItem`, jamais autrement : sans lui la carte n'affiche pas le bouton
+   *  et son clic ouvre la fiche, comme partout ailleurs. */
+  onOpenSheet?: () => void;
   card?: ListConf["card"];
   /** Config `list` complète — le CardX typé y lit SA tranche (`list.testimonial`, `list.resource`, …). */
   list?: ListConf;
@@ -1638,6 +1816,8 @@ export interface PreviewProps<T extends SearchListEntity = SearchEntity> {
   list?: ListConf;
   /** Ferme le conteneur de détail (drawer/dialog) — fourni par le conteneur. */
   onClose?: () => void;
+  /** Fin d'une édition faite depuis ce contenu — cf. `SwitchDetailsModeProps.onEdited`. */
+  onEdited?: () => void;
 }
 
 export interface SearchMapWrapperProps<T extends SearchListEntity = SearchEntity> {
@@ -1686,4 +1866,6 @@ export interface MapPopupProps<T extends SearchListEntity = SearchEntity> {
   actionKind?: "profil" | "preview";
   /** Handler du bouton d'action — fourni par SearchMap (popup react-map-gl). */
   onAction?: () => void;
+  /** Chips de tags : la MÊME conf que la carte de liste (`list.card.tagColors`) — un tag masqué en liste l'est aussi ici. */
+  tagColors?: TagColorsConf;
 }

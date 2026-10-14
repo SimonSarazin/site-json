@@ -4,7 +4,8 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router";
 
 /**
- * Retour à l'accueil après une réponse dans la modale d'invitation.
+ * Destination après une réponse dans la modale d'invitation : la fiche rejointe si on accepte,
+ * l'accueil si on refuse.
  *
  * Ce qui est protégé : la modale s'ouvre par-dessus TOUTE page, y compris celle du
  * lien Accepter/Refuser du mail (`AcceptInvitationPage`), dont elle masque le bouton.
@@ -23,7 +24,7 @@ vi.mock("../hooks/usePendingSiteInvitation", () => ({
   usePendingSiteInvitation: () => ({
     open: true,
     setOpen: state.setOpen,
-    entity: { serverData: { name: "Le Tiers-lieu" } },
+    entity: { slug: "le-tiers-lieu", serverData: { name: "Le Tiers-lieu" } },
     entityType: "project",
     isInvitingAdmin: false,
   }),
@@ -56,20 +57,20 @@ function rendre(depuis: string) {
   );
 }
 
-describe("PendingInvitationModal — retour à l'accueil après réponse", () => {
+describe("PendingInvitationModal — destination après réponse", () => {
   beforeEach(() => {
     state.succes = true;
     state.setOpen.mockClear();
   });
 
-  it("Accepter depuis le lien du mail : ferme la modale et renvoie à l'accueil", () => {
+  it("Accepter depuis le lien du mail : ferme la modale et mène à la fiche rejointe", () => {
     rendre(LIEN_MAIL);
     fireEvent.click(screen.getByText("PendingInvitationModal.accept"));
     expect(state.setOpen).toHaveBeenCalledWith(false);
-    expect(screen.getByTestId("chemin")).toHaveTextContent(/^\/$/);
+    expect(screen.getByTestId("chemin")).toHaveTextContent(/^\/profil\/le-tiers-lieu$/);
   });
 
-  it("Refuser depuis n'importe quelle page : renvoie aussi à l'accueil", () => {
+  it("Refuser depuis n'importe quelle page : renvoie à l'accueil", () => {
     rendre("/profil/le-tiers-lieu");
     fireEvent.click(screen.getByText("PendingInvitationModal.decline"));
     expect(state.setOpen).toHaveBeenCalledWith(false);

@@ -63,6 +63,15 @@ export const ProfileHeaderSectionSchema = z.object({
   addConfig: AddConfigSchema,
   addDropdownLabel: LocalizedString.optional(),
   showEmailButton: z.boolean().optional().default(true),
+  /**
+   * Propose « Supprimer » dans le menu d'actions, aux ADMINISTRATEURS de la fiche seulement.
+   * Défaut `false` : la suppression est DÉFINITIVE et sort l'élément de tout Communecter (ce n'est
+   * pas le « retrait » du référencement, qui se contente de le détacher du costum). Le SDK
+   * (`isAuthorOrAdmin`) puis le backend (`canDeleteElement`) restent juges en dernier ressort.
+   */
+  showDeleteButton: z.boolean().optional().default(false),
+  /** Destination après suppression — la page de la fiche n'existe plus. Défaut `/`. */
+  deleteRedirectPath: z.string().optional().default("/"),
   showReservationButton: z.boolean().optional().default(false),
   // Le bouton « Voir toutes les photos » s'affiche automatiquement quand le type de
   // profil a un onglet `gallery` (cf. ProfileHeaderComplete → lien vers cet onglet).
@@ -100,6 +109,13 @@ export const ProfileTiersLieuxInfoSectionSchema = z.object({
   showEmail: z.boolean().optional().default(true),
   showPhone: z.boolean().optional().default(true),
   showWebsite: z.boolean().optional().default(true),
+  /**
+   * Ressources réservables comptées dans l'encart (`compteRessources`) : `{ id, place, type, … }`.
+   * `id` = formulaire CoForm lu, `place` = chemin du champ, et `type` décide de CE QU'ON COMPTE :
+   * `single` (défaut) additionne la CAPACITÉ saisie (places, postes), `array` compte les lignes d'un
+   * tableau (moins son en-tête), `answer` compte les OFFRES déposées. Se tromper de mode affiche un
+   * chiffre plausible et faux — « 1 » pour un lieu qui déclare 10 places dans une seule offre.
+   */
   bedRoomPath: z.record(z.string(), z.string()).optional(),
   coworkingPath: z.record(z.string(), z.string()).optional(),
   roomPath: z.record(z.string(), z.string()).optional(),
@@ -130,6 +146,13 @@ export const ProfileTiersLieuxAboutSectionSchema = z.object({
   showAccommodation: z.boolean().optional().default(true),
   activity: z.record(z.string(), z.string()).optional(),
   equipement: z.record(z.string(), z.string()).optional(),
+  /**
+   * Ressources réservables comptées dans l'encart (`compteRessources`) : `{ id, place, type, … }`.
+   * `id` = formulaire CoForm lu, `place` = chemin du champ, et `type` décide de CE QU'ON COMPTE :
+   * `single` (défaut) additionne la CAPACITÉ saisie (places, postes), `array` compte les lignes d'un
+   * tableau (moins son en-tête), `answer` compte les OFFRES déposées. Se tromper de mode affiche un
+   * chiffre plausible et faux — « 1 » pour un lieu qui déclare 10 places dans une seule offre.
+   */
   bedRoomPath: z.record(z.string(), z.string()).optional(),
   coworkingPath: z.record(z.string(), z.string()).optional(),
   roomPath: z.record(z.string(), z.string()).optional(),
@@ -242,6 +265,8 @@ export const ProfileTagsSectionSchema = z.object({
   maxDisplay: z.number().optional().default(20),
   linkable: z.boolean().optional().default(false),
   searchOnClick: z.boolean().optional().default(false),
+  /** Tags NON affichés (égalité stricte) : un marqueur d'annuaire (`lieux-sante`) filtre, il ne se lit pas. */
+  hideTags: z.array(z.string()).optional(),
 });
 
 /**
@@ -304,6 +329,36 @@ export const ProfileToolsSectionSchema = z.object({
   sticky: z.boolean().optional(),
 });
 
+/**
+ * « Mes lieux » — portage de `costum.views.custom.franceTierslieux.listOrga` (legacy) : les
+ * organisations dont le compte connecté est MEMBRE (`links.members.<id>` existe, `isInviting`
+ * absent — exactement le filtre par défaut de `getOrganizations()`, cf. `useUserOrganizations`),
+ * PAS les fiches suivies (`links.follows`/`getSubscriptions`). Onglets secondaires (actus, agenda,
+ * projets liés à ces lieux) : cf. `MyPlacesSection.tsx`.
+ *
+ * Section GÉNÉRIQUE (pas un `Profile*Section` : elle ne lit pas `useProfileEntity()`, mais `me`
+ * directement) — page dédiée, pas un onglet de profil, pour rester adressable (`/mes-lieux`) sans
+ * dépendre du slug — inconnu en config — du compte connecté. Enregistrée dans le `SectionRenderer`
+ * générique, PAS dans `ProfileSectionRenderer`.
+ */
+export const MyPlacesSectionSchema = z.object({
+  type: z.literal("my-places"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString.optional(),
+    emptyStateText: LocalizedString.optional(),
+    /**
+     * PÉRIMÈTRE costum du réseau tiers-lieux — même convention que `MembershipQueryParams.sourceKey`
+     * (`$or[source.keys ∈, reference.costum ∈]`). Sur tiers-lieux.org : `["franceTierslieux",
+     * "tierslieuxbelgique", "navigatorDesTierslieux"]` (déjà utilisé ailleurs dans cette config,
+     * ex. `hero-search`). Absent = réseau Communecter entier.
+     */
+    sourceKey: z.array(z.string()).optional(),
+  }),
+});
+export type MyPlacesSection = z.infer<typeof MyPlacesSectionSchema>;
+export type MyPlacesSectionProps = MyPlacesSection["props"];
+
 // Profile-specific sections union
 export const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileHeaderSectionSchema,
@@ -363,6 +418,51 @@ export const ProfileTabSubRouteSchema = z.object({
   loader: z.string().optional(), // nom de la fonction loader optionnelle
 });
 
+/**
+ * Props de l'onglet « Structures » (`component: "StructuresTab"`) : les structures que le compte
+ * connecté administre, chacune avec ses créneaux (réponses d'un formulaire CoForm) et un bouton
+ * d'ajout qui préremplit puis MASQUE le champ structure. Tout ce qui est propre à un site
+ * (formulaire, chemin du finder) vient d'ici : l'onglet ne connaît aucun costum.
+ */
+export const StructuresTabPropsSchema = z.object({
+  answers: z.object({
+    /** Formulaire des créneaux (ObjectId). */
+    formId: z.string().regex(/^[0-9a-f]{24}$/, "id de formulaire CoForm attendu (ObjectId 24 hex)"),
+    /**
+     * Chemin Mongo du finder « structure » dans la réponse : `answers.<étape>.finder<kunik>`. Sert à
+     * la fois au filtre serveur (créneaux d'une structure), au préremplissage et au masquage.
+     */
+    structureFinderPath: z
+      .string()
+      .regex(/^answers\.[^.]+\.finder[^.]+$/, "chemin attendu : answers.<étape>.finder<kunik>"),
+    /** « Modifier » dans le détail d'un créneau, pour qui le gère ou l'a déposé (`canEditCoformAnswer`). Absent = lecture seule. */
+    editButton: z.boolean().optional(),
+    /**
+     * Groupe des créneaux DÉPOSÉS par le compte hors des structures qu'il administre (ou sans
+     * structure), tous statuts. Exige que le serveur montre à l'auteur ses réponses non validées
+     * (SSBE : `SportSanteBienetre::isBoundToOwnAnswers`) — sinon seuls ses créneaux validés y viendraient.
+     */
+    submittedSlots: z.boolean().optional(),
+  }),
+  /** `costum` (défaut code) : seules les structures rattachées au site porteur ; `network` : toutes. */
+  scope: z.enum(["costum", "network"]).optional(),
+  /** Action proposée quand le compte n'administre aucune structure (ex. la page des structures). */
+  emptyAction: z.object({ label: LocalizedString, href: z.string().startsWith("/") }).optional(),
+  /**
+   * Champ de MODÉRATION des structures (chemin pointé, ex. `statusActor`) : hors « Validé », pastille
+   * dans l'en-tête et explication au dépliage. Absent = rien d'affiché. Réservé à `scope: costum` :
+   * hors du site porteur, le même champ peut dire autre chose (« Une personne morale » ailleurs).
+   */
+  structureStatusField: z
+    .string()
+    .regex(/^[A-Za-z0-9_]+(\.[A-Za-z0-9_]+)*$/, "chemin pointé attendu (ex. statusActor)")
+    .optional(),
+}).refine((props) => !(props.structureStatusField && props.scope === "network"), {
+  message: "structureStatusField n'a de sens qu'en scope costum : hors du site porteur, le champ peut dire autre chose",
+  path: ["structureStatusField"],
+});
+export type StructuresTabProps = z.infer<typeof StructuresTabPropsSchema>;
+
 // Schema pour un tab de profil
 export const ProfileTabSchema = z.object({
   id: z.string(),
@@ -373,13 +473,13 @@ export const ProfileTabSchema = z.object({
   sections: z.array(ProfileSectionSchema).optional(),
 
   // Option 2 : Utiliser un composant dédié
-  component: z.enum(["SocialTab", "MembershipTab", "NewsTab"]).optional(),
+  component: z.enum(["SocialTab", "MembershipTab", "NewsTab", "StructuresTab"]).optional(),
 
   /**
    * Options passées au composant du mode `component`. Un onglet à `sections` configure chacune de ses
    * sections par ses `props` ; un onglet à `component` n'avait aucun équivalent et rendait donc
-   * toujours la même chose. Cf. `MembershipTabProps` (`types`, `scope`) ; les autres composants
-   * ignorent la clé.
+   * toujours la même chose. Cf. `MembershipTabProps` (`types`, `scope`) et `StructuresTabProps`
+   * (validées ci-dessous) ; les autres composants ignorent la clé.
    */
   props: z.record(z.string(), z.unknown()).optional(),
 
@@ -390,7 +490,17 @@ export const ProfileTabSchema = z.object({
 }).refine(
   (data) => (data.sections && data.sections.length > 0) || data.component,
   { message: "Un tab doit avoir soit 'sections' soit 'component'" }
-);
+).superRefine((tab, ctx) => {
+  // `props` est un record libre (le mode `component` sert plusieurs composants) : sans cette passe,
+  // un formulaire ou un chemin de finder MAL FORMÉ ne se verrait qu'à l'écran, onglet vide (un id
+  // bien formé mais faux, lui, ne se voit toujours qu'à l'écran).
+  if (tab.component !== "StructuresTab") return;
+  const parsed = StructuresTabPropsSchema.safeParse(tab.props);
+  if (parsed.success) return;
+  for (const issue of parsed.error.issues) {
+    ctx.addIssue({ code: "custom", message: issue.message, path: ["props", ...issue.path] });
+  }
+});
 
 export type ProfileTab = z.infer<typeof ProfileTabSchema>;
 export type ProfileTabCondition = z.infer<typeof ProfileTabConditionSchema>;
@@ -525,6 +635,17 @@ const MemberCardConfSchema = z.object({
     /** Préfixe des variables CSS : `<prefixe>-<slug>-carte` et `<prefixe>-<slug>-encre`. */
     prefixeCouleur: z.string(),
   }).optional(),
+  /** Couleur FIXE de la carte « équipe », pour une section sans territoire (ex. l'animation
+   *  départementale, un contact unique) où `couleursTerritoire` retomberait sur le neutre du
+   *  thème faute de valeur à résoudre. Prime sur `rattachement` : posée, elle s'applique à TOUTES
+   *  les cartes de la section, quel que soit le territoire porté par chaque membre. `bordure`
+   *  reprend `fond` si absente (même convention que `couleursTerritoire`). Couleurs CSS libres
+   *  (`var(--jeton)` recommandé) — contraste AA à vérifier entre `fond` et `encre`. */
+  fixedColors: z.object({
+    fond: z.string(),
+    encre: z.string(),
+    bordure: z.string().optional(),
+  }).optional(),
   showDescription: z.boolean().optional().default(true),
   showAddress: z.boolean().optional().default(true),
   // Bloc de compteurs de `CardProfile` (projets liés). Absent = affiché.
@@ -532,6 +653,12 @@ const MemberCardConfSchema = z.object({
   // rendue ici, elle doit donc se piloter pareil depuis les deux sections.
   showStats: z.boolean().optional(),
   detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
+  /** Plafond de colonnes de la grille « équipe » (`type: "team"` uniquement) — au-delà de 4 cartes,
+   *  le nombre de colonnes réelles est normalement plafonné à 4 (`GRILLE_CARTES`, `EntityMembers.tsx`).
+   *  Un effectif nombreux mais voulu plus resserré (ex. 9 coordonnateurs en 3×3) le réduit ici plutôt
+   *  que de changer le défaut partagé. Sans effet sous ce nombre de cartes (le plafond ne fait
+   *  jamais remonter le nombre de colonnes, seulement le réduire). Défaut code : 4 (historique).*/
+  maxColumns: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
 }).partial();
 
 export type MemberCardConf = z.infer<typeof MemberCardConfSchema>;

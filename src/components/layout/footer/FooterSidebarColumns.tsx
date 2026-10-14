@@ -114,25 +114,33 @@ export default function FooterSidebarColumns({ footer, style }: FooterSidebarCol
                     <p className="text-sm text-muted-foreground">
                         {t(footer.copyright)}
                     </p>
-                    <div className="flex gap-6 text-sm text-muted-foreground">
-                        {legalLinks.map((link, idx) => (
-                            <NavLink
-                                key={idx}
-                                to={link.href}
-                                className="hover:text-primary transition-colors"
-                            >
-                                {t(link.label)}
-                            </NavLink>
-                        ))}
-                        {bottomLinks.map((link, idx) => (
-                            <NavLink
-                                key={`bottom-${idx}`}
-                                to={link.href}
-                                className="hover:text-primary transition-colors"
-                            >
-                                {t(link.label)}
-                            </NavLink>
-                        ))}
+                    <div className="flex flex-col items-end gap-3">
+                        {footer.extra && (
+                            <div
+                                className="text-sm text-muted-foreground text-right"
+                                dangerouslySetInnerHTML={{ __html: footer.extra }}
+                            />
+                        )}
+                        <div className="flex gap-6 text-sm text-muted-foreground">
+                            {legalLinks.map((link, idx) => (
+                                <NavLink
+                                    key={idx}
+                                    to={link.href}
+                                    className="hover:text-primary transition-colors"
+                                >
+                                    {t(link.label)}
+                                </NavLink>
+                            ))}
+                            {bottomLinks.map((link, idx) => (
+                                <NavLink
+                                    key={`bottom-${idx}`}
+                                    to={link.href}
+                                    className="hover:text-primary transition-colors"
+                                >
+                                    {t(link.label)}
+                                </NavLink>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1,15 +1,15 @@
 import { useMemo } from "react";
 import { Link } from "react-router";
-import { Users, MapPin, ArrowUpRight, Building2, Mail } from "lucide-react";
+import { MapPin, ArrowUpRight, Building2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { getBaseUrl } from "@/lib/constant/common";
 import type { PreviewProps } from "../../schema";
-import { parseResourceDirectoryItem } from "../../lib/resourceDirectory";
+import { parseResourceDirectoryItem, resolveAnswerDetails, resolveAnswerType } from "../../lib/resourceDirectory";
 import { formatCapacityRange } from "../../helpers/servicePricingAnswers";
 import { useResourceParentsMap } from "../../contexts/resourceDirectory";
-import { ResourcePhotoCarousel } from "../ResourcePhotoCarousel";
+import { ResourceDetail } from "./resource/ResourceDetail";
 
 /** Prépend `https://` si l'URL n'a pas de schéma (et n'est pas un e-mail) — cf. preview legacy. */
 function externalUrl(raw: string): string {
@@ -27,10 +27,9 @@ function isYes(v: string | undefined): boolean {
 
 /**
  * Détail d'une ressource de tiers-lieu (`preview.type: "resource-directory"`).
- * Même présentation que le modal « En savoir plus » d'un tiers-lieu
- * (`ProfilTiersLieuxAbout`) : carrousel + pastille de capacité, puis nom, tarifs
- * (pastilles), surface, « À propos », équipements, services. Bouton d'action :
- * « Réserver » (lien de résa en ligne) OU « Contacter par e-mail » (`mailto:` de
+ * Même composant que le détail d'une ressource sur la fiche du lieu (`ResourceDetail`,
+ * partagé avec `ProfilTiersLieuxAbout`), avec en plus le porteur et son adresse. Bouton d'action :
+ * « Réserver » (lien de résa en ligne) OU « Réserver par e-mail » (`mailto:` de
  * l'e-mail du tiers-lieu) si pas de lien ; toujours « Voir le tiers-lieu ». Pas
  * d'étiquette de type. Adapté aux jetons de thème (clair + sombre).
  */
@@ -52,6 +51,18 @@ export default function PreviewResourceDirectory({ item, list }: PreviewProps) {
           })
         : null,
     [conf, serverData],
+  );
+
+  // Champs du détail déclarés pour ce type (`detailSuffixes`) : mêmes blocs et libellés que la fiche
+  // du lieu. Sinon, rendu historique (équipements / services / à propos de l'annuaire).
+  const details = useMemo(
+    () =>
+      conf
+        ? resolveAnswerDetails(serverData, resolveAnswerType(serverData, conf.resourceTypes), (key) =>
+            t(`resourceDirectory.detail.${key}`),
+          )
+        : null,
+    [conf, serverData, t],
   );
 
   if (!conf || !model) return null;
@@ -96,27 +107,12 @@ export default function PreviewResourceDirectory({ item, list }: PreviewProps) {
   }
 
   return (
-    <div className="grid max-h-[90vh] grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
-      {/* Carrousel d'images + pastille capacité */}
-      <div className="relative h-56 overflow-hidden bg-muted">
-        <ResourcePhotoCarousel
-          images={images}
-          alt={name}
-          heightClass="h-56"
-          arrowSize="lg"
-          fallback={<Users className="h-14 w-14 text-muted-foreground/30" />}
-        />
-        {capacityBadge && (
-          <span className="absolute right-3 top-3 z-10 rounded bg-background/90 px-2 py-1 text-xs text-foreground shadow">
-            {capacityBadge}
-          </span>
-        )}
-      </div>
-
-      {/* Contenu */}
-      <div className="space-y-4 overflow-y-auto p-5 scrollbar-thin">
-        <div className="space-y-1">
-          <h3 className="text-lg font-semibold text-foreground">{name}</h3>
+    <ResourceDetail
+      name={name}
+      images={images}
+      capacityLabel={capacityBadge}
+      subtitle={
+        <>
           {parentName && (
             <p className="text-sm text-muted-foreground">
               {t("resourceDirectory.by", undefined, { name: parentName })}
@@ -128,78 +124,28 @@ export default function PreviewResourceDirectory({ item, list }: PreviewProps) {
               {locality}
             </p>
           )}
-        </div>
-
-        {/* Tarifs — pastilles */}
-        {(model.prices.length > 0 || solidaire) && (
-          <div className="flex flex-wrap gap-2">
-            {model.prices.map((p) => (
-              <span
-                key={p.unit}
-                className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-3 py-1 text-sm font-medium text-primary"
-              >
-                {p.price}€{" "}
-                <span className="font-normal text-muted-foreground">
-                  {t(`resourceDirectory.priceSuffix.${p.unit}`)}
-                </span>
-              </span>
-            ))}
-            {solidaire && (
-              <span className="inline-flex items-center rounded-md bg-secondary/15 px-3 py-1 text-sm font-medium text-foreground">
-                {t("resourceDirectory.solidaire")}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Surface */}
-        {area && (
-          <p className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{t("resourceDirectory.area")}</span>{" "}
-            {areaLabel(area)}
-          </p>
-        )}
-
-        {/* À propos */}
-        {model.description && (
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-foreground">{t("resourceDirectory.about")}</p>
-            <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
-              {model.description}
-            </p>
-          </div>
-        )}
-
-        {/* Équipements */}
-        {model.equipments.length > 0 && (
-          <div className="space-y-1.5">
-            <p className="text-sm font-medium text-foreground">{t("resourceDirectory.equipments")}</p>
-            <div className="flex flex-wrap gap-1.5">
-              {model.equipments.map((eq) => (
-                <span key={eq} className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-                  {eq}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Services proposés */}
-        {model.extraServices.length > 0 && (
-          <div className="space-y-1.5">
-            <p className="text-sm font-medium text-foreground">{t("resourceDirectory.services")}</p>
-            <div className="flex flex-wrap gap-1.5">
-              {model.extraServices.map((s) => (
-                <span key={s} className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-                  {s}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Actions */}
-        {(model.bookingUrl || mailtoHref || parent?.slug) && (
+        </>
+      }
+      prices={model.prices.map((p) => ({ amount: p.price, suffix: t(`resourceDirectory.priceSuffix.${p.unit}`) }))}
+      solidarityLabel={solidaire ? t("resourceDirectory.detail.solidarity") : null}
+      area={area ? { label: t("resourceDirectory.detail.area"), value: areaLabel(area) } : null}
+      tags={
+        details
+          ? details.tags
+          : [
+              { label: t("resourceDirectory.equipments"), values: model.equipments },
+              { label: t("resourceDirectory.services"), values: model.extraServices },
+            ].filter((g) => g.values.length > 0)
+      }
+      notes={
+        details
+          ? details.notes
+          : model.description
+            ? [{ label: t("resourceDirectory.about"), value: model.description }]
+            : []
+      }
+      actions={
+        (model.bookingUrl || mailtoHref || parent?.slug) && (
           <div className="space-y-2 pt-1">
             {model.bookingUrl ? (
               <Button
@@ -226,8 +172,8 @@ export default function PreviewResourceDirectory({ item, list }: PreviewProps) {
               </Button>
             )}
           </div>
-        )}
-      </div>
-    </div>
+        )
+      }
+    />
   );
 }

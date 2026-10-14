@@ -40,6 +40,10 @@ export interface MemberCardConfig {
   layout?: "stack" | "row";
   /** Convention de rattachement — cf. `MemberCardConfSchema.rattachement`. */
   rattachement?: ConventionRattachement;
+  /** Couleur fixe de la carte « équipe », prime sur `rattachement` — cf. `MemberCardConfSchema.fixedColors`. */
+  fixedColors?: { fond: string; encre: string; bordure?: string };
+  /** Plafond de colonnes de la grille « équipe » — cf. `MemberCardConfSchema.maxColumns`. */
+  maxColumns?: 2 | 3 | 4;
   showDescription?: boolean;
   showAddress?: boolean;
   /** Bloc de compteurs de `CardProfile`. Absent = affiché — cf. `MemberCardConfSchema.showStats`. */
@@ -106,6 +110,14 @@ const GRILLE_CARTES: Record<number, string> = {
   4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
 };
 
+/** Variante élargie de `GRILLE_CARTES[3]`, réservée à `card.maxColumns` (opt-in) — une section qui
+ *  tombe à 3 cartes par le SEUL effet de son effectif naturel (sans `maxColumns` configuré) garde
+ *  `max-w-4xl` partout, y compris sur les autres sites du parc. */
+const GRILLE_CARTES_PLAFONNEE: Record<number, string> = {
+  ...GRILLE_CARTES,
+  3: "max-w-5xl grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+};
+
 /** Grille de cartes "profile" (CardProfile) avec ouverture de détail (drawer/dialog). */
 function ProfileCardList({
   members,
@@ -163,9 +175,18 @@ function ProfileCardList({
     <div className="space-y-4">
       {/* En « équipe », le nombre de colonnes est PLAFONNÉ par le nombre de cartes : avec une seule
           fiche (le contact CAF) ou deux (l'animation départementale), une grille à 4 colonnes les
-          tasse à gauche et laisse les trois quarts vides. `mx-auto` recentre alors le bloc. Classes
+          tasse à gauche et laisse les trois quarts vides. `mx-auto` recentre alors le bloc. `maxColumns`
+          (opt-in, cf. schéma) abaisse encore ce plafond pour un effectif nombreux voulu plus resserré
+          (ex. 9 coordonnateurs en 3×3 plutôt qu'en 4 colonnes) — SEUL ce cas opt-in élargit la
+          grille à 3 colonnes (`GRILLE_CARTES_PLAFONNEE`) ; un effectif naturel de 3 (sans
+          `maxColumns`) garde la largeur historique, inchangée pour le reste du parc. Classes
           littérales — le JIT ne génère pas de classe construite. */}
-      <div className={cn("mx-auto grid w-full gap-4", enEquipe ? GRILLE_CARTES[Math.min(members.length, 4)] : GRILLE_CARTES[4])}>
+      <div className={cn(
+        "mx-auto grid w-full gap-4",
+        enEquipe
+          ? (card?.maxColumns ? GRILLE_CARTES_PLAFONNEE : GRILLE_CARTES)[Math.min(members.length, card?.maxColumns ?? 4)]
+          : GRILLE_CARTES[4],
+      )}>
         {members.map((member, index) => {
           const isLastItem = index === members.length - 1;
           // Variante « équipe » : carte vitrine, lue sur la liste projetée (`fields`).
@@ -179,6 +200,7 @@ function ProfileCardList({
                 contactText={contactText}
                 layout={card?.layout}
                 rattachement={conventionEquipe}
+                fixedColors={card?.fixedColors}
               />
             </Suspense>
           ) : (

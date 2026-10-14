@@ -416,6 +416,91 @@ carte et la modale de dépôt affichaient encore l'état d'avant.
 
 ---
 
+### 3.4 Contributeurs à l'édition
+
+Parité du bouton legacy « Add contributors » de la fiche (`campDetail.php`,
+`add_form_contributor`) : l'auteur ou un admin désigne des **citoyens** qui peuvent **modifier**
+le commun.
+
+| | |
+|---|---|
+| Stockage | `answers.<id>.links.canEdit = { <userId>: { name, type } }` — le legacy y range parfois une vignette (`profilThumbImageUrl`), reprise à la réécriture en chemin **relatif** (la lecture SDK la rend absolue, cf. pièges) |
+| Bouton | `CommunEditorsControl`, à côté de « Modifier », gardé par `canManageEditors` (auteur ou admin) |
+| Recherche | `FinderSearchModal`, citoyens, recherche globale (`notSourceKey`) — le `initType: ['citoyens']` du legacy |
+| Droit donné | modifier le commun (`canEditCommun`), pas le supprimer — et, quand la question « Référent » est reliée, changer la liste par elle (ci-dessous) |
+| Écriture | `useSaveCommunEditors` : `updateField("links.canEdit", …)` puis la question liée, chacune seulement si elle change ; une liste vide s'écrit `null` (`$unset`) |
+
+**Le lien avec la question « Référent du commun »** passe par la config du finder, comme dans le
+legacy : `params.finder<clé>.addToLinks = { value: true, links: "canEdit" }`. Rien n'est codé en
+dur — sans ce réglage, la liste vit seule. Au 29/09, **aucun formulaire de la base** ne le portait
+(il n'a été posé depuis que sur le formulaire des communs CAE de la base de développement, pour la
+vérification) : le lien était inactif partout, et les deux listes divergeaient déjà. D'où deux
+règles :
+
+- la fiche présente l'**union** des deux sources, et « Enregistrer » les réaligne — le bouton reste
+  actif sans modification à l'écran quand elles divergent (`editorsWrites`) ;
+- l'enregistrement du formulaire synchronise **par différence**
+  ([`coform/utils/addToLinks.ts`](../src/modules/coform/utils/addToLinks.ts)) : un référent ajouté
+  entre dans `links.canEdit`, un référent retiré en sort, un contributeur qui n'est pas référent
+  n'en sort jamais. Le calcul vit dans `useCoFormFinalMutation`, sur la réponse relue à l'instant :
+  c'est le seul point que traversent **tous** les chemins d'enregistrement.
+
+C'est un lien **supplémentaire** : le lien par type d'élément que tout finder écrit
+(`links.<type>`) n'est pas touché.
+
+**Qui peut changer la liste — parité legacy, assumée le 30/09.** Le bouton de la fiche est réservé
+à l'auteur et aux admins (`canManageEditors`). Mais la question « Référent » reliée à la liste fait
+partie du commun : **quiconque peut le modifier**, contributeurs à l'édition compris, change la
+liste par elle — comme dans le legacy, où le finder écrit `links.canEdit` pour tout éditeur. Le
+backend ne s'y oppose pas davantage : `SaveAnswerAction` remplace tout type de lien reçu d'un
+éditeur. `canManageEditors` est donc une garde d'**affichage**, pas une frontière de droit ; en
+faire une demanderait de masquer la question aux non-gestionnaires **et** de filtrer
+`links.canEdit` côté backend.
+
+**Dépendances backend** (non commitées au 30/09) :
+
+- `citizenToolKit` — `Coform::canAdminAnswer` accepte `links.canEdit.<userId>`. Sans cela,
+  l'enregistrement refusait ces personnes (`unauthorized_update`) alors qu'`Authorisation::canEdit`
+  leur affichait déjà les boutons d'édition. Cette garde ne couvre que l'enregistrement, les fichiers
+  et l'historique ; `GetAnswerFilesAction` charge désormais `links` pour l'appliquer.
+- `citizenToolKit` — `SaveAnswerAction` (et la création, `Coform::saveAnswer`) : un type de lien
+  reçu **vide** est retiré au lieu d'être stocké en `[]`. PHP décode l'objet `{}` du client en
+  tableau vide, et un `links.canEdit` tableau fait échouer tout `$set links.canEdit.<id>` ultérieur :
+  l'ajout par le finder legacy échouait sans bruit. Cas réel : vider la question « Référent » dans le
+  formulaire.
+- `survey` — l'écran de config du finder (`views/tpls/forms/cplx/finder.php`) expose `addToLinks`
+  (une case, et le lien, limité à `canEdit`). Il n'y figurait pas, et ré-enregistrer la config de
+  l'input l'effaçait.
+
+⚠️ Pièges :
+
+- `addToLinks` se lit dans les params du **formulaire de l'appel courant**, celui qui fait autorité
+  sur la fiche, sous la clé de stockage `finder<clé d'input>` — la même que dans `answers.<étape>`.
+  `answered` n'est jamais un lien alimentable : c'est le tableau des contributeurs que tient le
+  backend.
+- **La lecture SDK n'est pas la forme stockée.** `ApiClient._normalizeRecursively` rend absolus les
+  champs image (`profilThumbImageUrl`…) partout dans le document relu. Toute écriture qui reprend
+  une entrée existante passe par `withRelativeImageUrls` (`coform/utils/toRelativeImageUrl.ts`) —
+  sinon l'URL absolue du backend part en base, et le legacy, qui préfixe lui-même
+  (`baseUrl + profilThumbImageUrl`), affiche une image cassée (constaté le 29/09). Un test qui
+  remplace `callEndpoint` court-circuite cette normalisation : lui faire passer l'état serveur par
+  `client._transformData`.
+- **La mutation affecte toujours `answer.data.links`**, même vide. Le brouillon d'une réponse relue
+  reprend ses `links` normalisés, et `save()` les renvoyait tous : vignettes absolues, et
+  `links.answered` remplacé par sa copie relue — le modifieur n'y entrait jamais. Un objet vide
+  n'est pas transmis : la base garde ses liens.
+- Le multi-étapes de `SmartCoForm` ne transmet pas à la mutation les `links` que calcule
+  `CoFormProvider` (antérieur, hors de ce lot) : c'est pourquoi la synchronisation n'est pas
+  calculée côté formulaire.
+- **Annuaire** (décision du 30/09) : un non-admin y voit les communs sélectionnés, les siens, **et
+  ceux dont il est contributeur à l'édition** — un commun pas encore sélectionné est justement celui
+  qu'on demande à ses contributeurs de reprendre. C'est la 3ᵉ branche du `$or` de visibilité
+  (`splitAacFilters`, `links.canEdit.<id>` en `$exists`) ; le décompte et les facettes suivent, par
+  construction. Critère : la **liste** `links.canEdit`, celle qui donne le droit — un référent
+  présent seulement dans la question (données antérieures à la synchronisation) n'y figure qu'une
+  fois la liste réalignée. ⚠️ Sur un formulaire `onlyAdminCanSeeList` (§13.5), le backend réduit un
+  non-admin à ses propres réponses : les contributeurs n'y voient pas les communs d'autrui.
+
 ## 4. Le résolveur `AacConfig` — le cœur du socle
 
 **[`lib/resolveAacConfig.ts`](../src/modules/aac/lib/resolveAacConfig.ts)** est une fonction
@@ -531,6 +616,11 @@ financière.
   **connecté** peut lire et modifier une réponse **sans lien au contexte** de l'appel
   (`IndexAction.php:237`, sous `session['userId']`). Ce n'est **pas** un dépôt sans connexion.
   Porté par `canEditCommun`.
+- **Contributeurs à l'édition** (`links.canEdit`, §3.4) : `canEditCommun` les accepte, connectés.
+  Le bouton de gestion (`canManageEditors`) est réservé à l'auteur et aux admins — ni
+  `anyOnewithLinkCanAnswer` ni la liste n'y ouvrent —, mais ce n'est **pas** une frontière de
+  droit : la question « Référent » reliée à la liste reste modifiable par tout éditeur (parité
+  legacy).
 - **Lecture** : publique, sauf `onlymemberaccess` (membres et admins — `Form.php:1869`). Pas de
   clé `annuaire` : la restriction de **listing** (`onlyAdminCanSeeList`) est appliquée par le
   backend, §13.5.
@@ -556,6 +646,7 @@ ci-dessous.
 | **Générer / Associer un projet** | admin de l'appel **ou** déposant | `CommunProjectControl.canManageProject` |
 | **Ajouter / éditer palier et action** | admin du **projet lié** **ou** déposant | `cagnotte` + `ownerIds` |
 | **Supprimer DÉFINITIVEMENT un commun** | auteur **ou** admin | `aac` (`canDeleteCommun`) |
+| **Gérer les contributeurs à l'édition** | bouton : auteur **ou** admin ; par la question « Référent » reliée : tout éditeur (parité legacy) | `aac` (`canManageEditors`) |
 
 Porter l'appel autorise à instruire et à **promouvoir** un commun, pas à écrire dans le plan de
 financement d'autrui. L'admin de l'appel retrouve les paliers dès qu'il administre le projet lié —
@@ -598,7 +689,8 @@ convention du repo, **plus une spécificité AAC** :
 - **`userId` en DERNIER segment** sur les données user-scopées (mes votes/éval/financements/« vu »),
   et **absent** des données publiques (config, listing) pour préserver la mutualisation du cache.
   ⚠️ Depuis la bascule sur `directoryproposal`, `COMMUNS` / `COUNT` / `FACETS` **sont** user-scopées :
-  un visiteur non administrateur ne reçoit que les communs sélectionnés plus les siens (§13.5).
+  un visiteur non administrateur ne reçoit que les communs sélectionnés, les siens et ceux dont il
+  est contributeur à l'édition (§3.4, §13.5).
 
 **Le balayage de l'annuaire est MÉMORISÉ.** Le chemin « filtre client » (`usage`, `usageSub`,
 `maturity`, et `q`/`tags` tant que la question n'est pas résolue — cf. §3.1) balaie jusqu'à

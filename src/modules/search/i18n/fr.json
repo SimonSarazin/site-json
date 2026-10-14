@@ -59,7 +59,12 @@
         "notProvided": "Non renseigné",
         "installation": "Installation",
         "installationEmpty": "Aucune installation renseignée",
-        "validated": "Validé",
+        "status": {
+            "validated": "Validé",
+            "pending": "En attente",
+            "inProgress": "En cours",
+            "refused": "Refusé"
+        },
         "noName": "(Pas de nom)",
         "by": "Par :",
         "showLess": "Voir moins",
@@ -67,7 +72,10 @@
         "activitySheet": "Fiche d'activité",
         "structureSheet": "Fiche structure",
         "edit": "Modifier",
-        "editError": "Impossible de charger cette fiche pour la modifier."
+        "editTitle": "Modifier — {{title}}",
+        "editLoading": "Chargement de la fiche…",
+        "edited": "Modifications enregistrées.",
+        "editError": "Impossible de charger cette fiche. Cliquez de nouveau sur « Modifier » pour réessayer."
     },
     "CardPoiAmenities": {
         "amenities": "Aménagement",
@@ -77,7 +85,10 @@
         "showers": "Douches",
         "freeAccess": "Libre accès",
         "yearsAgo": "Il y a {{count}} ans",
-        "filterByInstallation": "Filtrer par l'installation {{name}}"
+        "filterByInstallation": "Filtrer par l'installation {{name}}",
+        "expand": "Déplier la fiche",
+        "collapse": "Replier la fiche",
+        "sheet": "Fiche"
     },
     "PreviewPoiAmenities": {
         "edit": "Éditer",
@@ -186,7 +197,10 @@
         "memberOfCount_one": "{{count}} organisation",
         "memberOfCount_other": "{{count}} organisations",
         "createdOn": "Créé le",
-        "documents": "Documents"
+        "documents": "Documents",
+        "docRecepisse": "Récépissé de déclaration",
+        "docResponsableCivilePro": "Responsabilité civile professionnelle",
+        "notProvided": "Non renseigné"
     },
     "PreviewReservations": {
         "title": "Réservations",
@@ -207,7 +221,18 @@
         "bookAria": "Réserver le {{day}} de {{start}} à {{end}}",
         "bookTitle": "Réserver un créneau",
         "conflict": "Ce créneau est déjà réservé par {{user}}.",
-        "referenceNotice": "Grille de référence : une case libre signifie qu'aucune réservation n'est enregistrée — pas que l'équipement est ouvert."
+        "referenceNotice": "Grille de référence : une case libre signifie qu'aucune réservation n'est enregistrée — pas que l'équipement est ouvert.",
+        "orgaSheet": "Fiche",
+        "orgaSheetAria": "Ouvrir la fiche de {{name}} dans l'annuaire"
+    },
+    "PreviewBookedResources": {
+        "title": "Équipements réservés",
+        "error": "Impossible de charger les équipements réservés.",
+        "unknownResource": "Équipement non renseigné",
+        "slotCount_one": "{{count}} créneau",
+        "slotCount_other": "{{count}} créneaux",
+        "sheet": "Fiche",
+        "sheetAria": "Ouvrir la fiche de {{name}}"
     },
     "Filtres actifs :": "Filtres actifs :",
     "À partir du": "À partir du",
@@ -236,6 +261,8 @@
     "+{{count}} autres — précisez la recherche": "+{{count}} autres — précisez la recherche",
     "Carte": "Carte",
     "Voir en liste": "Voir en liste",
+    "Observatoire": "Observatoire",
+    "Chargement des données… {{loaded}} / {{total}}": "Chargement des données… {{loaded}} / {{total}}",
     "type.NGO": "ONG",
     "type.LocalBusiness": "Entreprise locale",
     "type.Group": "Groupe",
@@ -295,11 +322,9 @@
     "resourceDirectory.priceSuffix.fullDay": "/journée",
     "resourceDirectory.priceSuffix.bed": "/lit",
     "resourceDirectory.priceSuffix.room": "/nuitée",
-    "resourceDirectory.area": "Surface :",
     "resourceDirectory.roomsCount": "{{count}} salle",
     "resourceDirectory.roomsCount_other": "{{count}} salles",
     "resourceDirectory.hostedTitle": "Tiers-lieu porteur",
-    "resourceDirectory.solidaire": "Tarif solidaire",
     "resourceDirectory.nameCoworking": "Espace de coworking",
     "resourceDirectory.nameMeeting": "Salle de réunion",
     "resourceDirectory.nameAccommodation": "Hébergement",
@@ -311,8 +336,17 @@
     "resourceDirectory.filterByParent": "Voir les ressources de {{name}}",
     "resourceDirectory.activeParentFilter": "Ressources portées par {{name}}",
     "resourceDirectory.clearParentFilter": "Retirer le filtre",
-    "resourceDirectory.contactByEmail": "Contacter par e-mail",
+    "resourceDirectory.contactByEmail": "Réserver par e-mail",
     "resourceDirectory.mailtoSubject": "Demande de réservation — {{name}}",
+    "resourceDirectory.detail.equipments": "Équipements",
+    "resourceDirectory.detail.catering": "Restauration",
+    "resourceDirectory.detail.services": "Services proposés",
+    "resourceDirectory.detail.roomType": "Type de chambre",
+    "resourceDirectory.detail.moreInfo": "Bon à savoir",
+    "resourceDirectory.detail.about": "À propos du lieu",
+    "resourceDirectory.detail.tip": "Le petit truc en plus",
+    "resourceDirectory.detail.area": "Surface",
+    "resourceDirectory.detail.solidarity": "Tarif solidaire possible",
     "Chargement des points… {{loaded}} / {{total}}": "Chargement des points… {{loaded}} / {{total}}",
     "Carte limitée aux {{loaded}} premiers résultats": "Carte limitée aux {{loaded}} premiers résultats",
     "Aucun résultat": "Aucun résultat",

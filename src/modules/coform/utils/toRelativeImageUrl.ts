@@ -28,3 +28,41 @@ export function toRelativeImageUrl(absoluteOrRelative: string | undefined): stri
     return absoluteOrRelative;
   }
 }
+
+/**
+ * Les champs que le SDK rend ABSOLUS à la lecture, où qu'ils soient dans le document : miroir de
+ * `ApiClient._imageFields` (`cocolight-api-client`, normalisation `_normalizeRecursively` →
+ * `_ensureFullURL`).
+ */
+const SDK_IMAGE_FIELDS = [
+  "profilImageUrl",
+  "profilThumbImageUrl",
+  "profilMediumImageUrl",
+  "profilMarkerImageUrl",
+  "profilBannerUrl",
+  "profilRealBannerUrl",
+  "imagePath",
+  "imageThumbPath",
+  "docPath",
+  "imageThumb",
+  "imageMediumPath",
+  "logo",
+  "logoMin",
+  "image",
+] as const;
+
+/**
+ * Une entrée relue par le SDK, dont les champs image redeviennent relatifs, comme en base. Pour
+ * toute écriture qui « conserve » une entrée existante — sans quoi l'URL absolue du backend part en
+ * base, et le legacy, qui préfixe lui-même (`baseUrl + profilThumbImageUrl`), affiche une image
+ * cassée. Seule cette normalisation est défaite : les autres (booléens, dates, identifiants) ne
+ * touchent pas une entrée de lien `{ name, type, profilThumbImageUrl }`.
+ */
+export function withRelativeImageUrls<T extends Record<string, unknown>>(entry: T): T {
+  const stored: Record<string, unknown> = { ...entry };
+  for (const field of SDK_IMAGE_FIELDS) {
+    const value = stored[field];
+    if (typeof value === "string" && value !== "") stored[field] = toRelativeImageUrl(value) ?? value;
+  }
+  return stored as T;
+}

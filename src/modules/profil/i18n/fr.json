@@ -84,6 +84,7 @@
     "member": "Membre",
     "admin": "Administrateur",
     "leaveOrganization": "Quitter l'organisation",
+    "deleteOrganization": "Supprimer cette fiche",
     "unfollowDialog": {
       "title": "Ne plus suivre cette organisation",
       "description": "Êtes-vous sûr de vouloir ne plus suivre cette organisation ? Vous ne recevrez plus ses actualités.",
@@ -221,7 +222,13 @@
     "openSince": "Ouvert depuis",
     "register": "Inscription",
     "comingSoon": "En construction",
-    "sectionLabel": "Section {{name}}"
+    "sectionLabel": "Section {{name}}",
+    "deleteDialog": {
+      "title": "Supprimer définitivement cette fiche ?",
+      "description": "La fiche sera supprimée de Communecter, et pas seulement de ce site : elle disparaîtra pour tout le monde, avec ses informations. Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer définitivement"
+    }
   },
   "ProfileMembers": {
     "title": "Membres",
@@ -367,7 +374,14 @@
     },
     "rolesLabel": "Rôles dans l'organisation",
     "rolesPlaceholder": "Ajouter un rôle (Entrée pour valider)…",
-    "rolesHint": "Texte libre — ex. « Coordonnatrice parentalité Arrageois »."
+    "rolesHint": "Texte libre — ex. « Coordonnatrice parentalité Arrageois ».",
+    "manageRoles": "Gérer les rôles"
+  },
+  "ManageRolesDialog": {
+    "title": "Gérer les rôles",
+    "description": "Rôles de {{name}} — la liste complète remplace les rôles actuels.",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…"
   },
   "MemberManagementDialog": {
     "title": "Gestion des membres",
@@ -722,7 +736,9 @@
       "inviteAdminSuccess": "Invitation d'administrateur envoyée à {{name}}",
       "inviteAdminError": "Impossible d'envoyer l'invitation d'administrateur à {{name}}",
       "emailInviteSuccess": "{{count}} invitation(s) envoyée(s) par email",
-      "emailInviteError": "Impossible d'envoyer les invitations par email"
+      "emailInviteError": "Impossible d'envoyer les invitations par email",
+      "setRolesSuccess": "Rôles de {{name}} mis à jour",
+      "setRolesError": "Impossible de mettre à jour les rôles de {{name}}"
     },
     "comment": {
       "addSuccess": "Commentaire ajouté avec succès",
@@ -822,6 +838,13 @@
     "title": "Éditer le profil",
     "profileImage": "Photo de profil",
     "bannerImage": "Bannière",
+    "imageFormat": {
+      "original": "Original",
+      "wide": "16:9",
+      "panorama": "3:1",
+      "classic": "4:3",
+      "square": "Carré"
+    },
     "changeImage": "Changer",
     "changeBanner": "Changer la bannière",
     "changeAvatar": "Changer l'avatar",
@@ -1354,8 +1377,8 @@
     "meetingRoomsPlural": "salles de réunion",
     "workstations": "poste de travail",
     "workstationsPlural": "postes de travail",
-    "accommodation": "chambre",
-    "accommodationPlural": "chambres",
+    "accommodation": "place d'hébergement",
+    "accommodationPlural": "places d'hébergement",
     "reservationSpace": "Espace réservation",
     "reservationNote": "Réserver votre espace directement en ligne",
     "contact": "Contact",
@@ -1466,5 +1489,115 @@
   },
   "CardTeamMember": {
     "territoryNews": "Les actualités du territoire"
+  },
+  "MyPlacesSection": {
+    "title": "Mes lieux",
+    "loginRequired": "Connectez-vous pour voir vos tiers-lieux.",
+    "empty": "Vous n'êtes membre d'aucun tiers-lieu pour l'instant.",
+    "emptyHint": "Rejoignez un tiers-lieu depuis sa fiche pour le retrouver ici.",
+    "needPlaceFirst": "Rejoignez d'abord un tiers-lieu pour voir son contenu ici.",
+    "emptyNews": "Aucune actualité de vos tiers-lieux pour l'instant.",
+    "emptyAgenda": "Aucun événement à venir lié à vos tiers-lieux pour l'instant.",
+    "emptyAgendaOngoing": "Aucun événement en cours lié à vos tiers-lieux.",
+    "emptyAgendaPast": "Aucun événement passé lié à vos tiers-lieux.",
+    "emptyProjects": "Aucun projet lié à vos tiers-lieux pour l'instant.",
+    "tabs": {
+      "places": "Mes tiers-lieux",
+      "news": "Actus",
+      "agenda": "Agenda",
+      "projects": "Projets"
+    }
+  },
+  "EntityDuplicates": {
+    "title_one": "Une fiche au nom proche existe déjà",
+    "title_other": "{{count}} fiches au nom proche existent déjà",
+    "titleStrong_one": "Une fiche du même nom existe déjà à ce code postal",
+    "titleStrong_other": "{{count}} fiches au nom proche existent déjà, dont au moins une du même nom au même code postal",
+    "description": "Vérifiez qu'il ne s'agit pas de la vôtre avant de continuer. Vous pouvez poursuivre la création.",
+    "error": "La recherche de fiches existantes a échoué. Vous pouvez poursuivre la création.",
+    "placeUnknown": "Commune non renseignée",
+    "hint": {
+      "sameNameSamePostalCode": "Même nom, même code postal",
+      "sameName": "Même nom",
+      "samePostalCode": "Même code postal"
+    },
+    "preview": "Aperçu",
+    "open": "Ouvrir la fiche",
+    "newTab": "(nouvel onglet)",
+    "more_one": "et une autre fiche au nom proche",
+    "more_other": "et {{count}} autres fiches au nom proche",
+    "confirm": {
+      "title": "Cette fiche existe peut-être déjà",
+      "description": "« {{name}} » existe déjà ({{place}}), avec le même nom et le même code postal. Créer quand même une nouvelle fiche ?",
+      "create": "Créer quand même",
+      "cancel": "Revenir au formulaire"
+    },
+    "titleMany": "Plus de {{count}} fiches au nom proche existent déjà",
+    "titleStrongMany": "Plus de {{count}} fiches au nom proche existent déjà, dont au moins une du même nom au même code postal",
+    "moreMany": "et d'autres fiches au nom proche, non affichées"
+  },
+  "StructuresTab": {
+    "title": "Mes structures",
+    "intro": "Les structures que vous administrez et leurs créneaux, publiés ou non. Un créneau ajouté est publié après validation par l'équipe du site.",
+    "loadError": "Impossible de charger vos structures.",
+    "retry": "Réessayer",
+    "emptyTitle": "Vous n'administrez aucune structure",
+    "emptyDescription": "Pour gérer tous les créneaux d'une structure, il faut en être administrateur. Référencez votre structure, ou demandez à l'un de ses administrateurs de vous ajouter.",
+    "add": "Ajouter un créneau",
+    "addFor": "Ajouter un créneau à {{structure}}",
+    "addTitle": "Ajouter un créneau — {{structure}}",
+    "added": "Créneau ajouté. Il sera publié après validation.",
+    "viewProfile": "Voir la fiche",
+    "viewProfileFor": "Voir la fiche de {{structure}}",
+    "slotsError": "Impossible de charger les créneaux de {{structure}}.",
+    "noSlots": "Aucun créneau pour cette structure.",
+    "slotsLabel": "Créneaux de {{structure}}",
+    "openSlot": "Voir le détail du créneau {{title}}",
+    "untitled": "Créneau sans titre",
+    "noSchedule": "Horaires non renseignés",
+    "moreSchedules": "+{{count}}",
+    "weekDays": "Jours : {{days}}",
+    "noDays": "Jours non renseignés",
+    "counts": {
+      "pending_one": "{{count}} en attente",
+      "pending_other": "{{count}} en attente",
+      "inProgress_one": "{{count}} en cours",
+      "inProgress_other": "{{count}} en cours",
+      "validated_one": "{{count}} validé",
+      "validated_other": "{{count}} validés",
+      "refused_one": "{{count}} refusé",
+      "refused_other": "{{count}} refusés"
+    },
+    "loading": "Chargement de vos structures…",
+    "retryFor": "Réessayer de charger les créneaux de {{structure}}",
+    "addLoading": "Ouverture du formulaire…",
+    "moreSchedulesSr_one": "et {{count}} autre horaire",
+    "moreSchedulesSr_other": "et {{count}} autres horaires",
+    "summary": {
+      "none": "Aucun créneau",
+      "partial_one": "{{count}}+ créneau",
+      "partial_other": "{{count}}+ créneaux"
+    },
+    "structureStatus": {
+      "pending": "En attente de validation",
+      "refused": "Validation refusée"
+    },
+    "structureStatusHelp": {
+      "pending": "Cette structure n'apparaît pas encore dans les listes du site : elle y figurera dès que l'équipe du site l'aura validée.",
+      "refused": "L'équipe du site n'a pas validé cette structure : elle n'apparaît pas dans les listes du site. Contactez l'équipe du site pour en connaître la raison."
+    },
+    "submitted": {
+      "title": "Mes autres créneaux",
+      "titleAlone": "Mes créneaux",
+      "help": "Les créneaux que vous avez déposés pour une structure que vous n'administrez pas, ou sans structure, quel que soit leur statut.",
+      "label": "Créneaux déposés hors de vos structures",
+      "labelAlone": "Créneaux que vous avez déposés",
+      "structureSr_one": "Structure : {{structures}}",
+      "structureSr_other": "Structures : {{structures}}",
+      "noStructure": "Sans structure",
+      "unnamedStructure": "Structure sans nom",
+      "loadError": "Impossible de charger les créneaux que vous avez déposés.",
+      "retryFor": "Réessayer de charger les créneaux que vous avez déposés"
+    }
   }
 }

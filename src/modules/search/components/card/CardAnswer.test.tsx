@@ -108,6 +108,14 @@ describe("CardAnswer — audience du bouton « Fiche structure »", () => {
     expect(queryByText(FICHE)).toBeNull();
   });
 
+  it("audience managers : masqué pour l'AUTEUR du créneau sans droit de gestion (il peut le modifier, pas gérer la structure)", () => {
+    const ME = "6448f244ecf6e50e4b539677";
+    ctx.me = { ...lambda, id: ME };
+    const deMoi = { serverData: { ...(item.serverData as Record<string, unknown>), user: ME } } as unknown as SearchEntity;
+    const { queryByText } = render(<CardAnswer item={deMoi} card={MANAGERS} />);
+    expect(queryByText(FICHE)).toBeNull();
+  });
+
   // Parité SSR : au serveur `me` vaut toujours null et `hydrated` false ; un gestionnaire
   // doit donc voir le MÊME rendu (pas de bouton) au 1er passage — sinon mismatch.
   it("audience managers : masqué avant hydratation MÊME pour un ayant droit", () => {
@@ -120,5 +128,27 @@ describe("CardAnswer — audience du bouton « Fiche structure »", () => {
   it("le bouton « Fiche activité » n'est jamais gaté par l'audience", () => {
     const { queryByText } = render(<CardAnswer item={item} card={MANAGERS} />);
     expect(queryByText("coformAnswer.activitySheet")).not.toBeNull();
+  });
+});
+
+/**
+ * Libellé du statut : celui du statut NORMALISÉ, jamais la valeur brute ni « Validé » par défaut. Une
+ * réponse tout juste déposée n'a pas de statut : la carte (et le détail, même règle) doit dire
+ * « En attente » — les listes publiques, filtrées sur « Validé » côté serveur, ne voient pas ce cas.
+ */
+describe("CardAnswer — libellé du statut", () => {
+  const avecStatut = (state: string) =>
+    ({ serverData: { ...item.serverData, sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7: state } }) as unknown as SearchEntity;
+
+  it("sans statut : « En attente », jamais « Validé »", () => {
+    const { queryByText } = render(<CardAnswer item={item} card={{ type: "card-answer" } as never} />);
+    expect(queryByText("coformAnswer.status.pending")).not.toBeNull();
+    expect(queryByText("coformAnswer.status.validated")).toBeNull();
+  });
+
+  it("« Réfusé », orthographe legacy en base : libellé normalisé, pas la faute", () => {
+    const { queryByText } = render(<CardAnswer item={avecStatut("Réfusé")} card={{ type: "card-answer" } as never} />);
+    expect(queryByText("coformAnswer.status.refused")).not.toBeNull();
+    expect(queryByText("Réfusé")).toBeNull();
   });
 });

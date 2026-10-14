@@ -1,4 +1,4 @@
-import { Lightbulb, MapPin, Users } from "lucide-react";
+import { Lightbulb, MapPin, Users, Building2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useT } from "@/hooks/useT";
 import { SearchCardProps } from "../../schema";
 import useItem from "../../hooks/useItem";
-import { collectChipValues, decorateTags } from "../../lib/colorBy";
+import { decorateItemTags } from "../../lib/colorBy";
+import { getEntryId } from "../../lib/searchMapSelection";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMemo } from "react";
 import { shortenTag } from "@/helpers/shortenTag";
@@ -19,9 +20,11 @@ export default function CardDefault({
     showDescription: false,
     showAddress: true,
   },
+  list,
 }: SearchCardProps) {
   const t = useT("modules/search");
   const data = useItem(item);
+  const linkedLabel = list?.linkedLabels?.[getEntryId(item) ?? ""];
 
   const {
     name,
@@ -51,11 +54,7 @@ export default function CardDefault({
   // `tagColors.paths` ajoute les valeurs de champs serverData aux chips : la
   // taxonomie de parent62 vit dans `territoires`/`publics`/`themes`, pas dans `tags`.
   const displayTags = useMemo(
-    () =>
-      decorateTags(
-        collectChipValues(tags, item?.serverData, card.tagColors),
-        card.tagColors
-      ),
+    () => decorateItemTags(tags, item?.serverData, card.tagColors),
     [tags, item?.serverData, card.tagColors]
   );
 
@@ -83,6 +82,13 @@ export default function CardDefault({
             <h3 className="font-semibold text-primary group-hover:text-primary/80 transition-colors w-full break-words">
               {name}
             </h3>
+
+            {linkedLabel && (
+              <div className="flex items-center text-xs text-muted-foreground mb-1 truncate">
+                <Building2 className="h-3 w-3 mr-1 flex-shrink-0" aria-hidden="true" />
+                {linkedLabel}
+              </div>
+            )}
 
             {card.showAddress && address?.addressLocality && (
               <div className="flex items-center text-sm text-muted-foreground mb-2 truncate">

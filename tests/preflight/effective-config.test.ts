@@ -23,8 +23,9 @@ import { searchByFieldsToQuery } from "@/modules/search/lib/searchByFieldsToQuer
  *
  * Pour chaque `config.prod.*.json`, ce test matérialise une projection SÉMANTIQUE calculée par les
  * MÊMES fonctions pures que l'app (résolution des menus d'ajout, des routes d'édition, des
- * baseParams admin expansés, des sous-types de référencement, des défauts membership), et la
- * compare à une fixture committée (`__effective__/<site>.json`).
+ * baseParams admin expansés, des sous-types de référencement, des défauts membership) — plus les
+ * contributions déclarées des pages publiques (ajouter / modifier) —, et la compare à une fixture
+ * committée (`__effective__/<site>.json`).
  *
  * L'effet recherché : tout changement de CODE PARTAGÉ qui altère le comportement effectif d'un
  * site — même un site dont on ne touche pas la config — apparaît comme un diff de SA fixture.
@@ -218,6 +219,42 @@ function projeter(site: string, cfg: Cfg) {
     }
   }
 
+  // ── Contributions depuis une page publique : bouton « Ajouter » d'une liste (cible déclarée +
+  //    gate), « Modifier » du détail, audience du bouton « Fiche structure » des cartes de
+  //    réponses. Valeurs DÉCLARÉES, défauts du code matérialisés (`adminOnly` true, `audience`
+  //    "all"). Précédent : ces trois clés ont quitté `/creneaux` SSBE au merge MR 51 + 52
+  //    (`3ad39655`) sans laisser de diff — aucune projection ne les portait.
+  const contributions: Record<string, unknown> = {};
+  for (const page of (cfg.pages as Array<Record<string, unknown>> | undefined) ?? []) {
+    const sections = (page.sections as SectionLike[] | undefined) ?? [];
+    for (const section of walkSections(sections)) {
+      const props = section.props as
+        | {
+            addButton?: { show?: boolean; coform?: string; modal?: string; adminOnly?: boolean };
+            list?: {
+              card?: { structureAction?: { audience?: string } };
+              preview?: { editButton?: boolean };
+            };
+          }
+        | undefined;
+      const ajout = props?.addButton?.show
+        ? {
+            ...(props.addButton.coform ? { coform: props.addButton.coform } : {}),
+            ...(props.addButton.modal ? { modal: props.addButton.modal } : {}),
+            adminOnly: props.addButton.adminOnly ?? true,
+          }
+        : null;
+      const structureAction = props?.list?.card?.structureAction;
+      const entree = {
+        ...(ajout ? { ajout } : {}),
+        ...(props?.list?.preview?.editButton ? { modifier: true } : {}),
+        ...(structureAction ? { ficheStructure: { audience: structureAction.audience ?? "all" } } : {}),
+      };
+      if (Object.keys(entree).length === 0) continue;
+      contributions[cleUnique(contributions, `${page.path}/${section.type}`)] = entree;
+    }
+  }
+
   // ── Facettes « par réponses » : pour chaque groupe `filtersByAnswers`/`filtersByPath`, le
   //    filtre Mongo RÉELLEMENT émis au clic sur une valeur — calculé par les fonctions pures de
   //    l'app (`answerToggleArgs` + `searchByFieldsToQuery`), sur une valeur témoin.
@@ -289,8 +326,30 @@ function projeter(site: string, cfg: Cfg) {
   //    de défaut du code diffe la fixture de tous les sites qui ne déclarent rien).
   const membership: Record<string, unknown> = {};
   const profileRelated: Record<string, unknown> = {};
+  // Onglet « Structures » : ses options EFFECTIVES (défauts du code matérialisés). Le même risque que
+  // les contributions des pages : une résolution de conflit qui les perd ne laisserait aucun diff.
+  const structuresTabs: Record<string, unknown> = {};
   for (const [type, profil] of Object.entries(profils)) {
     for (const tab of (profil?.tabs as Array<Record<string, unknown>> | undefined) ?? []) {
+      if (tab.component === "StructuresTab") {
+        const props =
+          (tab.props as
+            | {
+                answers?: { formId?: string; structureFinderPath?: string; editButton?: boolean; submittedSlots?: boolean };
+                scope?: string;
+                structureStatusField?: string;
+              }
+            | undefined) ?? {};
+        structuresTabs[`${type}/${tab.id}`] = {
+          formId: props.answers?.formId ?? null,
+          structureFinderPath: props.answers?.structureFinderPath ?? null,
+          editButton: props.answers?.editButton ?? false,
+          submittedSlots: props.answers?.submittedSlots ?? false,
+          scope: props.scope ?? "costum",
+          structureStatusField: props.structureStatusField ?? null,
+        };
+        continue;
+      }
       if (tab.component !== "MembershipTab") continue;
       const props = (tab.props as { types?: string[]; scope?: string } | undefined) ?? {};
       membership[`${type}/${tab.id}`] = {
@@ -314,10 +373,12 @@ function projeter(site: string, cfg: Cfg) {
     editModals,
     adminResources,
     pages,
+    ...(Object.keys(contributions).length ? { contributions } : {}),
     ...(Object.keys(stamps).length ? { stamps } : {}),
     ...(Object.keys(answerFacets).length ? { answerFacets } : {}),
     referencement,
     membership,
+    ...(Object.keys(structuresTabs).length ? { structuresTabs } : {}),
     profileRelated,
   };
 }

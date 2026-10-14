@@ -23,6 +23,9 @@ import { resolveAnswerAuthorId } from "../lib/answerAuthor";
 import { isSelectedIn, type ChooseProposalValue } from "@/modules/coform/utils/chooseProposal";
 import { CommunSelectionControl } from "../components/pageDetail/CommunSelectionControl.tsx";
 import { CommunProjectControl } from "../components/pageDetail/CommunProjectControl.tsx";
+import { CommunEditorsControl } from "../components/pageDetail/CommunEditorsControl.tsx";
+import { useAacFormMeta, useAacFormParams } from "../hooks/useAacFormMeta";
+import { editorIdsOf, resolveEditorsQuestion } from "../lib/communEditors";
 
 import { CommunHero } from "../components/pageDetail/CommunHero.tsx";
 import { CommunDeleteControl } from "../components/pageDetail/CommunDeleteControl";
@@ -286,6 +289,18 @@ export default function AacCommunDetailPage() {
     const gallerySubKey = useAacGallerySubKey();
 
     /**
+     * La question qui alimente `links.canEdit` — les contributeurs à l'édition —, si le
+     * formulaire en DÉCLARE une (`addToLinks`, « Référent du commun » dans le gabarit AAC). Même
+     * entrée de cache que `useAacConfig` : aucune requête de plus.
+     */
+    const { meta: formMeta } = useAacFormMeta(formId ?? null);
+    const formParams = useAacFormParams(formId ?? null);
+    const editorsQuestion = useMemo(
+        () => resolveEditorsQuestion(formMeta, formParams),
+        [formMeta, formParams]
+    );
+
+    /**
      * Le contrôleur des paliers, monté UNE SEULE FOIS pour la page.
      *
      * « Besoins financiers » et « Suivi des actions » l'appelaient chacun : deux états
@@ -425,7 +440,10 @@ export default function AacCommunDetailPage() {
     // le piège : `answer.user` n'est PAS l'auteur sur un commun porté par une
     // organisation.
     const authorId = resolveAnswerAuthorId(answer);
-    const canEditThisCommun = perms.canEditCommun({ authorId });
+    // Les contributeurs à l'édition (`links.canEdit`) modifient le commun comme son auteur : c'est
+    // ce que `Coform::canAdminAnswer` accepte à l'enregistrement.
+    const editorIds = editorIdsOf(answer);
+    const canEditThisCommun = perms.canEditCommun({ authorId, editorIds });
 
     const isCommunAuthor = !!authorId && authorId === perms.currentUserId;
 
@@ -510,6 +528,17 @@ export default function AacCommunDetailPage() {
                             {String(t("detail.edit.cta"))}
                         </Button>
                     )}
+
+                    {/* Le bouton qui gère la liste : l'auteur et les admins. La question « Référent »
+                        reliée à la liste reste modifiable par tout éditeur (parité legacy, doc/34 §3.4). */}
+                    <CommunEditorsControl
+                        api={api}
+                        canManage={perms.canManageEditors({ authorId })}
+                        answerId={answerId ?? null}
+                        answer={answer}
+                        question={editorsQuestion}
+                        formId={formId ?? null}
+                    />
 
                     <CommunSelectionControl
                         api={api}

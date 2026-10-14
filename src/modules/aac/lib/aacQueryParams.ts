@@ -32,6 +32,7 @@
  * disparaît.
  */
 import type { AacCardFieldRef, AacCardFields } from "./resolveAacCardFields";
+import { EDITORS_LINK } from "./communEditors";
 import type { AacDirectoryFiltersState, AacSortKey } from "./filtersKey";
 
 /**
@@ -86,6 +87,9 @@ export interface AacVisibility {
   /** Id du contexte porteur (1re clé de `form.parent`). */
   contextId: string | null;
 }
+
+/** Un identifiant Mongo — seule forme d'id utilisateur admise dans un chemin de filtre. */
+const OBJECT_ID = /^[a-f0-9]{24}$/i;
 
 export const PUBLIC_AAC_VISIBILITY: AacVisibility = {
   isAdmin: false,
@@ -179,6 +183,12 @@ export function splitAacFilters(
   // exactement `filters[$or][answers.aapStep2.choose.<contextId>.value]=selected`
   // et `filters[$or][user]=<userId>`.
   //
+  // Plus ceux dont il est CONTRIBUTEUR À L'ÉDITION (`links.canEdit`, doc/34
+  // §3.4 — décision du 30/09), sans équivalent legacy : un commun pas encore
+  // sélectionné est justement celui qu'on demande à ses contributeurs de
+  // reprendre, et ils ne le trouvaient que par lien direct. Dans le `$or`, le
+  // backend pousse `{ $exists: true }` tel quel à Mongo.
+  //
   // `$or` est ici une MAP, pas un tableau : `SearchNew::searchFilters` la
   // déplie en `[{clé: valeur}, …]` (SearchNew.php:549-573) et pousse la valeur
   // BRUTE, sans garde sur le vide. Un `user: ""` (anonyme) ne matche donc rien —
@@ -188,12 +198,16 @@ export function splitAacFilters(
   // de plus pour laisser `usage`/`usageSub` côté client (cf. plus haut).
   const choosePath = serverPath(fields.choose);
   if (!visibility.isAdmin && choosePath && visibility.contextId) {
-    server.filters = {
-      $or: {
-        [`${choosePath}.${visibility.contextId}.value`]: "selected",
-        user: visibility.currentUserId,
-      },
+    const branches: Record<string, unknown> = {
+      [`${choosePath}.${visibility.contextId}.value`]: "selected",
+      user: visibility.currentUserId,
     };
+    // L'identifiant entre dans un CHEMIN Mongo : validé, sans quoi un point ou un
+    // `$` en ouvriraient un autre. Anonyme (`""`) : pas de branche du tout.
+    if (OBJECT_ID.test(visibility.currentUserId)) {
+      branches[`links.${EDITORS_LINK}.${visibility.currentUserId}`] = { $exists: true };
+    }
+    server.filters = { $or: branches };
   }
 
   // Exclure les réponses SANS titre — c'est-à-dire les brouillons.

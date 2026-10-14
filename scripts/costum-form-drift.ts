@@ -50,6 +50,9 @@ const LIB = "@communecter/cocolight-api-client";
  */
 const ASSUMES: Record<string, string> = {
   // "sport-sante-bienetre-organizations.recepisseDeclaration": "motif + date + qui a tranché",
+  "sport-sante-bienetre-organizations.mss":
+    "2026-09-09 — exposé via describeCostumForms (contrat live : string|boolean), pas via le chemin " +
+    "api.organization de cette garde. Écart d'inférence backend, pas d'absence réelle.",
 };
 
 /** Document `costumForms` tel qu'il est écrit dans le config, avant compilation. */

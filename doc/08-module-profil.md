@@ -475,7 +475,7 @@ export const ProfileTabSchema = z.object({
   label: LocalizedString,
   path: z.string().optional(),    // chemin URL personnalisé (par défaut = id)
   sections: z.array(ProfileSectionSchema).optional(), // Option 1: sections composables
-  component: z.enum(["SocialTab", "MembershipTab", "NewsTab"]).optional(), // Option 2: composant dédié
+  component: z.enum(["SocialTab", "MembershipTab", "NewsTab", "StructuresTab"]).optional(), // Option 2: composant dédié
   subRoutes: z.array(ProfileTabSubRouteSchema).optional(), // Sous-routes (ex: news/:newsId)
   condition: ProfileTabConditionSchema, // Conditions d'affichage
 }).refine(
@@ -516,7 +516,8 @@ export const ProfilesConfigSchema = z.object({
 
 ### Onglets paramétrables — `tab.props` (MembershipTab)
 
-Un tab en mode `component` accepte `props` (record libre, validé par le composant). Pour
+Un tab en mode `component` accepte `props` (record libre ; `StructuresTab` : validé par le schéma —
+`superRefine` — et revalidé à l'exécution, les autres par leur composant). Pour
 `MembershipTab` :
 
 ```jsonc
@@ -534,6 +535,95 @@ Un tab en mode `component` accepte `props` (record libre, validé par le composa
 
 Même commutateur `scope` sur les sections `profile-related` (onglets Projets/Événements d'une
 organisation, via `useRelatedEntities`).
+
+### Onglet « Structures » — `StructuresTab` (structures administrées et leurs créneaux)
+
+Sur **son propre** profil, la liste des structures que le compte administre — admin **validé**
+(`isAdmin`, sans `isAdminPending`/`toBeValidated`/`isInviting` : la règle serveur
+`Authorisation::isElementAdmin`, cf. `lib/adminLinks.ts`), quel que soit leur statut de modération —,
+chacune avec ses créneaux de tous statuts (réponses d'un formulaire CoForm) et un bouton « Ajouter
+un créneau ». En option : « Modifier » dans le détail d'un créneau, et le groupe des créneaux que le
+compte a déposés hors de ses structures. Première config : SSBE.
+
+```jsonc
+{ "id": "structures", "component": "StructuresTab",
+  "condition": { "entityTypes": ["citoyens"], "userContext": "own", "auth": "required" },
+  "props": {
+    "answers": { "formId": "<ObjectId du formulaire>",
+                 "structureFinderPath": "answers.<étape>.finder<kunik>",   // finder « structure »
+                 "editButton": true,                                       // « Modifier » dans le détail
+                 "submittedSlots": true },                                 // créneaux déposés ailleurs
+    "scope": "costum",                                                     // défaut code
+    "structureStatusField": "statusActor",                                 // modération des structures
+    "emptyAction": { "label": { "fr": "Voir les structures du réseau" }, "href": "/structure" } } }
+```
+
+- **Props validées** par le schéma (`StructuresTabPropsSchema`, `superRefine` de l'onglet) :
+  `config:validate` signale un formulaire ou un chemin de finder **mal formé** (ObjectId,
+  `answers.<étape>.finder<kunik>`) au bon chemin (`props.answers.structureFinderPath`…) ; un id bien
+  formé mais faux ne se voit qu'à l'écran. `structureStatusField` (chemin pointé) est refusé en
+  `scope: network` : hors du site porteur, le même champ peut dire autre chose (`statusActor` vaut
+  « Une personne morale » dans un autre costum). La config n'étant jamais parsée par Zod au runtime,
+  `ProfileTemplateDynamic` revalide les props : invalides, l'onglet ne rend rien ; valides, il les
+  transmet NETTOYÉES (`parsed.data`) — une option oubliée du schéma disparaîtrait sans bruit, d'où le
+  test « props intactes » de `schema.test.ts`.
+- **Affichage** : un accordéon, un bloc par structure (logo, nom, commune, compteurs par statut,
+  « Voir la fiche », « Ajouter un créneau ») ; avec `structureStatusField`, une structure **non
+  validée** porte une pastille dans son en-tête (« En attente de validation », ou « Validation
+  refusée » — deux états pour l'admin, cf. `structureModeration`) et une explication au dépliage
+  (« n'apparaît pas encore dans les listes du site » — sa page de profil, elle, reste publique) ; une structure validée n'en porte pas, l'exception seule est
+  signalée ; jusqu'à trois structures tout est déplié, au-delà la
+  première seule (`defaultOpenStructures`) — seule une structure dépliée charge ses créneaux. Chaque
+  créneau tient en une ligne : titre, type, statut de modération (pastille icône + libellé, statut
+  NORMALISÉ — cf. `normalizeStatus` : un statut absent se lit « En attente », ici comme dans le
+  détail), **bande de la semaine** lundi→dimanche (doublée d'un texte pour les lecteurs d'écran) et
+  horaire. La ligne est un bouton nommé par l'action (« Voir le détail du créneau … ») et décrit par
+  le reste. Un clic ouvre le détail `coform-answer` (`SlotDetail`, Suspense local : le profil ne
+  disparaît pas derrière un spinner au premier chargement), en lecture, ou avec « Modifier » si
+  `answers.editButton` — gate du détail : gestionnaire, admin de n'importe quelle structure citée,
+  ou auteur (`canEditCoformAnswer`, cf. [07-module-search](07-module-search.md)) ; `user` est projeté
+  dans toutes les listes de l'onglet pour que l'auteur soit reconnu partout. Les compteurs d'en-tête ne valent que
+  pour une liste complète ; tant qu'une page reste à charger, l'en-tête dit « 50+ créneaux ».
+- **Données** : `useUserOrganizations` + `validatedAdminLinkFilters` (+ `sourceKey: [porteur]` en
+  `scope: costum`) ; créneaux par `useSearchQuery` filtré sur
+  `{ form, "<structureFinderPath>.<id>": { $exists: true } }`. Toutes les listes de l'onglet
+  partagent **un préfixe de cache par utilisateur** (`SEARCH_QUERY_KEYS.MANAGED_ANSWERS_PREFIX`,
+  défini dans search) et se distinguent par leurs filtres : la réponse dépend du compte, et le
+  détail d'un créneau les rafraîchit toutes d'un appel après une modification (un créneau peut
+  changer de groupe). Côté SSBE, le hook `SportSanteBienetre::searchAnswers` lève le filtre
+  « Validé » quand la recherche est bornée, en `$and`, à une structure que l'utilisateur administre
+  (la première condition stricte décide) ou à ses propres créneaux (`isBoundToOwnAnswers`) ; contrat :
+  `modules/costum/tests/SportSanteBienetreBoundSearchTest.php`.
+  Ce filtre vaut sur le chemin nominal (recherche portant le costum) : **ce n'est pas une frontière
+  d'accès** — des chemins hors hook existent côté serveur (cf. doc projet SSBE, §13).
+- **Ajout** : `CoFormModal` (lazy) avec le finder **prérempli** (`buildFinderDefaultValues`) et
+  **masqué** (`hiddenFields`, cf. [21-module-coform](21-module-coform.md)), `elementId` = la
+  structure — le brouillon est rangé par structure, sans quoi un brouillon commencé ailleurs
+  changerait en silence la valeur du champ masqué. Après l'enregistrement : toutes les listes gérées
+  du compte sont invalidées (préfixe partagé) et cette structure est dépliée, donc rechargée ; rien de
+  public (un créneau n'est publié qu'à sa validation). Un ajout depuis une liste publique
+  (`/creneaux`, `useAnswerCreated`) invalide aussi ces listes.
+  Le formulaire est préchauffé au survol/focus du bouton ; à la fermeture d'une boîte, le focus
+  revient à l'élément qui l'a ouverte (au bouton « Ajouter » de l'en-tête si c'était celui de l'état
+  vide, que la liste remplace — `useReturnFocus`). Une ligne peut aussi quitter sa liste au
+  rechargement qui suit une modification (créneau changé de structure) : dans les secondes qui suivent
+  la fermeture, l'arrivée des données relance la vérification — repli sur le déclencheur du groupe,
+  puis sur le titre de l'onglet si le groupe entier disparaît.
+- **Créneaux déposés ailleurs** (`answers.submittedSlots`) : sous les structures, un groupe « Mes
+  autres créneaux » (« Mes créneaux » pour un compte sans structure) liste les créneaux que le compte
+  a DÉPOSÉS (`{ form, user: <id> }`, `user` projeté pour reconnaître l'auteur) sous une structure qu'il
+  n'administre pas, ou sans structure — tous statuts. Ceux d'une structure listée sont écartés
+  côté client (`citedStructures` : toutes les structures du finder, qui est `multiple`) ; chaque
+  ligne dit sa structure. Rendu seulement quand la liste des structures est connue (l'exclusion en a
+  besoin) et s'il a du contenu. **Exige le hook serveur** : sans `isBoundToOwnAnswers`, un auteur
+  non admin n'y verrait que ses créneaux validés.
+- **SSR** : tout dépend de `me` → neutralisé avant hydratation (titre + squelette), aucun
+  préchargement. La condition `userContext` attend désormais l'hydratation (`lib/tabVisibility.ts`) :
+  un onglet `own` n'apparaît qu'après, ce qui supprime aussi l'écart SSR/client d'« Amis » et de
+  « Communautés ».
+- **Modification** (`answers.editButton`) : le statut ne craint rien — un non-admin du costum ne le
+  voit ni ne l'envoie (`isAdminOnly`), et `SaveAnswerAction` fusionne champ par champ ; le finder
+  structure reste modifiable (un créneau déplacé change de groupe, ou quitte l'onglet).
 
 ### Routage d'ÉDITION — `editModals[]` + clauses `when`
 
@@ -604,12 +694,32 @@ Le module profil propose **21 types de sections** configurables:
 | `profile-actions`          | ProfileActionsSectionSchema  | showEditButton, showAddDropdown, layout        | Boutons d'action (éditer, ajouter, email) |
 | `profile-event-dates`      | ProfileEventDatesSectionSchema | showType, dateFormat                         | Dates d'événement (start/end)             |
 | `profile-badges`           | ProfileBadgesSectionSchema   | layout (grid, flex, list), maxDisplay          | Badges et certifications                  |
-| `profile-tags`             | ProfileTagsSectionSchema     | maxDisplay, linkable, searchOnClick            | Tags et mots-clés                         |
+| `profile-tags`             | ProfileTagsSectionSchema     | maxDisplay, linkable, searchOnClick, hideTags (tags non affichés, égalité stricte — un marqueur d'annuaire classe la fiche sans se lire) | Tags et mots-clés                         |
 | `profile-fields`           | ProfileFieldsSectionSchema   | variant (card, plain), columns (1, 2), fields[] | **Champs d'entité déclarés en config** — dont les champs costum, sans code par site |
 | `profile-opening-hours`    | ProfileOpeningHoursSectionSchema | format (table, list, compact), showCurrentStatus | Horaires d'ouverture          |
 | `profile-tab-layout`       | ProfileTabLayoutSectionSchema | leftSections, rightSections                   | Layout deux colonnes pour tabs            |
 | `profile-template-dynamic` | ProfileTemplateDynamicSchema | —                                              | Template dynamique basé sur config        |
 | `profile-tools`            | ProfileToolsSectionSchema    | title, sticky                                  | « Nos outils » générique (`ourTools`), éditable par les admins — équivalent sans vocabulaire tiers-lieux du bloc de `profile-info-tl` |
+
+### Compteurs de l'encart « Réserver en ligne » (`profile-info-tl`)
+
+`roomPath`, `coworkingPath` et `bedRoomPath` décrivent chacun une ressource réservable :
+`{ id, place, type, … }` — `id` est le formulaire CoForm dont on lit les réponses, `place` le chemin
+du champ. **`type` décide de ce qu'on compte**, et c'est le piège :
+
+| `type` | Compte | À utiliser pour |
+|---|---|---|
+| `single` (défaut) | la SOMME du champ numérique sur toutes les réponses | une capacité saisie : places d'hébergement, postes de travail |
+| `array` | la somme des longueurs du tableau, moins son en-tête | une liste de lignes : salles de réunion |
+| `answer` | le NOMBRE DE RÉPONSES | des offres, quand aucune capacité n'est saisie |
+
+Se tromper de mode donne un chiffre **plausible et faux** : `answer` sur l'hébergement affichait « 1 »
+sur un lieu déclarant 10 places dans son unique offre (24/09). Les trois modes vivent dans une seule
+fonction pure, `components/sections/custom/compteRessources.ts`, testée — le corps était auparavant
+recopié trois fois dans le composant, et celui des salles avait perdu la branche `answer`.
+
+⚠️ Le libellé affiché doit suivre le mode : compter des places et écrire « chambres » est un second
+bug. Les clés sont `ProfileTiersLieuxInfo.accommodation`/`accommodationPlural`.
 
 ### `profile-fields` — champs d'entité config-driven
 
@@ -666,6 +776,8 @@ export const ProfileHeaderSectionSchema = z.object({
   addConfig: AddConfigSchema,
   addDropdownLabel: LocalizedString.optional(),
   showEmailButton: z.boolean().optional().default(true),
+  showDeleteButton: z.boolean().optional().default(false),   // cf. encart « Supprimer une fiche »
+  deleteRedirectPath: z.string().optional().default("/"),
   showReservationButton: z.boolean().optional().default(false),
   // Opt-in : le bouton « Voir toutes les photos » ne s'affiche QUE si le type de
   // profil courant possède un onglet `gallery` dans sa config (`profiles[type].tabs`).
@@ -674,6 +786,32 @@ export const ProfileHeaderSectionSchema = z.object({
   showAllPhotosButton: z.boolean().optional().default(true),
 });
 ```
+
+**Bannière et photo de profil — envoi** (`ProfileImageUpload`) : le recadrage propose un format — « Original » (ratio de la
+photo, sélectionné par défaut), 16:9, 3:1, 4:3, carré — ou « Utiliser l'image entière », qui envoie le
+fichier d'origine sans le retoucher. L'affichage, lui, ne change pas (cadre fixe en `object-cover`).
+⚠️ `bannerHeight` n'est lu par aucun composant.
+
+### Supprimer une fiche depuis son profil
+
+`showDeleteButton: true` ajoute « Supprimer cette fiche » **en dernier** dans le menu d'actions de
+l'en-tête, derrière un séparateur, avec un dialogue de confirmation. Deux conditions, jamais une
+seule : l'option posée par le site ET `permissions.isAdmin` sur CETTE fiche. `deleteRedirectPath`
+(défaut `/`) dit où atterrir, la page de la fiche n'existant plus après coup.
+
+⚠️ **Ce n'est pas le « retrait » du référencement.** L'action appelle `element/delete` via
+`Organization.delete()` : la fiche quitte Communecter en entier, pour tous les sites, pas seulement
+celui qui l'affichait. Pour détacher une fiche d'un costum en la laissant vivre, c'est l'onglet
+« Référencement » de l'admin qu'il faut (`reference.costum`).
+
+Trois gardes se superposent et aucune ne remplace les autres : l'option + `isAdmin` côté client, la
+garde SDK `isAuthorOrAdmin` (auteur ou administrateur, hiérarchie comprise), puis `canDeleteElement`
+côté backend. La mutation (`actions/mutations/lifecycle.ts`) invalide la fiche ET les listes de
+recherche — sans quoi le lieu supprimé resterait affiché dans l'annuaire.
+
+Sentinelle de parc : `tests/preflight/profile-delete-button.test.ts` liste les sites qui l'ouvrent,
+vérifie que la destination est une page réelle et que l'option ne vit que sur un profil
+d'organisation (les autres types n'ont pas d'« admin de la fiche »).
 
 ## ProfileRenderer
 
@@ -1185,7 +1323,7 @@ Depuis la branche `review`, les tabs de profil supportent une `condition.auth` e
 }
 ```
 
-Valeurs : `"required"` (connecté seulement), `"anonymous"` (déconnecté seulement), `"any"` (tous). Évalué via `useVisibility()` du système de visibilité.
+Valeurs : `"required"` (connecté seulement), `"anonymous"` (déconnecté seulement), `"any"` (tous). Évalué par `isTabVisible` (`lib/tabVisibility.ts`), après hydratation seulement.
 
 ---
 
@@ -1401,7 +1539,9 @@ profil de l'entité (`EntityStatusButton`).
 - Réponse obligatoire : pas de croix de fermeture, Échap et clic extérieur neutralisés
   (`showCloseButton={false}` + `onEscapeKeyDown`/`onInteractOutside`) — seuls Accepter/Refuser referment
   la modale (`onSuccess` de la mutation).
-- Après la réponse (acceptée ou refusée), retour à l'accueil (`navigate("/")`), quelle que soit la page.
+- Après la réponse, on quitte la page courante, quelle qu'elle soit : **acceptée → fiche rejointe**
+  (`/profil/<slug>`, comme « Continuer » sur `AcceptInvitationPage`), **refusée → accueil** (`/`, aussi
+  en repli si l'entité n'a pas de slug).
   La modale s'ouvre aussi par-dessus la page du lien Accepter/Refuser du mail (`AcceptInvitationPage`),
   dont elle masque le bouton : une fois l'invitation tranchée, cette page n'a plus d'objet.
 - `useHydrated()` : `me` est toujours `null` au SSR, donc `open` reste `false` au 1er render client pour

@@ -59,7 +59,6 @@
     "notProvided": "Not provided",
     "installation": "Facility",
     "installationEmpty": "No facility provided",
-    "validated": "Validated",
     "noName": "(No name)",
     "by": "By:",
     "showLess": "See less",
@@ -67,7 +66,16 @@
     "activitySheet": "Activity sheet",
     "structureSheet": "Organization sheet",
     "edit": "Edit",
-    "editError": "Unable to load this entry for editing."
+    "editTitle": "Edit — {{title}}",
+    "editLoading": "Loading the entry…",
+    "edited": "Changes saved.",
+    "editError": "Couldn't load this entry. Select Edit again to retry.",
+    "status": {
+      "validated": "Validated",
+      "pending": "Pending",
+      "inProgress": "In progress",
+      "refused": "Refused"
+    }
   },
   "CardPoiAmenities": {
     "amenities": "Amenities",
@@ -77,7 +85,10 @@
     "showers": "Showers",
     "freeAccess": "Free access",
     "yearsAgo": "{{count}} years ago",
-    "filterByInstallation": "Filter by facility {{name}}"
+    "filterByInstallation": "Filter by facility {{name}}",
+    "expand": "Expand card",
+    "collapse": "Collapse card",
+    "sheet": "Details"
   },
   "PreviewPoiAmenities": {
     "edit": "Edit",
@@ -186,7 +197,10 @@
     "memberOfCount_one": "{{count}} organization",
     "memberOfCount_other": "{{count}} organizations",
     "createdOn": "Created on",
-    "documents": "Documents"
+    "documents": "Documents",
+    "docRecepisse": "Declaration receipt",
+    "docResponsableCivilePro": "Professional liability insurance",
+    "notProvided": "Not provided"
   },
   "PreviewReservations": {
     "title": "Bookings",
@@ -207,7 +221,18 @@
     "bookAria": "Book {{day}} from {{start}} to {{end}}",
     "bookTitle": "Book a time slot",
     "conflict": "This slot is already booked by {{user}}.",
-    "referenceNotice": "Reference grid: an empty cell means no booking is on record — not that the facility is open."
+    "referenceNotice": "Reference grid: an empty cell means no booking is on record — not that the facility is open.",
+    "orgaSheet": "Profile",
+    "orgaSheetAria": "Open {{name}}'s profile in the directory"
+  },
+  "PreviewBookedResources": {
+    "title": "Booked facilities",
+    "error": "Unable to load booked facilities.",
+    "unknownResource": "Unspecified facility",
+    "slotCount_one": "{{count}} time slot",
+    "slotCount_other": "{{count}} time slots",
+    "sheet": "Details",
+    "sheetAria": "Open the {{name}} details"
   },
   "Filtres actifs :": "Active filters:",
   "À partir du": "From",
@@ -236,6 +261,8 @@
   "+{{count}} autres — précisez la recherche": "+{{count}} more — refine your search",
   "Carte": "Map",
   "Voir en liste": "See in list",
+  "Observatoire": "Observatory",
+  "Chargement des données… {{loaded}} / {{total}}": "Loading data… {{loaded}} / {{total}}",
   "type.NGO": "NGO",
   "type.LocalBusiness": "Local Business",
   "type.Group": "Group",
@@ -295,11 +322,9 @@
   "resourceDirectory.priceSuffix.fullDay": "/day",
   "resourceDirectory.priceSuffix.bed": "/bed",
   "resourceDirectory.priceSuffix.room": "/night",
-  "resourceDirectory.area": "Area:",
   "resourceDirectory.roomsCount": "{{count}} room",
   "resourceDirectory.roomsCount_other": "{{count}} rooms",
   "resourceDirectory.hostedTitle": "Host third place",
-  "resourceDirectory.solidaire": "Solidarity rate",
   "resourceDirectory.nameCoworking": "Coworking space",
   "resourceDirectory.nameMeeting": "Meeting room",
   "resourceDirectory.nameAccommodation": "Accommodation",
@@ -311,8 +336,17 @@
   "resourceDirectory.filterByParent": "See resources hosted by {{name}}",
   "resourceDirectory.activeParentFilter": "Resources hosted by {{name}}",
   "resourceDirectory.clearParentFilter": "Clear filter",
-  "resourceDirectory.contactByEmail": "Contact by email",
+  "resourceDirectory.contactByEmail": "Book by email",
   "resourceDirectory.mailtoSubject": "Booking request — {{name}}",
+  "resourceDirectory.detail.equipments": "Equipment",
+  "resourceDirectory.detail.catering": "Catering",
+  "resourceDirectory.detail.services": "Services offered",
+  "resourceDirectory.detail.roomType": "Room type",
+  "resourceDirectory.detail.moreInfo": "Good to know",
+  "resourceDirectory.detail.about": "About the place",
+  "resourceDirectory.detail.tip": "The little extra",
+  "resourceDirectory.detail.area": "Area",
+  "resourceDirectory.detail.solidarity": "Solidarity rate available",
   "Chargement des points… {{loaded}} / {{total}}": "Loading points… {{loaded}} / {{total}}",
   "Carte limitée aux {{loaded}} premiers résultats": "Map limited to the first {{loaded}} results",
   "Aucun résultat": "No results",

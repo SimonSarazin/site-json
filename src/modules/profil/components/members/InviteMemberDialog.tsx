@@ -6,6 +6,8 @@ import type { EntityTypes, User } from "@communecter/cocolight-api-client";
 import { useEntityLabels } from "../../hooks/useEntityLabels";
 import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 import { useAdminActions, useInviteByEmail, canInviteByEmail } from "../../actions";
+import { useInviteMemberWithRoles, useInviteAdminWithRoles } from "../../actions/mutations/member";
+import { rolesExistantsDeLEntite } from "../../lib/memberRoles";
 import { useUserStatusBadge } from "../../hooks/useUserStatusBadge";
 import { ConfirmationDialog } from "./ConfirmationDialog";
 import {
@@ -58,6 +60,13 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
   const t = useT("modules/profil");
   const [activeTab, setActiveTab] = useState("users");
   const [searchTerm, setSearchTerm] = useState("");
+  // Rôles à poser sur l'invitation « users » (recherche, pas par e-mail) — un seul champ pour la
+  // session de recherche, pas une ligne par résultat : on invite un utilisateur à la fois ici.
+  const [searchRoles, setSearchRoles] = useState<string[]>([]);
+  const inviteWithRoles = useInviteMemberWithRoles(entity);
+  // Même mutation, toast « invitation d'administrateur » — cf. `runAction` (constat de revue : un
+  // seul hook au message figé sur « invitation envoyée » faisait disparaître la distinction admin).
+  const inviteAdminWithRoles = useInviteAdminWithRoles(entity);
   // Une ligne par invité : email + nom + message + admin (réglables indépendamment).
   const [invites, setInvites] = useState<InviteRow[]>([{ ...EMPTY_INVITE }]);
   const debouncedSearch = useDebounce(searchTerm, 300);
@@ -110,12 +119,33 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
   // Labels spécifiques à l'entité
   const labels = useEntityLabels(entity);
 
+  // Rôles déjà posés sur un membre de l'entité — proposés en suggestion dans les deux onglets,
+  // à défaut d'endpoint de suggestions côté backend (cf. commentaires `TagsInput` ci-dessous).
+  const rolesSuggeres = rolesExistantsDeLEntite(entity?.serverData?.links as Record<string, unknown> | undefined);
+
+  // Ids des actions d'invitation (utilisateur PAS ENCORE lié, cf. `useAdminActions` — bloc « actions
+  // d'invitation » tout en bas de `getUserActionButtons`) : seules celles-ci passent par `searchRoles`.
+  // Un id absent de cette liste (promote/demote/remove…) vise un membre DÉJÀ lié — `onClick` d'origine,
+  // intact — les rôles d'un lien existant se corrigent via « Gérer les rôles », pas ici.
+  const INVITE_ACTION_IDS = new Set(["invite-member", "invite-contributor", "invite-participant", "invite-admin"]);
 
   // Composant pour afficher les actions d'un utilisateur
   const UserActionButtons = ({ user }: { user: User }) => {
     const actions = getUserActionButtons(user);
 
     if (actions.length === 0) return null;
+
+    const runAction = (action: (typeof actions)[number]) => {
+      if (INVITE_ACTION_IDS.has(action.id)) {
+        const isAdmin = action.id === "invite-admin";
+        (isAdmin ? inviteAdminWithRoles : inviteWithRoles).mutate(
+          { user, roles: searchRoles, admin: isAdmin },
+          { onSuccess: () => setSearchRoles([]) },
+        );
+        return;
+      }
+      action.onClick();
+    };
 
     // Si une seule action, afficher le bouton directement
     if (actions.length === 1) {
@@ -124,7 +154,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
         <Button
           size="sm"
           variant={action.variant}
-          onClick={action.onClick}
+          onClick={() => runAction(action)}
           disabled={action.disabled}
         >
           {action.icon}
@@ -146,7 +176,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           {actions.map((action, index) => (
             <div key={action.id}>
               <DropdownMenuItem
-                onClick={action.onClick}
+                onClick={() => runAction(action)}
                 disabled={action.disabled}
                 className={action.variant === "destructive" ? "text-destructive" : ""}
               >
@@ -166,6 +196,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
 
   const handleClose = () => {
     setSearchTerm("");
+    setSearchRoles([]);
     setInvites([{ ...EMPTY_INVITE }]);
     setActiveTab("users");
     hideConfirmation();
@@ -216,6 +247,22 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
                   />
                 </div>
 
+                {/* Rôles à poser sur l'invitation — mêmes principes que l'onglet « emails » (saisie
+                    libre, pas les tags globaux du réseau — simplement suggérée via les rôles déjà
+                    posés sur l'entité). Appliqués au clic sur « Inviter… » ci-dessous
+                    (`UserActionButtons` → `INVITE_ACTION_IDS`), pour N'IMPORTE LEQUEL des résultats. */}
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">
+                    {t("InviteMemberDialog.rolesLabel")}
+                  </Label>
+                  <TagsInput
+                    tags={searchRoles}
+                    onTagsChange={setSearchRoles}
+                    searchable={false}
+                    suggestions={rolesSuggeres}
+                    texts={{ placeholder: t("InviteMemberDialog.rolesPlaceholder") }}
+                  />
+                </div>
 
                 {/* Résultats de recherche */}
                 <div className="max-h-60 overflow-y-auto">
@@ -334,7 +381,8 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
                         {/* Rôles : `searchable={false}` — ce ne sont PAS les tags globaux du réseau
                             (`useSearchTags`), mais des libellés propres à CETTE entité. Le backend
                             n'expose pas d'endpoint de suggestions au SDK (`element/getroleslist`
-                            n'y est pas), donc saisie libre — ce que fait aussi Communecter. */}
+                            n'y est pas) ; on suggère donc localement les rôles déjà posés sur un
+                            membre de l'entité (`suggestions`), saisie libre sinon — comme Communecter. */}
                         <div className="space-y-1">
                           <Label className="text-xs text-muted-foreground">
                             {t("InviteMemberDialog.rolesLabel")}
@@ -343,6 +391,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
                             tags={row.roles}
                             onTagsChange={(roles) => updateInvite(i, { roles })}
                             searchable={false}
+                            suggestions={rolesSuggeres}
                             texts={{ placeholder: t("InviteMemberDialog.rolesPlaceholder") }}
                           />
                           <p className="text-xs text-muted-foreground">

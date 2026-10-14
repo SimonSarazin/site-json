@@ -3,8 +3,10 @@
  *
  * Producteurs : `useSearchQuery`, `prefetchSearchResults`
  * Consommateurs invalidants (tous par `RESULTS_PREFIX`) : `SearchProStatic` et
- *   `PreviewCoformAnswer` (écriture d'une answer CoForm), `addStandard`
- *   (création/édition d'entité), `PreviewPoiAmenities` (suppression de POI).
+ *   `PreviewCoformAnswer` (écriture d'une answer CoForm — listes statiques ET listes
+ *   gérées du compte, `MANAGED_ANSWERS_PREFIX`), `useAnswerCreated` (création depuis une
+ *   liste), `addStandard` (création/édition d'entité), `PreviewPoiAmenities` (suppression
+ *   de POI), `ManagedStructureItem` (créneau ajouté depuis l'onglet profil « Structures »).
  *   Sinon refetch via `refetch()` ou changement des params (qui change la
  *   queryKey naturellement).
  *
@@ -30,6 +32,14 @@
 export const SEARCH_STATIC_LIST_PREFIX = "searchCostumStatic";
 export const SEARCH_STATIC_MAP_PREFIX = "searchCostumStaticMapAll";
 
+/**
+ * Préfixe de la recherche de DOUBLONS à la création d'une entité (slot `slot:entityDuplicates`
+ * des formulaires costum). Producteur : `useEntityDuplicates` (module profil). Invalidation :
+ * `invalidate:standard` via `mutation.invalidateFn.params.searchKeys` du formulaire — une entité
+ * tout juste créée doit apparaître à la saisie suivante du même nom.
+ */
+export const SEARCH_DUPLICATES_PREFIX = "entityDuplicates";
+
 export interface SearchQueryKeyParams {
   queryKeyPrefix: string;
   searchText: string;
@@ -51,9 +61,9 @@ export const SEARCH_QUERY_KEYS = {
    * Résultats de recherche paginés.
    *
    * Producteurs : `useSearchQuery`, `prefetchSearchResults`
-   * Consommateurs invalidants : `invalidateSearchStaticResults` (création /
-   *   édition d'une answer CoForm — ex. créneau), `addStandard`,
-   *   `PreviewPoiAmenities` — tous par `RESULTS_PREFIX`.
+   * Consommateurs invalidants : `SearchProStatic` et `PreviewCoformAnswer` (création /
+   *   édition d'une answer CoForm — ex. créneau), `addStandard`, `PreviewPoiAmenities`,
+   *   `ManagedStructureItem` (`MANAGED_ANSWERS_PREFIX`, par utilisateur) — tous par `RESULTS_PREFIX`.
    */
   RESULTS: (params: SearchQueryKeyParams) =>
     [
@@ -72,6 +82,20 @@ export const SEARCH_QUERY_KEYS = {
    */
   RESULTS_PREFIX: (queryKeyPrefix: string) => [queryKeyPrefix] as const,
   /**
+   * `queryKeyPrefix` des listes de réponses CoForm GÉRÉES par un compte (onglet profil « Structures » :
+   * les créneaux de chaque structure qu'il administre, et ceux qu'il a déposés ailleurs). Une CHAÎNE,
+   * partagée par toutes ces listes, qui se distinguent par leurs `baseParams` (dans la clé) :
+   * l'invalidation compare la clé élément par élément, un préfixe par structure serait inatteignable
+   * d'un seul appel. Le compte est DANS le préfixe : le serveur montre à chacun des réponses non
+   * validées différentes. Défini ici et non dans profil pour que `PreviewCoformAnswer` l'invalide
+   * après une modification sans importer profil (cf. `SEARCH_DUPLICATES_PREFIX`).
+   * Producteur : `useManagedAnswers` (`ManagedStructureItem`, `SubmittedSlotsItem`).
+   * Consommateurs invalidants (par `RESULTS_PREFIX`) : `PreviewCoformAnswer` (après une
+   * modification), `ManagedStructureItem` (après un ajout depuis l'onglet), `useAnswerCreated`
+   * (après un ajout depuis une liste, ex. /creneaux).
+   */
+  MANAGED_ANSWERS_PREFIX: (userId: string): string => `managed-answers:${userId}`,
+  /**
    * Réservations CoForm d'une ressource (section réservations du preview
    * `poi-amenities`).
    *
@@ -82,12 +106,24 @@ export const SEARCH_QUERY_KEYS = {
   RESERVATIONS: (formId: string, resourceId: string) =>
     ["search-reservations", formId, resourceId] as const,
   /**
-   * Documents (fichiers non-image) d'une structure, pour le preview `structure`.
+   * Réservations d'une ORGANISATION : answers dont le finder `userOrga` pointe
+   * ce club (section « équipements réservés » du preview `structure`).
    *
-   * Producteur : `PreviewStructure` (via `item.getGalleryFiles()`). Données
-   * PUBLIQUES au même titre que la fiche — pas d'invalidation, staleTime suffit.
+   * Producteur : `useOrgaReservationsQuery`. Clé distincte de `RESERVATIONS`
+   * (qui part d'une RESSOURCE) : les deux interrogent le même formulaire par
+   * des chemins de finder différents, leurs caches ne doivent pas se croiser.
    */
-  DOCUMENTS: (id: string | null) => ["search-structure-documents", id] as const,
+  ORGA_RESERVATIONS: (formId: string, orgaId: string) =>
+    ["search-orga-reservations", formId, orgaId] as const,
+  /**
+   * Entité chargée par IDENTIFIANT pour ouvrir sa fiche depuis l'URL
+   * (`list.previewFetch`), quand la liste affichée ne la porte pas.
+   *
+   * Producteur : `useEntityByIdQuery`. Données publiques (mêmes fiches que la
+   * recherche) — pas d'invalidation, staleTime suffit.
+   */
+  ENTITY_BY_ID: (kind: string, id: string) =>
+    ["search-entity-by-id", kind, id] as const,
 } as const;
 
 export type SearchQueryKeyType = ReturnType<
