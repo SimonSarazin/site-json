@@ -100,7 +100,7 @@ describe("useAacFundingResource — monte la réparation des orphelines, gardée
 
   it("le droit se calcule sur l'entité du projet lié et le déposant du commun, comme sur la fiche", () => {
     mocks.savedSelectedResource = RESSOURCE;
-    const projet = { id: "proj-1" };
+    const projet = { id: "proj-1", serverData: {} };
     mocks.projectEntity = projet;
 
     renderHook(() => useAacFundingResource("answer-1", { answer: { userId: "deposant" } }));
@@ -115,5 +115,24 @@ describe("useAacFundingResource — monte la réparation des orphelines, gardée
     renderHook(() => useAacFundingResource("answer-1"));
 
     expect(mocks.useCagnottePermissions).toHaveBeenCalledWith(null, { ownerIds: [] });
+  });
+});
+
+describe("useAacFundingResource — projet lié d'un commun absent de l'enveloppe", () => {
+  const REPONSE = { id: "answer-1", project: { id: "proj-1" }, answers: { aapStep1: { titre: "Mon commun" } } };
+
+  it("le projet vient du document réponse (`project.id`)", () => {
+    const { result } = renderHook(() => useAacFundingResource("answer-1", { answer: REPONSE }));
+
+    expect(result.current.targetResource?.projectId).toBe("proj-1");
+    expect(mocks.useCommunProjectEntity).toHaveBeenCalledWith("proj-1");
+  });
+
+  it("le slug vient de l'entité projet quand l'enveloppe ne le porte pas", () => {
+    mocks.projectEntity = { id: "proj-1", serverData: { slug: "sportsPei" } };
+
+    const { result } = renderHook(() => useAacFundingResource("answer-1", { answer: REPONSE }));
+
+    expect(result.current.projectSlug).toBe("sportsPei");
   });
 });

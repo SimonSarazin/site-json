@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { AacCommunDeleteButton } from "../../components/directory/AacCommunDeleteButton";
+import { AacCommunProjectLink } from "../../components/directory/AacCommunProjectLink";
 import type { AacCommunItemProps } from "../../components/directory/variants/items";
 import { AAC_VISIBLE_TAGS, formatAacAmount, progressBarWidth } from "../../lib/aacDisplay";
 import { communPath } from "../../lib/communPath";
@@ -53,6 +54,7 @@ export default function CommunRowEditorial({ commun, onRequestDelete, isDeleting
           )}
           <span className="min-w-0 truncate">{commun.tags.slice(0, AAC_VISIBLE_TAGS).join(" • ")}</span>
         </p>
+        <AacCommunProjectLink project={commun.project} className="mt-1 text-primary" />
       </div>
 
       <div className="hidden shrink-0 gap-1.5 lg:flex">

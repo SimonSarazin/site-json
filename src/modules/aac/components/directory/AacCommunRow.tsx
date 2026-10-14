@@ -8,6 +8,7 @@ import {
 } from "../../lib/aacDisplay";
 import { AacHiddenTagsBadge } from "./AacHiddenTagsBadge";
 import { AacCommunDeleteButton } from "./AacCommunDeleteButton";
+import { AacCommunProjectLink } from "./AacCommunProjectLink";
 import { StatusPill } from "../StatusPill";
 import type { AacCommunCard as CommunCard } from "../../lib/parseAacAnswer";
 import { communPath } from "../../lib/communPath";
@@ -91,6 +92,9 @@ export function AacCommunRow({ commun, onRequestDelete, isDeleting, className }:
               {String(t("directory.card.pending"))}
             </StatusPill>
           ) : null}
+
+          {/* Projet lié, sur la ligne du titre. */}
+          <AacCommunProjectLink project={commun.project} className="max-w-48 shrink-0 text-primary" />
         </div>
 
         <p

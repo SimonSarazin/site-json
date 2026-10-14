@@ -56,6 +56,8 @@
       "untitled": "Untitled commons",
       "noDescription": "(No description)",
       "pending": "Pending",
+      "project": "Project: {{name}}",
+      "inProject": "In project",
       "location": "Municipality",
       "collected": "Collected on ongoing co-funding",
       "noFunding": "No co-funding request currently pending",

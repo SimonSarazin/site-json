@@ -100,6 +100,7 @@ function makeVM(overrides: Partial<CommunDetailReadyVM> = {}): CommunDetailReady
         interestCount: 0,
         isSelected: null,
         usage: { categories: [], subs: [], bySub: {} },
+        project: null,
         createdAt: 0,
         updatedAt: 0,
       },

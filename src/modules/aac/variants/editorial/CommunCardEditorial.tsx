@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { AacHiddenTagsBadge } from "../../components/directory/AacHiddenTagsBadge";
 import { AacCommunDeleteButton } from "../../components/directory/AacCommunDeleteButton";
+import { AacCommunProjectLink } from "../../components/directory/AacCommunProjectLink";
 import type { AacCommunItemProps } from "../../components/directory/variants/items";
 import { formatAacAmount, progressBarWidth } from "../../lib/aacDisplay";
 import { communPath } from "../../lib/communPath";
@@ -91,6 +92,10 @@ export default function CommunCardEditorial({
             {String(t("directory.card.pending"))}
           </Badge>
         )}
+        <AacCommunProjectLink
+          project={commun.project}
+          className="rounded-md border border-primary/30 px-2 py-0.5 font-medium text-primary"
+        />
         {commun.keywords.map((keyword) => (
           <Badge key={keyword} variant="outline">
             {keyword}

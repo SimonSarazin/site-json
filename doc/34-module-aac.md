@@ -983,6 +983,18 @@ mentionne pour ces deux surfaces est périmée.
     filtre ne consulte plus du tout. Une clé **nue** reste tolérée (l'état historique) et se lit sous
     les catégories retenues, toutes si aucune ne l'est : l'union qui en résulte est la limite de
     cette forme, pas un choix.
+13. **Le projet d'un commun se lit sur `answer.project.id`, jamais sur `project.answer`.** C'est le
+    lien qu'écrivent Oceco, `generateproject` et l'association, et celui que lit le legacy (qui
+    retrouve la réponse d'un projet en interrogeant `answers` sur `project.id`). Le renvoi
+    `project.answer` n'est posé par `generateproject` que depuis septembre 2026 : il manque sur les
+    liens anciens (44 projets sur 49 pour le formulaire OCECO d'Open Atlas). Les deux lectures
+    doivent donc RECEVOIR `project` :
+    - **fiche** : `findanswered` (`api.answer`) le projette par défaut (`FindAnsweredByIdAction`).
+      Sans lui, le repli `buildResourceFromAnswer` est aveugle, et un commun absent de l'enveloppe
+      (visiteur anonyme, ou enveloppe lue sur un autre formulaire de l'hôte) n'a plus de projet ;
+    - **annuaire** : chaque ligne porte `project`, et le bloc `projects` (§13.3) donne nom et slug.
+      `parseAacAnswer` en fait `card.project`, affiché par `AacCommunProjectLink` : « Projet : nom »
+      vers `/profil/<slug>`, ou « En projet » sans lien quand le projet n'est pas résolu.
 
 ---
 
@@ -1164,7 +1176,7 @@ appelé). Vaut `0` si l'utilisateur n'est pas connecté.
 **Mode `countonly`** — `{ "count": { "<searchType[0]>": int } }`, sans `results`. ⚠️ Les blocs latéraux
 ci-dessous sont **tout de même présents** (vides) : `parsePropositionData` est appelé dans ce mode aussi.
 
-**Mode normal** — `results`, `count` optionnel, et dix blocs latéraux batch-résolus :
+**Mode normal** — `results`, `count` optionnel, et onze blocs latéraux batch-résolus :
 
 | Clé | Forme | Contenu |
 |---|---|---|
@@ -1178,6 +1190,7 @@ ci-dessous sont **tout de même présents** (vides) : `parsePropositionData` est
 | `allImages` | map | documents `subKey = aapStep1.image`, extensions image |
 | `allDocuments` | map | documents hors image, `doctype`\|`docType` = `file` |
 | `elements` | map | entités de contexte — `name`, `slug`, `collection` |
+| `projects` | map | projets liés aux réponses (par `project.id`) — `name`, `slug`, `profilThumbImageUrl` ; un projet supprimé en est absent |
 | `inputs` | map | `forms.inputs` des formulaires concernés — `step`, `inputs` |
 | `allNotSeenComments` | map `contextId → int` | nombre de commentaires non vus |
 

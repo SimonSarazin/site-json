@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { AacHiddenTagsBadge } from "./AacHiddenTagsBadge";
 import { AacCommunDeleteButton } from "./AacCommunDeleteButton";
+import { AacCommunProjectLink } from "./AacCommunProjectLink";
 import type { AacCommunCard as CommunCard } from "../../lib/parseAacAnswer";
 import {
   AAC_VISIBLE_TAGS,
@@ -95,6 +96,11 @@ export function AacCommunCard({ commun, onRequestDelete, isDeleting, className }
           // n'existe pas dans site-json.
           <div className="h-40 w-full rounded-[10px] bg-muted" />
         )}
+        {/* Projet lié, en surimpression sur le visuel. */}
+        <AacCommunProjectLink
+          project={commun.project}
+          className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] rounded-full border border-border bg-card/90 px-2 py-0.5 font-medium text-primary backdrop-blur-sm"
+        />
       </div>
 
       <div className="relative block pt-3">

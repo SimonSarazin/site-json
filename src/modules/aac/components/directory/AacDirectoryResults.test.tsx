@@ -48,6 +48,7 @@ function commun(id: string, title: string): CommunCard {
     isSelected: null,
     usage: EMPTY_AAC_USAGE,
     address: null,
+    project: null,
     createdAt: 0,
     updatedAt: 0,
   };

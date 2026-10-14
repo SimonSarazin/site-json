@@ -56,6 +56,8 @@
       "untitled": "Commun sans titre",
       "noDescription": "(Pas de description)",
       "pending": "En attente",
+      "project": "Projet : {{name}}",
+      "inProject": "En projet",
       "location": "Commune",
       "collected": "Collecté sur les cofinancements en cours",
       "noFunding": "Pas de demande de cofinancement en cours",

@@ -21,7 +21,7 @@
  * et un même commun peut être porté par deux AAC avec des chiffres différents.
  * D'où le rôle `users`, dont le chemin est libre — cf. `readField`.
  */
-import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
+import { getEntityId, toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
 import type { AacCardFieldRef, AacCardFields } from "./resolveAacCardFields";
 import { readUsageAnswer, type AacUsageAnswer } from "./aacUsage";
 import { readCommunAddress, type AacCommunAddress } from "./communAddress";
@@ -139,6 +139,13 @@ export interface AacFund {
   financers: number[];
 }
 
+/** Le projet lié d'un commun ; `name` et `slug` à `null` tant qu'il n'est pas résolu. */
+export interface AacCommunProject {
+  id: string;
+  name: string | null;
+  slug: string | null;
+}
+
 /** Ce que consomme la carte. Aucune forme du backend ne transparaît ici. */
 export interface AacCommunCard {
   id: string;
@@ -185,6 +192,8 @@ export interface AacCommunCard {
   usage: AacUsageAnswer;
   /** Adresse du commun (filtre « Commune ») ; `null` sans `directory.fields.adresse` ou sans réponse. */
   address: AacCommunAddress | null;
+  /** Projet lié, lu sur `answer.project.id` (cf. doc/34 §9 n°13) ; `null` sans projet. */
+  project: AacCommunProject | null;
   /**
    * Qui a DÉPOSÉ le commun, pas l'entité d'affichage : c'est le gate du bouton de suppression
    * dans l'annuaire. `undefined` quand la source ne le porte pas (compte temporaire, projection
@@ -204,6 +213,8 @@ export interface ParseAacAnswerOptions {
   baseUrl?: string;
   /** Force la question d'usage, sinon repérée par sa forme `{list, sublist}`. */
   usageId?: string | null;
+  /** Bloc annexe `projects` de `directoryproposal` (id → `{name, slug}`) ; sans entrée, projet non résolu. */
+  projects?: unknown;
 }
 
 /** Le libellé que le backend pose quand `answers.aapStep1.titre` est absent. */
@@ -211,7 +222,7 @@ const BACKEND_NO_TITLE = "(No title)";
 
 export function parseAacAnswer(
   raw: unknown,
-  { fields, contextId, baseUrl = "", usageId }: ParseAacAnswerOptions
+  { fields, contextId, baseUrl = "", usageId, projects }: ParseAacAnswerOptions
 ): AacCommunCard {
   const a = rec(raw);
   const answers = rec(a.answers);
@@ -307,6 +318,17 @@ export function parseAacAnswer(
     isSelected = toStr(rec(choose[contextId]).value) === "selected";
   }
 
+  // Bloc brut : objet indexé par id, ou `[]` s'il est vide.
+  const projectId = getEntityId(rec(a.project).id).trim();
+  const projectInfo = rec(rec(projects)[projectId]);
+  const project: AacCommunProject | null = projectId
+    ? {
+        id: projectId,
+        name: toStr(projectInfo.name).trim() || null,
+        slug: toStr(projectInfo.slug).trim() || null,
+      }
+    : null;
+
   return {
     id,
     title: rawTitle,
@@ -329,6 +351,7 @@ export function parseAacAnswer(
     usage: readUsageAnswer(answers[fields.title?.stepKey ?? mainStepKey(answers)], usageId),
     // Lue par `readField` : le chemin configuré peut viser n'importe quelle étape.
     address: readCommunAddress(readField(a, fields.adresse)),
+    project,
     // Jamais `a.user` en premier : selon la route, ce champ porte l'entité d'AFFICHAGE, pas
     // le déposant. `resolveAnswerAuthorId` applique la règle — `userId` d'abord.
     authorId: resolveAnswerAuthorId(a as Parameters<typeof resolveAnswerAuthorId>[0]),

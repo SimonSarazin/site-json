@@ -23,6 +23,7 @@ const card = (p: Partial<AacCommunCard>): AacCommunCard => ({
   isSelected: null,
   usage: EMPTY_AAC_USAGE,
   address: null,
+  project: null,
   createdAt: 0,
   updatedAt: 0,
   ...p,

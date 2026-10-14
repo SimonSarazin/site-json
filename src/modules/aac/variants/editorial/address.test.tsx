@@ -46,6 +46,7 @@ function commun(patch: Partial<CommunCard> = {}): CommunCard {
       localityId: "c-sd",
       label: "12 rue Juliette Dodu, 97400, Saint-Denis",
     },
+    project: null,
     createdAt: 0,
     updatedAt: 0,
     ...patch,

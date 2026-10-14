@@ -931,7 +931,8 @@ Fix : `useFundingEnvelope(id, { hostEntity })` prend l'entité à interroger ; c
 dépendre de cette lecture de masse :
 
 - `buildResourceFromAnswer` (`utils/dataTransform.ts`) reconstruit la ressource depuis le document
-  réponse (projet lié + `depense[]`) ;
+  réponse (projet lié + `depense[]`). Le projet lié n'y est que si `findanswered` projette `project`,
+  ce qu'il fait par défaut (cf. `doc/34` §9, piège n° 13) ;
 - `MilestoneMutationContext.docs` alimente `resolveMilestoneSyncContextFromDocs`, sans quoi
   éditer / clôturer un palier échoue sur `milestone.errors.syncContextMissing`.
 
@@ -958,7 +959,7 @@ dépendre de cette lecture de masse :
 
 ### 2. `useFundingEnvelope` fait deux appels backend
 
-`getEnvelopeData` toujours appelé. `getFormData` appelé en plus si `formId` extractible **et** `me?.id` non null. Le merge (`mergeEnvelopePayloads`) écrase certains champs : `projects`, `links`, `contextData`, `nopropProject`. Implication : côté SSR (sans auth), seul `getEnvelopeData` est consommé ; le client ré-appelle si l'utilisateur est connecté.
+`getEnvelopeData` toujours appelé. `getFormData` appelé en plus si `formId` extractible **et** `me?.id` non null. ⚠️ Ce `formId` est le **premier** formulaire AAP de l'hôte (`extractFormIdFromEnvelope`) : sur un hôte qui en porte plusieurs (Open Atlas : 3), l'enveloppe peut lire un autre formulaire que celui du commun, qui en est alors absent. Le merge (`mergeEnvelopePayloads`) écrase certains champs : `projects`, `links`, `contextData`, `nopropProject`. Implication : côté SSR (sans auth), seul `getEnvelopeData` est consommé ; le client ré-appelle si l'utilisateur est connecté.
 
 La query est également **désactivée côté SSR** (`enabled: typeof window !== 'undefined' && ...`) : le serveur n'a pas de session, donc `me` est null, ce qui retournerait une enveloppe anonyme avec `totalFinancement: 0`. Le prefetch SSR passe par `prefetchFundingEnvelope` qui réutilise le même `queryFn` avec les mêmes règles.
 

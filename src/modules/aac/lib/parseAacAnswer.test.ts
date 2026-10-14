@@ -765,3 +765,42 @@ describe("parseAacAnswer — adresse", () => {
     expect(card.address).toBeNull();
   });
 });
+
+describe("parseAacAnswer — projet lié", () => {
+  const PROJECT_ID = "67589593a8a1d73bd8299e87";
+  const linked = {
+    _id: { $id: "6a586e832ba6c41088255f33" },
+    project: { id: PROJECT_ID, startDate: { sec: 1784180355, usec: 696000 } },
+  };
+  /** Le bloc annexe tel que `directoryproposal` le renvoie : indexé par id, brut. */
+  const PROJECTS = {
+    [PROJECT_ID]: { _id: { $id: PROJECT_ID }, name: "SPORTS PEI", slug: "sportsPei" },
+  };
+
+  it("sans `project.id`, pas de projet — y compris un `project` réduit à sa date", () => {
+    expect(parse({ _id: { $id: "a1" } }).project).toBeNull();
+    expect(parse({ _id: { $id: "a1" }, project: { startDate: "3/9/2022" } }).project).toBeNull();
+  });
+
+  it("le bloc `projects` nomme le projet lié", () => {
+    expect(parse(linked, { projects: PROJECTS }).project).toEqual({
+      id: PROJECT_ID,
+      name: "SPORTS PEI",
+      slug: "sportsPei",
+    });
+  });
+
+  it("projet absent du bloc (supprimé), bloc vide `[]` ou absent : lié mais non résolu", () => {
+    const unresolved = { id: PROJECT_ID, name: null, slug: null };
+
+    expect(parse(linked, { projects: { autre: { name: "Autre", slug: "autre" } } }).project).toEqual(unresolved);
+    expect(parse(linked, { projects: [] }).project).toEqual(unresolved);
+    expect(parse(linked).project).toEqual(unresolved);
+  });
+
+  it("`project.id` en `{ $id }` reste lisible", () => {
+    const card = parse({ _id: { $id: "a1" }, project: { id: { $id: PROJECT_ID } } }, { projects: PROJECTS });
+
+    expect(card.project?.slug).toBe("sportsPei");
+  });
+});

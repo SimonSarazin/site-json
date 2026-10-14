@@ -15,7 +15,7 @@ import type { LazyVariant } from "@/lib/variants";
 /**
  * Conformité des interfaces de l'annuaire, paramétrée sur les clés des registres.
  *  - Communs (carte et ligne) : lien vers la fiche, titre ou repli, badge « en attente » ssi
- *    `isSelected === false`, suppression ssi le droit est accordé, sur ce commun.
+ *    `isSelected === false`, projet lié, suppression ssi le droit est accordé, sur ce commun.
  *  - Dispositions : un contrôle `data-aac-filter="<nom>"` par filtre activé et résolu, compteur,
  *    bascule, dépôt, résultats du contrôleur ; en vitrine, le lien « voir tout » sans commande.
  */
@@ -80,6 +80,7 @@ function commun(patch: Partial<CommunCard> = {}): CommunCard {
     isSelected: true,
     usage: EMPTY_AAC_USAGE,
     address: null,
+    project: null,
     createdAt: 0,
     updatedAt: 0,
     ...patch,
@@ -146,6 +147,23 @@ describe.each(AAC_DIRECTORY_CARD_VARIANTS.keys())("interface de commun « %s »"
 
       await renderLazy(Item as LazyVariant<never>, <Item commun={commun({ isSelected: null })} />);
       expect(screen.queryByText("directory.card.pending")).toBeNull();
+    });
+
+    it("projet lié : son nom vers sa page, « en projet » sans slug, rien sans projet", async () => {
+      const resolved = { id: "p1", name: "SPORTS PEI", slug: "sportsPei" };
+      await renderLazy(Item as LazyVariant<never>, <Item commun={commun({ project: resolved })} />);
+      expect(document.querySelector('a[href="/profil/sportsPei"]')?.textContent).toContain(
+        "directory.card.project SPORTS PEI"
+      );
+      cleanup();
+
+      await renderLazy(Item as LazyVariant<never>, <Item commun={commun({ project: { id: "p1", name: null, slug: null } })} />);
+      expect(screen.getAllByText("directory.card.inProject").length).toBeGreaterThan(0);
+      expect(document.querySelector('a[href^="/profil/"]')).toBeNull();
+      cleanup();
+
+      await renderLazy(Item as LazyVariant<never>, <Item commun={commun()} />);
+      expect(screen.queryByText(/directory\.card\.(project|inProject)/)).toBeNull();
     });
 
     it("suppression : un bouton ssi le droit est accordé, et il vise CE commun", async () => {
