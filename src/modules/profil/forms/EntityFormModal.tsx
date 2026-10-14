@@ -89,9 +89,15 @@ export interface EntityFormModalProps {
   parent?: EntityTypes | null;
   /** Valeurs semées en mode AJOUT, par-dessus les défauts du descripteur (cf. `createDefaults.ts`). */
   createDefaults?: Record<string, unknown>;
+  /**
+   * Création lancée depuis un autre parcours (ex. le bouton « Ajouter » d'un finder coform) : reçoit
+   * l'entité créée, et la modale ne redirige PAS vers sa fiche — l'appelant garde la main, sans quoi
+   * la saisie en cours serait abandonnée.
+   */
+  onCreated?: (entity: EntityTypes) => void;
 }
 
-export function EntityFormModal({ config: configProp, spec, open, onOpenChange, mode = "add", entity, parent, createDefaults }: EntityFormModalProps): ReactNode {
+export function EntityFormModal({ config: configProp, spec, open, onOpenChange, mode = "add", entity, parent, createDefaults, onCreated }: EntityFormModalProps): ReactNode {
   const config = useMemo(() => configProp ?? specToConfig(spec as EntityModalSpec), [configProp, spec]);
   const t = useT("modules/profil");
   const tr = (k: I18n) => t(k); // résout clé i18n OU LocalizedString inline (useT route selon le type)
@@ -146,15 +152,17 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
   }, [isEdit, entity, config, parent, scope]); // eslint-disable-line react-hooks/exhaustive-deps
   const slots = useMemo(() => config.slots?.(ctx), [config, effMode, entity, parent, scope]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const mutation = useEntityMutation(config.buildSpec(ctx));
+  const mutationSpec = config.buildSpec(ctx);
+  const mutation = useEntityMutation(onCreated ? { ...mutationSpec, navigateOnSuccess: false } : mutationSpec);
   const guard = useUnsavedGuard(onOpenChange);
   // Création seulement : en édition l'entité existe, il n'y a rien à confirmer.
   const duplicateGuard = useDuplicateSubmitGuard(effMode === "add" ? config.duplicateCheck : undefined, open);
 
   const commit = async (cleaned: FieldValues) => {
-    await mutation.mutateAsync(cleaned as Record<string, unknown>);
+    const { entity: created } = await mutation.mutateAsync(cleaned as Record<string, unknown>);
     config.afterSubmit?.(ctx, cleaned);
     onOpenChange(false);
+    if (effMode === "add" && created) onCreated?.(created);
   };
   const onSubmit = async (values: FieldValues) => {
     const cleaned = config.cleanValues ? config.cleanValues(values) : values;

@@ -454,7 +454,7 @@ dispatchent vers les registres (`forms/specRegistries.ts`, peuplés par `forms/r
 observatoire est passé aux `mutation.stamps` (`append` + `$costum`, cf. § dédié) ; `buildTiersLieuxPayload`
 subsiste comme export mais n'est plus registré — il ne sert que d'ORACLE de parité aux tests.
 
-Le parc porte aujourd'hui **28 déclarations `costumForms` (26 ids uniques) réparties sur 9 `config.prod.*.json`** —
+Le parc porte aujourd'hui (01/10/2026) **34 déclarations `costumForms` (32 ids uniques) réparties sur 11 `config.prod.*.json`** —
 `tiers-lieux` et `equipements-sportifs` sont déclarés par deux sites chacun. Toutes sont compilées au boot par
 `registerCostumForms.ts` et posées à blanc par `tests/preflight/costum-forms.test.ts`, qui énumère tous les
 `config.prod*.json`.
@@ -702,6 +702,27 @@ TS, désormais supprimée ; la non-régression est aujourd'hui tenue par
 ---
 
 ## Pièges / gotchas
+
+### Une modale ouverte DEPUIS un formulaire le soumettait aussi
+
+En React, un `submit` remonte l'arbre des **composants**, portails compris. La modale de création
+d'un finder coform (`EntityFormModal`, rendue sous la question) soumettait donc AUSSI le formulaire
+hôte : sa validation partait, ses erreurs s'affichaient derrière. Le `submit` est arrêté **à la
+frontière du dialogue** — `DialogContent`, `SheetContent` et `ModalContent`, les trois contenus bâtis
+sur le dialogue Radix (`stopSubmitAtPortal`, [`src/lib/portalSubmit.ts`](../src/lib/portalSubmit.ts))
+— et non dans `GenericForm` : la règle vaut pour tout formulaire rendu dans un dialogue ou un panneau
+latéral (une étape coform, un formulaire de module), pas pour le seul formulaire du moteur. Il ne
+remonte plus à un formulaire placé au-dessus dans l'arbre React ; un bouton `form="<id>"` posé dans
+un dialogue soumet toujours le formulaire qu'il désigne (l'évènement naît sur ce formulaire, hors du
+dialogue). ⚠️ Les autres portails (`AlertDialogContent`, `DrawerContent`, `PopoverContent`) n'ont pas
+ce garde : un formulaire qu'on y monterait sous un autre formulaire demande de l'y poser.
+
+### Créer depuis un autre parcours : `onCreated`
+
+`EntityFormModal` (et `DynamicModal`, qui le relaie) accepte `onCreated(entity)` : la modale rend
+l'entité créée à l'appelant et ne redirige PAS vers sa fiche (`navigateOnSuccess: false` forcé) —
+sans quoi la saisie en cours serait abandonnée. Usage : le bouton « Ajouter » d'un finder coform
+([21-module-coform](21-module-coform.md), `coform.finderAddNew`).
 
 ### Scroll-lock des modales coincé sur `<body>` (scroll de page perdu)
 

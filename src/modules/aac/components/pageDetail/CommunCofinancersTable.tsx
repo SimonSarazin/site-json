@@ -26,7 +26,7 @@ interface CommunCofinancersTableProps {
 /**
  * La collection où lire la fiche d'un cofinanceur. Le backend écrit `"tl"`
  * (tiers-lieu), `"organization"` au singulier par défaut, ou rien ; seul le
- * paiement d'un citoyen pose `"citoyens"` (cf. `paymentDataProcessor`).
+ * paiement d'un citoyen pose `"citoyens"` (cf. `Aap::addFinancerEngagement`).
  */
 const financerEntityType = (type: string): FinderElementType =>
     type === "citoyens" ? "citoyens" : "organizations";

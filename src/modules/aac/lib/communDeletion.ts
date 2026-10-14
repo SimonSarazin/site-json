@@ -17,7 +17,7 @@ export interface CommunDeletionPlan {
   paymentAmount: number;
   /**
    * Dès qu'un versement existe, le commun porte une trace comptable : le supprimer effacerait
-   * la contrepartie de sommes engagées. Le retrait de l'annuaire (`CommunSelectionControl`)
+   * la contrepartie de sommes engagées. Le retrait de l'annuaire (`useCommunSelectionAction`)
    * reste la voie non destructive.
    */
   isBlocked: boolean;
