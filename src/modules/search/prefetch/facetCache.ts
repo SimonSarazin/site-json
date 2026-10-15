@@ -12,21 +12,26 @@
  * restent frais à chaque rendu. Côté client, rien ne change (`useSearchZoneQuery` & co. parlent au
  * backend directement après hydratation).
  *
- * Réglage : `SSR_FACET_CACHE_TTL_MS` (serveur uniquement ; défaut 5 min ; `0` désactive). La clé de
- * chaque entrée est la queryKey React Query de la facette, déjà une sérialisation déterministe de
- * ses paramètres.
+ * Réglage : `SSR_FACET_CACHE_TTL_MS` (serveur uniquement, pas dans `window.__ENV__` ; défaut 5 min ;
+ * `0` ou toute valeur négative désactive — même contrat que `createSsrMemo`). La clé de chaque
+ * entrée est la queryKey React Query de la facette, déjà une sérialisation déterministe de ses
+ * paramètres.
  */
 import { createSsrMemo } from "@/lib/ssrMemo";
 
 export const SSR_FACET_CACHE_TTL_ENV = "SSR_FACET_CACHE_TTL_MS";
 export const SSR_FACET_CACHE_TTL_DEFAULT_MS = 5 * 60_000;
 
-/** Lit la durée de vie dans l'environnement du PROCESSUS serveur (pas `window.__ENV__`). */
+/**
+ * Lit la durée de vie dans l'environnement du PROCESSUS serveur. Absente, vide ou illisible →
+ * défaut ; `<= 0` → `0` (désactivé), comme le mémo l'entend.
+ */
 export function facetCacheTtlMs(env: Record<string, string | undefined> = processEnv()): number {
   const raw = env[SSR_FACET_CACHE_TTL_ENV];
   if (raw === undefined || raw.trim() === "") return SSR_FACET_CACHE_TTL_DEFAULT_MS;
   const n = Number(raw);
-  return Number.isFinite(n) && n >= 0 ? n : SSR_FACET_CACHE_TTL_DEFAULT_MS;
+  if (!Number.isFinite(n)) return SSR_FACET_CACHE_TTL_DEFAULT_MS;
+  return n > 0 ? n : 0;
 }
 
 function processEnv(): Record<string, string | undefined> {

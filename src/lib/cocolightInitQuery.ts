@@ -12,6 +12,11 @@
  * L'isolation entre requêtes est inchangée : elle tient au `QueryClient` par requête (vidé à la
  * fermeture de la réponse), pas au nombre d'appels à `initApi`.
  *
+ * Si l'init REJETTE (stockage des jetons ou constructeur du client en échec — `initApi` rattrape
+ * déjà le reste), React Query ne garde rien : chaque demande suivante de la requête réessaie. C'est
+ * le comportement d'avant le partage (un essai par loader), pas une régression, et c'est voulu :
+ * un échec passager ne doit pas être mémorisé pour tout le rendu.
+ *
  * Côté client, `useCocolightInit` lit la même clé sur le `QueryClient` du navigateur, où `initApi`
  * est de toute façon un singleton.
  *
@@ -21,7 +26,7 @@
  */
 import type { QueryClient } from "@tanstack/react-query";
 import { getBaseUrl } from "./constant/common";
-import { initApi, type InitApiOptions, type InitApiResult } from "./apiClient";
+import { initApi, type InitApiResult } from "./apiClient";
 
 /** Clé de l'init API — partagée par `entry-server`, les loaders SSR et `useCocolightInit`. */
 export const COCOLIGHT_INIT_QUERY_KEY = ["cocolight-init"] as const;
@@ -29,13 +34,13 @@ export const COCOLIGHT_INIT_QUERY_KEY = ["cocolight-init"] as const;
 /**
  * L'init API de ce `queryClient` : créée au premier appel, retrouvée ensuite — y compris par les
  * appels concurrents, qui attendent la même promesse.
+ *
+ * Pas d'options : une entrée de cache n'a qu'une valeur, des options passées par un deuxième
+ * appelant seraient ignorées en silence. L'init SSR se fait toujours sur `getBaseUrl()`.
  */
-export function ensureInitApi(
-  queryClient: QueryClient,
-  options: InitApiOptions = {},
-): Promise<InitApiResult> {
+export function ensureInitApi(queryClient: QueryClient): Promise<InitApiResult> {
   return queryClient.ensureQueryData({
     queryKey: COCOLIGHT_INIT_QUERY_KEY,
-    queryFn: () => initApi({ baseURL: getBaseUrl(), ...options }),
+    queryFn: () => initApi({ baseURL: getBaseUrl() }),
   });
 }

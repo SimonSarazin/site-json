@@ -63,10 +63,14 @@ describe("ensureInitApi — une init API par QueryClient", () => {
     expect(initApi).toHaveBeenCalledTimes(2);
   });
 
-  it("les options passées complètent la baseURL par défaut", async () => {
-    initApi.mockResolvedValue(RESULT);
-    await ensureInitApi(new QueryClient(), { debug: true });
-    expect(initApi).toHaveBeenCalledWith({ baseURL: "http://backend.test", debug: true });
+  it("un échec d'init n'est pas mémorisé : la demande suivante de la requête réessaie (comme avant le partage)", async () => {
+    initApi.mockRejectedValueOnce(new Error("token storage HS")).mockResolvedValue(RESULT);
+    // `retry: false` : l'échec doit être VU, pas rattrapé par les tentatives de React Query.
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    await expect(ensureInitApi(queryClient)).rejects.toThrow("token storage HS");
+    expect(await ensureInitApi(queryClient)).toBe(RESULT);
+    expect(initApi).toHaveBeenCalledTimes(2);
   });
 
   it("la clé est celle qu'`entry-server` exclut de la déshydratation", () => {

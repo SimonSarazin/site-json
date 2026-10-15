@@ -12,6 +12,10 @@ import path from "node:path";
  * porteuse (`getinfo/key` + `element/about`, 51 Ko) : mesuré sur tiers-lieux `/lieux` avant le
  * partage, 6 inits et 17 appels backend par page servie au lieu de 1 et 7.
  *
+ * Le garde-fou regarde les IMPORTS, pas les appels : on ne peut pas appeler `initApi` sans
+ * l'importer, un alias (`initApi as init`) ou un import d'espace de noms (`* as apiClient`) sont
+ * vus, et un commentaire qui cite `initApi()` ne déclenche rien.
+ *
  * Hors périmètre, volontairement : `src/hooks/useCocolightInit.ts` (client, lit la même clé via
  * `useSuspenseQuery`) et `src/modules/blog/server/feed.ts` (`/blog/feed.xml`, un point d'entrée
  * HTTP à part, sans `QueryClient`).
@@ -42,7 +46,18 @@ function sourcesDe(entry: string, files: string[] = []): string[] {
   return files;
 }
 
-const DIRECT_INIT = /\binitApi\s*\(/;
+/** Le module `apiClient`, importé par alias (`@/lib/apiClient`) ou par chemin relatif. */
+const API_CLIENT_MODULE = String.raw`["'][^"']*lib\/apiClient["']`;
+/** `import { …, initApi, … } from "…/lib/apiClient"` — avec ou sans alias `initApi as x`. */
+const NAMED_INIT_API_IMPORT = new RegExp(
+  String.raw`import\s*\{[^}]*\binitApi\b[^}]*\}\s*from\s*` + API_CLIENT_MODULE,
+);
+/** `import * as x from "…/lib/apiClient"` — donnerait accès à `x.initApi`. */
+const NAMESPACE_IMPORT = new RegExp(String.raw`import\s*\*\s*as\s+\w+\s+from\s*` + API_CLIENT_MODULE);
+
+export function importeInitApi(source: string): boolean {
+  return NAMED_INIT_API_IMPORT.test(source) || NAMESPACE_IMPORT.test(source);
+}
 
 describe("Preflight — une seule init API par requête SSR", () => {
   const sources = SSR_SCOPE.flatMap((e) => sourcesDe(e))
@@ -61,13 +76,22 @@ describe("Preflight — une seule init API par requête SSR", () => {
     ]));
   });
 
-  test("aucun `initApi(` direct : tout passe par `ensureInitApi(queryClient)`", () => {
+  test("le détecteur voit un import direct, aliasé ou d'espace de noms, et ignore un commentaire", () => {
+    expect(importeInitApi('import { initApi } from "@/lib/apiClient";')).toBe(true);
+    expect(importeInitApi("import { initApi as init, type InitApiResult } from '@/lib/apiClient';")).toBe(true);
+    expect(importeInitApi('import {\n  resetApiState,\n  initApi,\n} from "./lib/apiClient";')).toBe(true);
+    expect(importeInitApi('import * as apiClient from "../../lib/apiClient";')).toBe(true);
+    expect(importeInitApi('import { resetApiState } from "./lib/apiClient"; // jamais initApi() ici')).toBe(false);
+    expect(importeInitApi('import { ensureInitApi } from "@/lib/cocolightInitQuery";')).toBe(false);
+  });
+
+  test("aucun import d'`initApi` : tout passe par `ensureInitApi(queryClient)`", () => {
     const offenders = sources
-      .filter(({ content }) => DIRECT_INIT.test(content))
+      .filter(({ content }) => importeInitApi(content))
       .map(({ file }) => path.relative(PROJECT_ROOT, file));
     if (offenders.length > 0) {
       console.error(
-        "\n❌ `initApi()` appelé directement dans le cycle d'une requête SSR :\n" +
+        "\n❌ `initApi` importé dans le cycle d'une requête SSR :\n" +
           offenders.map((f) => `  - ${f}`).join("\n") +
           "\n\nUtilisez `ensureInitApi(queryClient)` (src/lib/cocolightInitQuery.ts) : une seule init" +
           " API par requête, partagée avec entry-server et les autres loaders.\n",

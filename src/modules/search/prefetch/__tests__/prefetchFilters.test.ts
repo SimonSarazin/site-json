@@ -39,6 +39,12 @@ vi.mock("../../hooks/useFiltersByPath", async (importOriginal) => ({
   fetchFiltersByPath: (...args: unknown[]) => fetchFiltersByPath(...args),
 }));
 
+// Un mémo PROPRE au test : l'instance réelle lit `SSR_FACET_CACHE_TTL_MS` dans le shell du
+// développeur (`0` = passe-plat), ce qui rendrait ces tests dépendants de l'environnement.
+vi.mock("../facetCache", async () => {
+  const { createSsrMemo } = await import("@/lib/ssrMemo");
+  return { facetCache: createSsrMemo({ ttlMs: 60_000 }) };
+});
 import { facetCache } from "../facetCache";
 import {
   prefetchSearchZones,

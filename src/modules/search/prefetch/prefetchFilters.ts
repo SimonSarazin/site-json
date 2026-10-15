@@ -1,4 +1,4 @@
-import type { QueryClient } from "@tanstack/react-query";
+import type { QueryClient, QueryKey } from "@tanstack/react-query";
 import { ensureInitApi } from "@/lib/cocolightInitQuery";
 import {
   searchZoneQueryKey,
@@ -55,6 +55,46 @@ export function findFiltersSections(sections: RawSection[]): RawSection[] {
 }
 
 /**
+ * Tronc commun des quatre facettes :
+ *  1. l'entrée React Query que la page lira (`queryKey`, la même que le hook client) ;
+ *  2. l'init API de la requête (`ensureInitApi`, partagée) et le garde-fou duck-typing sur la
+ *     méthode du porteur (`entity` sinon `api`) ;
+ *  3. le mémo serveur `facetCache`, dont la clé est la queryKey — complétée par `memoKeyExtra`
+ *     quand un paramètre de l'appel n'entre pas dans la queryKey (ex. `filterBy` d'entityList).
+ * Best-effort : un échec est journalisé et rend `null`, le rendu continue sans la facette.
+ */
+async function prefetchFacet<V>(args: {
+  queryClient: QueryClient;
+  queryKey: QueryKey;
+  /** Méthode du porteur requise (`searchZone`, `coformFiltersSearch`…). */
+  method: string;
+  /** Pour le journal d'erreur. */
+  label: string;
+  /** Valeur rendue quand aucun porteur n'offre `method`. */
+  empty: V;
+  memoKeyExtra?: unknown[];
+  fetch: (target: unknown) => Promise<V>;
+}): Promise<V | null> {
+  const { queryClient, queryKey, method, label, empty, memoKeyExtra = [], fetch } = args;
+  try {
+    return await queryClient.ensureQueryData({
+      queryKey,
+      queryFn: async () => {
+        const { entity, api } = await ensureInitApi(queryClient);
+        const target = entity || api;
+        if (!target || typeof (target as unknown as Record<string, unknown>)[method] !== "function") {
+          return empty;
+        }
+        return facetCache.get(JSON.stringify([...queryKey, ...memoKeyExtra]), () => fetch(target));
+      },
+    });
+  } catch (error) {
+    console.error(`Erreur préchargement ${label}:`, error);
+    return null;
+  }
+}
+
+/**
  * Pré-charge les zones (pays/régions…) pour le SSR — hydrate React Query
  * avec la même `queryKey` que `useSearchZoneQuery`.
  */
@@ -64,26 +104,14 @@ export async function prefetchSearchZones(
   options: SearchZoneOptions
 ) {
   if (options.countryCode.length === 0 || options.level.length === 0) return null;
-
-  try {
-    const queryKey = searchZoneQueryKey(query, options);
-    return await queryClient.ensureQueryData({
-      queryKey,
-      queryFn: async () => {
-        const { entity, api } = await ensureInitApi(queryClient);
-        const target = entity || api;
-        if (!target || typeof (target as { searchZone?: unknown }).searchZone !== "function") {
-          return [];
-        }
-        return facetCache.get(JSON.stringify(queryKey), () =>
-          fetchSearchZones(target as Parameters<typeof fetchSearchZones>[0], options)
-        );
-      },
-    });
-  } catch (error) {
-    console.error("Erreur préchargement zones:", error);
-    return null;
-  }
+  return prefetchFacet({
+    queryClient,
+    queryKey: searchZoneQueryKey(query, options),
+    method: "searchZone",
+    label: "zones",
+    empty: [] as Awaited<ReturnType<typeof fetchSearchZones>>,
+    fetch: (target) => fetchSearchZones(target as Parameters<typeof fetchSearchZones>[0], options),
+  });
 }
 
 /**
@@ -96,26 +124,14 @@ export async function prefetchFiltersByAnswers(
   options: FiltersByAnswersOptions
 ) {
   if (Object.keys(options).length === 0) return null;
-
-  try {
-    const queryKey = filtersByAnswersQueryKey(query, options);
-    return await queryClient.ensureQueryData({
-      queryKey,
-      queryFn: async () => {
-        const { entity, api } = await ensureInitApi(queryClient);
-        const target = entity || api;
-        if (!target || typeof (target as { coformFiltersSearch?: unknown }).coformFiltersSearch !== "function") {
-          return {};
-        }
-        return facetCache.get(JSON.stringify(queryKey), () =>
-          fetchFiltersByAnswers(target as Parameters<typeof fetchFiltersByAnswers>[0], options)
-        );
-      },
-    });
-  } catch (error) {
-    console.error("Erreur préchargement filtersByAnswers:", error);
-    return null;
-  }
+  return prefetchFacet({
+    queryClient,
+    queryKey: filtersByAnswersQueryKey(query, options),
+    method: "coformFiltersSearch",
+    label: "filtersByAnswers",
+    empty: {} as Awaited<ReturnType<typeof fetchFiltersByAnswers>>,
+    fetch: (target) => fetchFiltersByAnswers(target as Parameters<typeof fetchFiltersByAnswers>[0], options),
+  });
 }
 
 /**
@@ -130,27 +146,16 @@ export async function prefetchFilterEntities(
   filterBy = "slug"
 ) {
   if (!options.defaultTypes?.length) return null;
-
-  try {
-    const queryKey = filterEntitiesQueryKey(query, options);
-    return await queryClient.ensureQueryData({
-      queryKey,
-      queryFn: async () => {
-        const { entity, api } = await ensureInitApi(queryClient);
-        const target = entity || api;
-        if (!target || typeof (target as { searchCostum?: unknown }).searchCostum !== "function") {
-          return [];
-        }
-        // `filterBy` n'entre pas dans la queryKey (même contrat que le client) : il complète la clé.
-        return facetCache.get(JSON.stringify([...queryKey, filterBy]), () =>
-          fetchFilterEntities(target as Parameters<typeof fetchFilterEntities>[0], options, filterBy)
-        );
-      },
-    });
-  } catch (error) {
-    console.error("Erreur préchargement entités filtre:", error);
-    return null;
-  }
+  return prefetchFacet({
+    queryClient,
+    queryKey: filterEntitiesQueryKey(query, options),
+    method: "searchCostum",
+    label: "entités filtre",
+    empty: [] as Awaited<ReturnType<typeof fetchFilterEntities>>,
+    // `filterBy` n'entre pas dans la queryKey (même contrat que le client) : il complète la clé du mémo.
+    memoKeyExtra: [filterBy],
+    fetch: (target) => fetchFilterEntities(target as Parameters<typeof fetchFilterEntities>[0], options, filterBy),
+  });
 }
 
 /**
@@ -163,26 +168,14 @@ export async function prefetchFiltersByPath(
   options: FiltersByPathOptions
 ) {
   if (Object.keys(options).length === 0) return null;
-
-  try {
-    const queryKey = filtersByPathQueryKey(query, options);
-    return await queryClient.ensureQueryData({
-      queryKey,
-      queryFn: async () => {
-        const { entity, api } = await ensureInitApi(queryClient);
-        const target = entity || api;
-        if (!target || typeof (target as { coformFilterByPath?: unknown }).coformFilterByPath !== "function") {
-          return {};
-        }
-        return facetCache.get(JSON.stringify(queryKey), () =>
-          fetchFiltersByPath(target as Parameters<typeof fetchFiltersByPath>[0], options)
-        );
-      },
-    });
-  } catch (error) {
-    console.error("Erreur préchargement filtersByPath:", error);
-    return null;
-  }
+  return prefetchFacet({
+    queryClient,
+    queryKey: filtersByPathQueryKey(query, options),
+    method: "coformFilterByPath",
+    label: "filtersByPath",
+    empty: {} as Awaited<ReturnType<typeof fetchFiltersByPath>>,
+    fetch: (target) => fetchFiltersByPath(target as Parameters<typeof fetchFiltersByPath>[0], options),
+  });
 }
 
 /**

@@ -5,7 +5,8 @@ import { createSsrMemo } from "../ssrMemo";
  * `createSsrMemo` : le mémo serveur derrière le cache des facettes (`facetCache`).
  * Chaque test fige une clause du contrat écrit en tête du module — en particulier celles qui
  * distinguent ce mémo d'un cache naïf : jamais d'échec mémorisé, regroupement des appels en vol,
- * copie à chaque lecture, passe-plat quand il est désactivé.
+ * copie à chaque lecture, `clear()` qui rend caducs les appels en vol, passe-plat quand il est
+ * désactivé, et une promesse en toute circonstance.
  */
 function horloge(start = 1_000_000) {
   let t = start;
@@ -93,6 +94,52 @@ describe("createSsrMemo", () => {
     expect(second).not.toBe(premier);
     // L'objet renvoyé par fn n'a pas été distribué tel quel non plus.
     expect(original).toEqual({ items: [{ name: "Bretagne" }] });
+  });
+
+  it("toujours une promesse : un fn qui LÈVE (pas rejette) devient un rejet, rien n'est mémorisé", async () => {
+    const memo = createSsrMemo({ ttlMs: 1000 });
+    const fn = vi.fn(() => { throw new Error("synchrone"); });
+    let p!: Promise<unknown>;
+    expect(() => { p = memo.get("k", fn as unknown as () => Promise<unknown>); }).not.toThrow();
+    await expect(p).rejects.toThrow("synchrone");
+    expect(memo.size).toBe(0);
+  });
+
+  it("toujours une promesse : une valeur NON clonable fait rejeter, sur le chemin miss comme sur le chemin hit", async () => {
+    const memo = createSsrMemo({ ttlMs: 1000 });
+    // Une fonction propre n'est pas clonable par structuredClone (DataCloneError).
+    const fn = vi.fn(async () => ({ f: () => 1 }));
+    await expect(memo.get("k", fn)).rejects.toThrow();
+    expect(memo.size).toBe(1); // la valeur est bien stockée, c'est la COPIE qui est impossible
+    let p!: Promise<unknown>;
+    expect(() => { p = memo.get("k", fn); }).not.toThrow();
+    await expect(p).rejects.toThrow();
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it("clear() pendant un appel en vol : le résultat tardif est servi mais pas mémorisé, et n'évince pas l'appel relancé", async () => {
+    const memo = createSsrMemo({ ttlMs: 1000 });
+    let resolveA!: (v: string) => void;
+    let resolveB!: (v: string) => void;
+    const fn = vi.fn<() => Promise<string>>()
+      .mockImplementationOnce(() => new Promise((r) => { resolveA = r; }))
+      .mockImplementationOnce(() => new Promise((r) => { resolveB = r; }));
+
+    const a = memo.get("k", fn); // A part
+    memo.clear();                // purge : A devient caduc
+    const b = memo.get("k", fn); // B part (A n'est plus en vol pour le mémo)
+    expect(fn).toHaveBeenCalledTimes(2);
+
+    resolveA("ancien");
+    expect(await a).toBe("ancien"); // servi à qui l'attendait…
+    expect(memo.size).toBe(0);      // …mais pas mémorisé
+
+    const c = memo.get("k", fn);    // rejoint B : A n'a pas évincé B en se terminant
+    expect(fn).toHaveBeenCalledTimes(2);
+    resolveB("nouveau");
+    expect(await b).toBe("nouveau");
+    expect(await c).toBe("nouveau");
+    expect(memo.size).toBe(1);
   });
 
   it("ttlMs <= 0 : passe-plat strict, fn à chaque appel, rien de stocké", async () => {
