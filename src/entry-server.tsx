@@ -10,8 +10,8 @@ import { type SiteConfig }                      from '@/types/site';
 import { buildRoutes }                          from '@/lib/buildRoutes';
 import { Writable } from 'node:stream';
 import { dehydrate, HydrationBoundary, QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { getBaseUrl } from './lib/constant/common';
-import { initApi, resetApiState } from './lib/apiClient';
+import { resetApiState } from './lib/apiClient';
+import { COCOLIGHT_INIT_QUERY_KEY, ensureInitApi } from './lib/cocolightInitQuery';
 import { serializeSsrState } from './lib/ssrStatePacking';
 import {
   ChunkCollectorContext,
@@ -73,13 +73,14 @@ export async function render(
   const router = createStaticRouter(handler.dataRoutes, context);
 
   /* 3.  Pré-hydratation React-Query ------------------------------------ */
-  // ⬇️  on exécute la requête "cocolight-init" AVANT le rendu
+  // ⬇️  l'init API AVANT le rendu — sous la MÊME entrée `["cocolight-init"]` que les loaders de
+  // préchargement qui viennent de tourner dans `handler.query` : si l'un d'eux l'a créée, on la
+  // retrouve ici (un seul ApiClient et une seule résolution du porteur par requête).
+  // Chrono : `hit` quand un loader a déjà créé l'entrée (le coût réel est alors dans `routerQuery`).
+  const initShared = queryClient.getQueryState(COCOLIGHT_INIT_QUERY_KEY) !== undefined;
   if (isDev) t0 = performance.now();
-  const initResult = await queryClient.ensureQueryData({
-    queryKey: ["cocolight-init"],
-    queryFn: () => initApi({ baseURL: getBaseUrl() })
-  });
-  if (isDev) timings.initApi = (performance.now() - t0).toFixed(1);
+  const initResult = await ensureInitApi(queryClient);
+  if (isDev) timings.initApi = `${(performance.now() - t0).toFixed(1)}ms (${initShared ? "hit" : "miss"})`;
 
   // Créer une query SÉRIALISABLE avec les données utiles pour l'hydratation
   // (sans les classes ApiClient, Api qui ne peuvent pas être sérialisées)
@@ -92,7 +93,7 @@ export async function render(
 
   const dehydratedState = dehydrate(queryClient, {
     // Exclure cocolight-init (non-sérialisable), mais garder cocolight-data
-    shouldDehydrateQuery: q => q.queryKey[0] !== "cocolight-init",
+    shouldDehydrateQuery: q => q.queryKey[0] !== COCOLIGHT_INIT_QUERY_KEY[0],
   });
 
   /* 4.  Précharger tous les composants lazy AVANT le rendu ------------ */
@@ -107,7 +108,7 @@ export async function render(
   });
 
   if (isDev) {
-    console.log(`[PERF entry-server] buildRoutes:${timings.buildRoutes}ms | routerQuery:${timings.routerQuery}ms | initApi:${timings.initApi}ms | preloadAll:${timings.preloadAll}ms`);
+    console.log(`[PERF entry-server] buildRoutes:${timings.buildRoutes}ms | routerQuery:${timings.routerQuery}ms | initApi:${timings.initApi} | preloadAll:${timings.preloadAll}ms`);
   }
 
   /* --------------------------------------------------------- */

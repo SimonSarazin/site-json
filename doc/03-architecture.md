@@ -442,8 +442,8 @@ export const routes: ModuleRouteFactory = (queryClient?: QueryClient, config?: S
       return await queryClient.ensureQueryData({
         queryKey: ["element-about", slug],
         queryFn: async () => {
-          const { organization } = await initApi({ baseURL: getBaseUrl() });
-          return organization.entityBySlug(slug);
+          const { entity } = await ensureInitApi(queryClient); // init partagée de la requête (cocolightInitQuery)
+          return entity.entityBySlug(slug);
         }
       });
     }
@@ -868,7 +868,7 @@ Exporte une seule fonction `render(req, res, cfg, onHead, closingTags)`. Appelé
 3. `buildRoutes(cfg, queryClient)` — construit l'arbre de routes React Router avec loaders SSR
 4. `handler.query(new Request(absUrl))` — exécute les loaders pour la requête courante
 5. Redirection : si le loader retourne une `Response`, la requête HTTP est redirigée immédiatement
-6. `queryClient.ensureQueryData({ queryKey: ["cocolight-init"] })` — init de l'API Cocolight avant le rendu
+6. `ensureInitApi(queryClient)` — init de l'API Cocolight avant le rendu, sous l'entrée `["cocolight-init"]` partagée avec les loaders de l'étape 4 (s'ils l'ont déjà créée, elle est retrouvée : une seule init par requête)
 7. Stockage des données sérialisables dans `cocolight-data` (exclut les instances de classe non-sérialisables)
 8. `dehydrate(queryClient)` — exporte l'état React Query (sans `cocolight-init`)
 9. `preloadAll()` — précharge tous les lazy chunks (vite-preload) pour le rendu SSR

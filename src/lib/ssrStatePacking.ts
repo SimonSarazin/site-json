@@ -23,8 +23,11 @@ const isObject = (v: unknown): v is JsonObject => v !== null && typeof v === "ob
 const hasEntityParent = (node: JsonObject): node is JsonObject & { parent: JsonObject } =>
   node.__isSerializedEntity === true && isObject(node.parent);
 
-/** Une copie indépendante ; `structuredClone` manque aux navigateurs anciens (Safari < 15.4). */
-const clone = <V>(value: V): V =>
+/**
+ * Une copie indépendante ; `structuredClone` manque aux navigateurs anciens (Safari < 15.4).
+ * Partagé avec `ssrMemo` (copie servie à chaque lecture du mémo serveur).
+ */
+export const clone = <V>(value: V): V =>
   typeof structuredClone === "function" ? structuredClone(value) : (JSON.parse(JSON.stringify(value)) as V);
 
 /** L'échappement de `serialize-javascript` (`isJSON`), à l'identique : le JSON reste inerte dans un `<script>`. */
