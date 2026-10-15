@@ -21,13 +21,11 @@ type CtaCardGridStat = NonNullable<CtaCardGridProps["stats"]>[number];
  */
 function StatTile({
     stat,
-    queryKeyPrefix,
     className,
     colorClass,
     t,
 }: {
     stat: CtaCardGridStat;
-    queryKeyPrefix: string;
     className: string;
     colorClass: string;
     t: ReturnType<typeof useLocalization>["t"];
@@ -35,7 +33,7 @@ function StatTile({
     return (
         <div className={className}>
             <div className="text-4xl font-bold mb-2">
-                <StatValue stat={stat} queryKeyPrefix={queryKeyPrefix} skeletonClassName="mx-auto block h-10 w-16">
+                <StatValue stat={stat} skeletonClassName="mx-auto block h-10 w-16">
                     {(value) => <span className={colorClass}>{value}</span>}
                 </StatValue>
             </div>
@@ -180,7 +178,6 @@ export function CtaCardGrid({ id, props }: CtaCardGridSectionProps) {
                             <StatTile
                                 key={index}
                                 stat={stat}
-                                queryKeyPrefix={`cta-card-grid-stat-${id ?? "grid"}-${index}`}
                                 className={statClasses}
                                 colorClass={getStatColorClass(stat.color)}
                                 t={t}

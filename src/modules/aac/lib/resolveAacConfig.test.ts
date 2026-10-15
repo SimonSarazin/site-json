@@ -67,8 +67,60 @@ describe("resolveAacConfig", () => {
     const cfg = resolveAacConfig("f1", form);
     expect(cfg.roles.depenseStepKey).toBe("aapStep1");
     expect(cfg.roles.evalStepKey).toBe("aapStep2");
+    expect(cfg.roles.evalStepKeyFound).toBe("aapStep2");
     expect(cfg.roles.financementStepKey).toBe("aapStep3");
     expect(cfg.roles.suiviStepKey).toBe("aapStep4");
+  });
+
+  it("étape d'évaluation sans question de vote : `evalStepKey` par position, `evalStepKeyFound` nul", () => {
+    // AAP [identité, projet, budget] : le dispatch désigne la 2e étape, que rien n'a trouvée.
+    const form = {
+      subForms: ["aapStep1", "aapStep2", "aapStep3"],
+      inputs: {
+        aapStep1: step({ titre: "text" }),
+        aapStep2: step({ description: "textarea" }),
+        aapStep3: step({ depense: "tpls.forms.ocecoform.newDepenseList" }),
+      },
+    };
+    const cfg = resolveAacConfig("f1", form);
+    expect(cfg.roles.evalStepKey).toBe("aapStep2");
+    expect(cfg.roles.evalStepKeyFound).toBeNull();
+  });
+
+  it("une étape qui ne porte que la grille `tpls.forms.aap.evaluation` est TROUVÉE", () => {
+    const form = {
+      subForms: ["aapStep1", "aapStep2", "aapStep3"],
+      inputs: {
+        aapStep1: step({ titre: "text" }),
+        aapStep2: step({ description: "textarea" }),
+        aapStep3: step({ grille: "tpls.forms.aap.evaluation" }),
+      },
+    };
+    const cfg = resolveAacConfig("f1", form);
+    expect(cfg.roles.evalStepKeyFound).toBe("aapStep3");
+  });
+
+  it("une grille de critères sur l'étape de DÉPÔT ne la désigne jamais comme étape d'évaluation", () => {
+    // Masquer l'étape trouvée à l'auteur lui ferait perdre sa propre proposition à l'édition.
+    const form = {
+      subForms: ["aapStep1", "aapStep2", "aapStep3"],
+      inputs: {
+        aapStep1: step({ titre: "text", depense: "tpls.forms.ocecoform.newDepenseList", grille: "tpls.forms.aap.evaluation" }),
+        aapStep2: step({ description: "textarea" }),
+        aapStep3: step({ choose: "chooseProposal" }),
+      },
+    };
+    const cfg = resolveAacConfig("f1", form);
+    expect(cfg.roles.depenseStepKey).toBe("aapStep1");
+    expect(cfg.roles.evalStepKeyFound).toBe("aapStep3");
+
+    // Sans `depense` : la 1ʳᵉ étape reste l'étape de dépôt, et l'est tout autant pour ce scan.
+    const sansDepense = resolveAacConfig("f1", {
+      subForms: ["aapStep1", "aapStep2"],
+      inputs: { aapStep1: step({ titre: "text", grille: "tpls.forms.aap.evaluation" }), aapStep2: step({ q: "text" }) },
+    });
+    expect(sansDepense.roles.depenseStepKey).toBe("aapStep1");
+    expect(sansDepense.roles.evalStepKeyFound).toBeNull();
   });
 
   it("subForms OBJET (fallback config) quand form.subForms est absent", () => {

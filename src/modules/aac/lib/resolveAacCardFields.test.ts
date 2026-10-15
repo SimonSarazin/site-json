@@ -38,6 +38,7 @@ const ROLES: AacStepRoles = {
   depenseStepKey: "etapeA",
   evalStepKey: "etapeB",
   financementStepKey: null,
+  evalStepKeyFound: null,
   suiviStepKey: null,
 };
 
@@ -319,6 +320,7 @@ describe("resolveAacCardFields", () => {
       depenseStepKey: null,
       evalStepKey: null,
       financementStepKey: null,
+      evalStepKeyFound: null,
       suiviStepKey: null,
     });
     expect(Object.values(fields).every((v) => v === null)).toBe(true);

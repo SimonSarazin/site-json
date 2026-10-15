@@ -478,8 +478,10 @@ export default function AacCommunDetailPage() {
     // appelé conditionnellement. `SmartCoForm` mémoïse de toute façon sur le
     // CONTENU de la liste, pas sur sa référence.
     // Un AAP n'a pas de `choose` mais a bien une étape d'évaluation (les votes
-    // `decide` du form OCECO) : le masquage suit l'ÉVALUATION, pas la sélection.
-    const evalStepKey = chooseStepKey ?? config?.roles.evalStepKey ?? null;
+    // `decide` du form OCECO) : le masquage suit l'ÉVALUATION, pas la sélection —
+    // à condition qu'elle ait été TROUVÉE (`evalStepKeyFound`). Devinée par position,
+    // ce serait une étape ordinaire du formulaire, retirée à tort à son auteur.
+    const evalStepKey = chooseStepKey ?? config?.roles.evalStepKeyFound ?? null;
     const hiddenStepsForEdit = !perms.isAdmin && evalStepKey ? [evalStepKey] : [];
 
     // Rafraîchit la fiche affichée. Les caches de l'annuaire, eux, sont

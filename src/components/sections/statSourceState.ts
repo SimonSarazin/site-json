@@ -7,9 +7,11 @@
  * public : pendant le SSR, chaque source est « en attente ». Source `aacCommuns` :
  * `useAacCommunsCountState` (module AAC).
  */
+import { useMemo } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useEntityMembers } from "@/modules/profil/hooks/useMembersQuery";
-import { useSearchAllResults } from "@/modules/search/hooks/useSearchAllResults";
+import { SEARCH_STAT_COUNT_PREFIX } from "@/modules/search/constants/queryKeys";
+import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import type { StatDynamicSource } from "@/types/site-schema";
 
 export interface StatSourceState {
@@ -25,19 +27,31 @@ export const STAT_PENDING: StatSourceState = { value: null, unavailable: false }
 type SearchCountSource = Extract<StatDynamicSource, { type: "searchCount" }>;
 type MembersCountSource = Extract<StatDynamicSource, { type: "membersCount" }>;
 
-/** @param queryKeyPrefix Préfixe de clé React Query, unique par tuile. */
-export function useSearchCountState(source: SearchCountSource, queryKeyPrefix: string): StatSourceState {
+const NO_TAGS: Record<string, string[]> = {};
+
+export function useSearchCountState(source: SearchCountSource): StatSourceState {
   const { entity } = useCocolight();
-  const { total, isPending } = useSearchAllResults({
-    queryKeyPrefix,
-    searchType: { type: [source.entityType] },
-    baseParams: source.baseParams ?? {},
-    // On ne veut que le total : la 1ʳᵉ page suffit (cf. useSearchAllResults.total).
-    maxResults: 1,
+  const searchType = useMemo(() => ({ type: [source.entityType] }), [source.entityType]);
+  // Seul le `count` de la réponse est lu : une page d'UN document, réduit à son nom — au lieu d'une
+  // 1ʳᵉ page pleine (10 documents complets) transférée et transformée pour lire un entier. Si peu
+  // coûteux que le compte garde le cache des listes (60 s) : il suit la liste qu'il résume.
+  const baseParams = useMemo(
+    () => ({ ...source.baseParams, indexStepList: 1, defaultFields: ["name"] }),
+    [source.baseParams],
+  );
+  const { totalCount, hasCount, isPending } = useSearchQuery({
+    queryKeyPrefix: SEARCH_STAT_COUNT_PREFIX,
+    searchText: "",
+    searchTags: NO_TAGS,
+    searchType,
+    mapUsed: false,
+    baseParams,
   });
-  // `total` n'est connu qu'avec le `count` de la 1ʳᵉ page ; requête close sans lui = échec. Sans
-  // entité, la recherche ne part jamais (`isPending` pour toujours) : une absence (cf. ci-dessous).
-  return { value: total, unavailable: total == null && (!entity || !isPending) };
+  // `totalCount` vaut 0 tant que la 1ʳᵉ page n'a pas apporté son `count` : seul `hasCount` le rend
+  // fiable ; requête close sans lui = échec. Sans entité, la recherche ne part jamais (`isPending`
+  // pour toujours) : une absence (cf. ci-dessous).
+  const value = hasCount ? totalCount : null;
+  return { value, unavailable: value == null && (!entity || !isPending) };
 }
 
 export function useMembersCountState(source: MembersCountSource): StatSourceState {
@@ -51,7 +65,9 @@ export function useMembersCountState(source: MembersCountSource): StatSourceStat
   // slug n'a pas été résolu — une absence, que `StatFigure` n'affiche qu'après hydratation (le
   // serveur, lui, peut ne pas l'avoir quand le client l'aura). Requête close sans `count` (échec,
   // type d'entité sans membres) : une absence aussi — jamais le 0 d'attente. Un refetch en échec
-  // garde ses données : le chiffre déjà compté reste.
+  // garde ses données : le chiffre déjà compté reste. L'attente se lit sur `isPending`, comme pour
+  // la recherche : `isLoading` (= `isPending && isFetching`) prendrait pour une absence une requête
+  // qui n'est simplement pas partie (hors ligne, avant abonnement).
   const value = entity && members.hasCount ? members.totalCount : null;
-  return { value, unavailable: value == null && (!entity || !members.isLoading) };
+  return { value, unavailable: value == null && (!entity || !members.isPending) };
 }

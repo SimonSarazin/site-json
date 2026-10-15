@@ -1,6 +1,5 @@
-import type { QueryClient } from "@tanstack/react-query";
-import { getBaseUrl } from "@/lib/constant/common";
-import { initApi } from "@/lib/apiClient";
+import type { QueryClient, QueryKey } from "@tanstack/react-query";
+import { ensureInitApi } from "@/lib/cocolightInitQuery";
 import {
   searchZoneQueryKey,
   fetchSearchZones,
@@ -18,10 +17,13 @@ import {
 } from "../hooks/useFilterEntities";
 import {
   filtersByPathQueryKey,
-  fetchFiltersByPath,
+  fetchFilterByPathEntry,
   type FiltersByPathOptions,
 } from "../hooks/useFiltersByPath";
 import { enfantsDeSection, type SectionLike } from "@/lib/sectionContainers";
+// Mémo serveur des facettes : un appel backend par facette et par durée de vie, pas par rendu.
+// Les résultats de recherche (`prefetchSearchResults`) ne passent PAS par lui.
+import { facetCache } from "./facetCache";
 
 /**
  * Section JSON minimaliste pour les helpers de découverte. Le schéma complet
@@ -53,6 +55,49 @@ export function findFiltersSections(sections: RawSection[]): RawSection[] {
 }
 
 /**
+ * Tronc commun des quatre facettes :
+ *  1. l'entrée React Query que la page lira (`queryKey`, la même que le hook client) ;
+ *  2. l'init API de la requête (`ensureInitApi`, partagée) et le garde-fou duck-typing sur la
+ *     méthode du porteur (`entity` sinon `api`) ;
+ *  3. le mémo serveur `facetCache`, dont la clé est `memoKey` : la facette et les paramètres de
+ *     l'APPEL backend — jamais l'identifiant de section porté par la queryKey, pour que deux
+ *     sections (ou deux pages) qui demandent la même facette partagent une seule entrée et un seul
+ *     appel par durée de vie. `null` : `fetch` tient son propre mémo (filtersByPath, par entrée).
+ * Best-effort : un échec est journalisé et rend `null`, le rendu continue sans la facette.
+ */
+async function prefetchFacet<V>(args: {
+  queryClient: QueryClient;
+  queryKey: QueryKey;
+  /** Méthode du porteur requise (`searchZone`, `coformFiltersSearch`…). */
+  method: string;
+  /** Pour le journal d'erreur. */
+  label: string;
+  /** Valeur rendue quand aucun porteur n'offre `method`. */
+  empty: V;
+  /** Clé du mémo serveur (facette + paramètres d'appel), ou `null` si `fetch` mémorise lui-même. */
+  memoKey: unknown[] | null;
+  fetch: (target: unknown) => Promise<V>;
+}): Promise<V | null> {
+  const { queryClient, queryKey, method, label, empty, memoKey, fetch } = args;
+  try {
+    return await queryClient.ensureQueryData({
+      queryKey,
+      queryFn: async () => {
+        const { entity, api } = await ensureInitApi(queryClient);
+        const target = entity || api;
+        if (!target || typeof (target as unknown as Record<string, unknown>)[method] !== "function") {
+          return empty;
+        }
+        return memoKey ? facetCache.get(JSON.stringify(memoKey), () => fetch(target)) : fetch(target);
+      },
+    });
+  } catch (error) {
+    console.error(`Erreur préchargement ${label}:`, error);
+    return null;
+  }
+}
+
+/**
  * Pré-charge les zones (pays/régions…) pour le SSR — hydrate React Query
  * avec la même `queryKey` que `useSearchZoneQuery`.
  */
@@ -62,23 +107,15 @@ export async function prefetchSearchZones(
   options: SearchZoneOptions
 ) {
   if (options.countryCode.length === 0 || options.level.length === 0) return null;
-
-  try {
-    return await queryClient.ensureQueryData({
-      queryKey: searchZoneQueryKey(query, options),
-      queryFn: async () => {
-        const { entity, api } = await initApi({ baseURL: getBaseUrl() });
-        const target = entity || api;
-        if (!target || typeof (target as { searchZone?: unknown }).searchZone !== "function") {
-          return [];
-        }
-        return fetchSearchZones(target as Parameters<typeof fetchSearchZones>[0], options);
-      },
-    });
-  } catch (error) {
-    console.error("Erreur préchargement zones:", error);
-    return null;
-  }
+  return prefetchFacet({
+    queryClient,
+    queryKey: searchZoneQueryKey(query, options),
+    method: "searchZone",
+    label: "zones",
+    empty: [] as Awaited<ReturnType<typeof fetchSearchZones>>,
+    memoKey: ["zones", options],
+    fetch: (target) => fetchSearchZones(target as Parameters<typeof fetchSearchZones>[0], options),
+  });
 }
 
 /**
@@ -91,23 +128,15 @@ export async function prefetchFiltersByAnswers(
   options: FiltersByAnswersOptions
 ) {
   if (Object.keys(options).length === 0) return null;
-
-  try {
-    return await queryClient.ensureQueryData({
-      queryKey: filtersByAnswersQueryKey(query, options),
-      queryFn: async () => {
-        const { entity, api } = await initApi({ baseURL: getBaseUrl() });
-        const target = entity || api;
-        if (!target || typeof (target as { coformFiltersSearch?: unknown }).coformFiltersSearch !== "function") {
-          return {};
-        }
-        return fetchFiltersByAnswers(target as Parameters<typeof fetchFiltersByAnswers>[0], options);
-      },
-    });
-  } catch (error) {
-    console.error("Erreur préchargement filtersByAnswers:", error);
-    return null;
-  }
+  return prefetchFacet({
+    queryClient,
+    queryKey: filtersByAnswersQueryKey(query, options),
+    method: "coformFiltersSearch",
+    label: "filtersByAnswers",
+    empty: {} as Awaited<ReturnType<typeof fetchFiltersByAnswers>>,
+    memoKey: ["filters-by-answers", options],
+    fetch: (target) => fetchFiltersByAnswers(target as Parameters<typeof fetchFiltersByAnswers>[0], options),
+  });
 }
 
 /**
@@ -122,23 +151,16 @@ export async function prefetchFilterEntities(
   filterBy = "slug"
 ) {
   if (!options.defaultTypes?.length) return null;
-
-  try {
-    return await queryClient.ensureQueryData({
-      queryKey: filterEntitiesQueryKey(query, options),
-      queryFn: async () => {
-        const { entity, api } = await initApi({ baseURL: getBaseUrl() });
-        const target = entity || api;
-        if (!target || typeof (target as { searchCostum?: unknown }).searchCostum !== "function") {
-          return [];
-        }
-        return fetchFilterEntities(target as Parameters<typeof fetchFilterEntities>[0], options, filterBy);
-      },
-    });
-  } catch (error) {
-    console.error("Erreur préchargement entités filtre:", error);
-    return null;
-  }
+  return prefetchFacet({
+    queryClient,
+    queryKey: filterEntitiesQueryKey(query, options),
+    method: "searchCostum",
+    label: "entités filtre",
+    empty: [] as Awaited<ReturnType<typeof fetchFilterEntities>>,
+    // `filterBy` n'entre pas dans la queryKey (même contrat que le client) mais change l'appel.
+    memoKey: ["filter-entities", options, filterBy],
+    fetch: (target) => fetchFilterEntities(target as Parameters<typeof fetchFilterEntities>[0], options, filterBy),
+  });
 }
 
 /**
@@ -151,23 +173,31 @@ export async function prefetchFiltersByPath(
   options: FiltersByPathOptions
 ) {
   if (Object.keys(options).length === 0) return null;
-
-  try {
-    return await queryClient.ensureQueryData({
-      queryKey: filtersByPathQueryKey(query, options),
-      queryFn: async () => {
-        const { entity, api } = await initApi({ baseURL: getBaseUrl() });
-        const target = entity || api;
-        if (!target || typeof (target as { coformFilterByPath?: unknown }).coformFilterByPath !== "function") {
-          return {};
-        }
-        return fetchFiltersByPath(target as Parameters<typeof fetchFiltersByPath>[0], options);
-      },
-    });
-  } catch (error) {
-    console.error("Erreur préchargement filtersByPath:", error);
-    return null;
-  }
+  return prefetchFacet({
+    queryClient,
+    queryKey: filtersByPathQueryKey(query, options),
+    method: "coformFilterByPath",
+    label: "filtersByPath",
+    empty: {} as Record<string, Awaited<ReturnType<typeof fetchFilterByPathEntry>>>,
+    // Mémo PAR ENTRÉE, posé avant le repli best-effort : une entrée en échec rejette et n'est pas
+    // mémorisée (la suivante réessaie), les autres sont servies — l'agrégat `fetchFiltersByPath`
+    // du client, lui, avale l'échec, ce qu'un mémo prendrait pour un succès à garder 5 min.
+    memoKey: null,
+    fetch: async (target) => {
+      const entity = target as Parameters<typeof fetchFilterByPathEntry>[0];
+      const resolved = await Promise.all(
+        Object.entries(options).map(async ([key, opt]) => {
+          try {
+            return [key, await facetCache.get(JSON.stringify(["filters-by-path", opt]), () => fetchFilterByPathEntry(entity, opt))] as const;
+          } catch (error) {
+            console.error(`[prefetchFiltersByPath] échec pour "${key}":`, error);
+            return [key, { label: opt.label, values: {} }] as const;
+          }
+        }),
+      );
+      return Object.fromEntries(resolved);
+    },
+  });
 }
 
 /**

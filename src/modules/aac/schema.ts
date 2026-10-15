@@ -49,10 +49,19 @@ export const AacDirectoryFieldsSchema = z.object({
    * AAC : à déclarer, sous la forme `answers.<étape>.choose` (badge, bouton
    * « Ajouter à l'annuaire », annuaire public restreint aux sélectionnés).
    * AAP : à omettre — il n'a pas d'étape de sélection ; ni statut, ni
-   * restriction, toute proposition titrée est publique. Un chemin sans le
-   * préfixe `answers.` est ignoré.
+   * restriction, toute proposition titrée est publique.
+   *
+   * Seule clé dont la FORME est contrainte : un chemin sans `answers.` serait
+   * ignoré en silence au runtime (l'annuaire publierait tout) — `config:validate`
+   * le refuse donc. Que le chemin désigne une VRAIE question, et qu'un AAC n'ait
+   * pas oublié la clé, seul le formulaire le dit : `config:probe` le vérifie.
    */
-  choose: z.string().optional(),
+  choose: z
+    .string()
+    .regex(/^answers\.[^.\s]+\.[^.\s]+$/, {
+      message: "choose est une réponse : answers.<étape>.<id> (ex. answers.aapStep2.choose)",
+    })
+    .optional(),
   /**
    * Où compter les MEMBRES du commun — un chemin racine, presque toujours hors
    * de `answers`.

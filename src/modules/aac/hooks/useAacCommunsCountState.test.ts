@@ -18,9 +18,11 @@ vi.mock("./useAacDirectoryContext", () => ({
 }));
 
 const countSpy = vi.fn();
+const countContextSpy = vi.fn();
 vi.mock("./useAacCommunsCount", () => ({
-  useAacCommunsCount: (enabled: boolean) => {
+  useAacCommunsCount: (context: unknown, enabled: boolean) => {
     countSpy(enabled);
+    countContextSpy(context);
     return state.count;
   },
 }));
@@ -31,9 +33,15 @@ beforeEach(() => {
   state.context = { formId: "form-1", resolved: {}, isFormLoading: false, configError: null };
   state.count = { count: null, isLoading: false, error: null };
   countSpy.mockClear();
+  countContextSpy.mockClear();
 });
 
 describe("useAacCommunsCountState", () => {
+  it("passe au décompte le contexte AAC qu'il a résolu (le décompte ne le résout plus lui-même)", () => {
+    renderHook(() => useAacCommunsCountState(true));
+    expect(countContextSpy).toHaveBeenCalledWith(state.context);
+  });
+
   it("formulaire résolu : décompte lancé, chiffre rendu", () => {
     state.count = { count: 144, isLoading: false, error: null };
     const { result } = renderHook(() => useAacCommunsCountState(true));

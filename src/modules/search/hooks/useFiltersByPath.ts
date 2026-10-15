@@ -51,45 +51,56 @@ export function filtersByPathQueryKey(
 }
 
 /**
- * Fetcher + transformation partagés hook + prefetch SSR. Un appel
- * `coformFilterByPath` par entrée (en parallèle), résultat transformé vers le
- * même shape que `filtersByAnswers` (record `values` indexé par `name`).
+ * UNE entrée (`coformFilterByPath` + transformation vers le shape de `filtersByAnswers`, record
+ * `values` indexé par `name`). REJETTE en cas d'échec : c'est ce que le mémo serveur
+ * (`prefetch/facetCache`) doit voir pour ne rien mémoriser — un `{ values: {} }` de repli serait
+ * pris pour un succès et servi vide à tous les visiteurs pendant toute sa durée de vie.
+ */
+export async function fetchFilterByPathEntry(
+  entity: CoformFilterByPathEntity,
+  opt: FiltersByPathOptions[string],
+): Promise<FilterAnswerType> {
+  const thematicAnswerPath = `answers.${opt.thematicPath}`;
+  const res = await entity.coformFilterByPath({
+    params: { thematicPath: opt.thematicPath, finderPath: opt.finderPath },
+    fields: [thematicAnswerPath, ...(opt.finderPath ? [opt.finderPath] : [])],
+    filters: { [thematicAnswerPath]: { $exists: true } },
+    ...(opt.notSourceKey ? { notSourceKey: true } : {}),
+  });
+
+  const values: FilterAnswerType["values"] = {};
+  for (const v of res.values ?? []) {
+    if (!v.name) continue;
+    values[v.name] = {
+      name: v.name,
+      image: v.image ?? "",
+      // Dédoublonne les orgas (le backend peut renvoyer des doublons).
+      orgaNameArray: Array.from(new Set(v.orgaNameArray ?? [])),
+    };
+  }
+  return { label: opt.label, values };
+}
+
+/**
+ * Fetcher partagé hook client + prefetch SSR. Un appel `coformFilterByPath` par entrée (en
+ * parallèle, `fetchFilterByPathEntry`), **best-effort** : une entrée en échec est journalisée et
+ * rendue vide, les autres s'affichent. Côté SSR, le prefetch mémorise entrée par entrée AVANT ce
+ * repli — un échec n'y est jamais mémorisé.
  */
 export async function fetchFiltersByPath(
   entity: CoformFilterByPathEntity,
   options: FiltersByPathOptions,
 ): Promise<Record<string, FilterAnswerType>> {
-  const entries = Object.entries(options);
-
   const resolved = await Promise.all(
-    entries.map(async ([key, opt]) => {
-      const thematicAnswerPath = `answers.${opt.thematicPath}`;
+    Object.entries(options).map(async ([key, opt]) => {
       try {
-        const res = await entity.coformFilterByPath({
-          params: { thematicPath: opt.thematicPath, finderPath: opt.finderPath },
-          fields: [thematicAnswerPath, ...(opt.finderPath ? [opt.finderPath] : [])],
-          filters: { [thematicAnswerPath]: { $exists: true } },
-          ...(opt.notSourceKey ? { notSourceKey: true } : {}),
-        });
-
-        const values: FilterAnswerType["values"] = {};
-        for (const v of res.values ?? []) {
-          if (!v.name) continue;
-          values[v.name] = {
-            name: v.name,
-            image: v.image ?? "",
-            // Dédoublonne les orgas (le backend peut renvoyer des doublons).
-            orgaNameArray: Array.from(new Set(v.orgaNameArray ?? [])),
-          };
-        }
-        return [key, { label: opt.label, values }] as const;
+        return [key, await fetchFilterByPathEntry(entity, opt)] as const;
       } catch (error) {
         console.error(`[fetchFiltersByPath] échec pour "${key}":`, error);
         return [key, { label: opt.label, values: {} }] as const;
       }
     }),
   );
-
   return Object.fromEntries(resolved);
 }
 

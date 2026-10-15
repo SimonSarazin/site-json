@@ -266,7 +266,7 @@ const StatsSectionSchema = z.object({
 | ------------- | -------- | --------------------------------------- |
 | `items`       | `array`  | Liste des statistiques                  |
 | `items[].value` | `string?` | Chiffre écrit ; avec `source`, repli affiché tant que le compte n'est pas revenu. `value` ou `source` obligatoire |
-| `items[].source` | `StatDynamicSource?` | Chiffre **compté** côté client : `searchCount` (`entityType` + `baseParams`), `membersCount` (`toBeValidated`), `aacCommuns` (communs de `config.aac`). Même contrat que `cta-card-grid.props.stats[].source` |
+| `items[].source` | `StatDynamicSource?` | Chiffre **compté** côté client : `searchCount` (`entityType` + `baseParams` ; une page d'un document réduit à `name`, une seule requête pour toutes les tuiles du même périmètre, cache des listes — 60 s — et invalidé après une création ou une suppression d'entité, un formulaire costum, l'ajout ou la modification d'une réponse CoForm et les actions d'admin), `membersCount` (`toBeValidated`), `aacCommuns` (communs de `config.aac`). Même contrat que `cta-card-grid.props.stats[].source` |
 | `items[].highlight` | `boolean?` | Design `tiles` : tuile sur l'aplat `primary` |
 | `description` | `LocalizedString?` | Description (optionnel)        |
 | `icon`        | `string?` | Icone (optionnel ; ignorée en `tiles`) |

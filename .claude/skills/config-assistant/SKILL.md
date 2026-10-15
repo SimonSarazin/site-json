@@ -38,7 +38,7 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | Chercher / vérifier un slug d'entité | `npm run entity:slug -- search <nom>` / `check <slug>` |
 | Qualité (liens morts, i18n, thème) | `npm run audit:config` |
 | **La config REND-elle ?** (SSR réel : sections déclarées vs rendues) | `npm run config:render -- <config.json>` |
-| **Les données EXISTENT-elles ?** (chaque `baseParams` sondé sur le backend) | `npm run config:probe -- <config.json>` |
+| **Les données EXISTENT-elles ?** (chaque `baseParams` sondé sur le backend ; la sélection AAC `choose` confrontée au formulaire réel) | `npm run config:probe -- <config.json>` |
 | Validation finale stricte | `npm run test:preflight` |
 
 Pour PARSER une sortie (jq, extraire un sous-arbre, script), appeler

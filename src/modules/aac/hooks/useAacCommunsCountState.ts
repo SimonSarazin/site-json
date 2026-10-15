@@ -24,8 +24,9 @@ export interface AacCommunsCountState {
 
 /** @param wanted la surface veut-elle un chiffre ? Faux ⇒ aucune requête de décompte. */
 export function useAacCommunsCountState(wanted: boolean): AacCommunsCountState {
-  const { formId, resolved, isFormLoading, configError } = useAacDirectoryContext();
+  const context = useAacDirectoryContext();
+  const { formId, resolved, isFormLoading, configError } = context;
   const reachable = formId !== null && !configError && (isFormLoading || Boolean(resolved));
-  const { count, error } = useAacCommunsCount(wanted && reachable);
+  const { count, error } = useAacCommunsCount(context, wanted && reachable);
   return { count, error, reachable };
 }

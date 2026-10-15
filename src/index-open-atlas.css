@@ -276,12 +276,31 @@ html {
   --gradient-section: linear-gradient(135deg, var(--background), color-mix(in oklab, var(--primary) 16%, var(--card)));
 }
 
-/* Règles HORS @layer, à dessein : elles doivent battre les utilitaires Tailwind (en @layer) —
-   `.text-primary` repeint ci-dessous, et les marges de `#projets-apercu`, posées par des classes. */
-
 /* En sombre, le rouge des boutons (#CC2443 : blanc dessus à 5,4:1) ne tient que 3,5:1 en TEXTE sur la nuit.
-   Les aplats gardent `primary`, l'encre texte passe au rouge clair de la maquette (#F75B6B, 5,9:1). */
-.dark .text-primary, .dark .hover\:text-primary:hover { color: var(--oa-ink); }
+   Les aplats gardent `primary`, l'encre texte passe au rouge clair de la maquette (#F75B6B, 5,9:1). Le jeton
+   `primary` sert à la fois l'aplat et l'encre : c'est l'utilitaire qu'on repeint, pas le jeton.
+   DANS la couche `utilities` et derrière `:where(.dark)` (spécificité 0,1,0) : la règle bat `.text-primary`
+   seul, mais cède à toute variante d'état (`hover:text-primary-foreground`, 0,2,0) — hors couche, elle
+   gardait l'encre rouge clair sur l'aplat rouge au survol (bouton de carte AAC, ~1,6:1).
+   `group-hover:` fait exception : son `:hover` compte (0,2,0), jeu égal avec `hover:text-*`, et la règle,
+   déclarée après, gagnerait. Elle se retire donc quand l'élément, survolé lui-même, porte sa propre
+   couleur de survol (`hover:text-*`, préfixée ou non — `md:hover:text-*` —, sous `:where` pour rester à
+   0,2,0). Le motif prend aussi `hover:text-lg` & co. : la surcharge s'y retire, à éviter sur ces éléments. */
+@layer utilities {
+  :where(.dark) .text-primary,
+  :where(.dark) .hover\:text-primary:hover,
+  :where(.dark) .group-hover\:text-primary:is(:where(.group):hover *):where(:not(:is([class^="hover:text-"], [class*=" hover:text-"], [class*=":hover:text-"]):hover)) { color: var(--oa-ink); }
+  /* Variantes à 80 % : le rouge à 80 % tombe à 2,6:1 sur la nuit — l'encre de survol, plus claire. */
+  :where(.dark) .hover\:text-primary\/80:hover,
+  :where(.dark) .group-hover\:text-primary\/80:is(:where(.group):hover *):where(:not(:is([class^="hover:text-"], [class*=" hover:text-"], [class*=":hover:text-"]):hover)) { color: var(--oa-ink-hover); }
+  /* Variantes `dark:` : 0,2,0 et 0,3,0 chez Tailwind — même spécificité ici, déclarée après. */
+  .dark .dark\:text-primary,
+  .dark .dark\:hover\:text-primary:hover { color: var(--oa-ink); }
+  .dark .dark\:hover\:text-primary\/80:hover { color: var(--oa-ink-hover); }
+}
+
+/* Règles HORS @layer, à dessein : elles doivent battre les utilitaires Tailwind (en @layer) — les marges
+   de `#projets-apercu`, posées par des classes. */
 
 /* ── Accueil « Nuit » (maquette de Simon, oct. 2026) ─────────────────────────────────────────
    Blocs `html` de l'accueil : classes oa-*, tokens du thème uniquement — le mode clair suit seul.

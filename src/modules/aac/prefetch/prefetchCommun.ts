@@ -15,8 +15,7 @@
  */
 import type { QueryClient } from "@tanstack/react-query";
 import type { Api } from "@communecter/cocolight-api-client";
-import { getBaseUrl } from "@/lib/constant/common";
-import { initApi, type InitApiResult } from "@/lib/apiClient";
+import { ensureInitApi } from "@/lib/cocolightInitQuery";
 import type { CoFormAnswer, CoFormData } from "@/modules/coform/types";
 
 /**
@@ -45,19 +44,6 @@ export const COMMUN_FORM_QUERY_KEY = (formId: string | null, userId: string | nu
   ["aac-commun-form", formId, userId] as const;
 
 /**
- * L'init API de CETTE requête SSR, sous la MÊME entrée de cache
- * qu'`entry-server` (`["cocolight-init"]`, la seule que sa déshydratation
- * exclut). Les loaders tournant avant elle, c'est le loader qui la crée et
- * `entry-server` qui la retrouve : un aller-retour d'init, pas deux.
- */
-function ensureApi(queryClient: QueryClient): Promise<InitApiResult> {
-  return queryClient.ensureQueryData({
-    queryKey: ["cocolight-init"],
-    queryFn: () => initApi({ baseURL: getBaseUrl() }),
-  });
-}
-
-/**
  * Précharge la réponse (le commun) puis le formulaire qui fait autorité.
  *
  * @param siteFormId `config.aac.formId` — le formulaire de L'APPEL COURANT, que
@@ -69,7 +55,9 @@ export async function prefetchCommunDetail(
   answerId: string,
   siteFormId: string | null = null
 ): Promise<void> {
-  const { api, me } = await ensureApi(queryClient);
+  // L'init API de CETTE requête SSR, partagée avec `entry-server` et les autres loaders
+  // (`cocolightInitQuery`) : un aller-retour d'init par requête, pas un par loader.
+  const { api, me } = await ensureInitApi(queryClient);
   if (!api) return;
 
   const userId = me?.id ?? null;
