@@ -2078,9 +2078,11 @@ vie (`SSR_FACET_CACHE_TTL_MS`, défaut 5 min, `0` désactive), pas par rendu. Mo
 `/lieux`, les deux appels de facettes thématiques (`autoglobalthematicntwrk`) pesaient 2,2 s cumulées sur
 une page servie en 2 s, et elles sont identiques pour tous les visiteurs (SSR anonyme). Contrat du mémo :
 seuls les succès sont mémorisés (un hoquet backend n'est jamais amplifié), les appels en vol sont
-regroupés, chaque requête reçoit une copie (`structuredClone`), taille bornée. La clé d'une entrée est la
-queryKey React Query de la facette (+ `filterBy` pour `entityList`), donc la clé que la page lit et la
-donnée hydratée sont inchangées. **Hors du cache** : `prefetchSearchResults` (les résultats restent frais
+regroupés, chaque requête reçoit une copie (`structuredClone`), taille bornée. La clé d'une entrée est la facette et les
+paramètres de son appel backend (+ `filterBy` pour `entityList`) — **pas** la queryKey, qui porte l'identifiant
+de section : deux sections ou deux pages qui demandent la même facette partagent une entrée. `filtersByPath` est
+mémorisé **entrée par entrée**, avant son repli best-effort : une entrée en échec n'est jamais mémorisée (la
+suivante réessaie), les autres sont servies. La clé que la page lit et la donnée hydratée sont inchangées. **Hors du cache** : `prefetchSearchResults` (les résultats restent frais
 à chaque rendu) et tout le code client (après hydratation, `useSearchZoneQuery` & co. parlent au backend
 directement). Seule contrepartie : une liste de filtres peut avoir jusqu'à une durée de vie de retard.
 

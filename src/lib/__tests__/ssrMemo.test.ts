@@ -105,16 +105,32 @@ describe("createSsrMemo", () => {
     expect(memo.size).toBe(0);
   });
 
-  it("toujours une promesse : une valeur NON clonable fait rejeter, sur le chemin miss comme sur le chemin hit", async () => {
+  it("toujours une promesse : une valeur NON clonable fait rejeter, et n'est PAS mémorisée", async () => {
     const memo = createSsrMemo({ ttlMs: 1000 });
     // Une fonction propre n'est pas clonable par structuredClone (DataCloneError).
     const fn = vi.fn(async () => ({ f: () => 1 }));
-    await expect(memo.get("k", fn)).rejects.toThrow();
-    expect(memo.size).toBe(1); // la valeur est bien stockée, c'est la COPIE qui est impossible
     let p!: Promise<unknown>;
     expect(() => { p = memo.get("k", fn); }).not.toThrow();
     await expect(p).rejects.toThrow();
-    expect(fn).toHaveBeenCalledTimes(1);
+    // Un échec comme un autre : rien derrière lui, la demande suivante relance fn (sinon la clé
+    // resterait empoisonnée toute la durée de vie, chaque lecture rejetant sur la copie).
+    expect(memo.size).toBe(0);
+    fn.mockResolvedValueOnce({ f: 1 } as unknown as { f: () => 1 });
+    expect(await memo.get("k", fn)).toEqual({ f: 1 });
+    expect(fn).toHaveBeenCalledTimes(2);
+    expect(memo.size).toBe(1);
+  });
+
+  it("les demandes regroupées sur une valeur non clonable échouent toutes, rien n'est mémorisé", async () => {
+    const memo = createSsrMemo({ ttlMs: 1000 });
+    let resolve!: (v: unknown) => void;
+    const fn = vi.fn(() => new Promise((r) => { resolve = r; }));
+    const a = memo.get("k", fn);
+    const b = memo.get("k", fn);
+    resolve({ f: () => 1 });
+    await expect(a).rejects.toThrow();
+    await expect(b).rejects.toThrow();
+    expect(memo.size).toBe(0);
   });
 
   it("clear() pendant un appel en vol : le résultat tardif est servi mais pas mémorisé, et n'évince pas l'appel relancé", async () => {

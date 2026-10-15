@@ -17,7 +17,7 @@ import {
 } from "../hooks/useFilterEntities";
 import {
   filtersByPathQueryKey,
-  fetchFiltersByPath,
+  fetchFilterByPathEntry,
   type FiltersByPathOptions,
 } from "../hooks/useFiltersByPath";
 import { enfantsDeSection, type SectionLike } from "@/lib/sectionContainers";
@@ -59,8 +59,10 @@ export function findFiltersSections(sections: RawSection[]): RawSection[] {
  *  1. l'entrée React Query que la page lira (`queryKey`, la même que le hook client) ;
  *  2. l'init API de la requête (`ensureInitApi`, partagée) et le garde-fou duck-typing sur la
  *     méthode du porteur (`entity` sinon `api`) ;
- *  3. le mémo serveur `facetCache`, dont la clé est la queryKey — complétée par `memoKeyExtra`
- *     quand un paramètre de l'appel n'entre pas dans la queryKey (ex. `filterBy` d'entityList).
+ *  3. le mémo serveur `facetCache`, dont la clé est `memoKey` : la facette et les paramètres de
+ *     l'APPEL backend — jamais l'identifiant de section porté par la queryKey, pour que deux
+ *     sections (ou deux pages) qui demandent la même facette partagent une seule entrée et un seul
+ *     appel par durée de vie. `null` : `fetch` tient son propre mémo (filtersByPath, par entrée).
  * Best-effort : un échec est journalisé et rend `null`, le rendu continue sans la facette.
  */
 async function prefetchFacet<V>(args: {
@@ -72,10 +74,11 @@ async function prefetchFacet<V>(args: {
   label: string;
   /** Valeur rendue quand aucun porteur n'offre `method`. */
   empty: V;
-  memoKeyExtra?: unknown[];
+  /** Clé du mémo serveur (facette + paramètres d'appel), ou `null` si `fetch` mémorise lui-même. */
+  memoKey: unknown[] | null;
   fetch: (target: unknown) => Promise<V>;
 }): Promise<V | null> {
-  const { queryClient, queryKey, method, label, empty, memoKeyExtra = [], fetch } = args;
+  const { queryClient, queryKey, method, label, empty, memoKey, fetch } = args;
   try {
     return await queryClient.ensureQueryData({
       queryKey,
@@ -85,7 +88,7 @@ async function prefetchFacet<V>(args: {
         if (!target || typeof (target as unknown as Record<string, unknown>)[method] !== "function") {
           return empty;
         }
-        return facetCache.get(JSON.stringify([...queryKey, ...memoKeyExtra]), () => fetch(target));
+        return memoKey ? facetCache.get(JSON.stringify(memoKey), () => fetch(target)) : fetch(target);
       },
     });
   } catch (error) {
@@ -110,6 +113,7 @@ export async function prefetchSearchZones(
     method: "searchZone",
     label: "zones",
     empty: [] as Awaited<ReturnType<typeof fetchSearchZones>>,
+    memoKey: ["zones", options],
     fetch: (target) => fetchSearchZones(target as Parameters<typeof fetchSearchZones>[0], options),
   });
 }
@@ -130,6 +134,7 @@ export async function prefetchFiltersByAnswers(
     method: "coformFiltersSearch",
     label: "filtersByAnswers",
     empty: {} as Awaited<ReturnType<typeof fetchFiltersByAnswers>>,
+    memoKey: ["filters-by-answers", options],
     fetch: (target) => fetchFiltersByAnswers(target as Parameters<typeof fetchFiltersByAnswers>[0], options),
   });
 }
@@ -152,8 +157,8 @@ export async function prefetchFilterEntities(
     method: "searchCostum",
     label: "entités filtre",
     empty: [] as Awaited<ReturnType<typeof fetchFilterEntities>>,
-    // `filterBy` n'entre pas dans la queryKey (même contrat que le client) : il complète la clé du mémo.
-    memoKeyExtra: [filterBy],
+    // `filterBy` n'entre pas dans la queryKey (même contrat que le client) mais change l'appel.
+    memoKey: ["filter-entities", options, filterBy],
     fetch: (target) => fetchFilterEntities(target as Parameters<typeof fetchFilterEntities>[0], options, filterBy),
   });
 }
@@ -173,8 +178,25 @@ export async function prefetchFiltersByPath(
     queryKey: filtersByPathQueryKey(query, options),
     method: "coformFilterByPath",
     label: "filtersByPath",
-    empty: {} as Awaited<ReturnType<typeof fetchFiltersByPath>>,
-    fetch: (target) => fetchFiltersByPath(target as Parameters<typeof fetchFiltersByPath>[0], options),
+    empty: {} as Record<string, Awaited<ReturnType<typeof fetchFilterByPathEntry>>>,
+    // Mémo PAR ENTRÉE, posé avant le repli best-effort : une entrée en échec rejette et n'est pas
+    // mémorisée (la suivante réessaie), les autres sont servies — l'agrégat `fetchFiltersByPath`
+    // du client, lui, avale l'échec, ce qu'un mémo prendrait pour un succès à garder 5 min.
+    memoKey: null,
+    fetch: async (target) => {
+      const entity = target as Parameters<typeof fetchFilterByPathEntry>[0];
+      const resolved = await Promise.all(
+        Object.entries(options).map(async ([key, opt]) => {
+          try {
+            return [key, await facetCache.get(JSON.stringify(["filters-by-path", opt]), () => fetchFilterByPathEntry(entity, opt))] as const;
+          } catch (error) {
+            console.error(`[prefetchFiltersByPath] échec pour "${key}":`, error);
+            return [key, { label: opt.label, values: {} }] as const;
+          }
+        }),
+      );
+      return Object.fromEntries(resolved);
+    },
   });
 }
 

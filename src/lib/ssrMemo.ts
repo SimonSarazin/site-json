@@ -11,12 +11,16 @@
  * - **Les appels en vol sont regroupés** : N demandes concurrentes pour la même clé → un seul `fn`.
  * - **Chaque appelant reçoit une copie** (`structuredClone`, ~2 ms pour 500 Ko), jamais l'objet
  *   stocké : une requête SSR qui muterait sa donnée ne contaminerait ni le mémo ni les voisines.
+ *   La copie est faite AVANT la mémorisation : une valeur non clonable (fonction, instance) est un
+ *   échec comme un autre — rejet, rien de stocké, la demande suivante relance `fn`.
  * - **`get` renvoie toujours une promesse** : un `fn` qui lève ou une valeur non clonable se
  *   traduisent par un rejet, jamais par un throw synchrone.
  * - **`clear()` rend caducs les appels en vol** : leur résultat est servi à ceux qui l'attendaient
  *   mais n'est pas mémorisé, et ils n'évincent pas un appel lancé après la purge.
  * - `ttlMs <= 0` : passe-plat strict, `fn` est appelé à chaque fois (mode « désactivé »).
- * - Taille bornée (`maxEntries`, FIFO) : impossible de dériver en mémoire.
+ * - Taille bornée (`maxEntries`, FIFO) : impossible de dériver en NOMBRE d'entrées. Le plafond
+ *   n'est pas en octets : 200 facettes de 500 Ko feraient 100 Mo — un site en compte une dizaine,
+ *   la borne est une ceinture, pas le dimensionnement.
  *
  * Ce n'est PAS un cache de pages : rien ici ne touche au HTML ni au streaming.
  */
@@ -57,7 +61,8 @@ export function createSsrMemo(options: SsrMemoOptions): SsrMemo {
   const now = options.now ?? Date.now;
 
   const entries = new Map<string, Entry>();
-  const inFlight = new Map<string, Promise<unknown>>();
+  /** L'original (à mémoriser, jamais distribué) et la copie due au premier appelant. */
+  const inFlight = new Map<string, Promise<{ value: unknown; copy: unknown }>>();
   const stats: SsrMemoStats = { hits: 0, misses: 0, joined: 0 };
   /** Incrémentée par `clear()` : un appel parti sous une génération antérieure ne mémorise rien. */
   let generation = 0;
@@ -87,31 +92,33 @@ export function createSsrMemo(options: SsrMemoOptions): SsrMemo {
         entries.delete(key);
       }
 
-      const pending = inFlight.get(key) as Promise<V> | undefined;
+      const pending = inFlight.get(key) as Promise<{ value: V; copy: V }> | undefined;
       if (pending) {
         stats.joined++;
-        return pending.then(clone);
+        return pending.then((r) => clone(r.value));
       }
 
       stats.misses++;
       const startedUnder = generation;
       // `new Promise` appelle `fn` tout de suite (les tests comptent dessus) et convertit un throw
       // synchrone en rejet.
-      const request: Promise<V> = new Promise<V>((resolve) => resolve(fn()))
+      const request = new Promise<V>((resolve) => resolve(fn()))
         .then((value) => {
+          // La copie D'ABORD : une valeur non clonable rejette ici, rien n'est mémorisé, et les
+          // appels regroupés échouent avec elle. L'original reste dans le mémo, jamais distribué.
+          const copy = clone(value);
           if (startedUnder === generation) {
             entries.set(key, { value, expiresAt: now() + ttlMs });
             evict();
           }
-          return value;
+          return { value, copy };
         })
         .finally(() => {
           // Ne retire que SON entrée : après un `clear()`, la clé peut porter un appel plus récent.
           if (inFlight.get(key) === request) inFlight.delete(key);
         });
       inFlight.set(key, request);
-      // L'original reste dans le mémo ; même le premier appelant reçoit une copie.
-      return request.then(clone);
+      return request.then((r) => r.copy);
     },
 
     clear(): void {

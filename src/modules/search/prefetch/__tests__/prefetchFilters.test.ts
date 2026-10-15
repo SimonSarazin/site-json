@@ -21,7 +21,7 @@ vi.mock("@/lib/cocolightInitQuery", () => ({
 const fetchSearchZones = vi.fn();
 const fetchFiltersByAnswers = vi.fn();
 const fetchFilterEntities = vi.fn();
-const fetchFiltersByPath = vi.fn();
+const fetchFilterByPathEntry = vi.fn();
 vi.mock("../../hooks/useSearchZone", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../hooks/useSearchZone")>()),
   fetchSearchZones: (...args: unknown[]) => fetchSearchZones(...args),
@@ -36,7 +36,7 @@ vi.mock("../../hooks/useFilterEntities", async (importOriginal) => ({
 }));
 vi.mock("../../hooks/useFiltersByPath", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../hooks/useFiltersByPath")>()),
-  fetchFiltersByPath: (...args: unknown[]) => fetchFiltersByPath(...args),
+  fetchFilterByPathEntry: (...args: unknown[]) => fetchFilterByPathEntry(...args),
 }));
 
 // Un mémo PROPRE au test : l'instance réelle lit `SSR_FACET_CACHE_TTL_MS` dans le shell du
@@ -64,7 +64,7 @@ beforeEach(() => {
   fetchSearchZones.mockResolvedValue(ZONES);
   fetchFiltersByAnswers.mockResolvedValue({ activités: { label: "Activités", values: [] } });
   fetchFilterEntities.mockResolvedValue([{ id: "1", name: "Réseau Bretagne" }]);
-  fetchFiltersByPath.mockResolvedValue({ reseauxThematiques: { label: "Réseaux", values: [] } });
+  fetchFilterByPathEntry.mockResolvedValue({ label: "Réseaux", values: {} });
 });
 
 describe("prefetchFilters — cache serveur des facettes", () => {
@@ -131,7 +131,48 @@ describe("prefetchFilters — cache serveur des facettes", () => {
     }
     expect(fetchFiltersByAnswers).toHaveBeenCalledTimes(1);
     expect(fetchFilterEntities).toHaveBeenCalledTimes(1);
-    expect(fetchFiltersByPath).toHaveBeenCalledTimes(1);
+    expect(fetchFilterByPathEntry).toHaveBeenCalledTimes(1);
+  });
+
+  it("la clé du mémo ignore l'identifiant de section : deux sections qui demandent la même facette → un appel", async () => {
+    // `/` et `/lieux` déclarent chacune leur groupe de zones ; la queryKey diffère (section), pas l'appel.
+    const a = await prefetchSearchZones(new QueryClient(), "filters-zone-accueil", ZONE_OPTIONS);
+    const b = await prefetchSearchZones(new QueryClient(), "filters-zone-lieux", ZONE_OPTIONS);
+    expect(fetchSearchZones).toHaveBeenCalledTimes(1);
+    expect(a).toEqual(ZONES);
+    expect(b).toEqual(ZONES);
+    expect(facetCache.size).toBe(1);
+
+    const byPath = { reseauxThematiques: { label: { fr: "Réseaux" }, thematicPath: "form_1.q" } };
+    await prefetchFiltersByPath(new QueryClient(), "filters-by-path-accueil", byPath);
+    await prefetchFiltersByPath(new QueryClient(), "filters-by-path-lieux", byPath);
+    expect(fetchFilterByPathEntry).toHaveBeenCalledTimes(1);
+  });
+
+  it("filtersByPath : une entrée en échec est servie vide mais PAS mémorisée ; les autres le sont", async () => {
+    const byPath = {
+      reseaux: { label: { fr: "Réseaux" }, thematicPath: "form_1.reseaux" },
+      themes: { label: { fr: "Thèmes" }, thematicPath: "form_1.themes" },
+    };
+    fetchFilterByPathEntry.mockImplementation(async (_e: unknown, opt: { thematicPath: string }) => {
+      if (opt.thematicPath === "form_1.themes") throw new Error("timeout autoglobalthematicntwrk");
+      return { label: { fr: "Réseaux" }, values: { A: { name: "A", image: "", orgaNameArray: [] } } };
+    });
+
+    const first = await prefetchFiltersByPath(new QueryClient(), "p", byPath);
+    // Best-effort pour CE rendu : la facette en échec est vide, l'autre est là.
+    expect(first).toEqual({
+      reseaux: { label: { fr: "Réseaux" }, values: { A: { name: "A", image: "", orgaNameArray: [] } } },
+      themes: { label: { fr: "Thèmes" }, values: {} },
+    });
+    expect(facetCache.size).toBe(1); // seule `reseaux` est mémorisée
+
+    // Rendu suivant : `reseaux` vient du mémo, `themes` est redemandée (et réussit cette fois).
+    fetchFilterByPathEntry.mockResolvedValue({ label: { fr: "Thèmes" }, values: { B: { name: "B", image: "", orgaNameArray: [] } } });
+    const second = await prefetchFiltersByPath(new QueryClient(), "p", byPath);
+    expect(second?.themes.values).toEqual({ B: { name: "B", image: "", orgaNameArray: [] } });
+    expect(fetchFilterByPathEntry).toHaveBeenCalledTimes(3); // 2 au premier rendu, 1 au second
+    expect(facetCache.size).toBe(2);
   });
 
   it("entityList : `filterBy` distingue les entrées (il n'est pas dans la queryKey)", async () => {

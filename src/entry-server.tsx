@@ -76,9 +76,11 @@ export async function render(
   // ⬇️  l'init API AVANT le rendu — sous la MÊME entrée `["cocolight-init"]` que les loaders de
   // préchargement qui viennent de tourner dans `handler.query` : si l'un d'eux l'a créée, on la
   // retrouve ici (un seul ApiClient et une seule résolution du porteur par requête).
+  // Chrono : `hit` quand un loader a déjà créé l'entrée (le coût réel est alors dans `routerQuery`).
+  const initShared = queryClient.getQueryState(COCOLIGHT_INIT_QUERY_KEY) !== undefined;
   if (isDev) t0 = performance.now();
   const initResult = await ensureInitApi(queryClient);
-  if (isDev) timings.initApi = (performance.now() - t0).toFixed(1);
+  if (isDev) timings.initApi = `${(performance.now() - t0).toFixed(1)}ms (${initShared ? "hit" : "miss"})`;
 
   // Créer une query SÉRIALISABLE avec les données utiles pour l'hydratation
   // (sans les classes ApiClient, Api qui ne peuvent pas être sérialisées)
@@ -106,7 +108,7 @@ export async function render(
   });
 
   if (isDev) {
-    console.log(`[PERF entry-server] buildRoutes:${timings.buildRoutes}ms | routerQuery:${timings.routerQuery}ms | initApi:${timings.initApi}ms | preloadAll:${timings.preloadAll}ms`);
+    console.log(`[PERF entry-server] buildRoutes:${timings.buildRoutes}ms | routerQuery:${timings.routerQuery}ms | initApi:${timings.initApi} | preloadAll:${timings.preloadAll}ms`);
   }
 
   /* --------------------------------------------------------- */

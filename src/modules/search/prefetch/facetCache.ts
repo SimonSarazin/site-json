@@ -14,8 +14,9 @@
  *
  * Réglage : `SSR_FACET_CACHE_TTL_MS` (serveur uniquement, pas dans `window.__ENV__` ; défaut 5 min ;
  * `0` ou toute valeur négative désactive — même contrat que `createSsrMemo`). La clé de chaque
- * entrée est la queryKey React Query de la facette, déjà une sérialisation déterministe de ses
- * paramètres.
+ * entrée est la facette et les paramètres de son APPEL backend (`prefetchFacet`, `memoKey`) — pas la
+ * queryKey, qui porte l'identifiant de section : deux sections qui demandent la même facette
+ * partagent l'entrée. `filtersByPath` est mémorisé entrée par entrée (un appel backend chacune).
  */
 import { createSsrMemo } from "@/lib/ssrMemo";
 
