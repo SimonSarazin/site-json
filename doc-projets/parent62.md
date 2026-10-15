@@ -4455,6 +4455,29 @@ l'utilisait déjà.
 | `config:render config.prod.parent62.json` | ✅ 52/52 pages, 183/183 sections, 0 échec |
 | `test:e2e` | non rejouable sur ce poste (`.env.test` absent, pas d'identifiants backend réels) — limite d'environnement déjà connue, pas une régression de ce lot |
 
+### 9septquadragies.11 Nettoyage de relecture (non bloquant)
+
+- `ProfileParent62About.tsx` recopiait localement `toStringArray` au lieu d'utiliser le helper
+  partagé `src/helpers/toStringArray.ts` — celui-ci lit aussi les deux formes OBJET que le legacy
+  renvoie pour un champ multi-valeurs (tableau PHP à index non contigus, dictionnaire de présence),
+  la copie locale rendait `[]` dessus (« Non renseigné » affiché alors que les filtres voient les
+  valeurs). Supprimée, import du helper partagé.
+- Commentaire de `ProfileParent62AboutSectionSchema` (`schema.ts`) périmé : citait encore
+  `costumForms.parent62-partenaire` seul et « type de structure, thèmes, territoires, publics »
+  (sélecteur de type retiré depuis, champs réels différents côté acteur). Réécrit pour refléter les
+  deux `costumForms` distingués par tag.
+- `doc/08-module-profil.md` : table des sections de profil ne listait pas `profile-parent62-about`
+  et le compteur était resté à 21 au lieu de 22. Ajoutés.
+- `TYPE_LABELS` (doublon de l'enum du formulaire) signalé en relecture : déjà absent du code, retiré
+  dans un lot antérieur de cette session (sélecteur « Type de structure » supprimé avec le reste de
+  la carte, §9septquadragies.3) — rien à faire.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| Tests ciblés (`ProfileParent62About`/`profileParent62Social`/`profileParent62Documents`, `toStringArray`) | ✅ 31/31 |
+| `tests/preflight/` (hors `bundle-size.test.ts`) | ✅ 822/823 |
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)

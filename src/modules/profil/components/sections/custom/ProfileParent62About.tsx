@@ -14,6 +14,7 @@ import SocialLinks from "@/components/layout/footer/SocialLinks";
 import { useT } from "@/hooks/useT";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import { renderMarkdown } from "@/helpers/renderMarkdown";
+import { toStringArray } from "@/helpers/toStringArray";
 import { useDocumentsList } from "../../../hooks/useDocuments";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useProfileSetup } from "../../../hooks/useProfileSetup";
@@ -23,14 +24,6 @@ import { toSocialLinks } from "./profileParent62Social";
 
 interface ProfileParent62AboutProps {
   section: ProfileParent62AboutSection;
-}
-
-function toStringArray(value: unknown): string[] {
-  if (Array.isArray(value)) {
-    return value.filter((v): v is string => typeof v === "string" && v.trim() !== "");
-  }
-  if (typeof value === "string" && value.trim() !== "") return [value.trim()];
-  return [];
 }
 
 function SectionCard({

@@ -182,9 +182,10 @@ export const ProfileSsbeAboutSectionSchema = z.object({
   hidden: z.boolean().optional().default(false),
 });
 
-/** Fiche « À propos » générique pour une organisation parent62 (`costumForms.parent62-partenaire`) :
- *  type de structure, catégorie thématique (`costum.lists.categoryThematic`), thèmes, territoires,
- *  publics — aucun de ces champs n'est couvert par `profile-info` (contact) ni `profile-tags`. */
+/** Fiche « À propos » d'une organisation parent62 — couvre les deux `costumForms` `organizations` du
+ *  costum (`parent62-acteur` : `categoryThematic`/`typeAction`/`publicCible` ; `parent62-partenaire` :
+ *  `territoires`/`publics`/`themes`), distingués au rendu par le tag `"Partenaires"`. Aucun de ces
+ *  champs n'est couvert par `profile-info` (contact) ni `profile-tags`. */
 export const ProfileParent62AboutSectionSchema = z.object({
   type: z.literal("profile-parent62-about"),
   hidden: z.boolean().optional().default(false),
