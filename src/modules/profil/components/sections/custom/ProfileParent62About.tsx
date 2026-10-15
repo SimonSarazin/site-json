@@ -1,19 +1,17 @@
 import {
   Accessibility,
-  Facebook,
   FileText,
   Globe,
-  Instagram,
-  Linkedin,
   ListChecks,
   MessageSquare,
   Package,
   Tags,
   User,
   Users,
-  Youtube,
 } from "lucide-react";
 import { FilesList } from "@/components/media/FilesList";
+import SocialLinks from "@/components/layout/footer/SocialLinks";
+import { useT } from "@/hooks/useT";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import { renderMarkdown } from "@/helpers/renderMarkdown";
 import { useDocumentsList } from "../../../hooks/useDocuments";
@@ -21,6 +19,7 @@ import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useProfileSetup } from "../../../hooks/useProfileSetup";
 import type { ProfileParent62AboutSection } from "../../../schema";
 import { toPresentationDocs } from "./profileParent62Documents";
+import { toSocialLinks } from "./profileParent62Social";
 
 interface ProfileParent62AboutProps {
   section: ProfileParent62AboutSection;
@@ -61,9 +60,9 @@ function SectionCard({
   );
 }
 
-function PillGroup({ values }: { values: string[] }) {
+function PillGroup({ values, notProvided }: { values: string[]; notProvided: string }) {
   if (values.length === 0) {
-    return <p className="text-sm text-muted-foreground">Non renseigné</p>;
+    return <p className="text-sm text-muted-foreground">{notProvided}</p>;
   }
   return (
     <div className="flex flex-wrap gap-1.5">
@@ -87,19 +86,15 @@ function TextCard({ icon, title, value }: { icon: React.ElementType; title: stri
   );
 }
 
-const SOCIAL_NETWORKS: ReadonlyArray<{ key: string; label: string; icon: React.ElementType }> = [
-  { key: "facebook", label: "Facebook", icon: Facebook },
-  { key: "instagram", label: "Instagram", icon: Instagram },
-  { key: "linkedin", label: "LinkedIn", icon: Linkedin },
-  { key: "youtube", label: "YouTube", icon: Youtube },
-];
-
 /**
- * Fiche « À propos » générique d'une organisation parent62 (`costumForms.parent62-partenaire`) —
- * remplace `profile-about-ssbe` (conçu pour sport-sante-bien-etre : SIREN, représentant légal… des
- * champs que ce formulaire ne collecte pas, affichés vides sur toute fiche parent62). Montre TOUS les
- * attributs saisis par ce formulaire et non couverts ailleurs sur la page profil : `profile-info`
- * (sidebar) porte déjà e-mail/téléphone/site/adresse, `profile-tags` les mots-clés dérivés.
+ * Fiche « À propos » d'une organisation parent62 — remplace `profile-about-ssbe` (conçu pour
+ * sport-sante-bien-etre : SIREN, représentant légal… des champs que ce formulaire ne collecte pas,
+ * affichés vides sur toute fiche parent62). Couvre les DEUX formulaires `organizations` du costum
+ * (`parent62-partenaire` et `parent62-acteur`, cf. §9septquadragies.3 de `doc-projets/parent62.md`) —
+ * distingués par le même tag `"Partenaires"` que `/annuaire` vs `/annuaire-acteurs-parentalite` et le
+ * routage d'édition, PAS par `type` (discriminant de sous-type costum côté acteur, nature juridique côté
+ * partenaire — deux sémantiques incompatibles) ni par `source.key` (non fiable sur les fiches importées).
+ * `profile-info` (sidebar) porte déjà e-mail/téléphone/site/adresse, `profile-tags` les mots-clés dérivés.
  * `profile-opening-hours` (horaires) vit À CÔTÉ, dans `rightSections` — seul bloc généré par CE
  * composant qui en dépend ailleurs. Les documents, eux, sont rendus ICI (pas via la section générique
  * `profile-documents`) pour rester adjacents à « Interlocuteur privilégié » (demande explicite).
@@ -107,27 +102,35 @@ const SOCIAL_NETWORKS: ReadonlyArray<{ key: string; label: string; icon: React.E
  * l'habillage en bandeau dégradé `--primary`/`--accent` du thème parent62 sur chaque bloc, plutôt que
  * les cartes neutres de la section générique.
  *
- * Noms de champs vérifiés sur les 38 organisations importées (pas de supposition) : `themes` et
- * `territoires`, lus par une version antérieure de ce composant, n'existent sur AUCUNE d'entre elles —
- * remplacés par `typeAction` et `publicCible`, les champs réels du formulaire.
- *
- * Pas de carte « Type de structure » : `type` est désormais le DISCRIMINANT de sous-type costum lu par
- * le SDK en édition (`serverData.type === "acteur"` → résout `costum.typeObj.acteur`, cf. formulaire
- * `parent62-acteur`) — sa valeur n'est plus la nature juridique de la structure et n'a rien d'affichable.
+ * Pas de carte « Type de structure » : `type` est le DISCRIMINANT de sous-type costum lu par le SDK en
+ * édition (`serverData.type === "acteur"` → résout `costum.typeObj.acteur`) côté acteur — sa valeur n'a
+ * rien d'affichable ; côté partenaire il porte la nature juridique (NGO/Group/…), non montrée ici non
+ * plus (champ jamais renseigné en pratique sur les fiches réelles).
  */
 export default function ProfileParent62About({ section }: ProfileParent62AboutProps) {
+  const t = useT("modules/profil");
   const { entity } = useProfileSetup();
   const { shortDescription, description } = useFormatProfileEntity(entity);
+
+  const tags = toStringArray(useReactiveProperty(entity.serverData, "tags"));
+  const isPartenaire = tags.includes("Partenaires");
 
   const categoryThematic = toStringArray(useReactiveProperty(entity.serverData, "categoryThematic"));
   const typeAction = toStringArray(useReactiveProperty(entity.serverData, "typeAction"));
   const publicCible = toStringArray(useReactiveProperty(entity.serverData, "publicCible"));
+  const territoires = toStringArray(useReactiveProperty(entity.serverData, "territoires"));
+  const publics = toStringArray(useReactiveProperty(entity.serverData, "publics"));
+  const themes = toStringArray(useReactiveProperty(entity.serverData, "themes"));
   const accessibility = useReactiveProperty(entity.serverData, "accessibility") as string | undefined;
   const provisionResources = useReactiveProperty(entity.serverData, "provisionResources") as string | undefined;
   const contact = useReactiveProperty(entity.serverData, "contact") as string | undefined;
   const note = useReactiveProperty(entity.serverData, "note") as string | undefined;
   const socialNetwork = (useReactiveProperty(entity.serverData, "socialNetwork") ?? {}) as Record<string, string>;
-  const socialLinks = SOCIAL_NETWORKS.filter(({ key }) => typeof socialNetwork[key] === "string" && socialNetwork[key].trim() !== "");
+  const facebook = useReactiveProperty(entity.serverData, "facebook") as string | undefined;
+  const instagram = useReactiveProperty(entity.serverData, "instagram") as string | undefined;
+  const linkedin = useReactiveProperty(entity.serverData, "linkedin") as string | undefined;
+  const youtube = useReactiveProperty(entity.serverData, "youtube") as string | undefined;
+  const socialLinks = toSocialLinks({ socialNetwork, facebook, instagram, linkedin, youtube });
   const presentationImages = toPresentationDocs(useReactiveProperty(entity.serverData, "images"));
   const { data: files = [] } = useDocumentsList(entity);
   const documents = [...files, ...presentationImages];
@@ -141,7 +144,7 @@ export default function ProfileParent62About({ section }: ProfileParent62AboutPr
   return (
     <div className="mb-6 space-y-5">
       {hasDescription && (
-        <SectionCard icon={FileText} title="Description">
+        <SectionCard icon={FileText} title={t("ProfileParent62About.description")}>
           {shortDescription && (
             <p className="mb-3 text-base font-medium text-foreground">{shortDescription}</p>
           )}
@@ -154,59 +157,60 @@ export default function ProfileParent62About({ section }: ProfileParent62AboutPr
         </SectionCard>
       )}
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <SectionCard icon={Tags} title="Catégorie thématique">
-          <PillGroup values={categoryThematic} />
-        </SectionCard>
+      {isPartenaire ? (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <SectionCard icon={Tags} title={t("ProfileParent62About.territoires")}>
+            <PillGroup values={territoires} notProvided={t("ProfileParent62About.notProvided")} />
+          </SectionCard>
 
-        <SectionCard icon={ListChecks} title="Type d'action">
-          <PillGroup values={typeAction} />
-        </SectionCard>
+          <SectionCard icon={Users} title={t("ProfileParent62About.publics")}>
+            <PillGroup values={publics} notProvided={t("ProfileParent62About.notProvided")} />
+          </SectionCard>
 
-        <SectionCard icon={Users} title="Public cible">
-          <PillGroup values={publicCible} />
-        </SectionCard>
-      </div>
+          <SectionCard icon={ListChecks} title={t("ProfileParent62About.themes")}>
+            <PillGroup values={themes} notProvided={t("ProfileParent62About.notProvided")} />
+          </SectionCard>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <SectionCard icon={Tags} title={t("ProfileParent62About.categoryThematic")}>
+            <PillGroup values={categoryThematic} notProvided={t("ProfileParent62About.notProvided")} />
+          </SectionCard>
+
+          <SectionCard icon={ListChecks} title={t("ProfileParent62About.typeAction")}>
+            <PillGroup values={typeAction} notProvided={t("ProfileParent62About.notProvided")} />
+          </SectionCard>
+
+          <SectionCard icon={Users} title={t("ProfileParent62About.publicCible")}>
+            <PillGroup values={publicCible} notProvided={t("ProfileParent62About.notProvided")} />
+          </SectionCard>
+        </div>
+      )}
 
       {socialLinks.length > 0 && (
-        <SectionCard icon={Globe} title="Réseaux sociaux">
-          <div className="flex flex-wrap gap-2">
-            {socialLinks.map(({ key, label, icon: Icon }) => {
-              const value = socialNetwork[key];
-              const href = /^https?:\/\//i.test(value) ? value : `https://${value}`;
-              return (
-                <a
-                  key={key}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {label}
-                </a>
-              );
-            })}
-          </div>
+        <SectionCard icon={Globe} title={t("ProfileParent62About.socialNetworks")}>
+          <SocialLinks socials={socialLinks} />
         </SectionCard>
       )}
 
       {(accessibility || provisionResources || contact || documents.length > 0 || note) && (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          {accessibility && <TextCard icon={Accessibility} title="Accès / stationnement" value={accessibility} />}
+          {accessibility && (
+            <TextCard icon={Accessibility} title={t("ProfileParent62About.accessibility")} value={accessibility} />
+          )}
           {provisionResources && (
-            <TextCard icon={Package} title="Mise à disposition de ressources" value={provisionResources} />
+            <TextCard icon={Package} title={t("ProfileParent62About.provisionResources")} value={provisionResources} />
           )}
           {/* Documents juste à côté de l'interlocuteur (demande explicite) : même source que la section
               générique `profile-documents` (`getGalleryFiles`), rendue ici en carte bandeau pour rester
               dans le même langage visuel que le reste de la fiche plutôt que la carte neutre générique. */}
-          {contact && <TextCard icon={User} title="Interlocuteur privilégié" value={contact} />}
+          {contact && <TextCard icon={User} title={t("ProfileParent62About.contact")} value={contact} />}
           {documents.length > 0 && (
-            <SectionCard icon={FileText} title="Documents">
+            <SectionCard icon={FileText} title={t("ProfileParent62About.documents")}>
               <FilesList files={documents} />
             </SectionCard>
           )}
-          {note && <TextCard icon={MessageSquare} title="Remarques" value={note} />}
+          {note && <TextCard icon={MessageSquare} title={t("ProfileParent62About.note")} value={note} />}
         </div>
       )}
     </div>

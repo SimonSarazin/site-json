@@ -60,6 +60,22 @@
   "ProfileAbout": {
     "title": "About"
   },
+  "ProfileParent62About": {
+    "notProvided": "Not provided",
+    "description": "Description",
+    "categoryThematic": "Thematic category",
+    "typeAction": "Type of action",
+    "publicCible": "Target audience",
+    "territoires": "Territories",
+    "publics": "Audiences",
+    "themes": "Topics",
+    "socialNetworks": "Social networks",
+    "accessibility": "Access / parking",
+    "provisionResources": "Resources available",
+    "contact": "Primary contact",
+    "documents": "Documents",
+    "note": "Remarks"
+  },
   "ProfileMap": {
     "title": "Location",
     "mapPlaceholder": "Map to be implemented",

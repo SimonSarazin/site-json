@@ -185,9 +185,13 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
               contribue plus du tout à la taille du conteneur, qui peut alors s'étirer librement sur la
               hauteur du texte voisin. Logo carré comme ailleurs dans ce header (vignette compacte
               `h-11 w-11` ci-dessous) : à revoir si un site au logo non carré adopte un jour ce header.
-              Mobile (`flex-col`) inchangé : centré, pas de rangée à égaler. */}
+              Mobile (`flex-col`) inchangé : centré, pas de rangée à égaler.
+              `sm:min-h-11 sm:min-w-11` : sans `logoTitle` NI `logoSubtitle` (le bloc voisin ne rend
+              alors rien), la piste grid `auto` n'a plus aucun contenu en flux pour se dimensionner —
+              le conteneur logo (lui-même hors flux, cf. plus haut) retombe à 0×0 dès `sm:`. Plancher au
+              même gabarit que la vignette mobile, jamais atteint tant qu'un des deux textes est présent. */}
           <NavLink to={header.path || "/"} className={`flex flex-col sm:grid sm:grid-cols-[auto_1fr] items-center sm:items-stretch gap-3 sm:gap-5 ${marque.gap} text-center sm:text-left cursor-pointer group`}>
-            <div className="relative h-11 w-11 sm:h-auto sm:w-auto sm:aspect-square shrink-0">
+            <div className="relative h-11 w-11 sm:h-auto sm:w-auto sm:aspect-square sm:min-h-11 sm:min-w-11 shrink-0">
               <HeaderLogo
                 header={header}
                 isOverlay

@@ -4407,6 +4407,54 @@ changement moteur nécessaire.
 | `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
 | `tests/preflight/` (hors `bundle-size.test.ts`) | ✅ 822/823 |
 
+### 9septquadragies.9 Correctifs trouvés en relecture (annuaires, fiche profil, réseaux sociaux, header)
+
+- **Périmètre des deux annuaires** : confirmé côté backend (`SearchNew::getQueries`,
+  `communecter-dev`) que `$post["filters"]` est injecté dans `$query` AVANT `searchSourceKey`, qui
+  l'englobe ensuite dans un `$and` avec le `$or` dérivé du scope — le tag `"Partenaires"` (§9septquadragies.6)
+  filtre donc réellement les résultats côté serveur, pas seulement à l'affichage.
+- **Bloc « À propos » ne lisait que les champs du formulaire Acteur** : un Partenaire référencé via
+  `/annuaire` (champs `territoires`/`publics`/`themes`) ouvrait une fiche à cartes vides, sa saisie
+  n'apparaissant nulle part. Corrigé : le composant lit désormais le même tag `"Partenaires"` que le
+  routage d'édition et l'annuaire pour choisir le jeu de champs à afficher.
+- **Réseaux sociaux** : ne lisait que la forme imbriquée (`serverData.socialNetwork.*`), alors que les
+  organisations importées/« normales » les stockent à PLAT (`serverData.facebook`) — même distinction déjà
+  gérée par `ProfileTiersLieuxInfo.tsx`. Corrigé (lecture plate en priorité, repli sur l'imbriquée,
+  extrait en module testé `profileParent62Social.ts`) ; le rendu passe désormais par `SocialLinks`
+  (`footer/SocialLinks.tsx`, déjà partagé) via `NavLink`/`classifyHref`, au lieu d'un `<a href>` qui
+  préfixait `https://` même sur un identifiant sans URL (`@parent62` → `https://@parent62`).
+- **i18n** : la fiche était en français en dur (même choix que `ProfileSsbeAbout`) alors que la preview
+  de l'annuaire est bilingue. Ajout du namespace `ProfileParent62About` (`fr.json`/`en.json`) et bascule
+  sur `useT`.
+- **HeaderStacked (moteur, hors parent62)** : le conteneur du logo (`sm:h-auto sm:w-auto sm:aspect-square`,
+  hors flux) retombe à 0×0 dès `sm:` si ni `logoTitle` ni `logoSubtitle` n'est déclaré — rien d'autre dans
+  la rangée grid pour la dimensionner. Parent62 (seul site sur ce header) déclare les deux, donc non
+  visible ici ; plancher `sm:min-h-11 sm:min-w-11` ajouté par prudence pour tout futur site qui adopterait
+  ce header sans les deux textes.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `profileParent62Social.test.ts` (nouveau) | ✅ 6/6 |
+| `tests/preflight/` (hors `bundle-size.test.ts`) | ✅ 822/823, parité i18n fr/en incluse |
+
+### 9septquadragies.10 `/annuaire` : détail en tiroir (droite), cohérent avec `/annuaire-acteurs-parentalite`
+
+`list.card.detailsMode` passe de `"dialog"` (modale centrée) à `"drawer"` (tiroir, sens par défaut
+`"right"` de `CustomDrawer.tsx`) sur `/annuaire` — aligné sur `/annuaire-acteurs-parentalite`, qui
+l'utilisait déjà.
+
+**Vérification complète avant commit** (checklist standards du lead, portes chiffrées) :
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` (`eslint -f json` sur les fichiers du lot) | ✅ 0 erreur |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `test:unit` complet, RAM chiffrée (`NODE_OPTIONS=--max-old-space-size=4096 --maxWorkers=2`, machine à 7,5 Go) | ✅ 6070/6072 (1 skip) — seul `bundle-size.test.ts` en échec, préexistant/sans rapport |
+| `test:integration` (`SITE_CONFIG_PATH=./config.prod.parent62.json`, même garde RAM) | ✅ 1041/1043 — 1 timeout `/annuaire` (20s) sous charge mémoire, **rejoué isolément : 6/6 vert** (confirmé transitoire, pas une régression) ; + `bundle-size.test.ts` |
+| `config:render config.prod.parent62.json` | ✅ 52/52 pages, 183/183 sections, 0 échec |
+| `test:e2e` | non rejouable sur ce poste (`.env.test` absent, pas d'identifiants backend réels) — limite d'environnement déjà connue, pas une régression de ce lot |
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)

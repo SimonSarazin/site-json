@@ -19053,7 +19053,7 @@
                     "showStats": false,
                     "showDescription": true,
                     "showAddress": true,
-                    "detailsMode": "dialog"
+                    "detailsMode": "drawer"
                   },
                   "preview": {
                     "type": "facets",
