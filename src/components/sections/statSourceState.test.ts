@@ -37,6 +37,9 @@ vi.mock("@/modules/profil/hooks/useMembersQuery", () => ({
 }));
 
 import { useMembersCountState, useSearchCountState } from "./statSourceState";
+import { publicSurfaceKeys } from "@/lib/queryKeys";
+import { SEARCH_LISTS_INVALIDATION } from "@/modules/profil/constants/listInvalidation";
+import { SEARCH_QUERY_KEYS } from "@/modules/search/constants/queryKeys";
 
 /** Ce que `useInfiniteQueryScroll` rend tant que la 1ʳᵉ page n'est pas revenue. */
 const QUERY_IN_FLIGHT = {
@@ -89,6 +92,16 @@ describe("useSearchCountState", () => {
     expect(second.queryKeyPrefix).toBe("stat-search-count");
     expect(second.baseParams).toEqual(premier.baseParams);
     expect(second.searchType).toEqual(premier.searchType);
+  });
+
+  it("le compte suit la liste qu'il résume : cache des listes, invalidé par les créations et l'admin", () => {
+    renderHook(() => useSearchCountState(SEARCH));
+    const [[params]] = searchQuerySpy.mock.calls as [[Record<string, unknown>]];
+    // Pas de staleTime long à lui : une fiche référencée gardait l'ancien chiffre 30 min.
+    expect(params.cache).toBeUndefined();
+    const prefix = JSON.stringify(SEARCH_QUERY_KEYS.RESULTS_PREFIX(params.queryKeyPrefix as string));
+    expect(SEARCH_LISTS_INVALIDATION.map((k) => JSON.stringify(k))).toContain(prefix);
+    expect(publicSurfaceKeys().map((k) => JSON.stringify(k))).toContain(prefix);
   });
 
   it("requête désactivée (SSR, API non résolue) : en attente", () => {
