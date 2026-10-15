@@ -227,6 +227,7 @@ src/modules/search/
 │   ├── prefetchFilters.ts         # prefetchFilterSection, prefetchSearchZones,
 │   │                              #   prefetchFiltersByAnswers, prefetchFiltersByPath,
 │   │                              #   prefetchFilterEntities, findFiltersSections (générique)
+│   ├── facetCache.ts              # mémo SERVEUR des facettes (SSR_FACET_CACHE_TTL_MS, défaut 5 min)
 │   └── index.ts
 │
 ├── constants/
@@ -2070,6 +2071,18 @@ La queryKey générée pour `filtersByAnswers` est `filters-answers-${sectionId}
 - `prefetchFiltersByAnswers(queryClient, queryId, options)` — filtres CoForm answers
 - `prefetchFiltersByPath(queryClient, queryId, options)` — filtres CoForm by path
 - `prefetchFilterEntities(queryClient, queryId, options, filterBy?)` — entités entityList
+
+**Cache serveur des facettes (`prefetch/facetCache.ts`)** — ces quatre prefetchers passent par un mémo au
+niveau du processus (`createSsrMemo`, `src/lib/ssrMemo.ts`) : un appel backend par facette et par durée de
+vie (`SSR_FACET_CACHE_TTL_MS`, défaut 5 min, `0` désactive), pas par rendu. Motivation : sur tiers-lieux
+`/lieux`, les deux appels de facettes thématiques (`autoglobalthematicntwrk`) pesaient 2,2 s cumulées sur
+une page servie en 2 s, et elles sont identiques pour tous les visiteurs (SSR anonyme). Contrat du mémo :
+seuls les succès sont mémorisés (un hoquet backend n'est jamais amplifié), les appels en vol sont
+regroupés, chaque requête reçoit une copie (`structuredClone`), taille bornée. La clé d'une entrée est la
+queryKey React Query de la facette (+ `filterBy` pour `entityList`), donc la clé que la page lit et la
+donnée hydratée sont inchangées. **Hors du cache** : `prefetchSearchResults` (les résultats restent frais
+à chaque rendu) et tout le code client (après hydratation, `useSearchZoneQuery` & co. parlent au backend
+directement). Seule contrepartie : une liste de filtres peut avoir jusqu'à une durée de vie de retard.
 
 ---
 

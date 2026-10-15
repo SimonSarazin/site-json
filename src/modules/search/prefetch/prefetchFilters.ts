@@ -21,6 +21,9 @@ import {
   type FiltersByPathOptions,
 } from "../hooks/useFiltersByPath";
 import { enfantsDeSection, type SectionLike } from "@/lib/sectionContainers";
+// Mémo serveur des facettes : un appel backend par facette et par durée de vie, pas par rendu.
+// Les résultats de recherche (`prefetchSearchResults`) ne passent PAS par lui.
+import { facetCache } from "./facetCache";
 
 /**
  * Section JSON minimaliste pour les helpers de découverte. Le schéma complet
@@ -63,15 +66,18 @@ export async function prefetchSearchZones(
   if (options.countryCode.length === 0 || options.level.length === 0) return null;
 
   try {
+    const queryKey = searchZoneQueryKey(query, options);
     return await queryClient.ensureQueryData({
-      queryKey: searchZoneQueryKey(query, options),
+      queryKey,
       queryFn: async () => {
         const { entity, api } = await ensureInitApi(queryClient);
         const target = entity || api;
         if (!target || typeof (target as { searchZone?: unknown }).searchZone !== "function") {
           return [];
         }
-        return fetchSearchZones(target as Parameters<typeof fetchSearchZones>[0], options);
+        return facetCache.get(JSON.stringify(queryKey), () =>
+          fetchSearchZones(target as Parameters<typeof fetchSearchZones>[0], options)
+        );
       },
     });
   } catch (error) {
@@ -92,15 +98,18 @@ export async function prefetchFiltersByAnswers(
   if (Object.keys(options).length === 0) return null;
 
   try {
+    const queryKey = filtersByAnswersQueryKey(query, options);
     return await queryClient.ensureQueryData({
-      queryKey: filtersByAnswersQueryKey(query, options),
+      queryKey,
       queryFn: async () => {
         const { entity, api } = await ensureInitApi(queryClient);
         const target = entity || api;
         if (!target || typeof (target as { coformFiltersSearch?: unknown }).coformFiltersSearch !== "function") {
           return {};
         }
-        return fetchFiltersByAnswers(target as Parameters<typeof fetchFiltersByAnswers>[0], options);
+        return facetCache.get(JSON.stringify(queryKey), () =>
+          fetchFiltersByAnswers(target as Parameters<typeof fetchFiltersByAnswers>[0], options)
+        );
       },
     });
   } catch (error) {
@@ -123,15 +132,19 @@ export async function prefetchFilterEntities(
   if (!options.defaultTypes?.length) return null;
 
   try {
+    const queryKey = filterEntitiesQueryKey(query, options);
     return await queryClient.ensureQueryData({
-      queryKey: filterEntitiesQueryKey(query, options),
+      queryKey,
       queryFn: async () => {
         const { entity, api } = await ensureInitApi(queryClient);
         const target = entity || api;
         if (!target || typeof (target as { searchCostum?: unknown }).searchCostum !== "function") {
           return [];
         }
-        return fetchFilterEntities(target as Parameters<typeof fetchFilterEntities>[0], options, filterBy);
+        // `filterBy` n'entre pas dans la queryKey (même contrat que le client) : il complète la clé.
+        return facetCache.get(JSON.stringify([...queryKey, filterBy]), () =>
+          fetchFilterEntities(target as Parameters<typeof fetchFilterEntities>[0], options, filterBy)
+        );
       },
     });
   } catch (error) {
@@ -152,15 +165,18 @@ export async function prefetchFiltersByPath(
   if (Object.keys(options).length === 0) return null;
 
   try {
+    const queryKey = filtersByPathQueryKey(query, options);
     return await queryClient.ensureQueryData({
-      queryKey: filtersByPathQueryKey(query, options),
+      queryKey,
       queryFn: async () => {
         const { entity, api } = await ensureInitApi(queryClient);
         const target = entity || api;
         if (!target || typeof (target as { coformFilterByPath?: unknown }).coformFilterByPath !== "function") {
           return {};
         }
-        return fetchFiltersByPath(target as Parameters<typeof fetchFiltersByPath>[0], options);
+        return facetCache.get(JSON.stringify(queryKey), () =>
+          fetchFiltersByPath(target as Parameters<typeof fetchFiltersByPath>[0], options)
+        );
       },
     });
   } catch (error) {
