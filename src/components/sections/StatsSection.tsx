@@ -4,10 +4,12 @@ import { cn } from '@/lib/utils';
 import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
 import { StatsSectionProps } from '@/types/site-schema';
 import { buildGridColsClass } from './responsiveGridCols';
+import { StatValue } from './StatValue';
 
 export function StatsSection({ id, props }: { id?: string; props: StatsSectionProps }) {
-  const { items, layout = 'horizontal', animated = true, columns } = props;
+  const { items, design = 'default', layout = 'horizontal', animated = true, columns } = props;
   const [isVisible, setIsVisible] = useState(false);
+  const queryKeyPrefix = `stats-${id ?? 'section'}`;
 
   // `columns` (si fourni) pilote la grille ; sinon, défauts historiques par layout.
   const gridColsClass = columns
@@ -17,7 +19,9 @@ export function StatsSection({ id, props }: { id?: string; props: StatsSectionPr
       : "grid-cols-1 md:grid-cols-2";
 
   useEffect(() => {
-    if (!animated) return;
+    // Les tuiles n'animent pas leurs chiffres : un compte qui arrive APRÈS l'entrée à
+    // l'écran repartirait de zéro sous les yeux du visiteur.
+    if (!animated || design === 'tiles') return;
     if (typeof window === 'undefined') return;
 
     const observer = new IntersectionObserver(
@@ -39,7 +43,7 @@ export function StatsSection({ id, props }: { id?: string; props: StatsSectionPr
         observer.unobserve(element);
       }
     };
-  }, [id, animated]);
+  }, [id, animated, design]);
 
   const AnimatedNumber = ({ value, isVisible }: { value: string; isVisible: boolean }) => {
     const [displayValue, setDisplayValue] = useState('0');
@@ -78,6 +82,44 @@ export function StatsSection({ id, props }: { id?: string; props: StatsSectionPr
     return <span>{displayValue}</span>;
   };
 
+  if (design === 'tiles') {
+    return (
+      <section id={id} className="px-4 py-3 sm:px-6 lg:px-8">
+        <div className={cn("mx-auto grid max-w-6xl gap-5", buildGridColsClass(columns ?? { sm: 3 }))}>
+          {items.map((item, index) => (
+            <div
+              key={index}
+              className={cn(
+                "flex flex-col gap-1.5 rounded-2xl border p-7",
+                item.highlight
+                  ? "border-transparent bg-primary text-primary-foreground"
+                  : "border-border bg-card text-card-foreground"
+              )}
+            >
+              <div className="text-5xl font-bold leading-none tracking-tight md:text-6xl">
+                <StatValue
+                  stat={item}
+                  queryKeyPrefix={`${queryKeyPrefix}-${index}`}
+                  skeletonClassName={item.highlight ? "bg-primary-foreground/25" : undefined}
+                >
+                  {(value) => value}
+                </StatValue>
+              </div>
+              <T
+                k={item.label}
+                as="span"
+                className={cn("text-[15px] font-medium", !item.highlight && "text-muted-foreground")}
+              />
+              {item.description && (
+                <T k={item.description} as="p" className="text-sm opacity-80" />
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id={id || 'stats-section'} className="py-16 bg-primary/5 text-foreground">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -111,7 +153,9 @@ export function StatsSection({ id, props }: { id?: string; props: StatsSectionPr
                   "text-4xl md:text-5xl font-bold text-foreground mb-2",
                   layout === 'vertical' && "text-3xl md:text-4xl"
                 )}>
-                  <AnimatedNumber value={item.value} isVisible={isVisible} />
+                  <StatValue stat={item} queryKeyPrefix={`${queryKeyPrefix}-${index}`}>
+                    {(value) => <AnimatedNumber value={value} isVisible={isVisible} />}
+                  </StatValue>
                 </div>
 
                 <T k={item.label} as="h3" className="text-lg font-semibold text-foreground mb-1" />

@@ -114,6 +114,7 @@ export function useAacDirectoryContext(): AacDirectoryContext {
 
   // Un visiteur NON ADMINISTRATEUR ne voit que les communs sélectionnés, plus
   // les siens — parité avec le filtre `applyFor: "forUser"` du bloc legacy.
+  // Uniquement si la config déclare `choose` (AAC) : cf. `splitAacFilters`.
   // Les gates DOIVENT entrer dans le calcul : sans eux, `anyOnewithLinkCanAnswer` est lu comme
   // absent et `canEditCommun` répond faux là où la fiche répond vrai.
   const permData = useMemo<AacPermissionData>(() => ({ gates: config?.gates }), [config?.gates]);

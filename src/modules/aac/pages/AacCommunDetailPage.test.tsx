@@ -172,8 +172,12 @@ vi.mock("../hooks/useAacFormMeta", () => ({
 // elle que `SmartCoForm` exige pour activer le brouillon, et qu'il grave dans
 // l'entrée localStorage (cf. `useCoFormDraft.computeDraftState`).
 vi.mock("@/modules/coform/components/CoFormModal", () => ({
-  CoFormModal: (props: { baseUpdatedAt?: number | null }) => (
-    <div data-testid="edit-modal" data-base-updated-at={String(props.baseUpdatedAt ?? "null")} />
+  CoFormModal: (props: { baseUpdatedAt?: number | null; hiddenStepKeys?: string[] }) => (
+    <div
+      data-testid="edit-modal"
+      data-base-updated-at={String(props.baseUpdatedAt ?? "null")}
+      data-hidden-steps={(props.hiddenStepKeys ?? []).join(",")}
+    />
   ),
 }));
 
@@ -590,6 +594,34 @@ describe("AacCommunDetailPage — lignée de péremption du brouillon d'édition
     render(<AacCommunDetailPage />);
 
     expect(baseUpdatedAt()).toBe("null");
+  });
+});
+
+/**
+ * Un AAP n'a pas de `choose` (non déclaré en config ⇒ `fields.choose` nul), mais
+ * il a une étape d'ÉVALUATION — les votes `decide` du form OCECO d'Open Atlas.
+ * Le masquage à l'édition dépendait de `choose` : couper l'un rouvrait l'autre,
+ * et l'auteur pouvait voter sur sa propre proposition.
+ */
+describe("AacCommunDetailPage — l'étape d'évaluation reste masquée à l'auteur", () => {
+  const hiddenSteps = () => screen.getByTestId("edit-modal").getAttribute("data-hidden-steps");
+  const withEvalStep = (evalStepKey: string | null): AacResolvedConfig => {
+    const base = makeConfig(false);
+    return { ...base, roles: { ...base.roles, evalStepKey } };
+  };
+
+  it("AAP (pas de `choose`) : l'étape d'évaluation résolue est masquée au non-admin", () => {
+    config = withEvalStep("aapStep2");
+    render(<AacCommunDetailPage />);
+
+    expect(hiddenSteps()).toBe("aapStep2");
+  });
+
+  it("ni `choose` ni étape d'évaluation : rien n'est masqué", () => {
+    config = withEvalStep(null);
+    render(<AacCommunDetailPage />);
+
+    expect(hiddenSteps()).toBe("");
   });
 });
 

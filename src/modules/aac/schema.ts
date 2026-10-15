@@ -30,7 +30,8 @@ import { PLACE_KINDS } from "@/modules/coform/utils/finderFilters";
  * racine. Une valeur illisible est ignorée au runtime (retour au scan), pas
  * appliquée de travers.
  *
- * Facultatif — sans lui, `resolveAacCardFields` déduit par type et par libellé.
+ * Facultatif — sans lui, `resolveAacCardFields` déduit par type et par libellé,
+ * SAUF `choose`, qui ne se déduit jamais (cf. sa clé ci-dessous).
  * Pour lire les questions d'un form et leurs libellés :
  * `POST <backend>/survey/coform/getformbyid` avec `parentFormId=<formId>` (sans
  * auth) → `data.inputs.<étape>.inputs`.
@@ -42,6 +43,15 @@ export const AacDirectoryFieldsSchema = z.object({
   maturity: z.string().optional(),
   image: z.string().optional(),
   depense: z.string().optional(),
+  /**
+   * L'étape de SÉLECTION d'un commun pour l'annuaire de l'appel — jamais déduite.
+   *
+   * AAC : à déclarer, sous la forme `answers.<étape>.choose` (badge, bouton
+   * « Ajouter à l'annuaire », annuaire public restreint aux sélectionnés).
+   * AAP : à omettre — il n'a pas d'étape de sélection ; ni statut, ni
+   * restriction, toute proposition titrée est publique. Un chemin sans le
+   * préfixe `answers.` est ignoré.
+   */
   choose: z.string().optional(),
   /**
    * Où compter les MEMBRES du commun — un chemin racine, presque toujours hors

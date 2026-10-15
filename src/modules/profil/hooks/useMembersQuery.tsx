@@ -134,6 +134,7 @@ export function useEntityMembers(
 
   return {
     totalCount: 0,
+    hasCount: false,
     members: [],
     items: [],
     isLoading: false,
