@@ -24,7 +24,7 @@
 export const ANSWER_PATH_TYPE = "answerPath";
 
 /** Cible d'un groupe « par réponses » — cf. `FiltersByAnswersSchema.filterTarget`. */
-export type AnswerFilterTarget = "answers" | "linkedElements";
+export type AnswerFilterTarget = "answers" | "linkedElements" | "parentId";
 
 /** Sous-ensemble de config nécessaire pour décider du prédicat (answers ou path). */
 export interface AnswerGroupConf {
@@ -84,6 +84,8 @@ export function answerFilterClause(
  * donnent des résultats différents.
  *
  * - cible `answers`        → `{ field: <chemin>, type: "answerPath", value: [libellé] }`
+ * - cible `parentId`       → `{ field: "parentId", value: orgaNameArray }` (liste dont le document
+ *   n'est pas l'élément lié mais en porte l'id en `parentId` — annuaire des ressources)
  * - cible historique       → `{ field: "_id", value: orgaNameArray }`
  */
 export function answerToggleArgs(
@@ -95,5 +97,6 @@ export function answerToggleArgs(
   if (fieldPath) {
     return { field: fieldPath, value: [option.name || optionKey], fieldType: ANSWER_PATH_TYPE };
   }
-  return { field: "_id", value: option.orgaNameArray ?? [], fieldType: null };
+  const field = conf?.filterTarget === "parentId" ? "parentId" : "_id";
+  return { field, value: option.orgaNameArray ?? [], fieldType: null };
 }

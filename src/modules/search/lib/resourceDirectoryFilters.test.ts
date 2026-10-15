@@ -100,15 +100,16 @@ describe("thematicParentIds", () => {
   });
   it("réseaux cochés : union de leurs lieux membres, sans les autres filtres", () => {
     const sbf = {
-      a: { field: "_id", value: ["p1", "p2"] },
-      b: { field: "_id", value: ["p2", "p3"] },
+      a: { field: "parentId", value: ["p1", "p2"] },
+      b: { field: "parentId", value: ["p2", "p3"] },
+      e: { field: "_id", value: ["autre"] }, // un autre groupe écrivant `_id` n'est pas un réseau
       c: { field: "priceHourly", value: ["0-20"] },
       d: { field: "Zlevel3", type: "scopeList", value: { id: "Z", type: "level3" } },
     } as never;
     expect(thematicParentIds(sbf)).toEqual(["p1", "p2", "p3"]);
   });
   it("réseau coché SANS lieu membre : [] (et non null — sinon tout l'annuaire s'afficherait)", () => {
-    expect(thematicParentIds({ a: { field: "_id", value: [] } } as never)).toEqual([]);
+    expect(thematicParentIds({ a: { field: "parentId", value: [] } } as never)).toEqual([]);
   });
 });
 

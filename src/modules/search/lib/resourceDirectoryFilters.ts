@@ -79,15 +79,16 @@ export function matchesZones(zonesOfParent: readonly string[] | undefined, zoneI
 }
 
 /**
- * Lieux membres des réseaux thématiques cochés, lus dans `searchByFields` (entrées `_id` du groupe
- * `filtersByPath`) — et non dans `searchByFieldsToQuery`, qui saute les tableaux vides : un réseau
- * coché SANS lieu membre y disparaîtrait et le filtre avec. `null` = aucun réseau coché ; `[]` = des
- * réseaux cochés, mais aucun lieu membre.
+ * Lieux membres des réseaux thématiques cochés, lus dans `searchByFields` (entrées `parentId` du groupe
+ * `filtersByPath` en `filterTarget: "parentId"`, champ propre à cette cible : aucun autre groupe ne
+ * l'écrit) — et non dans `searchByFieldsToQuery`, qui saute les tableaux vides : un réseau coché SANS
+ * lieu membre y disparaîtrait et le filtre avec. `null` = aucun réseau coché ; `[]` = des réseaux
+ * cochés, mais aucun lieu membre.
  */
 export function thematicParentIds(searchByFields: Record<string, SearchByFieldValue> | undefined): string[] | null {
   let ids: string[] | null = null;
   for (const { field, type, value } of Object.values(searchByFields ?? {})) {
-    if (field !== "_id" || type || !Array.isArray(value)) continue;
+    if (field !== "parentId" || type || !Array.isArray(value)) continue;
     ids = [...new Set([...(ids ?? []), ...value])];
   }
   return ids;
