@@ -56,6 +56,7 @@ communauté, les projets par AAC, et plus tard les pages d'outils.
 | 02/10 | Claude | Trois directions d'accueil proposées sur un canvas de design (A fidèle, B nuit, C éditorial) |
 | 05/10 | Francki | Commit du lot 4 (`8d60acf1`) ; direction **B — Nuit** retenue et retouchée par Simon (export HTML) |
 | 14/10 | Francki + Claude | Suites de la revue MR 94 : étape masquée seulement si TROUVÉE (`evalStepKeyFound`), `.text-primary` sombre cède au survol, comptes de tuiles allégés et partagés, `AnimatedNumber` sans retour à 0, namespace i18n `components/sections`, gardes `choose` (Zod + `config:probe`), état SSR aux parents factorisés (`/communaute` 3,5 → 1,86 Mo) |
+| 15/10 | Francki + Claude | Suites de la revue MR 97 : l'étape de dépôt n'est jamais prise pour l'étape d'évaluation, compte des tuiles au cache des listes et invalidé avec elles, `group-hover:text-primary` sombre cède à un `hover:text-*` propre, état SSR sérialisé en un seul passage (72 ms au lieu de 170 sur `/communaute`) + test E2E de restitution, `config:probe` sans faux échec sur un site AAC sans périmètre |
 | 09/10 | Francki + Claude | Lot 6 : page `/outils` d'après une maquette reçue en capture (pas de HTML source) — sections `html` + feuille `oa-*`, accents cyan et vert ajoutés ; nav « Nos outils » (§10) |
 | 06/10 | Francki + Claude | Lot 5 : intégration de la maquette B — thème sombre par défaut, accueil en sections `html` stylées par `customCSS`, tuiles de chiffres vivantes (moteur : `stats` `design: "tiles"`, source `aacCommuns`) (§10) |
 
@@ -485,7 +486,8 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
 - **`/communaute` pèse 1,86 Mo de HTML** (3,5 Mo avant le 14/10). Chaque carte embarquait `parent`,
   une copie sérialisée de l'entité Open Atlas (~44 Ko, `links` compris), soit 1,8 Mo répétés sur 42
   cartes : l'état SSR range désormais chaque parent distinct une fois (`src/lib/ssrStatePacking.ts`,
-  doc/14), pour tous les sites. Reste ~1,45 Mo de données de cartes (les `links` des membres) —
+  doc/14), pour tous les sites, en un seul passage JSON (72 ms à chaud, moins que l'état non emballé),
+  restitution couverte par `e2e/hydration.spec.ts`. Reste ~1,45 Mo de données de cartes (les `links` des membres) —
   une projection `defaultFields` les réduirait, à condition de savoir ce que lisent cartes et fiches.
 - `costum.slug` vaut `"OpenAtlas"` alors que la clé de source est `"openAtlas"` : ne jamais écrire
   `sourceKey: ["OpenAtlas"]` (0 résultat).
