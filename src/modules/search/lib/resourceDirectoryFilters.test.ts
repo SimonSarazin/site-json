@@ -64,16 +64,20 @@ describe("selectedZones / matchesZones", () => {
   } as never;
 
   it("ne lit que les zones cochées", () => {
-    expect(selectedZones(sbf)).toEqual([{ id: "Z", level: "level3" }]);
+    expect(selectedZones(sbf)).toEqual(["Z"]);
     expect(selectedZones(undefined)).toEqual([]);
   });
 
   it("garde un lieu dans une des zones, écarte les autres et les lieux inconnus", () => {
-    const zones = [{ id: "Z", level: "level3" }];
-    expect(matchesZones({ level3: "Z" }, zones)).toBe(true);
-    expect(matchesZones({ level3: "Y" }, zones)).toBe(false);
-    expect(matchesZones(undefined, zones)).toBe(false);
+    expect(matchesZones(["P", "Z"], ["Z"])).toBe(true);
+    expect(matchesZones(["P", "Y"], ["Z"])).toBe(false);
+    expect(matchesZones(undefined, ["Z"])).toBe(false);
     expect(matchesZones(undefined, [])).toBe(true);
+  });
+
+  it("zone reconnue quel que soit le niveau sous lequel l'adresse la porte (DOM : pays = région)", () => {
+    // Option « Réunion » de niveau 3, adresse qui ne porte la zone que sous level1.
+    expect(matchesZones(["RE-zone"], ["RE-zone"])).toBe(true);
   });
 });
 

@@ -797,7 +797,9 @@ carré transparent (PNG, image entière centrée — `padFileToSquare`) : elle s
 `object-cover` hors de l'en-tête et le backend en tire une miniature 50×50 recadrée au centre. Le carré
 est plafonné à 1024 px (`MAX_SQUARE_SIDE`, image réduite en gardant ses proportions) : sans plafond, une
 photo 4000×3000 donnait un PNG de plusieurs dizaines de Mo, et Safari iOS refuse d'exporter un canvas
-au-delà de 16,7 Mpx. Si la mise au carré échoue malgré tout, la photo part telle quelle. La bannière,
+au-delà de 16,7 Mpx. La photo est d'abord allégée (`lightenImage`, comme la bannière) : une photo déjà
+carrée, ou dont la mise au carré échoue, part donc allégée et non à pleine taille. Après un échec d'envoi,
+le champ fichier est remis à zéro pour qu'on puisse rechoisir la même photo. La bannière,
 elle, est allégée avant l'envoi (`lightenImage` : au-delà de 1 Mo, plus grand côté ramené à 1920 px,
 JPEG 0,85) et sa zone de recadrage (`cropW`/`cropH`) suit les dimensions du fichier envoyé (`fitWithin`) :
 envoyée telle quelle, une photo d'appareil (15,8 Mo, 6875×4544) dépassait la taille de requête de PHP

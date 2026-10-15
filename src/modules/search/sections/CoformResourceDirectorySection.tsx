@@ -391,7 +391,7 @@ function ResourceDirectoryList({
     () => items.map((it) => it.model.parent?.id).filter((v): v is string => !!v),
     [items],
   );
-  const { parents, isLoading: parentsLoading } = useResourceParentsQuery(parentIds, { costumSlug, contextId, contextType });
+  const { parents, isLoading: parentsLoading, isError: parentsError } = useResourceParentsQuery(parentIds, { costumSlug, contextId, contextType });
 
   // Facettes CLIENT : type (`selectedFilters.resourceType`), capacité (`selectedFilters.capacity`),
   // zone du lieu porteur (`searchByFields`, type `scopeList`).
@@ -432,7 +432,9 @@ function ResourceDirectoryList({
         </p>
       </div>
 
-      {error ? (
+      {/* Zone cochée : elle se juge sur l'adresse des lieux porteurs — s'ils n'ont pas pu être lus, la
+          liste vide serait un « Aucun résultat » faux. */}
+      {error || (zones.length > 0 && parentsError) ? (
         <div className="rounded border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
           {t("Aucun résultat trouvé.")}
         </div>

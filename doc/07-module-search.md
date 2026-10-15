@@ -616,7 +616,10 @@ au-dessus de la grille le retire. La facette « type » (client) s'applique par-
   exclue dès qu'une tranche est cochée ;
 - **`regionFilter`** — groupe `scopeList` (zones chargées par `FiltersSection`) ; la sélection
   (`locality`) n'est PAS envoyée (une réponse n'a pas d'adresse) : filtre **CÔTÉ CLIENT** sur
-  `address.level*` du lieu porteur. Les lieux porteurs sont donc lus pour TOUTES les ressources
+  `address.level*` du lieu porteur — l'id coché est cherché parmi TOUTES les zones de l'adresse,
+  quel qu'en soit le niveau (dans les DOM, une même zone sert de pays, de région et de département).
+  Si les lieux porteurs n'ont pas pu être lus, la liste affiche une erreur plutôt qu'un « Aucun
+  résultat » faux. Les lieux porteurs sont donc lus pour TOUTES les ressources
   chargées, pas seulement celles affichées.
 
 Groupes ouverts à l'arrivée : les deux premiers groupes RÉELLEMENT déclarés, dans cet ordre

@@ -55,27 +55,27 @@ export function matchesCapacity(capacity: { min: number; max: number } | null, r
   });
 }
 
-/** Zones cochées dans un groupe `scopeList` (`{ id, type: "level3" }`) — lues dans `searchByFields`. */
-export function selectedZones(
-  searchByFields: Record<string, SearchByFieldValue> | undefined,
-): Array<{ id: string; level: string }> {
-  const zones: Array<{ id: string; level: string }> = [];
+/** Ids des zones cochées dans un groupe `scopeList` (`{ id, type: "level3" }`) — lus dans `searchByFields`. */
+export function selectedZones(searchByFields: Record<string, SearchByFieldValue> | undefined): string[] {
+  const ids: string[] = [];
   for (const { type, value } of Object.values(searchByFields ?? {})) {
     if (type !== "scopeList" || !value || typeof value !== "object" || Array.isArray(value)) continue;
-    const { id, type: level } = value as { id?: unknown; type?: unknown };
-    if (typeof id === "string" && typeof level === "string") zones.push({ id, level });
+    const { id } = value as { id?: unknown };
+    if (typeof id === "string") ids.push(id);
   }
-  return zones;
+  return ids;
 }
 
-/** Le lieu porteur est-il dans UNE des zones cochées ? Aucune zone → vrai ; lieu inconnu → faux. */
-export function matchesZones(
-  zonesOfParent: Partial<Record<string, string>> | undefined,
-  zones: ReadonlyArray<{ id: string; level: string }>,
-): boolean {
-  if (zones.length === 0) return true;
+/**
+ * Le lieu porteur est-il dans UNE des zones cochées ? Aucune zone → vrai ; lieu inconnu → faux.
+ * L'id coché est cherché parmi TOUTES les zones de l'adresse, quel qu'en soit le niveau : dans les
+ * DOM (RE, GP, MQ, YT, GF), une même zone sert de pays, de région et de département — une adresse qui
+ * ne la porte que sous `level1` ne serait pas reconnue par une option de `level3`.
+ */
+export function matchesZones(zonesOfParent: readonly string[] | undefined, zoneIds: readonly string[]): boolean {
+  if (zoneIds.length === 0) return true;
   if (!zonesOfParent) return false;
-  return zones.some((z) => zonesOfParent[z.level] === z.id);
+  return zoneIds.some((id) => zonesOfParent.includes(id));
 }
 
 /**
