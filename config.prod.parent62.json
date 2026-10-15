@@ -18983,7 +18983,9 @@
                     "parent62"
                   ],
                   "costumSlug": "parent62",
-                  "defaultTags": ["Partenaires"],
+                  "defaultFilters": {
+                    "tags": { "$in": ["Partenaires"] }
+                  },
                   "defaultFields": [
                     "name",
                     "slug",
@@ -20202,7 +20204,8 @@
                   "type": "profile-badges"
                 },
                 {
-                  "type": "profile-tags"
+                  "type": "profile-tags",
+                  "hideTags": ["Partenaires"]
                 }
               ],
               "rightSections": [
@@ -21514,7 +21517,6 @@
           "widget": "file",
           "label": {
             "fr": "Documents",
-            
             "en": "Documents"
           },
           "info": {

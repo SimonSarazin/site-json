@@ -4480,8 +4480,59 @@ l'utilisait déjà.
 
 **Hors parent62, trouvé dans la même relecture** : `PreviewTestimonialBubble.tsx` (module `search`,
 preview « parole de parent ») — le bouton « agrandir l'image » devenait le premier focusable du
-dialogue Radix à l'ouverture (annoncé avant le titre, Entrée ouvrait la lightbox par-dessus). Corrigé
-par `tabIndex={-1}`, régression testée (`PreviewTestimonialBubble.test.tsx`).
+dialogue Radix à l'ouverture (annoncé avant le titre, Entrée ouvrait la lightbox par-dessus). Un premier
+correctif local (`tabIndex={-1}` sur le bouton) a été posé puis **annulé** : il traitait le symptôme en
+rendant le bouton inatteignable au clavier, un lecteur d'écran n'y accédait alors plus jamais. Corrigé à
+la racine en §9septquadragies.12 (`DetailsModeDialog.tsx`, `onOpenAutoFocus`).
+
+### 9septquadragies.12 Second passage de relecture (avant merge)
+
+- **`defaultTags` écrasait les tags choisis par le visiteur** — `buildSearchPayload.ts` pose
+  `param.searchTags = defaultTags` APRÈS les tags de l'utilisateur (`options.tags.verb:"$all"` restant
+  posé, désormais incohérent) : un clic sur un mot-clé de carte ou un `?tags=X` sur `/annuaire`
+  envoyait `["Partenaires"]` à la place de `X`. Corrigé : `/annuaire` bascule sur
+  `defaultFilters:{"tags":{"$in":["Partenaires"]}}`, symétrique du `$nin` déjà posé côté acteurs — se
+  compose avec les facettes au lieu de les écraser (mécanisme `filters`, pas `searchTags`).
+- **Le tag `"Partenaires"` s'affichait comme un mot-clé public cliquable** sur la fiche profil
+  (section `profile-tags`) — ajout de `hideTags:["Partenaires"]` (prévu par le schéma pour exactement
+  ce cas).
+- **Trois lectures non gardées pouvaient faire planter la section** :
+  - `profileParent62Social.ts` : le repli imbriqué (`flat.socialNetwork[platform]`) n'était pas
+    typé-gardé comme la branche plate — un objet/nombre y aurait fait planter `.trim()`. Signature
+    passée en `unknown`, garde `typeof === "string"` sur les deux branches.
+  - `ProfileParent62About.tsx` : `contact`/`note`/`accessibility`/`provisionResources` castés
+    `as string` et rendus en `<p>{value}</p>` — un objet aurait levé « Objects are not valid as a React
+    child ». `ProfileSsbeAbout` gardait ça avec un `toText()` local, perdu dans la réécriture ; repris
+    ici (même patron, pas encore mutualisé — 2ᵉ occurrence).
+- **Lightbox parole, focus Radix (racine, pas symptôme)** : le `tabIndex={-1}` posé en premier passage
+  rendait le bouton image inatteignable au clavier. Annulé ; corrigé dans `DetailsModeDialog.tsx`
+  (`onOpenAutoFocus={(e) => e.preventDefault()}` sur `DialogContent`) — même geste déjà posé 3× ailleurs
+  dans le repo (`CommonTableField`, `MentionInput`, `TagsInput`), bénéficie à TOUTES les previews en
+  mode dialog, pas seulement « parole de parent ».
+- **`HeaderStacked` : la boîte du logo restait dans le flux même sans logo** (`HeaderLogo` rend `null`
+  sans image ni `logoIcon`, mais sa boîte 44×44 + le `gap` du conteneur restaient) — conditionné au
+  même calcul que `HeaderLogo` (`resolveHeaderLogo` + `logoIcon`). Non visible sur parent62 (logo
+  configuré), prudence pour un futur site sans logo sur ce header.
+- **Ligne parasite** (`config.prod.parent62.json`, bloc `label` de `parent62-article.fields.documents`)
+  — 12 espaces entre `fr`/`en`, retirée.
+- **`detailsMode` `/annuaire` passé en `drawer`** : confirmé intentionnel — demande explicite de
+  l'utilisateur en session (cohérence avec `/annuaire-acteurs-parentalite`, tiroir à droite).
+
+**Point laissé OUVERT, à trancher avant merge (pas une question de code)** : les organisations déjà
+référencées via `/annuaire` AVANT ce lot n'ont pas le tag `"Partenaires"` — elles disparaîtraient de
+`/annuaire` et basculeraient sur le formulaire acteur (qui ne pose pas le tag, pas d'auto-réparation).
+Un seul « Partenaire » existe en base LOCALE (« DEMAIN », cf. §9septquadragies.6) et ressemble à une
+fiche de test. **Aucune vérification possible sur les données de PRODUCTION depuis ce poste** — à
+trancher avec l'équipe : soit confirmer qu'aucune organisation réelle n'est dans ce cas en prod, soit
+prévoir un passage unique en base (poser le tag sur les organisations `source.key:"parent62"`
+antérieures à ce lot et non issues de l'import `youthCare`).
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| Tests ciblés (profil parent62, testimonial, detailsMode, header) | ✅ 57/57 |
+| `tests/preflight/` (hors `bundle-size.test.ts`) | ✅ 848/849 |
 
 ## 10. Checklist d'avancement
 
@@ -4651,6 +4702,7 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | **`typeObj` de production** (2.7) — déclarer sur le costum parent62 de production `typeObj.organizations` (`territoires`, `publics`, `themes`) comme en base locale (§9octotricies) | Thomas / backend |
 | **`typeObj.acteur` de production** — créé et appliqué en LOCAL uniquement (cf. §9septquadragies.3) ; reste à reporter sur la base de PRODUCTION (même opération) avant toute édition réelle en prod | Thomas / backend |
 | **Republication SDK (`costum-extensions.json`)** — aucune entrée `organizations` pour `parent62` dans l'artefact vendu (généré 03/09, périmé) ; le scanner backend qui le produit (`tools/parity/scripts/costum-fields.mjs`) est hors d'atteinte depuis ce poste. Nécessaire pour que l'édition des champs costum de `parent62-acteur` soit fiable en PRODUCTION (sans dépendre de `VITE_COSTUM_FORCE_LIVE`, local uniquement) | backend / Thomas |
+| **[AVANT MERGE] Partenaires déjà en prod sans tag `"Partenaires"`** — le découpage `/annuaire` vs `/annuaire-acteurs-parentalite` (§9septquadragies.6/.12) repose entièrement sur ce tag ; toute organisation référencée via `/annuaire` AVANT ce lot en est dépourvue et basculerait sur le formulaire acteur (sans auto-réparation). Aucune vérification possible sur les données de PRODUCTION depuis ce poste — à confirmer (aucune organisation réelle dans ce cas) ou prévoir un passage unique en base avant merge | Thomas / réseau |
 | **Données P2/P3** — relevé du 25/07 : 3 paroles, 4 ressources ; events et organisations à confirmer. Volumétrie réelle à créer/importer | réseau / Thomas |
 | **Géolocalisation** — aucune donnée ne porte de coordonnées : la vue carte de `/recherche` est vide et le `colorBy` par territoire est invérifiable | réseau / Thomas |
 | Borne de fin des dates (`$lt`/`$lte`) dans `SearchNew::getQueries` | Thomas / backend |

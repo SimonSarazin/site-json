@@ -43,6 +43,11 @@ export default function DetailsModeDialog({ openDetails, setOpenDetails, item, p
               inatteignable au clic. */}
           <DialogContent
             aria-describedby={undefined}
+            // Sans ça, Radix pose le focus initial sur le premier élément focusable du CONTENU (une
+            // preview peut en avoir un dès son en-tête, ex. le bouton « agrandir l'image » de
+            // `PreviewTestimonialBubble`) plutôt que sur le dialogue lui-même — déjà fait 3× ailleurs
+            // dans le repo (`CommonTableField`, `MentionInput`, `TagsInput`), même geste ici.
+            onOpenAutoFocus={(e) => e.preventDefault()}
             className={cn(
               "p-0 gap-0 max-h-[90vh] overflow-hidden",
               "[&>[data-slot=dialog-close]]:z-20 [&>[data-slot=dialog-close]]:rounded-full [&>[data-slot=dialog-close]]:bg-background/80",

@@ -26,6 +26,15 @@ interface ProfileParent62AboutProps {
   section: ProfileParent62AboutSection;
 }
 
+/** Même patron que `ProfileSsbeAbout.tsx` (pas encore mutualisé, 2ᵉ occurrence) : une fiche d'une
+ *  collection partagée par plusieurs costums peut porter un champ texte en forme inattendue (objet,
+ *  nombre) — `<p>{value}</p>` sur un objet lève « Objects are not valid as a React child ». */
+function toText(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
 function SectionCard({
   icon: Icon,
   title,
@@ -114,15 +123,16 @@ export default function ProfileParent62About({ section }: ProfileParent62AboutPr
   const territoires = toStringArray(useReactiveProperty(entity.serverData, "territoires"));
   const publics = toStringArray(useReactiveProperty(entity.serverData, "publics"));
   const themes = toStringArray(useReactiveProperty(entity.serverData, "themes"));
-  const accessibility = useReactiveProperty(entity.serverData, "accessibility") as string | undefined;
-  const provisionResources = useReactiveProperty(entity.serverData, "provisionResources") as string | undefined;
-  const contact = useReactiveProperty(entity.serverData, "contact") as string | undefined;
-  const note = useReactiveProperty(entity.serverData, "note") as string | undefined;
-  const socialNetwork = (useReactiveProperty(entity.serverData, "socialNetwork") ?? {}) as Record<string, string>;
-  const facebook = useReactiveProperty(entity.serverData, "facebook") as string | undefined;
-  const instagram = useReactiveProperty(entity.serverData, "instagram") as string | undefined;
-  const linkedin = useReactiveProperty(entity.serverData, "linkedin") as string | undefined;
-  const youtube = useReactiveProperty(entity.serverData, "youtube") as string | undefined;
+  const accessibility = toText(useReactiveProperty(entity.serverData, "accessibility"));
+  const provisionResources = toText(useReactiveProperty(entity.serverData, "provisionResources"));
+  const contact = toText(useReactiveProperty(entity.serverData, "contact"));
+  const note = toText(useReactiveProperty(entity.serverData, "note"));
+  const socialNetworkRaw = useReactiveProperty(entity.serverData, "socialNetwork");
+  const socialNetwork = (socialNetworkRaw && typeof socialNetworkRaw === "object" ? socialNetworkRaw : {}) as Record<string, unknown>;
+  const facebook = useReactiveProperty(entity.serverData, "facebook");
+  const instagram = useReactiveProperty(entity.serverData, "instagram");
+  const linkedin = useReactiveProperty(entity.serverData, "linkedin");
+  const youtube = useReactiveProperty(entity.serverData, "youtube");
   const socialLinks = toSocialLinks({ socialNetwork, facebook, instagram, linkedin, youtube });
   const presentationImages = toPresentationDocs(useReactiveProperty(entity.serverData, "images"));
   const { data: files = [] } = useDocumentsList(entity);
