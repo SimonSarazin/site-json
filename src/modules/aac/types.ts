@@ -215,6 +215,12 @@ export interface AacStep {
 export interface AacStepRoles {
   depenseStepKey: string | null;
   evalStepKey: string | null;
+  /**
+   * `evalStepKey` quand l'étape a été TROUVÉE par scan (question `choose`/`decide` ou de vote),
+   * `null` quand elle n'est qu'une POSITION (dispatch 4 vs 5 étapes). Seule une étape trouvée
+   * est masquée à l'auteur : sur un AAP sans vote, la position désignerait une étape ordinaire.
+   */
+  evalStepKeyFound: string | null;
   financementStepKey: string | null;
   suiviStepKey: string | null;
 }

@@ -55,6 +55,7 @@ communauté, les projets par AAC, et plus tard les pages d'outils.
 | 02/10 | Francki + Claude | Lot 4 : accueil recomposé d'après une maquette HTML reçue d'un ami de Francki (structure et textes repris, palette rouge du logo conservée, police Sora) ; pages `/accompagnement` et `/contact` ; nav et footer refaits (§10) |
 | 02/10 | Claude | Trois directions d'accueil proposées sur un canvas de design (A fidèle, B nuit, C éditorial) |
 | 05/10 | Francki | Commit du lot 4 (`8d60acf1`) ; direction **B — Nuit** retenue et retouchée par Simon (export HTML) |
+| 14/10 | Francki + Claude | Suites de la revue MR 94 : étape masquée seulement si TROUVÉE (`evalStepKeyFound`), `.text-primary` sombre cède au survol, comptes de tuiles allégés et partagés, `AnimatedNumber` sans retour à 0, namespace i18n `components/sections`, gardes `choose` (Zod + `config:probe`), état SSR aux parents factorisés (`/communaute` 3,5 → 1,86 Mo) |
 | 09/10 | Francki + Claude | Lot 6 : page `/outils` d'après une maquette reçue en capture (pas de HTML source) — sections `html` + feuille `oa-*`, accents cyan et vert ajoutés ; nav « Nos outils » (§10) |
 | 06/10 | Francki + Claude | Lot 5 : intégration de la maquette B — thème sombre par défaut, accueil en sections `html` stylées par `customCSS`, tuiles de chiffres vivantes (moteur : `stats` `design: "tiles"`, source `aacCommuns`) (§10) |
 
@@ -234,7 +235,7 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
 | Déclaration du site | [`../sites.json`](../sites.json) — entrée `openAtlas` (sans `coolifyApp`/`domain` pour l'instant) |
 | Assets | `../public/images/openAtlas/` : `logo.png`, `logo-dark.png`, `logo-symbol.png`, `logo-symbol-dark.png`, `logo-symbol-neutral.png`, `favicon.png`, `logo-symbol-lg.png` + `logo-symbol-dark-lg.png` (lot 5 : symbole du héro, 380 px recadrés du logo complet à sa résolution native) |
 | CSS | [`../src/index-open-atlas.css`](../src/index-open-atlas.css) — jetons `--oa-*`, encre `.text-primary` en sombre, blocs `oa-*` de l'accueil et de `/outils`, icônes en masque. Avant le 09/10 : `index-rezo-la-mer` partagée + `theme.customCSS` |
-| Code moteur (lot 5) | [`../src/components/sections/StatsSection.tsx`](../src/components/sections/StatsSection.tsx) (design `tiles`, chiffres comptés) · [`../src/components/sections/useStatDynamicValue.ts`](../src/components/sections/useStatDynamicValue.ts) (source `aacCommuns`, état `unavailable`) · `../src/types/site-schema.ts` · tests `StatsSection.test.tsx`, `useStatDynamicValue.test.ts` · registre `../scripts/lib/prop-descriptions.ts` · story `../.design-sync/previews/StatsSection.tsx` · `../doc/34-module-aac.md` |
+| Code moteur (lot 5) | [`../src/components/sections/StatsSection.tsx`](../src/components/sections/StatsSection.tsx) (design `tiles`, chiffres comptés) · [`../src/components/sections/statSourceState.ts`](../src/components/sections/statSourceState.ts) (état d'une source compté : `value`, `unavailable`) · `../src/types/site-schema.ts` · tests `StatsSection.test.tsx`, `statSourceState.test.ts` · registre `../scripts/lib/prop-descriptions.ts` · story `../.design-sync/previews/StatsSection.tsx` · `../doc/34-module-aac.md` |
 | Tests | `../tests/preflight/__effective__/open-atlas.json` (instantané du préflight — ne projette pas le bloc `aac`) |
 
 ---
@@ -412,8 +413,8 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
 - **Contre-revue** (06/10 — 0 majeur, 4 mineurs) : entité nulle ⇒ tiret (le client résout la sienne
   avant son 1er rendu), un refetch en échec ne masque plus un nombre de membres connu, tuile AAC en
   chunk `lazy` (build prod : 0 chunk AAC préchargé sur SSBE, contre 3), doc `cta-card-grid` alignée.
-  Reste : le fichier `useStatDynamicValue.ts` ne contient plus de `useStatDynamicValue` (renommage
-  `git mv` à décider) ; `aac-highlight` tranche encore son médaillon dès le SSR sur un serveur sans
+  Le fichier `useStatDynamicValue.ts`, qui ne contenait plus ce hook, est devenu `statSourceState.ts`
+  (revue MR 94, 14/10). Reste : `aac-highlight` tranche encore son médaillon dès le SSR sur un serveur sans
   entité (préexistant, hors périmètre).
 - **Gates** (06/10, backend PROD) :
 
@@ -481,16 +482,16 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
   feuille, même ton). Contourné ici par le ton `muted`.
 - La doc du module (doc/34 §6) dit le financement gardé par `coremu` ; le code le montre dès qu'une
   étape de financement existe (`hasFundingStep`). Le code fait foi — doc à resynchroniser.
-- **`/communaute` pèse 3,3 Mo de HTML**, dont 3,2 Mo d'état React Query : chaque carte embarque
-  `parent`, une copie sérialisée de l'entité Open Atlas (~43 Ko), soit ~1,8 Mo répétés sur 42 cartes.
-  Problème **moteur/SDK**, pas de config.
+- **`/communaute` pèse 1,86 Mo de HTML** (3,5 Mo avant le 14/10). Chaque carte embarquait `parent`,
+  une copie sérialisée de l'entité Open Atlas (~44 Ko, `links` compris), soit 1,8 Mo répétés sur 42
+  cartes : l'état SSR range désormais chaque parent distinct une fois (`src/lib/ssrStatePacking.ts`,
+  doc/14), pour tous les sites. Reste ~1,45 Mo de données de cartes (les `links` des membres) —
+  une projection `defaultFields` les réduirait, à condition de savoir ce que lisent cartes et fiches.
 - `costum.slug` vaut `"OpenAtlas"` alors que la clé de source est `"openAtlas"` : ne jamais écrire
   `sourceKey: ["OpenAtlas"]` (0 résultat).
 - **Vitrine des projets de l'accueil** (lot 5) : l'aperçu montre les 3 premiers projets du
   formulaire tels quels — au 06/10 « MSS Tampon » (deux fois) et « SPORTS PEI », sans description ni
   image. C'est la donnée, pas le rendu : à nettoyer côté réponses, ou à trier autrement.
-- **Liens internes des sections `html`** (`/projets`, `/contact`…) : `<a>` natifs, donc rechargement
-  complet de la page (SSR) au lieu d'une navigation SPA. Fonctionnel, plus lent.
 - **Tuiles comptées côté client** : le HTML serveur porte un squelette à leur place (pas de
   préchargement SSR des comptes).
 - **Poids de la config dans chaque page** : la config entière est sérialisée dans le HTML de chaque
@@ -499,7 +500,7 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
   chargement paresseux des sections `html` le réglerait.
 - **`/communaute` : erreur SSR `COSTUM_RESOLVED - Request validation failed`** à chaque rendu serveur
   (6/6 le 09/10), visible aussi en console navigateur ; la page rend quand même. Reproduite sur le
-  commit `b4f7f9f8` (4/4) : **antérieure** à la feuille propre et à `/outils`, à instruire.
+  commit `b4f7f9f8` (4/4) : **antérieure** à la feuille propre et à `/outils`. Cause (instruite le 14/10) : un membre importé en 2016 (`5761377a40bb4ecd65630b74`) porte `source.key: ["crowdfunder"]`, un TABLEAU ; le SDK le passait tel quel au préchargement des costums (`prefetchCostums`), la validation de `COSTUM_RESOLVED` le refusait et `safeCall` journalisait l'erreur. Sans effet sur le rendu. Corrigé dans cocolight-api-client (`src/costum/runtime.ts` : seules les clés à la forme d'un slug partent) — en attente de commit et de publication du SDK, puis de la montée de version ici.
 
 ---
 
@@ -507,7 +508,7 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
 
 | Question | Responsable |
 |---|---|
-| Faut-il **écarter** certains projets du site public (projets clients, budgets nominatifs, doublons) ? Aujourd'hui, pas de filtre de publication sur un AAP : nettoyer les réponses, ou définir une règle (tag, statut) à porter en config | Francki / admins Open Atlas |
+| **À trancher par qui porte le site** (remonté par la revue de la MR 94 : le site rend visible et indexable ce qui n'était lisible qu'en API) — faut-il **écarter** certains projets du site public (projets clients, budgets nominatifs, doublons) ? Aujourd'hui, pas de filtre de publication sur un AAP : nettoyer les réponses, ou définir une règle (tag, statut) à porter en config | Francki / admins Open Atlas |
 | Rouvrir le formulaire pour permettre le dépôt depuis le site ? (aujourd'hui `closed`) | Francki |
 | Liste des outils à décrire et mode de production du contenu des pages d'outils | Francki |
 | Mentions légales : forme juridique, immatriculation, siège, directeur de publication, hébergeur, contact. Candidats **à confirmer** lus sur la fiche de l'entité : 56 rue Andy, 97460 Saint-Paul ; `contact@communecter.org` | Open Atlas |

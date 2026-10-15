@@ -67,8 +67,37 @@ describe("resolveAacConfig", () => {
     const cfg = resolveAacConfig("f1", form);
     expect(cfg.roles.depenseStepKey).toBe("aapStep1");
     expect(cfg.roles.evalStepKey).toBe("aapStep2");
+    expect(cfg.roles.evalStepKeyFound).toBe("aapStep2");
     expect(cfg.roles.financementStepKey).toBe("aapStep3");
     expect(cfg.roles.suiviStepKey).toBe("aapStep4");
+  });
+
+  it("étape d'évaluation sans question de vote : `evalStepKey` par position, `evalStepKeyFound` nul", () => {
+    // AAP [identité, projet, budget] : le dispatch désigne la 2e étape, que rien n'a trouvée.
+    const form = {
+      subForms: ["aapStep1", "aapStep2", "aapStep3"],
+      inputs: {
+        aapStep1: step({ titre: "text" }),
+        aapStep2: step({ description: "textarea" }),
+        aapStep3: step({ depense: "tpls.forms.ocecoform.newDepenseList" }),
+      },
+    };
+    const cfg = resolveAacConfig("f1", form);
+    expect(cfg.roles.evalStepKey).toBe("aapStep2");
+    expect(cfg.roles.evalStepKeyFound).toBeNull();
+  });
+
+  it("une étape qui ne porte que la grille `tpls.forms.aap.evaluation` est TROUVÉE", () => {
+    const form = {
+      subForms: ["aapStep1", "aapStep2", "aapStep3"],
+      inputs: {
+        aapStep1: step({ titre: "text" }),
+        aapStep2: step({ description: "textarea" }),
+        aapStep3: step({ grille: "tpls.forms.aap.evaluation" }),
+      },
+    };
+    const cfg = resolveAacConfig("f1", form);
+    expect(cfg.roles.evalStepKeyFound).toBe("aapStep3");
   });
 
   it("subForms OBJET (fallback config) quand form.subForms est absent", () => {

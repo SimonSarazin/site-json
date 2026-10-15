@@ -68,6 +68,8 @@ export interface InfiniteEntityQueryResult<TResult> {
   /** La 1ʳᵉ page a apporté son `count` : `totalCount` est un vrai total, pas le 0 d'attente. */
   hasCount: boolean;
   isLoading: boolean;
+  /** Pas encore de résultat, requête en vol OU en attente de départ (désactivée, hors ligne). */
+  isPending: boolean;
   isFetchingNextPage: boolean;
   hasNextPage: boolean | undefined;
   lastItemRef: (node: HTMLElement | null) => void;
@@ -117,6 +119,7 @@ export function useInfiniteEntityQuery<TEntity, TResult>({
     totalCount,
     hasCount,
     isLoading,
+    isPending,
     isFetchingNextPage,
     hasNextPage,
     lastItemRef,
@@ -157,6 +160,7 @@ export function useInfiniteEntityQuery<TEntity, TResult>({
     totalCount,
     hasCount,
     isLoading,
+    isPending,
     isFetchingNextPage,
     hasNextPage,
     lastItemRef,

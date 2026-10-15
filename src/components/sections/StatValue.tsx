@@ -2,7 +2,7 @@ import { Suspense, type ReactNode } from "react";
 import { lazy } from "vite-preload";
 import type { StatDynamicSource } from "@/types/site-schema";
 import { StatFigure, type StatFigureProps } from "./StatFigure";
-import { STAT_PENDING, useMembersCountState, useSearchCountState } from "./useStatDynamicValue";
+import { STAT_PENDING, useMembersCountState, useSearchCountState } from "./statSourceState";
 
 const AacCommunsStatValue = lazy(() => import("./AacCommunsStatValue"));
 
@@ -14,8 +14,6 @@ interface StatLike {
 
 interface StatValueProps {
   stat: StatLike;
-  /** Préfixe de clé React Query, unique par tuile. */
-  queryKeyPrefix: string;
   skeletonClassName?: string;
   children: (value: string) => ReactNode;
 }
@@ -31,11 +29,11 @@ const NO_SOURCE = { value: null, unavailable: true };
  *
  * Partagé par `stats` et `cta-card-grid` : le contrat d'affichage est celui de `StatFigure`.
  */
-export function StatValue({ stat, queryKeyPrefix, skeletonClassName, children }: StatValueProps) {
+export function StatValue({ stat, skeletonClassName, children }: StatValueProps) {
   const figure: FigureProps = { written: stat.value, skeletonClassName, children };
   switch (stat.source?.type) {
     case "searchCount":
-      return <SearchCountValue source={stat.source} queryKeyPrefix={queryKeyPrefix} {...figure} />;
+      return <SearchCountValue source={stat.source} {...figure} />;
     case "membersCount":
       return <MembersCountValue source={stat.source} {...figure} />;
     case "aacCommuns":
@@ -53,10 +51,9 @@ export function StatValue({ stat, queryKeyPrefix, skeletonClassName, children }:
 
 function SearchCountValue({
   source,
-  queryKeyPrefix,
   ...figure
-}: FigureProps & { source: Extract<StatDynamicSource, { type: "searchCount" }>; queryKeyPrefix: string }) {
-  return <StatFigure state={useSearchCountState(source, queryKeyPrefix)} {...figure} />;
+}: FigureProps & { source: Extract<StatDynamicSource, { type: "searchCount" }> }) {
+  return <StatFigure state={useSearchCountState(source)} {...figure} />;
 }
 
 function MembersCountValue({

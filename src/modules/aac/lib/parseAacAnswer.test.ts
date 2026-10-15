@@ -26,6 +26,7 @@ const ROLES = {
   depenseStepKey: "etapeA",
   evalStepKey: "etapeB",
   financementStepKey: null,
+  evalStepKeyFound: null,
   suiviStepKey: null,
 };
 

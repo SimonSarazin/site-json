@@ -35,7 +35,8 @@
  *
  * Sorties / codes :
  *   0  tous les périmètres renvoient au moins un résultat
- *   1  au moins un périmètre est VIDE (le défaut cherché)
+ *   1  au moins un périmètre est VIDE (le défaut cherché), ou la sélection AAC
+ *      (`aac.directory.fields.choose`) est mal formée ou ne désigne aucune question
  *   2  erreur d'usage, config illisible, backend injoignable, ou périmètre en
  *      erreur backend (une erreur ne vaut PAS un périmètre vide : rien n'est
  *      prouvé). JAMAIS 1 pour un défaut d'outil : l'appelant doit pouvoir lire
@@ -50,6 +51,8 @@ import { canonicalSearchProStaticBaseParams } from "../src/modules/search/lib/ca
 import { agendaListIndexStep, buildAgendaListParams, type AgendaBaseParams } from "../src/modules/agenda/lib/buildAgendaParams";
 import { buildObservatoryBaseParams } from "../src/modules/observatoire/hooks/useObservatoryItemsQuery";
 import { fetchFilterEntities } from "../src/modules/search/hooks/useFilterEntities";
+import { buildAacFormMeta } from "../src/modules/aac/lib/formMeta";
+import { diagnoseAacChoose, type AacChooseFinding } from "../src/modules/aac/lib/diagnoseAacChoose";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -228,13 +231,17 @@ const ignored = collected
   .filter((x): x is { path: string; type: string; reason: string } => x.reason !== undefined);
 const perimeters = collected.filter((p) => !unreadReason(p));
 
+// AAC déclaré ? Sa sélection (`choose`) se confronte au formulaire réel, même sans aucun périmètre.
+const aacBlock = isRecord(rawConfig) && isRecord(rawConfig.aac) ? rawConfig.aac : undefined;
+const aacFormId = typeof aacBlock?.formId === "string" ? aacBlock.formId : undefined;
+
 // Rien à sonder : on ne touche PAS au réseau (un site vitrine sans recherche
 // n'a pas à échouer parce que son slug est absent du backend interrogé).
-if (perimeters.length === 0) {
+if (perimeters.length === 0 && !aacFormId) {
   if (JSON_OUT)
     // `entity: null` et non absent : la forme de sortie reste la MÊME dans les
     // deux branches (l'appelant lit un champ, pas une exception de clé).
-    console.log(JSON.stringify({ config: CONFIG_PATH, backend: baseURL, slug, slugSource: resolution.source, slugSiblings: resolution.siblings, warnings, entity: null, perimeters: [], ignored, summary: { total: 0, ok: 0, empty: 0, error: 0 } }, null, 2));
+    console.log(JSON.stringify({ config: CONFIG_PATH, backend: baseURL, slug, slugSource: resolution.source, slugSiblings: resolution.siblings, warnings, entity: null, perimeters: [], ignored, aac: null, summary: { total: 0, ok: 0, empty: 0, error: 0, aacDefect: false } }, null, 2));
   else {
     console.log(`\n🛰️   Sonde des périmètres — ${path.basename(CONFIG_PATH)}\n     aucun baseParams sondable dans ce config — rien à sonder`);
     for (const i of ignored) console.log(`     (ignoré) ${i.path} — ${i.reason}`);
@@ -287,6 +294,33 @@ try {
 const entityServerData = entity.serverData ?? {};
 const entityName = typeof entityServerData.name === "string" ? entityServerData.name : "?";
 const entityKind = entity.getEntityType?.() ?? "?";
+
+// ─── AAC : la sélection (`choose`) déclarée ⇄ celle du formulaire réel ──────
+// Rien de statique ne voit ce décalage (cf. `diagnoseAacChoose`) : le formulaire est lu comme
+// l'app le lit (`entity.form`, même `buildAacFormMeta`). Un chemin mal formé ou introuvable est un
+// défaut de config (code 1) ; une sélection non déclarée est un AVERTISSEMENT — un AAP qui publie
+// tout peut porter une question `choose` sans la vouloir.
+interface AacCheck {
+  formId: string;
+  finding: AacChooseFinding | null;
+  /** Formulaire illisible : rien n'est prouvé sur la sélection (code 2, comme un périmètre en erreur). */
+  error?: string;
+}
+let aacCheck: AacCheck | undefined;
+if (aacFormId) {
+  const directory = isRecord(aacBlock?.directory) ? aacBlock.directory : undefined;
+  const declaredChoose = isRecord(directory?.fields) ? directory.fields.choose : undefined;
+  try {
+    const form = await (entity as unknown as {
+      form: (p: { id: string }) => Promise<{ serverData?: unknown }>;
+    }).form({ id: aacFormId });
+    aacCheck = { formId: aacFormId, finding: diagnoseAacChoose(buildAacFormMeta(aacFormId, form.serverData), declaredChoose) };
+    if (aacCheck.finding?.kind === "non-declaree") warnings.push(`AAC ${aacFormId} : ${aacCheck.finding.message}`);
+  } catch (e) {
+    aacCheck = { formId: aacFormId, finding: null, error: describeError(e) };
+  }
+}
+const aacDefect = aacCheck?.finding && aacCheck.finding.kind !== "non-declaree" ? aacCheck.finding : null;
 
 // ─── Construction des appels (mêmes fonctions que l'app) ──────────────────
 type Method = "searchCostum" | "searchEventsCostum" | "searchCostum (filtre entityList)";
@@ -513,7 +547,8 @@ if (JSON_OUT) {
         entity: { name: entityName, type: entityKind },
         perimeters: results,
         ignored,
-        summary: { total: results.length, ok: nOk, empty: nEmpty, error: nErr },
+        aac: aacCheck ?? null,
+        summary: { total: results.length, ok: nOk, empty: nEmpty, error: nErr + (aacCheck?.error ? 1 : 0), aacDefect: !!aacDefect },
       },
       null,
       2,
@@ -543,6 +578,18 @@ if (JSON_OUT) {
   // Écartés : dits, jamais tus — c'est du config mort, pas un périmètre vide.
   for (const i of ignored) console.log(`➖  ${i.path}  ${i.type}  → ignoré : ${i.reason}`);
 
+  if (aacCheck?.error) {
+    console.log(`❌  aac.directory.fields.choose  → formulaire ${aacCheck.formId} illisible (${aacCheck.error}) : sélection NON vérifiée`);
+  } else if (aacCheck) {
+    console.log(
+      aacDefect
+        ? `⛔  aac.directory.fields.choose  → ${aacDefect.message}`
+        : aacCheck.finding
+          ? `⚠️   aac.directory.fields.choose  → non déclaré, le formulaire ${aacCheck.formId} porte une sélection (voir l'avertissement)`
+          : `✅  aac.directory.fields.choose  → cohérent avec le formulaire ${aacCheck.formId}`,
+    );
+  }
+
   console.log("\n" + "═".repeat(78));
   console.log(
     `${results.length} périmètre(s) — ${nOk} OK · ${nEmpty} VIDE · ${nErr} erreur(s)` +
@@ -554,4 +601,4 @@ if (JSON_OUT) {
   console.log("");
 }
 
-process.exit(nErr > 0 ? 2 : nEmpty > 0 ? 1 : 0);
+process.exit(nErr > 0 || aacCheck?.error ? 2 : nEmpty > 0 || aacDefect ? 1 : 0);

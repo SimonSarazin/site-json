@@ -447,6 +447,17 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
    - `["cocolight-init"]` : résultat brut de `initApi()`, contient des classes non-JSON-sérialisables (`ApiClient`). **Exclu** de la déshydratation.
    - `["cocolight-data"]` : sous-ensemble sérialisable (`me`, `entity`, `contextType`, `contextId`). **Inclus** dans la déshydratation et transmis au client via `window.__REACT_QUERY_STATE__`.
 
+   **Parents factorisés au transport** (`src/lib/ssrStatePacking.ts`). Chaque entité du SDK se
+   sérialise avec la méta de son parent (`BaseEntity.toJSON` → `parent`, `links` compris pour
+   `isAdmin()`), recopiée dans chaque carte d'une liste — sur /communaute d'Open Atlas, 42 copies de
+   44 Ko (1,8 Mo d'un état de 3,3 Mo). `entry-server` passe donc l'état à `packSsrState` avant
+   `onHead` : chaque parent distinct est rangé une fois dans `__ssrParents`, une référence
+   `{ __ssrParentRef: n }` reste à sa place. Côté client, `src/lib/ssrStateBootstrap.ts`, importé EN
+   PREMIER par `entry-client`, restitue une copie par entité avant toute lecture
+   (`HydrationBoundary`, `getHydratedCocolightData`). React Query et le SDK reçoivent le même JSON
+   qu'avant (vérifié à l'identique sur /communaute, horodatages mis à part) ; l'état emballé reste un
+   `DehydratedState` lisible (`queries`, `mutations`).
+
 ### Intégration vite-preload
 
    Le module `vite-preload` trace les composants lazy-loaded et injecte les balises `<link rel="modulepreload">` dans le HTML SSR. Il est initialisé **après** la déshydratation React Query mais **avant** le rendu :
