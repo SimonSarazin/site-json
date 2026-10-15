@@ -1,6 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { getBaseUrl } from "@/lib/constant/common";
-import { initApi } from "@/lib/apiClient";
+import { ensureInitApi } from "@/lib/cocolightInitQuery";
 import {
   searchZoneQueryKey,
   fetchSearchZones,
@@ -67,7 +66,7 @@ export async function prefetchSearchZones(
     return await queryClient.ensureQueryData({
       queryKey: searchZoneQueryKey(query, options),
       queryFn: async () => {
-        const { entity, api } = await initApi({ baseURL: getBaseUrl() });
+        const { entity, api } = await ensureInitApi(queryClient);
         const target = entity || api;
         if (!target || typeof (target as { searchZone?: unknown }).searchZone !== "function") {
           return [];
@@ -96,7 +95,7 @@ export async function prefetchFiltersByAnswers(
     return await queryClient.ensureQueryData({
       queryKey: filtersByAnswersQueryKey(query, options),
       queryFn: async () => {
-        const { entity, api } = await initApi({ baseURL: getBaseUrl() });
+        const { entity, api } = await ensureInitApi(queryClient);
         const target = entity || api;
         if (!target || typeof (target as { coformFiltersSearch?: unknown }).coformFiltersSearch !== "function") {
           return {};
@@ -127,7 +126,7 @@ export async function prefetchFilterEntities(
     return await queryClient.ensureQueryData({
       queryKey: filterEntitiesQueryKey(query, options),
       queryFn: async () => {
-        const { entity, api } = await initApi({ baseURL: getBaseUrl() });
+        const { entity, api } = await ensureInitApi(queryClient);
         const target = entity || api;
         if (!target || typeof (target as { searchCostum?: unknown }).searchCostum !== "function") {
           return [];
@@ -156,7 +155,7 @@ export async function prefetchFiltersByPath(
     return await queryClient.ensureQueryData({
       queryKey: filtersByPathQueryKey(query, options),
       queryFn: async () => {
-        const { entity, api } = await initApi({ baseURL: getBaseUrl() });
+        const { entity, api } = await ensureInitApi(queryClient);
         const target = entity || api;
         if (!target || typeof (target as { coformFilterByPath?: unknown }).coformFilterByPath !== "function") {
           return {};
