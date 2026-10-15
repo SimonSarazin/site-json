@@ -21,6 +21,10 @@
       }
     }
   },
+  "finderAddNew": {
+    "organizations": "add-organization",
+    "poi": "add-poi"
+  },
   "editModals": {
     "citoyens": {
       "vierge": "edit-profile",

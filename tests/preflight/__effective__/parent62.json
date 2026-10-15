@@ -4,11 +4,13 @@
   "addMenus": {
     "citoyens": {
       "builtins": {
-        "organization": "add-parent62-partenaire",
         "project": "add-project",
         "event": "add-event",
         "poi": "add-poi"
-      }
+      },
+      "customs": [
+        "add-parent62-partenaire"
+      ]
     },
     "organizations": {
       "builtins": {
@@ -24,13 +26,23 @@
       }
     }
   },
+  "finderAddNew": {
+    "organizations": "add-organization",
+    "events": "add-event",
+    "poi": "add-poi"
+  },
   "editModals": {
     "organizations": {
       "vierge": "edit-profile",
       "routes": [
         {
+          "declare": "edit-parent62-acteur",
+          "native": "edit-parent62-acteur",
+          "horsPerimetre": "edit-profile"
+        },
+        {
           "declare": "edit-parent62-partenaire",
-          "native": "edit-parent62-partenaire",
+          "native": "edit-parent62-acteur",
           "horsPerimetre": "edit-profile"
         }
       ]
@@ -180,6 +192,9 @@
         "costumSlug": "parent62",
         "sourceKey": [
           "parent62"
+        ],
+        "defaultFields": [
+          "category"
         ]
       },
       "create": "add-parent62-recovery-center",
@@ -199,6 +214,9 @@
         "costumSlug": "parent62",
         "sourceKey": [
           "parent62"
+        ],
+        "defaultFields": [
+          "annee"
         ]
       },
       "create": "add-parent62-inforeso",
@@ -1353,6 +1371,9 @@
           "parent62"
         ],
         "costumSlug": "parent62",
+        "defaultTags": [
+          "Partenaires"
+        ],
         "defaultFields": [
           "name",
           "slug",
@@ -1385,7 +1406,67 @@
         },
         "indexStepList": 24
       }
+    },
+    "/annuaire-acteurs-parentalite/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "defaultFilters": {
+          "tags": {
+            "$nin": [
+              "Partenaires"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "type",
+          "collection",
+          "source",
+          "reference",
+          "shortDescription",
+          "description",
+          "email",
+          "telephone",
+          "url",
+          "address",
+          "geo",
+          "geoPosition",
+          "categoryThematic",
+          "typeAction",
+          "publicCible",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "indexStepList": 200
+      }
     }
+  },
+  "stamps": {
+    "parent62-partenaire": [
+      {
+        "field": "tags",
+        "value": "Partenaires",
+        "op": "append",
+        "on": "both",
+        "channel": "payload"
+      }
+    ]
   },
   "referencement": {},
   "membership": {

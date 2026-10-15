@@ -3,7 +3,8 @@ import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
 
-import { costumCreateKey } from "@/modules/profil/components/action-buttons/AddEntityDropdown";
+import { STANDARD_ADD_MODAL_BY_TYPE, costumCreateKey } from "@/modules/profil/components/add/addModals";
+import { resolveFinderAddNewModal } from "@/modules/coform/utils/finderAddNew";
 import { resolveEditModalName } from "@/modules/profil/components/profile-edit/EditModalRegistry";
 import { LISTES } from "@/modules/profil/components/tabs/MembershipTab";
 import { resolveCreateModal, resolveEditModal } from "@/modules/admin/sections/resourceHelpers";
@@ -22,10 +23,10 @@ import { searchByFieldsToQuery } from "@/modules/search/lib/searchByFieldsToQuer
  * GARDE D'IMPACT INTER-CONFIGS — étage 2 : le « comportement résolu par site ».
  *
  * Pour chaque `config.prod.*.json`, ce test matérialise une projection SÉMANTIQUE calculée par les
- * MÊMES fonctions pures que l'app (résolution des menus d'ajout, des routes d'édition, des
- * baseParams admin expansés, des sous-types de référencement, des défauts membership) — plus les
- * contributions déclarées des pages publiques (ajouter / modifier) —, et la compare à une fixture
- * committée (`__effective__/<site>.json`).
+ * MÊMES fonctions pures que l'app (résolution des menus d'ajout, des routes d'édition, de la modale
+ * d'« Ajouter » d'un finder coform, des baseParams admin expansés, des sous-types de référencement,
+ * des défauts membership) — plus les contributions déclarées des pages publiques (ajouter /
+ * modifier) —, et la compare à une fixture committée (`__effective__/<site>.json`).
  *
  * L'effet recherché : tout changement de CODE PARTAGÉ qui altère le comportement effectif d'un
  * site — même un site dont on ne touche pas la config — apparaît comme un diff de SA fixture.
@@ -159,6 +160,24 @@ function projeter(site: string, cfg: Cfg) {
         .filter(Boolean);
       addMenus[cleUnique(addMenus, type)] = { builtins, ...(customs.length ? { customs } : {}) };
     }
+  }
+
+  // ── Bouton « Ajouter » d'un finder coform : la modale EFFECTIVE, par type cherché puis par
+  //    question déclarée (`null` = pas de bouton). Ne sont projetés que les types où la réponse PEUT
+  //    ne pas être la modale standard : ceux pour lesquels le site déclare un formulaire costum, ou
+  //    une entrée `coform.finderAddNew`. Précédent mesuré : une règle « formulaire costum unique du
+  //    site » a rerouté les finders d'organisations, de projets, d'événements et de POI de 11 sites
+  //    sans qu'aucune fixture ne bouge (revue de la MR !83) — ce chemin n'était pas projeté.
+  const declarations = (cfg.coform as { finderAddNew?: Record<string, unknown> } | undefined)?.finderAddNew ?? {};
+  const finderAddNew: Record<string, unknown> = {};
+  for (const type of Object.keys(STANDARD_ADD_MODAL_BY_TYPE)) {
+    const concerne = type in declarations || Object.values(forms).some((doc) => doc?.entityType === type);
+    if (concerne) finderAddNew[type] = resolveFinderAddNewModal(declarations, undefined, type, forms);
+  }
+  for (const cle of Object.keys(declarations)) {
+    if (cle in STANDARD_ADD_MODAL_BY_TYPE) continue;
+    // La question l'emporte sur tout type : celui de la sonde n'entre pas dans la réponse.
+    finderAddNew[`question:${cle}`] = resolveFinderAddNewModal(declarations, cle, "", forms);
   }
 
   // ── Routes d'édition : résolution RÉELLE sur des sondes — une « native » (champs du match +
@@ -383,6 +402,7 @@ function projeter(site: string, cfg: Cfg) {
     slug,
     ...(deploiements.length > 1 ? { deploiements } : {}),
     addMenus,
+    ...(Object.keys(finderAddNew).length ? { finderAddNew } : {}),
     editModals,
     adminResources,
     pages,

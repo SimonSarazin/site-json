@@ -79,7 +79,9 @@ versement, jamais par la position dans `financer[]`, qu'une insertion concurrent
 
 **Ne jamais écrire ce bloc côté client** : `finkey`, `invoiceId` et les agrégats sont générés
 par `Aap::addFinancerEngagement` / `payFinancerEngagement` / `recomputeFinancerPayment`. Le
-front passe par `/co2/aap/coremuoperation/`. **En lecture**, tout passe par
+front passe par `/co2/aap/coremuoperation/` ; les versements Stripe et HelloAsso, eux, sont écrits
+par le serveur après vérification du paiement (`fundingEnvelope`, cf.
+[Module Cagnotte](18-module-cagnotte.md#services-de-paiement)). **En lecture**, tout passe par
 [`readFinancerPaymentState`](../src/modules/cagnotte/utils/financerPayment.ts) — une seule
 fonction, qui gère les trois formes en base (canonique, engagement neuf `{logs:[]}`, et legacy
 sans `payment`) et traduit `payed` → `paid` pour l'affichage. Aucune migration n'étant prévue,
@@ -168,6 +170,11 @@ avec `AacCommunList` : review MR 53, M25/H11/H13.)
   l'hydratation. Il ne disparaît que sur **échec réel** du décompte, et n'est pas rendu du tout si
   `config.aac.formId` est absent (le nombre ne sera jamais connu : mieux vaut pas de médaillon
   qu'un médaillon vide).
+- **le même chiffre en tuile** : `stats.props.items[].source` ou `cta-card-grid.props.stats[].source`
+  = `{"type": "aacCommuns"}` — même décompte et même garde de joignabilité
+  (`useAacCommunsCountState`, partagé avec le médaillon). Compté côté client : squelette en SSR ;
+  AAC absent ou irrésoluble ⇒ tiret, tranché après hydratation — jamais un squelette perpétuel.
+  Usage réel : accueil d'Open Atlas (`stats` en `design: "tiles"`).
 
 ⚠️ Les `.default()` Zod de ces props sont **documentaires** : la config n'est pas parsée par Zod à
 l'exécution, chaque composant applique ses propres défauts.
@@ -217,7 +224,7 @@ champs (§ chaîne ci-dessous). Le bloc sert d'échappatoire déterministe.
 
 - **`answers.<étape>.<idQuestion>`** — une réponse au formulaire. L'étape fait partie du
   chemin : un form AAP en compte 4 ou 5, l'id seul n'en désigne aucune, et la seule devinette
-  disponible serait l'étape du RÔLE (`depenseStepKey`, ou `evalStepKey` pour `choose`) — juste
+  disponible serait l'étape du RÔLE (`depenseStepKey`) — juste
   dans le cas canonique, fausse dès qu'une question sort de son étape attendue, et
   indisponible quand la dérivation échoue. C'est aussi la forme de `form.mapping` en base et
   celle de la lecture réelle (`answers[étape][id]`).
@@ -248,7 +255,7 @@ Les 8 rôles, et ce que chacun pilote **au-delà de la carte** :
 | `maturity` | — | filtre « maturité » (ses OPTIONS viennent de la question) ; **aucun repli backend** : non résolu ⇒ `null` et filtre masqué |
 | `image` | visuel | **c'est lui qui pilote la vignette** — cf. l'ordre de lecture ci-dessous |
 | `depense` | jauge de financement | repli quand `funds` n'est pas pré-calculé, **avec le même filtre `include !== false`** que le backend (§13.3) |
-| `choose` | badge « en attente » | lu sur l'étape d'ÉVALUATION, pas celle de dépôt ; la clé de contexte est la **1ʳᵉ entrée de `form.parent`** (`firstParent`), pas l'entité du slug du site |
+| `choose` | badge « en attente » / « sélectionné » | **résolu par la config SEULEMENT, jamais deviné** : un AAC a une étape de sélection, un AAP non (le form OCECO d'Open Atlas n'a qu'un `decide`). Déclaré ⇒ badge, bouton « Ajouter à l'annuaire » et **annuaire public restreint aux sélectionnés** ; absent ⇒ ni statut, ni bouton, ni restriction : toute proposition titrée est publique. L'étape masquée au non-admin à l'édition suit l'étape d'**évaluation** (`choose` déclaré, sinon `roles.evalStepKeyFound`) : un AAP garde ses votes hors de portée de l'auteur. Seule une étape **trouvée** par scan (question `choose`/`decide`/de vote) est masquée — `roles.evalStepKey`, qui retombe sur une POSITION (2ᵉ ou 3ᵉ étape), désignerait sur un AAP sans vote une étape ordinaire de l'auteur. Un chemin sans préfixe `answers.` est refusé par `config:validate` (le runtime l'ignore). La clé de contexte est la **1ʳᵉ entrée de `form.parent`** (`firstParent`), pas l'entité du slug du site |
 | `users` | nombre de membres | **le seul rôle qui ne parle pas du formulaire** — cf. ci-dessous |
 
 **`image` : la QUESTION d'abord, la vignette backend en repli.** L'ordre est
@@ -287,8 +294,15 @@ ensemble.
 ([`lib/resolveAacCardFields.ts`](../src/modules/aac/lib/resolveAacCardFields.ts)) :
 
 `config` → `form.mapping` → scan (type/libellé) → défaut canonique
-(`titre`/`description`/`tags`/`image`/`depense`/`choose` ; ni `maturity` ni `users` n'en ont
-un) → `null`.
+(`titre`/`description`/`tags`/`image`/`depense` ; ni `maturity` ni `users` n'en ont
+un) → `null`. **Sauf `choose`** : `config` → `null`, rien d'autre — le deviner fabriquait
+`aapStep2.choose` sur tout formulaire, et un AAP voyait chaque proposition « en attente » et son
+annuaire public vide. Un site AAC **doit** donc déclarer `"choose": "answers.<étape>.choose"`.
+Les oublis ne passent plus en silence : `config:validate` refuse un chemin sans `answers.` ;
+`config:probe` lit le formulaire réel (`diagnoseAacChoose`) et échoue (code 1) sur un `choose` qui ne
+désigne aucune question, avertit quand le formulaire porte une question `choose` que la config ne
+déclare pas ; en développement, l'annuaire dit les mêmes constats dans la console. Le signal est la
+QUESTION `choose`, pas `aapType` : le formulaire de la Fédération des CAE, un AAC, n'en a pas.
 
 Le résultat porte un champ **`source`** (`"config" | "mapping" | "scan" | "default" | "none"`)
 qui dit lequel a répondu : c'est par lui qu'on diagnostique une carte vide.
@@ -359,6 +373,26 @@ dès que `detail.sections` est absent ou vide, et `useAacGallerySubKey()` rend `
 `detail.gallery`. Une fiche sans prose ni galerie sur un nouveau site n'est pas un bug : c'est le
 bloc `detail` qui manque — et rien ne le signale à `config:validate` (tout y est optionnel).
 
+**La barre d'actions de la fiche** ([`CommunActionBar`](../src/modules/aac/components/pageDetail/CommunActionBar.tsx),
+arbitrage du 01/10) suit quatre règles :
+
+- **l'état se lit, pour tous** — « En attente » / « Sélectionné » et « Phase proposition » à gauche,
+  admin compris : une action ne remplace plus une pastille ;
+- **un seul bouton plein**, la décision encore ouverte : « Ajouter à l'annuaire » (admin, commun non
+  sélectionné), en dernier avant « ⋯ » ;
+- **« ⋯ »** porte le passage en projet (« Générer le projet », « Associer un projet existant »), puis
+  « Retirer de l'annuaire », puis, à l'écart et en rouge, « Supprimer le commun ». Sous `sm`,
+  « Éditeurs » y passe aussi ; « Ouvrir le projet » reste un bouton, visible de tous ;
+- chaque action garde **son** gate et **sa** confirmation : trois hooks
+  (`useCommunSelectionAction`, `useCommunProjectActions`, `useCommunDeleteAction`) portent écriture,
+  dialogue et état ; la barre ne place que les déclencheurs.
+
+Deux pièges : les dialogues sont rendus **hors** du menu (son contenu est démonté à la fermeture), et
+le menu est **non modal** — modal, il laissait `pointer-events: none` sur `<body>` à la fermeture de
+la recherche de projets montée depuis une de ses entrées (page figée). Le passage en projet n'existe
+que si le commun peut encore en recevoir un (`canLink`) : un dialogue ouvert disparaît si un projet
+arrive entre-temps, sinon « Associer » écraserait le lien existant.
+
 ### 3.3 La fiche — financement, paliers, cofinanceurs, SEO
 
 Les blocs structurels de `/aac/commun/:answerId` ne se déclarent pas ; ce qui suit décrit ce
@@ -418,7 +452,7 @@ le commun.
 | | |
 |---|---|
 | Stockage | `answers.<id>.links.canEdit = { <userId>: { name, type } }` — le legacy y range parfois une vignette (`profilThumbImageUrl`), reprise à la réécriture en chemin **relatif** (la lecture SDK la rend absolue, cf. pièges) |
-| Bouton | `CommunEditorsControl`, à côté de « Modifier », gardé par `canManageEditors` (auteur ou admin) |
+| Bouton | « Éditeurs », dans la barre de la fiche à côté de « Modifier » (dans « ⋯ » sous `sm`), dialogue `CommunEditorsDialog` ; gardé par `canManageEditors` (auteur ou admin) |
 | Recherche | `FinderSearchModal`, citoyens, recherche globale (`notSourceKey`) — le `initType: ['citoyens']` du legacy |
 | Droit donné | modifier le commun (`canEditCommun`), pas le supprimer — et, quand la question « Référent » est reliée, changer la liste par elle (ci-dessous) |
 | Écriture | `useSaveCommunEditors` : `updateField("links.canEdit", …)` puis la question liée, chacune seulement si elle change ; une liste vide s'écrit `null` (`$unset`) |
@@ -517,8 +551,13 @@ Les règles qu'il reproduit — **chacune est un piège du legacy** :
 | **Config org-spécifique** | Deux configs CoForm coexistent (**template héritable** vs **org-spécifique**) → on lit **celle pointée par `form.config`**. |
 | **`typeCoFinancer` à la RACINE du form** | Nature des organisations cofinanceuses : `"tiersLieux"` (le défaut legacy FTL) ou un **TAG d'organisation** (`"cae"`…, `Organization::get_cofinancer_bytags`). Clé racine du form parent, comme les gates — `financer.php:835` lit `costum.mainFormData.typeCoFinancer` puis `parentForm.typeCoFinancer`, `AnswerAction.php:268` teste `$params["parentForm"]["typeCoFinancer"]` : **ni `params`, ni l'aapConfig**. Absent ⇒ `null` ; le repli appartient à l'**affichage**, pas au résolveur. Périmètre de « J'utilise » (`useAacPlaceSourceKeys`), par priorité : `aac.detail.placeSourceKeys`, `aac.detail.placeKind`, ce `typeCoFinancer` (`"cae"` sans casse ⇒ CAE, toute autre valeur ⇒ tiers-lieux), puis tiers-lieux. |
 
-Sortie (`AacResolvedConfig`) : `steps[]`, `roles{depenseStepKey, evalStepKey, financementStepKey,
-suiviStepKey}`, `criteria[]`, `criteriaSource`, `gates`, `campaigns[]`, `typeCoFinancer`.
+Sortie (`AacResolvedConfig`) : `steps[]`, `roles{depenseStepKey, evalStepKey, evalStepKeyFound,
+financementStepKey, suiviStepKey}`, `criteria[]`, `criteriaSource`, `gates`, `campaigns[]`,
+`typeCoFinancer`. `evalStepKeyFound` = l'étape d'évaluation TROUVÉE par scan (`choose`, `decide`,
+sélection, vote ou grille `tpls.forms.aap.evaluation`), `null` quand `evalStepKey` n'est qu'une
+position (dispatch 4 vs 5) — seule elle est masquée à l'auteur. Le scan ÉCARTE l'étape de dépôt
+(`depenseStepKey`) : une grille de critères posée à côté de la proposition la désignerait, et
+l'auteur perdrait sa propre étape à l'édition.
 
 > **Nommage — ne pas confondre :**
 > - **`AacConfig`** (`schema.ts`) = le bloc **DÉCLARÉ** dans `config.aac` (juste `{ formId }`).
@@ -636,7 +675,7 @@ ci-dessous.
 | Action | Qui | Où |
 |---|---|---|
 | Sélectionner / valider un commun | admin de l'appel | `aac` (`canSelectCommun`) |
-| **Générer / Associer un projet** | admin de l'appel **ou** déposant | `CommunProjectControl.canManageProject` |
+| **Générer / Associer un projet** | admin de l'appel **ou** déposant | `project.canManage` de `CommunActionBar` (entrées de « ⋯ ») |
 | **Ajouter / éditer palier et action** | admin du **projet lié** **ou** déposant | `cagnotte` + `ownerIds` |
 | **Supprimer DÉFINITIVEMENT un commun** | auteur **ou** admin | `aac` (`canDeleteCommun`) |
 | **Gérer les contributeurs à l'édition** | bouton : auteur **ou** admin ; par la question « Référent » reliée : tout éditeur (parité legacy) | `aac` (`canManageEditors`) |
@@ -658,7 +697,7 @@ Deux garde-fous s'ajoutent au droit, côté front :
   refuse la suppression dès qu'un versement existe — compté sur `items[].allFunding`, **jamais** sur
   `resourceFinancedAmount`, qui ne somme que les paliers OUVERTS : un commun financé puis clôturé
   afficherait 0 € et redeviendrait supprimable. Le retrait de l'annuaire
-  (`CommunSelectionControl`) reste la voie non destructive.
+  (« Retirer de l'annuaire », `useCommunSelectionAction`) reste la voie non destructive.
 - **La cascade est EXPLICITE et sur demande** : le backend n'en fait aucune (`Element::deleteSimple`
   retire le document, ses commentaires et ses fichiers, mais ni les actions d'un projet ni les liens
   croisés). `useDeleteCommun` supprime le commun d'abord — seul échec qui fait échouer le geste —
@@ -714,7 +753,7 @@ AAC_QUERY_KEYS.COMMUNS_SCAN(formId, campaignId, serverParams, userId)
 > lèverait `projectMissing` une fois la saisie faite. Le commentaire de `queryKeys.ts` ne cite
 > aujourd'hui que le producteur.
 
-**Invalider après un dépôt ou une sélection** : `AacDepositButton` comme `CommunSelectionControl`
+**Invalider après un dépôt ou une sélection** : `AacDepositButton` comme `useCommunSelectionAction`
 invalident les **TROIS** préfixes `COMMUNS_PREFIX()` / `COUNT_PREFIX()` / `FACETS_PREFIX()`. Les trois,
 parce qu'ils sont volontairement disjoints : le décompte ignore les filtres de l'annuaire (il doit
 survivre à leur changement sans refetch) et les facettes se calculent sur le jeu NON filtré (sinon

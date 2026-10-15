@@ -38,7 +38,7 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | Chercher / vérifier un slug d'entité | `npm run entity:slug -- search <nom>` / `check <slug>` |
 | Qualité (liens morts, i18n, thème) | `npm run audit:config` |
 | **La config REND-elle ?** (SSR réel : sections déclarées vs rendues) | `npm run config:render -- <config.json>` |
-| **Les données EXISTENT-elles ?** (chaque `baseParams` sondé sur le backend) | `npm run config:probe -- <config.json>` |
+| **Les données EXISTENT-elles ?** (chaque `baseParams` sondé sur le backend ; la sélection AAC `choose` confrontée au formulaire réel) | `npm run config:probe -- <config.json>` |
 | Validation finale stricte | `npm run test:preflight` |
 
 Pour PARSER une sortie (jq, extraire un sous-arbre, script), appeler
@@ -380,7 +380,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 | `blog` | routes `/blog/:slug` (+ `/blog/id/:id`) + sections `articleFeed`/`articleReader` | `config.blog` (`feedCostumSlug`, variants card/reader), `costumForms.<article>`, `commandPalette.articleSearch` | POI `type:"article"` scopés costum (`source.key`) |
 | `coform` | routes `/coform/:formId` (+ `/answer/:answerId`, `/place`) | réf. de formulaire | CoForm défini côté backend |
 | `toolsCatalog` | section `toolsCatalog` (catalogue d'outils d'usage : recherche/filtres/pagination CÔTÉ SERVEUR + modale détail des lieux, bloc commun, bouton de réponse, édition d'enrichissement réservée aux admins du costum) | `formId`/`step`/`finderPath` (+ options : `showOpenSourceToggle`, `showUsageFilter`, `defaultView`, `showCommunInfo`+`communFormId`, `showAnswerButton`, `enableEnrichmentEditing`…) | réponses coform (commonTable) + collection `navigatorcriteria` (enrichissement) |
-| `aac` | sections `aac-directory`/`aac-highlight` (l'annuaire des communs — `variant` full/preview — et la bande CTA + médaillon compteur), routes `/aac` + `/aac/commun/:answerId` (montées seulement si `config.aac` existe) | `config.aac.formId` (form parent `type:aap,aapType:aac` — jamais dans les props de section), `config.aac.directory.fields`, `config.aac.detail` | CoForm/AAP défini côté backend (form + aapConfig) — cf. doc/34 §3 |
+| `aac` | sections `aac-directory`/`aac-highlight` (l'annuaire des communs — `variant` full/preview — et la bande CTA + médaillon compteur), routes `/aac` + `/aac/commun/:answerId` (montées seulement si `config.aac` existe) | `config.aac.formId` (form parent `type:aap,aapType:aac` — jamais dans les props de section), `config.aac.directory.fields` (⚠ `choose` n'est JAMAIS deviné : le déclarer sur un AAC, l'omettre sur un AAP — sinon pas de sélection, et tout l'annuaire est public), `config.aac.detail` | CoForm/AAP défini côté backend (form + aapConfig) — cf. doc/34 §3 |
 | `cagnotte` | sections `actions`/`finance`/`*-summary` | `idProjet` | projet + Stripe/HelloAsso |
 | `profil` | `/profil/:slug`, section `member` | `config.profiles` (tabs, editModal) | types d'entités |
 | `auth` | `loginForm`/`registerForm`/`recoverPasswordForm`, `<AuthMenu>` (dont entrée « Kanban » plateforme via `auth.menu.kanban`, admins du costum) | `config.auth`, `header.utilities.auth` | comptes/SSO Communecter |

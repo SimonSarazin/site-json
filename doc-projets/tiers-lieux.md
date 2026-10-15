@@ -98,7 +98,7 @@ de hero sur une page à panneau, cela produit deux champs de recherche.
 
 | Page | Sections | Rôle |
 |---|---|---|
-| `/` | 11 | `hero-search` + résultats + **teaser agenda** + 5 blocs éditoriaux |
+| `/` | 12 | `hero-search` + résultats + **bandeau services** (5 cartes, lien vers l'annuaire) + **teaser agenda** + 5 blocs éditoriaux |
 | `/reservation` | 5 | hero, annuaire des ressources (5 cartes + lien complet), puis 3 blocs éditoriaux ; sans `section-lieux` |
 | `/lieux` | 1 | `gridLayout` — panneau de filtres (5 groupes) + `searchProStatic` |
 | `/observatoire` | 1 | `data-observatory` en **split view** (30/09) — cf. §4.3 |
@@ -213,6 +213,19 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 14/10 — accueil : bandeau « Trouver un service », libellés de menu (MR 92, Simon)
+
+L'accueil affiche désormais, sous « Découvrir les lieux », le même bandeau `coform-resource-directory`
+que `/reservation` (5 cartes, 5 colonnes desktop, sans facettes, lien « Voir tous les résultats » vers
+`/annuaire-ressources`) — ce qui périme la phrase « l'accueil n'affiche pas cet annuaire » du 07/10.
+Les deux bandeaux ont le même en-tête, « Trouver un service » (ex-« Découvrir les services »), et les
+mêmes `detailSuffixes` (ajoutés à la copie de l'accueil à la reprise : sans eux, l'aperçu d'une
+ressource retombait sur le rendu historique). Menu : « Les Licoops » (pluriel), « La communauté
+support » (et titre de `/communaute`), la plateforme d'aiguillage passe en fin de « Coopérer ».
+Profil : le bloc outils s'intitule « Accès direct aux outils du lieu » (clé `ProfileTiersLieuxInfo.tools`,
+anglais aligné). La recette `home-recherche` de `page-recipes.json` suit la nouvelle séquence.
+**Validation** : `config:validate` ✅ — 18 pages, 43 sections ; préflight ✅. Rendu navigateur non vérifié.
 
 ### 07/10 — `/reservation` : aperçu de ressources
 
@@ -584,6 +597,19 @@ redirection, refresh non bloquant) · intégration SSR parent62 98/98, tiers-lie
 aussi sur `main`). Parcours réel (compte invité qui accepte) non rejoué en local.
 
 
+### 12/10 — annuaire des ressources : filtres Thématique, Capacité, Géographique
+
+**Fait** (`/annuaire-ressources`) : plus de filtre Tarif ; filtres, dans l'ordre : Type de ressource,
+**Thématique du lieu** (réseaux thématiques du lieu porteur, mêmes réponses que le filtre de `/lieux`),
+**Capacité d'accueil** (1 à 10, 10 à 30, 30 à 50, plus de 50), **Géographique** (régions, mêmes zones
+que `/lieux`). Moteur : options `priceFilters` (défaut true), `thematicFilter`, `capacityFilter`
+(défaut false), `regionFilter` de `coform-resource-directory` — autres sites inchangés. Capacité :
+personnes pour une salle, postes pour le coworking, chambres pour l'hébergement.
+
+**Vérifié** au navigateur (backend local) : 25 ressources ; « 10 à 30 » → 17, « plus de 50 » → 3,
+« Cafés cantines solidaires » → 3, « Hauts-de-France » → 18 ; décocher rend les 25. Rendu clair,
+sombre, mobile. Tests de `lib/resourceDirectoryFilters.ts`.
+
 ### 09/10bis — bannière et photo de profil : envoyées à leur taille ; photo de profil entière
 
 **Fait (moteur, tous les sites)** :
@@ -591,7 +617,12 @@ aussi sur `main`). Parcours réel (compte invité qui accepte) non rejoué en lo
   « Original » (ratio de la photo, par défaut), 16:9, 3:1, 4:3, carré — ou « Utiliser l'image
   entière », qui envoie le fichier d'origine (bannière : zone de recadrage = toute la photo, la copie
   `profilBannerUrl` garde donc la même taille). Option `aspectOptions` d'`ImageCropDialog` (absente =
-  rendu inchangé, ex. actus) ;
+  rendu inchangé, ex. actus) ; « Utiliser l'image entière » ferme le dialogue dès le clic (pas de
+  double envoi) ; une photo de profil non carrée part complétée en carré transparent (image entière
+  centrée, carré plafonné à 1024 px — PNG de 0,3 à 2,7 Mo mesuré pour une photo 4000×3000) : entière
+  aussi dans le menu compte, les cartes, les commentaires et la miniature backend ; si la mise au carré
+  échoue, la photo part telle quelle ; la bannière est allégée avant l'envoi (1920 px au plus) : une
+  photo de 15,8 Mo (6875×4544) part en 0,3 à 0,4 Mo, au lieu d'être refusée par PHP ;
 - affichage : bannière inchangée (`object-cover`) ; photo de profil de l'en-tête `complete` en
   `object-contain` — un logo large n'est plus rogné (une photo carrée reste coupée aux coins du rond).
 
@@ -913,8 +944,11 @@ qui porte le patron le plus propre du parc : formulaires sans taxonomie site-sp�
   `profiles[type].editModals`, jamais `profiles.default`).
 - **Effet de bord du moteur** : déclarer un form costum fait qu'il sert AUSSI aux boutons d'ajout
   des profils, dès qu'il est l'**unique** form de sa collection (`costumCreateKey`,
-  `AddEntityDropdown.tsx` — « un site qui déclare un formulaire pour ses événements ne veut pas du
-  formulaire standard »). D'où le contraste observé : parent62 (3 forms `poi`), saint-paul (2) et
+  `profil/components/add/addModals.ts` — « un site qui déclare un formulaire pour ses événements ne
+  veut pas du formulaire standard »). Le bouton « Ajouter » d'un **finder coform** ne suit PAS cette
+  règle : sans déclaration `coform.finderAddNew`, il ouvre la modale standard du type — pour que les
+  finders d'organisations à `addNew` de ce site créent des tiers-lieux, déclarer
+  `"organizations": "add-tiers-lieux"`. D'où le contraste observé : parent62 (3 forms `poi`), saint-paul (2) et
   Ekilib.re (2) gardent le form POI **générique** ; tiers-lieux n'en a qu'un, il capturait donc le
   bouton.
   - **Événements** : « Ajouter un événement » ouvre le form tiers-lieux — voulu.

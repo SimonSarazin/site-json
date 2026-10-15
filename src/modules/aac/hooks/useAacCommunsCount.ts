@@ -5,11 +5,14 @@
  * traverse le réseau. Il porte sur la population VISIBLE (cf.
  * `fetchAacCommunsCount`), donc sur le même ensemble que l'annuaire — c'est la
  * raison d'être du socle partagé `useAacDirectoryContext`.
+ *
+ * Reçoit le contexte DÉJÀ résolu par l'appelant (`useAacCommunsCountState`, seule entrée publique) :
+ * le résoudre ici une seconde fois rejouait la config, les sélections de meta et les permissions.
  */
 import { useQuery } from "@tanstack/react-query";
 import { AAC_QUERY_KEYS } from "../constants/queryKeys";
 import { fetchAacCommunsCount } from "../lib/communsTransport";
-import { useAacDirectoryContext } from "./useAacDirectoryContext";
+import type { AacDirectoryContext } from "./useAacDirectoryContext";
 
 export interface UseAacCommunsCountResult {
   /** `null` tant que le chiffre n'est pas connu — jamais un 0 provisoire. */
@@ -18,8 +21,13 @@ export interface UseAacCommunsCountResult {
   error: Error | null;
 }
 
-export function useAacCommunsCount(enabled = true): UseAacCommunsCountResult {
-  const { formId, form, fields, resolved, visibility } = useAacDirectoryContext();
+export function useAacCommunsCount(
+  { formId, form, fields, resolved, visibility }: Pick<
+    AacDirectoryContext,
+    "formId" | "form" | "fields" | "resolved" | "visibility"
+  >,
+  enabled = true,
+): UseAacCommunsCountResult {
 
   const { data, isLoading, error } = useQuery({
     queryKey: AAC_QUERY_KEYS.COUNT(formId, null, visibility.currentUserId),

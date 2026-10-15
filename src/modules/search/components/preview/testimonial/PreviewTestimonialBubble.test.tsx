@@ -30,4 +30,9 @@ describe("PreviewTestimonialBubble — cadrage de l'illustration", () => {
     expect(container.querySelector("img.object-contain")?.getAttribute("alt")).toBe("Anonyme");
     expect(container.querySelector("img.blur-lg")?.getAttribute("alt")).toBe("");
   });
+
+  it("le bouton « agrandir l'image » est hors de l'auto-focus Radix (tabIndex -1)", () => {
+    const { container } = render(<PreviewTestimonialBubble item={item} list={{ testimonial: { quoteField: "description" } } as never} onClose={() => {}} />);
+    expect(container.querySelector("button[aria-label='testimonial.viewImage']")?.getAttribute("tabindex")).toBe("-1");
+  });
 });
