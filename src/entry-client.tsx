@@ -1,3 +1,5 @@
+// En PREMIER : restitue l'état SSR emballé avant que quiconque ne le lise (cf. ssrStatePacking).
+import "@/lib/ssrStateBootstrap";
 import "@/i18n";
 
 import { hydrateRoot } from "react-dom/client";

@@ -63,6 +63,7 @@ export function useSearchAllResults({
   const {
     transformedResults,
     totalCount,
+    hasCount,
     isLoading,
     isPending,
     isFetching,
@@ -124,8 +125,9 @@ export function useSearchAllResults({
     isFetching,
     /** Nombre d'items chargés jusqu'ici (progressif). */
     loaded,
-    /** Total annoncé par le backend (connu dès la 1ʳᵉ page), sinon null. */
-    total: totalCount ?? null,
+    /** Total annoncé par le backend (connu dès la 1ʳᵉ page), sinon null. `totalCount` vaut 0 tant
+     *  que la 1ʳᵉ page n'a pas apporté son `count` (vol, échec) : seul `hasCount` le rend fiable. */
+    total: hasCount ? totalCount : null,
     /** Vrai quand tout est chargé (ou plafonné). */
     isComplete,
     /** Vrai si l'arrêt vient du plafond `maxResults`. */

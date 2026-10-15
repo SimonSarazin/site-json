@@ -593,9 +593,11 @@ export type ActionTiles = z.infer<typeof ActionTilesSchema>;
 export type ActionTilesProps = z.infer<typeof ActionTilesSchema>["props"];
 
 /**
- * Source dynamique d'un compteur `cta-card-grid.props.stats[]`
- * `searchCount` compte un périmètre de recherche déjà public (même contrat que les KPIs admin) ; 
- * `membersCount` compte les membres de l'entité, validés par défaut (`toBeValidated: true` = en attente).
+ * Source dynamique d'un compteur `cta-card-grid.props.stats[]` ou `stats.props.items[]`
+ * `searchCount` compte un périmètre de recherche déjà public (même contrat que les KPIs admin) ;
+ * `membersCount` compte les membres de l'entité, validés par défaut (`toBeValidated: true` = en attente) ;
+ * `aacCommuns` compte les communs visibles de `config.aac.formId` — le chiffre du médaillon
+ * d'`aac-highlight`, sans rien à paramétrer (pas de `config.aac` ⇒ jamais résolu).
  */
 const StatDynamicSourceSchema = z.discriminatedUnion("type", [
   z.object({
@@ -606,6 +608,9 @@ const StatDynamicSourceSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("membersCount"),
     toBeValidated: z.boolean().default(false),
+  }),
+  z.object({
+    type: z.literal("aacCommuns"),
   }),
 ]);
 export type StatDynamicSource = z.infer<typeof StatDynamicSourceSchema>;
@@ -1028,11 +1033,24 @@ const StatsSectionSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     items: z.array(z.object({
-      value: z.string(),
+      /** Chiffre écrit. Avec `source`, repli affiché tant que le compte n'est pas revenu. */
+      value: z.string().optional(),
       label: LocalizedString,
       description: LocalizedString.optional(),
       icon: z.string().optional(),
+      /** Chiffre COMPTÉ côté client (même contrat que `cta-card-grid.props.stats[].source`). */
+      source: StatDynamicSourceSchema.optional(),
+      /** Design `tiles` : la tuile pleine couleur primaire — celle qui porte le chiffre phare. */
+      highlight: z.boolean().optional(),
+    }).refine((item) => item.value !== undefined || item.source !== undefined, {
+      message: "Un stat doit avoir soit `value` (statique) soit `source` (dynamique).",
     })),
+    /**
+     * `default` — chiffres centrés sur un aplat léger, icône au-dessus ;
+     * `tiles` — une rangée de tuiles arrondies (chiffre puis légende, alignés à gauche),
+     * sans fond de section : se pose sous un en-tête de bande, au-dessus d'une liste.
+     */
+    design: z.enum(["default", "tiles"]).optional(),
     layout: z.enum(["horizontal", "vertical"]).default("horizontal"),
     // Nombre de colonnes par breakpoint (mobile = 1). Optionnel : sans lui, le
     // défaut `horizontal` reste md:2 lg:4 (idéal pour 4/8 items). À régler quand

@@ -12,6 +12,7 @@ import { Writable } from 'node:stream';
 import { dehydrate, type DehydratedState, HydrationBoundary, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { getBaseUrl } from './lib/constant/common';
 import { initApi, resetApiState } from './lib/apiClient';
+import { packSsrState } from './lib/ssrStatePacking';
 import {
   ChunkCollectorContext,
   createChunkCollector,
@@ -227,7 +228,8 @@ export async function render(
              ${helmetCtx.helmet?.title ?? ''}
              ${helmetCtx.helmet?.meta ?? ''}
              ${helmetCtx.helmet?.link ?? ''}`,
-             dehydratedState
+             // Parents d'entités factorisés pour le transport (restitués par `ssrStateBootstrap`).
+             packSsrState(dehydratedState)
           );
 
           /* Pipe direct vers res — l'override de `res.end()` ci-dessus

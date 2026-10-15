@@ -677,7 +677,7 @@ permissions).
 
 ## Sections de profil
 
-Le module profil propose **21 types de sections** configurables:
+Le module profil propose **22 types de sections** configurables:
 
 | Section                    | Type                         | Variantes/Options                              | Description                               |
 | -------------------------- | ---------------------------- | ---------------------------------------------- | ----------------------------------------- |
@@ -687,6 +687,7 @@ Le module profil propose **21 types de sections** configurables:
 | `profile-about`            | ProfileAboutSection          | layout: column, grid                           | Description et à propos                   |
 | `profile-about-tl`         | ProfileTiersLieuxAboutSection| —                                              | À propos tiers-lieux (variante custom)    |
 | `profile-about-ssbe`       | ProfileSsbeAboutSection      | —                                              | À propos SSBE (variante custom)           |
+| `profile-parent62-about`   | ProfileParent62AboutSection  | —                                              | À propos parent62 (variante custom, 2 costumForms `organizations` distingués par tag) |
 | `profile-map`              | ProfileMapSection            | height, zoom, showMarker                       | Carte de localisation (Leaflet)           |
 | `profile-organizer`        | ProfileOrganizerSection      | showLogo, showDescription, showLink            | Organisateur/Porteur de projet            |
 | `profile-members`          | ProfileMembersSection        | limit, showRole, showManagement                | Liste des membres                         |

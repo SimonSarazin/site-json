@@ -477,7 +477,12 @@ export default function AacCommunDetailPage() {
     // Pas de `useMemo` : on est APRÈS les retours anticipés, un hook ici serait
     // appelé conditionnellement. `SmartCoForm` mémoïse de toute façon sur le
     // CONTENU de la liste, pas sur sa référence.
-    const hiddenStepsForEdit = !perms.isAdmin && chooseStepKey ? [chooseStepKey] : [];
+    // Un AAP n'a pas de `choose` mais a bien une étape d'évaluation (les votes
+    // `decide` du form OCECO) : le masquage suit l'ÉVALUATION, pas la sélection —
+    // à condition qu'elle ait été TROUVÉE (`evalStepKeyFound`). Devinée par position,
+    // ce serait une étape ordinaire du formulaire, retirée à tort à son auteur.
+    const evalStepKey = chooseStepKey ?? config?.roles.evalStepKeyFound ?? null;
+    const hiddenStepsForEdit = !perms.isAdmin && evalStepKey ? [evalStepKey] : [];
 
     // Rafraîchit la fiche affichée. Les caches de l'annuaire, eux, sont
     // invalidés par la MUTATION elle-même (`extraInvalidate`) : ce callback-ci

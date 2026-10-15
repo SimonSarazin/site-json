@@ -11,14 +11,15 @@
  * D'où la chaîne de résolution, du plus explicite au plus devinatoire :
  *   override de config > `form.mapping` > scan des types/libellés > défauts.
  *
+ * Exception : `choose` ne se résout QUE par la config (cf. `CONFIG_ONLY_ROLES`).
+ *
  * ⚠️ L'override de config est un CHEMIN, lu par `parseFieldPath` :
  *
  *  - `answers.<étape>.<id>` pour une RÉPONSE — l'étape en fait partie, car un
  *    form a plusieurs étapes et la seule devinette disponible ici serait l'étape
- *    du RÔLE (`depenseStepKey`, ou `evalStepKey` pour `choose`) : juste dans le
- *    cas canonique, faux dès qu'une question sort de son étape attendue, et
- *    indisponible quand la dérivation échoue. C'est aussi la forme de
- *    `form.mapping` en base ;
+ *    du RÔLE (`depenseStepKey`) : juste dans le cas canonique, faux dès qu'une
+ *    question sort de son étape attendue, et indisponible quand la dérivation
+ *    échoue. C'est aussi la forme de `form.mapping` en base ;
  *  - un chemin RACINE de profondeur libre (`name`, `links.cae`…) pour ce qui
  *    n'est pas une réponse : champs pré-calculés par le backend, ou branches
  *    métier propres à la PLATEFORME (le vivier de membres d'un commun vit dans
@@ -107,15 +108,24 @@ const DEFAULT_IDS: Record<AacCardFieldRole, string | null> = {
   maturity: null, // aucun nom canonique : la maturité est propre à chaque AAC
   image: "image",
   depense: "depense",
-  choose: "choose",
+  choose: null, // jamais deviné : cf. CONFIG_ONLY_ROLES
   // Aucun défaut : le vivier de membres est propre à la PLATEFORME, pas au
   // formulaire (`links.cae`, `links.tls`…). Non résolu ⇒ `parseAacAnswer`
   // retombe sur le `user_count` du backend.
   users: null,
 };
 
-/** Rôles portés par l'étape d'évaluation plutôt que par l'étape de dépôt. */
-const EVAL_ROLES = new Set<AacCardFieldRole>(["choose"]);
+/**
+ * Rôles qui n'existent que si la config les DÉCLARE.
+ *
+ * `choose` — la sélection d'un commun pour l'annuaire de l'appel — est propre
+ * aux AAC : un AAP n'a pas cette étape (le form OCECO d'Open Atlas n'a qu'un
+ * `decide` en `aapStep2`). Le deviner fabriquait `aapStep2.choose` sur tout
+ * formulaire : chaque proposition passait « En attente », et l'annuaire public,
+ * restreint aux sélectionnées, sortait vide. Sans chemin explicite : `null` ⇒
+ * ni statut de sélection, ni restriction de visibilité.
+ */
+const CONFIG_ONLY_ROLES = new Set<AacCardFieldRole>(["choose"]);
 
 /** Le chemin de lecture d'un champ : `answers.<étape>.<id>`, ou `<id>` à la racine. */
 function fieldPath(stepKey: string | null, id: string): string {
@@ -240,7 +250,6 @@ export function resolveAacCardFields(
   overrides?: Partial<Record<AacCardFieldRole, string>>
 ): ResolvedAacCardFields {
   const mainStep = roles.depenseStepKey ?? Object.keys(meta.byStep)[0] ?? null;
-  const evalStep = roles.evalStepKey ?? null;
 
   const fields = {} as AacCardFields;
   const source = {} as Record<AacCardFieldRole, AacCardFieldSource>;
@@ -252,7 +261,10 @@ export function resolveAacCardFields(
     // reste exploitable là où l'étape du rôle est introuvable (form atypique) ou
     // simplement différente (question déplacée hors de son étape attendue).
     const override = parseFieldPath(overrides?.[role]);
-    if (override) {
+    // `choose` est une RÉPONSE (`answers.<étape>.choose`) : un chemin racine
+    // (`"aapStep2.choose"`, préfixe oublié) poserait un statut sans restriction.
+    const isMalformedConfigOnly = CONFIG_ONLY_ROLES.has(role) && override?.stepKey === null;
+    if (override && !isMalformedConfigOnly) {
       // `known.stepKey` est toujours une chaîne : un chemin racine ne peut donc
       // pas emprunter les métadonnées d'une question homonyme (`tags` existe
       // dans les deux mondes).
@@ -265,8 +277,8 @@ export function resolveAacCardFields(
       continue;
     }
 
-    // Sans chemin explicite, on retombe sur l'étape du RÔLE — une déduction.
-    const stepKey = EVAL_ROLES.has(role) ? evalStep : mainStep;
+    // Sans chemin explicite, on retombe sur l'étape de dépôt — une déduction.
+    const stepKey = CONFIG_ONLY_ROLES.has(role) ? null : mainStep;
     if (!stepKey) {
       fields[role] = null;
       source[role] = "none";

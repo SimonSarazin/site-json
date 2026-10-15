@@ -170,6 +170,11 @@ avec `AacCommunList` : review MR 53, M25/H11/H13.)
   l'hydratation. Il ne disparaît que sur **échec réel** du décompte, et n'est pas rendu du tout si
   `config.aac.formId` est absent (le nombre ne sera jamais connu : mieux vaut pas de médaillon
   qu'un médaillon vide).
+- **le même chiffre en tuile** : `stats.props.items[].source` ou `cta-card-grid.props.stats[].source`
+  = `{"type": "aacCommuns"}` — même décompte et même garde de joignabilité
+  (`useAacCommunsCountState`, partagé avec le médaillon). Compté côté client : squelette en SSR ;
+  AAC absent ou irrésoluble ⇒ tiret, tranché après hydratation — jamais un squelette perpétuel.
+  Usage réel : accueil d'Open Atlas (`stats` en `design: "tiles"`).
 
 ⚠️ Les `.default()` Zod de ces props sont **documentaires** : la config n'est pas parsée par Zod à
 l'exécution, chaque composant applique ses propres défauts.
@@ -219,7 +224,7 @@ champs (§ chaîne ci-dessous). Le bloc sert d'échappatoire déterministe.
 
 - **`answers.<étape>.<idQuestion>`** — une réponse au formulaire. L'étape fait partie du
   chemin : un form AAP en compte 4 ou 5, l'id seul n'en désigne aucune, et la seule devinette
-  disponible serait l'étape du RÔLE (`depenseStepKey`, ou `evalStepKey` pour `choose`) — juste
+  disponible serait l'étape du RÔLE (`depenseStepKey`) — juste
   dans le cas canonique, fausse dès qu'une question sort de son étape attendue, et
   indisponible quand la dérivation échoue. C'est aussi la forme de `form.mapping` en base et
   celle de la lecture réelle (`answers[étape][id]`).
@@ -250,7 +255,7 @@ Les 8 rôles, et ce que chacun pilote **au-delà de la carte** :
 | `maturity` | — | filtre « maturité » (ses OPTIONS viennent de la question) ; **aucun repli backend** : non résolu ⇒ `null` et filtre masqué |
 | `image` | visuel | **c'est lui qui pilote la vignette** — cf. l'ordre de lecture ci-dessous |
 | `depense` | jauge de financement | repli quand `funds` n'est pas pré-calculé, **avec le même filtre `include !== false`** que le backend (§13.3) |
-| `choose` | badge « en attente » | lu sur l'étape d'ÉVALUATION, pas celle de dépôt ; la clé de contexte est la **1ʳᵉ entrée de `form.parent`** (`firstParent`), pas l'entité du slug du site |
+| `choose` | badge « en attente » / « sélectionné » | **résolu par la config SEULEMENT, jamais deviné** : un AAC a une étape de sélection, un AAP non (le form OCECO d'Open Atlas n'a qu'un `decide`). Déclaré ⇒ badge, bouton « Ajouter à l'annuaire » et **annuaire public restreint aux sélectionnés** ; absent ⇒ ni statut, ni bouton, ni restriction : toute proposition titrée est publique. L'étape masquée au non-admin à l'édition suit l'étape d'**évaluation** (`choose` déclaré, sinon `roles.evalStepKeyFound`) : un AAP garde ses votes hors de portée de l'auteur. Seule une étape **trouvée** par scan (question `choose`/`decide`/de vote) est masquée — `roles.evalStepKey`, qui retombe sur une POSITION (2ᵉ ou 3ᵉ étape), désignerait sur un AAP sans vote une étape ordinaire de l'auteur. Un chemin sans préfixe `answers.` est refusé par `config:validate` (le runtime l'ignore). La clé de contexte est la **1ʳᵉ entrée de `form.parent`** (`firstParent`), pas l'entité du slug du site |
 | `users` | nombre de membres | **le seul rôle qui ne parle pas du formulaire** — cf. ci-dessous |
 
 **`image` : la QUESTION d'abord, la vignette backend en repli.** L'ordre est
@@ -289,8 +294,15 @@ ensemble.
 ([`lib/resolveAacCardFields.ts`](../src/modules/aac/lib/resolveAacCardFields.ts)) :
 
 `config` → `form.mapping` → scan (type/libellé) → défaut canonique
-(`titre`/`description`/`tags`/`image`/`depense`/`choose` ; ni `maturity` ni `users` n'en ont
-un) → `null`.
+(`titre`/`description`/`tags`/`image`/`depense` ; ni `maturity` ni `users` n'en ont
+un) → `null`. **Sauf `choose`** : `config` → `null`, rien d'autre — le deviner fabriquait
+`aapStep2.choose` sur tout formulaire, et un AAP voyait chaque proposition « en attente » et son
+annuaire public vide. Un site AAC **doit** donc déclarer `"choose": "answers.<étape>.choose"`.
+Les oublis ne passent plus en silence : `config:validate` refuse un chemin sans `answers.` ;
+`config:probe` lit le formulaire réel (`diagnoseAacChoose`) et échoue (code 1) sur un `choose` qui ne
+désigne aucune question, avertit quand le formulaire porte une question `choose` que la config ne
+déclare pas ; en développement, l'annuaire dit les mêmes constats dans la console. Le signal est la
+QUESTION `choose`, pas `aapType` : le formulaire de la Fédération des CAE, un AAC, n'en a pas.
 
 Le résultat porte un champ **`source`** (`"config" | "mapping" | "scan" | "default" | "none"`)
 qui dit lequel a répondu : c'est par lui qu'on diagnostique une carte vide.
@@ -539,8 +551,11 @@ Les règles qu'il reproduit — **chacune est un piège du legacy** :
 | **Config org-spécifique** | Deux configs CoForm coexistent (**template héritable** vs **org-spécifique**) → on lit **celle pointée par `form.config`**. |
 | **`typeCoFinancer` à la RACINE du form** | Nature des organisations cofinanceuses : `"tiersLieux"` (le défaut legacy FTL) ou un **TAG d'organisation** (`"cae"`…, `Organization::get_cofinancer_bytags`). Clé racine du form parent, comme les gates — `financer.php:835` lit `costum.mainFormData.typeCoFinancer` puis `parentForm.typeCoFinancer`, `AnswerAction.php:268` teste `$params["parentForm"]["typeCoFinancer"]` : **ni `params`, ni l'aapConfig**. Absent ⇒ `null` ; le repli appartient à l'**affichage**, pas au résolveur. Périmètre de « J'utilise » (`useAacPlaceSourceKeys`), par priorité : `aac.detail.placeSourceKeys`, `aac.detail.placeKind`, ce `typeCoFinancer` (`"cae"` sans casse ⇒ CAE, toute autre valeur ⇒ tiers-lieux), puis tiers-lieux. |
 
-Sortie (`AacResolvedConfig`) : `steps[]`, `roles{depenseStepKey, evalStepKey, financementStepKey,
-suiviStepKey}`, `criteria[]`, `criteriaSource`, `gates`, `campaigns[]`, `typeCoFinancer`.
+Sortie (`AacResolvedConfig`) : `steps[]`, `roles{depenseStepKey, evalStepKey, evalStepKeyFound,
+financementStepKey, suiviStepKey}`, `criteria[]`, `criteriaSource`, `gates`, `campaigns[]`,
+`typeCoFinancer`. `evalStepKeyFound` = l'étape d'évaluation TROUVÉE par scan (`choose`, `decide`,
+sélection, vote ou grille `tpls.forms.aap.evaluation`), `null` quand `evalStepKey` n'est qu'une
+position (dispatch 4 vs 5) — seule elle est masquée à l'auteur.
 
 > **Nommage — ne pas confondre :**
 > - **`AacConfig`** (`schema.ts`) = le bloc **DÉCLARÉ** dans `config.aac` (juste `{ formId }`).

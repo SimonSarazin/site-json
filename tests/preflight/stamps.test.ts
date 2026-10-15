@@ -100,11 +100,17 @@ describe("préflight mutation.stamps", () => {
       // discriminant `identity {tags:"CAE"}` du sous-type `organizationsTls`.
       "federationDesCae/cae:2",
       "institut-bleu/institut-bleu-acteur:2",
-      // parent62 n'a PLUS de stamp : le mot-clé dérivé du type d'actualité (`category` → Appels à
-      // projets / Offres d'emploi / A la une / Zoom) est porté par les codecs `p62article:tagsRead`/
+      // parent62-article n'a PLUS de stamp : le mot-clé dérivé du type d'actualité (`category` → Appels
+      // à projets / Offres d'emploi / A la une / Zoom) est porté par les codecs `p62article:tagsRead`/
       // `tagsWrite` du champ `tags`. Le stamp `append` refusionnait les tags serveur, donc l'ancien tag
       // revenait quand on changeait de type (impossible de sortir une actu du bandeau « à la une »).
       // Garde de non-retour : `src/modules/profil/forms/article.configDriven.test.ts`.
+      // parent62-partenaire, lui, EN pose un : tag fixe `Partenaires` (append, on:both) — pas de champ
+      // `tags` visible dans ce form (rien à réconcilier au retrait), sert uniquement à différencier
+      // `/annuaire` (tag présent) de `/annuaire-acteurs-parentalite` (tag absent, `$nin`) : `type` et
+      // `source.key` se sont révélés non fiables sur les fiches importées (cf. doc-projets/parent62.md
+      // §9septquadragies.6).
+      "parent62/parent62-partenaire:1",
       // MSS structure n'a PLUS de stamp : `statusActor` est déclaré au dynForm du costum
       // `associationEkilibre` depuis la copie du chantier A (plan mss-la-tampon) — l'inject
       // payload « En cours » passe la whitelist, le stamp pathValue de contournement a été retiré.
