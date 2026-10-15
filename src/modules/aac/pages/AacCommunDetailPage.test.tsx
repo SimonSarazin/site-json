@@ -102,6 +102,7 @@ function makeConfig(hasFundingStep: boolean): AacResolvedConfig {
       depenseStepKey: "aapStep1",
       evalStepKey: null,
       financementStepKey: hasFundingStep ? "aapStep3" : null,
+      evalStepKeyFound: null,
       suiviStepKey: null,
     },
     criteria: [],
@@ -605,9 +606,12 @@ describe("AacCommunDetailPage — lignée de péremption du brouillon d'édition
  */
 describe("AacCommunDetailPage — l'étape d'évaluation reste masquée à l'auteur", () => {
   const hiddenSteps = () => screen.getByTestId("edit-modal").getAttribute("data-hidden-steps");
-  const withEvalStep = (evalStepKey: string | null): AacResolvedConfig => {
+  const withEvalStep = (
+    evalStepKey: string | null,
+    evalStepKeyFound: string | null = evalStepKey,
+  ): AacResolvedConfig => {
     const base = makeConfig(false);
-    return { ...base, roles: { ...base.roles, evalStepKey } };
+    return { ...base, roles: { ...base.roles, evalStepKey, evalStepKeyFound } };
   };
 
   it("AAP (pas de `choose`) : l'étape d'évaluation résolue est masquée au non-admin", () => {
@@ -619,6 +623,15 @@ describe("AacCommunDetailPage — l'étape d'évaluation reste masquée à l'aut
 
   it("ni `choose` ni étape d'évaluation : rien n'est masqué", () => {
     config = withEvalStep(null);
+    render(<AacCommunDetailPage />);
+
+    expect(hiddenSteps()).toBe("");
+  });
+
+  it("étape d'évaluation devinée par POSITION (aucune question de vote) : rien n'est masqué", () => {
+    // Ce que produit le résolveur pour un AAP [identité, projet, budget] : `evalStepKey` vaut la
+    // 2e étape par dispatch, mais rien ne l'a trouvée — c'est l'étape « projet » de l'auteur.
+    config = withEvalStep("aapStep2", null);
     render(<AacCommunDetailPage />);
 
     expect(hiddenSteps()).toBe("");

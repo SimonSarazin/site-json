@@ -24,7 +24,8 @@ const state = vi.hoisted(() => ({
   aacCount: { count: null as number | null, isLoading: false, error: null as Error | null },
 }));
 
-vi.mock("@/components/layout/i18n", () => ({}));
+vi.mock("./i18n/i18n", () => ({}));
+vi.mock("@/hooks/useLoadNamespace", () => ({ useLoadNamespace: () => ({ loaded: true }) }));
 vi.mock("@/hooks/useT", () => ({
   useT: () => (k: unknown) => (typeof k === "string" ? k : (k as { fr: string }).fr),
 }));
@@ -69,7 +70,7 @@ const QUERY_IN_FLIGHT = {
 
 const tile = (stat: { value?: string; source?: StatDynamicSource }) => (
   <div>
-    <StatValue stat={stat} queryKeyPrefix="k">
+    <StatValue stat={stat}>
       {(value) => <strong>{value}</strong>}
     </StatValue>
   </div>
