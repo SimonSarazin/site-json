@@ -47,8 +47,9 @@ export interface UseAacFacetsParams {
   contextId?: string | null;
   baseUrl?: string;
   /**
-   * Qui regarde. Les décomptes portent sur la population VISIBLE : un anonyme ne
-   * doit pas voir des facettes alimentées par des communs non sélectionnés.
+   * Qui regarde. Les décomptes portent sur la population VISIBLE : sur un AAC
+   * (`choose` déclaré), un anonyme ne doit pas voir des facettes alimentées par
+   * des communs non sélectionnés.
    */
   visibility?: AacVisibility;
   /**

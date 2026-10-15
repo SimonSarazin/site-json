@@ -88,8 +88,44 @@ describe("resolveAacCardFields", () => {
   it("construit `path` depuis la clé d'étape RÉSOLUE, pas depuis aapStepN", () => {
     const { fields } = resolveAacCardFields(meta(), ROLES);
     expect(fields.title?.path).toBe("answers.etapeA.q_titre");
-    expect(fields.choose?.path).toBe("answers.etapeB.choose");
     expect(JSON.stringify(fields)).not.toContain("aapStep");
+  });
+
+  it("`choose` ne se devine JAMAIS : sans chemin en config, il reste null", () => {
+    // Le form déclare pourtant la question `choose` sur son étape d'évaluation :
+    // un AAP n'a pas d'étape de sélection, et seule la config sait si l'appel en a une.
+    const { fields, source } = resolveAacCardFields(meta(), ROLES);
+    expect(meta().byId.choose?.stepKey).toBe("etapeB");
+    expect(fields.choose).toBeNull();
+    expect(source.choose).toBe("none");
+  });
+
+  it("`choose` ne vient pas non plus de `form.mapping` : la config seule en décide", () => {
+    const withMapping = buildAacFormMeta("f1", {
+      ...FORM,
+      mapping: { choose: "answers.etapeB.choose" },
+    });
+    const { fields, source } = resolveAacCardFields(withMapping, ROLES);
+    expect(fields.choose).toBeNull();
+    expect(source.choose).toBe("none");
+  });
+
+  it("un `choose` sans préfixe `answers.` est REFUSÉ, pas lu comme champ racine", () => {
+    // Lu à la racine, il posait un statut « En attente » sans restreindre l'annuaire.
+    for (const malformed of ["etapeB.choose", "choose"]) {
+      const { fields, source } = resolveAacCardFields(meta(), ROLES, { choose: malformed });
+      expect(fields.choose, malformed).toBeNull();
+      expect(source.choose, malformed).toBe("none");
+    }
+  });
+
+  it("`choose` déclaré en config est honoré, avec les métadonnées de la question", () => {
+    const { fields, source } = resolveAacCardFields(meta(), ROLES, {
+      choose: "answers.etapeB.choose",
+    });
+    expect(fields.choose?.path).toBe("answers.etapeB.choose");
+    expect(fields.choose?.label).toBe("Sélection");
+    expect(source.choose).toBe("config");
   });
 
   it("scan : titre par type text, description par textarea, image par uploader", () => {

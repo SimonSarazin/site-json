@@ -32,6 +32,26 @@ export function canCompressImage(file: File): boolean {
   return ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
 }
 
+/**
+ * Dimensions, en px entiers, d'une image ramenée sous `max` px pour son plus grand côté (proportions
+ * gardées, jamais agrandie) — celles du canvas de `compressImage`. Exportée pour qu'un appelant
+ * connaisse la taille du fichier compressé sans le redécoder (ex. zone de recadrage d'une bannière).
+ */
+export function fitWithin(width: number, height: number, max: number): { width: number; height: number } {
+  let w = width;
+  let h = height;
+  if (w > h) {
+    if (w > max) {
+      h = (h * max) / w;
+      w = max;
+    }
+  } else if (h > max) {
+    w = (w * max) / h;
+    h = max;
+  }
+  return { width: Math.floor(w), height: Math.floor(h) };
+}
+
 export async function compressImage(
   file: File,
   options: { maxWidthOrHeight: number; quality: number } = { maxWidthOrHeight: 1920, quality: 0.85 }
@@ -43,19 +63,7 @@ export async function compressImage(
 
     img.onload = () => {
       const { maxWidthOrHeight, quality } = options;
-      let { width, height } = img;
-
-      if (width > height) {
-        if (width > maxWidthOrHeight) {
-          height = (height * maxWidthOrHeight) / width;
-          width = maxWidthOrHeight;
-        }
-      } else {
-        if (height > maxWidthOrHeight) {
-          width = (width * maxWidthOrHeight) / height;
-          height = maxWidthOrHeight;
-        }
-      }
+      const { width, height } = fitWithin(img.width, img.height, maxWidthOrHeight);
 
       canvas.width = width;
       canvas.height = height;

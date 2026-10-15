@@ -581,6 +581,10 @@ jointure sur le lieu porteur + garde région + éclatement, pour quoi
 | `customHeader` | `{ title?, linkText?, linkHref? }` | En-tête : titre à gauche et bouton de lien vers la page complète à droite |
 | `limit` | entier ≥ 1 | Nombre maximal de cartes affichées ; borne aussi la requête initiale et désactive le scroll infini. La limite s'applique après l'éclatement des salles |
 | `showFilters` | boolean (défaut `true`) | `false` masque les facettes type/prix et désactive le filtre par lieu porteur piloté depuis les cartes |
+| `priceFilters` | boolean (défaut `true`) | `false` retire les 3 groupes prix |
+| `thematicFilter` | `{ label, thematicPath, finderPath }` | Facette « réseaux thématiques » du lieu porteur (même réglage que `filtersByPath` de la section `filters`). Absente : pas de facette |
+| `capacityFilter` | boolean (défaut `false`) | Facette « Capacité d'accueil » (`1-10` / `10-30` / `30-50` / `50-`) |
+| `regionFilter` | `{ label, countryCode, level }` | Facette de zone (`scopeList`, ex. `level: ["3"]` = régions) sur l'adresse du lieu porteur. Absente : pas de facette |
 
 Le filtre Mongo FIXE (`buildResourceDirectoryFilters`) émet `form.$in` + un `$or`
 en **forme MAP** (`{ "answers.<step>.finder…": { "$exists": true }, … }`) — **pas
@@ -596,7 +600,29 @@ tient l'état `activeParent` et le distribue aux cartes via
 `ResourceDirectoryActionsProvider` ; une puce « Ressources portées par {nom} ✕ »
 au-dessus de la grille le retire. La facette « type » (client) s'applique par-dessus.
 
-**Quatre facettes** (`hideSearch: true` — pas de recherche texte). Un annuaire de
+**Facettes optionnelles** (ordre d'affichage : type, thématique, capacité, zone, prix) :
+- **`thematicFilter`** — `filtersByPath` du panneau : chaque réseau thématique porte la liste de ses
+  lieux membres ; la sélection (`filters._id.$in`) n'a pas de sens sur une réponse, la section la
+  renvoie en **`filters.parentId`** → filtre **CÔTÉ SERVEUR** ; croisée avec le lieu cliqué sur une
+  carte (`parentIdsFilter`). Réseaux cochés lus dans `searchByFields` (`thematicParentIds`) : un
+  réseau sans lieu membre y garde son entrée `_id: []`, que `searchByFieldsToQuery` sauterait. Lieu
+  cliqué hors des réseaux cochés, ou réseau sans membre → **aucune requête** et liste vide : un
+  `parentId.$in` vide est IGNORÉ par le backend (`$parentToFind != null`, et `[] != null` est faux
+  en PHP), qui rendrait tout l'annuaire ;
+- **`capacityFilter`** — **CÔTÉ CLIENT**, sur la statistique de la pastille (`model.stats[0]`) :
+  fourchette de personnes (salle — une seule borne saisie, « à partir de 10 », vaut 10, comme la
+  pastille), postes (coworking), chambres (hébergement, pas de nombre de
+  personnes saisi) ; gardée si elle recoupe une tranche cochée, bornes incluses ; capacité inconnue
+  exclue dès qu'une tranche est cochée ;
+- **`regionFilter`** — groupe `scopeList` (zones chargées par `FiltersSection`) ; la sélection
+  (`locality`) n'est PAS envoyée (une réponse n'a pas d'adresse) : filtre **CÔTÉ CLIENT** sur
+  `address.level*` du lieu porteur. Les lieux porteurs sont donc lus pour TOUTES les ressources
+  chargées, pas seulement celles affichées.
+
+Groupes ouverts à l'arrivée : les deux premiers groupes RÉELLEMENT déclarés, dans cet ordre
+(`defaultOpenFilterGroups` — jamais un groupe absent). Logique pure dans `lib/resourceDirectoryFilters.ts`.
+
+**Quatre facettes par défaut** (`hideSearch: true` — pas de recherche texte). Un annuaire de
 ressources est BORNÉ : la section charge l'ensemble (`indexStepList: 500`,
 `defaultFields` inclut **`"form"`** — indispensable à l'éclatement serveur et au
 routage du filtre prix), parse chaque résultat (`parseResourceDirectoryItem`),
@@ -676,7 +702,7 @@ même ordre et sous les mêmes libellés (`lib/resourceDetails.ts`, partagé ave
 listes `equipments`, `catering` (Restauration), `services`, `roomType` ; textes `moreInfo`
 (Bon à savoir), `about` (À propos du lieu), `tip` (Le petit truc en plus), rendus en
 markdown/HTML sanitisé. Sans `detailSuffixes` (rendu historique) : **À propos**
-(`descriptionSuffix`) → **Équipements** (`fieldSuffixes.equipments`) → **Services
+(`descriptionSuffix`, texte brut, sauts de ligne gardés) → **Équipements** (`fieldSuffixes.equipments`) → **Services
 proposés** (`servicesSuffix`). ⚠️ `fieldSuffixes.equipments` est COMMUN aux 3 formulaires :
 pour les salles de réunion il désigne en réalité la Restauration — d'où `detailSuffixes`.
 

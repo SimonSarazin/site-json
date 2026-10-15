@@ -45,8 +45,8 @@ function coordsOf(sd: Record<string, unknown>): { lat: number; lng: number } | n
 
 /**
  * Résout EN UN APPEL les tiers-lieux porteurs (`_id: {$in: ids}`) d'un lot de
- * ressources : nom, slug, image, ville, `address.level1` (garde région) et
- * coordonnées. Pendant client de la remontée serveur que fait
+ * ressources : nom, slug, image, adresse et zones (`address.level1`…`level4`, filtre de zone de
+ * l'annuaire) et coordonnées. Pendant client de la remontée serveur que fait
  * `Navigator::getRessourceTL` (`PHDB::findOneById(... profilImageUrl, address, geo)`).
  */
 export function useResourceParentsQuery(ids: string[], opts: UseResourceParentsOptions = {}) {
@@ -89,7 +89,12 @@ export function useResourceParentsQuery(ids: string[], opts: UseResourceParentsO
           streetAddress: str(addr?.streetAddress),
           postalCode: str(addr?.postalCode),
           addressLocality: str(addr?.addressLocality),
-          level1: str(addr?.level1),
+          zones: Object.fromEntries(
+            ["level1", "level2", "level3", "level4"].flatMap((lvl) => {
+              const zone = str(addr?.[lvl]);
+              return zone ? [[lvl, zone]] : [];
+            }),
+          ),
           coords: coordsOf(sd),
         });
       }

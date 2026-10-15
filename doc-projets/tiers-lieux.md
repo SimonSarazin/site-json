@@ -597,6 +597,19 @@ redirection, refresh non bloquant) · intégration SSR parent62 98/98, tiers-lie
 aussi sur `main`). Parcours réel (compte invité qui accepte) non rejoué en local.
 
 
+### 12/10 — annuaire des ressources : filtres Thématique, Capacité, Géographique
+
+**Fait** (`/annuaire-ressources`) : plus de filtre Tarif ; filtres, dans l'ordre : Type de ressource,
+**Thématique du lieu** (réseaux thématiques du lieu porteur, mêmes réponses que le filtre de `/lieux`),
+**Capacité d'accueil** (1 à 10, 10 à 30, 30 à 50, plus de 50), **Géographique** (régions, mêmes zones
+que `/lieux`). Moteur : options `priceFilters` (défaut true), `thematicFilter`, `capacityFilter`
+(défaut false), `regionFilter` de `coform-resource-directory` — autres sites inchangés. Capacité :
+personnes pour une salle, postes pour le coworking, chambres pour l'hébergement.
+
+**Vérifié** au navigateur (backend local) : 25 ressources ; « 10 à 30 » → 17, « plus de 50 » → 3,
+« Cafés cantines solidaires » → 3, « Hauts-de-France » → 18 ; décocher rend les 25. Rendu clair,
+sombre, mobile. Tests de `lib/resourceDirectoryFilters.ts`.
+
 ### 09/10bis — bannière et photo de profil : envoyées à leur taille ; photo de profil entière
 
 **Fait (moteur, tous les sites)** :
@@ -604,7 +617,12 @@ aussi sur `main`). Parcours réel (compte invité qui accepte) non rejoué en lo
   « Original » (ratio de la photo, par défaut), 16:9, 3:1, 4:3, carré — ou « Utiliser l'image
   entière », qui envoie le fichier d'origine (bannière : zone de recadrage = toute la photo, la copie
   `profilBannerUrl` garde donc la même taille). Option `aspectOptions` d'`ImageCropDialog` (absente =
-  rendu inchangé, ex. actus) ;
+  rendu inchangé, ex. actus) ; « Utiliser l'image entière » ferme le dialogue dès le clic (pas de
+  double envoi) ; une photo de profil non carrée part complétée en carré transparent (image entière
+  centrée, carré plafonné à 1024 px — PNG de 0,3 à 2,7 Mo mesuré pour une photo 4000×3000) : entière
+  aussi dans le menu compte, les cartes, les commentaires et la miniature backend ; si la mise au carré
+  échoue, la photo part telle quelle ; la bannière est allégée avant l'envoi (1920 px au plus) : une
+  photo de 15,8 Mo (6875×4544) part en 0,3 à 0,4 Mo, au lieu d'être refusée par PHP ;
 - affichage : bannière inchangée (`object-cover`) ; photo de profil de l'en-tête `complete` en
   `object-contain` — un logo large n'est plus rogné (une photo carrée reste coupée aux coins du rond).
 
