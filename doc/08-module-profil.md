@@ -1300,6 +1300,16 @@ création, elle, passait par `me.costum(slug)`. ⚠ Un `costumForm` sans `costum
 silence côté config. Gardes : `useEntityMutation.test.ts` (§ « EDIT costum : épingle du schéma ») et le préflight
 `tests/preflight/costum-form-slug.test.ts`.
 
+**Costum LIVE (`VITE_COSTUM_FORCE_LIVE=true`, posé par site dans `sites.json` → `env`)** : la lib ignore ses schémas
+bundlés et ne résout un costum que depuis son cache live. Or `get()` ne précharge que le costum de la
+PROVENANCE de la fiche (`source.key`). Quand la fiche vient d'ailleurs — cas d'un annuaire : un lieu de
+tiers-lieux.org a `source.key: "laRosee"`, `"franceTierslieux"`… —, le costum du FORMULAIRE n'est jamais
+chargé, `setCostumScope` épingle un contexte NU (aucun champ) et l'enregistrement rejette
+`holderOrganization` (59 lieux sur 59 mesurés). Dans ce mode, `pinSchemaCostumScope` appelle d'abord
+`entity.loadCostumScope(slug)` (charge le costum du formulaire en live, cache de session, puis épingle) et
+ne retombe sur `setCostumScope` que si ce chargement échoue ou ne rend rien. Une fiche dont la provenance
+EST le costum du formulaire (parent62) ne dépendait pas de ce chargement. Hors mode live : inchangé.
+
 ---
 
 ### Édition inline d'une propriété `serverData` (pattern `updateField` + `refresh`)

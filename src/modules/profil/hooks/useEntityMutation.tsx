@@ -22,6 +22,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { isCostumHostAdmin } from "@/lib/permissions";
 import { COSTUM_QUERY_KEYS } from "@/constants/queryKeys";
 import { costumSlugOf } from "@/lib/costumLists";
+import { getCostumForceLive } from "@/lib/constant/common";
 import { useNavigate } from "react-router";
 import { buildParentReference, buildOrganizerReference, logCocolightError } from "./mutationUtils";
 import { submitEntityEdit, type EditableEntity } from "./submitEntityEdit";
@@ -120,14 +121,30 @@ export interface EntityMutationSpec {
  * d'ADMINISTRATION et la provenance (`source.key`) continue de gouverner le schéma — comportement
  * voulu pour `ensureCostumScope` (import/export/validation), PAS ici.
  *
+ * Costum LIVE (`VITE_COSTUM_FORCE_LIVE`) : la lib ignore ses schémas bundlés et ne
+ * résout un costum que depuis son cache live. Or `get()` ne précharge que le costum de la PROVENANCE de
+ * l'entité (`source.key`) : sur un annuaire, la fiche vient d'ailleurs (un lieu de tiers-lieux.org a
+ * `source.key: "laRosee"`, `"franceTierslieux"`…), le cache du costum du FORMULAIRE reste froid et
+ * `setCostumScope` épingle un contexte NU, sans aucun champ, et tout champ costum est refusé. D'où
+ * `loadCostumScope` (charge le costum en live, cache de session, puis épingle)
+ * avant tout repli sur `setCostumScope`. Hors mode live : inchangé (registre bundlé).
+ *
  * Échec NON bloquant : un costum hors registre lève (« fournissez costumId/costumType ») ; on laisse
  * alors le save échouer avec l'erreur de champ, plus parlante qu'une erreur d'identité costum.
  */
-function pinSchemaCostumScope(target: unknown, slug: string | undefined): void {
+async function pinSchemaCostumScope(target: unknown, slug: string | undefined): Promise<void> {
   if (!slug || !target || typeof target !== "object") return;
   const holder = target as {
     setCostumScope?: (slug: string, opts?: { costumId?: string; costumType?: string; pinSchema?: boolean }) => void;
+    loadCostumScope?: (slug: string) => Promise<boolean>;
   };
+  if (getCostumForceLive() && typeof holder.loadCostumScope === "function") {
+    try {
+      if (await holder.loadCostumScope(slug)) return;
+    } catch (err) {
+      console.warn(`[costum] chargement live du schéma « ${slug} » impossible, repli sur le registre`, err);
+    }
+  }
   if (typeof holder.setCostumScope !== "function") return;
   try {
     holder.setCostumScope(slug, { pinSchema: true });
@@ -280,7 +297,7 @@ export async function runEntityMutation(
   // ── ÉDITION ─────────────────────────────────────────────────────────────────
   if (spec.mode === "edit") {
     if (!spec.target) throw new Error("No entity provided");
-    pinSchemaCostumScope(spec.target, spec.schemaCostumSlug);
+    await pinSchemaCostumScope(spec.target, spec.schemaCostumSlug);
     try {
       await submitEntityEdit(spec.target as unknown as EditableEntity, payload, { imageFile, imageDeleted });
     } catch (err) {
