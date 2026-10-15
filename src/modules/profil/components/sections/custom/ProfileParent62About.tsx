@@ -1,6 +1,5 @@
 import {
   Accessibility,
-  Building2,
   Facebook,
   FileText,
   Globe,
@@ -21,20 +20,11 @@ import { useDocumentsList } from "../../../hooks/useDocuments";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useProfileSetup } from "../../../hooks/useProfileSetup";
 import type { ProfileParent62AboutSection } from "../../../schema";
+import { toPresentationDocs } from "./profileParent62Documents";
 
 interface ProfileParent62AboutProps {
   section: ProfileParent62AboutSection;
 }
-
-/** `type` de `costumForms.parent62-partenaire` — valeur technique (compat Communecter) → libellé du
- *  formulaire. Pas de mapping partagé ailleurs dans le code : recopié tel quel depuis le form, comme
- *  les libellés déjà écrits en dur dans `ProfileSsbeAbout`. */
-const TYPE_LABELS: Record<string, string> = {
-  NGO: "Association",
-  GovernmentOrganization: "Collectivité / service public",
-  Group: "Établissement (crèche, école, centre social…)",
-  LocalBusiness: "Entreprise",
-};
 
 function toStringArray(value: unknown): string[] {
   if (Array.isArray(value)) {
@@ -120,10 +110,14 @@ const SOCIAL_NETWORKS: ReadonlyArray<{ key: string; label: string; icon: React.E
  * Noms de champs vérifiés sur les 38 organisations importées (pas de supposition) : `themes` et
  * `territoires`, lus par une version antérieure de ce composant, n'existent sur AUCUNE d'entre elles —
  * remplacés par `typeAction` et `publicCible`, les champs réels du formulaire.
+ *
+ * Pas de carte « Type de structure » : `type` est désormais le DISCRIMINANT de sous-type costum lu par
+ * le SDK en édition (`serverData.type === "acteur"` → résout `costum.typeObj.acteur`, cf. formulaire
+ * `parent62-acteur`) — sa valeur n'est plus la nature juridique de la structure et n'a rien d'affichable.
  */
 export default function ProfileParent62About({ section }: ProfileParent62AboutProps) {
   const { entity } = useProfileSetup();
-  const { shortDescription, description, type } = useFormatProfileEntity(entity);
+  const { shortDescription, description } = useFormatProfileEntity(entity);
 
   const categoryThematic = toStringArray(useReactiveProperty(entity.serverData, "categoryThematic"));
   const typeAction = toStringArray(useReactiveProperty(entity.serverData, "typeAction"));
@@ -134,14 +128,15 @@ export default function ProfileParent62About({ section }: ProfileParent62AboutPr
   const note = useReactiveProperty(entity.serverData, "note") as string | undefined;
   const socialNetwork = (useReactiveProperty(entity.serverData, "socialNetwork") ?? {}) as Record<string, string>;
   const socialLinks = SOCIAL_NETWORKS.filter(({ key }) => typeof socialNetwork[key] === "string" && socialNetwork[key].trim() !== "");
-  const { data: documents = [] } = useDocumentsList(entity);
+  const presentationImages = toPresentationDocs(useReactiveProperty(entity.serverData, "images"));
+  const { data: files = [] } = useDocumentsList(entity);
+  const documents = [...files, ...presentationImages];
 
   if (section.hidden === true) {
     return null;
   }
 
   const hasDescription = Boolean(shortDescription || description);
-  const typeLabel = type ? (TYPE_LABELS[type] ?? type) : null;
 
   return (
     <div className="mb-6 space-y-5">
@@ -160,10 +155,6 @@ export default function ProfileParent62About({ section }: ProfileParent62AboutPr
       )}
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <SectionCard icon={Building2} title="Type de structure">
-          <p className="text-sm text-foreground">{typeLabel ?? "Non renseigné"}</p>
-        </SectionCard>
-
         <SectionCard icon={Tags} title="Catégorie thématique">
           <PillGroup values={categoryThematic} />
         </SectionCard>

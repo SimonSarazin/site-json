@@ -4301,7 +4301,111 @@ admin `resource` sans validation qui affiche un champ costum hors du socle léga
 | `test:unit` (suite complète) | ✅ 5 825/5 828 passés, 1 skip — 2 échecs **pré-existants et sans rapport** (`bundle-size`, dette connue) |
 | `tests/preflight/costum-forms.test.ts` | ✅ 73/73 — toutes les clés de codec du nouveau form résolues |
 | `tests/preflight/archetypes.test.ts` | ✅ (resynchronisé : `examples/admin.json` avait dérivé du correctif `defaultFields`) |
-| Écran | ✅ `/annuaire-acteurs-parentalite` et fiche profil en clair/sombre/mobile (390 px), aucun débordement |
+
+### 9septquadragies.2 Documents attachés, hors `about.files`
+
+Une image/un dépliant d'une fiche peut être rattaché via `contentKey` plutôt que dans `about.files` (ex.
+`"presentation"`, cf. §9septquadragies.5) : visible sur la page profil (`ProfileParent62About`, lecture
+directe de `serverData.images`), et depuis le 14/10 également éditable dans le formulaire via le champ
+`galeriePresentation` (§9septquadragies.6).
+
+### 9septquadragies.3 `typeObj` de l'acteur — sous-type costum dédié
+
+Un sous-type costum **séparé** `costum.typeObj.acteur` (`sameAs:"organizations"`) porte les 8 champs
+spécifiques (`categoryThematic`/`typeAction`/`publicCible`/`accessibility`/`provisionResources`/`contact`/
+`note`/`socialNetwork`) — pas fusionné dans le typeObj `organizations` existant des Partenaires. En
+édition, le SDK choisit le sous-type via `serverData.type` (seul levier, `BaseEntity.ts`) : `type` est
+donc le **discriminant pur** de ce sous-type (`"acteur"`) sur les fiches acteurs, et ne porte plus la
+nature juridique de structure (NGO/Collectivité/Établissement/Entreprise) comme sur `parent62-partenaire`
+— le sélecteur « Type de structure » est donc absent du formulaire `parent62-acteur` et de son affichage.
+
+
+### 9septquadragies.5 Images « presentation »
+
+`contentKey:"presentation"` (collection `documents`, séparée de `organizations` — assemblée à la lecture
+par le backend, jointe par `{type:"organizations", id:<_id>}`) : affichées sur la fiche profil publique
+(`toPresentationDocs`/`ProfileParent62About.tsx`, lit `serverData.images` directement, code
+site-spécifique sans dépendance moteur) et éditables depuis le formulaire via `galeriePresentation`
+(§9septquadragies.6). Pour tout nouvel ajout (image ou document), le champ « Documents » du formulaire
+accepte déjà les images (`widgetProps.accept` élargi, config seule).
+
+### 9septquadragies.6 Galerie « Images de présentation » + différenciation `/annuaire` vs `/annuaire-acteurs-parentalite`
+
+**Galerie en édition** (zéro moteur) : champ `galeriePresentation` (`widget:"gallery"`,
+`contentKey:"presentation"`, `renderOnly:true`) sur `parent62-acteur` — même mécanisme que
+`parent62-article` (`contentKey:"slider"`) et d'autres sites (tiers-lieux, institut-bleu, saint-paul-sport,
+federationDesCae).
+
+**Différenciation des deux annuaires** — `/annuaire` (Partenaires) et `/annuaire-acteurs-parentalite`
+(Acteurs) sont distingués par un tag, **jamais** par `type` ou `source.key` (tous deux non fiables sur les
+fiches importées et/ou dépendants d'une donnée de lot de test) :
+- `/annuaire` : `baseParams.defaultTags:["Partenaires"]`. Tag posé par `mutation.stamps` sur
+  `parent62-partenaire` (`{field:"tags", value:"Partenaires", op:"append", on:"both"}` — moteur déjà
+  partagé, cf. tiers-lieux `mainTag`/`compagnon`), réaffirmé à CHAQUE sauvegarde (create ET edit).
+  `defaultTags` est un scope de base invisible (même mécanisme que le bandeau « À la une » de l'accueil),
+  pas un filtre interactif retirable.
+- `/annuaire-acteurs-parentalite` : `defaultFilters:{"tags":{"$nin":["Partenaires"]}}` — Acteur = défaut
+  (absence du tag).
+- Seul « DEMAIN » existe comme Partenaire en base locale (fiche visiblement de test) — pas retaguée
+  automatiquement, à trancher avec l'équipe lors d'une vraie soumission.
+
+`/recherche` (cible « Structures & partenaires ») reste volontairement sans filtre dédié (confirmé avec
+l'équipe).
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `stamps.test.ts` (moteur partagé, non modifié) | ✅ 20/20 |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+
+### 9septquadragies.7 Deux correctifs trouvés en relecture avant merge
+
+- **`email` optionnel rejeté à la création** (`ApiValidationError … /email must be a valid email address`,
+  reproduit sur « Ajouter un partenaire ») : le schéma AJV `ADD_ORGANIZATION` (`common3`, côté SDK) exige
+  `format:"email"` SANS passe-droit pour `""`, contrairement à `url`/`tags` qui en ont un. `email` sur
+  `parent62-partenaire`/`parent62-acteur` est optionnel et sans codec `write` : laissé vide, le pipeline
+  générique émettait `email:""`, rejeté par l'AJV. Isolé en rejouant le schéma réel du SDK
+  (`cocolight-api-client/src/endpoints.module.ts`) avec Ajv en local, hors navigateur. **Correctif**,
+  config seule, déjà en usage (`rezo-sante-acteur`/`rezo-sante-lieu`) : `"write": "omitEmpty"` sur les deux
+  champs `email` — omet la clé plutôt que d'envoyer `""`.
+- **« Ajouter une organisation » depuis un profil citoyen ouvrait le formulaire Communecter générique**,
+  pas `parent62-partenaire` : deux `costumForms` d'`entityType:"organizations"` existent désormais
+  (`parent62-partenaire` et `parent62-acteur`, §9septquadragies.3), et le résolveur
+  (`siteCostumAddModal`/`costumCreateKey`, `addModals.ts`) rend `null` dès qu'il y a plusieurs candidats
+  pour une collection — « on ne choisit pas à la place du site » — donc `profiles.citoyens.addConfig.
+  organization:true` retombait sur `add-organization`. Un parent référençant sa structure depuis son
+  profil la créait donc sans `categoryThematic`/tag `Partenaires`/scope `parent62` — invisible dans les
+  deux annuaires. **Correctif**, config seule, patron déjà utilisé par `institut-bleu` (2 formulaires
+  `poi` pour la même raison) : `organization:false` + une entrée `addConfig.custom` ciblant explicitement
+  `modalKey:"add-parent62-partenaire"` (label, icône `handshake`, `condition:{auth:"required",
+  userContext:"own"}`). Fixture de garde `tests/preflight/__effective__/parent62.json` régénérée
+  (`vitest -u`) : `addMenus.citoyens.builtins.organization` disparaît, `customs:["add-parent62-
+  partenaire"]` apparaît.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `tests/preflight/` (hors `bundle-size.test.ts`, échec préexistant sans rapport) | ✅ 822/823 |
+| `stamps.test.ts` (sentinelle d'inventaire, mise à jour : `parent62/parent62-partenaire:1`) | ✅ |
+
+### 9septquadragies.8 Routage d'édition par tag, indépendant de `source.key`
+
+Le réimport à venir des organisations acteurs posera `source.key:"parent62"` (fin de l'usage de
+`"youthCare"`, clé de lot de test). `profiles.organizations.editModals` route donc sur le tag, pas sur une
+clé de source :
+- `edit-parent62-acteur` : `NOT(tags contains "Partenaires") AND (scope parent62)`.
+- `edit-parent62-partenaire` : `scope parent62` (catch-all — implicitement les fiches taguées, puisque
+  l'acteur prend tout le reste en premier).
+
+Vue matchable (`entityMatchData`, `src/lib/entityMatch.ts`) expose déjà `tags` normalisé — aucun
+changement moteur nécessaire.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `tests/preflight/` (hors `bundle-size.test.ts`) | ✅ 822/823 |
 
 ## 10. Checklist d'avancement
 
@@ -4469,6 +4573,8 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | **Transcription / sous-titres des paroles** (1.6) — champ dédié à ajouter au form + affichage | Peterson / réseau |
 | **Masquage public des events *pending*** (2.6) — `searchEventsCostum` applique-t-il un gate `toBeValidated` ? sinon à faire côté backend | Thomas |
 | **`typeObj` de production** (2.7) — déclarer sur le costum parent62 de production `typeObj.organizations` (`territoires`, `publics`, `themes`) comme en base locale (§9octotricies) | Thomas / backend |
+| **`typeObj.acteur` de production** — créé et appliqué en LOCAL uniquement (cf. §9septquadragies.3) ; reste à reporter sur la base de PRODUCTION (même opération) avant toute édition réelle en prod | Thomas / backend |
+| **Republication SDK (`costum-extensions.json`)** — aucune entrée `organizations` pour `parent62` dans l'artefact vendu (généré 03/09, périmé) ; le scanner backend qui le produit (`tools/parity/scripts/costum-fields.mjs`) est hors d'atteinte depuis ce poste. Nécessaire pour que l'édition des champs costum de `parent62-acteur` soit fiable en PRODUCTION (sans dépendre de `VITE_COSTUM_FORCE_LIVE`, local uniquement) | backend / Thomas |
 | **Données P2/P3** — relevé du 25/07 : 3 paroles, 4 ressources ; events et organisations à confirmer. Volumétrie réelle à créer/importer | réseau / Thomas |
 | **Géolocalisation** — aucune donnée ne porte de coordonnées : la vue carte de `/recherche` est vide et le `colorBy` par territoire est invérifiable | réseau / Thomas |
 | Borne de fin des dates (`$lt`/`$lte`) dans `SearchNew::getQueries` | Thomas / backend |

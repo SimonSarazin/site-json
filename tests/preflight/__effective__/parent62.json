@@ -4,11 +4,13 @@
   "addMenus": {
     "citoyens": {
       "builtins": {
-        "organization": "add-organization",
         "project": "add-project",
         "event": "add-event",
         "poi": "add-poi"
-      }
+      },
+      "customs": [
+        "add-parent62-partenaire"
+      ]
     },
     "organizations": {
       "builtins": {
@@ -35,12 +37,12 @@
       "routes": [
         {
           "declare": "edit-parent62-acteur",
-          "native": "edit-parent62-partenaire",
+          "native": "edit-parent62-acteur",
           "horsPerimetre": "edit-profile"
         },
         {
           "declare": "edit-parent62-partenaire",
-          "native": "edit-parent62-partenaire",
+          "native": "edit-parent62-acteur",
           "horsPerimetre": "edit-profile"
         }
       ]
@@ -1369,6 +1371,9 @@
           "parent62"
         ],
         "costumSlug": "parent62",
+        "defaultTags": [
+          "Partenaires"
+        ],
         "defaultFields": [
           "name",
           "slug",
@@ -1411,6 +1416,13 @@
           "parent62"
         ],
         "costumSlug": "parent62",
+        "defaultFilters": {
+          "tags": {
+            "$nin": [
+              "Partenaires"
+            ]
+          }
+        },
         "defaultFields": [
           "name",
           "slug",
@@ -1444,6 +1456,17 @@
         "indexStepList": 200
       }
     }
+  },
+  "stamps": {
+    "parent62-partenaire": [
+      {
+        "field": "tags",
+        "value": "Partenaires",
+        "op": "append",
+        "on": "both",
+        "channel": "payload"
+      }
+    ]
   },
   "referencement": {},
   "membership": {

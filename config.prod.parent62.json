@@ -18983,6 +18983,7 @@
                     "parent62"
                   ],
                   "costumSlug": "parent62",
+                  "defaultTags": ["Partenaires"],
                   "defaultFields": [
                     "name",
                     "slug",
@@ -19196,6 +19197,9 @@
                     "parent62"
                   ],
                   "costumSlug": "parent62",
+                  "defaultFilters": {
+                    "tags": { "$nin": ["Partenaires"] }
+                  },
                   "defaultFields": [
                     "name",
                     "slug",
@@ -20030,10 +20034,24 @@
           "variant": "complete",
           "showAddDropdown": true,
           "addConfig": {
-            "organization": true,
+            "organization": false,
             "project": true,
             "event": true,
-            "poi": true
+            "poi": true,
+            "custom": [
+              {
+                "modalKey": "add-parent62-partenaire",
+                "label": {
+                  "fr": "Ajouter un partenaire",
+                  "en": "Add a partner"
+                },
+                "icon": "handshake",
+                "condition": {
+                  "auth": "required",
+                  "userContext": "own"
+                }
+              }
+            ]
           }
         },
         {
@@ -20358,9 +20376,29 @@
         {
           "editModal": "edit-parent62-acteur",
           "when": {
-            "field": "sourceKeys",
-            "op": "contains",
-            "value": "youthCare"
+            "and": [
+              {
+                "not": {
+                  "field": "tags",
+                  "op": "contains",
+                  "value": "Partenaires"
+                }
+              },
+              {
+                "or": [
+                  {
+                    "field": "sourceKeys",
+                    "op": "contains",
+                    "value": "parent62"
+                  },
+                  {
+                    "field": "reference.costum",
+                    "op": "contains",
+                    "value": "parent62"
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -21476,6 +21514,7 @@
           "widget": "file",
           "label": {
             "fr": "Documents",
+            
             "en": "Documents"
           },
           "info": {
@@ -24754,6 +24793,7 @@
         },
         "email": {
           "widget": "email",
+          "write": "omitEmpty",
           "label": {
             "fr": "E-mail",
             "en": "Email"
@@ -24874,6 +24914,14 @@
             }
           }
         },
+        "stamps": [
+          {
+            "field": "tags",
+            "value": "Partenaires",
+            "op": "append",
+            "on": "both"
+          }
+        ],
         "successKey": {
           "add": "toast.add.organizationSuccess",
           "edit": "toast.profile.updateSuccess"
@@ -24932,7 +24980,6 @@
               "columns": 1,
               "fields": [
                 "name",
-                "type",
                 "profil_avatar",
                 "shortDescription",
                 "description"
@@ -25009,7 +25056,8 @@
                 "accessibility",
                 "provisionResources",
                 "note",
-                "documents"
+                "documents",
+                "galeriePresentation"
               ]
             }
           ]
@@ -25023,43 +25071,6 @@
             "fr": "Nom de la structure",
             "en": "Organisation name"
           }
-        },
-        "type": {
-          "widget": "select",
-          "label": {
-            "fr": "Type de structure",
-            "en": "Type of organisation"
-          },
-          "enum": [
-            {
-              "value": "NGO",
-              "label": {
-                "fr": "Association",
-                "en": "Association"
-              }
-            },
-            {
-              "value": "GovernmentOrganization",
-              "label": {
-                "fr": "Collectivité / service public",
-                "en": "Local authority / public service"
-              }
-            },
-            {
-              "value": "Group",
-              "label": {
-                "fr": "Établissement (crèche, école, centre social…)",
-                "en": "Facility (nursery, school, social centre…)"
-              }
-            },
-            {
-              "value": "LocalBusiness",
-              "label": {
-                "fr": "Entreprise",
-                "en": "Company"
-              }
-            }
-          ]
         },
         "profil_avatar": {
           "widget": "image",
@@ -25182,6 +25193,7 @@
         },
         "email": {
           "widget": "email",
+          "write": "omitEmpty",
           "label": {
             "fr": "E-mail",
             "en": "Email"
@@ -25361,15 +25373,31 @@
             "en": "Documents"
           },
           "info": {
-            "fr": "Plaquettes, flyers… PDF ou document bureautique.",
-            "en": "Leaflets, flyers… PDF or office document."
+            "fr": "Plaquettes, flyers, photos… PDF, document bureautique ou image.",
+            "en": "Leaflets, flyers, photos… PDF, office document or image."
           },
           "widgetProps": {
             "contentKey": "file",
             "docType": "file",
             "maxItems": 10,
-            "accept": ".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx,.odt,.ods,.odp,.csv"
+            "accept": ".pdf,.jpg,.jpeg,.png,.webp,.xls,.xlsx,.doc,.docx,.ppt,.pptx,.odt,.ods,.odp,.csv"
           }
+        },
+        "galeriePresentation": {
+          "widget": "gallery",
+          "label": {
+            "fr": "Images de présentation",
+            "en": "Presentation images"
+          },
+          "info": {
+            "fr": "Visuels mis en avant sur la fiche (jusqu'à 12).",
+            "en": "Images highlighted on the profile page (up to 12)."
+          },
+          "widgetProps": {
+            "contentKey": "presentation",
+            "maxItems": 12
+          },
+          "renderOnly": true
         }
       },
       "chrome": {
