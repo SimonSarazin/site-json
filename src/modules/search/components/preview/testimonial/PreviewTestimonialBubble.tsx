@@ -46,6 +46,10 @@ export default function PreviewTestimonialBubble({ item, list, onClose }: Previe
           type="button"
           onClick={() => setImageOpen(true)}
           aria-label={t("testimonial.viewImage")}
+          // `tabIndex={-1}` : hors de l'auto-focus Radix à l'ouverture du dialogue — sans lui, ce bouton
+          // (premier focusable du contenu) reçoit le focus initial à la place du titre, et Entrée ouvre
+          // la lightbox par-dessus la modale encore ouverte.
+          tabIndex={-1}
           className="relative flex max-h-[30vh] w-full shrink-0 cursor-zoom-in items-center justify-center overflow-hidden bg-muted"
         >
           {/* Fond flou : même URL que l'image nette → un seul téléchargement (cache). */}
@@ -59,6 +63,7 @@ export default function PreviewTestimonialBubble({ item, list, onClose }: Previe
           type="button"
           onClick={() => setImageOpen(true)}
           aria-label={t("testimonial.viewImage")}
+          tabIndex={-1}
           className="relative aspect-[21/9] max-h-[30vh] w-full shrink-0 cursor-zoom-in overflow-hidden bg-muted"
         >
           <OptimizedImage src={data.image} alt={data.title} width={840} className="h-full w-full object-cover" />

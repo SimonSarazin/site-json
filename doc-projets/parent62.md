@@ -4478,6 +4478,11 @@ l'utilisait déjà.
 | Tests ciblés (`ProfileParent62About`/`profileParent62Social`/`profileParent62Documents`, `toStringArray`) | ✅ 31/31 |
 | `tests/preflight/` (hors `bundle-size.test.ts`) | ✅ 822/823 |
 
+**Hors parent62, trouvé dans la même relecture** : `PreviewTestimonialBubble.tsx` (module `search`,
+preview « parole de parent ») — le bouton « agrandir l'image » devenait le premier focusable du
+dialogue Radix à l'ouverture (annoncé avant le titre, Entrée ouvrait la lightbox par-dessus). Corrigé
+par `tabIndex={-1}`, régression testée (`PreviewTestimonialBubble.test.tsx`).
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
