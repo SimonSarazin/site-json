@@ -261,10 +261,9 @@ app.use(['/{*all}'], async (req, res) => {
       res,
       cachedConfig,
       // callback onHead : reçoit les balises Helmet
-      (helmetHead, dehydratedState) => {
-        const stateScript = `<script>window.__REACT_QUERY_STATE__=${serialize(
-                            dehydratedState, { isJSON: true }
-                          )}</script>`;
+      // `stateJson` arrive sérialisé ET échappé (`serializeSsrState`) : pas de second passage JSON.
+      (helmetHead, stateJson) => {
+        const stateScript = `<script>window.__REACT_QUERY_STATE__=${stateJson}</script>`;
 
         res.write(helmetHead);      // <title> / <meta> / <link>…
         res.write(stateScript);

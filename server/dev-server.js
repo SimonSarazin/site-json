@@ -193,9 +193,10 @@ async function createServer() {
       timings.loadEntryServer = (performance.now() - t0).toFixed(1);
 
       t0 = performance.now();
-      await render(req, res, config, (helmetHead, dehydratedState) => {
+      // `stateJson` arrive sérialisé ET échappé (`serializeSsrState`) : pas de second passage JSON.
+      await render(req, res, config, (helmetHead, stateJson) => {
         res.write(helmetHead);
-        res.write(`<script>window.__REACT_QUERY_STATE__=${serialize(dehydratedState, { isJSON: true })}</script>`);
+        res.write(`<script>window.__REACT_QUERY_STATE__=${stateJson}</script>`);
         res.write(beforeBody);
       }, tail);
       timings.render = (performance.now() - t0).toFixed(1);

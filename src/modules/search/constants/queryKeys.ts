@@ -40,6 +40,15 @@ export const SEARCH_STATIC_MAP_PREFIX = "searchCostumStaticMapAll";
  */
 export const SEARCH_DUPLICATES_PREFIX = "entityDuplicates";
 
+/**
+ * Préfixe COMMUN des chiffres comptés des tuiles de stat (source `searchCount`). Producteur :
+ * `useSearchCountState`. La clé porte déjà le périmètre (type + baseParams) : deux tuiles qui comptent
+ * le même périmètre partagent une requête. Invalidation : `SEARCH_LISTS_INVALIDATION` (création /
+ * suppression d'entité), `publicSurfaceKeys` (actions d'admin), `invalidate:standard` (formulaires
+ * costum), `useAnswerCreated` et `PreviewCoformAnswer` (réponses CoForm) — une fiche ajoutée compte aussitôt.
+ */
+export const SEARCH_STAT_COUNT_PREFIX = "stat-search-count";
+
 export interface SearchQueryKeyParams {
   queryKeyPrefix: string;
   searchText: string;

@@ -30,41 +30,76 @@ const hasEntityParent = (node: JsonObject): node is JsonObject & { parent: JsonO
 export const clone = <V>(value: V): V =>
   typeof structuredClone === "function" ? structuredClone(value) : (JSON.parse(JSON.stringify(value)) as V);
 
-function forEachNode(node: unknown, visit: (obj: JsonObject) => void): void {
-  if (Array.isArray(node)) {
-    for (const item of node) forEachNode(item, visit);
-    return;
-  }
-  if (!isObject(node)) return;
-  visit(node);
-  for (const value of Object.values(node)) forEachNode(value, visit);
-}
+/** L'échappement de `serialize-javascript` (`isJSON`), à l'identique : le JSON reste inerte dans un `<script>`. */
+const UNSAFE_CHARS = /[<>/\u2028\u2029]/g;
+const ESCAPED_CHARS: Record<string, string> = {
+  "<": "\\u003C",
+  ">": "\\u003E",
+  "/": "\\u002F",
+  "\u2028": "\\u2028",
+  "\u2029": "\\u2029",
+};
+const toScriptSafe = (json: string): string => json.replace(UNSAFE_CHARS, (c) => ESCAPED_CHARS[c]);
 
 /**
- * Serveur : range les parents distincts dans `__ssrParents`. Un seul `JSON.stringify`, dont le
- * replacer voit chaque entité APRÈS son `toJSON` (comme `serialize(…, { isJSON: true })`) ; sans
- * parent à factoriser, l'état d'origine est rendu tel quel — pas de reparse pour rien.
+ * Serveur : le texte de `window.__REACT_QUERY_STATE__=…`, parents distincts rangés dans
+ * `__ssrParents`. UN `JSON.stringify` de l'état, dont le replacer voit chaque entité APRÈS son
+ * `toJSON` ; la table des parents s'ajoute au texte, sans reparse. Un parent n'est sérialisé qu'une
+ * fois par INSTANCE du SDK — celle qu'une liste partage entre toutes ses cartes —, le texte ne
+ * servant qu'à reconnaître deux instances au contenu identique.
  */
-export function packSsrState<T extends object>(state: T): T {
-  const indexByParent = new Map<string, number>();
-  const parents: JsonObject[] = [];
+export function serializeSsrState(state: object): string {
+  // La table s'ajoute en dernière clé d'un OBJET : un autre état part tel quel, sans référence.
+  if (!isObject(state)) return toScriptSafe(JSON.stringify(state));
 
-  const text = JSON.stringify(state, (_key, value: unknown) => {
+  const indexByText = new Map<string, number>();
+  const indexByInstance = new WeakMap<object, number>();
+  const parentTexts: string[] = [];
+
+  const text = JSON.stringify(state, function (this: unknown, key: string, value: unknown) {
     if (!isObject(value) || !hasEntityParent(value)) return value;
-    const parentKey = JSON.stringify(value.parent);
-    let index = indexByParent.get(parentKey);
+    // `this[key]` : l'entité AVANT son `toJSON` — son parent, une instance du SDK. Sans `toJSON`
+    // (nœud déjà sérialisé), aucune instance ne garantit le contenu : reconnu par son texte.
+    const original = (this as JsonObject)[key];
+    const instance =
+      original !== value && isObject(original) && isObject(original.parent) ? original.parent : undefined;
+    let index = instance ? indexByInstance.get(instance) : undefined;
     if (index === undefined) {
-      index = parents.length;
-      parents.push(JSON.parse(parentKey) as JsonObject);
-      indexByParent.set(parentKey, index);
+      const parentText = JSON.stringify(value.parent);
+      index = indexByText.get(parentText);
+      if (index === undefined) {
+        index = parentTexts.length;
+        parentTexts.push(parentText);
+        indexByText.set(parentText, index);
+      }
+      if (instance) indexByInstance.set(instance, index);
     }
     return { ...value, parent: { [REF_KEY]: index } };
   });
 
-  if (parents.length === 0) return state;
-  const json = JSON.parse(text) as JsonObject;
-  json[PARENTS_KEY] = parents;
-  return json as T;
+  if (parentTexts.length === 0) return toScriptSafe(text);
+  // Un `toJSON` de l'état qui rendrait autre chose qu'un objet : pas de table où ranger les parents.
+  if (!text.startsWith("{")) return toScriptSafe(JSON.stringify(state));
+  // `text` est celui d'un objet NON vide (il porte au moins l'entité référencée) : `{…}` → `{…,"__ssrParents":[…]}`.
+  return toScriptSafe(`${text.slice(0, -1)},"${PARENTS_KEY}":[${parentTexts.join(",")}]}`);
+}
+
+/** Restitue les parents référencés sous `node` ; ne descend jamais dans un parent restitué (il n'en contient pas). */
+function restoreParents(node: unknown, parents: unknown[]): void {
+  if (Array.isArray(node)) {
+    for (const item of node) restoreParents(item, parents);
+    return;
+  }
+  if (!isObject(node)) return;
+  const isEntity = node.__isSerializedEntity === true;
+  for (const [key, value] of Object.entries(node)) {
+    const ref = isEntity && key === "parent" && isObject(value) ? value[REF_KEY] : undefined;
+    if (typeof ref === "number") {
+      if (isObject(parents[ref])) node.parent = clone(parents[ref]);
+      continue;
+    }
+    restoreParents(value, parents);
+  }
 }
 
 /**
@@ -75,11 +110,6 @@ export function unpackSsrState<T>(state: T): T {
   if (!isObject(state) || !Array.isArray(state[PARENTS_KEY])) return state;
   const parents = state[PARENTS_KEY] as unknown[];
   delete state[PARENTS_KEY];
-
-  forEachNode(state, (node) => {
-    if (node.__isSerializedEntity !== true || !isObject(node.parent)) return;
-    const ref = node.parent[REF_KEY];
-    if (typeof ref === "number" && isObject(parents[ref])) node.parent = clone(parents[ref]);
-  });
+  restoreParents(state, parents);
   return state;
 }

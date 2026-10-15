@@ -9,10 +9,10 @@ import {
 import { type SiteConfig }                      from '@/types/site';
 import { buildRoutes }                          from '@/lib/buildRoutes';
 import { Writable } from 'node:stream';
-import { dehydrate, type DehydratedState, HydrationBoundary, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { dehydrate, HydrationBoundary, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { resetApiState } from './lib/apiClient';
 import { COCOLIGHT_INIT_QUERY_KEY, ensureInitApi } from './lib/cocolightInitQuery';
-import { packSsrState } from './lib/ssrStatePacking';
+import { serializeSsrState } from './lib/ssrStatePacking';
 import {
   ChunkCollectorContext,
   createChunkCollector,
@@ -33,7 +33,8 @@ export async function render(
   req: Request,
   res: Response,
   cfg: SiteConfig,
-  onHead: (headHtml: string, dehydratedState: DehydratedState) => Promise<void>,
+  /** `stateJson` : le texte de `window.__REACT_QUERY_STATE__`, prêt à injecter (`serializeSsrState`). */
+  onHead: (headHtml: string, stateJson: string) => Promise<void>,
   closingTags = '</div></body></html>',
 ): Promise<void> {
   const isDev = import.meta.env.DEV;
@@ -219,6 +220,14 @@ export async function render(
           /* Récupérer les tags de preload pour les chunks lazy utilisés   */
           const preloadTags = collector.getTags();
 
+          /* État React Query : parents d'entités factorisés (restitués par `ssrStateBootstrap`),
+             échappé pour un <script> — un seul passage JSON, sans `serialize` derrière. */
+          if (isDev) t0 = performance.now();
+          const stateJson = serializeSsrState(dehydratedState);
+          if (isDev) {
+            console.log(`[PERF entry-server] serializeState:${(performance.now() - t0).toFixed(1)}ms (${(stateJson.length / 1024).toFixed(0)} Ko)`);
+          }
+
           /* Injecter dans le head (fonts et images EN PREMIER pour priorité maximale) */
           onHead(
             `${fontPreloadTags}
@@ -227,8 +236,7 @@ export async function render(
              ${helmetCtx.helmet?.title ?? ''}
              ${helmetCtx.helmet?.meta ?? ''}
              ${helmetCtx.helmet?.link ?? ''}`,
-             // Parents d'entités factorisés pour le transport (restitués par `ssrStateBootstrap`).
-             packSsrState(dehydratedState)
+             stateJson
           );
 
           /* Pipe direct vers res — l'override de `res.end()` ci-dessus

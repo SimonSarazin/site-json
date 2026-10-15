@@ -206,7 +206,7 @@ function getHydratedCocolightData(): CocolightHydratedData | null {
 
 **Fonctionnement** :
 1. Le serveur SSR pré-charge les données `cocolight-data` via React Query
-2. Ces données sont sérialisées dans `window.__REACT_QUERY_STATE__` (via `serialize-javascript`)
+2. Ces données sont sérialisées dans `window.__REACT_QUERY_STATE__` (via `serializeSsrState`, même échappement que `serialize-javascript`)
 3. Côté client, si l'utilisateur n'est **pas connecté**, `createApiInstances()` réutilise ces données
 4. L'entité est reconstituée via `Cocolight.helper.fromEntityJSON()` pour obtenir un objet SDK complet
 5. Cela évite un appel réseau supplémentaire à `entityBySlug()` au premier render
