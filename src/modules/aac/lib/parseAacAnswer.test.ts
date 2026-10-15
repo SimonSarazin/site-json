@@ -4,31 +4,39 @@ import { buildAacFormMeta } from "./formMeta";
 import { resolveAacCardFields } from "./resolveAacCardFields";
 import { EMPTY_AAC_CARD_FIELDS, type AacCardFields } from "./resolveAacCardFields";
 
-/** Champs résolus sur un formulaire aux clés EXOTIQUES (rien en dur). */
-const FIELDS: AacCardFields = resolveAacCardFields(
-  buildAacFormMeta("f1", {
-    subForms: ["etapeA", "etapeB"],
-    inputs: {
-      etapeA: {
-        inputs: {
-          q_titre: { type: "text", label: "Nom", position: 1 },
-          q_desc: { type: "textarea", label: "Résumé", position: 2 },
-          q_theme: { type: "tpls.forms.cplx.checkboxNew", label: "Thèmes", position: 3 },
-          q_matu: { type: "tpls.forms.cplx.radioNew", label: "Maturité", position: 4 },
-          depense: { type: "tpls.forms.ocecoform.newDepenseList", label: "Budget", position: 5 },
-        },
+/** Un formulaire aux clés EXOTIQUES (rien en dur). */
+const FORM_META = buildAacFormMeta("f1", {
+  subForms: ["etapeA", "etapeB"],
+  inputs: {
+    etapeA: {
+      inputs: {
+        q_titre: { type: "text", label: "Nom", position: 1 },
+        q_desc: { type: "textarea", label: "Résumé", position: 2 },
+        q_theme: { type: "tpls.forms.cplx.checkboxNew", label: "Thèmes", position: 3 },
+        q_matu: { type: "tpls.forms.cplx.radioNew", label: "Maturité", position: 4 },
+        depense: { type: "tpls.forms.ocecoform.newDepenseList", label: "Budget", position: 5 },
       },
-      etapeB: { inputs: { choose: { type: "tpls.forms.aap.selection", label: "Sél." } } },
     },
-    params: { checkboxNewq_theme: { list: ["A", "B"] }, radioNewq_matu: { list: ["Idée"] } },
-  }),
-  {
-    depenseStepKey: "etapeA",
-    evalStepKey: "etapeB",
-    financementStepKey: null,
-    suiviStepKey: null,
-  }
-).fields;
+    etapeB: { inputs: { choose: { type: "tpls.forms.aap.selection", label: "Sél." } } },
+  },
+  params: { checkboxNewq_theme: { list: ["A", "B"] }, radioNewq_matu: { list: ["Idée"] } },
+});
+
+const ROLES = {
+  depenseStepKey: "etapeA",
+  evalStepKey: "etapeB",
+  financementStepKey: null,
+  evalStepKeyFound: null,
+  suiviStepKey: null,
+};
+
+/** Un AAC : sa config déclare l'étape de sélection, qui ne se devine jamais. */
+const FIELDS: AacCardFields = resolveAacCardFields(FORM_META, ROLES, {
+  choose: "answers.etapeB.choose",
+}).fields;
+
+/** Le même formulaire vu comme un AAP : aucune sélection déclarée. */
+const FIELDS_AAP: AacCardFields = resolveAacCardFields(FORM_META, ROLES).fields;
 
 const parse = (raw: unknown, opts: Partial<Parameters<typeof parseAacAnswer>[1]> = {}) =>
   parseAacAnswer(raw, { fields: FIELDS, ...opts });
@@ -512,6 +520,15 @@ describe("parseAacAnswer — compteurs et badge", () => {
     // Sans contextId ⇒ indécidé : on ne sait pas sous quelle clé regarder.
     expect(
       parse({ ...base, answers: { etapeB: { choose: {} } } }).isSelected
+    ).toBeNull();
+    // Un AAP (pas de `choose` en config, champs passés par le VRAI résolveur) ⇒
+    // indécidé, même avec un contexte et une valeur en base : la proposition
+    // n'est ni « en attente » ni « sélectionnée ».
+    expect(
+      parseAacAnswer(
+        { ...base, answers: { etapeB: { choose: { ctx1: { value: "selected" } } } } },
+        { fields: FIELDS_AAP, contextId: "ctx1" }
+      ).isSelected
     ).toBeNull();
   });
 });

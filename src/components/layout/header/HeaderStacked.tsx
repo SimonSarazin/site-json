@@ -74,18 +74,26 @@ const PLANCHER_BANDEAU = {
 } as const;
 
 /**
- * Taille de la marque (logo + wordmark) à partir de `xl:`, même clé que le plancher.
+ * Taille de la marque (wordmark) à partir de `xl:`, même clé que le plancher. Le LOGO n'a pas de
+ * HAUTEUR de rendu ici : il s'aligne tout seul sur la hauteur du bloc titre+sous-titre voisin (CSS
+ * Grid + `items-stretch`, cf. plus bas) — un plafond de taille en dur aurait fini par diverger du
+ * wordmark qu'il doit accompagner, à chaque changement de preset ou de longueur de sous-titre.
+ * `px` reste : c'est la résolution SOURCE demandée à `/img` (optimisation), volontairement bien
+ * AU-DESSUS de toute hauteur de rendu réaliste pour ce preset (×2 par le srcSet 2x déjà) — sinon le
+ * logo est servi plus petit qu'affiché et l'agrandissement CSS le floute (mesuré : 80px demandés,
+ * rendu jusqu'à 132px).
  *
  * Le plancher SEUL ne réduit rien : la hauteur du bandeau vaut `max(plancher, contenu)`, et à
  * `xl:h-40` + wordmark `text-7xl` le contenu mesure ~290px — il dépassait donc un plancher à 25vh
  * (225px sur un écran de 900) et le bandeau restait à 32% de l'écran. Demander un bandeau plus court
- * implique une marque plus petite ; les deux se règlent d'un seul cran.
+ * implique un wordmark plus petit (donc un logo plus petit, qui en découle) ; les deux se règlent
+ * d'un seul cran.
  * Mobile/tablette inchangés (classes `sm:` communes) : là, le bandeau suit déjà son contenu.
  */
 const MARQUE_BANDEAU = {
-  sm: { logo: "xl:h-20 xl:w-20", wordmark: "xl:text-4xl xl:mb-1", sous: "xl:text-lg", mt: "xl:mt-1", gap: "xl:gap-7", px: 80 },
-  md: { logo: "xl:h-32 xl:w-32", wordmark: "xl:text-6xl xl:mb-2", sous: "xl:text-2xl", mt: "xl:mt-2", gap: "xl:gap-10", px: 128 },
-  lg: { logo: "xl:h-40 xl:w-40", wordmark: "xl:text-7xl xl:mb-3", sous: "xl:text-3xl", mt: "xl:mt-3", gap: "xl:gap-12", px: 160 },
+  sm: { wordmark: "xl:text-4xl xl:mb-1", sous: "xl:text-lg", mt: "xl:mt-1", gap: "xl:gap-7", px: 200 },
+  md: { wordmark: "xl:text-6xl xl:mb-2", sous: "xl:text-2xl", mt: "xl:mt-2", gap: "xl:gap-10", px: 260 },
+  lg: { wordmark: "xl:text-7xl xl:mb-3", sous: "xl:text-3xl", mt: "xl:mt-3", gap: "xl:gap-12", px: 340 },
 } as const;
 
 export default function HeaderStacked({ header }: HeaderStackedProps) {
@@ -155,15 +163,44 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
             superpose au bas du bandeau + une fine respiration — le wordmark ne
             passe jamais sous la barre. */}
         <div className={`relative flex flex-col items-center justify-center px-4 pt-4 pb-16 ${PLANCHER_BANDEAU[header.height ?? "md"]}`}>
-          <NavLink to={header.path || "/"} className={`flex flex-col sm:flex-row items-center gap-3 sm:gap-5 ${marque.gap} text-center sm:text-left cursor-pointer group`}>
-            <HeaderLogo
-              header={header}
-              isOverlay
-              iconTone="white"
-              imageClassName={`h-11 w-11 sm:h-12 sm:w-12 ${marque.logo} shrink-0 object-contain transition-transform group-hover:scale-110`}
-              iconClassName={`w-11 h-11 sm:w-12 sm:h-12 ${marque.logo} shrink-0 transition-transform group-hover:scale-110`}
-              imageHeight={marque.px}
-            />
+          {/* `sm:grid` (au lieu de `flex`) : à partir de `sm:` (logo et titre/sous-titre en ligne), le
+              logo doit REMPLIR la hauteur de la rangée au lieu d'être centré à sa taille naturelle —
+              `items-stretch` + `aspect-square` sur l'image y suffisent EN GRID, pas en FLEX : en flex,
+              la largeur `auto` d'un item étiré sur l'axe croisé ne se recalcule PAS depuis son
+              `aspect-ratio` (elle reste celle du flex-basis posé AVANT l'étirement — mesuré : logo
+              carré étiré en 80×132, pas 132×132, avec `h-auto`/`w-auto`/`aspect-square` pourtant posés).
+              Le modèle de piste de CSS Grid, lui, résout largeur ET hauteur ENSEMBLE pour un item
+              étiré avec ratio déclaré — d'où `grid-cols-[auto_1fr]` (colonne logo à sa largeur de
+              contenu, colonne texte au reste).
+              ⚠️ L'IMAGE elle-même ne doit PAS être l'item grid direct : son `min-height`/`min-width`
+              implicites valent par défaut sa taille INTRINSÈQUE (`auto`), qui participe au calcul de
+              hauteur de la rangée — en demandant un logo source plus grand pour la netteté
+              (`marque.px`, cf. plus bas, nécessaire pour ne pas re-flouter un agrandissement CSS), sa
+              taille intrinsèque dépassait celle du bloc titre+sous-titre et GONFLAIT toute la rangée à
+              sa propre taille au lieu de s'aligner sur elle (mesuré : rangée et logo à 200px au lieu
+              des 132px du texte ; `min-h-0`/`min-w-0` SEULS sur l'image n'y suffisent pas — la piste
+              `auto` de la rangée reste sensible à la taille MAX-CONTENT de l'image). D'où le
+              conteneur : lui seul est l'item grid (`sm:aspect-square sm:h-auto`, SANS contenu normal
+              pour ne rien imposer), l'image y est `absolute inset-0` — sortie du flux, elle ne
+              contribue plus du tout à la taille du conteneur, qui peut alors s'étirer librement sur la
+              hauteur du texte voisin. Logo carré comme ailleurs dans ce header (vignette compacte
+              `h-11 w-11` ci-dessous) : à revoir si un site au logo non carré adopte un jour ce header.
+              Mobile (`flex-col`) inchangé : centré, pas de rangée à égaler.
+              `sm:min-h-11 sm:min-w-11` : sans `logoTitle` NI `logoSubtitle` (le bloc voisin ne rend
+              alors rien), la piste grid `auto` n'a plus aucun contenu en flux pour se dimensionner —
+              le conteneur logo (lui-même hors flux, cf. plus haut) retombe à 0×0 dès `sm:`. Plancher au
+              même gabarit que la vignette mobile, jamais atteint tant qu'un des deux textes est présent. */}
+          <NavLink to={header.path || "/"} className={`flex flex-col sm:grid sm:grid-cols-[auto_1fr] items-center sm:items-stretch gap-3 sm:gap-5 ${marque.gap} text-center sm:text-left cursor-pointer group`}>
+            <div className="relative h-11 w-11 sm:h-auto sm:w-auto sm:aspect-square sm:min-h-11 sm:min-w-11 shrink-0">
+              <HeaderLogo
+                header={header}
+                isOverlay
+                iconTone="white"
+                imageClassName="absolute inset-0 h-full w-full object-contain transition-transform group-hover:scale-110"
+                iconClassName="absolute inset-0 h-full w-full transition-transform group-hover:scale-110"
+                imageHeight={marque.px}
+              />
+            </div>
             {(header.logoTitle || header.logoSubtitle) && (
               <span className="flex flex-col items-center sm:items-start leading-tight">
                 {header.logoTitle && (
@@ -240,15 +277,15 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
               to={header.path || "/"}
               className={cn(
                 "relative flex items-center shrink-0 overflow-hidden justify-self-start group transition-all duration-300 ease-out",
-                stuck ? "w-11 sm:w-13 opacity-100 scale-100" : "w-0 opacity-0 scale-75 pointer-events-none"
+                stuck ? "w-12 sm:w-14 opacity-100 scale-100" : "w-0 opacity-0 scale-75 pointer-events-none"
               )}
             >
               <HeaderLogo
                 header={header}
                 iconTone="white"
-                imageClassName="h-11 w-11 sm:h-13 sm:w-13 relative shrink-0 object-contain transition-transform group-hover:scale-110"
-                iconClassName="w-11 h-11 sm:w-13 sm:h-13 relative shrink-0 transition-transform group-hover:scale-110"
-                imageHeight={52}
+                imageClassName="h-12 w-12 sm:h-14 sm:w-14 relative shrink-0 object-contain transition-transform group-hover:scale-110"
+                iconClassName="w-12 h-12 sm:w-14 sm:h-14 relative shrink-0 transition-transform group-hover:scale-110"
+                imageHeight={56}
               />
             </NavLink>
 

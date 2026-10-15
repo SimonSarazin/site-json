@@ -53,19 +53,14 @@ export default function PreviewResourceDirectory({ item, list }: PreviewProps) {
     [conf, serverData],
   );
 
-  // Champs du détail déclarés pour ce type (`detailSuffixes`) : mêmes blocs et libellés que la fiche
-  // du lieu. Sinon, rendu historique (équipements / services / à propos de l'annuaire).
-  const details = useMemo(
-    () =>
-      conf
-        ? resolveAnswerDetails(serverData, resolveAnswerType(serverData, conf.resourceTypes), (key) =>
-            t(`resourceDirectory.detail.${key}`),
-          )
-        : null,
-    [conf, serverData, t],
-  );
-
   if (!conf || !model) return null;
+
+  // Champs du détail déclarés pour ce type (`detailSuffixes`) : mêmes blocs et libellés que la fiche
+  // du lieu. Sinon, rendu historique (équipements / services / à propos de l'annuaire). Sans `useMemo` :
+  // `t` (`useT`) change à chaque rendu, le memo recalculerait de toute façon.
+  const details = resolveAnswerDetails(serverData, resolveAnswerType(serverData, conf.resourceTypes), (key) =>
+    t(`resourceDirectory.detail.${key}`),
+  );
 
   const parent = model.parent ? parentsMap?.get(model.parent.id) : undefined;
   const parentName = parent?.name ?? model.parent?.name;
@@ -141,7 +136,7 @@ export default function PreviewResourceDirectory({ item, list }: PreviewProps) {
         details
           ? details.notes
           : model.description
-            ? [{ label: t("resourceDirectory.about"), value: model.description }]
+            ? [{ label: t("resourceDirectory.about"), value: model.description, plainText: true }]
             : []
       }
       actions={

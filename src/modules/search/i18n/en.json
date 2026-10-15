@@ -10,7 +10,8 @@
   },
   "testimonial": {
     "listen": "Listen",
-    "listenTitle": "Listen to the testimony"
+    "listenTitle": "Listen to the testimony",
+    "viewImage": "View full image"
   },
   "resource": {
     "open": "Open the link",

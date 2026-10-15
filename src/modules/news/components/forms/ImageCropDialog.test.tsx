@@ -8,7 +8,19 @@ vi.mock("@/hooks/useT", () => ({ useT: () => (k: string) => k }));
 
 // Le vrai Cropper a besoin d'un rendu d'image réel : on n'en garde que le ratio reçu.
 vi.mock("react-easy-crop", () => ({
-  default: ({ aspect }: { aspect: number }) => <div data-testid="cropper" data-aspect={String(aspect)} />,
+  default: ({
+    aspect,
+    onMediaLoaded,
+  }: {
+    aspect: number;
+    onMediaLoaded?: (m: { naturalWidth: number; naturalHeight: number }) => void;
+  }) => (
+    <div data-testid="cropper" data-aspect={String(aspect)}>
+      <button type="button" onClick={() => onMediaLoaded?.({ naturalWidth: 400, naturalHeight: 800 })}>
+        photo portrait chargée
+      </button>
+    </div>
+  ),
 }));
 
 // jsdom n'a pas de ResizeObserver, requis par le Slider Radix du dialogue.
@@ -47,5 +59,43 @@ describe("ImageCropDialog — sélecteur de format", () => {
   it("`original` sans photo chargée retombe sur `aspect`", () => {
     render(<ImageCropDialog {...base} aspect={16 / 9} aspectOptions={[{ label: "Original", value: "original" }]} />);
     expect(screen.getByTestId("cropper").dataset.aspect).toBe(String(16 / 9));
+  });
+
+  it("« Utiliser l'image entière » ferme le dialogue dès le clic : pas de second envoi possible", async () => {
+    const onUseOriginal = vi.fn();
+    const onOpenChange = vi.fn();
+    render(<ImageCropDialog {...base} onOpenChange={onOpenChange} onUseOriginal={onUseOriginal} />);
+    const bouton = screen.getByRole("button", { name: "forms.imageCrop.useOriginal" });
+    // Inactif tant que le recadreur n'a pas lu les dimensions de la photo.
+    expect((bouton as HTMLButtonElement).disabled).toBe(true);
+    await userEvent.click(screen.getByText("photo portrait chargée"));
+    await userEvent.click(bouton);
+    expect(onUseOriginal).toHaveBeenCalledWith({ width: 400, height: 800 });
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  describe("nouvelle photo ou réouverture : rien n'est gardé de la photo précédente", () => {
+    const formats = [
+      { label: "Original", value: "original" as const },
+      { label: "Carré", value: 1 },
+    ];
+
+    it("nouvelle `imageUrl` : ratio de la photo précédente oublié, retour à « Original »", async () => {
+      const { rerender } = render(<ImageCropDialog {...base} aspect={16 / 9} aspectOptions={formats} />);
+      await userEvent.click(screen.getByText("photo portrait chargée"));
+      expect(screen.getByTestId("cropper").dataset.aspect).toBe("0.5");
+      await userEvent.click(screen.getByRole("radio", { name: "Carré" }));
+      rerender(<ImageCropDialog {...base} imageUrl="data:image/png;base64,y" aspect={16 / 9} aspectOptions={formats} />);
+      expect(screen.getByTestId("cropper").dataset.aspect).toBe(String(16 / 9));
+      expect(screen.getByRole("radio", { name: "Original" }).getAttribute("aria-checked")).toBe("true");
+    });
+
+    it("réouverture sur la même photo : format remis à « Original »", async () => {
+      const { rerender } = render(<ImageCropDialog {...base} aspect={16 / 9} aspectOptions={formats} />);
+      await userEvent.click(screen.getByRole("radio", { name: "Carré" }));
+      rerender(<ImageCropDialog {...base} open={false} aspect={16 / 9} aspectOptions={formats} />);
+      rerender(<ImageCropDialog {...base} aspect={16 / 9} aspectOptions={formats} />);
+      expect(screen.getByTestId("cropper").dataset.aspect).toBe(String(16 / 9));
+    });
   });
 });
