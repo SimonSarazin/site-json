@@ -101,7 +101,7 @@ export function AacDepositButton({ formId, stepKey, label }: AacDepositButtonPro
    * `user: <moi>`. Il s'affiche avec le badge « En attente », jusqu'à ce qu'un
    * administrateur le sélectionne — et le médaillon « Communs déposés » le
    * compte, puisqu'il est calculé par le MÊME `splitAacFilters` que le listing.
-   * Les trois clés, comme `CommunSelectionControl`.
+   * Les trois clés, comme `useCommunSelectionAction`.
    */
   const handleAfterSubmit = () => {
     queryClient.invalidateQueries({ queryKey: AAC_QUERY_KEYS.COMMUNS_PREFIX() });

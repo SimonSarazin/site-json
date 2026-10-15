@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type {
   GlobalAutocompleteCostumData,
   SearchEntity,
@@ -9,15 +9,19 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { COFORM_QUERY_KEYS } from "../constants/queryKeys";
 import type { FinderConfig, FinderSearchResult, FinderElementType } from "../types";
 import { toFinderSearchResult } from "../utils";
-import { buildFinderSearchParams } from "../utils/finderFilters";
+import { buildFinderSearchParams, primaryFinderType } from "../utils/finderFilters";
 
 /**
  * Constantes UX du finder — alignées sur le comportement historique du modal.
  */
 const FINDER_DEBOUNCE_MS = 300;
-const FINDER_MIN_CHARS = 2;
+/** Seuil de saisie, PARTAGÉ avec la modale : deux valeurs qui divergeraient laisseraient « Recherche en cours… » sans fin. */
+export const FINDER_MIN_CHARS = 2;
 const FINDER_INDEX_STEP = 30;
 const FINDER_STALE_TIME_MS = 30_000;
+
+/** Sans entité hôte, la recherche ne peut pas partir : une erreur à dire, plutôt qu'une attente sans fin. */
+const HOTE_INDISPONIBLE = new Error("Finder : entité hôte indisponible, recherche impossible");
 
 interface UseFinderSearchResultsArgs {
   /** Texte tapé par l'utilisateur (non-debounced). Le hook applique le debounce en interne. */
@@ -33,8 +37,18 @@ interface UseFinderSearchResultsResult {
   results: FinderSearchResult[];
   /** `true` tant qu'un fetch est en cours (initial ou refetch). */
   isFetching: boolean;
-  /** Erreur du dernier fetch, `null` sinon. */
+  /**
+   * La réponse affichée est CELLE de la saisie courante : debounce écoulé, et pas une liste conservée
+   * d'une recherche précédente. Seule une réponse courante peut conclure « aucun résultat » — et
+   * proposer « Ajouter ». Faux sous le seuil.
+   */
+  isCurrentAnswer: boolean;
+  /** Erreur de la recherche de la saisie courante, `null` sinon (et pendant le debounce). */
   error: Error | null;
+  /** Relance la recherche de la saisie courante. */
+  retry: () => void;
+  /** Une relance peut aboutir : faux sans entité hôte, où « Réessayer » ne ferait rien de visible. */
+  canRetry: boolean;
 }
 
 /**
@@ -49,8 +63,11 @@ interface UseFinderSearchResultsResult {
  *
  * Caractéristiques :
  *  - Debounce 300ms intégré (cf. `FINDER_DEBOUNCE_MS`)
- *  - `enabled` = `enabled && query.length >= 2 && !!entity` (cf. `FINDER_MIN_CHARS`)
+ *  - `enabled` = `enabled && query.length >= FINDER_MIN_CHARS && !!entity`
  *  - Cache 30s (les inputs autocomplete sont rafraîchis fréquemment)
+ *  - La réponse PRÉCÉDENTE reste affichée pendant la recherche suivante (`keepPreviousData`) : la liste
+ *    ne se vide plus à chaque frappe. Mais une réponse conservée — même vide — ne dit rien de la saisie
+ *    en cours : `isCurrentAnswer` est seul à pouvoir conclure (« aucun résultat », « Ajouter »)
  *  - Le filtrage des éléments déjà sélectionnés se fait **côté composant**
  *    (laisser le cache RQ uniforme entre re-renders)
  *
@@ -86,9 +103,10 @@ export function useFinderSearchResults({
   const filtersPayload = searchParams.filters;
   const searchTypeArray = searchParams.searchType as GlobalAutocompleteCostumData["searchType"];
 
-  const fallbackType: FinderElementType = Array.isArray(config.type)
-    ? config.type[0]
-    : config.type;
+  const fallbackType: FinderElementType = primaryFinderType(config.type);
+
+  const seuilAtteint = debouncedQuery.length >= FINDER_MIN_CHARS;
+  const actif = enabled && !!entity && seuilAtteint;
 
   const queryResult = useQuery<FinderSearchResult[], Error>({
     // queryKey stable : ne dépend pas de selectedElements (filtrage local).
@@ -99,9 +117,9 @@ export function useFinderSearchResults({
       config.notSourceKey,
       searchParams.sourceKey,
     ),
-    enabled:
-      enabled && !!entity && debouncedQuery.length >= FINDER_MIN_CHARS,
+    enabled: actif,
     staleTime: FINDER_STALE_TIME_MS,
+    placeholderData: keepPreviousData,
     queryFn: async () => {
       if (!entity) throw new Error("entity not initialized");
 
@@ -131,9 +149,18 @@ export function useFinderSearchResults({
     },
   });
 
+  // Le debounce est écoulé : la requête porte sur ce qui est tapé, pas sur la frappe d'avant.
+  const aJour = debouncedQuery === query;
+
+  // Sous le seuil, rien — pas même la réponse conservée d'une recherche précédente.
   return {
-    results: queryResult.data ?? [],
+    results: actif ? queryResult.data ?? [] : [],
     isFetching: queryResult.isFetching,
-    error: queryResult.error,
+    isCurrentAnswer: actif && aJour && queryResult.data !== undefined && !queryResult.isPlaceholderData,
+    error: enabled && seuilAtteint && aJour ? (entity ? queryResult.error : HOTE_INDISPONIBLE) : null,
+    retry: () => {
+      void queryResult.refetch();
+    },
+    canRetry: !!entity,
   };
 }

@@ -177,8 +177,10 @@ interface JoinConfirmDialogProps {
 
 function JoinConfirmDialog({ org, onClose, onSuccess, placeKind }: JoinConfirmDialogProps) {
   const t = useT("modules/coform");
-  const requestMemberMutation = useRequestToJoin(org);
-  const requestAdminMutation = useRequestToJoinAdmin(org);
+  // Le succès s'annonce par le toast de la modale, qui dit la suite (« …dès validation par un
+  // admin ») : celui de la mutation (« …envoyée avec succès ») est tu, sinon deux toasts se suivent.
+  const requestMemberMutation = useRequestToJoin(org, { silentSuccess: true });
+  const requestAdminMutation = useRequestToJoinAdmin(org, { silentSuccess: true });
   const data = (org as unknown as { serverData?: Record<string, unknown> } | null)?.serverData ?? {};
   const name = (data.name as string) || (org as unknown as { name?: string } | null)?.name || "—";
 
@@ -215,8 +217,8 @@ function JoinConfirmDialog({ org, onClose, onSuccess, placeKind }: JoinConfirmDi
         </DialogHeader>
 
         {/* Deux actions explicites — pas d'étape "valider" intermédiaire pour
-            que l'user voie immédiatement quel rôle il demande. Chaque mutation
-            émet son propre toast de succès. */}
+            que l'user voie immédiatement quel rôle il demande. Chaque bouton
+            émet son propre toast de succès (cf. `silentSuccess` plus haut). */}
         <div className="flex flex-col gap-2 py-2">
           <Button
             variant="default"
@@ -412,14 +414,19 @@ export function PlacesListView({
       }
 
       // Sinon, fetch l'entité fraîche et ouvrir la confirmation.
+      // Par `me` : le SDK ne donne le contexte utilisateur qu'à une entité chargée depuis un `User`.
+      // Chargée par `api`, elle a `isMe` faux, et `requestToJoin` / `requestToJoinAdmin` refusent
+      // AVANT tout appel « Vous devez être connecté… » — à un utilisateur connecté.
       try {
-        const fetched = await api.organization({ id: picked.id });
+        const fetched = me
+          ? await me.organization({ id: picked.id })
+          : await api.organization({ id: picked.id });
         setConfirmOrg(fetched);
       } catch (err) {
         console.warn("[PlacesListView] organization fetch failed", err);
       }
     },
-    [api, organizations, goToPlace, t, formData.publicCanEditSharedAnswer, placeKind]
+    [api, me, organizations, goToPlace, t, formData.publicCanEditSharedAnswer, placeKind]
   );
 
   // Si pas de finder partagé, on ne peut pas filtrer / pré-remplir → message.

@@ -5,8 +5,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
 import dotenv from "dotenv";
-import { helloassoCheckoutIntentHandler, helloassoTokenHandler, helloassoCallbackHandler, helloassoCheckoutStatusHandler, helloassoDiagnosticHandler } from "./api/helloasso-checkout.js";
 import { realtimeFluxHandler, realtimePushHandler } from "./api/realtime.js";
+import { helloassoCallbackRedirect } from "./api/helloasso-callback.js";
 import { createImageOptimizer } from "./middleware/imageOptimizer.js";
 import { createImageUpload } from "./middleware/imageUpload.js";
 import { normalizeSiteConfig } from "./utils/normalizeSiteConfig.js";
@@ -82,16 +82,11 @@ async function createServer() {
   // parfaitement valide repartirait en 400.
   app.all("/api/realtime/push/*splat", realtimePushHandler);
 
-  // Routes API HelloAsso
-  app.get("/api/helloasso/token", helloassoTokenHandler);
-  app.post("/api/helloasso/checkout-intent", helloassoCheckoutIntentHandler);
-  app.get("/api/helloasso/callback", helloassoCallbackHandler);
-  app.get("/api/helloasso/checkout-status/:checkoutIntentId", helloassoCheckoutStatusHandler);
-  app.get("/api/helloasso/orgs", helloassoDiagnosticHandler);
-
   // TEMPS REEL — avant le 404 /api. Pas de `compression` en dev, mais l'ordre reste le meme
   // qu'en prod pour que les deux serveurs se comportent pareil.
   app.get("/api/realtime/flux", realtimeFluxHandler);
+  // Retour HelloAsso de l'ancienne route : redirigé vers le backend (temporaire).
+  app.get("/api/helloasso/callback", helloassoCallbackRedirect);
 
   // Route /api/* INCONNUE : 404 franc (même garde que prod-server) — sinon le catch-all SSR
   // répond 200 avec la page HTML et un client testant `response.ok` croit à un succès.

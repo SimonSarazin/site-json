@@ -60,6 +60,22 @@
   "ProfileAbout": {
     "title": "À propos"
   },
+  "ProfileParent62About": {
+    "notProvided": "Non renseigné",
+    "description": "Description",
+    "categoryThematic": "Catégorie thématique",
+    "typeAction": "Type d'action",
+    "publicCible": "Public cible",
+    "territoires": "Territoires",
+    "publics": "Publics",
+    "themes": "Thèmes",
+    "socialNetworks": "Réseaux sociaux",
+    "accessibility": "Accès / stationnement",
+    "provisionResources": "Mise à disposition de ressources",
+    "contact": "Interlocuteur privilégié",
+    "documents": "Documents",
+    "note": "Remarques"
+  },
   "ProfileMap": {
     "title": "Localisation",
     "mapPlaceholder": "Carte à implémenter",
@@ -1383,7 +1399,7 @@
     "reservationNote": "Réserver votre espace directement en ligne",
     "contact": "Contact",
     "fax": "Fax",
-    "tools": "Aiguillage vers les ressources",
+    "tools": "Accès direct aux outils du lieu",
     "editTools": "Modifier les liens",
     "toolsEmpty": "Aucun lien renseigné pour le moment.",
     "toolsModal": {

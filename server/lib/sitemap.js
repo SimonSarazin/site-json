@@ -109,9 +109,8 @@ export function registerSeoRoutes(app, getConfig) {
   // `deploy:env` (dérivée de sites.json : aliases[0] sinon domain) et par
   // dev-server (localhost). `SITE_PUBLIC_URL` conservé en repli legacy (nom
   // historique de ce fichier, jamais déployé mais peut-être posé à la main),
-  // puis PUBLIC_BASE_URL (même notion côté helloasso-checkout.js), sinon
-  // l'host de la requête — qui donne `http://` derrière le proxy Coolify
-  // (pas de trust proxy), d'où l'importance de la variable.
+  // puis PUBLIC_BASE_URL, sinon l'host de la requête — qui donne `http://`
+  // derrière le proxy Coolify (pas de trust proxy), d'où l'importance de la variable.
   const resolveBaseUrl = (req) =>
     process.env.VITE_SITE_PUBLIC_URL ||
     process.env.SITE_PUBLIC_URL ||

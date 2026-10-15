@@ -54,6 +54,7 @@
    "sequence": [
     "hero-search",
     "searchProStatic",
+    "coform-resource-directory",
     "title",
     "cards",
     "agenda",
@@ -64,7 +65,7 @@
     "content",
     "content"
    ],
-   "rythme": "`hero-search` PILOTE la liste qui le suit immédiatement (c'est son rôle : la barre de recherche du hero filtre le searchProStatic en dessous). Le reste de la page est de l'éditorial qui se lit en scrollant, une fois la recherche passée."
+   "rythme": "`hero-search` PILOTE la liste qui le suit immédiatement (c'est son rôle : la barre de recherche du hero filtre le searchProStatic en dessous). Le reste de la page est de l'éditorial qui se lit en scrollant, une fois la recherche passée. Le bandeau `coform-resource-directory` (5 services, lien vers l'annuaire) prolonge la recherche avant l'éditorial."
   },
   {
    "id": "page-recherche",

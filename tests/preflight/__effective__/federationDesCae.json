@@ -14,6 +14,10 @@
       ]
     }
   },
+  "finderAddNew": {
+    "organizations": "add-organization",
+    "question:finderaapStep1lurzepkc4q8n686r8h": "add-cae"
+  },
   "editModals": {
     "organizations": {
       "vierge": "edit-profile",

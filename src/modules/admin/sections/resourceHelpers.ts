@@ -2,14 +2,7 @@ import type { AdminResourceSection } from "../schema";
 import type { LocalizedString } from "@/types/locale-schema";
 import { formatDateLong, resolveEventStartDate } from "@/helpers/formatDate";
 import { formatRecurrenceLabel, type Translate } from "@/modules/search/lib/openingHoursDays";
-
-/** entityType (collection plurielle) → clé de modale d'ajout STANDARD (ModalRegistry). */
-const ADD_MODAL_BY_TYPE: Record<string, string> = {
-  organizations: "add-organization",
-  projects: "add-project",
-  events: "add-event",
-  poi: "add-poi",
-};
+import { STANDARD_ADD_MODAL_BY_TYPE } from "@/modules/profil/components/add/addModals";
 
 /** Sous-ensemble utile d'un doc `config.costumForms` (résolution du form costum du site). */
 export interface CostumFormDocLike {
@@ -77,7 +70,7 @@ export function createCoformId(section: AdminResourceSection): string | null {
  * Le pas 3 remplace un `docs[0]` qui faisait dépendre le formulaire ouvert de l'ORDRE DES CLÉS
  * dans le JSON : réordonner `costumForms` — geste cosmétique, qu'aucun test ne surveille — changeait
  * silencieusement la modale d'ajout de l'admin. Refuser de choisir aligne aussi cette fonction sur
- * son jumeau public `costumCreateKey` (AddEntityDropdown), qui rendait déjà `null` sur ambiguïté :
+ * son jumeau public `costumCreateKey` (l'« Ajouter » d'un profil), qui rendait déjà `null` sur ambiguïté :
  * la MÊME décision était prise différemment des deux côtés pour une même config.
  */
 export function resolveCreateModal(
@@ -89,7 +82,7 @@ export function resolveCreateModal(
   if (create === false) return null;
   // Création par CoFormModal (`{coform}`) : pas une modale d'entité — cf. `createCoformId`.
   if (typeof create === "object") return null;
-  const standard = ADD_MODAL_BY_TYPE[section.entityType] ?? null;
+  const standard = STANDARD_ADD_MODAL_BY_TYPE[section.entityType] ?? null;
   if (create === "standard") return standard;
   if (typeof create === "string" && create !== "inherit") return create;
 

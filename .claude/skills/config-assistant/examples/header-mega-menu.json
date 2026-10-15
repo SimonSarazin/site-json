@@ -156,7 +156,7 @@
           },
           {
             "label": {
-              "fr": "Les Licoop",
+              "fr": "Les Licoops",
               "en": "Licoop places"
             },
             "description": {
@@ -318,17 +318,6 @@
           },
           {
             "label": {
-              "fr": "La plateforme d'aiguillage",
-              "en": "The guidance platform"
-            },
-            "description": {
-              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs",
-              "en": "A platform that streamlines support requests and responses through a network of stakeholders"
-            },
-            "path": "https://aiguillage.tiers-lieux.org/"
-          },
-          {
-            "label": {
               "fr": "Auto-diagnostic du lieu comme Licoop",
               "en": "Place self-diagnosis as Licoop"
             },
@@ -362,14 +351,25 @@
           },
           {
             "label": {
-              "fr": "Communauté",
-              "en": "Community"
+              "fr": "La communauté support",
+              "en": "The support community"
             },
             "description": {
-              "fr": "La communauté qui anime cette plateforme",
-              "en": "The community that drives this platform"
+              "fr": "La communauté support qui prend soin de cette ressource",
+              "en": "The support community that takes care of this resource"
             },
             "path": "/communaute"
+          },
+          {
+            "label": {
+              "fr": "La plateforme d'aiguillage",
+              "en": "The guidance platform"
+            },
+            "description": {
+              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs",
+              "en": "A platform that streamlines support requests and responses through a network of stakeholders"
+            },
+            "path": "https://aiguillage.tiers-lieux.org/"
           }
         ]
       },

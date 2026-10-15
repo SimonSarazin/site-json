@@ -26,7 +26,7 @@ import { asRecord, getServerData, normalizeTags, toArrayOrValues, toNumber, toSa
 import { generateMilestoneId } from "@/modules/cagnotte/utils/idGeneration";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { appendProjectMilestone, updateAnswerDepenseFields } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
-import { unpaidAmountOf } from "@/modules/cagnotte/utils/financerPayment";
+import { dueAmountOf, unpaidAmountOf } from "@/modules/cagnotte/utils/financerPayment";
 
 /** Financeur d'une dépense tel que l'enveloppe le sert, avant enrichissement. */
 type RawDepenseFinancer = FundingTransaction & { method?: string };
@@ -616,8 +616,9 @@ export function useOrphanDepenseRepair(params: {
 /**
  * Les promesses de l'utilisateur (et de ses organisations) encore à régler : une ligne
  * partiellement versée reste une promesse pour son solde, d'où le filtre sur
- * `unpaidAmountOf(fund) > 0`. `remainingAmount` porte ce solde ; `fundingAmount` reste le
- * montant engagé, pour l'affichage seul — payer dessus surfacturerait.
+ * `dueAmountOf(fund) > 0` — un versement en attente de validation n'est plus dû.
+ * `remainingAmount` porte ce solde ; `fundingAmount` reste le montant engagé, pour
+ * l'affichage seul — payer dessus surfacturerait.
  */
 export function computePledgesFromResources(resources: CagnotteResource[], userId?: string, orgsIds: string[] = []): Pledge[] {
 
@@ -625,7 +626,7 @@ export function computePledgesFromResources(resources: CagnotteResource[], userI
         (resource.items ?? [])
             .flatMap((item) =>
                 item.funding
-                    .filter((fund) => unpaidAmountOf(fund) > 0 && (fund.financerId === userId || orgsIds.includes(fund.financerId || "")))
+                    .filter((fund) => dueAmountOf(fund) > 0 && (fund.financerId === userId || orgsIds.includes(fund.financerId || "")))
                     .map((fund) => ({
                         id: `${resource.id}-${item.itemId}-${fund.finkey || fund.fundingIndex}`,
                         resourceId: resource.answerId,
@@ -636,7 +637,7 @@ export function computePledgesFromResources(resources: CagnotteResource[], userI
                         finkey: fund.finkey,
                         depenseKey: fund.depenseKey,
                         fundingAmount: toNumber(fund.amount),
-                        remainingAmount: unpaidAmountOf(fund),
+                        remainingAmount: dueAmountOf(fund),
                         financerId: fund.financerId || "unknown_id",
                         financerName: fund.financerName,
                         userPledge: item.userPledge,
