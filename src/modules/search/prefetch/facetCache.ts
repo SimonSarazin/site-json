@@ -1,0 +1,42 @@
+/**
+ * Cache SERVEUR des facettes de filtres — le mémo de `prefetchFilters`.
+ *
+ * Les facettes (zones pays/régions, listes d'entités des `filterGroups`, filtres par réponses,
+ * filtres par thématique) sont redemandées au backend à CHAQUE rendu SSR d'une page de recherche,
+ * alors qu'elles sont identiques pour tous les visiteurs (le SSR est anonyme) et changent rarement.
+ * Mesuré sur tiers-lieux `/lieux` : les deux appels de facettes thématiques
+ * (`autoglobalthematicntwrk`) pèsent 2,2 s cumulées sur une page servie en 2 s.
+ *
+ * Avec ce mémo, un conteneur ne refait chaque appel de facette qu'une fois par durée de vie ; entre
+ * deux, le rendu lit la copie en mémoire. Les RÉSULTATS de recherche ne passent pas par ici : ils
+ * restent frais à chaque rendu. Côté client, rien ne change (`useSearchZoneQuery` & co. parlent au
+ * backend directement après hydratation).
+ *
+ * Réglage : `SSR_FACET_CACHE_TTL_MS` (serveur uniquement, pas dans `window.__ENV__` ; défaut 5 min ;
+ * `0` ou toute valeur négative désactive — même contrat que `createSsrMemo`). La clé de chaque
+ * entrée est la facette et les paramètres de son APPEL backend (`prefetchFacet`, `memoKey`) — pas la
+ * queryKey, qui porte l'identifiant de section : deux sections qui demandent la même facette
+ * partagent l'entrée. `filtersByPath` est mémorisé entrée par entrée (un appel backend chacune).
+ */
+import { createSsrMemo } from "@/lib/ssrMemo";
+
+export const SSR_FACET_CACHE_TTL_ENV = "SSR_FACET_CACHE_TTL_MS";
+export const SSR_FACET_CACHE_TTL_DEFAULT_MS = 5 * 60_000;
+
+/**
+ * Lit la durée de vie dans l'environnement du PROCESSUS serveur. Absente, vide ou illisible →
+ * défaut ; `<= 0` → `0` (désactivé), comme le mémo l'entend.
+ */
+export function facetCacheTtlMs(env: Record<string, string | undefined> = processEnv()): number {
+  const raw = env[SSR_FACET_CACHE_TTL_ENV];
+  if (raw === undefined || raw.trim() === "") return SSR_FACET_CACHE_TTL_DEFAULT_MS;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return SSR_FACET_CACHE_TTL_DEFAULT_MS;
+  return n > 0 ? n : 0;
+}
+
+function processEnv(): Record<string, string | undefined> {
+  return typeof process !== "undefined" && process.env ? process.env : {};
+}
+
+export const facetCache = createSsrMemo({ ttlMs: facetCacheTtlMs() });

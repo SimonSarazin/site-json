@@ -5,7 +5,11 @@
     "loading": "Chargement des articles…",
     "readMore": "Lire l'article",
     "error": "Impossible de charger les articles.",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "page": "Page {{n}}",
+    "pageOf": "Page {{current}} sur {{total}}"
   },
   "article": {
     "backToList": "Retour aux articles",
@@ -17,7 +21,9 @@
     "edit": "Modifier",
     "delete": "Supprimer",
     "deleteTitle": "Supprimer cette actualité ?",
-    "deleteDescription": "« {{title}} » sera définitivement supprimée. Cette action est irréversible."
+    "deleteDescription": "« {{title}} » sera définitivement supprimée. Cette action est irréversible.",
+    "territories": "Territoires",
+    "audiences": "Publics"
   },
   "teaser": {
     "cta": "En savoir plus",

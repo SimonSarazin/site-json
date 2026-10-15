@@ -128,7 +128,7 @@ describe("ChooseProposalField", () => {
    * `choose.<1re clé de form.parent>`. Sur un formulaire porté par un autre
    * parent que l'entité du site, le toast annonçait l'enregistrement, la base
    * recevait `choose.<site>`, et le commun restait « En attente » dans
-   * l'annuaire, indéfiniment. Même règle que `CommunSelectionControl`.
+   * l'annuaire, indéfiniment. Même règle que `useCommunSelectionAction`.
    */
   it("écrit sous le contexte du FORMULAIRE, jamais sous celui du costum du site", () => {
     poser({ context: CONTEXTE_B });

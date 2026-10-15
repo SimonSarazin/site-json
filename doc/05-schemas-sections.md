@@ -247,12 +247,16 @@ const StatsSectionSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     items: z.array(z.object({
-      value: z.string(),
+      value: z.string().optional(),
       label: LocalizedString,
       description: LocalizedString.optional(),
       icon: z.string().optional(),
-    })),
+      source: StatDynamicSourceSchema.optional(),
+      highlight: z.boolean().optional(),
+    }).refine((item) => item.value !== undefined || item.source !== undefined)),
+    design: z.enum(["default", "tiles"]).optional(),
     layout: z.enum(["horizontal", "vertical"]).default("horizontal"),
+    columns: ResponsiveColumns.optional(),
     animated: z.boolean().default(true),
   }),
 });
@@ -261,10 +265,21 @@ const StatsSectionSchema = z.object({
 | Propriete     | Type     | Description                             |
 | ------------- | -------- | --------------------------------------- |
 | `items`       | `array`  | Liste des statistiques                  |
+| `items[].value` | `string?` | Chiffre écrit ; avec `source`, repli affiché tant que le compte n'est pas revenu. `value` ou `source` obligatoire |
+| `items[].source` | `StatDynamicSource?` | Chiffre **compté** côté client : `searchCount` (`entityType` + `baseParams` ; une page d'un document réduit à `name`, une seule requête pour toutes les tuiles du même périmètre, cache des listes — 60 s — et invalidé après une création ou une suppression d'entité, un formulaire costum, l'ajout ou la modification d'une réponse CoForm et les actions d'admin), `membersCount` (`toBeValidated`), `aacCommuns` (communs de `config.aac`). Même contrat que `cta-card-grid.props.stats[].source` |
+| `items[].highlight` | `boolean?` | Design `tiles` : tuile sur l'aplat `primary` |
 | `description` | `LocalizedString?` | Description (optionnel)        |
-| `icon`        | `string?` | Icone (optionnel)                      |
-| `layout`      | `enum`   | Disposition (defaut: `"horizontal"`)    |
-| `animated`    | `boolean` | Animation (defaut: `true`)             |
+| `icon`        | `string?` | Icone (optionnel ; ignorée en `tiles`) |
+| `design`      | `enum?`  | `default` (chiffres centrés, aplat léger) ou `tiles` (tuiles arrondies sans fond de section, sous un en-tête de bande) |
+| `layout`      | `enum`   | Disposition (defaut: `"horizontal"` ; ignorée en `tiles`) |
+| `columns`     | `object?` | Colonnes par breakpoint (`tiles` sans lui : `sm:3`) |
+| `animated`    | `boolean` | Animation (defaut: `true` ; jamais en `tiles`) |
+
+Chiffre compté (`StatValue`, partagé avec `cta-card-grid`) : le compte dès qu'il est connu ; sinon
+`value` ; sinon un **squelette** pendant l'attente (et toujours en SSR — aucun compte n'est
+préchargé) et un **tiret** nommé « Chiffre non disponible » quand le compte ne viendra pas (échec,
+AAC absent ou irrésoluble) — tranché seulement **après hydratation**, sans quoi un serveur qui n'a pas
+résolu l'entité désaccorderait le rendu client. Un `0` n'est affiché que s'il a été compté.
 
 ## `logoCloud`
 
@@ -2045,21 +2060,42 @@ export const ActionTilesSchema = z.object({
 | `bg`       | `enum`    | Couleur de fond                          |
 | `columns`  | `ResponsiveColumns?` | Colonnes par breakpoint (défaut sm:2 lg:4) |
 | `size` | `"md" \| "lg"` | Taille des tuiles : `md` (défaut : titre 14 px, sous-titre 12 px, icône 16 px) ou `lg` (18 px, 16 px, icône 32 px, marges verticales élargies, contenu calé en haut pour aligner les icônes d'une rangée) |
-| `headlineStyle` | `"plain" \| "badge" \| "pill"` | Rendu du titre : `plain` (défaut, centré), `badge` (pastille inclinée d'`articleTeaser`/`map-bubbles`) ou `pill` (la même en arrondi droit). Les deux pastilles se calent à gauche, pour une page dont toutes les bandes portent le même repère |
-| `tileLayout` | `"centered" \| "inline"` | Disposition d'une tuile : `centered` (défaut, icône puis textes centrés) ou `inline` — icône en pastille, titre à côté, sous-titre dessous, aligné à gauche. `inline` se lit mieux dès que les sous-titres font une phrase |
+| `headlineStyle` | `"plain" \| "badge" \| "pill" \| "text"` | Rendu du titre : `plain` (défaut, centré), `badge` (pastille inclinée d'`articleTeaser`/`map-bubbles`), `pill` (la même en arrondi droit) ou `text` — texte seul, sans fond ni rotation, plus grand. Les deux pastilles se calent à gauche, pour une page dont toutes les bandes portent le même repère |
+| `tileLayout` | `"centered" \| "inline" \| "pillRow"` | Disposition d'une tuile : `centered` (défaut, icône puis textes centrés), `inline` — icône en pastille, titre à côté, sous-titre dessous, aligné à gauche — ou `pillRow` : titre de section ET actions sur une seule ligne, chaque action en bouton pilule (icône en pastille, libellé, flèche), sans sous-titre. `inline` se lit mieux dès que les sous-titres font une phrase ; `pillRow` quand la bande doit rester compacte (ex. posée en `gridLayout.topSection`) |
+| `hoverEffect` | `"none" \| "lift"` | Effet au survol/focus d'une tuile : `none` (défaut) ou `lift` — la tuile monte légèrement et gagne une ombre (sans mouvement sous `prefers-reduced-motion`) |
+| `density` | `"default" \| "compact"` | `compact` : ni fond, ni padding, ni conteneur propres, marges verticales resserrées — pour une rangée posée DANS une autre bande (`gridLayout.topSection`). Défaut : rendu historique |
 
 `articleTeaser`, `map-bubbles` et `featured-carousel` partagent le réglage `headlineStyle` (`badge` par
-défaut, étiquette inclinée ; `pill` en arrondi droit). `map-bubbles` et `featured-carousel` acceptent en
+défaut, étiquette inclinée ; `pill` en arrondi droit ; `text` — texte seul, sans fond ni rotation, plus
+grand — pour `map-bubbles`/`featured-carousel`). `map-bubbles` et `featured-carousel` acceptent en
 plus `badgeColor`/`badgeTextColor` : la teinte de l'ÉTIQUETTE, indépendante de `accentColor` qui, elle,
-teinte les boutons. Sur `featured-carousel`, `background` impose un texte BLANC (rendu historique, pensé
-pour un fond sombre) : fournir `textColor` dès que la carte est claire. Ce même bloc accepte
+teinte les boutons ; et `badgeIcon`/`badgeIconColor` (`headlineIcon`/`headlineIconColor` sur
+`map-bubbles`) — une icône lucide posée avant le texte du titre, de couleur indépendante de celle du
+texte (ex. icône turquoise, titre marine en `headlineStyle:"text"`), absente par défaut (titre texte
+seul, rendu historique). Sur `featured-carousel`, `background` impose un texte BLANC (rendu historique,
+pensé pour un fond sombre) : fournir `textColor` dès que la carte est claire. Ce même bloc accepte
 `backgroundOverlay` (même grammaire que `map-bubbles`) pour poser la diapositive sur un PANNEAU dégradé,
 avec `overlayTextColor` — l'encre du texte posé sur le panneau, qui doit suivre le DÉGRADÉ (pas l'encre
 de la carte) : si le dégradé a une variante sombre, lui donner un jeton qui change avec lui. `design`
 (`sticker` par défaut, `card`) règle à part le PLACEMENT sur `map-bubbles` et `featured-carousel` : titre
 débordant du haut du bloc, et pour le carrousel, points de position au centre et bouton compact à droite,
-en pied de carte (dans le panneau quand `backgroundOverlay` est posé). `articleTeaser` accepte
-aussi `maxWidth` (défaut `4xl`), même échelle que `gridLayout`.
+en pied de carte (dans le panneau quand `backgroundOverlay` est posé) ; ce pied passe sur une ligne
+selon la largeur du CARROUSEL (container query), pas de l'écran — il tient dans une colonne étroite.
+`featured-carousel.linkTitleAndImage` (défaut `false`) rend le titre ET l'image de la diapositive
+cliquables, vers la même cible que le bouton (l'image est un lien doublon, retiré du clavier et des
+lecteurs d'écran). `featured-carousel.ctaStyle` (`button` défaut, pilule pleine, ou `link` — texte +
+flèche sans fond) règle l'apparence du CTA ; `ctaPosition` (`footer` défaut, partage la ligne des points
+en `card`, ou `inline`, sous le texte de chaque diapositive) son emplacement, sans effet en `sticker`.
+`map-bubbles.animate` (défaut `false`) fait apparaître les bulles en cascade puis les fait respirer en
+boucle en `scale` seul (jamais d'opacité, qui délaverait leur couleur de marque ; rien sous
+`prefers-reduced-motion`) ; `map-bubbles.illustrationMaxWidth` (longueur CSS, `calc()`/`min()` acceptés)
+plafonne la LARGEUR de l'illustration, centrée dans son panneau — les bulles, en % de l'illustration,
+suivent. `illustrationMaxHeight` fait l'inverse — plafonne la HAUTEUR (opt-in, jamais automatique) pour
+une illustration haute étirée par une colonne voisine plus grande (`gridLayout.align:"stretch"`) ; il
+REQUIERT `illustrationAspectRatio` (ratio CSS exact du fichier, ex. `"996/945"` — sans lui, un fichier
+qui n'est pas au format 4:3 par défaut serait étiré). `illustrationBackgroundImage` (image de fond de
+l'illustration, ex. un dégradé déjà cuit en PNG) PRIME sur `backgroundOverlay` (CSS) si les deux sont
+fournis. `articleTeaser` accepte aussi `maxWidth` (défaut `4xl`), même échelle que `gridLayout`.
 | `accentColor` | `string?` | Couleur de la pastille de titre (`headlineStyle: "badge"`). Son encre est blanche : à choisir assez foncée, contraste AA à mesurer |
 | `width` | `"default" \| "wide"` | Largeur de la grille : `default` (1024 px max) ou `wide` (1280 px max) |
 
@@ -2100,15 +2136,20 @@ export const CtaCardGridSchema = z.object({
     stats: z
       .array(
         z.object({
-          value: z.string(),
+          value: z.string().optional(),
           label: LocalizedString,
           color: z.enum(["primary", "turquoise", "cyan-bright", "accent", "teal"]).optional(),
-        })
+          source: StatDynamicSourceSchema.optional(), // searchCount | membersCount | aacCommuns
+        }).refine((stat) => stat.value !== undefined || stat.source !== undefined)
       )
       .optional(),
   }),
 });
 ```
+
+Le chiffre d'une tuile `stats[]` passe par le même composant que `stats.props.items[]`
+(`StatValue`) : compté si `source`, repli `value`, squelette en attente (et en SSR), tiret nommé
+quand le compte ne viendra pas — cf. § `stats`.
 
 | Propriete  | Type      | Description                                |
 | ---------- | --------- | ------------------------------------------ |
@@ -2633,6 +2674,8 @@ const GridLayoutSectionSchema = z.object({
 | `className`         | `string?` | Classes CSS additionnelles               |
 | `leftWrapperClass`  | `string?` | Classes CSS du wrapper gauche            |
 | `rightWrapperClass` | `string?` | Classes CSS du wrapper droit             |
+| `topSection`        | `Section?` | Section rendue EN TÊTE de la même bande, pleine largeur, au-dessus du couple gauche/droite (ou de la rangée), séparée d'elle par `gap` — pour lire plusieurs blocs comme une seule bande (ex. `action-tiles` en `density: "compact"`) |
+| `innerWrapperClass` | `string?` | Classes du bloc qui porte `topSection` et la grille, À L'INTÉRIEUR du conteneur — pour poser un panneau (fond, arrondi, ombre) sur le fond de bande `bg`. Absent : aucune boîte ajoutée, DOM historique |
 
 > ⚠️ **Un container est traversé par le prefetch SSR et les gardes** via
 > `SECTION_EXTRACTORS` (`src/lib/sectionContainers.ts`, dupliqué dans

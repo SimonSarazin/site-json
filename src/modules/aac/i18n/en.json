@@ -111,7 +111,8 @@
       "milestoneNamed": "Discuss the milestone “{{name}}”"
     },
     "editors": {
-      "cta": "Edit contributors",
+      "cta": "Editors",
+      "ctaHint": "Edit contributors: the people who can edit this commun",
       "title": "Edit contributors",
       "description": "These people can edit this commun, but not delete it.",
       "questionNote": "This list is also the answer to the “{{label}}” question of the form: by editing the commun, these people can therefore change it too.",
@@ -219,7 +220,7 @@
       "openImage": "Enlarge image {{index}}"
     },
     "selection": {
-      "selectCta": "Add from directory",
+      "selectCta": "Add to the directory",
       "deselectCta": "Remove from directory",
       "selected": "Selected",
       "pending": "Pending",
@@ -244,6 +245,9 @@
       "openFullPage": "View full page",
       "generateCta": "Generate the project",
       "associateCta": "Associate an existing project",
+      "menuLabel": "Turn into a project",
+      "generateHint": "Creates the project and its follow-up space from this commun. Cannot be undone.",
+      "associateHint": "Links a project you administer.",
       "proposalPhaseBadge": "Proposal phase",
       "confirmGenerate": {
         "title": "Generate a project from this commun?",
@@ -269,6 +273,9 @@
     },
     "origin": {
       "deposedOn": "Submitted on “{{name}}”"
+    },
+    "actions": {
+      "more": "More actions"
     }
   },
   "delete": {

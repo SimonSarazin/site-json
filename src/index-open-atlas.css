@@ -1,0 +1,533 @@
+@import 'tailwindcss';
+@import "tw-animate-css";
+@import "./styles/shared.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Feuille d'Open Atlas (slug `openAtlas`).
+   Les COULEURS vivent dans `config.theme.colors.{light,dark}` (injectées au runtime par
+   SiteTheme.tsx, SSR compris) : ce fichier ne porte que le mapping `@theme inline`, la base, les
+   jetons propres au site (`--oa-*`) et les blocs des sections `html` (classes `oa-*`).
+   Base reprise d'index-rezo-la-mer.css (gabarit d'origine du site), sans sa couche « océan » que la
+   config repeignait jusqu'ici en rouge, ni les utilitaires qu'aucun composant n'emploie. */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+
+  /* Custom breakpoint for extra small screens */
+  --breakpoint-xs: 475px;
+}
+
+/* Safelist responsive grid-cols */
+@source inline("{,sm:,md:,lg:}grid-cols-{1..6}");
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border);
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+  }
+
+  :root {
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    font-weight: 400;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    letter-spacing: var(--tracking-normal);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-foreground;
+  }
+
+  p {
+    @apply text-foreground;
+  }
+
+  a {
+    @apply text-primary hover:text-primary/80;
+    text-decoration: inherit;
+  }
+}
+
+@layer utilities {
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom prose styles for markdown content */
+.prose {
+  max-width: none;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  color: var(--foreground);
+}
+
+.prose p {
+  color: var(--muted-foreground);
+}
+
+.prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prose a:hover {
+  color: color-mix(in oklch, var(--primary) 80%, transparent);
+}
+
+.prose code {
+  background: var(--muted);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.prose pre {
+  background: var(--muted);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.prose blockquote {
+  border-left: 4px solid var(--primary);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: var(--muted-foreground);
+}
+
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--muted-foreground) 30%, transparent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--muted-foreground) 50%, transparent);
+}
+
+/* Animation utilities */
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.fade-in {
+  animation-name: fadeIn;
+}
+
+.slide-in-from-bottom-4 {
+  animation-name: slideInFromBottom;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.duration-1000 {
+  animation-duration: 1000ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-400 {
+  animation-delay: 400ms;
+}
+
+/* ==========================================
+   Open Atlas — jetons du site
+   ========================================== */
+
+:root {
+  /* Encre rouge des textes, rouge du logo pour les traits (filet des surtitres, liens du schéma),
+     et les deux accents de la page « Nos outils » : cyan (comprendre), vert (agir). Valeurs claires
+     assombries pour tenir 5:1 sur fond blanc. */
+  --oa-ink: var(--primary);
+  --oa-ink-hover: color-mix(in oklab, var(--primary) 78%, black);
+  --oa-line: oklch(0.5994 0.2087 18.1);
+  --oa-cyan: #0A6F86;
+  --oa-lime: #47720E;
+
+  /* Bandeau des `searchHeader` (/communaute) : le texte posé dessus suit le mode, le fond aussi —
+     une teinte rouge légère mêlée au fond clair. */
+  --gradient-section: linear-gradient(135deg,
+    color-mix(in oklab, var(--primary) 8%, var(--background)),
+    color-mix(in oklab, var(--accent) 70%, var(--background)));
+}
+
+.dark {
+  --oa-ink: oklch(0.6802 0.1904 17.8);
+  --oa-ink-hover: oklch(0.7640 0.1418 15.1);
+  --oa-cyan: #3BC7E5;
+  --oa-lime: #A2CC56;
+  --gradient-section: linear-gradient(135deg, var(--background), color-mix(in oklab, var(--primary) 16%, var(--card)));
+}
+
+/* En sombre, le rouge des boutons (#CC2443 : blanc dessus à 5,4:1) ne tient que 3,5:1 en TEXTE sur la nuit.
+   Les aplats gardent `primary`, l'encre texte passe au rouge clair de la maquette (#F75B6B, 5,9:1). Le jeton
+   `primary` sert à la fois l'aplat et l'encre : c'est l'utilitaire qu'on repeint, pas le jeton.
+   DANS la couche `utilities` et derrière `:where(.dark)` (spécificité 0,1,0) : la règle bat `.text-primary`
+   seul, mais cède à toute variante d'état (`hover:text-primary-foreground`, 0,2,0) — hors couche, elle
+   gardait l'encre rouge clair sur l'aplat rouge au survol (bouton de carte AAC, ~1,6:1).
+   `group-hover:` fait exception : son `:hover` compte (0,2,0), jeu égal avec `hover:text-*`, et la règle,
+   déclarée après, gagnerait. Elle se retire donc quand l'élément, survolé lui-même, porte sa propre
+   couleur de survol (`hover:text-*`, préfixée ou non — `md:hover:text-*` —, sous `:where` pour rester à
+   0,2,0). Le motif prend aussi `hover:text-lg` & co. : la surcharge s'y retire, à éviter sur ces éléments. */
+@layer utilities {
+  :where(.dark) .text-primary,
+  :where(.dark) .hover\:text-primary:hover,
+  :where(.dark) .group-hover\:text-primary:is(:where(.group):hover *):where(:not(:is([class^="hover:text-"], [class*=" hover:text-"], [class*=":hover:text-"]):hover)) { color: var(--oa-ink); }
+  /* Variantes à 80 % : le rouge à 80 % tombe à 2,6:1 sur la nuit — l'encre de survol, plus claire. */
+  :where(.dark) .hover\:text-primary\/80:hover,
+  :where(.dark) .group-hover\:text-primary\/80:is(:where(.group):hover *):where(:not(:is([class^="hover:text-"], [class*=" hover:text-"], [class*=":hover:text-"]):hover)) { color: var(--oa-ink-hover); }
+  /* Variantes `dark:` : 0,2,0 et 0,3,0 chez Tailwind — même spécificité ici, déclarée après. */
+  .dark .dark\:text-primary,
+  .dark .dark\:hover\:text-primary:hover { color: var(--oa-ink); }
+  .dark .dark\:hover\:text-primary\/80:hover { color: var(--oa-ink-hover); }
+}
+
+/* Règles HORS @layer, à dessein : elles doivent battre les utilitaires Tailwind (en @layer) — les marges
+   de `#projets-apercu`, posées par des classes. */
+
+/* ── Accueil « Nuit » (maquette de Simon, oct. 2026) ─────────────────────────────────────────
+   Blocs `html` de l'accueil : classes oa-*, tokens du thème uniquement — le mode clair suit seul.
+   Largeur utile 72rem, marges latérales calées sur les sections de code (px-4 / sm:px-6 / lg:px-8). */
+.oa-band { padding: 6rem 1rem; background: var(--background); color: var(--foreground); }
+.oa-band--alt { background: var(--muted); }
+.oa-band--head { padding-bottom: 1.75rem; }
+@media (min-width: 640px) { .oa-band { padding-inline: 1.5rem; } }
+@media (min-width: 1024px) { .oa-band { padding-inline: 2rem; } }
+.oa-wrap { max-width: 72rem; margin-inline: auto; }
+.oa-stack { display: flex; flex-direction: column; gap: 2.5rem; }
+.oa-head { display: flex; flex-direction: column; gap: 0.875rem; max-width: 44rem; }
+.oa-eyebrow { display: inline-flex; align-items: center; gap: 0.625rem; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-foreground); }
+.oa-eyebrow::before { content: ""; flex: none; width: 1.5rem; height: 2px; background: var(--oa-line); }
+.oa-h1 { margin: 0; font-size: clamp(2.5rem, 5.2vw, 4rem); line-height: 1.04; font-weight: 700; letter-spacing: -0.025em; }
+.oa-h2 { margin: 0; font-size: clamp(1.875rem, 3.4vw, 2.5rem); line-height: 1.1; font-weight: 700; }
+.oa-h3 { margin: 0; font-size: 1.75rem; font-weight: 700; }
+.oa-h4 { margin: 0; font-size: 1.1875rem; font-weight: 700; }
+.oa-ink { color: var(--oa-ink); }
+.oa-lead { margin: 0; max-width: 44ch; font-size: 1.1875rem; line-height: 1.6; color: var(--muted-foreground); }
+.oa-text { margin: 0; font-size: 1.0625rem; line-height: 1.65; color: var(--muted-foreground); }
+.oa-text-sm { margin: 0; font-size: 1rem; line-height: 1.6; color: var(--muted-foreground); }
+.oa-actions { display: flex; flex-wrap: wrap; gap: 0.875rem; }
+.oa-btn { display: inline-flex; align-items: center; min-height: 3.125rem; padding: 0 1.625rem; border-radius: 999px; font-size: 0.9375rem; font-weight: 600; text-decoration: none; transition: background-color 0.15s, border-color 0.15s; }
+.oa-btn--sm { min-height: 2.75rem; padding: 0 1.25rem; font-size: 0.875rem; }
+.oa-btn--primary { background: var(--primary); color: var(--primary-foreground); }
+.oa-btn--primary:hover { background: color-mix(in oklab, var(--primary) 86%, white); }
+.oa-btn--ghost { border: 1px solid color-mix(in oklab, var(--foreground) 30%, transparent); color: var(--foreground); }
+.oa-btn--ghost:hover { border-color: var(--foreground); }
+.oa-btn:focus-visible, .oa-more:focus-visible, .oa-net a:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+#outils, #reseau, #accompagnement, #rejoindre { scroll-margin-top: 5.5rem; }
+
+.oa-hero { padding-block: 6.5rem 6rem; }
+.oa-hero__grid { display: grid; gap: 3rem; align-items: center; }
+.oa-hero__text { display: flex; flex-direction: column; gap: 1.5rem; }
+.oa-hero__text .oa-actions { margin-top: 0.375rem; }
+.oa-hero__art { display: flex; justify-content: center; }
+.oa-hero__art img { width: min(380px, 64vw); height: auto; }
+.oa-only-dark { display: none; }
+.dark .oa-only-dark { display: block; }
+.dark .oa-only-light { display: none; }
+
+.oa-grid { display: grid; gap: 1.375rem; margin: 0; padding: 0; list-style: none; }
+.oa-card { display: flex; flex-direction: column; gap: 1rem; padding: 2.25rem; border-radius: 1.25rem; background: var(--card); color: var(--card-foreground); border: 1px solid var(--border); }
+.oa-kicker { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--oa-ink); }
+.oa-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.25rem 0 0; padding: 0; list-style: none; }
+.oa-chips li { padding: 0.4375rem 0.75rem; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--foreground) 18%, transparent); font-size: 0.8125rem; color: color-mix(in oklab, var(--foreground) 55%, var(--muted-foreground)); }
+.oa-chips li.is-more { border-style: dashed; color: var(--muted-foreground); }
+.oa-more { margin-top: auto; padding-top: 0.5rem; font-size: 0.9375rem; font-weight: 600; color: var(--oa-ink); text-decoration: none; }
+.oa-more:hover, .oa-net a:hover { color: var(--oa-ink-hover); }
+
+.oa-head-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1.5rem; }
+#projets-apercu { box-sizing: content-box; max-width: 72rem; padding: 1.75rem 1rem 6rem; }
+@media (min-width: 640px) { #projets-apercu { padding-inline: 1.5rem; } }
+@media (min-width: 1024px) { #projets-apercu { padding-inline: 2rem; } }
+
+.oa-principles li { display: flex; flex-direction: column; gap: 0.75rem; }
+.oa-principles p { margin: 0; font-size: 0.9375rem; line-height: 1.6; color: var(--muted-foreground); }
+.oa-num { font-size: 0.875rem; font-weight: 700; color: var(--oa-ink); }
+
+.oa-split { display: grid; gap: 3rem; align-items: center; }
+.oa-split--top { align-items: start; }
+
+/* Schéma « au cœur » : boîte au ratio de la maquette (520×420), tout positionné en % pour suivre l'écran. */
+.oa-net { position: relative; width: 100%; max-width: 520px; aspect-ratio: 520 / 420; margin-inline: auto; }
+.oa-net svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.oa-net .is-hot { stroke: var(--oa-line); stroke-width: 2.5; }
+.oa-net .is-cold { stroke: color-mix(in oklab, var(--foreground) 28%, transparent); stroke-width: 1.5; stroke-dasharray: 5 6; }
+.oa-net circle.is-hot { stroke-width: 3; }
+.oa-net circle.is-cold { stroke: var(--foreground); stroke-width: 2; stroke-dasharray: none; }
+.oa-net__hub { position: absolute; left: 38.46%; top: 35.71%; width: 23.08%; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: var(--card); border: 1px solid color-mix(in oklab, var(--foreground) 15%, transparent); }
+.oa-net__hub img { width: 70%; height: auto; }
+.oa-net__label { position: absolute; left: 50%; top: 67.14%; transform: translateX(-50%); font-size: 0.8125rem; font-weight: 600; white-space: nowrap; }
+.oa-net a { position: absolute; padding: 0.4375rem 0.75rem; border-radius: 999px; background: var(--card); border: 1px solid color-mix(in oklab, var(--foreground) 15%, transparent); font-size: 0.8125rem; color: var(--foreground); text-decoration: none; white-space: nowrap; }
+.oa-net .oa-net__p1 { left: 3.85%; top: 4.76%; }
+.oa-net .oa-net__p2 { right: 0; top: 7.14%; }
+.oa-net .oa-net__p3 { left: 0; bottom: 4.76%; }
+.oa-net .oa-net__p4 { right: 0; bottom: 6.19%; }
+@media (max-width: 480px) { .oa-net a, .oa-net__label { padding: 0.3125rem 0.625rem; font-size: 0.75rem; } }
+
+.oa-box { margin-top: 0.875rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; border-radius: 1rem; background: var(--card); border: 1px solid var(--border); }
+.oa-box p { margin: 0; font-size: 0.9375rem; line-height: 1.6; color: var(--muted-foreground); }
+.oa-steps { margin: 0; padding: 0; list-style: none; }
+.oa-steps li { display: flex; gap: 1.125rem; padding: 1.25rem 0; border-bottom: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent); font-size: 1rem; line-height: 1.5; }
+.oa-steps li:last-child { border-bottom: 0; }
+.oa-steps .oa-num { flex: none; font-size: 1rem; }
+
+.oa-join { padding-block: 6.5rem; }
+.oa-join .oa-wrap { max-width: 53.75rem; display: flex; flex-direction: column; align-items: center; gap: 1.125rem; text-align: center; }
+.oa-join .oa-h2 { font-size: clamp(2rem, 3.8vw, 2.75rem); }
+.oa-join .oa-text { max-width: 56ch; }
+.oa-join .oa-actions { justify-content: center; margin-top: 0.5rem; }
+
+@media (min-width: 560px) { .oa-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 960px) {
+  .oa-hero__grid, .oa-grid--2, .oa-split { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .oa-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* ── Page « Nos outils » (maquette reçue le 09/10/2026) ─────────────────────────────────────
+   Mêmes briques oa-* que l'accueil, plus deux accents par famille d'outils : cyan (comprendre)
+   et vert (agir), à côté du rouge (rassembler). Variantes claires assombries pour tenir 5:1. */
+.oa-cyan, .oa-kicker.oa-cyan { color: var(--oa-cyan); }
+.oa-lime, .oa-kicker.oa-lime { color: var(--oa-lime); }
+.oa-ico { display: inline-block; width: 1.25rem; height: 1.25rem; flex: none; background-color: currentColor; -webkit-mask: var(--oa-i) center / contain no-repeat; mask: var(--oa-i) center / contain no-repeat; }
+#familles, #creer, #recolter, #decider, #cooperer { scroll-margin-top: 5.5rem; }
+
+.oa-tools-hero { padding-block: 3.5rem 0; }
+.oa-back { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 600; color: var(--foreground); text-decoration: none; }
+.oa-back .oa-ico { width: 1rem; height: 1rem; }
+.oa-back:hover { color: var(--oa-ink); }
+.oa-eyebrow--muted::before { background: color-mix(in oklab, var(--foreground) 35%, transparent); }
+.oa-h1--xl { font-size: clamp(3rem, 6vw, 4rem); }
+.oa-h2--md { font-size: clamp(1.75rem, 3vw, 2.25rem); }
+.oa-text--md { font-size: 1rem; }
+@media (min-width: 960px) { .oa-tools-hero .oa-hero__grid { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); } }
+.oa-lead--xl { max-width: 38rem; font-size: clamp(1.25rem, 2vw, 1.5rem); line-height: 1.5; color: var(--foreground); }
+.oa-btn--square { gap: 0.5rem; border-radius: 0.5rem; }
+.oa-btn .oa-ico { width: 1rem; height: 1rem; }
+.oa-hero__art--muted img { opacity: 0.78; }
+.oa-perks { display: grid; gap: 1.5rem; margin: 3rem 0 0; padding: 1.75rem 0 2.5rem; list-style: none; border-top: 1px solid var(--border); }
+.oa-perk { display: flex; gap: 0.875rem; }
+.oa-perk .oa-ico { color: var(--oa-ink); margin-top: 0.125rem; }
+.oa-perk strong { display: block; font-size: 0.9375rem; }
+.oa-perk strong + span { display: block; margin-top: 0.25rem; font-size: 0.8125rem; color: var(--muted-foreground); }
+
+.oa-band--flushb { padding-bottom: 0; }
+.oa-band--end { padding-bottom: 6rem; }
+.oa-text--aside { max-width: 24rem; font-size: 0.9375rem; }
+.oa-chipnav { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 2rem; padding-bottom: 1.75rem; border-bottom: 1px solid var(--border); }
+.oa-chipnav a { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 0.5rem; background: var(--background); border: 1px solid color-mix(in oklab, var(--foreground) 15%, transparent); font-size: 0.875rem; font-weight: 600; color: var(--foreground); text-decoration: none; }
+.oa-chipnav a:hover { border-color: var(--foreground); }
+.oa-chipnav .oa-ico { width: 1rem; height: 1rem; }
+.oa-chipnav a:focus-visible, .oa-back:focus-visible, .oa-link:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+
+.oa-family-band { padding-block: 3rem 1rem; }
+.oa-family--red { --oa-acc: var(--oa-ink); }
+.oa-family--cyan { --oa-acc: var(--oa-cyan); }
+.oa-family--lime { --oa-acc: var(--oa-lime); }
+.oa-family__head { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 0.875rem; row-gap: 0.5rem; align-items: baseline; margin-bottom: 1.75rem; }
+.oa-family__head .oa-num { color: var(--oa-acc); font-weight: 600; }
+.oa-family__head h3 { margin: 0; font-size: 1.5rem; font-weight: 700; }
+.oa-family__head p { grid-column: 2; margin: 0; font-size: 0.9375rem; color: var(--muted-foreground); }
+.oa-grid--3 { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 720px) { .oa-grid--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .oa-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.oa-tool { display: flex; flex-direction: column; gap: 0.875rem; padding: 1.75rem; border-radius: 0.75rem; background: var(--card); color: var(--card-foreground); border: 1px solid var(--border); border-top: 2px solid var(--oa-acc); }
+.oa-tool__top { display: flex; justify-content: space-between; align-items: center; }
+.oa-tool__top .oa-ico { width: 1.5rem; height: 1.5rem; color: var(--oa-acc); }
+.oa-tool__top small { font-size: 0.75rem; color: var(--muted-foreground); }
+.oa-tool h4 { margin: 0.5rem 0 0; font-size: 1.5rem; font-weight: 700; }
+.oa-tool p { margin: 0; font-size: 0.9375rem; line-height: 1.65; color: var(--muted-foreground); }
+.oa-tool .oa-tool__tagline { margin-top: -0.375rem; font-size: 0.875rem; font-weight: 600; color: var(--oa-acc); }
+.oa-checks { display: flex; flex-direction: column; gap: 0.75rem; margin: 0.25rem 0 0; padding: 0; list-style: none; }
+.oa-checks li { display: flex; align-items: flex-start; gap: 0.625rem; font-size: 0.9375rem; }
+.oa-checks .oa-ico { width: 1rem; height: 1rem; margin-top: 0.2rem; color: var(--oa-acc, var(--oa-ink)); }
+.oa-checks--lime .oa-ico { color: var(--oa-lime); }
+.oa-checks--2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.875rem 1.5rem; }
+/* Accordéon « En savoir plus sur … » des cartes d'outils : <details> natif, ouvert sans JS.
+   Fermées, les cartes d'une rangée gardent la même hauteur (accordéon calé en bas) ;
+   dès qu'une s'ouvre, chacune reprend la sienne au lieu d'étirer ses voisines. */
+.oa-tool .oa-checks { margin-bottom: 0.75rem; }
+.oa-tool__more { margin-top: auto; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+.oa-tool__more summary { display: flex; justify-content: space-between; align-items: center; gap: 1rem; list-style: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; color: var(--foreground); }
+.oa-tool__more summary::-webkit-details-marker { display: none; }
+.oa-tool__more summary .oa-ico { width: 1rem; height: 1rem; transition: transform 0.2s ease; }
+.oa-tool__more[open] summary .oa-ico { transform: rotate(180deg); }
+.oa-tool__more summary:hover { color: var(--oa-ink); }
+.oa-tool__more summary:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; border-radius: 0.25rem; }
+.oa-tool .oa-tool__more p { margin-top: 0.875rem; line-height: 1.85; }
+.oa-grid--3:has(.oa-tool__more[open]) { align-items: start; }
+@media (prefers-reduced-motion: reduce) { .oa-tool__more summary .oa-ico { transition: none; } }
+
+.oa-head--wide { max-width: 48rem; }
+.oa-head--full { max-width: none; }
+@media (min-width: 960px) { .oa-split--lead { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); } }
+.oa-text--strong { color: color-mix(in oklab, var(--foreground) 70%, var(--muted-foreground)); }
+.oa-text--small { font-size: 0.9375rem; }
+.oa-relie { display: flex; flex-direction: column; gap: 1.25rem; padding-block: 1.75rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.oa-relie__head { display: flex; align-items: center; gap: 1rem; }
+.oa-relie__head .oa-ico { width: 2.25rem; height: 2.25rem; color: var(--oa-cyan); }
+.oa-relie__head strong { display: block; font-size: 1.25rem; }
+.oa-relie__head strong + span { font-size: 0.875rem; color: var(--muted-foreground); }
+.oa-link { display: inline-flex; align-items: center; gap: 0.375rem; font-size: 0.9375rem; font-weight: 600; color: var(--foreground); text-decoration: none; }
+.oa-link .oa-ico { width: 1rem; height: 1rem; }
+.oa-link:hover { color: var(--oa-ink); }
+
+.oa-method { display: grid; gap: 1.5rem; margin: 2.5rem 0 0; padding: 0; list-style: none; }
+@media (min-width: 640px) { .oa-method { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .oa-method { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.oa-method li { display: flex; flex-direction: column; gap: 0.375rem; padding-top: 1.25rem; border-top: 1px solid color-mix(in oklab, var(--foreground) 15%, transparent); }
+.oa-step__top { display: flex; justify-content: space-between; align-items: center; font-size: 0.8125rem; color: var(--oa-lime); }
+.oa-step__top .oa-ico { width: 1rem; height: 1rem; color: var(--muted-foreground); }
+.oa-method h3 { margin: 0.5rem 0 0; font-size: 1.25rem; font-weight: 700; }
+.oa-step__tool { font-size: 0.9375rem; font-weight: 500; color: var(--oa-lime); }
+.oa-method p { margin: 0; font-size: 0.9375rem; line-height: 1.6; color: var(--muted-foreground); }
+
+.oa-usages { display: grid; gap: 0 2.5rem; margin-top: 2.5rem; }
+@media (min-width: 768px) { .oa-usages { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.oa-usage { display: flex; flex-direction: column; gap: 0.5rem; padding-block: 1.75rem; border-top: 1px solid var(--border); }
+.oa-usage h3 { margin: 0; font-size: 1.25rem; font-weight: 700; }
+.oa-usage p { margin: 0; font-size: 0.9375rem; line-height: 1.65; color: var(--muted-foreground); }
+.oa-usage__cat { font-size: 0.8125rem; color: var(--oa-ink); }
+.oa-usage__tags { font-size: 0.8125rem; color: var(--oa-cyan); }
+
+.oa-band--rule { border-top: 1px solid var(--border); }
+.oa-cta-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1.5rem; }
+.oa-cta-row .oa-text { font-size: 0.9375rem; }
+.oa-cta-row .oa-head { flex: 1 1 32rem; max-width: 52rem; }
+@media (min-width: 768px) { .oa-perks { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.oa-i-arrow-down { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M12 5v14%22%3E%3C/path%3E%3Cpath d=%22m19 12-7 7-7-7%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-arrow-left { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m12 19-7-7 7-7%22%3E%3C/path%3E%3Cpath d=%22M19 12H5%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-arrow-right { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M5 12h14%22%3E%3C/path%3E%3Cpath d=%22m12 5 7 7-7 7%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-arrow-up-right { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M7 7h10v10%22%3E%3C/path%3E%3Cpath d=%22M7 17 17 7%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-calendar-days { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M8 2v4%22%3E%3C/path%3E%3Cpath d=%22M16 2v4%22%3E%3C/path%3E%3Crect width=%2218%22 height=%2218%22 x=%223%22 y=%224%22 rx=%222%22%3E%3C/rect%3E%3Cpath d=%22M3 10h18%22%3E%3C/path%3E%3Cpath d=%22M8 14h.01%22%3E%3C/path%3E%3Cpath d=%22M12 14h.01%22%3E%3C/path%3E%3Cpath d=%22M16 14h.01%22%3E%3C/path%3E%3Cpath d=%22M8 18h.01%22%3E%3C/path%3E%3Cpath d=%22M12 18h.01%22%3E%3C/path%3E%3Cpath d=%22M16 18h.01%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-chart-column { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M3 3v16a2 2 0 0 0 2 2h16%22%3E%3C/path%3E%3Cpath d=%22M18 17V9%22%3E%3C/path%3E%3Cpath d=%22M13 17V5%22%3E%3C/path%3E%3Cpath d=%22M8 17v-3%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-check { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M20 6 9 17l-5-5%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-chevron-down { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-clipboard-list { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Crect width=%228%22 height=%224%22 x=%228%22 y=%222%22 rx=%221%22 ry=%221%22%3E%3C/rect%3E%3Cpath d=%22M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2%22%3E%3C/path%3E%3Cpath d=%22M12 11h4%22%3E%3C/path%3E%3Cpath d=%22M12 16h4%22%3E%3C/path%3E%3Cpath d=%22M8 11h.01%22%3E%3C/path%3E%3Cpath d=%22M8 16h.01%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-database { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cellipse cx=%2212%22 cy=%225%22 rx=%229%22 ry=%223%22%3E%3C/ellipse%3E%3Cpath d=%22M3 5V19A9 3 0 0 0 21 19V5%22%3E%3C/path%3E%3Cpath d=%22M3 12A9 3 0 0 0 21 12%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-earth { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M21.54 15H17a2 2 0 0 0-2 2v4.54%22%3E%3C/path%3E%3Cpath d=%22M7 3.34V5a3 3 0 0 0 3 3a2 2 0 0 1 2 2c0 1.1.9 2 2 2a2 2 0 0 0 2-2c0-1.1.9-2 2-2h3.17%22%3E%3C/path%3E%3Cpath d=%22M11 21.95V18a2 2 0 0 0-2-2a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2H2.05%22%3E%3C/path%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210%22%3E%3C/circle%3E%3C/svg%3E"); }
+.oa-i-file-check { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z%22%3E%3C/path%3E%3Cpath d=%22M14 2v5a1 1 0 0 0 1 1h5%22%3E%3C/path%3E%3Cpath d=%22m9 15 2 2 4-4%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-heart-handshake { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M19.414 14.414C21 12.828 22 11.5 22 9.5a5.5 5.5 0 0 0-9.591-3.676.6.6 0 0 1-.818.001A5.5 5.5 0 0 0 2 9.5c0 2.3 1.5 4 3 5.5l5.535 5.362a2 2 0 0 0 2.879.052 2.12 2.12 0 0 0-.004-3 2.124 2.124 0 1 0 3-3 2.124 2.124 0 0 0 3.004 0 2 2 0 0 0 0-2.828l-1.881-1.882a2.41 2.41 0 0 0-3.409 0l-1.71 1.71a2 2 0 0 1-2.828 0 2 2 0 0 1 0-2.828l2.823-2.762%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-layers { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z%22%3E%3C/path%3E%3Cpath d=%22M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12%22%3E%3C/path%3E%3Cpath d=%22M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-lock { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Crect width=%2218%22 height=%2211%22 x=%223%22 y=%2211%22 rx=%222%22 ry=%222%22%3E%3C/rect%3E%3Cpath d=%22M7 11V7a5 5 0 0 1 10 0v4%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-map-pin { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0%22%3E%3C/path%3E%3Ccircle cx=%2212%22 cy=%2210%22 r=%223%22%3E%3C/circle%3E%3C/svg%3E"); }
+.oa-i-messages-square { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M16 10a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 14.286V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z%22%3E%3C/path%3E%3Cpath d=%22M20 9a2 2 0 0 1 2 2v10.286a.71.71 0 0 1-1.212.502l-2.202-2.202A2 2 0 0 0 17.172 19H10a2 2 0 0 1-2-2v-1%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-network { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Crect x=%2216%22 y=%2216%22 width=%226%22 height=%226%22 rx=%221%22%3E%3C/rect%3E%3Crect x=%222%22 y=%2216%22 width=%226%22 height=%226%22 rx=%221%22%3E%3C/rect%3E%3Crect x=%229%22 y=%222%22 width=%226%22 height=%226%22 rx=%221%22%3E%3C/rect%3E%3Cpath d=%22M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3%22%3E%3C/path%3E%3Cpath d=%22M12 12V8%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-sprout { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3%22%3E%3C/path%3E%3Cpath d=%22M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4%22%3E%3C/path%3E%3Cpath d=%22M5 21h14%22%3E%3C/path%3E%3C/svg%3E"); }
+.oa-i-users { --oa-i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%221.75%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2%22%3E%3C/path%3E%3Cpath d=%22M16 3.128a4 4 0 0 1 0 7.744%22%3E%3C/path%3E%3Cpath d=%22M22 21v-2a4 4 0 0 0-3-3.87%22%3E%3C/path%3E%3Ccircle cx=%229%22 cy=%227%22 r=%224%22%3E%3C/circle%3E%3C/svg%3E"); }

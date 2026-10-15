@@ -15,7 +15,23 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-09-23** — passe de revue du lot membres (§9septvicies.7 : 9 correctifs, 5 nettoyages transverses, césure coform rétablie — plus aucun test rouge) ; coordination territoriale lue en une requête serveur (§9septvicies.6) ; bandeaux de filtres en deux lignes, filtre par ville réservé aux actualités et tiré de l'adresse (§9novotricies). Précédemment : **2026-09-22** — annuaire des partenaires et filtre « Villes » des actualités, page « La communauté » retirée (§9octotricies). Précédemment : **2026-09-17** — INFORESO et « Elles et ils ont marqué le réseau » en pages dédiées avec leurs formulaires d'admin, types d'actualité « À la une » / « Zoom sur le réseau » en choix multiple, taxonomie facultative hors réunions (§9octovicies). Précédemment : **2026-09-15** — les cinq lots du 09/09 (§9vicies à §9quatervicies, validés en §9quinvicies), puis la refonte de l'accueil, les actions admin sur les actualités, les pages du réseau reprises à la source et le Mois de la Parentalité (§9sexvicies).
+Dernière mise à jour : **2026-10-13** — annuaire des acteurs du soutien à la parentalité
+(`/annuaire-acteurs-parentalite`, 38 organisations importées), fiche profil et formulaire d'édition dédié
+`parent62-acteur` sur les vrais champs du formulaire, correctif admin (colonnes « Année »/INFORESO et
+« Type »/Ressources invisibles) — détail en §9septquadragies. Précédemment : **2026-10-08** — relecture de la MR `parents62` : 12 constats corrigés (régressions,
+dette pré-existante étendue, bonnes pratiques) sur la gestion des rôles, l'export PDF, la grille équipe,
+la pagination numérotée (troncature `1 … 30 31 32 33 34`, bug « Previous »/« Next » resté en anglais, et
+l'annonce d'accessibilité qui disait « sur 2 » au lieu du total réel « sur 537 » — les trois trouvés en
+relisant mes propres vérifications), les liens `NavLink`/`classifyHref`, le téléchargement de Blob
+factorisé — détail en §9tresquadragies.2. Précédemment : **2026-10-06** — SDK monté en `1.0.196` (rôles de membre modifiables,
+export PDF de l'agenda) : dialogue « Gérer les rôles » sur tout membre déjà lié, rôles posables à
+l'invitation « users », export PDF réel vérifié en direct (150 Ko, `%PDF-` confirmé) — un bug backend
+connu (`Costumize::connectElement`) reste non corrigé sur le seul chemin d'invitation CRÉANT un lien,
+sans effet sur « Gérer les rôles » — détail en §9quinquadragies. Précédemment : **2026-10-01** — refonte
+accueil « Vous êtes »/Territoires/À la une en un seul panneau : assets carte remplacés, icônes de titre,
+plafond de hauteur opt-in de l'illustration (sans recadrage ni retouche des % de bulles), 2 bugs
+d'espacement trouvés et corrigés (ombre rognée par le carrousel, centrage vertical cassé par un
+`mt-auto`) — détail et gates réels en §9duoquadragies. Précédemment : **2026-09-23** — passe de revue du lot membres (§9septvicies.7 : 9 correctifs, 5 nettoyages transverses, césure coform rétablie — plus aucun test rouge) ; coordination territoriale lue en une requête serveur (§9septvicies.6) ; bandeaux de filtres en deux lignes, filtre par ville réservé aux actualités et tiré de l'adresse (§9novotricies). Précédemment : **2026-09-22** — annuaire des partenaires et filtre « Villes » des actualités, page « La communauté » retirée (§9octotricies). Précédemment : **2026-09-17** — INFORESO et « Elles et ils ont marqué le réseau » en pages dédiées avec leurs formulaires d'admin, types d'actualité « À la une » / « Zoom sur le réseau » en choix multiple, taxonomie facultative hors réunions (§9octovicies). Précédemment : **2026-09-15** — les cinq lots du 09/09 (§9vicies à §9quatervicies, validés en §9quinvicies), puis la refonte de l'accueil, les actions admin sur les actualités, les pages du réseau reprises à la source et le Mois de la Parentalité (§9sexvicies).
 
 **(f) Passe de revue du lot membres, et le dépôt sans test rouge** — `/code-review` rejoué sur la
 branche : 9 constats, tous corrigés (`territoires` en tableau lu par la carte, `NavLink` sur le lien de
@@ -3910,6 +3926,563 @@ vert (32 px, contre 16) que la ligne points + bouton au-dessus de son bord bas. 
 
 ---
 
+## 9quadragies. Fils d'actualités : deux lignes visibles sans défiler, réseau sans titres de carte
+
+Demande : diminuer la place que prennent les articles pour qu'au moins deux rangées se lisent sans
+défiler, sur l'ensemble des pages à fil d'actus — et retirer les intitulés des trois cartes « Les
+membres du réseau » (`/reseau`), qui répétaient le contenu déjà lisible dans leur texte.
+
+**Fils d'actualités** — nouvelle option moteur `articleFeed.density: "compact"` (opt-in, sans effet par
+défaut ailleurs sur le parc), posée sur les **33 sections `articleFeed`** du site (`/blog`, `/theme` et ses
+8 déclinaisons, les 9 pages `/public/*`, les 9 pages de territoire, Mois de la Parentalité, appels à
+projets, offres d'emploi, Zoom sur le réseau, comptes rendus de réunion) :
+
+- Grille à **2 colonnes dès le mobile** (au lieu d'1, comme le reste du parc) et **4 au maximum** à
+  partir de `lg:` (plafond retenu après essai à 5 colonnes, jugées trop étroites).
+- Carte `poster` (celle que porte parent62, `config.blog.defaultCardVariant`) : image ramenée du 3/4
+  portrait historique à un cadre 3/2, nettement plus court. La carte `default` du moteur (16/9, non
+  utilisée ici) suit le même principe à 5/2, pour rester cohérente si un autre site l'adopte un jour.
+- `py-6`/`gap-6` du `Card` de base **retirés** en compact — c'était du vide autour du seul enfant de la
+  carte (48 px perdus pour rien), pas un espacement entre plusieurs blocs.
+- **Titre, date, temps de lecture, extrait et tags restent tous affichés**, ramenés à une ligne chacun :
+  après plusieurs essais (masquer puis remettre ces informations), l'arbitrage retenu resserre la carte
+  par la hauteur de l'image et par le vide de `Card`, jamais par la disparition d'une information.
+- La carte « à la une » (la première du fil, en tête de page) garde son gabarit plein quel que soit
+  `density` — seules les cartes du fil en dessous se resserrent.
+
+**Réseau** — page `/reseau`, section `categories-grid` `reseau-membres` : les trois titres (« Parents et
+groupes de parents », « Centres Sociaux et EVS », « Institutions et collectivités ») sont retirés ; les
+cartes gardent leur icône et leur texte descriptif, `title` étant déjà optionnel dans le schéma.
+
+### 9quadragies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` · `audit:config` | ✅ 51 pages · 183 sections · RAS |
+| `typecheck` · `lint` | ✅ 0 erreur |
+| `test:unit` (préflight compris) | ✅ **5 028 tests**, 2 échecs **étrangers au lot** (`bundle-size`, `site-assets`) ; test de schéma ajouté sur `density` (accepté/rejeté) |
+| `test:integration` (`config-driven-ssr`, config parent62) | ✅ **98/98** |
+| `test:e2e` parent62 | ✅ **23/23**, dont une garde ajoutée (2 colonnes mobile, 4 en grand écran, `py-6` retiré, titre/tags toujours présents), **vérifiée rouge** sans `density` sur la section |
+| Écran | ✅ 1 440, 768 et 390 px, clair et sombre, sans débordement horizontal ; 2 rangées entières visibles sur `/blog` dès le haut de la grille |
+| Relecture | config resynchronisée avec `main` après une restauration de secours qui avait accidentellement fait régresser 3 points sans lien avec ce lot (texte du Mois de la Parentalité, texte des cartes « comptes rendus » sur les 9 pages de territoire, 2 liens de pied de page) — les trois retrouvent le texte/lien de `main`, seuls les changements de ce lot restent dans le diff |
+
+---
+
+## 9unquadragies. Couleurs fixes de l'équipe, filtre Villes sur l'agenda, loupe dans les actions du header
+
+`/equipe` — les deux sections sans territoire (« L'animation départementale », « Le contact à la CAF »)
+portent désormais une couleur de marque FIXE au lieu du neutre du thème (`couleursTerritoire` sans valeur
+à résoudre) : vert `--p62-vert` (déjà utilisé par les cases « Vous êtes… », 7,56:1) pour l'animation
+départementale, nouveau jaune-vert `--p62-caf` (`#d7d872`, 13,95:1) pour le contact CAF. Nouvelle option
+moteur `card.fixedColors: { fond, encre, bordure? }` (`MemberCardConfSchema`) : prime sur `rattachement`
+pour TOUTES les cartes de la section, quel que soit le territoire porté par chaque membre — la carte
+« L'équipe de Coordonnateurs (trices) », qui garde ses couleurs de territoire, n'y touche pas.
+
+`/agenda` — filtre « Villes » ajouté au `searchHeader`, même liste des 33 villes et même champ
+(`address.addressLocality`) que `/blog` : le formulaire « Proposer un événement » collecte déjà une
+adresse complète, aucune donnée à ajouter côté base. Le filtre rejoint le `PageFilters` partagé que
+l'agenda lit déjà pour territoire/public/thème — aucun changement moteur, ajout de config pur.
+
+En-tête — deux ajustements du header `stacked` (le seul à en avoir besoin, `main` n'en portait aucune
+trace malgré une tentative antérieure abandonnée, cf. [[project-parent62-accueil-bande-unique]]) :
+
+- **Menu centré** : la grille de la barre passe de `auto_1fr_auto` à `1fr_auto_1fr` — les deux colonnes
+  de FLANC (logo, actions) sont désormais de MÊME largeur quel que soit leur contenu, donc le menu
+  (colonne du milieu) se centre sur la barre entière, exactement sous le logo/titre du bandeau au-dessus.
+  Avec `auto_1fr_auto`, le menu ne se centrait que dans l'espace restant après le logo, décalé vers la
+  gauche dès que le groupe d'actions (plus large que le logo) l'emportait — systématique, mesuré à
+  111px d'écart avant correction.
+- **Loupe à la place de « Ctrl+K »** : nouvelle option moteur générique `nav[].placement: "actions"`
+  (`EnhancedNavItemType`, header `stacked` uniquement) — sort une entrée du menu centré pour la poser
+  dans le groupe d'actions de droite, en icône seule. Posée sur l'entrée « Recherche » existante, elle
+  y remplace le déclencheur de palette de commandes (`CommandTriggerButton`, retiré de ce header). Le
+  menu mobile garde la liste complète (pas de groupe d'actions séparé dans le tiroir).
+
+### 9unquadragies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` · `audit:config` | ✅ 51 pages · 183 sections · RAS |
+| `typecheck` · `lint` | ✅ 0 erreur |
+| `test:unit` | ✅ **5 028 tests**, 2 échecs étrangers au lot |
+| `test:integration` (`config-driven-ssr`, config parent62) | ✅ **98/98** |
+| `test:e2e` parent62 | ✅ **25/25**, dont 3 nouvelles gardes (couleurs fixes équipe, filtre Villes agenda, menu centré + absence de « Ctrl+K »), chacune **vérifiée rouge** sans sa correction. 2 échecs **étrangers au lot** sur `/territoire/arrageois` et `/equipe` : le backend local a gagné un coordonnateur pour l'Arrageois depuis l'écriture de ces tests (donnée, pas code) |
+| Écran | ✅ 1 280 px avec barre de défilement de 17px : aucun débordement (budget déjà tendu, cf. [[reference-header-stacked-budget-1280]]) ; 1 440 px : écart menu/logo 0px |
+| Contraste | ✅ noir sur `--p62-vert` 7,56:1, noir sur `--p62-caf` 13,95:1 (AAA les deux) |
+
+
+## 9duoquadragies. Accueil : « Vous êtes », Territoires et À la une en un seul panneau
+
+**Demande** : un seul bloc pour « Vous êtes », Territoires et À la une, sur fond blanc ; Territoires plus
+grand (3/4, À la une 1/4) et animé ; titre et image de l'actu cliquables ; boutons Parent/Pro assombris
+avec un effet au survol ; aucune nouvelle section ; thème et couleurs conservés ; header inchangé.
+
+**Config** (`pages[/]`) : la section `action-tiles` `home-double-entree` passe dans `gridLayout.topSection`
+(plus que 2 sections de premier niveau : `gridLayout`, `articleTeaser`). La grille garde l'aplat
+`page-accent` et porte un panneau blanc arrondi (`innerWrapperClass`) ; `leftColumns: 3`,
+`rightColumns: 1`, `gap: 4`, `from: lg`. Tuiles : `density: "compact"`, `hoverEffect: "lift"`, Parent en
+`--p62-vert-fonce` (jeton, `#0f6f5f`), Pro en `--p62-marine`, texte blanc, `headlineStyle: "text"` +
+`tileLayout: "pillRow"` pour « Vous êtes » (titre en police manuscrite `--font-serif`/Patrick Hand, sans
+pastille — un consommateur qui veut la police du menu l'ajoute lui-même, cf. `sectionBadge.ts`). Carte
+Territoires : `headlineIcon: "map-pin"`/`headlineIconColor` (turquoise), `animate`. Carrousel « à la
+une » : `linkTitleAndImage`, `badgeIcon: "megaphone"`/`badgeIconColor`, `ctaStyle: "link"` +
+`ctaPosition: "inline"` (« Lire la suite » turquoise souligné, au lieu du bouton plein historique).
+
+**Assets carte** (remplacés en cours de lot) : `carte-pdc.png` (silhouette blanche du territoire,
+996×945) et `fond-degrade-territoire.png` (dégradé déjà cuit) posées via `backgroundImage` /
+`illustrationBackgroundImage`, à la place de l'ancien webp + dégradé CSS (`carte-territoire-teal.webp`,
+désormais mort, **supprimé**). La carte, quasi carrée, devenait bien trop haute une fois élargie à toute
+la colonne — plafonnée en HAUTEUR (pas largeur) via le nouveau couple opt-in
+`illustrationMaxHeight: "80vh"` + `illustrationAspectRatio: "996/945"` (ratio exact du fichier, sans
+quoi l'image serait étirée) : la largeur suit, aucun pixel n'est rogné, les bulles (positionnées en %
+de cette boîte) restent alignées sur leur territoire.
+
+**Animation** : les bulles respirent en boucle via un nouveau `blink-scale` (scale seul) — remplace
+`pulse-glow` (scale + opacité), qui délavait leur couleur de marque à chaque cycle.
+
+**Deux bugs trouvés et corrigés pendant la vérification** (ni l'un ni l'autre demandés explicitement,
+découverts en mesurant l'espace vide sous la carte « à la une ») :
+1. L'ombre de la carte à la une (`shadow-lg`) était rognée sur 3 côtés par le viewport du carrousel
+   shadcn (`CarouselContent`, `overflow-hidden`) — corrigé par un wrapper `p-2` qui réserve la marge où
+   l'ombre se dessine.
+2. Le pied du carrousel (points + bouton) portait un `mt-auto`, qui absorbe tout l'espace libre AVANT
+   que le `justify-center` du conteneur ne puisse agir — la carte restait donc collée en haut, et tout
+   le vide s'accumulait entre elle et les points au lieu de se répartir. Remplacé par une marge fixe
+   (`mt-4`) : carte et pied forment désormais un seul bloc, centré verticalement dans la colonne.
+
+**Moteur** (options opt-in, défaut sans effet — documentées dans `doc/05-schemas-sections.md` et
+`scripts/lib/prop-descriptions.ts`) : `gridLayout.topSection`/`innerWrapperClass` (aucune boîte ajoutée
+sans eux), `action-tiles.hoverEffect`/`density`/`tileLayout: "pillRow"`, `map-bubbles.animate`/
+`headlineIcon`/`headlineIconColor`/`illustrationBackgroundImage`/`illustrationMaxHeight`/
+`illustrationAspectRatio`, `featured-carousel.linkTitleAndImage`/`badgeIcon`/`badgeIconColor`/
+`ctaStyle`/`ctaPosition`. `headlineStyle: "text"` (sans fond ni rotation) ajouté aux trois sections
+(`action-tiles`, `map-bubbles`, `featured-carousel`). Le pied du carrousel en habillage `card` passe sur
+une ligne selon la largeur du carrousel (container query) et non plus de l'écran : sans cela le bouton
+débordait de la colonne 1/4 — seul parent62 emploie cet habillage. Vérifié qu'aucun autre site du parc
+(7 configs posent `action-tiles`, aucune `map-bubbles`/`featured-carousel` hors parent62) ne déclare ces
+props : tous restent sur le rendu historique. Recette `home-a-la-une` de la skill `config-assistant`
+resynchronisée.
+
+**Limite** : le bandeau du header `stacked` restant inchangé (choix explicite), la bande (« Vous
+êtes » + Territoires/À la une) ne tient pas encore entièrement au-dessus de la ligne de flottaison une
+fois la barre repliée (sticky, 56 px) à 1 440×900 — le plafond de hauteur de la carte a réduit le
+dépassement mesuré d'environ 279 px à environ 97 px, sans l'éliminer. Aller plus loin demanderait soit
+de recadrer l'image (perte de pixels réels de la silhouette du territoire), soit de resserrer les % x/y
+des 9 bulles — ce que le code interdit explicitement en commentaire (« positions calibrées à la main,
+ne pas les retoucher pour compenser », décision déjà actée en §9quater (cf. aussi [[project-parent62-accueil-bande-unique]]).
+Ni l'un ni l'autre n'a été fait : la marge résiduelle reste en l'état.
+
+### 9duoquadragies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` | ✅ 51 pages · 182 sections |
+| `audit:config` (parent62) | ✅ RAS (0 traduction manquante, 0 lien mort, 0 clé morte) |
+| `typecheck` · `lint` | ✅ 0 erreur (warnings React Compiler préexistants, étrangers au lot) |
+| `test:unit` | ✅ **5 476/5 477** — seul échec `bundle-size` (`dist/` non reconstruit depuis la veille), étranger au lot |
+| `test:integration` (`config-driven-ssr`) | 🟡 **861/863** — 2 échecs dus à `.env` local (`VITE_SLUG=parent62` actif) : le serveur de test rend parent62 au lieu du config de démo attendu par ces 2 assertions (titre/footer) — artefact d'environnement local, étranger au lot et à `.env` lui-même (gitignoré, propriété de l'utilisateur, non modifié) |
+| `test:e2e` parent62 | ✅ **25 passés**, dont la garde « Vous êtes + Territoires/À la une forment UNE bande ». 2 échecs **étrangers au lot** (`/territoire/arrageois`, `/equipe`, données du backend local) — identiques sans les modifications |
+| Écran | ✅ 1 024 / 1 280 / 1 366 / 1 920 px, 768 px et 375 px, clair et sombre : plus de chevauchement étiquette/tuiles, lien de l'actu dans sa carte, 9 bulles de territoire visibles sans rognage |
+| Contraste | ✅ blanc sur `--p62-vert-fonce` 6,07:1 (AA), blanc sur `--p62-marine` 10,98:1 |
+
+---
+
+## 9tresquadragies. Fils d'actualités : pagination numérotée (12/page) au lieu du scroll infini
+
+Les 33 fils `articleFeed` du site (`/blog`, thèmes, territoires, appels à projets, offres d'emploi,
+zoomcat…) affichaient un bouton « Charger plus »/scroll infini. Passage à une pagination numérotée
+classique, posée **une seule fois** au niveau site (`config.blog.defaultPagination: "pages"`), et non
+répétée sur chaque section — nouvelle option moteur `config.blog.defaultPagination` /
+`articleFeed.pagination` (`"infinite"` | `"pages"`, `ArticleFeedSectionSchema`/`BlogConfigSchema`),
+défaut ABSENT → `"infinite"` (comportement historique, opt-in, aucun autre site n'est affecté). Le
+widget mono-article `champs-laep-actu` (`pageSize:1`, aperçu d'une actu précise) garde explicitement
+`"infinite"` — paginer un item unique n'a pas de sens.
+
+Le backend ne pagine QUE par curseur (`page.next()` du SDK) : un `indexMin` manuel est ignoré (déjà
+sondé/documenté dans `buildSearchPayload`, chemin carte). `usePagedFeedNav` (`modules/blog/hooks/
+useArticleFeed.ts`) en tient compte : les pages déjà visitées sont en cache React Query (retour
+instantané), la seule page « neuve » atteignable est la suivante immédiate (un clic dessus déclenche
+exactement un `fetchNextPage()`, jamais de saut ni de chaîne de fetch). La « une » (`featured`) reste
+résolue sur la page 1 quelle que soit la page affichée, dédupliquée de chaque page par id. La
+pagination revient à la page 1 dès que le périmètre filtré de la page change (`searchHeader`/
+`heroSearch` partagé, ex. filtre Villes de `/blog`). UI : composant shadcn `Pagination`
+(`components/ui/pagination.tsx`), jusque-là jamais consommé dans le parc.
+
+### 9tresquadragies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` | ✅ 51 pages · 182 sections |
+| `typecheck` · `lint` (module blog) | ✅ 0 erreur |
+| `test:unit` (module blog) | ✅ 60/60 (10 fichiers), dont 5 tests du hook `usePagedFeedNav` |
+| `test:e2e` parent62 | ✅ 26 passés, 1 ignoré ; 2 échecs **étrangers au lot** déjà connus (`/territoire/arrageois`, `/equipe`, données du backend local) |
+| Mobile 375 px (`/blog`, barre présente) | ✅ aucun débordement horizontal (document 367 px pour un viewport de 375 px) |
+| Autres pages `articleFeed` | non re-testées une à une (33 sections) : même composant et même hook, seule la config (`defaultPagination`, au niveau site) change |
+
+### 9tresquadragies.2 Troncature des boutons de page (06/10) et bug « Previous »/« Next » anglais trouvé en relisant
+
+Au-delà d'une trentaine de pages visitées (navigation séquentielle page après page — le curseur
+backend interdit tout saut, cf. ci-dessus), la rangée de boutons `1 2 3 … N` passait à la ligne.
+Nouveau helper pur testé `buildPageRange` (`modules/blog/lib/paginationRange.ts`) qui tronque en
+`1 … 30 31 32 33 34` dès que l'affichage complet déborderait (seuil : 7 boutons visibles, au-delà
+duquel masquer 1 seule page par une ellipse ne ferait pas gagner de place). Branché dans
+`ArticleFeed.tsx` via `PaginationEllipsis`, déjà présent dans `components/ui/pagination.tsx` mais
+jamais consommé. Vérifié en direct (Playwright, 34 pages atteintes) : une seule ligne en desktop ;
+sur mobile 390 px, léger retour à la ligne du seul bouton « Suivant » au-delà d'une vingtaine de
+pages — net progrès par rapport à l'avant (plusieurs lignes de boutons).
+
+**Bug trouvé en relisant les captures de cette vérification** : les boutons affichaient « Previous »/
+« Next » en ANGLAIS malgré les `t("feed.previous")`/`t("feed.next")` posés dans `ArticleFeed.tsx`.
+Cause : `PaginationPrevious`/`PaginationNext` (`components/ui/pagination.tsx`) spreadaient
+`{...props}` (qui contient `children`) PUIS redéfinissaient leurs propres enfants JSX
+(`<ChevronLeftIcon /><span>Previous</span>`) — en JSX, les enfants explicites entre les balises
+gagnent TOUJOURS sur un `children` venu d'un spread, quel que soit l'ordre des attributs. Le texte
+traduit était donc silencieusement écrasé par le texte anglais câblé en dur. Corrigé en
+destructurant `children` à part et en l'utilisant en repli (`children ?? "Previous"`) — comportement
+inchangé pour tout appelant qui n'en passe pas. `PaginationEllipsis` porte le même texte anglais
+câblé en dur (« More pages », `sr-only`) mais son conteneur est `aria-hidden` : inatteignable par un
+lecteur d'écran, donc pas un bug vivant, non touché.
+
+**2ᵉ bug trouvé en relisant, cette fois sur l'annonce d'accessibilité elle-même** (08/10) : le statut
+`role="status"` posé à côté de la pagination disait « Page X sur `nav.pageCount` », qui n'est QUE le
+nombre de pages navigables MAINTENANT (visitées + la suivante immédiate) — pas le nombre réel de
+pages du fil, qui continue de grandir à chaque clic sur « Suivant ». Un lecteur d'écran aurait donc
+entendu « Page 1 sur 2 » sur un fil de 6 434 articles (537 pages réelles). `useArticleFeed` expose
+déjà `totalCount`/`hasCount` (compte RÉEL renvoyé par le backend, `count.total`, pas toujours présent
+selon la recherche) — désormais utilisé pour l'annonce (`Math.ceil(totalCount / pageSize)`) quand
+disponible, repli sur `nav.pageCount` sinon. `nav.pageCount` lui-même n'est PAS touché : il reste la
+seule source de vérité pour les boutons et leurs bornes (`goToPage`). Vérifié en direct sur `/blog` :
+« Page 1 sur 537 ».
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` · `lint` | ✅ 0 erreur |
+| `test:unit` (`paginationRange.test.ts`) | ✅ 6/6, nouveau helper pur testé |
+| Vérifié en direct (34 pages) | ✅ `Previous 1 … 30 31 32 33 34 Next` → `Précédent 1 … 30 31 32 33 34 Suivant`, une ligne en desktop |
+| Mobile 390 px | 🟡 léger retour à la ligne du bouton « Suivant » seul au-delà d'une vingtaine de pages — net progrès, non retouché davantage |
+| Sombre | ✅ vérifié, contrastes corrects |
+| Annonce `role="status"` | ✅ vérifiée en direct sur `/blog` (6 434 articles) : « Page 1 sur 537 » (total réel), plus « Page 1 sur 2 » (pages navigables) |
+| Dernière page dans la troncature | ✅ vérifiée en direct sur `/appels-a-projets` (8 pages) : absente tant que non atteinte, puis `1 2 3 4 5 … 8 Suivant` une fois chargée (même en revenant sur la page 1) — propriété émergente de `nav.pageCount`, testée (`paginationRange.test.ts`) |
+
+## 9quattuorquadragies. Paroles de parents : image entière et carte par défaut ; profils en pleine largeur
+
+**Demande** : l'image d'une parole ne doit plus être rognée en bandeau ; la carte doit s'afficher à l'ouverture de `/temoignages` ; les pages profil doivent occuper toute la largeur.
+
+**Image entière (opt-in)** — `list.testimonial.imageFit` (`"cover"` défaut, `"contain"`). En `contain`, la carte et l'aperçu affichent l'image entière, centrée, sur un fond flou tiré de la même image (même idiome que les affiches du blog). En `cover`, le rendu historique (bannière 16/9 ou 21/9 rognée) est inchangé. Activé sur les deux listes de cartes de `/temoignages` (pages 12 et 45 de la config) ; la palette de commandes n'est pas concernée. Commits : `747759a0` (carte, configuration) puis `13f7d52d` (aperçu, version opt-in ; une version sans option écrite sur disque hors de nos éditions a été remplacée).
+
+**Carte par défaut** (`747759a0`) — `defaultViewMode: "map"` sur la section `paroles-list` : la vue split (liste + carte) s'ouvre sans clic ; le bouton « Voir en liste » reste disponible.
+
+**Profils en pleine largeur** — `profiles.<type>.layout: "full-width"` sur les six types (`default`, `citoyens`, `organizations`, `projects`, `events`, `poi`), au lieu de `"default"` (plafond `max-w-7xl`, soit 1280 px contre 1432 px sur le reste du site). Configuration seule, aucune ligne de code.
+
+**Vérifications (mesurées)**
+| Gate | Résultat |
+|---|---|
+| Carte témoignage (`CardTestimonialBubble.test.tsx`) | ✅ 2/2 : `cover` par défaut, `contain` sans ratio forcé |
+| Aperçu témoignage (`PreviewTestimonialBubble.test.tsx`) | ✅ 2/2 |
+| Typecheck · lint (fichiers touchés) | ✅ 0 erreur |
+| Profil : largeur du `main` | ✅ 1432 px à 1440 px de viewport (1280 px avant) ; débordement horizontal à 390 px : aucun (document 382 px) |
+| `/temoignages` : carte ouverte à l'arrivée | ✅ vérifié à la capture (viewport 1440 px) ; mobile 390 px : carte présente, aucun débordement |
+
+
+## 9quinquadragies. SDK 1.0.196 : rôles de membre modifiables, export PDF de l'agenda via le SDK
+
+**Contexte** : le SDK publié le jour même (`@communecter/cocolight-api-client@1.0.196`) livre exactement
+ce que décrivaient `Document de spécification — Rôles de membre sur les liens` et `Document de
+spécification — Endpoint SDK PDF imprimable agenda` : `User.setRoles(roles)` (endpoint `LINK_SET_ROLES`,
+remplacement intégral), `sendRequestToJoinParent({ admin, roles })`, et `endpointApi.agendaGetPdf(data)`
+(réponse binaire `arraybuffer`, gérée nativement par `ApiClient.callEndpoint`). Mise à jour :
+`cocolight-api-client` (dépôt local, fast-forward sur `origin/master`) puis `site-json` (`package.json`/lock,
+`^1.0.196`), les deux reconstruits/revalidés (`npm run build` du SDK, `npm run typecheck` de site-json).
+
+**Gérer les rôles d'un membre déjà lié** — nouveau dialogue `ManageRolesDialog` (`TagsInput`, pré-rempli
+via `rolesDuMembre`, déjà en place), mutation `useSetMemberRoles` (`{user, roles}`, hors factory
+`createUserMutation` qui ne porte qu'un `User`). Action « Gérer les rôles » ajoutée à
+`useAdminActions`/`buildManageRolesAction` sur tout membre DÉJÀ lié (admin/membre/contributeur/
+participant) — **opt-in via un callback** (`onManageRoles`, fourni par `MemberListRenderer` seul) :
+`InviteMemberDialog`, qui réutilise le même hook, n'affiche pas cette action, conformément à la demande
+initiale.
+
+**Poser des rôles à l'invitation « users »** (recherche, pas par e-mail — l'onglet « emails » les avait
+déjà) : un champ `TagsInput` au-dessus des résultats, appliqué par le nouveau hook
+`useInviteMemberWithRoles` (`{user, roles, admin}`) — seuls les boutons d'invitation (`invite-member`/
+`invite-admin`/…) y passent, les actions sur un membre déjà lié (promote/demote/remove/gérer les rôles)
+gardent leur `onClick` d'origine.
+
+**Suggestions de rôles existants** — les trois champs de rôles (« Gérer les rôles », invitation
+« users », invitation « emails ») proposent désormais en autocomplétion locale (`TagsInput.suggestions`)
+les rôles déjà posés sur un membre de l'entité, via le nouveau helper pur `rolesExistantsDeLEntite`
+(testé, `memberRoles.test.ts`) — dérivé de `entity.serverData.links`, déjà chargé : aucun appel réseau
+supplémentaire, le backend n'exposant toujours pas d'endpoint de suggestions au SDK. La saisie libre
+reste possible.
+
+**⚠️ Limite connue, non corrigée (hors périmètre SDK/site-json)** : `Costumize::connectElement`
+(backend PHP, `Document de spécification — Rôles attribués au mauvais membre`) écrit encore le rôle sur
+le lien de l'ADMIN qui invite, pas sur celui de l'invité, pour toute invitation **CRÉANT** un lien neuf
+(chemin `CONNECT`) sur un costum routé par `Costumize` — le cas de parent62. Ce bug est **indépendant**
+du lot ci-dessus : **« Gérer les rôles »** passe par `removerole`/`Link::removeRole`, jamais par
+`Costumize::connectElement` — non affecté. Seul « poser un rôle à l'invitation » (onglets « users » et
+« emails ») en hérite. Non re-testé en conditions réelles (pas de session admin dans cette session) :
+à vérifier au premier usage réel.
+
+**Export PDF de l'agenda** — nouvelle prop opt-in `agenda.showPdfExport` (défaut `false`), hook
+`useAgendaPdfExport` (`endpointApi.agendaGetPdf`, scope le costum PORTEUR entier via
+`getSiteCostumContext({contextId, contextType})` — jamais les filtres de la vue). Téléchargement par
+`Blob` + `<a download>` transitoire (aucun pattern de blob-download réutilisable trouvé — `downloadCsv.ts`
+est CSV-only, non généralisé pour un seul 2ᵉ usage). **Non activé sur `/agenda`** : la prop reste à son
+défaut `false`, conformément à la convention moteur (nouveauté = option, jamais un nouveau défaut pour
+un site en marche) — vérifié en direct dans cette session avec l'option forcée à `true`, qui a ensuite
+été retirée du config.
+
+### 9quinquadragies.1 Vérifications
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` | ✅ 51 pages · 182 sections |
+| `typecheck` · `lint` (fichiers touchés) | ✅ 0 erreur |
+| `test:unit` | ✅ suite complète (5528/5531, 2 échecs non liés à ce lot — snapshot archétype `agenda` resynchronisé, budget `bundle-size` pré-existant) ; `rolesExistantsDeLEntite` testé (9 cas, `memberRoles.test.ts`) — les mutations elles-mêmes restent sans test (React Query + mock SDK absents de ce module), le PDF n'a pas de test automatisé non plus |
+| Export PDF | ✅ **vérifié en direct, vrai navigateur (Playwright/Chromium), contre le backend réel** : clic → requête `AGENDA_GET_PDF` → fichier `agenda-parent62.pdf` de 150 519 octets, magic header `%PDF-` confirmé. Le blocage CORS documenté dans la spec est bien levé |
+| Mobile 390 px / sombre (`/agenda`) | ✅ bouton PDF en icône seule, aucun débordement horizontal, lisible en sombre |
+| Gestion des rôles | 🟡 **non vérifiée en conditions réelles** — aucune session admin disponible dans cette session ; typecheck/lint seuls |
+
+## 9sexquadragies. Footer : « Appels à projets »/« Offres d'emploi » retirés
+
+Sur demande, les deux liens retirés de `footer.columns[0].links` (`config.prod.parent62.json`). Le
+lien « Archives » a disparu de la même colonne pendant ce lot (édition concurrente côté config, hors
+de ce que ce lot a produit) — confirmé volontaire, laissé tel quel. La page `/archives` elle-même
+n'est pas supprimée, seulement son lien de footer.
+
+| Gate | Résultat |
+|---|---|
+| `validate-config` | ✅ 51 pages · 182 sections |
+
+## 9septquadragies. Annuaire des acteurs du soutien à la parentalité, formulaire d'édition dédié, correctif admin INFORESO/Ressources
+
+**Annuaire des acteurs** — nouvelle page `/annuaire-acteurs-parentalite` (entrée de menu dans « Le Réseau
+parentalité »), distincte de `/annuaire` (partenaires référencés via formulaire public) : affiche les 38
+organisations importées (`source.key:"youthCare"`, `reference.costum` contient `parent62`), vue **carte par
+défaut**, carte `image-cover`/`imageFit:"contain"` (même design que MSS/tiers-lieux), preview `facets`
+générique (`preview.type:"facets"`, zéro code) sur les VRAIS noms de champs observés en base — `categoryThematic`,
+`typeAction`, `publicCible`, `email`, `telephone`, `url` — et non les champs `territoires`/`publics`/`themes` du
+formulaire partenaire, qui n'existent sur AUCUNE de ces 38 fiches.
+
+**Page profil** — le bloc « À propos » d'une organisation (`profile-parent62-about`, remplace `profile-about-ssbe`
+qui affichait les champs SSBE vides sur parent62) montre désormais TOUS les attributs du formulaire non couverts
+par `profile-info`/`profile-opening-hours` : catégorie thématique, type d'action, **public cible**, réseaux sociaux
+(liens cliquables), accès/stationnement, mise à disposition de ressources, interlocuteur privilégié, remarques, et
+les documents attachés (même source que `profile-documents`/`getGalleryFiles`, rendus en carte à côté de
+l'interlocuteur plutôt qu'en section séparée). Bandeaux dégradés `var(--primary)`/`var(--accent)` du thème
+parent62 (pas `--card-header-gradient`, token bespoke absent de ce site). `profile-opening-hours` déplacé en
+colonne de droite, à côté des coordonnées.
+
+**Formulaire d'édition** — nouveau costumForm `parent62-acteur` (édition complète des 38 fiches depuis la page
+profil), construit à 100 % sur des codecs déjà partagés (zéro code) : `address:read/write`, `telephone:read/write`
+(groupe `_telSlot`/`_telRest`, déjà prouvé sur SSBE/cyber-reunion), `social:read/write` (widget `fieldArray`),
+widget natif `openingHours`, widget `file` pour les documents (`contentKey:"file"`, même bucket que la section
+profil générique). Routé via `profiles.organizations.editModals` : route `edit-parent62-acteur` AJOUTÉE AVANT
+`edit-parent62-partenaire`, condition `sourceKeys contient "youthCare"` — seules les 38 fiches importées basculent
+sur ce formulaire, `parent62-partenaire` reste inchangé pour les soumissions via `/annuaire`.
+
+**Correctif admin — colonnes custom invisibles (INFORESO, Ressources)** — bug trouvé en vérifiant le signalement
+« la colonne Année ne s'affiche pas » sur `/admin` → onglet INFORESO : une section admin `type:"resource"` SANS
+`status` ni action `validate` passe en « mode public » (`AdminResourceTable.tsx`), qui projette UNIQUEMENT
+`["source","reference"]` + `source.defaultFields` — tout champ costum hors de ce socle (ex. `annee`) est strippé
+par le backend, en silence ; seuls les champs du socle légacy (`name`, `created`…) survivent, ce qui masquait le
+bug (les autres colonnes affichaient bien leurs valeurs). **Même bug trouvé sur l'onglet « Ressources »**
+(colonne « Type » / champ `category`). Correctif : `source.defaultFields:["annee"]` / `["category"]` sur les deux
+sections — mécanisme déjà prévu par le code, juste non utilisé. **Piège réutilisable** pour toute future section
+admin `resource` sans validation qui affiche un champ costum hors du socle légacy.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `config:validate` | ✅ 52 pages · 183 sections |
+| `audit:config` | ✅ RAS |
+| `config:render` | ✅ 52/52 pages, 183/183 sections avec contenu SSR |
+| `test:unit` (suite complète) | ✅ 5 825/5 828 passés, 1 skip — 2 échecs **pré-existants et sans rapport** (`bundle-size`, dette connue) |
+| `tests/preflight/costum-forms.test.ts` | ✅ 73/73 — toutes les clés de codec du nouveau form résolues |
+| `tests/preflight/archetypes.test.ts` | ✅ (resynchronisé : `examples/admin.json` avait dérivé du correctif `defaultFields`) |
+
+### 9septquadragies.2 Documents attachés, hors `about.files`
+
+Une image/un dépliant d'une fiche peut être rattaché via `contentKey` plutôt que dans `about.files` (ex.
+`"presentation"`, cf. §9septquadragies.5) : visible sur la page profil (`ProfileParent62About`, lecture
+directe de `serverData.images`), et depuis le 14/10 également éditable dans le formulaire via le champ
+`galeriePresentation` (§9septquadragies.6).
+
+### 9septquadragies.3 `typeObj` de l'acteur — sous-type costum dédié
+
+Un sous-type costum **séparé** `costum.typeObj.acteur` (`sameAs:"organizations"`) porte les 8 champs
+spécifiques (`categoryThematic`/`typeAction`/`publicCible`/`accessibility`/`provisionResources`/`contact`/
+`note`/`socialNetwork`) — pas fusionné dans le typeObj `organizations` existant des Partenaires. En
+édition, le SDK choisit le sous-type via `serverData.type` (seul levier, `BaseEntity.ts`) : `type` est
+donc le **discriminant pur** de ce sous-type (`"acteur"`) sur les fiches acteurs, et ne porte plus la
+nature juridique de structure (NGO/Collectivité/Établissement/Entreprise) comme sur `parent62-partenaire`
+— le sélecteur « Type de structure » est donc absent du formulaire `parent62-acteur` et de son affichage.
+
+
+### 9septquadragies.5 Images « presentation »
+
+`contentKey:"presentation"` (collection `documents`, séparée de `organizations` — assemblée à la lecture
+par le backend, jointe par `{type:"organizations", id:<_id>}`) : affichées sur la fiche profil publique
+(`toPresentationDocs`/`ProfileParent62About.tsx`, lit `serverData.images` directement, code
+site-spécifique sans dépendance moteur) et éditables depuis le formulaire via `galeriePresentation`
+(§9septquadragies.6). Pour tout nouvel ajout (image ou document), le champ « Documents » du formulaire
+accepte déjà les images (`widgetProps.accept` élargi, config seule).
+
+### 9septquadragies.6 Galerie « Images de présentation » + différenciation `/annuaire` vs `/annuaire-acteurs-parentalite`
+
+**Galerie en édition** (zéro moteur) : champ `galeriePresentation` (`widget:"gallery"`,
+`contentKey:"presentation"`, `renderOnly:true`) sur `parent62-acteur` — même mécanisme que
+`parent62-article` (`contentKey:"slider"`) et d'autres sites (tiers-lieux, institut-bleu, saint-paul-sport,
+federationDesCae).
+
+**Différenciation des deux annuaires** — `/annuaire` (Partenaires) et `/annuaire-acteurs-parentalite`
+(Acteurs) sont distingués par un tag, **jamais** par `type` ou `source.key` (tous deux non fiables sur les
+fiches importées et/ou dépendants d'une donnée de lot de test) :
+- `/annuaire` : `baseParams.defaultTags:["Partenaires"]`. Tag posé par `mutation.stamps` sur
+  `parent62-partenaire` (`{field:"tags", value:"Partenaires", op:"append", on:"both"}` — moteur déjà
+  partagé, cf. tiers-lieux `mainTag`/`compagnon`), réaffirmé à CHAQUE sauvegarde (create ET edit).
+  `defaultTags` est un scope de base invisible (même mécanisme que le bandeau « À la une » de l'accueil),
+  pas un filtre interactif retirable.
+- `/annuaire-acteurs-parentalite` : `defaultFilters:{"tags":{"$nin":["Partenaires"]}}` — Acteur = défaut
+  (absence du tag).
+- Seul « DEMAIN » existe comme Partenaire en base locale (fiche visiblement de test) — pas retaguée
+  automatiquement, à trancher avec l'équipe lors d'une vraie soumission.
+
+`/recherche` (cible « Structures & partenaires ») reste volontairement sans filtre dédié (confirmé avec
+l'équipe).
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `stamps.test.ts` (moteur partagé, non modifié) | ✅ 20/20 |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+
+### 9septquadragies.7 Deux correctifs trouvés en relecture avant merge
+
+- **`email` optionnel rejeté à la création** (`ApiValidationError … /email must be a valid email address`,
+  reproduit sur « Ajouter un partenaire ») : le schéma AJV `ADD_ORGANIZATION` (`common3`, côté SDK) exige
+  `format:"email"` SANS passe-droit pour `""`, contrairement à `url`/`tags` qui en ont un. `email` sur
+  `parent62-partenaire`/`parent62-acteur` est optionnel et sans codec `write` : laissé vide, le pipeline
+  générique émettait `email:""`, rejeté par l'AJV. Isolé en rejouant le schéma réel du SDK
+  (`cocolight-api-client/src/endpoints.module.ts`) avec Ajv en local, hors navigateur. **Correctif**,
+  config seule, déjà en usage (`rezo-sante-acteur`/`rezo-sante-lieu`) : `"write": "omitEmpty"` sur les deux
+  champs `email` — omet la clé plutôt que d'envoyer `""`.
+- **« Ajouter une organisation » depuis un profil citoyen ouvrait le formulaire Communecter générique**,
+  pas `parent62-partenaire` : deux `costumForms` d'`entityType:"organizations"` existent désormais
+  (`parent62-partenaire` et `parent62-acteur`, §9septquadragies.3), et le résolveur
+  (`siteCostumAddModal`/`costumCreateKey`, `addModals.ts`) rend `null` dès qu'il y a plusieurs candidats
+  pour une collection — « on ne choisit pas à la place du site » — donc `profiles.citoyens.addConfig.
+  organization:true` retombait sur `add-organization`. Un parent référençant sa structure depuis son
+  profil la créait donc sans `categoryThematic`/tag `Partenaires`/scope `parent62` — invisible dans les
+  deux annuaires. **Correctif**, config seule, patron déjà utilisé par `institut-bleu` (2 formulaires
+  `poi` pour la même raison) : `organization:false` + une entrée `addConfig.custom` ciblant explicitement
+  `modalKey:"add-parent62-partenaire"` (label, icône `handshake`, `condition:{auth:"required",
+  userContext:"own"}`). Fixture de garde `tests/preflight/__effective__/parent62.json` régénérée
+  (`vitest -u`) : `addMenus.citoyens.builtins.organization` disparaît, `customs:["add-parent62-
+  partenaire"]` apparaît.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `tests/preflight/` (hors `bundle-size.test.ts`, échec préexistant sans rapport) | ✅ 822/823 |
+| `stamps.test.ts` (sentinelle d'inventaire, mise à jour : `parent62/parent62-partenaire:1`) | ✅ |
+
+### 9septquadragies.8 Routage d'édition par tag, indépendant de `source.key`
+
+Le réimport à venir des organisations acteurs posera `source.key:"parent62"` (fin de l'usage de
+`"youthCare"`, clé de lot de test). `profiles.organizations.editModals` route donc sur le tag, pas sur une
+clé de source :
+- `edit-parent62-acteur` : `NOT(tags contains "Partenaires") AND (scope parent62)`.
+- `edit-parent62-partenaire` : `scope parent62` (catch-all — implicitement les fiches taguées, puisque
+  l'acteur prend tout le reste en premier).
+
+Vue matchable (`entityMatchData`, `src/lib/entityMatch.ts`) expose déjà `tags` normalisé — aucun
+changement moteur nécessaire.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `tests/preflight/` (hors `bundle-size.test.ts`) | ✅ 822/823 |
+
+### 9septquadragies.9 Correctifs trouvés en relecture (annuaires, fiche profil, réseaux sociaux, header)
+
+- **Périmètre des deux annuaires** : confirmé côté backend (`SearchNew::getQueries`,
+  `communecter-dev`) que `$post["filters"]` est injecté dans `$query` AVANT `searchSourceKey`, qui
+  l'englobe ensuite dans un `$and` avec le `$or` dérivé du scope — le tag `"Partenaires"` (§9septquadragies.6)
+  filtre donc réellement les résultats côté serveur, pas seulement à l'affichage.
+- **Bloc « À propos » ne lisait que les champs du formulaire Acteur** : un Partenaire référencé via
+  `/annuaire` (champs `territoires`/`publics`/`themes`) ouvrait une fiche à cartes vides, sa saisie
+  n'apparaissant nulle part. Corrigé : le composant lit désormais le même tag `"Partenaires"` que le
+  routage d'édition et l'annuaire pour choisir le jeu de champs à afficher.
+- **Réseaux sociaux** : ne lisait que la forme imbriquée (`serverData.socialNetwork.*`), alors que les
+  organisations importées/« normales » les stockent à PLAT (`serverData.facebook`) — même distinction déjà
+  gérée par `ProfileTiersLieuxInfo.tsx`. Corrigé (lecture plate en priorité, repli sur l'imbriquée,
+  extrait en module testé `profileParent62Social.ts`) ; le rendu passe désormais par `SocialLinks`
+  (`footer/SocialLinks.tsx`, déjà partagé) via `NavLink`/`classifyHref`, au lieu d'un `<a href>` qui
+  préfixait `https://` même sur un identifiant sans URL (`@parent62` → `https://@parent62`).
+- **i18n** : la fiche était en français en dur (même choix que `ProfileSsbeAbout`) alors que la preview
+  de l'annuaire est bilingue. Ajout du namespace `ProfileParent62About` (`fr.json`/`en.json`) et bascule
+  sur `useT`.
+- **HeaderStacked (moteur, hors parent62)** : le conteneur du logo (`sm:h-auto sm:w-auto sm:aspect-square`,
+  hors flux) retombe à 0×0 dès `sm:` si ni `logoTitle` ni `logoSubtitle` n'est déclaré — rien d'autre dans
+  la rangée grid pour la dimensionner. Parent62 (seul site sur ce header) déclare les deux, donc non
+  visible ici ; plancher `sm:min-h-11 sm:min-w-11` ajouté par prudence pour tout futur site qui adopterait
+  ce header sans les deux textes.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `profileParent62Social.test.ts` (nouveau) | ✅ 6/6 |
+| `tests/preflight/` (hors `bundle-size.test.ts`) | ✅ 822/823, parité i18n fr/en incluse |
+
+### 9septquadragies.10 `/annuaire` : détail en tiroir (droite), cohérent avec `/annuaire-acteurs-parentalite`
+
+`list.card.detailsMode` passe de `"dialog"` (modale centrée) à `"drawer"` (tiroir, sens par défaut
+`"right"` de `CustomDrawer.tsx`) sur `/annuaire` — aligné sur `/annuaire-acteurs-parentalite`, qui
+l'utilisait déjà.
+
+**Vérification complète avant commit** (checklist standards du lead, portes chiffrées) :
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` (`eslint -f json` sur les fichiers du lot) | ✅ 0 erreur |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `test:unit` complet, RAM chiffrée (`NODE_OPTIONS=--max-old-space-size=4096 --maxWorkers=2`, machine à 7,5 Go) | ✅ 6070/6072 (1 skip) — seul `bundle-size.test.ts` en échec, préexistant/sans rapport |
+| `test:integration` (`SITE_CONFIG_PATH=./config.prod.parent62.json`, même garde RAM) | ✅ 1041/1043 — 1 timeout `/annuaire` (20s) sous charge mémoire, **rejoué isolément : 6/6 vert** (confirmé transitoire, pas une régression) ; + `bundle-size.test.ts` |
+| `config:render config.prod.parent62.json` | ✅ 52/52 pages, 183/183 sections, 0 échec |
+| `test:e2e` | non rejouable sur ce poste (`.env.test` absent, pas d'identifiants backend réels) — limite d'environnement déjà connue, pas une régression de ce lot |
+
+### 9septquadragies.11 Nettoyage de relecture (non bloquant)
+
+- `ProfileParent62About.tsx` recopiait localement `toStringArray` au lieu d'utiliser le helper
+  partagé `src/helpers/toStringArray.ts` — celui-ci lit aussi les deux formes OBJET que le legacy
+  renvoie pour un champ multi-valeurs (tableau PHP à index non contigus, dictionnaire de présence),
+  la copie locale rendait `[]` dessus (« Non renseigné » affiché alors que les filtres voient les
+  valeurs). Supprimée, import du helper partagé.
+- Commentaire de `ProfileParent62AboutSectionSchema` (`schema.ts`) périmé : citait encore
+  `costumForms.parent62-partenaire` seul et « type de structure, thèmes, territoires, publics »
+  (sélecteur de type retiré depuis, champs réels différents côté acteur). Réécrit pour refléter les
+  deux `costumForms` distingués par tag.
+- `doc/08-module-profil.md` : table des sections de profil ne listait pas `profile-parent62-about`
+  et le compteur était resté à 21 au lieu de 22. Ajoutés.
+- `TYPE_LABELS` (doublon de l'enum du formulaire) signalé en relecture : déjà absent du code, retiré
+  dans un lot antérieur de cette session (sélecteur « Type de structure » supprimé avec le reste de
+  la carte, §9septquadragies.3) — rien à faire.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| Tests ciblés (`ProfileParent62About`/`profileParent62Social`/`profileParent62Documents`, `toStringArray`) | ✅ 31/31 |
+| `tests/preflight/` (hors `bundle-size.test.ts`) | ✅ 822/823 |
+
+**Hors parent62, trouvé dans la même relecture** : `PreviewTestimonialBubble.tsx` (module `search`,
+preview « parole de parent ») — le bouton « agrandir l'image » devenait le premier focusable du
+dialogue Radix à l'ouverture (annoncé avant le titre, Entrée ouvrait la lightbox par-dessus). Corrigé
+par `tabIndex={-1}`, régression testée (`PreviewTestimonialBubble.test.tsx`).
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -3931,19 +4504,19 @@ vert (32 px, contre 16) que la ligne points + bouton au-dessus de son bord bas. 
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies). **09/09** : boutons **Modifier / Supprimer** sur la fiche `/blog/:slug`, gardés par `canEditProfile` (admin du costum ou auteur) et réutilisant la modale `edit-parent62-article` déjà en place — hérité par les **4 sites** déclarant une page `/blog`, à charge pour eux de router leur propre `editModals` (§9sexvicies.2). **17/09** : types **« À la une »** et **« Zoom sur le réseau »**, type en **choix multiple** ; le mot-clé suit désormais le type (codecs à la place du stamp) ; section d'accueil « Zoom sur le réseau » filtrée sur `Zoom` ; territoires/publics/thèmes facultatifs (§9octovicies.3-4). **22/09** : filtre **« Villes »** sur `/blog` (33 villes du survol des territoires, **23/09** : sur la ville de l'adresse) et champ adresse du formulaire (§9octotricies.1, §9novotricies) |
+| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies). **09/09** : boutons **Modifier / Supprimer** sur la fiche `/blog/:slug`, gardés par `canEditProfile` (admin du costum ou auteur) et réutilisant la modale `edit-parent62-article` déjà en place — hérité par les **4 sites** déclarant une page `/blog`, à charge pour eux de router leur propre `editModals` (§9sexvicies.2). **17/09** : types **« À la une »** et **« Zoom sur le réseau »**, type en **choix multiple** ; le mot-clé suit désormais le type (codecs à la place du stamp) ; section d'accueil « Zoom sur le réseau » filtrée sur `Zoom` ; territoires/publics/thèmes facultatifs (§9octovicies.3-4). **22/09** : filtre **« Villes »** sur `/blog` (33 villes du survol des territoires, **23/09** : sur la ville de l'adresse) et champ adresse du formulaire (§9octotricies.1, §9novotricies). **30/09** : les 33 fils passent en **pagination numérotée** (12/page) au lieu du scroll infini, réglée une seule fois via `config.blog.defaultPagination` (§9tresquadragies) |
 | 2.2 | Actualités filtrables dans le moteur de recherche | ✅ *(était ✅ config, 🟡 UX)* | cible `searchTargets` « Actualités » (`type:article`) dans `/recherche` + filtres territoire/public/thème/dates. **25/07 — UX unifiée** : une actualité de `/recherche` rend une carte dédiée et son clic ouvre le **reader canonique** `/blog/:slug` (repli `/blog/id/:id`), plus un drawer générique |
 | 2.3 | Module événementiel (agenda) + affichage territoire | 🟡 *(diagnostiqué le 14-19/08)* | module agenda complet (calendrier + liste, filtre territoire) ; testé avec des **événements de test locaux** (dev, pas de la production — cf. §9sexies), a révélé 3 bugs backend, **tous corrigés** (§9sexies.1) ; **0 donnée `events` en production, toujours à confirmer** ; pas de carte agenda (`enableMap:false`) |
-| 2.4 | Impression de l'agenda | ❌ | **aucun code print** (`@media print`/`window.print`) — à faire (CSS print ou export iCal/PDF) |
+| 2.4 | Impression de l'agenda | ✅ *(code prêt, non activé)* | export PDF via le SDK (`endpointApi.agendaGetPdf`, SDK ≥ 1.0.196), bouton opt-in `agenda.showPdfExport` (défaut `false`, vérifié en direct avec l'option forcée à `true` puis retirée — §9quinquadragies) — à activer sur `/agenda` quand souhaité |
 | 2.5 | Événements récurrents | ✅ *(était « config+code, non observable » le 24/07)* | `parent62-event` : `recurrency` + `openingHours` + `eventDates` + codecs/validators + calendrier « récurrents dépliés ». **Testé le 14-19/08 avec des événements de test locaux (dev, pas la production)** — a révélé 3 bugs backend dans `AgendaAction.php`, **tous corrigés** : matching par jour de semaine, mode LISTE excluant les récurrents, occurrence du jour en cours jamais renvoyée / onglet « En cours ». Front `site-json` entièrement corrigé et testé (899/899) — cf. §9sexies et les 2 documents de spécification à la racine du monorepo |
 | 2.6 | Ajout partenaires + **modération a priori** | ✅ *(était ❌, confirmé le 19/08)* | bouton public `requiresAdmin:false`, form injecte `preferences.toBeValidated:true`, onglet admin Agenda `validate` + « Proposé le ». `searchEventsCostum` masque bien les events *pending* côté public — confirmé (cf. §9sexies, §12) |
-| 2.7 | Annuaire partenaires (référencement + cartographie) | ✅ *(était 🟡)* | cible `searchTargets` « Structures & partenaires » (`organizations`) + carte + templates profils ; **25/07** : règle de rendu dédiée (`image-cover`, `imageFit:"contain"` pour des logos hétérogènes) ; **22/09** : page **`/annuaire`** (filtres territoire / type / public / thèmes, vue carte), formulaire `parent62-partenaire` modéré (dispense pour les admins du site), onglet admin « Partenaires » ; page « La communauté » retirée (§9octotricies.2). **0 organisation rattachée** à la livraison |
+| 2.7 | Annuaire partenaires (référencement + cartographie) | ✅ *(était 🟡)* | cible `searchTargets` « Structures & partenaires » (`organizations`) + carte + templates profils ; **25/07** : règle de rendu dédiée (`image-cover`, `imageFit:"contain"` pour des logos hétérogènes) ; **22/09** : page **`/annuaire`** (filtres territoire / type / public / thèmes, vue carte), formulaire `parent62-partenaire` modéré (dispense pour les admins du site), onglet admin « Partenaires » ; page « La communauté » retirée (§9octotricies.2). **0 organisation rattachée** à la livraison. **13/10** : page **`/annuaire-acteurs-parentalite`** distincte, 38 organisations importées (`source.key:"youthCare"`), preview et fiche profil sur les vrais champs du formulaire, formulaire d'édition dédié `parent62-acteur` (§9septquadragies) |
 
 ### Partie 3 (2 000 €) — statuts revus par l'audit du 24/07
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 3.1 | Module ressources (POI `recoveryCenter`) | 🟡 | `/ressources` + form `parent62-recovery-center` (catégories Vidéo/Photo/Compte-rendu/Doc/Lien, **02/09 : + Inforéso et Elles et ils ont marqué le réseau ; « Jeu » remplacé par « Les jeux du réseau »** — formulaire, filtre « Type » et pastilles de carte ; galerie/docs). **À vérifier en base** : les POI déjà enregistrés en `category: "Jeu"` ne sont pas migrés et sortent du filtre « Type ». **Données observées le 25/07** : `/ressources` affiche « Toutes les ressources (**4**) » — la mention « 0 donnée » du 24/07 est caduque. Création **admin-only** (pas de bouton public → le « formulaire simple partenaire » du CDC n'est pas exposé). **17/09** : **INFORESO** (`/inforeso`, POI `doc`, par année) et **« Elles et ils ont marqué le réseau »** (annuaire, POI `intervenant`) passent en **pages dédiées** avec formulaire et onglet `/admin` ; saisie des fiches à faire, prérequis prod en §9octovicies.6 |
+| 3.1 | Module ressources (POI `recoveryCenter`) | 🟡 | `/ressources` + form `parent62-recovery-center` (catégories Vidéo/Photo/Compte-rendu/Doc/Lien, **02/09 : + Inforéso et Elles et ils ont marqué le réseau ; « Jeu » remplacé par « Les jeux du réseau »** — formulaire, filtre « Type » et pastilles de carte ; galerie/docs). **À vérifier en base** : les POI déjà enregistrés en `category: "Jeu"` ne sont pas migrés et sortent du filtre « Type ». **Données observées le 25/07** : `/ressources` affiche « Toutes les ressources (**4**) » — la mention « 0 donnée » du 24/07 est caduque. Création **admin-only** (pas de bouton public → le « formulaire simple partenaire » du CDC n'est pas exposé). **17/09** : **INFORESO** (`/inforeso`, POI `doc`, par année) et **« Elles et ils ont marqué le réseau »** (annuaire, POI `intervenant`) passent en **pages dédiées** avec formulaire et onglet `/admin` ; saisie des fiches à faire, prérequis prod en §9octovicies.6. **13/10** : colonnes admin « Année » (INFORESO) et « Type » (Ressources) ne s'affichaient pas — `source.defaultFields` manquant sur les deux sections (§9septquadragies) |
 | 3.2 | Recherche dans les ressources (territoire/**ville**) | 🟡 *(était ✅ config)* | `/ressources` filtre `category` + `territoires` + public/thème + `searchBy:[name,description]` ; **23/09** : filtre « Commune » retiré, le filtre par ville étant réservé aux actualités (§9novotricies). **25/07** : les ressources sont aussi atteignables depuis `/recherche` (cible « Ressources » + règle de rendu dédiée) |
 | 3.3 | Votes « utile » / contributeurs | ❌ | pas de vote sur les ressources (`ADD_VOTE`/`links` à câbler + UI card) ; les votes n'existent que sur le fil news social |
 
@@ -4044,6 +4617,11 @@ attendue par le test parole ; périmètre `prepData`/`validategroup`.
 - ~~**`tests/preflight/archetypes.test.ts` rouge** (25/08, §9octies.4)~~ : **corrigé le 25/08**
   (§9novies) — resynchronisé, avec 3 autres exemples qui avaient aussi dérivé du dédoublonnage
   territoire « Familles en sol mineur » (§9quinquies).
+- **Section admin `resource` sans `status` ni action `validate` → projection réduite à
+  `["source","reference"]`** (13/10, §9septquadragies) : toute colonne ciblant un champ costum hors du
+  socle légacy (`name`/`created`/`address`…) reste invisible sans `source.defaultFields` explicite —
+  mécanisme prévu par `AdminResourceTable.tsx` mais facile à oublier à la création d'une section. À
+  vérifier systématiquement pour toute nouvelle section admin de ce type.
 
 ---
 
@@ -4065,13 +4643,14 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | **[03/09] Réunions publiées sans modération** — `parent62-reunion` n'injecte pas `preferences.toBeValidated` (sinon la porte `costumSlug` du volet masquerait la réunion à l'admin qui vient de la créer). Acceptable puisque le formulaire n'est atteignable que depuis `/admin` ; à revoir si un bouton public devait un jour l'ouvrir | Peterson |
 | **[03/09] `/agenda` doit-il montrer les réunions de comité ?** — il filtre `type:"others"` : les `meeting` n'y remonteront pas. Élargir à `{"type":{"$in":["others","meeting"]}}` (1 ligne de config) ou garder l'agenda public strictement « événements » ? | réseau / Peterson |
 | **[03/09] Ressources par territoire** — le volet n'affiche que des fiches `recoveryCenter` portant le `territoires` de la page : saisie/import à planifier territoire par territoire. Les 11 liens WordPress/GoGoCarto retirés des pages (archivés en §9novodecies.2) sont les premiers candidats à une ressaisie en fiches ressource, category *Lien* | réseau |
-| **Impression de l'agenda** (2.4) — non implémentée (CSS print ou export iCal/PDF) | Peterson |
 | **Alias `reseau.parent62.org` dans `sites.json`** (champ `aliases`) pour que `deploy:env` dérive `VITE_SITE_PUBLIC_URL` correctement — aujourd'hui l'entrée `parent62` n'a que `domain: parent62.00.re` (§8.5) | Peterson / Thomas |
 | **Âges dans `/recherche`** (1.5) — la liste `ages` existe (form + `/temoignages`), l'ajouter au groupe de filtres `/recherche` | Peterson |
 | **Votes « utile » + contributeurs** des ressources (3.3) — câbler `ADD_VOTE`/`links` + UI card | Peterson / Thomas |
 | **Transcription / sous-titres des paroles** (1.6) — champ dédié à ajouter au form + affichage | Peterson / réseau |
 | **Masquage public des events *pending*** (2.6) — `searchEventsCostum` applique-t-il un gate `toBeValidated` ? sinon à faire côté backend | Thomas |
 | **`typeObj` de production** (2.7) — déclarer sur le costum parent62 de production `typeObj.organizations` (`territoires`, `publics`, `themes`) comme en base locale (§9octotricies) | Thomas / backend |
+| **`typeObj.acteur` de production** — créé et appliqué en LOCAL uniquement (cf. §9septquadragies.3) ; reste à reporter sur la base de PRODUCTION (même opération) avant toute édition réelle en prod | Thomas / backend |
+| **Republication SDK (`costum-extensions.json`)** — aucune entrée `organizations` pour `parent62` dans l'artefact vendu (généré 03/09, périmé) ; le scanner backend qui le produit (`tools/parity/scripts/costum-fields.mjs`) est hors d'atteinte depuis ce poste. Nécessaire pour que l'édition des champs costum de `parent62-acteur` soit fiable en PRODUCTION (sans dépendre de `VITE_COSTUM_FORCE_LIVE`, local uniquement) | backend / Thomas |
 | **Données P2/P3** — relevé du 25/07 : 3 paroles, 4 ressources ; events et organisations à confirmer. Volumétrie réelle à créer/importer | réseau / Thomas |
 | **Géolocalisation** — aucune donnée ne porte de coordonnées : la vue carte de `/recherche` est vide et le `colorBy` par territoire est invérifiable | réseau / Thomas |
 | Borne de fin des dates (`$lt`/`$lte`) dans `SearchNew::getQueries` | Thomas / backend |

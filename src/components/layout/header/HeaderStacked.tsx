@@ -12,10 +12,10 @@ import MobileMenuBrand from "./MobileMenuBrand";
 import MobileNavItems from "./MobileNavItems";
 import NavIcon from "./NavIcon";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
-import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 import { useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
 import { useVisibilityList } from "@/lib/visibility/useVisibility";
 import { cn } from "@/lib/utils";
@@ -31,9 +31,6 @@ interface HeaderStackedProps {
 // les rendait invisibles en mode CLAIR sur le fond sombre.
 // Thème : icône seule → blanc fixe dans les deux modes (même teinte que LangSwitch).
 const THEME_BTN = "text-white/90 hover:text-white hover:bg-white/10 dark:hover:bg-white/10";
-// Recherche : seul l'état icône seule (<md) est concerné — au-delà, le champ
-// « Ctrl+K » garde son propre fond clair et reste lisible tel quel.
-const SEARCH_BTN = "max-md:text-white/90 max-md:hover:text-white";
 
 /**
  * Header 2 étages sur fond image : un bandeau wordmark (logo + titre/sous-titre)
@@ -77,18 +74,26 @@ const PLANCHER_BANDEAU = {
 } as const;
 
 /**
- * Taille de la marque (logo + wordmark) à partir de `xl:`, même clé que le plancher.
+ * Taille de la marque (wordmark) à partir de `xl:`, même clé que le plancher. Le LOGO n'a pas de
+ * HAUTEUR de rendu ici : il s'aligne tout seul sur la hauteur du bloc titre+sous-titre voisin (CSS
+ * Grid + `items-stretch`, cf. plus bas) — un plafond de taille en dur aurait fini par diverger du
+ * wordmark qu'il doit accompagner, à chaque changement de preset ou de longueur de sous-titre.
+ * `px` reste : c'est la résolution SOURCE demandée à `/img` (optimisation), volontairement bien
+ * AU-DESSUS de toute hauteur de rendu réaliste pour ce preset (×2 par le srcSet 2x déjà) — sinon le
+ * logo est servi plus petit qu'affiché et l'agrandissement CSS le floute (mesuré : 80px demandés,
+ * rendu jusqu'à 132px).
  *
  * Le plancher SEUL ne réduit rien : la hauteur du bandeau vaut `max(plancher, contenu)`, et à
  * `xl:h-40` + wordmark `text-7xl` le contenu mesure ~290px — il dépassait donc un plancher à 25vh
  * (225px sur un écran de 900) et le bandeau restait à 32% de l'écran. Demander un bandeau plus court
- * implique une marque plus petite ; les deux se règlent d'un seul cran.
+ * implique un wordmark plus petit (donc un logo plus petit, qui en découle) ; les deux se règlent
+ * d'un seul cran.
  * Mobile/tablette inchangés (classes `sm:` communes) : là, le bandeau suit déjà son contenu.
  */
 const MARQUE_BANDEAU = {
-  sm: { logo: "xl:h-20 xl:w-20", wordmark: "xl:text-4xl xl:mb-1", sous: "xl:text-lg", mt: "xl:mt-1", gap: "xl:gap-7", px: 80 },
-  md: { logo: "xl:h-32 xl:w-32", wordmark: "xl:text-6xl xl:mb-2", sous: "xl:text-2xl", mt: "xl:mt-2", gap: "xl:gap-10", px: 128 },
-  lg: { logo: "xl:h-40 xl:w-40", wordmark: "xl:text-7xl xl:mb-3", sous: "xl:text-3xl", mt: "xl:mt-3", gap: "xl:gap-12", px: 160 },
+  sm: { wordmark: "xl:text-4xl xl:mb-1", sous: "xl:text-lg", mt: "xl:mt-1", gap: "xl:gap-7", px: 200 },
+  md: { wordmark: "xl:text-6xl xl:mb-2", sous: "xl:text-2xl", mt: "xl:mt-2", gap: "xl:gap-10", px: 260 },
+  lg: { wordmark: "xl:text-7xl xl:mb-3", sous: "xl:text-3xl", mt: "xl:mt-3", gap: "xl:gap-12", px: 340 },
 } as const;
 
 export default function HeaderStacked({ header }: HeaderStackedProps) {
@@ -115,7 +120,12 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
   const marque = MARQUE_BANDEAU[header.height ?? "md"];
 
   const navVisibility = useVisibilityList(header.nav.map((item) => item.visibility));
-  const navItemsToDisplay = header.nav.filter((_, idx) => navVisibility[idx]);
+  const visibleNavItems = header.nav.filter((_, idx) => navVisibility[idx]);
+  // `placement: "actions"` sort l'entrée du menu centré (barre desktop du header `stacked` UNIQUEMENT,
+  // le menu mobile garde la liste complète — cf. `EnhancedNavItemType.placement`) pour la poser dans le
+  // groupe d'actions de droite, à la place d'un bouton de header (la loupe qui remplace « Ctrl+K »).
+  const navItemsToDisplay = visibleNavItems.filter((item) => item.placement !== "actions");
+  const actionNavItems = visibleNavItems.filter((item) => item.placement === "actions");
 
   // Fond partagé bandeau/barre. `bg-neutral-800` SOUS l'image : l'image peut avoir
   // un canal alpha partiellement transparent (cf. bug du texte fantôme) — les
@@ -153,15 +163,44 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
             superpose au bas du bandeau + une fine respiration — le wordmark ne
             passe jamais sous la barre. */}
         <div className={`relative flex flex-col items-center justify-center px-4 pt-4 pb-16 ${PLANCHER_BANDEAU[header.height ?? "md"]}`}>
-          <NavLink to={header.path || "/"} className={`flex flex-col sm:flex-row items-center gap-3 sm:gap-5 ${marque.gap} text-center sm:text-left cursor-pointer group`}>
-            <HeaderLogo
-              header={header}
-              isOverlay
-              iconTone="white"
-              imageClassName={`h-11 w-11 sm:h-12 sm:w-12 ${marque.logo} shrink-0 object-contain transition-transform group-hover:scale-110`}
-              iconClassName={`w-11 h-11 sm:w-12 sm:h-12 ${marque.logo} shrink-0 transition-transform group-hover:scale-110`}
-              imageHeight={marque.px}
-            />
+          {/* `sm:grid` (au lieu de `flex`) : à partir de `sm:` (logo et titre/sous-titre en ligne), le
+              logo doit REMPLIR la hauteur de la rangée au lieu d'être centré à sa taille naturelle —
+              `items-stretch` + `aspect-square` sur l'image y suffisent EN GRID, pas en FLEX : en flex,
+              la largeur `auto` d'un item étiré sur l'axe croisé ne se recalcule PAS depuis son
+              `aspect-ratio` (elle reste celle du flex-basis posé AVANT l'étirement — mesuré : logo
+              carré étiré en 80×132, pas 132×132, avec `h-auto`/`w-auto`/`aspect-square` pourtant posés).
+              Le modèle de piste de CSS Grid, lui, résout largeur ET hauteur ENSEMBLE pour un item
+              étiré avec ratio déclaré — d'où `grid-cols-[auto_1fr]` (colonne logo à sa largeur de
+              contenu, colonne texte au reste).
+              ⚠️ L'IMAGE elle-même ne doit PAS être l'item grid direct : son `min-height`/`min-width`
+              implicites valent par défaut sa taille INTRINSÈQUE (`auto`), qui participe au calcul de
+              hauteur de la rangée — en demandant un logo source plus grand pour la netteté
+              (`marque.px`, cf. plus bas, nécessaire pour ne pas re-flouter un agrandissement CSS), sa
+              taille intrinsèque dépassait celle du bloc titre+sous-titre et GONFLAIT toute la rangée à
+              sa propre taille au lieu de s'aligner sur elle (mesuré : rangée et logo à 200px au lieu
+              des 132px du texte ; `min-h-0`/`min-w-0` SEULS sur l'image n'y suffisent pas — la piste
+              `auto` de la rangée reste sensible à la taille MAX-CONTENT de l'image). D'où le
+              conteneur : lui seul est l'item grid (`sm:aspect-square sm:h-auto`, SANS contenu normal
+              pour ne rien imposer), l'image y est `absolute inset-0` — sortie du flux, elle ne
+              contribue plus du tout à la taille du conteneur, qui peut alors s'étirer librement sur la
+              hauteur du texte voisin. Logo carré comme ailleurs dans ce header (vignette compacte
+              `h-11 w-11` ci-dessous) : à revoir si un site au logo non carré adopte un jour ce header.
+              Mobile (`flex-col`) inchangé : centré, pas de rangée à égaler.
+              `sm:min-h-11 sm:min-w-11` : sans `logoTitle` NI `logoSubtitle` (le bloc voisin ne rend
+              alors rien), la piste grid `auto` n'a plus aucun contenu en flux pour se dimensionner —
+              le conteneur logo (lui-même hors flux, cf. plus haut) retombe à 0×0 dès `sm:`. Plancher au
+              même gabarit que la vignette mobile, jamais atteint tant qu'un des deux textes est présent. */}
+          <NavLink to={header.path || "/"} className={`flex flex-col sm:grid sm:grid-cols-[auto_1fr] items-center sm:items-stretch gap-3 sm:gap-5 ${marque.gap} text-center sm:text-left cursor-pointer group`}>
+            <div className="relative h-11 w-11 sm:h-auto sm:w-auto sm:aspect-square sm:min-h-11 sm:min-w-11 shrink-0">
+              <HeaderLogo
+                header={header}
+                isOverlay
+                iconTone="white"
+                imageClassName="absolute inset-0 h-full w-full object-contain transition-transform group-hover:scale-110"
+                iconClassName="absolute inset-0 h-full w-full transition-transform group-hover:scale-110"
+                imageHeight={marque.px}
+              />
+            </div>
             {(header.logoTitle || header.logoSubtitle) && (
               <span className="flex flex-col items-center sm:items-start leading-tight">
                 {header.logoTitle && (
@@ -224,7 +263,13 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
         </div>
 
         <div className="relative mx-auto max-w-[100rem] px-4">
-          <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4 h-14">
+          {/* `1fr_auto_1fr` (et non `auto_1fr_auto`) : les deux colonnes de FLANC sont de MÊME largeur,
+              quel que soit le contenu qu'elles portent (logo à gauche, groupe d'actions à droite —
+              jamais la même largeur). Le menu (colonne du milieu, `auto`) se centre alors sur la BARRE
+              ENTIÈRE, comme le logo/titre du bandeau au-dessus (centré sur la page) — avec l'ancien
+              `auto_1fr_auto`, le menu ne se centrait que dans l'espace RESTANT après le logo, décalé
+              vers la gauche dès que le groupe d'actions était plus large que le logo (systématique). */}
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 h-14">
             {/* Colonne logo : toujours montée, sa largeur transitionne 0 → taille
                 réelle quand la barre se colle (un montage/démontage conditionnel
                 ferait sauter le nombre de colonnes de la grille, non animable). */}
@@ -232,15 +277,15 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
               to={header.path || "/"}
               className={cn(
                 "relative flex items-center shrink-0 overflow-hidden justify-self-start group transition-all duration-300 ease-out",
-                stuck ? "w-11 sm:w-13 opacity-100 scale-100" : "w-0 opacity-0 scale-75 pointer-events-none"
+                stuck ? "w-12 sm:w-14 opacity-100 scale-100" : "w-0 opacity-0 scale-75 pointer-events-none"
               )}
             >
               <HeaderLogo
                 header={header}
                 iconTone="white"
-                imageClassName="h-11 w-11 sm:h-13 sm:w-13 relative shrink-0 object-contain transition-transform group-hover:scale-110"
-                iconClassName="w-11 h-11 sm:w-13 sm:h-13 relative shrink-0 transition-transform group-hover:scale-110"
-                imageHeight={52}
+                imageClassName="h-12 w-12 sm:h-14 sm:w-14 relative shrink-0 object-contain transition-transform group-hover:scale-110"
+                iconClassName="w-12 h-12 sm:w-14 sm:h-14 relative shrink-0 transition-transform group-hover:scale-110"
+                imageHeight={56}
               />
             </NavLink>
 
@@ -302,7 +347,15 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
             <div className="flex items-center justify-end gap-2 justify-self-end">
             <div className="hidden xl:flex items-center gap-2">
               {header.utilities?.notifications && <NotificationBell />}
-              {header.utilities?.search && <CommandTriggerButton className={SEARCH_BTN} />}
+              {/* Entrées `placement: "actions"` (la loupe, à la place de l'ancien bouton « Ctrl+K ») :
+                  icône seule, blanc fixe comme le reste du groupe. */}
+              {actionNavItems.map((item, idx) => (
+                <Button key={idx} asChild variant="ghost" size="icon" className={THEME_BTN} title={t(item.label)}>
+                  <NavLink to={item.path ?? item.href} aria-label={t(item.label)}>
+                    <NavIcon icon={item.icon} className="size-5 shrink-0" />
+                  </NavLink>
+                </Button>
+              ))}
               {header.utilities?.themeSwitch !== false && (
                 <ClientOnly fallback={<div className="w-10 h-10" />}>
                   {() => <ToggleButtonTheme className={THEME_BTN} />}
@@ -326,13 +379,19 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
 
             <div className="xl:hidden flex items-center gap-2">
               {header.utilities?.notifications && <NotificationBell />}
-              {header.utilities?.search && <CommandTriggerButton className={SEARCH_BTN} />}
+              {actionNavItems.map((item, idx) => (
+                <Button key={idx} asChild variant="ghost" size="icon" className={THEME_BTN} title={t(item.label)}>
+                  <NavLink to={item.path ?? item.href} aria-label={t(item.label)}>
+                    <NavIcon icon={item.icon} className="size-5 shrink-0" />
+                  </NavLink>
+                </Button>
+              ))}
               {header.utilities?.themeSwitch !== false && (
                 <ClientOnly fallback={<div className="w-8 h-8" />}>
                   {() => <ToggleButtonTheme className={THEME_BTN} />}
                 </ClientOnly>
               )}
-              {navItemsToDisplay.length > 0 && (
+              {visibleNavItems.length > 0 && (
                 <MobileMenuSheet
                   breakpoint="xl"
                   triggerClassName="text-white/90 hover:text-white"
@@ -340,8 +399,10 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
                 >
                   {(close) => (
                     <>
+                      {/* Mobile : liste complète, `placement: "actions"` n'existe que pour la barre
+                          desktop — pas de groupe d'actions séparé dans le menu déroulant. */}
                       <MobileNavItems
-                        items={navItemsToDisplay}
+                        items={visibleNavItems}
                         display={header.mobileNavDisplay}
                         onNavigate={close}
                         isActive={isNavItemActive}

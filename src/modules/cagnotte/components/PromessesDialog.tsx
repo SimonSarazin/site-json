@@ -2,11 +2,13 @@ import {useState, useMemo, Suspense} from "react";
 import {lazy} from "vite-preload";
 import {CreditCard, Layers, UserCheck, ChevronDown, ChevronRight} from "lucide-react";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Pledge} from "@/modules/cagnotte/types";
 import {useT} from "@/hooks/useT";
 import {useLoadNamespace} from "@/hooks/useLoadNamespace";
-import {toNumber} from "@/modules/cagnotte/utils/dataTransform.ts";
+import {cn} from "@/lib/utils";
+import { montantARegler, totalARegler } from "@/modules/cagnotte/utils/commande";
+import { CagnottePaymentsPanel } from "./parts/CagnottePaymentsPanel";
 
 // Lazy-load : PledgePaymentPage tire @stripe/stripe-js + @stripe/react-stripe-js
 // par import statique. En lazy, Stripe n'est téléchargé qu'au passage réel
@@ -22,6 +24,7 @@ interface PromessesDialogProps {
 
 type GroupMode = "resource" | "financer";
 type DialogStep = "list" | "payment";
+type ListTab = "pledges" | "payments";
 
 export function PromessesDialog({
                                     open,
@@ -32,6 +35,8 @@ export function PromessesDialog({
     useLoadNamespace("modules/cagnotte");
     const t = useT("modules/cagnotte");                               
     const [step, setStep] = useState<DialogStep>("list");
+    // Sans promesse à régler, la modale s'ouvre sur les paiements.
+    const [listTab, setListTab] = useState<ListTab>(() => (pledges.length > 0 ? "pledges" : "payments"));
     const [groupMode, setGroupMode] = useState<GroupMode>("resource");
     const [localSelectedIds, setLocalSelectedIds] = useState<Set<string>>(new Set());
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
@@ -59,9 +64,7 @@ export function PromessesDialog({
         return pledges.filter((p) => localSelectedIds.has(p.id));
     }, [pledges, localSelectedIds]);
 
-    const totalSelectedAmount = useMemo(() => {
-        return selectedPledgesList.reduce((sum, p) => sum + toNumber(p.fundingAmount), 0);
-    }, [selectedPledgesList]);
+    const totalSelectedAmount = useMemo(() => totalARegler(selectedPledgesList), [selectedPledgesList]);
 
     const handleToggleItem = (id: string) => {
         setLocalSelectedIds((prev) => {
@@ -106,10 +109,14 @@ export function PromessesDialog({
         }}>
             <DialogContent
                 aria-describedby={undefined}
-                className="sm:max-w-2xl bg-card border-border max-h-[90vh] overflow-hidden flex flex-col p-0">
+                className={cn(
+                    "bg-card border-border max-h-[90vh] overflow-hidden flex flex-col p-0",
+                    step === "list" && listTab === "payments" ? "sm:max-w-4xl" : "sm:max-w-2xl",
+                )}>
 
                 {step === "list" ? (
-                    <>
+                    <Tabs value={listTab} onValueChange={(v) => setListTab(v === "payments" ? "payments" : "pledges")}
+                          className="flex-1 min-h-0 gap-0">
                         <DialogHeader
                             className="border-b px-6 py-4 flex flex-row items-center justify-between space-y-0">
                             <DialogTitle className="flex items-center gap-2 text-xl font-bold">
@@ -121,7 +128,7 @@ export function PromessesDialog({
                                 setGroupMode(v as GroupMode);
                                 setExpandedGroups(new Set());
                             }}
-                                  className="w-[280px]">
+                                  className={cn("w-[280px]", listTab === "payments" && "hidden")}>
                                 <TabsList className="grid w-full grid-cols-2">
                                     <TabsTrigger value="resource" className="
                                     flex items-center gap-1.5 text-xs
@@ -153,112 +160,125 @@ export function PromessesDialog({
                             </Tabs>
                         </DialogHeader>
 
-                        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
-                            {Object.keys(groupedData).length === 0 ? (
-                                <p className="text-center text-muted-foreground py-8">
-                                    {String(t("CagnotteDialog.pledges.list.noPledges"))}
-                                </p>
-                            ) : (
-                                Object.entries(groupedData).map(([groupId, group]) => {
-                                    const isAllGroupChecked = group.items.length > 0 && group.items.every((i) => localSelectedIds.has(i.id));
-                                    const isExpanded = expandedGroups.has(groupId);
+                        <div className="border-b px-6 py-2">
+                            <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="pledges">{String(t("CagnotteDialog.pledges.list.tabs.pledges"))}</TabsTrigger>
+                                <TabsTrigger value="payments">{String(t("CagnotteDialog.pledges.list.tabs.payments"))}</TabsTrigger>
+                            </TabsList>
+                        </div>
 
-                                    return (
-                                        <div key={groupId}
-                                             className="rounded-xl border border-border/60 bg-secondary/10 overflow-hidden transition-all">
-                                            <div
-                                                className="flex items-center justify-between bg-secondary/30 px-4 py-3 border-b border-border/40 hover:bg-secondary/40 transition-colors">
-                                                
-                                                <label className="flex items-center gap-3 cursor-pointer select-none">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={isAllGroupChecked}
-                                                        onChange={() => handleToggleGroup(group.items)}
-                                                        className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer"
-                                                    />
-                                                    <span className="font-semibold text-sm text-foreground">
-                                                        {group.name}
-                                                    </span>
-                                                </label>
+                        <TabsContent value="pledges" className="flex min-h-0 flex-col">
+                            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+                                {Object.keys(groupedData).length === 0 ? (
+                                    <p className="text-center text-muted-foreground py-8">
+                                        {String(t("CagnotteDialog.pledges.list.noPledges"))}
+                                    </p>
+                                ) : (
+                                    Object.entries(groupedData).map(([groupId, group]) => {
+                                        const isAllGroupChecked = group.items.length > 0 && group.items.every((i) => localSelectedIds.has(i.id));
+                                        const isExpanded = expandedGroups.has(groupId);
 
-                                                {/* Clic sur la zone de droite pour plier/replier */}
-                                                <div 
-                                                    className="flex items-center gap-3 cursor-pointer select-none group"
-                                                    onClick={() => handleToggleExpand(groupId)}
-                                                >
-                                                    <span
-                                                        className="text-xs text-muted-foreground bg-background px-2.5 py-1 rounded-full border border-border/50 group-hover:border-primary/50 transition-colors">
-                                                        {group.items.length} {group.items.length > 1 ? String(t("CagnotteDialog.pledges.list.engagements")) : String(t("CagnotteDialog.pledges.list.engagement"))}
-                                                    </span>
-                                                    <div className="text-muted-foreground group-hover:text-primary transition-colors">
-                                                        {isExpanded ? (
-                                                            <ChevronDown className="w-5 h-5" />
-                                                        ) : (
-                                                            <ChevronRight className="w-5 h-5" />
-                                                        )}
+                                        return (
+                                            <div key={groupId}
+                                                 className="rounded-xl border border-border/60 bg-secondary/10 overflow-hidden transition-all">
+                                                <div
+                                                    className="flex items-center justify-between bg-secondary/30 px-4 py-3 border-b border-border/40 hover:bg-secondary/40 transition-colors">
+                                                    
+                                                    <label className="flex items-center gap-3 cursor-pointer select-none">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isAllGroupChecked}
+                                                            onChange={() => handleToggleGroup(group.items)}
+                                                            className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer"
+                                                        />
+                                                        <span className="font-semibold text-sm text-foreground">
+                                                            {group.name}
+                                                        </span>
+                                                    </label>
+
+                                                    {/* Clic sur la zone de droite pour plier/replier */}
+                                                    <div 
+                                                        className="flex items-center gap-3 cursor-pointer select-none group"
+                                                        onClick={() => handleToggleExpand(groupId)}
+                                                    >
+                                                        <span
+                                                            className="text-xs text-muted-foreground bg-background px-2.5 py-1 rounded-full border border-border/50 group-hover:border-primary/50 transition-colors">
+                                                            {group.items.length} {group.items.length > 1 ? String(t("CagnotteDialog.pledges.list.engagements")) : String(t("CagnotteDialog.pledges.list.engagement"))}
+                                                        </span>
+                                                        <div className="text-muted-foreground group-hover:text-primary transition-colors">
+                                                            {isExpanded ? (
+                                                                <ChevronDown className="w-5 h-5" />
+                                                            ) : (
+                                                                <ChevronRight className="w-5 h-5" />
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
+
+                                                {isExpanded && (
+                                                    <div className="divide-y divide-border/30">
+                                                        {group.items.map((pledge) => (
+                                                            <div key={pledge.id}
+                                                                 className="flex items-center justify-between p-3 pl-8 hover:bg-secondary/20 transition-colors">
+                                                                <label
+                                                                    className="flex items-center gap-3 cursor-pointer flex-1">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={localSelectedIds.has(pledge.id)}
+                                                                        onChange={() => handleToggleItem(pledge.id)}
+                                                                        className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer"
+                                                                    />
+                                                                    <div className="flex flex-col">
+                                                                        <span
+                                                                            className="text-sm font-medium text-foreground">{pledge.depenseName}</span>
+                                                                        <span className="text-xs text-muted-foreground">
+                                                                            {groupMode === "resource"
+                                                                                ? `${String(t("CagnotteDialog.pledges.list.by"))} : ${pledge.financerName}`
+                                                                                : `${String(t("CagnotteDialog.pledges.list.for"))} : ${pledge.resourceName}`}
+                                                                        </span>
+                                                                    </div>
+                                                                </label>
+                                                                <span className="font-mono text-sm font-semibold pr-2">
+                                                                    {montantARegler(pledge).toLocaleString("fr-FR")} €
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
-
-                                            {isExpanded && (
-                                                <div className="divide-y divide-border/30">
-                                                    {group.items.map((pledge) => (
-                                                        <div key={pledge.id}
-                                                             className="flex items-center justify-between p-3 pl-8 hover:bg-secondary/20 transition-colors">
-                                                            <label
-                                                                className="flex items-center gap-3 cursor-pointer flex-1">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={localSelectedIds.has(pledge.id)}
-                                                                    onChange={() => handleToggleItem(pledge.id)}
-                                                                    className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer"
-                                                                />
-                                                                <div className="flex flex-col">
-                                                                    <span
-                                                                        className="text-sm font-medium text-foreground">{pledge.depenseName}</span>
-                                                                    <span className="text-xs text-muted-foreground">
-                                                                        {groupMode === "resource"
-                                                                            ? `${String(t("CagnotteDialog.pledges.list.by"))} : ${pledge.financerName}`
-                                                                            : `${String(t("CagnotteDialog.pledges.list.for"))} : ${pledge.resourceName}`}
-                                                                    </span>
-                                                                </div>
-                                                            </label>
-                                                            <span className="font-mono text-sm font-semibold pr-2">
-                                                                {pledge.fundingAmount.toLocaleString("fr-FR")} €
-                                                            </span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })
-                            )}
-                        </div>
-
-                        <div className="border-t border-border bg-secondary/5 px-6 py-4">
-                            <div className="flex justify-between items-center mb-4 text-base font-bold">
-                                <span>{String(t("CagnotteDialog.pledges.list.totalSelectedLabel"))}</span>
-                                <span
-                                    className="text-primary font-mono text-xl">{totalSelectedAmount.toLocaleString("fr-FR")} €</span>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <button
-                                    disabled={totalSelectedAmount === 0}
-                                    onClick={() => setStep("payment")}
-                                    className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {String(t("CagnotteDialog.pledges.list.PaySelected"))} ({totalSelectedAmount.toLocaleString("fr-FR")} €)
-                                </button>
-                                {onOpenCagnotte && ( 
-                                    <button onClick={onOpenCagnotte}
-                                            className="w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                                        {String(t("CagnotteDialog.pledges.list.return"))}
-                                    </button>
+                                        );
+                                    })
                                 )}
                             </div>
-                        </div>
-                    </>
+
+                            <div className="border-t border-border bg-secondary/5 px-6 py-4">
+                                <div className="flex justify-between items-center mb-4 text-base font-bold">
+                                    <span>{String(t("CagnotteDialog.pledges.list.totalSelectedLabel"))}</span>
+                                    <span
+                                        className="text-primary font-mono text-xl">{totalSelectedAmount.toLocaleString("fr-FR")} €</span>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <button
+                                        disabled={totalSelectedAmount === 0}
+                                        onClick={() => setStep("payment")}
+                                        className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {String(t("CagnotteDialog.pledges.list.PaySelected"))} ({totalSelectedAmount.toLocaleString("fr-FR")} €)
+                                    </button>
+                                    {onOpenCagnotte && ( 
+                                        <button onClick={onOpenCagnotte}
+                                                className="w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                                            {String(t("CagnotteDialog.pledges.list.return"))}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="payments" className="min-h-0 overflow-y-auto px-6 py-4">
+                            <CagnottePaymentsPanel/>
+                        </TabsContent>
+                    </Tabs>
                 ) : (
                     <div className="p-6 overflow-y-auto">
                         <DialogTitle className="mb-4">

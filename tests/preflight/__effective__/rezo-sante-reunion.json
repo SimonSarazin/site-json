@@ -17,17 +17,30 @@
     },
     "citoyens": {
       "builtins": {
-        "organization": "add-rezo-sante-acteur",
         "project": "add-rezo-sante-projet",
         "event": "add-event",
         "poi": "add-rezo-sante-ressource"
-      }
+      },
+      "customs": [
+        "add-rezo-sante-acteur",
+        "add-rezo-sante-lieu"
+      ]
     }
+  },
+  "finderAddNew": {
+    "organizations": "add-organization",
+    "projects": "add-project",
+    "poi": "add-poi"
   },
   "editModals": {
     "organizations": {
       "vierge": "edit-profile",
       "routes": [
+        {
+          "declare": "edit-rezo-sante-lieu",
+          "native": "edit-rezo-sante-lieu",
+          "horsPerimetre": "edit-profile"
+        },
         {
           "declare": "edit-rezo-sante-acteur",
           "native": "edit-rezo-sante-acteur",
@@ -65,6 +78,11 @@
             "source.key": "EcosystemeSanteReunion",
             "source.keys": "EcosystemeSanteReunion",
             "reference.costum": "EcosystemeSanteReunion"
+          },
+          "tags": {
+            "$nin": [
+              "lieux-sante"
+            ]
           }
         },
         "defaultSortBy": {
@@ -72,6 +90,31 @@
         }
       },
       "create": "add-rezo-sante-acteur",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "lieux-sante/organizations": {
+      "source": {
+        "notSourceKey": true,
+        "defaultFilters": {
+          "$or": {
+            "source.key": "EcosystemeSanteReunion",
+            "source.keys": "EcosystemeSanteReunion",
+            "reference.costum": "EcosystemeSanteReunion"
+          },
+          "tags": {
+            "$in": [
+              "lieux-sante"
+            ]
+          }
+        },
+        "defaultSortBy": {
+          "updated": -1
+        }
+      },
+      "create": "add-rezo-sante-lieu",
       "edit": {
         "enabled": true,
         "modalName": null
@@ -156,6 +199,9 @@
               "Nutrition",
               "alimentation",
               "nutrition"
+            ],
+            "$nin": [
+              "lieux-sante"
             ]
           }
         },
@@ -205,6 +251,9 @@
               "sédentarité",
               "activite-physique",
               "Activite physique"
+            ],
+            "$nin": [
+              "lieux-sante"
             ]
           }
         },
@@ -252,6 +301,9 @@
             "$in": [
               "Sommeil",
               "sommeil"
+            ],
+            "$nin": [
+              "lieux-sante"
             ]
           }
         },
@@ -301,6 +353,9 @@
               "Addictions",
               "addiction",
               "addictions"
+            ],
+            "$nin": [
+              "lieux-sante"
             ]
           }
         },
@@ -350,6 +405,9 @@
               "Santé mentale",
               "Bien-être mental",
               "bien-etre-mental"
+            ],
+            "$nin": [
+              "lieux-sante"
             ]
           }
         },
@@ -401,6 +459,9 @@
               "culture",
               "Santé",
               "santé"
+            ],
+            "$nin": [
+              "lieux-sante"
             ]
           }
         },
@@ -442,6 +503,13 @@
         "defaultTypes": [
           "organizations"
         ],
+        "defaultFilters": {
+          "tags": {
+            "$nin": [
+              "lieux-sante"
+            ]
+          }
+        },
         "defaultFields": [
           "name",
           "slug",
@@ -469,6 +537,55 @@
           "shortDescription",
           "description",
           "tags"
+        ],
+        "indexStepList": 24,
+        "indexStepMap": 500
+      }
+    },
+    "/lieux-sante/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "EcosystemeSanteReunion"
+        ],
+        "costumSlug": "EcosystemeSanteReunion",
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFilters": {
+          "tags": {
+            "$in": [
+              "lieux-sante"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "category",
+          "description",
+          "shortDescription",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "medias",
+          "urls",
+          "address",
+          "tags",
+          "links",
+          "geo",
+          "geoPosition"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description",
+          "tags",
+          "address.addressLocality"
         ],
         "indexStepList": 24,
         "indexStepMap": 500

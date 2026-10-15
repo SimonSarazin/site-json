@@ -9,7 +9,7 @@
  * Toutes les fonctions sont pures (aucun side-effect) — adaptées à `utils/` plutôt qu'à `lib/`.
  */
 import type { CagnotteFundableItem, CagnotteResource, FundingActionStatus } from "../types";
-import { asRecord, toArrayOrValues, toNumber, toString, type UnknownRecord } from "./coerce";
+import { asRecord, toArrayOrValues, toId, toNumber, toString, type UnknownRecord } from "./coerce";
 import { listDepenseKeys } from "./depenseKey";
 import { readFinancerPaymentState, toDisplayPaymentStatus } from "./financerPayment";
 
@@ -17,7 +17,7 @@ import { readFinancerPaymentState, toDisplayPaymentStatus } from "./financerPaym
  * Les coercions de base vivent dans `coerce.ts` (socle sans dépendance) et sont ré-exportées
  * ici : elles font partie de la surface publique de ce module.
  */
-export { asRecord, toArrayOrValues, toNumber, toString };
+export { asRecord, toArrayOrValues, toId, toNumber, toString };
 export type { UnknownRecord };
 
 /**
@@ -52,6 +52,15 @@ export function toArray<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[];
   if (value == null) return [];
   return [value as T];
+}
+
+/** Type d'entité au format des collections backend (`organizations`, `projects`, `citoyens`). */
+export function normalizeEntityType(type: string | undefined | null): string {
+  const lowered = (type || "").toLowerCase();
+  if (lowered.includes("organization")) return "organizations";
+  if (lowered.includes("project")) return "projects";
+  if (lowered.includes("citoyen") || lowered.includes("user")) return "citoyens";
+  return lowered;
 }
 
 export function normalizeTags(value: unknown): string[] {

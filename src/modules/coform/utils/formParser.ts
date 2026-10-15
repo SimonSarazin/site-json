@@ -226,6 +226,40 @@ export function isTruthyFlag(value: unknown): boolean {
 }
 
 /**
+ * Défauts legacy des libellés d'un finder (`survey/…/cplx/finder.php`, `$paramsData`), PAR CHAMP :
+ * trouvés dans `params`, ils se lisent comme non configurés.
+ *
+ *  - `elementLabel` (en dur) et placeholder (traduit dans la langue de qui configure, en / fr / it) :
+ *    la modale de configuration les ENREGISTRE. Mesuré en base de dev le 01/10 : 21 finders sur 86
+ *    portent « Elément », 32 le placeholder français.
+ *  - libellé du BOUTON (`Yii::t("common", "Search and add")`, en / fr / it) : aucune modale ne
+ *    l'enregistre (0 finder sur 89, mesuré le 12/10), mais le legacy LIT `buttonLabel` dans `params`
+ *    — même boucle sur `$paramsData` : on peut l'y avoir posé à la main. Personnalisé, il s'affiche
+ *    tel quel.
+ *
+ * Un défaut est celui d'UN champ : « Rechercher et ajouter » écrit en placeholder est un choix.
+ */
+const LEGACY_FINDER_DEFAULTS = {
+  elementLabel: new Set(["Elément"]),
+  buttonLabel: new Set(["Search and add", "Rechercher et ajouter", "Cerca e aggiungi"]),
+  placeholderSearchField: new Set([
+    "Enter the name of the item you are looking for",
+    "Saisir le nom de l'élément que vous recherchez",
+    "Inserisci il nome dell'articolo che stai cercando",
+  ]),
+} as const;
+
+/**
+ * Libellé d'un finder : égal à un défaut legacy DE SON CHAMP (`legacyDefaults`), il se lit comme
+ * ABSENT (chaîne vide), pour que le rendu prenne le libellé traduit (`coform.finder.*`) — sinon
+ * « Your Elément doesn't exist yet? » en anglais.
+ */
+function finderLabel(value: unknown, legacyDefaults: ReadonlySet<string>): string {
+  const label = typeof value === "string" ? value.trim() : "";
+  return legacyDefaults.has(label) ? "" : label;
+}
+
+/**
  * Génère le nom du champ avec son préfixe si nécessaire
  * @param componentType - Type du composant
  * @param originalKey - Clé originale du champ dans le formulaire
@@ -910,9 +944,14 @@ export function parseCoFormFields(
             notSourceKey: toBool(paramData.notSourceKey ?? true),
             myContacts: toBool(paramData.myContacts),
             initCurrentUser: toBool(paramData.initCurrentUser),
-            elementLabel: (paramData.elementLabel as string) || "Élément",
-            buttonLabel: (paramData.buttonLabel as string) || "Rechercher et ajouter",
-            placeholderSearchField: (paramData.placeholderSearchField as string) || "Entrez le nom de l'élément recherché",
+            // Libellé absent ou défaut legacy ⇒ chaîne vide, et le rendu prend le libellé TRADUIT : un
+            // défaut écrit ici en français s'affichait tel quel en anglais (« Your Élément… »).
+            elementLabel: finderLabel(paramData.elementLabel, LEGACY_FINDER_DEFAULTS.elementLabel),
+            buttonLabel: finderLabel(paramData.buttonLabel, LEGACY_FINDER_DEFAULTS.buttonLabel),
+            placeholderSearchField: finderLabel(
+              paramData.placeholderSearchField,
+              LEGACY_FINDER_DEFAULTS.placeholderSearchField,
+            ),
             field: (paramData.field as string) || "element",
             multiple: toBool(paramData.multiple ?? true),
             addNew: toBool(paramData.addNew),

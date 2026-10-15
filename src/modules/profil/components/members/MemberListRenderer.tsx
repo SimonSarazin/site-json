@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { User, Organization, EntityTypes } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { useUserStatusBadge } from "../../hooks/useUserStatusBadge";
 import { useAdminActions } from "../../actions";
 import { rolesDuMembre } from "../../lib/memberRoles";
 import { LoadingState, EmptyState, UserListItem } from "../shared";
+import { ManageRolesDialog } from "./ManageRolesDialog";
 
 interface MemberListRendererProps {
   members: (User | Organization)[];
@@ -48,9 +50,13 @@ export function MemberListRenderer({
 }: MemberListRendererProps) {
   const t = useT("modules/profil");
   const { getUserStatusBadge } = useUserStatusBadge();
+  // Membre dont on édite les rôles — `null` = `ManageRolesDialog` fermé. État local à CETTE liste :
+  // `MemberManagementDialog` monte trois `MemberListRenderer` (pending/all/admins), chacune indépendante.
+  const [rolesTarget, setRolesTarget] = useState<User | null>(null);
   const { getUserActionButtons } = useAdminActions(
     entity,
-    showConfirmation || (() => {})
+    showConfirmation || (() => {}),
+    (user) => setRolesTarget(user),
   );
 
   // État de chargement
@@ -192,28 +198,37 @@ export function MemberListRenderer({
   };
 
   return (
-    <div className="space-y-3">
-      {members.map((member: User | Organization, index: number) => (
-        <UserListItem
-          key={member.id}
-          ref={index === members.length - 1 ? lastItemRef : undefined}
-          user={member}
-          subtitle={member.serverData?.email}
-          variant="card"
-          extra={renderRoles(member)}
-          badge={showBadges ? getUserStatusBadge(member, entity) : undefined}
-          actions={renderMemberActions(member)}
-        />
-      ))}
+    <>
+      <div className="space-y-3">
+        {members.map((member: User | Organization, index: number) => (
+          <UserListItem
+            key={member.id}
+            ref={index === members.length - 1 ? lastItemRef : undefined}
+            user={member}
+            subtitle={member.serverData?.email}
+            variant="card"
+            extra={renderRoles(member)}
+            badge={showBadges ? getUserStatusBadge(member, entity) : undefined}
+            actions={renderMemberActions(member)}
+          />
+        ))}
 
-      {/* Indicateur de chargement pour le scroll infini */}
-      {isFetchingNextPage && (
-        <LoadingState
-          variant="spinner"
-          size="sm"
-          message={t("ProfileMembers.loadingMore")}
-        />
-      )}
-    </div>
+        {/* Indicateur de chargement pour le scroll infini */}
+        {isFetchingNextPage && (
+          <LoadingState
+            variant="spinner"
+            size="sm"
+            message={t("ProfileMembers.loadingMore")}
+          />
+        )}
+      </div>
+
+      <ManageRolesDialog
+        entity={entity}
+        member={rolesTarget}
+        open={rolesTarget !== null}
+        onOpenChange={(open) => { if (!open) setRolesTarget(null); }}
+      />
+    </>
   );
 }

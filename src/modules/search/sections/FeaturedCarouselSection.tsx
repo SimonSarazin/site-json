@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
@@ -14,8 +15,7 @@ import FeaturedCarouselSlide from "./FeaturedCarouselSlide";
 import FeaturedCarouselCta from "./FeaturedCarouselCta";
 import type { FeaturedCarouselSectionProps } from "../schema";
 import "@/modules/search/i18n";
-import { accentStyle } from "@/lib/accentStyle";
-import { sectionBadgeClass } from "@/components/sections/sectionBadge";
+import { sectionBadgeClass, sectionHeadlineStyle } from "@/components/sections/sectionBadge";
 
 export interface FeaturedCarouselSectionWrapperProps {
   id?: string;
@@ -28,6 +28,9 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
   const t = useT();
   const { badgeLabel, ctaLabel, baseParams, resource, itemAction = { kind: "profil" }, autoplay, autoplayIntervalMs, background, accentColor, accentTextColor, showControls, design } = props;
   const enCarte = design === "card";
+  // `inline` : le CTA vit DANS chaque diapositive (sous le texte), comme en habillage `sticker` — sans
+  // objet en `sticker` (déjà son comportement par défaut). Le pied de carte ne garde alors que les points.
+  const ctaInline = enCarte && props.ctaPosition === "inline";
   // Panneau de contenu : même dégradé que l'illustration de `map-bubbles`, pour deux blocs qui se répondent.
   const voilePanneau = enCarte && props.backgroundOverlay
     ? {
@@ -37,7 +40,7 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
       }
     : undefined;
   // Le badge peut se teinter à part du bouton (`badgeColor`), sinon il suit l'accent.
-  const styleBadge = accentStyle(props.badgeColor ?? accentColor, props.badgeTextColor ?? accentTextColor);
+  const styleBadge = sectionHeadlineStyle(props.headlineStyle, props.badgeColor ?? accentColor, props.badgeTextColor ?? accentTextColor);
 
   const [searchType] = useState<Record<string, string[]> | null>(
     baseParams.defaultTypes ? { type: baseParams.defaultTypes } : null
@@ -113,30 +116,34 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
     <section
       id={id}
       style={sectionStyle}
-      // Habillage « carte » : la section porte ses propres coins et ne rogne plus — sinon la pilule de
-      // titre, qui déborde du haut, serait coupée. Ses marges calent le panneau sur celui de `map-bubbles`
-      // voisin : même marge basse, et en haut la même marge plus la ligne d'accroche que ce bloc porte
-      // au-dessus de son illustration.
-      className={cn("relative", enCarte ? "rounded-2xl pt-16 pb-6" : "overflow-hidden pt-6 pb-6 md:pt-10 md:pb-10", sectionClassName)}
+      // Habillage « carte » : la section porte ses propres coins et ne rogne plus.
+      className={cn("relative", enCarte ? "rounded-2xl pt-6 pb-6" : "overflow-hidden pt-6 pb-6 md:pt-10 md:pb-10", sectionClassName)}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
-      {/* Badge rendu UNE SEULE fois (hors des diapositives : il ne bouge pas d'une
-          slide à l'autre), DANS LE FLUX au-dessus du carrousel — même `container`/
-          padding que lui, donc même alignement gauche que le texte des diapositives.
-          En position absolue (version précédente), il chevauchait le titre dès que
-          celui-ci était long, ou que l'image manquait (la colonne texte, centrée
-          verticalement, remontait dessous) : en flux, sa place est réservée par
-          construction quelle que soit la hauteur du contenu. */}
+      {/* Badge rendu UNE SEULE fois (hors des diapositives : il ne bouge pas d'une slide à l'autre),
+          DANS LE FLUX au-dessus du carrousel — même `container`/padding que lui, donc même alignement
+          gauche que le texte des diapositives. En position absolue (débordant du haut de la carte),
+          il flottait AU-DESSUS du fond blanc au lieu d'être DANS la carte ; en flux, sa place est
+          réservée par construction quelle que soit la hauteur du contenu. */}
       {badgeLabel && (
-        <div className={enCarte ? "absolute -top-5 left-6 z-20" : "container mx-auto px-4 mb-2 md:mb-3"}>
+        <div className={cn("container mx-auto px-4", enCarte ? "mb-4 md:mb-6" : "mb-2 md:mb-3")}>
           <Badge
             variant={styleBadge ? undefined : "secondary"}
             style={styleBadge}
-            className={sectionBadgeClass(props.headlineStyle)}
+            className={cn(sectionBadgeClass(props.headlineStyle), "gap-2")}
           >
+            {props.badgeIcon && (
+              <DynamicIcon
+                name={props.badgeIcon as IconName}
+                className="shrink-0"
+                // `1em` : aussi grand que le TEXTE du titre, cf. même choix sur `map-bubbles`.
+                style={{ width: "1em", height: "1em", ...(props.badgeIconColor ? { color: props.badgeIconColor } : {}) }}
+                aria-hidden
+              />
+            )}
             {t(badgeLabel)}
           </Badge>
         </div>
@@ -152,9 +159,11 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
           de celui du bloc voisin. */}
       <div
         style={voilePanneau}
-        // `py-8` : la ligne points + bouton se lit un peu au-dessus du bord bas du panneau, pas collée à lui,
-        // et la diapositive respire d'autant sous son bord haut.
-        className={cn("flex flex-1 flex-col justify-start", voilePanneau && "mx-4 rounded-2xl px-3 py-8 md:px-4")}
+        // `justify-center` (plutôt que `justify-start`) : en `card`, la diapositive est plus courte que
+        // la colonne voisine (`map-bubbles`, étirée par `align:"stretch"`) — centrée, le vide résiduel se
+        // partage au-dessus ET en dessous au lieu de s'accumuler tout en bas. Le pied (points) garde son
+        // `mt-auto` : un enfant à marge automatique n'est pas concerné par `justify-content`.
+        className={cn("flex flex-1 flex-col justify-center", voilePanneau && "mx-4 rounded-2xl px-3 py-8 md:px-4")}
       >
       <Carousel
         opts={{ loop: renderable.length > 1 }}
@@ -172,6 +181,9 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
                 accentColor={accentColor}
                 accentTextColor={accentTextColor}
                 enCarte={enCarte}
+                showCta={!enCarte || ctaInline}
+                ctaStyle={props.ctaStyle}
+                linkTitleAndImage={props.linkTitleAndImage}
                 priority={index === 0}
               />
             </CarouselItem>
@@ -223,14 +235,26 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
           </>
         )}
       </Carousel>
-      {/* Pied : les points de position au centre, le bouton de la diapositive COURANTE à droite. Le bouton
-          vit ici (et non dans la diapositive) pour partager sa ligne avec les points, sans quoi il
+      {/* Pied : les points de position au centre, le bouton de la diapositive COURANTE à droite. En
+          `ctaPosition:"inline"`, le bouton est DANS la diapositive (cf. `FeaturedCarouselSlide`) — le
+          pied ne garde que les points, et disparaît tout à fait s'il n'y a qu'une diapositive. Sinon
+          (défaut `"footer"`), le bouton vit ici pour partager sa ligne avec les points, sans quoi il
           défilerait avec le contenu. */}
-      {enCarte && (
-        <div className={cn("container mx-auto mt-auto flex flex-col items-center gap-3 pt-4 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4", voilePanneau ? "px-0" : "px-4")}>
+      {enCarte && (!ctaInline || renderable.length > 1) && (
+        // `mt-4` (plutôt que l'ancien `mt-auto`) : une marge AUTO sur un enfant flex absorbe TOUT
+        // l'espace libre au-dessus de lui-même AVANT que `justify-center` (ci-dessus) ne puisse rien
+        // répartir — elle collait donc le pied en bas et laissait le vide s'accumuler ENTRE la carte
+        // et les points, au lieu de l'INSTANT où carte+pied se centrent ensemble dans la colonne. Avec
+        // une marge fixe, carte et pied forment UN seul bloc que `justify-center` centre comme un tout
+        // — le vide résiduel (carte stretchée à la hauteur de `map-bubbles`) se partage au-dessus ET
+        // en dessous du bloc entier, au lieu de s'accumuler sous la carte seule.
+        <div className="@container/pied mt-4">
+        <div className={cn("container mx-auto flex flex-col items-center gap-3 pt-4 @sm/pied:grid @sm/pied:grid-cols-[1fr_auto_1fr] @sm/pied:items-center @sm/pied:gap-4", voilePanneau ? "px-0" : "px-4")}>
           {/* Colonnes latérales de même largeur : les points restent au CENTRE quelle que soit la largeur
-              du bouton. Sous `sm:`, le bouton passe à la ligne — à cette largeur il mordrait sur eux. */}
-          <span aria-hidden className="hidden sm:block" />
+              du bouton. Sous `@sm` (largeur du CARROUSEL, pas de l'écran — il peut vivre dans une colonne
+              étroite de `gridLayout`), le bouton passe à la ligne : il mordrait sur les points, ou
+              déborderait de la carte. */}
+          <span aria-hidden className="hidden @sm/pied:block" />
           <div className="flex justify-center gap-2">
             {renderable.length > 1 &&
               renderable.map((item, index) => (
@@ -246,7 +270,8 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
                 />
               ))}
           </div>
-          <div className="flex justify-center sm:justify-end">
+          {!ctaInline && (
+          <div className="flex justify-center @sm/pied:justify-end">
           {renderable[selectedIndex] && (
             <FeaturedCarouselCta
               item={renderable[selectedIndex]}
@@ -258,6 +283,8 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
             />
           )}
           </div>
+          )}
+        </div>
         </div>
       )}
       </div>

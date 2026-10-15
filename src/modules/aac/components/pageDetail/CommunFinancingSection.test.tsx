@@ -35,7 +35,7 @@ function makeConfig(depenseStepKey: string | null): AacResolvedConfig {
     configId: null,
     aapType: "aac",
     steps: [],
-    roles: { depenseStepKey, evalStepKey: null, financementStepKey: null, suiviStepKey: null },
+    roles: { depenseStepKey, evalStepKey: null, evalStepKeyFound: null, financementStepKey: null, suiviStepKey: null },
     criteria: [],
     criteriaSource: "none",
     gates: {

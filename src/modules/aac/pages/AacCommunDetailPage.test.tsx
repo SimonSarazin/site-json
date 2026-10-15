@@ -41,15 +41,6 @@ vi.mock("react-router", () => ({
   Link: ({ children }: { children: ReactNode }) => <a>{children}</a>,
 }));
 
-// La suppression a son propre test (`CommunDeleteControl.test.tsx`) ; la page
-// n'est observée que sur ce qu'elle COMPOSE. Sans ce mock, la mutation atteindrait
-// `useMutation`, que le mock partiel de react-query de ce fichier n'expose pas.
-// C'est bien le HOOK qu'on coupe : mocker `mutations/answer` priverait au passage
-// `useDeleteCommun` de `deleteElementById`.
-vi.mock("../hooks/useDeleteCommun", () => ({
-  useDeleteCommun: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
-}));
-
 const CONNECTED = { id: "u1", isConnected: true };
 const ANONYMOUS = { id: "", isConnected: false };
 let me: { id: string; isConnected: boolean } = CONNECTED;
@@ -115,6 +106,7 @@ function makeConfig(hasFundingStep: boolean): AacResolvedConfig {
       depenseStepKey: "aapStep1",
       evalStepKey: null,
       financementStepKey: hasFundingStep ? "aapStep3" : null,
+      evalStepKeyFound: null,
       suiviStepKey: null,
     },
     criteria: [],
@@ -194,23 +186,37 @@ vi.mock("../hooks/useAacFormMeta", () => ({
 // elle que `SmartCoForm` exige pour activer le brouillon, et qu'il grave dans
 // l'entrée localStorage (cf. `useCoFormDraft.computeDraftState`).
 vi.mock("@/modules/coform/components/CoFormModal", () => ({
-  CoFormModal: (props: { baseUpdatedAt?: number | null }) => (
-    <div data-testid="edit-modal" data-base-updated-at={String(props.baseUpdatedAt ?? "null")} />
+  CoFormModal: (props: { baseUpdatedAt?: number | null; hiddenStepKeys?: string[] }) => (
+    <div
+      data-testid="edit-modal"
+      data-base-updated-at={String(props.baseUpdatedAt ?? "null")}
+      data-hidden-steps={(props.hiddenStepKeys ?? []).join(",")}
+    />
   ),
 }));
 
 // Les blocs eux-mêmes ont leurs propres dépendances (cagnotte, React Query) hors
 // du périmètre de CE test : on ne vérifie que leur PRÉSENCE dans l'arbre.
-vi.mock("../components/pageDetail/CommunSelectionControl.tsx", () => ({ CommunSelectionControl: () => null }));
-vi.mock("../components/pageDetail/CommunProjectControl.tsx", () => ({ CommunProjectControl: () => null }));
-// La suppression a ses propres tests (règle de refus, cascade, garde de droit) ;
-// ici elle apporterait sa mutation et son bundle i18n, hors périmètre.
-vi.mock("../components/pageDetail/CommunDeleteControl", () => ({ CommunDeleteControl: () => null }));
-// Les contributeurs à l'édition ont leurs propres tests (dialogue, mutation) : la page n'est
-// observée que sur le droit qu'elle leur passe.
-vi.mock("../components/pageDetail/CommunEditorsControl.tsx", () => ({
-  CommunEditorsControl: (props: { canManage: boolean }) => (
-    <div data-testid="editors-control" data-can-manage={String(props.canManage)} />
+// La barre d'actions a ses propres tests (état, aplat, menu, écritures) : la page n'est observée
+// que sur ce qu'elle lui passe. Elle apporterait sinon ses mutations, hors périmètre. Elle rend
+// l'emplacement `discussion` tel quel, comme la vraie : le bouton de discussion y est observé.
+vi.mock("../components/pageDetail/CommunActionBar.tsx", () => ({
+  CommunActionBar: (props: {
+    canEdit: boolean;
+    canManageEditors: boolean;
+    selection: { contextId: string | null };
+    project: { isLoading: boolean };
+    discussion?: ReactNode;
+  }) => (
+    <div
+      data-testid="action-bar"
+      data-can-edit={String(props.canEdit)}
+      data-can-manage-editors={String(props.canManageEditors)}
+      data-context-id={String(props.selection.contextId)}
+      data-project-loading={String(props.project.isLoading)}
+    >
+      {props.discussion}
+    </div>
   ),
 }));
 // L'espace de discussion a ses propres tests (bouton, compteurs, modale différée) : il lit
@@ -412,6 +418,8 @@ describe("AacCommunDetailPage — la phase du commun en cours de résolution", (
     expect(screen.getByText("detail.toc.actions")).toBeTruthy();
     expect(screen.getByText("detail.toc.contributors")).toBeTruthy();
     expect(screen.getByTestId("toc").getAttribute("data-loading")).toBe("true");
+    // Sans quoi la barre proposerait « Générer » sur un commun qui a peut-être déjà un projet.
+    expect(screen.getByTestId("action-bar")).toHaveAttribute("data-project-loading", "true");
   });
 
   it("phase résolue sans projet lié : les deux sections disparaissent, le sommaire est arrêté", () => {
@@ -421,6 +429,7 @@ describe("AacCommunDetailPage — la phase du commun en cours de résolution", (
     expect(screen.queryByText("detail.toc.actions")).toBeNull();
     expect(screen.queryByText("detail.toc.contributors")).toBeNull();
     expect(screen.getByTestId("toc").getAttribute("data-loading")).toBe("false");
+    expect(screen.getByTestId("action-bar")).toHaveAttribute("data-project-loading", "false");
   });
 
   it("blocs déclarés en vol : le sommaire attend, sans changer de longueur ensuite", () => {
@@ -688,6 +697,46 @@ describe("AacCommunDetailPage — lignée de péremption du brouillon d'édition
 });
 
 /**
+ * Un AAP n'a pas de `choose` (non déclaré en config ⇒ `fields.choose` nul), mais
+ * il a une étape d'ÉVALUATION — les votes `decide` du form OCECO d'Open Atlas.
+ * Le masquage à l'édition dépendait de `choose` : couper l'un rouvrait l'autre,
+ * et l'auteur pouvait voter sur sa propre proposition.
+ */
+describe("AacCommunDetailPage — l'étape d'évaluation reste masquée à l'auteur", () => {
+  const hiddenSteps = () => screen.getByTestId("edit-modal").getAttribute("data-hidden-steps");
+  const withEvalStep = (
+    evalStepKey: string | null,
+    evalStepKeyFound: string | null = evalStepKey,
+  ): AacResolvedConfig => {
+    const base = makeConfig(false);
+    return { ...base, roles: { ...base.roles, evalStepKey, evalStepKeyFound } };
+  };
+
+  it("AAP (pas de `choose`) : l'étape d'évaluation résolue est masquée au non-admin", () => {
+    config = withEvalStep("aapStep2");
+    render(<AacCommunDetailPage />);
+
+    expect(hiddenSteps()).toBe("aapStep2");
+  });
+
+  it("ni `choose` ni étape d'évaluation : rien n'est masqué", () => {
+    config = withEvalStep(null);
+    render(<AacCommunDetailPage />);
+
+    expect(hiddenSteps()).toBe("");
+  });
+
+  it("étape d'évaluation devinée par POSITION (aucune question de vote) : rien n'est masqué", () => {
+    // Ce que produit le résolveur pour un AAP [identité, projet, budget] : `evalStepKey` vaut la
+    // 2e étape par dispatch, mais rien ne l'a trouvée — c'est l'étape « projet » de l'auteur.
+    config = withEvalStep("aapStep2", null);
+    render(<AacCommunDetailPage />);
+
+    expect(hiddenSteps()).toBe("");
+  });
+});
+
+/**
  * Contributeurs à l'édition (`links.canEdit`) : ils MODIFIENT le commun — la modale d'édition est
  * montée pour eux —, mais le BOUTON qui gère la liste est réservé à l'auteur et aux admins (par la
  * question « Référent », ils la changent : parité legacy, décision du 30/09).
@@ -697,14 +746,19 @@ describe("AacCommunDetailPage — contributeurs à l'édition", () => {
   const CONTRIB = "57618d6640bb4ece776308aa";
   const TIERS = "64785065919b8815ad72cf94";
 
+  it("la sélection s'écrit sous le contexte de L'ANNUAIRE — la clé que son filtre lit", () => {
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("action-bar")).toHaveAttribute("data-context-id", "ctx");
+  });
+
   it("l'auteur gère la liste ; un tiers connecté, non", () => {
     render(<AacCommunDetailPage />);
-    expect(screen.getByTestId("editors-control")).toHaveAttribute("data-can-manage", "true");
+    expect(screen.getByTestId("action-bar")).toHaveAttribute("data-can-manage-editors", "true");
     cleanup();
 
     me = { id: TIERS, isConnected: true };
     render(<AacCommunDetailPage />);
-    expect(screen.getByTestId("editors-control")).toHaveAttribute("data-can-manage", "false");
+    expect(screen.getByTestId("action-bar")).toHaveAttribute("data-can-manage-editors", "false");
   });
 
   it("un contributeur listé obtient « Modifier » sans le bouton de gestion de la liste ; un tiers, rien", () => {
@@ -712,12 +766,14 @@ describe("AacCommunDetailPage — contributeurs à l'édition", () => {
     me = { id: CONTRIB, isConnected: true };
     render(<AacCommunDetailPage />);
     expect(screen.getByTestId("edit-modal")).toBeInTheDocument();
-    expect(screen.getByTestId("editors-control")).toHaveAttribute("data-can-manage", "false");
+    expect(screen.getByTestId("action-bar")).toHaveAttribute("data-can-edit", "true");
+    expect(screen.getByTestId("action-bar")).toHaveAttribute("data-can-manage-editors", "false");
     cleanup();
 
     me = { id: TIERS, isConnected: true };
     render(<AacCommunDetailPage />);
     expect(screen.queryByTestId("edit-modal")).not.toBeInTheDocument();
+    expect(screen.getByTestId("action-bar")).toHaveAttribute("data-can-edit", "false");
   });
 });
 

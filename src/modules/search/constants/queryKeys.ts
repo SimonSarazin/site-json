@@ -3,8 +3,10 @@
  *
  * Producteurs : `useSearchQuery`, `prefetchSearchResults`
  * Consommateurs invalidants (tous par `RESULTS_PREFIX`) : `SearchProStatic` et
- *   `PreviewCoformAnswer` (écriture d'une answer CoForm), `addStandard`
- *   (création/édition d'entité), `PreviewPoiAmenities` (suppression de POI).
+ *   `PreviewCoformAnswer` (écriture d'une answer CoForm — listes statiques ET listes
+ *   gérées du compte, `MANAGED_ANSWERS_PREFIX`), `useAnswerCreated` (création depuis une
+ *   liste), `addStandard` (création/édition d'entité), `PreviewPoiAmenities` (suppression
+ *   de POI), `ManagedStructureItem` (créneau ajouté depuis l'onglet profil « Structures »).
  *   Sinon refetch via `refetch()` ou changement des params (qui change la
  *   queryKey naturellement).
  *
@@ -38,6 +40,15 @@ export const SEARCH_STATIC_MAP_PREFIX = "searchCostumStaticMapAll";
  */
 export const SEARCH_DUPLICATES_PREFIX = "entityDuplicates";
 
+/**
+ * Préfixe COMMUN des chiffres comptés des tuiles de stat (source `searchCount`). Producteur :
+ * `useSearchCountState`. La clé porte déjà le périmètre (type + baseParams) : deux tuiles qui comptent
+ * le même périmètre partagent une requête. Invalidation : `SEARCH_LISTS_INVALIDATION` (création /
+ * suppression d'entité), `publicSurfaceKeys` (actions d'admin), `invalidate:standard` (formulaires
+ * costum), `useAnswerCreated` et `PreviewCoformAnswer` (réponses CoForm) — une fiche ajoutée compte aussitôt.
+ */
+export const SEARCH_STAT_COUNT_PREFIX = "stat-search-count";
+
 export interface SearchQueryKeyParams {
   queryKeyPrefix: string;
   searchText: string;
@@ -59,9 +70,9 @@ export const SEARCH_QUERY_KEYS = {
    * Résultats de recherche paginés.
    *
    * Producteurs : `useSearchQuery`, `prefetchSearchResults`
-   * Consommateurs invalidants : `invalidateSearchStaticResults` (création /
-   *   édition d'une answer CoForm — ex. créneau), `addStandard`,
-   *   `PreviewPoiAmenities` — tous par `RESULTS_PREFIX`.
+   * Consommateurs invalidants : `SearchProStatic` et `PreviewCoformAnswer` (création /
+   *   édition d'une answer CoForm — ex. créneau), `addStandard`, `PreviewPoiAmenities`,
+   *   `ManagedStructureItem` (`MANAGED_ANSWERS_PREFIX`, par utilisateur) — tous par `RESULTS_PREFIX`.
    */
   RESULTS: (params: SearchQueryKeyParams) =>
     [
@@ -79,6 +90,20 @@ export const SEARCH_QUERY_KEYS = {
    * de filtres pour un préfixe donné).
    */
   RESULTS_PREFIX: (queryKeyPrefix: string) => [queryKeyPrefix] as const,
+  /**
+   * `queryKeyPrefix` des listes de réponses CoForm GÉRÉES par un compte (onglet profil « Structures » :
+   * les créneaux de chaque structure qu'il administre, et ceux qu'il a déposés ailleurs). Une CHAÎNE,
+   * partagée par toutes ces listes, qui se distinguent par leurs `baseParams` (dans la clé) :
+   * l'invalidation compare la clé élément par élément, un préfixe par structure serait inatteignable
+   * d'un seul appel. Le compte est DANS le préfixe : le serveur montre à chacun des réponses non
+   * validées différentes. Défini ici et non dans profil pour que `PreviewCoformAnswer` l'invalide
+   * après une modification sans importer profil (cf. `SEARCH_DUPLICATES_PREFIX`).
+   * Producteur : `useManagedAnswers` (`ManagedStructureItem`, `SubmittedSlotsItem`).
+   * Consommateurs invalidants (par `RESULTS_PREFIX`) : `PreviewCoformAnswer` (après une
+   * modification), `ManagedStructureItem` (après un ajout depuis l'onglet), `useAnswerCreated`
+   * (après un ajout depuis une liste, ex. /creneaux).
+   */
+  MANAGED_ANSWERS_PREFIX: (userId: string): string => `managed-answers:${userId}`,
   /**
    * Réservations CoForm d'une ressource (section réservations du preview
    * `poi-amenities`).

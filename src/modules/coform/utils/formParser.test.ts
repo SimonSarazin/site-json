@@ -382,6 +382,105 @@ describe("parseCoFormFields", () => {
     expect(result[0].fields[0].componentType).toBe("finder");
   });
 
+  it("finder sans libellé ou resté aux défauts legacy : chaînes vides, que le rendu remplace par les libellés traduits", () => {
+    const formData = makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: {
+            nu: { label: "Sans libellés", type: "tpls.forms.cplx.finder" },
+            legacy: { label: "Défauts legacy", type: "tpls.forms.cplx.finder" },
+            cae: { label: "Avec libellés", type: "tpls.forms.cplx.finder" },
+          },
+        },
+      },
+      params: {
+        findernu: { type: "organizations" },
+        // Donnée exacte de la base : la modale de configuration legacy enregistre ses défauts.
+        finderlegacy: {
+          type: "organizations",
+          elementLabel: "Elément",
+          placeholderSearchField: "Saisir le nom de l'élément que vous recherchez",
+        },
+        findercae: { type: "organizations", elementLabel: " CAE", buttonLabel: "Chercher une CAE", placeholderSearchField: "Nom de la CAE" },
+      },
+    });
+
+    const champs = parseCoFormFields(formData)[0].fields;
+    const configDe = (nom: string) => champs.find((f) => f.name === nom)?.finderConfig;
+    // Un défaut français, écrit ici ou enregistré par le legacy, s'affichait tel quel en anglais
+    // (« Your Elément doesn't exist yet? »).
+    const vides = { elementLabel: "", buttonLabel: "", placeholderSearchField: "" };
+    expect(configDe("findernu")).toMatchObject(vides);
+    expect(configDe("finderlegacy")).toMatchObject(vides);
+    expect(configDe("findercae")).toMatchObject({
+      elementLabel: "CAE",
+      buttonLabel: "Chercher une CAE",
+      placeholderSearchField: "Nom de la CAE",
+    });
+  });
+
+  /** Les libellés d'un finder dont le bloc `params` porte, en plus de son type, les clés données. */
+  const libellesDuFinder = (params: Record<string, unknown>) => {
+    const formData = makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: { q: { label: "Question", type: "tpls.forms.cplx.finder" } },
+        },
+      },
+      params: { finderq: { type: "organizations", ...params } },
+    });
+    const config = parseCoFormFields(formData)[0].fields[0].finderConfig;
+    return {
+      elementLabel: config?.elementLabel,
+      buttonLabel: config?.buttonLabel,
+      placeholderSearchField: config?.placeholderSearchField,
+    };
+  };
+
+  it("finder : un `buttonLabel` posé en base à la main compte", () => {
+    // Aucune modale legacy n'écrit cette clé, mais `cplx/finder.php` la lit dans `params`.
+    expect(libellesDuFinder({ buttonLabel: "Chercher ma coopérative" }).buttonLabel).toBe("Chercher ma coopérative");
+    expect(libellesDuFinder({ buttonLabel: "  Chercher ma coopérative " }).buttonLabel).toBe("Chercher ma coopérative");
+
+    // Ce qui n'est pas un texte ne s'affiche pas.
+    expect(libellesDuFinder({ buttonLabel: { fr: "Chercher" } }).buttonLabel).toBe("");
+    expect(libellesDuFinder({ buttonLabel: "   " }).buttonLabel).toBe("");
+  });
+
+  it("finder : un défaut legacy se lit comme absent dans SON champ, et dans lui seul", () => {
+    // `$paramsData` de `cplx/finder.php`. Le bouton : `Yii::t("common", "Search and add")` en / fr / it —
+    // le recopier n'est pas personnaliser, et le rendu le traduit dans la langue de qui lit.
+    const defauts = {
+      elementLabel: ["Elément"],
+      buttonLabel: ["Search and add", "Rechercher et ajouter", "Cerca e aggiungi"],
+      placeholderSearchField: [
+        "Enter the name of the item you are looking for",
+        "Saisir le nom de l'élément que vous recherchez",
+        "Inserisci il nome dell'articolo che stai cercando",
+      ],
+    } as const;
+    type Champ = keyof typeof defauts;
+    const champs = Object.keys(defauts) as Champ[];
+
+    // Chaque défaut, posé dans chacun des trois champs : « Rechercher et ajouter » en placeholder ou
+    // « Elément » sur le bouton sont des choix de qui configure.
+    for (const champ of champs) {
+      for (const origine of champs) {
+        for (const defaut of defauts[origine]) {
+          expect(libellesDuFinder({ [champ]: defaut })[champ], `${champ} ← défaut de ${origine}`).toBe(
+            origine === champ ? "" : defaut,
+          );
+        }
+      }
+    }
+  });
+
   it("parse plusieurs subForms", () => {
     const formData = makeCoFormData({
       inputs: {

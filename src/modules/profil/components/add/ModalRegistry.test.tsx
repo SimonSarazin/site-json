@@ -14,6 +14,8 @@ import { render, screen } from "@testing-library/react";
 const state = vi.hoisted(() => ({
   isConnected: false,
   costumForms: undefined as Record<string, unknown> | undefined,
+  /** Les props reçues par le formulaire, dans l'ordre des rendus. */
+  recu: [] as Array<Record<string, unknown>>,
 }));
 
 vi.mock("@/modules/auth/hooks/useAuthActions", () => ({
@@ -35,10 +37,16 @@ vi.mock("@/hooks/useT", () => ({
 
 // Le formulaire réel est chargé en `lazy()` (import dynamique) : on le remplace
 // par un marqueur synchrone, sans quoi le test observerait le Suspense.
-vi.mock("../../../forms/EntityFormModal", () => ({
-  EntityFormModal: ({ open }: { open: boolean }) =>
-    open ? <div data-testid="entity-form" /> : null,
+vi.mock("../../forms/EntityFormModal", () => ({
+  EntityFormModal: (props: { open: boolean } & Record<string, unknown>) => {
+    state.recu.push(props);
+    return props.open ? <div data-testid="entity-form" /> : null;
+  },
 }));
+
+// Chemin COSTUM (`add-<id>`) : la spec vient du registre des formulaires de config — une spec
+// quelconque suffit, c'est le RELAIS des props vers le formulaire qui est testé.
+vi.mock("../../forms/costum/registerCostumForms", () => ({ getCostumModalSpec: () => ({}) }));
 
 import { DynamicModal } from "./ModalRegistry";
 
@@ -116,4 +124,26 @@ describe("DynamicModal — textes de l'invite surchargeables par la config", () 
     render(<DynamicModal modalName="add-institut-bleu-acteur" open onOpenChange={() => {}} />);
     expect(screen.getByText("AuthRequired.title")).toBeInTheDocument();
   });
+});
+
+describe("DynamicModal — relais de onCreated", () => {
+  beforeEach(() => {
+    state.isConnected = true;
+    state.recu = [];
+  });
+
+  it("le formulaire reçoit onCreated : la création depuis un finder coform en dépend", async () => {
+    const onCreated = vi.fn();
+    render(<DynamicModal modalName="add-organization" open onOpenChange={() => {}} onCreated={onCreated} />);
+    // Chargement DIFFÉRÉ (`lazy`) de la vraie config d'organisation : son premier import est lent.
+    await screen.findByTestId("entity-form", undefined, { timeout: 20000 });
+    expect(state.recu[state.recu.length - 1]?.onCreated).toBe(onCreated);
+  }, 30000);
+
+  it("idem par le chemin COSTUM (`add-<id>`), celui du finder « Partenaires » (`add-cae`)", async () => {
+    const onCreated = vi.fn();
+    render(<DynamicModal modalName="add-cae" open onOpenChange={() => {}} onCreated={onCreated} />);
+    await screen.findByTestId("entity-form", undefined, { timeout: 20000 });
+    expect(state.recu[state.recu.length - 1]?.onCreated).toBe(onCreated);
+  }, 30000);
 });

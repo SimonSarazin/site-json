@@ -55,7 +55,7 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
    * écrite dans le message de commit.
    */
   const MIN_COVERAGE: Record<string, number> = {
-    admin: 25,
+    admin: 27,
     auth: 17,
     commandPalette: 16,
     costumForm: 26,
@@ -66,6 +66,7 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
     profiles: 27,
     "section:action-tiles": 8,
     "section:map-bubbles": 5,
+    "section:featured-carousel": 5,
     "section:agenda": 15,
     "section:cardCountCT": 4,
     "section:content": 1,
@@ -75,6 +76,7 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
     "section:searchHeader": 10,
     "section:searchPro": 66,
     "section:searchProStatic": 85,
+    "section:stats": 4,
     "section:thematics": 2,
     theme: 11,
   };

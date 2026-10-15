@@ -394,11 +394,20 @@ Un **codec** est un couple de transforms read/write référencé par clé. Trois
 |---|---|---|
 | **Lié au WIDGET spécialisé** | `openingHours:read/write` | fourni AUTO par `WIDGET_DEFAULTS` → le champ hérite, 0 code costum |
 | **Clé partagée NOMMÉE** | `address:read/write`, `social:read/write` | widget générique → référencée explicitement (champ ou `serializeGroup`) |
-| **Codec de groupe PARAMÉTRÉ** | `monthYear`, `enumOrOther`, `multiCsv` | `serializeGroups[x] = { …, params }` ; le pipeline passe `params` en 3ᵉ arg d'`applyTransform` |
+| **Codec de groupe PARAMÉTRÉ** | `monthYear`, `enumOrOther`, `multiCsv`, `fixedTags` | `serializeGroups[x] = { …, params }` ; le pipeline passe `params` en 3ᵉ arg d'`applyTransform` |
 
 Les coercions de TYPE (`coerce:string/bool/number/…`) sont génériques (`engine`). Le `params` d'un codec de groupe
 est **donné** dans le schéma → un codec réutilisable (ex. `monthYear` = 2 selects mois+année ↔ `DD/MM/YYYY`,
 params `{monthField, yearField, day}`).
+
+`fixedTags` (params `{field, fixed[]}`) : mots-clés **imposés** par le formulaire. À la lecture, le widget ne
+montre que les mots-clés libres (les imposés en sont retirés) ; à l'écriture, les imposés reviennent en tête,
+dédupliqués, l'ordre des libres préservé — la fiche ne sort donc jamais de l'annuaire filtré sur ce tag. Codec de
+GROUPE pour que la liste des tags vive en config (un codec de champ ne reçoit pas de `params`) ; pas une estampille
+`append`, qui en édition refusionne les tags serveur et rend tout mot-clé libre indélébile. Premier usage :
+`rezo-sante-lieu` (`config.prod.rezo-sante-reunion.json`), dont le tag `lieux-sante` est aussi le `defaultTags` de
+la page `/lieux-sante` (`defaultFilters.tags.$in`, égalité exacte comme le codec) et le `hideTags` de sa carte —
+un seul contrat, gardé par `rezo-sante.configDriven.test.ts`.
 
 ### `enumFrom` — options dynamiques par clé
 
@@ -445,7 +454,7 @@ dispatchent vers les registres (`forms/specRegistries.ts`, peuplés par `forms/r
 observatoire est passé aux `mutation.stamps` (`append` + `$costum`, cf. § dédié) ; `buildTiersLieuxPayload`
 subsiste comme export mais n'est plus registré — il ne sert que d'ORACLE de parité aux tests.
 
-Le parc porte aujourd'hui **28 déclarations `costumForms` (26 ids uniques) réparties sur 9 `config.prod.*.json`** —
+Le parc porte aujourd'hui (01/10/2026) **34 déclarations `costumForms` (32 ids uniques) réparties sur 11 `config.prod.*.json`** —
 `tiers-lieux` et `equipements-sportifs` sont déclarés par deux sites chacun. Toutes sont compilées au boot par
 `registerCostumForms.ts` et posées à blanc par `tests/preflight/costum-forms.test.ts`, qui énumère tous les
 `config.prod*.json`.
@@ -693,6 +702,27 @@ TS, désormais supprimée ; la non-régression est aujourd'hui tenue par
 ---
 
 ## Pièges / gotchas
+
+### Une modale ouverte DEPUIS un formulaire le soumettait aussi
+
+En React, un `submit` remonte l'arbre des **composants**, portails compris. La modale de création
+d'un finder coform (`EntityFormModal`, rendue sous la question) soumettait donc AUSSI le formulaire
+hôte : sa validation partait, ses erreurs s'affichaient derrière. Le `submit` est arrêté **à la
+frontière du dialogue** — `DialogContent`, `SheetContent` et `ModalContent`, les trois contenus bâtis
+sur le dialogue Radix (`stopSubmitAtPortal`, [`src/lib/portalSubmit.ts`](../src/lib/portalSubmit.ts))
+— et non dans `GenericForm` : la règle vaut pour tout formulaire rendu dans un dialogue ou un panneau
+latéral (une étape coform, un formulaire de module), pas pour le seul formulaire du moteur. Il ne
+remonte plus à un formulaire placé au-dessus dans l'arbre React ; un bouton `form="<id>"` posé dans
+un dialogue soumet toujours le formulaire qu'il désigne (l'évènement naît sur ce formulaire, hors du
+dialogue). ⚠️ Les autres portails (`AlertDialogContent`, `DrawerContent`, `PopoverContent`) n'ont pas
+ce garde : un formulaire qu'on y monterait sous un autre formulaire demande de l'y poser.
+
+### Créer depuis un autre parcours : `onCreated`
+
+`EntityFormModal` (et `DynamicModal`, qui le relaie) accepte `onCreated(entity)` : la modale rend
+l'entité créée à l'appelant et ne redirige PAS vers sa fiche (`navigateOnSuccess: false` forcé) —
+sans quoi la saisie en cours serait abandonnée. Usage : le bouton « Ajouter » d'un finder coform
+([21-module-coform](21-module-coform.md), `coform.finderAddNew`).
 
 ### Scroll-lock des modales coincé sur `<body>` (scroll de page perdu)
 

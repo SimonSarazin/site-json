@@ -534,18 +534,28 @@ export const ActionTilesSchema = z.object({
     /** Largeur de la grille : `default` (1024 px max) ou `wide` (1280 px max), pour 4 tuiles et plus en `lg`. */
     width: z.enum(["default", "wide"]).optional(),
     /**
-     * Rendu du titre : `plain` (défaut, titre centré), `badge` — la pastille inclinée d'`articleTeaser`
-     * et de `map-bubbles` — ou `pill`, la même en arrondi droit. Les deux se calent à gauche, pour une
-     * page dont toutes les bandes portent le même repère. `accentColor` (couleur CSS) les teinte ; sans
-     * elle, la pastille prend le ton `secondary`.
+     * Rendu du titre : `plain` (défaut, titre nu, centré) ; `badge` — la pastille inclinée
+     * d'`articleTeaser` et de `map-bubbles` — `pill`, la même en arrondi droit, ou `text` — sans fond ni
+     * rotation, juste le texte, plus grand (`accentColor` en devient la couleur du texte au lieu de
+     * teinter un fond). `badge`/`pill`/`text` partagent le MÊME repère que les autres bandes de la page
+     * (`sectionBadgeClass`) ; sans `accentColor`, `badge`/`pill` prennent le ton `secondary`.
      */
-    headlineStyle: z.enum(["plain", "badge", "pill"]).optional(),
+    headlineStyle: z.enum(["plain", "badge", "pill", "text"]).optional(),
     /**
-     * Disposition d'une tuile : `centered` (défaut, icône puis textes centrés) ou `inline` — icône dans
-     * une pastille, titre à côté d'elle, sous-titre dessous, le tout aligné à gauche. `inline` se lit
-     * mieux dès que les sous-titres font une phrase entière.
+     * Disposition d'une tuile : `centered` (défaut, icône puis textes centrés), `inline` — icône dans
+     * une pastille, titre à côté d'elle, sous-titre dessous, le tout aligné à gauche — ou `pillRow` :
+     * le TITRE DE SECTION et les actions tiennent sur UNE SEULE ligne, chaque action devenant un bouton
+     * PILULE (icône en pastille, libellé, flèche) au lieu d'une tuile — pas de sous-titre (ignoré).
+     * `inline` se lit mieux dès que les sous-titres font une phrase entière ; `pillRow` quand la bande
+     * doit rester compacte et tenir au-dessus d'un autre bloc (ex. un bandeau d'accueil).
      */
-    tileLayout: z.enum(["centered", "inline"]).optional(),
+    tileLayout: z.enum(["centered", "inline", "pillRow"]).optional(),
+    /** Effet au survol/focus d'une tuile : `none` (défaut) ou `lift` — la tuile monte légèrement et
+     *  gagne une ombre (sans mouvement si `prefers-reduced-motion`). */
+    hoverEffect: z.enum(["none", "lift"]).optional(),
+    /** `compact` : marges de section et d'en-tête resserrées, fond transparent — pour une rangée de
+     *  tuiles posée DANS une autre bande (ex. `gridLayout.topSection`). Défaut : rendu historique. */
+    density: z.enum(["default", "compact"]).optional(),
     accentColor: z.string().optional(),
     actions: z.array(
       z.object({
@@ -583,9 +593,11 @@ export type ActionTiles = z.infer<typeof ActionTilesSchema>;
 export type ActionTilesProps = z.infer<typeof ActionTilesSchema>["props"];
 
 /**
- * Source dynamique d'un compteur `cta-card-grid.props.stats[]`
- * `searchCount` compte un périmètre de recherche déjà public (même contrat que les KPIs admin) ; 
- * `membersCount` compte les membres de l'entité, validés par défaut (`toBeValidated: true` = en attente).
+ * Source dynamique d'un compteur `cta-card-grid.props.stats[]` ou `stats.props.items[]`
+ * `searchCount` compte un périmètre de recherche déjà public (même contrat que les KPIs admin) ;
+ * `membersCount` compte les membres de l'entité, validés par défaut (`toBeValidated: true` = en attente) ;
+ * `aacCommuns` compte les communs visibles de `config.aac.formId` — le chiffre du médaillon
+ * d'`aac-highlight`, sans rien à paramétrer (pas de `config.aac` ⇒ jamais résolu).
  */
 const StatDynamicSourceSchema = z.discriminatedUnion("type", [
   z.object({
@@ -596,6 +608,9 @@ const StatDynamicSourceSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("membersCount"),
     toBeValidated: z.boolean().default(false),
+  }),
+  z.object({
+    type: z.literal("aacCommuns"),
   }),
 ]);
 export type StatDynamicSource = z.infer<typeof StatDynamicSourceSchema>;
@@ -1018,11 +1033,24 @@ const StatsSectionSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     items: z.array(z.object({
-      value: z.string(),
+      /** Chiffre écrit. Avec `source`, repli affiché tant que le compte n'est pas revenu. */
+      value: z.string().optional(),
       label: LocalizedString,
       description: LocalizedString.optional(),
       icon: z.string().optional(),
+      /** Chiffre COMPTÉ côté client (même contrat que `cta-card-grid.props.stats[].source`). */
+      source: StatDynamicSourceSchema.optional(),
+      /** Design `tiles` : la tuile pleine couleur primaire — celle qui porte le chiffre phare. */
+      highlight: z.boolean().optional(),
+    }).refine((item) => item.value !== undefined || item.source !== undefined, {
+      message: "Un stat doit avoir soit `value` (statique) soit `source` (dynamique).",
     })),
+    /**
+     * `default` — chiffres centrés sur un aplat léger, icône au-dessus ;
+     * `tiles` — une rangée de tuiles arrondies (chiffre puis légende, alignés à gauche),
+     * sans fond de section : se pose sous un en-tête de bande, au-dessus d'une liste.
+     */
+    design: z.enum(["default", "tiles"]).optional(),
     layout: z.enum(["horizontal", "vertical"]).default("horizontal"),
     // Nombre de colonnes par breakpoint (mobile = 1). Optionnel : sans lui, le
     // défaut `horizontal` reste md:2 lg:4 (idéal pour 4/8 items). À régler quand
@@ -1368,6 +1396,12 @@ export const MapBubblesSchema = z.object({
   props: z.object({
     // Rendu à la fois comme le <h2> sémantique et le badge-pastille incliné — pas de titre séparé.
     headline: LocalizedString,
+    /** Icône (registre lucide, kebab-case) posée avant le texte du titre — ex. "map-pin". Absente, le
+     *  titre reste texte seul (comportement historique). */
+    headlineIcon: z.string().optional(),
+    /** Couleur de l'icône du titre (CSS) — INDÉPENDANTE de la couleur du texte (ex. icône turquoise,
+     *  titre marine en `headlineStyle:"text"`). Défaut : hérite de la couleur du texte (`currentColor`). */
+    headlineIconColor: z.string().optional(),
     subhead: LocalizedString.optional(),
     backgroundImage: z.string().optional(),
     backgroundImageAlt: LocalizedString.optional(),
@@ -1379,14 +1413,17 @@ export const MapBubblesSchema = z.object({
      * suppose que le bloc est DANS une carte (colonne de `gridLayout`), sinon le titre flotte dans le vide.
      */
     design: z.enum(["sticker", "card"]).optional(),
-    /** Forme du titre : `badge` (défaut, étiquette inclinée) ou `pill` (arrondi droit). */
-    headlineStyle: z.enum(["badge", "pill"]).optional(),
-    /** Fond de l'étiquette de titre (couleur CSS). Défaut : le marine fixe de la carte. */
+    /** Forme du titre : `badge` (défaut, étiquette inclinée), `pill` (arrondi droit) ou `text` — texte
+     *  seul, sans fond ni rotation, police `--font-sans` (celle du menu), plus grand. */
+    headlineStyle: z.enum(["badge", "pill", "text"]).optional(),
+    /** Fond de l'étiquette de titre (couleur CSS). En `headlineStyle:"text"`, DEVIENT la couleur du
+     *  texte (il n'y a pas de fond à teinter). Défaut : le marine fixe de la carte. */
     badgeColor: z.string().optional(),
     /** Encre de l'étiquette de titre. Défaut blanc — contraste AA à mesurer sur `badgeColor`. */
     badgeTextColor: z.string().optional(),
     // Dégradé décoratif optionnel derrière l'illustration. Couleurs CSS arbitraires
     // (typiquement des var() de thème du site) : le composant ne code aucune couleur en dur.
+    // Ignoré si `illustrationBackgroundImage` est fourni (qui prime).
     backgroundOverlay: z
       .object({
         from: z.string(),
@@ -1394,6 +1431,25 @@ export const MapBubblesSchema = z.object({
         angle: z.number().optional(), // degrés, défaut 90 (gauche → droite)
       })
       .optional(),
+    /** Image de fond de l'illustration (chemin, ex. un dégradé déjà cuit en PNG) — PRIME sur
+     *  `backgroundOverlay` (CSS) si les deux sont fournis. Couvre tout le panneau (`cover`, centré). */
+    illustrationBackgroundImage: z.string().optional(),
+    /** Animation des bulles : apparition en cascade puis légère respiration en boucle. Désactivée
+     *  sous `prefers-reduced-motion`. Défaut `false`. */
+    animate: z.boolean().optional(),
+    /** Largeur max de l'illustration (longueur CSS, `calc()`/`min()` acceptés), centrée dans son panneau.
+     *  Les bulles, positionnées en % de l'illustration, suivent. Absent : toute la largeur (historique). */
+    illustrationMaxWidth: z.string().optional(),
+    /** Plafond de HAUTEUR de l'illustration (longueur CSS, ex. `"80vh"`), centrée — la largeur suit via
+     *  `illustrationAspectRatio` au lieu de forcer la hauteur à suivre la largeur de la colonne. Opt-in
+     *  (jamais de recadrage automatique) : absent, rendu historique (pleine largeur). À poser quand
+     *  l'illustration est haute (proche du carré) et la carte stretchée par une colonne voisine plus
+     *  haute qu'elle (ex. `gridLayout` en `align:"stretch"`). */
+    illustrationMaxHeight: z.string().optional(),
+    /** Ratio largeur/hauteur CSS de l'illustration (ex. `"996/945"`, le ratio EXACT du fichier) — requis
+     *  avec `illustrationMaxHeight` : sans lui, un fichier qui n'est pas au format 4:3 (défaut) serait
+     *  étiré ou laisserait des bandes. Les bulles restent en % de CETTE boîte, donc toujours alignées. */
+    illustrationAspectRatio: z.string().optional(),
     items: z.array(
       z.object({
         label: LocalizedString,
@@ -1562,7 +1618,13 @@ const GridLayoutSectionPropsSchema = z.object({
    *  bloc doit rester sur une ligne à fort zoom navigateur, qui rétrécit le viewport CSS. */
   from: z.enum(["md", "lg"]).optional(),
   gap: z.number().optional(),
+  /** Section rendue EN TÊTE de la même bande, au-dessus du couple gauche/droite (ou de la rangée),
+   *  sur toute la largeur — pour lire plusieurs blocs comme une seule bande. Absente : rendu historique. */
+  topSection: z.lazy(() => SectionSchemaLazy).optional(),
   className: z.string().optional(),
+  /** Classes du bloc qui porte `topSection` et la grille, À L'INTÉRIEUR du conteneur — pour poser un
+   *  panneau (fond, arrondi, ombre) sur le fond de bande `bg`. Absent : aucune boîte ajoutée. */
+  innerWrapperClass: z.string().optional(),
   leftWrapperClass: z.string().optional(),
   rightWrapperClass: z.string().optional(),
 });
@@ -1921,6 +1983,13 @@ export interface EnhancedNavItemType {
    * l'infobulle. Ignoré sans `icon`. Le menu mobile et les autres variantes de header affichent le libellé.
    */
   iconOnly?: boolean;
+  /**
+   * Barre desktop du header `stacked` : `"actions"` sort l'entrée du menu centré pour la poser dans le
+   * groupe d'actions de droite (thème, langue, connexion…), à la place d'un bouton de header — typiquement
+   * une loupe icône seule vers une page de recherche. Ignoré par les autres variantes de header (le menu
+   * mobile affiche toujours l'entrée dans la liste).
+   */
+  placement?: "actions";
 }
 
 const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
@@ -1938,6 +2007,7 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
     featured: z.boolean().optional(),
     dynamicList: DynamicNavList.optional(),
     iconOnly: z.boolean().optional(),
+    placement: z.literal("actions").optional(),
   }).refine(d => d.path || d.href || d.children || d.megaMenu || d.dynamicList, {
     message: "NavItem : path, href, children, megaMenu ou dynamicList obligatoire"
   })
@@ -2424,6 +2494,19 @@ export const SiteConfig = z.object({
   // les sections `aac-directory`/`aac-highlight` et les routes `/aac` le lisent
   // depuis ici (les routes ne sont montées que si ce bloc existe). cf. modules/aac.
   aac: AacConfigSchema.optional(),
+  // Config site-level des formulaires coform. `finderAddNew` : la modale d'AJOUT qu'ouvre le bouton
+  // « Ajouter » d'un finder (réglage `addNew` du legacy). Clé = la QUESTION (`finder<étape><id>`) ou le
+  // TYPE cherché (`organizations`…) ; valeur = une modale du ModalRegistry (`add-organization`,
+  // `add-<id costum>`). Précédence : question > type > modale standard du type. Un formulaire costum
+  // ne s'ouvre QUE déclaré ici, jamais d'office. cf. modules/coform (`resolveFinderAddNewModal`).
+  coform: z.object({
+    finderAddNew: z.record(
+      z.string(),
+      // Seules les modales d'AJOUT s'ouvrent (`DynamicModal` ne résout que `add-*`). Ce schéma ne
+      // tourne pas sur la config au runtime : le resolveur refait le contrôle, existence comprise.
+      z.string().regex(/^add-.+/, "attendu une modale d'ajout `add-<id>`"),
+    ).optional(),
+  }).optional(),
   commandPalette: CommandPaletteConfigSchema.optional(),
   // Config site-level du blog : défauts des variants extensibles (card/reader/feedLayout). cf. modules/blog.
   blog: BlogConfigSchema.optional(),

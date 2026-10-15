@@ -507,6 +507,32 @@ describe("normalizeFundingEnvelope — bloc `payment` des financeurs", () => {
   });
 });
 
+describe("normalizeFundingEnvelope — moyens de paiement de l'entité", () => {
+  it("garde les indicateurs `stripe` / `helloasso` de `getEnvelopeData` avec la clé publique", () => {
+    const { paymentMethods } = normalizeFundingEnvelope({
+      projects: [],
+      paymentMethods: { stripe: false, helloasso: true, stripePublicKey: "pk_test_x" },
+    });
+
+    expect(paymentMethods).toEqual({ stripe: false, helloasso: true, stripePublicKey: "pk_test_x" });
+  });
+
+  it("les reporte sur le projet sélectionné", () => {
+    const { selectedProject, paymentMethods } = normalizeFundingEnvelope(
+      {
+        projects: [{ id: "answer-1", project: { id: "project-1" } }],
+        paymentMethods: { stripe: true, helloasso: false },
+      },
+      undefined,
+      undefined,
+      "project-1",
+    );
+
+    expect(selectedProject?.paymentMethods).toMatchObject({ stripe: true, helloasso: false });
+    expect(paymentMethods).toMatchObject({ stripe: true, helloasso: false });
+  });
+});
+
 /**
  * Régression 1.3 (MR 53) : dans `MilestoneListField`, `rawDepenses` est la valeur
  * react-hook-form — déjà modifiée par le geste — et `enrichedItems` la photo

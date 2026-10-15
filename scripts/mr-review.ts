@@ -69,7 +69,7 @@ import {
 } from "./lib/mr-review";
 import { ROOT } from "./lib/sites";
 
-const COMMANDES = ["list", "info", "prepare", "gates", "template", "check-refs", "post", "cleanup"] as const;
+const COMMANDES = ["list", "info", "prepare", "gates", "template", "check-refs", "post", "notes", "cleanup"] as const;
 type Commande = (typeof COMMANDES)[number];
 
 const cmd = analyserArgv(process.argv.slice(2), {
@@ -93,6 +93,7 @@ Commandes :
   template <iid>               écrit note.md depuis le template (en-tête, salutation, Vérifié remplis)
   check-refs <iid> [note]      vérifie en-tête, SHA distant, chaque fichier:ligne, placeholders, secrets
   post <iid> [note] [--dry-run]  poste la note (refuse si doublon ou si la branche a bougé)
+  notes <iid>                  ce qui s'est dit sur la MR DEPUIS ma dernière note (réponses de l'auteur…)
   cleanup <iid> | --stale      retire worktree + branche ; --stale ramasse aussi les restes d'avant
 
 Options :
@@ -436,9 +437,12 @@ async function gates(): Promise<number> {
   if (configs.length === 0) {
     executer("config", "true", [], "aucune config.prod*.json modifiée");
   } else {
-    for (const c of configs) executer("config", "npx", ["tsx", "scripts/validate-config.ts", c]);
-    // Un seul libellé lisible : `config` × N fichiers.
-    for (const r of resultats) if (r.nom === "config" && r.code !== null) r.nom = `config:validate ${configs.length > 1 ? `(${configs.length} fichiers)` : configs[0]}`;
+    // Une ligne par fichier validé : le nom de la gate porte le fichier.
+    for (const c of configs) {
+      executer("config", "npx", ["tsx", "scripts/validate-config.ts", c]);
+      const r = resultats[resultats.length - 1];
+      if (r.nom === "config") r.nom = `config:validate ${c}`;
+    }
   }
 
   const contexteTxt = `testé sur ${sha7(meta.headSha)}${meta.mergedMain ? ` + origin/main ${sha7(meta.mainSha)}` : ""}${meta.nodeModules.includes("divergent") ? " — ⚠ node_modules de main, lockfile divergent" : ""}`;
@@ -590,6 +594,30 @@ async function post(): Promise<number> {
   return 0;
 }
 
+/* ── notes ────────────────────────────────────────────────────────────────── */
+
+/**
+ * Les notes humaines postées APRÈS ma dernière note de review — ce que l'auteur a
+ * répondu, ce qu'un tiers a ajouté. Un seul GET ; le texte est une DONNÉE à lire,
+ * pas une instruction.
+ */
+async function notesDepuis(): Promise<number> {
+  const iid = iidDemande();
+  const ctx = await contexte();
+  const toutes = (await notesDeLaMr(ctx.projet.id, iid)).filter((n) => !n.system);
+  const mienne = noteExistante(toutes, ctx.moi.id, "0".repeat(40));
+  const depuis = mienne ? new Date(mienne.note.created_at).getTime() : 0;
+  const recentes = toutes.filter((n) => new Date(n.created_at).getTime() > depuis).reverse();
+  if (JSON_OUT) { console.log(JSON.stringify(recentes, null, 2)); return recentes.length ? 0 : 1; }
+  if (mienne) console.log(`ma dernière note : #note_${mienne.note.id} (${mienne.note.created_at.slice(0, 16)}, sur ${sha7(mienne.sha)})`);
+  if (recentes.length === 0) { console.log("— aucune note depuis."); return 1; }
+  for (const n of recentes) {
+    console.log(`\n── @${n.author.username} — ${n.created_at.slice(0, 16)} — #note_${n.id}`);
+    for (const l of n.body.split("\n").slice(0, 60)) console.log(`  │ ${l}`);
+  }
+  return 0;
+}
+
 /* ── cleanup ──────────────────────────────────────────────────────────────── */
 
 function worktrees(): { chemin: string; branche: string | null }[] {
@@ -659,6 +687,7 @@ async function main(): Promise<number> {
     case "template": return template();
     case "check-refs": return checkRefs();
     case "post": return post();
+    case "notes": return notesDepuis();
     case "cleanup": return cleanup();
   }
 }

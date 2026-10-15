@@ -1161,13 +1161,13 @@ export interface FinderConfig {
   myContacts: boolean;
   /** Initialiser avec l'utilisateur connecté */
   initCurrentUser: boolean;
-  /** Label de l'élément recherché (ex: "Organisation", "Tiers-lieu") */
+  /** Label de l'élément recherché (ex: "Organisation", "Tiers-lieu"). Vide ⇒ libellé traduit. */
   elementLabel: string;
   /** Titre de la modale, déjà traduit — prioritaire sur « Rechercher un {{label}} ». */
   title?: string;
-  /** Texte du bouton de recherche */
+  /** Texte du bouton de recherche. Vide ⇒ libellé traduit. */
   buttonLabel: string;
-  /** Placeholder du champ de recherche */
+  /** Placeholder du champ de recherche. Vide ⇒ libellé traduit. */
   placeholderSearchField: string;
   /** Nom du champ (pour identifier les éléments sélectionnés) */
   field: string;

@@ -138,4 +138,38 @@ test.describe("Hydration (Level 3)", () => {
 
     expect(criticalErrors).toEqual([]);
   });
+
+  /**
+   * Parents d'entités factorisés (`src/lib/ssrStatePacking.ts`) : le HTML transporte des références
+   * `__ssrParentRef`, que `ssrStateBootstrap` doit avoir TOUTES restituées avant que React Query ne
+   * lise l'état. Une restitution ratée ne casse pas la page — elle fausse `isAdmin()` et la méta de
+   * parent jusqu'au prochain refetch, avec pour seul signal une ligne de console. Ce test la voit.
+   * Page lourde visée : `E2E_PACKED_PATH=/communaute VITE_SLUG=openAtlas npx playwright test e2e/hydration.spec.ts`.
+   */
+  test("parents d'entités factorisés : tous restitués avant l'hydratation", async ({ page, request }) => {
+    const target = process.env.E2E_PACKED_PATH ?? secondaryPath;
+    const html = await (await request.get(target)).text();
+    test.skip(!html.includes("__ssrParentRef"), `${target} : aucun parent factorisé dans le HTML — rien à restituer`);
+
+    const ssrErrors: string[] = [];
+    page.on("console", (msg) => {
+      if (msg.type() === "error" && msg.text().includes("[ssr]")) ssrErrors.push(msg.text());
+    });
+    await page.goto(target, { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(3000);
+
+    const state = await page.evaluate(() => {
+      const text = JSON.stringify(window.__REACT_QUERY_STATE__ ?? null);
+      return {
+        refs: text.split("__ssrParentRef").length - 1,
+        table: text.includes("__ssrParents"),
+        // Un parent restitué porte sa méta complète (`serverData`), pas un simple index.
+        restored: (text.match(/"parent":\{[^{}]*"serverData":\{/g) ?? []).length,
+      };
+    });
+    expect(ssrErrors).toEqual([]);
+    expect(state.refs).toBe(0);
+    expect(state.table).toBe(false);
+    expect(state.restored).toBeGreaterThan(0);
+  });
 });

@@ -30,6 +30,10 @@
       ]
     }
   },
+  "finderAddNew": {
+    "events": "add-event",
+    "poi": "add-poi"
+  },
   "editModals": {
     "events": {
       "vierge": "edit-profile",
