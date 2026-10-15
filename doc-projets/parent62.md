@@ -15,7 +15,10 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-10-08** — relecture de la MR `parents62` : 12 constats corrigés (régressions,
+Dernière mise à jour : **2026-10-13** — annuaire des acteurs du soutien à la parentalité
+(`/annuaire-acteurs-parentalite`, 38 organisations importées), fiche profil et formulaire d'édition dédié
+`parent62-acteur` sur les vrais champs du formulaire, correctif admin (colonnes « Année »/INFORESO et
+« Type »/Ressources invisibles) — détail en §9septquadragies. Précédemment : **2026-10-08** — relecture de la MR `parents62` : 12 constats corrigés (régressions,
 dette pré-existante étendue, bonnes pratiques) sur la gestion des rôles, l'export PDF, la grille équipe,
 la pagination numérotée (troncature `1 … 30 31 32 33 34`, bug « Previous »/« Next » resté en anglais, et
 l'annonce d'accessibilité qui disait « sur 2 » au lieu du total réel « sur 537 » — les trois trouvés en
@@ -4252,6 +4255,234 @@ n'est pas supprimée, seulement son lien de footer.
 |---|---|
 | `validate-config` | ✅ 51 pages · 182 sections |
 
+## 9septquadragies. Annuaire des acteurs du soutien à la parentalité, formulaire d'édition dédié, correctif admin INFORESO/Ressources
+
+**Annuaire des acteurs** — nouvelle page `/annuaire-acteurs-parentalite` (entrée de menu dans « Le Réseau
+parentalité »), distincte de `/annuaire` (partenaires référencés via formulaire public) : affiche les 38
+organisations importées (`source.key:"youthCare"`, `reference.costum` contient `parent62`), vue **carte par
+défaut**, carte `image-cover`/`imageFit:"contain"` (même design que MSS/tiers-lieux), preview `facets`
+générique (`preview.type:"facets"`, zéro code) sur les VRAIS noms de champs observés en base — `categoryThematic`,
+`typeAction`, `publicCible`, `email`, `telephone`, `url` — et non les champs `territoires`/`publics`/`themes` du
+formulaire partenaire, qui n'existent sur AUCUNE de ces 38 fiches.
+
+**Page profil** — le bloc « À propos » d'une organisation (`profile-parent62-about`, remplace `profile-about-ssbe`
+qui affichait les champs SSBE vides sur parent62) montre désormais TOUS les attributs du formulaire non couverts
+par `profile-info`/`profile-opening-hours` : catégorie thématique, type d'action, **public cible**, réseaux sociaux
+(liens cliquables), accès/stationnement, mise à disposition de ressources, interlocuteur privilégié, remarques, et
+les documents attachés (même source que `profile-documents`/`getGalleryFiles`, rendus en carte à côté de
+l'interlocuteur plutôt qu'en section séparée). Bandeaux dégradés `var(--primary)`/`var(--accent)` du thème
+parent62 (pas `--card-header-gradient`, token bespoke absent de ce site). `profile-opening-hours` déplacé en
+colonne de droite, à côté des coordonnées.
+
+**Formulaire d'édition** — nouveau costumForm `parent62-acteur` (édition complète des 38 fiches depuis la page
+profil), construit à 100 % sur des codecs déjà partagés (zéro code) : `address:read/write`, `telephone:read/write`
+(groupe `_telSlot`/`_telRest`, déjà prouvé sur SSBE/cyber-reunion), `social:read/write` (widget `fieldArray`),
+widget natif `openingHours`, widget `file` pour les documents (`contentKey:"file"`, même bucket que la section
+profil générique). Routé via `profiles.organizations.editModals` : route `edit-parent62-acteur` AJOUTÉE AVANT
+`edit-parent62-partenaire`, condition `sourceKeys contient "youthCare"` — seules les 38 fiches importées basculent
+sur ce formulaire, `parent62-partenaire` reste inchangé pour les soumissions via `/annuaire`.
+
+**Correctif admin — colonnes custom invisibles (INFORESO, Ressources)** — bug trouvé en vérifiant le signalement
+« la colonne Année ne s'affiche pas » sur `/admin` → onglet INFORESO : une section admin `type:"resource"` SANS
+`status` ni action `validate` passe en « mode public » (`AdminResourceTable.tsx`), qui projette UNIQUEMENT
+`["source","reference"]` + `source.defaultFields` — tout champ costum hors de ce socle (ex. `annee`) est strippé
+par le backend, en silence ; seuls les champs du socle légacy (`name`, `created`…) survivent, ce qui masquait le
+bug (les autres colonnes affichaient bien leurs valeurs). **Même bug trouvé sur l'onglet « Ressources »**
+(colonne « Type » / champ `category`). Correctif : `source.defaultFields:["annee"]` / `["category"]` sur les deux
+sections — mécanisme déjà prévu par le code, juste non utilisé. **Piège réutilisable** pour toute future section
+admin `resource` sans validation qui affiche un champ costum hors du socle légacy.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `config:validate` | ✅ 52 pages · 183 sections |
+| `audit:config` | ✅ RAS |
+| `config:render` | ✅ 52/52 pages, 183/183 sections avec contenu SSR |
+| `test:unit` (suite complète) | ✅ 5 825/5 828 passés, 1 skip — 2 échecs **pré-existants et sans rapport** (`bundle-size`, dette connue) |
+| `tests/preflight/costum-forms.test.ts` | ✅ 73/73 — toutes les clés de codec du nouveau form résolues |
+| `tests/preflight/archetypes.test.ts` | ✅ (resynchronisé : `examples/admin.json` avait dérivé du correctif `defaultFields`) |
+
+### 9septquadragies.2 Documents attachés, hors `about.files`
+
+Une image/un dépliant d'une fiche peut être rattaché via `contentKey` plutôt que dans `about.files` (ex.
+`"presentation"`, cf. §9septquadragies.5) : visible sur la page profil (`ProfileParent62About`, lecture
+directe de `serverData.images`), et depuis le 14/10 également éditable dans le formulaire via le champ
+`galeriePresentation` (§9septquadragies.6).
+
+### 9septquadragies.3 `typeObj` de l'acteur — sous-type costum dédié
+
+Un sous-type costum **séparé** `costum.typeObj.acteur` (`sameAs:"organizations"`) porte les 8 champs
+spécifiques (`categoryThematic`/`typeAction`/`publicCible`/`accessibility`/`provisionResources`/`contact`/
+`note`/`socialNetwork`) — pas fusionné dans le typeObj `organizations` existant des Partenaires. En
+édition, le SDK choisit le sous-type via `serverData.type` (seul levier, `BaseEntity.ts`) : `type` est
+donc le **discriminant pur** de ce sous-type (`"acteur"`) sur les fiches acteurs, et ne porte plus la
+nature juridique de structure (NGO/Collectivité/Établissement/Entreprise) comme sur `parent62-partenaire`
+— le sélecteur « Type de structure » est donc absent du formulaire `parent62-acteur` et de son affichage.
+
+
+### 9septquadragies.5 Images « presentation »
+
+`contentKey:"presentation"` (collection `documents`, séparée de `organizations` — assemblée à la lecture
+par le backend, jointe par `{type:"organizations", id:<_id>}`) : affichées sur la fiche profil publique
+(`toPresentationDocs`/`ProfileParent62About.tsx`, lit `serverData.images` directement, code
+site-spécifique sans dépendance moteur) et éditables depuis le formulaire via `galeriePresentation`
+(§9septquadragies.6). Pour tout nouvel ajout (image ou document), le champ « Documents » du formulaire
+accepte déjà les images (`widgetProps.accept` élargi, config seule).
+
+### 9septquadragies.6 Galerie « Images de présentation » + différenciation `/annuaire` vs `/annuaire-acteurs-parentalite`
+
+**Galerie en édition** (zéro moteur) : champ `galeriePresentation` (`widget:"gallery"`,
+`contentKey:"presentation"`, `renderOnly:true`) sur `parent62-acteur` — même mécanisme que
+`parent62-article` (`contentKey:"slider"`) et d'autres sites (tiers-lieux, institut-bleu, saint-paul-sport,
+federationDesCae).
+
+**Différenciation des deux annuaires** — `/annuaire` (Partenaires) et `/annuaire-acteurs-parentalite`
+(Acteurs) sont distingués par un tag, **jamais** par `type` ou `source.key` (tous deux non fiables sur les
+fiches importées et/ou dépendants d'une donnée de lot de test) :
+- `/annuaire` : `baseParams.defaultTags:["Partenaires"]`. Tag posé par `mutation.stamps` sur
+  `parent62-partenaire` (`{field:"tags", value:"Partenaires", op:"append", on:"both"}` — moteur déjà
+  partagé, cf. tiers-lieux `mainTag`/`compagnon`), réaffirmé à CHAQUE sauvegarde (create ET edit).
+  `defaultTags` est un scope de base invisible (même mécanisme que le bandeau « À la une » de l'accueil),
+  pas un filtre interactif retirable.
+- `/annuaire-acteurs-parentalite` : `defaultFilters:{"tags":{"$nin":["Partenaires"]}}` — Acteur = défaut
+  (absence du tag).
+- Seul « DEMAIN » existe comme Partenaire en base locale (fiche visiblement de test) — pas retaguée
+  automatiquement, à trancher avec l'équipe lors d'une vraie soumission.
+
+`/recherche` (cible « Structures & partenaires ») reste volontairement sans filtre dédié (confirmé avec
+l'équipe).
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `stamps.test.ts` (moteur partagé, non modifié) | ✅ 20/20 |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+
+### 9septquadragies.7 Deux correctifs trouvés en relecture avant merge
+
+- **`email` optionnel rejeté à la création** (`ApiValidationError … /email must be a valid email address`,
+  reproduit sur « Ajouter un partenaire ») : le schéma AJV `ADD_ORGANIZATION` (`common3`, côté SDK) exige
+  `format:"email"` SANS passe-droit pour `""`, contrairement à `url`/`tags` qui en ont un. `email` sur
+  `parent62-partenaire`/`parent62-acteur` est optionnel et sans codec `write` : laissé vide, le pipeline
+  générique émettait `email:""`, rejeté par l'AJV. Isolé en rejouant le schéma réel du SDK
+  (`cocolight-api-client/src/endpoints.module.ts`) avec Ajv en local, hors navigateur. **Correctif**,
+  config seule, déjà en usage (`rezo-sante-acteur`/`rezo-sante-lieu`) : `"write": "omitEmpty"` sur les deux
+  champs `email` — omet la clé plutôt que d'envoyer `""`.
+- **« Ajouter une organisation » depuis un profil citoyen ouvrait le formulaire Communecter générique**,
+  pas `parent62-partenaire` : deux `costumForms` d'`entityType:"organizations"` existent désormais
+  (`parent62-partenaire` et `parent62-acteur`, §9septquadragies.3), et le résolveur
+  (`siteCostumAddModal`/`costumCreateKey`, `addModals.ts`) rend `null` dès qu'il y a plusieurs candidats
+  pour une collection — « on ne choisit pas à la place du site » — donc `profiles.citoyens.addConfig.
+  organization:true` retombait sur `add-organization`. Un parent référençant sa structure depuis son
+  profil la créait donc sans `categoryThematic`/tag `Partenaires`/scope `parent62` — invisible dans les
+  deux annuaires. **Correctif**, config seule, patron déjà utilisé par `institut-bleu` (2 formulaires
+  `poi` pour la même raison) : `organization:false` + une entrée `addConfig.custom` ciblant explicitement
+  `modalKey:"add-parent62-partenaire"` (label, icône `handshake`, `condition:{auth:"required",
+  userContext:"own"}`). Fixture de garde `tests/preflight/__effective__/parent62.json` régénérée
+  (`vitest -u`) : `addMenus.citoyens.builtins.organization` disparaît, `customs:["add-parent62-
+  partenaire"]` apparaît.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `tests/preflight/` (hors `bundle-size.test.ts`, échec préexistant sans rapport) | ✅ 822/823 |
+| `stamps.test.ts` (sentinelle d'inventaire, mise à jour : `parent62/parent62-partenaire:1`) | ✅ |
+
+### 9septquadragies.8 Routage d'édition par tag, indépendant de `source.key`
+
+Le réimport à venir des organisations acteurs posera `source.key:"parent62"` (fin de l'usage de
+`"youthCare"`, clé de lot de test). `profiles.organizations.editModals` route donc sur le tag, pas sur une
+clé de source :
+- `edit-parent62-acteur` : `NOT(tags contains "Partenaires") AND (scope parent62)`.
+- `edit-parent62-partenaire` : `scope parent62` (catch-all — implicitement les fiches taguées, puisque
+  l'acteur prend tout le reste en premier).
+
+Vue matchable (`entityMatchData`, `src/lib/entityMatch.ts`) expose déjà `tags` normalisé — aucun
+changement moteur nécessaire.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `tests/preflight/` (hors `bundle-size.test.ts`) | ✅ 822/823 |
+
+### 9septquadragies.9 Correctifs trouvés en relecture (annuaires, fiche profil, réseaux sociaux, header)
+
+- **Périmètre des deux annuaires** : confirmé côté backend (`SearchNew::getQueries`,
+  `communecter-dev`) que `$post["filters"]` est injecté dans `$query` AVANT `searchSourceKey`, qui
+  l'englobe ensuite dans un `$and` avec le `$or` dérivé du scope — le tag `"Partenaires"` (§9septquadragies.6)
+  filtre donc réellement les résultats côté serveur, pas seulement à l'affichage.
+- **Bloc « À propos » ne lisait que les champs du formulaire Acteur** : un Partenaire référencé via
+  `/annuaire` (champs `territoires`/`publics`/`themes`) ouvrait une fiche à cartes vides, sa saisie
+  n'apparaissant nulle part. Corrigé : le composant lit désormais le même tag `"Partenaires"` que le
+  routage d'édition et l'annuaire pour choisir le jeu de champs à afficher.
+- **Réseaux sociaux** : ne lisait que la forme imbriquée (`serverData.socialNetwork.*`), alors que les
+  organisations importées/« normales » les stockent à PLAT (`serverData.facebook`) — même distinction déjà
+  gérée par `ProfileTiersLieuxInfo.tsx`. Corrigé (lecture plate en priorité, repli sur l'imbriquée,
+  extrait en module testé `profileParent62Social.ts`) ; le rendu passe désormais par `SocialLinks`
+  (`footer/SocialLinks.tsx`, déjà partagé) via `NavLink`/`classifyHref`, au lieu d'un `<a href>` qui
+  préfixait `https://` même sur un identifiant sans URL (`@parent62` → `https://@parent62`).
+- **i18n** : la fiche était en français en dur (même choix que `ProfileSsbeAbout`) alors que la preview
+  de l'annuaire est bilingue. Ajout du namespace `ProfileParent62About` (`fr.json`/`en.json`) et bascule
+  sur `useT`.
+- **HeaderStacked (moteur, hors parent62)** : le conteneur du logo (`sm:h-auto sm:w-auto sm:aspect-square`,
+  hors flux) retombe à 0×0 dès `sm:` si ni `logoTitle` ni `logoSubtitle` n'est déclaré — rien d'autre dans
+  la rangée grid pour la dimensionner. Parent62 (seul site sur ce header) déclare les deux, donc non
+  visible ici ; plancher `sm:min-h-11 sm:min-w-11` ajouté par prudence pour tout futur site qui adopterait
+  ce header sans les deux textes.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `profileParent62Social.test.ts` (nouveau) | ✅ 6/6 |
+| `tests/preflight/` (hors `bundle-size.test.ts`) | ✅ 822/823, parité i18n fr/en incluse |
+
+### 9septquadragies.10 `/annuaire` : détail en tiroir (droite), cohérent avec `/annuaire-acteurs-parentalite`
+
+`list.card.detailsMode` passe de `"dialog"` (modale centrée) à `"drawer"` (tiroir, sens par défaut
+`"right"` de `CustomDrawer.tsx`) sur `/annuaire` — aligné sur `/annuaire-acteurs-parentalite`, qui
+l'utilisait déjà.
+
+**Vérification complète avant commit** (checklist standards du lead, portes chiffrées) :
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` (`eslint -f json` sur les fichiers du lot) | ✅ 0 erreur |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `test:unit` complet, RAM chiffrée (`NODE_OPTIONS=--max-old-space-size=4096 --maxWorkers=2`, machine à 7,5 Go) | ✅ 6070/6072 (1 skip) — seul `bundle-size.test.ts` en échec, préexistant/sans rapport |
+| `test:integration` (`SITE_CONFIG_PATH=./config.prod.parent62.json`, même garde RAM) | ✅ 1041/1043 — 1 timeout `/annuaire` (20s) sous charge mémoire, **rejoué isolément : 6/6 vert** (confirmé transitoire, pas une régression) ; + `bundle-size.test.ts` |
+| `config:render config.prod.parent62.json` | ✅ 52/52 pages, 183/183 sections, 0 échec |
+| `test:e2e` | non rejouable sur ce poste (`.env.test` absent, pas d'identifiants backend réels) — limite d'environnement déjà connue, pas une régression de ce lot |
+
+### 9septquadragies.11 Nettoyage de relecture (non bloquant)
+
+- `ProfileParent62About.tsx` recopiait localement `toStringArray` au lieu d'utiliser le helper
+  partagé `src/helpers/toStringArray.ts` — celui-ci lit aussi les deux formes OBJET que le legacy
+  renvoie pour un champ multi-valeurs (tableau PHP à index non contigus, dictionnaire de présence),
+  la copie locale rendait `[]` dessus (« Non renseigné » affiché alors que les filtres voient les
+  valeurs). Supprimée, import du helper partagé.
+- Commentaire de `ProfileParent62AboutSectionSchema` (`schema.ts`) périmé : citait encore
+  `costumForms.parent62-partenaire` seul et « type de structure, thèmes, territoires, publics »
+  (sélecteur de type retiré depuis, champs réels différents côté acteur). Réécrit pour refléter les
+  deux `costumForms` distingués par tag.
+- `doc/08-module-profil.md` : table des sections de profil ne listait pas `profile-parent62-about`
+  et le compteur était resté à 21 au lieu de 22. Ajoutés.
+- `TYPE_LABELS` (doublon de l'enum du formulaire) signalé en relecture : déjà absent du code, retiré
+  dans un lot antérieur de cette session (sélecteur « Type de structure » supprimé avec le reste de
+  la carte, §9septquadragies.3) — rien à faire.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| Tests ciblés (`ProfileParent62About`/`profileParent62Social`/`profileParent62Documents`, `toStringArray`) | ✅ 31/31 |
+| `tests/preflight/` (hors `bundle-size.test.ts`) | ✅ 822/823 |
+
+**Hors parent62, trouvé dans la même relecture** : `PreviewTestimonialBubble.tsx` (module `search`,
+preview « parole de parent ») — le bouton « agrandir l'image » devenait le premier focusable du
+dialogue Radix à l'ouverture (annoncé avant le titre, Entrée ouvrait la lightbox par-dessus). Corrigé
+par `tabIndex={-1}`, régression testée (`PreviewTestimonialBubble.test.tsx`).
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -4279,13 +4510,13 @@ n'est pas supprimée, seulement son lien de footer.
 | 2.4 | Impression de l'agenda | ✅ *(code prêt, non activé)* | export PDF via le SDK (`endpointApi.agendaGetPdf`, SDK ≥ 1.0.196), bouton opt-in `agenda.showPdfExport` (défaut `false`, vérifié en direct avec l'option forcée à `true` puis retirée — §9quinquadragies) — à activer sur `/agenda` quand souhaité |
 | 2.5 | Événements récurrents | ✅ *(était « config+code, non observable » le 24/07)* | `parent62-event` : `recurrency` + `openingHours` + `eventDates` + codecs/validators + calendrier « récurrents dépliés ». **Testé le 14-19/08 avec des événements de test locaux (dev, pas la production)** — a révélé 3 bugs backend dans `AgendaAction.php`, **tous corrigés** : matching par jour de semaine, mode LISTE excluant les récurrents, occurrence du jour en cours jamais renvoyée / onglet « En cours ». Front `site-json` entièrement corrigé et testé (899/899) — cf. §9sexies et les 2 documents de spécification à la racine du monorepo |
 | 2.6 | Ajout partenaires + **modération a priori** | ✅ *(était ❌, confirmé le 19/08)* | bouton public `requiresAdmin:false`, form injecte `preferences.toBeValidated:true`, onglet admin Agenda `validate` + « Proposé le ». `searchEventsCostum` masque bien les events *pending* côté public — confirmé (cf. §9sexies, §12) |
-| 2.7 | Annuaire partenaires (référencement + cartographie) | ✅ *(était 🟡)* | cible `searchTargets` « Structures & partenaires » (`organizations`) + carte + templates profils ; **25/07** : règle de rendu dédiée (`image-cover`, `imageFit:"contain"` pour des logos hétérogènes) ; **22/09** : page **`/annuaire`** (filtres territoire / type / public / thèmes, vue carte), formulaire `parent62-partenaire` modéré (dispense pour les admins du site), onglet admin « Partenaires » ; page « La communauté » retirée (§9octotricies.2). **0 organisation rattachée** à la livraison |
+| 2.7 | Annuaire partenaires (référencement + cartographie) | ✅ *(était 🟡)* | cible `searchTargets` « Structures & partenaires » (`organizations`) + carte + templates profils ; **25/07** : règle de rendu dédiée (`image-cover`, `imageFit:"contain"` pour des logos hétérogènes) ; **22/09** : page **`/annuaire`** (filtres territoire / type / public / thèmes, vue carte), formulaire `parent62-partenaire` modéré (dispense pour les admins du site), onglet admin « Partenaires » ; page « La communauté » retirée (§9octotricies.2). **0 organisation rattachée** à la livraison. **13/10** : page **`/annuaire-acteurs-parentalite`** distincte, 38 organisations importées (`source.key:"youthCare"`), preview et fiche profil sur les vrais champs du formulaire, formulaire d'édition dédié `parent62-acteur` (§9septquadragies) |
 
 ### Partie 3 (2 000 €) — statuts revus par l'audit du 24/07
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 3.1 | Module ressources (POI `recoveryCenter`) | 🟡 | `/ressources` + form `parent62-recovery-center` (catégories Vidéo/Photo/Compte-rendu/Doc/Lien, **02/09 : + Inforéso et Elles et ils ont marqué le réseau ; « Jeu » remplacé par « Les jeux du réseau »** — formulaire, filtre « Type » et pastilles de carte ; galerie/docs). **À vérifier en base** : les POI déjà enregistrés en `category: "Jeu"` ne sont pas migrés et sortent du filtre « Type ». **Données observées le 25/07** : `/ressources` affiche « Toutes les ressources (**4**) » — la mention « 0 donnée » du 24/07 est caduque. Création **admin-only** (pas de bouton public → le « formulaire simple partenaire » du CDC n'est pas exposé). **17/09** : **INFORESO** (`/inforeso`, POI `doc`, par année) et **« Elles et ils ont marqué le réseau »** (annuaire, POI `intervenant`) passent en **pages dédiées** avec formulaire et onglet `/admin` ; saisie des fiches à faire, prérequis prod en §9octovicies.6 |
+| 3.1 | Module ressources (POI `recoveryCenter`) | 🟡 | `/ressources` + form `parent62-recovery-center` (catégories Vidéo/Photo/Compte-rendu/Doc/Lien, **02/09 : + Inforéso et Elles et ils ont marqué le réseau ; « Jeu » remplacé par « Les jeux du réseau »** — formulaire, filtre « Type » et pastilles de carte ; galerie/docs). **À vérifier en base** : les POI déjà enregistrés en `category: "Jeu"` ne sont pas migrés et sortent du filtre « Type ». **Données observées le 25/07** : `/ressources` affiche « Toutes les ressources (**4**) » — la mention « 0 donnée » du 24/07 est caduque. Création **admin-only** (pas de bouton public → le « formulaire simple partenaire » du CDC n'est pas exposé). **17/09** : **INFORESO** (`/inforeso`, POI `doc`, par année) et **« Elles et ils ont marqué le réseau »** (annuaire, POI `intervenant`) passent en **pages dédiées** avec formulaire et onglet `/admin` ; saisie des fiches à faire, prérequis prod en §9octovicies.6. **13/10** : colonnes admin « Année » (INFORESO) et « Type » (Ressources) ne s'affichaient pas — `source.defaultFields` manquant sur les deux sections (§9septquadragies) |
 | 3.2 | Recherche dans les ressources (territoire/**ville**) | 🟡 *(était ✅ config)* | `/ressources` filtre `category` + `territoires` + public/thème + `searchBy:[name,description]` ; **23/09** : filtre « Commune » retiré, le filtre par ville étant réservé aux actualités (§9novotricies). **25/07** : les ressources sont aussi atteignables depuis `/recherche` (cible « Ressources » + règle de rendu dédiée) |
 | 3.3 | Votes « utile » / contributeurs | ❌ | pas de vote sur les ressources (`ADD_VOTE`/`links` à câbler + UI card) ; les votes n'existent que sur le fil news social |
 
@@ -4386,6 +4617,11 @@ attendue par le test parole ; périmètre `prepData`/`validategroup`.
 - ~~**`tests/preflight/archetypes.test.ts` rouge** (25/08, §9octies.4)~~ : **corrigé le 25/08**
   (§9novies) — resynchronisé, avec 3 autres exemples qui avaient aussi dérivé du dédoublonnage
   territoire « Familles en sol mineur » (§9quinquies).
+- **Section admin `resource` sans `status` ni action `validate` → projection réduite à
+  `["source","reference"]`** (13/10, §9septquadragies) : toute colonne ciblant un champ costum hors du
+  socle légacy (`name`/`created`/`address`…) reste invisible sans `source.defaultFields` explicite —
+  mécanisme prévu par `AdminResourceTable.tsx` mais facile à oublier à la création d'une section. À
+  vérifier systématiquement pour toute nouvelle section admin de ce type.
 
 ---
 
@@ -4413,6 +4649,8 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | **Transcription / sous-titres des paroles** (1.6) — champ dédié à ajouter au form + affichage | Peterson / réseau |
 | **Masquage public des events *pending*** (2.6) — `searchEventsCostum` applique-t-il un gate `toBeValidated` ? sinon à faire côté backend | Thomas |
 | **`typeObj` de production** (2.7) — déclarer sur le costum parent62 de production `typeObj.organizations` (`territoires`, `publics`, `themes`) comme en base locale (§9octotricies) | Thomas / backend |
+| **`typeObj.acteur` de production** — créé et appliqué en LOCAL uniquement (cf. §9septquadragies.3) ; reste à reporter sur la base de PRODUCTION (même opération) avant toute édition réelle en prod | Thomas / backend |
+| **Republication SDK (`costum-extensions.json`)** — aucune entrée `organizations` pour `parent62` dans l'artefact vendu (généré 03/09, périmé) ; le scanner backend qui le produit (`tools/parity/scripts/costum-fields.mjs`) est hors d'atteinte depuis ce poste. Nécessaire pour que l'édition des champs costum de `parent62-acteur` soit fiable en PRODUCTION (sans dépendre de `VITE_COSTUM_FORCE_LIVE`, local uniquement) | backend / Thomas |
 | **Données P2/P3** — relevé du 25/07 : 3 paroles, 4 ressources ; events et organisations à confirmer. Volumétrie réelle à créer/importer | réseau / Thomas |
 | **Géolocalisation** — aucune donnée ne porte de coordonnées : la vue carte de `/recherche` est vide et le `colorBy` par territoire est invérifiable | réseau / Thomas |
 | Borne de fin des dates (`$lt`/`$lte`) dans `SearchNew::getQueries` | Thomas / backend |

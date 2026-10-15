@@ -329,6 +329,9 @@
               "costumSlug": "parent62",
               "sourceKey": [
                 "parent62"
+              ],
+              "defaultFields": [
+                "category"
               ]
             },
             "columns": [
@@ -399,6 +402,9 @@
               "costumSlug": "parent62",
               "sourceKey": [
                 "parent62"
+              ],
+              "defaultFields": [
+                "annee"
               ]
             },
             "columns": [
