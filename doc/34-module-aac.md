@@ -533,7 +533,9 @@ Sortie (`AacResolvedConfig`) : `steps[]`, `roles{depenseStepKey, evalStepKey, ev
 financementStepKey, suiviStepKey}`, `criteria[]`, `criteriaSource`, `gates`, `campaigns[]`,
 `typeCoFinancer`. `evalStepKeyFound` = l'étape d'évaluation TROUVÉE par scan (`choose`, `decide`,
 sélection, vote ou grille `tpls.forms.aap.evaluation`), `null` quand `evalStepKey` n'est qu'une
-position (dispatch 4 vs 5) — seule elle est masquée à l'auteur.
+position (dispatch 4 vs 5) — seule elle est masquée à l'auteur. Le scan ÉCARTE l'étape de dépôt
+(`depenseStepKey`) : une grille de critères posée à côté de la proposition la désignerait, et
+l'auteur perdrait sa propre étape à l'édition.
 
 > **Nommage — ne pas confondre :**
 > - **`AacConfig`** (`schema.ts`) = le bloc **DÉCLARÉ** dans `config.aac` (juste `{ formId }`).

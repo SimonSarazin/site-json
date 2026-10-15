@@ -7,7 +7,7 @@ import { lazy } from "vite-preload";
 import type { QueryKey } from "@tanstack/react-query";
 import { registerExistingUrlFn, registerCleanValuesFn, registerInvalidateFn, registerSlotFn, type InvalidateFn } from "../specRegistries";
 import { PROFIL_QUERY_KEYS } from "../../constants";
-import { SEARCH_QUERY_KEYS } from "@/modules/search/constants";
+import { SEARCH_QUERY_KEYS, SEARCH_STAT_COUNT_PREFIX } from "@/modules/search/constants";
 import { BLOG_QUERY_KEYS } from "@/modules/blog/constants/queryKeys";
 import { AGENDA_QUERY_KEYS } from "@/modules/agenda/constants/queryKeys";
 
@@ -41,9 +41,14 @@ const USER_LIST_BUILDERS: Record<string, (slug: string) => QueryKey> = {
  * invalidate GÉNÉRIQUE PARAMÉTRÉ (clé `invalidate:standard`). params : `userList` (clé de USER_LIST_BUILDERS,
  * invalidée pour le parent/me en CRÉATION), `searchKeys` (préfixes de recherche à rafraîchir, 2 modes),
  * `parentAboutOnAdd` (rafraîchir l'about du parent en création). Édition → about de l'entité. Ex-poi/tl:invalidate.
+ * Les chiffres des tuiles de stat (`SEARCH_STAT_COUNT_PREFIX`) suivent TOUJOURS : leurs périmètres vivent
+ * dans les sections, pas dans les `searchKeys` du formulaire.
  */
 const standardInvalidate: InvalidateFn = (ctx, params) => {
-  const searchKeys = ((params?.searchKeys as string[] | undefined) ?? []).map((k) => SEARCH_QUERY_KEYS.RESULTS_PREFIX(k));
+  const searchKeys = [
+    ...((params?.searchKeys as string[] | undefined) ?? []).map((k) => SEARCH_QUERY_KEYS.RESULTS_PREFIX(k)),
+    SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STAT_COUNT_PREFIX),
+  ];
   if (ctx.mode === "edit") {
     return [...(ctx.entity?.slug ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(ctx.entity.slug)] : []), ...searchKeys];
   }

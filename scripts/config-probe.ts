@@ -37,10 +37,12 @@
  *   0  tous les périmètres renvoient au moins un résultat
  *   1  au moins un périmètre est VIDE (le défaut cherché), ou la sélection AAC
  *      (`aac.directory.fields.choose`) est mal formée ou ne désigne aucune question
- *   2  erreur d'usage, config illisible, backend injoignable, ou périmètre en
- *      erreur backend (une erreur ne vaut PAS un périmètre vide : rien n'est
- *      prouvé). JAMAIS 1 pour un défaut d'outil : l'appelant doit pouvoir lire
- *      « 1 » comme « la config est en cause », sans ambiguïté.
+ *   2  erreur d'usage, config illisible, backend injoignable, périmètre en
+ *      erreur backend ou formulaire AAC illisible (une erreur ne vaut PAS un
+ *      périmètre vide : rien n'est prouvé). JAMAIS 1 pour un défaut d'outil :
+ *      l'appelant doit pouvoir lire « 1 » comme « la config est en cause », sans
+ *      ambiguïté. Exception : sans aucun périmètre, un costum ABSENT du backend
+ *      interrogé laisse le contrôle AAC non fait — avertissement, code 0.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -235,20 +237,28 @@ const perimeters = collected.filter((p) => !unreadReason(p));
 const aacBlock = isRecord(rawConfig) && isRecord(rawConfig.aac) ? rawConfig.aac : undefined;
 const aacFormId = typeof aacBlock?.formId === "string" ? aacBlock.formId : undefined;
 
-// Rien à sonder : on ne touche PAS au réseau (un site vitrine sans recherche
-// n'a pas à échouer parce que son slug est absent du backend interrogé).
-if (perimeters.length === 0 && !aacFormId) {
+/**
+ * Sortie SANS aucune sonde, code 0 : rien à sonder, ou contrôle AAC seul sur un costum absent du
+ * backend interrogé. Un site vitrine sans recherche n'a pas à échouer parce que son slug manque à
+ * CE backend (base locale) — le contrôle AAC non fait est DIT (avertissement), jamais tu.
+ */
+function exitWithoutProbe(note: string, aac: AacCheck | null): never {
   if (JSON_OUT)
     // `entity: null` et non absent : la forme de sortie reste la MÊME dans les
     // deux branches (l'appelant lit un champ, pas une exception de clé).
-    console.log(JSON.stringify({ config: CONFIG_PATH, backend: baseURL, slug, slugSource: resolution.source, slugSiblings: resolution.siblings, warnings, entity: null, perimeters: [], ignored, aac: null, summary: { total: 0, ok: 0, empty: 0, error: 0, aacDefect: false } }, null, 2));
+    console.log(JSON.stringify({ config: CONFIG_PATH, backend: baseURL, slug, slugSource: resolution.source, slugSiblings: resolution.siblings, warnings, entity: null, perimeters: [], ignored, aac, summary: { total: 0, ok: 0, empty: 0, error: 0, aacDefect: false } }, null, 2));
   else {
-    console.log(`\n🛰️   Sonde des périmètres — ${path.basename(CONFIG_PATH)}\n     aucun baseParams sondable dans ce config — rien à sonder`);
+    console.log(`\n🛰️   Sonde des périmètres — ${path.basename(CONFIG_PATH)}\n     ${note}`);
     for (const i of ignored) console.log(`     (ignoré) ${i.path} — ${i.reason}`);
+    // Rien de sondé, rien à qualifier — sauf le contrôle AAC manqué, qui est l'un de ces avertissements.
+    if (aac) for (const w of warnings) console.log(`⚠️   ${w}`);
     console.log("");
   }
   process.exit(0);
 }
+
+// Rien à sonder : on ne touche PAS au réseau.
+if (perimeters.length === 0 && !aacFormId) exitWithoutProbe("aucun baseParams sondable dans ce config — rien à sonder", null);
 
 // ─── Client anonyme + entité costum ───────────────────────────────────────
 /**
@@ -285,8 +295,23 @@ try {
   if (!resolved) throw new Error("entité non résolue");
   entity = resolved as unknown as ProbeEntity;
 } catch (e) {
+  const why = `costum « ${slug} » non résolu sur ${baseURL} : ${(e as Error).message}`;
+  // Slug ABSENT de ce backend — il a répondu, sans `contextId` — et seul l'AAC à contrôler : le
+  // ménagement de « rien à sonder ». Un backend injoignable, ou un slug trouvé dont l'entité ne se
+  // charge pas (`contextId` présent), reste fatal — rien n'y est prouvé.
+  const responseData = (e as { responseData?: unknown }).responseData;
+  const slugAbsent =
+    (e as Error).name === "ApiResponseError" && !(isRecord(responseData) && responseData.contextId);
+  if (perimeters.length === 0 && aacFormId && slugAbsent) {
+    warnings.push(`sélection AAC NON vérifiée — ${why} (--slug, ou VITE_BASE_URL_BACKEND pour viser le backend du site)`);
+    exitWithoutProbe(`aucun baseParams sondable ; contrôle AAC (formulaire ${aacFormId}) impossible sur ce backend`, {
+      formId: aacFormId,
+      finding: null,
+      skipped: why,
+    });
+  }
   fatal(
-    `costum « ${slug} » non résolu sur ${baseURL} : ${(e as Error).message}`,
+    why,
     "backend injoignable, ou slug absent de CE backend (--slug pour en viser un autre) — AUCUN périmètre n'a pu être testé",
   );
 }
@@ -305,6 +330,8 @@ interface AacCheck {
   finding: AacChooseFinding | null;
   /** Formulaire illisible : rien n'est prouvé sur la sélection (code 2, comme un périmètre en erreur). */
   error?: string;
+  /** Contrôle non fait : costum absent du backend interrogé, sans aucun périmètre (code 0, averti). */
+  skipped?: string;
 }
 let aacCheck: AacCheck | undefined;
 if (aacFormId) {
@@ -532,6 +559,8 @@ const results = await runAll(perimeters.map(planProbe));
 const nOk = results.filter((r) => r.status === "ok").length;
 const nEmpty = results.filter((r) => r.status === "vide").length;
 const nErr = results.filter((r) => r.status === "erreur").length;
+/** Un formulaire AAC illisible compte comme une erreur — la même au JSON, au texte et au code. */
+const nErrTotal = nErr + (aacCheck?.error ? 1 : 0);
 
 // ─── Sortie ───────────────────────────────────────────────────────────────
 if (JSON_OUT) {
@@ -548,7 +577,7 @@ if (JSON_OUT) {
         perimeters: results,
         ignored,
         aac: aacCheck ?? null,
-        summary: { total: results.length, ok: nOk, empty: nEmpty, error: nErr + (aacCheck?.error ? 1 : 0), aacDefect: !!aacDefect },
+        summary: { total: results.length, ok: nOk, empty: nEmpty, error: nErrTotal, aacDefect: !!aacDefect },
       },
       null,
       2,
@@ -592,13 +621,14 @@ if (JSON_OUT) {
 
   console.log("\n" + "═".repeat(78));
   console.log(
-    `${results.length} périmètre(s) — ${nOk} OK · ${nEmpty} VIDE · ${nErr} erreur(s)` +
+    `${results.length} périmètre(s) — ${nOk} OK · ${nEmpty} VIDE · ${nErrTotal} erreur(s)` +
+      (aacCheck?.error ? " (dont le formulaire AAC)" : "") +
       (ignored.length ? ` · ${ignored.length} ignoré(s)` : ""),
   );
   if (nEmpty) console.log("⚠️   Un périmètre VIDE = page/filtre sans résultat en production.");
-  if (nErr) console.log("⚠️   Une ERREUR ne prouve RIEN sur le périmètre (backend/SDK) — à rejouer.");
+  if (nErrTotal) console.log("⚠️   Une ERREUR ne prouve RIEN (backend/SDK) — à rejouer.");
   for (const w of warnings) console.log(`⚠️   ${w}`);
   console.log("");
 }
 
-process.exit(nErr > 0 || aacCheck?.error ? 2 : nEmpty > 0 || aacDefect ? 1 : 0);
+process.exit(nErrTotal > 0 ? 2 : nEmpty > 0 || aacDefect ? 1 : 0);

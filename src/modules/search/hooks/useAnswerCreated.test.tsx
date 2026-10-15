@@ -6,7 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 /**
  * Après la création d'une answer depuis une liste (« Ajouter un créneau » de /creneaux) : listes et
- * cartes statiques rafraîchies, listes gérées du compte aussi (onglet « Structures »), et le message
+ * cartes statiques rafraîchies, chiffres des tuiles de stat (« Créneaux disponibles »), listes gérées
+ * du compte aussi (onglet « Structures »), et le message
  * configuré — sans lui, le déposant d'un créneau modéré, invisible dans la liste, croirait à un échec.
  */
 const ctx = vi.hoisted(() => ({ me: null as { id?: string } | null, toastSuccess: vi.fn() }));
@@ -30,12 +31,13 @@ beforeEach(() => {
 });
 
 describe("useAnswerCreated", () => {
-  it("rafraîchit listes et cartes statiques ET les listes gérées du compte, puis dit le message configuré", () => {
+  it("rafraîchit listes et cartes statiques, chiffres des tuiles ET listes gérées du compte, puis dit le message configuré", () => {
     const invalidate = vi.spyOn(queryClient, "invalidateQueries");
     const { result } = renderHook(() => useAnswerCreated({ fr: "Créneau ajouté. Il sera publié après validation." }), { wrapper });
     result.current();
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ["searchCostumStatic"] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ["searchCostumStaticMapAll"] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["stat-search-count"] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ["managed-answers:u1"] });
     expect(ctx.toastSuccess).toHaveBeenCalledWith("Créneau ajouté. Il sera publié après validation.");
   });
@@ -46,6 +48,7 @@ describe("useAnswerCreated", () => {
     const { result } = renderHook(() => useAnswerCreated(undefined), { wrapper });
     result.current();
     expect(ctx.toastSuccess).not.toHaveBeenCalled();
-    expect(invalidate).toHaveBeenCalledTimes(2);
+    expect(invalidate).toHaveBeenCalledTimes(3);
+    expect(invalidate).not.toHaveBeenCalledWith({ queryKey: expect.arrayContaining([expect.stringMatching(/^managed-answers:/)]) });
   });
 });

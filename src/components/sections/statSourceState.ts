@@ -10,6 +10,7 @@
 import { useMemo } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useEntityMembers } from "@/modules/profil/hooks/useMembersQuery";
+import { SEARCH_STAT_COUNT_PREFIX } from "@/modules/search/constants/queryKeys";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import type { StatDynamicSource } from "@/types/site-schema";
 
@@ -26,33 +27,25 @@ export const STAT_PENDING: StatSourceState = { value: null, unavailable: false }
 type SearchCountSource = Extract<StatDynamicSource, { type: "searchCount" }>;
 type MembersCountSource = Extract<StatDynamicSource, { type: "membersCount" }>;
 
-/**
- * Préfixe COMMUN à tous les comptes de recherche : la clé porte déjà le périmètre (type + baseParams),
- * donc deux tuiles — d'une section `stats` ou d'une `cta-card-grid` — qui comptent le même périmètre
- * partagent une seule requête.
- */
-const SEARCH_COUNT_QUERY_PREFIX = "stat-search-count";
 const NO_TAGS: Record<string, string[]> = {};
-/** Le compte vit longtemps : une tuile ne mérite pas une requête à chaque visite. */
-const SEARCH_COUNT_CACHE = { staleTime: 30 * 60 * 1000, gcTime: 60 * 60 * 1000 };
 
 export function useSearchCountState(source: SearchCountSource): StatSourceState {
   const { entity } = useCocolight();
   const searchType = useMemo(() => ({ type: [source.entityType] }), [source.entityType]);
   // Seul le `count` de la réponse est lu : une page d'UN document, réduit à son nom — au lieu d'une
-  // 1ʳᵉ page pleine (10 documents complets) transférée et transformée pour lire un entier.
+  // 1ʳᵉ page pleine (10 documents complets) transférée et transformée pour lire un entier. Si peu
+  // coûteux que le compte garde le cache des listes (60 s) : il suit la liste qu'il résume.
   const baseParams = useMemo(
     () => ({ ...source.baseParams, indexStepList: 1, defaultFields: ["name"] }),
     [source.baseParams],
   );
   const { totalCount, hasCount, isPending } = useSearchQuery({
-    queryKeyPrefix: SEARCH_COUNT_QUERY_PREFIX,
+    queryKeyPrefix: SEARCH_STAT_COUNT_PREFIX,
     searchText: "",
     searchTags: NO_TAGS,
     searchType,
     mapUsed: false,
     baseParams,
-    cache: SEARCH_COUNT_CACHE,
   });
   // `totalCount` vaut 0 tant que la 1ʳᵉ page n'a pas apporté son `count` : seul `hasCount` le rend
   // fiable ; requête close sans lui = échec. Sans entité, la recherche ne part jamais (`isPending`
