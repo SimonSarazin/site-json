@@ -139,7 +139,7 @@ export interface AacFund {
   financers: number[];
 }
 
-/** Le projet lié d'un commun ; `name` et `slug` à `null` tant qu'il n'est pas résolu. */
+/** Projet lié d'un commun ; `name` et `slug` à `null` s'il n'est pas résolu. */
 export interface AacCommunProject {
   id: string;
   name: string | null;

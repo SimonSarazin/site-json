@@ -987,8 +987,7 @@ mentionne pour ces deux surfaces est périmée.
     lien qu'écrivent Oceco, `generateproject` et l'association, et celui que lit le legacy (qui
     retrouve la réponse d'un projet en interrogeant `answers` sur `project.id`). Le renvoi
     `project.answer` n'est posé par `generateproject` que depuis septembre 2026 : il manque sur les
-    liens anciens (44 projets sur 49 pour le formulaire OCECO d'Open Atlas). Les deux lectures
-    doivent donc RECEVOIR `project` :
+    liens anciens. Les deux lectures doivent donc RECEVOIR `project` :
     - **fiche** : `findanswered` (`api.answer`) le projette par défaut (`FindAnsweredByIdAction`).
       Sans lui, le repli `buildResourceFromAnswer` est aveugle, et un commun absent de l'enveloppe
       (visiteur anonyme, ou enveloppe lue sur un autre formulaire de l'hôte) n'a plus de projet ;

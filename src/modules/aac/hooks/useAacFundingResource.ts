@@ -117,7 +117,6 @@ export function useAacFundingResource(
     enabled: repairPerms.canCreateMilestone,
   });
 
-  // Slug de l'enveloppe, sinon celui de l'entité projet (commun absent de l'enveloppe).
   const projectSlug = fundingData?.projects?.find(
     (project) => project.id === targetResource?.projectId
   )?.slug || projectEntity?.serverData.slug || undefined;

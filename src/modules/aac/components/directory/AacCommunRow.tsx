@@ -25,8 +25,8 @@ interface AacCommunRowProps {
 /**
  * Un commun sur UNE LIGNE — le mode liste de l'annuaire.
  *
- * Mêmes FAITS que `AacCommunCard`, autre disposition : titre, description, tags,
- * collecte, membres et intéressés. La liste n'est pas une vue appauvrie de la
+ * Mêmes FAITS que `AacCommunCard`, autre disposition : titre, projet lié, description,
+ * tags, collecte, membres et intéressés. La liste n'est pas une vue appauvrie de la
  * carte, c'est la même information rangée pour être comparée d'une ligne à
  * l'autre — d'où les colonnes de droite, alignées et de largeur fixe : l'œil
  * descend une colonne de montants, pas une suite de blocs décalés.
@@ -94,7 +94,7 @@ export function AacCommunRow({ commun, onRequestDelete, isDeleting, className }:
           ) : null}
 
           {/* Projet lié, sur la ligne du titre. */}
-          <AacCommunProjectLink project={commun.project} className="max-w-48 shrink-0 text-primary" />
+          <AacCommunProjectLink project={commun.project} className="max-w-48 text-primary" />
         </div>
 
         <p
