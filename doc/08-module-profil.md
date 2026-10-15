@@ -791,7 +791,16 @@ export const ProfileHeaderSectionSchema = z.object({
 
 **Bannière et photo de profil — envoi** (`ProfileImageUpload`) : le recadrage propose un format — « Original » (ratio de la
 photo, sélectionné par défaut), 16:9, 3:1, 4:3, carré — ou « Utiliser l'image entière », qui envoie le
-fichier d'origine sans le retoucher. L'affichage, lui, ne change pas (cadre fixe en `object-cover`).
+fichier d'origine sans le retoucher. Une photo de profil non carrée est complétée, avant l'envoi, en
+carré transparent (PNG, image entière centrée — `padFileToSquare`) : elle s'affiche en rond
+`object-cover` hors de l'en-tête et le backend en tire une miniature 50×50 recadrée au centre. Le carré
+est plafonné à 1024 px (`MAX_SQUARE_SIDE`, image réduite en gardant ses proportions) : sans plafond, une
+photo 4000×3000 donnait un PNG de plusieurs dizaines de Mo, et Safari iOS refuse d'exporter un canvas
+au-delà de 16,7 Mpx. Si la mise au carré échoue malgré tout, la photo part telle quelle. La bannière,
+elle, est allégée avant l'envoi (`lightenImage` : au-delà de 1 Mo, plus grand côté ramené à 1920 px,
+JPEG 0,85) et sa zone de recadrage (`cropW`/`cropH`) suit les dimensions du fichier envoyé (`fitWithin`) :
+envoyée telle quelle, une photo d'appareil (15,8 Mo, 6875×4544) dépassait la taille de requête de PHP
+— le backend ne recevait aucun fichier (« Le chargement du document ne s'est pas deroulé correctement »). L'affichage, lui, ne change pas (cadre fixe en `object-cover`).
 ⚠️ `bannerHeight` n'est lu par aucun composant.
 
 ### Supprimer une fiche depuis son profil

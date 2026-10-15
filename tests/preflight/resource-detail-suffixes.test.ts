@@ -70,7 +70,9 @@ function ecartsDetail(cfg: unknown): string[] {
 }
 
 const SITES = readdirSync(ROOT)
-  .filter((f) => /^config\.prod\..+\.json$/.test(f))
+  // Toutes les configs de site à la racine : `config.prod.<slug>.json`, mais aussi `config.prod.json`,
+  // `config.dev*.json` et `site-config.json`.
+  .filter((f) => /^(config\..+|site-config)\.json$/.test(f))
   .sort()
   .map((f) => ({ site: f, cfg: JSON.parse(readFileSync(join(ROOT, f), "utf8")) as unknown }));
 

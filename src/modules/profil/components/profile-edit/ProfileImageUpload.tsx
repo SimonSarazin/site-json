@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { Camera, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -6,7 +6,8 @@ import { useT } from "@/hooks/useT";
 import { useUploadProfileImage, useUploadProfileBanner } from "../../hooks/useProfileMutations";
 import { ImageCropDialog } from "@/modules/news";
 import type { AspectOption } from "@/modules/news/components/forms/ImageCropDialog";
-import { imageNaturalSize } from "../../lib/imageNaturalSize";
+import { padFileToSquare } from "../../lib/padToSquare";
+import { fitWithin, lightenImage, UPLOAD_COMPRESSION } from "@/utils/imageUtils";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 
 interface ProfileImageUploadProps {
@@ -24,7 +25,8 @@ interface ProfileImageUploadProps {
  * - Preview de l'image actuelle
  * - Upload immédiat au choix du fichier
  * - Crop avec ImageCropDialog — avatar comme bannière : au format choisi (photo d'origine par
- *   défaut) ou envoyée entière, pour garder la taille de la photo
+ *   défaut) ou envoyée entière, pour garder la taille de la photo ; la photo de profil est
+ *   complétée en carré transparent si besoin (entière partout, cf. `padFileToSquare`)
  * - Loading state pendant l'upload
  *
  * @param entity - L'entité dont on modifie l'image
@@ -71,43 +73,52 @@ export function ProfileImageUpload({
   };
 
   // Format libre parmi des ratios usuels, la photo d'origine en premier (sélection par défaut).
-  const formatsImage = useMemo<AspectOption[]>(
-    () => [
-      { label: t("ProfileEdit.imageFormat.original"), value: "original" },
-      { label: t("ProfileEdit.imageFormat.wide"), value: 16 / 9 },
-      { label: t("ProfileEdit.imageFormat.panorama"), value: 3 },
-      { label: t("ProfileEdit.imageFormat.classic"), value: 4 / 3 },
-      { label: t("ProfileEdit.imageFormat.square"), value: 1 },
-    ],
-    [t],
-  );
+  const formatsImage: AspectOption[] = [
+    { label: t("ProfileEdit.imageFormat.original"), value: "original" },
+    { label: t("ProfileEdit.imageFormat.wide"), value: 16 / 9 },
+    { label: t("ProfileEdit.imageFormat.panorama"), value: 3 },
+    { label: t("ProfileEdit.imageFormat.classic"), value: 4 / 3 },
+    { label: t("ProfileEdit.imageFormat.square"), value: 1 },
+  ];
 
   // Photo envoyée telle quelle : le fichier d'origine — pour la bannière, avec une zone de recadrage qui
   // couvre toute la photo, la copie que le backend en tire (`profilBannerUrl`) garde donc la même taille.
-  const handleUseOriginal = async () => {
-    if (!selectedFile || !previewUrl) return;
-    try {
-      const { width, height } = await imageNaturalSize(previewUrl);
-      await handleCropComplete(selectedFile, { x: 0, y: 0, width, height });
-    } catch (error) {
-      // Image illisible : même traitement que l'échec d'envoi (`handleCropComplete`).
-      console.error("Error reading image size:", error);
-    }
+  // Dimensions lues par le recadreur (`onMediaLoaded`) : pas de second décodage de la photo.
+  const handleUseOriginal = (taille: { width: number; height: number }) => {
+    if (!selectedFile) return;
+    void handleCropComplete(selectedFile, { x: 0, y: 0, ...taille });
   };
 
   const handleCropComplete = async (croppedFile: File, cropArea?: { x: number; y: number; width: number; height: number }) => {
     try {
       // Upload avec les bonnes données selon le type
       if (type === "banner" && cropArea) {
+        // Bannière allégée avant l'envoi (`lightenImage` : au-delà de 1 Mo, plus grand côté ramené à
+        // 1920 px) : envoyée à sa taille d'origine, une photo d'appareil (15 Mo, 6875×4544) dépasse la
+        // taille de requête de PHP et le backend ne reçoit aucun fichier. La zone de recadrage suit les
+        // dimensions du fichier ENVOYÉ ; `lightenImage` rend la photo telle quelle (même référence)
+        // quand elle est légère, quand la réduction ne gagne rien ou quand elle échoue.
+        const fichier = await lightenImage(croppedFile);
+        const taille =
+          fichier === croppedFile
+            ? cropArea
+            : fitWithin(cropArea.width, cropArea.height, UPLOAD_COMPRESSION.maxWidthOrHeight);
         await uploadBannerMutation.mutateAsync({
-          file: croppedFile,
+          file: fichier,
           cropX: 0, // Image déjà croppée localement, pas de décalage
           cropY: 0, // Image déjà croppée localement, pas de décalage
-          cropW: cropArea.width,
-          cropH: cropArea.height,
+          cropW: taille.width,
+          cropH: taille.height,
         });
       } else {
-        await uploadImageMutation.mutateAsync(croppedFile);
+        // Carrée à l'envoi, même au format « Original » : cf. `padFileToSquare`. En cas d'échec de la mise
+        // au carré (décodage, canvas refusé par le navigateur), on envoie la photo telle quelle — comme
+        // avant ce traitement — plutôt que de ne rien envoyer.
+        const fichier = await padFileToSquare(croppedFile).catch((error) => {
+          console.warn("Photo de profil non mise au carré, envoyée telle quelle :", error);
+          return croppedFile;
+        });
+        await uploadImageMutation.mutateAsync(fichier);
       }
 
       // Nettoyer

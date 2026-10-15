@@ -22,6 +22,6 @@ export async function cheminFicheCible(api: Api, targetType: string, targetId: s
   const chargeur = chargeurDeFiche(targetType);
   if (!chargeur) return null;
   const fiche = await api[chargeur]({ id: targetId });
-  const slug = (fiche as { slug?: string | null } | null)?.slug;
+  const slug = fiche?.slug;
   return slug ? `/profil/${encodeURIComponent(slug)}` : null;
 }
